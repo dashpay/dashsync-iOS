@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -17,28 +17,28 @@
 
 #import "DSDocumentTransition.h"
 #import "DPDocument.h"
-#import "DSTransition+Protected.h"
 #import "DPDocumentState.h"
+#import "DSTransition+Protected.h"
 
-@interface DSDocumentTransition()
+@interface DSDocumentTransition ()
 
-@property(nonatomic,strong) NSArray<DPDocument *>* documents;
+@property (nonatomic, strong) NSArray<DPDocument *> *documents;
 
 @end
 
 @implementation DSDocumentTransition
 
--(NSArray*)documentsAsArrayOfDictionaries {
-    NSMutableArray * mArray = [NSMutableArray array];
-    for (DPDocument * document in self.documents) {
+- (NSArray *)documentsAsArrayOfDictionaries {
+    NSMutableArray *mArray = [NSMutableArray array];
+    for (DPDocument *document in self.documents) {
         [mArray addObject:document.objectDictionary];
     }
     return mArray;
 }
 
--(NSArray*)actions {
-    NSMutableArray * mArray = [NSMutableArray array];
-    for (DPDocument * document in self.documents) {
+- (NSArray *)actions {
+    NSMutableArray *mArray = [NSMutableArray array];
+    for (DPDocument *document in self.documents) {
         [mArray addObject:@(1)];
     }
     return mArray;
@@ -51,12 +51,12 @@
     return json;
 }
 
--(instancetype)initForDocuments:(NSArray<DPDocument*>*)documents withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain {
+- (instancetype)initForDocuments:(NSArray<DPDocument *> *)documents withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain {
     if (self = [super initWithTransitionVersion:version blockchainIdentityUniqueId:blockchainIdentityUniqueId onChain:chain]) {
         self.documents = documents;
     }
     self.type = DSTransitionType_Documents;
-    
+
     return self;
 }
 

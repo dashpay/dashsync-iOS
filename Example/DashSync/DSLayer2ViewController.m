@@ -18,10 +18,10 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
-    
+
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
@@ -32,12 +32,13 @@
 }
 
 
--(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"DAPICallsSegue"]) {
-        DSDAPICallsViewController * DAPICallsViewController = (DSDAPICallsViewController*)segue.destinationViewController;
+        DSDAPICallsViewController *DAPICallsViewController = (DSDAPICallsViewController *)segue.destinationViewController;
         DAPICallsViewController.chainManager = self.chainManager;
-    } else if ([segue.identifier isEqualToString:@"DAPsSegue"]) {
-        DSDAPListViewController * DAPListViewController = (DSDAPListViewController*)segue.destinationViewController;
+    }
+    else if ([segue.identifier isEqualToString:@"DAPsSegue"]) {
+        DSDAPListViewController *DAPListViewController = (DSDAPListViewController *)segue.destinationViewController;
         DAPListViewController.chainManager = self.chainManager;
     }
 }

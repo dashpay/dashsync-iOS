@@ -60,22 +60,22 @@ NS_ASSUME_NONNULL_BEGIN
     if (!object) {
         return NO;
     }
-    
+
     BOOL haveEqualCodeObjects = (self.code == object.code) || [self.code isEqual:object.code];
     if (!haveEqualCodeObjects) {
         return NO;
     }
-    
+
     BOOL haveEqualNameObjects = (self.name == object.name) || [self.name isEqual:object.name];
     if (!haveEqualNameObjects) {
         return NO;
     }
-    
+
     BOOL haveEqualPriceObjects = (self.price == object.price) || [self.price isEqual:object.price];
     if (!haveEqualPriceObjects) {
         return NO;
     }
-    
+
     return YES;
 }
 
@@ -83,11 +83,11 @@ NS_ASSUME_NONNULL_BEGIN
     if (self == object) {
         return YES;
     }
-    
+
     if (![object isKindOfClass:[self class]]) {
         return NO;
     }
-    
+
     return [self isEqualToPriceObject:object];
 }
 

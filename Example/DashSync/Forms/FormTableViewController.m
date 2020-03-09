@@ -54,7 +54,7 @@ static NSString *const TEXTVIEW_CELL_ID = @"TextViewFormTableViewCell";
 
 - (void)setSections:(nullable NSArray<FormSectionModel *> *)sections {
     _sections = [sections copy];
-    
+
     [self.tableView reloadData];
 }
 
@@ -147,7 +147,7 @@ static NSString *const TEXTVIEW_CELL_ID = @"TextViewFormTableViewCell";
     if (!indexPath) {
         return;
     }
-    
+
     for (NSUInteger i = indexPath.section; i < self.sections.count; i++) {
         FormSectionModel *sectionModel = self.sections[i];
         NSUInteger j = (indexPath.section == i) ? indexPath.row + 1 : 0;
@@ -162,7 +162,7 @@ static NSString *const TEXTVIEW_CELL_ID = @"TextViewFormTableViewCell";
                 else {
                     NSAssert(NO, @"Invalid cell class for TextFieldFormCellModel");
                 }
-                
+
                 return; // we're done
             }
         }

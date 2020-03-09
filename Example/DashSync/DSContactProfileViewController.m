@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (null_resettable, nonatomic, strong) TextFieldFormCellModel *usernameCellModel;
 @property (null_resettable, nonatomic, strong) TextFieldFormCellModel *avatarCellModel;
 @property (null_resettable, nonatomic, strong) TextViewFormCellModel *aboutMeCellModel;
-@property (nonatomic,strong) FormTableViewController * formTableViewController;
+@property (nonatomic, strong) FormTableViewController *formTableViewController;
 
 @end
 
@@ -69,7 +69,7 @@ NS_ASSUME_NONNULL_BEGIN
     formController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.view addSubview:formController.view];
     [formController didMoveToParentViewController:self];
-    
+
     self.formTableViewController = formController;
 
     [self updateAvatarView];
@@ -131,10 +131,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray<BaseFormCellModel *> *)profileItems {
     if (self.blockchainIdentity.currentUsername) {
-        return @[self.avatarCellModel, self.aboutMeCellModel];
-    } else {
+        return @[ self.avatarCellModel, self.aboutMeCellModel ];
+    }
+    else {
         //show username model if no username is set
-        return @[self.usernameCellModel, self.avatarCellModel, self.aboutMeCellModel];
+        return @[ self.usernameCellModel, self.avatarCellModel, self.aboutMeCellModel ];
     }
 }
 
@@ -187,25 +188,31 @@ NS_ASSUME_NONNULL_BEGIN
                                     ? self.avatarCellModel.text
                                     : self.avatarCellModel.placeholder;
     __weak typeof(self) weakSelf = self;
-    [self.blockchainIdentity createOrUpdateProfileWithAboutMeString:aboutMe avatarURLString:avatarURLString completion:^(BOOL success) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
+    [self.blockchainIdentity createOrUpdateProfileWithAboutMeString:aboutMe
+                                                    avatarURLString:avatarURLString
+                                                         completion:^(BOOL success) {
+                                                             __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                             if (!strongSelf) {
+                                                                 return;
+                                                             }
 
-        [strongSelf showAlertTitle:isCreate ? @"Create profile result:" : @"Update profile result:" result:success completion:^{
-            if (success) {
-                [strongSelf.delegate contactProfileViewControllerDidUpdateProfile:self];
-            }
-        }];
-    }];
+                                                             [strongSelf showAlertTitle:isCreate ? @"Create profile result:" : @"Update profile result:"
+                                                                                 result:success
+                                                                             completion:^{
+                                                                                 if (success) {
+                                                                                     [strongSelf.delegate contactProfileViewControllerDidUpdateProfile:self];
+                                                                                 }
+                                                                             }];
+                                                         }];
 }
 
 - (void)showAlertTitle:(NSString *)title result:(BOOL)result completion:(void (^)(void))completion {
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:result ? @"✅ success" : @"❌ failure" preferredStyle:UIAlertControllerStyleAlert];
-    [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:^(UIAlertAction *_Nonnull action) {
-               completion();
-           }]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"OK"
+                                              style:UIAlertActionStyleCancel
+                                            handler:^(UIAlertAction *_Nonnull action) {
+                                                completion();
+                                            }]];
     [self presentViewController:alert animated:YES completion:nil];
 }
 

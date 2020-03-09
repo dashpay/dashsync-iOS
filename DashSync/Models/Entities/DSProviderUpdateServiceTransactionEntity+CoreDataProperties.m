@@ -11,7 +11,7 @@
 @implementation DSProviderUpdateServiceTransactionEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSProviderUpdateServiceTransactionEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSProviderUpdateServiceTransactionEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSProviderUpdateServiceTransactionEntity"];
 }
 
 @dynamic ipAddress;

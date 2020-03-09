@@ -11,7 +11,7 @@
 @implementation DSBlockchainIdentityTopupTransitionEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSBlockchainIdentityTopupTransitionEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSBlockchainIdentityTopupTransitionEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSBlockchainIdentityTopupTransitionEntity"];
 }
 
 @dynamic topupAmount;

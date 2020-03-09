@@ -79,7 +79,7 @@ static CGFloat const VERTICAL_PADDING = 10.0; // same as in DWSeedWordModel+DWLa
 // Clean up pin from memory once window's gone.
 - (void)willMoveToWindow:(nullable UIWindow *)newWindow {
     [super willMoveToWindow:newWindow];
-    
+
     if (newWindow == nil) {
         self.text = @"";
     }

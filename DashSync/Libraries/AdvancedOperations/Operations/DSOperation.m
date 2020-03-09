@@ -163,24 +163,26 @@
     // If evaluating will take too long and opearation was cancelled and deleted from queue
     // make sure that DSOperationConditionResult will not retain and call on self
     __weak typeof(self) weakSelf = self;
-    [DSOperationConditionResult evaluateConditions:self.conditions operation:self completion:^(NSArray *failures) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
+    [DSOperationConditionResult evaluateConditions:self.conditions
+                                         operation:self
+                                        completion:^(NSArray *failures) {
+                                            __strong typeof(weakSelf) strongSelf = weakSelf;
+                                            if (!strongSelf) {
+                                                return;
+                                            }
 
-        if (strongSelf.isCancelled) {
-            return;
-        }
+                                            if (strongSelf.isCancelled) {
+                                                return;
+                                            }
 
-        if (failures.count != 0) {
-            [strongSelf cancelWithErrors:failures];
-        }
-        else if (strongSelf.state < DSOperationStateReady) {
-            //We must preceed to have the operation exit the queue
-            strongSelf.state = DSOperationStateReady;
-        }
-    }];
+                                            if (failures.count != 0) {
+                                                [strongSelf cancelWithErrors:failures];
+                                            }
+                                            else if (strongSelf.state < DSOperationStateReady) {
+                                                //We must preceed to have the operation exit the queue
+                                                strongSelf.state = DSOperationStateReady;
+                                            }
+                                        }];
 }
 
 - (void)willEnqueueInOperationQueue:(DSOperationQueue *)operationQueue {

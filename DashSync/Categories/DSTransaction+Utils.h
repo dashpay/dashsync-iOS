@@ -36,11 +36,11 @@ typedef NS_ENUM(NSUInteger, DSTransactionStatus) {
 
 @interface DSTransaction (Utils)
 
-- (DSTransactionStatus)transactionStatusInWallet:(DSWallet*)wallet;
-- (DSTransactionStatus)transactionStatusInAccount:(DSAccount*)account;
-- (NSString*)amountTextReceivedInAccount:(DSAccount*)account;
-- (NSString*)localCurrencyTextForAmountReceivedInAccount:(DSAccount*)account;
-- (NSString*)dateText;
-- (NSDate*)transactionDate;
+- (DSTransactionStatus)transactionStatusInWallet:(DSWallet *)wallet;
+- (DSTransactionStatus)transactionStatusInAccount:(DSAccount *)account;
+- (NSString *)amountTextReceivedInAccount:(DSAccount *)account;
+- (NSString *)localCurrencyTextForAmountReceivedInAccount:(DSAccount *)account;
+- (NSString *)dateText;
+- (NSDate *)transactionDate;
 
 @end

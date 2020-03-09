@@ -5,9 +5,9 @@
 //  Created by Sam Westrich on 7/12/18.
 //
 
-#import <Foundation/Foundation.h>
-#import "DSTransaction.h"
 #import "DSCoinbaseTransaction.h"
+#import "DSTransaction.h"
+#import <Foundation/Foundation.h>
 
 //Special Transaction
 //https://github.com/dashpay/dips/blob/master/dip-0002-special-transactions.md
@@ -28,12 +28,12 @@ typedef NS_ENUM(NSUInteger, DSTransactionType) {
 
 @interface DSTransactionFactory : NSObject
 
-+(DSTransaction*)transactionWithMessage:(NSData*)data onChain:(DSChain*)chain;
++ (DSTransaction *)transactionWithMessage:(NSData *)data onChain:(DSChain *)chain;
 
-+(DSTransactionType)transactionTypeOfMessage:(NSData*)data;
++ (DSTransactionType)transactionTypeOfMessage:(NSData *)data;
 
-+(BOOL)ignoreMessagesOfTransactionType:(DSTransactionType)transactionType;
++ (BOOL)ignoreMessagesOfTransactionType:(DSTransactionType)transactionType;
 
-+(BOOL)shouldIgnoreTransactionMessage:(NSData*)data;
++ (BOOL)shouldIgnoreTransactionMessage:(NSData *)data;
 
 @end

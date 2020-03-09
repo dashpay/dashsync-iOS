@@ -17,11 +17,11 @@
 
 #import "DSPriceOperationProvider.h"
 
+#import "DSFetchDashRetailPricesOperation.h"
 #import "DSFetchFirstFallbackPricesOperation.h"
 #import "DSFetchSecondFallbackPricesOperation.h"
-#import "DSFetchDashRetailPricesOperation.h"
-#import "DSNoSucceededDependenciesCondition.h"
 #import "DSFetchSparkPricesOperation.h"
+#import "DSNoSucceededDependenciesCondition.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
     DSNoSucceededDependenciesCondition *condition = [DSNoSucceededDependenciesCondition new];
 
     DSOperation *operation1 = [[DSFetchDashRetailPricesOperation alloc] initOperationWithCompletion:mainThreadCompletion];
-    
+
     DSOperation *operation2 = [[DSFetchSparkPricesOperation alloc] initOperationWithCompletion:mainThreadCompletion];
     [operation2 addCondition:condition];
     [operation2 addDependency:operation1];

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -23,10 +23,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSCreditFundingDerivationPath : DSSimpleIndexedDerivationPath
 
-+ (instancetype)blockchainIdentityRegistrationFundingDerivationPathForWallet:(DSWallet*)wallet;
-+ (instancetype)blockchainIdentityTopupFundingDerivationPathForWallet:(DSWallet*)wallet;
++ (instancetype)blockchainIdentityRegistrationFundingDerivationPathForWallet:(DSWallet *)wallet;
++ (instancetype)blockchainIdentityTopupFundingDerivationPathForWallet:(DSWallet *)wallet;
 
-- (NSString*)receiveAddress;
+- (NSString *)receiveAddress;
 
 - (void)signTransaction:(DSTransaction *)transaction withPrompt:(NSString *)authprompt completion:(TransactionValidityCompletionBlock)completion;
 

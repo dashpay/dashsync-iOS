@@ -11,8 +11,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSIndexPath (Dash)
 
--(NSIndexPath*)indexPathByRemovingFirstIndex;
--(NSString *)indexPathString;
+- (NSIndexPath *)indexPathByRemovingFirstIndex;
+- (NSString *)indexPathString;
 @end
 
 NS_ASSUME_NONNULL_END

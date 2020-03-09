@@ -20,8 +20,8 @@
 
 #import "DPErrors.h"
 
-#import "NSData+Bitcoin.h"
 #import "BigIntTypes.h"
+#import "NSData+Bitcoin.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -34,13 +34,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (copy, nonatomic) NSNumber *currentRevision;
 @property (strong, nonatomic) DPDocumentState *currentRegisteredDocumentState;
 @property (strong, nonatomic) DPDocumentState *currentLocalDocumentState;
-@property (strong, nonatomic) NSMutableArray<DPDocumentState *>* documentStates;
+@property (strong, nonatomic) NSMutableArray<DPDocumentState *> *documentStates;
 
 @end
 
 @implementation DPDocument
 
-- (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(NSString*)userId onContractWithId:(NSString*)contractId onTableWithName:(NSString*)tableName usingEntropy:(NSString*)entropy {
+- (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(NSString *)userId onContractWithId:(NSString *)contractId onTableWithName:(NSString *)tableName usingEntropy:(NSString *)entropy {
     NSParameterAssert(dataDictionary);
     NSParameterAssert(userId);
     NSParameterAssert(contractId);
@@ -49,12 +49,12 @@ NS_ASSUME_NONNULL_BEGIN
 
     self = [super init];
     if (self) {
-        
+
         self.tableName = tableName;
         self.userId = userId;
         self.contractId = contractId;
         self.entropy = entropy;
-        
+
         self.currentRevision = @1;
         self.currentLocalDocumentState = [DPDocumentState documentStateWithDataDictionary:dataDictionary];
         self.documentStates = [NSMutableArray arrayWithObject:self.currentLocalDocumentState];
@@ -63,18 +63,18 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
-- (nullable DPDocument *)documentWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(NSString*)userId onContractWithId:(NSString*)contractId inTable:(NSString*)table withEntropy:(NSString*)entropy {
+- (nullable DPDocument *)documentWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(NSString *)userId onContractWithId:(NSString *)contractId inTable:(NSString *)table withEntropy:(NSString *)entropy {
     return [[DPDocument alloc] initWithDataDictionary:dataDictionary createdByUserWithId:userId onContractWithId:contractId onTableWithName:table usingEntropy:entropy];
 }
 
 - (void)addStateForChangingData:(DSStringValueDictionary *)dataDictionary {
-    DPDocumentState * lastState = [self.documentStates lastObject];
-    
-    DSMutableStringValueDictionary * stateDataDictionary = [lastState.dataChangeDictionary mutableCopy];
+    DPDocumentState *lastState = [self.documentStates lastObject];
+
+    DSMutableStringValueDictionary *stateDataDictionary = [lastState.dataChangeDictionary mutableCopy];
     [stateDataDictionary addEntriesFromDictionary:dataDictionary];
-    
+
     self.currentLocalDocumentState = [DPDocumentState documentStateWithDataDictionary:stateDataDictionary ofType:DPDocumentStateType_Update];
-    
+
     [self.documentStates addObject:self.currentLocalDocumentState];
 }
 

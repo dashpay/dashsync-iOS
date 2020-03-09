@@ -11,7 +11,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSChain,DSPeer,DSGovernanceVote,DSGovernanceObjectEntity,DSTransaction,DSAccount;
+@class DSChain, DSPeer, DSGovernanceVote, DSGovernanceObjectEntity, DSTransaction, DSAccount;
 
 typedef NS_ENUM(uint32_t, DSGovernanceObjectType) {
     DSGovernanceObjectType_Uknown = 0,
@@ -32,16 +32,16 @@ typedef NS_ENUM(uint32_t, DSGovernanceObjectType) {
 @property (nonatomic, readonly) DSGovernanceObjectType type;
 @property (nonatomic, readonly) UInt256 governanceObjectHash;
 //@property (nonatomic, readonly) NSString * governanceMessage;
-@property (nonatomic, readonly) DSChain * chain;
-@property (nullable, nonatomic, readonly) NSString * identifier;
+@property (nonatomic, readonly) DSChain *chain;
+@property (nullable, nonatomic, readonly) NSString *identifier;
 @property (nonatomic, readonly) uint64_t amount;
 @property (nonatomic, readonly) BOOL finishedSync;
 @property (nonatomic, readonly) uint64_t startEpoch;
 @property (nonatomic, readonly) uint64_t endEpoch;
 @property (nullable, nonatomic, readonly) NSString *paymentAddress;
-@property (nullable, nonatomic, readonly) NSString * url;
+@property (nullable, nonatomic, readonly) NSString *url;
 @property (nonatomic, readonly) BOOL isValid;
-@property (nullable, nonatomic, readonly) DSGovernanceObjectEntity * governanceObjectEntity;
+@property (nullable, nonatomic, readonly) DSGovernanceObjectEntity *governanceObjectEntity;
 
 @property (nonatomic, readonly) NSUInteger recentGovernanceVoteHashesCount;
 @property (nonatomic, readonly) NSUInteger last3HoursStandaloneGovernanceVoteHashesCount;
@@ -49,32 +49,32 @@ typedef NS_ENUM(uint32_t, DSGovernanceObjectType) {
 
 @property (nonatomic, assign) uint64_t totalGovernanceVoteCount;
 
-@property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
+@property (nonatomic, strong) NSManagedObjectContext *managedObjectContext;
 
 @property (nullable, nonatomic, weak) id<DSGovernanceObjectDelegate> delegate;
 
-+(DSGovernanceObject* _Nullable)governanceObjectFromMessage:(NSData *)message onChain:(DSChain*)chain;
--(instancetype)initWithType:(DSGovernanceObjectType)governanceObjectType parentHash:(UInt256)parentHash revision:(uint32_t)revision timestamp:(NSTimeInterval)timestamp signature:(NSData* _Nullable)signature collateralHash:(UInt256)collateralHash governanceObjectHash:(UInt256)governanceObjectHash identifier:(NSString* _Nullable)identifier amount:(uint64_t)amount startEpoch:(uint64_t)startEpoch endEpoch:(uint64_t)endEpoch paymentAddress:(NSString* _Nullable)paymentAddress url:(NSString * _Nullable)url onChain:(DSChain *)chain;
++ (DSGovernanceObject *_Nullable)governanceObjectFromMessage:(NSData *)message onChain:(DSChain *)chain;
+- (instancetype)initWithType:(DSGovernanceObjectType)governanceObjectType parentHash:(UInt256)parentHash revision:(uint32_t)revision timestamp:(NSTimeInterval)timestamp signature:(NSData *_Nullable)signature collateralHash:(UInt256)collateralHash governanceObjectHash:(UInt256)governanceObjectHash identifier:(NSString *_Nullable)identifier amount:(uint64_t)amount startEpoch:(uint64_t)startEpoch endEpoch:(uint64_t)endEpoch paymentAddress:(NSString *_Nullable)paymentAddress url:(NSString *_Nullable)url onChain:(DSChain *)chain;
 
--(void)peer:(DSPeer * _Nullable)peer hasGovernanceVoteHashes:(NSSet *)governanceVoteHashes;
--(void)peer:(DSPeer * _Nullable)peer relayedGovernanceVote:(DSGovernanceVote *)governanceVote;
+- (void)peer:(DSPeer *_Nullable)peer hasGovernanceVoteHashes:(NSSet *)governanceVoteHashes;
+- (void)peer:(DSPeer *_Nullable)peer relayedGovernanceVote:(DSGovernanceVote *)governanceVote;
 
--(void)save;
+- (void)save;
 
--(DSTransaction* _Nullable)collateralTransactionForAccount:(DSAccount *)account;
+- (DSTransaction *_Nullable)collateralTransactionForAccount:(DSAccount *)account;
 
--(void)registerCollateralTransaction:(DSTransaction *)transaction;
+- (void)registerCollateralTransaction:(DSTransaction *)transaction;
 
--(NSData *)dataMessage;
+- (NSData *)dataMessage;
 
--(NSData *)proposalInfo;
+- (NSData *)proposalInfo;
 
 @end
 
-@protocol DSGovernanceObjectDelegate<NSObject>
+@protocol DSGovernanceObjectDelegate <NSObject>
 
 //we are syncing and a random vote comes in
--(void)governanceObject:(DSGovernanceObject*)governanceObject didReceiveUnknownHashes:(NSSet*)hash fromPeer:(DSPeer * _Nullable)peer;
+- (void)governanceObject:(DSGovernanceObject *)governanceObject didReceiveUnknownHashes:(NSSet *)hash fromPeer:(DSPeer *_Nullable)peer;
 
 @end
 

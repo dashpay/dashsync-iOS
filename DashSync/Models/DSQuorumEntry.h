@@ -5,17 +5,17 @@
 //  Created by Sam Westrich on 4/25/19.
 //
 
-#import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
+#import <Foundation/Foundation.h>
 
 typedef NS_ENUM(uint16_t, DSLLMQType) {
-    DSLLMQType_50_60 = 1, //every 24 blocks
+    DSLLMQType_50_60 = 1,  //every 24 blocks
     DSLLMQType_400_60 = 2, //288 blocks
     DSLLMQType_400_85 = 3, //576 blocks
-    DSLLMQType_5_60 = 100 //24 blocks
+    DSLLMQType_5_60 = 100  //24 blocks
 };
 
-@class DSChain,DSMasternodeList,DSQuorumEntryEntity;
+@class DSChain, DSMasternodeList, DSQuorumEntryEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -31,27 +31,27 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) int32_t signersCount;
 @property (nonatomic, readonly) DSLLMQType llmqType;
 @property (nonatomic, readonly) int32_t validMembersCount;
-@property (nonatomic, readonly) NSData * signersBitset;
-@property (nonatomic, readonly) NSData * validMembersBitset;
+@property (nonatomic, readonly) NSData *signersBitset;
+@property (nonatomic, readonly) NSData *validMembersBitset;
 @property (nonatomic, readonly) uint32_t length;
-@property (nonatomic, readonly, getter=toData) NSData * data;
+@property (nonatomic, readonly, getter=toData) NSData *data;
 @property (nonatomic, readonly) UInt256 quorumEntryHash;
-@property (nonatomic, readonly) DSChain * chain;
+@property (nonatomic, readonly) DSChain *chain;
 @property (nonatomic, readonly) BOOL verified;
 @property (nonatomic, assign) BOOL saved;
-@property (nonatomic, readonly) DSQuorumEntryEntity * matchingQuorumEntryEntity;
+@property (nonatomic, readonly) DSQuorumEntryEntity *matchingQuorumEntryEntity;
 
-+(instancetype)potentialQuorumEntryWithData:(NSData*)data dataOffset:(uint32_t)dataOffset onChain:(DSChain*)chain;
++ (instancetype)potentialQuorumEntryWithData:(NSData *)data dataOffset:(uint32_t)dataOffset onChain:(DSChain *)chain;
 
--(BOOL)validateWithMasternodeList:(DSMasternodeList*)dictionary;
+- (BOOL)validateWithMasternodeList:(DSMasternodeList *)dictionary;
 
--(instancetype)initWithVersion:(uint16_t)version type:(DSLLMQType)type quorumHash:(UInt256)quorumHash quorumPublicKey:(UInt384)quorumPublicKey commitmentHash:(UInt256)commitmentHash verified:(BOOL)verified onChain:(DSChain*)chain;
+- (instancetype)initWithVersion:(uint16_t)version type:(DSLLMQType)type quorumHash:(UInt256)quorumHash quorumPublicKey:(UInt384)quorumPublicKey commitmentHash:(UInt256)commitmentHash verified:(BOOL)verified onChain:(DSChain *)chain;
 
--(UInt256)orderingHashForRequestID:(UInt256)requestID forQuorumType:(DSLLMQType)quorumType;
+- (UInt256)orderingHashForRequestID:(UInt256)requestID forQuorumType:(DSLLMQType)quorumType;
 
-+(uint32_t)quorumSizeForType:(DSLLMQType)type;
++ (uint32_t)quorumSizeForType:(DSLLMQType)type;
 
-+(DSLLMQType)chainLockQuorumTypeForChain:(DSChain*)chain;
++ (DSLLMQType)chainLockQuorumTypeForChain:(DSChain *)chain;
 
 @end
 

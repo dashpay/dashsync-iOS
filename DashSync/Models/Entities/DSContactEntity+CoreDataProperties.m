@@ -11,7 +11,7 @@
 @implementation DSContactEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSContactEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSContactEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSContactEntity"];
 }
 
 @dynamic documentRevision;

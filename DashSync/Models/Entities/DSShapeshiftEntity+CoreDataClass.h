@@ -23,8 +23,8 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
 typedef enum eShapeshiftAddressStatus {
     eShapeshiftAddressStatus_Unused = 0,
@@ -39,23 +39,22 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSShapeshiftEntity : NSManagedObject
 
--(NSString*)shapeshiftStatusString;
+- (NSString *)shapeshiftStatusString;
 
--(void)checkStatus;
+- (void)checkStatus;
 
-+(NSArray*)shapeshiftsInProgress;
++ (NSArray *)shapeshiftsInProgress;
 
-+(DSShapeshiftEntity*)shapeshiftHavingWithdrawalAddress:(NSString*)withdrawalAddress;
-+(DSShapeshiftEntity*)unusedShapeshiftHavingWithdrawalAddress:(NSString*)withdrawalAddress;
-+(DSShapeshiftEntity*)registerShapeshiftWithInputAddress:(NSString*)inputAddress andWithdrawalAddress:(NSString*)withdrawalAddress withStatus:(eShapeshiftAddressStatus)shapeshiftAddressStatus;
-+(DSShapeshiftEntity*)registerShapeshiftWithInputAddress:(NSString*)inputAddress andWithdrawalAddress:(NSString*)withdrawalAddress withStatus:(eShapeshiftAddressStatus)shapeshiftAddressStatus fixedAmountOut:(NSNumber*)amountOut amountIn:(NSNumber*)amountIn;
++ (DSShapeshiftEntity *)shapeshiftHavingWithdrawalAddress:(NSString *)withdrawalAddress;
++ (DSShapeshiftEntity *)unusedShapeshiftHavingWithdrawalAddress:(NSString *)withdrawalAddress;
++ (DSShapeshiftEntity *)registerShapeshiftWithInputAddress:(NSString *)inputAddress andWithdrawalAddress:(NSString *)withdrawalAddress withStatus:(eShapeshiftAddressStatus)shapeshiftAddressStatus;
++ (DSShapeshiftEntity *)registerShapeshiftWithInputAddress:(NSString *)inputAddress andWithdrawalAddress:(NSString *)withdrawalAddress withStatus:(eShapeshiftAddressStatus)shapeshiftAddressStatus fixedAmountOut:(NSNumber *)amountOut amountIn:(NSNumber *)amountIn;
 
--(void)routinelyCheckStatusAtInterval:(NSTimeInterval)timeInterval;
+- (void)routinelyCheckStatusAtInterval:(NSTimeInterval)timeInterval;
 
 @end
 
 NS_ASSUME_NONNULL_END
-
 
 
 #import "DSShapeshiftEntity+CoreDataProperties.h"

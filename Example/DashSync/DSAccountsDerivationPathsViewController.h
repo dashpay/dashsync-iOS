@@ -6,11 +6,11 @@
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
 #import <DashSync/DashSync.h>
+#import <UIKit/UIKit.h>
 
 @interface DSAccountsDerivationPathsViewController : UITableViewController
 
-@property (nonatomic, strong) DSAccount * account;
+@property (nonatomic, strong) DSAccount *account;
 
 @end

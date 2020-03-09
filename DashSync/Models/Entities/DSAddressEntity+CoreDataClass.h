@@ -1,6 +1,6 @@
 //
 //  DSAddressEntity+CoreDataClass.h
-//  
+//
 //
 //  Created by Sam Westrich on 5/20/18.
 //
@@ -22,23 +22,23 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
-@class DSDerivationPathEntity,DSTxInputEntity,DSTxOutputEntity,DSSpecialTransactionEntity,DSSimplifiedMasternodeEntryEntity,DSChain,DSChainEntity;
+@class DSDerivationPathEntity, DSTxInputEntity, DSTxOutputEntity, DSSpecialTransactionEntity, DSSimplifiedMasternodeEntryEntity, DSChain, DSChainEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSAddressEntity : NSManagedObject
 
--(uint64_t)balance;
--(uint64_t)inAmount;
--(uint64_t)outAmount;
-+(DSAddressEntity*)addressMatching:(NSString*)address onChain:(DSChain*)chain; //gets created if not found
-+(DSAddressEntity*)findAddressMatching:(NSString*)address onChain:(DSChain*)chain; //does not get created if not found
-+(NSArray<DSAddressEntity*>*)findAddressesIn:(NSSet<NSString*>*)addresses onChain:(DSChain*)chain;
-+(NSDictionary<NSString*,DSAddressEntity*>*)findAddressesAndIndexIn:(NSSet<NSString*>*)addresses onChain:(DSChain*)chain;
-+(void)deleteAddressesOnChain:(DSChainEntity*)chainEntity;
+- (uint64_t)balance;
+- (uint64_t)inAmount;
+- (uint64_t)outAmount;
++ (DSAddressEntity *)addressMatching:(NSString *)address onChain:(DSChain *)chain;     //gets created if not found
++ (DSAddressEntity *)findAddressMatching:(NSString *)address onChain:(DSChain *)chain; //does not get created if not found
++ (NSArray<DSAddressEntity *> *)findAddressesIn:(NSSet<NSString *> *)addresses onChain:(DSChain *)chain;
++ (NSDictionary<NSString *, DSAddressEntity *> *)findAddressesAndIndexIn:(NSSet<NSString *> *)addresses onChain:(DSChain *)chain;
++ (void)deleteAddressesOnChain:(DSChainEntity *)chainEntity;
 
 @end
 

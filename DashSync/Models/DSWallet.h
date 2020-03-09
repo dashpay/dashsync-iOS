@@ -22,71 +22,71 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
-#import "DSBlockchainIdentity.h"
-#import "DSBIP39Mnemonic.h"
 #import "BigIntTypes.h"
+#import "DSBIP39Mnemonic.h"
+#import "DSBlockchainIdentity.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef void (^SeedCompletionBlock)(NSData * _Nullable seed, BOOL cancelled);
-typedef void (^SeedRequestBlock)(NSString * _Nullable authprompt, uint64_t amount, _Nullable SeedCompletionBlock seedCompletion);
+typedef void (^SeedCompletionBlock)(NSData *_Nullable seed, BOOL cancelled);
+typedef void (^SeedRequestBlock)(NSString *_Nullable authprompt, uint64_t amount, _Nullable SeedCompletionBlock seedCompletion);
 
-FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
+FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 
-#define DUFFS           100000000LL
-#define MAX_MONEY          (21000000LL*DUFFS)
+#define DUFFS 100000000LL
+#define MAX_MONEY (21000000LL * DUFFS)
 
-@class DSChain,DSAccount,DSTransaction,DSDerivationPath,DSLocalMasternode,DSKey,DSSpecialTransactionsWalletHolder,DSBLSKey,DSECDSAKey;
+@class DSChain, DSAccount, DSTransaction, DSDerivationPath, DSLocalMasternode, DSKey, DSSpecialTransactionsWalletHolder, DSBLSKey, DSECDSAKey;
 
 @interface DSWallet : NSObject
 
-@property (nonatomic, readonly) NSArray * accounts;
+@property (nonatomic, readonly) NSArray *accounts;
 
-@property (nonatomic, readonly) DSSpecialTransactionsWalletHolder * specialTransactionsHolder;
+@property (nonatomic, readonly) DSSpecialTransactionsWalletHolder *specialTransactionsHolder;
 
-@property (nonatomic, readonly) NSDictionary * blockchainIdentities;
+@property (nonatomic, readonly) NSDictionary *blockchainIdentities;
 
-@property (nonatomic, readonly) NSArray * blockchainIdentityAddresses;
+@property (nonatomic, readonly) NSArray *blockchainIdentityAddresses;
 
-@property (nonatomic, readonly) NSArray * providerOwnerAddresses;
+@property (nonatomic, readonly) NSArray *providerOwnerAddresses;
 
-@property (nonatomic, readonly) NSArray * providerVotingAddresses;
+@property (nonatomic, readonly) NSArray *providerVotingAddresses;
 
-@property (nonatomic, readonly) NSArray * providerOperatorAddresses;
+@property (nonatomic, readonly) NSArray *providerOperatorAddresses;
 
 //This is unique among all wallets and all chains
-@property (nonatomic, readonly) NSString * uniqueID;
+@property (nonatomic, readonly) NSString *uniqueID;
 
-@property (nonatomic, readonly) NSString * mnemonicUniqueID;
+@property (nonatomic, readonly) NSString *mnemonicUniqueID;
 
-@property (nonatomic, readonly) NSString * creationTimeUniqueID;
+@property (nonatomic, readonly) NSString *creationTimeUniqueID;
 
 @property (nonatomic, readonly) NSTimeInterval walletCreationTime;
 
 // set to true if this wallet is not stored on disk
-@property (nonatomic, readonly,getter=isTransient) BOOL transient;
+@property (nonatomic, readonly, getter=isTransient) BOOL transient;
 
 // chain for the wallet
-@property (nonatomic, readonly) DSChain * chain;
+@property (nonatomic, readonly) DSChain *chain;
 
 // current wallet balance excluding transactions known to be invalid
 @property (nonatomic, readonly) uint64_t balance;
 
 // all previously generated external addresses
-@property (nonatomic, readonly) NSSet * allReceiveAddresses;
+@property (nonatomic, readonly) NSSet *allReceiveAddresses;
 
 // all previously generated internal addresses
-@property (nonatomic, readonly) NSSet * allChangeAddresses;
+@property (nonatomic, readonly) NSSet *allChangeAddresses;
 
 // NSValue objects containing UTXO structs
-@property (nonatomic, readonly) NSArray * unspentOutputs;
+@property (nonatomic, readonly) NSArray *unspentOutputs;
 
 // latest 100 transactions sorted by date, most recent first
-@property (nonatomic, readonly) NSArray * recentTransactions;
+@property (nonatomic, readonly) NSArray *recentTransactions;
 
 // all wallet transactions sorted by date, most recent first
-@property (nonatomic, readonly) NSArray * allTransactions;
+@property (nonatomic, readonly) NSArray *allTransactions;
 
 // the total amount spent from the wallet (excluding change)
 @property (nonatomic, readonly) uint64_t totalSent;
@@ -102,14 +102,14 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 @property (nonatomic, readonly) SeedRequestBlock seedRequestBlock;
 
--(void)authPrivateKey:(void (^ _Nullable)(NSString * _Nullable authKey))completion;
+- (void)authPrivateKey:(void (^_Nullable)(NSString *_Nullable authKey))completion;
 
-+ (DSWallet* _Nullable)standardWalletWithSeedPhrase:(NSString *)seedPhrase setCreationDate:(NSTimeInterval)creationDate forChain:(DSChain * )chain storeSeedPhrase:(BOOL)storeSeedPhrase isTransient:(BOOL)isTransient;
-+ (DSWallet* _Nullable)standardWalletWithRandomSeedPhraseForChain:(DSChain *)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient;
-+ (DSWallet* _Nullable)standardWalletWithRandomSeedPhraseInLanguage:(DSBIP39Language)language forChain:(DSChain *)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient;
-+ (DSWallet* _Nullable)transientWalletWithDerivedKeyData:(NSData*)derivedData forChain:(DSChain*)chain;
++ (DSWallet *_Nullable)standardWalletWithSeedPhrase:(NSString *)seedPhrase setCreationDate:(NSTimeInterval)creationDate forChain:(DSChain *)chain storeSeedPhrase:(BOOL)storeSeedPhrase isTransient:(BOOL)isTransient;
++ (DSWallet *_Nullable)standardWalletWithRandomSeedPhraseForChain:(DSChain *)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient;
++ (DSWallet *_Nullable)standardWalletWithRandomSeedPhraseInLanguage:(DSBIP39Language)language forChain:(DSChain *)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient;
++ (DSWallet *_Nullable)transientWalletWithDerivedKeyData:(NSData *)derivedData forChain:(DSChain *)chain;
 
--(instancetype)initWithUniqueID:(NSString* _Nonnull)uniqueID forChain:(DSChain* _Nonnull)chain;
+- (instancetype)initWithUniqueID:(NSString *_Nonnull)uniqueID forChain:(DSChain *_Nonnull)chain;
 
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address;
@@ -117,7 +117,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 // true if the address is controlled by the wallet except for evolution addresses
 - (BOOL)accountsBaseDerivationPathsContainAddress:(NSString *)address;
 
-- (DSAccount* _Nullable)accountForAddress:(NSString *)address;
+- (DSAccount *_Nullable)accountForAddress:(NSString *)address;
 
 // true if the address was previously used as an input or output for this wallet
 - (BOOL)addressIsUsed:(NSString *)address;
@@ -134,22 +134,22 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
                 forTxHashes:(NSArray *)txHashes;
 
 //add an account to the wallet
-- (void)addAccount:(DSAccount*)account;
+- (void)addAccount:(DSAccount *)account;
 
 // returns an account where all derivation paths have the following account number
-- (DSAccount* _Nullable)accountWithNumber:(NSUInteger)accountNumber;
+- (DSAccount *_Nullable)accountWithNumber:(NSUInteger)accountNumber;
 
 // returns an account to which the given transaction is or can be associated with (even if it hasn't been registered), no account if the transaction is not associated with the wallet
-- (DSAccount* _Nullable)firstAccountThatCanContainTransaction:(DSTransaction *)transaction;
+- (DSAccount *_Nullable)firstAccountThatCanContainTransaction:(DSTransaction *)transaction;
 
 // returns all accounts to which the given transaction is or can be associated with (even if it hasn't been registered)
-- (NSArray*)accountsThatCanContainTransaction:(DSTransaction *)transaction;
+- (NSArray *)accountsThatCanContainTransaction:(DSTransaction *)transaction;
 
 // returns an account to which the given transaction hash is associated with, no account if the transaction hash is not associated with the wallet
-- (DSAccount * _Nullable)accountForTransactionHash:(UInt256)txHash transaction:(DSTransaction * _Nullable __autoreleasing * _Nullable)transaction;
+- (DSAccount *_Nullable)accountForTransactionHash:(UInt256)txHash transaction:(DSTransaction *_Nullable __autoreleasing *_Nullable)transaction;
 
 // returns the transaction with the given hash if it's been registered in the wallet (might also return non-registered)
-- (DSTransaction * _Nullable)transactionForHash:(UInt256)txHash;
+- (DSTransaction *_Nullable)transactionForHash:(UInt256)txHash;
 
 - (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
 
@@ -163,27 +163,27 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 - (BOOL)transactionIsValid:(DSTransaction *)transaction;
 
 //returns the seed phrase after authenticating
-- (void)seedPhraseAfterAuthentication:(void (^ _Nullable)(NSString * _Nullable seedPhrase))completion;
-- (void)seedPhraseAfterAuthenticationWithPrompt:(NSString * _Nullable)authprompt completion:(void (^ _Nullable)(NSString * _Nullable seedPhrase))completion;
+- (void)seedPhraseAfterAuthentication:(void (^_Nullable)(NSString *_Nullable seedPhrase))completion;
+- (void)seedPhraseAfterAuthenticationWithPrompt:(NSString *_Nullable)authprompt completion:(void (^_Nullable)(NSString *_Nullable seedPhrase))completion;
 
-- (NSString* _Nullable)seedPhraseIfAuthenticated;
+- (NSString *_Nullable)seedPhraseIfAuthenticated;
 
 //this is used from the account to help determine best start sync position for future resync
 - (void)setGuessedWalletCreationTime:(NSTimeInterval)guessedWalletCreationTime;
 
-- (DSKey* _Nullable)privateKeyForAddress:(NSString* _Nonnull)address fromSeed:(NSData* _Nonnull)seed;
+- (DSKey *_Nullable)privateKeyForAddress:(NSString *_Nonnull)address fromSeed:(NSData *_Nonnull)seed;
 
 //generate a random Mnemonic seed
-+ (NSString * _Nonnull)generateRandomSeed;
++ (NSString *_Nonnull)generateRandomSeed;
 
 //generate a random Mnemonic seed in a specified language
-+ (NSString * _Nonnull)generateRandomSeedForLanguage:(DSBIP39Language)language;
++ (NSString *_Nonnull)generateRandomSeedForLanguage:(DSBIP39Language)language;
 
 //get the MNEMONIC KEY prefixed unique ID
-+ (NSString* _Nonnull)mnemonicUniqueIDForUniqueID:(NSString*)uniqueID;
++ (NSString *_Nonnull)mnemonicUniqueIDForUniqueID:(NSString *)uniqueID;
 
 //get the CREATION TIME KEY prefixed unique ID
-+ (NSString* _Nonnull)creationTimeUniqueIDForUniqueID:(NSString*)uniqueID;
++ (NSString *_Nonnull)creationTimeUniqueIDForUniqueID:(NSString *)uniqueID;
 
 //This removes all blockchain information from the wallet, used for resync
 - (void)wipeBlockchainInfo;
@@ -192,42 +192,42 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 - (void)wipeWalletInfo;
 
 //Recreate derivation paths and addresses
--(void)reloadDerivationPaths;
+- (void)reloadDerivationPaths;
 
--(void)unregisterBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
--(void)addBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
--(void)registerBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
+- (void)unregisterBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
+- (void)addBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
+- (void)registerBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 
--(DSBlockchainIdentity*)createBlockchainIdentityOfType:(DSBlockchainIdentityType)type;
--(DSBlockchainIdentity*)createBlockchainIdentityOfType:(DSBlockchainIdentityType)type usingDerivationIndex:(uint32_t)index;
--(DSBlockchainIdentity*)createBlockchainIdentityOfType:(DSBlockchainIdentityType)type forUsername:(NSString * _Nullable)username;
--(DSBlockchainIdentity*)createBlockchainIdentityOfType:(DSBlockchainIdentityType)type forUsername:(NSString* _Nullable)username usingDerivationIndex:(uint32_t)index;
+- (DSBlockchainIdentity *)createBlockchainIdentityOfType:(DSBlockchainIdentityType)type;
+- (DSBlockchainIdentity *)createBlockchainIdentityOfType:(DSBlockchainIdentityType)type usingDerivationIndex:(uint32_t)index;
+- (DSBlockchainIdentity *)createBlockchainIdentityOfType:(DSBlockchainIdentityType)type forUsername:(NSString *_Nullable)username;
+- (DSBlockchainIdentity *)createBlockchainIdentityOfType:(DSBlockchainIdentityType)type forUsername:(NSString *_Nullable)username usingDerivationIndex:(uint32_t)index;
 
--(DSBlockchainIdentity* _Nullable)blockchainIdentityForUniqueId:(UInt256)uniqueId;
+- (DSBlockchainIdentity *_Nullable)blockchainIdentityForUniqueId:(UInt256)uniqueId;
 
-- (void)seedWithPrompt:(NSString * _Nullable)authprompt forAmount:(uint64_t)amount completion:(_Nullable SeedCompletionBlock)completion;
+- (void)seedWithPrompt:(NSString *_Nullable)authprompt forAmount:(uint64_t)amount completion:(_Nullable SeedCompletionBlock)completion;
 
-- (void)copyForChain:(DSChain *)chain completion:(void (^ _Nonnull)(DSWallet * _Nullable copiedWallet))completion;
+- (void)copyForChain:(DSChain *)chain completion:(void (^_Nonnull)(DSWallet *_Nullable copiedWallet))completion;
 
-- (void)registerMasternodeOperator:(DSLocalMasternode *)masternode; //will use indexes
-- (void)registerMasternodeOperator:(DSLocalMasternode *)masternode withOperatorPublicKey:(DSBLSKey*)operatorKey; //will use defined key
+- (void)registerMasternodeOperator:(DSLocalMasternode *)masternode;                                               //will use indexes
+- (void)registerMasternodeOperator:(DSLocalMasternode *)masternode withOperatorPublicKey:(DSBLSKey *)operatorKey; //will use defined key
 
 - (void)registerMasternodeOwner:(DSLocalMasternode *)masternode;
-- (void)registerMasternodeOwner:(DSLocalMasternode *)masternode withOwnerPrivateKey:(DSECDSAKey*)ownerKey; //will use defined key
+- (void)registerMasternodeOwner:(DSLocalMasternode *)masternode withOwnerPrivateKey:(DSECDSAKey *)ownerKey; //will use defined key
 
 - (void)registerMasternodeVoter:(DSLocalMasternode *)masternode;
-- (void)registerMasternodeVoter:(DSLocalMasternode *)masternode withVotingKey:(DSECDSAKey*)votingKey; //will use defined key
+- (void)registerMasternodeVoter:(DSLocalMasternode *)masternode withVotingKey:(DSECDSAKey *)votingKey; //will use defined key
 
 - (BOOL)containsProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash;
 - (BOOL)containsProviderOwningAuthenticationHash:(UInt160)owningAuthenticationHash;
 - (BOOL)containsProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey;
 - (BOOL)containsBlockchainIdentityBLSAuthenticationHash:(UInt160)blockchainIdentityAuthenticationHash;
-- (BOOL)containsHoldingAddress:(NSString*)holdingAddress;
+- (BOOL)containsHoldingAddress:(NSString *)holdingAddress;
 
 - (NSUInteger)indexOfProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash;
 - (NSUInteger)indexOfProviderOwningAuthenticationHash:(UInt160)owningAuthenticationHash;
 - (NSUInteger)indexOfProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey;
-- (NSUInteger)indexOfHoldingAddress:(NSString*)holdingAddress;
+- (NSUInteger)indexOfHoldingAddress:(NSString *)holdingAddress;
 - (NSUInteger)indexOfBlockchainIdentityAuthenticationHash:(UInt160)blockchainIdentityAuthenticationHash;
 - (NSUInteger)indexOfBlockchainIdentityCreditFundingRegistrationHash:(UInt160)creditFundingRegistrationHash;
 

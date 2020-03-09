@@ -16,29 +16,28 @@
 //
 
 
-#import "DSContactEntity+CoreDataClass.h"
 #import "DSAccount.h"
-#import "DSWallet.h"
-#import "DSDerivationPathFactory.h"
-#import "DSFundsDerivationPath.h"
-#import "DSDashPlatform.h"
-#import "NSData+Bitcoin.h"
-#import "DSPotentialOneWayFriendship.h"
 #import "DSAccountEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityRegistrationTransitionEntity+CoreDataClass.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainManager.h"
-#import "DSIncomingFundsDerivationPath.h"
-#import "NSData+Bitcoin.h"
+#import "DSContactEntity+CoreDataClass.h"
+#import "DSDashPlatform.h"
 #import "DSDerivationPathEntity+CoreDataClass.h"
+#import "DSDerivationPathFactory.h"
+#import "DSFundsDerivationPath.h"
+#import "DSIncomingFundsDerivationPath.h"
+#import "DSPotentialOneWayFriendship.h"
+#import "DSWallet.h"
+#import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 
 @implementation DSContactEntity
 
-+(void)deleteContactsOnChain:(DSChainEntity*)chainEntity {
++ (void)deleteContactsOnChain:(DSChainEntity *)chainEntity {
     [chainEntity.managedObjectContext performBlockAndWait:^{
-        NSArray * contactsToDelete = [self objectsMatching:@"(chain == %@)",chainEntity];
-        for (DSContactEntity * contact in contactsToDelete) {
+        NSArray *contactsToDelete = [self objectsMatching:@"(chain == %@)", chainEntity];
+        for (DSContactEntity *contact in contactsToDelete) {
             [chainEntity.managedObjectContext deleteObject:contact];
         }
     }];

@@ -27,58 +27,51 @@
 //  THE SOFTWARE.
 
 #import "DSPaymentRequest.h"
+#import "DSChain.h"
+#import "DSCurrencyPriceObject.h"
 #import "DSPaymentProtocol.h"
+#import "DSPriceManager.h"
+#import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 #import "NSString+Dash.h"
-#import "NSMutableData+Dash.h"
-#import "DSChain.h"
-#import "DSPriceManager.h"
-#import "DSCurrencyPriceObject.h"
 
-@interface DSPaymentRequest()
+@interface DSPaymentRequest ()
 
-@property(nonatomic,strong) DSChain * chain;
+@property (nonatomic, strong) DSChain *chain;
 
 @end
 
 // BIP21 bitcoin URI object https://github.com/bitcoin/bips/blob/master/bip-0021.mediawiki
 @implementation DSPaymentRequest
 
-+ (instancetype)requestWithString:(NSString *)string onChain:(DSChain*)chain
-{
++ (instancetype)requestWithString:(NSString *)string onChain:(DSChain *)chain {
     return [[self alloc] initWithString:string onChain:chain];
 }
 
-+ (instancetype)requestWithData:(NSData *)data onChain:(DSChain*)chain
-{
++ (instancetype)requestWithData:(NSData *)data onChain:(DSChain *)chain {
     return [[self alloc] initWithData:data onChain:chain];
 }
 
-+ (instancetype)requestWithURL:(NSURL *)url onChain:(DSChain*)chain
-{
++ (instancetype)requestWithURL:(NSURL *)url onChain:(DSChain *)chain {
     return [[self alloc] initWithURL:url onChain:chain];
 }
 
-- (instancetype)initWithString:(NSString *)string onChain:(DSChain*)chain
-{
-    if (! (self = [super init])) return nil;
+- (instancetype)initWithString:(NSString *)string onChain:(DSChain *)chain {
+    if (!(self = [super init])) return nil;
     self.chain = chain;
     self.string = string;
     return self;
 }
 
-- (instancetype)initWithData:(NSData *)data onChain:(DSChain*)chain
-{
+- (instancetype)initWithData:(NSData *)data onChain:(DSChain *)chain {
     return [self initWithString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] onChain:chain];
 }
 
-- (instancetype)initWithURL:(NSURL *)url onChain:(DSChain*)chain
-{
+- (instancetype)initWithURL:(NSURL *)url onChain:(DSChain *)chain {
     return [self initWithString:url.absoluteString onChain:chain];
 }
 
-- (void)setString:(NSString *)string
-{
+- (void)setString:(NSString *)string {
     self.scheme = nil;
     self.paymentAddress = nil;
     self.label = nil;
@@ -92,10 +85,11 @@
     if (string.length == 0) return;
 
     NSString *s = [[string stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]
-                   stringByReplacingOccurrencesOfString:@" " withString:@"%20"];
+        stringByReplacingOccurrencesOfString:@" "
+                                  withString:@"%20"];
     NSURL *url = [NSURL URLWithString:s];
-    
-    if (! url || ! url.scheme) {
+
+    if (!url || !url.scheme) {
         if ([s isValidDashAddressOnChain:self.chain] || [s isValidDashPrivateKeyOnChain:self.chain] || [s isValidDashBIP38Key]) {
             url = [NSURL URLWithString:[NSString stringWithFormat:@"dash://%@", s]];
             self.scheme = @"dash";
@@ -107,30 +101,33 @@
         }
 #endif
     }
-    else if (! url.host && url.resourceSpecifier) {
+    else if (!url.host && url.resourceSpecifier) {
         url = [NSURL URLWithString:[NSString stringWithFormat:@"%@://%@", url.scheme, url.resourceSpecifier]];
         self.scheme = url.scheme;
-    } else if (url.scheme) {
+    }
+    else if (url.scheme) {
         self.scheme = url.scheme;
-    } else {
+    }
+    else {
         self.scheme = @"dash";
     }
-    
+
     if ([url.scheme isEqualToString:@"dash"] || [url.scheme isEqualToString:@"bitcoin"]) {
         self.paymentAddress = url.host;
-    
+
         //TODO: correctly handle unknown but required url arguments (by reporting the request invalid)
         for (NSString *arg in [url.query componentsSeparatedByString:@"&"]) {
             NSArray *pair = [arg componentsSeparatedByString:@"="]; // if more than one '=', then pair[1] != value
 
             if (pair.count < 2) continue;
-        
+
             NSString *value = [[[arg substringFromIndex:[pair[0] length] + 1]
-                                stringByReplacingOccurrencesOfString:@"+" withString:@" "]
-                               stringByRemovingPercentEncoding];
-            
+                stringByReplacingOccurrencesOfString:@"+"
+                                          withString:@" "]
+                stringByRemovingPercentEncoding];
+
             BOOL require = FALSE;
-            NSString * key = pair[0];
+            NSString *key = pair[0];
             if ([key hasPrefix:@"req-"] && key.length > 4) {
                 key = [key substringFromIndex:4];
                 require = TRUE;
@@ -156,7 +153,7 @@
                 self.message = value;
             }
             else if ([[key lowercaseString] isEqual:@"is"]) {
-                if ([value  isEqual: @"1"])
+                if ([value isEqual:@"1"])
                     _requestsInstantSend = TRUE;
                 if (require)
                     _requiresInstantSend = TRUE;
@@ -172,47 +169,48 @@
             }
         }
     }
-    else if (url) self.r = s; // BIP73 url: https://github.com/bitcoin/bips/blob/master/bip-0073.mediawiki
+    else if (url)
+        self.r = s; // BIP73 url: https://github.com/bitcoin/bips/blob/master/bip-0073.mediawiki
 }
 
-- (NSString *)string
-{
-    if (! ([self.scheme isEqual:@"bitcoin"] || [self.scheme isEqual:@"dash"])) return self.r;
+- (NSString *)string {
+    if (!([self.scheme isEqual:@"bitcoin"] || [self.scheme isEqual:@"dash"])) return self.r;
 
-    NSMutableString *s = [NSMutableString stringWithFormat:@"%@:",self.scheme];
+    NSMutableString *s = [NSMutableString stringWithFormat:@"%@:", self.scheme];
     NSMutableArray *q = [NSMutableArray array];
     NSMutableCharacterSet *charset = [[NSCharacterSet URLQueryAllowedCharacterSet] mutableCopy];
-    
+
     [charset removeCharactersInString:@"&="];
     if (self.paymentAddress) [s appendString:self.paymentAddress];
-    
+
     if (self.amount > 0) {
         [q addObject:[@"amount=" stringByAppendingString:[(id)[NSDecimalNumber numberWithUnsignedLongLong:self.amount]
-                                                          decimalNumberByMultiplyingByPowerOf10:-8].stringValue]];
+                                                             decimalNumberByMultiplyingByPowerOf10:-8]
+                                                             .stringValue]];
     }
 
     if (self.label.length > 0) {
         [q addObject:[@"label=" stringByAppendingString:[self.label
-         stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
+                                                            stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
     }
-    
+
     if (self.message.length > 0) {
         [q addObject:[@"message=" stringByAppendingString:[self.message
-         stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
+                                                              stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
     }
 
     if (self.r.length > 0) {
         [q addObject:[@"r=" stringByAppendingString:[self.r
-         stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
+                                                        stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
     }
-    
+
     if (self.requestsInstantSend) {
         [q addObject:@"IS=1"];
     }
-    
+
     if (self.requestedFiatCurrencyCode.length > 0) {
         [q addObject:[@"currency=" stringByAppendingString:[self.requestedFiatCurrencyCode stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
-        
+
         if (self.requestedFiatCurrencyAmount > 0) {
             [q addObject:[NSString stringWithFormat:@"local=%.02f", self.requestedFiatCurrencyAmount]];
         }
@@ -222,32 +220,27 @@
         [s appendString:@"?"];
         [s appendString:[q componentsJoinedByString:@"&"]];
     }
-    
+
     return s;
 }
 
-- (void)setData:(NSData *)data
-{
+- (void)setData:(NSData *)data {
     self.string = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
 }
 
-- (NSData *)data
-{
+- (NSData *)data {
     return [self.string dataUsingEncoding:NSUTF8StringEncoding];
 }
 
-- (void)setUrl:(NSURL *)url
-{
+- (void)setUrl:(NSURL *)url {
     self.string = url.absoluteString;
 }
 
-- (NSURL *)url
-{
+- (NSURL *)url {
     return [NSURL URLWithString:self.string];
 }
 
-- (BOOL)isValid
-{
+- (BOOL)isValid {
     if ([self.scheme isEqualToString:@"dash"]) {
         BOOL valid = ([self.paymentAddress isValidDashAddressOnChain:self.chain] || (self.r && [NSURL URLWithString:self.r])) ? YES : NO;
         if (!valid) {
@@ -260,7 +253,6 @@
         BOOL valid = ([self.paymentAddress isValidBitcoinAddressOnChain:self.chain] || (self.r && [NSURL URLWithString:self.r])) ? YES : NO;
         if (!valid) {
             DSDLog(@"Not a valid bitcoin request");
-            
         }
         return valid;
     }
@@ -271,8 +263,7 @@
 }
 
 // receiver converted to BIP70 request object
-- (DSPaymentProtocolRequest *)protocolRequest
-{
+- (DSPaymentProtocolRequest *)protocolRequest {
     NSData *name = [self.label dataUsingEncoding:NSUTF8StringEncoding];
     NSMutableData *script = [NSMutableData data];
     if ([self.paymentAddress isValidDashAddressOnChain:self.chain]) {
@@ -284,130 +275,162 @@
     }
 #endif
     if (script.length == 0) return nil;
-    
+
     uint64_t sendingAmount = 0;
     BOOL useFiatPegging = NO;
     if (self.amount) {
         sendingAmount = self.amount;
-    } else if (self.requestedFiatCurrencyCode) {
-        DSCurrencyPriceObject * currencyPriceObject = [[DSPriceManager sharedInstance] priceForCurrencyCode:self.requestedFiatCurrencyCode];
+    }
+    else if (self.requestedFiatCurrencyCode) {
+        DSCurrencyPriceObject *currencyPriceObject = [[DSPriceManager sharedInstance] priceForCurrencyCode:self.requestedFiatCurrencyCode];
         if (currencyPriceObject) {
             useFiatPegging = YES;
-            sendingAmount = (uint64_t)[currencyPriceObject.price unsignedLongLongValue]*self.requestedFiatCurrencyAmount;
+            sendingAmount = (uint64_t)[currencyPriceObject.price unsignedLongLongValue] * self.requestedFiatCurrencyAmount;
         }
     }
-    
+
     DSPaymentProtocolDetails *details =
-        [[DSPaymentProtocolDetails alloc] initWithOutputAmounts:@[@(sendingAmount)]
-         outputScripts:@[script] time:0 expires:0 memo:self.message paymentURL:nil merchantData:nil onChain:self.chain];
+        [[DSPaymentProtocolDetails alloc] initWithOutputAmounts:@[ @(sendingAmount) ]
+                                                  outputScripts:@[ script ]
+                                                           time:0
+                                                        expires:0
+                                                           memo:self.message
+                                                     paymentURL:nil
+                                                   merchantData:nil
+                                                        onChain:self.chain];
     DSPaymentProtocolRequest *request =
-        [[DSPaymentProtocolRequest alloc] initWithVersion:1 pkiType:@"none" certs:(name ? @[name] : nil) details:details
-                                                signature:nil requestsInstantSend:self.requestsInstantSend requiresInstantSend:self.requiresInstantSend requestedAgainstFiatCurrency:useFiatPegging?self.requestedFiatCurrencyCode:nil requestedFiatAmount:0 onChain:self.chain callbackScheme:self.callbackScheme];
-    
+        [[DSPaymentProtocolRequest alloc] initWithVersion:1
+                                                  pkiType:@"none"
+                                                    certs:(name ? @[ name ] : nil)details:details
+                                                signature:nil
+                                      requestsInstantSend:self.requestsInstantSend
+                                      requiresInstantSend:self.requiresInstantSend
+                             requestedAgainstFiatCurrency:useFiatPegging ? self.requestedFiatCurrencyCode : nil
+                                      requestedFiatAmount:0
+                                                  onChain:self.chain
+                                           callbackScheme:self.callbackScheme];
+
     return request;
 }
 
 // fetches the request over HTTP and calls completion block
-+ (void)fetch:(NSString *)url scheme:(NSString*)scheme onChain:(DSChain*)chain timeout:(NSTimeInterval)timeout
-completion:(void (^)(DSPaymentProtocolRequest *req, NSError *error))completion
-{
-    if (! completion) return;
++ (void)fetch:(NSString *)url scheme:(NSString *)scheme onChain:(DSChain *)chain timeout:(NSTimeInterval)timeout
+    completion:(void (^)(DSPaymentProtocolRequest *req, NSError *error))completion {
+    if (!completion) return;
 
     NSURL *u = [NSURL URLWithString:url];
     NSMutableURLRequest *req = (u) ? [NSMutableURLRequest requestWithURL:u
-                                      cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:timeout] : nil;
+                                                             cachePolicy:NSURLRequestReloadIgnoringCacheData
+                                                         timeoutInterval:timeout]
+                                   : nil;
 
-    [req setValue:[NSString stringWithFormat:@"application/%@-paymentrequest",scheme] forHTTPHeaderField:@"Accept"];
-//  [req addValue:@"text/uri-list" forHTTPHeaderField:@"Accept"]; // breaks some BIP72 implementations, notably bitpay's
+    [req setValue:[NSString stringWithFormat:@"application/%@-paymentrequest", scheme] forHTTPHeaderField:@"Accept"];
+    //  [req addValue:@"text/uri-list" forHTTPHeaderField:@"Accept"]; // breaks some BIP72 implementations, notably bitpay's
 
-    if (! req) {
-        completion(nil, [NSError errorWithDomain:@"DashSync" code:417
-                         userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"Bad payment request URL", nil)}]);
+    if (!req) {
+        completion(nil, [NSError errorWithDomain:@"DashSync"
+                                            code:417
+                                        userInfo:@{NSLocalizedDescriptionKey : DSLocalizedString(@"Bad payment request URL", nil)}]);
         return;
     }
 
     [[[NSURLSession sharedSession] dataTaskWithRequest:req
-    completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-        if (error) {
-            completion(nil, error);
-            return;
-        }
-    
-        DSPaymentProtocolRequest *request = nil;
-        
-        if ([response.MIMEType.lowercaseString isEqual:[NSString stringWithFormat:@"application/%@-paymentrequest",scheme]] && data.length <= 50000) {
-            request = [DSPaymentProtocolRequest requestWithData:data onChain:chain];
-        }
-        else if ([response.MIMEType.lowercaseString isEqual:@"text/uri-list"] && data.length <= 50000) {
-            for (NSString *url in [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]
-                                   componentsSeparatedByString:@"\n"]) {
-                if ([url hasPrefix:@"#"]) continue; // skip comments
-                request = [DSPaymentRequest requestWithString:url onChain:chain].protocolRequest; // use first url and ignore the rest
-                break;
-            }
-        }
-        
-        if (! request) {
-            DSDLog(@"unexpected response from %@:\n%@", req.URL.host,
-                  [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-            completion(nil, [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                             [NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
-                              req.URL.host]}]);
-        }
-        else if (![request.details.chain isEqual:chain]) {
-            completion(nil, [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                             [NSString stringWithFormat:DSLocalizedString(@"Requested network \"%@\" not currently in use",
-                                                                          nil), request.details.chain.networkName]}]);
-        }
-        else completion(request, nil);
-    }] resume];
+                                     completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+                                         if (error) {
+                                             completion(nil, error);
+                                             return;
+                                         }
+
+                                         DSPaymentProtocolRequest *request = nil;
+
+                                         if ([response.MIMEType.lowercaseString isEqual:[NSString stringWithFormat:@"application/%@-paymentrequest", scheme]] && data.length <= 50000) {
+                                             request = [DSPaymentProtocolRequest requestWithData:data onChain:chain];
+                                         }
+                                         else if ([response.MIMEType.lowercaseString isEqual:@"text/uri-list"] && data.length <= 50000) {
+                                             for (NSString *url in [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]
+                                                      componentsSeparatedByString:@"\n"]) {
+                                                 if ([url hasPrefix:@"#"]) continue;                                               // skip comments
+                                                 request = [DSPaymentRequest requestWithString:url onChain:chain].protocolRequest; // use first url and ignore the rest
+                                                 break;
+                                             }
+                                         }
+
+                                         if (!request) {
+                                             DSDLog(@"unexpected response from %@:\n%@", req.URL.host,
+                                                    [[NSString alloc] initWithData:data
+                                                                          encoding:NSUTF8StringEncoding]);
+                                             completion(nil, [NSError errorWithDomain:@"DashSync"
+                                                                                 code:417
+                                                                             userInfo:@{NSLocalizedDescriptionKey :
+                                                                                            [NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
+                                                                                                                       req.URL.host]}]);
+                                         }
+                                         else if (![request.details.chain isEqual:chain]) {
+                                             completion(nil, [NSError errorWithDomain:@"DashSync"
+                                                                                 code:417
+                                                                             userInfo:@{NSLocalizedDescriptionKey :
+                                                                                            [NSString stringWithFormat:DSLocalizedString(@"Requested network \"%@\" not currently in use",
+                                                                                                                                         nil),
+                                                                                                                       request.details.chain.networkName]}]);
+                                         }
+                                         else {
+                                             completion(request, nil);
+                                         }
+                                     }] resume];
 }
 
-+ (void)postPayment:(DSPaymentProtocolPayment *)payment scheme:(NSString*)scheme to:(NSString *)paymentURL onChain:(DSChain*)chain
-            timeout:(NSTimeInterval)timeout completion:(void (^)(DSPaymentProtocolACK *ack, NSError *error))completion
-{
++ (void)postPayment:(DSPaymentProtocolPayment *)payment scheme:(NSString *)scheme to:(NSString *)paymentURL onChain:(DSChain *)chain
+            timeout:(NSTimeInterval)timeout
+         completion:(void (^)(DSPaymentProtocolACK *ack, NSError *error))completion {
     NSURL *u = [NSURL URLWithString:paymentURL];
     NSMutableURLRequest *req = (u) ? [NSMutableURLRequest requestWithURL:u
-                                      cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:timeout] : nil;
-    
-    if (! req) {
+                                                             cachePolicy:NSURLRequestReloadIgnoringCacheData
+                                                         timeoutInterval:timeout]
+                                   : nil;
+
+    if (!req) {
         if (completion) {
-            completion(nil, [NSError errorWithDomain:@"DashSync" code:417
-                             userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"Bad payment URL", nil)}]);
+            completion(nil, [NSError errorWithDomain:@"DashSync"
+                                                code:417
+                                            userInfo:@{NSLocalizedDescriptionKey : DSLocalizedString(@"Bad payment URL", nil)}]);
         }
-        
+
         return;
     }
 
-    [req setValue:[NSString stringWithFormat:@"application/%@-payment",scheme] forHTTPHeaderField:@"Content-Type"];
-    [req addValue:[NSString stringWithFormat:@"application/%@-paymentack",scheme] forHTTPHeaderField:@"Accept"];
+    [req setValue:[NSString stringWithFormat:@"application/%@-payment", scheme] forHTTPHeaderField:@"Content-Type"];
+    [req addValue:[NSString stringWithFormat:@"application/%@-paymentack", scheme] forHTTPHeaderField:@"Accept"];
     req.HTTPMethod = @"POST";
     req.HTTPBody = payment.data;
 
     [[[NSURLSession sharedSession] dataTaskWithRequest:req
-    completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-        if (error) {
-            if (completion) completion(nil, error);
-            return;
-        }
-        
-        DSPaymentProtocolACK *ack = nil;
-        
-        if ([response.MIMEType.lowercaseString isEqual:[NSString stringWithFormat:@"application/%@-paymentack",scheme]] && data.length <= 50000) {
-            ack = [DSPaymentProtocolACK ackWithData:data onChain:chain];
-        }
+                                     completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+                                         if (error) {
+                                             if (completion) completion(nil, error);
+                                             return;
+                                         }
 
-        if (! ack) {
-            DSDLog(@"unexpected response from %@:\n%@", req.URL.host,
-                  [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-            if (completion) {
-                completion(nil, [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                                 [NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
-                                  req.URL.host]}]);
-            }
-        }
-        else if (completion) completion(ack, nil);
-     }] resume];
+                                         DSPaymentProtocolACK *ack = nil;
+
+                                         if ([response.MIMEType.lowercaseString isEqual:[NSString stringWithFormat:@"application/%@-paymentack", scheme]] && data.length <= 50000) {
+                                             ack = [DSPaymentProtocolACK ackWithData:data onChain:chain];
+                                         }
+
+                                         if (!ack) {
+                                             DSDLog(@"unexpected response from %@:\n%@", req.URL.host,
+                                                    [[NSString alloc] initWithData:data
+                                                                          encoding:NSUTF8StringEncoding]);
+                                             if (completion) {
+                                                 completion(nil, [NSError errorWithDomain:@"DashSync"
+                                                                                     code:417
+                                                                                 userInfo:@{NSLocalizedDescriptionKey :
+                                                                                                [NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
+                                                                                                                           req.URL.host]}]);
+                                             }
+                                         }
+                                         else if (completion)
+                                             completion(ack, nil);
+                                     }] resume];
 }
 
 @end

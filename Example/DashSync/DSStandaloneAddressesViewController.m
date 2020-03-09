@@ -7,8 +7,8 @@
 //
 
 #import "DSStandaloneAddressesViewController.h"
-#import "NSManagedObject+Sugar.h"
 #import "DSAddressTableViewCell.h"
+#import "NSManagedObject+Sugar.h"
 #import <DashSync/DashSync.h>
 
 @interface DSStandaloneAddressesViewController () <NSFetchedResultsControllerDelegate>
@@ -19,10 +19,10 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
-    
+
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
@@ -37,27 +37,29 @@
     if (_fetchedResultsController != nil) {
         return _fetchedResultsController;
     }
-    NSManagedObjectContext * context = [NSManagedObject context];
+    NSManagedObjectContext *context = [NSManagedObject context];
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     NSEntityDescription *entity = [NSEntityDescription
-                                   entityForName:@"DSWalletEntity" inManagedObjectContext:context];
+                 entityForName:@"DSWalletEntity"
+        inManagedObjectContext:context];
     [fetchRequest setEntity:entity];
 
     NSSortDescriptor *sort = [[NSSortDescriptor alloc]
-                              initWithKey:@"created" ascending:NO];
+        initWithKey:@"created"
+          ascending:NO];
     [fetchRequest setSortDescriptors:[NSArray arrayWithObject:sort]];
 
     [fetchRequest setFetchBatchSize:20];
 
     NSFetchedResultsController *theFetchedResultsController =
-    [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest
-                                        managedObjectContext:context sectionNameKeyPath:nil
-                                                   cacheName:nil];
+        [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest
+                                            managedObjectContext:context
+                                              sectionNameKeyPath:nil
+                                                       cacheName:nil];
     self.fetchedResultsController = theFetchedResultsController;
     _fetchedResultsController.delegate = self;
 
     return _fetchedResultsController;
-
 }
 
 - (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
@@ -70,7 +72,7 @@
 
     UITableView *tableView = self.tableView;
 
-    switch(type) {
+    switch (type) {
 
         case NSFetchedResultsChangeInsert:
             [tableView insertRowsAtIndexPaths:[NSArray arrayWithObject:newIndexPath] withRowAnimation:UITableViewRowAnimationFade];
@@ -98,31 +100,31 @@
 
 #pragma mark - Table view data source
 
--(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     return 1;
 }
 
--(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     return 1;
 }
 
--(UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     static NSString *CellIdentifier = @"WalletCell";
-    
+
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
-    
+
     // Set up the cell...
     [self configureCell:cell atIndexPath:indexPath];
     return cell;
 }
 
--(void)configureCell:(UITableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
-    DSAddressTableViewCell * walletCell = (DSAddressTableViewCell*)cell;
-    
+- (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath {
+    DSAddressTableViewCell *walletCell = (DSAddressTableViewCell *)cell;
+
     walletCell.addressLabel = [self.fetchedResultsController objectAtIndexPath:indexPath];
 }
 
--(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     return 120;
 }
 
@@ -134,15 +136,15 @@
 }
 
 
-
 // Override to support editing the table view.
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
     if (editingStyle == UITableViewCellEditingStyleDelete) {
         // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    } else if (editingStyle == UITableViewCellEditingStyleInsert) {
+        [tableView deleteRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationFade];
+    }
+    else if (editingStyle == UITableViewCellEditingStyleInsert) {
         // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
+    }
 }
 
 @end

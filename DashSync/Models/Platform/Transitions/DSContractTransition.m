@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -16,13 +16,13 @@
 //
 
 #import "DSContractTransition.h"
+#import "DPContract+Protected.h"
 #import "DPDocument.h"
 #import "DSTransition+Protected.h"
-#import "DPContract+Protected.h"
 
-@interface DSContractTransition()
+@interface DSContractTransition ()
 
-@property(nonatomic,strong) DPContract * contract;
+@property (nonatomic, strong) DPContract *contract;
 
 @end
 
@@ -34,12 +34,12 @@
     return json;
 }
 
--(instancetype)initWithContract:(DPContract*)contract withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain {
+- (instancetype)initWithContract:(DPContract *)contract withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain {
     if (self = [super initWithTransitionVersion:version blockchainIdentityUniqueId:blockchainIdentityUniqueId onChain:chain]) {
         self.contract = contract;
     }
     self.type = DSTransitionType_DataContract;
-    
+
     return self;
 }
 

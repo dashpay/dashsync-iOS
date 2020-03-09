@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -15,16 +15,16 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
 #import "DSKey.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface NSData (Encryption)
 
-- (nullable NSData *)encryptWithSecretKey:(DSKey*)secretKey forPeerWithPublicKey:(DSKey*)peerPubKey;
-- (nullable NSData *)encryptWithSecretKey:(DSKey*)secretKey forPeerWithPublicKey:(DSKey*)peerPubKey useInitializationVectorForTesting:(NSData*)initializationVector;
-- (nullable NSData *)decryptWithSecretKey:(DSKey*)secretKey fromPeerWithPublicKey:(DSKey*)peerPubKey;
+- (nullable NSData *)encryptWithSecretKey:(DSKey *)secretKey forPeerWithPublicKey:(DSKey *)peerPubKey;
+- (nullable NSData *)encryptWithSecretKey:(DSKey *)secretKey forPeerWithPublicKey:(DSKey *)peerPubKey useInitializationVectorForTesting:(NSData *)initializationVector;
+- (nullable NSData *)decryptWithSecretKey:(DSKey *)secretKey fromPeerWithPublicKey:(DSKey *)peerPubKey;
 
 @end
 

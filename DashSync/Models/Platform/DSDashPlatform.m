@@ -16,14 +16,14 @@
 //
 
 #import "DSDashPlatform.h"
-#import "DSChain.h"
 #import "DPContract.h"
+#import "DSChain.h"
 #import "DSDAPINetworkService.h"
 
 @interface DSDashPlatform ()
 
 @property (strong, nonatomic) DSChain *chain;
-@property (strong, nonatomic, null_resettable) NSMutableDictionary* knownContracts;
+@property (strong, nonatomic, null_resettable) NSMutableDictionary *knownContracts;
 @property (strong, nonatomic) DPContract *dashPayContract;
 @property (strong, nonatomic) DPContract *dpnsContract;
 
@@ -31,7 +31,7 @@
 
 @implementation DSDashPlatform
 
-- (instancetype)initWithChain:(DSChain*)chain {
+- (instancetype)initWithChain:(DSChain *)chain {
 
     self = [super init];
     if (self) {
@@ -40,57 +40,59 @@
     return self;
 }
 
-static NSMutableDictionary * _platformChainDictionary = nil;
+static NSMutableDictionary *_platformChainDictionary = nil;
 static dispatch_once_t platformChainToken = 0;
 
-+(instancetype)sharedInstanceForChain:(DSChain*)chain {
-    
++ (instancetype)sharedInstanceForChain:(DSChain *)chain {
+
     NSParameterAssert(chain);
-    
+
     dispatch_once(&platformChainToken, ^{
         _platformChainDictionary = [NSMutableDictionary dictionary];
     });
-       DSDashPlatform * platformForChain = nil;
-       @synchronized(self) {
-           if (![_platformChainDictionary objectForKey:chain.uniqueID]) {
-               platformForChain = [[DSDashPlatform alloc] initWithChain:chain];
-               [_platformChainDictionary setObject:platformForChain forKey:chain.uniqueID];
-           } else {
-               platformForChain = [_platformChainDictionary objectForKey:chain.uniqueID];
-           }
-       }
+    DSDashPlatform *platformForChain = nil;
+    @synchronized(self) {
+        if (![_platformChainDictionary objectForKey:chain.uniqueID]) {
+            platformForChain = [[DSDashPlatform alloc] initWithChain:chain];
+            [_platformChainDictionary setObject:platformForChain forKey:chain.uniqueID];
+        }
+        else {
+            platformForChain = [_platformChainDictionary objectForKey:chain.uniqueID];
+        }
+    }
     return platformForChain;
 }
 
-- (DPDocumentFactory*)documentFactoryForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity forContract:(DPContract*)contract {
-    DPDocumentFactory * documentFactory = [[DPDocumentFactory alloc] initWithBlockchainIdentity:blockchainIdentity contract:contract onChain:self.chain];
+- (DPDocumentFactory *)documentFactoryForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity forContract:(DPContract *)contract {
+    DPDocumentFactory *documentFactory = [[DPDocumentFactory alloc] initWithBlockchainIdentity:blockchainIdentity contract:contract onChain:self.chain];
     return documentFactory;
 }
 
-+ (NSString*)nameForContractWithIdentifier:(NSString*)identifier {
++ (NSString *)nameForContractWithIdentifier:(NSString *)identifier {
     if ([identifier isEqualToString:DASHPAY_CONTRACT]) {
         return @"DashPay";
-    } else if ([identifier isEqualToString:DPNS_CONTRACT]) {
+    }
+    else if ([identifier isEqualToString:DPNS_CONTRACT]) {
         return @"DPNS";
     }
     return @"Unnamed Contract";
 }
 
--(NSMutableDictionary*)knownContracts {
+- (NSMutableDictionary *)knownContracts {
     if (!_knownContracts) {
-        _knownContracts = [NSMutableDictionary dictionaryWithObjects:@[[self dashPayContract], [self dpnsContract]] forKeys:@[DASHPAY_CONTRACT,DPNS_CONTRACT]];
+        _knownContracts = [NSMutableDictionary dictionaryWithObjects:@[ [self dashPayContract], [self dpnsContract] ] forKeys:@[ DASHPAY_CONTRACT, DPNS_CONTRACT ]];
     }
     return _knownContracts;
 }
 
--(DPContract*)dashPayContract {
+- (DPContract *)dashPayContract {
     if (!_dashPayContract) {
         _dashPayContract = [DPContract localDashpayContractForChain:self.chain];
     }
     return _dashPayContract;
 }
 
--(DPContract*)dpnsContract {
+- (DPContract *)dpnsContract {
     if (!_dpnsContract) {
         _dpnsContract = [DPContract localDPNSContractForChain:self.chain];
     }
@@ -98,4 +100,3 @@ static dispatch_once_t platformChainToken = 0;
 }
 
 @end
-

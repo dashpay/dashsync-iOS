@@ -1,6 +1,6 @@
 //
 //  DSAddressEntity+CoreDataClass.m
-//  
+//
 //
 //  Created by Sam Westrich on 5/20/18.
 //
@@ -23,80 +23,81 @@
 //  THE SOFTWARE.
 
 #import "DSAddressEntity+CoreDataClass.h"
-#import "DSTxOutputEntity+CoreDataClass.h"
-#import "DSChainEntity+CoreDataClass.h"
-#import "NSManagedObject+Sugar.h"
 #import "DSChain.h"
+#import "DSChainEntity+CoreDataClass.h"
+#import "DSTxOutputEntity+CoreDataClass.h"
+#import "NSManagedObject+Sugar.h"
 
 @implementation DSAddressEntity
 
--(uint64_t)balance {
+- (uint64_t)balance {
     uint64_t b = 0;
-    for (DSTxOutputEntity* output in self.usedInOutputs) {
+    for (DSTxOutputEntity *output in self.usedInOutputs) {
         if (!output.spentInInput) b += output.value;
     }
     return b;
 }
 
--(uint64_t)inAmount{
+- (uint64_t)inAmount {
     uint64_t b = 0;
-    for (DSTxOutputEntity* output in self.usedInOutputs) {
+    for (DSTxOutputEntity *output in self.usedInOutputs) {
         b += output.value;
     }
     return b;
 }
 
--(uint64_t)outAmount {
+- (uint64_t)outAmount {
     uint64_t b = 0;
-    for (DSTxOutputEntity* output in self.usedInOutputs) {
+    for (DSTxOutputEntity *output in self.usedInOutputs) {
         if (output.spentInInput) b += output.value;
     }
     return b;
 }
 
-+(DSAddressEntity*)addressMatching:(NSString*)address onChain:(DSChain*)chain {
-    NSArray <DSAddressEntity *>* addressEntities = [DSAddressEntity objectsMatching:@"address == %@ && derivationPath.chain == %@",address,chain.chainEntity];
++ (DSAddressEntity *)addressMatching:(NSString *)address onChain:(DSChain *)chain {
+    NSArray<DSAddressEntity *> *addressEntities = [DSAddressEntity objectsMatching:@"address == %@ && derivationPath.chain == %@", address, chain.chainEntity];
     if ([addressEntities count]) {
         NSAssert([addressEntities count] == 1, @"addresses should not be duplicates");
         return [addressEntities firstObject];
-    } else {
-        DSAddressEntity * addressEntity = [DSAddressEntity managedObject];
+    }
+    else {
+        DSAddressEntity *addressEntity = [DSAddressEntity managedObject];
         addressEntity.address = address;
         addressEntity.index = UINT32_MAX;
         return addressEntity;
     }
 }
 
-+(DSAddressEntity*)findAddressMatching:(NSString*)address onChain:(DSChain*)chain {
++ (DSAddressEntity *)findAddressMatching:(NSString *)address onChain:(DSChain *)chain {
 #if (0 && DEBUG) //this is for testing
-    NSArray <DSAddressEntity *>* addressEntities = [DSAddressEntity objectsMatching:@"address == %@ && derivationPath.chain == %@",address,chain.chainEntity];
+    NSArray<DSAddressEntity *> *addressEntities = [DSAddressEntity objectsMatching:@"address == %@ && derivationPath.chain == %@", address, chain.chainEntity];
     if ([addressEntities count]) {
         NSAssert([addressEntities count] == 1, @"addresses should not be duplicates");
         return [addressEntities firstObject];
     }
     return nil;
 #else
-    return [DSAddressEntity anyObjectMatching:@"address == %@ && derivationPath.chain == %@",address,chain.chainEntity];
+    return [DSAddressEntity anyObjectMatching:@"address == %@ && derivationPath.chain == %@", address, chain.chainEntity];
 #endif
 }
 
-+(NSArray<DSAddressEntity*>*)findAddressesIn:(NSSet<NSString*>*)addresses onChain:(DSChain*)chain {
-    return [DSAddressEntity objectsMatching:@"address IN %@ && derivationPath.chain == %@",addresses,chain.chainEntity];
++ (NSArray<DSAddressEntity *> *)findAddressesIn:(NSSet<NSString *> *)addresses onChain:(DSChain *)chain {
+    return [DSAddressEntity objectsMatching:@"address IN %@ && derivationPath.chain == %@", addresses, chain.chainEntity];
 }
 
-+(NSDictionary<NSString*,DSAddressEntity*>*)findAddressesAndIndexIn:(NSSet<NSString*>*)addresses onChain:(DSChain*)chain {
-    NSArray * addressEntities = [self findAddressesIn:addresses onChain:chain];
-    NSMutableArray * addressStringsOfEntities = [NSMutableArray array];
-    for (DSAddressEntity * addressEntity in addressEntities) {
++ (NSDictionary<NSString *, DSAddressEntity *> *)findAddressesAndIndexIn:(NSSet<NSString *> *)addresses onChain:(DSChain *)chain {
+    NSArray *addressEntities = [self findAddressesIn:addresses onChain:chain];
+    NSMutableArray *addressStringsOfEntities = [NSMutableArray array];
+    for (DSAddressEntity *addressEntity in addressEntities) {
         [addressStringsOfEntities addObject:addressEntity.address];
     }
     return [NSDictionary dictionaryWithObjects:addressEntities forKeys:addressStringsOfEntities];
 }
 
-+ (void)deleteAddressesOnChain:(DSChainEntity*)chainEntity {
++ (void)deleteAddressesOnChain:(DSChainEntity *)chainEntity {
     [chainEntity.managedObjectContext performBlockAndWait:^{
-        NSArray * addressesToDelete = [self objectsMatching:@"(derivationPath.chain == %@)",chainEntity];
-        for (DSAddressEntity * address in addressesToDelete) {
+        NSArray *addressesToDelete = [self objectsMatching:@"(derivationPath.chain == %@)", chainEntity];
+        for (DSAddressEntity *address in addressesToDelete) {
             [chainEntity.managedObjectContext deleteObject:address];
         }
     }];

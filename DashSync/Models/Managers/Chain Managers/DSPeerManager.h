@@ -26,16 +26,16 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <UIKit/UIKit.h>
-#import <Foundation/Foundation.h>
 #import "DSChain.h"
 #import "DSPeer.h"
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerConnectedPeersDidChangeNotification;
-FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerDownloadPeerDidChangeNotification;
-FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerPeersDidChangeNotification;
+FOUNDATION_EXPORT NSString *_Nonnull const DSPeerManagerConnectedPeersDidChangeNotification;
+FOUNDATION_EXPORT NSString *_Nonnull const DSPeerManagerDownloadPeerDidChangeNotification;
+FOUNDATION_EXPORT NSString *_Nonnull const DSPeerManagerPeersDidChangeNotification;
 
 #define PEER_MAX_CONNECTIONS 3
 #define SETTINGS_FIXED_PEER_KEY @"SETTINGS_FIXED_PEER"
@@ -44,22 +44,22 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerPeersDidChangeNotificati
 #define LAST_SYNCED_GOVERANCE_OBJECTS @"LAST_SYNCED_GOVERANCE_OBJECTS"
 #define LAST_SYNCED_MASTERNODE_LIST @"LAST_SYNCED_MASTERNODE_LIST"
 
-@class DSTransaction,DSGovernanceSyncManager,DSMasternodeManager,DSSporkManager,DSPeer,DSGovernanceVote,DSDAPIPeerManager,DSTransactionManager;
+@class DSTransaction, DSGovernanceSyncManager, DSMasternodeManager, DSSporkManager, DSPeer, DSGovernanceVote, DSDAPIPeerManager, DSTransactionManager;
 
 @interface DSPeerManager : NSObject <DSPeerDelegate, UIAlertViewDelegate>
 
 @property (nonatomic, readonly) BOOL connected;
 @property (nonatomic, readonly) NSUInteger peerCount;
 @property (nonatomic, readonly) NSUInteger connectedPeerCount; // number of connected peers
-@property (nullable, nonatomic, readonly) NSString * downloadPeerName;
-@property (nonatomic, readonly) DSChain * chain;
-@property (nullable, nonatomic, readonly) DSPeer * downloadPeer;
-@property (nullable, nonatomic, readonly) DSPeer * fixedPeer;
-@property (nonatomic, readonly) NSArray* registeredDevnetPeers;
-@property (nonatomic, readonly) NSArray* registeredDevnetPeerServices;
-@property (nullable, nonatomic, readonly) NSString* trustedPeerHost;
+@property (nullable, nonatomic, readonly) NSString *downloadPeerName;
+@property (nonatomic, readonly) DSChain *chain;
+@property (nullable, nonatomic, readonly) DSPeer *downloadPeer;
+@property (nullable, nonatomic, readonly) DSPeer *fixedPeer;
+@property (nonatomic, readonly) NSArray *registeredDevnetPeers;
+@property (nonatomic, readonly) NSArray *registeredDevnetPeerServices;
+@property (nullable, nonatomic, readonly) NSString *trustedPeerHost;
 
-- (instancetype)initWithChain:(DSChain*)chain;
+- (instancetype)initWithChain:(DSChain *)chain;
 
 - (void)connect;
 - (void)clearPeers;
@@ -70,7 +70,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerPeersDidChangeNotificati
 
 - (DSPeerStatus)statusForLocation:(UInt128)IPAddress port:(uint32_t)port;
 - (DSPeerType)typeForLocation:(UInt128)IPAddress port:(uint32_t)port;
-- (void)setTrustedPeerHost:(NSString * _Nullable)host;
+- (void)setTrustedPeerHost:(NSString *_Nullable)host;
 - (void)removeTrustedPeerHost;
 
 @end

@@ -29,10 +29,10 @@
 
 - (instancetype)init {
     NSDictionary *defaults = @{
-        @"useCheckpointMasternodeLists":@YES,
+        @"useCheckpointMasternodeLists" : @YES,
         @"keepHeaders" : @NO,
-        @"shouldSyncFromHeight":@NO,
-        @"smartOutputs":@YES,
+        @"shouldSyncFromHeight" : @NO,
+        @"smartOutputs" : @YES,
         @"syncGovernanceObjectsInterval" : @600, // 10 min
         @"syncMasternodeListInterval" : @600,    // 10 min
         @"syncFromHeight" : @0,

@@ -7,10 +7,10 @@
 //
 
 #import "DSCreateBlockchainIdentityViewController.h"
-#import "DSWalletChooserViewController.h"
 #import "DSAccountChooserViewController.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSCreditFundingTransaction.h"
+#import "DSWalletChooserViewController.h"
 
 @interface DSCreateBlockchainIdentityViewController ()
 - (IBAction)cancel:(id)sender;
@@ -22,8 +22,8 @@
 @property (strong, nonatomic) IBOutlet UILabel *fundingAccountIdentifierLabel;
 @property (strong, nonatomic) IBOutlet UILabel *typeLabel;
 @property (assign, nonatomic) DSBlockchainIdentityType identityType;
-@property (strong, nonatomic) DSWallet * wallet;
-@property (strong, nonatomic) DSAccount * fundingAccount;
+@property (strong, nonatomic) DSWallet *wallet;
+@property (strong, nonatomic) DSAccount *fundingAccount;
 
 @end
 
@@ -32,15 +32,15 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self setToDefaultAccount];
-    
+
     if (self.fundingAccount) {
         self.wallet = self.fundingAccount.wallet;
     }
-    
-    self.indexLabel.text = [NSString stringWithFormat:@"%d",[self.wallet unusedBlockchainIdentityIndex]];
-    
-    self.topupAmountLabel.text = [NSString stringWithFormat:@"%d",10000000]; //0.1 Dash
-    
+
+    self.indexLabel.text = [NSString stringWithFormat:@"%d", [self.wallet unusedBlockchainIdentityIndex]];
+
+    self.topupAmountLabel.text = [NSString stringWithFormat:@"%d", 10000000]; //0.1 Dash
+
     self.identityType = DSBlockchainIdentityType_User;
 }
 
@@ -49,10 +49,10 @@
     // Dispose of any resources that can be recreated.
 }
 
--(void)setToDefaultAccount {
+- (void)setToDefaultAccount {
     self.fundingAccount = nil;
-    for (DSWallet * wallet in self.chainManager.chain.wallets) {
-        for (DSAccount * account in wallet.accounts) {
+    for (DSWallet *wallet in self.chainManager.chain.wallets) {
+        for (DSAccount *account in wallet.accounts) {
             if (account.balance > 0) {
                 self.fundingAccount = account;
                 break;
@@ -62,12 +62,12 @@
     }
 }
 
--(void)setWallet:(DSWallet *)wallet {
+- (void)setWallet:(DSWallet *)wallet {
     _wallet = wallet;
     self.walletIdentifierLabel.text = wallet.uniqueID;
 }
 
--(void)setFundingAccount:(DSAccount *)fundingAccount {
+- (void)setFundingAccount:(DSAccount *)fundingAccount {
     _fundingAccount = fundingAccount;
     self.fundingAccountIdentifierLabel.text = fundingAccount.uniqueID;
 }
@@ -86,124 +86,139 @@
     [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
 }
 
--(void)raiseIssue:(NSString*)issue message:(NSString*)message {
-    UIAlertController * alert = [UIAlertController alertControllerWithTitle:issue message:message preferredStyle:UIAlertControllerStyleAlert];
-    [alert addAction:[UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
-        
-    }]];
-    [self presentViewController:alert animated:TRUE completion:^{
-        
-    }];
+- (void)raiseIssue:(NSString *)issue message:(NSString *)message {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:issue message:message preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Ok"
+                                              style:UIAlertActionStyleCancel
+                                            handler:^(UIAlertAction *_Nonnull action){
+
+                                            }]];
+    [self presentViewController:alert
+                       animated:TRUE
+                     completion:^{
+
+                     }];
 }
 
 - (IBAction)done:(id)sender {
-    
-    NSString * desiredUsername = [self.usernameLabel.text lowercaseString];
+
+    NSString *desiredUsername = [self.usernameLabel.text lowercaseString];
     NSScanner *scanner = [NSScanner scannerWithString:self.topupAmountLabel.text];
     uint64_t topupAmount = 0;
     [scanner scanUnsignedLongLong:&topupAmount];
     if (desiredUsername.length < 4) {
         [self raiseIssue:@"Username too short" message:@"Your blockchain username must be between 4 and 23 characters long and contain only alphanumeric characters. Underscores are also permitted."];
         return;
-    } else if (desiredUsername.length > 23) {
+    }
+    else if (desiredUsername.length > 23) {
         [self raiseIssue:@"Username too long" message:@"Your blockchain username must be between 4 and 23 characters long and contain only alphanumeric characters. Underscores are also permitted."];
         return;
-    } else if (!_wallet) {
+    }
+    else if (!_wallet) {
         [self raiseIssue:@"No wallet with balance" message:@"To create a blockchain user you must have a wallet with enough balance to pay the minimum credit fee"];
         return;
-    } else if (!_fundingAccount) {
+    }
+    else if (!_fundingAccount) {
         [self raiseIssue:@"No funding account with balance" message:@"To create a blockchain user you must have a wallet with enough balance to pay the minimum credit fee"];
         return;
-    } else {
-        NSCharacterSet * illegalChars = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
+    }
+    else {
+        NSCharacterSet *illegalChars = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
         if ([desiredUsername rangeOfCharacterFromSet:illegalChars].location != NSNotFound) {
             [self raiseIssue:@"Username contains illegal characters" message:@"Your blockchain username must be between 4 and 23 characters long and contain only alphanumeric characters. Underscores are also permitted."];
             return;
         }
     }
-    DSBlockchainIdentity * blockchainIdentity = [self.wallet createBlockchainIdentityOfType:self.identityType forUsername:desiredUsername usingDerivationIndex:[self.indexLabel.text intValue]];
+    DSBlockchainIdentity *blockchainIdentity = [self.wallet createBlockchainIdentityOfType:self.identityType forUsername:desiredUsername usingDerivationIndex:[self.indexLabel.text intValue]];
     [blockchainIdentity generateBlockchainIdentityExtendedPublicKeys:^(BOOL exists) {
         if (exists) {
-            NSString * creditFundingRegistrationAddress = [blockchainIdentity registrationFundingAddress];
-            [blockchainIdentity fundingTransactionForTopupAmount:topupAmount toAddress:creditFundingRegistrationAddress fundedByAccount:self.fundingAccount completion:^(DSCreditFundingTransaction * _Nonnull fundingTransaction) {
-                [self.fundingAccount signTransaction:fundingTransaction withPrompt:@"Would you like to create this user?" completion:^(BOOL signedTransaction, BOOL cancelled) {
-                    if (signedTransaction) {
-                        
-                        [self.chainManager.transactionManager publishTransaction:fundingTransaction completion:^(NSError * _Nullable error) {
-                            if (error) {
-                                [self raiseIssue:@"Error" message:error.localizedDescription];
-                            } else {
-                                [blockchainIdentity registerInWalletForRegistrationFundingTransaction:fundingTransaction];
-                                
-//                                [blockchainIdentity registrationTransitionForFundingTransaction:fundingTransaction completion:^(DSBlockchainIdentityRegistrationTransition * _Nonnull blockchainIdentityRegistrationTransition) {
-//                                    if (blockchainIdentityRegistrationTransition) {
-//
-//                                    } else {
-//                                        [self raiseIssue:@"Error" message:@"Unable to create blockchainIdentityRegistrationTransition."];
-//                                    }
-//                                }];
-                                
-                                [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
-                            }
-                        }];
-                    } else {
-                        [self raiseIssue:@"Error" message:@"Transaction was not signed."];
-                    }
-                }];
-                
-            }];
-        } else {
+            NSString *creditFundingRegistrationAddress = [blockchainIdentity registrationFundingAddress];
+            [blockchainIdentity fundingTransactionForTopupAmount:topupAmount
+                                                       toAddress:creditFundingRegistrationAddress
+                                                 fundedByAccount:self.fundingAccount
+                                                      completion:^(DSCreditFundingTransaction *_Nonnull fundingTransaction) {
+                                                          [self.fundingAccount signTransaction:fundingTransaction
+                                                                                    withPrompt:@"Would you like to create this user?"
+                                                                                    completion:^(BOOL signedTransaction, BOOL cancelled) {
+                                                                                        if (signedTransaction) {
+
+                                                                                            [self.chainManager.transactionManager publishTransaction:fundingTransaction
+                                                                                                                                          completion:^(NSError *_Nullable error) {
+                                                                                                                                              if (error) {
+                                                                                                                                                  [self raiseIssue:@"Error" message:error.localizedDescription];
+                                                                                                                                              }
+                                                                                                                                              else {
+                                                                                                                                                  [blockchainIdentity registerInWalletForRegistrationFundingTransaction:fundingTransaction];
+
+                                                                                                                                                  //                                [blockchainIdentity registrationTransitionForFundingTransaction:fundingTransaction completion:^(DSBlockchainIdentityRegistrationTransition * _Nonnull blockchainIdentityRegistrationTransition) {
+                                                                                                                                                  //                                    if (blockchainIdentityRegistrationTransition) {
+                                                                                                                                                  //
+                                                                                                                                                  //                                    } else {
+                                                                                                                                                  //                                        [self raiseIssue:@"Error" message:@"Unable to create blockchainIdentityRegistrationTransition."];
+                                                                                                                                                  //                                    }
+                                                                                                                                                  //                                }];
+
+                                                                                                                                                  [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
+                                                                                                                                              }
+                                                                                                                                          }];
+                                                                                        }
+                                                                                        else {
+                                                                                            [self raiseIssue:@"Error" message:@"Transaction was not signed."];
+                                                                                        }
+                                                                                    }];
+                                                      }];
+        }
+        else {
             [self raiseIssue:@"Error" message:@"Unable to register blockchain user."];
         }
     }];
 }
 
--(void)viewController:(UIViewController*)controller didChooseWallet:(DSWallet*)wallet {
+- (void)viewController:(UIViewController *)controller didChooseWallet:(DSWallet *)wallet {
     self.wallet = wallet;
 }
 
--(void)viewController:(UIViewController*)controller didChooseAccount:(DSAccount *)account {
+- (void)viewController:(UIViewController *)controller didChooseAccount:(DSAccount *)account {
     self.fundingAccount = account;
 }
 
--(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.row == 5) {
         UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Identity Type"
                                                                                  message:nil
                                                                           preferredStyle:UIAlertControllerStyleActionSheet];
-        
+
         [alertController addAction:[UIAlertAction actionWithTitle:@"User"
-                                                                style:UIAlertActionStyleDefault
-                                                              handler:^(UIAlertAction *_Nonnull action) {
-            self.typeLabel.text = @"User";
-            self.identityType = DSBlockchainIdentityType_User;
-                                                              }]];
-        
+                                                            style:UIAlertActionStyleDefault
+                                                          handler:^(UIAlertAction *_Nonnull action) {
+                                                              self.typeLabel.text = @"User";
+                                                              self.identityType = DSBlockchainIdentityType_User;
+                                                          }]];
+
         [alertController addAction:[UIAlertAction actionWithTitle:@"Application"
-          style:UIAlertActionStyleDefault
-        handler:^(UIAlertAction *_Nonnull action) {
-            self.typeLabel.text = @"Application";
-            self.identityType = DSBlockchainIdentityType_Application;
-        }]];
-        
+                                                            style:UIAlertActionStyleDefault
+                                                          handler:^(UIAlertAction *_Nonnull action) {
+                                                              self.typeLabel.text = @"Application";
+                                                              self.identityType = DSBlockchainIdentityType_Application;
+                                                          }]];
+
         [self presentViewController:alertController animated:YES completion:nil];
     }
 }
 
 
--(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"BlockchainIdentityChooseWalletSegue"]) {
-        DSWalletChooserViewController * chooseWalletSegue = (DSWalletChooserViewController*)segue.destinationViewController;
+        DSWalletChooserViewController *chooseWalletSegue = (DSWalletChooserViewController *)segue.destinationViewController;
         chooseWalletSegue.chain = self.chainManager.chain;
         chooseWalletSegue.delegate = self;
-    } else if ([segue.identifier isEqualToString:@"BlockchainIdentityChooseAccountSegue"]) {
-        DSAccountChooserViewController * chooseAccountSegue = (DSAccountChooserViewController*)segue.destinationViewController;
+    }
+    else if ([segue.identifier isEqualToString:@"BlockchainIdentityChooseAccountSegue"]) {
+        DSAccountChooserViewController *chooseAccountSegue = (DSAccountChooserViewController *)segue.destinationViewController;
         chooseAccountSegue.chain = self.chainManager.chain;
         chooseAccountSegue.delegate = self;
     }
 }
-
-
 
 
 @end

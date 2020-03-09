@@ -1,6 +1,6 @@
 //
 //  DSTxInputEntity+CoreDataClass.m
-//  
+//
 //
 //  Created by Sam Westrich on 5/20/18.
 //
@@ -22,36 +22,35 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSTxInputEntity+CoreDataClass.h"
-#import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransaction.h"
+#import "DSTransactionEntity+CoreDataClass.h"
+#import "DSTxInputEntity+CoreDataClass.h"
 #import "DSTxOutputEntity+CoreDataClass.h"
 #import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 
 @implementation DSTxInputEntity
 
-- (instancetype)setAttributesFromTransaction:(DSTransaction *)tx inputIndex:(NSUInteger)index forTransactionEntity:(DSTransactionEntity*)transactionEntity
-{
+- (instancetype)setAttributesFromTransaction:(DSTransaction *)tx inputIndex:(NSUInteger)index forTransactionEntity:(DSTransactionEntity *)transactionEntity {
     UInt256 hash = UINT256_ZERO;
-    
+
     [tx.inputHashes[index] getValue:&hash];
     self.txHash = [NSData dataWithBytes:&hash length:sizeof(hash)];
     self.n = [tx.inputIndexes[index] intValue];
     self.signature = (tx.inputSignatures[index] != [NSNull null]) ? tx.inputSignatures[index] : nil;
     self.sequence = [tx.inputSequences[index] intValue];
     self.transaction = transactionEntity;
-    DSTxOutputEntity * outputEntity = [DSTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", self.txHash, self.n].lastObject;
+    DSTxOutputEntity *outputEntity = [DSTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", self.txHash, self.n].lastObject;
     self.localAddress = outputEntity.localAddress;
-    
+
     // mark previously unspent outputs as spent
     [outputEntity setSpentInInput:self];
-    
+
     return self;
 }
 
--(DSUTXO)outpoint {
-    return ((DSUTXO) { .hash = self.txHash.UInt256 , .n = self.n });
+- (DSUTXO)outpoint {
+    return ((DSUTXO){.hash = self.txHash.UInt256, .n = self.n});
 }
 
 

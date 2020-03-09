@@ -30,14 +30,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    
-    [self mvvm_observe:@"cellModel.title" with:^(typeof(self) self, NSString * value) {
-        self.titleLabel.text = value;
-    }];
-    
-    [self mvvm_observe:@"cellModel.selectedValue" with:^(typeof(self) self, id<NamedObject> value) {
-        self.detailLabel.text = value.name;
-    }];
+
+    [self mvvm_observe:@"cellModel.title"
+                  with:^(typeof(self) self, NSString *value) {
+                      self.titleLabel.text = value;
+                  }];
+
+    [self mvvm_observe:@"cellModel.selectedValue"
+                  with:^(typeof(self) self, id<NamedObject> value) {
+                      self.detailLabel.text = value.name;
+                  }];
 }
 
 @end

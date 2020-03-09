@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -47,31 +47,31 @@ static NSUInteger FETCH_BATCH_SIZE = 20;
     if (_fetchedResultsController != nil) {
         return _fetchedResultsController;
     }
-    
+
     NSManagedObjectContext *context = self.context;
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     // Edit the entity name as appropriate.
     NSEntityDescription *entity = [NSEntityDescription entityForName:self.entityName
                                               inManagedObjectContext:context];
     [fetchRequest setEntity:entity];
-    
+
     // Set the batch size to a suitable number.
     [fetchRequest setFetchBatchSize:FETCH_BATCH_SIZE];
-    
+
     // Edit the sort key as appropriate.
     NSArray *sortDescriptors = self.sortDescriptors;
     [fetchRequest setSortDescriptors:sortDescriptors];
-    
+
     NSPredicate *filterPredicate = self.predicate;
     [fetchRequest setPredicate:filterPredicate];
-    
+
     // Edit the section name key path and cache name if appropriate.
     // nil for section name key path means "no sections".
     NSFetchedResultsController *aFetchedResultsController =
-    [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest
-                                        managedObjectContext:context
-                                          sectionNameKeyPath:nil
-                                                   cacheName:nil];
+        [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest
+                                            managedObjectContext:context
+                                              sectionNameKeyPath:nil
+                                                       cacheName:nil];
     _fetchedResultsController = aFetchedResultsController;
     aFetchedResultsController.delegate = self;
     NSError *error = nil;
@@ -81,7 +81,7 @@ static NSUInteger FETCH_BATCH_SIZE = 20;
         NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
         abort();
     }
-    
+
     return _fetchedResultsController;
 }
 
@@ -107,7 +107,7 @@ static NSUInteger FETCH_BATCH_SIZE = 20;
 
 - (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject atIndexPath:(nullable NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)type newIndexPath:(nullable NSIndexPath *)newIndexPath {
     UITableView *tableView = self.tableView;
-    
+
     switch (type) {
         case NSFetchedResultsChangeInsert: {
             [tableView insertRowsAtIndexPaths:@[ newIndexPath ] withRowAnimation:UITableViewRowAnimationFade];

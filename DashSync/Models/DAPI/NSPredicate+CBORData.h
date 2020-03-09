@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSPredicate (CBORData)
 
--(NSData*)dashPlatormWhereData;
+- (NSData *)dashPlatormWhereData;
 
 @end
 

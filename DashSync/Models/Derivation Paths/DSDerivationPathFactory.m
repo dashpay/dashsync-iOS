@@ -7,44 +7,43 @@
 
 #import "DSDerivationPathFactory.h"
 #import "DSAuthenticationKeysDerivationPath+Protected.h"
-#import "DSMasternodeHoldingsDerivationPath+Protected.h"
 #import "DSCreditFundingDerivationPath+Protected.h"
+#import "DSMasternodeHoldingsDerivationPath+Protected.h"
 
-@interface DSDerivationPathFactory()
+@interface DSDerivationPathFactory ()
 
-@property(nonatomic,strong) NSMutableDictionary * votingKeysDerivationPathByWallet;
-@property(nonatomic,strong) NSMutableDictionary * ownerKeysDerivationPathByWallet;
-@property(nonatomic,strong) NSMutableDictionary * operatorKeysDerivationPathByWallet;
-@property(nonatomic,strong) NSMutableDictionary * providerFundsDerivationPathByWallet;
-@property(nonatomic,strong) NSMutableDictionary * blockchainIdentityRegistrationFundingDerivationPathByWallet;
-@property(nonatomic,strong) NSMutableDictionary * blockchainIdentityTopupFundingDerivationPathByWallet;
-@property(nonatomic,strong) NSMutableDictionary * blockchainIdentityBLSDerivationPathByWallet;
-@property(nonatomic,strong) NSMutableDictionary * blockchainIdentityECDSADerivationPathByWallet;
+@property (nonatomic, strong) NSMutableDictionary *votingKeysDerivationPathByWallet;
+@property (nonatomic, strong) NSMutableDictionary *ownerKeysDerivationPathByWallet;
+@property (nonatomic, strong) NSMutableDictionary *operatorKeysDerivationPathByWallet;
+@property (nonatomic, strong) NSMutableDictionary *providerFundsDerivationPathByWallet;
+@property (nonatomic, strong) NSMutableDictionary *blockchainIdentityRegistrationFundingDerivationPathByWallet;
+@property (nonatomic, strong) NSMutableDictionary *blockchainIdentityTopupFundingDerivationPathByWallet;
+@property (nonatomic, strong) NSMutableDictionary *blockchainIdentityBLSDerivationPathByWallet;
+@property (nonatomic, strong) NSMutableDictionary *blockchainIdentityECDSADerivationPathByWallet;
 
 @end
 
 @implementation DSDerivationPathFactory
 
-+ (instancetype)sharedInstance
-{
++ (instancetype)sharedInstance {
     static id singleton = nil;
     static dispatch_once_t onceToken = 0;
-    
+
     dispatch_once(&onceToken, ^{
         singleton = [self new];
     });
-    
+
     return singleton;
 }
 
-- (DSAuthenticationKeysDerivationPath*)providerVotingKeysDerivationPathForWallet:(DSWallet*)wallet {
+- (DSAuthenticationKeysDerivationPath *)providerVotingKeysDerivationPathForWallet:(DSWallet *)wallet {
     static dispatch_once_t votingKeysDerivationPathByWalletToken = 0;
     dispatch_once(&votingKeysDerivationPathByWalletToken, ^{
         self.votingKeysDerivationPathByWallet = [NSMutableDictionary dictionary];
     });
     @synchronized(self) {
         if (![self.votingKeysDerivationPathByWallet objectForKey:wallet.uniqueID]) {
-            DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForChain:wallet.chain];
+            DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
@@ -55,14 +54,14 @@
     return [self.votingKeysDerivationPathByWallet objectForKey:wallet.uniqueID];
 }
 
-- (DSAuthenticationKeysDerivationPath*)providerOwnerKeysDerivationPathForWallet:(DSWallet*)wallet {
+- (DSAuthenticationKeysDerivationPath *)providerOwnerKeysDerivationPathForWallet:(DSWallet *)wallet {
     static dispatch_once_t providerOwnerKeysDerivationPathByWalletToken = 0;
     dispatch_once(&providerOwnerKeysDerivationPathByWalletToken, ^{
         self.ownerKeysDerivationPathByWallet = [NSMutableDictionary dictionary];
     });
     @synchronized(self) {
         if (![self.ownerKeysDerivationPathByWallet objectForKey:wallet.uniqueID]) {
-            DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForChain:wallet.chain];
+            DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
@@ -73,14 +72,14 @@
     return [self.ownerKeysDerivationPathByWallet objectForKey:wallet.uniqueID];
 }
 
-- (DSAuthenticationKeysDerivationPath*)providerOperatorKeysDerivationPathForWallet:(DSWallet*)wallet {
+- (DSAuthenticationKeysDerivationPath *)providerOperatorKeysDerivationPathForWallet:(DSWallet *)wallet {
     static dispatch_once_t providerOperatorKeysDerivationPathByWalletToken = 0;
     dispatch_once(&providerOperatorKeysDerivationPathByWalletToken, ^{
         self.operatorKeysDerivationPathByWallet = [NSMutableDictionary dictionary];
     });
     @synchronized(self) {
         if (![self.operatorKeysDerivationPathByWallet objectForKey:wallet.uniqueID]) {
-            DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForChain:wallet.chain];
+            DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
@@ -91,14 +90,14 @@
     return [self.operatorKeysDerivationPathByWallet objectForKey:wallet.uniqueID];
 }
 
-- (DSMasternodeHoldingsDerivationPath*)providerFundsDerivationPathForWallet:(DSWallet*)wallet {
+- (DSMasternodeHoldingsDerivationPath *)providerFundsDerivationPathForWallet:(DSWallet *)wallet {
     static dispatch_once_t providerFundsDerivationPathByWalletToken = 0;
     dispatch_once(&providerFundsDerivationPathByWalletToken, ^{
         self.providerFundsDerivationPathByWallet = [NSMutableDictionary dictionary];
     });
     @synchronized(self) {
         if (![self.providerFundsDerivationPathByWallet objectForKey:wallet.uniqueID]) {
-            DSMasternodeHoldingsDerivationPath * derivationPath = [DSMasternodeHoldingsDerivationPath providerFundsDerivationPathForChain:wallet.chain];
+            DSMasternodeHoldingsDerivationPath *derivationPath = [DSMasternodeHoldingsDerivationPath providerFundsDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
@@ -111,14 +110,14 @@
 
 // MARK: - Blockchain Identity Funding
 
-- (DSCreditFundingDerivationPath*)blockchainIdentityRegistrationFundingDerivationPathForWallet:(DSWallet*)wallet {
+- (DSCreditFundingDerivationPath *)blockchainIdentityRegistrationFundingDerivationPathForWallet:(DSWallet *)wallet {
     static dispatch_once_t blockchainIdentityRegistrationFundingDerivationPathByWalletToken = 0;
     dispatch_once(&blockchainIdentityRegistrationFundingDerivationPathByWalletToken, ^{
         self.blockchainIdentityRegistrationFundingDerivationPathByWallet = [NSMutableDictionary dictionary];
     });
     @synchronized(self) {
         if (![self.blockchainIdentityRegistrationFundingDerivationPathByWallet objectForKey:wallet.uniqueID]) {
-            DSCreditFundingDerivationPath * derivationPath = [DSCreditFundingDerivationPath blockchainIdentityRegistrationFundingDerivationPathForChain:wallet.chain];
+            DSCreditFundingDerivationPath *derivationPath = [DSCreditFundingDerivationPath blockchainIdentityRegistrationFundingDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
@@ -129,14 +128,14 @@
     return [self.blockchainIdentityRegistrationFundingDerivationPathByWallet objectForKey:wallet.uniqueID];
 }
 
-- (DSCreditFundingDerivationPath*)blockchainIdentityTopupFundingDerivationPathForWallet:(DSWallet*)wallet {
+- (DSCreditFundingDerivationPath *)blockchainIdentityTopupFundingDerivationPathForWallet:(DSWallet *)wallet {
     static dispatch_once_t blockchainIdentityTopupFundingDerivationPathByWalletToken = 0;
     dispatch_once(&blockchainIdentityTopupFundingDerivationPathByWalletToken, ^{
         self.blockchainIdentityTopupFundingDerivationPathByWallet = [NSMutableDictionary dictionary];
     });
     @synchronized(self) {
         if (![self.blockchainIdentityTopupFundingDerivationPathByWallet objectForKey:wallet.uniqueID]) {
-            DSCreditFundingDerivationPath * derivationPath = [DSCreditFundingDerivationPath blockchainIdentityTopupFundingDerivationPathForChain:wallet.chain];
+            DSCreditFundingDerivationPath *derivationPath = [DSCreditFundingDerivationPath blockchainIdentityTopupFundingDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
@@ -147,14 +146,14 @@
     return [self.blockchainIdentityTopupFundingDerivationPathByWallet objectForKey:wallet.uniqueID];
 }
 
-- (DSAuthenticationKeysDerivationPath*)blockchainIdentityBLSKeysDerivationPathForWallet:(DSWallet*)wallet {
+- (DSAuthenticationKeysDerivationPath *)blockchainIdentityBLSKeysDerivationPathForWallet:(DSWallet *)wallet {
     static dispatch_once_t blockchainIdentityBLSDerivationPathByWalletToken = 0;
     dispatch_once(&blockchainIdentityBLSDerivationPathByWalletToken, ^{
         self.blockchainIdentityBLSDerivationPathByWallet = [NSMutableDictionary dictionary];
     });
     @synchronized(self) {
         if (![self.blockchainIdentityBLSDerivationPathByWallet objectForKey:wallet.uniqueID]) {
-            DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentityBLSKeysDerivationPathForChain:wallet.chain];
+            DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentityBLSKeysDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
@@ -167,14 +166,14 @@
 
 // MARK: - Blockchain Identity Authentication
 
-- (DSAuthenticationKeysDerivationPath*)blockchainIdentityECDSAKeysDerivationPathForWallet:(DSWallet*)wallet {
+- (DSAuthenticationKeysDerivationPath *)blockchainIdentityECDSAKeysDerivationPathForWallet:(DSWallet *)wallet {
     static dispatch_once_t blockchainIdentityECDSADerivationPathByWalletToken = 0;
     dispatch_once(&blockchainIdentityECDSADerivationPathByWalletToken, ^{
         self.blockchainIdentityECDSADerivationPathByWallet = [NSMutableDictionary dictionary];
     });
     @synchronized(self) {
         if (![self.blockchainIdentityECDSADerivationPathByWallet objectForKey:wallet.uniqueID]) {
-            DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentityECDSAKeysDerivationPathForChain:wallet.chain];
+            DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentityECDSAKeysDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
@@ -185,8 +184,8 @@
     return [self.blockchainIdentityECDSADerivationPathByWallet objectForKey:wallet.uniqueID];
 }
 
-- (NSArray<DSDerivationPath*>*)loadedSpecializedDerivationPathsForWallet:(DSWallet*)wallet {
-    NSMutableArray * mArray = [NSMutableArray array];
+- (NSArray<DSDerivationPath *> *)loadedSpecializedDerivationPathsForWallet:(DSWallet *)wallet {
+    NSMutableArray *mArray = [NSMutableArray array];
     [mArray addObject:[[DSDerivationPathFactory sharedInstance] providerOwnerKeysDerivationPathForWallet:wallet]];
     [mArray addObject:[[DSDerivationPathFactory sharedInstance] providerOperatorKeysDerivationPathForWallet:wallet]];
     [mArray addObject:[[DSDerivationPathFactory sharedInstance] providerVotingKeysDerivationPathForWallet:wallet]];
@@ -200,10 +199,10 @@
     return mArray;
 }
 
-- (NSArray<DSDerivationPath*>*)unloadedSpecializedDerivationPathsNeedingExtendedPublicKeyForWallet:(DSWallet*)wallet {
-    NSMutableArray * mArray = [NSMutableArray array];
-    
-    for (DSDerivationPath * derivationPath in [self unloadedSpecializedDerivationPathsForWallet:wallet]) {
+- (NSArray<DSDerivationPath *> *)unloadedSpecializedDerivationPathsNeedingExtendedPublicKeyForWallet:(DSWallet *)wallet {
+    NSMutableArray *mArray = [NSMutableArray array];
+
+    for (DSDerivationPath *derivationPath in [self unloadedSpecializedDerivationPathsForWallet:wallet]) {
         if (![derivationPath hasExtendedPublicKey]) {
             [mArray addObject:derivationPath];
         }
@@ -211,44 +210,43 @@
     return [mArray copy];
 }
 
-- (NSArray<DSDerivationPath*>*)unloadedSpecializedDerivationPathsForWallet:(DSWallet*)wallet {
-    NSMutableArray * mArray = [NSMutableArray array];
+- (NSArray<DSDerivationPath *> *)unloadedSpecializedDerivationPathsForWallet:(DSWallet *)wallet {
+    NSMutableArray *mArray = [NSMutableArray array];
     //Masternode Owner
-    DSAuthenticationKeysDerivationPath * providerOwnerKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForChain:wallet.chain];
+    DSAuthenticationKeysDerivationPath *providerOwnerKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForChain:wallet.chain];
     providerOwnerKeysDerivationPath.wallet = wallet;
     [mArray addObject:providerOwnerKeysDerivationPath];
-    
-    
+
+
     //Masternode Operator
-    DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForChain:wallet.chain];
+    DSAuthenticationKeysDerivationPath *providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForChain:wallet.chain];
     providerOperatorKeysDerivationPath.wallet = wallet;
-    
+
     [mArray addObject:providerOperatorKeysDerivationPath];
-    
-    
+
+
     //Masternode Voting
-    DSAuthenticationKeysDerivationPath * providerVotingKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForChain:wallet.chain];
+    DSAuthenticationKeysDerivationPath *providerVotingKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForChain:wallet.chain];
     providerVotingKeysDerivationPath.wallet = wallet;
-    
+
     [mArray addObject:providerVotingKeysDerivationPath];
-    
-    
+
+
     //Masternode Holding
-    DSMasternodeHoldingsDerivationPath * providerFundsDerivationPath = [DSMasternodeHoldingsDerivationPath providerFundsDerivationPathForChain:wallet.chain];
+    DSMasternodeHoldingsDerivationPath *providerFundsDerivationPath = [DSMasternodeHoldingsDerivationPath providerFundsDerivationPathForChain:wallet.chain];
     providerFundsDerivationPath.wallet = wallet;
-    
+
     [mArray addObject:providerFundsDerivationPath];
-    
-    
+
+
     if (wallet.chain.isDevnetAny) {
         //Blockchain Identities
-        DSAuthenticationKeysDerivationPath * blockchainIdentitiesDerivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentityBLSKeysDerivationPathForChain:wallet.chain];
+        DSAuthenticationKeysDerivationPath *blockchainIdentitiesDerivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentityBLSKeysDerivationPathForChain:wallet.chain];
         blockchainIdentitiesDerivationPath.wallet = wallet;
-        
+
         [mArray addObject:blockchainIdentitiesDerivationPath];
-        
     }
-    
+
     return [mArray copy];
 }
 

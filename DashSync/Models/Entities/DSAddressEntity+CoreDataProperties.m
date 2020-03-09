@@ -11,7 +11,7 @@
 @implementation DSAddressEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSAddressEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSAddressEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSAddressEntity"];
 }
 
 @dynamic address;

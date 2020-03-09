@@ -1,6 +1,6 @@
 //
 //  DSTxOutputEntity+CoreDataProperties.m
-//  
+//
 //
 //  Created by Sam Westrich on 5/20/18.
 //
@@ -27,7 +27,7 @@
 @implementation DSTxOutputEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSTxOutputEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSTxOutputEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSTxOutputEntity"];
 }
 
 @dynamic address;

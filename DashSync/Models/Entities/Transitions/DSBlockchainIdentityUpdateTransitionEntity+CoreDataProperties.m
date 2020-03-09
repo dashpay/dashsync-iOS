@@ -11,7 +11,7 @@
 @implementation DSBlockchainIdentityUpdateTransitionEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSBlockchainIdentityUpdateTransitionEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSBlockchainIdentityUpdateTransitionEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSBlockchainIdentityUpdateTransitionEntity"];
 }
 
 @dynamic addedKeyPaths;

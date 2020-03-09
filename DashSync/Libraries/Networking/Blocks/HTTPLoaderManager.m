@@ -53,57 +53,57 @@ NS_ASSUME_NONNULL_BEGIN
 - (id<HTTPLoaderOperationProtocol>)sendRequest:(HTTPRequest *)httpRequest
                                        factory:(HTTPLoaderFactory *)factory
                                     completion:(HTTPLoaderCompletionBlock)completion {
-    return [self sendRequest:httpRequest factory:factory rawCompletion:^(BOOL success, BOOL cancelled, HTTPResponse *_Nullable response) {
-        NSAssert([NSThread isMainThread], nil);
+    return [self sendRequest:httpRequest
+                     factory:factory
+               rawCompletion:^(BOOL success, BOOL cancelled, HTTPResponse *_Nullable response) {
+                   NSAssert([NSThread isMainThread], nil);
 
-        if (success) {
-            NSError *_Nullable error = nil;
-            id _Nullable parsedData = [self parseResponse:response.body statusCode:response.statusCode request:httpRequest error:&error];
-            NSAssert((!error && parsedData) || (error && !parsedData), nil); // sanity check
-            
-            if ([DSLogger sharedInstance].shouldLogHTTPResponses) {
-                DSLogInfo(@">> Response OK: %@, error: %@", parsedData, error);
-            }
+                   if (success) {
+                       NSError *_Nullable error = nil;
+                       id _Nullable parsedData = [self parseResponse:response.body statusCode:response.statusCode request:httpRequest error:&error];
+                       NSAssert((!error && parsedData) || (error && !parsedData), nil); // sanity check
 
-            // store server timestamp
-            [[DSAuthenticationManager sharedInstance] updateSecureTimeFromResponseIfNeeded:response.responseHeaders];
+                       if ([DSLogger sharedInstance].shouldLogHTTPResponses) {
+                           DSLogInfo(@">> Response OK: %@, error: %@", parsedData, error);
+                       }
 
-            if (completion) {
-                completion(parsedData, response.responseHeaders, response.statusCode, error ?: response.error);
-            }
-        }
-        else {
-            NSError *error = nil;
-            if (cancelled) {
-                error = [NSError errorWithDomain:NSURLErrorDomain
-                                            code:NSURLErrorCancelled
-                                        userInfo:nil];
-            }
-            else {
-                error = response.error;
-            }
-            
-            if ([DSLogger sharedInstance].shouldLogHTTPResponses) {
-                id parsedData = response.body ?
-                    [NSJSONSerialization JSONObjectWithData:response.body
-                                                    options:httpRequest.jsonReadingOptions
-                                                      error:nil]
-                    : nil;
-                
-                DSLogInfo(@">> Response Failed: %@, error: %@", parsedData, error);
-            }
-            
-            if (completion) {
-                if (cancelled) {
-                    completion(nil, nil, HTTPResponseStatusCode_Invalid, error);
-                }
-                else {
-                    completion(nil, response.responseHeaders, response.statusCode, error);
-                }
-            }
-        }
+                       // store server timestamp
+                       [[DSAuthenticationManager sharedInstance] updateSecureTimeFromResponseIfNeeded:response.responseHeaders];
 
-    }];
+                       if (completion) {
+                           completion(parsedData, response.responseHeaders, response.statusCode, error ?: response.error);
+                       }
+                   }
+                   else {
+                       NSError *error = nil;
+                       if (cancelled) {
+                           error = [NSError errorWithDomain:NSURLErrorDomain
+                                                       code:NSURLErrorCancelled
+                                                   userInfo:nil];
+                       }
+                       else {
+                           error = response.error;
+                       }
+
+                       if ([DSLogger sharedInstance].shouldLogHTTPResponses) {
+                           id parsedData = response.body ? [NSJSONSerialization JSONObjectWithData:response.body
+                                                                                           options:httpRequest.jsonReadingOptions
+                                                                                             error:nil]
+                                                         : nil;
+
+                           DSLogInfo(@">> Response Failed: %@, error: %@", parsedData, error);
+                       }
+
+                       if (completion) {
+                           if (cancelled) {
+                               completion(nil, nil, HTTPResponseStatusCode_Invalid, error);
+                           }
+                           else {
+                               completion(nil, response.responseHeaders, response.statusCode, error);
+                           }
+                       }
+                   }
+               }];
 }
 
 - (id<HTTPLoaderOperationProtocol>)sendRequest:(HTTPRequest *)httpRequest

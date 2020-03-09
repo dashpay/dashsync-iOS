@@ -23,9 +23,9 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
 #import "DSChain.h"
 #import "DSPeer.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -36,24 +36,24 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo) {
     DSSyncCountInfo_GovernanceObjectVote = 11,
 };
 
-#define PROTOCOL_TIMEOUT     20.0
+#define PROTOCOL_TIMEOUT 20.0
 
-FOUNDATION_EXPORT NSString* const DSChainManagerNotificationChainKey;
+FOUNDATION_EXPORT NSString *const DSChainManagerNotificationChainKey;
 
 @class DSGovernanceSyncManager, DSMasternodeManager, DSSporkManager, DSPeerManager, DSGovernanceVote, DSDAPIClient, DSTransactionManager, DSBloomFilter;
 
-@interface DSChainManager : NSObject <DSChainDelegate,DSPeerChainDelegate>
+@interface DSChainManager : NSObject <DSChainDelegate, DSPeerChainDelegate>
 
 @property (nonatomic, readonly) double syncProgress;
-@property (nonatomic, readonly) DSSporkManager * sporkManager;
-@property (nonatomic, readonly) DSMasternodeManager * masternodeManager;
-@property (nonatomic, readonly) DSGovernanceSyncManager * governanceSyncManager;
-@property (nonatomic, readonly) DSDAPIClient * DAPIClient;
-@property (nonatomic, readonly) DSTransactionManager * transactionManager;
-@property (nonatomic, readonly) DSPeerManager * peerManager;
-@property (nonatomic, readonly) DSChain * chain;
+@property (nonatomic, readonly) DSSporkManager *sporkManager;
+@property (nonatomic, readonly) DSMasternodeManager *masternodeManager;
+@property (nonatomic, readonly) DSGovernanceSyncManager *governanceSyncManager;
+@property (nonatomic, readonly) DSDAPIClient *DAPIClient;
+@property (nonatomic, readonly) DSTransactionManager *transactionManager;
+@property (nonatomic, readonly) DSPeerManager *peerManager;
+@property (nonatomic, readonly) DSChain *chain;
 
-- (instancetype)initWithChain:(DSChain*)chain;
+- (instancetype)initWithChain:(DSChain *)chain;
 
 - (void)resetSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo;
 

@@ -50,23 +50,24 @@
 @property (nonatomic, assign) BOOL requiresInstantSend;
 @property (nonatomic, readonly) BOOL amountValueImmutable;
 @property (nonatomic, readonly) DSPaymentProtocolRequest *protocolRequest;
-@property (nonatomic, readonly) DSChain * chain;
+@property (nonatomic, readonly) DSChain *chain;
 
-+ (instancetype)requestWithString:(NSString *)string onChain:(DSChain*)chain;
-+ (instancetype)requestWithData:(NSData *)data onChain:(DSChain*)chain;
-+ (instancetype)requestWithURL:(NSURL *)url onChain:(DSChain*)chain;
++ (instancetype)requestWithString:(NSString *)string onChain:(DSChain *)chain;
++ (instancetype)requestWithData:(NSData *)data onChain:(DSChain *)chain;
++ (instancetype)requestWithURL:(NSURL *)url onChain:(DSChain *)chain;
 
-- (instancetype)initWithString:(NSString *)string onChain:(DSChain*)chain;
-- (instancetype)initWithData:(NSData *)data onChain:(DSChain*)chain;
-- (instancetype)initWithURL:(NSURL *)url onChain:(DSChain*)chain;
+- (instancetype)initWithString:(NSString *)string onChain:(DSChain *)chain;
+- (instancetype)initWithData:(NSData *)data onChain:(DSChain *)chain;
+- (instancetype)initWithURL:(NSURL *)url onChain:(DSChain *)chain;
 
 // fetches a BIP70 request over HTTP and calls completion block
 // https://github.com/bitcoin/bips/blob/master/bip-0070.mediawiki
-+ (void)fetch:(NSString *)url scheme:(NSString*)scheme onChain:(DSChain*)chain timeout:(NSTimeInterval)timeout
-completion:(void (^)(DSPaymentProtocolRequest *req, NSError *error))completion;
++ (void)fetch:(NSString *)url scheme:(NSString *)scheme onChain:(DSChain *)chain timeout:(NSTimeInterval)timeout
+    completion:(void (^)(DSPaymentProtocolRequest *req, NSError *error))completion;
 
 // posts a BIP70 payment object to the specified URL
-+ (void)postPayment:(DSPaymentProtocolPayment *)payment scheme:(NSString*)scheme to:(NSString *)paymentURL onChain:(DSChain*)chain
-timeout:(NSTimeInterval)timeout completion:(void (^)(DSPaymentProtocolACK *ack, NSError *error))completion;
++ (void)postPayment:(DSPaymentProtocolPayment *)payment scheme:(NSString *)scheme to:(NSString *)paymentURL onChain:(DSChain *)chain
+            timeout:(NSTimeInterval)timeout
+         completion:(void (^)(DSPaymentProtocolACK *ack, NSError *error))completion;
 
 @end

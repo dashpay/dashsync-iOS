@@ -1,6 +1,6 @@
 //
 //  DSMerkleBlockEntity+CoreDataClass.m
-//  
+//
 //  Created by Sam Westrich on 5/20/18.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,13 +21,13 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSMerkleBlockEntity+CoreDataClass.h"
-#import "DSMerkleBlock.h"
-#import "NSData+Bitcoin.h"
+#import "DSChain.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainLockEntity+CoreDataClass.h"
+#import "DSMerkleBlock.h"
+#import "DSMerkleBlockEntity+CoreDataClass.h"
+#import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
-#import "DSChain.h"
 
 @implementation DSMerkleBlockEntity
 
@@ -47,11 +47,11 @@
         self.height = block.height;
         self.chain = [block.chain chainEntity];
     }];
-    
+
     return self;
 }
 
-- (instancetype)setAttributesFromBlock:(DSMerkleBlock *)block forChain:(DSChainEntity*)chainEntity {
+- (instancetype)setAttributesFromBlock:(DSMerkleBlock *)block forChain:(DSChainEntity *)chainEntity {
     [self.managedObjectContext performBlockAndWait:^{
         self.blockHash = [NSData dataWithBytes:block.blockHash.u8 length:sizeof(UInt256)];
         self.version = block.version;
@@ -66,50 +66,59 @@
         self.height = block.height;
         self.chain = chainEntity;
     }];
-    
+
     return self;
 }
 
-- (DSMerkleBlock *)merkleBlock
-{
+- (DSMerkleBlock *)merkleBlock {
     __block DSMerkleBlock *block = nil;
-    
+
     [self.managedObjectContext performBlockAndWait:^{
         NSData *blockHash = self.blockHash, *prevBlock = self.prevBlock, *merkleRoot = self.merkleRoot;
         UInt256 hash = (blockHash.length == sizeof(UInt256)) ? *(const UInt256 *)blockHash.bytes : UINT256_ZERO,
-        prev = (prevBlock.length == sizeof(UInt256)) ? *(const UInt256 *)prevBlock.bytes : UINT256_ZERO,
-        root = (merkleRoot.length == sizeof(UInt256)) ? *(const UInt256 *)merkleRoot.bytes : UINT256_ZERO;
-        
-        DSChain * chain = self.chain.chain;
-        
-        DSChainLock * chainLock = nil;
+                prev = (prevBlock.length == sizeof(UInt256)) ? *(const UInt256 *)prevBlock.bytes : UINT256_ZERO,
+                root = (merkleRoot.length == sizeof(UInt256)) ? *(const UInt256 *)merkleRoot.bytes : UINT256_ZERO;
+
+        DSChain *chain = self.chain.chain;
+
+        DSChainLock *chainLock = nil;
         if (self.chainLock) {
             chainLock = [self.chainLock chainLockForChain:chain];
         }
-        block = [[DSMerkleBlock alloc] initWithBlockHash:hash onChain:self.chain.chain version:self.version prevBlock:prev merkleRoot:root
-                                               timestamp:self.timestamp target:self.target nonce:self.nonce
-                                       totalTransactions:self.totalTransactions hashes:self.hashes flags:self.flags height:self.height chainLock:chainLock];
+        block = [[DSMerkleBlock alloc] initWithBlockHash:hash
+                                                 onChain:self.chain.chain
+                                                 version:self.version
+                                               prevBlock:prev
+                                              merkleRoot:root
+                                               timestamp:self.timestamp
+                                                  target:self.target
+                                                   nonce:self.nonce
+                                       totalTransactions:self.totalTransactions
+                                                  hashes:self.hashes
+                                                   flags:self.flags
+                                                  height:self.height
+                                               chainLock:chainLock];
     }];
-    
+
     return block;
 }
 
-+ (NSArray<DSMerkleBlockEntity*>*)lastBlocks:(uint32_t)blockcount onChain:(DSChainEntity*)chainEntity {
-    __block NSArray * blocks = nil;
++ (NSArray<DSMerkleBlockEntity *> *)lastBlocks:(uint32_t)blockcount onChain:(DSChainEntity *)chainEntity {
+    __block NSArray *blocks = nil;
     [chainEntity.managedObjectContext performBlockAndWait:^{
-        NSFetchRequest * fetchRequest = [DSMerkleBlockEntity fetchReq];
-        [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"(chain == %@)",chainEntity]];
-        [fetchRequest setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"height" ascending:FALSE]]];
+        NSFetchRequest *fetchRequest = [DSMerkleBlockEntity fetchReq];
+        [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"(chain == %@)", chainEntity]];
+        [fetchRequest setSortDescriptors:@[ [NSSortDescriptor sortDescriptorWithKey:@"height" ascending:FALSE] ]];
         [fetchRequest setFetchLimit:blockcount];
         blocks = [DSMerkleBlockEntity fetchObjects:fetchRequest];
     }];
     return blocks;
 }
 
-+ (void)deleteBlocksOnChain:(DSChainEntity*)chainEntity {
++ (void)deleteBlocksOnChain:(DSChainEntity *)chainEntity {
     [chainEntity.managedObjectContext performBlockAndWait:^{
-        NSArray * merkleBlocksToDelete = [self objectsMatching:@"(chain == %@)",chainEntity];
-        for (DSMerkleBlockEntity * merkleBlock in merkleBlocksToDelete) {
+        NSArray *merkleBlocksToDelete = [self objectsMatching:@"(chain == %@)", chainEntity];
+        for (DSMerkleBlockEntity *merkleBlock in merkleBlocksToDelete) {
             [chainEntity.managedObjectContext deleteObject:merkleBlock];
         }
     }];

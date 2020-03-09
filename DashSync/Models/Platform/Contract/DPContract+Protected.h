@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (assign, nonatomic) DPContractState contractState;
 
--(DSContractTransition*)contractRegistrationTransitionForIdentity:(DSBlockchainIdentity*)blockchainIdentity;
+- (DSContractTransition *)contractRegistrationTransitionForIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 
 @end
 

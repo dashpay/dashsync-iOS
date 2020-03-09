@@ -23,24 +23,24 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
 #import "DSChain.h"
 #import "DSPeer.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerSyncStartedNotification;
-FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerSyncFinishedNotification;
-FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerSyncFailedNotification;
-FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerTransactionStatusDidChangeNotification;
-FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerTransactionReceivedNotification;
+FOUNDATION_EXPORT NSString *_Nonnull const DSTransactionManagerSyncStartedNotification;
+FOUNDATION_EXPORT NSString *_Nonnull const DSTransactionManagerSyncFinishedNotification;
+FOUNDATION_EXPORT NSString *_Nonnull const DSTransactionManagerSyncFailedNotification;
+FOUNDATION_EXPORT NSString *_Nonnull const DSTransactionManagerTransactionStatusDidChangeNotification;
+FOUNDATION_EXPORT NSString *_Nonnull const DSTransactionManagerTransactionReceivedNotification;
 
-FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerNotificationTransactionKey;
-FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerNotificationTransactionChangesKey;
-FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerNotificationInstantSendTransactionLockKey;
-FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey;
-FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerNotificationInstantSendTransactionAcceptedStatusKey;
+FOUNDATION_EXPORT NSString *_Nonnull const DSTransactionManagerNotificationTransactionKey;
+FOUNDATION_EXPORT NSString *_Nonnull const DSTransactionManagerNotificationTransactionChangesKey;
+FOUNDATION_EXPORT NSString *_Nonnull const DSTransactionManagerNotificationInstantSendTransactionLockKey;
+FOUNDATION_EXPORT NSString *_Nonnull const DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey;
+FOUNDATION_EXPORT NSString *_Nonnull const DSTransactionManagerNotificationInstantSendTransactionAcceptedStatusKey;
 
 
 typedef NS_ENUM(NSUInteger, DSRequestingAdditionalInfo) {
@@ -48,29 +48,29 @@ typedef NS_ENUM(NSUInteger, DSRequestingAdditionalInfo) {
     DSRequestingAdditionalInfo_CancelOrChangeAmount = 2
 };
 
-@class DSChain, DSPaymentRequest,DSPaymentProtocolRequest,DSShapeshiftEntity,DSTransaction,DSPaymentProtocolACK;
+@class DSChain, DSPaymentRequest, DSPaymentProtocolRequest, DSShapeshiftEntity, DSTransaction, DSPaymentProtocolACK;
 
 typedef void (^DSTransactionCreationRequestingAdditionalInfoBlock)(DSRequestingAdditionalInfo additionalInfo);
 
-typedef void (^DSTransactionChallengeBlock)(NSString * challengeTitle, NSString * challengeMessage,NSString * actionTitle, void (^actionBlock)(void), void (^cancelBlock)(void) );
+typedef void (^DSTransactionChallengeBlock)(NSString *challengeTitle, NSString *challengeMessage, NSString *actionTitle, void (^actionBlock)(void), void (^cancelBlock)(void));
 
-typedef void (^DSTransactionErrorNotificationBlock)(NSError *error, NSString * _Nullable errorTitle, NSString * _Nullable errorMessage,BOOL shouldCancel);
+typedef void (^DSTransactionErrorNotificationBlock)(NSError *error, NSString *_Nullable errorTitle, NSString *_Nullable errorMessage, BOOL shouldCancel);
 
 typedef BOOL (^DSTransactionCreationCompletionBlock)(DSTransaction *tx, NSString *prompt, uint64_t amount, uint64_t proposedFee, NSArray<NSString *> *addresses, BOOL isSecure); //return is whether we should continue automatically
 
-typedef BOOL (^DSTransactionSigningCompletionBlock)(DSTransaction * tx, NSError * _Nullable error, BOOL cancelled); //return is whether we should continue automatically
+typedef BOOL (^DSTransactionSigningCompletionBlock)(DSTransaction *tx, NSError *_Nullable error, BOOL cancelled); //return is whether we should continue automatically
 
-typedef void (^DSTransactionPublishedCompletionBlock)(DSTransaction * tx, NSError * _Nullable error, BOOL sent);
+typedef void (^DSTransactionPublishedCompletionBlock)(DSTransaction *tx, NSError *_Nullable error, BOOL sent);
 
-typedef void (^DSTransactionRequestRelayCompletionBlock)(DSTransaction * tx, DSPaymentProtocolACK *ack, BOOL relayedToServer);
+typedef void (^DSTransactionRequestRelayCompletionBlock)(DSTransaction *tx, DSPaymentProtocolACK *ack, BOOL relayedToServer);
 
-@interface DSTransactionManager : NSObject <DSChainTransactionsDelegate,DSPeerTransactionDelegate>
+@interface DSTransactionManager : NSObject <DSChainTransactionsDelegate, DSPeerTransactionDelegate>
 
-@property (nonatomic,readonly) DSChain * chain;
+@property (nonatomic, readonly) DSChain *chain;
 
-- (instancetype)initWithChain:(DSChain*)chain;
+- (instancetype)initWithChain:(DSChain *)chain;
 
-- (void)fetchMempoolFromPeer:(DSPeer*)peer;
+- (void)fetchMempoolFromPeer:(DSPeer *)peer;
 
 - (void)fetchMempoolFromNetwork;
 
@@ -82,19 +82,36 @@ typedef void (^DSTransactionRequestRelayCompletionBlock)(DSTransaction * tx, DSP
 
 - (void)publishTransaction:(DSTransaction *)transaction completion:(void (^)(NSError *error))completion;
 
-- (void)confirmPaymentRequest:(DSPaymentRequest *)paymentRequest fromAccount:(DSAccount*)account acceptInternalAddress:(BOOL)acceptInternalAddress acceptReusingAddress:(BOOL)acceptReusingAddress addressIsFromPasteboard:(BOOL)addressIsFromPasteboard requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingConfirmationPrompt
-     keepAuthenticatedIfErrorAfterAuthentication:(BOOL)keepAuthenticatedIfErrorAfterAuthentication
-     requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest presentChallenge:(DSTransactionChallengeBlock)challenge transactionCreationCompletion:(DSTransactionCreationCompletionBlock)completion signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock;
+- (void)confirmPaymentRequest:(DSPaymentRequest *)paymentRequest fromAccount:(DSAccount *)account acceptInternalAddress:(BOOL)acceptInternalAddress acceptReusingAddress:(BOOL)acceptReusingAddress addressIsFromPasteboard:(BOOL)addressIsFromPasteboard requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingConfirmationPrompt
+    keepAuthenticatedIfErrorAfterAuthentication:(BOOL)keepAuthenticatedIfErrorAfterAuthentication
+                       requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest
+                               presentChallenge:(DSTransactionChallengeBlock)challenge
+                  transactionCreationCompletion:(DSTransactionCreationCompletionBlock)completion
+                               signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion
+                            publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion
+                         errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock;
 
-- (void)signAndPublishTransaction:(DSTransaction *)tx createdFromProtocolRequest:(DSPaymentProtocolRequest*)protocolRequest fromAccount:(DSAccount*)account toAddress:(NSString*)address requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingConfirmationPrompt promptMessage:(NSString * _Nullable)promptMessage forAmount:(uint64_t)amount keepAuthenticatedIfErrorAfterAuthentication:(BOOL)keepAuthenticatedIfErrorAfterAuthentication requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest presentChallenge:(DSTransactionChallengeBlock)challenge transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion requestRelayCompletion:(DSTransactionRequestRelayCompletionBlock _Nullable)requestRelayCompletion errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock;
+- (void)signAndPublishTransaction:(DSTransaction *)tx createdFromProtocolRequest:(DSPaymentProtocolRequest *)protocolRequest fromAccount:(DSAccount *)account toAddress:(NSString *)address requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingConfirmationPrompt promptMessage:(NSString *_Nullable)promptMessage forAmount:(uint64_t)amount keepAuthenticatedIfErrorAfterAuthentication:(BOOL)keepAuthenticatedIfErrorAfterAuthentication requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest presentChallenge:(DSTransactionChallengeBlock)challenge transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion requestRelayCompletion:(DSTransactionRequestRelayCompletionBlock _Nullable)requestRelayCompletion errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock;
 
-- (void)confirmProtocolRequest:(DSPaymentProtocolRequest *)protoReq forAmount:(uint64_t)requestedAmount fromAccount:(DSAccount*)account addressIsFromPasteboard:(BOOL)addressIsFromPasteboard requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
-      keepAuthenticatedIfErrorAfterAuthentication:(BOOL)keepAuthenticatedIfErrorAfterAuthentication
-      requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest presentChallenge:(DSTransactionChallengeBlock)challenge transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion requestRelayCompletion:(DSTransactionRequestRelayCompletionBlock _Nullable)requestRelayCompletion errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock;
+- (void)confirmProtocolRequest:(DSPaymentProtocolRequest *)protoReq forAmount:(uint64_t)requestedAmount fromAccount:(DSAccount *)account addressIsFromPasteboard:(BOOL)addressIsFromPasteboard requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
+    keepAuthenticatedIfErrorAfterAuthentication:(BOOL)keepAuthenticatedIfErrorAfterAuthentication
+                       requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest
+                               presentChallenge:(DSTransactionChallengeBlock)challenge
+                  transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion
+                               signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion
+                            publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion
+                         requestRelayCompletion:(DSTransactionRequestRelayCompletionBlock _Nullable)requestRelayCompletion
+                         errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock;
 
-- (void)confirmProtocolRequest:(DSPaymentProtocolRequest *)protoReq forAmount:(uint64_t)requestedAmount fromAccount:(DSAccount*)account acceptInternalAddress:(BOOL)acceptInternalAddress acceptReusingAddress:(BOOL)acceptReusingAddress addressIsFromPasteboard:(BOOL)addressIsFromPasteboard acceptUncertifiedPayee:(BOOL)acceptUncertifiedPayee requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
-      keepAuthenticatedIfErrorAfterAuthentication:(BOOL)keepAuthenticatedIfErrorAfterAuthentication
-      requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest presentChallenge:(DSTransactionChallengeBlock)challenge transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion requestRelayCompletion:(DSTransactionRequestRelayCompletionBlock _Nullable)requestRelayCompletion errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock;
+- (void)confirmProtocolRequest:(DSPaymentProtocolRequest *)protoReq forAmount:(uint64_t)requestedAmount fromAccount:(DSAccount *)account acceptInternalAddress:(BOOL)acceptInternalAddress acceptReusingAddress:(BOOL)acceptReusingAddress addressIsFromPasteboard:(BOOL)addressIsFromPasteboard acceptUncertifiedPayee:(BOOL)acceptUncertifiedPayee requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
+    keepAuthenticatedIfErrorAfterAuthentication:(BOOL)keepAuthenticatedIfErrorAfterAuthentication
+                       requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest
+                               presentChallenge:(DSTransactionChallengeBlock)challenge
+                  transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion
+                               signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion
+                            publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion
+                         requestRelayCompletion:(DSTransactionRequestRelayCompletionBlock _Nullable)requestRelayCompletion
+                         errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock;
 @end
 
 NS_ASSUME_NONNULL_END

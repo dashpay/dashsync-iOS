@@ -43,8 +43,8 @@ NS_ASSUME_NONNULL_BEGIN
                                                reason:@"DSUInt256IndexPath could not allocate memory"
                                              userInfo:nil];
             }
-            for (NSUInteger i =0;i<length;i++) {
-                _indexes[i] = ((UInt256) { .u64 = { indexes[i], 0, 0, 0 } });
+            for (NSUInteger i = 0; i < length; i++) {
+                _indexes[i] = ((UInt256){.u64 = {indexes[i], 0, 0, 0}});
             }
         }
     }

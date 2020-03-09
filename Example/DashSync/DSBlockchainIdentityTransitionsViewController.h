@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -21,8 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSBlockchainIdentityTransitionsViewController : UITableViewController
 
-@property (nonatomic,strong) DSChainManager * chainManager;
-@property (nonatomic,strong) DSBlockchainIdentity * blockchainIdentity;
+@property (nonatomic, strong) DSChainManager *chainManager;
+@property (nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
 
 @end
 

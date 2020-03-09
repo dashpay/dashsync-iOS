@@ -6,8 +6,8 @@
 //
 //
 
-#import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
 @class DSChainEntity, DSGovernanceVoteEntity, DSGovernanceObjectEntity;
 
@@ -15,12 +15,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSGovernanceVoteHashEntity : NSManagedObject
 
-+(NSArray*)governanceVoteHashEntitiesWithHashes:(NSOrderedSet*)governanceVoteHashes forGovernanceObject:(DSGovernanceObjectEntity*)governanceObject;
-+(void)updateTimestampForGovernanceVoteHashEntitiesWithGovernanceVoteHashes:(NSOrderedSet*)governanceVoteHashes forGovernanceObject:(DSGovernanceObjectEntity*)governanceObject;
-+(void)removeOldest:(NSUInteger)count hashesNotIn:(NSSet*)governanceVoteHashes forGovernanceObject:(DSGovernanceObjectEntity*)governanceObject;
-+(NSUInteger)countAroundNowOnChain:(DSChainEntity*)chainEntity;
-+(NSUInteger)standaloneCountInLast3hoursOnChain:(DSChainEntity*)chainEntity;
-+(void)deleteHashesOnChain:(DSChainEntity*)chainEntity;
++ (NSArray *)governanceVoteHashEntitiesWithHashes:(NSOrderedSet *)governanceVoteHashes forGovernanceObject:(DSGovernanceObjectEntity *)governanceObject;
++ (void)updateTimestampForGovernanceVoteHashEntitiesWithGovernanceVoteHashes:(NSOrderedSet *)governanceVoteHashes forGovernanceObject:(DSGovernanceObjectEntity *)governanceObject;
++ (void)removeOldest:(NSUInteger)count hashesNotIn:(NSSet *)governanceVoteHashes forGovernanceObject:(DSGovernanceObjectEntity *)governanceObject;
++ (NSUInteger)countAroundNowOnChain:(DSChainEntity *)chainEntity;
++ (NSUInteger)standaloneCountInLast3hoursOnChain:(DSChainEntity *)chainEntity;
++ (void)deleteHashesOnChain:(DSChainEntity *)chainEntity;
 
 @end
 

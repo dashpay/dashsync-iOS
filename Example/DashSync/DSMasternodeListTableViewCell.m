@@ -21,7 +21,7 @@
     // Configure the view for the selected state
 }
 
--(IBAction)requestingValidation:(id)sender {
+- (IBAction)requestingValidation:(id)sender {
     [self.masternodeListCellDelegate masternodeListTableViewCellRequestsValidation:self];
 }
 

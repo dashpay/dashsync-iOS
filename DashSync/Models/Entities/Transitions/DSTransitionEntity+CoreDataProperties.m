@@ -11,7 +11,7 @@
 @implementation DSTransitionEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSTransitionEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSTransitionEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSTransitionEntity"];
 }
 
 @dynamic version;

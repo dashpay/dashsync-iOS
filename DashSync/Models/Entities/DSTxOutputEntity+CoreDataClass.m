@@ -1,6 +1,6 @@
 //
 //  DSTxOutputEntity+CoreDataClass.m
-//  
+//
 //
 //  Created by Sam Westrich on 5/20/18.
 //
@@ -22,22 +22,21 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSTxOutputEntity+CoreDataClass.h"
-#import "DSTransactionEntity+CoreDataClass.h"
 #import "DSAddressEntity+CoreDataClass.h"
-#import "DSTransaction.h"
-#import "NSData+Bitcoin.h"
-#import "DSChainEntity+CoreDataClass.h"
 #import "DSChain.h"
-#import "NSManagedObject+Sugar.h"
+#import "DSChainEntity+CoreDataClass.h"
 #import "DSDerivationPathEntity+CoreDataClass.h"
+#import "DSTransaction.h"
+#import "DSTransactionEntity+CoreDataClass.h"
+#import "DSTxOutputEntity+CoreDataClass.h"
+#import "NSData+Bitcoin.h"
+#import "NSManagedObject+Sugar.h"
 
 @implementation DSTxOutputEntity
 
-- (instancetype)setAttributesFromTransaction:(DSTransaction *)tx outputIndex:(NSUInteger)index forTransactionEntity:(DSTransactionEntity*)transactionEntity
-{
+- (instancetype)setAttributesFromTransaction:(DSTransaction *)tx outputIndex:(NSUInteger)index forTransactionEntity:(DSTransactionEntity *)transactionEntity {
     UInt256 txHash = tx.txHash;
-    
+
     self.txHash = [NSData dataWithBytes:&txHash length:sizeof(txHash)];
     self.n = (int32_t)index;
     self.address = (tx.outputAddresses[index] == [NSNull null]) ? nil : tx.outputAddresses[index];
@@ -46,13 +45,14 @@
     self.shapeshiftOutboundAddress = [DSTransaction shapeshiftOutboundAddressForScript:self.script];
     self.transaction = transactionEntity;
     if (self.address) {
-        NSArray * addressEntities = [DSAddressEntity objectsMatching:@"address == %@ && derivationPath.chain == %@",self.address,tx.chain.chainEntity];
+        NSArray *addressEntities = [DSAddressEntity objectsMatching:@"address == %@ && derivationPath.chain == %@", self.address, tx.chain.chainEntity];
         if ([addressEntities count]) {
             NSAssert([addressEntities count] == 1, @"addresses should not be duplicates");
             self.localAddress = [addressEntities objectAtIndex:0];
             self.account = self.localAddress.derivationPath.account; //this is to make the outputs easily accessible for an account
         }
-    } else {
+    }
+    else {
         DSDLog(@"Output had no address");
     }
     return self;

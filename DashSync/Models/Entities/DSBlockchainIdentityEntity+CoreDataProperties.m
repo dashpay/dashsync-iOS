@@ -11,7 +11,7 @@
 @implementation DSBlockchainIdentityEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSBlockchainIdentityEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSBlockchainIdentityEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSBlockchainIdentityEntity"];
 }
 
 @dynamic uniqueID;

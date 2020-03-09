@@ -15,31 +15,31 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
 #import "DPDocumentFactory.h"
+#import <Foundation/Foundation.h>
 
 #define DPNS_CONTRACT @"DPNS_CONTRACT"
 #define DASHPAY_CONTRACT @"DASHPAY_CONTRACT"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSChain,DPContract;
+@class DSChain, DPContract;
 
 @interface DSDashPlatform : NSObject
 
 @property (readonly, strong, nonatomic) DPContract *dashPayContract;
 @property (readonly, strong, nonatomic) DPContract *dpnsContract;
-@property (readonly, strong, nonatomic) NSMutableDictionary* knownContracts;
+@property (readonly, strong, nonatomic) NSMutableDictionary *knownContracts;
 
 @property (readonly, strong, nonatomic) DSChain *chain;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-- (DPDocumentFactory*)documentFactoryForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity forContract:(DPContract*)contract;
+- (DPDocumentFactory *)documentFactoryForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity forContract:(DPContract *)contract;
 
-+ (NSString*)nameForContractWithIdentifier:(NSString*)identifier;
++ (NSString *)nameForContractWithIdentifier:(NSString *)identifier;
 
-+ (instancetype)sharedInstanceForChain:(DSChain*)chain;
++ (instancetype)sharedInstanceForChain:(DSChain *)chain;
 
 @end
 

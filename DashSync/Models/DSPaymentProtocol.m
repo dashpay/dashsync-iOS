@@ -26,17 +26,17 @@
 //  THE SOFTWARE.
 
 #import "DSPaymentProtocol.h"
-#import "DSTransaction.h"
 #import "DSChain.h"
+#import "DSTransaction.h"
 #import "NSData+Bitcoin.h"
 #import "NSDate+Utils.h"
 
 // BIP70 payment protocol: https://github.com/bitcoin/bips/blob/master/bip-0070.mediawiki
 
-#define PROTOBUF_VARINT   0 // int32, int64, uint32, uint64, sint32, sint64, bool, enum
-#define PROTOBUF_64BIT    1 // fixed64, sfixed64, double
+#define PROTOBUF_VARINT 0   // int32, int64, uint32, uint64, sint32, sint64, bool, enum
+#define PROTOBUF_64BIT 1    // fixed64, sfixed64, double
 #define PROTOBUF_LENDELIM 2 // string, bytes, embedded messages, packed repeated fields
-#define PROTOBUF_32BIT    5 // fixed32, sfixed32, float
+#define PROTOBUF_32BIT 5    // fixed32, sfixed32, float
 
 #define protoBufString(d) [[NSString alloc] initWithData:(d) encoding:NSUTF8StringEncoding]
 
@@ -50,22 +50,20 @@
 
 @implementation NSData (ProtoBuf)
 
-- (uint64_t)protoBufVarIntAtOffset:(NSUInteger *)off
-{
+- (uint64_t)protoBufVarIntAtOffset:(NSUInteger *)off {
     uint64_t varInt = 0;
     uint8_t b = 0x80;
     NSUInteger i = 0;
 
     while ((b & 0x80) && *off < self.length) {
         b = ((const uint8_t *)self.bytes)[(*off)++];
-        varInt += (uint64_t)(b & 0x7f) << 7*i++;
+        varInt += (uint64_t)(b & 0x7f) << 7 * i++;
     }
 
     return (b & 0x80) ? 0 : varInt;
 }
 
-- (NSData *)protoBufLenDelimAtOffset:(NSUInteger *)off
-{
+- (NSData *)protoBufLenDelimAtOffset:(NSUInteger *)off {
     NSData *lenDelim = nil;
     NSUInteger len = (NSUInteger)[self protoBufVarIntAtOffset:off];
 
@@ -75,18 +73,28 @@
 }
 
 // sets either int or data depending on field type, and returns field key
-- (NSUInteger)protoBufFieldAtOffset:(NSUInteger *)off int:(uint64_t *)i data:(NSData **)d
-{
+- (NSUInteger)protoBufFieldAtOffset:(NSUInteger *)off int:(uint64_t *)i data:(NSData **)d {
     NSUInteger key = (NSUInteger)[self protoBufVarIntAtOffset:off];
     uint64_t varInt = 0;
     NSData *lenDelim = nil;
 
     switch (key & 0x07) {
-        case PROTOBUF_VARINT: varInt = [self protoBufVarIntAtOffset:off]; if (i) *i = varInt; break;
-        case PROTOBUF_64BIT: *off += sizeof(uint64_t); break; // not used by payment protocol
-        case PROTOBUF_LENDELIM: lenDelim = [self protoBufLenDelimAtOffset:off]; if (d) *d = lenDelim; break;
-        case PROTOBUF_32BIT: *off += sizeof(uint32_t); break; // not used by payment protocol
-        default: break;
+        case PROTOBUF_VARINT:
+            varInt = [self protoBufVarIntAtOffset:off];
+            if (i) *i = varInt;
+            break;
+        case PROTOBUF_64BIT:
+            *off += sizeof(uint64_t);
+            break; // not used by payment protocol
+        case PROTOBUF_LENDELIM:
+            lenDelim = [self protoBufLenDelimAtOffset:off];
+            if (d) *d = lenDelim;
+            break;
+        case PROTOBUF_32BIT:
+            *off += sizeof(uint32_t);
+            break; // not used by payment protocol
+        default:
+            break;
     }
 
     return key >> 3;
@@ -106,8 +114,7 @@
 
 @implementation NSMutableData (ProtoBuf)
 
-- (void)appendProtoBufVarInt:(uint64_t)i
-{
+- (void)appendProtoBufVarInt:(uint64_t)i {
     do {
         uint8_t b = i & 0x7f;
 
@@ -117,26 +124,22 @@
     } while (i > 0);
 }
 
-- (void)appendProtoBufLenDelim:(NSData *)d
-{
+- (void)appendProtoBufLenDelim:(NSData *)d {
     [self appendProtoBufVarInt:d.length];
     [self appendData:d];
 }
 
-- (void)appendProtoBufString:(NSString *)s withKey:(NSUInteger)key
-{
+- (void)appendProtoBufString:(NSString *)s withKey:(NSUInteger)key {
     [self appendProtoBufVarInt:(key << 3) | PROTOBUF_LENDELIM];
     [self appendProtoBufLenDelim:[s dataUsingEncoding:NSUTF8StringEncoding]];
 }
 
-- (void)appendProtoBufData:(NSData *)d withKey:(NSUInteger)key
-{
+- (void)appendProtoBufData:(NSData *)d withKey:(NSUInteger)key {
     [self appendProtoBufVarInt:(key << 3) | PROTOBUF_LENDELIM];
     [self appendProtoBufLenDelim:d];
 }
 
-- (void)appendProtoBufInt:(uint64_t)i withKey:(NSUInteger)key
-{
+- (void)appendProtoBufInt:(uint64_t)i withKey:(NSUInteger)key {
     [self appendProtoBufVarInt:(key << 3) | PROTOBUF_VARINT];
     [self appendProtoBufVarInt:i];
 }
@@ -194,17 +197,19 @@ typedef enum : NSUInteger {
 
 @implementation DSPaymentProtocolDetails
 
-+ (instancetype)detailsWithData:(NSData *)data onChain:(DSChain*)chain
-{
++ (instancetype)detailsWithData:(NSData *)data onChain:(DSChain *)chain {
     return [[self alloc] initWithData:data onChain:chain];
 }
 
 - (instancetype)initWithOutputAmounts:(NSArray *)amounts outputScripts:(NSArray *)scripts
-                                 time:(NSTimeInterval)time expires:(NSTimeInterval)expires memo:(NSString *)memo paymentURL:(NSString *)url
-                         merchantData:(NSData *)data onChain:(DSChain*)chain
-{
+                                 time:(NSTimeInterval)time
+                              expires:(NSTimeInterval)expires
+                                 memo:(NSString *)memo
+                           paymentURL:(NSString *)url
+                         merchantData:(NSData *)data
+                              onChain:(DSChain *)chain {
     if (scripts.count == 0 || amounts.count != scripts.count) return nil;
-    if (! (self = [self init])) return nil;
+    if (!(self = [self init])) return nil;
 
     self.chain = chain;
     _outputAmounts = amounts;
@@ -216,9 +221,8 @@ typedef enum : NSUInteger {
     return self;
 }
 
-- (instancetype)initWithData:(NSData *)data onChain:(DSChain*)chain
-{
-    if (! (self = [self init])) return nil;
+- (instancetype)initWithData:(NSData *)data onChain:(DSChain *)chain {
+    if (!(self = [self init])) return nil;
 
     NSUInteger off = 0;
     NSMutableArray *amounts = [NSMutableArray array], *scripts = [NSMutableArray array];
@@ -229,14 +233,29 @@ typedef enum : NSUInteger {
         NSUInteger o = 0;
 
         switch ([data protoBufFieldAtOffset:&off int:&i data:&d]) {
-            case details_network: if (d) self.chain = [DSChain chainForNetworkName:protoBufString(d)]; break;
-            case details_outputs: while (o < d.length) [d protoBufFieldAtOffset:&o int:&amount data:&script]; break;
-            case details_time: if (i) _time = i; break;
-            case details_expires: if (i) _expires = i; break;
-            case details_memo: if (d) _memo = protoBufString(d); break;
-            case details_payment_url: if (d) _paymentURL = protoBufString(d); break;
-            case details_merchant_data: if (d) _merchantData = d; break;
-            default: break;
+            case details_network:
+                if (d) self.chain = [DSChain chainForNetworkName:protoBufString(d)];
+                break;
+            case details_outputs:
+                while (o < d.length) [d protoBufFieldAtOffset:&o int:&amount data:&script];
+                break;
+            case details_time:
+                if (i) _time = i;
+                break;
+            case details_expires:
+                if (i) _expires = i;
+                break;
+            case details_memo:
+                if (d) _memo = protoBufString(d);
+                break;
+            case details_payment_url:
+                if (d) _paymentURL = protoBufString(d);
+                break;
+            case details_merchant_data:
+                if (d) _merchantData = d;
+                break;
+            default:
+                break;
         }
 
         if (script) [amounts addObject:@(amount)], [scripts addObject:script];
@@ -248,21 +267,19 @@ typedef enum : NSUInteger {
     return self;
 }
 
-- (NSArray *)outputAmounts
-{
-    if (! [_outputAmounts containsObject:@(UINT64_MAX)]) return _outputAmounts;
+- (NSArray *)outputAmounts {
+    if (![_outputAmounts containsObject:@(UINT64_MAX)]) return _outputAmounts;
 
     NSMutableArray *amounts = [NSMutableArray arrayWithArray:_outputAmounts];
-    
+
     while ([amounts containsObject:@(UINT64_MAX)]) {
         amounts[[amounts indexOfObject:@(UINT64_MAX)]] = @(0);
     }
-    
+
     return amounts;
 }
 
-- (NSData *)toData
-{
+- (NSData *)toData {
     NSMutableData *d = [NSMutableData data];
     NSUInteger i = 0;
 
@@ -291,20 +308,18 @@ typedef enum : NSUInteger {
 
 @property (nonatomic, assign) uint32_t version;
 @property (nonatomic, strong) NSString *pkiType;
-@property (nonatomic, strong) DSChain * chain;
+@property (nonatomic, strong) DSChain *chain;
 
 @end
 
 @implementation DSPaymentProtocolRequest
 
-+ (instancetype)requestWithData:(NSData *)data onChain:(DSChain *)chain
-{
++ (instancetype)requestWithData:(NSData *)data onChain:(DSChain *)chain {
     return [[self alloc] initWithData:data onChain:chain];
 }
 
-- (instancetype)initWithData:(NSData *)data onChain:(DSChain *)chain
-{
-    if (! (self = [self init])) return nil;
+- (instancetype)initWithData:(NSData *)data onChain:(DSChain *)chain {
+    if (!(self = [self init])) return nil;
 
     NSUInteger off = 0;
 
@@ -313,27 +328,50 @@ typedef enum : NSUInteger {
         NSData *d = nil;
 
         switch ([data protoBufFieldAtOffset:&off int:&i data:&d]) {
-            case request_version: if (i) _version = (uint32_t)i; break;
-            case request_pki_type: if (d) _pkiType = protoBufString(d); break;
-            case request_pki_data: if (d) _pkiData = d; break;
-            case request_details: if (d) _details = [DSPaymentProtocolDetails detailsWithData:d onChain:chain]; break;
-            case request_signature: if (d) _signature = d; break;
-            case request_requestsInstantSend: if (i) _requestsInstantSend = !!i; break;
-            case request_requiresInstantSend: if (i) _requiresInstantSend = !!i; break;
-            case request_fiatCurrencyPegging: if (d) _requestedFiatAmountCurrencyCode = protoBufString(d); break;
-            default: break;
+            case request_version:
+                if (i) _version = (uint32_t)i;
+                break;
+            case request_pki_type:
+                if (d) _pkiType = protoBufString(d);
+                break;
+            case request_pki_data:
+                if (d) _pkiData = d;
+                break;
+            case request_details:
+                if (d) _details = [DSPaymentProtocolDetails detailsWithData:d onChain:chain];
+                break;
+            case request_signature:
+                if (d) _signature = d;
+                break;
+            case request_requestsInstantSend:
+                if (i) _requestsInstantSend = !!i;
+                break;
+            case request_requiresInstantSend:
+                if (i) _requiresInstantSend = !!i;
+                break;
+            case request_fiatCurrencyPegging:
+                if (d) _requestedFiatAmountCurrencyCode = protoBufString(d);
+                break;
+            default:
+                break;
         }
     }
 
-    if (! _details) return nil; // required
+    if (!_details) return nil; // required
     return self;
 }
 
 - (instancetype)initWithVersion:(uint32_t)version pkiType:(NSString *)type certs:(NSArray *)certs
-                        details:(DSPaymentProtocolDetails *)details signature:(NSData *)sig requestsInstantSend:(BOOL)requestsInstantSend requiresInstantSend:(BOOL)requiresInstantSend requestedAgainstFiatCurrency:(NSString*)currencyCode requestedFiatAmount:(float)fiatAmount onChain:(DSChain *)chain callbackScheme:(NSString *)callbackScheme
-{
-    if (! details) return nil; // required
-    if (! (self = [self init])) return nil;
+                         details:(DSPaymentProtocolDetails *)details
+                       signature:(NSData *)sig
+             requestsInstantSend:(BOOL)requestsInstantSend
+             requiresInstantSend:(BOOL)requiresInstantSend
+    requestedAgainstFiatCurrency:(NSString *)currencyCode
+             requestedFiatAmount:(float)fiatAmount
+                         onChain:(DSChain *)chain
+                  callbackScheme:(NSString *)callbackScheme {
+    if (!details) return nil; // required
+    if (!(self = [self init])) return nil;
 
     if (version) _version = version;
     if (type) _pkiType = type;
@@ -355,23 +393,20 @@ typedef enum : NSUInteger {
     return self;
 }
 
--(void)updateForRequestsInstantSend:(BOOL)requestsInstantSend requiresInstantSend:(BOOL)requiresInstantSend {
+- (void)updateForRequestsInstantSend:(BOOL)requestsInstantSend requiresInstantSend:(BOOL)requiresInstantSend {
     _requestsInstantSend = requestsInstantSend;
     _requiresInstantSend = requiresInstantSend;
 }
 
-- (uint32_t)version
-{
+- (uint32_t)version {
     return (_version) ? _version : 1;
 }
 
-- (NSString *)pkiType
-{
+- (NSString *)pkiType {
     return (_pkiType) ? _pkiType : @"none";
 }
 
-- (NSData *)toData
-{
+- (NSData *)toData {
     NSMutableData *d = [NSMutableData data];
 
     if (_version) [d appendProtoBufInt:_version withKey:request_version];
@@ -385,8 +420,7 @@ typedef enum : NSUInteger {
     return d;
 }
 
-- (NSArray *)certs
-{
+- (NSArray *)certs {
     NSMutableArray *certs = [NSMutableArray array];
     NSUInteger off = 0;
 
@@ -399,19 +433,18 @@ typedef enum : NSUInteger {
     return certs;
 }
 
-- (BOOL)isValid
-{
+- (BOOL)isValid {
     BOOL r = YES;
-    
-    if (! [self.pkiType isEqual:@"none"]) {
+
+    if (![self.pkiType isEqual:@"none"]) {
         NSMutableArray *certs = [NSMutableArray array];
-        NSArray *policies = @[CFBridgingRelease(SecPolicyCreateBasicX509())];
+        NSArray *policies = @[ CFBridgingRelease(SecPolicyCreateBasicX509()) ];
         SecTrustRef trust = NULL;
         SecTrustResultType trustResult = kSecTrustResultInvalid;
 
         for (NSData *d in self.certs) {
             SecCertificateRef cert = SecCertificateCreateWithData(NULL, (__bridge CFDataRef)d);
-            
+
             if (cert) [certs addObject:CFBridgingRelease(cert)];
         }
 
@@ -424,17 +457,16 @@ typedef enum : NSUInteger {
 
         // kSecTrustResultUnspecified indicates a positive result that wasn't decided by the user
         if (trustResult != kSecTrustResultUnspecified && trustResult != kSecTrustResultProceed) {
-            _errorMessage = (certs.count > 0) ? DSLocalizedString(@"Untrusted certificate", nil) :
-                            DSLocalizedString(@"Missing certificate", nil);
+            _errorMessage = (certs.count > 0) ? DSLocalizedString(@"Untrusted certificate", nil) : DSLocalizedString(@"Missing certificate", nil);
 
             if (trust) {
                 for (NSDictionary *property in CFBridgingRelease(SecTrustCopyProperties(trust))) {
-                    if (! [property[@"type"] isEqual:(__bridge id)kSecPropertyTypeError]) continue;
+                    if (![property[@"type"] isEqual:(__bridge id)kSecPropertyTypeError]) continue;
                     _errorMessage = [_errorMessage stringByAppendingFormat:@" - %@", property[@"value"]];
                     break;
                 }
             }
-            
+
             r = NO;
         }
 
@@ -452,7 +484,7 @@ typedef enum : NSUInteger {
             status = SecKeyRawVerify(pubKey, kSecPaddingPKCS1SHA1, self.data.SHA1.u8, sizeof(UInt160), sig.bytes,
                                      sig.length);
         }
-        
+
         _signature = sig;
         if (pubKey) CFRelease(pubKey);
         if (trust) CFRelease(trust);
@@ -463,11 +495,13 @@ typedef enum : NSUInteger {
                 DSDLog(@"%@", _errorMessage);
             }
             else {
-                _errorMessage = [NSError errorWithDomain:NSOSStatusErrorDomain code:status
-                                 userInfo:nil].localizedDescription;
+                _errorMessage = [NSError errorWithDomain:NSOSStatusErrorDomain
+                                                    code:status
+                                                userInfo:nil]
+                                    .localizedDescription;
                 DSDLog(@"SecKeyRawVerify error: %@", _errorMessage);
             }
-            
+
             r = NO;
         }
     }
@@ -495,14 +529,12 @@ typedef enum : NSUInteger {
 @implementation DSPaymentProtocolPayment
 
 
-+ (instancetype)paymentWithData:(NSData *)data onChain:(DSChain*)chain
-{
++ (instancetype)paymentWithData:(NSData *)data onChain:(DSChain *)chain {
     return [[self alloc] initWithData:data onChain:chain];
 }
 
-- (instancetype)initWithData:(NSData *)data onChain:(DSChain*)chain
-{
-    if (! (self = [self init])) return nil;
+- (instancetype)initWithData:(NSData *)data onChain:(DSChain *)chain {
+    if (!(self = [self init])) return nil;
 
     NSUInteger off = 0;
     NSMutableArray *txs = [NSMutableArray array], *amounts = [NSMutableArray array], *scripts = [NSMutableArray array];
@@ -514,11 +546,20 @@ typedef enum : NSUInteger {
         NSUInteger o = 0;
 
         switch ([data protoBufFieldAtOffset:&off int:&i data:&d]) {
-            case payment_merchant_data: if (d) _merchantData = d; break;
-            case payment_transactions: if (d) tx = [DSTransaction transactionWithMessage:d onChain:chain]; break;
-            case payment_refund_to: while (o < d.length) [d protoBufFieldAtOffset:&o int:&amount data:&script]; break;
-            case payment_memo: if (d) _memo = protoBufString(d); break;
-            default: break;
+            case payment_merchant_data:
+                if (d) _merchantData = d;
+                break;
+            case payment_transactions:
+                if (d) tx = [DSTransaction transactionWithMessage:d onChain:chain];
+                break;
+            case payment_refund_to:
+                while (o < d.length) [d protoBufFieldAtOffset:&o int:&amount data:&script];
+                break;
+            case payment_memo:
+                if (d) _memo = protoBufString(d);
+                break;
+            default:
+                break;
         }
 
         if (tx) [txs addObject:tx];
@@ -533,10 +574,13 @@ typedef enum : NSUInteger {
 }
 
 - (instancetype)initWithMerchantData:(NSData *)data transactions:(NSArray *)transactions
-refundToAmounts:(NSArray *)amounts refundToScripts:(NSArray *)scripts memo:(NSString *)memo onChain:(DSChain*)chain;
+                     refundToAmounts:(NSArray *)amounts
+                     refundToScripts:(NSArray *)scripts
+                                memo:(NSString *)memo
+                             onChain:(DSChain *)chain;
 {
     if (amounts.count != scripts.count) return nil;
-    if (! (self = [self init])) return nil;
+    if (!(self = [self init])) return nil;
 
     _merchantData = data;
     _transactions = transactions;
@@ -547,21 +591,19 @@ refundToAmounts:(NSArray *)amounts refundToScripts:(NSArray *)scripts memo:(NSSt
     return self;
 }
 
-- (NSArray *)refundToAmounts
-{
-    if (! [_refundToAmounts containsObject:@(UINT64_MAX)]) return _refundToAmounts;
-    
+- (NSArray *)refundToAmounts {
+    if (![_refundToAmounts containsObject:@(UINT64_MAX)]) return _refundToAmounts;
+
     NSMutableArray *amounts = [NSMutableArray arrayWithArray:_refundToAmounts];
-    
+
     while ([amounts containsObject:@(UINT64_MAX)]) {
         amounts[[amounts indexOfObject:@(UINT64_MAX)]] = @(0);
     }
-    
+
     return amounts;
 }
 
-- (NSData *)toData
-{
+- (NSData *)toData {
     NSMutableData *d = [NSMutableData data];
     NSUInteger i = 0;
 
@@ -574,7 +616,7 @@ refundToAmounts:(NSArray *)amounts refundToScripts:(NSArray *)scripts memo:(NSSt
     for (NSData *script in _refundToScripts) {
         NSMutableData *output = [NSMutableData data];
         uint64_t amount = [_refundToAmounts[i++] unsignedLongLongValue];
-        
+
         if (amount != UINT64_MAX) [output appendProtoBufInt:amount withKey:output_amount];
         [output appendProtoBufData:script withKey:output_script];
         [d appendProtoBufData:output withKey:payment_refund_to];
@@ -586,22 +628,20 @@ refundToAmounts:(NSArray *)amounts refundToScripts:(NSArray *)scripts memo:(NSSt
 
 @end
 
-@interface DSPaymentProtocolACK()
+@interface DSPaymentProtocolACK ()
 
-@property(nonatomic,strong) DSChain * chain;
+@property (nonatomic, strong) DSChain *chain;
 
 @end
 
 @implementation DSPaymentProtocolACK
 
-+ (instancetype)ackWithData:(NSData *)data onChain:(DSChain*)chain
-{
++ (instancetype)ackWithData:(NSData *)data onChain:(DSChain *)chain {
     return [[self alloc] initWithData:data onChain:chain];
 }
 
-- (instancetype)initWithData:(NSData *)data onChain:(DSChain*)chain
-{
-    if (! (self = [self init])) return nil;
+- (instancetype)initWithData:(NSData *)data onChain:(DSChain *)chain {
+    if (!(self = [self init])) return nil;
 
     NSUInteger off = 0;
 
@@ -610,20 +650,24 @@ refundToAmounts:(NSArray *)amounts refundToScripts:(NSArray *)scripts memo:(NSSt
         NSData *d = nil;
 
         switch ([data protoBufFieldAtOffset:&off int:&i data:&d]) {
-            case ack_payment: if (d) _payment = [DSPaymentProtocolPayment paymentWithData:d onChain:chain]; break;
-            case ack_memo: if (d) _memo = protoBufString(d); break;
-            default: break;
+            case ack_payment:
+                if (d) _payment = [DSPaymentProtocolPayment paymentWithData:d onChain:chain];
+                break;
+            case ack_memo:
+                if (d) _memo = protoBufString(d);
+                break;
+            default:
+                break;
         }
     }
     self.chain = chain;
-    if (! _payment) return nil; // required
+    if (!_payment) return nil; // required
     return self;
 }
 
-- (instancetype)initWithPayment:(DSPaymentProtocolPayment *)payment andMemo:(NSString *)memo onChain:(DSChain*)chain
-{
-    if (! payment) return nil; // required
-    if (! (self = [self init])) return nil;
+- (instancetype)initWithPayment:(DSPaymentProtocolPayment *)payment andMemo:(NSString *)memo onChain:(DSChain *)chain {
+    if (!payment) return nil; // required
+    if (!(self = [self init])) return nil;
 
     self.chain = chain;
     _payment = payment;
@@ -631,8 +675,7 @@ refundToAmounts:(NSArray *)amounts refundToScripts:(NSArray *)scripts memo:(NSSt
     return self;
 }
 
-- (NSData *)toData
-{
+- (NSData *)toData {
     NSMutableData *d = [NSMutableData data];
 
     [d appendProtoBufData:_payment.data withKey:ack_payment];

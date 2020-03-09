@@ -6,9 +6,9 @@
 //
 //
 
-#import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
 #import "BigIntTypes.h"
+#import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
 @class DSBlockchainIdentityEntity, DSTransition, DSChainEntity, DSChain;
 
@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSTransitionEntity : NSManagedObject
 
 - (instancetype)setAttributesFromTransition:(DSTransition *)transition;
-- (DSTransition *)transitionForChain:(DSChain*)chain;
+- (DSTransition *)transitionForChain:(DSChain *)chain;
 //+ (NSArray<DSTransitionEntity*> * _Nonnull)transitionsForChain:(DSChainEntity*)chain;
 
 @property (nonatomic, readonly) Class transitionClass;

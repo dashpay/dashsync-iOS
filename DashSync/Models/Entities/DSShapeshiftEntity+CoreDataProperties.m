@@ -28,7 +28,7 @@
 @implementation DSShapeshiftEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSShapeshiftEntity *> *)fetchRequest {
-	return [[NSFetchRequest alloc] initWithEntityName:@"DSShapeshiftEntity"];
+    return [[NSFetchRequest alloc] initWithEntityName:@"DSShapeshiftEntity"];
 }
 
 @dynamic errorMessage;

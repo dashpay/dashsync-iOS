@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSFetchRequest<DSCoinbaseTransactionEntity *> *)fetchRequest;
 
-@property (assign,nonatomic) uint32_t height;
+@property (assign, nonatomic) uint32_t height;
 @property (nullable, nonatomic, retain) NSData *merkleRootMNList;
 
 @end

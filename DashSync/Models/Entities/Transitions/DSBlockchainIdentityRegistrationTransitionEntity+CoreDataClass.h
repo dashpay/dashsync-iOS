@@ -6,8 +6,8 @@
 //
 //
 
-#import <Foundation/Foundation.h>
 #import "DSTransitionEntity+CoreDataClass.h"
+#import <Foundation/Foundation.h>
 
 @class DSBlockchainIdentityKeyPathEntity, DSContactEntity;
 

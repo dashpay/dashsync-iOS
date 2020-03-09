@@ -74,20 +74,21 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)cancelByProducingResumeData:(void (^)(NSData *_Nullable resumeData))completionHandler {
-    [self.delegate cancellationTokenDidCancel:self producingResumeDataCompletion:^(NSData *_Nullable resumeData) {
-        if (completionHandler) {
-            dispatch_block_t block = ^{
-                completionHandler(resumeData);
-            };
+    [self.delegate cancellationTokenDidCancel:self
+                producingResumeDataCompletion:^(NSData *_Nullable resumeData) {
+                    if (completionHandler) {
+                        dispatch_block_t block = ^{
+                            completionHandler(resumeData);
+                        };
 
-            if ([NSThread isMainThread]) {
-                block();
-            }
-            else {
-                dispatch_async(dispatch_get_main_queue(), block);
-            }
-        }
-    }];
+                        if ([NSThread isMainThread]) {
+                            block();
+                        }
+                        else {
+                            dispatch_async(dispatch_get_main_queue(), block);
+                        }
+                    }
+                }];
 }
 
 @end

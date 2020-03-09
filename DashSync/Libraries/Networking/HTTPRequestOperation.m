@@ -108,7 +108,6 @@ static NSUInteger const HTTPRequestOperationMaxRedirects = 10;
 
 - (void)receiveData:(NSData *)data {
     [data enumerateByteRangesUsingBlock:^(const void *bytes, NSRange byteRange, BOOL *stop) {
-
         NSData *dataRange = [NSData dataWithBytes:bytes length:byteRange.length];
 
         if (self.request.chunks) {

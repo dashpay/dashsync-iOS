@@ -6,8 +6,8 @@
 //
 //
 
-#import <Foundation/Foundation.h>
 #import "DSTransactionEntity+CoreDataClass.h"
+#import <Foundation/Foundation.h>
 
 @class DSAddressEntity;
 

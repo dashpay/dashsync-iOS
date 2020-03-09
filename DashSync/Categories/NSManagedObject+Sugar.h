@@ -26,8 +26,8 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <UIKit/UIKit.h>
 #import <CoreData/CoreData.h>
+#import <UIKit/UIKit.h>
 
 @interface NSManagedObject (Sugar)
 
@@ -38,18 +38,18 @@
 
 // fetch existing objects
 + (NSArray *)allObjects;
-+ (NSArray *)allObjectsWithPrefetch:(NSArray<NSString*> *) prefetchArray;
++ (NSArray *)allObjectsWithPrefetch:(NSArray<NSString *> *)prefetchArray;
 + (NSArray *)objectsMatching:(NSString *)predicateFormat, ...;
 + (instancetype)anyObjectMatching:(NSString *)predicateFormat, ...;
 + (instancetype)anyObjectMatchingInContext:(NSManagedObjectContext *)context withPredicate:(NSString *)predicateFormat, ...;
 + (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args;
-+ (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext*)context;
++ (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext *)context;
 + (instancetype)anyObjectMatching:(NSString *)predicateFormat arguments:(va_list)args;
-+ (instancetype)anyObjectMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext*)context;
++ (instancetype)anyObjectMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext *)context;
 + (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending;
 + (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending offset:(NSUInteger)offset limit:(NSUInteger)lim;
 + (NSArray *)fetchObjects:(NSFetchRequest *)request;
-+ (NSArray *)fetchObjects:(NSFetchRequest *)request inContext:(NSManagedObjectContext*)context;
++ (NSArray *)fetchObjects:(NSFetchRequest *)request inContext:(NSManagedObjectContext *)context;
 
 // count existing objects
 + (NSUInteger)countAllObjects;
@@ -72,7 +72,7 @@
 + (void)setFetchBatchSize:(NSUInteger)fetchBatchSize;
 
 // returns the location on disk of the sqlite store file
-+ (NSURL*)storeURL;
++ (NSURL *)storeURL;
 
 // returns the managed object context for the application, or if the context doesn't already exist, creates it and binds
 // it to the persistent store coordinator for the application
@@ -80,18 +80,18 @@
 
 + (NSManagedObjectContext *)mainContext;
 
-+ (NSError*)saveMainContext;
++ (NSError *)saveMainContext;
 
 // sets a different context for NSManagedObject+Sugar methods to use for this type of entity
 + (void)setContext:(NSManagedObjectContext *)context;
 
-+ (NSError*)saveContext; // persists changes (this is called automatically for the main context when the app terminates)
++ (NSError *)saveContext; // persists changes (this is called automatically for the main context when the app terminates)
 
 + (NSString *)entityName; // override this if entity name differs from class name
 + (NSFetchRequest *)fetchReq;
 + (NSFetchedResultsController *)fetchedResultsController:(NSFetchRequest *)request;
 
-- (id)objectForKeyedSubscript:(id<NSCopying>)key; // id value = entity[@"key"]; thread safe valueForKey:
+- (id)objectForKeyedSubscript:(id<NSCopying>)key;               // id value = entity[@"key"]; thread safe valueForKey:
 - (void)setObject:(id)obj forKeyedSubscript:(id<NSCopying>)key; // entity[@"key"] = value; thread safe setValue:forKey:
 - (void)deleteObject;
 

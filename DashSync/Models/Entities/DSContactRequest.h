@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -15,28 +15,28 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
 #import "DPTypes.h"
+#import <Foundation/Foundation.h>
 
-@class DSKey,DSBlockchainIdentity;
+@class DSKey, DSBlockchainIdentity;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSContactRequest : NSObject
 
-@property(nonatomic,readonly) UInt256 recipientBlockchainIdentityUniqueId;
-@property(nonatomic,readonly) UInt256 senderBlockchainIdentityUniqueId;
-@property(nonatomic,readonly) uint32_t recipientKeyIndex;
-@property(nonatomic,readonly) uint32_t senderKeyIndex;
+@property (nonatomic, readonly) UInt256 recipientBlockchainIdentityUniqueId;
+@property (nonatomic, readonly) UInt256 senderBlockchainIdentityUniqueId;
+@property (nonatomic, readonly) uint32_t recipientKeyIndex;
+@property (nonatomic, readonly) uint32_t senderKeyIndex;
 
-@property(nonatomic,readonly) NSTimeInterval timestamp;
+@property (nonatomic, readonly) NSTimeInterval timestamp;
 
-@property(nonatomic,readonly) NSData * encryptedPublicKeyData;
+@property (nonatomic, readonly) NSData *encryptedPublicKeyData;
 
-+(instancetype)contactRequestFromDictionary:(DSStringValueDictionary*)serverDictionary onBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity;
++ (instancetype)contactRequestFromDictionary:(DSStringValueDictionary *)serverDictionary onBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 
--(NSData*)decryptedPublicKeyDataWithKey:(DSKey*)key;
+- (NSData *)decryptedPublicKeyDataWithKey:(DSKey *)key;
 
 @end
 

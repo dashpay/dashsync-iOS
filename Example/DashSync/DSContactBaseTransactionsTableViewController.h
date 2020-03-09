@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -28,7 +28,7 @@ typedef NS_ENUM(NSUInteger, DSContactTransactionDirection) {
 
 @interface DSContactBaseTransactionsTableViewController : DSFetchedResultsTableViewController
 
-@property (nonatomic,strong) DSChainManager *chainManager;
+@property (nonatomic, strong) DSChainManager *chainManager;
 @property (nonatomic, assign) DSContactTransactionDirection direction;
 
 @end

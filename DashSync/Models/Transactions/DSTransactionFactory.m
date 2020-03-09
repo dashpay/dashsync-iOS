@@ -6,40 +6,40 @@
 //
 
 #import "DSTransactionFactory.h"
-#import "DSCoinbaseTransaction.h"
+#import "DSBlockchainIdentityCloseTransition.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSBlockchainIdentityTopupTransition.h"
 #import "DSBlockchainIdentityUpdateTransition.h"
-#import "DSBlockchainIdentityCloseTransition.h"
+#import "DSCoinbaseTransaction.h"
+#import "DSCreditFundingTransaction.h"
 #import "DSProviderRegistrationTransaction.h"
-#import "DSProviderUpdateServiceTransaction.h"
 #import "DSProviderUpdateRegistrarTransaction.h"
 #import "DSProviderUpdateRevocationTransaction.h"
-#import "DSCreditFundingTransaction.h"
+#import "DSProviderUpdateServiceTransaction.h"
 #import "DSTransition.h"
-#import "NSData+Dash.h"
 #import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 
 @implementation DSTransactionFactory
 
-+(DSTransactionType)transactionTypeOfMessage:(NSData*)message {
++ (DSTransactionType)transactionTypeOfMessage:(NSData *)message {
     uint16_t version = [message UInt16AtOffset:0];
     if (version < 3) return DSTransactionType_Classic;
     return [message UInt16AtOffset:2];
 }
 
-+(DSTransaction*)transactionWithMessage:(NSData*)message onChain:(DSChain*)chain {
++ (DSTransaction *)transactionWithMessage:(NSData *)message onChain:(DSChain *)chain {
     uint16_t version = [message UInt16AtOffset:0];
     uint16_t type;
     if (version < 3) {
         type = DSTransactionType_Classic;
-    } else {
+    }
+    else {
         type = [message UInt16AtOffset:2];
     }
     switch (type) {
-        case DSTransactionType_Classic:
-        {
-            DSTransaction * transaction = [DSTransaction transactionWithMessage:message onChain:chain];
+        case DSTransactionType_Classic: {
+            DSTransaction *transaction = [DSTransaction transactionWithMessage:message onChain:chain];
             if ([transaction isCreditFundingTransaction]) {
                 //replace with credit funding transaction
                 transaction = [DSCreditFundingTransaction transactionWithMessage:message onChain:chain];
@@ -61,7 +61,7 @@
     }
 }
 
-+(BOOL)ignoreMessagesOfTransactionType:(DSTransactionType)transactionType {
++ (BOOL)ignoreMessagesOfTransactionType:(DSTransactionType)transactionType {
     switch (transactionType) {
         case DSTransactionType_Classic:
             return FALSE;
@@ -90,7 +90,7 @@
     }
 }
 
-+(BOOL)shouldIgnoreTransactionMessage:(NSData*)message {
++ (BOOL)shouldIgnoreTransactionMessage:(NSData *)message {
     return [self ignoreMessagesOfTransactionType:[self transactionTypeOfMessage:message]];
 }
 

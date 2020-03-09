@@ -11,7 +11,7 @@
 @implementation DSChainEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSChainEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSChainEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSChainEntity"];
 }
 
 @dynamic baseBlockHash;

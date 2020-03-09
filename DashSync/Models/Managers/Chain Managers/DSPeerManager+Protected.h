@@ -42,13 +42,12 @@ typedef NS_ENUM(NSUInteger, DSPeerManagerDesiredState) {
 @property (nonatomic, readonly) DSPeerManagerDesiredState desiredState;
 @property (nonatomic, readonly) dispatch_queue_t chainPeerManagerQueue;
 
-- (void)peerMisbehaving:(DSPeer *)peer errorMessage:(NSString*)errorMessage;
+- (void)peerMisbehaving:(DSPeer *)peer errorMessage:(NSString *)errorMessage;
 - (void)syncStopped;
 - (void)updateFilterOnPeers;
 
-- (void)disconnectDownloadPeerWithCompletion:(void (^ _Nullable)(BOOL success))completion;
+- (void)disconnectDownloadPeerWithCompletion:(void (^_Nullable)(BOOL success))completion;
 
 @end
 
 NS_ASSUME_NONNULL_END
-

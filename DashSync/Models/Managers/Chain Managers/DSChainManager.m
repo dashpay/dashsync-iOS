@@ -24,36 +24,36 @@
 //  THE SOFTWARE.
 
 #import "DSChainManager.h"
-#import "DSPeerManager+Protected.h"
-#import "DSEventManager.h"
-#import "DSChain.h"
-#import "DSSporkManager.h"
-#import "DSOptionsManager.h"
-#import "DSMasternodeManager+Protected.h"
-#import "DSGovernanceSyncManager+Protected.h"
-#import "DSTransactionManager+Protected.h"
-#import "DSIdentitiesManager.h"
 #import "DSBloomFilter.h"
-#import "DSMerkleBlock.h"
-#import "DSWallet.h"
-#import "DSDerivationPath.h"
-#import "NSString+Bitcoin.h"
-#import "NSDate+Utils.h"
-#import "DashSync.h"
+#import "DSChain.h"
 #import "DSChainEntity+CoreDataClass.h"
+#import "DSDerivationPath.h"
+#import "DSEventManager.h"
+#import "DSGovernanceSyncManager+Protected.h"
+#import "DSIdentitiesManager.h"
+#import "DSMasternodeManager+Protected.h"
+#import "DSMerkleBlock.h"
+#import "DSOptionsManager.h"
+#import "DSPeerManager+Protected.h"
+#import "DSSporkManager.h"
+#import "DSTransactionManager+Protected.h"
+#import "DSWallet.h"
+#import "DashSync.h"
+#import "NSDate+Utils.h"
+#import "NSString+Bitcoin.h"
 
 #define SYNC_STARTHEIGHT_KEY @"SYNC_STARTHEIGHT"
 
 @interface DSChainManager ()
 
-@property (nonatomic, strong) DSChain * chain;
-@property (nonatomic, strong) DSSporkManager * sporkManager;
-@property (nonatomic, strong) DSMasternodeManager * masternodeManager;
-@property (nonatomic, strong) DSGovernanceSyncManager * governanceSyncManager;
-@property (nonatomic, strong) DSIdentitiesManager * identitiesManager;
-@property (nonatomic, strong) DSDAPIClient * DAPIClient;
-@property (nonatomic, strong) DSTransactionManager * transactionManager;
-@property (nonatomic, strong) DSPeerManager * peerManager;
+@property (nonatomic, strong) DSChain *chain;
+@property (nonatomic, strong) DSSporkManager *sporkManager;
+@property (nonatomic, strong) DSMasternodeManager *masternodeManager;
+@property (nonatomic, strong) DSGovernanceSyncManager *governanceSyncManager;
+@property (nonatomic, strong) DSIdentitiesManager *identitiesManager;
+@property (nonatomic, strong) DSDAPIClient *DAPIClient;
+@property (nonatomic, strong) DSTransactionManager *transactionManager;
+@property (nonatomic, strong) DSPeerManager *peerManager;
 @property (nonatomic, assign) uint32_t syncStartHeight;
 @property (nonatomic, assign) NSTimeInterval lastChainRelayTime;
 
@@ -61,10 +61,9 @@
 
 @implementation DSChainManager
 
-- (instancetype)initWithChain:(DSChain*)chain
-{
-    if (! (self = [super init])) return nil;
-    
+- (instancetype)initWithChain:(DSChain *)chain {
+    if (!(self = [super init])) return nil;
+
     self.chain = chain;
     chain.chainManager = self;
     self.sporkManager = [[DSSporkManager alloc] initWithChain:chain];
@@ -75,22 +74,21 @@
     self.transactionManager = [[DSTransactionManager alloc] initWithChain:chain];
     self.peerManager = [[DSPeerManager alloc] initWithChain:chain];
     self.identitiesManager = [[DSIdentitiesManager alloc] initWithChain:chain];
-    
+
     return self;
 }
 
 // MARK: - Info
 
--(NSString*)syncStartHeightKey {
-    return [NSString stringWithFormat:@"%@_%@",SYNC_STARTHEIGHT_KEY,[self.chain uniqueID]];
+- (NSString *)syncStartHeightKey {
+    return [NSString stringWithFormat:@"%@_%@", SYNC_STARTHEIGHT_KEY, [self.chain uniqueID]];
 }
 
-- (double)syncProgress
-{
-    if (! self.peerManager.downloadPeer && self.syncStartHeight == 0) return 0.0;
+- (double)syncProgress {
+    if (!self.peerManager.downloadPeer && self.syncStartHeight == 0) return 0.0;
     //if (self.downloadPeer.status != DSPeerStatus_Connected) return 0.05;
     if (self.chain.lastBlockHeight >= self.chain.estimatedBlockHeight) return 1.0;
-    
+
     double lastBlockHeight = self.chain.lastBlockHeight;
     double estimatedBlockHeight = self.chain.estimatedBlockHeight;
     double syncStartHeight = self.syncStartHeight;
@@ -104,17 +102,17 @@
     return MIN(1.0, MAX(0.0, 0.1 + 0.9 * progress));
 }
 
--(void)resetSyncStartHeight {
+- (void)resetSyncStartHeight {
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     if (self.syncStartHeight == 0) self.syncStartHeight = (uint32_t)[userDefaults integerForKey:self.syncStartHeightKey];
-    
+
     if (self.syncStartHeight == 0) {
         self.syncStartHeight = self.chain.lastBlockHeight;
         [[NSUserDefaults standardUserDefaults] setInteger:self.syncStartHeight forKey:self.syncStartHeightKey];
     }
 }
 
--(void)restartSyncStartHeight {
+- (void)restartSyncStartHeight {
     self.syncStartHeight = 0;
     [[NSUserDefaults standardUserDefaults] setInteger:0 forKey:self.syncStartHeightKey];
 }
@@ -123,79 +121,77 @@
     self.lastChainRelayTime = [NSDate timeIntervalSince1970];
 }
 
--(void)resetLastRelayedItemTime {
+- (void)resetLastRelayedItemTime {
     self.lastChainRelayTime = 0;
 }
 
 // MARK: - Blockchain Sync
 
--(void)disconnectedRescan {
-    
-    DSChainEntity * chainEntity = self.chain.chainEntity;
+- (void)disconnectedRescan {
+
+    DSChainEntity *chainEntity = self.chain.chainEntity;
     [chainEntity.managedObjectContext performBlockAndWait:^{
-        [self.chain wipeMasternodesInContext:chainEntity.managedObjectContext];//masternodes and quorums must go first
+        [self.chain wipeMasternodesInContext:chainEntity.managedObjectContext]; //masternodes and quorums must go first
         [DSMerkleBlockEntity deleteBlocksOnChain:chainEntity];
         [DSTransactionHashEntity deleteTransactionHashesOnChain:chainEntity];
         [self.masternodeManager wipeMasternodeInfo];
         [self.chain wipeBlockchainInfo];
         [DSTransactionEntity saveContext];
     }];
-    
+
     if (![self.chain isMainnet]) {
         [self.chain.chainManager.peerManager removeTrustedPeerHost];
         [self.chain.chainManager.peerManager clearPeers];
         [DSPeerEntity deletePeersForChain:chainEntity];
         [DSPeerEntity saveContext];
     }
-    
+
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSQuorumListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
-        
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey : self}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey : self}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey : self}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSQuorumListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey : self}];
     });
-    
+
     self.syncStartHeight = self.chain.lastBlockHeight;
     [[NSUserDefaults standardUserDefaults] setInteger:self.syncStartHeight forKey:self.syncStartHeightKey];
     [self.peerManager connect];
 }
 
--(void)disconnectedRescanOfMasternodeListsAndQuorums {
-    
-    DSChainEntity * chainEntity = self.chain.chainEntity;
+- (void)disconnectedRescanOfMasternodeListsAndQuorums {
+
+    DSChainEntity *chainEntity = self.chain.chainEntity;
     [chainEntity.managedObjectContext performBlockAndWait:^{
-        [self.chain wipeMasternodesInContext:chainEntity.managedObjectContext];//masternodes and quorums must go first
+        [self.chain wipeMasternodesInContext:chainEntity.managedObjectContext]; //masternodes and quorums must go first
         [self.masternodeManager wipeMasternodeInfo];
         [DSTransactionEntity saveContext];
     }];
-    
+
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSQuorumListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
-        
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey : self}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSQuorumListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey : self}];
     });
     [self.peerManager connect];
 }
 
 // rescans blocks and transactions after earliestKeyTime, a new random download peer is also selected due to the
 // possibility that a malicious node might lie by omitting transactions that match the bloom filter
-- (void)rescan
-{
+- (void)rescan {
     if (!self.peerManager.connected) {
         [self disconnectedRescan];
-    } else {
+    }
+    else {
         [self.peerManager disconnectDownloadPeerWithCompletion:^(BOOL success) {
             [self disconnectedRescan];
         }];
     }
 }
 
-- (void)rescanMasternodeListsAndQuorums
-{
+- (void)rescanMasternodeListsAndQuorums {
     if (!self.peerManager.connected) {
         [self disconnectedRescanOfMasternodeListsAndQuorums];
-    } else {
+    }
+    else {
         [self.peerManager disconnectDownloadPeerWithCompletion:^(BOOL success) {
             [self disconnectedRescanOfMasternodeListsAndQuorums];
         }];
@@ -205,19 +201,19 @@
 
 // MARK: - DSChainDelegate
 
--(void)chain:(DSChain*)chain didSetBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes updatedTx:(NSArray *)updatedTx {
+- (void)chain:(DSChain *)chain didSetBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes updatedTx:(NSArray *)updatedTx {
     [self.transactionManager chain:chain didSetBlockHeight:height andTimestamp:timestamp forTxHashes:txHashes updatedTx:updatedTx];
 }
 
--(void)chainWasWiped:(DSChain*)chain {
+- (void)chainWasWiped:(DSChain *)chain {
     [self.transactionManager chainWasWiped:chain];
 }
 
--(void)chainWillStartSyncingBlockchain:(DSChain*)chain {
+- (void)chainWillStartSyncingBlockchain:(DSChain *)chain {
     [self.sporkManager getSporks]; //get the sporks early on
 }
 
--(void)chainFinishedSyncingTransactionsAndBlocks:(DSChain*)chain fromPeer:(DSPeer*)peer onMainChain:(BOOL)onMainChain {
+- (void)chainFinishedSyncingTransactionsAndBlocks:(DSChain *)chain fromPeer:(DSPeer *)peer onMainChain:(BOOL)onMainChain {
     if (onMainChain && peer && (peer == self.peerManager.downloadPeer)) self.lastChainRelayTime = [NSDate timeIntervalSince1970];
     DSDLog(@"chain finished syncing");
     self.syncStartHeight = 0;
@@ -231,43 +227,42 @@
     }
 }
 
--(void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain*)chain {
+- (void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain *)chain {
     if ([self.chain isEvolutionEnabled]) {
         [self.identitiesManager retrieveAllBlockchainIdentitiesChainStates];
     }
 }
 
--(void)chain:(DSChain*)chain badBlockReceivedFromPeer:(DSPeer*)peer {
-    DSDLog(@"peer at address %@ is misbehaving",peer.host);
+- (void)chain:(DSChain *)chain badBlockReceivedFromPeer:(DSPeer *)peer {
+    DSDLog(@"peer at address %@ is misbehaving", peer.host);
     [self.peerManager peerMisbehaving:peer errorMessage:@"Bad block received from peer"];
 }
 
--(void)chain:(DSChain*)chain receivedOrphanBlock:(DSMerkleBlock*)block fromPeer:(DSPeer*)peer {
+- (void)chain:(DSChain *)chain receivedOrphanBlock:(DSMerkleBlock *)block fromPeer:(DSPeer *)peer {
     // ignore orphans older than one week ago
     if (block.timestamp < [NSDate timeIntervalSince1970] - WEEK_TIME_INTERVAL) return;
-    
+
     // call getblocks, unless we already did with the previous block, or we're still downloading the chain
-    if (self.chain.lastBlockHeight >= peer.lastblock && ! uint256_eq(self.chain.lastOrphan.blockHash, block.prevBlock)) {
+    if (self.chain.lastBlockHeight >= peer.lastblock && !uint256_eq(self.chain.lastOrphan.blockHash, block.prevBlock)) {
         DSDLog(@"%@:%d calling getblocks", peer.host, peer.port);
         [peer sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
     }
 }
 
--(void)chain:(DSChain*)chain wasExtendedWithBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer {
+- (void)chain:(DSChain *)chain wasExtendedWithBlock:(DSMerkleBlock *)merkleBlock fromPeer:(DSPeer *)peer {
     if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList)) {
         // make sure we care about masternode lists
         [self.masternodeManager getCurrentMasternodeListWithSafetyDelay:3];
     }
-    
 }
 
 // MARK: - Count Info
 
--(void)resetSyncCountInfo:(DSSyncCountInfo)syncCountInfo {
+- (void)resetSyncCountInfo:(DSSyncCountInfo)syncCountInfo {
     [self setCount:0 forSyncCountInfo:syncCountInfo];
 }
 
--(void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)syncCountInfo {
+- (void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)syncCountInfo {
     switch (syncCountInfo) {
         case DSSyncCountInfo_GovernanceObject:
             self.chain.totalGovernanceObjectsCount = count;
@@ -287,33 +282,37 @@
 - (void)peer:(DSPeer *)peer relayedSyncInfo:(DSSyncCountInfo)syncCountInfo count:(uint32_t)count {
     [self setCount:count forSyncCountInfo:syncCountInfo];
     switch (syncCountInfo) {
-        case DSSyncCountInfo_List:
-        {
+        case DSSyncCountInfo_List: {
             //deprecated
             break;
         }
-        case DSSyncCountInfo_GovernanceObject:
-        {
+        case DSSyncCountInfo_GovernanceObject: {
             dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectCountUpdateNotification object:nil userInfo:@{@(syncCountInfo):@(count),DSChainManagerNotificationChainKey:self.chain}];
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectCountUpdateNotification
+                                                                    object:nil
+                                                                  userInfo:@{@(syncCountInfo) : @(count),
+                                                                             DSChainManagerNotificationChainKey : self.chain}];
             });
             break;
         }
-        case DSSyncCountInfo_GovernanceObjectVote:
-        {
+        case DSSyncCountInfo_GovernanceObjectVote: {
             if (peer.governanceRequestState == DSGovernanceRequestState_GovernanceObjectVoteHashesReceived) {
                 if (count == 0) {
                     //there were no votes
                     DSDLog(@"no votes on object, going to next object");
                     peer.governanceRequestState = DSGovernanceRequestState_GovernanceObjectVotes;
                     [self.governanceSyncManager finishedGovernanceVoteSyncWithPeer:peer];
-                } else {
+                }
+                else {
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVoteCountUpdateNotification object:nil userInfo:@{@(syncCountInfo):@(count),DSChainManagerNotificationChainKey:self.chain}];
+                        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVoteCountUpdateNotification
+                                                                            object:nil
+                                                                          userInfo:@{@(syncCountInfo) : @(count),
+                                                                                     DSChainManagerNotificationChainKey : self.chain}];
                     });
                 }
             }
-            
+
             break;
         }
         default:

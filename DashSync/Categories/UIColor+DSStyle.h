@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // for iOS 12 or lower Dark Mode is not supported for now (since it requires it's manual support)
 
-typedef NS_ENUM (NSInteger, DSAppearanceMode) {
+typedef NS_ENUM(NSInteger, DSAppearanceMode) {
     /// Follows Dark Mode setting on iOS 13, uses the light appearance mode on iOS 12 or lower
     DSAppearanceMode_Automatic,
     /// The light appearance mode

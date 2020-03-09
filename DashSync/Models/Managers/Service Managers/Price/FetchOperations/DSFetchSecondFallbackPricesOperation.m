@@ -19,9 +19,9 @@
 
 #import "DSCurrencyPriceObject.h"
 #import "DSHTTPBitPayOperation.h"
-#import "DSHTTPVesLocalBitcoinsOperation.h"
 #import "DSHTTPDashCentralOperation.h"
 #import "DSHTTPPoloniexOperation.h"
+#import "DSHTTPVesLocalBitcoinsOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

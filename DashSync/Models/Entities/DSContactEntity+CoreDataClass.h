@@ -15,18 +15,18 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
 #import "BigIntTypes.h"
 #import "DSPotentialOneWayFriendship.h"
+#import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
-@class DSAccountEntity, DSFriendRequestEntity, DSTransitionEntity, DSBlockchainIdentity,DSPotentialOneWayFriendship,DSWallet,DSIncomingFundsDerivationPath,DSChainEntity, DSBlockchainIdentityEntity;
+@class DSAccountEntity, DSFriendRequestEntity, DSTransitionEntity, DSBlockchainIdentity, DSPotentialOneWayFriendship, DSWallet, DSIncomingFundsDerivationPath, DSChainEntity, DSBlockchainIdentityEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSContactEntity : NSManagedObject
 
-+(void)deleteContactsOnChain:(DSChainEntity*)chainEntity;
++ (void)deleteContactsOnChain:(DSChainEntity *)chainEntity;
 
 @end
 

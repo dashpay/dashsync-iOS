@@ -6,26 +6,26 @@
 //
 
 #import "DSBlockchainIdentityRegistrationTransition.h"
+#import "BigIntTypes.h"
+#import "DSBlockchainIdentityRegistrationTransitionEntity+CoreDataClass.h"
+#import "DSECDSAKey.h"
+#import "DSTransactionFactory.h"
+#import "DSTransition+Protected.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
-#import "DSECDSAKey.h"
 #import "NSString+Bitcoin.h"
-#import "DSTransactionFactory.h"
-#import "DSBlockchainIdentityRegistrationTransitionEntity+CoreDataClass.h"
-#import "DSTransition+Protected.h"
-#import "BigIntTypes.h"
 
-@interface DSBlockchainIdentityRegistrationTransition()
+@interface DSBlockchainIdentityRegistrationTransition ()
 
-@property (nonatomic,strong) NSDictionary <NSNumber*,DSKey*>* publicKeys;
-@property (nonatomic,assign) DSUTXO lockedOutpoint;
-@property (nonatomic,assign) DSBlockchainIdentityType identityType;
+@property (nonatomic, strong) NSDictionary<NSNumber *, DSKey *> *publicKeys;
+@property (nonatomic, assign) DSUTXO lockedOutpoint;
+@property (nonatomic, assign) DSBlockchainIdentityType identityType;
 
 @end
 
 @implementation DSBlockchainIdentityRegistrationTransition
 
--(instancetype)initWithVersion:(uint16_t)version forIdentityType:(DSBlockchainIdentityType)identityType registeringPublicKeys:(NSDictionary <NSNumber*,DSKey*>*)publicKeys usingLockedOutpoint:(DSUTXO)lockedOutpoint onChain:(DSChain *)chain {
+- (instancetype)initWithVersion:(uint16_t)version forIdentityType:(DSBlockchainIdentityType)identityType registeringPublicKeys:(NSDictionary<NSNumber *, DSKey *> *)publicKeys usingLockedOutpoint:(DSUTXO)lockedOutpoint onChain:(DSChain *)chain {
     NSParameterAssert(chain);
     NSParameterAssert(publicKeys);
     NSAssert(publicKeys.count, @"There must be at least one key when registering a user");
@@ -39,14 +39,14 @@
     return self;
 }
 
--(Class)entityClass {
+- (Class)entityClass {
     return [DSBlockchainIdentityRegistrationTransitionEntity class];
 }
 
 - (NSMutableArray *)platformKeyDictionaries {
-    NSMutableArray * platformKeys = [NSMutableArray array];
-    for (NSNumber * indexIdentifier in self.publicKeys) {
-        DSKey * key = self.publicKeys[indexIdentifier];
+    NSMutableArray *platformKeys = [NSMutableArray array];
+    for (NSNumber *indexIdentifier in self.publicKeys) {
+        DSKey *key = self.publicKeys[indexIdentifier];
         DSMutableStringValueDictionary *platformKeyDictionary = [[DSMutableStringValueDictionary alloc] init];
         platformKeyDictionary[@"id"] = @([indexIdentifier integerValue] + 1);
         platformKeyDictionary[@"type"] = @(key.keyType);

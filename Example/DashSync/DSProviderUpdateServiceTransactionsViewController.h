@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSProviderUpdateServiceTransactionsViewController : UITableViewController
 
-@property (nonatomic,strong) DSLocalMasternode * localMasternode;
+@property (nonatomic, strong) DSLocalMasternode *localMasternode;
 
 @end
 

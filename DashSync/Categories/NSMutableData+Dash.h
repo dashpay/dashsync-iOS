@@ -68,15 +68,15 @@ CF_IMPLICIT_BRIDGING_DISABLED
 - (void)appendDevnetGenesisCoinbaseMessage:(NSString *)message;
 - (void)appendCoinbaseMessage:(NSString *)message atHeight:(uint32_t)height;
 
-- (void)appendBitcoinScriptPubKeyForAddress:(NSString *)address forChain:(DSChain*)chain;
-- (void)appendScriptPubKeyForAddress:(NSString *)address forChain:(DSChain*)chain;
-- (void)appendCreditBurnScriptPubKeyForAddress:(NSString *)address forChain:(DSChain*)chain;
+- (void)appendBitcoinScriptPubKeyForAddress:(NSString *)address forChain:(DSChain *)chain;
+- (void)appendScriptPubKeyForAddress:(NSString *)address forChain:(DSChain *)chain;
+- (void)appendCreditBurnScriptPubKeyForAddress:(NSString *)address forChain:(DSChain *)chain;
 - (void)appendScriptPushData:(NSData *)d;
 
 - (void)appendShapeshiftMemoForAddress:(NSString *)address;
-- (void)appendProposalInfo:(NSData*)proposalInfo;
+- (void)appendProposalInfo:(NSData *)proposalInfo;
 
-- (void)appendMessage:(NSData *)message type:(NSString *)type forChain:(DSChain*)chain;
+- (void)appendMessage:(NSData *)message type:(NSString *)type forChain:(DSChain *)chain;
 - (void)appendNullPaddedString:(NSString *)s length:(NSUInteger)length;
 - (void)appendNetAddress:(uint32_t)address port:(uint16_t)port services:(uint64_t)services;
 

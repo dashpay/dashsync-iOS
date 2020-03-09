@@ -18,8 +18,8 @@
 #import "DSPinField.h"
 
 #import "DSAuthenticationManager+Private.h"
-#import "UIColor+DSStyle.h"
 #import "NSMutableData+Dash.h" // SecureAllocator()
+#import "UIColor+DSStyle.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -83,12 +83,12 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
             case DSPinFieldStyle_Default:
             case DSPinFieldStyle_Small: {
                 emptyFieldColor = [UIColor ds_pinBackgroundColor];
-                
+
                 break;
             }
             case DSPinFieldStyle_DefaultWhite: {
                 emptyFieldColor = [UIColor ds_pinLockScreenBackgroundColor];
-                
+
                 break;
             }
         }
@@ -143,7 +143,7 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
 }
 
 - (NSString *)text {
-    return CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (__bridge CFArrayRef)self.value, (__bridge CFStringRef)@""));
+    return CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (__bridge CFArrayRef)self.value, (__bridge CFStringRef) @""));
 }
 
 - (void)clear {
@@ -164,7 +164,7 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
 // Clean up pin from memory once window's gone.
 - (void)willMoveToWindow:(nullable UIWindow *)newWindow {
     [super willMoveToWindow:newWindow];
-    
+
     if (newWindow == nil) {
         [self clear];
     }

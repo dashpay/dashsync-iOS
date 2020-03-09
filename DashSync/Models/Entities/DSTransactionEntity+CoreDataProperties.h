@@ -1,6 +1,6 @@
 //
 //  DSTransactionEntity+CoreDataProperties.h
-//  
+//
 //
 //  Created by Sam Westrich on 5/20/18.
 //
@@ -36,8 +36,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) int32_t lockTime;
 @property (nonatomic, retain) DSShapeshiftEntity *associatedShapeshift;
 @property (nonatomic, retain) DSChainEntity *chain;
-@property (nonatomic, retain) DSTransactionHashEntity * transactionHash;
-@property (nonatomic, retain) DSInstantSendLockEntity * instantSendLock;
+@property (nonatomic, retain) DSTransactionHashEntity *transactionHash;
+@property (nonatomic, retain) DSInstantSendLockEntity *instantSendLock;
 
 @end
 

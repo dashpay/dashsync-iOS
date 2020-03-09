@@ -11,7 +11,7 @@
 @implementation DSAccountEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSAccountEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSAccountEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSAccountEntity"];
 }
 
 @dynamic index;

@@ -6,8 +6,8 @@
 //
 //
 
-#import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
 @class DSChainEntity, DSSporkEntity;
 
@@ -15,11 +15,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSSporkHashEntity : NSManagedObject
 
-+(DSSporkHashEntity*)sporkHashEntityWithHash:(NSData*)sporkHash onChain:(DSChainEntity*)chainEntity;
++ (DSSporkHashEntity *)sporkHashEntityWithHash:(NSData *)sporkHash onChain:(DSChainEntity *)chainEntity;
 
-+(NSArray*)sporkHashEntitiesWithHash:(NSOrderedSet*)sporkHashes onChain:(DSChainEntity*)chainEntity;
++ (NSArray *)sporkHashEntitiesWithHash:(NSOrderedSet *)sporkHashes onChain:(DSChainEntity *)chainEntity;
 
-+(NSArray*)standaloneSporkHashEntitiesOnChain:(DSChainEntity*)chainEntity;
++ (NSArray *)standaloneSporkHashEntitiesOnChain:(DSChainEntity *)chainEntity;
 
 @end
 

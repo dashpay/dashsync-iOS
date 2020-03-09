@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -21,42 +21,42 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSIncomingFundsDerivationPath : DSDerivationPath
 
-@property (nonatomic,readonly) UInt256 contactSourceBlockchainIdentityUniqueId;
-@property (nonatomic,readonly) UInt256 contactDestinationBlockchainIdentityUniqueId;
+@property (nonatomic, readonly) UInt256 contactSourceBlockchainIdentityUniqueId;
+@property (nonatomic, readonly) UInt256 contactDestinationBlockchainIdentityUniqueId;
 
-+(instancetype)contactBasedDerivationPathWithDestinationBlockchainIdentityUniqueId:(UInt256)destinationBlockchainIdentityUniqueId sourceBlockchainIdentityUniqueId:(UInt256)sourceBlockchainIdentityUniqueId forAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain;
++ (instancetype)contactBasedDerivationPathWithDestinationBlockchainIdentityUniqueId:(UInt256)destinationBlockchainIdentityUniqueId sourceBlockchainIdentityUniqueId:(UInt256)sourceBlockchainIdentityUniqueId forAccountNumber:(uint32_t)accountNumber onChain:(DSChain *)chain;
 
 //The extended public key will be saved to disk (storeExternalDerivationPathExtendedPublicKeyToKeyChain call needed)
-+ (instancetype)externalDerivationPathWithExtendedPublicKey:(NSData*)extendedPublicKey withDestinationBlockchainIdentityUniqueId:(UInt256) destinationBlockchainIdentityUniqueId sourceBlockchainIdentityUniqueId:(UInt256) sourceBlockchainIdentityUniqueId onChain:(DSChain*)chain;
++ (instancetype)externalDerivationPathWithExtendedPublicKey:(NSData *)extendedPublicKey withDestinationBlockchainIdentityUniqueId:(UInt256)destinationBlockchainIdentityUniqueId sourceBlockchainIdentityUniqueId:(UInt256)sourceBlockchainIdentityUniqueId onChain:(DSChain *)chain;
 
 //The extended public key will be loaded from disk
-+ (instancetype)externalDerivationPathWithExtendedPublicKeyUniqueID:(NSString*)extendedPublicKeyUniqueId withDestinationBlockchainIdentityUniqueId:(UInt256) destinationBlockchainIdentityUniqueId sourceBlockchainIdentityUniqueId:(UInt256) sourceBlockchainIdentityUniqueId onChain:(DSChain*)chain;
++ (instancetype)externalDerivationPathWithExtendedPublicKeyUniqueID:(NSString *)extendedPublicKeyUniqueId withDestinationBlockchainIdentityUniqueId:(UInt256)destinationBlockchainIdentityUniqueId sourceBlockchainIdentityUniqueId:(UInt256)sourceBlockchainIdentityUniqueId onChain:(DSChain *)chain;
 
 // returns the first unused external address
-@property (nonatomic, readonly, nullable) NSString * receiveAddress;
+@property (nonatomic, readonly, nullable) NSString *receiveAddress;
 
 // all previously generated external addresses
-@property (nonatomic, readonly) NSArray * allReceiveAddresses;
+@property (nonatomic, readonly) NSArray *allReceiveAddresses;
 
 // used external addresses
-@property (nonatomic, readonly) NSArray * usedReceiveAddresses;
+@property (nonatomic, readonly) NSArray *usedReceiveAddresses;
 
-- (NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit;
+- (NSArray *_Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit;
 
-- (NSString * _Nullable)privateKeyStringAtIndex:(uint32_t)n fromSeed:(NSData *)seed;
-- (NSArray * _Nullable)serializedPrivateKeys:(NSArray *)n fromSeed:(NSData *)seed;
-- (NSArray * _Nullable)privateKeys:(NSArray *)n fromSeed:(NSData *)seed;
+- (NSString *_Nullable)privateKeyStringAtIndex:(uint32_t)n fromSeed:(NSData *)seed;
+- (NSArray *_Nullable)serializedPrivateKeys:(NSArray *)n fromSeed:(NSData *)seed;
+- (NSArray *_Nullable)privateKeys:(NSArray *)n fromSeed:(NSData *)seed;
 
-- (NSData * _Nullable)publicKeyDataAtIndex:(uint32_t)n;
+- (NSData *_Nullable)publicKeyDataAtIndex:(uint32_t)n;
 
 // gets an addess at an index one level down based on bip32
 - (NSString *)addressAtIndex:(uint32_t)index;
 
 - (NSString *)receiveAddressAtOffset:(NSUInteger)offset;
 
-- (NSIndexPath* _Nullable)indexPathForKnownAddress:(NSString*)address;
+- (NSIndexPath *_Nullable)indexPathForKnownAddress:(NSString *)address;
 
--(void)storeExternalDerivationPathExtendedPublicKeyToKeyChain;
+- (void)storeExternalDerivationPathExtendedPublicKeyToKeyChain;
 
 @end
 

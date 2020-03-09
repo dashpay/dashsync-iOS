@@ -25,59 +25,60 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSTransaction+Utils.h"
-#import "DSPriceManager.h"
 #import "DSAccount.h"
+#import "DSPriceManager.h"
+#import "DSTransaction+Utils.h"
 #import "DSWallet.h"
 
 @implementation DSTransaction (Utils)
 
-- (DSTransactionStatus)transactionStatusInAccount:(DSAccount*)account
-{
+- (DSTransactionStatus)transactionStatusInAccount:(DSAccount *)account {
     uint64_t received = [account amountReceivedFromTransaction:self],
              sent = [account amountSentByTransaction:self];
     uint32_t blockHeight = self.blockHeight;
     uint32_t confirms = ([self lastBlockHeight] > blockHeight) ? 0 : (blockHeight - [self lastBlockHeight]) + 1;
 
-    if (confirms == 0 && ! [account transactionIsValid:self]) {
+    if (confirms == 0 && ![account transactionIsValid:self]) {
         return DSTransactionStatus_Invalid;
     }
-    
+
     if (sent > 0 && received == sent) {
         return DSTransactionStatus_Move;
     }
     else if (sent > 0) {
         return DSTransactionStatus_Sent;
     }
-    else return DSTransactionStatus_Receive;
+    else {
+        return DSTransactionStatus_Receive;
+    }
 }
 
-- (DSTransactionStatus)transactionStatusInWallet:(DSWallet*)wallet
-{
+- (DSTransactionStatus)transactionStatusInWallet:(DSWallet *)wallet {
     uint64_t received = [wallet amountReceivedFromTransaction:self],
-    sent = [wallet amountSentByTransaction:self];
+             sent = [wallet amountSentByTransaction:self];
     uint32_t blockHeight = self.blockHeight;
     uint32_t confirms = ([self lastBlockHeight] > blockHeight) ? 0 : (blockHeight - [self lastBlockHeight]) + 1;
-    
-    if (confirms == 0 && ! [wallet transactionIsValid:self]) {
+
+    if (confirms == 0 && ![wallet transactionIsValid:self]) {
         return DSTransactionStatus_Invalid;
     }
-    
+
     if (sent > 0 && received == sent) {
         return DSTransactionStatus_Move;
     }
     else if (sent > 0) {
         return DSTransactionStatus_Sent;
     }
-    else return DSTransactionStatus_Receive;
+    else {
+        return DSTransactionStatus_Receive;
+    }
 }
 
-- (NSString*)localCurrencyTextForAmountReceivedInAccount:(DSAccount*)account
-{
+- (NSString *)localCurrencyTextForAmountReceivedInAccount:(DSAccount *)account {
     DSPriceManager *manager = [DSPriceManager sharedInstance];
     uint64_t received = [account amountReceivedFromTransaction:self],
 
-    sent = [account amountSentByTransaction:self];
+             sent = [account amountSentByTransaction:self];
 
     if (sent > 0 && received == sent) {
         return [NSString stringWithFormat:@"(%@)", [manager localCurrencyStringForDashAmount:sent]];
@@ -85,15 +86,16 @@
     else if (sent > 0) {
         return [NSString stringWithFormat:@"(%@)", [manager localCurrencyStringForDashAmount:received - sent]];
     }
-    else return [NSString stringWithFormat:@"(%@)", [manager localCurrencyStringForDashAmount:received]];
+    else {
+        return [NSString stringWithFormat:@"(%@)", [manager localCurrencyStringForDashAmount:received]];
+    }
 }
 
-- (NSString*)amountTextReceivedInAccount:(DSAccount*)account
-{
+- (NSString *)amountTextReceivedInAccount:(DSAccount *)account {
     DSPriceManager *manager = [DSPriceManager sharedInstance];
     uint64_t received = [account amountReceivedFromTransaction:self],
 
-    sent = [account amountSentByTransaction:self];
+             sent = [account amountSentByTransaction:self];
 
     if (sent > 0 && received == sent) {
         return [manager stringForDashAmount:sent];
@@ -101,26 +103,25 @@
     else if (sent > 0) {
         return [manager stringForDashAmount:received - sent];
     }
-    else return [manager stringForDashAmount:received];
+    else {
+        return [manager stringForDashAmount:received];
+    }
 }
 
-- (uint32_t)lastBlockHeight
-{
+- (uint32_t)lastBlockHeight {
     static uint32_t height = 0;
     uint32_t h = self.chain.lastBlockHeight;
-    
+
     if (h > height) height = h;
     return height;
 }
 
-- (NSString *)dateText
-{
+- (NSString *)dateText {
     NSDateFormatter *df = [NSDateFormatter new];
-    
+
     df.dateFormat = dateFormat(@"Mdja");
 
-    NSTimeInterval t = (self.timestamp > 1) ? self.timestamp :
-                       [self.chain timestampForBlockHeight:self.blockHeight] - 5*60;
+    NSTimeInterval t = (self.timestamp > 1) ? self.timestamp : [self.chain timestampForBlockHeight:self.blockHeight] - 5 * 60;
     NSString *date = [df stringFromDate:[NSDate dateWithTimeIntervalSince1970:t]];
 
     date = [date stringByReplacingOccurrencesOfString:@"am" withString:@"a"];
@@ -134,15 +135,13 @@
     return date;
 }
 
-- (NSDate *)transactionDate
-{
+- (NSDate *)transactionDate {
     return [NSDate dateWithTimeIntervalSince1970:self.timestamp];
 }
 
-static NSString *dateFormat(NSString *template)
-{
+static NSString *dateFormat(NSString *template) {
     NSString *format = [NSDateFormatter dateFormatFromTemplate:template options:0 locale:[NSLocale currentLocale]];
-    
+
     format = [format stringByReplacingOccurrencesOfString:@", " withString:@" "];
     format = [format stringByReplacingOccurrencesOfString:@" a" withString:@"a"];
     format = [format stringByReplacingOccurrencesOfString:@"hh" withString:@"h"];
@@ -150,8 +149,10 @@ static NSString *dateFormat(NSString *template)
     format = [format stringByReplacingOccurrencesOfString:@"HH" withString:@"H"];
     format = [format stringByReplacingOccurrencesOfString:@"H '" withString:@"H'"];
     format = [format stringByReplacingOccurrencesOfString:@"H " withString:@"H'h' "];
-    format = [format stringByReplacingOccurrencesOfString:@"H" withString:@"H'h'"
-              options:NSBackwardsSearch|NSAnchoredSearch range:NSMakeRange(0, format.length)];
+    format = [format stringByReplacingOccurrencesOfString:@"H"
+                                               withString:@"H'h'"
+                                                  options:NSBackwardsSearch | NSAnchoredSearch
+                                                    range:NSMakeRange(0, format.length)];
     return format;
 }
 

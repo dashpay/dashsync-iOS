@@ -6,19 +6,19 @@
 //
 //
 
-#import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
-@class DSGovernanceObjectEntity, DSGovernanceVoteHashEntity, DSSimplifiedMasternodeEntry,DSChainEntity,DSGovernanceVote;
+@class DSGovernanceObjectEntity, DSGovernanceVoteHashEntity, DSSimplifiedMasternodeEntry, DSChainEntity, DSGovernanceVote;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSGovernanceVoteEntity : NSManagedObject
 
-- (void)setAttributesFromGovernanceVote:(DSGovernanceVote *)governanceVote forHashEntity:(DSGovernanceVoteHashEntity*)hashEntity;
-+ (NSUInteger)countForChain:(DSChainEntity* _Nonnull)chain;
-+ (NSUInteger)countForGovernanceObject:(DSGovernanceObjectEntity*)governanceObject;
-- (DSGovernanceVote*)governanceVote;
+- (void)setAttributesFromGovernanceVote:(DSGovernanceVote *)governanceVote forHashEntity:(DSGovernanceVoteHashEntity *)hashEntity;
++ (NSUInteger)countForChain:(DSChainEntity *_Nonnull)chain;
++ (NSUInteger)countForGovernanceObject:(DSGovernanceObjectEntity *)governanceObject;
+- (DSGovernanceVote *)governanceVote;
 
 @end
 

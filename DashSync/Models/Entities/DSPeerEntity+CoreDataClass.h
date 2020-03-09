@@ -1,6 +1,6 @@
 //
 //  DSPeerEntity+CoreDataClass.h
-//  
+//
 //
 //  Created by Sam Westrich on 5/20/18.
 //
@@ -22,10 +22,10 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
-@class DSChainEntity,DSPeer;
+@class DSChainEntity, DSPeer;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable instancetype)setAttributesFromPeer:(DSPeer *)peer;
 - (DSPeer *)peer;
-+ (void)deletePeersForChain:(DSChainEntity*)chainEntity;
++ (void)deletePeersForChain:(DSChainEntity *)chainEntity;
 
 
 @end

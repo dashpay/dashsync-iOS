@@ -6,10 +6,10 @@
 //  Copyright © 2017 Aaron Voisine. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
+#import <Foundation/Foundation.h>
 
-typedef NS_ENUM(uint32_t,DSSporkIdentifier) {
+typedef NS_ENUM(uint32_t, DSSporkIdentifier) {
     DSSporkIdentifier_Spork2InstantSendEnabled = 10001,
     DSSporkIdentifier_Spork3InstantSendBlockFiltering = 10002,
     DSSporkIdentifier_Spork5InstantSendMaxValue = 10004,
@@ -32,19 +32,19 @@ typedef NS_ENUM(uint32_t,DSSporkIdentifier) {
 
 @interface DSSpork : NSObject
 
-@property (nonatomic,assign,readonly) DSSporkIdentifier identifier;
-@property (nonatomic,readonly) NSString* identifierString;
-@property (nonatomic,assign,readonly,getter=isValid) BOOL valid;
-@property (nonatomic,assign,readonly) uint64_t timeSigned;
-@property (nonatomic,assign,readonly) uint64_t value;
-@property (nonatomic,strong,readonly) NSData * signature;
-@property (nonatomic,assign,readonly) UInt256 sporkHash;
-@property (nonatomic,readonly) DSChain * chain;
+@property (nonatomic, assign, readonly) DSSporkIdentifier identifier;
+@property (nonatomic, readonly) NSString *identifierString;
+@property (nonatomic, assign, readonly, getter=isValid) BOOL valid;
+@property (nonatomic, assign, readonly) uint64_t timeSigned;
+@property (nonatomic, assign, readonly) uint64_t value;
+@property (nonatomic, strong, readonly) NSData *signature;
+@property (nonatomic, assign, readonly) UInt256 sporkHash;
+@property (nonatomic, readonly) DSChain *chain;
 
-+ (instancetype)sporkWithMessage:(NSData *)message onChain:(DSChain*)chain;
-    
-- (instancetype)initWithIdentifier:(DSSporkIdentifier)identifier value:(uint64_t)value timeSigned:(uint64_t)timeSigned signature:(NSData*)signature onChain:(DSChain*)chain;
-    
--(BOOL)isEqualToSpork:(DSSpork*)spork;
++ (instancetype)sporkWithMessage:(NSData *)message onChain:(DSChain *)chain;
+
+- (instancetype)initWithIdentifier:(DSSporkIdentifier)identifier value:(uint64_t)value timeSigned:(uint64_t)timeSigned signature:(NSData *)signature onChain:(DSChain *)chain;
+
+- (BOOL)isEqualToSpork:(DSSpork *)spork;
 
 @end

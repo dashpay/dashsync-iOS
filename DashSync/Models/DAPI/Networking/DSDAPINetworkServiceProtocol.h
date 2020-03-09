@@ -15,9 +15,9 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-#import "DSDAPIClientFetchDapObjectsOptions.h"
 #import "BigIntTypes.h"
+#import "DSDAPIClientFetchDapObjectsOptions.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -370,8 +370,8 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
 - (void)getIdentityByName:(NSString *)username
-                 inDomain:(NSString*)domain
-                  success:(void (^)(NSDictionary * _Nullable blockchainIdentity))success
+                 inDomain:(NSString *)domain
+                  success:(void (^)(NSDictionary *_Nullable blockchainIdentity))success
                   failure:(void (^)(NSError *error))failure;
 
 /**
@@ -407,7 +407,7 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
  @param success A block object to be executed when the request operation finishes successfully
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
-- (void)publishTransition:(DSTransition*)stateTransition
+- (void)publishTransition:(DSTransition *)stateTransition
                   success:(void (^)(NSDictionary *successDictionary))success
                   failure:(void (^)(NSError *error))failure;
 
@@ -422,12 +422,12 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
                           success:(void (^)(NSArray<NSDictionary *> *documents))success
                           failure:(void (^)(NSError *error))failure;
 
-- (void)getDPNSDocumentsForPreorderSaltedDomainHashes:(NSArray*)saltedDomainHashes
-                                            success:(void (^)(NSArray<NSDictionary *> *documents))success
-                                            failure:(void (^)(NSError *error))failure;
+- (void)getDPNSDocumentsForPreorderSaltedDomainHashes:(NSArray *)saltedDomainHashes
+                                              success:(void (^)(NSArray<NSDictionary *> *documents))success
+                                              failure:(void (^)(NSError *error))failure;
 
-- (void)getDPNSDocumentsForUsernames:(NSArray*)usernames
-                            inDomain:(NSString*)domain
+- (void)getDPNSDocumentsForUsernames:(NSArray *)usernames
+                            inDomain:(NSString *)domain
                              success:(void (^)(NSArray<NSDictionary *> *documents))success
                              failure:(void (^)(NSError *error))failure;
 
@@ -435,17 +435,17 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
                                       success:(void (^)(NSArray<NSDictionary *> *documents))success
                                       failure:(void (^)(NSError *error))failure;
 
-- (void)getDashpayIncomingContactRequestsForUserId:(NSString*)userId
+- (void)getDashpayIncomingContactRequestsForUserId:(NSString *)userId
                                              since:(NSTimeInterval)timestamp
                                            success:(void (^)(NSArray<NSDictionary *> *documents))success
                                            failure:(void (^)(NSError *error))failure;
 
-- (void)getDashpayOutgoingContactRequestsForUserId:(NSString*)userId
+- (void)getDashpayOutgoingContactRequestsForUserId:(NSString *)userId
                                              since:(NSTimeInterval)timestamp
                                            success:(void (^)(NSArray<NSDictionary *> *documents))success
                                            failure:(void (^)(NSError *error))failure;
 
-- (void)getDashpayProfileForUserId:(NSString*)userId
+- (void)getDashpayProfileForUserId:(NSString *)userId
                            success:(void (^)(NSArray<NSDictionary *> *documents))success
                            failure:(void (^)(NSError *error))failure;
 

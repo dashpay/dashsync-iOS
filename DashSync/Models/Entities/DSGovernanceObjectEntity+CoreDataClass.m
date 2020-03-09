@@ -6,15 +6,15 @@
 //
 //
 
+#import "DSChainEntity+CoreDataClass.h"
 #import "DSGovernanceObjectEntity+CoreDataClass.h"
 #import "DSGovernanceObjectHashEntity+CoreDataClass.h"
-#import "NSManagedObject+Sugar.h"
-#import "DSChainEntity+CoreDataClass.h"
 #import "NSData+Dash.h"
+#import "NSManagedObject+Sugar.h"
 
 @implementation DSGovernanceObjectEntity
 
-- (void)setAttributesFromGovernanceObject:(DSGovernanceObject *)governanceObject forHashEntity:(DSGovernanceObjectHashEntity*)hashEntity {
+- (void)setAttributesFromGovernanceObject:(DSGovernanceObject *)governanceObject forHashEntity:(DSGovernanceObjectHashEntity *)hashEntity {
     [self.managedObjectContext performBlockAndWait:^{
         [DSChainEntity setContext:self.managedObjectContext];
         [DSGovernanceObjectHashEntity setContext:self.managedObjectContext];
@@ -26,7 +26,8 @@
         self.type = governanceObject.type;
         if (hashEntity) {
             self.governanceObjectHash = hashEntity;
-        } else {
+        }
+        else {
             self.governanceObjectHash = [DSGovernanceObjectHashEntity governanceObjectHashEntityWithHash:[NSData dataWithUInt256:governanceObject.governanceObjectHash] onChain:governanceObject.chain.chainEntity];
         }
         self.identifier = governanceObject.identifier;
@@ -38,28 +39,28 @@
     }];
 }
 
-+ (NSUInteger)countForChain:(DSChainEntity*)chain {
++ (NSUInteger)countForChain:(DSChainEntity *)chain {
     __block NSUInteger count = 0;
     [chain.managedObjectContext performBlockAndWait:^{
-        NSFetchRequest * fetchRequest = [DSGovernanceObjectEntity fetchReq];
-        [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"governanceObjectHash.chain = %@",chain]];
+        NSFetchRequest *fetchRequest = [DSGovernanceObjectEntity fetchReq];
+        [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"governanceObjectHash.chain = %@", chain]];
         count = [DSGovernanceObjectEntity countObjects:fetchRequest];
     }];
     return count;
 }
 
--(DSGovernanceObject*)governanceObject {
+- (DSGovernanceObject *)governanceObject {
     __block DSGovernanceObject *governanceObject = nil;
-    
+
     [self.managedObjectContext performBlockAndWait:^{
-        DSChainEntity * chain = [self.governanceObjectHash chain];
-        UInt256 governanceObjectHash = *(UInt256*)self.governanceObjectHash.governanceObjectHash.bytes;
-        UInt256 parentHash = *(UInt256*)self.parentHash.bytes;
-        UInt256 collateralHash = *(UInt256*)self.collateralHash.bytes;
+        DSChainEntity *chain = [self.governanceObjectHash chain];
+        UInt256 governanceObjectHash = *(UInt256 *)self.governanceObjectHash.governanceObjectHash.bytes;
+        UInt256 parentHash = *(UInt256 *)self.parentHash.bytes;
+        UInt256 collateralHash = *(UInt256 *)self.collateralHash.bytes;
         governanceObject = [[DSGovernanceObject alloc] initWithType:self.type parentHash:parentHash revision:self.revision timestamp:self.timestamp signature:self.signature collateralHash:collateralHash governanceObjectHash:governanceObjectHash identifier:self.identifier amount:self.amount startEpoch:self.startEpoch endEpoch:self.endEpoch paymentAddress:self.paymentAddress url:self.url onChain:[chain chain]];
         governanceObject.totalGovernanceVoteCount = self.totalVotesCount;
     }];
-    
+
     return governanceObject;
 }
 

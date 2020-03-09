@@ -11,7 +11,7 @@
 @implementation DSGovernanceVoteEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSGovernanceVoteEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSGovernanceVoteEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSGovernanceVoteEntity"];
 }
 
 @dynamic outcome;

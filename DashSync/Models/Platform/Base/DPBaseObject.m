@@ -18,8 +18,8 @@
 #import "DPBaseObject.h"
 
 
-#import "NSData+Bitcoin.h"
 #import "BigIntTypes.h"
+#import "NSData+Bitcoin.h"
 #import <TinyCborObjc/NSObject+DSCborEncoding.h>
 
 NS_ASSUME_NONNULL_BEGIN

@@ -22,8 +22,8 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -37,14 +37,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) UInt768 signature;
 @property (nonatomic, readonly) BOOL signatureVerified;
 @property (nonatomic, readonly) BOOL saved;
-@property (nonatomic, readonly) DSQuorumEntry * intendedQuorum;
+@property (nonatomic, readonly) DSQuorumEntry *intendedQuorum;
 
 // message can be either a merkleblock or header message
-+ (instancetype)chainLockWithMessage:(NSData *)message onChain:(DSChain*)chain;
++ (instancetype)chainLockWithMessage:(NSData *)message onChain:(DSChain *)chain;
 
-- (instancetype)initWithMessage:(NSData *)message onChain:(DSChain*)chain;
+- (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain;
 
-- (instancetype)initWithBlockHash:(UInt256)blockHash signature:(UInt768)signature signatureVerified:(BOOL)signatureVerified quorumVerified:(BOOL)quorumVerified onChain:(DSChain*)chain;
+- (instancetype)initWithBlockHash:(UInt256)blockHash signature:(UInt768)signature signatureVerified:(BOOL)signatureVerified quorumVerified:(BOOL)quorumVerified onChain:(DSChain *)chain;
 
 - (instancetype)init NS_UNAVAILABLE;
 

@@ -11,7 +11,7 @@
 @implementation DSDocumentTransitionEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSDocumentTransitionEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSDocumentTransitionEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSDocumentTransitionEntity"];
 }
 
 @dynamic documents;

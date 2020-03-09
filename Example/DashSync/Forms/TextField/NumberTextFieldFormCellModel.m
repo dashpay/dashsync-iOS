@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (!allowedString) {
         return NO;
     }
-    
+
     return [super validateReplacementString:string text:text];
 }
 

@@ -23,39 +23,39 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
 #import "DSChainManager.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-FOUNDATION_EXPORT NSString* const DSChainsDidChangeNotification;
+FOUNDATION_EXPORT NSString *const DSChainsDidChangeNotification;
 
-#define SPEND_LIMIT_KEY     @"SPEND_LIMIT_KEY"
+#define SPEND_LIMIT_KEY @"SPEND_LIMIT_KEY"
 
 @interface DSChainsManager : NSObject
 
-@property (nonatomic,strong) DSChainManager * mainnetManager;
-@property (nonatomic,strong) DSChainManager * testnetManager;
-@property (nonatomic,strong) NSArray * devnetManagers;
-@property (nonatomic,readonly) BOOL hasAWallet;
-@property (nonatomic,readonly) NSArray * allWallets;
-@property (nonatomic,readonly) NSArray * chains;
-@property (nonatomic,readonly) NSArray * devnetChains;
-@property (nonatomic,readonly) uint64_t spendingLimit;
+@property (nonatomic, strong) DSChainManager *mainnetManager;
+@property (nonatomic, strong) DSChainManager *testnetManager;
+@property (nonatomic, strong) NSArray *devnetManagers;
+@property (nonatomic, readonly) BOOL hasAWallet;
+@property (nonatomic, readonly) NSArray *allWallets;
+@property (nonatomic, readonly) NSArray *chains;
+@property (nonatomic, readonly) NSArray *devnetChains;
+@property (nonatomic, readonly) uint64_t spendingLimit;
 
--(DSChainManager * _Nullable)chainManagerForChain:(DSChain*)chain;
+- (DSChainManager *_Nullable)chainManagerForChain:(DSChain *)chain;
 
--(void)updateDevnetChain:(DSChain *)chain forServiceLocations:(NSMutableOrderedSet<NSString*> *)serviceLocations  standardPort:(uint32_t)standardPort dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString* _Nullable)sporkAddress sporkPrivateKey:(NSString * _Nullable)sporkPrivateKey;
+- (void)updateDevnetChain:(DSChain *)chain forServiceLocations:(NSMutableOrderedSet<NSString *> *)serviceLocations standardPort:(uint32_t)standardPort dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString *_Nullable)sporkAddress sporkPrivateKey:(NSString *_Nullable)sporkPrivateKey;
 
--(DSChain* _Nullable)registerDevnetChainWithIdentifier:(NSString *)identifier forServiceLocations:(NSOrderedSet<NSString*> * )serviceLocations standardPort:(uint32_t)standardPort dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString * _Nullable)sporkAddress sporkPrivateKey:(NSString * _Nullable)sporkPrivateKey;
+- (DSChain *_Nullable)registerDevnetChainWithIdentifier:(NSString *)identifier forServiceLocations:(NSOrderedSet<NSString *> *)serviceLocations standardPort:(uint32_t)standardPort dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString *_Nullable)sporkAddress sporkPrivateKey:(NSString *_Nullable)sporkPrivateKey;
 
--(void)removeDevnetChain:(DSChain *)chain;
+- (void)removeDevnetChain:(DSChain *)chain;
 
 + (instancetype)sharedInstance;
 
--(BOOL)setSpendingLimitIfAuthenticated:(uint64_t)spendingLimit;
+- (BOOL)setSpendingLimitIfAuthenticated:(uint64_t)spendingLimit;
 
--(BOOL)resetSpendingLimitsIfAuthenticated;
+- (BOOL)resetSpendingLimitsIfAuthenticated;
 
 @end
 

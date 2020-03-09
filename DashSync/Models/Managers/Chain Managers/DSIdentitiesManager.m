@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -19,48 +19,48 @@
 #import "DSChain.h"
 #import "DSWallet.h"
 
-@interface DSIdentitiesManager()
+@interface DSIdentitiesManager ()
 
-@property (nonatomic, strong) DSChain * chain;
+@property (nonatomic, strong) DSChain *chain;
 
 @end
 
 @implementation DSIdentitiesManager
 
-- (instancetype)initWithChain:(DSChain*)chain
-{
+- (instancetype)initWithChain:(DSChain *)chain {
     NSParameterAssert(chain);
-    
-    if (! (self = [super init])) return nil;
-    
+
+    if (!(self = [super init])) return nil;
+
     self.chain = chain;
-    
+
     return self;
 }
 
 // MARK: - Identities
 
--(void)retrieveAllBlockchainIdentitiesChainStates {
-    for (DSWallet * wallet in self.chain.wallets) {
+- (void)retrieveAllBlockchainIdentitiesChainStates {
+    for (DSWallet *wallet in self.chain.wallets) {
         [self retrieveAllBlockchainIdentitiesChainStatesForWallet:wallet];
     }
 }
 
--(void)retrieveAllBlockchainIdentitiesChainStatesForWallet:(DSWallet*)wallet {
-    for (DSBlockchainIdentity * identity in [wallet.blockchainIdentities allValues]) {
+- (void)retrieveAllBlockchainIdentitiesChainStatesForWallet:(DSWallet *)wallet {
+    for (DSBlockchainIdentity *identity in [wallet.blockchainIdentities allValues]) {
         if (identity.registrationStatus == DSBlockchainIdentityRegistrationStatus_Unknown) {
             [identity retrieveIdentityNetworkStateInformationWithCompletion:^(BOOL success) {
                 if (success) {
                     //now lets get dpns info
-                    [identity fetchUsernamesWithCompletion:^(BOOL success) {
-                        
+                    [identity fetchUsernamesWithCompletion:^(BOOL success){
+
                     }];
                 }
             }];
-        } else if (identity.registrationStatus == DSBlockchainIdentityRegistrationStatus_Registered) {
+        }
+        else if (identity.registrationStatus == DSBlockchainIdentityRegistrationStatus_Registered) {
             if (!identity.currentUsername) {
-                [identity fetchUsernamesWithCompletion:^(BOOL success) {
-                    
+                [identity fetchUsernamesWithCompletion:^(BOOL success){
+
                 }];
             }
         }

@@ -19,10 +19,10 @@
 #import "DPDocument.h"
 #import "DPErrors.h"
 
-#import "NSData+Bitcoin.h"
 #import "BigIntTypes.h"
-#import <TinyCborObjc/NSData+DSCborDecoding.h>
 #import "DSKey.h"
+#import "NSData+Bitcoin.h"
+#import <TinyCborObjc/NSData+DSCborDecoding.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -32,15 +32,15 @@ static NSInteger const DEFAULT_REVISION = 1;
 
 @property (copy, nonatomic) NSString *userId;
 @property (strong, nonatomic) DPContract *contract;
-@property (strong, nonatomic) DSChain * chain;
+@property (strong, nonatomic) DSChain *chain;
 
 @end
 
 @implementation DPDocumentFactory
 
-- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity*)identity
-                      contract:(DPContract *)contract
-                         onChain:(DSChain*)chain {
+- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)identity
+                                  contract:(DPContract *)contract
+                                   onChain:(DSChain *)chain {
     NSParameterAssert(identity);
     NSParameterAssert(contract);
 
@@ -56,8 +56,8 @@ static NSInteger const DEFAULT_REVISION = 1;
 #pragma mark - DPDocumentFactory
 
 - (nullable DPDocument *)documentOnTable:(NSString *)tableName
-                                     withDataDictionary:(nullable DSStringValueDictionary *)dataDictionary
-                                    error:(NSError *_Nullable __autoreleasing *)error {
+                      withDataDictionary:(nullable DSStringValueDictionary *)dataDictionary
+                                   error:(NSError *_Nullable __autoreleasing *)error {
     NSParameterAssert(tableName);
 
     if (!dataDictionary) {
@@ -77,8 +77,8 @@ static NSInteger const DEFAULT_REVISION = 1;
 
         return nil;
     }
-    
-    NSString * base58String = uint256_base58(self.contract.registeredBlockchainIdentity);
+
+    NSString *base58String = uint256_base58(self.contract.registeredBlockchainIdentity);
 
     DPDocument *object = [[DPDocument alloc] initWithDataDictionary:dataDictionary createdByUserWithId:self.userId onContractWithId:base58String onTableWithName:tableName usingEntropy:[DSKey randomAddressForChain:[self chain]]];
 

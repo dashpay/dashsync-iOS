@@ -11,7 +11,7 @@
 @implementation DSBlockchainIdentityUsernameEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSBlockchainIdentityUsernameEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSBlockchainIdentityUsernameEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSBlockchainIdentityUsernameEntity"];
 }
 
 @dynamic status;

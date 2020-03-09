@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -15,8 +15,8 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -29,31 +29,31 @@ typedef NS_ENUM(NSUInteger, DSPlatformDocumentType) {
 
 @interface DSPlatformDocumentsRequest : NSObject
 
-@property(nonatomic,strong) NSPredicate * predicate;
-@property(nonatomic,strong) NSArray <NSSortDescriptor*>* sortDescriptors;
-@property(nonatomic,assign) uint32_t startAt;
-@property(nonatomic,assign) uint32_t limit;
-@property(nonatomic,strong) NSString * tableName;
-@property(nonatomic,strong) DPContract * contract;
-@property(nonatomic,assign) DSPlatformDocumentType type;
+@property (nonatomic, strong) NSPredicate *predicate;
+@property (nonatomic, strong) NSArray<NSSortDescriptor *> *sortDescriptors;
+@property (nonatomic, assign) uint32_t startAt;
+@property (nonatomic, assign) uint32_t limit;
+@property (nonatomic, strong) NSString *tableName;
+@property (nonatomic, strong) DPContract *contract;
+@property (nonatomic, assign) DSPlatformDocumentType type;
 
-+(instancetype)dpnsRequestForUserId:(NSString*)userId;
++ (instancetype)dpnsRequestForUserId:(NSString *)userId;
 
-+(instancetype)dpnsRequestForUsername:(NSString*)username inDomain:(NSString*)domain;
++ (instancetype)dpnsRequestForUsername:(NSString *)username inDomain:(NSString *)domain;
 
-+(instancetype)dpnsRequestForUsernames:(NSArray*)usernames inDomain:(NSString*)domain;
++ (instancetype)dpnsRequestForUsernames:(NSArray *)usernames inDomain:(NSString *)domain;
 
-+(instancetype)dpnsRequestForPreorderSaltedHashes:(NSArray*)preorderSaltedHashes;
++ (instancetype)dpnsRequestForPreorderSaltedHashes:(NSArray *)preorderSaltedHashes;
 
-+(instancetype)dashpayRequestForContactRequestForSendingUserId:(NSString*)userId toRecipientUserId:(NSString*)toUserId;
++ (instancetype)dashpayRequestForContactRequestForSendingUserId:(NSString *)userId toRecipientUserId:(NSString *)toUserId;
 
-+(instancetype)dashpayRequestForContactRequestsForSendingUserId:(NSString*)userId since:(NSTimeInterval)timestamp;
++ (instancetype)dashpayRequestForContactRequestsForSendingUserId:(NSString *)userId since:(NSTimeInterval)timestamp;
 
-+(instancetype)dashpayRequestForContactRequestsForRecipientUserId:(NSString*)userId since:(NSTimeInterval)timestamp;
++ (instancetype)dashpayRequestForContactRequestsForRecipientUserId:(NSString *)userId since:(NSTimeInterval)timestamp;
 
-+(instancetype)dashpayRequestForProfileWithUserId:(NSString*)userId;
++ (instancetype)dashpayRequestForProfileWithUserId:(NSString *)userId;
 
--(GetDocumentsRequest*)getDocumentsRequest;
+- (GetDocumentsRequest *)getDocumentsRequest;
 
 @end
 

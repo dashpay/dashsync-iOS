@@ -30,18 +30,21 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    
-    [self mvvm_observe:@"cellModel.title" with:^(typeof(self) self, NSString * value) {
-        self.titleLabel.text = value;
-    }];
-    
-    [self mvvm_observe:@"cellModel.placeholder" with:^(typeof(self) self, NSString * value) {
-        self.textField.placeholder = value;
-    }];
-    
-    [self mvvm_observe:@"cellModel.text" with:^(typeof(self) self, NSString * value) {
-        self.textField.text = value;
-    }];
+
+    [self mvvm_observe:@"cellModel.title"
+                  with:^(typeof(self) self, NSString *value) {
+                      self.titleLabel.text = value;
+                  }];
+
+    [self mvvm_observe:@"cellModel.placeholder"
+                  with:^(typeof(self) self, NSString *value) {
+                      self.textField.placeholder = value;
+                  }];
+
+    [self mvvm_observe:@"cellModel.text"
+                  with:^(typeof(self) self, NSString *value) {
+                      self.textField.text = value;
+                  }];
 }
 
 - (void)setCellModel:(nullable TextFieldFormCellModel *)cellModel {
@@ -93,7 +96,7 @@ NS_ASSUME_NONNULL_BEGIN
     else if (textField.returnKeyType == UIReturnKeyDone) {
         [self endEditing:YES];
     }
-    
+
     return YES;
 }
 

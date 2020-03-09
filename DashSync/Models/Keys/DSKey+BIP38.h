@@ -40,20 +40,20 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype _Nullable)keyWithBIP38Key:(NSString *)key andPassphrase:(NSString *)passphrase onChain:(DSChain *)chain;
 
 // generates an "intermediate code" for an EC multiply mode key, salt should be 64bits of random data
-+ (NSString * _Nullable)BIP38IntermediateCodeWithSalt:(uint64_t)salt andPassphrase:(NSString *)passphrase;
++ (NSString *_Nullable)BIP38IntermediateCodeWithSalt:(uint64_t)salt andPassphrase:(NSString *)passphrase;
 
 // generates an "intermediate code" for an EC multiply mode key with a lot and sequence number, lot must be less than
 // 1048576, sequence must be less than 4096, and salt should be 32bits of random data
 + (NSString *)BIP38IntermediateCodeWithLot:(uint32_t)lot sequence:(uint16_t)sequence salt:(uint32_t)salt
-passphrase:(NSString *)passphrase;
+                                passphrase:(NSString *)passphrase;
 
 // generates a BIP38 key from an "intermediate code" and 24 bytes of cryptographically random data (seedb),
-+ (NSString * _Nullable)BIP38KeyWithIntermediateCode:(NSString *)code seedb:(NSData *)seedb onChain:(DSChain* _Nonnull)chain;
++ (NSString *_Nullable)BIP38KeyWithIntermediateCode:(NSString *)code seedb:(NSData *)seedb onChain:(DSChain *_Nonnull)chain;
 
 - (nullable instancetype)initWithBIP38Key:(NSString *)key andPassphrase:(NSString *)passphrase onChain:(DSChain *)chain;
 
 // encrypts receiver with passphrase and returns BIP38 key
-- (NSString * _Nullable)BIP38KeyWithPassphrase:(NSString *)passphrase onChain:(DSChain*)chain;
+- (NSString *_Nullable)BIP38KeyWithPassphrase:(NSString *)passphrase onChain:(DSChain *)chain;
 
 @end
 

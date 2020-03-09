@@ -7,13 +7,13 @@
 //
 
 #import "DSBlockchainIdentityActionsViewController.h"
-#import "DSTopupBlockchainIdentityViewController.h"
 #import "DSBlockchainIdentityTransitionsViewController.h"
+#import "DSTopupBlockchainIdentityViewController.h"
 
-#import "DSContactsNavigationController.h"
-#import <SDWebImage/SDWebImage.h>
 #import "DSContactProfileViewController.h"
+#import "DSContactsNavigationController.h"
 #import "DSRegisterContractsViewController.h"
+#import <SDWebImage/SDWebImage.h>
 
 @interface DSBlockchainIdentityActionsViewController () <DSContactProfileViewControllerDelegate>
 @property (strong, nonatomic) IBOutlet UIImageView *avatarImageView;
@@ -36,29 +36,32 @@
             [self updateProfile];
         }];
     }
-    
+
     self.blockchainIdentityNameObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSBlockchainIdentityDidUpdateUsernameStatusNotification object:nil
-                                                       queue:nil usingBlock:^(NSNotification *note) {
-                                                           
-                                                           if ([note.userInfo[DSBlockchainIdentityKey] isEqual:self]) {
-                                                               [self reloadRegistrationInfo];
-                                                           }
-                                                       }];
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSBlockchainIdentityDidUpdateUsernameStatusNotification
+                                                          object:nil
+                                                           queue:nil
+                                                      usingBlock:^(NSNotification *note) {
+                                                          if ([note.userInfo[DSBlockchainIdentityKey] isEqual:self]) {
+                                                              [self reloadRegistrationInfo];
+                                                          }
+                                                      }];
 }
 
--(void)dealloc {
+- (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self.blockchainIdentityNameObserver];
 }
 
--(void)reloadRegistrationInfo {
+- (void)reloadRegistrationInfo {
     if (!self.blockchainIdentity.registered) {
         self.aboutMeLabel.text = @"Register Identity";
         self.usernameStatusLabel.text = @"";
-    } else if (!self.blockchainIdentity.currentUsername) {
+    }
+    else if (!self.blockchainIdentity.currentUsername) {
         self.aboutMeLabel.text = @"Set Username";
         self.usernameStatusLabel.text = @"";
-    } else if ([self.blockchainIdentity statusOfUsername:self.blockchainIdentity.currentUsername] != DSBlockchainIdentityUsernameStatus_Confirmed) {
+    }
+    else if ([self.blockchainIdentity statusOfUsername:self.blockchainIdentity.currentUsername] != DSBlockchainIdentityUsernameStatus_Confirmed) {
         self.aboutMeLabel.text = @"Register Username";
         switch ([self.blockchainIdentity statusOfUsername:self.blockchainIdentity.currentUsername]) {
             case DSBlockchainIdentityUsernameStatus_Initial:
@@ -77,8 +80,8 @@
                 self.usernameStatusLabel.text = @"";
                 break;
         }
-        
-    } else if (!self.blockchainIdentity.ownContact) {
+    }
+    else if (!self.blockchainIdentity.ownContact) {
         self.aboutMeLabel.text = @"Fetching";
         [self.avatarImageView sd_setImageWithURL:nil];
         self.usernameStatusLabel.text = @"";
@@ -89,17 +92,17 @@
     }
 }
 
--(void)loadProfileInitial {
+- (void)loadProfileInitial {
     self.title = self.blockchainIdentity.currentUsername;
     [self reloadRegistrationInfo];
-    
+
     self.typeLabel.text = self.blockchainIdentity.localizedBlockchainIdentityTypeString;
-    self.indexLabel.text = [NSString stringWithFormat:@"%d",self.blockchainIdentity.index];
-    
+    self.indexLabel.text = [NSString stringWithFormat:@"%d", self.blockchainIdentity.index];
+
     self.uniqueIdLabel.text = self.blockchainIdentity.uniqueIdString;
 }
 
--(void)updateProfile {
+- (void)updateProfile {
     self.title = self.blockchainIdentity.currentUsername;
     if (!self.blockchainIdentity.ownContact.isRegistered) {
         self.aboutMeLabel.text = @"Register Profile";
@@ -116,19 +119,23 @@
     // Dispose of any resources that can be recreated.
 }
 
--(void)raiseIssue:(NSString*)issue message:(NSString*)message {
-    UIAlertController * alert = [UIAlertController alertControllerWithTitle:issue message:message preferredStyle:UIAlertControllerStyleAlert];
-    [alert addAction:[UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
-        
-    }]];
-    [self presentViewController:alert animated:TRUE completion:^{
-        
-    }];
+- (void)raiseIssue:(NSString *)issue message:(NSString *)message {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:issue message:message preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Ok"
+                                              style:UIAlertActionStyleCancel
+                                            handler:^(UIAlertAction *_Nonnull action){
+
+                                            }]];
+    [self presentViewController:alert
+                       animated:TRUE
+                     completion:^{
+
+                     }];
 }
 
--(IBAction)registerBlockchainIdentity:(id)sender {
+- (IBAction)registerBlockchainIdentity:(id)sender {
     if (self.blockchainIdentity.isRegistered) return;
-    [self.blockchainIdentity createAndPublishRegistrationTransitionWithCompletion:^(NSDictionary * _Nullable successInfo, NSError * _Nullable error) {
+    [self.blockchainIdentity createAndPublishRegistrationTransitionWithCompletion:^(NSDictionary *_Nullable successInfo, NSError *_Nullable error) {
         if (error) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 [self raiseIssue:@"Unable to register." message:error.localizedDescription];
@@ -137,104 +144,111 @@
     }];
 }
 
--(IBAction)reset:(id)sender {
-//    [self.blockchainIdentity resetTransactionUsingNewIndex:self.blockchainIdentity.wallet.unusedBlockchainIdentityIndex completion:^(DSBlockchainIdentityUpdateTransition *blockchainIdentityResetTransaction) {
-//        [self.chainManager.transactionManager publishTransaction:blockchainIdentityResetTransaction completion:^(NSError * _Nullable error) {
-//            if (error) {
-//                [self raiseIssue:@"Error" message:error.localizedDescription];
-//                
-//            } else {
-//                [self.navigationController popViewControllerAnimated:TRUE];
-//            }
-//        }];
-//    }];
+- (IBAction)reset:(id)sender {
+    //    [self.blockchainIdentity resetTransactionUsingNewIndex:self.blockchainIdentity.wallet.unusedBlockchainIdentityIndex completion:^(DSBlockchainIdentityUpdateTransition *blockchainIdentityResetTransaction) {
+    //        [self.chainManager.transactionManager publishTransaction:blockchainIdentityResetTransaction completion:^(NSError * _Nullable error) {
+    //            if (error) {
+    //                [self raiseIssue:@"Error" message:error.localizedDescription];
+    //
+    //            } else {
+    //                [self.navigationController popViewControllerAnimated:TRUE];
+    //            }
+    //        }];
+    //    }];
 }
 
--(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0) {
         if (indexPath.row == 1 && !self.blockchainIdentity.registered) {
             UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Identity Type"
                                                                                      message:nil
                                                                               preferredStyle:UIAlertControllerStyleActionSheet];
-            
+
             [alertController addAction:[UIAlertAction actionWithTitle:@"User"
-                                                                    style:UIAlertActionStyleDefault
-                                                                  handler:^(UIAlertAction *_Nonnull action) {
-                self.typeLabel.text = @"User";
-                self.blockchainIdentity.type = DSBlockchainIdentityType_User;
-                                                                  }]];
-            
+                                                                style:UIAlertActionStyleDefault
+                                                              handler:^(UIAlertAction *_Nonnull action) {
+                                                                  self.typeLabel.text = @"User";
+                                                                  self.blockchainIdentity.type = DSBlockchainIdentityType_User;
+                                                              }]];
+
             [alertController addAction:[UIAlertAction actionWithTitle:@"Application"
-              style:UIAlertActionStyleDefault
-            handler:^(UIAlertAction *_Nonnull action) {
-                self.typeLabel.text = @"Application";
-                self.blockchainIdentity.type = DSBlockchainIdentityType_Application;
-            }]];
-            
+                                                                style:UIAlertActionStyleDefault
+                                                              handler:^(UIAlertAction *_Nonnull action) {
+                                                                  self.typeLabel.text = @"Application";
+                                                                  self.blockchainIdentity.type = DSBlockchainIdentityType_Application;
+                                                              }]];
+
             [self presentViewController:alertController animated:YES completion:nil];
-        } else if (indexPath.row == 3) { // About me / Register
+        }
+        else if (indexPath.row == 3) { // About me / Register
             if (!self.blockchainIdentity.registered) {
                 [self registerBlockchainIdentity:self];
-            } else if (self.blockchainIdentity.currentUsername && [self.blockchainIdentity statusOfUsername:self.blockchainIdentity.currentUsername] != DSBlockchainIdentityUsernameStatus_Confirmed) {
+            }
+            else if (self.blockchainIdentity.currentUsername && [self.blockchainIdentity statusOfUsername:self.blockchainIdentity.currentUsername] != DSBlockchainIdentityUsernameStatus_Confirmed) {
                 [self.blockchainIdentity registerUsernames];
-            } else {
+            }
+            else {
                 DSContactProfileViewController *controller = [[DSContactProfileViewController alloc] initWithBlockchainIdentity:self.blockchainIdentity];
                 controller.delegate = self;
                 UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:controller];
                 [self presentViewController:navigationController animated:YES completion:nil];
             }
-        } else if (indexPath.row == 5) { //Keys
-            
+        }
+        else if (indexPath.row == 5) { //Keys
         }
     }
     else if (indexPath.section == 1) { //Dashpay
-        if (indexPath.row == 0) { //Contacts
+        if (indexPath.row == 0) {      //Contacts
             DSContactsNavigationController *controller = [DSContactsNavigationController controllerWithChainManager:self.chainManager blockchainIdentity:self.blockchainIdentity];
             [self presentViewController:controller animated:YES completion:nil];
         }
-    } else if (indexPath.section == 2) { //Contracts
-        if (indexPath.row == 0) { //Register
+    }
+    else if (indexPath.section == 2) { //Contracts
+        if (indexPath.row == 0) {      //Register
             [self performSegueWithIdentifier:@"RegisterContractsSegue" sender:self];
-        } else if (indexPath.row == 1) { //View
-            
         }
-    } else if (indexPath.section == 3) { //Actions
+        else if (indexPath.row == 1) { //View
+        }
+    }
+    else if (indexPath.section == 3) { //Actions
         if (indexPath.row == 0) {
-
-        } else if (indexPath.row == 2) {
+        }
+        else if (indexPath.row == 2) {
         }
         else if (indexPath.row == 3) {
-            
-        } else if (indexPath.row == 4) {
-//            [tableView deselectRowAtIndexPath:indexPath animated:YES];
-//
-//            __weak typeof(self) weakSelf = self;
-//            [self.chainManager.DAPIClient ds_registerDashPayContractForUser:self.blockchainIdentity forChain:self.chainManager.chain completion:^(NSError * _Nullable error) {
-//                __strong typeof(weakSelf) strongSelf = weakSelf;
-//                if (!strongSelf) {
-//                    return;
-//                }
-//
-//                if (error) {
-//                    [strongSelf raiseIssue:@"Error" message:error.localizedDescription];
-//                }
-//            }];
+        }
+        else if (indexPath.row == 4) {
+            //            [tableView deselectRowAtIndexPath:indexPath animated:YES];
+            //
+            //            __weak typeof(self) weakSelf = self;
+            //            [self.chainManager.DAPIClient ds_registerDashPayContractForUser:self.blockchainIdentity forChain:self.chainManager.chain completion:^(NSError * _Nullable error) {
+            //                __strong typeof(weakSelf) strongSelf = weakSelf;
+            //                if (!strongSelf) {
+            //                    return;
+            //                }
+            //
+            //                if (error) {
+            //                    [strongSelf raiseIssue:@"Error" message:error.localizedDescription];
+            //                }
+            //            }];
         }
     }
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
--(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"BlockchainIdentityTopupSegue"]) {
-        DSTopupBlockchainIdentityViewController * topupBlockchainIdentityViewController = (DSTopupBlockchainIdentityViewController*)segue.destinationViewController;
+        DSTopupBlockchainIdentityViewController *topupBlockchainIdentityViewController = (DSTopupBlockchainIdentityViewController *)segue.destinationViewController;
         topupBlockchainIdentityViewController.chainManager = self.chainManager;
         topupBlockchainIdentityViewController.blockchainIdentity = self.blockchainIdentity;
-    } else if ([segue.identifier isEqualToString:@"BlockchainIdentityTransitionsSegue"]) {
-        DSBlockchainIdentityTransitionsViewController * blockchainIdentityTransitionsViewController = (DSBlockchainIdentityTransitionsViewController*)segue.destinationViewController;
+    }
+    else if ([segue.identifier isEqualToString:@"BlockchainIdentityTransitionsSegue"]) {
+        DSBlockchainIdentityTransitionsViewController *blockchainIdentityTransitionsViewController = (DSBlockchainIdentityTransitionsViewController *)segue.destinationViewController;
         blockchainIdentityTransitionsViewController.chainManager = self.chainManager;
         blockchainIdentityTransitionsViewController.blockchainIdentity = self.blockchainIdentity;
-    } else if ([segue.identifier isEqualToString:@"RegisterContractsSegue"]) {
-        DSRegisterContractsViewController * controller = segue.destinationViewController;
+    }
+    else if ([segue.identifier isEqualToString:@"RegisterContractsSegue"]) {
+        DSRegisterContractsViewController *controller = segue.destinationViewController;
         controller.blockchainIdentity = self.blockchainIdentity;
     }
 }
@@ -247,7 +261,7 @@
 
 - (void)contactProfileViewControllerDidUpdateProfile:(DSContactProfileViewController *)controller {
     [controller dismissViewControllerAnimated:YES completion:nil];
-    
+
     [self.blockchainIdentity fetchProfile:^(BOOL success) {
         [self updateProfile];
     }];

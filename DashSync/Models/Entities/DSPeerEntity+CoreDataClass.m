@@ -1,6 +1,6 @@
 //
 //  DSPeerEntity+CoreDataClass.m
-//  
+//
 //
 //  Created by Sam Westrich on 5/20/18.
 //
@@ -22,21 +22,20 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSPeerEntity+CoreDataClass.h"
-#import "DSPeer.h"
 #import "DSChain.h"
 #import "DSChainEntity+CoreDataClass.h"
+#import "DSPeer.h"
+#import "DSPeerEntity+CoreDataClass.h"
 #import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 #import <arpa/inet.h>
 
 @implementation DSPeerEntity
 
-- (instancetype)setAttributesFromPeer:(DSPeer *)peer
-{
+- (instancetype)setAttributesFromPeer:(DSPeer *)peer {
     //TODO: store IPv6 addresses
     if (peer.address.u64[0] != 0 || peer.address.u32[2] != CFSwapInt32HostToBig(0xffff)) return nil;
-    
+
     [self.managedObjectContext performBlockAndWait:^{
         self.address = CFSwapInt32BigToHost(peer.address.u32[3]);
         self.port = peer.port;
@@ -49,31 +48,30 @@
         self.lastRequestedGovernanceSync = peer.lastRequestedGovernanceSync;
         self.chain = [DSChainEntity chainEntityForType:peer.chain.chainType devnetIdentifier:peer.chain.devnetIdentifier checkpoints:nil];
     }];
-    
+
     return self;
 }
 
-- (DSPeer *)peer
-{
+- (DSPeer *)peer {
     __block DSPeer *peer = nil;
-    
+
     [self.managedObjectContext performBlockAndWait:^{
-        UInt128 address = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), CFSwapInt32HostToBig(self.address) } };
-        DSChain * chain = [self.chain chain];
+        UInt128 address = {.u32 = {0, 0, CFSwapInt32HostToBig(0xffff), CFSwapInt32HostToBig(self.address)}};
+        DSChain *chain = [self.chain chain];
         peer = [[DSPeer alloc] initWithAddress:address port:self.port onChain:chain timestamp:self.timestamp services:self.services];
         peer.misbehaving = self.misbehavin;
         peer.priority = self.priority;
         peer.lowPreferenceTill = self.lowPreferenceTill;
         peer.lastRequestedMasternodeList = self.lastRequestedMasternodeList;
     }];
-    
+
     return peer;
 }
 
-+ (void)deletePeersForChain:(DSChainEntity*)chainEntity {
++ (void)deletePeersForChain:(DSChainEntity *)chainEntity {
     [chainEntity.managedObjectContext performBlockAndWait:^{
-        NSArray * peersToDelete = [self objectsMatching:@"(chain == %@)",chainEntity];
-        for (DSPeerEntity * peer in peersToDelete) {
+        NSArray *peersToDelete = [self objectsMatching:@"(chain == %@)", chainEntity];
+        for (DSPeerEntity *peer in peersToDelete) {
             [chainEntity.managedObjectContext deleteObject:peer];
         }
     }];

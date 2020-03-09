@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -15,8 +15,8 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
 #import "DPTypes.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -35,9 +35,9 @@ typedef NS_ENUM(NSUInteger, DPDocumentStateType) {
 
 - (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary;
 
-+ (DPDocumentState*)documentStateWithDataDictionary:(DSStringValueDictionary *)dataDictionary;
++ (DPDocumentState *)documentStateWithDataDictionary:(DSStringValueDictionary *)dataDictionary;
 
-+ (DPDocumentState*)documentStateWithDataDictionary:(DSStringValueDictionary *)dataDictionary ofType:(DPDocumentStateType)documentStateType;
++ (DPDocumentState *)documentStateWithDataDictionary:(DSStringValueDictionary *)dataDictionary ofType:(DPDocumentStateType)documentStateType;
 
 @end
 

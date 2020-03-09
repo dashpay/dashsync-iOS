@@ -12,7 +12,7 @@
 
 @interface DSAccountsViewController ()
 
-@property (nonatomic,strong) NSArray <DSAccount*> * accounts;
+@property (nonatomic, strong) NSArray<DSAccount *> *accounts;
 
 @end
 
@@ -20,10 +20,10 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
-    
+
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
@@ -47,21 +47,21 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     DSAccountTableViewCell *cell = (DSAccountTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"AccountCellIdentifier" forIndexPath:indexPath];
-    
+
     // Configure the cell...
     [self configureCell:cell atIndexPath:indexPath];
     return cell;
 }
 
--(NSArray*)accounts {
+- (NSArray *)accounts {
     if (_accounts) return _accounts;
-    _accounts = [self.wallet.accounts sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"accountNumber" ascending:TRUE]]];
+    _accounts = [self.wallet.accounts sortedArrayUsingDescriptors:@[ [NSSortDescriptor sortDescriptorWithKey:@"accountNumber" ascending:TRUE] ]];
     return _accounts;
 }
 
--(void)configureCell:(DSAccountTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
-    DSAccount * account = [[self accounts] objectAtIndex:indexPath.row];
-    cell.accountNumberLabel.text = [NSString stringWithFormat:@"%u",account.accountNumber];
+- (void)configureCell:(DSAccountTableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath {
+    DSAccount *account = [[self accounts] objectAtIndex:indexPath.row];
+    cell.accountNumberLabel.text = [NSString stringWithFormat:@"%u", account.accountNumber];
     cell.balanceLabel.text = [[DSPriceManager sharedInstance] stringForDashAmount:account.balance];
     [[DSPriceManager sharedInstance] stringForDashAmount:account.balance];
 }
@@ -104,11 +104,11 @@
 
 #pragma mark - Navigation
 
- -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
- if ([segue.identifier isEqualToString:@"ViewAccountsDerivationPathsSegue"]) {
- NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
- DSAccountsDerivationPathsViewController * accountsDerivationPathsViewController = (DSAccountsDerivationPathsViewController*)segue.destinationViewController;
- accountsDerivationPathsViewController.account = [self.accounts objectAtIndex:indexPath.row];
- }
- }
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    if ([segue.identifier isEqualToString:@"ViewAccountsDerivationPathsSegue"]) {
+        NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
+        DSAccountsDerivationPathsViewController *accountsDerivationPathsViewController = (DSAccountsDerivationPathsViewController *)segue.destinationViewController;
+        accountsDerivationPathsViewController.account = [self.accounts objectAtIndex:indexPath.row];
+    }
+}
 @end

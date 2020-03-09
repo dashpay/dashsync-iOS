@@ -11,7 +11,7 @@
 @implementation DSBlockchainIdentityCloseTransitionEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSBlockchainIdentityCloseTransitionEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSBlockchainIdentityCloseTransitionEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSBlockchainIdentityCloseTransitionEntity"];
 }
 
 @dynamic reason;

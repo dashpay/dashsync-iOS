@@ -5,8 +5,8 @@
 //  Created by Sam Westrich on 6/5/18.
 //
 
-#import <Foundation/Foundation.h>
 #import <DSDynamicOptions/DSDynamicOptions.h>
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -29,16 +29,16 @@ typedef NS_ENUM(NSUInteger, DSSyncType) {
 
 @interface DSOptionsManager : DSDynamicOptions
 
-@property (nonatomic,assign) BOOL keepHeaders;
-@property (nonatomic,assign) BOOL useCheckpointMasternodeLists;
-@property (nonatomic,assign) BOOL smartOutputs;
-@property (nonatomic,assign) BOOL syncFromGenesis;
-@property (nonatomic,assign) BOOL retrievePriceInfo;
-@property (nonatomic,assign) BOOL shouldSyncFromHeight;
-@property (nonatomic,assign) uint32_t syncFromHeight;
-@property (nonatomic,assign) NSTimeInterval syncGovernanceObjectsInterval;
-@property (nonatomic,assign) NSTimeInterval syncMasternodeListInterval;
-@property (nonatomic,assign) DSSyncType syncType;
+@property (nonatomic, assign) BOOL keepHeaders;
+@property (nonatomic, assign) BOOL useCheckpointMasternodeLists;
+@property (nonatomic, assign) BOOL smartOutputs;
+@property (nonatomic, assign) BOOL syncFromGenesis;
+@property (nonatomic, assign) BOOL retrievePriceInfo;
+@property (nonatomic, assign) BOOL shouldSyncFromHeight;
+@property (nonatomic, assign) uint32_t syncFromHeight;
+@property (nonatomic, assign) NSTimeInterval syncGovernanceObjectsInterval;
+@property (nonatomic, assign) NSTimeInterval syncMasternodeListInterval;
+@property (nonatomic, assign) DSSyncType syncType;
 
 + (instancetype)sharedInstance;
 

@@ -11,7 +11,7 @@
 @implementation DSProviderRegistrationTransactionEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSProviderRegistrationTransactionEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSProviderRegistrationTransactionEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSProviderRegistrationTransactionEntity"];
 }
 
 @dynamic payloadSignature;

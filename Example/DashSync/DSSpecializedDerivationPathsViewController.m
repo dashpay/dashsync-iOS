@@ -7,14 +7,14 @@
 //
 
 #import "DSSpecializedDerivationPathsViewController.h"
+#import "DSAuthenticationKeysDerivationPathsAddressesViewController.h"
+#import "DSDerivationPath.h"
 #import "DSDerivationPathFactory.h"
 #import "DSDerivationPathTableViewCell.h"
-#import "DSDerivationPath.h"
-#import "DSAuthenticationKeysDerivationPathsAddressesViewController.h"
 
 @interface DSSpecializedDerivationPathsViewController ()
 
-@property (nonatomic,strong) NSArray <DSDerivationPath*> * derivationPaths;
+@property (nonatomic, strong) NSArray<DSDerivationPath *> *derivationPaths;
 
 @end
 
@@ -23,7 +23,6 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.derivationPaths = [[DSDerivationPathFactory sharedInstance] loadedSpecializedDerivationPathsForWallet:self.wallet];
-    
 }
 
 #pragma mark - Table view data source
@@ -38,20 +37,20 @@
 
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    static NSString * identifier = @"DerivationPathCellIdentifier";
-    
-    DSDerivationPath * derivationPath = self.derivationPaths[indexPath.row];
-    
+    static NSString *identifier = @"DerivationPathCellIdentifier";
+
+    DSDerivationPath *derivationPath = self.derivationPaths[indexPath.row];
+
     DSDerivationPathTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier forIndexPath:indexPath];
-    
+
     cell.derivationPathLabel.text = derivationPath.stringRepresentation;
-    cell.signingMechanismLabel.text = (derivationPath.signingAlgorithm == DSDerivationPathSigningAlgorith_BLS)?@"BLS":@"ECDSA";
+    cell.signingMechanismLabel.text = (derivationPath.signingAlgorithm == DSDerivationPathSigningAlgorith_BLS) ? @"BLS" : @"ECDSA";
     cell.referenceNameLabel.text = derivationPath.referenceName;
-    
-    cell.knownAddressesLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)derivationPath.allAddresses.count];
-    cell.usedAddressesLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)derivationPath.usedAddresses.count];
+
+    cell.knownAddressesLabel.text = [NSString stringWithFormat:@"%lu", (unsigned long)derivationPath.allAddresses.count];
+    cell.usedAddressesLabel.text = [NSString stringWithFormat:@"%lu", (unsigned long)derivationPath.usedAddresses.count];
     cell.xPublicKeyLabel.text = derivationPath.extendedPublicKey.hexString;
-    
+
     return cell;
 }
 
@@ -95,11 +94,11 @@
 
 // In a storyboard-based application, you will often want to do a little preparation before navigation
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-     if ([segue.identifier isEqualToString:@"ViewSpecializedAddressesSegue"]) {
-         NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
-         DSAuthenticationKeysDerivationPathsAddressesViewController * derivationPathsAddressesViewController = (DSAuthenticationKeysDerivationPathsAddressesViewController*)segue.destinationViewController;
-         derivationPathsAddressesViewController.derivationPath = (DSSimpleIndexedDerivationPath*)[self.derivationPaths objectAtIndex:indexPath.row];
-     }
+    if ([segue.identifier isEqualToString:@"ViewSpecializedAddressesSegue"]) {
+        NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
+        DSAuthenticationKeysDerivationPathsAddressesViewController *derivationPathsAddressesViewController = (DSAuthenticationKeysDerivationPathsAddressesViewController *)segue.destinationViewController;
+        derivationPathsAddressesViewController.derivationPath = (DSSimpleIndexedDerivationPath *)[self.derivationPaths objectAtIndex:indexPath.row];
+    }
 }
 
 

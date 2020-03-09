@@ -1,6 +1,6 @@
 //
 //  DSTxOutputEntity+CoreDataClass.h
-//  
+//
 //
 //  Created by Sam Westrich on 5/20/18.
 //
@@ -22,16 +22,16 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
-@class DSTransactionEntity,DSTransaction,DSDerivationPathEntity,DSAddressEntity,DSTxInputEntity,DSAccountEntity;
+@class DSTransactionEntity, DSTransaction, DSDerivationPathEntity, DSAddressEntity, DSTxInputEntity, DSAccountEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSTxOutputEntity : NSManagedObject
 
-- (instancetype)setAttributesFromTransaction:(DSTransaction *)tx outputIndex:(NSUInteger)index forTransactionEntity:(DSTransactionEntity*)transactionEntity;
+- (instancetype)setAttributesFromTransaction:(DSTransaction *)tx outputIndex:(NSUInteger)index forTransactionEntity:(DSTransactionEntity *)transactionEntity;
 
 @end
 

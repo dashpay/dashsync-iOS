@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic) uint32_t index;
 @property (nullable, nonatomic, copy) NSString *walletUniqueID;
-@property (nullable, nonatomic, retain) DSChainEntity * chain;
+@property (nullable, nonatomic, retain) DSChainEntity *chain;
 @property (nullable, nonatomic, retain) NSSet<DSTxOutputEntity *> *transactionOutputs;
 @property (nullable, nonatomic, retain) NSSet<DSDerivationPath *> *derivationPaths;
 

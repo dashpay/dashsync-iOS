@@ -29,11 +29,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSGovernanceSyncManager (Protected)
 
-@property (nonatomic,readonly) NSUInteger last3HoursStandaloneGovernanceObjectHashesCount;
+@property (nonatomic, readonly) NSUInteger last3HoursStandaloneGovernanceObjectHashesCount;
 
--(void)requestGovernanceObjectsFromPeer:(DSPeer*)peer;
+- (void)requestGovernanceObjectsFromPeer:(DSPeer *)peer;
 
--(void)finishedGovernanceVoteSyncWithPeer:(DSPeer*)peer;
+- (void)finishedGovernanceVoteSyncWithPeer:(DSPeer *)peer;
 
 @end
 

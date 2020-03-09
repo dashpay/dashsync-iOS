@@ -28,14 +28,14 @@
 
 #import <Foundation/Foundation.h>
 
-#define BLOCK_UNKNOWN_HEIGHT      INT32_MAX
+#define BLOCK_UNKNOWN_HEIGHT INT32_MAX
 #define DGW_PAST_BLOCKS_MIN 24
 #define DGW_PAST_BLOCKS_MAX 24
 
 #if (DEBUG && 1)
 #define LLMQ_KEEP_RECENT_BLOCKS 20000
 #else
-#define LLMQ_KEEP_RECENT_BLOCKS (576*8 + 100)
+#define LLMQ_KEEP_RECENT_BLOCKS (576 * 8 + 100)
 #endif
 
 NS_ASSUME_NONNULL_BEGIN
@@ -65,18 +65,25 @@ typedef union _UInt256 UInt256;
 // true if merkle tree and timestamp are valid, and proof-of-work matches the stated difficulty target
 // NOTE: This only checks if the block difficulty matches the difficulty target in the header. It does not check if the
 // target is correct for the block's height in the chain. Use verifyDifficultyFromPreviousBlock: for that.
-@property (nonatomic, readonly, getter = isValid) BOOL valid;
-@property (nonatomic, readonly, getter = isMerkleTreeValid) BOOL merkleTreeValid;
+@property (nonatomic, readonly, getter=isValid) BOOL valid;
+@property (nonatomic, readonly, getter=isMerkleTreeValid) BOOL merkleTreeValid;
 
-@property (nonatomic, readonly, getter = toData) NSData *data;
+@property (nonatomic, readonly, getter=toData) NSData *data;
 
 // message can be either a merkleblock or header message
-+ (instancetype)blockWithMessage:(NSData *)message onChain:(DSChain*)chain;
++ (instancetype)blockWithMessage:(NSData *)message onChain:(DSChain *)chain;
 
-- (instancetype)initWithMessage:(NSData *)message onChain:(DSChain*)chain;
-- (instancetype)initWithBlockHash:(UInt256)blockHash onChain:(DSChain*)chain version:(uint32_t)version prevBlock:(UInt256)prevBlock
-merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
-totalTransactions:(uint32_t)totalTransactions hashes:(NSData * _Nullable)hashes flags:(NSData * _Nullable)flags height:(uint32_t)height chainLock:(DSChainLock* _Nullable)chainLock;
+- (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain;
+- (instancetype)initWithBlockHash:(UInt256)blockHash onChain:(DSChain *)chain version:(uint32_t)version prevBlock:(UInt256)prevBlock
+                       merkleRoot:(UInt256)merkleRoot
+                        timestamp:(uint32_t)timestamp
+                           target:(uint32_t)target
+                            nonce:(uint32_t)nonce
+                totalTransactions:(uint32_t)totalTransactions
+                           hashes:(NSData *_Nullable)hashes
+                            flags:(NSData *_Nullable)flags
+                           height:(uint32_t)height
+                        chainLock:(DSChainLock *_Nullable)chainLock;
 
 // this init is used to check that the coinbase transaction is properly in the merkle tree of a block
 - (instancetype)initWithBlockHash:(UInt256)blockHash merkleRoot:(UInt256)merkleRoot totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags;
@@ -89,7 +96,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData * _Nullable)hashes 
 
 - (int32_t)darkGravityWaveTargetWithPreviousBlocks:(NSMutableDictionary *)previousBlocks;
 
-- (void)setChainLockedWithChainLock:(DSChainLock*)chainLock;
+- (void)setChainLockedWithChainLock:(DSChainLock *)chainLock;
 
 @end
 

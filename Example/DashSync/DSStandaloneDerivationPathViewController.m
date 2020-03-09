@@ -7,9 +7,9 @@
 //
 
 #import "DSStandaloneDerivationPathViewController.h"
-#import "DSStandaloneDerivationPathTableViewCell.h"
-#import "DSStandaloneDerivationPathKeyInputViewController.h"
 #import "DSFundsDerivationPathsAddressesViewController.h"
+#import "DSStandaloneDerivationPathKeyInputViewController.h"
+#import "DSStandaloneDerivationPathTableViewCell.h"
 
 @interface DSStandaloneDerivationPathViewController ()
 
@@ -21,15 +21,17 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     self.chainStandaloneDerivationPathObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil
-                                                       queue:nil usingBlock:^(NSNotification *note) {
-                                                           [self.tableView reloadData];
-                                                       }];
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainStandaloneDerivationPathsDidChangeNotification
+                                                          object:nil
+                                                           queue:nil
+                                                      usingBlock:^(NSNotification *note) {
+                                                          [self.tableView reloadData];
+                                                      }];
 }
-     
--(void)dealloc {
+
+- (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self.chainStandaloneDerivationPathObserver];
 }
 
@@ -40,58 +42,58 @@
 
 #pragma mark - Table view data source
 
--(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     return [self.chain.standaloneDerivationPaths count];
 }
 
--(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     return 1;
 }
 
--(UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"StandaloneDerivationPathCellIdentifier"];
-    
+
     // Set up the cell...
     [self configureCell:cell atIndexPath:indexPath];
     return cell;
 }
 
--(void)configureCell:(UITableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
+- (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath {
 
-        DSStandaloneDerivationPathTableViewCell * walletCell = (DSStandaloneDerivationPathTableViewCell*)cell;
-        DSDerivationPath * derivationPath = [[self.chain standaloneDerivationPaths] objectAtIndex:indexPath.row];
-        walletCell.xPublicKeyLabel.text = [derivationPath serializedExtendedPublicKey];
+    DSStandaloneDerivationPathTableViewCell *walletCell = (DSStandaloneDerivationPathTableViewCell *)cell;
+    DSDerivationPath *derivationPath = [[self.chain standaloneDerivationPaths] objectAtIndex:indexPath.row];
+    walletCell.xPublicKeyLabel.text = [derivationPath serializedExtendedPublicKey];
 }
 
--(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0) return 200;
     return 50;
 }
 
--(BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
     return TRUE;
 }
 
--(void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
     if (editingStyle == UITableViewCellEditingStyleDelete) {
-        
+
         [self.tableView beginUpdates];
         [self.chain unregisterStandaloneDerivationPath:[self.chain.standaloneDerivationPaths objectAtIndex:indexPath.row]];
-        [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+        [self.tableView deleteRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationFade];
         [self.tableView endUpdates];
     }
 }
 
--(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"AddStandaloneDerivationPathSegue"]) {
-        DSStandaloneDerivationPathKeyInputViewController * standaloneDerivationPathKeyInputViewController = (DSStandaloneDerivationPathKeyInputViewController*)segue.destinationViewController;
+        DSStandaloneDerivationPathKeyInputViewController *standaloneDerivationPathKeyInputViewController = (DSStandaloneDerivationPathKeyInputViewController *)segue.destinationViewController;
         standaloneDerivationPathKeyInputViewController.chain = self.chain;
-    } else if ([segue.identifier isEqualToString:@"ViewStandaloneDerivationPathsAddressesSegue"]) {
+    }
+    else if ([segue.identifier isEqualToString:@"ViewStandaloneDerivationPathsAddressesSegue"]) {
         NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
-        DSFundsDerivationPathsAddressesViewController * addresses = (DSFundsDerivationPathsAddressesViewController*)segue.destinationViewController;
-        addresses.derivationPath = (DSFundsDerivationPath*)[self.chain.standaloneDerivationPaths objectAtIndex:indexPath.row];
+        DSFundsDerivationPathsAddressesViewController *addresses = (DSFundsDerivationPathsAddressesViewController *)segue.destinationViewController;
+        addresses.derivationPath = (DSFundsDerivationPath *)[self.chain.standaloneDerivationPaths objectAtIndex:indexPath.row];
     }
 }
 
 @end
-

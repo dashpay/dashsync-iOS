@@ -11,7 +11,7 @@
 @implementation DSBlockchainIdentityKeyPathEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSBlockchainIdentityKeyPathEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSBlockchainIdentityKeyPathEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSBlockchainIdentityKeyPathEntity"];
 }
 
 @dynamic path;

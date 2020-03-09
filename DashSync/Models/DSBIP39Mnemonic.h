@@ -25,8 +25,8 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
 #import "DSMnemonic.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -47,15 +47,15 @@ typedef NS_ENUM(NSUInteger, DSBIP39Language) {
     DSBIP39Language_ChineseSimplified,
 };
 
-@interface DSBIP39Mnemonic : NSObject<DSMnemonic>
+@interface DSBIP39Mnemonic : NSObject <DSMnemonic>
 
 @property (nonnull, nonatomic, readonly) NSArray *words;
 @property (nonatomic, assign) DSBIP39Language defaultLanguage;
 
 + (instancetype _Nullable)sharedInstance;
 
-+ (NSArray*)availableLanguages;
-+ (NSString*)identifierForLanguage:(DSBIP39Language)language;
++ (NSArray *)availableLanguages;
++ (NSString *)identifierForLanguage:(DSBIP39Language)language;
 
 @end
 

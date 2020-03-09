@@ -6,16 +6,16 @@
 //
 //
 
-#import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
-@class DSContactEntity, DSTransitionEntity,DSDerivationPathEntity,DSAccountEntity;
+@class DSContactEntity, DSTransitionEntity, DSDerivationPathEntity, DSAccountEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSFriendRequestEntity : NSManagedObject
 
--(NSData*)finalizeWithFriendshipIdentifier;
+- (NSData *)finalizeWithFriendshipIdentifier;
 
 @end
 

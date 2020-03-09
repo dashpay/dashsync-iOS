@@ -26,9 +26,9 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+#import "DSTransaction.h"
 #import "NSManagedObject+Sugar.h"
 #import <objc/runtime.h>
-#import "DSTransaction.h"
 
 static const char *_mainContextKey = "mainContextKey";
 static const char *_contextKey = "contextKey";
@@ -41,56 +41,50 @@ static NSUInteger _fetchBatchSize = 100;
 
 // MARK: - create objects
 
-+ (instancetype)managedObject
-{
++ (instancetype)managedObject {
     return [self managedObjectInContext:self.context];
 }
 
-+ (instancetype)managedObjectInContext:(NSManagedObjectContext *)context
-{
++ (instancetype)managedObjectInContext:(NSManagedObjectContext *)context {
     __block NSEntityDescription *entity = nil;
     __block NSManagedObject *obj = nil;
-    
+
     [context performBlockAndWait:^{
         entity = [NSEntityDescription entityForName:self.entityName inManagedObjectContext:context];
         obj = [[self alloc] initWithEntity:entity insertIntoManagedObjectContext:context];
     }];
-    
+
     return obj;
 }
 
-+ (NSArray *)managedObjectArrayWithLength:(NSUInteger)length
-{
++ (NSArray *)managedObjectArrayWithLength:(NSUInteger)length {
     __block NSEntityDescription *entity = nil;
     NSMutableArray *a = [NSMutableArray arrayWithCapacity:length];
-    
+
     [self.context performBlockAndWait:^{
         entity = [NSEntityDescription entityForName:self.entityName inManagedObjectContext:self.context];
-        
+
         for (NSUInteger i = 0; i < length; i++) {
             [a addObject:[[self alloc] initWithEntity:entity insertIntoManagedObjectContext:self.context]];
         }
     }];
-    
+
     return a;
 }
 
 // MARK: - fetch existing objects
 
-+ (NSArray *)allObjects
-{
++ (NSArray *)allObjects {
     return [self fetchObjects:self.fetchReq];
 }
 
-+ (NSArray *)allObjectsWithPrefetch:(NSArray<NSString*> *) prefetchArray
-{
-    NSFetchRequest * fetchRequest = self.fetchReq;
++ (NSArray *)allObjectsWithPrefetch:(NSArray<NSString *> *)prefetchArray {
+    NSFetchRequest *fetchRequest = self.fetchReq;
     [fetchRequest setRelationshipKeyPathsForPrefetching:prefetchArray];
     return [self fetchObjects:fetchRequest];
 }
 
-+ (NSArray *)objectsMatching:(NSString *)predicateFormat, ...
-{
++ (NSArray *)objectsMatching:(NSString *)predicateFormat, ... {
     NSArray *a;
     va_list args;
 
@@ -100,83 +94,82 @@ static NSUInteger _fetchBatchSize = 100;
     return a;
 }
 
-+ (instancetype)anyObjectMatching:(NSString *)predicateFormat, ...
-{
++ (instancetype)anyObjectMatching:(NSString *)predicateFormat, ... {
     NSArray *a;
     va_list args;
-    
+
     va_start(args, predicateFormat);
     a = [self objectsMatching:predicateFormat arguments:args];
     va_end(args);
     if ([a count]) {
         return [a objectAtIndex:0];
-    } else return nil;
+    }
+    else {
+        return nil;
+    }
 }
 
-+ (instancetype)anyObjectMatchingInContext:(NSManagedObjectContext *)context withPredicate:(NSString *)predicateFormat, ...
-{
++ (instancetype)anyObjectMatchingInContext:(NSManagedObjectContext *)context withPredicate:(NSString *)predicateFormat, ... {
     NSArray *a;
     va_list args;
-    
+
     va_start(args, predicateFormat);
     a = [self objectsMatching:predicateFormat arguments:args inContext:context];
     va_end(args);
     if ([a count]) {
         return [a objectAtIndex:0];
-    } else return nil;
+    }
+    else {
+        return nil;
+    }
 }
 
-+ (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args 
-{
++ (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args {
     return [self objectsMatching:predicateFormat arguments:args inContext:self.context];
 }
 
-+ (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext*)context
-{
++ (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext *)context {
     NSFetchRequest *request = self.fetchReq;
-    
+
     request.predicate = [NSPredicate predicateWithFormat:predicateFormat arguments:args];
     return [self fetchObjects:request inContext:context];
 }
 
-+ (instancetype)anyObjectMatching:(NSString *)predicateFormat arguments:(va_list)args
-{
++ (instancetype)anyObjectMatching:(NSString *)predicateFormat arguments:(va_list)args {
     return [self anyObjectMatching:predicateFormat arguments:args inContext:self.context];
 }
 
-+ (instancetype)anyObjectMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext*)context
-{
-    NSArray * array = [self objectsMatching:predicateFormat arguments:args inContext:context];
++ (instancetype)anyObjectMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext *)context {
+    NSArray *array = [self objectsMatching:predicateFormat arguments:args inContext:context];
     if ([array count]) {
         return [array objectAtIndex:0];
-    } else return nil;
+    }
+    else {
+        return nil;
+    }
 }
 
-+ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending
-{
++ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending {
     return [self objectsSortedBy:key ascending:ascending offset:0 limit:0];
 }
 
-+ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending offset:(NSUInteger)offset limit:(NSUInteger)limit
-{
++ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending offset:(NSUInteger)offset limit:(NSUInteger)limit {
     NSFetchRequest *request = self.fetchReq;
-    
-    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:key ascending:ascending]];
+
+    request.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:key ascending:ascending] ];
     request.fetchOffset = offset;
     request.fetchLimit = limit;
     return [self fetchObjects:request];
 }
 
-+ (NSArray *)fetchObjects:(NSFetchRequest *)request
-{
++ (NSArray *)fetchObjects:(NSFetchRequest *)request {
     return [self fetchObjects:request inContext:self.context];
 }
 
-+ (NSArray *)fetchObjects:(NSFetchRequest *)request inContext:(NSManagedObjectContext*)context
-{
++ (NSArray *)fetchObjects:(NSFetchRequest *)request inContext:(NSManagedObjectContext *)context {
     __block NSArray *a = nil;
     __block NSError *error = nil;
-    
+
     [context performBlockAndWait:^{
         @try {
             a = [context executeFetchRequest:request error:&error];
@@ -188,66 +181,60 @@ static NSUInteger _fetchBatchSize = 100;
 #endif
             // if this is a not a debug build, delete the persisent data store before crashing
             [[NSFileManager defaultManager]
-             removeItemAtURL:objc_getAssociatedObject([NSManagedObject class], &_storeURLKey) error:nil];
+                removeItemAtURL:objc_getAssociatedObject([NSManagedObject class], &_storeURLKey)
+                          error:nil];
             @throw;
         }
     }];
-    
+
     return a;
 }
 
 // MARK: - count exising objects
 
-+ (NSUInteger)countAllObjects
-{
++ (NSUInteger)countAllObjects {
     return [self countObjects:self.fetchReq];
 }
 
-+ (NSUInteger)countObjectsMatching:(NSString *)predicateFormat, ...
-{
++ (NSUInteger)countObjectsMatching:(NSString *)predicateFormat, ... {
     NSUInteger count;
     va_list args;
-    
+
     va_start(args, predicateFormat);
     count = [self countObjectsMatching:predicateFormat arguments:args];
     va_end(args);
     return count;
 }
 
-+ (NSUInteger)countObjectsMatchingInContext:(NSManagedObjectContext *)context withPredicate:(NSString *)predicateFormat, ...
-{
++ (NSUInteger)countObjectsMatchingInContext:(NSManagedObjectContext *)context withPredicate:(NSString *)predicateFormat, ... {
     NSUInteger count;
     va_list args;
-    
+
     va_start(args, predicateFormat);
     count = [self countObjectsMatching:predicateFormat arguments:args inContext:context];
     va_end(args);
     return count;
 }
 
-+ (NSUInteger)countObjectsMatching:(NSString *)predicateFormat arguments:(va_list)args
-{
++ (NSUInteger)countObjectsMatching:(NSString *)predicateFormat arguments:(va_list)args {
     return [self countObjectsMatching:predicateFormat arguments:args inContext:self.context];
 }
 
-+ (NSUInteger)countObjectsMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext *)context
-{
++ (NSUInteger)countObjectsMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext *)context {
     NSFetchRequest *request = self.fetchReq;
-    
+
     request.predicate = [NSPredicate predicateWithFormat:predicateFormat arguments:args];
     return [self countObjects:request inContext:context];
 }
 
-+ (NSUInteger)countObjects:(NSFetchRequest *)request
-{
++ (NSUInteger)countObjects:(NSFetchRequest *)request {
     return [self countObjects:request inContext:self.context];
 }
 
-+ (NSUInteger)countObjects:(NSFetchRequest *)request inContext:(NSManagedObjectContext *)context
-{
++ (NSUInteger)countObjects:(NSFetchRequest *)request inContext:(NSManagedObjectContext *)context {
     __block NSUInteger count = 0;
     __block NSError *error = nil;
-    
+
     [context performBlockAndWait:^{
         @try {
             count = [context countForFetchRequest:request error:&error];
@@ -259,24 +246,24 @@ static NSUInteger _fetchBatchSize = 100;
 #endif
             // if this is a not a debug build, delete the persisent data store before crashing
             [[NSFileManager defaultManager]
-             removeItemAtURL:objc_getAssociatedObject([NSManagedObject class], &_storeURLKey) error:nil];
+                removeItemAtURL:objc_getAssociatedObject([NSManagedObject class], &_storeURLKey)
+                          error:nil];
             @throw;
         }
     }];
-    
+
     return count;
 }
 
 // MARK: - delete objects
 
-+ (NSUInteger)deleteObjects:(NSArray *)objects
-{
++ (NSUInteger)deleteObjects:(NSArray *)objects {
     [self.context performBlockAndWait:^{
         for (NSManagedObject *obj in objects) {
             [self.context deleteObject:obj];
         }
     }];
-    
+
     return objects.count;
 }
 
@@ -287,21 +274,19 @@ static NSUInteger _fetchBatchSize = 100;
 // MARK: - core data stack
 
 // call this before any NSManagedObject+Sugar methods to use a concurrency type other than NSMainQueueConcurrencyType
-+ (void)setConcurrencyType:(NSManagedObjectContextConcurrencyType)type
-{
++ (void)setConcurrencyType:(NSManagedObjectContextConcurrencyType)type {
     _concurrencyType = type;
 }
 
 // set the fetchBatchSize to use when fetching objects, default is 100
-+ (void)setFetchBatchSize:(NSUInteger)fetchBatchSize
-{
++ (void)setFetchBatchSize:(NSUInteger)fetchBatchSize {
     _fetchBatchSize = fetchBatchSize;
 }
 
-+(NSURL*)storeURL {
-    static NSURL * storeURL = nil;
++ (NSURL *)storeURL {
+    static NSURL *storeURL = nil;
     static dispatch_once_t onceToken = 0;
-    
+
     dispatch_once(&onceToken, ^{
         NSURL *docURL = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].lastObject;
         NSString *fileName = @"DashSync.sqlite";
@@ -310,84 +295,91 @@ static NSUInteger _fetchBatchSize = 100;
     return storeURL;
 }
 
-+(void)createContexts {
++ (void)createContexts {
     static dispatch_once_t onceToken = 0;
-    
+
     dispatch_once(&onceToken, ^{
         NSBundle *frameworkBundle = [NSBundle bundleForClass:[DSTransaction class]];
         NSURL *bundleURL = [[frameworkBundle resourceURL] URLByAppendingPathComponent:@"DashSync.bundle"];
         NSBundle *resourceBundle = [NSBundle bundleWithURL:bundleURL];
         NSURL *modelURL = [resourceBundle URLsForResourcesWithExtension:@"momd" subdirectory:nil].lastObject;
-        
+
         NSManagedObjectModel *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
         NSPersistentStoreCoordinator *coordinator =
-        [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:model];
+            [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:model];
         NSError *error = nil;
-        NSURL * storeURL = [self storeURL];
-        if ([coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL
-                                            options:@{NSMigratePersistentStoresAutomaticallyOption:@(YES),
-                                                      NSInferMappingModelAutomaticallyOption:@(YES)} error:&error] == nil) {
+        NSURL *storeURL = [self storeURL];
+        if ([coordinator addPersistentStoreWithType:NSSQLiteStoreType
+                                      configuration:nil
+                                                URL:storeURL
+                                            options:@{NSMigratePersistentStoresAutomaticallyOption : @(YES),
+                                                      NSInferMappingModelAutomaticallyOption : @(YES)}
+                                              error:&error] == nil) {
             DSDLog(@"%s: %@", __func__, error);
 #if (DEBUG && 1)
             abort();
 #else
-            // if this is a not a debug build, attempt to delete and create a new persisent data store before crashing
-            if (! [[NSFileManager defaultManager] removeItemAtURL:storeURL error:&error]) {
-                DSDLog(@"%s: %@", __func__, error);
-            }
-            
-            if ([coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL
-                                                options:@{NSMigratePersistentStoresAutomaticallyOption:@(YES),
-                                                          NSInferMappingModelAutomaticallyOption:@(YES)} error:&error] == nil) {
-                DSDLog(@"%s: %@", __func__, error);
-                abort(); // Forsooth, I am slain!
-            }
+                // if this is a not a debug build, attempt to delete and create a new persisent data store before crashing
+                if (![[NSFileManager defaultManager] removeItemAtURL:storeURL error:&error]) {
+                    DSDLog(@"%s: %@", __func__, error);
+                }
+
+                if ([coordinator addPersistentStoreWithType:NSSQLiteStoreType
+                                              configuration:nil
+                                                        URL:storeURL
+                                                    options:@{NSMigratePersistentStoresAutomaticallyOption : @(YES),
+                                                              NSInferMappingModelAutomaticallyOption : @(YES)}
+                                                      error:&error] == nil) {
+                    DSDLog(@"%s: %@", __func__, error);
+                    abort(); // Forsooth, I am slain!
+                }
 #endif
         }
-        
+
         if (coordinator) {
-            
+
             NSManagedObjectContext *objectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
             objectContext.persistentStoreCoordinator = coordinator;
-            
+
             [NSManagedObject setContext:objectContext];
-            
+
             NSManagedObjectContext *mainObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
             mainObjectContext.parentContext = objectContext;
-            
+
             objc_setAssociatedObject([NSManagedObject class], &_storeURLKey, storeURL,
                                      OBJC_ASSOCIATION_RETAIN_NONATOMIC);
             [NSManagedObject setMainContext:mainObjectContext];
-            
 
-//            [[NSNotificationCenter defaultCenter]
-//             addObserverForName:NSManagedObjectContextDidSaveNotification
-//             object:objectContext
-//             queue:nil
-//             usingBlock:^(NSNotification * _Nonnull note) {
-//                 [mainObjectContext performBlock:^{
-//                     [mainObjectContext mergeChangesFromContextDidSaveNotification:note];
-//                 }];
-//            }];
-            
+
+            //            [[NSNotificationCenter defaultCenter]
+            //             addObserverForName:NSManagedObjectContextDidSaveNotification
+            //             object:objectContext
+            //             queue:nil
+            //             usingBlock:^(NSNotification * _Nonnull note) {
+            //                 [mainObjectContext performBlock:^{
+            //                     [mainObjectContext mergeChangesFromContextDidSaveNotification:note];
+            //                 }];
+            //            }];
+
             // this will save changes to the persistent store before the application terminates
-            [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillTerminateNotification object:nil
-                                                               queue:nil usingBlock:^(NSNotification *note) {
-                                                                   [self saveContext];
-                                                               }];
+            [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillTerminateNotification
+                                                              object:nil
+                                                               queue:nil
+                                                          usingBlock:^(NSNotification *note) {
+                                                              [self saveContext];
+                                                          }];
         }
     });
 }
 
 // returns the managed object context for the application, or if the context doesn't already exist, creates it and binds
 // it to the persistent store coordinator for the application
-+ (NSManagedObjectContext *)context
-{
++ (NSManagedObjectContext *)context {
     [self createContexts];
 
     NSManagedObjectContext *context = objc_getAssociatedObject(self, &_contextKey);
 
-    if (! context && self != [NSManagedObject class]) {
+    if (!context && self != [NSManagedObject class]) {
         context = [NSManagedObject context];
         [self setContext:context];
     }
@@ -395,102 +387,97 @@ static NSUInteger _fetchBatchSize = 100;
     return (context == (id)[NSNull null]) ? nil : context;
 }
 
-+ (NSManagedObjectContext *)mainContext
-{
++ (NSManagedObjectContext *)mainContext {
     [self createContexts];
-    
+
     NSManagedObjectContext *context = objc_getAssociatedObject(self, &_mainContextKey);
-    
-    if (! context && self != [NSManagedObject class]) {
+
+    if (!context && self != [NSManagedObject class]) {
         context = [NSManagedObject mainContext];
         [self setMainContext:context];
     }
-    
+
     return (context == (id)[NSNull null]) ? nil : context;
 }
 
 // sets a different context for NSManagedObject+Sugar methods to use for this type of entity
-+ (void)setContext:(NSManagedObjectContext *)context
-{
++ (void)setContext:(NSManagedObjectContext *)context {
     objc_setAssociatedObject(self, &_contextKey, (context ? context : [NSNull null]),
                              OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 // sets a different main context for NSManagedObject+Sugar methods to use for this type of entity
-+ (void)setMainContext:(NSManagedObjectContext *)context
-{
++ (void)setMainContext:(NSManagedObjectContext *)context {
     objc_setAssociatedObject(self, &_mainContextKey, (context ? context : [NSNull null]),
                              OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 // persists changes (this is called automatically for the main context when the app terminates)
-+ (NSError*)saveContext
-{
-    if (! self.context.hasChanges) return nil;
-    __block NSError * error = nil;
++ (NSError *)saveContext {
+    if (!self.context.hasChanges) return nil;
+    __block NSError *error = nil;
     [self.context performBlockAndWait:^{
         if (self.context.hasChanges) {
             @autoreleasepool {
-                NSUInteger taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
+                NSUInteger taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+                }];
 
                 // this seems to fix unreleased temporary object IDs
                 [self.context obtainPermanentIDsForObjects:self.context.registeredObjects.allObjects error:nil];
 
-                if (! [self.context save:&error]) { // persist changes
+                if (![self.context save:&error]) { // persist changes
                     DSDLog(@"%s: %@", __func__, error);
 #if DEBUG
                     abort();
 #endif
                 }
-                
+
                 [[UIApplication sharedApplication] endBackgroundTask:taskId];
             }
         }
     }];
-    
+
     return error;
 }
 
 // persists changes (this is called automatically for the main context when the app terminates)
-+ (NSError*)saveMainContext
-{
-    if (! self.mainContext.hasChanges) return nil;
-    __block NSError * error = nil;
++ (NSError *)saveMainContext {
+    if (!self.mainContext.hasChanges) return nil;
+    __block NSError *error = nil;
     [self.mainContext performBlockAndWait:^{
         if (self.mainContext.hasChanges) {
             @autoreleasepool {
-                NSUInteger taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
-                
+                NSUInteger taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+                }];
+
                 // this seems to fix unreleased temporary object IDs
                 [self.mainContext obtainPermanentIDsForObjects:self.mainContext.registeredObjects.allObjects error:nil];
-                
-                if (! [self.mainContext save:&error]) { // persist changes
+
+                if (![self.mainContext save:&error]) { // persist changes
                     DSDLog(@"%s: %@", __func__, error);
 #if DEBUG
                     abort();
 #endif
                 }
-                
+
                 [self saveContext];
-                
+
                 [[UIApplication sharedApplication] endBackgroundTask:taskId];
             }
         }
     }];
-    
+
     return error;
 }
 
 // MARK: - entity methods
 
 // override this if entity name differs from class name
-+ (NSString *)entityName
-{
++ (NSString *)entityName {
     return NSStringFromClass([self class]);
 }
 
-+ (NSFetchRequest *)fetchReq
-{
++ (NSFetchRequest *)fetchReq {
     NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:self.entityName];
 
     request.fetchBatchSize = _fetchBatchSize;
@@ -498,15 +485,15 @@ static NSUInteger _fetchBatchSize = 100;
     return request;
 }
 
-+ (NSFetchedResultsController *)fetchedResultsController:(NSFetchRequest *)request
-{
-    return [[NSFetchedResultsController alloc] initWithFetchRequest:request managedObjectContext:self.context
-            sectionNameKeyPath:nil cacheName:nil];
++ (NSFetchedResultsController *)fetchedResultsController:(NSFetchRequest *)request {
+    return [[NSFetchedResultsController alloc] initWithFetchRequest:request
+                                               managedObjectContext:self.context
+                                                 sectionNameKeyPath:nil
+                                                          cacheName:nil];
 }
 
 // id value = entity[@"key"]; thread safe valueForKey:
-- (id)objectForKeyedSubscript:(id<NSCopying>)key
-{
+- (id)objectForKeyedSubscript:(id<NSCopying>)key {
     __block id obj = nil;
 
     [self.managedObjectContext performBlockAndWait:^{
@@ -517,15 +504,13 @@ static NSUInteger _fetchBatchSize = 100;
 }
 
 // entity[@"key"] = value; thread safe setValue:forKey:
-- (void)setObject:(id)obj forKeyedSubscript:(id<NSCopying>)key
-{
+- (void)setObject:(id)obj forKeyedSubscript:(id<NSCopying>)key {
     [self.managedObjectContext performBlockAndWait:^{
         [self setValue:obj forKey:(NSString *)key];
     }];
 }
 
-- (void)deleteObject
-{
+- (void)deleteObject {
     [self.managedObjectContext performBlockAndWait:^{
         [self.managedObjectContext deleteObject:self];
     }];

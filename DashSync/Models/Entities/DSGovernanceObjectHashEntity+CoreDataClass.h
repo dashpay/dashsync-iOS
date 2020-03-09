@@ -6,8 +6,8 @@
 //
 //
 
-#import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
 @class DSChainEntity, DSGovernanceObjectEntity;
 
@@ -15,13 +15,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSGovernanceObjectHashEntity : NSManagedObject
 
-+(DSGovernanceObjectHashEntity*)governanceObjectHashEntityWithHash:(NSData*)governanceObjectHash onChain:(DSChainEntity*)chainEntity;
-+(NSArray*)governanceObjectHashEntitiesWithHashes:(NSOrderedSet*)governanceObjectHashes onChain:(DSChainEntity*)chainEntity;
-+(void)updateTimestampForGovernanceObjectHashEntitiesWithGovernanceObjectHashes:(NSOrderedSet*)governanceObjectHashes onChain:(DSChainEntity*)chainEntity;
-+(void)removeOldest:(NSUInteger)count onChain:(DSChainEntity*)chainEntity;
-+(NSUInteger)countAroundNowOnChain:(DSChainEntity*)chainEntity;
-+(NSUInteger)standaloneCountInLast3hoursOnChain:(DSChainEntity*)chainEntity;
-+(void)deleteHashesOnChain:(DSChainEntity*)chainEntity;
++ (DSGovernanceObjectHashEntity *)governanceObjectHashEntityWithHash:(NSData *)governanceObjectHash onChain:(DSChainEntity *)chainEntity;
++ (NSArray *)governanceObjectHashEntitiesWithHashes:(NSOrderedSet *)governanceObjectHashes onChain:(DSChainEntity *)chainEntity;
++ (void)updateTimestampForGovernanceObjectHashEntitiesWithGovernanceObjectHashes:(NSOrderedSet *)governanceObjectHashes onChain:(DSChainEntity *)chainEntity;
++ (void)removeOldest:(NSUInteger)count onChain:(DSChainEntity *)chainEntity;
++ (NSUInteger)countAroundNowOnChain:(DSChainEntity *)chainEntity;
++ (NSUInteger)standaloneCountInLast3hoursOnChain:(DSChainEntity *)chainEntity;
++ (void)deleteHashesOnChain:(DSChainEntity *)chainEntity;
 
 @end
 

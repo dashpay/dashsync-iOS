@@ -17,12 +17,13 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     self.title = @"Pending";
-    
+
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(mocDidSaveNotification:)
-                                                 name:NSManagedObjectContextDidSaveNotification object:nil];
+                                                 name:NSManagedObjectContextDidSaveNotification
+                                               object:nil];
 }
 
 - (IBAction)refreshAction:(id)sender {
@@ -33,7 +34,7 @@
         if (!strongSelf) {
             return;
         }
-        
+
         [strongSelf.refreshControl endRefreshing];
     }];
 }
@@ -53,14 +54,14 @@
                 }
             }
         }
-        
+
         return hasRelationshipChanges;
     };
 
-    NSArray <NSManagedObject *> *insertedObjects = notification.userInfo[NSInsertedObjectsKey];
-    NSArray <NSManagedObject *> *updatedObjects = notification.userInfo[NSUpdatedObjectsKey];
-    NSArray <NSManagedObject *> *deletedObjects = notification.userInfo[NSDeletedObjectsKey];
-    
+    NSArray<NSManagedObject *> *insertedObjects = notification.userInfo[NSInsertedObjectsKey];
+    NSArray<NSManagedObject *> *updatedObjects = notification.userInfo[NSUpdatedObjectsKey];
+    NSArray<NSManagedObject *> *deletedObjects = notification.userInfo[NSDeletedObjectsKey];
+
     DSContactEntity *contact = self.blockchainIdentity.ownContact;
     if (objectsHasChangedContact(insertedObjects, contact) ||
         objectsHasChangedContact(updatedObjects, contact) ||
@@ -74,30 +75,30 @@
     return @"DSFriendRequestEntity";
 }
 
--(NSPredicate*)predicate {
-    return [NSPredicate predicateWithFormat:@"sourceContact == %@ && (SUBQUERY(sourceContact.incomingRequests, $friendRequest, $friendRequest.sourceContact == SELF.destinationContact).@count == 0)",self.blockchainIdentity.ownContact];
+- (NSPredicate *)predicate {
+    return [NSPredicate predicateWithFormat:@"sourceContact == %@ && (SUBQUERY(sourceContact.incomingRequests, $friendRequest, $friendRequest.sourceContact == SELF.destinationContact).@count == 0)", self.blockchainIdentity.ownContact];
 }
 
 
 - (NSArray<NSSortDescriptor *> *)sortDescriptors {
     NSSortDescriptor *usernameSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"destinationContact.username"
                                                                            ascending:YES];
-    return @[usernameSortDescriptor];
+    return @[ usernameSortDescriptor ];
 }
 
 #pragma mark - Table view data source
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     DSContactTableViewCell *cell = (DSContactTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"ContactCellIdentifier" forIndexPath:indexPath];
-    
+
     // Configure the cell...
     [self configureCell:cell atIndexPath:indexPath];
     return cell;
 }
 
--(void)configureCell:(DSContactTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
-    DSFriendRequestEntity * friendRequest = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    DSContactEntity * destinationFriendRequest = friendRequest.destinationContact;
+- (void)configureCell:(DSContactTableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath {
+    DSFriendRequestEntity *friendRequest = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    DSContactEntity *destinationFriendRequest = friendRequest.destinationContact;
     cell.textLabel.text = destinationFriendRequest.username;
 }
 
@@ -114,4 +115,3 @@
 }
 
 @end
-

@@ -30,12 +30,12 @@
 - (id)allObjects;
 - (id)objectForKey:(id)aKey;
 - (id)objectAtIndex:(NSUInteger)anIndex;
-- (id)initWithMutableDictionary:(NSMutableDictionary<NSData*,id>*)mutableDictionary keyAscending:(BOOL)isKeyAscending;
+- (id)initWithMutableDictionary:(NSMutableDictionary<NSData *, id> *)mutableDictionary keyAscending:(BOOL)isKeyAscending;
 - (void)setOrderedByKeyObject:(id)anObject forKey:(id)aKey;
 - (void)addObject:(id)anObject forKey:(id)aKey;
 - (void)removeObjectForKey:(id)aKey;
 - (void)removeObjectAtIndex:(NSUInteger)anIndex;
-- (void)addIndex:(NSString*)index;
+- (void)addIndex:(NSString *)index;
 - (id)keyForObject:(id)anObject;
 - (id)keyForObjectInArray:(id)anObject;
 - (NSUInteger)indexOfObject:(id)anObject;

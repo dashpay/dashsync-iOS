@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -36,10 +36,11 @@ static inline UIColor *ColorFromHEX(NSUInteger hexValue) {
     return ColorFromHEX(0x008DE4);
 }
 
-+ (UIColor *)ds_labelColorForMode:(DSAppearanceMode)appearanceMode {    
++ (UIColor *)ds_labelColorForMode:(DSAppearanceMode)appearanceMode {
     if (@available(iOS 13.0, *)) {
         return [UIColor labelColor];
-    } else {
+    }
+    else {
         if (appearanceMode == DSAppearanceMode_Dark) {
             return [UIColor whiteColor];
         }
@@ -64,7 +65,8 @@ static inline UIColor *ColorFromHEX(NSUInteger hexValue) {
 + (UIColor *)ds_passphraseBackgroundColorForMode:(DSAppearanceMode)appearanceMode {
     if (@available(iOS 13.0, *)) {
         return [UIColor systemBackgroundColor];
-    } else {
+    }
+    else {
         if (appearanceMode == DSAppearanceMode_Dark) {
             return [UIColor blackColor];
         }

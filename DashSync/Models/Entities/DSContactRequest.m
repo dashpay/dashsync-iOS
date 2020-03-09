@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -16,28 +16,28 @@
 //
 
 #import "DSContactRequest.h"
-#import "NSData+Bitcoin.h"
-#import "NSString+Bitcoin.h"
-#import "NSData+Encryption.h"
 #import "DSBlockchainIdentity+Protected.h"
+#import "NSData+Bitcoin.h"
+#import "NSData+Encryption.h"
+#import "NSString+Bitcoin.h"
 
-@interface DSContactRequest()
+@interface DSContactRequest ()
 
-@property(nonatomic,assign) UInt256 recipientBlockchainIdentityUniqueId;
-@property(nonatomic,assign) UInt256 senderBlockchainIdentityUniqueId;
-@property(nonatomic,assign) uint32_t recipientKeyIndex;
-@property(nonatomic,assign) uint32_t senderKeyIndex;
+@property (nonatomic, assign) UInt256 recipientBlockchainIdentityUniqueId;
+@property (nonatomic, assign) UInt256 senderBlockchainIdentityUniqueId;
+@property (nonatomic, assign) uint32_t recipientKeyIndex;
+@property (nonatomic, assign) uint32_t senderKeyIndex;
 
-@property(nonatomic,assign) NSTimeInterval timestamp;
+@property (nonatomic, assign) NSTimeInterval timestamp;
 
-@property(nonatomic,strong) NSData * encryptedPublicKeyData;
-@property(nonatomic,strong) DSBlockchainIdentity * blockchainIdentity;
+@property (nonatomic, strong) NSData *encryptedPublicKeyData;
+@property (nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
 
 @end
 
 @implementation DSContactRequest
 
--(instancetype)initWithDictionary:(DSStringValueDictionary*)rawContact onBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity {
+- (instancetype)initWithDictionary:(DSStringValueDictionary *)rawContact onBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     NSParameterAssert(rawContact);
     NSParameterAssert(blockchainIdentity);
     self = [super init];
@@ -63,22 +63,23 @@
     return self;
 }
 
-+(instancetype)contactRequestFromDictionary:(DSStringValueDictionary*)serverDictionary onBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity {
++ (instancetype)contactRequestFromDictionary:(DSStringValueDictionary *)serverDictionary onBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     return [[self alloc] initWithDictionary:serverDictionary onBlockchainIdentity:blockchainIdentity];
 }
 
--(DSKey*)secretKeyForDecryptionOfType:(DSKeyType)type {
-    if (uint256_eq(self.blockchainIdentity.uniqueID,self.recipientBlockchainIdentityUniqueId)) {
+- (DSKey *)secretKeyForDecryptionOfType:(DSKeyType)type {
+    if (uint256_eq(self.blockchainIdentity.uniqueID, self.recipientBlockchainIdentityUniqueId)) {
         //we are the recipient of the friend request
         return [self.blockchainIdentity privateKeyAtIndex:self.recipientKeyIndex - 1 ofType:(DSDerivationPathSigningAlgorith)type];
-    } else if (uint256_eq(self.blockchainIdentity.uniqueID,self.senderBlockchainIdentityUniqueId)) {
+    }
+    else if (uint256_eq(self.blockchainIdentity.uniqueID, self.senderBlockchainIdentityUniqueId)) {
         //we are the sender of the friend request
         return [self.blockchainIdentity privateKeyAtIndex:self.senderKeyIndex - 1 ofType:(DSDerivationPathSigningAlgorith)type];
     }
     return nil;
 }
 
--(NSData*)decryptedPublicKeyDataWithKey:(DSKey*)key {
+- (NSData *)decryptedPublicKeyDataWithKey:(DSKey *)key {
     return [self.encryptedPublicKeyData decryptWithSecretKey:[self secretKeyForDecryptionOfType:key.keyType] fromPeerWithPublicKey:key];
 }
 

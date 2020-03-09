@@ -33,13 +33,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, copy, nonatomic) NSNumber *currentLocalRevision;
 @property (readonly, copy, nonatomic) DSStringValueDictionary *objectDictionary;
 
-- (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(NSString*)userId onContractWithId:(NSString*)contractId onTableWithName:(NSString*)table usingEntropy:(NSString*)entropy;
+- (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(NSString *)userId onContractWithId:(NSString *)contractId onTableWithName:(NSString *)table usingEntropy:(NSString *)entropy;
 
 - (instancetype)init NS_UNAVAILABLE;
 
 - (void)addStateForChangingData:(DSStringValueDictionary *)dataDictionary;
 
-- (nullable DPDocument *)documentWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(NSString*)userId onContractWithId:(NSString*)contractId inTable:(NSString*)table withEntropy:(NSString*)entropy;
+- (nullable DPDocument *)documentWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(NSString *)userId onContractWithId:(NSString *)contractId inTable:(NSString *)table withEntropy:(NSString *)entropy;
 
 @end
 

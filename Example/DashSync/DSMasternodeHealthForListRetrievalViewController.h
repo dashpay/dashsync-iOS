@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMasternodeHealthForListRetrievalViewController : UITableViewController
 
-@property (nonatomic,strong) DSChainManager * chainManager;
+@property (nonatomic, strong) DSChainManager *chainManager;
 
 @end
 

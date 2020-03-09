@@ -11,7 +11,7 @@
 @implementation DSBlockchainIdentityRegistrationTransitionEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSBlockchainIdentityRegistrationTransitionEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSBlockchainIdentityRegistrationTransitionEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSBlockchainIdentityRegistrationTransitionEntity"];
 }
 
 @dynamic identityIdentifier;

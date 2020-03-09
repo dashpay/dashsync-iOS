@@ -60,7 +60,7 @@ NS_ASSUME_NONNULL_BEGIN
             NSFontAttributeName : self.font ?: [UIFont systemFontOfSize:14.0],
         } mutableCopy];
     }
-    
+
     UIColor *color = attributes[NSForegroundColorAttributeName] ?: [UIColor colorWithRed:0.0 green:0.0 blue:0.1 alpha:0.22];
     attributes[NSForegroundColorAttributeName] = [color colorWithAlphaComponent:0.22];
 

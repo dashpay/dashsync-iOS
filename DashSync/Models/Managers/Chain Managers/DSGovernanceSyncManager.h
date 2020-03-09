@@ -23,47 +23,47 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
 #import "DSGovernanceObject.h"
 #import "DSGovernanceVote.h"
 #import "DSPeer.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-FOUNDATION_EXPORT NSString* const DSGovernanceObjectListDidChangeNotification;
-FOUNDATION_EXPORT NSString* const DSGovernanceObjectCountUpdateNotification;
-FOUNDATION_EXPORT NSString* const DSGovernanceVotesDidChangeNotification;
-FOUNDATION_EXPORT NSString* const DSGovernanceVoteCountUpdateNotification;
+FOUNDATION_EXPORT NSString *const DSGovernanceObjectListDidChangeNotification;
+FOUNDATION_EXPORT NSString *const DSGovernanceObjectCountUpdateNotification;
+FOUNDATION_EXPORT NSString *const DSGovernanceVotesDidChangeNotification;
+FOUNDATION_EXPORT NSString *const DSGovernanceVoteCountUpdateNotification;
 
 #define SUPERBLOCK_AVERAGE_TIME 2575480
 #define PROPOSAL_COST 500000000
 
-@class DSPeer,DSChain,DSGovernanceObject,DSGovernanceVote;
+@class DSPeer, DSChain, DSGovernanceObject, DSGovernanceVote;
 
-@interface DSGovernanceSyncManager : NSObject <DSGovernanceObjectDelegate,DSPeerGovernanceDelegate>
+@interface DSGovernanceSyncManager : NSObject <DSGovernanceObjectDelegate, DSPeerGovernanceDelegate>
 
-@property (nonatomic,readonly) DSChain * chain;
-@property (nonatomic,readonly) NSUInteger recentGovernanceObjectHashesCount;
-@property (nonatomic,readonly) NSUInteger governanceObjectsCount;
-@property (nonatomic,readonly) NSUInteger proposalObjectsCount;
+@property (nonatomic, readonly) DSChain *chain;
+@property (nonatomic, readonly) NSUInteger recentGovernanceObjectHashesCount;
+@property (nonatomic, readonly) NSUInteger governanceObjectsCount;
+@property (nonatomic, readonly) NSUInteger proposalObjectsCount;
 
-@property (nonatomic,readonly) NSUInteger governanceVotesCount;
-@property (nonatomic,readonly) NSUInteger totalGovernanceVotesCount;
+@property (nonatomic, readonly) NSUInteger governanceVotesCount;
+@property (nonatomic, readonly) NSUInteger totalGovernanceVotesCount;
 
-@property (nullable, nonatomic,readonly) DSGovernanceObject * currentGovernanceSyncObject;
+@property (nullable, nonatomic, readonly) DSGovernanceObject *currentGovernanceSyncObject;
 
 
--(instancetype)initWithChain:(DSChain*)chain;
+- (instancetype)initWithChain:(DSChain *)chain;
 
--(void)startGovernanceSync;
+- (void)startGovernanceSync;
 
--(void)vote:(DSGovernanceVoteOutcome)governanceVoteOutcome onGovernanceProposal:(DSGovernanceObject *)governanceObject;
+- (void)vote:(DSGovernanceVoteOutcome)governanceVoteOutcome onGovernanceProposal:(DSGovernanceObject *)governanceObject;
 
--(void)wipeGovernanceInfo;
+- (void)wipeGovernanceInfo;
 
--(DSGovernanceObject*)createProposalWithIdentifier:(NSString*)identifier toPaymentAddress:(NSString*)paymentAddress forAmount:(uint64_t)amount fromAccount:(DSAccount*)account startDate:(NSDate*)date cycles:(NSUInteger)cycles url:(NSString*)url;
+- (DSGovernanceObject *)createProposalWithIdentifier:(NSString *)identifier toPaymentAddress:(NSString *)paymentAddress forAmount:(uint64_t)amount fromAccount:(DSAccount *)account startDate:(NSDate *)date cycles:(NSUInteger)cycles url:(NSString *)url;
 
--(void)publishProposal:(DSGovernanceObject*)goveranceProposal;
+- (void)publishProposal:(DSGovernanceObject *)goveranceProposal;
 
 
 @end

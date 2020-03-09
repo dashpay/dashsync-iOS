@@ -15,15 +15,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DSSignPayloadDelegate
 
--(void)viewController:(UIViewController*)controller didReturnSignature:(NSData*)signature;
+- (void)viewController:(UIViewController *)controller didReturnSignature:(NSData *)signature;
 
 @end
 
 @interface DSSignPayloadViewController : UIViewController
 
-@property (nonatomic,weak) id <DSSignPayloadDelegate> delegate;
-@property (nonatomic,strong) NSString * collateralAddress;
-@property (nonatomic,strong) DSProviderRegistrationTransaction * providerRegistrationTransaction;
+@property (nonatomic, weak) id<DSSignPayloadDelegate> delegate;
+@property (nonatomic, strong) NSString *collateralAddress;
+@property (nonatomic, strong) DSProviderRegistrationTransaction *providerRegistrationTransaction;
 
 @end
 

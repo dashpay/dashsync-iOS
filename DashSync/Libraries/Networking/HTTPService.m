@@ -111,8 +111,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)requestOperationHandler:(id<HTTPRequestOperationHandler>)requestOperationHandler
-                  cancelRequest:(HTTPRequest *)request
-  producingResumeDataCompletion:(void (^)(NSData *_Nullable resumeData))completionHandler {
+                    cancelRequest:(HTTPRequest *)request
+    producingResumeDataCompletion:(void (^)(NSData *_Nullable resumeData))completionHandler {
     NSArray *operations = nil;
     @synchronized(self.operations) {
         operations = [self.operations copy];
@@ -153,7 +153,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark NSURLSessionDataDelegate
 
 - (void)URLSession:(NSURLSession *)session
-          dataTask:(NSURLSessionDataTask *)dataTask
+              dataTask:(NSURLSessionDataTask *)dataTask
     didReceiveResponse:(NSURLResponse *)response
      completionHandler:(void (^)(NSURLSessionResponseDisposition disposition))completionHandler {
     HTTPRequestOperation *operation = [self handlerForTask:dataTask];
@@ -177,9 +177,9 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)URLSession:(NSURLSession *)session
-          dataTask:(NSURLSessionDataTask *)dataTask
- willCacheResponse:(NSCachedURLResponse *)proposedResponse
- completionHandler:(void (^)(NSCachedURLResponse *cachedResponse))completionHandler {
+             dataTask:(NSURLSessionDataTask *)dataTask
+    willCacheResponse:(NSCachedURLResponse *)proposedResponse
+    completionHandler:(void (^)(NSCachedURLResponse *cachedResponse))completionHandler {
     if (!completionHandler) {
         return;
     }
@@ -241,8 +241,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)URLSession:(NSURLSession *)session
-              task:(NSURLSessionTask *)task
- needNewBodyStream:(void (^)(NSInputStream *_Nullable))completionHandler {
+                 task:(NSURLSessionTask *)task
+    needNewBodyStream:(void (^)(NSInputStream *_Nullable))completionHandler {
     HTTPRequestOperation *operation = [self handlerForTask:task];
     [operation provideNewBodyStreamWithCompletion:completionHandler];
 }
@@ -267,12 +267,12 @@ NS_ASSUME_NONNULL_BEGIN
                withIntermediateDirectories:YES
                                 attributes:nil
                                      error:nil];
-        filePath = [cachePath stringByAppendingPathComponent:(NSString * _Nonnull)location.lastPathComponent];
+        filePath = [cachePath stringByAppendingPathComponent:(NSString * _Nonnull) location.lastPathComponent];
         operation.request.downloadLocationPath = filePath;
     }
 
     NSError *fileError;
-    if ([fileManager moveItemAtPath:(NSString * _Nonnull)location.path toPath:filePath error:&fileError]) {
+    if ([fileManager moveItemAtPath:(NSString * _Nonnull) location.path toPath:filePath error:&fileError]) {
         if (operation.request.downloadTaskPolicy == HTTPRequestDownloadTaskPolicyAlways) {
             [self URLSession:session task:downloadTask didCompleteWithError:nil];
         }
@@ -322,7 +322,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     NSURLRequest *urlRequest = request.urlRequest;
-    
+
     NSString *cURLSting = [urlRequest dc_cURL];
     if ([DSLogger sharedInstance].shouldLogHTTPRequests) {
         DSLogInfo(@"<< Request: %@", cURLSting);

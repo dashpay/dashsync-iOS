@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) DSTransitionEntity *transition;
 @property (nonnull, nonatomic, retain) DSDerivationPathEntity *derivationPath;
 @property (nonnull, nonatomic, retain) DSAccountEntity *account;
-@property (nonnull, nonatomic, retain) NSData * friendshipIdentifier;
+@property (nonnull, nonatomic, retain) NSData *friendshipIdentifier;
 
 @end
 

@@ -5,12 +5,12 @@
 //  Created by Sam Westrich on 6/12/18.
 //
 
-#import <Foundation/Foundation.h>
 #import "DSChain.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSGovernanceObject,DSSimplifiedMasternodeEntry,DSChain,DSECDSAKey;
+@class DSGovernanceObject, DSSimplifiedMasternodeEntry, DSChain, DSECDSAKey;
 
 typedef NS_ENUM(uint32_t, DSGovernanceVoteSignal) {
     DSGovernanceVoteSignal_None = 0,
@@ -29,23 +29,23 @@ typedef NS_ENUM(uint32_t, DSGovernanceVoteOutcome) {
 
 @interface DSGovernanceVote : NSObject
 
-@property (nullable, nonatomic,strong) DSGovernanceObject * governanceObject;
-@property (nonatomic,readonly) DSSimplifiedMasternodeEntry * masternode;
-@property (nonatomic,readonly) DSGovernanceVoteOutcome outcome;
-@property (nonatomic,readonly) DSGovernanceVoteSignal signal;
-@property (nonatomic,readonly) NSTimeInterval createdAt;
-@property (nonatomic,readonly) NSData * signature;
-@property (nonatomic,readonly) DSChain * chain;
-@property (nonatomic,readonly) UInt256 parentHash;
-@property (nonatomic,readonly) DSUTXO masternodeUTXO;
-@property (nonatomic,readonly) UInt256 governanceVoteHash;
+@property (nullable, nonatomic, strong) DSGovernanceObject *governanceObject;
+@property (nonatomic, readonly) DSSimplifiedMasternodeEntry *masternode;
+@property (nonatomic, readonly) DSGovernanceVoteOutcome outcome;
+@property (nonatomic, readonly) DSGovernanceVoteSignal signal;
+@property (nonatomic, readonly) NSTimeInterval createdAt;
+@property (nonatomic, readonly) NSData *signature;
+@property (nonatomic, readonly) DSChain *chain;
+@property (nonatomic, readonly) UInt256 parentHash;
+@property (nonatomic, readonly) DSUTXO masternodeUTXO;
+@property (nonatomic, readonly) UInt256 governanceVoteHash;
 
-+(DSGovernanceVote* _Nullable)governanceVoteFromMessage:(NSData *)message onChain:(DSChain *)chain;
--(instancetype)initWithParentHash:(UInt256)parentHash forMasternodeUTXO:(DSUTXO)masternodeUTXO voteOutcome:(DSGovernanceVoteOutcome)voteOutcome voteSignal:(DSGovernanceVoteSignal)voteSignal createdAt:(NSTimeInterval)createdAt signature:(NSData* _Nullable)signature onChain:(DSChain *)chain;
--(void)signWithKey:(DSECDSAKey*)key;
++ (DSGovernanceVote *_Nullable)governanceVoteFromMessage:(NSData *)message onChain:(DSChain *)chain;
+- (instancetype)initWithParentHash:(UInt256)parentHash forMasternodeUTXO:(DSUTXO)masternodeUTXO voteOutcome:(DSGovernanceVoteOutcome)voteOutcome voteSignal:(DSGovernanceVoteSignal)voteSignal createdAt:(NSTimeInterval)createdAt signature:(NSData *_Nullable)signature onChain:(DSChain *)chain;
+- (void)signWithKey:(DSECDSAKey *)key;
 
--(NSData*)dataMessage;
--(BOOL)isValid;
+- (NSData *)dataMessage;
+- (BOOL)isValid;
 
 @end
 

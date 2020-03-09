@@ -36,14 +36,14 @@ NS_ASSUME_NONNULL_BEGIN
 
         return;
     }
-    
+
     NSDictionary *exchangeData = response[@"VES"];
     if (![exchangeData isKindOfClass:NSDictionary.class]) {
         [self cancelWithInvalidResponse:response];
-        
+
         return;
     }
-    
+
     NSString *vesPrice = nil;
     if (exchangeData[@"avg_1h"]) {
         vesPrice = exchangeData[@"avg_1h"];

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -17,8 +17,8 @@
 
 #import <KVO-MVVM/KVOUITableViewCell.h>
 
-#import "TextViewFormCellModel.h"
 #import "TextInputFormTableViewCell.h"
+#import "TextViewFormCellModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

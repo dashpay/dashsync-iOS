@@ -16,15 +16,15 @@
 //
 
 #import "DPContract+Protected.h"
-#import "NSData+Bitcoin.h"
-#import "DSDashPlatform.h"
-#import "NSData+DSCborDecoding.h"
-#import "NSString+Bitcoin.h"
-#import "DSContractTransition.h"
-#import "DSChain.h"
-#import "NSManagedObject+Sugar.h"
-#import "DSContractEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
+#import "DSChain.h"
+#import "DSContractEntity+CoreDataClass.h"
+#import "DSContractTransition.h"
+#import "DSDashPlatform.h"
+#import "NSData+Bitcoin.h"
+#import "NSData+DSCborDecoding.h"
+#import "NSManagedObject+Sugar.h"
+#import "NSString+Bitcoin.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -38,7 +38,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 @property (copy, nonatomic, null_resettable) NSString *localContractIdentifier;
 @property (assign, nonatomic) UInt256 registeredBlockchainIdentity;
 @property (strong, nonatomic) DSChain *chain;
-@property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
+@property (nonatomic, strong) NSManagedObjectContext *managedObjectContext;
 
 @end
 
@@ -47,7 +47,8 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 #pragma mark - Init
 
 - (instancetype)initWithLocalContractIdentifier:(NSString *)localContractIdentifier
-                                      documents:(NSDictionary<NSString *, DSStringValueDictionary *> *)documents onChain:(DSChain*)chain {
+                                      documents:(NSDictionary<NSString *, DSStringValueDictionary *> *)documents
+                                        onChain:(DSChain *)chain {
     NSParameterAssert(localContractIdentifier);
     NSParameterAssert(documents);
 
@@ -61,16 +62,18 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
         _chain = chain;
         if (chain.managedObjectContext) {
             self.managedObjectContext = chain.managedObjectContext;
-        } else {
+        }
+        else {
             self.managedObjectContext = [NSManagedObject context];
         }
-        
+
         [self.managedObjectContext performBlockAndWait:^{
-            DSContractEntity * entity = self.contractEntity;
+            DSContractEntity *entity = self.contractEntity;
             if (entity) {
                 self.registeredBlockchainIdentity = entity.registeredBlockchainIdentityUniqueID.UInt256;
                 self.contractState = entity.state;
-            } else {
+            }
+            else {
                 [self save];
             }
         }];
@@ -81,9 +84,9 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 #pragma mark - Initializer Helpers
 
 + (DPContract *)contractWithName:(NSString *)name
-             withLocalIdentifier:(NSString*)localIdentifier
+             withLocalIdentifier:(NSString *)localIdentifier
                        documents:(NSDictionary<NSString *, DSStringValueDictionary *> *)documents
-                         onChain:(DSChain*)chain {
+                         onChain:(DSChain *)chain {
     NSParameterAssert(name);
     NSParameterAssert(documents);
 
@@ -97,16 +100,16 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 }
 
 + (nullable DPContract *)contractFromDictionary:(DSStringValueDictionary *)contractDictionary
-                            withLocalIdentifier:(NSString*)localIdentifier
-                                        onChain:(DSChain*)chain
+                            withLocalIdentifier:(NSString *)localIdentifier
+                                        onChain:(DSChain *)chain
                                           error:(NSError *_Nullable __autoreleasing *)error {
     return [self contractFromDictionary:contractDictionary withLocalIdentifier:localIdentifier skipValidation:NO onChain:chain error:error];
 }
 
 + (nullable DPContract *)contractFromDictionary:(DSStringValueDictionary *)contractDictionary
-                            withLocalIdentifier:(NSString*)localIdentifier
+                            withLocalIdentifier:(NSString *)localIdentifier
                                  skipValidation:(BOOL)skipValidation
-                                        onChain:(DSChain*)chain
+                                        onChain:(DSChain *)chain
                                           error:(NSError *_Nullable __autoreleasing *)error {
     NSParameterAssert(contractDictionary);
 
@@ -118,15 +121,15 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 }
 
 + (nullable DPContract *)contractFromSerialized:(NSData *)data
-                                        onChain:(DSChain*)chain
+                                        onChain:(DSChain *)chain
                                           error:(NSError *_Nullable __autoreleasing *)error {
     return [self contractFromSerialized:data withLocalIdentifier:[data base64String] skipValidation:NO onChain:chain error:error];
 }
 
 + (nullable DPContract *)contractFromSerialized:(NSData *)data
-                            withLocalIdentifier:(NSString*)identifier
+                            withLocalIdentifier:(NSString *)identifier
                                  skipValidation:(BOOL)skipValidation
-                                        onChain:(DSChain*)chain
+                                        onChain:(DSChain *)chain
                                           error:(NSError *_Nullable __autoreleasing *)error {
     NSParameterAssert(data);
 
@@ -142,11 +145,12 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
                                   error:error];
 }
 
-+ (DPContract *)contractFromDictionary:(DSStringValueDictionary *)rawContract withLocalIdentifier:(NSString*)localContractIdentifier onChain:(DSChain*)chain {
++ (DPContract *)contractFromDictionary:(DSStringValueDictionary *)rawContract withLocalIdentifier:(NSString *)localContractIdentifier onChain:(DSChain *)chain {
     NSDictionary<NSString *, DSStringValueDictionary *> *documents = rawContract[@"documents"];
 
     DPContract *contract = [[DPContract alloc] initWithLocalContractIdentifier:localContractIdentifier
-                                                  documents:documents onChain:chain];
+                                                                     documents:documents
+                                                                       onChain:chain];
 
     NSString *jsonMetaSchema = rawContract[@"$schema"];
     if (jsonMetaSchema) {
@@ -162,15 +166,15 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     if (definitions) {
         contract.definitions = definitions;
     }
-    
+
 
     return contract;
 }
 
 #pragma mark - Contract Info
 
--(NSString*)base58ContractID {
-    NSAssert(!uint256_is_zero(self.registeredBlockchainIdentity),@"Registered Blockchain Identity can not be 0");
+- (NSString *)base58ContractID {
+    NSAssert(!uint256_is_zero(self.registeredBlockchainIdentity), @"Registered Blockchain Identity can not be 0");
     return uint256_base58(self.registeredBlockchainIdentity);
 }
 
@@ -252,7 +256,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 
     NSString *refValue = [NSString stringWithFormat:@"%@#/documents/%@",
                                                     self.jsonSchemaId, type];
-    NSDictionary<NSString *, NSString *> *dpObjectSchemaRef = @{ @"$ref" : refValue };
+    NSDictionary<NSString *, NSString *> *dpObjectSchemaRef = @{@"$ref" : refValue};
 
     return dpObjectSchemaRef;
 }
@@ -262,11 +266,11 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     _keyValueDictionary = nil;
 }
 
--(NSString*)name {
+- (NSString *)name {
     return [DSDashPlatform nameForContractWithIdentifier:self.localContractIdentifier];
 }
 
--(NSString*)statusString {
+- (NSString *)statusString {
     switch (self.contractState) {
         case DPContractState_Unknown:
             return @"Unknown";
@@ -282,39 +286,39 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     return @"Other State";
 }
 
-- (void)registerCreator:(DSBlockchainIdentity*)blockchainIdentity {
-    self.registeredBlockchainIdentity = blockchainIdentity?blockchainIdentity.uniqueID:UINT256_ZERO;
+- (void)registerCreator:(DSBlockchainIdentity *)blockchainIdentity {
+    self.registeredBlockchainIdentity = blockchainIdentity ? blockchainIdentity.uniqueID : UINT256_ZERO;
     [self save];
 }
 
--(void)setContractState:(DPContractState)contractState {
+- (void)setContractState:(DPContractState)contractState {
     _contractState = contractState;
     [self save];
 }
 
 #pragma mark - Transitions
 
--(DSContractTransition*)contractRegistrationTransitionForIdentity:(DSBlockchainIdentity*)blockchainIdentity {
+- (DSContractTransition *)contractRegistrationTransitionForIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     return [[DSContractTransition alloc] initWithContract:self withTransitionVersion:1 blockchainIdentityUniqueId:blockchainIdentity.uniqueID onChain:self.chain];
 }
 
 
 #pragma mark - Saving
 
--(DSContractEntity*)contractEntity {
-    __block DSContractEntity* entity = nil;
+- (DSContractEntity *)contractEntity {
+    __block DSContractEntity *entity = nil;
     [self.managedObjectContext performBlockAndWait:^{
         [DSContractEntity setContext:self.managedObjectContext];
-        entity = [DSContractEntity anyObjectMatching:@"localContractIdentifier == %@",self.localContractIdentifier];
+        entity = [DSContractEntity anyObjectMatching:@"localContractIdentifier == %@", self.localContractIdentifier];
     }];
     return entity;
 }
 
--(void)save {
+- (void)save {
     [self.managedObjectContext performBlockAndWait:^{
         [DSBlockchainIdentityEntity setContext:self.managedObjectContext];
         [DSContractEntity setContext:self.managedObjectContext];
-        DSContractEntity * entity = self.contractEntity;
+        DSContractEntity *entity = self.contractEntity;
         BOOL hasChange = NO;
         if (!entity) {
             entity = [DSContractEntity managedObject];
@@ -327,7 +331,8 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
         if (!uint256_is_zero(self.registeredBlockchainIdentity) && (!entity.registeredBlockchainIdentityUniqueID || !uint256_eq(entity.registeredBlockchainIdentityUniqueID.UInt256, self.registeredBlockchainIdentity))) {
             entity.registeredBlockchainIdentityUniqueID = uint256_data(self.registeredBlockchainIdentity);
             hasChange = YES;
-        } else if (uint256_is_zero(self.registeredBlockchainIdentity) && entity.registeredBlockchainIdentityUniqueID) {
+        }
+        else if (uint256_is_zero(self.registeredBlockchainIdentity) && entity.registeredBlockchainIdentityUniqueID) {
             entity.registeredBlockchainIdentityUniqueID = nil;
             hasChange = YES;
         }
@@ -335,21 +340,20 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
             entity.state = self.contractState;
             hasChange = YES;
         }
-        
+
         if (hasChange) {
             [DSContractEntity saveContext];
             dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DPContractDidUpdateNotification object:nil userInfo:@{DSContractUpdateNotificationKey:self}];
+                [[NSNotificationCenter defaultCenter] postNotificationName:DPContractDidUpdateNotification object:nil userInfo:@{DSContractUpdateNotificationKey : self}];
             });
         }
-        
     }];
 }
 
 
 #pragma mark - Special Contracts
 
-+ (DPContract *)localDashpayContractForChain:(DSChain*)chain {
++ (DPContract *)localDashpayContractForChain:(DSChain *)chain {
     // TODO: read async'ly
     NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
     NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
@@ -359,7 +363,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     NSAssert(error == nil, @"Failed reading contract json");
     DSStringValueDictionary *jsonObject = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&error];
     NSAssert(error == nil, @"Failed parsing json");
-    
+
     DPContract *contract = [self contractFromDictionary:jsonObject withLocalIdentifier:DASHPAY_CONTRACT onChain:chain error:&error];
     NSAssert(error == nil, @"Failed building DPContract");
     if (!uint256_is_zero(chain.dashpayContractID) && contract.contractState == DPContractState_Unknown) {
@@ -371,7 +375,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     return contract;
 }
 
-+ (DPContract *)localDPNSContractForChain:(DSChain*)chain {
++ (DPContract *)localDPNSContractForChain:(DSChain *)chain {
     // TODO: read async'ly
     NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
     NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
@@ -381,7 +385,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     NSAssert(error == nil, @"Failed reading contract json");
     DSStringValueDictionary *jsonObject = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&error];
     NSAssert(error == nil, @"Failed parsing json");
-    
+
     DPContract *contract = [self contractFromDictionary:jsonObject withLocalIdentifier:DPNS_CONTRACT onChain:chain error:&error];
     NSAssert(error == nil, @"Failed building DPContract");
     if (!uint256_is_zero(chain.dpnsContractID) && contract.contractState == DPContractState_Unknown) {

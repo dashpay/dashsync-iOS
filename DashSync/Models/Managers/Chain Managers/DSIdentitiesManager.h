@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -23,9 +23,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSIdentitiesManager : NSObject
 
-@property (nonatomic, readonly) DSChain * chain;
+@property (nonatomic, readonly) DSChain *chain;
 
-- (instancetype)initWithChain:(DSChain*)chain;
+- (instancetype)initWithChain:(DSChain *)chain;
 
 - (void)retrieveAllBlockchainIdentitiesChainStates;
 

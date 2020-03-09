@@ -17,12 +17,12 @@
 
 #import "HTTPLoaderOperation.h"
 
+#import "DSNetworkActivityIndicatorManager.h"
 #import "HTTPCancellationToken.h"
 #import "HTTPLoader.h"
 #import "HTTPLoaderDelegate.h"
 #import "HTTPLoaderFactory.h"
 #import "HTTPRequest.h"
-#import "DSNetworkActivityIndicatorManager.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -69,7 +69,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.cancellationToken = [self.httpLoader performRequest:self.httpRequest];
     NSAssert(self.cancellationToken, @"Performing request failed");
-    
+
     [DSNetworkActivityIndicatorManager increaseActivityCounter];
 }
 

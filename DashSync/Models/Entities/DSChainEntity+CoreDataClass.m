@@ -1,6 +1,6 @@
 //
 //  DSChainEntity+CoreDataClass.m
-//  
+//
 //
 //  Created by Sam Westrich on 5/20/18.
 //
@@ -22,12 +22,12 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+#import "DSChain.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "DSPeerManager.h"
-#import "NSManagedObject+Sugar.h"
-#import "DSChain.h"
-#import "NSString+Dash.h"
 #import "NSData+Bitcoin.h"
+#import "NSManagedObject+Sugar.h"
+#import "NSString+Dash.h"
 
 @implementation DSChainEntity
 
@@ -40,8 +40,8 @@
 
 - (DSChain *)chain {
     __block DSChainType type;
-    __block NSString * devnetIdentifier;
-    __block NSData * data;
+    __block NSString *devnetIdentifier;
+    __block NSData *data;
     __block uint32_t totalMasternodeCount;
     __block uint32_t totalGovernanceObjectsCount;
     __block UInt256 baseBlockHash;
@@ -55,36 +55,39 @@
     }];
     if (type == DSChainType_MainNet) {
         return [DSChain mainnet];
-    } else if (type == DSChainType_TestNet) {
+    }
+    else if (type == DSChainType_TestNet) {
         return [DSChain testnet];
-    } else if (type == DSChainType_DevNet) {
+    }
+    else if (type == DSChainType_DevNet) {
         if ([DSChain devnetWithIdentifier:devnetIdentifier]) {
             return [DSChain devnetWithIdentifier:devnetIdentifier];
-        } else {
-            NSArray * checkpointArray = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+        }
+        else {
+            NSArray *checkpointArray = [NSKeyedUnarchiver unarchiveObjectWithData:data];
             return [DSChain recoverKnownDevnetWithIdentifier:devnetIdentifier withCheckpoints:checkpointArray];
         }
     }
     return nil;
 }
 
-+ (DSChainEntity*)chainEntityForType:(DSChainType)type devnetIdentifier:(NSString*)devnetIdentifier checkpoints:(NSArray*)checkpoints {
-    NSArray * objects = [DSChainEntity objectsMatching:@"type = %d && ((type != %d) || devnetIdentifier = %@)",type,DSChainType_DevNet,devnetIdentifier];
++ (DSChainEntity *)chainEntityForType:(DSChainType)type devnetIdentifier:(NSString *)devnetIdentifier checkpoints:(NSArray *)checkpoints {
+    NSArray *objects = [DSChainEntity objectsMatching:@"type = %d && ((type != %d) || devnetIdentifier = %@)", type, DSChainType_DevNet, devnetIdentifier];
     if (objects.count) {
-        DSChainEntity * chainEntity = [objects objectAtIndex:0];
-        NSArray * knownCheckpoints = [NSKeyedUnarchiver unarchiveObjectWithData:[chainEntity checkpoints]];
+        DSChainEntity *chainEntity = [objects objectAtIndex:0];
+        NSArray *knownCheckpoints = [NSKeyedUnarchiver unarchiveObjectWithData:[chainEntity checkpoints]];
         if (checkpoints.count > knownCheckpoints.count) {
-            NSData * archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints];
+            NSData *archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints];
             chainEntity.checkpoints = archivedCheckpoints;
         }
         return chainEntity;
     }
-    
-    DSChainEntity * chainEntity = [self managedObject];
+
+    DSChainEntity *chainEntity = [self managedObject];
     chainEntity.type = type;
     chainEntity.devnetIdentifier = devnetIdentifier;
     if (checkpoints) {
-        NSData * archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints];
+        NSData *archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints];
         chainEntity.checkpoints = archivedCheckpoints;
     }
     return chainEntity;

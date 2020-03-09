@@ -7,10 +7,10 @@
 //
 
 #import "DSChainsViewController.h"
-#import <DashSync/DashSync.h>
+#import "DSAddDevnetViewController.h"
 #import "DSChainTableViewCell.h"
 #import "DSSyncViewController.h"
-#import "DSAddDevnetViewController.h"
+#import <DashSync/DashSync.h>
 
 @interface DSChainsViewController ()
 
@@ -22,14 +22,16 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
-    
+
+
     self.addChainsObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainsDidChangeNotification object:nil
-                                                       queue:nil usingBlock:^(NSNotification *note) {
-                                                           NSLog(@"Added/removed a chain");
-                                                           [self.tableView reloadData];
-                                                       }];
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainsDidChangeNotification
+                                                          object:nil
+                                                           queue:nil
+                                                      usingBlock:^(NSNotification *note) {
+                                                          NSLog(@"Added/removed a chain");
+                                                          [self.tableView reloadData];
+                                                      }];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -47,24 +49,23 @@
     return 2 + [[[DSChainsManager sharedInstance] devnetChains] count];
 }
 
--(DSChain*)chainForIndex:(NSInteger)index {
+- (DSChain *)chainForIndex:(NSInteger)index {
     if (index == 0) return [DSChain mainnet];
     if (index == 1) return [DSChain testnet];
     NSInteger devnetIndex = index - 2;
-    NSArray * devnetChains = [[DSChainsManager sharedInstance] devnetChains];
+    NSArray *devnetChains = [[DSChainsManager sharedInstance] devnetChains];
     return [devnetChains objectAtIndex:devnetIndex];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     DSChainTableViewCell *cell = (DSChainTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"chainTableViewCell" forIndexPath:indexPath];
-    DSChain * chain = [self chainForIndex:indexPath.row];
+    DSChain *chain = [self chainForIndex:indexPath.row];
     if (cell) {
         cell.chainNameLabel.text = chain.name;
     }
-    
+
     return cell;
 }
-
 
 
 // Override to support conditional editing of the table view.
@@ -72,23 +73,26 @@
     // Return NO if you do not want the specified item to be editable.
     if (indexPath.row > 1) {
         return YES;
-    } else {
+    }
+    else {
         return NO;
     }
 }
 
--(NSArray*)tableView:(UITableView *)tableView editActionsForRowAtIndexPath:(nonnull NSIndexPath *)indexPath {
-    UITableViewRowAction * deleteAction = [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleDestructive title:@"Delete" handler:^(UITableViewRowAction * _Nonnull action, NSIndexPath * _Nonnull indexPath) {
-        DSChain * chain = [self chainForIndex:indexPath.row];
-        [[DSChainsManager sharedInstance] removeDevnetChain:chain];
-        
-    }];
-    UITableViewRowAction * editAction = [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleNormal title:@"Edit" handler:^(UITableViewRowAction * _Nonnull action, NSIndexPath * _Nonnull indexPath) {
-        [self performSegueWithIdentifier:@"AddDevnetSegue" sender:[self.tableView cellForRowAtIndexPath:indexPath]];
-    }];
-    return @[deleteAction,editAction];
+- (NSArray *)tableView:(UITableView *)tableView editActionsForRowAtIndexPath:(nonnull NSIndexPath *)indexPath {
+    UITableViewRowAction *deleteAction = [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleDestructive
+                                                                            title:@"Delete"
+                                                                          handler:^(UITableViewRowAction *_Nonnull action, NSIndexPath *_Nonnull indexPath) {
+                                                                              DSChain *chain = [self chainForIndex:indexPath.row];
+                                                                              [[DSChainsManager sharedInstance] removeDevnetChain:chain];
+                                                                          }];
+    UITableViewRowAction *editAction = [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleNormal
+                                                                          title:@"Edit"
+                                                                        handler:^(UITableViewRowAction *_Nonnull action, NSIndexPath *_Nonnull indexPath) {
+                                                                            [self performSegueWithIdentifier:@"AddDevnetSegue" sender:[self.tableView cellForRowAtIndexPath:indexPath]];
+                                                                        }];
+    return @[ deleteAction, editAction ];
 }
-
 
 
 //// Override to support editing the table view.
@@ -123,18 +127,19 @@
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     // Get the new view controller using [segue destinationViewController].
     // Pass the selected object to the new view controller.
-    UITableViewCell * cell = (UITableViewCell*)sender;
+    UITableViewCell *cell = (UITableViewCell *)sender;
     NSInteger index = [self.tableView indexPathForCell:cell].row;
     if ([segue.identifier isEqualToString:@"ChainDetailsSegue"]) {
-        DSSyncViewController * syncViewController = (DSSyncViewController *)segue.destinationViewController;
-        DSChain * chain = [self chainForIndex:index];
+        DSSyncViewController *syncViewController = (DSSyncViewController *)segue.destinationViewController;
+        DSChain *chain = [self chainForIndex:index];
         syncViewController.chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
         syncViewController.title = chain.name;
-    } else if ([segue.identifier isEqualToString:@"AddDevnetSegue"]) {
+    }
+    else if ([segue.identifier isEqualToString:@"AddDevnetSegue"]) {
         if ([sender isKindOfClass:[UITableViewCell class]]) {
-        DSAddDevnetViewController * addDevnetViewController = (DSAddDevnetViewController *)((UINavigationController*)segue.destinationViewController).topViewController;
-        DSChain * chain = [self chainForIndex:index];
-        addDevnetViewController.chain = chain;
+            DSAddDevnetViewController *addDevnetViewController = (DSAddDevnetViewController *)((UINavigationController *)segue.destinationViewController).topViewController;
+            DSChain *chain = [self chainForIndex:index];
+            addDevnetViewController.chain = chain;
         }
     }
 }

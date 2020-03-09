@@ -11,7 +11,7 @@
 @implementation DSChainLockEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSChainLockEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSChainLockEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSChainLockEntity"];
 }
 
 @dynamic signature;

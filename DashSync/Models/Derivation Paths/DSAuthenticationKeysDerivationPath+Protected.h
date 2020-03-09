@@ -11,11 +11,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSAuthenticationKeysDerivationPath ()
 
-+ (instancetype)providerVotingKeysDerivationPathForChain:(DSChain*)chain;
-+ (instancetype)providerOwnerKeysDerivationPathForChain:(DSChain*)chain;
-+ (instancetype)providerOperatorKeysDerivationPathForChain:(DSChain*)chain;
-+ (instancetype)blockchainIdentityECDSAKeysDerivationPathForChain:(DSChain*)chain;
-+ (instancetype)blockchainIdentityBLSKeysDerivationPathForChain:(DSChain*)chain;
++ (instancetype)providerVotingKeysDerivationPathForChain:(DSChain *)chain;
++ (instancetype)providerOwnerKeysDerivationPathForChain:(DSChain *)chain;
++ (instancetype)providerOperatorKeysDerivationPathForChain:(DSChain *)chain;
++ (instancetype)blockchainIdentityECDSAKeysDerivationPathForChain:(DSChain *)chain;
++ (instancetype)blockchainIdentityBLSKeysDerivationPathForChain:(DSChain *)chain;
 
 @end
 

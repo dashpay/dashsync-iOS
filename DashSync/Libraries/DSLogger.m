@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -56,9 +56,9 @@ NS_ASSUME_NONNULL_BEGIN
     self = [super init];
     if (self) {
         [DDLog addLogger:[DDOSLogger sharedInstance]]; // os_log
-        
+
         DDFileLogger *fileLogger = [[DDFileLogger alloc] init];
-        fileLogger.rollingFrequency = 60 * 60 * 24; // 24 hour rolling
+        fileLogger.rollingFrequency = 60 * 60 * 24;            // 24 hour rolling
         fileLogger.logFileManager.maximumNumberOfLogFiles = 3; // keep a 3 days worth of log files
         [DDLog addLogger:fileLogger];
         _fileLogger = fileLogger;
@@ -66,16 +66,16 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
-- (NSArray <NSURL *> *)logFiles {
-    NSArray <DDLogFileInfo *> *logFileInfos = [self.fileLogger.logFileManager unsortedLogFileInfos];
-    NSMutableArray <NSURL *> *logFiles = [NSMutableArray array];
+- (NSArray<NSURL *> *)logFiles {
+    NSArray<DDLogFileInfo *> *logFileInfos = [self.fileLogger.logFileManager unsortedLogFileInfos];
+    NSMutableArray<NSURL *> *logFiles = [NSMutableArray array];
     for (DDLogFileInfo *fileInfo in logFileInfos) {
         NSURL *fileURL = [NSURL fileURLWithPath:fileInfo.filePath];
         if (fileURL) {
             [logFiles addObject:fileURL];
         }
     }
-    
+
     return [logFiles copy];
 }
 

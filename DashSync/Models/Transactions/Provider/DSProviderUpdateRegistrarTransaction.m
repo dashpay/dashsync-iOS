@@ -6,22 +6,22 @@
 //
 
 #import "DSProviderUpdateRegistrarTransaction.h"
-#import "NSData+Bitcoin.h"
-#import "NSMutableData+Dash.h"
+#import "DSChainManager.h"
 #import "DSECDSAKey.h"
-#import "NSString+Dash.h"
-#import "DSTransactionFactory.h"
+#import "DSLocalMasternode.h"
+#import "DSMasternodeManager.h"
+#import "DSProviderRegistrationTransaction.h"
 #import "DSProviderRegistrationTransactionEntity+CoreDataClass.h"
 #import "DSProviderUpdateRegistrarTransactionEntity+CoreDataClass.h"
-#import "DSMasternodeManager.h"
-#import "DSChainManager.h"
-#import "DSProviderRegistrationTransaction.h"
+#import "DSTransactionFactory.h"
 #import "DSTransactionManager.h"
-#import "DSLocalMasternode.h"
+#import "NSData+Bitcoin.h"
+#import "NSMutableData+Dash.h"
+#import "NSString+Dash.h"
 
-@interface DSProviderUpdateRegistrarTransaction()
+@interface DSProviderUpdateRegistrarTransaction ()
 
-@property (nonatomic,strong) DSProviderRegistrationTransaction * providerRegistrationTransaction;
+@property (nonatomic, strong) DSProviderRegistrationTransaction *providerRegistrationTransaction;
 
 @end
 
@@ -31,71 +31,70 @@
     return [self initWithMessage:message registrationTransaction:nil onChain:chain];
 }
 
-- (instancetype)initWithMessage:(NSData *)message registrationTransaction:(DSProviderRegistrationTransaction* _Nullable)registrationTransaction onChain:(DSChain *)chain
-{
-    if (! (self = [super initWithMessage:message onChain:chain])) return nil;
+- (instancetype)initWithMessage:(NSData *)message registrationTransaction:(DSProviderRegistrationTransaction *_Nullable)registrationTransaction onChain:(DSChain *)chain {
+    if (!(self = [super initWithMessage:message onChain:chain])) return nil;
     self.type = DSTransactionType_ProviderUpdateRegistrar;
     NSUInteger length = message.length;
     uint32_t off = self.payloadOffset;
-    
+
     if (length - off < 1) return nil;
-    NSNumber * payloadLengthSize = nil;
+    NSNumber *payloadLengthSize = nil;
     uint64_t payloadLength = [message varIntAtOffset:off length:&payloadLengthSize];
     off += payloadLengthSize.unsignedLongValue;
-    
+
     if (length - off < 2) return nil;
     self.providerUpdateRegistrarTransactionVersion = [message UInt16AtOffset:off];
     off += 2;
-    
+
     if (length - off < 32) return nil;
     UInt256 providerRegistrationTransactionHash = [message UInt256AtOffset:off];
     if (registrationTransaction) {
-        NSAssert(uint256_eq(providerRegistrationTransactionHash,registrationTransaction.txHash), @"wrong registration transaction provided");
+        NSAssert(uint256_eq(providerRegistrationTransactionHash, registrationTransaction.txHash), @"wrong registration transaction provided");
         self.providerRegistrationTransaction = registrationTransaction;
     }
     self.providerRegistrationTransactionHash = providerRegistrationTransactionHash;
     off += 32;
-    
+
     if (length - off < 2) return nil;
     self.providerMode = [message UInt16AtOffset:off];
     off += 2;
-    
+
     if (length - off < 48) return nil;
     self.operatorKey = [message UInt384AtOffset:off];
     off += 48;
-    
+
     if (length - off < 20) return nil;
     self.votingKeyHash = [message UInt160AtOffset:off];
     off += 20;
-    
-    NSNumber * scriptPayoutLength = nil;
+
+    NSNumber *scriptPayoutLength = nil;
     self.scriptPayout = [message dataAtOffset:off length:&scriptPayoutLength];
     off += scriptPayoutLength.unsignedIntegerValue;
-    
+
     if (length - off < 32) return nil;
     self.inputsHash = [message UInt256AtOffset:off];
     off += 32;
-    
+
     if (length - off < 1) return nil;
-    NSNumber * messageSignatureSizeLength = nil;
+    NSNumber *messageSignatureSizeLength = nil;
     NSUInteger messageSignatureSize = (NSUInteger)[message varIntAtOffset:off length:&messageSignatureSizeLength];
     off += messageSignatureSizeLength.unsignedIntegerValue;
     if (length - off < messageSignatureSize) return nil;
     self.payloadSignature = [message subdataWithRange:NSMakeRange(off, messageSignatureSize)];
-    off+= messageSignatureSize;
+    off += messageSignatureSize;
     self.payloadOffset = off;
-    
+
     //todo verify inputs hash
-    
+
     if ([self payloadData].length != payloadLength) return nil;
     self.txHash = self.data.SHA256_2;
-    
+
 
     return self;
 }
 
 
-- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray*)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts providerUpdateRegistrarTransactionVersion:(uint16_t)version providerTransactionHash:(UInt256)providerTransactionHash mode:(uint16_t)providerMode operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash scriptPayout:(NSData*)scriptPayout onChain:(DSChain * _Nonnull)chain {
+- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray *)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts providerUpdateRegistrarTransactionVersion:(uint16_t)version providerTransactionHash:(UInt256)providerTransactionHash mode:(uint16_t)providerMode operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash scriptPayout:(NSData *)scriptPayout onChain:(DSChain *_Nonnull)chain {
     if (!(self = [super initWithInputHashes:hashes inputIndexes:indexes inputScripts:scripts inputSequences:inputSequences outputAddresses:addresses outputAmounts:amounts onChain:chain])) return nil;
     self.type = DSTransactionType_ProviderUpdateRegistrar;
     self.version = SPECIAL_TX_VERSION;
@@ -108,7 +107,7 @@
     return self;
 }
 
--(instancetype)initWithProviderUpdateRegistrarTransactionVersion:(uint16_t)version providerTransactionHash:(UInt256)providerTransactionHash mode:(uint16_t)providerMode operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash scriptPayout:(NSData*)scriptPayout onChain:(DSChain * _Nonnull)chain {
+- (instancetype)initWithProviderUpdateRegistrarTransactionVersion:(uint16_t)version providerTransactionHash:(UInt256)providerTransactionHash mode:(uint16_t)providerMode operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash scriptPayout:(NSData *)scriptPayout onChain:(DSChain *_Nonnull)chain {
     if (!(self = [super initOnChain:chain])) return nil;
     self.type = DSTransactionType_ProviderUpdateRegistrar;
     self.version = SPECIAL_TX_VERSION;
@@ -121,39 +120,39 @@
     return self;
 }
 
--(void)setProviderRegistrationTransactionHash:(UInt256)providerTransactionHash {
+- (void)setProviderRegistrationTransactionHash:(UInt256)providerTransactionHash {
     _providerRegistrationTransactionHash = providerTransactionHash;
     if (!self.providerRegistrationTransaction) {
-        self.providerRegistrationTransaction = (DSProviderRegistrationTransaction*)[self.chain transactionForHash:self.providerRegistrationTransactionHash];
+        self.providerRegistrationTransaction = (DSProviderRegistrationTransaction *)[self.chain transactionForHash:self.providerRegistrationTransactionHash];
     }
 }
 
--(DSProviderRegistrationTransaction*)providerRegistrationTransaction {
-    if (!_providerRegistrationTransaction) self.providerRegistrationTransaction = (DSProviderRegistrationTransaction*)[self.chain transactionForHash:self.providerRegistrationTransactionHash];
+- (DSProviderRegistrationTransaction *)providerRegistrationTransaction {
+    if (!_providerRegistrationTransaction) self.providerRegistrationTransaction = (DSProviderRegistrationTransaction *)[self.chain transactionForHash:self.providerRegistrationTransactionHash];
     return _providerRegistrationTransaction;
 }
 
--(UInt256)payloadHash {
+- (UInt256)payloadHash {
     return [self payloadDataForHash].SHA256_2;
 }
 
--(BOOL)checkPayloadSignature:(DSECDSAKey*)providerOwnerPublicKey {
+- (BOOL)checkPayloadSignature:(DSECDSAKey *)providerOwnerPublicKey {
     return uint160_eq([providerOwnerPublicKey hash160], self.providerRegistrationTransaction.ownerKeyHash);
 }
 
--(BOOL)checkPayloadSignature {
-    DSECDSAKey * providerOwnerPublicKey = [DSECDSAKey keyRecoveredFromCompactSig:self.payloadSignature andMessageDigest:[self payloadHash]];
+- (BOOL)checkPayloadSignature {
+    DSECDSAKey *providerOwnerPublicKey = [DSECDSAKey keyRecoveredFromCompactSig:self.payloadSignature andMessageDigest:[self payloadHash]];
     return [self checkPayloadSignature:providerOwnerPublicKey];
 }
 
--(void)signPayloadWithKey:(DSECDSAKey*)privateKey {
+- (void)signPayloadWithKey:(DSECDSAKey *)privateKey {
     //ATTENTION If this ever changes from ECDSA, change the max signature size defined above
-    DSDLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
+    DSDLog(@"Private Key is %@", [privateKey privateKeyStringForChain:self.chain]);
     self.payloadSignature = [privateKey compactSign:[self payloadHash]];
 }
 
--(NSData*)basePayloadData {
-    NSMutableData * data = [NSMutableData data];
+- (NSData *)basePayloadData {
+    NSMutableData *data = [NSMutableData data];
     [data appendUInt16:self.providerUpdateRegistrarTransactionVersion];
     [data appendUInt256:self.providerRegistrationTransactionHash];
     [data appendUInt16:self.providerMode];
@@ -165,56 +164,54 @@
     return data;
 }
 
--(NSData*)payloadDataForHash {
-    NSMutableData * data = [NSMutableData data];
+- (NSData *)payloadDataForHash {
+    NSMutableData *data = [NSMutableData data];
     [data appendData:[self basePayloadData]];
     return data;
 }
 
--(NSData*)payloadData {
-    NSMutableData * data = [NSMutableData data];
+- (NSData *)payloadData {
+    NSMutableData *data = [NSMutableData data];
     [data appendData:[self basePayloadData]];
     [data appendUInt8:self.payloadSignature.length];
     [data appendData:self.payloadSignature];
     return data;
 }
 
-- (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex
-{
-    NSMutableData * data = [[super toDataWithSubscriptIndex:subscriptIndex] mutableCopy];
+- (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex {
+    NSMutableData *data = [[super toDataWithSubscriptIndex:subscriptIndex] mutableCopy];
     [data appendVarInt:self.payloadData.length];
     [data appendData:[self payloadData]];
     if (subscriptIndex != NSNotFound) [data appendUInt32:SIGHASH_ALL];
     return data;
 }
 
-- (size_t)size
-{
-    if (! uint256_is_zero(self.txHash)) return self.data.length;
+- (size_t)size {
+    if (!uint256_is_zero(self.txHash)) return self.data.length;
     return [super size] + [NSMutableData sizeOfVarInt:self.payloadData.length] + ([self basePayloadData].length + MAX_ECDSA_SIGNATURE_SIZE);
 }
 
--(NSString*)payoutAddress {
+- (NSString *)payoutAddress {
     return [NSString addressWithScriptPubKey:self.scriptPayout onChain:self.providerRegistrationTransaction.chain];
 }
 
--(NSString*)operatorAddress {
+- (NSString *)operatorAddress {
     return [DSKey addressWithPublicKeyData:[NSData dataWithUInt384:self.operatorKey] forChain:self.chain];
 }
 
--(NSString*)votingAddress {
+- (NSString *)votingAddress {
     return [[NSData dataWithUInt160:self.votingKeyHash] addressFromHash160DataForChain:self.chain];
 }
 
--(Class)entityClass {
+- (Class)entityClass {
     return [DSProviderUpdateRegistrarTransactionEntity class];
 }
 
--(void)updateInputsHash {
-    NSMutableData * data = [NSMutableData data];
-    for (NSUInteger i =0; i<self.inputHashes.count;i++) {
+- (void)updateInputsHash {
+    NSMutableData *data = [NSMutableData data];
+    for (NSUInteger i = 0; i < self.inputHashes.count; i++) {
         UInt256 hash = UINT256_ZERO;
-        NSValue * inputHash = self.inputHashes[i];
+        NSValue *inputHash = self.inputHashes[i];
         [inputHash getValue:&hash];
         [data appendUInt256:hash];
         [data appendUInt32:[self.inputIndexes[i] unsignedIntValue]];
@@ -222,7 +219,7 @@
     self.inputsHash = [data SHA256_2];
 }
 
--(void)hasSetInputsAndOutputs {
+- (void)hasSetInputsAndOutputs {
     [self updateInputsHash];
 }
 

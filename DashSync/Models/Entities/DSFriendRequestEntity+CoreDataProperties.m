@@ -11,7 +11,7 @@
 @implementation DSFriendRequestEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSFriendRequestEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSFriendRequestEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSFriendRequestEntity"];
 }
 
 @dynamic destinationContact;

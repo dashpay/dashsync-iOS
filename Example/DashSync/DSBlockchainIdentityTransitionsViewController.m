@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -16,12 +16,12 @@
 //
 
 #import "DSBlockchainIdentityTransitionsViewController.h"
-#import "DSTransitionTableViewCell.h"
 #import "DSTransition.h"
+#import "DSTransitionTableViewCell.h"
 
 @interface DSBlockchainIdentityTransitionsViewController ()
 
-@property (nonatomic,strong) NSArray * transitions;
+@property (nonatomic, strong) NSArray *transitions;
 
 
 @end
@@ -30,23 +30,24 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     self.transitions = [self.blockchainIdentity allTransitions];
-    
-    UIRefreshControl * refreshControl = [[UIRefreshControl alloc] init];
+
+    UIRefreshControl *refreshControl = [[UIRefreshControl alloc] init];
     [refreshControl addTarget:self action:@selector(refreshStateTransitions) forControlEvents:UIControlEventValueChanged];
-    
+
     self.tableView.refreshControl = refreshControl;
 }
 
--(void)refreshStateTransitions {
-    [self.chainManager.DAPIClient getAllStateTransitionsForUser:self.blockchainIdentity completion:^(NSError * _Nullable error) {
-        if (!error) {
-            self.transitions = [self.blockchainIdentity allTransitions];
-            [self.tableView reloadData];
-        }
-        [self.tableView.refreshControl endRefreshing];
-    }];
+- (void)refreshStateTransitions {
+    [self.chainManager.DAPIClient getAllStateTransitionsForUser:self.blockchainIdentity
+                                                     completion:^(NSError *_Nullable error) {
+                                                         if (!error) {
+                                                             self.transitions = [self.blockchainIdentity allTransitions];
+                                                             [self.tableView reloadData];
+                                                         }
+                                                         [self.tableView.refreshControl endRefreshing];
+                                                     }];
 }
 
 #pragma mark - Table view data source
@@ -61,12 +62,12 @@
 
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    static NSString * transitionCellIdentifier = @"TransitionCell";
+    static NSString *transitionCellIdentifier = @"TransitionCell";
     DSTransitionTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:transitionCellIdentifier forIndexPath:indexPath];
-    
-    DSTransition * transition = [self.transitions objectAtIndex:indexPath.row];
-    
-    cell.numberLabel.text = [NSString stringWithFormat:@"%ld",(long)indexPath.row];
+
+    DSTransition *transition = [self.transitions objectAtIndex:indexPath.row];
+
+    cell.numberLabel.text = [NSString stringWithFormat:@"%ld", (long)indexPath.row];
     //cell.confirmedInBlockLabel.text = [NSString stringWithFormat:@"%u",transition.blockHeight];
     cell.transactionLabel.text = uint256_hex(transition.transitionHash);
     //cell.previousTransitionHashLabel.text = uint256_hex(transition.previousTransitionHash);

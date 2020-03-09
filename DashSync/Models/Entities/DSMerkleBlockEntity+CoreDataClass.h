@@ -1,6 +1,6 @@
 //
 //  DSMerkleBlockEntity+CoreDataClass.h
-//  
+//
 //
 //  Created by Sam Westrich on 5/20/18.
 //
@@ -22,8 +22,8 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
 @class DSChainEntity, DSMerkleBlock, DSMasternodeListEntity, DSQuorumEntryEntity, DSChainLockEntity;
 
@@ -32,11 +32,11 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSMerkleBlockEntity : NSManagedObject
 
 - (instancetype)setAttributesFromBlock:(DSMerkleBlock *)block;
-- (instancetype)setAttributesFromBlock:(DSMerkleBlock *)block forChain:(DSChainEntity*)chainEntity; //this is faster when you know the chain entity already
+- (instancetype)setAttributesFromBlock:(DSMerkleBlock *)block forChain:(DSChainEntity *)chainEntity; //this is faster when you know the chain entity already
 - (DSMerkleBlock *)merkleBlock;
 
-+ (NSArray<DSMerkleBlockEntity*>*)lastBlocks:(uint32_t)blockcount onChain:(DSChainEntity*)chainEntity;
-+ (void)deleteBlocksOnChain:(DSChainEntity*)chainEntity;
++ (NSArray<DSMerkleBlockEntity *> *)lastBlocks:(uint32_t)blockcount onChain:(DSChainEntity *)chainEntity;
++ (void)deleteBlocksOnChain:(DSChainEntity *)chainEntity;
 
 @end
 
