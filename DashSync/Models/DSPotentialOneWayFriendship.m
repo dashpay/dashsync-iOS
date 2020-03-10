@@ -30,6 +30,7 @@
 #import "DSPotentialContact.h"
 #import "NSData+Encryption.h"
 #import "DSKey.h"
+#import "DSBlockchainIdentity+Protected.h"
 
 @interface DSPotentialOneWayFriendship()
 

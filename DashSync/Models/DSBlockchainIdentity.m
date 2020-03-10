@@ -69,7 +69,6 @@
 @property (nonatomic,assign) DSUTXO lockedOutpoint;
 @property (nonatomic,assign) uint32_t index;
 @property (nonatomic,assign) DSBlockchainIdentityRegistrationStatus registrationStatus;
-@property (nonatomic,assign) UInt256 lastTransitionHash;
 @property (nonatomic,assign) uint64_t creditBalance;
 
 @property (nonatomic,assign) uint32_t keysCreated;
@@ -583,7 +582,7 @@
     return self.registrationStatus == DSBlockchainIdentityRegistrationStatus_Registered;
 }
 
--(NSString*)registrationStatusString {
+-(NSString*)localizedRegistrationStatusString {
     switch (self.registrationStatus) {
         case DSBlockchainIdentityRegistrationStatus_Registered:
             return DSLocalizedString(@"Registered", @"The Blockchain Identity is registered");

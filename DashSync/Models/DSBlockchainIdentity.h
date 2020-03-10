@@ -69,36 +69,42 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityKey;
 /*! @brief Related to DPNS. This is the list of usernames that are associated to the identity. These usernames however might not yet be registered or might be invalid. This can be used in tandem with the statusOfUsername: method */
 @property (nonatomic,readonly) NSArray <NSString *> * usernames;
 
-/*! @brief Related to DPNS. This is current and most likely username associated to the identity. It is not necessarily registered yet on L2 however so its state should be determined with the statusOfUsername: method */
+/*! @brief Related to DPNS. This is current and most likely username associated to the identity. It is not necessarily registered yet on L2 however so its state should be determined with the statusOfUsername: method
+    @discussion There are situations where this is nil as it is not yet known or if no username has yet been set. */
 @property (nullable,nonatomic,readonly) NSString * currentUsername;
 
-@property (nonatomic,readonly) UInt256 lastTransitionHash;
-
+/*! @brief Related to registering the identity. This is the address used to fund the registration of the identity. Dash sent to this address in the special credit funding transaction will be converted to L2 credits */
 @property (nonatomic,readonly) NSString * registrationFundingAddress;
 
+/*! @brief Related to Dashpay. This is the users status message */
 @property (nonatomic,readonly) NSString * dashpayBioString;
-@property (nonatomic,readonly) uint64_t creditBalance;
-@property (nonatomic,readonly) uint32_t activeKeys;
-@property (nonatomic,readonly) uint64_t syncHeight;
-@property (nonatomic,assign) DSBlockchainIdentityType type;
 
-@property (nonatomic,readonly) NSArray <DSTransition*>* allTransitions;
+/*! @brief The known balance in credits of the identity */
+@property (nonatomic,readonly) uint64_t creditBalance;
+
+/*! @brief The number of active keys that the blockchain identity has */
+@property (nonatomic,readonly) uint32_t activeKeys;
+
+/*! @brief The type of the blockchain identity, it can be either an application or a user, with more potential types to come */
+@property (nonatomic,assign) DSBlockchainIdentityType type;
 
 /*! @brief This is the transaction on L1 that has an output that is used to fund the creation of this blockchain identity.
     @discussion There are situations where this is nil as it is not yet known ; if the blockchain identity is being retrieved from L2 or if we are resyncing the chain. */
-@property (nonatomic,readonly) DSCreditFundingTransaction * registrationCreditFundingTransaction;
+@property (nullable,nonatomic,readonly) DSCreditFundingTransaction * registrationCreditFundingTransaction;
 
+/*! @brief In our system a contact is a vue on a blockchain identity for Dashpay. A blockchain identity is therefore represented by a contact that will have relationships in the system */
 @property (nonatomic,readonly) DSContactEntity* ownContact;
 
-@property (nonatomic,readonly) DPDocumentFactory* dashpayDocumentFactory;
-@property (nonatomic,readonly) DPDocumentFactory* dpnsDocumentFactory;
-
+/*! @brief This is the status of the registration of the identity. It starts off in an initial status, and ends in a confirmed status */
 @property (nonatomic,readonly) DSBlockchainIdentityRegistrationStatus registrationStatus;
 
-@property (nonatomic,readonly) NSString * registrationStatusString;
+/*! @brief This is the localized status of the registration of the identity returned as a string. It starts off in an initial status, and ends in a confirmed status */
+@property (nonatomic,readonly) NSString * localizedRegistrationStatusString;
 
+/*! @brief This is a convenience method that checks to see if registrationStatus is confirmed */
 @property (nonatomic,readonly,getter=isRegistered) BOOL registered;
 
+/*! @brief This is the localized type of the identity returned as a string. */
 @property (nonatomic,readonly) NSString * localizedBlockchainIdentityTypeString;
 
 -(void)addUsername:(NSString*)username save:(BOOL)save;

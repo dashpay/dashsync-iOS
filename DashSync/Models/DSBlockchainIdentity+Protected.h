@@ -23,7 +23,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSBlockchainIdentity ()
 
+/*! @brief This is a convenience factory to quickly make dashpay documents */
+@property (nonatomic,readonly) DPDocumentFactory* dashpayDocumentFactory;
 
+/*! @brief This is a convenience factory to quickly make dpns documents */
+@property (nonatomic,readonly) DPDocumentFactory* dpnsDocumentFactory;
 
 @property (nonatomic,readonly) NSArray<DPDocument*>* unregisteredUsernamesPreorderDocuments;
 @property (nonatomic,readonly,nullable) DSDocumentTransition* unregisteredUsernamesPreorderTransition;
