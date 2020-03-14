@@ -28,7 +28,7 @@
     [self loadData];
     
     self.blockchainIdentitiesObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSBlockchainIdentitiesDidUpdateNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSBlockchainIdentityDidUpdateNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            
                                                            if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self.chainManager chain]]) {
@@ -103,7 +103,7 @@
             blockchainIdentityCell.confirmationsLabel.text = [NSString stringWithFormat:@"%u",(self.chainManager.chain.lastBlockHeight - blockchainIdentity.registrationCreditFundingTransaction.blockHeight + 1)];
             }
         }
-        blockchainIdentityCell.registrationL2StatusLabel.text = blockchainIdentity.registrationStatusString;
+        blockchainIdentityCell.registrationL2StatusLabel.text = blockchainIdentity.localizedRegistrationStatusString;
         blockchainIdentityCell.publicKeysLabel.text = [NSString stringWithFormat:@"%u",blockchainIdentity.activeKeys];
     }
 }

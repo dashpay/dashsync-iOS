@@ -31,7 +31,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    self.transitions = [self.blockchainIdentity allTransitions];
+    self.transitions = nil;//[self.blockchainIdentity allTransitions];
     
     UIRefreshControl * refreshControl = [[UIRefreshControl alloc] init];
     [refreshControl addTarget:self action:@selector(refreshStateTransitions) forControlEvents:UIControlEventValueChanged];
@@ -42,7 +42,7 @@
 -(void)refreshStateTransitions {
     [self.chainManager.DAPIClient getAllStateTransitionsForUser:self.blockchainIdentity completion:^(NSError * _Nullable error) {
         if (!error) {
-            self.transitions = [self.blockchainIdentity allTransitions];
+            self.transitions = nil;//[self.blockchainIdentity allTransitions];
             [self.tableView reloadData];
         }
         [self.tableView.refreshControl endRefreshing];

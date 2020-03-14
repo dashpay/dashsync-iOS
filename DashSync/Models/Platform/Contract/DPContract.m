@@ -65,15 +65,15 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
             self.managedObjectContext = [NSManagedObject context];
         }
         
-        [self.managedObjectContext performBlockAndWait:^{
-            DSContractEntity * entity = self.contractEntity;
-            if (entity) {
-                self.registeredBlockchainIdentity = entity.registeredBlockchainIdentityUniqueID.UInt256;
-                self.contractState = entity.state;
-            } else {
-                [self save];
-            }
-        }];
+//        [self.managedObjectContext performBlockAndWait:^{
+//            DSContractEntity * entity = self.contractEntity;
+//            if (entity) {
+//                self.registeredBlockchainIdentity = entity.registeredBlockchainIdentityUniqueID.UInt256;
+//                self.contractState = entity.state;
+//            } else {
+//                [self save];
+//            }
+//        }];
     }
     return self;
 }
@@ -177,7 +177,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 - (NSString *)localContractIdentifier {
     if (!_localContractIdentifier) {
         NSData *serializedData = uint256_data([self.serialized SHA256_2]);
-        _localContractIdentifier = [serializedData base58String];
+        _localContractIdentifier = [NSString stringWithFormat:@"%@-%@",[serializedData base58String],self.chain.uniqueID];
     }
     return _localContractIdentifier;
 }
@@ -305,7 +305,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     __block DSContractEntity* entity = nil;
     [self.managedObjectContext performBlockAndWait:^{
         [DSContractEntity setContext:self.managedObjectContext];
-        entity = [DSContractEntity anyObjectMatching:@"localContractIdentifier == %@",self.localContractIdentifier];
+        entity = [DSContractEntity anyObjectMatching:@"localContractIdentifier == %@ && chain == %@",self.localContractIdentifier,self.chain.chainEntity];
     }];
     return entity;
 }
@@ -318,6 +318,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
         BOOL hasChange = NO;
         if (!entity) {
             entity = [DSContractEntity managedObject];
+            entity.chain = self.chain.chainEntity;
             entity.localContractIdentifier = self.localContractIdentifier;
             if (!uint256_is_zero(self.registeredBlockchainIdentity)) {
                 entity.registeredBlockchainIdentityUniqueID = uint256_data(self.registeredBlockchainIdentity);
@@ -360,7 +361,9 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     DSStringValueDictionary *jsonObject = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&error];
     NSAssert(error == nil, @"Failed parsing json");
     
-    DPContract *contract = [self contractFromDictionary:jsonObject withLocalIdentifier:DASHPAY_CONTRACT onChain:chain error:&error];
+    NSString * localIdentifier = [NSString stringWithFormat:@"%@-%@",DASHPAY_CONTRACT,chain.uniqueID];
+    
+    DPContract *contract = [self contractFromDictionary:jsonObject withLocalIdentifier:localIdentifier onChain:chain error:&error];
     NSAssert(error == nil, @"Failed building DPContract");
     if (!uint256_is_zero(chain.dashpayContractID) && contract.contractState == DPContractState_Unknown) {
         contract.contractState = DPContractState_Registered;
@@ -382,7 +385,9 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     DSStringValueDictionary *jsonObject = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&error];
     NSAssert(error == nil, @"Failed parsing json");
     
-    DPContract *contract = [self contractFromDictionary:jsonObject withLocalIdentifier:DPNS_CONTRACT onChain:chain error:&error];
+    NSString * localIdentifier = [NSString stringWithFormat:@"%@-%@",DPNS_CONTRACT,chain.uniqueID];
+    
+    DPContract *contract = [self contractFromDictionary:jsonObject withLocalIdentifier:localIdentifier onChain:chain error:&error];
     NSAssert(error == nil, @"Failed building DPContract");
     if (!uint256_is_zero(chain.dpnsContractID) && contract.contractState == DPContractState_Unknown) {
         contract.contractState = DPContractState_Registered;

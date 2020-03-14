@@ -89,7 +89,7 @@
                     "maxLength":2048
                 }
             },
-            "required": ["timestamp", "toUserId", "encryptedPublicKey", "senderKeyIndex", "receiverKeyIndex"],
+            "required": ["timestamp", "toUserId", "encryptedPublicKey", "senderKeyIndex", "recipientKeyIndex"],
             "additionalProperties": false
         }
     }

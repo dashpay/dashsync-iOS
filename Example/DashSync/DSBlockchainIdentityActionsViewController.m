@@ -23,6 +23,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *usernameStatusLabel;
 @property (strong, nonatomic) IBOutlet UILabel *uniqueIdLabel;
 @property (strong, nonatomic) id blockchainIdentityNameObserver;
+@property (strong, nonatomic) id blockchainIdentityRegistrationStatusObserver;
 
 @end
 
@@ -37,18 +38,38 @@
         }];
     }
     
+    __weak typeof(self) weakSelf = self;
+    
     self.blockchainIdentityNameObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSBlockchainIdentityDidUpdateUsernameStatusNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
-                                                           
-                                                           if ([note.userInfo[DSBlockchainIdentityKey] isEqual:self]) {
-                                                               [self reloadRegistrationInfo];
+                                                           __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                           if (!strongSelf) {
+                                                               return;
+                                                           }
+                                                           if ([note.userInfo[DSBlockchainIdentityKey] isEqual:strongSelf.blockchainIdentity]) {
+                                                               [strongSelf reloadRegistrationInfo];
+                                                           }
+                                                       }];
+    
+    self.blockchainIdentityRegistrationStatusObserver =
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSBlockchainIdentityDidUpdateNotification object:nil
+                                                       queue:nil usingBlock:^(NSNotification *note) {
+                                                           __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                           if (!strongSelf) {
+                                                               return;
+                                                           }
+                                                           if ([note.userInfo[DSBlockchainIdentityKey] isEqual:strongSelf.blockchainIdentity]) {
+                                                               if ([note.userInfo[DSBlockchainIdentityUpdateEvents] containsObject:DSBlockchainIdentityUpdateEventRegistration]) {
+                                                                   [strongSelf reloadRegistrationInfo];
+                                                               }
                                                            }
                                                        }];
 }
 
 -(void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self.blockchainIdentityNameObserver];
+    [[NSNotificationCenter defaultCenter] removeObserver:self.blockchainIdentityRegistrationStatusObserver];
 }
 
 -(void)reloadRegistrationInfo {
@@ -128,6 +149,10 @@
 
 -(IBAction)registerBlockchainIdentity:(id)sender {
     if (self.blockchainIdentity.isRegistered) return;
+    if (self.blockchainIdentity.type == DSBlockchainIdentityType_Unknown) {
+        [self raiseIssue:@"Unknown Registration Type" message:@"Please select the type of identity you wish to register"];
+        return;
+    }
     [self.blockchainIdentity createAndPublishRegistrationTransitionWithCompletion:^(NSDictionary * _Nullable successInfo, NSError * _Nullable error) {
         if (error) {
             dispatch_async(dispatch_get_main_queue(), ^{

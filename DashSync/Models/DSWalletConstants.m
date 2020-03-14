@@ -59,8 +59,20 @@ NSString* const DPContractDidUpdateNotification = @"DPContractDidUpdateNotificat
 
 NSString* const DSContractUpdateNotificationKey = @"DSContractUpdateNotificationKey";
 
-NSString* const DSBlockchainIdentitiesDidUpdateNotification = @"DSBlockchainIdentitiesDidUpdateNotification";
+NSString* const DSBlockchainIdentityDidUpdateNotification = @"DSBlockchainIdentitiesDidUpdateNotification";
 
 NSString* const DSBlockchainIdentityDidUpdateUsernameStatusNotification = @"DSBlockchainIdentityDidUpdateUsernameStatusNotification";
 
 NSString* const DSBlockchainIdentityKey = @"DSBlockchainIdentityKey";
+
+NSString* const DSBlockchainIdentityUsernameKey = @"DSBlockchainIdentityUsernameKey";
+
+NSString* const DSBlockchainIdentityUpdateEvents = @"DSBlockchainIdentityUpdateEvents";
+
+NSString* const DSBlockchainIdentityUpdateEventNewKey = @"DSBlockchainIdentityUpdateEventNewKey";
+
+NSString* const DSBlockchainIdentityUpdateEventRegistration = @"DSBlockchainIdentityUpdateEventRegistration";
+
+NSString* const DSBlockchainIdentityUpdateEventCreditBalance = @"DSBlockchainIdentityUpdateEventCreditBalance";
+
+NSString* const DSBlockchainIdentityUpdateEventType = @"DSBlockchainIdentityUpdateEventType";

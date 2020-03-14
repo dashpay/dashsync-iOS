@@ -39,9 +39,16 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityType) {
 #define BLOCKCHAIN_USERNAME_STATUS @"BLOCKCHAIN_USERNAME_STATUS"
 #define BLOCKCHAIN_USERNAME_SALT @"BLOCKCHAIN_USERNAME_SALT"
 
-FOUNDATION_EXPORT NSString* const DSBlockchainIdentitiesDidUpdateNotification;
+FOUNDATION_EXPORT NSString* const DSBlockchainIdentityDidUpdateNotification;
 FOUNDATION_EXPORT NSString* const DSBlockchainIdentityDidUpdateUsernameStatusNotification;
 FOUNDATION_EXPORT NSString* const DSBlockchainIdentityKey;
+FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUsernameKey;
+
+FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEvents;
+FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventNewKey;
+FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventRegistration;
+FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventCreditBalance;
+FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 
 @interface DSBlockchainIdentity : NSObject
 
@@ -107,50 +114,62 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityKey;
 /*! @brief This is the localized type of the identity returned as a string. */
 @property (nonatomic,readonly) NSString * localizedBlockchainIdentityTypeString;
 
--(void)addUsername:(NSString*)username save:(BOOL)save;
+/*! @brief This is a convenience factory to quickly make dashpay documents */
+@property (nonatomic,readonly) DPDocumentFactory* dashpayDocumentFactory;
 
--(void)retrieveIdentityNetworkStateInformationWithCompletion:(void (^)(BOOL success))completion;
+/*! @brief This is a convenience factory to quickly make dpns documents */
+@property (nonatomic,readonly) DPDocumentFactory* dpnsDocumentFactory;
+
+// MARK: - Contracts
 
 -(void)fetchAndUpdateContract:(DPContract*)contract;
 
--(uint32_t)indexOfKey:(DSKey*)key;
+// MARK: - Helpers
 
--(DSBlockchainIdentityUsernameStatus)statusOfUsername:(NSString*)username;
+/*! @brief This will return a localized blockchain identity type string for a specified type. This is a helper method so clients are not forced to localize the type themselves. Values are capitalized. "User" and "Application" are examples of return values. */
++ (NSString*)localizedBlockchainIdentityTypeStringForType:(DSBlockchainIdentityType)type;
 
--(void)generateBlockchainIdentityExtendedPublicKeys:(void (^ _Nullable)(BOOL registered))completion;
-
--(void)registerInWallet;
-
--(BOOL)unregisterLocally;
-
--(void)registerInWalletForRegistrationFundingTransaction:(DSCreditFundingTransaction*)fundingTransaction;
-
--(void)registerInWalletForBlockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId;
+// MARK: - Identity
 
 -(void)fundingTransactionForTopupAmount:(uint64_t)topupAmount toAddress:(NSString*)address fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSCreditFundingTransaction * fundingTransaction))completion;
 
--(void)registrationTransitionWithCompletion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition))completion;
-
--(void)topupTransitionForForFundingTransaction:(DSTransaction*)fundingTransaction completion:(void (^ _Nullable)(DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransition))completion;
-
--(void)updateTransitionUsingNewIndex:(uint32_t)index completion:(void (^ _Nullable)(DSBlockchainIdentityUpdateTransition * blockchainIdentityUpdateTransition))completion;
-
--(void)createAndPublishRegistrationTransitionWithCompletion:(void (^ _Nullable)(NSDictionary * _Nullable successInfo, NSError * _Nullable error))completion;
-
--(void)updateWithTopupTransition:(DSBlockchainIdentityTopupTransition*)blockchainIdentityTopupTransaction save:(BOOL)save;
--(void)updateWithUpdateTransition:(DSBlockchainIdentityUpdateTransition*)blockchainIdentityResetTransaction save:(BOOL)save;
--(void)updateWithCloseTransition:(DSBlockchainIdentityCloseTransition*)blockchainIdentityCloseTransaction save:(BOOL)save;
--(void)updateWithDocumentTransition:(DSDocumentTransition*)transition save:(BOOL)save;
-
--(DSKey*)createNewKeyOfType:(DSDerivationPathSigningAlgorith)type returnIndex:(uint32_t *)rIndex;
-
--(void)signStateTransition:(DSTransition*)transition forKeyIndex:(uint32_t)keyIndex ofType:(DSDerivationPathSigningAlgorith)signingAlgorithm withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion;
+-(void)retrieveIdentityNetworkStateInformationWithCompletion:(void (^)(BOOL success))completion;
 
 -(void)signStateTransition:(DSTransition*)transition withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion;
 
 -(BOOL)verifySignature:(NSData*)signature ofType:(DSDerivationPathSigningAlgorith)signingAlgorithm forMessageDigest:(UInt256)messageDigest;
 
+-(void)createAndPublishRegistrationTransitionWithCompletion:(void (^ _Nullable)(NSDictionary * _Nullable successInfo, NSError * _Nullable error))completion;
+
+-(void)signStateTransition:(DSTransition*)transition forKeyIndex:(uint32_t)keyIndex ofType:(DSDerivationPathSigningAlgorith)signingAlgorithm withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion;
+
 -(void)encryptData:(NSData*)data withKeyAtIndex:(uint32_t)index forRecipientKey:(DSKey*)recipientKey withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(NSData* encryptedData))completion;
+
+/*! @brief Register the blockchain identity to its wallet. This should only be done once on the creation of the blockchain identity.
+*/
+-(void)registerInWallet;
+
+/*! @brief Unregister the blockchain identity from the wallet. This should only be used if the blockchain identity is not yet registered or if a progressive wallet wipe is happening.
+    @discussion When a blockchain identity is registered on the network it is automatically retrieved from the L1 chain on resync. If a client wallet wishes to change their default blockchain identity in a wallet it should be done by marking the default blockchain identity index in the wallet. Clients should not try to delete a registered blockchain identity from a wallet.
+ */
+-(BOOL)unregisterLocally;
+
+/*! @brief Register the blockchain identity to its wallet from a credit funding registration transaction. This should only be done once on the creation of the blockchain identity.
+    @param fundingTransaction The funding transaction used to initially fund the blockchain identity.
+*/
+-(void)registerInWalletForRegistrationFundingTransaction:(DSCreditFundingTransaction*)fundingTransaction;
+
+// MARK: - Keys
+
+/*! @brief Register the blockchain identity to its wallet from a credit funding registration transaction. This should only be done once on the creation of the blockchain identity.
+*/
+-(void)generateBlockchainIdentityExtendedPublicKeys:(void (^ _Nullable)(BOOL registered))completion;
+
+-(uint32_t)indexOfKey:(DSKey*)key;
+
+-(DSKey*)createNewKeyOfType:(DSDerivationPathSigningAlgorith)type returnIndex:(uint32_t *)rIndex;
+
+// MARK: - Dashpay
 
 -(void)sendNewFriendRequestToPotentialContact:(DSPotentialContact*)potentialContact completion:(void (^)(BOOL))completion;
 
@@ -166,7 +185,11 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityKey;
 
 - (void)createOrUpdateProfileWithAboutMeString:(NSString*)aboutme avatarURLString:(NSString *)avatarURLString completion:(void (^)(BOOL success))completion;
 
-+ (NSString*)localizedBlockchainIdentityTypeStringForType:(DSBlockchainIdentityType)type;
+// MARK: - DPNS
+
+-(void)addUsername:(NSString*)username save:(BOOL)save;
+
+-(DSBlockchainIdentityUsernameStatus)statusOfUsername:(NSString*)username;
 
 -(void)registerUsernames;
 

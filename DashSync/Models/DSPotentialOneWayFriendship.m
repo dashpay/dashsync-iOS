@@ -96,6 +96,8 @@
         @"timestamp": @([[[NSDate alloc] init] timeIntervalSince1970]),
                            @"toUserId" : uint256_data(self.destinationContact.associatedBlockchainIdentityUniqueId).reverse.base58String,
                            @"encryptedPublicKey" : [self.encryptedExtendedPublicKey base64EncodedStringWithOptions:0],
+        @"senderKeyIndex" : @(self.sourceKeyIndex),
+        @"recipientKeyIndex" : @(self.destinationKeyIndex),
                            };
     
     

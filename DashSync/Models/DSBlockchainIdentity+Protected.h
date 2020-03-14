@@ -23,12 +23,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSBlockchainIdentity ()
 
-/*! @brief This is a convenience factory to quickly make dashpay documents */
-@property (nonatomic,readonly) DPDocumentFactory* dashpayDocumentFactory;
-
-/*! @brief This is a convenience factory to quickly make dpns documents */
-@property (nonatomic,readonly) DPDocumentFactory* dpnsDocumentFactory;
-
 @property (nonatomic,readonly) NSArray<DPDocument*>* unregisteredUsernamesPreorderDocuments;
 @property (nonatomic,readonly,nullable) DSDocumentTransition* unregisteredUsernamesPreorderTransition;
 
@@ -47,6 +41,16 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)registerKeyIsActive:(BOOL)active atIndexPath:(NSIndexPath*)indexPath ofType:(DSDerivationPathSigningAlgorith)type;
 -(DSKey*)privateKeyAtIndex:(uint32_t)index ofType:(DSDerivationPathSigningAlgorith)type;
 -(void)deletePersistentObject;
+
+
+
+-(void)registerInWalletForBlockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId;
+
+-(void)registrationTransitionWithCompletion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition))completion;
+
+-(void)topupTransitionForForFundingTransaction:(DSTransaction*)fundingTransaction completion:(void (^ _Nullable)(DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransition))completion;
+
+-(void)updateTransitionUsingNewIndex:(uint32_t)index completion:(void (^ _Nullable)(DSBlockchainIdentityUpdateTransition * blockchainIdentityUpdateTransition))completion;
 
 @end
 

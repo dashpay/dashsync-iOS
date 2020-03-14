@@ -23,8 +23,8 @@
             "properties": {
                 "nameHash": {
                     "type": "string",
-                    "minLength": 64,
-                    "maxLength": 64,
+                    "minLength": 68,
+                    "maxLength": 68,
                     "pattern": "^[0123456789abcdef]+$"
                 },
                 "label": {
@@ -47,7 +47,7 @@
                 "preorderSalt": {
                     "type": "string",
                     "minLength": 1,
-                    "maxLength": 64
+                    "maxLength": 68
                 },
                 "records": {
                     "type": "object",
@@ -86,7 +86,7 @@
                 "saltedDomainHash": {
                     "type": "string",
                     "minLength": 64,
-                    "maxLength": 64,
+                    "maxLength": 68,
                     "pattern": "^[0123456789abcdef]+$"
                 }
             },

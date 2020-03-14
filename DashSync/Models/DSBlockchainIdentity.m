@@ -638,6 +638,12 @@
 // MARK: Registering
 
 -(void)createAndPublishRegistrationTransitionWithCompletion:(void (^)(NSDictionary *, NSError *))completion {
+    if (self.type == DSBlockchainIdentityType_Unknown) {
+        NSError * error = [NSError errorWithDomain:@"DashSync" code:501 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                       DSLocalizedString(@"An identity needs to have its type defined before it can be registered.", nil)}];
+        completion(nil,error);
+        return;
+    }
     [self registrationTransitionWithCompletion:^(DSBlockchainIdentityRegistrationTransition * _Nonnull blockchainIdentityRegistrationTransition) {
         if (blockchainIdentityRegistrationTransition) {
             [self.DAPIClient publishTransition:blockchainIdentityRegistrationTransition success:^(NSDictionary * _Nonnull successDictionary) {
@@ -765,8 +771,8 @@
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ //this is so we don't get DAPINetworkService immediately
         
-        if (contract.contractState == DPContractState_Unknown) {
-            [self.DAPINetworkService getIdentityByName:@"dashpay7" inDomain:@"" success:^(NSDictionary * _Nonnull blockchainIdentity) {
+        if (!uint256_is_zero(self.wallet.chain.dpnsContractID) && contract.contractState == DPContractState_Unknown) {
+            [self.DAPINetworkService getIdentityByName:@"dashpay" inDomain:@"" success:^(NSDictionary * _Nonnull blockchainIdentity) {
                 if (!blockchainIdentity) {
                     __strong typeof(weakContract) strongContract = weakContract;
                     if (!strongContract) {
@@ -782,7 +788,7 @@
                 }
                 strongContract.contractState = DPContractState_NotRegistered;
             }];
-        } else if (contract.contractState == DPContractState_NotRegistered) {
+        } else if ((uint256_is_zero(self.wallet.chain.dpnsContractID) && uint256_is_zero(contract.registeredBlockchainIdentity)) || contract.contractState == DPContractState_NotRegistered) {
             [contract registerCreator:self];
             __block DSContractTransition * transition = [contract contractRegistrationTransitionForIdentity:self];
             [self signStateTransition:transition withPrompt:@"Register Contract?" completion:^(BOOL success) {
@@ -1133,6 +1139,8 @@
 
 - (void)fetchUsernamesWithCompletion:(void (^)(BOOL))completion {
     __weak typeof(self) weakSelf = self;
+    DPContract * contract = [DSDashPlatform sharedInstanceForChain:self.wallet.chain].dpnsContract;
+    if (contract.contractState != DPContractState_Registered) return;
     [self.DAPINetworkService getDPNSDocumentsForIdentityWithUserId:self.uniqueIdString success:^(NSArray<NSDictionary *> * _Nonnull documents) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
@@ -1445,7 +1453,7 @@
             completion(NO);
             return;
         }
-        NSData * publicKeyData = ((NSString*)publicKeyDictionary[@"data"]).base58ToData;
+        NSData * publicKeyData = ((NSString*)publicKeyDictionary[@"data"]).base64ToData;
         DSKeyType keyType = [(NSNumber*)publicKeyDictionary[@"type"] unsignedIntValue];
         uint32_t keyIndex = [(NSNumber*)publicKeyDictionary[@"id"] unsignedIntValue];
         
@@ -1600,7 +1608,13 @@
 // MARK: Fetching
 
 - (void)fetchProfile:(void (^)(BOOL))completion {
-    __weak typeof(self) weakSelf = self;
+    
+    DPContract * dashpayContract = [DSDashPlatform sharedInstanceForChain:self.wallet.chain].dashPayContract;
+    if ([dashpayContract contractState] != DPContractState_Registered) {
+        completion(FALSE);
+        return;
+    }
+    
     [self fetchProfileForBlockchainIdentityUniqueId:self.uniqueID saveReturnedProfile:TRUE context:self.managedObjectContext completion:^(DSContactEntity *contactEntity) {
         if (completion) {
             if (contactEntity) {
@@ -1614,6 +1628,13 @@
 
 - (void)fetchProfileForBlockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId saveReturnedProfile:(BOOL)saveReturnedProfile context:(NSManagedObjectContext*)context completion:(void (^)(DSContactEntity* contactEntity))completion {
     __weak typeof(self) weakSelf = self;
+    
+    DPContract * dashpayContract = [DSDashPlatform sharedInstanceForChain:self.wallet.chain].dashPayContract;
+    if ([dashpayContract contractState] != DPContractState_Registered) {
+        completion(FALSE);
+        return;
+    }
+    
     [self.DAPINetworkService getDashpayProfileForUserId:uint256_reverse_base58(blockchainIdentityUniqueId) success:^(NSArray<NSDictionary *> * _Nonnull documents) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
@@ -2122,26 +2143,42 @@
         }
         self.ownContact = contact;
         [DSBlockchainIdentityEntity saveContext];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentityDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.wallet.chain,DSBlockchainIdentityKey:self}];
+        });
     }];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentitiesDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.wallet.chain}];
-    });
 }
 
 
 -(void)save {
     [self.managedObjectContext performBlockAndWait:^{
+        BOOL changeOccured = NO;
+        NSMutableArray * updateEvents = [NSMutableArray array];
         [DSBlockchainIdentityEntity setContext:self.managedObjectContext];
         [DSBlockchainIdentityUsernameEntity setContext:self.managedObjectContext];
         DSBlockchainIdentityEntity * entity = self.blockchainIdentityEntity;
-        entity.creditBalance = self.creditBalance;
-        entity.registrationStatus = self.registrationStatus;
-        entity.type = self.type;
-        [DSBlockchainIdentityEntity saveContext];
+        if (entity.creditBalance != self.creditBalance) {
+            entity.creditBalance = self.creditBalance;
+            changeOccured = YES;
+            [updateEvents addObject:DSBlockchainIdentityUpdateEventCreditBalance];
+        }
+        if (entity.registrationStatus != self.registrationStatus) {
+            entity.registrationStatus = self.registrationStatus;
+            changeOccured = YES;
+            [updateEvents addObject:DSBlockchainIdentityUpdateEventRegistration];
+        }
+        if (entity.type != self.type) {
+            entity.type = self.type;
+            changeOccured = YES;
+            [updateEvents addObject:DSBlockchainIdentityUpdateEventType];
+        }
+        if (changeOccured) {
+            [DSBlockchainIdentityEntity saveContext];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentityDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.wallet.chain,DSBlockchainIdentityKey:self,DSBlockchainIdentityUpdateEvents:updateEvents}];
+            });
+        }
     }];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentitiesDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.wallet.chain}];
-    });
 }
 
 -(NSString*)identifierForKeyAtPath:(NSIndexPath*)path fromDerivationPath:(DSDerivationPath*)derivationPath {
@@ -2164,10 +2201,10 @@
             [entity addKeyPathsObject:blockchainIdentityKeyPathEntity];
             [DSBlockchainIdentityEntity saveContext];
         }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentityDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.wallet.chain,DSBlockchainIdentityKey:self,DSBlockchainIdentityUpdateEvents:@[DSBlockchainIdentityUpdateEventNewKey]}];
+        });
     }];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentitiesDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.wallet.chain}];
-    });
 }
 
 -(void)saveNewUsername:(NSString*)username status:(DSBlockchainIdentityUsernameStatus)status {
@@ -2184,10 +2221,11 @@
             self.ownContact.username = username;
         }
         [DSBlockchainIdentityEntity saveContext];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentityDidUpdateUsernameStatusNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.wallet.chain, DSBlockchainIdentityKey:self}];
+        });
     }];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentityDidUpdateUsernameStatusNotification object:nil userInfo:@{DSBlockchainIdentityKey:self}];
-    });
+
 }
 
 -(void)saveUsernames:(NSArray*)usernames toStatus:(DSBlockchainIdentityUsernameStatus)status {
@@ -2234,6 +2272,9 @@
             if (commitSave) {
                 [DSBlockchainIdentityEntity saveContext];
             }
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentityDidUpdateUsernameStatusNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.wallet.chain, DSBlockchainIdentityKey:self, DSBlockchainIdentityUsernameKey:username}];
+            });
         }
     }];
 }
@@ -2253,10 +2294,10 @@
             [blockchainIdentityEntity deleteObject];
             [DSBlockchainIdentityEntity saveContext];
         }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentityDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.wallet.chain,DSBlockchainIdentityKey:self}];
+        });
     }];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentitiesDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.wallet.chain}];
-    });
 }
 
 // MARK: Entity

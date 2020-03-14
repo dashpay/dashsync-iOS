@@ -68,9 +68,9 @@ static dispatch_once_t platformChainToken = 0;
 }
 
 + (NSString*)nameForContractWithIdentifier:(NSString*)identifier {
-    if ([identifier isEqualToString:DASHPAY_CONTRACT]) {
+    if ([identifier hasPrefix:DASHPAY_CONTRACT]) {
         return @"DashPay";
-    } else if ([identifier isEqualToString:DPNS_CONTRACT]) {
+    } else if ([identifier hasPrefix:DPNS_CONTRACT]) {
         return @"DPNS";
     }
     return @"Unnamed Contract";
