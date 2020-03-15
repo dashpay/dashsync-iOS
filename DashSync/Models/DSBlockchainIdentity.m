@@ -542,7 +542,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 }
 
 -(DSKey*)createNewKeyOfType:(DSKeyType)type returnIndex:(uint32_t *)rIndex {
-    NSUInteger keyIndex = self.keysCreated;
+    uint32_t keyIndex = self.keysCreated;
     const NSUInteger indexes[] = {_index,keyIndex};
     NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
     
@@ -550,10 +550,30 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     
     DSKey * key = [derivationPath publicKeyAtIndexPath:indexPath onChain:self.wallet.chain];
     self.keysCreated++;
+    if (rIndex) {
+        *rIndex = keyIndex;
+    }
     NSDictionary * keyDictionary = @{@(DSBlockchainIdentityKeyDictionary_Key):key, @(DSBlockchainIdentityKeyDictionary_KeyType):@(type), @(DSBlockchainIdentityKeyDictionary_KeyStatus):@(DSBlockchainIdentityKeyStatus_Registering)};
     [self.keyInfoDictionaries setObject:keyDictionary forKey:@(keyIndex)];
     [self saveNewKey:key atPath:indexPath withStatus:DSBlockchainIdentityKeyStatus_Registering fromDerivationPath:derivationPath];
     return key;
+}
+
+-(uint32_t)firstIndexOfKeyOfType:(DSKeyType)type createIfNotPresent:(BOOL)createIfNotPresent {
+    for (NSNumber * indexNumber in self.keyInfoDictionaries) {
+        NSDictionary * keyDictionary = self.keyInfoDictionaries[indexNumber];
+        DSKeyType keyTypeAtIndex = [keyDictionary[@(DSBlockchainIdentityKeyDictionary_KeyType)] unsignedIntValue];
+        if (keyTypeAtIndex == type) {
+            return [indexNumber unsignedIntValue];
+        }
+    }
+    if (createIfNotPresent) {
+        uint32_t rIndex;
+        [self createNewKeyOfType:type returnIndex:&rIndex];
+        return rIndex;
+    } else {
+        return UINT32_MAX;
+    }
 }
 
 -(DSKey*)keyOfType:(DSKeyType)type atIndex:(uint32_t)index {
@@ -576,10 +596,26 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     
     DSKey * keyToCheck = [derivationPath publicKeyAtIndexPath:indexPath onChain:self.wallet.chain];
-    DSKey * keyToCheck1 = [derivationPath publicKeyAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:4] onChain:self.wallet.chain];
     if ([keyToCheck.publicKeyData isEqualToData:key.publicKeyData]) {
         uint32_t index = (uint32_t)[indexPath indexAtPosition:[indexPath length] - 1];
-        self.keysCreated = MAX(self.keysCreated,index + 1);
+        if (self.keyInfoDictionaries[@(index)]) {
+            NSDictionary * keyDictionary = self.keyInfoDictionaries[@(index)];
+            DSKey * keyToCheckInDictionary = keyDictionary[@(DSBlockchainIdentityKeyDictionary_Key)];
+            if ([keyToCheckInDictionary.publicKeyData isEqualToData:key.publicKeyData]) {
+                if (save) {
+                    [self updateStatus:status forKeyAtPath:indexPath fromDerivationPath:derivationPath];
+                }
+            } else {
+                NSAssert(FALSE, @"these should really match up");
+                DSDLog(@"these should really match up");
+                return;
+            }
+        } else {
+            self.keysCreated = MAX(self.keysCreated,index + 1);
+            if (save) {
+                [self saveNewKey:key atPath:indexPath withStatus:status fromDerivationPath:derivationPath];
+            }
+        }
         NSDictionary * keyDictionary = @{@(DSBlockchainIdentityKeyDictionary_Key):key, @(DSBlockchainIdentityKeyDictionary_KeyType):@(type), @(DSBlockchainIdentityKeyDictionary_KeyStatus):@(status)};
         [self.keyInfoDictionaries setObject:keyDictionary forKey:@(index)];
         if (save) {
@@ -1530,16 +1566,22 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         }
         NSData * publicKeyData = ((NSString*)publicKeyDictionary[@"data"]).base64ToData;
         DSKeyType keyType = [(NSNumber*)publicKeyDictionary[@"type"] unsignedIntValue];
-        uint32_t keyIndex = [(NSNumber*)publicKeyDictionary[@"id"] unsignedIntValue];
+        uint32_t destinationKeyIndex = [(NSNumber*)publicKeyDictionary[@"id"] unsignedIntValue] - 1; //todo fix -1
         
         DSKey * key = [DSKey keyForPublicKeyData:publicKeyData forKeyType:keyType onChain:self.wallet.chain];
         
         NSAssert(!uint256_is_zero(blockchainIdentityContactUniqueId), @"blockchainIdentityContactUniqueId should not be null");
         NSAssert(key, @"key should not be null");
         [potentialContact setAssociatedBlockchainIdentityUniqueId:blockchainIdentityContactUniqueId];
-        [potentialContact addPublicKey:key atIndex:keyIndex];
+        [potentialContact addPublicKey:key atIndex:destinationKeyIndex];
         DSAccount * account = [self.wallet accountWithNumber:0];
-        DSPotentialOneWayFriendship * potentialFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationContact:potentialContact destinationKeyIndex:keyIndex sourceBlockchainIdentity:self sourceKeyIndex:0 account:account];
+        uint32_t sourceKeyIndex = [self firstIndexOfKeyOfType:keyType createIfNotPresent:NO];
+        if (sourceKeyIndex == UINT32_MAX) { //not found
+            //to do register a new key
+            NSAssert(FALSE, @"we shouldn't be getting here");
+            return;
+        }
+        DSPotentialOneWayFriendship * potentialFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationContact:potentialContact destinationKeyIndex:destinationKeyIndex sourceBlockchainIdentity:self sourceKeyIndex:sourceKeyIndex account:account];
         
         [potentialFriendship createDerivationPath];
         
@@ -1602,6 +1644,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     [contact setAssociatedBlockchainIdentityUniqueId:friendRequest.sourceContact.associatedBlockchainIdentityUniqueId.UInt256];
     DSKey * friendsEncyptionKey = [DSKey keyForPublicKeyData:friendRequest.sourceContact.encryptionPublicKey forKeyType:friendRequest.sourceContact.encryptionPublicKeyType onChain:self.wallet.chain];
     [contact addPublicKey:friendsEncyptionKey atIndex:friendRequest.sourceContact.encryptionPublicKeyIndex];
+    uint32_t sourceKeyIndex = [self firstIndexOfKeyOfType:friendRequest.sourceContact.encryptionPublicKeyType createIfNotPresent:NO];
+    if (sourceKeyIndex == UINT32_MAX) { //not found
+        //to do register a new key
+        NSAssert(FALSE, @"we shouldn't be getting here");
+        return;
+    }
     DSPotentialOneWayFriendship *potentialFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationContact:contact destinationKeyIndex:friendRequest.sourceContact.encryptionPublicKeyIndex sourceBlockchainIdentity:self sourceKeyIndex:0 account:account];
     [potentialFriendship createDerivationPath];
     
@@ -1959,7 +2007,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                     
                     DSPotentialContact* contact = [[DSPotentialContact alloc] initWithContactEntity:self.ownContact];
                     
-                    DSPotentialOneWayFriendship * potentialFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationContact:contact destinationKeyIndex:0 sourceBlockchainIdentity:sourceBlockchainIdentity sourceKeyIndex:0 account:account];
+                    DSPotentialOneWayFriendship * potentialFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationContact:contact destinationKeyIndex:contactRequest.recipientKeyIndex sourceBlockchainIdentity:sourceBlockchainIdentity sourceKeyIndex:contactRequest.senderKeyIndex account:account];
                     
                     DSIncomingFundsDerivationPath * derivationPath = [potentialFriendship createDerivationPath];
                     
@@ -2076,7 +2124,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                             
                             DSPotentialContact * contact = [[DSPotentialContact alloc] initWithContactEntity:destinationContactEntity];
                             
-                            DSPotentialOneWayFriendship * realFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationContact:contact destinationKeyIndex:0 sourceBlockchainIdentity:self sourceKeyIndex:0 account:account];
+                            DSPotentialOneWayFriendship * realFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationContact:contact destinationKeyIndex:contactRequest.recipientKeyIndex sourceBlockchainIdentity:self sourceKeyIndex:contactRequest.senderKeyIndex account:account];
                             
                             DSIncomingFundsDerivationPath * derivationPath = [realFriendship createDerivationPath];
                             
@@ -2279,10 +2327,30 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             [DSBlockchainIdentityEntity saveContext];
         }
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentityDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.wallet.chain,DSBlockchainIdentityKey:self,DSBlockchainIdentityUpdateEvents:@[DSBlockchainIdentityUpdateEventNewKey]}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentityDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.wallet.chain,DSBlockchainIdentityKey:self,DSBlockchainIdentityUpdateEvents:@[DSBlockchainIdentityUpdateEventKeyUpdate]}];
         });
     }];
 }
+
+-(void)updateStatus:(DSBlockchainIdentityKeyStatus)status forKeyAtPath:(NSIndexPath*)path fromDerivationPath:(DSDerivationPath*)derivationPath {
+    [self.managedObjectContext performBlockAndWait:^{
+        [DSBlockchainIdentityEntity setContext:self.managedObjectContext];
+        [DSBlockchainIdentityKeyPathEntity setContext:self.managedObjectContext];
+        DSBlockchainIdentityEntity * entity = self.blockchainIdentityEntity;
+        DSDerivationPathEntity * derivationPathEntity = derivationPath.derivationPathEntity;
+        NSData *keyPathData = [NSKeyedArchiver archivedDataWithRootObject:path];
+        DSBlockchainIdentityKeyPathEntity * blockchainIdentityKeyPathEntity = [[DSBlockchainIdentityKeyPathEntity objectsMatching:@"blockchainIdentity == %@ && derivationPath == %@ && path == %@",entity, derivationPathEntity,keyPathData] firstObject];
+        if (blockchainIdentityKeyPathEntity) {
+            DSBlockchainIdentityKeyPathEntity * blockchainIdentityKeyPathEntity = [DSBlockchainIdentityKeyPathEntity managedObject];
+            blockchainIdentityKeyPathEntity.keyStatus = status;
+            [DSBlockchainIdentityEntity saveContext];
+        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentityDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.wallet.chain,DSBlockchainIdentityKey:self,DSBlockchainIdentityUpdateEvents:@[DSBlockchainIdentityUpdateEventKeyUpdate]}];
+        });
+    }];
+}
+
 
 -(void)saveNewUsername:(NSString*)username status:(DSBlockchainIdentityUsernameStatus)status {
     [self.managedObjectContext performBlockAndWait:^{

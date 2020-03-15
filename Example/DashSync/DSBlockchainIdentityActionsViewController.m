@@ -40,7 +40,7 @@
         }];
     }
     
-    [self updateKeys];
+    [self reloadKeyInfo];
     
     __weak typeof(self) weakSelf = self;
     
@@ -66,6 +66,9 @@
                                                            if ([note.userInfo[DSBlockchainIdentityKey] isEqual:strongSelf.blockchainIdentity]) {
                                                                if ([note.userInfo[DSBlockchainIdentityUpdateEvents] containsObject:DSBlockchainIdentityUpdateEventRegistration]) {
                                                                    [strongSelf reloadRegistrationInfo];
+                                                               }
+                                                               if ([note.userInfo[DSBlockchainIdentityUpdateEvents] containsObject:DSBlockchainIdentityUpdateEventKeyUpdate]) {
+                                                                   [strongSelf reloadKeyInfo];
                                                                }
                                                            }
                                                        }];
@@ -136,7 +139,7 @@
     }
 }
 
--(void)updateKeys {
+-(void)reloadKeyInfo {
     self.keyCountLabel.text = [NSString stringWithFormat:@"%u/%u",self.blockchainIdentity.activeKeyCount, self.blockchainIdentity.totalKeyCount];
 }
 

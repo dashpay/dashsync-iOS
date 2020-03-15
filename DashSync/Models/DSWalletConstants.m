@@ -69,7 +69,7 @@ NSString* const DSBlockchainIdentityUsernameKey = @"DSBlockchainIdentityUsername
 
 NSString* const DSBlockchainIdentityUpdateEvents = @"DSBlockchainIdentityUpdateEvents";
 
-NSString* const DSBlockchainIdentityUpdateEventNewKey = @"DSBlockchainIdentityUpdateEventNewKey";
+NSString* const DSBlockchainIdentityUpdateEventKeyUpdate = @"DSBlockchainIdentityUpdateEventKeyUpdate";
 
 NSString* const DSBlockchainIdentityUpdateEventRegistration = @"DSBlockchainIdentityUpdateEventRegistration";
 

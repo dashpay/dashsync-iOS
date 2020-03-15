@@ -53,7 +53,7 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityKey;
 FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUsernameKey;
 
 FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEvents;
-FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventNewKey;
+FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventKeyUpdate;
 FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventRegistration;
 FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventCreditBalance;
 FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;

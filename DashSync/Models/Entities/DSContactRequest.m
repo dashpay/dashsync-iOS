@@ -56,8 +56,9 @@
         self.senderBlockchainIdentityUniqueId = [senderString base58ToData].UInt256;
         self.encryptedPublicKeyData = [encryptedPublicKeyString base64ToData];
         self.timestamp = [timestamp doubleValue];
-        self.recipientKeyIndex = [recipientKeyIndex unsignedIntValue];
-        self.senderKeyIndex = [senderKeyIndex unsignedIntValue];
+        //todo fix -1
+        self.recipientKeyIndex = [recipientKeyIndex unsignedIntValue] - 1;
+        self.senderKeyIndex = [senderKeyIndex unsignedIntValue] - 1;
         self.blockchainIdentity = blockchainIdentity;
     }
     return self;
@@ -70,10 +71,10 @@
 -(DSKey*)secretKeyForDecryptionOfType:(DSKeyType)type {
     if (uint256_eq(self.blockchainIdentity.uniqueID,self.recipientBlockchainIdentityUniqueId)) {
         //we are the recipient of the friend request
-        return [self.blockchainIdentity privateKeyAtIndex:self.recipientKeyIndex - 1 ofType:(DSKeyType)type];
+        return [self.blockchainIdentity privateKeyAtIndex:self.recipientKeyIndex ofType:(DSKeyType)type];
     } else if (uint256_eq(self.blockchainIdentity.uniqueID,self.senderBlockchainIdentityUniqueId)) {
         //we are the sender of the friend request
-        return [self.blockchainIdentity privateKeyAtIndex:self.senderKeyIndex - 1 ofType:(DSKeyType)type];
+        return [self.blockchainIdentity privateKeyAtIndex:self.senderKeyIndex ofType:(DSKeyType)type];
     }
     return nil;
 }
