@@ -106,7 +106,7 @@
     
     UInt256 derivationPathIndexes1[] = {uint256_from_long(77)};
     BOOL hardened1[] = {YES};
-    DSDerivationPath * derivationPath1 = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes1 hardened:hardened1 length:1 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_BLS reference:DSDerivationPathReference_Unknown onChain:[DSChain mainnet]];
+    DSDerivationPath * derivationPath1 = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes1 hardened:hardened1 length:1 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSKeyType_BLS reference:DSDerivationPathReference_Unknown onChain:[DSChain mainnet]];
     DSBLSKey * keyPair1 = [keyPair deriveToPath:derivationPath1.baseIndexPath];
     UInt256 chainCode1 = keyPair1.chainCode;
     XCTAssertEqualObjects([NSData dataWithUInt256:chainCode1].hexString, @"f2c8e4269bb3e54f8179a5c6976d92ca14c3260dd729981e9d15f53049fd698b",@"Testing BLS private child derivation returning chain code");
@@ -114,7 +114,7 @@
     
     UInt256 derivationPathIndexes2[] = {uint256_from_long(3),uint256_from_long(17)};
     BOOL hardened2[] = {NO,NO};
-    DSDerivationPath * derivationPath2 = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes2 hardened:hardened2 length:2 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_BLS reference:DSDerivationPathReference_Unknown onChain:[DSChain mainnet]];
+    DSDerivationPath * derivationPath2 = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes2 hardened:hardened2 length:2 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSKeyType_BLS reference:DSDerivationPathReference_Unknown onChain:[DSChain mainnet]];
     DSBLSKey * keyPair2 = [keyPair deriveToPath:derivationPath2.baseIndexPath];
     XCTAssertEqual(keyPair2.publicKeyFingerprint, 0xff26a31f,@"Testing BLS extended private child public key fingerprint");
     

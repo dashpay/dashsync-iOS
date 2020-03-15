@@ -82,7 +82,7 @@
 }
 
 -(BOOL)checkTransitionSignedByBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity {
-    return [blockchainIdentity verifySignature:self.signatureData ofType:DSDerivationPathSigningAlgorith_ECDSA forMessageDigest:[self serializedBaseDataHash].UInt256];
+    return [blockchainIdentity verifySignature:self.signatureData ofType:DSKeyType_ECDSA forMessageDigest:[self serializedBaseDataHash].UInt256];
 }
 
 -(void)signWithKey:(DSKey*)privateKey atIndex:(uint32_t)index fromIdentity:(DSBlockchainIdentity*)blockchainIdentity {
@@ -91,10 +91,10 @@
     //ATTENTION If this ever changes from ECDSA, change the max signature size defined above
     //DSDLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
     if ([privateKey isMemberOfClass:[DSBLSKey class]]) {
-        self.signatureType = DSDerivationPathSigningAlgorith_BLS;
+        self.signatureType = DSKeyType_BLS;
         self.signatureData = uint768_data([((DSBLSKey*)privateKey) signDigest:[self serializedBaseDataHash].UInt256]);
     } else if ([privateKey isMemberOfClass:[DSECDSAKey class]]) {
-        self.signatureType = DSDerivationPathSigningAlgorith_ECDSA;
+        self.signatureType = DSKeyType_ECDSA;
         self.signatureData = [((DSECDSAKey*)privateKey) compactSign:[self serializedBaseDataHash].UInt256];
     }
     self.signaturePublicKeyId = index + 1; //hack for indexes starting at 1

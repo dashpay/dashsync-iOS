@@ -1003,7 +1003,7 @@
                         }
                         for (DSBlockchainIdentityKeyPathEntity * keyPath in blockchainIdentityEntity.keyPaths) {
                             NSIndexPath *keyIndexPath = (NSIndexPath *)[NSKeyedUnarchiver unarchiveObjectWithData:(NSData*)[keyPath path]];
-                            [blockchainIdentity registerKeyIsActive:YES atIndexPath:keyIndexPath ofType:DSDerivationPathSigningAlgorith_ECDSA];
+                            [blockchainIdentity registerKeyWithStatus:keyPath.keyStatus atIndexPath:keyIndexPath ofType:keyPath.keyType];
                         }
                     } else {
                         //No blockchain identity is known in core data

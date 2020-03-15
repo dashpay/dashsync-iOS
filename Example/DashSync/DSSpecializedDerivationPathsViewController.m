@@ -45,7 +45,7 @@
     DSDerivationPathTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier forIndexPath:indexPath];
     
     cell.derivationPathLabel.text = derivationPath.stringRepresentation;
-    cell.signingMechanismLabel.text = (derivationPath.signingAlgorithm == DSDerivationPathSigningAlgorith_BLS)?@"BLS":@"ECDSA";
+    cell.signingMechanismLabel.text = (derivationPath.signingAlgorithm == DSKeyType_BLS)?@"BLS":@"ECDSA";
     cell.referenceNameLabel.text = derivationPath.referenceName;
     
     cell.knownAddressesLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)derivationPath.allAddresses.count];

@@ -14,12 +14,14 @@
 #import <SDWebImage/SDWebImage.h>
 #import "DSContactProfileViewController.h"
 #import "DSRegisterContractsViewController.h"
+#import "DSBlockchainIdentityKeysViewController.h"
 
 @interface DSBlockchainIdentityActionsViewController () <DSContactProfileViewControllerDelegate>
 @property (strong, nonatomic) IBOutlet UIImageView *avatarImageView;
 @property (strong, nonatomic) IBOutlet UILabel *aboutMeLabel;
 @property (strong, nonatomic) IBOutlet UILabel *typeLabel;
 @property (strong, nonatomic) IBOutlet UILabel *indexLabel;
+@property (strong, nonatomic) IBOutlet UILabel *keyCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *usernameStatusLabel;
 @property (strong, nonatomic) IBOutlet UILabel *uniqueIdLabel;
 @property (strong, nonatomic) id blockchainIdentityNameObserver;
@@ -37,6 +39,8 @@
             [self updateProfile];
         }];
     }
+    
+    [self updateKeys];
     
     __weak typeof(self) weakSelf = self;
     
@@ -130,6 +134,10 @@
         self.aboutMeLabel.text = self.blockchainIdentity.ownContact.publicMessage;
         [self.avatarImageView sd_setImageWithURL:[NSURL URLWithString:self.blockchainIdentity.ownContact.avatarPath]];
     }
+}
+
+-(void)updateKeys {
+    self.keyCountLabel.text = [NSString stringWithFormat:@"%u/%u",self.blockchainIdentity.activeKeyCount, self.blockchainIdentity.totalKeyCount];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -260,6 +268,9 @@
         blockchainIdentityTransitionsViewController.blockchainIdentity = self.blockchainIdentity;
     } else if ([segue.identifier isEqualToString:@"RegisterContractsSegue"]) {
         DSRegisterContractsViewController * controller = segue.destinationViewController;
+        controller.blockchainIdentity = self.blockchainIdentity;
+    } else if ([segue.identifier isEqualToString:@"BlockchainIdentityKeysSegue"]) {
+        DSBlockchainIdentityKeysViewController * controller = segue.destinationViewController;
         controller.blockchainIdentity = self.blockchainIdentity;
     }
 }

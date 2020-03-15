@@ -20,5 +20,7 @@
 @dynamic derivationPath;
 @dynamic removedInIdentityUpdates;
 @dynamic blockchainIdentity;
+@dynamic keyType;
+@dynamic keyStatus;
 
 @end

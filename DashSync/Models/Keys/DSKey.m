@@ -68,6 +68,20 @@
     return 0;
 }
 
+-(NSString*)localizedKeyType {
+    switch (self.keyType) {
+        case 1:
+            return DSLocalizedString(@"ECDSA",nil);
+            break;
+        case 2:
+            return DSLocalizedString(@"BLS",nil);
+            break;
+        default:
+            return DSLocalizedString(@"Unknown Key Type",nil);
+            break;
+    }
+}
+
 + (DSKey*)keyForPublicKeyData:(NSData*)data forKeyType:(DSKeyType)keyType onChain:(DSChain*)chain {
     switch (keyType) {
         case DSKeyType_BLS:

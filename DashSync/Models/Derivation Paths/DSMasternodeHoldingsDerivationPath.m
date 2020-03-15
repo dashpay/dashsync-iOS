@@ -25,7 +25,7 @@
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(3), uint256_from_long(0)};
     BOOL hardenedIndexes[] = {YES,YES,YES,YES};
-    return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_ProtectedFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ProviderFunds onChain:chain];
+    return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_ProtectedFunds signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_ProviderFunds onChain:chain];
 }
 
 -(NSString*)receiveAddress {

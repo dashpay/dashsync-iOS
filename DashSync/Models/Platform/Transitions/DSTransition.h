@@ -43,7 +43,7 @@ typedef NS_ENUM(NSUInteger, DSTransitionType) {
 @property (nonatomic, readonly) NSTimeInterval createdTimestamp;
 @property (nonatomic, readonly) NSTimeInterval registeredTimestamp;
 
-@property (nonatomic, readonly) DSDerivationPathSigningAlgorith signatureType;
+@property (nonatomic, readonly) DSKeyType signatureType;
 @property (nonatomic, readonly) NSData * signatureData;
 @property (nonatomic, readonly) uint32_t signaturePublicKeyId;
 

@@ -25,6 +25,7 @@ typedef NS_ENUM(NSUInteger, DSKeyType) {
 @property (nonatomic, readonly) UInt160 hash160;
 @property (nonatomic,readonly) NSString * secretKeyString;
 @property (nonatomic,readonly) DSKeyType keyType;
+@property (nonatomic,readonly) NSString * localizedKeyType;
 
 - (BOOL)verify:(UInt256)messageDigest signatureData:(NSData*)signature;
 - (NSString *)addressForChain:(DSChain*)chain;

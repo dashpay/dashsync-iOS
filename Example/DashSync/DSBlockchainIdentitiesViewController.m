@@ -104,7 +104,7 @@
             }
         }
         blockchainIdentityCell.registrationL2StatusLabel.text = blockchainIdentity.localizedRegistrationStatusString;
-        blockchainIdentityCell.publicKeysLabel.text = [NSString stringWithFormat:@"%u",blockchainIdentity.activeKeys];
+        blockchainIdentityCell.publicKeysLabel.text = [NSString stringWithFormat:@"%u/%u",blockchainIdentity.activeKeyCount, blockchainIdentity.totalKeyCount];
     }
 }
 

@@ -40,6 +40,8 @@
         <relationship name="fundingTransaction" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSCreditFundingTransactionEntity" inverseName="fundedTransition" inverseEntity="DSCreditFundingTransactionEntity" syncable="YES"/>
     </entity>
     <entity name="DSBlockchainIdentityKeyPathEntity" representedClassName="DSBlockchainIdentityKeyPathEntity" syncable="YES">
+        <attribute name="keyStatus" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="keyType" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="path" optional="YES" attributeType="Transformable" syncable="YES"/>
         <relationship name="addedInIdentityUpdates" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityUpdateTransitionEntity" inverseName="addedKeyPaths" inverseEntity="DSBlockchainIdentityUpdateTransitionEntity" syncable="YES"/>
         <relationship name="addedInRegistrations" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityRegistrationTransitionEntity" inverseName="usedKeyPaths" inverseEntity="DSBlockchainIdentityRegistrationTransitionEntity" syncable="YES"/>
@@ -474,7 +476,7 @@
         <element name="DSBlockchainIdentityCloseTransitionEntity" positionX="-850.375" positionY="1261.98046875" width="128" height="58"/>
         <element name="DSBlockchainIdentityEntity" positionX="-2403" positionY="-171" width="128" height="223"/>
         <element name="DSBlockchainIdentityFundedTransition" positionX="-2403" positionY="-171" width="128" height="58"/>
-        <element name="DSBlockchainIdentityKeyPathEntity" positionX="-2394" positionY="-162" width="128" height="133"/>
+        <element name="DSBlockchainIdentityKeyPathEntity" positionX="-2394" positionY="-162" width="128" height="163"/>
         <element name="DSBlockchainIdentityRegistrationTransitionEntity" positionX="-1043.37109375" positionY="1260.8203125" width="128" height="58"/>
         <element name="DSBlockchainIdentityTopupTransitionEntity" positionX="-1435" positionY="1261.13671875" width="128" height="58"/>
         <element name="DSBlockchainIdentityUpdateTransitionEntity" positionX="-2403" positionY="-207" width="128" height="73"/>

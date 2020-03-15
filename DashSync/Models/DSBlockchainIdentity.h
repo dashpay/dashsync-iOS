@@ -36,6 +36,14 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityType) {
     DSBlockchainIdentityType_Application = 2,
 };
 
+typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyStatus) {
+    DSBlockchainIdentityKeyStatus_Unknown = 0,
+    DSBlockchainIdentityKeyStatus_Registered = 1,
+    DSBlockchainIdentityKeyStatus_Registering = 2,
+    DSBlockchainIdentityKeyStatus_NotRegistered = 3,
+    DSBlockchainIdentityKeyStatus_Revoked = 4,
+};
+
 #define BLOCKCHAIN_USERNAME_STATUS @"BLOCKCHAIN_USERNAME_STATUS"
 #define BLOCKCHAIN_USERNAME_SALT @"BLOCKCHAIN_USERNAME_SALT"
 
@@ -89,8 +97,11 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 /*! @brief The known balance in credits of the identity */
 @property (nonatomic,readonly) uint64_t creditBalance;
 
-/*! @brief The number of active keys that the blockchain identity has */
-@property (nonatomic,readonly) uint32_t activeKeys;
+/*! @brief The number of registered active keys that the blockchain identity has */
+@property (nonatomic,readonly) uint32_t activeKeyCount;
+
+/*! @brief The number of all keys that the blockchain identity has, registered, in registration, or inactive */
+@property (nonatomic,readonly) uint32_t totalKeyCount;
 
 /*! @brief The type of the blockchain identity, it can be either an application or a user, with more potential types to come */
 @property (nonatomic,assign) DSBlockchainIdentityType type;
@@ -137,11 +148,11 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 
 -(void)signStateTransition:(DSTransition*)transition withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion;
 
--(BOOL)verifySignature:(NSData*)signature ofType:(DSDerivationPathSigningAlgorith)signingAlgorithm forMessageDigest:(UInt256)messageDigest;
+-(BOOL)verifySignature:(NSData*)signature ofType:(DSKeyType)signingAlgorithm forMessageDigest:(UInt256)messageDigest;
 
 -(void)createAndPublishRegistrationTransitionWithCompletion:(void (^ _Nullable)(NSDictionary * _Nullable successInfo, NSError * _Nullable error))completion;
 
--(void)signStateTransition:(DSTransition*)transition forKeyIndex:(uint32_t)keyIndex ofType:(DSDerivationPathSigningAlgorith)signingAlgorithm withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion;
+-(void)signStateTransition:(DSTransition*)transition forKeyIndex:(uint32_t)keyIndex ofType:(DSKeyType)signingAlgorithm withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion;
 
 -(void)encryptData:(NSData*)data withKeyAtIndex:(uint32_t)index forRecipientKey:(DSKey*)recipientKey withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(NSData* encryptedData))completion;
 
@@ -167,7 +178,23 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 
 -(uint32_t)indexOfKey:(DSKey*)key;
 
--(DSKey*)createNewKeyOfType:(DSDerivationPathSigningAlgorith)type returnIndex:(uint32_t *)rIndex;
+-(DSBlockchainIdentityKeyStatus)statusOfKeyAtIndex:(NSUInteger)index;
+
+-(DSKeyType)typeOfKeyAtIndex:(NSUInteger)index;
+
+-(DSKey*)keyAtIndex:(NSUInteger)index;
+
+-(uint32_t)keyCountForKeyType:(DSKeyType)keyType;
+
++(NSString*)localizedStatusOfKeyForBlockchainIdentityKeyStatus:(DSBlockchainIdentityKeyStatus)status;
+
+-(NSString*)localizedStatusOfKeyAtIndex:(NSUInteger)index;
+
+-(DSKey*)createNewKeyOfType:(DSKeyType)type returnIndex:(uint32_t *)rIndex;
+
+-(DSKey*)keyOfType:(DSKeyType)type atIndex:(uint32_t)rIndex;
+
+-(uint32_t)registeredKeysOfType:(DSKeyType)type;
 
 // MARK: - Dashpay
 

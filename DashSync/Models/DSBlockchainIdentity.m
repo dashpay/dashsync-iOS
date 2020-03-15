@@ -59,7 +59,13 @@
 #import "NSIndexPath+Dash.h"
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
-#define DEFAULT_SIGNING_ALGORITH DSDerivationPathSigningAlgorith_ECDSA
+#define DEFAULT_SIGNING_ALGORITH DSKeyType_ECDSA
+
+typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
+    DSBlockchainIdentityKeyDictionary_Key = 0,
+    DSBlockchainIdentityKeyDictionary_KeyType = 1,
+    DSBlockchainIdentityKeyDictionary_KeyStatus = 2,
+};
 
 @interface DSBlockchainIdentity()
 
@@ -72,8 +78,9 @@
 @property (nonatomic,assign) uint64_t creditBalance;
 
 @property (nonatomic,assign) uint32_t keysCreated;
+@property (nonatomic,strong) NSMutableDictionary <NSNumber*, NSDictionary*> * keyInfoDictionaries;
 @property (nonatomic,assign) uint32_t currentMainKeyIndex;
-@property (nonatomic,assign) DSDerivationPathSigningAlgorith currentMainKeyType;
+@property (nonatomic,assign) DSKeyType currentMainKeyType;
 
 @property (nonatomic,strong) DSCreditFundingTransaction * registrationCreditFundingTransaction;
 
@@ -94,8 +101,6 @@
 
 @property(nonatomic,strong) DSContactEntity * ownContact;
 
-@property(nonatomic,strong) NSMutableDictionary * usedKeys;
-
 @property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
 
 @end
@@ -112,15 +117,10 @@
     self.wallet = wallet;
     self.keysCreated = 0;
     self.currentMainKeyIndex = 0;
-    self.currentMainKeyType = DSDerivationPathSigningAlgorith_ECDSA;
+    self.currentMainKeyType = DSKeyType_ECDSA;
     self.index = index;
-//    self.blockchainIdentityTopupTransitions = [NSMutableArray array];
-//    self.blockchainIdentityCloseTransitions = [NSMutableArray array];
-//    self.blockchainIdentityUpdateTransitions = [NSMutableArray array];
-//    self.documentTransitions = [NSMutableArray array];
-//    self.allTransitions = [NSMutableArray array];
     self.usernameStatuses = [NSMutableDictionary dictionary];
-    self.usedKeys = [NSMutableDictionary dictionary];
+    self.keyInfoDictionaries = [NSMutableDictionary dictionary];
     self.registrationStatus = DSBlockchainIdentityRegistrationStatus_Unknown;
     self.usernameSalts = [NSMutableDictionary dictionary];
     self.type = type;
@@ -428,13 +428,67 @@
 
 // MARK: - Keys
 
--(uint32_t)activeKeys {
-    //todo
-    return self.keysCreated;
+-(uint32_t)activeKeyCount {
+    uint32_t rActiveKeys = 0;
+    for (NSNumber * index in self.keyInfoDictionaries) {
+        NSDictionary * keyDictionary = self.keyInfoDictionaries[index];
+        DSBlockchainIdentityKeyStatus status = [keyDictionary[@(DSBlockchainIdentityKeyDictionary_KeyStatus)] unsignedIntValue];
+        if (status == DSBlockchainIdentityKeyStatus_Registered) rActiveKeys++;
+    }
+    return rActiveKeys;
+}
+
+-(uint32_t)totalKeyCount {
+    return (uint32_t)self.keyInfoDictionaries.count;
+}
+
+-(uint32_t)keyCountForKeyType:(DSKeyType)keyType {
+    uint32_t keyCount = 0;
+    for (NSNumber * index in self.keyInfoDictionaries) {
+        NSDictionary * keyDictionary = self.keyInfoDictionaries[index];
+        DSKeyType type = [keyDictionary[@(DSBlockchainIdentityKeyDictionary_KeyType)] unsignedIntValue];
+        if (type == keyType) keyCount++;
+    }
+    return keyCount;
+}
+
+-(DSBlockchainIdentityKeyStatus)statusOfKeyAtIndex:(NSUInteger)index {
+    return [[[self.keyInfoDictionaries objectForKey:@(index)] objectForKey:@(DSBlockchainIdentityKeyDictionary_KeyStatus)] unsignedIntValue];
+}
+
+-(DSKeyType)typeOfKeyAtIndex:(NSUInteger)index {
+    return [[[self.keyInfoDictionaries objectForKey:@(index)] objectForKey:@(DSBlockchainIdentityKeyDictionary_KeyType)] unsignedIntValue];
+}
+
+-(DSKey*)keyAtIndex:(NSUInteger)index {
+    return [[self.keyInfoDictionaries objectForKey:@(index)] objectForKey:@(DSBlockchainIdentityKeyDictionary_Key)];
+}
+
+-(NSString*)localizedStatusOfKeyAtIndex:(NSUInteger)index {
+    DSBlockchainIdentityKeyStatus status = [self statusOfKeyAtIndex:index];
+    return [[self class] localizedStatusOfKeyForBlockchainIdentityKeyStatus:status];
+}
+
++(NSString*)localizedStatusOfKeyForBlockchainIdentityKeyStatus:(DSBlockchainIdentityKeyStatus)status {
+    switch (status) {
+        case DSBlockchainIdentityKeyStatus_Unknown:
+            return DSLocalizedString(@"Unknown", @"Status of Key or Username is Unknown");
+        case DSBlockchainIdentityKeyStatus_Registered:
+            return DSLocalizedString(@"Registered", @"Status of Key or Username is Registered");
+        case DSBlockchainIdentityKeyStatus_Registering:
+            return DSLocalizedString(@"Registering", @"Status of Key or Username is Registering");
+        case DSBlockchainIdentityKeyStatus_NotRegistered:
+            return DSLocalizedString(@"Not Registered", @"Status of Key or Username is Not Registered");
+        case DSBlockchainIdentityKeyStatus_Revoked:
+            return DSLocalizedString(@"Revoked", @"Status of Key or Username is Revoked");
+        default:
+            return @"";
+    }
+    
 }
 
 -(uint32_t)indexOfKey:(DSKey*)key {
-    DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:DSDerivationPathSigningAlgorith_ECDSA];
+    DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:DSKeyType_ECDSA];
     NSUInteger index = [derivationPath indexOfKnownAddress:[[NSData dataWithUInt160:key.hash160] addressFromHash160DataForChain:self.wallet.chain]];
     if (index == NSNotFound) {
         derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:self.wallet];
@@ -443,16 +497,16 @@
     return (uint32_t)index;
 }
 
--(DSAuthenticationKeysDerivationPath*)derivationPathForType:(DSDerivationPathSigningAlgorith)type {
-    if (type == DSDerivationPathSigningAlgorith_ECDSA) {
+-(DSAuthenticationKeysDerivationPath*)derivationPathForType:(DSKeyType)type {
+    if (type == DSKeyType_ECDSA) {
         return [[DSDerivationPathFactory sharedInstance] blockchainIdentityECDSAKeysDerivationPathForWallet:self.wallet];
-    } else if (type == DSDerivationPathSigningAlgorith_BLS) {
+    } else if (type == DSKeyType_BLS) {
         return [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:self.wallet];
     }
     return nil;
 }
 
--(DSKey*)privateKeyAtIndex:(uint32_t)index ofType:(DSDerivationPathSigningAlgorith)type {
+-(DSKey*)privateKeyAtIndex:(uint32_t)index ofType:(DSKeyType)type {
     
     const NSUInteger indexes[] = {_index,index};
     NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
@@ -467,7 +521,7 @@
     return [DSKey keyForSecretKeyData:keySecret forKeyType:(DSKeyType)type onChain:self.wallet.chain];
 }
 
--(DSKey*)privateKeyAtIndex:(uint32_t)index ofType:(DSDerivationPathSigningAlgorith)type forSeed:(NSData*)seed {
+-(DSKey*)privateKeyAtIndex:(uint32_t)index ofType:(DSKeyType)type forSeed:(NSData*)seed {
     
     const NSUInteger indexes[] = {_index,index};
     NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
@@ -477,7 +531,7 @@
     return [derivationPath privateKeyAtIndexPath:indexPath fromSeed:seed];
 }
 
--(DSKey*)publicKeyAtIndex:(uint32_t)index ofType:(DSDerivationPathSigningAlgorith)type {
+-(DSKey*)publicKeyAtIndex:(uint32_t)index ofType:(DSKeyType)type {
     
     const NSUInteger indexes[] = {_index,index};
     NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
@@ -487,44 +541,63 @@
     return [derivationPath publicKeyAtIndexPath:indexPath onChain:self.wallet.chain];
 }
 
--(DSKey*)createNewKeyOfType:(DSDerivationPathSigningAlgorith)type returnIndex:(uint32_t *)rIndex {
-    const NSUInteger indexes[] = {_index,self.keysCreated};
+-(DSKey*)createNewKeyOfType:(DSKeyType)type returnIndex:(uint32_t *)rIndex {
+    NSUInteger keyIndex = self.keysCreated;
+    const NSUInteger indexes[] = {_index,keyIndex};
     NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
     
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     
     DSKey * key = [derivationPath publicKeyAtIndexPath:indexPath onChain:self.wallet.chain];
     self.keysCreated++;
-    [self saveNewKey:key atPath:indexPath fromDerivationPath:derivationPath];
+    NSDictionary * keyDictionary = @{@(DSBlockchainIdentityKeyDictionary_Key):key, @(DSBlockchainIdentityKeyDictionary_KeyType):@(type), @(DSBlockchainIdentityKeyDictionary_KeyStatus):@(DSBlockchainIdentityKeyStatus_Registering)};
+    [self.keyInfoDictionaries setObject:keyDictionary forKey:@(keyIndex)];
+    [self saveNewKey:key atPath:indexPath withStatus:DSBlockchainIdentityKeyStatus_Registering fromDerivationPath:derivationPath];
     return key;
 }
 
--(void)addKey:(DSKey*)key atIndex:(uint32_t)index ofType:(DSDerivationPathSigningAlgorith)type save:(BOOL)save {
+-(DSKey*)keyOfType:(DSKeyType)type atIndex:(uint32_t)index {
     const NSUInteger indexes[] = {_index,index};
     NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
-    [self addKey:key atIndexPath:indexPath ofType:type save:save];
+    
+    DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
+    
+    DSKey * key = [derivationPath publicKeyAtIndexPath:indexPath onChain:self.wallet.chain];
+    return key;
 }
 
--(void)addKey:(DSKey*)key atIndexPath:(NSIndexPath*)indexPath ofType:(DSDerivationPathSigningAlgorith)type save:(BOOL)save {
+-(void)addKey:(DSKey*)key atIndex:(uint32_t)index ofType:(DSKeyType)type withStatus:(DSBlockchainIdentityKeyStatus)status save:(BOOL)save {
+    const NSUInteger indexes[] = {_index,index};
+    NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
+    [self addKey:key atIndexPath:indexPath ofType:type withStatus:status save:save];
+}
+
+-(void)addKey:(DSKey*)key atIndexPath:(NSIndexPath*)indexPath ofType:(DSKeyType)type withStatus:(DSBlockchainIdentityKeyStatus)status save:(BOOL)save {
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     
     DSKey * keyToCheck = [derivationPath publicKeyAtIndexPath:indexPath onChain:self.wallet.chain];
+    DSKey * keyToCheck1 = [derivationPath publicKeyAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:4] onChain:self.wallet.chain];
     if ([keyToCheck.publicKeyData isEqualToData:key.publicKeyData]) {
         uint32_t index = (uint32_t)[indexPath indexAtPosition:[indexPath length] - 1];
         self.keysCreated = MAX(self.keysCreated,index + 1);
+        NSDictionary * keyDictionary = @{@(DSBlockchainIdentityKeyDictionary_Key):key, @(DSBlockchainIdentityKeyDictionary_KeyType):@(type), @(DSBlockchainIdentityKeyDictionary_KeyStatus):@(status)};
+        [self.keyInfoDictionaries setObject:keyDictionary forKey:@(index)];
         if (save) {
-            [self saveNewKey:key atPath:indexPath fromDerivationPath:derivationPath];
+            [self saveNewKey:key atPath:indexPath withStatus:status fromDerivationPath:derivationPath];
         }
+    } else {
+        DSDLog(@"these should really match up");
     }
 }
 
--(void)registerKeyIsActive:(BOOL)active atIndexPath:(NSIndexPath*)indexPath ofType:(DSDerivationPathSigningAlgorith)type {
+-(void)registerKeyWithStatus:(DSBlockchainIdentityKeyStatus)status atIndexPath:(NSIndexPath*)indexPath ofType:(DSKeyType)type {
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     
     DSKey * key = [derivationPath publicKeyAtIndexPath:indexPath onChain:self.wallet.chain];
     uint32_t index = (uint32_t)[indexPath indexAtPosition:[indexPath length] - 1];
     self.keysCreated = MAX(self.keysCreated,index + 1);
-    [self.usedKeys setObject:key forKey:@(index)];
+    NSDictionary * keyDictionary = @{@(DSBlockchainIdentityKeyDictionary_Key):key, @(DSBlockchainIdentityKeyDictionary_KeyType):@(type), @(DSBlockchainIdentityKeyDictionary_KeyStatus):@(status)};
+    [self.keyInfoDictionaries setObject:keyDictionary forKey:@(index)];
 }
 
 // MARK: From Remote/Network
@@ -554,7 +627,7 @@
     uint32_t type = 0;
     DSKey * key = [self keyFromKeyDictionary:dictionary rType:&type rIndex:&index];
     if (key) {
-        [self addKey:key atIndex:index ofType:type save:TRUE];
+        [self addKey:key atIndex:index ofType:type withStatus:DSBlockchainIdentityKeyStatus_Registered save:YES];
     }
 }
 
@@ -629,7 +702,9 @@
         
         uint32_t index;
         
-        DSKey * publicKey = [self createNewKeyOfType:DSDerivationPathSigningAlgorith_ECDSA returnIndex:&index];
+        DSKey * publicKey = [self createNewKeyOfType:DSKeyType_ECDSA returnIndex:&index];
+        
+        NSAssert(index == 0, @"The index should be 0 here");
         
         [self registrationTransitionSignedByPrivateKey:privateKey atIndex:index registeringPublicKeys:@{@(index):publicKey} completion:completion];
     }];
@@ -704,7 +779,7 @@
 
 // MARK: - Signing and Encryption
 
--(void)signStateTransition:(DSTransition*)transition forKeyIndex:(uint32_t)keyIndex ofType:(DSDerivationPathSigningAlgorith)signingAlgorithm withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion {
+-(void)signStateTransition:(DSTransition*)transition forKeyIndex:(uint32_t)keyIndex ofType:(DSKeyType)signingAlgorithm withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion {
     NSParameterAssert(transition);
     
     [[DSAuthenticationManager sharedInstance] seedWithPrompt:prompt forWallet:self.wallet forAmount:0 forceAuthentication:YES completion:^(NSData* _Nullable seed, BOOL cancelled) {
@@ -731,7 +806,7 @@
     
 }
 
--(BOOL)verifySignature:(NSData*)signature forKeyIndex:(uint32_t)keyIndex ofType:(DSDerivationPathSigningAlgorith)signingAlgorithm forMessageDigest:(UInt256)messageDigest {
+-(BOOL)verifySignature:(NSData*)signature forKeyIndex:(uint32_t)keyIndex ofType:(DSKeyType)signingAlgorithm forMessageDigest:(UInt256)messageDigest {
     DSKey * publicKey = [self publicKeyAtIndex:keyIndex ofType:signingAlgorithm];
     return [publicKey verify:messageDigest signatureData:signature];
 }
@@ -743,7 +818,7 @@
             return;
         }
             
-        DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:(DSDerivationPathSigningAlgorith)recipientPublicKey.keyType];
+        DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:(DSKeyType)recipientPublicKey.keyType];
         DSKey * privateKey = [derivationPath privateKeyAtIndex:self.index fromSeed:seed];
         NSData * encryptedData = [data encryptWithSecretKey:privateKey forPeerWithPublicKey:recipientPublicKey];
         completion(encryptedData);
@@ -2185,7 +2260,7 @@
     return [NSString stringWithFormat:@"%@-%@-%@",self.uniqueIdString,derivationPath.standaloneExtendedPublicKeyUniqueID,[path indexPathString]];
 }
 
--(void)saveNewKey:(DSKey*)key atPath:(NSIndexPath*)path fromDerivationPath:(DSDerivationPath*)derivationPath {
+-(void)saveNewKey:(DSKey*)key atPath:(NSIndexPath*)path withStatus:(DSBlockchainIdentityKeyStatus)status fromDerivationPath:(DSDerivationPath*)derivationPath {
     [self.managedObjectContext performBlockAndWait:^{
         [DSBlockchainIdentityEntity setContext:self.managedObjectContext];
         [DSBlockchainIdentityKeyPathEntity setContext:self.managedObjectContext];
@@ -2196,6 +2271,8 @@
         if (!count) {
             DSBlockchainIdentityKeyPathEntity * blockchainIdentityKeyPathEntity = [DSBlockchainIdentityKeyPathEntity managedObject];
             blockchainIdentityKeyPathEntity.derivationPath = derivationPath.derivationPathEntity;
+            blockchainIdentityKeyPathEntity.keyType = key.keyType;
+            blockchainIdentityKeyPathEntity.keyStatus = status;
             setKeychainData(key.secretKeyData, [self identifierForKeyAtPath:path fromDerivationPath:derivationPath], YES);
             blockchainIdentityKeyPathEntity.path = keyPathData;
             [entity addKeyPathsObject:blockchainIdentityKeyPathEntity];

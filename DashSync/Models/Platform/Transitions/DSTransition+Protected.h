@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSTimeInterval registeredTimestamp;
 
 @property (nonatomic, copy) NSData * signatureData;
-@property (nonatomic, assign) DSDerivationPathSigningAlgorith signatureType;
+@property (nonatomic, assign) DSKeyType signatureType;
 @property (nonatomic, assign) uint32_t signaturePublicKeyId;
 
 @property (nonatomic, readonly) DSMutableStringValueDictionary * keyValueDictionary;

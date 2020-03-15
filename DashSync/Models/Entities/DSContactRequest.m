@@ -70,10 +70,10 @@
 -(DSKey*)secretKeyForDecryptionOfType:(DSKeyType)type {
     if (uint256_eq(self.blockchainIdentity.uniqueID,self.recipientBlockchainIdentityUniqueId)) {
         //we are the recipient of the friend request
-        return [self.blockchainIdentity privateKeyAtIndex:self.recipientKeyIndex - 1 ofType:(DSDerivationPathSigningAlgorith)type];
+        return [self.blockchainIdentity privateKeyAtIndex:self.recipientKeyIndex - 1 ofType:(DSKeyType)type];
     } else if (uint256_eq(self.blockchainIdentity.uniqueID,self.senderBlockchainIdentityUniqueId)) {
         //we are the sender of the friend request
-        return [self.blockchainIdentity privateKeyAtIndex:self.senderKeyIndex - 1 ofType:(DSDerivationPathSigningAlgorith)type];
+        return [self.blockchainIdentity privateKeyAtIndex:self.senderKeyIndex - 1 ofType:(DSKeyType)type];
     }
     return nil;
 }

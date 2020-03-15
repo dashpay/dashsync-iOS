@@ -7,7 +7,8 @@
 //
 
 #import "DSBlockchainIdentityKeyPathEntity+CoreDataClass.h"
-
+#import "DSKey.h"
+#import "DSBlockchainIdentity.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -21,6 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) DSDerivationPathEntity *derivationPath;
 @property (nullable, nonatomic, retain) NSSet<DSBlockchainIdentityUpdateTransitionEntity *> *removedInIdentityUpdates;
 @property (nullable, nonatomic, retain) DSBlockchainIdentityEntity *blockchainIdentity;
+@property (nonatomic, assign) uint16_t keyType;
+@property (nonatomic, assign) uint16_t keyStatus;
 
 @end
 

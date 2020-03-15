@@ -265,3 +265,15 @@
 
 /* No comment provided by engineer. */
 "An identity needs to have its type defined before it can be registered." = "An identity needs to have its type defined before it can be registered.";
+
+/* Status of Key or Username is Revoked */
+"Revoked" = "Revoked";
+
+/* No comment provided by engineer. */
+"BLS" = "BLS";
+
+/* No comment provided by engineer. */
+"ECDSA" = "ECDSA";
+
+/* No comment provided by engineer. */
+"Unknown Key Type" = "Unknown Key Type";
