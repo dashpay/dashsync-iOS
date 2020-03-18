@@ -46,7 +46,7 @@
 #import "DSMasternodeHoldingsDerivationPath+Protected.h"
 #import "DSDerivationPathFactory.h"
 #import "DSSpecialTransactionsWalletHolder.h"
-#import "DSContactEntity+CoreDataClass.h"
+#import "DSDashpayUserEntity+CoreDataClass.h"
 #import "DSAccountEntity+CoreDataClass.h"
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSFriendRequestEntity+CoreDataClass.h"

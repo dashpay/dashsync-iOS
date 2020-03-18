@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(instancetype)initWithUsername:(NSString*)username avatarPath:(NSString*)avatarPath publicMessage:(NSString*)publicMessage;
 
--(instancetype)initWithContactEntity:(DSDashpayUserEntity*)contactEntity;
+-(instancetype)initWithDashpayUser:(DSDashpayUserEntity*)contactEntity;
 
 -(void)addPublicKey:(DSKey *)key atIndex:(NSUInteger)index;
 

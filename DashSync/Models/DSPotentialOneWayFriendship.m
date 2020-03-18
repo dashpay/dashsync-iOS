@@ -22,7 +22,7 @@
 #import "DSFundsDerivationPath.h"
 #import "DSDashPlatform.h"
 #import "DSFriendRequestEntity+CoreDataClass.h"
-#import "DSContactEntity+CoreDataClass.h"
+#import "DSDashpayUserEntity+CoreDataClass.h
 #import "NSManagedObject+Sugar.h"
 #import "DSBLSKey.h"
 #import "DSIncomingFundsDerivationPath.h"

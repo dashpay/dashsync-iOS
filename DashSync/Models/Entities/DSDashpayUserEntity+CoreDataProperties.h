@@ -6,7 +6,7 @@
 //
 //
 
-#import "DSContactEntity+CoreDataClass.h"
+#import "DSDashpayUserEntity+CoreDataClass.h"
 
 
 NS_ASSUME_NONNULL_BEGIN
@@ -20,7 +20,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSData *encryptionPublicKey;
 @property (nonatomic, assign) uint32_t encryptionPublicKeyType;
 @property (nonatomic, assign) uint32_t encryptionPublicKeyIndex;
-@property (nullable, nonatomic, copy) NSString *username;
 @property (nullable, nonatomic, copy) NSString *displayName;
 @property (nullable, nonatomic, copy) NSString *avatarPath;
 @property (nullable, nonatomic, retain) NSData *associatedBlockchainIdentityUniqueId;

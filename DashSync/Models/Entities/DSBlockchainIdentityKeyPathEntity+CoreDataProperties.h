@@ -21,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) DSBlockchainIdentityEntity *blockchainIdentity;
 @property (nonatomic, assign) uint16_t keyType;
 @property (nonatomic, assign) uint16_t keyStatus;
+@property (nonatomic, assign) uint32_t keyID;
 
 @end
 

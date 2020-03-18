@@ -34,6 +34,7 @@
         <relationship name="usernames" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSBlockchainIdentityUsernameEntity" inverseName="blockchainIdentity" inverseEntity="DSBlockchainIdentityUsernameEntity" syncable="YES"/>
     </entity>
     <entity name="DSBlockchainIdentityKeyPathEntity" representedClassName="DSBlockchainIdentityKeyPathEntity" syncable="YES">
+        <attribute name="keyID" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="keyStatus" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="keyType" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="path" optional="YES" attributeType="Transformable" syncable="YES"/>
@@ -104,7 +105,6 @@
         <attribute name="isRegistered" optional="YES" attributeType="Boolean" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="profileDocumentRevision" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="publicMessage" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="username" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <relationship name="associatedBlockchainIdentity" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityEntity" inverseName="matchingDashpayUser" inverseEntity="DSBlockchainIdentityEntity" indexed="YES" syncable="YES"/>
         <relationship name="chain" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="contacts" inverseEntity="DSChainEntity" syncable="YES"/>
         <relationship name="friends" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSDashpayUserEntity" inverseName="friends" inverseEntity="DSDashpayUserEntity" syncable="YES"/>
@@ -437,12 +437,12 @@
         <element name="DSAccountEntity" positionX="-2135.0703125" positionY="459.18359375" width="128" height="135"/>
         <element name="DSAddressEntity" positionX="-2619.41015625" positionY="308.31640625" width="128" height="180"/>
         <element name="DSBlockchainIdentityEntity" positionX="-2403" positionY="-171" width="128" height="223"/>
-        <element name="DSBlockchainIdentityKeyPathEntity" positionX="-2394" positionY="-162" width="128" height="118"/>
+        <element name="DSBlockchainIdentityKeyPathEntity" positionX="-2394" positionY="-162" width="128" height="133"/>
         <element name="DSBlockchainIdentityUsernameEntity" positionX="-2421" positionY="-189" width="128" height="103"/>
         <element name="DSChainEntity" positionX="-1151.6328125" positionY="-163.1796875" width="128" height="328"/>
         <element name="DSChainLockEntity" positionX="-2403" positionY="-171" width="128" height="103"/>
         <element name="DSCoinbaseTransactionEntity" positionX="-2322" positionY="-81" width="128" height="75"/>
-        <element name="DSDashpayUserEntity" positionX="-1898.890625" positionY="1279.48828125" width="128" height="283"/>
+        <element name="DSDashpayUserEntity" positionX="-1898.890625" positionY="1279.48828125" width="128" height="268"/>
         <element name="DSContractEntity" positionX="-2412" positionY="-180" width="128" height="118"/>
         <element name="DSCreditFundingTransactionEntity" positionX="-2412" positionY="-180" width="128" height="73"/>
         <element name="DSDerivationPathEntity" positionX="-2121" positionY="-103.05859375" width="128" height="163"/>

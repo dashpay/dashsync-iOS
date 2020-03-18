@@ -8,7 +8,8 @@
 
 #import "DSFriendRequestEntity+CoreDataClass.h"
 #import "BigIntTypes.h"
-#import "DSContactEntity+CoreDataClass.h"
+#import "DSDashpayUserEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSAccountEntity+CoreDataClass.h"
 #import "NSData+Bitcoin.h"
 
@@ -36,7 +37,7 @@
 }
 
 -(NSString*)debugDescription {
-    return [NSString stringWithFormat:@"%@ - { %@ -> %@ / %d }",[super debugDescription],self.sourceContact.username,self.destinationContact.username,self.account.index];
+    return [NSString stringWithFormat:@"%@ - { %@ -> %@ / %d }",[super debugDescription],self.sourceContact.associatedBlockchainIdentity.usernames,self.destinationContact.associatedBlockchainIdentity.usernames,self.account.index];
 }
 
 @end

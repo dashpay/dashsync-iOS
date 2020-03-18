@@ -19,5 +19,6 @@
 @dynamic blockchainIdentity;
 @dynamic keyType;
 @dynamic keyStatus;
+@dynamic keyID;
 
 @end

@@ -16,7 +16,7 @@
 //
 
 
-#import "DSContactEntity+CoreDataClass.h"
+#import "DSDashpayUserEntity+CoreDataClass.h"
 #import "DSAccount.h"
 #import "DSWallet.h"
 #import "DSDerivationPathFactory.h"

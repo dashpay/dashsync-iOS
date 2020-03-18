@@ -17,7 +17,7 @@
 
 #import "DSPotentialContact.h"
 #import "BigIntTypes.h"
-#import "DSContactEntity+CoreDataClass.h"
+#import "DSDashpayUserEntity+CoreDataClass.h"
 #import "NSData+Bitcoin.h"
 #import "DSKey.h"
 
@@ -48,10 +48,10 @@
     return self;
 }
 
--(instancetype)initWithContactEntity:(DSDashpayUserEntity*)contactEntity {
-    self = [self initWithUsername:contactEntity.username avatarPath:contactEntity.avatarPath publicMessage:contactEntity.publicMessage];
+-(instancetype)initWithDashpayUser:(DSDashpayUserEntity*)dashpayUserEntity {
+    self = [self initWithUsername:dashpayUserEntity.username avatarPath:dashpayUserEntity.avatarPath publicMessage:dashpayUserEntity.publicMessage];
     if (self) {
-        _associatedBlockchainIdentityUniqueId = contactEntity.associatedBlockchainIdentityUniqueId.UInt256;
+        _associatedBlockchainIdentityUniqueId = dashpayUserEntity.associatedBlockchainIdentityUniqueId.UInt256;
     }
     return self;
 }

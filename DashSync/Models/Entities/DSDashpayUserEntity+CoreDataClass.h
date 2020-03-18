@@ -36,4 +36,4 @@ NS_ASSUME_NONNULL_BEGIN
 
 NS_ASSUME_NONNULL_END
 
-#import "DSContactEntity+CoreDataProperties.h"
+#import "DSDashpayUserEntity+CoreDataProperties.h"

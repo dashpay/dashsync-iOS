@@ -6,7 +6,7 @@
 //
 //
 
-#import "DSContactEntity+CoreDataProperties.h"
+#import "DSDashpayUserEntity+CoreDataProperties.h"
 
 @implementation DSDashpayUserEntity (CoreDataProperties)
 
@@ -16,7 +16,6 @@
 
 @dynamic profileDocumentRevision;
 @dynamic contactRequestDocumentRevision;
-@dynamic username;
 @dynamic displayName;
 @dynamic associatedBlockchainIdentityUniqueId;
 @dynamic publicMessage;
