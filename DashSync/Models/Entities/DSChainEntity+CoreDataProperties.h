@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint16_t type;
 @property (nullable, nonatomic, retain) NSSet<DSAccountEntity *> *accounts;
 @property (nullable, nonatomic, retain) NSSet<DSMerkleBlockEntity *> *blocks;
-@property (nullable, nonatomic, retain) NSSet<DSContactEntity *> *contacts;
+@property (nullable, nonatomic, retain) NSSet<DSDashpayUserEntity *> *contacts;
 @property (nullable, nonatomic, retain) NSSet<DSDerivationPathEntity *> *derivationPaths;
 @property (nullable, nonatomic, retain) NSSet<DSGovernanceObjectHashEntity *> *governanceObjectHashes;
 @property (nullable, nonatomic, retain) NSSet<DSPeerEntity *> *peers;
@@ -48,10 +48,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addBlocks:(NSSet<DSMerkleBlockEntity *> *)values;
 - (void)removeBlocks:(NSSet<DSMerkleBlockEntity *> *)values;
 
-- (void)addContactsObject:(DSContactEntity *)value;
-- (void)removeContactsObject:(DSContactEntity *)value;
-- (void)addContacts:(NSSet<DSContactEntity *> *)values;
-- (void)removeContacts:(NSSet<DSContactEntity *> *)values;
+- (void)addContactsObject:(DSDashpayUserEntity *)value;
+- (void)removeContactsObject:(DSDashpayUserEntity *)value;
+- (void)addContacts:(NSSet<DSDashpayUserEntity *> *)values;
+- (void)removeContacts:(NSSet<DSDashpayUserEntity *> *)values;
 
 - (void)addDerivationPathsObject:(DSDerivationPathEntity *)value;
 - (void)removeDerivationPathsObject:(DSDerivationPathEntity *)value;

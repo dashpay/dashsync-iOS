@@ -30,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (null_resettable, nonatomic, strong) DSContactProfileAvatarView *avatarView;
 @property (null_resettable, nonatomic, strong) TextFieldFormCellModel *usernameCellModel;
+@property (null_resettable, nonatomic, strong) TextFieldFormCellModel *displayNameCellModel;
 @property (null_resettable, nonatomic, strong) TextFieldFormCellModel *avatarCellModel;
 @property (null_resettable, nonatomic, strong) TextViewFormCellModel *aboutMeCellModel;
 @property (nonatomic,strong) FormTableViewController * formTableViewController;
@@ -97,6 +98,24 @@ NS_ASSUME_NONNULL_BEGIN
     return _usernameCellModel;
 }
 
+- (TextFieldFormCellModel *)displayNameCellModel {
+    if (!_displayNameCellModel) {
+        TextFieldFormCellModel *cellModel = [[TextFieldFormCellModel alloc] initWithTitle:@"Display Name"];
+        cellModel.autocorrectionType = UITextAutocorrectionTypeNo;
+        cellModel.returnKeyType = UIReturnKeyNext;
+        cellModel.placeholder = @"Enter Display Name";
+        __weak typeof(self) weakSelf = self;
+        cellModel.didReturnValueBlock = ^(TextFieldFormCellModel *_Nonnull cellModel) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+        };
+        _displayNameCellModel = cellModel;
+    }
+    return _displayNameCellModel;
+}
+
 - (TextFieldFormCellModel *)avatarCellModel {
     if (!_avatarCellModel) {
         TextFieldFormCellModel *cellModel = [[TextFieldFormCellModel alloc] initWithTitle:@"Avatar"];
@@ -104,7 +123,7 @@ NS_ASSUME_NONNULL_BEGIN
         cellModel.returnKeyType = UIReturnKeyNext;
         cellModel.placeholder = [NSString stringWithFormat:@"https://api.adorable.io/avatars/120/%@.png",
                                                            self.blockchainIdentity.currentUsername];
-        cellModel.text = self.blockchainIdentity.ownContact.avatarPath;
+        cellModel.text = self.blockchainIdentity.matchingDashpayUser.avatarPath;
         __weak typeof(self) weakSelf = self;
         cellModel.didChangeValueBlock = ^(TextFieldFormCellModel *_Nonnull cellModel) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -123,7 +142,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (!_aboutMeCellModel) {
         TextViewFormCellModel *cellModel = [[TextViewFormCellModel alloc] initWithTitle:@"About me"];
         cellModel.placeholder = [NSString stringWithFormat:@"Hey I'm a demo user %@", self.blockchainIdentity.currentUsername];
-        cellModel.text = self.blockchainIdentity.ownContact.publicMessage;
+        cellModel.text = self.blockchainIdentity.matchingDashpayUser.publicMessage;
         _aboutMeCellModel = cellModel;
     }
     return _aboutMeCellModel;
@@ -179,7 +198,10 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.view.userInteractionEnabled = NO;
     // TODO: show HUD
-    BOOL isCreate = !self.blockchainIdentity.ownContact;
+    BOOL isCreate = !self.blockchainIdentity.matchingDashpayUser;
+    NSString *displayName = self.displayNameCellModel.text.length > 0
+                            ? self.displayNameCellModel.text
+                            : self.displayNameCellModel.placeholder;
     NSString *aboutMe = self.aboutMeCellModel.text.length > 0
                             ? self.aboutMeCellModel.text
                             : self.aboutMeCellModel.placeholder;
@@ -187,7 +209,7 @@ NS_ASSUME_NONNULL_BEGIN
                                     ? self.avatarCellModel.text
                                     : self.avatarCellModel.placeholder;
     __weak typeof(self) weakSelf = self;
-    [self.blockchainIdentity createOrUpdateProfileWithAboutMeString:aboutMe avatarURLString:avatarURLString completion:^(BOOL success) {
+    [self.blockchainIdentity createOrUpdateProfileWithDisplayName:displayName publicMessage:aboutMe avatarURLString:avatarURLString completion:^(BOOL success) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;

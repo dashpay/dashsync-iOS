@@ -201,13 +201,13 @@
         NSMutableArray * usedFriendshipIdentifiers = [NSMutableArray array];
         for (NSData * blockchainIdentityData in self.mBlockchainIdentities) {
             DSBlockchainIdentity * blockchainIdentity = [self.mBlockchainIdentities objectForKey:blockchainIdentityData];
-            for (DSFriendRequestEntity * friendRequest in blockchainIdentity.ownContact.outgoingRequests) {
+            for (DSFriendRequestEntity * friendRequest in blockchainIdentity.matchingDashpayUser.outgoingRequests) {
                 DSAccount * account = [self accountWithNumber:friendRequest.account.index];
                 DSIncomingFundsDerivationPath * fundsDerivationPath = [DSIncomingFundsDerivationPath
                                                                contactBasedDerivationPathWithDestinationBlockchainIdentityUniqueId:friendRequest.destinationContact.associatedBlockchainIdentityUniqueId.UInt256 sourceBlockchainIdentityUniqueId:blockchainIdentity.uniqueID forAccountNumber:account.accountNumber onChain:self.chain];
                 fundsDerivationPath.wallet = self;
                 fundsDerivationPath.account = account;
-                NSLog(@"%@",blockchainIdentity.ownContact.outgoingRequests);
+                NSLog(@"%@",blockchainIdentity.matchingDashpayUser.outgoingRequests);
                 [account addIncomingDerivationPath:fundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier];
                 [usedFriendshipIdentifiers addObject:friendRequest.friendshipIdentifier];
             }
@@ -215,7 +215,7 @@
         
         for (NSData * blockchainUniqueIdData in self.mBlockchainIdentities) {
             DSBlockchainIdentity * blockchainIdentity = [self.mBlockchainIdentities objectForKey:blockchainUniqueIdData];
-            for (DSFriendRequestEntity * friendRequest in blockchainIdentity.ownContact.incomingRequests) {
+            for (DSFriendRequestEntity * friendRequest in blockchainIdentity.matchingDashpayUser.incomingRequests) {
                 
                 DSAccount * account = [self accountWithNumber:friendRequest.account.index];
                 DSIncomingFundsDerivationPath * fundsDerivationPath = [account derivationPathForFriendshipWithIdentifier:friendRequest.friendshipIdentifier];

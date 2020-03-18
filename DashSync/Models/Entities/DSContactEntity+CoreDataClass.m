@@ -25,7 +25,6 @@
 #import "NSData+Bitcoin.h"
 #import "DSPotentialOneWayFriendship.h"
 #import "DSAccountEntity+CoreDataClass.h"
-#import "DSBlockchainIdentityRegistrationTransitionEntity+CoreDataClass.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainManager.h"
 #import "DSIncomingFundsDerivationPath.h"
@@ -33,15 +32,23 @@
 #import "DSDerivationPathEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
 
-@implementation DSContactEntity
+@implementation DSDashpayUserEntity
 
 +(void)deleteContactsOnChain:(DSChainEntity*)chainEntity {
     [chainEntity.managedObjectContext performBlockAndWait:^{
         NSArray * contactsToDelete = [self objectsMatching:@"(chain == %@)",chainEntity];
-        for (DSContactEntity * contact in contactsToDelete) {
+        for (DSDashpayUserEntity * contact in contactsToDelete) {
             [chainEntity.managedObjectContext deleteObject:contact];
         }
     }];
 }
+
+//-(DPDocument*)profileDocument {
+//
+//}
+//
+//-(DPDocument*)contactRequestDocument {
+//
+//}
 
 @end

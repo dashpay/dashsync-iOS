@@ -106,14 +106,15 @@
                 break;
         }
         
-    } else if (!self.blockchainIdentity.ownContact) {
+    } else if (!self.blockchainIdentity.matchingDashpayUser.isRegistered) {
         self.aboutMeLabel.text = @"Fetching";
         [self.avatarImageView sd_setImageWithURL:nil];
         self.usernameStatusLabel.text = @"";
     }
     else {
-        self.aboutMeLabel.text = self.blockchainIdentity.ownContact.publicMessage;
-        [self.avatarImageView sd_setImageWithURL:[NSURL URLWithString:self.blockchainIdentity.ownContact.avatarPath]];
+        self.aboutMeLabel.text = self.blockchainIdentity.matchingDashpayUser.publicMessage;
+        [self.avatarImageView sd_setImageWithURL:[NSURL URLWithString:self.blockchainIdentity.matchingDashpayUser.avatarPath]];
+        self.usernameStatusLabel.text = @"";
     }
 }
 
@@ -129,13 +130,19 @@
 
 -(void)updateProfile {
     self.title = self.blockchainIdentity.currentUsername;
-    if (!self.blockchainIdentity.ownContact.isRegistered) {
+    if (!self.blockchainIdentity.matchingDashpayUser.isRegistered) {
         self.aboutMeLabel.text = @"Register Profile";
         [self.avatarImageView sd_setImageWithURL:nil];
     }
     else {
-        self.aboutMeLabel.text = self.blockchainIdentity.ownContact.publicMessage;
-        [self.avatarImageView sd_setImageWithURL:[NSURL URLWithString:self.blockchainIdentity.ownContact.avatarPath]];
+        if (!self.blockchainIdentity.matchingDashpayUser.publicMessage) {
+            self.aboutMeLabel.text = @"No message set!";
+            self.aboutMeLabel.textColor = [UIColor grayColor];
+        } else {
+            self.aboutMeLabel.text = self.blockchainIdentity.matchingDashpayUser.publicMessage;
+            self.aboutMeLabel.textColor = [UIColor darkTextColor];
+        }
+        [self.avatarImageView sd_setImageWithURL:[NSURL URLWithString:self.blockchainIdentity.matchingDashpayUser.avatarPath]];
     }
 }
 

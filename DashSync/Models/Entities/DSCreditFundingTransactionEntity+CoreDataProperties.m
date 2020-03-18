@@ -15,6 +15,5 @@
 }
 
 @dynamic blockchainIdentity;
-@dynamic fundedTransition;
 
 @end

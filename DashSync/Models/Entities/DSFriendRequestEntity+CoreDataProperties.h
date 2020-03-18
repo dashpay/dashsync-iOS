@@ -15,9 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSFetchRequest<DSFriendRequestEntity *> *)fetchRequest;
 
-@property (nonnull, nonatomic, retain) DSContactEntity *destinationContact;
-@property (nonnull, nonatomic, retain) DSContactEntity *sourceContact;
-@property (nullable, nonatomic, retain) DSTransitionEntity *transition;
+@property (nonnull, nonatomic, retain) DSDashpayUserEntity *destinationContact;
+@property (nonnull, nonatomic, retain) DSDashpayUserEntity *sourceContact;
 @property (nonnull, nonatomic, retain) DSDerivationPathEntity *derivationPath;
 @property (nonnull, nonatomic, retain) DSAccountEntity *account;
 @property (nonnull, nonatomic, retain) NSData * friendshipIdentifier;

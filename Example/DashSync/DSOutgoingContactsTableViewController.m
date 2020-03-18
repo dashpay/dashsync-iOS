@@ -41,7 +41,7 @@
 - (void)mocDidSaveNotification:(NSNotification *)notification {
     // Since NSFetchedResultsController doesn't observe relationship changes we have to manully trigger an update
     // http://openradar.appspot.com/radar?id=1754401
-    BOOL (^objectsHasChangedContact)(NSArray *, DSContactEntity *) = ^BOOL(NSArray *objects, DSContactEntity *contact) {
+    BOOL (^objectsHasChangedContact)(NSArray *, DSDashpayUserEntity *) = ^BOOL(NSArray *objects, DSDashpayUserEntity *contact) {
         BOOL hasRelationshipChanges = NO;
         for (NSManagedObject *mo in objects) {
             if ([mo isKindOfClass:DSFriendRequestEntity.class]) {
@@ -61,7 +61,7 @@
     NSArray <NSManagedObject *> *updatedObjects = notification.userInfo[NSUpdatedObjectsKey];
     NSArray <NSManagedObject *> *deletedObjects = notification.userInfo[NSDeletedObjectsKey];
     
-    DSContactEntity *contact = self.blockchainIdentity.ownContact;
+    DSDashpayUserEntity *contact = self.blockchainIdentity.matchingDashpayUser;
     if (objectsHasChangedContact(insertedObjects, contact) ||
         objectsHasChangedContact(updatedObjects, contact) ||
         objectsHasChangedContact(deletedObjects, contact)) {
@@ -75,7 +75,7 @@
 }
 
 -(NSPredicate*)predicate {
-    return [NSPredicate predicateWithFormat:@"sourceContact == %@ && (SUBQUERY(sourceContact.incomingRequests, $friendRequest, $friendRequest.sourceContact == SELF.destinationContact).@count == 0)",self.blockchainIdentity.ownContact];
+    return [NSPredicate predicateWithFormat:@"sourceContact == %@ && (SUBQUERY(sourceContact.incomingRequests, $friendRequest, $friendRequest.sourceContact == SELF.destinationContact).@count == 0)",self.blockchainIdentity.matchingDashpayUser];
 }
 
 
@@ -97,7 +97,7 @@
 
 -(void)configureCell:(DSContactTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
     DSFriendRequestEntity * friendRequest = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    DSContactEntity * destinationFriendRequest = friendRequest.destinationContact;
+    DSDashpayUserEntity * destinationFriendRequest = friendRequest.destinationContact;
     cell.textLabel.text = destinationFriendRequest.username;
 }
 

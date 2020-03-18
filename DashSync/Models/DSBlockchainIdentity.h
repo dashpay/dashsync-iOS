@@ -11,7 +11,7 @@
 #import "DSDerivationPath.h"
 
 NS_ASSUME_NONNULL_BEGIN
-@class DSWallet,DSBlockchainIdentityRegistrationTransition,DSBlockchainIdentityTopupTransition,DSBlockchainIdentityUpdateTransition,DSBlockchainIdentityCloseTransition,DSAccount,DSChain,DSTransition,DSContactEntity,DSPotentialOneWayFriendship,DSTransaction,DSFriendRequestEntity,DSPotentialContact,DSCreditFundingTransaction,DSDocumentTransition,DSKey,DPDocumentFactory;
+@class DSWallet,DSBlockchainIdentityRegistrationTransition,DSBlockchainIdentityTopupTransition,DSBlockchainIdentityUpdateTransition,DSBlockchainIdentityCloseTransition,DSAccount,DSChain,DSTransition,DSDashpayUserEntity,DSPotentialOneWayFriendship,DSTransaction,DSFriendRequestEntity,DSPotentialContact,DSCreditFundingTransaction,DSDocumentTransition,DSKey,DPDocumentFactory;
 
 typedef NS_ENUM(NSUInteger, DSBlockchainIdentityRegistrationStatus) {
     DSBlockchainIdentityRegistrationStatus_Unknown = 0,
@@ -75,7 +75,10 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 /*! @brief This is the outpoint of the registration credit funding transaction. It is used to determine the unique ID by double SHA256 its value. Returned as an NSData of a UTXO { .hash , .n } */
 @property (nonatomic,readonly) NSData * lockedOutpointData;
 
-/*! @brief This is the wallet holding the blockchain identity. There should always be a wallet associated to a blockchain identity and hence this should never be nil. */
+/*! @brief This is if the blockchain identity is present in wallets or not. If this is false then the blockchain identity is known for example from being a dashpay friend. */
+@property (nonatomic,readonly) BOOL isLocal;
+
+/*! @brief This is the wallet holding the blockchain identity. There should always be a wallet associated to a blockchain identity if the blockchain identity is local, but never if it is not. */
 @property (nonatomic,weak,readonly) DSWallet * wallet;
 
 /*! @brief This is the index of the blockchain identity in the wallet. The index is the top derivation used to derive an extended set of keys for the identity. No two blockchain identities should be allowed to have the same index in a wallet. For example m/.../.../.../index/key */
@@ -111,7 +114,7 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 @property (nullable,nonatomic,readonly) DSCreditFundingTransaction * registrationCreditFundingTransaction;
 
 /*! @brief In our system a contact is a vue on a blockchain identity for Dashpay. A blockchain identity is therefore represented by a contact that will have relationships in the system */
-@property (nonatomic,readonly) DSContactEntity* ownContact;
+@property (nonatomic,readonly) DSDashpayUserEntity* matchingDashpayUser;
 
 /*! @brief This is the status of the registration of the identity. It starts off in an initial status, and ends in a confirmed status */
 @property (nonatomic,readonly) DSBlockchainIdentityRegistrationStatus registrationStatus;
@@ -210,7 +213,7 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 
 - (void)fetchProfile:(void (^)(BOOL success))completion;
 
-- (void)createOrUpdateProfileWithAboutMeString:(NSString*)aboutme avatarURLString:(NSString *)avatarURLString completion:(void (^)(BOOL success))completion;
+- (void)createOrUpdateProfileWithDisplayName:(NSString*)displayName publicMessage:(NSString*)publicMessage avatarURLString:(NSString *)avatarURLString completion:(void (^)(BOOL success))completion;
 
 // MARK: - DPNS
 

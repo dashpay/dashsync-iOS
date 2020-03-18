@@ -51,11 +51,11 @@ static NSString * const CellId = @"CellId";
 }
 
 - (NSString *)entityName {
-    return @"DSContactEntity";
+    return @"DSDashpayUserEntity";
 }
 
 -(NSPredicate*)predicate {
-    return [NSPredicate predicateWithFormat:@"ANY friends == %@",self.blockchainIdentity.ownContact];
+    return [NSPredicate predicateWithFormat:@"ANY friends == %@",self.blockchainIdentity.matchingDashpayUser];
 }
 
 - (NSArray<NSSortDescriptor *> *)sortDescriptors {
@@ -74,7 +74,7 @@ static NSString * const CellId = @"CellId";
 }
 
 -(void)configureCell:(DSContactTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
-    DSContactEntity * friend = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    DSDashpayUserEntity * friend = [self.fetchedResultsController objectAtIndexPath:indexPath];
     cell.textLabel.text = friend.username;
 }
 
@@ -88,8 +88,8 @@ static NSString * const CellId = @"CellId";
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     NSIndexPath * selectedIndex = self.tableView.indexPathForSelectedRow;
-    DSContactEntity * friend = [self.fetchedResultsController objectAtIndexPath:selectedIndex];
-    DSContactEntity * me = self.blockchainIdentity.ownContact;
+    DSDashpayUserEntity * friend = [self.fetchedResultsController objectAtIndexPath:selectedIndex];
+    DSDashpayUserEntity * me = self.blockchainIdentity.matchingDashpayUser;
     DSFriendRequestEntity * meToFriend = [[me.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact == %@",friend]] anyObject];
     DSFriendRequestEntity * friendToMe = [[me.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",friend]] anyObject];
     if ([segue.identifier isEqualToString:@"ContactTransactionsSegue"]) {

@@ -39,8 +39,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) DSMutableStringValueDictionary * keyValueDictionary;
 
-@property (nonatomic, readonly) DSTransitionEntity * transitionEntity;
-
 -(instancetype)initOnChain:(DSChain*)chain;
 
 @end

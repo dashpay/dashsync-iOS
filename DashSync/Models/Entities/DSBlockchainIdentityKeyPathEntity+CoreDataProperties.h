@@ -17,10 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSFetchRequest<DSBlockchainIdentityKeyPathEntity *> *)fetchRequest;
 
 @property (nullable, nonatomic, retain) NSObject *path;
-@property (nullable, nonatomic, retain) NSSet<DSBlockchainIdentityUpdateTransitionEntity *> *addedInIdentityUpdates;
-@property (nullable, nonatomic, retain) NSSet<DSBlockchainIdentityRegistrationTransitionEntity *> *addedInRegistrations;
 @property (nullable, nonatomic, retain) DSDerivationPathEntity *derivationPath;
-@property (nullable, nonatomic, retain) NSSet<DSBlockchainIdentityUpdateTransitionEntity *> *removedInIdentityUpdates;
 @property (nullable, nonatomic, retain) DSBlockchainIdentityEntity *blockchainIdentity;
 @property (nonatomic, assign) uint16_t keyType;
 @property (nonatomic, assign) uint16_t keyStatus;
@@ -28,21 +25,6 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface DSBlockchainIdentityKeyPathEntity (CoreDataGeneratedAccessors)
-
-- (void)addAddedInIdentityUpdatesObject:(DSBlockchainIdentityUpdateTransitionEntity *)value;
-- (void)removeAddedInIdentityUpdatesObject:(DSBlockchainIdentityUpdateTransitionEntity *)value;
-- (void)addAddedInIdentityUpdates:(NSSet<DSBlockchainIdentityUpdateTransitionEntity *> *)values;
-- (void)removeAddedInIdentityUpdates:(NSSet<DSBlockchainIdentityUpdateTransitionEntity *> *)values;
-
-- (void)addAddedInRegistrationsObject:(DSBlockchainIdentityRegistrationTransitionEntity *)value;
-- (void)removeAddedInRegistrationsObject:(DSBlockchainIdentityRegistrationTransitionEntity *)value;
-- (void)addAddedInRegistrations:(NSSet<DSBlockchainIdentityRegistrationTransitionEntity *> *)values;
-- (void)removeAddedInRegistrations:(NSSet<DSBlockchainIdentityRegistrationTransitionEntity *> *)values;
-
-- (void)addRemovedInIdentityUpdatesObject:(DSBlockchainIdentityUpdateTransitionEntity *)value;
-- (void)removeRemovedInIdentityUpdatesObject:(DSBlockchainIdentityUpdateTransitionEntity *)value;
-- (void)addRemovedInIdentityUpdates:(NSSet<DSBlockchainIdentityUpdateTransitionEntity *> *)values;
-- (void)removeRemovedInIdentityUpdates:(NSSet<DSBlockchainIdentityUpdateTransitionEntity *> *)values;
 
 @end
 

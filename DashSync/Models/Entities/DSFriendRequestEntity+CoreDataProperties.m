@@ -16,7 +16,6 @@
 
 @dynamic destinationContact;
 @dynamic sourceContact;
-@dynamic transition;
 @dynamic derivationPath;
 @dynamic account;
 @dynamic friendshipIdentifier;

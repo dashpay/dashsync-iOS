@@ -8,13 +8,14 @@
 
 #import "DSContactEntity+CoreDataProperties.h"
 
-@implementation DSContactEntity (CoreDataProperties)
+@implementation DSDashpayUserEntity (CoreDataProperties)
 
-+ (NSFetchRequest<DSContactEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSContactEntity"];
++ (NSFetchRequest<DSDashpayUserEntity *> *)fetchRequest {
+	return [NSFetchRequest fetchRequestWithEntityName:@"DSDashpayUserEntity"];
 }
 
-@dynamic documentRevision;
+@dynamic profileDocumentRevision;
+@dynamic contactRequestDocumentRevision;
 @dynamic username;
 @dynamic displayName;
 @dynamic associatedBlockchainIdentityUniqueId;
@@ -22,7 +23,6 @@
 @dynamic associatedBlockchainIdentity;
 @dynamic outgoingRequests;
 @dynamic incomingRequests;
-@dynamic profileTransition;
 @dynamic friends;
 @dynamic encryptionPublicKey;
 @dynamic avatarPath;

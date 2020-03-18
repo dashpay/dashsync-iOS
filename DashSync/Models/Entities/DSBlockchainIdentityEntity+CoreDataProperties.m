@@ -18,12 +18,12 @@
 @dynamic topUpFundingTransactions;
 @dynamic registrationFundingTransaction;
 @dynamic keyPaths;
-@dynamic ownContact;
-@dynamic transitions;
+@dynamic matchingDashpayUser;
 @dynamic chain;
 @dynamic usernames;
 @dynamic creditBalance;
 @dynamic registrationStatus;
 @dynamic type;
+@dynamic isLocal;
 
 @end

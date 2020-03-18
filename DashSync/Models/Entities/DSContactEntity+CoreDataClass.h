@@ -20,13 +20,17 @@
 #import "BigIntTypes.h"
 #import "DSPotentialOneWayFriendship.h"
 
-@class DSAccountEntity, DSFriendRequestEntity, DSTransitionEntity, DSBlockchainIdentity,DSPotentialOneWayFriendship,DSWallet,DSIncomingFundsDerivationPath,DSChainEntity, DSBlockchainIdentityEntity;
+@class DSAccountEntity, DSFriendRequestEntity, DSTransitionEntity, DSBlockchainIdentity,DSPotentialOneWayFriendship,DSWallet,DSIncomingFundsDerivationPath,DSChainEntity, DSBlockchainIdentityEntity, DPDocument;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSContactEntity : NSManagedObject
+@interface DSDashpayUserEntity : NSManagedObject
 
 +(void)deleteContactsOnChain:(DSChainEntity*)chainEntity;
+
+-(DPDocument*)profileDocument;
+
+-(DPDocument*)contactRequestDocument;
 
 @end
 

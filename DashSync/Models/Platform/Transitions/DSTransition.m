@@ -13,7 +13,6 @@
 #import "DSECDSAKey.h"
 #import "NSString+Bitcoin.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
-#import "DSTransitionEntity+CoreDataClass.h"
 #import "DSBlockchainIdentity.h"
 #import "DSTransition.h"
 #import "NSDate+Utils.h"
@@ -51,16 +50,6 @@
     self.blockchainIdentityUniqueId = blockchainIdentityUniqueId;
     return self;
 }
-
-//-(void)setRegistrationTransactionHash:(UInt256)registrationTransactionHash {
-//    _registrationTransactionHash = registrationTransactionHash;
-//    self.blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransition*)[self.chain transactionForHash:registrationTransactionHash];
-//}
-
-//-(DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransaction {
-//    if (!_blockchainIdentityRegistrationTransaction) self.blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransition*)[self.chain transactionForHash:self.registrationTransactionHash];
-//    return _blockchainIdentityRegistrationTransaction;
-//}
 
 -(BOOL)checkTransitionSignatureForECDSAKey:(DSECDSAKey*)transitionRecoveredPublicKey {
     return [transitionRecoveredPublicKey verify:[self serializedBaseDataHash].UInt256 signatureData:self.signatureData];
@@ -131,72 +120,5 @@
     }
     return _keyValueDictionary;
 }
-
-
--(Class)entityClass {
-    return [DSTransitionEntity class];
-}
-
-// MARK: - Persistence
-
--(DSTransitionEntity *)transitionEntity {
-    NSManagedObjectContext * context = [DSTransitionEntity context];
-    __block DSTransitionEntity * transitionEntity = nil;
-    [context performBlockAndWait:^{ // add the transaction to core data
-        [DSChainEntity setContext:context];
-        Class transitionEntityClass = [self entityClass];
-        [transitionEntityClass setContext:context];
-        if ([DSTransitionEntity countObjectsMatching:@"transitionHash == %@", uint256_data(self.transitionHash)] == 0) {
-            
-            transitionEntity = [transitionEntityClass managedObject];
-            [transitionEntity setAttributesFromTransition:self];
-        } else {
-            transitionEntity = [DSTransitionEntity anyObjectMatching:@"transitionHash == %@", uint256_data(self.transitionHash)];
-        }
-    }];
-    return transitionEntity;
-}
-
--(DSTransitionEntity *)save {
-    NSManagedObjectContext * context = [DSTransitionEntity context];
-    __block DSTransitionEntity * transitionEntity = nil;
-    [context performBlockAndWait:^{ // add the transaction to core data
-        [DSChainEntity setContext:context];
-        Class transitionEntityClass = [self entityClass];
-        [transitionEntityClass setContext:context];
-        if ([DSTransitionEntity countObjectsMatching:@"transitionHash == %@", uint256_data(self.transitionHash)] == 0) {
-            
-            transitionEntity = [transitionEntityClass managedObject];
-            [transitionEntity setAttributesFromTransition:self];
-            [transitionEntityClass saveContext];
-        } else {
-            transitionEntity = [DSTransitionEntity anyObjectMatching:@"transitionHash == %@", uint256_data(self.transitionHash)];
-            [transitionEntity setAttributesFromTransition:self];
-            [transitionEntityClass saveContext];
-        }
-    }];
-    return transitionEntity;
-}
-
--(BOOL)saveInitial {
-    if (self.saved) return nil;
-    NSManagedObjectContext * context = [DSTransitionEntity context];
-    __block BOOL didSave = FALSE;
-    [context performBlockAndWait:^{ // add the transaction to core data
-        [DSChainEntity setContext:context];
-        Class transitionEntityClass = [self entityClass];
-        [transitionEntityClass setContext:context];
-        if ([DSTransitionEntity countObjectsMatching:@"transitionHash == %@", uint256_data(self.transitionHash)] == 0) {
-            
-            DSTransitionEntity * transitionEntity = [transitionEntityClass managedObject];
-            [transitionEntity setAttributesFromTransition:self];
-            [transitionEntityClass saveContext];
-            didSave = TRUE;
-        }
-    }];
-    self.saved = didSave;
-    return didSave;
-}
-
 
 @end

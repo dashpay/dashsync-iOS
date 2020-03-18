@@ -48,7 +48,7 @@
     return self;
 }
 
--(instancetype)initWithContactEntity:(DSContactEntity*)contactEntity {
+-(instancetype)initWithContactEntity:(DSDashpayUserEntity*)contactEntity {
     self = [self initWithUsername:contactEntity.username avatarPath:contactEntity.avatarPath publicMessage:contactEntity.publicMessage];
     if (self) {
         _associatedBlockchainIdentityUniqueId = contactEntity.associatedBlockchainIdentityUniqueId.UInt256;

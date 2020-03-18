@@ -11,7 +11,6 @@
 #import "DSECDSAKey.h"
 #import "NSString+Bitcoin.h"
 #import "DSTransactionFactory.h"
-#import "DSBlockchainIdentityCloseTransitionEntity+CoreDataClass.h"
 
 @implementation DSBlockchainIdentityCloseTransition
 

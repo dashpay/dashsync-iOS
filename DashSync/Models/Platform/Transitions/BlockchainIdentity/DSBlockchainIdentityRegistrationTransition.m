@@ -11,7 +11,6 @@
 #import "DSECDSAKey.h"
 #import "NSString+Bitcoin.h"
 #import "DSTransactionFactory.h"
-#import "DSBlockchainIdentityRegistrationTransitionEntity+CoreDataClass.h"
 #import "DSTransition+Protected.h"
 #import "BigIntTypes.h"
 
@@ -37,10 +36,6 @@
     self.lockedOutpoint = lockedOutpoint;
     self.publicKeys = publicKeys;
     return self;
-}
-
--(Class)entityClass {
-    return [DSBlockchainIdentityRegistrationTransitionEntity class];
 }
 
 - (NSMutableArray *)platformKeyDictionaries {

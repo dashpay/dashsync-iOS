@@ -480,8 +480,8 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
                 [mutableString appendFormat:@"/%lu%@",(unsigned long)[self indexAtPosition:i].u64[0],[self isHardenedAtPosition:i]?@"'":@""];
             } else {
                 UInt256 index = [self indexAtPosition:i];
-                [[DSContactEntity context] performBlockAndWait:^{
-                    DSContactEntity * contactEntity = [DSContactEntity anyObjectMatching:@"associatedBlockchainIdentityUniqueId == %@",uint256_data(index)];
+                [[DSDashpayUserEntity context] performBlockAndWait:^{
+                    DSDashpayUserEntity * contactEntity = [DSDashpayUserEntity anyObjectMatching:@"associatedBlockchainIdentityUniqueId == %@",uint256_data(index)];
                     if (contactEntity) {
                         [mutableString appendFormat:@"/%@%@",contactEntity.username,[self isHardenedAtPosition:i]?@"'":@""];
                     } else {
@@ -509,8 +509,8 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
         if ([self isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
             mutableString = [NSMutableString stringWithFormat:@"inc"];
             DSIncomingFundsDerivationPath * incomingFundsDerivationPath = (DSIncomingFundsDerivationPath*)self;
-            [[DSContactEntity context] performBlockAndWait:^{
-                DSContactEntity * sourceContactEntity = [DSContactEntity anyObjectMatching:@"associatedBlockchainIdentityUniqueId == %@",uint256_data(incomingFundsDerivationPath.contactSourceBlockchainIdentityUniqueId)];
+            [[DSDashpayUserEntity context] performBlockAndWait:^{
+                DSDashpayUserEntity * sourceContactEntity = [DSDashpayUserEntity anyObjectMatching:@"associatedBlockchainIdentityUniqueId == %@",uint256_data(incomingFundsDerivationPath.contactSourceBlockchainIdentityUniqueId)];
                 if (sourceContactEntity) {
                     [mutableString appendFormat:@"/%@",sourceContactEntity.username];
                 } else {

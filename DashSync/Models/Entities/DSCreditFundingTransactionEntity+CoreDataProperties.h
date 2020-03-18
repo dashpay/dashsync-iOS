@@ -16,7 +16,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSFetchRequest<DSCreditFundingTransactionEntity *> *)fetchRequest;
 
 @property (nullable, nonatomic, retain) DSBlockchainIdentityEntity *blockchainIdentity;
-@property (nullable, nonatomic, retain) NSManagedObject *fundedTransition;
 
 @end
 

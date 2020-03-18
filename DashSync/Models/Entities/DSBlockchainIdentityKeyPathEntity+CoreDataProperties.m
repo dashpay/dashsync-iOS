@@ -15,10 +15,7 @@
 }
 
 @dynamic path;
-@dynamic addedInIdentityUpdates;
-@dynamic addedInRegistrations;
 @dynamic derivationPath;
-@dynamic removedInIdentityUpdates;
 @dynamic blockchainIdentity;
 @dynamic keyType;
 @dynamic keyStatus;

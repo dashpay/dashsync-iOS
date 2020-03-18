@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSContactSendDashViewController : UIViewController
 
 @property (strong, nonatomic) DSBlockchainIdentity *blockchainIdentity;
-@property (strong, nonatomic) DSContactEntity *contact;
+@property (strong, nonatomic) DSDashpayUserEntity *contact;
 
 @end
 

@@ -13,7 +13,6 @@
 #import "DSProviderUpdateServiceTransactionEntity+CoreDataClass.h"
 #import "DSProviderUpdateRegistrarTransactionEntity+CoreDataClass.h"
 #import "DSProviderUpdateRevocationTransactionEntity+CoreDataClass.h"
-#import "DSTransitionEntity+CoreDataClass.h"
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSTxInputEntity+CoreDataClass.h"

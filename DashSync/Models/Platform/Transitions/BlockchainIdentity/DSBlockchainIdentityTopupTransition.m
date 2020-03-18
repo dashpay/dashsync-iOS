@@ -11,7 +11,6 @@
 #import "DSECDSAKey.h"
 #import "NSString+Bitcoin.h"
 #import "DSTransactionFactory.h"
-#import "DSBlockchainIdentityTopupTransitionEntity+CoreDataClass.h"
 
 @interface DSBlockchainIdentityTopupTransition()
 
@@ -19,8 +18,5 @@
 
 @implementation DSBlockchainIdentityTopupTransition
 
--(Class)entityClass {
-    return [DSBlockchainIdentityTopupTransitionEntity class];
-}
 
 @end

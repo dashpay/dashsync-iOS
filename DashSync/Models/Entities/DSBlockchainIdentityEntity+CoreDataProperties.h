@@ -17,13 +17,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, retain) NSData *uniqueID;
 @property (nonatomic, assign) uint16_t type;
+@property (nonatomic, assign) Boolean isLocal;
 @property (nonatomic, assign) uint16_t registrationStatus;
 @property (nonatomic, assign) uint64_t creditBalance;
 @property (nullable, nonatomic, retain) NSSet<DSCreditFundingTransactionEntity *> *topUpFundingTransactions;
 @property (nullable, nonatomic, retain) DSCreditFundingTransactionEntity * registrationFundingTransaction;
 @property (nullable, nonatomic, retain) NSSet<DSBlockchainIdentityKeyPathEntity *> *keyPaths;
-@property (nullable, nonatomic, retain) DSContactEntity *ownContact;
-@property (nullable, nonatomic, retain) NSSet<DSTransitionEntity *> *transitions;
+@property (nullable, nonatomic, retain) DSDashpayUserEntity *matchingDashpayUser;
 @property (nullable, nonatomic, retain) NSSet<DSBlockchainIdentityUsernameEntity *> *usernames;
 @property (nullable, nonatomic, retain) DSChainEntity *chain;
 
@@ -45,11 +45,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)removeUsernamesObject:(DSBlockchainIdentityUsernameEntity *)value;
 - (void)addUsernames:(NSSet<DSBlockchainIdentityUsernameEntity *> *)values;
 - (void)removeUsernames:(NSSet<DSBlockchainIdentityUsernameEntity *> *)values;
-
-- (void)addTransitionsObject:(DSTransitionEntity *)value;
-- (void)removeTransitionsObject:(DSTransitionEntity *)value;
-- (void)addTransitions:(NSSet<DSTransitionEntity *> *)values;
-- (void)removeTransitions:(NSSet<DSTransitionEntity *> *)values;
 
 @end
 

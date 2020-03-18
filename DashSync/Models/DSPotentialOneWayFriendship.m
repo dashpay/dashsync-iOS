@@ -120,12 +120,12 @@
 }
 
 
--(DSFriendRequestEntity*)outgoingFriendRequestForContactEntity:(DSContactEntity*)contactEntity {
+-(DSFriendRequestEntity*)outgoingFriendRequestForContactEntity:(DSDashpayUserEntity*)contactEntity {
     NSParameterAssert(contactEntity);
     NSAssert(uint256_eq(contactEntity.associatedBlockchainIdentityUniqueId.UInt256, self.destinationContact.associatedBlockchainIdentityUniqueId), @"contact entity must match");
-    NSAssert(self.sourceBlockchainIdentity.ownContact,@"The own contact of the source Identity must be set");
+    NSAssert(self.sourceBlockchainIdentity.matchingDashpayUser,@"The own contact of the source Identity must be set");
     DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObject];
-    friendRequestEntity.sourceContact = self.sourceBlockchainIdentity.ownContact;
+    friendRequestEntity.sourceContact = self.sourceBlockchainIdentity.matchingDashpayUser;
     friendRequestEntity.destinationContact = contactEntity;
     friendRequestEntity.derivationPath = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self.fundsDerivationPathForContact];
     friendRequestEntity.account = friendRequestEntity.derivationPath.account;
@@ -137,9 +137,9 @@
 
 -(DSFriendRequestEntity*)outgoingFriendRequest {
     NSAssert(!uint256_is_zero(self.destinationContact.associatedBlockchainIdentityUniqueId), @"destination contact must be known");
-    DSContactEntity * contactEntity = [DSContactEntity anyObjectMatching:@"associatedBlockchainIdentityUniqueId == %@",uint256_data(self.destinationContact.associatedBlockchainIdentityUniqueId)];
+    DSDashpayUserEntity * contactEntity = [DSDashpayUserEntity anyObjectMatching:@"associatedBlockchainIdentityUniqueId == %@",uint256_data(self.destinationContact.associatedBlockchainIdentityUniqueId)];
     if (!contactEntity) {
-        contactEntity =  [DSContactEntity managedObject];
+        contactEntity =  [DSDashpayUserEntity managedObject];
         
         contactEntity.username = self.destinationContact.username;
         contactEntity.avatarPath = self.destinationContact.avatarPath;

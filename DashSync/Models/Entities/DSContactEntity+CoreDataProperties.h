@@ -11,11 +11,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSContactEntity (CoreDataProperties)
+@interface DSDashpayUserEntity (CoreDataProperties)
 
-+ (NSFetchRequest<DSContactEntity *> *)fetchRequest;
++ (NSFetchRequest<DSDashpayUserEntity *> *)fetchRequest;
 
-@property (nonatomic, assign) uint32_t documentRevision;
+@property (nonatomic, assign) uint32_t profileDocumentRevision;
+@property (nonatomic, assign) uint32_t contactRequestDocumentRevision;
 @property (nullable, nonatomic, retain) NSData *encryptionPublicKey;
 @property (nonatomic, assign) uint32_t encryptionPublicKeyType;
 @property (nonatomic, assign) uint32_t encryptionPublicKeyIndex;
@@ -28,19 +29,18 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) DSBlockchainIdentityEntity *associatedBlockchainIdentity;
 @property (nullable, nonatomic, retain) NSSet<DSFriendRequestEntity *> *outgoingRequests;
 @property (nullable, nonatomic, retain) NSSet<DSFriendRequestEntity *> *incomingRequests;
-@property (nullable, nonatomic, retain) NSSet<DSContactEntity *> *friends;
-@property (nullable, nonatomic, retain) DSTransitionEntity *profileTransition;
+@property (nullable, nonatomic, retain) NSSet<DSDashpayUserEntity *> *friends;
 @property (nullable, nonatomic, retain) DSChainEntity *chain;
 
 @end
 
-@interface DSContactEntity (CoreDataGeneratedAccessors)
+@interface DSDashpayUserEntity (CoreDataGeneratedAccessors)
 
 
-- (void)addFriendsObject:(DSContactEntity *)value;
-- (void)removeFriendsObject:(DSContactEntity *)value;
-- (void)addFriends:(NSSet<DSContactEntity *> *)values;
-- (void)removeFriends:(NSSet<DSContactEntity *> *)values;
+- (void)addFriendsObject:(DSDashpayUserEntity *)value;
+- (void)removeFriendsObject:(DSDashpayUserEntity *)value;
+- (void)addFriends:(NSSet<DSDashpayUserEntity *> *)values;
+- (void)removeFriends:(NSSet<DSDashpayUserEntity *> *)values;
 
 - (void)addOutgoingRequestsObject:(DSFriendRequestEntity *)value;
 - (void)removeOutgoingRequestsObject:(DSFriendRequestEntity *)value;

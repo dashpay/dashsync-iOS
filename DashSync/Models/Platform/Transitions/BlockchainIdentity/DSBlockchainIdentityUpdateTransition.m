@@ -11,7 +11,6 @@
 #import "DSECDSAKey.h"
 #import "NSString+Bitcoin.h"
 #import "DSTransactionFactory.h"
-#import "DSBlockchainIdentityUpdateTransitionEntity+CoreDataClass.h"
 
 @implementation DSBlockchainIdentityUpdateTransition
 
@@ -185,9 +184,5 @@
 //{
 //    return [super size] + [self payloadData].length;
 //}
-
--(Class)entityClass {
-    return [DSBlockchainIdentityUpdateTransitionEntity class];
-}
 
 @end
