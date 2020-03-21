@@ -113,7 +113,7 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
     @discussion There are situations where this is nil as it is not yet known ; if the blockchain identity is being retrieved from L2 or if we are resyncing the chain. */
 @property (nullable,nonatomic,readonly) DSCreditFundingTransaction * registrationCreditFundingTransaction;
 
-/*! @brief In our system a contact is a vue on a blockchain identity for Dashpay. A blockchain identity is therefore represented by a contact that will have relationships in the system */
+/*! @brief In our system a contact is a vue on a blockchain identity for Dashpay. A blockchain identity is therefore represented by a contact that will have relationships in the system. This is in the default backgroundContext. */
 @property (nonatomic,readonly) DSDashpayUserEntity* matchingDashpayUser;
 
 /*! @brief This is the status of the registration of the identity. It starts off in an initial status, and ends in a confirmed status */
@@ -142,6 +142,8 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 
 /*! @brief This will return a localized blockchain identity type string for a specified type. This is a helper method so clients are not forced to localize the type themselves. Values are capitalized. "User" and "Application" are examples of return values. */
 + (NSString*)localizedBlockchainIdentityTypeStringForType:(DSBlockchainIdentityType)type;
+
+- (DSDashpayUserEntity*)matchingDashpayUserInContext:(NSManagedObjectContext*)context;
 
 // MARK: - Identity
 

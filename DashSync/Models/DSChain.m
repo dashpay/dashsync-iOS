@@ -2260,10 +2260,12 @@ static dispatch_once_t devnetToken = 0;
 // MARK: - Identities
 
 -(DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId {
+    NSAssert(!uint256_is_zero(uniqueId), @"uniqueId must not be null");
     return [self blockchainIdentityForUniqueId:uniqueId foundInWallet:nil];
 }
 
 -(DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId foundInWallet:(DSWallet**)foundInWallet {
+    NSAssert(!uint256_is_zero(uniqueId), @"uniqueId must not be null");
     for (DSWallet * wallet in self.wallets) {
         DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForUniqueId:uniqueId];
         if (blockchainIdentity) {

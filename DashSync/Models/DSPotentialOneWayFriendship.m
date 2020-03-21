@@ -141,6 +141,7 @@
     DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObject];
     friendRequestEntity.sourceContact = self.sourceBlockchainIdentity.matchingDashpayUser;
     friendRequestEntity.destinationContact = dashpayUserEntity;
+    NSAssert(friendRequestEntity.sourceContact != friendRequestEntity.destinationContact, @"This must be different contacts");
     friendRequestEntity.derivationPath = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self.fundsDerivationPathForContact];
     friendRequestEntity.account = friendRequestEntity.derivationPath.account;
     

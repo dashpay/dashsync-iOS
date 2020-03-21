@@ -12,13 +12,23 @@
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSAccountEntity+CoreDataClass.h"
 #import "NSData+Bitcoin.h"
-
+#import "DSChainEntity+CoreDataClass.h"
+#import "NSManagedObject+Sugar.h"
 
 @interface DSFriendRequestEntity()
 
 @end
 
 @implementation DSFriendRequestEntity
+
++(void)deleteFriendRequestsOnChain:(DSChainEntity*)chainEntity {
+    [chainEntity.managedObjectContext performBlockAndWait:^{
+        NSArray * friendRequestsToDelete = [self objectsMatching:@"(derivationPath.chain == %@)",chainEntity];
+        for (DSFriendRequestEntity * friendRequest in friendRequestsToDelete) {
+            [friendRequest.managedObjectContext deleteObject:friendRequest];
+        }
+    }];
+}
 
 -(NSData*)finalizeWithFriendshipIdentifier {
     NSAssert(self.sourceContact, @"source contact must exist");

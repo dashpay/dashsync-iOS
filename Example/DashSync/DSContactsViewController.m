@@ -55,11 +55,11 @@ static NSString * const CellId = @"CellId";
 }
 
 -(NSPredicate*)predicate {
-    return [NSPredicate predicateWithFormat:@"ANY friends == %@",self.blockchainIdentity.matchingDashpayUser];
+    return [NSPredicate predicateWithFormat:@"ANY friends == %@",[self.blockchainIdentity matchingDashpayUserInContext:self.context]];
 }
 
 - (NSArray<NSSortDescriptor *> *)sortDescriptors {
-    NSSortDescriptor *usernameSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"username" ascending:YES];
+    NSSortDescriptor *usernameSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"associatedBlockchainIdentity.dashpayUsername.stringValue" ascending:YES];
     return @[usernameSortDescriptor];
 }
 
@@ -88,13 +88,15 @@ static NSString * const CellId = @"CellId";
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     NSIndexPath * selectedIndex = self.tableView.indexPathForSelectedRow;
-    DSDashpayUserEntity * friend = [self.fetchedResultsController objectAtIndexPath:selectedIndex];
-    DSDashpayUserEntity * me = self.blockchainIdentity.matchingDashpayUser;
-    DSFriendRequestEntity * meToFriend = [[me.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact == %@",friend]] anyObject];
-    DSFriendRequestEntity * friendToMe = [[me.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",friend]] anyObject];
+    DSDashpayUserEntity * dashpayFriend = [self.fetchedResultsController objectAtIndexPath:selectedIndex];
+    DSDashpayUserEntity * me = [self.blockchainIdentity matchingDashpayUserInContext:self.context];
+    NSLog(@"%@",me.outgoingRequests);
+    DSFriendRequestEntity * meToFriend = [[me.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact == %@",dashpayFriend]] anyObject];
+    DSFriendRequestEntity * friendToMe = [[me.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",dashpayFriend]] anyObject];
+    NSAssert(meToFriend && friendToMe, @"We are friends after all");
     if ([segue.identifier isEqualToString:@"ContactTransactionsSegue"]) {
         UITabBarController * tabBarController = segue.destinationViewController;
-        tabBarController.title = friend.username;
+        tabBarController.title = dashpayFriend.username;
         for (UIViewController * controller in tabBarController.viewControllers) {
             if ([controller isKindOfClass:[DSContactReceivedTransactionsTableViewController class]]) {
                 DSContactReceivedTransactionsTableViewController *receivedTransactionsController = (DSContactReceivedTransactionsTableViewController *)controller;
@@ -108,7 +110,7 @@ static NSString * const CellId = @"CellId";
                 sentTransactionsController.friendRequest = friendToMe;
             } else if ([controller isKindOfClass:[DSContactSendDashViewController class]]) {
                 ((DSContactSendDashViewController*)controller).blockchainIdentity = self.blockchainIdentity;
-                ((DSContactSendDashViewController*)controller).contact = friend;
+                ((DSContactSendDashViewController*)controller).contact = dashpayFriend;
             }
         }
     }

@@ -917,11 +917,12 @@
 -(void)wipeBlockchainIdentities {
     for (DSBlockchainIdentity * blockchainIdentity in [_mBlockchainIdentities allValues]) {
         [self unregisterBlockchainIdentity:blockchainIdentity];
-        [blockchainIdentity deletePersistentObject];
+        [blockchainIdentity deletePersistentObjectAndSave:NO];
     }
 }
 
 -(DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId {
+    NSAssert(!uint256_is_zero(uniqueId), @"uniqueId must not be null");
     DSBlockchainIdentity * foundBlockchainIdentity = nil;
     for (DSBlockchainIdentity * blockchainIdentity in [_mBlockchainIdentities allValues]) {
         if (uint256_eq([blockchainIdentity uniqueID],uniqueId)) {

@@ -26,7 +26,7 @@ static NSUInteger FETCH_BATCH_SIZE = 20;
 @implementation DSFetchedResultsTableViewController
 
 - (NSManagedObjectContext *)context {
-    return [NSManagedObject context];
+    return [NSManagedObject mainContext];
 }
 
 - (NSString *)entityName {

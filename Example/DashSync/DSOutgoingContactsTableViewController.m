@@ -80,7 +80,7 @@
 
 
 - (NSArray<NSSortDescriptor *> *)sortDescriptors {
-    NSSortDescriptor *usernameSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"destinationContact.username"
+    NSSortDescriptor *usernameSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"destinationContact.associatedBlockchainIdentity.dashpayUsername.stringValue"
                                                                            ascending:YES];
     return @[usernameSortDescriptor];
 }

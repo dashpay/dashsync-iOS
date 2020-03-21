@@ -85,7 +85,7 @@ static NSString * const CellId = @"CellId";
 }
 
 - (NSArray<NSSortDescriptor *> *)sortDescriptors {
-    NSSortDescriptor *usernameSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"sourceContact.username"
+    NSSortDescriptor *usernameSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"sourceContact.associatedBlockchainIdentity.dashpayUsername.stringValue"
                                                                            ascending:YES];
     return @[usernameSortDescriptor];
 }

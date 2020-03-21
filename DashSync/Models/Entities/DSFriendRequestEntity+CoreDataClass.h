@@ -9,13 +9,14 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSDashpayUserEntity, DSTransitionEntity,DSDerivationPathEntity,DSAccountEntity;
+@class DSDashpayUserEntity, DSTransitionEntity, DSDerivationPathEntity, DSAccountEntity, DSChainEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSFriendRequestEntity : NSManagedObject
 
 -(NSData*)finalizeWithFriendshipIdentifier;
++(void)deleteFriendRequestsOnChain:(DSChainEntity*)chainEntity;
 
 @end
 

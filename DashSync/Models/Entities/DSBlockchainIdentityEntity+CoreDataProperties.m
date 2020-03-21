@@ -25,5 +25,6 @@
 @dynamic registrationStatus;
 @dynamic type;
 @dynamic isLocal;
+@dynamic dashpayUsername;
 
 @end

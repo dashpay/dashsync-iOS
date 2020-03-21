@@ -151,6 +151,7 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
         [DSAddressEntity deleteAddressesOnChain:chainEntity];
         [DSTransactionHashEntity deleteTransactionHashesOnChain:chainEntity];
         [DSDerivationPathEntity deleteDerivationPathsOnChain:chainEntity];
+        [DSFriendRequestEntity deleteFriendRequestsOnChain:chainEntity];
         [chain wipeBlockchainInfo];
         [DSDashpayUserEntity deleteContactsOnChain:chainEntity];// this must move after wipeBlockchainInfo where blockchain identities are removed
         [DSTransactionEntity saveContext];
