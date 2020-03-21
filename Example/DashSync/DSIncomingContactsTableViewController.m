@@ -24,7 +24,7 @@ static NSString * const CellId = @"CellId";
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(mocDidSaveNotification:)
-                                                 name:NSManagedObjectContextDidSaveNotification object:nil];
+                                                 name:NSManagedObjectContextDidSaveNotification object:self.context];
 }
 
 - (IBAction)refreshAction:(id)sender {
@@ -63,7 +63,7 @@ static NSString * const CellId = @"CellId";
     NSArray <NSManagedObject *> *updatedObjects = notification.userInfo[NSUpdatedObjectsKey];
     NSArray <NSManagedObject *> *deletedObjects = notification.userInfo[NSDeletedObjectsKey];
     
-    DSDashpayUserEntity *contact = self.blockchainIdentity.matchingDashpayUser;
+    DSDashpayUserEntity *contact = [self.blockchainIdentity matchingDashpayUserInContext:self.context];
     if (objectsHasChangedContact(insertedObjects, contact) ||
         objectsHasChangedContact(updatedObjects, contact) ||
         objectsHasChangedContact(deletedObjects, contact)) {

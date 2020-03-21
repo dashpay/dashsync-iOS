@@ -90,7 +90,6 @@ static NSString * const CellId = @"CellId";
     NSIndexPath * selectedIndex = self.tableView.indexPathForSelectedRow;
     DSDashpayUserEntity * dashpayFriend = [self.fetchedResultsController objectAtIndexPath:selectedIndex];
     DSDashpayUserEntity * me = [self.blockchainIdentity matchingDashpayUserInContext:self.context];
-    NSLog(@"%@",me.outgoingRequests);
     DSFriendRequestEntity * meToFriend = [[me.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact == %@",dashpayFriend]] anyObject];
     DSFriendRequestEntity * friendToMe = [[me.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",dashpayFriend]] anyObject];
     NSAssert(meToFriend && friendToMe, @"We are friends after all");

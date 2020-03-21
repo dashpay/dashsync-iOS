@@ -810,10 +810,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 -(void)applyIdentityDictionary:(NSDictionary*)identityDictionary {
     if (identityDictionary[@"credits"]) {
         uint64_t creditBalance = (uint64_t)[identityDictionary[@"credits"] longLongValue];
-        self.creditBalance = creditBalance;
+        _creditBalance = creditBalance;
     }
     if (!self.type) {
-        self.type = identityDictionary[@"type"]?[((NSNumber*)identityDictionary[@"type"]) intValue]:DSBlockchainIdentityType_Unknown;
+        _type = identityDictionary[@"type"]?[((NSNumber*)identityDictionary[@"type"]) intValue]:DSBlockchainIdentityType_Unknown;
     }
     if (identityDictionary[@"publicKeys"]) {
         for (NSDictionary * dictionary in identityDictionary[@"publicKeys"]) {
@@ -2233,7 +2233,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 }
                 
                 [self.matchingDashpayUser addOutgoingRequestsObject:friendRequestEntity];
-                if ([[recipientBlockchainIdentityEntity.matchingDashpayUser.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",self.matchingDashpayUser]] count]) {
+                if ([[recipientBlockchainIdentityEntity.matchingDashpayUser.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact == %@",self.matchingDashpayUser]] count]) {
                     [self.matchingDashpayUser addFriendsObject:recipientBlockchainIdentityEntity.matchingDashpayUser];
                 }
                 
@@ -2403,7 +2403,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         [DSBlockchainIdentityEntity setContext:self.managedObjectContext];
         [DSBlockchainIdentityKeyPathEntity setContext:self.managedObjectContext];
         DSBlockchainIdentityEntity * blockchainIdentityEntity = self.blockchainIdentityEntity;
-        NSUInteger count = [DSBlockchainIdentityKeyPathEntity countObjectsMatching:@"blockchainIdentityEntity == %@ && keyID == %@",blockchainIdentityEntity,@(keyID)];
+        NSUInteger count = [DSBlockchainIdentityKeyPathEntity countObjectsMatching:@"blockchainIdentity == %@ && keyID == %@",blockchainIdentityEntity,@(keyID)];
         if (!count) {
             DSBlockchainIdentityKeyPathEntity * blockchainIdentityKeyPathEntity = [DSBlockchainIdentityKeyPathEntity managedObject];
             blockchainIdentityKeyPathEntity.keyType = key.keyType;
