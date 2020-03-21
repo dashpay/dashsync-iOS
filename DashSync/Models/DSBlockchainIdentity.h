@@ -147,7 +147,7 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 
 -(void)fundingTransactionForTopupAmount:(uint64_t)topupAmount toAddress:(NSString*)address fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSCreditFundingTransaction * fundingTransaction))completion;
 
--(void)retrieveIdentityNetworkStateInformationWithCompletion:(void (^)(BOOL success))completion;
+-(void)fetchIdentityNetworkStateInformationWithCompletion:(void (^)(BOOL success))completion;
 
 -(void)signStateTransition:(DSTransition*)transition withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion;
 

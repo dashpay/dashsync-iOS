@@ -107,6 +107,9 @@
 #import "DSPotentialContact.h"
 #import "DSDashpayUserEntity+CoreDataClass.h"
 #import "DSFriendRequestEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityKeyPathEntity+CoreDataClass.h"
 
 #import "DSNetworking.h"
 

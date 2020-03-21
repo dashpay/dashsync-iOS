@@ -288,6 +288,8 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 - (DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId;
 
+- (DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId foundInWallet:(DSWallet**)foundInWallet;
+
 @end
 
 @protocol DSChainTransactionsDelegate

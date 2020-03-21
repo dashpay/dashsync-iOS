@@ -25,9 +25,11 @@
 #import "DSDerivationPath+Protected.h"
 #import "DSIncomingFundsDerivationPath.h"
 #import "NSManagedObject+Sugar.h"
-#import "DSContactEntity+CoreDataClass.h"
+#import "DSDashpayUserEntity+CoreDataClass.h"
 #import "DSFriendRequestEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
+#import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityEntity+CoreDataClass.h"
 
 // BIP32 is a scheme for deriving chains of addresses from a seed value
 // https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
@@ -371,8 +373,11 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
                     DSFriendRequestEntity * friendRequest = [DSFriendRequestEntity anyObjectMatching:@"derivationPath.publicKeyIdentifier == %@",self.standaloneExtendedPublicKeyUniqueID];
                     
                     NSAssert(friendRequest, @"friend request must exist");
-                    
-                    DSDLog(@"No extended public key set for the relationship between %@ and %@ (%@ receiving payments) ",friendRequest.sourceContact.username,friendRequest.destinationContact.username,friendRequest.sourceContact.username);
+#ifdef DEBUG
+                    DSBlockchainIdentityUsernameEntity * sourceUsernameEntity = [friendRequest.sourceContact.associatedBlockchainIdentity.usernames anyObject];
+                    DSBlockchainIdentityUsernameEntity * destinationUsernameEntity = [friendRequest.destinationContact.associatedBlockchainIdentity.usernames anyObject];
+                    DSDLog(@"No extended public key set for the relationship between %@ and %@ (%@ receiving payments) ",sourceUsernameEntity.stringValue,destinationUsernameEntity.stringValue,sourceUsernameEntity.stringValue);
+#endif
                 }
             }
             NSAssert(_extendedPublicKey, @"extended public key not set");
@@ -481,9 +486,10 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
             } else {
                 UInt256 index = [self indexAtPosition:i];
                 [[DSDashpayUserEntity context] performBlockAndWait:^{
-                    DSDashpayUserEntity * contactEntity = [DSDashpayUserEntity anyObjectMatching:@"associatedBlockchainIdentityUniqueId == %@",uint256_data(index)];
-                    if (contactEntity) {
-                        [mutableString appendFormat:@"/%@%@",contactEntity.username,[self isHardenedAtPosition:i]?@"'":@""];
+                    DSDashpayUserEntity * dashpayUserEntity = [DSDashpayUserEntity anyObjectMatching:@"associatedBlockchainIdentityUniqueId == %@",uint256_data(index)];
+                    if (dashpayUserEntity) {
+                        DSBlockchainIdentityUsernameEntity * usernameEntity = [dashpayUserEntity.associatedBlockchainIdentity.usernames anyObject];
+                        [mutableString appendFormat:@"/%@%@",usernameEntity.stringValue,[self isHardenedAtPosition:i]?@"'":@""];
                     } else {
                         [mutableString appendFormat:@"/0x%@%@",uint256_hex([self indexAtPosition:i]),[self isHardenedAtPosition:i]?@"'":@""];
                     }
@@ -510,9 +516,10 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
             mutableString = [NSMutableString stringWithFormat:@"inc"];
             DSIncomingFundsDerivationPath * incomingFundsDerivationPath = (DSIncomingFundsDerivationPath*)self;
             [[DSDashpayUserEntity context] performBlockAndWait:^{
-                DSDashpayUserEntity * sourceContactEntity = [DSDashpayUserEntity anyObjectMatching:@"associatedBlockchainIdentityUniqueId == %@",uint256_data(incomingFundsDerivationPath.contactSourceBlockchainIdentityUniqueId)];
-                if (sourceContactEntity) {
-                    [mutableString appendFormat:@"/%@",sourceContactEntity.username];
+                DSDashpayUserEntity * sourceDashpayUserEntity = [DSDashpayUserEntity anyObjectMatching:@"associatedBlockchainIdentityUniqueId == %@",uint256_data(incomingFundsDerivationPath.contactSourceBlockchainIdentityUniqueId)];
+                if (sourceDashpayUserEntity) {
+                    DSBlockchainIdentityUsernameEntity * usernameEntity = [sourceDashpayUserEntity.associatedBlockchainIdentity.usernames anyObject];
+                    [mutableString appendFormat:@"/%@",usernameEntity.stringValue];
                 } else {
                     [mutableString appendFormat:@"/0x%@",uint256_hex(incomingFundsDerivationPath.contactSourceBlockchainIdentityUniqueId)];
                 }

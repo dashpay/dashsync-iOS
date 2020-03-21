@@ -1,5 +1,5 @@
 //
-//  DSContactEntity+CoreDataClass.h
+//  DSdashpayUserEntity+CoreDataClass.h
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -25,6 +25,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSDashpayUserEntity : NSManagedObject
+
+@property (nonatomic,readonly) NSString * username;
 
 +(void)deleteContactsOnChain:(DSChainEntity*)chainEntity;
 

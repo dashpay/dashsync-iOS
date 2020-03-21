@@ -1,5 +1,5 @@
 //
-//  DSContactEntity+CoreDataClass.m
+//  DSdashpayUserEntity+CoreDataClass.m
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -30,6 +30,8 @@
 #import "DSIncomingFundsDerivationPath.h"
 #import "NSData+Bitcoin.h"
 #import "DSDerivationPathEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
 
 @implementation DSDashpayUserEntity
@@ -41,6 +43,12 @@
             [chainEntity.managedObjectContext deleteObject:contact];
         }
     }];
+}
+
+-(NSString*)username {
+    //todo manage when more than 1 username
+    DSBlockchainIdentityUsernameEntity * username = [self.associatedBlockchainIdentity.usernames anyObject];
+    return username.stringValue;
 }
 
 //-(DPDocument*)profileDocument {

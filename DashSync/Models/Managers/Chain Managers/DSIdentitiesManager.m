@@ -49,7 +49,7 @@
 -(void)retrieveAllBlockchainIdentitiesChainStatesForWallet:(DSWallet*)wallet {
     for (DSBlockchainIdentity * identity in [wallet.blockchainIdentities allValues]) {
         if (identity.registrationStatus == DSBlockchainIdentityRegistrationStatus_Unknown) {
-            [identity retrieveIdentityNetworkStateInformationWithCompletion:^(BOOL success) {
+            [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success) {
                 if (success) {
                     //now lets get dpns info
                     [identity fetchUsernamesWithCompletion:^(BOOL success) {

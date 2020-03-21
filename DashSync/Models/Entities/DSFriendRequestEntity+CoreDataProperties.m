@@ -19,5 +19,7 @@
 @dynamic derivationPath;
 @dynamic account;
 @dynamic friendshipIdentifier;
+@dynamic sourceKeyIndex;
+@dynamic destinationKeyIndex;
 
 @end

@@ -2260,9 +2260,16 @@ static dispatch_once_t devnetToken = 0;
 // MARK: - Identities
 
 -(DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId {
+    return [self blockchainIdentityForUniqueId:uniqueId foundInWallet:nil];
+}
+
+-(DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId foundInWallet:(DSWallet**)foundInWallet {
     for (DSWallet * wallet in self.wallets) {
         DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForUniqueId:uniqueId];
         if (blockchainIdentity) {
+            if (foundInWallet) {
+                *foundInWallet = wallet;
+            }
             return blockchainIdentity;
         }
     }

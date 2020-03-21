@@ -1,5 +1,5 @@
 //
-//  DSContactEntity+CoreDataProperties.m
+//  DSdashpayUserEntity+CoreDataProperties.m
 //  DashSync
 //
 //  Created by Sam Westrich on 3/24/19.
@@ -15,19 +15,14 @@
 }
 
 @dynamic profileDocumentRevision;
-@dynamic contactRequestDocumentRevision;
 @dynamic displayName;
-@dynamic associatedBlockchainIdentityUniqueId;
 @dynamic publicMessage;
 @dynamic associatedBlockchainIdentity;
 @dynamic outgoingRequests;
 @dynamic incomingRequests;
 @dynamic friends;
-@dynamic encryptionPublicKey;
 @dynamic avatarPath;
 @dynamic chain;
 @dynamic isRegistered;
-@dynamic encryptionPublicKeyType;
-@dynamic encryptionPublicKeyIndex;
 
 @end

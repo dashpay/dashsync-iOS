@@ -20,5 +20,6 @@
 @dynamic keyType;
 @dynamic keyStatus;
 @dynamic keyID;
+@dynamic publicKeyData;
 
 @end

@@ -102,8 +102,9 @@ static NSString * const CellId = @"CellId";
 
 -(void)configureCell:(DSContactTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
     DSFriendRequestEntity * friendRequest = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    DSDashpayUserEntity * sourceFriendRequest = friendRequest.sourceContact;
-    cell.textLabel.text = sourceFriendRequest.username;
+    DSBlockchainIdentityEntity * sourceBlockchainIdentity = friendRequest.sourceContact.associatedBlockchainIdentity;
+    DSBlockchainIdentityUsernameEntity * username = [sourceBlockchainIdentity.usernames anyObject];
+    cell.textLabel.text = username.stringValue;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {

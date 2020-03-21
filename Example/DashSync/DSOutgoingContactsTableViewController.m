@@ -97,8 +97,9 @@
 
 -(void)configureCell:(DSContactTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
     DSFriendRequestEntity * friendRequest = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    DSDashpayUserEntity * destinationFriendRequest = friendRequest.destinationContact;
-    cell.textLabel.text = destinationFriendRequest.username;
+    DSBlockchainIdentityEntity * destinationBlockchainIdentity = friendRequest.destinationContact.associatedBlockchainIdentity;
+    DSBlockchainIdentityUsernameEntity * username = [destinationBlockchainIdentity.usernames anyObject];
+    cell.textLabel.text = username.stringValue;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {

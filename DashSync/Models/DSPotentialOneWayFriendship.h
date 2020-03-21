@@ -26,14 +26,14 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSPotentialOneWayFriendship : NSObject
 
 @property (nonatomic, readonly) DSAccount* account;
-@property (nonatomic, readonly) DSPotentialContact * destinationContact;
+@property (nonatomic, readonly) DSBlockchainIdentity * destinationBlockchainIdentity;
 @property (nonatomic, readonly) DSBlockchainIdentity * sourceBlockchainIdentity; //this is the holder of the contacts, not the destination
 
--(instancetype)initWithDestinationContact:(DSPotentialContact*)destinationContact destinationKeyIndex:(uint32_t)destinationKeyIndex sourceBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentityOwner sourceKeyIndex:(uint32_t)sourceKeyIndex account:(DSAccount*)account;
+-(instancetype)initWithDestinationBlockchainIdentity:(DSBlockchainIdentity*)destinationBlockchainIdentity destinationKeyIndex:(uint32_t)destinationKeyIndex sourceBlockchainIdentity:(DSBlockchainIdentity*)sourceBlockchainIdentity sourceKeyIndex:(uint32_t)sourceKeyIndex account:(DSAccount*)account;
 
--(DSFriendRequestEntity*)outgoingFriendRequest;
+//-(DSFriendRequestEntity*)outgoingFriendRequest;
 
--(DSFriendRequestEntity*)outgoingFriendRequestForContactEntity:(DSDashpayUserEntity*)contactEntity;
+-(DSFriendRequestEntity*)outgoingFriendRequestForDashpayUserEntity:(DSDashpayUserEntity*)dashpayUserEntity;
 
 -(DSDerivationPathEntity*)storeExtendedPublicKeyAssociatedWithFriendRequest:(DSFriendRequestEntity*)friendRequestEntity;
 

@@ -1,5 +1,5 @@
 //
-//  DSContactEntity+CoreDataProperties.h
+//  DSdashpayUserEntity+CoreDataProperties.h
 //  DashSync
 //
 //  Created by Sam Westrich on 3/24/19.
@@ -16,13 +16,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSFetchRequest<DSDashpayUserEntity *> *)fetchRequest;
 
 @property (nonatomic, assign) uint32_t profileDocumentRevision;
-@property (nonatomic, assign) uint32_t contactRequestDocumentRevision;
-@property (nullable, nonatomic, retain) NSData *encryptionPublicKey;
-@property (nonatomic, assign) uint32_t encryptionPublicKeyType;
-@property (nonatomic, assign) uint32_t encryptionPublicKeyIndex;
 @property (nullable, nonatomic, copy) NSString *displayName;
 @property (nullable, nonatomic, copy) NSString *avatarPath;
-@property (nullable, nonatomic, retain) NSData *associatedBlockchainIdentityUniqueId;
 @property (nullable, nonatomic, copy) NSString *publicMessage;
 @property (nonatomic, assign) BOOL isRegistered;
 @property (nullable, nonatomic, retain) DSBlockchainIdentityEntity *associatedBlockchainIdentity;

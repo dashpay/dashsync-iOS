@@ -68,15 +68,26 @@
     return [[self alloc] initWithDictionary:serverDictionary onBlockchainIdentity:blockchainIdentity];
 }
 
--(DSKey*)secretKeyForDecryptionOfType:(DSKeyType)type {
+-(BOOL)blockchainIdentityIsRecipient {
     if (uint256_eq(self.blockchainIdentity.uniqueID,self.recipientBlockchainIdentityUniqueId)) {
         //we are the recipient of the friend request
-        return [self.blockchainIdentity privateKeyAtIndex:self.recipientKeyIndex ofType:(DSKeyType)type];
+        return YES;
     } else if (uint256_eq(self.blockchainIdentity.uniqueID,self.senderBlockchainIdentityUniqueId)) {
+        //we are the sender of the friend request
+        return NO;
+    }
+    NSAssert(NO,@"We should never get here");
+    return NO;
+}
+
+-(DSKey*)secretKeyForDecryptionOfType:(DSKeyType)type {
+    if ([self blockchainIdentityIsRecipient]) {
+        //we are the recipient of the friend request
+        return [self.blockchainIdentity privateKeyAtIndex:self.recipientKeyIndex ofType:(DSKeyType)type];
+    } else {
         //we are the sender of the friend request
         return [self.blockchainIdentity privateKeyAtIndex:self.senderKeyIndex ofType:(DSKeyType)type];
     }
-    return nil;
 }
 
 -(NSData*)decryptedPublicKeyDataWithKey:(DSKey*)key {

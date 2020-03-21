@@ -22,7 +22,7 @@
 #import "DSFundsDerivationPath.h"
 #import "DSDashPlatform.h"
 #import "DSFriendRequestEntity+CoreDataClass.h"
-#import "DSDashpayUserEntity+CoreDataClass.h
+#import "DSDashpayUserEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSBLSKey.h"
 #import "DSIncomingFundsDerivationPath.h"
@@ -31,11 +31,13 @@
 #import "NSData+Encryption.h"
 #import "DSKey.h"
 #import "DSBlockchainIdentity+Protected.h"
+#import "DSBlockchainIdentityEntity+CoreDataClass.h"
 
 @interface DSPotentialOneWayFriendship()
 
 @property (nonatomic, strong) DSAccount* account;
 @property (nonatomic, strong) DSBlockchainIdentity * sourceBlockchainIdentity;
+@property (nonatomic, strong) DSBlockchainIdentity * destinationBlockchainIdentity;
 @property (nonatomic, strong) DSPotentialContact * destinationContact;
 @property (nonatomic, strong) DSIncomingFundsDerivationPath * fundsDerivationPathForContact;
 @property (nonatomic, strong) NSData * extendedPublicKey;
@@ -47,9 +49,9 @@
 
 @implementation DSPotentialOneWayFriendship
 
--(instancetype)initWithDestinationContact:(DSPotentialContact*)destinationContact destinationKeyIndex:(uint32_t)destinationKeyIndex sourceBlockchainIdentity:(DSBlockchainIdentity*)sourceBlockchainIdentity sourceKeyIndex:(uint32_t)sourceKeyIndex account:(DSAccount*)account {
+-(instancetype)initWithDestinationBlockchainIdentity:(DSBlockchainIdentity*)destinationBlockchainIdentity destinationKeyIndex:(uint32_t)destinationKeyIndex sourceBlockchainIdentity:(DSBlockchainIdentity*)sourceBlockchainIdentity sourceKeyIndex:(uint32_t)sourceKeyIndex account:(DSAccount*)account {
     if (!(self = [super init])) return nil;
-    self.destinationContact = destinationContact;
+    self.destinationBlockchainIdentity = destinationBlockchainIdentity;
     self.account = account;
     self.sourceBlockchainIdentity = sourceBlockchainIdentity;
     self.sourceKeyIndex = sourceKeyIndex;
@@ -58,16 +60,34 @@
     return self;
 }
 
+-(UInt256)destinationBlockchainIdentityUniqueId {
+    if (self.destinationBlockchainIdentity) {
+        return self.destinationBlockchainIdentity.uniqueID;
+    } else if (self.destinationContact) {
+        return self.destinationContact.associatedBlockchainIdentityUniqueId;
+    }
+    return UINT256_ZERO;
+}
+
+-(DSKey*)destinationKeyAtIndex {
+    if (self.destinationBlockchainIdentity) {
+        return [self.destinationBlockchainIdentity keyAtIndex:self.destinationKeyIndex];
+    } else if (self.destinationContact) {
+        return [self.destinationContact publicKeyAtIndex:self.destinationKeyIndex];
+    }
+    return nil;
+}
+
 -(DSIncomingFundsDerivationPath*)createDerivationPath {
-    NSAssert(!uint256_is_zero(self.destinationContact.associatedBlockchainIdentityUniqueId), @"associatedBlockchainIdentityUniqueId must not be null");
+    NSAssert(!uint256_is_zero([self destinationBlockchainIdentityUniqueId]), @"destinationBlockchainIdentityUniqueId must not be null");
     self.fundsDerivationPathForContact = [DSIncomingFundsDerivationPath
-                                          contactBasedDerivationPathWithDestinationBlockchainIdentityUniqueId:self.destinationContact.associatedBlockchainIdentityUniqueId sourceBlockchainIdentityUniqueId:self.sourceBlockchainIdentity.uniqueID forAccountNumber:self.account.accountNumber onChain:self.sourceBlockchainIdentity.wallet.chain];
+                                          contactBasedDerivationPathWithDestinationBlockchainIdentityUniqueId:[self destinationBlockchainIdentityUniqueId] sourceBlockchainIdentityUniqueId:self.sourceBlockchainIdentity.uniqueID forAccountNumber:self.account.accountNumber onChain:self.sourceBlockchainIdentity.wallet.chain];
     self.fundsDerivationPathForContact.account = self.account;
     DSDerivationPath * masterContactsDerivationPath = [self.account masterContactsDerivationPath];
     
     self.extendedPublicKey = [self.fundsDerivationPathForContact generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
     __weak typeof(self) weakSelf = self;
-    DSKey * recipientKey = [self.destinationContact publicKeyAtIndex:self.destinationKeyIndex];
+    DSKey * recipientKey = [self destinationKeyAtIndex];
     [self.sourceBlockchainIdentity encryptData:self.extendedPublicKey withKeyAtIndex:self.sourceKeyIndex forRecipientKey:recipientKey withPrompt:@"" completion:^(NSData * _Nonnull encryptedData) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
@@ -80,21 +100,15 @@
 }
 
 -(DPDocument*)contactRequestDocument {
-    NSAssert(!uint256_is_zero(self.destinationContact.associatedBlockchainIdentityUniqueId), @"the destination contact's associatedBlockchainIdentityUniqueId must be set before making a friend request");
+    NSAssert(!uint256_is_zero([self destinationBlockchainIdentityUniqueId]), @"the destination contact's associatedBlockchainIdentityUniqueId must be set before making a friend request");
     NSAssert([self.encryptedExtendedPublicKey length] > 0, @"The encrypted extended public key must exist");
-//    DSDashPlatform *dpp = [DSDashPlatform sharedInstanceForChain:self.sourceBlockchainIdentity.wallet.chain];
-//    dpp.userId = uint256_reverse_hex(self.sourceBlockchainIdentity.registrationTransitionHash);
-//
-    //to do encrypt public key
-    //DSBLSKey * key = [DSBLSKey blsKeyWithPublicKey:self.contactEncryptionPublicKey onChain:self.sourceBlockchainIdentity.wallet.chain];
-    
     NSAssert(self.extendedPublicKey, @"Problem creating extended public key for potential contact?");
     NSError *error = nil;
     
     
     DSStringValueDictionary *data = @{
         @"timestamp": @([[[NSDate alloc] init] timeIntervalSince1970]),
-                           @"toUserId" : uint256_data(self.destinationContact.associatedBlockchainIdentityUniqueId).reverse.base58String,
+                           @"toUserId" : uint256_base58([self destinationBlockchainIdentityUniqueId]),
                            @"encryptedPublicKey" : [self.encryptedExtendedPublicKey base64EncodedStringWithOptions:0],
         @"senderKeyIndex" : @(self.sourceKeyIndex + 1),
         @"recipientKeyIndex" : @(self.destinationKeyIndex + 1),
@@ -120,13 +134,13 @@
 }
 
 
--(DSFriendRequestEntity*)outgoingFriendRequestForContactEntity:(DSDashpayUserEntity*)contactEntity {
-    NSParameterAssert(contactEntity);
-    NSAssert(uint256_eq(contactEntity.associatedBlockchainIdentityUniqueId.UInt256, self.destinationContact.associatedBlockchainIdentityUniqueId), @"contact entity must match");
+-(DSFriendRequestEntity*)outgoingFriendRequestForDashpayUserEntity:(DSDashpayUserEntity*)dashpayUserEntity {
+    NSParameterAssert(dashpayUserEntity);
+    NSAssert(uint256_eq(dashpayUserEntity.associatedBlockchainIdentity.uniqueID.UInt256, [self destinationBlockchainIdentityUniqueId]), @"contact entity must match");
     NSAssert(self.sourceBlockchainIdentity.matchingDashpayUser,@"The own contact of the source Identity must be set");
     DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObject];
     friendRequestEntity.sourceContact = self.sourceBlockchainIdentity.matchingDashpayUser;
-    friendRequestEntity.destinationContact = contactEntity;
+    friendRequestEntity.destinationContact = dashpayUserEntity;
     friendRequestEntity.derivationPath = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self.fundsDerivationPathForContact];
     friendRequestEntity.account = friendRequestEntity.derivationPath.account;
     
@@ -135,21 +149,19 @@
 }
 
 
--(DSFriendRequestEntity*)outgoingFriendRequest {
-    NSAssert(!uint256_is_zero(self.destinationContact.associatedBlockchainIdentityUniqueId), @"destination contact must be known");
-    DSDashpayUserEntity * contactEntity = [DSDashpayUserEntity anyObjectMatching:@"associatedBlockchainIdentityUniqueId == %@",uint256_data(self.destinationContact.associatedBlockchainIdentityUniqueId)];
-    if (!contactEntity) {
-        contactEntity =  [DSDashpayUserEntity managedObject];
-        
-        contactEntity.username = self.destinationContact.username;
-        contactEntity.avatarPath = self.destinationContact.avatarPath;
-        contactEntity.publicMessage = self.destinationContact.publicMessage;
-        contactEntity.associatedBlockchainIdentityUniqueId = uint256_data(self.destinationContact.associatedBlockchainIdentityUniqueId);
-        contactEntity.chain = self.account.wallet.chain.chainEntity;
-    }
-    
-    return [self outgoingFriendRequestForContactEntity:contactEntity];
-}
+//-(DSFriendRequestEntity*)outgoingFriendRequest {
+//    NSAssert(!uint256_is_zero(self.destinationContact.associatedBlockchainIdentityUniqueId), @"destination contact must be known");
+//    DSDashpayUserEntity * dashpayUserEntity = [DSDashpayUserEntity anyObjectMatching:@"associatedBlockchainIdentityUniqueId == %@",uint256_data(self.destinationContact.associatedBlockchainIdentityUniqueId)];
+//    if (!dashpayUserEntity) {
+//        dashpayUserEntity =  [DSDashpayUserEntity managedObject];
+//        dashpayUserEntity.avatarPath = self.destinationContact.avatarPath;
+//        dashpayUserEntity.publicMessage = self.destinationContact.publicMessage;
+//        dashpayUserEntity.associatedBlockchainIdentity = uint256_data([self destinationBlockchainIdentityUniqueId]);
+//        dashpayUserEntity.chain = self.account.wallet.chain.chainEntity;
+//    }
+//    
+//    return [self outgoingFriendRequestForDashpayUserEntity:dashpayUserEntity];
+//}
 
 -(BOOL)isEqual:(id)object {
     if (self == object) {

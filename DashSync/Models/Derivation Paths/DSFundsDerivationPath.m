@@ -8,7 +8,7 @@
 #import "DSDerivationPath+Protected.h"
 #import "DSFundsDerivationPath.h"
 #import "DSBlockchainIdentity.h"
-#import "DSContactEntity+CoreDataClass.h"
+#import "DSDashpayUserEntity+CoreDataClass.h"
 #import "DSAccount.h"
 
 @interface DSFundsDerivationPath()

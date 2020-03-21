@@ -133,11 +133,12 @@
                 } else {
                     DSDerivationPath * derivationPath = [account derivationPathContainingAddress:address];
                     if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
-                        UInt256 destinationRegistrationTransactionHash = [((DSIncomingFundsDerivationPath*) derivationPath) contactDestinationBlockchainIdentityUniqueId];
-                        UInt256 sourceRegistrationTransactionHash = [((DSIncomingFundsDerivationPath*) derivationPath) contactSourceBlockchainIdentityUniqueId];
-                        DSDashpayUserEntity * destination = [DSDashpayUserEntity anyObjectMatching:@"associatedBlockchainIdentityUniqueId == %@",uint256_data(destinationRegistrationTransactionHash)];
-                        DSDashpayUserEntity * source = [DSDashpayUserEntity anyObjectMatching:@"associatedBlockchainIdentityUniqueId == %@",uint256_data(sourceRegistrationTransactionHash)];
-                        [detail addObject:[NSString stringWithFormat:NSLocalizedString(@"%@'s address from %@", nil),source.username,destination.username]];
+                        UInt256 destinationBlockchainIdentityUniqueId = [((DSIncomingFundsDerivationPath*) derivationPath) contactDestinationBlockchainIdentityUniqueId];
+                        UInt256 sourceBlockchainIdentityUniqueId = [((DSIncomingFundsDerivationPath*) derivationPath) contactSourceBlockchainIdentityUniqueId];
+                        DSBlockchainIdentityUsernameEntity * destination = [DSBlockchainIdentityUsernameEntity anyObjectMatching:@"blockchainIdentity.uniqueID == %@",uint256_data(destinationBlockchainIdentityUniqueId)];
+                        DSBlockchainIdentityUsernameEntity * source = [DSBlockchainIdentityUsernameEntity anyObjectMatching:@"blockchainIdentity.uniqueID == %@",uint256_data(sourceBlockchainIdentityUniqueId)];
+                        
+                        [detail addObject:[NSString stringWithFormat:NSLocalizedString(@"%@'s address from %@", nil),source.stringValue,destination.stringValue]];
                     } else {
                         [detail addObject:NSLocalizedString(@"wallet address", nil)];
                     }
@@ -150,8 +151,8 @@
         }
         else if ([account externalDerivationPathContainingAddress:address]) {
             DSIncomingFundsDerivationPath * incomingFundsDerivationPath = [account externalDerivationPathContainingAddress:address];
-            DSDashpayUserEntity * contact = [DSDashpayUserEntity anyObjectMatching:@"associatedBlockchainIdentityUniqueId == %@",uint256_data(incomingFundsDerivationPath.contactSourceBlockchainIdentityUniqueId)];
-            [detail addObject:[NSString stringWithFormat:NSLocalizedString(@"%@'s address", nil),contact.username]];
+            DSBlockchainIdentityUsernameEntity * contact = [DSBlockchainIdentityUsernameEntity anyObjectMatching:@"blockchainIdentity.uniqueID == %@",uint256_data(incomingFundsDerivationPath.contactSourceBlockchainIdentityUniqueId)];
+            [detail addObject:[NSString stringWithFormat:NSLocalizedString(@"%@'s address", nil),contact.stringValue]];
             [text addObject:address];
             [amount addObject:@(-amt)];
             [currencyIsBitcoinInstead addObject:@FALSE];
@@ -478,9 +479,8 @@
                     } else {
                         DSDerivationPath * derivationPath = [account derivationPathContainingAddress:self.inputAddresses[indexPath.row]];
                         if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
-                            UInt256 registrationTransactionHash = [((DSIncomingFundsDerivationPath*) derivationPath) contactDestinationBlockchainIdentityUniqueId];
-                            DSDashpayUserEntity * contact = [DSDashpayUserEntity anyObjectMatching:@"associatedBlockchainIdentityUniqueId == %@",uint256_data(registrationTransactionHash)];
-                            cell.typeInfoLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%@'s address", nil),contact.username];
+                            DSBlockchainIdentityUsernameEntity * contact = [DSBlockchainIdentityUsernameEntity anyObjectMatching:@"blockchainIdentity.uniqueID == %@",uint256_data(((DSIncomingFundsDerivationPath*) derivationPath).contactSourceBlockchainIdentityUniqueId)];
+                            cell.typeInfoLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%@'s address", nil),contact.stringValue];
                         } else {
                             cell.typeInfoLabel.text = NSLocalizedString(@"wallet address", nil);
                         }

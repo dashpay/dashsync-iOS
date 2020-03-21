@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint16_t keyType;
 @property (nonatomic, assign) uint16_t keyStatus;
 @property (nonatomic, assign) uint32_t keyID;
+@property (nullable, nonatomic, retain) NSData *publicKeyData;
 
 @end
 
