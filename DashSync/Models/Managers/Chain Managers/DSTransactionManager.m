@@ -1055,7 +1055,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     [self.txRequests[hash] removeObject:peer];
     
     
-    if ([transaction isKindOfClass:[DSBlockchainIdentityRegistrationTransition class]] && blockchainIdentity && isNewBlockchainIdentity) {
+    if ([transaction isKindOfClass:[DSCreditFundingTransaction class]] && blockchainIdentity && isNewBlockchainIdentity) {
         [self fetchFriendshipsForBlockchainIdentity:blockchainIdentity];
     } else {
         [self updateTransactionsBloomFilter];
@@ -1064,7 +1064,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 
 -(void)fetchFriendshipsForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity {
     dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-    [blockchainIdentity fetchProfile:^(BOOL success) {
+    [blockchainIdentity fetchAllNetworkStateInformationWithCompletion:^(BOOL success) {
         if (success) {
             [blockchainIdentity fetchOutgoingContactRequests:^(BOOL success) {
                 if (success) {

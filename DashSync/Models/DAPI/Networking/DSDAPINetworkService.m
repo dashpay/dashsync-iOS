@@ -504,6 +504,22 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     [[self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil] start];
 }
 
+- (void)searchDPNSDocumentsForUsernamePrefix:(NSString*)usernamePrefix
+                                    inDomain:(NSString*)domain
+                                      offset:(uint32_t)offset
+                                       limit:(uint32_t)limit
+                                     success:(void (^)(NSArray<NSDictionary *> *documents))success
+                                     failure:(void (^)(NSError *error))failure {
+    NSParameterAssert(usernamePrefix);
+    DSPlatformDocumentsRequest * platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForUsernameStartsWithSearch:usernamePrefix inDomain:domain offset:offset limit:limit];
+    platformDocumentsRequest.contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
+    DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
+    responseHandler.dispatchQueue = self.grpcDispatchQueue;
+    responseHandler.successHandler = success;
+    responseHandler.errorHandler = failure;
+    [[self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil] start];
+}
+
 - (void)getIdentityByName:(NSString *)username
                  inDomain:(NSString*)domain
                   success:(void (^)(NSDictionary * _Nullable blockchainIdentity))success
@@ -549,32 +565,6 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     responseHandler.successHandler = success;
     responseHandler.errorHandler = failure;
     [[self.gRPCClient getIdentityWithMessage:getIdentityRequest responseHandler:responseHandler callOptions:nil] start];
-}
-
-- (void)searchUsersWithPattern:(NSString *)pattern
-                        offset:(NSUInteger)offset
-                         limit:(NSUInteger)limit
-                       success:(void (^)(NSArray<NSDictionary *> *blockchainIdentities, NSUInteger totalCount))success
-                       failure:(void (^)(NSError *error))failure {
-    NSParameterAssert(pattern);
-    NSAssert(limit <= 25, @"Limit should be <= 25");
-
-    [self requestWithMethod:@"searchUsers"
-                  parameters:@{
-                      @"pattern" : pattern,
-                      @"offset" : @(offset),
-                      @"limit" : @(limit),
-                  }
-        validateAgainstClass:NSDictionary.class
-                     success:^(id _Nonnull responseObject) {
-                         if (success) {
-                             NSDictionary *responseDictionary = (NSDictionary *)responseObject;
-                             NSArray<NSDictionary *> *blockchainIdentities = responseDictionary[@"results"];
-                             NSUInteger totalCount = [responseDictionary[@"totalCount"] unsignedIntegerValue];
-                             success(blockchainIdentities, totalCount);
-                         }
-                     }
-                     failure:failure];
 }
 
 - (void)registerContract:(DSTransition *)stateTransition

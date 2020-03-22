@@ -18,6 +18,11 @@
 #import "DSIdentitiesManager.h"
 #import "DSChain.h"
 #import "DSWallet.h"
+#import "DSChainManager.h"
+#import "DSBlockchainIdentity+Protected.h"
+#import "NSString+Dash.h"
+#import "DSDAPIClient.h"
+#import "DSDAPINetworkService.h"
 
 @interface DSIdentitiesManager()
 
@@ -66,5 +71,31 @@
         }
     }
 }
+
+- (void)searchIdentitiesByNamePrefix:(NSString*)namePrefix withCompletion:(IdentitiesCompletionBlock)completion {
+    DSDAPIClient * client = self.chain.chainManager.DAPIClient;
+     [client.DAPINetworkService searchDPNSDocumentsForUsernamePrefix:namePrefix inDomain:@"" offset:0 limit:100 success:^(NSArray<NSDictionary *> * _Nonnull documents) {
+         __block NSMutableArray * rBlockchainIdentities = [NSMutableArray array];
+         for (NSDictionary * document in documents) {
+             NSString * userId = document[@"$userId"];
+             NSString * normalizedLabel = document[@"normalizedLabel"];
+             DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 onChain:self.chain inContext:self.chain.managedObjectContext];
+             [identity addUsername:normalizedLabel status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO];
+             [rBlockchainIdentities addObject:identity];
+         }
+         if (completion) {
+             dispatch_async(dispatch_get_main_queue(), ^{
+                 completion([rBlockchainIdentities copy],nil);
+             });
+         }
+     } failure:^(NSError * _Nonnull error) {
+         if (completion) {
+             dispatch_async(dispatch_get_main_queue(), ^{
+                 completion(nil,error);
+             });
+         }
+         NSLog(@"Failure %@",error);
+     }];
+ }
 
 @end

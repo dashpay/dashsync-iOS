@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15702" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="ZPX-rY-FdL">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15702"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Search Blockchain Identities View Controller-->
+        <scene sceneID="JBb-qK-pBL">
+            <objects>
+                <tableViewController storyboardIdentifier="SearchBlockchainIdentitiesIdentifier" id="ZPX-rY-FdL" customClass="DSSearchBlockchainIdentitiesViewController" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="80" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="0nN-EN-UgF">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <searchBar key="tableHeaderView" contentMode="redraw" searchBarStyle="minimal" placeholder="Search" showsScopeBar="YES" id="d6S-Kb-9DJ">
+                            <rect key="frame" x="0.0" y="0.0" width="414" height="56"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                            <textInputTraits key="textInputTraits"/>
+                            <scopeButtonTitles>
+                                <string>Name</string>
+                                <string>Identifier</string>
+                            </scopeButtonTitles>
+                            <connections>
+                                <outlet property="delegate" destination="ZPX-rY-FdL" id="MEa-Bt-efL"/>
+                            </connections>
+                        </searchBar>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="BlockchainIdentityNameCellIdentifier" rowHeight="80" id="OyX-xE-eVu" customClass="DSBlockchainIdentitySearchTableViewCell">
+                                <rect key="frame" x="0.0" y="84" width="414" height="80"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="OyX-xE-eVu" id="9cU-Ml-m0w">
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="80"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Username" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2Gn-pQ-hGo">
+                                            <rect key="frame" x="16" y="16" width="79" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Bob" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cBg-7P-cVq">
+                                            <rect key="frame" x="367.5" y="16" width="30.5" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Identity ID" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="9" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="SOX-eD-cRI" customClass="BRCopyLabel">
+                                            <rect key="frame" x="16" y="49" width="382" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="cBg-7P-cVq" firstAttribute="firstBaseline" secondItem="2Gn-pQ-hGo" secondAttribute="firstBaseline" id="6p2-gP-fCD"/>
+                                        <constraint firstAttribute="trailing" secondItem="cBg-7P-cVq" secondAttribute="trailing" constant="16" id="DwN-aN-gYs"/>
+                                        <constraint firstItem="2Gn-pQ-hGo" firstAttribute="leading" secondItem="9cU-Ml-m0w" secondAttribute="leading" constant="16" id="aVR-qr-e9e"/>
+                                        <constraint firstItem="SOX-eD-cRI" firstAttribute="top" secondItem="2Gn-pQ-hGo" secondAttribute="bottom" constant="12" id="boU-1b-eat"/>
+                                        <constraint firstItem="SOX-eD-cRI" firstAttribute="trailing" secondItem="cBg-7P-cVq" secondAttribute="trailing" id="j22-5y-dct"/>
+                                        <constraint firstItem="2Gn-pQ-hGo" firstAttribute="top" secondItem="9cU-Ml-m0w" secondAttribute="top" constant="16" id="ofF-TE-9Dn"/>
+                                        <constraint firstItem="SOX-eD-cRI" firstAttribute="leading" secondItem="2Gn-pQ-hGo" secondAttribute="leading" id="wJj-Hd-PJ2"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <connections>
+                                    <outlet property="identityUniqueIDLabel" destination="SOX-eD-cRI" id="HYE-gQ-n7j"/>
+                                    <outlet property="usernameLabel" destination="cBg-7P-cVq" id="V34-Ai-mJc"/>
+                                </connections>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="ZPX-rY-FdL" id="YgA-gk-2qy"/>
+                            <outlet property="delegate" destination="ZPX-rY-FdL" id="wAO-PQ-0tG"/>
+                        </connections>
+                    </tableView>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="57X-E7-NVA" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="156.52173913043478" y="234.375"/>
+        </scene>
+    </scenes>
+</document>

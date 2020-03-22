@@ -43,6 +43,10 @@ typedef NS_ENUM(NSUInteger, DSPlatformDocumentType) {
 
 +(instancetype)dpnsRequestForUsernames:(NSArray*)usernames inDomain:(NSString*)domain;
 
++(instancetype)dpnsRequestForUsernameStartsWithSearch:(NSString*)usernamePrefix inDomain:(NSString*)domain;
+
++(instancetype)dpnsRequestForUsernameStartsWithSearch:(NSString*)usernamePrefix inDomain:(NSString*)domain offset:(uint32_t)offset limit:(uint32_t)limit;
+
 +(instancetype)dpnsRequestForPreorderSaltedHashes:(NSArray*)preorderSaltedHashes;
 
 +(instancetype)dashpayRequestForContactRequestForSendingUserId:(NSString*)userId toRecipientUserId:(NSString*)toUserId;

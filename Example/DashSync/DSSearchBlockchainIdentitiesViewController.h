@@ -15,23 +15,13 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSChain,DSBlockchainIdentity;
+@interface DSSearchBlockchainIdentitiesViewController : UITableViewController <UISearchBarDelegate>
 
-typedef void (^IdentitiesCompletionBlock)(NSArray <DSBlockchainIdentity*> * _Nullable blockchainIdentities, NSError * _Nullable error);
-
-@interface DSIdentitiesManager : NSObject
-
-@property (nonatomic, readonly) DSChain * chain;
-
-- (instancetype)initWithChain:(DSChain*)chain;
-
-- (void)retrieveAllBlockchainIdentitiesChainStates;
-
-- (void)searchIdentitiesByNamePrefix:(NSString*)namePrefix withCompletion:(IdentitiesCompletionBlock)completion;
+@property (nonatomic,strong) DSChainManager * chainManager;
 
 @end
 

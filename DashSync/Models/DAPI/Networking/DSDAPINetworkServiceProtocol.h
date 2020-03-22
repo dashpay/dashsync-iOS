@@ -386,21 +386,6 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
                 failure:(void (^)(NSError *error))failure;
 
 /**
- Get a list of users after matching search criteria
- 
- @param pattern Search pattern
- @param offset Starting amount of results to return
- @param limit Limit of search results to return
- @param success A block object to be executed when the request operation finishes successfully
- @param failure A block object to be executed when the request operation finishes unsuccessfully
- */
-- (void)searchUsersWithPattern:(NSString *)pattern
-                        offset:(NSUInteger)offset
-                         limit:(NSUInteger)limit
-                       success:(void (^)(NSArray<NSDictionary *> *blockchainIdentities, NSUInteger totalCount))success
-                       failure:(void (^)(NSError *error))failure;
-
-/**
  Sends raw state transition to the network
  
  @param stateTransition Hex-string representing state transition header
@@ -434,6 +419,23 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
 - (void)getDPNSDocumentsForIdentityWithUserId:(NSString *)userId
                                       success:(void (^)(NSArray<NSDictionary *> *documents))success
                                       failure:(void (^)(NSError *error))failure;
+
+/**
+Get a list of users after matching search criteria
+
+@param usernamePrefix The username prefix that will be searched upon
+@param domain The domain in which to search
+@param offset Starting amount of results to return
+@param limit Limit of search results to return
+@param success A block object to be executed when the request operation finishes successfully
+@param failure A block object to be executed when the request operation finishes unsuccessfully
+*/
+- (void)searchDPNSDocumentsForUsernamePrefix:(NSString*)usernamePrefix
+                                    inDomain:(NSString*)domain
+                                      offset:(uint32_t)offset
+                                       limit:(uint32_t)limit
+                                     success:(void (^)(NSArray<NSDictionary *> *documents))success
+                                     failure:(void (^)(NSError *error))failure;
 
 - (void)getDashpayIncomingContactRequestsForUserId:(NSString*)userId
                                              since:(NSTimeInterval)timestamp

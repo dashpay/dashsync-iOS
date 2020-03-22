@@ -35,7 +35,7 @@
     [super viewDidLoad];
     [self loadProfileInitial];
     if (self.blockchainIdentity.registered && self.blockchainIdentity.currentUsername && [self.blockchainIdentity statusOfUsername:self.blockchainIdentity.currentUsername] == DSBlockchainIdentityUsernameStatus_Confirmed) {
-        [self.blockchainIdentity fetchProfile:^(BOOL success) {
+        [self.blockchainIdentity fetchProfileWithCompletion:^(BOOL success) {
             [self updateProfile];
         }];
     }
@@ -294,7 +294,7 @@
 - (void)contactProfileViewControllerDidUpdateProfile:(DSContactProfileViewController *)controller {
     [controller dismissViewControllerAnimated:YES completion:nil];
     
-    [self.blockchainIdentity fetchProfile:^(BOOL success) {
+    [self.blockchainIdentity fetchProfileWithCompletion:^(BOOL success) {
         [self updateProfile];
     }];
 }

@@ -40,6 +40,7 @@
 #import "DSPriceManager.h"
 #import "DSMasternodeManager.h"
 #import "DSDAPINetworkService.h"
+#import "DSIdentitiesManager.h"
 #import "DSGovernanceSyncManager.h"
 #import "DSGovernanceObject.h"
 #import "DSGovernanceVote.h"

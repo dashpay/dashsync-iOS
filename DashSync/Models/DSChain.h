@@ -286,9 +286,13 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 - (void)updateAddressUsageOfSimplifiedMasternodeEntries:(NSArray*)simplifiedMasternodeEntries;
 
+-(NSArray <DSBlockchainIdentity *>*)allBlockchainIdentitiesArray;
+
+-(NSDictionary <NSData*,DSBlockchainIdentity *>*)allBlockchainIdentitiesByUniqueIdDictionary;
+
 - (DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId;
 
-- (DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId foundInWallet:(DSWallet**)foundInWallet;
+- (DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId foundInWallet:(DSWallet*_Nullable*_Nullable)foundInWallet;
 
 @end
 

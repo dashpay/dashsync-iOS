@@ -22,6 +22,7 @@
 #import "DSPeersViewController.h"
 #import "DSLayer2ViewController.h"
 #import "DSActionsViewController.h"
+#import "DSSearchBlockchainIdentitiesViewController.h"
 
 @interface DSSyncViewController ()
 
@@ -525,6 +526,9 @@
     } else if ([segue.identifier isEqualToString:@"ActionsSegue"]) {
         DSActionsViewController * actionsViewController = (DSActionsViewController*)segue.destinationViewController;
         actionsViewController.chainManager = self.chainManager;
+    } else if ([segue.identifier isEqualToString:@"SearchBlockchainIdentitiesSegue"]) {
+        DSSearchBlockchainIdentitiesViewController * searchViewController = (DSSearchBlockchainIdentitiesViewController*)segue.destinationViewController;
+        searchViewController.chainManager = self.chainManager;
     }
 }
 

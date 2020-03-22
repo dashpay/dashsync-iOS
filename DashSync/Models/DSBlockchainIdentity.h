@@ -151,6 +151,10 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 
 -(void)fetchIdentityNetworkStateInformationWithCompletion:(void (^)(BOOL success))completion;
 
+-(void)fetchAllNetworkStateInformationWithCompletion:(void (^)(BOOL success))completion;
+
+-(void)fetchNeededNetworkStateInformationWithCompletion:(void (^)(BOOL success))completion;
+
 -(void)signStateTransition:(DSTransition*)transition withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion;
 
 -(BOOL)verifySignature:(NSData*)signature ofType:(DSKeyType)signingAlgorithm forMessageDigest:(UInt256)messageDigest;
@@ -213,7 +217,7 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 
 - (void)fetchIncomingContactRequests:(void (^)(BOOL success))completion;
 
-- (void)fetchProfile:(void (^)(BOOL success))completion;
+- (void)fetchProfileWithCompletion:(void (^)(BOOL success))completion;
 
 - (void)createOrUpdateProfileWithDisplayName:(NSString*)displayName publicMessage:(NSString*)publicMessage avatarURLString:(NSString *)avatarURLString completion:(void (^)(BOOL success))completion;
 

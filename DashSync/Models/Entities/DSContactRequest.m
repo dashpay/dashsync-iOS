@@ -94,4 +94,8 @@
     return [self.encryptedPublicKeyData decryptWithSecretKey:[self secretKeyForDecryptionOfType:key.keyType] fromPeerWithPublicKey:key];
 }
 
+-(NSString*)debugDescription {
+    return [NSString stringWithFormat:@"%@ - from %@/%d to %@/%d",[super debugDescription],uint256_base58( self.senderBlockchainIdentityUniqueId),self.senderKeyIndex,uint256_base58(self.recipientBlockchainIdentityUniqueId),self.recipientKeyIndex];
+}
+
 @end

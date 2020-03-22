@@ -2259,6 +2259,25 @@ static dispatch_once_t devnetToken = 0;
 
 // MARK: - Identities
 
+-(NSArray <DSBlockchainIdentity *>*)allBlockchainIdentitiesArray {
+    NSMutableArray * rAllBlockchainIdentities = [NSMutableArray array];
+    for (DSWallet * wallet in self.wallets) {
+        [rAllBlockchainIdentities addObjectsFromArray:[wallet.blockchainIdentities allValues]];
+    }
+    return rAllBlockchainIdentities;
+}
+
+-(NSDictionary <NSData*,DSBlockchainIdentity *>*)allBlockchainIdentitiesByUniqueIdDictionary {
+    NSMutableDictionary * rAllBlockchainIdentities = [NSMutableDictionary dictionary];
+    for (DSWallet * wallet in self.wallets) {
+        for (DSBlockchainIdentity * blockchainIdentity in [wallet.blockchainIdentities allValues]) {
+            [rAllBlockchainIdentities setObject:blockchainIdentity forKey:blockchainIdentity.uniqueIDData];
+        }
+    }
+    return rAllBlockchainIdentities;
+}
+
+
 -(DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId {
     NSAssert(!uint256_is_zero(uniqueId), @"uniqueId must not be null");
     return [self blockchainIdentityForUniqueId:uniqueId foundInWallet:nil];

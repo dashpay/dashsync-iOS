@@ -71,6 +71,20 @@
     return platformDocumentsRequest;
 }
 
++(instancetype)dpnsRequestForUsernameStartsWithSearch:(NSString*)usernamePrefix inDomain:(NSString*)domain {
+    return [self dpnsRequestForUsernameStartsWithSearch:usernamePrefix inDomain:domain offset:0 limit:100];
+}
+
++(instancetype)dpnsRequestForUsernameStartsWithSearch:(NSString*)usernamePrefix inDomain:(NSString*)domain offset:(uint32_t)offset limit:(uint32_t)limit {
+    DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
+    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel BEGINSWITH %@ && normalizedParentDomainName == %@",usernamePrefix,[domain lowercaseString]];
+    platformDocumentsRequest.startAt = offset;
+    platformDocumentsRequest.limit = limit;
+    platformDocumentsRequest.type = DSPlatformDocumentType_Document;
+    platformDocumentsRequest.tableName = @"domain";
+    return platformDocumentsRequest;
+}
+
 +(instancetype)dashpayRequestForContactRequestsForSendingUserId:(NSString*)userId since:(NSTimeInterval)timestamp {
     DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"%K == %@ && timestamp >= %@",@"$userId",userId,@(timestamp)];

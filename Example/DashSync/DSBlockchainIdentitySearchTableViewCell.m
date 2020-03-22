@@ -15,24 +15,19 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DSBlockchainIdentitySearchTableViewCell.h"
 
-NS_ASSUME_NONNULL_BEGIN
+@implementation DSBlockchainIdentitySearchTableViewCell
 
-@class DSChain,DSBlockchainIdentity;
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Initialization code
+}
 
-typedef void (^IdentitiesCompletionBlock)(NSArray <DSBlockchainIdentity*> * _Nullable blockchainIdentities, NSError * _Nullable error);
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
 
-@interface DSIdentitiesManager : NSObject
-
-@property (nonatomic, readonly) DSChain * chain;
-
-- (instancetype)initWithChain:(DSChain*)chain;
-
-- (void)retrieveAllBlockchainIdentitiesChainStates;
-
-- (void)searchIdentitiesByNamePrefix:(NSString*)namePrefix withCompletion:(IdentitiesCompletionBlock)completion;
+    // Configure the view for the selected state
+}
 
 @end
-
-NS_ASSUME_NONNULL_END
