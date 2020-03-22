@@ -1014,15 +1014,23 @@
                             //The registration funding transaction exists
                             //Weird but we should recover in this situation
                             DSCreditFundingTransaction * registrationTransaction = (DSCreditFundingTransaction *)[creditRegitrationTransactionEntity transactionForChain:self.chain];
-                            blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:DSBlockchainIdentityType_Unknown atIndex:[registrationTransaction usedDerivationPathIndexForWallet:self] withFundingTransaction:registrationTransaction withUsernameDictionary:nil inWallet:self inContext:self.chain.managedObjectContext];
-                            [blockchainIdentity registerInWallet];
+                            
+                            BOOL correctIndex = [registrationTransaction checkDerivationPathIndexForWallet:self isIndex:index];
+                            if (!correctIndex) {
+                                NSAssert(FALSE,@"We should implement this");
+                            } else {
+                                blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:DSBlockchainIdentityType_Unknown atIndex:index withFundingTransaction:registrationTransaction withUsernameDictionary:nil inWallet:self inContext:self.chain.managedObjectContext];
+                                [blockchainIdentity registerInWallet];
+                            }
                         } else {
                             //We also don't have the registration funding transaction
                             blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:DSBlockchainIdentityType_Unknown atIndex:index withLockedOutpoint:blockchainIdentityLockedOutpoint inWallet:self inContext:self.chain.managedObjectContext];
                             [blockchainIdentity registerInWalletForBlockchainIdentityUniqueId:[dsutxo_data(blockchainIdentityLockedOutpoint) SHA256_2]];
                         }
                     }
-                    [rDictionary setObject:blockchainIdentity forKey:blockchainIdentityLockedOutpointData];
+                    if (blockchainIdentity) {
+                        [rDictionary setObject:blockchainIdentity forKey:blockchainIdentityLockedOutpointData];
+                    }
                     
                 }];
             }

@@ -29,6 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,readonly) uint32_t usedDerivationPathIndex;
 
 -(uint32_t)usedDerivationPathIndexForWallet:(DSWallet*)wallet;
+-(void)markAddressAsUsedInWallet:(DSWallet*)wallet;
+-(BOOL)checkDerivationPathIndexForWallet:(DSWallet*)wallet isIndex:(uint32_t)index;
 
 @end
 

@@ -59,17 +59,17 @@
     return cell;
 }
 
-
-/*
-// Override to support conditional editing of the table view.
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
-}
-*/
-
 -(void)searchByNamePrefix:(NSString*)namePrefix {
     [self.chainManager.identitiesManager searchIdentitiesByNamePrefix:namePrefix withCompletion:^(NSArray<DSBlockchainIdentity *> * _Nullable blockchainIdentities, NSError * _Nullable error) {
+        if (!error) {
+            self.blockchainIdentities = blockchainIdentities;
+            [self.tableView reloadData];
+        }
+    }];
+}
+
+-(void)searchByIdentifier:(NSString*)identifier {
+    [self.chainManager.identitiesManager searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID:identifier withCompletion:^(NSArray<DSBlockchainIdentity *> * _Nullable blockchainIdentities, NSError * _Nullable error) {
         if (!error) {
             self.blockchainIdentities = blockchainIdentities;
             [self.tableView reloadData];
@@ -81,7 +81,7 @@
     if (!searchBar.selectedScopeButtonIndex) {
         [self searchByNamePrefix:searchBar.text];
     } else {
-        //[self searchByIdentifier:searchBar.text];
+        [self searchByIdentifier:searchBar.text];
     }
 }
 /*

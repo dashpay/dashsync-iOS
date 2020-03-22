@@ -268,6 +268,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     self.registrationCreditFundingTransaction = fundingTransaction;
     self.lockedOutpoint = fundingTransaction.lockedOutpoint;
     [self registerInWalletForBlockchainIdentityUniqueId:fundingTransaction.creditBurnIdentityIdentifier];
+    
+    //we need to also set the address of the funding transaction to being used so future identities past the initial gap limit are found
+    [fundingTransaction markAddressAsUsedInWallet:self.wallet];
 }
 
 -(void)registerInWalletForBlockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId {
@@ -659,8 +662,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         if (self.keyInfoDictionaries[@(index)]) {
             NSDictionary * keyDictionary = self.keyInfoDictionaries[@(index)];
             DSKey * keyToCheckInDictionary = keyDictionary[@(DSBlockchainIdentityKeyDictionary_Key)];
+            DSBlockchainIdentityKeyStatus keyToCheckInDictionaryStatus = [keyDictionary[@(DSBlockchainIdentityKeyDictionary_KeyStatus)] unsignedIntegerValue];
             if ([keyToCheckInDictionary.publicKeyData isEqualToData:key.publicKeyData]) {
-                if (save) {
+                if (save && status != keyToCheckInDictionaryStatus) {
                     [self updateStatus:status forKeyWithIndexID:index];
                 }
             } else {
@@ -757,6 +761,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     uint32_t index = 0;
     uint32_t type = 0;
     DSKey * key = [self keyFromKeyDictionary:dictionary rType:&type rIndex:&index];
+    NSLog(@"%@",key.publicKeyData.base64String);
     if (key) {
         [self addKey:key atIndex:index ofType:type withStatus:DSBlockchainIdentityKeyStatus_Registered save:YES];
     }
@@ -1185,7 +1190,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 -(NSArray<NSString*>*)usernamesWithStatus:(DSBlockchainIdentityUsernameStatus)usernameStatus {
     NSMutableArray * unregisteredUsernames = [NSMutableArray array];
     for (NSString * username in self.usernameStatuses) {
-        DSBlockchainIdentityUsernameStatus status = [self.usernameStatuses[username] unsignedIntegerValue];
+        NSDictionary * usernameInfo = self.usernameStatuses[username];
+        DSBlockchainIdentityUsernameStatus status = [[usernameInfo objectForKey:BLOCKCHAIN_USERNAME_STATUS] unsignedIntegerValue];
         if (status == usernameStatus) {
             [unregisteredUsernames addObject:username];
         }
@@ -1196,7 +1202,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 -(NSArray<NSString*>*)preorderedUsernames {
     NSMutableArray * unregisteredUsernames = [NSMutableArray array];
     for (NSString * username in self.usernameStatuses) {
-        DSBlockchainIdentityUsernameStatus status = [self.usernameStatuses[username] unsignedIntegerValue];
+        NSDictionary * usernameInfo = self.usernameStatuses[username];
+        DSBlockchainIdentityUsernameStatus status = [[usernameInfo objectForKey:BLOCKCHAIN_USERNAME_STATUS] unsignedIntegerValue];
         if (status == DSBlockchainIdentityUsernameStatus_Preordered) {
             [unregisteredUsernames addObject:username];
         }
@@ -1711,20 +1718,36 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         NSString * base58String = nil;
         if (!blockchainIdentityDictionary || !(base58String = blockchainIdentityDictionary[@"id"])) {
             if (completion) {
-                completion(NO);
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completion(NO);
+                });
             }
             return;
         }
         
         UInt256 blockchainIdentityContactUniqueId = base58String.base58ToData.UInt256;
+        
         NSAssert(!uint256_is_zero(blockchainIdentityContactUniqueId), @"blockchainIdentityContactUniqueId should not be null");
         
-        DSBlockchainIdentity * potentialContactBlockchainIdentity = [[DSBlockchainIdentity alloc] initWithUniqueId:blockchainIdentityContactUniqueId onChain:self.chain inContext:self.managedObjectContext];
-        [potentialContactBlockchainIdentity applyIdentityDictionary:blockchainIdentityDictionary];
+        DSBlockchainIdentityEntity * potentialContactBlockchainIdentityEntity = [DSBlockchainIdentityEntity anyObjectMatchingInContext:self.managedObjectContext withPredicate:@"uniqueID == %@",uint256_data(blockchainIdentityContactUniqueId)];
         
+        DSBlockchainIdentity * potentialContactBlockchainIdentity = nil;
+        
+        if (potentialContactBlockchainIdentityEntity) {
+            potentialContactBlockchainIdentity = [[DSBlockchainIdentity alloc] initWithBlockchainIdentityEntity:potentialContactBlockchainIdentityEntity inContext:self.managedObjectContext];
+        } else {
+            potentialContactBlockchainIdentity = [[DSBlockchainIdentity alloc] initWithUniqueId:blockchainIdentityContactUniqueId onChain:self.chain inContext:self.managedObjectContext];
+
+            [potentialContactBlockchainIdentity saveInitial];
+        }
+        [potentialContactBlockchainIdentity applyIdentityDictionary:blockchainIdentityDictionary];
+        [potentialContactBlockchainIdentity save];
         
         if (![potentialContactBlockchainIdentity isDashpayReady]) {
-            completion(NO);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(NO);
+            });
+
             return;
         }
         uint32_t destinationKeyIndex = [potentialContactBlockchainIdentity firstIndexOfKeyOfType:self.currentMainKeyType createIfNotPresent:NO];
@@ -1735,6 +1758,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         if (sourceKeyIndex == UINT32_MAX) { //not found
             //to do register a new key
             NSAssert(FALSE, @"we shouldn't be getting here");
+            if (completion) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completion(NO);
+                });
+            }
             return;
         }
         DSPotentialOneWayFriendship * potentialFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationBlockchainIdentity:potentialContactBlockchainIdentity destinationKeyIndex:destinationKeyIndex sourceBlockchainIdentity:self sourceKeyIndex:sourceKeyIndex account:account];
@@ -2364,7 +2392,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         entity.chain = self.chain.chainEntity;
         for (NSString * username in self.usernameStatuses) {
             DSBlockchainIdentityUsernameEntity * usernameEntity = [DSBlockchainIdentityUsernameEntity managedObject];
-            usernameEntity.status = ((NSNumber*)self.usernameStatuses[username]).intValue;
+            usernameEntity.status = [self statusOfUsername:username];
             usernameEntity.stringValue = username;
             usernameEntity.blockchainIdentity = entity;
             [entity addUsernamesObject:usernameEntity];

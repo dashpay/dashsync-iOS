@@ -1055,8 +1055,8 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     [self.txRequests[hash] removeObject:peer];
     
     
-    if ([transaction isKindOfClass:[DSCreditFundingTransaction class]] && blockchainIdentity && isNewBlockchainIdentity) {
-        [self fetchFriendshipsForBlockchainIdentity:blockchainIdentity];
+    if (NO) {//[transaction isKindOfClass:[DSCreditFundingTransaction class]] && blockchainIdentity && isNewBlockchainIdentity) {
+        //[self fetchFriendshipsForBlockchainIdentity:blockchainIdentity];
     } else {
         [self updateTransactionsBloomFilter];
     }

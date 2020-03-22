@@ -57,6 +57,19 @@
     return (uint32_t)[registrationFundingDerivationPath indexOfKnownAddress:address];
 }
 
+-(BOOL)checkDerivationPathIndexForWallet:(DSWallet*)wallet isIndex:(uint32_t)index {
+    DSCreditFundingDerivationPath * registrationFundingDerivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:wallet];
+    NSString * address = [[NSData dataWithUInt160:[self creditBurnPublicKeyHash]] addressFromHash160DataForChain:self.chain];
+    return [[registrationFundingDerivationPath addressAtIndex:index] isEqualToString:address];
+}
+
+-(void)markAddressAsUsedInWallet:(DSWallet*)wallet {
+    DSCreditFundingDerivationPath * registrationFundingDerivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:wallet];
+    NSString * address = [[NSData dataWithUInt160:[self creditBurnPublicKeyHash]] addressFromHash160DataForChain:self.chain];
+    [registrationFundingDerivationPath registerTransactionAddress:address];
+    [registrationFundingDerivationPath registerAddressesWithGapLimit:10];
+}
+
 -(uint32_t)usedDerivationPathIndex {
     if (!self.account) return UINT32_MAX;
     return [self usedDerivationPathIndexForWallet:self.account.wallet];

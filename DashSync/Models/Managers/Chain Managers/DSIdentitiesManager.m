@@ -98,4 +98,33 @@
      }];
  }
 
+- (void)searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID:(NSString*)userID withCompletion:(IdentitiesCompletionBlock)completion {
+   DSDAPIClient * client = self.chain.chainManager.DAPIClient;
+    [client.DAPINetworkService getDPNSDocumentsForIdentityWithUserId:userID success:^(NSArray<NSDictionary *> * _Nonnull documents) {
+        __block NSMutableArray * rBlockchainIdentities = [NSMutableArray array];
+        for (NSDictionary * document in documents) {
+            NSString * userId = document[@"$userId"];
+            NSString * normalizedLabel = document[@"normalizedLabel"];
+            DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 onChain:self.chain inContext:self.chain.managedObjectContext];
+            [identity addUsername:normalizedLabel status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO];
+            [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success) {
+                
+            }];
+            [rBlockchainIdentities addObject:identity];
+        }
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion([rBlockchainIdentities copy],nil);
+            });
+        }
+    } failure:^(NSError * _Nonnull error) {
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(nil,error);
+            });
+        }
+        NSLog(@"Failure %@",error);
+    }];
+}
+
 @end
