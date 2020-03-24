@@ -486,7 +486,7 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
             } else {
                 UInt256 index = [self indexAtPosition:i];
                 [[DSDashpayUserEntity context] performBlockAndWait:^{
-                    DSDashpayUserEntity * dashpayUserEntity = [DSDashpayUserEntity anyObjectMatching:@"associatedBlockchainIdentityUniqueId == %@",uint256_data(index)];
+                    DSDashpayUserEntity * dashpayUserEntity = [DSDashpayUserEntity anyObjectMatching:@"associatedBlockchainIdentity.uniqueID == %@",uint256_data(index)];
                     if (dashpayUserEntity) {
                         DSBlockchainIdentityUsernameEntity * usernameEntity = [dashpayUserEntity.associatedBlockchainIdentity.usernames anyObject];
                         [mutableString appendFormat:@"/%@%@",usernameEntity.stringValue,[self isHardenedAtPosition:i]?@"'":@""];
@@ -516,7 +516,7 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
             mutableString = [NSMutableString stringWithFormat:@"inc"];
             DSIncomingFundsDerivationPath * incomingFundsDerivationPath = (DSIncomingFundsDerivationPath*)self;
             [[DSDashpayUserEntity context] performBlockAndWait:^{
-                DSDashpayUserEntity * sourceDashpayUserEntity = [DSDashpayUserEntity anyObjectMatching:@"associatedBlockchainIdentityUniqueId == %@",uint256_data(incomingFundsDerivationPath.contactSourceBlockchainIdentityUniqueId)];
+                DSDashpayUserEntity * sourceDashpayUserEntity = [DSDashpayUserEntity anyObjectMatching:@"associatedBlockchainIdentity.uniqueID == %@",uint256_data(incomingFundsDerivationPath.contactSourceBlockchainIdentityUniqueId)];
                 if (sourceDashpayUserEntity) {
                     DSBlockchainIdentityUsernameEntity * usernameEntity = [sourceDashpayUserEntity.associatedBlockchainIdentity.usernames anyObject];
                     [mutableString appendFormat:@"/%@",usernameEntity.stringValue];

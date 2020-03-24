@@ -209,7 +209,7 @@ NS_ASSUME_NONNULL_BEGIN
                                     ? self.avatarCellModel.text
                                     : self.avatarCellModel.placeholder;
     __weak typeof(self) weakSelf = self;
-    [self.blockchainIdentity createOrUpdateProfileWithDisplayName:displayName publicMessage:aboutMe avatarURLString:avatarURLString completion:^(BOOL success) {
+    [self.blockchainIdentity createOrUpdateProfileWithDisplayName:displayName publicMessage:aboutMe avatarURLString:avatarURLString completion:^(BOOL success, NSError * error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;

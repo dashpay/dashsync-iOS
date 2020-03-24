@@ -28,7 +28,7 @@
 - (IBAction)refreshAction:(id)sender {
     [self.refreshControl beginRefreshing];
     __weak typeof(self) weakSelf = self;
-    [self.blockchainIdentity fetchOutgoingContactRequests:^(BOOL success) {
+    [self.blockchainIdentity fetchOutgoingContactRequests:^(BOOL success, NSError * error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;

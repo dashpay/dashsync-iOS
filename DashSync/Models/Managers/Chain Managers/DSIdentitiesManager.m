@@ -54,17 +54,17 @@
 -(void)retrieveAllBlockchainIdentitiesChainStatesForWallet:(DSWallet*)wallet {
     for (DSBlockchainIdentity * identity in [wallet.blockchainIdentities allValues]) {
         if (identity.registrationStatus == DSBlockchainIdentityRegistrationStatus_Unknown) {
-            [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success) {
+            [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, NSError * error) {
                 if (success) {
                     //now lets get dpns info
-                    [identity fetchUsernamesWithCompletion:^(BOOL success) {
+                    [identity fetchUsernamesWithCompletion:^(BOOL success, NSError * error) {
                         
                     }];
                 }
             }];
         } else if (identity.registrationStatus == DSBlockchainIdentityRegistrationStatus_Registered) {
             if (!identity.currentUsername) {
-                [identity fetchUsernamesWithCompletion:^(BOOL success) {
+                [identity fetchUsernamesWithCompletion:^(BOOL success, NSError * error) {
                     
                 }];
             }
@@ -107,7 +107,7 @@
             NSString * normalizedLabel = document[@"normalizedLabel"];
             DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 onChain:self.chain inContext:self.chain.managedObjectContext];
             [identity addUsername:normalizedLabel status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO];
-            [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success) {
+            [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, NSError * error) {
                 
             }];
             [rBlockchainIdentities addObject:identity];

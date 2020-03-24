@@ -35,8 +35,10 @@
     [super viewDidLoad];
     [self loadProfileInitial];
     if (self.blockchainIdentity.registered && self.blockchainIdentity.currentUsername && [self.blockchainIdentity statusOfUsername:self.blockchainIdentity.currentUsername] == DSBlockchainIdentityUsernameStatus_Confirmed) {
-        [self.blockchainIdentity fetchProfileWithCompletion:^(BOOL success) {
-            [self updateProfile];
+        [self.blockchainIdentity fetchProfileWithCompletion:^(BOOL success, NSError * error) {
+            if (success) {
+                [self updateProfile];
+            }
         }];
     }
     
@@ -219,7 +221,9 @@
             if (!self.blockchainIdentity.registered) {
                 [self registerBlockchainIdentity:self];
             } else if (self.blockchainIdentity.currentUsername && [self.blockchainIdentity statusOfUsername:self.blockchainIdentity.currentUsername] != DSBlockchainIdentityUsernameStatus_Confirmed) {
-                [self.blockchainIdentity registerUsernames];
+                [self.blockchainIdentity registerUsernamesWithCompletion:^(BOOL success, NSError * _Nonnull error) {
+                    
+                }];
             } else {
                 DSContactProfileViewController *controller = [[DSContactProfileViewController alloc] initWithBlockchainIdentity:self.blockchainIdentity];
                 controller.delegate = self;
@@ -294,7 +298,7 @@
 - (void)contactProfileViewControllerDidUpdateProfile:(DSContactProfileViewController *)controller {
     [controller dismissViewControllerAnimated:YES completion:nil];
     
-    [self.blockchainIdentity fetchProfileWithCompletion:^(BOOL success) {
+    [self.blockchainIdentity fetchProfileWithCompletion:^(BOOL success, NSError * error) {
         [self updateProfile];
     }];
 }

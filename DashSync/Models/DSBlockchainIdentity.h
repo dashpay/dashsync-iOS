@@ -13,6 +13,20 @@
 NS_ASSUME_NONNULL_BEGIN
 @class DSWallet,DSBlockchainIdentityRegistrationTransition,DSBlockchainIdentityTopupTransition,DSBlockchainIdentityUpdateTransition,DSBlockchainIdentityCloseTransition,DSAccount,DSChain,DSTransition,DSDashpayUserEntity,DSPotentialOneWayFriendship,DSTransaction,DSFriendRequestEntity,DSPotentialContact,DSCreditFundingTransaction,DSDocumentTransition,DSKey,DPDocumentFactory;
 
+typedef NS_ENUM(NSUInteger, DSBlockchainIdentityRegistrationStep) {
+    DSBlockchainIdentityRegistrationStep_None = 0,
+    DSBlockchainIdentityRegistrationStep_PublicKeyGeneration = 1,
+    DSBlockchainIdentityRegistrationStep_FundingTransactionCreation = 2,
+    DSBlockchainIdentityRegistrationStep_FundingTransactionPublishing = 4,
+    DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence = 8,
+    DSBlockchainIdentityRegistrationStep_Identity = 16,
+    DSBlockchainIdentityRegistrationStep_Username = 32,
+    DSBlockchainIdentityRegistrationStep_Profile = 64,
+    DSBlockchainIdentityRegistrationStep_RegistrationWithUsername = DSBlockchainIdentityRegistrationStep_PublicKeyGeneration | DSBlockchainIdentityRegistrationStep_FundingTransactionCreation | DSBlockchainIdentityRegistrationStep_FundingTransactionPublishing | DSBlockchainIdentityRegistrationStep_Identity | DSBlockchainIdentityRegistrationStep_Username | DSBlockchainIdentityRegistrationStep_Profile | DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence,
+    DSBlockchainIdentityRegistrationStep_RegistrationWithUsernameAndDashpayProfile = DSBlockchainIdentityRegistrationStep_RegistrationWithUsername | DSBlockchainIdentityRegistrationStep_Profile,
+    DSBlockchainIdentityRegistrationStep_All = DSBlockchainIdentityRegistrationStep_RegistrationWithUsernameAndDashpayProfile
+};
+
 typedef NS_ENUM(NSUInteger, DSBlockchainIdentityRegistrationStatus) {
     DSBlockchainIdentityRegistrationStatus_Unknown = 0,
     DSBlockchainIdentityRegistrationStatus_Registered = 1,
@@ -147,13 +161,15 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 
 // MARK: - Identity
 
+-(void)registerOnNetwork:(DSBlockchainIdentityRegistrationStep)steps withFundingAccount:(DSAccount*)account forTopupAmount:(uint64_t)topupDuffAmount stepCompletion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationStep stepCompleted))stepCompletion completion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError * error))completion;
+
 -(void)fundingTransactionForTopupAmount:(uint64_t)topupAmount toAddress:(NSString*)address fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSCreditFundingTransaction * fundingTransaction))completion;
 
--(void)fetchIdentityNetworkStateInformationWithCompletion:(void (^)(BOOL success))completion;
+-(void)fetchIdentityNetworkStateInformationWithCompletion:(void (^)(BOOL success, NSError * error))completion;
 
--(void)fetchAllNetworkStateInformationWithCompletion:(void (^)(BOOL success))completion;
+-(void)fetchAllNetworkStateInformationWithCompletion:(void (^)(BOOL success, NSError * error))completion;
 
--(void)fetchNeededNetworkStateInformationWithCompletion:(void (^)(BOOL success))completion;
+-(void)fetchNeededNetworkStateInformationWithCompletion:(void (^)(BOOL success, NSError * error))completion;
 
 -(void)signStateTransition:(DSTransition*)transition withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion;
 
@@ -207,19 +223,19 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 
 // MARK: - Dashpay
 
--(void)sendNewFriendRequestToPotentialContact:(DSPotentialContact*)potentialContact completion:(void (^)(BOOL))completion;
+-(void)sendNewFriendRequestToPotentialContact:(DSPotentialContact*)potentialContact completion:(void (^ _Nullable)(BOOL success, NSError * error))completion;
 
--(void)sendNewFriendRequestMatchingPotentialFriendship:(DSPotentialOneWayFriendship*)potentialFriendship completion:(void (^)(BOOL))completion;
+-(void)sendNewFriendRequestMatchingPotentialFriendship:(DSPotentialOneWayFriendship*)potentialFriendship completion:(void (^ _Nullable)(BOOL success, NSError * error))completion;
 
--(void)acceptFriendRequest:(DSFriendRequestEntity*)friendRequest completion:(void (^)(BOOL))completion;
+-(void)acceptFriendRequest:(DSFriendRequestEntity*)friendRequest completion:(void (^ _Nullable)(BOOL success, NSError * error))completion;
 
-- (void)fetchOutgoingContactRequests:(void (^)(BOOL success))completion;
+- (void)fetchOutgoingContactRequests:(void (^ _Nullable)(BOOL success, NSError * error))completion;
 
-- (void)fetchIncomingContactRequests:(void (^)(BOOL success))completion;
+- (void)fetchIncomingContactRequests:(void (^ _Nullable)(BOOL success, NSError * error))completion;
 
-- (void)fetchProfileWithCompletion:(void (^)(BOOL success))completion;
+- (void)fetchProfileWithCompletion:(void (^ _Nullable)(BOOL success, NSError * error))completion;
 
-- (void)createOrUpdateProfileWithDisplayName:(NSString*)displayName publicMessage:(NSString*)publicMessage avatarURLString:(NSString *)avatarURLString completion:(void (^)(BOOL success))completion;
+- (void)createOrUpdateProfileWithDisplayName:(NSString*)displayName publicMessage:(NSString*)publicMessage avatarURLString:(NSString *)avatarURLString completion:(void (^ _Nullable)(BOOL success, NSError * error))completion;
 
 // MARK: - DPNS
 
@@ -227,9 +243,9 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 
 -(DSBlockchainIdentityUsernameStatus)statusOfUsername:(NSString*)username;
 
--(void)registerUsernames;
+-(void)registerUsernamesWithCompletion:(void (^ _Nullable)(BOOL success, NSError * error))completion;
 
-- (void)fetchUsernamesWithCompletion:(void (^)(BOOL))completion;
+- (void)fetchUsernamesWithCompletion:(void (^ _Nullable)(BOOL success, NSError * error))completion;
 
 @end
 

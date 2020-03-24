@@ -21,9 +21,14 @@
 @property (strong, nonatomic) IBOutlet UILabel *walletIdentifierLabel;
 @property (strong, nonatomic) IBOutlet UILabel *fundingAccountIdentifierLabel;
 @property (strong, nonatomic) IBOutlet UILabel *typeLabel;
+@property (strong, nonatomic) IBOutlet UISwitch *registerOnL2Switch;
+@property (strong, nonatomic) IBOutlet UISwitch *registerUsernameSwitch;
 @property (assign, nonatomic) DSBlockchainIdentityType identityType;
 @property (strong, nonatomic) DSWallet * wallet;
 @property (strong, nonatomic) DSAccount * fundingAccount;
+@property (assign, nonatomic) BOOL shouldRegisterOnL2;
+@property (assign, nonatomic) BOOL shouldRegisterUsername;
+
 
 @end
 
@@ -37,11 +42,30 @@
         self.wallet = self.fundingAccount.wallet;
     }
     
+    self.shouldRegisterOnL2 = YES;
+    if (uint256_is_zero(self.wallet.chain.dpnsContractID)) {
+        self.shouldRegisterUsername = YES;
+        [self.registerUsernameSwitch setOn:FALSE animated:NO];
+    }
+    
     self.indexLabel.text = [NSString stringWithFormat:@"%d",[self.wallet unusedBlockchainIdentityIndex]];
     
     self.topupAmountLabel.text = [NSString stringWithFormat:@"%d",10000000]; //0.1 Dash
     
     self.identityType = DSBlockchainIdentityType_User;
+}
+
+-(IBAction)registerOnL2SwitchValueChanged:(UISwitch*)sender {
+    
+    self.shouldRegisterOnL2 = sender.isOn;
+    if (!self.shouldRegisterOnL2) {
+        [self.registerUsernameSwitch setOn:FALSE animated:YES];
+        self.shouldRegisterUsername = NO;
+    }
+}
+
+-(IBAction)registerUsernameSwitchValueChanged:(UISwitch*)sender {
+    self.shouldRegisterUsername = sender.isOn;
 }
 
 - (void)didReceiveMemoryWarning {
@@ -122,38 +146,14 @@
         }
     }
     DSBlockchainIdentity * blockchainIdentity = [self.wallet createBlockchainIdentityOfType:self.identityType forUsername:desiredUsername usingDerivationIndex:[self.indexLabel.text intValue]];
-    [blockchainIdentity generateBlockchainIdentityExtendedPublicKeys:^(BOOL exists) {
-        if (exists) {
-            NSString * creditFundingRegistrationAddress = [blockchainIdentity registrationFundingAddress];
-            [blockchainIdentity fundingTransactionForTopupAmount:topupAmount toAddress:creditFundingRegistrationAddress fundedByAccount:self.fundingAccount completion:^(DSCreditFundingTransaction * _Nonnull fundingTransaction) {
-                [self.fundingAccount signTransaction:fundingTransaction withPrompt:@"Would you like to create this user?" completion:^(BOOL signedTransaction, BOOL cancelled) {
-                    if (signedTransaction) {
-                        
-                        [self.chainManager.transactionManager publishTransaction:fundingTransaction completion:^(NSError * _Nullable error) {
-                            if (error) {
-                                [self raiseIssue:@"Error" message:error.localizedDescription];
-                            } else {
-                                [blockchainIdentity registerInWalletForRegistrationFundingTransaction:fundingTransaction];
-                                
-//                                [blockchainIdentity registrationTransitionForFundingTransaction:fundingTransaction completion:^(DSBlockchainIdentityRegistrationTransition * _Nonnull blockchainIdentityRegistrationTransition) {
-//                                    if (blockchainIdentityRegistrationTransition) {
-//
-//                                    } else {
-//                                        [self raiseIssue:@"Error" message:@"Unable to create blockchainIdentityRegistrationTransition."];
-//                                    }
-//                                }];
-                                
-                                [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
-                            }
-                        }];
-                    } else {
-                        [self raiseIssue:@"Error" message:@"Transaction was not signed."];
-                    }
-                }];
-                
-            }];
+    [blockchainIdentity registerOnNetwork:DSBlockchainIdentityRegistrationStep_RegistrationWithUsername withFundingAccount:self.fundingAccount forTopupAmount:topupAmount stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {
+        
+    } completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError * _Nonnull error) {
+        if (error) {
+            [self raiseIssue:@"Error" message:error.localizedDescription];
+            return;
         } else {
-            [self raiseIssue:@"Error" message:@"Unable to register blockchain user."];
+            [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
         }
     }];
 }

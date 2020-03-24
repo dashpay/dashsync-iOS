@@ -277,3 +277,45 @@
 
 /* No comment provided by engineer. */
 "Unknown Key Type" = "Unknown Key Type";
+
+/* No comment provided by engineer. */
+"Could not derive public keys from wallet" = "Could not derive public keys from wallet";
+
+/* No comment provided by engineer. */
+"Dashpay Contract is not yet registered on network" = "Dashpay Contract is not yet registered on network";
+
+/* No comment provided by engineer. */
+"DPNS Contract is not yet registered on network" = "DPNS Contract is not yet registered on network";
+
+/* No comment provided by engineer. */
+"Funding transaction could not be created" = "Funding transaction could not be created";
+
+/* No comment provided by engineer. */
+"Internal key handling error" = "Internal key handling error";
+
+/* No comment provided by engineer. */
+"Internal memory allocation error" = "Internal memory allocation error";
+
+/* No comment provided by engineer. */
+"Malformed platform response" = "Malformed platform response";
+
+/* No comment provided by engineer. */
+"Timeout while waiting for funding transaction to be accepted by network" = "Timeout while waiting for funding transaction to be accepted by network";
+
+/* No comment provided by engineer. */
+"Transaction could not be signed" = "Transaction could not be signed";
+
+/* No comment provided by engineer. */
+"Unable to register registration transition" = "Unable to register registration transition";
+
+/* No comment provided by engineer. */
+"User has actions to complete before being able to use Dashpay" = "User has actions to complete before being able to use Dashpay";
+
+/* No comment provided by engineer. */
+"Requested username domain documents not present on platform after timeout" = "Requested username domain documents not present on platform after timeout";
+
+/* No comment provided by engineer. */
+"Requested username preorder documents not present on platform after timeout" = "Requested username preorder documents not present on platform after timeout";
+
+/* No comment provided by engineer. */
+"Unable to sign transition" = "Unable to sign transition";

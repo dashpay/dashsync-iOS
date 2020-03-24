@@ -1064,11 +1064,11 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 
 -(void)fetchFriendshipsForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity {
     dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-    [blockchainIdentity fetchAllNetworkStateInformationWithCompletion:^(BOOL success) {
+    [blockchainIdentity fetchAllNetworkStateInformationWithCompletion:^(BOOL success, NSError * error) {
         if (success) {
-            [blockchainIdentity fetchOutgoingContactRequests:^(BOOL success) {
+            [blockchainIdentity fetchOutgoingContactRequests:^(BOOL success, NSError * error) {
                 if (success) {
-                    [blockchainIdentity fetchIncomingContactRequests:^(BOOL success) {
+                    [blockchainIdentity fetchIncomingContactRequests:^(BOOL success, NSError * error) {
                         if (success) {
                             dispatch_semaphore_signal(sem);
                         }

@@ -62,7 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
         
         DSPotentialContact * potentialContact = [[DSPotentialContact alloc] initWithUsername:username];
         
-        [self.blockchainIdentity sendNewFriendRequestToPotentialContact:potentialContact completion:^(BOOL success) {
+        [self.blockchainIdentity sendNewFriendRequestToPotentialContact:potentialContact completion:^(BOOL success, NSError * error) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;

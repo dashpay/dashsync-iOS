@@ -1098,6 +1098,64 @@
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" id="Jcc-El-FSs" userLabel="WalletCell">
+                                        <rect key="frame" x="0.0" y="292" width="414" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Jcc-El-FSs" id="qv6-IM-klD">
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Register on L2" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ElF-jR-rZ6">
+                                                    <rect key="frame" x="16" y="12" width="110.5" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0ZB-YD-gc0">
+                                                    <rect key="frame" x="351" y="6" width="49" height="31"/>
+                                                    <color key="onTintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    <connections>
+                                                        <action selector="registerOnL2SwitchValueChanged:" destination="hcD-p6-pV9" eventType="valueChanged" id="ReK-i0-Ksp"/>
+                                                    </connections>
+                                                </switch>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstAttribute="trailing" secondItem="0ZB-YD-gc0" secondAttribute="trailing" constant="16" id="UAZ-BX-9yw"/>
+                                                <constraint firstItem="0ZB-YD-gc0" firstAttribute="firstBaseline" secondItem="ElF-jR-rZ6" secondAttribute="firstBaseline" constant="-22" id="Y8Q-1i-ukc"/>
+                                                <constraint firstItem="ElF-jR-rZ6" firstAttribute="leading" secondItem="qv6-IM-klD" secondAttribute="leading" constant="16" id="mH4-tG-H8C"/>
+                                                <constraint firstItem="ElF-jR-rZ6" firstAttribute="top" secondItem="qv6-IM-klD" secondAttribute="top" constant="12.000000000000028" id="zSe-Fe-L4U"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" id="rYI-oV-MWp" userLabel="WalletCell">
+                                        <rect key="frame" x="0.0" y="336" width="414" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="rYI-oV-MWp" id="Tdr-MK-32z">
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Register Username" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cYM-pY-p5G">
+                                                    <rect key="frame" x="16" y="12" width="146" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="SQK-cK-N4u">
+                                                    <rect key="frame" x="351" y="6" width="49" height="31"/>
+                                                    <color key="onTintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    <connections>
+                                                        <action selector="registerUsernameSwitchValueChanged:" destination="hcD-p6-pV9" eventType="valueChanged" id="lgK-NR-kOM"/>
+                                                    </connections>
+                                                </switch>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstAttribute="trailing" secondItem="SQK-cK-N4u" secondAttribute="trailing" constant="16" id="4w5-Xi-SYj"/>
+                                                <constraint firstItem="cYM-pY-p5G" firstAttribute="top" secondItem="Tdr-MK-32z" secondAttribute="top" constant="12.000000000000028" id="G5T-9n-j9l"/>
+                                                <constraint firstItem="cYM-pY-p5G" firstAttribute="leading" secondItem="Tdr-MK-32z" secondAttribute="leading" constant="16" id="s2D-7V-40Y"/>
+                                                <constraint firstItem="SQK-cK-N4u" firstAttribute="firstBaseline" secondItem="cYM-pY-p5G" secondAttribute="firstBaseline" constant="-22" id="uJi-kz-3td"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
                                 </cells>
                             </tableViewSection>
                         </sections>
@@ -1121,6 +1179,8 @@
                     <connections>
                         <outlet property="fundingAccountIdentifierLabel" destination="VKM-NY-Par" id="gAB-ft-9M9"/>
                         <outlet property="indexLabel" destination="blG-BX-zhF" id="KRg-Ng-K1i"/>
+                        <outlet property="registerOnL2Switch" destination="0ZB-YD-gc0" id="I7F-rj-JHC"/>
+                        <outlet property="registerUsernameSwitch" destination="SQK-cK-N4u" id="Ha1-Gp-WwE"/>
                         <outlet property="topupAmountLabel" destination="8rw-9e-fZS" id="y3g-Uz-yXe"/>
                         <outlet property="typeLabel" destination="fgF-yR-EDc" id="rXI-NO-xVX"/>
                         <outlet property="usernameLabel" destination="4DX-Be-adr" id="heY-dK-1tA"/>
