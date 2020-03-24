@@ -243,25 +243,32 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     __block DSBlockchainIdentityRegistrationStep stepsCompleted = DSBlockchainIdentityRegistrationStep_None;
     if (!(steps & DSBlockchainIdentityRegistrationStep_PublicKeyGeneration)) {
         if (completion) {
-            completion(stepsCompleted, nil);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(stepsCompleted, nil);
+            });
         }
         return;
     }
         [self generateBlockchainIdentityExtendedPublicKeys:^(BOOL exists) {
             if (!exists) {
                  if (completion) {
-                     completion(stepsCompleted, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
-                     DSLocalizedString(@"Could not derive public keys from wallet", nil)}]);
+                     dispatch_async(dispatch_get_main_queue(), ^{
+                         completion(stepsCompleted, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Could not derive public keys from wallet", nil)}]);
+                    });
                  }
                 return;
             }
                 if (stepCompletion) {
-                    stepCompletion(DSBlockchainIdentityRegistrationStep_PublicKeyGeneration);
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        stepCompletion(DSBlockchainIdentityRegistrationStep_PublicKeyGeneration);
+                    });
                 }
                 stepsCompleted |= DSBlockchainIdentityRegistrationStep_PublicKeyGeneration;
                 if (!(steps & DSBlockchainIdentityRegistrationStep_FundingTransactionCreation)) {
                     if (completion) {
-                        completion(stepsCompleted, nil);
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            completion(stepsCompleted, nil);
+                        });
                     }
                     return;
                 }
@@ -269,68 +276,84 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 [self fundingTransactionForTopupAmount:topupDuffAmount toAddress:creditFundingRegistrationAddress fundedByAccount:fundingAccount completion:^(DSCreditFundingTransaction * _Nonnull fundingTransaction) {
                     if (!fundingTransaction) {
                         if (completion) {
-                            completion(stepsCompleted, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
-                            DSLocalizedString(@"Funding transaction could not be created", nil)}]);
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                completion(stepsCompleted, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Funding transaction could not be created", nil)}]);
+                            });
                         }
                         return;
                     }
                     [fundingAccount signTransaction:fundingTransaction withPrompt:@"Would you like to create this user?" completion:^(BOOL signedTransaction, BOOL cancelled) {
                         if (!signedTransaction) {
                             if (completion) {
-                                completion(stepsCompleted, cancelled?nil:[NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
-                                DSLocalizedString(@"Transaction could not be signed", nil)}]);
+                                dispatch_async(dispatch_get_main_queue(), ^{
+                                    completion(stepsCompleted, cancelled?nil:[NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Transaction could not be signed", nil)}]);
+                                });
                             }
                         }
                         if (stepCompletion) {
-                            stepCompletion(DSBlockchainIdentityRegistrationStep_FundingTransactionCreation);
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                stepCompletion(DSBlockchainIdentityRegistrationStep_FundingTransactionCreation);
+                            });
                         }
                         stepsCompleted |= DSBlockchainIdentityRegistrationStep_FundingTransactionCreation;
                         if (!(steps & DSBlockchainIdentityRegistrationStep_FundingTransactionPublishing)) {
                             if (completion) {
-                                completion(stepsCompleted, nil);
+                                dispatch_async(dispatch_get_main_queue(), ^{
+                                    completion(stepsCompleted, nil);
+                                });
                             }
                             return;
                         }
+                        
+                        dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+                        __block BOOL transactionSuccessfullyPublished = FALSE;
+                        
+                        __block id observer = [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil
+                                                                                                   queue:nil usingBlock:^(NSNotification *note) {
+                            DSTransaction *tx = [note.userInfo objectForKey:DSTransactionManagerNotificationTransactionKey];
+                            if ([tx isEqual:fundingTransaction]) {
+                                    NSDictionary * changes = [note.userInfo objectForKey:DSTransactionManagerNotificationTransactionChangesKey];
+                                    if (changes) {
+                                        NSNumber * accepted = [changes objectForKey:DSTransactionManagerNotificationInstantSendTransactionAcceptedStatusKey];
+                                        NSNumber * lockVerified = [changes objectForKey:DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey];
+                                        if ([accepted boolValue] || [lockVerified boolValue]) {
+                                            transactionSuccessfullyPublished = TRUE;
+                                            dispatch_semaphore_signal(sem);
+                                        }
+                                    }
+                                }
+                        }];
                             
                             [self.chain.chainManager.transactionManager publishTransaction:fundingTransaction completion:^(NSError * _Nullable error) {
                                 if (error) {
+                                    [[NSNotificationCenter defaultCenter] removeObserver:observer];
                                     if (completion) {
-                                        completion(stepsCompleted, error);
+                                        dispatch_async(dispatch_get_main_queue(), ^{
+                                            completion(stepsCompleted, error);
+                                        });
                                     }
                                     return;
                                 }
                                 
-                                dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-                                __block BOOL transactionSuccessfullyPublished = FALSE;
+                                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0),^{
                                 
-                                [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil
-                                                                                                           queue:nil usingBlock:^(NSNotification *note) {
-                                    DSTransaction *tx = [note.userInfo objectForKey:DSTransactionManagerNotificationTransactionKey];
-                                    if (tx == fundingTransaction) {
-                                            NSDictionary * changes = [note.userInfo objectForKey:DSTransactionManagerNotificationTransactionChangesKey];
-                                            if (changes) {
-                                                NSNumber * accepted = [changes objectForKey:DSTransactionManagerNotificationInstantSendTransactionAcceptedStatusKey];
-                                                NSNumber * lockVerified = [changes objectForKey:DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey];
-                                                if ([accepted boolValue] || [lockVerified boolValue]) {
-                                                    transactionSuccessfullyPublished = TRUE;
-                                                    dispatch_semaphore_signal(sem);
-                                                }
-                                            }
-                                        }
-                                }];
+                                dispatch_semaphore_wait(sem, dispatch_time(DISPATCH_TIME_NOW, 30 * NSEC_PER_SEC));
                                 
-                                dispatch_semaphore_wait(sem, 10000);
+                                [[NSNotificationCenter defaultCenter] removeObserver:observer];
                                 
                                 if (!transactionSuccessfullyPublished) {
                                     if (completion) {
-                                        completion(stepsCompleted, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
-                                        DSLocalizedString(@"Timeout while waiting for funding transaction to be accepted by network", nil)}]);
+                                        dispatch_async(dispatch_get_main_queue(), ^{
+                                            completion(stepsCompleted, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"Timeout while waiting for funding transaction to be accepted by network", nil)}]);
+                                        });
                                     }
                                     return;
                                 }
                                 
                                 if (stepCompletion) {
-                                    stepCompletion(DSBlockchainIdentityRegistrationStep_FundingTransactionPublishing);
+                                    dispatch_async(dispatch_get_main_queue(), ^{
+                                        stepCompletion(DSBlockchainIdentityRegistrationStep_FundingTransactionPublishing);
+                                    });
                                 }
                                 stepsCompleted |= DSBlockchainIdentityRegistrationStep_FundingTransactionPublishing;
                                 
@@ -338,19 +361,25 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                                 
                                 if (!(steps & DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence)) {
                                     if (completion) {
-                                        completion(stepsCompleted, nil);
+                                        dispatch_async(dispatch_get_main_queue(), ^{
+                                            completion(stepsCompleted, nil);
+                                        });
                                     }
                                     return;
                                 }
                                 [self registerInWalletForRegistrationFundingTransaction:fundingTransaction];
                                 if (stepCompletion) {
-                                    stepCompletion(DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence);
+                                    dispatch_async(dispatch_get_main_queue(), ^{
+                                        stepCompletion(DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence);
+                                    });
                                 }
                                 stepsCompleted |= DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence;
                                 
                                 if (!(steps & DSBlockchainIdentityRegistrationStep_Identity)) {
                                     if (completion) {
-                                        completion(stepsCompleted, nil);
+                                        dispatch_async(dispatch_get_main_queue(), ^{
+                                            completion(stepsCompleted, nil);
+                                        });
                                     }
                                     return;
                                 }
@@ -359,7 +388,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                                 [self createAndPublishRegistrationTransitionWithCompletion:^(NSDictionary * _Nullable successInfo, NSError * _Nullable error) {
                                     if (error) {
                                         if (completion) {
-                                            completion(stepsCompleted, error);
+                                            dispatch_async(dispatch_get_main_queue(), ^{
+                                                completion(stepsCompleted, error);
+                                            });
                                         }
                                         return;
                                     }
@@ -370,7 +401,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                                     
                                     if (!(steps & DSBlockchainIdentityRegistrationStep_Username)) {
                                         if (completion) {
-                                            completion(stepsCompleted, nil);
+                                            dispatch_async(dispatch_get_main_queue(), ^{
+                                                completion(stepsCompleted, nil);
+                                            });
                                         }
                                         return;
                                     }
@@ -378,12 +411,35 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                                     [self registerUsernamesWithCompletion:^(BOOL success, NSError * _Nonnull error) {
                                         if (!success) {
                                             if (completion) {
-                                                completion(stepsCompleted, error);
+                                                dispatch_async(dispatch_get_main_queue(), ^{
+                                                    completion(stepsCompleted, error);
+                                                });
                                             }
                                             return;
                                         }
+                                        if (stepCompletion) {
+                                            stepCompletion(DSBlockchainIdentityRegistrationStep_Username);
+                                        }
+                                        stepsCompleted |= DSBlockchainIdentityRegistrationStep_Username;
+                                        
+                                        if (!(steps & DSBlockchainIdentityRegistrationStep_Profile)) {
+                                            if (completion) {
+                                                dispatch_async(dispatch_get_main_queue(), ^{
+                                                    completion(stepsCompleted, nil);
+                                                });
+                                            }
+                                            return;
+                                        }
+                                        //todo:we need to still do profile
+                                        if (completion) {
+                                            dispatch_async(dispatch_get_main_queue(), ^{
+                                                completion(stepsCompleted, nil);
+                                            });
+                                        }
+                                        
                                     }];
                                 }];
+                                });
                             }];
                         }];
                     
@@ -2614,14 +2670,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         }
         [DSDashpayUserEntity setContext:self.managedObjectContext];
         [DSChainEntity setContext:self.managedObjectContext];
-        DSDashpayUserEntity * dashpayUserEntity = [DSDashpayUserEntity anyObjectMatchingInContext:self.managedObjectContext withPredicate:@"associatedBlockchainIdentity.uniqueID == %@", uint256_data(self.uniqueID)];
-        if (!dashpayUserEntity) {
-            dashpayUserEntity = [DSDashpayUserEntity managedObjectInContext:self.managedObjectContext];
-            dashpayUserEntity.chain = self.chain.chainEntity;
-            dashpayUserEntity.associatedBlockchainIdentity = entity;
-        } else if (!dashpayUserEntity.associatedBlockchainIdentity) {
-            dashpayUserEntity.associatedBlockchainIdentity = entity;
-        }
+        DSDashpayUserEntity * dashpayUserEntity = [DSDashpayUserEntity managedObjectInContext:self.managedObjectContext];
+        dashpayUserEntity.chain = self.chain.chainEntity;
+        entity.matchingDashpayUser = dashpayUserEntity;
+        
         self.matchingDashpayUser = dashpayUserEntity;
         [DSBlockchainIdentityEntity saveContext];
         if ([self isLocal]) {

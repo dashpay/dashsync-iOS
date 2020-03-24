@@ -43,8 +43,9 @@
     }
     
     self.shouldRegisterOnL2 = YES;
+    self.shouldRegisterUsername = YES;
     if (uint256_is_zero(self.wallet.chain.dpnsContractID)) {
-        self.shouldRegisterUsername = YES;
+        self.shouldRegisterUsername = NO;
         [self.registerUsernameSwitch setOn:FALSE animated:NO];
     }
     
@@ -146,7 +147,14 @@
         }
     }
     DSBlockchainIdentity * blockchainIdentity = [self.wallet createBlockchainIdentityOfType:self.identityType forUsername:desiredUsername usingDerivationIndex:[self.indexLabel.text intValue]];
-    [blockchainIdentity registerOnNetwork:DSBlockchainIdentityRegistrationStep_RegistrationWithUsername withFundingAccount:self.fundingAccount forTopupAmount:topupAmount stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {
+    DSBlockchainIdentityRegistrationStep steps = DSBlockchainIdentityRegistrationStep_L1Steps;
+    if (self.shouldRegisterOnL2) {
+        steps |= DSBlockchainIdentityRegistrationStep_Identity;
+    }
+    if (self.shouldRegisterUsername) {
+        steps |= DSBlockchainIdentityRegistrationStep_Username;
+    }
+    [blockchainIdentity registerOnNetwork:steps withFundingAccount:self.fundingAccount forTopupAmount:topupAmount stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {
         
     } completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError * _Nonnull error) {
         if (error) {
