@@ -233,7 +233,11 @@
 
 -(void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain*)chain {
     if ([self.chain isEvolutionEnabled]) {
-        [self.identitiesManager retrieveAllBlockchainIdentitiesChainStates];
+        //this only needs to happen once per session
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            [self.identitiesManager retrieveAllBlockchainIdentitiesChainStates];
+        });
     }
 }
 

@@ -305,6 +305,24 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                             return;
                         }
                         
+                        //In wallet registration occurs now
+                        
+                        if (!(steps & DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence)) {
+                            if (completion) {
+                                dispatch_async(dispatch_get_main_queue(), ^{
+                                    completion(stepsCompleted, nil);
+                                });
+                            }
+                            return;
+                        }
+                        [self registerInWalletForRegistrationFundingTransaction:fundingTransaction];
+                        if (stepCompletion) {
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                stepCompletion(DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence);
+                            });
+                        }
+                        stepsCompleted |= DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence;
+                        
                         dispatch_semaphore_t sem = dispatch_semaphore_create(0);
                         __block BOOL transactionSuccessfullyPublished = FALSE;
                         
@@ -356,24 +374,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                                     });
                                 }
                                 stepsCompleted |= DSBlockchainIdentityRegistrationStep_FundingTransactionPublishing;
-                                
-                                //In wallet registration occurs now
-                                
-                                if (!(steps & DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence)) {
-                                    if (completion) {
-                                        dispatch_async(dispatch_get_main_queue(), ^{
-                                            completion(stepsCompleted, nil);
-                                        });
-                                    }
-                                    return;
-                                }
-                                [self registerInWalletForRegistrationFundingTransaction:fundingTransaction];
-                                if (stepCompletion) {
-                                    dispatch_async(dispatch_get_main_queue(), ^{
-                                        stepCompletion(DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence);
-                                    });
-                                }
-                                stepsCompleted |= DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence;
                                 
                                 if (!(steps & DSBlockchainIdentityRegistrationStep_Identity)) {
                                     if (completion) {
@@ -442,7 +442,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                                 });
                             }];
                         }];
-                    
                 }];
         }];
 }
