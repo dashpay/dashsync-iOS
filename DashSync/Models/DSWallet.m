@@ -916,6 +916,10 @@
     NSAssert(!uint256_is_zero(blockchainIdentity.uniqueID), @"registrationTransactionHashData must not be null");
     [keyChainDictionary setObject:@(blockchainIdentity.index) forKey:blockchainIdentity.lockedOutpointData];
     setKeychainDict(keyChainDictionary, self.walletBlockchainIdentitiesKey, NO);
+    
+    if (!_defaultBlockchainIdentity && (blockchainIdentity.index == 0)) {
+        _defaultBlockchainIdentity = blockchainIdentity;
+    }
 }
 
 -(void)wipeBlockchainIdentities {
@@ -923,6 +927,7 @@
         [self unregisterBlockchainIdentity:blockchainIdentity];
         [blockchainIdentity deletePersistentObjectAndSave:NO];
     }
+    _defaultBlockchainIdentity = nil;
 }
 
 -(DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId {
