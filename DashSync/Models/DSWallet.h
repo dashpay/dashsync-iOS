@@ -47,7 +47,9 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 @property (nonatomic, readonly) NSDictionary <NSData*,DSBlockchainIdentity*> * blockchainIdentities;
 
-@property (nonatomic, strong) DSBlockchainIdentity* defaultBlockchainIdentity;
+@property (nonatomic, readonly, nullable) DSBlockchainIdentity* defaultBlockchainIdentity;
+
+-(void)setDefaultBlockchainIdentity:(DSBlockchainIdentity *)defaultBlockchainIdentity;
 
 @property (nonatomic, readonly) NSArray <NSString*> * blockchainIdentityAddresses;
 
