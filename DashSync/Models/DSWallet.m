@@ -281,6 +281,10 @@
     return [NSString stringWithFormat:@"%@_%@",WALLET_BLOCKCHAIN_USERS_KEY,[self uniqueID]];
 }
 
+-(NSString*)walletBlockchainIdentitiesDefaultIndexKey {
+    return [NSString stringWithFormat:@"%@_%@_DEFAULT_INDEX",WALLET_BLOCKCHAIN_USERS_KEY,[self uniqueID]];
+}
+
 -(NSString*)walletMasternodeVotersKey {
     return [NSString stringWithFormat:@"%@_%@",WALLET_MASTERNODE_VOTERS_KEY,[self uniqueID]];
 }
@@ -943,6 +947,13 @@
     if (!_mBlockchainIdentities) {
         NSError * error = nil;
         NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.walletBlockchainIdentitiesKey, &error) mutableCopy];
+        if (error) {
+            return nil;
+        }
+        uint64_t defaultIndex = getKeychainInt(self.walletBlockchainIdentitiesDefaultIndexKey, &error);
+        if (error) {
+            return nil;
+        }
         NSMutableDictionary * rDictionary = [NSMutableDictionary dictionary];
         
         if (keyChainDictionary) {
@@ -1030,6 +1041,9 @@
                     }
                     if (blockchainIdentity) {
                         [rDictionary setObject:blockchainIdentity forKey:blockchainIdentityLockedOutpointData];
+                        if (index == defaultIndex) {
+                            _defaultBlockchainIdentity = blockchainIdentity;
+                        }
                     }
                     
                 }];
@@ -1038,6 +1052,12 @@
         _mBlockchainIdentities = rDictionary;
     }
     return _mBlockchainIdentities;
+}
+
+-(void)setDefaultBlockchainIdentity:(DSBlockchainIdentity *)defaultBlockchainIdentity {
+    if (![[self.blockchainIdentities allValues] containsObject:defaultBlockchainIdentity]) return;
+    _defaultBlockchainIdentity = defaultBlockchainIdentity;
+    setKeychainInt(defaultBlockchainIdentity.index, self.walletBlockchainIdentitiesDefaultIndexKey, NO);
 }
 
 -(uint32_t)unusedBlockchainIdentityIndex {

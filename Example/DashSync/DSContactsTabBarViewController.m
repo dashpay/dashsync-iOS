@@ -68,7 +68,7 @@ NS_ASSUME_NONNULL_BEGIN
                 return;
             }
             
-            [strongSelf showAlertTitle:@"Contact request result:" result:success];
+            [strongSelf showAlertTitle:error.localizedDescription result:success];
         }];
     }]];
     [self presentViewController:alert animated:YES completion:nil];

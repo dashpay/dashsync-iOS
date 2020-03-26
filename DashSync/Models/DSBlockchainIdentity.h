@@ -230,9 +230,9 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 
 -(void)acceptFriendRequest:(DSFriendRequestEntity*)friendRequest completion:(void (^ _Nullable)(BOOL success, NSError * error))completion;
 
-- (void)fetchOutgoingContactRequests:(void (^ _Nullable)(BOOL success, NSError * error))completion;
+- (void)fetchOutgoingContactRequests:(void (^ _Nullable)(BOOL success, NSArray<NSError *> *errors))completion;
 
-- (void)fetchIncomingContactRequests:(void (^ _Nullable)(BOOL success, NSError * error))completion;
+- (void)fetchIncomingContactRequests:(void (^ _Nullable)(BOOL success, NSArray<NSError *> *errors))completion;
 
 - (void)fetchProfileWithCompletion:(void (^ _Nullable)(BOOL success, NSError * error))completion;
 

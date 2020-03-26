@@ -41,19 +41,21 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 @interface DSWallet : NSObject
 
-@property (nonatomic, readonly) NSArray * accounts;
+@property (nonatomic, readonly) NSArray <DSAccount*> * accounts;
 
 @property (nonatomic, readonly) DSSpecialTransactionsWalletHolder * specialTransactionsHolder;
 
-@property (nonatomic, readonly) NSDictionary * blockchainIdentities;
+@property (nonatomic, readonly) NSDictionary <NSData*,DSBlockchainIdentity*> * blockchainIdentities;
 
-@property (nonatomic, readonly) NSArray * blockchainIdentityAddresses;
+@property (nonatomic, strong) DSBlockchainIdentity* defaultBlockchainIdentity;
 
-@property (nonatomic, readonly) NSArray * providerOwnerAddresses;
+@property (nonatomic, readonly) NSArray <NSString*> * blockchainIdentityAddresses;
 
-@property (nonatomic, readonly) NSArray * providerVotingAddresses;
+@property (nonatomic, readonly) NSArray <NSString*> * providerOwnerAddresses;
 
-@property (nonatomic, readonly) NSArray * providerOperatorAddresses;
+@property (nonatomic, readonly) NSArray <NSString*> * providerVotingAddresses;
+
+@property (nonatomic, readonly) NSArray <NSString*> * providerOperatorAddresses;
 
 //This is unique among all wallets and all chains
 @property (nonatomic, readonly) NSString * uniqueID;
@@ -74,19 +76,19 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 @property (nonatomic, readonly) uint64_t balance;
 
 // all previously generated external addresses
-@property (nonatomic, readonly) NSSet * allReceiveAddresses;
+@property (nonatomic, readonly) NSSet <NSString*> * allReceiveAddresses;
 
 // all previously generated internal addresses
-@property (nonatomic, readonly) NSSet * allChangeAddresses;
+@property (nonatomic, readonly) NSSet <NSString*> * allChangeAddresses;
 
 // NSValue objects containing UTXO structs
 @property (nonatomic, readonly) NSArray * unspentOutputs;
 
 // latest 100 transactions sorted by date, most recent first
-@property (nonatomic, readonly) NSArray * recentTransactions;
+@property (nonatomic, readonly) NSArray <DSTransaction*> * recentTransactions;
 
 // all wallet transactions sorted by date, most recent first
-@property (nonatomic, readonly) NSArray * allTransactions;
+@property (nonatomic, readonly) NSArray <DSTransaction*> * allTransactions;
 
 // the total amount spent from the wallet (excluding change)
 @property (nonatomic, readonly) uint64_t totalSent;
