@@ -882,7 +882,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     [script appendCreditBurnScriptPubKeyForAddress:address forChain:self.wallet.chain];
     
     DSCreditFundingTransaction *transaction = [[DSCreditFundingTransaction alloc] initOnChain:self.wallet.chain];
-    return (DSCreditFundingTransaction*)[self updateTransaction:transaction forAmounts:@[@(amount)] toOutputScripts:@[script] withFee:fee toShapeshiftAddress:nil shuffleOutputOrder:YES];
+    return (DSCreditFundingTransaction*)[self updateTransaction:transaction forAmounts:@[@(amount)] toOutputScripts:@[script] withFee:fee shuffleOutputOrder:YES];
 }
 
 
@@ -915,7 +915,11 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
 - (DSTransaction *)updateTransaction:(DSTransaction*)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee {
-    return [self updateTransaction:transaction forAmounts:amounts toOutputScripts:scripts withFee:fee toShapeshiftAddress:nil shuffleOutputOrder:YES];
+    return [self updateTransaction:transaction forAmounts:amounts toOutputScripts:scripts withFee:fee shuffleOutputOrder:YES];
+}
+
+- (DSTransaction *)updateTransaction:(DSTransaction*)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee shuffleOutputOrder:(BOOL)shuffleOutputOrder {
+    return [self updateTransaction:transaction forAmounts:amounts toOutputScripts:scripts withFee:false toShapeshiftAddress:nil shuffleOutputOrder:shuffleOutputOrder];
 }
 
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts

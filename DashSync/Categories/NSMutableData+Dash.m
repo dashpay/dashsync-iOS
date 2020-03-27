@@ -323,6 +323,35 @@ CFAllocatorRef SecureAllocator()
     }
 }
 
+- (void)appendCreditBurnScriptPubKeyForHashDataOfAddress:(NSData *)hashData forChain:(DSChain*)chain
+{
+    if (hashData.length != 20) return;
+    
+    [self appendUInt8:OP_RETURN];
+    [self appendScriptPushData:hashData];
+
+//    if ([chain isMainnet]) {
+//        pubkeyAddress = DASH_PUBKEY_ADDRESS;
+//        scriptAddress = DASH_SCRIPT_ADDRESS;
+//    } else {
+//        pubkeyAddress = DASH_PUBKEY_ADDRESS_TEST;
+//        scriptAddress = DASH_SCRIPT_ADDRESS_TEST;
+//    }
+//
+//    if (version == pubkeyAddress) {
+//        [self appendUInt8:OP_DUP];
+//        [self appendUInt8:OP_HASH160];
+//        [self appendScriptPushData:hash];
+//        [self appendUInt8:OP_EQUALVERIFY];
+//        [self appendUInt8:OP_CHECKSIG];
+//    }
+//    else if (version == scriptAddress) {
+//        [self appendUInt8:OP_HASH160];
+//        [self appendScriptPushData:hash];
+//        [self appendUInt8:OP_EQUAL];
+//    }
+}
+
 - (void)appendCreditBurnScriptPubKeyForAddress:(NSString *)address forChain:(DSChain*)chain
 {
     //uint8_t pubkeyAddress, scriptAddress;

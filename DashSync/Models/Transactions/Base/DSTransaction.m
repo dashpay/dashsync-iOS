@@ -578,14 +578,41 @@
     return [self signWithPrivateKeys:keys];
 }
 
-- (BOOL)signWithPrivateKeys:(NSArray *)keys
-{
+- (BOOL)signWithPrivateKeys:(NSArray *)keys {
     NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:keys.count];
     
     for (DSECDSAKey *key in keys) {
         [addresses addObject:[key addressForChain:self.chain]];
     }
     
+    return [self signWithPrivateKeys:keys forAddresses:addresses];
+}
+
+- (BOOL)signWithPreorderedPrivateKeys:(NSArray *)keys {
+    for (NSUInteger i = 0; i < self.hashes.count; i++) {
+        NSMutableData *sig = [NSMutableData data];
+        NSData * data = [self toDataWithSubscriptIndex:i];
+        UInt256 hash = data.SHA256_2;
+        NSMutableData *s = [NSMutableData dataWithData:[keys[i] sign:hash]];
+        NSArray *elem = [self.inScripts[i] scriptElements];
+        
+        [s appendUInt8:SIGHASH_ALL];
+        [sig appendScriptPushData:s];
+        
+        if (elem.count >= 2 && [elem[elem.count - 2] intValue] == OP_EQUALVERIFY) { // pay-to-pubkey-hash scriptSig
+            [sig appendScriptPushData:[keys[i] publicKeyData]];
+        }
+        
+        self.signatures[i] = sig;
+    }
+    
+    if (! self.isSigned) return NO;
+    _txHash = self.data.SHA256_2;
+    return YES;
+}
+
+- (BOOL)signWithPrivateKeys:(NSArray *)keys forAddresses:(NSArray *)addresses
+{
     for (NSUInteger i = 0; i < self.hashes.count; i++) {
         NSString *addr = [NSString addressWithScriptPubKey:self.inScripts[i] onChain:self.chain];
         NSUInteger keyIdx = (addr) ? [addresses indexOfObject:addr] : NSNotFound;

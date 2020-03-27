@@ -70,6 +70,7 @@ CF_IMPLICIT_BRIDGING_DISABLED
 
 - (void)appendBitcoinScriptPubKeyForAddress:(NSString *)address forChain:(DSChain*)chain;
 - (void)appendScriptPubKeyForAddress:(NSString *)address forChain:(DSChain*)chain;
+- (void)appendCreditBurnScriptPubKeyForHashDataOfAddress:(NSData *)hashData forChain:(DSChain*)chain;
 - (void)appendCreditBurnScriptPubKeyForAddress:(NSString *)address forChain:(DSChain*)chain;
 - (void)appendScriptPushData:(NSData *)d;
 

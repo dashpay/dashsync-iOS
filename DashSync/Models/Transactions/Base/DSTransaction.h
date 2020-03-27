@@ -130,6 +130,7 @@ sequence:(uint32_t)sequence;
 - (void)hasSetInputsAndOutputs;
 - (BOOL)signWithSerializedPrivateKeys:(NSArray *)privateKeys;
 - (BOOL)signWithPrivateKeys:(NSArray *)keys;
+- (BOOL)signWithPreorderedPrivateKeys:(NSArray *)keys;
 
 - (NSString*)shapeshiftOutboundAddress;
 - (NSString*)shapeshiftOutboundAddressForceScript;
