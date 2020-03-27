@@ -85,14 +85,22 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
                                   completion:^(BOOL success) {
                                       __strong typeof(weakSelf) strongSelf = weakSelf;
                                       if (!strongSelf) {
+                                          if (completion) {
+                                              completion([NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                                              DSLocalizedString(@"Internal memory allocation error", nil)}]);
+                                          }
                                           return;
                                       }
                                       
                                       if (success) {
                                           [strongSelf publishTransition:documentTransition success:^(NSDictionary * _Nonnull successDictionary) {
-                                              
+                                              if (completion) {
+                                                  completion(nil);
+                                              }
                                           } failure:^(NSError * _Nonnull error) {
-                                              
+                                              if (completion) {
+                                                  completion(error);
+                                              }
                                           }];
                                       }
                                       else {

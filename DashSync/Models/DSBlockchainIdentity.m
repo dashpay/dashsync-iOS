@@ -1936,6 +1936,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                 __strong typeof(weakSelf) strongSelf = weakSelf;
                 if (!strongSelf) {
+                    if (completion) {
+                        completion(NO, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                        DSLocalizedString(@"Internal memory allocation error", nil)}]);
+                    }
                     return;
                 }
                 [strongSelf monitorForContract:contract withRetryCount:retryCount - 1 completion:completion];
@@ -2018,6 +2022,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     [self.DAPINetworkService getIdentityByName:potentialContact.username inDomain:[self topDomainName] success:^(NSDictionary *_Nonnull blockchainIdentityDictionary) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
+            if (completion) {
+                completion(NO, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                DSLocalizedString(@"Internal memory allocation error", nil)}]);
+            }
             return;
         }
         NSString * base58String = nil;
@@ -2106,28 +2114,34 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     [self.DAPIClient sendDocument:potentialFriendship.contactRequestDocument forIdentity:self contract:contract completion:^(NSError * _Nullable error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
+            if (completion) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completion(NO, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                    DSLocalizedString(@"Internal memory allocation error", nil)}]);
+                });
+            }
             return;
         }
         
         BOOL success = error == nil;
         
-        if (success) {
-            [potentialFriendship.destinationBlockchainIdentity fetchProfileWithCompletion:^(BOOL success, NSError * error) {
-                if (!success) {
-                    if (completion) {
-                        completion(success,error);
-                    }
-                    return;
-                }
-                DSFriendRequestEntity * friendRequest = [potentialFriendship outgoingFriendRequestForDashpayUserEntity:potentialFriendship.destinationBlockchainIdentity.matchingDashpayUser];
-                [strongSelf.matchingDashpayUser addOutgoingRequestsObject:friendRequest];
-                [potentialFriendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequest];
-                [DSFriendRequestEntity saveContext];
-                if (completion) {
-                    completion(success,error);
-                }
-            }];
+        if (!success) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(NO, error);
+            });
+            return;
         }
+        
+        DSFriendRequestEntity * friendRequest = [potentialFriendship outgoingFriendRequestForDashpayUserEntity:potentialFriendship.destinationBlockchainIdentity.matchingDashpayUser];
+        [strongSelf.matchingDashpayUser addOutgoingRequestsObject:friendRequest];
+        [potentialFriendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequest];
+        [DSFriendRequestEntity saveContext];
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(success,error);
+            });
+        }
+        
     }];
 }
 
@@ -2171,6 +2185,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             [self.DAPINetworkService publishTransition:transition success:^(NSDictionary * _Nonnull successDictionary) {
                 __strong typeof(weakSelf) strongSelf = weakSelf;
                 if (!strongSelf) {
+                    if (completion) {
+                        completion(NO, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                        DSLocalizedString(@"Internal memory allocation error", nil)}]);
+                    }
                     return;
                 }
                 if (completion) {
@@ -2214,14 +2232,20 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     
     DPContract * dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
     if ([dashpayContract contractState] != DPContractState_Registered) {
-        completion(NO, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
-        DSLocalizedString(@"Dashpay Contract is not yet registered on network", nil)}]);
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(NO, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                DSLocalizedString(@"Dashpay Contract is not yet registered on network", nil)}]);
+            });
+        }
         return;
     }
     
     [self fetchProfileForBlockchainIdentityUniqueId:self.uniqueID saveReturnedProfile:TRUE context:self.managedObjectContext completion:^(BOOL success, NSError * error) {
         if (completion) {
-            completion(success, error);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(success, error);
+            });
         }
     }];
 }
@@ -2243,6 +2267,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     [self.DAPINetworkService getDashpayProfileForUserId:uint256_base58(blockchainIdentityUniqueId) success:^(NSArray<NSDictionary *> * _Nonnull documents) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
+            if (completion) {
+                completion(NO, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                DSLocalizedString(@"Internal memory allocation error", nil)}]);
+            }
             return;
         }
         if (![documents count]) {
@@ -2258,6 +2286,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         [context performBlockAndWait:^{
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
+                if (completion) {
+                    completion(NO, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                    DSLocalizedString(@"Internal memory allocation error", nil)}]);
+                }
                 return;
             }
             [DSDashpayUserEntity setContext:context];
@@ -2316,13 +2348,27 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     [self.DAPINetworkService getDashpayIncomingContactRequestsForUserId:self.uniqueIdString since:0 success:^(NSArray<NSDictionary *> * _Nonnull documents) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
+            if (completion) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completion(NO, @[[NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                    DSLocalizedString(@"Internal memory allocation error", nil)}]]);
+                });
+            }
             return;
         }
         
-        [strongSelf handleContactRequestObjects:documents context:strongSelf.managedObjectContext completion:completion];
+        [strongSelf handleContactRequestObjects:documents context:strongSelf.managedObjectContext completion:^(BOOL success, NSArray<NSError *> *errors) {
+            if (completion) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completion(success, errors);
+                });
+            }
+        }];
     } failure:^(NSError * _Nonnull error) {
         if (completion) {
-            completion(NO, @[error]);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(NO, @[error]);
+            });
         }
     }];
 }
@@ -2332,14 +2378,26 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     [self.DAPINetworkService getDashpayOutgoingContactRequestsForUserId:self.uniqueIdString since:0 success:^(NSArray<NSDictionary *> * _Nonnull documents) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
+            if (completion) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completion(NO, @[[NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                    DSLocalizedString(@"Internal memory allocation error", nil)}]]);
+                });
+            }
             return;
         }
         
-        [strongSelf handleContactRequestObjects:documents context:strongSelf.managedObjectContext completion:completion];
+        [strongSelf handleContactRequestObjects:documents context:strongSelf.managedObjectContext completion:^(BOOL success, NSArray<NSError *> *errors) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(success,errors);
+            });
+        }];
         
     } failure:^(NSError *_Nonnull error) {
         if (completion) {
-            completion(NO,@[error]);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(NO,@[error]);
+            });
         }
     }];
 }
@@ -2604,6 +2662,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 //check to see if the blockchain identity has keys
                 
                 if (!recipientBlockchainIdentity.activeKeyCount) {
+                    dispatch_group_enter(dispatchGroup);
                     [recipientBlockchainIdentity fetchAllNetworkStateInformationWithCompletion:^(BOOL success, NSError * error) {
                         if (success) {
                             [self addFriendshipFromSourceBlockchainIdentity:self sourceKeyIndex:contactRequest.senderKeyIndex toRecipientBlockchainIdentity:recipientBlockchainIdentity recipientKeyIndex:contactRequest.recipientKeyIndex inContext:self.managedObjectContext];
