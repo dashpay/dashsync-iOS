@@ -111,8 +111,8 @@ typedef struct _DSLLMQ {
 #define uint16_firstbits(x) (x & 0xFF? uint8_firstbits( x ) : 8+uint8_firstbits( x >> 8 ))
 #define uint32_firstbits(x) (x & 0xFFFF? uint16_firstbits( x ) : 16+uint16_firstbits( x >> 16 ))
 #define uint64_firstbits(x) (x & 0xFFFFFFFF? uint32_firstbits( x ) : 32+uint32_firstbits( x >> 32 ))
-#define uint128_firstbits(x) (x.u64[0] & 0xFFFFFFFF? uint64_firstbits( x ) : 64+uint64_firstbits( x.u64[1] ))
-#define uint256_firstbits(x) ((x.u64[0] & 0xFFFFFFFF)? uint64_firstbits( x.u64[0] ) : ((x.u64[1] & 0xFFFFFFFF)? (64+uint64_firstbits( x.u64[1] )):((x.u64[2] & 0xFFFFFFFF)? (128+uint64_firstbits( x.u64[2] )):(192+uint64_firstbits( x.u64[3] )))))
+#define uint128_firstbits(x) (x.u64[0] & 0xFFFFFFFFFFFFFFFF? uint64_firstbits( x ) : 64+uint64_firstbits( x.u64[1] ))
+#define uint256_firstbits(x) ((x.u64[0] & 0xFFFFFFFFFFFFFFFF)? uint64_firstbits( x.u64[0] ) : ((x.u64[1] & 0xFFFFFFFFFFFFFFFF)? (64+uint64_firstbits( x.u64[1] )):((x.u64[2] & 0xFFFFFFFFFFFFFFFF)? (128+uint64_firstbits( x.u64[2] )):(192+uint64_firstbits( x.u64[3] )))))
 
 #define uint768_is_zero(u)\
 (((u).u64[0] | (u).u64[1] | (u).u64[2] | (u).u64[3] | (u).u64[4] | (u).u64[5] | (u).u64[6] | (u).u64[7] | (u).u64[8] | (u).u64[9] | (u).u64[10] | (u).u64[11]) == 0)
@@ -145,6 +145,7 @@ typedef struct _DSLLMQ {
 #define uint160_hex(u) [NSData dataWithUInt160:u].hexString
 #define uint160_reverse_hex(u) [NSData dataWithUInt160:u].reverse.hexString
 #define uint256_hex(u) [NSData dataWithUInt256:u].hexString
+#define uint256_bin(u) [NSData dataWithUInt256:u].binaryString
 #define uint256_base64(u) [NSData dataWithUInt256:u].base64String
 #define uint256_base58(u) [NSData dataWithUInt256:u].base58String
 #define uint256_reverse_hex(u) [NSData dataWithUInt256:u].reverse.hexString

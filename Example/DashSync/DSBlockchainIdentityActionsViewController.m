@@ -108,7 +108,7 @@
                 break;
         }
         
-    } else if (!self.blockchainIdentity.matchingDashpayUser.isRegistered) {
+    } else if (!self.blockchainIdentity.matchingDashpayUser.remoteProfileDocumentRevision) {
         self.aboutMeLabel.text = @"Fetching";
         [self.avatarImageView sd_setImageWithURL:nil];
         self.usernameStatusLabel.text = @"";
@@ -132,7 +132,7 @@
 
 -(void)updateProfile {
     self.title = self.blockchainIdentity.currentUsername;
-    if (!self.blockchainIdentity.matchingDashpayUser.isRegistered) {
+    if (!self.blockchainIdentity.matchingDashpayUser.remoteProfileDocumentRevision) {
         self.aboutMeLabel.text = @"Register Profile";
         [self.avatarImageView sd_setImageWithURL:nil];
     }

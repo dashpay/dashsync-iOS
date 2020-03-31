@@ -198,6 +198,7 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 - (NSString *)base64String;
 - (NSString *)shortHexString;
 - (NSString *)hexString;
+- (NSString *)binaryString;
     
 + (NSData * _Nullable)merkleRootFromHashes:(NSArray*)hashes;
 

@@ -43,7 +43,7 @@
     for (NSNumber * indexIdentifier in self.publicKeys) {
         DSKey * key = self.publicKeys[indexIdentifier];
         DSMutableStringValueDictionary *platformKeyDictionary = [[DSMutableStringValueDictionary alloc] init];
-        platformKeyDictionary[@"id"] = @([indexIdentifier integerValue] + 1);
+        platformKeyDictionary[@"id"] = @([indexIdentifier unsignedIntValue] + 1);
         platformKeyDictionary[@"type"] = @(key.keyType);
         platformKeyDictionary[@"data"] = key.publicKeyData.base64String;
         platformKeyDictionary[@"isEnabled"] = @YES;
@@ -58,6 +58,23 @@
     json[@"lockedOutPoint"] = dsutxo_data(self.lockedOutpoint).base64String;
     json[@"publicKeys"] = [self platformKeyDictionaries];
     return json;
+}
+
+-(void)applyKeyValueDictionary:(DSMutableStringValueDictionary *)keyValueDictionary {
+    [super applyKeyValueDictionary:keyValueDictionary];
+    self.identityType = [keyValueDictionary[@"identityType"] unsignedIntValue];
+    NSString * lockedOutPointString = keyValueDictionary[@"lockedOutPoint"];
+    self.lockedOutpoint = [lockedOutPointString.base64ToData transactionOutpoint];
+    NSArray * publicKeysDictionariesArray = keyValueDictionary[@"publicKeys"];
+    NSMutableDictionary * platformKeys = [NSMutableDictionary dictionary];
+    for (DSMutableStringValueDictionary * platformKeyDictionary in publicKeysDictionariesArray) {
+        DSKeyType keyType = [platformKeyDictionary[@"type"] unsignedIntValue];
+        NSUInteger identifier = [platformKeyDictionary[@"id"] unsignedIntValue] - 1;
+        NSData* keyData = ((NSString*)platformKeyDictionary[@"data"]).base64ToData;
+        DSKey * key = [DSKey keyForPublicKeyData:keyData forKeyType:keyType onChain:self.chain];
+        [platformKeys setObject:key forKey:@(identifier)];
+    }
+    self.publicKeys = [platformKeys copy];
 }
 
 //- (NSString *)description

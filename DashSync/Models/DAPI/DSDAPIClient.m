@@ -76,9 +76,8 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     NSParameterAssert(document);
     NSParameterAssert(contract);
     
-    DSDocumentTransition * documentTransition = [[DSDocumentTransition alloc] initForDocuments:@[document] withTransitionVersion:1 blockchainIdentityUniqueId:blockchainIdentity.uniqueID onChain:self.chain];
+    DSDocumentTransition * documentTransition = [[DSDocumentTransition alloc] initForCreatedDocuments:@[document] withTransitionVersion:1 blockchainIdentityUniqueId:blockchainIdentity.uniqueID onChain:self.chain];
     
-    DSDLog(@"identity %@",uint256_hex(documentTransition.blockchainIdentityUniqueId));
     __weak typeof(self) weakSelf = self;
     [blockchainIdentity signStateTransition:documentTransition
                                   withPrompt:@""

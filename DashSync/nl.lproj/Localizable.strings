@@ -319,3 +319,6 @@
 
 /* No comment provided by engineer. */
 "Unable to sign transition" = "Unable to sign transition";
+
+/* No comment provided by engineer. */
+"Transition had nothing to update" = "Transition had nothing to update";

@@ -19,11 +19,21 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, DSDocumentTransitionType) {
+    DSDocumentTransitionType_Create = 1,
+    DSDocumentTransitionType_Update = 2,
+    DSDocumentTransitionType_Delete = 3,
+};
+
 @interface DSDocumentTransition : DSTransition
 
 @property(nonatomic,readonly) NSArray<DPDocument *>* documents;
 
--(instancetype)initForDocuments:(NSArray<DPDocument*>*)documents withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain;
+-(instancetype)initForCreatedDocuments:(NSArray<DPDocument*>*)documents withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain;
+
+-(instancetype)initForUpdatedDocuments:(NSArray<DPDocument*>*)documents withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain;
+
+-(instancetype)initForDocuments:(NSArray<DPDocument*>*)documents withActions:(NSArray<NSNumber*>*)actions withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain;
 
 @end
 

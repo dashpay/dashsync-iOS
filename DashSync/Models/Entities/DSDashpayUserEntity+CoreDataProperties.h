@@ -15,11 +15,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSFetchRequest<DSDashpayUserEntity *> *)fetchRequest;
 
-@property (nonatomic, assign) uint32_t profileDocumentRevision;
+@property (nonatomic, assign) uint32_t localProfileDocumentRevision;
+@property (nonatomic, assign) uint32_t remoteProfileDocumentRevision;
 @property (nullable, nonatomic, copy) NSString *displayName;
 @property (nullable, nonatomic, copy) NSString *avatarPath;
 @property (nullable, nonatomic, copy) NSString *publicMessage;
-@property (nonatomic, assign) BOOL isRegistered;
 @property (nullable, nonatomic, retain) DSBlockchainIdentityEntity *associatedBlockchainIdentity;
 @property (nullable, nonatomic, retain) NSSet<DSFriendRequestEntity *> *outgoingRequests;
 @property (nullable, nonatomic, retain) NSSet<DSFriendRequestEntity *> *incomingRequests;

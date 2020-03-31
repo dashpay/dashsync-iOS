@@ -49,6 +49,7 @@
 + (NSString *)base58WithData:(NSData *)d;
 + (NSString *)base58checkWithData:(NSData *)d;
 + (NSString *)hexWithData:(NSData *)d;
++ (NSString *)binaryWithData:(NSData *)d;
 + (NSString *)bitcoinAddressWithScriptPubKey:(NSData *)script forChain:(DSChain*)chain;
 + (NSString *)bitcoinAddressWithScriptSig:(NSData *)script forChain:(DSChain*)chain;
 

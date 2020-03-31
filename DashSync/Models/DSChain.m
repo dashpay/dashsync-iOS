@@ -489,8 +489,11 @@ static dispatch_once_t devnetToken = 0;
     
     return devnetChain;
 }
-
 +(DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID {
+    return [self setUpDevnetWithIdentifier:identifier withCheckpoints:checkpointArray withDefaultPort:port withDefaultDapiJRPCPort:dapiJRPCPort withDefaultDapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID isTransient:NO];
+}
+
++(DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID isTransient:(BOOL)isTransient {
     dispatch_once(&devnetToken, ^{
         _devnetDictionary = [NSMutableDictionary dictionary];
     });
@@ -505,7 +508,8 @@ static dispatch_once_t devnetToken = 0;
             devnetChain = [_devnetDictionary objectForKey:identifier];
         }
     }
-    if (inSetUp) {
+    if (inSetUp && !isTransient) {
+        //note: there is no point to load anything if the chain is transient
         [devnetChain setUp];
         [[DSChainEntity context] performBlockAndWait:^{
             DSChainEntity * chainEntity = [devnetChain chainEntity];

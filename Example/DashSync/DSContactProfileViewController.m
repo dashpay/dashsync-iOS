@@ -208,8 +208,10 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *avatarURLString = self.avatarCellModel.text.length > 0
                                     ? self.avatarCellModel.text
                                     : self.avatarCellModel.placeholder;
+    
+    [self.blockchainIdentity updateDashpayProfileWithDisplayName:displayName publicMessage:aboutMe avatarURLString:avatarURLString];
     __weak typeof(self) weakSelf = self;
-    [self.blockchainIdentity createOrUpdateProfileWithDisplayName:displayName publicMessage:aboutMe avatarURLString:avatarURLString completion:^(BOOL success, NSError * error) {
+    [self.blockchainIdentity signAndPublishProfileWithCompletion:^(BOOL success, BOOL cancelled, NSError * _Nonnull error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;

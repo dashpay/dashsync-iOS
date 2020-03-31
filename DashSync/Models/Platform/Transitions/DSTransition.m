@@ -18,6 +18,7 @@
 #import "NSDate+Utils.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSChainEntity+CoreDataClass.h"
+#import <TinyCborObjc/NSData+DSCborDecoding.h>
 
 @interface DSTransition()
 
@@ -38,6 +39,17 @@
     self.chain = chain;
     self.saved = FALSE;
     self.createdTimestamp = [NSDate timeIntervalSince1970];
+    return self;
+}
+
+-(instancetype)initWithData:(NSData*)data onChain:(DSChain*)chain {
+    if (! (self = [self initOnChain:chain])) return nil;
+    NSError * error = nil;
+    _keyValueDictionary = [data ds_decodeCborError:&error];
+    if (error || !_keyValueDictionary) {
+        return nil;
+    }
+    [self applyKeyValueDictionary:_keyValueDictionary];
     return self;
 }
 
@@ -119,6 +131,12 @@
         _keyValueDictionary = json;
     }
     return _keyValueDictionary;
+}
+
+-(void)applyKeyValueDictionary:(DSMutableStringValueDictionary *)keyValueDictionary {
+    _keyValueDictionary = keyValueDictionary;
+    self.signatureData = keyValueDictionary[@"signature"];
+    self.signaturePublicKeyId = [keyValueDictionary[@"signaturePublicKeyId"] unsignedIntValue];
 }
 
 @end

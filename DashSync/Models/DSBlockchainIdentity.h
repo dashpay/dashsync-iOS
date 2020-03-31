@@ -236,7 +236,11 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 
 - (void)fetchProfileWithCompletion:(void (^ _Nullable)(BOOL success, NSError * error))completion;
 
-- (void)createOrUpdateProfileWithDisplayName:(NSString*)displayName publicMessage:(NSString*)publicMessage avatarURLString:(NSString *)avatarURLString completion:(void (^ _Nullable)(BOOL success, NSError * error))completion;
+- (void)updateDashpayProfileWithDisplayName:(NSString*)displayName publicMessage:(NSString*)publicMessage avatarURLString:(NSString *)avatarURLString;
+
+- (void)signedProfileDocumentTransitionWithPrompt:(NSString*)prompt completion:(void (^)(DSTransition * transition, BOOL cancelled, NSError * error))completion;
+
+- (void)signAndPublishProfileWithCompletion:(void (^)(BOOL success, BOOL cancelled, NSError * error))completion;
 
 // MARK: - DPNS
 

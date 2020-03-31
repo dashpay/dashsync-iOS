@@ -1339,6 +1339,11 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     return [NSString hexWithData:self];
 }
 
+- (NSString *)binaryString
+{
+    return [NSString binaryWithData:self];
+}
+
 +(NSData*)opReturnScript {
     NSMutableData * opReturnScript = [NSMutableData data];
     [opReturnScript appendUInt8:OP_RETURN];

@@ -40,6 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) DSMutableStringValueDictionary * keyValueDictionary;
 
 -(instancetype)initOnChain:(DSChain*)chain;
+-(void)applyKeyValueDictionary:(DSMutableStringValueDictionary *)keyValueDictionary;
 
 @end
 

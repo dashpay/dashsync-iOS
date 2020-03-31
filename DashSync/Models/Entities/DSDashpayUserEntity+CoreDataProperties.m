@@ -14,7 +14,8 @@
 	return [NSFetchRequest fetchRequestWithEntityName:@"DSDashpayUserEntity"];
 }
 
-@dynamic profileDocumentRevision;
+@dynamic localProfileDocumentRevision;
+@dynamic remoteProfileDocumentRevision;
 @dynamic displayName;
 @dynamic publicMessage;
 @dynamic associatedBlockchainIdentity;
@@ -23,6 +24,5 @@
 @dynamic friends;
 @dynamic avatarPath;
 @dynamic chain;
-@dynamic isRegistered;
 
 @end
