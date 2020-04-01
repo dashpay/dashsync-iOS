@@ -35,7 +35,7 @@ typedef NS_ENUM(NSUInteger, DPContractState) {
 @interface DPContract : DPBaseObject
 
 @property (readonly, copy, nonatomic) NSString *localContractIdentifier;
-@property (readonly, nonatomic) UInt256 registeredBlockchainIdentity;
+@property (readonly, nonatomic) UInt256 registeredBlockchainIdentityUniqueID;
 @property (readonly, copy, nonatomic) NSString *name;
 @property (readonly, copy, nonatomic) NSString *base58ContractID;
 @property (readonly, copy, nonatomic) NSString *statusString;

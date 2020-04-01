@@ -1297,7 +1297,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 }
                 strongContract.contractState = DPContractState_NotRegistered;
             }];
-        } else if ((uint256_is_zero(self.chain.dpnsContractID) && uint256_is_zero(contract.registeredBlockchainIdentity)) || contract.contractState == DPContractState_NotRegistered) {
+        } else if ((uint256_is_zero(self.chain.dpnsContractID) && uint256_is_zero(contract.registeredBlockchainIdentityUniqueID)) || contract.contractState == DPContractState_NotRegistered) {
             [contract registerCreator:self];
             __block DSContractTransition * transition = [contract contractRegistrationTransitionForIdentity:self];
             [self signStateTransition:transition withPrompt:@"Register Contract?" completion:^(BOOL success) {

@@ -322,3 +322,9 @@
 
 /* No comment provided by engineer. */
 "Transition had nothing to update" = "Transition had nothing to update";
+
+/* No comment provided by engineer. */
+"Contract '%@' doesn't contain a table named '%@'" = "Contract '%1$@' doesn't contain a table named '%2$@'";
+
+/* No comment provided by engineer. */
+"Contract '%@' needs to first be locally registered" = "Contract '%@' needs to first be locally registered";

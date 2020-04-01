@@ -27,6 +27,7 @@ typedef NS_ENUM(NSInteger, DPErrorCode) {
     DPErrorCode_InvalidDPObject,
     DPErrorCode_InvalidDocumentType,
     DPErrorCode_ContractAndDocumentsNotAllowedSamePacket,
+    DPErrorCode_UnknownContract,
 };
 
 NS_ASSUME_NONNULL_END

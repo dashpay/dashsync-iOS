@@ -309,12 +309,13 @@ static checkpoint mainnet_checkpoint_array[] = {
     }
     //    DSDLog(@"%@",[NSData dataWithUInt256:self.checkpoints[0].checkpointHash]);
     //    DSDLog(@"%@",[NSData dataWithUInt256:self.genesisHash]);
+    self.devnetIdentifier = identifier;
     self.standardPort = port;
     self.standardDapiJRPCPort = dapiJRPCPort;
     self.standardDapiGRPCPort = dapiGRPCPort;
     self.dpnsContractID = dpnsContractID;
     self.dashpayContractID = dashpayContractID;
-    self.devnetIdentifier = identifier;
+
     self.mainThreadChainEntity = [self chainEntity];
     return self;
 }

@@ -63,14 +63,28 @@ static NSInteger const DEFAULT_REVISION = 1;
     if (!dataDictionary) {
         dataDictionary = @{};
     }
-
-    if (![self.contract isDocumentDefinedForType:tableName]) {
+    
+    if (uint256_is_zero(self.contract.registeredBlockchainIdentityUniqueID)) {
         if (error != NULL) {
             *error = [NSError errorWithDomain:DPErrorDomain
                                          code:DPErrorCode_InvalidDocumentType
                                      userInfo:@{
                                          NSLocalizedDescriptionKey :
-                                             [NSString stringWithFormat:@"Contract '%@' doesn't contain type '%@'",
+                                             [NSString stringWithFormat:DSLocalizedString(@"Contract '%@' needs to first be locally registered",nil),
+                                                                        self.contract.name],
+                                     }];
+        }
+
+        return nil;
+    }
+
+    if (![self.contract isDocumentDefinedForType:tableName]) {
+        if (error != NULL) {
+            *error = [NSError errorWithDomain:DPErrorDomain
+                                         code:DPErrorCode_UnknownContract
+                                     userInfo:@{
+                                         NSLocalizedDescriptionKey :
+                                             [NSString stringWithFormat:DSLocalizedString(@"Contract '%@' doesn't contain a table named '%@'", nil),
                                                                         self.contract.name, tableName],
                                      }];
         }
@@ -78,7 +92,7 @@ static NSInteger const DEFAULT_REVISION = 1;
         return nil;
     }
     
-    NSString * base58String = uint256_base58(self.contract.registeredBlockchainIdentity);
+    NSString * base58String = uint256_base58(self.contract.registeredBlockchainIdentityUniqueID);
 
     DPDocument *object = [[DPDocument alloc] initWithDataDictionary:dataDictionary createdByUserWithId:self.userId onContractWithId:base58String onTableWithName:tableName usingEntropy:[DSKey randomAddressForChain:[self chain]]];
 
