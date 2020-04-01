@@ -26,7 +26,7 @@ static NSUInteger FETCH_BATCH_SIZE = 20;
 @implementation DSFetchedResultsTableViewController
 
 - (NSManagedObjectContext *)context {
-    return [NSManagedObject mainContext];
+    return [NSManagedObject context];
 }
 
 - (NSString *)entityName {
@@ -102,35 +102,41 @@ static NSUInteger FETCH_BATCH_SIZE = 20;
 #pragma mark - NSFetchedResultsControllerDelegate
 
 - (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
-    [self.tableView beginUpdates];
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        [self.tableView beginUpdates];
+    });
 }
 
 - (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject atIndexPath:(nullable NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)type newIndexPath:(nullable NSIndexPath *)newIndexPath {
-    UITableView *tableView = self.tableView;
-    
-    switch (type) {
-        case NSFetchedResultsChangeInsert: {
-            [tableView insertRowsAtIndexPaths:@[ newIndexPath ] withRowAnimation:UITableViewRowAnimationFade];
-            break;
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        UITableView *tableView = self.tableView;
+        
+        switch (type) {
+            case NSFetchedResultsChangeInsert: {
+                [tableView insertRowsAtIndexPaths:@[ newIndexPath ] withRowAnimation:UITableViewRowAnimationFade];
+                break;
+            }
+            case NSFetchedResultsChangeDelete: {
+                [tableView deleteRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationFade];
+                break;
+            }
+            case NSFetchedResultsChangeMove: {
+                [tableView moveRowAtIndexPath:indexPath toIndexPath:newIndexPath];
+                break;
+            }
+            case NSFetchedResultsChangeUpdate: {
+                [self configureCell:[tableView cellForRowAtIndexPath:indexPath]
+                        atIndexPath:indexPath];
+                break;
+            }
         }
-        case NSFetchedResultsChangeDelete: {
-            [tableView deleteRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationFade];
-            break;
-        }
-        case NSFetchedResultsChangeMove: {
-            [tableView moveRowAtIndexPath:indexPath toIndexPath:newIndexPath];
-            break;
-        }
-        case NSFetchedResultsChangeUpdate: {
-            [self configureCell:[tableView cellForRowAtIndexPath:indexPath]
-                    atIndexPath:indexPath];
-            break;
-        }
-    }
+    });
 }
 
 - (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
-    [self.tableView endUpdates];
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        [self.tableView endUpdates];
+    });
 }
 
 @end

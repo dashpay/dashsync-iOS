@@ -23,6 +23,7 @@
 #import "NSString+Dash.h"
 #import "DSDAPIClient.h"
 #import "DSDAPINetworkService.h"
+#import "DSOptionsManager.h"
 
 @interface DSIdentitiesManager()
 
@@ -57,16 +58,20 @@
             [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, NSError * error) {
                 if (success) {
                     //now lets get dpns info
-                    [identity fetchUsernamesWithCompletion:^(BOOL success, NSError * error) {
-                        
-                    }];
+                    if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_DPNS)) {
+                        [identity fetchUsernamesWithCompletion:^(BOOL success, NSError * error) {
+                            
+                        }];
+                    }
                 }
             }];
         } else if (identity.registrationStatus == DSBlockchainIdentityRegistrationStatus_Registered) {
             if (!identity.currentUsername) {
-                [identity fetchUsernamesWithCompletion:^(BOOL success, NSError * error) {
-                    
-                }];
+                if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_DPNS)) {
+                    [identity fetchUsernamesWithCompletion:^(BOOL success, NSError * error) {
+                        
+                    }];
+                }
             }
         }
     }

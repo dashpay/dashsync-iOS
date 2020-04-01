@@ -51,6 +51,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityType) {
     DSBlockchainIdentityType_Application = 2,
 };
 
+typedef NS_ENUM(NSUInteger, DSBlockchainIdentityRetryDelayType) {
+    DSBlockchainIdentityRetryDelayType_Linear = 0,
+    DSBlockchainIdentityRetryDelayType_SlowingDown20Percent = 1,
+    DSBlockchainIdentityRetryDelayType_SlowingDown50Percent = 2,
+};
+
 typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyStatus) {
     DSBlockchainIdentityKeyStatus_Unknown = 0,
     DSBlockchainIdentityKeyStatus_Registered = 1,

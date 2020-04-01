@@ -68,7 +68,9 @@ static NSString * const CellId = @"CellId";
         objectsHasChangedContact(updatedObjects, contact) ||
         objectsHasChangedContact(deletedObjects, contact)) {
         self.fetchedResultsController = nil;
-        [self.tableView reloadData];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.tableView reloadData];
+        });
     }
 }
 
@@ -81,7 +83,7 @@ static NSString * const CellId = @"CellId";
     //own contact is homer
     //self is marge
     //validates to being a request from marge to homer
-    return [NSPredicate predicateWithFormat:@"destinationContact == %@ && (SUBQUERY(destinationContact.outgoingRequests, $friendRequest, $friendRequest.destinationContact == SELF.sourceContact).@count == 0)",self.blockchainIdentity.matchingDashpayUser];
+    return [NSPredicate predicateWithFormat:@"destinationContact == %@ && (SUBQUERY(destinationContact.outgoingRequests, $friendRequest, $friendRequest.destinationContact == SELF.sourceContact).@count == 0)",[self.blockchainIdentity matchingDashpayUserInContext:self.context]];
 }
 
 - (NSArray<NSSortDescriptor *> *)sortDescriptors {

@@ -20,9 +20,9 @@
     
     self.title = @"Pending";
     
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(mocDidSaveNotification:)
-                                                 name:NSManagedObjectContextDidSaveNotification object:self.context];
+//    [[NSNotificationCenter defaultCenter] addObserver:self
+//                                             selector:@selector(mocDidSaveNotification:)
+//                                                 name:NSManagedObjectContextDidSaveNotification object:self.context];
 }
 
 - (IBAction)refreshAction:(id)sender {
@@ -75,7 +75,7 @@
 }
 
 -(NSPredicate*)predicate {
-    return [NSPredicate predicateWithFormat:@"sourceContact == %@ && (SUBQUERY(sourceContact.incomingRequests, $friendRequest, $friendRequest.sourceContact == SELF.destinationContact).@count == 0)",self.blockchainIdentity.matchingDashpayUser];
+    return [NSPredicate predicateWithFormat:@"sourceContact == %@ && (SUBQUERY(sourceContact.incomingRequests, $friendRequest, $friendRequest.sourceContact == SELF.destinationContact).@count == 0)",[self.blockchainIdentity matchingDashpayUserInContext:self.context]];
 }
 
 
