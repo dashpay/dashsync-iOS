@@ -1474,24 +1474,25 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 // MARK: Documents
 
--(NSArray<DPDocument*>*)preorderDocumentsForUnregisteredUsernames:(NSArray*)unregisteredUsernames {
+-(NSArray<DPDocument*>*)preorderDocumentsForUnregisteredUsernames:(NSArray*)unregisteredUsernames error:(NSError**)error {
     NSMutableArray * usernamePreorderDocuments = [NSMutableArray array];
     for (NSData * saltedDomainHashData in [[self saltedDomainHashesForUsernames:unregisteredUsernames] allValues]) {
-        NSError * error = nil;
         NSString * saltedDomainHashString = [saltedDomainHashData hexString];
         DSStringValueDictionary * dataDictionary = @{
             @"saltedDomainHash": saltedDomainHashString
         };
-        DPDocument * document = [self.dpnsDocumentFactory documentOnTable:@"preorder" withDataDictionary:dataDictionary error:&error];
+        DPDocument * document = [self.dpnsDocumentFactory documentOnTable:@"preorder" withDataDictionary:dataDictionary error:error];
+        if (*error) {
+            return nil;
+        }
         [usernamePreorderDocuments addObject:document];
     }
     return usernamePreorderDocuments;
 }
 
--(NSArray<DPDocument*>*)domainDocumentsForUnregisteredUsernames:(NSArray*)unregisteredUsernames {
+-(NSArray<DPDocument*>*)domainDocumentsForUnregisteredUsernames:(NSArray*)unregisteredUsernames error:(NSError**)error {
     NSMutableArray * usernameDomainDocuments = [NSMutableArray array];
     for (NSString * username in [self saltedDomainHashesForUsernames:unregisteredUsernames]) {
-        NSError * error = nil;
         NSMutableData * nameHashData = [NSMutableData data];
         [nameHashData appendData:@"5620".hexToData]; //56 because SHA256_2 and 20 because 32 bytes
         NSData * usernameData = [[username lowercaseString] dataUsingEncoding:NSUTF8StringEncoding];
@@ -1504,7 +1505,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             @"preorderSalt": [self.usernameSalts objectForKey:username].base58String,
             @"records" : @{@"dashIdentity":uint256_base58(self.uniqueID)}
         };
-        DPDocument * document = [self.dpnsDocumentFactory documentOnTable:@"domain" withDataDictionary:dataDictionary error:&error];
+        DPDocument * document = [self.dpnsDocumentFactory documentOnTable:@"domain" withDataDictionary:dataDictionary error:error];
+        if (error) {
+            return nil;
+        }
         [usernameDomainDocuments addObject:document];
     }
     return usernameDomainDocuments;
@@ -1512,15 +1516,15 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 // MARK: Transitions
 
--(DSDocumentTransition*)preorderTransitionForUnregisteredUsernames:(NSArray*)unregisteredUsernames {
-    NSArray * usernamePreorderDocuments = [self preorderDocumentsForUnregisteredUsernames:unregisteredUsernames];
+-(DSDocumentTransition*)preorderTransitionForUnregisteredUsernames:(NSArray*)unregisteredUsernames error:(NSError**)error  {
+    NSArray * usernamePreorderDocuments = [self preorderDocumentsForUnregisteredUsernames:unregisteredUsernames error:error];
     if (![usernamePreorderDocuments count]) return nil;
     DSDocumentTransition * transition = [[DSDocumentTransition alloc] initForCreatedDocuments:usernamePreorderDocuments withTransitionVersion:1 blockchainIdentityUniqueId:self.uniqueID onChain:self.chain];
     return transition;
 }
 
--(DSDocumentTransition*)domainTransitionForUnregisteredUsernames:(NSArray*)unregisteredUsernames {
-    NSArray * usernamePreorderDocuments = [self domainDocumentsForUnregisteredUsernames:unregisteredUsernames];
+-(DSDocumentTransition*)domainTransitionForUnregisteredUsernames:(NSArray*)unregisteredUsernames error:(NSError**)error {
+    NSArray * usernamePreorderDocuments = [self domainDocumentsForUnregisteredUsernames:unregisteredUsernames error:error];
     if (![usernamePreorderDocuments count]) return nil;
     DSDocumentTransition * transition = [[DSDocumentTransition alloc] initForCreatedDocuments:usernamePreorderDocuments withTransitionVersion:1 blockchainIdentityUniqueId:self.uniqueID onChain:self.chain];
     return transition;
@@ -1606,7 +1610,14 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 //Preorder stage
 -(void)registerPreorderedSaltedDomainHashesForUsernames:(NSArray*)usernames completion:(void (^ _Nullable)(BOOL success, NSError * error))completion {
-    DSDocumentTransition * transition = [self preorderTransitionForUnregisteredUsernames:usernames];
+    NSError * error = nil;
+    DSDocumentTransition * transition = [self preorderTransitionForUnregisteredUsernames:usernames error:&error];
+    if (error) {
+        if (completion) {
+            completion(NO,error);
+        }
+        return;
+    }
     [self signStateTransition:transition withPrompt:@"Register Usernames?" completion:^(BOOL success) {
         if (success) {
             [self.DAPINetworkService publishTransition:transition success:^(NSDictionary * _Nonnull successDictionary) {
@@ -1646,7 +1657,14 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 }
 
 -(void)registerUsernameDomainsForUsernames:(NSArray*)usernames completion:(void (^ _Nullable)(BOOL success, NSError * error))completion {
-    DSDocumentTransition * transition = [self domainTransitionForUnregisteredUsernames:usernames];
+    NSError * error = nil;
+    DSDocumentTransition * transition = [self domainTransitionForUnregisteredUsernames:usernames error:&error];
+    if (error) {
+        if (completion) {
+            completion(NO,error);
+        }
+        return;
+    }
     [self signStateTransition:transition withPrompt:@"Register Usernames?" completion:^(BOOL success) {
         if (success) {
             [self.DAPINetworkService publishTransition:transition success:^(NSDictionary * _Nonnull successDictionary) {
