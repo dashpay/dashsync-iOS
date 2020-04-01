@@ -22,9 +22,18 @@ static NSString * const CellId = @"CellId";
 
     self.title = @"Requests";
     
+}
+
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(mocDidSaveNotification:)
-                                                 name:NSManagedObjectContextDidSaveNotification object:self.context];
+                                                 name:NSManagedObjectContextDidSaveNotification object:[NSManagedObject context]];
+}
+
+-(void)viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:NSManagedObjectContextDidSaveNotification object:[NSManagedObject context]];
 }
 
 - (IBAction)refreshAction:(id)sender {
@@ -63,10 +72,11 @@ static NSString * const CellId = @"CellId";
     NSArray <NSManagedObject *> *updatedObjects = notification.userInfo[NSUpdatedObjectsKey];
     NSArray <NSManagedObject *> *deletedObjects = notification.userInfo[NSDeletedObjectsKey];
     
-    DSDashpayUserEntity *contact = [self.blockchainIdentity matchingDashpayUserInContext:self.context];
+    DSDashpayUserEntity *contact = self.blockchainIdentity.matchingDashpayUser;
     if (objectsHasChangedContact(insertedObjects, contact) ||
         objectsHasChangedContact(updatedObjects, contact) ||
         objectsHasChangedContact(deletedObjects, contact)) {
+        [self.context mergeChangesFromContextDidSaveNotification:notification];
         self.fetchedResultsController = nil;
         dispatch_async(dispatch_get_main_queue(), ^{
             [self.tableView reloadData];

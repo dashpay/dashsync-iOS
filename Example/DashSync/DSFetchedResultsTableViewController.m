@@ -26,7 +26,7 @@ static NSUInteger FETCH_BATCH_SIZE = 20;
 @implementation DSFetchedResultsTableViewController
 
 - (NSManagedObjectContext *)context {
-    return [NSManagedObject context];
+    return [NSManagedObject mainContext];
 }
 
 - (NSString *)entityName {
@@ -37,6 +37,17 @@ static NSUInteger FETCH_BATCH_SIZE = 20;
 - (NSPredicate *)predicate {
     NSAssert(NO, @"Method should be overriden");
     return [NSPredicate predicateWithValue:YES];
+}
+
+-(void)viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
+    self.fetchedResultsController = nil;
+}
+
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self fetchedResultsController];
+    [self.tableView reloadData];
 }
 
 - (NSArray<NSSortDescriptor *> *)sortDescriptors {
@@ -102,13 +113,10 @@ static NSUInteger FETCH_BATCH_SIZE = 20;
 #pragma mark - NSFetchedResultsControllerDelegate
 
 - (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
-    dispatch_sync(dispatch_get_main_queue(), ^{
-        [self.tableView beginUpdates];
-    });
+    [self.tableView beginUpdates];
 }
 
 - (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject atIndexPath:(nullable NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)type newIndexPath:(nullable NSIndexPath *)newIndexPath {
-    dispatch_sync(dispatch_get_main_queue(), ^{
         UITableView *tableView = self.tableView;
         
         switch (type) {
@@ -130,13 +138,10 @@ static NSUInteger FETCH_BATCH_SIZE = 20;
                 break;
             }
         }
-    });
 }
 
 - (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
-    dispatch_sync(dispatch_get_main_queue(), ^{
-        [self.tableView endUpdates];
-    });
+    [self.tableView endUpdates];
 }
 
 @end
