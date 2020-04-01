@@ -1506,7 +1506,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             @"records" : @{@"dashIdentity":uint256_base58(self.uniqueID)}
         };
         DPDocument * document = [self.dpnsDocumentFactory documentOnTable:@"domain" withDataDictionary:dataDictionary error:error];
-        if (error) {
+        if (*error) {
             return nil;
         }
         [usernameDomainDocuments addObject:document];
@@ -1612,7 +1612,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 -(void)registerPreorderedSaltedDomainHashesForUsernames:(NSArray*)usernames completion:(void (^ _Nullable)(BOOL success, NSError * error))completion {
     NSError * error = nil;
     DSDocumentTransition * transition = [self preorderTransitionForUnregisteredUsernames:usernames error:&error];
-    if (error) {
+    if (error || !transition) {
         if (completion) {
             completion(NO,error);
         }
@@ -1659,7 +1659,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 -(void)registerUsernameDomainsForUsernames:(NSArray*)usernames completion:(void (^ _Nullable)(BOOL success, NSError * error))completion {
     NSError * error = nil;
     DSDocumentTransition * transition = [self domainTransitionForUnregisteredUsernames:usernames error:&error];
-    if (error) {
+    if (error || !transition) {
         if (completion) {
             completion(NO,error);
         }
