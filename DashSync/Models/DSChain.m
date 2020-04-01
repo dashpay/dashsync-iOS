@@ -1424,7 +1424,10 @@ static dispatch_once_t devnetToken = 0;
         for (NSString * uniqueID in walletIdentifiers) {
             DSWallet * wallet = [[DSWallet alloc] initWithUniqueID:uniqueID forChain:self];
             [self addWallet:wallet];
-            
+        }
+        //we should load blockchain identies after all wallets are in the chain, as blockchain identities might be on different wallets and have interactions between each other
+        for (DSWallet * wallet in self.wallets) {
+            [wallet loadBlockchainIdentities];
         }
     }
 }

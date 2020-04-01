@@ -37,7 +37,11 @@
     NSAssert(friendRequest, @"there must be a friendRequest");
     self.friendRequest = friendRequest;
     self.account = [self.blockchainIdentity.wallet accountWithNumber:0];
-    DSIncomingFundsDerivationPath * derivationPath = [self.account derivationPathForFriendshipWithIdentifier:friendRequest.friendshipIdentifier];
+    [self reloadAddressField];
+}
+
+-(void)reloadAddressField {
+    DSIncomingFundsDerivationPath * derivationPath = [self.account derivationPathForFriendshipWithIdentifier:self.friendRequest.friendshipIdentifier];
     NSAssert(derivationPath.extendedPublicKey, @"Extended public key must exist already");
     self.address = [derivationPath receiveAddress];
     NSIndexPath * indexPath = [derivationPath indexPathForKnownAddress:self.address];
@@ -105,7 +109,7 @@
             return TRUE;
         } publishedCompletion:^(DSTransaction * _Nonnull tx, NSError * _Nullable error, BOOL sent) {
             if (sent) {
-                
+                [self reloadAddressField];
                 [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
                                                             center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
                                        popOutAfterDelay:2.0]];

@@ -198,6 +198,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 //Recreate derivation paths and addresses
 -(void)reloadDerivationPaths;
 
+-(void)loadBlockchainIdentities;
+
 -(void)unregisterBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 -(void)addBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 -(void)registerBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;

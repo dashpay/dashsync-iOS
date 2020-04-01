@@ -126,6 +126,14 @@
     return [self indexAtPosition:[self length] - 3].u64[0] & ~BIP32_HARD;
 }
 
+-(BOOL)sourceIsLocal {
+    return !![self.chain blockchainIdentityForUniqueId:self.contactSourceBlockchainIdentityUniqueId];
+}
+
+-(BOOL)destinationIsLocal {
+    return !![self.chain blockchainIdentityForUniqueId:self.contactDestinationBlockchainIdentityUniqueId];
+}
+
 // MARK: - Derivation Path Addresses
 
 - (void)registerTransactionAddress:(NSString * _Nonnull)address {

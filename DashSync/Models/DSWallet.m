@@ -187,8 +187,6 @@
     
     self.specialTransactionsHolder = [[DSSpecialTransactionsWalletHolder alloc] initWithWallet:self inContext:self.chain.managedObjectContext];
     
-    NSError * error = nil;
-    
     self.mBlockchainIdentities = nil;
     [self blockchainIdentities];
     
@@ -196,6 +194,10 @@
     
     //add blockchain user derivation paths to account
     
+    return self;
+}
+
+-(void)loadBlockchainIdentities {
     [self.chain.managedObjectContext performBlockAndWait:^{
         
         NSMutableArray * usedFriendshipIdentifiers = [NSMutableArray array];
@@ -234,9 +236,6 @@
             }
         }
     }];
-
-    if (error) return nil;
-    return self;
 }
 
 
