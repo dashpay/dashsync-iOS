@@ -103,8 +103,11 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // extended Public Key Identifier, which is just the short hex string of the extended public key
 @property (nonatomic, readonly, nullable) NSString * standaloneExtendedPublicKeyUniqueID;
 
-// the walletBasedExtendedPublicKeyLocationString is the key used to store the public key in nsuserdefaults
+// the walletBasedExtendedPublicKeyLocationString is the key used to store the public key in the key chain
 @property (nonatomic, readonly, nullable) NSString * walletBasedExtendedPublicKeyLocationString;
+
+// the walletBasedExtendedPublicKeyLocationString is the key used to store the private key in the key chain, this is only available on authentication derivation paths
+@property (nonatomic, readonly, nullable) NSString * walletBasedExtendedPrivateKeyLocationString;
 
 // current derivation path balance excluding transactions known to be invalid
 @property (nonatomic, assign) uint64_t balance;

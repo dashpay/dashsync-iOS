@@ -239,9 +239,6 @@
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Cüzdanınız eşitlenmemiş olabilir.\nBlok zincirini yeniden taratmak bunu sık sık düzeltebilir.";
 
-/* No comment provided by engineer. */
-"Do you wish to create this identity?" = "Do you wish to create this identity?";
-
 /* The Blockchain Identity is not registered */
 "Not Registered" = "Not Registered";
 
@@ -334,3 +331,6 @@
 
 /* No comment provided by engineer. */
 "The blockchain identity hasn't yet been locally activated" = "The blockchain identity hasn't yet been locally activated";
+
+/* No comment provided by engineer. */
+"The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion" = "The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion";

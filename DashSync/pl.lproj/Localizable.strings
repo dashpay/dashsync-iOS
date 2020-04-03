@@ -72,9 +72,6 @@
 "Devnet" = "Devnet";
 
 /* No comment provided by engineer. */
-"Do you wish to create this identity?" = "Do you wish to create this identity?";
-
-/* No comment provided by engineer. */
 "Double spend" = "Podwójne wydatkowanie";
 
 /* The server is not working */
@@ -334,3 +331,6 @@
 
 /* No comment provided by engineer. */
 "The blockchain identity hasn't yet been locally activated" = "The blockchain identity hasn't yet been locally activated";
+
+/* No comment provided by engineer. */
+"The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion" = "The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion";

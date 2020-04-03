@@ -26,6 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 //you can set wallet unique Id to nil if you don't wish to store the keys. This will generate both the private and public keys, but will return the public key data
 - (NSData * _Nullable)generateExtendedKeysFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId;
 
+- (DSKey * _Nullable)privateKeyAtIndexPath:(NSIndexPath*)indexPath;
+
 @end
 
 NS_ASSUME_NONNULL_END

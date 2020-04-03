@@ -89,7 +89,7 @@
     NSAssert(self.extendedPublicKey, @"Problem creating extended public key for potential contact?");
     __weak typeof(self) weakSelf = self;
     DSKey * recipientKey = [self destinationKeyAtIndex];
-    [self.sourceBlockchainIdentity encryptData:self.extendedPublicKey withKeyAtIndex:self.sourceKeyIndex forRecipientKey:recipientKey withPrompt:@"" completion:^(NSData * _Nonnull encryptedData) {
+    [self.sourceBlockchainIdentity encryptData:self.extendedPublicKey withKeyAtIndex:self.sourceKeyIndex forRecipientKey:recipientKey completion:^(NSData * _Nonnull encryptedData) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             if (completion) {

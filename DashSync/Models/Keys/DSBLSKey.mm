@@ -116,9 +116,19 @@
 + (nullable instancetype)blsKeyWithExtendedPublicKeyData:(NSData*)extendedPublicKey onChain:(DSChain*)chain {
     return [[DSBLSKey alloc] initWithExtendedPublicKeyData:extendedPublicKey onChain:chain];
 }
+
++ (nullable instancetype)blsKeyWithExtendedPrivateKeyData:(NSData*)extendedPrivateKey onChain:(DSChain*)chain {
+    return [[DSBLSKey alloc] initWithExtendedPrivateKeyData:extendedPrivateKey onChain:chain];
+}
+
 - (nullable instancetype)initWithExtendedPublicKeyData:(NSData*)extendedPublicKey onChain:(DSChain*)chain {
     bls::ExtendedPublicKey extendedPublicBLSKey = bls::ExtendedPublicKey::FromBytes((const uint8_t *)extendedPublicKey.bytes);
     return [self initWithExtendedBLSPublicKey:extendedPublicBLSKey onChain:chain];
+}
+
+- (nullable instancetype)initWithExtendedPrivateKeyData:(NSData*)extendedPrivateKey onChain:(DSChain*)chain {
+    bls::ExtendedPrivateKey extendedPrivateBLSKey = bls::ExtendedPrivateKey::FromBytes((const uint8_t *)extendedPrivateKey.bytes);
+    return [self initWithExtendedPrivateKey:extendedPrivateBLSKey onChain:chain];
 }
 
 - (nullable instancetype)initWithExtendedPrivateKeyFromSeed:(NSData *)seed onChain:(DSChain*)chain {

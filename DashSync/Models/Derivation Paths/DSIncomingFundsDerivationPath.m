@@ -194,8 +194,9 @@
         
         NSUInteger upperLimit = gapLimit;
         while (a.count < upperLimit) { // generate new addresses up to gapLimit
-            NSData *pubKey = [self publicKeyDataAtIndex:n];
-            NSString *address = [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
+            NSData *pubKeyData = [self publicKeyDataAtIndex:n];
+            DSECDSAKey * pubKey = [DSECDSAKey keyWithPublicKey:pubKeyData];
+            NSString *address = [pubKey addressForChain:self.chain];
             
             if (! address) {
                 DSDLog(@"error generating keys");

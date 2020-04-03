@@ -121,6 +121,28 @@ type:(DSDerivationPathType)type signingAlgorithm:(DSKeyType)signingAlgorithm ref
     return nil;
 }
 
+-(NSData*)extendedPrivateKey {
+    NSError * error = nil;
+    NSData * data = getKeychainData([self walletBasedExtendedPublicKeyLocationString], &error);
+    return data;
+}
 
+- (DSKey * _Nullable)privateKeyAtIndexPath:(NSIndexPath*)indexPath {
+    if (self.signingAlgorithm == DSKeyType_ECDSA) {
+        
+        UInt256 chain = [self.extendedPrivateKey UInt256AtOffset:4];
+        UInt256 privKey = [self.extendedPrivateKey UInt256AtOffset:36];
+        for (NSInteger i = 0;i<[indexPath length];i++) {
+            uint32_t derivation = (uint32_t)[indexPath indexAtPosition:i];
+            CKDpriv(&privKey, &chain, derivation);
+        }
+        return [DSECDSAKey keyWithSecret:privKey compressed:YES];;
+    } else if (self.signingAlgorithm == DSKeyType_BLS) {
+        DSBLSKey * extendedPrivateKey = [DSBLSKey blsKeyWithExtendedPrivateKeyData:self.extendedPrivateKey onChain:self.chain];
+        DSBLSKey * extendedPrivateKeyAtIndexPath = [extendedPrivateKey deriveToPath:indexPath];
+        return extendedPrivateKeyAtIndexPath;
+    }
+    return nil;
+}
 
 @end

@@ -199,7 +199,13 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     
     self.pubkey = publicKey;
     self.compressed = (self.pubkey.length == 33) ? YES : NO;
-    return (secp256k1_ec_pubkey_parse(_ctx, &pk, self.publicKeyData.bytes, self.publicKeyData.length)) ? self : nil;
+    
+    BOOL valid = (secp256k1_ec_pubkey_parse(_ctx, &pk, self.publicKeyData.bytes, self.publicKeyData.length));
+    if (valid) {
+        return self;
+    } else {
+        return nil;
+    }
 }
 
 - (instancetype)initWithCompactSig:(NSData *)compactSig andMessageDigest:(UInt256)md

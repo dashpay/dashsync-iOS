@@ -27,6 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable instancetype)initWithPrivateKeyFromSeed:(NSData *)seed onChain:(DSChain*)chain;
 + (nullable instancetype)blsKeyWithExtendedPrivateKeyFromSeed:(NSData *)seed onChain:(DSChain*)chain;
 - (nullable instancetype)initWithExtendedPrivateKeyFromSeed:(NSData *)seed onChain:(DSChain*)chain;
++ (nullable instancetype)blsKeyWithExtendedPrivateKeyData:(NSData*)extendedPrivateKey onChain:(DSChain*)chain;
+- (nullable instancetype)initWithExtendedPrivateKeyData:(NSData*)extendedPrivateKey onChain:(DSChain*)chain;
 + (nullable instancetype)blsKeyWithExtendedPublicKeyData:(NSData*)extendedPublicKey onChain:(DSChain*)chain;
 - (nullable instancetype)initWithExtendedPublicKeyData:(NSData*)extendedPublicKey onChain:(DSChain*)chain;
 + (nullable instancetype)blsKeyWithPublicKey:(UInt384)publicKey onChain:(DSChain*)chain;

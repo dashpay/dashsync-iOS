@@ -98,6 +98,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 @property (nonatomic, strong) DSChain * chain;
 
+@property (nonatomic, strong) DSECDSAKey * registrationFundingPrivateKey;
+
 @end
 
 @implementation DSBlockchainIdentity
@@ -700,6 +702,30 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 // MARK: - Keys
 
+-(void)createFundingPrivateKeyWithPrompt:(NSString*)prompt completion:(void (^ _Nullable)(BOOL success, BOOL cancelled))completion {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[DSAuthenticationManager sharedInstance] seedWithPrompt:prompt forWallet:self.wallet forAmount:0 forceAuthentication:NO completion:^(NSData * _Nullable seed, BOOL cancelled) {
+            if (!seed) {
+                if (completion) {
+                    completion(NO,cancelled);
+                }
+                return;
+            }
+            
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                DSCreditFundingDerivationPath * derivationPathRegistrationFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:self.wallet];
+                
+                self.registrationFundingPrivateKey = (DSECDSAKey *)[derivationPathRegistrationFunding privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.index] fromSeed:seed];
+                if (completion) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        completion(YES,NO);
+                    });
+                }
+            });
+        }];
+    });
+}
+
 -(BOOL)activePrivateKeysAreLoadedWithFetchingError:(NSError**)error {
     BOOL loaded = TRUE;
     for (NSNumber * index in self.keyInfoDictionaries) {
@@ -708,7 +734,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         DSKeyType keyType = [keyDictionary[@(DSBlockchainIdentityKeyDictionary_KeyType)] unsignedIntValue];
         if (status == DSBlockchainIdentityKeyStatus_Registered) {
             loaded &= [self hasPrivateKeyAtIndex:[index unsignedIntValue] ofType:keyType error:error];
-            if (error) return FALSE;
+            if (*error) return FALSE;
         }
     }
     return loaded;
@@ -818,6 +844,16 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     if (!keySecret || error) return nil;
     
     return [DSKey keyForSecretKeyData:keySecret forKeyType:(DSKeyType)type onChain:self.chain];
+}
+
+-(DSKey*)derivePrivateKeyAtIndex:(uint32_t)index ofType:(DSKeyType)type {
+    if (!_isLocal) return nil;
+    const NSUInteger indexes[] = {_index,index};
+    NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
+    
+    DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
+    
+    return [derivationPath privateKeyAtIndexPath:indexPath];
 }
 
 -(DSKey*)privateKeyAtIndex:(uint32_t)index ofType:(DSKeyType)type forSeed:(NSData*)seed {
@@ -1072,30 +1108,24 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     }
 }
 
--(void)registrationTransitionWithCompletion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction))completion {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        NSString * question = DSLocalizedString(@"Do you wish to create this identity?", nil);
-        [[DSAuthenticationManager sharedInstance] seedWithPrompt:question forWallet:self.wallet forAmount:0 forceAuthentication:NO completion:^(NSData * _Nullable seed, BOOL cancelled) {
-            if (!seed) {
-                completion(nil);
-                return;
-            }
-            
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                DSCreditFundingDerivationPath * derivationPathRegistrationFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:self.wallet];
-                
-                DSECDSAKey * privateKey = (DSECDSAKey *)[derivationPathRegistrationFunding privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.index] fromSeed:seed];
-                
-                uint32_t index;
-                
-                DSKey * publicKey = [self createNewKeyOfType:DSKeyType_ECDSA returnIndex:&index];
-                
-                NSAssert(index == 0, @"The index should be 0 here");
-                
-                [self registrationTransitionSignedByPrivateKey:privateKey atIndex:index registeringPublicKeys:@{@(index):publicKey} completion:completion];
-            });
-        }];
-    });
+-(void)registrationTransitionWithCompletion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction, NSError * error))completion {
+    if (!self.registrationFundingPrivateKey) {
+        if (completion) {
+            completion(nil,[NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion", nil)}]);
+        }
+    }
+    
+    uint32_t index;
+    
+    DSKey * publicKey = [self createNewKeyOfType:DSKeyType_ECDSA returnIndex:&index];
+    
+    NSAssert(index == 0, @"The index should be 0 here");
+    
+    [self registrationTransitionSignedByPrivateKey:self.registrationFundingPrivateKey atIndex:index registeringPublicKeys:@{@(index):publicKey} completion:^(DSBlockchainIdentityRegistrationTransition *blockchainIdentityRegistrationTransaction) {
+        if (completion) {
+            completion(blockchainIdentityRegistrationTransaction, nil);
+        }
+    }];
 }
 
 // MARK: Registering
@@ -1104,10 +1134,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     if (self.type == DSBlockchainIdentityType_Unknown) {
         NSError * error = [NSError errorWithDomain:@"DashSync" code:501 userInfo:@{NSLocalizedDescriptionKey:
                                                                                        DSLocalizedString(@"An identity needs to have its type defined before it can be registered.", nil)}];
-        completion(nil,error);
+        completion(nil, error);
         return;
     }
-    [self registrationTransitionWithCompletion:^(DSBlockchainIdentityRegistrationTransition * _Nonnull blockchainIdentityRegistrationTransition) {
+    [self registrationTransitionWithCompletion:^(DSBlockchainIdentityRegistrationTransition * _Nonnull blockchainIdentityRegistrationTransition, NSError * registrationTransitionError) {
         if (blockchainIdentityRegistrationTransition) {
             [self.DAPIClient publishTransition:blockchainIdentityRegistrationTransition success:^(NSDictionary * _Nonnull successDictionary) {
                 [self monitorForBlockchainIdentityWithRetryCount:5 delay:4 retryDelayType:DSBlockchainIdentityRetryDelayType_Linear completion:^(BOOL success, NSError * error) {
@@ -1133,7 +1163,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             if (completion) {
                 NSError * error = [NSError errorWithDomain:@"DashSync" code:501 userInfo:@{NSLocalizedDescriptionKey:
                                                                                                DSLocalizedString(@"Unable to create registration transition", nil)}];
-                completion(nil,error);
+                completion(nil,registrationTransitionError?registrationTransitionError:error);
             }
         }
     }];
@@ -1258,23 +1288,16 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 -(void)signStateTransition:(DSTransition*)transition forKeyIndex:(uint32_t)keyIndex ofType:(DSKeyType)signingAlgorithm withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion {
     NSParameterAssert(transition);
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[DSAuthenticationManager sharedInstance] seedWithPrompt:prompt forWallet:self.wallet forAmount:0 forceAuthentication:YES completion:^(NSData* _Nullable seed, BOOL cancelled) {
-            if (!seed) {
-                completion(NO);
-                return;
-            }
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             
-                DSKey * privateKey = [self privateKeyAtIndex:keyIndex ofType:signingAlgorithm forSeed:seed];
-                
-                //        NSLog(@"%@",uint160_hex(self.blockchainIdentityRegistrationTransition.pubkeyHash));
-                //        NSAssert(uint160_eq(privateKey.publicKeyData.hash160,self.blockchainIdentityRegistrationTransition.pubkeyHash),@"Keys aren't ok");
-                [transition signWithKey:privateKey atIndex:keyIndex fromIdentity:self];
-                completion(YES);
-            });
-        }];
-    });
+    DSKey * privateKey = [self privateKeyAtIndex:keyIndex ofType:signingAlgorithm];
+    NSAssert(privateKey, @"The private key should exist");
+    NSAssert([privateKey.publicKeyData isEqualToData:[self publicKeyAtIndex:keyIndex ofType:signingAlgorithm].publicKeyData], @"These should be equal");
+    //        NSLog(@"%@",uint160_hex(self.blockchainIdentityRegistrationTransition.pubkeyHash));
+    //        NSAssert(uint160_eq(privateKey.publicKeyData.hash160,self.blockchainIdentityRegistrationTransition.pubkeyHash),@"Keys aren't ok");
+    [transition signWithKey:privateKey atIndex:keyIndex fromIdentity:self];
+    if (completion) {
+        completion(YES);
+    }
 }
 
 -(void)signStateTransition:(DSTransition*)transition withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion {
@@ -1291,41 +1314,23 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     return [publicKey verify:messageDigest signatureData:signature];
 }
 
--(void)encryptData:(NSData*)data withKeyAtIndex:(uint32_t)index forRecipientKey:(DSKey*)recipientPublicKey withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(NSData* encryptedData))completion {
+-(void)encryptData:(NSData*)data withKeyAtIndex:(uint32_t)index forRecipientKey:(DSKey*)recipientPublicKey completion:(void (^ _Nullable)(NSData* encryptedData))completion {
     NSParameterAssert(data);
     NSParameterAssert(recipientPublicKey);
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[DSAuthenticationManager sharedInstance] seedWithPrompt:@"" forWallet:self.wallet forAmount:0 forceAuthentication:NO completion:^(NSData* _Nullable seed, BOOL cancelled) {
-            if (!seed) {
-                completion(nil);
-                return;
-            }
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:(DSKeyType)recipientPublicKey.keyType];
-                DSKey * privateKey = [derivationPath privateKeyAtIndex:self.index fromSeed:seed];
-                NSData * encryptedData = [data encryptWithSecretKey:privateKey forPeerWithPublicKey:recipientPublicKey];
-                completion(encryptedData);
-            });
-        }];
-    });
+    DSKey * privateKey = [self privateKeyAtIndex:self.index ofType:recipientPublicKey.keyType];
+    NSData * encryptedData = [data encryptWithSecretKey:privateKey forPeerWithPublicKey:recipientPublicKey];
+    if (completion) {
+        completion(encryptedData);
+    }
+
 }
 
--(void)decryptData:(NSData*)encryptedData fromRecipientKey:(UInt384)recipientPublicKey withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(NSData* decryptedData))completion {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[DSAuthenticationManager sharedInstance] seedWithPrompt:@"" forWallet:self.wallet forAmount:0 forceAuthentication:NO completion:^(NSData* _Nullable seed, BOOL cancelled) {
-            if (!seed) {
-                completion(nil);
-                return;
-            }
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:self.wallet];
-                DSBLSKey * privateKey = (DSBLSKey *)[derivationPath privateKeyAtIndex:self.index fromSeed:seed];
-                DSBLSKey * publicRecipientKey = [DSBLSKey blsKeyWithPublicKey:recipientPublicKey onChain:self.chain];
-                NSData * data = [encryptedData decryptWithSecretKey:privateKey fromPeerWithPublicKey:publicRecipientKey];
-                completion(data);
-            });
-        }];
-    });
+-(void)decryptData:(NSData*)encryptedData withKeyAtIndex:(uint32_t)index fromSenderKey:(DSKey*)senderPublicKey completion:(void (^ _Nullable)(NSData* decryptedData))completion {
+    DSKey * privateKey = [self privateKeyAtIndex:self.index ofType:senderPublicKey.keyType];
+    NSData * data = [encryptedData decryptWithSecretKey:privateKey fromPeerWithPublicKey:senderPublicKey];
+    if (completion) {
+        completion(data);
+    }
 }
 
 // MARK: - Contracts
@@ -3017,6 +3022,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             if (key.secretKeyData) {
                 setKeychainData(key.secretKeyData, [self identifierForKeyAtPath:path fromDerivationPath:derivationPath], YES);
                 DSDLog(@"Saving key at %@ for user %@",[self identifierForKeyAtPath:path fromDerivationPath:derivationPath],self.currentUsername);
+            } else {
+                DSKey * privateKey = [self derivePrivateKeyAtIndex:[self indexOfKey:key] ofType:key.keyType];
+                NSAssert([privateKey.publicKeyData isEqualToData:key.publicKeyData], @"The keys don't seem to match up");
+                setKeychainData(privateKey.secretKeyData, [self identifierForKeyAtPath:path fromDerivationPath:derivationPath], YES);
+                DSDLog(@"Saving key after rederivation %@ for user %@",[self identifierForKeyAtPath:path fromDerivationPath:derivationPath],self.currentUsername);
             }
 
             blockchainIdentityKeyPathEntity.path = keyPathData;
