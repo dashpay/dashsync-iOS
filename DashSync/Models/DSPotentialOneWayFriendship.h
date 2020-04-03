@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(DSDerivationPathEntity*)storeExtendedPublicKeyAssociatedWithFriendRequest:(DSFriendRequestEntity*)friendRequestEntity;
 
--(DSIncomingFundsDerivationPath*)createDerivationPath;
+-(void)createDerivationPathWithCompletion:(void (^)(BOOL success, DSIncomingFundsDerivationPath * incomingFundsDerivationPath))completion;
 
 -(DPDocument*)contactRequestDocument;
 

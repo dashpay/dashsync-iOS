@@ -78,7 +78,7 @@
     return nil;
 }
 
--(DSIncomingFundsDerivationPath*)createDerivationPath {
+-(void)createDerivationPathWithCompletion:(void (^)(BOOL success, DSIncomingFundsDerivationPath * incomingFundsDerivationPath))completion {
     NSAssert(!uint256_is_zero([self destinationBlockchainIdentityUniqueId]), @"destinationBlockchainIdentityUniqueId must not be null");
     self.fundsDerivationPathForContact = [DSIncomingFundsDerivationPath
                                           contactBasedDerivationPathWithDestinationBlockchainIdentityUniqueId:[self destinationBlockchainIdentityUniqueId] sourceBlockchainIdentityUniqueId:self.sourceBlockchainIdentity.uniqueID forAccountNumber:self.account.accountNumber onChain:self.sourceBlockchainIdentity.wallet.chain];
@@ -86,17 +86,22 @@
     DSDerivationPath * masterContactsDerivationPath = [self.account masterContactsDerivationPath];
     
     self.extendedPublicKey = [self.fundsDerivationPathForContact generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
+    NSAssert(self.extendedPublicKey, @"Problem creating extended public key for potential contact?");
     __weak typeof(self) weakSelf = self;
     DSKey * recipientKey = [self destinationKeyAtIndex];
     [self.sourceBlockchainIdentity encryptData:self.extendedPublicKey withKeyAtIndex:self.sourceKeyIndex forRecipientKey:recipientKey withPrompt:@"" completion:^(NSData * _Nonnull encryptedData) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
+            if (completion) {
+                completion(NO,nil);
+            }
             return;
         }
         strongSelf.encryptedExtendedPublicKey = encryptedData;
+        if (completion) {
+            completion(YES,self.fundsDerivationPathForContact);
+        }
     }];
-    NSAssert(self.extendedPublicKey, @"Problem creating extended public key for potential contact?");
-    return self.fundsDerivationPathForContact;
 }
 
 -(DPDocument*)contactRequestDocument {

@@ -176,7 +176,7 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 
 -(void)fetchAllNetworkStateInformationWithCompletion:(void (^)(BOOL success, NSError * error))completion;
 
--(void)fetchNeededNetworkStateInformationWithCompletion:(void (^)(BOOL success, NSError * error))completion;
+-(void)fetchNeededNetworkStateInformationWithCompletion:(void (^)(DSBlockchainIdentityRegistrationStep failureStep, NSError * error))completion;
 
 -(void)signStateTransition:(DSTransition*)transition withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion;
 
@@ -235,6 +235,10 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 -(void)sendNewFriendRequestMatchingPotentialFriendship:(DSPotentialOneWayFriendship*)potentialFriendship completion:(void (^ _Nullable)(BOOL success, NSError * error))completion;
 
 -(void)acceptFriendRequest:(DSFriendRequestEntity*)friendRequest completion:(void (^ _Nullable)(BOOL success, NSError * error))completion;
+
+- (BOOL)activePrivateKeysAreLoadedWithFetchingError:(NSError**)error;
+
+- (void)fetchContactRequests:(void (^ _Nullable)(BOOL success, NSArray<NSError *> *errors))completion;
 
 - (void)fetchOutgoingContactRequests:(void (^ _Nullable)(BOOL success, NSArray<NSError *> *errors))completion;
 

@@ -328,3 +328,9 @@
 
 /* No comment provided by engineer. */
 "Contract '%@' needs to first be locally registered" = "Contract '%@' needs to first be locally registered";
+
+/* No comment provided by engineer. */
+"Count not create friendship derivation path" = "Count not create friendship derivation path";
+
+/* No comment provided by engineer. */
+"The blockchain identity hasn't yet been locally activated" = "The blockchain identity hasn't yet been locally activated";

@@ -81,13 +81,10 @@
 }
 
 -(DSKey*)secretKeyForDecryptionOfType:(DSKeyType)type {
-    if ([self blockchainIdentityIsRecipient]) {
-        //we are the recipient of the friend request
-        return [self.blockchainIdentity privateKeyAtIndex:self.recipientKeyIndex ofType:(DSKeyType)type];
-    } else {
-        //we are the sender of the friend request
-        return [self.blockchainIdentity privateKeyAtIndex:self.senderKeyIndex ofType:(DSKeyType)type];
-    }
+    uint32_t index = [self blockchainIdentityIsRecipient]?self.recipientKeyIndex:self.senderKeyIndex;
+    DSKey * key = [self.blockchainIdentity privateKeyAtIndex:index ofType:(DSKeyType)type];
+    NSAssert(key, @"Key should exist");
+    return key;
 }
 
 -(NSData*)decryptedPublicKeyDataWithKey:(DSKey*)key {

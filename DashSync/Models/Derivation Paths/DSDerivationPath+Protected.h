@@ -41,6 +41,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSString * standaloneExtendedPublicKeyLocationString;
 @property (nonatomic, readonly) DSDerivationPathEntity * derivationPathEntity;
 
+-(BOOL)isHardenedAtPosition:(NSUInteger)position;
+
+- (NSData *)generateExtendedECDSAPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString*)walletUniqueId storePrivateKey:(BOOL)storePrivateKey;
+
+- (NSData *)generateExtendedBLSPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString*)walletUniqueId storePrivateKey:(BOOL)storePrivateKey;
+
 
 @end
 
