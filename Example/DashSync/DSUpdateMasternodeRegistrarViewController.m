@@ -107,12 +107,12 @@
 
 -(void)viewController:(UIViewController*)controller didChooseAccount:(DSAccount*)account {
     self.account = account;
-    self.accountChooserTableViewCell.accountLabel.text = [NSString stringWithFormat:@"%@-%u",self.account.wallet.uniqueID,self.account.accountNumber];
+    self.accountChooserTableViewCell.accountLabel.text = [NSString stringWithFormat:@"%@-%u",self.account.wallet.uniqueIDString,self.account.accountNumber];
 }
 
 -(void)viewController:(UIViewController *)controller didChooseWallet:(DSWallet *)wallet {
     self.votingWallet = wallet;
-    self.walletChooserTableViewCell.walletLabel.text = [NSString stringWithFormat:@"%@",self.votingWallet.uniqueID];
+    self.walletChooserTableViewCell.walletLabel.text = [NSString stringWithFormat:@"%@",self.votingWallet.uniqueIDString];
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {

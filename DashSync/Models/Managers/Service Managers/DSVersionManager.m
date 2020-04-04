@@ -190,7 +190,7 @@
                         @autoreleasepool {
                             
                             for (DSDerivationPath * derivationPath in derivationPaths) {
-                                success &= !![derivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueID];
+                                success &= !![derivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueIDString];
                             }
                             
                         }

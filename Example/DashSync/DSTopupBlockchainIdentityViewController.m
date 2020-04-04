@@ -55,12 +55,12 @@
 
 -(void)setWallet:(DSWallet *)wallet {
     _wallet = wallet;
-    self.walletIdentifierLabel.text = wallet.uniqueID;
+    self.walletIdentifierLabel.text = wallet.uniqueIDString;
 }
 
 -(void)setFundingAccount:(DSAccount *)fundingAccount {
     _fundingAccount = fundingAccount;
-    self.fundingAccountIdentifierLabel.text = [NSString stringWithFormat:@"%@-%u",fundingAccount.wallet.uniqueID,fundingAccount.accountNumber];
+    self.fundingAccountIdentifierLabel.text = [NSString stringWithFormat:@"%@-%u",fundingAccount.wallet.uniqueIDString,fundingAccount.accountNumber];
 }
 
 /*

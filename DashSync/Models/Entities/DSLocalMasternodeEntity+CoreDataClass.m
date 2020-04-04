@@ -54,12 +54,12 @@
 
 -(void)setAttributesFromLocalMasternode:(DSLocalMasternode*)localMasternode {
     self.votingKeysIndex = localMasternode.votingWalletIndex;
-    self.votingKeysWalletUniqueId = localMasternode.votingKeysWallet.uniqueID;
-    self.ownerKeysWalletUniqueId = localMasternode.ownerKeysWallet.uniqueID;
+    self.votingKeysWalletUniqueId = localMasternode.votingKeysWallet.uniqueIDString;
+    self.ownerKeysWalletUniqueId = localMasternode.ownerKeysWallet.uniqueIDString;
     self.ownerKeysIndex = localMasternode.ownerWalletIndex;
     self.operatorKeysIndex = localMasternode.operatorWalletIndex;
-    self.operatorKeysWalletUniqueId = localMasternode.operatorKeysWallet.uniqueID;
-    self.holdingKeysWalletUniqueId = localMasternode.holdingKeysWallet.uniqueID;
+    self.operatorKeysWalletUniqueId = localMasternode.operatorKeysWallet.uniqueIDString;
+    self.holdingKeysWalletUniqueId = localMasternode.holdingKeysWallet.uniqueIDString;
     self.holdingKeysIndex = localMasternode.holdingWalletIndex;
     DSProviderRegistrationTransactionEntity * providerRegistrationTransactionEntity = [DSProviderRegistrationTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(localMasternode.providerRegistrationTransaction.txHash)];
     self.providerRegistrationTransaction = providerRegistrationTransactionEntity;

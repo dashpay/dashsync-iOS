@@ -340,6 +340,52 @@
     
 }
 
+-(void)testECDSAPrivateDerivation {
+    NSString * seedPhrase = @"upper renew that grow pelican pave subway relief describe enforce suit hedgehog blossom dose swallow";
+    
+    NSData * seed = [[DSBIP39Mnemonic sharedInstance]
+                     deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
+    
+    DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedPhrase
+                                               setCreationDate:0 forChain:self.chain storeSeedPhrase:NO isTransient:YES];
+    
+    DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentitiesECDSAKeysDerivationPathForWallet:wallet];
+    
+    [derivationPath generateExtendedECDSAPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueIDString storePrivateKey:YES];
+    
+    const NSUInteger indexes[] = {1,5};
+    
+    DSKey * privateKey = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndexes:indexes length:2]];
+    DSKey * publicKey = [derivationPath publicKeyAtIndexPath:[NSIndexPath indexPathWithIndexes:indexes length:2] onChain:nil];
+    
+    XCTAssertEqualObjects(privateKey.publicKeyData,publicKey.publicKeyData,@"the public keys must match");
+    
+    
+}
+
+-(void)testBLSPrivateDerivation {
+    NSString * seedPhrase = @"upper renew that grow pelican pave subway relief describe enforce suit hedgehog blossom dose swallow";
+    
+    NSData * seed = [[DSBIP39Mnemonic sharedInstance]
+                     deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
+    
+    DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedPhrase
+                                               setCreationDate:0 forChain:self.chain storeSeedPhrase:NO isTransient:YES];
+    
+    DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentitiesBLSKeysDerivationPathForWallet:wallet];
+    
+    [derivationPath generateExtendedBLSPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueIDString storePrivateKey:YES];
+    
+    const NSUInteger indexes[] = {1,5};
+    
+    DSKey * privateKey = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndexes:indexes length:2]];
+    DSKey * publicKey = [derivationPath publicKeyAtIndexPath:[NSIndexPath indexPathWithIndexes:indexes length:2] onChain:nil];
+    
+    XCTAssertEqualObjects(privateKey.publicKeyData,publicKey.publicKeyData,@"the public keys must match");
+    
+    
+}
+
 -(void)test256BitDerivation {
     
     NSString * seedPhrase = @"upper renew that grow pelican pave subway relief describe enforce suit hedgehog blossom dose swallow";

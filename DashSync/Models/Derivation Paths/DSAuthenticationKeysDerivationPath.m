@@ -123,7 +123,7 @@ type:(DSDerivationPathType)type signingAlgorithm:(DSKeyType)signingAlgorithm ref
 
 -(NSData*)extendedPrivateKey {
     NSError * error = nil;
-    NSData * data = getKeychainData([self walletBasedExtendedPublicKeyLocationString], &error);
+    NSData * data = getKeychainData([self walletBasedExtendedPrivateKeyLocationString], &error);
     return data;
 }
 
@@ -136,7 +136,7 @@ type:(DSDerivationPathType)type signingAlgorithm:(DSKeyType)signingAlgorithm ref
             uint32_t derivation = (uint32_t)[indexPath indexAtPosition:i];
             CKDpriv(&privKey, &chain, derivation);
         }
-        return [DSECDSAKey keyWithSecret:privKey compressed:YES];;
+        return [DSECDSAKey keyWithSecret:privKey compressed:YES];
     } else if (self.signingAlgorithm == DSKeyType_BLS) {
         DSBLSKey * extendedPrivateKey = [DSBLSKey blsKeyWithExtendedPrivateKeyData:self.extendedPrivateKey onChain:self.chain];
         DSBLSKey * extendedPrivateKeyAtIndexPath = [extendedPrivateKey deriveToPath:indexPath];

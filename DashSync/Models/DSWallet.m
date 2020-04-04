@@ -79,7 +79,7 @@
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, strong) NSMutableDictionary * mAccounts;
 @property (nonatomic, strong) DSSpecialTransactionsWalletHolder * specialTransactionsHolder;
-@property (nonatomic, copy) NSString * uniqueID;
+@property (nonatomic, copy) NSString * uniqueIDString;
 @property (nonatomic, assign) NSTimeInterval walletCreationTime;
 @property (nonatomic, assign) BOOL checkedWalletCreationTime;
 @property (nonatomic, assign) BOOL checkedGuessedWalletCreationTime;
@@ -167,7 +167,7 @@
     NSParameterAssert(chain);
     
     if (! (self = [self initWithChain:chain])) return nil;
-    self.uniqueID = uniqueID;
+    self.uniqueIDString = uniqueID;
     __weak typeof(self) weakSelf = self;
     self.seedRequestBlock = ^void(NSString *authprompt, uint64_t amount, SeedCompletionBlock seedCompletion) {
         //this happens when we request the seed
@@ -277,23 +277,23 @@
 }
 
 -(NSString*)walletBlockchainIdentitiesKey {
-    return [NSString stringWithFormat:@"%@_%@",WALLET_BLOCKCHAIN_USERS_KEY,[self uniqueID]];
+    return [NSString stringWithFormat:@"%@_%@",WALLET_BLOCKCHAIN_USERS_KEY,[self uniqueIDString]];
 }
 
 -(NSString*)walletBlockchainIdentitiesDefaultIndexKey {
-    return [NSString stringWithFormat:@"%@_%@_DEFAULT_INDEX",WALLET_BLOCKCHAIN_USERS_KEY,[self uniqueID]];
+    return [NSString stringWithFormat:@"%@_%@_DEFAULT_INDEX",WALLET_BLOCKCHAIN_USERS_KEY,[self uniqueIDString]];
 }
 
 -(NSString*)walletMasternodeVotersKey {
-    return [NSString stringWithFormat:@"%@_%@",WALLET_MASTERNODE_VOTERS_KEY,[self uniqueID]];
+    return [NSString stringWithFormat:@"%@_%@",WALLET_MASTERNODE_VOTERS_KEY,[self uniqueIDString]];
 }
 
 -(NSString*)walletMasternodeOwnersKey {
-    return [NSString stringWithFormat:@"%@_%@",WALLET_MASTERNODE_OWNERS_KEY,[self uniqueID]];
+    return [NSString stringWithFormat:@"%@_%@",WALLET_MASTERNODE_OWNERS_KEY,[self uniqueIDString]];
 }
 
 -(NSString*)walletMasternodeOperatorsKey {
-    return [NSString stringWithFormat:@"%@_%@",WALLET_MASTERNODE_OPERATORS_KEY,[self uniqueID]];
+    return [NSString stringWithFormat:@"%@_%@",WALLET_MASTERNODE_OPERATORS_KEY,[self uniqueIDString]];
 }
 
 -(NSArray *)accounts {
@@ -337,7 +337,7 @@
 }
 
 -(NSString*)mnemonicUniqueID {
-    return [DSWallet mnemonicUniqueIDForUniqueID:self.uniqueID];
+    return [DSWallet mnemonicUniqueIDForUniqueID:self.uniqueIDString];
 }
 
 +(NSString*)creationTimeUniqueIDForUniqueID:(NSString*)uniqueID {
@@ -359,15 +359,15 @@
 }
 
 -(NSString*)creationTimeUniqueID {
-    return [DSWallet creationTimeUniqueIDForUniqueID:self.uniqueID];
+    return [DSWallet creationTimeUniqueIDForUniqueID:self.uniqueIDString];
 }
 
 -(NSString*)creationGuessTimeUniqueID {
-    return [DSWallet creationGuessTimeUniqueIDForUniqueID:self.uniqueID];
+    return [DSWallet creationGuessTimeUniqueIDForUniqueID:self.uniqueIDString];
 }
 
 -(NSString*)didVerifyCreationTimeUniqueID {
-    return [DSWallet didVerifyCreationTimeUniqueIDForUniqueID:self.uniqueID];
+    return [DSWallet didVerifyCreationTimeUniqueIDForUniqueID:self.uniqueIDString];
 }
 
 // MARK: - Wallet Creation Time
@@ -484,7 +484,7 @@
 
 -(BOOL)hasSeedPhrase {
     NSError * error = nil;
-    BOOL hasSeed = hasKeychainData(self.uniqueID, &error);
+    BOOL hasSeed = hasKeychainData(self.uniqueIDString, &error);
     return hasSeed;
 }
 

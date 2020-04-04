@@ -89,7 +89,7 @@
 
 -(void)setWallet:(DSWallet *)wallet {
     _wallet = wallet;
-    self.walletIdentifierLabel.text = wallet.uniqueID;
+    self.walletIdentifierLabel.text = wallet.uniqueIDString;
 }
 
 -(void)setFundingAccount:(DSAccount *)fundingAccount {

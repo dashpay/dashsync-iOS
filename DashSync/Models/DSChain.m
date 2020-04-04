@@ -1463,7 +1463,7 @@ static dispatch_once_t devnetToken = 0;
     NSError * error = nil;
     NSMutableArray * keyChainArray = [getKeychainArray(self.chainWalletsKey, &error) mutableCopy];
     if (!keyChainArray) keyChainArray = [NSMutableArray array];
-    [keyChainArray removeObject:wallet.uniqueID];
+    [keyChainArray removeObject:wallet.uniqueIDString];
     setKeychainArray(keyChainArray, self.chainWalletsKey, NO);
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
@@ -1489,8 +1489,8 @@ static dispatch_once_t devnetToken = 0;
     NSError * error = nil;
     NSMutableArray * keyChainArray = [getKeychainArray(self.chainWalletsKey, &error) mutableCopy];
     if (!keyChainArray) keyChainArray = [NSMutableArray array];
-    if (![keyChainArray containsObject:wallet.uniqueID]) {
-        [keyChainArray addObject:wallet.uniqueID];
+    if (![keyChainArray containsObject:wallet.uniqueIDString]) {
+        [keyChainArray addObject:wallet.uniqueIDString];
         setKeychainArray(keyChainArray, self.chainWalletsKey, NO);
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];

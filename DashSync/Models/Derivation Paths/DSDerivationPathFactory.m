@@ -43,16 +43,16 @@
         self.votingKeysDerivationPathByWallet = [NSMutableDictionary dictionary];
     });
     @synchronized(self) {
-        if (![self.votingKeysDerivationPathByWallet objectForKey:wallet.uniqueID]) {
+        if (![self.votingKeysDerivationPathByWallet objectForKey:wallet.uniqueIDString]) {
             DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
             }
-            [self.votingKeysDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueID];
+            [self.votingKeysDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueIDString];
         }
     }
-    return [self.votingKeysDerivationPathByWallet objectForKey:wallet.uniqueID];
+    return [self.votingKeysDerivationPathByWallet objectForKey:wallet.uniqueIDString];
 }
 
 - (DSAuthenticationKeysDerivationPath*)providerOwnerKeysDerivationPathForWallet:(DSWallet*)wallet {
@@ -61,16 +61,16 @@
         self.ownerKeysDerivationPathByWallet = [NSMutableDictionary dictionary];
     });
     @synchronized(self) {
-        if (![self.ownerKeysDerivationPathByWallet objectForKey:wallet.uniqueID]) {
+        if (![self.ownerKeysDerivationPathByWallet objectForKey:wallet.uniqueIDString]) {
             DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
             }
-            [self.ownerKeysDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueID];
+            [self.ownerKeysDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueIDString];
         }
     }
-    return [self.ownerKeysDerivationPathByWallet objectForKey:wallet.uniqueID];
+    return [self.ownerKeysDerivationPathByWallet objectForKey:wallet.uniqueIDString];
 }
 
 - (DSAuthenticationKeysDerivationPath*)providerOperatorKeysDerivationPathForWallet:(DSWallet*)wallet {
@@ -79,16 +79,16 @@
         self.operatorKeysDerivationPathByWallet = [NSMutableDictionary dictionary];
     });
     @synchronized(self) {
-        if (![self.operatorKeysDerivationPathByWallet objectForKey:wallet.uniqueID]) {
+        if (![self.operatorKeysDerivationPathByWallet objectForKey:wallet.uniqueIDString]) {
             DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
             }
-            [self.operatorKeysDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueID];
+            [self.operatorKeysDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueIDString];
         }
     }
-    return [self.operatorKeysDerivationPathByWallet objectForKey:wallet.uniqueID];
+    return [self.operatorKeysDerivationPathByWallet objectForKey:wallet.uniqueIDString];
 }
 
 - (DSMasternodeHoldingsDerivationPath*)providerFundsDerivationPathForWallet:(DSWallet*)wallet {
@@ -97,16 +97,16 @@
         self.providerFundsDerivationPathByWallet = [NSMutableDictionary dictionary];
     });
     @synchronized(self) {
-        if (![self.providerFundsDerivationPathByWallet objectForKey:wallet.uniqueID]) {
+        if (![self.providerFundsDerivationPathByWallet objectForKey:wallet.uniqueIDString]) {
             DSMasternodeHoldingsDerivationPath * derivationPath = [DSMasternodeHoldingsDerivationPath providerFundsDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
             }
-            [self.providerFundsDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueID];
+            [self.providerFundsDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueIDString];
         }
     }
-    return [self.providerFundsDerivationPathByWallet objectForKey:wallet.uniqueID];
+    return [self.providerFundsDerivationPathByWallet objectForKey:wallet.uniqueIDString];
 }
 
 // MARK: - Blockchain Identity Funding
@@ -117,16 +117,16 @@
         self.blockchainIdentityRegistrationFundingDerivationPathByWallet = [NSMutableDictionary dictionary];
     });
     @synchronized(self) {
-        if (![self.blockchainIdentityRegistrationFundingDerivationPathByWallet objectForKey:wallet.uniqueID]) {
+        if (![self.blockchainIdentityRegistrationFundingDerivationPathByWallet objectForKey:wallet.uniqueIDString]) {
             DSCreditFundingDerivationPath * derivationPath = [DSCreditFundingDerivationPath blockchainIdentityRegistrationFundingDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
             }
-            [self.blockchainIdentityRegistrationFundingDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueID];
+            [self.blockchainIdentityRegistrationFundingDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueIDString];
         }
     }
-    return [self.blockchainIdentityRegistrationFundingDerivationPathByWallet objectForKey:wallet.uniqueID];
+    return [self.blockchainIdentityRegistrationFundingDerivationPathByWallet objectForKey:wallet.uniqueIDString];
 }
 
 - (DSCreditFundingDerivationPath*)blockchainIdentityTopupFundingDerivationPathForWallet:(DSWallet*)wallet {
@@ -135,16 +135,16 @@
         self.blockchainIdentityTopupFundingDerivationPathByWallet = [NSMutableDictionary dictionary];
     });
     @synchronized(self) {
-        if (![self.blockchainIdentityTopupFundingDerivationPathByWallet objectForKey:wallet.uniqueID]) {
+        if (![self.blockchainIdentityTopupFundingDerivationPathByWallet objectForKey:wallet.uniqueIDString]) {
             DSCreditFundingDerivationPath * derivationPath = [DSCreditFundingDerivationPath blockchainIdentityTopupFundingDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
             }
-            [self.blockchainIdentityTopupFundingDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueID];
+            [self.blockchainIdentityTopupFundingDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueIDString];
         }
     }
-    return [self.blockchainIdentityTopupFundingDerivationPathByWallet objectForKey:wallet.uniqueID];
+    return [self.blockchainIdentityTopupFundingDerivationPathByWallet objectForKey:wallet.uniqueIDString];
 }
 
 - (DSAuthenticationKeysDerivationPath*)blockchainIdentityBLSKeysDerivationPathForWallet:(DSWallet*)wallet {
@@ -153,16 +153,16 @@
         self.blockchainIdentityBLSDerivationPathByWallet = [NSMutableDictionary dictionary];
     });
     @synchronized(self) {
-        if (![self.blockchainIdentityBLSDerivationPathByWallet objectForKey:wallet.uniqueID]) {
+        if (![self.blockchainIdentityBLSDerivationPathByWallet objectForKey:wallet.uniqueIDString]) {
             DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentityBLSKeysDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
             }
-            [self.blockchainIdentityBLSDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueID];
+            [self.blockchainIdentityBLSDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueIDString];
         }
     }
-    return [self.blockchainIdentityBLSDerivationPathByWallet objectForKey:wallet.uniqueID];
+    return [self.blockchainIdentityBLSDerivationPathByWallet objectForKey:wallet.uniqueIDString];
 }
 
 // MARK: - Blockchain Identity Authentication
@@ -173,16 +173,16 @@
         self.blockchainIdentityECDSADerivationPathByWallet = [NSMutableDictionary dictionary];
     });
     @synchronized(self) {
-        if (![self.blockchainIdentityECDSADerivationPathByWallet objectForKey:wallet.uniqueID]) {
+        if (![self.blockchainIdentityECDSADerivationPathByWallet objectForKey:wallet.uniqueIDString]) {
             DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentityECDSAKeysDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
             }
-            [self.blockchainIdentityECDSADerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueID];
+            [self.blockchainIdentityECDSADerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueIDString];
         }
     }
-    return [self.blockchainIdentityECDSADerivationPathByWallet objectForKey:wallet.uniqueID];
+    return [self.blockchainIdentityECDSADerivationPathByWallet objectForKey:wallet.uniqueIDString];
 }
 
 - (NSArray<DSDerivationPath*>*)loadedSpecializedDerivationPathsForWallet:(DSWallet*)wallet {

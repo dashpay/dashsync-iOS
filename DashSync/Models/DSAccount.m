@@ -206,7 +206,7 @@
                 NSFetchRequest * fetchRequest = [DSTxOutputEntity fetchRequest];
                 
                 //for some reason it is faster to search by the wallet unique id on the account, then it is by the account itself, this might change if there are more than 1 account;
-                fetchRequest.predicate = [NSPredicate predicateWithFormat:@"account.walletUniqueID = %@ && account.index = %@" ,self.wallet.uniqueID,@(self.accountNumber)];
+                fetchRequest.predicate = [NSPredicate predicateWithFormat:@"account.walletUniqueID = %@ && account.index = %@" ,self.wallet.uniqueIDString,@(self.accountNumber)];
                 [fetchRequest setRelationshipKeyPathsForPrefetching:@[@"transaction.inputs",@"transaction.outputs",@"transaction.transactionHash",@"spentInInput.transaction.inputs",@"spentInInput.transaction.outputs",@"spentInInput.transaction.transactionHash"]];
                 
                 NSError * fetchRequestError = nil;
@@ -288,7 +288,7 @@
 // MARK: - Calculated Attributes
 
 -(NSString*)uniqueID {
-    return [NSString stringWithFormat:@"%@-0-%u",self.wallet.uniqueID,self.accountNumber]; //0 is for type 0
+    return [NSString stringWithFormat:@"%@-0-%u",self.wallet.uniqueIDString,self.accountNumber]; //0 is for type 0
 }
 
 - (uint32_t)blockHeight
