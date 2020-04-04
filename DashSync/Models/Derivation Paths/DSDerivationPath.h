@@ -201,7 +201,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 + (NSData *)deserializedExtendedPublicKey:(NSString *)extendedPublicKeyString onChain:(DSChain*)chain;
 - (NSData * _Nullable)deserializedExtendedPublicKey:(NSString *)extendedPublicKeyString;
 
-- (DSKey*)publicKeyAtIndexPath:(NSIndexPath*)indexPath onChain:(DSChain* _Nullable)chain;
+- (DSKey*)publicKeyAtIndexPath:(NSIndexPath*)indexPath;
 
 - (NSData *)publicKeyDataAtIndexPath:(NSIndexPath*)indexPath;
 

@@ -82,10 +82,10 @@
     }
 }
 
-+ (DSKey*)keyForPublicKeyData:(NSData*)data forKeyType:(DSKeyType)keyType onChain:(DSChain*)chain {
++ (DSKey*)keyForPublicKeyData:(NSData*)data forKeyType:(DSKeyType)keyType {
     switch (keyType) {
         case DSKeyType_BLS:
-            return [DSBLSKey blsKeyWithPublicKey:data.UInt384 onChain:chain];
+            return [DSBLSKey blsKeyWithPublicKey:data.UInt384];
         case DSKeyType_ECDSA:
             return [DSECDSAKey keyWithPublicKey:data];
         default:
@@ -94,16 +94,26 @@
 
 }
 
-+ (DSKey*)keyForSecretKeyData:(NSData*)data forKeyType:(DSKeyType)keyType onChain:(DSChain*)chain {
++ (DSKey*)keyForSecretKeyData:(NSData*)data forKeyType:(DSKeyType)keyType {
     switch (keyType) {
         case DSKeyType_BLS:
-            return [DSBLSKey blsKeyWithPrivateKey:data.UInt256 onChain:chain];
+            return [DSBLSKey blsKeyWithPrivateKey:data.UInt256];
         case DSKeyType_ECDSA:
             return [DSECDSAKey keyWithSecret:data.UInt256 compressed:YES];
         default:
             return nil;
     }
+}
 
++ (DSKey*)keyForExtendedSecretKeyData:(NSData*)data forKeyType:(DSKeyType)keyType {
+    switch (keyType) {
+        case DSKeyType_BLS:
+            return [DSBLSKey blsKeyWithPrivateKey:data.UInt256];
+        case DSKeyType_ECDSA:
+            return [DSECDSAKey keyWithSecret:data.UInt256 compressed:YES];
+        default:
+            return nil;
+    }
 }
 
 @end

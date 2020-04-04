@@ -17,25 +17,24 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic,readonly) uint32_t publicKeyFingerprint;
 @property (nonatomic,readonly) UInt256 chainCode;
-@property (nonatomic,readonly) DSChain * chain;
 @property (nonatomic,readonly) NSData * extendedPrivateKeyData;
 @property (nonatomic,readonly) NSData * extendedPublicKeyData;
 @property (nonatomic,readonly) UInt256 secretKey;
 @property (nonatomic,readonly) UInt384 publicKey;
 
-+ (nullable instancetype)blsKeyWithPrivateKeyFromSeed:(NSData *)seed onChain:(DSChain*)chain;
-- (nullable instancetype)initWithPrivateKeyFromSeed:(NSData *)seed onChain:(DSChain*)chain;
-+ (nullable instancetype)blsKeyWithExtendedPrivateKeyFromSeed:(NSData *)seed onChain:(DSChain*)chain;
-- (nullable instancetype)initWithExtendedPrivateKeyFromSeed:(NSData *)seed onChain:(DSChain*)chain;
-+ (nullable instancetype)blsKeyWithExtendedPrivateKeyData:(NSData*)extendedPrivateKey onChain:(DSChain*)chain;
-- (nullable instancetype)initWithExtendedPrivateKeyData:(NSData*)extendedPrivateKey onChain:(DSChain*)chain;
-+ (nullable instancetype)blsKeyWithExtendedPublicKeyData:(NSData*)extendedPublicKey onChain:(DSChain*)chain;
-- (nullable instancetype)initWithExtendedPublicKeyData:(NSData*)extendedPublicKey onChain:(DSChain*)chain;
-+ (nullable instancetype)blsKeyWithPublicKey:(UInt384)publicKey onChain:(DSChain*)chain;
-- (nullable instancetype)initWithPublicKey:(UInt384)publicKey onChain:(DSChain*)chain;
-+ (nullable instancetype)blsKeyWithPrivateKey:(UInt256)secretKey onChain:(DSChain*)chain;
-- (nullable instancetype)initWithPrivateKey:(UInt256)secretKey onChain:(DSChain*)chain;
-+ (nullable instancetype)blsKeyByAggregatingPublicKeys:(NSArray<DSBLSKey*>*)publicKeys onChain:(DSChain*)chain;
++ (nullable instancetype)blsKeyWithPrivateKeyFromSeed:(NSData *)seed;
+- (nullable instancetype)initWithPrivateKeyFromSeed:(NSData *)seed;
++ (nullable instancetype)blsKeyWithExtendedPrivateKeyFromSeed:(NSData *)seed;
+- (nullable instancetype)initWithExtendedPrivateKeyFromSeed:(NSData *)seed;
++ (nullable instancetype)blsKeyWithExtendedPrivateKeyData:(NSData*)extendedPrivateKey;
+- (nullable instancetype)initWithExtendedPrivateKeyData:(NSData*)extendedPrivateKey;
++ (nullable instancetype)blsKeyWithExtendedPublicKeyData:(NSData*)extendedPublicKey;
+- (nullable instancetype)initWithExtendedPublicKeyData:(NSData*)extendedPublicKey;
++ (nullable instancetype)blsKeyWithPublicKey:(UInt384)publicKey;
+- (nullable instancetype)initWithPublicKey:(UInt384)publicKey;
++ (nullable instancetype)blsKeyWithPrivateKey:(UInt256)secretKey;
+- (nullable instancetype)initWithPrivateKey:(UInt256)secretKey;
++ (nullable instancetype)blsKeyByAggregatingPublicKeys:(NSArray<DSBLSKey*>*)publicKeys;
 
 - (DSBLSKey* _Nullable)deriveToPath:(NSIndexPath *)derivationPath;
 - (DSBLSKey* _Nullable)publicDeriveToPath:(NSIndexPath *)derivationPath;

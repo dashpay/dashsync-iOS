@@ -147,11 +147,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             NSIndexPath *keyIndexPath = (NSIndexPath *)[NSKeyedUnarchiver unarchiveObjectWithData:(NSData*)[keyPath path]];
             BOOL success = [self registerKeyWithStatus:keyPath.keyStatus atIndexPath:keyIndexPath ofType:keyPath.keyType];
             if (!success) {
-                DSKey * key = [DSKey keyForPublicKeyData:keyPath.publicKeyData forKeyType:keyPath.keyType onChain:self.chain];
+                DSKey * key = [DSKey keyForPublicKeyData:keyPath.publicKeyData forKeyType:keyPath.keyType];
                 [self registerKey:key withStatus:keyPath.keyStatus atIndex:keyPath.keyID ofType:keyPath.keyType];
             }
         } else {
-            DSKey * key = [DSKey keyForPublicKeyData:keyPath.publicKeyData forKeyType:keyPath.keyType onChain:self.chain];
+            DSKey * key = [DSKey keyForPublicKeyData:keyPath.publicKeyData forKeyType:keyPath.keyType];
             [self registerKey:key withStatus:keyPath.keyStatus atIndex:keyPath.keyID ofType:keyPath.keyType];
         }
     }
@@ -843,13 +843,19 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     
     if (!keySecret || error) return nil;
     
-    return [DSKey keyForSecretKeyData:keySecret forKeyType:(DSKeyType)type onChain:self.chain];
+    return [DSKey keyForSecretKeyData:keySecret forKeyType:type];
 }
 
--(DSKey*)derivePrivateKeyAtIndex:(uint32_t)index ofType:(DSKeyType)type {
+-(DSKey*)derivePrivateKeyAtIdentityKeyIndex:(uint32_t)index ofType:(DSKeyType)type {
     if (!_isLocal) return nil;
     const NSUInteger indexes[] = {_index,index};
     NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
+    
+    return [self derivePrivateKeyAtIndexPath:indexPath ofType:type];
+}
+
+-(DSKey*)derivePrivateKeyAtIndexPath:(NSIndexPath*)indexPath ofType:(DSKeyType)type {
+    if (!_isLocal) return nil;
     
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     
@@ -873,7 +879,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     
-    return [derivationPath publicKeyAtIndexPath:indexPath onChain:self.chain];
+    return [derivationPath publicKeyAtIndexPath:indexPath];
 }
 
 -(DSKey*)createNewKeyOfType:(DSKeyType)type returnIndex:(uint32_t *)rIndex {
@@ -884,15 +890,17 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     
-    DSKey * key = [derivationPath publicKeyAtIndexPath:indexPath onChain:self.chain];
+    DSKey * publicKey = [derivationPath publicKeyAtIndexPath:indexPath];
+    DSKey * privateKey = [derivationPath privateKeyAtIndexPath:indexPath];
+    NSAssert([publicKey.publicKeyData isEqualToData:privateKey.publicKeyData],@"These should be equal");
     self.keysCreated++;
     if (rIndex) {
         *rIndex = keyIndex;
     }
-    NSDictionary * keyDictionary = @{@(DSBlockchainIdentityKeyDictionary_Key):key, @(DSBlockchainIdentityKeyDictionary_KeyType):@(type), @(DSBlockchainIdentityKeyDictionary_KeyStatus):@(DSBlockchainIdentityKeyStatus_Registering)};
+    NSDictionary * keyDictionary = @{@(DSBlockchainIdentityKeyDictionary_Key):publicKey, @(DSBlockchainIdentityKeyDictionary_KeyType):@(type), @(DSBlockchainIdentityKeyDictionary_KeyStatus):@(DSBlockchainIdentityKeyStatus_Registering)};
     [self.keyInfoDictionaries setObject:keyDictionary forKey:@(keyIndex)];
-    [self saveNewKey:key atPath:indexPath withStatus:DSBlockchainIdentityKeyStatus_Registering fromDerivationPath:derivationPath];
-    return key;
+    [self saveNewKey:publicKey atPath:indexPath withStatus:DSBlockchainIdentityKeyStatus_Registering fromDerivationPath:derivationPath];
+    return publicKey;
 }
 
 -(uint32_t)firstIndexOfKeyOfType:(DSKeyType)type createIfNotPresent:(BOOL)createIfNotPresent {
@@ -919,7 +927,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     
-    DSKey * key = [derivationPath publicKeyAtIndexPath:indexPath onChain:self.chain];
+    DSKey * key = [derivationPath publicKeyAtIndexPath:indexPath];
     return key;
 }
 
@@ -945,7 +953,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         } else {
             self.keysCreated = MAX(self.keysCreated,index + 1);
             if (save) {
-                [self saveNewKey:key forKeyWithIndexID:index withStatus:status];
+                [self saveNewRemoteIdentityKey:key forKeyWithIndexID:index withStatus:status];
             }
         }
         NSDictionary * keyDictionary = @{@(DSBlockchainIdentityKeyDictionary_Key):key, @(DSBlockchainIdentityKeyDictionary_KeyType):@(type), @(DSBlockchainIdentityKeyDictionary_KeyStatus):@(status)};
@@ -959,7 +967,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     //derivationPath will be nil if not local
     
-    DSKey * keyToCheck = [derivationPath publicKeyAtIndexPath:indexPath onChain:self.chain];
+    DSKey * keyToCheck = [derivationPath publicKeyAtIndexPath:indexPath];
     if ([keyToCheck.publicKeyData isEqualToData:key.publicKeyData]) { //if it isn't local we shouldn't verify
         uint32_t index = (uint32_t)[indexPath indexAtPosition:[indexPath length] - 1];
         if (self.keyInfoDictionaries[@(index)]) {
@@ -990,7 +998,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 -(BOOL)registerKeyWithStatus:(DSBlockchainIdentityKeyStatus)status atIndexPath:(NSIndexPath*)indexPath ofType:(DSKeyType)type {
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     
-    DSKey * key = [derivationPath publicKeyAtIndexPath:indexPath onChain:self.chain];
+    DSKey * key = [derivationPath publicKeyAtIndexPath:indexPath];
     if (!key) return FALSE;
     uint32_t index = (uint32_t)[indexPath indexAtPosition:[indexPath length] - 1];
     self.keysCreated = MAX(self.keysCreated,index + 1);
@@ -1016,7 +1024,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         DSKey * rKey = nil;
         NSData * data = [dataString base64ToData];
         if ([type intValue] == DSKeyType_BLS) {
-            rKey = [DSBLSKey blsKeyWithPublicKey:data.UInt384 onChain:self.chain];
+            rKey = [DSBLSKey blsKeyWithPublicKey:data.UInt384];
         } else if ([type intValue] == DSKeyType_ECDSA) {
             rKey = [DSECDSAKey keyWithPublicKey:data];
         }
@@ -3023,7 +3031,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 setKeychainData(key.secretKeyData, [self identifierForKeyAtPath:path fromDerivationPath:derivationPath], YES);
                 DSDLog(@"Saving key at %@ for user %@",[self identifierForKeyAtPath:path fromDerivationPath:derivationPath],self.currentUsername);
             } else {
-                DSKey * privateKey = [self derivePrivateKeyAtIndex:[self indexOfKey:key] ofType:key.keyType];
+                DSKey * privateKey = [self derivePrivateKeyAtIndexPath:path ofType:key.keyType];
                 NSAssert([privateKey.publicKeyData isEqualToData:key.publicKeyData], @"The keys don't seem to match up");
                 setKeychainData(privateKey.secretKeyData, [self identifierForKeyAtPath:path fromDerivationPath:derivationPath], YES);
                 DSDLog(@"Saving key after rederivation %@ for user %@",[self identifierForKeyAtPath:path fromDerivationPath:derivationPath],self.currentUsername);
@@ -3043,7 +3051,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     }];
 }
 
--(void)saveNewKey:(DSKey*)key forKeyWithIndexID:(uint32_t)keyID withStatus:(DSBlockchainIdentityKeyStatus)status {
+-(void)saveNewRemoteIdentityKey:(DSKey*)key forKeyWithIndexID:(uint32_t)keyID withStatus:(DSBlockchainIdentityKeyStatus)status {
     NSAssert(!self.isLocal, @"This should only be called on non local blockchain identities");
     if (self.isLocal) return;
     [self.managedObjectContext performBlockAndWait:^{
