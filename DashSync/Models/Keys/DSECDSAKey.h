@@ -36,6 +36,11 @@ typedef struct {
     uint8_t p[33];
 } DSECPoint;
 
+extern void CKDpriv(UInt256 *k, UInt256 *c, uint32_t i);
+extern void CKDpriv256(UInt256 *k, UInt256 *c, UInt256 i, BOOL hardened);
+extern void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i);
+extern void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened);
+
 // adds 256bit big endian ints a and b (mod secp256k1 order) and stores the result in a
 // returns true on success
 int DSSecp256k1ModAdd(UInt256 * a, const UInt256 * b);
@@ -62,7 +67,7 @@ int DSSecp256k1PointMul(DSECPoint * p, const UInt256 * i);
 
 @property (nonatomic, readonly, nullable) const UInt256 *secretKey;
 
-+ (nullable instancetype)keyWithExtendedPrivateKeyData:(NSData*)extendedPrivateKeyData compressed:(BOOL)compressed;
++ (nullable instancetype)keyWithExtendedPrivateKeyData:(NSData*)extendedPrivateKeyData;
 + (nullable instancetype)keyWithPrivateKey:(NSString *)privateKey onChain:(DSChain*)chain;
 + (nullable instancetype)keyWithSecret:(UInt256)secret compressed:(BOOL)compressed;
 + (nullable instancetype)keyWithExtendedPublicKeyData:(NSData*)extendedPublicKeyData;
@@ -71,7 +76,7 @@ int DSSecp256k1PointMul(DSECPoint * p, const UInt256 * i);
 
 + (nullable instancetype)keyWithDHKeyExchangeWithPublicKey:(DSECDSAKey *)publicKey forPrivateKey:(DSECDSAKey*)privateKey;
 
-- (nullable instancetype)initWithExtendedPrivateKeyData:(NSData*)extendedPrivateKeyData compressed:(BOOL)compressed;
+- (nullable instancetype)initWithExtendedPrivateKeyData:(NSData*)extendedPrivateKeyData;
 - (nullable instancetype)initWithPrivateKey:(NSString *)privateKey onChain:(DSChain*)chain;
 - (nullable instancetype)initWithSecret:(UInt256)secret compressed:(BOOL)compressed;
 - (nullable instancetype)initWithExtendedPublicKeyData:(NSData*)extendedPublicKeyData;

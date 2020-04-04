@@ -33,6 +33,7 @@
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "DSChain.h"
+#import "DSDerivationPath.h"
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wconversion"
@@ -48,6 +49,140 @@
 
 static secp256k1_context *_ctx = NULL;
 static dispatch_once_t _ctx_once = 0;
+
+// BIP32 is a scheme for deriving chains of addresses from a seed value
+// https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
+
+// Private parent key -> private child key
+//
+// CKDpriv((kpar, cpar), i) -> (ki, ci) computes a child extended private key from the parent extended private key:
+//
+// - Check whether i >= 2^31 (whether the child is a hardened key).
+//     - If so (hardened child): let I = HMAC-SHA512(Key = cpar, Data = 0x00 || ser256(kpar) || ser32(i)).
+//       (Note: The 0x00 pads the private key to make it 33 bytes long.)
+//     - If not (normal child): let I = HMAC-SHA512(Key = cpar, Data = serP(point(kpar)) || ser32(i)).
+// - Split I into two 32-byte sequences, IL and IR.
+// - The returned child key ki is parse256(IL) + kpar (mod n).
+// - The returned chain code ci is IR.
+// - In case parse256(IL) >= n or ki = 0, the resulting key is invalid, and one should proceed with the next value for i
+//   (Note: this has probability lower than 1 in 2^127.)
+//
+void CKDpriv(UInt256 *k, UInt256 *c, uint32_t i)
+{
+    uint8_t buf[sizeof(DSECPoint) + sizeof(i)];
+    UInt512 I;
+    
+    if (i & BIP32_HARD) {
+        buf[0] = 0;
+        *(UInt256 *)&buf[1] = *k;
+    }
+    else DSSecp256k1PointGen((DSECPoint *)buf, k);
+    
+    *(uint32_t *)&buf[sizeof(DSECPoint)] = CFSwapInt32HostToBig(i);
+    NSLog(@"c is %@, buf is %@",uint256_hex(*c),[NSData dataWithBytes:buf length:sizeof(DSECPoint) + sizeof(i)].hexString);
+    HMAC(&I, SHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf)); // I = HMAC-SHA512(c, k|P(k) || i)
+    NSLog(@"c now is %@, I now is %@",uint256_hex(*c),uint512_hex(I));
+    DSSecp256k1ModAdd(k, (UInt256 *)&I); // k = IL + k (mod n)
+    *c = *(UInt256 *)&I.u8[sizeof(UInt256)]; // c = IR
+    
+    memset(buf, 0, sizeof(buf));
+    memset(&I, 0, sizeof(I));
+}
+
+void CKDpriv256(UInt256 *k, UInt256 *c, UInt256 i, BOOL hardened)
+{
+    BOOL iIs31Bits = uint256_is_31_bits(i);
+    uint32_t smallI;
+    uint32_t length = sizeof(DSECPoint) + (iIs31Bits?sizeof(smallI):((sizeof(i) + sizeof(hardened))));
+    uint8_t buf[length];
+    UInt512 I;
+    
+    if (hardened) {
+        buf[0] = 0;
+        *(UInt256 *)&buf[1] = *k;
+    }
+    else DSSecp256k1PointGen((DSECPoint *)buf, k);
+
+    if (iIs31Bits) {
+        //we are deriving a 31 bit integer
+        smallI = i.u32[0];
+        if (hardened) smallI |= BIP32_HARD;
+        smallI = CFSwapInt32HostToBig(smallI);
+        *(uint32_t *)&buf[sizeof(DSECPoint)] = smallI;
+    } else {
+        *(BOOL *)&buf[sizeof(DSECPoint)] = hardened;
+        *(UInt256 *)&buf[sizeof(DSECPoint) + sizeof(hardened)] = i;
+    }
+    HMAC(&I, SHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf)); // I = HMAC-SHA512(c, k|P(k) || i)
+    DSSecp256k1ModAdd(k, (UInt256 *)&I); // k = IL + k (mod n)
+    *c = *(UInt256 *)&I.u8[sizeof(UInt256)]; // c = IR
+    
+    memset(buf, 0, sizeof(buf));
+    memset(&I, 0, sizeof(I));
+}
+
+// Public parent key -> public child key
+//
+// CKDpub((Kpar, cpar), i) -> (Ki, ci) computes a child extended public key from the parent extended public key.
+// It is only defined for non-hardened child keys.
+//
+// - Check whether i >= 2^31 (whether the child is a hardened key).
+//     - If so (hardened child): return failure
+//     - If not (normal child): let I = HMAC-SHA512(Key = cpar, Data = serP(Kpar) || ser32(i)).
+// - Split I into two 32-byte sequences, IL and IR.
+// - The returned child key Ki is point(parse256(IL)) + Kpar.
+// - The returned chain code ci is IR.
+// - In case parse256(IL) >= n or Ki is the point at infinity, the resulting key is invalid, and one should proceed with
+//   the next value for i.
+//
+void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
+{
+    if (i & BIP32_HARD) return; // can't derive private child key from public parent key
+    
+    uint8_t buf[sizeof(*K) + sizeof(i)];
+    UInt512 I;
+    
+    *(DSECPoint *)buf = *K;
+    *(uint32_t *)&buf[sizeof(*K)] = CFSwapInt32HostToBig(i);
+    
+    HMAC(&I, SHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf)); // I = HMAC-SHA512(c, P(K) || i)
+    
+    *c = *(UInt256 *)&I.u8[sizeof(UInt256)]; // c = IR
+    DSSecp256k1PointAdd(K, (UInt256 *)&I); // K = P(IL) + K
+    
+    memset(buf, 0, sizeof(buf));
+    memset(&I, 0, sizeof(I));
+}
+
+void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
+{
+    if (hardened) return; // can't derive private child key from public parent key
+    BOOL iIs31Bits = uint256_is_31_bits(i);
+    uint32_t smallI;
+    uint32_t length = sizeof(*K) + (iIs31Bits?sizeof(smallI):(sizeof(i) + sizeof(hardened)));
+    uint8_t buf[length];
+    UInt512 I;
+    
+    *(DSECPoint *)buf = *K;
+    
+    if (iIs31Bits) {
+        smallI = i.u32[0];
+        smallI = CFSwapInt32HostToBig(smallI);
+        
+        *(uint32_t *)&buf[sizeof(*K)] = smallI;
+    } else {
+        *(BOOL *)&buf[sizeof(*K)] = hardened;
+        *(UInt256 *)&buf[sizeof(*K) + sizeof(hardened)] = i;
+    }
+    
+    HMAC(&I, SHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf)); // I = HMAC-SHA512(c, P(K) || i)
+    
+    *c = *(UInt256 *)&I.u8[sizeof(UInt256)]; // c = IR
+    DSSecp256k1PointAdd(K, (UInt256 *)&I); // K = P(IL) + K
+    
+    memset(buf, 0, sizeof(buf));
+    memset(&I, 0, sizeof(I));
+}
 
 // adds 256bit big endian ints a and b (mod secp256k1 order) and stores the result in a
 // returns true on success
@@ -125,9 +260,9 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     return [[self alloc] initWithSecret:secret compressed:compressed];
 }
 
-+ (instancetype)keyWithExtendedPrivateKeyData:(NSData*)extendedPrivateKeyData compressed:(BOOL)compressed
++ (instancetype)keyWithExtendedPrivateKeyData:(NSData*)extendedPrivateKeyData
 {
-    return [[self alloc] initWithExtendedPrivateKeyData:extendedPrivateKeyData compressed:compressed];
+    return [[self alloc] initWithExtendedPrivateKeyData:extendedPrivateKeyData];
 }
 
 + (instancetype)keyWithExtendedPublicKeyData:(NSData*)extendedPublicKeyData
@@ -169,12 +304,12 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     return (secp256k1_ec_seckey_verify(_ctx, _seckey.u8)) ? self : nil;
 }
 
-- (instancetype)initWithExtendedPrivateKeyData:(NSData*)extendedPrivateKeyData compressed:(BOOL)compressed
+- (instancetype)initWithExtendedPrivateKeyData:(NSData*)extendedPrivateKeyData
 {
     NSAssert(extendedPrivateKeyData.length == ECDSA_EXTENDED_SECRET_KEY_SIZE,@"Key size is incorrect");
     if (extendedPrivateKeyData.length < ECDSA_EXTENDED_SECRET_KEY_SIZE) return nil;
     
-    if (!(self = [self initWithSecret:[extendedPrivateKeyData subdataWithRange:NSMakeRange(36, 32)].UInt256 compressed:compressed])) return nil;
+    if (!(self = [self initWithSecret:[extendedPrivateKeyData subdataWithRange:NSMakeRange(36, 32)].UInt256 compressed:YES])) return nil;
     
     self.fingerprint = [extendedPrivateKeyData UInt32AtOffset:0];
     self.chaincode = [extendedPrivateKeyData UInt256AtOffset:4];
@@ -423,6 +558,48 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
 
 -(DSKeyType)keyType {
     return DSKeyType_ECDSA;
+}
+
+// MARK: - Derivation
+
+-(DSECDSAKey*)privateDeriveToPath:(NSIndexPath*)indexPath {
+    
+    UInt256 chain = self.chaincode;
+    UInt256 secret = self.seckey;
+    for (NSInteger i = 0;i<[indexPath length] - 1;i++) {
+        uint32_t derivation = (uint32_t)[indexPath indexAtPosition:i];
+        CKDpriv(&secret, &chain, derivation);
+    }
+    uint32_t fingerprint = [DSECDSAKey keyWithSecret:secret compressed:YES].hash160.u32[0];
+    
+    CKDpriv(&secret, &chain, (uint32_t)[indexPath indexAtPosition:[indexPath length] - 1]);
+    
+    DSECDSAKey * childKey = [DSECDSAKey keyWithSecret:secret compressed:YES];
+    childKey.chaincode = chain;
+    childKey.fingerprint = fingerprint;
+    return childKey;
+}
+
+-(DSECDSAKey*)publicDeriveToPath:(NSIndexPath*)indexPath {
+    UInt256 chain = self.chaincode;
+    DSECPoint pubKey = *(const DSECPoint *)((const uint8_t *)self.publicKeyData.bytes);
+    for (NSInteger i = 0;i<[indexPath length] - 1;i++) {
+        uint32_t derivation = (uint32_t)[indexPath indexAtPosition:i];
+        CKDpub(&pubKey, &chain, derivation);
+    }
+    NSData * publicKeyData = [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
+    uint32_t fingerprint = publicKeyData.hash160.u32[0];
+    
+    CKDpub(&pubKey, &chain, (uint32_t)[indexPath indexAtPosition:[indexPath length] - 1]);
+    
+    publicKeyData = [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
+    DSECDSAKey * childKey = [DSECDSAKey keyWithPublicKeyData:publicKeyData];
+    childKey.chaincode = chain;
+    childKey.fingerprint = fingerprint;
+    
+    
+    NSAssert(childKey, @"Public key should be created");
+    return childKey;
 }
 
 

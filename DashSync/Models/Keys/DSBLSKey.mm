@@ -236,7 +236,7 @@
 
 // MARK: - Derivation
 
--(DSBLSKey*)deriveToPath:(NSIndexPath*)derivationPath {
+-(DSBLSKey*)privateDeriveToPath:(NSIndexPath*)derivationPath {
     bls::ExtendedPrivateKey blsExtendedPrivateKey = bls::ExtendedPrivateKey::FromBytes((const uint8_t *)self.extendedPrivateKeyData.bytes);
     bls::ExtendedPrivateKey derivedExtendedPrivateKey = [DSBLSKey derive:blsExtendedPrivateKey indexes:derivationPath];
     return [[DSBLSKey alloc] initWithExtendedPrivateKey:derivedExtendedPrivateKey];

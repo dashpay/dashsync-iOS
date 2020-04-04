@@ -31,140 +31,6 @@
 #import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 
-// BIP32 is a scheme for deriving chains of addresses from a seed value
-// https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
-
-// Private parent key -> private child key
-//
-// CKDpriv((kpar, cpar), i) -> (ki, ci) computes a child extended private key from the parent extended private key:
-//
-// - Check whether i >= 2^31 (whether the child is a hardened key).
-//     - If so (hardened child): let I = HMAC-SHA512(Key = cpar, Data = 0x00 || ser256(kpar) || ser32(i)).
-//       (Note: The 0x00 pads the private key to make it 33 bytes long.)
-//     - If not (normal child): let I = HMAC-SHA512(Key = cpar, Data = serP(point(kpar)) || ser32(i)).
-// - Split I into two 32-byte sequences, IL and IR.
-// - The returned child key ki is parse256(IL) + kpar (mod n).
-// - The returned chain code ci is IR.
-// - In case parse256(IL) >= n or ki = 0, the resulting key is invalid, and one should proceed with the next value for i
-//   (Note: this has probability lower than 1 in 2^127.)
-//
-void CKDpriv(UInt256 *k, UInt256 *c, uint32_t i)
-{
-    uint8_t buf[sizeof(DSECPoint) + sizeof(i)];
-    UInt512 I;
-    
-    if (i & BIP32_HARD) {
-        buf[0] = 0;
-        *(UInt256 *)&buf[1] = *k;
-    }
-    else DSSecp256k1PointGen((DSECPoint *)buf, k);
-    
-    *(uint32_t *)&buf[sizeof(DSECPoint)] = CFSwapInt32HostToBig(i);
-    NSLog(@"c is %@, buf is %@",uint256_hex(*c),[NSData dataWithBytes:buf length:sizeof(DSECPoint) + sizeof(i)].hexString);
-    HMAC(&I, SHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf)); // I = HMAC-SHA512(c, k|P(k) || i)
-    NSLog(@"c now is %@, I now is %@",uint256_hex(*c),uint512_hex(I));
-    DSSecp256k1ModAdd(k, (UInt256 *)&I); // k = IL + k (mod n)
-    *c = *(UInt256 *)&I.u8[sizeof(UInt256)]; // c = IR
-    
-    memset(buf, 0, sizeof(buf));
-    memset(&I, 0, sizeof(I));
-}
-
-void CKDpriv256(UInt256 *k, UInt256 *c, UInt256 i, BOOL hardened)
-{
-    BOOL iIs31Bits = uint256_is_31_bits(i);
-    uint32_t smallI;
-    uint32_t length = sizeof(DSECPoint) + (iIs31Bits?sizeof(smallI):((sizeof(i) + sizeof(hardened))));
-    uint8_t buf[length];
-    UInt512 I;
-    
-    if (hardened) {
-        buf[0] = 0;
-        *(UInt256 *)&buf[1] = *k;
-    }
-    else DSSecp256k1PointGen((DSECPoint *)buf, k);
-
-    if (iIs31Bits) {
-        //we are deriving a 31 bit integer
-        smallI = i.u32[0];
-        if (hardened) smallI |= BIP32_HARD;
-        smallI = CFSwapInt32HostToBig(smallI);
-        *(uint32_t *)&buf[sizeof(DSECPoint)] = smallI;
-    } else {
-        *(BOOL *)&buf[sizeof(DSECPoint)] = hardened;
-        *(UInt256 *)&buf[sizeof(DSECPoint) + sizeof(hardened)] = i;
-    }
-    HMAC(&I, SHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf)); // I = HMAC-SHA512(c, k|P(k) || i)
-    DSSecp256k1ModAdd(k, (UInt256 *)&I); // k = IL + k (mod n)
-    *c = *(UInt256 *)&I.u8[sizeof(UInt256)]; // c = IR
-    
-    memset(buf, 0, sizeof(buf));
-    memset(&I, 0, sizeof(I));
-}
-
-// Public parent key -> public child key
-//
-// CKDpub((Kpar, cpar), i) -> (Ki, ci) computes a child extended public key from the parent extended public key.
-// It is only defined for non-hardened child keys.
-//
-// - Check whether i >= 2^31 (whether the child is a hardened key).
-//     - If so (hardened child): return failure
-//     - If not (normal child): let I = HMAC-SHA512(Key = cpar, Data = serP(Kpar) || ser32(i)).
-// - Split I into two 32-byte sequences, IL and IR.
-// - The returned child key Ki is point(parse256(IL)) + Kpar.
-// - The returned chain code ci is IR.
-// - In case parse256(IL) >= n or Ki is the point at infinity, the resulting key is invalid, and one should proceed with
-//   the next value for i.
-//
-void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
-{
-    if (i & BIP32_HARD) return; // can't derive private child key from public parent key
-    
-    uint8_t buf[sizeof(*K) + sizeof(i)];
-    UInt512 I;
-    
-    *(DSECPoint *)buf = *K;
-    *(uint32_t *)&buf[sizeof(*K)] = CFSwapInt32HostToBig(i);
-    
-    HMAC(&I, SHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf)); // I = HMAC-SHA512(c, P(K) || i)
-    
-    *c = *(UInt256 *)&I.u8[sizeof(UInt256)]; // c = IR
-    DSSecp256k1PointAdd(K, (UInt256 *)&I); // K = P(IL) + K
-    
-    memset(buf, 0, sizeof(buf));
-    memset(&I, 0, sizeof(I));
-}
-
-void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
-{
-    if (hardened) return; // can't derive private child key from public parent key
-    BOOL iIs31Bits = uint256_is_31_bits(i);
-    uint32_t smallI;
-    uint32_t length = sizeof(*K) + (iIs31Bits?sizeof(smallI):(sizeof(i) + sizeof(hardened)));
-    uint8_t buf[length];
-    UInt512 I;
-    
-    *(DSECPoint *)buf = *K;
-    
-    if (iIs31Bits) {
-        smallI = i.u32[0];
-        smallI = CFSwapInt32HostToBig(smallI);
-        
-        *(uint32_t *)&buf[sizeof(*K)] = smallI;
-    } else {
-        *(BOOL *)&buf[sizeof(*K)] = hardened;
-        *(UInt256 *)&buf[sizeof(*K) + sizeof(hardened)] = i;
-    }
-    
-    HMAC(&I, SHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf)); // I = HMAC-SHA512(c, P(K) || i)
-    
-    *c = *(UInt256 *)&I.u8[sizeof(UInt256)]; // c = IR
-    DSSecp256k1PointAdd(K, (UInt256 *)&I); // K = P(IL) + K
-    
-    memset(buf, 0, sizeof(buf));
-    memset(&I, 0, sizeof(I));
-}
-
 #define DERIVATION_PATH_EXTENDED_PUBLIC_KEY_WALLET_BASED_LOCATION @"DP_EPK_WBL"
 #define DERIVATION_PATH_EXTENDED_PUBLIC_KEY_STANDALONE_BASED_LOCATION @"DP_EPK_SBL"
 #define DERIVATION_PATH_EXTENDED_SECRET_KEY_WALLET_BASED_LOCATION @"DP_ESK_WBL"
@@ -1023,7 +889,7 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
     if (! seed) return nil;
     if (![self length]) return nil; //there needs to be at least 1 length
     DSBLSKey * topKey = [DSBLSKey keyWithExtendedPrivateKeyFromSeed:seed];
-    DSBLSKey * derivationPathExtendedKey = [topKey deriveToPath:[self baseIndexPath]];
+    DSBLSKey * derivationPathExtendedKey = [topKey privateDeriveToPath:[self baseIndexPath]];
     
     _extendedPublicKey = derivationPathExtendedKey.extendedPublicKeyData;
     if (walletUniqueId) {
@@ -1041,8 +907,8 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
     if (! seed) return nil;
     if (![self length]) return nil; //there needs to be at least 1 length
     DSBLSKey * topKey = [DSBLSKey keyWithExtendedPrivateKeyFromSeed:seed];
-    DSBLSKey * derivationPathExtendedKey = [topKey deriveToPath:[self baseIndexPath]];
-    DSBLSKey * privateKey = [derivationPathExtendedKey deriveToPath:indexPath];
+    DSBLSKey * derivationPathExtendedKey = [topKey privateDeriveToPath:[self baseIndexPath]];
+    DSBLSKey * privateKey = [derivationPathExtendedKey privateDeriveToPath:indexPath];
     
     return privateKey;
 }
@@ -1060,11 +926,11 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
         version = DASH_PRIVKEY_TEST;
     }
     DSBLSKey * topKey = [DSBLSKey keyWithExtendedPrivateKeyFromSeed:seed];
-    DSBLSKey * derivationPathExtendedKey = [topKey deriveToPath:[self baseIndexPath]];
+    DSBLSKey * derivationPathExtendedKey = [topKey privateDeriveToPath:[self baseIndexPath]];
     
     for (NSIndexPath *indexPath in indexPaths) {
         NSMutableData *privKey = [NSMutableData secureDataWithCapacity:34];
-        DSBLSKey * privateKey = [derivationPathExtendedKey deriveToPath:indexPath];
+        DSBLSKey * privateKey = [derivationPathExtendedKey privateDeriveToPath:indexPath];
         [privKey appendBytes:&version length:1];
         [privKey appendUInt256:[privateKey secretKey]];
         [privKey appendBytes:"\x01" length:1]; // specifies compressed pubkey format
@@ -1087,10 +953,10 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
         version = DASH_PRIVKEY_TEST;
     }
     DSBLSKey * topKey = [DSBLSKey keyWithExtendedPrivateKeyFromSeed:seed];
-    DSBLSKey * derivationPathExtendedKey = [topKey deriveToPath:[self baseIndexPath]];
+    DSBLSKey * derivationPathExtendedKey = [topKey privateDeriveToPath:[self baseIndexPath]];
     
     for (NSIndexPath *indexPath in indexPaths) {
-        DSBLSKey * privateKey = [derivationPathExtendedKey deriveToPath:indexPath];
+        DSBLSKey * privateKey = [derivationPathExtendedKey privateDeriveToPath:indexPath];
         [a addObject:privateKey];
     }
     

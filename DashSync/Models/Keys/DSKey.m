@@ -115,10 +115,20 @@
         case DSKeyType_BLS:
             return [DSBLSKey keyWithExtendedPrivateKeyData:data];
         case DSKeyType_ECDSA:
-            return [DSECDSAKey keyWithSecret:data.UInt256 compressed:YES];
+            return [DSECDSAKey keyWithExtendedPrivateKeyData:data];
         default:
             return nil;
     }
+}
+
+- (DSKey*)privateDeriveToPath:(NSIndexPath*)derivationPath {
+    NSAssert(NO, @"This should be overridden");
+    return nil;
+}
+
+- (DSKey*)publicDeriveToPath:(NSIndexPath*)derivationPath {
+    NSAssert(NO, @"This should be overridden");
+    return nil;
 }
 
 @end
