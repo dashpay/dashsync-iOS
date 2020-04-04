@@ -49,7 +49,7 @@
 }
 
 
-+ (nullable instancetype)blsKeyWithPrivateKeyFromSeed:(NSData *)seed {
++ (nullable instancetype)keyWithPrivateKeyFromSeed:(NSData *)seed {
     return [[DSBLSKey alloc] initWithPrivateKeyFromSeed:seed];
 }
 
@@ -68,15 +68,15 @@
     return self;
 }
 
-+ (nullable instancetype)blsKeyWithExtendedPrivateKeyFromSeed:(NSData *)seed {
++ (nullable instancetype)keyWithExtendedPrivateKeyFromSeed:(NSData *)seed {
     return [[DSBLSKey alloc] initWithExtendedPrivateKeyFromSeed:seed];
 }
 
-+ (nullable instancetype)blsKeyWithPublicKey:(UInt384)publicKey {
++ (nullable instancetype)keyWithPublicKey:(UInt384)publicKey {
     return [[DSBLSKey alloc] initWithPublicKey:publicKey];
 }
 
-+ (nullable instancetype)blsKeyByAggregatingPublicKeys:(NSArray<DSBLSKey*>*)publicKeys {
++ (nullable instancetype)keyByAggregatingPublicKeys:(NSArray<DSBLSKey*>*)publicKeys {
     bls::PublicKey blsPublicKey = [DSBLSKey aggregatePublicKeys:publicKeys];
     
     UInt384 publicKey = UINT384_ZERO;
@@ -92,7 +92,7 @@
     return self;
 }
 
-+ (nullable instancetype)blsKeyWithPrivateKey:(UInt256)secretKey {
++ (nullable instancetype)keyWithPrivateKey:(UInt256)secretKey {
     return [[DSBLSKey alloc] initWithPrivateKey:secretKey];
 }
 
@@ -108,11 +108,11 @@
     return self;
 }
 
-+ (nullable instancetype)blsKeyWithExtendedPublicKeyData:(NSData*)extendedPublicKey {
++ (nullable instancetype)keyWithExtendedPublicKeyData:(NSData*)extendedPublicKey {
     return [[DSBLSKey alloc] initWithExtendedPublicKeyData:extendedPublicKey];
 }
 
-+ (nullable instancetype)blsKeyWithExtendedPrivateKeyData:(NSData*)extendedPrivateKey {
++ (nullable instancetype)keyWithExtendedPrivateKeyData:(NSData*)extendedPrivateKey {
     return [[DSBLSKey alloc] initWithExtendedPrivateKeyData:extendedPrivateKey];
 }
 

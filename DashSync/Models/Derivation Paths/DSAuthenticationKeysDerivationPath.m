@@ -138,7 +138,7 @@ type:(DSDerivationPathType)type signingAlgorithm:(DSKeyType)signingAlgorithm ref
         }
         return [DSECDSAKey keyWithSecret:privKey compressed:YES];
     } else if (self.signingAlgorithm == DSKeyType_BLS) {
-        DSBLSKey * extendedPrivateKey = [DSBLSKey blsKeyWithExtendedPrivateKeyData:self.extendedPrivateKey];
+        DSBLSKey * extendedPrivateKey = [DSBLSKey keyWithExtendedPrivateKeyData:self.extendedPrivateKey];
         DSBLSKey * extendedPrivateKeyAtIndexPath = [extendedPrivateKey deriveToPath:indexPath];
         return extendedPrivateKeyAtIndexPath;
     }

@@ -1024,9 +1024,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         DSKey * rKey = nil;
         NSData * data = [dataString base64ToData];
         if ([type intValue] == DSKeyType_BLS) {
-            rKey = [DSBLSKey blsKeyWithPublicKey:data.UInt384];
+            rKey = [DSBLSKey keyWithPublicKey:data.UInt384];
         } else if ([type intValue] == DSKeyType_ECDSA) {
-            rKey = [DSECDSAKey keyWithPublicKey:data];
+            rKey = [DSECDSAKey keyWithPublicKeyData:data];
         }
         *rIndex = [keyId unsignedIntValue] - 1;
         *rType = [type unsignedIntValue];

@@ -355,7 +355,7 @@
 
 -(DSBLSKey*)operatorPublicBLSKey {
     if (!_operatorPublicBLSKey && !uint384_is_zero(self.operatorPublicKey)) {
-        _operatorPublicBLSKey = [DSBLSKey blsKeyWithPublicKey:self.operatorPublicKey];
+        _operatorPublicBLSKey = [DSBLSKey keyWithPublicKey:self.operatorPublicKey];
     }
     return _operatorPublicBLSKey;
 }

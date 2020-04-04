@@ -118,7 +118,7 @@
 
 -(BOOL)checkPayloadSignature {
     NSAssert(self.providerRegistrationTransaction, @"We need a provider registration transaction");
-    return [self checkPayloadSignature:[DSBLSKey blsKeyWithPublicKey:self.providerRegistrationTransaction.operatorKey]];
+    return [self checkPayloadSignature:[DSBLSKey keyWithPublicKey:self.providerRegistrationTransaction.operatorKey]];
 }
 
 -(BOOL)checkPayloadSignature:(DSBLSKey*)publicKey {

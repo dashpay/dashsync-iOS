@@ -691,9 +691,9 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
 
 -(DSKey*)publicKeyAtIndexPath:(NSIndexPath*)indexPath {
     if (self.signingAlgorithm == DSKeyType_ECDSA) {
-        return [DSECDSAKey keyWithPublicKey:[self publicKeyDataAtIndexPath:indexPath]];
+        return [DSECDSAKey keyWithPublicKeyData:[self publicKeyDataAtIndexPath:indexPath]];
     } else if (self.signingAlgorithm == DSKeyType_BLS) {
-        return [DSBLSKey blsKeyWithPublicKey:[self publicKeyDataAtIndexPath:indexPath].UInt384];
+        return [DSBLSKey keyWithPublicKey:[self publicKeyDataAtIndexPath:indexPath].UInt384];
     }
     return nil;
 }
@@ -716,7 +716,7 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
         NSAssert(data, @"Public key should be created");
         return data;
     } else if (self.signingAlgorithm == DSKeyType_BLS) {
-        DSBLSKey * extendedPublicKey = [DSBLSKey blsKeyWithExtendedPublicKeyData:self.extendedPublicKey];
+        DSBLSKey * extendedPublicKey = [DSBLSKey keyWithExtendedPublicKeyData:self.extendedPublicKey];
         DSBLSKey * extendedPublicKeyAtIndexPath = [extendedPublicKey publicDeriveToPath:indexPath];
         NSData * data = [NSData dataWithUInt384:extendedPublicKeyAtIndexPath.publicKey];
         NSAssert(data, @"Public key should be created");
@@ -1022,7 +1022,7 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
 {
     if (! seed) return nil;
     if (![self length]) return nil; //there needs to be at least 1 length
-    DSBLSKey * topKey = [DSBLSKey blsKeyWithExtendedPrivateKeyFromSeed:seed];
+    DSBLSKey * topKey = [DSBLSKey keyWithExtendedPrivateKeyFromSeed:seed];
     DSBLSKey * derivationPathExtendedKey = [topKey deriveToPath:[self baseIndexPath]];
     
     _extendedPublicKey = derivationPathExtendedKey.extendedPublicKeyData;
@@ -1040,7 +1040,7 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
 {
     if (! seed) return nil;
     if (![self length]) return nil; //there needs to be at least 1 length
-    DSBLSKey * topKey = [DSBLSKey blsKeyWithExtendedPrivateKeyFromSeed:seed];
+    DSBLSKey * topKey = [DSBLSKey keyWithExtendedPrivateKeyFromSeed:seed];
     DSBLSKey * derivationPathExtendedKey = [topKey deriveToPath:[self baseIndexPath]];
     DSBLSKey * privateKey = [derivationPathExtendedKey deriveToPath:indexPath];
     
@@ -1059,7 +1059,7 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
     } else {
         version = DASH_PRIVKEY_TEST;
     }
-    DSBLSKey * topKey = [DSBLSKey blsKeyWithExtendedPrivateKeyFromSeed:seed];
+    DSBLSKey * topKey = [DSBLSKey keyWithExtendedPrivateKeyFromSeed:seed];
     DSBLSKey * derivationPathExtendedKey = [topKey deriveToPath:[self baseIndexPath]];
     
     for (NSIndexPath *indexPath in indexPaths) {
@@ -1086,7 +1086,7 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
     } else {
         version = DASH_PRIVKEY_TEST;
     }
-    DSBLSKey * topKey = [DSBLSKey blsKeyWithExtendedPrivateKeyFromSeed:seed];
+    DSBLSKey * topKey = [DSBLSKey keyWithExtendedPrivateKeyFromSeed:seed];
     DSBLSKey * derivationPathExtendedKey = [topKey deriveToPath:[self baseIndexPath]];
     
     for (NSIndexPath *indexPath in indexPaths) {

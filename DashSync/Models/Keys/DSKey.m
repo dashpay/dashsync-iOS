@@ -68,6 +68,11 @@
     return 0;
 }
 
+-(BOOL)verify:(UInt256)messageDigest signatureData:(NSData *)signature {
+    NSAssert(NO, @"This should be overridden");
+    return NO;
+}
+
 -(NSString*)localizedKeyType {
     switch (self.keyType) {
         case 1:
@@ -85,9 +90,9 @@
 + (DSKey*)keyForPublicKeyData:(NSData*)data forKeyType:(DSKeyType)keyType {
     switch (keyType) {
         case DSKeyType_BLS:
-            return [DSBLSKey blsKeyWithPublicKey:data.UInt384];
+            return [DSBLSKey keyWithPublicKey:data.UInt384];
         case DSKeyType_ECDSA:
-            return [DSECDSAKey keyWithPublicKey:data];
+            return [DSECDSAKey keyWithPublicKeyData:data];
         default:
             return nil;
     }
@@ -97,7 +102,7 @@
 + (DSKey*)keyForSecretKeyData:(NSData*)data forKeyType:(DSKeyType)keyType {
     switch (keyType) {
         case DSKeyType_BLS:
-            return [DSBLSKey blsKeyWithPrivateKey:data.UInt256];
+            return [DSBLSKey keyWithPrivateKey:data.UInt256];
         case DSKeyType_ECDSA:
             return [DSECDSAKey keyWithSecret:data.UInt256 compressed:YES];
         default:
@@ -108,7 +113,7 @@
 + (DSKey*)keyForExtendedSecretKeyData:(NSData*)data forKeyType:(DSKeyType)keyType {
     switch (keyType) {
         case DSKeyType_BLS:
-            return [DSBLSKey blsKeyWithPrivateKey:data.UInt256];
+            return [DSBLSKey keyWithPrivateKey:data.UInt256];
         case DSKeyType_ECDSA:
             return [DSECDSAKey keyWithSecret:data.UInt256 compressed:YES];
         default:

@@ -121,7 +121,7 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     return [[self alloc] initWithSecret:secret compressed:compressed];
 }
 
-+ (instancetype)keyWithPublicKey:(NSData *)publicKey
++ (instancetype)keyWithPublicKeyData:(NSData *)publicKey
 {
     return [[self alloc] initWithPublicKey:publicKey];
 }

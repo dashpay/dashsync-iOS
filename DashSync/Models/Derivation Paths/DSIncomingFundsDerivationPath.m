@@ -195,7 +195,7 @@
         NSUInteger upperLimit = gapLimit;
         while (a.count < upperLimit) { // generate new addresses up to gapLimit
             NSData *pubKeyData = [self publicKeyDataAtIndex:n];
-            DSECDSAKey * pubKey = [DSECDSAKey keyWithPublicKey:pubKeyData];
+            DSECDSAKey * pubKey = [DSECDSAKey keyWithPublicKeyData:pubKeyData];
             NSString *address = [pubKey addressForChain:self.chain];
             
             if (! address) {
@@ -240,7 +240,7 @@
 - (NSString *)addressAtIndex:(uint32_t)index
 {
     NSData *pubKey = [self publicKeyDataAtIndex:index];
-    return [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
+    return [[DSECDSAKey keyWithPublicKeyData:pubKey] addressForChain:self.chain];
 }
 
 // returns the first unused external address
