@@ -34,6 +34,7 @@ typedef NS_ENUM(NSUInteger, DSKeyType) {
 - (NSString * _Nullable)privateKeyStringForChain:(DSChain*)chain;
 + (DSKey*)keyForPublicKeyData:(NSData*)data forKeyType:(DSKeyType)keyType;
 + (DSKey*)keyForSecretKeyData:(NSData*)data forKeyType:(DSKeyType)keyType;
++ (DSKey*)keyForExtendedSecretKeyData:(NSData*)data forKeyType:(DSKeyType)keyType;
 
 @end
 

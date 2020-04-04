@@ -44,6 +44,8 @@
 
 #pragma clang diagnostic pop
 
+#define ECDSA_EXTENDED_SECRET_KEY_SIZE 68
+
 static secp256k1_context *_ctx = NULL;
 static dispatch_once_t _ctx_once = 0;
 
@@ -106,6 +108,8 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
 @property (nonatomic, assign) UInt256 seckey;
 @property (nonatomic, strong) NSData *pubkey;
 @property (nonatomic, assign) BOOL compressed;
+@property (nonatomic, assign) UInt256 chaincode;
+@property (nonatomic, assign) uint32_t fingerprint;
 
 @end
 
@@ -119,6 +123,16 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
 + (instancetype)keyWithSecret:(UInt256)secret compressed:(BOOL)compressed
 {
     return [[self alloc] initWithSecret:secret compressed:compressed];
+}
+
++ (instancetype)keyWithExtendedPrivateKeyData:(NSData*)extendedPrivateKeyData compressed:(BOOL)compressed
+{
+    return [[self alloc] initWithExtendedPrivateKeyData:extendedPrivateKeyData compressed:compressed];
+}
+
++ (instancetype)keyWithExtendedPublicKeyData:(NSData*)extendedPublicKeyData
+{
+    return [[self alloc] initWithExtendedPublicKeyData:extendedPublicKeyData];
 }
 
 + (instancetype)keyWithPublicKeyData:(NSData *)publicKey
@@ -138,7 +152,12 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
 - (instancetype)init
 {
     dispatch_once(&_ctx_once, ^{ _ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY); });
-    return (self = [super init]);
+    if (! (self = [super init])) return nil;
+    
+    _fingerprint = 0;
+    _chaincode = UINT256_ZERO;
+    
+    return self;
 }
 
 - (instancetype)initWithSecret:(UInt256)secret compressed:(BOOL)compressed
@@ -148,6 +167,32 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     _seckey = secret;
     _compressed = compressed;
     return (secp256k1_ec_seckey_verify(_ctx, _seckey.u8)) ? self : nil;
+}
+
+- (instancetype)initWithExtendedPrivateKeyData:(NSData*)extendedPrivateKeyData compressed:(BOOL)compressed
+{
+    NSAssert(extendedPrivateKeyData.length == ECDSA_EXTENDED_SECRET_KEY_SIZE,@"Key size is incorrect");
+    if (extendedPrivateKeyData.length < ECDSA_EXTENDED_SECRET_KEY_SIZE) return nil;
+    
+    if (!(self = [self initWithSecret:[extendedPrivateKeyData subdataWithRange:NSMakeRange(36, 32)].UInt256 compressed:compressed])) return nil;
+    
+    self.fingerprint = [extendedPrivateKeyData UInt32AtOffset:0];
+    self.chaincode = [extendedPrivateKeyData UInt256AtOffset:4];
+    
+    return self;
+}
+
+- (instancetype)initWithExtendedPublicKeyData:(NSData*)extendedPublicKeyData
+{
+    NSAssert(extendedPublicKeyData.length == ECDSA_EXTENDED_SECRET_KEY_SIZE,@"Key size is incorrect");
+    if (extendedPublicKeyData.length < ECDSA_EXTENDED_SECRET_KEY_SIZE) return nil;
+    
+    if (!(self = [self initWithPublicKey:[extendedPublicKeyData subdataWithRange:NSMakeRange(36, extendedPublicKeyData.length - 36)]])) return nil;
+    
+    self.fingerprint = [extendedPublicKeyData UInt32AtOffset:0];
+    self.chaincode = [extendedPublicKeyData UInt256AtOffset:4];
+    
+    return self;
 }
 
 - (instancetype)initWithPrivateKey:(NSString *)privateKey onChain:(DSChain*)chain

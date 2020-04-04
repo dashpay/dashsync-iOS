@@ -62,15 +62,19 @@ int DSSecp256k1PointMul(DSECPoint * p, const UInt256 * i);
 
 @property (nonatomic, readonly, nullable) const UInt256 *secretKey;
 
++ (nullable instancetype)keyWithExtendedPrivateKeyData:(NSData*)extendedPrivateKeyData compressed:(BOOL)compressed;
 + (nullable instancetype)keyWithPrivateKey:(NSString *)privateKey onChain:(DSChain*)chain;
 + (nullable instancetype)keyWithSecret:(UInt256)secret compressed:(BOOL)compressed;
++ (nullable instancetype)keyWithExtendedPublicKeyData:(NSData*)extendedPublicKeyData;
 + (nullable instancetype)keyWithPublicKeyData:(NSData *)publicKey;
 + (nullable instancetype)keyRecoveredFromCompactSig:(NSData *)compactSig andMessageDigest:(UInt256)md;
 
 + (nullable instancetype)keyWithDHKeyExchangeWithPublicKey:(DSECDSAKey *)publicKey forPrivateKey:(DSECDSAKey*)privateKey;
 
+- (nullable instancetype)initWithExtendedPrivateKeyData:(NSData*)extendedPrivateKeyData compressed:(BOOL)compressed;
 - (nullable instancetype)initWithPrivateKey:(NSString *)privateKey onChain:(DSChain*)chain;
 - (nullable instancetype)initWithSecret:(UInt256)secret compressed:(BOOL)compressed;
+- (nullable instancetype)initWithExtendedPublicKeyData:(NSData*)extendedPublicKeyData;
 - (nullable instancetype)initWithPublicKey:(NSData *)publicKey;
 - (nullable instancetype)initWithCompactSig:(NSData *)compactSig andMessageDigest:(UInt256)md;
 

@@ -113,7 +113,7 @@
 + (DSKey*)keyForExtendedSecretKeyData:(NSData*)data forKeyType:(DSKeyType)keyType {
     switch (keyType) {
         case DSKeyType_BLS:
-            return [DSBLSKey keyWithPrivateKey:data.UInt256];
+            return [DSBLSKey keyWithExtendedPrivateKeyData:data];
         case DSKeyType_ECDSA:
             return [DSECDSAKey keyWithSecret:data.UInt256 compressed:YES];
         default:

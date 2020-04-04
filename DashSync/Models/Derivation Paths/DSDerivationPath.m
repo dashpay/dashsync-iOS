@@ -1208,6 +1208,7 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
 
 - (NSString *)serializedExtendedPublicKey
 {
+    //todo make sure this works with BLS keys
     if (self.extendedPublicKey.length < 36) return nil;
     
     uint32_t fingerprint = CFSwapInt32BigToHost(*(const uint32_t *)self.extendedPublicKey.bytes);
