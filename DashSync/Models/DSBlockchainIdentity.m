@@ -891,6 +891,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     
     DSKey * publicKey = [derivationPath publicKeyAtIndexPath:indexPath];
+    NSAssert([derivationPath hasExtendedPublicKey], @"The derivation path should have an extended private key");
     DSKey * privateKey = [derivationPath privateKeyAtIndexPath:indexPath];
     NSAssert([publicKey.publicKeyData isEqualToData:privateKey.publicKeyData],@"These should be equal");
     self.keysCreated++;

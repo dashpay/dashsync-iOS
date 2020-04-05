@@ -121,6 +121,11 @@ type:(DSDerivationPathType)type signingAlgorithm:(DSKeyType)signingAlgorithm ref
     return nil;
 }
 
+-(BOOL)hasExtendedPrivateKey {
+    NSError * error = nil;
+    return hasKeychainData([self walletBasedExtendedPrivateKeyLocationString], &error);
+}
+
 -(NSData*)extendedPrivateKey {
     NSError * error = nil;
     NSData * data = getKeychainData([self walletBasedExtendedPrivateKeyLocationString], &error);
