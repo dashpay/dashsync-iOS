@@ -276,9 +276,6 @@
 "Unknown Key Type" = "Unknown Key Type";
 
 /* No comment provided by engineer. */
-"Could not derive public keys from wallet" = "Could not derive public keys from wallet";
-
-/* No comment provided by engineer. */
 "Dashpay Contract is not yet registered on network" = "Dashpay Contract is not yet registered on network";
 
 /* No comment provided by engineer. */
@@ -334,3 +331,6 @@
 
 /* No comment provided by engineer. */
 "The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion" = "The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion";
+
+/* No comment provided by engineer. */
+"The blockchain identity extended public keys need to be registered before you can register a blockchain identity." = "The blockchain identity extended public keys need to be registered before you can register a blockchain identity.";
