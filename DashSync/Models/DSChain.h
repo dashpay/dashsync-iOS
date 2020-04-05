@@ -224,6 +224,8 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 // returns an account to which the given transaction is or can be associated with (even if it hasn't been registered), no account if the transaction is not associated with the wallet
 - (DSAccount* _Nullable)firstAccountThatCanContainTransaction:(DSTransaction *)transaction;
 
+- (NSArray<DSAccount *> *)accountsForTransactionHash:(UInt256)txHash transaction:(DSTransaction *_Nullable*_Nullable)transaction;
+
 // returns all accounts to which the given transaction is or can be associated with (even if it hasn't been registered)
 - (NSArray*)accountsThatCanContainTransaction:(DSTransaction * _Nonnull)transaction;
 
@@ -231,7 +233,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 - (DSAccount* _Nullable)accountContainingAddress:(NSString *)address;
 
 // returns an account to which the given transaction hash is associated with, no account if the transaction hash is not associated with the wallet
-- (DSAccount * _Nullable)accountForTransactionHash:(UInt256)txHash transaction:(DSTransaction * _Nullable * _Nullable)transaction wallet:(DSWallet * _Nullable * _Nullable)wallet;
+- (DSAccount * _Nullable)firstAccountForTransactionHash:(UInt256)txHash transaction:(DSTransaction * _Nullable * _Nullable)transaction wallet:(DSWallet * _Nullable * _Nullable)wallet;
 
 
 -(NSArray<DSDerivationPath*>*)standardDerivationPathsForAccountNumber:(uint32_t)accountNumber;
@@ -294,6 +296,12 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 - (DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId;
 
 - (DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId foundInWallet:(DSWallet*_Nullable*_Nullable)foundInWallet;
+
+// returns the amount received globally from the transaction (total outputs to change and/or receive addresses)
+- (uint64_t)amountReceivedFromTransaction:(DSTransaction *)transaction;
+
+// retuns the amount sent globally by the trasaction (total wallet outputs consumed, change and fee included)
+- (uint64_t)amountSentByTransaction:(DSTransaction *)transaction;
 
 @end
 

@@ -452,11 +452,11 @@
     
     incomingFundsDerivationPath.account = account;
     
-    NSData * extendedPublicKeyFromMasterContactDerivationPath = [incomingFundsDerivationPath generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
+    DSKey * extendedPublicKeyFromMasterContactDerivationPath = [incomingFundsDerivationPath generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
     
-    NSData * extendedPublicKeyFromSeed = [incomingFundsDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
+    DSKey * extendedPublicKeyFromSeed = [incomingFundsDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
     
-    XCTAssertEqualObjects(extendedPublicKeyFromMasterContactDerivationPath,extendedPublicKeyFromSeed,@"The extended public keys should be the same");
+    XCTAssertEqualObjects(extendedPublicKeyFromMasterContactDerivationPath.extendedPublicKeyData,extendedPublicKeyFromSeed.extendedPublicKeyData,@"The extended public keys should be the same");
 }
 
 
@@ -485,7 +485,7 @@
     
     incomingFundsDerivationPath.account = account;
     
-    NSData * extendedPublicKeyFromMasterContactDerivationPath = [incomingFundsDerivationPath generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
+    DSKey * extendedPublicKeyFromMasterContactDerivationPath = [incomingFundsDerivationPath generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
     
     uint8_t bobSeed[10] = {10, 9, 8, 7, 6, 6, 7, 8, 9, 10};
     NSData *bobSeedData = [NSData dataWithBytes:bobSeed length:10];
@@ -493,7 +493,7 @@
     
     DSAuthenticationKeysDerivationPath * derivationPathBLS = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:wallet];
     DSKey * privateKeyBLS = [derivationPathBLS privateKeyAtIndex:0 fromSeed:seed];
-    NSData * encryptedDataBLS = [extendedPublicKeyFromMasterContactDerivationPath encryptWithSecretKey:privateKeyBLS forPeerWithPublicKey:bobKeyPairBLS];
+    NSData * encryptedDataBLS = [extendedPublicKeyFromMasterContactDerivationPath.extendedPublicKeyData encryptWithSecretKey:privateKeyBLS forPeerWithPublicKey:bobKeyPairBLS];
     
     NSString * base64DataBLS = encryptedDataBLS.base64String;
     XCTAssertEqual([base64DataBLS length], 128, @"The size of the base64 should be 128");
@@ -504,7 +504,7 @@
     
     DSAuthenticationKeysDerivationPath * derivationPathECDSA = [[DSDerivationPathFactory sharedInstance] blockchainIdentityECDSAKeysDerivationPathForWallet:wallet];
     DSKey * privateKeyECDSA = [derivationPathECDSA privateKeyAtIndex:0 fromSeed:seed];
-    NSData * encryptedDataECDSA = [extendedPublicKeyFromMasterContactDerivationPath encryptWithSecretKey:privateKeyECDSA forPeerWithPublicKey:bobKeyPairECDSA];
+    NSData * encryptedDataECDSA = [extendedPublicKeyFromMasterContactDerivationPath.extendedPublicKeyData encryptWithSecretKey:privateKeyECDSA forPeerWithPublicKey:bobKeyPairECDSA];
     
     NSString * base64DataECDSA = encryptedDataECDSA.base64String;
     XCTAssertEqual([base64DataECDSA length], 128, @"The size of the base64 should be 128");

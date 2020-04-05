@@ -273,8 +273,12 @@
     return nil;
 }
 
--(DSAccount*)account {
+-(DSAccount*)firstAccount {
     return [self.chain firstAccountThatCanContainTransaction:self];
+}
+
+-(NSArray<DSAccount*>*)accounts {
+    return [self.chain accountsThatCanContainTransaction:self];
 }
 
 - (NSArray *)inputHashes
@@ -661,7 +665,8 @@
 // returns the fee for the given transaction if all its inputs are from wallet transactions, UINT64_MAX otherwise
 - (uint64_t)feeUsed
 {
-    return [self.account feeForTransaction:self];
+    //TODO: This most likely does not work when sending from multiple accounts
+    return [self.firstAccount feeForTransaction:self];
 }
 
 - (uint64_t)roundedFeeCostPerByte

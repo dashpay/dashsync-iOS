@@ -1337,7 +1337,11 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     if (transaction.blockHeight != TX_UNCONFIRMED) return YES;
     
     if (self.allTx[uint256_obj(transaction.txHash)] != nil) {
-        return ([self.invalidTx containsObject:uint256_obj(transaction.txHash)]) ? NO : YES;
+        if ([self.invalidTx containsObject:uint256_obj(transaction.txHash)]) {
+            return NO;
+        } else {
+            return YES;
+        }
     }
     
     uint32_t i = 0;
@@ -1349,7 +1353,9 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         
         [hash getValue:&h];
         if ((tx && ! [self transactionIsValid:tx]) ||
-            [self.spentOutputs containsObject:dsutxo_obj(((DSUTXO) { h, n }))]) return NO;
+            [self.spentOutputs containsObject:dsutxo_obj(((DSUTXO) { h, n }))]) {
+            return NO;
+        }
     }
     
     return YES;

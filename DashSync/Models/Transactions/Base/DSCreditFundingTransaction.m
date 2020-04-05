@@ -71,8 +71,23 @@
 }
 
 -(uint32_t)usedDerivationPathIndex {
-    if (!self.account) return UINT32_MAX;
-    return [self usedDerivationPathIndexForWallet:self.account.wallet];
+    if (!self.accounts.count) return UINT32_MAX;
+    if (self.accounts.count == 1) {
+        return [self usedDerivationPathIndexForWallet:self.firstAccount.wallet];
+    } else {
+        NSMutableArray * wallets = [NSMutableArray array];
+        for (DSAccount * account in self.accounts) {
+            if (!account.wallet) continue;
+            if (![wallets containsObject:account.wallet]) {
+                [wallets addObject:account.wallet];
+            }
+        }
+        for (DSWallet * wallet in wallets) {
+            uint32_t derivation = [self usedDerivationPathIndexForWallet:wallet];
+            if (derivation != UINT32_MAX) return derivation;
+        }
+        return UINT32_MAX;
+    }
 }
 
 -(Class)entityClass {
