@@ -40,8 +40,8 @@
 @property (nonatomic, strong) DSBlockchainIdentity * destinationBlockchainIdentity;
 @property (nonatomic, strong) DSPotentialContact * destinationContact;
 @property (nonatomic, strong) DSIncomingFundsDerivationPath * fundsDerivationPathForContact;
-@property (nonatomic, strong) NSData * extendedPublicKey;
-@property (nonatomic, strong) NSData * encryptedExtendedPublicKey;
+@property (nonatomic, strong) DSKey * extendedPublicKey;
+@property (nonatomic, strong) NSData * encryptedExtendedPublicKeyData;
 @property (nonatomic, assign) uint32_t sourceKeyIndex;
 @property (nonatomic, assign) uint32_t destinationKeyIndex;
 
@@ -89,7 +89,7 @@
     NSAssert(self.extendedPublicKey, @"Problem creating extended public key for potential contact?");
     __weak typeof(self) weakSelf = self;
     DSKey * recipientKey = [self destinationKeyAtIndex];
-    [self.sourceBlockchainIdentity encryptData:self.extendedPublicKey withKeyAtIndex:self.sourceKeyIndex forRecipientKey:recipientKey completion:^(NSData * _Nonnull encryptedData) {
+    [self.sourceBlockchainIdentity encryptData:self.extendedPublicKey.extendedPublicKeyData withKeyAtIndex:self.sourceKeyIndex forRecipientKey:recipientKey completion:^(NSData * _Nonnull encryptedData) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             if (completion) {
@@ -97,7 +97,7 @@
             }
             return;
         }
-        strongSelf.encryptedExtendedPublicKey = encryptedData;
+        strongSelf.encryptedExtendedPublicKeyData = encryptedData;
         if (completion) {
             completion(YES,self.fundsDerivationPathForContact);
         }
@@ -106,7 +106,7 @@
 
 -(DPDocument*)contactRequestDocument {
     NSAssert(!uint256_is_zero([self destinationBlockchainIdentityUniqueId]), @"the destination contact's associatedBlockchainIdentityUniqueId must be set before making a friend request");
-    NSAssert([self.encryptedExtendedPublicKey length] > 0, @"The encrypted extended public key must exist");
+    NSAssert([self.encryptedExtendedPublicKeyData length] > 0, @"The encrypted extended public key must exist");
     NSAssert(self.extendedPublicKey, @"Problem creating extended public key for potential contact?");
     NSError *error = nil;
     
@@ -114,7 +114,7 @@
     DSStringValueDictionary *data = @{
         @"timestamp": @([[[NSDate alloc] init] timeIntervalSince1970]),
                            @"toUserId" : uint256_base58([self destinationBlockchainIdentityUniqueId]),
-                           @"encryptedPublicKey" : [self.encryptedExtendedPublicKey base64EncodedStringWithOptions:0],
+                           @"encryptedPublicKey" : [self.encryptedExtendedPublicKeyData base64EncodedStringWithOptions:0],
         @"senderKeyIndex" : @(self.sourceKeyIndex + 1),
         @"recipientKeyIndex" : @(self.destinationKeyIndex + 1),
                            };

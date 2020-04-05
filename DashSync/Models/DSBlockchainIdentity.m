@@ -2204,8 +2204,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 - (void)sendNewFriendRequestMatchingPotentialFriendship:(DSPotentialOneWayFriendship*)potentialFriendship completion:(void (^)(BOOL success, NSError * error))completion {
     NSAssert(_isLocal, @"This should not be performed on a non local blockchain identity");
     if (!_isLocal) return;
-    if (!potentialFriendship.destinationBlockchainIdentity) {
-        NSAssert(potentialFriendship.destinationBlockchainIdentity, @"There must be a destination contact if the destination blockchain identity is not known");
+    if (!potentialFriendship.destinationBlockchainIdentity.matchingDashpayUser) {
+        NSAssert(potentialFriendship.destinationBlockchainIdentity.matchingDashpayUser, @"There must be a destination contact if the destination blockchain identity is not known");
         return;
     }
     
