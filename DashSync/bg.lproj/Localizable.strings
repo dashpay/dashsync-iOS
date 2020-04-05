@@ -334,3 +334,6 @@
 
 /* No comment provided by engineer. */
 "The blockchain identity extended public keys need to be registered before you can register a blockchain identity." = "The blockchain identity extended public keys need to be registered before you can register a blockchain identity.";
+
+/* No comment provided by engineer. */
+"Incorrect Key format after contact request decryption" = "Incorrect Key format after contact request decryption";

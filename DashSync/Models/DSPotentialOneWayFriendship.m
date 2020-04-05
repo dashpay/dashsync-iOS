@@ -86,20 +86,26 @@
     DSDerivationPath * masterContactsDerivationPath = [self.account masterContactsDerivationPath];
     
     self.extendedPublicKey = [self.fundsDerivationPathForContact generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
+    if (completion) {
+        completion(YES,self.fundsDerivationPathForContact);
+    }
+}
+
+-(void)encryptExtendedPublicKeyWithCompletion:(void (^)(BOOL success))completion {
     NSAssert(self.extendedPublicKey, @"Problem creating extended public key for potential contact?");
-    __weak typeof(self) weakSelf = self;
-    DSKey * recipientKey = [self destinationKeyAtIndex];
+     __weak typeof(self) weakSelf = self;
+     DSKey * recipientKey = [self destinationKeyAtIndex];
     [self.sourceBlockchainIdentity encryptData:self.extendedPublicKey.extendedPublicKeyData withKeyAtIndex:self.sourceKeyIndex forRecipientKey:recipientKey completion:^(NSData * _Nonnull encryptedData) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             if (completion) {
-                completion(NO,nil);
+                completion(NO);
             }
             return;
         }
         strongSelf.encryptedExtendedPublicKeyData = encryptedData;
         if (completion) {
-            completion(YES,self.fundsDerivationPathForContact);
+            completion(YES);
         }
     }];
 }
@@ -178,7 +184,7 @@
         return FALSE;
     }
     
-    if ([self.destinationContact.username isEqualToString:((DSPotentialOneWayFriendship*)object).destinationContact.username] && uint256_eq(self.sourceBlockchainIdentity.uniqueID,((DSPotentialOneWayFriendship*)object).sourceBlockchainIdentity.uniqueID) &&
+    if (uint256_eq(self.destinationBlockchainIdentity.uniqueID,((DSPotentialOneWayFriendship*)object).destinationBlockchainIdentity.uniqueID) && uint256_eq(self.sourceBlockchainIdentity.uniqueID,((DSPotentialOneWayFriendship*)object).sourceBlockchainIdentity.uniqueID) &&
         self.account.accountNumber == ((DSPotentialOneWayFriendship*)object).account.accountNumber) {
         return TRUE;
     }
@@ -187,11 +193,11 @@
 }
 
 - (NSUInteger)hash {
-    return self.destinationContact.username.hash ^ self.sourceBlockchainIdentity.hash ^ self.account.accountNumber;
+    return self.destinationBlockchainIdentity.hash ^ self.sourceBlockchainIdentity.hash ^ self.account.accountNumber;
 }
 
 -(NSString*)debugDescription {
-    return [NSString stringWithFormat:@"%@ - s:%@ d:%@", [super debugDescription], self.sourceBlockchainIdentity.currentUsername, self.destinationContact.username];
+    return [NSString stringWithFormat:@"%@ - s:%@ d:%@", [super debugDescription], self.sourceBlockchainIdentity.currentUsername, self.destinationBlockchainIdentity.currentUsername];
 }
 
 @end

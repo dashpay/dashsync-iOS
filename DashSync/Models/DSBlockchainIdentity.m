@@ -155,6 +155,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             [self registerKey:key withStatus:keyPath.keyStatus atIndex:keyPath.keyID ofType:keyPath.keyType];
         }
     }
+    self.matchingDashpayUser = blockchainIdentityEntity.matchingDashpayUser;
     return self;
 }
 
@@ -839,6 +840,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     NSError * error = nil;
     NSData * keySecret = getKeychainData([self identifierForKeyAtPath:indexPath fromDerivationPath:derivationPath], &error);
     
+    NSAssert(keySecret, @"This should be present");
+    
     if (!keySecret || error) return nil;
     
     return [DSKey keyWithPrivateKeyData:keySecret forKeyType:type];
@@ -1258,7 +1261,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         }];
     } else {
         if (completion) {
-            completion(YES, nil);
+            completion(DSBlockchainIdentityRegistrationStep_None, nil);
         }
     }
 }
@@ -1324,7 +1327,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 -(void)encryptData:(NSData*)data withKeyAtIndex:(uint32_t)index forRecipientKey:(DSKey*)recipientPublicKey completion:(void (^ _Nullable)(NSData* encryptedData))completion {
     NSParameterAssert(data);
     NSParameterAssert(recipientPublicKey);
-    DSKey * privateKey = [self privateKeyAtIndex:self.index ofType:recipientPublicKey.keyType];
+    DSKey * privateKey = [self privateKeyAtIndex:index ofType:recipientPublicKey.keyType];
     NSData * encryptedData = [data encryptWithSecretKey:privateKey forPeerWithPublicKey:recipientPublicKey];
     if (completion) {
         completion(encryptedData);
@@ -1333,7 +1336,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 }
 
 -(void)decryptData:(NSData*)encryptedData withKeyAtIndex:(uint32_t)index fromSenderKey:(DSKey*)senderPublicKey completion:(void (^ _Nullable)(NSData* decryptedData))completion {
-    DSKey * privateKey = [self privateKeyAtIndex:self.index ofType:senderPublicKey.keyType];
+    DSKey * privateKey = [self privateKeyAtIndex:index ofType:senderPublicKey.keyType];
     NSData * data = [encryptedData decryptWithSecretKey:privateKey fromPeerWithPublicKey:senderPublicKey];
     if (completion) {
         completion(data);
@@ -2187,7 +2190,28 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             DSPotentialOneWayFriendship * potentialFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationBlockchainIdentity:potentialContactBlockchainIdentity destinationKeyIndex:destinationKeyIndex sourceBlockchainIdentity:self sourceKeyIndex:sourceKeyIndex account:account];
             
             [potentialFriendship createDerivationPathWithCompletion:^(BOOL success, DSIncomingFundsDerivationPath * _Nonnull incomingFundsDerivationPath) {
-                [self sendNewFriendRequestMatchingPotentialFriendship:potentialFriendship completion:completion];
+                if (!success) {
+                    if (completion) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            completion(NO,[NSError errorWithDomain:@"DashSync" code:501 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                                       DSLocalizedString(@"Internal key handling error", nil)}]);
+                        });
+                    }
+                    return;
+                }
+                [potentialFriendship encryptExtendedPublicKeyWithCompletion:^(BOOL success) {
+                    if (!success) {
+                        if (completion) {
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                completion(NO,[NSError errorWithDomain:@"DashSync" code:501 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                                           DSLocalizedString(@"Internal key handling error", nil)}]);
+                            });
+                        }
+                        return;
+                    }
+                    [self sendNewFriendRequestMatchingPotentialFriendship:potentialFriendship completion:completion];
+                }];
+                
             }];
         }];
     } failure:^(NSError *_Nonnull error) {
@@ -2232,21 +2256,21 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             });
             return;
         }
-        
-        DSFriendRequestEntity * friendRequest = [potentialFriendship outgoingFriendRequestForDashpayUserEntity:potentialFriendship.destinationBlockchainIdentity.matchingDashpayUser];
-        [strongSelf.matchingDashpayUser addOutgoingRequestsObject:friendRequest];
-        
-        if ([[friendRequest.destinationContact.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact == %@",strongSelf.matchingDashpayUser]] count]) {
-            [strongSelf.matchingDashpayUser addFriendsObject:friendRequest.destinationContact];
-        }
-        [potentialFriendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequest];
-        [DSFriendRequestEntity saveContext];
-        if (completion) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completion(success,error);
-            });
-        }
-        
+        [self.managedObjectContext performBlock:^{
+             DSFriendRequestEntity * friendRequest = [potentialFriendship outgoingFriendRequestForDashpayUserEntity:potentialFriendship.destinationBlockchainIdentity.matchingDashpayUser];
+                   [strongSelf.matchingDashpayUser addOutgoingRequestsObject:friendRequest];
+                   
+                   if ([[friendRequest.destinationContact.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact == %@",strongSelf.matchingDashpayUser]] count]) {
+                       [strongSelf.matchingDashpayUser addFriendsObject:friendRequest.destinationContact];
+                   }
+                   [potentialFriendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequest];
+                   [DSFriendRequestEntity saveContext];
+                   if (completion) {
+                       dispatch_async(dispatch_get_main_queue(), ^{
+                           completion(success,error);
+                       });
+                   }
+        }];
     }];
 }
 
@@ -2275,7 +2299,18 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     DSPotentialOneWayFriendship *potentialFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationBlockchainIdentity:otherBlockchainIdentity destinationKeyIndex:friendRequest.sourceKeyIndex sourceBlockchainIdentity:self sourceKeyIndex:friendRequest.destinationKeyIndex account:account];
     [potentialFriendship createDerivationPathWithCompletion:^(BOOL success, DSIncomingFundsDerivationPath * _Nonnull incomingFundsDerivationPath) {
         if (success) {
-            [self sendNewFriendRequestMatchingPotentialFriendship:potentialFriendship completion:completion];
+            [potentialFriendship encryptExtendedPublicKeyWithCompletion:^(BOOL success) {
+                if (!success) {
+                    if (completion) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            completion(NO,[NSError errorWithDomain:@"DashSync" code:501 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                                       DSLocalizedString(@"Internal key handling error", nil)}]);
+                        });
+                    }
+                    return;
+                }
+                [self sendNewFriendRequestMatchingPotentialFriendship:potentialFriendship completion:completion];
+            }];
         } else {
             if (completion) {
                 completion(NO, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
@@ -2426,14 +2461,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             }
             return;
         }
-        if (![documents count]) {
-            if (completion) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    completion(YES,nil);
-                });
-            }
-            return;
-        }
         
         NSDictionary * contactDictionary = [documents firstObject];
         [context performBlockAndWait:^{
@@ -2447,7 +2474,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             }
             [DSDashpayUserEntity setContext:context];
             [DSChainEntity setContext:context];
-            DSDashpayUserEntity * contact = [DSDashpayUserEntity anyObjectMatchingInContext:context withPredicate:@"associatedBlockchainIdentity.uniqueID == %@", uint256_data(blockchainIdentityUniqueId)];
+            DSDashpayUserEntity * contact = self.blockchainIdentityEntity.matchingDashpayUser;
+            if (!contact) {
+                NSAssert(FALSE, @"It is weird to get here");
+                contact = [DSDashpayUserEntity anyObjectMatchingInContext:context withPredicate:@"associatedBlockchainIdentity.uniqueID == %@", uint256_data(blockchainIdentityUniqueId)];
+            }
             if (!contact || [[contactDictionary objectForKey:@"$rev"] intValue] != contact.localProfileDocumentRevision) {
                 
                 if (!contact) {
@@ -2469,11 +2500,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                         blockchainIdentity.matchingDashpayUser = contact;
                     }
                 }
-                contact.localProfileDocumentRevision = [[contactDictionary objectForKey:@"$rev"] intValue];
-                contact.remoteProfileDocumentRevision = [[contactDictionary objectForKey:@"$rev"] intValue];
-                contact.avatarPath = [contactDictionary objectForKey:@"avatarUrl"];
-                contact.publicMessage = [contactDictionary objectForKey:@"about"];
-                contact.displayName = [contactDictionary objectForKey:@"displayName"];
+                if (contactDictionary) {
+                    contact.localProfileDocumentRevision = [[contactDictionary objectForKey:@"$rev"] intValue];
+                    contact.remoteProfileDocumentRevision = [[contactDictionary objectForKey:@"$rev"] intValue];
+                    contact.avatarPath = [contactDictionary objectForKey:@"avatarUrl"];
+                    contact.publicMessage = [contactDictionary objectForKey:@"about"];
+                    contact.displayName = [contactDictionary objectForKey:@"displayName"];
+                }
                 
                 if (saveReturnedProfile) {
                     [DSDashpayUserEntity saveContext];
@@ -2686,11 +2719,17 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                         DSKey * senderPublicKey = [senderBlockchainIdentity keyAtIndex:contactRequest.senderKeyIndex];
                         NSData * extendedPublicKeyData = [contactRequest decryptedPublicKeyDataWithKey:senderPublicKey];
                         DSECDSAKey * extendedPublicKey = [DSECDSAKey keyWithExtendedPublicKeyData:extendedPublicKeyData];
-                        DSDashpayUserEntity * senderDashpayUserEntity = senderBlockchainIdentity.blockchainIdentityEntity.matchingDashpayUser;
-                        NSAssert(senderDashpayUserEntity, @"The sender should exist");
-                        [self addIncomingRequestFromContact:senderDashpayUserEntity
-                                       forExtendedPublicKey:extendedPublicKey
-                                                    context:context];
+                        if (!extendedPublicKey) {
+                            succeeded = FALSE;
+                            [errors addObject:[NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                                           DSLocalizedString(@"Incorrect Key format after contact request decryption", nil)}]];
+                        } else {
+                            DSDashpayUserEntity * senderDashpayUserEntity = senderBlockchainIdentity.blockchainIdentityEntity.matchingDashpayUser;
+                            NSAssert(senderDashpayUserEntity, @"The sender should exist");
+                            [self addIncomingRequestFromContact:senderDashpayUserEntity
+                                           forExtendedPublicKey:extendedPublicKey
+                                                        context:context];
+                        }
                     }
                     dispatch_group_leave(dispatchGroup);
                 }];
@@ -3037,7 +3076,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             } else {
                 DSKey * privateKey = [self derivePrivateKeyAtIndexPath:path ofType:key.keyType];
                 NSAssert([privateKey.publicKeyData isEqualToData:key.publicKeyData], @"The keys don't seem to match up");
-                setKeychainData(privateKey.privateKeyData, [self identifierForKeyAtPath:path fromDerivationPath:derivationPath], YES);
+                NSData * privateKeyData = privateKey.privateKeyData;
+                NSAssert(privateKeyData, @"Private key data should exist");
+                setKeychainData(privateKeyData, [self identifierForKeyAtPath:path fromDerivationPath:derivationPath], YES);
                 DSDLog(@"Saving key after rederivation %@ for user %@",[self identifierForKeyAtPath:path fromDerivationPath:derivationPath],self.currentUsername);
             }
 
