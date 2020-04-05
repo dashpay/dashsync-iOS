@@ -136,7 +136,7 @@
 
 -(BOOL)verifySignatureAgainstQuorum:(DSQuorumEntry*)quorumEntry {
     UInt384 publicKey = quorumEntry.quorumPublicKey;
-    DSBLSKey * blsKey = [DSBLSKey blsKeyWithPublicKey:publicKey onChain:self.chain];
+    DSBLSKey * blsKey = [DSBLSKey keyWithPublicKey:publicKey];
     UInt256 signId = [self signIDForQuorumEntry:quorumEntry];
     DSDLog(@"verifying signature %@ with public key %@ for transaction hash %@ against quorum %@",[NSData dataWithUInt768:self.signature].hexString, [NSData dataWithUInt384:publicKey].hexString, [NSData dataWithUInt256:self.transactionHash].hexString,quorumEntry);
     return [blsKey verify:signId signature:self.signature];

@@ -47,7 +47,7 @@
     return derivationPath;
 }
 
-+ (instancetype)externalDerivationPathWithExtendedPublicKey:(NSData*)extendedPublicKey withDestinationBlockchainIdentityUniqueId:(UInt256) destinationBlockchainIdentityUniqueId sourceBlockchainIdentityUniqueId:(UInt256) sourceBlockchainIdentityUniqueId onChain:(DSChain*)chain {
++ (instancetype)externalDerivationPathWithExtendedPublicKey:(DSKey*)extendedPublicKey withDestinationBlockchainIdentityUniqueId:(UInt256) destinationBlockchainIdentityUniqueId sourceBlockchainIdentityUniqueId:(UInt256) sourceBlockchainIdentityUniqueId onChain:(DSChain*)chain {
     UInt256 indexes[] = {};
     BOOL hardenedIndexes[] = {};
     DSIncomingFundsDerivationPath * derivationPath = [[self alloc] initWithIndexes:indexes hardened:hardenedIndexes length:0 type:DSDerivationPathType_ViewOnlyFunds signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_ContactBasedFundsExternal onChain:chain]; //we are going to assume this is only ecdsa for now
@@ -81,8 +81,8 @@
 }
 
 -(void)storeExternalDerivationPathExtendedPublicKeyToKeyChain {
-    NSAssert(self.extendedPublicKey != nil,@"the extended public key must exist");
-    setKeychainData(self.extendedPublicKey, self.standaloneExtendedPublicKeyLocationString, NO);
+    NSAssert(self.extendedPublicKeyData != nil,@"the extended public key must exist");
+    setKeychainData(self.extendedPublicKeyData, self.standaloneExtendedPublicKeyLocationString, NO);
 }
 
 -(void)reloadAddresses {
@@ -148,7 +148,7 @@
 
 
 -(NSString*)createIdentifierForDerivationPath {
-    return [NSString stringWithFormat:@"%@-%@-%@",[NSData dataWithUInt256:_contactSourceBlockchainIdentityUniqueId].shortHexString,[NSData dataWithUInt256:_contactDestinationBlockchainIdentityUniqueId].shortHexString,[NSData dataWithUInt256:[[self extendedPublicKey] SHA256]].shortHexString];
+    return [NSString stringWithFormat:@"%@-%@-%@",[NSData dataWithUInt256:_contactSourceBlockchainIdentityUniqueId].shortHexString,[NSData dataWithUInt256:_contactDestinationBlockchainIdentityUniqueId].shortHexString,[NSData dataWithUInt256:[[self extendedPublicKeyData] SHA256]].shortHexString];
 }
 
 // Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
@@ -194,8 +194,9 @@
         
         NSUInteger upperLimit = gapLimit;
         while (a.count < upperLimit) { // generate new addresses up to gapLimit
-            NSData *pubKey = [self publicKeyDataAtIndex:n];
-            NSString *address = [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
+            NSData *pubKeyData = [self publicKeyDataAtIndex:n];
+            DSECDSAKey * pubKey = [DSECDSAKey keyWithPublicKeyData:pubKeyData];
+            NSString *address = [pubKey addressForChain:self.chain];
             
             if (! address) {
                 DSDLog(@"error generating keys");
@@ -239,7 +240,7 @@
 - (NSString *)addressAtIndex:(uint32_t)index
 {
     NSData *pubKey = [self publicKeyDataAtIndex:index];
-    return [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
+    return [[DSECDSAKey keyWithPublicKeyData:pubKey] addressForChain:self.chain];
 }
 
 // returns the first unused external address

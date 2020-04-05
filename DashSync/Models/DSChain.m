@@ -1463,7 +1463,7 @@ static dispatch_once_t devnetToken = 0;
     NSError * error = nil;
     NSMutableArray * keyChainArray = [getKeychainArray(self.chainWalletsKey, &error) mutableCopy];
     if (!keyChainArray) keyChainArray = [NSMutableArray array];
-    [keyChainArray removeObject:wallet.uniqueID];
+    [keyChainArray removeObject:wallet.uniqueIDString];
     setKeychainArray(keyChainArray, self.chainWalletsKey, NO);
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
@@ -1489,8 +1489,8 @@ static dispatch_once_t devnetToken = 0;
     NSError * error = nil;
     NSMutableArray * keyChainArray = [getKeychainArray(self.chainWalletsKey, &error) mutableCopy];
     if (!keyChainArray) keyChainArray = [NSMutableArray array];
-    if (![keyChainArray containsObject:wallet.uniqueID]) {
-        [keyChainArray addObject:wallet.uniqueID];
+    if (![keyChainArray containsObject:wallet.uniqueIDString]) {
+        [keyChainArray addObject:wallet.uniqueIDString];
         setKeychainArray(keyChainArray, self.chainWalletsKey, NO);
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
@@ -2209,7 +2209,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 // returns an account to which the given transaction hash is associated with, no account if the transaction hash is not associated with the wallet
-- (DSAccount * _Nullable)accountForTransactionHash:(UInt256)txHash transaction:(DSTransaction **)transaction wallet:(DSWallet **)wallet {
+- (DSAccount * _Nullable)firstAccountForTransactionHash:(UInt256)txHash transaction:(DSTransaction **)transaction wallet:(DSWallet **)wallet {
     for (DSWallet * lWallet in self.wallets) {
         for (DSAccount * account in lWallet.accounts) {
             DSTransaction * lTransaction = [account transactionForHash:txHash];
@@ -2221,6 +2221,21 @@ static dispatch_once_t devnetToken = 0;
         }
     }
     return nil;
+}
+
+// returns an account to which the given transaction hash is associated with, no account if the transaction hash is not associated with the wallet
+- (NSArray<DSAccount *> *)accountsForTransactionHash:(UInt256)txHash transaction:(DSTransaction **)transaction {
+    NSMutableArray * accounts = [NSMutableArray array];
+    for (DSWallet * lWallet in self.wallets) {
+        for (DSAccount * account in lWallet.accounts) {
+            DSTransaction * lTransaction = [account transactionForHash:txHash];
+            if (lTransaction) {
+                if (transaction) *transaction = lTransaction;
+                [accounts addObject:account];
+            }
+        }
+    }
+    return [accounts copy];
 }
 
 -(uint32_t)blockchainIdentitiesCount {
@@ -2237,6 +2252,28 @@ static dispatch_once_t devnetToken = 0;
         [mArray addObjectsFromArray:wallet.allTransactions];
     }
     return mArray;
+}
+
+// retuns the amount sent globally by the trasaction (total wallet outputs consumed, change and fee included)
+- (uint64_t)amountReceivedFromTransaction:(DSTransaction *)transaction {
+    NSParameterAssert(transaction);
+    
+    uint64_t received = 0;
+    for (DSWallet * wallet in self.wallets) {
+        received += [wallet amountReceivedFromTransaction:transaction];
+    }
+    return received;
+}
+
+// retuns the amount sent globally by the trasaction (total wallet outputs consumed, change and fee included)
+- (uint64_t)amountSentByTransaction:(DSTransaction *)transaction {
+    NSParameterAssert(transaction);
+    
+    uint64_t sent = 0;
+    for (DSWallet * wallet in self.wallets) {
+        sent += [wallet amountSentByTransaction:transaction];
+    }
+    return sent;
 }
 
 // fee that will be added for a transaction of the given size in bytes

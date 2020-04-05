@@ -851,16 +851,15 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     DSDLog(@"Peer requested transaction with hash %@",hash);
     DSTransaction *transaction = self.publishedTx[hash];
     BOOL transactionIsPublished = !!transaction;
-    DSAccount * account = [self.chain firstAccountThatCanContainTransaction:transaction];
+    NSArray<DSAccount *> * accounts = [self.chain accountsThatCanContainTransaction:transaction];
     if (transactionIsPublished) {
-        account = [self.chain firstAccountThatCanContainTransaction:transaction];
-        if (!account) {
-            account = [self.chain accountForTransactionHash:txHash transaction:nil wallet:nil];
+        if (![accounts count]) {
+            accounts = [self.chain accountsForTransactionHash:txHash transaction:nil];
         }
     } else {
-        account = [self.chain accountForTransactionHash:txHash transaction:&transaction wallet:nil];
+        accounts = [self.chain accountsForTransactionHash:txHash transaction:&transaction];
     }
-    if (!account) {
+    if (![accounts count]) {
         DSDLog(@"No transaction could be found on any account for hash %@",hash);
         return nil;
     }
@@ -872,15 +871,28 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     [self.nonFalsePositiveTransactions addObject:hash];
     [self.publishedCallback removeObjectForKey:hash];
     
-    if (callback && ![account transactionIsValid:transaction]) {
+    BOOL isTransactionValid = YES;
+    if (callback) {
+        for (DSAccount * account in accounts) {
+            isTransactionValid &= [account transactionIsValid:transaction];
+        }
+    }
+    
+    if (callback && !isTransactionValid) {
         [self.publishedTx removeObjectForKey:hash];
         error = [NSError errorWithDomain:@"DashSync" code:401
                                 userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"Double spend", nil)}];
     }
-    else if (transaction && ![account transactionForHash:txHash] && [account registerTransaction:transaction]) {
-        [[DSTransactionEntity context] performBlock:^{
-            [DSTransactionEntity saveContext]; // persist transactions to core data
-        }];
+    else if (transaction) {
+        for (DSAccount * account in accounts) {
+            if (![account transactionForHash:txHash]) {
+                if ([account registerTransaction:transaction]) {
+                    [[DSTransactionEntity context] performBlock:^{
+                        [DSTransactionEntity saveContext]; // persist transactions to core data
+                    }];
+                }
+            }
+        }
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -1094,7 +1106,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 - (void)peer:(DSPeer *)peer rejectedTransaction:(UInt256)txHash withCode:(uint8_t)code
 {
     DSTransaction *transaction = nil;
-    DSAccount * account = [self.chain accountForTransactionHash:txHash transaction:&transaction wallet:nil];
+    NSArray<DSAccount *> * accounts = [self.chain accountsForTransactionHash:txHash transaction:&transaction];
     NSValue *hash = uint256_obj(txHash);
     
     if ([self.txRelays[hash] containsObject:peer]) {
@@ -1126,15 +1138,21 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     [self.txRequests[hash] removeObject:peer];
     
     // if we get rejected for any reason other than double-spend, the peer is likely misconfigured
-    if (code != REJECT_SPENT && [account amountSentByTransaction:transaction] > 0) {
-        for (hash in transaction.inputHashes) { // check that all inputs are confirmed before dropping peer
-            UInt256 h = UINT256_ZERO;
-            
-            [hash getValue:&h];
-            if ([self.chain transactionForHash:h].blockHeight == TX_UNCONFIRMED) return;
+    if (code != REJECT_SPENT) {
+        BOOL sentSomething = FALSE;
+        for (DSAccount * account in accounts) {
+            sentSomething |= ([account amountSentByTransaction:transaction] > 0);
         }
-        
-        [self.peerManager peerMisbehaving:peer errorMessage:@"Peer rejected the transaction"];
+        if (sentSomething) {
+            for (hash in transaction.inputHashes) { // check that all inputs are confirmed before dropping peer
+                UInt256 h = UINT256_ZERO;
+                
+                [hash getValue:&h];
+                if ([self.chain transactionForHash:h].blockHeight == TX_UNCONFIRMED) return;
+            }
+            
+            [self.peerManager peerMisbehaving:peer errorMessage:@"Peer rejected the transaction"];
+        }
     }
 }
 
@@ -1157,7 +1175,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     
     DSTransaction * transaction = nil;
     DSWallet * wallet = nil;
-    DSAccount * account = [self.chain accountForTransactionHash:instantSendTransactionLock.transactionHash transaction:&transaction wallet:&wallet];
+    DSAccount * account = [self.chain firstAccountForTransactionHash:instantSendTransactionLock.transactionHash transaction:&transaction wallet:&wallet];
     
     if (account && transaction) {
         [transaction setInstantSendReceivedWithInstantSendLock:instantSendTransactionLock];
@@ -1186,7 +1204,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
             [instantSendTransactionLock save];
             DSTransaction * transaction = nil;
             DSWallet * wallet = nil;
-            DSAccount * account = [self.chain accountForTransactionHash:instantSendTransactionLock.transactionHash transaction:&transaction wallet:&wallet];
+            DSAccount * account = [self.chain firstAccountForTransactionHash:instantSendTransactionLock.transactionHash transaction:&transaction wallet:&wallet];
             
             if (account && transaction) {
                 [transaction setInstantSendReceivedWithInstantSendLock:instantSendTransactionLock];

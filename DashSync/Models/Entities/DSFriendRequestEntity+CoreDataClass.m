@@ -10,6 +10,7 @@
 #import "BigIntTypes.h"
 #import "DSDashpayUserEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
 #import "DSAccountEntity+CoreDataClass.h"
 #import "NSData+Bitcoin.h"
 #import "DSChainEntity+CoreDataClass.h"
@@ -47,7 +48,7 @@
 }
 
 -(NSString*)debugDescription {
-    return [NSString stringWithFormat:@"%@ - { %@ -> %@ / %d }",[super debugDescription],self.sourceContact.associatedBlockchainIdentity.usernames,self.destinationContact.associatedBlockchainIdentity.usernames,self.account.index];
+    return [NSString stringWithFormat:@"%@ - { %@ -> %@ / %d }",[super debugDescription],self.sourceContact.associatedBlockchainIdentity.dashpayUsername.stringValue,self.destinationContact.associatedBlockchainIdentity.dashpayUsername.stringValue,self.account.index];
 }
 
 @end

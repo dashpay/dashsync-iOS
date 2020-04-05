@@ -102,7 +102,7 @@
     DSAccount * collateralAccount = [providerRegistrationTransactionFromMessage.chain accountContainingAddress:collateralAddress];
     
     DSAccount * inputAccount = [providerRegistrationTransactionFromMessage.chain accountContainingAddress:inputAddress0];
-    DSFundsDerivationPath * inputDerivationPath = [inputAccount derivationPathContainingAddress:inputAddress0];
+    DSFundsDerivationPath * inputDerivationPath = (DSFundsDerivationPath *)[inputAccount derivationPathContainingAddress:inputAddress0];
     
     DSKey * inputPrivateKey = [inputDerivationPath privateKeyForKnownAddress:inputAddress0 fromSeed:seed];
     
@@ -120,7 +120,7 @@
     
     NSString * base64Signature = @"H7N+ScH/K4BXcTk5pVE+bnEacc/y5RfmIk33JO11Cu8bf5rZ7GErSnJQIy4eQA2nGKlQHh2aVWVSbksf9owCh2M=";
     
-    DSFundsDerivationPath * derivationPath = [collateralAccount derivationPathContainingAddress:collateralAddress];
+    DSFundsDerivationPath * derivationPath = (DSFundsDerivationPath *)[collateralAccount derivationPathContainingAddress:collateralAddress];
     
     NSIndexPath * indexPath = [derivationPath indexPathForKnownAddress:collateralAddress];
     DSECDSAKey* key = (DSECDSAKey*)[derivationPath privateKeyAtIndexPath:indexPath fromSeed:seed];
@@ -315,7 +315,7 @@
     
     DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForWallet:wallet];
     if (!providerOperatorKeysDerivationPath.hasExtendedPublicKey) {
-        [providerOperatorKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueID];
+        [providerOperatorKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueIDString];
     }
     
     UInt384 operatorKeyNeeded =[NSData dataFromHexString:@"157b10706659e25eb362b5d902d809f9160b1688e201ee6e94b40f9b5062d7074683ef05a2d5efb7793c47059c878dfa"].UInt384;
@@ -326,7 +326,7 @@
     
     XCTAssertEqualObjects([NSData dataWithUInt384:operatorKey].hexString, [NSData dataWithUInt384:operatorKeyNeeded].hexString,@"operator keys don't match");
     
-    DSBLSKey * operatorBLSKey = [DSBLSKey blsKeyWithPublicKey:operatorKey onChain:chain];
+    DSBLSKey * operatorBLSKey = [DSBLSKey keyWithPublicKey:operatorKey];
     
     UInt256 payloadHash = providerUpdateServiceTransactionFromMessage.payloadDataForHash.SHA256_2;
     
@@ -387,7 +387,7 @@
     NSString * privateOwnerKeyString = @"cQpV2b9hNQd5Xs7REcrkPXmuCNDVvx6mSndr2ZgXKhfAhWDUUznB";
     NSString * privateOperatorKey = @"0fc63f4e6d7572a6c33465525b5c3323f57036873dd37c98c393267c58b50533";
     
-    DSBLSKey * operatorKey = [DSBLSKey blsKeyWithPrivateKey:privateOperatorKey.hexToData.UInt256 onChain:chain];
+    DSBLSKey * operatorKey = [DSBLSKey keyWithPrivateKey:privateOperatorKey.hexToData.UInt256];
     
     UInt256 providerTransactionHash = @"3dbb7de94e219e8f7eaea4f3c01cf97d77372e10152734c1959f17302369aa49".hexToData.reverse.UInt256;
     

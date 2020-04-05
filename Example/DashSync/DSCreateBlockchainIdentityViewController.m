@@ -89,7 +89,7 @@
 
 -(void)setWallet:(DSWallet *)wallet {
     _wallet = wallet;
-    self.walletIdentifierLabel.text = wallet.uniqueID;
+    self.walletIdentifierLabel.text = wallet.uniqueIDString;
 }
 
 -(void)setFundingAccount:(DSAccount *)fundingAccount {
@@ -154,16 +154,23 @@
     if (self.shouldRegisterUsername) {
         steps |= DSBlockchainIdentityRegistrationStep_Username;
     }
-    [blockchainIdentity registerOnNetwork:steps withFundingAccount:self.fundingAccount forTopupAmount:topupAmount stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {
-        
-    } completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError * _Nonnull error) {
-        if (error) {
-            [self raiseIssue:@"Error" message:error.localizedDescription];
-            return;
-        } else {
-            [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
-        }
+    [blockchainIdentity generateBlockchainIdentityExtendedPublicKeysWithPrompt:@"Update wallet to allow for Evolution features?" completion:^(BOOL registered) {
+        [blockchainIdentity createFundingPrivateKeyWithPrompt:@"Register?" completion:^(BOOL success, BOOL cancelled) {
+            if (success && !cancelled) {
+                [blockchainIdentity registerOnNetwork:steps withFundingAccount:self.fundingAccount forTopupAmount:topupAmount stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {
+                    
+                } completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError * _Nonnull error) {
+                    if (error) {
+                        [self raiseIssue:@"Error" message:error.localizedDescription];
+                        return;
+                    } else {
+                        [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
+                    }
+                }];
+            }
+        }];
     }];
+    
 }
 
 -(void)viewController:(UIViewController*)controller didChooseWallet:(DSWallet*)wallet {

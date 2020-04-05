@@ -60,7 +60,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 @property (nonatomic, readonly) NSArray <NSString*> * providerOperatorAddresses;
 
 //This is unique among all wallets and all chains
-@property (nonatomic, readonly) NSString * uniqueID;
+@property (nonatomic, readonly) NSString * uniqueIDString;
 
 @property (nonatomic, readonly) NSString * mnemonicUniqueID;
 

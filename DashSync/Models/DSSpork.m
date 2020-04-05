@@ -81,7 +81,7 @@
     [stringMessageData appendString:stringMessage];
     UInt256 messageDigest = stringMessageData.SHA256_2;
     DSECDSAKey * messagePublicKey = [DSECDSAKey keyRecoveredFromCompactSig:signature andMessageDigest:messageDigest];
-    DSECDSAKey * sporkPublicKey = [DSECDSAKey keyWithPublicKey:[NSData dataFromHexString:[self sporkKey]]];
+    DSECDSAKey * sporkPublicKey = [DSECDSAKey keyWithPublicKeyData:[NSData dataFromHexString:[self sporkKey]]];
     
     return [sporkPublicKey.publicKeyData isEqualToData:messagePublicKey.publicKeyData];
 }

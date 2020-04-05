@@ -98,6 +98,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 @property (nonatomic, strong) DSChain * chain;
 
+@property (nonatomic, strong) DSECDSAKey * registrationFundingPrivateKey;
+
 @end
 
 @implementation DSBlockchainIdentity
@@ -145,11 +147,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             NSIndexPath *keyIndexPath = (NSIndexPath *)[NSKeyedUnarchiver unarchiveObjectWithData:(NSData*)[keyPath path]];
             BOOL success = [self registerKeyWithStatus:keyPath.keyStatus atIndexPath:keyIndexPath ofType:keyPath.keyType];
             if (!success) {
-                DSKey * key = [DSKey keyForPublicKeyData:keyPath.publicKeyData forKeyType:keyPath.keyType onChain:self.chain];
+                DSKey * key = [DSKey keyWithPublicKeyData:keyPath.publicKeyData forKeyType:keyPath.keyType];
                 [self registerKey:key withStatus:keyPath.keyStatus atIndex:keyPath.keyID ofType:keyPath.keyType];
             }
         } else {
-            DSKey * key = [DSKey keyForPublicKeyData:keyPath.publicKeyData forKeyType:keyPath.keyType onChain:self.chain];
+            DSKey * key = [DSKey keyWithPublicKeyData:keyPath.publicKeyData forKeyType:keyPath.keyType];
             [self registerKey:key withStatus:keyPath.keyStatus atIndex:keyPath.keyID ofType:keyPath.keyType];
         }
     }
@@ -241,7 +243,15 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 -(void)registerOnNetwork:(DSBlockchainIdentityRegistrationStep)steps withFundingAccount:(DSAccount*)fundingAccount forTopupAmount:(uint64_t)topupDuffAmount stepCompletion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationStep stepCompleted))stepCompletion completion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError * error))completion {
     __block DSBlockchainIdentityRegistrationStep stepsCompleted = DSBlockchainIdentityRegistrationStep_None;
-    if (!(steps & DSBlockchainIdentityRegistrationStep_PublicKeyGeneration)) {
+    if (![self hasBlockchainIdentityExtendedPublicKeys]) {
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(stepsCompleted, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"The blockchain identity extended public keys need to be registered before you can register a blockchain identity.", nil)}]);
+            });
+        }
+        return;
+    }
+    if (!(steps & DSBlockchainIdentityRegistrationStep_FundingTransactionCreation)) {
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 completion(stepsCompleted, nil);
@@ -249,133 +259,134 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         }
         return;
     }
-    [self generateBlockchainIdentityExtendedPublicKeys:^(BOOL exists) {
-        if (!exists) {
+    NSString * creditFundingRegistrationAddress = [self registrationFundingAddress];
+    [self fundingTransactionForTopupAmount:topupDuffAmount toAddress:creditFundingRegistrationAddress fundedByAccount:fundingAccount completion:^(DSCreditFundingTransaction * _Nonnull fundingTransaction) {
+        if (!fundingTransaction) {
             if (completion) {
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    completion(stepsCompleted, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Could not derive public keys from wallet", nil)}]);
+                    completion(stepsCompleted, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Funding transaction could not be created", nil)}]);
                 });
             }
             return;
         }
-        if (stepCompletion) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                stepCompletion(DSBlockchainIdentityRegistrationStep_PublicKeyGeneration);
-            });
-        }
-        stepsCompleted |= DSBlockchainIdentityRegistrationStep_PublicKeyGeneration;
-        if (!(steps & DSBlockchainIdentityRegistrationStep_FundingTransactionCreation)) {
-            if (completion) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    completion(stepsCompleted, nil);
-                });
-            }
-            return;
-        }
-        NSString * creditFundingRegistrationAddress = [self registrationFundingAddress];
-        [self fundingTransactionForTopupAmount:topupDuffAmount toAddress:creditFundingRegistrationAddress fundedByAccount:fundingAccount completion:^(DSCreditFundingTransaction * _Nonnull fundingTransaction) {
-            if (!fundingTransaction) {
+        [fundingAccount signTransaction:fundingTransaction withPrompt:@"Would you like to create this user?" completion:^(BOOL signedTransaction, BOOL cancelled) {
+            if (!signedTransaction) {
                 if (completion) {
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        completion(stepsCompleted, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Funding transaction could not be created", nil)}]);
+                        completion(stepsCompleted, cancelled?nil:[NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Transaction could not be signed", nil)}]);
+                    });
+                }
+            }
+            if (stepCompletion) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    stepCompletion(DSBlockchainIdentityRegistrationStep_FundingTransactionCreation);
+                });
+            }
+            stepsCompleted |= DSBlockchainIdentityRegistrationStep_FundingTransactionCreation;
+            if (!(steps & DSBlockchainIdentityRegistrationStep_FundingTransactionPublishing)) {
+                if (completion) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        completion(stepsCompleted, nil);
                     });
                 }
                 return;
             }
-            [fundingAccount signTransaction:fundingTransaction withPrompt:@"Would you like to create this user?" completion:^(BOOL signedTransaction, BOOL cancelled) {
-                if (!signedTransaction) {
-                    if (completion) {
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            completion(stepsCompleted, cancelled?nil:[NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Transaction could not be signed", nil)}]);
-                        });
-                    }
-                }
-                if (stepCompletion) {
+            
+            //In wallet registration occurs now
+            
+            if (!(steps & DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence)) {
+                if (completion) {
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        stepCompletion(DSBlockchainIdentityRegistrationStep_FundingTransactionCreation);
+                        completion(stepsCompleted, nil);
                     });
                 }
-                stepsCompleted |= DSBlockchainIdentityRegistrationStep_FundingTransactionCreation;
-                if (!(steps & DSBlockchainIdentityRegistrationStep_FundingTransactionPublishing)) {
-                    if (completion) {
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            completion(stepsCompleted, nil);
-                        });
-                    }
-                    return;
-                }
-                
-                //In wallet registration occurs now
-                
-                if (!(steps & DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence)) {
-                    if (completion) {
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            completion(stepsCompleted, nil);
-                        });
-                    }
-                    return;
-                }
-                [self registerInWalletForRegistrationFundingTransaction:fundingTransaction];
-                if (stepCompletion) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        stepCompletion(DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence);
-                    });
-                }
-                stepsCompleted |= DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence;
-                
-                dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-                __block BOOL transactionSuccessfullyPublished = FALSE;
-                
-                __block id observer = [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil
-                                                                                         queue:nil usingBlock:^(NSNotification *note) {
-                    DSTransaction *tx = [note.userInfo objectForKey:DSTransactionManagerNotificationTransactionKey];
-                    if ([tx isEqual:fundingTransaction]) {
-                        NSDictionary * changes = [note.userInfo objectForKey:DSTransactionManagerNotificationTransactionChangesKey];
-                        if (changes) {
-                            NSNumber * accepted = [changes objectForKey:DSTransactionManagerNotificationInstantSendTransactionAcceptedStatusKey];
-                            NSNumber * lockVerified = [changes objectForKey:DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey];
-                            if ([accepted boolValue] || [lockVerified boolValue]) {
-                                transactionSuccessfullyPublished = TRUE;
-                                dispatch_semaphore_signal(sem);
-                            }
+                return;
+            }
+            [self registerInWalletForRegistrationFundingTransaction:fundingTransaction];
+            if (stepCompletion) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    stepCompletion(DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence);
+                });
+            }
+            stepsCompleted |= DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence;
+            
+            dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+            __block BOOL transactionSuccessfullyPublished = FALSE;
+            
+            __block id observer = [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil
+                                                                                     queue:nil usingBlock:^(NSNotification *note) {
+                DSTransaction *tx = [note.userInfo objectForKey:DSTransactionManagerNotificationTransactionKey];
+                if ([tx isEqual:fundingTransaction]) {
+                    NSDictionary * changes = [note.userInfo objectForKey:DSTransactionManagerNotificationTransactionChangesKey];
+                    if (changes) {
+                        NSNumber * accepted = [changes objectForKey:DSTransactionManagerNotificationInstantSendTransactionAcceptedStatusKey];
+                        NSNumber * lockVerified = [changes objectForKey:DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey];
+                        if ([accepted boolValue] || [lockVerified boolValue]) {
+                            transactionSuccessfullyPublished = TRUE;
+                            dispatch_semaphore_signal(sem);
                         }
                     }
-                }];
+                }
+            }];
+            
+            [self.chain.chainManager.transactionManager publishTransaction:fundingTransaction completion:^(NSError * _Nullable error) {
+                if (error) {
+                    [[NSNotificationCenter defaultCenter] removeObserver:observer];
+                    if (completion) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            completion(stepsCompleted, error);
+                        });
+                    }
+                    return;
+                }
                 
-                [self.chain.chainManager.transactionManager publishTransaction:fundingTransaction completion:^(NSError * _Nullable error) {
-                    if (error) {
-                        [[NSNotificationCenter defaultCenter] removeObserver:observer];
+                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0),^{
+                    
+                    dispatch_semaphore_wait(sem, dispatch_time(DISPATCH_TIME_NOW, 30 * NSEC_PER_SEC));
+                    
+                    [[NSNotificationCenter defaultCenter] removeObserver:observer];
+                    
+                    if (!transactionSuccessfullyPublished) {
                         if (completion) {
                             dispatch_async(dispatch_get_main_queue(), ^{
-                                completion(stepsCompleted, error);
+                                completion(stepsCompleted, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"Timeout while waiting for funding transaction to be accepted by network", nil)}]);
                             });
                         }
                         return;
                     }
                     
-                    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0),^{
-                        
-                        dispatch_semaphore_wait(sem, dispatch_time(DISPATCH_TIME_NOW, 30 * NSEC_PER_SEC));
-                        
-                        [[NSNotificationCenter defaultCenter] removeObserver:observer];
-                        
-                        if (!transactionSuccessfullyPublished) {
+                    if (stepCompletion) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            stepCompletion(DSBlockchainIdentityRegistrationStep_FundingTransactionPublishing);
+                        });
+                    }
+                    stepsCompleted |= DSBlockchainIdentityRegistrationStep_FundingTransactionPublishing;
+                    
+                    if (!(steps & DSBlockchainIdentityRegistrationStep_Identity)) {
+                        if (completion) {
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                completion(stepsCompleted, nil);
+                            });
+                        }
+                        return;
+                    }
+                    
+                    
+                    [self createAndPublishRegistrationTransitionWithCompletion:^(NSDictionary * _Nullable successInfo, NSError * _Nullable error) {
+                        if (error) {
                             if (completion) {
                                 dispatch_async(dispatch_get_main_queue(), ^{
-                                    completion(stepsCompleted, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"Timeout while waiting for funding transaction to be accepted by network", nil)}]);
+                                    completion(stepsCompleted, error);
                                 });
                             }
                             return;
                         }
-                        
                         if (stepCompletion) {
-                            dispatch_async(dispatch_get_main_queue(), ^{
-                                stepCompletion(DSBlockchainIdentityRegistrationStep_FundingTransactionPublishing);
-                            });
+                            stepCompletion(DSBlockchainIdentityRegistrationStep_Identity);
                         }
-                        stepsCompleted |= DSBlockchainIdentityRegistrationStep_FundingTransactionPublishing;
+                        stepsCompleted |= DSBlockchainIdentityRegistrationStep_Identity;
                         
-                        if (!(steps & DSBlockchainIdentityRegistrationStep_Identity)) {
+                        if (!(steps & DSBlockchainIdentityRegistrationStep_Username)) {
                             if (completion) {
                                 dispatch_async(dispatch_get_main_queue(), ^{
                                     completion(stepsCompleted, nil);
@@ -384,9 +395,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                             return;
                         }
                         
-                        
-                        [self createAndPublishRegistrationTransitionWithCompletion:^(NSDictionary * _Nullable successInfo, NSError * _Nullable error) {
-                            if (error) {
+                        [self registerUsernamesWithCompletion:^(BOOL success, NSError * _Nonnull error) {
+                            if (!success) {
                                 if (completion) {
                                     dispatch_async(dispatch_get_main_queue(), ^{
                                         completion(stepsCompleted, error);
@@ -395,11 +405,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                                 return;
                             }
                             if (stepCompletion) {
-                                stepCompletion(DSBlockchainIdentityRegistrationStep_Identity);
+                                stepCompletion(DSBlockchainIdentityRegistrationStep_Username);
                             }
-                            stepsCompleted |= DSBlockchainIdentityRegistrationStep_Identity;
+                            stepsCompleted |= DSBlockchainIdentityRegistrationStep_Username;
                             
-                            if (!(steps & DSBlockchainIdentityRegistrationStep_Username)) {
+                            if (!(steps & DSBlockchainIdentityRegistrationStep_Profile)) {
                                 if (completion) {
                                     dispatch_async(dispatch_get_main_queue(), ^{
                                         completion(stepsCompleted, nil);
@@ -407,40 +417,16 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                                 }
                                 return;
                             }
+                            //todo:we need to still do profile
+                            if (completion) {
+                                dispatch_async(dispatch_get_main_queue(), ^{
+                                    completion(stepsCompleted, nil);
+                                });
+                            }
                             
-                            [self registerUsernamesWithCompletion:^(BOOL success, NSError * _Nonnull error) {
-                                if (!success) {
-                                    if (completion) {
-                                        dispatch_async(dispatch_get_main_queue(), ^{
-                                            completion(stepsCompleted, error);
-                                        });
-                                    }
-                                    return;
-                                }
-                                if (stepCompletion) {
-                                    stepCompletion(DSBlockchainIdentityRegistrationStep_Username);
-                                }
-                                stepsCompleted |= DSBlockchainIdentityRegistrationStep_Username;
-                                
-                                if (!(steps & DSBlockchainIdentityRegistrationStep_Profile)) {
-                                    if (completion) {
-                                        dispatch_async(dispatch_get_main_queue(), ^{
-                                            completion(stepsCompleted, nil);
-                                        });
-                                    }
-                                    return;
-                                }
-                                //todo:we need to still do profile
-                                if (completion) {
-                                    dispatch_async(dispatch_get_main_queue(), ^{
-                                        completion(stepsCompleted, nil);
-                                    });
-                                }
-                                
-                            }];
                         }];
-                    });
-                }];
+                    }];
+                });
             }];
         }];
     }];
@@ -448,7 +434,21 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 // MARK: - Local Registration and Generation
 
--(void)generateBlockchainIdentityExtendedPublicKeys:(void (^ _Nullable)(BOOL registered))completion {
+-(BOOL)hasBlockchainIdentityExtendedPublicKeys {
+    NSAssert(_isLocal, @"This should not be performed on a non local blockchain identity");
+    if (!_isLocal) return FALSE;
+    DSAuthenticationKeysDerivationPath * derivationPathBLS = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:self.wallet];
+    DSAuthenticationKeysDerivationPath * derivationPathECDSA = [[DSDerivationPathFactory sharedInstance] blockchainIdentityECDSAKeysDerivationPathForWallet:self.wallet];
+    DSCreditFundingDerivationPath * derivationPathRegistrationFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:self.wallet];
+    DSCreditFundingDerivationPath * derivationPathTopupFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityTopupFundingDerivationPathForWallet:self.wallet];
+    if ([derivationPathBLS hasExtendedPublicKey] && [derivationPathECDSA hasExtendedPublicKey] && [derivationPathRegistrationFunding hasExtendedPublicKey] && [derivationPathTopupFunding hasExtendedPublicKey]) {
+        return YES;
+    } else {
+        return NO;
+    }
+}
+
+-(void)generateBlockchainIdentityExtendedPublicKeysWithPrompt:(NSString*)prompt completion:(void (^ _Nullable)(BOOL registered))completion {
     NSAssert(_isLocal, @"This should not be performed on a non local blockchain identity");
     if (!_isLocal) return;
     __block DSAuthenticationKeysDerivationPath * derivationPathBLS = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:self.wallet];
@@ -459,15 +459,15 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         completion(YES);
         return;
     }
-    [[DSAuthenticationManager sharedInstance] seedWithPrompt:@"Generate Blockchain Identity" forWallet:self.wallet forAmount:0 forceAuthentication:NO completion:^(NSData * _Nullable seed, BOOL cancelled) {
+    [[DSAuthenticationManager sharedInstance] seedWithPrompt:prompt forWallet:self.wallet forAmount:0 forceAuthentication:NO completion:^(NSData * _Nullable seed, BOOL cancelled) {
         if (!seed) {
             completion(NO);
             return;
         }
-        [derivationPathBLS generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.wallet.uniqueID];
-        [derivationPathECDSA generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.wallet.uniqueID];
-        [derivationPathRegistrationFunding generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.wallet.uniqueID];
-        [derivationPathTopupFunding generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.wallet.uniqueID];
+        [derivationPathBLS generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.wallet.uniqueIDString];
+        [derivationPathECDSA generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.wallet.uniqueIDString];
+        [derivationPathRegistrationFunding generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.wallet.uniqueIDString];
+        [derivationPathTopupFunding generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.wallet.uniqueIDString];
         completion(YES);
     }];
 }
@@ -700,6 +700,44 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 // MARK: - Keys
 
+-(void)createFundingPrivateKeyWithPrompt:(NSString*)prompt completion:(void (^ _Nullable)(BOOL success, BOOL cancelled))completion {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[DSAuthenticationManager sharedInstance] seedWithPrompt:prompt forWallet:self.wallet forAmount:0 forceAuthentication:NO completion:^(NSData * _Nullable seed, BOOL cancelled) {
+            if (!seed) {
+                if (completion) {
+                    completion(NO,cancelled);
+                }
+                return;
+            }
+            
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                DSCreditFundingDerivationPath * derivationPathRegistrationFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:self.wallet];
+                
+                self.registrationFundingPrivateKey = (DSECDSAKey *)[derivationPathRegistrationFunding privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.index] fromSeed:seed];
+                if (completion) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        completion(YES,NO);
+                    });
+                }
+            });
+        }];
+    });
+}
+
+-(BOOL)activePrivateKeysAreLoadedWithFetchingError:(NSError**)error {
+    BOOL loaded = TRUE;
+    for (NSNumber * index in self.keyInfoDictionaries) {
+        NSDictionary * keyDictionary = self.keyInfoDictionaries[index];
+        DSBlockchainIdentityKeyStatus status = [keyDictionary[@(DSBlockchainIdentityKeyDictionary_KeyStatus)] unsignedIntValue];
+        DSKeyType keyType = [keyDictionary[@(DSBlockchainIdentityKeyDictionary_KeyType)] unsignedIntValue];
+        if (status == DSBlockchainIdentityKeyStatus_Registered) {
+            loaded &= [self hasPrivateKeyAtIndex:[index unsignedIntValue] ofType:keyType error:error];
+            if (*error) return FALSE;
+        }
+    }
+    return loaded;
+}
+
 -(uint32_t)activeKeyCount {
     uint32_t rActiveKeys = 0;
     for (NSNumber * index in self.keyInfoDictionaries) {
@@ -781,6 +819,16 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     return nil;
 }
 
+-(BOOL)hasPrivateKeyAtIndex:(uint32_t)index ofType:(DSKeyType)type error:(NSError**)error {
+    if (!_isLocal) return NO;
+    const NSUInteger indexes[] = {_index,index};
+    NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
+    
+    DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
+    
+    return hasKeychainData([self identifierForKeyAtPath:indexPath fromDerivationPath:derivationPath], error);
+}
+
 -(DSKey*)privateKeyAtIndex:(uint32_t)index ofType:(DSKeyType)type {
     if (!_isLocal) return nil;
     const NSUInteger indexes[] = {_index,index};
@@ -793,7 +841,23 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     
     if (!keySecret || error) return nil;
     
-    return [DSKey keyForSecretKeyData:keySecret forKeyType:(DSKeyType)type onChain:self.chain];
+    return [DSKey keyWithPrivateKeyData:keySecret forKeyType:type];
+}
+
+-(DSKey*)derivePrivateKeyAtIdentityKeyIndex:(uint32_t)index ofType:(DSKeyType)type {
+    if (!_isLocal) return nil;
+    const NSUInteger indexes[] = {_index,index};
+    NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
+    
+    return [self derivePrivateKeyAtIndexPath:indexPath ofType:type];
+}
+
+-(DSKey*)derivePrivateKeyAtIndexPath:(NSIndexPath*)indexPath ofType:(DSKeyType)type {
+    if (!_isLocal) return nil;
+    
+    DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
+    
+    return [derivationPath privateKeyAtIndexPath:indexPath];
 }
 
 -(DSKey*)privateKeyAtIndex:(uint32_t)index ofType:(DSKeyType)type forSeed:(NSData*)seed {
@@ -813,7 +877,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     
-    return [derivationPath publicKeyAtIndexPath:indexPath onChain:self.chain];
+    return [derivationPath publicKeyAtIndexPath:indexPath];
 }
 
 -(DSKey*)createNewKeyOfType:(DSKeyType)type returnIndex:(uint32_t *)rIndex {
@@ -824,15 +888,18 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     
-    DSKey * key = [derivationPath publicKeyAtIndexPath:indexPath onChain:self.chain];
+    DSKey * publicKey = [derivationPath publicKeyAtIndexPath:indexPath];
+    NSAssert([derivationPath hasExtendedPublicKey], @"The derivation path should have an extended private key");
+    DSKey * privateKey = [derivationPath privateKeyAtIndexPath:indexPath];
+    NSAssert([publicKey.publicKeyData isEqualToData:privateKey.publicKeyData],@"These should be equal");
     self.keysCreated++;
     if (rIndex) {
         *rIndex = keyIndex;
     }
-    NSDictionary * keyDictionary = @{@(DSBlockchainIdentityKeyDictionary_Key):key, @(DSBlockchainIdentityKeyDictionary_KeyType):@(type), @(DSBlockchainIdentityKeyDictionary_KeyStatus):@(DSBlockchainIdentityKeyStatus_Registering)};
+    NSDictionary * keyDictionary = @{@(DSBlockchainIdentityKeyDictionary_Key):publicKey, @(DSBlockchainIdentityKeyDictionary_KeyType):@(type), @(DSBlockchainIdentityKeyDictionary_KeyStatus):@(DSBlockchainIdentityKeyStatus_Registering)};
     [self.keyInfoDictionaries setObject:keyDictionary forKey:@(keyIndex)];
-    [self saveNewKey:key atPath:indexPath withStatus:DSBlockchainIdentityKeyStatus_Registering fromDerivationPath:derivationPath];
-    return key;
+    [self saveNewKey:publicKey atPath:indexPath withStatus:DSBlockchainIdentityKeyStatus_Registering fromDerivationPath:derivationPath];
+    return publicKey;
 }
 
 -(uint32_t)firstIndexOfKeyOfType:(DSKeyType)type createIfNotPresent:(BOOL)createIfNotPresent {
@@ -859,7 +926,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     
-    DSKey * key = [derivationPath publicKeyAtIndexPath:indexPath onChain:self.chain];
+    DSKey * key = [derivationPath publicKeyAtIndexPath:indexPath];
     return key;
 }
 
@@ -885,7 +952,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         } else {
             self.keysCreated = MAX(self.keysCreated,index + 1);
             if (save) {
-                [self saveNewKey:key forKeyWithIndexID:index withStatus:status];
+                [self saveNewRemoteIdentityKey:key forKeyWithIndexID:index withStatus:status];
             }
         }
         NSDictionary * keyDictionary = @{@(DSBlockchainIdentityKeyDictionary_Key):key, @(DSBlockchainIdentityKeyDictionary_KeyType):@(type), @(DSBlockchainIdentityKeyDictionary_KeyStatus):@(status)};
@@ -899,7 +966,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     //derivationPath will be nil if not local
     
-    DSKey * keyToCheck = [derivationPath publicKeyAtIndexPath:indexPath onChain:self.chain];
+    DSKey * keyToCheck = [derivationPath publicKeyAtIndexPath:indexPath];
     if ([keyToCheck.publicKeyData isEqualToData:key.publicKeyData]) { //if it isn't local we shouldn't verify
         uint32_t index = (uint32_t)[indexPath indexAtPosition:[indexPath length] - 1];
         if (self.keyInfoDictionaries[@(index)]) {
@@ -930,7 +997,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 -(BOOL)registerKeyWithStatus:(DSBlockchainIdentityKeyStatus)status atIndexPath:(NSIndexPath*)indexPath ofType:(DSKeyType)type {
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     
-    DSKey * key = [derivationPath publicKeyAtIndexPath:indexPath onChain:self.chain];
+    DSKey * key = [derivationPath publicKeyAtIndexPath:indexPath];
     if (!key) return FALSE;
     uint32_t index = (uint32_t)[indexPath indexAtPosition:[indexPath length] - 1];
     self.keysCreated = MAX(self.keysCreated,index + 1);
@@ -956,9 +1023,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         DSKey * rKey = nil;
         NSData * data = [dataString base64ToData];
         if ([type intValue] == DSKeyType_BLS) {
-            rKey = [DSBLSKey blsKeyWithPublicKey:data.UInt384 onChain:self.chain];
+            rKey = [DSBLSKey keyWithPublicKey:data.UInt384];
         } else if ([type intValue] == DSKeyType_ECDSA) {
-            rKey = [DSECDSAKey keyWithPublicKey:data];
+            rKey = [DSECDSAKey keyWithPublicKeyData:data];
         }
         *rIndex = [keyId unsignedIntValue] - 1;
         *rType = [type unsignedIntValue];
@@ -1048,30 +1115,24 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     }
 }
 
--(void)registrationTransitionWithCompletion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction))completion {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        NSString * question = DSLocalizedString(@"Do you wish to create this identity?", nil);
-        [[DSAuthenticationManager sharedInstance] seedWithPrompt:question forWallet:self.wallet forAmount:0 forceAuthentication:NO completion:^(NSData * _Nullable seed, BOOL cancelled) {
-            if (!seed) {
-                completion(nil);
-                return;
-            }
-            
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                DSCreditFundingDerivationPath * derivationPathRegistrationFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:self.wallet];
-                
-                DSECDSAKey * privateKey = (DSECDSAKey *)[derivationPathRegistrationFunding privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.index] fromSeed:seed];
-                
-                uint32_t index;
-                
-                DSKey * publicKey = [self createNewKeyOfType:DSKeyType_ECDSA returnIndex:&index];
-                
-                NSAssert(index == 0, @"The index should be 0 here");
-                
-                [self registrationTransitionSignedByPrivateKey:privateKey atIndex:index registeringPublicKeys:@{@(index):publicKey} completion:completion];
-            });
-        }];
-    });
+-(void)registrationTransitionWithCompletion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction, NSError * error))completion {
+    if (!self.registrationFundingPrivateKey) {
+        if (completion) {
+            completion(nil,[NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion", nil)}]);
+        }
+    }
+    
+    uint32_t index;
+    
+    DSKey * publicKey = [self createNewKeyOfType:DSKeyType_ECDSA returnIndex:&index];
+    
+    NSAssert(index == 0, @"The index should be 0 here");
+    
+    [self registrationTransitionSignedByPrivateKey:self.registrationFundingPrivateKey atIndex:index registeringPublicKeys:@{@(index):publicKey} completion:^(DSBlockchainIdentityRegistrationTransition *blockchainIdentityRegistrationTransaction) {
+        if (completion) {
+            completion(blockchainIdentityRegistrationTransaction, nil);
+        }
+    }];
 }
 
 // MARK: Registering
@@ -1080,10 +1141,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     if (self.type == DSBlockchainIdentityType_Unknown) {
         NSError * error = [NSError errorWithDomain:@"DashSync" code:501 userInfo:@{NSLocalizedDescriptionKey:
                                                                                        DSLocalizedString(@"An identity needs to have its type defined before it can be registered.", nil)}];
-        completion(nil,error);
+        completion(nil, error);
         return;
     }
-    [self registrationTransitionWithCompletion:^(DSBlockchainIdentityRegistrationTransition * _Nonnull blockchainIdentityRegistrationTransition) {
+    [self registrationTransitionWithCompletion:^(DSBlockchainIdentityRegistrationTransition * _Nonnull blockchainIdentityRegistrationTransition, NSError * registrationTransitionError) {
         if (blockchainIdentityRegistrationTransition) {
             [self.DAPIClient publishTransition:blockchainIdentityRegistrationTransition success:^(NSDictionary * _Nonnull successDictionary) {
                 [self monitorForBlockchainIdentityWithRetryCount:5 delay:4 retryDelayType:DSBlockchainIdentityRetryDelayType_Linear completion:^(BOOL success, NSError * error) {
@@ -1109,7 +1170,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             if (completion) {
                 NSError * error = [NSError errorWithDomain:@"DashSync" code:501 userInfo:@{NSLocalizedDescriptionKey:
                                                                                                DSLocalizedString(@"Unable to create registration transition", nil)}];
-                completion(nil,error);
+                completion(nil,registrationTransitionError?registrationTransitionError:error);
             }
         }
     }];
@@ -1140,47 +1201,65 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     }];
 }
 
--(void)fetchNeededNetworkStateInformationWithCompletion:(void (^)(BOOL success, NSError * error))completion {
+-(void)fetchNeededNetworkStateInformationWithCompletion:(void (^)(DSBlockchainIdentityRegistrationStep failureStep, NSError * error))completion {
     if (!self.activeKeyCount) {
         [self fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, NSError * error) {
             if (!success) {
-                completion(success,error);
+                if (completion) {
+                    completion(DSBlockchainIdentityRegistrationStep_Identity,error);
+                }
                 return;
             }
             if (![self.usernames count]) {
                 [self fetchUsernamesWithCompletion:^(BOOL success, NSError * error) {
                     if (!success) {
-                        completion(success,error);
+                        if (completion) {
+                            completion(DSBlockchainIdentityRegistrationStep_Username,error);
+                        }
                         return;
                     }
                     if (![self.matchingDashpayUser avatarPath]) {
                         [self fetchProfileWithCompletion:^(BOOL success, NSError * error) {
-                            completion(success,error);
+                            if (completion) {
+                                completion(success?DSBlockchainIdentityRegistrationStep_None: DSBlockchainIdentityRegistrationStep_Profile, error);
+                            }
                         }];
                     }
                 }];
             } else if (![self.matchingDashpayUser avatarPath]) {
                 [self fetchProfileWithCompletion:^(BOOL success, NSError * error) {
-                    completion(success,error);
+                    if (completion) {
+                        completion(success?DSBlockchainIdentityRegistrationStep_None: DSBlockchainIdentityRegistrationStep_Profile, error);
+                    }
                 }];
             }
         }];
     } else if (![self.usernames count]) {
         [self fetchUsernamesWithCompletion:^(BOOL success, NSError * error) {
             if (!success) {
-                completion(success,error);
+                if (completion) {
+                    completion(DSBlockchainIdentityRegistrationStep_Username,error);
+                }
                 return;
             }
             if (![self.matchingDashpayUser avatarPath]) {
                 [self fetchProfileWithCompletion:^(BOOL success, NSError * error) {
-                    completion(success,error);
+                    if (completion) {
+                        completion(success?DSBlockchainIdentityRegistrationStep_None: DSBlockchainIdentityRegistrationStep_Profile, error);
+                    }
                 }];
             }
         }];
     } else if (![self.matchingDashpayUser avatarPath]) {
         [self fetchProfileWithCompletion:^(BOOL success, NSError * error) {
-            completion(success,error);
+            if (completion) {
+                completion(success?DSBlockchainIdentityRegistrationStep_None: DSBlockchainIdentityRegistrationStep_Profile, error);
+            }
         }];
+    } else {
+        if (completion) {
+            completion(YES, nil);
+        }
     }
 }
 
@@ -1216,23 +1295,16 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 -(void)signStateTransition:(DSTransition*)transition forKeyIndex:(uint32_t)keyIndex ofType:(DSKeyType)signingAlgorithm withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion {
     NSParameterAssert(transition);
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[DSAuthenticationManager sharedInstance] seedWithPrompt:prompt forWallet:self.wallet forAmount:0 forceAuthentication:YES completion:^(NSData* _Nullable seed, BOOL cancelled) {
-            if (!seed) {
-                completion(NO);
-                return;
-            }
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             
-                DSKey * privateKey = [self privateKeyAtIndex:keyIndex ofType:signingAlgorithm forSeed:seed];
-                
-                //        NSLog(@"%@",uint160_hex(self.blockchainIdentityRegistrationTransition.pubkeyHash));
-                //        NSAssert(uint160_eq(privateKey.publicKeyData.hash160,self.blockchainIdentityRegistrationTransition.pubkeyHash),@"Keys aren't ok");
-                [transition signWithKey:privateKey atIndex:keyIndex fromIdentity:self];
-                completion(YES);
-            });
-        }];
-    });
+    DSKey * privateKey = [self privateKeyAtIndex:keyIndex ofType:signingAlgorithm];
+    NSAssert(privateKey, @"The private key should exist");
+    NSAssert([privateKey.publicKeyData isEqualToData:[self publicKeyAtIndex:keyIndex ofType:signingAlgorithm].publicKeyData], @"These should be equal");
+    //        NSLog(@"%@",uint160_hex(self.blockchainIdentityRegistrationTransition.pubkeyHash));
+    //        NSAssert(uint160_eq(privateKey.publicKeyData.hash160,self.blockchainIdentityRegistrationTransition.pubkeyHash),@"Keys aren't ok");
+    [transition signWithKey:privateKey atIndex:keyIndex fromIdentity:self];
+    if (completion) {
+        completion(YES);
+    }
 }
 
 -(void)signStateTransition:(DSTransition*)transition withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion {
@@ -1249,41 +1321,23 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     return [publicKey verify:messageDigest signatureData:signature];
 }
 
--(void)encryptData:(NSData*)data withKeyAtIndex:(uint32_t)index forRecipientKey:(DSKey*)recipientPublicKey withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(NSData* encryptedData))completion {
+-(void)encryptData:(NSData*)data withKeyAtIndex:(uint32_t)index forRecipientKey:(DSKey*)recipientPublicKey completion:(void (^ _Nullable)(NSData* encryptedData))completion {
     NSParameterAssert(data);
     NSParameterAssert(recipientPublicKey);
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[DSAuthenticationManager sharedInstance] seedWithPrompt:@"" forWallet:self.wallet forAmount:0 forceAuthentication:NO completion:^(NSData* _Nullable seed, BOOL cancelled) {
-            if (!seed) {
-                completion(nil);
-                return;
-            }
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:(DSKeyType)recipientPublicKey.keyType];
-                DSKey * privateKey = [derivationPath privateKeyAtIndex:self.index fromSeed:seed];
-                NSData * encryptedData = [data encryptWithSecretKey:privateKey forPeerWithPublicKey:recipientPublicKey];
-                completion(encryptedData);
-            });
-        }];
-    });
+    DSKey * privateKey = [self privateKeyAtIndex:self.index ofType:recipientPublicKey.keyType];
+    NSData * encryptedData = [data encryptWithSecretKey:privateKey forPeerWithPublicKey:recipientPublicKey];
+    if (completion) {
+        completion(encryptedData);
+    }
+
 }
 
--(void)decryptData:(NSData*)encryptedData fromRecipientKey:(UInt384)recipientPublicKey withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(NSData* decryptedData))completion {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[DSAuthenticationManager sharedInstance] seedWithPrompt:@"" forWallet:self.wallet forAmount:0 forceAuthentication:NO completion:^(NSData* _Nullable seed, BOOL cancelled) {
-            if (!seed) {
-                completion(nil);
-                return;
-            }
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:self.wallet];
-                DSBLSKey * privateKey = (DSBLSKey *)[derivationPath privateKeyAtIndex:self.index fromSeed:seed];
-                DSBLSKey * publicRecipientKey = [DSBLSKey blsKeyWithPublicKey:recipientPublicKey onChain:self.chain];
-                NSData * data = [encryptedData decryptWithSecretKey:privateKey fromPeerWithPublicKey:publicRecipientKey];
-                completion(data);
-            });
-        }];
-    });
+-(void)decryptData:(NSData*)encryptedData withKeyAtIndex:(uint32_t)index fromSenderKey:(DSKey*)senderPublicKey completion:(void (^ _Nullable)(NSData* decryptedData))completion {
+    DSKey * privateKey = [self privateKeyAtIndex:self.index ofType:senderPublicKey.keyType];
+    NSData * data = [encryptedData decryptWithSecretKey:privateKey fromPeerWithPublicKey:senderPublicKey];
+    if (completion) {
+        completion(data);
+    }
 }
 
 // MARK: - Contracts
@@ -2101,35 +2155,41 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         [potentialContactBlockchainIdentity applyIdentityDictionary:blockchainIdentityDictionary];
         [potentialContactBlockchainIdentity save];
         
-        if (![potentialContactBlockchainIdentity isDashpayReady]) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completion(NO, [NSError errorWithDomain:@"DashSync" code:501 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                            DSLocalizedString(@"User has actions to complete before being able to use Dashpay", nil)}]);
-            });
-            
-            return;
-        }
-        uint32_t destinationKeyIndex = [potentialContactBlockchainIdentity firstIndexOfKeyOfType:self.currentMainKeyType createIfNotPresent:NO];
-        uint32_t sourceKeyIndex = [self firstIndexOfKeyOfType:self.currentMainKeyType createIfNotPresent:NO];
-        
-        
-        DSAccount * account = [self.wallet accountWithNumber:0];
-        if (sourceKeyIndex == UINT32_MAX) { //not found
-            //to do register a new key
-            NSAssert(FALSE, @"we shouldn't be getting here");
-            if (completion) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    completion(NO,[NSError errorWithDomain:@"DashSync" code:501 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                               DSLocalizedString(@"Internal key handling error", nil)}]);
-                });
+        [potentialContactBlockchainIdentity fetchNeededNetworkStateInformationWithCompletion:^(DSBlockchainIdentityRegistrationStep failureStep, NSError * _Nonnull error) {
+            if (failureStep && failureStep != DSBlockchainIdentityRegistrationStep_Profile) { //if profile fails we can still continue on
+                completion(NO, error);
+                return;
             }
-            return;
-        }
-        DSPotentialOneWayFriendship * potentialFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationBlockchainIdentity:potentialContactBlockchainIdentity destinationKeyIndex:destinationKeyIndex sourceBlockchainIdentity:self sourceKeyIndex:sourceKeyIndex account:account];
-        
-        [potentialFriendship createDerivationPath];
-        
-        [self sendNewFriendRequestMatchingPotentialFriendship:potentialFriendship completion:completion];
+            if (![potentialContactBlockchainIdentity isDashpayReady]) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completion(NO, [NSError errorWithDomain:@"DashSync" code:501 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                                DSLocalizedString(@"User has actions to complete before being able to use Dashpay", nil)}]);
+                });
+                
+                return;
+            }
+            uint32_t destinationKeyIndex = [potentialContactBlockchainIdentity firstIndexOfKeyOfType:self.currentMainKeyType createIfNotPresent:NO];
+            uint32_t sourceKeyIndex = [self firstIndexOfKeyOfType:self.currentMainKeyType createIfNotPresent:NO];
+            
+            
+            DSAccount * account = [self.wallet accountWithNumber:0];
+            if (sourceKeyIndex == UINT32_MAX) { //not found
+                //to do register a new key
+                NSAssert(FALSE, @"we shouldn't be getting here");
+                if (completion) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        completion(NO,[NSError errorWithDomain:@"DashSync" code:501 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                                   DSLocalizedString(@"Internal key handling error", nil)}]);
+                    });
+                }
+                return;
+            }
+            DSPotentialOneWayFriendship * potentialFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationBlockchainIdentity:potentialContactBlockchainIdentity destinationKeyIndex:destinationKeyIndex sourceBlockchainIdentity:self sourceKeyIndex:sourceKeyIndex account:account];
+            
+            [potentialFriendship createDerivationPathWithCompletion:^(BOOL success, DSIncomingFundsDerivationPath * _Nonnull incomingFundsDerivationPath) {
+                [self sendNewFriendRequestMatchingPotentialFriendship:potentialFriendship completion:completion];
+            }];
+        }];
     } failure:^(NSError *_Nonnull error) {
         DSDLog(@"%@", error);
         
@@ -2204,7 +2264,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     //                                                                 publicMessage:friendRequest.sourceContact.publicMessage];
     //    [contact setAssociatedBlockchainIdentityUniqueId:friendRequest.sourceContact.associatedBlockchainIdentity.uniqueID.UInt256];
     //    DSKey * friendsEncyptionKey = [otherBlockchainIdentity keyOfType:friendRequest.sourceEncryptionPublicKeyIndex atIndex:friendRequest.sourceEncryptionPublicKeyIndex];
-    //[DSKey keyForPublicKeyData:friendRequest.sourceContact.encryptionPublicKey forKeyType:friendRequest.sourceContact.encryptionPublicKeyType onChain:self.chain];
+    //[DSKey keyWithPublicKeyData:friendRequest.sourceContact.encryptionPublicKey forKeyType:friendRequest.sourceContact.encryptionPublicKeyType onChain:self.chain];
     //    [contact addPublicKey:friendsEncyptionKey atIndex:friendRequest.sourceContact.encryptionPublicKeyIndex];
     //    uint32_t sourceKeyIndex = [self firstIndexOfKeyOfType:friendRequest.sourceContact.encryptionPublicKeyType createIfNotPresent:NO];
     //    if (sourceKeyIndex == UINT32_MAX) { //not found
@@ -2213,9 +2273,18 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     //        return;
     //    }
     DSPotentialOneWayFriendship *potentialFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationBlockchainIdentity:otherBlockchainIdentity destinationKeyIndex:friendRequest.sourceKeyIndex sourceBlockchainIdentity:self sourceKeyIndex:friendRequest.destinationKeyIndex account:account];
-    [potentialFriendship createDerivationPath];
+    [potentialFriendship createDerivationPathWithCompletion:^(BOOL success, DSIncomingFundsDerivationPath * _Nonnull incomingFundsDerivationPath) {
+        if (success) {
+            [self sendNewFriendRequestMatchingPotentialFriendship:potentialFriendship completion:completion];
+        } else {
+            if (completion) {
+                completion(NO, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                DSLocalizedString(@"Count not create friendship derivation path", nil)}]);
+            }
+        }
+    }];
     
-    [self sendNewFriendRequestMatchingPotentialFriendship:potentialFriendship completion:completion];
+    
     
 }
 
@@ -2427,7 +2496,40 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     }];
 }
 
+-(void)fetchContactRequests:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
+    __weak typeof(self) weakSelf = self;
+    [self fetchIncomingContactRequests:^(BOOL success, NSArray<NSError *> *errors) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            if (completion) {
+                completion(NO, @[[NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                            DSLocalizedString(@"Internal memory allocation error", nil)}]]);
+            }
+            return;
+        }
+        if (!success) {
+            if (completion) {
+                completion(success, errors);
+            }
+            return;
+        }
+    
+        [strongSelf fetchOutgoingContactRequests:completion];
+    }];
+}
+
 - (void)fetchIncomingContactRequests:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
+    NSError * error = nil;
+    if (![self activePrivateKeysAreLoadedWithFetchingError:&error]) {
+        //The blockchain identity hasn't been intialized on the device, ask the user to activate the blockchain user, this action allows private keys to be cached on the blockchain identity level
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(NO, @[error?error:[NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                              DSLocalizedString(@"The blockchain identity hasn't yet been locally activated", nil)}]]);
+            });
+        }
+        return;
+    }
     __weak typeof(self) weakSelf = self;
     [self.DAPINetworkService getDashpayIncomingContactRequestsForUserId:self.uniqueIdString since:0 success:^(NSArray<NSDictionary *> * _Nonnull documents) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -2458,6 +2560,17 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 }
 
 - (void)fetchOutgoingContactRequests:(void (^)(BOOL success,  NSArray<NSError *> *errors))completion {
+    NSError * error = nil;
+    if (![self activePrivateKeysAreLoadedWithFetchingError:&error]) {
+        //The blockchain identity hasn't been intialized on the device, ask the user to activate the blockchain user, this action allows private keys to be cached on the blockchain identity level
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(NO, @[error?error:[NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                              DSLocalizedString(@"The blockchain identity hasn't yet been locally activated", nil)}]]);
+            });
+        }
+        return;
+    }
     __weak typeof(self) weakSelf = self;
     [self.DAPINetworkService getDashpayOutgoingContactRequestsForUserId:self.uniqueIdString since:0 success:^(NSArray<NSDictionary *> * _Nonnull documents) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -2572,10 +2685,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                     if (success) {
                         DSKey * senderPublicKey = [senderBlockchainIdentity keyAtIndex:contactRequest.senderKeyIndex];
                         NSData * extendedPublicKeyData = [contactRequest decryptedPublicKeyDataWithKey:senderPublicKey];
+                        DSECDSAKey * extendedPublicKey = [DSECDSAKey keyWithExtendedPublicKeyData:extendedPublicKeyData];
                         DSDashpayUserEntity * senderDashpayUserEntity = senderBlockchainIdentity.blockchainIdentityEntity.matchingDashpayUser;
                         NSAssert(senderDashpayUserEntity, @"The sender should exist");
                         [self addIncomingRequestFromContact:senderDashpayUserEntity
-                                       forExtendedPublicKey:extendedPublicKeyData
+                                       forExtendedPublicKey:extendedPublicKey
                                                     context:context];
                     }
                     dispatch_group_leave(dispatchGroup);
@@ -2590,18 +2704,24 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                     
                     DSPotentialOneWayFriendship * potentialFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationBlockchainIdentity:self destinationKeyIndex:contactRequest.recipientKeyIndex sourceBlockchainIdentity:sourceBlockchainIdentity sourceKeyIndex:contactRequest.senderKeyIndex account:account];
                     
-                    DSIncomingFundsDerivationPath * derivationPath = [potentialFriendship createDerivationPath];
-                    
-                    DSFriendRequestEntity * friendRequest = [potentialFriendship outgoingFriendRequestForDashpayUserEntity:self.matchingDashpayUser];
-                    [potentialFriendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequest];
-                    [self.matchingDashpayUser addIncomingRequestsObject:friendRequest];
-                    
-                    if ([[friendRequest.sourceContact.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",self.matchingDashpayUser]] count]) {
-                        [self.matchingDashpayUser addFriendsObject:friendRequest.sourceContact];
-                    }
-                    
-                    [account addIncomingDerivationPath:derivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier];
-                    [DSFriendRequestEntity saveContext];
+                    [potentialFriendship createDerivationPathWithCompletion:^(BOOL success, DSIncomingFundsDerivationPath * _Nonnull incomingFundsDerivationPath) {
+                        if (success) {
+                            DSFriendRequestEntity * friendRequest = [potentialFriendship outgoingFriendRequestForDashpayUserEntity:self.matchingDashpayUser];
+                            [potentialFriendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequest];
+                            [self.matchingDashpayUser addIncomingRequestsObject:friendRequest];
+                            
+                            if ([[friendRequest.sourceContact.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",self.matchingDashpayUser]] count]) {
+                                [self.matchingDashpayUser addFriendsObject:friendRequest.sourceContact];
+                            }
+                            
+                            [account addIncomingDerivationPath:incomingFundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier];
+                            [DSFriendRequestEntity saveContext];
+                        } else {
+                            succeeded = FALSE;
+                            [errors addObject:[NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                                           DSLocalizedString(@"Count not create friendship derivation path", nil)}]];
+                        }
+                    }];
                     
                 } else {
                     DSBlockchainIdentity * sourceBlockchainIdentity = [[DSBlockchainIdentity alloc] initWithBlockchainIdentityEntity:externalBlockchainIdentity inContext:self.managedObjectContext];
@@ -2609,10 +2729,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                     if ([sourceBlockchainIdentity activeKeyCount] > 0 && [sourceBlockchainIdentity keyAtIndex:contactRequest.senderKeyIndex]) {
                         //the contact already existed, and has an encryption public key set, create the incoming friend request, add a friendship if an outgoing friend request also exists
                         DSKey * key = [sourceBlockchainIdentity keyAtIndex:contactRequest.senderKeyIndex];
-                        NSData * decrypted = [contactRequest decryptedPublicKeyDataWithKey:key];
-                        NSAssert(decrypted, @"Data should be decrypted");
+                        NSData * decryptedExtendedPublicKeyData = [contactRequest decryptedPublicKeyDataWithKey:key];
+                        NSAssert(decryptedExtendedPublicKeyData, @"Data should be decrypted");
+                        DSECDSAKey * extendedPublicKey = [DSECDSAKey keyWithExtendedPublicKeyData:decryptedExtendedPublicKeyData];
+                        NSAssert(extendedPublicKey, @"A key should be recovered");
                         [self addIncomingRequestFromContact:externalBlockchainIdentity.matchingDashpayUser
-                                       forExtendedPublicKey:decrypted
+                                       forExtendedPublicKey:extendedPublicKey
                                                     context:context];
                         
                         if ([[externalBlockchainIdentity.matchingDashpayUser.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",self.matchingDashpayUser]] count]) {
@@ -2623,13 +2745,15 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                     } else {
                         //the blockchain identity is already known, but needs to updated to get the right key, create the incoming friend request, add a friendship if an outgoing friend request also exists
                         dispatch_group_enter(dispatchGroup);
-                        [sourceBlockchainIdentity fetchNeededNetworkStateInformationWithCompletion:^(BOOL success, NSError * error) {
-                            if (success) {
+                        [sourceBlockchainIdentity fetchNeededNetworkStateInformationWithCompletion:^(DSBlockchainIdentityRegistrationStep failureStep, NSError * error) {
+                            if (!failureStep) {
                                 DSKey * key = [sourceBlockchainIdentity keyAtIndex:contactRequest.senderKeyIndex];
-                                NSData * decrypted = [contactRequest decryptedPublicKeyDataWithKey:key];
-                                NSAssert(decrypted, @"Data should be decrypted");
+                                NSData * decryptedExtendedPublicKeyData = [contactRequest decryptedPublicKeyDataWithKey:key];
+                                NSAssert(decryptedExtendedPublicKeyData, @"Data should be decrypted");
+                                DSECDSAKey * extendedPublicKey = [DSECDSAKey keyWithExtendedPublicKeyData:decryptedExtendedPublicKeyData];
+                                NSAssert(extendedPublicKey, @"A key should be recovered");
                                 [self addIncomingRequestFromContact:externalBlockchainIdentity.matchingDashpayUser
-                                               forExtendedPublicKey:decrypted
+                                               forExtendedPublicKey:extendedPublicKey
                                                             context:context];
                                 
                                 if ([[externalBlockchainIdentity.matchingDashpayUser.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",self.matchingDashpayUser]] count]) {
@@ -2663,7 +2787,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     friendRequestEntity.destinationContact = recipientBlockchainIdentity.matchingDashpayUser;
     NSAssert(friendRequestEntity.sourceContact != friendRequestEntity.destinationContact, @"This must be different contacts");
     
-    DSAccountEntity * accountEntity = [DSAccountEntity accountEntityForWalletUniqueID:self.wallet.uniqueID index:0 onChain:self.chain];
+    DSAccountEntity * accountEntity = [DSAccountEntity accountEntityForWalletUniqueID:self.wallet.uniqueIDString index:0 onChain:self.chain];
     
     friendRequestEntity.account = accountEntity;
     
@@ -2673,33 +2797,36 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     
     DSPotentialOneWayFriendship * realFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationBlockchainIdentity:recipientBlockchainIdentity destinationKeyIndex:recipientKeyIndex sourceBlockchainIdentity:self sourceKeyIndex:sourceKeyIndex account:account];
     
-    DSIncomingFundsDerivationPath * derivationPath = [realFriendship createDerivationPath];
-    
-    if (recipientBlockchainIdentity.isLocal) { //the destination is also local
-        NSAssert(recipientBlockchainIdentity.wallet, @"Wallet should be known");
-        DSAccount * recipientAccount = [recipientBlockchainIdentity.wallet accountWithNumber:0];
-        NSAssert(recipientAccount, @"Recipient Wallet should exist");
-        [recipientAccount addIncomingDerivationPath:derivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
-        if (recipientAccount != account) {
-            [account addOutgoingDerivationPath:derivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
+    [realFriendship createDerivationPathWithCompletion:^(BOOL success, DSIncomingFundsDerivationPath * _Nonnull incomingFundsDerivationPath) {
+        if (!success) {
+            return;
         }
-    } else {
-        //todo update outgoing derivation paths to incoming derivation paths as blockchain users come in
-        [account addOutgoingDerivationPath:derivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
-    }
-    
-    //[account addIncomingDerivationPath:derivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
-    
-    friendRequestEntity.derivationPath = [realFriendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequestEntity];
-    
-    NSAssert(friendRequestEntity.derivationPath, @"derivation path must be present");
-    
-    [self.matchingDashpayUser addOutgoingRequestsObject:friendRequestEntity];
-    if ([[recipientBlockchainIdentity.matchingDashpayUser.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact == %@",self.matchingDashpayUser]] count]) {
-        [self.matchingDashpayUser addFriendsObject:recipientBlockchainIdentity.matchingDashpayUser];
-    }
-    
-    [DSDashpayUserEntity saveContext];
+        if (recipientBlockchainIdentity.isLocal) { //the destination is also local
+            NSAssert(recipientBlockchainIdentity.wallet, @"Wallet should be known");
+            DSAccount * recipientAccount = [recipientBlockchainIdentity.wallet accountWithNumber:0];
+            NSAssert(recipientAccount, @"Recipient Wallet should exist");
+            [recipientAccount addIncomingDerivationPath:incomingFundsDerivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
+            if (recipientAccount != account) {
+                [account addOutgoingDerivationPath:incomingFundsDerivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
+            }
+        } else {
+            //todo update outgoing derivation paths to incoming derivation paths as blockchain users come in
+            [account addOutgoingDerivationPath:incomingFundsDerivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
+        }
+        
+        //[account addIncomingDerivationPath:derivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
+        
+        friendRequestEntity.derivationPath = [realFriendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequestEntity];
+        
+        NSAssert(friendRequestEntity.derivationPath, @"derivation path must be present");
+        
+        [self.matchingDashpayUser addOutgoingRequestsObject:friendRequestEntity];
+        if ([[recipientBlockchainIdentity.matchingDashpayUser.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact == %@",self.matchingDashpayUser]] count]) {
+            [self.matchingDashpayUser addFriendsObject:recipientBlockchainIdentity.matchingDashpayUser];
+        }
+        
+        [DSDashpayUserEntity saveContext];
+    }];
 }
 
 - (void)handleOutgoingRequests:(NSArray <DSContactRequest *>  *)outgoingRequests
@@ -2773,7 +2900,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 }
 
 -(void)addIncomingRequestFromContact:(DSDashpayUserEntity*)dashpayUserEntity
-                forExtendedPublicKey:(NSData*)extendedPublicKey
+                forExtendedPublicKey:(DSKey*)extendedPublicKey
                              context:(NSManagedObjectContext *)context {
     DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObjectInContext:context];
     friendRequestEntity.sourceContact = dashpayUserEntity;
@@ -2787,7 +2914,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     
     DSAccount * account = [self.wallet accountWithNumber:0];
     
-    DSAccountEntity * accountEntity = [DSAccountEntity accountEntityForWalletUniqueID:self.wallet.uniqueID index:account.accountNumber onChain:self.chain];
+    DSAccountEntity * accountEntity = [DSAccountEntity accountEntityForWalletUniqueID:self.wallet.uniqueIDString index:account.accountNumber onChain:self.chain];
     
     derivationPathEntity.account = accountEntity;
     
@@ -2895,6 +3022,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         [DSBlockchainIdentityEntity setContext:self.managedObjectContext];
         [DSBlockchainIdentityKeyPathEntity setContext:self.managedObjectContext];
         DSBlockchainIdentityEntity * blockchainIdentityEntity = self.blockchainIdentityEntity;
+        NSAssert(blockchainIdentityEntity, @"Entity should be present");
         DSDerivationPathEntity * derivationPathEntity = derivationPath.derivationPathEntity;
         NSData *keyPathData = [NSKeyedArchiver archivedDataWithRootObject:path];
         NSUInteger count = [DSBlockchainIdentityKeyPathEntity countObjectsMatching:@"blockchainIdentity == %@ && derivationPath == %@ && path == %@",blockchainIdentityEntity,derivationPathEntity,keyPathData];
@@ -2903,12 +3031,23 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             blockchainIdentityKeyPathEntity.derivationPath = derivationPath.derivationPathEntity;
             blockchainIdentityKeyPathEntity.keyType = key.keyType;
             blockchainIdentityKeyPathEntity.keyStatus = status;
-            setKeychainData(key.secretKeyData, [self identifierForKeyAtPath:path fromDerivationPath:derivationPath], YES);
+            if (key.privateKeyData) {
+                setKeychainData(key.privateKeyData, [self identifierForKeyAtPath:path fromDerivationPath:derivationPath], YES);
+                DSDLog(@"Saving key at %@ for user %@",[self identifierForKeyAtPath:path fromDerivationPath:derivationPath],self.currentUsername);
+            } else {
+                DSKey * privateKey = [self derivePrivateKeyAtIndexPath:path ofType:key.keyType];
+                NSAssert([privateKey.publicKeyData isEqualToData:key.publicKeyData], @"The keys don't seem to match up");
+                setKeychainData(privateKey.privateKeyData, [self identifierForKeyAtPath:path fromDerivationPath:derivationPath], YES);
+                DSDLog(@"Saving key after rederivation %@ for user %@",[self identifierForKeyAtPath:path fromDerivationPath:derivationPath],self.currentUsername);
+            }
+
             blockchainIdentityKeyPathEntity.path = keyPathData;
             blockchainIdentityKeyPathEntity.publicKeyData = key.publicKeyData;
             blockchainIdentityKeyPathEntity.keyID = (uint32_t)[path indexAtPosition:path.length - 1];
             [blockchainIdentityEntity addKeyPathsObject:blockchainIdentityKeyPathEntity];
             [DSBlockchainIdentityEntity saveContext];
+        } else {
+            DSDLog(@"Already had saved this key %@",path);
         }
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentityDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain,DSBlockchainIdentityKey:self,DSBlockchainIdentityUpdateEvents:@[DSBlockchainIdentityUpdateEventKeyUpdate]}];
@@ -2916,7 +3055,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     }];
 }
 
--(void)saveNewKey:(DSKey*)key forKeyWithIndexID:(uint32_t)keyID withStatus:(DSBlockchainIdentityKeyStatus)status {
+-(void)saveNewRemoteIdentityKey:(DSKey*)key forKeyWithIndexID:(uint32_t)keyID withStatus:(DSBlockchainIdentityKeyStatus)status {
     NSAssert(!self.isLocal, @"This should only be called on non local blockchain identities");
     if (self.isLocal) return;
     [self.managedObjectContext performBlockAndWait:^{

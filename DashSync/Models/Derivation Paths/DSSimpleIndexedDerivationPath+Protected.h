@@ -6,6 +6,7 @@
 //
 
 #import "DSSimpleIndexedDerivationPath.h"
+#import "DSDerivationPath+Protected.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

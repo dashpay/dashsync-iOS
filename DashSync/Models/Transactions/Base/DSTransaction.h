@@ -98,7 +98,8 @@ typedef union _UInt160 UInt160;
 
 @property (nonatomic, strong) DSShapeshiftEntity * associatedShapeshift;
 @property (nonatomic, readonly) DSChain * chain;
-@property (nonatomic, readonly) DSAccount * account;
+@property (nonatomic, readonly) DSAccount * firstAccount;
+@property (nonatomic, readonly) NSArray * accounts;
 @property (nonatomic, readonly) Class entityClass;
 
 @property (nonatomic, readonly) BOOL transactionTypeRequiresInputs;

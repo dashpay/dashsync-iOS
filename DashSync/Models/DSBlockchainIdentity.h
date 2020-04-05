@@ -15,14 +15,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, DSBlockchainIdentityRegistrationStep) {
     DSBlockchainIdentityRegistrationStep_None = 0,
-    DSBlockchainIdentityRegistrationStep_PublicKeyGeneration = 1,
-    DSBlockchainIdentityRegistrationStep_FundingTransactionCreation = 2,
-    DSBlockchainIdentityRegistrationStep_FundingTransactionPublishing = 4,
-    DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence = 8,
-    DSBlockchainIdentityRegistrationStep_L1Steps = DSBlockchainIdentityRegistrationStep_PublicKeyGeneration | DSBlockchainIdentityRegistrationStep_FundingTransactionCreation | DSBlockchainIdentityRegistrationStep_FundingTransactionPublishing | DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence,
-    DSBlockchainIdentityRegistrationStep_Identity = 16,
-    DSBlockchainIdentityRegistrationStep_Username = 32,
-    DSBlockchainIdentityRegistrationStep_Profile = 64,
+    DSBlockchainIdentityRegistrationStep_FundingTransactionCreation = 1,
+    DSBlockchainIdentityRegistrationStep_FundingTransactionPublishing = 2,
+    DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence = 4,
+    DSBlockchainIdentityRegistrationStep_L1Steps = DSBlockchainIdentityRegistrationStep_FundingTransactionCreation | DSBlockchainIdentityRegistrationStep_FundingTransactionPublishing | DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence,
+    DSBlockchainIdentityRegistrationStep_Identity = 8,
+    DSBlockchainIdentityRegistrationStep_Username = 16,
+    DSBlockchainIdentityRegistrationStep_Profile = 32,
     DSBlockchainIdentityRegistrationStep_RegistrationWithUsername = DSBlockchainIdentityRegistrationStep_L1Steps | DSBlockchainIdentityRegistrationStep_Username,
     DSBlockchainIdentityRegistrationStep_RegistrationWithUsernameAndDashpayProfile = DSBlockchainIdentityRegistrationStep_RegistrationWithUsername | DSBlockchainIdentityRegistrationStep_Profile,
     DSBlockchainIdentityRegistrationStep_All = DSBlockchainIdentityRegistrationStep_RegistrationWithUsernameAndDashpayProfile
@@ -176,17 +175,19 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 
 -(void)fetchAllNetworkStateInformationWithCompletion:(void (^)(BOOL success, NSError * error))completion;
 
--(void)fetchNeededNetworkStateInformationWithCompletion:(void (^)(BOOL success, NSError * error))completion;
+-(void)fetchNeededNetworkStateInformationWithCompletion:(void (^)(DSBlockchainIdentityRegistrationStep failureStep, NSError * error))completion;
 
 -(void)signStateTransition:(DSTransition*)transition withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion;
 
 -(BOOL)verifySignature:(NSData*)signature ofType:(DSKeyType)signingAlgorithm forMessageDigest:(UInt256)messageDigest;
 
+-(void)createFundingPrivateKeyWithPrompt:(NSString*)prompt completion:(void (^ _Nullable)(BOOL success, BOOL cancelled))completion;
+
 -(void)createAndPublishRegistrationTransitionWithCompletion:(void (^ _Nullable)(NSDictionary * _Nullable successInfo, NSError * _Nullable error))completion;
 
--(void)signStateTransition:(DSTransition*)transition forKeyIndex:(uint32_t)keyIndex ofType:(DSKeyType)signingAlgorithm withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion;
+-(void)signStateTransition:(DSTransition*)transition forKeyIndex:(uint32_t)keyIndex ofType:(DSKeyType)signingAlgorithm completion:(void (^ _Nullable)(BOOL success))completion;
 
--(void)encryptData:(NSData*)data withKeyAtIndex:(uint32_t)index forRecipientKey:(DSKey*)recipientKey withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(NSData* encryptedData))completion;
+-(void)encryptData:(NSData*)data withKeyAtIndex:(uint32_t)index forRecipientKey:(DSKey*)recipientKey completion:(void (^ _Nullable)(NSData* encryptedData))completion;
 
 /*! @brief Register the blockchain identity to its wallet. This should only be done once on the creation of the blockchain identity.
 */
@@ -206,7 +207,9 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 
 /*! @brief Register the blockchain identity to its wallet from a credit funding registration transaction. This should only be done once on the creation of the blockchain identity.
 */
--(void)generateBlockchainIdentityExtendedPublicKeys:(void (^ _Nullable)(BOOL registered))completion;
+-(void)generateBlockchainIdentityExtendedPublicKeysWithPrompt:(NSString*)prompt completion:(void (^ _Nullable)(BOOL registered))completion;
+
+-(BOOL)hasBlockchainIdentityExtendedPublicKeys;
 
 -(uint32_t)indexOfKey:(DSKey*)key;
 
@@ -235,6 +238,10 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 -(void)sendNewFriendRequestMatchingPotentialFriendship:(DSPotentialOneWayFriendship*)potentialFriendship completion:(void (^ _Nullable)(BOOL success, NSError * error))completion;
 
 -(void)acceptFriendRequest:(DSFriendRequestEntity*)friendRequest completion:(void (^ _Nullable)(BOOL success, NSError * error))completion;
+
+- (BOOL)activePrivateKeysAreLoadedWithFetchingError:(NSError**)error;
+
+- (void)fetchContactRequests:(void (^ _Nullable)(BOOL success, NSArray<NSError *> *errors))completion;
 
 - (void)fetchOutgoingContactRequests:(void (^ _Nullable)(BOOL success, NSArray<NSError *> *errors))completion;
 

@@ -113,7 +113,7 @@
     NSString * identityIdentifier = [uint256_data(fundingTransaction.creditBurnIdentityIdentifier) base58String];
     XCTAssertEqualObjects(identityIdentifier, @"Cka1ELdpfrZhFFvKRurvPtTHurDXXnnezafNPJkxCYjc", @"Identity Identifier is incorrect");
     
-    DSECDSAKey * publicKey = [DSECDSAKey keyWithPublicKey:@"AsPvyyh6pkxss/Fespa7HCJIY8IA6ElAf6VKuqVcnPze".base64ToData];
+    DSECDSAKey * publicKey = [DSECDSAKey keyWithPublicKeyData:@"AsPvyyh6pkxss/Fespa7HCJIY8IA6ElAf6VKuqVcnPze".base64ToData];
     
     DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition = [[DSBlockchainIdentityRegistrationTransition alloc] initWithVersion:1 forIdentityType:1 registeringPublicKeys:@{@(1):publicKey} usingLockedOutpoint:fundingTransaction.lockedOutpoint onChain:[DSChain testnet]];
     

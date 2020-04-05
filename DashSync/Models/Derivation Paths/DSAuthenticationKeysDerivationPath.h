@@ -12,6 +12,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSAuthenticationKeysDerivationPath : DSSimpleIndexedDerivationPath
 
+@property (nonatomic,readonly) BOOL hasExtendedPrivateKey;
+
 + (instancetype)providerVotingKeysDerivationPathForWallet:(DSWallet*)wallet;
 + (instancetype)providerOwnerKeysDerivationPathForWallet:(DSWallet*)wallet;
 + (instancetype)providerOperatorKeysDerivationPathForWallet:(DSWallet*)wallet;
@@ -22,6 +24,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (DSKey*)firstUnusedPrivateKeyFromSeed:(NSData*)seed;
 - (DSKey*)privateKeyForAddress:(NSString*)address fromSeed:(NSData*)seed;
 - (DSKey*)privateKeyForHash160:(UInt160)hash160 fromSeed:(NSData*)seed;
+
+- (DSKey * _Nullable)privateKeyAtIndexPath:(NSIndexPath*)indexPath;
 
 @end
 

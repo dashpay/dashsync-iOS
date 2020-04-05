@@ -72,9 +72,6 @@
 "Devnet" = "Devnet";
 
 /* No comment provided by engineer. */
-"Do you wish to create this identity?" = "Do you wish to create this identity?";
-
-/* No comment provided by engineer. */
 "Double spend" = "Double spend";
 
 /* The server is not working */
@@ -279,9 +276,6 @@
 "Unknown Key Type" = "Unknown Key Type";
 
 /* No comment provided by engineer. */
-"Could not derive public keys from wallet" = "Could not derive public keys from wallet";
-
-/* No comment provided by engineer. */
 "Dashpay Contract is not yet registered on network" = "Dashpay Contract is not yet registered on network";
 
 /* No comment provided by engineer. */
@@ -328,3 +322,15 @@
 
 /* No comment provided by engineer. */
 "Contract '%@' needs to first be locally registered" = "Contract '%@' needs to first be locally registered";
+
+/* No comment provided by engineer. */
+"Count not create friendship derivation path" = "Count not create friendship derivation path";
+
+/* No comment provided by engineer. */
+"The blockchain identity hasn't yet been locally activated" = "The blockchain identity hasn't yet been locally activated";
+
+/* No comment provided by engineer. */
+"The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion" = "The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion";
+
+/* No comment provided by engineer. */
+"The blockchain identity extended public keys need to be registered before you can register a blockchain identity." = "The blockchain identity extended public keys need to be registered before you can register a blockchain identity.";

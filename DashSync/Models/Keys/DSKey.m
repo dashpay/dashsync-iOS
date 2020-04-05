@@ -15,6 +15,13 @@
 #import "DSBLSKey.h"
 #import "DSECDSAKey.h"
 
+@interface DSKey()
+
+@property (nonatomic, strong) NSData * extendedPrivateKeyData;
+@property (nonatomic, strong) NSData * extendedPublicKeyData;
+
+@end
+
 @implementation DSKey
 
 - (UInt160)hash160
@@ -68,6 +75,11 @@
     return 0;
 }
 
+-(BOOL)verify:(UInt256)messageDigest signatureData:(NSData *)signature {
+    NSAssert(NO, @"This should be overridden");
+    return NO;
+}
+
 -(NSString*)localizedKeyType {
     switch (self.keyType) {
         case 1:
@@ -82,28 +94,61 @@
     }
 }
 
-+ (DSKey*)keyForPublicKeyData:(NSData*)data forKeyType:(DSKeyType)keyType onChain:(DSChain*)chain {
++ (DSKey*)keyWithPublicKeyData:(NSData*)data forKeyType:(DSKeyType)keyType {
     switch (keyType) {
         case DSKeyType_BLS:
-            return [DSBLSKey blsKeyWithPublicKey:data.UInt384 onChain:chain];
+            return [DSBLSKey keyWithPublicKey:data.UInt384];
         case DSKeyType_ECDSA:
-            return [DSECDSAKey keyWithPublicKey:data];
+            return [DSECDSAKey keyWithPublicKeyData:data];
         default:
             return nil;
     }
 
 }
 
-+ (DSKey*)keyForSecretKeyData:(NSData*)data forKeyType:(DSKeyType)keyType onChain:(DSChain*)chain {
++ (DSKey*)keyWithPrivateKeyData:(NSData*)data forKeyType:(DSKeyType)keyType {
     switch (keyType) {
         case DSKeyType_BLS:
-            return [DSBLSKey blsKeyWithPrivateKey:data.UInt256 onChain:chain];
+            return [DSBLSKey keyWithPrivateKey:data.UInt256];
         case DSKeyType_ECDSA:
             return [DSECDSAKey keyWithSecret:data.UInt256 compressed:YES];
         default:
             return nil;
     }
+}
 
++ (DSKey*)keyWithExtendedPublicKeyData:(NSData*)data forKeyType:(DSKeyType)keyType {
+    if (!data) return nil;
+    switch (keyType) {
+        case DSKeyType_BLS:
+            return [DSBLSKey keyWithExtendedPublicKeyData:data];
+        case DSKeyType_ECDSA:
+            return [DSECDSAKey keyWithExtendedPublicKeyData:data];
+        default:
+            return nil;
+    }
+}
+
++ (DSKey*)keyWithExtendedPrivateKeyData:(NSData*)data forKeyType:(DSKeyType)keyType {
+    if (!data) return nil;
+    switch (keyType) {
+        case DSKeyType_BLS:
+            return [DSBLSKey keyWithExtendedPrivateKeyData:data];
+        case DSKeyType_ECDSA:
+            return [DSECDSAKey keyWithExtendedPrivateKeyData:data];
+        default:
+            return nil;
+    }
+}
+
+- (DSKey*)privateDeriveToPath:(NSIndexPath*)derivationPath {
+    NSAssert(NO, @"This should be overridden");
+    return nil;
+}
+
+- (DSKey*)publicDeriveToPath:(NSIndexPath*)derivationPath {
+    NSAssert(NO, @"This should be overridden");
+    return nil;
 }
 
 @end

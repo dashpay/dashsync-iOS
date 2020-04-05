@@ -34,11 +34,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-extern void CKDpriv(UInt256 *k, UInt256 *c, uint32_t i);
-extern void CKDpriv256(UInt256 *k, UInt256 *c, UInt256 i, BOOL hardened);
-extern void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i);
-extern void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened);
-
 typedef void (^TransactionValidityCompletionBlock)(BOOL signedTransaction, BOOL cancelled);
 
 #define BIP32_HARD 0x80000000
@@ -93,7 +88,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 @property (nonatomic, readonly, weak, nullable) DSWallet * wallet;
 
 // extended Public Key
-@property (nonatomic, readonly) NSData * extendedPublicKey;
+@property (nonatomic, readonly) NSData * extendedPublicKeyData;
 
 @property (nonatomic, readonly) BOOL hasExtendedPublicKey;
 
@@ -103,8 +98,11 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // extended Public Key Identifier, which is just the short hex string of the extended public key
 @property (nonatomic, readonly, nullable) NSString * standaloneExtendedPublicKeyUniqueID;
 
-// the walletBasedExtendedPublicKeyLocationString is the key used to store the public key in nsuserdefaults
+// the walletBasedExtendedPublicKeyLocationString is the key used to store the public key in the key chain
 @property (nonatomic, readonly, nullable) NSString * walletBasedExtendedPublicKeyLocationString;
+
+// the walletBasedExtendedPublicKeyLocationString is the key used to store the private key in the key chain, this is only available on authentication derivation paths
+@property (nonatomic, readonly, nullable) NSString * walletBasedExtendedPrivateKeyLocationString;
 
 // current derivation path balance excluding transactions known to be invalid
 @property (nonatomic, assign) uint64_t balance;
@@ -171,13 +169,13 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 
 - (DSKey * _Nullable)privateKeyForKnownAddress:(NSString*)address fromSeed:(NSData *)seed;
 
-- (NSData * _Nullable)deprecatedIncorrectExtendedPublicKeyFromSeed:(NSData * _Nullable)seed;
+- (DSKey * _Nullable)deprecatedIncorrectExtendedPublicKeyFromSeed:(NSData * _Nullable)seed;
 
 //you can set wallet unique Id to nil if you don't wish to store the extended Public Key
-- (NSData * _Nullable)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId;
+- (DSKey * _Nullable)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId;
 
 //you can set wallet unique Id to nil if you don't wish to store the extended Public Key
-- (NSData * _Nullable)generateExtendedPublicKeyFromParentDerivationPath:(DSDerivationPath*)parentDerivationPath storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId;
+- (DSKey * _Nullable)generateExtendedPublicKeyFromParentDerivationPath:(DSDerivationPath*)parentDerivationPath storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId;
 
 //sometimes we need to store the public key but not at generation time, use this method for that
 - (BOOL)storeExtendedPublicKeyUnderWalletUniqueId:(NSString* _Nonnull)walletUniqueId;
@@ -198,7 +196,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 + (NSData *)deserializedExtendedPublicKey:(NSString *)extendedPublicKeyString onChain:(DSChain*)chain;
 - (NSData * _Nullable)deserializedExtendedPublicKey:(NSString *)extendedPublicKeyString;
 
-- (DSKey*)publicKeyAtIndexPath:(NSIndexPath*)indexPath onChain:(DSChain*)chain;
+- (DSKey*)publicKeyAtIndexPath:(NSIndexPath*)indexPath;
 
 - (NSData *)publicKeyDataAtIndexPath:(NSIndexPath*)indexPath;
 
