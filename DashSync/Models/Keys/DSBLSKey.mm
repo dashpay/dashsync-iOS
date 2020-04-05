@@ -11,14 +11,13 @@
 #import "NSIndexPath+Dash.h"
 #import "DSChain.h"
 #import "NSString+Dash.h"
+#import "DSKey+Protected.h"
 
 @interface DSBLSKey ()
 
 @property (nonatomic, assign) UInt256 secretKey;
 @property (nonatomic, assign) UInt384 publicKey;
 @property (nonatomic, assign) UInt256 chainCode;
-@property (nonatomic, strong) NSData * extendedPrivateKeyData;
-@property (nonatomic, strong) NSData * extendedPublicKeyData;
 
 @end
 

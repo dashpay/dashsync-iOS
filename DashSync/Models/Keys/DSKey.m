@@ -15,6 +15,13 @@
 #import "DSBLSKey.h"
 #import "DSECDSAKey.h"
 
+@interface DSKey()
+
+@property (nonatomic, strong) NSData * extendedPrivateKeyData;
+@property (nonatomic, strong) NSData * extendedPublicKeyData;
+
+@end
+
 @implementation DSKey
 
 - (UInt160)hash160
@@ -110,7 +117,7 @@
     }
 }
 
-+ (DSKey*)keyForExtendedPublicKeyData:(NSData*)data forKeyType:(DSKeyType)keyType {
++ (DSKey*)keyWithExtendedPublicKeyData:(NSData*)data forKeyType:(DSKeyType)keyType {
     if (!data) return nil;
     switch (keyType) {
         case DSKeyType_BLS:
@@ -122,7 +129,7 @@
     }
 }
 
-+ (DSKey*)keyForExtendedPrivateKeyData:(NSData*)data forKeyType:(DSKeyType)keyType {
++ (DSKey*)keyWithExtendedPrivateKeyData:(NSData*)data forKeyType:(DSKeyType)keyType {
     if (!data) return nil;
     switch (keyType) {
         case DSKeyType_BLS:

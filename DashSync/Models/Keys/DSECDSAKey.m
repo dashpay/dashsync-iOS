@@ -34,6 +34,7 @@
 #import "NSMutableData+Dash.h"
 #import "DSChain.h"
 #import "DSDerivationPath.h"
+#import "DSKey+Protected.h"
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wconversion"
