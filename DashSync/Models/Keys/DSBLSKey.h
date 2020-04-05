@@ -36,9 +36,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable instancetype)initWithPrivateKey:(UInt256)secretKey;
 + (nullable instancetype)keyByAggregatingPublicKeys:(NSArray<DSBLSKey*>*)publicKeys;
 
-- (DSBLSKey* _Nullable)privateDeriveToPath:(NSIndexPath *)derivationPath;
-- (DSBLSKey* _Nullable)publicDeriveToPath:(NSIndexPath *)derivationPath;
-
 - (BOOL)verify:(UInt256)messageDigest signature:(UInt768)signature;
 + (BOOL)verify:(UInt256)messageDigest signature:(UInt768)signature withPublicKey:(UInt384)publicKey;
 + (BOOL)verifySecureAggregated:(UInt256)messageDigest signature:(UInt768)signature withPublicKeys:(NSArray*)publicKeys;

@@ -118,12 +118,12 @@
 
 - (nullable instancetype)initWithExtendedPublicKeyData:(NSData*)extendedPublicKey {
     bls::ExtendedPublicKey extendedPublicBLSKey = bls::ExtendedPublicKey::FromBytes((const uint8_t *)extendedPublicKey.bytes);
-    return [self initWithExtendedBLSPublicKey:extendedPublicBLSKey];
+    return [self initWithBLSExtendedPublicKey:extendedPublicBLSKey];
 }
 
 - (nullable instancetype)initWithExtendedPrivateKeyData:(NSData*)extendedPrivateKey {
     bls::ExtendedPrivateKey extendedPrivateBLSKey = bls::ExtendedPrivateKey::FromBytes((const uint8_t *)extendedPrivateKey.bytes);
-    return [self initWithExtendedPrivateKey:extendedPrivateBLSKey];
+    return [self initWithBLSExtendedPrivateKey:extendedPrivateBLSKey];
 }
 
 - (nullable instancetype)initWithExtendedPrivateKeyFromSeed:(NSData *)seed {
@@ -131,10 +131,10 @@
     
     bls::ExtendedPrivateKey blsExtendedPrivateKey = bls::ExtendedPrivateKey::FromSeed((uint8_t *)seed.bytes, seed.length);
     
-    return [self initWithExtendedPrivateKey:blsExtendedPrivateKey];
+    return [self initWithBLSExtendedPrivateKey:blsExtendedPrivateKey];
 }
 
-- (nullable instancetype)initWithExtendedPrivateKey:(bls::ExtendedPrivateKey)blsExtendedPrivateKey {
+- (nullable instancetype)initWithBLSExtendedPrivateKey:(bls::ExtendedPrivateKey)blsExtendedPrivateKey {
     if (!self || !(self = [super init])) return nil;
     
     uint8_t blsExtendedPrivateKeyBytes[bls::ExtendedPrivateKey::EXTENDED_PRIVATE_KEY_SIZE];
@@ -168,7 +168,7 @@
     return self;
 }
 
-- (nullable instancetype)initWithExtendedBLSPublicKey:(bls::ExtendedPublicKey)blsExtendedPublicKey {
+- (nullable instancetype)initWithBLSExtendedPublicKey:(bls::ExtendedPublicKey)blsExtendedPublicKey {
     if (!self || !(self = [super init])) return nil;
     
     uint8_t blsExtendedPublicKeyBytes[bls::ExtendedPublicKey::EXTENDED_PUBLIC_KEY_SIZE];
@@ -202,7 +202,7 @@
     return [NSData dataWithUInt384:self.publicKey];
 }
 
--(NSData*)secretKeyData {
+-(NSData*)privateKeyData {
     if (uint256_is_zero(self.secretKey)) return nil;
     return [NSData dataWithUInt256:self.secretKey];
 }
@@ -239,7 +239,7 @@
 -(DSBLSKey*)privateDeriveToPath:(NSIndexPath*)derivationPath {
     bls::ExtendedPrivateKey blsExtendedPrivateKey = bls::ExtendedPrivateKey::FromBytes((const uint8_t *)self.extendedPrivateKeyData.bytes);
     bls::ExtendedPrivateKey derivedExtendedPrivateKey = [DSBLSKey derive:blsExtendedPrivateKey indexes:derivationPath];
-    return [[DSBLSKey alloc] initWithExtendedPrivateKey:derivedExtendedPrivateKey];
+    return [[DSBLSKey alloc] initWithBLSExtendedPrivateKey:derivedExtendedPrivateKey];
 }
 
 -(DSBLSKey*)publicDeriveToPath:(NSIndexPath*)derivationPath {
@@ -247,7 +247,12 @@
     bls::ExtendedPublicKey blsExtendedPublicKey = [self blsExtendedPublicKey];
 
     bls::ExtendedPublicKey derivedExtendedPublicKey = [DSBLSKey publicDerive:blsExtendedPublicKey indexes:derivationPath];
-    return [[DSBLSKey alloc] initWithExtendedBLSPublicKey:derivedExtendedPublicKey];
+    return [[DSBLSKey alloc] initWithBLSExtendedPublicKey:derivedExtendedPublicKey];
+}
+
+-(DSKey*)extendedPublicKey {
+    if (!self.extendedPublicKeyData.length) return nil;
+    return [[DSBLSKey alloc] initWithBLSExtendedPublicKey:[self blsExtendedPublicKey]];
 }
 
 -(bls::ExtendedPublicKey)blsExtendedPublicKey {
@@ -262,6 +267,22 @@
     } else {
         uint8_t bytes[] = {};
         return bls::ExtendedPublicKey::FromBytes(bytes);
+    }
+}
+
+-(DSKey*)extendedPrivateKey {
+    if (!self.extendedPrivateKeyData.length) return nil;
+    return [[DSBLSKey alloc] initWithBLSExtendedPrivateKey:[self blsExtendedPrivateKey]];
+}
+
+-(bls::ExtendedPrivateKey)blsExtendedPrivateKey {
+    if (self.extendedPrivateKeyData.length) {
+        bls::ExtendedPrivateKey blsExtendedPrivateKey = bls::ExtendedPrivateKey::FromBytes((const uint8_t *)self.extendedPrivateKeyData.bytes);
+        
+        return blsExtendedPrivateKey;
+    } else {
+        uint8_t bytes[] = {};
+        return bls::ExtendedPrivateKey::FromBytes(bytes);
     }
 }
 

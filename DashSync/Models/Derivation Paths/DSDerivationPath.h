@@ -88,7 +88,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 @property (nonatomic, readonly, weak, nullable) DSWallet * wallet;
 
 // extended Public Key
-@property (nonatomic, readonly) NSData * extendedPublicKey;
+@property (nonatomic, readonly) NSData * extendedPublicKeyData;
 
 @property (nonatomic, readonly) BOOL hasExtendedPublicKey;
 
@@ -169,13 +169,13 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 
 - (DSKey * _Nullable)privateKeyForKnownAddress:(NSString*)address fromSeed:(NSData *)seed;
 
-- (NSData * _Nullable)deprecatedIncorrectExtendedPublicKeyFromSeed:(NSData * _Nullable)seed;
+- (DSKey * _Nullable)deprecatedIncorrectExtendedPublicKeyFromSeed:(NSData * _Nullable)seed;
 
 //you can set wallet unique Id to nil if you don't wish to store the extended Public Key
-- (NSData * _Nullable)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId;
+- (DSKey * _Nullable)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId;
 
 //you can set wallet unique Id to nil if you don't wish to store the extended Public Key
-- (NSData * _Nullable)generateExtendedPublicKeyFromParentDerivationPath:(DSDerivationPath*)parentDerivationPath storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId;
+- (DSKey * _Nullable)generateExtendedPublicKeyFromParentDerivationPath:(DSDerivationPath*)parentDerivationPath storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId;
 
 //sometimes we need to store the public key but not at generation time, use this method for that
 - (BOOL)storeExtendedPublicKeyUnderWalletUniqueId:(NSString* _Nonnull)walletUniqueId;

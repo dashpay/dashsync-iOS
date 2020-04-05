@@ -109,7 +109,7 @@ type:(DSDerivationPathType)type signingAlgorithm:(DSKeyType)signingAlgorithm ref
     return [self privateKeyForAddress:address fromSeed:seed];
 }
 
-- (NSData *)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString*)walletUniqueId
+- (DSKey *)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString*)walletUniqueId
 {
     if (! seed) return nil;
     if (![self length]) return nil; //there needs to be at least 1 length
@@ -128,10 +128,8 @@ type:(DSDerivationPathType)type signingAlgorithm:(DSKeyType)signingAlgorithm ref
 }
 
 - (DSKey * _Nullable)privateKeyAtIndexPath:(NSIndexPath*)indexPath {
-    DSKey * extendedPrivateKey = [DSKey keyForExtendedSecretKeyData:self.extendedPrivateKey forKeyType:self.signingAlgorithm];
-    DSKey * privateKeyAtIndexPath = [extendedPrivateKey privateDeriveToPath:indexPath];
-    
-    DSKey * privateKeyAtIndexPath = [self.extendedPublicKey deriveToPath:indexPath];
+    DSKey * extendedPrivateKey = [DSKey keyWithExtendedPrivateKeyData:self.extendedPrivateKey forKeyType:self.signingAlgorithm];
+    return [extendedPrivateKey privateDeriveToPath:indexPath];
 }
 
 @end

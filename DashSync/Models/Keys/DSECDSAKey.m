@@ -245,6 +245,7 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
 @property (nonatomic, assign) BOOL compressed;
 @property (nonatomic, assign) UInt256 chaincode;
 @property (nonatomic, assign) uint32_t fingerprint;
+@property (nonatomic, assign) BOOL isExtended;
 
 @end
 
@@ -291,6 +292,7 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     
     _fingerprint = 0;
     _chaincode = UINT256_ZERO;
+    _isExtended = FALSE;
     
     return self;
 }
@@ -313,19 +315,18 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     
     self.fingerprint = [extendedPrivateKeyData UInt32AtOffset:0];
     self.chaincode = [extendedPrivateKeyData UInt256AtOffset:4];
+    self.isExtended = TRUE;
     
     return self;
 }
 
 - (instancetype)initWithExtendedPublicKeyData:(NSData*)extendedPublicKeyData
 {
-    NSAssert(extendedPublicKeyData.length == ECDSA_EXTENDED_SECRET_KEY_SIZE,@"Key size is incorrect");
-    if (extendedPublicKeyData.length < ECDSA_EXTENDED_SECRET_KEY_SIZE) return nil;
-    
     if (!(self = [self initWithPublicKey:[extendedPublicKeyData subdataWithRange:NSMakeRange(36, extendedPublicKeyData.length - 36)]])) return nil;
     
     self.fingerprint = [extendedPublicKeyData UInt32AtOffset:0];
     self.chaincode = [extendedPublicKeyData UInt256AtOffset:4];
+    self.isExtended = TRUE;
     
     return self;
 }
@@ -471,6 +472,33 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     return self.pubkey;
 }
 
+- (NSData *)extendedPublicKeyData
+{
+    if (!self.isExtended) return nil;
+    NSMutableData * data = [NSMutableData data];
+    [data appendUInt32:self.fingerprint];
+    [data appendUInt256:self.chaincode];
+    [data appendData:[self publicKeyData]];
+    return [data copy];
+}
+
+-(NSData*)privateKeyData {
+    if (uint256_is_zero(*self.secretKey)) return nil;
+    return [NSData dataWithUInt256:*self.secretKey];
+}
+
+- (NSData *)extendedPrivateKeyData
+{
+    if (!self.isExtended) return nil;
+    NSData * privateKeyData = [self privateKeyData];
+    if (!privateKeyData) return nil;
+    NSMutableData * data = [NSMutableData secureData];
+    [data appendUInt32:self.fingerprint];
+    [data appendUInt256:self.chaincode];
+    [data appendData:privateKeyData];
+    return [data copy];
+}
+
 - (const UInt256 *)secretKey
 {
     return &_seckey;
@@ -483,11 +511,6 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
 -(NSString*)secretKeyString {
     if (uint256_is_zero(*self.secretKey)) return @"";
     return [NSData dataWithUInt256:*self.secretKey].hexString;
-}
-
--(NSData*)secretKeyData {
-    if (uint256_is_zero(*self.secretKey)) return nil;
-    return [NSData dataWithUInt256:*self.secretKey];
 }
 
 - (NSData *)sign:(UInt256)md
@@ -577,6 +600,7 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     DSECDSAKey * childKey = [DSECDSAKey keyWithSecret:secret compressed:YES];
     childKey.chaincode = chain;
     childKey.fingerprint = fingerprint;
+    childKey.isExtended = TRUE;
     return childKey;
 }
 
@@ -596,7 +620,7 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     DSECDSAKey * childKey = [DSECDSAKey keyWithPublicKeyData:publicKeyData];
     childKey.chaincode = chain;
     childKey.fingerprint = fingerprint;
-    
+    childKey.isExtended = TRUE;
     
     NSAssert(childKey, @"Public key should be created");
     return childKey;

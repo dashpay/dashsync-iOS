@@ -42,7 +42,7 @@
 
 -(void)reloadAddressField {
     DSIncomingFundsDerivationPath * derivationPath = [self.account derivationPathForFriendshipWithIdentifier:self.friendRequest.friendshipIdentifier];
-    NSAssert(derivationPath.extendedPublicKey, @"Extended public key must exist already");
+    NSAssert(derivationPath.extendedPublicKeyData, @"Extended public key must exist already");
     self.address = [derivationPath receiveAddress];
     NSIndexPath * indexPath = [derivationPath indexPathForKnownAddress:self.address];
     self.addressTextField.text = [NSString stringWithFormat:@"%lu - %@",(unsigned long)[indexPath indexAtPosition:0],self.address];

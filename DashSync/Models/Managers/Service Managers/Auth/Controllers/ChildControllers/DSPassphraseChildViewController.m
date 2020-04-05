@@ -87,7 +87,7 @@ static CGFloat const TEXTVIEW_HEIGHT = 120.0;
     NSData *oldData = nil;
     if (chain.wallets.count) {
         DSWallet *wallet = [chain.wallets objectAtIndex:0];
-        oldData = [[wallet accountWithNumber:0] bip44DerivationPath].extendedPublicKey;
+        oldData = [[wallet accountWithNumber:0] bip44DerivationPath].extendedPublicKeyData;
     }
 
     if (!oldData) {
@@ -102,7 +102,7 @@ static CGFloat const TEXTVIEW_HEIGHT = 120.0;
     DSWallet *transientWallet = [DSWallet standardWalletWithSeedPhrase:phrase setCreationDate:[NSDate timeIntervalSince1970] forChain:chain storeSeedPhrase:NO isTransient:YES];
     DSAccount *transientAccount = [transientWallet accountWithNumber:0];
     DSDerivationPath *transientDerivationPath = [transientAccount bip44DerivationPath];
-    NSData *transientExtendedPublicKey = transientDerivationPath.extendedPublicKey;
+    NSData *transientExtendedPublicKey = transientDerivationPath.extendedPublicKeyData;
 
     if (transientExtendedPublicKey &&
         ![transientExtendedPublicKey isEqual:oldData] &&

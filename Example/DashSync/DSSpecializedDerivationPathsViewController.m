@@ -50,7 +50,7 @@
     
     cell.knownAddressesLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)derivationPath.allAddresses.count];
     cell.usedAddressesLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)derivationPath.usedAddresses.count];
-    cell.xPublicKeyLabel.text = derivationPath.extendedPublicKey.hexString;
+    cell.xPublicKeyLabel.text = derivationPath.extendedPublicKeyData.hexString;
     
     return cell;
 }

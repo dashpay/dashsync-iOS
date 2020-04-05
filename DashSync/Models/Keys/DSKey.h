@@ -20,9 +20,11 @@ typedef NS_ENUM(NSUInteger, DSKeyType) {
 
 @interface DSKey : NSObject
 
+@property (nullable, nonatomic, readonly) NSData *extendedPublicKeyData;
+@property (nullable, nonatomic, readonly) NSData *extendedPrivateKeyData;
 @property (nullable, nonatomic, readonly) NSData *publicKeyData;
-@property (nullable, nonatomic, readonly) NSData *secretKeyData;
-@property (nonatomic, readonly) UInt160 hash160;
+@property (nullable, nonatomic, readonly) NSData *privateKeyData;
+@property (nonatomic,readonly) UInt160 hash160;
 @property (nonatomic,readonly) NSString * secretKeyString;
 @property (nonatomic,readonly) DSKeyType keyType;
 @property (nonatomic,readonly) NSString * localizedKeyType;
@@ -32,12 +34,13 @@ typedef NS_ENUM(NSUInteger, DSKeyType) {
 + (NSString *)randomAddressForChain:(DSChain*)chain;
 + (NSString *)addressWithPublicKeyData:(NSData*)data forChain:(DSChain*)chain;
 - (NSString * _Nullable)privateKeyStringForChain:(DSChain*)chain;
-+ (DSKey*)keyForPublicKeyData:(NSData*)data forKeyType:(DSKeyType)keyType;
-+ (DSKey*)keyForSecretKeyData:(NSData*)data forKeyType:(DSKeyType)keyType;
-+ (DSKey*)keyForExtendedSecretKeyData:(NSData*)data forKeyType:(DSKeyType)keyType;
++ (nullable instancetype)keyWithPublicKeyData:(NSData*)data forKeyType:(DSKeyType)keyType;
++ (nullable instancetype)keyWithPrivateKeyData:(NSData*)data forKeyType:(DSKeyType)keyType;
++ (nullable instancetype)keyWithExtendedPrivateKeyData:(NSData*)extendedPrivateKeyData forKeyType:(DSKeyType)keyType;
++ (nullable instancetype)keyWithExtendedPublicKeyData:(NSData*)extendedPublicKeyData forKeyType:(DSKeyType)keyType;
 
-- (DSKey*)privateDeriveToPath:(NSIndexPath*)derivationPath;
-- (DSKey*)publicDeriveToPath:(NSIndexPath*)derivationPath;
+- (nullable instancetype)privateDeriveToPath:(NSIndexPath*)derivationPath;
+- (nullable instancetype)publicDeriveToPath:(NSIndexPath*)derivationPath;
 
 @end
 

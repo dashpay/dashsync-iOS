@@ -147,11 +147,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             NSIndexPath *keyIndexPath = (NSIndexPath *)[NSKeyedUnarchiver unarchiveObjectWithData:(NSData*)[keyPath path]];
             BOOL success = [self registerKeyWithStatus:keyPath.keyStatus atIndexPath:keyIndexPath ofType:keyPath.keyType];
             if (!success) {
-                DSKey * key = [DSKey keyForPublicKeyData:keyPath.publicKeyData forKeyType:keyPath.keyType];
+                DSKey * key = [DSKey keyWithPublicKeyData:keyPath.publicKeyData forKeyType:keyPath.keyType];
                 [self registerKey:key withStatus:keyPath.keyStatus atIndex:keyPath.keyID ofType:keyPath.keyType];
             }
         } else {
-            DSKey * key = [DSKey keyForPublicKeyData:keyPath.publicKeyData forKeyType:keyPath.keyType];
+            DSKey * key = [DSKey keyWithPublicKeyData:keyPath.publicKeyData forKeyType:keyPath.keyType];
             [self registerKey:key withStatus:keyPath.keyStatus atIndex:keyPath.keyID ofType:keyPath.keyType];
         }
     }
@@ -843,7 +843,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     
     if (!keySecret || error) return nil;
     
-    return [DSKey keyForSecretKeyData:keySecret forKeyType:type];
+    return [DSKey keyWithPrivateKeyData:keySecret forKeyType:type];
 }
 
 -(DSKey*)derivePrivateKeyAtIdentityKeyIndex:(uint32_t)index ofType:(DSKeyType)type {
@@ -2265,7 +2265,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     //                                                                 publicMessage:friendRequest.sourceContact.publicMessage];
     //    [contact setAssociatedBlockchainIdentityUniqueId:friendRequest.sourceContact.associatedBlockchainIdentity.uniqueID.UInt256];
     //    DSKey * friendsEncyptionKey = [otherBlockchainIdentity keyOfType:friendRequest.sourceEncryptionPublicKeyIndex atIndex:friendRequest.sourceEncryptionPublicKeyIndex];
-    //[DSKey keyForPublicKeyData:friendRequest.sourceContact.encryptionPublicKey forKeyType:friendRequest.sourceContact.encryptionPublicKeyType onChain:self.chain];
+    //[DSKey keyWithPublicKeyData:friendRequest.sourceContact.encryptionPublicKey forKeyType:friendRequest.sourceContact.encryptionPublicKeyType onChain:self.chain];
     //    [contact addPublicKey:friendsEncyptionKey atIndex:friendRequest.sourceContact.encryptionPublicKeyIndex];
     //    uint32_t sourceKeyIndex = [self firstIndexOfKeyOfType:friendRequest.sourceContact.encryptionPublicKeyType createIfNotPresent:NO];
     //    if (sourceKeyIndex == UINT32_MAX) { //not found
@@ -2686,10 +2686,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                     if (success) {
                         DSKey * senderPublicKey = [senderBlockchainIdentity keyAtIndex:contactRequest.senderKeyIndex];
                         NSData * extendedPublicKeyData = [contactRequest decryptedPublicKeyDataWithKey:senderPublicKey];
+                        DSECDSAKey * extendedPublicKey = [DSECDSAKey keyWithExtendedPublicKeyData:extendedPublicKeyData];
                         DSDashpayUserEntity * senderDashpayUserEntity = senderBlockchainIdentity.blockchainIdentityEntity.matchingDashpayUser;
                         NSAssert(senderDashpayUserEntity, @"The sender should exist");
                         [self addIncomingRequestFromContact:senderDashpayUserEntity
-                                       forExtendedPublicKey:extendedPublicKeyData
+                                       forExtendedPublicKey:extendedPublicKey
                                                     context:context];
                     }
                     dispatch_group_leave(dispatchGroup);
@@ -2729,10 +2730,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                     if ([sourceBlockchainIdentity activeKeyCount] > 0 && [sourceBlockchainIdentity keyAtIndex:contactRequest.senderKeyIndex]) {
                         //the contact already existed, and has an encryption public key set, create the incoming friend request, add a friendship if an outgoing friend request also exists
                         DSKey * key = [sourceBlockchainIdentity keyAtIndex:contactRequest.senderKeyIndex];
-                        NSData * decrypted = [contactRequest decryptedPublicKeyDataWithKey:key];
-                        NSAssert(decrypted, @"Data should be decrypted");
+                        NSData * decryptedExtendedPublicKeyData = [contactRequest decryptedPublicKeyDataWithKey:key];
+                        NSAssert(decryptedExtendedPublicKeyData, @"Data should be decrypted");
+                        DSECDSAKey * extendedPublicKey = [DSECDSAKey keyWithExtendedPublicKeyData:decryptedExtendedPublicKeyData];
+                        NSAssert(extendedPublicKey, @"A key should be recovered");
                         [self addIncomingRequestFromContact:externalBlockchainIdentity.matchingDashpayUser
-                                       forExtendedPublicKey:decrypted
+                                       forExtendedPublicKey:extendedPublicKey
                                                     context:context];
                         
                         if ([[externalBlockchainIdentity.matchingDashpayUser.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",self.matchingDashpayUser]] count]) {
@@ -2746,10 +2749,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                         [sourceBlockchainIdentity fetchNeededNetworkStateInformationWithCompletion:^(DSBlockchainIdentityRegistrationStep failureStep, NSError * error) {
                             if (!failureStep) {
                                 DSKey * key = [sourceBlockchainIdentity keyAtIndex:contactRequest.senderKeyIndex];
-                                NSData * decrypted = [contactRequest decryptedPublicKeyDataWithKey:key];
-                                NSAssert(decrypted, @"Data should be decrypted");
+                                NSData * decryptedExtendedPublicKeyData = [contactRequest decryptedPublicKeyDataWithKey:key];
+                                NSAssert(decryptedExtendedPublicKeyData, @"Data should be decrypted");
+                                DSECDSAKey * extendedPublicKey = [DSECDSAKey keyWithExtendedPublicKeyData:decryptedExtendedPublicKeyData];
+                                NSAssert(extendedPublicKey, @"A key should be recovered");
                                 [self addIncomingRequestFromContact:externalBlockchainIdentity.matchingDashpayUser
-                                               forExtendedPublicKey:decrypted
+                                               forExtendedPublicKey:extendedPublicKey
                                                             context:context];
                                 
                                 if ([[externalBlockchainIdentity.matchingDashpayUser.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",self.matchingDashpayUser]] count]) {
@@ -2896,7 +2901,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 }
 
 -(void)addIncomingRequestFromContact:(DSDashpayUserEntity*)dashpayUserEntity
-                forExtendedPublicKey:(NSData*)extendedPublicKey
+                forExtendedPublicKey:(DSKey*)extendedPublicKey
                              context:(NSManagedObjectContext *)context {
     DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObjectInContext:context];
     friendRequestEntity.sourceContact = dashpayUserEntity;
@@ -3027,13 +3032,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             blockchainIdentityKeyPathEntity.derivationPath = derivationPath.derivationPathEntity;
             blockchainIdentityKeyPathEntity.keyType = key.keyType;
             blockchainIdentityKeyPathEntity.keyStatus = status;
-            if (key.secretKeyData) {
-                setKeychainData(key.secretKeyData, [self identifierForKeyAtPath:path fromDerivationPath:derivationPath], YES);
+            if (key.privateKeyData) {
+                setKeychainData(key.privateKeyData, [self identifierForKeyAtPath:path fromDerivationPath:derivationPath], YES);
                 DSDLog(@"Saving key at %@ for user %@",[self identifierForKeyAtPath:path fromDerivationPath:derivationPath],self.currentUsername);
             } else {
                 DSKey * privateKey = [self derivePrivateKeyAtIndexPath:path ofType:key.keyType];
                 NSAssert([privateKey.publicKeyData isEqualToData:key.publicKeyData], @"The keys don't seem to match up");
-                setKeychainData(privateKey.secretKeyData, [self identifierForKeyAtPath:path fromDerivationPath:derivationPath], YES);
+                setKeychainData(privateKey.privateKeyData, [self identifierForKeyAtPath:path fromDerivationPath:derivationPath], YES);
                 DSDLog(@"Saving key after rederivation %@ for user %@",[self identifierForKeyAtPath:path fromDerivationPath:derivationPath],self.currentUsername);
             }
 

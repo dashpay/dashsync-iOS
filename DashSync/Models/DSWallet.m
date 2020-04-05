@@ -1190,7 +1190,7 @@
         if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
         [keyChainDictionary setObject:hashedOwnerKey forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
         setKeychainDict(keyChainDictionary, self.walletMasternodeOwnersKey, NO);
-        setKeychainData([ownerKey secretKeyData], ownerKeyStorageLocation, NO);
+        setKeychainData([ownerKey privateKeyData], ownerKeyStorageLocation, NO);
     }
 }
 - (void)registerMasternodeVoter:(DSLocalMasternode *)masternode
@@ -1218,7 +1218,7 @@
         [keyChainDictionary setObject:hashedVoterKey forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
         setKeychainDict(keyChainDictionary, self.walletMasternodeVotersKey, NO);
         if ([votingKey hasPrivateKey]) {
-            setKeychainData([votingKey secretKeyData], ownerKeyStorageLocation, NO);
+            setKeychainData([votingKey privateKeyData], ownerKeyStorageLocation, NO);
         } else {
             setKeychainData([votingKey publicKeyData], ownerKeyStorageLocation, NO);
         }

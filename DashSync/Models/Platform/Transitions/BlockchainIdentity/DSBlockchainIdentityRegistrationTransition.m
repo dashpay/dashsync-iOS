@@ -71,7 +71,7 @@
         DSKeyType keyType = [platformKeyDictionary[@"type"] unsignedIntValue];
         NSUInteger identifier = [platformKeyDictionary[@"id"] unsignedIntValue] - 1;
         NSData* keyData = ((NSString*)platformKeyDictionary[@"data"]).base64ToData;
-        DSKey * key = [DSKey keyForPublicKeyData:keyData forKeyType:keyType];
+        DSKey * key = [DSKey keyWithPublicKeyData:keyData forKeyType:keyType];
         [platformKeys setObject:key forKey:@(identifier)];
     }
     self.publicKeys = [platformKeys copy];

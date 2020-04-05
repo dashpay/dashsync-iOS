@@ -47,7 +47,7 @@
     return derivationPath;
 }
 
-+ (instancetype)externalDerivationPathWithExtendedPublicKey:(NSData*)extendedPublicKey withDestinationBlockchainIdentityUniqueId:(UInt256) destinationBlockchainIdentityUniqueId sourceBlockchainIdentityUniqueId:(UInt256) sourceBlockchainIdentityUniqueId onChain:(DSChain*)chain {
++ (instancetype)externalDerivationPathWithExtendedPublicKey:(DSKey*)extendedPublicKey withDestinationBlockchainIdentityUniqueId:(UInt256) destinationBlockchainIdentityUniqueId sourceBlockchainIdentityUniqueId:(UInt256) sourceBlockchainIdentityUniqueId onChain:(DSChain*)chain {
     UInt256 indexes[] = {};
     BOOL hardenedIndexes[] = {};
     DSIncomingFundsDerivationPath * derivationPath = [[self alloc] initWithIndexes:indexes hardened:hardenedIndexes length:0 type:DSDerivationPathType_ViewOnlyFunds signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_ContactBasedFundsExternal onChain:chain]; //we are going to assume this is only ecdsa for now
@@ -81,8 +81,8 @@
 }
 
 -(void)storeExternalDerivationPathExtendedPublicKeyToKeyChain {
-    NSAssert(self.extendedPublicKey != nil,@"the extended public key must exist");
-    setKeychainData(self.extendedPublicKey, self.standaloneExtendedPublicKeyLocationString, NO);
+    NSAssert(self.extendedPublicKeyData != nil,@"the extended public key must exist");
+    setKeychainData(self.extendedPublicKeyData, self.standaloneExtendedPublicKeyLocationString, NO);
 }
 
 -(void)reloadAddresses {
@@ -148,7 +148,7 @@
 
 
 -(NSString*)createIdentifierForDerivationPath {
-    return [NSString stringWithFormat:@"%@-%@-%@",[NSData dataWithUInt256:_contactSourceBlockchainIdentityUniqueId].shortHexString,[NSData dataWithUInt256:_contactDestinationBlockchainIdentityUniqueId].shortHexString,[NSData dataWithUInt256:[[self extendedPublicKey] SHA256]].shortHexString];
+    return [NSString stringWithFormat:@"%@-%@-%@",[NSData dataWithUInt256:_contactSourceBlockchainIdentityUniqueId].shortHexString,[NSData dataWithUInt256:_contactDestinationBlockchainIdentityUniqueId].shortHexString,[NSData dataWithUInt256:[[self extendedPublicKeyData] SHA256]].shortHexString];
 }
 
 // Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
