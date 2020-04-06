@@ -2743,6 +2743,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                     
                     DSPotentialOneWayFriendship * potentialFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationBlockchainIdentity:self destinationKeyIndex:contactRequest.recipientKeyIndex sourceBlockchainIdentity:sourceBlockchainIdentity sourceKeyIndex:contactRequest.senderKeyIndex account:account];
                     
+                    dispatch_group_enter(dispatchGroup);
                     [potentialFriendship createDerivationPathWithCompletion:^(BOOL success, DSIncomingFundsDerivationPath * _Nonnull incomingFundsDerivationPath) {
                         if (success) {
                             DSFriendRequestEntity * friendRequest = [potentialFriendship outgoingFriendRequestForDashpayUserEntity:self.matchingDashpayUser];
@@ -2760,6 +2761,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                             [errors addObject:[NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
                                                                                                            DSLocalizedString(@"Count not create friendship derivation path", nil)}]];
                         }
+                        dispatch_group_leave(dispatchGroup);
                     }];
                     
                 } else {
@@ -2771,7 +2773,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                         NSData * decryptedExtendedPublicKeyData = [contactRequest decryptedPublicKeyDataWithKey:key];
                         NSAssert(decryptedExtendedPublicKeyData, @"Data should be decrypted");
                         DSECDSAKey * extendedPublicKey = [DSECDSAKey keyWithExtendedPublicKeyData:decryptedExtendedPublicKeyData];
-                        NSAssert(extendedPublicKey, @"A key should be recovered");
+                        if (!extendedPublicKey) {
+                            succeeded = FALSE;
+                            [errors addObject:[NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"Contact request extended public key is incorrectly encrypted.", nil)}]];
+                            return;
+                        }
                         [self addIncomingRequestFromContact:externalBlockchainIdentity.matchingDashpayUser
                                        forExtendedPublicKey:extendedPublicKey
                                                     context:context];

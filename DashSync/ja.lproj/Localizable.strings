@@ -337,3 +337,6 @@
 
 /* No comment provided by engineer. */
 "Incorrect Key format after contact request decryption" = "Incorrect Key format after contact request decryption";
+
+/* No comment provided by engineer. */
+"Contact request extended public key is incorrectly encrypted." = "Contact request extended public key is incorrectly encrypted.";

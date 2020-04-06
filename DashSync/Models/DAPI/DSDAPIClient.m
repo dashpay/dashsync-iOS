@@ -33,6 +33,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, strong) NSMutableSet<NSString *>* availablePeers;
+@property (nonatomic, strong) NSMutableSet<NSString *>* usedPeers;
 @property (nonatomic, strong) NSMutableArray<DSDAPINetworkService *>* activeServices;
 @property (atomic, strong) dispatch_queue_t dispatchQueue;
 
@@ -174,6 +175,18 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 
 - (void)addDAPINodeByAddress:(NSString*)host {
     [self.availablePeers addObject:host];
+    DSDAPINetworkService * foundNetworkService = nil;
+    for (DSDAPINetworkService * networkService in self.activeServices) {
+        if ([networkService.ipAddress isEqualToString:host]) {
+            foundNetworkService = networkService;
+            break;
+        }
+    }
+    if (!foundNetworkService) {
+        HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
+        DSDAPINetworkService * DAPINetworkService = [[DSDAPINetworkService alloc] initWithDAPINodeIPAddress:host httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.dispatchQueue onChain:self.chain];
+        [self.activeServices addObject:DAPINetworkService];
+    }
 }
 
 - (void)removeDAPINodeByAddress:(NSString*)host {
@@ -193,11 +206,12 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
             if ([self.activeServices count] == 1) return [self.activeServices objectAtIndex:0]; //if only 1 service, just use first one
             return [self.activeServices objectAtIndex:arc4random_uniform((uint32_t)[self.activeServices count])]; //use a random service
         } else if ([self.availablePeers count]) {
-            NSString * peerHost = [[self.availablePeers allObjects] objectAtIndex:arc4random_uniform((uint32_t)[self.availablePeers count])];
-            HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
-            DSDAPINetworkService * DAPINetworkService = [[DSDAPINetworkService alloc] initWithDAPINodeIPAddress:peerHost httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.dispatchQueue onChain:self.chain];
-            [self.activeServices addObject:DAPINetworkService];
-            return DAPINetworkService;
+            for (NSString * peerHost in self.availablePeers) {
+                HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
+                DSDAPINetworkService * DAPINetworkService = [[DSDAPINetworkService alloc] initWithDAPINodeIPAddress:peerHost httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.dispatchQueue onChain:self.chain];
+                [self.activeServices addObject:DAPINetworkService];
+                return DAPINetworkService;
+            }
         }
         return nil;
     }
