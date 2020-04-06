@@ -32,14 +32,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-
-typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
-    DSTransactionDirection_Sent,
-    DSTransactionDirection_Received,
-    DSTransactionDirection_Moved,
-    DSTransactionDirection_NotAccountFunds,
-};
-
 @class DSFundsDerivationPath,DSIncomingFundsDerivationPathDSWallet,DSBlockchainIdentityRegistrationTransition,DSBlockchainIdentityUpdateTransition,DSCreditFundingTransaction;
 @class DSCoinbaseTransaction,DSPotentialOneWayFriendship;
 

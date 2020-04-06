@@ -24,13 +24,19 @@
 
 @implementation DSBlockchainIdentityRegistrationTransition
 
+- (instancetype)initOnChain:(DSChain*)chain
+{
+    if (! (self = [super initOnChain:chain])) return nil;
+    self.type = DSTransitionType_IdentityRegistration;
+    return self;
+}
+
 -(instancetype)initWithVersion:(uint16_t)version forIdentityType:(DSBlockchainIdentityType)identityType registeringPublicKeys:(NSDictionary <NSNumber*,DSKey*>*)publicKeys usingLockedOutpoint:(DSUTXO)lockedOutpoint onChain:(DSChain *)chain {
     NSParameterAssert(chain);
     NSParameterAssert(publicKeys);
     NSAssert(publicKeys.count, @"There must be at least one key when registering a user");
 
-    if (!(self = [super initOnChain:chain])) return nil;
-    self.type = DSTransitionType_IdentityRegistration;
+    if (!(self = [self initOnChain:chain])) return nil;
     self.identityType = identityType;
     self.version = 1;
     self.lockedOutpoint = lockedOutpoint;
@@ -65,6 +71,7 @@
     self.identityType = [keyValueDictionary[@"identityType"] unsignedIntValue];
     NSString * lockedOutPointString = keyValueDictionary[@"lockedOutPoint"];
     self.lockedOutpoint = [lockedOutPointString.base64ToData transactionOutpoint];
+    self.blockchainIdentityUniqueId = [dsutxo_data(self.lockedOutpoint) SHA256_2];
     NSArray * publicKeysDictionariesArray = keyValueDictionary[@"publicKeys"];
     NSMutableDictionary * platformKeys = [NSMutableDictionary dictionary];
     for (DSMutableStringValueDictionary * platformKeyDictionary in publicKeysDictionariesArray) {

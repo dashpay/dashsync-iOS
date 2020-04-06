@@ -93,6 +93,14 @@ FOUNDATION_EXPORT NSString* const DSChainBlockWasLockedNotification;
 FOUNDATION_EXPORT NSString* const DSChainNotificationBlockKey;
 FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
+typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
+    DSTransactionDirection_Sent,
+    DSTransactionDirection_Received,
+    DSTransactionDirection_Moved,
+    DSTransactionDirection_NotAccountFunds,
+};
+
+
 @class DSWallet,DSMerkleBlock,DSChainManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSSimplifiedMasternodeEntry,DSBlockchainIdentity,DSBloomFilter,DSProviderRegistrationTransaction,DSChain,DSMasternodeList;
 
 @protocol DSChainDelegate;
@@ -223,6 +231,8 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 // returns an account to which the given transaction is or can be associated with (even if it hasn't been registered), no account if the transaction is not associated with the wallet
 - (DSAccount* _Nullable)firstAccountThatCanContainTransaction:(DSTransaction *)transaction;
+
+- (DSTransactionDirection)directionOfTransaction:(DSTransaction *)transaction;
 
 - (NSArray<DSAccount *> *)accountsForTransactionHash:(UInt256)txHash transaction:(DSTransaction *_Nullable*_Nullable)transaction;
 

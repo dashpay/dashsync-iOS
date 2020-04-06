@@ -30,6 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint64_t creditFee;
 @property (nonatomic, assign) UInt256 transitionHash;
 
+@property (nonatomic, assign) UInt256 blockchainIdentityUniqueId;
+
 @property (nonatomic, assign) NSTimeInterval createdTimestamp;
 @property (nonatomic, assign) NSTimeInterval registeredTimestamp;
 

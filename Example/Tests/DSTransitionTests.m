@@ -67,7 +67,7 @@
     
     [self.testAccount registerTransaction:fundingTransaction];
     
-//    self.blockchainIdentity = [[DSBlockchainIdentity alloc] initWithFundingTransaction:fundingTransaction withUsernameDictionary:nil inWallet:self.testWallet inContext:nil];
+    self.blockchainIdentity = [[DSBlockchainIdentity alloc] initWithFundingTransaction:fundingTransaction withUsernameDictionary:nil inWallet:self.testWallet inContext:nil];
 }
 
 - (void)tearDown {
@@ -100,9 +100,8 @@
     DSKey * key = [blockchainIdentityRegistrationTransition.publicKeys allValues][0];
     XCTAssertEqualObjects(key.publicKeyData.hexString, @"027874912e5d8e99cb129d4d0dc7c8285343c181c4c8272f89752c65b68ceb2c94");
     XCTAssertEqual(key.keyType, DSKeyType_ECDSA);
-    XCTAssertEqualObjects(uint256_hex(blockchainIdentityRegistrationTransition.blockchainIdentityUniqueId), @"");
-//    NSAssert(blockchainIdentityRegistrationTransition.type == 0, <#desc, ...#>)
-    NSLog(@"%@",blockchainIdentityRegistrationTransition);
+    XCTAssertEqualObjects(uint256_hex(blockchainIdentityRegistrationTransition.blockchainIdentityUniqueId), @"fd0851e8705c4989dc4f36e676c0d8c8cae9e5ff278bcbccb4d827b6f078290c");
+    XCTAssertEqual(blockchainIdentityRegistrationTransition.type, DSTransitionType_IdentityRegistration);
 }
 
 @end

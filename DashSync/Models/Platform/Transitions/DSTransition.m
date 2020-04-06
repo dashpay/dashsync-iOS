@@ -23,7 +23,6 @@
 @interface DSTransition()
 
 @property (nonatomic, strong) DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction;
-@property (nonatomic, assign) UInt256 blockchainIdentityUniqueId;
 
 @property (nonatomic, strong) DSChain * chain;
 

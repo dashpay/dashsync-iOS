@@ -2246,6 +2246,29 @@ static dispatch_once_t devnetToken = 0;
     return blockchainIdentitiesCount;
 }
 
+- (DSTransactionDirection)directionOfTransaction:(DSTransaction *)transaction {
+    const uint64_t sent = [self amountSentByTransaction:transaction];
+    const uint64_t received = [self amountReceivedFromTransaction:transaction];
+    const uint64_t fee = transaction.feeUsed;
+    
+    if (sent > 0 && (received + fee) == sent) {
+        // moved
+        return DSTransactionDirection_Moved;
+    }
+    else if (sent > 0) {
+        // sent
+        return DSTransactionDirection_Sent;
+    }
+    else if (received > 0) {
+        // received
+        return DSTransactionDirection_Received;
+    } else {
+        // no funds moved on this account
+        return DSTransactionDirection_NotAccountFunds;
+    }
+}
+
+
 -(NSArray *) allTransactions {
     NSMutableArray * mArray = [NSMutableArray array];
     for (DSWallet * wallet in self.wallets) {
