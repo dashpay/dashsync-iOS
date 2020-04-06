@@ -242,6 +242,104 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 // MARK: - Full Registration agglomerate
 
+-(void)continueRegisteringProfileOnNetwork:(DSBlockchainIdentityRegistrationStep)steps stepsCompleted:(DSBlockchainIdentityRegistrationStep)stepsAlreadyCompleted stepCompletion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationStep stepCompleted))stepCompletion completion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError * error))completion {
+    
+    __block DSBlockchainIdentityRegistrationStep stepsCompleted = stepsAlreadyCompleted;
+        
+    if (!(steps & DSBlockchainIdentityRegistrationStep_Profile)) {
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(stepsCompleted, nil);
+            });
+        }
+        return;
+    }
+    //todo:we need to still do profile
+    if (completion) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            completion(stepsCompleted, nil);
+        });
+    }
+        
+}
+
+
+-(void)continueRegisteringUsernamesOnNetwork:(DSBlockchainIdentityRegistrationStep)steps stepsCompleted:(DSBlockchainIdentityRegistrationStep)stepsAlreadyCompleted stepCompletion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationStep stepCompleted))stepCompletion completion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError * error))completion {
+    
+    __block DSBlockchainIdentityRegistrationStep stepsCompleted = stepsAlreadyCompleted;
+        
+    if (!(steps & DSBlockchainIdentityRegistrationStep_Username)) {
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(stepsCompleted, nil);
+            });
+        }
+        return;
+    }
+    
+    [self registerUsernamesWithCompletion:^(BOOL success, NSError * _Nonnull error) {
+        if (!success) {
+            if (completion) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completion(stepsCompleted, error);
+                });
+            }
+            return;
+        }
+        if (stepCompletion) {
+            stepCompletion(DSBlockchainIdentityRegistrationStep_Username);
+        }
+        stepsCompleted |= DSBlockchainIdentityRegistrationStep_Username;
+        
+        [self continueRegisteringProfileOnNetwork:steps stepsCompleted:stepsCompleted stepCompletion:stepCompletion completion:completion];
+    }];
+}
+
+-(void)continueRegisteringIdentityOnNetwork:(DSBlockchainIdentityRegistrationStep)steps stepsCompleted:(DSBlockchainIdentityRegistrationStep)stepsAlreadyCompleted stepCompletion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationStep stepCompleted))stepCompletion completion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError * error))completion {
+    
+    __block DSBlockchainIdentityRegistrationStep stepsCompleted = stepsAlreadyCompleted;
+    if (!(steps & DSBlockchainIdentityRegistrationStep_Identity)) {
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(stepsCompleted, nil);
+            });
+        }
+        return;
+    }
+    
+    
+    [self createAndPublishRegistrationTransitionWithCompletion:^(NSDictionary * _Nullable successInfo, NSError * _Nullable error) {
+        if (error) {
+            if (completion) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completion(stepsCompleted, error);
+                });
+            }
+            return;
+        }
+        if (stepCompletion) {
+            stepCompletion(DSBlockchainIdentityRegistrationStep_Identity);
+        }
+        stepsCompleted |= DSBlockchainIdentityRegistrationStep_Identity;
+        
+        [self continueRegisteringUsernamesOnNetwork:steps stepsCompleted:stepsCompleted stepCompletion:stepCompletion completion:completion];
+    }];
+}
+
+
+-(void)continueRegisteringOnNetwork:(DSBlockchainIdentityRegistrationStep)steps withFundingAccount:(DSAccount*)fundingAccount forTopupAmount:(uint64_t)topupDuffAmount stepCompletion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationStep stepCompleted))stepCompletion completion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError * error))completion {
+    if (!self.registrationCreditFundingTransaction) {
+        [self registerOnNetwork:steps withFundingAccount:fundingAccount forTopupAmount:topupDuffAmount stepCompletion:stepCompletion completion:completion];
+    } else if (self.registrationStatus != DSBlockchainIdentityRegistrationStatus_Registered) {
+        [self continueRegisteringIdentityOnNetwork:steps stepsCompleted:DSBlockchainIdentityRegistrationStep_L1Steps stepCompletion:stepCompletion completion:completion];
+    } else if ([self.unregisteredUsernames count]) {
+        [self continueRegisteringUsernamesOnNetwork:steps stepsCompleted:DSBlockchainIdentityRegistrationStep_L1Steps | DSBlockchainIdentityRegistrationStep_Identity stepCompletion:stepCompletion completion:completion];
+    } else if (self.matchingDashpayUser.remoteProfileDocumentRevision < 1) {
+        [self continueRegisteringProfileOnNetwork:steps stepsCompleted:DSBlockchainIdentityRegistrationStep_L1Steps | DSBlockchainIdentityRegistrationStep_Identity stepCompletion:stepCompletion completion:completion];
+    }
+}
+
+
 -(void)registerOnNetwork:(DSBlockchainIdentityRegistrationStep)steps withFundingAccount:(DSAccount*)fundingAccount forTopupAmount:(uint64_t)topupDuffAmount stepCompletion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationStep stepCompleted))stepCompletion completion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError * error))completion {
     __block DSBlockchainIdentityRegistrationStep stepsCompleted = DSBlockchainIdentityRegistrationStep_None;
     if (![self hasBlockchainIdentityExtendedPublicKeys]) {
@@ -363,70 +461,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                     }
                     stepsCompleted |= DSBlockchainIdentityRegistrationStep_FundingTransactionPublishing;
                     
-                    if (!(steps & DSBlockchainIdentityRegistrationStep_Identity)) {
-                        if (completion) {
-                            dispatch_async(dispatch_get_main_queue(), ^{
-                                completion(stepsCompleted, nil);
-                            });
-                        }
-                        return;
-                    }
-                    
-                    
-                    [self createAndPublishRegistrationTransitionWithCompletion:^(NSDictionary * _Nullable successInfo, NSError * _Nullable error) {
-                        if (error) {
-                            if (completion) {
-                                dispatch_async(dispatch_get_main_queue(), ^{
-                                    completion(stepsCompleted, error);
-                                });
-                            }
-                            return;
-                        }
-                        if (stepCompletion) {
-                            stepCompletion(DSBlockchainIdentityRegistrationStep_Identity);
-                        }
-                        stepsCompleted |= DSBlockchainIdentityRegistrationStep_Identity;
-                        
-                        if (!(steps & DSBlockchainIdentityRegistrationStep_Username)) {
-                            if (completion) {
-                                dispatch_async(dispatch_get_main_queue(), ^{
-                                    completion(stepsCompleted, nil);
-                                });
-                            }
-                            return;
-                        }
-                        
-                        [self registerUsernamesWithCompletion:^(BOOL success, NSError * _Nonnull error) {
-                            if (!success) {
-                                if (completion) {
-                                    dispatch_async(dispatch_get_main_queue(), ^{
-                                        completion(stepsCompleted, error);
-                                    });
-                                }
-                                return;
-                            }
-                            if (stepCompletion) {
-                                stepCompletion(DSBlockchainIdentityRegistrationStep_Username);
-                            }
-                            stepsCompleted |= DSBlockchainIdentityRegistrationStep_Username;
-                            
-                            if (!(steps & DSBlockchainIdentityRegistrationStep_Profile)) {
-                                if (completion) {
-                                    dispatch_async(dispatch_get_main_queue(), ^{
-                                        completion(stepsCompleted, nil);
-                                    });
-                                }
-                                return;
-                            }
-                            //todo:we need to still do profile
-                            if (completion) {
-                                dispatch_async(dispatch_get_main_queue(), ^{
-                                    completion(stepsCompleted, nil);
-                                });
-                            }
-                            
-                        }];
-                    }];
+                    [self continueRegisteringIdentityOnNetwork:steps stepsCompleted:stepsCompleted stepCompletion:stepCompletion completion:completion];
                 });
             }];
         }];
