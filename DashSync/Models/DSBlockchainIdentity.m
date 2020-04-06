@@ -1160,9 +1160,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         }
     }
     
-    uint32_t index;
+    uint32_t index = [self firstIndexOfKeyOfType:DSKeyType_ECDSA createIfNotPresent:YES];
     
-    DSKey * publicKey = [self createNewKeyOfType:DSKeyType_ECDSA returnIndex:&index];
+    DSKey * publicKey = [self keyAtIndex:index];
     
     NSAssert(index == 0, @"The index should be 0 here");
     
