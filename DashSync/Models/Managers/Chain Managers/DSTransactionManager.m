@@ -120,14 +120,19 @@
 - (void)addTransactionToPublishList:(DSTransaction *)transaction
 {
     if (transaction.blockHeight == TX_UNCONFIRMED) {
-        DSDLog(@"[DSTransactionManager] add transaction to publish list %@ (%@)", transaction,transaction.toData);
-        self.publishedTx[uint256_obj(transaction.txHash)] = transaction;
-        
-        for (NSValue *hash in transaction.inputHashes) {
-            UInt256 h = UINT256_ZERO;
+        DSDLog(@"[DSTransactionManager] add transaction to publish list %@ (%@)", transaction, transaction.toData);
+        if (!self.publishedTx[uint256_obj(transaction.txHash)]) {
+            self.publishedTx[uint256_obj(transaction.txHash)] = transaction;
             
-            [hash getValue:&h];
-            [self addTransactionToPublishList:[self.chain transactionForHash:h]];
+            for (NSValue *hash in transaction.inputHashes) {
+                UInt256 h = UINT256_ZERO;
+                
+                [hash getValue:&h];
+                DSTransaction * inputTransaction = [self.chain transactionForHash:h];
+                if (inputTransaction) {
+                    [self addTransactionToPublishList:inputTransaction];
+                }
+            }
         }
     }
 }
