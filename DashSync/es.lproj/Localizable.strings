@@ -9,7 +9,7 @@
 "\n\n     amount %@ (%@)" = "\n\n     cantidad %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nDIRECCIÓN YA UTILIZADA\nlas direcciones dash están previstas para ser utilizadas solo una vez\nre-utilizar reduce la privacidad para ambos usted y el receptor, puede resultar en una pérdida si el receptor no tiene directamente control de la dirección.";
+"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nDIRECCIÓN YA UTILIZADA\nLas direcciones Dash están previstas para ser utilizadas solo una vez\n\nRe-utilizar reduce la privacidad para ambos usted y el receptor, puede resultar en una pérdida si el receptor no tiene directamente control de la dirección.";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\ncuota de red +%1$@ (%2$@)";
@@ -77,7 +77,7 @@
 /* No comment provided by engineer. */
 "Double spend" = "Doble gasto";
 
-/* No comment provided by engineer. */
+/* The server is not working */
 "Down" = "Bajo";
 
 /* No comment provided by engineer. */
@@ -87,25 +87,16 @@
 "Error from payment request server %@" = "Error del servidor de solicitud de pagos %@";
 
 /* No comment provided by engineer. */
-"Error signing dash transaction" = "Error al firmar transacción de Dash";
-
-/* No comment provided by engineer. */
 "Error signing transaction" = "Error al firmar transacción";
 
 /* No comment provided by engineer. */
 "Ignore" = "Ignorar";
 
 /* No comment provided by engineer. */
-"Instant payment" = "Pago instantáneo";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend requiere suficientes entradas con 6 confirmaciones, enviar de todas formas como una transacción regular?";
-
-/* No comment provided by engineer. */
 "Insufficient funds" = "Fondos insuficientes";
 
 /* No comment provided by engineer. */
-"Insufficient funds for dash network fee" = "Fondos insuficientes para la tasa de red de Dash";
+"Insufficient funds for Dash network fee" = "Fondos insuficientes para la tasa de red de Dash";
 
 /* No comment provided by engineer. */
 "Internal Error" = "Error interno";
@@ -138,7 +129,7 @@
 "Not a valid private key" = "Clave privada inválida ";
 
 /* No comment provided by engineer. */
-"Not connected to the dash network" = "Sin conección a la red de Dash";
+"Not connected to the Dash network" = "Sin conección a la red de Dash";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
@@ -161,6 +152,9 @@
 /* No comment provided by engineer. */
 "PIN for %@" = "PIN para %@";
 
+/* Please authenticate to create your Testnet wallet */
+"Please authenticate to create your %@ wallet" = "Autentícate para crear tu %@ billetera";
+
 /* No comment provided by engineer. */
 "Recovery phrase" = "Frase de recuperación";
 
@@ -178,12 +172,6 @@
 
 /* No comment provided by engineer. */
 "Reset" = "Reinicia";
-
-/* No comment provided by engineer. */
-"Retry" = "Reintentar";
-
-/* No comment provided by engineer. */
-"Send" = "Enviar";
 
 /* No comment provided by engineer. */
 "Server Error" = "Error de servidor";
@@ -204,9 +192,6 @@
 "This private key is empty" = "Esta llave privada está vacía";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Esta petición requiere un pago instantáneo pero no cuentas con las 6 confirmaciones necesarias para hacer InstantSend, puedes pedirle al negocio que reciba una transacción normal o esperar unos minutos.";
-
-/* No comment provided by engineer. */
 "Transaction canceled, network timeout" = "Transacción cancelada, tiempo de red excedido";
 
 /* No comment provided by engineer. */
@@ -222,7 +207,7 @@
 "Unexpected response from %@" = "Respuesta inesperada de %@";
 
 /* No comment provided by engineer. */
-"unknown address" = "dirección desconocida";
+"Unknown address" = "Dirección desconocida";
 
 /* No comment provided by engineer. */
 "Unknown Error" = "Error desconocido";
@@ -239,7 +224,7 @@
 /* No comment provided by engineer. */
 "Untrusted certificate" = "Certificado no confiable";
 
-/* No comment provided by engineer. */
+/* The server is up and running */
 "Up" = "Arriba";
 
 /* Updating Price */

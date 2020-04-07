@@ -29,6 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSGovernanceSyncManager (Protected)
 
+-(instancetype)initWithChain:(DSChain*)chain;
+
 @property (nonatomic,readonly) NSUInteger last3HoursStandaloneGovernanceObjectHashesCount;
 
 -(void)requestGovernanceObjectsFromPeer:(DSPeer*)peer;

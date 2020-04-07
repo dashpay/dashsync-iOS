@@ -28,20 +28,19 @@
 NS_ASSUME_NONNULL_BEGIN
 
 #define PIN_UNLOCK_TIME_KEY     @"PIN_UNLOCK_TIME"
+#define BIOMETRIC_SPENDING_LIMIT_NOT_SET UINT64_MAX
 
-typedef void (^PinCompletionBlock)(BOOL authenticatedOrSuccess, BOOL cancelled);
+typedef void (^PinCompletionBlock)(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled);
 typedef void (^SeedPhraseCompletionBlock)(NSString * _Nullable seedPhrase);
 typedef void (^SeedCompletionBlock)(NSData * _Nullable seed, BOOL cancelled);
 
 extern NSString *const DSApplicationTerminationRequestNotification;
 
-@class DSWallet,DSChain,DSTransaction;
+@class DSWallet, DSChain, DSTransaction;
 
 @interface DSAuthenticationManager : NSObject
 
-@property (nonatomic, readonly, getter=isTouchIdEnabled) BOOL touchIdEnabled; // true if touch id is enabled
-@property (nonatomic, readonly, getter=isFaceIdEnabled) BOOL faceIdEnabled;
-@property (nonatomic, readonly, getter=isPasscodeEnabled) BOOL passcodeEnabled; // true if device passcode is enabled
+@property (nonatomic, readonly) uint64_t biometricSpendingLimit;
 @property (nonatomic, readonly) BOOL shouldUseAuthentication; //true if the app should use authentication once it is set up
 @property (nonatomic, readonly) BOOL usesAuthentication; //true if the app uses authentication and it is set up
 @property (nonatomic, readonly) BOOL didAuthenticate; // true if the user authenticated after this was last set to false
@@ -60,6 +59,9 @@ extern NSString *const DSApplicationTerminationRequestNotification;
 
 - (BOOL)isBiometricAuthenticationAllowed;
 - (BOOL)isBiometricSpendingAllowed;
+
+- (BOOL)setBiometricSpendingLimitIfAuthenticated:(uint64_t)spendingLimit;
+- (BOOL)canUseBiometricAuthenticationForAmount:(uint64_t)amount;
 
 - (void)authenticateUsingBiometricsOnlyWithPrompt:(NSString * _Nullable)prompt
                                        completion:(PinCompletionBlock)completion;

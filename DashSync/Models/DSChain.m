@@ -44,7 +44,7 @@
 #import "DSDerivationPath.h"
 #import "DSOptionsManager.h"
 #import "DSChainsManager.h"
-#import "DSMasternodeManager.h"
+#import "DSMasternodeManager+Protected.h"
 #import "DSDerivationPathEntity+CoreDataProperties.h"
 #import "NSMutableData+Dash.h"
 #import "NSData+Dash.h"
@@ -157,10 +157,12 @@ static checkpoint mainnet_checkpoint_array[] = {
     { 1060000, "00000000000000132447e6bac9fe0d7d756851450eab29358787dc05d809bf07", 1556260812, 0x191f6aceu, "", "" },
     { 1080000, "00000000000000099c5cc38bac7878f771408537e520a1ef9e31b5c1040d2d2a", 1559412342, 0x192a9588u, "", "" },
     { 1088640, "00000000000000112e41e4b3afda8b233b8cc07c532d2eac5de097b68358c43e", 1560773201, 0x1922ae0bu, "ML1088640", "379fd491044a273372a8e901866fbe6ed9bab7ce2de0968a71d38de5d5eac340" },
-    { 1100000, "00000000000000190560ed4b128c156e489fdbe0814bf62c8ab53ab3259d7908", 1562561033, 0x191a9f05u, "ML1100000", "b42a23b668751fa8239b736c63c8529ead78df579ed85389f6db7ddbc736fa48" },
+    { 1100000, "00000000000000190560ed4b128c156e489fdbe0814bf62c8ab53ab3259d7908", 1562561033, 0x191a9f05u, "", ""},
     { 1120000, "0000000000000011103eae768e6a322b991c5c20569d95930b87e1305fa19c75", 1565712301, 0x19200768u, "", ""},
     { 1140000, "00000000000000083ac0e592e180487cb237f659a305d2be19e883ed564fe20f", 1568864488, 0x1923198bu, "", ""},
     { 1160000, "00000000000000098f985e79ca74ca2cf8c113763f8184011759306945149309", 1572017931, 0x191f3f6eu, "", ""},
+    { 1180000, "0000000000000001e1de4be8cafd6b0dc70a16293f8e82bcc41a87d80032ac34", 1575169584, 0x191bb2a5u, "", ""},
+    { 1200000, "0000000000000005fbc6c64e048be7c29d43e4829f360220cededb73ce84894c", 1578321180, 0x191c82aau, "ML1200000", "76c45ae14e68484bcd26d55cfee6155778e573c6dba4b68764189e25d50c0fe4"},
 };
 
 #define FEE_PER_BYTE_KEY          @"FEE_PER_BYTE"
@@ -1914,7 +1916,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 // fee that will be added for a transaction of the given size in bytes
-- (uint64_t)feeForTxSize:(NSUInteger)size isInstant:(BOOL)isInstant inputCount:(NSInteger)inputCount
+- (uint64_t)feeForTxSize:(NSUInteger)size
 {
     uint64_t standardFee = size*TX_FEE_PER_B; // standard fee based on tx size
         

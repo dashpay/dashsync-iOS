@@ -118,7 +118,7 @@
         [blockchainUserRegistrationTransaction signPayloadWithKey:privateKey];
         NSMutableData * opReturnScript = [NSMutableData data];
         [opReturnScript appendUInt8:OP_RETURN];
-        [fundingAccount updateTransaction:blockchainUserRegistrationTransaction forAmounts:@[@(topupAmount)] toOutputScripts:@[opReturnScript] withFee:YES isInstant:NO];
+        [fundingAccount updateTransaction:blockchainUserRegistrationTransaction forAmounts:@[@(topupAmount)] toOutputScripts:@[opReturnScript] withFee:YES];
         
         completion(blockchainUserRegistrationTransaction);
     }];
@@ -137,7 +137,7 @@
         
         NSMutableData * opReturnScript = [NSMutableData data];
         [opReturnScript appendUInt8:OP_RETURN];
-        [fundingAccount updateTransaction:blockchainUserTopupTransaction forAmounts:@[@(topupAmount)] toOutputScripts:@[opReturnScript] withFee:YES isInstant:NO];
+        [fundingAccount updateTransaction:blockchainUserTopupTransaction forAmounts:@[@(topupAmount)] toOutputScripts:@[opReturnScript] withFee:YES];
 
         completion(blockchainUserTopupTransaction);
     }];

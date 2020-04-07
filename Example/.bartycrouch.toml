@@ -1,0 +1,21 @@
+[update]
+tasks = ["code", "normalize"]
+
+[update.code]
+codePath = "../DashSync/"
+localizablePath = "../DashSync/"
+defaultToKeys = true
+additive = false
+unstripped = false
+customFunction = "DSLocalizedString"
+
+[update.normalize]
+path = "."
+sourceLocale = "en"
+harmonizeWithSource = true
+sortByKeys = true
+
+[lint]
+path = "."
+duplicateKeys = true
+emptyValues = true

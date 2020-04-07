@@ -9,7 +9,7 @@
 "\n\n     amount %@ (%@)" = "\n\n     bedrag %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRES IS AL IN GEBRUIK\ndash-adressen zijn bestemd voor éénmalig gebruik\n\nhergebruik verlaagt het privacyniveau voor jou en de ontvanger en kan leiden tot verlies als de ontvanger het adres niet direct beheert";
+"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRES IS AL IN GEBRUIK\nDash-adressen zijn bestemd voor éénmalig gebruik\n\nhergebruik verlaagt het privacyniveau voor jou en de ontvanger en kan leiden tot verlies als de ontvanger het adres niet direct beheert";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nnetwerkvergoeding +%1$@ (%2$@)";
@@ -77,8 +77,8 @@
 /* No comment provided by engineer. */
 "Double spend" = "Dubbel uitgegeven";
 
-/* No comment provided by engineer. */
-"Down" = "Down";
+/* The server is not working */
+"Down" = "Naar beneden";
 
 /* No comment provided by engineer. */
 "Enter old PIN" = "Voer oude pin in";
@@ -87,25 +87,16 @@
 "Error from payment request server %@" = "Fout van server voor betalingsverzoeken %@";
 
 /* No comment provided by engineer. */
-"Error signing dash transaction" = "Fout bij ondertekenen dash-transactie";
-
-/* No comment provided by engineer. */
 "Error signing transaction" = "Fout bij ondertekenen transactie";
 
 /* No comment provided by engineer. */
 "Ignore" = "Negeer";
 
 /* No comment provided by engineer. */
-"Instant payment" = "Instantane betaling";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend vereist genoeg invoeren met 6 bevestigingen. Versturen als reguliere transactie?";
-
-/* No comment provided by engineer. */
 "Insufficient funds" = "Ontoereikende fondsen";
 
 /* No comment provided by engineer. */
-"Insufficient funds for dash network fee" = "Onvoldoende fondsen voor transactiekosten dash-netwek";
+"Insufficient funds for Dash network fee" = "Onvoldoende fondsen voor transactiekosten Dash-netwerk";
 
 /* No comment provided by engineer. */
 "Internal Error" = "Interne fout";
@@ -138,7 +129,7 @@
 "Not a valid private key" = "Geen geldige privésleutel";
 
 /* No comment provided by engineer. */
-"Not connected to the dash network" = "Niet verbonden met dash-netwerk";
+"Not connected to the Dash network" = "Niet verbonden met Dash-netwerk";
 
 /* No comment provided by engineer. */
 "OK" = "Oké";
@@ -161,6 +152,9 @@
 /* No comment provided by engineer. */
 "PIN for %@" = "Pin voor %@";
 
+/* Please authenticate to create your Testnet wallet */
+"Please authenticate to create your %@ wallet" = "Authenticeer uw om uw%@ portemonnee te creëren";
+
 /* No comment provided by engineer. */
 "Recovery phrase" = "Hersetlzin";
 
@@ -178,12 +172,6 @@
 
 /* No comment provided by engineer. */
 "Reset" = "Reset";
-
-/* No comment provided by engineer. */
-"Retry" = "Probeer opnieuw";
-
-/* No comment provided by engineer. */
-"Send" = "Verstuur";
 
 /* No comment provided by engineer. */
 "Server Error" = "Serverfout";
@@ -204,9 +192,6 @@
 "This private key is empty" = "De privésleutel is leeg";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Dit verzoek heeft een onmiddellijke betaling  nodig maar je hebt niet genoeg inputs met 6 bevestigingen die nodig zijn voor InstantSend, je mag de merchant vragen om een normale transactie te accepteren of wacht een paar minuten.";
-
-/* No comment provided by engineer. */
 "Transaction canceled, network timeout" = "Transactie is geannuleerd, netwerktime-out";
 
 /* No comment provided by engineer. */
@@ -222,7 +207,7 @@
 "Unexpected response from %@" = "Onverwacht response van %@";
 
 /* No comment provided by engineer. */
-"unknown address" = "onbekend adres";
+"Unknown address" = "Onbekend adres";
 
 /* No comment provided by engineer. */
 "Unknown Error" = "Onbekende fout";
@@ -239,8 +224,8 @@
 /* No comment provided by engineer. */
 "Untrusted certificate" = "Onvertrouwd certificaat";
 
-/* No comment provided by engineer. */
-"Up" = "Up";
+/* The server is up and running */
+"Up" = "Omhoog";
 
 /* Updating Price */
 "Updating Price" = "Bezig met bijwerken van prijs";

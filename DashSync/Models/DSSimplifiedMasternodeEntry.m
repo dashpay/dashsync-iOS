@@ -131,6 +131,7 @@
 
 -(void)keepInfoOfPreviousEntryVersion:(DSSimplifiedMasternodeEntry*)masternodeEntry atBlockHash:(UInt256)blockHash {
     DSMerkleBlock * block = [self.chain blockForBlockHash:blockHash];
+    if (!block) return;
     [self updatePreviousValidity:masternodeEntry atBlock:block];
     [self updatePreviousOperatorPublicKeysFromPreviousSimplifiedMasternodeEntry:masternodeEntry atBlock:block];
     [self updatePreviousSimplifiedMasternodeEntryHashesFromPreviousSimplifiedMasternodeEntry:masternodeEntry atBlock:block];
@@ -338,7 +339,9 @@
 }
 
 -(NSString*)validString {
-    return self.isValid?DSLocalizedString(@"Up", nil):DSLocalizedString(@"Down", nil);
+    return self.isValid
+        ? DSLocalizedString(@"Up", @"The server is up and running")
+        : DSLocalizedString(@"Down", @"The server is not working");
 }
 
 -(NSString*)uniqueID {

@@ -18,6 +18,10 @@
 #import "DSLocalMasternodeEntity+CoreDataClass.h"
 #import "DSQuorumEntryEntity+CoreDataClass.h"
 #import "DSMasternodeListEntity+CoreDataClass.h"
+#import "DSPeerManager+Protected.h"
+#import "DSSporkManager+Protected.h"
+#import "DSMasternodeManager+Protected.h"
+#import "DSChainManager+Protected.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -240,7 +244,7 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
             [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
         });
     } else {
-        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:@"Wipe wallets" usingBiometricAuthentication:NO alertIfLockout:NO completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
+        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:@"Wipe wallets" usingBiometricAuthentication:NO alertIfLockout:NO completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
             if (authenticatedOrSuccess) {
                 [chain wipeWalletsAndDerivatives];
                 dispatch_async(dispatch_get_main_queue(), ^{
