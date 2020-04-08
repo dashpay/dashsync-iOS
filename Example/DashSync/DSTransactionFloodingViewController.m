@@ -256,7 +256,7 @@
                     else if (! sent) { //TODO: show full screen sent dialog with tx info, "you sent b10,000 to bob"
                         sent = YES;
                         tx.timestamp = [NSDate timeIntervalSince1970];
-                        [self.fundingAccount registerTransaction:tx];
+                        [self.fundingAccount registerTransaction:tx saveImmediately:YES];
                         self.transactionCountTextField.text = [NSString stringWithFormat:@"%ld",[self.transactionCountTextField.text integerValue] - 1];
                         self.alreadySentCount++;
                         uint32_t resetEvery = [self.resetQuorumsTextField.text intValue];
