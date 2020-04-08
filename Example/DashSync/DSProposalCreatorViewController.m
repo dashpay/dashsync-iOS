@@ -116,7 +116,7 @@
             if (error) {
                 NSLog(@"%@",error);
             } else {
-                [self.account registerTransaction:transaction];
+                [self.account registerTransaction:transaction saveImmediately:YES];
                 [proposal registerCollateralTransaction:transaction];
                 [proposal save];
                 [self.chainManager.governanceSyncManager publishProposal:proposal];

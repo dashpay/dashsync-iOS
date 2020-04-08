@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
 
-@class DSWallet,DSTransaction,DSBlockchainUserRegistrationTransaction,DSBlockchainUserResetTransaction;
+@class DSWallet, DSTransaction, DSBlockchainUserRegistrationTransaction, DSBlockchainUserResetTransaction;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(DSTransaction*)transactionForHash:(UInt256)transactionHash;
 
-- (void)registerTransaction:(DSTransaction*)transaction;
+- (void)registerTransaction:(DSTransaction*)transaction saveImmediately:(BOOL)saveImmediately;
 
 - (void)removeAllTransactions;
 
@@ -33,6 +33,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray*)subscriptionTransactionsForRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash;
 
 - (UInt256)lastSubscriptionTransactionHashForRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash;
+
+// this is used to save transactions atomically with the block, needs to be called before switching threads to save the block
+- (void)prepareForIncomingTransactionPersistenceForBlockSaveWithNumber:(uint32_t)blockNumber;
+
+// this is used to save transactions atomically with the block
+- (void)persistIncomingTransactionsAttributesForBlockSaveWithNumber:(uint32_t)blockNumber inContext:(NSManagedObjectContext*)context;
 
 @end
 

@@ -674,6 +674,22 @@
     return updated;
 }
 
+// this is used to save transactions atomically with the block, needs to be called before switching threads to save the block
+- (void)prepareForIncomingTransactionPersistenceForBlockSaveWithNumber:(uint32_t)blockNumber {
+    for (DSAccount * account in self.accounts) {
+        [account prepareForIncomingTransactionPersistenceForBlockSaveWithNumber:blockNumber];
+    }
+    [self.specialTransactionsHolder prepareForIncomingTransactionPersistenceForBlockSaveWithNumber:blockNumber];
+}
+
+// this is used to save transactions atomically with the block
+- (void)persistIncomingTransactionsAttributesForBlockSaveWithNumber:(uint32_t)blockNumber inContext:(NSManagedObjectContext*)context {
+    for (DSAccount * account in self.accounts) {
+        [account persistIncomingTransactionsAttributesForBlockSaveWithNumber:blockNumber inContext:context];
+    }
+    [self.specialTransactionsHolder persistIncomingTransactionsAttributesForBlockSaveWithNumber:blockNumber inContext:context];
+}
+
 -(void)chainUpdatedBlockHeight:(int32_t)height {
     for (DSAccount * account in self.accounts) {
         [account chainUpdatedBlockHeight:height];

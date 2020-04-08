@@ -120,16 +120,21 @@
 - (void)addTransactionToPublishList:(DSTransaction *)transaction
 {
     if (transaction.blockHeight == TX_UNCONFIRMED) {
-        DSDLog(@"[DSTransactionManager] add transaction to publish list %@ (%@)", transaction,transaction.toData);
-        self.publishedTx[uint256_obj(transaction.txHash)] = transaction;
-        
-        for (NSValue *hash in transaction.inputHashes) {
-            UInt256 h = UINT256_ZERO;
+        DSDLog(@"[DSTransactionManager] add transaction to publish list %@ (%@)", transaction, transaction.toData);
+        if (!self.publishedTx[uint256_obj(transaction.txHash)]) {
+            self.publishedTx[uint256_obj(transaction.txHash)] = transaction;
             
-            [hash getValue:&h];
-            [self addTransactionToPublishList:[self.chain transactionForHash:h]];
+            for (NSValue *hash in transaction.inputHashes) {
+                UInt256 h = UINT256_ZERO;
+                
+                [hash getValue:&h];
+                DSTransaction * inputTransaction = [self.chain transactionForHash:h];
+                if (inputTransaction) {
+                    [self addTransactionToPublishList:inputTransaction];
+                }
+            }
         }
-    }
+    } 
 }
 
 - (void)publishTransaction:(DSTransaction *)transaction completion:(void (^)(NSError *error))completion
@@ -276,7 +281,6 @@
             NSArray * accounts = [self.chain accountsThatCanContainTransaction:transaction];
             for (DSAccount * account in accounts) {
                 [account removeTransaction:transaction];
-                
             }
         }
         [DSTransactionHashEntity saveContext];
@@ -565,7 +569,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
                 else if (!sent) {
                     sent = YES;
                     tx.timestamp = [NSDate timeIntervalSince1970];
-                    [account registerTransaction:tx];
+                    [account registerTransaction:tx saveImmediately:YES];
                     publishedCompletion(tx,nil,sent);
                 }
                 
@@ -611,7 +615,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
                                                else if (!sent) {
                                                    sent = TRUE;
                                                    tx.timestamp = [NSDate timeIntervalSince1970];
-                                                   [account registerTransaction:tx];
+                                                   [account registerTransaction:tx saveImmediately:YES];
                                                }
                                                requestRelayCompletion(tx,ack,!error);
                                                
@@ -869,7 +873,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         error = [NSError errorWithDomain:@"DashSync" code:401
                                 userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"Double spend", nil)}];
     }
-    else if (transaction && ![account transactionForHash:txHash] && [account registerTransaction:transaction]) {
+    else if (transaction && ![account transactionForHash:txHash] && [account registerTransaction:transaction saveImmediately:YES]) {
         [[DSTransactionEntity context] performBlock:^{
             [DSTransactionEntity saveContext]; // persist transactions to core data
         }];
@@ -896,7 +900,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 // MARK: Incoming Transactions
 
 //The peer is informing us that it has an inventory of a transaction we might be interested in, this might also be a transaction we sent out which we are checking has properly been relayed on the network
-- (void)peer:(DSPeer *)peer hasTransaction:(UInt256)txHash transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock;
+- (void)peer:(DSPeer *)peer hasTransactionWithHash:(UInt256)txHash transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock;
 {
     NSValue *hash = uint256_obj(txHash);
     BOOL syncing = (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight);
@@ -914,7 +918,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         DSDLog(@"No account found for this transaction");
         return;
     }
-    if (![account registerTransaction:transaction]) return;
+    if (![account registerTransaction:transaction saveImmediately:YES]) return;
     if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
     if (callback || (! syncing && ! [self.txRelays[hash] containsObject:peer])) {
@@ -942,7 +946,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 }
 
 //The peer has sent us a transaction we are interested in and that we did not send ourselves
-- (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock
+- (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction inBlock:(DSMerkleBlock*)block transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock
 {
     NSValue *hash = uint256_obj(transaction.txHash);
     BOOL syncing = (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight);
@@ -956,7 +960,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         DSDLog(@"%@:%d no account for transaction %@", peer.host, peer.port, hash);
         if (![self.chain transactionHasLocalReferences:transaction]) return;
     } else {
-        if (![account registerTransaction:transaction]) {
+        if (![account registerTransaction:transaction saveImmediately:block?NO:YES]) {
             DSDLog(@"%@:%d could not register transaction %@", peer.host, peer.port, hash);
             return;
         }
@@ -964,7 +968,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     
     if (![transaction isMemberOfClass:[DSTransaction class]]) {
         //it's a special transaction
-        [self.chain registerSpecialTransaction:transaction];
+        [self.chain registerSpecialTransaction:transaction saveImmediately:block?NO:YES];
         
         [self.chain triggerUpdatesForLocalReferences:transaction];
     }
