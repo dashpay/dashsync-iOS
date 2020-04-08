@@ -36,6 +36,8 @@
 @property (nonatomic,strong) NSMutableDictionary * providerUpdateRegistrarTransactions;
 @property (nonatomic,strong) NSMutableDictionary * providerUpdateRevocationTransactions;
 @property (nonatomic,strong) NSMutableDictionary * creditFundingTransactions;
+@property (nonatomic,strong) NSMutableArray <DSTransaction*> *transactionsToSave;
+@property (nonatomic,strong) NSMutableDictionary <NSNumber*,NSArray<DSTransaction*>*> *transactionsToSaveInBlockSave;
 
 @property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
 
@@ -53,6 +55,8 @@
     self.creditFundingTransactions = [NSMutableDictionary dictionary];
     self.managedObjectContext = managedObjectContext?managedObjectContext:[NSManagedObject context];
     self.wallet = wallet;
+    self.transactionsToSave = [NSMutableArray array];
+    self.transactionsToSaveInBlockSave = [NSMutableDictionary dictionary];
     return self;
 }
 
@@ -103,7 +107,20 @@
     }
 }
 
-- (BOOL)registerTransaction:(DSTransaction*)transaction {
+
+-(void)prepareForIncomingTransactionPersistenceForBlockSaveWithNumber:(uint32_t)blockNumber {
+    [self.transactionsToSaveInBlockSave setObject:[self.transactionsToSave copy] forKey:@(blockNumber)];
+    [self.transactionsToSave removeAllObjects];
+}
+
+-(void)persistIncomingTransactionsAttributesForBlockSaveWithNumber:(uint32_t)blockNumber inContext:(NSManagedObjectContext*)context {
+    for (DSTransaction * transaction in self.transactionsToSaveInBlockSave[@(blockNumber)]) {
+        [transaction setInitialPersistentAttributesInContext:context];
+    }
+    [self.transactionsToSaveInBlockSave removeObjectForKey:@(blockNumber)];
+}
+
+- (BOOL)registerTransaction:(DSTransaction*)transaction saveImmediately:(BOOL)saveImmediately {
     BOOL added = FALSE;
     if ([transaction isMemberOfClass:[DSProviderRegistrationTransaction class]]) {
         if (![self.providerRegistrationTransactions objectForKey:uint256_data(transaction.txHash)]) {
@@ -145,6 +162,11 @@
         return YES;
     } else {
         return NO;
+    }
+    if (saveImmediately) {
+        [transaction saveInitial];
+    } else {
+        [self.transactionsToSave addObject:transaction];
     }
 }
 

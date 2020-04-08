@@ -345,7 +345,7 @@
 - (NSString *)description
 {
     NSString *txid = [NSString hexWithData:[NSData dataWithBytes:self.txHash.u8 length:sizeof(UInt256)].reverse];
-    return [NSString stringWithFormat:@"%@(id=%@)", [self class], txid];
+    return [NSString stringWithFormat:@"%@(id=%@-block=%@)", [self class], txid, (self.blockHeight == TX_UNCONFIRMED)?@"Not mined":@(self.blockHeight)];
 }
 
 - (NSString *)longDescription
@@ -707,14 +707,14 @@
 }
 
 -(uint32_t)confirmations {
-    if (self.blockHeight == UINT32_MAX) return 0;
+    if (self.blockHeight == TX_UNCONFIRMED) return 0;
     const uint32_t lastHeight = self.chain.lastBlockHeight;
     return lastHeight - self.blockHeight;
 }
 
 -(BOOL)confirmed {
     if (_confirmed) return YES; //because it can't be unconfirmed
-    if (self.blockHeight == UINT32_MAX) return NO;
+    if (self.blockHeight == TX_UNCONFIRMED) return NO;
     const uint32_t lastHeight = self.chain.lastBlockHeight;
     if (self.blockHeight > self.chain.lastBlockHeight) return NO; //maybe a reorg?
     if (lastHeight - self.blockHeight > 6) return YES;
@@ -831,20 +831,28 @@
     return transactionEntity;
 }
 
+-(BOOL)setInitialPersistentAttributesInContext:(NSManagedObjectContext*)context {
+    [DSChainEntity setContext:context];
+    Class transactionEntityClass = [self entityClass];
+    [transactionEntityClass setContext:context];
+    [DSTransactionHashEntity setContext:context];
+    if ([DSTransactionEntity countObjectsMatching:@"transactionHash.txHash == %@", uint256_data(self.txHash)] == 0) {
+        
+        DSTransactionEntity * transactionEntity = [transactionEntityClass managedObject];
+        [transactionEntity setAttributesFromTransaction:self];
+        return YES;
+    } else {
+        return NO;
+    }
+}
+
 -(BOOL)saveInitial {
     if (self.saved) return nil;
     NSManagedObjectContext * context = [DSTransactionEntity context];
     __block BOOL didSave = FALSE;
     [context performBlockAndWait:^{ // add the transaction to core data
-        [DSChainEntity setContext:context];
-        Class transactionEntityClass = [self entityClass];
-        [transactionEntityClass setContext:context];
-        [DSTransactionHashEntity setContext:context];
-        if ([DSTransactionEntity countObjectsMatching:@"transactionHash.txHash == %@", uint256_data(self.txHash)] == 0) {
-            
-            DSTransactionEntity * transactionEntity = [transactionEntityClass managedObject];
-            [transactionEntity setAttributesFromTransaction:self];
-            [transactionEntityClass saveContext];
+        if ([self setInitialPersistentAttributesInContext:context]) {
+            [DSTransactionEntity saveContext];
             didSave = TRUE;
         }
     }];

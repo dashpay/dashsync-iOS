@@ -45,7 +45,7 @@
 #import "DSDerivationPath.h"
 #import "DSOptionsManager.h"
 #import "DSChainsManager.h"
-#import "DSMasternodeManager.h"
+#import "DSMasternodeManager+Protected.h"
 #import "DSDerivationPathEntity+CoreDataProperties.h"
 #import "NSMutableData+Dash.h"
 #import "NSData+Dash.h"
@@ -75,6 +75,7 @@
 #import "DSCreditFundingTransaction.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSBlockchainIdentity+Protected.h"
+#import "DSTransactionHashEntity+CoreDataProperties.h"
 
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; const char * masternodeListPath; const char * merkleRoot;} checkpoint;
 
@@ -100,28 +101,28 @@ static checkpoint testnet_checkpoint_array[] = {
 // blockchain checkpoints - these are also used as starting points for partial chain downloads, so they need to be at
 // difficulty transition boundaries in order to verify the block difficulty at the immediately following transition
 static checkpoint mainnet_checkpoint_array[] = {
-    {       0, "00000ffd590b1485b3caadc19b22e6379c733355108f107a430458cdf3407ab6", 1390095618, 0x1e0ffff0u, "", "" },//dash
-    {    1500, "000000aaf0300f59f49bc3e970bad15c11f961fe2347accffff19d96ec9778e3", 1390109863, 0x1e00ffffu, "", "" },//dash
-    {    4991, "000000003b01809551952460744d5dbb8fcbd6cbae3c220267bf7fa43f837367", 1390271049, 0x1c426980u, "", "" },//dash
-    {    9918, "00000000213e229f332c0ffbe34defdaa9e74de87f2d8d1f01af8d121c3c170b", 1391392449, 0x1c41cc20u, "", "" },//dash
-    {   16912, "00000000075c0d10371d55a60634da70f197548dbbfa4123e12abfcbc5738af9", 1392328997, 0x1c07cc3bu, "", "" },//dash
-    {   23912, "0000000000335eac6703f3b1732ec8b2f89c3ba3a7889e5767b090556bb9a276", 1393373461, 0x1c0177efu, "", "" },//dash
-    {   35457, "0000000000b0ae211be59b048df14820475ad0dd53b9ff83b010f71a77342d9f", 1395110315, 0x1c00da53u, "", "" },//dash
-    {   45479, "000000000063d411655d590590e16960f15ceea4257122ac430c6fbe39fbf02d", 1396620889, 0x1c009c80u, "", "" },//dash
-    {   55895, "0000000000ae4c53a43639a4ca027282f69da9c67ba951768a20415b6439a2d7", 1398190161, 0x1c00bae3u, "", "" },//dash
-    {   68899, "0000000000194ab4d3d9eeb1f2f792f21bb39ff767cb547fe977640f969d77b7", 1400148293, 0x1b25df16u, "", "" },//dash
-    {   74619, "000000000011d28f38f05d01650a502cc3f4d0e793fbc26e2a2ca71f07dc3842", 1401048723, 0x1b1905e3u, "", "" },//dash
-    {   75095, "0000000000193d12f6ad352a9996ee58ef8bdc4946818a5fec5ce99c11b87f0d", 1401126238, 0x1b2587e3u, "", "" },//dash
-    {   88805, "00000000001392f1652e9bf45cd8bc79dc60fe935277cd11538565b4a94fa85f", 1403283082, 0x1b194dfbu, "", "" },//dash
-    {  107996, "00000000000a23840ac16115407488267aa3da2b9bc843e301185b7d17e4dc40", 1406300692, 0x1b11c217u, "", "" },//dash
-    {  137993, "00000000000cf69ce152b1bffdeddc59188d7a80879210d6e5c9503011929c3c", 1411014812, 0x1b1142abu, "", "" },//dash
-    {  167996, "000000000009486020a80f7f2cc065342b0c2fb59af5e090cd813dba68ab0fed", 1415730882, 0x1b112d94u, "", "" },//dash
-    {  207992, "00000000000d85c22be098f74576ef00b7aa00c05777e966aff68a270f1e01a5", 1422026638, 0x1b113c01u, "", "" },//dash
-    {  217752, "00000000000a7baeb2148272a7e14edf5af99a64af456c0afc23d15a0918b704", 1423563332, 0x1b10c9b6u, "", "" },//dash
-    {  227121, "00000000000455a2b3a2ed5dfb03990043ca0074568b939acec62820e89a6c45", 1425039295, 0x1b1261d6u, "", "" },//dash This is the first sync time (aka BIP39 creation time).
-    {  246209, "00000000000eec6f7871d3d70321ae98ef1007ab0812d876bda1208afcfb7d7d", 1428046505, 0x1b1a5e27u, "", "" },//dash
-    {  298549, "00000000000cc467fbfcfd49b82e4f9dc8afb0ef83be7c638f573be6a852ba56", 1436306353, 0x1b1ff0dbu, "", "" },//dash
-    {  312645, "0000000000059dcb71ad35a9e40526c44e7aae6c99169a9e7017b7d84b1c2daf", 1438525019, 0x1b1c46ceu, "", "" },//dash
+    {       0, "00000ffd590b1485b3caadc19b22e6379c733355108f107a430458cdf3407ab6", 1390095618, 0x1e0ffff0u, "", "" },
+    {    1500, "000000aaf0300f59f49bc3e970bad15c11f961fe2347accffff19d96ec9778e3", 1390109863, 0x1e00ffffu, "", "" },
+    {    4991, "000000003b01809551952460744d5dbb8fcbd6cbae3c220267bf7fa43f837367", 1390271049, 0x1c426980u, "", "" },
+    {    9918, "00000000213e229f332c0ffbe34defdaa9e74de87f2d8d1f01af8d121c3c170b", 1391392449, 0x1c41cc20u, "", "" },
+    {   16912, "00000000075c0d10371d55a60634da70f197548dbbfa4123e12abfcbc5738af9", 1392328997, 0x1c07cc3bu, "", "" },
+    {   23912, "0000000000335eac6703f3b1732ec8b2f89c3ba3a7889e5767b090556bb9a276", 1393373461, 0x1c0177efu, "", "" },
+    {   35457, "0000000000b0ae211be59b048df14820475ad0dd53b9ff83b010f71a77342d9f", 1395110315, 0x1c00da53u, "", "" },
+    {   45479, "000000000063d411655d590590e16960f15ceea4257122ac430c6fbe39fbf02d", 1396620889, 0x1c009c80u, "", "" },
+    {   55895, "0000000000ae4c53a43639a4ca027282f69da9c67ba951768a20415b6439a2d7", 1398190161, 0x1c00bae3u, "", "" },
+    {   68899, "0000000000194ab4d3d9eeb1f2f792f21bb39ff767cb547fe977640f969d77b7", 1400148293, 0x1b25df16u, "", "" },
+    {   74619, "000000000011d28f38f05d01650a502cc3f4d0e793fbc26e2a2ca71f07dc3842", 1401048723, 0x1b1905e3u, "", "" },
+    {   75095, "0000000000193d12f6ad352a9996ee58ef8bdc4946818a5fec5ce99c11b87f0d", 1401126238, 0x1b2587e3u, "", "" },
+    {   88805, "00000000001392f1652e9bf45cd8bc79dc60fe935277cd11538565b4a94fa85f", 1403283082, 0x1b194dfbu, "", "" },
+    {  107996, "00000000000a23840ac16115407488267aa3da2b9bc843e301185b7d17e4dc40", 1406300692, 0x1b11c217u, "", "" },
+    {  137993, "00000000000cf69ce152b1bffdeddc59188d7a80879210d6e5c9503011929c3c", 1411014812, 0x1b1142abu, "", "" },
+    {  167996, "000000000009486020a80f7f2cc065342b0c2fb59af5e090cd813dba68ab0fed", 1415730882, 0x1b112d94u, "", "" },
+    {  207992, "00000000000d85c22be098f74576ef00b7aa00c05777e966aff68a270f1e01a5", 1422026638, 0x1b113c01u, "", "" },
+    {  217752, "00000000000a7baeb2148272a7e14edf5af99a64af456c0afc23d15a0918b704", 1423563332, 0x1b10c9b6u, "", "" },
+    {  227121, "00000000000455a2b3a2ed5dfb03990043ca0074568b939acec62820e89a6c45", 1425039295, 0x1b1261d6u, "", "" }, //This is the first sync time (aka BIP39 creation time).
+    {  246209, "00000000000eec6f7871d3d70321ae98ef1007ab0812d876bda1208afcfb7d7d", 1428046505, 0x1b1a5e27u, "", "" },
+    {  298549, "00000000000cc467fbfcfd49b82e4f9dc8afb0ef83be7c638f573be6a852ba56", 1436306353, 0x1b1ff0dbu, "", "" },
+    {  312645, "0000000000059dcb71ad35a9e40526c44e7aae6c99169a9e7017b7d84b1c2daf", 1438525019, 0x1b1c46ceu, "", "" },
     {  340000, "000000000014f4e32be2038272cc074a75467c342e25bfe0b566fabe927240b4", 1442833344, 0x1b1acd73u, "", "" },
     {  360000, "0000000000136c1c34bfeb783103c77331930768e864aaf91859b302558d292c", 1445983058, 0x1b21ec4eu, "", "" },
     {  380000, "00000000000a5ab368be389a048caac7435d7244960e69adaa53eb0b94f8b3c3", 1442833344, 0x1b16c480u, "", "" },
@@ -167,6 +168,8 @@ static checkpoint mainnet_checkpoint_array[] = {
     { 1160000, "00000000000000098f985e79ca74ca2cf8c113763f8184011759306945149309", 1572017931, 0x191f3f6eu, "", ""},
     { 1180000, "0000000000000001e1de4be8cafd6b0dc70a16293f8e82bcc41a87d80032ac34", 1575169584, 0x191bb2a5u, "", ""},
     { 1200000, "0000000000000005fbc6c64e048be7c29d43e4829f360220cededb73ce84894c", 1578321180, 0x191c82aau, "ML1200000", "76c45ae14e68484bcd26d55cfee6155778e573c6dba4b68764189e25d50c0fe4"},
+    { 1220000, "00000000000000088d62064bf4fde648fe8d573dc93ef38434e81cfe612de78c", 1581472545, 0x190f1e55u, "", ""},
+    { 1240000, "000000000000000aa3928f6e2a96284f8540b79af896a5d6c1fec2a942757014", 1584625095, 0x1916f846u, "", ""},
 };
 
 #define FEE_PER_BYTE_KEY          @"FEE_PER_BYTE"
@@ -216,6 +219,8 @@ static checkpoint mainnet_checkpoint_array[] = {
 @property (nonatomic, assign) uint32_t cachedStandardDapiGRPCPort;
 @property (nonatomic, assign) UInt256 cachedDpnsContractID;
 @property (nonatomic, assign) UInt256 cachedDashpayContractID;
+@property (nonatomic, strong) NSMutableDictionary <NSData*,NSNumber*>* transactionHashHeights;
+@property (nonatomic, strong) NSMutableDictionary <NSData*,NSNumber*>* transactionHashTimestamps;
 @property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
 
 @end
@@ -232,6 +237,8 @@ static checkpoint mainnet_checkpoint_array[] = {
     self.mWallets = [NSMutableArray array];
     self.estimatedBlockHeights = [NSMutableDictionary dictionary];
     self.managedObjectContext = [NSManagedObject context];
+    self.transactionHashHeights = [NSMutableDictionary dictionary];
+    self.transactionHashTimestamps = [NSMutableDictionary dictionary];
     
     self.feePerByte = DEFAULT_FEE_PER_B;
     uint64_t feePerByte = [[NSUserDefaults standardUserDefaults] doubleForKey:FEE_PER_BYTE_KEY];
@@ -1822,7 +1829,12 @@ static dispatch_once_t devnetToken = 0;
     NSMutableArray *updatedTx = [NSMutableArray array];
     if ([txHashes count]) {
         //need to reverify this works
-        
+        for (NSValue * transactionHash in txHashes) {
+            [self.transactionHashHeights setObject:@(height) forKey:uint256_data_from_obj(transactionHash)];
+        }
+        for (NSValue * transactionHash in txHashes) {
+            [self.transactionHashTimestamps setObject:@(timestamp) forKey:uint256_data_from_obj(transactionHash)];
+        }
         for (DSWallet * wallet in self.wallets) {
             [updatedTx addObjectsFromArray:[wallet setBlockHeight:height andTimestamp:timestamp
                                                       forTxHashes:txHashes]];
@@ -2039,11 +2051,14 @@ static dispatch_once_t devnetToken = 0;
     NSMutableDictionary *blocks = [NSMutableDictionary dictionary];
     DSMerkleBlock *b = self.lastBlock;
     uint32_t startHeight = 0;
+    __block uint32_t lastBlockHeight = self.lastBlock.height;
     while (b) {
         blocks[[NSData dataWithBytes:b.blockHash.u8 length:sizeof(UInt256)]] = b;
         startHeight = b.height;
         b = self.blocks[uint256_obj(b.prevBlock)];
     }
+    
+    [self prepareForIncomingTransactionPersistenceForBlockSaveWithNumber:lastBlockHeight];
     
     [[DSMerkleBlockEntity context] performBlock:^{
         if ([[DSOptionsManager sharedInstance] keepHeaders]) {
@@ -2064,13 +2079,28 @@ static dispatch_once_t devnetToken = 0;
             }
         }
         
-        for (DSMerkleBlock *b in blocks.allValues) {
+        for (DSMerkleBlock *merkleBlock in blocks.allValues) {
             @autoreleasepool {
-                [[DSMerkleBlockEntity managedObject] setAttributesFromBlock:b forChain:self.delegateQueueChainEntity];
+                [[DSMerkleBlockEntity managedObject] setAttributesFromBlock:merkleBlock forChain:self.delegateQueueChainEntity];
             }
         }
         
+        NSMutableSet *entities = [NSMutableSet set];
+        
+        [self persistIncomingTransactionsAttributesForBlockSaveWithNumber:lastBlockHeight inContext:[DSMerkleBlockEntity context]];
+        
+        for (DSTransactionHashEntity *e in [DSTransactionHashEntity objectsMatching:@"txHash in %@", [self.transactionHashHeights allKeys]]) {
+            e.blockHeight = [self.transactionHashHeights[e.txHash] intValue];
+            e.timestamp = [self.transactionHashTimestamps[e.txHash] intValue];;
+            [entities addObject:e];
+        }
+        for (DSTransactionHashEntity *e in entities) {
+            DSDLog(@"blockHeight is %u for %@",e.blockHeight,e.txHash);
+        }
+
         [DSMerkleBlockEntity saveContext];
+        self.transactionHashHeights = [NSMutableDictionary dictionary];
+        self.transactionHashTimestamps = [NSMutableDictionary dictionary];
     }];
 }
 
@@ -2175,6 +2205,20 @@ static dispatch_once_t devnetToken = 0;
         }
     }
     return nil;
+}
+
+// this is used to save transactions atomically with the block, needs to be called before switching threads to save the block
+- (void)prepareForIncomingTransactionPersistenceForBlockSaveWithNumber:(uint32_t)blockNumber {
+    for (DSWallet * wallet in self.wallets) {
+        [wallet prepareForIncomingTransactionPersistenceForBlockSaveWithNumber:blockNumber];
+    }
+}
+
+// this is used to save transactions atomically with the block
+- (void)persistIncomingTransactionsAttributesForBlockSaveWithNumber:(uint32_t)blockNumber inContext:(NSManagedObjectContext*)context {
+    for (DSWallet * wallet in self.wallets) {
+        [wallet persistIncomingTransactionsAttributesForBlockSaveWithNumber:blockNumber inContext:context];
+    }
 }
 
 - (DSTransaction *)transactionForHash:(UInt256)txHash {
@@ -2367,18 +2411,19 @@ static dispatch_once_t devnetToken = 0;
 
 // MARK: - Registering special transactions
 
--(BOOL)registerProviderRegistrationTransaction:(DSProviderRegistrationTransaction*)providerRegistrationTransaction {
+
+-(BOOL)registerProviderRegistrationTransaction:(DSProviderRegistrationTransaction*)providerRegistrationTransaction saveImmediately:(BOOL)saveImmediately {
     DSWallet * ownerWallet = [self walletHavingProviderOwnerAuthenticationHash:providerRegistrationTransaction.ownerKeyHash foundAtIndex:nil];
     DSWallet * votingWallet = [self walletHavingProviderVotingAuthenticationHash:providerRegistrationTransaction.votingKeyHash foundAtIndex:nil];
     DSWallet * operatorWallet = [self walletHavingProviderOperatorAuthenticationKey:providerRegistrationTransaction.operatorKey foundAtIndex:nil];
     DSWallet * holdingWallet = [self walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:providerRegistrationTransaction foundAtIndex:nil];
     DSAccount * account = [self accountContainingAddress:providerRegistrationTransaction.payoutAddress];
     BOOL registered = NO;
-    registered |= [account registerTransaction:providerRegistrationTransaction];
-    registered |= [ownerWallet.specialTransactionsHolder registerTransaction:providerRegistrationTransaction];
-    registered |= [votingWallet.specialTransactionsHolder registerTransaction:providerRegistrationTransaction];
-    registered |= [operatorWallet.specialTransactionsHolder registerTransaction:providerRegistrationTransaction];
-    registered |= [holdingWallet.specialTransactionsHolder registerTransaction:providerRegistrationTransaction];
+    registered |= [account registerTransaction:providerRegistrationTransaction saveImmediately:saveImmediately];
+    registered |= [ownerWallet.specialTransactionsHolder registerTransaction:providerRegistrationTransaction saveImmediately:saveImmediately];
+    registered |= [votingWallet.specialTransactionsHolder registerTransaction:providerRegistrationTransaction saveImmediately:saveImmediately];
+    registered |= [operatorWallet.specialTransactionsHolder registerTransaction:providerRegistrationTransaction saveImmediately:saveImmediately];
+    registered |= [holdingWallet.specialTransactionsHolder registerTransaction:providerRegistrationTransaction saveImmediately:saveImmediately];
     
     if (ownerWallet) {
         DSAuthenticationKeysDerivationPath * ownerDerivationPath = [[DSDerivationPathFactory sharedInstance] providerOwnerKeysDerivationPathForWallet:ownerWallet];
@@ -2409,23 +2454,24 @@ static dispatch_once_t devnetToken = 0;
     DSAccount * account = [self accountContainingAddress:providerUpdateServiceTransaction.payoutAddress];
     BOOL registered = [account registerTransaction:providerUpdateServiceTransaction];
     if (providerRegistrationTransaction && providerRegistrationWallet) {
-        registered |= [providerRegistrationWallet.specialTransactionsHolder registerTransaction:providerUpdateServiceTransaction];
+        registered |= [providerRegistrationWallet.specialTransactionsHolder registerTransaction:providerUpdateServiceTransaction saveImmediately:saveImmediately];
     }
     return registered;
 }
 
--(BOOL)registerProviderUpdateRegistrarTransaction:(DSProviderUpdateRegistrarTransaction*)providerUpdateRegistrarTransaction {
+
+-(BOOL)registerProviderUpdateRegistrarTransaction:(DSProviderUpdateRegistrarTransaction*)providerUpdateRegistrarTransaction saveImmediately:(BOOL)saveImmediately {
     
     DSWallet * votingWallet = [self walletHavingProviderVotingAuthenticationHash:providerUpdateRegistrarTransaction.votingKeyHash foundAtIndex:nil];
     DSWallet * operatorWallet = [self walletHavingProviderOperatorAuthenticationKey:providerUpdateRegistrarTransaction.operatorKey foundAtIndex:nil];
-    [votingWallet.specialTransactionsHolder registerTransaction:providerUpdateRegistrarTransaction];
-    [operatorWallet.specialTransactionsHolder registerTransaction:providerUpdateRegistrarTransaction];
+    [votingWallet.specialTransactionsHolder registerTransaction:providerUpdateRegistrarTransaction saveImmediately:saveImmediately];
+    [operatorWallet.specialTransactionsHolder registerTransaction:providerUpdateRegistrarTransaction saveImmediately:saveImmediately];
     DSWallet * providerRegistrationWallet = nil;
     DSTransaction * providerRegistrationTransaction = [self transactionForHash:providerUpdateRegistrarTransaction.providerRegistrationTransactionHash returnWallet:&providerRegistrationWallet];
     DSAccount * account = [self accountContainingAddress:providerUpdateRegistrarTransaction.payoutAddress];
     BOOL registered = [account registerTransaction:providerUpdateRegistrarTransaction];
     if (providerRegistrationTransaction && providerRegistrationWallet) {
-        registered |= [providerRegistrationWallet.specialTransactionsHolder registerTransaction:providerUpdateRegistrarTransaction];
+        registered |= [providerRegistrationWallet.specialTransactionsHolder registerTransaction:providerUpdateRegistrarTransaction saveImmediately:saveImmediately];
     }
     
     if (votingWallet) {
@@ -2440,15 +2486,16 @@ static dispatch_once_t devnetToken = 0;
     return registered;
 }
 
--(BOOL)registerProviderUpdateRevocationTransaction:(DSProviderUpdateRevocationTransaction*)providerUpdateRevocationTransaction {
+-(BOOL)registerProviderUpdateRevocationTransaction:(DSProviderUpdateRevocationTransaction*)providerUpdateRevocationTransaction saveImmediately:(BOOL)saveImmediately {
     DSWallet * providerRegistrationWallet = nil;
     DSTransaction * providerRegistrationTransaction = [self transactionForHash:providerUpdateRevocationTransaction.providerRegistrationTransactionHash returnWallet:&providerRegistrationWallet];
     if (providerRegistrationTransaction && providerRegistrationWallet) {
-        return [providerRegistrationWallet.specialTransactionsHolder registerTransaction:providerUpdateRevocationTransaction];
+        return [providerRegistrationWallet.specialTransactionsHolder registerTransaction:providerUpdateRevocationTransaction saveImmediately:saveImmediately];
     } else {
         return NO;
     }
 }
+
 //
 //-(BOOL)registerBlockchainIdentityRegistrationTransaction:(DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransaction {
 //    DSWallet * blockchainIdentityWallet = [self walletHavingBlockchainIdentityAuthenticationHash:blockchainIdentityRegistrationTransaction.pubkeyHash foundAtIndex:nil];
@@ -2508,36 +2555,20 @@ static dispatch_once_t devnetToken = 0;
 //    }
 //}
 
--(BOOL)registerSpecialTransaction:(DSTransaction*)transaction {
+-(BOOL)registerSpecialTransaction:(DSTransaction*)transaction saveImmediately:(BOOL)saveImmediately {
     if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
         DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
-        return [self registerProviderRegistrationTransaction:providerRegistrationTransaction];
+        return [self registerProviderRegistrationTransaction:providerRegistrationTransaction saveImmediately:saveImmediately];
     } else if ([transaction isKindOfClass:[DSProviderUpdateServiceTransaction class]]) {
         DSProviderUpdateServiceTransaction * providerUpdateServiceTransaction = (DSProviderUpdateServiceTransaction *)transaction;
-        return [self registerProviderUpdateServiceTransaction:providerUpdateServiceTransaction];
+        return [self registerProviderUpdateServiceTransaction:providerUpdateServiceTransaction saveImmediately:saveImmediately];
     } else if ([transaction isKindOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
         DSProviderUpdateRegistrarTransaction * providerUpdateRegistrarTransaction = (DSProviderUpdateRegistrarTransaction *)transaction;
-        return [self registerProviderUpdateRegistrarTransaction:providerUpdateRegistrarTransaction];
+        return [self registerProviderUpdateRegistrarTransaction:providerUpdateRegistrarTransaction saveImmediately:saveImmediately];
     } else if ([transaction isKindOfClass:[DSProviderUpdateRevocationTransaction class]]) {
         DSProviderUpdateRevocationTransaction * providerUpdateRevocationTransaction = (DSProviderUpdateRevocationTransaction *)transaction;
-        return [self registerProviderUpdateRevocationTransaction:providerUpdateRevocationTransaction];
+        return [self registerProviderUpdateRevocationTransaction:providerUpdateRevocationTransaction saveImmediately:saveImmediately];
     }
-//    else if ([transaction isKindOfClass:[DSBlockchainIdentityRegistrationTransition class]]) {
-//        DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransition *)transaction;
-//        return [self registerBlockchainIdentityRegistrationTransaction:blockchainIdentityRegistrationTransaction];
-//    } else if ([transaction isKindOfClass:[DSBlockchainIdentityUpdateTransition class]]) {
-//        DSBlockchainIdentityUpdateTransition * blockchainIdentityResetTransaction = (DSBlockchainIdentityUpdateTransition *)transaction;
-//        return [self registerBlockchainIdentityResetTransaction:blockchainIdentityResetTransaction];
-//    } else if ([transaction isKindOfClass:[DSBlockchainIdentityCloseTransition class]]) {
-//        DSBlockchainIdentityCloseTransition * blockchainIdentityCloseTransaction = (DSBlockchainIdentityCloseTransition *)transaction;
-//        return [self registerBlockchainIdentityCloseTransaction:blockchainIdentityCloseTransaction];
-//    } else if ([transaction isKindOfClass:[DSBlockchainIdentityTopupTransition class]]) {
-//        DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransaction = (DSBlockchainIdentityTopupTransition *)transaction;
-//        return [self registerBlockchainIdentityTopupTransaction:blockchainIdentityTopupTransaction];
-//    } else if ([transaction isKindOfClass:[DSTransition class]]) {
-//        DSTransition * transition = (DSTransition*)transaction;
-//        return [self registerTransition:transition];
-//    }
     return FALSE;
 }
 

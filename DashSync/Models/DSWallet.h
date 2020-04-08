@@ -166,6 +166,12 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 // true if no previous wallet transaction spends any of the given transaction's inputs, and no inputs are invalid
 - (BOOL)transactionIsValid:(DSTransaction *)transaction;
 
+// this is used to save transactions atomically with the block, needs to be called before switching threads to save the block
+- (void)prepareForIncomingTransactionPersistenceForBlockSaveWithNumber:(uint32_t)blockNumber;
+
+// this is used to save transactions atomically with the block
+- (void)persistIncomingTransactionsAttributesForBlockSaveWithNumber:(uint32_t)blockNumber inContext:(NSManagedObjectContext*)context;
+
 //returns the seed phrase after authenticating
 - (void)seedPhraseAfterAuthentication:(void (^ _Nullable)(NSString * _Nullable seedPhrase))completion;
 - (void)seedPhraseAfterAuthenticationWithPrompt:(NSString * _Nullable)authprompt completion:(void (^ _Nullable)(NSString * _Nullable seedPhrase))completion;

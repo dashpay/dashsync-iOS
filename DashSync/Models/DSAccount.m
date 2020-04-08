@@ -86,6 +86,9 @@
 @property (nonatomic, strong) NSSet *spentOutputs, *invalidTx, *pendingTx;
 @property (nonatomic, strong) NSMutableOrderedSet *transactions;
 
+@property (nonatomic, strong) NSMutableArray <DSTransaction*> *transactionsToSave;
+@property (nonatomic, strong) NSMutableDictionary <NSNumber*,NSArray<DSTransaction*>*> *transactionsToSaveInBlockSave;
+
 @property (nonatomic, strong) NSOrderedSet *utxos;
 @property (nonatomic, strong) NSMutableDictionary *allTx;
 
@@ -169,6 +172,8 @@
     self.transactions = [NSMutableOrderedSet orderedSet];
     self.allTx = [NSMutableDictionary dictionary];
     self.managedObjectContext = context?context:[NSManagedObject context];
+    self.transactionsToSave = [NSMutableArray array];
+    self.transactionsToSaveInBlockSave = [NSMutableDictionary dictionary];
     self.isViewOnlyAccount = FALSE;
     return self;
 }
@@ -178,6 +183,8 @@
     
     if (! (self = [self initWithAccountNumber:accountNumber withDerivationPaths:derivationPaths inContext:context])) return nil;
     self.isViewOnlyAccount = TRUE;
+    self.transactionsToSave = [NSMutableArray array];
+    self.transactionsToSaveInBlockSave = [NSMutableDictionary dictionary];
     
     return self;
 }
@@ -1072,40 +1079,6 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             [self sortTransactions];
             [self updateBalance];
         }
-        
-        [self.managedObjectContext performBlockAndWait:^{
-            @autoreleasepool {
-                NSMutableSet *entities = [NSMutableSet set];
-                
-                for (DSTransactionHashEntity *e in [DSTransactionHashEntity objectsMatching:@"txHash in %@", hashes]) {
-                    if (e.blockHeight != height || e.timestamp != timestamp) {
-                        e.blockHeight = height;
-                        e.timestamp = timestamp;
-                        [entities addObject:e];
-                    }
-                }
-                
-                //                if (height != TX_UNCONFIRMED) {
-                //                    // BUG: XXX saving the tx.blockHeight and the block it's contained in both need to happen together
-                //                    // as an atomic db operation. If the tx.blockHeight is saved but the block isn't when the app exits,
-                //                    // then a re-org that happens afterward can potentially result in an invalid tx showing as confirmed
-                //
-                //                    for (NSManagedObject *e in entities) {
-                //                        [self.moc refreshObject:e mergeChanges:NO];
-                //                    }
-                //                }
-                for (DSTransactionHashEntity *e in entities) {
-                    DSDLog(@"blockHeight is %u for %@",e.blockHeight,e.txHash);
-                }
-                if (entities.count) {
-                    NSError * error = nil;
-                    [self.managedObjectContext save:&error];
-                    if (error) {
-                        DSDLog(@"Issue Saving DB when setting Block Height");
-                    }
-                }
-            }
-        }];
     }
     
     return updated;
@@ -1277,7 +1250,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 // MARK: = Registration
 
 // records the transaction in the account, or returns false if it isn't associated with the wallet
-- (BOOL)registerTransaction:(DSTransaction *)transaction
+- (BOOL)registerTransaction:(DSTransaction *)transaction saveImmediately:(BOOL)saveImmediately
 {
     NSParameterAssert(transaction);
     
@@ -1318,11 +1291,27 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     }
     [self updateBalance];
     
-    if (!self.wallet.isTransient) {
-        [transaction saveInitial];
+    if (saveImmediately) {
+	if (!self.wallet.isTransient) {
+            [transaction saveInitial];
+	}
+    } else {
+        [self.transactionsToSave addObject:transaction];
     }
     
     return YES;
+}
+
+-(void)prepareForIncomingTransactionPersistenceForBlockSaveWithNumber:(uint32_t)blockNumber {
+    [self.transactionsToSaveInBlockSave setObject:[self.transactionsToSave copy] forKey:@(blockNumber)];
+    [self.transactionsToSave removeAllObjects];
+}
+
+-(void)persistIncomingTransactionsAttributesForBlockSaveWithNumber:(uint32_t)blockNumber inContext:(NSManagedObjectContext*)context {
+    for (DSTransaction * transaction in self.transactionsToSaveInBlockSave[@(blockNumber)]) {
+        [transaction setInitialPersistentAttributesInContext:context];
+    }
+    [self.transactionsToSaveInBlockSave removeObjectForKey:@(blockNumber)];
 }
 
 // MARK: = Transaction State

@@ -36,7 +36,6 @@
 #import "NSMutableData+Dash.h"
 #import "DSVersionManager.h"
 #import "NSData+Bitcoin.h"
-#import <LocalAuthentication/LocalAuthentication.h>
 #import "NSDate+Utils.h"
 #import "UIWindow+DSUtils.h"
 #import "DashSync.h"
@@ -45,6 +44,7 @@
 #import "DSRequestPinViewController.h"
 #import "DSSetPinViewController.h"
 #import "DSRecoveryViewController.h"
+#import "DSBiometricsAuthenticator.h"
 
 static NSString *sanitizeString(NSString *s)
 {
@@ -61,6 +61,9 @@ static NSString *sanitizeString(NSString *s)
 #define PIN_FAIL_HEIGHT_KEY @"pinfailheight"
 #define LOCK    @"\xF0\x9F\x94\x92" // unicode lock symbol U+1F512 (utf-8)
 #define REDX    @"\xE2\x9D\x8C"     // unicode cross mark U+274C, red x emoji (utf-8)
+
+#define BIOMETRIC_SPENDING_LIMIT_KEY  @"SPEND_LIMIT_AMOUNT"
+#define BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY  @"BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY"
 
 NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTerminationRequestNotification";
 
@@ -174,43 +177,6 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     }
 }
 
-// MARK: - Device
-
-// true if touch id is enabled
-- (BOOL)isTouchIdEnabled
-{
-    if (@available(iOS 11.0, *)) {
-        if (![LAContext class]) return FALSE; //sanity check
-        LAContext * context = [LAContext new];
-        return ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil] && context.biometryType == LABiometryTypeTouchID);
-    } else {
-        return ([LAContext class] &&
-                [[LAContext new] canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil]) ? YES : NO;
-    }
-}
-
-// true if touch id is enabled
-- (BOOL)isFaceIdEnabled
-{
-    if (@available(iOS 11.0, *)) {
-        if (![LAContext class]) return FALSE; //sanity check
-        LAContext * context = [LAContext new];
-        return ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil] && context.biometryType == LABiometryTypeFaceID);
-    } else {
-        return FALSE;
-    }
-}
-
-// true if device passcode is enabled
-- (BOOL)isPasscodeEnabled
-{
-    NSError *error = nil;
-    
-    if (! [LAContext class]) return YES; // we can only check for passcode on iOS 8 and above
-    if ([[LAContext new] canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error]) return YES;
-    return (error && error.code == LAErrorPasscodeNotSet) ? NO : YES;
-}
-
 // MARK: - Prompts
 
 // generate a description of a transaction so the user can review and decide whether to confirm or cancel
@@ -318,7 +284,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
         DSDLog(@"Tried to remove a pin, but wallets exist on device");
         return;
     }
-    setKeychainData(nil, SPEND_LIMIT_KEY, NO);
+    setKeychainInt(0, BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY, NO);
     setKeychainData(nil, PIN_KEY, NO);
     setKeychainData(nil, PIN_FAIL_COUNT_KEY, NO);
     setKeychainData(nil, PIN_FAIL_HEIGHT_KEY, NO);
@@ -326,14 +292,87 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     self.usesAuthentication = NO;
 }
 
+// MARK: - Biometric Limits
+
+// amount that can be spent using touch id without pin entry
+- (uint64_t)biometricSpendingLimit
+{
+    NSError * error = nil;
+    BOOL hasASpendingLimit = hasKeychainData(BIOMETRIC_SPENDING_LIMIT_KEY, &error);
+    if (error) return 0;
+    if (!hasASpendingLimit) {
+        if ([[NSUserDefaults standardUserDefaults] doubleForKey:BIOMETRIC_SPENDING_LIMIT_KEY]) {
+            //lets migrate this when we are authenticated
+            if ([self setBiometricSpendingLimitIfAuthenticated:[[NSUserDefaults standardUserDefaults] doubleForKey:BIOMETRIC_SPENDING_LIMIT_KEY]]) {
+                
+                [[NSUserDefaults standardUserDefaults] removeObjectForKey:BIOMETRIC_SPENDING_LIMIT_KEY];
+                
+                uint64_t spendingLimit = getKeychainInt(BIOMETRIC_SPENDING_LIMIT_KEY, &error);
+                if (error) return 0;
+                
+                return spendingLimit;
+            }
+        } else {
+            return BIOMETRIC_SPENDING_LIMIT_NOT_SET;
+        }
+    }
+    
+    uint64_t spendingLimit = getKeychainInt(BIOMETRIC_SPENDING_LIMIT_KEY, &error);
+    if (error) return 0;
+    
+    return spendingLimit;
+}
+
+- (BOOL)setBiometricSpendingLimitIfAuthenticated:(uint64_t)spendingLimit
+{
+    if (![self didAuthenticate]) return FALSE;
+    
+    if (setKeychainInt(spendingLimit, BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY, NO)) { //we are authenticated anyways so reset this
+        // use setDouble since setInteger won't hold a uint64_t
+        setKeychainInt(spendingLimit, BIOMETRIC_SPENDING_LIMIT_KEY, YES);
+        return TRUE;
+    }
+    return FALSE;
+}
+
+-(BOOL)resetSpendingLimitsIfAuthenticated {
+    if (![self didAuthenticate]) return FALSE;
+    uint64_t limit = self.biometricSpendingLimit;
+    if (limit > 0) setKeychainInt(limit, BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY, NO);
+    return TRUE;
+}
+
+-(BOOL)updateBiometricsAmountLeftAfterSpendingAmount:(uint64_t)amount {
+    NSError * error = nil;
+    BOOL hasAmountLeft = hasKeychainData(BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY, &error);
+    if (error || !hasAmountLeft) return NO;
+    
+    uint64_t amountLeft = getKeychainInt(BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY, &error);
+    if (error) return FALSE;
+    if (amountLeft < amount) {
+        setKeychainInt(0, BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY, NO); //require pin because this is weird
+        return FALSE;
+    }
+    setKeychainInt(amountLeft - amount, BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY, NO);
+    return TRUE;
+}
+
+-(BOOL)canUseBiometricAuthenticationForAmount:(uint64_t)amount {
+    if (![self isBiometricSpendingAllowed]) return FALSE;
+    NSError * error = nil;
+    BOOL hasAmountLeft = hasKeychainData(BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY, &error);
+    if (error || !hasAmountLeft) return NO;
+    
+    uint64_t amountLeft = getKeychainInt(BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY, &error);
+    if (error) return FALSE;
+    return (amount <= amountLeft);
+}
+
+
 // MARK: - Authentication
 
 - (BOOL)isBiometricAuthenticationAllowed {
-    LAContext *context = [[LAContext alloc] init];
-    NSError *error = nil;
-    if ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error] == NO) {
-        DSDLog(@"[LAContext canEvaluatePolicy:] %@", error.localizedDescription);
-        
+    if (DSBiometricsAuthenticator.isBiometricsAuthenticationEnabled == NO) {
         return NO;
     }
     
@@ -344,7 +383,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 }
 
 - (BOOL)isBiometricSpendingAllowed {
-    return ([self isBiometricAuthenticationAllowed] && getKeychainInt(SPEND_LIMIT_KEY, nil) > 0);
+    return ([self isBiometricAuthenticationAllowed] && getKeychainInt(BIOMETRIC_SPENDING_LIMIT_KEY, nil) > 0);
 }
 
 - (void)authenticateUsingBiometricsOnlyWithPrompt:(NSString * _Nullable)prompt
@@ -362,37 +401,34 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     NSAssert(self.usesAuthentication, @"Authentication is not configured");
     
     if (!self.usesAuthentication) { //if we don't have authentication
-        completion(YES, NO);
+        completion(YES, NO, NO);
         return;
     }
     
     NSAssert([self isBiometricAuthenticationAllowed],
              @"Check if biometrics allowed using `isBiometricAuthenticationAllowed` method before calling this method");
     
-    LAContext *context = [[LAContext alloc] init];
-    
-    void(^localAuthBlock)(void) = ^{
-        [self performLocalAuthenticationSynchronously:context
-                                               prompt:prompt
-                                           completion:^(BOOL authenticated, BOOL shouldTryAnotherMethod) {
-                                               if (shouldFallbackToPin && shouldTryAnotherMethod) {
-                                                   [self authenticateWithPrompt:prompt
-                                                   usingBiometricAuthentication:NO
-                                                                 alertIfLockout:alertIfLockout
-                                                                     completion:completion];
-                                               }
-                                               else {
-                                                   completion(authenticated, NO);
-                                               }
-                                           }];
-    };
-    
     BOOL shouldPreprompt = NO;
     if (@available(iOS 11.0, *)) {
-        if (context.biometryType == LABiometryTypeFaceID) {
+        if (DSBiometricsAuthenticator.biometryType == LABiometryTypeFaceID) {
             shouldPreprompt = YES;
         }
     }
+    
+    void(^localAuthBlock)(void) = ^{
+        [self performLocalAuthenticationWithPrompt:prompt completion:^(BOOL authenticated, BOOL shouldTryAnotherMethod) {
+            if (shouldFallbackToPin && shouldTryAnotherMethod) {
+                [self authenticateWithPrompt:prompt
+                usingBiometricAuthentication:NO
+                              alertIfLockout:alertIfLockout
+                                  completion:completion];
+            }
+            else {
+                completion(authenticated, YES, NO);
+            }
+        }];
+    };
+    
     if (prompt && shouldPreprompt) {
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:DSLocalizedString(@"Confirm", nil)
                                                                        message:prompt
@@ -400,7 +436,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
         UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:DSLocalizedString(@"Cancel", nil)
                                                                style:UIAlertActionStyleCancel
                                                              handler:^(UIAlertAction * action) {
-                                                                 completion(NO, YES);
+                                                                 completion(NO, NO, YES);
                                                              }];
         [alert addAction:cancelAction];
         UIAlertAction *okAction = [UIAlertAction actionWithTitle:DSLocalizedString(@"OK", nil)
@@ -436,7 +472,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 // prompts user to authenticate with touch id or passcode
 - (void)authenticateWithPrompt:(NSString *)authprompt usingBiometricAuthentication:(BOOL)usesBiometricAuthentication alertIfLockout:(BOOL)alertIfLockout completion:(PinCompletionBlock)completion {
     if (!self.usesAuthentication) { //if we don't have authentication
-        completion(YES, NO);
+        completion(YES, NO, NO);
         return;
     }
     
@@ -460,38 +496,34 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     }
 }
 
-- (void)performLocalAuthenticationSynchronously:(LAContext *)context
-                                         prompt:(NSString *)prompt
-                                     completion:(void(^)(BOOL authenticated, BOOL shouldTryAnotherMethod))completion {
+- (void)performLocalAuthenticationWithPrompt:(NSString *)prompt
+                                  completion:(void(^)(BOOL authenticated, BOOL shouldTryAnotherMethod))completion {
     [DSEventManager saveEvent:@"wallet_manager:touchid_auth"];
     
-    __block NSInteger result = 0;
-    context.localizedFallbackTitle = DSLocalizedString(@"Passcode", nil);
-    [context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
-            localizedReason:(prompt.length > 0 ? prompt : @" ")
-                      reply:^(BOOL success, NSError *error) {
-                          result = success ? 1 : error.code;
-                      }];
-    
-    while (result == 0) {
-        [[NSRunLoop mainRunLoop] runMode:NSDefaultRunLoopMode
-                              beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
-    }
-    
-    if (result == LAErrorAuthenticationFailed) {
-        setKeychainInt(0, SPEND_LIMIT_KEY, NO); // require pin entry for next spend
-    }
-    else if (result == 1) {
-        self.didAuthenticate = YES;
-        completion(YES, NO);
-        return;
-    }
-    else if (result == LAErrorUserCancel || result == LAErrorSystemCancel) {
-        completion(NO, NO);
-        return;
-    }
-    
-    completion(NO, YES);
+    [DSBiometricsAuthenticator
+     performBiometricsAuthenticationWithReason:prompt.length > 0 ? prompt : @" "
+     fallbackTitle:DSLocalizedString(@"Passcode", nil)
+     completion:^(DSBiometricsAuthenticationResult result) {
+        switch (result) {
+            case DSBiometricsAuthenticationResultSucceeded: {
+                self.didAuthenticate = YES;
+                completion(YES, NO);
+                
+                break;
+            }
+            case DSBiometricsAuthenticationResultFailed: {
+                setKeychainInt(0, BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY, NO); // require pin entry for next spend
+                completion(NO, YES);
+                
+                break;
+            }
+            case DSBiometricsAuthenticationResultCancelled: {
+                completion(NO, NO);
+                
+                break;
+            }
+        }
+    }];
 }
 
 -(void)userLockedOut {
@@ -590,7 +622,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
                 [self userLockedOut];
             }
             
-            completion(authenticated, NO);
+            completion(authenticated, NO, NO);
         }
     }];
 }
@@ -755,7 +787,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 }
 
 - (void)removePinForced {
-    setKeychainData(nil, SPEND_LIMIT_KEY, NO);
+    setKeychainInt(0, BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY, NO);
     setKeychainData(nil, PIN_KEY, NO);
     setKeychainData(nil, PIN_FAIL_COUNT_KEY, NO);
     setKeychainData(nil, PIN_FAIL_HEIGHT_KEY, NO);
@@ -876,7 +908,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
         [self setFailCount:0];
         [self setFailHeight:0];
 
-        [[DSChainsManager sharedInstance] resetSpendingLimitsIfAuthenticated];
+        [self resetSpendingLimitsIfAuthenticated];
         [[NSUserDefaults standardUserDefaults] setDouble:[NSDate timeIntervalSince1970]
                                                   forKey:PIN_UNLOCK_TIME_KEY];
 

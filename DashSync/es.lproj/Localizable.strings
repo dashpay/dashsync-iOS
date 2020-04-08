@@ -9,7 +9,7 @@
 "\n\n     amount %@ (%@)" = "\n\n     cantidad %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
+"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nDIRECCIÓN YA UTILIZADA\nLas direcciones Dash están previstas para ser utilizadas solo una vez\n\nRe-utilizar reduce la privacidad para ambos usted y el receptor, puede resultar en una pérdida si el receptor no tiene directamente control de la dirección.";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\ncuota de red +%1$@ (%2$@)";
@@ -93,7 +93,7 @@
 "Insufficient funds" = "Fondos insuficientes";
 
 /* No comment provided by engineer. */
-"Insufficient funds for Dash network fee" = "Insufficient funds for Dash network fee";
+"Insufficient funds for Dash network fee" = "Fondos insuficientes para la tasa de red de Dash";
 
 /* No comment provided by engineer. */
 "Internal Error" = "Error interno";
@@ -150,7 +150,7 @@
 "PIN for %@" = "PIN para %@";
 
 /* Please authenticate to create your Testnet wallet */
-"Please authenticate to create your %@ wallet" = "Please authenticate to create your %@ wallet";
+"Please authenticate to create your %@ wallet" = "Autentícate para crear tu %@ billetera";
 
 /* No comment provided by engineer. */
 "Recovery phrase" = "Frase de recuperación";

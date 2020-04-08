@@ -148,6 +148,8 @@ sequence:(uint32_t)sequence;
 
 - (BOOL)saveInitial; //returns if the save took place
 
+- (BOOL)setInitialPersistentAttributesInContext:(NSManagedObjectContext*)context;
+
 //instant send
 
 - (void)setInstantSendReceivedWithInstantSendLock:(DSInstantSendTransactionLock*)instantSendLock;

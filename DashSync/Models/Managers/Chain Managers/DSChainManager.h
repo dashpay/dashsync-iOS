@@ -54,10 +54,6 @@ FOUNDATION_EXPORT NSString* const DSChainManagerNotificationChainKey;
 @property (nonatomic, readonly) DSPeerManager * peerManager;
 @property (nonatomic, readonly) DSChain * chain;
 
-- (instancetype)initWithChain:(DSChain*)chain;
-
-- (void)resetSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo;
-
 - (void)rescan;
 
 - (void)rescanMasternodeListsAndQuorums;

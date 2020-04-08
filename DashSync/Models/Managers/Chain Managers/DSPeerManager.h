@@ -59,7 +59,10 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerPeersDidChangeNotificati
 @property (nonatomic, readonly) NSArray* registeredDevnetPeerServices;
 @property (nullable, nonatomic, readonly) NSString* trustedPeerHost;
 
-- (instancetype)initWithChain:(DSChain*)chain;
+- (DSPeerStatus)statusForLocation:(UInt128)IPAddress port:(uint32_t)port;
+- (DSPeerType)typeForLocation:(UInt128)IPAddress port:(uint32_t)port;
+- (void)setTrustedPeerHost:(NSString * _Nullable)host;
+- (void)removeTrustedPeerHost;
 
 - (void)connect;
 - (void)clearPeers;

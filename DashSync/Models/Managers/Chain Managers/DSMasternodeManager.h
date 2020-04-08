@@ -50,20 +50,11 @@ FOUNDATION_EXPORT NSString* const DSQuorumListDidChangeNotification;
 @property (nonatomic,readonly) uint32_t lastMasternodeListBlockHeight;
 @property (nonatomic,readonly) DSMasternodeList * currentMasternodeList;
 
--(instancetype _Nonnull)initWithChain:(DSChain* _Nonnull)chain NS_DESIGNATED_INITIALIZER;
-- (instancetype)init NS_UNAVAILABLE;
-
--(void)setUp;
-
--(void)loadFileDistributedMasternodeLists;
+-(instancetype)init NS_UNAVAILABLE;
 
 //-(void)addMasternodePrivateKey:(NSString*)privateKey atAddress:(NSString*)address;
 
 -(DSSimplifiedMasternodeEntry*)masternodeHavingProviderRegistrationTransactionHash:(NSData*)providerRegistrationTransactionHash;
-
--(void)wipeMasternodeInfo;
-
--(void)reloadMasternodeLists;
 
 -(BOOL)hasMasternodeAtLocation:(UInt128)IPAddress port:(uint32_t)port;
 
@@ -74,8 +65,6 @@ FOUNDATION_EXPORT NSString* const DSQuorumListDidChangeNotification;
 -(DSLocalMasternode *)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet * _Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet * _Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex inOwnerWallet:(DSWallet * _Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex inVotingWallet:(DSWallet * _Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex;
 
 -(DSLocalMasternode*)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet* _Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet* _Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex operatorPublicKey:(DSBLSKey*)operatorPublicKey inOwnerWallet:(DSWallet* _Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex ownerPrivateKey:(DSECDSAKey*)ownerPrivateKey inVotingWallet:(DSWallet* _Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex votingKey:(DSECDSAKey*)votingKey;
-
--(DSLocalMasternode *)localMasternodeFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntry  claimedWithOwnerWallet:(DSWallet*)wallet ownerKeyIndex:(uint32_t)ownerKeyIndex;
 
 -(DSLocalMasternode *)localMasternodeFromProviderRegistrationTransaction:(DSProviderRegistrationTransaction*)providerRegistrationTransaction save:(BOOL)save;
 
@@ -93,17 +82,11 @@ FOUNDATION_EXPORT NSString* const DSQuorumListDidChangeNotification;
 
 -(DSMasternodeList*)masternodeListForBlockHash:(UInt256)blockHash;
 
--(void)getRecentMasternodeList:(NSUInteger)blocksAgo withSafetyDelay:(uint32_t)safetyDelay;
-
--(void)getCurrentMasternodeListWithSafetyDelay:(uint32_t)safetyDelay;
-
--(void)getMasternodeListsForBlockHashes:(NSOrderedSet*)blockHashes;
-
 -(void)getMasternodeListForBlockHeight:(uint32_t)blockHeight error:(NSError**)error;
 
 -(void)getMasternodeListForBlockHash:(UInt256)blockHash;
 
-+(void)processMasternodeDiffMessage:(NSData*)message baseMasternodeList:(DSMasternodeList* _Nullable)baseMasternodeList masternodeListLookup:(DSMasternodeList*(^)(UInt256 blockHash))masternodeListLookup lastBlock:(DSMerkleBlock* _Nullable)lastBlock onChain:(DSChain*)chain blockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup completion:(void (^)(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * masternodeList, NSDictionary * addedMasternodes, NSDictionary * modifiedMasternodes, NSDictionary * addedQuorums, NSOrderedSet * neededMissingMasternodeLists))completion;
+-(void)reloadMasternodeLists;
 
 @end
 

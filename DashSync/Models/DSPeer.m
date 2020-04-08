@@ -303,9 +303,9 @@
 {
     if (_status == DSPeerStatus_Disconnected) return;
     if (!error) {
-        DSDLog(@"Disconnected from peer %@ with unknown error",self.host);
+        DSDLog(@"Disconnected from peer %@ (%@ protocol %d) with unknown error",self.host,self.useragent,self.version);
     } else {
-        DSDLog(@"Disconnected from peer %@ with error %@",self.host,error);
+        DSDLog(@"Disconnected from peer %@ (%@ protocol %d) with error %@",self.host,self.useragent,self.version,error);
     }
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel connect timeout
 
@@ -1172,11 +1172,12 @@
         }
     }
     
-    if ([self.chain syncsBlockchain] && !self.sentFilter && ! self.sentMempool && ! self.sentGetblocks && (txHashes.count + instantSendLockHashes.count > 0) && !onlyPrivateSendTransactions) {
-        [self error:@"got tx inv message before loading a filter"];
-        return;
-    }
-    else if (txHashes.count + instantSendLockHashes.count > 10000) { // this was happening on testnet, some sort of DOS/spam attack?
+//    if ([self.chain syncsBlockchain] && !self.sentFilter && ! self.sentMempool && ! self.sentGetblocks && (txHashes.count + instantSendLockHashes.count > 0) && !onlyPrivateSendTransactions) {
+//        [self error:@"got tx inv message before loading a filter"];
+//        return;
+//    }
+//    else
+    if (txHashes.count + instantSendLockHashes.count > 10000) { // this was happening on testnet, some sort of DOS/spam attack?
         DSDLog(@"%@:%u too many transactions, disconnecting", self.host, self.port);
         [self disconnect]; // disconnecting seems to be the easiest way to mitigate it
         return;
@@ -1208,7 +1209,7 @@
             [hash getValue:&h];
             
             dispatch_async(self.delegateQueue, ^{
-                if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasTransaction:h transactionIsRequestingInstantSendLock:NO];
+                if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasTransactionWithHash:h transactionIsRequestingInstantSendLock:NO];
             });
         }
         
@@ -1299,15 +1300,10 @@
     }
     
     if (tx) {
-        if ([tx isKindOfClass:[DSBlockchainIdentityRegistrationTransition class]]) {
-            dispatch_sync(self.delegateQueue, ^{ // if there is a blockchain user process this synchronously
-                [self.transactionDelegate peer:self relayedTransaction:tx transactionIsRequestingInstantSendLock:isIxTransaction];
-            });
-        } else {
-            dispatch_async(self.delegateQueue, ^{
-                [self.transactionDelegate peer:self relayedTransaction:tx transactionIsRequestingInstantSendLock:isIxTransaction];
-            });
-        }
+        __block DSMerkleBlock * currentBlock = self.currentBlock;
+        dispatch_async(self.delegateQueue, ^{
+            [self.transactionDelegate peer:self relayedTransaction:tx inBlock:currentBlock transactionIsRequestingInstantSendLock:isIxTransaction];
+        });
     }
     
 #if LOG_FULL_TX_MESSAGE

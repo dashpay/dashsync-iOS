@@ -67,6 +67,8 @@ NS_ASSUME_NONNULL_BEGIN
                                                           BOOL cancelled,
                                                           BOOL shouldLockout))completion;
 
+- (BOOL)updateBiometricsAmountLeftAfterSpendingAmount:(uint64_t)amount;
+
 @end
 
 NS_ASSUME_NONNULL_END

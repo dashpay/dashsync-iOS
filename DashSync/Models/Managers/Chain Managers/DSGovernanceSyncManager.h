@@ -52,9 +52,6 @@ FOUNDATION_EXPORT NSString* const DSGovernanceVoteCountUpdateNotification;
 
 @property (nullable, nonatomic,readonly) DSGovernanceObject * currentGovernanceSyncObject;
 
-
--(instancetype)initWithChain:(DSChain*)chain;
-
 -(void)startGovernanceSync;
 
 -(void)vote:(DSGovernanceVoteOutcome)governanceVoteOutcome onGovernanceProposal:(DSGovernanceObject *)governanceObject;
