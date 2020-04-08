@@ -2448,11 +2448,11 @@ static dispatch_once_t devnetToken = 0;
     return registered;
 }
 
--(BOOL)registerProviderUpdateServiceTransaction:(DSProviderUpdateServiceTransaction*)providerUpdateServiceTransaction {
+-(BOOL)registerProviderUpdateServiceTransaction:(DSProviderUpdateServiceTransaction*)providerUpdateServiceTransaction saveImmediately:(BOOL)saveImmediately {
     DSWallet * providerRegistrationWallet = nil;
     DSTransaction * providerRegistrationTransaction = [self transactionForHash:providerUpdateServiceTransaction.providerRegistrationTransactionHash returnWallet:&providerRegistrationWallet];
     DSAccount * account = [self accountContainingAddress:providerUpdateServiceTransaction.payoutAddress];
-    BOOL registered = [account registerTransaction:providerUpdateServiceTransaction];
+    BOOL registered = [account registerTransaction:providerUpdateServiceTransaction saveImmediately:saveImmediately];
     if (providerRegistrationTransaction && providerRegistrationWallet) {
         registered |= [providerRegistrationWallet.specialTransactionsHolder registerTransaction:providerUpdateServiceTransaction saveImmediately:saveImmediately];
     }
@@ -2469,7 +2469,7 @@ static dispatch_once_t devnetToken = 0;
     DSWallet * providerRegistrationWallet = nil;
     DSTransaction * providerRegistrationTransaction = [self transactionForHash:providerUpdateRegistrarTransaction.providerRegistrationTransactionHash returnWallet:&providerRegistrationWallet];
     DSAccount * account = [self accountContainingAddress:providerUpdateRegistrarTransaction.payoutAddress];
-    BOOL registered = [account registerTransaction:providerUpdateRegistrarTransaction];
+    BOOL registered = [account registerTransaction:providerUpdateRegistrarTransaction saveImmediately:saveImmediately];
     if (providerRegistrationTransaction && providerRegistrationWallet) {
         registered |= [providerRegistrationWallet.specialTransactionsHolder registerTransaction:providerUpdateRegistrarTransaction saveImmediately:saveImmediately];
     }
