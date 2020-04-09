@@ -38,6 +38,7 @@ typedef NS_ENUM(NSUInteger, DPContractState) {
 @property (readonly, nonatomic) UInt256 registeredBlockchainIdentityUniqueID;
 @property (readonly, copy, nonatomic) NSString *name;
 @property (readonly, copy, nonatomic) NSString *base58ContractID;
+@property (readonly, copy, nonatomic) NSString *ownerID;
 @property (readonly, copy, nonatomic) NSString *statusString;
 @property (readonly, nonatomic) DPContractState contractState;
 @property (readonly, copy, nonatomic) NSString *jsonSchemaId;

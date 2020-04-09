@@ -44,12 +44,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
     DSBlockchainIdentityUsernameStatus_TakenOnNetwork = 6,
 };
 
-typedef NS_ENUM(NSUInteger, DSBlockchainIdentityType) {
-    DSBlockchainIdentityType_Unknown = 0,
-    DSBlockchainIdentityType_User = 1,
-    DSBlockchainIdentityType_Application = 2,
-};
-
 typedef NS_ENUM(NSUInteger, DSBlockchainIdentityRetryDelayType) {
     DSBlockchainIdentityRetryDelayType_Linear = 0,
     DSBlockchainIdentityRetryDelayType_SlowingDown20Percent = 1,
@@ -126,9 +120,6 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 /*! @brief The number of all keys that the blockchain identity has, registered, in registration, or inactive */
 @property (nonatomic,readonly) uint32_t totalKeyCount;
 
-/*! @brief The type of the blockchain identity, it can be either an application or a user, with more potential types to come */
-@property (nonatomic,assign) DSBlockchainIdentityType type;
-
 /*! @brief This is the transaction on L1 that has an output that is used to fund the creation of this blockchain identity.
     @discussion There are situations where this is nil as it is not yet known ; if the blockchain identity is being retrieved from L2 or if we are resyncing the chain. */
 @property (nullable,nonatomic,readonly) DSCreditFundingTransaction * registrationCreditFundingTransaction;
@@ -145,9 +136,6 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 /*! @brief This is a convenience method that checks to see if registrationStatus is confirmed */
 @property (nonatomic,readonly,getter=isRegistered) BOOL registered;
 
-/*! @brief This is the localized type of the identity returned as a string. */
-@property (nonatomic,readonly) NSString * localizedBlockchainIdentityTypeString;
-
 /*! @brief This is a convenience factory to quickly make dashpay documents */
 @property (nonatomic,readonly) DPDocumentFactory* dashpayDocumentFactory;
 
@@ -159,9 +147,6 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 -(void)fetchAndUpdateContract:(DPContract*)contract;
 
 // MARK: - Helpers
-
-/*! @brief This will return a localized blockchain identity type string for a specified type. This is a helper method so clients are not forced to localize the type themselves. Values are capitalized. "User" and "Application" are examples of return values. */
-+ (NSString*)localizedBlockchainIdentityTypeStringForType:(DSBlockchainIdentityType)type;
 
 - (DSDashpayUserEntity*)matchingDashpayUserInContext:(NSManagedObjectContext*)context;
 

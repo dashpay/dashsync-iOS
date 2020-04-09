@@ -118,6 +118,7 @@
 - (DSMutableStringValueDictionary *)baseKeyValueDictionary {
     DSMutableStringValueDictionary *json = [[DSMutableStringValueDictionary alloc] init];
     json[@"protocolVersion"] = @(0);
+    json[@"entropy"] = [DSKey randomAddressForChain:[self chain]];
     json[@"type"] = @(self.type);
     return json;
 }

@@ -119,7 +119,7 @@
     
     DSStringValueDictionary *data = @{
         @"timestamp": @([[[NSDate alloc] init] timeIntervalSince1970]),
-                           @"toUserId" : uint256_base58([self destinationBlockchainIdentityUniqueId]),
+                           @"toOwnerId" : uint256_base58([self destinationBlockchainIdentityUniqueId]),
                            @"encryptedPublicKey" : [self.encryptedExtendedPublicKeyData base64EncodedStringWithOptions:0],
         @"senderKeyIndex" : @(self.sourceKeyIndex + 1),
         @"recipientKeyIndex" : @(self.destinationKeyIndex + 1),

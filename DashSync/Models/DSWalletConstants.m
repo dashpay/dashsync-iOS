@@ -74,5 +74,3 @@ NSString* const DSBlockchainIdentityUpdateEventKeyUpdate = @"DSBlockchainIdentit
 NSString* const DSBlockchainIdentityUpdateEventRegistration = @"DSBlockchainIdentityUpdateEventRegistration";
 
 NSString* const DSBlockchainIdentityUpdateEventCreditBalance = @"DSBlockchainIdentityUpdateEventCreditBalance";
-
-NSString* const DSBlockchainIdentityUpdateEventType = @"DSBlockchainIdentityUpdateEventType";

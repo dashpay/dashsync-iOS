@@ -19,5 +19,6 @@
 @dynamic state;
 @dynamic chain;
 @dynamic creator;
+@dynamic entropy;
 
 @end

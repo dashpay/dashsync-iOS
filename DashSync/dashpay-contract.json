@@ -3,7 +3,7 @@
         "profile": {
             "indices": [{
                 "properties": [{
-                    "$userId": "asc"
+                    "$ownerId": "asc"
                 }],
                 "unique": true
             }],
@@ -28,20 +28,20 @@
         "contactRequest": {
             "indices": [{
                 "properties": [{
-                    "$userId": "asc"
+                    "$ownerId": "asc"
                 }, {
-                    "toUserId": "asc"
+                    "toOwnerId": "asc"
                 }],
                 "unique": true
             },
             {
                 "properties": [{
-                    "$userId": "asc"
+                    "$ownerId": "asc"
                 }]
             },
             {
                 "properties": [{
-                    "toUserId": "asc"
+                    "toOwnerId": "asc"
                 }]
             },
             {
@@ -51,14 +51,14 @@
             },
             {
                 "properties": [{
-                    "toUserId": "asc"
+                    "toOwnerId": "asc"
                 }, {
                     "timestamp": "asc"
                 }]
             },
             {
                 "properties": [{
-                    "$userId": "asc"
+                    "$ownerId": "asc"
                 }, {
                     "timestamp": "asc"
                 }]
@@ -67,7 +67,7 @@
                 "timestamp": {
                     "type": "number"
                 },
-                "toUserId": {
+                "toOwnerId": {
                     "type": "string",
                     "maxLength":44,
                     "minLength":44
@@ -89,7 +89,7 @@
                     "maxLength":2048
                 }
             },
-            "required": ["timestamp", "toUserId", "encryptedPublicKey", "senderKeyIndex", "recipientKeyIndex"],
+            "required": ["timestamp", "toOwnerId", "encryptedPublicKey", "senderKeyIndex", "recipientKeyIndex"],
             "additionalProperties": false
         }
     }

@@ -126,14 +126,14 @@ type:(DSDerivationPathType)type signingAlgorithm:(DSKeyType)signingAlgorithm ref
     return hasKeychainData([self walletBasedExtendedPrivateKeyLocationString], &error);
 }
 
--(NSData*)extendedPrivateKey {
+-(NSData*)extendedPrivateKeyData {
     NSError * error = nil;
     NSData * data = getKeychainData([self walletBasedExtendedPrivateKeyLocationString], &error);
     return data;
 }
 
 - (DSKey * _Nullable)privateKeyAtIndexPath:(NSIndexPath*)indexPath {
-    DSKey * extendedPrivateKey = [DSKey keyWithExtendedPrivateKeyData:self.extendedPrivateKey forKeyType:self.signingAlgorithm];
+    DSKey * extendedPrivateKey = [DSKey keyWithExtendedPrivateKeyData:self.extendedPrivateKeyData forKeyType:self.signingAlgorithm];
     return [extendedPrivateKey privateDeriveToPath:indexPath];
 }
 

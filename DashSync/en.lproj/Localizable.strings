@@ -254,15 +254,6 @@
 /* It is Unknown if the Blockchain Identity is registered */
 "Unknown" = "Unknown";
 
-/* As a type of Blockchain Identity */
-"Application" = "Application";
-
-/* As a type of Blockchain Identity */
-"User" = "User";
-
-/* No comment provided by engineer. */
-"An identity needs to have its type defined before it can be registered." = "An identity needs to have its type defined before it can be registered.";
-
 /* Status of Key or Username is Revoked */
 "Revoked" = "Revoked";
 

@@ -534,7 +534,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
         if ([dpnsDictionaries count]) {
             NSDictionary * dpnsDictionary = [dpnsDictionaries firstObject];
             NSString * base58String = nil;
-            if (!dpnsDictionary || !(base58String = dpnsDictionary[@"$userId"])) {
+            if (!dpnsDictionary || !(base58String = dpnsDictionary[@"$ownerId"])) {
                 if (failure) {
                     failure([NSError errorWithDomain:DPErrorDomain code:DPErrorCode_InvalidDocumentType userInfo:@{
                         NSLocalizedDescriptionKey :

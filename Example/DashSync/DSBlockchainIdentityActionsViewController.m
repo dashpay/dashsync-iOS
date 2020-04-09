@@ -19,7 +19,6 @@
 @interface DSBlockchainIdentityActionsViewController () <DSContactProfileViewControllerDelegate>
 @property (strong, nonatomic) IBOutlet UIImageView *avatarImageView;
 @property (strong, nonatomic) IBOutlet UILabel *aboutMeLabel;
-@property (strong, nonatomic) IBOutlet UILabel *typeLabel;
 @property (strong, nonatomic) IBOutlet UILabel *indexLabel;
 @property (strong, nonatomic) IBOutlet UILabel *keyCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *usernameStatusLabel;
@@ -124,7 +123,6 @@
     self.title = self.blockchainIdentity.currentUsername;
     [self reloadRegistrationInfo];
     
-    self.typeLabel.text = self.blockchainIdentity.localizedBlockchainIdentityTypeString;
     self.indexLabel.text = [NSString stringWithFormat:@"%d",self.blockchainIdentity.index];
     
     self.uniqueIdLabel.text = self.blockchainIdentity.uniqueIdString;
@@ -169,17 +167,18 @@
 
 -(IBAction)registerBlockchainIdentity:(id)sender {
     if (self.blockchainIdentity.isRegistered) return;
-    if (self.blockchainIdentity.type == DSBlockchainIdentityType_Unknown) {
-        [self raiseIssue:@"Unknown Registration Type" message:@"Please select the type of identity you wish to register"];
-        return;
-    }
-    [self.blockchainIdentity createAndPublishRegistrationTransitionWithCompletion:^(NSDictionary * _Nullable successInfo, NSError * _Nullable error) {
-        if (error) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [self raiseIssue:@"Unable to register." message:error.localizedDescription];
-            });
+    [self.blockchainIdentity createFundingPrivateKeyWithPrompt:@"Register?" completion:^(BOOL success, BOOL cancelled) {
+        if (success && !cancelled) {
+             [self.blockchainIdentity createAndPublishRegistrationTransitionWithCompletion:^(NSDictionary * _Nullable successInfo, NSError * _Nullable error) {
+                   if (error) {
+                       dispatch_async(dispatch_get_main_queue(), ^{
+                           [self raiseIssue:@"Unable to register." message:error.localizedDescription];
+                       });
+                   }
+            }];
         }
     }];
+   
 }
 
 -(IBAction)reset:(id)sender {
@@ -197,27 +196,7 @@
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0) {
-        if (indexPath.row == 1 && !self.blockchainIdentity.registered) {
-            UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Identity Type"
-                                                                                     message:nil
-                                                                              preferredStyle:UIAlertControllerStyleActionSheet];
-            
-            [alertController addAction:[UIAlertAction actionWithTitle:@"User"
-                                                                    style:UIAlertActionStyleDefault
-                                                                  handler:^(UIAlertAction *_Nonnull action) {
-                self.typeLabel.text = @"User";
-                self.blockchainIdentity.type = DSBlockchainIdentityType_User;
-                                                                  }]];
-            
-            [alertController addAction:[UIAlertAction actionWithTitle:@"Application"
-              style:UIAlertActionStyleDefault
-            handler:^(UIAlertAction *_Nonnull action) {
-                self.typeLabel.text = @"Application";
-                self.blockchainIdentity.type = DSBlockchainIdentityType_Application;
-            }]];
-            
-            [self presentViewController:alertController animated:YES completion:nil];
-        } else if (indexPath.row == 3) { // About me / Register
+        if (indexPath.row == 2) { // About me / Register
             if (!self.blockchainIdentity.registered) {
                 [self registerBlockchainIdentity:self];
             } else if (self.blockchainIdentity.currentUsername && [self.blockchainIdentity statusOfUsername:self.blockchainIdentity.currentUsername] != DSBlockchainIdentityUsernameStatus_Confirmed) {

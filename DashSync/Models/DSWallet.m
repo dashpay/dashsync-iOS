@@ -1015,7 +1015,7 @@
                                     [usernameStatuses setObject:@{BLOCKCHAIN_USERNAME_STATUS:@(usernameEntity.status)} forKey:usernameEntity.stringValue];
                                 }
                             }
-                            blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:blockchainIdentityEntity.type atIndex:index withFundingTransaction:registrationTransaction withUsernameDictionary:usernameStatuses havingCredits:blockchainIdentityEntity.creditBalance registrationStatus:blockchainIdentityEntity.registrationStatus inWallet:self inContext:self.chain.managedObjectContext];
+                            blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index withFundingTransaction:registrationTransaction withUsernameDictionary:usernameStatuses havingCredits:blockchainIdentityEntity.creditBalance registrationStatus:blockchainIdentityEntity.registrationStatus inWallet:self inContext:self.chain.managedObjectContext];
                         } else {
                             //Identity is known by core data, but registration transaction hasn't synced yet
                             //Lets first see if the output exists just to sanity check
@@ -1034,9 +1034,9 @@
                                         [usernameStatuses setObject:@{BLOCKCHAIN_USERNAME_STATUS:@(usernameEntity.status)} forKey:usernameEntity.stringValue];
                                     }
                                 }
-                                blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:blockchainIdentityEntity.type atIndex:index withFundingTransaction:registrationTransaction withUsernameDictionary:usernameStatuses havingCredits:blockchainIdentityEntity.creditBalance registrationStatus:blockchainIdentityEntity.registrationStatus inWallet:self inContext:self.chain.managedObjectContext];
+                                blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index withFundingTransaction:registrationTransaction withUsernameDictionary:usernameStatuses havingCredits:blockchainIdentityEntity.creditBalance registrationStatus:blockchainIdentityEntity.registrationStatus inWallet:self inContext:self.chain.managedObjectContext];
                             } else {
-                                blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:blockchainIdentityEntity.type atIndex:index withLockedOutpoint:blockchainIdentityLockedOutpoint inWallet:self inContext:self.chain.managedObjectContext];
+                                blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index withLockedOutpoint:blockchainIdentityLockedOutpoint inWallet:self inContext:self.chain.managedObjectContext];
                             }
                         }
                         for (DSBlockchainIdentityKeyPathEntity * keyPath in blockchainIdentityEntity.keyPaths) {
@@ -1056,12 +1056,12 @@
                             if (!correctIndex) {
                                 NSAssert(FALSE,@"We should implement this");
                             } else {
-                                blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:DSBlockchainIdentityType_Unknown atIndex:index withFundingTransaction:registrationTransaction withUsernameDictionary:nil inWallet:self inContext:self.chain.managedObjectContext];
+                                blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index withFundingTransaction:registrationTransaction withUsernameDictionary:nil inWallet:self inContext:self.chain.managedObjectContext];
                                 [blockchainIdentity registerInWallet];
                             }
                         } else {
                             //We also don't have the registration funding transaction
-                            blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:DSBlockchainIdentityType_Unknown atIndex:index withLockedOutpoint:blockchainIdentityLockedOutpoint inWallet:self inContext:self.chain.managedObjectContext];
+                            blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index withLockedOutpoint:blockchainIdentityLockedOutpoint inWallet:self inContext:self.chain.managedObjectContext];
                             [blockchainIdentity registerInWalletForBlockchainIdentityUniqueId:[dsutxo_data(blockchainIdentityLockedOutpoint) SHA256_2]];
                         }
                     }
@@ -1092,24 +1092,24 @@
     return max != nil ? ([max unsignedIntValue] + 1) : 0;
 }
 
--(DSBlockchainIdentity*)createBlockchainIdentityOfType:(DSBlockchainIdentityType)type {
-    DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:type atIndex:[self unusedBlockchainIdentityIndex] inWallet:self inContext:self.chain.managedObjectContext ];
+-(DSBlockchainIdentity*)createBlockchainIdentity {
+    DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:[self unusedBlockchainIdentityIndex] inWallet:self inContext:self.chain.managedObjectContext ];
     return blockchainIdentity;
 }
 
--(DSBlockchainIdentity*)createBlockchainIdentityOfType:(DSBlockchainIdentityType)type usingDerivationIndex:(uint32_t)index {
-    DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:type atIndex:[self unusedBlockchainIdentityIndex] inWallet:self inContext:self.chain.managedObjectContext ];
+-(DSBlockchainIdentity*)createBlockchainIdentityUsingDerivationIndex:(uint32_t)index {
+    DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:[self unusedBlockchainIdentityIndex] inWallet:self inContext:self.chain.managedObjectContext ];
     return blockchainIdentity;
 }
 
--(DSBlockchainIdentity*)createBlockchainIdentityOfType:(DSBlockchainIdentityType)type forUsername:(NSString*)username {
-    DSBlockchainIdentity * blockchainIdentity = [self createBlockchainIdentityOfType:type];
+-(DSBlockchainIdentity*)createBlockchainIdentityForUsername:(NSString*)username {
+    DSBlockchainIdentity * blockchainIdentity = [self createBlockchainIdentity];
     [blockchainIdentity addUsername:username save:NO];
     return blockchainIdentity;
 }
 
--(DSBlockchainIdentity*)createBlockchainIdentityOfType:(DSBlockchainIdentityType)type forUsername:(NSString*)username usingDerivationIndex:(uint32_t)index {
-    DSBlockchainIdentity * blockchainIdentity = [self createBlockchainIdentityOfType:type usingDerivationIndex:index];
+-(DSBlockchainIdentity*)createBlockchainIdentityForUsername:(NSString*)username usingDerivationIndex:(uint32_t)index {
+    DSBlockchainIdentity * blockchainIdentity = [self createBlockchainIdentityUsingDerivationIndex:index];
     [blockchainIdentity addUsername:username save:NO];
     return blockchainIdentity;
 }

@@ -82,7 +82,7 @@
      [client.DAPINetworkService searchDPNSDocumentsForUsernamePrefix:namePrefix inDomain:@"" offset:0 limit:100 success:^(NSArray<NSDictionary *> * _Nonnull documents) {
          __block NSMutableArray * rBlockchainIdentities = [NSMutableArray array];
          for (NSDictionary * document in documents) {
-             NSString * userId = document[@"$userId"];
+             NSString * userId = document[@"$ownerId"];
              NSString * normalizedLabel = document[@"normalizedLabel"];
              DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 onChain:self.chain inContext:self.chain.managedObjectContext];
              [identity addUsername:normalizedLabel status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO];
@@ -108,7 +108,7 @@
     [client.DAPINetworkService getDPNSDocumentsForIdentityWithUserId:userID success:^(NSArray<NSDictionary *> * _Nonnull documents) {
         __block NSMutableArray * rBlockchainIdentities = [NSMutableArray array];
         for (NSDictionary * document in documents) {
-            NSString * userId = document[@"$userId"];
+            NSString * userId = document[@"$ownerId"];
             NSString * normalizedLabel = document[@"normalizedLabel"];
             DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 onChain:self.chain inContext:self.chain.managedObjectContext];
             [identity addUsername:normalizedLabel status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO];

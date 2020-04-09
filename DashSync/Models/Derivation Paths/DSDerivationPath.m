@@ -443,6 +443,12 @@
         case DSDerivationPathReference_ContactBasedFundsRoot:
             return @"Contact Funds Root";
             break;
+        case DSDerivationPathReference_BlockchainIdentityCreditRegistrationFunding:
+            return @"BI Credit Registration Funding";
+            break;
+        case DSDerivationPathReference_BlockchainIdentityCreditTopupFunding:
+            return @"BI Credit Topup Funding";
+            break;
         default:
             return @"Unknown";
             break;
@@ -702,7 +708,9 @@
         NSMutableData *mPrivateKey = [NSMutableData secureData];
         [mPrivateKey appendData:mKey];
         [mPrivateKey appendData:key.privateKeyData];
+        NSAssert(mPrivateKey, @"Private key data must exist");
         setKeychainData(mPrivateKey,[self walletBasedExtendedPrivateKeyLocationStringForWalletUniqueID:walletUniqueId],YES);
+        DSDLog(@"Recorded private key data at %@",[self walletBasedExtendedPrivateKeyLocationStringForWalletUniqueID:walletUniqueId]);
         DSKey * original = [DSKey keyWithExtendedPrivateKeyData:mPrivateKey forKeyType:key.keyType];
         NSAssert([original.publicKeyData isEqualToData:_extendedPublicKey.publicKeyData], @"These should be equal");
     }
@@ -911,7 +919,9 @@
     if (walletUniqueId) {
         setKeychainData(derivationPathExtendedKey.extendedPublicKeyData,[self walletBasedExtendedPublicKeyLocationStringForWalletUniqueID:walletUniqueId],NO);
         if (storePrivateKey) {
+            NSAssert(derivationPathExtendedKey.extendedPrivateKeyData, @"Private key data must exist");
             setKeychainData(derivationPathExtendedKey.extendedPrivateKeyData,[self walletBasedExtendedPrivateKeyLocationStringForWalletUniqueID:walletUniqueId],YES);
+            DSDLog(@"Recorded private key data at %@",[self walletBasedExtendedPrivateKeyLocationStringForWalletUniqueID:walletUniqueId]);
             DSKey * original = [DSKey keyWithExtendedPrivateKeyData:derivationPathExtendedKey.extendedPrivateKeyData forKeyType:topKey.keyType];
             NSAssert([original.extendedPublicKeyData isEqualToData:derivationPathExtendedKey.extendedPublicKeyData], @"These should be equal");
         }
