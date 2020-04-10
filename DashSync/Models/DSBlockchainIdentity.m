@@ -1539,14 +1539,14 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 // MARK: Documents
 
--(NSArray<DPDocument*>*)preorderDocumentsForUnregisteredUsernames:(NSArray*)unregisteredUsernames error:(NSError**)error {
+-(NSArray<DPDocument*>*)preorderDocumentsForUnregisteredUsernames:(NSArray*)unregisteredUsernames usingEntropyString:(NSString*)entropyString  error:(NSError**)error {
     NSMutableArray * usernamePreorderDocuments = [NSMutableArray array];
     for (NSData * saltedDomainHashData in [[self saltedDomainHashesForUsernames:unregisteredUsernames] allValues]) {
         NSString * saltedDomainHashString = [saltedDomainHashData hexString];
         DSStringValueDictionary * dataDictionary = @{
             @"saltedDomainHash": saltedDomainHashString
         };
-        DPDocument * document = [self.dpnsDocumentFactory documentOnTable:@"preorder" withDataDictionary:dataDictionary error:error];
+        DPDocument * document = [self.dpnsDocumentFactory documentOnTable:@"preorder" withDataDictionary:dataDictionary usingEntropy:entropyString  error:error];
         if (*error) {
             return nil;
         }
@@ -1555,7 +1555,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     return usernamePreorderDocuments;
 }
 
--(NSArray<DPDocument*>*)domainDocumentsForUnregisteredUsernames:(NSArray*)unregisteredUsernames error:(NSError**)error {
+-(NSArray<DPDocument*>*)domainDocumentsForUnregisteredUsernames:(NSArray*)unregisteredUsernames usingEntropyString:(NSString*)entropyString  error:(NSError**)error {
     NSMutableArray * usernameDomainDocuments = [NSMutableArray array];
     for (NSString * username in [self saltedDomainHashesForUsernames:unregisteredUsernames]) {
         NSMutableData * nameHashData = [NSMutableData data];
@@ -1570,7 +1570,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             @"preorderSalt": [self.usernameSalts objectForKey:username].base58String,
             @"records" : @{@"dashIdentity":uint256_base58(self.uniqueID)}
         };
-        DPDocument * document = [self.dpnsDocumentFactory documentOnTable:@"domain" withDataDictionary:dataDictionary error:error];
+        DPDocument * document = [self.dpnsDocumentFactory documentOnTable:@"domain" withDataDictionary:dataDictionary usingEntropy:entropyString error:error];
         if (*error) {
             return nil;
         }
@@ -1582,16 +1582,18 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 // MARK: Transitions
 
 -(DSDocumentTransition*)preorderTransitionForUnregisteredUsernames:(NSArray*)unregisteredUsernames error:(NSError**)error  {
-    NSArray * usernamePreorderDocuments = [self preorderDocumentsForUnregisteredUsernames:unregisteredUsernames error:error];
+    NSString * entropyString = [DSKey randomAddressForChain:self.chain];
+    NSArray * usernamePreorderDocuments = [self preorderDocumentsForUnregisteredUsernames:unregisteredUsernames usingEntropyString:entropyString error:error];
     if (![usernamePreorderDocuments count]) return nil;
-    DSDocumentTransition * transition = [[DSDocumentTransition alloc] initForCreatedDocuments:usernamePreorderDocuments withTransitionVersion:1 blockchainIdentityUniqueId:self.uniqueID onChain:self.chain];
+    DSDocumentTransition * transition = [[DSDocumentTransition alloc] initForDocuments:usernamePreorderDocuments withTransitionVersion:1 blockchainIdentityUniqueId:self.uniqueID usingEntropyString:entropyString onChain:self.chain];
     return transition;
 }
 
 -(DSDocumentTransition*)domainTransitionForUnregisteredUsernames:(NSArray*)unregisteredUsernames error:(NSError**)error {
-    NSArray * usernamePreorderDocuments = [self domainDocumentsForUnregisteredUsernames:unregisteredUsernames error:error];
+    NSString * entropyString = [DSKey randomAddressForChain:self.chain];
+    NSArray * usernamePreorderDocuments = [self domainDocumentsForUnregisteredUsernames:unregisteredUsernames usingEntropyString:entropyString  error:error];
     if (![usernamePreorderDocuments count]) return nil;
-    DSDocumentTransition * transition = [[DSDocumentTransition alloc] initForCreatedDocuments:usernamePreorderDocuments withTransitionVersion:1 blockchainIdentityUniqueId:self.uniqueID onChain:self.chain];
+    DSDocumentTransition * transition = [[DSDocumentTransition alloc] initForDocuments:usernamePreorderDocuments withTransitionVersion:1 blockchainIdentityUniqueId:self.uniqueID usingEntropyString:entropyString  onChain:self.chain];
     return transition;
 }
 
@@ -2081,7 +2083,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     return YES;
 }
 
--(DPDocument*)matchingDashpayUserProfileDocument {
+-(DPDocument*)matchingDashpayUserProfileDocumentForEntropyString:(NSString*)entropyString {
     //The revision must be at least at 1, otherwise nothing was ever done
     if (self.matchingDashpayUser && self.matchingDashpayUser.localProfileDocumentRevision) {
         __block DSStringValueDictionary * dataDictionary = nil;
@@ -2091,11 +2093,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 @"publicMessage": self.matchingDashpayUser.publicMessage?self.matchingDashpayUser.publicMessage:@"",
                 @"avatarUrl": self.matchingDashpayUser.avatarPath?self.matchingDashpayUser.avatarPath:@"https://api.adorable.io/avatars/120/example",
                 @"displayName": self.matchingDashpayUser.displayName?self.matchingDashpayUser.displayName:(self.currentUsername?self.currentUsername:@""),
-                @"$rev": @(self.matchingDashpayUser.localProfileDocumentRevision)
+                @"$revision": @(self.matchingDashpayUser.localProfileDocumentRevision)
             };
         }];
         NSError * error = nil;
-        DPDocument * document = [self.dashpayDocumentFactory documentOnTable:@"profile" withDataDictionary:dataDictionary error:&error];
+        DPDocument * document = [self.dashpayDocumentFactory documentOnTable:@"profile" withDataDictionary:dataDictionary usingEntropy:entropyString error:&error];
         return document;
     } else {
         return nil;
@@ -2227,8 +2229,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     
     __weak typeof(self) weakSelf = self;
     DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
-    
-    [self.DAPIClient sendDocument:potentialFriendship.contactRequestDocument forIdentity:self contract:contract completion:^(NSError * _Nullable error) {
+    NSString * entropyString = [DSKey randomAddressForChain:self.chain];
+    DPDocument * document = [potentialFriendship contactRequestDocumentWithEntropy:entropyString];
+    [self.DAPIClient sendDocument:document forIdentity:self contract:contract usingEntropyString:entropyString completion:^(NSError * _Nullable error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             if (completion) {
@@ -2318,10 +2321,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 // MARK: Profile
 
 -(DSDocumentTransition*)profileDocumentTransition {
-    DPDocument * profileDocument = [self matchingDashpayUserProfileDocument];
+    NSString * entropyString = [DSKey randomAddressForChain:self.chain];
+    DPDocument * profileDocument = [self matchingDashpayUserProfileDocumentForEntropyString:entropyString];
     if (!profileDocument) return nil;
-    DSDocumentTransitionType action = self.matchingDashpayUser.remoteProfileDocumentRevision?DSDocumentTransitionType_Update:DSDocumentTransitionType_Create;
-    DSDocumentTransition * transition = [[DSDocumentTransition alloc] initForDocuments:@[profileDocument] withActions:@[@(action)] withTransitionVersion:1 blockchainIdentityUniqueId:self.uniqueID onChain:self.chain];
+    DSDocumentTransition * transition = [[DSDocumentTransition alloc] initForDocuments:@[profileDocument] withTransitionVersion:1 blockchainIdentityUniqueId:self.uniqueID usingEntropyString:entropyString onChain:self.chain];
     return transition;
 }
 

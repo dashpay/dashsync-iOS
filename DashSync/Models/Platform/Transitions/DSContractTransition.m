@@ -31,11 +31,12 @@
 - (DSMutableStringValueDictionary *)baseKeyValueDictionary {
     DSMutableStringValueDictionary *json = [super baseKeyValueDictionary];
     json[@"dataContract"] = self.contract.objectDictionary;
+    json[@"entropy"] = @"yZDZMVEWEQfkrWdKD4EW2Qjn144xP4X6Pi";//[uint256_base58(self.contract.entropy) stringByPaddingToLength:34 withString:@"1" startingAtIndex:0];
     return json;
 }
 
--(instancetype)initWithContract:(DPContract*)contract withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain {
-    if (self = [super initWithTransitionVersion:version blockchainIdentityUniqueId:blockchainIdentityUniqueId onChain:chain]) {
+-(instancetype)initWithContract:(DPContract*)contract withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId usingEntropyString:(NSString*)entropyString onChain:(DSChain *)chain {
+    if (self = [super initWithTransitionVersion:version blockchainIdentityUniqueId:blockchainIdentityUniqueId usingEntropyString:entropyString  onChain:chain]) {
         self.contract = contract;
     }
     self.type = DSTransitionType_DataContract;

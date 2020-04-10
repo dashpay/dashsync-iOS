@@ -25,6 +25,7 @@
 @property (nonatomic, strong) DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction;
 
 @property (nonatomic, strong) DSChain * chain;
+@property (nonatomic, strong) NSString * entropyString;
 
 @end
 
@@ -52,13 +53,14 @@
     return self;
 }
 
--(instancetype)initWithTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain * _Nonnull)chain {
+-(instancetype)initWithTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId usingEntropyString:(NSString*)entropyString onChain:(DSChain * _Nonnull)chain {
     NSParameterAssert(chain);
     
     if (!(self = [self initOnChain:chain])) return nil;
     self.type = DSTransitionType_Documents;
     self.version = version;
     self.blockchainIdentityUniqueId = blockchainIdentityUniqueId;
+    self.entropyString = entropyString;
     return self;
 }
 
@@ -118,7 +120,6 @@
 - (DSMutableStringValueDictionary *)baseKeyValueDictionary {
     DSMutableStringValueDictionary *json = [[DSMutableStringValueDictionary alloc] init];
     json[@"protocolVersion"] = @(0);
-    json[@"entropy"] = [DSKey randomAddressForChain:[self chain]];
     json[@"type"] = @(self.type);
     return json;
 }

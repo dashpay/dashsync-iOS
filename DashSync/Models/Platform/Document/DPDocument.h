@@ -16,6 +16,7 @@
 //
 
 #import "DPBaseObject.h"
+#import "BigIntTypes.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -24,8 +25,12 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DPDocument : NSObject
 
 @property (readonly, copy, nonatomic) NSString *tableName;
-@property (readonly, copy, nonatomic) NSString *contractId;
-@property (readonly, copy, nonatomic) NSString *userId;
+@property (readonly, nonatomic) UInt256 ownerId;
+@property (readonly, copy, nonatomic) NSString *base58OwnerIdString;
+@property (readonly, nonatomic) UInt256 contractId;
+@property (readonly, copy, nonatomic) NSString *base58ContractIdString;
+@property (readonly, nonatomic) UInt256 documentId;
+@property (readonly, copy, nonatomic) NSString *base58DocumentIdString;
 @property (readonly, copy, nonatomic) NSString *entropy;
 @property (readonly, nonatomic) DPDocumentState *currentRegisteredDocumentState;
 @property (readonly, nonatomic) DPDocumentState *currentLocalDocumentState;
@@ -33,13 +38,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, copy, nonatomic) NSNumber *currentLocalRevision;
 @property (readonly, copy, nonatomic) DSStringValueDictionary *objectDictionary;
 
-- (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(NSString*)userId onContractWithId:(NSString*)contractId onTableWithName:(NSString*)table usingEntropy:(NSString*)entropy;
+- (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString*)tableName usingEntropy:(NSString*)entropy;
 
 - (instancetype)init NS_UNAVAILABLE;
 
 - (void)addStateForChangingData:(DSStringValueDictionary *)dataDictionary;
 
-- (nullable DPDocument *)documentWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(NSString*)userId onContractWithId:(NSString*)contractId inTable:(NSString*)table withEntropy:(NSString*)entropy;
+- (nullable DPDocument *)documentWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString*)tableName usingEntropy:(NSString*)entropy;
 
 @end
 

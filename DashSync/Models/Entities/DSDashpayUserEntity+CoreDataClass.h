@@ -30,9 +30,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 +(void)deleteContactsOnChain:(DSChainEntity*)chainEntity;
 
--(DPDocument*)profileDocument;
+//-(DPDocument*)profileDocument;
 
--(DPDocument*)contactRequestDocument;
+//-(DPDocument*)contactRequestDocument;
 
 @end
 
