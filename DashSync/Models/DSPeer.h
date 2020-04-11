@@ -30,6 +30,8 @@
 #import "DSChain.h"
 #import "BigIntTypes.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 typedef NS_ENUM(uint32_t,DSInvType) {
     DSInvType_Error = 0,
     DSInvType_Tx = 1,
@@ -192,8 +194,8 @@ typedef void (^MempoolCompletionBlock)(BOOL success, BOOL needed, BOOL interrupt
 - (void)peer:(DSPeer *)peer relayedTooManyOrphanBlocks:(NSUInteger)orphanBlockCount;
 - (void)peer:(DSPeer *)peer relayedNotFoundMessagesWithTransactionHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockhashes;
 - (DSTransaction *)peer:(DSPeer *)peer requestedTransaction:(UInt256)txHash;
-- (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock;
-- (void)peer:(DSPeer *)peer hasTransaction:(UInt256)txHash transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock;
+- (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction inBlock:(DSMerkleBlock* _Nullable)block transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock;
+- (void)peer:(DSPeer *)peer hasTransactionWithHash:(UInt256)txHash transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock;
 - (void)peer:(DSPeer *)peer rejectedTransaction:(UInt256)txHash withCode:(uint8_t)code;
 - (void)peer:(DSPeer *)peer hasInstantSendLockHashes:(NSOrderedSet*)instantSendLockHashes;
 - (void)peer:(DSPeer *)peer hasChainLockHashes:(NSOrderedSet*)chainLockHashes;
@@ -205,13 +207,13 @@ typedef void (^MempoolCompletionBlock)(BOOL success, BOOL needed, BOOL interrupt
 @protocol DSPeerGovernanceDelegate<NSObject>
 @required
 
-- (DSGovernanceVote *)peer:(DSPeer *)peer requestedVote:(UInt256)voteHash;
-- (DSGovernanceObject *)peer:(DSPeer *)peer requestedGovernanceObject:(UInt256)governanceObjectHash;
-- (void)peer:(DSPeer *)peer hasGovernanceObjectHashes:(NSSet*)governanceObjectHashes;
-- (void)peer:(DSPeer *)peer hasGovernanceVoteHashes:(NSSet*)governanceVoteHashes;
-- (void)peer:(DSPeer *)peer relayedGovernanceObject:(DSGovernanceObject *)governanceObject;
-- (void)peer:(DSPeer *)peer relayedGovernanceVote:(DSGovernanceVote *)governanceVote;
-- (void)peer:(DSPeer *)peer ignoredGovernanceSync:(DSGovernanceRequestState)governanceRequestState;
+- (DSGovernanceVote *)peer:(DSPeer * _Nullable)peer requestedVote:(UInt256)voteHash;
+- (DSGovernanceObject *)peer:(DSPeer * _Nullable)peer requestedGovernanceObject:(UInt256)governanceObjectHash;
+- (void)peer:(DSPeer * _Nullable)peer hasGovernanceObjectHashes:(NSSet*)governanceObjectHashes;
+- (void)peer:(DSPeer * _Nullable)peer hasGovernanceVoteHashes:(NSSet*)governanceVoteHashes;
+- (void)peer:(DSPeer * _Nullable)peer relayedGovernanceObject:(DSGovernanceObject *)governanceObject;
+- (void)peer:(DSPeer * _Nullable)peer relayedGovernanceVote:(DSGovernanceVote *)governanceVote;
+- (void)peer:(DSPeer * _Nullable)peer ignoredGovernanceSync:(DSGovernanceRequestState)governanceRequestState;
 
 @end
 
@@ -296,17 +298,17 @@ services:(uint64_t)services;
 - (void)setChainDelegate:(id<DSPeerChainDelegate>)chainDelegate peerDelegate:(id<DSPeerDelegate>)peerDelegate transactionDelegate:(id<DSPeerTransactionDelegate>)transactionDelegate governanceDelegate:(id<DSPeerGovernanceDelegate>)governanceDelegate sporkDelegate:(id<DSPeerSporkDelegate>)sporkDelegate masternodeDelegate:(id<DSPeerMasternodeDelegate>)masternodeDelegate queue:(dispatch_queue_t)delegateQueue;
 - (void)connect;
 - (void)disconnect;
-- (void)disconnectWithError:(NSError *)error;
+- (void)disconnectWithError:(NSError * _Nullable)error;
 - (void)receivedOrphanBlock;
 - (void)sendMessage:(NSData *)message type:(NSString *)type;
 - (void)sendFilterloadMessage:(NSData *)filter;
-- (void)sendMempoolMessage:(NSArray *)publishedTxHashes completion:(MempoolCompletionBlock)completion;
+- (void)sendMempoolMessage:(NSArray *)publishedTxHashes completion:(MempoolCompletionBlock _Nullable)completion;
 - (void)sendGetheadersMessageWithLocators:(NSArray *)locators andHashStop:(UInt256)hashStop;
 - (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(UInt256)hashStop;
-- (void)sendTransactionInvMessagesForTxHashes:(NSArray *)txInvHashes txLockRequestHashes:(NSArray*)txLockRequestInvHashes;
+- (void)sendTransactionInvMessagesForTxHashes:(NSArray * _Nullable)txInvHashes txLockRequestHashes:(NSArray* _Nullable)txLockRequestInvHashes;
 - (void)sendInvMessageForHashes:(NSArray *)invHashes ofType:(DSInvType)invType;
 - (void)sendGetdataMessageForTxHash:(UInt256)txHash;
-- (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes instantSendLockHashes:(NSArray*)instantSendLockHashes blockHashes:(NSArray *)blockHashes chainLockHashes:(NSArray *)chainLockHashes;
+- (void)sendGetdataMessageWithTxHashes:(NSArray * _Nullable)txHashes instantSendLockHashes:(NSArray* _Nullable)instantSendLockHashes blockHashes:(NSArray * _Nullable)blockHashes chainLockHashes:(NSArray * _Nullable)chainLockHashes;
 - (void)sendGetdataMessageWithGovernanceObjectHashes:(NSArray<NSData*> *)governanceObjectHashes;
 - (void)sendGetdataMessageWithGovernanceVoteHashes:(NSArray<NSData*> *)governanceVoteHashes;
 - (void)sendGetMasternodeListFromPreviousBlockHash:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash;
@@ -327,3 +329,5 @@ services:(uint64_t)services;
 
 
 @end
+
+NS_ASSUME_NONNULL_END

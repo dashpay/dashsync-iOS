@@ -51,6 +51,7 @@
 #import "NSString+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "DSMasternodeList.h"
+#import "DSError.h"
 
 #define IX_INPUT_LOCKED_KEY @"IX_INPUT_LOCKED_KEY"
 
@@ -119,16 +120,21 @@
 - (void)addTransactionToPublishList:(DSTransaction *)transaction
 {
     if (transaction.blockHeight == TX_UNCONFIRMED) {
-        DSDLog(@"[DSTransactionManager] add transaction to publish list %@ (%@)", transaction,transaction.toData);
-        self.publishedTx[uint256_obj(transaction.txHash)] = transaction;
-        
-        for (NSValue *hash in transaction.inputHashes) {
-            UInt256 h = UINT256_ZERO;
+        DSDLog(@"[DSTransactionManager] add transaction to publish list %@ (%@)", transaction, transaction.toData);
+        if (!self.publishedTx[uint256_obj(transaction.txHash)]) {
+            self.publishedTx[uint256_obj(transaction.txHash)] = transaction;
             
-            [hash getValue:&h];
-            [self addTransactionToPublishList:[self.chain transactionForHash:h]];
+            for (NSValue *hash in transaction.inputHashes) {
+                UInt256 h = UINT256_ZERO;
+                
+                [hash getValue:&h];
+                DSTransaction * inputTransaction = [self.chain transactionForHash:h];
+                if (inputTransaction) {
+                    [self addTransactionToPublishList:inputTransaction];
+                }
+            }
         }
-    }
+    } 
 }
 
 - (void)publishTransaction:(DSTransaction *)transaction completion:(void (^)(NSError *error))completion
@@ -147,7 +153,7 @@
         if (completion) {
             [[DSEventManager sharedEventManager] saveEvent:@"transaction_manager:not_connected"];
             completion([NSError errorWithDomain:@"DashSync" code:-1009 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                      DSLocalizedString(@"Not connected to the dash network", nil)}]);
+                                                                                      DSLocalizedString(@"Not connected to the Dash network", nil)}]);
         }
         
         return;
@@ -275,7 +281,6 @@
             NSArray * accounts = [self.chain accountsThatCanContainTransaction:transaction];
             for (DSAccount * account in accounts) {
                 [account removeTransaction:transaction];
-                
             }
         }
         [DSTransactionHashEntity saveContext];
@@ -355,11 +360,17 @@
 
 // MARK: - Front end
 
-- (void)confirmProtocolRequest:(DSPaymentProtocolRequest *)protoReq forAmount:(uint64_t)requestedAmount fromAccount:(DSAccount*)account addressIsFromPasteboard:(BOOL)addressIsFromPasteboard requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest presentChallenge:(DSTransactionChallengeBlock)challenge transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion requestRelayCompletion:(DSTransactionRequestRelayCompletionBlock)requestRelayCompletion errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock {
-    return [self confirmProtocolRequest:protoReq forAmount:requestedAmount fromAccount:account acceptInternalAddress:NO acceptReusingAddress:NO addressIsFromPasteboard:addressIsFromPasteboard acceptUncertifiedPayee:NO requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];
+- (void)confirmProtocolRequest:(DSPaymentProtocolRequest *)protoReq forAmount:(uint64_t)requestedAmount fromAccount:(DSAccount*)account addressIsFromPasteboard:(BOOL)addressIsFromPasteboard requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
+      keepAuthenticatedIfErrorAfterAuthentication:(BOOL)keepAuthenticatedIfErrorAfterAuthentication
+      requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest presentChallenge:(DSTransactionChallengeBlock)challenge transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion requestRelayCompletion:(DSTransactionRequestRelayCompletionBlock)requestRelayCompletion errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock {
+    return [self confirmProtocolRequest:protoReq forAmount:requestedAmount fromAccount:account acceptInternalAddress:NO acceptReusingAddress:NO addressIsFromPasteboard:addressIsFromPasteboard acceptUncertifiedPayee:NO  requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt
+               keepAuthenticatedIfErrorAfterAuthentication:keepAuthenticatedIfErrorAfterAuthentication
+               requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];
 }
 
-- (void)confirmProtocolRequest:(DSPaymentProtocolRequest *)protoReq forAmount:(uint64_t)requestedAmount fromAccount:(DSAccount*)account acceptInternalAddress:(BOOL)acceptInternalAddress acceptReusingAddress:(BOOL)acceptReusingAddress addressIsFromPasteboard:(BOOL)addressIsFromPasteboard acceptUncertifiedPayee:(BOOL)acceptUncertifiedPayee requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest presentChallenge:(DSTransactionChallengeBlock)challenge transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion requestRelayCompletion:(DSTransactionRequestRelayCompletionBlock)requestRelayCompletion errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock
+- (void)confirmProtocolRequest:(DSPaymentProtocolRequest *)protoReq forAmount:(uint64_t)requestedAmount fromAccount:(DSAccount*)account acceptInternalAddress:(BOOL)acceptInternalAddress acceptReusingAddress:(BOOL)acceptReusingAddress addressIsFromPasteboard:(BOOL)addressIsFromPasteboard acceptUncertifiedPayee:(BOOL)acceptUncertifiedPayee
+requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
+      keepAuthenticatedIfErrorAfterAuthentication:(BOOL)keepAuthenticatedIfErrorAfterAuthentication requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest presentChallenge:(DSTransactionChallengeBlock)challenge transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion requestRelayCompletion:(DSTransactionRequestRelayCompletionBlock)requestRelayCompletion errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock
 {
     DSChain * chain = account.wallet.chain;
     DSWallet * wallet = account.wallet;
@@ -368,10 +379,14 @@
     uint64_t amount = 0, fee = 0;
     BOOL valid = protoReq.isValid, outputTooSmall = NO;
     
-    BOOL requestsInstantSend = protoReq.requestsInstantSend;
-    
     if (! valid && [protoReq.errorMessage isEqual:DSLocalizedString(@"Request expired", nil)]) {
-        errorNotificationBlock(DSLocalizedString(@"Bad payment request", nil),protoReq.errorMessage,YES);
+        NSString *errorTitle = DSLocalizedString(@"Bad payment request", nil);
+        NSString *errorMessage = protoReq.errorMessage;
+        NSString *localizedDescription = [NSString stringWithFormat:@"%@\n%@", errorTitle, errorMessage];
+        NSError *error = [NSError errorWithDomain:DSErrorDomain
+                                             code:DSErrorPaymentRequestExpired
+                                         userInfo:@{ NSLocalizedDescriptionKey: localizedDescription }];
+        errorNotificationBlock(error, errorTitle, errorMessage, YES);
         return;
     }
     
@@ -393,23 +408,25 @@
         NSString * challengeTitle = DSLocalizedString(@"WARNING", nil);
         NSString * challengeMessage = DSLocalizedString(@"This payment address is already in your wallet", nil);
         NSString * challengeAction = DSLocalizedString(@"Ignore", nil);
-        challenge(challengeTitle,challengeMessage,challengeAction,^{[self confirmProtocolRequest:protoReq forAmount:requestedAmount fromAccount:account acceptInternalAddress:YES acceptReusingAddress:acceptReusingAddress addressIsFromPasteboard:addressIsFromPasteboard acceptUncertifiedPayee:acceptUncertifiedPayee requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];}, ^{additionalInfoRequest(DSRequestingAdditionalInfo_CancelOrChangeAmount);});
+        challenge(challengeTitle,challengeMessage,challengeAction,^{[self confirmProtocolRequest:protoReq forAmount:requestedAmount fromAccount:account acceptInternalAddress:YES acceptReusingAddress:acceptReusingAddress addressIsFromPasteboard:addressIsFromPasteboard acceptUncertifiedPayee:acceptUncertifiedPayee  requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt keepAuthenticatedIfErrorAfterAuthentication:keepAuthenticatedIfErrorAfterAuthentication requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];}, ^{additionalInfoRequest(DSRequestingAdditionalInfo_CancelOrChangeAmount);});
         return;
     }
     else if ((amount == 0 || amount == UINT64_MAX) && !acceptReusingAddress && [wallet transactionAddressAlreadySeenInOutputs:address] && addressIsFromPasteboard) {
         NSString * challengeTitle = DSLocalizedString(@"WARNING", nil);
-        NSString * challengeMessage = DSLocalizedString(@"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\n"
+        NSString * challengeMessage = DSLocalizedString(@"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\n"
                                                         "re-use reduces privacy for both you and the recipient and can result in loss if "
                                                         "the recipient doesn't directly control the address", nil);
         NSString * challengeAction = DSLocalizedString(@"Ignore", nil);
-        challenge(challengeTitle,challengeMessage,challengeAction,^{[self confirmProtocolRequest:protoReq forAmount:requestedAmount fromAccount:account acceptInternalAddress:acceptInternalAddress acceptReusingAddress:YES addressIsFromPasteboard:addressIsFromPasteboard acceptUncertifiedPayee:acceptUncertifiedPayee requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];}, ^{additionalInfoRequest(DSRequestingAdditionalInfo_CancelOrChangeAmount);});
+        challenge(challengeTitle,challengeMessage,challengeAction,^{[self confirmProtocolRequest:protoReq forAmount:requestedAmount fromAccount:account acceptInternalAddress:acceptInternalAddress acceptReusingAddress:YES addressIsFromPasteboard:addressIsFromPasteboard acceptUncertifiedPayee:acceptUncertifiedPayee requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt
+                                                                        keepAuthenticatedIfErrorAfterAuthentication:keepAuthenticatedIfErrorAfterAuthentication
+                                                                        requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];}, ^{additionalInfoRequest(DSRequestingAdditionalInfo_CancelOrChangeAmount);});
         return;
     } else if (protoReq.errorMessage.length > 0 && protoReq.commonName.length > 0 &&
                !acceptUncertifiedPayee) {
         NSString * challengeTitle = DSLocalizedString(@"Payee identity isn't certified", nil);
         NSString * challengeMessage = protoReq.errorMessage;
         NSString * challengeAction = DSLocalizedString(@"Ignore", nil);
-        challenge(challengeTitle,challengeMessage,challengeAction,^{[self confirmProtocolRequest:protoReq forAmount:requestedAmount fromAccount:account acceptInternalAddress:acceptInternalAddress acceptReusingAddress:acceptReusingAddress addressIsFromPasteboard:addressIsFromPasteboard acceptUncertifiedPayee:YES requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];}, ^{additionalInfoRequest(DSRequestingAdditionalInfo_CancelOrChangeAmount);});
+        challenge(challengeTitle,challengeMessage,challengeAction,^{[self confirmProtocolRequest:protoReq forAmount:requestedAmount fromAccount:account acceptInternalAddress:acceptInternalAddress acceptReusingAddress:acceptReusingAddress addressIsFromPasteboard:addressIsFromPasteboard acceptUncertifiedPayee:YES requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt keepAuthenticatedIfErrorAfterAuthentication:keepAuthenticatedIfErrorAfterAuthentication requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];}, ^{additionalInfoRequest(DSRequestingAdditionalInfo_CancelOrChangeAmount);});
         
         return;
     }
@@ -418,23 +435,37 @@
         return;
     }
     else if (amount < TX_MIN_OUTPUT_AMOUNT) {
-        errorNotificationBlock(DSLocalizedString(@"Couldn't make payment", nil),[NSString stringWithFormat:DSLocalizedString(@"Dash payments can't be less than %@", nil),
-                                                                                 [priceManager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]],YES);
+        NSString *errorTitle = DSLocalizedString(@"Couldn't make payment", nil);
+        NSString *errorMessage = [NSString stringWithFormat:
+                                  DSLocalizedString(@"Dash payments can't be less than %@", nil),
+                                  [priceManager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]];
+        NSString *localizedDescription = [NSString stringWithFormat:@"%@\n%@", errorTitle, errorMessage];
+        NSError *error = [NSError errorWithDomain:DSErrorDomain
+                                             code:DSErrorPaymentAmountLessThenMinOutputAmount
+                                         userInfo:@{ NSLocalizedDescriptionKey: localizedDescription }];
+        errorNotificationBlock(error, errorTitle, errorMessage, YES);
         return;
     }
     else if (outputTooSmall) {
-        errorNotificationBlock(DSLocalizedString(@"Couldn't make payment", nil),[NSString stringWithFormat:DSLocalizedString(@"Dash transaction outputs can't be less than %@",
-                                                                                                                             nil), [priceManager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]],YES);
+        NSString *errorTitle = DSLocalizedString(@"Couldn't make payment", nil);
+        NSString *errorMessage = [NSString stringWithFormat:
+                                  DSLocalizedString(@"Dash transaction outputs can't be less than %@", nil),
+                                  [priceManager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]];
+        NSString *localizedDescription = [NSString stringWithFormat:@"%@\n%@", errorTitle, errorMessage];
+        NSError *error = [NSError errorWithDomain:DSErrorDomain
+                                             code:DSErrorPaymentTransactionOutputTooSmall
+                                         userInfo:@{ NSLocalizedDescriptionKey: localizedDescription }];
+        errorNotificationBlock(error, errorTitle, errorMessage, YES);
         return;
     }
     
     if (requestedAmount == 0) {
         tx = [account transactionForAmounts:protoReq.details.outputAmounts
-                            toOutputScripts:protoReq.details.outputScripts withFee:YES isInstant:requestsInstantSend];
+                            toOutputScripts:protoReq.details.outputScripts withFee:YES];
     }
     else if (amount <= account.balance) {
         tx = [account transactionForAmounts:@[@(requestedAmount)]
-                            toOutputScripts:@[protoReq.details.outputScripts.firstObject] withFee:YES isInstant:requestsInstantSend];
+                            toOutputScripts:@[protoReq.details.outputScripts.firstObject] withFee:YES];
     }
     
     if (tx) {
@@ -445,7 +476,7 @@
         DSTransaction * tempTx = [account transactionFor:account.balance
                                                       to:address withFee:NO];
         uint8_t additionalInputs = (((account.balance - amount) % 1024) >> 8); //get a random amount of additional inputs between 0 and 3, we don't use last bits because they are often 0
-        fee = [chain feeForTxSize:tempTx.size + TX_INPUT_SIZE*additionalInputs isInstant:requestsInstantSend inputCount:tempTx.inputHashes.count + additionalInputs];
+        fee = [chain feeForTxSize:tempTx.size + TX_INPUT_SIZE*additionalInputs];
         amount += fee; // pretty much a random fee
     }
     
@@ -473,28 +504,29 @@
                                                                             localCurrency:localCurrency];
     if (transactionCreationCompletion(tx, suggestedPrompt, amount, fee, @[address], isSecure)) {
         CFRunLoopPerformBlock([[NSRunLoop mainRunLoop] getCFRunLoop], kCFRunLoopCommonModes, ^{
-            [self signAndPublishTransaction:tx createdFromProtocolRequest:protoReq fromAccount:account toAddress:address requiresSpendingAuthenticationPrompt:YES promptMessage:suggestedPrompt forAmount:amount requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];
+            [self signAndPublishTransaction:tx createdFromProtocolRequest:protoReq fromAccount:account toAddress:address requiresSpendingAuthenticationPrompt:YES promptMessage:suggestedPrompt forAmount:amount keepAuthenticatedIfErrorAfterAuthentication:keepAuthenticatedIfErrorAfterAuthentication requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];
         });
     }
 }
 
-
-- (void)signAndPublishTransaction:(DSTransaction *)tx createdFromProtocolRequest:(DSPaymentProtocolRequest*)protocolRequest fromAccount:(DSAccount*)account toAddress:(NSString*)address requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt promptMessage:(NSString *)promptMessage forAmount:(uint64_t)amount requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest presentChallenge:(DSTransactionChallengeBlock)challenge transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion requestRelayCompletion:(DSTransactionRequestRelayCompletionBlock)requestRelayCompletion errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock
+- (void)signAndPublishTransaction:(DSTransaction *)tx createdFromProtocolRequest:(DSPaymentProtocolRequest*)protocolRequest fromAccount:(DSAccount*)account toAddress:(NSString*)address requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt promptMessage:(NSString *)promptMessage forAmount:(uint64_t)amount keepAuthenticatedIfErrorAfterAuthentication:(BOOL)keepAuthenticatedIfErrorAfterAuthentication requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest presentChallenge:(DSTransactionChallengeBlock)challenge transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion requestRelayCompletion:(DSTransactionRequestRelayCompletionBlock)requestRelayCompletion errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock
 {
     DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
     __block BOOL previouslyWasAuthenticated = authenticationManager.didAuthenticate;
     
     if (! tx) { // tx is nil if there were insufficient wallet funds
         if (authenticationManager.didAuthenticate) {
-            [self insufficientFundsForTransaction:tx createdFromProtocolRequest:protocolRequest fromAccount:account forAmount:amount toAddress:address requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];
+            //the fee puts us over the limit
+            [self insufficientFundsForTransactionCreatedFromProtocolRequest:protocolRequest fromAccount:account forAmount:amount toAddress:address requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt keepAuthenticatedIfErrorAfterAuthentication:keepAuthenticatedIfErrorAfterAuthentication requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];
         } else {
             [authenticationManager seedWithPrompt:promptMessage forWallet:account.wallet forAmount:amount forceAuthentication:NO completion:^(NSData * _Nullable seed, BOOL cancelled) {
                 if (seed) {
-                    [self insufficientFundsForTransaction:tx createdFromProtocolRequest:protocolRequest fromAccount:account forAmount:amount toAddress:address requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];
+                    //the fee puts us over the limit
+                    [self insufficientFundsForTransactionCreatedFromProtocolRequest:protocolRequest fromAccount:account forAmount:amount toAddress:address requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt keepAuthenticatedIfErrorAfterAuthentication:keepAuthenticatedIfErrorAfterAuthentication requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];
                 } else {
                     additionalInfoRequest(DSRequestingAdditionalInfo_CancelOrChangeAmount);
                 }
-                if (!previouslyWasAuthenticated) [authenticationManager deauthenticate];
+                if (!previouslyWasAuthenticated && !keepAuthenticatedIfErrorAfterAuthentication) [authenticationManager deauthenticate];
             }];
         }
     } else {
@@ -505,15 +537,24 @@
             displayedPrompt = @"";
         }
         [account signTransaction:tx withPrompt:displayedPrompt completion:^(BOOL signedTransaction, BOOL cancelled) {
-            if (! previouslyWasAuthenticated) [authenticationManager deauthenticate];
             
-            if (cancelled) return;
-            
-            if (!signedTransaction || ! tx.isSigned) {
-                signedCompletion(tx,[NSError errorWithDomain:@"DashSync" code:401
-                                                    userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"Error signing dash transaction", nil)}],NO);
+            if (cancelled) {
+                if (! previouslyWasAuthenticated && !keepAuthenticatedIfErrorAfterAuthentication) [authenticationManager deauthenticate];
+                if (signedCompletion) {
+                    signedCompletion(tx, nil, YES);
+                }
+                
                 return;
             }
+            
+            if (!signedTransaction || ! tx.isSigned) {
+                if (! previouslyWasAuthenticated && !keepAuthenticatedIfErrorAfterAuthentication) [authenticationManager deauthenticate];
+                signedCompletion(tx,[NSError errorWithDomain:@"DashSync" code:401
+                                                    userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"Error signing transaction", nil)}],NO);
+                return;
+            }
+            
+            if (! previouslyWasAuthenticated) [authenticationManager deauthenticate];
             
             if (!signedCompletion(tx,nil,NO)) return; //give the option to stop the process to clients
             
@@ -528,7 +569,7 @@
                 else if (!sent) {
                     sent = YES;
                     tx.timestamp = [NSDate timeIntervalSince1970];
-                    [account registerTransaction:tx];
+                    [account registerTransaction:tx saveImmediately:YES];
                     publishedCompletion(tx,nil,sent);
                 }
                 
@@ -553,13 +594,28 @@
                                            dispatch_async(dispatch_get_main_queue(), ^{
                                                if (!publishingError && error) {
                                                    if (!sent) {
-                                                       errorNotificationBlock([NSString stringWithFormat:DSLocalizedString(@"Error from payment request server %@",nil),protocolRequest.details.paymentURL],error.localizedDescription,YES);
+                                                       NSString *errorTitle = [NSString
+                                                                               stringWithFormat:
+                                                                               DSLocalizedString(@"Error from payment request server %@",nil),
+                                                                               protocolRequest.details.paymentURL];
+                                                       NSString *errorMessage = error.localizedDescription;
+                                                       NSString *localizedDescription = [NSString
+                                                                                         stringWithFormat:@"%@\n%@",
+                                                                                         errorTitle, errorMessage];
+                                                       NSError *resError = [NSError
+                                                                            errorWithDomain:DSErrorDomain
+                                                                            code:DSErrorPaymentRequestServerError
+                                                                            userInfo:@{
+                                                                                NSLocalizedDescriptionKey: localizedDescription,
+                                                                                NSUnderlyingErrorKey: error,
+                                                                            }];
+                                                       errorNotificationBlock(resError, errorTitle, errorMessage, YES);
                                                    }
                                                }
                                                else if (!sent) {
                                                    sent = TRUE;
                                                    tx.timestamp = [NSDate timeIntervalSince1970];
-                                                   [account registerTransaction:tx];
+                                                   [account registerTransaction:tx saveImmediately:YES];
                                                }
                                                requestRelayCompletion(tx,ack,!error);
                                                
@@ -571,41 +627,18 @@
     }
 }
 
--(void)insufficientFundsForTransaction:(DSTransaction *)tx createdFromProtocolRequest:(DSPaymentProtocolRequest*)protocolRequest fromAccount:(DSAccount*)account forAmount:(uint64_t)requestedSendAmount toAddress:(NSString*)address requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest presentChallenge:(DSTransactionChallengeBlock)challenge transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion  requestRelayCompletion:(DSTransactionRequestRelayCompletionBlock)requestRelayCompletion errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock {
+-(void)insufficientFundsForTransactionCreatedFromProtocolRequest:(DSPaymentProtocolRequest*)protocolRequest fromAccount:(DSAccount*)account forAmount:(uint64_t)requestedSendAmount toAddress:(NSString*)address requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
+              keepAuthenticatedIfErrorAfterAuthentication:(BOOL)keepAuthenticatedIfErrorAfterAuthentication
+              requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest presentChallenge:(DSTransactionChallengeBlock)challenge transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion  requestRelayCompletion:(DSTransactionRequestRelayCompletionBlock)requestRelayCompletion errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock {
     DSPriceManager * manager = [DSPriceManager sharedInstance];
     uint64_t fuzz = [manager amountForLocalCurrencyString:[manager localCurrencyStringForDashAmount:1]]*2;
-    DSChain * chain = account.wallet.chain;
-    if (requestedSendAmount <= account.balance && protocolRequest.requestsInstantSend && ([account maxOutputAmountWithConfirmationCount:chain.ixPreviousConfirmationsNeeded usingInstantSend:TRUE returnInputCount:nil] < requestedSendAmount)) {
-        if (protocolRequest.requiresInstantSend) {
-            NSString * challengeTitle = DSLocalizedString(@"Instant payment", nil);
-            NSString * challengeMessage = DSLocalizedString(@"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes.",
-                                                            nil);
-            void (^retryBlock) (void) = ^{
-                
-                [self confirmProtocolRequest:protocolRequest forAmount:requestedSendAmount fromAccount:account acceptInternalAddress:YES acceptReusingAddress:YES addressIsFromPasteboard:NO acceptUncertifiedPayee:YES requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];
-                
-            };
-            challenge(challengeTitle,challengeMessage,DSLocalizedString(@"Retry", nil),retryBlock,^{additionalInfoRequest(DSRequestingAdditionalInfo_CancelOrChangeAmount);});
-        } else {
-            NSString * challengeTitle = DSLocalizedString(@"Instant payment", nil);
-            NSString * challengeMessage = DSLocalizedString(@"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?",nil);
-            
-            void (^sendRegularBlock) (void) = ^{
-                DSPaymentProtocolRequest * regularPaymentProtocolRequest = [[DSPaymentProtocolRequest alloc] initWithVersion:protocolRequest.version pkiType:protocolRequest.pkiType certs:protocolRequest.certs details:protocolRequest.details signature:protocolRequest.signature requestsInstantSend:NO requiresInstantSend:NO requestedAgainstFiatCurrency:protocolRequest.requestedFiatAmountCurrencyCode requestedFiatAmount:0 onChain:self.chain callbackScheme:protocolRequest.callbackScheme]; //we can put the requested fiat amount here to 0, as it was already calculated
-                [self confirmProtocolRequest:regularPaymentProtocolRequest forAmount:requestedSendAmount fromAccount:account acceptInternalAddress:YES acceptReusingAddress:YES addressIsFromPasteboard:NO acceptUncertifiedPayee:YES requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];
-                
-            };
-            
-            challenge(challengeTitle,challengeMessage,DSLocalizedString(@"Send", nil),sendRegularBlock,^{additionalInfoRequest(DSRequestingAdditionalInfo_CancelOrChangeAmount);});
-            return;
-        }
-    } else if (requestedSendAmount <= account.balance + fuzz && requestedSendAmount > 0 && !protocolRequest.details.paymentURL) {
+    if (requestedSendAmount <= account.balance + fuzz && requestedSendAmount > 0 && !protocolRequest.details.paymentURL) {
         // if user selected an amount equal to or below wallet balance, but the fee will bring the total above the
         // balance, offer to reduce the amount to available funds minus fee
-        int64_t amount = [account maxOutputAmountUsingInstantSend:tx.desiresInstantSendSending];
+        int64_t amount = [account maxOutputAmount];
         
         if (amount > 0 && amount < requestedSendAmount) {
-            NSString * challengeTitle = DSLocalizedString(@"Insufficient funds for dash network fee", nil);
+            NSString * challengeTitle = DSLocalizedString(@"Insufficient funds for Dash network fee", nil);
             NSString * challengeMessage = [NSString stringWithFormat:DSLocalizedString(@"Reduce payment amount by\n%@ (%@)?", nil),
                                            [manager stringForDashAmount:requestedSendAmount - amount],
                                            [manager localCurrencyStringForDashAmount:requestedSendAmount - amount]];
@@ -617,25 +650,37 @@
             void (^sendReducedBlock) (void) = ^{
                 DSPaymentRequest * paymentRequest = [DSPaymentRequest requestWithString:address onChain:self.chain];
                 paymentRequest.amount = amount;
-                [self confirmProtocolRequest:paymentRequest.protocolRequest forAmount:amount fromAccount:account acceptInternalAddress:YES acceptReusingAddress:YES addressIsFromPasteboard:NO acceptUncertifiedPayee:YES requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion
+                [self confirmProtocolRequest:paymentRequest.protocolRequest forAmount:amount fromAccount:account acceptInternalAddress:YES acceptReusingAddress:YES addressIsFromPasteboard:NO acceptUncertifiedPayee:YES requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt
+                    keepAuthenticatedIfErrorAfterAuthentication:keepAuthenticatedIfErrorAfterAuthentication
+                    requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion
                          publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];
                 
             };
             
-            challenge(challengeTitle,challengeMessage,reduceString,sendReducedBlock,^{additionalInfoRequest(DSRequestingAdditionalInfo_CancelOrChangeAmount);});
+        challenge(challengeTitle,challengeMessage,reduceString,sendReducedBlock,^{additionalInfoRequest(DSRequestingAdditionalInfo_CancelOrChangeAmount);});
         }
         else {
-            errorNotificationBlock(DSLocalizedString(@"Insufficient funds for dash network fee", nil),nil,NO);
+            NSString *errorTitle = DSLocalizedString(@"Insufficient funds for Dash network fee", nil);
+            NSError *error = [NSError errorWithDomain:DSErrorDomain
+                                                 code:DSErrorInsufficientFundsForNetworkFee
+                                             userInfo:@{ NSLocalizedDescriptionKey: errorTitle }];
+            errorNotificationBlock(error, errorTitle, nil, NO);
         }
     }
     else {
-        errorNotificationBlock(DSLocalizedString(@"Insufficient funds", nil),nil,NO);
+        NSString *errorTitle = DSLocalizedString(@"Insufficient funds", nil);
+        NSError *error = [NSError errorWithDomain:DSErrorDomain
+                                             code:DSErrorInsufficientFunds
+                                         userInfo:@{ NSLocalizedDescriptionKey: errorTitle }];
+        errorNotificationBlock(error, errorTitle, nil, NO);
     }
 }
 
-- (void)confirmPaymentRequest:(DSPaymentRequest *)paymentRequest fromAccount:(DSAccount*)account acceptInternalAddress:(BOOL)acceptInternalAddress acceptReusingAddress:(BOOL)acceptReusingAddress addressIsFromPasteboard:(BOOL)addressIsFromPasteboard requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest presentChallenge:(DSTransactionChallengeBlock)challenge transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock {
+- (void)confirmPaymentRequest:(DSPaymentRequest *)paymentRequest fromAccount:(DSAccount*)account acceptInternalAddress:(BOOL)acceptInternalAddress acceptReusingAddress:(BOOL)acceptReusingAddress addressIsFromPasteboard:(BOOL)addressIsFromPasteboard requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
+     keepAuthenticatedIfErrorAfterAuthentication:(BOOL)keepAuthenticatedIfErrorAfterAuthentication
+     requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest presentChallenge:(DSTransactionChallengeBlock)challenge transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock {
     DSPaymentProtocolRequest * protocolRequest = paymentRequest.protocolRequest;
-    [self confirmProtocolRequest:protocolRequest forAmount:paymentRequest.amount fromAccount:account acceptInternalAddress:acceptInternalAddress acceptReusingAddress:acceptReusingAddress addressIsFromPasteboard:addressIsFromPasteboard acceptUncertifiedPayee:NO requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:nil errorNotificationBlock:errorNotificationBlock];
+    [self confirmProtocolRequest:protocolRequest forAmount:paymentRequest.amount fromAccount:account acceptInternalAddress:acceptInternalAddress acceptReusingAddress:acceptReusingAddress addressIsFromPasteboard:addressIsFromPasteboard acceptUncertifiedPayee:NO requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt keepAuthenticatedIfErrorAfterAuthentication:keepAuthenticatedIfErrorAfterAuthentication requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:nil errorNotificationBlock:errorNotificationBlock];
 }
 
 
@@ -828,7 +873,7 @@
         error = [NSError errorWithDomain:@"DashSync" code:401
                                 userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"Double spend", nil)}];
     }
-    else if (transaction && ![account transactionForHash:txHash] && [account registerTransaction:transaction]) {
+    else if (transaction && ![account transactionForHash:txHash] && [account registerTransaction:transaction saveImmediately:YES]) {
         [[DSTransactionEntity context] performBlock:^{
             [DSTransactionEntity saveContext]; // persist transactions to core data
         }];
@@ -855,7 +900,7 @@
 // MARK: Incoming Transactions
 
 //The peer is informing us that it has an inventory of a transaction we might be interested in, this might also be a transaction we sent out which we are checking has properly been relayed on the network
-- (void)peer:(DSPeer *)peer hasTransaction:(UInt256)txHash transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock;
+- (void)peer:(DSPeer *)peer hasTransactionWithHash:(UInt256)txHash transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock;
 {
     NSValue *hash = uint256_obj(txHash);
     BOOL syncing = (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight);
@@ -873,7 +918,7 @@
         DSDLog(@"No account found for this transaction");
         return;
     }
-    if (![account registerTransaction:transaction]) return;
+    if (![account registerTransaction:transaction saveImmediately:YES]) return;
     if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
     if (callback || (! syncing && ! [self.txRelays[hash] containsObject:peer])) {
@@ -901,7 +946,7 @@
 }
 
 //The peer has sent us a transaction we are interested in and that we did not send ourselves
-- (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock
+- (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction inBlock:(DSMerkleBlock*)block transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock
 {
     NSValue *hash = uint256_obj(transaction.txHash);
     BOOL syncing = (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight);
@@ -915,7 +960,7 @@
         DSDLog(@"%@:%d no account for transaction %@", peer.host, peer.port, hash);
         if (![self.chain transactionHasLocalReferences:transaction]) return;
     } else {
-        if (![account registerTransaction:transaction]) {
+        if (![account registerTransaction:transaction saveImmediately:block?NO:YES]) {
             DSDLog(@"%@:%d could not register transaction %@", peer.host, peer.port, hash);
             return;
         }
@@ -923,7 +968,7 @@
     
     if (![transaction isMemberOfClass:[DSTransaction class]]) {
         //it's a special transaction
-        [self.chain registerSpecialTransaction:transaction];
+        [self.chain registerSpecialTransaction:transaction saveImmediately:block?NO:YES];
         
         [self.chain triggerUpdatesForLocalReferences:transaction];
     }

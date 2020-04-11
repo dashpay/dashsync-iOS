@@ -381,10 +381,10 @@
             NSMutableData * scriptPayout = [NSMutableData data];
             [scriptPayout appendScriptPubKeyForAddress:holdingAddress forChain:self.holdingKeysWallet.chain];
             
-            [fundingAccount updateTransaction:providerRegistrationTransaction forAmounts:@[@(MASTERNODE_COST)] toOutputScripts:@[scriptPayout] withFee:YES isInstant:NO];
+            [fundingAccount updateTransaction:providerRegistrationTransaction forAmounts:@[@(MASTERNODE_COST)] toOutputScripts:@[scriptPayout] withFee:YES];
             
         } else {
-            [fundingAccount updateTransaction:providerRegistrationTransaction forAmounts:@[] toOutputScripts:@[] withFee:YES isInstant:NO];
+            [fundingAccount updateTransaction:providerRegistrationTransaction forAmounts:@[] toOutputScripts:@[] withFee:YES];
         }
         
         [providerRegistrationTransaction updateInputsHash];
@@ -424,7 +424,7 @@
         DSProviderUpdateServiceTransaction * providerUpdateServiceTransaction = [[DSProviderUpdateServiceTransaction alloc] initWithProviderUpdateServiceTransactionVersion:1 providerTransactionHash:self.providerRegistrationTransaction.txHash ipAddress:ipAddress port:port scriptPayout:scriptPayout onChain:fundingAccount.wallet.chain];
         
         
-        [fundingAccount updateTransaction:providerUpdateServiceTransaction forAmounts:@[] toOutputScripts:@[] withFee:YES isInstant:NO];
+        [fundingAccount updateTransaction:providerUpdateServiceTransaction forAmounts:@[] toOutputScripts:@[] withFee:YES];
         
         [providerUpdateServiceTransaction signPayloadWithKey:operatorKey];
         
@@ -459,7 +459,7 @@
         DSProviderUpdateRegistrarTransaction * providerUpdateRegistrarTransaction = [[DSProviderUpdateRegistrarTransaction alloc] initWithProviderUpdateRegistrarTransactionVersion:1 providerTransactionHash:self.providerRegistrationTransaction.txHash mode:0 operatorKey:operatorKey votingKeyHash:votingKeyHash scriptPayout:scriptPayout onChain:fundingAccount.wallet.chain];
         
         
-        [fundingAccount updateTransaction:providerUpdateRegistrarTransaction forAmounts:@[] toOutputScripts:@[] withFee:YES isInstant:NO];
+        [fundingAccount updateTransaction:providerUpdateRegistrarTransaction forAmounts:@[] toOutputScripts:@[] withFee:YES];
         
         [providerUpdateRegistrarTransaction signPayloadWithKey:ownerKey];
         
@@ -490,7 +490,7 @@
         NSMutableData *script = [NSMutableData data];
         
         [script appendScriptPubKeyForAddress:self.providerRegistrationTransaction.outputAddresses[index] forChain:self.providerRegistrationTransaction.chain];
-        uint64_t fee = [self.providerRegistrationTransaction.chain feeForTxSize:194 isInstant:NO inputCount:1]; // assume we will add a change output
+        uint64_t fee = [self.providerRegistrationTransaction.chain feeForTxSize:194]; // assume we will add a change output
 
         DSTransaction * reclaimTransaction = [[DSTransaction alloc] initWithInputHashes:@[uint256_obj(self.providerRegistrationTransaction.txHash)] inputIndexes:@[@(index)] inputScripts:@[script] outputAddresses:@[fundingAccount.changeAddress] outputAmounts:@[@(MASTERNODE_COST - fee)] onChain:self.providerRegistrationTransaction.chain];
         

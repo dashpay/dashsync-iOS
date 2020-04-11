@@ -100,7 +100,7 @@ NS_ASSUME_NONNULL_BEGIN
                                  }
 
                                  if (completion) {
-                                     completion(authenticated, cancelled);
+                                     completion(authenticated, NO, cancelled);
                                  }
                              }];
 }

@@ -67,8 +67,6 @@ typedef union _UInt256 UInt256;
 
 @property (nonatomic, readonly) BOOL hasUnverifiedInstantSendLock;
 
-@property (nonatomic, assign) BOOL desiresInstantSendSending;
-
 @property (nonatomic, readonly) DSInstantSendTransactionLock * instantSendLockAwaitingProcessing;
 
 @property (nonatomic, assign) UInt256 txHash;
@@ -140,6 +138,8 @@ sequence:(uint32_t)sequence;
 - (DSTransactionEntity *)save;
 
 - (BOOL)saveInitial; //returns if the save took place
+
+- (BOOL)setInitialPersistentAttributesInContext:(NSManagedObjectContext*)context;
 
 //instant send
 

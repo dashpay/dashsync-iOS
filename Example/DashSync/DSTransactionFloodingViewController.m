@@ -131,7 +131,7 @@
     // if user selected an amount equal to or below wallet balance, but the fee will bring the total above the
     // balance, offer to reduce the amount to available funds minus fee
     if (requestedSendAmount <= self.fundingAccount.balance + fuzz && requestedSendAmount > 0) {
-        int64_t amount = [self.fundingAccount maxOutputAmountUsingInstantSend:tx.desiresInstantSendSending];
+        int64_t amount = [self.fundingAccount maxOutputAmount];
         
         if (amount > 0 && amount < requestedSendAmount) {
             UIAlertController * alert = [UIAlertController
@@ -256,7 +256,7 @@
                     else if (! sent) { //TODO: show full screen sent dialog with tx info, "you sent b10,000 to bob"
                         sent = YES;
                         tx.timestamp = [NSDate timeIntervalSince1970];
-                        [self.fundingAccount registerTransaction:tx];
+                        [self.fundingAccount registerTransaction:tx saveImmediately:YES];
                         self.transactionCountTextField.text = [NSString stringWithFormat:@"%ld",[self.transactionCountTextField.text integerValue] - 1];
                         self.alreadySentCount++;
                         uint32_t resetEvery = [self.resetQuorumsTextField.text intValue];
@@ -287,7 +287,7 @@
         DSPaymentRequest * paymentRequest = [DSPaymentRequest requestWithString:address onChain:self.chainManager.chain];
         paymentRequest.amount = 1000;
         DSPaymentProtocolRequest * protocolRequest = paymentRequest.protocolRequest;
-        DSTransaction * transaction = [self.fundingAccount transactionForAmounts:protocolRequest.details.outputAmounts toOutputScripts:protocolRequest.details.outputScripts withFee:TRUE isInstant:NO];
+        DSTransaction * transaction = [self.fundingAccount transactionForAmounts:protocolRequest.details.outputAmounts toOutputScripts:protocolRequest.details.outputScripts withFee:TRUE];
         if (transaction) {
             CFRunLoopPerformBlock([[NSRunLoop mainRunLoop] getCFRunLoop], kCFRunLoopCommonModes, ^{
                 [self confirmTransaction:transaction toAddress:self.destinationAccount.receiveAddress forAmount:paymentRequest.amount];

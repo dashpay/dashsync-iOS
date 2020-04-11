@@ -45,6 +45,7 @@
 #import "DSMasternodeHoldingsDerivationPath+Protected.h"
 #import "DSDerivationPathFactory.h"
 #import "DSSpecialTransactionsWalletHolder.h"
+#import "DSAuthenticationManager+Private.h"
 
 #define SEED_ENTROPY_LENGTH   (128/8)
 #define WALLET_CREATION_TIME_KEY   @"WALLET_CREATION_TIME_KEY"
@@ -230,7 +231,11 @@
         completion(self);
         return;
     }
-    [self seedPhraseAfterAuthentication:^(NSString * _Nullable seedPhrase) {
+    NSString *prompt = [NSString stringWithFormat:DSLocalizedString(@"Please authenticate to create your %@ wallet",
+    @"Please authenticate to create your Testnet wallet"),
+                        chain.localizedName];
+    
+    [self seedPhraseAfterAuthenticationWithPrompt:prompt completion:^(NSString * _Nullable seedPhrase) {
         if (!seedPhrase) {
             completion(nil);
             return;
@@ -446,15 +451,20 @@
             completion([[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:getKeychainString(self.mnemonicUniqueID, nil) withPassphrase:nil],NO);
             return;
         }
-        BOOL touchid = amount?((self.totalSent + amount < getKeychainInt(SPEND_LIMIT_KEY, nil)) ? YES : NO):NO;
         
-        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:authprompt usingBiometricAuthentication:touchid alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
+        BOOL usingBiometricAuthentication = amount?[[DSAuthenticationManager sharedInstance] canUseBiometricAuthenticationForAmount:amount]:NO;
+        
+        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:authprompt usingBiometricAuthentication:usingBiometricAuthentication alertIfLockout:YES completion:^(BOOL authenticated, BOOL usedBiometrics, BOOL cancelled) {
             if (!authenticated) {
                 completion(nil,cancelled);
             } else {
-                // BUG: if user manually chooses to enter pin, the Touch ID spending limit is reset, but the tx being authorized
-                // still counts towards the next Touch ID spending limit
-                if (! touchid) setKeychainInt(self.totalSent + amount + [DSChainsManager sharedInstance].spendingLimit, SPEND_LIMIT_KEY, NO);
+                if (usedBiometrics) {
+                    BOOL loweredAmountSuccessfully = [[DSAuthenticationManager sharedInstance] updateBiometricsAmountLeftAfterSpendingAmount:amount];
+                    if (!loweredAmountSuccessfully) {
+                        completion(nil,cancelled);
+                        return;
+                    }
+                }
                 completion([[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:getKeychainString(self.mnemonicUniqueID, nil) withPassphrase:nil],cancelled);
             }
         }];
@@ -475,7 +485,7 @@
 - (void)seedPhraseAfterAuthenticationWithPrompt:(NSString *)authprompt completion:(void (^)(NSString * seedPhrase))completion
 {
     @autoreleasepool {
-        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:authprompt usingBiometricAuthentication:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
+        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:authprompt usingBiometricAuthentication:NO alertIfLockout:YES completion:^(BOOL authenticated, BOOL usedBiometrics, BOOL cancelled) {
             NSString * rSeedPhrase = authenticated?getKeychainString(self.mnemonicUniqueID, nil):nil;
             completion(rSeedPhrase);
         }];
@@ -662,6 +672,22 @@
         }
     }
     return updated;
+}
+
+// this is used to save transactions atomically with the block, needs to be called before switching threads to save the block
+- (void)prepareForIncomingTransactionPersistenceForBlockSaveWithNumber:(uint32_t)blockNumber {
+    for (DSAccount * account in self.accounts) {
+        [account prepareForIncomingTransactionPersistenceForBlockSaveWithNumber:blockNumber];
+    }
+    [self.specialTransactionsHolder prepareForIncomingTransactionPersistenceForBlockSaveWithNumber:blockNumber];
+}
+
+// this is used to save transactions atomically with the block
+- (void)persistIncomingTransactionsAttributesForBlockSaveWithNumber:(uint32_t)blockNumber inContext:(NSManagedObjectContext*)context {
+    for (DSAccount * account in self.accounts) {
+        [account persistIncomingTransactionsAttributesForBlockSaveWithNumber:blockNumber inContext:context];
+    }
+    [self.specialTransactionsHolder persistIncomingTransactionsAttributesForBlockSaveWithNumber:blockNumber inContext:context];
 }
 
 -(void)chainUpdatedBlockHeight:(int32_t)height {

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>%ld attempt(s) remaining</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@attempts@</string>
+		<key>attempts</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%Id pozostała próba</string>
+			<key>few</key>
+			<string>%Id pozostałych prób</string>
+			<key>many</key>
+			<string>%Id pozostałych prób</string>
+			<key>other</key>
+			<string>%Id pozostałych prób</string>
+		</dict>
+	</dict>
+	<key>%ld second(s)</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@seconds@</string>
+		<key>seconds</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%Id sekunda</string>
+			<key>few</key>
+			<string>%Id sekund</string>
+			<key>many</key>
+			<string>%Id sekund</string>
+			<key>other</key>
+			<string>%Id sekund</string>
+		</dict>
+	</dict>
+	<key>%ld minute(s)</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@minutes@</string>
+		<key>minutes</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%Id minuta</string>
+			<key>few</key>
+			<string>%Id minut</string>
+			<key>many</key>
+			<string>%Id minut</string>
+			<key>other</key>
+			<string>%Id minut</string>
+		</dict>
+	</dict>
+	<key>%ld hour(s)</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@hours@</string>
+		<key>hours</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%Id godzina</string>
+			<key>few</key>
+			<string>%Id godzin</string>
+			<key>many</key>
+			<string>%Id godzin</string>
+			<key>other</key>
+			<string>%Id godzin</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

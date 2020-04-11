@@ -46,16 +46,6 @@ FOUNDATION_EXPORT NSString* const DSSporkListDidUpdateNotification;
 @property (nonatomic,readonly) NSDictionary * sporkDictionary;
 @property (nonatomic,readonly) DSChain * chain;
 
-- (instancetype)initWithChain:(DSChain*)chain;
-
-- (void)getSporks;
-
-- (void)wipeSporkInfo;
-
-- (void)checkTriggers;
-
-- (void)stopGettingSporks;
-
 @end
 
 NS_ASSUME_NONNULL_END

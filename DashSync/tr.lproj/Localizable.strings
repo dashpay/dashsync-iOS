@@ -9,7 +9,7 @@
 "\n\n     amount %@ (%@)" = "\n\n     miktar %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRES ZATEN KULLANIMDA\ndash adresleri tek kullanımlıktır\n\nadresi tekrar kullanmak hem sizin hem de alıcının gizliliğini azaltır ve eğer alıcı adresi doğrudan kontrol etmiyorsa kayba yol açabilir";
+"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRES ZATEN KULLANIMDA\nDash adresleri tek kullanımlıktır\n\nAdresi tekrar kullanmak hem sizin hem de alıcının gizliliğini azaltır ve eğer alıcı adresi doğrudan kontrol etmiyorsa kayba yol açabilir";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nağ ücreti +%1$@ (%2$@)";
@@ -36,76 +36,67 @@
 "Are you sure you would like to update this masternode to pay to %@?" = "Bu anadüğümü buna: %@ ödeme yapacak şekilde güncellemek istediğinize emin misiniz?";
 
 /* No comment provided by engineer. */
-"Bad password, try again" = "Bad password, try again";
+"Bad password, try again" = "Hatalı şifre, yeniden deneyin";
 
 /* No comment provided by engineer. */
-"Bad payment request" = "Bad payment request";
+"Bad payment request" = "Hatalı ödeme talebi";
 
 /* No comment provided by engineer. */
-"Bad payment request URL" = "Bad payment request URL";
+"Bad payment request URL" = "Hatalı ödeme talep linki";
 
 /* No comment provided by engineer. */
-"Bad payment URL" = "Bad payment URL";
+"Bad payment URL" = "Hatalı ödeme linki";
 
 /* No comment provided by engineer. */
-"Cancel" = "Cancel";
+"Cancel" = "İptal et";
 
 /* No comment provided by engineer. */
 "Confirm" = "Onayla";
 
 /* No comment provided by engineer. */
-"Confirm PIN" = "Confirm PIN";
+"Confirm PIN" = "PİN'i Onayla";
 
 /* No comment provided by engineer. */
-"Connect timeout" = "Connect timeout";
+"Connect timeout" = "Bağlantı zaman aşımı";
 
 /* No comment provided by engineer. */
-"Couldn't make payment" = "Couldn't make payment";
+"Couldn't make payment" = "Ödeme yapılamadı";
 
 /* No comment provided by engineer. */
-"Dash payments can't be less than %@" = "Dash payments can't be less than %@";
+"Dash payments can't be less than %@" = "Dash ödemesi %@ altında olamaz";
 
 /* No comment provided by engineer. */
-"Dash transaction not signed" = "Dash transaction not signed";
+"Dash transaction not signed" = "Dash işlemi imzalanmamış";
 
 /* No comment provided by engineer. */
-"Dash transaction outputs can't be less than %@" = "Dash transaction outputs can't be less than %@";
+"Dash transaction outputs can't be less than %@" = "Dash işlemi çıkışı %@ altında olamaz";
 
 /* No comment provided by engineer. */
 "Devnet" = "Devnet";
 
 /* No comment provided by engineer. */
-"Double spend" = "Double spend";
+"Double spend" = "Çift ödeme";
+
+/* The server is not working */
+"Down" = "Çöktü";
 
 /* No comment provided by engineer. */
-"Down" = "Down";
-
-/* No comment provided by engineer. */
-"Enter old PIN" = "Enter old PIN";
+"Enter old PIN" = "Eski PİN'i girin";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Ödeme talebi sunucusundan hata %@";
 
 /* No comment provided by engineer. */
-"Error signing dash transaction" = "Error signing dash transaction";
+"Error signing transaction" = "İşlem kaydı hatası";
 
 /* No comment provided by engineer. */
-"Error signing transaction" = "Error signing transaction";
+"Ignore" = "Yoksay";
 
 /* No comment provided by engineer. */
-"Ignore" = "Ignore";
+"Insufficient funds" = "Yetersiz bakiye";
 
 /* No comment provided by engineer. */
-"Instant payment" = "Instant payment";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "Anında Gönder için 6 onaylı yeterli girdi gerekir, yine de sıradan işlem olarak gönder?";
-
-/* No comment provided by engineer. */
-"Insufficient funds" = "Insufficient funds";
-
-/* No comment provided by engineer. */
-"Insufficient funds for dash network fee" = "Insufficient funds for dash network fee";
+"Insufficient funds for Dash network fee" = "Dash ağ ücreti için yetersiz bakiye";
 
 /* No comment provided by engineer. */
 "Internal Error" = "Dahili Hata";
@@ -126,103 +117,97 @@
 "Method Not Found" = "Metod Bulunamadı";
 
 /* No comment provided by engineer. */
-"Missing certificate" = "Missing certificate";
+"Missing certificate" = "Eksik sertifika";
 
 /* No comment provided by engineer. */
-"No attempts remaining" = "No attempts remaining";
+"No attempts remaining" = "Deneme hakkı kalmadı";
 
 /* No comment provided by engineer. */
-"No peers found" = "No peers found";
+"No peers found" = "Eşler bulunamadı";
 
 /* No comment provided by engineer. */
-"Not a valid private key" = "Not a valid private key";
+"Not a valid private key" = "Geçerli bir özel anahtar değil";
 
 /* No comment provided by engineer. */
-"Not connected to the dash network" = "Not connected to the dash network";
+"Not connected to the Dash network" = "Dash ağına bağlı değil";
 
 /* No comment provided by engineer. */
-"OK" = "OK";
+"OK" = "Tamam";
 
 /* No comment provided by engineer. */
 "Parse Error" = "İşleme .Hatası";
 
 /* No comment provided by engineer. */
-"Passcode" = "Passcode";
+"Passcode" = "Şifre";
 
 /* No comment provided by engineer. */
-"Password" = "Password";
+"Password" = "Şifre";
 
 /* No comment provided by engineer. */
-"Password protected key" = "Password protected key";
+"Password protected key" = "Şifre korumalı anahtar";
 
 /* No comment provided by engineer. */
-"Payee identity isn't certified" = "Payee identity isn't certified";
+"Payee identity isn't certified" = "Alacaklı kimliği onaylı değil";
 
 /* No comment provided by engineer. */
-"PIN for %@" = "PIN for %@";
+"PIN for %@" = "%@ için PİN";
+
+/* Please authenticate to create your Testnet wallet */
+"Please authenticate to create your %@ wallet" = "Lütfen %@ cüzdanınızı oluşturmak kimlik doğrulaması yapın";
 
 /* No comment provided by engineer. */
-"Recovery phrase" = "Recovery phrase";
+"Recovery phrase" = "Kurtarma cümlesi";
 
 /* No comment provided by engineer. */
-"Reduce payment amount by\n%@ (%@)?" = "Reduce payment amount by\n%1$@ (%2$@)?";
+"Reduce payment amount by\n%@ (%@)?" = "%1$@ (%2$@) ile ödeme miktarı düşürülsün mü?";
 
 /* No comment provided by engineer. */
-"Request expired" = "Request expired";
+"Request expired" = "İstek süresi bitti";
 
 /* No comment provided by engineer. */
-"Requested network \"%@\" not currently in use" = "Requested network \"%@\" not currently in use";
+"Requested network \"%@\" not currently in use" = "İstenen ağ \"%@\" şu anda kullanımda değil";
 
 /* No comment provided by engineer. */
-"Rescan" = "Rescan";
+"Rescan" = "Yeniden tara";
 
 /* No comment provided by engineer. */
-"Reset" = "Reset";
-
-/* No comment provided by engineer. */
-"Retry" = "Retry";
-
-/* No comment provided by engineer. */
-"Send" = "Send";
+"Reset" = "Yeniden Başlat";
 
 /* No comment provided by engineer. */
 "Server Error" = "Sunucu Hatası";
 
 /* No comment provided by engineer. */
-"Set PIN" = "Set PIN";
+"Set PIN" = "PİN Oluştur";
 
 /* No comment provided by engineer. */
 "Testnet" = "Testnet";
 
 /* No comment provided by engineer. */
-"This payment address is already in your wallet" = "This payment address is already in your wallet";
+"This payment address is already in your wallet" = "Ödeme adresi zaten cüzdanınızda var";
 
 /* No comment provided by engineer. */
-"This private key is already in your wallet" = "This private key is already in your wallet";
+"This private key is already in your wallet" = "Bu özel anahtar zaten cüzdanınızda var";
 
 /* No comment provided by engineer. */
-"This private key is empty" = "This private key is empty";
+"This private key is empty" = "Bu özel anahtar boş";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Bu ödeme talebi anında ödeme gerektirir ama Anında Gönder için gereken 6 onay için yeterli girdiye sahip değilsiniz. Satıcı ile normal ödeme yöntemi üzerinde anlaşabilir ya da bir kaç dakika bekleyebilirsiniz";
+"Transaction canceled, network timeout" = "İşlem iptal edildi, ağ zaman aşımına uğradı";
 
 /* No comment provided by engineer. */
-"Transaction canceled, network timeout" = "Transaction canceled, network timeout";
+"Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "İşlem ücretleri bu anahtarda kullanılabilir olan paradan daha pahalıya mal olabilir(küçük \"para\" deposu nedeniyle)";
 
 /* No comment provided by engineer. */
-"Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)";
+"Transaction rejected" = "İşlem reddedildi";
 
 /* No comment provided by engineer. */
-"Transaction rejected" = "Transaction rejected";
+"Try again in %@" = "%@ içinde tekrar deneyin";
 
 /* No comment provided by engineer. */
-"Try again in %@" = "Try again in %@";
+"Unexpected response from %@" = "%@'den beklenmeyen yanıt";
 
 /* No comment provided by engineer. */
-"Unexpected response from %@" = "Unexpected response from %@";
-
-/* No comment provided by engineer. */
-"unknown address" = "unknown address";
+"Unknown address" = "Bilinmeyen adres";
 
 /* No comment provided by engineer. */
 "Unknown Error" = "Bilinmeyen Hata";
@@ -231,28 +216,28 @@
 "Unknown JSON-RPC Response" = "Bilinmeyen JSON-RPC Yanıtı";
 
 /* No comment provided by engineer. */
-"Unrecognized address" = "Unrecognized address";
+"Unrecognized address" = "Onaylanmamış adres";
 
 /* No comment provided by engineer. */
-"Unsupported signature type" = "Unsupported signature type";
+"Unsupported signature type" = "Desteklenmeyen imza türü";
 
 /* No comment provided by engineer. */
-"Untrusted certificate" = "Untrusted certificate";
+"Untrusted certificate" = "Güvenilir olmayan sertifika";
 
-/* No comment provided by engineer. */
-"Up" = "Up";
+/* The server is up and running */
+"Up" = "Açık";
 
 /* Updating Price */
 "Updating Price" = "Fiyat Güncelleniyor";
 
 /* No comment provided by engineer. */
-"Wallet disabled" = "Wallet disabled";
+"Wallet disabled" = "Cüzdan devredışı";
 
 /* No comment provided by engineer. */
 "WARNING" = "UYARI";
 
 /* No comment provided by engineer. */
-"Wipe" = "Wipe";
+"Wipe" = "Sil";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Cüzdanınız eşitlenmemiş olabilir.\nBlok zincirini yeniden taratmak bunu sık sık düzeltebilir.";

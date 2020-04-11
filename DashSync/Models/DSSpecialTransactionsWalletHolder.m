@@ -48,6 +48,8 @@
 @property (nonatomic,strong) NSMutableDictionary * blockchainUserResetTransactions;
 @property (nonatomic,strong) NSMutableDictionary * blockchainUserCloseTransactions;
 @property (nonatomic,strong) NSMutableDictionary * transitions;
+@property (nonatomic,strong) NSMutableArray <DSTransaction*> *transactionsToSave;
+@property (nonatomic,strong) NSMutableDictionary <NSNumber*,NSArray<DSTransaction*>*> *transactionsToSaveInBlockSave;
 
 @property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
 
@@ -69,6 +71,8 @@
     self.transitions = [NSMutableDictionary dictionary];
     self.managedObjectContext = managedObjectContext?managedObjectContext:[NSManagedObject context];
     self.wallet = wallet;
+    self.transactionsToSave = [NSMutableArray array];
+    self.transactionsToSaveInBlockSave = [NSMutableDictionary dictionary];
     return self;
 }
 
@@ -119,7 +123,19 @@
     }
 }
 
-- (void)registerTransaction:(DSTransaction*)transaction {
+-(void)prepareForIncomingTransactionPersistenceForBlockSaveWithNumber:(uint32_t)blockNumber {
+    [self.transactionsToSaveInBlockSave setObject:[self.transactionsToSave copy] forKey:@(blockNumber)];
+    [self.transactionsToSave removeAllObjects];
+}
+
+-(void)persistIncomingTransactionsAttributesForBlockSaveWithNumber:(uint32_t)blockNumber inContext:(NSManagedObjectContext*)context {
+    for (DSTransaction * transaction in self.transactionsToSaveInBlockSave[@(blockNumber)]) {
+        [transaction setInitialPersistentAttributesInContext:context];
+    }
+    [self.transactionsToSaveInBlockSave removeObjectForKey:@(blockNumber)];
+}
+
+- (void)registerTransaction:(DSTransaction*)transaction saveImmediately:(BOOL)saveImmediately {
     if ([transaction isMemberOfClass:[DSProviderRegistrationTransaction class]]) {
         [self.providerRegistrationTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
     } else if ([transaction isMemberOfClass:[DSProviderUpdateServiceTransaction class]]) {
@@ -142,7 +158,11 @@
         NSAssert(FALSE,@"unknown transaction type being registered");
         return;
     }
-    [transaction saveInitial];
+    if (saveImmediately) {
+        [transaction saveInitial];
+    } else {
+        [self.transactionsToSave addObject:transaction];
+    }
 }
 
 -(void)loadTransactions {

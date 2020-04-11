@@ -106,9 +106,9 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 -(void)addDerivationPathsFromArray:(NSArray<DSDerivationPath *> *)derivationPaths;
 
 // largest amount that can be sent from the account after fees
-- (uint64_t)maxOutputAmountUsingInstantSend:(BOOL)instantSend;
+@property (nonatomic, readonly) uint64_t maxOutputAmount;
 
-- (uint64_t)maxOutputAmountWithConfirmationCount:(uint64_t)confirmationCount usingInstantSend:(BOOL)instantSend returnInputCount:(uint32_t* _Nullable)rInputCount;
+- (uint64_t)maxOutputAmountWithConfirmationCount:(uint64_t)confirmationCount returnInputCount:(uint32_t* _Nullable)rInputCount;
 
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address;
@@ -135,12 +135,9 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
                                    toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee;
 
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
-- (DSTransaction * _Nullable)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant;
+- (DSTransaction * _Nullable)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee toShapeshiftAddress:(NSString* _Nullable)shapeshiftAddress;
 
-// returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
-- (DSTransaction * _Nullable)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant toShapeshiftAddress:(NSString* _Nullable)shapeshiftAddress;
-
-- (DSTransaction *)updateTransaction:(DSTransaction *)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant;
+- (DSTransaction *)updateTransaction:(DSTransaction *)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee;
 
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
 - (void)signTransaction:(DSTransaction *)transaction withPrompt:(NSString * _Nullable)authprompt completion:(_Nonnull TransactionValidityCompletionBlock)completion;
@@ -149,7 +146,13 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 - (BOOL)canContainTransaction:(DSTransaction *)transaction;
 
 // adds a transaction to the account, or returns false if it isn't associated with the account
-- (BOOL)registerTransaction:(DSTransaction *)transaction;
+- (BOOL)registerTransaction:(DSTransaction *)transaction saveImmediately:(BOOL)saveImmediately;
+
+// this is used to save transactions atomically with the block, needs to be called before switching threads to save the block
+- (void)prepareForIncomingTransactionPersistenceForBlockSaveWithNumber:(uint32_t)blockNumber;
+
+// this is used to save transactions atomically with the block
+- (void)persistIncomingTransactionsAttributesForBlockSaveWithNumber:(uint32_t)blockNumber inContext:(NSManagedObjectContext*)context;
 
 // removes a transaction from the account along with any transactions that depend on its outputs, returns TRUE if a transaction was removed
 - (BOOL)removeTransaction:(DSTransaction *)transaction;

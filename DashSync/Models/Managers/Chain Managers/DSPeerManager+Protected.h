@@ -48,6 +48,11 @@ typedef NS_ENUM(NSUInteger, DSPeerManagerDesiredState) {
 
 - (void)disconnectDownloadPeerWithCompletion:(void (^ _Nullable)(BOOL success))completion;
 
+- (instancetype)initWithChain:(DSChain*)chain;
+
+- (void)clearRegisteredPeers;
+- (void)registerPeerAtLocation:(UInt128)IPAddress port:(uint32_t)port dapiPort:(uint32_t)dapiPort;
+
 @end
 
 NS_ASSUME_NONNULL_END
