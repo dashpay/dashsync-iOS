@@ -346,7 +346,9 @@
     NSParameterAssert(friendshipIdentifier);
     DSIncomingFundsDerivationPath * derivationPath = [self.mContactIncomingFundDerivationPathsDictionary objectForKey:friendshipIdentifier];
     if (derivationPath) return derivationPath;
-    return [self.mContactOutgoingFundDerivationPathsDictionary objectForKey:friendshipIdentifier];
+    derivationPath = [self.mContactOutgoingFundDerivationPathsDictionary objectForKey:friendshipIdentifier];
+    NSAssert(derivationPath, @"There should be a derivationPathFound");
+    return derivationPath;
 }
 
 -(void)addDerivationPath:(DSDerivationPath*)derivationPath {

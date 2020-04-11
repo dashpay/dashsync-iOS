@@ -173,12 +173,14 @@
         [self raiseIssue:@"Unknown Registration Type" message:@"Please select the type of identity you wish to register"];
         return;
     }
-    [self.blockchainIdentity createAndPublishRegistrationTransitionWithCompletion:^(NSDictionary * _Nullable successInfo, NSError * _Nullable error) {
-        if (error) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [self raiseIssue:@"Unable to register." message:error.localizedDescription];
-            });
-        }
+    [self.blockchainIdentity createFundingPrivateKeyWithPrompt:@"" completion:^(BOOL success, BOOL cancelled) {
+        [self.blockchainIdentity createAndPublishRegistrationTransitionWithCompletion:^(NSDictionary * _Nullable successInfo, NSError * _Nullable error) {
+            if (error) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self raiseIssue:@"Unable to register." message:error.localizedDescription];
+                });
+            }
+        }];
     }];
 }
 
