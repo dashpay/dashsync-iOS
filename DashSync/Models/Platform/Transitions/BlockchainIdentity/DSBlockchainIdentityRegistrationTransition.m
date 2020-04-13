@@ -40,6 +40,7 @@
     self.identityType = identityType;
     self.version = 1;
     self.lockedOutpoint = lockedOutpoint;
+    self.blockchainIdentityUniqueId = [dsutxo_data(lockedOutpoint) SHA256_2];
     self.publicKeys = publicKeys;
     return self;
 }
