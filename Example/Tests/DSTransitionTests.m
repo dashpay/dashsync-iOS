@@ -98,7 +98,7 @@
         }];
     }];
     [self waitForExpectationsWithTimeout:10 handler:^(NSError * _Nullable error) {
-        
+        XCTAssertNil(error);
     }];
 }
 
