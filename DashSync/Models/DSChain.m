@@ -1901,6 +1901,14 @@ static dispatch_once_t devnetToken = 0;
     return [self transactionForHash:txHash returnWallet:nil];
 }
 
+- (DSAccount* _Nullable)firstAccountWithBalance {
+    for (DSWallet * wallet in self.wallets) {
+        DSAccount * account = [wallet firstAccountWithBalance];
+        if (account) return account;
+    }
+    return nil;
+}
+
 - (DSAccount* _Nullable)firstAccountThatCanContainTransaction:(DSTransaction *)transaction {
     if (!transaction) return nil;
     for (DSWallet * wallet in self.wallets) {

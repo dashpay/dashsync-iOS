@@ -203,6 +203,9 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 // returns the transaction with the given hash if it's been registered in any wallet on the chain (might also return non-registered)
 - (DSTransaction * _Nullable)transactionForHash:(UInt256)txHash;
 
+// returns the first account with a balance
+- (DSAccount* _Nullable)firstAccountWithBalance;
+
 // returns an account to which the given transaction is or can be associated with (even if it hasn't been registered), no account if the transaction is not associated with the wallet
 - (DSAccount* _Nullable)firstAccountThatCanContainTransaction:(DSTransaction *)transaction;
 

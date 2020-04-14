@@ -21,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (DSKey*)firstUnusedPrivateKeyFromSeed:(NSData*)seed;
 - (DSKey*)privateKeyForAddress:(NSString*)address fromSeed:(NSData*)seed;
 - (DSKey*)privateKeyForHash160:(UInt160)hash160 fromSeed:(NSData*)seed;
+- (NSData*)publicKeyDataForHash160:(UInt160)hash160;
 
 @end
 
