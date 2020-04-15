@@ -1171,12 +1171,11 @@
         }
     }
     
-//    if ([self.chain syncsBlockchain] && !self.sentFilter && ! self.sentMempool && ! self.sentGetblocks && (txHashes.count + instantSendLockHashes.count > 0) && !onlyPrivateSendTransactions) {
-//        [self error:@"got tx inv message before loading a filter"];
-//        return;
-//    }
-//    else
-    if (txHashes.count + instantSendLockHashes.count > 10000) { // this was happening on testnet, some sort of DOS/spam attack?
+    if ([self.chain syncsBlockchain] && !self.sentFilter && ! self.sentMempool && ! self.sentGetblocks && (txHashes.count > 0) && !onlyPrivateSendTransactions) {
+        [self error:@"got tx inv message before loading a filter"];
+        return;
+    }
+    else if (txHashes.count + instantSendLockHashes.count > 10000) { // this was happening on testnet, some sort of DOS/spam attack?
         DSDLog(@"%@:%u too many transactions, disconnecting", self.host, self.port);
         [self disconnect]; // disconnecting seems to be the easiest way to mitigate it
         return;
