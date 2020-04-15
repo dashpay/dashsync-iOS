@@ -287,7 +287,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             return;
         }
         if (stepCompletion) {
-            stepCompletion(DSBlockchainIdentityRegistrationStep_Username);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                stepCompletion(DSBlockchainIdentityRegistrationStep_Username);
+            });
         }
         stepsCompleted |= DSBlockchainIdentityRegistrationStep_Username;
         
@@ -318,7 +320,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             return;
         }
         if (stepCompletion) {
-            stepCompletion(DSBlockchainIdentityRegistrationStep_Identity);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                stepCompletion(DSBlockchainIdentityRegistrationStep_Identity);
+            });
         }
         stepsCompleted |= DSBlockchainIdentityRegistrationStep_Identity;
         
@@ -1727,10 +1731,17 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             NSArray * usernames = [self usernamesWithStatus:DSBlockchainIdentityUsernameStatus_RegistrationPending];
             if (usernames.count) {
                 [self monitorForDPNSUsernames:usernames withRetryCount:2 completion:completion];
+            } else {
+                if (completion) {
+                    completion(NO,nil);
+                }
             }
             break;
         }
         default:
+            if (completion) {
+                completion(NO,nil);
+            }
             break;
     }
 }
