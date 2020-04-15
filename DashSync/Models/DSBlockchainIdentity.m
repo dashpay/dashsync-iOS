@@ -242,6 +242,26 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 // MARK: - Full Registration agglomerate
 
+-(DSBlockchainIdentityRegistrationStep)stepsCompleted {
+    DSBlockchainIdentityRegistrationStep stepsCompleted = DSBlockchainIdentityRegistrationStep_None;
+    if (self.isRegistered) {
+        stepsCompleted = DSBlockchainIdentityRegistrationStep_RegistrationSteps;
+        if ([self usernamesWithStatus:DSBlockchainIdentityUsernameStatus_Confirmed].count) {
+            stepsCompleted |= DSBlockchainIdentityRegistrationStep_Username;
+        }
+    } else if (self.registrationCreditFundingTransaction) {
+        stepsCompleted |= DSBlockchainIdentityRegistrationStep_FundingTransactionCreation;
+        DSAccount * account = [self.chain firstAccountThatCanContainTransaction:self.registrationCreditFundingTransaction];
+        if (self.registrationCreditFundingTransaction.blockHeight != TX_UNCONFIRMED || [account transactionIsVerified:self.registrationCreditFundingTransaction]) {
+            stepsCompleted |= DSBlockchainIdentityRegistrationStep_FundingTransactionPublishing;
+        }
+    }
+    if ([self isRegisteredInWallet]) {
+        stepsCompleted |= DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence;
+    }
+    return stepsCompleted;
+}
+
 -(void)continueRegisteringProfileOnNetwork:(DSBlockchainIdentityRegistrationStep)steps stepsCompleted:(DSBlockchainIdentityRegistrationStep)stepsAlreadyCompleted stepCompletion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationStep stepCompleted))stepCompletion completion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError * error))completion {
     
     __block DSBlockchainIdentityRegistrationStep stepsCompleted = stepsAlreadyCompleted;
@@ -532,6 +552,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     if (!_isLocal) return;
     self.uniqueID = blockchainIdentityUniqueId;
     [self registerInWallet];
+}
+
+-(BOOL)isRegisteredInWallet {
+    NSAssert(_isLocal, @"This should not be performed on a non local blockchain identity");
+    if (!_isLocal) return FALSE;
+    if (!self.wallet) return FALSE;
+    return [self.wallet containsBlockchainIdentity:self];
 }
 
 -(void)registerInWallet {
@@ -1514,18 +1541,18 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 // MARK: Usernames
 
 -(void)addUsername:(NSString*)username save:(BOOL)save {
-    [self addUsername:username status:DSBlockchainIdentityUsernameStatus_Initial save:save];
+    [self addUsername:username status:DSBlockchainIdentityUsernameStatus_Initial save:save registerOnNetwork:YES];
 }
 
--(void)addUsername:(NSString*)username status:(DSBlockchainIdentityUsernameStatus)status save:(BOOL)save {
+-(void)addUsername:(NSString*)username status:(DSBlockchainIdentityUsernameStatus)status save:(BOOL)save registerOnNetwork:(BOOL)registerOnNetwork {
     [self.usernameStatuses setObject:@{BLOCKCHAIN_USERNAME_STATUS:@(DSBlockchainIdentityUsernameStatus_Initial)} forKey:username];
     if (save) {
         [self saveNewUsername:username status:DSBlockchainIdentityUsernameStatus_Initial];
-    }
-    if (self.registered && status != DSBlockchainIdentityUsernameStatus_Confirmed) {
-        [self registerUsernamesWithCompletion:^(BOOL success, NSError * _Nonnull error) {
-            
-        }];
+        if (registerOnNetwork && self.registered && status != DSBlockchainIdentityUsernameStatus_Confirmed) {
+            [self registerUsernamesWithCompletion:^(BOOL success, NSError * _Nonnull error) {
+                
+            }];
+        }
     }
 }
 

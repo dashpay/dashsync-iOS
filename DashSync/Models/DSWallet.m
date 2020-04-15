@@ -923,6 +923,14 @@
 
 }
 
+-(BOOL)containsBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity {
+    if (blockchainIdentity.lockedOutpointData) {
+        return [self.mBlockchainIdentities objectForKey:blockchainIdentity.lockedOutpointData];
+    } else {
+        return FALSE;
+    }
+}
+
 - (void)registerBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity
 {
     NSParameterAssert(blockchainIdentity);

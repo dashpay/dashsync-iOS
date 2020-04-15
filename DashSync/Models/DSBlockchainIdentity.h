@@ -20,11 +20,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityRegistrationStep) {
     DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence = 4,
     DSBlockchainIdentityRegistrationStep_L1Steps = DSBlockchainIdentityRegistrationStep_FundingTransactionCreation | DSBlockchainIdentityRegistrationStep_FundingTransactionPublishing | DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence,
     DSBlockchainIdentityRegistrationStep_Identity = 8,
+    DSBlockchainIdentityRegistrationStep_RegistrationSteps = DSBlockchainIdentityRegistrationStep_L1Steps | DSBlockchainIdentityRegistrationStep_Identity,
     DSBlockchainIdentityRegistrationStep_Username = 16,
+    DSBlockchainIdentityRegistrationStep_RegistrationStepsWithUsername = DSBlockchainIdentityRegistrationStep_RegistrationSteps | DSBlockchainIdentityRegistrationStep_Username,
     DSBlockchainIdentityRegistrationStep_Profile = 32,
-    DSBlockchainIdentityRegistrationStep_RegistrationWithUsername = DSBlockchainIdentityRegistrationStep_L1Steps | DSBlockchainIdentityRegistrationStep_Username,
-    DSBlockchainIdentityRegistrationStep_RegistrationWithUsernameAndDashpayProfile = DSBlockchainIdentityRegistrationStep_RegistrationWithUsername | DSBlockchainIdentityRegistrationStep_Profile,
-    DSBlockchainIdentityRegistrationStep_All = DSBlockchainIdentityRegistrationStep_RegistrationWithUsernameAndDashpayProfile,
+    DSBlockchainIdentityRegistrationStep_RegistrationStepsWithUsernameAndDashpayProfile = DSBlockchainIdentityRegistrationStep_RegistrationStepsWithUsername | DSBlockchainIdentityRegistrationStep_Profile,
+    DSBlockchainIdentityRegistrationStep_All = DSBlockchainIdentityRegistrationStep_RegistrationStepsWithUsernameAndDashpayProfile,
     DSBlockchainIdentityRegistrationStep_Cancelled = 1 << 31
 };
 
@@ -98,6 +99,9 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 
 /*! @brief This is if the blockchain identity is present in wallets or not. If this is false then the blockchain identity is known for example from being a dashpay friend. */
 @property (nonatomic,readonly) BOOL isLocal;
+
+/*! @brief This is the bitwise steps that the identity has already performed in registration. */
+@property (nonatomic,readonly) DSBlockchainIdentityRegistrationStep stepsCompleted;
 
 /*! @brief This is the wallet holding the blockchain identity. There should always be a wallet associated to a blockchain identity if the blockchain identity is local, but never if it is not. */
 @property (nonatomic,weak,readonly) DSWallet * wallet;

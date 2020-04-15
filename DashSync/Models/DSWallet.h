@@ -209,6 +209,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 -(void)unregisterBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 -(void)addBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 -(void)registerBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
+-(BOOL)containsBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity;
 
 -(DSBlockchainIdentity*)createBlockchainIdentityOfType:(DSBlockchainIdentityType)type;
 -(DSBlockchainIdentity*)createBlockchainIdentityOfType:(DSBlockchainIdentityType)type usingDerivationIndex:(uint32_t)index;
