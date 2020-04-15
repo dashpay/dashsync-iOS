@@ -33,6 +33,8 @@ typedef void (^IdentitiesCompletionBlock)(NSArray <DSBlockchainIdentity*> * _Nul
 
 - (void)searchIdentitiesByNamePrefix:(NSString*)namePrefix withCompletion:(IdentitiesCompletionBlock)completion;
 
+- (void)searchIdentitiesByNamePrefix:(NSString*)namePrefix offset:(uint32_t)offset limit:(uint32_t)limit withCompletion:(IdentitiesCompletionBlock)completion;
+
 - (void)searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID:(NSString*)userID withCompletion:(IdentitiesCompletionBlock)completion;
 
 @end

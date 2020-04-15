@@ -78,8 +78,12 @@
 }
 
 - (void)searchIdentitiesByNamePrefix:(NSString*)namePrefix withCompletion:(IdentitiesCompletionBlock)completion {
+    [self searchIdentitiesByNamePrefix:namePrefix offset:0 limit:100 withCompletion:completion];
+}
+
+- (void)searchIdentitiesByNamePrefix:(NSString*)namePrefix offset:(uint32_t)offset limit:(uint32_t)limit withCompletion:(IdentitiesCompletionBlock)completion {
     DSDAPIClient * client = self.chain.chainManager.DAPIClient;
-     [client.DAPINetworkService searchDPNSDocumentsForUsernamePrefix:namePrefix inDomain:@"" offset:0 limit:100 success:^(NSArray<NSDictionary *> * _Nonnull documents) {
+     [client.DAPINetworkService searchDPNSDocumentsForUsernamePrefix:namePrefix inDomain:@"" offset:offset limit:limit success:^(NSArray<NSDictionary *> * _Nonnull documents) {
          __block NSMutableArray * rBlockchainIdentities = [NSMutableArray array];
          for (NSDictionary * document in documents) {
              NSString * userId = document[@"$userId"];
