@@ -639,10 +639,10 @@
     return rBalance;
 }
 
--(NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal {
+-(NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal error:(NSError**)error {
     NSMutableArray * mArray = [NSMutableArray array];
     for (DSAccount * account in self.accounts) {
-        [mArray addObjectsFromArray:[account registerAddressesWithGapLimit:gapLimit internal:internal]];
+        [mArray addObjectsFromArray:[account registerAddressesWithGapLimit:gapLimit internal:internal error:error]];
     }
     return [mArray copy];
 }

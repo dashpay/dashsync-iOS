@@ -117,7 +117,7 @@
             }
         }];
         self.addressesLoaded = TRUE;
-        [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL];
+        [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL error:nil];
         
     }
 }
@@ -140,7 +140,7 @@
     if ([self containsAddress:address]) {
         if (![self.mUsedAddresses containsObject:address]) {
             [self.mUsedAddresses addObject:address];
-            [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL];
+            [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL error:nil];
         }
     }
 }
@@ -155,7 +155,7 @@
 // found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
 // following the last used address in the chain. The internal chain is used for change addresses and the external chain
 // for receive addresses.
-- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit
+- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit error:(NSError**)error
 {
     NSAssert(self.account, @"Account must be set");
     if (!self.account.wallet.isTransient) {
@@ -200,6 +200,10 @@
             
             if (! address) {
                 DSDLog(@"error generating keys");
+                if (error) {
+                    *error = [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                          DSLocalizedString(@"Error generating public keys", nil)}];
+                }
                 return nil;
             }
             
@@ -247,14 +251,14 @@
 - (NSString *)receiveAddress
 {
     //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
-    NSString *addr = [self registerAddressesWithGapLimit:1].lastObject;
+    NSString *addr = [self registerAddressesWithGapLimit:1 error:nil].lastObject;
     return (addr) ? addr : self.externalAddresses.lastObject;
 }
 
 - (NSString *)receiveAddressAtOffset:(NSUInteger)offset
 {
     //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
-    NSString *addr = [self registerAddressesWithGapLimit:offset + 1].lastObject;
+    NSString *addr = [self registerAddressesWithGapLimit:offset + 1 error:nil].lastObject;
     return (addr) ? addr : self.externalAddresses.lastObject;
 }
 

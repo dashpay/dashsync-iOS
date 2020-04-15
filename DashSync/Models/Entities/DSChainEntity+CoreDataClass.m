@@ -65,7 +65,8 @@
             return [DSChain recoverKnownDevnetWithIdentifier:devnetIdentifier withCheckpoints:checkpointArray];
         }
     }
-    return nil;
+    NSAssert(FALSE, @"Unknown DSChainType");
+    return [DSChain mainnet];
 }
 
 + (DSChainEntity*)chainEntityForType:(DSChainType)type devnetIdentifier:(NSString*)devnetIdentifier checkpoints:(NSArray*)checkpoints {

@@ -44,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // generates an "intermediate code" for an EC multiply mode key with a lot and sequence number, lot must be less than
 // 1048576, sequence must be less than 4096, and salt should be 32bits of random data
-+ (NSString *)BIP38IntermediateCodeWithLot:(uint32_t)lot sequence:(uint16_t)sequence salt:(uint32_t)salt
++ (NSString * _Nullable)BIP38IntermediateCodeWithLot:(uint32_t)lot sequence:(uint16_t)sequence salt:(uint32_t)salt
 passphrase:(NSString *)passphrase;
 
 // generates a BIP38 key from an "intermediate code" and 24 bytes of cryptographically random data (seedb),

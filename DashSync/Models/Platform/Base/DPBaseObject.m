@@ -23,8 +23,6 @@
 #import <TinyCborObjc/NSObject+DSCborEncoding.h>
 
 
-NS_ASSUME_NONNULL_BEGIN
-
 @implementation DPBaseObject
 
 - (void)resetSerializedValues {
@@ -79,4 +77,3 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-NS_ASSUME_NONNULL_END

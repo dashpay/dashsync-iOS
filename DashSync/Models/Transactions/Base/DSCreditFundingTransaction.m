@@ -67,7 +67,7 @@
     DSCreditFundingDerivationPath * registrationFundingDerivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:wallet];
     NSString * address = [[NSData dataWithUInt160:[self creditBurnPublicKeyHash]] addressFromHash160DataForChain:self.chain];
     [registrationFundingDerivationPath registerTransactionAddress:address];
-    [registrationFundingDerivationPath registerAddressesWithGapLimit:10];
+    [registrationFundingDerivationPath registerAddressesWithGapLimit:10 error:nil];
 }
 
 -(uint32_t)usedDerivationPathIndex {

@@ -266,8 +266,8 @@
         }
     } else {
         for (DSFundsDerivationPath * derivationPath in self.fundDerivationPaths) {
-            [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:YES];
-            [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:NO];
+            [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:YES error:nil];
+            [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:NO error:nil];
         }
     }
     if (!self.isViewOnlyAccount) {
@@ -411,13 +411,13 @@
 
 // MARK: - Addresses from Combined Derivation Paths
 
--(NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal {
+-(NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal error:(NSError**)error {
     NSMutableArray * mArray = [NSMutableArray array];
     for (DSDerivationPath * derivationPath in self.fundDerivationPaths) {
         if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
-            [mArray addObjectsFromArray:[(DSFundsDerivationPath*)derivationPath registerAddressesWithGapLimit:gapLimit internal:internal]];
+            [mArray addObjectsFromArray:[(DSFundsDerivationPath*)derivationPath registerAddressesWithGapLimit:gapLimit internal:internal error:error]];
         } else if (!internal && [derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
-            [mArray addObjectsFromArray:[(DSIncomingFundsDerivationPath*)derivationPath registerAddressesWithGapLimit:gapLimit]];
+            [mArray addObjectsFromArray:[(DSIncomingFundsDerivationPath*)derivationPath registerAddressesWithGapLimit:gapLimit error:error]];
         }
         
     }

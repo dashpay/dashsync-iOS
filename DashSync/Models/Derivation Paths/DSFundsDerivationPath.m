@@ -74,8 +74,8 @@
             }
         }];
         self.addressesLoaded = TRUE;
-        [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:YES];
-        [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:NO];
+        [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:YES error:nil];
+        [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:NO error:nil];
         
     }
 }
@@ -87,9 +87,9 @@
         if (![self.mUsedAddresses containsObject:address]) {
             [self.mUsedAddresses addObject:address];
             if ([self.internalAddresses containsObject:address]) {
-                [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
+                [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES error:nil];
             } else {
-                [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO];
+                [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO error:nil];
             }
         }
     }
@@ -99,7 +99,7 @@
 // found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
 // following the last used address in the chain. The internal chain is used for change addresses and the external chain
 // for receive addresses.
-- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal
+- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal error:(NSError**)error
 {
     if (!self.account.wallet.isTransient) {
         NSAssert(self.addressesLoaded, @"addresses must be loaded before calling this function");
@@ -142,6 +142,10 @@
             
             if (! addr) {
                 DSDLog(@"error generating keys");
+                if (error) {
+                    *error = [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                          DSLocalizedString(@"Error generating public keys", nil)}];
+                }
                 return nil;
             }
             
@@ -198,14 +202,14 @@
 - (NSString *)receiveAddress
 {
     //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
-    NSString *addr = [self registerAddressesWithGapLimit:1 internal:NO].lastObject;
+    NSString *addr = [self registerAddressesWithGapLimit:1 internal:NO error:nil].lastObject;
     return (addr) ? addr : self.externalAddresses.lastObject;
 }
 
 - (NSString *)receiveAddressAtOffset:(NSUInteger)offset
 {
     //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
-    NSString *addr = [self registerAddressesWithGapLimit:offset + 1 internal:NO].lastObject;
+    NSString *addr = [self registerAddressesWithGapLimit:offset + 1 internal:NO error:nil].lastObject;
     return (addr) ? addr : self.externalAddresses.lastObject;
 }
 
@@ -213,7 +217,7 @@
 - (NSString *)changeAddress
 {
     //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
-    return [self registerAddressesWithGapLimit:1 internal:YES].lastObject;
+    return [self registerAddressesWithGapLimit:1 internal:YES error:nil].lastObject;
 }
 
 // all previously generated external addresses

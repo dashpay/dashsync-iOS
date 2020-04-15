@@ -29,7 +29,7 @@
 }
 
 -(NSString*)receiveAddress {
-    NSString *addr = [self registerAddressesWithGapLimit:1].lastObject;
+    NSString *addr = [self registerAddressesWithGapLimit:1 error:nil].lastObject;
     return (addr) ? addr : self.mOrderedAddresses.lastObject;
 }
 

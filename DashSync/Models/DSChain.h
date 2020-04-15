@@ -332,7 +332,6 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 -(void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain*)chain;
 -(void)chain:(DSChain*)chain receivedOrphanBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer;
 -(void)chain:(DSChain*)chain wasExtendedWithBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer;
--(void)chain:(DSChain*)chain changedCurrentMasternodeList:(DSMasternodeList*)masternodeList fromPeer:(DSPeer*)peer;
 -(void)chain:(DSChain*)chain badBlockReceivedFromPeer:(DSPeer*)peer;
 
 @end

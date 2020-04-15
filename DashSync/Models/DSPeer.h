@@ -207,8 +207,8 @@ typedef void (^MempoolCompletionBlock)(BOOL success, BOOL needed, BOOL interrupt
 @protocol DSPeerGovernanceDelegate<NSObject>
 @required
 
-- (DSGovernanceVote *)peer:(DSPeer * _Nullable)peer requestedVote:(UInt256)voteHash;
-- (DSGovernanceObject *)peer:(DSPeer * _Nullable)peer requestedGovernanceObject:(UInt256)governanceObjectHash;
+- (DSGovernanceVote * _Nullable)peer:(DSPeer * _Nullable)peer requestedVote:(UInt256)voteHash;
+- (DSGovernanceObject * _Nullable)peer:(DSPeer * _Nullable)peer requestedGovernanceObject:(UInt256)governanceObjectHash;
 - (void)peer:(DSPeer * _Nullable)peer hasGovernanceObjectHashes:(NSSet*)governanceObjectHashes;
 - (void)peer:(DSPeer * _Nullable)peer hasGovernanceVoteHashes:(NSSet*)governanceVoteHashes;
 - (void)peer:(DSPeer * _Nullable)peer relayedGovernanceObject:(DSGovernanceObject *)governanceObject;

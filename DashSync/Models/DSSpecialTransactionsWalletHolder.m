@@ -158,15 +158,14 @@
         return NO;
     }
     if (added) {
-        [transaction saveInitial];
+        if (saveImmediately) {
+            [transaction saveInitial];
+        } else {
+            [self.transactionsToSave addObject:transaction];
+        }
         return YES;
     } else {
         return NO;
-    }
-    if (saveImmediately) {
-        [transaction saveInitial];
-    } else {
-        [self.transactionsToSave addObject:transaction];
     }
 }
 

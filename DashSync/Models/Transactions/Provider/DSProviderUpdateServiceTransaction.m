@@ -129,7 +129,7 @@
     self.payloadSignature = [NSData dataWithUInt768:[privateKey signData:[self payloadDataForHash]]];
 }
 
--(NSString*)payoutAddress {
+-(NSString* _Nullable)payoutAddress {
     if (self.scriptPayout.length == 0) {
         return nil; //no payout address
     } else {

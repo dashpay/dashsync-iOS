@@ -340,3 +340,6 @@
 
 /* No comment provided by engineer. */
 "Contact request extended public key is incorrectly encrypted." = "Contact request extended public key is incorrectly encrypted.";
+
+/* No comment provided by engineer. */
+"Error generating public keys" = "Error generating public keys";

@@ -345,3 +345,6 @@
 
 /* No comment provided by engineer. */
 "User has actions to complete before being able to use Dashpay" = "User has actions to complete before being able to use Dashpay";
+
+/* No comment provided by engineer. */
+"Error generating public keys" = "Error generating public keys";

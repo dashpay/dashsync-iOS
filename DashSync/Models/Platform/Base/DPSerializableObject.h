@@ -23,12 +23,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DPSerializableObject <NSObject>
 
-@property (readonly, strong, nonatomic) DSMutableStringValueDictionary *keyValueDictionary;
-@property (readonly, strong, nonatomic) DSMutableStringValueDictionary *baseKeyValueDictionary;
-@property (readonly, strong, nonatomic) NSData *serialized;
-@property (readonly, strong, nonatomic) NSData *serializedBaseData;
-@property (readonly, strong, nonatomic) NSData *serializedHash;
-@property (readonly, strong, nonatomic) NSData *serializedBaseDataHash;
+@property (readonly, strong, nullable, nonatomic) DSMutableStringValueDictionary *keyValueDictionary;
+@property (readonly, strong, nullable, nonatomic) DSMutableStringValueDictionary *baseKeyValueDictionary;
+@property (readonly, strong, nullable, nonatomic) NSData *serialized;
+@property (readonly, strong, nullable, nonatomic) NSData *serializedBaseData;
+@property (readonly, strong, nullable, nonatomic) NSData *serializedHash;
+@property (readonly, strong, nullable, nonatomic) NSData *serializedBaseDataHash;
 
 @end
 

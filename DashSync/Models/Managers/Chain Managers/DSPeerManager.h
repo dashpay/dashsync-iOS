@@ -71,11 +71,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerPeersDidChangeNotificati
 - (void)clearRegisteredPeers;
 - (void)registerPeerAtLocation:(UInt128)IPAddress port:(uint32_t)port dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort;
 
-- (DSPeerStatus)statusForLocation:(UInt128)IPAddress port:(uint32_t)port;
-- (DSPeerType)typeForLocation:(UInt128)IPAddress port:(uint32_t)port;
-- (void)setTrustedPeerHost:(NSString * _Nullable)host;
-- (void)removeTrustedPeerHost;
-
 @end
 
 NS_ASSUME_NONNULL_END
