@@ -372,9 +372,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             if (!signedTransaction) {
                 if (completion) {
                     dispatch_async(dispatch_get_main_queue(), ^{
+                        if (cancelled) {
+                            stepsCompleted |= DSBlockchainIdentityRegistrationStep_Cancelled;
+                        }
                         completion(stepsCompleted, cancelled?nil:[NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Transaction could not be signed", nil)}]);
                     });
                 }
+                return;
             }
             if (stepCompletion) {
                 dispatch_async(dispatch_get_main_queue(), ^{

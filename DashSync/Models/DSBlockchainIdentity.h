@@ -24,7 +24,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityRegistrationStep) {
     DSBlockchainIdentityRegistrationStep_Profile = 32,
     DSBlockchainIdentityRegistrationStep_RegistrationWithUsername = DSBlockchainIdentityRegistrationStep_L1Steps | DSBlockchainIdentityRegistrationStep_Username,
     DSBlockchainIdentityRegistrationStep_RegistrationWithUsernameAndDashpayProfile = DSBlockchainIdentityRegistrationStep_RegistrationWithUsername | DSBlockchainIdentityRegistrationStep_Profile,
-    DSBlockchainIdentityRegistrationStep_All = DSBlockchainIdentityRegistrationStep_RegistrationWithUsernameAndDashpayProfile
+    DSBlockchainIdentityRegistrationStep_All = DSBlockchainIdentityRegistrationStep_RegistrationWithUsernameAndDashpayProfile,
+    DSBlockchainIdentityRegistrationStep_Cancelled = 1 << 31
 };
 
 typedef NS_ENUM(NSUInteger, DSBlockchainIdentityRegistrationStatus) {
