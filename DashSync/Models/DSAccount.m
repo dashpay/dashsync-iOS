@@ -507,7 +507,7 @@
     for (DSIncomingFundsDerivationPath * derivationPath in self.mContactOutgoingFundDerivationPathsDictionary.allValues) {
         if ([derivationPath containsAddress:address]) return derivationPath;
     }
-    return FALSE;
+    return nil;
 }
 
 // true if the address was previously used as an input or output in any wallet transaction

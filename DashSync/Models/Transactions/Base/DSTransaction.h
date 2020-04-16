@@ -121,7 +121,7 @@ typedef union _UInt160 UInt160;
 - (void)addInputHash:(UInt256)hash index:(NSUInteger)index script:(NSData * _Nullable)script signature:(NSData * _Nullable)signature
 sequence:(uint32_t)sequence;
 - (void)addOutputAddress:(NSString *)address amount:(uint64_t)amount;
-- (void)addOutputScript:(NSData *)script withAddress:(NSString*)address amount:(uint64_t)amount;
+- (void)addOutputScript:(NSData *)script withAddress:(NSString* _Nullable)address amount:(uint64_t)amount;
 - (void)addOutputShapeshiftAddress:(NSString *)address;
 - (void)addOutputBurnAmount:(uint64_t)amount;
 - (void)addOutputCreditAddress:(NSString *)address amount:(uint64_t)amount;
@@ -133,9 +133,9 @@ sequence:(uint32_t)sequence;
 - (BOOL)signWithPrivateKeys:(NSArray *)keys;
 - (BOOL)signWithPreorderedPrivateKeys:(NSArray *)keys;
 
-- (NSString*)shapeshiftOutboundAddress;
-- (NSString*)shapeshiftOutboundAddressForceScript;
-+ (NSString*)shapeshiftOutboundAddressForScript:(NSData*)script;
+- (NSString* _Nullable)shapeshiftOutboundAddress;
+- (NSString* _Nullable)shapeshiftOutboundAddressForceScript;
++ (NSString* _Nullable)shapeshiftOutboundAddressForScript:(NSData*)script;
 
 // priority = sum(input_amount_in_satoshis*input_age_in_blocks)/tx_size_in_bytes
 - (uint64_t)priorityForAmounts:(NSArray *)amounts withAges:(NSArray *)ages;

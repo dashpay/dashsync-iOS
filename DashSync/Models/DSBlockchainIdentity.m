@@ -1218,7 +1218,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     }
 }
 
--(void)registrationTransitionWithCompletion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction, NSError * error))completion {
+-(void)registrationTransitionWithCompletion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationTransition * _Nullable blockchainIdentityRegistrationTransaction, NSError * _Nullable error))completion {
     if (!self.registrationFundingPrivateKey) {
         if (completion) {
             completion(nil,[NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion", nil)}]);
@@ -1247,7 +1247,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         completion(nil, error);
         return;
     }
-    [self registrationTransitionWithCompletion:^(DSBlockchainIdentityRegistrationTransition * _Nonnull blockchainIdentityRegistrationTransition, NSError * registrationTransitionError) {
+    [self registrationTransitionWithCompletion:^(DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition, NSError * registrationTransitionError) {
         if (blockchainIdentityRegistrationTransition) {
             [self.DAPIClient publishTransition:blockchainIdentityRegistrationTransition success:^(NSDictionary * _Nonnull successDictionary) {
                 [self monitorForBlockchainIdentityWithRetryCount:5 delay:4 retryDelayType:DSBlockchainIdentityRetryDelayType_Linear completion:^(BOOL success, NSError * error) {
@@ -1304,7 +1304,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     }];
 }
 
--(void)fetchNeededNetworkStateInformationWithCompletion:(void (^)(DSBlockchainIdentityRegistrationStep failureStep, NSError * error))completion {
+-(void)fetchNeededNetworkStateInformationWithCompletion:(void (^)(DSBlockchainIdentityRegistrationStep failureStep, NSError * _Nullable error))completion {
     if (!self.activeKeyCount) {
         [self fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, NSError * error) {
             if (!success) {
@@ -2275,7 +2275,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         [potentialContactBlockchainIdentity applyIdentityDictionary:blockchainIdentityDictionary];
         [potentialContactBlockchainIdentity save];
         
-        [potentialContactBlockchainIdentity fetchNeededNetworkStateInformationWithCompletion:^(DSBlockchainIdentityRegistrationStep failureStep, NSError * _Nonnull error) {
+        [potentialContactBlockchainIdentity fetchNeededNetworkStateInformationWithCompletion:^(DSBlockchainIdentityRegistrationStep failureStep, NSError * error) {
             if (failureStep && failureStep != DSBlockchainIdentityRegistrationStep_Profile) { //if profile fails we can still continue on
                 completion(NO, error);
                 return;
@@ -2471,7 +2471,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     }];
 }
 
--(void)signedProfileDocumentTransitionWithPrompt:(NSString*)prompt completion:(void (^)(DSTransition * transition, BOOL cancelled, NSError * error))completion {
+-(void)signedProfileDocumentTransitionWithCompletion:(void (^)(DSTransition * transition, BOOL cancelled, NSError * error))completion {
     __weak typeof(self) weakSelf = self;
     DSDocumentTransition * transition = [self profileDocumentTransition];
     if (!transition) {
@@ -2504,11 +2504,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         profileDocumentRevision = self.matchingDashpayUser.localProfileDocumentRevision;
         [DSDashpayUserEntity saveContext];
     }];
-    [self signedProfileDocumentTransitionWithPrompt:@"Update profile?" completion:^(DSTransition *transition, BOOL cancelled, NSError *error) {
+    [self signedProfileDocumentTransitionWithCompletion:^(DSTransition *transition, BOOL cancelled, NSError *error) {
         if (!transition) {
             if (completion) {
                 completion(NO, cancelled, error);
             }
+            return;
         }
         [self.DAPINetworkService publishTransition:transition success:^(NSDictionary * _Nonnull successDictionary) {
             __strong typeof(weakSelf) strongSelf = weakSelf;

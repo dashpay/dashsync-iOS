@@ -31,7 +31,7 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode) {
 @interface DSDAPIClient : NSObject
 
 @property (readonly, nonatomic) DSChain * chain;
-@property (nonatomic, readonly) DSDAPINetworkService * DAPINetworkService;
+@property (nonatomic, nullable, readonly) DSDAPINetworkService * DAPINetworkService;
 @property (atomic, readonly) dispatch_queue_t dispatchQueue;
 
 - (instancetype)initWithChain:(DSChain *)chain NS_DESIGNATED_INITIALIZER;

@@ -1634,7 +1634,7 @@ static dispatch_once_t devnetToken = 0;
             b = self.blocks[uint256_obj(b.prevBlock)];
         }
     }
-    DSCheckpoint * lastCheckpoint;
+    DSCheckpoint * lastCheckpoint = nil;
     //then add the last checkpoint we know about previous to this block
     for (DSCheckpoint * checkpoint in self.checkpoints) {
         if (checkpoint.height < lastHeight) {
@@ -1643,7 +1643,9 @@ static dispatch_once_t devnetToken = 0;
             break;
         }
     }
-    [locators addObject:uint256_data(lastCheckpoint.checkpointHash)];
+    if (lastCheckpoint) {
+        [locators addObject:uint256_data(lastCheckpoint.checkpointHash)];
+    }
     return locators;
 }
 

@@ -184,10 +184,10 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 - (DSKey* _Nullable)privateKeyForAddress:(NSString* _Nonnull)address fromSeed:(NSData* _Nonnull)seed;
 
 //generate a random Mnemonic seed
-+ (NSString * _Nonnull)generateRandomSeed;
++ (NSString * _Nullable)generateRandomSeedPhrase;
 
 //generate a random Mnemonic seed in a specified language
-+ (NSString * _Nonnull)generateRandomSeedForLanguage:(DSBIP39Language)language;
++ (NSString * _Nullable)generateRandomSeedPhraseForLanguage:(DSBIP39Language)language;
 
 //get the MNEMONIC KEY prefixed unique ID
 + (NSString* _Nonnull)mnemonicUniqueIDForUniqueID:(NSString*)uniqueID;

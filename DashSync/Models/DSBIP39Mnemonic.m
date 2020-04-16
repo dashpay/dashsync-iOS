@@ -99,7 +99,7 @@
             return @"it";
             break;
         default:
-            return nil;
+            return @"en"; //return english as default
             break;
     }
 }

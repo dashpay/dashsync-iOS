@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(instancetype)initWithWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
 
--(DSTransaction*)transactionForHash:(UInt256)transactionHash;
+-(DSTransaction* _Nullable)transactionForHash:(UInt256)transactionHash;
 
 - (BOOL)registerTransaction:(DSTransaction*)transaction saveImmediately:(BOOL)saveImmediately;
 

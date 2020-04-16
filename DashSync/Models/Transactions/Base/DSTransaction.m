@@ -266,11 +266,11 @@
 // MARK: - Attributes
 
 -(NSData*)payloadData {
-    return nil;
+    return [NSData data];
 }
 
 -(NSData*)payloadDataForHash {
-    return nil;
+    return [NSData data];
 }
 
 -(DSAccount*)firstAccount {
@@ -536,8 +536,9 @@
 }
 
 
-- (void)addOutputScript:(NSData *)script withAddress:(NSString*)address amount:(uint64_t)amount
+- (void)addOutputScript:(NSData * _Nonnull)script withAddress:(NSString*)address amount:(uint64_t)amount
 {
+    NSParameterAssert(script);
     if (!address && script) {
         address = [NSString addressWithScriptPubKey:script onChain:self.chain];
     }

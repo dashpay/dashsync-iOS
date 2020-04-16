@@ -63,9 +63,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(NSDictionary*)compare:(DSMasternodeList*)other usingOurString:(NSString*)ours usingTheirString:(NSString*)theirs;
 
--(DSQuorumEntry*)quorumEntryForInstantSendRequestID:(UInt256)requestID;
+-(DSQuorumEntry* _Nullable)quorumEntryForInstantSendRequestID:(UInt256)requestID;
 
--(DSQuorumEntry*)quorumEntryForChainLockRequestID:(UInt256)requestID;
+-(DSQuorumEntry* _Nullable)quorumEntryForChainLockRequestID:(UInt256)requestID;
 
 -(NSArray<DSQuorumEntry*>*)quorumEntriesRankedForInstantSendRequestID:(UInt256)requestID;
 

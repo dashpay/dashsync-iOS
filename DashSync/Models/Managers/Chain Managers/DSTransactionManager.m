@@ -855,7 +855,10 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     DSDLog(@"Peer requested transaction with hash %@",hash);
     DSTransaction *transaction = self.publishedTx[hash];
     BOOL transactionIsPublished = !!transaction;
-    NSArray<DSAccount *> * accounts = [self.chain accountsThatCanContainTransaction:transaction];
+    NSArray<DSAccount *> * accounts = nil;
+    if (transaction) {
+        accounts = [self.chain accountsThatCanContainTransaction:transaction];
+    }
     if (transactionIsPublished) {
         if (![accounts count]) {
             accounts = [self.chain accountsForTransactionHash:txHash transaction:nil];

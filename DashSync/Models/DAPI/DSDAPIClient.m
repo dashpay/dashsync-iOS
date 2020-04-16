@@ -25,8 +25,6 @@
 #import "DSDocumentTransition.h"
 #import <arpa/inet.h>
 
-NS_ASSUME_NONNULL_BEGIN
-
 NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 
 @interface DSDAPIClient()
@@ -233,5 +231,3 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 
 
 @end
-
-NS_ASSUME_NONNULL_END
