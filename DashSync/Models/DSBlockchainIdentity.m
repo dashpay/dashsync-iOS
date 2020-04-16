@@ -849,6 +849,18 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     return keyCount;
 }
 
+-(NSArray*)activeKeysForKeyType:(DSKeyType)keyType {
+    NSMutableArray * activeKeys = [NSMutableArray array];
+    for (NSNumber * index in self.keyInfoDictionaries) {
+        NSDictionary * keyDictionary = self.keyInfoDictionaries[index];
+        DSKeyType type = [keyDictionary[@(DSBlockchainIdentityKeyDictionary_KeyType)] unsignedIntValue];
+        if (type == keyType) {
+            [activeKeys addObject:keyDictionary[@(DSBlockchainIdentityKeyDictionary_Key)]];
+        }
+    }
+    return [activeKeys copy];
+}
+
 -(DSBlockchainIdentityKeyStatus)statusOfKeyAtIndex:(NSUInteger)index {
     return [[[self.keyInfoDictionaries objectForKey:@(index)] objectForKey:@(DSBlockchainIdentityKeyDictionary_KeyStatus)] unsignedIntValue];
 }
@@ -1384,7 +1396,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 // MARK: - Signing and Encryption
 
--(void)signStateTransition:(DSTransition*)transition forKeyIndex:(uint32_t)keyIndex ofType:(DSKeyType)signingAlgorithm withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion {
+-(void)signStateTransition:(DSTransition*)transition forKeyIndex:(uint32_t)keyIndex ofType:(DSKeyType)signingAlgorithm completion:(void (^ _Nullable)(BOOL success))completion {
     NSParameterAssert(transition);
             
     DSKey * privateKey = [self privateKeyAtIndex:keyIndex ofType:signingAlgorithm];
@@ -1398,13 +1410,23 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     }
 }
 
--(void)signStateTransition:(DSTransition*)transition withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion {
+-(void)signStateTransition:(DSTransition*)transition completion:(void (^ _Nullable)(BOOL success))completion {
     if (!self.keysCreated) {
         uint32_t index;
         [self createNewKeyOfType:DEFAULT_SIGNING_ALGORITH saveKey:!self.wallet.isTransient returnIndex:&index];
     }
-    return [self signStateTransition:transition forKeyIndex:self.currentMainKeyIndex ofType:self.currentMainKeyType withPrompt:prompt completion:completion];
+    return [self signStateTransition:transition forKeyIndex:self.currentMainKeyIndex ofType:self.currentMainKeyType completion:completion];
     
+}
+
+-(BOOL)verifySignature:(NSData*)signature ofType:(DSKeyType)signingAlgorithm forMessageDigest:(UInt256)messageDigest {
+    for (DSKey * publicKey in [self activeKeysForKeyType:signingAlgorithm]) {
+        BOOL verified = [publicKey verify:messageDigest signatureData:signature];
+        if (verified) {
+            return TRUE;
+        }
+    }
+    return FALSE;
 }
 
 -(BOOL)verifySignature:(NSData*)signature forKeyIndex:(uint32_t)keyIndex ofType:(DSKeyType)signingAlgorithm forMessageDigest:(UInt256)messageDigest {
@@ -1458,7 +1480,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         } else if ((uint256_is_zero(self.chain.dpnsContractID) && uint256_is_zero(contract.registeredBlockchainIdentityUniqueID)) || contract.contractState == DPContractState_NotRegistered) {
             [contract registerCreator:self];
             __block DSContractTransition * transition = [contract contractRegistrationTransitionForIdentity:self];
-            [self signStateTransition:transition withPrompt:@"Register Contract?" completion:^(BOOL success) {
+            [self signStateTransition:transition completion:^(BOOL success) {
                 if (success) {
                     [self.DAPINetworkService publishTransition:transition success:^(NSDictionary * _Nonnull successDictionary) {
                         __strong typeof(weakContract) strongContract = weakContract;
@@ -1783,7 +1805,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         }
         return;
     }
-    [self signStateTransition:transition withPrompt:@"Register Usernames?" completion:^(BOOL success) {
+    [self signStateTransition:transition completion:^(BOOL success) {
         if (success) {
             [self.DAPINetworkService publishTransition:transition success:^(NSDictionary * _Nonnull successDictionary) {
                 dispatch_async(dispatch_get_main_queue(), ^{
@@ -1830,7 +1852,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         }
         return;
     }
-    [self signStateTransition:transition withPrompt:@"Register Usernames?" completion:^(BOOL success) {
+    [self signStateTransition:transition completion:^(BOOL success) {
         if (success) {
             [self.DAPINetworkService publishTransition:transition success:^(NSDictionary * _Nonnull successDictionary) {
                 dispatch_async(dispatch_get_main_queue(), ^{
@@ -2459,7 +2481,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         }
         return;
     }
-    [self signStateTransition:transition withPrompt:@"Update profile?" completion:^(BOOL success) {
+    [self signStateTransition:transition completion:^(BOOL success) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             if (completion) {

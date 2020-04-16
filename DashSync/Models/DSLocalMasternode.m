@@ -568,7 +568,7 @@
              countObjectsMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)] == 0) {
             DSProviderRegistrationTransactionEntity * providerRegistrationTransactionEntity = [DSProviderRegistrationTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)];
             if (!providerRegistrationTransactionEntity) {
-                providerRegistrationTransactionEntity = (DSProviderRegistrationTransactionEntity *)[self.providerRegistrationTransaction save];
+                [self.providerRegistrationTransaction save];
             }
             DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity managedObject];
             [localMasternode setAttributesFromLocalMasternode:self];

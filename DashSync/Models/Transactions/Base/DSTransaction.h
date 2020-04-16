@@ -118,7 +118,7 @@ typedef union _UInt160 UInt160;
 - (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray*)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts onChain:(DSChain *)chain; //for v2 onwards
 
 - (void)addInputHash:(UInt256)hash index:(NSUInteger)index script:(NSData * _Nullable)script;
-- (void)addInputHash:(UInt256)hash index:(NSUInteger)index script:(NSData * _Nullable)script signature:(NSData *)signature
+- (void)addInputHash:(UInt256)hash index:(NSUInteger)index script:(NSData * _Nullable)script signature:(NSData * _Nullable)signature
 sequence:(uint32_t)sequence;
 - (void)addOutputAddress:(NSString *)address amount:(uint64_t)amount;
 - (void)addOutputScript:(NSData *)script withAddress:(NSString*)address amount:(uint64_t)amount;

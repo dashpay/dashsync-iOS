@@ -191,7 +191,7 @@ inline static int ceil_log2(int x)
 
 -(BOOL)isMerkleTreeValid {
     NSMutableData *d = [NSMutableData data];
-    UInt256 merkleRoot;
+    UInt256 merkleRoot = UINT256_ZERO;
     int hashIdx = 0, flagIdx = 0;
     NSValue *root = [self _walk:&hashIdx :&flagIdx :0 :^id (id hash, BOOL flag) {
         return hash;

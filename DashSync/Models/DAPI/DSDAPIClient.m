@@ -81,7 +81,6 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     
     __weak typeof(self) weakSelf = self;
     [blockchainIdentity signStateTransition:documentTransition
-                                  withPrompt:@""
                                   completion:^(BOOL success) {
                                       __strong typeof(weakSelf) strongSelf = weakSelf;
                                       if (!strongSelf) {

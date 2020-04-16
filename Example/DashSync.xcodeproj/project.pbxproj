@@ -274,7 +274,6 @@
 		FBF31B6C222FD94400393301 /* Wallets.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBF31B6B222FD94400393301 /* Wallets.storyboard */; };
 		FBF31B6F2231C53900393301 /* DSSignPayloadViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF31B6E2231C53900393301 /* DSSignPayloadViewController.m */; };
 		FBF31B7122328AA900393301 /* DSProviderTransactionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF31B7022328AA800393301 /* DSProviderTransactionsTests.m */; };
-		FBF6050C22BA85F10082EB00 /* DSMasternodeHealthForListRetrievalViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF6050B22BA85F10082EB00 /* DSMasternodeHealthForListRetrievalViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -688,8 +687,6 @@
 		FBF31B6D2231C53900393301 /* DSSignPayloadViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSignPayloadViewController.h; sourceTree = "<group>"; };
 		FBF31B6E2231C53900393301 /* DSSignPayloadViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSignPayloadViewController.m; sourceTree = "<group>"; };
 		FBF31B7022328AA800393301 /* DSProviderTransactionsTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSProviderTransactionsTests.m; sourceTree = "<group>"; };
-		FBF6050A22BA85F10082EB00 /* DSMasternodeHealthForListRetrievalViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMasternodeHealthForListRetrievalViewController.h; sourceTree = "<group>"; };
-		FBF6050B22BA85F10082EB00 /* DSMasternodeHealthForListRetrievalViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMasternodeHealthForListRetrievalViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1289,8 +1286,6 @@
 				FB83C2E321B7B7560057A0EF /* DSActionsViewController.m */,
 				FB83C2E521B91A8D0057A0EF /* DSTransactionFloodingViewController.h */,
 				FB83C2E621B91A8D0057A0EF /* DSTransactionFloodingViewController.m */,
-				FBF6050A22BA85F10082EB00 /* DSMasternodeHealthForListRetrievalViewController.h */,
-				FBF6050B22BA85F10082EB00 /* DSMasternodeHealthForListRetrievalViewController.m */,
 			);
 			name = Actions;
 			sourceTree = "<group>";
@@ -1782,7 +1777,6 @@
 				FB988324241D6C3300B39F02 /* DSBlockchainIdentityKeyTableViewCell.m in Sources */,
 				FB6B784C2278FB3A0005C9DB /* DSContactSendDashViewController.m in Sources */,
 				FBD967A72125719E005CBE0B /* DSBlockchainIdentityActionsViewController.m in Sources */,
-				FBF6050C22BA85F10082EB00 /* DSMasternodeHealthForListRetrievalViewController.m in Sources */,
 				FBBDF429226C8ECA0081D673 /* DSTransitionTableViewCell.m in Sources */,
 				FB5252FF20F2377E009A2BF1 /* BRCopyLabel.m in Sources */,
 				2A3B3EC220F893F4002962FB /* BaseFormCellModel.m in Sources */,

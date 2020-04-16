@@ -319,8 +319,9 @@
     if (!self.hasFinishedAlready) {
         self.hasFinishedAlready = YES;
         self.state = DSOperationStateFinishing;
-
-        _internalErrors = [self.internalErrors arrayByAddingObjectsFromArray:errors];
+        if (errors) {
+            _internalErrors = [self.internalErrors arrayByAddingObjectsFromArray:errors];
+        }
         [self finishedWithErrors:self.internalErrors];
 
         for (NSObject<DSOperationObserverProtocol> *observer in self.observers) {

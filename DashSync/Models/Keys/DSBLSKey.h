@@ -17,8 +17,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic,readonly) uint32_t publicKeyFingerprint;
 @property (nonatomic,readonly) UInt256 chainCode;
-@property (nonatomic,readonly) NSData * extendedPrivateKeyData;
-@property (nonatomic,readonly) NSData * extendedPublicKeyData;
 @property (nonatomic,readonly) UInt256 secretKey;
 @property (nonatomic,readonly) UInt384 publicKey;
 

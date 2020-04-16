@@ -51,12 +51,4 @@
     return username.stringValue;
 }
 
-//-(DPDocument*)profileDocument {
-//
-//}
-//
-//-(DPDocument*)contactRequestDocument {
-//
-//}
-
 @end
