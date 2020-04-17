@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DSChain,DSBlockchainIdentity;
 
+@protocol DSDAPINetworkServiceRequest;
+
 typedef void (^IdentitiesCompletionBlock)(NSArray <DSBlockchainIdentity*> * _Nullable blockchainIdentities, NSError * _Nullable error);
 
 @interface DSIdentitiesManager : NSObject
@@ -31,9 +33,9 @@ typedef void (^IdentitiesCompletionBlock)(NSArray <DSBlockchainIdentity*> * _Nul
 
 - (void)retrieveAllBlockchainIdentitiesChainStates;
 
-- (void)searchIdentitiesByNamePrefix:(NSString*)namePrefix withCompletion:(IdentitiesCompletionBlock)completion;
+- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByNamePrefix:(NSString*)namePrefix withCompletion:(IdentitiesCompletionBlock)completion;
 
-- (void)searchIdentitiesByNamePrefix:(NSString*)namePrefix offset:(uint32_t)offset limit:(uint32_t)limit withCompletion:(IdentitiesCompletionBlock)completion;
+- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByNamePrefix:(NSString*)namePrefix offset:(uint32_t)offset limit:(uint32_t)limit withCompletion:(IdentitiesCompletionBlock)completion;
 
 - (void)searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID:(NSString*)userID withCompletion:(IdentitiesCompletionBlock)completion;
 

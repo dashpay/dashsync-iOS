@@ -504,7 +504,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     [[self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil] start];
 }
 
-- (void)searchDPNSDocumentsForUsernamePrefix:(NSString*)usernamePrefix
+- (id<DSDAPINetworkServiceRequest>)searchDPNSDocumentsForUsernamePrefix:(NSString*)usernamePrefix
                                     inDomain:(NSString*)domain
                                       offset:(uint32_t)offset
                                        limit:(uint32_t)limit
@@ -517,7 +517,9 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.successHandler = success;
     responseHandler.errorHandler = failure;
-    [[self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil] start];
+    GRPCUnaryProtoCall * call = [self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil];
+    [call start];
+    return (id<DSDAPINetworkServiceRequest>)call;
 }
 
 - (void)getIdentityByName:(NSString *)username

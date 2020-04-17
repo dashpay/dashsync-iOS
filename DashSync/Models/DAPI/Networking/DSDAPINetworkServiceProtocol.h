@@ -17,6 +17,7 @@
 
 #import <Foundation/Foundation.h>
 #import "DSDAPIClientFetchDapObjectsOptions.h"
+#import "DSDAPINetworkServiceRequest.h"
 #import "BigIntTypes.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -430,7 +431,7 @@ Get a list of users after matching search criteria
 @param success A block object to be executed when the request operation finishes successfully
 @param failure A block object to be executed when the request operation finishes unsuccessfully
 */
-- (void)searchDPNSDocumentsForUsernamePrefix:(NSString*)usernamePrefix
+- (id<DSDAPINetworkServiceRequest>)searchDPNSDocumentsForUsernamePrefix:(NSString*)usernamePrefix
                                     inDomain:(NSString*)domain
                                       offset:(uint32_t)offset
                                        limit:(uint32_t)limit
