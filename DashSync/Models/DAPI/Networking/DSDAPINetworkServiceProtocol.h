@@ -359,7 +359,7 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
  @param success A block object to be executed when the request operation finishes successfully
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
-- (void)fetchContractForId:(NSString *)contractId
+- (id<DSDAPINetworkServiceRequest>)fetchContractForId:(NSString *)contractId
                    success:(void (^)(NSDictionary *contract))success
                    failure:(void (^)(NSError *error))failure;
 
@@ -370,7 +370,7 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
  @param success A block object to be executed when the request operation finishes successfully
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
-- (void)getIdentityByName:(NSString *)username
+- (id<DSDAPINetworkServiceRequest> _Nullable)getIdentityByName:(NSString *)username
                  inDomain:(NSString*)domain
                   success:(void (^)(NSDictionary * _Nullable blockchainIdentity))success
                   failure:(void (^)(NSError *error))failure;
@@ -382,7 +382,7 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
  @param success A block object to be executed when the request operation finishes successfully
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
-- (void)getIdentityById:(NSString *)userId
+- (id<DSDAPINetworkServiceRequest>)getIdentityById:(NSString *)userId
                 success:(void (^)(NSDictionary *blockchainIdentity))success
                 failure:(void (^)(NSError *error))failure;
 
@@ -393,7 +393,7 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
  @param success A block object to be executed when the request operation finishes successfully
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
-- (void)publishTransition:(DSTransition*)stateTransition
+- (id<DSDAPINetworkServiceRequest>)publishTransition:(DSTransition*)stateTransition
                   success:(void (^)(NSDictionary *successDictionary))success
                   failure:(void (^)(NSError *error))failure;
 
@@ -404,20 +404,20 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
  @param success A block object to be executed when the request operation finishes successfully
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
-- (void)fetchDocumentsWithRequest:(DSPlatformDocumentsRequest *)platformDocumentsRequest
+- (id<DSDAPINetworkServiceRequest>)fetchDocumentsWithRequest:(DSPlatformDocumentsRequest *)platformDocumentsRequest
                           success:(void (^)(NSArray<NSDictionary *> *documents))success
                           failure:(void (^)(NSError *error))failure;
 
-- (void)getDPNSDocumentsForPreorderSaltedDomainHashes:(NSArray*)saltedDomainHashes
+- (id<DSDAPINetworkServiceRequest>)getDPNSDocumentsForPreorderSaltedDomainHashes:(NSArray*)saltedDomainHashes
                                             success:(void (^)(NSArray<NSDictionary *> *documents))success
                                             failure:(void (^)(NSError *error))failure;
 
-- (void)getDPNSDocumentsForUsernames:(NSArray*)usernames
+- (id<DSDAPINetworkServiceRequest>)getDPNSDocumentsForUsernames:(NSArray*)usernames
                             inDomain:(NSString*)domain
                              success:(void (^)(NSArray<NSDictionary *> *documents))success
                              failure:(void (^)(NSError *error))failure;
 
-- (void)getDPNSDocumentsForIdentityWithUserId:(NSString *)userId
+- (id<DSDAPINetworkServiceRequest>)getDPNSDocumentsForIdentityWithUserId:(NSString *)userId
                                       success:(void (^)(NSArray<NSDictionary *> *documents))success
                                       failure:(void (^)(NSError *error))failure;
 
@@ -438,17 +438,17 @@ Get a list of users after matching search criteria
                                      success:(void (^)(NSArray<NSDictionary *> *documents))success
                                      failure:(void (^)(NSError *error))failure;
 
-- (void)getDashpayIncomingContactRequestsForUserId:(NSString*)userId
+- (id<DSDAPINetworkServiceRequest>)getDashpayIncomingContactRequestsForUserId:(NSString*)userId
                                              since:(NSTimeInterval)timestamp
                                            success:(void (^)(NSArray<NSDictionary *> *documents))success
                                            failure:(void (^)(NSError *error))failure;
 
-- (void)getDashpayOutgoingContactRequestsForUserId:(NSString*)userId
+- (id<DSDAPINetworkServiceRequest>)getDashpayOutgoingContactRequestsForUserId:(NSString*)userId
                                              since:(NSTimeInterval)timestamp
                                            success:(void (^)(NSArray<NSDictionary *> *documents))success
                                            failure:(void (^)(NSError *error))failure;
 
-- (void)getDashpayProfileForUserId:(NSString*)userId
+- (id<DSDAPINetworkServiceRequest>)getDashpayProfileForUserId:(NSString*)userId
                            success:(void (^)(NSArray<NSDictionary *> *documents))success
                            failure:(void (^)(NSError *error))failure;
 

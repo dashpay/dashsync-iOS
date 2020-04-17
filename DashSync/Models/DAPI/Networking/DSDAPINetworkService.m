@@ -28,8 +28,6 @@
 #import "NSData+Bitcoin.h"
 #import "DPErrors.h"
 
-NS_ASSUME_NONNULL_BEGIN
-
 NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.error";
 
 
@@ -450,7 +448,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
 
 #pragma mark Layer 2
 
-- (void)fetchContractForId:(NSString *)contractId
+- (id<DSDAPINetworkServiceRequest>)fetchContractForId:(NSString *)contractId
                    success:(void (^)(NSDictionary *contract))success
                    failure:(void (^)(NSError *error))failure {
     NSParameterAssert(contractId);
@@ -461,10 +459,12 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.successHandler = success;
     responseHandler.errorHandler = failure;
-    [[self.gRPCClient getDataContractWithMessage:getDataContractRequest responseHandler:responseHandler callOptions:nil] start];
+    GRPCUnaryProtoCall * call = [self.gRPCClient getDataContractWithMessage:getDataContractRequest responseHandler:responseHandler callOptions:nil];
+    [call start];
+    return (id<DSDAPINetworkServiceRequest>)call;
 }
 
-- (void)getDPNSDocumentsForPreorderSaltedDomainHashes:(NSArray*)saltedDomainHashes
+- (id<DSDAPINetworkServiceRequest>)getDPNSDocumentsForPreorderSaltedDomainHashes:(NSArray*)saltedDomainHashes
                                               success:(void (^)(NSArray<NSDictionary *> *documents))success
                                               failure:(void (^)(NSError *error))failure {
     NSAssert(saltedDomainHashes.count,@"saltedDomainHash must not be empty");
@@ -474,10 +474,12 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.successHandler = success;
     responseHandler.errorHandler = failure;
-    [[self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil] start];
+    GRPCUnaryProtoCall * call = [self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil];
+    [call start];
+    return (id<DSDAPINetworkServiceRequest>)call;
 }
 
-- (void)getDPNSDocumentsForIdentityWithUserId:(NSString *)userId
+- (id<DSDAPINetworkServiceRequest>)getDPNSDocumentsForIdentityWithUserId:(NSString *)userId
                              success:(void (^)(NSArray<NSDictionary *> *documents))success
                              failure:(void (^)(NSError *error))failure {
     NSParameterAssert(userId);
@@ -487,10 +489,12 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.successHandler = success;
     responseHandler.errorHandler = failure;
-    [[self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil] start];
+    GRPCUnaryProtoCall * call = [self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil];
+    [call start];
+    return (id<DSDAPINetworkServiceRequest>)call;
 }
 
-- (void)getDPNSDocumentsForUsernames:(NSArray*)usernames
+- (id<DSDAPINetworkServiceRequest>)getDPNSDocumentsForUsernames:(NSArray*)usernames
                             inDomain:(NSString*)domain
                              success:(void (^)(NSArray<NSDictionary *> *documents))success
                              failure:(void (^)(NSError *error))failure {
@@ -501,7 +505,9 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.successHandler = success;
     responseHandler.errorHandler = failure;
-    [[self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil] start];
+    GRPCUnaryProtoCall * call = [self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil];
+    [call start];
+    return (id<DSDAPINetworkServiceRequest>)call;
 }
 
 - (id<DSDAPINetworkServiceRequest>)searchDPNSDocumentsForUsernamePrefix:(NSString*)usernamePrefix
@@ -522,13 +528,13 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     return (id<DSDAPINetworkServiceRequest>)call;
 }
 
-- (void)getIdentityByName:(NSString *)username
+- (id<DSDAPINetworkServiceRequest>)getIdentityByName:(NSString *)username
                  inDomain:(NSString*)domain
                   success:(void (^)(NSDictionary * _Nullable blockchainIdentity))success
                   failure:(void (^)(NSError *error))failure {
     NSParameterAssert(username);
     DSPlatformDocumentsRequest * platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForUsername:username inDomain:domain];
-    if (uint256_is_zero(self.chain.dpnsContractID)) return;
+    if (uint256_is_zero(self.chain.dpnsContractID)) return nil;
     platformDocumentsRequest.contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
     DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
@@ -552,10 +558,12 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
         }
     };
     responseHandler.errorHandler = failure;
-    [[self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil] start];
+    GRPCUnaryProtoCall * call = [self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil];
+    [call start];
+    return (id<DSDAPINetworkServiceRequest>)call;
 }
 
-- (void)getIdentityById:(NSString *)userId
+- (id<DSDAPINetworkServiceRequest>)getIdentityById:(NSString *)userId
             success:(void (^)(NSDictionary *blockchainIdentity))success
             failure:(void (^)(NSError *error))failure {
     NSParameterAssert(userId);
@@ -566,10 +574,12 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.successHandler = success;
     responseHandler.errorHandler = failure;
-    [[self.gRPCClient getIdentityWithMessage:getIdentityRequest responseHandler:responseHandler callOptions:nil] start];
+    GRPCUnaryProtoCall * call = [self.gRPCClient getIdentityWithMessage:getIdentityRequest responseHandler:responseHandler callOptions:nil];
+    [call start];
+    return (id<DSDAPINetworkServiceRequest>)call;
 }
 
-- (void)registerContract:(DSTransition *)stateTransition
+- (id<DSDAPINetworkServiceRequest>)registerContract:(DSTransition *)stateTransition
                                         success:(void (^)(NSDictionary *successDictionary))success
                                         failure:(void (^)(NSError *error))failure {
     NSParameterAssert(stateTransition);
@@ -580,10 +590,12 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.successHandler = success;
     responseHandler.errorHandler = failure;
-    [[self.gRPCClient applyStateTransitionWithMessage:updateStateRequest responseHandler:responseHandler callOptions:nil] start];
+    GRPCUnaryProtoCall * call = [self.gRPCClient applyStateTransitionWithMessage:updateStateRequest responseHandler:responseHandler callOptions:nil];
+    [call start];
+    return (id<DSDAPINetworkServiceRequest>)call;
 }
 
-- (void)publishTransition:(DSTransition *)stateTransition
+- (id<DSDAPINetworkServiceRequest>)publishTransition:(DSTransition *)stateTransition
                                         success:(void (^)(NSDictionary *successDictionary))success
                                         failure:(void (^)(NSError *error))failure {
     NSParameterAssert(stateTransition);
@@ -594,10 +606,12 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.successHandler = success;
     responseHandler.errorHandler = failure;
-    [[self.gRPCClient applyStateTransitionWithMessage:updateStateRequest responseHandler:responseHandler callOptions:nil] start];
+    GRPCUnaryProtoCall * call = [self.gRPCClient applyStateTransitionWithMessage:updateStateRequest responseHandler:responseHandler callOptions:nil];
+    [call start];
+    return (id<DSDAPINetworkServiceRequest>)call;
 }
 
-- (void)getDashpayIncomingContactRequestsForUserId:(NSString*)userId since:(NSTimeInterval)timestamp
+- (id<DSDAPINetworkServiceRequest>)getDashpayIncomingContactRequestsForUserId:(NSString*)userId since:(NSTimeInterval)timestamp
                              success:(void (^)(NSArray<NSDictionary *> *documents))success
                              failure:(void (^)(NSError *error))failure {
     NSParameterAssert(userId);
@@ -608,10 +622,12 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     responseHandler.successHandler = success;
     responseHandler.errorHandler = failure;
     responseHandler.request = platformDocumentsRequest;
-    [[self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil] start];
+    GRPCUnaryProtoCall * call = [self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil];
+    [call start];
+    return (id<DSDAPINetworkServiceRequest>)call;
 }
 
-- (void)getDashpayOutgoingContactRequestsForUserId:(NSString*)userId since:(NSTimeInterval)timestamp
+- (id<DSDAPINetworkServiceRequest>)getDashpayOutgoingContactRequestsForUserId:(NSString*)userId since:(NSTimeInterval)timestamp
                              success:(void (^)(NSArray<NSDictionary *> *documents))success
                              failure:(void (^)(NSError *error))failure {
     NSParameterAssert(userId);
@@ -622,10 +638,12 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     responseHandler.successHandler = success;
     responseHandler.errorHandler = failure;
     responseHandler.request = platformDocumentsRequest;
-    [[self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil] start];
+    GRPCUnaryProtoCall * call = [self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil];
+    [call start];
+    return (id<DSDAPINetworkServiceRequest>)call;
 }
 
-- (void)getDashpayProfileForUserId:(NSString*)userId
+- (id<DSDAPINetworkServiceRequest>)getDashpayProfileForUserId:(NSString*)userId
                              success:(void (^)(NSArray<NSDictionary *> *documents))success
                              failure:(void (^)(NSError *error))failure {
     NSParameterAssert(userId);
@@ -635,10 +653,12 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.successHandler = success;
     responseHandler.errorHandler = failure;
-    [[self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil] start];
+    GRPCUnaryProtoCall * call = [self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil];
+    [call start];
+    return (id<DSDAPINetworkServiceRequest>)call;
 }
 
-- (void)fetchDocumentsWithRequest:(DSPlatformDocumentsRequest *)platformDocumentsRequest
+- (id<DSDAPINetworkServiceRequest>)fetchDocumentsWithRequest:(DSPlatformDocumentsRequest *)platformDocumentsRequest
                             success:(void (^)(NSArray<NSDictionary *> *documents))success
                             failure:(void (^)(NSError *error))failure {
     NSParameterAssert(platformDocumentsRequest);
@@ -646,7 +666,9 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.successHandler = success;
     responseHandler.errorHandler = failure;
-    [[self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil] start];
+    GRPCUnaryProtoCall * call = [self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil];
+    [call start];
+    return (id<DSDAPINetworkServiceRequest>)call;
 }
 
 #pragma mark - Private
@@ -685,4 +707,3 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
 
 @end
 
-NS_ASSUME_NONNULL_END

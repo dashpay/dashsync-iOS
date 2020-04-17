@@ -175,4 +175,9 @@
     return nil;
 }
 
+- (nullable instancetype)publicDeriveTo256BitDerivationPath:(DSDerivationPath*)derivationPath derivationPathOffset:(NSUInteger)derivationPathOffset {
+    NSAssert(NO, @"This should be overridden");
+    return nil;
+}
+
 @end
