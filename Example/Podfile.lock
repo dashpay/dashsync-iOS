@@ -1,69 +1,231 @@
 PODS:
+  - "!ProtoCompiler (3.11.2)":
+    - Protobuf (~> 3.0)
+  - "!ProtoCompiler-gRPCPlugin (1.27.0)":
+    - "!ProtoCompiler (= 3.11.2)"
+    - gRPC-ProtoRPC (= 1.27.0)
+  - abseil/algorithm/algorithm (0.20190808.1)
+  - abseil/base/atomic_hook (0.20190808.1)
+  - abseil/base/base (0.20190808.1):
+    - abseil/base/atomic_hook
+    - abseil/base/base_internal
+    - abseil/base/config
+    - abseil/base/core_headers
+    - abseil/base/dynamic_annotations
+    - abseil/base/log_severity
+    - abseil/base/spinlock_wait
+    - abseil/meta/type_traits
+  - abseil/base/base_internal (0.20190808.1):
+    - abseil/meta/type_traits
+  - abseil/base/bits (0.20190808.1):
+    - abseil/base/core_headers
+  - abseil/base/config (0.20190808.1)
+  - abseil/base/core_headers (0.20190808.1):
+    - abseil/base/config
+  - abseil/base/dynamic_annotations (0.20190808.1)
+  - abseil/base/endian (0.20190808.1):
+    - abseil/base/config
+    - abseil/base/core_headers
+  - abseil/base/log_severity (0.20190808.1):
+    - abseil/base/core_headers
+  - abseil/base/spinlock_wait (0.20190808.1):
+    - abseil/base/core_headers
+  - abseil/base/throw_delegate (0.20190808.1):
+    - abseil/base/base
+    - abseil/base/config
+  - abseil/container/compressed_tuple (0.20190808.1):
+    - abseil/utility/utility
+  - abseil/container/inlined_vector (0.20190808.1):
+    - abseil/algorithm/algorithm
+    - abseil/base/core_headers
+    - abseil/base/throw_delegate
+    - abseil/container/inlined_vector_internal
+    - abseil/memory/memory
+  - abseil/container/inlined_vector_internal (0.20190808.1):
+    - abseil/base/core_headers
+    - abseil/container/compressed_tuple
+    - abseil/memory/memory
+    - abseil/meta/type_traits
+    - abseil/types/span
+  - abseil/memory/memory (0.20190808.1):
+    - abseil/base/core_headers
+    - abseil/meta/type_traits
+  - abseil/meta/type_traits (0.20190808.1):
+    - abseil/base/config
+  - abseil/numeric/int128 (0.20190808.1):
+    - abseil/base/config
+    - abseil/base/core_headers
+  - abseil/strings/internal (0.20190808.1):
+    - abseil/base/core_headers
+    - abseil/base/endian
+    - abseil/meta/type_traits
+  - abseil/strings/strings (0.20190808.1):
+    - abseil/base/base
+    - abseil/base/bits
+    - abseil/base/config
+    - abseil/base/core_headers
+    - abseil/base/endian
+    - abseil/base/throw_delegate
+    - abseil/memory/memory
+    - abseil/meta/type_traits
+    - abseil/numeric/int128
+    - abseil/strings/internal
+  - abseil/types/bad_optional_access (0.20190808.1):
+    - abseil/base/base
+    - abseil/base/config
+  - abseil/types/optional (0.20190808.1):
+    - abseil/base/base_internal
+    - abseil/base/config
+    - abseil/base/core_headers
+    - abseil/memory/memory
+    - abseil/meta/type_traits
+    - abseil/types/bad_optional_access
+    - abseil/utility/utility
+  - abseil/types/span (0.20190808.1):
+    - abseil/algorithm/algorithm
+    - abseil/base/core_headers
+    - abseil/base/throw_delegate
+    - abseil/meta/type_traits
+  - abseil/utility/utility (0.20190808.1):
+    - abseil/base/base_internal
+    - abseil/base/config
+    - abseil/meta/type_traits
   - bls-signatures-pod (0.2.9)
+  - BoringSSL-GRPC (0.0.5):
+    - BoringSSL-GRPC/Implementation (= 0.0.5)
+    - BoringSSL-GRPC/Interface (= 0.0.5)
+  - BoringSSL-GRPC/Implementation (0.0.5):
+    - BoringSSL-GRPC/Interface (= 0.0.5)
+  - BoringSSL-GRPC/Interface (0.0.5)
   - CocoaLumberjack (3.6.0):
     - CocoaLumberjack/Core (= 3.6.0)
   - CocoaLumberjack/Core (3.6.0)
+  - DAPI-GRPC (0.0.1):
+    - "!ProtoCompiler-gRPCPlugin (~> 1.0)"
+    - DAPI-GRPC/Messages (= 0.0.1)
+    - DAPI-GRPC/Services (= 0.0.1)
+  - DAPI-GRPC/Messages (0.0.1):
+    - "!ProtoCompiler-gRPCPlugin (~> 1.0)"
+    - Protobuf
+  - DAPI-GRPC/Services (0.0.1):
+    - "!ProtoCompiler-gRPCPlugin (~> 1.0)"
+    - DAPI-GRPC/Messages
+    - gRPC-ProtoRPC
   - DashSync (0.1.0):
     - bls-signatures-pod (= 0.2.9)
     - CocoaLumberjack (= 3.6.0)
-    - DSDynamicOptions (= 0.1.0)
+    - DAPI-GRPC (= 0.0.1)
+    - DSDynamicOptions (= 0.1.1)
     - DWAlertController (= 0.2.1)
-    - secp256k1_dash (= 0.1.2)
-  - DSDynamicOptions (0.1.0)
-  - DSJSONSchemaValidation (2.0.5)
+    - secp256k1_dash (= 0.1.3-alpha.2)
+    - TinyCborObjc (= 0.4.4)
+  - DSDynamicOptions (0.1.1)
   - DWAlertController (0.2.1)
-  - ios-dpp (0.0.1):
-    - DSJSONSchemaValidation (= 2.0.5)
-    - TinyCborObjc (= 0.3.0)
+  - gRPC-Core (1.27.0):
+    - gRPC-Core/Implementation (= 1.27.0)
+    - gRPC-Core/Interface (= 1.27.0)
+  - gRPC-Core/Implementation (1.27.0):
+    - abseil/container/inlined_vector (= 0.20190808.1)
+    - abseil/strings/strings (= 0.20190808.1)
+    - abseil/types/optional (= 0.20190808.1)
+    - BoringSSL-GRPC (= 0.0.5)
+    - gRPC-Core/Interface (= 1.27.0)
+  - gRPC-Core/Interface (1.27.0)
+  - gRPC-ProtoRPC (1.27.0):
+    - gRPC-ProtoRPC/Legacy (= 1.27.0)
+    - gRPC-ProtoRPC/Legacy-Header (= 1.27.0)
+    - gRPC-ProtoRPC/Main (= 1.27.0)
+  - gRPC-ProtoRPC/Legacy (1.27.0):
+    - gRPC-ProtoRPC/Legacy-Header (= 1.27.0)
+    - gRPC-ProtoRPC/Main (= 1.27.0)
+    - gRPC-RxLibrary (= 1.27.0)
+    - gRPC/GRPCCore (= 1.27.0)
+    - Protobuf (~> 3.0)
+  - gRPC-ProtoRPC/Legacy-Header (1.27.0)
+  - gRPC-ProtoRPC/Main (1.27.0):
+    - gRPC-ProtoRPC/Legacy-Header (= 1.27.0)
+    - gRPC/Interface (= 1.27.0)
+    - Protobuf (~> 3.0)
+  - gRPC-RxLibrary (1.27.0):
+    - gRPC-RxLibrary/Implementation (= 1.27.0)
+    - gRPC-RxLibrary/Interface (= 1.27.0)
+  - gRPC-RxLibrary/Implementation (1.27.0):
+    - gRPC-RxLibrary/Interface
+  - gRPC-RxLibrary/Interface (1.27.0)
+  - gRPC/GRPCCore (1.27.0):
+    - gRPC-Core (= 1.27.0)
+    - gRPC-RxLibrary (= 1.27.0)
+    - gRPC/Interface (= 1.27.0)
+    - gRPC/Interface-Legacy (= 1.27.0)
+  - gRPC/Interface (1.27.0):
+    - gRPC/Interface-Legacy (= 1.27.0)
+  - gRPC/Interface-Legacy (1.27.0):
+    - gRPC-RxLibrary/Interface (= 1.27.0)
   - KVO-MVVM (0.5.1)
-  - secp256k1_dash (0.1.2)
-  - tinycbor (0.5.3-alpha2)
-  - TinyCborObjc (0.3.0):
-    - tinycbor (= 0.5.3-alpha2)
+  - Protobuf (3.11.4)
+  - SDWebImage (5.0.1):
+    - SDWebImage/Core (= 5.0.1)
+  - SDWebImage/Core (5.0.1)
+  - secp256k1_dash (0.1.3-alpha.2)
+  - tinycbor (0.5.3)
+  - TinyCborObjc (0.4.4):
+    - tinycbor (= 0.5.3)
 
 DEPENDENCIES:
+  - DAPI-GRPC (from `../`)
   - DashSync (from `../`)
-  - ios-dpp (from `https://github.com/dashevo/ios-dpp.git`, commit `6b3210b2f0f124687175a697720099a6dd3d3024`, branch `master`)
   - KVO-MVVM (= 0.5.1)
+  - SDWebImage (= 5.0.1)
 
 SPEC REPOS:
   trunk:
+    - "!ProtoCompiler"
+    - "!ProtoCompiler-gRPCPlugin"
+    - abseil
     - bls-signatures-pod
+    - BoringSSL-GRPC
     - CocoaLumberjack
     - DSDynamicOptions
-    - DSJSONSchemaValidation
     - DWAlertController
+    - gRPC
+    - gRPC-Core
+    - gRPC-ProtoRPC
+    - gRPC-RxLibrary
     - KVO-MVVM
+    - Protobuf
+    - SDWebImage
     - secp256k1_dash
     - tinycbor
     - TinyCborObjc
 
 EXTERNAL SOURCES:
+  DAPI-GRPC:
+    :path: "../"
   DashSync:
     :path: "../"
-  ios-dpp:
-    :branch: master
-    :commit: 6b3210b2f0f124687175a697720099a6dd3d3024
-    :git: https://github.com/dashevo/ios-dpp.git
-
-CHECKOUT OPTIONS:
-  ios-dpp:
-    :commit: 6b3210b2f0f124687175a697720099a6dd3d3024
-    :git: https://github.com/dashevo/ios-dpp.git
 
 SPEC CHECKSUMS:
+  "!ProtoCompiler": da24805d8339f352ec7bb4cb4df2db6a3be45665
+  "!ProtoCompiler-gRPCPlugin": f391d1b326229c16a05ca3d2611f28d66b9ed9fb
+  abseil: 88704f97dbfdb436f29ea8deb788a46c5115f581
   bls-signatures-pod: 56adce76843f10f484ff996c33aee36cfd98ae5e
+  BoringSSL-GRPC: 8f2c6b5fbae71d1f3aabb787a52fd4929d1eef33
   CocoaLumberjack: 78b0c238666f4f58db069738ec176f4519557516
-  DashSync: e693cc7ede2f98ce305c0f972e1457c76b218188
-  DSDynamicOptions: 6a37eb496daee3c067e086b5b236d77707e9a3ee
-  DSJSONSchemaValidation: a0d791d3c8a4801cb3c72f3c8701342e2cb66f58
+  DAPI-GRPC: faca236b4d2357cbab85a67a8341e4eeb6c51798
+  DashSync: 449bc062a53b6ee210193ccb4831c74bde179a8e
+  DSDynamicOptions: 23229bb4e60e7fc966cc1842eb405ea3b94b042e
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
-  ios-dpp: 5193ef55546e5cc3ce1ef5ad831f084a07731dc1
+  gRPC: 5001a90441b0bbb1d48afa36c9461ebc381bcb6a
+  gRPC-Core: 1f6b96422c8978621b199d30be9d8254d873f307
+  gRPC-ProtoRPC: 674a6d9bbf1e184077651d7412b9d5e76a8fb36b
+  gRPC-RxLibrary: 46eef33e55e9cf6b7a21cb60dd034175a38ece40
   KVO-MVVM: 4df3afd1f7ebcb69735458b85db59c4271ada7c6
-  secp256k1_dash: 7fdbc23e3e8a27d522ec211b874d97fb091c2b23
-  tinycbor: d2990189c8db918fbdb2936708642aeb55334dd5
-  TinyCborObjc: b514d3e288b5d26c3c65c568ec97e375a6840a98
+  Protobuf: 176220c526ad8bd09ab1fb40a978eac3fef665f7
+  SDWebImage: 27dd2c9ea07a2252f94557c9fbb6105ee94b74c9
+  secp256k1_dash: 5a10f3369ea82b75bb655c2f3fa119debbaa10ee
+  tinycbor: 1a978845921ea4befaf5c977e55b3f0e09a80395
+  TinyCborObjc: d7e40c16e7882ba48f15fa3699db85d2c05dbe84
 
-PODFILE CHECKSUM: b09554bb9c6dde4448a8af3373e4cebe69d01959
+PODFILE CHECKSUM: 3172746975d8992a323f5d3ed6240dbd8397eba6
 
-COCOAPODS: 1.8.4
+COCOAPODS: 1.9.1

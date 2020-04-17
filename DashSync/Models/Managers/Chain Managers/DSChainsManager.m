@@ -35,6 +35,7 @@
 #import "DSPeerManager+Protected.h"
 #import "DSChainManager+Protected.h"
 #include <arpa/inet.h>
+#import "DSDashPlatform.h"
 
 #define DEVNET_CHAINS_KEY  @"DEVNET_CHAINS_KEY"
 
@@ -70,7 +71,7 @@
         self.knownDevnetChains = [NSMutableArray array];
         for (NSString * string in registeredDevnetIdentifiers) {
             NSArray<DSCheckpoint*>* checkpointArray = registeredDevnetIdentifiers[string];
-            [self.knownDevnetChains addObject:[DSChain setUpDevnetWithIdentifier:string withCheckpoints:checkpointArray withDefaultPort:DEVNET_STANDARD_PORT withDefaultDapiPort:DEVNET_DAPI_STANDARD_PORT]];
+            [self.knownDevnetChains addObject:[DSChain recoverKnownDevnetWithIdentifier:string withCheckpoints:checkpointArray]];
         }
         
         self.reachability = [DSReachabilityManager sharedManager];
@@ -118,7 +119,6 @@
             devnetChainManager = [[DSChainManager alloc] initWithChain:chain];
             chain.chainManager = devnetChainManager;
             [self.knownChains addObject:chain];
-            [self.knownDevnetChains addObject:chain];
             [self.devnetGenesisDictionary setObject:devnetChainManager forKey:genesisValue];
         } else {
             devnetChainManager = [self.devnetGenesisDictionary objectForKey:genesisValue];
@@ -148,7 +148,7 @@
     return [self.knownChains copy];
 }
 
--(void)updateDevnetChain:(DSChain*)chain forServiceLocations:(NSMutableOrderedSet<NSString*>*)serviceLocations standardPort:(uint32_t)standardPort dapiPort:(uint32_t)dapiPort protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString*)sporkAddress sporkPrivateKey:(NSString*)sporkPrivateKey {
+-(void)updateDevnetChain:(DSChain*)chain forServiceLocations:(NSMutableOrderedSet<NSString*>*)serviceLocations standardPort:(uint32_t)standardPort dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString*)sporkAddress sporkPrivateKey:(NSString*)sporkPrivateKey {
     NSParameterAssert(chain);
     NSParameterAssert(serviceLocations);
     
@@ -167,6 +167,27 @@
     if (sporkPrivateKey && [sporkPrivateKey isValidDashDevnetPrivateKey]) {
         chain.sporkPrivateKey = sporkPrivateKey;
     }
+    if (standardPort && standardPort != chain.standardPort) {
+        chain.standardPort = standardPort;
+    }
+    if (dapiJRPCPort && dapiJRPCPort != chain.standardDapiJRPCPort) {
+        chain.standardDapiJRPCPort = dapiJRPCPort;
+    }
+    if (dapiGRPCPort && dapiGRPCPort != chain.standardDapiGRPCPort) {
+        chain.standardDapiGRPCPort = dapiGRPCPort;
+    }
+    if (!uint256_eq(dpnsContractID, chain.dpnsContractID)) {
+        chain.dpnsContractID = dpnsContractID;
+        DPContract * contract = [DSDashPlatform sharedInstanceForChain:chain].dpnsContract;
+        DSBlockchainIdentity * blockchainIdentity = [chain blockchainIdentityForUniqueId:dpnsContractID];
+        [contract registerCreator:blockchainIdentity];
+    }
+    if (!uint256_eq(dashpayContractID, chain.dashpayContractID)) {
+        chain.dashpayContractID = dashpayContractID;
+        DPContract * contract = [DSDashPlatform sharedInstanceForChain:chain].dashPayContract;
+        DSBlockchainIdentity * blockchainIdentity = [chain blockchainIdentityForUniqueId:dashpayContractID];
+        [contract registerCreator:blockchainIdentity];
+    }
     for (NSString * serviceLocation in serviceLocations) {
         NSArray * serviceArray = [serviceLocation componentsSeparatedByString:@":"];
         NSString * address = serviceArray[0];
@@ -185,17 +206,17 @@
             DSDLog(@"invalid address");
         }
         
-        [peerManager registerPeerAtLocation:ipAddress port:port?[port intValue]:standardPort dapiPort:dapiPort];
+        [peerManager registerPeerAtLocation:ipAddress port:port?[port intValue]:standardPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort];
     }
 }
 
--(DSChain*)registerDevnetChainWithIdentifier:(NSString*)identifier forServiceLocations:(NSMutableOrderedSet<NSString*>*)serviceLocations standardPort:(uint32_t)standardPort dapiPort:(uint32_t)dapiPort protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString*)sporkAddress sporkPrivateKey:(NSString*)sporkPrivateKey {
+-(DSChain*)registerDevnetChainWithIdentifier:(NSString*)identifier forServiceLocations:(NSOrderedSet<NSString*>*)serviceLocations standardPort:(uint32_t)standardPort dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString*)sporkAddress sporkPrivateKey:(NSString*)sporkPrivateKey {
     NSParameterAssert(identifier);
     NSParameterAssert(serviceLocations);
     
     NSError * error = nil;
     
-    DSChain * chain = [DSChain setUpDevnetWithIdentifier:identifier withCheckpoints:nil withDefaultPort:standardPort withDefaultDapiPort:dapiPort];
+    DSChain * chain = [DSChain setUpDevnetWithIdentifier:identifier withCheckpoints:nil withDefaultPort:standardPort withDefaultDapiJRPCPort:dapiJRPCPort withDefaultDapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID];
     if (protocolVersion) {
         chain.protocolVersion = protocolVersion;
     }
@@ -228,7 +249,7 @@
             DSDLog(@"invalid address");
         }
         
-        [peerManager registerPeerAtLocation:ipAddress port:port?[port intValue]:standardPort dapiPort:dapiPort];
+        [peerManager registerPeerAtLocation:ipAddress port:port?[port intValue]:standardPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort];
     }
     
     NSMutableDictionary * registeredDevnetsDictionary = [getKeychainDict(DEVNET_CHAINS_KEY, &error) mutableCopy];

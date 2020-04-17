@@ -195,12 +195,16 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 - (int)intValue; // returns the opcode used to store the receiver in a script (i.e. OP_PUSHDATA1)
 
 - (NSString *)base58String;
+- (NSString *)base64String;
 - (NSString *)shortHexString;
 - (NSString *)hexString;
+- (NSString *)binaryString;
     
 + (NSData * _Nullable)merkleRootFromHashes:(NSArray*)hashes;
 
-- (NSString*)addressFromHash160DataForChain:(DSChain*)chain;
+- (BOOL)isSizedForAddress;
+
+- (NSString* _Nullable)addressFromHash160DataForChain:(DSChain*)chain;
 
 + (NSData*)scriptPubKeyForAddress:(NSString*)address forChain:(DSChain*)chain;
 

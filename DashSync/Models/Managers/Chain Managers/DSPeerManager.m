@@ -50,7 +50,6 @@
 #import "DSGovernanceObject.h"
 #import "DSGovernanceVote.h"
 #import "DSWallet.h"
-#import "DSDAPIClient.h"
 #import "NSDate+Utils.h"
 #import "DSTransactionManager+Protected.h"
 #import "DSChainManager+Protected.h"
@@ -539,11 +538,11 @@
     setKeychainArray(@[], self.chain.registeredPeersKey, NO);
 }
 
--(void)registerPeerAtLocation:(UInt128)IPAddress port:(uint32_t)port dapiPort:(uint32_t)dapiPort {
+-(void)registerPeerAtLocation:(UInt128)IPAddress port:(uint32_t)port dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort {
     NSError * error = nil;
     NSMutableArray * registeredPeersArray = [getKeychainArray(self.chain.registeredPeersKey, &error) mutableCopy];
     if (!registeredPeersArray) registeredPeersArray = [NSMutableArray array];
-    NSDictionary * insertDictionary = @{@"address":[NSData dataWithUInt128:IPAddress],@"port":@(port),@"dapiPort":@(dapiPort)};
+    NSDictionary * insertDictionary = @{@"address":[NSData dataWithUInt128:IPAddress],@"port":@(port),@"dapiJRPCPort":@(dapiJRPCPort),@"dapiGRPCPort":@(dapiGRPCPort)};
     BOOL found = FALSE;
     for (NSDictionary * dictionary in registeredPeersArray) {
         if ([dictionary isEqualToDictionary:insertDictionary]) {

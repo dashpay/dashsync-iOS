@@ -329,7 +329,7 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
 }
 
 - (NSArray<UITextSelectionRect *> *)selectionRectsForRange:(UITextRange *)range {
-    return nil;
+    return [NSArray array];
 }
 
 - (void)setBaseWritingDirection:(UITextWritingDirection)writingDirection forRange:(UITextRange *)range {

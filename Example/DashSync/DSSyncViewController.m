@@ -18,10 +18,11 @@
 #import "DSStandaloneDerivationPathViewController.h"
 #import "DSGovernanceObjectListViewController.h"
 #import "DSTransactionsViewController.h"
-#import "DSBlockchainUsersViewController.h"
+#import "DSBlockchainIdentitiesViewController.h"
 #import "DSPeersViewController.h"
 #import "DSLayer2ViewController.h"
 #import "DSActionsViewController.h"
+#import "DSSearchBlockchainIdentitiesViewController.h"
 
 @interface DSSyncViewController ()
 
@@ -46,12 +47,12 @@
 @property (strong, nonatomic) IBOutlet UILabel *masternodeListUpdatedLabel;
 @property (strong, nonatomic) IBOutlet UILabel *receivedProposalCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *receivedVotesCountLabel;
-@property (strong, nonatomic) IBOutlet UILabel *blockchainUsersCountLabel;
+@property (strong, nonatomic) IBOutlet UILabel *blockchainIdentitiesCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *receivingAddressLabel;
 @property (strong, nonatomic) IBOutlet UILabel *masternodeListsCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *earliestMasternodeListLabel;
 @property (strong, nonatomic) IBOutlet UILabel *lastMasternodeListLabel;
-@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,blocksObserver,blocksResetObserver,sporkObserver,masternodeObserver,masternodeCountObserver, chainWalletObserver,chainStandaloneDerivationPathObserver,chainSingleAddressObserver,governanceObjectCountObserver,governanceObjectReceivedCountObserver,governanceVoteCountObserver,governanceVoteReceivedCountObserver,connectedPeerConnectionObserver,peerConnectionObserver,blockchainUsersObserver,quorumObserver;
+@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,blocksObserver,blocksResetObserver,sporkObserver,masternodeObserver,masternodeCountObserver, chainWalletObserver,chainStandaloneDerivationPathObserver,chainSingleAddressObserver,governanceObjectCountObserver,governanceObjectReceivedCountObserver,governanceVoteCountObserver,governanceVoteReceivedCountObserver,connectedPeerConnectionObserver,peerConnectionObserver,blockchainIdentitiesObserver,quorumObserver;
 
 - (IBAction)startSync:(id)sender;
 - (IBAction)stopSync:(id)sender;
@@ -77,7 +78,7 @@
     [self updateSingleAddressesCount];
     [self updateReceivedGovernanceProposalCount];
     [self updateReceivedGovernanceVoteCount];
-    [self updateBlockchainUsersCount];
+    [self updateBlockchainIdentitiesCount];
     [self updatePeerCount];
     [self updateConnectedPeerCount];
     
@@ -200,10 +201,10 @@
                                                            }
                                                        }];
     
-    self.blockchainUsersObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSChainBlockchainUsersDidChangeNotification object:nil
+    self.blockchainIdentitiesObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSBlockchainIdentityDidUpdateNotification object:nil
                                                                                           queue:nil usingBlock:^(NSNotification *note) {
                                                                                               if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
-                                                                                                  [self updateBlockchainUsersCount];
+                                                                                                  [self updateBlockchainIdentitiesCount];
                                                                                               }
                                                                                           }];
     self.chainStandaloneDerivationPathObserver =
@@ -476,8 +477,8 @@
     self.receivedVotesCountLabel.text = [NSString stringWithFormat:@"%lu / %lu",(unsigned long)[self.chainManager.governanceSyncManager governanceVotesCount],self.chainManager.governanceSyncManager.totalGovernanceVotesCount];
 }
 
--(void)updateBlockchainUsersCount {
-    self.blockchainUsersCountLabel.text = [NSString stringWithFormat:@"%u",self.chainManager.chain.blockchainUsersCount];
+-(void)updateBlockchainIdentitiesCount {
+    self.blockchainIdentitiesCountLabel.text = [NSString stringWithFormat:@"%u",self.chainManager.chain.blockchainIdentitiesCount];
 }
 
 -(void)updateReceivedGovernanceProposalCount {
@@ -513,9 +514,9 @@
     } else if ([segue.identifier isEqualToString:@"TransactionsViewSegue"]) {
         DSTransactionsViewController * transactionsViewController = (DSTransactionsViewController*)segue.destinationViewController;
         transactionsViewController.chainManager = self.chainManager;
-    } else if ([segue.identifier isEqualToString:@"BlockchainUsersSegue"]) {
-        DSBlockchainUsersViewController * blockchainUsersViewController = (DSBlockchainUsersViewController*)segue.destinationViewController;
-        blockchainUsersViewController.chainManager = self.chainManager;
+    } else if ([segue.identifier isEqualToString:@"BlockchainIdentitiesSegue"]) {
+        DSBlockchainIdentitiesViewController * blockchainIdentitiesViewController = (DSBlockchainIdentitiesViewController*)segue.destinationViewController;
+        blockchainIdentitiesViewController.chainManager = self.chainManager;
     } else if ([segue.identifier isEqualToString:@"ShowPeersSegue"]) {
         DSPeersViewController * peersViewController = (DSPeersViewController*)segue.destinationViewController;
         peersViewController.chainManager = self.chainManager;
@@ -525,6 +526,9 @@
     } else if ([segue.identifier isEqualToString:@"ActionsSegue"]) {
         DSActionsViewController * actionsViewController = (DSActionsViewController*)segue.destinationViewController;
         actionsViewController.chainManager = self.chainManager;
+    } else if ([segue.identifier isEqualToString:@"SearchBlockchainIdentitiesSegue"]) {
+        DSSearchBlockchainIdentitiesViewController * searchViewController = (DSSearchBlockchainIdentitiesViewController*)segue.destinationViewController;
+        searchViewController.chainManager = self.chainManager;
     }
 }
 

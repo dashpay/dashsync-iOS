@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,assign) UInt128 ipAddress; //v6, but only v4 supported
 @property (nonatomic,assign) uint16_t port;
 @property (nonatomic,strong) NSData * scriptPayout;
-@property (nonatomic,readonly) NSString * payoutAddress;
+@property (nonatomic,nullable,readonly) NSString * payoutAddress;
 @property (nonatomic,assign) UInt256 inputsHash;
 @property (nonatomic,strong) NSData * payloadSignature;
 @property (nonatomic,readonly) DSProviderRegistrationTransaction * providerRegistrationTransaction;

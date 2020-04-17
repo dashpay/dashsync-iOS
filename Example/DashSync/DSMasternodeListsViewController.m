@@ -176,7 +176,7 @@
     uint32_t blockHeight = (![self.blockHeightTextField.text isEqualToString:@""])?[self.blockHeightTextField.text intValue]:self.chain.lastBlock.height;
 
     NSError * error = nil;
-    [self.chain.chainManager.masternodeManager getMasternodeListForBlockHeight:blockHeight error:&error];
+    [self.chain.chainManager.masternodeManager requestMasternodeListForBlockHeight:blockHeight error:&error];
     if (error) {
         [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
                                                     center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
@@ -190,7 +190,7 @@
     uint32_t blockHeight = lastKnownBlockHeight + 24;
     
     NSError * error = nil;
-    [self.chain.chainManager.masternodeManager getMasternodeListForBlockHeight:blockHeight error:&error];
+    [self.chain.chainManager.masternodeManager requestMasternodeListForBlockHeight:blockHeight error:&error];
     if (error) {
         [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
                                                     center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]

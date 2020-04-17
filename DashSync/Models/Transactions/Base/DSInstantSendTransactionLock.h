@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithTransactionHash:(UInt256)transactionHash withInputOutpoints:(NSArray*)inputOutpoints signatureVerified:(BOOL)signatureVerified quorumVerified:(BOOL)quorumVerified onChain:(DSChain*)chain;
 
-- (DSQuorumEntry*)findSigningQuorumReturnMasternodeList:(DSMasternodeList*_Nullable*_Nullable)returnMasternodeList;
+- (DSQuorumEntry* _Nullable)findSigningQuorumReturnMasternodeList:(DSMasternodeList*_Nullable*_Nullable)returnMasternodeList;
 
 @end
 

@@ -14,11 +14,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DSContactsNavigationController
 
-+ (instancetype)controllerWithChainManager:(DSChainManager *)chainManager blockchainUser:(DSBlockchainUser *)blockchainUser {
++ (instancetype)controllerWithChainManager:(DSChainManager *)chainManager blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Contacts" bundle:nil];
     DSContactsTabBarViewController *tabbar = [storyboard instantiateInitialViewController];
     tabbar.chainManager = chainManager;
-    tabbar.blockchainUser = blockchainUser;
+    tabbar.blockchainIdentity = blockchainIdentity;
     
     DSContactsNavigationController *navigation = [[DSContactsNavigationController alloc] initWithRootViewController:tabbar];
     return navigation;

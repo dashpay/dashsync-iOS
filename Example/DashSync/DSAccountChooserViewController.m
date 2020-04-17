@@ -44,7 +44,7 @@
 
 -(NSString*)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
     DSWallet * wallet = [self.chain.wallets objectAtIndex:section];
-    return wallet.uniqueID;
+    return wallet.uniqueIDString;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {

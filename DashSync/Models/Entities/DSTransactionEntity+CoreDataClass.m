@@ -28,7 +28,7 @@
 #import "DSAddressEntity+CoreDataClass.h"
 #import "DSChain.h"
 #import "DSChainEntity+CoreDataClass.h"
-#import "DSTransaction.h"
+#import "DSTransaction+Protected.h"
 #import "DSMerkleBlock.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSData+Bitcoin.h"
@@ -106,6 +106,10 @@
     return transactions;
 }
 
+- (DSTransaction *)transaction {
+    return [self transactionForChain:[self.chain chain]];
+}
+
 - (DSTransaction *)transactionForChain:(DSChain*)chain
 {
     if (!chain) chain = [self.chain chain];
@@ -116,6 +120,8 @@
         
         if (txHash.length == sizeof(UInt256)) tx.txHash = *(const UInt256 *)txHash.bytes;
         tx.lockTime = self.lockTime;
+        tx.saved = TRUE;
+        
         tx.blockHeight = self.transactionHash.blockHeight;
         tx.timestamp = self.transactionHash.timestamp;
         tx.associatedShapeshift = self.associatedShapeshift;

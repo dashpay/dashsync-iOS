@@ -28,29 +28,27 @@
 #import "DSTransaction.h"
 #import "NSData+Bitcoin.h"
 #import "DSFundsDerivationPath.h"
+#import "DSIncomingFundsDerivationPath.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
-    DSTransactionDirection_Sent,
-    DSTransactionDirection_Received,
-    DSTransactionDirection_Moved,
-    DSTransactionDirection_NotAccountFunds,
-};
-
-@class DSFundsDerivationPath,DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserResetTransaction;
-@class DSCoinbaseTransaction;
+@class DSFundsDerivationPath,DSIncomingFundsDerivationPathDSWallet,DSBlockchainIdentityRegistrationTransition,DSBlockchainIdentityUpdateTransition,DSCreditFundingTransaction;
+@class DSCoinbaseTransaction,DSPotentialOneWayFriendship;
 
 @interface DSAccount : NSObject
 
 // BIP 43 derivation paths
-@property (nullable, nonatomic, readonly) NSArray<DSFundsDerivationPath *> * derivationPaths;
+@property (nullable, nonatomic, readonly) NSArray<DSDerivationPath *> * fundDerivationPaths;
+
+@property (nullable, nonatomic, readonly) NSArray<DSDerivationPath *> * outgoingFundDerivationPaths;
 
 @property (nullable, nonatomic, strong) DSFundsDerivationPath * defaultDerivationPath;
 
 @property (nullable, nonatomic, readonly) DSFundsDerivationPath * bip44DerivationPath;
 
 @property (nullable, nonatomic, readonly) DSFundsDerivationPath * bip32DerivationPath;
+
+@property (nullable, nonatomic, readonly) DSDerivationPath * masterContactsDerivationPath;
 
 @property (nullable, nonatomic, weak) DSWallet * wallet;
 
@@ -91,17 +89,28 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 // all previously generated internal addresses
 @property (nonatomic, readonly) NSArray <NSString *> * internalAddresses;
 
--(NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
+// all the contacts for an account
+@property (nonatomic, readonly) NSArray <DSPotentialOneWayFriendship*> * _Nonnull contacts;
 
-+(DSAccount*)accountWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context;
+-(NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal error:(NSError**)error;
 
--(instancetype)initWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context ;
++(DSAccount*)accountWithAccountNumber:(uint32_t)accountNumber withDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context;
 
--(instancetype)initAsViewOnlyWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context ;
+-(instancetype)initWithAccountNumber:(uint32_t)accountNumber withDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context ;
+
+-(instancetype)initAsViewOnlyWithAccountNumber:(uint32_t)accountNumber withDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context ;
 
 -(void)removeDerivationPath:(DSDerivationPath*)derivationPath;
 
+-(DSIncomingFundsDerivationPath*)derivationPathForFriendshipWithIdentifier:(NSData*)friendshipIdentifier;
+
+-(void)removeIncomingDerivationPathForFriendshipWithIdentifier:(NSData*)friendshipIdentifier;
+
 -(void)addDerivationPath:(DSDerivationPath*)derivationPath;
+
+-(void)addIncomingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath forFriendshipIdentifier:(NSData*)friendshipIdentifier;
+
+-(void)addOutgoingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath forFriendshipIdentifier:(NSData*)friendshipIdentifier;
 
 -(void)addDerivationPathsFromArray:(NSArray<DSDerivationPath *> *)derivationPaths;
 
@@ -119,8 +128,14 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 // true if the address is external and is controlled by the wallet
 - (BOOL)containsExternalAddress:(NSString *)address;
 
+// true if the address is controlled by the wallet except for evolution addresses
+- (BOOL)baseDerivationPathsContainAddress:(NSString *)address;
+
 // the high level (hardened) derivation path containing the address
--(DSFundsDerivationPath*)derivationPathContainingAddress:(NSString *)address;
+- (DSDerivationPath* _Nullable)derivationPathContainingAddress:(NSString *)address;
+
+// the high level (hardened) derivation path containing the address that is external to the wallet, basically a friend's address
+- (DSIncomingFundsDerivationPath* _Nullable)externalDerivationPathContainingAddress:(NSString *)address;
 
 - (BOOL)transactionAddressAlreadySeenInOutputs:(NSString *)address;
 
@@ -129,6 +144,9 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 
 // returns an unsigned transaction that sends the specified amount from the wallet to the given address
 - (DSTransaction * _Nullable)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee;
+
+// returns an unsigned transaction that sends the specified amount from the wallet to the given address intended for conversion to L2 credits
+- (DSCreditFundingTransaction * _Nullable)creditFundingTransactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee;
 
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
 - (DSTransaction * _Nullable)transactionForAmounts:(NSArray *)amounts
@@ -139,6 +157,8 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 
 - (DSTransaction *)updateTransaction:(DSTransaction *)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee;
 
+- (DSTransaction *)updateTransaction:(DSTransaction*)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee shuffleOutputOrder:(BOOL)shuffleOutputOrder;
+
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
 - (void)signTransaction:(DSTransaction *)transaction withPrompt:(NSString * _Nullable)authprompt completion:(_Nonnull TransactionValidityCompletionBlock)completion;
 
@@ -146,7 +166,13 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 - (BOOL)canContainTransaction:(DSTransaction *)transaction;
 
 // adds a transaction to the account, or returns false if it isn't associated with the account
-- (BOOL)registerTransaction:(DSTransaction *)transaction;
+- (BOOL)registerTransaction:(DSTransaction *)transaction saveImmediately:(BOOL)saveImmediately;
+
+// this is used to save transactions atomically with the block, needs to be called before switching threads to save the block
+- (void)prepareForIncomingTransactionPersistenceForBlockSaveWithNumber:(uint32_t)blockNumber;
+
+// this is used to save transactions atomically with the block
+- (void)persistIncomingTransactionsAttributesForBlockSaveWithNumber:(uint32_t)blockNumber inContext:(NSManagedObjectContext*)context;
 
 // removes a transaction from the account along with any transactions that depend on its outputs, returns TRUE if a transaction was removed
 - (BOOL)removeTransaction:(DSTransaction *)transaction;

@@ -1,0 +1,99 @@
+{
+    "documents": {
+        "domain": {
+            "indices": [
+                {
+                    "properties": [
+                        { "nameHash": "asc" }
+                    ],
+                    "unique": true
+                },
+                {
+                    "properties": [
+                        { "normalizedParentDomainName": "asc" },
+                        { "normalizedLabel": "asc" }
+                    ]
+                },
+                {
+                    "properties": [
+                        { "records.dashIdentity": "asc" }
+                    ]
+                }
+            ],
+            "properties": {
+                "nameHash": {
+                    "type": "string",
+                    "minLength": 68,
+                    "maxLength": 68,
+                    "pattern": "^[0123456789abcdef]+$"
+                },
+                "label": {
+                    "type": "string",
+                    "pattern": "^((?!-)[a-zA-Z0-9-]{0,62}[a-zA-Z0-9])$",
+                    "minLength": 3,
+                    "maxLength": 40,
+                },
+                "normalizedLabel": {
+                    "type": "string",
+                    "pattern": "^((?!-)[a-z0-9-]{0,62}[a-z0-9])$",
+                    "minLength": 3,
+                    "maxLength": 40
+                },
+                "normalizedParentDomainName": {
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 40
+                },
+                "preorderSalt": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 68
+                },
+                "records": {
+                    "type": "object",
+                    "properties": {
+                        "dashIdentity": {
+                            "type": "string",
+                            "minLength": 42,
+                            "maxLength": 44,
+                            "pattern": "^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                }
+            },
+            "required": [
+                "nameHash",
+                "label",
+                "normalizedLabel",
+                "normalizedParentDomainName",
+                "preorderSalt",
+                "records"
+            ],
+            "additionalProperties": false
+        },
+        "preorder": {
+            "indices": [
+                {
+                    "properties": [
+                        { "saltedDomainHash": "asc" }
+                    ],
+                    "unique": true
+                }
+            ],
+            "properties": {
+                "saltedDomainHash": {
+                    "type": "string",
+                    "minLength": 64,
+                    "maxLength": 68,
+                    "pattern": "^[0123456789abcdef]+$"
+                }
+            },
+            "required": [
+                "saltedDomainHash"
+            ],
+            "additionalProperties": false
+        }
+    }
+}

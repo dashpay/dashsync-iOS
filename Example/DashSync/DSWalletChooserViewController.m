@@ -52,7 +52,7 @@
 
 -(void)configureCell:(DSWalletTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
     DSWallet * wallet = [self.chain.wallets objectAtIndex:indexPath.section];
-    cell.xPublicKeyLabel.text = wallet.uniqueID;
+    cell.xPublicKeyLabel.text = wallet.uniqueIDString;
 }
 
 -(NSIndexPath*)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath {

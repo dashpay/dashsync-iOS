@@ -99,7 +99,7 @@
             return @"it";
             break;
         default:
-            return nil;
+            return @"en"; //return english as default
             break;
     }
 }
@@ -120,6 +120,17 @@
         }
     }
     return _words;
+}
+
+- (NSArray *)wordsForLanguage:(DSBIP39Language)language
+{
+    NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
+    NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+    if (language == DSBIP39Language_Default) {
+        return [NSArray arrayWithContentsOfFile:[bundle pathForResource:WORDS ofType:@"plist"]];
+    } else {
+        return [NSArray arrayWithContentsOfFile:[bundle pathForResource:WORDS ofType:@"plist" inDirectory:nil forLocalization:[DSBIP39Mnemonic identifierForLanguage:language]]];
+    }
 }
 
 - (NSSet *)allWords
@@ -159,10 +170,21 @@
     return CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (CFArrayRef)a, CFSTR(" ")));
 }
 
+- (NSData * _Nullable)decodePhrase:(NSString *)phrase {
+    return [self decodePhrase:phrase inLanguage:self.defaultLanguage];
+}
+
 // phrase must be normalized
-- (NSData * _Nullable)decodePhrase:(NSString *)phrase
+- (NSData * _Nullable)decodePhrase:(NSString *)phrase inLanguage:(DSBIP39Language)language
 {
     NSParameterAssert(phrase);
+    
+    NSArray * words = nil;
+    if (language == self.defaultLanguage) {
+        words = self.words;
+    } else {
+        words = [self wordsForLanguage:language];
+    }
     
     NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(),
                                    (CFStringRef)[self normalizePhrase:phrase], CFSTR(" ")));
@@ -178,8 +200,8 @@
     }
 
     for (int i = 0; i < (a.count*11 + 7)/8; i++) {
-        x = (uint32_t)[self.words indexOfObject:a[i*8/11]];
-        y = (i*8/11 + 1 < a.count) ? (uint32_t)[self.words indexOfObject:a[i*8/11 + 1]] : 0;
+        x = (uint32_t)[words indexOfObject:a[i*8/11]];
+        y = (i*8/11 + 1 < a.count) ? (uint32_t)[words indexOfObject:a[i*8/11 + 1]] : 0;
 
         if (x == (uint32_t)NSNotFound || y == (uint32_t)NSNotFound) {
 #if DEBUG
@@ -224,8 +246,27 @@
 - (BOOL)phraseIsValid:(NSString *)phrase
 {
     NSParameterAssert(phrase);
-    return ([self decodePhrase:phrase] == nil) ? NO : YES;
+    BOOL phraseValid = ([self decodePhrase:phrase] == nil) ? NO : YES;
+    if (phraseValid) {
+        return TRUE;
+    } else {
+        for (NSNumber * languageNumber in [DSBIP39Mnemonic availableLanguages]) {
+            DSBIP39Language language = [languageNumber unsignedIntValue];
+            if (language == self.defaultLanguage) continue;
+            phraseValid |= [self phraseIsValid:phrase inLanguage:language];
+            if (phraseValid) return TRUE;
+        }
+    }
+    return FALSE;
 }
+
+// true if all words and checksum are valid, phrase must be normalized
+- (BOOL)phraseIsValid:(NSString *)phrase inLanguage:(DSBIP39Language)language
+{
+    NSParameterAssert(phrase);
+    return ([self decodePhrase:phrase inLanguage:language] == nil) ? NO : YES;
+}
+
 
 // minimally cleans up user input phrase, suitable for display/editing
 - (NSString *)cleanupPhrase:(NSString *)phrase

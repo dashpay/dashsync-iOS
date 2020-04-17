@@ -7,14 +7,15 @@
 
 #import "DSTransactionFactory.h"
 #import "DSCoinbaseTransaction.h"
-#import "DSBlockchainUserRegistrationTransaction.h"
-#import "DSBlockchainUserTopupTransaction.h"
-#import "DSBlockchainUserResetTransaction.h"
-#import "DSBlockchainUserCloseTransaction.h"
+#import "DSBlockchainIdentityRegistrationTransition.h"
+#import "DSBlockchainIdentityTopupTransition.h"
+#import "DSBlockchainIdentityUpdateTransition.h"
+#import "DSBlockchainIdentityCloseTransition.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "DSProviderUpdateServiceTransaction.h"
 #import "DSProviderUpdateRegistrarTransaction.h"
 #import "DSProviderUpdateRevocationTransaction.h"
+#import "DSCreditFundingTransaction.h"
 #import "DSTransition.h"
 #import "NSData+Dash.h"
 #import "NSData+Bitcoin.h"
@@ -29,21 +30,24 @@
 
 +(DSTransaction*)transactionWithMessage:(NSData*)message onChain:(DSChain*)chain {
     uint16_t version = [message UInt16AtOffset:0];
-    if (version < 3) return [DSTransaction transactionWithMessage:message onChain:chain]; //no special transactions yet
-    uint16_t type = [message UInt16AtOffset:2];
+    uint16_t type;
+    if (version < 3) {
+        type = DSTransactionType_Classic;
+    } else {
+        type = [message UInt16AtOffset:2];
+    }
     switch (type) {
         case DSTransactionType_Classic:
-            return [DSTransaction transactionWithMessage:message onChain:chain];
+        {
+            DSTransaction * transaction = [DSTransaction transactionWithMessage:message onChain:chain];
+            if ([transaction isCreditFundingTransaction]) {
+                //replace with credit funding transaction
+                transaction = [DSCreditFundingTransaction transactionWithMessage:message onChain:chain];
+            }
+            return transaction;
+        }
         case DSTransactionType_Coinbase:
             return [DSCoinbaseTransaction transactionWithMessage:message onChain:chain];
-        case DSTransactionType_SubscriptionRegistration:
-            return [DSBlockchainUserRegistrationTransaction transactionWithMessage:message onChain:chain];
-        case DSTransactionType_SubscriptionTopUp:
-            return [DSBlockchainUserTopupTransaction transactionWithMessage:message onChain:chain];
-        case DSTransactionType_SubscriptionCloseAccount:
-            return [DSBlockchainUserCloseTransaction transactionWithMessage:message onChain:chain];
-        case DSTransactionType_SubscriptionResetKey:
-            return [DSBlockchainUserResetTransaction transactionWithMessage:message onChain:chain];
         case DSTransactionType_ProviderRegistration:
             return [DSProviderRegistrationTransaction transactionWithMessage:message onChain:chain];
         case DSTransactionType_ProviderUpdateService:
@@ -52,8 +56,6 @@
             return [DSProviderUpdateRegistrarTransaction transactionWithMessage:message onChain:chain];
         case DSTransactionType_ProviderUpdateRevocation:
             return [DSProviderUpdateRevocationTransaction transactionWithMessage:message onChain:chain];
-        case DSTransactionType_Transition:
-            return [DSTransition transactionWithMessage:message onChain:chain];
         default:
             return [DSTransaction transactionWithMessage:message onChain:chain]; //we won't be able to check the payload, but try best to support it.
     }

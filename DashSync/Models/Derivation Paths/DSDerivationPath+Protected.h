@@ -25,7 +25,7 @@
 #import "NSString+Bitcoin.h"
 #import "NSString+Dash.h"
 #import "NSData+Bitcoin.h"
-#import "DSBlockchainUser.h"
+#import "DSBlockchainIdentity.h"
 #import "DSBLSKey.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -35,7 +35,18 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL addressesLoaded;
 @property (nonatomic, strong) NSManagedObjectContext * moc;
 @property (nonatomic, strong) NSMutableSet *mAllAddresses, *mUsedAddresses;
+@property (nonatomic, strong) DSKey * extendedPublicKey;//master public key used to generate wallet addresses
+@property (nonatomic, strong) NSString * standaloneExtendedPublicKeyUniqueID;
 @property (nonatomic, weak) DSWallet * wallet;
+@property (nonatomic, nullable, readonly) NSString * standaloneExtendedPublicKeyLocationString;
+@property (nonatomic, readonly) DSDerivationPathEntity * derivationPathEntity;
+
+-(BOOL)isHardenedAtPosition:(NSUInteger)position;
+
+- (DSKey * _Nullable)generateExtendedECDSAPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString*)walletUniqueId storePrivateKey:(BOOL)storePrivateKey;
+
+- (DSKey * _Nullable)generateExtendedBLSPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString*)walletUniqueId storePrivateKey:(BOOL)storePrivateKey;
+
 
 @end
 

@@ -6,15 +6,17 @@
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+#import "DSFetchedResultsTableViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSContactsModel;
+@class DSChainManager;
+@class DSBlockchainIdentity;
 
-@interface DSContactsViewController : UITableViewController
+@interface DSContactsViewController : DSFetchedResultsTableViewController
 
-@property (strong, nonatomic) DSContactsModel *model;
+@property (nonatomic,strong) DSChainManager *chainManager;
+@property (strong, nonatomic) DSBlockchainIdentity *blockchainIdentity;
 
 @end
 

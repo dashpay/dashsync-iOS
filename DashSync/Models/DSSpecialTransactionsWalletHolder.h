@@ -8,7 +8,8 @@
 #import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
 
-@class DSWallet,DSTransaction,DSBlockchainUserRegistrationTransaction,DSBlockchainUserResetTransaction;
+
+@class DSWallet, DSTransaction, DSCreditFundingTransaction, DSBlockchainIdentityRegistrationTransition, DSBlockchainIdentityUpdateTransition;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -18,21 +19,29 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(instancetype)initWithWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
 
--(DSTransaction*)transactionForHash:(UInt256)transactionHash;
+-(DSTransaction* _Nullable)transactionForHash:(UInt256)transactionHash;
 
-- (void)registerTransaction:(DSTransaction*)transaction;
+- (BOOL)registerTransaction:(DSTransaction*)transaction saveImmediately:(BOOL)saveImmediately;
 
 - (void)removeAllTransactions;
 
-// This gets a blockchain user registration transaction that has a specific public key hash (will change to BLS pub key)
-- (DSBlockchainUserRegistrationTransaction*)blockchainUserRegistrationTransactionForPublicKeyHash:(UInt160)publicKeyHash;
+-(DSCreditFundingTransaction*)creditFundingTransactionForBlockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId;
 
-// This gets a blockchain user reset transaction that has a specific public key hash (will change to BLS pub key)
-- (DSBlockchainUserResetTransaction*)blockchainUserResetTransactionForPublicKeyHash:(UInt160)publicKeyHash;
+//// This gets a blockchain user registration transaction that has a specific public key hash (will change to BLS pub key)
+//- (DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransactionForPublicKeyHash:(UInt160)publicKeyHash;
+//
+//// This gets a blockchain user reset transaction that has a specific public key hash (will change to BLS pub key)
+//- (DSBlockchainIdentityUpdateTransition*)blockchainIdentityResetTransactionForPublicKeyHash:(UInt160)publicKeyHash;
+//
+//- (NSArray<DSTransaction*>*)identityTransitionsForRegistrationTransitionHash:(UInt256)blockchainIdentityRegistrationTransactionHash;
+//
+//- (UInt256)lastSubscriptionTransactionHashForRegistrationTransactionHash:(UInt256)blockchainIdentityRegistrationTransactionHash;
 
-- (NSArray*)subscriptionTransactionsForRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash;
+// this is used to save transactions atomically with the block, needs to be called before switching threads to save the block
+- (void)prepareForIncomingTransactionPersistenceForBlockSaveWithNumber:(uint32_t)blockNumber;
 
-- (UInt256)lastSubscriptionTransactionHashForRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash;
+// this is used to save transactions atomically with the block
+- (void)persistIncomingTransactionsAttributesForBlockSaveWithNumber:(uint32_t)blockNumber inContext:(NSManagedObjectContext*)context;
 
 @end
 

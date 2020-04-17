@@ -8,6 +8,7 @@
 
 #import "DSDAPIGetAddressSummaryViewController.h"
 #import "BRBubbleView.h"
+
 @interface DSDAPIGetAddressSummaryViewController ()
 @property (strong, nonatomic) IBOutlet UITextField *addressTextField;
 - (IBAction)checkAddress:(id)sender;
@@ -29,7 +30,7 @@
 - (IBAction)checkAddress:(id)sender {
     NSString * address = self.addressTextField.text;
     if ([address isValidDashAddressOnChain:self.chainManager.chain]) {
-        [self.chainManager.DAPIClient getAddressSummary:address success:^(NSDictionary * _Nonnull addressSummary) {
+        [self.chainManager.DAPIClient.DAPINetworkService getAddressSummary:@[address] noTxList:NO from:@(0) to:@(10) fromHeight:nil toHeight:nil success:^(NSDictionary * _Nonnull addressSummary) {
             NSLog(@"%@", addressSummary);
         } failure:^(NSError * _Nonnull error) {
             [self.view addSubview:[[[BRBubbleView viewWithText:[NSString stringWithFormat:@"%@",error.localizedDescription]

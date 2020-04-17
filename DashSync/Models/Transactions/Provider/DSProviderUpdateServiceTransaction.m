@@ -118,7 +118,7 @@
 
 -(BOOL)checkPayloadSignature {
     NSAssert(self.providerRegistrationTransaction, @"We need a provider registration transaction");
-    return [self checkPayloadSignature:[DSBLSKey blsKeyWithPublicKey:self.providerRegistrationTransaction.operatorKey onChain:self.chain]];
+    return [self checkPayloadSignature:[DSBLSKey keyWithPublicKey:self.providerRegistrationTransaction.operatorKey]];
 }
 
 -(BOOL)checkPayloadSignature:(DSBLSKey*)publicKey {
@@ -129,7 +129,7 @@
     self.payloadSignature = [NSData dataWithUInt768:[privateKey signData:[self payloadDataForHash]]];
 }
 
--(NSString*)payoutAddress {
+-(NSString* _Nullable)payoutAddress {
     if (self.scriptPayout.length == 0) {
         return nil; //no payout address
     } else {

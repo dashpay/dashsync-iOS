@@ -33,24 +33,33 @@
 
 // create objects
 + (instancetype)managedObject;
++ (instancetype)managedObjectInContext:(NSManagedObjectContext *)context;
 + (NSArray *)managedObjectArrayWithLength:(NSUInteger)length;
 
 // fetch existing objects
 + (NSArray *)allObjects;
++ (NSArray *)allObjectsWithPrefetch:(NSArray<NSString*> *) prefetchArray;
 + (NSArray *)objectsMatching:(NSString *)predicateFormat, ...;
 + (instancetype)anyObjectMatching:(NSString *)predicateFormat, ...;
++ (instancetype)anyObjectMatchingInContext:(NSManagedObjectContext *)context withPredicate:(NSString *)predicateFormat, ...;
 + (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args;
++ (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext*)context;
 + (instancetype)anyObjectMatching:(NSString *)predicateFormat arguments:(va_list)args;
++ (instancetype)anyObjectMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext*)context;
 + (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending;
 + (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending offset:(NSUInteger)offset limit:(NSUInteger)lim;
 + (NSArray *)fetchObjects:(NSFetchRequest *)request;
-+ (NSArray *)fetchObjectsInContext:(NSFetchRequest *)request;
++ (NSArray *)fetchObjects:(NSFetchRequest *)request inContext:(NSManagedObjectContext*)context;
 
 // count existing objects
 + (NSUInteger)countAllObjects;
 + (NSUInteger)countObjectsMatching:(NSString *)predicateFormat, ...;
 + (NSUInteger)countObjectsMatching:(NSString *)predicateFormat arguments:(va_list)args;
 + (NSUInteger)countObjects:(NSFetchRequest *)request;
+
++ (NSUInteger)countObjectsMatchingInContext:(NSManagedObjectContext *)context withPredicate:(NSString *)predicateFormat, ...;
++ (NSUInteger)countObjectsMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext *)context;
++ (NSUInteger)countObjects:(NSFetchRequest *)request inContext:(NSManagedObjectContext *)context;
 
 // delete objects
 + (NSUInteger)deleteAllObjects;

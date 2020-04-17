@@ -32,7 +32,6 @@
 @implementation DSChainEntity
 
 - (instancetype)setAttributesFromChain:(DSChain *)chain {
-    self.standardPort = chain.standardPort;
     self.type = chain.chainType;
     self.totalMasternodeCount = chain.totalMasternodeCount;
     self.totalGovernanceObjectsCount = chain.totalGovernanceObjectsCount;
@@ -41,16 +40,12 @@
 
 - (DSChain *)chain {
     __block DSChainType type;
-    __block uint32_t port;
-    __block uint32_t dapiPort;
     __block NSString * devnetIdentifier;
     __block NSData * data;
     __block uint32_t totalMasternodeCount;
     __block uint32_t totalGovernanceObjectsCount;
     __block UInt256 baseBlockHash;
     [self.managedObjectContext performBlockAndWait:^{
-        port = self.standardPort;
-        dapiPort = self.standardDapiPort;
         type = self.type;
         devnetIdentifier = self.devnetIdentifier;
         data = self.checkpoints;
@@ -67,10 +62,11 @@
             return [DSChain devnetWithIdentifier:devnetIdentifier];
         } else {
             NSArray * checkpointArray = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-            return [DSChain setUpDevnetWithIdentifier:devnetIdentifier withCheckpoints:checkpointArray withDefaultPort:port withDefaultDapiPort:dapiPort];
+            return [DSChain recoverKnownDevnetWithIdentifier:devnetIdentifier withCheckpoints:checkpointArray];
         }
     }
-    return nil;
+    NSAssert(FALSE, @"Unknown DSChainType");
+    return [DSChain mainnet];
 }
 
 + (DSChainEntity*)chainEntityForType:(DSChainType)type devnetIdentifier:(NSString*)devnetIdentifier checkpoints:(NSArray*)checkpoints {
@@ -91,20 +87,6 @@
     if (checkpoints) {
         NSData * archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints];
         chainEntity.checkpoints = archivedCheckpoints;
-    }
-    if (type == DSChainType_MainNet) {
-        chainEntity.standardPort = MAINNET_STANDARD_PORT;
-    } else if (type == DSChainType_TestNet) {
-        chainEntity.standardPort = TESTNET_STANDARD_PORT;
-    } else {
-        chainEntity.standardPort = DEVNET_STANDARD_PORT;
-    }
-    if (type == DSChainType_MainNet) {
-        chainEntity.standardDapiPort = MAINNET_DAPI_STANDARD_PORT;
-    } else if (type == DSChainType_TestNet) {
-        chainEntity.standardDapiPort = TESTNET_DAPI_STANDARD_PORT;
-    } else {
-        chainEntity.standardDapiPort = DEVNET_DAPI_STANDARD_PORT;
     }
     return chainEntity;
 }

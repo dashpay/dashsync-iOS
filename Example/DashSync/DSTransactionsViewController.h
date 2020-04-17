@@ -9,6 +9,8 @@
 #import <UIKit/UIKit.h>
 #import <DashSync/DashSync.h>
 
+extern NSString *dateFormat(NSString *_template);
+
 @interface DSTransactionsViewController : UITableViewController <NSFetchedResultsControllerDelegate>
 
 @property (nonatomic,strong) DSChainManager * chainManager;

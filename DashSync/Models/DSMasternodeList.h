@@ -9,6 +9,9 @@
 #import "BigIntTypes.h"
 #import "DSQuorumEntry.h"
 
+#define MASTERNODE_LIST_ADDED_NODES @"MASTERNODE_LIST_ADDED_NODES"
+#define MASTERNODE_LIST_REMOVED_NODES @"MASTERNODE_LIST_REMOVED_NODES"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class DSSimplifiedMasternodeEntry,DSChain,DSQuorumEntry;
@@ -56,11 +59,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(NSDictionary*)compareWithPrevious:(DSMasternodeList*)other;
 
+-(NSDictionary*)listOfChangedNodesComparedTo:(DSMasternodeList*)previous;
+
 -(NSDictionary*)compare:(DSMasternodeList*)other usingOurString:(NSString*)ours usingTheirString:(NSString*)theirs;
 
--(DSQuorumEntry*)quorumEntryForInstantSendRequestID:(UInt256)requestID;
+-(DSQuorumEntry* _Nullable)quorumEntryForInstantSendRequestID:(UInt256)requestID;
 
--(DSQuorumEntry*)quorumEntryForChainLockRequestID:(UInt256)requestID;
+-(DSQuorumEntry* _Nullable)quorumEntryForChainLockRequestID:(UInt256)requestID;
 
 -(NSArray<DSQuorumEntry*>*)quorumEntriesRankedForInstantSendRequestID:(UInt256)requestID;
 

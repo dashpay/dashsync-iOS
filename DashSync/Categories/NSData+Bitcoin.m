@@ -519,6 +519,7 @@ void MD5(void *md, const void *data, size_t len)
 void HMAC(void *md, void (*hash)(void *, const void *, size_t), size_t hlen, const void *key, size_t klen,
           const void *data, size_t dlen)
 {
+    //blen is block size length
     size_t blen = (hlen > 32) ? 128 : 64;
     uint8_t k[hlen], kipad[blen + dlen], kopad[blen + hlen];
     
@@ -778,7 +779,7 @@ size_t chacha20Poly1305AEADDecrypt(void *out, size_t outLen, const void *key32, 
 }
 
 // helper function for serializing BIP32 master public/private keys to standard export format
-NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, UInt256 chain, NSData *key,BOOL mainnet)
+NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, UInt256 chain, NSData *key, BOOL mainnet)
 {
     NSMutableData *d = [NSMutableData secureDataWithCapacity:14 + key.length + sizeof(chain)];
     
@@ -1189,8 +1190,8 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
 
 - (DSUTXO)transactionOutpoint
 {
-    if (self.length < sizeof(DSUTXO)) return DSUTXO_ZERO;
-    return *(DSUTXO *)(self.bytes);
+    if (self.length < 36) return DSUTXO_ZERO;
+    return (DSUTXO) { .hash = [self UInt256], .n = *(uint32_t *)(self.bytes + 32) };
 }
 
 - (DSLLMQ)llmq
@@ -1318,6 +1319,11 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     return [NSString base58WithData:self];
 }
 
+- (NSString *)base64String
+{
+    return [self base64EncodedStringWithOptions:0];
+}
+
 - (NSString *)shortHexString
 {
     NSString * hexData = [NSString hexWithData:self];
@@ -1331,6 +1337,11 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
 - (NSString *)hexString
 {
     return [NSString hexWithData:self];
+}
+
+- (NSString *)binaryString
+{
+    return [NSString binaryWithData:self];
 }
 
 +(NSData*)opReturnScript {
@@ -1373,7 +1384,12 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     return [level objectAtIndex:0];
 }
 
+- (BOOL)isSizedForAddress {
+    return (self.length == 20);
+}
+
 - (NSString*)addressFromHash160DataForChain:(DSChain*)chain {
+    NSAssert(self.length == 20, @"The length of this data should be 20 bytes");
     if (self.length != 20) return nil;
     NSMutableData *d = [NSMutableData data];
     uint8_t v;

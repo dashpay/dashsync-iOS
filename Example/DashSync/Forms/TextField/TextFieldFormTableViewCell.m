@@ -36,8 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
     }];
     
     [self mvvm_observe:@"cellModel.placeholder" with:^(typeof(self) self, NSString * value) {
-        NSDictionary *attributes = @{NSForegroundColorAttributeName : [UIColor colorWithWhite:1.0 alpha:0.5]};
-        self.textField.attributedPlaceholder = [[NSAttributedString alloc] initWithString:value ?: @"" attributes:attributes];
+        self.textField.placeholder = value;
     }];
     
     [self mvvm_observe:@"cellModel.text" with:^(typeof(self) self, NSString * value) {
@@ -56,7 +55,9 @@ NS_ASSUME_NONNULL_BEGIN
     self.textField.secureTextEntry = cellModel.secureTextEntry;
 }
 
-- (void)textFieldBecomeFirstResponder {
+#pragma mark - TextInputFormTableViewCell
+
+- (void)textInputBecomeFirstResponder {
     [self.textField becomeFirstResponder];
 }
 
@@ -92,8 +93,14 @@ NS_ASSUME_NONNULL_BEGIN
     else if (textField.returnKeyType == UIReturnKeyDone) {
         [self endEditing:YES];
     }
-
+    
     return YES;
+}
+
+- (void)textFieldDidEndEditing:(UITextField *)textField reason:(UITextFieldDidEndEditingReason)reason {
+    if (reason == UITextFieldDidEndEditingReasonCommitted && self.cellModel.didReturnValueBlock) {
+        self.cellModel.didReturnValueBlock(self.cellModel);
+    }
 }
 
 @end

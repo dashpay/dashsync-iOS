@@ -13,10 +13,6 @@
 #import "DSProviderUpdateServiceTransactionEntity+CoreDataClass.h"
 #import "DSProviderUpdateRegistrarTransactionEntity+CoreDataClass.h"
 #import "DSProviderUpdateRevocationTransactionEntity+CoreDataClass.h"
-#import "DSBlockchainUserResetTransactionEntity+CoreDataClass.h"
-#import "DSBlockchainUserCloseTransactionEntity+CoreDataClass.h"
-#import "DSBlockchainUserTopupTransactionEntity+CoreDataClass.h"
-#import "DSTransitionEntity+CoreDataClass.h"
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSTxInputEntity+CoreDataClass.h"
@@ -29,11 +25,7 @@
 #import "DSProviderUpdateServiceTransaction.h"
 #import "DSProviderUpdateRegistrarTransaction.h"
 #import "DSProviderUpdateRevocationTransaction.h"
-#import "DSBlockchainUserRegistrationTransaction.h"
-#import "DSBlockchainUserTopupTransaction.h"
-#import "DSBlockchainUserCloseTransaction.h"
-#import "DSBlockchainUserResetTransaction.h"
-#import "DSTransition.h"
+#import "DSCreditFundingTransaction.h"
 #import "DSChain.h"
 
 @interface DSSpecialTransactionsWalletHolder()
@@ -43,11 +35,9 @@
 @property (nonatomic,strong) NSMutableDictionary * providerUpdateServiceTransactions;
 @property (nonatomic,strong) NSMutableDictionary * providerUpdateRegistrarTransactions;
 @property (nonatomic,strong) NSMutableDictionary * providerUpdateRevocationTransactions;
-@property (nonatomic,strong) NSMutableDictionary * blockchainUserRegistrationTransactions;
-@property (nonatomic,strong) NSMutableDictionary * blockchainUserTopupTransactions;
-@property (nonatomic,strong) NSMutableDictionary * blockchainUserResetTransactions;
-@property (nonatomic,strong) NSMutableDictionary * blockchainUserCloseTransactions;
-@property (nonatomic,strong) NSMutableDictionary * transitions;
+@property (nonatomic,strong) NSMutableDictionary * creditFundingTransactions;
+@property (nonatomic,strong) NSMutableArray <DSTransaction*> *transactionsToSave;
+@property (nonatomic,strong) NSMutableDictionary <NSNumber*,NSArray<DSTransaction*>*> *transactionsToSaveInBlockSave;
 
 @property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
 
@@ -62,18 +52,16 @@
     self.providerUpdateServiceTransactions = [NSMutableDictionary dictionary];
     self.providerUpdateRegistrarTransactions = [NSMutableDictionary dictionary];
     self.providerUpdateRevocationTransactions = [NSMutableDictionary dictionary];
-    self.blockchainUserRegistrationTransactions = [NSMutableDictionary dictionary];
-    self.blockchainUserTopupTransactions = [NSMutableDictionary dictionary];
-    self.blockchainUserResetTransactions = [NSMutableDictionary dictionary];
-    self.blockchainUserCloseTransactions = [NSMutableDictionary dictionary];
-    self.transitions = [NSMutableDictionary dictionary];
+    self.creditFundingTransactions = [NSMutableDictionary dictionary];
     self.managedObjectContext = managedObjectContext?managedObjectContext:[NSManagedObject context];
     self.wallet = wallet;
+    self.transactionsToSave = [NSMutableArray array];
+    self.transactionsToSaveInBlockSave = [NSMutableDictionary dictionary];
     return self;
 }
 
 -(NSArray<NSMutableDictionary*>*)transactionDictionaries {
-    return @[self.providerRegistrationTransactions,self.providerUpdateServiceTransactions,self.providerUpdateRegistrarTransactions,self.providerUpdateRevocationTransactions,self.blockchainUserRegistrationTransactions,self.blockchainUserCloseTransactions,self.blockchainUserResetTransactions,self.blockchainUserTopupTransactions];
+    return @[self.providerRegistrationTransactions,self.providerUpdateServiceTransactions,self.providerUpdateRegistrarTransactions,self.providerUpdateRevocationTransactions,self.creditFundingTransactions];
 }
 
 -(NSUInteger)allTransactionsCount {
@@ -119,30 +107,66 @@
     }
 }
 
-- (void)registerTransaction:(DSTransaction*)transaction {
+
+-(void)prepareForIncomingTransactionPersistenceForBlockSaveWithNumber:(uint32_t)blockNumber {
+    [self.transactionsToSaveInBlockSave setObject:[self.transactionsToSave copy] forKey:@(blockNumber)];
+    [self.transactionsToSave removeAllObjects];
+}
+
+-(void)persistIncomingTransactionsAttributesForBlockSaveWithNumber:(uint32_t)blockNumber inContext:(NSManagedObjectContext*)context {
+    for (DSTransaction * transaction in self.transactionsToSaveInBlockSave[@(blockNumber)]) {
+        [transaction setInitialPersistentAttributesInContext:context];
+    }
+    [self.transactionsToSaveInBlockSave removeObjectForKey:@(blockNumber)];
+}
+
+- (BOOL)registerTransaction:(DSTransaction*)transaction saveImmediately:(BOOL)saveImmediately {
+    BOOL added = FALSE;
     if ([transaction isMemberOfClass:[DSProviderRegistrationTransaction class]]) {
-        [self.providerRegistrationTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+        if (![self.providerRegistrationTransactions objectForKey:uint256_data(transaction.txHash)]) {
+            [self.providerRegistrationTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+            added = TRUE;
+        }
     } else if ([transaction isMemberOfClass:[DSProviderUpdateServiceTransaction class]]) {
-        [self.providerUpdateServiceTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+        if (![self.providerUpdateServiceTransactions objectForKey:uint256_data(transaction.txHash)]) {
+            [self.providerUpdateServiceTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+            added = TRUE;
+        }
     } else if ([transaction isMemberOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
+        if (![self.providerUpdateRegistrarTransactions objectForKey:uint256_data(transaction.txHash)]) {
         [self.providerUpdateRegistrarTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+            added = TRUE;
+        }
     } else if ([transaction isMemberOfClass:[DSProviderUpdateRevocationTransaction class]]) {
+        if (![self.providerUpdateRevocationTransactions objectForKey:uint256_data(transaction.txHash)]) {
         [self.providerUpdateRevocationTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
-    } else if ([transaction isMemberOfClass:[DSBlockchainUserRegistrationTransaction class]]) {
-        [self.blockchainUserRegistrationTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
-    } else if ([transaction isMemberOfClass:[DSBlockchainUserResetTransaction class]]) {
-        [self.blockchainUserResetTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
-    } else if ([transaction isMemberOfClass:[DSBlockchainUserCloseTransaction class]]) {
-        [self.blockchainUserCloseTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
-    } else if ([transaction isMemberOfClass:[DSBlockchainUserTopupTransaction class]]) {
-        [self.blockchainUserTopupTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
-    } else if ([transaction isMemberOfClass:[DSTransition class]]) {
-        [self.transitions setObject:transaction forKey:uint256_data(transaction.txHash)];
+            added = TRUE;
+        }
+    } else if ([transaction isMemberOfClass:[DSProviderUpdateRevocationTransaction class]]) {
+           if (![self.providerUpdateRevocationTransactions objectForKey:uint256_data(transaction.txHash)]) {
+           [self.providerUpdateRevocationTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+               added = TRUE;
+           }
+    } else if ([transaction isMemberOfClass:[DSCreditFundingTransaction class]]) {
+          DSCreditFundingTransaction * creditFundingTransaction = (DSCreditFundingTransaction *)transaction;
+          if (![self.creditFundingTransactions objectForKey:uint256_data(creditFundingTransaction.creditBurnIdentityIdentifier)]) {
+          [self.creditFundingTransactions setObject:transaction forKey:uint256_data(creditFundingTransaction.creditBurnIdentityIdentifier)];
+              added = TRUE;
+          }
     } else {
         NSAssert(FALSE,@"unknown transaction type being registered");
-        return;
+        return NO;
     }
-    [transaction saveInitial];
+    if (added) {
+        if (saveImmediately) {
+            [transaction saveInitial];
+        } else {
+            [self.transactionsToSave addObject:transaction];
+        }
+        return YES;
+    } else {
+        return NO;
+    }
 }
 
 -(void)loadTransactions {
@@ -152,13 +176,18 @@
         [DSSpecialTransactionEntity setContext:self.managedObjectContext];
         [DSTxInputEntity setContext:self.managedObjectContext];
         [DSTxOutputEntity setContext:self.managedObjectContext];
+        [DSAddressEntity setContext:self.managedObjectContext];
         [DSDerivationPathEntity setContext:self.managedObjectContext];
         NSMutableArray * derivationPathEntities = [NSMutableArray array];
         for (DSDerivationPath * derivationPath in [self derivationPaths]) {
             if (![derivationPath hasExtendedPublicKey]) continue;
             DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:derivationPath];
+            
+            //DSDLog(@"addresses for derivation path entity %@",derivationPathEntity.addresses);
             [derivationPathEntities addObject:derivationPathEntity];
         }
+        NSArray<DSSpecialTransactionEntity *>* specialTransactionEntitiesA = [DSSpecialTransactionEntity allObjectsWithPrefetch:@[@"addresses"]];
+        NSLog(@"%@",[specialTransactionEntitiesA firstObject].addresses.firstObject);
         NSArray<DSSpecialTransactionEntity *>* specialTransactionEntities = [DSSpecialTransactionEntity objectsMatching:@"(ANY addresses.derivationPath IN %@)",derivationPathEntities];
         for (DSSpecialTransactionEntity *e in specialTransactionEntities) {
                 DSTransaction *transaction = [e transactionForChain:self.wallet.chain];
@@ -170,10 +199,9 @@
                     [self.providerUpdateServiceTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
                 } else if ([transaction isMemberOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
                     [self.providerUpdateRegistrarTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
-                } else if ([transaction isMemberOfClass:[DSBlockchainUserRegistrationTransaction class]]) {
-                    [self.blockchainUserRegistrationTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
-                } else if ([transaction isMemberOfClass:[DSBlockchainUserResetTransaction class]]) {
-                    [self.blockchainUserResetTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+                } else if ([transaction isMemberOfClass:[DSCreditFundingTransaction class]]) {
+                    DSCreditFundingTransaction * creditFundingTransaction = (DSCreditFundingTransaction *)transaction;
+                    [self.creditFundingTransactions setObject:transaction forKey:uint256_data(creditFundingTransaction.creditBurnIdentityIdentifier)];
                 } else { //the other ones don't have addresses in payload
                     NSAssert(FALSE, @"Unknown special transaction type");
                 }
@@ -205,124 +233,129 @@
             }
         }
         
-        NSArray * blockchainUserRegistrationTransactions = [self.blockchainUserRegistrationTransactions allValues];
-        
-        for (DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction in blockchainUserRegistrationTransactions) {
-            NSArray<DSBlockchainUserResetTransactionEntity *>* blockchainUserResetTransactions = [DSBlockchainUserResetTransactionEntity objectsMatching:@"registrationTransactionHash == %@",uint256_data(blockchainUserRegistrationTransaction.txHash)];
-            for (DSBlockchainUserResetTransactionEntity *e in blockchainUserResetTransactions) {
-                DSTransaction *transaction = [e transactionForChain:self.wallet.chain];
-                
-                if (! transaction) continue;
-                [self.blockchainUserResetTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
-            }
-            
-            NSArray<DSBlockchainUserCloseTransactionEntity *>* blockchainUserCloseTransactions = [DSBlockchainUserCloseTransactionEntity objectsMatching:@"registrationTransactionHash == %@",uint256_data(blockchainUserRegistrationTransaction.txHash)];
-            for (DSBlockchainUserCloseTransactionEntity *e in blockchainUserCloseTransactions) {
-                DSTransaction *transaction = [e transactionForChain:self.wallet.chain];
-                
-                if (! transaction) continue;
-                [self.blockchainUserCloseTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
-            }
-            
-            NSArray<DSBlockchainUserTopupTransactionEntity *>* blockchainUserTopupTransactions = [DSBlockchainUserTopupTransactionEntity objectsMatching:@"registrationTransactionHash == %@",uint256_data(blockchainUserRegistrationTransaction.txHash)];
-            for (DSBlockchainUserTopupTransactionEntity *e in blockchainUserTopupTransactions) {
-                DSTransaction *transaction = [e transactionForChain:self.wallet.chain];
-                
-                if (! transaction) continue;
-                [self.blockchainUserTopupTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
-            }
-            
-            NSArray<DSTransition *>* transitions = [DSTransitionEntity objectsMatching:@"registrationTransactionHash == %@",uint256_data(blockchainUserRegistrationTransaction.txHash)];
-            for (DSTransitionEntity *e in transitions) {
-                DSTransaction *transaction = [e transactionForChain:self.wallet.chain];
-                
-                if (! transaction) continue;
-                [self.transitions setObject:transaction forKey:uint256_data(transaction.txHash)];
-            }
-        }
+//        NSArray * blockchainIdentityRegistrationTransactions = [self.blockchainIdentityRegistrationTransactions allValues];
+//
+//        for (DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction in blockchainIdentityRegistrationTransactions) {
+//            NSArray<DSBlockchainIdentityResetTransitionEntity *>* blockchainIdentityResetTransactions = [DSBlockchainIdentityResetTransactionEntity objectsMatching:@"registrationTransactionHash == %@",uint256_data(blockchainIdentityRegistrationTransaction.txHash)];
+//            for (DSBlockchainIdentityResetTransitionEntity *e in blockchainIdentityResetTransactions) {
+//                DSTransaction *transaction = [e transactionForChain:self.wallet.chain];
+//
+//                if (! transaction) continue;
+//                [self.blockchainIdentityResetTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+//            }
+//
+//            NSArray<DSBlockchainIdentityCloseTransitionEntity *>* blockchainIdentityCloseTransactions = [DSBlockchainIdentityCloseTransactionEntity objectsMatching:@"registrationTransactionHash == %@",uint256_data(blockchainIdentityRegistrationTransaction.txHash)];
+//            for (DSBlockchainIdentityCloseTransitionEntity *e in blockchainIdentityCloseTransactions) {
+//                DSTransaction *transaction = [e transactionForChain:self.wallet.chain];
+//
+//                if (! transaction) continue;
+//                [self.blockchainIdentityCloseTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+//            }
+//
+//            NSArray<DSBlockchainIdentityTopupTransitionEntity *>* blockchainIdentityTopupTransactions = [DSBlockchainIdentityTopupTransitionEntity objectsMatching:@"registrationTransactionHash == %@",uint256_data(blockchainIdentityRegistrationTransaction.txHash)];
+//            for (DSBlockchainIdentityTopupTransitionEntity *e in blockchainIdentityTopupTransactions) {
+//                DSTransaction *transaction = [e transactionForChain:self.wallet.chain];
+//
+//                if (! transaction) continue;
+//                [self.blockchainIdentityTopupTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+//            }
+//            NSArray<DSTransition *>* transitions = [DSTransitionEntity objectsMatching:@"registrationTransactionHash == %@",uint256_data(blockchainIdentityRegistrationTransaction.txHash)];
+//            for (DSTransitionEntity *e in transitions) {
+//                DSTransaction *transaction = [e transactionForChain:self.wallet.chain];
+//
+//                if (! transaction) continue;
+//                [self.transitions setObject:transaction forKey:uint256_data(transaction.txHash)];
+//            }
+//        }
     }];
 }
 
-// MARK: == Blockchain Users Transaction Retrieval
-
-- (DSBlockchainUserRegistrationTransaction*)blockchainUserRegistrationTransactionForPublicKeyHash:(UInt160)publicKeyHash {
-    for (DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction in [self.blockchainUserRegistrationTransactions allValues]) {
-        if (uint160_eq(blockchainUserRegistrationTransaction.pubkeyHash, publicKeyHash)) {
-            return blockchainUserRegistrationTransaction;
-        }
-    }
-    return nil;
+-(DSCreditFundingTransaction*)creditFundingTransactionForBlockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId {
+    return [self.creditFundingTransactions objectForKey:uint256_data(blockchainIdentityUniqueId)];
 }
 
-- (DSBlockchainUserResetTransaction*)blockchainUserResetTransactionForPublicKeyHash:(UInt160)publicKeyHash {
-    for (DSBlockchainUserResetTransaction * blockchainUserResetTransaction in [self.blockchainUserResetTransactions allValues]) {
-        if (uint160_eq(blockchainUserResetTransaction.replacementPublicKeyHash, publicKeyHash)) {
-            return blockchainUserResetTransaction;
-        }
-    }
-    return nil;
-}
-
-- (NSArray*)subscriptionTransactionsForRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash {
-    NSMutableArray * subscriptionTransactions = [NSMutableArray array];
-    for (DSBlockchainUserTopupTransaction * blockchainUserTopupTransaction in [self.blockchainUserTopupTransactions allValues]) {
-        if (uint256_eq(blockchainUserTopupTransaction.registrationTransactionHash, blockchainUserRegistrationTransactionHash)) {
-            [subscriptionTransactions addObject:blockchainUserTopupTransaction];
-        }
-    }
-    for (DSBlockchainUserResetTransaction * blockchainUserResetTransaction in [self.blockchainUserResetTransactions allValues]) {
-        if (uint256_eq(blockchainUserResetTransaction.registrationTransactionHash, blockchainUserRegistrationTransactionHash)) {
-            [subscriptionTransactions addObject:blockchainUserResetTransaction];
-        }
-    }
-    for (DSBlockchainUserCloseTransaction * blockchainUserCloseTransaction in [self.blockchainUserCloseTransactions allValues]) {
-        if (uint256_eq(blockchainUserCloseTransaction.registrationTransactionHash, blockchainUserRegistrationTransactionHash)) {
-            [subscriptionTransactions addObject:blockchainUserCloseTransaction];
-        }
-    }
-    for (DSTransition * transition in [self.transitions allValues]) {
-        if (uint256_eq(transition.registrationTransactionHash, blockchainUserRegistrationTransactionHash)) {
-            [subscriptionTransactions addObject:transition];
-        }
-    }
-    return [subscriptionTransactions copy];
-}
-
--(UInt256)lastSubscriptionTransactionHashForRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash {
-    NSMutableOrderedSet * subscriptionTransactions = [NSMutableOrderedSet orderedSetWithArray:[self subscriptionTransactionsForRegistrationTransactionHash:blockchainUserRegistrationTransactionHash]];
-    UInt256 lastSubscriptionTransactionHash = blockchainUserRegistrationTransactionHash;
-    while ([subscriptionTransactions count]) {
-        BOOL found = FALSE;
-        for (DSTransaction * transaction in [subscriptionTransactions copy]) {
-            if ([transaction isKindOfClass:[DSBlockchainUserTopupTransaction class]]) {
-                [subscriptionTransactions removeObject:transaction]; //remove topups
-            } else if ([transaction isKindOfClass:[DSBlockchainUserResetTransaction class]]) {
-                DSBlockchainUserResetTransaction * blockchainUserResetTransaction = (DSBlockchainUserResetTransaction*)transaction;
-                if (uint256_eq(blockchainUserResetTransaction.previousBlockchainUserTransactionHash, lastSubscriptionTransactionHash)) {
-                    lastSubscriptionTransactionHash = blockchainUserResetTransaction.txHash;
-                    found = TRUE;
-                    [subscriptionTransactions removeObject:blockchainUserResetTransaction];
-                }
-            } else if ([transaction isKindOfClass:[DSBlockchainUserCloseTransaction class]]) {
-                DSBlockchainUserCloseTransaction * blockchainUserCloseTransaction = (DSBlockchainUserCloseTransaction*)transaction;
-                if (uint256_eq(blockchainUserCloseTransaction.previousBlockchainUserTransactionHash, lastSubscriptionTransactionHash)) {
-                    lastSubscriptionTransactionHash = blockchainUserCloseTransaction.txHash;
-                    found = TRUE;
-                    [subscriptionTransactions removeObject:blockchainUserCloseTransaction];
-                }
-            } else if ([transaction isKindOfClass:[DSTransition class]]) {
-                DSTransition * transition = (DSTransition*)transaction;
-                if (uint256_eq(transition.previousTransitionHash, lastSubscriptionTransactionHash)) {
-                    lastSubscriptionTransactionHash = transition.txHash;
-                    NSLog(@"%@",uint256_hex(transition.txHash));
-                    found = TRUE;
-                    [subscriptionTransactions removeObject:transition];
-                }
-            }
-        }
-        if (!found) break;
-    }
-    return lastSubscriptionTransactionHash;
-}
+//// MARK: == Blockchain Identities Transaction Retrieval
+//
+//-(DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransactionForPublicKeyHash:(UInt160)publicKeyHash {
+//    for (DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction in [self.blockchainIdentityRegistrationTransactions allValues]) {
+//        if (uint160_eq(blockchainIdentityRegistrationTransaction.pubkeyHash, publicKeyHash)) {
+//            return blockchainIdentityRegistrationTransaction;
+//        }
+//    }
+//    return nil;
+//}
+//
+//- (DSBlockchainIdentityUpdateTransition*)blockchainIdentityResetTransactionForPublicKeyHash:(UInt160)publicKeyHash {
+//    for (DSBlockchainIdentityResetTransition * blockchainIdentityResetTransaction in [self.blockchainIdentityResetTransactions allValues]) {
+//        if (uint160_eq(blockchainIdentityResetTransaction.replacementPublicKeyHash, publicKeyHash)) {
+//            return blockchainIdentityResetTransaction;
+//        }
+//    }
+//    return nil;
+//}
+//
+//-(NSArray<DSTransaction*>*)identityTransitionsForRegistrationTransitionHash:(UInt256)blockchainIdentityRegistrationTransactionHash {
+//    NSLog(@"blockchainIdentityRegistrationTransactionHash %@",uint256_hex(blockchainIdentityRegistrationTransactionHash));
+//    NSMutableArray<DSTransaction*> * subscriptionTransactions = [NSMutableArray array];
+//    for (DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransaction in [self.blockchainIdentityTopupTransactions allValues]) {
+//        if (uint256_eq(blockchainIdentityTopupTransaction.registrationTransactionHash, blockchainIdentityRegistrationTransactionHash)) {
+//            [subscriptionTransactions addObject:blockchainIdentityTopupTransaction];
+//        }
+//    }
+//    for (DSBlockchainIdentityResetTransition * blockchainIdentityResetTransaction in [self.blockchainIdentityResetTransactions allValues]) {
+//        if (uint256_eq(blockchainIdentityResetTransaction.registrationTransactionHash, blockchainIdentityRegistrationTransactionHash)) {
+//            [subscriptionTransactions addObject:blockchainIdentityResetTransaction];
+//        }
+//    }
+//    for (DSBlockchainIdentityCloseTransition * blockchainIdentityCloseTransaction in [self.blockchainIdentityCloseTransactions allValues]) {
+//        if (uint256_eq(blockchainIdentityCloseTransaction.registrationTransactionHash, blockchainIdentityRegistrationTransactionHash)) {
+//            [subscriptionTransactions addObject:blockchainIdentityCloseTransaction];
+//        }
+//    }
+//    for (DSTransition * transition in [self.transitions allValues]) {
+//        NSLog(@"transition blockchainIdentityRegistrationTransactionHash %@",uint256_hex(transition.registrationTransactionHash));
+//        if (uint256_eq(transition.registrationTransactionHash, blockchainIdentityRegistrationTransactionHash)) {
+//            [subscriptionTransactions addObject:transition];
+//        }
+//    }
+//    return [subscriptionTransactions copy];
+//}
+//
+//-(UInt256)lastSubscriptionTransactionHashForRegistrationTransactionHash:(UInt256)blockchainIdentityRegistrationTransactionHash {
+//    NSMutableOrderedSet * subscriptionTransactions = [NSMutableOrderedSet orderedSetWithArray:[self identityTransitionsForRegistrationTransitionHash:blockchainIdentityRegistrationTransactionHash]];
+//    UInt256 lastSubscriptionTransactionHash = blockchainIdentityRegistrationTransactionHash;
+//    while ([subscriptionTransactions count]) {
+//        BOOL found = FALSE;
+//        for (DSTransaction * transaction in [subscriptionTransactions copy]) {
+//            if ([transaction isKindOfClass:[DSBlockchainIdentityTopupTransition class]]) {
+//                [subscriptionTransactions removeObject:transaction]; //remove topups
+//            } else if ([transaction isKindOfClass:[DSBlockchainIdentityUpdateTransition class]]) {
+//                DSBlockchainIdentityUpdateTransition * blockchainIdentityResetTransaction = (DSBlockchainIdentityUpdateTransition*)transaction;
+//                if (uint256_eq(blockchainIdentityResetTransaction.previousBlockchainIdentityTransactionHash, lastSubscriptionTransactionHash)) {
+//                    lastSubscriptionTransactionHash = blockchainIdentityResetTransaction.txHash;
+//                    found = TRUE;
+//                    [subscriptionTransactions removeObject:blockchainIdentityResetTransaction];
+//                }
+//            } else if ([transaction isKindOfClass:[DSBlockchainIdentityCloseTransition class]]) {
+//                DSBlockchainIdentityCloseTransition * blockchainIdentityCloseTransaction = (DSBlockchainIdentityCloseTransition*)transaction;
+//                if (uint256_eq(blockchainIdentityCloseTransaction.previousBlockchainIdentityTransactionHash, lastSubscriptionTransactionHash)) {
+//                    lastSubscriptionTransactionHash = blockchainIdentityCloseTransaction.txHash;
+//                    found = TRUE;
+//                    [subscriptionTransactions removeObject:blockchainIdentityCloseTransaction];
+//                }
+//            } else if ([transaction isKindOfClass:[DSTransition class]]) {
+//                DSTransition * transition = (DSTransition*)transaction;
+//                if (uint256_eq(transition.previousTransitionHash, lastSubscriptionTransactionHash)) {
+//                    lastSubscriptionTransactionHash = transition.txHash;
+//                    NSLog(@"%@",uint256_hex(transition.txHash));
+//                    found = TRUE;
+//                    [subscriptionTransactions removeObject:transition];
+//                }
+//            }
+//        }
+//        if (!found) break;
+//    }
+//    return lastSubscriptionTransactionHash;
+//}
 
 @end

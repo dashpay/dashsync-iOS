@@ -323,15 +323,15 @@
         
         DSMasternodeHoldingsDerivationPath * providerFundsDerivationPath = [DSMasternodeHoldingsDerivationPath providerFundsDerivationPathForWallet:self.holdingKeysWallet];
         if (!providerFundsDerivationPath.hasExtendedPublicKey) {
-            [providerFundsDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.holdingKeysWallet.uniqueID];
+            [providerFundsDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.holdingKeysWallet.uniqueIDString];
         }
         DSAuthenticationKeysDerivationPath * providerOwnerKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForWallet:self.ownerKeysWallet];
         if (!providerOwnerKeysDerivationPath.hasExtendedPublicKey) {
-            [providerOwnerKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.ownerKeysWallet.uniqueID];
+            [providerOwnerKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.ownerKeysWallet.uniqueIDString];
         }
         DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForWallet:self.operatorKeysWallet];
         if (!providerOperatorKeysDerivationPath.hasExtendedPublicKey) {
-            [providerOperatorKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.operatorKeysWallet.uniqueID];
+            [providerOperatorKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.operatorKeysWallet.uniqueIDString];
         }
         DSECDSAKey * ownerKey;
         if (self.ownerWalletIndex == UINT32_MAX) {
@@ -348,7 +348,7 @@
         if ([fundingAccount.wallet.chain.chainManager.sporkManager deterministicMasternodeListEnabled]) {
             DSAuthenticationKeysDerivationPath * providerVotingKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForWallet:self.votingKeysWallet];
             if (!providerVotingKeysDerivationPath.hasExtendedPublicKey) {
-                [providerVotingKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.votingKeysWallet.uniqueID];
+                [providerVotingKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.votingKeysWallet.uniqueIDString];
             }
             if (self.votingWalletIndex == UINT32_MAX) {
                 self.votingWalletIndex = (uint32_t)[providerVotingKeysDerivationPath firstUnusedIndex];
@@ -568,7 +568,7 @@
              countObjectsMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)] == 0) {
             DSProviderRegistrationTransactionEntity * providerRegistrationTransactionEntity = [DSProviderRegistrationTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)];
             if (!providerRegistrationTransactionEntity) {
-                providerRegistrationTransactionEntity = (DSProviderRegistrationTransactionEntity *)[self.providerRegistrationTransaction save];
+                [self.providerRegistrationTransaction save];
             }
             DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity managedObject];
             [localMasternode setAttributesFromLocalMasternode:self];

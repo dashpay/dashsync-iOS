@@ -7,6 +7,7 @@
 #import <Availability.h>
 #import <UIKit/UIKit.h>
 #import <CoreData/CoreData.h>
+#import <DashSync/DashSync.h>
 
 #ifndef __IPHONE_5_0
 #warning "This project uses features only available in iOS SDK 5.0 and later."

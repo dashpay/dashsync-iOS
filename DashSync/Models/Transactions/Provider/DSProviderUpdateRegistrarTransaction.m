@@ -31,7 +31,7 @@
     return [self initWithMessage:message registrationTransaction:nil onChain:chain];
 }
 
-- (instancetype)initWithMessage:(NSData *)message registrationTransaction:(DSProviderRegistrationTransaction*)registrationTransaction onChain:(DSChain *)chain
+- (instancetype)initWithMessage:(NSData *)message registrationTransaction:(DSProviderRegistrationTransaction* _Nullable)registrationTransaction onChain:(DSChain *)chain
 {
     if (! (self = [super initWithMessage:message onChain:chain])) return nil;
     self.type = DSTransactionType_ProviderUpdateRegistrar;

@@ -32,6 +32,7 @@
 #import "DSMasternodeManager+Protected.h"
 #import "DSGovernanceSyncManager+Protected.h"
 #import "DSTransactionManager+Protected.h"
+#import "DSIdentitiesManager.h"
 #import "DSBloomFilter.h"
 #import "DSMerkleBlock.h"
 #import "DSWallet.h"
@@ -49,6 +50,7 @@
 @property (nonatomic, strong) DSSporkManager * sporkManager;
 @property (nonatomic, strong) DSMasternodeManager * masternodeManager;
 @property (nonatomic, strong) DSGovernanceSyncManager * governanceSyncManager;
+@property (nonatomic, strong) DSIdentitiesManager * identitiesManager;
 @property (nonatomic, strong) DSDAPIClient * DAPIClient;
 @property (nonatomic, strong) DSTransactionManager * transactionManager;
 @property (nonatomic, strong) DSPeerManager * peerManager;
@@ -67,16 +69,12 @@
     chain.chainManager = self;
     self.sporkManager = [[DSSporkManager alloc] initWithChain:chain];
     self.masternodeManager = [[DSMasternodeManager alloc] initWithChain:chain];
+    self.DAPIClient = [[DSDAPIClient alloc] initWithChain:chain]; //this must be
     [self.masternodeManager setUp];
     self.governanceSyncManager = [[DSGovernanceSyncManager alloc] initWithChain:chain];
     self.transactionManager = [[DSTransactionManager alloc] initWithChain:chain];
     self.peerManager = [[DSPeerManager alloc] initWithChain:chain];
-    
-    // TODO: node should be randomly selected on every DAPI call
-    // (using devnet-maithai for now)
-    NSURL *dapiNodeURL = [NSURL URLWithString:@"http://54.187.113.35:3000"];
-    HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
-    self.DAPIClient = [[DSDAPIClient alloc] initWithDAPINodeURL:dapiNodeURL httpLoaderFactory:loaderFactory];
+    self.identitiesManager = [[DSIdentitiesManager alloc] initWithChain:chain];
     
     return self;
 }
@@ -233,6 +231,18 @@
     }
 }
 
+-(void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain*)chain {
+    if ([self.chain isEvolutionEnabled]) {
+        if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_BlockchainIdentities)) {
+            //this only needs to happen once per session
+            static dispatch_once_t onceToken;
+            dispatch_once(&onceToken, ^{
+                [self.identitiesManager retrieveAllBlockchainIdentitiesChainStates];
+            });
+        }
+    }
+}
+
 -(void)chain:(DSChain*)chain badBlockReceivedFromPeer:(DSPeer*)peer {
     DSDLog(@"peer at address %@ is misbehaving",peer.host);
     [self.peerManager peerMisbehaving:peer errorMessage:@"Bad block received from peer"];
@@ -256,6 +266,8 @@
     }
     
 }
+
+
 
 // MARK: - Count Info
 

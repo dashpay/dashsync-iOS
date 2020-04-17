@@ -43,6 +43,8 @@
 -(UInt512)simd512;
 -(UInt512)echo512;
 
+-(UInt256)blake2s;
+
 + (NSData *)dataFromHexString:(NSString *)string;
 
 @end

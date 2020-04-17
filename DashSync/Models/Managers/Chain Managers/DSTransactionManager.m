@@ -51,6 +51,9 @@
 #import "NSString+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "DSMasternodeList.h"
+#import "DSTransition.h"
+#import "DSBlockchainIdentityRegistrationTransition.h"
+#import "DSCreditFundingTransaction.h"
 #import "DSError.h"
 
 #define IX_INPUT_LOCKED_KEY @"IX_INPUT_LOCKED_KEY"
@@ -60,6 +63,7 @@
 @property (nonatomic, strong) NSMutableDictionary *txRelays, *txRequests;
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
 @property (nonatomic, strong) NSMutableSet *nonFalsePositiveTransactions;
+@property (nonatomic, assign) BOOL resetBloomFilterAfterNextBlock;
 @property (nonatomic, strong) DSBloomFilter *bloomFilter;
 @property (nonatomic, assign) uint32_t filterUpdateHeight;
 @property (nonatomic, assign) double transactionsBloomFilterFalsePositiveRate;
@@ -120,16 +124,21 @@
 - (void)addTransactionToPublishList:(DSTransaction *)transaction
 {
     if (transaction.blockHeight == TX_UNCONFIRMED) {
-        DSDLog(@"[DSTransactionManager] add transaction to publish list %@ (%@)", transaction,transaction.toData);
-        self.publishedTx[uint256_obj(transaction.txHash)] = transaction;
-        
-        for (NSValue *hash in transaction.inputHashes) {
-            UInt256 h = UINT256_ZERO;
+        DSDLog(@"[DSTransactionManager] add transaction to publish list %@ (%@)", transaction, transaction.toData);
+        if (!self.publishedTx[uint256_obj(transaction.txHash)]) {
+            self.publishedTx[uint256_obj(transaction.txHash)] = transaction;
             
-            [hash getValue:&h];
-            [self addTransactionToPublishList:[self.chain transactionForHash:h]];
+            for (NSValue *hash in transaction.inputHashes) {
+                UInt256 h = UINT256_ZERO;
+                
+                [hash getValue:&h];
+                DSTransaction * inputTransaction = [self.chain transactionForHash:h];
+                if (inputTransaction) {
+                    [self addTransactionToPublishList:inputTransaction];
+                }
+            }
         }
-    }
+    } 
 }
 
 - (void)publishTransaction:(DSTransaction *)transaction completion:(void (^)(NSError *error))completion
@@ -240,6 +249,10 @@
         DSDLog(@"transaction relays count %lu, transaction requests count %lu",(unsigned long)[self.txRelays[hash] count],(unsigned long)[self.txRequests[hash] count]);
         DSAccount * account = [self.chain firstAccountThatCanContainTransaction:transaction];
         if (!account && ![specialTransactionsSet containsObject:transaction]) {
+            //the following might be needed, it was in evopayments branch
+//            if (!self.chain.isDevnetAny || ![transaction isKindOfClass:[DSTransition class]]) {
+//                NSAssert(FALSE, @"This needs to be implemented for transitions, if you are here now is the time to do it.");
+//            }
             NSAssert(FALSE, @"This probably needs more implementation work, if you are here now is the time to do it.");
             continue;
         }
@@ -276,7 +289,6 @@
             NSArray * accounts = [self.chain accountsThatCanContainTransaction:transaction];
             for (DSAccount * account in accounts) {
                 [account removeTransaction:transaction];
-                
             }
         }
         [DSTransactionHashEntity saveContext];
@@ -400,7 +412,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     
     
     NSString *address = [NSString addressWithScriptPubKey:protoReq.details.outputScripts.firstObject onChain:chain];
-    if (!acceptInternalAddress && [wallet containsAddress:address]) {
+    if (!acceptInternalAddress && [wallet accountsBaseDerivationPathsContainAddress:address]) {
         NSString * challengeTitle = DSLocalizedString(@"WARNING", nil);
         NSString * challengeMessage = DSLocalizedString(@"This payment address is already in your wallet", nil);
         NSString * challengeAction = DSLocalizedString(@"Ignore", nil);
@@ -565,7 +577,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
                 else if (!sent) {
                     sent = YES;
                     tx.timestamp = [NSDate timeIntervalSince1970];
-                    [account registerTransaction:tx];
+                    [account registerTransaction:tx saveImmediately:YES];
                     publishedCompletion(tx,nil,sent);
                 }
                 
@@ -611,7 +623,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
                                                else if (!sent) {
                                                    sent = TRUE;
                                                    tx.timestamp = [NSDate timeIntervalSince1970];
-                                                   [account registerTransaction:tx];
+                                                   [account registerTransaction:tx saveImmediately:YES];
                                                }
                                                requestRelayCompletion(tx,ack,!error);
                                                
@@ -784,8 +796,8 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         // every time a new wallet address is added, the bloom filter has to be rebuilt, and each address is only used for
         // one transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a wallet
         // transaction is encountered during the blockchain download
-        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO];
-        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
+        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO error:nil];
+        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES error:nil];
         NSSet *addresses = [wallet.allReceiveAddresses setByAddingObjectsFromSet:wallet.allChangeAddresses];
         [allAddressesArray addObjectsFromArray:[addresses allObjects]];
         
@@ -795,8 +807,8 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     }
     
     for (DSFundsDerivationPath * derivationPath in self.chain.standaloneDerivationPaths) {
-        [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO];
-        [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
+        [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO error:nil];
+        [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES error:nil];
         NSArray *addresses = [derivationPath.allReceiveAddresses arrayByAddingObjectsFromArray:derivationPath.allChangeAddresses];
         [allAddressesArray addObjectsFromArray:addresses];
     }
@@ -843,16 +855,18 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     DSDLog(@"Peer requested transaction with hash %@",hash);
     DSTransaction *transaction = self.publishedTx[hash];
     BOOL transactionIsPublished = !!transaction;
-    DSAccount * account = [self.chain firstAccountThatCanContainTransaction:transaction];
+    NSArray<DSAccount *> * accounts = nil;
+    if (transaction) {
+        accounts = [self.chain accountsThatCanContainTransaction:transaction];
+    }
     if (transactionIsPublished) {
-        account = [self.chain firstAccountThatCanContainTransaction:transaction];
-        if (!account) {
-            account = [self.chain accountForTransactionHash:txHash transaction:nil wallet:nil];
+        if (![accounts count]) {
+            accounts = [self.chain accountsForTransactionHash:txHash transaction:nil];
         }
     } else {
-        account = [self.chain accountForTransactionHash:txHash transaction:&transaction wallet:nil];
+        accounts = [self.chain accountsForTransactionHash:txHash transaction:&transaction];
     }
-    if (!account) {
+    if (![accounts count]) {
         DSDLog(@"No transaction could be found on any account for hash %@",hash);
         return nil;
     }
@@ -864,15 +878,28 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     [self.nonFalsePositiveTransactions addObject:hash];
     [self.publishedCallback removeObjectForKey:hash];
     
-    if (callback && ![account transactionIsValid:transaction]) {
+    BOOL isTransactionValid = YES;
+    if (callback) {
+        for (DSAccount * account in accounts) {
+            isTransactionValid &= [account transactionIsValid:transaction];
+        }
+    }
+    
+    if (callback && !isTransactionValid) {
         [self.publishedTx removeObjectForKey:hash];
         error = [NSError errorWithDomain:@"DashSync" code:401
                                 userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"Double spend", nil)}];
     }
-    else if (transaction && ![account transactionForHash:txHash] && [account registerTransaction:transaction]) {
-        [[DSTransactionEntity context] performBlock:^{
-            [DSTransactionEntity saveContext]; // persist transactions to core data
-        }];
+    else if (transaction) {
+        for (DSAccount * account in accounts) {
+            if (![account transactionForHash:txHash]) {
+                if ([account registerTransaction:transaction saveImmediately:YES]) {
+                    [[DSTransactionEntity context] performBlock:^{
+                        [DSTransactionEntity saveContext]; // persist transactions to core data
+                    }];
+                }
+            }
+        }
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -896,7 +923,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 // MARK: Incoming Transactions
 
 //The peer is informing us that it has an inventory of a transaction we might be interested in, this might also be a transaction we sent out which we are checking has properly been relayed on the network
-- (void)peer:(DSPeer *)peer hasTransaction:(UInt256)txHash transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock;
+- (void)peer:(DSPeer *)peer hasTransactionWithHash:(UInt256)txHash transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock;
 {
     NSValue *hash = uint256_obj(txHash);
     BOOL syncing = (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight);
@@ -914,7 +941,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         DSDLog(@"No account found for this transaction");
         return;
     }
-    if (![account registerTransaction:transaction]) return;
+    if (![account registerTransaction:transaction saveImmediately:YES]) return;
     if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
     if (callback || (! syncing && ! [self.txRelays[hash] containsObject:peer])) {
@@ -942,7 +969,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 }
 
 //The peer has sent us a transaction we are interested in and that we did not send ourselves
-- (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock
+- (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction inBlock:(DSMerkleBlock*)block transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock
 {
     NSValue *hash = uint256_obj(transaction.txHash);
     BOOL syncing = (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight);
@@ -956,17 +983,41 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         DSDLog(@"%@:%d no account for transaction %@", peer.host, peer.port, hash);
         if (![self.chain transactionHasLocalReferences:transaction]) return;
     } else {
-        if (![account registerTransaction:transaction]) {
+        if (![account registerTransaction:transaction saveImmediately:block?NO:YES]) {
             DSDLog(@"%@:%d could not register transaction %@", peer.host, peer.port, hash);
             return;
         }
     }
     
+    BOOL isNewBlockchainIdentity = FALSE;
+    DSBlockchainIdentity * blockchainIdentity = nil;
+    
     if (![transaction isMemberOfClass:[DSTransaction class]]) {
         //it's a special transaction
-        [self.chain registerSpecialTransaction:transaction];
+        BOOL registered = YES; //default to yes
+        if (![transaction isKindOfClass:[DSCreditFundingTransaction class]]) {
+            registered = [self.chain registerSpecialTransaction:transaction saveImmediately:block?NO:YES];
+        }
         
-        [self.chain triggerUpdatesForLocalReferences:transaction];
+        if (registered) {
+            if ([transaction isKindOfClass:[DSCreditFundingTransaction class]]) {
+                DSCreditFundingTransaction * creditFundingTransaction = (DSCreditFundingTransaction *)transaction;
+                uint32_t index;
+                DSWallet * wallet = [self.chain walletHavingBlockchainIdentityCreditFundingRegistrationHash:creditFundingTransaction.creditBurnPublicKeyHash foundAtIndex:&index];
+                
+                if (wallet) {
+                    blockchainIdentity = [wallet blockchainIdentityForUniqueId:transaction.creditBurnIdentityIdentifier];
+                }
+                
+                if (!blockchainIdentity) {
+                    [self.chain triggerUpdatesForLocalReferences:transaction];
+                    blockchainIdentity = [wallet blockchainIdentityForUniqueId:transaction.creditBurnIdentityIdentifier];
+                    if (blockchainIdentity) isNewBlockchainIdentity = TRUE;
+                }
+            } else {
+                [self.chain triggerUpdatesForLocalReferences:transaction];
+            }
+        }
     }
     
     if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
@@ -1021,7 +1072,32 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     
     [self.nonFalsePositiveTransactions addObject:hash];
     [self.txRequests[hash] removeObject:peer];
-    [self updateTransactionsBloomFilter];
+    
+    
+    if (NO) {//[transaction isKindOfClass:[DSCreditFundingTransaction class]] && blockchainIdentity && isNewBlockchainIdentity) {
+        //[self fetchFriendshipsForBlockchainIdentity:blockchainIdentity];
+    } else {
+        [self updateTransactionsBloomFilter];
+    }
+}
+
+-(void)fetchFriendshipsForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity {
+    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+    [blockchainIdentity fetchAllNetworkStateInformationWithCompletion:^(BOOL success, NSError * error) {
+        if (success) {
+            [blockchainIdentity fetchOutgoingContactRequests:^(BOOL success, NSArray<NSError *> *errors) {
+                if (success) {
+                    [blockchainIdentity fetchIncomingContactRequests:^(BOOL success, NSArray<NSError *> *errors) {
+                        if (success) {
+                            dispatch_semaphore_signal(sem);
+                        }
+                    }];
+                }
+            }];
+        }
+    }];
+    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+    _resetBloomFilterAfterNextBlock = TRUE;
 }
 
 // MARK: Transaction Issues
@@ -1037,7 +1113,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 - (void)peer:(DSPeer *)peer rejectedTransaction:(UInt256)txHash withCode:(uint8_t)code
 {
     DSTransaction *transaction = nil;
-    DSAccount * account = [self.chain accountForTransactionHash:txHash transaction:&transaction wallet:nil];
+    NSArray<DSAccount *> * accounts = [self.chain accountsForTransactionHash:txHash transaction:&transaction];
     NSValue *hash = uint256_obj(txHash);
     
     if ([self.txRelays[hash] containsObject:peer]) {
@@ -1069,15 +1145,21 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     [self.txRequests[hash] removeObject:peer];
     
     // if we get rejected for any reason other than double-spend, the peer is likely misconfigured
-    if (code != REJECT_SPENT && [account amountSentByTransaction:transaction] > 0) {
-        for (hash in transaction.inputHashes) { // check that all inputs are confirmed before dropping peer
-            UInt256 h = UINT256_ZERO;
-            
-            [hash getValue:&h];
-            if ([self.chain transactionForHash:h].blockHeight == TX_UNCONFIRMED) return;
+    if (code != REJECT_SPENT) {
+        BOOL sentSomething = FALSE;
+        for (DSAccount * account in accounts) {
+            sentSomething |= ([account amountSentByTransaction:transaction] > 0);
         }
-        
-        [self.peerManager peerMisbehaving:peer errorMessage:@"Peer rejected the transaction"];
+        if (sentSomething) {
+            for (hash in transaction.inputHashes) { // check that all inputs are confirmed before dropping peer
+                UInt256 h = UINT256_ZERO;
+                
+                [hash getValue:&h];
+                if ([self.chain transactionForHash:h].blockHeight == TX_UNCONFIRMED) return;
+            }
+            
+            [self.peerManager peerMisbehaving:peer errorMessage:@"Peer rejected the transaction"];
+        }
     }
 }
 
@@ -1100,7 +1182,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     
     DSTransaction * transaction = nil;
     DSWallet * wallet = nil;
-    DSAccount * account = [self.chain accountForTransactionHash:instantSendTransactionLock.transactionHash transaction:&transaction wallet:&wallet];
+    DSAccount * account = [self.chain firstAccountForTransactionHash:instantSendTransactionLock.transactionHash transaction:&transaction wallet:&wallet];
     
     if (account && transaction) {
         [transaction setInstantSendReceivedWithInstantSendLock:instantSendTransactionLock];
@@ -1129,7 +1211,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
             [instantSendTransactionLock save];
             DSTransaction * transaction = nil;
             DSWallet * wallet = nil;
-            DSAccount * account = [self.chain accountForTransactionHash:instantSendTransactionLock.transactionHash transaction:&transaction wallet:&wallet];
+            DSAccount * account = [self.chain firstAccountForTransactionHash:instantSendTransactionLock.transactionHash transaction:&transaction wallet:&wallet];
             
             if (account && transaction) {
                 [transaction setInstantSendReceivedWithInstantSendLock:instantSendTransactionLock];
@@ -1195,7 +1277,18 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         return;
     }
     
+    
+    if (_resetBloomFilterAfterNextBlock) {
+        NSLog(@"here");
+    }
+    
     [self.chain addBlock:block fromPeer:peer];
+    
+    if (_resetBloomFilterAfterNextBlock) {
+        _bloomFilter = nil; // reset bloom filter so it's recreated with new wallet addresses
+        [self.peerManager updateFilterOnPeers];
+        _resetBloomFilterAfterNextBlock = FALSE;
+    }
 }
 
 - (void)peer:(DSPeer *)peer relayedTooManyOrphanBlocks:(NSUInteger)orphanBlockCount {

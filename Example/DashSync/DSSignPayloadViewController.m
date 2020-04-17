@@ -60,8 +60,8 @@
         
 
         
-        
-        DSFundsDerivationPath * derivationPath = [account derivationPathContainingAddress:self.collateralAddress];
+        //todo make a protocol for DSIncomingDerivationPath and DSFundsDerivationPath
+        DSFundsDerivationPath * derivationPath = (DSFundsDerivationPath *)[account derivationPathContainingAddress:self.collateralAddress];
         
         NSIndexPath * indexPath = [derivationPath indexPathForKnownAddress:self.collateralAddress];
         

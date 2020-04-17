@@ -36,6 +36,11 @@ typedef struct {
     uint8_t p[33];
 } DSECPoint;
 
+extern void CKDpriv(UInt256 *k, UInt256 *c, uint32_t i);
+extern void CKDpriv256(UInt256 *k, UInt256 *c, UInt256 i, BOOL hardened);
+extern void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i);
+extern void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened);
+
 // adds 256bit big endian ints a and b (mod secp256k1 order) and stores the result in a
 // returns true on success
 int DSSecp256k1ModAdd(UInt256 * a, const UInt256 * b);
@@ -62,18 +67,26 @@ int DSSecp256k1PointMul(DSECPoint * p, const UInt256 * i);
 
 @property (nonatomic, readonly, nullable) const UInt256 *secretKey;
 
++ (nullable instancetype)keyWithExtendedPrivateKeyData:(NSData*)extendedPrivateKeyData;
++ (nullable instancetype)keyWithExtendedPublicKeyData:(NSData*)extendedPublicKeyData;
 + (nullable instancetype)keyWithPrivateKey:(NSString *)privateKey onChain:(DSChain*)chain;
 + (nullable instancetype)keyWithSecret:(UInt256)secret compressed:(BOOL)compressed;
-+ (nullable instancetype)keyWithPublicKey:(NSData *)publicKey;
+
++ (nullable instancetype)keyWithPublicKeyData:(NSData *)publicKey;
 + (nullable instancetype)keyRecoveredFromCompactSig:(NSData *)compactSig andMessageDigest:(UInt256)md;
 
++ (nullable instancetype)keyWithDHKeyExchangeWithPublicKey:(DSECDSAKey *)publicKey forPrivateKey:(DSECDSAKey*)privateKey;
+
+- (nullable instancetype)initWithExtendedPrivateKeyData:(NSData*)extendedPrivateKeyData;
 - (nullable instancetype)initWithPrivateKey:(NSString *)privateKey onChain:(DSChain*)chain;
 - (nullable instancetype)initWithSecret:(UInt256)secret compressed:(BOOL)compressed;
+- (nullable instancetype)initWithExtendedPublicKeyData:(NSData*)extendedPublicKeyData;
 - (nullable instancetype)initWithPublicKey:(NSData *)publicKey;
 - (nullable instancetype)initWithCompactSig:(NSData *)compactSig andMessageDigest:(UInt256)md;
 
+- (nullable instancetype)initWithDHKeyExchangeWithPublicKey:(DSECDSAKey *)publicKey forPrivateKey:(DSECDSAKey*)privateKey;
+
 - (NSData * _Nullable)sign:(UInt256)md;
-- (BOOL)verify:(UInt256)md signature:(NSData *)sig;
 
 - (NSString * _Nullable)privateKeyStringForChain:(DSChain* _Nonnull)chain;
 // Pieter Wuille's compact signature encoding used for bitcoin message signing

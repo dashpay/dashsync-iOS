@@ -20,7 +20,6 @@ NSString* const DSPeerManagerConnectedPeersDidChangeNotification =      @"DSPeer
 NSString* const DSPeerManagerDownloadPeerDidChangeNotification =      @"DSPeerManagerDownloadPeerDidChangeNotification";
 
 NSString* const DSChainWalletsDidChangeNotification =    @"DSChainWalletsDidChangeNotification";
-NSString* const DSChainBlockchainUsersDidChangeNotification =    @"DSChainBlockchainUsersDidChangeNotification";
 
 NSString* const DSChainStandaloneDerivationPathsDidChangeNotification =    @"DSChainStandaloneDerivationPathsDidChangeNotification";
 NSString* const DSChainStandaloneAddressesDidChangeNotification = @"DSChainStandaloneAddressesDidChangeNotification";
@@ -45,7 +44,7 @@ NSString* const DSGovernanceVoteCountUpdateNotification = @"DSGovernanceVoteCoun
 
 NSString* const DSChainsDidChangeNotification = @"DSChainsDidChangeNotification";
 
-NSString* const DSChainManagerNotificationChainKey =         @"DSChainManagerNotificationChainKey";
+NSString* const DSChainManagerNotificationChainKey = @"DSChainManagerNotificationChainKey";
 
 NSString* const DSTransactionManagerNotificationTransactionKey =         @"DSTransactionManagerNotificationTransactionKey";
 NSString* const DSTransactionManagerNotificationTransactionChangesKey =         @"DSTransactionManagerNotificationTransactionChangesKey";
@@ -55,3 +54,25 @@ NSString* const DSTransactionManagerNotificationInstantSendTransactionLockKey = 
 NSString* const DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey =         @"DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey";
 
 NSString* const DSTransactionManagerNotificationInstantSendTransactionAcceptedStatusKey =         @"DSTransactionManagerNotificationInstantSendTransactionAcceptedStatusKey";
+
+NSString* const DPContractDidUpdateNotification = @"DPContractDidUpdateNotification";
+
+NSString* const DSContractUpdateNotificationKey = @"DSContractUpdateNotificationKey";
+
+NSString* const DSBlockchainIdentityDidUpdateNotification = @"DSBlockchainIdentitiesDidUpdateNotification";
+
+NSString* const DSBlockchainIdentityDidUpdateUsernameStatusNotification = @"DSBlockchainIdentityDidUpdateUsernameStatusNotification";
+
+NSString* const DSBlockchainIdentityKey = @"DSBlockchainIdentityKey";
+
+NSString* const DSBlockchainIdentityUsernameKey = @"DSBlockchainIdentityUsernameKey";
+
+NSString* const DSBlockchainIdentityUpdateEvents = @"DSBlockchainIdentityUpdateEvents";
+
+NSString* const DSBlockchainIdentityUpdateEventKeyUpdate = @"DSBlockchainIdentityUpdateEventKeyUpdate";
+
+NSString* const DSBlockchainIdentityUpdateEventRegistration = @"DSBlockchainIdentityUpdateEventRegistration";
+
+NSString* const DSBlockchainIdentityUpdateEventCreditBalance = @"DSBlockchainIdentityUpdateEventCreditBalance";
+
+NSString* const DSBlockchainIdentityUpdateEventType = @"DSBlockchainIdentityUpdateEventType";

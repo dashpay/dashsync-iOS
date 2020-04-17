@@ -11,10 +11,9 @@
 
 @implementation DSSimpleIndexedDerivationPath
 
-- (instancetype)initWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
-                           type:(DSDerivationPathType)type signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain {
+- (instancetype _Nullable)initWithIndexes:(const UInt256[_Nullable])indexes hardened:(const BOOL[_Nullable])hardenedIndexes length:(NSUInteger)length type:(DSDerivationPathType)type signingAlgorithm:(DSKeyType)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain {
     
-    if (! (self = [super initWithIndexes:indexes length:length type:type signingAlgorithm:signingAlgorithm reference:reference onChain:chain])) return nil;
+    if (! (self = [super initWithIndexes:indexes hardened:hardenedIndexes length:length type:type signingAlgorithm:signingAlgorithm reference:reference onChain:chain])) return nil;
     
     self.mOrderedAddresses = [NSMutableArray array];
     
@@ -46,13 +45,14 @@
                 }
             }];
             self.addressesLoaded = TRUE;
-            [self registerAddressesWithGapLimit:10];
+            [self registerAddressesWithGapLimit:10 error:nil];
         }
     }
 }
 
 -(void)reloadAddresses {
     [self.mAllAddresses removeAllObjects];
+    [self.mOrderedAddresses removeAllObjects];
     [self.mUsedAddresses removeAllObjects];
     self.addressesLoaded = NO;
     [self loadAddresses];
@@ -63,7 +63,7 @@
 - (void)registerTransactionAddress:(NSString * _Nonnull)address {
     if (![self.mUsedAddresses containsObject:address]) {
         [self.mUsedAddresses addObject:address];
-        [self registerAddressesWithDefaultGapLimit];
+        [self registerAddressesWithDefaultGapLimitWithError:nil];
     }
 }
 
@@ -71,14 +71,14 @@
     return 10;
 }
 
-- (NSArray *)registerAddressesWithDefaultGapLimit {
-    return [self registerAddressesWithGapLimit:[self defaultGapLimit]];
+- (NSArray *)registerAddressesWithDefaultGapLimitWithError:(NSError**)error {
+    return [self registerAddressesWithGapLimit:[self defaultGapLimit] error:error];
 }
 
 // Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
 // found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
 // following the last used address in the chain.
-- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit
+- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit error:(NSError**)error
 {
     
     NSMutableArray * rArray = [self.mOrderedAddresses mutableCopy];
@@ -117,6 +117,10 @@
             
             if (! addr) {
                 DSDLog(@"error generating keys");
+                if (error) {
+                    *error = [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                          DSLocalizedString(@"Error generating public keys", nil)}];
+                }
                 return nil;
             }
             

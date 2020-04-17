@@ -51,6 +51,7 @@
 #import "DSChainManager.h"
 #import "DSInstantSendTransactionLock.h"
 #import "DSSporkManager.h"
+#import "DSBlockchainIdentityRegistrationTransition.h"
 
 #define PEER_LOGGING 1
 #define LOG_ALL_HEADERS_IN_ACCEPT_HEADERS 0
@@ -302,9 +303,9 @@
 {
     if (_status == DSPeerStatus_Disconnected) return;
     if (!error) {
-        DSDLog(@"Disconnected from peer %@ with unknown error",self.host);
+        DSDLog(@"Disconnected from peer %@ (%@ protocol %d) with unknown error",self.host,self.useragent,self.version);
     } else {
-        DSDLog(@"Disconnected from peer %@ with error %@",self.host,error);
+        DSDLog(@"Disconnected from peer %@ (%@ protocol %d) with error %@",self.host,self.useragent,self.version,error);
     }
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel connect timeout
 
@@ -1171,7 +1172,7 @@
         }
     }
     
-    if ([self.chain syncsBlockchain] && !self.sentFilter && ! self.sentMempool && ! self.sentGetblocks && (txHashes.count + instantSendLockHashes.count > 0) && !onlyPrivateSendTransactions) {
+    if ([self.chain syncsBlockchain] && !self.sentFilter && ! self.sentMempool && ! self.sentGetblocks && (txHashes.count > 0) && !onlyPrivateSendTransactions) {
         [self error:@"got tx inv message before loading a filter"];
         return;
     }
@@ -1207,7 +1208,7 @@
             [hash getValue:&h];
             
             dispatch_async(self.delegateQueue, ^{
-                if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasTransaction:h transactionIsRequestingInstantSendLock:NO];
+                if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasTransactionWithHash:h transactionIsRequestingInstantSendLock:NO];
             });
         }
         
@@ -1298,23 +1299,24 @@
     }
     
     if (tx) {
+        __block DSMerkleBlock * currentBlock = self.currentBlock;
         dispatch_async(self.delegateQueue, ^{
-            [self.transactionDelegate peer:self relayedTransaction:tx transactionIsRequestingInstantSendLock:isIxTransaction];
+            [self.transactionDelegate peer:self relayedTransaction:tx inBlock:currentBlock transactionIsRequestingInstantSendLock:isIxTransaction];
         });
+        #if LOG_FULL_TX_MESSAGE
+            DSDLog(@"%@:%u got %@ %@ %@", self.host, self.port, isIxTransaction?@"ix":@"tx", uint256_obj(tx.txHash),message.hexString);
+        #else
+            DSDLog(@"%@:%u got %@ %@", self.host, self.port, isIxTransaction?@"ix":@"tx", uint256_obj(tx.txHash));
+        #endif
     }
-    
-#if LOG_FULL_TX_MESSAGE
-    DSDLog(@"%@:%u got %@ %@ %@", self.host, self.port, isIxTransaction?@"ix":@"tx", uint256_obj(tx.txHash),message.hexString);
-#else
-    DSDLog(@"%@:%u got %@ %@", self.host, self.port, isIxTransaction?@"ix":@"tx", uint256_obj(tx.txHash));
-#endif
+
     
     if (self.currentBlock) { // we're collecting tx messages for a merkleblock
         UInt256 txHash = tx?tx.txHash:message.SHA256_2;
         if ([self.currentBlockTxHashes containsObject:uint256_obj(txHash)]) {
             [self.currentBlockTxHashes removeObject:uint256_obj(txHash)];
         } else {
-            DSDLog(@"%@:%u current block does not contain transaction %@ (contains %@)", self.host, self.port,uint256_data(tx.txHash).hexString,self.currentBlockTxHashes);
+            DSDLog(@"%@:%u current block does not contain transaction %@ (contains %@)", self.host, self.port,uint256_hex(txHash),self.currentBlockTxHashes);
         }
         
         if (self.currentBlockTxHashes.count == 0) { // we received the entire block including all matched tx

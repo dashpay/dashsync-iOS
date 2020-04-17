@@ -454,7 +454,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 
 - (void)seedWithPrompt:(NSString * _Nullable)authprompt forWallet:(DSWallet*)wallet forAmount:(uint64_t)amount forceAuthentication:(BOOL)forceAuthentication completion:(_Nullable SeedCompletionBlock)completion {
     NSParameterAssert(wallet);
-    
+    NSAssert([NSThread isMainThread], @"This should only be called on main thread");
     if (forceAuthentication) {
         [wallet seedWithPrompt:authprompt forAmount:amount completion:completion];
     } else {

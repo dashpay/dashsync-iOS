@@ -14,9 +14,9 @@
 
 #define TRANSACTION_CELL_HEIGHT 75
 
-static NSString *dateFormat(NSString *template)
+NSString *dateFormat(NSString *_template)
 {
-    NSString *format = [NSDateFormatter dateFormatFromTemplate:template options:0 locale:[NSLocale currentLocale]];
+    NSString *format = [NSDateFormatter dateFormatFromTemplate:_template options:0 locale:[NSLocale currentLocale]];
     
     format = [format stringByReplacingOccurrencesOfString:@", " withString:@" "];
     format = [format stringByReplacingOccurrencesOfString:@" a" withString:@"a"];
@@ -310,12 +310,11 @@ static NSString *dateFormat(NSString *template)
     DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
     DSTransactionEntity * transactionEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    NSLog(@"%u",transactionEntity.transactionHash.blockHeight);
     DSTransaction *tx = [transactionEntity transactionForChain:self.chainManager.chain];
     [self.transactions setObject:tx forKey:uint256_data(tx.txHash)];
     DSAccount * account = [self.chainManager.chain firstAccountThatCanContainTransaction:tx];
-    uint64_t received = [account amountReceivedFromTransaction:tx],
-    sent = [account amountSentByTransaction:tx],
+    uint64_t received = [tx.chain amountReceivedFromTransaction:tx],
+    sent = [tx.chain amountSentByTransaction:tx],
     balance = [account balanceAfterTransaction:tx];
     uint32_t blockHeight = self.blockHeight;
     uint32_t confirms = (tx.blockHeight > blockHeight) ? 0 : (blockHeight - tx.blockHeight) + 1;

@@ -32,6 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSTransactionEntity : NSManagedObject
 
 - (instancetype)setAttributesFromTransaction:(DSTransaction *)tx;
+- (DSTransaction *)transaction;
 - (DSTransaction *)transactionForChain:(DSChain*)chain;
 + (NSArray<DSTransactionEntity*> * _Nonnull)transactionsForChain:(DSChainEntity*)chain;
 

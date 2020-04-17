@@ -80,14 +80,14 @@
         if (self.account) break;
     }
     if (self.account) {
-        self.accountInfoLabel.text = [NSString stringWithFormat:@"%@-%u",self.account.wallet.uniqueID,self.account.accountNumber];
+        self.accountInfoLabel.text = [NSString stringWithFormat:@"%@-%u",self.account.wallet.uniqueIDString,self.account.accountNumber];
         self.addressTextField.placeholder = self.account.defaultDerivationPath.receiveAddress;
     }
 }
 
 -(void)viewController:(UIViewController*)controller didChooseAccount:(DSAccount*)account {
     self.account = account;
-    self.accountInfoLabel.text = [NSString stringWithFormat:@"%@-%u",self.account.wallet.uniqueID,self.account.accountNumber];
+    self.accountInfoLabel.text = [NSString stringWithFormat:@"%@-%u",self.account.wallet.uniqueIDString,self.account.accountNumber];
     self.addressTextField.placeholder = self.account.defaultDerivationPath.receiveAddress;
 }
 
@@ -116,7 +116,7 @@
             if (error) {
                 NSLog(@"%@",error);
             } else {
-                [self.account registerTransaction:transaction];
+                [self.account registerTransaction:transaction saveImmediately:YES];
                 [proposal registerCollateralTransaction:transaction];
                 [proposal save];
                 [self.chainManager.governanceSyncManager publishProposal:proposal];

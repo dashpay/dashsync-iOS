@@ -30,22 +30,26 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define MAINNET_STANDARD_PORT 9999
 #define TESTNET_STANDARD_PORT 19999
-#define DEVNET_STANDARD_PORT 12999
+#define DEVNET_STANDARD_PORT 20001
 
-#define MAINNET_DAPI_STANDARD_PORT 3000
-#define TESTNET_DAPI_STANDARD_PORT 3000
-#define DEVNET_DAPI_STANDARD_PORT 3000
+#define MAINNET_DAPI_JRPC_STANDARD_PORT 3000
+#define TESTNET_DAPI_JRPC_STANDARD_PORT 3000
+#define DEVNET_DAPI_JRPC_STANDARD_PORT 3000
 
-#define PROTOCOL_VERSION_MAINNET   70215
-#define DEFAULT_MIN_PROTOCOL_VERSION_MAINNET  70214
+#define MAINNET_DAPI_GRPC_STANDARD_PORT 3010
+#define TESTNET_DAPI_GRPC_STANDARD_PORT 3010
+#define DEVNET_DAPI_GRPC_STANDARD_PORT 3010
 
-#define PROTOCOL_VERSION_TESTNET   70215
-#define DEFAULT_MIN_PROTOCOL_VERSION_TESTNET  70214
+#define PROTOCOL_VERSION_MAINNET   70216
+#define DEFAULT_MIN_PROTOCOL_VERSION_MAINNET  70215
 
-#define PROTOCOL_VERSION_DEVNET   70215
-#define DEFAULT_MIN_PROTOCOL_VERSION_DEVNET  70213
+#define PROTOCOL_VERSION_TESTNET   70216
+#define DEFAULT_MIN_PROTOCOL_VERSION_TESTNET  70215
 
-#define MAX_VALID_MIN_PROTOCOL_VERSION 70215
+#define PROTOCOL_VERSION_DEVNET   70216
+#define DEFAULT_MIN_PROTOCOL_VERSION_DEVNET  70215
+
+#define MAX_VALID_MIN_PROTOCOL_VERSION 70216
 #define MIN_VALID_MIN_PROTOCOL_VERSION 70213
 
 #define DASH_MAGIC_NUMBER_TESTNET 0xffcae2ce
@@ -64,6 +68,12 @@ NS_ASSUME_NONNULL_BEGIN
 #define SPORK_ADDRESS_MAINNET @"Xgtyuk76vhuFW2iT7UAiHgNdWXCf3J34wh"
 #define SPORK_ADDRESS_TESTNET @"yjPtiKh2uwk3bDutTEA2q9mCtXyiZRWn55"
 
+#define MAINNET_DASHPAY_CONTRACT_ID @""
+#define MAINNET_DPNS_CONTRACT_ID @""
+
+#define TESTNET_DASHPAY_CONTRACT_ID @""
+#define TESTNET_DPNS_CONTRACT_ID @""
+
 
 #define DEFAULT_FEE_PER_B TX_FEE_PER_B
 #define MIN_FEE_PER_B     TX_FEE_PER_B // minimum relay fee on a 191byte tx
@@ -76,7 +86,6 @@ typedef NS_ENUM(uint16_t, DSChainType) {
 };
 
 FOUNDATION_EXPORT NSString* const DSChainWalletsDidChangeNotification;
-FOUNDATION_EXPORT NSString* const DSChainBlockchainUsersDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainStandaloneDerivationPathsDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainStandaloneAddressesDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainBlocksDidChangeNotification;
@@ -84,7 +93,15 @@ FOUNDATION_EXPORT NSString* const DSChainBlockWasLockedNotification;
 FOUNDATION_EXPORT NSString* const DSChainNotificationBlockKey;
 FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
-@class DSWallet,DSMerkleBlock,DSChainManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSSimplifiedMasternodeEntry,DSBlockchainUser,DSBloomFilter,DSProviderRegistrationTransaction,DSChain;
+typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
+    DSTransactionDirection_Sent,
+    DSTransactionDirection_Received,
+    DSTransactionDirection_Moved,
+    DSTransactionDirection_NotAccountFunds,
+};
+
+
+@class DSWallet,DSMerkleBlock,DSChainManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSSimplifiedMasternodeEntry,DSBlockchainIdentity,DSBloomFilter,DSProviderRegistrationTransaction,DSChain,DSMasternodeList;
 
 @protocol DSChainDelegate;
 
@@ -109,7 +126,8 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 @property (nonatomic, readonly) NSDictionary *recentBlocks;
 @property (nonatomic, assign) DSChainType chainType;
 @property (nonatomic, assign) uint32_t standardPort;
-@property (nonatomic, assign) uint32_t standardDapiPort;
+@property (nonatomic, assign) uint32_t standardDapiJRPCPort;
+@property (nonatomic, assign) uint32_t standardDapiGRPCPort;
 @property (nonatomic, assign) UInt256 genesisHash;
 @property (nonatomic, readonly,nullable) NSString * chainTip;
 @property (nonatomic, readonly) uint32_t lastBlockHeight;
@@ -146,9 +164,12 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 @property (nonatomic, readonly) uint16_t transactionVersion;
 @property (nonatomic, assign) uint32_t totalGovernanceObjectsCount;
 @property (nonatomic, assign) uint32_t totalMasternodeCount;
-@property (nonatomic, readonly) uint32_t blockchainUsersCount;
+@property (nonatomic, readonly) uint32_t blockchainIdentitiesCount;
 @property (nonatomic, assign) UInt256 masternodeBaseBlockHash;
-@property (nonatomic, readonly) uint64_t ixPreviousConfirmationsNeeded;
+
+@property (nonatomic, assign) UInt256 dpnsContractID;
+@property (nonatomic, assign) UInt256 dashpayContractID;
+
 @property (nonatomic, readonly) NSManagedObjectContext * managedObjectContext;
 
 // outputs below this amount are uneconomical due to fees
@@ -166,7 +187,9 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 +(DSChain*)testnet;
 
 +(DSChain* _Nullable)devnetWithIdentifier:(NSString*)identifier;
-+(DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>* _Nullable)checkpointArray withDefaultPort:(uint32_t)port withDefaultDapiPort:(uint32_t)dapiPort;
++(DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>* _Nullable)checkpointArray withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID;
++(DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>* _Nullable)checkpointArray withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID isTransient:(BOOL)isTransient;
++(DSChain*)recoverKnownDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray;
 
 +(DSChain* _Nullable)chainForNetworkName:(NSString* _Nullable)networkName;
 
@@ -174,7 +197,10 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 -(BOOL)isMainnet;
 -(BOOL)isTestnet;
 -(BOOL)isDevnetAny;
+-(BOOL)isEvolutionEnabled;
 -(BOOL)isDevnetWithGenesisHash:(UInt256)genesisHash;
+
+-(void)setDevnetNetworkName:(NSString*)networkName;
 
 -(void)setUp;
 
@@ -206,6 +232,10 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 // returns an account to which the given transaction is or can be associated with (even if it hasn't been registered), no account if the transaction is not associated with the wallet
 - (DSAccount* _Nullable)firstAccountThatCanContainTransaction:(DSTransaction *)transaction;
 
+- (DSTransactionDirection)directionOfTransaction:(DSTransaction *)transaction;
+
+- (NSArray<DSAccount *> *)accountsForTransactionHash:(UInt256)txHash transaction:(DSTransaction *_Nullable*_Nullable)transaction;
+
 // returns all accounts to which the given transaction is or can be associated with (even if it hasn't been registered)
 - (NSArray*)accountsThatCanContainTransaction:(DSTransaction * _Nonnull)transaction;
 
@@ -213,7 +243,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 - (DSAccount* _Nullable)accountContainingAddress:(NSString *)address;
 
 // returns an account to which the given transaction hash is associated with, no account if the transaction hash is not associated with the wallet
-- (DSAccount * _Nullable)accountForTransactionHash:(UInt256)txHash transaction:(DSTransaction * _Nullable * _Nullable)transaction wallet:(DSWallet * _Nullable * _Nullable)wallet;
+- (DSAccount * _Nullable)firstAccountForTransactionHash:(UInt256)txHash transaction:(DSTransaction * _Nullable * _Nullable)transaction wallet:(DSWallet * _Nullable * _Nullable)wallet;
 
 
 -(NSArray<DSDerivationPath*>*)standardDerivationPathsForAccountNumber:(uint32_t)accountNumber;
@@ -251,6 +281,8 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 - (DSMerkleBlock * _Nullable)blockFromChainTip:(NSUInteger)blocksAgo;
 
+- (DSWallet* _Nullable)walletHavingBlockchainIdentityCreditFundingRegistrationHash:(UInt160)creditFundingRegistrationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
+
 - (DSWallet* _Nullable)walletHavingProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
 
 - (DSWallet* _Nullable)walletHavingProviderOwnerAuthenticationHash:(UInt160)owningAuthenticationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
@@ -259,15 +291,27 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 - (DSWallet* _Nullable)walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:(DSProviderRegistrationTransaction * _Nonnull)transaction foundAtIndex:(uint32_t* _Nullable)rIndex;
 
-- (DSWallet* _Nullable)walletHavingBlockchainUserAuthenticationHash:(UInt160)blockchainUserAuthenticationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
-
 - (BOOL)transactionHasLocalReferences:(DSTransaction*)transaction;
 
-- (void)registerSpecialTransaction:(DSTransaction*)transaction;
+- (BOOL)registerSpecialTransaction:(DSTransaction*)transaction saveImmediately:(BOOL)saveImmediately;
 
 - (void)triggerUpdatesForLocalReferences:(DSTransaction*)transaction;
 
 - (void)updateAddressUsageOfSimplifiedMasternodeEntries:(NSArray*)simplifiedMasternodeEntries;
+
+-(NSArray <DSBlockchainIdentity *>*)allBlockchainIdentitiesArray;
+
+-(NSDictionary <NSData*,DSBlockchainIdentity *>*)allBlockchainIdentitiesByUniqueIdDictionary;
+
+- (DSBlockchainIdentity* _Nullable)blockchainIdentityForUniqueId:(UInt256)uniqueId;
+
+- (DSBlockchainIdentity* _Nullable)blockchainIdentityForUniqueId:(UInt256)uniqueId foundInWallet:(DSWallet*_Nullable*_Nullable)foundInWallet;
+
+// returns the amount received globally from the transaction (total outputs to change and/or receive addresses)
+- (uint64_t)amountReceivedFromTransaction:(DSTransaction *)transaction;
+
+// retuns the amount sent globally by the trasaction (total wallet outputs consumed, change and fee included)
+- (uint64_t)amountSentByTransaction:(DSTransaction *)transaction;
 
 @end
 
@@ -285,6 +329,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 -(void)chainWillStartSyncingBlockchain:(DSChain*)chain;
 -(void)chainFinishedSyncingTransactionsAndBlocks:(DSChain*)chain fromPeer:(DSPeer* _Nullable)peer onMainChain:(BOOL)onMainChain;
+-(void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain*)chain;
 -(void)chain:(DSChain*)chain receivedOrphanBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer;
 -(void)chain:(DSChain*)chain wasExtendedWithBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer;
 -(void)chain:(DSChain*)chain badBlockReceivedFromPeer:(DSPeer*)peer;

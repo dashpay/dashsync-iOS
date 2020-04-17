@@ -66,27 +66,35 @@ FOUNDATION_EXPORT NSString* const DSQuorumListDidChangeNotification;
 
 -(DSLocalMasternode*)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet* _Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet* _Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex operatorPublicKey:(DSBLSKey*)operatorPublicKey inOwnerWallet:(DSWallet* _Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex ownerPrivateKey:(DSECDSAKey*)ownerPrivateKey inVotingWallet:(DSWallet* _Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex votingKey:(DSECDSAKey*)votingKey;
 
--(DSLocalMasternode *)localMasternodeFromProviderRegistrationTransaction:(DSProviderRegistrationTransaction*)providerRegistrationTransaction save:(BOOL)save;
+-(DSLocalMasternode * _Nullable)localMasternodeFromProviderRegistrationTransaction:(DSProviderRegistrationTransaction*)providerRegistrationTransaction save:(BOOL)save;
 
 -(DSLocalMasternode * _Nullable)localMasternodeHavingProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash;
 
 -(DSLocalMasternode * _Nullable)localMasternodeUsingIndex:(uint32_t)index atDerivationPath:(DSDerivationPath*)derivationPath;
 
--(NSArray<DSLocalMasternode*>*)localMasternodesPreviouslyUsingIndex:(uint32_t)index atDerivationPath:(DSDerivationPath*)derivationPath;
+-(NSArray<DSLocalMasternode*>* _Nullable)localMasternodesPreviouslyUsingIndex:(uint32_t)index atDerivationPath:(DSDerivationPath*)derivationPath;
 
--(DSQuorumEntry*)quorumEntryForInstantSendRequestID:(UInt256)requestID withBlockHeightOffset:(uint32_t)blockHeightOffset;
+-(DSQuorumEntry* _Nullable)quorumEntryForInstantSendRequestID:(UInt256)requestID withBlockHeightOffset:(uint32_t)blockHeightOffset;
 
--(DSQuorumEntry*)quorumEntryForChainLockRequestID:(UInt256)requestID withBlockHeightOffset:(uint32_t)blockHeightOffset;
+-(DSQuorumEntry* _Nullable)quorumEntryForChainLockRequestID:(UInt256)requestID withBlockHeightOffset:(uint32_t)blockHeightOffset;
 
--(DSQuorumEntry*)quorumEntryForChainLockRequestID:(UInt256)requestID forBlockHeight:(uint32_t)blockHeight;
+-(DSQuorumEntry* _Nullable)quorumEntryForChainLockRequestID:(UInt256)requestID forBlockHeight:(uint32_t)blockHeight;
 
--(DSMasternodeList*)masternodeListForBlockHash:(UInt256)blockHash;
+-(DSMasternodeList* _Nullable)masternodeListForBlockHash:(UInt256)blockHash;
 
--(void)getMasternodeListForBlockHeight:(uint32_t)blockHeight error:(NSError**)error;
+-(BOOL)requestMasternodeListForBlockHeight:(uint32_t)blockHeight error:(NSError* _Nullable* _Nullable)error;
 
--(void)getMasternodeListForBlockHash:(UInt256)blockHash;
+-(BOOL)requestMasternodeListForBlockHash:(UInt256)blockHash;
 
 -(void)reloadMasternodeLists;
+
+@end
+
+@protocol DSMasternodeManagerDelegate
+
+@required
+
+-(void)chain:(DSChain*)chain changedCurrentMasternodeList:(DSMasternodeList*)masternodeList fromPeer:(DSPeer*)peer;
 
 @end
 

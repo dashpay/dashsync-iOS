@@ -16,4 +16,14 @@
     return [NSIndexPath indexPathWithIndexes:indexes length:self.length - 1];
 }
 
+- (NSString *)indexPathString;
+{
+    if (!self.length) return @"";
+    NSMutableString *indexString = [NSMutableString stringWithFormat:@"%lu",[self indexAtPosition:0]];
+    for (int i = 1; i < [self length]; i++){
+        [indexString appendString:[NSString stringWithFormat:@".%lu", [self indexAtPosition:i]]];
+    }
+    return indexString;
+}
+
 @end

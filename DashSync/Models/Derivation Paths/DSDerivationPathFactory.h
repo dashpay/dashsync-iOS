@@ -9,7 +9,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSAuthenticationKeysDerivationPath,DSWallet,DSMasternodeHoldingsDerivationPath,DSDerivationPath;
+@class DSAuthenticationKeysDerivationPath,DSWallet,DSMasternodeHoldingsDerivationPath,DSDerivationPath,DSCreditFundingDerivationPath;
 
 @interface DSDerivationPathFactory : NSObject
 
@@ -19,7 +19,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (DSAuthenticationKeysDerivationPath*)providerOwnerKeysDerivationPathForWallet:(DSWallet*)wallet;
 - (DSAuthenticationKeysDerivationPath*)providerOperatorKeysDerivationPathForWallet:(DSWallet*)wallet;
 - (DSMasternodeHoldingsDerivationPath*)providerFundsDerivationPathForWallet:(DSWallet*)wallet;
-- (DSAuthenticationKeysDerivationPath*)blockchainUsersKeysDerivationPathForWallet:(DSWallet*)wallet;
+
+- (DSCreditFundingDerivationPath*)blockchainIdentityRegistrationFundingDerivationPathForWallet:(DSWallet*)wallet;
+- (DSCreditFundingDerivationPath*)blockchainIdentityTopupFundingDerivationPathForWallet:(DSWallet*)wallet;
+- (DSAuthenticationKeysDerivationPath*)blockchainIdentityBLSKeysDerivationPathForWallet:(DSWallet*)wallet;
+- (DSAuthenticationKeysDerivationPath*)blockchainIdentityECDSAKeysDerivationPathForWallet:(DSWallet*)wallet;
 
 - (NSArray<DSDerivationPath*>*)loadedSpecializedDerivationPathsForWallet:(DSWallet*)wallet;
 - (NSArray<DSDerivationPath*>*)unloadedSpecializedDerivationPathsForWallet:(DSWallet*)wallet;
