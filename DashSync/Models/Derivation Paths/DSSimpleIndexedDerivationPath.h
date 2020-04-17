@@ -41,8 +41,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray *)privateKeysToIndex:(NSUInteger)index fromSeed:(NSData *)seed;
 
 // update addresses
-- (NSArray *)registerAddressesWithDefaultGapLimitWithError:(NSError**)error;
-- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit error:(NSError**)error;
+- (NSArray * _Nullable)registerAddressesWithDefaultGapLimitWithError:(NSError**)error;
+- (NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit error:(NSError**)error;
 
 @end
 

@@ -182,9 +182,13 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 
 -(void)fetchAllNetworkStateInformationWithCompletion:(void (^)(BOOL success, NSError * error))completion;
 
--(void)fetchNeededNetworkStateInformationWithCompletion:(void (^)(DSBlockchainIdentityRegistrationStep failureStep, NSError * error))completion;
+-(void)fetchNeededNetworkStateInformationWithCompletion:(void (^)(DSBlockchainIdentityRegistrationStep failureStep, NSError * _Nullable error))completion;
 
--(void)signStateTransition:(DSTransition*)transition withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion;
+-(void)signStateTransition:(DSTransition*)transition completion:(void (^ _Nullable)(BOOL success))completion;
+
+-(void)signStateTransition:(DSTransition*)transition forKeyIndex:(uint32_t)keyIndex ofType:(DSKeyType)signingAlgorithm completion:(void (^ _Nullable)(BOOL success))completion;
+
+-(BOOL)verifySignature:(NSData*)signature forKeyIndex:(uint32_t)keyIndex ofType:(DSKeyType)signingAlgorithm forMessageDigest:(UInt256)messageDigest;
 
 -(BOOL)verifySignature:(NSData*)signature ofType:(DSKeyType)signingAlgorithm forMessageDigest:(UInt256)messageDigest;
 
@@ -192,7 +196,7 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 
 -(void)createAndPublishRegistrationTransitionWithCompletion:(void (^ _Nullable)(NSDictionary * _Nullable successInfo, NSError * _Nullable error))completion;
 
--(void)signStateTransition:(DSTransition*)transition forKeyIndex:(uint32_t)keyIndex ofType:(DSKeyType)signingAlgorithm completion:(void (^ _Nullable)(BOOL success))completion;
+
 
 -(void)encryptData:(NSData*)data withKeyAtIndex:(uint32_t)index forRecipientKey:(DSKey*)recipientKey completion:(void (^ _Nullable)(NSData* encryptedData))completion;
 
@@ -224,7 +228,7 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 
 -(DSKeyType)typeOfKeyAtIndex:(NSUInteger)index;
 
--(DSKey*)keyAtIndex:(NSUInteger)index;
+-(DSKey* _Nullable)keyAtIndex:(NSUInteger)index;
 
 -(uint32_t)keyCountForKeyType:(DSKeyType)keyType;
 
@@ -232,11 +236,9 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 
 -(NSString*)localizedStatusOfKeyAtIndex:(NSUInteger)index;
 
--(DSKey*)createNewKeyOfType:(DSKeyType)type returnIndex:(uint32_t *)rIndex;
+-(DSKey* _Nullable)createNewKeyOfType:(DSKeyType)type saveKey:(BOOL)saveKey returnIndex:(uint32_t *)rIndex;
 
--(DSKey*)keyOfType:(DSKeyType)type atIndex:(uint32_t)rIndex;
-
--(uint32_t)registeredKeysOfType:(DSKeyType)type;
+-(DSKey* _Nullable)keyOfType:(DSKeyType)type atIndex:(uint32_t)rIndex;
 
 // MARK: - Dashpay
 
@@ -258,7 +260,7 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 
 - (void)updateDashpayProfileWithDisplayName:(NSString*)displayName publicMessage:(NSString*)publicMessage avatarURLString:(NSString *)avatarURLString;
 
-- (void)signedProfileDocumentTransitionWithPrompt:(NSString*)prompt completion:(void (^)(DSTransition * transition, BOOL cancelled, NSError * error))completion;
+- (void)signedProfileDocumentTransitionWithCompletion:(void (^)(DSTransition * transition, BOOL cancelled, NSError * error))completion;
 
 - (void)signAndPublishProfileWithCompletion:(void (^)(BOOL success, BOOL cancelled, NSError * error))completion;
 

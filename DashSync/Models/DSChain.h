@@ -303,9 +303,9 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 
 -(NSDictionary <NSData*,DSBlockchainIdentity *>*)allBlockchainIdentitiesByUniqueIdDictionary;
 
-- (DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId;
+- (DSBlockchainIdentity* _Nullable)blockchainIdentityForUniqueId:(UInt256)uniqueId;
 
-- (DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId foundInWallet:(DSWallet*_Nullable*_Nullable)foundInWallet;
+- (DSBlockchainIdentity* _Nullable)blockchainIdentityForUniqueId:(UInt256)uniqueId foundInWallet:(DSWallet*_Nullable*_Nullable)foundInWallet;
 
 // returns the amount received globally from the transaction (total outputs to change and/or receive addresses)
 - (uint64_t)amountReceivedFromTransaction:(DSTransaction *)transaction;

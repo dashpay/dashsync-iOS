@@ -1384,7 +1384,12 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     return [level objectAtIndex:0];
 }
 
+- (BOOL)isSizedForAddress {
+    return (self.length == 20);
+}
+
 - (NSString*)addressFromHash160DataForChain:(DSChain*)chain {
+    NSAssert(self.length == 20, @"The length of this data should be 20 bytes");
     if (self.length != 20) return nil;
     NSMutableData *d = [NSMutableData data];
     uint8_t v;

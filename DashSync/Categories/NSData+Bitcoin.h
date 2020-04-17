@@ -202,7 +202,9 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
     
 + (NSData * _Nullable)merkleRootFromHashes:(NSArray*)hashes;
 
-- (NSString*)addressFromHash160DataForChain:(DSChain*)chain;
+- (BOOL)isSizedForAddress;
+
+- (NSString* _Nullable)addressFromHash160DataForChain:(DSChain*)chain;
 
 + (NSData*)scriptPubKeyForAddress:(NSString*)address forChain:(DSChain*)chain;
 

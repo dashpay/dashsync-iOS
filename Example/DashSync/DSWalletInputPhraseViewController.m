@@ -42,7 +42,7 @@
  */
 
 - (IBAction)generateRandomPassphrase:(id)sender {
-    self.randomPassphrase = [DSWallet generateRandomSeed];
+    self.randomPassphrase = [DSWallet generateRandomSeedPhrase];
     self.inputSeedPhraseTextView.text = self.randomPassphrase;
     self.saveButton.enabled = TRUE;
 }

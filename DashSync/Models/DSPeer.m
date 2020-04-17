@@ -1303,20 +1303,20 @@
         dispatch_async(self.delegateQueue, ^{
             [self.transactionDelegate peer:self relayedTransaction:tx inBlock:currentBlock transactionIsRequestingInstantSendLock:isIxTransaction];
         });
+        #if LOG_FULL_TX_MESSAGE
+            DSDLog(@"%@:%u got %@ %@ %@", self.host, self.port, isIxTransaction?@"ix":@"tx", uint256_obj(tx.txHash),message.hexString);
+        #else
+            DSDLog(@"%@:%u got %@ %@", self.host, self.port, isIxTransaction?@"ix":@"tx", uint256_obj(tx.txHash));
+        #endif
     }
-    
-#if LOG_FULL_TX_MESSAGE
-    DSDLog(@"%@:%u got %@ %@ %@", self.host, self.port, isIxTransaction?@"ix":@"tx", uint256_obj(tx.txHash),message.hexString);
-#else
-    DSDLog(@"%@:%u got %@ %@", self.host, self.port, isIxTransaction?@"ix":@"tx", uint256_obj(tx.txHash));
-#endif
+
     
     if (self.currentBlock) { // we're collecting tx messages for a merkleblock
         UInt256 txHash = tx?tx.txHash:message.SHA256_2;
         if ([self.currentBlockTxHashes containsObject:uint256_obj(txHash)]) {
             [self.currentBlockTxHashes removeObject:uint256_obj(txHash)];
         } else {
-            DSDLog(@"%@:%u current block does not contain transaction %@ (contains %@)", self.host, self.port,uint256_data(tx.txHash).hexString,self.currentBlockTxHashes);
+            DSDLog(@"%@:%u current block does not contain transaction %@ (contains %@)", self.host, self.port,uint256_hex(txHash),self.currentBlockTxHashes);
         }
         
         if (self.currentBlockTxHashes.count == 0) { // we received the entire block including all matched tx

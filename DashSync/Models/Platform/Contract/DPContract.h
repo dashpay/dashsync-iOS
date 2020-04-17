@@ -51,7 +51,7 @@ typedef NS_ENUM(NSUInteger, DPContractState) {
 @property (copy, nonatomic) NSDictionary<NSString *, DSStringValueDictionary *> *definitions;
 
 - (instancetype)initWithLocalContractIdentifier:(NSString *)contractID
-                   documents:(NSDictionary<NSString *, DSStringValueDictionary *> *)documents onChain:(DSChain*)chain inManagedObjectContext:(NSManagedObjectContext*)managedObjectContext;
+                   documents:(NSDictionary<NSString *, DSStringValueDictionary *> *)documents onChain:(DSChain*)chain;
 
 - (instancetype)init NS_UNAVAILABLE;
 

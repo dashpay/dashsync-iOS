@@ -25,8 +25,6 @@
 #import "DSDocumentTransition.h"
 #import <arpa/inet.h>
 
-NS_ASSUME_NONNULL_BEGIN
-
 NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 
 @interface DSDAPIClient()
@@ -81,7 +79,6 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     
     __weak typeof(self) weakSelf = self;
     [blockchainIdentity signStateTransition:documentTransition
-                                  withPrompt:@""
                                   completion:^(BOOL success) {
                                       __strong typeof(weakSelf) strongSelf = weakSelf;
                                       if (!strongSelf) {
@@ -234,5 +231,3 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 
 
 @end
-
-NS_ASSUME_NONNULL_END
