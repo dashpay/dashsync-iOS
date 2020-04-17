@@ -73,7 +73,7 @@
                                                    outputAddresses:@[[k addressForChain:self.chain], [k addressForChain:self.chain]] outputAmounts:@[@100000000, @4900000000]
                                                            onChain:self.chain];
     
-    [tx signWithSerializedPrivateKeys:@[[k privateKeyStringForChain:self.chain]]];
+    [tx signWithSerializedPrivateKeys:@[[k serializedPrivateKeyForChain:self.chain]]];
     
     XCTAssertTrue([tx isSigned], @"[DSTransaction signWithSerializedPrivateKeys:]");
     
@@ -94,7 +94,7 @@
                                                       @1000000]
                                             onChain:self.chain];
     
-    [tx signWithSerializedPrivateKeys:@[[k privateKeyStringForChain:self.chain]]];
+    [tx signWithSerializedPrivateKeys:@[[k serializedPrivateKeyForChain:self.chain]]];
     
     XCTAssertTrue([tx isSigned], @"[DSTransaction signWithSerializedPrivateKeys:]");
     

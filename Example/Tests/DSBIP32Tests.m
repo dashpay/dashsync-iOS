@@ -190,13 +190,13 @@
     NSString *seedString = @"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f";
     NSData *seed = seedString.hexToData;
 
-    NSString *xprv = [DSDerivationPath serializedPrivateMasterFromSeed:seed forChain:self.chain];
+    NSString *xprv = [DSECDSAKey serializedPrivateMasterFromSeedData:seed forChain:self.chain];
 
     NSLog(@"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f xpriv = %@", xprv);
 
     XCTAssertEqualObjects(xprv,
                           @"xprv9s21ZrQH143K27s8Yy6TJSKmKUxTBuXJr4RDTjJ5Jqq13d9v2VzYymSoM4VodDK7nrQHTruX6TuBsGuEVXoo91GwZnmBcTaqUhgK7HeysNv",
-                          @"[DSBIP32Sequence serializedPrivateMasterFromSeed:forChain:]");
+                          @"[DSBIP32Sequence serializedPrivateMasterFromSeedData:forChain:]");
 }
 
 - (void)testBIP32SequenceSerializedMasterPublicKey
@@ -493,6 +493,8 @@
     DSKey * extendedPublicKeyFromSeed = [incomingFundsDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
     
     XCTAssertEqualObjects(extendedPublicKeyFromMasterContactDerivationPath.extendedPublicKeyData,extendedPublicKeyFromSeed.extendedPublicKeyData,@"The extended public keys should be the same");
+    
+    XCTAssertEqualObjects(extendedPublicKeyFromMasterContactDerivationPath.extendedPublicKeyData.hexString, @"3e7a0ef04c69004adffed522a0378ffa6851e4ce122d4c3a5c19081fced7a7b43e6fb903039d2fa3bd6d93a540214a6886d6c0c46bc45a95a11fef672125c4a0a553662008", @"Incorrect value for extended public key");
 }
 
 

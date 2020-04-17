@@ -183,14 +183,6 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 //sometimes we need to store the public key but not at generation time, use this method for that
 - (BOOL)storeExtendedPublicKeyUnderWalletUniqueId:(NSString* _Nonnull)walletUniqueId;
 
-+ (NSString * _Nullable)serializedPrivateMasterFromSeed:(NSData * _Nullable)seed forChain:(DSChain*)chain;
-
-// key used for authenticated API calls, i.e. bitauth: https://github.com/bitpay/bitauth
-+ (NSString * _Nullable)authPrivateKeyFromSeed:(NSData * _Nullable)seed forChain:(DSChain*)chain;
-
-// key used for BitID: https://github.com/bitid/bitid/blob/master/BIP_draft.md
-+ (NSString * _Nullable)bitIdPrivateKey:(uint32_t)n forURI:(NSString *)uri fromSeed:(NSData *)seed forChain:(DSChain*)chain;
-
 - (NSString * _Nullable)serializedExtendedPublicKey;
 
 - (NSString * _Nullable)serializedExtendedPrivateKeyFromSeed:(NSData * _Nullable)seed;

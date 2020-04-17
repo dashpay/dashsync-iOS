@@ -56,8 +56,8 @@
     XCTAssertEqualObjects(@"XbKPGyV1BpzzxNAggx6Q9a6o7GaBWTLhJS", [key addressForChain:self.chain], @"[DSKey keyWithPrivateKey:]");
     
     // compressed private key export
-    NSLog(@"privKey = %@", [key privateKeyStringForChain:self.chain]);
-    XCTAssertEqualObjects(@"XDHVuTeSrRs77u15134RPtiMrsj9KFDvsx1TwKUJxcgb4oiP6gA6", [key privateKeyStringForChain:self.chain],
+    NSLog(@"privKey = %@", [key serializedPrivateKeyForChain:self.chain]);
+    XCTAssertEqualObjects(@"XDHVuTeSrRs77u15134RPtiMrsj9KFDvsx1TwKUJxcgb4oiP6gA6", [key serializedPrivateKeyForChain:self.chain],
                           @"[DSKey privateKey]");
 }
 
@@ -72,8 +72,8 @@
     key = [DSECDSAKey keyWithBIP38Key:@"6PfV898iMrVs3d9gJSw5HTYyGhQRR5xRu5ji4GE6H5QdebT2YgK14Lu1E5"
                    andPassphrase:@"TestingOneTwoThree"
            onChain:self.chain];
-    NSLog(@"privKey = %@", [key privateKeyStringForChain:self.chain]);
-    XCTAssertEqualObjects(@"7sEJGJRPeGoNBsW8tKAk4JH52xbxrktPfJcNxEx3uf622ZrGR5k", [key privateKeyStringForChain:self.chain],
+    NSLog(@"privKey = %@", [key serializedPrivateKeyForChain:self.chain]);
+    XCTAssertEqualObjects(@"7sEJGJRPeGoNBsW8tKAk4JH52xbxrktPfJcNxEx3uf622ZrGR5k", [key serializedPrivateKeyForChain:self.chain],
                           @"[DSKey keyWithBIP38Key:andPassphrase:]");
     XCTAssertEqualObjects([key BIP38KeyWithPassphrase:@"TestingOneTwoThree" onChain:self.chain],
                           @"6PRT3Wy4p7MZETE3n56KzyjyizMsE26WnMWpSeSoZawawEm7jaeCVa2wMu",  //not EC multiplied (todo)
@@ -81,7 +81,7 @@
 
     // incorrect password test
     key = [DSECDSAKey keyWithBIP38Key:@"6PRW5o9FLp4gJDDVqJQKJFTpMvdsSGJxMYHtHaQBF3ooa8mwD69bapcDQn" andPassphrase:@"foobar" onChain:self.chain];
-    NSLog(@"privKey = %@", [key privateKeyStringForChain:self.chain]);
+    NSLog(@"privKey = %@", [key serializedPrivateKeyForChain:self.chain]);
     XCTAssertNil(key, @"[DSKey keyWithBIP38Key:andPassphrase:]");
 }
 #endif

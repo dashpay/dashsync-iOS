@@ -555,14 +555,29 @@
 }
 
 - (DSKey *)generateExtendedPublicKeyFromParentDerivationPath:(DSDerivationPath*)parentDerivationPath storeUnderWalletUniqueId:(NSString*)walletUniqueId {
+    NSAssert(parentDerivationPath.signingAlgorithm == self.signingAlgorithm, @"The signing algorithms must be the same");
+    NSParameterAssert(parentDerivationPath);
+    NSAssert(self.length > parentDerivationPath.length, @"length must be inferior to the parent derivation path length");
+    NSAssert(parentDerivationPath.extendedPublicKey, @"the parent derivation path must have an extended public key");
     if (![self length]) return nil; //there needs to be at least 1 length
-    if (self.signingAlgorithm == DSKeyType_ECDSA) {
-        return [self generateExtendedECDSAPublicKeyFromParentDerivationPath:parentDerivationPath storeUnderWalletUniqueId:walletUniqueId];
-    } else if (self.signingAlgorithm == DSKeyType_BLS) {
-        NSAssert(FALSE, @"Not yet implemented");
-        return nil; //todo
+    if (self.length <= parentDerivationPath.length) return nil; // we need to be longer
+    if (!parentDerivationPath.extendedPublicKey) return nil; //parent derivation path
+    if (parentDerivationPath.signingAlgorithm != self.signingAlgorithm) return nil;
+    for (NSInteger i = 0;i<[parentDerivationPath length] - 1;i++) {
+        NSAssert(uint256_eq([parentDerivationPath indexAtPosition:i],[self indexAtPosition:i]), @"This derivation path must start with elements of the parent derivation path");
+        if (!uint256_eq([parentDerivationPath indexAtPosition:i],[self indexAtPosition:i])) return nil;
     }
-    return nil;
+    
+    _extendedPublicKey = [parentDerivationPath.extendedPublicKey publicDeriveTo256BitDerivationPath:self derivationPathOffset:parentDerivationPath.length];
+    
+    NSAssert(_extendedPublicKey, @"extendedPublicKey should be set");
+    
+    if (walletUniqueId) {
+        setKeychainData(_extendedPublicKey.extendedPublicKeyData,[self walletBasedExtendedPublicKeyLocationStringForWalletUniqueID:walletUniqueId],NO);
+    }
+    
+    return _extendedPublicKey;
+
 }
 
 - (DSKey *)privateKeyForKnownAddress:(NSString*)address fromSeed:(NSData *)seed {
@@ -645,31 +660,25 @@
 
 
 - (NSArray *)serializedPrivateKeysAtIndexPaths:(NSArray*)indexPaths fromSeed:(NSData *)seed {
-    if (self.signingAlgorithm == DSKeyType_ECDSA) {
-        return [self serializedECDSAPrivateKeysAtIndexPaths:indexPaths fromSeed:seed];
-    } else if (self.signingAlgorithm == DSKeyType_BLS) {
-        return [self serializedBLSPrivateKeysAtIndexPaths:indexPaths fromSeed:seed];
+    if (! seed || ! indexPaths) return nil;
+    if (indexPaths.count == 0) return @[];
+    
+    NSMutableArray *serializedPrivateKeys = [NSMutableArray arrayWithCapacity:indexPaths.count];
+    DSKey * topKey = [DSKey keyWithSeedData:seed forKeyType:self.signingAlgorithm];
+    DSKey * derivationPathExtendedKey = [topKey privateDeriveTo256BitDerivationPath:self];
+    
+    for (NSIndexPath *indexPath in indexPaths) {
+        DSKey * privateKey = [derivationPathExtendedKey privateDeriveToPath:indexPath];
+        NSString * serializedPrivateKey = [privateKey serializedPrivateKeyForChain:self.chain];
+        NSAssert(serializedPrivateKey, @"The serialized private key should exist");
+        [serializedPrivateKeys addObject:serializedPrivateKey];
     }
-    return nil;
+    
+    return serializedPrivateKeys;
 }
 
 
-// MARK: - ECDSA Key Generation
-
-
-+ (NSString *)serializedPrivateMasterFromSeed:(NSData *)seed forChain:(DSChain*)chain
-{
-    if (! seed) return nil;
-    
-    UInt512 I;
-    
-    HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
-    
-    UInt256 secret = *(UInt256 *)&I, lChain = *(UInt256 *)&I.u8[sizeof(UInt256)];
-    
-    return serialize(0, 0, 0, lChain, [NSData dataWithBytes:&secret length:sizeof(secret)],[chain isMainnet]);
-}
-
+// MARK: - Deprecated
 
 //this is for upgrade purposes only
 - (DSKey *)deprecatedIncorrectExtendedPublicKeyFromSeed:(NSData *)seed
@@ -696,220 +705,13 @@
     return [DSKey keyWithExtendedPublicKeyData:mpk forKeyType:DSKeyType_ECDSA];
 }
 
-// master public key format is: 4 byte parent fingerprint || 32 byte chain code || 33 byte compressed public key
-- (DSKey *)generateExtendedECDSAPublicKeyFromParentDerivationPath:(DSDerivationPath *)parentDerivationPath storeUnderWalletUniqueId:(NSString*)walletUniqueId
-{
-    if (self.length <= parentDerivationPath.length) return nil; // we need to be longer
-    if (!parentDerivationPath.extendedPublicKeyData) return nil; //parent derivation path
-    if (![self length]) return nil; //there needs to be at least 1 length
-    NSMutableData *mpk = [NSMutableData secureData];
-    
-    UInt256 chain = *(const UInt256 *)((const uint8_t *)parentDerivationPath.extendedPublicKeyData.bytes + 4);
-    DSECPoint pubKey = *(const DSECPoint *)((const uint8_t *)parentDerivationPath.extendedPublicKeyData.bytes + 36);
-    //DSDLog(@"starting with pubkey %@",[NSData dataWithBytes:&pubKey length:sizeof(pubKey)].hexString);
-    for (NSInteger i = 0;i<[self length] - 1;i++) {
-        if (i < parentDerivationPath.length) {
-            if (!uint256_eq([parentDerivationPath indexAtPosition:i],[self indexAtPosition:i])) return nil;
-        } else {
-            CKDpub256(&pubKey, &chain, [self indexAtPosition:i],[self isHardenedAtPosition:i]);
-            //DSDLog(@"after %@ pubkey %@",[NSData dataWithUInt256:[self indexAtPosition:i]],[NSData dataWithBytes:&pubKey length:sizeof(pubKey)].hexString);
-        }
-    }
-    NSData * publicKeyParentData = [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
-    
-    [mpk appendBytes:publicKeyParentData.hash160.u32 length:4];
-    CKDpub256(&pubKey, &chain, [self indexAtPosition:[self length] - 1],[self isHardenedAtPosition:[self length] - 1]);
-    
-    DSDLog(@"after %@ pubkey %@",[NSData dataWithUInt256:[self indexAtPosition:[self length] - 1]],[NSData dataWithBytes:&pubKey length:sizeof(pubKey)].hexString);
-    [mpk appendBytes:&chain length:sizeof(chain)];
-    
-    NSData * publicKeyData = [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
-    
-    [mpk appendData:publicKeyData];
-    
-    _extendedPublicKey = [DSKey keyWithExtendedPublicKeyData:mpk forKeyType:DSKeyType_ECDSA];
-    NSAssert(_extendedPublicKey, @"extendedPublicKey should be set");
-    
-    if (walletUniqueId) {
-        setKeychainData(mpk,[self walletBasedExtendedPublicKeyLocationStringForWalletUniqueID:walletUniqueId],NO);
-    }
-    
-    return _extendedPublicKey;
-}
+// MARK: - Storage
 
 -(BOOL)storeExtendedPublicKeyUnderWalletUniqueId:(NSString*)walletUniqueId {
     if (!_extendedPublicKey) return FALSE;
     NSParameterAssert(walletUniqueId);
     setKeychainData(_extendedPublicKey.extendedPublicKeyData,[self walletBasedExtendedPublicKeyLocationStringForWalletUniqueID:walletUniqueId],NO);
     return TRUE;
-}
-
-- (NSData *)generateECDSAPublicKeyFromSeed:(NSData *)seed atIndexPath:(NSIndexPath*)indexPath storeUnderWalletUniqueId:(NSString*)walletUniqueId
-{
-    if (! seed) return nil;
-    if (![self length]) return nil; //there needs to be at least 1 length
-    NSMutableData *mpk = [NSMutableData secureData];
-    UInt512 I;
-    
-    HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
-    
-    UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
-    
-    for (NSInteger i = 0;i<[self length];i++) {
-        CKDpriv256(&secret, &chain, [self indexAtPosition:i],[self isHardenedAtPosition:i]);
-    }
-    for (NSInteger i = 0;i<[indexPath length] - 1;i++) {
-        uint32_t derivation = (uint32_t)[indexPath indexAtPosition:i];
-        CKDpriv(&secret, &chain, derivation);
-    }
-    
-    [mpk appendBytes:[DSECDSAKey keyWithSecret:secret compressed:YES].hash160.u32 length:4];
-    CKDpriv(&secret, &chain, (uint32_t)[indexPath indexAtPosition:[indexPath length] - 1]); // account 0H
-    
-    [mpk appendBytes:&chain length:sizeof(chain)];
-    [mpk appendData:[DSECDSAKey keyWithSecret:secret compressed:YES].publicKeyData];
-    
-    return mpk;
-}
-
-- (NSArray *)serializedECDSAPrivateKeysAtIndexPaths:(NSArray*)indexPaths fromSeed:(NSData *)seed
-{
-    if (! seed || ! indexPaths) return nil;
-    if (indexPaths.count == 0) return @[];
-    
-    NSMutableArray *a = [NSMutableArray arrayWithCapacity:indexPaths.count];
-    UInt512 I;
-    
-    HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
-    
-    UInt256 secretRoot = *(UInt256 *)&I, chainRoot = *(UInt256 *)&I.u8[sizeof(UInt256)];
-    uint8_t version;
-    if ([self.chain isMainnet]) {
-        version = DASH_PRIVKEY;
-    } else {
-        version = DASH_PRIVKEY_TEST;
-    }
-    
-    for (NSInteger i = 0;i<[self length];i++) {
-        CKDpriv256(&secretRoot, &chainRoot, [self indexAtPosition:i],[self isHardenedAtPosition:i]);
-    }
-
-    
-    for (NSIndexPath *indexPath in indexPaths) {
-        
-        UInt256 secret = secretRoot;
-        UInt256 chain = chainRoot;
-        
-        NSMutableData *privKey = [NSMutableData secureDataWithCapacity:34];
-        
-        for (NSInteger i = 0;i<[indexPath length];i++) {
-            uint32_t derivation = (uint32_t)[indexPath indexAtPosition:i];
-            CKDpriv(&secret, &chain, derivation);
-        }
-        
-        [privKey appendBytes:&version length:1];
-        [privKey appendBytes:&secret length:sizeof(secret)];
-        [privKey appendBytes:"\x01" length:1]; // specifies compressed pubkey format
-        [a addObject:[NSString base58checkWithData:privKey]];
-    }
-    
-    return a;
-}
-
-// MARK: - BLS Key Generation
-
-- (NSArray *)serializedBLSPrivateKeysAtIndexPaths:(NSArray*)indexPaths fromSeed:(NSData *)seed
-{
-    if (! seed || ! indexPaths) return nil;
-    if (indexPaths.count == 0) return @[];
-    
-    NSMutableArray *a = [NSMutableArray arrayWithCapacity:indexPaths.count];
-    uint8_t version;
-    if ([self.chain isMainnet]) {
-        version = DASH_PRIVKEY;
-    } else {
-        version = DASH_PRIVKEY_TEST;
-    }
-    DSBLSKey * topKey = [DSBLSKey extendedPrivateKeyWithSeedData:seed];
-    DSBLSKey * derivationPathExtendedKey = [topKey privateDeriveToPath:[self baseIndexPath]];
-    
-    for (NSIndexPath *indexPath in indexPaths) {
-        NSMutableData *privKey = [NSMutableData secureDataWithCapacity:34];
-        DSBLSKey * privateKey = [derivationPathExtendedKey privateDeriveToPath:indexPath];
-        [privKey appendBytes:&version length:1];
-        [privKey appendUInt256:[privateKey secretKey]];
-        [privKey appendBytes:"\x01" length:1]; // specifies compressed pubkey format
-        [a addObject:[NSString base58checkWithData:privKey]];
-    }
-    
-    return a;
-}
-
-// MARK: - Authentication Key Generation
-
-+ (NSString *)authPrivateKeyFromSeed:(NSData *)seed forChain:(DSChain*)chain
-{
-    if (! seed) return nil;
-    
-    UInt512 I;
-    
-    HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
-    
-    UInt256 secret = *(UInt256 *)&I, chainHash = *(UInt256 *)&I.u8[sizeof(UInt256)];
-    
-    uint8_t version;
-    if ([chain isMainnet]) {
-        version = DASH_PRIVKEY;
-    } else {
-        version = DASH_PRIVKEY_TEST;
-    }
-    
-    // path m/1H/0 (same as copay uses for bitauth)
-    CKDpriv(&secret, &chainHash, 1 | BIP32_HARD);
-    CKDpriv(&secret, &chainHash, 0);
-    
-    NSMutableData *privKey = [NSMutableData secureDataWithCapacity:34];
-    
-    [privKey appendBytes:&version length:1];
-    [privKey appendBytes:&secret length:sizeof(secret)];
-    [privKey appendBytes:"\x01" length:1]; // specifies compressed pubkey format
-    return [NSString base58checkWithData:privKey];
-}
-
-// key used for BitID: https://github.com/bitid/bitid/blob/master/BIP_draft.md
-+ (NSString *)bitIdPrivateKey:(uint32_t)n forURI:(NSString *)uri fromSeed:(NSData *)seed forChain:(DSChain*)chain
-{
-    NSUInteger len = [uri lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
-    NSMutableData *data = [NSMutableData dataWithCapacity:sizeof(n) + len];
-    
-    [data appendUInt32:n];
-    [data appendBytes:uri.UTF8String length:len];
-    
-    UInt256 hash = data.SHA256;
-    UInt512 I;
-    
-    HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
-    
-    UInt256 secret = *(UInt256 *)&I, chainHash = *(UInt256 *)&I.u8[sizeof(UInt256)];
-    uint8_t version;
-    if ([chain isMainnet]) {
-        version = DASH_PRIVKEY;
-    } else {
-        version = DASH_PRIVKEY_TEST;
-    }
-    
-    CKDpriv(&secret, &chainHash, 13 | BIP32_HARD); // m/13H
-    CKDpriv(&secret, &chainHash, CFSwapInt32LittleToHost(hash.u32[0]) | BIP32_HARD); // m/13H/aH
-    CKDpriv(&secret, &chainHash, CFSwapInt32LittleToHost(hash.u32[1]) | BIP32_HARD); // m/13H/aH/bH
-    CKDpriv(&secret, &chainHash, CFSwapInt32LittleToHost(hash.u32[2]) | BIP32_HARD); // m/13H/aH/bH/cH
-    CKDpriv(&secret, &chainHash, CFSwapInt32LittleToHost(hash.u32[3]) | BIP32_HARD); // m/13H/aH/bH/cH/dH
-    
-    NSMutableData *privKey = [NSMutableData secureDataWithCapacity:34];
-    
-    [privKey appendBytes:&version length:1];
-    [privKey appendBytes:&secret length:sizeof(secret)];
-    [privKey appendBytes:"\x01" length:1]; // specifies compressed pubkey format
-    return [NSString base58checkWithData:privKey];
 }
 
 // MARK: - Serializations

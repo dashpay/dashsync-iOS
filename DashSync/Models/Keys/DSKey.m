@@ -67,7 +67,7 @@
     return [[NSData dataWithUInt160:randomNumber] addressFromHash160DataForChain:chain];
 }
 
-- (NSString *)privateKeyStringForChain:(DSChain*)chain {
+- (NSString *)serializedPrivateKeyForChain:(DSChain*)chain {
     return nil;
 }
 

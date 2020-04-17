@@ -210,7 +210,7 @@
     return [NSData dataWithUInt256:self.secretKey].hexString;
 }
 
-- (NSString *)privateKeyStringForChain:(DSChain*)chain
+- (NSString *)serializedPrivateKeyForChain:(DSChain*)chain
 {
     if (uint256_is_zero(self.secretKey)) return nil;
     
