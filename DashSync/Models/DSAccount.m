@@ -1666,7 +1666,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                     }];
                 }
                 else {
-                    [self sweepPrivateKey:[key privateKeyStringForChain:self.wallet.chain] withFee:[userInfo[AUTH_SWEEP_FEE] boolValue] completion:sweepCompletion];
+                    [self sweepPrivateKey:[key serializedPrivateKeyForChain:self.wallet.chain] withFee:[userInfo[AUTH_SWEEP_FEE] boolValue] completion:sweepCompletion];
                 }
             });
         } cancel:^{

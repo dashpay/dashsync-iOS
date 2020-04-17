@@ -56,8 +56,8 @@
     XCTAssertEqualObjects(@"XbKPGyV1BpzzxNAggx6Q9a6o7GaBWTLhJS", [key addressForChain:self.chain], @"[DSKey keyWithPrivateKey:]");
     
     // compressed private key export
-    NSLog(@"privKey = %@", [key privateKeyStringForChain:self.chain]);
-    XCTAssertEqualObjects(@"XDHVuTeSrRs77u15134RPtiMrsj9KFDvsx1TwKUJxcgb4oiP6gA6", [key privateKeyStringForChain:self.chain],
+    NSLog(@"privKey = %@", [key serializedPrivateKeyForChain:self.chain]);
+    XCTAssertEqualObjects(@"XDHVuTeSrRs77u15134RPtiMrsj9KFDvsx1TwKUJxcgb4oiP6gA6", [key serializedPrivateKeyForChain:self.chain],
                           @"[DSKey privateKey]");
 }
 
@@ -72,8 +72,8 @@
     key = [DSECDSAKey keyWithBIP38Key:@"6PfV898iMrVs3d9gJSw5HTYyGhQRR5xRu5ji4GE6H5QdebT2YgK14Lu1E5"
                    andPassphrase:@"TestingOneTwoThree"
            onChain:self.chain];
-    NSLog(@"privKey = %@", [key privateKeyStringForChain:self.chain]);
-    XCTAssertEqualObjects(@"7sEJGJRPeGoNBsW8tKAk4JH52xbxrktPfJcNxEx3uf622ZrGR5k", [key privateKeyStringForChain:self.chain],
+    NSLog(@"privKey = %@", [key serializedPrivateKeyForChain:self.chain]);
+    XCTAssertEqualObjects(@"7sEJGJRPeGoNBsW8tKAk4JH52xbxrktPfJcNxEx3uf622ZrGR5k", [key serializedPrivateKeyForChain:self.chain],
                           @"[DSKey keyWithBIP38Key:andPassphrase:]");
     XCTAssertEqualObjects([key BIP38KeyWithPassphrase:@"TestingOneTwoThree" onChain:self.chain],
                           @"6PRT3Wy4p7MZETE3n56KzyjyizMsE26WnMWpSeSoZawawEm7jaeCVa2wMu",  //not EC multiplied (todo)
@@ -81,7 +81,7 @@
 
     // incorrect password test
     key = [DSECDSAKey keyWithBIP38Key:@"6PRW5o9FLp4gJDDVqJQKJFTpMvdsSGJxMYHtHaQBF3ooa8mwD69bapcDQn" andPassphrase:@"foobar" onChain:self.chain];
-    NSLog(@"privKey = %@", [key privateKeyStringForChain:self.chain]);
+    NSLog(@"privKey = %@", [key serializedPrivateKeyForChain:self.chain]);
     XCTAssertNil(key, @"[DSKey keyWithBIP38Key:andPassphrase:]");
 }
 #endif
@@ -279,8 +279,8 @@
     NSData * messageData2 = [NSData dataWithBytes:message2 length:3];
     NSData * messageData3 = [NSData dataWithBytes:message3 length:4];
     NSData * messageData4 = [NSData dataWithBytes:message4 length:2];
-    DSBLSKey * keyPair1 = [DSBLSKey keyWithPrivateKeyFromSeed:seedData1];
-    DSBLSKey * keyPair2 = [DSBLSKey keyWithPrivateKeyFromSeed:seedData2];
+    DSBLSKey * keyPair1 = [DSBLSKey keyWithSeedData:seedData1];
+    DSBLSKey * keyPair2 = [DSBLSKey keyWithSeedData:seedData2];
     
     uint32_t fingerprint1 =keyPair1.publicKeyFingerprint;
     XCTAssertEqual(fingerprint1, 0x26d53247,@"Testing BLS private child public key fingerprint");
@@ -317,7 +317,7 @@
     NSData * seedData1 = [NSData dataWithBytes:seed1 length:5];
     uint8_t message1[3] = {7, 8, 9};
     NSData * messageData1 = [NSData dataWithBytes:message1 length:3];
-    DSBLSKey * keyPair1 = [DSBLSKey keyWithPrivateKeyFromSeed:seedData1];
+    DSBLSKey * keyPair1 = [DSBLSKey keyWithSeedData:seedData1];
     
     UInt768 signature1 = [keyPair1 signData:messageData1];
     

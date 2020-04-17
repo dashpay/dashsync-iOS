@@ -67,6 +67,7 @@ int DSSecp256k1PointMul(DSECPoint * p, const UInt256 * i);
 
 @property (nonatomic, readonly, nullable) const UInt256 *secretKey;
 
++ (nullable instancetype)keyWithSeedData:(NSData *)data;
 + (nullable instancetype)keyWithExtendedPrivateKeyData:(NSData*)extendedPrivateKeyData;
 + (nullable instancetype)keyWithExtendedPublicKeyData:(NSData*)extendedPublicKeyData;
 + (nullable instancetype)keyWithPrivateKey:(NSString *)privateKey onChain:(DSChain*)chain;
@@ -77,6 +78,7 @@ int DSSecp256k1PointMul(DSECPoint * p, const UInt256 * i);
 
 + (nullable instancetype)keyWithDHKeyExchangeWithPublicKey:(DSECDSAKey *)publicKey forPrivateKey:(DSECDSAKey*)privateKey;
 
+- (nullable instancetype)initWithSeedData:(NSData*)seedData;
 - (nullable instancetype)initWithExtendedPrivateKeyData:(NSData*)extendedPrivateKeyData;
 - (nullable instancetype)initWithPrivateKey:(NSString *)privateKey onChain:(DSChain*)chain;
 - (nullable instancetype)initWithSecret:(UInt256)secret compressed:(BOOL)compressed;
@@ -87,13 +89,19 @@ int DSSecp256k1PointMul(DSECPoint * p, const UInt256 * i);
 - (nullable instancetype)initWithDHKeyExchangeWithPublicKey:(DSECDSAKey *)publicKey forPrivateKey:(DSECDSAKey*)privateKey;
 
 - (NSData * _Nullable)sign:(UInt256)md;
-
-- (NSString * _Nullable)privateKeyStringForChain:(DSChain* _Nonnull)chain;
 // Pieter Wuille's compact signature encoding used for bitcoin message signing
 // to verify a compact signature, recover a public key from the signature and verify that it matches the signer's pubkey
 - (NSData * _Nullable)compactSign:(UInt256)md;
 
 - (BOOL)hasPrivateKey;
+
++ (NSString * _Nullable)serializedPrivateMasterFromSeedData:(NSData *)seedData forChain:(DSChain*)chain;
+
+// key used for authenticated API calls, i.e. bitauth: https://github.com/bitpay/bitauth
++ (NSString * _Nullable)serializedAuthPrivateKeyFromSeed:(NSData * _Nullable)seed forChain:(DSChain*)chain;
+
+// key used for BitID: https://github.com/bitid/bitid/blob/master/BIP_draft.md
++ (NSString * _Nullable)serializedBitIdPrivateKey:(uint32_t)n forURI:(NSString *)uri fromSeed:(NSData *)seed forChain:(DSChain*)chain;
 
 @end
 

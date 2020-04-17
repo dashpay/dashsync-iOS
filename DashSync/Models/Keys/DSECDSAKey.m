@@ -252,6 +252,10 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
 
 @implementation DSECDSAKey
 
++ (nullable instancetype)keyWithSeedData:(NSData *)data {
+    return [[self alloc] initWithSeedData:data];
+}
+
 + (instancetype)keyWithPrivateKey:(NSString *)privateKey onChain:(DSChain*)chain
 {
     return [[self alloc] initWithPrivateKey:privateKey onChain:chain];
@@ -296,6 +300,23 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     _isExtended = FALSE;
     
     return self;
+}
+
+- (instancetype)initWithSeedData:(NSData*)seedData
+{
+    if (! (self = [self init])) return nil;
+    
+    UInt512 I;
+       
+   HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seedData.bytes, seedData.length);
+   
+   UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
+
+    _seckey = secret;
+    _compressed = YES;
+    _chaincode = chain;
+    
+    return (secp256k1_ec_seckey_verify(_ctx, _seckey.u8)) ? self : nil;
 }
 
 - (instancetype)initWithSecret:(UInt256)secret compressed:(BOOL)compressed
@@ -436,7 +457,87 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     return self;
 }
 
-- (nullable NSString *)privateKeyStringForChain:(DSChain*)chain
+// MARK: - Authentication Key Generation
+
++ (NSString *)serializedAuthPrivateKeyFromSeed:(NSData *)seed forChain:(DSChain*)chain
+{
+    if (! seed) return nil;
+    
+    UInt512 I;
+    
+    HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
+    
+    UInt256 secret = *(UInt256 *)&I, chainHash = *(UInt256 *)&I.u8[sizeof(UInt256)];
+    
+    uint8_t version;
+    if ([chain isMainnet]) {
+        version = DASH_PRIVKEY;
+    } else {
+        version = DASH_PRIVKEY_TEST;
+    }
+    
+    // path m/1H/0 (same as copay uses for bitauth)
+    CKDpriv(&secret, &chainHash, 1 | BIP32_HARD);
+    CKDpriv(&secret, &chainHash, 0);
+    
+    NSMutableData *privKey = [NSMutableData secureDataWithCapacity:34];
+    
+    [privKey appendBytes:&version length:1];
+    [privKey appendBytes:&secret length:sizeof(secret)];
+    [privKey appendBytes:"\x01" length:1]; // specifies compressed pubkey format
+    return [NSString base58checkWithData:privKey];
+}
+
+// key used for BitID: https://github.com/bitid/bitid/blob/master/BIP_draft.md
++ (NSString *)serializedBitIdPrivateKey:(uint32_t)n forURI:(NSString *)uri fromSeed:(NSData *)seed forChain:(DSChain*)chain
+{
+    NSUInteger len = [uri lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+    NSMutableData *data = [NSMutableData dataWithCapacity:sizeof(n) + len];
+    
+    [data appendUInt32:n];
+    [data appendBytes:uri.UTF8String length:len];
+    
+    UInt256 hash = data.SHA256;
+    UInt512 I;
+    
+    HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
+    
+    UInt256 secret = *(UInt256 *)&I, chainHash = *(UInt256 *)&I.u8[sizeof(UInt256)];
+    uint8_t version;
+    if ([chain isMainnet]) {
+        version = DASH_PRIVKEY;
+    } else {
+        version = DASH_PRIVKEY_TEST;
+    }
+    
+    CKDpriv(&secret, &chainHash, 13 | BIP32_HARD); // m/13H
+    CKDpriv(&secret, &chainHash, CFSwapInt32LittleToHost(hash.u32[0]) | BIP32_HARD); // m/13H/aH
+    CKDpriv(&secret, &chainHash, CFSwapInt32LittleToHost(hash.u32[1]) | BIP32_HARD); // m/13H/aH/bH
+    CKDpriv(&secret, &chainHash, CFSwapInt32LittleToHost(hash.u32[2]) | BIP32_HARD); // m/13H/aH/bH/cH
+    CKDpriv(&secret, &chainHash, CFSwapInt32LittleToHost(hash.u32[3]) | BIP32_HARD); // m/13H/aH/bH/cH/dH
+    
+    NSMutableData *privKey = [NSMutableData secureDataWithCapacity:34];
+    
+    [privKey appendBytes:&version length:1];
+    [privKey appendBytes:&secret length:sizeof(secret)];
+    [privKey appendBytes:"\x01" length:1]; // specifies compressed pubkey format
+    return [NSString base58checkWithData:privKey];
+}
+
++ (NSString *)serializedPrivateMasterFromSeedData:(NSData *)seedData forChain:(DSChain*)chain
+{
+    if (! seedData) return nil;
+    
+    UInt512 I;
+    
+    HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seedData.bytes, seedData.length);
+    
+    UInt256 secret = *(UInt256 *)&I, lChain = *(UInt256 *)&I.u8[sizeof(UInt256)];
+    
+    return serialize(0, 0, 0, lChain, [NSData dataWithBytes:&secret length:sizeof(secret)],[chain isMainnet]);
+}
+
+- (nullable NSString *)serializedPrivateKeyForChain:(DSChain*)chain
 {
     NSParameterAssert(chain);
     
@@ -468,8 +569,9 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
                                           (self.compressed ? SECP256K1_EC_COMPRESSED : SECP256K1_EC_UNCOMPRESSED));
             if (len == d.length) self.pubkey = d;
         }
+        NSAssert(self.pubkey, @"Public key data should exist");
     }
-    
+    NSAssert(self.pubkey, @"Public key data should exist");
     return self.pubkey;
 }
 
@@ -480,6 +582,7 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     [data appendUInt32:self.fingerprint];
     [data appendUInt256:self.chaincode];
     [data appendData:[self publicKeyData]];
+    NSAssert(data.length >= 4 + sizeof(UInt256) + sizeof(DSECPoint), @"extended public key is wrong size");
     return [data copy];
 }
 
@@ -584,6 +687,11 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     return DSKeyType_ECDSA;
 }
 
+- (void)forgetPrivateKey {
+    [self publicKeyData];
+    _seckey = UINT256_ZERO;
+}
+
 // MARK: - Derivation
 
 -(DSECDSAKey*)privateDeriveToPath:(NSIndexPath*)indexPath {
@@ -602,6 +710,7 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     childKey.chaincode = chain;
     childKey.fingerprint = fingerprint;
     childKey.isExtended = TRUE;
+    NSAssert(childKey, @"Child key should be created");
     return childKey;
 }
 
@@ -616,6 +725,55 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     uint32_t fingerprint = publicKeyData.hash160.u32[0];
     
     CKDpub(&pubKey, &chain, (uint32_t)[indexPath indexAtPosition:[indexPath length] - 1]);
+    
+    publicKeyData = [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
+    DSECDSAKey * childKey = [DSECDSAKey keyWithPublicKeyData:publicKeyData];
+    childKey.chaincode = chain;
+    childKey.fingerprint = fingerprint;
+    childKey.isExtended = TRUE;
+    
+    NSAssert(childKey, @"Public key should be created");
+    return childKey;
+}
+
+- (instancetype)privateDeriveTo256BitDerivationPath:(DSDerivationPath*)derivationPath {
+    UInt256 chain = self.chaincode;
+    UInt256 secret = self.seckey;
+    for (NSInteger i = 0;i<[derivationPath length] - 1;i++) {
+        UInt256 derivation = [derivationPath indexAtPosition:i];
+        BOOL isHardenedAtPosition = [derivationPath isHardenedAtPosition:i];
+        CKDpriv256(&secret, &chain, derivation,isHardenedAtPosition);
+    }
+    uint32_t fingerprint = [DSECDSAKey keyWithSecret:secret compressed:YES].hash160.u32[0];
+    CKDpriv256(&secret, &chain, [derivationPath indexAtPosition:[derivationPath length] - 1],[derivationPath isHardenedAtPosition:[derivationPath length] - 1]);
+    DSECDSAKey * childKey = [DSECDSAKey keyWithSecret:secret compressed:YES];
+    childKey.chaincode = chain;
+    childKey.fingerprint = fingerprint;
+    childKey.isExtended = TRUE;
+    NSAssert(childKey, @"Child key should be created");
+    return childKey;
+}
+
+- (instancetype)publicDeriveTo256BitDerivationPath:(DSDerivationPath*)derivationPath {
+    return [self publicDeriveTo256BitDerivationPath:derivationPath derivationPathOffset:0];
+}
+
+- (instancetype)publicDeriveTo256BitDerivationPath:(DSDerivationPath*)derivationPath derivationPathOffset:(NSUInteger)derivationPathOffset {
+    NSAssert(derivationPath.length > derivationPathOffset, @"derivationPathOffset must be smaller that the derivation path length");
+    UInt256 chain = self.chaincode;
+    DSECPoint pubKey = *(const DSECPoint *)((const uint8_t *)self.publicKeyData.bytes);
+    for (NSInteger i = derivationPathOffset;i<[derivationPath length] - 1;i++) {
+        UInt256 derivation = [derivationPath indexAtPosition:i];
+        BOOL isHardenedAtPosition = [derivationPath isHardenedAtPosition:i];
+        CKDpub256(&pubKey, &chain, derivation,isHardenedAtPosition);
+    }
+    NSData * publicKeyData = [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
+    uint32_t fingerprint = publicKeyData.hash160.u32[0];
+    
+    UInt256 derivation = [derivationPath indexAtPosition:[derivationPath length] - 1];
+    BOOL isHardenedAtPosition = [derivationPath isHardenedAtPosition:[derivationPath length] - 1];
+    
+    CKDpub256(&pubKey, &chain, derivation,isHardenedAtPosition);
     
     publicKeyData = [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
     DSECDSAKey * childKey = [DSECDSAKey keyWithPublicKeyData:publicKeyData];

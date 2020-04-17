@@ -621,7 +621,7 @@
             @autoreleasepool {
                 NSString *privKey = getKeychainString(AUTH_PRIVKEY_KEY, nil);
                 if (! privKey) {
-                    privKey = [DSDerivationPath authPrivateKeyFromSeed:seed forChain:self.chain];
+                    privKey = [DSECDSAKey serializedAuthPrivateKeyFromSeed:seed forChain:self.chain];
                     setKeychainString(privKey, AUTH_PRIVKEY_KEY, NO);
                 }
                 

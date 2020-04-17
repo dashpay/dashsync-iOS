@@ -20,10 +20,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,readonly) UInt256 secretKey;
 @property (nonatomic,readonly) UInt384 publicKey;
 
-+ (nullable instancetype)keyWithPrivateKeyFromSeed:(NSData *)seed;
-- (nullable instancetype)initWithPrivateKeyFromSeed:(NSData *)seed;
-+ (nullable instancetype)keyWithExtendedPrivateKeyFromSeed:(NSData *)seed;
-- (nullable instancetype)initWithExtendedPrivateKeyFromSeed:(NSData *)seed;
++ (nullable instancetype)keyWithSeedData:(NSData *)data;
+- (nullable instancetype)initWithSeedData:(NSData*)seedData;
++ (nullable instancetype)extendedPrivateKeyWithSeedData:(NSData *)seed;
+- (nullable instancetype)initWithExtendedPrivateKeyWithSeedData:(NSData *)seed;
 + (nullable instancetype)keyWithExtendedPrivateKeyData:(NSData*)extendedPrivateKey;
 - (nullable instancetype)initWithExtendedPrivateKeyData:(NSData*)extendedPrivateKey;
 + (nullable instancetype)keyWithExtendedPublicKeyData:(NSData*)extendedPublicKey;

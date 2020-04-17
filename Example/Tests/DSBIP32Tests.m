@@ -61,13 +61,13 @@
 -(void)testBLSFingerprintFromSeed {
     uint8_t seed[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     NSData * seedData = [NSData dataWithBytes:seed length:10];
-    DSBLSKey * keyPair = [DSBLSKey keyWithPrivateKeyFromSeed:seedData];
+    DSBLSKey * keyPair = [DSBLSKey keyWithSeedData:seedData];
     uint32_t fingerprint =keyPair.publicKeyFingerprint;
     XCTAssertEqual(fingerprint, 0xddad59bb,@"Testing BLS private child public key fingerprint");
     
     uint8_t seed2[] = {1, 50, 6, 244, 24, 199, 1, 25};
     NSData * seedData2 = [NSData dataWithBytes:seed2 length:8];
-    DSBLSKey * keyPair2 = [DSBLSKey keyWithExtendedPrivateKeyFromSeed:seedData2];
+    DSBLSKey * keyPair2 = [DSBLSKey extendedPrivateKeyWithSeedData:seedData2];
     uint32_t fingerprint2 = keyPair2.publicKeyFingerprint;
     XCTAssertEqual(fingerprint2, 0xa4700b27,@"Testing BLS extended private child public key fingerprint");
 }
@@ -99,7 +99,7 @@
 -(void)testBLSDerivation {
     uint8_t seed[] = {1, 50, 6, 244, 24, 199, 1, 25};
     NSData * seedData = [NSData dataWithBytes:seed length:8];
-    DSBLSKey * keyPair = [DSBLSKey keyWithExtendedPrivateKeyFromSeed:seedData];
+    DSBLSKey * keyPair = [DSBLSKey extendedPrivateKeyWithSeedData:seedData];
     
     UInt256 chainCode = keyPair.chainCode;
     XCTAssertEqualObjects([NSData dataWithUInt256:chainCode].hexString, @"d8b12555b4cc5578951e4a7c80031e22019cc0dce168b3ed88115311b8feb1e3",@"Testing BLS derivation chain code");
@@ -190,13 +190,13 @@
     NSString *seedString = @"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f";
     NSData *seed = seedString.hexToData;
 
-    NSString *xprv = [DSDerivationPath serializedPrivateMasterFromSeed:seed forChain:self.chain];
+    NSString *xprv = [DSECDSAKey serializedPrivateMasterFromSeedData:seed forChain:self.chain];
 
     NSLog(@"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f xpriv = %@", xprv);
 
     XCTAssertEqualObjects(xprv,
                           @"xprv9s21ZrQH143K27s8Yy6TJSKmKUxTBuXJr4RDTjJ5Jqq13d9v2VzYymSoM4VodDK7nrQHTruX6TuBsGuEVXoo91GwZnmBcTaqUhgK7HeysNv",
-                          @"[DSBIP32Sequence serializedPrivateMasterFromSeed:forChain:]");
+                          @"[DSBIP32Sequence serializedPrivateMasterFromSeedData:forChain:]");
 }
 
 - (void)testBIP32SequenceSerializedMasterPublicKey
@@ -351,14 +351,32 @@
     
     DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentitiesECDSAKeysDerivationPathForWallet:wallet];
     
-    [derivationPath generateExtendedECDSAPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueIDString storePrivateKey:YES];
+    [derivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueIDString storePrivateKey:YES];
     
-    const NSUInteger indexes[] = {1,5};
+    const NSUInteger indexes1[] = {1,5};
+    const NSUInteger indexes2[] = {4,6};
     
-    DSKey * privateKey = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndexes:indexes length:2]];
-    DSKey * publicKey = [derivationPath publicKeyAtIndexPath:[NSIndexPath indexPathWithIndexes:indexes length:2]];
+    NSIndexPath * indexPath1 = [NSIndexPath indexPathWithIndexes:indexes1 length:2];
+    NSIndexPath * indexPath2 = [NSIndexPath indexPathWithIndexes:indexes2 length:2];
     
-    XCTAssertEqualObjects(privateKey.publicKeyData,publicKey.publicKeyData,@"the public keys must match");
+    DSKey * privateKey1 = [derivationPath privateKeyAtIndexPath:indexPath1];
+    DSKey * publicKey1 = [derivationPath publicKeyAtIndexPath:indexPath1];
+    
+    XCTAssertEqualObjects(privateKey1.publicKeyData,publicKey1.publicKeyData,@"the public keys must match");
+    
+    DSKey * privateKey2 = [derivationPath privateKeyAtIndexPath:indexPath2];
+    DSKey * publicKey2 = [derivationPath publicKeyAtIndexPath:indexPath2];
+    
+    XCTAssertEqualObjects(privateKey2.publicKeyData,publicKey2.publicKeyData,@"the public keys must match");
+    
+    NSArray * privateKeys = [derivationPath privateKeysAtIndexPaths:@[indexPath1,indexPath2] fromSeed:seed];
+    DSKey * privateKey1FromMultiIndex = privateKeys[0];
+    DSKey * privateKey2FromMultiIndex = privateKeys[1];
+    XCTAssertEqualObjects(privateKey1FromMultiIndex.publicKeyData, privateKey1.publicKeyData,@"the public keys must match");
+    XCTAssertEqualObjects(privateKey2FromMultiIndex.publicKeyData, privateKey2.publicKeyData,@"the public keys must match");
+    
+    XCTAssertEqualObjects(privateKey1FromMultiIndex.privateKeyData, privateKey1.privateKeyData,@"the private keys must match");
+    XCTAssertEqualObjects(privateKey2FromMultiIndex.privateKeyData, privateKey2.privateKeyData,@"the private keys must match");
 }
 
 -(void)testBLSPrivateDerivation {
@@ -372,14 +390,32 @@
     
     DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentitiesBLSKeysDerivationPathForWallet:wallet];
     
-    [derivationPath generateExtendedBLSPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueIDString storePrivateKey:YES];
+    [derivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueIDString storePrivateKey:YES];
     
-    const NSUInteger indexes[] = {1,5};
+    const NSUInteger indexes1[] = {1,5};
+    const NSUInteger indexes2[] = {4,6};
     
-    DSKey * privateKey = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndexes:indexes length:2]];
-    DSKey * publicKey = [derivationPath publicKeyAtIndexPath:[NSIndexPath indexPathWithIndexes:indexes length:2]];
+    NSIndexPath * indexPath1 = [NSIndexPath indexPathWithIndexes:indexes1 length:2];
+    NSIndexPath * indexPath2 = [NSIndexPath indexPathWithIndexes:indexes2 length:2];
     
-    XCTAssertEqualObjects(privateKey.publicKeyData,publicKey.publicKeyData,@"the public keys must match");
+    DSKey * privateKey1 = [derivationPath privateKeyAtIndexPath:indexPath1];
+    DSKey * publicKey1 = [derivationPath publicKeyAtIndexPath:indexPath1];
+    
+    XCTAssertEqualObjects(privateKey1.publicKeyData,publicKey1.publicKeyData,@"the public keys must match");
+    
+    DSKey * privateKey2 = [derivationPath privateKeyAtIndexPath:indexPath2];
+    DSKey * publicKey2 = [derivationPath publicKeyAtIndexPath:indexPath2];
+    
+    XCTAssertEqualObjects(privateKey2.publicKeyData,publicKey2.publicKeyData,@"the public keys must match");
+    
+    NSArray * privateKeys = [derivationPath privateKeysAtIndexPaths:@[indexPath1,indexPath2] fromSeed:seed];
+    DSKey * privateKey1FromMultiIndex = privateKeys[0];
+    DSKey * privateKey2FromMultiIndex = privateKeys[1];
+    XCTAssertEqualObjects(privateKey1FromMultiIndex.publicKeyData, privateKey1.publicKeyData,@"the public keys must match");
+    XCTAssertEqualObjects(privateKey2FromMultiIndex.publicKeyData, privateKey2.publicKeyData,@"the public keys must match");
+    
+    XCTAssertEqualObjects(privateKey1FromMultiIndex.privateKeyData, privateKey1.privateKeyData,@"the private keys must match");
+    XCTAssertEqualObjects(privateKey2FromMultiIndex.privateKeyData, privateKey2.privateKeyData,@"the private keys must match");
 }
 
 -(void)test256BitDerivation {
@@ -457,6 +493,8 @@
     DSKey * extendedPublicKeyFromSeed = [incomingFundsDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
     
     XCTAssertEqualObjects(extendedPublicKeyFromMasterContactDerivationPath.extendedPublicKeyData,extendedPublicKeyFromSeed.extendedPublicKeyData,@"The extended public keys should be the same");
+    
+    XCTAssertEqualObjects(extendedPublicKeyFromMasterContactDerivationPath.extendedPublicKeyData.hexString, @"3e7a0ef04c69004adffed522a0378ffa6851e4ce122d4c3a5c19081fced7a7b43e6fb903039d2fa3bd6d93a540214a6886d6c0c46bc45a95a11fef672125c4a0a553662008", @"Incorrect value for extended public key");
 }
 
 
@@ -489,7 +527,7 @@
     
     uint8_t bobSeed[10] = {10, 9, 8, 7, 6, 6, 7, 8, 9, 10};
     NSData *bobSeedData = [NSData dataWithBytes:bobSeed length:10];
-    DSBLSKey *bobKeyPairBLS = [DSBLSKey keyWithPrivateKeyFromSeed:bobSeedData];
+    DSBLSKey *bobKeyPairBLS = [DSBLSKey keyWithSeedData:bobSeedData];
     
     DSAuthenticationKeysDerivationPath * derivationPathBLS = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:wallet];
     DSKey * privateKeyBLS = [derivationPathBLS privateKeyAtIndex:0 fromSeed:seed];
