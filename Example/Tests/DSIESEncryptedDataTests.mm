@@ -37,11 +37,11 @@
 - (void)testBLSEncryptionAndDecryption {
     uint8_t aliceSeed[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     NSData *aliceSeedData = [NSData dataWithBytes:aliceSeed length:10];
-    DSBLSKey *aliceKeyPair = [DSBLSKey keyWithPrivateKeyFromSeed:aliceSeedData];
+    DSBLSKey *aliceKeyPair = [DSBLSKey extendedPrivateKeyWithSeedData:aliceSeedData];
     
     uint8_t bobSeed[10] = {10, 9, 8, 7, 6, 6, 7, 8, 9, 10};
     NSData *bobSeedData = [NSData dataWithBytes:bobSeed length:10];
-    DSBLSKey *bobKeyPair = [DSBLSKey keyWithPrivateKeyFromSeed:bobSeedData];
+    DSBLSKey *bobKeyPair = [DSBLSKey extendedPrivateKeyWithSeedData:bobSeedData];
     
 
     NSString *secret = @"my little secret is a pony that never sleeps";

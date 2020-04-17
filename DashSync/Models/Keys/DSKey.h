@@ -16,7 +16,7 @@ typedef NS_ENUM(NSUInteger, DSKeyType) {
     DSKeyType_BLS = 2,
 };
 
-@class DSChain;
+@class DSChain, DSDerivationPath;
 
 @interface DSKey : NSObject
 
@@ -29,11 +29,14 @@ typedef NS_ENUM(NSUInteger, DSKeyType) {
 @property (nonatomic,readonly) DSKeyType keyType;
 @property (nonatomic,readonly) NSString * localizedKeyType;
 
+- (void)forgetPrivateKey;
 - (BOOL)verify:(UInt256)messageDigest signatureData:(NSData*)signature;
 - (NSString *)addressForChain:(DSChain*)chain;
 + (NSString *)randomAddressForChain:(DSChain*)chain;
 + (NSString *)addressWithPublicKeyData:(NSData*)data forChain:(DSChain*)chain;
 - (NSString * _Nullable)privateKeyStringForChain:(DSChain*)chain;
+
++ (nullable instancetype)keyWithSeedData:(NSData*)data forKeyType:(DSKeyType)keyType;
 + (nullable instancetype)keyWithPublicKeyData:(NSData*)data forKeyType:(DSKeyType)keyType;
 + (nullable instancetype)keyWithPrivateKeyData:(NSData*)data forKeyType:(DSKeyType)keyType;
 + (nullable instancetype)keyWithExtendedPrivateKeyData:(NSData*)extendedPrivateKeyData forKeyType:(DSKeyType)keyType;
@@ -41,6 +44,8 @@ typedef NS_ENUM(NSUInteger, DSKeyType) {
 
 - (nullable instancetype)privateDeriveToPath:(NSIndexPath*)derivationPath;
 - (nullable instancetype)publicDeriveToPath:(NSIndexPath*)derivationPath;
+- (nullable instancetype)privateDeriveTo256BitDerivationPath:(DSDerivationPath*)derivationPath;
+- (nullable instancetype)publicDeriveTo256BitDerivationPath:(DSDerivationPath*)derivationPath;
 
 @end
 

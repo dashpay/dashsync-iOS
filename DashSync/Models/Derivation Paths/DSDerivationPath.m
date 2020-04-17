@@ -528,16 +528,30 @@
 
 // MARK: - Key Generation
 
-- (DSKey *)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString*)walletUniqueId
+- (DSKey *)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString*)walletUniqueId {
+    return [self generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:walletUniqueId storePrivateKey:NO];
+}
+
+- (DSKey *)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString*)walletUniqueId storePrivateKey:(BOOL)storePrivateKey
 {
     if (! seed) return nil;
     if (![self length]) return nil; //there needs to be at least 1 length
-    if (self.signingAlgorithm == DSKeyType_ECDSA) {
-        return [self generateExtendedECDSAPublicKeyFromSeed:seed storeUnderWalletUniqueId:walletUniqueId storePrivateKey:NO];
-    } else if (self.signingAlgorithm == DSKeyType_BLS) {
-        return [self generateExtendedBLSPublicKeyFromSeed:seed storeUnderWalletUniqueId:walletUniqueId storePrivateKey:NO];
+    DSKey * seedKey = [DSKey keyWithSeedData:seed forKeyType:self.signingAlgorithm];
+    if (!seedKey) return nil;
+    _extendedPublicKey = [seedKey privateDeriveTo256BitDerivationPath:self];
+    NSAssert(_extendedPublicKey, @"extendedPublicKey should be set");
+    if (!_extendedPublicKey) return nil;
+    
+    if (walletUniqueId) {
+        setKeychainData(_extendedPublicKey.extendedPublicKeyData,[self walletBasedExtendedPublicKeyLocationStringForWalletUniqueID:walletUniqueId],NO);
+        if (storePrivateKey) {
+            setKeychainData(_extendedPublicKey.extendedPrivateKeyData,[self walletBasedExtendedPrivateKeyLocationStringForWalletUniqueID:walletUniqueId],YES);
+        }
     }
-    return nil;
+
+    [_extendedPublicKey forgetPrivateKey];
+    
+    return _extendedPublicKey;
 }
 
 - (DSKey *)generateExtendedPublicKeyFromParentDerivationPath:(DSDerivationPath*)parentDerivationPath storeUnderWalletUniqueId:(NSString*)walletUniqueId {
@@ -557,14 +571,17 @@
 }
 
 - (DSKey *)privateKeyAtIndexPath:(NSIndexPath*)indexPath fromSeed:(NSData *)seed {
-    if (! seed) return nil;
+    NSParameterAssert(indexPath);
+    NSParameterAssert(seed);
+    if (! seed || !indexPath) return nil;
     if (![self length]) return nil; //there needs to be at least 1 length
-    if (self.signingAlgorithm == DSKeyType_ECDSA) {
-        return [self privateECDSAKeyAtIndexPath:indexPath fromSeed:seed];
-    } else if (self.signingAlgorithm == DSKeyType_BLS) {
-        return [self privateBLSKeyAtIndexPath:indexPath fromSeed:seed];
-    }
-    return nil;
+    DSKey * topKey = [DSKey keyWithSeedData:seed forKeyType:self.signingAlgorithm];
+    NSAssert(topKey, @"Top key should exist");
+    if (!topKey) return nil;
+    DSKey * derivationPathExtendedKey = [topKey privateDeriveTo256BitDerivationPath:self];
+    NSAssert(derivationPathExtendedKey, @"Top key should exist");
+    if (!derivationPathExtendedKey) return nil;
+    return [derivationPathExtendedKey privateDeriveToPath:indexPath];
 }
 
 -(DSKey*)publicKeyAtIndexPath:(NSIndexPath*)indexPath {
@@ -604,12 +621,25 @@
 }
 
 - (NSArray *)privateKeysAtIndexPaths:(NSArray*)indexPaths fromSeed:(NSData *)seed {
-    if (self.signingAlgorithm == DSKeyType_ECDSA) {
-        return [self privateECDSAKeysAtIndexPaths:indexPaths fromSeed:seed];
-    } else if (self.signingAlgorithm == DSKeyType_BLS) {
-        return [self privateBLSKeysAtIndexPaths:indexPaths fromSeed:seed];
+    if (! seed || ! indexPaths) return nil;
+    if (indexPaths.count == 0) return @[];
+    NSMutableArray *privateKeys = [NSMutableArray arrayWithCapacity:indexPaths.count];
+    DSKey * topKey = [DSKey keyWithSeedData:seed forKeyType:self.signingAlgorithm];
+    DSKey * derivationPathExtendedKey = [topKey privateDeriveTo256BitDerivationPath:self];
+    
+#if DEBUG
+    if (_extendedPublicKey) {
+        NSData * publicKey = _extendedPublicKey.extendedPublicKeyData;
+        NSAssert([publicKey isEqualToData:derivationPathExtendedKey.extendedPublicKeyData], @"The derivation doesn't match the public key");
     }
-    return nil;
+#endif
+    
+    for (NSIndexPath *indexPath in indexPaths) {
+        DSKey * privateKey = [derivationPathExtendedKey privateDeriveToPath:indexPath];
+        [privateKeys addObject:privateKey];
+    }
+    
+    return privateKeys;
 }
 
 
@@ -664,49 +694,6 @@
     [mpk appendData:[DSECDSAKey keyWithSecret:secret compressed:YES].publicKeyData];
     
     return [DSKey keyWithExtendedPublicKeyData:mpk forKeyType:DSKeyType_ECDSA];
-}
-
-// master public key format is: 4 byte parent fingerprint || 32 byte chain code || 33 byte compressed public key
-- (DSKey *)generateExtendedECDSAPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString*)walletUniqueId storePrivateKey:(BOOL)storePrivateKey
-{
-    if (! seed) return nil;
-    if (![self length]) return nil; //there needs to be at least 1 length
-    NSMutableData *mKey = [NSMutableData secureData];
-    UInt512 I;
-    
-    HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
-    
-    UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
-    
-    for (NSInteger i = 0;i<[self length] - 1;i++) {
-        UInt256 derivation = [self indexAtPosition:i];
-        BOOL isHardenedAtPosition = [self isHardenedAtPosition:i];
-        CKDpriv256(&secret, &chain, derivation,isHardenedAtPosition);
-    }
-    [mKey appendBytes:[DSECDSAKey keyWithSecret:secret compressed:YES].hash160.u32 length:4];
-    CKDpriv256(&secret, &chain, [self indexAtPosition:[self length] - 1],[self isHardenedAtPosition:[self length] - 1]); // account 0H
-    
-    [mKey appendBytes:&chain length:sizeof(chain)];
-    DSKey * key = [DSECDSAKey keyWithSecret:secret compressed:YES];
-    NSMutableData *mPublicKey = [NSMutableData secureData];
-    [mPublicKey appendData:mKey];
-    [mPublicKey appendData:key.publicKeyData];
-    
-    _extendedPublicKey = [DSKey keyWithExtendedPublicKeyData:mPublicKey forKeyType:DSKeyType_ECDSA];
-    NSAssert(_extendedPublicKey, @"extendedPublicKey should be set");
-    
-    if (walletUniqueId) {
-        setKeychainData(mPublicKey,[self walletBasedExtendedPublicKeyLocationStringForWalletUniqueID:walletUniqueId],NO);
-    }
-    if (storePrivateKey) {
-        NSMutableData *mPrivateKey = [NSMutableData secureData];
-        [mPrivateKey appendData:mKey];
-        [mPrivateKey appendData:key.privateKeyData];
-        setKeychainData(mPrivateKey,[self walletBasedExtendedPrivateKeyLocationStringForWalletUniqueID:walletUniqueId],YES);
-        DSKey * original = [DSKey keyWithExtendedPrivateKeyData:mPrivateKey forKeyType:key.keyType];
-        NSAssert([original.publicKeyData isEqualToData:_extendedPublicKey.publicKeyData], @"These should be equal");
-    }
-    return _extendedPublicKey;
 }
 
 // master public key format is: 4 byte parent fingerprint || 32 byte chain code || 33 byte compressed public key
@@ -785,29 +772,6 @@
     return mpk;
 }
 
-- (DSECDSAKey *)privateECDSAKeyAtIndexPath:(NSIndexPath*)indexPath fromSeed:(NSData *)seed
-{
-    if (! seed || ! indexPath) return nil;
-    if (indexPath.length == 0) return nil;
-    
-    UInt512 I;
-    
-    HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
-    
-    UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
-    
-    for (NSInteger i = 0;i<[self length];i++) {
-        CKDpriv256(&secret, &chain, [self indexAtPosition:i],[self isHardenedAtPosition:i]);
-    }
-    
-    for (NSInteger i = 0;i<[indexPath length];i++) {
-        uint32_t derivation = (uint32_t)[indexPath indexAtPosition:i];
-        CKDpriv(&secret, &chain, derivation);
-    }
-    
-    return [DSECDSAKey keyWithSecret:secret compressed:YES];
-}
-
 - (NSArray *)serializedECDSAPrivateKeysAtIndexPaths:(NSArray*)indexPaths fromSeed:(NSData *)seed
 {
     if (! seed || ! indexPaths) return nil;
@@ -852,84 +816,7 @@
     return a;
 }
 
-- (NSArray *)privateECDSAKeysAtIndexPaths:(NSArray*)indexPaths fromSeed:(NSData *)seed
-{
-    if (! seed || ! indexPaths) return nil;
-    if (indexPaths.count == 0) return @[];
-    
-    NSMutableArray *a = [NSMutableArray arrayWithCapacity:indexPaths.count];
-    UInt512 I;
-    
-    HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
-    
-    UInt256 secretRoot = *(UInt256 *)&I, chainRoot = *(UInt256 *)&I.u8[sizeof(UInt256)];
-    uint8_t version;
-    if ([self.chain isMainnet]) {
-        version = DASH_PRIVKEY;
-    } else {
-        version = DASH_PRIVKEY_TEST;
-    }
-    
-    for (NSInteger i = 0;i<[self length];i++) {
-        CKDpriv256(&secretRoot, &chainRoot, [self indexAtPosition:i],[self isHardenedAtPosition:i]);
-    }
-    
-    if (_extendedPublicKey) {
-        NSData * publicKey = _extendedPublicKey.publicKeyData;
-        NSData * publicKeyFromDerivation = [DSECDSAKey keyWithSecret:secretRoot compressed:YES].publicKeyData;
-        NSAssert([publicKey isEqualToData:publicKeyFromDerivation], @"The derivation doesn't match the public key");
-    }
-    
-    
-    for (NSIndexPath *indexPath in indexPaths) {
-        
-        UInt256 secret = secretRoot;
-        UInt256 chain = chainRoot;
-        
-        for (NSInteger i = 0;i<[indexPath length];i++) {
-            uint32_t derivation = (uint32_t)[indexPath indexAtPosition:i];
-            CKDpriv(&secret, &chain, derivation);
-        }
-        
-        [a addObject:[DSECDSAKey keyWithSecret:secret compressed:YES]];
-    }
-    
-    return a;
-}
-
 // MARK: - BLS Key Generation
-
-// master public key format is: 4 byte parent fingerprint || 32 byte chain code || 33 byte compressed public key
-- (DSKey *)generateExtendedBLSPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString*)walletUniqueId storePrivateKey:(BOOL)storePrivateKey
-{
-    if (! seed) return nil;
-    if (![self length]) return nil; //there needs to be at least 1 length
-    DSBLSKey * topKey = [DSBLSKey keyWithExtendedPrivateKeyFromSeed:seed];
-    DSKey * derivationPathExtendedKey = [topKey privateDeriveToPath:[self baseIndexPath]];
-    
-    _extendedPublicKey = derivationPathExtendedKey;
-    if (walletUniqueId) {
-        setKeychainData(derivationPathExtendedKey.extendedPublicKeyData,[self walletBasedExtendedPublicKeyLocationStringForWalletUniqueID:walletUniqueId],NO);
-        if (storePrivateKey) {
-            setKeychainData(derivationPathExtendedKey.extendedPrivateKeyData,[self walletBasedExtendedPrivateKeyLocationStringForWalletUniqueID:walletUniqueId],YES);
-            DSKey * original = [DSKey keyWithExtendedPrivateKeyData:derivationPathExtendedKey.extendedPrivateKeyData forKeyType:topKey.keyType];
-            NSAssert([original.extendedPublicKeyData isEqualToData:derivationPathExtendedKey.extendedPublicKeyData], @"These should be equal");
-        }
-    }
-    
-    return _extendedPublicKey;
-}
-
-- (DSBLSKey *)privateBLSKeyAtIndexPath:(NSIndexPath*)indexPath fromSeed:(NSData *)seed
-{
-    if (! seed) return nil;
-    if (![self length]) return nil; //there needs to be at least 1 length
-    DSBLSKey * topKey = [DSBLSKey keyWithExtendedPrivateKeyFromSeed:seed];
-    DSBLSKey * derivationPathExtendedKey = [topKey privateDeriveToPath:[self baseIndexPath]];
-    DSBLSKey * privateKey = [derivationPathExtendedKey privateDeriveToPath:indexPath];
-    
-    return privateKey;
-}
 
 - (NSArray *)serializedBLSPrivateKeysAtIndexPaths:(NSArray*)indexPaths fromSeed:(NSData *)seed
 {
@@ -943,7 +830,7 @@
     } else {
         version = DASH_PRIVKEY_TEST;
     }
-    DSBLSKey * topKey = [DSBLSKey keyWithExtendedPrivateKeyFromSeed:seed];
+    DSBLSKey * topKey = [DSBLSKey extendedPrivateKeyWithSeedData:seed];
     DSBLSKey * derivationPathExtendedKey = [topKey privateDeriveToPath:[self baseIndexPath]];
     
     for (NSIndexPath *indexPath in indexPaths) {
@@ -957,30 +844,6 @@
     
     return a;
 }
-
-- (NSArray *)privateBLSKeysAtIndexPaths:(NSArray*)indexPaths fromSeed:(NSData *)seed
-{
-    if (! seed || ! indexPaths) return nil;
-    if (indexPaths.count == 0) return @[];
-    
-    NSMutableArray *a = [NSMutableArray arrayWithCapacity:indexPaths.count];
-    uint8_t version;
-    if ([self.chain isMainnet]) {
-        version = DASH_PRIVKEY;
-    } else {
-        version = DASH_PRIVKEY_TEST;
-    }
-    DSBLSKey * topKey = [DSBLSKey keyWithExtendedPrivateKeyFromSeed:seed];
-    DSBLSKey * derivationPathExtendedKey = [topKey privateDeriveToPath:[self baseIndexPath]];
-    
-    for (NSIndexPath *indexPath in indexPaths) {
-        DSBLSKey * privateKey = [derivationPathExtendedKey privateDeriveToPath:indexPath];
-        [a addObject:privateKey];
-    }
-    
-    return a;
-}
-
 
 // MARK: - Authentication Key Generation
 

@@ -111,14 +111,7 @@ type:(DSDerivationPathType)type signingAlgorithm:(DSKeyType)signingAlgorithm ref
 
 - (DSKey *)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString*)walletUniqueId
 {
-    if (! seed) return nil;
-    if (![self length]) return nil; //there needs to be at least 1 length
-    if (self.signingAlgorithm == DSKeyType_ECDSA) {
-        return [self generateExtendedECDSAPublicKeyFromSeed:seed storeUnderWalletUniqueId:walletUniqueId storePrivateKey:self.shouldStoreExtendedPrivateKey];
-    } else if (self.signingAlgorithm == DSKeyType_BLS) {
-        return [self generateExtendedBLSPublicKeyFromSeed:seed storeUnderWalletUniqueId:walletUniqueId storePrivateKey:self.shouldStoreExtendedPrivateKey];
-    }
-    return nil;
+    return [super generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:walletUniqueId storePrivateKey:self.shouldStoreExtendedPrivateKey];
 }
 
 -(BOOL)hasExtendedPrivateKey {

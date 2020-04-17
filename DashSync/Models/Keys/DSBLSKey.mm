@@ -47,15 +47,14 @@
     return [self publicDerive:pkChild indexes:[indexPath indexPathByRemovingFirstIndex]];
 }
 
-
-+ (nullable instancetype)keyWithPrivateKeyFromSeed:(NSData *)seed {
-    return [[DSBLSKey alloc] initWithPrivateKeyFromSeed:seed];
++ (nullable instancetype)keyWithSeedData:(NSData *)seedData {
+    return [[DSBLSKey alloc] initWithSeedData:seedData];
 }
 
-- (nullable instancetype)initWithPrivateKeyFromSeed:(NSData *)seed {
+- (nullable instancetype)initWithSeedData:(NSData *)seedData {
     if (!(self = [super init])) return nil;
     
-    bls::PrivateKey blsPrivateKey = bls::PrivateKey::FromSeed((uint8_t *)seed.bytes, seed.length);
+    bls::PrivateKey blsPrivateKey = bls::PrivateKey::FromSeed((uint8_t *)seedData.bytes, seedData.length);
     bls::PublicKey blsPublicKey = blsPrivateKey.GetPublicKey();
     UInt256 secret = UINT256_ZERO;
     blsPrivateKey.Serialize(secret.u8);
@@ -67,8 +66,8 @@
     return self;
 }
 
-+ (nullable instancetype)keyWithExtendedPrivateKeyFromSeed:(NSData *)seed {
-    return [[DSBLSKey alloc] initWithExtendedPrivateKeyFromSeed:seed];
++ (nullable instancetype)extendedPrivateKeyWithSeedData:(NSData *)seed {
+    return [[DSBLSKey alloc] initWithExtendedPrivateKeyWithSeedData:seed];
 }
 
 + (nullable instancetype)keyWithPublicKey:(UInt384)publicKey {
@@ -125,7 +124,7 @@
     return [self initWithBLSExtendedPrivateKey:extendedPrivateBLSKey];
 }
 
-- (nullable instancetype)initWithExtendedPrivateKeyFromSeed:(NSData *)seed {
+- (nullable instancetype)initWithExtendedPrivateKeyWithSeedData:(NSData *)seed {
     if (!(self = [super init])) return nil;
     
     bls::ExtendedPrivateKey blsExtendedPrivateKey = bls::ExtendedPrivateKey::FromSeed((uint8_t *)seed.bytes, seed.length);
@@ -233,7 +232,15 @@
     return DSKeyType_BLS;
 }
 
+- (void)forgetPrivateKey {
+    self.secretKey = UINT256_ZERO;
+}
+
 // MARK: - Derivation
+
+- (instancetype)privateDeriveTo256BitDerivationPath:(DSDerivationPath*)derivationPath {
+    return [self privateDeriveToPath:[derivationPath baseIndexPath]];
+}
 
 -(DSBLSKey*)privateDeriveToPath:(NSIndexPath*)derivationPath {
     bls::ExtendedPrivateKey blsExtendedPrivateKey = bls::ExtendedPrivateKey::FromBytes((const uint8_t *)self.extendedPrivateKeyData.bytes);
