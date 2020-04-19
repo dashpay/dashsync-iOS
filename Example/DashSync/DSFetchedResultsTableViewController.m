@@ -49,19 +49,44 @@ static NSUInteger FETCH_BATCH_SIZE = 20;
 }
 
 - (void)backgroundManagedObjectContextDidSaveNotification:(NSNotification *)notification {
-    BOOL (^objectsHasChangedContact)(NSSet *) = ^BOOL(NSSet *objects) {
+    BOOL (^objectsHaveChanged)(NSSet *) = ^BOOL(NSSet *objects) {
         NSSet * foundObjects = [objects filteredSetUsingPredicate:[self fullPredicateInContext]];
-        return foundObjects.count;
+        if (foundObjects.count) return TRUE;
+        return FALSE;
     };
+    
+    BOOL (^objectsHaveChangedInverted)(NSSet *) = ^BOOL(NSSet *objects) {
+        if (![self requiredInvertedPredicate]) return FALSE;
+        NSSet * foundObjects = [objects filteredSetUsingPredicate:[self fullInvertedPredicateInContext]];
+        if (foundObjects.count) return TRUE;
+        return FALSE;
+    };
+
 
     NSSet <NSManagedObject *> *insertedObjects = notification.userInfo[NSInsertedObjectsKey];
     NSSet <NSManagedObject *> *updatedObjects = notification.userInfo[NSUpdatedObjectsKey];
     NSSet <NSManagedObject *> *deletedObjects = notification.userInfo[NSDeletedObjectsKey];
-    
-    if (objectsHasChangedContact(insertedObjects) ||
-        objectsHasChangedContact(updatedObjects) ||
-        objectsHasChangedContact(deletedObjects)) {
+    BOOL inserted = FALSE;
+    BOOL updated = FALSE;
+    BOOL deleted = FALSE;
+    BOOL insertedInverted = FALSE;
+    BOOL deletedInverted = FALSE;
+    if ((inserted = objectsHaveChanged(insertedObjects)) ||
+        (updated = objectsHaveChanged(updatedObjects)) ||
+        (deleted = objectsHaveChanged(deletedObjects)) ||
+        (insertedInverted = objectsHaveChangedInverted(insertedObjects)) ||
+        (deletedInverted = objectsHaveChangedInverted(deletedObjects))) {
+        if (inserted || updated || deleted) {
+            insertedInverted = objectsHaveChangedInverted(insertedObjects);
+            deletedInverted = objectsHaveChangedInverted(deletedObjects);
+        }
         [self.context mergeChangesFromContextDidSaveNotification:notification];
+        if (insertedInverted || deletedInverted) {
+            self.fetchedResultsController = nil;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self.tableView reloadData];
+            });
+        }
     }
 }
 
@@ -79,6 +104,10 @@ static NSUInteger FETCH_BATCH_SIZE = 20;
     return TRUE;
 }
 
+-(BOOL)requiredInvertedPredicate {
+    return FALSE;
+}
+
 -(NSPredicate *)classPredicate {
     return [NSPredicate predicateWithFormat:@"self isKindOfClass: %@", NSClassFromString([self entityName])];
 }
@@ -87,11 +116,24 @@ static NSUInteger FETCH_BATCH_SIZE = 20;
     return [[self predicate] predicateInContext:[NSManagedObject context]];
 }
 
+-(NSPredicate *)invertedPredicateInContext {
+    return [[self invertedPredicate] predicateInContext:[NSManagedObject context]];
+}
+
 -(NSPredicate *)fullPredicateInContext {
     return [NSCompoundPredicate andPredicateWithSubpredicates:@[[self classPredicate],[self predicateInContext]]];
 }
 
+-(NSPredicate *)fullInvertedPredicateInContext {
+    return [NSCompoundPredicate andPredicateWithSubpredicates:@[[self classPredicate],[self invertedPredicateInContext]]];
+}
+
 - (NSPredicate *)predicate {
+    NSAssert(NO, @"Method should be overriden");
+    return [NSPredicate predicateWithValue:YES];
+}
+
+- (NSPredicate *)invertedPredicate {
     NSAssert(NO, @"Method should be overriden");
     return [NSPredicate predicateWithValue:YES];
 }

@@ -49,6 +49,14 @@ static NSString * const CellId = @"CellId";
     return [NSPredicate predicateWithFormat:@"destinationContact == %@ && (SUBQUERY(destinationContact.outgoingRequests, $friendRequest, $friendRequest.destinationContact == SELF.sourceContact).@count == 0)",[self.blockchainIdentity matchingDashpayUserInContext:self.context]];
 }
 
+-(BOOL)requiredInvertedPredicate {
+    return YES;
+}
+
+-(NSPredicate*)invertedPredicate {
+    return [NSPredicate predicateWithFormat:@"sourceContact == %@ && (SUBQUERY(sourceContact.incomingRequests, $friendRequest, $friendRequest.sourceContact == SELF.destinationContact).@count > 0)",[self.blockchainIdentity matchingDashpayUserInContext:self.context]];
+}
+
 - (NSArray<NSSortDescriptor *> *)sortDescriptors {
     NSSortDescriptor *usernameSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"sourceContact.associatedBlockchainIdentity.dashpayUsername.stringValue"
                                                                            ascending:YES];
