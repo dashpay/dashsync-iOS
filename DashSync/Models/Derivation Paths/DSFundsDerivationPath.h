@@ -11,6 +11,10 @@
 #define SEQUENCE_GAP_LIMIT_INTERNAL 5
 #define SEQUENCE_GAP_LIMIT_INITIAL 100
 
+#define SEQUENCE_DASHPAY_GAP_LIMIT_INCOMING 6
+#define SEQUENCE_DASHPAY_GAP_LIMIT_OUTGOING 3
+#define SEQUENCE_DASHPAY_GAP_LIMIT_INITIAL 10
+
 #define EXTENDED_0_PUBKEY_KEY_BIP44_V0   @"masterpubkeyBIP44" //these are old and need to be retired
 #define EXTENDED_0_PUBKEY_KEY_BIP32_V0   @"masterpubkeyBIP32" //these are old and need to be retired
 #define EXTENDED_0_PUBKEY_KEY_BIP44_V1   @"extended0pubkeyBIP44"

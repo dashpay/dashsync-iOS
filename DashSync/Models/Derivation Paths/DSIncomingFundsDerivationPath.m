@@ -117,7 +117,7 @@
             }
         }];
         self.addressesLoaded = TRUE;
-        [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL error:nil];
+        [self registerAddressesWithGapLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INITIAL error:nil];
         
     }
 }

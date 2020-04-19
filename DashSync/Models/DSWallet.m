@@ -641,10 +641,10 @@
     return rBalance;
 }
 
--(NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal error:(NSError**)error {
+-(NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit dashpayGapLimit:(NSUInteger)dashpayGapLimit internal:(BOOL)internal error:(NSError**)error {
     NSMutableArray * mArray = [NSMutableArray array];
     for (DSAccount * account in self.accounts) {
-        [mArray addObjectsFromArray:[account registerAddressesWithGapLimit:gapLimit internal:internal error:error]];
+        [mArray addObjectsFromArray:[account registerAddressesWithGapLimit:gapLimit dashpayGapLimit:dashpayGapLimit internal:internal error:error]];
     }
     return [mArray copy];
 }

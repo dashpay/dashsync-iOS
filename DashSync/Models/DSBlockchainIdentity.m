@@ -55,7 +55,7 @@
 #import "NSData+Bitcoin.h"
 #import "DSContactRequest.h"
 #import "NSIndexPath+Dash.h"
-#import "DSTransactionManager.h"
+#import "DSTransactionManager+Protected.h"
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
 #define DEFAULT_SIGNING_ALGORITH DSKeyType_ECDSA
@@ -2894,6 +2894,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                             
                             [account addIncomingDerivationPath:incomingFundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier];
                             [DSFriendRequestEntity saveContext];
+                            [self.chain.chainManager.transactionManager updateTransactionsBloomFilter];
                         } else {
                             succeeded = FALSE;
                             [errors addObject:[NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
@@ -2994,10 +2995,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             }
         } else {
             //todo update outgoing derivation paths to incoming derivation paths as blockchain users come in
-            [account addOutgoingDerivationPath:incomingFundsDerivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
+            [account addIncomingDerivationPath:incomingFundsDerivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
         }
-        
-        //[account addIncomingDerivationPath:incomingFundsDerivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
         
         friendRequestEntity.derivationPath = [friendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequestEntity];
         
@@ -3009,6 +3008,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         }
         
         [DSDashpayUserEntity saveContext];
+        [self.chain.chainManager.transactionManager updateTransactionsBloomFilter];
     }];
 }
 
@@ -3128,6 +3128,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     [self.matchingDashpayUser addIncomingRequestsObject:friendRequestEntity];
     
     [DSDashpayUserEntity saveContext];
+    [self.chain.chainManager.transactionManager updateTransactionsBloomFilter];
 }
 
 // MARK: - Persistence
