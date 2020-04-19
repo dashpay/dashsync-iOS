@@ -88,6 +88,8 @@
 
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
 #import "NSManagedObject+Sugar.h"
+#import "NSPredicate+DSUtils.h"
+#import "NSPredicate+CBORData.h"
 #import "DSPaymentRequest.h"
 #import "DSPaymentProtocol.h"
 

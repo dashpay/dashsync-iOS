@@ -2382,14 +2382,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             return;
         }
         
-//        [self fetchOutgoingContactRequests:^(BOOL success, NSArray<NSError *> * _Nonnull errors) {
-//           if (completion) {
-//               dispatch_async(dispatch_get_main_queue(), ^{
-//                   completion(success,errors.count?[errors firstObject]:nil);
-//               });
-//           }
-//        }];
-        [self.managedObjectContext performBlock:^{
+        [strongSelf.managedObjectContext performBlockAndWait:^{
             [self addFriendship:potentialFriendship inContext:self.managedObjectContext];
 //            [self addFriendshipFromSourceBlockchainIdentity:potentialFriendship.sourceBlockchainIdentity sourceKeyIndex:potentialFriendship.so toRecipientBlockchainIdentity:<#(DSBlockchainIdentity *)#> recipientKeyIndex:<#(uint32_t)#> inContext:<#(NSManagedObjectContext *)#>]
 //             DSFriendRequestEntity * friendRequest = [potentialFriendship outgoingFriendRequestForDashpayUserEntity:potentialFriendship.destinationBlockchainIdentity.matchingDashpayUser];
@@ -2406,14 +2399,23 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 //                       });
 //                   }
         }];
+        
+        [self fetchOutgoingContactRequests:^(BOOL success, NSArray<NSError *> * _Nonnull errors) {
+           if (completion) {
+               dispatch_async(dispatch_get_main_queue(), ^{
+                   completion(success,errors.count?[errors firstObject]:nil);
+               });
+           }
+        }];
     }];
 }
 
 -(void)acceptFriendRequest:(DSFriendRequestEntity*)friendRequest completion:(void (^)(BOOL success, NSError * error))completion {
     NSAssert(_isLocal, @"This should not be performed on a non local blockchain identity");
     if (!_isLocal) return;
+    DSFriendRequestEntity * friendRequestInContext = [self.managedObjectContext objectWithID:friendRequest.objectID];
     DSAccount * account = [self.wallet accountWithNumber:0];
-    DSDashpayUserEntity * otherDashpayUser = friendRequest.sourceContact;
+    DSDashpayUserEntity * otherDashpayUser = friendRequestInContext.sourceContact;
     DSBlockchainIdentity * otherBlockchainIdentity = [self.chain blockchainIdentityForUniqueId:otherDashpayUser.associatedBlockchainIdentity.uniqueID.UInt256];
     
     if (!otherBlockchainIdentity) {

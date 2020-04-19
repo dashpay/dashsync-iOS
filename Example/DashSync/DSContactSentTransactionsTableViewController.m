@@ -30,6 +30,45 @@
     [super viewDidLoad];
     
     self.direction = DSContactTransactionDirectionSent;
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(mocDidSaveNotification:)
+                                                 name:NSManagedObjectContextDidSaveNotification object:[NSManagedObject context]];
+}
+
+-(void)viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:NSManagedObjectContextDidSaveNotification object:[NSManagedObject context]];
+}
+
+- (void)mocDidSaveNotification:(NSNotification *)notification {
+    // Since NSFetchedResultsController doesn't observe relationship changes we have to manully trigger an update
+    // http://openradar.appspot.com/radar?id=1754401
+    BOOL (^objectsHasChangedContact)(NSArray *, DSDashpayUserEntity *) = ^BOOL(NSArray *objects, DSDashpayUserEntity *contact) {
+        BOOL hasRelationshipChanges = NO;
+        for (NSManagedObject *mo in objects) {
+            if ([mo isKindOfClass:DSFriendRequestEntity.class]) {
+                DSFriendRequestEntity *friendRequest = (DSFriendRequestEntity *)mo;
+                if (friendRequest.sourceContact == contact ||
+                    friendRequest.destinationContact == contact) {
+                    hasRelationshipChanges = YES;
+                    break;
+                }
+            }
+        }
+        
+        return hasRelationshipChanges;
+    };
+
+    NSArray <NSManagedObject *> *insertedObjects = notification.userInfo[NSInsertedObjectsKey];
+    NSArray <NSManagedObject *> *updatedObjects = notification.userInfo[NSUpdatedObjectsKey];
+    NSArray <NSManagedObject *> *deletedObjects = notification.userInfo[NSDeletedObjectsKey];
+    
+    DSDashpayUserEntity *contact = self.blockchainIdentity.matchingDashpayUser;
+    if (objectsHasChangedContact(insertedObjects, contact) ||
+        objectsHasChangedContact(updatedObjects, contact) ||
+        objectsHasChangedContact(deletedObjects, contact)) {
+        [self.context mergeChangesFromContextDidSaveNotification:notification];
+    }
 }
 
 -(void)setBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
