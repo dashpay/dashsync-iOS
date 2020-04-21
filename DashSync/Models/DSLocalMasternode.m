@@ -500,10 +500,18 @@
     if (![_providerUpdateRegistrarTransactions containsObject:providerUpdateRegistrarTransaction]) {
         [_providerUpdateRegistrarTransactions addObject:providerUpdateRegistrarTransaction];
         
-        DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForWallet:self.operatorKeysWallet];
+        uint32_t operatorNewWalletIndex;
+        if (self.operatorKeysWallet) {
+            DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForWallet:self.operatorKeysWallet];
+            operatorNewWalletIndex = (uint32_t)[providerOperatorKeysDerivationPath indexOfKnownAddress:providerUpdateRegistrarTransaction.operatorAddress];
+        } else {
+            DSWallet * operatorKeysWallet = [self.chain walletHavingProviderOperatorAuthenticationKey:providerUpdateRegistrarTransaction.operatorKey foundAtIndex:&operatorNewWalletIndex];
+            if (operatorKeysWallet) {
+                self.operatorKeysWallet = operatorKeysWallet;
+            }
+        }
         
-        uint32_t operatorNewWalletIndex = (uint32_t)[providerOperatorKeysDerivationPath indexOfKnownAddress:providerUpdateRegistrarTransaction.operatorAddress];
-        if (self.operatorWalletIndex != operatorNewWalletIndex) {
+        if (self.operatorKeysWallet && (self.operatorWalletIndex != operatorNewWalletIndex)) {
             if (self.operatorWalletIndex != UINT32_MAX && ![self.previousOperatorWalletIndexes containsIndex:self.operatorWalletIndex]) {
                 [self.previousOperatorWalletIndexes addIndex:self.operatorWalletIndex];
             }
@@ -513,10 +521,18 @@
             self.operatorWalletIndex = operatorNewWalletIndex;
         }
         
-        DSAuthenticationKeysDerivationPath * providerVotingKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForWallet:self.votingKeysWallet];
-        
-        uint32_t votingNewWalletIndex = (uint32_t)[providerVotingKeysDerivationPath indexOfKnownAddress:providerUpdateRegistrarTransaction.votingAddress];
-        if (self.votingWalletIndex != votingNewWalletIndex) {
+        uint32_t votingNewWalletIndex;
+        if (self.votingKeysWallet) {
+            DSAuthenticationKeysDerivationPath * providerVotingKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForWallet:self.votingKeysWallet];
+            votingNewWalletIndex = (uint32_t)[providerVotingKeysDerivationPath indexOfKnownAddress:providerUpdateRegistrarTransaction.votingAddress];
+        } else {
+            DSWallet * votingKeysWallet = [self.chain walletHavingProviderVotingAuthenticationHash:providerUpdateRegistrarTransaction.votingKeyHash foundAtIndex:&votingNewWalletIndex];
+            if (votingKeysWallet) {
+                self.votingKeysWallet = votingKeysWallet;
+            }
+        }
+
+        if (self.votingKeysWallet && (self.votingWalletIndex != votingNewWalletIndex)) {
             if (self.votingWalletIndex != UINT32_MAX && ![self.previousVotingWalletIndexes containsIndex:self.votingWalletIndex]) {
                 [self.previousVotingWalletIndexes addIndex:self.votingWalletIndex];
             }
