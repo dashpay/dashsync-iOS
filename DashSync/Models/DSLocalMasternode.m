@@ -258,6 +258,12 @@
 }
 
 -(DSECDSAKey*)ownerKeyFromSeed:(NSData*)seed {
+    if (!self.ownerKeysWallet) {
+        return nil;
+    }
+    if (!seed) {
+        return nil;
+    }
     DSAuthenticationKeysDerivationPath * providerOwnerKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForWallet:self.ownerKeysWallet];
     
     return (DSECDSAKey *)[providerOwnerKeysDerivationPath privateKeyForHash160:self.providerRegistrationTransaction.ownerKeyHash fromSeed:seed];
@@ -265,10 +271,17 @@
 
 -(NSString*)ownerKeyStringFromSeed:(NSData*)seed {
     DSECDSAKey * ecdsaKey = [self ownerKeyFromSeed:seed];
+    if (!ecdsaKey) return nil;
     return [ecdsaKey secretKeyString];
 }
 
 -(DSECDSAKey*)votingKeyFromSeed:(NSData*)seed {
+    if (!self.votingKeysWallet) {
+        return nil;
+    }
+    if (!seed) {
+        return nil;
+    }
     DSAuthenticationKeysDerivationPath * providerVotingKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForWallet:self.votingKeysWallet];
     
     return (DSECDSAKey *)[providerVotingKeysDerivationPath privateKeyForHash160:self.providerRegistrationTransaction.votingKeyHash fromSeed:seed];
@@ -276,6 +289,7 @@
 
 -(NSString*)votingKeyStringFromSeed:(NSData*)seed {
     DSECDSAKey * ecdsaKey = [self votingKeyFromSeed:seed];
+    if (!ecdsaKey) return nil;
     return [ecdsaKey secretKeyString];
 }
 
