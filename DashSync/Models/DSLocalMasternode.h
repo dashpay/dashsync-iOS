@@ -69,11 +69,11 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus) {
 
 -(DSECDSAKey* _Nullable)ownerKeyFromSeed:(NSData*)seed ;
 
--(NSString*)ownerKeyStringFromSeed:(NSData*)seed;
+-(NSString* _Nullable)ownerKeyStringFromSeed:(NSData*)seed;
 
 -(DSECDSAKey* _Nullable)votingKeyFromSeed:(NSData*)seed;
 
--(NSString*)votingKeyStringFromSeed:(NSData*)seed;
+-(NSString* _Nullable)votingKeyStringFromSeed:(NSData*)seed;
 
 -(BOOL)forceOperatorPublicKey:(DSBLSKey*)operatorPublicKey;
 
