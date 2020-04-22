@@ -226,8 +226,8 @@ typedef enum : NSUInteger {
         uint64_t i = 0, amount = UINT64_MAX;
         NSData *d = nil, *script = nil;
         NSUInteger o = 0;
-
-        switch ([data protoBufFieldAtOffset:&off int:&i data:&d]) {
+        details_key details = [data protoBufFieldAtOffset:&off int:&i data:&d];
+        switch (details) {
             case details_network: if (d) self.chain = [DSChain chainForNetworkName:protoBufString(d)]; break;
             case details_outputs: while (o < d.length) [d protoBufFieldAtOffset:&o int:&amount data:&script]; break;
             case details_time: if (i) _time = i; break;
@@ -235,7 +235,10 @@ typedef enum : NSUInteger {
             case details_memo: if (d) _memo = protoBufString(d); break;
             case details_payment_url: if (d) _paymentURL = protoBufString(d); break;
             case details_merchant_data: if (d) _merchantData = d; break;
-            default: break;
+            default: {
+                DSDLog(@"Unknown details type: %lu",(unsigned long)details);
+                break;
+            }
         }
 
         if (script) [amounts addObject:@(amount)], [scripts addObject:script];
