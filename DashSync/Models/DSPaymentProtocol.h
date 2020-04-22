@@ -86,6 +86,7 @@ merchantData:(NSData *)data onChain:(DSChain*)chain;
 @property (nonatomic, readonly) NSArray *refundToScripts; // where to send refunds, if a refund is necessary
 @property (nonatomic, readonly) NSString *memo; // human-readable message for the merchant, optional
 @property (nonatomic, readonly) DSChain *chain;
+@property (nonatomic, readonly) BOOL chainSetInProtocol;
 
 @property (nonatomic, readonly, getter = toData) NSData *data;
 

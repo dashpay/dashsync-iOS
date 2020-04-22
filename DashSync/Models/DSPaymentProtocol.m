@@ -185,6 +185,7 @@ typedef enum : NSUInteger {
 @interface DSPaymentProtocolDetails ()
 
 @property (nonatomic, strong) DSChain *chain;
+@property (nonatomic, assign) BOOL chainSetInProtocol;
 @property (nonatomic, strong) NSArray *outputAmounts;
 
 @end
@@ -204,6 +205,7 @@ typedef enum : NSUInteger {
     if (! (self = [self init])) return nil;
 
     self.chain = chain;
+    _chainSetInProtocol = YES;
     _outputAmounts = amounts;
     _outputScripts = scripts;
     _time = time;
@@ -244,8 +246,11 @@ typedef enum : NSUInteger {
     _outputScripts = scripts;
     if (!self.chain) {
         self.chain = chain;
+        self.chainSetInProtocol = NO;
     } else if (self.chain != chain) {
         return nil;
+    } else {
+        self.chainSetInProtocol = YES;
     }
     return self;
 }
@@ -268,7 +273,7 @@ typedef enum : NSUInteger {
     NSMutableData *d = [NSMutableData data];
     NSUInteger i = 0;
 
-    if (self.chain) [d appendProtoBufString:self.chain.networkName withKey:details_network];
+    if (self.chain && self.chainSetInProtocol) [d appendProtoBufString:self.chain.networkName withKey:details_network];
 
     for (NSData *script in _outputScripts) {
         NSMutableData *output = [NSMutableData data];
