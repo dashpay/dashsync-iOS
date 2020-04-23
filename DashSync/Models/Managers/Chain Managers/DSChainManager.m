@@ -253,7 +253,7 @@
     if (block.timestamp < [NSDate timeIntervalSince1970] - WEEK_TIME_INTERVAL) return;
     
     // call getblocks, unless we already did with the previous block, or we're still downloading the chain
-    if (self.chain.lastBlockHeight >= peer.lastblock && ! uint256_eq(self.chain.lastOrphan.blockHash, block.prevBlock)) {
+    if (self.chain.lastBlockHeight >= peer.lastBlockHeight && ! uint256_eq(self.chain.lastOrphan.blockHash, block.prevBlock)) {
         DSDLog(@"%@:%d calling getblocks", peer.host, peer.port);
         [peer sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
     }

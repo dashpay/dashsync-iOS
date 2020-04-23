@@ -131,6 +131,7 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 @property (nonatomic, assign) UInt256 genesisHash;
 @property (nonatomic, readonly,nullable) NSString * chainTip;
 @property (nonatomic, readonly) uint32_t lastBlockHeight;
+@property (nonatomic, readonly) uint32_t lastHeaderHeight;
 @property (nonatomic, readonly) uint32_t estimatedBlockHeight; // last block height reported by current download peer
 @property (nonatomic, readonly) NSString * networkName;
 @property (nonatomic, readonly) NSString * name;
@@ -139,6 +140,7 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 @property (nonatomic, weak,nullable) DSChainManager * chainManager;
 @property (nonatomic, readonly,nullable) DSMerkleBlock * lastBlock;
 @property (nonatomic, readonly,nullable) NSArray * blockLocatorArray;
+@property (nonatomic, readonly,nullable) NSArray * headerLocatorArrayForMasternodeSync;
 @property (nonatomic, readonly,nullable) DSMerkleBlock *lastOrphan;
 @property (nonatomic, readonly,nullable) DSChainEntity *chainEntity;
 @property (nonatomic, readonly) uint32_t magicNumber;
@@ -149,6 +151,7 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 @property (nonatomic, readonly) BOOL hasAWallet;
 @property (nonatomic, readonly) BOOL hasAStandaloneDerivationPath;
 @property (nonatomic, readonly) BOOL syncsBlockchain;
+@property (nonatomic, readonly) BOOL shouldSyncHeadersFirstForMasternodeListVerification;
 @property (nonatomic, readonly,nullable) NSString * devnetIdentifier;
 @property (nonatomic, assign) uint64_t feePerByte;
 @property (nonatomic, readonly) NSTimeInterval earliestWalletCreationTime;
@@ -208,6 +211,7 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 
 -(void)setEstimatedBlockHeight:(uint32_t)estimatedBlockHeight fromPeer:(DSPeer*)peer;
 -(void)removeEstimatedBlockHeightOfPeer:(DSPeer*)peer;
+-(BOOL)addHeader:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer;
 -(BOOL)addBlock:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer;
 -(void)saveBlocks;
 -(void)wipeWalletsAndDerivatives;

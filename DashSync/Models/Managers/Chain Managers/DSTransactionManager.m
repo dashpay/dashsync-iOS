@@ -1239,6 +1239,20 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 
 // MARK: Blocks
 
+- (void)peer:(DSPeer *)peer relayedHeader:(DSMerkleBlock *)block
+{
+    //DSDLog(@"relayed block %@ total transactions %d %u",uint256_hex(block.blockHash), block.totalTransactions,block.timestamp);
+    // ignore block headers that are newer than 2 days before earliestKeyTime (headers have 0 totalTransactions)
+    if (!self.chain.shouldSyncHeadersFirstForMasternodeListVerification &&
+        (block.timestamp + DAY_TIME_INTERVAL*2 > self.chain.earliestWalletCreationTime)) {
+        DSDLog(@"ignoring header %@",uint256_hex(block.blockHash));
+        return;
+    }
+    
+    [self.chain addBlock:block fromPeer:peer];
+
+}
+
 - (void)peer:(DSPeer *)peer relayedBlock:(DSMerkleBlock *)block
 {
     //DSDLog(@"relayed block %@ total transactions %d %u",uint256_hex(block.blockHash), block.totalTransactions,block.timestamp);
@@ -1266,7 +1280,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
                    peer.port, self.transactionsBloomFilterFalsePositiveRate, self.chain.lastBlockHeight + 1 - self.filterUpdateHeight);
             [self.peerManager.downloadPeer disconnect];
         }
-        else if (self.chain.lastBlockHeight + 500 < peer.lastblock && self.transactionsBloomFilterFalsePositiveRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*10.0) {
+        else if (self.chain.lastBlockHeight + 500 < peer.lastBlockHeight && self.transactionsBloomFilterFalsePositiveRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*10.0) {
             [self updateTransactionsBloomFilter]; // rebuild bloom filter when it starts to degrade
         }
     }

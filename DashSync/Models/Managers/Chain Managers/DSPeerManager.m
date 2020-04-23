@@ -714,11 +714,11 @@
     
     if (peer.timestamp > now + 2*60*60 || peer.timestamp < now - 2*60*60) peer.timestamp = now; //timestamp sanity check
     self.connectFailures = 0;
-    DSDLog(@"%@:%d connected with lastblock %d", peer.host, peer.port, peer.lastblock);
+    DSDLog(@"%@:%d connected with lastblock %d", peer.host, peer.port, peer.lastBlockHeight);
     
     // drop peers that don't carry full blocks, or aren't synced yet
     // TODO: XXXX does this work with 0.11 pruned nodes?
-    if (! (peer.services & SERVICES_NODE_NETWORK) || peer.lastblock + 10 < self.chain.lastBlockHeight) {
+    if (! (peer.services & SERVICES_NODE_NETWORK) || peer.lastBlockHeight + 10 < self.chain.lastBlockHeight) {
         [peer disconnect];
         return;
     }
@@ -731,7 +731,7 @@
     
     if (self.connected) {
         if (![self.chain syncsBlockchain]) return;
-        if (self.chain.estimatedBlockHeight >= peer.lastblock || self.chain.lastBlockHeight >= peer.lastblock) {
+        if (self.chain.estimatedBlockHeight >= peer.lastBlockHeight || self.chain.lastBlockHeight >= peer.lastBlockHeight) {
             if (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight) {
                 DSDLog(@"self.chain.lastBlockHeight %u, self.chain.estimatedBlockHeight %u",self.chain.lastBlockHeight,self.chain.estimatedBlockHeight);
                 return; // don't load bloom filter yet if we're syncing
@@ -783,20 +783,20 @@
     // peers agree on lastblock, use one of them instead
     for (DSPeer *p in self.connectedPeers) {
         if (p.status != DSPeerStatus_Connected) continue;
-        if ((p.pingTime < peer.pingTime && p.lastblock >= peer.lastblock) || p.lastblock > peer.lastblock) peer = p;
+        if ((p.pingTime < peer.pingTime && p.lastBlockHeight >= peer.lastBlockHeight) || p.lastBlockHeight > peer.lastBlockHeight) peer = p;
     }
     
     [self.downloadPeer disconnect];
     self.downloadPeer = peer;
     _connected = YES;
-    [self.chain setEstimatedBlockHeight:peer.lastblock fromPeer:peer];
+    [self.chain setEstimatedBlockHeight:peer.lastBlockHeight fromPeer:peer];
     if ([self.chain syncsBlockchain] && [self.chain canConstructAFilter]) {
         [peer sendFilterloadMessage:[self.transactionManager transactionsBloomFilterForPeer:peer].data];
     }
     peer.currentBlockHeight = self.chain.lastBlockHeight;
     
     
-    if ([self.chain syncsBlockchain] && (self.chain.lastBlockHeight < peer.lastblock)) { // start blockchain sync
+    if ([self.chain syncsBlockchain] && (self.chain.lastBlockHeight < peer.lastBlockHeight)) { // start blockchain sync
         [self.chainManager resetLastRelayedItemTime];
         dispatch_async(dispatch_get_main_queue(), ^{ // setup a timer to detect if the sync stalls
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
@@ -807,14 +807,17 @@
             [self.chainManager chainWillStartSyncingBlockchain:self.chain];
             
             dispatch_async(self.chainPeerManagerQueue, ^{
-                // request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
-                // BUG: XXX headers can timeout on slow connections (each message is over 160k)
-                BOOL startingDevnetSync = [self.chain isDevnetAny] && self.chain.lastBlock.height < 5;
-                if (startingDevnetSync || self.chain.lastBlock.timestamp + (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4 >= self.chain.earliestWalletCreationTime) {
-                    [peer sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
-                }
-                else {
-                    [peer sendGetheadersMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
+                if (self.chain.shouldSyncHeadersFirstForMasternodeListVerification) {
+                //masternode list should be synced first and the masternode list is old
+                    [peer sendGetheadersMessageWithLocators:[self.chain headerLocatorArrayForMasternodeSync] andHashStop:UINT256_ZERO];
+                } else {
+                    BOOL startingDevnetSync = [self.chain isDevnetAny] && self.chain.lastBlock.height < 5;
+                    if (startingDevnetSync || self.chain.lastBlock.timestamp + (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4 >= self.chain.earliestWalletCreationTime) {
+                        [peer sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
+                    }
+                    else {
+                        [peer sendGetheadersMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
+                    }
                 }
             });
         });

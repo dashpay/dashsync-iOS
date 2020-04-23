@@ -52,6 +52,7 @@
 #import "DSInstantSendTransactionLock.h"
 #import "DSSporkManager.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
+#import "DSMasternodeManager.h"
 
 #define PEER_LOGGING 1
 #define LOG_ALL_HEADERS_IN_ACCEPT_HEADERS 0
@@ -962,7 +963,7 @@
         return;
     }
     
-    _lastblock = [message UInt32AtOffset:80 + l.unsignedIntegerValue];
+    _lastBlockHeight = [message UInt32AtOffset:80 + l.unsignedIntegerValue];
 
     if (self.version < self.chain.minProtocolVersion) {
 #if MESSAGE_LOGGING
@@ -1182,7 +1183,7 @@
         return;
     }
     else if (self.currentBlockHeight > 0 && blockHashes.count > 2 && blockHashes.count < 500 &&
-             self.currentBlockHeight + self.knownBlockHashes.count + blockHashes.count < self.lastblock) {
+             self.currentBlockHeight + self.knownBlockHashes.count + blockHashes.count < self.lastBlockHeight) {
         [self error:@"non-standard inv, %u is fewer block hashes than expected", (int)blockHashes.count];
         return;
     }
@@ -1434,7 +1435,7 @@
     // Devnets can run slower than usual
     NSTimeInterval lastTimestamp = [message UInt32AtOffset:l + 81*(count - 1) + 68];
     NSTimeInterval firstTimestamp = [message UInt32AtOffset:l + 81 + 68];
-    if (firstTimestamp + DAY_TIME_INTERVAL*2 >= self.earliestKeyTime) {
+    if (!self.chain.shouldSyncHeadersFirstForMasternodeListVerification && (firstTimestamp + DAY_TIME_INTERVAL*2 >= self.earliestKeyTime)) {
         //this is a rare scenario where we called getheaders but the first header returned was actually past the cuttoff, but the previous header was before the cuttoff
         DSDLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, [self.chain blockLocatorArray]);
         [self sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
@@ -1446,7 +1447,8 @@
         NSData *firstHashData = uint256_data(firstBlockHash);
         NSData *lastHashData = uint256_data(lastBlockHash);
         
-        if ((lastTimestamp + DAY_TIME_INTERVAL*2) >= self.earliestKeyTime) { // request blocks for the remainder of the chain
+        
+        if (((lastTimestamp + DAY_TIME_INTERVAL*2) >= self.earliestKeyTime) && (!self.chain.shouldSyncHeadersFirstForMasternodeListVerification)) { // request blocks for the remainder of the chain
             NSTimeInterval timestamp = [message UInt32AtOffset:l + 81 + 68];
             
             for (off = l; timestamp > 0 && ((timestamp + DAY_TIME_INTERVAL*2) < self.earliestKeyTime);) {
@@ -1476,7 +1478,7 @@
         }
         
         dispatch_async(self.delegateQueue, ^{
-            [self.transactionDelegate peer:self relayedBlock:block];
+            [self.transactionDelegate peer:self relayedHeader:block];
         });
     }
 }
