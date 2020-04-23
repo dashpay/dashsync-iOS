@@ -1074,8 +1074,8 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     [self.txRequests[hash] removeObject:peer];
     
     
-    if (NO) {//[transaction isKindOfClass:[DSCreditFundingTransaction class]] && blockchainIdentity && isNewBlockchainIdentity) {
-        //[self fetchFriendshipsForBlockchainIdentity:blockchainIdentity];
+    if ([transaction isKindOfClass:[DSCreditFundingTransaction class]] && blockchainIdentity && isNewBlockchainIdentity) {
+        [self fetchFriendshipsForBlockchainIdentity:blockchainIdentity];
     } else {
         [self updateTransactionsBloomFilter];
     }
@@ -1249,7 +1249,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         return;
     }
     
-    [self.chain addBlock:block fromPeer:peer];
+    [self.chain addHeader:block fromPeer:peer];
 
 }
 

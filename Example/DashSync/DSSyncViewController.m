@@ -30,6 +30,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *percentageLabel;
 @property (strong, nonatomic) IBOutlet UILabel *dbSizeLabel;
 @property (strong, nonatomic) IBOutlet UILabel *lastBlockHeightLabel;
+@property (strong, nonatomic) IBOutlet UILabel *lastMasternodeBlockHeightLabel;
 @property (strong, nonatomic) IBOutlet UIProgressView *progressView, *pulseView;
 @property (assign, nonatomic) NSTimeInterval timeout, start;
 @property (strong, nonatomic) IBOutlet UILabel *connectedPeerCountLabel;
@@ -52,7 +53,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *masternodeListsCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *earliestMasternodeListLabel;
 @property (strong, nonatomic) IBOutlet UILabel *lastMasternodeListLabel;
-@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,blocksObserver,blocksResetObserver,sporkObserver,masternodeObserver,masternodeCountObserver, chainWalletObserver,chainStandaloneDerivationPathObserver,chainSingleAddressObserver,governanceObjectCountObserver,governanceObjectReceivedCountObserver,governanceVoteCountObserver,governanceVoteReceivedCountObserver,connectedPeerConnectionObserver,peerConnectionObserver,blockchainIdentitiesObserver,quorumObserver;
+@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,blocksObserver,blocksResetObserver,headersResetObserver,sporkObserver,masternodeObserver,masternodeCountObserver, chainWalletObserver,chainStandaloneDerivationPathObserver,chainSingleAddressObserver,governanceObjectCountObserver,governanceObjectReceivedCountObserver,governanceVoteCountObserver,governanceVoteReceivedCountObserver,connectedPeerConnectionObserver,peerConnectionObserver,blockchainIdentitiesObserver,quorumObserver;
 
 - (IBAction)startSync:(id)sender;
 - (IBAction)stopSync:(id)sender;
@@ -70,6 +71,7 @@
     [self updateBalance];
     [self updateSporks];
     [self updateBlockHeight];
+    [self updateHeaderHeight];
     [self updateKnownMasternodes];
     [self updateMasternodeLists];
     [self updateQuorumsList];
@@ -121,6 +123,7 @@
                                                            if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
                                                                NSLog(@"update blockheight");
                                                                [self updateBlockHeight];
+                                                               [self updateHeaderHeight];
                                                            }
                                                        }];
     
@@ -129,6 +132,12 @@
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            [self updateBlockHeight];
                                                            [self updateBalance];
+                                                       }];
+    
+    self.headersResetObserver =
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainInitialHeadersDidChangeNotification object:nil
+                                                       queue:nil usingBlock:^(NSNotification *note) {
+                                                           [self updateHeaderHeight];
                                                        }];
     
     self.balanceObserver =
@@ -309,6 +318,7 @@
     double progress = self.chainManager.syncProgress;
     uint64_t dbFileSize = [DashSync sharedSyncController].dbSize;
     uint32_t lastBlockHeight = self.chain.lastBlockHeight;
+    uint32_t lastHeaderHeight = self.chain.lastHeaderHeight;
     if (self.timeout > 1.0 && 0.1 + 0.9*elapsed/self.timeout < progress) progress = 0.1 + 0.9*elapsed/self.timeout;
     
     if ((counter % 13) == 0) {
@@ -338,6 +348,7 @@
     self.percentageLabel.text = [NSString stringWithFormat:@"%0.1f%%",(progress > 0.1 ? progress - 0.1 : 0.0)*111.0];
     self.dbSizeLabel.text = [NSString stringWithFormat:@"%0.1llu KB",dbFileSize/1000];
     self.lastBlockHeightLabel.text = [NSString stringWithFormat:@"%d",lastBlockHeight];
+    self.lastMasternodeBlockHeightLabel.text = [NSString stringWithFormat:@"%d",lastHeaderHeight];
     self.downloadPeerLabel.text = self.chainManager.peerManager.downloadPeerName;
     self.chainTipLabel.text = self.chain.chainTip;
     if (progress + DBL_EPSILON >= 1.0) {
@@ -428,6 +439,10 @@
     self.lastBlockHeightLabel.text = [NSString stringWithFormat:@"%d",self.chain.lastBlockHeight];
 }
 
+-(void)updateHeaderHeight {
+    self.lastMasternodeBlockHeightLabel.text = [NSString stringWithFormat:@"%d",self.chain.lastHeaderHeight];
+}
+
 -(void)updatePeerCount {
     uint64_t peerCount = self.chainManager.peerManager.peerCount;
     self.peerCountLabel.text = [NSString stringWithFormat:@"%llu",peerCount];
@@ -498,6 +513,11 @@
         sporksViewController.sporksArray = [[[[self.chainManager.sporkManager sporkDictionary] allValues] sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"identifier" ascending:TRUE]]] mutableCopy];
     } else if ([segue.identifier isEqualToString:@"BlockchainExplorerSegue"]) {
         DSBlockchainExplorerViewController * blockchainExplorerViewController = (DSBlockchainExplorerViewController*)segue.destinationViewController;
+        blockchainExplorerViewController.type = DSBlockchainExplorerType_Blocks;
+        blockchainExplorerViewController.chain = self.chainManager.chain;
+    } else if ([segue.identifier isEqualToString:@"HeaderBlockchainExplorerSegue"]) {
+        DSBlockchainExplorerViewController * blockchainExplorerViewController = (DSBlockchainExplorerViewController*)segue.destinationViewController;
+        blockchainExplorerViewController.type = DSBlockchainExplorerType_Headers;
         blockchainExplorerViewController.chain = self.chainManager.chain;
     } else if ([segue.identifier isEqualToString:@"MasternodeListSegue"]) {
         DSMasternodeViewController * masternodeViewController = (DSMasternodeViewController*)segue.destinationViewController;

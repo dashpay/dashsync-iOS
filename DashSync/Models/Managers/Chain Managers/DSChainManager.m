@@ -217,6 +217,15 @@
     [self.sporkManager getSporks]; //get the sporks early on
 }
 
+-(void)chainFinishedSyncingInitialHeaders:(DSChain*)chain fromPeer:(DSPeer*)peer onMainChain:(BOOL)onMainChain {
+    if (onMainChain && peer && (peer == self.peerManager.downloadPeer)) self.lastChainRelayTime = [NSDate timeIntervalSince1970];
+    if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList)) {
+        // make sure we care about masternode lists
+        [self.masternodeManager getRecentMasternodeList:32 withSafetyDelay:0];
+        [self.masternodeManager getCurrentMasternodeListWithSafetyDelay:0];
+    }
+}
+
 -(void)chainFinishedSyncingTransactionsAndBlocks:(DSChain*)chain fromPeer:(DSPeer*)peer onMainChain:(BOOL)onMainChain {
     if (onMainChain && peer && (peer == self.peerManager.downloadPeer)) self.lastChainRelayTime = [NSDate timeIntervalSince1970];
     DSDLog(@"chain finished syncing");

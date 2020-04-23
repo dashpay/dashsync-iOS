@@ -1391,10 +1391,6 @@
     NSUInteger count = (NSUInteger)[message varIntAtOffset:0 length:&lNumber];
     NSUInteger l = lNumber.unsignedIntegerValue;
     NSUInteger off = 0;
-    if (count == 0) {
-        [self error:@"count cannot be 0"];
-        return;
-    }
     
     if (message.length < l + 81*count) {
         [self error:@"malformed headers message, length is %u, should be %u for %u items", (int)message.length,
@@ -1441,6 +1437,7 @@
         [self sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
         return;
     }
+    if (!count) return;
     if (count >= 2000 || ((lastTimestamp + DAY_TIME_INTERVAL*2) >= self.earliestKeyTime) || [self.chain isDevnetAny]) {
         UInt256 firstBlockHash = [message subdataWithRange:NSMakeRange(l, 80)].x11;
         UInt256 lastBlockHash = [message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].x11;
@@ -1465,10 +1462,6 @@
                   @[lastHashData.reverse.hexString, firstHashData.reverse.hexString]);
             [self sendGetheadersMessageWithLocators:@[lastHashData, firstHashData] andHashStop:UINT256_ZERO];
         }
-    }
-    else {
-        [self error:@"non-standard headers message, %u is fewer headers than expected, last header time is %@, peer version %d", (int)count,[NSDate dateWithTimeIntervalSince1970:lastTimestamp],self.version];
-        return;
     }
     for (NSUInteger off = l; off < l + 81*count; off += 81) {
         DSMerkleBlock *block = [DSMerkleBlock blockWithMessage:[message subdataWithRange:NSMakeRange(off, 81)] onChain:self.chain];

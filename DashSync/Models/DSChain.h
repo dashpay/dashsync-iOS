@@ -89,6 +89,7 @@ FOUNDATION_EXPORT NSString* const DSChainWalletsDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainStandaloneDerivationPathsDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainStandaloneAddressesDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainBlocksDidChangeNotification;
+FOUNDATION_EXPORT NSString* const DSChainInitialHeadersDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainBlockWasLockedNotification;
 FOUNDATION_EXPORT NSString* const DSChainNotificationBlockKey;
 FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
@@ -139,6 +140,7 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 @property (nonatomic, readonly) NSString * uniqueID;
 @property (nonatomic, weak,nullable) DSChainManager * chainManager;
 @property (nonatomic, readonly,nullable) DSMerkleBlock * lastBlock;
+@property (nonatomic, readonly,nullable) DSMerkleBlock * lastBlockOrHeader;
 @property (nonatomic, readonly,nullable) NSArray * blockLocatorArray;
 @property (nonatomic, readonly,nullable) NSArray * headerLocatorArrayForMasternodeSync;
 @property (nonatomic, readonly,nullable) DSMerkleBlock *lastOrphan;
@@ -283,7 +285,10 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 
 - (DSMerkleBlock * _Nullable)blockForBlockHash:(UInt256)blockHash;
 
+- (DSMerkleBlock* _Nullable)recentBlockForBlockHash:(UInt256)blockHash;
+
 - (DSMerkleBlock * _Nullable)blockFromChainTip:(NSUInteger)blocksAgo;
+
 
 - (DSWallet* _Nullable)walletHavingBlockchainIdentityCreditFundingRegistrationHash:(UInt160)creditFundingRegistrationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
 
@@ -332,6 +337,7 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 @required
 
 -(void)chainWillStartSyncingBlockchain:(DSChain*)chain;
+-(void)chainFinishedSyncingInitialHeaders:(DSChain*)chain fromPeer:(DSPeer* _Nullable)peer onMainChain:(BOOL)onMainChain;
 -(void)chainFinishedSyncingTransactionsAndBlocks:(DSChain*)chain fromPeer:(DSPeer* _Nullable)peer onMainChain:(BOOL)onMainChain;
 -(void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain*)chain;
 -(void)chain:(DSChain*)chain receivedOrphanBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer;

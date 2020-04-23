@@ -450,7 +450,12 @@
 
 -(void)getRecentMasternodeList:(NSUInteger)blocksAgo withSafetyDelay:(uint32_t)safetyDelay {
     @synchronized (self.masternodeListRetrievalQueue) {
-        DSMerkleBlock * merkleBlock = [self.chain blockFromChainTip:blocksAgo];
+        DSMerkleBlock * merkleBlock = nil;
+        if (self.chain.shouldSyncHeadersFirstForMasternodeListVerification) {
+            merkleBlock = [self.chain blockFromChainTip:blocksAgo];
+        } else {
+            merkleBlock = [self.chain blockFromChainTip:blocksAgo];
+        }
         if ([self.masternodeListRetrievalQueue lastObject] && uint256_eq(merkleBlock.blockHash, [self.masternodeListRetrievalQueue lastObject].UInt256)) {
             //we are asking for the same as the last one
             return;
@@ -868,11 +873,7 @@
         return;
     };
     
-    DSMerkleBlock * lastBlock = peer.chain.lastBlock;
-    
-    while (lastBlock && !uint256_eq(lastBlock.blockHash, blockHash)) {
-        lastBlock = peer.chain.recentBlocks[uint256_obj(lastBlock.prevBlock)];
-    }
+    DSMerkleBlock * lastBlock = [peer.chain recentBlockForBlockHash:blockHash];
     
     if (!lastBlock) {
         [self issueWithMasternodeListFromPeer:peer];
