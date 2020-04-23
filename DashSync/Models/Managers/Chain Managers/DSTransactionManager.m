@@ -1075,6 +1075,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     
     
     if ([transaction isKindOfClass:[DSCreditFundingTransaction class]] && blockchainIdentity && isNewBlockchainIdentity) {
+        [self.peerManager disconnect];
         [self fetchFriendshipsForBlockchainIdentity:blockchainIdentity];
     } else {
         [self updateTransactionsBloomFilter];
@@ -1082,22 +1083,17 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 }
 
 -(void)fetchFriendshipsForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity {
-    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-    [blockchainIdentity fetchAllNetworkStateInformationWithCompletion:^(BOOL success, NSError * error) {
+    [blockchainIdentity fetchAllNetworkStateInformationWithCompletion:^(BOOL success, NSArray<NSError *> * _Nullable errors) {
         if (success) {
-            [blockchainIdentity fetchOutgoingContactRequests:^(BOOL success, NSArray<NSError *> *errors) {
-                if (success) {
-                    [blockchainIdentity fetchIncomingContactRequests:^(BOOL success, NSArray<NSError *> *errors) {
-                        if (success) {
-                            dispatch_semaphore_signal(sem);
-                        }
-                    }];
-                }
-            }];
+        [self.peerManager connect];
+            self->_resetBloomFilterAfterNextBlock = TRUE;
+        } else {
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                [self fetchFriendshipsForBlockchainIdentity:blockchainIdentity];
+            });
         }
     }];
-    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
-    _resetBloomFilterAfterNextBlock = TRUE;
+    
 }
 
 // MARK: Transaction Issues
@@ -1289,11 +1285,6 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
         DSDLog(@"ignoring block due to filter update %@",uint256_hex(block.blockHash));
         return;
-    }
-    
-    
-    if (_resetBloomFilterAfterNextBlock) {
-        NSLog(@"here");
     }
     
     [self.chain addBlock:block fromPeer:peer];

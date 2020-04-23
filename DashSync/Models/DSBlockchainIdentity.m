@@ -1286,21 +1286,60 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     [self monitorForBlockchainIdentityWithRetryCount:5 retryAbsentCount:0 delay:3 retryDelayType:DSBlockchainIdentityRetryDelayType_SlowingDown50Percent completion:completion];
 }
 
--(void)fetchAllNetworkStateInformationWithCompletion:(void (^)(BOOL success, NSError * error))completion {
+-(void)fetchAllNetworkStateInformationWithCompletion:(void (^)(BOOL success, NSArray<NSError *> * errors))completion {
     [self fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, NSError * error) {
         if (!success) {
-            completion(success, error);
+            if (completion) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completion(success, @[error]);
+                });
+            }
             return;
         }
+        __block BOOL groupedSuccess = YES;
+        __block NSMutableArray * groupedErrors = [NSMutableArray array];
+        dispatch_group_t dispatchGroup = dispatch_group_create();
+        dispatch_group_enter(dispatchGroup);
         [self fetchUsernamesWithCompletion:^(BOOL success, NSError * error) {
-            if (!success) {
-                completion(success, error);
-                return;
+            groupedSuccess &= success;
+            if (error) {
+                [groupedErrors addObject:error];
             }
-            [self fetchProfileWithCompletion:^(BOOL success, NSError * error) {
-                completion(success, error);
-            }];
+            dispatch_group_leave(dispatchGroup);
         }];
+        
+        dispatch_group_enter(dispatchGroup);
+        [self fetchProfileWithCompletion:^(BOOL success, NSError * error) {
+            groupedSuccess &= success;
+            if (error) {
+                [groupedErrors addObject:error];
+            }
+            dispatch_group_leave(dispatchGroup);
+        }];
+        
+        dispatch_group_enter(dispatchGroup);
+        [self fetchOutgoingContactRequests:^(BOOL success, NSArray<NSError *> *errors) {
+            groupedSuccess &= success;
+            if ([errors count]) {
+                [groupedErrors addObjectsFromArray:errors];
+            }
+            dispatch_group_leave(dispatchGroup);
+        }];
+        
+        dispatch_group_enter(dispatchGroup);
+        [self fetchIncomingContactRequests:^(BOOL success, NSArray<NSError *> *errors) {
+            groupedSuccess &= success;
+            if ([errors count]) {
+                [groupedErrors addObjectsFromArray:errors];
+            }
+            dispatch_group_leave(dispatchGroup);
+        }];
+        
+        if (completion) {
+            dispatch_group_notify(dispatchGroup, dispatch_get_main_queue(), ^{
+                completion(groupedSuccess,[groupedErrors copy]);
+            });
+        }
     }];
 }
 
@@ -2852,7 +2891,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 dispatch_group_enter(dispatchGroup);
                 DSBlockchainIdentity * senderBlockchainIdentity = [[DSBlockchainIdentity alloc] initWithUniqueId:contactRequest.senderBlockchainIdentityUniqueId onChain:self.chain inContext:self.managedObjectContext];
                 [senderBlockchainIdentity saveInitial];
-                [senderBlockchainIdentity fetchAllNetworkStateInformationWithCompletion:^(BOOL success, NSError * error) {
+                [senderBlockchainIdentity fetchAllNetworkStateInformationWithCompletion:^(BOOL success, NSArray<NSError *> * _Nullable networkErrors) {
                     if (success) {
                         DSKey * senderPublicKey = [senderBlockchainIdentity keyAtIndex:contactRequest.senderKeyIndex];
                         NSData * extendedPublicKeyData = [contactRequest decryptedPublicKeyDataWithKey:senderPublicKey];
@@ -2868,6 +2907,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                                            forExtendedPublicKey:extendedPublicKey
                                                         context:context];
                         }
+                    } else {
+                        [errors addObjectsFromArray:networkErrors];
                     }
                     dispatch_group_leave(dispatchGroup);
                 }];
@@ -3041,12 +3082,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 dispatch_group_enter(dispatchGroup);
                 DSBlockchainIdentity * recipientBlockchainIdentity = [[DSBlockchainIdentity alloc] initWithUniqueId:contactRequest.recipientBlockchainIdentityUniqueId onChain:self.chain inContext:self.managedObjectContext];
                 [recipientBlockchainIdentity saveInitial];
-                [recipientBlockchainIdentity fetchAllNetworkStateInformationWithCompletion:^(BOOL success, NSError * error) {
+                [recipientBlockchainIdentity fetchAllNetworkStateInformationWithCompletion:^(BOOL success, NSArray<NSError *> * _Nullable networkErrors) {
                     if (success) {
                         [self addFriendshipFromSourceBlockchainIdentity:self sourceKeyIndex:contactRequest.senderKeyIndex toRecipientBlockchainIdentity:recipientBlockchainIdentity recipientKeyIndex:contactRequest.recipientKeyIndex inContext:self.managedObjectContext];
                     } else {
                         succeeded = FALSE;
-                        [errors addObject:error];
+                        [errors addObjectsFromArray:networkErrors];
                     }
                     dispatch_group_leave(dispatchGroup);
                 }];
@@ -3068,12 +3109,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 
                 if (!recipientBlockchainIdentity.activeKeyCount) {
                     dispatch_group_enter(dispatchGroup);
-                    [recipientBlockchainIdentity fetchAllNetworkStateInformationWithCompletion:^(BOOL success, NSError * error) {
+                    [recipientBlockchainIdentity fetchAllNetworkStateInformationWithCompletion:^(BOOL success, NSArray<NSError *> * _Nullable networkErrors) {
                         if (success) {
                             [self addFriendshipFromSourceBlockchainIdentity:self sourceKeyIndex:contactRequest.senderKeyIndex toRecipientBlockchainIdentity:recipientBlockchainIdentity recipientKeyIndex:contactRequest.recipientKeyIndex inContext:self.managedObjectContext];
                         } else {
                             succeeded = FALSE;
-                            [errors addObject:error];
+                            [errors addObjectsFromArray:networkErrors];
                         }
                         dispatch_group_leave(dispatchGroup);
                     }];
