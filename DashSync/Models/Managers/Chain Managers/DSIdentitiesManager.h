@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DSDAPINetworkServiceRequest;
 
 typedef void (^IdentitiesCompletionBlock)(NSArray <DSBlockchainIdentity*> * _Nullable blockchainIdentities, NSError * _Nullable error);
+typedef void (^IdentityCompletionBlock)(DSBlockchainIdentity* _Nullable blockchainIdentity, NSError * _Nullable error);
 
 @interface DSIdentitiesManager : NSObject
 
@@ -32,6 +33,8 @@ typedef void (^IdentitiesCompletionBlock)(NSArray <DSBlockchainIdentity*> * _Nul
 - (instancetype)initWithChain:(DSChain*)chain;
 
 - (void)retrieveAllBlockchainIdentitiesChainStates;
+
+- (id<DSDAPINetworkServiceRequest>)searchIdentityByName:(NSString*)namePrefix withCompletion:(IdentityCompletionBlock)completion;
 
 - (id<DSDAPINetworkServiceRequest>)searchIdentitiesByNamePrefix:(NSString*)namePrefix withCompletion:(IdentitiesCompletionBlock)completion;
 

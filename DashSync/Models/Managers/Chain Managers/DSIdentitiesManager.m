@@ -81,6 +81,33 @@
     return [self searchIdentitiesByNamePrefix:namePrefix offset:0 limit:100 withCompletion:completion];
 }
 
+- (id<DSDAPINetworkServiceRequest>)searchIdentityByName:(NSString*)name withCompletion:(IdentityCompletionBlock)completion {
+    DSDAPIClient * client = self.chain.chainManager.DAPIClient;
+    id<DSDAPINetworkServiceRequest> call = [client.DAPINetworkService getDPNSDocumentsForUsernames:@[name] inDomain:@"" success:^(NSArray<NSDictionary *> * _Nonnull documents) {
+        __block NSMutableArray * rBlockchainIdentities = [NSMutableArray array];
+        for (NSDictionary * document in documents) {
+            NSString * userId = document[@"$userId"];
+            NSString * normalizedLabel = document[@"normalizedLabel"];
+            DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 onChain:self.chain inContext:self.chain.managedObjectContext];
+            [identity addUsername:normalizedLabel status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
+            [rBlockchainIdentities addObject:identity];
+        }
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion([rBlockchainIdentities firstObject],nil);
+            });
+        }
+    } failure:^(NSError * _Nonnull error) {
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(nil,error);
+            });
+        }
+        NSLog(@"Failure %@",error);
+    }];
+    return call;
+}
+
 - (id<DSDAPINetworkServiceRequest>)searchIdentitiesByNamePrefix:(NSString*)namePrefix offset:(uint32_t)offset limit:(uint32_t)limit withCompletion:(IdentitiesCompletionBlock)completion {
     DSDAPIClient * client = self.chain.chainManager.DAPIClient;
     id<DSDAPINetworkServiceRequest> call = [client.DAPINetworkService searchDPNSDocumentsForUsernamePrefix:namePrefix inDomain:@"" offset:offset limit:limit success:^(NSArray<NSDictionary *> * _Nonnull documents) {
