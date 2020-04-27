@@ -547,6 +547,13 @@ refundToAmounts:(NSArray *)amounts refundToScripts:(NSArray *)scripts memo:(NSSt
     return self;
 }
 
+-(NSString*)merchantString {
+    if (self.merchantData) {
+        return [[NSString alloc] initWithData:self.merchantData encoding:NSUTF8StringEncoding];
+    }
+    return nil;
+}
+
 - (NSArray *)refundToAmounts
 {
     if (! [_refundToAmounts containsObject:@(UINT64_MAX)]) return _refundToAmounts;
