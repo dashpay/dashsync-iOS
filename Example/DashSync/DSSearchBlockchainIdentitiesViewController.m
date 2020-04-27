@@ -60,8 +60,8 @@
 }
 
 -(void)searchByNamePrefix:(NSString*)namePrefix {
-    [self.chainManager.identitiesManager searchIdentitiesByNamePrefix:namePrefix withCompletion:^(NSArray<DSBlockchainIdentity *> * _Nullable blockchainIdentities, NSError * _Nullable error) {
-        if (!error) {
+    [self.chainManager.identitiesManager searchIdentitiesByNamePrefix:namePrefix withCompletion:^(BOOL succeess, NSArray<DSBlockchainIdentity *> * _Nullable blockchainIdentities, NSArray<NSError *> * _Nonnull errors) {
+        if (succeess) {
             self.blockchainIdentities = blockchainIdentities;
             [self.tableView reloadData];
         }
@@ -69,8 +69,8 @@
 }
 
 -(void)searchByIdentifier:(NSString*)identifier {
-    [self.chainManager.identitiesManager searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID:identifier withCompletion:^(NSArray<DSBlockchainIdentity *> * _Nullable blockchainIdentities, NSError * _Nullable error) {
-        if (!error) {
+    [self.chainManager.identitiesManager searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID:identifier withCompletion:^(BOOL succeess, NSArray<DSBlockchainIdentity *> * _Nullable blockchainIdentities, NSArray<NSError *> * _Nonnull errors) {
+        if (succeess) {
             self.blockchainIdentities = blockchainIdentities;
             [self.tableView reloadData];
         }

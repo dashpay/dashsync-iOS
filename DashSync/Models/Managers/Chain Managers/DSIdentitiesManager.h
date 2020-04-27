@@ -23,14 +23,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DSDAPINetworkServiceRequest;
 
-typedef void (^IdentitiesCompletionBlock)(NSArray <DSBlockchainIdentity*> * _Nullable blockchainIdentities, NSError * _Nullable error);
-typedef void (^IdentityCompletionBlock)(DSBlockchainIdentity* _Nullable blockchainIdentity, NSError * _Nullable error);
+typedef void (^IdentitiesCompletionBlock)(BOOL succeess, NSArray <DSBlockchainIdentity*> * _Nullable blockchainIdentities, NSArray<NSError *> * errors);
+typedef void (^IdentityCompletionBlock)(BOOL succeess, DSBlockchainIdentity* _Nullable blockchainIdentity, NSError * _Nullable error);
 
 @interface DSIdentitiesManager : NSObject
 
 @property (nonatomic, readonly) DSChain * chain;
 
 - (instancetype)initWithChain:(DSChain*)chain;
+
+- (NSArray*)unsyncedBlockchainIdentities;
+
+- (void)syncBlockchainIdentitiesWithCompletion:(IdentitiesCompletionBlock)completion;
 
 - (void)retrieveAllBlockchainIdentitiesChainStates;
 

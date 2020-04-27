@@ -45,7 +45,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
         _chain = chain;
         self.availablePeers = [NSMutableSet set];
         self.activeServices = [NSMutableArray array];
-                self.dispatchQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.dapigrpc.%@",self.chain.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
+        self.dispatchQueue = self.chain.networkingQueue;
 
     }
     return self;

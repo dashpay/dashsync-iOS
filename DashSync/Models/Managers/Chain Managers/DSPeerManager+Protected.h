@@ -40,7 +40,6 @@ typedef NS_ENUM(NSUInteger, DSPeerManagerDesiredState) {
 @property (nonatomic, readonly) NSUInteger connectFailures, misbehavingCount, maxConnectCount;
 @property (nonatomic, readonly) NSSet *connectedPeers;
 @property (nonatomic, readonly) DSPeerManagerDesiredState desiredState;
-@property (nonatomic, readonly) dispatch_queue_t chainPeerManagerQueue;
 
 - (void)peerMisbehaving:(DSPeer *)peer errorMessage:(NSString*)errorMessage;
 - (void)syncStopped;

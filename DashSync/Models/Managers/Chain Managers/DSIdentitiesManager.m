@@ -24,6 +24,8 @@
 #import "DSDAPIClient.h"
 #import "DSDAPINetworkService.h"
 #import "DSOptionsManager.h"
+#import "DSCreditFundingTransaction.h"
+#import "DSMerkleBlock.h"
 
 @interface DSIdentitiesManager()
 
@@ -45,6 +47,43 @@
 }
 
 // MARK: - Identities
+
+- (NSArray*)unsyncedBlockchainIdentities {
+    NSMutableArray * unsyncedBlockchainIdentities = [NSMutableArray array];
+    for (DSBlockchainIdentity * blockchainIdentity in [self.chain allBlockchainIdentitiesArray]) {
+        if (!blockchainIdentity.registrationCreditFundingTransaction || (blockchainIdentity.registrationCreditFundingTransaction.blockHeight == BLOCK_UNKNOWN_HEIGHT)) {
+            [unsyncedBlockchainIdentities addObject:blockchainIdentity];
+        } else if (self.chain.lastBlockHeight > blockchainIdentity.dashpaySyncronizationBlockHeight) {
+            //If they are equal then the blockchain identity is synced
+            //This is because the dashpaySyncronizationBlock represents the last block for the bloom filter used in L1 should be considered valid
+            //That's because it is set at the time with the hash of the last
+            [unsyncedBlockchainIdentities addObject:blockchainIdentity];
+        }
+    }
+    return unsyncedBlockchainIdentities;
+}
+
+-(void)syncBlockchainIdentitiesWithCompletion:(IdentitiesCompletionBlock)completion {
+    dispatch_group_t dispatchGroup = dispatch_group_create();
+    __block BOOL groupedSuccess = YES;
+    __block NSMutableArray * groupedErrors = [NSMutableArray array];
+    NSArray <DSBlockchainIdentity *> * blockchainIdentities =  [self unsyncedBlockchainIdentities];
+    for (DSBlockchainIdentity * blockchainIdentity in blockchainIdentities) {
+        dispatch_group_enter(dispatchGroup);
+        [blockchainIdentity fetchAllNetworkStateInformationWithCompletion:^(BOOL success, NSArray<NSError *> * _Nullable errors) {
+            groupedSuccess &= success;
+            [groupedErrors addObjectsFromArray:errors];
+            dispatch_group_leave(dispatchGroup);
+        }];
+    }
+    
+
+    if (completion) {
+        dispatch_group_notify(dispatchGroup, dispatch_get_main_queue(), ^{
+            completion(groupedSuccess,blockchainIdentities,[groupedErrors copy]);
+        });
+    }
+}
 
 -(void)retrieveAllBlockchainIdentitiesChainStates {
     for (DSWallet * wallet in self.chain.wallets) {
@@ -94,13 +133,13 @@
         }
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                completion([rBlockchainIdentities firstObject],nil);
+                completion(YES,[rBlockchainIdentities firstObject],nil);
             });
         }
     } failure:^(NSError * _Nonnull error) {
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                completion(nil,error);
+                completion(NO,nil,error);
             });
         }
         NSLog(@"Failure %@",error);
@@ -121,13 +160,13 @@
         }
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                completion([rBlockchainIdentities copy],nil);
+                completion(YES,[rBlockchainIdentities copy],@[]);
             });
         }
     } failure:^(NSError * _Nonnull error) {
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                completion(nil,error);
+                completion(NO, nil, @[error]);
             });
         }
         NSLog(@"Failure %@",error);
@@ -151,13 +190,13 @@
         }
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                completion([rBlockchainIdentities copy],nil);
+                completion(YES,[rBlockchainIdentities copy],@[]);
             });
         }
     } failure:^(NSError * _Nonnull error) {
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                completion(nil,error);
+                completion(NO, nil, @[error]);
             });
         }
         NSLog(@"Failure %@",error);

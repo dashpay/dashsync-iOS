@@ -76,6 +76,7 @@
 #import "NSManagedObject+Sugar.h"
 #import "DSBlockchainIdentity+Protected.h"
 #import "DSTransactionHashEntity+CoreDataProperties.h"
+#import "BigIntTypes.h"
 
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; const char * masternodeListPath; const char * merkleRoot;} checkpoint;
 
@@ -221,6 +222,7 @@ static checkpoint mainnet_checkpoint_array[] = {
 @property (nonatomic, assign) UInt256 cachedDashpayContractID;
 @property (nonatomic, strong) NSMutableDictionary <NSData*,NSNumber*>* transactionHashHeights;
 @property (nonatomic, strong) NSMutableDictionary <NSData*,NSNumber*>* transactionHashTimestamps;
+@property (nonatomic, strong) dispatch_queue_t networkingQueue;
 @property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
 
 @end
@@ -245,6 +247,14 @@ static checkpoint mainnet_checkpoint_array[] = {
     if (feePerByte >= MIN_FEE_PER_B && feePerByte <= MAX_FEE_PER_B) self.feePerByte = feePerByte;
     
     return self;
+}
+
+-(dispatch_queue_t)networkingQueue {
+    if (!_networkingQueue) {
+        NSAssert(!uint256_is_zero(self.genesisHash), @"genesisHash must be set");
+        _networkingQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.network.%@",self.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
+    }
+    return _networkingQueue;
 }
 
 - (instancetype)initWithType:(DSChainType)type checkpoints:(NSArray*)checkpoints

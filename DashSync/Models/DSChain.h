@@ -140,6 +140,7 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 @property (nonatomic, readonly) NSString * uniqueID;
 @property (nonatomic, weak,nullable) DSChainManager * chainManager;
 @property (nonatomic, readonly,nullable) DSMerkleBlock * lastBlock;
+@property (nonatomic, readonly,nullable) DSMerkleBlock * lastHeader;
 @property (nonatomic, readonly,nullable) DSMerkleBlock * lastBlockOrHeader;
 @property (nonatomic, readonly,nullable) NSArray * blockLocatorArray;
 @property (nonatomic, readonly,nullable) NSArray * headerLocatorArrayForMasternodeSync;
@@ -187,6 +188,8 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 @property (nonatomic, readonly) uint64_t balance;
 
 @property (nonatomic, assign) uint32_t bestBlockHeight;
+
+@property (nonatomic, readonly) dispatch_queue_t networkingQueue;
 
 +(DSChain*)mainnet;
 +(DSChain*)testnet;

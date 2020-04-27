@@ -374,7 +374,7 @@
     self.timeOutObserverTry++;
     __block uint16_t timeOutObserverTry = self.timeOutObserverTry;
     
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(20 * (self.timedOutAttempt + 1) * NSEC_PER_SEC)), [self peerManager].chainPeerManagerQueue, ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(20 * (self.timedOutAttempt + 1) * NSEC_PER_SEC)), self.chain.networkingQueue, ^{
         if (![self.masternodeListRetrievalQueue count]) return;
         if (self.timeOutObserverTry != timeOutObserverTry) return;
         NSMutableSet * leftToGet = [masternodeListsInRetrieval mutableCopy];
@@ -401,7 +401,7 @@
     }
     if ([self.masternodeListsInRetrieval count]) return;
     if (!self.peerManager.downloadPeer || (self.peerManager.downloadPeer.status != DSPeerStatus_Connected)) {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), [self peerManager].chainPeerManagerQueue, ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), self.chain.networkingQueue, ^{
             [self dequeueMasternodeListRequest];
         });
         return;
@@ -484,7 +484,7 @@
     if (safetyDelay) {
         //the safety delay checks to see if this was called in the last n seconds.
         self.timeIntervalForMasternodeRetrievalSafetyDelay = [[NSDate date] timeIntervalSince1970];
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(safetyDelay * NSEC_PER_SEC)), [self peerManager].chainPeerManagerQueue, ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(safetyDelay * NSEC_PER_SEC)), self.chain.networkingQueue, ^{
             NSTimeInterval timeElapsed = [[NSDate date] timeIntervalSince1970] - self.timeIntervalForMasternodeRetrievalSafetyDelay;
             if (timeElapsed > safetyDelay) {
                 [self getCurrentMasternodeListWithSafetyDelay:0];
@@ -971,7 +971,7 @@
         if (error) {
             [self.masternodeListRetrievalQueue removeAllObjects];
             [self wipeMasternodeInfo];
-            dispatch_async([self peerManager].chainPeerManagerQueue, ^{
+            dispatch_async(self.chain.networkingQueue, ^{
                 [self getCurrentMasternodeListWithSafetyDelay:0];
             });
         }

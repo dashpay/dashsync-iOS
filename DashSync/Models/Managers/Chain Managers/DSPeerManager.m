@@ -84,7 +84,7 @@
 @property (nonatomic, strong) id backgroundObserver, walletAddedObserver;
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, assign) DSPeerManagerDesiredState desiredState;
-@property (nonatomic, strong) dispatch_queue_t chainPeerManagerQueue;
+@property (nonatomic, readonly) dispatch_queue_t networkingQueue;
 
 @end
 
@@ -101,8 +101,6 @@
     self.mutableMisbehavingPeers = [NSMutableSet set];
     self.taskId = UIBackgroundTaskInvalid;
     
-    //there should be one queue per chain
-    self.chainPeerManagerQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.peermanager.%@",self.chain.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
     self.maxConnectCount = PEER_MAX_CONNECTIONS;
     
     self.backgroundObserver =
@@ -113,7 +111,7 @@
                                                            
                                                            if (self.taskId == UIBackgroundTaskInvalid) {
                                                                self.misbehavingCount = 0;
-                                                               dispatch_async(self.chainPeerManagerQueue, ^{
+                                                               dispatch_async(self.networkingQueue, ^{
                                                                    [self.connectedPeers makeObjectsPerformSelector:@selector(disconnect)];
                                                                });
                                                            }
@@ -133,6 +131,10 @@
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
     if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
     if (self.walletAddedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.walletAddedObserver];
+}
+
+-(dispatch_queue_t)networkingQueue {
+    return self.chain.networkingQueue;
 }
 
 - (NSSet *)connectedPeers {
@@ -344,7 +346,7 @@
 
 
 - (void)changeCurrentPeers {
-    dispatch_async(self.chainPeerManagerQueue, ^{
+    dispatch_async(self.networkingQueue, ^{
         for (DSPeer *p in self.connectedPeers) {
             p.priority--;
             NSCalendar *calendar = [[NSCalendar alloc] initWithCalendarIdentifier: NSCalendarIdentifierGregorian];
@@ -587,7 +589,7 @@
 - (void)connect
 {
     self.desiredState = DSPeerManagerDesiredState_Connected;
-    dispatch_async(self.chainPeerManagerQueue, ^{
+    dispatch_async(self.networkingQueue, ^{
         
         if ([self.chain syncsBlockchain] && ![self.chain canConstructAFilter]) return; // check to make sure the wallet has been created if only are a basic wallet with no dash features
         if (self.connectFailures >= MAX_CONNECT_FAILURES) self.connectFailures = 0; // this attempt is a manual retry
@@ -597,7 +599,7 @@
             
             if (self.taskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
                 self.taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
-                    dispatch_async(self.chainPeerManagerQueue, ^{
+                    dispatch_async(self.networkingQueue, ^{
                         [self.chain saveBlocks];
                     });
                     
@@ -633,7 +635,7 @@
                     DSPeer *peer = peers[(NSUInteger)(pow(arc4random_uniform((uint32_t)peers.count), 2)/peers.count)];
                     
                     if (peer && ! [self.connectedPeers containsObject:peer]) {
-                        [peer setChainDelegate:self.chain.chainManager peerDelegate:self transactionDelegate:self.transactionManager governanceDelegate:self.governanceSyncManager sporkDelegate:self.sporkManager masternodeDelegate:self.masternodeManager queue:self.chainPeerManagerQueue];
+                        [peer setChainDelegate:self.chain.chainManager peerDelegate:self transactionDelegate:self.transactionManager governanceDelegate:self.governanceSyncManager sporkDelegate:self.sporkManager masternodeDelegate:self.masternodeManager queue:self.networkingQueue];
                         peer.earliestKeyTime = earliestWalletCreationTime;
                         
                         [self.mutableConnectedPeers addObject:peer];
@@ -663,7 +665,7 @@
 - (void)disconnect
 {
     self.desiredState = DSPeerManagerDesiredState_Disconnected;
-    dispatch_async(self.chainPeerManagerQueue, ^{
+    dispatch_async(self.networkingQueue, ^{
         for (DSPeer *peer in self.connectedPeers) {
             self.connectFailures = MAX_CONNECT_FAILURES; // prevent futher automatic reconnect attempts
             [peer disconnect];
@@ -673,7 +675,7 @@
 
 - (void)disconnectDownloadPeerWithCompletion:(void (^ _Nullable)(BOOL success))completion {
     [self.downloadPeer disconnect];
-    dispatch_async(self.chainPeerManagerQueue, ^{
+    dispatch_async(self.networkingQueue, ^{
         if (self.downloadPeer) { // disconnect the current download peer so a new random one will be selected
             [self.peers removeObject:self.downloadPeer];
         }
@@ -806,7 +808,7 @@
             
             [self.chainManager chainWillStartSyncingBlockchain:self.chain];
             
-            dispatch_async(self.chainPeerManagerQueue, ^{
+            dispatch_async(self.networkingQueue, ^{
                 if (self.chain.shouldSyncHeadersFirstForMasternodeListVerification) {
                 //masternode list should be synced first and the masternode list is old
                     [peer sendGetheadersMessageWithLocators:[self.chain headerLocatorArrayForMasternodeSync] andHashStop:UINT256_ZERO];

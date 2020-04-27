@@ -79,6 +79,7 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventKeyUpdate;
 FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventRegistration;
 FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventCreditBalance;
 FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
+FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventDashpaySyncronizationBlockHash;
 
 @interface DSBlockchainIdentity : NSObject
 
@@ -158,6 +159,12 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 
 /*! @brief This is a convenience factory to quickly make dpns documents */
 @property (nonatomic,readonly) DPDocumentFactory* dpnsDocumentFactory;
+
+/*! @brief DashpaySyncronizationBlock represents the last L1 block height for which Dashpay would be synchronized, if this isn't at the end of the chain then we need to query L2 to make sure we don't need to update our bloom filter */
+@property (nonatomic,readonly) uint32_t dashpaySyncronizationBlockHeight;
+
+/*! @brief DashpaySyncronizationBlock represents the last L1 block hash for which Dashpay would be synchronized */
+@property (nonatomic,readonly) UInt256 dashpaySyncronizationBlockHash;
 
 // MARK: - Contracts
 

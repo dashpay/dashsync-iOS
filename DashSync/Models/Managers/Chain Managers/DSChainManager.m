@@ -129,6 +129,28 @@
 
 // MARK: - Blockchain Sync
 
+- (void)startSync {
+    if ([self.identitiesManager unsyncedBlockchainIdentities].count) {
+        [self.identitiesManager syncBlockchainIdentitiesWithCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> * _Nullable blockchainIdentities, NSArray<NSError *> * _Nonnull errors) {
+            if (success) {
+                [self.peerManager connect];
+            } else {
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    [self startSync];
+                });
+            }
+        }];
+    } else {
+        [self.peerManager connect];
+    }
+    
+}
+
+- (void)stopSync {
+    
+    [self.peerManager disconnect];
+}
+
 -(void)disconnectedRescan {
     
     DSChainEntity * chainEntity = self.chain.chainEntity;
