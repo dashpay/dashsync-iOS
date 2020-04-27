@@ -187,6 +187,7 @@ typedef enum : NSUInteger {
 @property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, assign) BOOL chainSetInProtocol;
 @property (nonatomic, strong) NSArray *outputAmounts;
+@property (nonatomic, strong) NSData * data;
 
 @end
 
@@ -255,6 +256,7 @@ typedef enum : NSUInteger {
     } else {
         self.chainSetInProtocol = YES;
     }
+    self.data = data;
     return self;
 }
 
@@ -273,6 +275,7 @@ typedef enum : NSUInteger {
 
 - (NSData *)toData
 {
+    if (_data) return _data;
     NSMutableData *d = [NSMutableData data];
     NSUInteger i = 0;
 
@@ -292,6 +295,7 @@ typedef enum : NSUInteger {
     if (_memo) [d appendProtoBufString:_memo withKey:details_memo];
     if (_paymentURL) [d appendProtoBufString:_paymentURL withKey:details_payment_url];
     if (_merchantData) [d appendProtoBufData:_merchantData withKey:details_merchant_data];
+    _data = d;
     return d;
 }
 
