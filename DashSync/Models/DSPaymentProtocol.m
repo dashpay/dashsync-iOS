@@ -260,6 +260,13 @@ typedef enum : NSUInteger {
     return self;
 }
 
+-(NSString*)merchantString {
+    if (self.merchantData) {
+        return [[NSString alloc] initWithData:self.merchantData encoding:NSUTF8StringEncoding];
+    }
+    return nil;
+}
+
 - (NSArray *)outputAmounts
 {
     if (! [_outputAmounts containsObject:@(UINT64_MAX)]) return _outputAmounts;

@@ -40,6 +40,7 @@
 @property (nonatomic, readonly) NSString *memo; // human-readable description of request for the customer, optional
 @property (nonatomic, readonly) NSString *paymentURL; // url to send payment and get payment ack, optional
 @property (nonatomic, readonly) NSData *merchantData; // arbitrary data to include in the payment message, optional
+@property (nonatomic, readonly) NSString *merchantString; // optional
 @property (nonatomic, readonly) DSChain *chain;
 
 @property (nonatomic, readonly, getter = toData) NSData *data;
