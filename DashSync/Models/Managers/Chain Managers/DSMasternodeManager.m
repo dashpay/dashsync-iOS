@@ -29,7 +29,7 @@
 #import "DSAddressEntity+CoreDataProperties.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "NSManagedObject+Sugar.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "DSPeer.h"
 #import "NSData+Dash.h"
 #import "DSPeerManager.h"

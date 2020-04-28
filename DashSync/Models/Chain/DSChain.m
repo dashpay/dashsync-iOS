@@ -22,7 +22,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "DSPeer.h"
 #import "NSString+Bitcoin.h"
 #import "NSData+Bitcoin.h"
@@ -1261,42 +1261,6 @@ static dispatch_once_t devnetToken = 0;
     return [self.viewingAccount fundDerivationPaths];
 }
 
-// MARK: - Voting Keys
-
-//-(NSData*)votingKeyForMasternode:(DSSimplifiedMasternodeEntry*)masternodeEntry {
-//    NSError * error = nil;
-//    NSDictionary * keyChainDictionary = getKeychainDict(self.votingKeysKey, &error);
-//    NSData * votingKey = [keyChainDictionary objectForKey:masternodeEntry.uniqueID];
-//    return votingKey;
-//}
-//
-//-(NSArray*)registeredMasternodes {
-//    NSError * error = nil;
-//    NSDictionary * keyChainDictionary = getKeychainDict(self.votingKeysKey, &error);
-//    DSChainManager * chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:self];
-//    NSMutableArray * registeredMasternodes = [NSMutableArray array];
-//    for (NSData * providerRegistrationTransactionHash in keyChainDictionary) {
-//        DSSimplifiedMasternodeEntry * masternode = [chainManager.masternodeManager masternodeHavingProviderRegistrationTransactionHash:providerRegistrationTransactionHash];
-//        [registeredMasternodes addObject:masternode];
-//    }
-//    return [registeredMasternodes copy];
-//}
-//
-//-(void)registerVotingKey:(NSData*)votingKey forMasternodeEntry:(DSSimplifiedMasternodeEntry*)masternodeEntry {
-//    NSError * error = nil;
-//    NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.votingKeysKey, &error) mutableCopy];
-//    if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
-//    [keyChainDictionary setObject:votingKey forKey:[NSData dataWithUInt256:masternodeEntry.providerRegistrationTransactionHash]];
-//    setKeychainDict([keyChainDictionary copy], self.votingKeysKey, YES);
-//    NSManagedObjectContext * context = [DSSimplifiedMasternodeEntryEntity context];
-//    [context performBlockAndWait:^{
-//        [DSSimplifiedMasternodeEntryEntity setContext:context];
-//        DSSimplifiedMasternodeEntryEntity * masternodeEntryEntity = masternodeEntry.simplifiedMasternodeEntryEntity;
-//        masternodeEntryEntity.claimed = TRUE;
-//        [DSSimplifiedMasternodeEntryEntity saveContext];
-//    }];
-//}
-
 // MARK: - Probabilistic Filters
 
 - (DSBloomFilter*)bloomFilterWithFalsePositiveRate:(double)falsePositiveRate withTweak:(uint32_t)tweak {
@@ -1396,7 +1360,7 @@ static dispatch_once_t devnetToken = 0;
     }
     [self wipeBlockchainIdentitiesPersistedData];
     [self.viewingAccount wipeBlockchainInfo];
-    self.bestBlockHeight = 0;
+    _bestBlockHeight = 0;
     _blocks = nil;
     _lastBlock = nil;
     [self setLastBlockHeightForRescan];
@@ -1827,7 +1791,7 @@ static dispatch_once_t devnetToken = 0;
 
 - (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes
 {
-    if (height != TX_UNCONFIRMED && height > self.bestBlockHeight) self.bestBlockHeight = height;
+    if (height != TX_UNCONFIRMED && height > self.bestBlockHeight) _bestBlockHeight = height;
     NSMutableArray *updatedTx = [NSMutableArray array];
     if ([txHashes count]) {
         //need to reverify this works
@@ -2284,7 +2248,7 @@ static dispatch_once_t devnetToken = 0;
     return [accounts copy];
 }
 
--(uint32_t)blockchainIdentitiesCount {
+-(uint32_t)localBlockchainIdentitiesCount {
     uint32_t blockchainIdentitiesCount = 0;
     for (DSWallet * lWallet in self.wallets) {
         blockchainIdentitiesCount += [lWallet blockchainIdentitiesCount];
@@ -2373,7 +2337,7 @@ static dispatch_once_t devnetToken = 0;
 
 // MARK: - Identities
 
--(NSArray <DSBlockchainIdentity *>*)allBlockchainIdentitiesArray {
+-(NSArray <DSBlockchainIdentity *>*)localBlockchainIdentities {
     NSMutableArray * rAllBlockchainIdentities = [NSMutableArray array];
     for (DSWallet * wallet in self.wallets) {
         [rAllBlockchainIdentities addObjectsFromArray:[wallet.blockchainIdentities allValues]];
@@ -2381,7 +2345,7 @@ static dispatch_once_t devnetToken = 0;
     return rAllBlockchainIdentities;
 }
 
--(NSDictionary <NSData*,DSBlockchainIdentity *>*)allBlockchainIdentitiesByUniqueIdDictionary {
+-(NSDictionary <NSData*,DSBlockchainIdentity *>*)localBlockchainIdentitiesByUniqueIdDictionary {
     NSMutableDictionary * rAllBlockchainIdentities = [NSMutableDictionary dictionary];
     for (DSWallet * wallet in self.wallets) {
         for (DSBlockchainIdentity * blockchainIdentity in [wallet.blockchainIdentities allValues]) {

@@ -37,7 +37,7 @@
 #import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSEventManager.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "DSSpork.h"
 #import "DSSporkManager.h"
 #import "DSChainEntity+CoreDataClass.h"

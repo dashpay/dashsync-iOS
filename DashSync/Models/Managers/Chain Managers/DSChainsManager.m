@@ -36,6 +36,7 @@
 #import "DSChainManager+Protected.h"
 #include <arpa/inet.h>
 #import "DSDashPlatform.h"
+#import "DSChain+Protected.h"
 
 #define DEVNET_CHAINS_KEY  @"DEVNET_CHAINS_KEY"
 
