@@ -198,13 +198,10 @@
     switch (self.chain.chainType) {
         case DSChainType_MainNet:
             return MAINNET_DNS_SEEDS;
-            break;
         case DSChainType_TestNet:
             return TESTNET_DNS_SEEDS;
-            break;
         case DSChainType_DevNet:
             return nil; //no dns seeds for devnets
-            break;
         default:
             break;
     }

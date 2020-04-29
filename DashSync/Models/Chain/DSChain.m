@@ -599,14 +599,11 @@ static dispatch_once_t devnetToken = 0;
     switch ([self chainType]) {
         case DSChainType_MainNet:
             return @"main";
-            break;
         case DSChainType_TestNet:
             return @"test";
-            break;
         case DSChainType_DevNet:
             if (_networkName) return _networkName;
             return @"dev";
-            break;
         default:
             break;
     }
@@ -617,14 +614,11 @@ static dispatch_once_t devnetToken = 0;
     switch ([self chainType]) {
         case DSChainType_MainNet:
             return @"Mainnet";
-            break;
         case DSChainType_TestNet:
             return @"Testnet";
-            break;
         case DSChainType_DevNet:
             if (_networkName) return _networkName;
             return [@"Devnet - " stringByAppendingString:self.devnetIdentifier];
-            break;
         default:
             break;
     }
@@ -635,14 +629,11 @@ static dispatch_once_t devnetToken = 0;
     switch ([self chainType]) {
         case DSChainType_MainNet:
             return DSLocalizedString(@"Mainnet",nil);
-            break;
         case DSChainType_TestNet:
             return DSLocalizedString(@"Testnet",nil);
-            break;
         case DSChainType_DevNet:
             if (_networkName) return _networkName;
             return [NSString stringWithFormat:@"%@ - %@", DSLocalizedString(@"Devnet",nil),self.devnetIdentifier];
-            break;
         default:
             break;
     }
@@ -679,13 +670,10 @@ static dispatch_once_t devnetToken = 0;
     switch ([self chainType]) {
         case DSChainType_MainNet:
             return 20;
-            break;
         case DSChainType_TestNet:
             return 40;
-            break;
         case DSChainType_DevNet:
             return 3;
-            break;
         default:
             break;
     }
@@ -889,7 +877,6 @@ static dispatch_once_t devnetToken = 0;
                 return _cachedStandardDapiGRPCPort;
             }
             else return DEVNET_DAPI_GRPC_STANDARD_PORT;
-            break;
         }
         default:
             break;
@@ -925,7 +912,6 @@ static dispatch_once_t devnetToken = 0;
             return MAX_PROOF_OF_WORK_DEVNET;
         default:
             return MAX_PROOF_OF_WORK_MAINNET;
-            break;
     }
 }
 
@@ -939,7 +925,6 @@ static dispatch_once_t devnetToken = 0;
             return YES;
         default:
             return NO;
-            break;
     }
 }
 
@@ -954,10 +939,8 @@ static dispatch_once_t devnetToken = 0;
     switch ([self chainType]) {
         case DSChainType_MainNet:
             return SPORK_PUBLIC_KEY_MAINNET;
-            break;
         case DSChainType_TestNet:
             return SPORK_PUBLIC_KEY_TESTNET;
-            break;
         case DSChainType_DevNet:
         {
             NSError * error = nil;
@@ -993,10 +976,8 @@ static dispatch_once_t devnetToken = 0;
     switch ([self chainType]) {
         case DSChainType_MainNet:
             return nil;
-            break;
         case DSChainType_TestNet:
             return nil;
-            break;
         case DSChainType_DevNet:
         {
             NSError * error = nil;
@@ -1032,10 +1013,8 @@ static dispatch_once_t devnetToken = 0;
     switch ([self chainType]) {
         case DSChainType_MainNet:
             return SPORK_ADDRESS_MAINNET;
-            break;
         case DSChainType_TestNet:
             return SPORK_ADDRESS_TESTNET;
-            break;
         case DSChainType_DevNet:
         {
             NSError * error = nil;
@@ -1217,7 +1196,6 @@ static dispatch_once_t devnetToken = 0;
                 return _cachedStandardDapiJRPCPort;
             }
             else return DEVNET_DAPI_JRPC_STANDARD_PORT;
-            break;
         }
         default:
             break;
