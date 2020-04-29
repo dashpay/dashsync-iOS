@@ -28,6 +28,7 @@
 #import "DSECDSAKey.h"
 #import "DSChainManager.h"
 #import "DSSporkManager.h"
+#import "DSChain+Protected.h"
 #include <arpa/inet.h>
 
 #define MASTERNODE_NAME_KEY @"MASTERNODE_NAME_KEY"

@@ -26,7 +26,7 @@
 #import "DSTxInputEntity+CoreDataClass.h"
 #import "DSTxOutputEntity+CoreDataClass.h"
 #import "DSAddressEntity+CoreDataClass.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSTransaction+Protected.h"
 #import "DSMerkleBlock.h"

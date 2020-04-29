@@ -29,7 +29,7 @@
 #import "DSAddressEntity+CoreDataProperties.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "NSManagedObject+Sugar.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "DSPeer.h"
 #import "NSData+Dash.h"
 #import "DSPeerManager.h"
@@ -273,7 +273,7 @@
 -(void)loadFileDistributedMasternodeLists {
     if (![[DSOptionsManager sharedInstance] useCheckpointMasternodeLists]) return;
     if (!self.currentMasternodeList) {
-        DSCheckpoint * checkpoint = [self.chain lastCheckpointWithMasternodeList];
+        DSCheckpoint * checkpoint = [self.chain lastCheckpointHavingMasternodeList];
         if (self.chain.lastBlockHeight >= checkpoint.height) {
             [self processRequestFromFileForBlockHash:checkpoint.checkpointHash completion:^(BOOL success) {
                 

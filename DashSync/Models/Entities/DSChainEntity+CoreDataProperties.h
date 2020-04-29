@@ -19,7 +19,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSData *checkpoints;
 @property (nullable, nonatomic, copy) NSString *devnetIdentifier;
 @property (nonatomic, assign) uint32_t totalGovernanceObjectsCount;
-@property (nonatomic, assign) uint32_t totalMasternodeCount;
 @property (nonatomic, assign) uint16_t type;
 @property (nullable, nonatomic, retain) NSSet<DSAccountEntity *> *accounts;
 @property (nullable, nonatomic, retain) NSSet<DSMerkleBlockEntity *> *blocks;

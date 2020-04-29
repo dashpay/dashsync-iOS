@@ -478,7 +478,7 @@
 }
 
 -(void)updateBlockchainIdentitiesCount {
-    self.blockchainIdentitiesCountLabel.text = [NSString stringWithFormat:@"%u",self.chainManager.chain.blockchainIdentitiesCount];
+    self.blockchainIdentitiesCountLabel.text = [NSString stringWithFormat:@"%u",self.chainManager.chain.localBlockchainIdentitiesCount];
 }
 
 -(void)updateReceivedGovernanceProposalCount {

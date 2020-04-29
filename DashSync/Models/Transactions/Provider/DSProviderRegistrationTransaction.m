@@ -13,7 +13,8 @@
 #import "DSTransactionFactory.h"
 #import "DSProviderRegistrationTransactionEntity+CoreDataClass.h"
 #import "DSMasternodeManager.h"
-#import "DSChainManager.h"
+#import "DSChainManager+Protected.h"
+#import "DSChain+Protected.h"
 #import "NSString+Dash.h"
 #include <arpa/inet.h>
 

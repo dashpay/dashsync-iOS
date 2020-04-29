@@ -31,7 +31,7 @@
 #import "DSGovernanceVoteEntity+CoreDataProperties.h"
 #import "DSGovernanceVoteHashEntity+CoreDataProperties.h"
 #import "NSManagedObject+Sugar.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "DSPeer.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "NSData+Dash.h"

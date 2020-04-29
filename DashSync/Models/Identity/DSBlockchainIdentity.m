@@ -6,7 +6,7 @@
 //
 
 #import "DSBlockchainIdentity+Protected.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "DSECDSAKey.h"
 #import "DSAccount.h"
 #import "DSWallet.h"

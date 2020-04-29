@@ -28,7 +28,7 @@
 #import "DSSporkHashEntity+CoreDataProperties.h"
 #import "DSSporkEntity+CoreDataProperties.h"
 #import "NSManagedObject+Sugar.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "DSPeerManager+Protected.h"
 #import "DSOptionsManager.h"

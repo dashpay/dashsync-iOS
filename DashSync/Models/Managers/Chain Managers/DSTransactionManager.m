@@ -25,7 +25,7 @@
 
 #import "DSTransactionManager.h"
 #import "DSTransaction.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "DSEventManager.h"
 #import "DSPeerManager+Protected.h"
 #import "DSChainManager+Protected.h"
