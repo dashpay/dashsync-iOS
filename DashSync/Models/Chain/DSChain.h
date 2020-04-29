@@ -327,40 +327,46 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 /*! @brief Returns an account to which the given address is contained in a derivation path.  */
 - (DSAccount* _Nullable)accountContainingAddress:(NSString *)address;
 
-// MARK: - Masternode Lists and Quorums
-
-@property (nonatomic, assign) UInt256 masternodeBaseBlockHash;
-
 // MARK: - Governance
 
+/*! @brief Returns a count of all governance objects.  */
 @property (nonatomic, assign) uint32_t totalGovernanceObjectsCount;
 
 // MARK: - Identities
 
+/*! @brief Returns a count of local blockchain identities.  */
 @property (nonatomic, readonly) uint32_t localBlockchainIdentitiesCount;
 
+/*! @brief Returns an array of all local blockchain identities.  */
 @property (nonatomic, readonly) NSArray <DSBlockchainIdentity *>* localBlockchainIdentities;
 
+/*! @brief Returns a dictionary of all local blockchain identities keyed by uniqueId.  */
 @property (nonatomic, readonly) NSDictionary <NSData*,DSBlockchainIdentity *>* localBlockchainIdentitiesByUniqueIdDictionary;
 
+/*! @brief Returns a blockchain identity by uniqueId, if it exists.  */
 - (DSBlockchainIdentity* _Nullable)blockchainIdentityForUniqueId:(UInt256)uniqueId;
 
+/*! @brief Returns a blockchain identity by uniqueId, if it exists. Also returns the wallet it was found in.  */
 - (DSBlockchainIdentity* _Nullable)blockchainIdentityForUniqueId:(UInt256)uniqueId foundInWallet:(DSWallet*_Nullable*_Nullable)foundInWallet;
-
-// MARK: - Peers
-
-@property (nonatomic, readonly,nullable) NSString * registeredPeersKey;
 
 // MARK: - Chain Retrieval methods
 
+/*! @brief Mainnet chain.  */
 + (DSChain*)mainnet;
+
+/*! @brief Testnet chain.  */
 + (DSChain*)testnet;
 
+/*! @brief Devnet chain with given identifier.  */
 + (DSChain* _Nullable)devnetWithIdentifier:(NSString*)identifier;
+
+/*! @brief Set up a given devnet with an identifier, checkpoints, default L1, JRPC and GRPC ports, a dpns contractId and a dashpay contract id. This devnet will be registered on the keychain.  */
 + (DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>* _Nullable)checkpointArray withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID;
-+ (DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>* _Nullable)checkpointArray withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID isTransient:(BOOL)isTransient;
+
+/*! @brief Retrieve from the keychain a devnet with an identifier and add given checkpoints.  */
 + (DSChain*)recoverKnownDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray;
 
+/*! @brief Retrieve a chain having the specified network name.  */
 + (DSChain* _Nullable)chainForNetworkName:(NSString* _Nullable)networkName;
 
 // MARK: - Chain Info methods
