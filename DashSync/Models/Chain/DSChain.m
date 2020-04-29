@@ -199,7 +199,7 @@ static checkpoint mainnet_checkpoint_array[] = {
 @interface DSChain ()
 
 @property (nonatomic, strong) DSMerkleBlock *lastBlock, *lastOrphan;
-@property (nonatomic, strong) NSMutableDictionary *blocks, *orphans;
+@property (nonatomic, strong) NSMutableDictionary <NSValue*, DSMerkleBlock*> *blocks, *orphans;
 @property (nonatomic, strong) NSMutableDictionary <NSData*,DSCheckpoint*> *checkpointsByHashDictionary;
 @property (nonatomic, strong) NSMutableDictionary <NSNumber*,DSCheckpoint*> *checkpointsByHeightDictionary;
 @property (nonatomic, strong) NSArray<DSCheckpoint*> * checkpoints;
@@ -277,11 +277,6 @@ static checkpoint mainnet_checkpoint_array[] = {
     return self;
 }
 
--(void)setUp {
-    [self retrieveWallets];
-    [self retrieveStandaloneDerivationPaths];
-}
-
 -(instancetype)initAsDevnetWithIdentifier:(NSString*)identifier checkpoints:(NSArray<DSCheckpoint*>*)checkpoints
 {
     //for devnet the genesis checkpoint is really the second block
@@ -328,94 +323,6 @@ static checkpoint mainnet_checkpoint_array[] = {
 
     self.mainThreadChainEntity = [self chainEntity];
     return self;
-}
-
-//static CBlock CreateDevNetGenesisBlock(const uint256 &prevBlockHash, const std::string& devNetName, uint32_t nTime, uint32_t nNonce, uint32_t nBits, const CAmount& genesisReward)
-//{
-//    assert(!devNetName.empty());
-//
-//    CMutableTransaction txNew;
-//    txNew.nVersion = 1;
-//    txNew.vin.resize(1);
-//    txNew.vout.resize(1);
-//    // put height (BIP34) and devnet name into coinbase
-//    txNew.vin[0].scriptSig = CScript() << 1 << std::vector<unsigned char>(devNetName.begin(), devNetName.end());
-//    txNew.vout[0].nValue = genesisReward;
-//    txNew.vout[0].scriptPubKey = CScript() << OP_RETURN;
-//
-//    CBlock genesis;
-//    genesis.nTime    = nTime;
-//    genesis.nBits    = nBits;
-//    genesis.nNonce   = nNonce;
-//    genesis.nVersion = 4;
-//    genesis.vtx.push_back(MakeTransactionRef(std::move(txNew)));
-//    genesis.hashPrevBlock = prevBlockHash;
-//    genesis.hashMerkleRoot = BlockMerkleRoot(genesis);
-//    return genesis;
-//}
-
--(UInt256)blockHashForDevNetGenesisBlockWithVersion:(uint32_t)version prevHash:(UInt256)prevHash merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce {
-    NSMutableData *d = [NSMutableData data];
-    
-    [d appendUInt32:version];
-    
-    [d appendBytes:&prevHash length:sizeof(prevHash)];
-    [d appendBytes:&merkleRoot length:sizeof(merkleRoot)];
-    [d appendUInt32:timestamp];
-    [d appendUInt32:target];
-    [d appendUInt32:nonce];
-    return d.x11;
-}
-
--(DSCheckpoint*)createDevNetGenesisBlockCheckpointForParentCheckpoint:(DSCheckpoint*)checkpoint withIdentifier:(NSString*)identifier {
-    uint32_t nTime = checkpoint.timestamp + 1;
-    uint32_t nBits = checkpoint.target;
-    UInt256 fullTarget = setCompact(nBits);
-    uint32_t nVersion = 4;
-    UInt256 prevHash = checkpoint.checkpointHash;
-    UInt256 merkleRoot = [DSTransaction devnetGenesisCoinbaseWithIdentifier:identifier forChain:self].txHash;
-    uint32_t nonce = UINT32_MAX; //+1 => 0;
-    UInt256 blockhash;
-    do {
-        nonce++; //should start at 0;
-        blockhash = [self blockHashForDevNetGenesisBlockWithVersion:nVersion prevHash:prevHash merkleRoot:merkleRoot timestamp:nTime target:nBits nonce:nonce];
-    } while (nonce < UINT32_MAX && uint256_sup(blockhash, fullTarget));
-    DSCheckpoint * block2Checkpoint = [[DSCheckpoint alloc] init];
-    block2Checkpoint.height = 1;
-    block2Checkpoint.checkpointHash = blockhash;//*(UInt256*)[NSData dataWithUInt256:blockhash].reverse.bytes;
-    block2Checkpoint.target = nBits;
-    block2Checkpoint.timestamp = nTime;
-    return block2Checkpoint;
-}
-
-+(NSMutableArray*)createCheckpointsArrayFromCheckpoints:(checkpoint*)checkpoints count:(NSUInteger)checkpointCount {
-    NSMutableArray * checkpointMutableArray = [NSMutableArray array];
-    for (int i = 0; i <checkpointCount;i++) {
-        DSCheckpoint * check = [DSCheckpoint new];
-        check.height = checkpoints[i].height;
-        check.checkpointHash = *(UInt256 *)[NSString stringWithCString:checkpoints[i].checkpointHash encoding:NSUTF8StringEncoding].hexToData.reverse.bytes;
-        check.target = checkpoints[i].target;
-        check.timestamp = checkpoints[i].timestamp;
-        check.masternodeListName = [NSString stringWithCString:checkpoints[i].masternodeListPath encoding:NSUTF8StringEncoding];
-        NSString * merkleRootString = [NSString stringWithCString:checkpoints[i].merkleRoot encoding:NSUTF8StringEncoding];
-        check.merkleRoot = [merkleRootString isEqualToString:@""]?UINT256_ZERO:merkleRootString.hexToData.reverse.UInt256;
-        [checkpointMutableArray addObject:check];
-    }
-    return [checkpointMutableArray copy];
-}
-
--(DSChainEntity*)chainEntity {
-    if ([NSThread isMainThread] && _mainThreadChainEntity) return self.mainThreadChainEntity;
-    __block DSChainEntity* chainEntity = nil;
-    [[DSChainEntity context] performBlockAndWait:^{
-        chainEntity = [DSChainEntity chainEntityForType:self.chainType devnetIdentifier:self.devnetIdentifier checkpoints:self.checkpoints];
-    }];
-    return chainEntity;
-}
-
--(DSChainManager*)chainManager {
-    if (_chainManager) return _chainManager;
-    return [[DSChainsManager sharedInstance] chainManagerForChain:self];
 }
 
 +(DSChain*)mainnet {
@@ -535,23 +442,103 @@ static dispatch_once_t devnetToken = 0;
     return nil;
 }
 
+-(void)setUp {
+    [self retrieveWallets];
+    [self retrieveStandaloneDerivationPaths];
+}
+
 -(NSArray<DSDerivationPath*>*)standardDerivationPathsForAccountNumber:(uint32_t)accountNumber {
     return @[[DSFundsDerivationPath bip32DerivationPathForAccountNumber:accountNumber onChain:self],[DSFundsDerivationPath bip44DerivationPathForAccountNumber:accountNumber onChain:self],[DSDerivationPath masterBlockchainIdentityContactsDerivationPathForAccountNumber:accountNumber onChain:self]];
 }
 
+// MARK: - Helpers
 
--(void)save {
-    [self.managedObjectContext performBlockAndWait:^{
-        DSChainEntity * entity = self.chainEntity;
-        entity.totalGovernanceObjectsCount = self.totalGovernanceObjectsCount;
-        entity.baseBlockHash = [NSData dataWithUInt256:self.masternodeBaseBlockHash];
-        [DSChainEntity saveContext];
-    }];
+-(DSChainManager*)chainManager {
+    if (_chainManager) return _chainManager;
+    return [[DSChainsManager sharedInstance] chainManagerForChain:self];
 }
 
--(NSString*)debugDescription {
-    return [[super debugDescription] stringByAppendingString:[NSString stringWithFormat:@" {%@}",self.name]];
++(NSMutableArray*)createCheckpointsArrayFromCheckpoints:(checkpoint*)checkpoints count:(NSUInteger)checkpointCount {
+    NSMutableArray * checkpointMutableArray = [NSMutableArray array];
+    for (int i = 0; i <checkpointCount;i++) {
+        DSCheckpoint * check = [DSCheckpoint new];
+        check.height = checkpoints[i].height;
+        check.checkpointHash = *(UInt256 *)[NSString stringWithCString:checkpoints[i].checkpointHash encoding:NSUTF8StringEncoding].hexToData.reverse.bytes;
+        check.target = checkpoints[i].target;
+        check.timestamp = checkpoints[i].timestamp;
+        check.masternodeListName = [NSString stringWithCString:checkpoints[i].masternodeListPath encoding:NSUTF8StringEncoding];
+        NSString * merkleRootString = [NSString stringWithCString:checkpoints[i].merkleRoot encoding:NSUTF8StringEncoding];
+        check.merkleRoot = [merkleRootString isEqualToString:@""]?UINT256_ZERO:merkleRootString.hexToData.reverse.UInt256;
+        [checkpointMutableArray addObject:check];
+    }
+    return [checkpointMutableArray copy];
 }
+
+- (BOOL)isEqual:(id)obj
+{
+    return self == obj || ([obj isKindOfClass:[DSChain class]] && uint256_eq([obj genesisHash], _genesisHash));
+}
+
+// MARK: Devnet Helpers
+
+//static CBlock CreateDevNetGenesisBlock(const uint256 &prevBlockHash, const std::string& devNetName, uint32_t nTime, uint32_t nNonce, uint32_t nBits, const CAmount& genesisReward)
+//{
+//    assert(!devNetName.empty());
+//
+//    CMutableTransaction txNew;
+//    txNew.nVersion = 1;
+//    txNew.vin.resize(1);
+//    txNew.vout.resize(1);
+//    // put height (BIP34) and devnet name into coinbase
+//    txNew.vin[0].scriptSig = CScript() << 1 << std::vector<unsigned char>(devNetName.begin(), devNetName.end());
+//    txNew.vout[0].nValue = genesisReward;
+//    txNew.vout[0].scriptPubKey = CScript() << OP_RETURN;
+//
+//    CBlock genesis;
+//    genesis.nTime    = nTime;
+//    genesis.nBits    = nBits;
+//    genesis.nNonce   = nNonce;
+//    genesis.nVersion = 4;
+//    genesis.vtx.push_back(MakeTransactionRef(std::move(txNew)));
+//    genesis.hashPrevBlock = prevBlockHash;
+//    genesis.hashMerkleRoot = BlockMerkleRoot(genesis);
+//    return genesis;
+//}
+
+-(UInt256)blockHashForDevNetGenesisBlockWithVersion:(uint32_t)version prevHash:(UInt256)prevHash merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce {
+    NSMutableData *d = [NSMutableData data];
+    
+    [d appendUInt32:version];
+    
+    [d appendBytes:&prevHash length:sizeof(prevHash)];
+    [d appendBytes:&merkleRoot length:sizeof(merkleRoot)];
+    [d appendUInt32:timestamp];
+    [d appendUInt32:target];
+    [d appendUInt32:nonce];
+    return d.x11;
+}
+
+-(DSCheckpoint*)createDevNetGenesisBlockCheckpointForParentCheckpoint:(DSCheckpoint*)checkpoint withIdentifier:(NSString*)identifier {
+    uint32_t nTime = checkpoint.timestamp + 1;
+    uint32_t nBits = checkpoint.target;
+    UInt256 fullTarget = setCompact(nBits);
+    uint32_t nVersion = 4;
+    UInt256 prevHash = checkpoint.checkpointHash;
+    UInt256 merkleRoot = [DSTransaction devnetGenesisCoinbaseWithIdentifier:identifier forChain:self].txHash;
+    uint32_t nonce = UINT32_MAX; //+1 => 0;
+    UInt256 blockhash;
+    do {
+        nonce++; //should start at 0;
+        blockhash = [self blockHashForDevNetGenesisBlockWithVersion:nVersion prevHash:prevHash merkleRoot:merkleRoot timestamp:nTime target:nBits nonce:nonce];
+    } while (nonce < UINT32_MAX && uint256_sup(blockhash, fullTarget));
+    DSCheckpoint * block2Checkpoint = [[DSCheckpoint alloc] init];
+    block2Checkpoint.height = 1;
+    block2Checkpoint.checkpointHash = blockhash;//*(UInt256*)[NSData dataWithUInt256:blockhash].reverse.bytes;
+    block2Checkpoint.target = nBits;
+    block2Checkpoint.timestamp = nTime;
+    return block2Checkpoint;
+}
+
 
 // MARK: - Check Type
 
@@ -575,13 +562,6 @@ static dispatch_once_t devnetToken = 0;
     return [self isDevnetAny];
 }
 
--(NSString*)uniqueID {
-    if (!_uniqueID) {
-        _uniqueID = [[NSData dataWithUInt256:[self genesisHash]] shortHexString];
-    }
-    return _uniqueID;
-}
-
 -(BOOL)isDevnetWithGenesisHash:(UInt256)genesisHash {
     if ([self chainType] != DSChainType_DevNet) {
         return false;
@@ -589,6 +569,98 @@ static dispatch_once_t devnetToken = 0;
         return uint256_eq([self genesisHash],genesisHash);
     }
 }
+
+// MARK: - Keychain Strings
+
+-(NSString*)chainWalletsKey {
+    return [NSString stringWithFormat:@"%@_%@",CHAIN_WALLETS_KEY,[self uniqueID]];
+}
+
+-(NSString*)chainStandaloneDerivationPathsKey {
+    return [NSString stringWithFormat:@"%@_%@",CHAIN_STANDALONE_DERIVATIONS_KEY,[self uniqueID]];
+}
+
+-(NSString*)registeredPeersKey {
+    return [NSString stringWithFormat:@"%@_%@",REGISTERED_PEERS_KEY,[self uniqueID]];
+}
+
+-(NSString*)votingKeysKey {
+    return [NSString stringWithFormat:@"%@_%@",CHAIN_VOTING_KEYS_KEY,[self uniqueID]];
+}
+
+
+// MARK: - Names and Identifiers
+
+-(NSString*)uniqueID {
+    if (!_uniqueID) {
+        _uniqueID = [[NSData dataWithUInt256:[self genesisHash]] shortHexString];
+    }
+    return _uniqueID;
+}
+
+
+-(NSString*)networkName {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return @"main";
+            break;
+        case DSChainType_TestNet:
+            return @"test";
+            break;
+        case DSChainType_DevNet:
+            if (_networkName) return _networkName;
+            return @"dev";
+            break;
+        default:
+            break;
+    }
+    if (_networkName) return _networkName;
+}
+
+-(NSString*)name {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return @"Mainnet";
+            break;
+        case DSChainType_TestNet:
+            return @"Testnet";
+            break;
+        case DSChainType_DevNet:
+            if (_networkName) return _networkName;
+            return [@"Devnet - " stringByAppendingString:self.devnetIdentifier];
+            break;
+        default:
+            break;
+    }
+    if (_networkName) return _networkName;
+}
+
+-(NSString*)localizedName {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return DSLocalizedString(@"Mainnet",nil);
+            break;
+        case DSChainType_TestNet:
+            return DSLocalizedString(@"Testnet",nil);
+            break;
+        case DSChainType_DevNet:
+            if (_networkName) return _networkName;
+            return [NSString stringWithFormat:@"%@ - %@", DSLocalizedString(@"Devnet",nil),self.devnetIdentifier];
+            break;
+        default:
+            break;
+    }
+    if (_networkName) return _networkName;
+}
+
+-(void)setDevnetNetworkName:(NSString*)networkName {
+    if ([self chainType] == DSChainType_DevNet) _networkName = @"Evonet";
+}
+
+// MARK: - L1 Chain Parameters
+
+
+// MARK: Sync Parameters
 
 -(uint32_t)magicNumber {
     switch (_chainType) {
@@ -617,27 +689,6 @@ static dispatch_once_t devnetToken = 0;
             break;
     }
 }
-
--(NSString*)chainWalletsKey {
-    return [NSString stringWithFormat:@"%@_%@",CHAIN_WALLETS_KEY,[self uniqueID]];
-}
-
--(NSString*)chainStandaloneDerivationPathsKey {
-    return [NSString stringWithFormat:@"%@_%@",CHAIN_STANDALONE_DERIVATIONS_KEY,[self uniqueID]];
-}
-
--(NSString*)registeredPeersKey {
-    return [NSString stringWithFormat:@"%@_%@",REGISTERED_PEERS_KEY,[self uniqueID]];
-}
-
--(NSString*)votingKeysKey {
-    return [NSString stringWithFormat:@"%@_%@",CHAIN_VOTING_KEYS_KEY,[self uniqueID]];
-}
-
-
-// MARK: - Chain Parameters
-
-
 
 -(uint32_t)protocolVersion {
     switch ([self chainType]) {
@@ -993,65 +1044,6 @@ static dispatch_once_t devnetToken = 0;
             return NO;
             break;
     }
-}
-
-
--(NSString*)networkName {
-    switch ([self chainType]) {
-        case DSChainType_MainNet:
-            return @"main";
-            break;
-        case DSChainType_TestNet:
-            return @"test";
-            break;
-        case DSChainType_DevNet:
-            if (_networkName) return _networkName;
-            return @"dev";
-            break;
-        default:
-            break;
-    }
-    if (_networkName) return _networkName;
-}
-
--(NSString*)name {
-    switch ([self chainType]) {
-        case DSChainType_MainNet:
-            return @"Mainnet";
-            break;
-        case DSChainType_TestNet:
-            return @"Testnet";
-            break;
-        case DSChainType_DevNet:
-            if (_networkName) return _networkName;
-            return [@"Devnet - " stringByAppendingString:self.devnetIdentifier];
-            break;
-        default:
-            break;
-    }
-    if (_networkName) return _networkName;
-}
-
--(NSString*)localizedName {
-    switch ([self chainType]) {
-        case DSChainType_MainNet:
-            return DSLocalizedString(@"Mainnet",nil);
-            break;
-        case DSChainType_TestNet:
-            return DSLocalizedString(@"Testnet",nil);
-            break;
-        case DSChainType_DevNet:
-            if (_networkName) return _networkName;
-            return [NSString stringWithFormat:@"%@ - %@", DSLocalizedString(@"Devnet",nil),self.devnetIdentifier];
-            break;
-        default:
-            break;
-    }
-    if (_networkName) return _networkName;
-}
-
--(void)setDevnetNetworkName:(NSString*)networkName {
-    if ([self chainType] == DSChainType_DevNet) _networkName = @"Evonet";
 }
 
 -(uint64_t)baseReward {
@@ -2328,11 +2320,6 @@ static dispatch_once_t devnetToken = 0;
     return (amount > TX_MIN_OUTPUT_AMOUNT) ? amount : TX_MIN_OUTPUT_AMOUNT;
 }
 
-- (BOOL)isEqual:(id)obj
-{
-    return self == obj || ([obj isKindOfClass:[DSChain class]] && uint256_eq([obj genesisHash], _genesisHash));
-}
-
 // MARK: - Identities
 
 -(NSArray <DSBlockchainIdentity *>*)localBlockchainIdentities {
@@ -2731,6 +2718,32 @@ static dispatch_once_t devnetToken = 0;
     }
     if (rIndex) *rIndex = UINT32_MAX;
     return nil;
+}
+
+// MARK: - Persistence
+
+-(DSChainEntity*)chainEntity {
+    if ([NSThread isMainThread] && _mainThreadChainEntity) return self.mainThreadChainEntity;
+    __block DSChainEntity* chainEntity = nil;
+    [[DSChainEntity context] performBlockAndWait:^{
+        chainEntity = [DSChainEntity chainEntityForType:self.chainType devnetIdentifier:self.devnetIdentifier checkpoints:self.checkpoints];
+    }];
+    return chainEntity;
+}
+
+-(void)save {
+    [self.managedObjectContext performBlockAndWait:^{
+        DSChainEntity * entity = self.chainEntity;
+        entity.totalGovernanceObjectsCount = self.totalGovernanceObjectsCount;
+        entity.baseBlockHash = [NSData dataWithUInt256:self.masternodeBaseBlockHash];
+        [DSChainEntity saveContext];
+    }];
+}
+
+// MARK: - Description
+
+-(NSString*)debugDescription {
+    return [[super debugDescription] stringByAppendingString:[NSString stringWithFormat:@" {%@}",self.name]];
 }
 
 @end
