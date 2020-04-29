@@ -99,9 +99,9 @@
 }
 
 -(NSString*)sporkKey {
-    if (self.chain.sporkPublicKey) return self.chain.sporkPublicKey;
-    if (self.chain.sporkPrivateKey) {
-        DSECDSAKey * sporkPrivateKey = [DSECDSAKey keyWithPrivateKey:self.chain.sporkPrivateKey onChain:self.chain];
+    if (self.chain.sporkPublicKeyHexString) return self.chain.sporkPublicKeyHexString;
+    if (self.chain.sporkPrivateKeyBase58String) {
+        DSECDSAKey * sporkPrivateKey = [DSECDSAKey keyWithPrivateKey:self.chain.sporkPrivateKeyBase58String onChain:self.chain];
         return sporkPrivateKey.publicKeyData.hexString;
     }
     return nil;

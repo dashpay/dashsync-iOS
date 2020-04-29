@@ -28,7 +28,7 @@
 
 #import "DSPeer.h"
 #import "DSTransaction.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "DSSpork.h"
 #import "DSMerkleBlock.h"
 #import "DSChainLock.h"

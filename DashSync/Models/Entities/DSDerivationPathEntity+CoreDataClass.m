@@ -24,7 +24,7 @@
 
 #import "DSDerivationPathEntity+CoreDataClass.h"
 #import "DSChainEntity+CoreDataClass.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "DSWallet.h"
 #import "DSAccount.h"
 #import "DSDerivationPath.h"

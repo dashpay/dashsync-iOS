@@ -25,74 +25,24 @@
 
 #import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
+#import "DSChainConstants.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-#define MAINNET_STANDARD_PORT 9999
-#define TESTNET_STANDARD_PORT 19999
-#define DEVNET_STANDARD_PORT 20001
-
-#define MAINNET_DAPI_JRPC_STANDARD_PORT 3000
-#define TESTNET_DAPI_JRPC_STANDARD_PORT 3000
-#define DEVNET_DAPI_JRPC_STANDARD_PORT 3000
-
-#define MAINNET_DAPI_GRPC_STANDARD_PORT 3010
-#define TESTNET_DAPI_GRPC_STANDARD_PORT 3010
-#define DEVNET_DAPI_GRPC_STANDARD_PORT 3010
-
-#define PROTOCOL_VERSION_MAINNET   70216
-#define DEFAULT_MIN_PROTOCOL_VERSION_MAINNET  70215
-
-#define PROTOCOL_VERSION_TESTNET   70216
-#define DEFAULT_MIN_PROTOCOL_VERSION_TESTNET  70215
-
-#define PROTOCOL_VERSION_DEVNET   70216
-#define DEFAULT_MIN_PROTOCOL_VERSION_DEVNET  70215
-
-#define MAX_VALID_MIN_PROTOCOL_VERSION 70216
-#define MIN_VALID_MIN_PROTOCOL_VERSION 70213
-
-#define DASH_MAGIC_NUMBER_TESTNET 0xffcae2ce
-#define DASH_MAGIC_NUMBER_MAINNET 0xbd6b0cbf
-#define DASH_MAGIC_NUMBER_DEVNET 0xceffcae2
-
-#define MAX_PROOF_OF_WORK_MAINNET 0x1e0fffffu   // highest value for difficulty target (higher values are less difficult)
-#define MAX_PROOF_OF_WORK_TESTNET 0x1e0fffffu
-#define MAX_PROOF_OF_WORK_DEVNET 0x207fffffu
-
-#define SPORK_PUBLIC_KEY_MAINNET @"04549ac134f694c0243f503e8c8a9a986f5de6610049c40b07816809b0d1d06a21b07be27b9bb555931773f62ba6cf35a25fd52f694d4e1106ccd237a7bb899fdd"
-
-#define SPORK_PUBLIC_KEY_TESTNET @"046f78dcf911fbd61910136f7f0f8d90578f68d0b3ac973b5040fb7afb501b5939f39b108b0569dca71488f5bbf498d92e4d1194f6f941307ffd95f75e76869f0e"
-
-
-#define SPORK_ADDRESS_MAINNET @"Xgtyuk76vhuFW2iT7UAiHgNdWXCf3J34wh"
-#define SPORK_ADDRESS_TESTNET @"yjPtiKh2uwk3bDutTEA2q9mCtXyiZRWn55"
-
-#define MAINNET_DASHPAY_CONTRACT_ID @""
-#define MAINNET_DPNS_CONTRACT_ID @""
-
-#define TESTNET_DASHPAY_CONTRACT_ID @""
-#define TESTNET_DPNS_CONTRACT_ID @""
-
-
-#define DEFAULT_FEE_PER_B TX_FEE_PER_B
-#define MIN_FEE_PER_B     TX_FEE_PER_B // minimum relay fee on a 191byte tx
-#define MAX_FEE_PER_B     1000 // slightly higher than a 1000bit fee on a 191byte tx
+FOUNDATION_EXPORT NSString* const DSChainWalletsDidChangeNotification;
+FOUNDATION_EXPORT NSString* const DSChainStandaloneDerivationPathsDidChangeNotification;
+FOUNDATION_EXPORT NSString* const DSChainStandaloneAddressesDidChangeNotification;
+FOUNDATION_EXPORT NSString* const DSChainBlocksDidChangeNotification;
+FOUNDATION_EXPORT NSString* const DSChainBlockWasLockedNotification;
+FOUNDATION_EXPORT NSString* const DSChainNotificationBlockKey;
+FOUNDATION_EXPORT NSString* const DSChainInitialHeadersDidChangeNotification;
+FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 typedef NS_ENUM(uint16_t, DSChainType) {
     DSChainType_MainNet,
     DSChainType_TestNet,
     DSChainType_DevNet,
 };
-
-FOUNDATION_EXPORT NSString* const DSChainWalletsDidChangeNotification;
-FOUNDATION_EXPORT NSString* const DSChainStandaloneDerivationPathsDidChangeNotification;
-FOUNDATION_EXPORT NSString* const DSChainStandaloneAddressesDidChangeNotification;
-FOUNDATION_EXPORT NSString* const DSChainBlocksDidChangeNotification;
-FOUNDATION_EXPORT NSString* const DSChainInitialHeadersDidChangeNotification;
-FOUNDATION_EXPORT NSString* const DSChainBlockWasLockedNotification;
-FOUNDATION_EXPORT NSString* const DSChainNotificationBlockKey;
-FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
     DSTransactionDirection_Sent,
@@ -101,14 +51,13 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
     DSTransactionDirection_NotAccountFunds,
 };
 
-
-@class DSWallet,DSMerkleBlock,DSChainManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSSimplifiedMasternodeEntry,DSBlockchainIdentity,DSBloomFilter,DSProviderRegistrationTransaction,DSChain,DSMasternodeList;
+@class DSChain, DSChainEntity, DSChainManager, DSWallet, DSMerkleBlock, DSPeer, DSDerivationPath, DSTransaction, DSAccount, DSSimplifiedMasternodeEntry, DSBlockchainIdentity, DSBloomFilter, DSProviderRegistrationTransaction, DSMasternodeList;
 
 @protocol DSChainDelegate;
 
 @interface DSCheckpoint : NSObject <NSCoding>
 
-+(DSCheckpoint*)genesisDevnetCheckpoint;
++ (DSCheckpoint*)genesisDevnetCheckpoint;
 @property (nonatomic, assign) uint32_t height;
 @property (nonatomic, assign) UInt256 checkpointHash;
 @property (nonatomic, assign) uint32_t timestamp;
@@ -116,214 +65,332 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 @property (nonatomic, strong) NSString * masternodeListName;
 @property (nonatomic, assign) UInt256 merkleRoot;
 
--(DSMerkleBlock*)merkleBlockForChain:(DSChain*)chain;
+- (DSMerkleBlock*)merkleBlockForChain:(DSChain*)chain;
 
 @end
 
 @interface DSChain : NSObject
 
-@property (nonatomic, readonly) NSArray<DSWallet *> * wallets;
-@property (nonatomic, readonly) NSArray<DSDerivationPath *> * standaloneDerivationPaths;
-@property (nonatomic, readonly) NSDictionary *recentBlocks;
-@property (nonatomic, assign) DSChainType chainType;
-@property (nonatomic, assign) uint32_t standardPort;
-@property (nonatomic, assign) uint32_t standardDapiJRPCPort;
-@property (nonatomic, assign) uint32_t standardDapiGRPCPort;
-@property (nonatomic, assign) UInt256 genesisHash;
-@property (nonatomic, readonly,nullable) NSString * chainTip;
-@property (nonatomic, readonly) uint32_t lastBlockHeight;
-@property (nonatomic, readonly) uint32_t lastHeaderHeight;
-@property (nonatomic, readonly) uint32_t estimatedBlockHeight; // last block height reported by current download peer
-@property (nonatomic, readonly) NSString * networkName;
-@property (nonatomic, readonly) NSString * name;
-@property (nonatomic, readonly) NSString * localizedName;
-@property (nonatomic, readonly) NSString * uniqueID;
-@property (nonatomic, weak,nullable) DSChainManager * chainManager;
-@property (nonatomic, readonly,nullable) DSMerkleBlock * lastBlock;
-@property (nonatomic, readonly,nullable) DSMerkleBlock * lastHeader;
-@property (nonatomic, readonly,nullable) DSMerkleBlock * lastBlockOrHeader;
-@property (nonatomic, readonly,nullable) NSArray * blockLocatorArray;
-@property (nonatomic, readonly,nullable) NSArray * headerLocatorArrayForMasternodeSync;
-@property (nonatomic, readonly,nullable) DSMerkleBlock *lastOrphan;
-@property (nonatomic, readonly,nullable) DSChainEntity *chainEntity;
-@property (nonatomic, readonly) uint32_t magicNumber;
-@property (nonatomic, readonly) uint32_t peerMisbehavingThreshold;
-@property (nonatomic, readonly) NSString * chainWalletsKey;
-@property (nonatomic, readonly) uint64_t baseReward;
-@property (nonatomic, readonly) BOOL canConstructAFilter;
-@property (nonatomic, readonly) BOOL hasAWallet;
-@property (nonatomic, readonly) BOOL hasAStandaloneDerivationPath;
-@property (nonatomic, readonly) BOOL syncsBlockchain;
-@property (nonatomic, readonly) BOOL shouldSyncHeadersFirstForMasternodeListVerification;
-@property (nonatomic, readonly,nullable) NSString * devnetIdentifier;
-@property (nonatomic, assign) uint64_t feePerByte;
-@property (nonatomic, readonly) NSTimeInterval earliestWalletCreationTime;
-@property (nonatomic, readonly,nullable) NSString * registeredPeersKey;
-@property (nonatomic, readonly) NSArray<DSCheckpoint*> * checkpoints;
-@property (nonatomic, assign) uint32_t minProtocolVersion;
-@property (nonatomic, assign) uint32_t protocolVersion;
-@property (nonatomic, readonly) uint32_t maxProofOfWork;
-@property (nonatomic, readonly) BOOL allowMinDifficultyBlocks;
-@property (nonatomic, strong, nullable) NSString * sporkPublicKey;
-@property (nonatomic, strong, nullable) NSString * sporkPrivateKey;
-@property (nonatomic, strong, nullable) NSString * sporkAddress;
-@property (nonatomic, readonly) uint16_t transactionVersion;
-@property (nonatomic, assign) uint32_t totalGovernanceObjectsCount;
-@property (nonatomic, assign) uint32_t totalMasternodeCount;
-@property (nonatomic, readonly) uint32_t blockchainIdentitiesCount;
-@property (nonatomic, assign) UInt256 masternodeBaseBlockHash;
+// MARK: - Shortcuts
 
-@property (nonatomic, assign) UInt256 dpnsContractID;
-@property (nonatomic, assign) UInt256 dashpayContractID;
+/*! @brief The chain manager is a container for all managers (peer, identity, governance, masternode, spork and transition). It also is used to control the sync process.  */
+@property (nonatomic, weak, nullable) DSChainManager * chainManager;
 
+/*! @brief The chain entity associated in Core Data in the context of the chain's managed object context.  */
+@property (nonatomic, readonly, nullable) DSChainEntity * chainEntity;
+
+/*! @brief The managed object context of the chain.  */
 @property (nonatomic, readonly) NSManagedObjectContext * managedObjectContext;
 
-// outputs below this amount are uneconomical due to fees
+// MARK: - L1 Network Chain Info
+
+/*! @brief The network name. Currently main, test, dev or reg.  */
+@property (nonatomic, readonly) NSString * networkName;
+
+/*! @brief An array of known hard coded checkpoints for the chain.  */
+@property (nonatomic, readonly) NSArray<DSCheckpoint*> * checkpoints;
+
+// MARK: Sync
+
+/*! @brief The genesis hash is the hash of the first block of the chain. For a devnet this is actually the second block as the first block is created in a special way for devnets.  */
+@property (nonatomic, readonly) UInt256 genesisHash;
+
+/*! @brief The magic number is used in message headers to indicate what network (or chain) a message is intended for.  */
+@property (nonatomic, readonly) uint32_t magicNumber;
+
+/*! @brief The base reward is the intial mining reward at genesis for the chain. This goes down by 7% every year. A SPV client does not validate that the reward amount is correct as it would not make sense for miners to enter incorrect rewards as the blocks would be rejected by full nodes.  */
+@property (nonatomic, readonly) uint64_t baseReward;
+
+/*! @brief minProtocolVersion is the minimum protocol version that peers on this chain can communicate with. This should only be changed in the case of devnets.  */
+@property (nonatomic, assign) uint32_t minProtocolVersion;
+
+/*! @brief protocolVersion is the protocol version that we currently use for this chain. This should only be changed in the case of devnets.  */
+@property (nonatomic, assign) uint32_t protocolVersion;
+
+/*! @brief protocolVersion is the protocol version that we currently use for this chain.  */
+@property (nonatomic, readonly) uint32_t maxProofOfWork;
+
+/*! @brief allowMinDifficultyBlocks is set to TRUE on networks where mining is low enough that it can be attacked by increasing difficulty with ASICs and then no longer running ASICs. This is set to NO for Mainnet, and generally should be YES on all other networks.  */
+@property (nonatomic, readonly) BOOL allowMinDifficultyBlocks;
+
+/*! @brief This is the minimum amount that can be entered into an amount for a output for it not to be considered dust.  */
 @property (nonatomic, readonly) uint64_t minOutputAmount;
 
-// all wallet transactions sorted by date, most recent first
-@property (nonatomic, readonly) NSArray * allTransactions;
+// MARK: Fees
 
-// current wallet balance excluding transactions known to be invalid
-@property (nonatomic, readonly) uint64_t balance;
+@property (nonatomic, assign) uint64_t feePerByte;
 
-@property (nonatomic, assign) uint32_t bestBlockHeight;
-
-@property (nonatomic, readonly) dispatch_queue_t networkingQueue;
-
-+(DSChain*)mainnet;
-+(DSChain*)testnet;
-
-+(DSChain* _Nullable)devnetWithIdentifier:(NSString*)identifier;
-+(DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>* _Nullable)checkpointArray withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID;
-+(DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>* _Nullable)checkpointArray withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID isTransient:(BOOL)isTransient;
-+(DSChain*)recoverKnownDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray;
-
-+(DSChain* _Nullable)chainForNetworkName:(NSString* _Nullable)networkName;
-
-
--(BOOL)isMainnet;
--(BOOL)isTestnet;
--(BOOL)isDevnetAny;
--(BOOL)isEvolutionEnabled;
--(BOOL)isDevnetWithGenesisHash:(UInt256)genesisHash;
-
--(void)setDevnetNetworkName:(NSString*)networkName;
-
--(void)setUp;
-
--(void)save;
-
--(void)setEstimatedBlockHeight:(uint32_t)estimatedBlockHeight fromPeer:(DSPeer*)peer;
--(void)removeEstimatedBlockHeightOfPeer:(DSPeer*)peer;
--(BOOL)addHeader:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer;
--(BOOL)addBlock:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer;
--(void)saveBlocks;
--(void)wipeWalletsAndDerivatives;
--(void)reloadDerivationPaths;
--(void)clearOrphans;
--(void)setLastBlockHeightForRescan;
--(void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes;
--(NSTimeInterval)timestampForBlockHeight:(uint32_t)blockHeight; // seconds since 1970, 00:00:00 01/01/01 GMT
-
--(void)unregisterWallet:(DSWallet*)wallet;
--(void)addWallet:(DSWallet*)wallet;
--(void)registerWallet:(DSWallet*)wallet;
--(void)unregisterAllWallets;
-
--(void)unregisterStandaloneDerivationPath:(DSDerivationPath*)derivationPath;
--(void)addStandaloneDerivationPath:(DSDerivationPath*)derivationPath;
--(void)registerStandaloneDerivationPath:(DSDerivationPath*)derivationPath;
-
-// returns the transaction with the given hash if it's been registered in any wallet on the chain (might also return non-registered)
-- (DSTransaction * _Nullable)transactionForHash:(UInt256)txHash;
-
-// returns an account to which the given transaction is or can be associated with (even if it hasn't been registered), no account if the transaction is not associated with the wallet
-- (DSAccount* _Nullable)firstAccountThatCanContainTransaction:(DSTransaction *)transaction;
-
-- (DSTransactionDirection)directionOfTransaction:(DSTransaction *)transaction;
-
-- (NSArray<DSAccount *> *)accountsForTransactionHash:(UInt256)txHash transaction:(DSTransaction *_Nullable*_Nullable)transaction;
-
-// returns all accounts to which the given transaction is or can be associated with (even if it hasn't been registered)
-- (NSArray*)accountsThatCanContainTransaction:(DSTransaction * _Nonnull)transaction;
-
-// returns an account to which the given address is contained in a derivation path
-- (DSAccount* _Nullable)accountContainingAddress:(NSString *)address;
-
-// returns an account to which the given transaction hash is associated with, no account if the transaction hash is not associated with the wallet
-- (DSAccount * _Nullable)firstAccountForTransactionHash:(UInt256)txHash transaction:(DSTransaction * _Nullable * _Nullable)transaction wallet:(DSWallet * _Nullable * _Nullable)wallet;
-
-
--(NSArray<DSDerivationPath*>*)standardDerivationPathsForAccountNumber:(uint32_t)accountNumber;
-
-// fee that will be added for a transaction of the given size in bytes
+/*! @brief The fee for transactions in L1 are now entirely dependent on their size.  */
 - (uint64_t)feeForTxSize:(NSUInteger)size;
 
-//-(void)registerVotingKey:(NSData*)votingKey forMasternodeEntry:(DSSimplifiedMasternodeEntry*)masternodeEntry;
+// MARK: Ports
 
-//-(NSData* _Nullable)votingKeyForMasternode:(DSSimplifiedMasternodeEntry*)masternodeEntry;
-//
-//-(NSArray*)registeredMasternodes;
+/*! @brief The standard port for the chain for L1 communication.  */
+@property (nonatomic, assign) uint32_t standardPort;
 
-//This removes all blockchain information from the chain's wallets and derivation paths
-- (void)wipeBlockchainInfo;
+/*! @brief The standard port for the chain for L2 communication through JRPC.  */
+@property (nonatomic, assign) uint32_t standardDapiJRPCPort;
 
-- (void)wipeMasternodesInContext:(NSManagedObjectContext*)context;
+/*! @brief The standard port for the chain for L2 communication through GRPC.  */
+@property (nonatomic, assign) uint32_t standardDapiGRPCPort;
 
-- (DSBloomFilter*)bloomFilterWithFalsePositiveRate:(double)falsePositiveRate withTweak:(uint32_t)tweak;
+// MARK: Sporks
 
-- (uint32_t)heightForBlockHash:(UInt256)blockhash;
+/*! @brief The spork public key as a hex string.  */
+@property (nonatomic, strong, nullable) NSString * sporkPublicKeyHexString;
 
-- (DSCheckpoint* _Nullable)lastCheckpointWithMasternodeList;
+/*! @brief The spork private key as a base 58 string.  */
+@property (nonatomic, strong, nullable) NSString * sporkPrivateKeyBase58String;
 
+/*! @brief The spork address base 58 string (addresses are known to be base 58).  */
+@property (nonatomic, strong, nullable) NSString * sporkAddress;
+
+// MARK: - L2 Network Chain Info
+
+/*! @brief The dpns contract id.  */
+@property (nonatomic, assign) UInt256 dpnsContractID;
+
+/*! @brief The dashpay contract id.  */
+@property (nonatomic, assign) UInt256 dashpayContractID;
+
+// MARK: - DashSync Chain Info
+
+/*! @brief The chain type (MainNet, TestNet or DevNet).  */
+@property (nonatomic, readonly) DSChainType chainType;
+
+/*! @brief A threshold after which a peer will be banned.  */
+@property (nonatomic, readonly) uint32_t peerMisbehavingThreshold;
+
+/*! @brief True if this chain syncs the blockchain. All Chains currently sync the blockchain.  */
+@property (nonatomic, readonly) BOOL syncsBlockchain;
+
+/*! @brief True if this chain should sync headers first for masternode list verification.  */
+@property (nonatomic, readonly) BOOL shouldSyncHeadersFirstForMasternodeListVerification;
+
+/*! @brief The default transaction version used when sending transactions.  */
+@property (nonatomic, readonly) uint16_t transactionVersion;
+
+/*! @brief Returns all standard derivaton paths used for the chain based on the account number.  */
+- (NSArray<DSDerivationPath*>*)standardDerivationPathsForAccountNumber:(uint32_t)accountNumber;
+
+// MARK: Names and Identifiers
+
+/*! @brief The unique identifier of the chain. This unique id follows the same chain accross devices because it is the short hex string of the genesis hash.  */
+@property (nonatomic, readonly) NSString * uniqueID;
+
+/*! @brief The devnet identifier is the name of the devnet, the genesis hash of a devnet uses this devnet identifier in its construction.  */
+@property (nonatomic, readonly, nullable) NSString * devnetIdentifier;
+
+/*! @brief The name of the chain (Mainnet-Testnet-Devnet).  */
+@property (nonatomic, readonly) NSString * name;
+
+/*! @brief The localized name of the chain (Mainnet-Testnet-Devnet).  */
+@property (nonatomic, readonly) NSString * localizedName;
+
+- (void)setDevnetNetworkName:(NSString*)networkName;
+
+// MARK: - Wallets
+
+/*! @brief The wallets in the chain.  */
+@property (nonatomic, readonly) NSArray<DSWallet *> * wallets;
+
+/*! @brief Conveniance method. Does this walleet have a chain?  */
+@property (nonatomic, readonly) BOOL hasAWallet;
+
+/*! @brief Conveniance method. The earliest known creation time for any wallet in this chain.  */
+@property (nonatomic, readonly) NSTimeInterval earliestWalletCreationTime;
+
+/*! @brief Unregister a wallet from the chain, it will no longer be loaded or used.  */
+- (void)unregisterWallet:(DSWallet*)wallet;
+
+/*! @brief Register a wallet to the chain.  */
+- (void)registerWallet:(DSWallet*)wallet;
+
+/*! @brief Unregister all wallets from the chain, they will no longer be loaded or used.  */
+- (void)unregisterAllWallets;
+
+// MARK: - Standalone Derivation Paths
+
+/*! @brief Standalone derivation paths used in this chain. This is currently an experimental feature  */
+@property (nonatomic, readonly) NSArray<DSDerivationPath *> * standaloneDerivationPaths;
+
+/*! @brief Conveniance method to find out if the chain has a standalone derivation path. Standalone derivation paths are currently an experimental feature  */
+@property (nonatomic, readonly) BOOL hasAStandaloneDerivationPath;
+
+/*! @brief Unregister a standalone derivation path from the chain, it will no longer be loaded or used. Standalone derivation paths are currently an experimental feature  */
+- (void)unregisterStandaloneDerivationPath:(DSDerivationPath*)derivationPath;
+
+/*! @brief Register a standalone derivation path to the chain. Standalone derivation paths are currently an experimental feature  */
+- (void)registerStandaloneDerivationPath:(DSDerivationPath*)derivationPath;
+
+// MARK: - Checkpoints
+
+/*! @brief Returns the last checkpoint that has a masternode list attached to it.  */
+- (DSCheckpoint* _Nullable)lastCheckpointHavingMasternodeList;
+
+/*! @brief Returns the checkpoint matching the parameter block hash, if one exists.  */
 - (DSCheckpoint* _Nullable)checkpointForBlockHash:(UInt256)blockHash;
 
+/*! @brief Returns the checkpoint at a given block height, if one exists at that block height.  */
 - (DSCheckpoint* _Nullable)checkpointForBlockHeight:(uint32_t)blockHeight;
 
-//Is there a block at the following height that is confirmed?
-- (BOOL)blockHeightChainLocked:(uint32_t)height;
+// MARK: - Blocks and Headers
 
+/*! @brief The last known block on the chain.  */
+@property (nonatomic, readonly, nullable) DSMerkleBlock * lastBlock;
+
+/*! @brief The last known header on the chain.  */
+@property (nonatomic, readonly, nullable) DSMerkleBlock * lastHeader;
+
+/*! @brief The last known block or header on the chain. Whichever is latest.  */
+@property (nonatomic, readonly, nullable) DSMerkleBlock * lastBlockOrHeader;
+
+/*! @brief The last known orphan on the chain. An orphan is a block who's parent is currently not known.  */
+@property (nonatomic, readonly, nullable) DSMerkleBlock * lastOrphan;
+
+/*! @brief A dictionary of the the most recent known blocks keyed by block hash.  */
+@property (nonatomic, readonly) NSDictionary <NSValue*,DSMerkleBlock*> *recentBlocks;
+
+/*! @brief A short hex string of the last block's block hash.  */
+@property (nonatomic, readonly, nullable) NSString * chainTip;
+
+/*! @brief The block locator array is an array of the 10 most recent block hashes in decending order followed by block hashes that double the step back each iteration in decending order and finishing with the previous known checkpoint after that last hash. Something like (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -15, -23, -39, -71, -135, ..., 0).  */
+@property (nonatomic, readonly, nullable) NSArray <NSData*> * blockLocatorArray;
+
+/*! @brief The timestamp of a block at a given height.  */
+- (NSTimeInterval)timestampForBlockHeight:(uint32_t)blockHeight; // seconds since 1970, 00:00:00 01/01/01 GMT
+
+/*! @brief The block on the main chain at a certain height. By main chain it is understood to mean not forked chain - this could be on mainnet, testnet or a devnet.  */
 - (DSMerkleBlock * _Nullable)blockAtHeight:(uint32_t)height;
 
+/*! @brief Returns a known block with the given block hash. This does not have to be in the main chain. A null result could mean that the block was old and has since been discarded.  */
 - (DSMerkleBlock * _Nullable)blockForBlockHash:(UInt256)blockHash;
 
-- (DSMerkleBlock* _Nullable)recentBlockForBlockHash:(UInt256)blockHash;
+/*! @brief Returns a known block in the main chain with the given block hash. A null result could mean that the block was old and has since been discarded.  */
+- (DSMerkleBlock * _Nullable)recentBlockForBlockHash:(UInt256)blockHash;
 
+/*! @brief Returns a known block with a given distance from the chain tip. A null result would mean that the given distance exceeded the number of blocks kept locally.  */
 - (DSMerkleBlock * _Nullable)blockFromChainTip:(NSUInteger)blocksAgo;
 
+// MARK: Heights
 
-- (DSWallet* _Nullable)walletHavingBlockchainIdentityCreditFundingRegistrationHash:(UInt160)creditFundingRegistrationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
+/*! @brief Returns the height of the last block.  */
+@property (nonatomic, readonly) uint32_t lastBlockHeight;
 
-- (DSWallet* _Nullable)walletHavingProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
+/*! @brief Returns the height of the last header.  */
+@property (nonatomic, readonly) uint32_t lastHeaderHeight;
 
-- (DSWallet* _Nullable)walletHavingProviderOwnerAuthenticationHash:(UInt160)owningAuthenticationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
+/*! @brief Returns the height of the best block.  */
+@property (nonatomic, readonly) uint32_t bestBlockHeight;
 
-- (DSWallet* _Nullable)walletHavingProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey foundAtIndex:(uint32_t* _Nullable)rIndex;
+/*! @brief Returns the estimated height of chain. This is reported by the current download peer but can not be verified and is not secure.  */
+@property (nonatomic, readonly) uint32_t estimatedBlockHeight;
 
-- (DSWallet* _Nullable)walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:(DSProviderRegistrationTransaction * _Nonnull)transaction foundAtIndex:(uint32_t* _Nullable)rIndex;
+/*! @brief Returns the height of a block having the given hash. If no block is found returns UINT32_MAX  */
+- (uint32_t)heightForBlockHash:(UInt256)blockhash;
 
-- (BOOL)transactionHasLocalReferences:(DSTransaction*)transaction;
+// MARK: Chain Lock
 
-- (BOOL)registerSpecialTransaction:(DSTransaction*)transaction saveImmediately:(BOOL)saveImmediately;
+/*! @brief Returns if there is a block at the following height that is confirmed.  */
+- (BOOL)blockHeightChainLocked:(uint32_t)height;
 
-- (void)triggerUpdatesForLocalReferences:(DSTransaction*)transaction;
+// MARK: - Transactions
 
-- (void)updateAddressUsageOfSimplifiedMasternodeEntries:(NSArray*)simplifiedMasternodeEntries;
+/*! @brief Returns all wallet transactions sorted by date, most recent first.  */
+@property (nonatomic, readonly) NSArray <DSTransaction*> * allTransactions;
 
--(NSArray <DSBlockchainIdentity *>*)allBlockchainIdentitiesArray;
+/*! @brief Returns the transaction with the given hash if it's been registered in any wallet on the chain (might also return non-registered) */
+- (DSTransaction * _Nullable)transactionForHash:(UInt256)txHash;
 
--(NSDictionary <NSData*,DSBlockchainIdentity *>*)allBlockchainIdentitiesByUniqueIdDictionary;
+/*! @brief Returns the direction of a transaction for the chain (Sent - Received - Moved - Not Account Funds) */
+- (DSTransactionDirection)directionOfTransaction:(DSTransaction *)transaction;
 
-- (DSBlockchainIdentity* _Nullable)blockchainIdentityForUniqueId:(UInt256)uniqueId;
-
-- (DSBlockchainIdentity* _Nullable)blockchainIdentityForUniqueId:(UInt256)uniqueId foundInWallet:(DSWallet*_Nullable*_Nullable)foundInWallet;
-
-// returns the amount received globally from the transaction (total outputs to change and/or receive addresses)
+/*! @brief Returns the amount received globally from the transaction (total outputs to change and/or receive addresses) */
 - (uint64_t)amountReceivedFromTransaction:(DSTransaction *)transaction;
 
-// retuns the amount sent globally by the trasaction (total wallet outputs consumed, change and fee included)
+/*! @brief Returns the amount sent globally by the trasaction (total wallet outputs consumed, change and fee included) */
 - (uint64_t)amountSentByTransaction:(DSTransaction *)transaction;
+
+/*! @brief Returns if this transaction has any local references. Local references are a pubkey hash contained in a wallet, pubkeys in wallets special derivation paths, or anything that would make the transaction relevant for this device. */
+- (BOOL)transactionHasLocalReferences:(DSTransaction*)transaction;
+
+// MARK: - Bloom Filter
+
+/*! @brief Returns if a filter can be created for the chain. Generally this means that the chain has at least a wallet or a standalone derivation path. */
+@property (nonatomic, readonly) BOOL canConstructAFilter;
+
+/*! @brief Returns a bloom filter with the given false positive rate tweaked with the value tweak. The value tweak is generally peer specific. */
+- (DSBloomFilter*)bloomFilterWithFalsePositiveRate:(double)falsePositiveRate withTweak:(uint32_t)tweak;
+
+// MARK: - Accounts and Balances
+
+/*! @brief The current wallet balance excluding transactions known to be invalid.  */
+@property (nonatomic, readonly) uint64_t balance;
+
+/*! @brief All accounts that contain the specified transaction hash. The transaction is also returned if it is found.  */
+- (NSArray<DSAccount *> *)accountsForTransactionHash:(UInt256)txHash transaction:(DSTransaction *_Nullable*_Nullable)transaction;
+
+/*! @brief Returns an account to which the given transaction is or can be associated with (even if it hasn't been registered), no account if the transaction is not associated with the wallet.  */
+- (DSAccount* _Nullable)firstAccountThatCanContainTransaction:(DSTransaction *)transaction;
+
+/*! @brief Returns all accounts to which the given transaction is or can be associated with (even if it hasn't been registered)  */
+- (NSArray*)accountsThatCanContainTransaction:(DSTransaction * _Nonnull)transaction;
+
+/*! @brief Returns an account to which the given transaction hash is associated with, no account if the transaction hash is not associated with the wallet.  */
+- (DSAccount * _Nullable)firstAccountForTransactionHash:(UInt256)txHash transaction:(DSTransaction * _Nullable * _Nullable)transaction wallet:(DSWallet * _Nullable * _Nullable)wallet;
+
+/*! @brief Returns an account to which the given address is contained in a derivation path.  */
+- (DSAccount* _Nullable)accountContainingAddress:(NSString *)address;
+
+// MARK: - Governance
+
+/*! @brief Returns a count of all governance objects.  */
+@property (nonatomic, assign) uint32_t totalGovernanceObjectsCount;
+
+// MARK: - Identities
+
+/*! @brief Returns a count of local blockchain identities.  */
+@property (nonatomic, readonly) uint32_t localBlockchainIdentitiesCount;
+
+/*! @brief Returns an array of all local blockchain identities.  */
+@property (nonatomic, readonly) NSArray <DSBlockchainIdentity *>* localBlockchainIdentities;
+
+/*! @brief Returns a dictionary of all local blockchain identities keyed by uniqueId.  */
+@property (nonatomic, readonly) NSDictionary <NSData*,DSBlockchainIdentity *>* localBlockchainIdentitiesByUniqueIdDictionary;
+
+/*! @brief Returns a blockchain identity by uniqueId, if it exists.  */
+- (DSBlockchainIdentity* _Nullable)blockchainIdentityForUniqueId:(UInt256)uniqueId;
+
+/*! @brief Returns a blockchain identity by uniqueId, if it exists. Also returns the wallet it was found in.  */
+- (DSBlockchainIdentity* _Nullable)blockchainIdentityForUniqueId:(UInt256)uniqueId foundInWallet:(DSWallet*_Nullable*_Nullable)foundInWallet;
+
+// MARK: - Chain Retrieval methods
+
+/*! @brief Mainnet chain.  */
++ (DSChain*)mainnet;
+
+/*! @brief Testnet chain.  */
++ (DSChain*)testnet;
+
+/*! @brief Devnet chain with given identifier.  */
++ (DSChain* _Nullable)devnetWithIdentifier:(NSString*)identifier;
+
+/*! @brief Set up a given devnet with an identifier, checkpoints, default L1, JRPC and GRPC ports, a dpns contractId and a dashpay contract id. This devnet will be registered on the keychain.  */
++ (DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>* _Nullable)checkpointArray withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID;
+
+/*! @brief Retrieve from the keychain a devnet with an identifier and add given checkpoints.  */
++ (DSChain*)recoverKnownDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray;
+
+/*! @brief Retrieve a chain having the specified network name.  */
++ (DSChain* _Nullable)chainForNetworkName:(NSString* _Nullable)networkName;
+
+// MARK: - Chain Info methods
+
+- (BOOL)isMainnet;
+- (BOOL)isTestnet;
+- (BOOL)isDevnetAny;
+- (BOOL)isEvolutionEnabled;
+- (BOOL)isDevnetWithGenesisHash:(UInt256)genesisHash;
 
 @end
 
@@ -340,8 +407,8 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 @required
 
 -(void)chainWillStartSyncingBlockchain:(DSChain*)chain;
--(void)chainFinishedSyncingInitialHeaders:(DSChain*)chain fromPeer:(DSPeer* _Nullable)peer onMainChain:(BOOL)onMainChain;
 -(void)chainFinishedSyncingTransactionsAndBlocks:(DSChain*)chain fromPeer:(DSPeer* _Nullable)peer onMainChain:(BOOL)onMainChain;
+-(void)chainFinishedSyncingInitialHeaders:(DSChain*)chain fromPeer:(DSPeer* _Nullable)peer onMainChain:(BOOL)onMainChain;
 -(void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain*)chain;
 -(void)chain:(DSChain*)chain receivedOrphanBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer;
 -(void)chain:(DSChain*)chain wasExtendedWithBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer;

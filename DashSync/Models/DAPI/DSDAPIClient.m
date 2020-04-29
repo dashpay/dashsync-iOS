@@ -20,7 +20,7 @@
 #import <DashSync/DSTransition.h>
 #import <DashSync/DashSync.h>
 #import "DSDAPINetworkService.h"
-
+#import "DSChain+Protected.h"
 #import "DSDashPlatform.h"
 #import "DSDocumentTransition.h"
 #import <arpa/inet.h>

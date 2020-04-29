@@ -27,7 +27,7 @@
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainLockEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 
 @implementation DSMerkleBlockEntity
 

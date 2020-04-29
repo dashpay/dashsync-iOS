@@ -37,7 +37,7 @@
 #import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSEventManager.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "DSSpork.h"
 #import "DSSporkManager.h"
 #import "DSChainEntity+CoreDataClass.h"
@@ -200,13 +200,10 @@
     switch (self.chain.chainType) {
         case DSChainType_MainNet:
             return MAINNET_DNS_SEEDS;
-            break;
         case DSChainType_TestNet:
             return TESTNET_DNS_SEEDS;
-            break;
         case DSChainType_DevNet:
             return nil; //no dns seeds for devnets
-            break;
         default:
             break;
     }

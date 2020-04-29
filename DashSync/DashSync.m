@@ -22,6 +22,7 @@
 #import "DSSporkManager+Protected.h"
 #import "DSMasternodeManager+Protected.h"
 #import "DSChainManager+Protected.h"
+#import "DSChain+Protected.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

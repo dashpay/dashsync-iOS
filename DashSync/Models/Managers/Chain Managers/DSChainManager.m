@@ -26,7 +26,7 @@
 #import "DSChainManager.h"
 #import "DSPeerManager+Protected.h"
 #import "DSEventManager.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "DSSporkManager+Protected.h"
 #import "DSOptionsManager.h"
 #import "DSMasternodeManager+Protected.h"

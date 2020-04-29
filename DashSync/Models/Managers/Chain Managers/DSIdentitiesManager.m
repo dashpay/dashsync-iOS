@@ -50,7 +50,7 @@
 
 - (NSArray*)unsyncedBlockchainIdentities {
     NSMutableArray * unsyncedBlockchainIdentities = [NSMutableArray array];
-    for (DSBlockchainIdentity * blockchainIdentity in [self.chain allBlockchainIdentitiesArray]) {
+    for (DSBlockchainIdentity * blockchainIdentity in [self.chain localBlockchainIdentities]) {
         if (!blockchainIdentity.registrationCreditFundingTransaction || (blockchainIdentity.registrationCreditFundingTransaction.blockHeight == BLOCK_UNKNOWN_HEIGHT)) {
             [unsyncedBlockchainIdentities addObject:blockchainIdentity];
         } else if (self.chain.lastBlockHeight > blockchainIdentity.dashpaySyncronizationBlockHeight) {

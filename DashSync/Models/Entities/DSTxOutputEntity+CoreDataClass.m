@@ -28,7 +28,7 @@
 #import "DSTransaction.h"
 #import "NSData+Bitcoin.h"
 #import "DSChainEntity+CoreDataClass.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSDerivationPathEntity+CoreDataClass.h"
 
