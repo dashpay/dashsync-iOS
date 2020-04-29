@@ -70,7 +70,7 @@
                 "toUserId": {
                     "type": "string",
                     "maxLength":44,
-                    "minLength":44
+                    "minLength":1
                 },
                 "encryptedPublicKey": {
                     "type": "string",

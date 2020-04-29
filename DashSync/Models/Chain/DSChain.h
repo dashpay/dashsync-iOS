@@ -222,7 +222,7 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 // MARK: - Checkpoints
 
 /*! @brief Returns the last checkpoint that has a masternode list attached to it.  */
-- (DSCheckpoint* _Nullable)lastCheckpointWithMasternodeList;
+- (DSCheckpoint* _Nullable)lastCheckpointHavingMasternodeList;
 
 /*! @brief Returns the checkpoint matching the parameter block hash, if one exists.  */
 - (DSCheckpoint* _Nullable)checkpointForBlockHash:(UInt256)blockHash;

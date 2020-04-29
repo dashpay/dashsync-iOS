@@ -273,7 +273,7 @@
 -(void)loadFileDistributedMasternodeLists {
     if (![[DSOptionsManager sharedInstance] useCheckpointMasternodeLists]) return;
     if (!self.currentMasternodeList) {
-        DSCheckpoint * checkpoint = [self.chain lastCheckpointWithMasternodeList];
+        DSCheckpoint * checkpoint = [self.chain lastCheckpointHavingMasternodeList];
         if (self.chain.lastBlockHeight >= checkpoint.height) {
             [self processRequestFromFileForBlockHash:checkpoint.checkpointHash completion:^(BOOL success) {
                 
