@@ -24,7 +24,18 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setEstimatedBlockHeight:(uint32_t)estimatedBlockHeight fromPeer:(DSPeer*)peer;
 - (void)removeEstimatedBlockHeightOfPeer:(DSPeer*)peer;
 - (BOOL)addBlock:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer;
+
+- (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes;
+
+/*! @brief Add a wallet to the chain. It is only temporarily in the chain if externaly added this way.  */
+- (void)addWallet:(DSWallet*)wallet;
+
+/*! @brief Add a standalone derivation path to the chain. It is only temporarily in the chain if externaly added this way.  */
+- (void)addStandaloneDerivationPath:(DSDerivationPath*)derivationPath;
+
 - (void)saveBlocks;
+
+- (void)save;
 
 - (void)wipeWalletsAndDerivatives;
 - (void)reloadDerivationPaths;

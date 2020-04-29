@@ -11,6 +11,7 @@
 #import "NSManagedObject+Sugar.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "NSData+Dash.h"
+#import "DSChain+Protected.h"
 
 @implementation DSGovernanceObjectEntity
 

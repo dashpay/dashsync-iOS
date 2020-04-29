@@ -23,6 +23,7 @@
 //  THE SOFTWARE.
 
 #import "DSWallet.h"
+#import "DSChain+Protected.h"
 #import "DSAccount.h"
 #import "DSAuthenticationManager.h"
 #import "DSPriceManager.h"

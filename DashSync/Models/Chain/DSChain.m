@@ -217,11 +217,14 @@ static checkpoint mainnet_checkpoint_array[] = {
 @property (nonatomic, assign) uint32_t cachedStandardPort;
 @property (nonatomic, assign) uint32_t cachedStandardDapiJRPCPort;
 @property (nonatomic, assign) uint32_t cachedStandardDapiGRPCPort;
+@property (nonatomic, assign) UInt256 genesisHash;
 @property (nonatomic, assign) UInt256 cachedDpnsContractID;
 @property (nonatomic, assign) UInt256 cachedDashpayContractID;
 @property (nonatomic, strong) NSMutableDictionary <NSData*,NSNumber*>* transactionHashHeights;
 @property (nonatomic, strong) NSMutableDictionary <NSData*,NSNumber*>* transactionHashTimestamps;
 @property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
+
+@property (nonatomic, readonly) NSString * chainWalletsKey;
 
 @end
 
@@ -429,7 +432,6 @@ static checkpoint mainnet_checkpoint_array[] = {
         [_mainnet setUp];
         [[DSChainEntity context] performBlockAndWait:^{
             DSChainEntity * chainEntity = [_mainnet chainEntity];
-            _mainnet.totalMasternodeCount = chainEntity.totalMasternodeCount;
             _mainnet.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
             _mainnet.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
         }];
@@ -450,7 +452,6 @@ static checkpoint mainnet_checkpoint_array[] = {
         [_testnet setUp];
         [[DSChainEntity context] performBlockAndWait:^{
             DSChainEntity * chainEntity = [_testnet chainEntity];
-            _testnet.totalMasternodeCount = chainEntity.totalMasternodeCount;
             _testnet.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
             _testnet.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
         }];
@@ -489,7 +490,6 @@ static dispatch_once_t devnetToken = 0;
         [devnetChain setUp];
         [[DSChainEntity context] performBlockAndWait:^{
             DSChainEntity * chainEntity = [devnetChain chainEntity];
-            devnetChain.totalMasternodeCount = chainEntity.totalMasternodeCount;
             devnetChain.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
             devnetChain.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
         }];
@@ -521,7 +521,6 @@ static dispatch_once_t devnetToken = 0;
         [devnetChain setUp];
         [[DSChainEntity context] performBlockAndWait:^{
             DSChainEntity * chainEntity = [devnetChain chainEntity];
-            devnetChain.totalMasternodeCount = chainEntity.totalMasternodeCount;
             devnetChain.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
             devnetChain.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
         }];
@@ -544,7 +543,6 @@ static dispatch_once_t devnetToken = 0;
 -(void)save {
     [self.managedObjectContext performBlockAndWait:^{
         DSChainEntity * entity = self.chainEntity;
-        entity.totalMasternodeCount = self.totalMasternodeCount;
         entity.totalGovernanceObjectsCount = self.totalGovernanceObjectsCount;
         entity.baseBlockHash = [NSData dataWithUInt256:self.masternodeBaseBlockHash];
         [DSChainEntity saveContext];
@@ -1082,7 +1080,7 @@ static dispatch_once_t devnetToken = 0;
     return [[self checkpoints] lastObject];
 }
 
--(NSString*)sporkPublicKey {
+-(NSString*)sporkPublicKeyHexString {
     switch ([self chainType]) {
         case DSChainType_MainNet:
             return SPORK_PUBLIC_KEY_MAINNET;
@@ -1106,7 +1104,7 @@ static dispatch_once_t devnetToken = 0;
     return nil;
 }
 
--(void)setSporkPublicKey:(NSString *)sporkPublicKey {
+-(void)setSporkPublicKeyHexString:(NSString *)sporkPublicKey {
     switch ([self chainType]) {
         case DSChainType_MainNet:
             return;
@@ -1121,7 +1119,7 @@ static dispatch_once_t devnetToken = 0;
     }
 }
 
--(NSString*)sporkPrivateKey {
+-(NSString*)sporkPrivateKeyBase58String {
     switch ([self chainType]) {
         case DSChainType_MainNet:
             return nil;
@@ -1145,7 +1143,7 @@ static dispatch_once_t devnetToken = 0;
     return nil;
 }
 
--(void)setSporkPrivateKey:(NSString *)sporkPrivateKey {
+-(void)setSporkPrivateKeyBase58String:(NSString *)sporkPrivateKey {
     switch ([self chainType]) {
         case DSChainType_MainNet:
             return;
@@ -1581,7 +1579,7 @@ static dispatch_once_t devnetToken = 0;
 
 
 // this is used as part of a getblocks or getheaders request
-- (NSArray *)blockLocatorArray
+- (NSArray <NSData*> *)blockLocatorArray
 {
     // append 10 most recent block checkpointHashes, decending, then continue appending, doubling the step back each time,
     // finishing with the genesis block (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -15, -23, -39, -71, -135, ..., 0)

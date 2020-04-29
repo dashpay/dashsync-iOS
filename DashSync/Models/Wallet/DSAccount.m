@@ -27,7 +27,7 @@
 #import "DSAccount.h"
 #import "DSWallet.h"
 #import "DSECDSAKey.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 
 #import "DSTransaction.h"
 #import "DSProviderRegistrationTransaction.h"

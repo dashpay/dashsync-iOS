@@ -18,7 +18,6 @@
 @dynamic checkpoints;
 @dynamic devnetIdentifier;
 @dynamic totalGovernanceObjectsCount;
-@dynamic totalMasternodeCount;
 @dynamic type;
 @dynamic accounts;
 @dynamic blocks;

@@ -28,7 +28,7 @@
 #import "DSEventManager.h"
 #import "DSAccount.h"
 #import "DSWallet.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "DSChainsManager.h"
 #import "DSPriceManager.h"
 #import "DSDerivationPath.h"

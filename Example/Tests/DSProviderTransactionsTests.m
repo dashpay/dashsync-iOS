@@ -8,7 +8,7 @@
 
 #import <XCTest/XCTest.h>
 #import "DSECDSAKey.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "NSString+Bitcoin.h"
 #import "DSTransaction.h"
 #import "NSMutableData+Dash.h"

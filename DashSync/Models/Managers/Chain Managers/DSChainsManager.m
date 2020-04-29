@@ -166,7 +166,7 @@
         chain.sporkAddress = sporkAddress;
     }
     if (sporkPrivateKey && [sporkPrivateKey isValidDashDevnetPrivateKey]) {
-        chain.sporkPrivateKey = sporkPrivateKey;
+        chain.sporkPrivateKeyBase58String = sporkPrivateKey;
     }
     if (standardPort && standardPort != chain.standardPort) {
         chain.standardPort = standardPort;
@@ -228,7 +228,7 @@
         chain.sporkAddress = sporkAddress;
     }
     if (sporkPrivateKey && [sporkPrivateKey isValidDashDevnetPrivateKey]) {
-        chain.sporkPrivateKey = sporkPrivateKey;
+        chain.sporkPrivateKeyBase58String = sporkPrivateKey;
     }
     DSChainManager * chainManager = [self chainManagerForChain:chain];
     DSPeerManager * peerManager = chainManager.peerManager;

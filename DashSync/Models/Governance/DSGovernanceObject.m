@@ -8,7 +8,7 @@
 #import "DSGovernanceObject.h"
 #import "NSData+Bitcoin.h"
 #import "NSData+Dash.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "DSGovernanceVote.h"
 #import "DSGovernanceVoteEntity+CoreDataProperties.h"
 #import "DSGovernanceVoteHashEntity+CoreDataProperties.h"

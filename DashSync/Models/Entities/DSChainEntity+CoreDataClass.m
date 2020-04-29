@@ -33,7 +33,6 @@
 
 - (instancetype)setAttributesFromChain:(DSChain *)chain {
     self.type = chain.chainType;
-    self.totalMasternodeCount = chain.totalMasternodeCount;
     self.totalGovernanceObjectsCount = chain.totalGovernanceObjectsCount;
     return self;
 }
@@ -42,14 +41,12 @@
     __block DSChainType type;
     __block NSString * devnetIdentifier;
     __block NSData * data;
-    __block uint32_t totalMasternodeCount;
     __block uint32_t totalGovernanceObjectsCount;
     __block UInt256 baseBlockHash;
     [self.managedObjectContext performBlockAndWait:^{
         type = self.type;
         devnetIdentifier = self.devnetIdentifier;
         data = self.checkpoints;
-        totalMasternodeCount = self.totalMasternodeCount;
         totalGovernanceObjectsCount = self.totalGovernanceObjectsCount;
         baseBlockHash = self.baseBlockHash.UInt256;
     }];

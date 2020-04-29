@@ -9,7 +9,7 @@
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataClass.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSLocalMasternodeEntity+CoreDataClass.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
