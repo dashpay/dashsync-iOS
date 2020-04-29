@@ -199,8 +199,8 @@ static checkpoint mainnet_checkpoint_array[] = {
 
 @interface DSChain ()
 
-@property (nonatomic, strong) DSMerkleBlock *lastBlock, *lastOrphan;
-@property (nonatomic, strong) NSMutableDictionary <NSValue*, DSMerkleBlock*> *blocks, *orphans;
+@property (nonatomic, strong) DSMerkleBlock *lastBlock, *lastHeader, *lastOrphan;
+@property (nonatomic, strong) NSMutableDictionary <NSValue*, DSMerkleBlock*> *blocks, *headers, *orphans;
 @property (nonatomic, strong) NSMutableDictionary <NSData*,DSCheckpoint*> *checkpointsByHashDictionary;
 @property (nonatomic, strong) NSMutableDictionary <NSNumber*,DSCheckpoint*> *checkpointsByHeightDictionary;
 @property (nonatomic, strong) NSArray<DSCheckpoint*> * checkpoints;
@@ -224,7 +224,6 @@ static checkpoint mainnet_checkpoint_array[] = {
 @property (nonatomic, strong) NSMutableDictionary <NSData*,NSNumber*>* transactionHashHeights;
 @property (nonatomic, strong) NSMutableDictionary <NSData*,NSNumber*>* transactionHashTimestamps;
 @property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
-@property (nonatomic, strong) dispatch_queue_t networkingQueue;
 
 @property (nonatomic, readonly) NSString * chainWalletsKey;
 
@@ -1907,7 +1906,7 @@ static dispatch_once_t devnetToken = 0;
     //DSDLog(@"%@:%d added block at height %d target %x blockHash: %@", peer.host, peer.port,
     //      block.height,block.target, blockHash);
     
-    if (checkpoint && checkpoint == [self lastCheckpointWithMasternodeList]) {
+    if (checkpoint && checkpoint == [self lastCheckpointHavingMasternodeList]) {
         [self.chainManager.masternodeManager loadFileDistributedMasternodeLists];
     }
     
@@ -2093,7 +2092,7 @@ static dispatch_once_t devnetToken = 0;
     //DSDLog(@"%@:%d added block at height %d target %x blockHash: %@", peer.host, peer.port,
     //      block.height,block.target, blockHash);
     
-    if (checkpoint && checkpoint == [self lastCheckpointWithMasternodeList]) {
+    if (checkpoint && checkpoint == [self lastCheckpointHavingMasternodeList]) {
         [self.chainManager.masternodeManager loadFileDistributedMasternodeLists];
     }
     
@@ -2571,12 +2570,12 @@ static dispatch_once_t devnetToken = 0;
     }
     [self wipeBlockchainIdentitiesPersistedData];
     [self.viewingAccount wipeBlockchainInfo];
-    self.bestBlockHeight = 0;
+    _bestBlockHeight = 0;
     _blocks = nil;
     _headers = nil;
     _lastBlock = nil;
     _lastHeader = nil;
-    [self setLastBlockHeightForRescan];
+    [self setLastBlockForRescan];
     [self.chainManager chainWasWiped:self];
 }
 

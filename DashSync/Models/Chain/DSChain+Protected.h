@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // MARK: - Network
 
-@property (nonatomic, readonly) dispatch_queue_t networkingQueue;
+@property (nonatomic, strong) dispatch_queue_t networkingQueue;
 
 // MARK: - Blocks
 
