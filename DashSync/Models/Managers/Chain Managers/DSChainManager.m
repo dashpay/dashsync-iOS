@@ -207,7 +207,7 @@
     if (!self.peerManager.connected) {
         [self disconnectedRescan];
     } else {
-        [self.peerManager disconnectDownloadPeerWithCompletion:^(BOOL success) {
+        [self.peerManager disconnectDownloadPeerForError:nil withCompletion:^(BOOL success) {
             [self disconnectedRescan];
         }];
     }
@@ -218,7 +218,7 @@
     if (!self.peerManager.connected) {
         [self disconnectedRescanOfMasternodeListsAndQuorums];
     } else {
-        [self.peerManager disconnectDownloadPeerWithCompletion:^(BOOL success) {
+        [self.peerManager disconnectDownloadPeerForError:nil withCompletion:^(BOOL success) {
             [self disconnectedRescanOfMasternodeListsAndQuorums];
         }];
     }

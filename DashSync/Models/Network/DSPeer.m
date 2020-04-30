@@ -304,7 +304,7 @@
 {
     if (_status == DSPeerStatus_Disconnected) return;
     if (!error) {
-        DSDLog(@"Disconnected from peer %@ (%@ protocol %d) with unknown error",self.host,self.useragent,self.version);
+        DSDLog(@"Disconnected from peer %@ (%@ protocol %d) with no error",self.host,self.useragent,self.version);
     } else {
         DSDLog(@"Disconnected from peer %@ (%@ protocol %d) with error %@",self.host,self.useragent,self.version,error);
     }
@@ -1438,7 +1438,7 @@
         return;
     }
     if (!count) return;
-    if (count >= 2000 || ((lastTimestamp + DAY_TIME_INTERVAL*2) >= self.earliestKeyTime) || [self.chain isDevnetAny]) {
+    if (count >= 2000 || (((lastTimestamp + DAY_TIME_INTERVAL*2) >= self.earliestKeyTime) && (!self.chain.shouldSyncHeadersFirstForMasternodeListVerification))) {
         UInt256 firstBlockHash = [message subdataWithRange:NSMakeRange(l, 80)].x11;
         UInt256 lastBlockHash = [message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].x11;
         NSData *firstHashData = uint256_data(firstBlockHash);

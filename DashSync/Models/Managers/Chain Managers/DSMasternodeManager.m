@@ -395,6 +395,7 @@
 }
 
 -(void)dequeueMasternodeListRequest {
+    DSDLog(@"Dequeued Masternode List Request");
     if (![self.masternodeListRetrievalQueue count]) {
         [self.chain.chainManager chainFinishedSyncingMasternodeListsAndQuorums:self.chain];
         return;
@@ -414,10 +415,12 @@
         UInt256 blockHash = blockHashData.UInt256;
         
         //we should check the associated block still exists
-        __block BOOL hasBlock;
-        [self.managedObjectContext performBlockAndWait:^{
-            hasBlock = !![DSMerkleBlockEntity countObjectsMatching:@"blockHash == %@",uint256_data(blockHash)];
-        }];
+        __block BOOL hasBlock = [self.chain blockForBlockHash:blockHash];
+        if (!hasBlock) {
+            [self.managedObjectContext performBlockAndWait:^{
+                hasBlock = !![DSMerkleBlockEntity countObjectsMatching:@"blockHash == %@",uint256_data(blockHash)];
+            }];
+        }
         if (hasBlock) {
             //there is the rare possibility we have the masternode list as a checkpoint, so lets first try that
             [self processRequestFromFileForBlockHash:blockHash completion:^(BOOL success) {

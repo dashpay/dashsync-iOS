@@ -45,7 +45,7 @@ typedef NS_ENUM(NSUInteger, DSPeerManagerDesiredState) {
 - (void)syncStopped;
 - (void)updateFilterOnPeers;
 
-- (void)disconnectDownloadPeerWithCompletion:(void (^ _Nullable)(BOOL success))completion;
+- (void)disconnectDownloadPeerForError:(NSError* _Nullable)error withCompletion:(void (^ _Nullable)(BOOL success))completion;
 
 - (instancetype)initWithChain:(DSChain*)chain;
 

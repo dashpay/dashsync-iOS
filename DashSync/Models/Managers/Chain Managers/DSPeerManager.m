@@ -670,8 +670,8 @@
     });
 }
 
-- (void)disconnectDownloadPeerWithCompletion:(void (^ _Nullable)(BOOL success))completion {
-    [self.downloadPeer disconnect];
+- (void)disconnectDownloadPeerForError:(NSError*)error withCompletion:(void (^ _Nullable)(BOOL success))completion {
+    [self.downloadPeer disconnectWithError:error];
     dispatch_async(self.networkingQueue, ^{
         if (self.downloadPeer) { // disconnect the current download peer so a new random one will be selected
             [self.peers removeObject:self.downloadPeer];
@@ -690,7 +690,8 @@
                    afterDelay:PROTOCOL_TIMEOUT - (now - self.chainManager.lastChainRelayTime)];
         return;
     }
-    [self disconnectDownloadPeerWithCompletion:nil];
+    [self disconnectDownloadPeerForError:[NSError errorWithDomain:@"DashSync" code:500
+    userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"Synchronization Timeout",@"An error message for notifying that chain sync has timed out")}] withCompletion:nil];
 }
 
 - (void)syncStopped
