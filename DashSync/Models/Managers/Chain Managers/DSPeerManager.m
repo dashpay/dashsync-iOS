@@ -600,7 +600,7 @@
                         [self.chain saveBlocks];
                     });
                     
-                    [self syncStopped];
+                    [self chainSyncStopped];
                 }];
             }
             
@@ -646,7 +646,7 @@
         }
         
         if (self.connectedPeers.count == 0) {
-            [self syncStopped];
+            [self chainSyncStopped];
             
             dispatch_async(dispatch_get_main_queue(), ^{
                 NSError *error = [NSError errorWithDomain:@"DashSync" code:1
@@ -694,7 +694,7 @@
     userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"Synchronization Timeout",@"An error message for notifying that chain sync has timed out")}] withCompletion:nil];
 }
 
-- (void)syncStopped
+- (void)chainSyncStopped
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
@@ -805,21 +805,7 @@
             [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
             
             [self.chainManager chainWillStartSyncingBlockchain:self.chain];
-            
-            dispatch_async(self.networkingQueue, ^{
-                if (self.chain.shouldSyncHeadersFirstForMasternodeListVerification) {
-                //masternode list should be synced first and the masternode list is old
-                    [peer sendGetheadersMessageWithLocators:[self.chain headerLocatorArrayForMasternodeSync] andHashStop:UINT256_ZERO];
-                } else {
-                    BOOL startingDevnetSync = [self.chain isDevnetAny] && self.chain.lastBlock.height < 5;
-                    if (startingDevnetSync || self.chain.lastBlock.timestamp + (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4 >= self.chain.earliestWalletCreationTime) {
-                        [peer sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
-                    }
-                    else {
-                        [peer sendGetheadersMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
-                    }
-                }
-            });
+            [self.chainManager chainShouldStartSyncingBlockchain:self.chain onPeer:peer];
         });
     }
     else { // we're already synced
@@ -855,7 +841,7 @@
     }
     
     if (! self.connected && self.connectFailures == MAX_CONNECT_FAILURES) {
-        [self syncStopped];
+        [self chainSyncStopped];
         
         // clear out stored peers so we get a fresh list from DNS on next connect attempt
         @synchronized (self.mutableMisbehavingPeers) {

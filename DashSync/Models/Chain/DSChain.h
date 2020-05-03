@@ -407,6 +407,7 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 @required
 
 -(void)chainWillStartSyncingBlockchain:(DSChain*)chain;
+-(void)chainShouldStartSyncingBlockchain:(DSChain*)chain onPeer:(DSPeer*)peer;
 -(void)chainFinishedSyncingTransactionsAndBlocks:(DSChain*)chain fromPeer:(DSPeer* _Nullable)peer onMainChain:(BOOL)onMainChain;
 -(void)chainFinishedSyncingInitialHeaders:(DSChain*)chain fromPeer:(DSPeer* _Nullable)peer onMainChain:(BOOL)onMainChain;
 -(void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain*)chain;

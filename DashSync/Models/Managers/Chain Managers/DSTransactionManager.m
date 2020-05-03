@@ -730,7 +730,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
                 }
                 
                 if (peer == self.peerManager.downloadPeer) {
-                    [self.peerManager syncStopped];
+                    [self.peerManager chainSyncStopped];
                     
                     dispatch_async(dispatch_get_main_queue(), ^{
                         [[NSNotificationCenter defaultCenter]
@@ -741,7 +741,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         }
         else if (peer == self.peerManager.downloadPeer) {
             DSDLog(@"[DSTransactionManager] fetching mempool ping failure on download peer %@",peer.host);
-            [self.peerManager syncStopped];
+            [self.peerManager chainSyncStopped];
             
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter]

@@ -42,7 +42,7 @@ typedef NS_ENUM(NSUInteger, DSPeerManagerDesiredState) {
 @property (nonatomic, readonly) DSPeerManagerDesiredState desiredState;
 
 - (void)peerMisbehaving:(DSPeer *)peer errorMessage:(NSString*)errorMessage;
-- (void)syncStopped;
+- (void)chainSyncStopped;
 - (void)updateFilterOnPeers;
 
 - (void)disconnectDownloadPeerForError:(NSError* _Nullable)error withCompletion:(void (^ _Nullable)(BOOL success))completion;

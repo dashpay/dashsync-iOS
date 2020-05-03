@@ -239,8 +239,26 @@
     [self.sporkManager getSporks]; //get the sporks early on
 }
 
+-(void)chainShouldStartSyncingBlockchain:(DSChain*)chain onPeer:(DSPeer*)peer {
+    dispatch_async(self.chain.networkingQueue, ^{
+        if (self.chain.shouldSyncHeadersFirstForMasternodeListVerification) {
+        //masternode list should be synced first and the masternode list is old
+            [peer sendGetheadersMessageWithLocators:[self.chain headerLocatorArrayForMasternodeSync] andHashStop:UINT256_ZERO];
+        } else {
+            BOOL startingDevnetSync = [self.chain isDevnetAny] && self.chain.lastBlock.height < 5;
+            if (startingDevnetSync || self.chain.lastBlock.timestamp + (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4 >= self.chain.earliestWalletCreationTime) {
+                [peer sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
+            }
+            else {
+                [peer sendGetheadersMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
+            }
+        }
+    });
+}
+
 -(void)chainFinishedSyncingInitialHeaders:(DSChain*)chain fromPeer:(DSPeer*)peer onMainChain:(BOOL)onMainChain {
     if (onMainChain && peer && (peer == self.peerManager.downloadPeer)) self.lastChainRelayTime = [NSDate timeIntervalSince1970];
+    [self.peerManager chainSyncStopped];
     if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList)) {
         // make sure we care about masternode lists
         [self.masternodeManager getRecentMasternodeList:32 withSafetyDelay:0];
@@ -263,13 +281,22 @@
 }
 
 -(void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain*)chain {
-    if ([self.chain isEvolutionEnabled]) {
-        if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_BlockchainIdentities)) {
-            //this only needs to happen once per session
-            static dispatch_once_t onceToken;
-            dispatch_once(&onceToken, ^{
-                [self.identitiesManager retrieveAllBlockchainIdentitiesChainStates];
-            });
+    
+    if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeListFirst)) {
+        if (self.peerManager.connectedPeerCount == 0) {
+            [self.peerManager connect];
+        } else {
+            [self chainShouldStartSyncingBlockchain:chain onPeer:self.peerManager.downloadPeer];
+        }
+    } else {
+        if ([self.chain isEvolutionEnabled]) {
+            if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_BlockchainIdentities)) {
+                //this only needs to happen once per session
+                static dispatch_once_t onceToken;
+                dispatch_once(&onceToken, ^{
+                    [self.identitiesManager retrieveAllBlockchainIdentitiesChainStates];
+                });
+            }
         }
     }
 }

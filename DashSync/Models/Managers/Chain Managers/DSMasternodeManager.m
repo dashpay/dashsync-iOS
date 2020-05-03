@@ -1091,7 +1091,7 @@
 
 -(void)removeOldMasternodeLists {
     if (!self.currentMasternodeList) return;
-    [self.managedObjectContext performBlockAndWait:^{
+    [self.managedObjectContext performBlock:^{
         uint32_t lastBlockHeight = self.currentMasternodeList.height;
         NSMutableArray * masternodeListBlockHashes = [[self.masternodeListsByBlockHash allKeys] mutableCopy];
         [masternodeListBlockHashes addObjectsFromArray:[self.masternodeListsBlockHashStubs allObjects]];
