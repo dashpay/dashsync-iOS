@@ -79,6 +79,9 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 /*! @brief The chain entity associated in Core Data in the context of the chain's managed object context.  */
 @property (nonatomic, readonly, nullable) DSChainEntity * chainEntity;
 
+/*! @brief The chain entity associated in Core Data in the required context.  */
+-(DSChainEntity*)chainEntityInContext:(NSManagedObjectContext*)context;
+
 /*! @brief The managed object context of the chain.  */
 @property (nonatomic, readonly) NSManagedObjectContext * managedObjectContext;
 

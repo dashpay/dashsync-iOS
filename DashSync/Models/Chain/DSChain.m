@@ -2158,7 +2158,7 @@ static dispatch_once_t devnetToken = 0;
             self.checkpointsByHashDictionary[uint256_data(checkpointHash)] = checkpoint;
         }
         self.delegateQueueChainEntity = [self chainEntity];
-        for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity lastBlocks:LLMQ_KEEP_RECENT_BLOCKS onChain:self.delegateQueueChainEntity]) {
+        for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity lastHeaders:LLMQ_KEEP_RECENT_BLOCKS onChain:self.delegateQueueChainEntity]) {
             @autoreleasepool {
                 DSMerkleBlock *b = e.merkleBlock;
                 
@@ -3036,9 +3036,14 @@ static dispatch_once_t devnetToken = 0;
 
 -(DSChainEntity*)chainEntity {
     if ([NSThread isMainThread] && _mainThreadChainEntity) return self.mainThreadChainEntity;
+    return [self chainEntityInContext:[DSChainEntity context]];
+}
+
+-(DSChainEntity*)chainEntityInContext:(NSManagedObjectContext*)context {
+    NSParameterAssert(context);
     __block DSChainEntity* chainEntity = nil;
-    [[DSChainEntity context] performBlockAndWait:^{
-        chainEntity = [DSChainEntity chainEntityForType:self.chainType devnetIdentifier:self.devnetIdentifier checkpoints:self.checkpoints];
+    [context performBlockAndWait:^{
+        chainEntity = [DSChainEntity chainEntityForType:self.chainType devnetIdentifier:self.devnetIdentifier checkpoints:self.checkpoints inContext:context];
     }];
     return chainEntity;
 }
@@ -3083,12 +3088,12 @@ static dispatch_once_t devnetToken = 0;
     [[DSMerkleBlockEntity context] performBlock:^{
         if ([[DSOptionsManager sharedInstance] keepHeaders] || onlyHeaders) {
             //only remove orphan chains
-            NSArray<DSMerkleBlockEntity *> * recentOrphans = [DSMerkleBlockEntity objectsMatching:@"(chain == %@) && (height > %u) && !(blockHash in %@) ",self.delegateQueueChainEntity,startHeight,blocks.allKeys];
+            NSArray<DSMerkleBlockEntity *> * recentOrphans = [DSMerkleBlockEntity objectsMatching:@"(chain == %@) && (height > %u) && !(blockHash in %@) && onlyHeader == %@",self.delegateQueueChainEntity,startHeight,blocks.allKeys,@(onlyHeaders)];
             if ([recentOrphans count])  DSDLog(@"%lu recent orphans will be removed from disk",(unsigned long)[recentOrphans count]);
             [DSMerkleBlockEntity deleteObjects:recentOrphans];
         } else {
             //remember to not delete blocks needed for quorums
-            NSArray<DSMerkleBlockEntity *> * oldBlockHeaders = [DSMerkleBlockEntity objectsMatching:@"(chain == %@) && !(blockHash in %@) && (usedByQuorums.@count == 0) && masternodeList == NIL",self.delegateQueueChainEntity,blocks.allKeys];
+            NSArray<DSMerkleBlockEntity *> * oldBlockHeaders = [DSMerkleBlockEntity objectsMatching:@"(chain == %@) && !(blockHash in %@) && (usedByQuorums.@count == 0) && masternodeList == NIL && onlyHeader == %@",self.delegateQueueChainEntity,blocks.allKeys,@(onlyHeaders)];
             [DSMerkleBlockEntity deleteObjects:oldBlockHeaders];
         }
         
