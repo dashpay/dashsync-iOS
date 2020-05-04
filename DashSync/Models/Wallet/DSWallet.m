@@ -786,14 +786,14 @@
 
 // set the block heights and timestamps for the given transactions, use a height of TX_UNCONFIRMED and timestamp of 0 to
 // indicate a transaction and it's dependents should remain marked as unverified (not 0-conf safe)
-- (NSArray *)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes
+- (NSArray *)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)txHashes
 {
     NSParameterAssert(txHashes);
     
     NSMutableArray *updated = [NSMutableArray array];
     
     for (DSAccount * account in self.accounts) {
-        NSArray * fromAccount = [account setBlockHeight:height andTimestamp:timestamp forTxHashes:txHashes];
+        NSArray * fromAccount = [account setBlockHeight:height andTimestamp:timestamp forTransactionHashes:txHashes];
         if (fromAccount) {
             [updated addObjectsFromArray:fromAccount];
         } else {
@@ -1275,6 +1275,11 @@
 - (NSUInteger)indexOfBlockchainIdentityCreditFundingRegistrationHash:(UInt160)creditFundingRegistrationHash {
     DSCreditFundingDerivationPath * derivationPath = [DSCreditFundingDerivationPath blockchainIdentityRegistrationFundingDerivationPathForWallet:self];
     return [derivationPath indexOfKnownAddress:[[NSData dataWithUInt160:creditFundingRegistrationHash] addressFromHash160DataForChain:self.chain]];
+}
+
+- (NSUInteger)indexOfBlockchainIdentityCreditFundingTopupHash:(UInt160)creditFundingTopupHash {
+    DSCreditFundingDerivationPath * derivationPath = [DSCreditFundingDerivationPath blockchainIdentityTopupFundingDerivationPathForWallet:self];
+    return [derivationPath indexOfKnownAddress:[[NSData dataWithUInt160:creditFundingTopupHash] addressFromHash160DataForChain:self.chain]];
 }
 
 @end

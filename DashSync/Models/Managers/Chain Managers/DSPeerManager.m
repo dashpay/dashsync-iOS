@@ -491,6 +491,19 @@
 
 // MARK: - Peer Registration
 
+- (void)pauseBlockchainSynchronizationOnPeers {
+    self.downloadPeer.needsFilterUpdate = YES;
+}
+
+- (void)resumeBlockchainSynchronizationOnPeers {
+    self.downloadPeer.needsFilterUpdate = NO;
+    if (self.downloadPeer) {
+        [self updateFilterOnPeers];
+    } else {
+        [self connect];
+    }
+}
+
 - (void)updateFilterOnPeers
 {
     if (self.downloadPeer.needsFilterUpdate) return;

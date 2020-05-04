@@ -12,7 +12,7 @@
 @implementation DSBlockchainIdentityEntity
 
 -(DSBlockchainIdentity*)blockchainIdentity {
-    return [[DSBlockchainIdentity alloc] initWithBlockchainIdentityEntity:self inContext:self.managedObjectContext];
+    return [[DSBlockchainIdentity alloc] initWithBlockchainIdentityEntity:self];
 }
 
 @end

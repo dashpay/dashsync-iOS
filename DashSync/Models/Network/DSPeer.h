@@ -306,7 +306,7 @@ services:(uint64_t)services;
 - (void)sendMempoolMessage:(NSArray *)publishedTxHashes completion:(MempoolCompletionBlock _Nullable)completion;
 - (void)sendGetheadersMessageWithLocators:(NSArray *)locators andHashStop:(UInt256)hashStop;
 - (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(UInt256)hashStop;
-- (void)sendTransactionInvMessagesForTxHashes:(NSArray * _Nullable)txInvHashes txLockRequestHashes:(NSArray* _Nullable)txLockRequestInvHashes;
+- (void)sendTransactionInvMessagesforTransactionHashes:(NSArray * _Nullable)txInvHashes txLockRequestHashes:(NSArray* _Nullable)txLockRequestInvHashes;
 - (void)sendInvMessageForHashes:(NSArray *)invHashes ofType:(DSInvType)invType;
 - (void)sendGetdataMessageForTxHash:(UInt256)txHash;
 - (void)sendGetdataMessageWithTxHashes:(NSArray * _Nullable)txHashes instantSendLockHashes:(NSArray* _Nullable)instantSendLockHashes blockHashes:(NSArray * _Nullable)blockHashes chainLockHashes:(NSArray * _Nullable)chainLockHashes;

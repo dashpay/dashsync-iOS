@@ -29,6 +29,20 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityRegistrationStep) {
     DSBlockchainIdentityRegistrationStep_Cancelled = 1 << 30
 };
 
+typedef NS_ENUM(NSUInteger, DSBlockchainIdentityQueryStep) {
+    DSBlockchainIdentityQueryStep_None = DSBlockchainIdentityRegistrationStep_None, //0
+    DSBlockchainIdentityQueryStep_Identity = DSBlockchainIdentityRegistrationStep_Identity,
+    DSBlockchainIdentityQueryStep_Username = DSBlockchainIdentityRegistrationStep_Username,
+    DSBlockchainIdentityQueryStep_Profile = DSBlockchainIdentityRegistrationStep_Profile,
+    DSBlockchainIdentityQueryStep_IncomingContactRequests = 64,
+    DSBlockchainIdentityQueryStep_OutgoingContactRequests = 128,
+    DSBlockchainIdentityQueryStep_ContactRequests = DSBlockchainIdentityQueryStep_IncomingContactRequests | DSBlockchainIdentityQueryStep_OutgoingContactRequests,
+    DSBlockchainIdentityQueryStep_AllForForeignBlockchainIdentity = DSBlockchainIdentityQueryStep_Identity | DSBlockchainIdentityQueryStep_Username | DSBlockchainIdentityQueryStep_Profile,
+    DSBlockchainIdentityQueryStep_AllForLocalBlockchainIdentity = DSBlockchainIdentityQueryStep_Identity | DSBlockchainIdentityQueryStep_Username | DSBlockchainIdentityQueryStep_Profile | DSBlockchainIdentityQueryStep_ContactRequests,
+    DSBlockchainIdentityQueryStep_BadQuery = 1 << 29,
+    DSBlockchainIdentityQueryStep_Cancelled = 1 << 30
+};
+
 typedef NS_ENUM(NSUInteger, DSBlockchainIdentityRegistrationStatus) {
     DSBlockchainIdentityRegistrationStatus_Unknown = 0,
     DSBlockchainIdentityRegistrationStatus_Registered = 1,
@@ -187,9 +201,9 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventDashpaySyncroni
 
 -(void)fetchIdentityNetworkStateInformationWithCompletion:(void (^)(BOOL success, NSError * error))completion;
 
--(void)fetchAllNetworkStateInformationWithCompletion:(void (^)(BOOL success, NSArray<NSError *> * _Nullable errors))completion;
+-(void)fetchAllNetworkStateInformationWithCompletion:(void (^)(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> * errors))completion;
 
--(void)fetchNeededNetworkStateInformationWithCompletion:(void (^)(DSBlockchainIdentityRegistrationStep failureStep, NSError * _Nullable error))completion;
+-(void)fetchNeededNetworkStateInformationWithCompletion:(void (^)(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> * errors))completion;
 
 -(void)signStateTransition:(DSTransition*)transition completion:(void (^ _Nullable)(BOOL success))completion;
 
@@ -249,11 +263,11 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventDashpaySyncroni
 
 // MARK: - Dashpay
 
--(void)sendNewFriendRequestToPotentialContact:(DSPotentialContact*)potentialContact completion:(void (^ _Nullable)(BOOL success, NSError * error))completion;
+- (void)sendNewFriendRequestToPotentialContact:(DSPotentialContact*)potentialContact completion:(void (^ _Nullable)(BOOL success, NSArray<NSError *> * errors))completion;
 
--(void)sendNewFriendRequestMatchingPotentialFriendship:(DSPotentialOneWayFriendship*)potentialFriendship completion:(void (^ _Nullable)(BOOL success, NSError * error))completion;
+- (void)sendNewFriendRequestMatchingPotentialFriendship:(DSPotentialOneWayFriendship*)potentialFriendship completion:(void (^ _Nullable)(BOOL success, NSArray<NSError *> * errors))completion;
 
--(void)acceptFriendRequest:(DSFriendRequestEntity*)friendRequest completion:(void (^ _Nullable)(BOOL success, NSError * error))completion;
+- (void)acceptFriendRequest:(DSFriendRequestEntity*)friendRequest completion:(void (^ _Nullable)(BOOL success, NSArray<NSError *> * errors))completion;
 
 - (BOOL)activePrivateKeysAreLoadedWithFetchingError:(NSError**)error;
 

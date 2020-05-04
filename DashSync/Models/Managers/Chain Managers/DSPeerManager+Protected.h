@@ -43,6 +43,9 @@ typedef NS_ENUM(NSUInteger, DSPeerManagerDesiredState) {
 
 - (void)peerMisbehaving:(DSPeer *)peer errorMessage:(NSString*)errorMessage;
 - (void)chainSyncStopped;
+
+- (void)pauseBlockchainSynchronizationOnPeers;
+- (void)resumeBlockchainSynchronizationOnPeers;
 - (void)updateFilterOnPeers;
 
 - (void)disconnectDownloadPeerForError:(NSError* _Nullable)error withCompletion:(void (^ _Nullable)(BOOL success))completion;

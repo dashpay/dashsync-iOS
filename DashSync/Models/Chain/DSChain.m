@@ -1828,7 +1828,7 @@ static dispatch_once_t devnetToken = 0;
             self.blocks[blockHash] = block;
         }
         self.lastBlock = block;
-        [self setBlockHeight:block.height andTimestamp:txTime forTxHashes:txHashes];
+        [self setBlockHeight:block.height andTimestamp:txTime forTransactionHashes:txHashes];
         peer.currentBlockHeight = block.height; //might be download peer instead
         if (block.height == self.estimatedBlockHeight) syncDone = YES;
         onMainChain = TRUE;
@@ -1847,7 +1847,7 @@ static dispatch_once_t devnetToken = 0;
         while (b && b.height > block.height) b = self.blocks[uint256_obj(b.prevBlock)]; // is block in main chain?
         
         if (b != nil && uint256_eq(b.blockHash, block.blockHash)) { // if it's not on a fork, set block heights for its transactions
-            [self setBlockHeight:block.height andTimestamp:txTime forTxHashes:txHashes];
+            [self setBlockHeight:block.height andTimestamp:txTime forTransactionHashes:txHashes];
             if (block.height == self.lastBlockHeight) self.lastBlock = block;
         }
     }
@@ -1890,11 +1890,11 @@ static dispatch_once_t devnetToken = 0;
             }
         }
         
-        [self setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTxHashes:txHashes];
+        [self setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTransactionHashes:txHashes];
         b = block;
         
         while (b.height > b2.height) { // set transaction heights for new main chain
-            [self setBlockHeight:b.height andTimestamp:txTime forTxHashes:b.txHashes];
+            [self setBlockHeight:b.height andTimestamp:txTime forTransactionHashes:b.txHashes];
             b = self.blocks[uint256_obj(b.prevBlock)];
             txTime = b.timestamp/2 + ((DSMerkleBlock *)self.blocks[uint256_obj(b.prevBlock)]).timestamp/2;
         }
@@ -1910,14 +1910,18 @@ static dispatch_once_t devnetToken = 0;
         [self.chainManager.masternodeManager loadFileDistributedMasternodeLists];
     }
     
+    BOOL savedBlocks = NO;
     if (syncDone) { // chain download is complete
         [self saveBlocks];
+        savedBlocks = YES;
         [self.chainManager chainFinishedSyncingTransactionsAndBlocks:self fromPeer:peer onMainChain:onMainChain];
     }
     
     if (block.height > self.estimatedBlockHeight) {
         _bestEstimatedBlockHeight = block.height;
-        [self saveBlocks];
+        if (!savedBlocks) {
+            [self saveBlocks];
+        }
         [self.chainManager chain:self wasExtendedWithBlock:block fromPeer:peer];
         
         // notify that transaction confirmations may have changed
@@ -2080,7 +2084,7 @@ static dispatch_once_t devnetToken = 0;
         b = header;
         
         while (b.height > b2.height) { // set transaction heights for new main chain
-            [self setBlockHeight:b.height andTimestamp:txTime forTxHashes:b.txHashes];
+            [self setBlockHeight:b.height andTimestamp:txTime forTransactionHashes:b.txHashes];
             b = self.headers[uint256_obj(b.prevBlock)];
             txTime = b.timestamp/2 + ((DSMerkleBlock *)self.blocks[uint256_obj(b.prevBlock)]).timestamp/2;
         }
@@ -2335,21 +2339,21 @@ static dispatch_once_t devnetToken = 0;
     return self.checkpoints[0].timestamp;
 }
 
-- (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes
+- (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)transactionHashes
 {
     if (height != TX_UNCONFIRMED && height > self.bestBlockHeight) _bestBlockHeight = height;
-    NSMutableArray *updatedTx = [NSMutableArray array];
-    if ([txHashes count]) {
+    NSMutableArray *updatedTransactions = [NSMutableArray array];
+    if ([transactionHashes count]) {
         //need to reverify this works
-        for (NSValue * transactionHash in txHashes) {
+        for (NSValue * transactionHash in transactionHashes) {
             [self.transactionHashHeights setObject:@(height) forKey:uint256_data_from_obj(transactionHash)];
         }
-        for (NSValue * transactionHash in txHashes) {
+        for (NSValue * transactionHash in transactionHashes) {
             [self.transactionHashTimestamps setObject:@(timestamp) forKey:uint256_data_from_obj(transactionHash)];
         }
         for (DSWallet * wallet in self.wallets) {
-            [updatedTx addObjectsFromArray:[wallet setBlockHeight:height andTimestamp:timestamp
-                                                      forTxHashes:txHashes]];
+            [updatedTransactions addObjectsFromArray:[wallet setBlockHeight:height andTimestamp:timestamp
+                                                      forTransactionHashes:transactionHashes]];
         }
     } else {
         for (DSWallet * wallet in self.wallets) {
@@ -2357,7 +2361,7 @@ static dispatch_once_t devnetToken = 0;
         }
     }
     
-    [self.chainManager chain:self didSetBlockHeight:height andTimestamp:timestamp forTxHashes:txHashes updatedTx:updatedTx];
+    [self.chainManager chain:self didSetBlockHeight:height andTimestamp:timestamp forTransactionHashes:transactionHashes updatedTransactions:updatedTransactions];
 }
 
 -(void)reloadDerivationPaths {
@@ -2957,6 +2961,18 @@ static dispatch_once_t devnetToken = 0;
 - (DSWallet*)walletHavingBlockchainIdentityCreditFundingRegistrationHash:(UInt160)creditFundingRegistrationHash foundAtIndex:(uint32_t*)rIndex {
     for (DSWallet * wallet in self.wallets) {
         NSUInteger index = [wallet indexOfBlockchainIdentityCreditFundingRegistrationHash:creditFundingRegistrationHash];
+        if (index != NSNotFound) {
+            if (rIndex) *rIndex = (uint32_t)index;
+            return wallet;
+        }
+    }
+    if (rIndex) *rIndex = UINT32_MAX;
+    return nil;
+}
+
+- (DSWallet*)walletHavingBlockchainIdentityCreditFundingTopupHash:(UInt160)creditFundingTopupHash foundAtIndex:(uint32_t*)rIndex {
+    for (DSWallet * wallet in self.wallets) {
+        NSUInteger index = [wallet indexOfBlockchainIdentityCreditFundingTopupHash:creditFundingTopupHash];
         if (index != NSNotFound) {
             if (rIndex) *rIndex = (uint32_t)index;
             return wallet;

@@ -397,12 +397,18 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 @protocol DSChainTransactionsDelegate
 @required
 
--(void)chain:(DSChain*)chain didSetBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes updatedTx:(NSArray *)updatedTx;
+-(void)chain:(DSChain*)chain didSetBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)txHashes updatedTransactions:(NSArray *)updatedTransactions;
 -(void)chainWasWiped:(DSChain*)chain;
 
 @end
 
-@protocol DSChainDelegate <DSChainTransactionsDelegate>
+@protocol DSChainIdentitiesDelegate
+@required
+-(void)chain:(DSChain*)chain didFinishFetchingBlockchainIdentityDAPInformation:(DSBlockchainIdentity*)blockchainIdentity;
+
+@end
+
+@protocol DSChainDelegate <DSChainTransactionsDelegate,DSChainIdentitiesDelegate>
 
 @required
 

@@ -221,7 +221,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)chainUpdatedBlockHeight:(int32_t)height;
 
-- (NSArray *)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes;
+- (NSArray *)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)txHashes;
 
 // This loads the derivation paths addresses once the account is set to a wallet
 - (void)loadDerivationPaths;

@@ -627,7 +627,7 @@
     }
 }
 
-- (void)sendTransactionInvMessagesForTxHashes:(NSArray *)txInvHashes txLockRequestHashes:(NSArray*)txLockRequestInvHashes {
+- (void)sendTransactionInvMessagesforTransactionHashes:(NSArray *)txInvHashes txLockRequestHashes:(NSArray*)txLockRequestInvHashes {
     NSMutableOrderedSet *txHashes = txInvHashes?[NSMutableOrderedSet orderedSetWithArray:txInvHashes]:nil;
     NSMutableOrderedSet *txLockRequestHashes = txLockRequestInvHashes?[NSMutableOrderedSet orderedSetWithArray:txLockRequestInvHashes]:nil;
     NSMutableData *msg = [NSMutableData data];

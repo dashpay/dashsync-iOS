@@ -38,7 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)removeEstimatedBlockHeightOfPeer:(DSPeer*)peer;
 - (BOOL)addBlock:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer;
 - (BOOL)addHeader:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer;
-- (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes;
+- (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)txHashes;
 - (void)clearOrphans;
 
 // MARK: - Wallet, Accounts and Transactions
@@ -55,6 +55,8 @@ NS_ASSUME_NONNULL_BEGIN
 // MARK: Wallet Discovery
 
 - (DSWallet* _Nullable)walletHavingBlockchainIdentityCreditFundingRegistrationHash:(UInt160)creditFundingRegistrationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
+
+- (DSWallet* _Nullable)walletHavingBlockchainIdentityCreditFundingTopupHash:(UInt160)creditFundingTopupHash foundAtIndex:(uint32_t*)rIndex;
 
 - (DSWallet* _Nullable)walletHavingProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
 

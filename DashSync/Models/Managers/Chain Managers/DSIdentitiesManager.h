@@ -16,27 +16,32 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "DSChain.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSChain,DSBlockchainIdentity;
+@class DSChain, DSBlockchainIdentity, DSCreditFundingTransaction;
 
 @protocol DSDAPINetworkServiceRequest;
 
 typedef void (^IdentitiesCompletionBlock)(BOOL succeess, NSArray <DSBlockchainIdentity*> * _Nullable blockchainIdentities, NSArray<NSError *> * errors);
 typedef void (^IdentityCompletionBlock)(BOOL succeess, DSBlockchainIdentity* _Nullable blockchainIdentity, NSError * _Nullable error);
 
-@interface DSIdentitiesManager : NSObject
+@interface DSIdentitiesManager : NSObject <DSChainIdentitiesDelegate>
 
 @property (nonatomic, readonly) DSChain * chain;
 
 - (instancetype)initWithChain:(DSChain*)chain;
+
+- (DSBlockchainIdentity*)foreignBlockchainIdentityWithUniqueId:(UInt256)uniqueId;
 
 - (NSArray*)unsyncedBlockchainIdentities;
 
 - (void)syncBlockchainIdentitiesWithCompletion:(IdentitiesCompletionBlock)completion;
 
 - (void)retrieveAllBlockchainIdentitiesChainStates;
+
+- (void)checkCreditFundingTransactionForPossibleNewIdentity:(DSCreditFundingTransaction*)creditFundingTransaction;
 
 - (id<DSDAPINetworkServiceRequest>)searchIdentityByName:(NSString*)namePrefix withCompletion:(IdentityCompletionBlock)completion;
 
