@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSAccountEntity : NSManagedObject
 
-+ (DSAccountEntity* _Nonnull)accountEntityForWalletUniqueID:(NSString*)walletUniqueID index:(uint32_t)index onChain:(DSChain*)chain;
++ (DSAccountEntity* _Nonnull)accountEntityForWalletUniqueID:(NSString*)walletUniqueID index:(uint32_t)index onChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context;
 
 @end
 

@@ -26,5 +26,6 @@
 @dynamic type;
 @dynamic isLocal;
 @dynamic dashpayUsername;
+@dynamic dashpaySyncronizationBlockHash;
 
 @end

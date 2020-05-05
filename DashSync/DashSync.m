@@ -114,7 +114,7 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
 {
     NSParameterAssert(chain);
     
-    [[[DSChainsManager sharedInstance] chainManagerForChain:chain].peerManager connect];
+    [[[DSChainsManager sharedInstance] chainManagerForChain:chain] startSync];
 }
 
 -(void)stopSyncAllChains {
@@ -128,7 +128,7 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
 {
     NSParameterAssert(chain);
     
-    [[[DSChainsManager sharedInstance] chainManagerForChain:chain].peerManager disconnect];
+    [[[DSChainsManager sharedInstance] chainManagerForChain:chain] stopSync];
 }
 
 -(void)wipePeerDataForChain:(DSChain*)chain {
@@ -165,6 +165,7 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil];
             [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlocksDidChangeNotification object:nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainInitialHeadersDidChangeNotification object:nil];
         });
     }];
 }
@@ -322,7 +323,7 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
                                      queue:nil
                                 usingBlock:^(NSNotification *note) {
         DSDLog(@"Background fetch: protected data available");
-        [[[DSChainsManager sharedInstance] mainnetManager].peerManager connect];
+        [[[DSChainsManager sharedInstance] mainnetManager] startSync];
     }];
     
     self.syncFinishedNotificationObserver =
@@ -343,7 +344,7 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
     }];
     
     DSDLog(@"Background fetch: starting");
-    [mainnetManager.peerManager connect];
+    [mainnetManager startSync];
     
     // sync events to the server
     [[DSEventManager sharedEventManager] sync];

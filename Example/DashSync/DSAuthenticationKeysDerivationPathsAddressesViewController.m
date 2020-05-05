@@ -46,7 +46,7 @@
 }
 
 -(NSPredicate*)searchPredicate {
-    DSDerivationPathEntity * entity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self.derivationPath];
+    DSDerivationPathEntity * entity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self.derivationPath inContext:self.managedObjectContext];
     return [NSPredicate predicateWithFormat:@"(derivationPath == %@)",entity];
 }
 

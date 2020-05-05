@@ -34,6 +34,7 @@
 // create objects
 + (instancetype)managedObject;
 + (instancetype)managedObjectInContext:(NSManagedObjectContext *)context;
++ (instancetype)managedObjectInNewChildContextForParentContext:(NSManagedObjectContext *)context;
 + (NSArray *)managedObjectArrayWithLength:(NSUInteger)length;
 
 // fetch existing objects
@@ -44,8 +45,10 @@
 + (instancetype)anyObjectMatchingInContext:(NSManagedObjectContext *)context withPredicate:(NSString *)predicateFormat, ...;
 + (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args;
 + (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext*)context;
++ (NSArray *)objectsForPredicate:(NSPredicate*)predicate inContext:(NSManagedObjectContext*)context;
 + (instancetype)anyObjectMatching:(NSString *)predicateFormat arguments:(va_list)args;
 + (instancetype)anyObjectMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext*)context;
++ (instancetype)anyObjectForPredicate:(NSPredicate*)predicate inContext:(NSManagedObjectContext*)context;
 + (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending;
 + (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending offset:(NSUInteger)offset limit:(NSUInteger)lim;
 + (NSArray *)fetchObjects:(NSFetchRequest *)request;

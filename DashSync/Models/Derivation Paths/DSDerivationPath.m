@@ -129,7 +129,7 @@
     self.addressesLoaded = FALSE;
     self.mAllAddresses = [NSMutableSet set];
     self.mUsedAddresses = [NSMutableSet set];
-    self.moc = [NSManagedObject context];
+    self.managedObjectContext = [NSManagedObject context];
     
     const size_t size = sizeof(BOOL);
     const size_t memorySize = length * size;
@@ -269,9 +269,9 @@
     if (!_extendedPublicKey) return;
     setKeychainData([self extendedPublicKeyData], [self standaloneExtendedPublicKeyLocationString], NO);
     setKeychainDict(@{DERIVATION_PATH_STANDALONE_INFO_CHILD:self.child,DERIVATION_PATH_STANDALONE_INFO_DEPTH:self.depth}, [self standaloneInfoDictionaryLocationString], NO);
-    [self.moc performBlockAndWait:^{
-        [DSDerivationPathEntity setContext:self.moc];
-        [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self];
+    [self.managedObjectContext performBlockAndWait:^{
+        [DSDerivationPathEntity setContext:self.managedObjectContext];
+        [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
     }];
 }
 
@@ -335,7 +335,7 @@
 // MARK: - Derivation Path Information
 
 -(DSDerivationPathEntity*)derivationPathEntity {
-    return [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self];
+    return [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
 }
 
 -(NSNumber*)depth {

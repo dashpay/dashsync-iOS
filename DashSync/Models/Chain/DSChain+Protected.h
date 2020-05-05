@@ -28,12 +28,17 @@ NS_ASSUME_NONNULL_BEGIN
 /*! @brief Set up a given devnet with an identifier, checkpoints, default L1, JRPC and GRPC ports, a dpns contractId and a dashpay contract id. This devnet will be registered on the keychain. The additional isTransient property allows for test usage where you do not wish to persist the devnet.  */
 + (DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>* _Nullable)checkpointArray withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID isTransient:(BOOL)isTransient;
 
+// MARK: - Network
+
+@property (nonatomic, strong) dispatch_queue_t networkingQueue;
+
 // MARK: - Blocks
 
 - (void)setEstimatedBlockHeight:(uint32_t)estimatedBlockHeight fromPeer:(DSPeer*)peer;
 - (void)removeEstimatedBlockHeightOfPeer:(DSPeer*)peer;
 - (BOOL)addBlock:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer;
-- (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes;
+- (BOOL)addHeader:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer;
+- (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)txHashes;
 - (void)clearOrphans;
 
 // MARK: - Wallet, Accounts and Transactions
@@ -50,6 +55,8 @@ NS_ASSUME_NONNULL_BEGIN
 // MARK: Wallet Discovery
 
 - (DSWallet* _Nullable)walletHavingBlockchainIdentityCreditFundingRegistrationHash:(UInt160)creditFundingRegistrationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
+
+- (DSWallet* _Nullable)walletHavingBlockchainIdentityCreditFundingTopupHash:(UInt160)creditFundingTopupHash foundAtIndex:(uint32_t*)rIndex;
 
 - (DSWallet* _Nullable)walletHavingProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
 
@@ -69,6 +76,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) UInt256 masternodeBaseBlockHash;
 
 - (void)updateAddressUsageOfSimplifiedMasternodeEntries:(NSArray*)simplifiedMasternodeEntries;
+
+/*! @brief The header locator array is an array of the 10 most recent block hashes in decending order followed by block hashes that double the step back each iteration in decending order and finishing with the previous known checkpoint after that last hash. Something like (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -15, -23, -39, -71, -135, ..., 0).  */
+@property (nonatomic, readonly, nullable) NSArray * headerLocatorArrayForMasternodeSync;
 
 // MARK: - Wiping
 

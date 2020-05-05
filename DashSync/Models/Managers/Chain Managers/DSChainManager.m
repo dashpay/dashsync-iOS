@@ -129,6 +129,28 @@
 
 // MARK: - Blockchain Sync
 
+- (void)startSync {
+    if ([self.identitiesManager unsyncedBlockchainIdentities].count) {
+        [self.identitiesManager syncBlockchainIdentitiesWithCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> * _Nullable blockchainIdentities, NSArray<NSError *> * _Nonnull errors) {
+            if (success) {
+                [self.peerManager connect];
+            } else {
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    [self startSync];
+                });
+            }
+        }];
+    } else {
+        [self.peerManager connect];
+    }
+    
+}
+
+- (void)stopSync {
+    
+    [self.peerManager disconnect];
+}
+
 -(void)disconnectedRescan {
     
     DSChainEntity * chainEntity = self.chain.chainEntity;
@@ -185,7 +207,7 @@
     if (!self.peerManager.connected) {
         [self disconnectedRescan];
     } else {
-        [self.peerManager disconnectDownloadPeerWithCompletion:^(BOOL success) {
+        [self.peerManager disconnectDownloadPeerForError:nil withCompletion:^(BOOL success) {
             [self disconnectedRescan];
         }];
     }
@@ -196,7 +218,7 @@
     if (!self.peerManager.connected) {
         [self disconnectedRescanOfMasternodeListsAndQuorums];
     } else {
-        [self.peerManager disconnectDownloadPeerWithCompletion:^(BOOL success) {
+        [self.peerManager disconnectDownloadPeerForError:nil withCompletion:^(BOOL success) {
             [self disconnectedRescanOfMasternodeListsAndQuorums];
         }];
     }
@@ -205,8 +227,12 @@
 
 // MARK: - DSChainDelegate
 
--(void)chain:(DSChain*)chain didSetBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes updatedTx:(NSArray *)updatedTx {
-    [self.transactionManager chain:chain didSetBlockHeight:height andTimestamp:timestamp forTxHashes:txHashes updatedTx:updatedTx];
+-(void)chain:(DSChain*)chain didSetBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)txHashes updatedTransactions:(NSArray *)updatedTransactions {
+    [self.transactionManager chain:chain didSetBlockHeight:height andTimestamp:timestamp forTransactionHashes:txHashes updatedTransactions:updatedTransactions];
+}
+
+-(void)chain:(DSChain*)chain didFinishFetchingBlockchainIdentityDAPInformation:(DSBlockchainIdentity*)blockchainIdentity {
+    [self.peerManager resumeBlockchainSynchronizationOnPeers];
 }
 
 -(void)chainWasWiped:(DSChain*)chain {
@@ -215,6 +241,33 @@
 
 -(void)chainWillStartSyncingBlockchain:(DSChain*)chain {
     [self.sporkManager getSporks]; //get the sporks early on
+}
+
+-(void)chainShouldStartSyncingBlockchain:(DSChain*)chain onPeer:(DSPeer*)peer {
+    dispatch_async(self.chain.networkingQueue, ^{
+        if (self.chain.shouldSyncHeadersFirstForMasternodeListVerification) {
+        //masternode list should be synced first and the masternode list is old
+            [peer sendGetheadersMessageWithLocators:[self.chain headerLocatorArrayForMasternodeSync] andHashStop:UINT256_ZERO];
+        } else {
+            BOOL startingDevnetSync = [self.chain isDevnetAny] && self.chain.lastBlock.height < 5;
+            if (startingDevnetSync || self.chain.lastBlock.timestamp + (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4 >= self.chain.earliestWalletCreationTime) {
+                [peer sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
+            }
+            else {
+                [peer sendGetheadersMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
+            }
+        }
+    });
+}
+
+-(void)chainFinishedSyncingInitialHeaders:(DSChain*)chain fromPeer:(DSPeer*)peer onMainChain:(BOOL)onMainChain {
+    if (onMainChain && peer && (peer == self.peerManager.downloadPeer)) self.lastChainRelayTime = [NSDate timeIntervalSince1970];
+    [self.peerManager chainSyncStopped];
+    if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList)) {
+        // make sure we care about masternode lists
+        [self.masternodeManager getRecentMasternodeList:32 withSafetyDelay:0];
+        [self.masternodeManager getCurrentMasternodeListWithSafetyDelay:0];
+    }
 }
 
 -(void)chainFinishedSyncingTransactionsAndBlocks:(DSChain*)chain fromPeer:(DSPeer*)peer onMainChain:(BOOL)onMainChain {
@@ -232,13 +285,22 @@
 }
 
 -(void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain*)chain {
-    if ([self.chain isEvolutionEnabled]) {
-        if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_BlockchainIdentities)) {
-            //this only needs to happen once per session
-            static dispatch_once_t onceToken;
-            dispatch_once(&onceToken, ^{
-                [self.identitiesManager retrieveAllBlockchainIdentitiesChainStates];
-            });
+    
+    if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeListFirst)) {
+        if (self.peerManager.connectedPeerCount == 0) {
+            [self.peerManager connect];
+        } else {
+            [self chainShouldStartSyncingBlockchain:chain onPeer:self.peerManager.downloadPeer];
+        }
+    } else {
+        if ([self.chain isEvolutionEnabled]) {
+            if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_BlockchainIdentities)) {
+                //this only needs to happen once per session
+                static dispatch_once_t onceToken;
+                dispatch_once(&onceToken, ^{
+                    [self.identitiesManager retrieveAllBlockchainIdentitiesChainStates];
+                });
+            }
         }
     }
 }
@@ -253,7 +315,7 @@
     if (block.timestamp < [NSDate timeIntervalSince1970] - WEEK_TIME_INTERVAL) return;
     
     // call getblocks, unless we already did with the previous block, or we're still downloading the chain
-    if (self.chain.lastBlockHeight >= peer.lastblock && ! uint256_eq(self.chain.lastOrphan.blockHash, block.prevBlock)) {
+    if (self.chain.lastBlockHeight >= peer.lastBlockHeight && ! uint256_eq(self.chain.lastOrphan.blockHash, block.prevBlock)) {
         DSDLog(@"%@:%d calling getblocks", peer.host, peer.port);
         [peer sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
     }

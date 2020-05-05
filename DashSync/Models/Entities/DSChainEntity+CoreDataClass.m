@@ -66,8 +66,8 @@
     return [DSChain mainnet];
 }
 
-+ (DSChainEntity*)chainEntityForType:(DSChainType)type devnetIdentifier:(NSString*)devnetIdentifier checkpoints:(NSArray*)checkpoints {
-    NSArray * objects = [DSChainEntity objectsMatching:@"type = %d && ((type != %d) || devnetIdentifier = %@)",type,DSChainType_DevNet,devnetIdentifier];
++ (DSChainEntity*)chainEntityForType:(DSChainType)type devnetIdentifier:(NSString*)devnetIdentifier checkpoints:(NSArray*)checkpoints inContext:(NSManagedObjectContext*)context {
+    NSArray * objects = [DSChainEntity objectsForPredicate:[NSPredicate predicateWithFormat:@"type = %d && ((type != %d) || devnetIdentifier = %@)",type,DSChainType_DevNet,devnetIdentifier] inContext:context];
     if (objects.count) {
         DSChainEntity * chainEntity = [objects objectAtIndex:0];
         NSArray * knownCheckpoints = [NSKeyedUnarchiver unarchiveObjectWithData:[chainEntity checkpoints]];
@@ -78,7 +78,7 @@
         return chainEntity;
     }
     
-    DSChainEntity * chainEntity = [self managedObject];
+    DSChainEntity * chainEntity = [self managedObjectInContext:context];
     chainEntity.type = type;
     chainEntity.devnetIdentifier = devnetIdentifier;
     if (checkpoints) {
