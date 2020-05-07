@@ -84,6 +84,7 @@
             }
         }
     //}
+    NSManagedObjectContext * context = [NSManagedObjectContext viewContext];
     
     for (NSString *address in transaction.outputAddresses) {
         NSData * script = transaction.outputScripts[outputAmountIndex];
@@ -254,6 +255,7 @@
     NSInteger indexPathRow = indexPath.row;
     NSInteger realSection = indexPath.section;
     if ([self.transaction type] == DSTransactionType_Coinbase && indexPath.section == 1) realSection++;
+    NSManagedObjectContext * context = [NSManagedObjectContext viewContext];
     // Configure the cell...
     switch (realSection) {
         case 0:

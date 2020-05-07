@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setAttributesFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry onBlock:(DSMerkleBlockEntity * _Nullable)block;
 
 + (void)deleteHavingQuorumHashes:(NSArray*)quorumHashes onChainEntity:(DSChainEntity*)chainEntity;
-+ (DSQuorumEntryEntity* _Nullable)quorumEntryForHash:(NSData*)quorumEntryHash onChain:(DSChainEntity* _Nonnull)chainEntity;
++ (DSQuorumEntryEntity* _Nullable)quorumEntryForHash:(NSData*)quorumEntryHash onChainEntity:(DSChainEntity*)chainEntity;
 
 + (void)deleteAllOnChainEntity:(DSChainEntity*)chainEntity;
 

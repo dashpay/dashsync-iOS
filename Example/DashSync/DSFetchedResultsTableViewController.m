@@ -32,9 +32,10 @@ static NSUInteger FETCH_BATCH_SIZE = 20;
 -(void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     if ([self dynamicUpdate]) {
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(backgroundManagedObjectContextDidSaveNotification:)
-                                                     name:NSManagedObjectContextDidSaveNotification object:[NSManagedObject context]];
+        //todo fix this with new core data stack
+//        [[NSNotificationCenter defaultCenter] addObserver:self
+//                                                 selector:@selector(backgroundManagedObjectContextDidSaveNotification:)
+//                                                     name:NSManagedObjectContextDidSaveNotification object:self.context];
     }
     [self fetchedResultsController];
     [self.tableView reloadData];
@@ -44,7 +45,7 @@ static NSUInteger FETCH_BATCH_SIZE = 20;
     [super viewDidDisappear:animated];
     self.fetchedResultsController = nil;
     if ([self dynamicUpdate]) {
-        [[NSNotificationCenter defaultCenter] removeObserver:self name:NSManagedObjectContextDidSaveNotification object:[NSManagedObject context]];
+//        [[NSNotificationCenter defaultCenter] removeObserver:self name:NSManagedObjectContextDidSaveNotification object:[NSManagedObjectContext context]];
     }
 }
 
@@ -92,7 +93,7 @@ static NSUInteger FETCH_BATCH_SIZE = 20;
 
 
 - (NSManagedObjectContext *)context {
-    return [NSManagedObject mainContext];
+    return [NSManagedObjectContext viewContext];
 }
 
 - (NSString *)entityName {
@@ -113,11 +114,11 @@ static NSUInteger FETCH_BATCH_SIZE = 20;
 }
 
 -(NSPredicate *)predicateInContext {
-    return [[self predicate] predicateInContext:[NSManagedObject context]];
+    return [[self predicate] predicateInContext:self.context];
 }
 
 -(NSPredicate *)invertedPredicateInContext {
-    return [[self invertedPredicate] predicateInContext:[NSManagedObject context]];
+    return [[self invertedPredicate] predicateInContext:self.context];
 }
 
 -(NSPredicate *)fullPredicateInContext {

@@ -31,10 +31,6 @@
 #import "DSTransaction.h"
 #import "DSDataController.h"
 
-static const char *_mainContextKey = "mainContextKey";
-static const char *_contextKey = "contextKey";
-static const char *_storeURLKey = "storeURLKey";
-
 static NSManagedObjectContextConcurrencyType _concurrencyType = NSMainQueueConcurrencyType;
 static NSUInteger _fetchBatchSize = 100;
 
@@ -237,19 +233,8 @@ static NSUInteger _fetchBatchSize = 100;
     __block NSError *error = nil;
     
     [context performBlockAndWait:^{
-        @try {
-            a = [context executeFetchRequest:request error:&error];
-            if (error) DSDLog(@"%s: %@", __func__, error);
-        }
-        @catch (NSException *exception) {
-#if DEBUG
-            @throw;
-#endif
-            // if this is a not a debug build, delete the persisent data store before crashing
-            [[NSFileManager defaultManager]
-             removeItemAtURL:objc_getAssociatedObject([NSManagedObject class], &_storeURLKey) error:nil];
-            @throw;
-        }
+        a = [context executeFetchRequest:request error:&error];
+        if (error) DSDLog(@"%s: %@", __func__, error);
     }];
     
     return a;
@@ -325,19 +310,8 @@ static NSUInteger _fetchBatchSize = 100;
     __block NSError *error = nil;
     
     [context performBlockAndWait:^{
-        @try {
-            count = [context countForFetchRequest:request error:&error];
-            if (error) DSDLog(@"%s: %@", __func__, error);
-        }
-        @catch (NSException *exception) {
-#if DEBUG
-            @throw;
-#endif
-            // if this is a not a debug build, delete the persisent data store before crashing
-            [[NSFileManager defaultManager]
-             removeItemAtURL:objc_getAssociatedObject([NSManagedObject class], &_storeURLKey) error:nil];
-            @throw;
-        }
+        count = [context countForFetchRequest:request error:&error];
+        if (error) DSDLog(@"%s: %@", __func__, error);
     }];
     
     return count;
@@ -374,12 +348,6 @@ static NSUInteger _fetchBatchSize = 100;
 }
 
 // MARK: - core data stack
-
-// call this before any NSManagedObject+Sugar methods to use a concurrency type other than NSMainQueueConcurrencyType
-+ (void)setConcurrencyType:(NSManagedObjectContextConcurrencyType)type
-{
-    _concurrencyType = type;
-}
 
 // set the fetchBatchSize to use when fetching objects, default is 100
 + (void)setFetchBatchSize:(NSUInteger)fetchBatchSize

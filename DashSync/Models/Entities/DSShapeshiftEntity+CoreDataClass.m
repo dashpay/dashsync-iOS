@@ -167,7 +167,7 @@
 
 -(void)deleteObject {
     [self.checkStatusTimer invalidate];
-    [super deleteObject];
+    [super deleteObjectAndWait];
 }
 
 @end

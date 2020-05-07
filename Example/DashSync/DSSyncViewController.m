@@ -372,37 +372,37 @@
     UIAlertController * wipeDataAlertController = [UIAlertController alertControllerWithTitle:@"What do you wish to Wipe?" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Peer Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        [[DashSync sharedSyncController] wipePeerDataForChain:self.chainManager.chain];
+        [[DashSync sharedSyncController] wipePeerDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Chain Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainManager.chain];
-        [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chainManager.chain];
+        [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
+        [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Masternode Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainManager.chain];
+        [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Governance Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        [[DashSync sharedSyncController] wipeGovernanceDataForChain:self.chainManager.chain];
+        [[DashSync sharedSyncController] wipeGovernanceDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Spork Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        [[DashSync sharedSyncController] wipeSporkDataForChain:self.chainManager.chain];
+        [[DashSync sharedSyncController] wipeSporkDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Wallet Data" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
-        [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainManager.chain forceReauthentication:YES];
+        [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainManager.chain forceReauthentication:YES inContext:[NSManagedObjectContext viewContext]];
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Everything" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
-        [[DashSync sharedSyncController] wipePeerDataForChain:self.chainManager.chain];
-        [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chainManager.chain];
-        [[DashSync sharedSyncController] wipeSporkDataForChain:self.chainManager.chain];
-        [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainManager.chain];
-        [[DashSync sharedSyncController] wipeGovernanceDataForChain:self.chainManager.chain];
-        [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainManager.chain forceReauthentication:YES]; //this takes care of blockchain info as well;
+        [[DashSync sharedSyncController] wipePeerDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
+        [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
+        [[DashSync sharedSyncController] wipeSporkDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
+        [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
+        [[DashSync sharedSyncController] wipeGovernanceDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
+        [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainManager.chain forceReauthentication:YES inContext:[NSManagedObjectContext viewContext]]; //this takes care of blockchain info as well;
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {

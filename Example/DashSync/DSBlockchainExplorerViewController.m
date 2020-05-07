@@ -37,11 +37,12 @@
 #pragma mark - Automation KVO
 
 -(NSManagedObjectContext*)managedObjectContext {
-    return [NSManagedObject context];
+    return [NSManagedObjectContext viewContext];
 }
 
 -(NSPredicate*)searchPredicate {
     // Get all shapeshifts that have been received by shapeshift.io or all shapeshifts that have no deposits but where we can verify a transaction has been pushed on the blockchain
+    NSManagedObjectContext * context = self.managedObjectContext;
     if (self.searchString && ![self.searchString isEqualToString:@""]) {
         if (self.searchString.length < 10 && ([self.searchString isEqualToString:@"0"] || [self.searchString longLongValue])) {
             if (self.type == DSBlockchainExplorerType_All) {

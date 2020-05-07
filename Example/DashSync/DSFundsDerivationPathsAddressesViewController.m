@@ -41,7 +41,7 @@
 #pragma mark - Automation KVO
 
 -(NSManagedObjectContext*)managedObjectContext {
-    if (!_managedObjectContext) self.managedObjectContext = [NSManagedObject context];
+    if (!_managedObjectContext) self.managedObjectContext = [NSManagedObjectContext viewContext];
     return _managedObjectContext;
 }
 

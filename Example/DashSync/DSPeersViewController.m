@@ -42,16 +42,17 @@
 #pragma mark - Automation KVO
 
 -(NSManagedObjectContext*)managedObjectContext {
-    return [NSManagedObject context];
+    return [NSManagedObjectContext viewContext];
 }
 
 -(NSPredicate*)searchPredicate {
     // Get all shapeshifts that have been received by shapeshift.io or all shapeshifts that have no deposits but where we can verify a transaction has been pushed on the blockchain
+    
     if (self.searchString && ![self.searchString isEqualToString:@""]) {
         if ([self.searchString isEqualToString:@"0"] || [self.searchString longLongValue]) {
             NSArray * ipArray = [self.searchString componentsSeparatedByString:@"."];
             NSMutableArray *partPredicates = [NSMutableArray array];
-            NSPredicate * chainPredicate = [NSPredicate predicateWithFormat:@"chain == %@",self.chainManager.chain.chainEntity];
+            NSPredicate * chainPredicate = [NSPredicate predicateWithFormat:@"chain == %@",[self.chainManager.chain chainEntityInContext:self.managedObjectContext]];
             [partPredicates addObject:chainPredicate];
             for (int i = 0; i< MIN(ipArray.count,4); i++) {
                 if ([ipArray[i] isEqualToString:@""]) break;
@@ -61,11 +62,11 @@
             
             return [NSCompoundPredicate andPredicateWithSubpredicates:partPredicates];
         } else {
-            return [NSPredicate predicateWithFormat:@"chain == %@",self.chainManager.chain.chainEntity];
+            return [NSPredicate predicateWithFormat:@"chain == %@",[self.chainManager.chain chainEntityInContext:self.managedObjectContext]];
         }
         
     } else {
-        return [NSPredicate predicateWithFormat:@"chain == %@",self.chainManager.chain.chainEntity];
+        return [NSPredicate predicateWithFormat:@"chain == %@",[self.chainManager.chain chainEntityInContext:self.managedObjectContext]];
     }
     
 }

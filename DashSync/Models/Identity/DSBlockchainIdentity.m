@@ -3479,7 +3479,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 DSAccount * account = [self.wallet accountWithNumber:accountNumber];
                 [account removeIncomingDerivationPathForFriendshipWithIdentifier:friendRequest.friendshipIdentifier];
             }
-            [blockchainIdentityEntity deleteObject];
+            [blockchainIdentityEntity deleteObjectAndWait];
             if (save) {
                 [self.managedObjectContext ds_save];
             }

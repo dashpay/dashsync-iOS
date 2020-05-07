@@ -430,7 +430,7 @@
                     e.lastRequestedGovernanceSync = p.lastRequestedGovernanceSync;
                     [peers removeObject:p];
                 }
-                else [e deleteObject];
+                else [e deleteObjectAndWait];
             }
         }
         

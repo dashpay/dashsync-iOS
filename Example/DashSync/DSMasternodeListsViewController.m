@@ -39,7 +39,7 @@
 #pragma mark - Automation KVO
 
 -(NSManagedObjectContext*)managedObjectContext {
-    return [NSManagedObject mainContext];
+    return [NSManagedObjectContext viewContext];
 }
 
 - (NSFetchedResultsController *)fetchedResultsController
@@ -59,7 +59,7 @@
     
     [fetchRequest setSortDescriptors:sortDescriptors];
     
-    NSPredicate *filterPredicate = [NSPredicate predicateWithFormat:@"block.chain == %@",[self.chain chainEntityInContext:context]];
+    NSPredicate *filterPredicate = [NSPredicate predicateWithFormat:@"block.chain == %@",[self.chain chainEntityInContext:self.managedObjectContext]];
     [fetchRequest setPredicate:filterPredicate];
     
     // Edit the section name key path and cache name if appropriate.
@@ -153,8 +153,8 @@
         // Delete the row from the data source
         [self.tableView beginUpdates];
         DSMasternodeListEntity *masternodeListEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
-        [masternodeListEntity deleteObject];
-        [DSMasternodeListEntity saveMainContext];
+        [masternodeListEntity deleteObjectAndWait];
+        [masternodeListEntity.managedObjectContext ds_saveInBlockAndWait];
         [self.chain.chainManager.masternodeManager reloadMasternodeLists];
         [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
         [self.tableView endUpdates];

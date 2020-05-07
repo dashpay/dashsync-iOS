@@ -143,7 +143,7 @@
         [[DSTxOutputEntity objectsInContext:self.managedObjectContext matching:@"txHash == %@ && n == %d", e.txHash, e.n].lastObject setSpentInInput:nil];
     }
     
-    [super deleteObject];
+    [super deleteObjectAndWait];
 }
 
 -(Class)transactionClass {
