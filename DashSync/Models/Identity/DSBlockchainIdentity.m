@@ -2235,6 +2235,17 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     }
 }
 
+- (DSBlockchainIdentityFriendshipStatus)friendshipStatusForRelationshipWithBlockchainIdentity:(DSBlockchainIdentity*)otherBlockchainIdentity {
+    if (!self.matchingDashpayUser) return DSBlockchainIdentityFriendshipStatus_Unknown;
+    __block BOOL isIncoming;
+    __block BOOL isOutgoing;
+    [self.matchingDashpayUser.managedObjectContext performBlockAndWait:^{
+        isIncoming = !![self.matchingDashpayUser.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact.associatedBlockchainIdentity.uniqueID == %@", uint256_data(otherBlockchainIdentity.uniqueID)]].count;
+        isOutgoing = !![self.matchingDashpayUser.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact.associatedBlockchainIdentity.uniqueID == %@", uint256_data(otherBlockchainIdentity.uniqueID)]].count;
+    }];
+    return ((isIncoming << 1) | isOutgoing );
+}
+
 
 // MARK: Sending a Friend Request
 
