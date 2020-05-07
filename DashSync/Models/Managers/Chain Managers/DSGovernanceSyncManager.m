@@ -74,8 +74,8 @@
     if (! (self = [super init])) return nil;
     _chain = chain;
     _governanceObjects = [NSMutableArray array];
-    [self loadGovernanceObjects:0];
     self.managedObjectContext = [NSManagedObjectContext chainContext];
+    [self loadGovernanceObjects:0];
     self.publishVotes = [[NSMutableDictionary alloc] init];
     self.publishGovernanceObjects = [[NSMutableDictionary alloc] init];
     return self;

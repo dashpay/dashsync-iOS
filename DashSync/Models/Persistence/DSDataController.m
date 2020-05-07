@@ -89,7 +89,7 @@
     dispatch_once(&oncePeerToken, ^{
         _peerContext = [self.persistentContainer newBackgroundContext];
     });
-    return self.peerContext;
+    return _peerContext;
 }
 
 -(NSManagedObjectContext*)chainContext {
@@ -97,7 +97,7 @@
     dispatch_once(&onceChainToken, ^{
         _chainContext = [self.persistentContainer newBackgroundContext];
     });
-    return self.chainContext;
+    return _chainContext;
 }
 
 -(NSManagedObjectContext*)platformContext {
@@ -105,7 +105,7 @@
     dispatch_once(&oncePlatformToken, ^{
         _platformContext = [self.persistentContainer newBackgroundContext];
     });
-    return self.platformContext;
+    return _platformContext;
 }
 
 + (instancetype)sharedInstance
