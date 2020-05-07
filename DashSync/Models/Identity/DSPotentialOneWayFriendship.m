@@ -146,7 +146,7 @@
     NSParameterAssert(dashpayUserEntity);
     NSAssert(uint256_eq(dashpayUserEntity.associatedBlockchainIdentity.uniqueID.UInt256, [self destinationBlockchainIdentityUniqueId]), @"contact entity must match");
     NSAssert(self.sourceBlockchainIdentity.matchingDashpayUser,@"The own contact of the source Identity must be set");
-    DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObject];
+    DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObjectInContext:dashpayUserEntity.managedObjectContext];
     friendRequestEntity.sourceContact = self.sourceBlockchainIdentity.matchingDashpayUser;
     friendRequestEntity.destinationContact = dashpayUserEntity;
     NSAssert(friendRequestEntity.sourceContact != friendRequestEntity.destinationContact, @"This must be different contacts");
@@ -160,7 +160,7 @@
 
 //-(DSFriendRequestEntity*)outgoingFriendRequest {
 //    NSAssert(!uint256_is_zero(self.destinationContact.associatedBlockchainIdentityUniqueId), @"destination contact must be known");
-//    DSDashpayUserEntity * dashpayUserEntity = [DSDashpayUserEntity anyObjectMatching:@"associatedBlockchainIdentityUniqueId == %@",uint256_data(self.destinationContact.associatedBlockchainIdentityUniqueId)];
+//    DSDashpayUserEntity * dashpayUserEntity = [DSDashpayUserEntity anyObjectInContext:context matching:@"associatedBlockchainIdentityUniqueId == %@",uint256_data(self.destinationContact.associatedBlockchainIdentityUniqueId)];
 //    if (!dashpayUserEntity) {
 //        dashpayUserEntity =  [DSDashpayUserEntity managedObject];
 //        dashpayUserEntity.avatarPath = self.destinationContact.avatarPath;

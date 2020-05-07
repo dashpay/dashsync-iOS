@@ -129,7 +129,7 @@
     self.addressesLoaded = FALSE;
     self.mAllAddresses = [NSMutableSet set];
     self.mUsedAddresses = [NSMutableSet set];
-    self.managedObjectContext = [NSManagedObject context];
+    self.managedObjectContext = [NSManagedObjectContext chainContext];
     
     const size_t size = sizeof(BOOL);
     const size_t memorySize = length * size;
@@ -246,7 +246,7 @@
                 #ifdef DEBUG
             if (!extendedPublicKeyData) {
                 if ([self isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
-                    DSFriendRequestEntity * friendRequest = [DSFriendRequestEntity anyObjectMatching:@"derivationPath.publicKeyIdentifier == %@",self.standaloneExtendedPublicKeyUniqueID];
+                    DSFriendRequestEntity * friendRequest = [DSFriendRequestEntity anyObjectInContext:self.managedObjectContext matching:@"derivationPath.publicKeyIdentifier == %@",self.standaloneExtendedPublicKeyUniqueID];
                     
                     NSAssert(friendRequest, @"friend request must exist");
 
@@ -270,7 +270,6 @@
     setKeychainData([self extendedPublicKeyData], [self standaloneExtendedPublicKeyLocationString], NO);
     setKeychainDict(@{DERIVATION_PATH_STANDALONE_INFO_CHILD:self.child,DERIVATION_PATH_STANDALONE_INFO_DEPTH:self.depth}, [self standaloneInfoDictionaryLocationString], NO);
     [self.managedObjectContext performBlockAndWait:^{
-        [DSDerivationPathEntity setContext:self.managedObjectContext];
         [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
     }];
 }
@@ -364,8 +363,8 @@
                 [mutableString appendFormat:@"/%lu%@",(unsigned long)[self indexAtPosition:i].u64[0],[self isHardenedAtPosition:i]?@"'":@""];
             } else {
                 UInt256 index = [self indexAtPosition:i];
-                [[DSDashpayUserEntity context] performBlockAndWait:^{
-                    DSDashpayUserEntity * dashpayUserEntity = [DSDashpayUserEntity anyObjectMatching:@"associatedBlockchainIdentity.uniqueID == %@",uint256_data(index)];
+                [self.managedObjectContext performBlockAndWait:^{
+                    DSDashpayUserEntity * dashpayUserEntity = [DSDashpayUserEntity anyObjectInContext:self.managedObjectContext matching:@"associatedBlockchainIdentity.uniqueID == %@",uint256_data(index)];
                     if (dashpayUserEntity) {
                         DSBlockchainIdentityUsernameEntity * usernameEntity = [dashpayUserEntity.associatedBlockchainIdentity.usernames anyObject];
                         [mutableString appendFormat:@"/%@%@",usernameEntity.stringValue,[self isHardenedAtPosition:i]?@"'":@""];
@@ -394,8 +393,8 @@
         if ([self isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
             mutableString = [NSMutableString stringWithFormat:@"inc"];
             DSIncomingFundsDerivationPath * incomingFundsDerivationPath = (DSIncomingFundsDerivationPath*)self;
-            [[DSDashpayUserEntity context] performBlockAndWait:^{
-                DSDashpayUserEntity * sourceDashpayUserEntity = [DSDashpayUserEntity anyObjectMatching:@"associatedBlockchainIdentity.uniqueID == %@",uint256_data(incomingFundsDerivationPath.contactSourceBlockchainIdentityUniqueId)];
+            [self.managedObjectContext performBlockAndWait:^{
+                DSDashpayUserEntity * sourceDashpayUserEntity = [DSDashpayUserEntity anyObjectInContext:self.managedObjectContext matching:@"associatedBlockchainIdentity.uniqueID == %@",uint256_data(incomingFundsDerivationPath.contactSourceBlockchainIdentityUniqueId)];
                 if (sourceDashpayUserEntity) {
                     DSBlockchainIdentityUsernameEntity * usernameEntity = [sourceDashpayUserEntity.associatedBlockchainIdentity.usernames anyObject];
                     [mutableString appendFormat:@"/%@",usernameEntity.stringValue];

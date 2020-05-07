@@ -255,11 +255,9 @@
     self.currentBlock = nil;
     self.currentBlockTxHashes = nil;
     
-    self.managedObjectContext = [NSManagedObject context];
+    self.managedObjectContext = [NSManagedObjectContext peerContext];
     [self.managedObjectContext performBlockAndWait:^{
-        [DSTransactionHashEntity setContext:self.managedObjectContext];
-        [DSChainEntity setContext:self.managedObjectContext];
-        NSArray<DSTransactionHashEntity*> * transactionHashEntities  = [DSTransactionHashEntity standaloneTransactionHashEntitiesOnChain:self.chain.chainEntity];
+        NSArray<DSTransactionHashEntity*> * transactionHashEntities  = [DSTransactionHashEntity standaloneTransactionHashEntitiesOnChainEntity:[self.chain chainEntityInContext:self.managedObjectContext]];
         for (DSTransactionHashEntity * hashEntity in transactionHashEntities) {
             [self.knownTxHashes addObject:hashEntity.txHash];
         }
@@ -1931,8 +1929,8 @@
 // MARK: - Saving to Disk
 
 -(void)save {
-    [[DSPeerEntity context] performBlock:^{
-        NSArray * peerEntities = [DSPeerEntity objectsMatching:@"address == %@ && port == %@", @(CFSwapInt32BigToHost(self.address.u32[3])),@(self.port)];
+    [self.managedObjectContext performBlock:^{
+        NSArray * peerEntities = [DSPeerEntity objectsInContext:self.managedObjectContext matching:@"address == %@ && port == %@", @(CFSwapInt32BigToHost(self.address.u32[3])),@(self.port)];
         if ([peerEntities count]) {
             DSPeerEntity * e = [peerEntities firstObject];
             
@@ -1947,7 +1945,7 @@
             }
         } else {
             @autoreleasepool {
-                [[DSPeerEntity managedObject] setAttributesFromPeer:self]; // add new peers
+                [[DSPeerEntity managedObjectInContext:self.managedObjectContext] setAttributesFromPeer:self]; // add new peers
             }
         }
     }];

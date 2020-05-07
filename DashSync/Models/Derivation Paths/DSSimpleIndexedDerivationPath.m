@@ -24,8 +24,6 @@
     @synchronized (self) {
         if (!self.addressesLoaded) {
             [self.managedObjectContext performBlockAndWait:^{
-                [DSAddressEntity setContext:self.managedObjectContext];
-                [DSTransactionEntity setContext:self.managedObjectContext];
                 DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
                 self.syncBlockHeight = derivationPathEntity.syncBlockHeight;
                 NSArray<DSAddressEntity *> *addresses = [derivationPathEntity.addresses sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"index" ascending:YES]]];
@@ -126,9 +124,8 @@
             
             if (!self.wallet.isTransient) {
                 [self.managedObjectContext performBlock:^{ // store new address in core data
-                    [DSDerivationPathEntity setContext:self.managedObjectContext];
                     DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
-                    DSAddressEntity *e = [DSAddressEntity managedObject];
+                    DSAddressEntity *e = [DSAddressEntity managedObjectInContext:self.managedObjectContext];
                     e.derivationPath = derivationPathEntity;
                     NSAssert([addr isValidDashAddressOnChain:self.chain], @"the address is being saved to the wrong derivation path");
                     e.address = addr;

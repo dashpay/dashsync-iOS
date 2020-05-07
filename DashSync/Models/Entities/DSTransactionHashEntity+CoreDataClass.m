@@ -13,16 +13,16 @@
 
 @implementation DSTransactionHashEntity
 
-+(NSArray*)standaloneTransactionHashEntitiesOnChain:(DSChainEntity*)chainEntity {
++(NSArray*)standaloneTransactionHashEntitiesOnChainEntity:(DSChainEntity*)chainEntity {
     NSFetchRequest * fetchRequest = [self fetchReq];
     [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"chain == %@ && transaction = nil",chainEntity]];
-    NSArray * standaloneHashes = [self fetchObjects:fetchRequest];
+    NSArray * standaloneHashes = [self fetchObjects:fetchRequest inContext:chainEntity.managedObjectContext];
     return standaloneHashes;
 }
 
-+ (void)deleteTransactionHashesOnChain:(DSChainEntity*)chainEntity {
++ (void)deleteTransactionHashesOnChainEntity:(DSChainEntity*)chainEntity {
     [chainEntity.managedObjectContext performBlockAndWait:^{
-        NSArray * transactionsToDelete = [self objectsMatching:@"(chain == %@)",chainEntity];
+        NSArray * transactionsToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@)",chainEntity];
         for (DSTransactionHashEntity * transaction in transactionsToDelete) {
             [chainEntity.managedObjectContext deleteObject:transaction];
         }

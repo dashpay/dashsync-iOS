@@ -181,13 +181,13 @@
         chain.dpnsContractID = dpnsContractID;
         DPContract * contract = [DSDashPlatform sharedInstanceForChain:chain].dpnsContract;
         DSBlockchainIdentity * blockchainIdentity = [chain blockchainIdentityForUniqueId:dpnsContractID];
-        [contract registerCreator:blockchainIdentity];
+        [contract registerCreator:blockchainIdentity inContext:[NSManagedObjectContext platformContext]];
     }
     if (!uint256_eq(dashpayContractID, chain.dashpayContractID)) {
         chain.dashpayContractID = dashpayContractID;
         DPContract * contract = [DSDashPlatform sharedInstanceForChain:chain].dashPayContract;
         DSBlockchainIdentity * blockchainIdentity = [chain blockchainIdentityForUniqueId:dashpayContractID];
-        [contract registerCreator:blockchainIdentity];
+        [contract registerCreator:blockchainIdentity inContext:[NSManagedObjectContext platformContext]];
     }
     for (NSString * serviceLocation in serviceLocations) {
         NSArray * serviceArray = [serviceLocation componentsSeparatedByString:@":"];
@@ -283,12 +283,13 @@
                 setKeychainDict(registeredDevnetsDictionary, DEVNET_CHAINS_KEY, NO);
             }
             [chain wipeWalletsAndDerivatives];
-            [[DashSync sharedSyncController] wipePeerDataForChain:chain];
-            [[DashSync sharedSyncController] wipeBlockchainDataForChain:chain];
-            [[DashSync sharedSyncController] wipeSporkDataForChain:chain];
-            [[DashSync sharedSyncController] wipeMasternodeDataForChain:chain];
-            [[DashSync sharedSyncController] wipeGovernanceDataForChain:chain];
-            [[DashSync sharedSyncController] wipeWalletDataForChain:chain forceReauthentication:NO]; //this takes care of blockchain info as well;
+            NSManagedObjectContext * context = [NSManagedObjectContext chainContext];
+            [[DashSync sharedSyncController] wipePeerDataForChain:chain inContext:context];
+            [[DashSync sharedSyncController] wipeBlockchainDataForChain:chain inContext:context];
+            [[DashSync sharedSyncController] wipeSporkDataForChain:chain inContext:context];
+            [[DashSync sharedSyncController] wipeMasternodeDataForChain:chain inContext:context];
+            [[DashSync sharedSyncController] wipeGovernanceDataForChain:chain inContext:context];
+            [[DashSync sharedSyncController] wipeWalletDataForChain:chain forceReauthentication:NO inContext:context]; //this takes care of blockchain info as well;
             [self.knownDevnetChains removeObject:chain];
             [self.knownChains removeObject:chain];
             NSValue * genesisValue = uint256_obj(chain.genesisHash);

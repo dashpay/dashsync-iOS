@@ -171,7 +171,7 @@
     }
     self.transactions = [NSMutableOrderedSet orderedSet];
     self.allTx = [NSMutableDictionary dictionary];
-    self.managedObjectContext = context?context:[NSManagedObject context];
+    self.managedObjectContext = context?context:[NSManagedObjectContext chainContext];
     self.transactionsToSave = [NSMutableArray array];
     self.transactionsToSaveInBlockSave = [NSMutableDictionary dictionary];
     self.isViewOnlyAccount = FALSE;
@@ -201,12 +201,7 @@
     if (_wallet.isTransient) return;
     //NSDate *startTime = [NSDate date];
     [self.managedObjectContext performBlockAndWait:^{
-        [DSTransactionEntity setContext:self.managedObjectContext];
-        [DSAccountEntity setContext:self.managedObjectContext];
-        [DSTxInputEntity setContext:self.managedObjectContext];
-        [DSTxOutputEntity setContext:self.managedObjectContext];
-        [DSDerivationPathEntity setContext:self.managedObjectContext];
-        NSUInteger transactionCount = [DSTransactionEntity countObjectsMatching:@"transactionHash.chain == %@",self.wallet.chain.chainEntity];
+        NSUInteger transactionCount = [DSTransactionEntity countObjectsInContext:self.managedObjectContext matching:@"transactionHash.chain == %@",[self.wallet.chain chainEntityInContext:self.managedObjectContext]];
         if (transactionCount > self.allTx.count) {
             // pre-fetch transaction inputs and outputs
             @autoreleasepool {
@@ -1125,10 +1120,8 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     
     [self updateBalance];
     
-    [self.managedObjectContext performBlock:^{ // remove transaction from core data
-        [DSTransactionHashEntity deleteObjects:[DSTransactionHashEntity objectsMatching:@"txHash == %@",
-                                                [NSData dataWithUInt256:transactionHash]]];
-    }];
+    [DSTransactionHashEntity deleteObjects:[DSTransactionHashEntity objectsInContext:self.managedObjectContext matching:@"txHash == %@",
+                                                [NSData dataWithUInt256:transactionHash]] inContext:self.managedObjectContext];
     return TRUE;
 }
 

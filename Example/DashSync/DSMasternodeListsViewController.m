@@ -59,7 +59,7 @@
     
     [fetchRequest setSortDescriptors:sortDescriptors];
     
-    NSPredicate *filterPredicate = [NSPredicate predicateWithFormat:@"block.chain == %@",self.chain.chainEntity];
+    NSPredicate *filterPredicate = [NSPredicate predicateWithFormat:@"block.chain == %@",[self.chain chainEntityInContext:context]];
     [fetchRequest setPredicate:filterPredicate];
     
     // Edit the section name key path and cache name if appropriate.

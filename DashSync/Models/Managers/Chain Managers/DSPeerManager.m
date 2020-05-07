@@ -86,6 +86,8 @@
 @property (nonatomic, assign) DSPeerManagerDesiredState desiredState;
 @property (nonatomic, readonly) dispatch_queue_t networkingQueue;
 
+@property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
+
 @end
 
 @implementation DSPeerManager
@@ -122,6 +124,8 @@
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            //[[self.connectedPeers copy] makeObjectsPerformSelector:@selector(disconnect)];
                                                        }];
+    
+    self.managedObjectContext = [NSManagedObjectContext peerContext];
     
     return self;
 }
@@ -231,8 +235,8 @@
         if (_peers.count >= _maxConnectCount) return _peers;
         _peers = [NSMutableOrderedSet orderedSet];
         
-        [[DSPeerEntity context] performBlockAndWait:^{
-            for (DSPeerEntity *e in [DSPeerEntity objectsMatching:@"chain == %@",self.chain.chainEntity]) {
+        [self.managedObjectContext performBlockAndWait:^{
+            for (DSPeerEntity *e in [DSPeerEntity objectsInContext:self.managedObjectContext matching:@"chain == %@",[self.chain chainEntityInContext:self.managedObjectContext]]) {
                 @autoreleasepool {
                     if (e.misbehavin == 0) [self->_peers addObject:[e peer]];
                     else [self.mutableMisbehavingPeers addObject:[e peer]];
@@ -361,7 +365,7 @@
         if (++self.misbehavingCount >= self.chain.peerMisbehavingThreshold) { // clear out stored peers so we get a fresh list from DNS for next connect
             self.misbehavingCount = 0;
             [self.mutableMisbehavingPeers removeAllObjects];
-            [DSPeerEntity deleteAllObjects];
+            [DSPeerEntity deleteAllObjectsInContext:self.managedObjectContext];
             _peers = nil;
         }
         
@@ -409,11 +413,10 @@
         [addrs addObject:@(CFSwapInt32BigToHost(p.address.u32[3]))];
     }
     
-    [[DSPeerEntity context] performBlock:^{
-        [DSChainEntity setContext:[DSPeerEntity context]];
-        [DSPeerEntity deleteObjects:[DSPeerEntity objectsMatching:@"(chain == %@) && !(address in %@)", self.chain.chainEntity, addrs]]; // remove deleted peers
+    [self.managedObjectContext performBlock:^{
+        [DSPeerEntity deleteObjects:[DSPeerEntity objectsInContext:self.managedObjectContext matching:@"(chain == %@) && !(address in %@)", [self.chain chainEntityInContext:self.managedObjectContext], addrs] inContext:self.managedObjectContext]; // remove deleted peers
         
-        for (DSPeerEntity *e in [DSPeerEntity objectsMatching:@"(chain == %@) && (address in %@)", self.chain.chainEntity, addrs]) { // update existing peers
+        for (DSPeerEntity *e in [DSPeerEntity objectsInContext:self.managedObjectContext matching:@"(chain == %@) && (address in %@)", [self.chain chainEntityInContext:self.managedObjectContext], addrs]) { // update existing peers
             @autoreleasepool {
                 DSPeer *p = [peers member:[e peer]];
                 
@@ -433,7 +436,7 @@
         
         for (DSPeer *p in peers) {
             @autoreleasepool {
-                [[DSPeerEntity managedObject] setAttributesFromPeer:p]; // add new peers
+                [[DSPeerEntity managedObjectInContext:self.managedObjectContext] setAttributesFromPeer:p]; // add new peers
             }
         }
     }];
@@ -860,7 +863,7 @@
         @synchronized (self.mutableMisbehavingPeers) {
             [self.mutableMisbehavingPeers removeAllObjects];
         }
-        [DSPeerEntity deleteAllObjects];
+        [DSPeerEntity deleteAllObjectsInContext:self.managedObjectContext];
         _peers = nil;
         
         dispatch_async(dispatch_get_main_queue(), ^{

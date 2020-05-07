@@ -1,6 +1,6 @@
-//
-//  DSdashpayUserEntity+CoreDataClass.h
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  
+//  Created by Sam Westrich
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,21 +17,21 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
-#import "BigIntTypes.h"
-#import "DSPotentialOneWayFriendship.h"
-
-@class DSAccountEntity, DSFriendRequestEntity, DSTransitionEntity, DSBlockchainIdentity,DSPotentialOneWayFriendship,DSWallet,DSIncomingFundsDerivationPath,DSChainEntity, DSBlockchainIdentityEntity, DPDocument;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSDashpayUserEntity : NSManagedObject
+@interface DSDataController : NSObject
 
-@property (nonatomic,readonly) NSString * username;
+@property (nonatomic, readonly) NSManagedObjectContext * viewContext;
+@property (nonatomic, readonly) NSManagedObjectContext * peerContext;
+@property (nonatomic, readonly) NSManagedObjectContext * chainContext;
+@property (nonatomic, readonly) NSManagedObjectContext * platformContext;
 
-+(void)deleteContactsOnChainEntity:(DSChainEntity*)chainEntity;
++ (instancetype)sharedInstance;
 
+// returns the location on disk of the sqlite store file
++ (NSURL*)storeURL;
+ 
 @end
 
 NS_ASSUME_NONNULL_END
-
-#import "DSDashpayUserEntity+CoreDataProperties.h"

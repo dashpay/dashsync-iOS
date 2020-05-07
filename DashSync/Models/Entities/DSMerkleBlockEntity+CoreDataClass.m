@@ -31,26 +31,6 @@
 
 @implementation DSMerkleBlockEntity
 
-- (instancetype)setAttributesFromBlock:(DSMerkleBlock *)block;
-{
-    [self.managedObjectContext performBlockAndWait:^{
-        self.blockHash = [NSData dataWithBytes:block.blockHash.u8 length:sizeof(UInt256)];
-        self.version = block.version;
-        self.prevBlock = [NSData dataWithBytes:block.prevBlock.u8 length:sizeof(UInt256)];
-        self.merkleRoot = [NSData dataWithBytes:block.merkleRoot.u8 length:sizeof(UInt256)];
-        self.timestamp = block.timestamp;
-        self.target = block.target;
-        self.nonce = block.nonce;
-        self.totalTransactions = block.totalTransactions;
-        self.hashes = [NSData dataWithData:block.hashes];
-        self.flags = [NSData dataWithData:block.flags];
-        self.height = block.height;
-        self.chain = [block.chain chainEntity];
-    }];
-    
-    return self;
-}
-
 - (instancetype)setAttributesFromBlock:(DSMerkleBlock *)block forChain:(DSChainEntity*)chainEntity {
     [self.managedObjectContext performBlockAndWait:^{
         self.blockHash = [NSData dataWithBytes:block.blockHash.u8 length:sizeof(UInt256)];
@@ -94,33 +74,33 @@
     return block;
 }
 
-+ (NSArray<DSMerkleBlockEntity*>*)lastBlocks:(uint32_t)blockcount onChain:(DSChainEntity*)chainEntity {
++ (NSArray<DSMerkleBlockEntity*>*)lastBlocks:(uint32_t)blockcount onChainEntity:(DSChainEntity*)chainEntity {
     __block NSArray * blocks = nil;
     [chainEntity.managedObjectContext performBlockAndWait:^{
         NSFetchRequest * fetchRequest = [DSMerkleBlockEntity fetchReq];
         [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"(chain == %@ && onlyHeader == FALSE)",chainEntity]];
         [fetchRequest setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"height" ascending:FALSE]]];
         [fetchRequest setFetchLimit:blockcount];
-        blocks = [DSMerkleBlockEntity fetchObjects:fetchRequest];
+        blocks = [DSMerkleBlockEntity fetchObjects:fetchRequest inContext:chainEntity.managedObjectContext];
     }];
     return blocks;
 }
 
-+ (NSArray<DSMerkleBlockEntity*>*)lastHeaders:(uint32_t)blockcount onChain:(DSChainEntity*)chainEntity {
++ (NSArray<DSMerkleBlockEntity*>*)lastHeaders:(uint32_t)blockcount onChainEntity:(DSChainEntity*)chainEntity {
     __block NSArray * blocks = nil;
     [chainEntity.managedObjectContext performBlockAndWait:^{
         NSFetchRequest * fetchRequest = [DSMerkleBlockEntity fetchReq];
         [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"(chain == %@ && onlyHeader == TRUE)",chainEntity]];
         [fetchRequest setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"height" ascending:FALSE]]];
         [fetchRequest setFetchLimit:blockcount];
-        blocks = [DSMerkleBlockEntity fetchObjects:fetchRequest];
+        blocks = [DSMerkleBlockEntity fetchObjects:fetchRequest inContext:chainEntity.managedObjectContext];
     }];
     return blocks;
 }
 
-+ (void)deleteBlocksOnChain:(DSChainEntity*)chainEntity {
++ (void)deleteBlocksOnChainEntity:(DSChainEntity*)chainEntity {
     [chainEntity.managedObjectContext performBlockAndWait:^{
-        NSArray * merkleBlocksToDelete = [self objectsMatching:@"(chain == %@)",chainEntity];
+        NSArray * merkleBlocksToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@)",chainEntity];
         for (DSMerkleBlockEntity * merkleBlock in merkleBlocksToDelete) {
             [chainEntity.managedObjectContext deleteObject:merkleBlock];
         }

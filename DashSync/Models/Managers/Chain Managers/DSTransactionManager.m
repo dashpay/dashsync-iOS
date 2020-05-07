@@ -289,13 +289,16 @@
     }
     
     if (transactionsToBeRemoved.count) {
+        NSManagedObjectContext * context = nil;
         for (DSTransaction * transaction in [transactionsToBeRemoved copy]) {
             NSArray * accounts = [self.chain accountsThatCanContainTransaction:transaction];
             for (DSAccount * account in accounts) {
                 [account removeTransaction:transaction];
+                NSAssert(!context || context == account.managedObjectContext, @"All accounts should be on same context");
+                context = account.managedObjectContext;
             }
         }
-        [DSTransactionHashEntity saveContext];
+        [context ds_saveInBlockAndWait];
     }
     
     [self.removeUnrelayedTransactionsLocalRequests removeAllObjects];
@@ -904,9 +907,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         for (DSAccount * account in accounts) {
             if (![account transactionForHash:txHash]) {
                 if ([account registerTransaction:transaction saveImmediately:YES]) {
-                    [[DSTransactionEntity context] performBlock:^{
-                        [DSTransactionEntity saveContext]; // persist transactions to core data
-                    }];
+                    [[NSManagedObjectContext chainContext] ds_saveInBlock];
                 }
             }
         }

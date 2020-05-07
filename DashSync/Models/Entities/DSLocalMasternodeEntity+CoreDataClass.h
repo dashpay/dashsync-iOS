@@ -19,9 +19,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setAttributesFromLocalMasternode:(DSLocalMasternode*)localMasternode;
 
-+ (NSDictionary<NSData*,DSLocalMasternodeEntity*>*)findLocalMasternodesAndIndexForProviderRegistrationHashes:(NSSet<NSData*>*)providerRegistrationHashes;
++ (NSDictionary<NSData*,DSLocalMasternodeEntity*>*)findLocalMasternodesAndIndexForProviderRegistrationHashes:(NSSet<NSData*>*)providerRegistrationHashes inContext:(NSManagedObjectContext*)context;
 
-+ (void)deleteAllOnChain:(DSChainEntity*)chainEntity;
++ (void)deleteAllOnChainEntity:(DSChainEntity*)chainEntity;
 
 @end
 

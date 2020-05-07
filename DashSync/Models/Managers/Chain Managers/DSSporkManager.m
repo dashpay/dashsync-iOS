@@ -63,16 +63,15 @@
     __block NSMutableDictionary * sporkDictionary = [NSMutableDictionary dictionary];
     self.lastRequestedSporks = 0;
     self.lastSyncedSporks = 0;
-    self.managedObjectContext = [NSManagedObject context];
+    self.managedObjectContext = [NSManagedObjectContext chainContext];
     [self.managedObjectContext performBlockAndWait:^{
-        [DSChainEntity setContext:self.managedObjectContext];
-        DSChainEntity * chainEntity = self.chain.chainEntity;
-        NSArray * sporkEntities = [DSSporkEntity sporksOnChain:chainEntity];
+        DSChainEntity * chainEntity = [self.chain chainEntityInContext:self.managedObjectContext];
+        NSArray * sporkEntities = [DSSporkEntity sporksonChainEntity:chainEntity];
         for (DSSporkEntity * sporkEntity in sporkEntities) {
             DSSpork * spork = [[DSSpork alloc] initWithIdentifier:sporkEntity.identifier value:sporkEntity.value timeSigned:sporkEntity.timeSigned signature:sporkEntity.signature onChain:chain];
             sporkDictionary[@(spork.identifier)] = spork;
         }
-        NSArray * sporkHashEntities = [DSSporkHashEntity standaloneSporkHashEntitiesOnChain:chainEntity];
+        NSArray * sporkHashEntities = [DSSporkHashEntity standaloneSporkHashEntitiesOnChainEntity:chainEntity];
         for (DSSporkHashEntity * sporkHashEntity in sporkHashEntities) {
             [sporkHashesMarkedForRetrieval addObject:sporkHashEntity.sporkHash];
         }
@@ -199,12 +198,10 @@
     if (!currentSpork || updatedSpork) {
         [self.managedObjectContext performBlockAndWait:^{
             @autoreleasepool {
-                [DSSporkHashEntity setContext:self.managedObjectContext];
-                [DSSporkEntity setContext:self.managedObjectContext];
-                DSSporkHashEntity * hashEntity = [DSSporkHashEntity sporkHashEntityWithHash:[NSData dataWithUInt256:spork.sporkHash] onChain:spork.chain.chainEntity];
+                DSSporkHashEntity * hashEntity = [DSSporkHashEntity sporkHashEntityWithHash:[NSData dataWithUInt256:spork.sporkHash] onChainEntity:[spork.chain chainEntityInContext:self.managedObjectContext]];
                 if (hashEntity) {
-                    [[DSSporkEntity managedObject] setAttributesFromSpork:spork withSporkHash:hashEntity]; // add new peers
-                    [DSSporkEntity saveContext];
+                    [[DSSporkEntity managedObjectInContext:self.managedObjectContext] setAttributesFromSpork:spork withSporkHash:hashEntity]; // add new peers
+                    [self.managedObjectContext ds_save];
                 } else {
                     DSDLog(@"Spork was received that wasn't requested");
                 }

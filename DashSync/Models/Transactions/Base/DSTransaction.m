@@ -164,13 +164,13 @@
         
         NSString * outboundShapeshiftAddress = [self shapeshiftOutboundAddress];
         if (outboundShapeshiftAddress) {
-            self.associatedShapeshift = [DSShapeshiftEntity shapeshiftHavingWithdrawalAddress:outboundShapeshiftAddress];
+            self.associatedShapeshift = [DSShapeshiftEntity shapeshiftHavingWithdrawalAddress:outboundShapeshiftAddress inContext:[NSManagedObjectContext chainContext]];
             if (self.associatedShapeshift && [self.associatedShapeshift.shapeshiftStatus integerValue] == eShapeshiftAddressStatus_Unused) {
                 self.associatedShapeshift.shapeshiftStatus = @(eShapeshiftAddressStatus_NoDeposits);
             }
             if (!self.associatedShapeshift) {
                 NSString * possibleOutboundShapeshiftAddress = [self shapeshiftOutboundAddressForceScript];
-                self.associatedShapeshift = [DSShapeshiftEntity shapeshiftHavingWithdrawalAddress:possibleOutboundShapeshiftAddress];
+                self.associatedShapeshift = [DSShapeshiftEntity shapeshiftHavingWithdrawalAddress:possibleOutboundShapeshiftAddress inContext:[NSManagedObjectContext chainContext]];
                 if (self.associatedShapeshift && [self.associatedShapeshift.shapeshiftStatus integerValue] == eShapeshiftAddressStatus_Unused) {
                     self.associatedShapeshift.shapeshiftStatus = @(eShapeshiftAddressStatus_NoDeposits);
                 }
@@ -178,7 +178,7 @@
             if (!self.associatedShapeshift && [self.outputAddresses count]) {
                 NSString * mainOutputAddress = nil;
                 NSMutableArray * allAddresses = [NSMutableArray array];
-                for (DSAddressEntity *e in [DSAddressEntity allObjects]) {
+                for (DSAddressEntity *e in [DSAddressEntity allObjectsInContext:chain.chainManagedObjectContext]) {
                     [allAddresses addObject:e.address];
                 }
                 for (NSString * outputAddress in self.outputAddresses) {
@@ -188,7 +188,7 @@
                 }
                 //NSAssert(mainOutputAddress, @"there should always be an output address");
                 if (mainOutputAddress){
-                    self.associatedShapeshift = [DSShapeshiftEntity registerShapeshiftWithInputAddress:mainOutputAddress andWithdrawalAddress:outboundShapeshiftAddress withStatus:eShapeshiftAddressStatus_NoDeposits];
+                    self.associatedShapeshift = [DSShapeshiftEntity registerShapeshiftWithInputAddress:mainOutputAddress andWithdrawalAddress:outboundShapeshiftAddress withStatus:eShapeshiftAddressStatus_NoDeposits inContext:[NSManagedObjectContext chainContext]];
                 }
             }
         }
@@ -797,49 +797,42 @@
 
 // MARK: - Persistence
 
--(DSTransactionEntity *)transactionEntity {
-    NSManagedObjectContext * context = [DSTransactionEntity context];
+-(DSTransactionEntity *)transactionEntityInContext:(NSManagedObjectContext*)context {
     __block DSTransactionEntity * transactionEntity = nil;
     [context performBlockAndWait:^{ // add the transaction to core data
-        [DSChainEntity setContext:context];
-        Class transactionEntityClass = [self entityClass];
-        [transactionEntityClass setContext:context];
-        [DSTransactionHashEntity setContext:context];
-        transactionEntity = [DSTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(self.txHash)];
+        transactionEntity = [DSTransactionEntity anyObjectInContext:context matching:@"transactionHash.txHash == %@", uint256_data(self.txHash)];
     }];
     return transactionEntity;
 }
 
 -(DSTransactionEntity *)save {
-    NSManagedObjectContext * context = [DSTransactionEntity context];
+    NSManagedObjectContext * context = self.chain.chainManagedObjectContext;
+    return [self saveInContext:context];
+}
+
+-(DSTransactionEntity *)saveInContext:(NSManagedObjectContext*)context {
     __block DSTransactionEntity * transactionEntity = nil;
     [context performBlockAndWait:^{ // add the transaction to core data
-        [DSChainEntity setContext:context];
         Class transactionEntityClass = [self entityClass];
-        [transactionEntityClass setContext:context];
-        [DSTransactionHashEntity setContext:context];
-        if ([DSTransactionEntity countObjectsMatching:@"transactionHash.txHash == %@", uint256_data(self.txHash)] == 0) {
+        if ([DSTransactionEntity countObjectsInContext:context matching:@"transactionHash.txHash == %@", uint256_data(self.txHash)] == 0) {
             
-            transactionEntity = [transactionEntityClass managedObject];
+            transactionEntity = [transactionEntityClass managedObjectInContext:context];
             [transactionEntity setAttributesFromTransaction:self];
-            [transactionEntityClass saveContext];
+            [context ds_save];
         } else {
-            transactionEntity = [DSTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(self.txHash)];
+            transactionEntity = [DSTransactionEntity anyObjectInContext:context matching:@"transactionHash.txHash == %@", uint256_data(self.txHash)];
             [transactionEntity setAttributesFromTransaction:self];
-            [transactionEntityClass saveContext];
+            [context ds_save];
         }
     }];
     return transactionEntity;
 }
 
 -(BOOL)setInitialPersistentAttributesInContext:(NSManagedObjectContext*)context {
-    [DSChainEntity setContext:context];
     Class transactionEntityClass = [self entityClass];
-    [transactionEntityClass setContext:context];
-    [DSTransactionHashEntity setContext:context];
-    if ([DSTransactionEntity countObjectsMatching:@"transactionHash.txHash == %@", uint256_data(self.txHash)] == 0) {
+    if ([DSTransactionEntity countObjectsInContext:context matching:@"transactionHash.txHash == %@", uint256_data(self.txHash)] == 0) {
         
-        DSTransactionEntity * transactionEntity = [transactionEntityClass managedObject];
+        DSTransactionEntity * transactionEntity = [transactionEntityClass managedObjectInContext:context];
         [transactionEntity setAttributesFromTransaction:self];
         return YES;
     } else {
@@ -848,13 +841,20 @@
 }
 
 -(BOOL)saveInitial {
+    NSManagedObjectContext * context = self.chain.chainManagedObjectContext;
+    return [self saveInitialInContext:context];
+}
+
+-(BOOL)saveInitialInContext:(NSManagedObjectContext*)context {
     if (self.saved) return nil;
-    NSManagedObjectContext * context = [DSTransactionEntity context];
     __block BOOL didSave = FALSE;
     [context performBlockAndWait:^{ // add the transaction to core data
         if ([self setInitialPersistentAttributesInContext:context]) {
-            [DSTransactionEntity saveContext];
-            didSave = TRUE;
+            if (![context ds_save]) {
+                didSave = TRUE;
+            } else {
+                DSDLog(@"There was an error saving the transaction");
+            }
         }
     }];
     self.saved = didSave;

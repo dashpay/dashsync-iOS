@@ -54,7 +54,7 @@
         if ([self.searchString isEqualToString:@"0"] || [self.searchString longLongValue]) {
             NSArray * ipArray = [self.searchString componentsSeparatedByString:@"."];
             NSMutableArray *partPredicates = [NSMutableArray array];
-            NSPredicate * chainPredicate = [NSPredicate predicateWithFormat:@"chain == %@",self.chain.chainEntity];
+            NSPredicate * chainPredicate = [NSPredicate predicateWithFormat:@"chain == %@",[self.chain chainEntityInContext:context]];
             [partPredicates addObject:chainPredicate];
             for (int i = 0; i< MIN(ipArray.count,4); i++) {
                 if ([ipArray[i] isEqualToString:@""]) break;
@@ -64,11 +64,11 @@
             
             return [NSCompoundPredicate andPredicateWithSubpredicates:partPredicates];
         } else {
-            return [NSPredicate predicateWithFormat:@"chain == %@",self.chain.chainEntity];
+            return [NSPredicate predicateWithFormat:@"chain == %@",[self.chain chainEntityInContext:context]];
         }
         
     } else {
-        return [NSPredicate predicateWithFormat:@"chain == %@",self.chain.chainEntity];
+        return [NSPredicate predicateWithFormat:@"chain == %@",[self.chain chainEntityInContext:context]];
     }
     
 }

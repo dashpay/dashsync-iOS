@@ -207,8 +207,7 @@ static checkpoint mainnet_checkpoint_array[] = {
 @property (nonatomic, copy) NSString * uniqueID;
 @property (nonatomic, copy) NSString * networkName;
 @property (nonatomic, strong) NSMutableArray<DSWallet *> * mWallets;
-@property (nonatomic, strong) DSChainEntity * mainThreadChainEntity;
-@property (nonatomic, strong) DSChainEntity * delegateQueueChainEntity;
+@property (nonatomic, strong) DSChainEntity * chainEntity;
 @property (nonatomic, strong) NSString * devnetIdentifier;
 @property (nonatomic, strong) DSAccount * viewingAccount;
 @property (nonatomic, strong) NSMutableDictionary * estimatedBlockHeights;
@@ -223,7 +222,7 @@ static checkpoint mainnet_checkpoint_array[] = {
 @property (nonatomic, assign) UInt256 cachedDashpayContractID;
 @property (nonatomic, strong) NSMutableDictionary <NSData*,NSNumber*>* transactionHashHeights;
 @property (nonatomic, strong) NSMutableDictionary <NSData*,NSNumber*>* transactionHashTimestamps;
-@property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
+@property (nonatomic, strong) NSManagedObjectContext * chainManagedObjectContext;
 
 @property (nonatomic, readonly) NSString * chainWalletsKey;
 
@@ -240,7 +239,7 @@ static checkpoint mainnet_checkpoint_array[] = {
     self.genesisHash = self.checkpoints[0].checkpointHash;
     self.mWallets = [NSMutableArray array];
     self.estimatedBlockHeights = [NSMutableDictionary dictionary];
-    self.managedObjectContext = [NSManagedObject context];
+    self.chainManagedObjectContext = [NSManagedObjectContext chainContext];
     self.transactionHashHeights = [NSMutableDictionary dictionary];
     self.transactionHashTimestamps = [NSMutableDictionary dictionary];
     
@@ -273,7 +272,6 @@ static checkpoint mainnet_checkpoint_array[] = {
     }
     self.checkpoints = checkpoints;
     self.genesisHash = self.checkpoints[0].checkpointHash;
-    self.mainThreadChainEntity = [self chainEntity];
 
     return self;
 }
@@ -295,7 +293,6 @@ static checkpoint mainnet_checkpoint_array[] = {
     //    DSDLog(@"%@",[NSData dataWithUInt256:self.checkpoints[0].checkpointHash]);
     //    DSDLog(@"%@",[NSData dataWithUInt256:self.genesisHash]);
     self.devnetIdentifier = identifier;
-    self.mainThreadChainEntity = [self chainEntity];
     return self;
 }
 
@@ -321,8 +318,6 @@ static checkpoint mainnet_checkpoint_array[] = {
     self.standardDapiGRPCPort = dapiGRPCPort;
     self.dpnsContractID = dpnsContractID;
     self.dashpayContractID = dashpayContractID;
-
-    self.mainThreadChainEntity = [self chainEntity];
     return self;
 }
 
@@ -338,7 +333,7 @@ static checkpoint mainnet_checkpoint_array[] = {
     });
     if (inSetUp) {
         [_mainnet setUp];
-        [[DSChainEntity context] performBlockAndWait:^{
+        [[NSManagedObjectContext chainContext] performBlockAndWait:^{
             DSChainEntity * chainEntity = [_mainnet chainEntity];
             _mainnet.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
             _mainnet.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
@@ -358,7 +353,7 @@ static checkpoint mainnet_checkpoint_array[] = {
     });
     if (inSetUp) {
         [_testnet setUp];
-        [[DSChainEntity context] performBlockAndWait:^{
+        [[NSManagedObjectContext chainContext] performBlockAndWait:^{
             DSChainEntity * chainEntity = [_testnet chainEntity];
             _testnet.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
             _testnet.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
@@ -396,7 +391,7 @@ static dispatch_once_t devnetToken = 0;
     }
     if (inSetUp) {
         [devnetChain setUp];
-        [[DSChainEntity context] performBlockAndWait:^{
+        [[NSManagedObjectContext chainContext] performBlockAndWait:^{
             DSChainEntity * chainEntity = [devnetChain chainEntity];
             devnetChain.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
             devnetChain.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
@@ -427,7 +422,7 @@ static dispatch_once_t devnetToken = 0;
     if (inSetUp && !isTransient) {
         //note: there is no point to load anything if the chain is transient
         [devnetChain setUp];
-        [[DSChainEntity context] performBlockAndWait:^{
+        [[NSManagedObjectContext chainContext] performBlockAndWait:^{
             DSChainEntity * chainEntity = [devnetChain chainEntity];
             devnetChain.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
             devnetChain.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
@@ -1246,7 +1241,7 @@ static dispatch_once_t devnetToken = 0;
 
 -(DSAccount*)viewingAccount {
     if (_viewingAccount) return _viewingAccount;
-    self.viewingAccount = [[DSAccount alloc] initAsViewOnlyWithAccountNumber:0 withDerivationPaths:@[] inContext:self.managedObjectContext];
+    self.viewingAccount = [[DSAccount alloc] initAsViewOnlyWithAccountNumber:0 withDerivationPaths:@[] inContext:self.chainManagedObjectContext];
     return _viewingAccount;
 }
 
@@ -1545,8 +1540,8 @@ static dispatch_once_t devnetToken = 0;
 - (DSMerkleBlock *)lastBlock
 {
     if (! _lastBlock) {
-        [DSMerkleBlockEntity.context performBlockAndWait:^{
-            NSArray * lastBlocks = [DSMerkleBlockEntity lastBlocks:1 onChain:self.chainEntity];
+        [self.chainManagedObjectContext performBlockAndWait:^{
+            NSArray * lastBlocks = [DSMerkleBlockEntity lastBlocks:1 onChainEntity:self.chainEntity];
             DSMerkleBlock * lastBlock = [[lastBlocks firstObject] merkleBlock];
             self->_lastBlock = lastBlock;
             if (lastBlock) {
@@ -1611,7 +1606,7 @@ static dispatch_once_t devnetToken = 0;
         return _blocks;
     }
     
-    [[DSMerkleBlockEntity context] performBlockAndWait:^{
+    [self.chainManagedObjectContext performBlockAndWait:^{
         if (self->_blocks.count > 0) return;
         self->_blocks = [NSMutableDictionary dictionary];
         self.checkpointsByHashDictionary = [NSMutableDictionary dictionary];
@@ -1626,8 +1621,8 @@ static dispatch_once_t devnetToken = 0;
             self.checkpointsByHeightDictionary[@(checkpoint.height)] = checkpoint;
             self.checkpointsByHashDictionary[uint256_data(checkpointHash)] = checkpoint;
         }
-        self.delegateQueueChainEntity = [self chainEntity];
-        for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity lastBlocks:LLMQ_KEEP_RECENT_BLOCKS onChain:self.delegateQueueChainEntity]) {
+        self.chainEntity = [self chainEntityInContext:self.chainManagedObjectContext];
+        for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity lastBlocks:LLMQ_KEEP_RECENT_BLOCKS onChainEntity:self.chainEntity]) {
             @autoreleasepool {
                 DSMerkleBlock *b = e.merkleBlock;
                 
@@ -2142,7 +2137,7 @@ static dispatch_once_t devnetToken = 0;
         return _headers;
     }
     
-    [[DSMerkleBlockEntity context] performBlockAndWait:^{
+    [self.chainManagedObjectContext performBlockAndWait:^{
         if (self->_headers.count > 0) return;
         self->_headers = [NSMutableDictionary dictionary];
         self.checkpointsByHashDictionary = [NSMutableDictionary dictionary];
@@ -2157,8 +2152,8 @@ static dispatch_once_t devnetToken = 0;
             self.checkpointsByHeightDictionary[@(checkpoint.height)] = checkpoint;
             self.checkpointsByHashDictionary[uint256_data(checkpointHash)] = checkpoint;
         }
-        self.delegateQueueChainEntity = [self chainEntity];
-        for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity lastHeaders:LLMQ_KEEP_RECENT_BLOCKS onChain:self.delegateQueueChainEntity]) {
+        self.chainEntity = [self chainEntity];
+        for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity lastHeaders:LLMQ_KEEP_RECENT_BLOCKS onChainEntity:self.chainEntity]) {
             @autoreleasepool {
                 DSMerkleBlock *b = e.merkleBlock;
                 
@@ -2320,8 +2315,10 @@ static dispatch_once_t devnetToken = 0;
             while (block && block.height > blockHeight) block = self.blocks[uint256_obj(block.prevBlock)];
             if (block) return block.timestamp;
         }
+    } else {
+        //load blocks
+        [self blocks];
     }
-    else [[DSMerkleBlockEntity context] performBlock:^{ [self blocks]; }];
     
     uint32_t h = self.lastBlockHeight, t = self.lastBlock.timestamp;
     
@@ -2584,16 +2581,11 @@ static dispatch_once_t devnetToken = 0;
 }
 
 -(void)wipeMasternodesInContext:(NSManagedObjectContext*)context {
-    [DSChainEntity setContext:context];
-    [DSSimplifiedMasternodeEntryEntity setContext:context];
-    [DSLocalMasternodeEntity setContext:context];
-    [DSQuorumEntryEntity setContext:context];
-    [DSMasternodeListEntity setContext:context];
-    DSChainEntity * chainEntity = self.chainEntity;
-    [DSLocalMasternodeEntity deleteAllOnChain:chainEntity];
-    [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
-    [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
-    [DSMasternodeListEntity deleteAllOnChain:chainEntity];
+    DSChainEntity * chainEntity = [self chainEntityInContext:context];
+    [DSLocalMasternodeEntity deleteAllOnChainEntity:chainEntity];
+    [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
+    [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
+    [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
     [self.chainManager.masternodeManager wipeMasternodeInfo];
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@_%@",self.uniqueID,LAST_SYNCED_MASTERNODE_LIST]];
 }
@@ -2654,9 +2646,9 @@ static dispatch_once_t devnetToken = 0;
 }
 
 -(void)wipeBlockchainIdentitiesPersistedData {
-    [[DSBlockchainIdentityEntity context] performBlockAndWait:^{
-        NSArray * objects = [DSBlockchainIdentityEntity objectsMatching:@"chain == %@",self.chainEntity];
-        [DSBlockchainIdentityEntity deleteObjects:objects];
+    [self.chainManagedObjectContext performBlockAndWait:^{
+        NSArray * objects = [DSBlockchainIdentityEntity objectsInContext:self.chainManagedObjectContext matching:@"chain == %@",self.chainEntity];
+        [DSBlockchainIdentityEntity deleteObjects:objects inContext:self.chainManagedObjectContext];
     }];
 }
 
@@ -2895,7 +2887,7 @@ static dispatch_once_t devnetToken = 0;
         if (wallet) {
             DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForUniqueId:creditFundingTransaction.creditBurnIdentityIdentifier];
             if (!blockchainIdentity) {
-                blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:DSBlockchainIdentityType_Unknown atIndex:[creditFundingTransaction usedDerivationPathIndex] withFundingTransaction:creditFundingTransaction withUsernameDictionary:nil inWallet:wallet inContext:self.managedObjectContext];
+                blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:DSBlockchainIdentityType_Unknown atIndex:[creditFundingTransaction usedDerivationPathIndex] withFundingTransaction:creditFundingTransaction withUsernameDictionary:nil inWallet:wallet inContext:self.chainManagedObjectContext];
                 [blockchainIdentity registerInWalletForRegistrationFundingTransaction:creditFundingTransaction];
             }
         }
@@ -3034,11 +3026,6 @@ static dispatch_once_t devnetToken = 0;
 
 // MARK: - Persistence
 
--(DSChainEntity*)chainEntity {
-    if ([NSThread isMainThread] && _mainThreadChainEntity) return self.mainThreadChainEntity;
-    return [self chainEntityInContext:[DSChainEntity context]];
-}
-
 -(DSChainEntity*)chainEntityInContext:(NSManagedObjectContext*)context {
     NSParameterAssert(context);
     __block DSChainEntity* chainEntity = nil;
@@ -3049,11 +3036,11 @@ static dispatch_once_t devnetToken = 0;
 }
 
 -(void)save {
-    [self.managedObjectContext performBlockAndWait:^{
+    [self.chainManagedObjectContext performBlockAndWait:^{
         DSChainEntity * entity = self.chainEntity;
         entity.totalGovernanceObjectsCount = self.totalGovernanceObjectsCount;
         entity.baseBlockHash = [NSData dataWithUInt256:self.masternodeBaseBlockHash];
-        [DSChainEntity saveContext];
+        [self.chainManagedObjectContext ds_save];
     }];
 }
 
@@ -3085,21 +3072,21 @@ static dispatch_once_t devnetToken = 0;
         [self prepareForIncomingTransactionPersistenceForBlockSaveWithNumber:lastBlockHeight];
     }
     
-    [[DSMerkleBlockEntity context] performBlock:^{
+    [self.chainManagedObjectContext performBlock:^{
         if ([[DSOptionsManager sharedInstance] keepHeaders] || onlyHeaders) {
             //only remove orphan chains
-            NSArray<DSMerkleBlockEntity *> * recentOrphans = [DSMerkleBlockEntity objectsMatching:@"(chain == %@) && (height > %u) && !(blockHash in %@) && onlyHeader == %@",self.delegateQueueChainEntity,startHeight,blocks.allKeys,@(onlyHeaders)];
+            NSArray<DSMerkleBlockEntity *> * recentOrphans = [DSMerkleBlockEntity objectsInContext:self.chainManagedObjectContext matching:@"(chain == %@) && (height > %u) && !(blockHash in %@) && onlyHeader == %@",self.chainEntity,startHeight,blocks.allKeys,@(onlyHeaders)];
             if ([recentOrphans count])  DSDLog(@"%lu recent orphans will be removed from disk",(unsigned long)[recentOrphans count]);
-            [DSMerkleBlockEntity deleteObjects:recentOrphans];
+            [DSMerkleBlockEntity deleteObjects:recentOrphans inContext:self.chainManagedObjectContext];
         } else {
             //remember to not delete blocks needed for quorums
-            NSArray<DSMerkleBlockEntity *> * oldBlockHeaders = [DSMerkleBlockEntity objectsMatching:@"(chain == %@) && !(blockHash in %@) && (usedByQuorums.@count == 0) && masternodeList == NIL && onlyHeader == %@",self.delegateQueueChainEntity,blocks.allKeys,@(onlyHeaders)];
-            [DSMerkleBlockEntity deleteObjects:oldBlockHeaders];
+            NSArray<DSMerkleBlockEntity *> * oldBlockHeaders = [DSMerkleBlockEntity objectsInContext:self.chainManagedObjectContext matching:@"(chain == %@) && !(blockHash in %@) && (usedByQuorums.@count == 0) && masternodeList == NIL && onlyHeader == %@",self.chainEntity,blocks.allKeys,@(onlyHeaders)];
+            [DSMerkleBlockEntity deleteObjects:oldBlockHeaders inContext:self.chainManagedObjectContext];
         }
         
-        for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity objectsMatching:@"blockHash in %@",blocks.allKeys]) {
+        for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity objectsInContext:self.chainManagedObjectContext matching:@"blockHash in %@",blocks.allKeys]) {
             @autoreleasepool {
-                [e setAttributesFromBlock:blocks[e.blockHash] forChain:self.delegateQueueChainEntity];
+                [e setAttributesFromBlock:blocks[e.blockHash] forChain:self.chainEntity];
                 if (!onlyHeaders) { //can only go header -> block
                     e.onlyHeader = FALSE;
                 }
@@ -3109,8 +3096,8 @@ static dispatch_once_t devnetToken = 0;
         
         for (DSMerkleBlock *merkleBlock in blocks.allValues) {
             @autoreleasepool {
-                DSMerkleBlockEntity * e = [DSMerkleBlockEntity managedObject];
-                [e setAttributesFromBlock:merkleBlock forChain:self.delegateQueueChainEntity];
+                DSMerkleBlockEntity * e = [DSMerkleBlockEntity managedObjectInContext:self.chainManagedObjectContext];
+                [e setAttributesFromBlock:merkleBlock forChain:self.chainEntity];
                 e.onlyHeader = onlyHeaders;
             }
         }
@@ -3118,9 +3105,9 @@ static dispatch_once_t devnetToken = 0;
         NSMutableSet *entities = [NSMutableSet set];
         
         if (!onlyHeaders) {
-            [self persistIncomingTransactionsAttributesForBlockSaveWithNumber:lastBlockHeight inContext:[DSMerkleBlockEntity context]];
+            [self persistIncomingTransactionsAttributesForBlockSaveWithNumber:lastBlockHeight inContext:self.chainManagedObjectContext];
             
-            for (DSTransactionHashEntity *e in [DSTransactionHashEntity objectsMatching:@"txHash in %@", [self.transactionHashHeights allKeys]]) {
+            for (DSTransactionHashEntity *e in [DSTransactionHashEntity objectsInContext:self.chainManagedObjectContext matching:@"txHash in %@", [self.transactionHashHeights allKeys]]) {
                 e.blockHeight = [self.transactionHashHeights[e.txHash] intValue];
                 e.timestamp = [self.transactionHashTimestamps[e.txHash] intValue];;
                 [entities addObject:e];
@@ -3132,7 +3119,7 @@ static dispatch_once_t devnetToken = 0;
             self.transactionHashTimestamps = [NSMutableDictionary dictionary];
         }
 
-        [DSMerkleBlockEntity saveContext];
+        [self.chainManagedObjectContext ds_save];
     }];
 }
 

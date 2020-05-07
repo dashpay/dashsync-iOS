@@ -15,8 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSTransactionHashEntity : NSManagedObject
 
-+(NSArray*)standaloneTransactionHashEntitiesOnChain:(DSChainEntity*)chainEntity;
-+ (void)deleteTransactionHashesOnChain:(DSChainEntity*)chainEntity;
++(NSArray*)standaloneTransactionHashEntitiesOnChainEntity:(DSChainEntity*)chainEntity;
++ (void)deleteTransactionHashesOnChainEntity:(DSChainEntity*)chainEntity;
 
 @end
 

@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(DSMasternodeList*)masternodeListWithSimplifiedMasternodeEntryPool:(NSDictionary <NSData*,DSSimplifiedMasternodeEntry*>*)simplifiedMasternodeEntries quorumEntryPool:(NSDictionary <NSNumber*,NSDictionary*>*)quorumEntries;
 
-+ (void)deleteAllOnChain:(DSChainEntity*)chainEntity;
++ (void)deleteAllOnChainEntity:(DSChainEntity*)chainEntity;
 
 @end
 

@@ -15,17 +15,21 @@
 //  limitations under the License.
 //
 
-#import "DPContract.h"
 
-@class DSBlockchainIdentity;
+#import <CoreData/CoreData.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DPContract ()
+@interface NSManagedObjectContext (DSSugar)
 
--(void)setContractState:(DPContractState)contractState inContext:(NSManagedObjectContext*)context;
+@property (class, nonatomic, readonly) NSManagedObjectContext * viewContext;
+@property (class, nonatomic, readonly) NSManagedObjectContext * peerContext;
+@property (class, nonatomic, readonly) NSManagedObjectContext * chainContext;
+@property (class, nonatomic, readonly) NSManagedObjectContext * platformContext;
 
--(DSContractTransition*)contractRegistrationTransitionForIdentity:(DSBlockchainIdentity*)blockchainIdentity;
+-(NSError*)ds_save;
+-(void)ds_saveInBlock;
+-(NSError*)ds_saveInBlockAndWait;
 
 @end
 

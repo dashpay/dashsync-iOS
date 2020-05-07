@@ -348,8 +348,8 @@
     return [NSData dataWithUInt256:self.providerRegistrationTransactionHash].shortHexString;
 }
 
--(DSSimplifiedMasternodeEntryEntity*)simplifiedMasternodeEntryEntity {
-    DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity anyObjectMatching:@"providerRegistrationTransactionHash = %@",[NSData dataWithUInt256:self.providerRegistrationTransactionHash]];
+-(DSSimplifiedMasternodeEntryEntity*)simplifiedMasternodeEntryEntityInContext:(NSManagedObjectContext*)context {
+    DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity anyObjectInContext:context matching:@"providerRegistrationTransactionHash = %@",[NSData dataWithUInt256:self.providerRegistrationTransactionHash]];
     return simplifiedMasternodeEntryEntity;
 }
 

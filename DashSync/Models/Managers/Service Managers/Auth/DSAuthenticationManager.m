@@ -575,9 +575,10 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
                                          [[DSVersionManager sharedInstance] clearKeychainWalletOldData];
                                          [[DashSync sharedSyncController] stopSyncAllChains];
                                          for (DSChain * chain in [[DSChainsManager sharedInstance] chains]) {
-                                             [[DashSync sharedSyncController] wipeMasternodeDataForChain:chain];
-                                             [[DashSync sharedSyncController] wipeBlockchainDataForChain:chain];
-                                             [[DashSync sharedSyncController] wipeSporkDataForChain:chain];
+                                             NSManagedObjectContext * context = [NSManagedObjectContext chainContext];
+                                             [[DashSync sharedSyncController] wipeMasternodeDataForChain:chain inContext:context];
+                                             [[DashSync sharedSyncController] wipeBlockchainDataForChain:chain inContext:context];
+                                             [[DashSync sharedSyncController] wipeSporkDataForChain:chain inContext:context];
                                              [chain unregisterAllWallets];
                                          }
                                          [self removePin];

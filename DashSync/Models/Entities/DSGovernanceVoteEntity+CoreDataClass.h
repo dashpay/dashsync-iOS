@@ -16,8 +16,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSGovernanceVoteEntity : NSManagedObject
 
 - (void)setAttributesFromGovernanceVote:(DSGovernanceVote *)governanceVote forHashEntity:(DSGovernanceVoteHashEntity*)hashEntity;
-+ (NSUInteger)countForChain:(DSChainEntity* _Nonnull)chain;
-+ (NSUInteger)countForGovernanceObject:(DSGovernanceObjectEntity*)governanceObject;
++ (NSUInteger)countForChainEntity:(DSChainEntity* _Nonnull)chain;
++ (NSUInteger)countForGovernanceObjectEntity:(DSGovernanceObjectEntity*)governanceObject;
 - (DSGovernanceVote*)governanceVote;
 
 @end

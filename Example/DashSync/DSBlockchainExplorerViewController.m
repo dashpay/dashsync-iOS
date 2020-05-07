@@ -45,21 +45,21 @@
     if (self.searchString && ![self.searchString isEqualToString:@""]) {
         if (self.searchString.length < 10 && ([self.searchString isEqualToString:@"0"] || [self.searchString longLongValue])) {
             if (self.type == DSBlockchainExplorerType_All) {
-                return [NSPredicate predicateWithFormat:@"chain == %@ && (height == %@)",self.chain.chainEntity,@([self.searchString longLongValue])];
+                return [NSPredicate predicateWithFormat:@"chain == %@ && (height == %@)",[self.chain chainEntityInContext:context],@([self.searchString longLongValue])];
             } else {
-                return [NSPredicate predicateWithFormat:@"chain == %@ && (height == %@) && (onlyHeader == %@)",self.chain.chainEntity,@([self.searchString longLongValue]),@(self.type == DSBlockchainExplorerType_Headers)];
+                return [NSPredicate predicateWithFormat:@"chain == %@ && (height == %@) && (onlyHeader == %@)",[self.chain chainEntityInContext:context],@([self.searchString longLongValue]),@(self.type == DSBlockchainExplorerType_Headers)];
             }
         } else if (self.searchString.length > 10) {
                         if (self.type == DSBlockchainExplorerType_All) {
-            return [NSPredicate predicateWithFormat:@"chain == %@ && (blockHash == %@ || blockHash == %@ )",self.chain.chainEntity,self.searchString.hexToData,self.searchString.hexToData.reverse];
+            return [NSPredicate predicateWithFormat:@"chain == %@ && (blockHash == %@ || blockHash == %@ )",[self.chain chainEntityInContext:context],self.searchString.hexToData,self.searchString.hexToData.reverse];
                         } else {
-                                        return [NSPredicate predicateWithFormat:@"chain == %@ && (onlyHeader == %@) && (blockHash == %@ || blockHash == %@ )",self.chain.chainEntity, @(self.type == DSBlockchainExplorerType_Headers), self.searchString.hexToData, self.searchString.hexToData.reverse];
+                                        return [NSPredicate predicateWithFormat:@"chain == %@ && (onlyHeader == %@) && (blockHash == %@ || blockHash == %@ )",[self.chain chainEntityInContext:context], @(self.type == DSBlockchainExplorerType_Headers), self.searchString.hexToData, self.searchString.hexToData.reverse];
                         }
         } else {
             if (self.type == DSBlockchainExplorerType_All) {
-                return [NSPredicate predicateWithFormat:@"chain == %@",self.chain.chainEntity];
+                return [NSPredicate predicateWithFormat:@"chain == %@",[self.chain chainEntityInContext:context]];
             } else {
-                return [NSPredicate predicateWithFormat:@"chain == %@ && (onlyHeader == %@)",self.chain.chainEntity,@(self.type == DSBlockchainExplorerType_Headers)];
+                return [NSPredicate predicateWithFormat:@"chain == %@ && (onlyHeader == %@)",[self.chain chainEntityInContext:context],@(self.type == DSBlockchainExplorerType_Headers)];
             }
             
         }
@@ -69,9 +69,9 @@
         
     } else {
         if (self.type == DSBlockchainExplorerType_All) {
-            return [NSPredicate predicateWithFormat:@"chain == %@",self.chain.chainEntity];
+            return [NSPredicate predicateWithFormat:@"chain == %@",[self.chain chainEntityInContext:context]];
         } else {
-            return [NSPredicate predicateWithFormat:@"chain == %@ && (onlyHeader == %@)",self.chain.chainEntity,@(self.type == DSBlockchainExplorerType_Headers)];
+            return [NSPredicate predicateWithFormat:@"chain == %@ && (onlyHeader == %@)",[self.chain chainEntityInContext:context],@(self.type == DSBlockchainExplorerType_Headers)];
         }
     }
     

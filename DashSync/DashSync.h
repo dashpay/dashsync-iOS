@@ -138,16 +138,16 @@ FOUNDATION_EXPORT const unsigned char DashSyncVersionString[];
 - (void)registerBackgroundFetchOnce;
 - (void)setupDashSyncOnce;
 
--(void)startSyncForChain:(DSChain* _Nonnull)chain;
--(void)stopSyncForChain:(DSChain* _Nonnull)chain;
+-(void)startSyncForChain:(DSChain*)chain;
+-(void)stopSyncForChain:(DSChain*)chain;
 -(void)stopSyncAllChains;
 
--(void)wipePeerDataForChain:(DSChain* _Nonnull)chain;
--(void)wipeBlockchainDataForChain:(DSChain* _Nonnull)chain;
--(void)wipeGovernanceDataForChain:(DSChain* _Nonnull)chain;
--(void)wipeMasternodeDataForChain:(DSChain* _Nonnull)chain;
--(void)wipeSporkDataForChain:(DSChain* _Nonnull)chain;
--(void)wipeWalletDataForChain:(DSChain* _Nonnull)chain forceReauthentication:(BOOL)forceReauthentication;
+-(void)wipePeerDataForChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context;
+-(void)wipeBlockchainDataForChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context;
+-(void)wipeGovernanceDataForChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context;
+-(void)wipeMasternodeDataForChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context;
+-(void)wipeSporkDataForChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context;
+-(void)wipeWalletDataForChain:(DSChain*)chain forceReauthentication:(BOOL)forceReauthentication inContext:(NSManagedObjectContext*)context;
 
 -(uint64_t)dbSize;
 

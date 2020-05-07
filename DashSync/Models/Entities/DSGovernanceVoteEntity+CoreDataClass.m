@@ -28,29 +28,29 @@
         NSData * masternodeHashData = [NSData dataWithUInt256:governanceVote.masternodeUTXO.hash];
         self.masternodeHash = masternodeHashData;
         self.masternodeIndex = (uint32_t)governanceVote.masternodeUTXO.n;
-        NSArray * matchingMasternodeEntities = [DSSimplifiedMasternodeEntryEntity objectsMatching:@"utxoHash == %@ && utxoIndex == %@",masternodeHashData,@(governanceVote.masternodeUTXO.n)];
+        NSArray * matchingMasternodeEntities = [DSSimplifiedMasternodeEntryEntity objectsInContext:self.managedObjectContext matching:@"utxoHash == %@ && utxoIndex == %@",masternodeHashData,@(governanceVote.masternodeUTXO.n)];
         if ([matchingMasternodeEntities count]) {
             self.masternode = [matchingMasternodeEntities firstObject];
         }
     }];
 }
 
-+ (NSUInteger)countForGovernanceObject:(DSGovernanceObjectEntity*)governanceObject {
++ (NSUInteger)countForGovernanceObjectEntity:(DSGovernanceObjectEntity*)governanceObjectEntity {
     __block NSUInteger count = 0;
-    [governanceObject.managedObjectContext performBlockAndWait:^{
+    [governanceObjectEntity.managedObjectContext performBlockAndWait:^{
         NSFetchRequest * fetchRequest = [DSGovernanceVoteEntity fetchReq];
-        [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"governanceVoteHash.governanceObject = %@",governanceObject]];
-        count = [DSGovernanceVoteEntity countObjects:fetchRequest];
+        [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"governanceVoteHash.governanceObject = %@",governanceObjectEntity]];
+        count = [DSGovernanceVoteEntity countObjects:fetchRequest inContext:governanceObjectEntity.managedObjectContext];
     }];
     return count;
 }
 
-+ (NSUInteger)countForChain:(DSChainEntity*)chain {
++ (NSUInteger)countForChainEntity:(DSChainEntity*)chain {
     __block NSUInteger count = 0;
     [chain.managedObjectContext performBlockAndWait:^{
         NSFetchRequest * fetchRequest = [DSGovernanceVoteEntity fetchReq];
         [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"governanceVoteHash.chain = %@",chain]];
-        count = [DSGovernanceVoteEntity countObjects:fetchRequest];
+        count = [DSGovernanceVoteEntity countObjects:fetchRequest inContext:chain.managedObjectContext];
     }];
     return count;
 }

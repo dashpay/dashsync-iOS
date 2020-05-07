@@ -152,22 +152,25 @@
 }
 
 -(void)disconnectedRescan {
-    
-    DSChainEntity * chainEntity = self.chain.chainEntity;
+    NSManagedObjectContext * chainContext = [NSManagedObjectContext chainContext];
+    DSChainEntity * chainEntity = [self.chain chainEntityInContext:chainContext];
     [chainEntity.managedObjectContext performBlockAndWait:^{
         [self.chain wipeMasternodesInContext:chainEntity.managedObjectContext];//masternodes and quorums must go first
-        [DSMerkleBlockEntity deleteBlocksOnChain:chainEntity];
-        [DSTransactionHashEntity deleteTransactionHashesOnChain:chainEntity];
+        [DSMerkleBlockEntity deleteBlocksOnChainEntity:chainEntity];
+        [DSTransactionHashEntity deleteTransactionHashesOnChainEntity:chainEntity];
         [self.masternodeManager wipeMasternodeInfo];
         [self.chain wipeBlockchainInfo];
-        [DSTransactionEntity saveContext];
+        [chainContext ds_save];
     }];
+    
+    NSManagedObjectContext * peerContext =  [NSManagedObjectContext peerContext];
+    DSChainEntity * chainEntityInPeerContext = [self.chain chainEntityInContext:peerContext];
     
     if (![self.chain isMainnet]) {
         [self.chain.chainManager.peerManager removeTrustedPeerHost];
         [self.chain.chainManager.peerManager clearPeers];
-        [DSPeerEntity deletePeersForChain:chainEntity];
-        [DSPeerEntity saveContext];
+        [DSPeerEntity deletePeersForChainEntity:chainEntityInPeerContext];
+        [peerContext ds_save];
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -184,12 +187,12 @@
 }
 
 -(void)disconnectedRescanOfMasternodeListsAndQuorums {
-    
-    DSChainEntity * chainEntity = self.chain.chainEntity;
+    NSManagedObjectContext * chainContext = [NSManagedObjectContext chainContext];
+    DSChainEntity * chainEntity = [self.chain chainEntityInContext:chainContext];
     [chainEntity.managedObjectContext performBlockAndWait:^{
         [self.chain wipeMasternodesInContext:chainEntity.managedObjectContext];//masternodes and quorums must go first
         [self.masternodeManager wipeMasternodeInfo];
-        [DSTransactionEntity saveContext];
+        [chainContext ds_save];
     }];
     
     dispatch_async(dispatch_get_main_queue(), ^{

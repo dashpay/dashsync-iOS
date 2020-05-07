@@ -56,6 +56,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) uint32_t accountNumber;
 
+@property (nonatomic, readonly) NSManagedObjectContext * managedObjectContext;
+
 // current wallet balance excluding transactions known to be invalid
 @property (nonatomic, readonly) uint64_t balance;
 

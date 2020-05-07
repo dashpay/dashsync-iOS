@@ -37,9 +37,9 @@
 
 -(NSPredicate*)searchPredicate {
     if (self.searchString && ![self.searchString isEqualToString:@""]) {
-        return [NSPredicate predicateWithFormat:@"chain == %@ && block.height == %@",self.chain.chainEntity,self.searchString];
+        return [NSPredicate predicateWithFormat:@"chain == %@ && block.height == %@",[self.chain chainEntityInContext:context],self.searchString];
     } else {
-        return [NSPredicate predicateWithFormat:@"chain == %@",self.chain.chainEntity];
+        return [NSPredicate predicateWithFormat:@"chain == %@",[self.chain chainEntityInContext:context]];
     }
     
 }

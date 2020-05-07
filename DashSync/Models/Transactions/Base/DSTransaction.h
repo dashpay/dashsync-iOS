@@ -146,6 +146,8 @@ sequence:(uint32_t)sequence;
 
 - (DSTransactionEntity *)save;
 
+- (DSTransactionEntity *)saveInContext:(NSManagedObjectContext*)context;
+
 - (BOOL)saveInitial; //returns if the save took place
 
 - (BOOL)setInitialPersistentAttributesInContext:(NSManagedObjectContext*)context;

@@ -34,11 +34,12 @@
 @property(nonatomic,readonly) NSData * payloadData;
 @property(nonatomic,readonly) NSString * uniqueID;
 @property(nonatomic,readonly,class) uint32_t payloadLength;
-@property(nonatomic,readonly) DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity;
 
 +(instancetype)simplifiedMasternodeEntryWithData:(NSData*)data onChain:(DSChain*)chain;
 
 +(instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash confirmedHash:(UInt256)confirmedHash address:(UInt128)address port:(uint16_t)port operatorBLSPublicKey:(UInt384)operatorBLSPublicKey previousOperatorBLSPublicKeys:(NSDictionary <DSMerkleBlock*,NSData*>*)previousOperatorBLSPublicKeys keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid previousValidity:(NSDictionary <DSMerkleBlock*,NSData*>*)previousValidity simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash previousSimplifiedMasternodeEntryHashes:(NSDictionary <DSMerkleBlock*,NSData*>*)previousSimplifiedMasternodeEntryHashes onChain:(DSChain*)chain;
+
+-(DSSimplifiedMasternodeEntryEntity*)simplifiedMasternodeEntryEntityInContext:(NSManagedObjectContext*)context;
 
 -(BOOL)verifySignature:(UInt768)signature forMessageDigest:(UInt256)messageDigest;
 
