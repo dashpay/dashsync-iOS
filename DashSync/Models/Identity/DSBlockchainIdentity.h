@@ -254,7 +254,9 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 
 -(void)sendNewFriendRequestMatchingPotentialFriendship:(DSPotentialOneWayFriendship*)potentialFriendship completion:(void (^ _Nullable)(BOOL success, NSError * error))completion;
 
--(void)acceptFriendRequest:(DSFriendRequestEntity*)friendRequest completion:(void (^ _Nullable)(BOOL success, NSError * error))completion;
+- (void)acceptFriendRequestFromBlockchainIdentity:(DSBlockchainIdentity*)otherBlockchainIdentity completion:(void (^)(BOOL success, NSError * error))completion;
+
+- (void)acceptFriendRequest:(DSFriendRequestEntity*)friendRequest completion:(void (^ _Nullable)(BOOL success, NSError * error))completion;
 
 - (BOOL)activePrivateKeysAreLoadedWithFetchingError:(NSError**)error;
 
