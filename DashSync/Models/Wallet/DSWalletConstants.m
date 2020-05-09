@@ -24,6 +24,7 @@ NSString* const DSChainWalletsDidChangeNotification =    @"DSChainWalletsDidChan
 NSString* const DSChainStandaloneDerivationPathsDidChangeNotification =    @"DSChainStandaloneDerivationPathsDidChangeNotification";
 NSString* const DSChainStandaloneAddressesDidChangeNotification = @"DSChainStandaloneAddressesDidChangeNotification";
 NSString* const DSChainBlocksDidChangeNotification = @"DSChainBlocksDidChainNotification";
+NSString* const DSChainInitialHeadersDidChangeNotification = @"DSChainInitialHeadersDidChangeNotification";
 NSString* const DSChainBlockWasLockedNotification = @"DSChainBlockWasLockedNotification";
 NSString* const DSChainNotificationBlockKey = @"DSChainNotificationBlockKey";
 
@@ -76,3 +77,5 @@ NSString* const DSBlockchainIdentityUpdateEventRegistration = @"DSBlockchainIden
 NSString* const DSBlockchainIdentityUpdateEventCreditBalance = @"DSBlockchainIdentityUpdateEventCreditBalance";
 
 NSString* const DSBlockchainIdentityUpdateEventType = @"DSBlockchainIdentityUpdateEventType";
+
+NSString* const DSBlockchainIdentityUpdateEventDashpaySyncronizationBlockHash = @"DSBlockchainIdentityUpdateEventDashpaySyncronizationBlockHash";

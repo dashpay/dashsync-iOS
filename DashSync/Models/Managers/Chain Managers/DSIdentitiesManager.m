@@ -16,7 +16,7 @@
 //
 
 #import "DSIdentitiesManager.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "DSWallet.h"
 #import "DSChainManager.h"
 #import "DSBlockchainIdentity+Protected.h"
@@ -24,10 +24,14 @@
 #import "DSDAPIClient.h"
 #import "DSDAPINetworkService.h"
 #import "DSOptionsManager.h"
+#import "DSCreditFundingTransaction.h"
+#import "DSMerkleBlock.h"
+#import "DSPeerManager.h"
 
 @interface DSIdentitiesManager()
 
 @property (nonatomic, strong) DSChain * chain;
+@property (nonatomic, strong) NSMutableDictionary * foreignBlockchainIdentities;
 
 @end
 
@@ -40,11 +44,63 @@
     if (! (self = [super init])) return nil;
     
     self.chain = chain;
+    self.foreignBlockchainIdentities = [NSMutableDictionary dictionary];
     
     return self;
 }
 
 // MARK: - Identities
+
+- (DSBlockchainIdentity*)foreignBlockchainIdentityWithUniqueId:(UInt256)uniqueId {
+    //foreign blockchain identities are for local blockchain identies' contacts, not for search.
+    @synchronized (self.foreignBlockchainIdentities) {
+        if (self.foreignBlockchainIdentities[uint256_data(uniqueId)]) {
+            return self.foreignBlockchainIdentities[uint256_data(uniqueId)];
+        } else {
+            DSBlockchainIdentity * foreignBlockchainIdentity = [[DSBlockchainIdentity alloc] initWithUniqueId:uniqueId onChain:self.chain inContext:self.chain.managedObjectContext];
+            [foreignBlockchainIdentity saveInitial];
+            self.foreignBlockchainIdentities[uint256_data(uniqueId)] = foreignBlockchainIdentity;
+        }
+        return self.foreignBlockchainIdentities[uint256_data(uniqueId)];
+    }
+}
+
+- (NSArray*)unsyncedBlockchainIdentities {
+    NSMutableArray * unsyncedBlockchainIdentities = [NSMutableArray array];
+    for (DSBlockchainIdentity * blockchainIdentity in [self.chain localBlockchainIdentities]) {
+        if (!blockchainIdentity.registrationCreditFundingTransaction || (blockchainIdentity.registrationCreditFundingTransaction.blockHeight == BLOCK_UNKNOWN_HEIGHT)) {
+            [unsyncedBlockchainIdentities addObject:blockchainIdentity];
+        } else if (self.chain.lastBlockHeight > blockchainIdentity.dashpaySyncronizationBlockHeight) {
+            //If they are equal then the blockchain identity is synced
+            //This is because the dashpaySyncronizationBlock represents the last block for the bloom filter used in L1 should be considered valid
+            //That's because it is set at the time with the hash of the last
+            [unsyncedBlockchainIdentities addObject:blockchainIdentity];
+        }
+    }
+    return unsyncedBlockchainIdentities;
+}
+
+-(void)syncBlockchainIdentitiesWithCompletion:(IdentitiesCompletionBlock)completion {
+    dispatch_group_t dispatchGroup = dispatch_group_create();
+    __block BOOL groupedSuccess = YES;
+    __block NSMutableArray * groupedErrors = [NSMutableArray array];
+    NSArray <DSBlockchainIdentity *> * blockchainIdentities =  [self unsyncedBlockchainIdentities];
+    for (DSBlockchainIdentity * blockchainIdentity in blockchainIdentities) {
+        dispatch_group_enter(dispatchGroup);
+        [blockchainIdentity fetchAllNetworkStateInformationWithCompletion:^(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> * _Nullable errors) {
+            groupedSuccess &= !failureStep;
+            [groupedErrors addObjectsFromArray:errors];
+            dispatch_group_leave(dispatchGroup);
+        }];
+    }
+    
+
+    if (completion) {
+        dispatch_group_notify(dispatchGroup, dispatch_get_main_queue(), ^{
+            completion(groupedSuccess,blockchainIdentities,[groupedErrors copy]);
+        });
+    }
+}
 
 -(void)retrieveAllBlockchainIdentitiesChainStates {
     for (DSWallet * wallet in self.chain.wallets) {
@@ -94,13 +150,13 @@
         }
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                completion([rBlockchainIdentities firstObject],nil);
+                completion(YES,[rBlockchainIdentities firstObject],nil);
             });
         }
     } failure:^(NSError * _Nonnull error) {
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                completion(nil,error);
+                completion(NO,nil,error);
             });
         }
         NSLog(@"Failure %@",error);
@@ -121,13 +177,13 @@
         }
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                completion([rBlockchainIdentities copy],nil);
+                completion(YES,[rBlockchainIdentities copy],@[]);
             });
         }
     } failure:^(NSError * _Nonnull error) {
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                completion(nil,error);
+                completion(NO, nil, @[error]);
             });
         }
         NSLog(@"Failure %@",error);
@@ -151,17 +207,50 @@
         }
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                completion([rBlockchainIdentities copy],nil);
+                completion(YES,[rBlockchainIdentities copy],@[]);
             });
         }
     } failure:^(NSError * _Nonnull error) {
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                completion(nil,error);
+                completion(NO, nil, @[error]);
             });
         }
         NSLog(@"Failure %@",error);
     }];
+}
+
+- (void)checkCreditFundingTransactionForPossibleNewIdentity:(DSCreditFundingTransaction*)creditFundingTransaction {
+    uint32_t index;
+    DSWallet * wallet = [self.chain walletHavingBlockchainIdentityCreditFundingRegistrationHash:creditFundingTransaction.creditBurnPublicKeyHash foundAtIndex:&index];
+    
+    if (!wallet) return; //it's a topup or we are funding an external identity
+    
+    DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForUniqueId:creditFundingTransaction.creditBurnIdentityIdentifier];
+    
+    NSAssert(blockchainIdentity, @"We should have already created the blockchain identity at this point in the transaction manager by calling triggerUpdatesForLocalReferences");
+    
+    
+    //DSDLog(@"Paused Sync at block %d to gather identity information on %@",block.height,blockchainIdentity.uniqueIdString);
+    [self fetchNeededNetworkStateInformationForBlockchainIdentity:blockchainIdentity];
+}
+
+-(void)fetchNeededNetworkStateInformationForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity {
+    [blockchainIdentity fetchNeededNetworkStateInformationWithCompletion:^(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> * _Nullable errors) {
+        if (!failureStep) {
+            [self chain:self.chain didFinishFetchingBlockchainIdentityDAPInformation:blockchainIdentity];
+        } else {
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                [self fetchNeededNetworkStateInformationForBlockchainIdentity:blockchainIdentity];
+            });
+        }
+    }];
+}
+
+// MARK: - DSChainIdentitiesDelegate
+
+-(void)chain:(DSChain*)chain didFinishFetchingBlockchainIdentityDAPInformation:(DSBlockchainIdentity*)blockchainIdentity {
+    [self.chain.chainManager chain:chain didFinishFetchingBlockchainIdentityDAPInformation:blockchainIdentity];
 }
 
 @end

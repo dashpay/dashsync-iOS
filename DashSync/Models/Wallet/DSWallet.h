@@ -135,7 +135,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 // as unverified (not 0-conf safe)
 - (NSArray *)setBlockHeight:(int32_t)height
                andTimestamp:(NSTimeInterval)timestamp
-                forTxHashes:(NSArray *)txHashes;
+                forTransactionHashes:(NSArray *)txHashes;
 
 //add an account to the wallet
 - (void)addAccount:(DSAccount*)account;
@@ -243,6 +243,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 - (NSUInteger)indexOfHoldingAddress:(NSString*)holdingAddress;
 - (NSUInteger)indexOfBlockchainIdentityAuthenticationHash:(UInt160)blockchainIdentityAuthenticationHash;
 - (NSUInteger)indexOfBlockchainIdentityCreditFundingRegistrationHash:(UInt160)creditFundingRegistrationHash;
+- (NSUInteger)indexOfBlockchainIdentityCreditFundingTopupHash:(UInt160)creditFundingTopupHash;
 
 @end
 

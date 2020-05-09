@@ -12,18 +12,19 @@
 
 @implementation DSAccountEntity
 
-+ (DSAccountEntity* _Nonnull)accountEntityForWalletUniqueID:(NSString*)walletUniqueID index:(uint32_t)index onChain:(DSChain*)chain {
++ (DSAccountEntity* _Nonnull)accountEntityForWalletUniqueID:(NSString*)walletUniqueID index:(uint32_t)index onChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context {
     NSParameterAssert(walletUniqueID);
     NSParameterAssert(chain);
+    NSParameterAssert(context);
     NSArray * accounts = [DSAccountEntity objectsMatching:@"walletUniqueID = %@ && index = %@",walletUniqueID,@(index)];
     if ([accounts count]) {
         NSAssert([accounts count] == 1, @"There can only be one account per index per wallet");
         return [accounts objectAtIndex:0];
     }
-    DSAccountEntity * accountEntity = [DSAccountEntity managedObject];
+    DSAccountEntity * accountEntity = [DSAccountEntity managedObjectInContext:context];
     accountEntity.walletUniqueID = walletUniqueID;
     accountEntity.index = index;
-    accountEntity.chain = chain.chainEntity;
+    accountEntity.chain = [chain chainEntityInContext:context];
     return accountEntity;
 }
 

@@ -64,8 +64,9 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerPeersDidChangeNotificati
 - (void)setTrustedPeerHost:(NSString * _Nullable)host;
 - (void)removeTrustedPeerHost;
 
-- (void)connect;
+
 - (void)clearPeers;
+- (void)connect;
 - (void)disconnect;
 
 - (void)clearRegisteredPeers;

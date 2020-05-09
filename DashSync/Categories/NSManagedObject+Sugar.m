@@ -59,6 +59,22 @@ static NSUInteger _fetchBatchSize = 100;
     return obj;
 }
 
+
++ (instancetype)managedObjectInNewChildContextForParentContext:(NSManagedObjectContext *)context
+{
+    NSManagedObjectContext * childContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+    [childContext setParentContext:context];
+    __block NSEntityDescription *entity = nil;
+    __block NSManagedObject *obj = nil;
+    
+    [childContext performBlockAndWait:^{
+        entity = [NSEntityDescription entityForName:self.entityName inManagedObjectContext:context];
+        obj = [[self alloc] initWithEntity:entity insertIntoManagedObjectContext:context];
+    }];
+    
+    return obj;
+}
+
 + (NSArray *)managedObjectArrayWithLength:(NSUInteger)length
 {
     __block NSEntityDescription *entity = nil;
@@ -133,9 +149,14 @@ static NSUInteger _fetchBatchSize = 100;
 
 + (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext*)context
 {
+    return [self objectsForPredicate:[NSPredicate predicateWithFormat:predicateFormat arguments:args] inContext:context];
+}
+
++ (NSArray *)objectsForPredicate:(NSPredicate*)predicate inContext:(NSManagedObjectContext*)context
+{
     NSFetchRequest *request = self.fetchReq;
     
-    request.predicate = [NSPredicate predicateWithFormat:predicateFormat arguments:args];
+    request.predicate = predicate;
     return [self fetchObjects:request inContext:context];
 }
 
@@ -150,6 +171,15 @@ static NSUInteger _fetchBatchSize = 100;
     if ([array count]) {
         return [array objectAtIndex:0];
     } else return nil;
+}
+
++ (instancetype)anyObjectForPredicate:(NSPredicate*)predicate inContext:(NSManagedObjectContext*)context
+{
+    NSFetchRequest *request = self.fetchReq;
+    
+    request.predicate = predicate;
+    request.fetchLimit = 1;
+    return [[self fetchObjects:request inContext:context] firstObject];
 }
 
 + (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending

@@ -53,6 +53,11 @@ FOUNDATION_EXPORT NSString* const DSChainManagerNotificationChainKey;
 @property (nonatomic, readonly) DSTransactionManager * transactionManager;
 @property (nonatomic, readonly) DSPeerManager * peerManager;
 @property (nonatomic, readonly) DSChain * chain;
+@property (nonatomic, readonly) BOOL synchronizing;
+
+- (void)startSync;
+
+- (void)stopSync;
 
 - (void)rescan;
 

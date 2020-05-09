@@ -35,6 +35,7 @@ FOUNDATION_EXPORT NSString* const DSChainStandaloneAddressesDidChangeNotificatio
 FOUNDATION_EXPORT NSString* const DSChainBlocksDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainBlockWasLockedNotification;
 FOUNDATION_EXPORT NSString* const DSChainNotificationBlockKey;
+FOUNDATION_EXPORT NSString* const DSChainInitialHeadersDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 typedef NS_ENUM(uint16_t, DSChainType) {
@@ -77,6 +78,9 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 
 /*! @brief The chain entity associated in Core Data in the context of the chain's managed object context.  */
 @property (nonatomic, readonly, nullable) DSChainEntity * chainEntity;
+
+/*! @brief The chain entity associated in Core Data in the required context.  */
+-(DSChainEntity*)chainEntityInContext:(NSManagedObjectContext*)context;
 
 /*! @brief The managed object context of the chain.  */
 @property (nonatomic, readonly) NSManagedObjectContext * managedObjectContext;
@@ -163,6 +167,9 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 /*! @brief True if this chain syncs the blockchain. All Chains currently sync the blockchain.  */
 @property (nonatomic, readonly) BOOL syncsBlockchain;
 
+/*! @brief True if this chain should sync headers first for masternode list verification.  */
+@property (nonatomic, readonly) BOOL shouldSyncHeadersFirstForMasternodeListVerification;
+
 /*! @brief The default transaction version used when sending transactions.  */
 @property (nonatomic, readonly) uint16_t transactionVersion;
 
@@ -230,10 +237,16 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 /*! @brief Returns the checkpoint at a given block height, if one exists at that block height.  */
 - (DSCheckpoint* _Nullable)checkpointForBlockHeight:(uint32_t)blockHeight;
 
-// MARK: - Blocks
+// MARK: - Blocks and Headers
 
 /*! @brief The last known block on the chain.  */
 @property (nonatomic, readonly, nullable) DSMerkleBlock * lastBlock;
+
+/*! @brief The last known header on the chain.  */
+@property (nonatomic, readonly, nullable) DSMerkleBlock * lastHeader;
+
+/*! @brief The last known block or header on the chain. Whichever is latest.  */
+@property (nonatomic, readonly, nullable) DSMerkleBlock * lastBlockOrHeader;
 
 /*! @brief The last known orphan on the chain. An orphan is a block who's parent is currently not known.  */
 @property (nonatomic, readonly, nullable) DSMerkleBlock * lastOrphan;
@@ -253,9 +266,11 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 /*! @brief The block on the main chain at a certain height. By main chain it is understood to mean not forked chain - this could be on mainnet, testnet or a devnet.  */
 - (DSMerkleBlock * _Nullable)blockAtHeight:(uint32_t)height;
 
-/*! @brief Returns a known block with the given block hash. A null result could mean that the block was old and has since been discarded.  */
+/*! @brief Returns a known block with the given block hash. This does not have to be in the main chain. A null result could mean that the block was old and has since been discarded.  */
 - (DSMerkleBlock * _Nullable)blockForBlockHash:(UInt256)blockHash;
 
+/*! @brief Returns a known block in the main chain with the given block hash. A null result could mean that the block was old and has since been discarded.  */
+- (DSMerkleBlock * _Nullable)recentBlockForBlockHash:(UInt256)blockHash;
 
 /*! @brief Returns a known block with a given distance from the chain tip. A null result would mean that the given distance exceeded the number of blocks kept locally.  */
 - (DSMerkleBlock * _Nullable)blockFromChainTip:(NSUInteger)blocksAgo;
@@ -265,7 +280,10 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 /*! @brief Returns the height of the last block.  */
 @property (nonatomic, readonly) uint32_t lastBlockHeight;
 
-/*! @brief Returns the height of the last block.  */
+/*! @brief Returns the height of the last header.  */
+@property (nonatomic, readonly) uint32_t lastHeaderHeight;
+
+/*! @brief Returns the height of the best block.  */
 @property (nonatomic, readonly) uint32_t bestBlockHeight;
 
 /*! @brief Returns the estimated height of chain. This is reported by the current download peer but can not be verified and is not secure.  */
@@ -382,17 +400,25 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 @protocol DSChainTransactionsDelegate
 @required
 
--(void)chain:(DSChain*)chain didSetBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes updatedTx:(NSArray *)updatedTx;
+-(void)chain:(DSChain*)chain didSetBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)txHashes updatedTransactions:(NSArray *)updatedTransactions;
 -(void)chainWasWiped:(DSChain*)chain;
 
 @end
 
-@protocol DSChainDelegate <DSChainTransactionsDelegate>
+@protocol DSChainIdentitiesDelegate
+@required
+-(void)chain:(DSChain*)chain didFinishFetchingBlockchainIdentityDAPInformation:(DSBlockchainIdentity*)blockchainIdentity;
+
+@end
+
+@protocol DSChainDelegate <DSChainTransactionsDelegate,DSChainIdentitiesDelegate>
 
 @required
 
 -(void)chainWillStartSyncingBlockchain:(DSChain*)chain;
+-(void)chainShouldStartSyncingBlockchain:(DSChain*)chain onPeer:(DSPeer*)peer;
 -(void)chainFinishedSyncingTransactionsAndBlocks:(DSChain*)chain fromPeer:(DSPeer* _Nullable)peer onMainChain:(BOOL)onMainChain;
+-(void)chainFinishedSyncingInitialHeaders:(DSChain*)chain fromPeer:(DSPeer* _Nullable)peer onMainChain:(BOOL)onMainChain;
 -(void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain*)chain;
 -(void)chain:(DSChain*)chain receivedOrphanBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer;
 -(void)chain:(DSChain*)chain wasExtendedWithBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer;

@@ -189,6 +189,7 @@ typedef void (^MempoolCompletionBlock)(BOOL success, BOOL needed, BOOL interrupt
 @required
 
 // called when the peer relays either a merkleblock or a block header, headers will have 0 totalTransactions
+- (void)peer:(DSPeer *)peer relayedHeader:(DSMerkleBlock *)block;
 - (void)peer:(DSPeer *)peer relayedBlock:(DSMerkleBlock *)block;
 - (void)peer:(DSPeer *)peer relayedChainLock:(DSChainLock *)chainLock;
 - (void)peer:(DSPeer *)peer relayedTooManyOrphanBlocks:(NSUInteger)orphanBlockCount;
@@ -270,7 +271,7 @@ typedef NS_ENUM(NSUInteger, DSPeerType) {
 @property (nonatomic, readonly) uint32_t version;
 @property (nonatomic, readonly) uint64_t nonce;
 @property (nonatomic, readonly) NSString *useragent;
-@property (nonatomic, readonly) uint32_t lastblock;
+@property (nonatomic, readonly) uint32_t lastBlockHeight;
 @property (nonatomic, readonly) uint64_t feePerByte; // minimum tx fee rate peer will accept
 @property (nonatomic, readonly) NSTimeInterval pingTime;
 @property (nonatomic, readonly) NSTimeInterval relaySpeed; // headers or block->totalTx per second being relayed
@@ -305,7 +306,7 @@ services:(uint64_t)services;
 - (void)sendMempoolMessage:(NSArray *)publishedTxHashes completion:(MempoolCompletionBlock _Nullable)completion;
 - (void)sendGetheadersMessageWithLocators:(NSArray *)locators andHashStop:(UInt256)hashStop;
 - (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(UInt256)hashStop;
-- (void)sendTransactionInvMessagesForTxHashes:(NSArray * _Nullable)txInvHashes txLockRequestHashes:(NSArray* _Nullable)txLockRequestInvHashes;
+- (void)sendTransactionInvMessagesforTransactionHashes:(NSArray * _Nullable)txInvHashes txLockRequestHashes:(NSArray* _Nullable)txLockRequestInvHashes;
 - (void)sendInvMessageForHashes:(NSArray *)invHashes ofType:(DSInvType)invType;
 - (void)sendGetdataMessageForTxHash:(UInt256)txHash;
 - (void)sendGetdataMessageWithTxHashes:(NSArray * _Nullable)txHashes instantSendLockHashes:(NSArray* _Nullable)instantSendLockHashes blockHashes:(NSArray * _Nullable)blockHashes chainLockHashes:(NSArray * _Nullable)chainLockHashes;

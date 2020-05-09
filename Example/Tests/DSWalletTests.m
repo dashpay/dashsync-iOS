@@ -78,7 +78,7 @@
 //
 //    XCTAssertEqual(w.balance, DUFFS, @"[DSWallet registerTransaction]");
 //
-//    [w setBlockHeight:1000 andTimestamp:1 forTxHashes:@[uint256_obj(tx.txHash)]];
+//    [w setBlockHeight:1000 andTimestamp:1 forTransactionHashes:@[uint256_obj(tx.txHash)]];
 //    XCTAssertEqual(w.balance, DUFFS*2, @"[DSWallet registerTransaction]");
 //
 //    tx = [w transactionFor:DUFFS/2 to:k.address withFee:NO];

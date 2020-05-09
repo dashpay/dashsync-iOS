@@ -29,6 +29,20 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityRegistrationStep) {
     DSBlockchainIdentityRegistrationStep_Cancelled = 1 << 30
 };
 
+typedef NS_ENUM(NSUInteger, DSBlockchainIdentityQueryStep) {
+    DSBlockchainIdentityQueryStep_None = DSBlockchainIdentityRegistrationStep_None, //0
+    DSBlockchainIdentityQueryStep_Identity = DSBlockchainIdentityRegistrationStep_Identity,
+    DSBlockchainIdentityQueryStep_Username = DSBlockchainIdentityRegistrationStep_Username,
+    DSBlockchainIdentityQueryStep_Profile = DSBlockchainIdentityRegistrationStep_Profile,
+    DSBlockchainIdentityQueryStep_IncomingContactRequests = 64,
+    DSBlockchainIdentityQueryStep_OutgoingContactRequests = 128,
+    DSBlockchainIdentityQueryStep_ContactRequests = DSBlockchainIdentityQueryStep_IncomingContactRequests | DSBlockchainIdentityQueryStep_OutgoingContactRequests,
+    DSBlockchainIdentityQueryStep_AllForForeignBlockchainIdentity = DSBlockchainIdentityQueryStep_Identity | DSBlockchainIdentityQueryStep_Username | DSBlockchainIdentityQueryStep_Profile,
+    DSBlockchainIdentityQueryStep_AllForLocalBlockchainIdentity = DSBlockchainIdentityQueryStep_Identity | DSBlockchainIdentityQueryStep_Username | DSBlockchainIdentityQueryStep_Profile | DSBlockchainIdentityQueryStep_ContactRequests,
+    DSBlockchainIdentityQueryStep_BadQuery = 1 << 29,
+    DSBlockchainIdentityQueryStep_Cancelled = 1 << 30
+};
+
 typedef NS_ENUM(NSUInteger, DSBlockchainIdentityRegistrationStatus) {
     DSBlockchainIdentityRegistrationStatus_Unknown = 0,
     DSBlockchainIdentityRegistrationStatus_Registered = 1,
@@ -87,6 +101,7 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventKeyUpdate;
 FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventRegistration;
 FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventCreditBalance;
 FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
+FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventDashpaySyncronizationBlockHash;
 
 @interface DSBlockchainIdentity : NSObject
 
@@ -167,6 +182,12 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 /*! @brief This is a convenience factory to quickly make dpns documents */
 @property (nonatomic,readonly) DPDocumentFactory* dpnsDocumentFactory;
 
+/*! @brief DashpaySyncronizationBlock represents the last L1 block height for which Dashpay would be synchronized, if this isn't at the end of the chain then we need to query L2 to make sure we don't need to update our bloom filter */
+@property (nonatomic,readonly) uint32_t dashpaySyncronizationBlockHeight;
+
+/*! @brief DashpaySyncronizationBlock represents the last L1 block hash for which Dashpay would be synchronized */
+@property (nonatomic,readonly) UInt256 dashpaySyncronizationBlockHash;
+
 // MARK: - Contracts
 
 -(void)fetchAndUpdateContract:(DPContract*)contract;
@@ -188,9 +209,9 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 
 -(void)fetchIdentityNetworkStateInformationWithCompletion:(void (^)(BOOL success, NSError * error))completion;
 
--(void)fetchAllNetworkStateInformationWithCompletion:(void (^)(BOOL success, NSError * error))completion;
+-(void)fetchAllNetworkStateInformationWithCompletion:(void (^)(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> * errors))completion;
 
--(void)fetchNeededNetworkStateInformationWithCompletion:(void (^)(DSBlockchainIdentityRegistrationStep failureStep, NSError * _Nullable error))completion;
+-(void)fetchNeededNetworkStateInformationWithCompletion:(void (^)(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> * errors))completion;
 
 -(void)signStateTransition:(DSTransition*)transition completion:(void (^ _Nullable)(BOOL success))completion;
 
@@ -250,13 +271,14 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventType;
 
 // MARK: - Dashpay
 
--(void)sendNewFriendRequestToPotentialContact:(DSPotentialContact*)potentialContact completion:(void (^ _Nullable)(BOOL success, NSError * error))completion;
+- (void)sendNewFriendRequestToPotentialContact:(DSPotentialContact*)potentialContact completion:(void (^ _Nullable)(BOOL success, NSArray<NSError *> * errors))completion;
 
--(void)sendNewFriendRequestMatchingPotentialFriendship:(DSPotentialOneWayFriendship*)potentialFriendship completion:(void (^ _Nullable)(BOOL success, NSError * error))completion;
+- (void)sendNewFriendRequestMatchingPotentialFriendship:(DSPotentialOneWayFriendship*)potentialFriendship completion:(void (^ _Nullable)(BOOL success, NSArray<NSError *> * errors))completion;
 
-- (void)acceptFriendRequestFromBlockchainIdentity:(DSBlockchainIdentity*)otherBlockchainIdentity completion:(void (^)(BOOL success, NSError * error))completion;
 
-- (void)acceptFriendRequest:(DSFriendRequestEntity*)friendRequest completion:(void (^ _Nullable)(BOOL success, NSError * error))completion;
+- (void)acceptFriendRequestFromBlockchainIdentity:(DSBlockchainIdentity*)otherBlockchainIdentity completion:(void (^)(BOOL success, NSArray<NSError *> * errors))completion;
+
+- (void)acceptFriendRequest:(DSFriendRequestEntity*)friendRequest completion:(void (^ _Nullable)(BOOL success, NSArray<NSError *> * errors))completion;
 
 - (BOOL)activePrivateKeysAreLoadedWithFetchingError:(NSError**)error;
 

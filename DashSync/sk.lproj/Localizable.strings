@@ -354,3 +354,9 @@
 
 /* No comment provided by engineer. */
 "You can only accept a friend request from blockchain identity who has sent you one, and none were found" = "You can only accept a friend request from blockchain identity who has sent you one, and none were found";
+
+/* An error message for notifying that chain sync has timed out */
+"Synchronization Timeout" = "Synchronization Timeout";
+
+/* No comment provided by engineer. */
+"Attempt to query DAPs for blockchain identity with no active keys" = "Attempt to query DAPs for blockchain identity with no active keys";
