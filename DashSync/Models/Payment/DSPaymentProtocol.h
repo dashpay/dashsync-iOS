@@ -40,6 +40,7 @@
 @property (nonatomic, readonly) NSString *memo; // human-readable description of request for the customer, optional
 @property (nonatomic, readonly) NSString *paymentURL; // url to send payment and get payment ack, optional
 @property (nonatomic, readonly) NSData *merchantData; // arbitrary data to include in the payment message, optional
+@property (nonatomic, readonly) NSString *merchantString; // optional
 @property (nonatomic, readonly) DSChain *chain;
 
 @property (nonatomic, readonly, getter = toData) NSData *data;
@@ -68,28 +69,26 @@ merchantData:(NSData *)data onChain:(DSChain*)chain;
 @property (nonatomic, readonly) NSString *errorMessage; // error message if there was an error validating the request
 @property (nonatomic, readonly) NSString *callbackScheme; //used for a local device callback
 @property (nonatomic, readonly) DSChain *chain;
-@property (nonatomic, readonly) BOOL requestsInstantSend;
-@property (nonatomic, readonly) BOOL requiresInstantSend;
 @property (nonatomic, readonly) NSString * requestedFiatAmountCurrencyCode;
 
 + (instancetype)requestWithData:(NSData *)data onChain:(DSChain*)chain;
 
 - (instancetype)initWithData:(NSData *)data onChain:(DSChain*)chain;
 - (instancetype)initWithVersion:(uint32_t)version pkiType:(NSString *)type certs:(NSArray *)certs
-                        details:(DSPaymentProtocolDetails *)details signature:(NSData *)sig requestsInstantSend:(BOOL)requestsInstantSend requiresInstantSend:(BOOL)requiresInstantSend requestedAgainstFiatCurrency:(NSString*)currencyCode requestedFiatAmount:(float)fiatAmount onChain:(DSChain *)chain callbackScheme:(NSString *)callbackScheme;
-
--(void)updateForRequestsInstantSend:(BOOL)requestsInstantSend requiresInstantSend:(BOOL)requiresInstantSend;
+                        details:(DSPaymentProtocolDetails *)details signature:(NSData *)sig onChain:(DSChain *)chain callbackScheme:(NSString *)callbackScheme;
 
 @end
 
 @interface DSPaymentProtocolPayment : NSObject
 
 @property (nonatomic, readonly) NSData *merchantData; // from request.details.merchantData, optional
+@property (nonatomic, readonly) NSString *merchantString; // optional
 @property (nonatomic, readonly) NSArray *transactions; // array of signed DSTransaction objs to satisfy details.outputs
 @property (nonatomic, readonly) NSArray *refundToAmounts; // refund amounts, if a refund is necessary, default is 0
 @property (nonatomic, readonly) NSArray *refundToScripts; // where to send refunds, if a refund is necessary
 @property (nonatomic, readonly) NSString *memo; // human-readable message for the merchant, optional
 @property (nonatomic, readonly) DSChain *chain;
+@property (nonatomic, readonly) BOOL chainSetInProtocol;
 
 @property (nonatomic, readonly, getter = toData) NSData *data;
 

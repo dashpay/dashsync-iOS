@@ -60,6 +60,14 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
     DSBlockchainIdentityUsernameStatus_TakenOnNetwork = 6,
 };
 
+typedef NS_ENUM(NSUInteger, DSBlockchainIdentityFriendshipStatus) {
+    DSBlockchainIdentityFriendshipStatus_Unknown = NSUIntegerMax,
+    DSBlockchainIdentityFriendshipStatus_None = 0,
+    DSBlockchainIdentityFriendshipStatus_Outgoing = 1,
+    DSBlockchainIdentityFriendshipStatus_Incoming = 2,
+    DSBlockchainIdentityFriendshipStatus_Friends = DSBlockchainIdentityFriendshipStatus_Outgoing | DSBlockchainIdentityFriendshipStatus_Incoming,
+};
+
 typedef NS_ENUM(NSUInteger, DSBlockchainIdentityType) {
     DSBlockchainIdentityType_Unknown = 0,
     DSBlockchainIdentityType_User = 1,
@@ -267,6 +275,9 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventDashpaySyncroni
 
 - (void)sendNewFriendRequestMatchingPotentialFriendship:(DSPotentialOneWayFriendship*)potentialFriendship completion:(void (^ _Nullable)(BOOL success, NSArray<NSError *> * errors))completion;
 
+
+- (void)acceptFriendRequestFromBlockchainIdentity:(DSBlockchainIdentity*)otherBlockchainIdentity completion:(void (^)(BOOL success, NSArray<NSError *> * errors))completion;
+
 - (void)acceptFriendRequest:(DSFriendRequestEntity*)friendRequest completion:(void (^ _Nullable)(BOOL success, NSArray<NSError *> * errors))completion;
 
 - (BOOL)activePrivateKeysAreLoadedWithFetchingError:(NSError**)error;
@@ -284,6 +295,10 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventDashpaySyncroni
 - (void)signedProfileDocumentTransitionWithCompletion:(void (^)(DSTransition * transition, BOOL cancelled, NSError * error))completion;
 
 - (void)signAndPublishProfileWithCompletion:(void (^)(BOOL success, BOOL cancelled, NSError * error))completion;
+
+// MARK: - Dashpay Friendship Helpers
+
+- (DSBlockchainIdentityFriendshipStatus)friendshipStatusForRelationshipWithBlockchainIdentity:(DSBlockchainIdentity*)otherBlockchainIdentity;
 
 // MARK: - DPNS
 

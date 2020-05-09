@@ -349,6 +349,12 @@
 /* No comment provided by engineer. */
 "Error generating public keys" = "Error generating public keys";
 
+/* No comment provided by engineer. */
+"Accepting a friend request should only happen from a local blockchain identity" = "Accepting a friend request should only happen from a local blockchain identity";
+
+/* No comment provided by engineer. */
+"You can only accept a friend request from blockchain identity who has sent you one, and none were found" = "You can only accept a friend request from blockchain identity who has sent you one, and none were found";
+
 /* An error message for notifying that chain sync has timed out */
 "Synchronization Timeout" = "Synchronization Timeout";
 

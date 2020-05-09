@@ -2332,6 +2332,22 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     }
 }
 
+
+- (DSBlockchainIdentityFriendshipStatus)friendshipStatusForRelationshipWithBlockchainIdentity:(DSBlockchainIdentity*)otherBlockchainIdentity {
+    if (!self.matchingDashpayUser) return DSBlockchainIdentityFriendshipStatus_Unknown;
+    __block BOOL isIncoming;
+    __block BOOL isOutgoing;
+    [self.matchingDashpayUser.managedObjectContext performBlockAndWait:^{
+        isIncoming = !![self.matchingDashpayUser.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact.associatedBlockchainIdentity.uniqueID == %@", uint256_data(otherBlockchainIdentity.uniqueID)]].count;
+        isOutgoing = !![self.matchingDashpayUser.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact.associatedBlockchainIdentity.uniqueID == %@", uint256_data(otherBlockchainIdentity.uniqueID)]].count;
+    }];
+    return ((isIncoming << 1) | isOutgoing );
+}
+
+
+// MARK: Sending a Friend Request
+
+
 -(void)setDashpaySyncronizationBlockHash:(UInt256)dashpaySyncronizationBlockHash {
     _dashpaySyncronizationBlockHash = dashpaySyncronizationBlockHash;
     if (uint256_is_zero(_dashpaySyncronizationBlockHash)) {
@@ -2518,9 +2534,39 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     }];
 }
 
+
+-(void)acceptFriendRequestFromBlockchainIdentity:(DSBlockchainIdentity*)otherBlockchainIdentity completion:(void (^)(BOOL success, NSArray<NSError *> * errors))completion {
+    NSAssert(_isLocal, @"This should not be performed on a non local blockchain identity");
+    if (!_isLocal) {
+        if (completion) {
+            completion(NO,@[[NSError errorWithDomain:@"DashSync" code:501 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                   DSLocalizedString(@"Accepting a friend request should only happen from a local blockchain identity", nil)}]]);
+        }
+        return;
+    }
+
+    [self.matchingDashpayUser.managedObjectContext performBlockAndWait:^{
+        DSFriendRequestEntity * friendRequest = [[self.matchingDashpayUser.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact.associatedBlockchainIdentity.uniqueID == %@", uint256_data(otherBlockchainIdentity.uniqueID)]] anyObject];
+        if (!friendRequest) {
+            if (completion) {
+                completion(NO,@[[NSError errorWithDomain:@"DashSync" code:501 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                       DSLocalizedString(@"You can only accept a friend request from blockchain identity who has sent you one, and none were found", nil)}]]);
+            }
+        } else {
+            [self acceptFriendRequest:friendRequest completion:completion];
+        }
+    }];
+}
+
 -(void)acceptFriendRequest:(DSFriendRequestEntity*)friendRequest completion:(void (^)(BOOL success, NSArray<NSError *> * errors))completion {
     NSAssert(_isLocal, @"This should not be performed on a non local blockchain identity");
-    if (!_isLocal) return;
+    if (!_isLocal) {
+        if (completion) {
+            completion(NO,@[[NSError errorWithDomain:@"DashSync" code:501 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                   DSLocalizedString(@"Accepting a friend request should only happen from a local blockchain identity", nil)}]]);
+        }
+        return;
+    }
     DSFriendRequestEntity * friendRequestInContext = [self.managedObjectContext objectWithID:friendRequest.objectID];
     DSAccount * account = [self.wallet accountWithNumber:0];
     DSDashpayUserEntity * otherDashpayUser = friendRequestInContext.sourceContact;
