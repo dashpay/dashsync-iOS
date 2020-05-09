@@ -88,6 +88,7 @@
     static dispatch_once_t oncePeerToken;
     dispatch_once(&oncePeerToken, ^{
         _peerContext = [self.persistentContainer newBackgroundContext];
+        [_peerContext setMergePolicy:NSMergeByPropertyObjectTrumpMergePolicy];
     });
     return _peerContext;
 }
@@ -96,6 +97,7 @@
     static dispatch_once_t onceChainToken;
     dispatch_once(&onceChainToken, ^{
         _chainContext = [self.persistentContainer newBackgroundContext];
+        [_chainContext setMergePolicy:NSMergeByPropertyObjectTrumpMergePolicy];
     });
     return _chainContext;
 }
@@ -104,6 +106,7 @@
     static dispatch_once_t oncePlatformToken;
     dispatch_once(&oncePlatformToken, ^{
         _platformContext = [self.persistentContainer newBackgroundContext];
+        [_platformContext setMergePolicy:NSMergeByPropertyObjectTrumpMergePolicy];
     });
     return _platformContext;
 }

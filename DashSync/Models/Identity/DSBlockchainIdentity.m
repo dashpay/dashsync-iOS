@@ -611,7 +611,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     if (!_isLocal) return FALSE;
     if (self.isRegistered) return FALSE; //if it is already registered we can not unregister it from the wallet
     [self.wallet unregisterBlockchainIdentity:self];
-    [self deletePersistentObjectAndSave:YES];
+    [self deletePersistentObjectAndSave:YES inContext:self.managedObjectContext];
     return TRUE;
 }
 
@@ -3515,9 +3515,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 // MARK: Deletion
 
--(void)deletePersistentObjectAndSave:(BOOL)save {
-    [self.managedObjectContext performBlockAndWait:^{
-        DSBlockchainIdentityEntity * blockchainIdentityEntity = self.blockchainIdentityEntity;
+-(void)deletePersistentObjectAndSave:(BOOL)save inContext:(NSManagedObjectContext*)context {
+    [context performBlockAndWait:^{
+        DSBlockchainIdentityEntity * blockchainIdentityEntity = [self blockchainIdentityEntityInContext:context];
         if (blockchainIdentityEntity) {
             NSSet <DSFriendRequestEntity *>* friendRequests = [blockchainIdentityEntity.matchingDashpayUser outgoingRequests];
             for (DSFriendRequestEntity * friendRequest in friendRequests) {
@@ -3527,7 +3527,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             }
             [blockchainIdentityEntity deleteObjectAndWait];
             if (save) {
-                [self.managedObjectContext ds_save];
+                [context ds_save];
             }
         }
         dispatch_async(dispatch_get_main_queue(), ^{

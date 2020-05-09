@@ -87,7 +87,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)wipeMasternodesInContext:(NSManagedObjectContext*)context;
 
 /*! @brief This removes all blockchain information from the chain's wallets and derivation paths. */
-- (void)wipeBlockchainInfo;
+- (void)wipeBlockchainInfoInContext:(NSManagedObjectContext*)context;
 
 // MARK: - Persistence
 

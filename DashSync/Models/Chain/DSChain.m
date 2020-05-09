@@ -236,12 +236,18 @@ static checkpoint mainnet_checkpoint_array[] = {
     if (! (self = [super init])) return nil;
     NSAssert([NSThread isMainThread], @"Chains should only be created on main thread (for chain entity optimizations)");
     self.orphans = [NSMutableDictionary dictionary];
-    self.genesisHash = self.checkpoints[0].checkpointHash;
     self.mWallets = [NSMutableArray array];
     self.estimatedBlockHeights = [NSMutableDictionary dictionary];
-    self.chainManagedObjectContext = [NSManagedObjectContext chainContext];
+
     self.transactionHashHeights = [NSMutableDictionary dictionary];
     self.transactionHashTimestamps = [NSMutableDictionary dictionary];
+    
+    if (self.checkpoints) {
+        self.genesisHash = self.checkpoints[0].checkpointHash;
+        dispatch_sync(self.networkingQueue, ^{
+            self.chainManagedObjectContext = [NSManagedObjectContext chainContext];
+        });
+    }
     
     self.feePerByte = DEFAULT_FEE_PER_B;
     uint64_t feePerByte = [[NSUserDefaults standardUserDefaults] doubleForKey:FEE_PER_BYTE_KEY];
@@ -290,6 +296,9 @@ static checkpoint mainnet_checkpoint_array[] = {
         self.checkpoints = checkpoints;
         self.genesisHash = checkpoints[1].checkpointHash;
     }
+    dispatch_sync(self.networkingQueue, ^{
+        self.chainManagedObjectContext = [NSManagedObjectContext chainContext];
+    });
     //    DSDLog(@"%@",[NSData dataWithUInt256:self.checkpoints[0].checkpointHash]);
     //    DSDLog(@"%@",[NSData dataWithUInt256:self.genesisHash]);
     self.devnetIdentifier = identifier;
@@ -299,20 +308,7 @@ static checkpoint mainnet_checkpoint_array[] = {
 -(instancetype)initAsDevnetWithIdentifier:(NSString*)identifier checkpoints:(NSArray<DSCheckpoint*>*)checkpoints port:(uint32_t)port dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID
 {
     //for devnet the genesis checkpoint is really the second block
-    if (! (self = [self init])) return nil;
-    _chainType = DSChainType_DevNet;
-    if (!checkpoints || ![checkpoints count]) {
-        DSCheckpoint * genesisCheckpoint = [DSCheckpoint genesisDevnetCheckpoint];
-        DSCheckpoint * secondCheckpoint = [self createDevNetGenesisBlockCheckpointForParentCheckpoint:genesisCheckpoint withIdentifier:identifier];
-        self.checkpoints = @[genesisCheckpoint,secondCheckpoint];
-        self.genesisHash = secondCheckpoint.checkpointHash;
-    } else {
-        self.checkpoints = checkpoints;
-        self.genesisHash = checkpoints[1].checkpointHash;
-    }
-    //    DSDLog(@"%@",[NSData dataWithUInt256:self.checkpoints[0].checkpointHash]);
-    //    DSDLog(@"%@",[NSData dataWithUInt256:self.genesisHash]);
-    self.devnetIdentifier = identifier;
+    if (! (self = [self initAsDevnetWithIdentifier:identifier checkpoints:checkpoints])) return nil;
     self.standardPort = port;
     self.standardDapiJRPCPort = dapiJRPCPort;
     self.standardDapiGRPCPort = dapiGRPCPort;
@@ -1441,7 +1437,7 @@ static dispatch_once_t devnetToken = 0;
 
 -(void)unregisterWallet:(DSWallet*)wallet {
     NSAssert(wallet.chain == self, @"the wallet you are trying to remove is not on this chain");
-    [wallet wipeBlockchainInfo];
+    [wallet wipeBlockchainInfoInContext:self.chainManagedObjectContext];
     [wallet wipeWalletInfo];
     [self.mWallets removeObject:wallet];
     NSError * error = nil;
@@ -2565,11 +2561,11 @@ static dispatch_once_t devnetToken = 0;
 
 // MARK: - Wiping
 
-- (void)wipeBlockchainInfo {
+- (void)wipeBlockchainInfoInContext:(NSManagedObjectContext*)context {
     for (DSWallet * wallet in self.wallets) {
-        [wallet wipeBlockchainInfo];
+        [wallet wipeBlockchainInfoInContext:context];
     }
-    [self wipeBlockchainIdentitiesPersistedData];
+    [self wipeBlockchainIdentitiesPersistedDataInContext:context];
     [self.viewingAccount wipeBlockchainInfo];
     _bestBlockHeight = 0;
     _blocks = nil;
@@ -2645,10 +2641,10 @@ static dispatch_once_t devnetToken = 0;
     return nil;
 }
 
--(void)wipeBlockchainIdentitiesPersistedData {
-    [self.chainManagedObjectContext performBlockAndWait:^{
-        NSArray * objects = [DSBlockchainIdentityEntity objectsInContext:self.chainManagedObjectContext matching:@"chain == %@",self.chainEntity];
-        [DSBlockchainIdentityEntity deleteObjects:objects inContext:self.chainManagedObjectContext];
+-(void)wipeBlockchainIdentitiesPersistedDataInContext:(NSManagedObjectContext*)context {
+    [context performBlockAndWait:^{
+        NSArray * objects = [DSBlockchainIdentityEntity objectsInContext:context matching:@"chain == %@",self.chainEntity];
+        [DSBlockchainIdentityEntity deleteObjects:objects inContext:context];
     }];
 }
 

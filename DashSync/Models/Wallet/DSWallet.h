@@ -196,7 +196,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 + (NSString* _Nonnull)creationTimeUniqueIDForUniqueID:(NSString*)uniqueID;
 
 //This removes all blockchain information from the wallet, used for resync
-- (void)wipeBlockchainInfo;
+- (void)wipeBlockchainInfoInContext:(NSManagedObjectContext*)context;
 
 //This removes all wallet based information from the wallet, used when deletion of wallet is wanted
 - (void)wipeWalletInfo;

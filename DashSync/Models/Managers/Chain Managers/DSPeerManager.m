@@ -125,7 +125,9 @@
                                                            //[[self.connectedPeers copy] makeObjectsPerformSelector:@selector(disconnect)];
                                                        }];
     
-    self.managedObjectContext = [NSManagedObjectContext peerContext];
+    dispatch_sync(self.networkingQueue, ^{
+        self.managedObjectContext = [NSManagedObjectContext peerContext];
+    });
     
     return self;
 }

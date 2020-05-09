@@ -159,7 +159,7 @@
         [DSMerkleBlockEntity deleteBlocksOnChainEntity:chainEntity];
         [DSTransactionHashEntity deleteTransactionHashesOnChainEntity:chainEntity];
         [self.masternodeManager wipeMasternodeInfo];
-        [self.chain wipeBlockchainInfo];
+        [self.chain wipeBlockchainInfoInContext:chainContext];
         [chainContext ds_save];
     }];
     

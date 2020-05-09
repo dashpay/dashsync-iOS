@@ -100,12 +100,12 @@
 }
 
 - (DSTransaction *)transaction {
-    return [self transactionForChain:[self.chain chain]];
+    return [self transactionForChain:[self.transactionHash chain].chain];
 }
 
 - (DSTransaction *)transactionForChain:(DSChain*)chain
 {
-    if (!chain) chain = [self.chain chain];
+    if (!chain) chain = [self.transactionHash chain].chain;
     DSTransaction *tx = [[[self transactionClass] alloc] initOnChain:chain];
     
     [self.managedObjectContext performBlockAndWait:^{

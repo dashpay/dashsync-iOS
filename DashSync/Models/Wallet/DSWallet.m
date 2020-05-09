@@ -874,12 +874,12 @@
 
 // MARK: - Wiping
 
-- (void)wipeBlockchainInfo {
+- (void)wipeBlockchainInfoInContext:(NSManagedObjectContext*)context {
     for (DSAccount * account in self.accounts) {
         [account wipeBlockchainInfo];
     }
     [self.specialTransactionsHolder removeAllTransactions];
-    [self wipeBlockchainIdentities];
+    [self wipeBlockchainIdentitiesInContext:context];
 }
 
 // MARK: - Blockchain Identities
@@ -954,10 +954,10 @@
     }
 }
 
--(void)wipeBlockchainIdentities {
+-(void)wipeBlockchainIdentitiesInContext:(NSManagedObjectContext*)context {
     for (DSBlockchainIdentity * blockchainIdentity in [_mBlockchainIdentities allValues]) {
         [self unregisterBlockchainIdentity:blockchainIdentity];
-        [blockchainIdentity deletePersistentObjectAndSave:NO];
+        [blockchainIdentity deletePersistentObjectAndSave:NO inContext:context];
     }
     _defaultBlockchainIdentity = nil;
 }
@@ -1005,7 +1005,7 @@
                 //either the identity is known in core data (and we can pull it) or the wallet has been wiped and we need to get it from DAPI (the unique Id was saved in the keychain, so we don't need to resync)
                 //TODO: get the identity from core data
                 
-                NSManagedObjectContext * context = [NSManagedObjectContext platformContext]; //shouldn't matter what context is used
+                NSManagedObjectContext * context = [NSManagedObjectContext chainContext]; //shouldn't matter what context is used
                 
                 [context performBlockAndWait:^{
                     NSUInteger blockchainIdentityEntitiesCount = [DSBlockchainIdentityEntity countObjectsInContext:context matching:@"chain == %@",[self.chain chainEntityInContext:context]];
