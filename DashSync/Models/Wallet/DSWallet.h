@@ -135,7 +135,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 // as unverified (not 0-conf safe)
 - (NSArray *)setBlockHeight:(int32_t)height
                andTimestamp:(NSTimeInterval)timestamp
-                forTxHashes:(NSArray *)txHashes;
+                forTransactionHashes:(NSArray *)txHashes;
 
 //add an account to the wallet
 - (void)addAccount:(DSAccount*)account;
@@ -155,7 +155,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 // returns the transaction with the given hash if it's been registered in the wallet (might also return non-registered)
 - (DSTransaction * _Nullable)transactionForHash:(UInt256)txHash;
 
-- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal error:(NSError * _Nullable * _Nullable)error;
+- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit dashpayGapLimit:(NSUInteger)dashpayGapLimit internal:(BOOL)internal error:(NSError * _Nullable * _Nullable)error;
 
 // returns the amount received by the wallet from the transaction (total outputs to change and/or receive addresses)
 - (uint64_t)amountReceivedFromTransaction:(DSTransaction *)transaction;
@@ -243,6 +243,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 - (NSUInteger)indexOfHoldingAddress:(NSString*)holdingAddress;
 - (NSUInteger)indexOfBlockchainIdentityAuthenticationHash:(UInt160)blockchainIdentityAuthenticationHash;
 - (NSUInteger)indexOfBlockchainIdentityCreditFundingRegistrationHash:(UInt160)creditFundingRegistrationHash;
+- (NSUInteger)indexOfBlockchainIdentityCreditFundingTopupHash:(UInt160)creditFundingTopupHash;
 
 @end
 

@@ -14,6 +14,7 @@
 #import "DSMerkleBlockEntity+CoreDataClass.h"
 #import "NSMutableData+Dash.h"
 #import "DSQuorumEntry.h"
+#import "DSChain+Protected.h"
 
 @implementation DSQuorumEntryEntity
 

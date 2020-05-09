@@ -16,7 +16,7 @@
 //
 
 #import "DSFetchedResultsTableViewController.h"
-
+#import <DashSync/NSPredicate+DSUtils.h>
 #import <DashSync/NSManagedObject+Sugar.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -24,6 +24,72 @@ NS_ASSUME_NONNULL_BEGIN
 static NSUInteger FETCH_BATCH_SIZE = 20;
 
 @implementation DSFetchedResultsTableViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+}
+
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    if ([self dynamicUpdate]) {
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(backgroundManagedObjectContextDidSaveNotification:)
+                                                     name:NSManagedObjectContextDidSaveNotification object:[NSManagedObject context]];
+    }
+    [self fetchedResultsController];
+    [self.tableView reloadData];
+}
+
+-(void)viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
+    self.fetchedResultsController = nil;
+    if ([self dynamicUpdate]) {
+        [[NSNotificationCenter defaultCenter] removeObserver:self name:NSManagedObjectContextDidSaveNotification object:[NSManagedObject context]];
+    }
+}
+
+- (void)backgroundManagedObjectContextDidSaveNotification:(NSNotification *)notification {
+    BOOL (^objectsHaveChanged)(NSSet *) = ^BOOL(NSSet *objects) {
+        NSSet * foundObjects = [objects filteredSetUsingPredicate:[self fullPredicateInContext]];
+        if (foundObjects.count) return TRUE;
+        return FALSE;
+    };
+    
+    BOOL (^objectsHaveChangedInverted)(NSSet *) = ^BOOL(NSSet *objects) {
+        if (![self requiredInvertedPredicate]) return FALSE;
+        NSSet * foundObjects = [objects filteredSetUsingPredicate:[self fullInvertedPredicateInContext]];
+        if (foundObjects.count) return TRUE;
+        return FALSE;
+    };
+
+
+    NSSet <NSManagedObject *> *insertedObjects = notification.userInfo[NSInsertedObjectsKey];
+    NSSet <NSManagedObject *> *updatedObjects = notification.userInfo[NSUpdatedObjectsKey];
+    NSSet <NSManagedObject *> *deletedObjects = notification.userInfo[NSDeletedObjectsKey];
+    BOOL inserted = FALSE;
+    BOOL updated = FALSE;
+    BOOL deleted = FALSE;
+    BOOL insertedInverted = FALSE;
+    BOOL deletedInverted = FALSE;
+    if ((inserted = objectsHaveChanged(insertedObjects)) ||
+        (updated = objectsHaveChanged(updatedObjects)) ||
+        (deleted = objectsHaveChanged(deletedObjects)) ||
+        (insertedInverted = objectsHaveChangedInverted(insertedObjects)) ||
+        (deletedInverted = objectsHaveChangedInverted(deletedObjects))) {
+        if (inserted || updated || deleted) {
+            insertedInverted = objectsHaveChangedInverted(insertedObjects);
+            deletedInverted = objectsHaveChangedInverted(deletedObjects);
+        }
+        [self.context mergeChangesFromContextDidSaveNotification:notification];
+        if (insertedInverted || deletedInverted) {
+            self.fetchedResultsController = nil;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self.tableView reloadData];
+            });
+        }
+    }
+}
+
 
 - (NSManagedObjectContext *)context {
     return [NSManagedObject mainContext];
@@ -34,20 +100,42 @@ static NSUInteger FETCH_BATCH_SIZE = 20;
     return @"";
 }
 
+-(BOOL)dynamicUpdate {
+    return TRUE;
+}
+
+-(BOOL)requiredInvertedPredicate {
+    return FALSE;
+}
+
+-(NSPredicate *)classPredicate {
+    return [NSPredicate predicateWithFormat:@"self isKindOfClass: %@", NSClassFromString([self entityName])];
+}
+
+-(NSPredicate *)predicateInContext {
+    return [[self predicate] predicateInContext:[NSManagedObject context]];
+}
+
+-(NSPredicate *)invertedPredicateInContext {
+    return [[self invertedPredicate] predicateInContext:[NSManagedObject context]];
+}
+
+-(NSPredicate *)fullPredicateInContext {
+    return [NSCompoundPredicate andPredicateWithSubpredicates:@[[self classPredicate],[self predicateInContext]]];
+}
+
+-(NSPredicate *)fullInvertedPredicateInContext {
+    return [NSCompoundPredicate andPredicateWithSubpredicates:@[[self classPredicate],[self invertedPredicateInContext]]];
+}
+
 - (NSPredicate *)predicate {
     NSAssert(NO, @"Method should be overriden");
     return [NSPredicate predicateWithValue:YES];
 }
 
--(void)viewDidDisappear:(BOOL)animated {
-    [super viewDidDisappear:animated];
-    self.fetchedResultsController = nil;
-}
-
--(void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    [self fetchedResultsController];
-    [self.tableView reloadData];
+- (NSPredicate *)invertedPredicate {
+    NSAssert(NO, @"Method should be overriden");
+    return [NSPredicate predicateWithValue:YES];
 }
 
 - (NSArray<NSSortDescriptor *> *)sortDescriptors {

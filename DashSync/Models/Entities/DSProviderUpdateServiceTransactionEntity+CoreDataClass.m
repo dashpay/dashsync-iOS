@@ -14,7 +14,7 @@
 #import "NSData+Bitcoin.h"
 #import "DSKey.h"
 #import "DSChainEntity+CoreDataClass.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "NSString+Dash.h"
 
 @implementation DSProviderUpdateServiceTransactionEntity

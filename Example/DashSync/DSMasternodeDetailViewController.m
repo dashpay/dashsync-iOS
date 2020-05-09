@@ -87,7 +87,7 @@
                     if (self.localMasternode.ownerKeysWallet && [self.ownerKeyLabel.text isEqualToString:@"SHOW"]) {
                         [self.localMasternode.ownerKeysWallet seedWithPrompt:@"Show owner key?" forAmount:0 completion:^(NSData * _Nullable seed, BOOL cancelled) {
                             if (seed) {
-                                self.ownerKeyLabel.text = [[self.localMasternode ownerKeyFromSeed:seed] privateKeyStringForChain:self.chain];
+                                self.ownerKeyLabel.text = [[self.localMasternode ownerKeyFromSeed:seed] serializedPrivateKeyForChain:self.chain];
                             }
                         }];
                     }

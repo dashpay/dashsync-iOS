@@ -25,7 +25,7 @@
 
 #import "DSTransactionManager.h"
 #import "DSTransaction.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "DSEventManager.h"
 #import "DSPeerManager+Protected.h"
 #import "DSChainManager+Protected.h"
@@ -47,6 +47,7 @@
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSInstantSendTransactionLock.h"
 #import "DSMasternodeManager+Protected.h"
+#import "DSIdentitiesManager.h"
 #import "DSSpecialTransactionsWalletHolder.h"
 #import "NSString+Dash.h"
 #import "NSMutableData+Dash.h"
@@ -63,7 +64,6 @@
 @property (nonatomic, strong) NSMutableDictionary *txRelays, *txRequests;
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
 @property (nonatomic, strong) NSMutableSet *nonFalsePositiveTransactions;
-@property (nonatomic, assign) BOOL resetBloomFilterAfterNextBlock;
 @property (nonatomic, strong) DSBloomFilter *bloomFilter;
 @property (nonatomic, assign) uint32_t filterUpdateHeight;
 @property (nonatomic, assign) double transactionsBloomFilterFalsePositiveRate;
@@ -106,6 +106,10 @@
 
 -(DSMasternodeManager*)masternodeManager {
     return self.chain.chainManager.masternodeManager;
+}
+
+-(DSIdentitiesManager*)identitiesManager {
+    return self.chain.chainManager.identitiesManager;
 }
 
 -(DSChainManager*)chainManager {
@@ -180,7 +184,7 @@
         
         for (DSPeer *p in peers) {
             if (p.status != DSPeerStatus_Connected) continue;
-            [p sendTransactionInvMessagesForTxHashes:txHashes txLockRequestHashes:nil];
+            [p sendTransactionInvMessagesforTransactionHashes:txHashes txLockRequestHashes:nil];
             [p sendPingMessageWithPongHandler:^(BOOL success) {
                 if (! success) return;
                 
@@ -280,7 +284,7 @@
         else if ([self.txRelays[hash] count] < self.peerManager.maxConnectCount) {
             // set timestamp 0 to mark as unverified
             DSDLog(@"setting transaction as unverified %@", transaction);
-            [self.chain setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTxHashes:@[hash]];
+            [self.chain setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTransactionHashes:@[hash]];
         }
     }
     
@@ -730,7 +734,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
                 }
                 
                 if (peer == self.peerManager.downloadPeer) {
-                    [self.peerManager syncStopped];
+                    [self.peerManager chainSyncStopped];
                     
                     dispatch_async(dispatch_get_main_queue(), ^{
                         [[NSNotificationCenter defaultCenter]
@@ -741,7 +745,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         }
         else if (peer == self.peerManager.downloadPeer) {
             DSDLog(@"[DSTransactionManager] fetching mempool ping failure on download peer %@",peer.host);
-            [self.peerManager syncStopped];
+            [self.peerManager chainSyncStopped];
             
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter]
@@ -785,6 +789,12 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     return _bloomFilter;
 }
 
+-(void)destroyTransactionsBloomFilter {
+    if (! _bloomFilter) return; // bloom filter is aready being updated
+    _bloomFilter = nil;
+    [self.peerManager pauseBlockchainSynchronizationOnPeers];
+}
+
 -(void)updateTransactionsBloomFilter {
     if (! _bloomFilter) return; // bloom filter is aready being updated
     
@@ -796,8 +806,8 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         // every time a new wallet address is added, the bloom filter has to be rebuilt, and each address is only used for
         // one transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a wallet
         // transaction is encountered during the blockchain download
-        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO error:nil];
-        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES error:nil];
+        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL dashpayGapLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INCOMING internal:NO error:nil];
+        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL dashpayGapLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INCOMING internal:YES error:nil];
         NSSet *addresses = [wallet.allReceiveAddresses setByAddingObjectsFromSet:wallet.allChangeAddresses];
         [allAddressesArray addObjectsFromArray:[addresses allObjects]];
         
@@ -829,11 +839,11 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 
 // MARK: - DSChainTransactionsDelegate
 
--(void)chain:(DSChain*)chain didSetBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes updatedTx:(NSArray *)updatedTx {
+-(void)chain:(DSChain*)chain didSetBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)transactionHashes updatedTransactions:(NSArray *)updatedTransactions {
     if (height != TX_UNCONFIRMED) { // remove confirmed tx from publish list and relay counts
-        [self.publishedTx removeObjectsForKeys:txHashes];
-        [self.publishedCallback removeObjectsForKeys:txHashes];
-        [self.txRelays removeObjectsForKeys:txHashes];
+        [self.publishedTx removeObjectsForKeys:transactionHashes];
+        [self.publishedCallback removeObjectsForKeys:transactionHashes];
+        [self.txRelays removeObjectsForKeys:transactionHashes];
     }
 }
 
@@ -953,7 +963,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
             [self.chain transactionForHash:txHash].blockHeight == TX_UNCONFIRMED &&
             [self.chain transactionForHash:txHash].timestamp == 0) {
             [self.chain setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSince1970]
-                           forTxHashes:@[hash]]; // set timestamp when tx is verified
+                           forTransactionHashes:@[hash]]; // set timestamp when tx is verified
         }
         
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -1011,8 +1021,10 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
                 
                 if (!blockchainIdentity) {
                     [self.chain triggerUpdatesForLocalReferences:transaction];
-                    blockchainIdentity = [wallet blockchainIdentityForUniqueId:transaction.creditBurnIdentityIdentifier];
-                    if (blockchainIdentity) isNewBlockchainIdentity = TRUE;
+                    if (wallet) {
+                        blockchainIdentity = [wallet blockchainIdentityForUniqueId:transaction.creditBurnIdentityIdentifier];
+                        if (blockchainIdentity) isNewBlockchainIdentity = TRUE;
+                    }
                 }
             } else {
                 [self.chain triggerUpdatesForLocalReferences:transaction];
@@ -1045,7 +1057,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
             [account transactionForHash:transaction.txHash].blockHeight == TX_UNCONFIRMED &&
             [account transactionForHash:transaction.txHash].timestamp == 0) {
             [account setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSince1970]
-                        forTxHashes:@[hash]]; // set timestamp when tx is verified
+                        forTransactionHashes:@[hash]]; // set timestamp when tx is verified
         }
         
         //todo: deal when the transaction received is not in an account
@@ -1074,30 +1086,12 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     [self.txRequests[hash] removeObject:peer];
     
     
-    if (NO) {//[transaction isKindOfClass:[DSCreditFundingTransaction class]] && blockchainIdentity && isNewBlockchainIdentity) {
-        //[self fetchFriendshipsForBlockchainIdentity:blockchainIdentity];
+    if ([transaction isKindOfClass:[DSCreditFundingTransaction class]] && blockchainIdentity && isNewBlockchainIdentity) {
+        [self.identitiesManager checkCreditFundingTransactionForPossibleNewIdentity:(DSCreditFundingTransaction*)transaction];
+        [self destroyTransactionsBloomFilter]; //We want to destroy it temporarily, while we wait for L2, no matter what the block should not be saved and needs to be refetched
     } else {
         [self updateTransactionsBloomFilter];
     }
-}
-
--(void)fetchFriendshipsForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity {
-    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-    [blockchainIdentity fetchAllNetworkStateInformationWithCompletion:^(BOOL success, NSError * error) {
-        if (success) {
-            [blockchainIdentity fetchOutgoingContactRequests:^(BOOL success, NSArray<NSError *> *errors) {
-                if (success) {
-                    [blockchainIdentity fetchIncomingContactRequests:^(BOOL success, NSArray<NSError *> *errors) {
-                        if (success) {
-                            dispatch_semaphore_signal(sem);
-                        }
-                    }];
-                }
-            }];
-        }
-    }];
-    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
-    _resetBloomFilterAfterNextBlock = TRUE;
 }
 
 // MARK: Transaction Issues
@@ -1120,7 +1114,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         [self.txRelays[hash] removeObject:peer];
         
         if (transaction.blockHeight == TX_UNCONFIRMED) { // set timestamp 0 for unverified
-            [self.chain setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTxHashes:@[hash]];
+            [self.chain setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTransactionHashes:@[hash]];
         }
         
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -1239,6 +1233,20 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 
 // MARK: Blocks
 
+- (void)peer:(DSPeer *)peer relayedHeader:(DSMerkleBlock *)block
+{
+    //DSDLog(@"relayed block %@ total transactions %d %u",uint256_hex(block.blockHash), block.totalTransactions,block.timestamp);
+    // ignore block headers that are newer than 2 days before earliestKeyTime (headers have 0 totalTransactions)
+    if (!self.chain.shouldSyncHeadersFirstForMasternodeListVerification &&
+        (block.timestamp + DAY_TIME_INTERVAL*2 > self.chain.earliestWalletCreationTime)) {
+        DSDLog(@"ignoring header %@",uint256_hex(block.blockHash));
+        return;
+    }
+    
+    [self.chain addHeader:block fromPeer:peer];
+
+}
+
 - (void)peer:(DSPeer *)peer relayedBlock:(DSMerkleBlock *)block
 {
     //DSDLog(@"relayed block %@ total transactions %d %u",uint256_hex(block.blockHash), block.totalTransactions,block.timestamp);
@@ -1266,7 +1274,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
                    peer.port, self.transactionsBloomFilterFalsePositiveRate, self.chain.lastBlockHeight + 1 - self.filterUpdateHeight);
             [self.peerManager.downloadPeer disconnect];
         }
-        else if (self.chain.lastBlockHeight + 500 < peer.lastblock && self.transactionsBloomFilterFalsePositiveRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*10.0) {
+        else if (self.chain.lastBlockHeight + 500 < peer.lastBlockHeight && self.transactionsBloomFilterFalsePositiveRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*10.0) {
             [self updateTransactionsBloomFilter]; // rebuild bloom filter when it starts to degrade
         }
     }
@@ -1277,18 +1285,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         return;
     }
     
-    
-    if (_resetBloomFilterAfterNextBlock) {
-        NSLog(@"here");
-    }
-    
     [self.chain addBlock:block fromPeer:peer];
-    
-    if (_resetBloomFilterAfterNextBlock) {
-        _bloomFilter = nil; // reset bloom filter so it's recreated with new wallet addresses
-        [self.peerManager updateFilterOnPeers];
-        _resetBloomFilterAfterNextBlock = FALSE;
-    }
 }
 
 - (void)peer:(DSPeer *)peer relayedTooManyOrphanBlocks:(NSUInteger)orphanBlockCount {

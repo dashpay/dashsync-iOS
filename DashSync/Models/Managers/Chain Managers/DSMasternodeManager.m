@@ -29,7 +29,7 @@
 #import "DSAddressEntity+CoreDataProperties.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "NSManagedObject+Sugar.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "DSPeer.h"
 #import "NSData+Dash.h"
 #import "DSPeerManager.h"
@@ -273,7 +273,7 @@
 -(void)loadFileDistributedMasternodeLists {
     if (![[DSOptionsManager sharedInstance] useCheckpointMasternodeLists]) return;
     if (!self.currentMasternodeList) {
-        DSCheckpoint * checkpoint = [self.chain lastCheckpointWithMasternodeList];
+        DSCheckpoint * checkpoint = [self.chain lastCheckpointHavingMasternodeList];
         if (self.chain.lastBlockHeight >= checkpoint.height) {
             [self processRequestFromFileForBlockHash:checkpoint.checkpointHash completion:^(BOOL success) {
                 
@@ -374,7 +374,7 @@
     self.timeOutObserverTry++;
     __block uint16_t timeOutObserverTry = self.timeOutObserverTry;
     
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(20 * (self.timedOutAttempt + 1) * NSEC_PER_SEC)), [self peerManager].chainPeerManagerQueue, ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(20 * (self.timedOutAttempt + 1) * NSEC_PER_SEC)), self.chain.networkingQueue, ^{
         if (![self.masternodeListRetrievalQueue count]) return;
         if (self.timeOutObserverTry != timeOutObserverTry) return;
         NSMutableSet * leftToGet = [masternodeListsInRetrieval mutableCopy];
@@ -395,13 +395,14 @@
 }
 
 -(void)dequeueMasternodeListRequest {
+    DSDLog(@"Dequeued Masternode List Request");
     if (![self.masternodeListRetrievalQueue count]) {
         [self.chain.chainManager chainFinishedSyncingMasternodeListsAndQuorums:self.chain];
         return;
     }
     if ([self.masternodeListsInRetrieval count]) return;
     if (!self.peerManager.downloadPeer || (self.peerManager.downloadPeer.status != DSPeerStatus_Connected)) {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), [self peerManager].chainPeerManagerQueue, ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), self.chain.networkingQueue, ^{
             [self dequeueMasternodeListRequest];
         });
         return;
@@ -414,10 +415,12 @@
         UInt256 blockHash = blockHashData.UInt256;
         
         //we should check the associated block still exists
-        __block BOOL hasBlock;
-        [self.managedObjectContext performBlockAndWait:^{
-            hasBlock = !![DSMerkleBlockEntity countObjectsMatching:@"blockHash == %@",uint256_data(blockHash)];
-        }];
+        __block BOOL hasBlock = [self.chain blockForBlockHash:blockHash];
+        if (!hasBlock) {
+            [self.managedObjectContext performBlockAndWait:^{
+                hasBlock = !![DSMerkleBlockEntity countObjectsMatching:@"blockHash == %@",uint256_data(blockHash)];
+            }];
+        }
         if (hasBlock) {
             //there is the rare possibility we have the masternode list as a checkpoint, so lets first try that
             [self processRequestFromFileForBlockHash:blockHash completion:^(BOOL success) {
@@ -450,7 +453,12 @@
 
 -(void)getRecentMasternodeList:(NSUInteger)blocksAgo withSafetyDelay:(uint32_t)safetyDelay {
     @synchronized (self.masternodeListRetrievalQueue) {
-        DSMerkleBlock * merkleBlock = [self.chain blockFromChainTip:blocksAgo];
+        DSMerkleBlock * merkleBlock = nil;
+        if (self.chain.shouldSyncHeadersFirstForMasternodeListVerification) {
+            merkleBlock = [self.chain blockFromChainTip:blocksAgo];
+        } else {
+            merkleBlock = [self.chain blockFromChainTip:blocksAgo];
+        }
         if ([self.masternodeListRetrievalQueue lastObject] && uint256_eq(merkleBlock.blockHash, [self.masternodeListRetrievalQueue lastObject].UInt256)) {
             //we are asking for the same as the last one
             return;
@@ -479,7 +487,7 @@
     if (safetyDelay) {
         //the safety delay checks to see if this was called in the last n seconds.
         self.timeIntervalForMasternodeRetrievalSafetyDelay = [[NSDate date] timeIntervalSince1970];
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(safetyDelay * NSEC_PER_SEC)), [self peerManager].chainPeerManagerQueue, ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(safetyDelay * NSEC_PER_SEC)), self.chain.networkingQueue, ^{
             NSTimeInterval timeElapsed = [[NSDate date] timeIntervalSince1970] - self.timeIntervalForMasternodeRetrievalSafetyDelay;
             if (timeElapsed > safetyDelay) {
                 [self getCurrentMasternodeListWithSafetyDelay:0];
@@ -868,11 +876,7 @@
         return;
     };
     
-    DSMerkleBlock * lastBlock = peer.chain.lastBlock;
-    
-    while (lastBlock && !uint256_eq(lastBlock.blockHash, blockHash)) {
-        lastBlock = peer.chain.recentBlocks[uint256_obj(lastBlock.prevBlock)];
-    }
+    DSMerkleBlock * lastBlock = [peer.chain recentBlockForBlockHash:blockHash];
     
     if (!lastBlock) {
         [self issueWithMasternodeListFromPeer:peer];
@@ -970,7 +974,7 @@
         if (error) {
             [self.masternodeListRetrievalQueue removeAllObjects];
             [self wipeMasternodeInfo];
-            dispatch_async([self peerManager].chainPeerManagerQueue, ^{
+            dispatch_async(self.chain.networkingQueue, ^{
                 [self getCurrentMasternodeListWithSafetyDelay:0];
             });
         }
@@ -1087,7 +1091,7 @@
 
 -(void)removeOldMasternodeLists {
     if (!self.currentMasternodeList) return;
-    [self.managedObjectContext performBlockAndWait:^{
+    [self.managedObjectContext performBlock:^{
         uint32_t lastBlockHeight = self.currentMasternodeList.height;
         NSMutableArray * masternodeListBlockHashes = [[self.masternodeListsByBlockHash allKeys] mutableCopy];
         [masternodeListBlockHashes addObjectsFromArray:[self.masternodeListsBlockHashStubs allObjects]];

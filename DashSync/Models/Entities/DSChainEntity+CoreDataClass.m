@@ -33,7 +33,6 @@
 
 - (instancetype)setAttributesFromChain:(DSChain *)chain {
     self.type = chain.chainType;
-    self.totalMasternodeCount = chain.totalMasternodeCount;
     self.totalGovernanceObjectsCount = chain.totalGovernanceObjectsCount;
     return self;
 }
@@ -42,14 +41,12 @@
     __block DSChainType type;
     __block NSString * devnetIdentifier;
     __block NSData * data;
-    __block uint32_t totalMasternodeCount;
     __block uint32_t totalGovernanceObjectsCount;
     __block UInt256 baseBlockHash;
     [self.managedObjectContext performBlockAndWait:^{
         type = self.type;
         devnetIdentifier = self.devnetIdentifier;
         data = self.checkpoints;
-        totalMasternodeCount = self.totalMasternodeCount;
         totalGovernanceObjectsCount = self.totalGovernanceObjectsCount;
         baseBlockHash = self.baseBlockHash.UInt256;
     }];
@@ -69,8 +66,8 @@
     return [DSChain mainnet];
 }
 
-+ (DSChainEntity*)chainEntityForType:(DSChainType)type devnetIdentifier:(NSString*)devnetIdentifier checkpoints:(NSArray*)checkpoints {
-    NSArray * objects = [DSChainEntity objectsMatching:@"type = %d && ((type != %d) || devnetIdentifier = %@)",type,DSChainType_DevNet,devnetIdentifier];
++ (DSChainEntity*)chainEntityForType:(DSChainType)type devnetIdentifier:(NSString*)devnetIdentifier checkpoints:(NSArray*)checkpoints inContext:(NSManagedObjectContext*)context {
+    NSArray * objects = [DSChainEntity objectsForPredicate:[NSPredicate predicateWithFormat:@"type = %d && ((type != %d) || devnetIdentifier = %@)",type,DSChainType_DevNet,devnetIdentifier] inContext:context];
     if (objects.count) {
         DSChainEntity * chainEntity = [objects objectAtIndex:0];
         NSArray * knownCheckpoints = [NSKeyedUnarchiver unarchiveObjectWithData:[chainEntity checkpoints]];
@@ -81,7 +78,7 @@
         return chainEntity;
     }
     
-    DSChainEntity * chainEntity = [self managedObject];
+    DSChainEntity * chainEntity = [self managedObjectInContext:context];
     chainEntity.type = type;
     chainEntity.devnetIdentifier = devnetIdentifier;
     if (checkpoints) {

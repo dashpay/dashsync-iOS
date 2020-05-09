@@ -68,6 +68,7 @@
 		71719F9F1E33DC2100824A3D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 71719F9D1E33DC2100824A3D /* LaunchScreen.storyboard */; };
 		83CFCA70892A5DF9F64BA1AA /* libPods-DashSync_Tests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 955D615511918752AF099181 /* libPods-DashSync_Tests.a */; };
 		873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 873B8AEA1B1F5CCA007FD442 /* Main.storyboard */; };
+		FB0955CC244BBDC400A93675 /* DSContactRelationshipInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0955CB244BBDC400A93675 /* DSContactRelationshipInfoViewController.m */; };
 		FB0F15A2210490C3000272E6 /* DSTransactionDetailTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0F15A1210490C3000272E6 /* DSTransactionDetailTableViewCell.m */; };
 		FB0F15A521049432000272E6 /* DSTransactionStatusTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0F15A421049432000272E6 /* DSTransactionStatusTableViewCell.m */; };
 		FB0F15A821049505000272E6 /* DSTransactionAmountTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0F15A721049505000272E6 /* DSTransactionAmountTableViewCell.m */; };
@@ -386,6 +387,8 @@
 		C90A9AD2C32828341F0E6915 /* Pods-DashSync_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync_Tests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-DashSync_Tests/Pods-DashSync_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		DFA886AB709D97089A70E82A /* Pods-DashSync_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync_Tests.release.xcconfig"; path = "Pods/Target Support Files/Pods-DashSync_Tests/Pods-DashSync_Tests.release.xcconfig"; sourceTree = "<group>"; };
 		E47ABFD6469F1FD556CDA6C7 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
+		FB0955CA244BBDC400A93675 /* DSContactRelationshipInfoViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactRelationshipInfoViewController.h; sourceTree = "<group>"; };
+		FB0955CB244BBDC400A93675 /* DSContactRelationshipInfoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactRelationshipInfoViewController.m; sourceTree = "<group>"; };
 		FB0F15A0210490C3000272E6 /* DSTransactionDetailTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTransactionDetailTableViewCell.h; sourceTree = "<group>"; };
 		FB0F15A1210490C3000272E6 /* DSTransactionDetailTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTransactionDetailTableViewCell.m; sourceTree = "<group>"; };
 		FB0F15A321049432000272E6 /* DSTransactionStatusTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTransactionStatusTableViewCell.h; sourceTree = "<group>"; };
@@ -746,6 +749,8 @@
 				2AF8A95922847E5200F8C72D /* DSContactProfileViewController.m */,
 				2AF8A95B2284820F00F8C72D /* DSContactProfileAvatarView.h */,
 				2AF8A95C2284820F00F8C72D /* DSContactProfileAvatarView.m */,
+				FB0955CA244BBDC400A93675 /* DSContactRelationshipInfoViewController.h */,
+				FB0955CB244BBDC400A93675 /* DSContactRelationshipInfoViewController.m */,
 			);
 			name = Contacts;
 			sourceTree = "<group>";
@@ -1736,6 +1741,7 @@
 				2AE125F4223BD14B00379C6F /* DSIncomingContactsTableViewController.m in Sources */,
 				FB6B78492278D5210005C9DB /* DSContactSentTransactionsTableViewController.m in Sources */,
 				FBAA7749222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.m in Sources */,
+				FB0955CC244BBDC400A93675 /* DSContactRelationshipInfoViewController.m in Sources */,
 				FB763C622089AF9500CDBA57 /* DSStandaloneAddressesViewController.m in Sources */,
 				6003F5A7195388D20070C39A /* DSSyncViewController.m in Sources */,
 				FBE155FE22B954EE009CA817 /* DSMasternodeListTableViewCell.m in Sources */,

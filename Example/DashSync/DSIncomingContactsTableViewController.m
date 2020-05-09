@@ -24,18 +24,6 @@ static NSString * const CellId = @"CellId";
     
 }
 
--(void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(mocDidSaveNotification:)
-                                                 name:NSManagedObjectContextDidSaveNotification object:[NSManagedObject context]];
-}
-
--(void)viewDidDisappear:(BOOL)animated {
-    [super viewDidDisappear:animated];
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:NSManagedObjectContextDidSaveNotification object:[NSManagedObject context]];
-}
-
 - (IBAction)refreshAction:(id)sender {
     [self.refreshControl beginRefreshing];
     __weak typeof(self) weakSelf = self;
@@ -49,41 +37,6 @@ static NSString * const CellId = @"CellId";
     }];
 }
 
-- (void)mocDidSaveNotification:(NSNotification *)notification {
-    // Since NSFetchedResultsController doesn't observe relationship changes we have to manully trigger an update
-    // http://openradar.appspot.com/radar?id=1754401
-    BOOL (^objectsHasChangedContact)(NSArray *, DSDashpayUserEntity *) = ^BOOL(NSArray *objects, DSDashpayUserEntity *contact) {
-        BOOL hasRelationshipChanges = NO;
-        for (NSManagedObject *mo in objects) {
-            if ([mo isKindOfClass:DSFriendRequestEntity.class]) {
-                DSFriendRequestEntity *friendRequest = (DSFriendRequestEntity *)mo;
-                if (friendRequest.sourceContact == contact ||
-                    friendRequest.destinationContact == contact) {
-                    hasRelationshipChanges = YES;
-                    break;
-                }
-            }
-        }
-        
-        return hasRelationshipChanges;
-    };
-    
-    NSArray <NSManagedObject *> *insertedObjects = notification.userInfo[NSInsertedObjectsKey];
-    NSArray <NSManagedObject *> *updatedObjects = notification.userInfo[NSUpdatedObjectsKey];
-    NSArray <NSManagedObject *> *deletedObjects = notification.userInfo[NSDeletedObjectsKey];
-    
-    DSDashpayUserEntity *contact = self.blockchainIdentity.matchingDashpayUser;
-    if (objectsHasChangedContact(insertedObjects, contact) ||
-        objectsHasChangedContact(updatedObjects, contact) ||
-        objectsHasChangedContact(deletedObjects, contact)) {
-        [self.context mergeChangesFromContextDidSaveNotification:notification];
-        self.fetchedResultsController = nil;
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self.tableView reloadData];
-        });
-    }
-}
-
 - (NSString *)entityName {
     return @"DSFriendRequestEntity";
 }
@@ -94,6 +47,14 @@ static NSString * const CellId = @"CellId";
     //self is marge
     //validates to being a request from marge to homer
     return [NSPredicate predicateWithFormat:@"destinationContact == %@ && (SUBQUERY(destinationContact.outgoingRequests, $friendRequest, $friendRequest.destinationContact == SELF.sourceContact).@count == 0)",[self.blockchainIdentity matchingDashpayUserInContext:self.context]];
+}
+
+-(BOOL)requiredInvertedPredicate {
+    return YES;
+}
+
+-(NSPredicate*)invertedPredicate {
+    return [NSPredicate predicateWithFormat:@"sourceContact == %@ && (SUBQUERY(sourceContact.incomingRequests, $friendRequest, $friendRequest.sourceContact == SELF.destinationContact).@count > 0)",[self.blockchainIdentity matchingDashpayUserInContext:self.context]];
 }
 
 - (NSArray<NSSortDescriptor *> *)sortDescriptors {
@@ -123,7 +84,7 @@ static NSString * const CellId = @"CellId";
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     DSFriendRequestEntity * friendRequest = [self.fetchedResultsController objectAtIndexPath:indexPath];
     __weak typeof(self) weakSelf = self;
-    [self.blockchainIdentity acceptFriendRequest:friendRequest completion:^(BOOL success, NSError * error) {
+    [self.blockchainIdentity acceptFriendRequest:friendRequest completion:^(BOOL success, NSArray<NSError *> * _Nonnull errors) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;

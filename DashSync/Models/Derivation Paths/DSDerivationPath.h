@@ -174,19 +174,14 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 //you can set wallet unique Id to nil if you don't wish to store the extended Public Key
 - (DSKey * _Nullable)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId;
 
+//addition option to store the private key, this should generally not be used unless the key is meant to be used without authentication
+- (DSKey * _Nullable)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId storePrivateKey:(BOOL)storePrivateKey;
+
 //you can set wallet unique Id to nil if you don't wish to store the extended Public Key
 - (DSKey * _Nullable)generateExtendedPublicKeyFromParentDerivationPath:(DSDerivationPath*)parentDerivationPath storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId;
 
 //sometimes we need to store the public key but not at generation time, use this method for that
 - (BOOL)storeExtendedPublicKeyUnderWalletUniqueId:(NSString* _Nonnull)walletUniqueId;
-
-+ (NSString * _Nullable)serializedPrivateMasterFromSeed:(NSData * _Nullable)seed forChain:(DSChain*)chain;
-
-// key used for authenticated API calls, i.e. bitauth: https://github.com/bitpay/bitauth
-+ (NSString * _Nullable)authPrivateKeyFromSeed:(NSData * _Nullable)seed forChain:(DSChain*)chain;
-
-// key used for BitID: https://github.com/bitid/bitid/blob/master/BIP_draft.md
-+ (NSString * _Nullable)bitIdPrivateKey:(uint32_t)n forURI:(NSString *)uri fromSeed:(NSData *)seed forChain:(DSChain*)chain;
 
 - (NSString * _Nullable)serializedExtendedPublicKey;
 
@@ -208,6 +203,8 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 -(void)loadAddresses;
 
 -(void)reloadAddresses;
+
+-(BOOL)isHardenedAtPosition:(NSUInteger)position;
 
 -(BOOL)isDerivationPathEqual:(id)object;
 

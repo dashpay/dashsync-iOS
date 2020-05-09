@@ -8,7 +8,7 @@
 
 #import "DSSporkEntity+CoreDataClass.h"
 #import "DSSpork.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "DSSporkHashEntity+CoreDataClass.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"

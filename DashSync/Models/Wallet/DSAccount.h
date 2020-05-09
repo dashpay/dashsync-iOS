@@ -92,7 +92,7 @@ NS_ASSUME_NONNULL_BEGIN
 // all the contacts for an account
 @property (nonatomic, readonly) NSArray <DSPotentialOneWayFriendship*> * _Nonnull contacts;
 
--(NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal error:(NSError**)error;
+-(NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit dashpayGapLimit:(NSUInteger)dashpayGapLimit  internal:(BOOL)internal error:(NSError**)error;
 
 +(DSAccount*)accountWithAccountNumber:(uint32_t)accountNumber withDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context;
 
@@ -221,7 +221,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)chainUpdatedBlockHeight:(int32_t)height;
 
-- (NSArray *)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes;
+- (NSArray *)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)txHashes;
 
 // This loads the derivation paths addresses once the account is set to a wallet
 - (void)loadDerivationPaths;

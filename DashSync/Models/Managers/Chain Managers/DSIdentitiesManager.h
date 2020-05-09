@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -16,24 +16,38 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "DSChain.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSChain,DSBlockchainIdentity;
+@class DSChain, DSBlockchainIdentity, DSCreditFundingTransaction;
 
-typedef void (^IdentitiesCompletionBlock)(NSArray <DSBlockchainIdentity*> * _Nullable blockchainIdentities, NSError * _Nullable error);
+@protocol DSDAPINetworkServiceRequest;
 
-@interface DSIdentitiesManager : NSObject
+typedef void (^IdentitiesCompletionBlock)(BOOL succeess, NSArray <DSBlockchainIdentity*> * _Nullable blockchainIdentities, NSArray<NSError *> * errors);
+typedef void (^IdentityCompletionBlock)(BOOL succeess, DSBlockchainIdentity* _Nullable blockchainIdentity, NSError * _Nullable error);
+
+@interface DSIdentitiesManager : NSObject <DSChainIdentitiesDelegate>
 
 @property (nonatomic, readonly) DSChain * chain;
 
 - (instancetype)initWithChain:(DSChain*)chain;
 
+- (DSBlockchainIdentity*)foreignBlockchainIdentityWithUniqueId:(UInt256)uniqueId;
+
+- (NSArray*)unsyncedBlockchainIdentities;
+
+- (void)syncBlockchainIdentitiesWithCompletion:(IdentitiesCompletionBlock)completion;
+
 - (void)retrieveAllBlockchainIdentitiesChainStates;
 
-- (void)searchIdentitiesByNamePrefix:(NSString*)namePrefix withCompletion:(IdentitiesCompletionBlock)completion;
+- (void)checkCreditFundingTransactionForPossibleNewIdentity:(DSCreditFundingTransaction*)creditFundingTransaction;
 
-- (void)searchIdentitiesByNamePrefix:(NSString*)namePrefix offset:(uint32_t)offset limit:(uint32_t)limit withCompletion:(IdentitiesCompletionBlock)completion;
+- (id<DSDAPINetworkServiceRequest>)searchIdentityByName:(NSString*)namePrefix withCompletion:(IdentityCompletionBlock)completion;
+
+- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByNamePrefix:(NSString*)namePrefix withCompletion:(IdentitiesCompletionBlock)completion;
+
+- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByNamePrefix:(NSString*)namePrefix offset:(uint32_t)offset limit:(uint32_t)limit withCompletion:(IdentitiesCompletionBlock)completion;
 
 - (void)searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID:(NSString*)userID withCompletion:(IdentitiesCompletionBlock)completion;
 

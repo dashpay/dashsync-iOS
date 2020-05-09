@@ -11,6 +11,7 @@
 #import "DSContactReceivedTransactionsTableViewController.h"
 #import "DSContactSentTransactionsTableViewController.h"
 #import "DSContactSendDashViewController.h"
+#import "DSContactRelationshipInfoViewController.h"
 
 static NSString * const CellId = @"CellId";
 
@@ -89,7 +90,8 @@ static NSString * const CellId = @"CellId";
     DSDashpayUserEntity * me = [self.blockchainIdentity matchingDashpayUserInContext:self.context];
     DSFriendRequestEntity * meToFriend = [[me.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact == %@",dashpayFriend]] anyObject];
     DSFriendRequestEntity * friendToMe = [[me.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",dashpayFriend]] anyObject];
-    NSAssert(meToFriend && friendToMe, @"We are friends after all");
+    NSAssert(meToFriend, @"We are friends after all - us to them");
+    NSAssert(friendToMe, @"We are friends after all - them to us");
     if ([segue.identifier isEqualToString:@"ContactTransactionsSegue"]) {
         UITabBarController * tabBarController = segue.destinationViewController;
         tabBarController.title = dashpayFriend.username;
@@ -107,7 +109,11 @@ static NSString * const CellId = @"CellId";
             } else if ([controller isKindOfClass:[DSContactSendDashViewController class]]) {
                 ((DSContactSendDashViewController*)controller).blockchainIdentity = self.blockchainIdentity;
                 ((DSContactSendDashViewController*)controller).contact = dashpayFriend;
-            }
+            } else if ([controller isKindOfClass:[DSContactRelationshipInfoViewController class]]) {
+               ((DSContactRelationshipInfoViewController*)controller).blockchainIdentity = self.blockchainIdentity;
+               ((DSContactRelationshipInfoViewController*)controller).incomingFriendRequest = friendToMe;
+                ((DSContactRelationshipInfoViewController*)controller).outgoingFriendRequest = meToFriend;
+           }
         }
     }
 }

@@ -468,7 +468,7 @@ passphrase:(NSString *)passphrase
     NSParameterAssert(passphrase);
     NSParameterAssert(chain);
     
-    NSData *priv = [self privateKeyStringForChain:chain].base58checkToData;
+    NSData *priv = [self serializedPrivateKeyForChain:chain].base58checkToData;
 
     if (priv.length < 33 || ! passphrase) return nil;
 

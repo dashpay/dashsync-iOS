@@ -27,7 +27,7 @@
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainLockEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 
 @implementation DSMerkleBlockEntity
 
@@ -98,7 +98,19 @@
     __block NSArray * blocks = nil;
     [chainEntity.managedObjectContext performBlockAndWait:^{
         NSFetchRequest * fetchRequest = [DSMerkleBlockEntity fetchReq];
-        [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"(chain == %@)",chainEntity]];
+        [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"(chain == %@ && onlyHeader == FALSE)",chainEntity]];
+        [fetchRequest setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"height" ascending:FALSE]]];
+        [fetchRequest setFetchLimit:blockcount];
+        blocks = [DSMerkleBlockEntity fetchObjects:fetchRequest];
+    }];
+    return blocks;
+}
+
++ (NSArray<DSMerkleBlockEntity*>*)lastHeaders:(uint32_t)blockcount onChain:(DSChainEntity*)chainEntity {
+    __block NSArray * blocks = nil;
+    [chainEntity.managedObjectContext performBlockAndWait:^{
+        NSFetchRequest * fetchRequest = [DSMerkleBlockEntity fetchReq];
+        [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"(chain == %@ && onlyHeader == TRUE)",chainEntity]];
         [fetchRequest setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"height" ascending:FALSE]]];
         [fetchRequest setFetchLimit:blockcount];
         blocks = [DSMerkleBlockEntity fetchObjects:fetchRequest];

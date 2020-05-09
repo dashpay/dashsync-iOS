@@ -133,12 +133,9 @@
 
 -(DSDerivationPathEntity*)storeExtendedPublicKeyAssociatedWithFriendRequest:(DSFriendRequestEntity*)friendRequestEntity {
     [self.fundsDerivationPathForContact storeExtendedPublicKeyUnderWalletUniqueId:self.account.wallet.uniqueIDString];
-    
-    
     __block DSDerivationPathEntity* fundsDerivationPathEntity = nil;
     
     [friendRequestEntity.managedObjectContext performBlockAndWait:^{
-        [DSDerivationPathEntity setContext:friendRequestEntity.managedObjectContext];
         fundsDerivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self.fundsDerivationPathForContact associateWithFriendRequest:friendRequestEntity];
     }];
     return fundsDerivationPathEntity;
@@ -153,7 +150,7 @@
     friendRequestEntity.sourceContact = self.sourceBlockchainIdentity.matchingDashpayUser;
     friendRequestEntity.destinationContact = dashpayUserEntity;
     NSAssert(friendRequestEntity.sourceContact != friendRequestEntity.destinationContact, @"This must be different contacts");
-    friendRequestEntity.derivationPath = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self.fundsDerivationPathForContact];
+    friendRequestEntity.derivationPath = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self.fundsDerivationPathForContact inContext:dashpayUserEntity.managedObjectContext];
     friendRequestEntity.account = friendRequestEntity.derivationPath.account;
     
     [friendRequestEntity finalizeWithFriendshipIdentifier];

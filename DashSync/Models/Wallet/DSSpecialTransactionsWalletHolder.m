@@ -181,7 +181,7 @@
         NSMutableArray * derivationPathEntities = [NSMutableArray array];
         for (DSDerivationPath * derivationPath in [self derivationPaths]) {
             if (![derivationPath hasExtendedPublicKey]) continue;
-            DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:derivationPath];
+            DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:derivationPath inContext:self.managedObjectContext];
             
             //DSDLog(@"addresses for derivation path entity %@",derivationPathEntity.addresses);
             [derivationPathEntities addObject:derivationPathEntity];

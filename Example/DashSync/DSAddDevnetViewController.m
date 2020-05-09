@@ -54,7 +54,7 @@
         self.addDevnetNameTableViewCell.valueTextField.text = self.chain.devnetIdentifier;
         self.protocolVersionTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u",self.chain.protocolVersion];
         self.minProtocolVersionTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u",self.chain.minProtocolVersion];
-        self.sporkPrivateKeyTableViewCell.valueTextField.text = self.chain.sporkPrivateKey;
+        self.sporkPrivateKeyTableViewCell.valueTextField.text = self.chain.sporkPrivateKeyBase58String;
         self.sporkAddressTableViewCell.valueTextField.text = self.chain.sporkAddress;
         self.addDevnetNameTableViewCell.userInteractionEnabled = FALSE;
         self.dashdPortTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u",self.chain.standardPort];

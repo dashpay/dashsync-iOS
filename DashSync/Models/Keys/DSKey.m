@@ -67,7 +67,7 @@
     return [[NSData dataWithUInt160:randomNumber] addressFromHash160DataForChain:chain];
 }
 
-- (NSString *)privateKeyStringForChain:(DSChain*)chain {
+- (NSString *)serializedPrivateKeyForChain:(DSChain*)chain {
     return nil;
 }
 
@@ -91,6 +91,17 @@
         default:
             return DSLocalizedString(@"Unknown Key Type",nil);
             break;
+    }
+}
+
++ (nullable instancetype)keyWithSeedData:(NSData*)data forKeyType:(DSKeyType)keyType {
+    switch (keyType) {
+        case DSKeyType_BLS:
+            return [DSBLSKey extendedPrivateKeyWithSeedData:data];
+        case DSKeyType_ECDSA:
+            return [DSECDSAKey keyWithSeedData:data];
+        default:
+            return nil;
     }
 }
 
@@ -141,12 +152,30 @@
     }
 }
 
-- (DSKey*)privateDeriveToPath:(NSIndexPath*)derivationPath {
+- (void)forgetPrivateKey {
+    
+}
+
+- (instancetype)privateDeriveToPath:(NSIndexPath*)derivationPath {
     NSAssert(NO, @"This should be overridden");
     return nil;
 }
 
-- (DSKey*)publicDeriveToPath:(NSIndexPath*)derivationPath {
+- (instancetype)publicDeriveToPath:(NSIndexPath*)derivationPath {
+    NSAssert(NO, @"This should be overridden");
+    return nil;
+}
+
+- (nullable instancetype)privateDeriveTo256BitDerivationPath:(DSDerivationPath*)derivationPath {
+    NSAssert(NO, @"This should be overridden");
+    return nil;
+}
+- (nullable instancetype)publicDeriveTo256BitDerivationPath:(DSDerivationPath*)derivationPath {
+    NSAssert(NO, @"This should be overridden");
+    return nil;
+}
+
+- (nullable instancetype)publicDeriveTo256BitDerivationPath:(DSDerivationPath*)derivationPath derivationPathOffset:(NSUInteger)derivationPathOffset {
     NSAssert(NO, @"This should be overridden");
     return nil;
 }
