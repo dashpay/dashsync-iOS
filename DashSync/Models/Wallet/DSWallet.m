@@ -872,6 +872,14 @@
     return [[DSDerivationPathFactory sharedInstance] loadedSpecializedDerivationPathsForWallet:self];
 }
 
+-(BOOL)hasAnExtendedPublicKeyMissing {
+    for (DSAccount * account in self.accounts) {
+        if ([account hasAnExtendedPublicKeyMissing]) return YES;
+    }
+    //todo add non funds derivation paths
+    return NO;
+}
+
 // MARK: - Wiping
 
 - (void)wipeBlockchainInfoInContext:(NSManagedObjectContext*)context {

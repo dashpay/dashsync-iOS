@@ -336,15 +336,15 @@
 
 // MARK: - Count Info
 
--(void)resetSyncCountInfo:(DSSyncCountInfo)syncCountInfo {
-    [self setCount:0 forSyncCountInfo:syncCountInfo];
+-(void)resetSyncCountInfo:(DSSyncCountInfo)syncCountInfo inContext:(NSManagedObjectContext*)context {
+    [self setCount:0 forSyncCountInfo:syncCountInfo inContext:context];
 }
 
--(void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)syncCountInfo {
+-(void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)syncCountInfo inContext:(NSManagedObjectContext*)context {
     switch (syncCountInfo) {
         case DSSyncCountInfo_GovernanceObject:
             self.chain.totalGovernanceObjectsCount = count;
-            [self.chain save];
+            [self.chain saveInContext:context];
             break;
         case DSSyncCountInfo_GovernanceObjectVote:
             self.governanceSyncManager.currentGovernanceSyncObject.totalGovernanceVoteCount = count;
@@ -358,7 +358,7 @@
 // MARK: - DSPeerChainDelegate
 
 - (void)peer:(DSPeer *)peer relayedSyncInfo:(DSSyncCountInfo)syncCountInfo count:(uint32_t)count {
-    [self setCount:count forSyncCountInfo:syncCountInfo];
+    [self setCount:count forSyncCountInfo:syncCountInfo inContext:self.chain.chainManagedObjectContext];
     switch (syncCountInfo) {
         case DSSyncCountInfo_List:
         {

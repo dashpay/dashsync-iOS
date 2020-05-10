@@ -1530,7 +1530,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     NSParameterAssert(data);
     NSParameterAssert(recipientPublicKey);
     DSKey * privateKey = [self privateKeyAtIndex:index ofType:recipientPublicKey.keyType];
-    NSData * encryptedData = [data encryptWithSecretKey:privateKey forPeerWithPublicKey:recipientPublicKey];
+    NSData * encryptedData = [data encryptWithSecretKey:privateKey forPublicKey:recipientPublicKey];
     if (completion) {
         completion(encryptedData);
     }
@@ -1539,7 +1539,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 -(void)decryptData:(NSData*)encryptedData withKeyAtIndex:(uint32_t)index fromSenderKey:(DSKey*)senderPublicKey completion:(void (^ _Nullable)(NSData* decryptedData))completion {
     DSKey * privateKey = [self privateKeyAtIndex:index ofType:senderPublicKey.keyType];
-    NSData * data = [encryptedData decryptWithSecretKey:privateKey fromPeerWithPublicKey:senderPublicKey];
+    NSData * data = [encryptedData decryptWithSecretKey:privateKey fromPublicKey:senderPublicKey];
     if (completion) {
         completion(data);
     }

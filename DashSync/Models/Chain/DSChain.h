@@ -36,6 +36,7 @@ FOUNDATION_EXPORT NSString* const DSChainBlocksDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainBlockWasLockedNotification;
 FOUNDATION_EXPORT NSString* const DSChainNotificationBlockKey;
 FOUNDATION_EXPORT NSString* const DSChainInitialHeadersDidChangeNotification;
+FOUNDATION_EXPORT NSString* const DSChainInitialHeadersDidFinishSyncingNotification;
 FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 typedef NS_ENUM(uint16_t, DSChainType) {
@@ -208,6 +209,9 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 
 /*! @brief Unregister all wallets from the chain, they will no longer be loaded or used.  */
 - (void)unregisterAllWallets;
+
+/*! @brief Unregister all wallets from the chain that don't have an extended public key in one of their derivation paths, they will no longer be loaded or used.  */
+- (void)unregisterAllWalletsMissingExtendedPublicKeys;
 
 // MARK: - Standalone Derivation Paths
 

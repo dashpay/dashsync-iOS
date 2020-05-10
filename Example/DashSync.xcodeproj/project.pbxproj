@@ -228,6 +228,8 @@
 		FBD967AA212571DC005CBE0B /* DSTopupBlockchainIdentityViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967A9212571DC005CBE0B /* DSTopupBlockchainIdentityViewController.m */; };
 		FBD967AD21270DD6005CBE0B /* DSUsernameTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967AC21270DD6005CBE0B /* DSUsernameTableViewCell.m */; };
 		FBDB9B7E20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */; };
+		FBE07DD124673AC200A1079C /* DSSyncTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FBE07DD024673AC200A1079C /* DSSyncTests.m */; };
+		FBE07DD32467440200A1079C /* DSChainedSigningTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FBE07DD22467440200A1079C /* DSChainedSigningTests.m */; };
 		FBE155FB22B931FA009CA817 /* DSMasternodeListsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBE155FA22B931FA009CA817 /* DSMasternodeListsViewController.m */; };
 		FBE155FE22B954EE009CA817 /* DSMasternodeListTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBE155FD22B954EE009CA817 /* DSMasternodeListTableViewCell.m */; };
 		FBE1560022B99368009CA817 /* MasternodeList1088800.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBE155FF22B99368009CA817 /* MasternodeList1088800.dat */; };
@@ -635,6 +637,8 @@
 		FBD967AB21270DD6005CBE0B /* DSUsernameTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSUsernameTableViewCell.h; sourceTree = "<group>"; };
 		FBD967AC21270DD6005CBE0B /* DSUsernameTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSUsernameTableViewCell.m; sourceTree = "<group>"; };
 		FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDeterministicMasternodeListTests.m; sourceTree = "<group>"; };
+		FBE07DD024673AC200A1079C /* DSSyncTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSyncTests.m; sourceTree = "<group>"; };
+		FBE07DD22467440200A1079C /* DSChainedSigningTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSChainedSigningTests.m; sourceTree = "<group>"; };
 		FBE155F922B931FA009CA817 /* DSMasternodeListsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMasternodeListsViewController.h; sourceTree = "<group>"; };
 		FBE155FA22B931FA009CA817 /* DSMasternodeListsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMasternodeListsViewController.m; sourceTree = "<group>"; };
 		FBE155FC22B954EE009CA817 /* DSMasternodeListTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMasternodeListTableViewCell.h; sourceTree = "<group>"; };
@@ -935,6 +939,8 @@
 				FBBDF422226B6E770081D673 /* DSBigNumberTests.m */,
 				FB1B98D023D6A3BD00D50F69 /* DSTransitionTests.m */,
 				FBC9248C2414EF0600005D0D /* DSAttackTests.m */,
+				FBE07DD024673AC200A1079C /* DSSyncTests.m */,
+				FBE07DD22467440200A1079C /* DSChainedSigningTests.m */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -1838,6 +1844,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2A7DCCAE20D9485A0097049F /* DSBIP32Tests.m in Sources */,
+				FBE07DD124673AC200A1079C /* DSSyncTests.m in Sources */,
 				2A7DCCB220DA10870097049F /* DSBloomFilterTests.m in Sources */,
 				2AA2C5EB20E37B74007768B1 /* DSGovernanceTests.m in Sources */,
 				FB1B98D123D6A3BD00D50F69 /* DSTransitionTests.m in Sources */,
@@ -1845,6 +1852,7 @@
 				FBDB9B7E20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m in Sources */,
 				FBF31B7122328AA900393301 /* DSProviderTransactionsTests.m in Sources */,
 				FBBDF423226B6E770081D673 /* DSBigNumberTests.m in Sources */,
+				FBE07DD32467440200A1079C /* DSChainedSigningTests.m in Sources */,
 				2A7DCCAC20D9474F0097049F /* DSBIP39Tests.m in Sources */,
 				2A1ECBDF20D8F7DB000177D8 /* DSTransactionTests.m in Sources */,
 				2A1ECBD920D8B327000177D8 /* DSHashTests.m in Sources */,

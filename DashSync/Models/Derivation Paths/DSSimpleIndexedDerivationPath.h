@@ -37,8 +37,9 @@ NS_ASSUME_NONNULL_BEGIN
 // gets a private key at an index
 - (DSKey * _Nullable)privateKeyAtIndex:(uint32_t)index fromSeed:(NSData *)seed;
 
-// get private keys to an index
+// get private keys for a range or to an index
 - (NSArray *)privateKeysToIndex:(NSUInteger)index fromSeed:(NSData *)seed;
+- (NSArray *)privateKeysForRange:(NSRange)range fromSeed:(NSData *)seed;
 
 // update addresses
 - (NSArray * _Nullable)registerAddressesWithDefaultGapLimitWithError:(NSError**)error;

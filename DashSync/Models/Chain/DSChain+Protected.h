@@ -94,6 +94,8 @@ NS_ASSUME_NONNULL_BEGIN
 /*! @brief Save chain info, this rarely needs to be called.  */
 - (void)save;
 
+- (void)saveInContext:(NSManagedObjectContext*)context;
+
 - (void)saveBlocks;
 
 @end

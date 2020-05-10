@@ -47,13 +47,13 @@
     NSString *secret = @"my little secret is a pony that never sleeps";
     NSData *data = [secret dataUsingEncoding:NSUTF8StringEncoding];
     //Alice is sending to Bob
-    NSData *encryptedData = [data encryptWithSecretKey:aliceKeyPair forPeerWithPublicKey:bobKeyPair useInitializationVectorForTesting:@"eac5bcd6eb85074759e0261497428c9b".hexToData];
+    NSData *encryptedData = [data encryptWithSecretKey:aliceKeyPair forPublicKey:bobKeyPair usingInitializationVector:@"eac5bcd6eb85074759e0261497428c9b".hexToData];
     XCTAssertNotNil(encryptedData);
     
     XCTAssertEqualObjects(encryptedData, @"eac5bcd6eb85074759e0261497428c9bd72bd418ce96e69cbb6766e59f8d1f8138afb0686018bb4d401369e77ba47367f93a49a528f4cc9e3f209a515e6dd8f2".hexToData, @"they should be the same data");
     
     //Bob is receiving from Alice
-    NSData *decrypted = [encryptedData decryptWithSecretKey:bobKeyPair fromPeerWithPublicKey:aliceKeyPair];
+    NSData *decrypted = [encryptedData decryptWithSecretKey:bobKeyPair fromPublicKey:aliceKeyPair];
     XCTAssertNotNil(decrypted);
     NSString * decryptedSecret = [[NSString alloc] initWithData:decrypted encoding:NSUTF8StringEncoding];
     XCTAssertEqualObjects(secret,decryptedSecret,@"they should be the same string");
@@ -72,13 +72,13 @@
     NSString *secret = @"my little secret is a pony that never sleeps";
     NSData *data = [secret dataUsingEncoding:NSUTF8StringEncoding];
     //Alice is sending to Bob
-    NSData *encryptedData = [data encryptWithSecretKey:aliceKeyPair forPeerWithPublicKey:bobKeyPair useInitializationVectorForTesting:@"eac5bcd6eb85074759e0261497428c9b".hexToData];
+    NSData *encryptedData = [data encryptWithSecretKey:aliceKeyPair forPublicKey:bobKeyPair usingInitializationVector:@"eac5bcd6eb85074759e0261497428c9b".hexToData];
     XCTAssertNotNil(encryptedData);
     
-    XCTAssertEqualObjects(encryptedData, @"eac5bcd6eb85074759e0261497428c9b3725d3b9ec4d739a842116277c6ace81549089be0d11a54ee09a99dcf7ac695a8ea56d41bf0b62def90b6f78f8b0aca9".hexToData, @"they should be the same data");
+    XCTAssertEqualObjects(encryptedData.hexString, @"eac5bcd6eb85074759e0261497428c9b9eb25942b8fd1b4290a8ad3c1d4e3b74c4fe423e41b22320915f060a6d88da2274b2c69d4bbf44cb1e3c14b01c6fcb70", @"they should be the same data");
     
     //Bob is receiving from Alice
-    NSData *decrypted = [encryptedData decryptWithSecretKey:bobKeyPair fromPeerWithPublicKey:aliceKeyPair];
+    NSData *decrypted = [encryptedData decryptWithSecretKey:bobKeyPair fromPublicKey:aliceKeyPair];
     XCTAssertNotNil(decrypted);
     NSString * decryptedSecret = [[NSString alloc] initWithData:decrypted encoding:NSUTF8StringEncoding];
     XCTAssertEqualObjects(secret,decryptedSecret,@"they should be the same string");

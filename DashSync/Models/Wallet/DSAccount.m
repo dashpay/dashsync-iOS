@@ -257,7 +257,9 @@
 - (void)loadDerivationPaths {
     if (!_wallet.isTransient) {
         for (DSFundsDerivationPath * derivationPath in self.fundDerivationPaths) {
-            [derivationPath loadAddresses];
+            if ([derivationPath hasExtendedPublicKey]) {
+                [derivationPath loadAddresses];
+            }
         }
     } else {
         for (DSFundsDerivationPath * derivationPath in self.fundDerivationPaths) {
@@ -270,9 +272,9 @@
         }
     }
     if (!self.isViewOnlyAccount) {
-        if (self.bip44DerivationPath) {
+        if (self.bip44DerivationPath && [self.bip44DerivationPath hasExtendedPublicKey]) {
             self.defaultDerivationPath = self.bip44DerivationPath;
-        } else if (self.bip32DerivationPath) {
+        } else if (self.bip32DerivationPath && [self.bip32DerivationPath hasExtendedPublicKey]) {
             self.defaultDerivationPath = self.bip32DerivationPath;
         } else if ([self.fundDerivationPaths objectAtIndex:0] && [[self.fundDerivationPaths objectAtIndex:0] isKindOfClass:[DSFundsDerivationPath class]]) {
             self.defaultDerivationPath = (DSFundsDerivationPath*)[self.fundDerivationPaths objectAtIndex:0];
@@ -408,6 +410,13 @@
 }
 
 // MARK: - Addresses from Combined Derivation Paths
+
+-(BOOL)hasAnExtendedPublicKeyMissing {
+    for (DSDerivationPath * derivationPath in self.fundDerivationPaths) {
+        if (![derivationPath hasExtendedPublicKey]) return YES;
+    }
+    return NO;
+}
 
 -(NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit dashpayGapLimit:(NSUInteger)dashpayGapLimit internal:(BOOL)internal error:(NSError**)error {
     NSMutableArray * mArray = [NSMutableArray array];

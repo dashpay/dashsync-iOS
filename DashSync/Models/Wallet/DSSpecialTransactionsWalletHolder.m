@@ -64,6 +64,7 @@
     return @[self.providerRegistrationTransactions,self.providerUpdateServiceTransactions,self.providerUpdateRegistrarTransactions,self.providerUpdateRevocationTransactions,self.creditFundingTransactions];
 }
 
+
 -(NSUInteger)allTransactionsCount {
     NSUInteger count = 0;
     for (NSDictionary * transactionDictionary in [self transactionDictionaries]) {

@@ -278,6 +278,9 @@ static checkpoint mainnet_checkpoint_array[] = {
     }
     self.checkpoints = checkpoints;
     self.genesisHash = self.checkpoints[0].checkpointHash;
+    dispatch_sync(self.networkingQueue, ^{
+        self.chainManagedObjectContext = [NSManagedObjectContext chainContext];
+    });
 
     return self;
 }
@@ -1435,6 +1438,14 @@ static dispatch_once_t devnetToken = 0;
     }
 }
 
+-(void)unregisterAllWalletsMissingExtendedPublicKeys {
+    for (DSWallet * wallet in [self.mWallets copy]) {
+        if ([wallet hasAnExtendedPublicKeyMissing]) {
+            [self unregisterWallet:wallet];
+        }
+    }
+}
+
 -(void)unregisterWallet:(DSWallet*)wallet {
     NSAssert(wallet.chain == self, @"the wallet you are trying to remove is not on this chain");
     [wallet wipeBlockchainInfoInContext:self.chainManagedObjectContext];
@@ -2094,6 +2105,9 @@ static dispatch_once_t devnetToken = 0;
     if (syncDone) { // chain download is complete
         [self saveHeaders];
         [self.chainManager chainFinishedSyncingInitialHeaders:self fromPeer:peer onMainChain:onMainChain];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainInitialHeadersDidFinishSyncingNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
+        });
     }
     
     if (header.height > self.estimatedBlockHeight) {
@@ -3032,11 +3046,15 @@ static dispatch_once_t devnetToken = 0;
 }
 
 -(void)save {
-    [self.chainManagedObjectContext performBlockAndWait:^{
-        DSChainEntity * entity = self.chainEntity;
+    [self saveInContext:self.chainManagedObjectContext];
+}
+
+-(void)saveInContext:(NSManagedObjectContext*)context {
+    [context performBlockAndWait:^{
+        DSChainEntity * entity = [self chainEntityInContext:context];
         entity.totalGovernanceObjectsCount = self.totalGovernanceObjectsCount;
         entity.baseBlockHash = [NSData dataWithUInt256:self.masternodeBaseBlockHash];
-        [self.chainManagedObjectContext ds_save];
+        [context ds_save];
     }];
 }
 

@@ -94,6 +94,9 @@ NS_ASSUME_NONNULL_BEGIN
 // all the contacts for an account
 @property (nonatomic, readonly) NSArray <DSPotentialOneWayFriendship*> * _Nonnull contacts;
 
+// has an extended public key missing in one of the account derivation paths
+@property (nonatomic, readonly) BOOL hasAnExtendedPublicKeyMissing;
+
 -(NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit dashpayGapLimit:(NSUInteger)dashpayGapLimit  internal:(BOOL)internal error:(NSError**)error;
 
 +(DSAccount*)accountWithAccountNumber:(uint32_t)accountNumber withDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context;

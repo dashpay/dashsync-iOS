@@ -48,6 +48,8 @@ typedef NS_ENUM(NSUInteger, DSKeyType) {
 - (nullable instancetype)publicDeriveTo256BitDerivationPath:(DSDerivationPath*)derivationPath;
 - (nullable instancetype)publicDeriveTo256BitDerivationPath:(DSDerivationPath*)derivationPath derivationPathOffset:(NSUInteger)derivationPathOffset;
 
+- (nullable instancetype)initWithDHKeyExchangeWithPublicKey:(DSKey*)publicKey forPrivateKey:(DSKey*)privateKey;
+
 @end
 
 NS_ASSUME_NONNULL_END

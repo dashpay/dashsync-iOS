@@ -438,9 +438,11 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     return nil;
 }
 
-- (nullable instancetype)initWithDHKeyExchangeWithPublicKey:(DSECDSAKey *)publicKey forPrivateKey:(DSECDSAKey*)privateKey {
+- (nullable instancetype)initWithDHKeyExchangeWithPublicKey:(DSKey *)publicKey forPrivateKey:(DSKey*)privateKey {
     NSParameterAssert(publicKey);
     NSParameterAssert(privateKey);
+    NSAssert([publicKey isKindOfClass:[DSECDSAKey class]], @"The public key needs to be a ECDSA key");
+    NSAssert([privateKey isKindOfClass:[DSECDSAKey class]], @"The privateKey key needs to be a ECDSA key");
     if (! (self = [self init])) return nil;
     
     secp256k1_pubkey pk;
@@ -450,7 +452,7 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     
     //uint8_t * seckey = NULL;
     
-    if (secp256k1_ecdh(_ctx, _seckey.u8, &pk, (const uint8_t *)privateKey.secretKey)!= 1) {
+    if (secp256k1_ecdh(_ctx, _seckey.u8, &pk, (const uint8_t *)((DSECDSAKey*)privateKey).secretKey)!= 1) {
         return nil;
     }
     self.compressed = NO;

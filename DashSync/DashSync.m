@@ -213,8 +213,8 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
     [self stopSyncForChain:chain];
     [context performBlockAndWait:^{
         DSChainManager * chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
-        [chainManager resetSyncCountInfo:DSSyncCountInfo_GovernanceObject];
-        [chainManager resetSyncCountInfo:DSSyncCountInfo_GovernanceObjectVote];
+        [chainManager resetSyncCountInfo:DSSyncCountInfo_GovernanceObject inContext:context];
+        [chainManager resetSyncCountInfo:DSSyncCountInfo_GovernanceObjectVote inContext:context];
         [chainManager.governanceSyncManager wipeGovernanceInfo];
         [context ds_save];
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@_%@",chain.uniqueID,LAST_SYNCED_GOVERANCE_OBJECTS]];

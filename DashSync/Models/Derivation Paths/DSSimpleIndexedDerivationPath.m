@@ -204,14 +204,17 @@
     return [mArray copy];
 }
 
-- (NSArray *)privateKeysToIndex:(NSUInteger)index fromSeed:(NSData *)seed {
-
+- (NSArray *)privateKeysForRange:(NSRange)range fromSeed:(NSData *)seed {
     NSMutableArray * mArray = [NSMutableArray array];
-    for (int i = 0;i<index;i++) {
-        DSKey *privateKey = [self privateKeyAtIndex:i fromSeed:seed];
+    for (NSUInteger i = range.location;i<(range.location + range.length);i++) {
+        DSKey *privateKey = [self privateKeyAtIndex:(uint32_t)i fromSeed:seed];
         [mArray addObject:privateKey];
     }
     return [mArray copy];
+}
+
+- (NSArray *)privateKeysToIndex:(NSUInteger)index fromSeed:(NSData *)seed {
+    return [self privateKeysForRange:NSMakeRange(0, index) fromSeed:seed];
 }
 
 @end

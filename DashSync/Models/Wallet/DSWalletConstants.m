@@ -25,6 +25,7 @@ NSString* const DSChainStandaloneDerivationPathsDidChangeNotification =    @"DSC
 NSString* const DSChainStandaloneAddressesDidChangeNotification = @"DSChainStandaloneAddressesDidChangeNotification";
 NSString* const DSChainBlocksDidChangeNotification = @"DSChainBlocksDidChainNotification";
 NSString* const DSChainInitialHeadersDidChangeNotification = @"DSChainInitialHeadersDidChangeNotification";
+NSString* const DSChainInitialHeadersDidFinishSyncingNotification = @"DSChainInitialHeadersDidFinishSyncingNotification";
 NSString* const DSChainBlockWasLockedNotification = @"DSChainBlockWasLockedNotification";
 NSString* const DSChainNotificationBlockKey = @"DSChainNotificationBlockKey";
 

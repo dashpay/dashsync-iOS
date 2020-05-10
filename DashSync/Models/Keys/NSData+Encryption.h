@@ -22,9 +22,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSData (Encryption)
 
-- (nullable NSData *)encryptWithSecretKey:(DSKey*)secretKey forPeerWithPublicKey:(DSKey*)peerPubKey;
-- (nullable NSData *)encryptWithSecretKey:(DSKey*)secretKey forPeerWithPublicKey:(DSKey*)peerPubKey useInitializationVectorForTesting:(NSData*)initializationVector;
-- (nullable NSData *)decryptWithSecretKey:(DSKey*)secretKey fromPeerWithPublicKey:(DSKey*)peerPubKey;
+- (nullable NSData *)encryptWithSecretKey:(DSKey*)secretKey forPublicKey:(DSKey*)peerPubKey;
+- (nullable NSData *)encryptWithSecretKey:(DSKey*)secretKey forPublicKey:(DSKey*)peerPubKey usingInitializationVector:(NSData*)initializationVector;
+- (nullable NSData *)decryptWithSecretKey:(DSKey*)secretKey fromPublicKey:(DSKey*)peerPubKey;
+- (nullable NSData *)encryptWithDHKey:(DSKey*)dhKey;
+- (nullable NSData *)encapsulatedDHEncryptionWithKeys:(NSArray<DSKey*>*)keys;
+- (nullable NSData *)encapsulatedDHDecryptionWithKeys:(NSArray<DSKey*>*)keys;
+- (nullable NSData *)encapsulatedDHEncryptionWithKeys:(NSArray<DSKey*>*)keys usingInitializationVector:(NSData*)initializationVector;
+- (nullable NSData *)encapsulatedDHDecryptionWithKeys:(NSArray<DSKey*>*)keys usingIVSize:(NSUInteger)ivSize;
 
 @end
 

@@ -298,7 +298,7 @@
     
     XCTAssertEqualObjects([NSData dataWithUInt768:signature2].hexString, @"975b5daa64b915be19b5ac6d47bc1c2fc832d2fb8ca3e95c4805d8216f95cf2bdbb36cc23645f52040e381550727db420b523b57d494959e0e8c0c6060c46cf173872897f14d43b2ac2aec52fc7b46c02c5699ff7a10beba24d3ced4e89c821e",@"Testing BLS signing");
     
-    UInt768 aggregateSignature1 = [DSBLSKey aggregateSignatures:@[[NSData dataWithUInt768:signature1],[NSData dataWithUInt768:signature2]] withPublicKeys:@[[NSData dataWithUInt384:keyPair1.publicKey],[NSData dataWithUInt384:keyPair2.publicKey]] withMessages:@[messageData1,messageData1]];
+    UInt768 aggregateSignature1 = [DSBLSKey aggregateSignatures:@[[NSData dataWithUInt768:signature1],[NSData dataWithUInt768:signature2]] withPublicKeys:@[[DSBLSKey keyWithPublicKey:keyPair1.publicKey],[DSBLSKey keyWithPublicKey:keyPair2.publicKey]] withMessages:@[messageData1,messageData1]];
     
     XCTAssertEqualObjects([NSData dataWithUInt768:aggregateSignature1].hexString, @"0a638495c1403b25be391ed44c0ab013390026b5892c796a85ede46310ff7d0e0671f86ebe0e8f56bee80f28eb6d999c0a418c5fc52debac8fc338784cd32b76338d629dc2b4045a5833a357809795ef55ee3e9bee532edfc1d9c443bf5bc658",@"Testing BLS simple signature aggregation");
     
@@ -306,7 +306,7 @@
     UInt768 signature4 = [keyPair1 signDataSingleSHA256:messageData3];
     UInt768 signature5 = [keyPair2 signDataSingleSHA256:messageData4];
     
-    UInt768 aggregateSignature2 = [DSBLSKey aggregateSignatures:@[[NSData dataWithUInt768:signature3],[NSData dataWithUInt768:signature4],[NSData dataWithUInt768:signature5]] withPublicKeys:@[[NSData dataWithUInt384:keyPair1.publicKey],[NSData dataWithUInt384:keyPair1.publicKey],[NSData dataWithUInt384:keyPair2.publicKey]] withMessages:@[messageData2,messageData3,messageData4]];
+    UInt768 aggregateSignature2 = [DSBLSKey aggregateSignatures:@[[NSData dataWithUInt768:signature3],[NSData dataWithUInt768:signature4],[NSData dataWithUInt768:signature5]] withPublicKeys:@[[DSBLSKey keyWithPublicKey:keyPair1.publicKey],[DSBLSKey keyWithPublicKey:keyPair1.publicKey],[DSBLSKey keyWithPublicKey:keyPair2.publicKey]] withMessages:@[messageData2,messageData3,messageData4]];
     
     XCTAssertEqualObjects([NSData dataWithUInt768:aggregateSignature2].hexString, @"8b11daf73cd05f2fe27809b74a7b4c65b1bb79cc1066bdf839d96b97e073c1a635d2ec048e0801b4a208118fdbbb63a516bab8755cc8d850862eeaa099540cd83621ff9db97b4ada857ef54c50715486217bd2ecb4517e05ab49380c041e159b",@"Testing BLS complex signature aggregation");
     
