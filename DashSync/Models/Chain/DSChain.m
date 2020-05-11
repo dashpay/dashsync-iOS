@@ -1917,6 +1917,9 @@ static dispatch_once_t devnetToken = 0;
         [self saveBlocks];
         savedBlocks = YES;
         [self.chainManager chainFinishedSyncingTransactionsAndBlocks:self fromPeer:peer onMainChain:onMainChain];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlocksDidFinishSyncingNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
+        });
     }
     
     if (block.height > self.estimatedBlockHeight) {

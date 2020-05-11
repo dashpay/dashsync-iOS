@@ -59,17 +59,16 @@
 - (void)testExample {
     if (@available(iOS 13.0, *)) {
         [self measureWithMetrics:@[[[XCTCPUMetric alloc] init],[[XCTMemoryMetric alloc] init],[[XCTClockMetric alloc] init]] block:^{
-            [[DashSync sharedSyncController] wipePeerDataForChain:self.chain inContext:[NSManagedObjectContext viewContext]];
-            [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext viewContext]];
-            [[DashSync sharedSyncController] wipeSporkDataForChain:self.chain inContext:[NSManagedObjectContext viewContext]];
-            [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chain inContext:[NSManagedObjectContext viewContext]];
-            [[DashSync sharedSyncController] wipeGovernanceDataForChain:self.chain inContext:[NSManagedObjectContext viewContext]];
-            [[DashSync sharedSyncController] wipeWalletDataForChain:self.chain forceReauthentication:YES inContext:[NSManagedObjectContext viewContext]]; //this takes care of blockchain info as well;
+            [[DashSync sharedSyncController] wipePeerDataForChain:self.chain inContext:[NSManagedObjectContext peerContext]];
+            [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+            [[DashSync sharedSyncController] wipeSporkDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+            [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
             XCTestExpectation *expectation = [[XCTestExpectation alloc] init];
             [[DashSync sharedSyncController] startSyncForChain:self.chain];
             self.txStatusObserver =
-            [[NSNotificationCenter defaultCenter] addObserverForName:DSChainInitialHeadersDidFinishSyncingNotification object:nil
+            [[NSNotificationCenter defaultCenter] addObserverForName:DSChainBlocksDidFinishSyncingNotification object:nil
                                                                queue:nil usingBlock:^(NSNotification *note) {
+                DSDLog(@"Finished sync");
                 [expectation fulfill];
             }];
             [self waitForExpectations:@[expectation] timeout:36000];

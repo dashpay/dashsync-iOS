@@ -37,6 +37,7 @@ FOUNDATION_EXPORT NSString* const DSChainBlockWasLockedNotification;
 FOUNDATION_EXPORT NSString* const DSChainNotificationBlockKey;
 FOUNDATION_EXPORT NSString* const DSChainInitialHeadersDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainInitialHeadersDidFinishSyncingNotification;
+FOUNDATION_EXPORT NSString* const DSChainBlocksDidFinishSyncingNotification;
 FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 typedef NS_ENUM(uint16_t, DSChainType) {
