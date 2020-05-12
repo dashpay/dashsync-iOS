@@ -42,7 +42,7 @@
 @implementation DSSyncTests
 
 - (void)setUp {
-    self.chain = [DSChain devnetWithIdentifier:@"devnet-mobile"];
+    self.chain = [DSChain mainnet];
     [self.chain unregisterAllWalletsMissingExtendedPublicKeys];
     self.wallet = [DSWallet standardWalletWithRandomSeedPhraseForChain:self.chain storeSeedPhrase:YES isTransient:NO];
 
@@ -56,7 +56,7 @@
     [self.chain unregisterWallet:self.wallet];
 }
 
-- (void)testExample {
+- (void)testFullSync {
     if (@available(iOS 13.0, *)) {
         [self measureWithMetrics:@[[[XCTCPUMetric alloc] init],[[XCTMemoryMetric alloc] init],[[XCTClockMetric alloc] init]] block:^{
             [[DashSync sharedSyncController] wipePeerDataForChain:self.chain inContext:[NSManagedObjectContext peerContext]];
