@@ -236,6 +236,10 @@ static NSData *_Nullable AES256EncryptDecrypt(CCOperation operation,
     return nil;
 }
 
+- (nullable NSData *)decryptWithSecretKey:(DSKey*)secretKey fromPublicKey:(DSKey*)peerPubKey {
+    return [self decryptWithSecretKey:secretKey fromPublicKey:peerPubKey usingIVSize:kCCBlockSizeAES128];
+}
+
 - (nullable NSData *)decryptWithSecretKey:(DSKey*)secretKey fromPublicKey:(DSKey*)peerPubKey usingIVSize:(NSUInteger)ivSize {
     if ([secretKey isMemberOfClass:[DSBLSKey class]] && [peerPubKey isMemberOfClass:[DSBLSKey class]]) {
         return [self decryptWithBLSSecretKey:(DSBLSKey*)secretKey fromPublicKey:(DSBLSKey*)peerPubKey usingIVSize:ivSize];

@@ -253,8 +253,8 @@
             [peer sendGetheadersMessageWithLocators:[self.chain headerLocatorArrayForMasternodeSync] andHashStop:UINT256_ZERO];
         } else {
             BOOL startingDevnetSync = [self.chain isDevnetAny] && self.chain.lastBlock.height < 5;
-            if (startingDevnetSync || self.chain.lastBlock.timestamp + (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4 >= self.chain.earliestWalletCreationTime) {
-                [peer sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
+            if (startingDevnetSync || self.chain.lastBlockOrHeader.timestamp + HEADER_WINDOW_BUFFER_TIME >= self.chain.earliestWalletCreationTime) {
+                [peer sendGetblocksMessageWithLocators:[self.chain blockLocatorArrayBeforeTimestamp:self.chain.earliestWalletCreationTime - HEADER_WINDOW_BUFFER_TIME includeHeaders:YES] andHashStop:UINT256_ZERO];
             }
             else {
                 [peer sendGetheadersMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];

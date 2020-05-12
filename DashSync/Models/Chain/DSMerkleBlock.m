@@ -189,6 +189,14 @@ inline static int ceil_log2(int x)
     return self;
 }
 
+- (instancetype)initWithCheckpoint:(DSCheckpoint*)checkpoint onChain:(DSChain*)chain {
+    if (! (self = [self initWithBlockHash:checkpoint.checkpointHash onChain:chain version:1 prevBlock:UINT256_ZERO
+    merkleRoot:checkpoint.merkleRoot timestamp:checkpoint.timestamp
+        target:checkpoint.target nonce:0 totalTransactions:0 hashes:nil flags:nil
+        height:checkpoint.height chainLock:nil])) return nil;
+    return self;
+}
+
 -(BOOL)isMerkleTreeValid {
     NSMutableData *d = [NSMutableData data];
     UInt256 merkleRoot = UINT256_ZERO;

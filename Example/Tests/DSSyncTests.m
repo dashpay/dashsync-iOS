@@ -42,7 +42,7 @@
 @implementation DSSyncTests
 
 - (void)setUp {
-    self.chain = [DSChain testnet];
+    self.chain = [DSChain devnetWithIdentifier:@"devnet-mobile"];
     [self.chain unregisterAllWalletsMissingExtendedPublicKeys];
     self.wallet = [DSWallet standardWalletWithRandomSeedPhraseForChain:self.chain storeSeedPhrase:YES isTransient:NO];
 
@@ -63,15 +63,15 @@
             [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
             [[DashSync sharedSyncController] wipeSporkDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
             [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
-            XCTestExpectation *expectation = [[XCTestExpectation alloc] init];
+            XCTestExpectation *headerFinishedExpectation = [[XCTestExpectation alloc] init];
             [[DashSync sharedSyncController] startSyncForChain:self.chain];
             self.txStatusObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:DSChainBlocksDidFinishSyncingNotification object:nil
                                                                queue:nil usingBlock:^(NSNotification *note) {
                 DSDLog(@"Finished sync");
-                [expectation fulfill];
+                [headerFinishedExpectation fulfill];
             }];
-            [self waitForExpectations:@[expectation] timeout:36000];
+            [self waitForExpectations:@[headerFinishedExpectation] timeout:36000];
         }];
     } else {
         // Fallback on earlier versions

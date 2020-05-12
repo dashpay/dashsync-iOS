@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef union _UInt256 UInt256;
 
-@class DSChain, DSChainLock;
+@class DSChain, DSChainLock, DSCheckpoint;
 
 @interface DSMerkleBlock : NSObject <NSCopying>
 
@@ -80,6 +80,8 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData * _Nullable)hashes 
 
 // this init is used to check that the coinbase transaction is properly in the merkle tree of a block
 - (instancetype)initWithBlockHash:(UInt256)blockHash merkleRoot:(UInt256)merkleRoot totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags;
+
+- (instancetype)initWithCheckpoint:(DSCheckpoint*)checkpoint onChain:(DSChain*)chain;
 
 // true if the given tx hash is known to be included in the block
 - (BOOL)containsTxHash:(UInt256)txHash;

@@ -250,6 +250,12 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 /*! @brief The last known block or header on the chain. Whichever is latest.  */
 @property (nonatomic, readonly, nullable) DSMerkleBlock * lastBlockOrHeader;
 
+/*! @brief The last known block on the chain before the given timestamp.  */
+- (DSMerkleBlock *)lastBlockBeforeTimestamp:(NSTimeInterval)timestamp;
+
+/*! @brief The last known block or header on the chain before the given timestamp.  */
+- (DSMerkleBlock *)lastBlockOrHeaderBeforeTimestamp:(NSTimeInterval)timestamp;
+
 /*! @brief The last known orphan on the chain. An orphan is a block who's parent is currently not known.  */
 @property (nonatomic, readonly, nullable) DSMerkleBlock * lastOrphan;
 
@@ -261,6 +267,9 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 
 /*! @brief The block locator array is an array of the 10 most recent block hashes in decending order followed by block hashes that double the step back each iteration in decending order and finishing with the previous known checkpoint after that last hash. Something like (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -15, -23, -39, -71, -135, ..., 0).  */
 @property (nonatomic, readonly, nullable) NSArray <NSData*> * blockLocatorArray;
+
+/*! @brief This block locator array is an array of 10 block hashes in decending order before the given timestamp followed by block hashes that double the step back each iteration in decending order and finishing with the previous known checkpoint after that last hash. Something like (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -15, -23, -39, -71, -135, ..., 0).  */
+- (NSArray <NSData*> *)blockLocatorArrayBeforeTimestamp:(NSTimeInterval)timestamp includeHeaders:(BOOL)includeHeaders;
 
 /*! @brief The timestamp of a block at a given height.  */
 - (NSTimeInterval)timestampForBlockHeight:(uint32_t)blockHeight; // seconds since 1970, 00:00:00 01/01/01 GMT
