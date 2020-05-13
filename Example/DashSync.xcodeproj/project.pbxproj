@@ -185,6 +185,7 @@
 		FB90D2CF20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2CE20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m */; };
 		FB90D2D220C3F76E002B7956 /* DSDerivationPathTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2D120C3F76E002B7956 /* DSDerivationPathTableViewCell.m */; };
 		FB90D2D520C40DD3002B7956 /* DSFundsDerivationPathsAddressesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2D420C40DD3002B7956 /* DSFundsDerivationPathsAddressesViewController.m */; };
+		FB969707246BCA8E00BF56A5 /* DSErrorSimulationsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB969706246BCA8E00BF56A5 /* DSErrorSimulationsViewController.m */; };
 		FB988321241D64FA00B39F02 /* DSBlockchainIdentityKeysViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB988320241D64FA00B39F02 /* DSBlockchainIdentityKeysViewController.m */; };
 		FB988324241D6C3300B39F02 /* DSBlockchainIdentityKeyTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB988323241D6C3300B39F02 /* DSBlockchainIdentityKeyTableViewCell.m */; };
 		FB995D9A21101C4200AC37D0 /* DSPeersViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB995D9921101C4200AC37D0 /* DSPeersViewController.m */; };
@@ -561,6 +562,8 @@
 		FB90D2D120C3F76E002B7956 /* DSDerivationPathTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDerivationPathTableViewCell.m; sourceTree = "<group>"; };
 		FB90D2D320C40DD3002B7956 /* DSFundsDerivationPathsAddressesViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSFundsDerivationPathsAddressesViewController.h; sourceTree = "<group>"; };
 		FB90D2D420C40DD3002B7956 /* DSFundsDerivationPathsAddressesViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSFundsDerivationPathsAddressesViewController.m; sourceTree = "<group>"; };
+		FB969705246BCA8E00BF56A5 /* DSErrorSimulationsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSErrorSimulationsViewController.h; sourceTree = "<group>"; };
+		FB969706246BCA8E00BF56A5 /* DSErrorSimulationsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSErrorSimulationsViewController.m; sourceTree = "<group>"; };
 		FB98831F241D64FA00B39F02 /* DSBlockchainIdentityKeysViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainIdentityKeysViewController.h; sourceTree = "<group>"; };
 		FB988320241D64FA00B39F02 /* DSBlockchainIdentityKeysViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainIdentityKeysViewController.m; sourceTree = "<group>"; };
 		FB988322241D6C3300B39F02 /* DSBlockchainIdentityKeyTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainIdentityKeyTableViewCell.h; sourceTree = "<group>"; };
@@ -1149,6 +1152,8 @@
 			children = (
 				6003F5A5195388D20070C39A /* DSSyncViewController.h */,
 				6003F5A6195388D20070C39A /* DSSyncViewController.m */,
+				FB969705246BCA8E00BF56A5 /* DSErrorSimulationsViewController.h */,
+				FB969706246BCA8E00BF56A5 /* DSErrorSimulationsViewController.m */,
 				FB6DC62320AB63AC00E35EED /* DSSettingsViewController.h */,
 				FB6DC62420AB63AC00E35EED /* DSSettingsViewController.m */,
 				FB6DC62720AB64F400E35EED /* DSChainsViewController.h */,
@@ -1750,6 +1755,7 @@
 				FB0955CC244BBDC400A93675 /* DSContactRelationshipInfoViewController.m in Sources */,
 				FB763C622089AF9500CDBA57 /* DSStandaloneAddressesViewController.m in Sources */,
 				6003F5A7195388D20070C39A /* DSSyncViewController.m in Sources */,
+				FB969707246BCA8E00BF56A5 /* DSErrorSimulationsViewController.m in Sources */,
 				FBE155FE22B954EE009CA817 /* DSMasternodeListTableViewCell.m in Sources */,
 				FB3E970720DC245C00D9B0CB /* DSTransactionTableViewCell.m in Sources */,
 				2A3B3EB720F893F4002962FB /* SwitcherFormCellModel.m in Sources */,

@@ -56,7 +56,10 @@
 #import "DSDerivationPath.h"
 #import "NSString+Dash.h"
 #import "NSMutableData+Dash.h"
+
 #import "DSOptionsManager.h"
+#import "DSErrorSimulationManager.h"
+
 #import "NSData+Dash.h"
 #import "NSArray+Dash.h"
 #import "NSDate+Utils.h"
