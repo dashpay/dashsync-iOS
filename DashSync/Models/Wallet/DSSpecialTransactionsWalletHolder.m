@@ -183,7 +183,7 @@
             [derivationPathEntities addObject:derivationPathEntity];
         }
         NSArray<DSSpecialTransactionEntity *>* specialTransactionEntitiesA = [DSSpecialTransactionEntity allObjectsWithPrefetch:@[@"addresses"] inContext:context];
-        NSLog(@"%@",[specialTransactionEntitiesA firstObject].addresses.firstObject);
+        //DSDLog(@"%@",[specialTransactionEntitiesA firstObject].addresses.firstObject);
         NSArray<DSSpecialTransactionEntity *>* specialTransactionEntities = [DSSpecialTransactionEntity objectsInContext:context matching:@"(ANY addresses.derivationPath IN %@)",derivationPathEntities];
         for (DSSpecialTransactionEntity *e in specialTransactionEntities) {
                 DSTransaction *transaction = [e transactionForChain:self.wallet.chain];

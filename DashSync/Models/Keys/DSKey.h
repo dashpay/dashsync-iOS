@@ -41,6 +41,7 @@ typedef NS_ENUM(NSUInteger, DSKeyType) {
 + (nullable instancetype)keyWithPrivateKeyData:(NSData*)data forKeyType:(DSKeyType)keyType;
 + (nullable instancetype)keyWithExtendedPrivateKeyData:(NSData*)extendedPrivateKeyData forKeyType:(DSKeyType)keyType;
 + (nullable instancetype)keyWithExtendedPublicKeyData:(NSData*)extendedPublicKeyData forKeyType:(DSKeyType)keyType;
++ (nullable instancetype)keyWithDHKeyExchangeWithPublicKey:(DSKey *)publicKey forPrivateKey:(DSKey*)privateKey;
 
 - (nullable instancetype)privateDeriveToPath:(NSIndexPath*)derivationPath;
 - (nullable instancetype)publicDeriveToPath:(NSIndexPath*)derivationPath;

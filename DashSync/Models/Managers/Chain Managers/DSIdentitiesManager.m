@@ -159,7 +159,7 @@
                 completion(NO,nil,error);
             });
         }
-        NSLog(@"Failure %@",error);
+        DSDLog(@"Failure in searchIdentityByName %@",error);
     }];
     return call;
 }
@@ -186,7 +186,7 @@
                 completion(NO, nil, @[error]);
             });
         }
-        NSLog(@"Failure %@",error);
+        DSDLog(@"Failure in searchIdentitiesByNamePrefix %@",error);
     }];
     return call;
 }
@@ -216,7 +216,7 @@
                 completion(NO, nil, @[error]);
             });
         }
-        NSLog(@"Failure %@",error);
+        DSDLog(@"Failure in searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID %@",error);
     }];
 }
 

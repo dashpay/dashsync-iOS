@@ -275,7 +275,7 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
         NSError *error = nil;
         [[BGTaskScheduler sharedScheduler] submitTaskRequest:request error:&error];
         if (error) {
-            NSLog(@"Error scheduling background refresh");
+            DSDLog(@"Error scheduling background refresh");
         }
     }
 }

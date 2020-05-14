@@ -251,10 +251,10 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 @property (nonatomic, readonly, nullable) DSMerkleBlock * lastBlockOrHeader;
 
 /*! @brief The last known block on the chain before the given timestamp.  */
-- (DSMerkleBlock *)lastBlockBeforeTimestamp:(NSTimeInterval)timestamp;
+- (DSMerkleBlock *)lastBlockOnOrBeforeTimestamp:(NSTimeInterval)timestamp;
 
 /*! @brief The last known block or header on the chain before the given timestamp.  */
-- (DSMerkleBlock *)lastBlockOrHeaderBeforeTimestamp:(NSTimeInterval)timestamp;
+- (DSMerkleBlock *)lastBlockOrHeaderOnOrBeforeTimestamp:(NSTimeInterval)timestamp;
 
 /*! @brief The last known orphan on the chain. An orphan is a block who's parent is currently not known.  */
 @property (nonatomic, readonly, nullable) DSMerkleBlock * lastOrphan;

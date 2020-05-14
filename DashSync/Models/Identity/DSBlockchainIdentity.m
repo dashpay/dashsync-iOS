@@ -1191,7 +1191,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     uint32_t index = 0;
     uint32_t type = 0;
     DSKey * key = [self keyFromKeyDictionary:dictionary rType:&type rIndex:&index];
-    NSLog(@"%@",key.publicKeyData.base64String);
     if (key) {
         [self addKey:key atIndex:index ofType:type withStatus:DSBlockchainIdentityKeyStatus_Registered save:YES];
     }
@@ -1565,7 +1564,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                     }
                     [strongContract setContractState:DPContractState_NotRegistered inContext:context];
                 }
-                NSLog(@"okay");
             } failure:^(NSError * _Nonnull error) {
                 __strong typeof(weakContract) strongContract = weakContract;
                 if (!strongContract) {

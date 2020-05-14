@@ -37,7 +37,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 #define DUFFS           100000000LL
 #define MAX_MONEY          (21000000LL*DUFFS)
 
-@class DSChain,DSAccount,DSTransaction,DSDerivationPath,DSLocalMasternode,DSKey,DSSpecialTransactionsWalletHolder,DSBLSKey,DSECDSAKey;
+@class DSChain, DSAccount, DSTransaction, DSDerivationPath, DSLocalMasternode, DSKey, DSSpecialTransactionsWalletHolder, DSBLSKey, DSECDSAKey;
 
 @interface DSWallet : NSObject
 
@@ -45,7 +45,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 @property (nonatomic, readonly) DSSpecialTransactionsWalletHolder * specialTransactionsHolder;
 
-@property (nonatomic, readonly) NSDictionary <NSData*,DSBlockchainIdentity*> * blockchainIdentities;
+@property (nonatomic, readonly) NSDictionary <NSData*, DSBlockchainIdentity*> * blockchainIdentities;
 
 @property (nonatomic, readonly, nullable) DSBlockchainIdentity* defaultBlockchainIdentity;
 
@@ -61,10 +61,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 //This is unique among all wallets and all chains
 @property (nonatomic, readonly) NSString * uniqueIDString;
-
-@property (nonatomic, readonly) NSString * mnemonicUniqueID;
-
-@property (nonatomic, readonly) NSString * creationTimeUniqueID;
 
 @property (nonatomic, readonly) NSTimeInterval walletCreationTime;
 
@@ -103,10 +99,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 // the amount of known blockchain users
 @property (nonatomic, readonly) uint32_t blockchainIdentitiesCount;
-
-@property (nonatomic, readonly) SeedRequestBlock seedRequestBlock;
-
-@property (nonatomic, readonly) BOOL hasAnExtendedPublicKeyMissing;
 
 -(void)authPrivateKey:(void (^ _Nullable)(NSString * _Nullable authKey))completion;
 
@@ -180,9 +172,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 - (NSString* _Nullable)seedPhraseIfAuthenticated;
 
-//this is used from the account to help determine best start sync position for future resync
-- (void)setGuessedWalletCreationTime:(NSTimeInterval)guessedWalletCreationTime;
-
 - (DSKey* _Nullable)privateKeyForAddress:(NSString* _Nonnull)address fromSeed:(NSData* _Nonnull)seed;
 
 //generate a random Mnemonic seed
@@ -190,12 +179,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 //generate a random Mnemonic seed in a specified language
 + (NSString * _Nullable)generateRandomSeedPhraseForLanguage:(DSBIP39Language)language;
-
-//get the MNEMONIC KEY prefixed unique ID
-+ (NSString* _Nonnull)mnemonicUniqueIDForUniqueID:(NSString*)uniqueID;
-
-//get the CREATION TIME KEY prefixed unique ID
-+ (NSString* _Nonnull)creationTimeUniqueIDForUniqueID:(NSString*)uniqueID;
 
 //This removes all blockchain information from the wallet, used for resync
 - (void)wipeBlockchainInfoInContext:(NSManagedObjectContext*)context;
@@ -205,8 +188,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 //Recreate derivation paths and addresses
 -(void)reloadDerivationPaths;
-
--(void)loadBlockchainIdentities;
 
 -(void)unregisterBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 -(void)addBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;

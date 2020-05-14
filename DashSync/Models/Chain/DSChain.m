@@ -36,7 +36,7 @@
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSPriceManager.h"
 #import "DSChainEntity+CoreDataClass.h"
-#import "DSWallet.h"
+#import "DSWallet+Protected.h"
 #import "DSPeerManager.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "NSCoder+Dash.h"
@@ -1442,30 +1442,21 @@ static dispatch_once_t devnetToken = 0;
     return (self.lastHeader.height>self.lastBlock.height)?_lastHeader:_lastBlock;
 }
 
--(DSCheckpoint*)lastCheckpointBeforeTimestamp:(NSTimeInterval)timestamp {
-    for (long i = self.checkpoints.count - 1; i >= 0; i--) {
-        if (self.checkpoints[i].timestamp < timestamp) {
-            return self.checkpoints[i];
-        }
-    }
-    return nil;
-}
-
-- (DSMerkleBlock *)lastBlockBeforeTimestamp:(NSTimeInterval)timestamp {
+- (DSMerkleBlock *)lastBlockOnOrBeforeTimestamp:(NSTimeInterval)timestamp {
     DSMerkleBlock *b = self.lastBlock;
     NSTimeInterval blockTime = b.timestamp;
-    while (b && b.height > 0 && blockTime > timestamp) {
+    while (b && b.height > 0 && blockTime >= timestamp) {
         b = self.blocks[uint256_obj(b.prevBlock)];
     }
-    if (!b) b = [[DSMerkleBlock alloc] initWithCheckpoint:[self lastCheckpointBeforeTimestamp:timestamp] onChain:self];
+    if (!b) b = [[DSMerkleBlock alloc] initWithCheckpoint:[self lastCheckpointOnOrBeforeTimestamp:timestamp] onChain:self];
     return b;
 }
 
-- (DSMerkleBlock *)lastBlockOrHeaderBeforeTimestamp:(NSTimeInterval)timestamp {
+- (DSMerkleBlock *)lastBlockOrHeaderOnOrBeforeTimestamp:(NSTimeInterval)timestamp {
     DSMerkleBlock *b = self.lastBlockOrHeader;
     NSTimeInterval blockTime = b.timestamp;
     BOOL useBlocksNow = (b != _lastHeader);
-    while (b && b.height > 0 && blockTime > timestamp) {
+    while (b && b.height > 0 && blockTime >= timestamp) {
         if (!useBlocksNow) {
             b = useBlocksNow?self.blocks[uint256_obj(b.prevBlock)]:self.initialHeadersSyncBlocks[uint256_obj(b.prevBlock)];
         }
@@ -1474,7 +1465,7 @@ static dispatch_once_t devnetToken = 0;
             b = useBlocksNow?self.blocks[uint256_obj(b.prevBlock)]:self.initialHeadersSyncBlocks[uint256_obj(b.prevBlock)];
         }
     }
-    if (!b) b = [[DSMerkleBlock alloc] initWithCheckpoint:[self lastCheckpointBeforeTimestamp:timestamp] onChain:self];
+    if (!b) b = [[DSMerkleBlock alloc] initWithCheckpoint:[self lastCheckpointOnOrBeforeTimestamp:timestamp] onChain:self];
     return b;
 }
 
@@ -1572,7 +1563,7 @@ static dispatch_once_t devnetToken = 0;
     // finishing with the genesis block (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -15, -23, -39, -71, -135, ..., 0)
     NSMutableArray *locators = [NSMutableArray array];
     int32_t step = 1, start = 0;
-    DSMerkleBlock *b = includeHeaders?[self lastBlockOrHeaderBeforeTimestamp:timestamp]:[self lastBlockBeforeTimestamp:timestamp];
+    DSMerkleBlock *b = includeHeaders?[self lastBlockOrHeaderOnOrBeforeTimestamp:timestamp]:[self lastBlockOnOrBeforeTimestamp:timestamp];
     uint32_t lastHeight = b.height;
     while (b && b.height > 0) {
         [locators addObject:uint256_data(b.blockHash)];

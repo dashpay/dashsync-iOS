@@ -80,9 +80,9 @@ void CKDpriv(UInt256 *k, UInt256 *c, uint32_t i)
     else DSSecp256k1PointGen((DSECPoint *)buf, k);
     
     *(uint32_t *)&buf[sizeof(DSECPoint)] = CFSwapInt32HostToBig(i);
-    NSLog(@"c is %@, buf is %@",uint256_hex(*c),[NSData dataWithBytes:buf length:sizeof(DSECPoint) + sizeof(i)].hexString);
+    //DSDLog(@"c is %@, buf is %@",uint256_hex(*c),[NSData dataWithBytes:buf length:sizeof(DSECPoint) + sizeof(i)].hexString);
     HMAC(&I, SHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf)); // I = HMAC-SHA512(c, k|P(k) || i)
-    NSLog(@"c now is %@, I now is %@",uint256_hex(*c),uint512_hex(I));
+    //DSDLog(@"c now is %@, I now is %@",uint256_hex(*c),uint512_hex(I));
     DSSecp256k1ModAdd(k, (UInt256 *)&I); // k = IL + k (mod n)
     *c = *(UInt256 *)&I.u8[sizeof(UInt256)]; // c = IR
     
@@ -284,10 +284,6 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
 + (instancetype)keyRecoveredFromCompactSig:(NSData *)compactSig andMessageDigest:(UInt256)md
 {
     return [[self alloc] initWithCompactSig:compactSig andMessageDigest:md];
-}
-
-+(instancetype)keyWithDHKeyExchangeWithPublicKey:(DSECDSAKey *)publicKey forPrivateKey:(DSECDSAKey*)privateKey {
-    return [[self alloc] initWithDHKeyExchangeWithPublicKey:publicKey forPrivateKey:privateKey];
 }
 
 - (instancetype)init

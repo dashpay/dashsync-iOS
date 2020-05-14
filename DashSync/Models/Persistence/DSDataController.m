@@ -57,7 +57,7 @@
     
     [self.persistentContainer loadPersistentStoresWithCompletionHandler:^(NSPersistentStoreDescription *description, NSError *error) {
         if (error != nil) {
-            NSLog(@"Failed to load Core Data stack: %@", error);
+            DSDLog(@"Failed to load Core Data stack: %@", error);
 #if (DEBUG && 1)
             abort();
 #else
@@ -69,7 +69,7 @@
             
             [self.persistentContainer loadPersistentStoresWithCompletionHandler:^(NSPersistentStoreDescription *description, NSError *error) {
                 if (error != nil) {
-                    NSLog(@"Failed to load Core Data stack again: %@", error);
+                    DSDLog(@"Failed to load Core Data stack again: %@", error);
                     abort();
                 }
             }];

@@ -25,7 +25,7 @@
 
 #import "DSFundsDerivationPath.h"
 #import "DSAccount.h"
-#import "DSWallet.h"
+#import "DSWallet+Protected.h"
 #import "DSECDSAKey.h"
 #import "DSChain+Protected.h"
 

@@ -8,7 +8,7 @@
 #import "DSVersionManager.h"
 #import "NSString+Bitcoin.h"
 #import "NSData+Bitcoin.h"
-#import "DSWallet.h"
+#import "DSWallet+Protected.h"
 #import "DSAccount.h"
 #import "DSAuthenticationManager+UpdateSecureTime.h"
 #import "DSBIP39Mnemonic.h"

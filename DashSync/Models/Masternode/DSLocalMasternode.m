@@ -120,7 +120,7 @@
     DSWallet * votingWallet = [providerRegistrationTransaction.chain walletHavingProviderVotingAuthenticationHash:providerRegistrationTransaction.votingKeyHash foundAtIndex:&votingAddressIndex];
     DSWallet * operatorWallet = [providerRegistrationTransaction.chain walletHavingProviderOperatorAuthenticationKey:providerRegistrationTransaction.operatorKey foundAtIndex:&operatorAddressIndex];
     DSWallet * holdingWallet = [providerRegistrationTransaction.chain walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:providerRegistrationTransaction foundAtIndex:&holdingAddressIndex];
-    NSLog(@"%@",[uint160_data(providerRegistrationTransaction.ownerKeyHash) addressFromHash160DataForChain:providerRegistrationTransaction.chain]);
+    //DSDLog(@"%@",[uint160_data(providerRegistrationTransaction.ownerKeyHash) addressFromHash160DataForChain:providerRegistrationTransaction.chain]);
     self.operatorKeysWallet = operatorWallet;
     self.holdingKeysWallet = holdingWallet;
     self.ownerKeysWallet = ownerWallet;

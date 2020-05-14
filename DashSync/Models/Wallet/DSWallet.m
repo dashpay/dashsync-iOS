@@ -211,7 +211,7 @@
                                                                contactBasedDerivationPathWithDestinationBlockchainIdentityUniqueId:friendRequest.destinationContact.associatedBlockchainIdentity.uniqueID.UInt256 sourceBlockchainIdentityUniqueId:blockchainIdentity.uniqueID forAccountNumber:account.accountNumber onChain:self.chain];
                 fundsDerivationPath.wallet = self;
                 fundsDerivationPath.account = account;
-                NSLog(@"%@",blockchainIdentity.matchingDashpayUser.outgoingRequests);
+                //DSDLog(@"%@",blockchainIdentity.matchingDashpayUser.outgoingRequests);
                 [account addIncomingDerivationPath:fundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier];
                 [usedFriendshipIdentifiers addObject:friendRequest.friendshipIdentifier];
             }

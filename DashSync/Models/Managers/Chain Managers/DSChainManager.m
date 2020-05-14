@@ -258,7 +258,7 @@
         } else {
             BOOL startingDevnetSync = [self.chain isDevnetAny] && self.chain.lastBlock.height < 5;
             if (startingDevnetSync || self.chain.lastBlockOrHeader.timestamp + HEADER_WINDOW_BUFFER_TIME >= self.chain.earliestWalletCreationTime) {
-                [peer sendGetblocksMessageWithLocators:[self.chain blockLocatorArrayBeforeTimestamp:self.chain.earliestWalletCreationTime - HEADER_WINDOW_BUFFER_TIME includeHeaders:YES] andHashStop:UINT256_ZERO];
+                [peer sendGetblocksMessageWithLocators:[self.chain blockLocatorArrayBeforeTimestamp:((self.chain.earliestWalletCreationTime - HEADER_WINDOW_BUFFER_TIME < BIP39_CREATION_TIME)?BIP39_CREATION_TIME:(self.chain.earliestWalletCreationTime - HEADER_WINDOW_BUFFER_TIME)) includeHeaders:YES] andHashStop:UINT256_ZERO];
             }
             else {
                 [peer sendGetheadersMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
