@@ -1298,6 +1298,28 @@ static dispatch_once_t devnetToken = 0;
     return [[self checkpoints] lastObject];
 }
 
+-(DSCheckpoint*)lastCheckpointOnOrBeforeHeight:(uint32_t)height {
+    NSUInteger genesisHeight = [self isDevnetAny]?1:0;
+    // if we don't have any blocks yet, use the latest checkpoint that's at least a week older than earliestKeyTime
+    for (long i = self.checkpoints.count - 1; i >= genesisHeight; i--) {
+        if (i == genesisHeight || ![self syncsBlockchain] || (self.checkpoints[i].height <= height)) {
+            return self.checkpoints[i];
+        }
+    }
+    return nil;
+}
+
+-(DSCheckpoint*)lastCheckpointOnOrBeforeTimestamp:(NSTimeInterval)timestamp {
+    NSUInteger genesisHeight = [self isDevnetAny]?1:0;
+    // if we don't have any blocks yet, use the latest checkpoint that's at least a week older than earliestKeyTime
+    for (long i = self.checkpoints.count - 1; i >= genesisHeight; i--) {
+        if (i == genesisHeight || ![self syncsBlockchain] || (self.checkpoints[i].timestamp <= timestamp)) {
+            return self.checkpoints[i];
+        }
+    }
+    return nil;
+}
+
 - (DSCheckpoint* _Nullable)lastCheckpointHavingMasternodeList {
     NSSet * set = [self.checkpointsByHeightDictionary keysOfEntriesPassingTest:^BOOL(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
         DSCheckpoint * checkpoint = (DSCheckpoint *)obj;
@@ -1412,36 +1434,6 @@ static dispatch_once_t devnetToken = 0;
 
 // MARK: - Blocks
 
--(void)setLastBlockForRescan {
-    _lastBlock = nil;
-    
-    if ([[DSOptionsManager sharedInstance] syncFromGenesis]) {
-        NSUInteger genesisHeight = [self isDevnetAny]?1:0;
-        UInt256 checkpointHash = self.checkpoints[genesisHeight].checkpointHash;
-        
-        _lastBlock = self.blocks[uint256_obj(checkpointHash)];
-    } else if ([[DSOptionsManager sharedInstance] shouldSyncFromHeight]) {
-        // start the chain download from the most recent checkpoint that's before the height variable
-        for (long i = self.checkpoints.count - 1; ! _lastBlock && i >= 0; i--) {
-            if (i == 0 || (self.checkpoints[i].height <= [[DSOptionsManager sharedInstance] syncFromHeight])) {
-                UInt256 checkpointHash = self.checkpoints[i].checkpointHash;
-                
-                _lastBlock = self.blocks[uint256_obj(checkpointHash)];
-            }
-        }
-    } else {
-        
-        // start the chain download from the most recent checkpoint that's at least a week older than earliestKeyTime
-        for (long i = self.checkpoints.count - 1; ! _lastBlock && i >= 0; i--) {
-            if (i == 0 || (self.checkpoints[i].timestamp + WEEK_TIME_INTERVAL < self.startSyncFromTime)) {
-                UInt256 checkpointHash = self.checkpoints[i].checkpointHash;
-                
-                _lastBlock = self.blocks[uint256_obj(checkpointHash)];
-            }
-        }
-    }
-}
-
 -(NSDictionary*)recentBlocks {
     return [[self blocks] copy];
 }
@@ -1486,6 +1478,31 @@ static dispatch_once_t devnetToken = 0;
     return b;
 }
 
+-(void)setLastBlockFromCheckpoints {
+    DSCheckpoint * checkpoint = nil;
+    if ([[DSOptionsManager sharedInstance] syncFromGenesis]) {
+        NSUInteger genesisHeight = [self isDevnetAny]?1:0;
+        checkpoint = self.checkpoints[genesisHeight];
+    } else if ([[DSOptionsManager sharedInstance] shouldSyncFromHeight]) {
+        checkpoint = [self lastCheckpointOnOrBeforeHeight:[[DSOptionsManager sharedInstance] syncFromHeight]];
+    } else {
+        NSTimeInterval startSyncTime = self.startSyncFromTime;
+        checkpoint = [self lastCheckpointOnOrBeforeTimestamp:(startSyncTime == BIP39_CREATION_TIME)?BIP39_CREATION_TIME:startSyncTime - HEADER_WINDOW_BUFFER_TIME];
+    }
+    
+    if (checkpoint) {
+        if (self.blocks[uint256_obj(checkpoint.checkpointHash)]) {
+            _lastBlock = self.blocks[uint256_obj(checkpoint.checkpointHash)];
+        } else if (self.initialHeadersSyncBlocks[uint256_obj(checkpoint.checkpointHash)]) {
+            _lastBlock = [[DSMerkleBlock alloc] initWithCheckpoint:checkpoint onChain:self];
+        }
+    }
+    
+    if (_lastBlock) {
+        DSDLog(@"last block at height %d chosen from checkpoints (hash is %@)",_lastBlock.height,[NSData dataWithUInt256:_lastBlock.blockHash].hexString);
+    }
+}
+
 - (DSMerkleBlock *)lastBlock
 {
     if (! _lastBlock) {
@@ -1499,47 +1516,8 @@ static dispatch_once_t devnetToken = 0;
         }];
 
         if (!_lastBlock) {
-            if ([[DSOptionsManager sharedInstance] syncFromGenesis]) {
-                NSUInteger genesisHeight = [self isDevnetAny]?1:0;
-                UInt256 checkpointHash = self.checkpoints[genesisHeight].checkpointHash;
-                
-                _lastBlock = self.blocks[uint256_obj(checkpointHash)];
-                
-            } else if ([[DSOptionsManager sharedInstance] shouldSyncFromHeight]) {
-                // if we don't have any blocks yet, use the latest checkpoint that's at least a week older than earliestKeyTime
-                for (long i = self.checkpoints.count - 1; ! _lastBlock && i >= 0; i--) {
-                    if (i == 0 || ![self syncsBlockchain] || (self.checkpoints[i].height <= [[DSOptionsManager sharedInstance] syncFromHeight])) {
-                        UInt256 checkpointHash = self.checkpoints[i].checkpointHash;
-                        
-                        _lastBlock = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
-                                                                   merkleRoot:self.checkpoints[i].merkleRoot timestamp:self.checkpoints[i].timestamp
-                                                                       target:self.checkpoints[i].target nonce:0 totalTransactions:0 hashes:nil flags:nil
-                                                                       height:self.checkpoints[i].height chainLock:nil];
-                    }
-                }
-            } else {
-                NSTimeInterval startSyncTime = self.startSyncFromTime;
-                BOOL addBuffer = (startSyncTime != BIP39_CREATION_TIME);
-                NSUInteger genesisHeight = [self isDevnetAny]?1:0;
-                // if we don't have any blocks yet, use the latest checkpoint that's at least a week older than earliestKeyTime
-                for (long i = self.checkpoints.count - 1; ! _lastBlock && i >= genesisHeight; i--) {
-                    if (i == genesisHeight || ![self syncsBlockchain] || (self.checkpoints[i].timestamp + (addBuffer?HEADER_WINDOW_BUFFER_TIME:0) <= startSyncTime)) {
-                        UInt256 checkpointHash = self.checkpoints[i].checkpointHash;
-                        
-                        _lastBlock = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
-                                                                   merkleRoot:self.checkpoints[i].merkleRoot timestamp:self.checkpoints[i].timestamp
-                                                                       target:self.checkpoints[i].target nonce:0 totalTransactions:0 hashes:nil flags:nil
-                                                                       height:self.checkpoints[i].height chainLock:nil];
-                    }
-                }
-                if (_lastBlock) {
-                    DSDLog(@"last block at height %d chosen from checkpoints (hash is %@)",_lastBlock.height,[NSData dataWithUInt256:_lastBlock.blockHash].hexString);
-                }
-            }
-            
+            [self setLastBlockFromCheckpoints];
         }
-        
-        
         
         if (_lastBlock.height > self.estimatedBlockHeight) _bestEstimatedBlockHeight = _lastBlock.height;
     }
@@ -2563,7 +2541,8 @@ static dispatch_once_t devnetToken = 0;
     _initialHeadersSyncBlocks = nil;
     _lastBlock = nil;
     _lastHeader = nil;
-    [self setLastBlockForRescan];
+    _lastBlock = nil;
+    [self setLastBlockFromCheckpoints];
     [self.chainManager chainWasWiped:self];
 }
 
