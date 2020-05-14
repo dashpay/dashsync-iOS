@@ -24,7 +24,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) BOOL enabled;
 @property (nonatomic, assign) uint32_t peerRandomDisconnectionFrequency;
+
+//This is when a byzantine peer can omit transactions.
 @property (nonatomic, assign) uint32_t peerByzantineTransactionOmissionFrequency;
+
+//This is when a byzantine peer can maliciously report a higher estimated block height to get the client to select them.
+@property (nonatomic, assign) uint32_t peerByzantineReportingHigherEstimatedBlockHeightFrequency;
 
 + (instancetype)sharedInstance;
 

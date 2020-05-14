@@ -655,6 +655,8 @@
                         
                         [self.mutableConnectedPeers addObject:peer];
                         
+                        DSDLog(@"Will attempt to connect to peer %@", peer.host);
+                        
                         [peer connect];
                     }
                     
@@ -737,29 +739,32 @@
     // drop peers that don't carry full blocks, or aren't synced yet
     // TODO: XXXX does this work with 0.11 pruned nodes?
     if (! (peer.services & SERVICES_NODE_NETWORK) || peer.lastBlockHeight + 10 < self.chain.lastBlockHeight) {
-        [peer disconnect];
+        [peer disconnectWithError:[NSError errorWithDomain:@"DashSync" code:500
+        userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Node at host %@ does not service network",nil),peer.host]}]];
         return;
     }
     
     // drop peers that don't support SPV filtering
     if (peer.version >= 70206 && !(peer.services & SERVICES_NODE_BLOOM)) {
-        [peer disconnect];
+        [peer disconnectWithError:[NSError errorWithDomain:@"DashSync" code:500
+                                                  userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Node at host %@ does not support bloom filtering",nil),peer.host]}]];
         return;
     }
     
     if (self.connected) {
         if (![self.chain syncsBlockchain]) return;
+        if ([self.chain canConstructAFilter]) {
+            [peer sendFilterloadMessage:[self.transactionManager transactionsBloomFilterForPeer:peer].data];
+            [peer sendInvMessageForHashes:self.transactionManager.publishedCallback.allKeys ofType:DSInvType_Tx]; // publish pending tx
+        } else {
+            [peer sendFilterloadMessage:[DSBloomFilter emptyBloomFilterData]];
+        }
         if (self.chain.estimatedBlockHeight >= peer.lastBlockHeight || self.chain.lastBlockHeight >= peer.lastBlockHeight) {
             if (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight) {
                 DSDLog(@"self.chain.lastBlockHeight %u, self.chain.estimatedBlockHeight %u",self.chain.lastBlockHeight,self.chain.estimatedBlockHeight);
-                return; // don't load bloom filter yet if we're syncing
+                return; // don't get mempool yet if we're syncing
             }
-            if ([self.chain canConstructAFilter]) {
-                [peer sendFilterloadMessage:[self.transactionManager transactionsBloomFilterForPeer:peer].data];
-                [peer sendInvMessageForHashes:self.transactionManager.publishedCallback.allKeys ofType:DSInvType_Tx]; // publish pending tx
-            } else {
-                [peer sendFilterloadMessage:[DSBloomFilter emptyBloomFilterData]];
-            }
+
             [peer sendPingMessageWithPongHandler:^(BOOL success) {
                 if (! success) {
                     DSDLog(@"[DSTransactionManager] fetching mempool ping on connection failure peer %@",peer.host);

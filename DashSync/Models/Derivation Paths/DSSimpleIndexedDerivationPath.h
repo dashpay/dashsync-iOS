@@ -31,8 +31,11 @@ NS_ASSUME_NONNULL_BEGIN
 // true if the address at the index was previously used as an input or output in any wallet transaction
 - (BOOL)addressIsUsedAtIndex:(uint32_t)index;
 
-// gets addresses to an index
+// gets addresses to an index, does not use cache and does not add to cache
 - (NSArray *)addressesToIndex:(NSUInteger)index;
+
+// gets addresses to an index, does not use cache and does not add to cache
+- (NSArray *)addressesToIndex:(NSUInteger)index useCache:(BOOL)useCache addToCache:(BOOL)addToCache;
 
 // gets a private key at an index
 - (DSKey * _Nullable)privateKeyAtIndex:(uint32_t)index fromSeed:(NSData *)seed;

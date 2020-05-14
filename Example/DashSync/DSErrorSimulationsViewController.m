@@ -71,6 +71,16 @@
         
     };
     [items addObject:l1ByzantineOmissionCellModel];
+    
+    NumberTextFieldFormCellModel *l1ByzantineReportingHigherEstimatedBlockHeightFrequencyCellModel = [[NumberTextFieldFormCellModel alloc] initWithTitle:@"Higher Est. Block Height Frequency"
+                                                                                                placeholder:@"Frequency"];
+
+    l1ByzantineReportingHigherEstimatedBlockHeightFrequencyCellModel.text = [NSString stringWithFormat:@"%u", options.peerByzantineReportingHigherEstimatedBlockHeightFrequency];
+    l1ByzantineReportingHigherEstimatedBlockHeightFrequencyCellModel.didReturnValueBlock = ^(TextFieldFormCellModel *_Nonnull cellModel) {
+        options.peerByzantineReportingHigherEstimatedBlockHeightFrequency = (uint32_t)cellModel.text.longLongValue;
+        
+    };
+    [items addObject:l1ByzantineReportingHigherEstimatedBlockHeightFrequencyCellModel];
 
     return items;
 }
@@ -87,7 +97,7 @@
 
     {
         FormSectionModel *section = [[FormSectionModel alloc] init];
-        section.headerTitle = @"L1";
+        section.headerTitle = @"Peer Network (Using percentage frequencies)";
         section.items = [self l1Items];
         [sections addObject:section];
     }

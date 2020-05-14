@@ -194,12 +194,25 @@
     return [mArray copy];
 }
 
-- (NSArray *)addressesToIndex:(NSUInteger)index
+- (NSArray *)addressesToIndex:(NSUInteger)index {
+    return [self addressesToIndex:index useCache:NO addToCache:NO];
+}
+
+- (NSArray *)addressesToIndex:(NSUInteger)index useCache:(BOOL)useCache addToCache:(BOOL)addToCache
 {
     NSMutableArray * mArray = [NSMutableArray array];
-    for (NSData * pubKey in [self publicKeyDataArrayToIndex:index]) {
-        NSString *addr = [DSKey addressWithPublicKeyData:pubKey forChain:self.chain];
-        [mArray addObject:addr];
+    for (uint32_t i = 0; i<index;i++) {
+        if (useCache && self.mOrderedAddresses[i]) {
+            [mArray addObject:self.mOrderedAddresses[i]];
+        } else {
+            
+            NSData * pubKey = [self publicKeyDataAtIndex:i];
+            NSString *addr = [DSKey addressWithPublicKeyData:pubKey forChain:self.chain];
+            [mArray addObject:addr];
+            if (addToCache && self.mOrderedAddresses.count == i) {
+                [self.mOrderedAddresses addObject:addr];
+            }
+        }
     }
     return [mArray copy];
 }

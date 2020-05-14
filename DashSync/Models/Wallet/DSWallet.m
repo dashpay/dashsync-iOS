@@ -895,7 +895,7 @@
 -(NSArray*)blockchainIdentityAddresses {
     DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:self];
     if (!derivationPath.hasExtendedPublicKey) return @[];
-    return [derivationPath addressesToIndex:[self unusedBlockchainIdentityIndex] + 10];
+    return [derivationPath addressesToIndex:[self unusedBlockchainIdentityIndex] + 10 useCache:YES addToCache:YES];
 }
 
 //- (DSBlockchainIdentityRegistrationTransition *)registrationTransactionForPublicKeyHash:(UInt160)publicKeyHash {
@@ -1100,7 +1100,7 @@
 -(NSArray*)providerOwnerAddresses {
     DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] providerOwnerKeysDerivationPathForWallet:self];
     if (!derivationPath.hasExtendedPublicKey) return @[];
-    return [derivationPath addressesToIndex:[self unusedProviderOwnerIndex] + 10];
+    return [derivationPath addressesToIndex:[self unusedProviderOwnerIndex] + 10 useCache:YES addToCache:YES];
 }
 
 -(uint32_t)unusedProviderOwnerIndex {
@@ -1112,7 +1112,7 @@
 -(NSArray*)providerVotingAddresses {
     DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] providerVotingKeysDerivationPathForWallet:self];
     if (!derivationPath.hasExtendedPublicKey) return @[];
-    return [derivationPath addressesToIndex:[self unusedProviderVotingIndex] + 10];
+    return [derivationPath addressesToIndex:[self unusedProviderVotingIndex] + 10 useCache:YES addToCache:YES];
 }
 
 -(uint32_t)unusedProviderVotingIndex {
@@ -1124,7 +1124,7 @@
 -(NSArray*)providerOperatorAddresses {
     DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] providerOperatorKeysDerivationPathForWallet:self];
     if (!derivationPath.hasExtendedPublicKey) return @[];
-    return [derivationPath addressesToIndex:[self unusedProviderOperatorIndex] + 10];
+    return [derivationPath addressesToIndex:[self unusedProviderOperatorIndex] + 10 useCache:YES addToCache:YES];
 }
 
 -(uint32_t)unusedProviderOperatorIndex {

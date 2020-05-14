@@ -106,7 +106,7 @@
 @interface DSChain ()
 
 @property (nonatomic, strong) DSMerkleBlock *lastBlock, *lastHeader, *lastOrphan;
-@property (nonatomic, strong) NSMutableDictionary <NSValue*, DSMerkleBlock*> *blocks, *headers, *orphans;
+@property (nonatomic, strong) NSMutableDictionary <NSValue*, DSMerkleBlock*> *blocks, *initialHeadersSyncBlocks, *orphans;
 @property (nonatomic, strong) NSMutableDictionary <NSData*,DSCheckpoint*> *checkpointsByHashDictionary;
 @property (nonatomic, strong) NSMutableDictionary <NSNumber*,DSCheckpoint*> *checkpointsByHeightDictionary;
 @property (nonatomic, strong) NSArray<DSCheckpoint*> * checkpoints;
@@ -1475,11 +1475,11 @@ static dispatch_once_t devnetToken = 0;
     BOOL useBlocksNow = (b != _lastHeader);
     while (b && b.height > 0 && blockTime > timestamp) {
         if (!useBlocksNow) {
-            b = useBlocksNow?self.blocks[uint256_obj(b.prevBlock)]:self.headers[uint256_obj(b.prevBlock)];
+            b = useBlocksNow?self.blocks[uint256_obj(b.prevBlock)]:self.initialHeadersSyncBlocks[uint256_obj(b.prevBlock)];
         }
         if (!b) {
             useBlocksNow = !useBlocksNow;
-            b = useBlocksNow?self.blocks[uint256_obj(b.prevBlock)]:self.headers[uint256_obj(b.prevBlock)];
+            b = useBlocksNow?self.blocks[uint256_obj(b.prevBlock)]:self.initialHeadersSyncBlocks[uint256_obj(b.prevBlock)];
         }
     }
     if (!b) b = [[DSMerkleBlock alloc] initWithCheckpoint:[self lastCheckpointBeforeTimestamp:timestamp] onChain:self];
@@ -1603,7 +1603,7 @@ static dispatch_once_t devnetToken = 0;
         
         for (int32_t i = 0; b && i < step; i++) {
             b = self.blocks[uint256_obj(b.prevBlock)];
-            if (!b) b = self.headers[uint256_obj(b.prevBlock)];
+            if (!b) b = self.initialHeadersSyncBlocks[uint256_obj(b.prevBlock)];
         }
     }
     DSCheckpoint * lastCheckpoint = nil;
@@ -1625,7 +1625,7 @@ static dispatch_once_t devnetToken = 0;
 - (DSMerkleBlock * _Nullable)blockForBlockHash:(UInt256)blockHash {
     DSMerkleBlock * b = self.blocks[uint256_obj(blockHash)];
     if (b) return b;
-    return self.headers[uint256_obj(blockHash)];
+    return self.initialHeadersSyncBlocks[uint256_obj(blockHash)];
 }
 
 -(DSMerkleBlock*)recentBlockForBlockHash:(UInt256)blockHash {
@@ -1635,7 +1635,7 @@ static dispatch_once_t devnetToken = 0;
         BOOL useBlocksNow = FALSE;
         while (b && b.height > 0 && !uint256_eq(b.blockHash, blockHash)) {
             if (!useBlocksNow) {
-                b = self.headers[uint256_obj(b.prevBlock)];
+                b = self.initialHeadersSyncBlocks[uint256_obj(b.prevBlock)];
             }
             if (!b) {
                 useBlocksNow = TRUE;
@@ -1672,7 +1672,7 @@ static dispatch_once_t devnetToken = 0;
         BOOL useBlocksNow = FALSE;
         while (b && b.height > 0 && count < blocksAgo) {
             if (!useBlocksNow) {
-                b = self.headers[uint256_obj(b.prevBlock)];
+                b = self.initialHeadersSyncBlocks[uint256_obj(b.prevBlock)];
             }
             if (!b) {
                 useBlocksNow = TRUE;
@@ -1897,13 +1897,30 @@ static dispatch_once_t devnetToken = 0;
     return TRUE;
 }
 
-- (BOOL)addHeader:(DSMerkleBlock *)header fromPeer:(DSPeer*)peer
+- (BOOL)addHeader:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer {
+    NSValue *prevBlock = uint256_obj(block.prevBlock);
+    DSMerkleBlock *prev = self.blocks[prevBlock];
+    BOOL addingToInitialHeadersSync = FALSE;
+    if (!prev) {
+        prev = self.initialHeadersSyncBlocks[prevBlock];
+        if (prev) {
+            addingToInitialHeadersSync = TRUE;
+        }
+    }
+    if (!addingToInitialHeadersSync) {
+        return [self addBlock:block fromPeer:peer];
+    } else {
+        return [self addInitialHeadersSyncBlock:block fromPeer:peer];
+    }
+}
+
+- (BOOL)addInitialHeadersSyncBlock:(DSMerkleBlock *)header fromPeer:(DSPeer*)peer
 {
     //DSDLog(@"a block %@",uint256_hex(block.blockHash));
 
     
     NSValue *blockHash = uint256_obj(header.blockHash), *prevBlock = uint256_obj(header.prevBlock);
-    DSMerkleBlock *prev = self.headers[prevBlock];
+    DSMerkleBlock *prev = self.initialHeadersSyncBlocks[prevBlock];
     uint32_t txTime = 0;
     BOOL syncDone = NO;
     
@@ -1928,20 +1945,20 @@ static dispatch_once_t devnetToken = 0;
     header.height = prev.height + 1;
     txTime = header.timestamp/2 + prev.timestamp/2;
     
-    @synchronized (self.headers) {
+    @synchronized (self.initialHeadersSyncBlocks) {
         if ((header.height % 1000) == 0) { //free up some memory from time to time
             [self saveHeaders];
             DSMerkleBlock *b = header;
             
             for (uint32_t i = 0; b && i < LLMQ_KEEP_RECENT_BLOCKS; i++) {
-                b = self.headers[uint256_obj(b.prevBlock)];
+                b = self.initialHeadersSyncBlocks[uint256_obj(b.prevBlock)];
             }
             NSMutableArray * blocksToRemove = [NSMutableArray array];
             while (b) { // free up some memory
                 [blocksToRemove addObject:uint256_obj(b.blockHash)];
-                b = self.headers[uint256_obj(b.prevBlock)];
+                b = self.initialHeadersSyncBlocks[uint256_obj(b.prevBlock)];
             }
-            [self.headers removeObjectsForKeys:blocksToRemove];
+            [self.initialHeadersSyncBlocks removeObjectsForKeys:blocksToRemove];
             //DSDLog(@"%lu blocks remaining",(unsigned long)[self.blocks count]);
         }
     }
@@ -1951,8 +1968,8 @@ static dispatch_once_t devnetToken = 0;
     
     if (!self.isDevnetAny) {
         if ((header.height > (lastCheckpoint.height + DGW_PAST_BLOCKS_MAX)) &&
-            ![header verifyDifficultyWithPreviousBlocks:self.headers]) {
-            uint32_t foundDifficulty = [header darkGravityWaveTargetWithPreviousBlocks:self.headers];
+            ![header verifyDifficultyWithPreviousBlocks:self.initialHeadersSyncBlocks]) {
+            uint32_t foundDifficulty = [header darkGravityWaveTargetWithPreviousBlocks:self.initialHeadersSyncBlocks];
             DSDLog(@"%@:%d relayed header with invalid difficulty height %d target %x foundTarget %x, blockHash: %@", peer.host, peer.port,
                   header.height,header.target,foundDifficulty, blockHash);
             [self.chainManager chain:self badBlockReceivedFromPeer:peer];
@@ -1976,26 +1993,26 @@ static dispatch_once_t devnetToken = 0;
         if ((header.height % 2000) == 0 || header.height > peer.lastBlockHeight) {
             DSDLog(@"adding header on %@ at height: %d from peer %@", self.name, header.height,peer.host);
         }
-        @synchronized (self.headers) {
-            self.headers[blockHash] = header;
+        @synchronized (self.initialHeadersSyncBlocks) {
+            self.initialHeadersSyncBlocks[blockHash] = header;
         }
         self.lastHeader = header;
         peer.currentBlockHeight = header.height; //might be download peer instead
         if (header.height == self.estimatedBlockHeight) syncDone = YES;
         onMainChain = TRUE;
     }
-    else if (self.headers[blockHash] != nil) { // we already have the header
+    else if (self.initialHeadersSyncBlocks[blockHash] != nil) { // we already have the header
         if ((header.height % 2000) == 0 || header.height > peer.lastBlockHeight) {
             DSDLog(@"%@:%d relayed existing block at height %d", peer.host, peer.port, header.height);
         }
         
-        @synchronized (self.headers) {
-            self.headers[blockHash] = header;
+        @synchronized (self.initialHeadersSyncBlocks) {
+            self.initialHeadersSyncBlocks[blockHash] = header;
         }
         
         DSMerkleBlock *b = self.lastHeader;
         
-        while (b && b.height > header.height) b = self.headers[uint256_obj(b.prevBlock)]; // is header in main chain?
+        while (b && b.height > header.height) b = self.initialHeadersSyncBlocks[uint256_obj(b.prevBlock)]; // is header in main chain?
         
         if (b != nil && uint256_eq(b.blockHash, header.blockHash)) {
             if (header.height == self.lastBlockHeight) self.lastHeader = header;
@@ -2011,7 +2028,7 @@ static dispatch_once_t devnetToken = 0;
         
         DSDLog(@"chain header fork to height %d", header.height);
         @synchronized (self.blocks) {
-            self.headers[blockHash] = header;
+            self.initialHeadersSyncBlocks[blockHash] = header;
         }
         if (header.height <= self.lastBlockHeight) return TRUE; // if fork is shorter than main chain, ignore it for now
         
@@ -2019,8 +2036,8 @@ static dispatch_once_t devnetToken = 0;
         DSMerkleBlock *b = header, *b2 = self.lastHeader;
         
         while (b && b2 && ! uint256_eq(b.blockHash, b2.blockHash)) { // walk back to where the fork joins the main chain
-            b = self.headers[uint256_obj(b.prevBlock)];
-            if (b.height < b2.height) b2 = self.headers[uint256_obj(b2.prevBlock)];
+            b = self.initialHeadersSyncBlocks[uint256_obj(b.prevBlock)];
+            if (b.height < b2.height) b2 = self.initialHeadersSyncBlocks[uint256_obj(b2.prevBlock)];
         }
         
         DSDLog(@"reorganizing chain from height %d, new height is %d", b.height, header.height);
@@ -2037,7 +2054,7 @@ static dispatch_once_t devnetToken = 0;
         
         while (b.height > b2.height) { // set transaction heights for new main chain
             [self setBlockHeight:b.height andTimestamp:txTime forTransactionHashes:b.txHashes];
-            b = self.headers[uint256_obj(b.prevBlock)];
+            b = self.initialHeadersSyncBlocks[uint256_obj(b.prevBlock)];
             txTime = b.timestamp/2 + ((DSMerkleBlock *)self.blocks[uint256_obj(b.prevBlock)]).timestamp/2;
         }
         
@@ -2081,7 +2098,7 @@ static dispatch_once_t devnetToken = 0;
         DSMerkleBlock *b = self.orphans[blockHash];
         
         [self.orphans removeObjectForKey:blockHash];
-        [self addHeader:b fromPeer:peer];
+        [self addInitialHeadersSyncBlock:b fromPeer:peer];
     }
     return TRUE;
 }
@@ -2089,23 +2106,23 @@ static dispatch_once_t devnetToken = 0;
 
 // MARK: Headers
 
-- (NSMutableDictionary *)headers
+- (NSMutableDictionary *)initialHeadersSyncBlocks
 {
-    if (_headers.count > 0) {
+    if (_initialHeadersSyncBlocks.count > 0) {
         if (!_checkpointsByHashDictionary) _checkpointsByHashDictionary = [NSMutableDictionary dictionary];
         if (!_checkpointsByHeightDictionary) _checkpointsByHeightDictionary = [NSMutableDictionary dictionary];
-        return _headers;
+        return _initialHeadersSyncBlocks;
     }
     
     [self.chainManagedObjectContext performBlockAndWait:^{
-        if (self->_headers.count > 0) return;
-        self->_headers = [NSMutableDictionary dictionary];
+        if (self->_initialHeadersSyncBlocks.count > 0) return;
+        self->_initialHeadersSyncBlocks = [NSMutableDictionary dictionary];
         self.checkpointsByHashDictionary = [NSMutableDictionary dictionary];
         self.checkpointsByHeightDictionary = [NSMutableDictionary dictionary];
         for (DSCheckpoint * checkpoint in self.checkpoints) { // add checkpoints to the block collection
             UInt256 checkpointHash = checkpoint.checkpointHash;
             
-            self->_headers[uint256_obj(checkpointHash)] = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
+            self->_initialHeadersSyncBlocks[uint256_obj(checkpointHash)] = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
                                                                                        merkleRoot:checkpoint.merkleRoot timestamp:checkpoint.timestamp
                                                                                            target:checkpoint.target nonce:0 totalTransactions:0 hashes:nil
                                                                                             flags:nil height:checkpoint.height chainLock:nil];
@@ -2117,35 +2134,40 @@ static dispatch_once_t devnetToken = 0;
             @autoreleasepool {
                 DSMerkleBlock *b = e.merkleBlock;
                 
-                if (b) self->_headers[uint256_obj(b.blockHash)] = b;
+                if (b) self->_initialHeadersSyncBlocks[uint256_obj(b.blockHash)] = b;
             }
         };
     }];
     
-    return _headers;
+    return _initialHeadersSyncBlocks;
 }
 
 - (DSMerkleBlock *)lastHeader
 {
     if (!_lastHeader) {
-        // if we don't have any blocks yet, use the latest checkpoint that's at least a week older than earliestKeyTime
-        long i = self.checkpoints.count - 1;
-        uint32_t lastCheckpointHeight = self.checkpoints[i].height;
-        uint32_t lastBlockHeight = self.lastBlock.height;
-        
-        if (lastCheckpointHeight > lastBlockHeight) {
-            UInt256 checkpointHash = self.checkpoints[i].checkpointHash;
-            
-            _lastHeader = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
-                                                       merkleRoot:self.checkpoints[i].merkleRoot timestamp:self.checkpoints[i].timestamp
-                                                           target:self.checkpoints[i].target nonce:0 totalTransactions:0 hashes:nil flags:nil
-                                                           height:self.checkpoints[i].height chainLock:nil];
-            
-            if (_lastHeader) {
-                DSDLog(@"last header at height %d chosen from checkpoints (hash is %@)",_lastHeader.height,[NSData dataWithUInt256:_lastHeader.blockHash].hexString);
+        [self.chainManagedObjectContext performBlockAndWait:^{
+            NSArray * lastHeaders = [DSMerkleBlockEntity lastHeaders:1 onChainEntity:self.chainEntity];
+            DSMerkleBlock * lastHeader = [[lastHeaders firstObject] merkleBlock];
+            self->_lastHeader = lastHeader;
+            if (lastHeader) {
+                DSDLog(@"last header at height %d recovered from db (hash is %@)",lastHeader.height,[NSData dataWithUInt256:lastHeader.blockHash].hexString);
             }
-        } else {
-            _lastHeader = self.lastBlock;
+        }];
+        if (!_lastHeader) {
+            // if we don't have any headers yet, use the latest checkpoint
+            DSCheckpoint * lastCheckpoint = self.lastCheckpoint;
+            uint32_t lastBlockHeight = self.lastBlockHeight;
+            
+            if (lastCheckpoint.height > lastBlockHeight) {
+                
+                _lastHeader = [[DSMerkleBlock alloc] initWithCheckpoint:lastCheckpoint onChain:self];
+                
+                if (_lastHeader) {
+                    DSDLog(@"last header at height %d chosen from checkpoints (hash is %@)",_lastHeader.height,[NSData dataWithUInt256:_lastHeader.blockHash].hexString);
+                }
+            } else {
+                _lastHeader = self.lastBlock;
+            }
         }
     }
     return _lastHeader;
@@ -2162,7 +2184,7 @@ static dispatch_once_t devnetToken = 0;
         if (++start >= 10) step *= 2;
         
         for (int32_t i = 0; b && i < step; i++) {
-            b = self.headers[uint256_obj(b.prevBlock)];
+            b = self.initialHeadersSyncBlocks[uint256_obj(b.prevBlock)];
         }
     }
     DSCheckpoint * lastCheckpoint = nil;
@@ -2197,7 +2219,7 @@ static dispatch_once_t devnetToken = 0;
     while (b && b.height > height) {
         b = self.blocks[uint256_obj(b.prevBlock)];
         if (!b) {
-            b = self.headers[uint256_obj(b.prevBlock)];
+            b = self.initialHeadersSyncBlocks[uint256_obj(b.prevBlock)];
         }
         confirmed |= b.chainLocked;
         count++;
@@ -2217,6 +2239,11 @@ static dispatch_once_t devnetToken = 0;
     return self.lastHeader.height;
 }
 
+- (uint32_t)lastBlockOrHeaderHeight
+{
+    return self.lastBlockOrHeader.height;
+}
+
 - (uint32_t)heightForBlockHash:(UInt256)blockhash {
     DSCheckpoint * checkpoint = [self.checkpointsByHashDictionary objectForKey:uint256_data(blockhash)];
     if (checkpoint) {
@@ -2228,7 +2255,7 @@ static dispatch_once_t devnetToken = 0;
         return block.height;
     }
     
-    DSMerkleBlock * header = [self.headers objectForKey:uint256_obj(blockhash)];
+    DSMerkleBlock * header = [self.initialHeadersSyncBlocks objectForKey:uint256_obj(blockhash)];
     if (header && (header.height != UINT32_MAX)) {
         return header.height;
     }
@@ -2244,7 +2271,7 @@ static dispatch_once_t devnetToken = 0;
             NSValue * prevBlockValue = uint256_obj(prevBlock);
             b = self.blocks[prevBlockValue];
             if (!b) {
-                b = self.headers[prevBlockValue];
+                b = self.initialHeadersSyncBlocks[prevBlockValue];
             }
         }
     }
@@ -2533,7 +2560,7 @@ static dispatch_once_t devnetToken = 0;
     [self.viewingAccount wipeBlockchainInfo];
     _bestBlockHeight = 0;
     _blocks = nil;
-    _headers = nil;
+    _initialHeadersSyncBlocks = nil;
     _lastBlock = nil;
     _lastHeader = nil;
     [self setLastBlockForRescan];
@@ -3027,7 +3054,7 @@ static dispatch_once_t devnetToken = 0;
         blocks[[NSData dataWithBytes:b.blockHash.u8 length:sizeof(UInt256)]] = b;
         startHeight = b.height;
         if (onlyHeaders) {
-            b = self.headers[uint256_obj(b.prevBlock)];
+            b = self.initialHeadersSyncBlocks[uint256_obj(b.prevBlock)];
         } else {
             b = self.blocks[uint256_obj(b.prevBlock)];
         }

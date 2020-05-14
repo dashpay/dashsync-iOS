@@ -291,8 +291,11 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 /*! @brief Returns the height of the last block.  */
 @property (nonatomic, readonly) uint32_t lastBlockHeight;
 
-/*! @brief Returns the height of the last header.  */
+/*! @brief Returns the height of the last header used in initial headers sync to get the deterministic masternode list.  */
 @property (nonatomic, readonly) uint32_t lastHeaderHeight;
+
+/*! @brief Returns the height of the last block or header (header used in initial headers sync to get the deterministic masternode list).  */
+@property (nonatomic, readonly) uint32_t lastBlockOrHeaderHeight;
 
 /*! @brief Returns the height of the best block.  */
 @property (nonatomic, readonly) uint32_t bestBlockHeight;

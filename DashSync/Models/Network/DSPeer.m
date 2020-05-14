@@ -352,7 +352,7 @@
 {
     if (self.status != DSPeerStatus_Connecting || ! self.sentVerack || ! self.gotVerack) return;
     
-    DSDLog(@"%@:%u handshake completed", self.host, self.port);
+    DSDLog(@"%@:%u handshake completed %@", self.host, self.port, (self.peerDelegate.downloadPeer == self)?@"(download peer)":@"");
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending handshake timeout
     _status = DSPeerStatus_Connected;
     
@@ -457,7 +457,7 @@
 - (void)sendFilterloadMessage:(NSData *)filter
 {
     self.sentFilter = YES;
-    DSDLog(@"Sending filter with fingerprint %@ to node %@",[NSData dataWithUInt256:filter.SHA256].shortHexString,self.host);
+    DSDLog(@"Sending filter with fingerprint %@ to node %@ %@",[NSData dataWithUInt256:filter.SHA256].shortHexString,self.host,self.peerDelegate.downloadPeer == self?@"(download peer) ":@"");
     [self sendMessage:filter type:MSG_FILTERLOAD];
 }
 

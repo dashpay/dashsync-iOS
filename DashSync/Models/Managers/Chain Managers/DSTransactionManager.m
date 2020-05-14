@@ -1244,7 +1244,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         return;
     }
     
-    [self.chain addHeader:block fromPeer:peer];
+    [self.chain addInitialHeadersSyncBlock:block fromPeer:peer];
 
 }
 
@@ -1261,7 +1261,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     NSArray *txHashes = block.txHashes;
     
     // track the observed bloom filter false positive rate using a low pass filter to smooth out variance
-    if (peer == self.peerManager.downloadPeer && block.totalTransactions > 0) {
+    if (peer == self.peerManager.downloadPeer && block.txHashes.count > 0) {
         NSMutableSet *falsePositives = [NSMutableSet setWithArray:txHashes];
         
         // 1% low pass filter, also weights each block by total transactions, using 1400 tx per block as typical

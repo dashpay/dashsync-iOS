@@ -56,6 +56,7 @@
 @property (nonatomic, strong) DSPeerManager * peerManager;
 @property (nonatomic, assign) uint32_t syncStartHeight;
 @property (nonatomic, assign) NSTimeInterval lastChainRelayTime;
+@property (nonatomic, assign) BOOL gotSporksAtChainSyncStart;
 
 @end
 
@@ -75,6 +76,7 @@
     self.transactionManager = [[DSTransactionManager alloc] initWithChain:chain];
     self.peerManager = [[DSPeerManager alloc] initWithChain:chain];
     self.identitiesManager = [[DSIdentitiesManager alloc] initWithChain:chain];
+    self.gotSporksAtChainSyncStart = FALSE;
     
     return self;
 }
@@ -243,7 +245,9 @@
 }
 
 -(void)chainWillStartSyncingBlockchain:(DSChain*)chain {
-    [self.sporkManager getSporks]; //get the sporks early on
+    if (!self.gotSporksAtChainSyncStart) {
+        [self.sporkManager getSporks]; //get the sporks early on
+    }
 }
 
 -(void)chainShouldStartSyncingBlockchain:(DSChain*)chain onPeer:(DSPeer*)peer {
