@@ -56,6 +56,36 @@
     [self.chain unregisterWallet:self.wallet];
 }
 
+- (void)testInitialHeadersSync {
+    if (@available(iOS 13.0, *)) {
+        [self measureWithMetrics:@[[[XCTCPUMetric alloc] init],[[XCTMemoryMetric alloc] init],[[XCTClockMetric alloc] init]] block:^{
+            DSDLog(@"Starting testInitialHeadersSync");
+            DSSyncType originalSyncType = [[DSOptionsManager sharedInstance] syncType];
+            [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_BaseSPV];
+            [[DashSync sharedSyncController] wipePeerDataForChain:self.chain inContext:[NSManagedObjectContext peerContext]];
+            [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+            [[DashSync sharedSyncController] wipeSporkDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+            [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+            [self.chain.chainManager.peerManager setTrustedPeerHost:@"178.128.228.195:9999"];
+            [self.chain useCheckpointBeforeOrOnHeightForInitialHeadersSync:227121];
+            XCTestExpectation *headerFinishedExpectation = [[XCTestExpectation alloc] init];
+            [[DashSync sharedSyncController] startSyncForChain:self.chain];
+            self.txStatusObserver =
+            [[NSNotificationCenter defaultCenter] addObserverForName:DSChainInitialHeadersDidFinishSyncingNotification object:nil
+                                                               queue:nil usingBlock:^(NSNotification *note) {
+                DSDLog(@"Finished sync");
+                [[DashSync sharedSyncController] stopSyncForChain:self.chain];
+                [self.chain.chainManager.peerManager removeTrustedPeerHost];
+                [[DSOptionsManager sharedInstance] setSyncType:originalSyncType];
+                [headerFinishedExpectation fulfill];
+            }];
+            [self waitForExpectations:@[headerFinishedExpectation] timeout:360000];
+        }];
+    } else {
+        // Fallback on earlier versions
+    }
+}
+
 - (void)testFullSync {
     if (@available(iOS 13.0, *)) {
         [self measureWithMetrics:@[[[XCTCPUMetric alloc] init],[[XCTMemoryMetric alloc] init],[[XCTClockMetric alloc] init]] block:^{

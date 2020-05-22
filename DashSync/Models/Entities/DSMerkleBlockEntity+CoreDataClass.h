@@ -31,11 +31,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMerkleBlockEntity : NSManagedObject
 
-- (instancetype)setAttributesFromBlock:(DSMerkleBlock *)block forChain:(DSChainEntity*)chainEntity; //this is faster when you know the chain entity already
+- (instancetype)setAttributesFromBlock:(DSMerkleBlock *)block forChainEntity:(DSChainEntity*)chainEntity; //this is faster when you know the chain entity already
 - (DSMerkleBlock *)merkleBlock;
 
-+ (NSArray<DSMerkleBlockEntity*>*)lastBlocks:(uint32_t)blockcount onChainEntity:(DSChainEntity*)chainEntity;
-+ (NSArray<DSMerkleBlockEntity*>*)lastHeaders:(uint32_t)blockcount onChainEntity:(DSChainEntity*)chainEntity;
++ (NSArray<DSMerkleBlockEntity*>*)lastTerminalBlocks:(uint32_t)blockcount onChainEntity:(DSChainEntity*)chainEntity;
 + (void)deleteBlocksOnChainEntity:(DSChainEntity*)chainEntity;
 
 @end

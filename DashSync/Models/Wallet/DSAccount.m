@@ -302,7 +302,7 @@
 - (uint32_t)blockHeight
 {
     static uint32_t height = 0;
-    uint32_t h = self.wallet.chain.lastBlockHeight;
+    uint32_t h = self.wallet.chain.lastSyncBlockHeight;
     
     if (h > height) height = h;
     return height;
@@ -1393,7 +1393,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     
     if ([transaction isKindOfClass:[DSCoinbaseTransaction class]]) { //only allow these to be spent after 100 inputs
         DSCoinbaseTransaction * coinbaseTransaction = (DSCoinbaseTransaction*)transaction;
-        if (coinbaseTransaction.height + 100 > self.wallet.chain.lastBlockHeight) return YES;
+        if (coinbaseTransaction.height + 100 > self.wallet.chain.lastSyncBlockHeight) return YES;
     }
     return NO;
 }

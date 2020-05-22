@@ -1395,7 +1395,11 @@
          (int)(((l == 0) ? 1 : l) + count*81), (int)count];
         return;
     }
-    DSDLog(@"%@:%u got %u headers", self.host, self.port, (int)count);
+    if (count == 0) {
+        DSDLog(@"%@:%u got 0 headers (%@)", self.host, self.port, message.hexString);
+    } else {
+        DSDLog(@"%@:%u got %u headers", self.host, self.port, (int)count);
+    }
     
 #if LOG_ALL_HEADERS_IN_ACCEPT_HEADERS
     for (int i =0;i<count;i++) {
@@ -1436,7 +1440,7 @@
         return;
     }
     if (!count) return;
-    if (count >= 2000 || (((lastTimestamp + DAY_TIME_INTERVAL*2) >= self.earliestKeyTime) && (!self.chain.shouldSyncHeadersFirstForMasternodeListVerification))) {
+    if (count >= HEADERS_MAX_AMOUNT || (((lastTimestamp + DAY_TIME_INTERVAL*2) >= self.earliestKeyTime) && (!self.chain.shouldSyncHeadersFirstForMasternodeListVerification))) {
         UInt256 firstBlockHash = [message subdataWithRange:NSMakeRange(l, 80)].x11;
         UInt256 lastBlockHash = [message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].x11;
         NSData *firstHashData = uint256_data(firstBlockHash);

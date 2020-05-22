@@ -91,9 +91,9 @@
 {
     if (! self.peerManager.downloadPeer && self.syncStartHeight == 0) return 0.0;
     //if (self.downloadPeer.status != DSPeerStatus_Connected) return 0.05;
-    if (self.chain.lastBlockHeight >= self.chain.estimatedBlockHeight) return 1.0;
+    if (self.chain.lastSyncBlockHeight >= self.chain.estimatedBlockHeight) return 1.0;
     
-    double lastBlockHeight = self.chain.lastBlockHeight;
+    double lastBlockHeight = self.chain.lastSyncBlockHeight;
     double estimatedBlockHeight = self.chain.estimatedBlockHeight;
     double syncStartHeight = self.syncStartHeight;
     double progress;
@@ -111,7 +111,7 @@
     if (self.syncStartHeight == 0) self.syncStartHeight = (uint32_t)[userDefaults integerForKey:self.syncStartHeightKey];
     
     if (self.syncStartHeight == 0) {
-        self.syncStartHeight = self.chain.lastBlockHeight;
+        self.syncStartHeight = self.chain.lastSyncBlockHeight;
         [[NSUserDefaults standardUserDefaults] setInteger:self.syncStartHeight forKey:self.syncStartHeightKey];
     }
 }
@@ -183,7 +183,7 @@
         
     });
     
-    self.syncStartHeight = self.chain.lastBlockHeight;
+    self.syncStartHeight = self.chain.lastSyncBlockHeight;
     [[NSUserDefaults standardUserDefaults] setInteger:self.syncStartHeight forKey:self.syncStartHeightKey];
     [self.peerManager connect];
 }
@@ -254,11 +254,11 @@
     dispatch_async(self.chain.networkingQueue, ^{
         if (self.chain.shouldSyncHeadersFirstForMasternodeListVerification) {
         //masternode list should be synced first and the masternode list is old
-            [peer sendGetheadersMessageWithLocators:[self.chain headerLocatorArrayForMasternodeSync] andHashStop:UINT256_ZERO];
+            [peer sendGetheadersMessageWithLocators:[self.chain terminalBlocksLocatorArray] andHashStop:UINT256_ZERO];
         } else {
-            BOOL startingDevnetSync = [self.chain isDevnetAny] && self.chain.lastBlock.height < 5;
-            if (startingDevnetSync || self.chain.lastBlockOrHeader.timestamp + HEADER_WINDOW_BUFFER_TIME >= self.chain.earliestWalletCreationTime) {
-                [peer sendGetblocksMessageWithLocators:[self.chain blockLocatorArrayBeforeTimestamp:((self.chain.earliestWalletCreationTime - HEADER_WINDOW_BUFFER_TIME < BIP39_CREATION_TIME)?BIP39_CREATION_TIME:(self.chain.earliestWalletCreationTime - HEADER_WINDOW_BUFFER_TIME)) includeHeaders:YES] andHashStop:UINT256_ZERO];
+            BOOL startingDevnetSync = [self.chain isDevnetAny] && self.chain.lastSyncBlock.height < 5;
+            if (startingDevnetSync || self.chain.lastBlock.timestamp + HEADER_WINDOW_BUFFER_TIME >= self.chain.earliestWalletCreationTime) {
+                [peer sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
             }
             else {
                 [peer sendGetheadersMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
@@ -292,23 +292,11 @@
 }
 
 -(void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain*)chain {
-    
-    if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeListFirst)) {
-        if (self.peerManager.connectedPeerCount == 0) {
-            [self.peerManager connect];
-        } else {
-            [self chainShouldStartSyncingBlockchain:chain onPeer:self.peerManager.downloadPeer];
-        }
+    DSDLog(@"Chain finished syncing masternode list and quorums, it should start syncing chain");
+    if (self.peerManager.connectedPeerCount == 0) {
+        [self.peerManager connect];
     } else {
-        if ([self.chain isEvolutionEnabled]) {
-            if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_BlockchainIdentities)) {
-                //this only needs to happen once per session
-                static dispatch_once_t onceToken;
-                dispatch_once(&onceToken, ^{
-                    [self.identitiesManager retrieveAllBlockchainIdentitiesChainStates];
-                });
-            }
-        }
+        [self chainShouldStartSyncingBlockchain:chain onPeer:self.peerManager.downloadPeer];
     }
 }
 
@@ -322,7 +310,7 @@
     if (block.timestamp < [NSDate timeIntervalSince1970] - WEEK_TIME_INTERVAL) return;
     
     // call getblocks, unless we already did with the previous block, or we're still downloading the chain
-    if (self.chain.lastBlockHeight >= peer.lastBlockHeight && ! uint256_eq(self.chain.lastOrphan.blockHash, block.prevBlock)) {
+    if (self.chain.lastSyncBlockHeight >= peer.lastBlockHeight && ! uint256_eq(self.chain.lastOrphan.blockHash, block.prevBlock)) {
         DSDLog(@"%@:%d calling getblocks", peer.host, peer.port);
         [peer sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
     }

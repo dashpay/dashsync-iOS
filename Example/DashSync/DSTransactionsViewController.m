@@ -75,7 +75,7 @@ NSString *dateFormat(NSString *_template)
         self.syncStartedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncStartedNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
-                                                               if ([self.chainManager.chain timestampForBlockHeight:self.chainManager.chain.lastBlockHeight] + WEEK_TIME_INTERVAL <
+                                                               if ([self.chainManager.chain timestampForBlockHeight:self.chainManager.chain.lastSyncBlockHeight] + WEEK_TIME_INTERVAL <
                                                                    [NSDate timeIntervalSince1970] &&
                                                                    self.chainManager.chain.earliestWalletCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSince1970]) {
                                                                    self.navigationItem.titleView = nil;
@@ -164,7 +164,7 @@ NSString *dateFormat(NSString *_template)
 - (uint32_t)blockHeight
 {
     static uint32_t height = 0;
-    uint32_t h = self.chainManager.chain.lastBlockHeight;
+    uint32_t h = self.chainManager.chain.lastSyncBlockHeight;
     
     if (h > height) height = h;
     return height;

@@ -35,6 +35,8 @@ FOUNDATION_EXPORT NSString* const DSChainStandaloneAddressesDidChangeNotificatio
 FOUNDATION_EXPORT NSString* const DSChainBlocksDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainBlockWasLockedNotification;
 FOUNDATION_EXPORT NSString* const DSChainNotificationBlockKey;
+
+// For improved performance DSChainInitialHeadersDidChangeNotification is not garanteed to trigger on every initial headers change.
 FOUNDATION_EXPORT NSString* const DSChainInitialHeadersDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainInitialHeadersDidFinishSyncingNotification;
 FOUNDATION_EXPORT NSString* const DSChainBlocksDidFinishSyncingNotification;
@@ -239,16 +241,25 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 /*! @brief Returns the checkpoint at a given block height, if one exists at that block height.  */
 - (DSCheckpoint* _Nullable)checkpointForBlockHeight:(uint32_t)blockHeight;
 
+/*! @brief Returns the last checkpoint on or before the given height.  */
+- (DSCheckpoint*)lastCheckpointOnOrBeforeHeight:(uint32_t)height;
+
+/*! @brief Returns the last checkpoint on or before the given timestamp.  */
+- (DSCheckpoint*)lastCheckpointOnOrBeforeTimestamp:(NSTimeInterval)timestamp;
+
+/*! @brief When used this will change the checkpoint used for initial headers sync.  */
+- (void)useCheckpointBeforeOrOnHeightForInitialHeadersSync:(uint32_t)blockHeight;
+
 // MARK: - Blocks and Headers
 
 /*! @brief The last known block on the chain.  */
-@property (nonatomic, readonly, nullable) DSMerkleBlock * lastBlock;
+@property (nonatomic, readonly, nullable) DSMerkleBlock * lastSyncBlock;
 
 /*! @brief The last known header on the chain.  */
-@property (nonatomic, readonly, nullable) DSMerkleBlock * lastHeader;
+@property (nonatomic, readonly, nullable) DSMerkleBlock * lastTerminalBlock;
 
 /*! @brief The last known block or header on the chain. Whichever is latest.  */
-@property (nonatomic, readonly, nullable) DSMerkleBlock * lastBlockOrHeader;
+@property (nonatomic, readonly, nullable) DSMerkleBlock * lastBlock;
 
 /*! @brief The last known block on the chain before the given timestamp.  */
 - (DSMerkleBlock *)lastBlockOnOrBeforeTimestamp:(NSTimeInterval)timestamp;
@@ -269,7 +280,7 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 @property (nonatomic, readonly, nullable) NSArray <NSData*> * blockLocatorArray;
 
 /*! @brief This block locator array is an array of 10 block hashes in decending order before the given timestamp followed by block hashes that double the step back each iteration in decending order and finishing with the previous known checkpoint after that last hash. Something like (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -15, -23, -39, -71, -135, ..., 0).  */
-- (NSArray <NSData*> *)blockLocatorArrayBeforeTimestamp:(NSTimeInterval)timestamp includeHeaders:(BOOL)includeHeaders;
+- (NSArray <NSData*> *)blockLocatorArrayBeforeTimestamp:(NSTimeInterval)timestamp includeInitialsHeaders:(BOOL)includeHeaders;
 
 /*! @brief The timestamp of a block at a given height.  */
 - (NSTimeInterval)timestampForBlockHeight:(uint32_t)blockHeight; // seconds since 1970, 00:00:00 01/01/01 GMT
@@ -289,13 +300,13 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 // MARK: Heights
 
 /*! @brief Returns the height of the last block.  */
-@property (nonatomic, readonly) uint32_t lastBlockHeight;
+@property (nonatomic, readonly) uint32_t lastSyncBlockHeight;
 
 /*! @brief Returns the height of the last header used in initial headers sync to get the deterministic masternode list.  */
-@property (nonatomic, readonly) uint32_t lastHeaderHeight;
+@property (nonatomic, readonly) uint32_t lastTerminalBlockHeight;
 
 /*! @brief Returns the height of the last block or header (header used in initial headers sync to get the deterministic masternode list).  */
-@property (nonatomic, readonly) uint32_t lastBlockOrHeaderHeight;
+@property (nonatomic, readonly) uint32_t lastBlockHeight;
 
 /*! @brief Returns the height of the best block.  */
 @property (nonatomic, readonly) uint32_t bestBlockHeight;

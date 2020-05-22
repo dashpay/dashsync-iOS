@@ -109,7 +109,8 @@
     [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            [self savePeers];
-                                                           [self.chain saveBlocks];
+                                                           [self.chain saveBlockLocators];
+                                                           [self.chain saveTerminalBlocks];
                                                            
                                                            if (self.taskId == UIBackgroundTaskInvalid) {
                                                                self.misbehavingCount = 0;
@@ -521,12 +522,12 @@
         DSDLog(@"updating filter with newly created wallet addresses");
         [self.transactionManager clearTransactionsBloomFilter];
         
-        if (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight) { // if we're syncing, only update download peer
+        if (self.chain.lastSyncBlockHeight < self.chain.estimatedBlockHeight) { // if we're syncing, only update download peer
             [self.downloadPeer sendFilterloadMessage:[self.transactionManager transactionsBloomFilterForPeer:self.downloadPeer].data];
             [self.downloadPeer sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so filter is loaded
                 if (! success) return;
                 self.downloadPeer.needsFilterUpdate = NO;
-                [self.downloadPeer rerequestBlocksFrom:self.chain.lastBlock.blockHash];
+                [self.downloadPeer rerequestBlocksFrom:self.chain.lastSyncBlock.blockHash];
                 [self.downloadPeer sendPingMessageWithPongHandler:^(BOOL success) {
                     if (! success || self.downloadPeer.needsFilterUpdate) return;
                     [self.downloadPeer sendGetblocksMessageWithLocators:[self.chain blockLocatorArray]
@@ -615,7 +616,8 @@
             if (self.taskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
                 self.taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
                     dispatch_async(self.networkingQueue, ^{
-                        [self.chain saveBlocks];
+                        [self.chain saveBlockLocators];
+                        [self.chain saveTerminalBlocks];
                     });
                     
                     [self chainSyncStopped];
@@ -738,7 +740,7 @@
     
     // drop peers that don't carry full blocks, or aren't synced yet
     // TODO: XXXX does this work with 0.11 pruned nodes?
-    if (! (peer.services & SERVICES_NODE_NETWORK) || peer.lastBlockHeight + 10 < self.chain.lastBlockHeight) {
+    if (! (peer.services & SERVICES_NODE_NETWORK) || peer.lastBlockHeight + 10 < self.chain.lastSyncBlockHeight) {
         [peer disconnectWithError:[NSError errorWithDomain:@"DashSync" code:500
         userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Node at host %@ does not service network",nil),peer.host]}]];
         return;
@@ -759,9 +761,9 @@
         } else {
             [peer sendFilterloadMessage:[DSBloomFilter emptyBloomFilterData]];
         }
-        if (self.chain.estimatedBlockHeight >= peer.lastBlockHeight || self.chain.lastBlockHeight >= peer.lastBlockHeight) {
-            if (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight) {
-                DSDLog(@"self.chain.lastBlockHeight %u, self.chain.estimatedBlockHeight %u",self.chain.lastBlockHeight,self.chain.estimatedBlockHeight);
+        if (self.chain.estimatedBlockHeight >= peer.lastBlockHeight || self.chain.lastSyncBlockHeight >= peer.lastBlockHeight) {
+            if (self.chain.lastSyncBlockHeight < self.chain.estimatedBlockHeight) {
+                DSDLog(@"self.chain.lastBlockHeight %u, self.chain.estimatedBlockHeight %u",self.chain.lastSyncBlockHeight,self.chain.estimatedBlockHeight);
                 return; // don't get mempool yet if we're syncing
             }
 
@@ -816,10 +818,10 @@
     if ([self.chain syncsBlockchain] && [self.chain canConstructAFilter]) {
         [peer sendFilterloadMessage:[self.transactionManager transactionsBloomFilterForPeer:peer].data];
     }
-    peer.currentBlockHeight = self.chain.lastBlockHeight;
+    peer.currentBlockHeight = self.chain.lastSyncBlockHeight;
     
     
-    if ([self.chain syncsBlockchain] && (self.chain.lastBlockHeight < peer.lastBlockHeight)) { // start blockchain sync
+    if ([self.chain syncsBlockchain] && (self.chain.lastSyncBlockHeight < peer.lastBlockHeight)) { // start blockchain sync
         [self.chainManager resetLastRelayedItemTime];
         dispatch_async(dispatch_get_main_queue(), ^{ // setup a timer to detect if the sync stalls
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];

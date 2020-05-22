@@ -1406,7 +1406,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                     return;
                 }
                 //todo This needs to be eventually set with the blockchain returned by platform.
-                strongSelf.dashpaySyncronizationBlockHash = strongSelf.chain.lastHeader.blockHash;
+                strongSelf.dashpaySyncronizationBlockHash = strongSelf.chain.lastTerminalBlock.blockHash;
             }
             completion(failureStep,[groupedErrors copy]);
         });

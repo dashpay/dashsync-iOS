@@ -31,7 +31,7 @@
 
 @implementation DSMerkleBlockEntity
 
-- (instancetype)setAttributesFromBlock:(DSMerkleBlock *)block forChain:(DSChainEntity*)chainEntity {
+- (instancetype)setAttributesFromBlock:(DSMerkleBlock *)block forChainEntity:(DSChainEntity*)chainEntity {
     [self.managedObjectContext performBlockAndWait:^{
         self.blockHash = [NSData dataWithBytes:block.blockHash.u8 length:sizeof(UInt256)];
         self.version = block.version;
@@ -74,23 +74,11 @@
     return block;
 }
 
-+ (NSArray<DSMerkleBlockEntity*>*)lastBlocks:(uint32_t)blockcount onChainEntity:(DSChainEntity*)chainEntity {
++ (NSArray<DSMerkleBlockEntity*>*)lastTerminalBlocks:(uint32_t)blockcount onChainEntity:(DSChainEntity*)chainEntity {
     __block NSArray * blocks = nil;
     [chainEntity.managedObjectContext performBlockAndWait:^{
         NSFetchRequest * fetchRequest = [DSMerkleBlockEntity fetchReq];
-        [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"(chain == %@ && onlyHeader == FALSE)",chainEntity]];
-        [fetchRequest setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"height" ascending:FALSE]]];
-        [fetchRequest setFetchLimit:blockcount];
-        blocks = [DSMerkleBlockEntity fetchObjects:fetchRequest inContext:chainEntity.managedObjectContext];
-    }];
-    return blocks;
-}
-
-+ (NSArray<DSMerkleBlockEntity*>*)lastHeaders:(uint32_t)blockcount onChainEntity:(DSChainEntity*)chainEntity {
-    __block NSArray * blocks = nil;
-    [chainEntity.managedObjectContext performBlockAndWait:^{
-        NSFetchRequest * fetchRequest = [DSMerkleBlockEntity fetchReq];
-        [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"(chain == %@ && onlyHeader == TRUE)",chainEntity]];
+        [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"(chain == %@)",chainEntity]];
         [fetchRequest setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"height" ascending:FALSE]]];
         [fetchRequest setFetchLimit:blockcount];
         blocks = [DSMerkleBlockEntity fetchObjects:fetchRequest inContext:chainEntity.managedObjectContext];

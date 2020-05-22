@@ -783,7 +783,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 //It makes sense to keep this in this class because it is not a property of the chain, but intead of a effemeral item used in the synchronization of the chain.
 - (DSBloomFilter *)transactionsBloomFilterForPeer:(DSPeer *)peer
 {
-    self.filterUpdateHeight = self.chain.lastBlockHeight;
+    self.filterUpdateHeight = self.chain.lastSyncBlockHeight;
     self.transactionsBloomFilterFalsePositiveRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
     
     
@@ -937,7 +937,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 - (void)peer:(DSPeer *)peer hasTransactionWithHash:(UInt256)txHash transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock;
 {
     NSValue *hash = uint256_obj(txHash);
-    BOOL syncing = (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight);
+    BOOL syncing = (self.chain.lastSyncBlockHeight < self.chain.estimatedBlockHeight);
     DSTransaction *transaction = self.publishedTx[hash];
     void (^callback)(NSError *error) = self.publishedCallback[hash];
     
@@ -983,7 +983,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 - (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction inBlock:(DSMerkleBlock*)block transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock
 {
     NSValue *hash = uint256_obj(transaction.txHash);
-    BOOL syncing = (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight);
+    BOOL syncing = (self.chain.lastSyncBlockHeight < self.chain.estimatedBlockHeight);
     void (^callback)(NSError *error) = self.publishedCallback[hash];
     
     DSDLog(@"%@:%d relayed transaction %@", peer.host, peer.port, hash);
@@ -1244,6 +1244,8 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         return;
     }
     
+    if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
+    
     [self.chain addInitialHeadersSyncBlock:block fromPeer:peer];
 
 }
@@ -1272,19 +1274,21 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         // false positive rate sanity check
         if (self.peerManager.downloadPeer.status == DSPeerStatus_Connected && self.transactionsBloomFilterFalsePositiveRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10.0) {
             DSDLog(@"%@:%d bloom filter false positive rate %f too high after %d blocks, disconnecting...", peer.host,
-                   peer.port, self.transactionsBloomFilterFalsePositiveRate, self.chain.lastBlockHeight + 1 - self.filterUpdateHeight);
+                   peer.port, self.transactionsBloomFilterFalsePositiveRate, self.chain.lastSyncBlockHeight + 1 - self.filterUpdateHeight);
             [self.peerManager.downloadPeer disconnect];
         }
-        else if (self.chain.lastBlockHeight + 500 < peer.lastBlockHeight && self.transactionsBloomFilterFalsePositiveRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*10.0) {
+        else if (self.chain.lastSyncBlockHeight + 500 < peer.lastBlockHeight && self.transactionsBloomFilterFalsePositiveRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*10.0) {
             [self updateTransactionsBloomFilter]; // rebuild bloom filter when it starts to degrade
         }
     }
     
+    if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
+    
     if (! _bloomFilter) { // ignore potentially incomplete blocks when a filter update is pending
-        if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
         DSDLog(@"ignoring block due to filter update %@",uint256_hex(block.blockHash));
         return;
     }
+    
     
     [self.chain addBlock:block fromPeer:peer];
 }

@@ -107,7 +107,7 @@
 - (uint32_t)lastBlockHeight
 {
     static uint32_t height = 0;
-    uint32_t h = self.chain.lastBlockHeight;
+    uint32_t h = self.chain.lastSyncBlockHeight;
     
     if (h > height) height = h;
     return height;

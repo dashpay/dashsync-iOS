@@ -223,7 +223,7 @@
         NSArray * masternodeListEntities = [DSMasternodeListEntity fetchObjects:fetchRequest inContext:self.managedObjectContext];
         NSMutableDictionary * simplifiedMasternodeEntryPool = [NSMutableDictionary dictionary];
         NSMutableDictionary * quorumEntryPool = [NSMutableDictionary dictionary];
-        uint32_t neededMasternodeListHeight = self.chain.lastBlock.height - 23; //2*8+7
+        uint32_t neededMasternodeListHeight = self.chain.lastSyncBlock.height - 23; //2*8+7
         for (uint32_t i = (uint32_t)masternodeListEntities.count - 1; i != UINT32_MAX;i--) {
             DSMasternodeListEntity * masternodeListEntity = [masternodeListEntities objectAtIndex:i];
             if ((i == masternodeListEntities.count - 1) || ((self.masternodeListsByBlockHash.count < 3) && (neededMasternodeListHeight >= masternodeListEntity.block.height))) { //either last one or there are less than 3 (we aim for 3)
@@ -271,10 +271,10 @@
 }
 
 -(void)loadFileDistributedMasternodeLists {
-    if (![[DSOptionsManager sharedInstance] useCheckpointMasternodeLists]) return;
+    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList) || ![[DSOptionsManager sharedInstance] useCheckpointMasternodeLists]) return;
     if (!self.currentMasternodeList) {
         DSCheckpoint * checkpoint = [self.chain lastCheckpointHavingMasternodeList];
-        if (self.chain.lastBlockHeight >= checkpoint.height) {
+        if (self.chain.lastSyncBlockHeight >= checkpoint.height) {
             [self processRequestFromFileForBlockHash:checkpoint.checkpointHash completion:^(BOOL success) {
                 
             }];
@@ -453,12 +453,7 @@
 
 -(void)getRecentMasternodeList:(NSUInteger)blocksAgo withSafetyDelay:(uint32_t)safetyDelay {
     @synchronized (self.masternodeListRetrievalQueue) {
-        DSMerkleBlock * merkleBlock = nil;
-        if (self.chain.shouldSyncHeadersFirstForMasternodeListVerification) {
-            merkleBlock = [self.chain blockFromChainTip:blocksAgo];
-        } else {
-            merkleBlock = [self.chain blockFromChainTip:blocksAgo];
-        }
+        DSMerkleBlock * merkleBlock = [self.chain blockFromChainTip:blocksAgo];
         if ([self.masternodeListRetrievalQueue lastObject] && uint256_eq(merkleBlock.blockHash, [self.masternodeListRetrievalQueue lastObject].UInt256)) {
             //we are asking for the same as the last one
             return;
@@ -989,7 +984,7 @@
         DSMerkleBlockEntity * merkleBlockEntity = [DSMerkleBlockEntity anyObjectInContext:context matching:@"blockHash == %@",uint256_data(masternodeList.blockHash)];
         if (!merkleBlockEntity && ([chain checkpointForBlockHash:masternodeList.blockHash])) {
             DSCheckpoint * checkpoint = [chain checkpointForBlockHash:masternodeList.blockHash];
-            merkleBlockEntity = [[DSMerkleBlockEntity managedObjectInContext:context] setAttributesFromBlock:[checkpoint merkleBlockForChain:chain] forChain:chainEntity];
+            merkleBlockEntity = [[DSMerkleBlockEntity managedObjectInContext:context] setAttributesFromBlock:[checkpoint merkleBlockForChain:chain] forChainEntity:chainEntity];
         }
         NSAssert(merkleBlockEntity, @"Merkle block should exist");
         NSAssert(!merkleBlockEntity.masternodeList, @"Merkle block should not have a masternode list already");

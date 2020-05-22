@@ -70,7 +70,7 @@
     for (DSBlockchainIdentity * blockchainIdentity in [self.chain localBlockchainIdentities]) {
         if (!blockchainIdentity.registrationCreditFundingTransaction || (blockchainIdentity.registrationCreditFundingTransaction.blockHeight == BLOCK_UNKNOWN_HEIGHT)) {
             [unsyncedBlockchainIdentities addObject:blockchainIdentity];
-        } else if (self.chain.lastBlockHeight > blockchainIdentity.dashpaySyncronizationBlockHeight) {
+        } else if (self.chain.lastSyncBlockHeight > blockchainIdentity.dashpaySyncronizationBlockHeight) {
             //If they are equal then the blockchain identity is synced
             //This is because the dashpaySyncronizationBlock represents the last block for the bloom filter used in L1 should be considered valid
             //That's because it is set at the time with the hash of the last

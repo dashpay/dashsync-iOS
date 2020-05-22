@@ -89,37 +89,37 @@
 -(BOOL)instantSendActive {
     DSSpork * instantSendSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork2InstantSendEnabled)];
     if (!instantSendSpork) return TRUE;//assume true
-    return instantSendSpork.value <= self.chain.lastBlockOrHeaderHeight;
+    return instantSendSpork.value <= self.chain.lastBlockHeight;
 }
 
 -(BOOL)sporksUpdatedSignatures {
     DSSpork * updateSignatureSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork6NewSigs)];
     if (!updateSignatureSpork) return FALSE;//assume false
-    return updateSignatureSpork.value <= self.chain.lastBlockOrHeaderHeight;
+    return updateSignatureSpork.value <= self.chain.lastBlockHeight;
 }
 
 -(BOOL)deterministicMasternodeListEnabled {
     DSSpork * dmlSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork15DeterministicMasternodesEnabled)];
     if (!dmlSpork) return TRUE;//assume true
-    return dmlSpork.value <= self.chain.lastBlockOrHeaderHeight;
+    return dmlSpork.value <= self.chain.lastBlockHeight;
 }
 
 -(BOOL)llmqInstantSendEnabled {
     DSSpork * llmqSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork20InstantSendLLMQBased)];
     if (!llmqSpork) return TRUE;//assume true
-    return llmqSpork.value <= self.chain.lastBlockOrHeaderHeight;
+    return llmqSpork.value <= self.chain.lastBlockHeight;
 }
 
 -(BOOL)quorumDKGEnabled {
     DSSpork * dkgSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork17QuorumDKGEnabled)];
     if (!dkgSpork) return TRUE;//assume true
-    return dkgSpork.value <= self.chain.lastBlockOrHeaderHeight;
+    return dkgSpork.value <= self.chain.lastBlockHeight;
 }
 
 -(BOOL)chainLocksEnabled {
     DSSpork * chainLockSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork19ChainLocksEnabled)];
     if (!chainLockSpork) return TRUE;//assume true
-    return chainLockSpork.value <= self.chain.lastBlockOrHeaderHeight;
+    return chainLockSpork.value <= self.chain.lastBlockHeight;
 }
 
 -(NSDictionary*)sporkDictionary {

@@ -47,8 +47,10 @@ typedef union _UInt256 UInt256;
 @interface DSMerkleBlock : NSObject <NSCopying>
 
 @property (nonatomic, readonly) UInt256 blockHash;
+@property (nonatomic, readonly) NSValue * blockHashValue;
 @property (nonatomic, readonly) uint32_t version;
 @property (nonatomic, readonly) UInt256 prevBlock;
+@property (nonatomic, readonly) NSValue * prevBlockValue;
 @property (nonatomic, readonly) UInt256 merkleRoot;
 @property (nonatomic, readonly) uint32_t timestamp; // time interval since unix epoch
 @property (nonatomic, readonly) uint32_t target;

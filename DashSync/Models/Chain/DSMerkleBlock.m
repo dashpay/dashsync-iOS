@@ -76,8 +76,10 @@ inline static int ceil_log2(int x)
 @interface DSMerkleBlock ()
 
 @property (nonatomic, assign) UInt256 blockHash;
+@property (nonatomic, strong) NSValue * blockHashValue;
 @property (nonatomic, assign) uint32_t version;
 @property (nonatomic, assign) UInt256 prevBlock;
+@property (nonatomic, strong) NSValue * prevBlockValue;
 @property (nonatomic, assign) UInt256 merkleRoot;
 @property (nonatomic, assign) uint32_t timestamp; // time interval since unix epoch
 @property (nonatomic, assign) uint32_t target;
@@ -195,6 +197,20 @@ inline static int ceil_log2(int x)
         target:checkpoint.target nonce:0 totalTransactions:0 hashes:nil flags:nil
         height:checkpoint.height chainLock:nil])) return nil;
     return self;
+}
+
+-(NSValue*)prevBlockValue {
+    if (!_prevBlockValue) {
+        _prevBlockValue = uint256_obj(self.prevBlock);
+    }
+    return _prevBlockValue;
+}
+
+-(NSValue*)blockHashValue {
+    if (!_blockHashValue) {
+        _blockHashValue = uint256_obj(self.blockHash);
+    }
+    return _blockHashValue;
 }
 
 -(BOOL)isMerkleTreeValid {

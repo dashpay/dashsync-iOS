@@ -261,7 +261,7 @@
     }
     
     if (timeout <= DBL_EPSILON) {
-        if ([self.chain timestampForBlockHeight:self.chain.lastBlockHeight] +
+        if ([self.chain timestampForBlockHeight:self.chain.lastSyncBlockHeight] +
             WEEK_TIME_INTERVAL < [NSDate timeIntervalSince1970]) {
             if (self.chainManager.chain.earliestWalletCreationTime + DAY_TIME_INTERVAL < start) {
                 self.explanationLabel.text = NSLocalizedString(@"Syncing", nil);
@@ -317,8 +317,8 @@
     NSTimeInterval elapsed = [NSDate timeIntervalSince1970] - self.start;
     double progress = self.chainManager.syncProgress;
     uint64_t dbFileSize = [DashSync sharedSyncController].dbSize;
-    uint32_t lastBlockHeight = self.chain.lastBlockHeight;
-    uint32_t lastHeaderHeight = self.chain.lastHeaderHeight;
+    uint32_t lastBlockHeight = self.chain.lastSyncBlockHeight;
+    uint32_t lastHeaderHeight = self.chain.lastTerminalBlockHeight;
     if (self.timeout > 1.0 && 0.1 + 0.9*elapsed/self.timeout < progress) progress = 0.1 + 0.9*elapsed/self.timeout;
     
     if ((counter % 13) == 0) {
@@ -436,11 +436,11 @@
 }
 
 -(void)updateBlockHeight {
-    self.lastBlockHeightLabel.text = [NSString stringWithFormat:@"%d",self.chain.lastBlockHeight];
+    self.lastBlockHeightLabel.text = [NSString stringWithFormat:@"%d",self.chain.lastSyncBlockHeight];
 }
 
 -(void)updateHeaderHeight {
-    self.lastMasternodeBlockHeightLabel.text = [NSString stringWithFormat:@"%d",self.chain.lastHeaderHeight];
+    self.lastMasternodeBlockHeightLabel.text = [NSString stringWithFormat:@"%d",self.chain.lastTerminalBlockHeight];
 }
 
 -(void)updatePeerCount {
@@ -513,11 +513,9 @@
         sporksViewController.sporksArray = [[[[self.chainManager.sporkManager sporkDictionary] allValues] sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"identifier" ascending:TRUE]]] mutableCopy];
     } else if ([segue.identifier isEqualToString:@"BlockchainExplorerSegue"]) {
         DSBlockchainExplorerViewController * blockchainExplorerViewController = (DSBlockchainExplorerViewController*)segue.destinationViewController;
-        blockchainExplorerViewController.type = DSBlockchainExplorerType_Blocks;
         blockchainExplorerViewController.chain = self.chainManager.chain;
     } else if ([segue.identifier isEqualToString:@"HeaderBlockchainExplorerSegue"]) {
         DSBlockchainExplorerViewController * blockchainExplorerViewController = (DSBlockchainExplorerViewController*)segue.destinationViewController;
-        blockchainExplorerViewController.type = DSBlockchainExplorerType_Headers;
         blockchainExplorerViewController.chain = self.chainManager.chain;
     } else if ([segue.identifier isEqualToString:@"MasternodeListSegue"]) {
         DSMasternodeViewController * masternodeViewController = (DSMasternodeViewController*)segue.destinationViewController;

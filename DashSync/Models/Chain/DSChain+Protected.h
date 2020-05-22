@@ -79,7 +79,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)updateAddressUsageOfSimplifiedMasternodeEntries:(NSArray*)simplifiedMasternodeEntries;
 
 /*! @brief The header locator array is an array of the 10 most recent block hashes in decending order followed by block hashes that double the step back each iteration in decending order and finishing with the previous known checkpoint after that last hash. Something like (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -15, -23, -39, -71, -135, ..., 0).  */
-@property (nonatomic, readonly, nullable) NSArray * headerLocatorArrayForMasternodeSync;
+@property (nonatomic, readonly, nullable) NSArray * terminalBlocksLocatorArray;
 
 // MARK: - Wiping
 
@@ -97,7 +97,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)saveInContext:(NSManagedObjectContext*)context;
 
-- (void)saveBlocks;
+- (void)saveBlockLocators;
+- (void)saveTerminalBlocks;
 
 @end
 

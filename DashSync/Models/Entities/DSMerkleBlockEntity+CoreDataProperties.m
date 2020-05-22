@@ -29,6 +29,5 @@
 @dynamic masternodeList;
 @dynamic usedByQuorums;
 @dynamic chainLock;
-@dynamic onlyHeader;
 
 @end

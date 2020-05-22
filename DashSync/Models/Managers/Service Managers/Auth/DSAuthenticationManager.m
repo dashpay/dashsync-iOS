@@ -133,7 +133,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     } else {
         //rare case
         NSTimeInterval lastCheckpointTime = [[DSChainsManager sharedInstance] mainnetManager].chain.checkpoints.lastObject.timestamp;
-        NSTimeInterval lastBlockTime = [[DSChainsManager sharedInstance] mainnetManager].chain.lastBlock.timestamp; //this will either be 0 or a real timestamp, both are fine for next check
+        NSTimeInterval lastBlockTime = [[DSChainsManager sharedInstance] mainnetManager].chain.lastSyncBlock.timestamp; //this will either be 0 or a real timestamp, both are fine for next check
         if (serverTime > lastCheckpointTime && serverTime > lastBlockTime) {
             //there was definitely an issue with serverTime at some point.
             [self updateSecureTime:serverTime];

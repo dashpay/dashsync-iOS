@@ -31,7 +31,6 @@
 #import "DSTransaction.h"
 #import "DSDataController.h"
 
-static NSManagedObjectContextConcurrencyType _concurrencyType = NSMainQueueConcurrencyType;
 static NSUInteger _fetchBatchSize = 100;
 
 @implementation NSManagedObject (Sugar)

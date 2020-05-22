@@ -25,6 +25,43 @@
             "required": ["avatarUrl", "publicMessage"],
             "additionalProperties": false
         },
+        "contactInfo": {
+            "indices": [{
+                "properties": [{
+                    "$userId": "asc"
+                }], {
+                    "encToUserId": "asc"
+                }],
+                "unique": true
+            },
+            {
+                "properties": [{
+                    "$userId": "asc"
+                }, {
+                    "timestamp": "asc"
+                }]
+            }],
+            "properties": {
+                "timestamp": {
+                    "type": "number"
+                },
+                "encToUserId": {
+                    "type": "string",
+                    "maxLength":128,
+                    "minLength":24
+                },
+                "encryptionKeyIndex": {
+                    "type": "integer"
+                },
+                "privateData": {
+                    "type": "string",
+                    "description": "This is the encrypted values of aliasName + note + displayHidden encoded as an array in cbor",
+                    "maxLength":2048
+                }
+            },
+            "required": ["timestamp", "encToUserId", "privateData", "encryptionKeyIndex"],
+            "additionalProperties": false
+        },
         "contactRequest": {
             "indices": [{
                 "properties": [{
@@ -82,11 +119,6 @@
                 },
                 "recipientKeyIndex": {
                     "type": "integer"
-                },
-                "privateData": {
-                    "type": "string",
-                    "description": "This is the encrypted values of aliasName + note + displayHidden encoded as an array in cbor",
-                    "maxLength":2048
                 }
             },
             "required": ["timestamp", "toUserId", "encryptedPublicKey", "senderKeyIndex", "recipientKeyIndex"],
