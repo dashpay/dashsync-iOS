@@ -393,7 +393,7 @@
             }
 #endif
 #if MESSAGE_CONTENT_LOGGING
-            DSDLog(@"%@:%u sending data %@", self.host, self.port, message.hexString);
+            DSDLog(@"%@:%u sending data (%lu bytes) %@", self.host, self.port, (unsigned long)message.length, message.hexString);
 #endif
         }
 #endif

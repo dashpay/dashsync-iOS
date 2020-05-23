@@ -128,7 +128,8 @@
 @property (nonatomic, strong) NSMutableDictionary <NSData*,NSNumber*>* transactionHashHeights;
 @property (nonatomic, strong) NSMutableDictionary <NSData*,NSNumber*>* transactionHashTimestamps;
 @property (nonatomic, strong) NSManagedObjectContext * chainManagedObjectContext;
-@property (nonatomic, strong) DSCheckpoint * initialHeadersCheckpoint;
+@property (nonatomic, strong) DSCheckpoint * terminalHeadersOverrideUseCheckpoint;
+@property (nonatomic, strong) DSCheckpoint * syncHeadersOverrideUseCheckpoint;
 @property (nonatomic, strong) DSCheckpoint * lastCheckpoint;
 @property (nonatomic, assign) NSTimeInterval lastNotifiedTerminalBlockDidChange;
 
@@ -1356,9 +1357,14 @@ static dispatch_once_t devnetToken = 0;
     return _checkpointsByHeightDictionary;
 }
 
-- (void)useCheckpointBeforeOrOnHeightForInitialHeadersSync:(uint32_t)blockHeight {
+- (void)useCheckpointBeforeOrOnHeightForTerminalBlocksSync:(uint32_t)blockHeight {
     DSCheckpoint * checkpoint = [self lastCheckpointOnOrBeforeHeight:blockHeight];
-    self.initialHeadersCheckpoint = checkpoint;
+    self.terminalHeadersOverrideUseCheckpoint = checkpoint;
+}
+
+- (void)useCheckpointBeforeOrOnHeightForSyncingChainBlocks:(uint32_t)blockHeight {
+    DSCheckpoint * checkpoint = [self lastCheckpointOnOrBeforeHeight:blockHeight];
+    self.syncHeadersOverrideUseCheckpoint = checkpoint;
 }
 
 
@@ -1481,9 +1487,27 @@ static dispatch_once_t devnetToken = 0;
     return b;
 }
 
--(void)setLastBlockFromCheckpoints {
+-(void)setLastTerminalBlockFromCheckpoints {
+    DSCheckpoint * checkpoint = self.terminalHeadersOverrideUseCheckpoint?self.terminalHeadersOverrideUseCheckpoint:[self lastCheckpoint];
+    if (checkpoint) {
+        if (self.terminalBlocks[uint256_obj(checkpoint.checkpointHash)]) {
+            _lastTerminalBlock = self.syncBlocks[uint256_obj(checkpoint.checkpointHash)];
+        } else {
+            _lastTerminalBlock = [[DSMerkleBlock alloc] initWithCheckpoint:checkpoint onChain:self];
+            self.terminalBlocks[uint256_obj(checkpoint.checkpointHash)] = _lastTerminalBlock;
+        }
+    }
+    
+    if (_lastTerminalBlock) {
+        DSDLog(@"last terminal block at height %d chosen from checkpoints (hash is %@)",_lastSyncBlock.height,[NSData dataWithUInt256:_lastTerminalBlock.blockHash].hexString);
+    }
+}
+
+-(void)setLastSyncBlockFromCheckpoints {
     DSCheckpoint * checkpoint = nil;
-    if ([[DSOptionsManager sharedInstance] syncFromGenesis]) {
+    if (self.syncHeadersOverrideUseCheckpoint) {
+        checkpoint = self.syncHeadersOverrideUseCheckpoint;
+    } else if ([[DSOptionsManager sharedInstance] syncFromGenesis]) {
         NSUInteger genesisHeight = [self isDevnetAny]?1:0;
         checkpoint = self.checkpoints[genesisHeight];
     } else if ([[DSOptionsManager sharedInstance] shouldSyncFromHeight]) {
@@ -1496,13 +1520,14 @@ static dispatch_once_t devnetToken = 0;
     if (checkpoint) {
         if (self.syncBlocks[uint256_obj(checkpoint.checkpointHash)]) {
             _lastSyncBlock = self.syncBlocks[uint256_obj(checkpoint.checkpointHash)];
-        } else if (self.terminalBlocks[uint256_obj(checkpoint.checkpointHash)]) {
+        } else {
             _lastSyncBlock = [[DSMerkleBlock alloc] initWithCheckpoint:checkpoint onChain:self];
+            self.syncBlocks[uint256_obj(checkpoint.checkpointHash)] = _lastSyncBlock;
         }
     }
     
     if (_lastSyncBlock) {
-        DSDLog(@"last block at height %d chosen from checkpoints (hash is %@)",_lastSyncBlock.height,[NSData dataWithUInt256:_lastSyncBlock.blockHash].hexString);
+        DSDLog(@"last sync block at height %d chosen from checkpoints (hash is %@)",_lastSyncBlock.height,[NSData dataWithUInt256:_lastSyncBlock.blockHash].hexString);
     }
 }
 
@@ -1514,12 +1539,12 @@ static dispatch_once_t devnetToken = 0;
             DSMerkleBlock * lastBlock = [[lastBlocks firstObject] merkleBlock];
             self->_lastSyncBlock = lastBlock;
             if (lastBlock) {
-                DSDLog(@"last block at height %d recovered from db (hash is %@)",lastBlock.height,[NSData dataWithUInt256:lastBlock.blockHash].hexString);
+                DSDLog(@"last sync block at height %d recovered from db (hash is %@)",lastBlock.height,[NSData dataWithUInt256:lastBlock.blockHash].hexString);
             }
         }];
 
         if (!_lastSyncBlock) {
-            [self setLastBlockFromCheckpoints];
+            [self setLastSyncBlockFromCheckpoints];
         }
         
         if (_lastSyncBlock.height > self.estimatedBlockHeight) _bestEstimatedBlockHeight = _lastSyncBlock.height;
@@ -2047,7 +2072,7 @@ static dispatch_once_t devnetToken = 0;
     }
     
     if (syncDone) { // chain download is complete
-        //[self saveTerminalBlocks];
+        [self saveTerminalBlocks];
         [self.chainManager chainFinishedSyncingInitialHeaders:self fromPeer:peer onMainChain:onMainChain];
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSChainInitialHeadersDidFinishSyncingNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
@@ -2056,7 +2081,7 @@ static dispatch_once_t devnetToken = 0;
     
     if (terminalBlock.height > self.estimatedBlockHeight) {
         _bestEstimatedBlockHeight = terminalBlock.height;
-        //[self saveTerminalBlocks];
+        [self saveTerminalBlocks];
         [self.chainManager chain:self wasExtendedWithBlock:terminalBlock fromPeer:peer];
         
         // notify that transaction confirmations may have changed
@@ -2133,17 +2158,13 @@ static dispatch_once_t devnetToken = 0;
             }
         }];
         if (!_lastTerminalBlock) {
-            // if we don't have any headers yet, use the latest checkpoint
-            DSCheckpoint * lastCheckpoint = self.initialHeadersCheckpoint?self.initialHeadersCheckpoint:self.lastCheckpoint;
-            uint32_t lastBlockHeight = self.lastSyncBlockHeight;
             
-            if (lastCheckpoint.height > lastBlockHeight) {
-                
-                _lastTerminalBlock = [[DSMerkleBlock alloc] initWithCheckpoint:lastCheckpoint onChain:self];
-                
-                if (_lastTerminalBlock) {
-                    DSDLog(@"last header at height %d chosen from checkpoints (hash is %@)",_lastTerminalBlock.height,[NSData dataWithUInt256:_lastTerminalBlock.blockHash].hexString);
-                }
+            // if we don't have any headers yet, use the latest checkpoint
+            DSCheckpoint * lastCheckpoint = self.terminalHeadersOverrideUseCheckpoint?self.terminalHeadersOverrideUseCheckpoint:self.lastCheckpoint;
+            uint32_t lastSyncBlockHeight = self.lastSyncBlockHeight;
+            
+            if (lastCheckpoint.height > lastSyncBlockHeight) {
+                [self setLastTerminalBlockFromCheckpoints];
             } else {
                 _lastTerminalBlock = self.lastSyncBlock;
             }
@@ -2541,7 +2562,8 @@ static dispatch_once_t devnetToken = 0;
     _lastSyncBlock = nil;
     _lastTerminalBlock = nil;
     _lastSyncBlock = nil;
-    [self setLastBlockFromCheckpoints];
+    [self setLastTerminalBlockFromCheckpoints];
+    [self setLastSyncBlockFromCheckpoints];
     [self.chainManager chainWasWiped:self];
 }
 
@@ -3053,13 +3075,16 @@ static dispatch_once_t devnetToken = 0;
 {
     NSMutableDictionary *blocks = [NSMutableDictionary dictionary];
     DSMerkleBlock *b = self.lastTerminalBlock;
-    uint32_t startHeight = 0;
-    while (b) {
-        blocks[[NSData dataWithBytes:b.blockHash.u8 length:sizeof(UInt256)]] = b;
+    uint32_t endHeight = b.height;
+    uint32_t startHeight = b.height;
+    while (b && (startHeight > self.lastCheckpoint.height) && (endHeight - startHeight < LLMQ_KEEP_RECENT_BLOCKS)) {
+        blocks[[NSData dataWithUInt256:b.blockHash]] = b;
         startHeight = b.height;
         b = self.terminalBlocks[b.prevBlockValue];
     }
-    
+    if (startHeight == b.height) { //only save last one then
+        blocks[[NSData dataWithUInt256:b.blockHash]] = b;
+    }
     [self.chainManagedObjectContext performBlockAndWait:^{
         if ([[DSOptionsManager sharedInstance] keepHeaders]) {
             //only remove orphan chains

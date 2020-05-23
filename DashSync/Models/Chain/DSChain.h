@@ -247,8 +247,11 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 /*! @brief Returns the last checkpoint on or before the given timestamp.  */
 - (DSCheckpoint*)lastCheckpointOnOrBeforeTimestamp:(NSTimeInterval)timestamp;
 
-/*! @brief When used this will change the checkpoint used for initial headers sync.  */
-- (void)useCheckpointBeforeOrOnHeightForInitialHeadersSync:(uint32_t)blockHeight;
+/*! @brief When used this will change the checkpoint used for initial headers sync. This value is not persisted.  */
+- (void)useCheckpointBeforeOrOnHeightForTerminalBlocksSync:(uint32_t)blockHeight;
+
+/*! @brief When used this will change the checkpoint used for main chain syncing. This value is not persisted.  */
+- (void)useCheckpointBeforeOrOnHeightForSyncingChainBlocks:(uint32_t)blockHeight;
 
 // MARK: - Blocks and Headers
 

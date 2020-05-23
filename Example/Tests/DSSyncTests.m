@@ -43,6 +43,7 @@
 
 - (void)setUp {
     self.chain = [DSChain mainnet];
+    [self.chain unregisterAllWallets];
     [self.chain unregisterAllWalletsMissingExtendedPublicKeys];
     self.wallet = [DSWallet standardWalletWithRandomSeedPhraseForChain:self.chain storeSeedPhrase:YES isTransient:NO];
 
@@ -61,13 +62,15 @@
         [self measureWithMetrics:@[[[XCTCPUMetric alloc] init],[[XCTMemoryMetric alloc] init],[[XCTClockMetric alloc] init]] block:^{
             DSDLog(@"Starting testInitialHeadersSync");
             DSSyncType originalSyncType = [[DSOptionsManager sharedInstance] syncType];
+            [self.chain useCheckpointBeforeOrOnHeightForSyncingChainBlocks:0];
+            [self.chain useCheckpointBeforeOrOnHeightForTerminalBlocksSync:227121];
             [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_BaseSPV];
             [[DashSync sharedSyncController] wipePeerDataForChain:self.chain inContext:[NSManagedObjectContext peerContext]];
             [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
             [[DashSync sharedSyncController] wipeSporkDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
             [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
             [self.chain.chainManager.peerManager setTrustedPeerHost:@"178.128.228.195:9999"];
-            [self.chain useCheckpointBeforeOrOnHeightForInitialHeadersSync:227121];
+            
             XCTestExpectation *headerFinishedExpectation = [[XCTestExpectation alloc] init];
             [[DashSync sharedSyncController] startSyncForChain:self.chain];
             self.txStatusObserver =
