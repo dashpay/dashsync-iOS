@@ -92,6 +92,8 @@
 - (void)testFullSync {
     if (@available(iOS 13.0, *)) {
         [self measureWithMetrics:@[[[XCTCPUMetric alloc] init],[[XCTMemoryMetric alloc] init],[[XCTClockMetric alloc] init]] block:^{
+            [self.chain useCheckpointBeforeOrOnHeightForSyncingChainBlocks:227121];
+            [self.chain useCheckpointBeforeOrOnHeightForTerminalBlocksSync:UINT32_MAX];
             [[DashSync sharedSyncController] wipePeerDataForChain:self.chain inContext:[NSManagedObjectContext peerContext]];
             [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
             [[DashSync sharedSyncController] wipeSporkDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];

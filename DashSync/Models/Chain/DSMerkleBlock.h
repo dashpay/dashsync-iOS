@@ -32,7 +32,7 @@
 #define DGW_PAST_BLOCKS_MIN 24
 #define DGW_PAST_BLOCKS_MAX 24
 
-#if (DEBUG && 1)
+#if (DEBUG && 0)
 #define LLMQ_KEEP_RECENT_BLOCKS 20000
 #else
 #define LLMQ_KEEP_RECENT_BLOCKS (576*8 + 100)

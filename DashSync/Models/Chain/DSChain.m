@@ -1534,6 +1534,7 @@ static dispatch_once_t devnetToken = 0;
 - (DSMerkleBlock *)lastSyncBlock
 {
     if (! _lastSyncBlock) {
+        
         [self.chainManagedObjectContext performBlockAndWait:^{
             NSArray * lastBlocks = [DSMerkleBlockEntity lastTerminalBlocks:1 onChainEntity:[self chainEntityInContext:self.chainManagedObjectContext]];
             DSMerkleBlock * lastBlock = [[lastBlocks firstObject] merkleBlock];
