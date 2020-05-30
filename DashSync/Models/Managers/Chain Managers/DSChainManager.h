@@ -55,6 +55,9 @@ FOUNDATION_EXPORT NSString* const DSChainManagerNotificationChainKey;
 @property (nonatomic, readonly) DSChain * chain;
 @property (nonatomic, readonly) BOOL synchronizing;
 
+/*! @brief Returns the sync phase that the chain is currently in.  */
+@property (nonatomic, readonly) DSChainSyncPhase syncPhase;
+
 - (void)startSync;
 
 - (void)stopSync;

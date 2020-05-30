@@ -223,7 +223,7 @@
         NSArray * masternodeListEntities = [DSMasternodeListEntity fetchObjects:fetchRequest inContext:self.managedObjectContext];
         NSMutableDictionary * simplifiedMasternodeEntryPool = [NSMutableDictionary dictionary];
         NSMutableDictionary * quorumEntryPool = [NSMutableDictionary dictionary];
-        uint32_t neededMasternodeListHeight = self.chain.lastSyncBlock.height - 23; //2*8+7
+        uint32_t neededMasternodeListHeight = self.chain.lastTerminalBlockHeight - 23; //2*8+7
         for (uint32_t i = (uint32_t)masternodeListEntities.count - 1; i != UINT32_MAX;i--) {
             DSMasternodeListEntity * masternodeListEntity = [masternodeListEntities objectAtIndex:i];
             if ((i == masternodeListEntities.count - 1) || ((self.masternodeListsByBlockHash.count < 3) && (neededMasternodeListHeight >= masternodeListEntity.block.height))) { //either last one or there are less than 3 (we aim for 3)
@@ -274,7 +274,7 @@
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList) || ![[DSOptionsManager sharedInstance] useCheckpointMasternodeLists]) return;
     if (!self.currentMasternodeList) {
         DSCheckpoint * checkpoint = [self.chain lastCheckpointHavingMasternodeList];
-        if (self.chain.lastSyncBlockHeight >= checkpoint.height) {
+        if (self.chain.lastTerminalBlockHeight >= checkpoint.height) {
             [self processRequestFromFileForBlockHash:checkpoint.checkpointHash completion:^(BOOL success) {
                 
             }];
@@ -871,7 +871,7 @@
         return;
     };
     
-    DSMerkleBlock * lastBlock = [peer.chain recentBlockForBlockHash:blockHash];
+    DSMerkleBlock * lastBlock = [peer.chain recentTerminalBlockForBlockHash:blockHash];
     
     if (!lastBlock) {
         [self issueWithMasternodeListFromPeer:peer];

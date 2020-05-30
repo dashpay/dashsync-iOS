@@ -117,6 +117,7 @@
 @property (nonatomic, strong) DSAccount * viewingAccount;
 @property (nonatomic, strong) NSMutableDictionary * estimatedBlockHeights;
 @property (nonatomic, assign) uint32_t bestEstimatedBlockHeight;
+//@property (nonatomic, assign) uint32_t headersMaxAmount;
 @property (nonatomic, assign) uint32_t cachedMinProtocolVersion;
 @property (nonatomic, assign) uint32_t cachedProtocolVersion;
 @property (nonatomic, assign) uint32_t cachedStandardPort;
@@ -175,11 +176,13 @@
         case DSChainType_MainNet: {
             self.standardPort = MAINNET_STANDARD_PORT;
             self.standardDapiJRPCPort = MAINNET_DAPI_JRPC_STANDARD_PORT;
+            self.headersMaxAmount = MAINNET_DEFAULT_HEADERS_MAX_AMOUNT;
             break;
         }
         case DSChainType_TestNet: {
             self.standardPort = TESTNET_STANDARD_PORT;
             self.standardDapiJRPCPort = TESTNET_DAPI_JRPC_STANDARD_PORT;
+            self.headersMaxAmount = TESTNET_DEFAULT_HEADERS_MAX_AMOUNT;
             break;
         }
         case DSChainType_DevNet: {
@@ -216,6 +219,7 @@
     //    DSDLog(@"%@",[NSData dataWithUInt256:self.checkpoints[0].checkpointHash]);
     //    DSDLog(@"%@",[NSData dataWithUInt256:self.genesisHash]);
     self.devnetIdentifier = identifier;
+    self.headersMaxAmount = DEVNET_DEFAULT_HEADERS_MAX_AMOUNT;
     return self;
 }
 
@@ -629,7 +633,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 - (NSString*)chainTip {
-    return [NSData dataWithUInt256:self.lastSyncBlock.blockHash].shortHexString;
+    return [NSData dataWithUInt256:self.lastTerminalBlock.blockHash].shortHexString;
 }
 
 // MARK: Sync Parameters
@@ -651,7 +655,7 @@ static dispatch_once_t devnetToken = 0;
 -(uint32_t)protocolVersion {
     switch ([self chainType]) {
         case DSChainType_MainNet:
-            return PROTOCOL_VERSION_MAINNET;
+            return (70216 + (self.headersMaxAmount / 2000));//PROTOCOL_VERSION_MAINNET;
         case DSChainType_TestNet:
             return PROTOCOL_VERSION_TESTNET;
         case DSChainType_DevNet:
@@ -1460,7 +1464,7 @@ static dispatch_once_t devnetToken = 0;
     return (self.lastTerminalBlock.height>self.lastSyncBlock.height)?_lastTerminalBlock:_lastSyncBlock;
 }
 
-- (DSMerkleBlock *)lastBlockOnOrBeforeTimestamp:(NSTimeInterval)timestamp {
+- (DSMerkleBlock *)lastChainSyncBlockOnOrBeforeTimestamp:(NSTimeInterval)timestamp {
     DSMerkleBlock *b = self.lastSyncBlock;
     NSTimeInterval blockTime = b.timestamp;
     while (b && b.height > 0 && blockTime >= timestamp) {
@@ -1470,17 +1474,17 @@ static dispatch_once_t devnetToken = 0;
     return b;
 }
 
-- (DSMerkleBlock *)lastBlockOrHeaderOnOrBeforeTimestamp:(NSTimeInterval)timestamp {
+- (DSMerkleBlock *)lastBlockOnOrBeforeTimestamp:(NSTimeInterval)timestamp {
     DSMerkleBlock *b = self.lastBlock;
     NSTimeInterval blockTime = b.timestamp;
-    BOOL useBlocksNow = (b != _lastTerminalBlock);
+    BOOL useSyncBlocksNow = (b != _lastTerminalBlock);
     while (b && b.height > 0 && blockTime >= timestamp) {
-        if (!useBlocksNow) {
-            b = useBlocksNow?self.syncBlocks[b.prevBlockValue]:self.terminalBlocks[b.prevBlockValue];
+        if (!useSyncBlocksNow) {
+            b = useSyncBlocksNow?self.syncBlocks[b.prevBlockValue]:self.terminalBlocks[b.prevBlockValue];
         }
         if (!b) {
-            useBlocksNow = !useBlocksNow;
-            b = useBlocksNow?self.syncBlocks[b.prevBlockValue]:self.terminalBlocks[b.prevBlockValue];
+            useSyncBlocksNow = !useSyncBlocksNow;
+            b = useSyncBlocksNow?self.syncBlocks[b.prevBlockValue]:self.terminalBlocks[b.prevBlockValue];
         }
     }
     if (!b) b = [[DSMerkleBlock alloc] initWithCheckpoint:[self lastCheckpointOnOrBeforeTimestamp:timestamp] onChain:self];
@@ -1534,15 +1538,6 @@ static dispatch_once_t devnetToken = 0;
 - (DSMerkleBlock *)lastSyncBlock
 {
     if (! _lastSyncBlock) {
-        
-        [self.chainManagedObjectContext performBlockAndWait:^{
-            NSArray * lastBlocks = [DSMerkleBlockEntity lastTerminalBlocks:1 onChainEntity:[self chainEntityInContext:self.chainManagedObjectContext]];
-            DSMerkleBlock * lastBlock = [[lastBlocks firstObject] merkleBlock];
-            self->_lastSyncBlock = lastBlock;
-            if (lastBlock) {
-                DSDLog(@"last sync block at height %d recovered from db (hash is %@)",lastBlock.height,[NSData dataWithUInt256:lastBlock.blockHash].hexString);
-            }
-        }];
 
         if (!_lastSyncBlock) {
             [self setLastSyncBlockFromCheckpoints];
@@ -1589,18 +1584,21 @@ static dispatch_once_t devnetToken = 0;
     return _syncBlocks;
 }
 
-- (NSArray <NSData*> *)blockLocatorArray {
-    return [self blockLocatorArrayBeforeTimestamp:UINT64_MAX includeInitialsHeaders:NO];
+- (NSArray <NSData*> *)chainSyncBlockLocatorArray {
+    if (!_lastPersistedChainSyncLocators) {
+        _lastPersistedChainSyncLocators = [self blockLocatorArrayOnOrBeforeTimestamp:1425039295 includeInitialTerminalBlocks:NO];
+    }
+    return _lastPersistedChainSyncLocators;
 }
 
 // this is used as part of a getblocks or getheaders request
-- (NSArray <NSData*> *)blockLocatorArrayBeforeTimestamp:(NSTimeInterval)timestamp includeInitialsHeaders:(BOOL)includeHeaders;
+- (NSArray <NSData*> *)blockLocatorArrayOnOrBeforeTimestamp:(NSTimeInterval)timestamp includeInitialTerminalBlocks:(BOOL)includeHeaders;
 {
     // append 10 most recent block checkpointHashes, decending, then continue appending, doubling the step back each time,
     // finishing with the genesis block (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -15, -23, -39, -71, -135, ..., 0)
     NSMutableArray *locators = [NSMutableArray array];
     int32_t step = 1, start = 0;
-    DSMerkleBlock *b = includeHeaders?[self lastBlockOrHeaderOnOrBeforeTimestamp:timestamp]:[self lastBlockOnOrBeforeTimestamp:timestamp];
+    DSMerkleBlock *b = includeHeaders?[self lastBlockOnOrBeforeTimestamp:timestamp]:[self lastChainSyncBlockOnOrBeforeTimestamp:timestamp];
     uint32_t lastHeight = b.height;
     while (b && b.height > 0) {
         [locators addObject:uint256_data(b.blockHash)];
@@ -1634,28 +1632,21 @@ static dispatch_once_t devnetToken = 0;
     return self.terminalBlocks[uint256_obj(blockHash)];
 }
 
--(DSMerkleBlock*)recentBlockForBlockHash:(UInt256)blockHash {
-    DSMerkleBlock *b = self.lastBlock;
+-(DSMerkleBlock*)recentTerminalBlockForBlockHash:(UInt256)blockHash {
+    DSMerkleBlock *b = self.lastTerminalBlock;
     NSUInteger count = 0;
-    if (b == _lastTerminalBlock && b != _lastSyncBlock) {
-        BOOL useBlocksNow = FALSE;
-        while (b && b.height > 0 && !uint256_eq(b.blockHash, blockHash)) {
-            if (!useBlocksNow) {
-                b = self.terminalBlocks[b.prevBlockValue];
-            }
-            if (!b) {
-                useBlocksNow = TRUE;
-            }
-            if (useBlocksNow) {
-                b = self.syncBlocks[b.prevBlockValue];
-            }
-            count++;
+    BOOL useSyncBlocksNow = FALSE;
+    while (b && b.height > 0 && !uint256_eq(b.blockHash, blockHash)) {
+        if (!useSyncBlocksNow) {
+            b = self.terminalBlocks[b.prevBlockValue];
         }
-    } else {
-        while (b && b.height > 0 && !uint256_eq(b.blockHash, blockHash)) {
+        if (!b) {
+            useSyncBlocksNow = TRUE;
+        }
+        if (useSyncBlocksNow) {
             b = self.syncBlocks[b.prevBlockValue];
-            count++;
         }
+        count++;
     }
     return b;
 }
@@ -1677,27 +1668,20 @@ static dispatch_once_t devnetToken = 0;
 }
 
 - (DSMerkleBlock *)blockFromChainTip:(NSUInteger)blocksAgo {
-    DSMerkleBlock *b = self.lastBlock;
+    DSMerkleBlock *b = self.lastTerminalBlock;
     NSUInteger count = 0;
-    if (b == _lastTerminalBlock && b != _lastSyncBlock) {
-        BOOL useBlocksNow = FALSE;
-        while (b && b.height > 0 && count < blocksAgo) {
-            if (!useBlocksNow) {
-                b = self.terminalBlocks[b.prevBlockValue];
-            }
-            if (!b) {
-                useBlocksNow = TRUE;
-            }
-            if (useBlocksNow) {
-                b = self.syncBlocks[b.prevBlockValue];
-            }
-            count++;
+    BOOL useSyncBlocksNow = FALSE;
+    while (b && b.height > 0 && count < blocksAgo) {
+        if (!useSyncBlocksNow) {
+            b = self.terminalBlocks[b.prevBlockValue];
         }
-    } else {
-        while (b && b.height > 0 && count < blocksAgo) {
+        if (!b) {
+            useSyncBlocksNow = TRUE;
+        }
+        if (useSyncBlocksNow) {
             b = self.syncBlocks[b.prevBlockValue];
-            count++;
         }
+        count++;
     }
     return b;
 }
@@ -1716,7 +1700,7 @@ static dispatch_once_t devnetToken = 0;
     BOOL syncDone = NO;
     
     if (! prev && self.terminalBlocks[prevBlock]) {
-        [self addInitialHeadersSyncBlock:block fromPeer:peer];
+        [self addTerminalBlock:block fromPeer:peer];
         return TRUE;
     }
     
@@ -1785,7 +1769,7 @@ static dispatch_once_t devnetToken = 0;
     
     BOOL onMainChain = FALSE;
     
-    if (uint256_eq(block.prevBlock, self.lastSyncBlock.blockHash)) { // new block extends main chain
+    if (uint256_eq(block.prevBlock, self.lastTerminalBlock.blockHash)) { // new block extends main chain
         if ((block.height % 500) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
             DSDLog(@"adding block on %@ at height: %d from peer %@", self.name, block.height,peer.host);
         }
@@ -1925,11 +1909,11 @@ static dispatch_once_t devnetToken = 0;
     if (!addingToInitialHeadersSync) {
         return [self addBlock:block fromPeer:peer];
     } else {
-        return [self addInitialHeadersSyncBlock:block fromPeer:peer];
+        return [self addTerminalBlock:block fromPeer:peer];
     }
 }
 
-- (BOOL)addInitialHeadersSyncBlock:(DSMerkleBlock *)terminalBlock fromPeer:(DSPeer*)peer
+- (BOOL)addTerminalBlock:(DSMerkleBlock *)terminalBlock fromPeer:(DSPeer*)peer
 {
     NSValue *blockHash = terminalBlock.blockHashValue, *prevBlock = terminalBlock.prevBlockValue;
     DSMerkleBlock *prev = self.terminalBlocks[prevBlock];
@@ -2008,7 +1992,7 @@ static dispatch_once_t devnetToken = 0;
     BOOL onMainChain = FALSE;
     
     if (uint256_eq(terminalBlock.prevBlock, self.lastTerminalBlock.blockHash)) { // new block extends main chain
-        if ((terminalBlock.height % HEADERS_MAX_AMOUNT) == 0 || terminalBlock.height > peer.lastBlockHeight) {
+        if ((terminalBlock.height % self.headersMaxAmount) == 0 || terminalBlock.height > peer.lastBlockHeight) {
             DSDLog(@"adding header on %@ at height: %d from peer %@", self.name, terminalBlock.height,peer.host);
         }
         @synchronized (self.terminalBlocks) {
@@ -2106,7 +2090,7 @@ static dispatch_once_t devnetToken = 0;
         DSMerkleBlock *b = self.orphans[blockHash];
         
         [self.orphans removeObjectForKey:blockHash];
-        [self addInitialHeadersSyncBlock:b fromPeer:peer];
+        [self addTerminalBlock:b fromPeer:peer];
     }
     return TRUE;
 }
@@ -2232,7 +2216,7 @@ static dispatch_once_t devnetToken = 0;
 
 - (uint32_t)lastSyncBlockHeight
 {
-    return self.lastSyncBlock.height;
+    return _lastSyncBlock?_lastSyncBlock.height:(self.lastPersistedChainSyncBlockHeight?self.lastPersistedChainSyncBlockHeight:self.lastSyncBlock.height);
 }
 
 - (uint32_t)lastTerminalBlockHeight
@@ -3050,7 +3034,7 @@ static dispatch_once_t devnetToken = 0;
         
         chainEntity.syncBlockHash = uint256_data(lastBlockHash);
         chainEntity.syncBlockHeight = lastBlockHeight;
-        NSArray * array = [self blockLocatorArray];
+        NSArray * array = [self chainSyncBlockLocatorArray];
         chainEntity.syncLocators = array?[NSKeyedArchiver archivedDataWithRootObject:array]:nil;
         
         NSMutableSet *entities = [NSMutableSet set];

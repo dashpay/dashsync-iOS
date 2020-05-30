@@ -55,6 +55,12 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
     DSTransactionDirection_NotAccountFunds,
 };
 
+typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
+    DSChainSyncPhase_Offline,
+    DSChainSyncPhase_InitialTerminalBlocks,
+    DSChainSyncPhase_ChainSync
+};
+
 @class DSChain, DSChainEntity, DSChainManager, DSWallet, DSMerkleBlock, DSPeer, DSDerivationPath, DSTransaction, DSAccount, DSSimplifiedMasternodeEntry, DSBlockchainIdentity, DSBloomFilter, DSProviderRegistrationTransaction, DSMasternodeList;
 
 @protocol DSChainDelegate;
@@ -110,6 +116,9 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 
 /*! @brief protocolVersion is the protocol version that we currently use for this chain. This should only be changed in the case of devnets.  */
 @property (nonatomic, assign) uint32_t protocolVersion;
+
+/*! @brief headersMaxAmount is the maximum amount of headers that is expected from peers.  */
+@property (nonatomic, assign) uint32_t headersMaxAmount;
 
 /*! @brief protocolVersion is the protocol version that we currently use for this chain.  */
 @property (nonatomic, readonly) uint32_t maxProofOfWork;
@@ -255,20 +264,20 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 
 // MARK: - Blocks and Headers
 
-/*! @brief The last known block on the chain.  */
+/*! @brief The last known chain sync block on the chain.  */
 @property (nonatomic, readonly, nullable) DSMerkleBlock * lastSyncBlock;
 
-/*! @brief The last known header on the chain.  */
+/*! @brief The last known terminal block on the chain.  */
 @property (nonatomic, readonly, nullable) DSMerkleBlock * lastTerminalBlock;
 
 /*! @brief The last known block or header on the chain. Whichever is latest.  */
 @property (nonatomic, readonly, nullable) DSMerkleBlock * lastBlock;
 
 /*! @brief The last known block on the chain before the given timestamp.  */
-- (DSMerkleBlock *)lastBlockOnOrBeforeTimestamp:(NSTimeInterval)timestamp;
+- (DSMerkleBlock *)lastChainSyncBlockOnOrBeforeTimestamp:(NSTimeInterval)timestamp;
 
 /*! @brief The last known block or header on the chain before the given timestamp.  */
-- (DSMerkleBlock *)lastBlockOrHeaderOnOrBeforeTimestamp:(NSTimeInterval)timestamp;
+- (DSMerkleBlock *)lastBlockOnOrBeforeTimestamp:(NSTimeInterval)timestamp;
 
 /*! @brief The last known orphan on the chain. An orphan is a block who's parent is currently not known.  */
 @property (nonatomic, readonly, nullable) DSMerkleBlock * lastOrphan;
@@ -280,10 +289,10 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 @property (nonatomic, readonly, nullable) NSString * chainTip;
 
 /*! @brief The block locator array is an array of the 10 most recent block hashes in decending order followed by block hashes that double the step back each iteration in decending order and finishing with the previous known checkpoint after that last hash. Something like (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -15, -23, -39, -71, -135, ..., 0).  */
-@property (nonatomic, readonly, nullable) NSArray <NSData*> * blockLocatorArray;
+@property (nonatomic, readonly, nullable) NSArray <NSData*> * chainSyncBlockLocatorArray;
 
 /*! @brief This block locator array is an array of 10 block hashes in decending order before the given timestamp followed by block hashes that double the step back each iteration in decending order and finishing with the previous known checkpoint after that last hash. Something like (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -15, -23, -39, -71, -135, ..., 0).  */
-- (NSArray <NSData*> *)blockLocatorArrayBeforeTimestamp:(NSTimeInterval)timestamp includeInitialsHeaders:(BOOL)includeHeaders;
+- (NSArray <NSData*> *)blockLocatorArrayOnOrBeforeTimestamp:(NSTimeInterval)timestamp includeInitialTerminalBlocks:(BOOL)includeHeaders;
 
 /*! @brief The timestamp of a block at a given height.  */
 - (NSTimeInterval)timestampForBlockHeight:(uint32_t)blockHeight; // seconds since 1970, 00:00:00 01/01/01 GMT
@@ -295,10 +304,21 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 - (DSMerkleBlock * _Nullable)blockForBlockHash:(UInt256)blockHash;
 
 /*! @brief Returns a known block in the main chain with the given block hash. A null result could mean that the block was old and has since been discarded.  */
-- (DSMerkleBlock * _Nullable)recentBlockForBlockHash:(UInt256)blockHash;
+- (DSMerkleBlock * _Nullable)recentTerminalBlockForBlockHash:(UInt256)blockHash;
 
 /*! @brief Returns a known block with a given distance from the chain tip. A null result would mean that the given distance exceeded the number of blocks kept locally.  */
 - (DSMerkleBlock * _Nullable)blockFromChainTip:(NSUInteger)blocksAgo;
+
+// MARK: Chain Sync
+
+/*! @brief Returns the hash of the last persisted sync block. The sync block itself most likely is not persisted.  */
+@property (nonatomic, readonly) UInt256 lastPersistedChainSyncBlockHash;
+
+/*! @brief Returns the height of the last persisted sync block. The sync block itself most likely is not persisted.  */
+@property (nonatomic, readonly) uint32_t lastPersistedChainSyncBlockHeight;
+
+/*! @brief Returns the locators of the last persisted chain sync block. The sync block itself most likely is not persisted.  */
+@property (nullable, nonatomic, readonly) NSArray * lastPersistedChainSyncLocators;
 
 // MARK: Heights
 

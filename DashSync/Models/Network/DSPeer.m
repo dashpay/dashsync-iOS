@@ -1435,12 +1435,12 @@
     NSTimeInterval firstTimestamp = [message UInt32AtOffset:l + 81 + 68];
     if (!self.chain.shouldSyncHeadersFirstForMasternodeListVerification && (firstTimestamp + DAY_TIME_INTERVAL*2 >= self.earliestKeyTime)) {
         //this is a rare scenario where we called getheaders but the first header returned was actually past the cuttoff, but the previous header was before the cuttoff
-        DSDLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, [self.chain blockLocatorArray]);
-        [self sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
+        DSDLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, [self.chain chainSyncBlockLocatorArray]);
+        [self sendGetblocksMessageWithLocators:self.chain.chainSyncBlockLocatorArray andHashStop:UINT256_ZERO];
         return;
     }
     if (!count) return;
-    if (count >= HEADERS_MAX_AMOUNT || (((lastTimestamp + DAY_TIME_INTERVAL*2) >= self.earliestKeyTime) && (!self.chain.shouldSyncHeadersFirstForMasternodeListVerification))) {
+    if (count >= self.chain.headersMaxAmount || (((lastTimestamp + DAY_TIME_INTERVAL*2) >= self.earliestKeyTime) && (!self.chain.shouldSyncHeadersFirstForMasternodeListVerification))) {
         UInt256 firstBlockHash = [message subdataWithRange:NSMakeRange(l, 80)].x11;
         UInt256 lastBlockHash = [message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].x11;
         NSData *firstHashData = uint256_data(firstBlockHash);

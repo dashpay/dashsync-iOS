@@ -38,9 +38,20 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)removeEstimatedBlockHeightOfPeer:(DSPeer*)peer;
 - (BOOL)addBlock:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer;
 - (BOOL)addHeader:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer;
-- (BOOL)addInitialHeadersSyncBlock:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer;
+- (BOOL)addTerminalBlock:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer;
 - (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)txHashes;
 - (void)clearOrphans;
+
+// MARK: Chain Sync
+
+/*! @brief Returns the hash of the last persisted sync block. The sync block itself most likely is not persisted.  */
+@property (nonatomic, assign) UInt256 lastPersistedChainSyncBlockHash;
+
+/*! @brief Returns the height of the last persisted sync block. The sync block itself most likely is not persisted.  */
+@property (nonatomic, assign) uint32_t lastPersistedChainSyncBlockHeight;
+
+/*! @brief Returns the locators of the last persisted chain sync block. The sync block itself most likely is not persisted.  */
+@property (nullable, nonatomic, strong) NSArray * lastPersistedChainSyncLocators;
 
 // MARK: - Wallet, Accounts and Transactions
 

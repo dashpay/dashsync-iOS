@@ -530,7 +530,7 @@
                 [self.downloadPeer rerequestBlocksFrom:self.chain.lastSyncBlock.blockHash];
                 [self.downloadPeer sendPingMessageWithPongHandler:^(BOOL success) {
                     if (! success || self.downloadPeer.needsFilterUpdate) return;
-                    [self.downloadPeer sendGetblocksMessageWithLocators:[self.chain blockLocatorArray]
+                    [self.downloadPeer sendGetblocksMessageWithLocators:[self.chain chainSyncBlockLocatorArray]
                                                             andHashStop:UINT256_ZERO];
                 }];
             }];
@@ -763,7 +763,7 @@
         }
         if (self.chain.estimatedBlockHeight >= peer.lastBlockHeight || self.chain.lastSyncBlockHeight >= peer.lastBlockHeight) {
             if (self.chain.lastSyncBlockHeight < self.chain.estimatedBlockHeight) {
-                DSDLog(@"self.chain.lastBlockHeight %u, self.chain.estimatedBlockHeight %u",self.chain.lastSyncBlockHeight,self.chain.estimatedBlockHeight);
+                DSDLog(@"self.chain.lastSyncBlockHeight %u, self.chain.estimatedBlockHeight %u",self.chain.lastSyncBlockHeight,self.chain.estimatedBlockHeight);
                 return; // don't get mempool yet if we're syncing
             }
 

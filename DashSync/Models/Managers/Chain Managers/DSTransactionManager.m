@@ -1246,7 +1246,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     
     if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
     
-    [self.chain addInitialHeadersSyncBlock:block fromPeer:peer];
+    [self.chain addTerminalBlock:block fromPeer:peer];
 
 }
 
