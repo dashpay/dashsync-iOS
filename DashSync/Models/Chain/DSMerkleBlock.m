@@ -372,6 +372,9 @@ inline static int ceil_log2(int x)
         
         if (previousBlock == NULL) { assert(currentBlock); break; }
         currentBlock = previousBlocks[uint256_obj(currentBlock.prevBlock)];
+        if (!currentBlock) {
+            DSDLog(@"Block missing for dark gravity wave calculation");
+        }
     }
     UInt256 blockCount256 = ((UInt256) { .u64 = { blockCount, 0, 0, 0 } });
     // darkTarget is the difficulty

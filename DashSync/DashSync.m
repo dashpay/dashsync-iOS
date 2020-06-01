@@ -167,8 +167,8 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
         
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlocksDidChangeNotification object:nil];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainInitialHeadersDidChangeNotification object:nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil];
         });
     }];
 }

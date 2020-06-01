@@ -23,8 +23,8 @@ NSString* const DSChainWalletsDidChangeNotification =    @"DSChainWalletsDidChan
 
 NSString* const DSChainStandaloneDerivationPathsDidChangeNotification =    @"DSChainStandaloneDerivationPathsDidChangeNotification";
 NSString* const DSChainStandaloneAddressesDidChangeNotification = @"DSChainStandaloneAddressesDidChangeNotification";
-NSString* const DSChainBlocksDidChangeNotification = @"DSChainBlocksDidChainNotification";
-NSString* const DSChainInitialHeadersDidChangeNotification = @"DSChainInitialHeadersDidChangeNotification";
+NSString* const DSChainChainSyncBlocksDidChangeNotification = @"DSChainChainSyncBlocksDidChangeNotification";
+NSString* const DSChainTerminalBlocksDidChangeNotification = @"DSChainTerminalBlocksDidChangeNotification";
 NSString* const DSChainInitialHeadersDidFinishSyncingNotification = @"DSChainInitialHeadersDidFinishSyncingNotification";
 NSString* const DSChainBlocksDidFinishSyncingNotification = @"DSChainBlocksDidFinishSyncingNotification";
 NSString* const DSChainBlockWasLockedNotification = @"DSChainBlockWasLockedNotification";

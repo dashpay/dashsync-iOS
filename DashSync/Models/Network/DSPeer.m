@@ -1124,7 +1124,7 @@
     }
     
     if (count > 0 && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePing) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePaymentVote) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodeVerify) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_GovernanceObjectVote) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_DSTx)) {
-        DSDLog(@"%@:%u got inv with %u item%@ (first item %@ with hash %@)", self.host, self.port, (int)count,count==1?@"":@"s",[self nameOfInvMessage:[message UInt32AtOffset:l.unsignedIntegerValue]],[NSData dataWithUInt256:[message UInt256AtOffset:l.unsignedIntegerValue + sizeof(uint32_t)]].hexString);
+        DSDLog(@"%@:%u got inv with %u item%@ (first item %@ with hash %@/%@)", self.host, self.port, (int)count,count==1?@"":@"s",[self nameOfInvMessage:[message UInt32AtOffset:l.unsignedIntegerValue]],[NSData dataWithUInt256:[message UInt256AtOffset:l.unsignedIntegerValue + sizeof(uint32_t)]].hexString,[NSData dataWithUInt256:[message UInt256AtOffset:l.unsignedIntegerValue + sizeof(uint32_t)]].reverse.hexString);
     }
     
     BOOL onlyPrivateSendTransactions = NO;

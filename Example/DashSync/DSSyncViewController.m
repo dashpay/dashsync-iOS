@@ -128,14 +128,14 @@
                                                        }];
     
     self.blocksResetObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainBlocksDidChangeNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainChainSyncBlocksDidChangeNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            [self updateBlockHeight];
                                                            [self updateBalance];
                                                        }];
     
     self.headersResetObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainInitialHeadersDidChangeNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainTerminalBlocksDidChangeNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            [self updateHeaderHeight];
                                                        }];
