@@ -1433,21 +1433,21 @@
     // Devnets can run slower than usual
     NSTimeInterval lastTimestamp = [message UInt32AtOffset:l + 81*(count - 1) + 68];
     NSTimeInterval firstTimestamp = [message UInt32AtOffset:l + 81 + 68];
-    if (!self.chain.shouldSyncHeadersFirstForMasternodeListVerification && (firstTimestamp + DAY_TIME_INTERVAL*2 >= self.earliestKeyTime)) {
+    if (!self.chain.needsInitialTerminalHeadersSync && (firstTimestamp + DAY_TIME_INTERVAL*2 >= self.earliestKeyTime)) {
         //this is a rare scenario where we called getheaders but the first header returned was actually past the cuttoff, but the previous header was before the cuttoff
         DSDLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, [self.chain chainSyncBlockLocatorArray]);
         [self sendGetblocksMessageWithLocators:self.chain.chainSyncBlockLocatorArray andHashStop:UINT256_ZERO];
         return;
     }
     if (!count) return;
-    if (count >= self.chain.headersMaxAmount || (((lastTimestamp + DAY_TIME_INTERVAL*2) >= self.earliestKeyTime) && (!self.chain.shouldSyncHeadersFirstForMasternodeListVerification))) {
+    if (count >= self.chain.headersMaxAmount || (((lastTimestamp + DAY_TIME_INTERVAL*2) >= self.earliestKeyTime) && (!self.chain.needsInitialTerminalHeadersSync))) {
         UInt256 firstBlockHash = [message subdataWithRange:NSMakeRange(l, 80)].x11;
         UInt256 lastBlockHash = [message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].x11;
         NSData *firstHashData = uint256_data(firstBlockHash);
         NSData *lastHashData = uint256_data(lastBlockHash);
         
         
-        if (((lastTimestamp + DAY_TIME_INTERVAL*2) >= self.earliestKeyTime) && (!self.chain.shouldSyncHeadersFirstForMasternodeListVerification)) { // request blocks for the remainder of the chain
+        if (((lastTimestamp + DAY_TIME_INTERVAL*2) >= self.earliestKeyTime) && (!self.chain.needsInitialTerminalHeadersSync)) { // request blocks for the remainder of the chain
             NSTimeInterval timestamp = [message UInt32AtOffset:l + 81 + 68];
             
             for (off = l; timestamp > 0 && ((timestamp + DAY_TIME_INTERVAL*2) < self.earliestKeyTime);) {

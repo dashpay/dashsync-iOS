@@ -50,6 +50,9 @@ NS_ASSUME_NONNULL_BEGIN
 /*! @brief Returns the height of the last persisted sync block. The sync block itself most likely is not persisted.  */
 @property (nonatomic, assign) uint32_t lastPersistedChainSyncBlockHeight;
 
+/*! @brief Returns the timestamp of the last persisted sync block. The sync block itself most likely is not persisted.  */
+@property (nonatomic, assign) NSTimeInterval lastPersistedChainSyncBlockTimestamp;
+
 /*! @brief Returns the locators of the last persisted chain sync block. The sync block itself most likely is not persisted.  */
 @property (nullable, nonatomic, strong) NSArray * lastPersistedChainSyncLocators;
 

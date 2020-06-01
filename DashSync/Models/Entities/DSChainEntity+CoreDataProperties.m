@@ -34,5 +34,6 @@
 @dynamic syncBlockHash;
 @dynamic syncBlockHeight;
 @dynamic syncLocators;
+@dynamic syncBlockTimestamp;
 
 @end

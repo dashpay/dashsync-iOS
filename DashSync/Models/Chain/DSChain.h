@@ -56,7 +56,7 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 };
 
 typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
-    DSChainSyncPhase_Offline,
+    DSChainSyncPhase_Unknown,
     DSChainSyncPhase_InitialTerminalBlocks,
     DSChainSyncPhase_ChainSync
 };
@@ -178,7 +178,7 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
 @property (nonatomic, readonly) BOOL syncsBlockchain;
 
 /*! @brief True if this chain should sync headers first for masternode list verification.  */
-@property (nonatomic, readonly) BOOL shouldSyncHeadersFirstForMasternodeListVerification;
+@property (nonatomic, readonly) BOOL needsInitialTerminalHeadersSync;
 
 /*! @brief The default transaction version used when sending transactions.  */
 @property (nonatomic, readonly) uint16_t transactionVersion;
@@ -270,9 +270,6 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
 /*! @brief The last known terminal block on the chain.  */
 @property (nonatomic, readonly, nullable) DSMerkleBlock * lastTerminalBlock;
 
-/*! @brief The last known block or header on the chain. Whichever is latest.  */
-@property (nonatomic, readonly, nullable) DSMerkleBlock * lastBlock;
-
 /*! @brief The last known block on the chain before the given timestamp.  */
 - (DSMerkleBlock *)lastChainSyncBlockOnOrBeforeTimestamp:(NSTimeInterval)timestamp;
 
@@ -317,19 +314,25 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
 /*! @brief Returns the height of the last persisted sync block. The sync block itself most likely is not persisted.  */
 @property (nonatomic, readonly) uint32_t lastPersistedChainSyncBlockHeight;
 
+/*! @brief Returns the timestamp of the last persisted sync block. The sync block itself most likely is not persisted.  */
+@property (nonatomic, readonly) NSTimeInterval lastPersistedChainSyncBlockTimestamp;
+
 /*! @brief Returns the locators of the last persisted chain sync block. The sync block itself most likely is not persisted.  */
 @property (nullable, nonatomic, readonly) NSArray * lastPersistedChainSyncLocators;
 
-// MARK: Heights
+// MARK: Last Block Information
 
-/*! @brief Returns the height of the last block.  */
+/*! @brief Returns the height of the last sync block.  */
 @property (nonatomic, readonly) uint32_t lastSyncBlockHeight;
+
+/*! @brief Returns the hash of the last sync block.  */
+@property (nonatomic, readonly) UInt256 lastSyncBlockHash;
+
+/*! @brief Returns the timestamp of the last sync block.  */
+@property (nonatomic, readonly) NSTimeInterval lastSyncBlockTimestamp;
 
 /*! @brief Returns the height of the last header used in initial headers sync to get the deterministic masternode list.  */
 @property (nonatomic, readonly) uint32_t lastTerminalBlockHeight;
-
-/*! @brief Returns the height of the last block or header (header used in initial headers sync to get the deterministic masternode list).  */
-@property (nonatomic, readonly) uint32_t lastBlockHeight;
 
 /*! @brief Returns the height of the best block.  */
 @property (nonatomic, readonly) uint32_t bestBlockHeight;

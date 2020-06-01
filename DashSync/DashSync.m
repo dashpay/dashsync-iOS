@@ -151,6 +151,9 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
     [self stopSyncForChain:chain];
     [context performBlockAndWait:^{
         DSChainEntity * chainEntity = [chain chainEntityInContext:context];
+        chainEntity.syncBlockTimestamp = 0;
+        chainEntity.syncBlockHash = nil;
+        chainEntity.syncBlockHeight = 0;
         [DSMerkleBlockEntity deleteBlocksOnChainEntity:chainEntity];
         [DSAddressEntity deleteAddressesOnChainEntity:chainEntity];
         [DSTransactionHashEntity deleteTransactionHashesOnChainEntity:chainEntity];

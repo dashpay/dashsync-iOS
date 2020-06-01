@@ -66,7 +66,7 @@
     if (! (self = [super init])) return nil;
     
     self.chain = chain;
-    self.syncPhase = DSChainSyncPhase_Offline;
+    self.syncPhase = DSChainSyncPhase_Unknown;
     chain.chainManager = self;
     self.sporkManager = [[DSSporkManager alloc] initWithChain:chain];
     self.masternodeManager = [[DSMasternodeManager alloc] initWithChain:chain];
@@ -252,14 +252,15 @@
 }
 
 -(void)chainShouldStartSyncingBlockchain:(DSChain*)chain onPeer:(DSPeer*)peer {
-    self.syncPhase = DSChainSyncPhase_ChainSync;
     dispatch_async(self.chain.networkingQueue, ^{
-        if (self.chain.shouldSyncHeadersFirstForMasternodeListVerification) {
+        if ((self.syncPhase != DSChainSyncPhase_ChainSync) && self.chain.needsInitialTerminalHeadersSync) {
         //masternode list should be synced first and the masternode list is old
+            self.syncPhase = DSChainSyncPhase_InitialTerminalBlocks;
             [peer sendGetheadersMessageWithLocators:[self.chain terminalBlocksLocatorArray] andHashStop:UINT256_ZERO];
         } else {
+            self.syncPhase = DSChainSyncPhase_ChainSync;
             BOOL startingDevnetSync = [self.chain isDevnetAny] && self.chain.lastSyncBlock.height < 5;
-            if (startingDevnetSync || self.chain.lastBlock.timestamp + HEADER_WINDOW_BUFFER_TIME >= self.chain.earliestWalletCreationTime) {
+            if (startingDevnetSync || self.chain.lastSyncBlockTimestamp + HEADER_WINDOW_BUFFER_TIME >= self.chain.earliestWalletCreationTime) {
                 [peer sendGetblocksMessageWithLocators:[self.chain chainSyncBlockLocatorArray] andHashStop:UINT256_ZERO];
             }
             else {
@@ -295,10 +296,13 @@
 
 -(void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain*)chain {
     DSDLog(@"Chain finished syncing masternode list and quorums, it should start syncing chain");
+    
     if (self.peerManager.connectedPeerCount == 0) {
+        self.syncPhase = DSChainSyncPhase_ChainSync;
         [self.peerManager connect];
     } else {
         if (self.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
+            self.syncPhase = DSChainSyncPhase_ChainSync;
             [self chainShouldStartSyncingBlockchain:chain onPeer:self.peerManager.downloadPeer];
         }
     }

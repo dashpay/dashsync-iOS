@@ -45,6 +45,8 @@
     __block UInt256 baseBlockHash;
     __block UInt256 lastPersistedChainSyncBlockHash;
     __block uint32_t lastPersistedChainSyncBlockHeight;
+    __block NSTimeInterval lastPersistedChainSyncBlockTimestamp;
+    
     __block NSData * lastPersistedChainSyncLocators;
     [self.managedObjectContext performBlockAndWait:^{
         type = self.type;
@@ -55,6 +57,7 @@
         lastPersistedChainSyncBlockHash = self.syncBlockHash.UInt256;
         lastPersistedChainSyncBlockHeight = self.syncBlockHeight;
         lastPersistedChainSyncLocators = self.syncLocators;
+        lastPersistedChainSyncBlockTimestamp = self.syncBlockTimestamp;
     }];
     DSChain * chain = nil;
     if (type == DSChainType_MainNet) {
@@ -74,6 +77,7 @@
     chain.lastPersistedChainSyncLocators = [NSKeyedUnarchiver unarchiveObjectWithData:lastPersistedChainSyncLocators];
     chain.lastPersistedChainSyncBlockHeight = lastPersistedChainSyncBlockHeight;
     chain.lastPersistedChainSyncBlockHash = lastPersistedChainSyncBlockHash;
+    chain.lastPersistedChainSyncBlockTimestamp = lastPersistedChainSyncBlockTimestamp;
     return chain;
 }
 
