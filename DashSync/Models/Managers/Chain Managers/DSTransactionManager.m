@@ -719,7 +719,9 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
                     DSDLog(@"[DSTransactionManager] fetching mempool message success peer %@",peer.host);
                     peer.synced = YES;
                     [self removeUnrelayedTransactionsFromPeer:peer];
-                    [peer sendGetaddrMessage]; // request a list of other dash peers
+                    if (!self.chainManager.peerManager.masternodeList) {
+                        [peer sendGetaddrMessage]; // request a list of other dash peers
+                    }
                     
                     dispatch_async(dispatch_get_main_queue(), ^{
                         [[NSNotificationCenter defaultCenter]

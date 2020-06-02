@@ -14,7 +14,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSSimplifiedMasternodeEntry,DSChain,DSQuorumEntry;
+@class DSSimplifiedMasternodeEntry,DSChain,DSQuorumEntry,DSPeer;
 
 @interface DSMasternodeList : NSObject
 
@@ -68,6 +68,8 @@ NS_ASSUME_NONNULL_BEGIN
 -(DSQuorumEntry* _Nullable)quorumEntryForChainLockRequestID:(UInt256)requestID;
 
 -(NSArray<DSQuorumEntry*>*)quorumEntriesRankedForInstantSendRequestID:(UInt256)requestID;
+
+-(NSArray<DSPeer*>*)peers:(uint32_t)peerCount withConnectivityNonce:(uint64_t)connectivityNonce;
 
 @end
 

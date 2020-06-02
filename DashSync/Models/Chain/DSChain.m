@@ -1686,15 +1686,24 @@ static dispatch_once_t devnetToken = 0;
     NSArray *txHashes = block.txHashes;
     
     NSValue *blockHash = uint256_obj(block.blockHash), *prevBlock = uint256_obj(block.prevBlock);
-    DSMerkleBlock *prev = self.syncBlocks[prevBlock];
-    
+    DSMerkleBlock *prev = nil;
     BOOL isTerminalBlock = FALSE;
-    if (!prev) {
+    if (self.chainManager.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
+        //We default to terminal blocks
         prev = self.terminalBlocks[prevBlock];
         if (prev) {
             isTerminalBlock = TRUE;
         }
+    } else {
+        prev = self.syncBlocks[prevBlock];
+        if (!prev) {
+            prev = self.terminalBlocks[prevBlock];
+            if (prev) {
+                isTerminalBlock = TRUE;
+            }
+        }
     }
+
     
     
     if (! prev) { // header is an orphan
@@ -1920,8 +1929,6 @@ static dispatch_once_t devnetToken = 0;
     BOOL savedBlockLocators = NO;
     BOOL savedTerminalBlocks = NO;
     if (syncDone) { // chain download is complete
-        [self saveBlockLocators];
-        savedBlockLocators = YES;
         if (isTerminalBlock) {
             [self saveTerminalBlocks];
             savedTerminalBlocks = YES;
@@ -1930,6 +1937,8 @@ static dispatch_once_t devnetToken = 0;
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSChainInitialHeadersDidFinishSyncingNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
             });
         } else {
+            [self saveBlockLocators];
+            savedBlockLocators = YES;
             [self.chainManager chainFinishedSyncingTransactionsAndBlocks:self fromPeer:peer onMainChain:onMainChain];
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlocksDidFinishSyncingNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
@@ -1939,7 +1948,7 @@ static dispatch_once_t devnetToken = 0;
     
     if (block.height > self.estimatedBlockHeight) {
         _bestEstimatedBlockHeight = block.height;
-        if (!savedBlockLocators) {
+        if (!isTerminalBlock && !savedBlockLocators) {
             [self saveBlockLocators];
         }
         if (!savedTerminalBlocks) {

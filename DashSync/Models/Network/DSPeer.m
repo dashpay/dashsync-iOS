@@ -53,6 +53,7 @@
 #import "DSSporkManager.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSMasternodeManager.h"
+#import "DSSimplifiedMasternodeEntry.h"
 
 #define PEER_LOGGING 1
 #define LOG_ALL_HEADERS_IN_ACCEPT_HEADERS 0
@@ -127,6 +128,10 @@
     return [[self alloc] initWithHost:host onChain:chain];
 }
 
++ (instancetype)peerWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntry {
+    return [[self alloc] initWithSimplifiedMasternodeEntry:simplifiedMasternodeEntry];
+}
+
 - (instancetype)initWithAddress:(UInt128)address andPort:(uint16_t)port onChain:(DSChain*)chain
 {
     if (! (self = [super init])) return nil;
@@ -136,6 +141,10 @@
     self.chain = chain;
     _outputBufferSemaphore = dispatch_semaphore_create(1);
     return self;
+}
+
+- (instancetype)initWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntry {
+    return [self initWithAddress:simplifiedMasternodeEntry.address andPort:simplifiedMasternodeEntry.port onChain:simplifiedMasternodeEntry.chain];
 }
 
 - (instancetype)initWithHost:(NSString *)host onChain:(DSChain*)chain

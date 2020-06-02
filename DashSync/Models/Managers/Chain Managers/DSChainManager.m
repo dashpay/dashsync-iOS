@@ -55,6 +55,7 @@
 @property (nonatomic, strong) DSTransactionManager * transactionManager;
 @property (nonatomic, strong) DSPeerManager * peerManager;
 @property (nonatomic, assign) uint32_t syncStartHeight;
+@property (nonatomic, assign) uint64_t sessionConnectivityNonce;
 @property (nonatomic, assign) BOOL gotSporksAtChainSyncStart;
 
 @end
@@ -77,6 +78,7 @@
     self.peerManager = [[DSPeerManager alloc] initWithChain:chain];
     self.identitiesManager = [[DSIdentitiesManager alloc] initWithChain:chain];
     self.gotSporksAtChainSyncStart = FALSE;
+    self.sessionConnectivityNonce = (long long) arc4random() << 32 | arc4random();
     
     return self;
 }
@@ -300,6 +302,8 @@
     if (self.peerManager.connectedPeerCount == 0) {
         self.syncPhase = DSChainSyncPhase_ChainSync;
         [self.peerManager connect];
+    } else if (!self.peerManager.masternodeList && self.masternodeManager.currentMasternodeList) {
+        [self.peerManager useMasternodeList:self.masternodeManager.currentMasternodeList withConnectivityNonce:self.sessionConnectivityNonce];
     } else {
         if (self.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
             self.syncPhase = DSChainSyncPhase_ChainSync;

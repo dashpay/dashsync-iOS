@@ -54,6 +54,7 @@
 #import "DSTransactionManager+Protected.h"
 #import "DSChainManager+Protected.h"
 #import "DSBloomFilter.h"
+#import "DSMasternodeList.h"
 #import <arpa/inet.h>
 
 #define PEER_LOGGING 1
@@ -84,6 +85,8 @@
 @property (nonatomic, strong) id backgroundObserver, walletAddedObserver;
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, assign) DSPeerManagerDesiredState desiredState;
+@property (nonatomic, assign) uint64_t masternodeListConnectivityNonce;
+@property (nonatomic, strong) DSMasternodeList * masternodeList;
 @property (nonatomic, readonly) dispatch_queue_t networkingQueue;
 
 @property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
@@ -600,6 +603,33 @@
     return [registeredDevnetPeerServicesArray copy];
 }
 
+// MARK: - Using Masternode List for connectivitity
+
+- (void)useMasternodeList:(DSMasternodeList*)masternodeList withConnectivityNonce:(uint64_t)connectivityNonce {
+    self.masternodeList = masternodeList;
+    self.masternodeListConnectivityNonce = connectivityNonce;
+    
+    BOOL connected = self.connected;
+
+    [self clearPeers];
+    
+    NSArray * peers = [masternodeList peers:500 withConnectivityNonce:connectivityNonce];
+    
+    [self.peers addObjectsFromArray:peers];
+    [self.peers minusSet:self.misbehavingPeers];
+    [self sortPeers];
+    
+    if (peers.count > 1 && peers.count < 1000) [self savePeers]; // peer relaying is complete when we receive <1000
+    
+    if (connected) {
+        [self connect];
+    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSPeerManagerPeersDidChangeNotification
+                                                            object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+    });
+}
+
 // MARK: - Connectivity
 
 - (void)connect
@@ -787,7 +817,9 @@
                     DSDLog(@"[DSTransactionManager] fetching mempool message on connection success peer %@",peer.host);
                     peer.synced = YES;
                     [self.transactionManager removeUnrelayedTransactionsFromPeer:peer];
-                    [peer sendGetaddrMessage]; // request a list of other dash peers
+                    if (!self.masternodeList) {
+                        [peer sendGetaddrMessage]; // request a list of other dash peers
+                    }
                     
                     dispatch_async(dispatch_get_main_queue(), ^{
                         [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification
@@ -899,6 +931,7 @@
 
 - (void)peer:(DSPeer *)peer relayedPeers:(NSArray *)peers
 {
+    if (self.masternodeList) return;
     DSDLog(@"%@:%d relayed %d peer(s)", peer.host, peer.port, (int)peers.count);
     [self.peers addObjectsFromArray:peers];
     [self.peers minusSet:self.misbehavingPeers];
