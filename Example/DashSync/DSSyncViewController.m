@@ -375,7 +375,11 @@
         [[DashSync sharedSyncController] wipePeerDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
     }]];
     
-    [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Chain Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+    [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Chain Sync Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [[DashSync sharedSyncController] wipeBlockchainNonTerminalDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
+    }]];
+    
+    [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"All Chain Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
         [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
         [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
     }]];

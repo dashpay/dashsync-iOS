@@ -154,12 +154,42 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
         chainEntity.syncBlockTimestamp = 0;
         chainEntity.syncBlockHash = nil;
         chainEntity.syncBlockHeight = 0;
+        chainEntity.syncLocators = nil;
         [DSMerkleBlockEntity deleteBlocksOnChainEntity:chainEntity];
         [DSAddressEntity deleteAddressesOnChainEntity:chainEntity];
         [DSTransactionHashEntity deleteTransactionHashesOnChainEntity:chainEntity];
         [DSDerivationPathEntity deleteDerivationPathsOnChainEntity:chainEntity];
         [DSFriendRequestEntity deleteFriendRequestsOnChainEntity:chainEntity];
         [chain wipeBlockchainInfoInContext:context];
+        chain.chainManager.syncPhase = DSChainSyncPhase_InitialTerminalBlocks;
+        [DSBlockchainIdentityEntity deleteBlockchainIdentitiesOnChainEntity:chainEntity];
+        [DSDashpayUserEntity deleteContactsOnChainEntity:chainEntity];// this must move after wipeBlockchainInfo where blockchain identities are removed
+        [context ds_save];
+        [chain reloadDerivationPaths];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil];
+        });
+    }];
+}
+
+-(void)wipeBlockchainNonTerminalDataForChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context {
+    NSParameterAssert(chain);
+    
+    [self stopSyncForChain:chain];
+    [context performBlockAndWait:^{
+        DSChainEntity * chainEntity = [chain chainEntityInContext:context];
+        chainEntity.syncBlockTimestamp = 0;
+        chainEntity.syncBlockHash = nil;
+        chainEntity.syncBlockHeight = 0;
+        chainEntity.syncLocators = nil;
+        [DSAddressEntity deleteAddressesOnChainEntity:chainEntity];
+        [DSTransactionHashEntity deleteTransactionHashesOnChainEntity:chainEntity];
+        [DSDerivationPathEntity deleteDerivationPathsOnChainEntity:chainEntity];
+        [DSFriendRequestEntity deleteFriendRequestsOnChainEntity:chainEntity];
+        [chain wipeBlockchainNonTerminalInfoInContext:context];
         [DSBlockchainIdentityEntity deleteBlockchainIdentitiesOnChainEntity:chainEntity];
         [DSDashpayUserEntity deleteContactsOnChainEntity:chainEntity];// this must move after wipeBlockchainInfo where blockchain identities are removed
         [context ds_save];

@@ -102,6 +102,8 @@ NS_ASSUME_NONNULL_BEGIN
 /*! @brief This removes all blockchain information from the chain's wallets and derivation paths. */
 - (void)wipeBlockchainInfoInContext:(NSManagedObjectContext*)context;
 
+- (void)wipeBlockchainNonTerminalInfoInContext:(NSManagedObjectContext*)context;
+
 // MARK: - Persistence
 
 /*! @brief Save chain info, this rarely needs to be called.  */

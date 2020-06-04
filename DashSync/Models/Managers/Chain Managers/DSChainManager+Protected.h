@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)resetLastRelayedItemTime;
 - (void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo inContext:(NSManagedObjectContext*)context;
 
+- (void)applyChainSynchronizationFingerprint:(NSData*)chainSynchronizationFingerprint;
+
 @property (nonatomic, assign) DSChainSyncPhase syncPhase;
 
 @end

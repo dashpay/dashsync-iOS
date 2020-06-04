@@ -147,6 +147,7 @@ FOUNDATION_EXPORT const unsigned char DashSyncVersionString[];
 
 -(void)wipePeerDataForChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context;
 -(void)wipeBlockchainDataForChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context;
+-(void)wipeBlockchainNonTerminalDataForChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context;
 -(void)wipeGovernanceDataForChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context;
 -(void)wipeMasternodeDataForChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context;
 -(void)wipeSporkDataForChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context;

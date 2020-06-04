@@ -611,12 +611,17 @@
     
     BOOL connected = self.connected;
 
-    [self clearPeers];
+    
     
     NSArray * peers = [masternodeList peers:500 withConnectivityNonce:connectivityNonce];
     
-    [self.peers addObjectsFromArray:peers];
-    [self.peers minusSet:self.misbehavingPeers];
+    if (!_peers) {
+        _peers = [NSMutableOrderedSet orderedSetWithArray:peers];
+    } else {
+        [self clearPeers];
+        [self.peers addObjectsFromArray:peers];
+        [self.peers minusSet:self.misbehavingPeers];
+    }
     [self sortPeers];
     
     if (peers.count > 1 && peers.count < 1000) [self savePeers]; // peer relaying is complete when we receive <1000

@@ -80,6 +80,10 @@
     self.gotSporksAtChainSyncStart = FALSE;
     self.sessionConnectivityNonce = (long long) arc4random() << 32 | arc4random();
     
+    if (self.masternodeManager.currentMasternodeList) {
+        [self.peerManager useMasternodeList:self.masternodeManager.currentMasternodeList withConnectivityNonce:self.sessionConnectivityNonce];
+    }
+    
     return self;
 }
 
@@ -250,6 +254,16 @@
 -(void)chainWillStartSyncingBlockchain:(DSChain*)chain {
     if (!self.gotSporksAtChainSyncStart) {
         [self.sporkManager getSporks]; //get the sporks early on
+    }
+}
+
+-(BOOL)shouldRequestMerkleBlocksInsteadOfHeaders {
+    if (self.chainSynchronizationFingerprint) {
+        //to do
+        return YES;
+        //[self.chainSynchronizationFingerprint getBytes:<#(nonnull void *)#> length:<#(NSUInteger)#>]
+    } else {
+        return YES;
     }
 }
 
