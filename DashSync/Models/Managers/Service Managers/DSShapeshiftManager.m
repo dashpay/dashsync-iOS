@@ -67,7 +67,7 @@
 #pragma mark - Automation KVO
 
 -(NSManagedObjectContext*)managedObjectContext {
-    return [NSManagedObject context];
+    return [NSManagedObjectContext chainContext];
 }
 
 -(NSPredicate*)shapeshiftsNeedingInfo {

@@ -80,9 +80,9 @@ void CKDpriv(UInt256 *k, UInt256 *c, uint32_t i)
     else DSSecp256k1PointGen((DSECPoint *)buf, k);
     
     *(uint32_t *)&buf[sizeof(DSECPoint)] = CFSwapInt32HostToBig(i);
-    NSLog(@"c is %@, buf is %@",uint256_hex(*c),[NSData dataWithBytes:buf length:sizeof(DSECPoint) + sizeof(i)].hexString);
+    //DSDLog(@"c is %@, buf is %@",uint256_hex(*c),[NSData dataWithBytes:buf length:sizeof(DSECPoint) + sizeof(i)].hexString);
     HMAC(&I, SHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf)); // I = HMAC-SHA512(c, k|P(k) || i)
-    NSLog(@"c now is %@, I now is %@",uint256_hex(*c),uint512_hex(I));
+    //DSDLog(@"c now is %@, I now is %@",uint256_hex(*c),uint512_hex(I));
     DSSecp256k1ModAdd(k, (UInt256 *)&I); // k = IL + k (mod n)
     *c = *(UInt256 *)&I.u8[sizeof(UInt256)]; // c = IR
     
@@ -286,10 +286,6 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     return [[self alloc] initWithCompactSig:compactSig andMessageDigest:md];
 }
 
-+(instancetype)keyWithDHKeyExchangeWithPublicKey:(DSECDSAKey *)publicKey forPrivateKey:(DSECDSAKey*)privateKey {
-    return [[self alloc] initWithDHKeyExchangeWithPublicKey:publicKey forPrivateKey:privateKey];
-}
-
 - (instancetype)init
 {
     dispatch_once(&_ctx_once, ^{ _ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY); });
@@ -438,9 +434,11 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     return nil;
 }
 
-- (nullable instancetype)initWithDHKeyExchangeWithPublicKey:(DSECDSAKey *)publicKey forPrivateKey:(DSECDSAKey*)privateKey {
+- (nullable instancetype)initWithDHKeyExchangeWithPublicKey:(DSKey *)publicKey forPrivateKey:(DSKey*)privateKey {
     NSParameterAssert(publicKey);
     NSParameterAssert(privateKey);
+    NSAssert([publicKey isKindOfClass:[DSECDSAKey class]], @"The public key needs to be a ECDSA key");
+    NSAssert([privateKey isKindOfClass:[DSECDSAKey class]], @"The privateKey key needs to be a ECDSA key");
     if (! (self = [self init])) return nil;
     
     secp256k1_pubkey pk;
@@ -450,7 +448,7 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     
     //uint8_t * seckey = NULL;
     
-    if (secp256k1_ecdh(_ctx, _seckey.u8, &pk, (const uint8_t *)privateKey.secretKey)!= 1) {
+    if (secp256k1_ecdh(_ctx, _seckey.u8, &pk, (const uint8_t *)((DSECDSAKey*)privateKey).secretKey)!= 1) {
         return nil;
     }
     self.compressed = NO;

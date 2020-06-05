@@ -95,8 +95,6 @@
 -(void)loadAddresses {
     if (!self.addressesLoaded) {
         [self.managedObjectContext performBlockAndWait:^{
-            [DSAddressEntity setContext:self.managedObjectContext];
-            [DSTransactionEntity setContext:self.managedObjectContext];
             DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
             self.syncBlockHeight = derivationPathEntity.syncBlockHeight;
             for (DSAddressEntity *e in derivationPathEntity.addresses) {
@@ -212,16 +210,15 @@
             
             if (!self.account.wallet.isTransient) {
                 [self.managedObjectContext performBlockAndWait:^{ // store new address in core data
-                    [DSDerivationPathEntity setContext:self.managedObjectContext];
                     DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
-                    DSAddressEntity *e = [DSAddressEntity managedObject];
+                    DSAddressEntity *e = [DSAddressEntity managedObjectInContext:self.managedObjectContext];
                     e.derivationPath = derivationPathEntity;
                     NSAssert([address isValidDashAddressOnChain:self.chain], @"the address is being saved to the wrong derivation path");
                     e.address = address;
                     e.index = n;
                     e.internal = NO;
                     e.standalone = NO;
-                    NSArray * outputs = [DSTxOutputEntity objectsMatching:@"address == %@",address];
+                    NSArray * outputs = [DSTxOutputEntity objectsInContext:self.managedObjectContext matching:@"address == %@",address];
                     [e addUsedInOutputs:[NSSet setWithArray:outputs]];
                     if (outputs.count) isUsed = TRUE;
                 }];

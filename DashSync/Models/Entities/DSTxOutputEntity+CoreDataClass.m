@@ -24,6 +24,7 @@
 
 #import "DSTxOutputEntity+CoreDataClass.h"
 #import "DSTransactionEntity+CoreDataClass.h"
+#import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSAddressEntity+CoreDataClass.h"
 #import "DSTransaction.h"
 #import "NSData+Bitcoin.h"
@@ -34,19 +35,20 @@
 
 @implementation DSTxOutputEntity
 
-- (instancetype)setAttributesFromTransaction:(DSTransaction *)tx outputIndex:(NSUInteger)index forTransactionEntity:(DSTransactionEntity*)transactionEntity
+- (instancetype)setAttributesFromTransaction:(DSTransaction *)transaction outputIndex:(NSUInteger)index forTransactionEntity:(DSTransactionEntity*)transactionEntity
 {
-    UInt256 txHash = tx.txHash;
+    UInt256 txHash = transaction.txHash;
     
     self.txHash = [NSData dataWithBytes:&txHash length:sizeof(txHash)];
     self.n = (int32_t)index;
-    self.address = (tx.outputAddresses[index] == [NSNull null]) ? nil : tx.outputAddresses[index];
-    self.script = tx.outputScripts[index];
-    self.value = [tx.outputAmounts[index] longLongValue];
+    self.address = (transaction.outputAddresses[index] == [NSNull null]) ? nil : transaction.outputAddresses[index];
+    self.script = transaction.outputScripts[index];
+    self.value = [transaction.outputAmounts[index] longLongValue];
     self.shapeshiftOutboundAddress = [DSTransaction shapeshiftOutboundAddressForScript:self.script];
     self.transaction = transactionEntity;
     if (self.address) {
-        NSArray * addressEntities = [DSAddressEntity objectsMatching:@"address == %@ && derivationPath.chain == %@",self.address,tx.chain.chainEntity];
+        DSChainEntity * chainEntity = transactionEntity.transactionHash.chain;
+        NSArray * addressEntities = [DSAddressEntity objectsInContext:transactionEntity.managedObjectContext matching:@"address == %@ && derivationPath.chain == %@",self.address,chainEntity?chainEntity:[transaction.chain chainEntityInContext:transactionEntity.managedObjectContext]];
         if ([addressEntities count]) {
             NSAssert([addressEntities count] == 1, @"addresses should not be duplicates");
             self.localAddress = [addressEntities objectAtIndex:0];

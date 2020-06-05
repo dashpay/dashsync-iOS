@@ -15,6 +15,8 @@
 #import "DSQuorumEntry.h"
 #import "DSMasternodeListEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
+#import "DSPeer.h"
+#import "NSData+Dash.h"
 
 // from https://en.bitcoin.it/wiki/Protocol_specification#Merkle_Trees
 // Merkle trees are binary trees of hashes. Merkle trees in bitcoin use a double SHA-256, the SHA-256 hash of the
@@ -474,6 +476,22 @@ inline static int ceil_log2(int x)
         }
     }];
     return orderedQuorums;
+}
+
+-(NSArray<DSPeer*>*)peers:(uint32_t)peerCount withConnectivityNonce:(uint64_t)connectivityNonce {
+    NSArray <NSData*>* registrationTransactionHashes = [self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allKeys];
+    NSArray <NSData*>* sortedHashes = [registrationTransactionHashes sortedArrayUsingComparator:^NSComparisonResult(NSData *  _Nonnull obj1, NSData *  _Nonnull obj2) {
+        UInt256 hash1 = [[[obj1 mutableCopy] appendUInt64:connectivityNonce] blake2s];
+        UInt256 hash2 = [[[obj2 mutableCopy] appendUInt64:connectivityNonce] blake2s];
+        return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
+    }];
+    NSMutableArray * mArray = [NSMutableArray array];
+    for (uint32_t i = 0; i< peerCount; i++) {
+        DSSimplifiedMasternodeEntry * masternodeEntry = self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[sortedHashes[i]];
+        DSPeer * peer = [DSPeer peerWithSimplifiedMasternodeEntry:masternodeEntry];
+        [mArray addObject:peer];
+    }
+    return mArray;
 }
 
 @end

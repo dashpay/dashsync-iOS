@@ -23,6 +23,7 @@
 #import "DSMasternodeManager+Protected.h"
 #import "DSChainManager+Protected.h"
 #import "DSChain+Protected.h"
+#import "DSDataController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -131,63 +132,90 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
     [[[DSChainsManager sharedInstance] chainManagerForChain:chain] stopSync];
 }
 
--(void)wipePeerDataForChain:(DSChain*)chain {
+-(void)wipePeerDataForChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context  {
     NSParameterAssert(chain);
     
     [self stopSyncForChain:chain];
     [[[DSChainsManager sharedInstance] chainManagerForChain:chain].peerManager removeTrustedPeerHost];
     [[[DSChainsManager sharedInstance] chainManagerForChain:chain].peerManager clearPeers];
-    NSManagedObjectContext * context = [NSManagedObject context];
     [context performBlockAndWait:^{
-        DSChainEntity * chainEntity = chain.chainEntity;
-        [DSPeerEntity deletePeersForChain:chainEntity];
-        [DSPeerEntity saveContext];
-        }];
+        DSChainEntity * chainEntity = [chain chainEntityInContext:context];
+        [DSPeerEntity deletePeersForChainEntity:chainEntity];
+        [context ds_save];
+    }];
 }
 
--(void)wipeBlockchainDataForChain:(DSChain*)chain {
+-(void)wipeBlockchainDataForChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context {
     NSParameterAssert(chain);
     
     [self stopSyncForChain:chain];
-    NSManagedObjectContext * context = [NSManagedObject context];
     [context performBlockAndWait:^{
-        DSChainEntity * chainEntity = chain.chainEntity;
-        [DSMerkleBlockEntity deleteBlocksOnChain:chainEntity];
-        [DSAddressEntity deleteAddressesOnChain:chainEntity];
-        [DSTransactionHashEntity deleteTransactionHashesOnChain:chainEntity];
-        [DSDerivationPathEntity deleteDerivationPathsOnChain:chainEntity];
-        [DSFriendRequestEntity deleteFriendRequestsOnChain:chainEntity];
-        [chain wipeBlockchainInfo];
-        [DSDashpayUserEntity deleteContactsOnChain:chainEntity];// this must move after wipeBlockchainInfo where blockchain identities are removed
-        [DSTransactionEntity saveContext];
+        DSChainEntity * chainEntity = [chain chainEntityInContext:context];
+        chainEntity.syncBlockTimestamp = 0;
+        chainEntity.syncBlockHash = nil;
+        chainEntity.syncBlockHeight = 0;
+        chainEntity.syncLocators = nil;
+        [DSMerkleBlockEntity deleteBlocksOnChainEntity:chainEntity];
+        [DSAddressEntity deleteAddressesOnChainEntity:chainEntity];
+        [DSTransactionHashEntity deleteTransactionHashesOnChainEntity:chainEntity];
+        [DSDerivationPathEntity deleteDerivationPathsOnChainEntity:chainEntity];
+        [DSFriendRequestEntity deleteFriendRequestsOnChainEntity:chainEntity];
+        [chain wipeBlockchainInfoInContext:context];
+        chain.chainManager.syncPhase = DSChainSyncPhase_InitialTerminalBlocks;
+        [DSBlockchainIdentityEntity deleteBlockchainIdentitiesOnChainEntity:chainEntity];
+        [DSDashpayUserEntity deleteContactsOnChainEntity:chainEntity];// this must move after wipeBlockchainInfo where blockchain identities are removed
+        [context ds_save];
         [chain reloadDerivationPaths];
         
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlocksDidChangeNotification object:nil];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainInitialHeadersDidChangeNotification object:nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil];
         });
     }];
 }
 
--(void)wipeMasternodeDataForChain:(DSChain*)chain {
+-(void)wipeBlockchainNonTerminalDataForChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context {
     NSParameterAssert(chain);
     
     [self stopSyncForChain:chain];
-    NSManagedObjectContext * context = [NSManagedObject context];
     [context performBlockAndWait:^{
-        [DSChainEntity setContext:context];
-        [DSSimplifiedMasternodeEntryEntity setContext:context];
-        [DSLocalMasternodeEntity setContext:context];
-        [DSQuorumEntryEntity setContext:context];
-        DSChainEntity * chainEntity = chain.chainEntity;
-        [DSLocalMasternodeEntity deleteAllOnChain:chainEntity];
-        [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
-        [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
-        [DSMasternodeListEntity deleteAllOnChain:chainEntity];
+        DSChainEntity * chainEntity = [chain chainEntityInContext:context];
+        chainEntity.syncBlockTimestamp = 0;
+        chainEntity.syncBlockHash = nil;
+        chainEntity.syncBlockHeight = 0;
+        chainEntity.syncLocators = nil;
+        [DSAddressEntity deleteAddressesOnChainEntity:chainEntity];
+        [DSTransactionHashEntity deleteTransactionHashesOnChainEntity:chainEntity];
+        [DSDerivationPathEntity deleteDerivationPathsOnChainEntity:chainEntity];
+        [DSFriendRequestEntity deleteFriendRequestsOnChainEntity:chainEntity];
+        [chain wipeBlockchainNonTerminalInfoInContext:context];
+        [DSBlockchainIdentityEntity deleteBlockchainIdentitiesOnChainEntity:chainEntity];
+        [DSDashpayUserEntity deleteContactsOnChainEntity:chainEntity];// this must move after wipeBlockchainInfo where blockchain identities are removed
+        [context ds_save];
+        [chain reloadDerivationPaths];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil];
+        });
+    }];
+}
+
+-(void)wipeMasternodeDataForChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context {
+    NSParameterAssert(chain);
+    
+    [self stopSyncForChain:chain];
+    [context performBlockAndWait:^{
+        DSChainEntity * chainEntity = [chain chainEntityInContext:context];
+        [DSLocalMasternodeEntity deleteAllOnChainEntity:chainEntity];
+        [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
+        [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
+        [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
         DSChainManager * chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
         [chainManager.masternodeManager wipeMasternodeInfo];
-        [DSSimplifiedMasternodeEntryEntity saveContext];
+        [context ds_save];
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@_%@",chain.uniqueID,LAST_SYNCED_MASTERNODE_LIST]];
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
@@ -196,37 +224,32 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
     
 }
 
--(void)wipeSporkDataForChain:(DSChain*)chain {
+-(void)wipeSporkDataForChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context {
     NSParameterAssert(chain);
     
     [self stopSyncForChain:chain];
-    NSManagedObjectContext * context = [NSManagedObject context];
     [context performBlockAndWait:^{
-        DSChainEntity * chainEntity = chain.chainEntity;
-        [DSSporkEntity deleteSporksOnChain:chainEntity];
+        DSChainEntity * chainEntity = [chain chainEntityInContext:context];
+        [DSSporkEntity deleteSporksOnChainEntity:chainEntity];
         DSChainManager * chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
         [chainManager.sporkManager wipeSporkInfo];
-        [DSSporkEntity saveContext];
+        [context ds_save];
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSSporkListDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
         });
     }];
 }
 
--(void)wipeGovernanceDataForChain:(DSChain*)chain {
+-(void)wipeGovernanceDataForChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context {
     NSParameterAssert(chain);
     
     [self stopSyncForChain:chain];
-    NSManagedObjectContext * context = [NSManagedObject context];
     [context performBlockAndWait:^{
-        DSChainEntity * chainEntity = chain.chainEntity;
-        [DSGovernanceObjectHashEntity deleteHashesOnChain:chainEntity];
-        [DSGovernanceVoteHashEntity deleteHashesOnChain:chainEntity];
         DSChainManager * chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
-        [chainManager resetSyncCountInfo:DSSyncCountInfo_GovernanceObject];
-        [chainManager resetSyncCountInfo:DSSyncCountInfo_GovernanceObjectVote];
+        [chainManager resetSyncCountInfo:DSSyncCountInfo_GovernanceObject inContext:context];
+        [chainManager resetSyncCountInfo:DSSyncCountInfo_GovernanceObjectVote inContext:context];
         [chainManager.governanceSyncManager wipeGovernanceInfo];
-        [DSGovernanceObjectHashEntity saveContext];
+        [context ds_save];
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@_%@",chain.uniqueID,LAST_SYNCED_GOVERANCE_OBJECTS]];
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
@@ -237,10 +260,10 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
     }];
 }
 
--(void)wipeWalletDataForChain:(DSChain*)chain forceReauthentication:(BOOL)forceReauthentication {
+-(void)wipeWalletDataForChain:(DSChain*)chain forceReauthentication:(BOOL)forceReauthentication inContext:(NSManagedObjectContext*)context {
     NSParameterAssert(chain);
-    [self wipeMasternodeDataForChain:chain];
-    [self wipeBlockchainDataForChain:chain];
+    [self wipeMasternodeDataForChain:chain inContext:context];
+    [self wipeBlockchainDataForChain:chain inContext:context];
     if (!forceReauthentication && [[DSAuthenticationManager sharedInstance] didAuthenticate]) {
         [chain wipeWalletsAndDerivatives];
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -264,7 +287,7 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
 }
 
 -(uint64_t)dbSize {
-    NSString * storeURL = [[NSManagedObject storeURL] path];
+    NSString * storeURL = [[DSDataController storeURL] path];
     NSError * attributesError = nil;
     NSDictionary *fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:storeURL error:&attributesError];
     if (attributesError) {
@@ -285,7 +308,7 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
         NSError *error = nil;
         [[BGTaskScheduler sharedScheduler] submitTaskRequest:request error:&error];
         if (error) {
-            NSLog(@"Error scheduling background refresh");
+            DSDLog(@"Error scheduling background refresh");
         }
     }
 }

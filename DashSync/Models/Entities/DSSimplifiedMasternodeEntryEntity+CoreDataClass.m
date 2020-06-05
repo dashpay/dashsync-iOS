@@ -89,7 +89,7 @@
     if (localMasternodes) {
         localMasternode = [localMasternodes objectForKey:uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
     } else {
-        localMasternode = [DSLocalMasternodeEntity anyObjectMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
+        localMasternode = [DSLocalMasternodeEntity anyObjectInContext:self.managedObjectContext matching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
     }
     
     self.localMasternode = localMasternode;
@@ -102,7 +102,7 @@
     if (knownOperatorAddresses) {
         operatorAddressEntity = [knownOperatorAddresses objectForKey:operatorAddress];
     } else {
-        operatorAddressEntity = [DSAddressEntity findAddressMatching:operatorAddress onChain:simplifiedMasternodeEntry.chain];
+        operatorAddressEntity = [DSAddressEntity findAddressMatching:operatorAddress onChain:simplifiedMasternodeEntry.chain inContext:self.managedObjectContext];
     }
     
     if (operatorAddressEntity) {
@@ -114,7 +114,7 @@
     if (knownVotingAddresses) {
         votingAddressEntity = [knownVotingAddresses objectForKey:operatorAddress];
     } else {
-        votingAddressEntity = [DSAddressEntity findAddressMatching:votingAddress onChain:simplifiedMasternodeEntry.chain];
+        votingAddressEntity = [DSAddressEntity findAddressMatching:votingAddress onChain:simplifiedMasternodeEntry.chain inContext:self.managedObjectContext];
     }
     
     if (votingAddressEntity) {
@@ -122,11 +122,12 @@
     }
 }
 
-- (void)setAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry onChain:(DSChainEntity*)chainEntity {
-    [self setAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry knownOperatorAddresses:nil knownVotingAddresses:nil localMasternodes:nil onChain:chainEntity];
+- (void)setAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry onChainEntity:(DSChainEntity*)chainEntity {
+    [self setAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry knownOperatorAddresses:nil knownVotingAddresses:nil localMasternodes:nil onChainEntity:chainEntity];
 }
 
-- (void)setAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry knownOperatorAddresses:(NSDictionary<NSString*,DSAddressEntity*>*)knownOperatorAddresses knownVotingAddresses:(NSDictionary<NSString*,DSAddressEntity*>*)knownVotingAddresses localMasternodes:(NSDictionary<NSData*,DSLocalMasternodeEntity*>*)localMasternodes onChain:(DSChainEntity*)chainEntity {
+- (void)setAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry knownOperatorAddresses:(NSDictionary<NSString*,DSAddressEntity*>*)knownOperatorAddresses knownVotingAddresses:(NSDictionary<NSString*,DSAddressEntity*>*)knownVotingAddresses localMasternodes:(NSDictionary<NSData*,DSLocalMasternodeEntity*>*)localMasternodes onChainEntity:(DSChainEntity*)chainEntity {
+    NSParameterAssert(simplifiedMasternodeEntry);
     self.providerRegistrationTransactionHash = [NSData dataWithUInt256:simplifiedMasternodeEntry.providerRegistrationTransactionHash];
     self.confirmedHash = [NSData dataWithUInt256:simplifiedMasternodeEntry.confirmedHash];
     self.ipv6Address = uint128_data(simplifiedMasternodeEntry.address);
@@ -137,7 +138,7 @@
     self.isValid = simplifiedMasternodeEntry.isValid;
     self.simplifiedMasternodeEntryHash = [NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash];
     if (!chainEntity) {
-        self.chain = simplifiedMasternodeEntry.chain.chainEntity;
+        self.chain = [simplifiedMasternodeEntry.chain chainEntityInContext:self.managedObjectContext];
     } else {
         self.chain = chainEntity;
     }
@@ -147,7 +148,7 @@
     if (localMasternodes) {
         localMasternode = [localMasternodes objectForKey:uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
     } else {
-        localMasternode = [DSLocalMasternodeEntity anyObjectMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
+        localMasternode = [DSLocalMasternodeEntity anyObjectInContext:chainEntity.managedObjectContext matching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
     }
     
     self.localMasternode = localMasternode;
@@ -160,7 +161,7 @@
     if (knownOperatorAddresses) {
         operatorAddressEntity = [knownOperatorAddresses objectForKey:operatorAddress];
     } else {
-        operatorAddressEntity = [DSAddressEntity findAddressMatching:operatorAddress onChain:simplifiedMasternodeEntry.chain];
+        operatorAddressEntity = [DSAddressEntity findAddressMatching:operatorAddress onChain:simplifiedMasternodeEntry.chain inContext:self.managedObjectContext];
     }
     
     if (operatorAddressEntity) {
@@ -172,7 +173,7 @@
     if (knownVotingAddresses) {
         votingAddressEntity = [knownVotingAddresses objectForKey:operatorAddress];
     } else {
-        votingAddressEntity = [DSAddressEntity findAddressMatching:votingAddress onChain:simplifiedMasternodeEntry.chain];
+        votingAddressEntity = [DSAddressEntity findAddressMatching:votingAddress onChain:simplifiedMasternodeEntry.chain inContext:self.managedObjectContext];
     }
     
     if (votingAddressEntity) {
@@ -180,26 +181,26 @@
     }
 }
 
-+ (void)deleteHavingProviderTransactionHashes:(NSArray*)providerTransactionHashes onChain:(DSChainEntity*)chainEntity {
-    NSArray * hashesToDelete = [self objectsMatching:@"(chain == %@) && (providerRegistrationTransactionHash IN %@)",chainEntity,providerTransactionHashes];
++ (void)deleteHavingProviderTransactionHashes:(NSArray*)providerTransactionHashes onChainEntity:(DSChainEntity*)chainEntity {
+    NSArray * hashesToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@) && (providerRegistrationTransactionHash IN %@)",chainEntity,providerTransactionHashes];
     for (DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity in hashesToDelete) {
         [chainEntity.managedObjectContext deleteObject:simplifiedMasternodeEntryEntity];
     }
 }
 
-+ (void)deleteAllOnChain:(DSChainEntity*)chainEntity {
-    NSArray * hashesToDelete = [self objectsMatching:@"(chain == %@)",chainEntity];
++ (void)deleteAllOnChainEntity:(DSChainEntity*)chainEntity {
+    NSArray * hashesToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@)",chainEntity];
     for (DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity in hashesToDelete) {
         [chainEntity.managedObjectContext deleteObject:simplifiedMasternodeEntryEntity];
     }
 }
 
-+ (DSSimplifiedMasternodeEntryEntity*)simplifiedMasternodeEntryForProviderRegistrationTransactionHash:(NSData*)providerRegistrationTransactionHash onChain:(DSChainEntity*)chainEntity {
-    return [self anyObjectMatching:@"(providerRegistrationTransactionHash == %@) && (chain == %@)",providerRegistrationTransactionHash,chainEntity];
++ (DSSimplifiedMasternodeEntryEntity*)simplifiedMasternodeEntryForProviderRegistrationTransactionHash:(NSData*)providerRegistrationTransactionHash onChainEntity:(DSChainEntity*)chainEntity {
+    return [self anyObjectInContext:chainEntity.managedObjectContext matching:@"(providerRegistrationTransactionHash == %@) && (chain == %@)",providerRegistrationTransactionHash,chainEntity];
 }
 
-+ (DSSimplifiedMasternodeEntryEntity*)simplifiedMasternodeEntryForHash:(NSData*)simplifiedMasternodeEntryHash onChain:(DSChainEntity*)chainEntity {
-    return [self anyObjectMatching:@"(simplifiedMasternodeEntryHash == %@) && (chain == %@)",simplifiedMasternodeEntryHash,chainEntity];
++ (DSSimplifiedMasternodeEntryEntity*)simplifiedMasternodeEntryForHash:(NSData*)simplifiedMasternodeEntryHash onChainEntity:(DSChainEntity*)chainEntity {
+    return [self anyObjectInContext:chainEntity.managedObjectContext matching:@"(simplifiedMasternodeEntryHash == %@) && (chain == %@)",simplifiedMasternodeEntryHash,chainEntity];
 }
 
 -(NSDictionary<DSMerkleBlock*,id>*)merkleBlockDictionaryFromBlockHashDictionary:(NSDictionary<NSData*,id>*)blockHashDictionary {

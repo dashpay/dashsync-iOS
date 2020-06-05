@@ -38,8 +38,8 @@
     return [DSMasternodeList masternodeListWithSimplifiedMasternodeEntries:masternodeEntriesArray quorumEntries:quorumEntriesArray atBlockHash:self.block.blockHash.UInt256 atBlockHeight:self.block.height withMasternodeMerkleRootHash:self.masternodeListMerkleRoot.UInt256 withQuorumMerkleRootHash:self.quorumListMerkleRoot.UInt256 onChain:self.block.chain.chain];
 }
 
-+ (void)deleteAllOnChain:(DSChainEntity*)chainEntity {
-    NSArray * masternodeLists = [self objectsMatching:@"(block.chain == %@)",chainEntity];
++ (void)deleteAllOnChainEntity:(DSChainEntity*)chainEntity {
+    NSArray * masternodeLists = [self objectsInContext:chainEntity.managedObjectContext matching:@"(block.chain == %@)",chainEntity];
     for (DSMasternodeListEntity * masternodeList in masternodeLists) {
         [chainEntity.managedObjectContext deleteObject:masternodeList];
     }

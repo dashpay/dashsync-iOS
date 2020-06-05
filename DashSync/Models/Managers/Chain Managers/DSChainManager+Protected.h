@@ -11,15 +11,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSChainManager ()
 
-@property (nonatomic, readonly) NSTimeInterval lastChainRelayTime;
+@property (nonatomic, assign) NSTimeInterval lastChainRelayTime;
 
 - (instancetype)initWithChain:(DSChain*)chain;
-- (void)resetSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo;
+- (void)resetSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo inContext:(NSManagedObjectContext*)context;
 - (void)resetSyncStartHeight;
 - (void)restartSyncStartHeight;
 - (void)relayedNewItem;
 - (void)resetLastRelayedItemTime;
-- (void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo;
+- (void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo inContext:(NSManagedObjectContext*)context;
+
+- (void)applyChainSynchronizationFingerprint:(NSData*)chainSynchronizationFingerprint;
+
+@property (nonatomic, assign) DSChainSyncPhase syncPhase;
 
 @end
 

@@ -63,6 +63,8 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus) {
 
 -(void)save;
 
+-(void)saveInContext:(NSManagedObjectContext*)context;
+
 -(DSBLSKey* _Nullable)operatorKeyFromSeed:(NSData*)seed;
 
 -(NSString*)operatorKeyStringFromSeed:(NSData*)seed;

@@ -70,9 +70,9 @@
     return peer;
 }
 
-+ (void)deletePeersForChain:(DSChainEntity*)chainEntity {
++ (void)deletePeersForChainEntity:(DSChainEntity*)chainEntity {
     [chainEntity.managedObjectContext performBlockAndWait:^{
-        NSArray * peersToDelete = [self objectsMatching:@"(chain == %@)",chainEntity];
+        NSArray * peersToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@)",chainEntity];
         for (DSPeerEntity * peer in peersToDelete) {
             [chainEntity.managedObjectContext deleteObject:peer];
         }

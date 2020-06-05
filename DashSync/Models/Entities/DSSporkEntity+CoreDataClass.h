@@ -15,8 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSSporkEntity : NSManagedObject
 
-+ (NSArray<DSSporkEntity*>*)sporksOnChain:(DSChainEntity*)chainEntity;
-+ (void)deleteSporksOnChain:(DSChainEntity*)chainEntity;
++ (NSArray<DSSporkEntity*>*)sporksonChainEntity:(DSChainEntity*)chainEntity;
++ (void)deleteSporksOnChainEntity:(DSChainEntity*)chainEntity;
 - (void)setAttributesFromSpork:(DSSpork *)spork withSporkHash:(DSSporkHashEntity*)sporkHash;
 
 @end

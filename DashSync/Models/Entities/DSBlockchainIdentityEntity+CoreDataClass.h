@@ -17,6 +17,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(DSBlockchainIdentity*)blockchainIdentity;
 
++(void)deleteBlockchainIdentitiesOnChainEntity:(DSChainEntity*)chainEntity;
+
 @end
 
 NS_ASSUME_NONNULL_END

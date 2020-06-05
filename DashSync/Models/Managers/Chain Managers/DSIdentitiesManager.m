@@ -57,7 +57,7 @@
         if (self.foreignBlockchainIdentities[uint256_data(uniqueId)]) {
             return self.foreignBlockchainIdentities[uint256_data(uniqueId)];
         } else {
-            DSBlockchainIdentity * foreignBlockchainIdentity = [[DSBlockchainIdentity alloc] initWithUniqueId:uniqueId onChain:self.chain inContext:self.chain.managedObjectContext];
+            DSBlockchainIdentity * foreignBlockchainIdentity = [[DSBlockchainIdentity alloc] initWithUniqueId:uniqueId onChain:self.chain inContext:self.chain.chainManagedObjectContext];
             [foreignBlockchainIdentity saveInitial];
             self.foreignBlockchainIdentities[uint256_data(uniqueId)] = foreignBlockchainIdentity;
         }
@@ -70,7 +70,7 @@
     for (DSBlockchainIdentity * blockchainIdentity in [self.chain localBlockchainIdentities]) {
         if (!blockchainIdentity.registrationCreditFundingTransaction || (blockchainIdentity.registrationCreditFundingTransaction.blockHeight == BLOCK_UNKNOWN_HEIGHT)) {
             [unsyncedBlockchainIdentities addObject:blockchainIdentity];
-        } else if (self.chain.lastBlockHeight > blockchainIdentity.dashpaySyncronizationBlockHeight) {
+        } else if (self.chain.lastSyncBlockHeight > blockchainIdentity.dashpaySyncronizationBlockHeight) {
             //If they are equal then the blockchain identity is synced
             //This is because the dashpaySyncronizationBlock represents the last block for the bloom filter used in L1 should be considered valid
             //That's because it is set at the time with the hash of the last
@@ -144,7 +144,7 @@
         for (NSDictionary * document in documents) {
             NSString * userId = document[@"$userId"];
             NSString * normalizedLabel = document[@"normalizedLabel"];
-            DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 onChain:self.chain inContext:self.chain.managedObjectContext];
+            DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 onChain:self.chain inContext:self.chain.chainManagedObjectContext];
             [identity addUsername:normalizedLabel status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
             [rBlockchainIdentities addObject:identity];
         }
@@ -159,7 +159,7 @@
                 completion(NO,nil,error);
             });
         }
-        NSLog(@"Failure %@",error);
+        DSDLog(@"Failure in searchIdentityByName %@",error);
     }];
     return call;
 }
@@ -171,7 +171,7 @@
         for (NSDictionary * document in documents) {
             NSString * userId = document[@"$userId"];
             NSString * normalizedLabel = document[@"normalizedLabel"];
-            DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 onChain:self.chain inContext:self.chain.managedObjectContext];
+            DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 onChain:self.chain inContext:self.chain.chainManagedObjectContext];
             [identity addUsername:normalizedLabel status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
             [rBlockchainIdentities addObject:identity];
         }
@@ -186,7 +186,7 @@
                 completion(NO, nil, @[error]);
             });
         }
-        NSLog(@"Failure %@",error);
+        DSDLog(@"Failure in searchIdentitiesByNamePrefix %@",error);
     }];
     return call;
 }
@@ -198,7 +198,7 @@
         for (NSDictionary * document in documents) {
             NSString * userId = document[@"$userId"];
             NSString * normalizedLabel = document[@"normalizedLabel"];
-            DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 onChain:self.chain inContext:self.chain.managedObjectContext];
+            DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 onChain:self.chain inContext:self.chain.chainManagedObjectContext];
             [identity addUsername:normalizedLabel status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
             [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, NSError * error) {
                 
@@ -216,7 +216,7 @@
                 completion(NO, nil, @[error]);
             });
         }
-        NSLog(@"Failure %@",error);
+        DSDLog(@"Failure in searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID %@",error);
     }];
 }
 

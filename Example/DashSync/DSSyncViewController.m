@@ -128,14 +128,14 @@
                                                        }];
     
     self.blocksResetObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainBlocksDidChangeNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainChainSyncBlocksDidChangeNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            [self updateBlockHeight];
                                                            [self updateBalance];
                                                        }];
     
     self.headersResetObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainInitialHeadersDidChangeNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainTerminalBlocksDidChangeNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            [self updateHeaderHeight];
                                                        }];
@@ -261,7 +261,7 @@
     }
     
     if (timeout <= DBL_EPSILON) {
-        if ([self.chain timestampForBlockHeight:self.chain.lastBlockHeight] +
+        if ([self.chain timestampForBlockHeight:self.chain.lastSyncBlockHeight] +
             WEEK_TIME_INTERVAL < [NSDate timeIntervalSince1970]) {
             if (self.chainManager.chain.earliestWalletCreationTime + DAY_TIME_INTERVAL < start) {
                 self.explanationLabel.text = NSLocalizedString(@"Syncing", nil);
@@ -317,8 +317,8 @@
     NSTimeInterval elapsed = [NSDate timeIntervalSince1970] - self.start;
     double progress = self.chainManager.syncProgress;
     uint64_t dbFileSize = [DashSync sharedSyncController].dbSize;
-    uint32_t lastBlockHeight = self.chain.lastBlockHeight;
-    uint32_t lastHeaderHeight = self.chain.lastHeaderHeight;
+    uint32_t lastBlockHeight = self.chain.lastSyncBlockHeight;
+    uint32_t lastHeaderHeight = self.chain.lastTerminalBlockHeight;
     if (self.timeout > 1.0 && 0.1 + 0.9*elapsed/self.timeout < progress) progress = 0.1 + 0.9*elapsed/self.timeout;
     
     if ((counter % 13) == 0) {
@@ -372,37 +372,41 @@
     UIAlertController * wipeDataAlertController = [UIAlertController alertControllerWithTitle:@"What do you wish to Wipe?" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Peer Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        [[DashSync sharedSyncController] wipePeerDataForChain:self.chainManager.chain];
+        [[DashSync sharedSyncController] wipePeerDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
     }]];
     
-    [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Chain Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainManager.chain];
-        [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chainManager.chain];
+    [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Chain Sync Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [[DashSync sharedSyncController] wipeBlockchainNonTerminalDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
+    }]];
+    
+    [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"All Chain Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
+        [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Masternode Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainManager.chain];
+        [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Governance Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        [[DashSync sharedSyncController] wipeGovernanceDataForChain:self.chainManager.chain];
+        [[DashSync sharedSyncController] wipeGovernanceDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Spork Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        [[DashSync sharedSyncController] wipeSporkDataForChain:self.chainManager.chain];
+        [[DashSync sharedSyncController] wipeSporkDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Wallet Data" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
-        [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainManager.chain forceReauthentication:YES];
+        [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainManager.chain forceReauthentication:YES inContext:[NSManagedObjectContext viewContext]];
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Everything" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
-        [[DashSync sharedSyncController] wipePeerDataForChain:self.chainManager.chain];
-        [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chainManager.chain];
-        [[DashSync sharedSyncController] wipeSporkDataForChain:self.chainManager.chain];
-        [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainManager.chain];
-        [[DashSync sharedSyncController] wipeGovernanceDataForChain:self.chainManager.chain];
-        [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainManager.chain forceReauthentication:YES]; //this takes care of blockchain info as well;
+        [[DashSync sharedSyncController] wipePeerDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
+        [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
+        [[DashSync sharedSyncController] wipeSporkDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
+        [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
+        [[DashSync sharedSyncController] wipeGovernanceDataForChain:self.chainManager.chain inContext:[NSManagedObjectContext viewContext]];
+        [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainManager.chain forceReauthentication:YES inContext:[NSManagedObjectContext viewContext]]; //this takes care of blockchain info as well;
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
@@ -436,11 +440,11 @@
 }
 
 -(void)updateBlockHeight {
-    self.lastBlockHeightLabel.text = [NSString stringWithFormat:@"%d",self.chain.lastBlockHeight];
+    self.lastBlockHeightLabel.text = [NSString stringWithFormat:@"%d",self.chain.lastSyncBlockHeight];
 }
 
 -(void)updateHeaderHeight {
-    self.lastMasternodeBlockHeightLabel.text = [NSString stringWithFormat:@"%d",self.chain.lastHeaderHeight];
+    self.lastMasternodeBlockHeightLabel.text = [NSString stringWithFormat:@"%d",self.chain.lastTerminalBlockHeight];
 }
 
 -(void)updatePeerCount {
@@ -513,11 +517,9 @@
         sporksViewController.sporksArray = [[[[self.chainManager.sporkManager sporkDictionary] allValues] sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"identifier" ascending:TRUE]]] mutableCopy];
     } else if ([segue.identifier isEqualToString:@"BlockchainExplorerSegue"]) {
         DSBlockchainExplorerViewController * blockchainExplorerViewController = (DSBlockchainExplorerViewController*)segue.destinationViewController;
-        blockchainExplorerViewController.type = DSBlockchainExplorerType_Blocks;
         blockchainExplorerViewController.chain = self.chainManager.chain;
     } else if ([segue.identifier isEqualToString:@"HeaderBlockchainExplorerSegue"]) {
         DSBlockchainExplorerViewController * blockchainExplorerViewController = (DSBlockchainExplorerViewController*)segue.destinationViewController;
-        blockchainExplorerViewController.type = DSBlockchainExplorerType_Headers;
         blockchainExplorerViewController.chain = self.chainManager.chain;
     } else if ([segue.identifier isEqualToString:@"MasternodeListSegue"]) {
         DSMasternodeViewController * masternodeViewController = (DSMasternodeViewController*)segue.destinationViewController;

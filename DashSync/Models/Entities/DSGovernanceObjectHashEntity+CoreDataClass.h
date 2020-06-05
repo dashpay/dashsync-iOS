@@ -15,13 +15,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSGovernanceObjectHashEntity : NSManagedObject
 
-+(DSGovernanceObjectHashEntity*)governanceObjectHashEntityWithHash:(NSData*)governanceObjectHash onChain:(DSChainEntity*)chainEntity;
-+(NSArray*)governanceObjectHashEntitiesWithHashes:(NSOrderedSet*)governanceObjectHashes onChain:(DSChainEntity*)chainEntity;
-+(void)updateTimestampForGovernanceObjectHashEntitiesWithGovernanceObjectHashes:(NSOrderedSet*)governanceObjectHashes onChain:(DSChainEntity*)chainEntity;
-+(void)removeOldest:(NSUInteger)count onChain:(DSChainEntity*)chainEntity;
-+(NSUInteger)countAroundNowOnChain:(DSChainEntity*)chainEntity;
-+(NSUInteger)standaloneCountInLast3hoursOnChain:(DSChainEntity*)chainEntity;
-+(void)deleteHashesOnChain:(DSChainEntity*)chainEntity;
++(DSGovernanceObjectHashEntity*)governanceObjectHashEntityWithHash:(NSData*)governanceObjectHash onChainEntity:(DSChainEntity*)chainEntity;
++(NSArray*)governanceObjectHashEntitiesWithHashes:(NSOrderedSet*)governanceObjectHashes onChainEntity:(DSChainEntity*)chainEntity;
++(void)updateTimestampForGovernanceObjectHashEntitiesWithGovernanceObjectHashes:(NSOrderedSet*)governanceObjectHashes onChainEntity:(DSChainEntity*)chainEntity;
++(void)removeOldest:(NSUInteger)count onChainEntity:(DSChainEntity*)chainEntity;
++(NSUInteger)countAroundNowOnChainEntity:(DSChainEntity*)chainEntity;
++(NSUInteger)standaloneCountInLast3hoursOnChainEntity:(DSChainEntity*)chainEntity;
++(void)deleteHashesOnChainEntity:(DSChainEntity*)chainEntity;
 
 @end
 

@@ -194,16 +194,14 @@
 
 -(void)save {
     if (_saved) return;
+    
+    NSManagedObjectContext * context = self.chain.chainManagedObjectContext;
     //saving here will only create, not update.
-    NSManagedObjectContext * context = [DSTransactionEntity context];
     [context performBlockAndWait:^{ // add the transaction to core data
-        [DSChainEntity setContext:context];
-        [DSInstantSendLockEntity setContext:context];
-        [DSTransactionHashEntity setContext:context];
-        if ([DSInstantSendLockEntity countObjectsMatching:@"transaction.transactionHash.txHash == %@", uint256_data(self.transactionHash)] == 0) {
-            DSInstantSendLockEntity * instantSendLockEntity = [DSInstantSendLockEntity managedObject];
+        if ([DSInstantSendLockEntity countObjectsInContext:self.chain.chainManagedObjectContext matching:@"transaction.transactionHash.txHash == %@", uint256_data(self.transactionHash)] == 0) {
+            DSInstantSendLockEntity * instantSendLockEntity = [DSInstantSendLockEntity managedObjectInContext:context];
             [instantSendLockEntity setAttributesFromInstantSendTransactionLock:self];
-            [DSInstantSendLockEntity saveContext];
+            [context ds_save];
         }
     }];
     self.saved = YES;

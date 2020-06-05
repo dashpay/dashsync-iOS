@@ -76,8 +76,10 @@ inline static int ceil_log2(int x)
 @interface DSMerkleBlock ()
 
 @property (nonatomic, assign) UInt256 blockHash;
+@property (nonatomic, strong) NSValue * blockHashValue;
 @property (nonatomic, assign) uint32_t version;
 @property (nonatomic, assign) UInt256 prevBlock;
+@property (nonatomic, strong) NSValue * prevBlockValue;
 @property (nonatomic, assign) UInt256 merkleRoot;
 @property (nonatomic, assign) uint32_t timestamp; // time interval since unix epoch
 @property (nonatomic, assign) uint32_t target;
@@ -166,6 +168,16 @@ inline static int ceil_log2(int x)
     return self;
 }
 
+- (instancetype)initWithBlockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp height:(uint32_t)height onChain:(DSChain*)chain {
+    if (! (self = [self init])) return nil;
+    _blockHash = blockHash;
+    _height = height;
+    _timestamp = timestamp;
+    self.chain = chain;
+    
+    return self;
+}
+
 - (instancetype)initWithBlockHash:(UInt256)blockHash onChain:(DSChain*)chain version:(uint32_t)version prevBlock:(UInt256)prevBlock
                        merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
                 totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags height:(uint32_t)height chainLock:(DSChainLock*)chainLock
@@ -187,6 +199,28 @@ inline static int ceil_log2(int x)
     self.chain = chain;
     
     return self;
+}
+
+- (instancetype)initWithCheckpoint:(DSCheckpoint*)checkpoint onChain:(DSChain*)chain {
+    if (! (self = [self initWithBlockHash:checkpoint.checkpointHash onChain:chain version:1 prevBlock:UINT256_ZERO
+    merkleRoot:checkpoint.merkleRoot timestamp:checkpoint.timestamp
+        target:checkpoint.target nonce:0 totalTransactions:0 hashes:nil flags:nil
+        height:checkpoint.height chainLock:nil])) return nil;
+    return self;
+}
+
+-(NSValue*)prevBlockValue {
+    if (!_prevBlockValue) {
+        _prevBlockValue = uint256_obj(self.prevBlock);
+    }
+    return _prevBlockValue;
+}
+
+-(NSValue*)blockHashValue {
+    if (!_blockHashValue) {
+        _blockHashValue = uint256_obj(self.blockHash);
+    }
+    return _blockHashValue;
 }
 
 -(BOOL)isMerkleTreeValid {
@@ -348,6 +382,9 @@ inline static int ceil_log2(int x)
         
         if (previousBlock == NULL) { assert(currentBlock); break; }
         currentBlock = previousBlocks[uint256_obj(currentBlock.prevBlock)];
+        if (!currentBlock) {
+            DSDLog(@"Block missing for dark gravity wave calculation");
+        }
     }
     UInt256 blockCount256 = ((UInt256) { .u64 = { blockCount, 0, 0, 0 } });
     // darkTarget is the difficulty

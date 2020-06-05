@@ -32,10 +32,14 @@ NS_ASSUME_NONNULL_BEGIN
 FOUNDATION_EXPORT NSString* const DSChainWalletsDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainStandaloneDerivationPathsDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainStandaloneAddressesDidChangeNotification;
-FOUNDATION_EXPORT NSString* const DSChainBlocksDidChangeNotification;
+FOUNDATION_EXPORT NSString* const DSChainChainSyncBlocksDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainBlockWasLockedNotification;
 FOUNDATION_EXPORT NSString* const DSChainNotificationBlockKey;
-FOUNDATION_EXPORT NSString* const DSChainInitialHeadersDidChangeNotification;
+
+// For improved performance DSChainInitialHeadersDidChangeNotification is not garanteed to trigger on every initial headers change.
+FOUNDATION_EXPORT NSString* const DSChainTerminalBlocksDidChangeNotification;
+FOUNDATION_EXPORT NSString* const DSChainInitialHeadersDidFinishSyncingNotification;
+FOUNDATION_EXPORT NSString* const DSChainBlocksDidFinishSyncingNotification;
 FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 typedef NS_ENUM(uint16_t, DSChainType) {
@@ -49,6 +53,12 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
     DSTransactionDirection_Received,
     DSTransactionDirection_Moved,
     DSTransactionDirection_NotAccountFunds,
+};
+
+typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
+    DSChainSyncPhase_Unknown = 0,
+    DSChainSyncPhase_InitialTerminalBlocks,
+    DSChainSyncPhase_ChainSync
 };
 
 @class DSChain, DSChainEntity, DSChainManager, DSWallet, DSMerkleBlock, DSPeer, DSDerivationPath, DSTransaction, DSAccount, DSSimplifiedMasternodeEntry, DSBlockchainIdentity, DSBloomFilter, DSProviderRegistrationTransaction, DSMasternodeList;
@@ -76,14 +86,11 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 /*! @brief The chain manager is a container for all managers (peer, identity, governance, masternode, spork and transition). It also is used to control the sync process.  */
 @property (nonatomic, weak, nullable) DSChainManager * chainManager;
 
-/*! @brief The chain entity associated in Core Data in the context of the chain's managed object context.  */
-@property (nonatomic, readonly, nullable) DSChainEntity * chainEntity;
-
 /*! @brief The chain entity associated in Core Data in the required context.  */
 -(DSChainEntity*)chainEntityInContext:(NSManagedObjectContext*)context;
 
 /*! @brief The managed object context of the chain.  */
-@property (nonatomic, readonly) NSManagedObjectContext * managedObjectContext;
+@property (nonatomic, readonly) NSManagedObjectContext * chainManagedObjectContext;
 
 // MARK: - L1 Network Chain Info
 
@@ -109,6 +116,9 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 
 /*! @brief protocolVersion is the protocol version that we currently use for this chain. This should only be changed in the case of devnets.  */
 @property (nonatomic, assign) uint32_t protocolVersion;
+
+/*! @brief headersMaxAmount is the maximum amount of headers that is expected from peers.  */
+@property (nonatomic, assign) uint32_t headersMaxAmount;
 
 /*! @brief protocolVersion is the protocol version that we currently use for this chain.  */
 @property (nonatomic, readonly) uint32_t maxProofOfWork;
@@ -168,7 +178,7 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 @property (nonatomic, readonly) BOOL syncsBlockchain;
 
 /*! @brief True if this chain should sync headers first for masternode list verification.  */
-@property (nonatomic, readonly) BOOL shouldSyncHeadersFirstForMasternodeListVerification;
+@property (nonatomic, readonly) BOOL needsInitialTerminalHeadersSync;
 
 /*! @brief The default transaction version used when sending transactions.  */
 @property (nonatomic, readonly) uint16_t transactionVersion;
@@ -212,6 +222,9 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 /*! @brief Unregister all wallets from the chain, they will no longer be loaded or used.  */
 - (void)unregisterAllWallets;
 
+/*! @brief Unregister all wallets from the chain that don't have an extended public key in one of their derivation paths, they will no longer be loaded or used.  */
+- (void)unregisterAllWalletsMissingExtendedPublicKeys;
+
 // MARK: - Standalone Derivation Paths
 
 /*! @brief Standalone derivation paths used in this chain. This is currently an experimental feature  */
@@ -237,16 +250,31 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 /*! @brief Returns the checkpoint at a given block height, if one exists at that block height.  */
 - (DSCheckpoint* _Nullable)checkpointForBlockHeight:(uint32_t)blockHeight;
 
+/*! @brief Returns the last checkpoint on or before the given height.  */
+- (DSCheckpoint*)lastCheckpointOnOrBeforeHeight:(uint32_t)height;
+
+/*! @brief Returns the last checkpoint on or before the given timestamp.  */
+- (DSCheckpoint*)lastCheckpointOnOrBeforeTimestamp:(NSTimeInterval)timestamp;
+
+/*! @brief When used this will change the checkpoint used for initial headers sync. This value is not persisted.  */
+- (void)useCheckpointBeforeOrOnHeightForTerminalBlocksSync:(uint32_t)blockHeight;
+
+/*! @brief When used this will change the checkpoint used for main chain syncing. This value is not persisted.  */
+- (void)useCheckpointBeforeOrOnHeightForSyncingChainBlocks:(uint32_t)blockHeight;
+
 // MARK: - Blocks and Headers
 
-/*! @brief The last known block on the chain.  */
-@property (nonatomic, readonly, nullable) DSMerkleBlock * lastBlock;
+/*! @brief The last known chain sync block on the chain.  */
+@property (nonatomic, readonly, nullable) DSMerkleBlock * lastSyncBlock;
 
-/*! @brief The last known header on the chain.  */
-@property (nonatomic, readonly, nullable) DSMerkleBlock * lastHeader;
+/*! @brief The last known terminal block on the chain.  */
+@property (nonatomic, readonly, nullable) DSMerkleBlock * lastTerminalBlock;
 
-/*! @brief The last known block or header on the chain. Whichever is latest.  */
-@property (nonatomic, readonly, nullable) DSMerkleBlock * lastBlockOrHeader;
+/*! @brief The last known block on the chain before the given timestamp.  */
+- (DSMerkleBlock *)lastChainSyncBlockOnOrBeforeTimestamp:(NSTimeInterval)timestamp;
+
+/*! @brief The last known block or header on the chain before the given timestamp.  */
+- (DSMerkleBlock *)lastBlockOnOrBeforeTimestamp:(NSTimeInterval)timestamp;
 
 /*! @brief The last known orphan on the chain. An orphan is a block who's parent is currently not known.  */
 @property (nonatomic, readonly, nullable) DSMerkleBlock * lastOrphan;
@@ -258,7 +286,10 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 @property (nonatomic, readonly, nullable) NSString * chainTip;
 
 /*! @brief The block locator array is an array of the 10 most recent block hashes in decending order followed by block hashes that double the step back each iteration in decending order and finishing with the previous known checkpoint after that last hash. Something like (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -15, -23, -39, -71, -135, ..., 0).  */
-@property (nonatomic, readonly, nullable) NSArray <NSData*> * blockLocatorArray;
+@property (nonatomic, readonly, nullable) NSArray <NSData*> * chainSyncBlockLocatorArray;
+
+/*! @brief This block locator array is an array of 10 block hashes in decending order before the given timestamp followed by block hashes that double the step back each iteration in decending order and finishing with the previous known checkpoint after that last hash. Something like (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -15, -23, -39, -71, -135, ..., 0).  */
+- (NSArray <NSData*> *)blockLocatorArrayOnOrBeforeTimestamp:(NSTimeInterval)timestamp includeInitialTerminalBlocks:(BOOL)includeHeaders;
 
 /*! @brief The timestamp of a block at a given height.  */
 - (NSTimeInterval)timestampForBlockHeight:(uint32_t)blockHeight; // seconds since 1970, 00:00:00 01/01/01 GMT
@@ -270,18 +301,38 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 - (DSMerkleBlock * _Nullable)blockForBlockHash:(UInt256)blockHash;
 
 /*! @brief Returns a known block in the main chain with the given block hash. A null result could mean that the block was old and has since been discarded.  */
-- (DSMerkleBlock * _Nullable)recentBlockForBlockHash:(UInt256)blockHash;
+- (DSMerkleBlock * _Nullable)recentTerminalBlockForBlockHash:(UInt256)blockHash;
 
 /*! @brief Returns a known block with a given distance from the chain tip. A null result would mean that the given distance exceeded the number of blocks kept locally.  */
 - (DSMerkleBlock * _Nullable)blockFromChainTip:(NSUInteger)blocksAgo;
 
-// MARK: Heights
+// MARK: Chain Sync
 
-/*! @brief Returns the height of the last block.  */
-@property (nonatomic, readonly) uint32_t lastBlockHeight;
+/*! @brief Returns the hash of the last persisted sync block. The sync block itself most likely is not persisted.  */
+@property (nonatomic, readonly) UInt256 lastPersistedChainSyncBlockHash;
 
-/*! @brief Returns the height of the last header.  */
-@property (nonatomic, readonly) uint32_t lastHeaderHeight;
+/*! @brief Returns the height of the last persisted sync block. The sync block itself most likely is not persisted.  */
+@property (nonatomic, readonly) uint32_t lastPersistedChainSyncBlockHeight;
+
+/*! @brief Returns the timestamp of the last persisted sync block. The sync block itself most likely is not persisted.  */
+@property (nonatomic, readonly) NSTimeInterval lastPersistedChainSyncBlockTimestamp;
+
+/*! @brief Returns the locators of the last persisted chain sync block. The sync block itself most likely is not persisted.  */
+@property (nullable, nonatomic, readonly) NSArray * lastPersistedChainSyncLocators;
+
+// MARK: Last Block Information
+
+/*! @brief Returns the height of the last sync block.  */
+@property (nonatomic, readonly) uint32_t lastSyncBlockHeight;
+
+/*! @brief Returns the hash of the last sync block.  */
+@property (nonatomic, readonly) UInt256 lastSyncBlockHash;
+
+/*! @brief Returns the timestamp of the last sync block.  */
+@property (nonatomic, readonly) NSTimeInterval lastSyncBlockTimestamp;
+
+/*! @brief Returns the height of the last header used in initial headers sync to get the deterministic masternode list.  */
+@property (nonatomic, readonly) uint32_t lastTerminalBlockHeight;
 
 /*! @brief Returns the height of the best block.  */
 @property (nonatomic, readonly) uint32_t bestBlockHeight;

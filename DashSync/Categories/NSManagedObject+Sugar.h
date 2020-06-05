@@ -28,74 +28,55 @@
 
 #import <UIKit/UIKit.h>
 #import <CoreData/CoreData.h>
+#import "NSManagedObjectContext+DSSugar.h"
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface NSManagedObject (Sugar)
 
 // create objects
-+ (instancetype)managedObject;
 + (instancetype)managedObjectInContext:(NSManagedObjectContext *)context;
-+ (instancetype)managedObjectInNewChildContextForParentContext:(NSManagedObjectContext *)context;
-+ (NSArray *)managedObjectArrayWithLength:(NSUInteger)length;
++ (NSArray *)managedObjectArrayWithLength:(NSUInteger)length inContext:(NSManagedObjectContext *)context;
 
 // fetch existing objects
-+ (NSArray *)allObjects;
-+ (NSArray *)allObjectsWithPrefetch:(NSArray<NSString*> *) prefetchArray;
-+ (NSArray *)objectsMatching:(NSString *)predicateFormat, ...;
-+ (instancetype)anyObjectMatching:(NSString *)predicateFormat, ...;
-+ (instancetype)anyObjectMatchingInContext:(NSManagedObjectContext *)context withPredicate:(NSString *)predicateFormat, ...;
-+ (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args;
-+ (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext*)context;
++ (NSArray *)allObjectsInContext:(NSManagedObjectContext *)context;
++ (NSArray *)allObjectsWithPrefetch:(NSArray<NSString*> *)prefetchArray inContext:(NSManagedObjectContext*)context;
++ (NSArray *)objectsInContext:(NSManagedObjectContext *)context matching:(NSString *)predicateFormat, ...;
++ (instancetype)anyObjectInContext:(NSManagedObjectContext *)context matching:(NSString *)predicateFormat, ...;
+
 + (NSArray *)objectsForPredicate:(NSPredicate*)predicate inContext:(NSManagedObjectContext*)context;
-+ (instancetype)anyObjectMatching:(NSString *)predicateFormat arguments:(va_list)args;
-+ (instancetype)anyObjectMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext*)context;
 + (instancetype)anyObjectForPredicate:(NSPredicate*)predicate inContext:(NSManagedObjectContext*)context;
-+ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending;
-+ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending offset:(NSUInteger)offset limit:(NSUInteger)lim;
-+ (NSArray *)fetchObjects:(NSFetchRequest *)request;
+
++ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending inContext:(NSManagedObjectContext*)context;
++ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending offset:(NSUInteger)offset limit:(NSUInteger)lim inContext:(NSManagedObjectContext*)context;
+
 + (NSArray *)fetchObjects:(NSFetchRequest *)request inContext:(NSManagedObjectContext*)context;
 
 // count existing objects
-+ (NSUInteger)countAllObjects;
-+ (NSUInteger)countObjectsMatching:(NSString *)predicateFormat, ...;
-+ (NSUInteger)countObjectsMatching:(NSString *)predicateFormat arguments:(va_list)args;
-+ (NSUInteger)countObjects:(NSFetchRequest *)request;
-
++ (NSUInteger)countAllObjectsInContext:(NSManagedObjectContext *)context;
++ (NSUInteger)countObjectsInContext:(NSManagedObjectContext *)context matching:(NSString *)predicateFormat, ...;
++ (NSUInteger)countObjects:(NSFetchRequest *)request inContext:(NSManagedObjectContext*)context;
 + (NSUInteger)countObjectsMatchingInContext:(NSManagedObjectContext *)context withPredicate:(NSString *)predicateFormat, ...;
-+ (NSUInteger)countObjectsMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext *)context;
-+ (NSUInteger)countObjects:(NSFetchRequest *)request inContext:(NSManagedObjectContext *)context;
 
 // delete objects
-+ (NSUInteger)deleteAllObjects;
-+ (NSUInteger)deleteObjects:(NSArray *)objects;
++ (NSUInteger)deleteAllObjectsInContext:(NSManagedObjectContext*)context;
++ (NSUInteger)deleteAllObjectsAndWaitInContext:(NSManagedObjectContext*)context;
++ (NSUInteger)deleteObjects:(NSArray *)objects inContext:(NSManagedObjectContext*)context;
++ (NSUInteger)deleteObjectsAndWait:(NSArray *)objects inContext:(NSManagedObjectContext*)context;
 
-// call this before any NSManagedObject+Sugar methods to use a concurrency type other than NSMainQueueConcurrencyType
-+ (void)setConcurrencyType:(NSManagedObjectContextConcurrencyType)type;
++ (instancetype)managedObjectInNewChildContextForParentContext:(NSManagedObjectContext *)context;
 
 // set the fetchBatchSize to use when fetching objects, default is 100
 + (void)setFetchBatchSize:(NSUInteger)fetchBatchSize;
 
-// returns the location on disk of the sqlite store file
-+ (NSURL*)storeURL;
-
-// returns the managed object context for the application, or if the context doesn't already exist, creates it and binds
-// it to the persistent store coordinator for the application
-+ (NSManagedObjectContext *)context;
-
-+ (NSManagedObjectContext *)mainContext;
-
-+ (NSError*)saveMainContext;
-
-// sets a different context for NSManagedObject+Sugar methods to use for this type of entity
-+ (void)setContext:(NSManagedObjectContext *)context;
-
-+ (NSError*)saveContext; // persists changes (this is called automatically for the main context when the app terminates)
-
 + (NSString *)entityName; // override this if entity name differs from class name
 + (NSFetchRequest *)fetchReq;
-+ (NSFetchedResultsController *)fetchedResultsController:(NSFetchRequest *)request;
 
 - (id)objectForKeyedSubscript:(id<NSCopying>)key; // id value = entity[@"key"]; thread safe valueForKey:
 - (void)setObject:(id)obj forKeyedSubscript:(id<NSCopying>)key; // entity[@"key"] = value; thread safe setValue:forKey:
 - (void)deleteObject;
+- (void)deleteObjectAndWait;
 
 @end
+
+NS_ASSUME_NONNULL_END

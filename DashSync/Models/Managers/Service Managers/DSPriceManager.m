@@ -102,7 +102,6 @@
     
     self.operationQueue = [[DSOperationQueue alloc] init];
     
-    [NSManagedObject setConcurrencyType:NSPrivateQueueConcurrencyType];
     self.reachability = [DSReachabilityManager sharedManager];
     _dashFormat = [NSNumberFormatter new];
     self.dashFormat.lenient = YES;

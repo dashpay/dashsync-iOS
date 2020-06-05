@@ -37,9 +37,22 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setEstimatedBlockHeight:(uint32_t)estimatedBlockHeight fromPeer:(DSPeer*)peer;
 - (void)removeEstimatedBlockHeightOfPeer:(DSPeer*)peer;
 - (BOOL)addBlock:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer;
-- (BOOL)addHeader:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer;
 - (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)txHashes;
 - (void)clearOrphans;
+
+// MARK: Chain Sync
+
+/*! @brief Returns the hash of the last persisted sync block. The sync block itself most likely is not persisted.  */
+@property (nonatomic, assign) UInt256 lastPersistedChainSyncBlockHash;
+
+/*! @brief Returns the height of the last persisted sync block. The sync block itself most likely is not persisted.  */
+@property (nonatomic, assign) uint32_t lastPersistedChainSyncBlockHeight;
+
+/*! @brief Returns the timestamp of the last persisted sync block. The sync block itself most likely is not persisted.  */
+@property (nonatomic, assign) NSTimeInterval lastPersistedChainSyncBlockTimestamp;
+
+/*! @brief Returns the locators of the last persisted chain sync block. The sync block itself most likely is not persisted.  */
+@property (nullable, nonatomic, strong) NSArray * lastPersistedChainSyncLocators;
 
 // MARK: - Wallet, Accounts and Transactions
 
@@ -78,7 +91,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)updateAddressUsageOfSimplifiedMasternodeEntries:(NSArray*)simplifiedMasternodeEntries;
 
 /*! @brief The header locator array is an array of the 10 most recent block hashes in decending order followed by block hashes that double the step back each iteration in decending order and finishing with the previous known checkpoint after that last hash. Something like (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -15, -23, -39, -71, -135, ..., 0).  */
-@property (nonatomic, readonly, nullable) NSArray * headerLocatorArrayForMasternodeSync;
+@property (nonatomic, readonly, nullable) NSArray * terminalBlocksLocatorArray;
 
 // MARK: - Wiping
 
@@ -87,14 +100,19 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)wipeMasternodesInContext:(NSManagedObjectContext*)context;
 
 /*! @brief This removes all blockchain information from the chain's wallets and derivation paths. */
-- (void)wipeBlockchainInfo;
+- (void)wipeBlockchainInfoInContext:(NSManagedObjectContext*)context;
+
+- (void)wipeBlockchainNonTerminalInfoInContext:(NSManagedObjectContext*)context;
 
 // MARK: - Persistence
 
 /*! @brief Save chain info, this rarely needs to be called.  */
 - (void)save;
 
-- (void)saveBlocks;
+- (void)saveInContext:(NSManagedObjectContext*)context;
+
+- (void)saveBlockLocators;
+- (void)saveTerminalBlocks;
 
 @end
 

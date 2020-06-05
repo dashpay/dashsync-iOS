@@ -54,38 +54,38 @@
     return b;
 }
 
-+(DSAddressEntity*)addressMatching:(NSString*)address onChain:(DSChain*)chain {
-    NSArray <DSAddressEntity *>* addressEntities = [DSAddressEntity objectsMatching:@"address == %@ && derivationPath.chain == %@",address,chain.chainEntity];
++(DSAddressEntity*)addressMatching:(NSString*)address onChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context {
+    NSArray <DSAddressEntity *>* addressEntities = [DSAddressEntity objectsInContext:context matching:@"address == %@ && derivationPath.chain == %@",address,[chain chainEntityInContext:context]];
     if ([addressEntities count]) {
         NSAssert([addressEntities count] == 1, @"addresses should not be duplicates");
         return [addressEntities firstObject];
     } else {
-        DSAddressEntity * addressEntity = [DSAddressEntity managedObject];
+        DSAddressEntity * addressEntity = [DSAddressEntity managedObjectInContext:context];
         addressEntity.address = address;
         addressEntity.index = UINT32_MAX;
         return addressEntity;
     }
 }
 
-+(DSAddressEntity*)findAddressMatching:(NSString*)address onChain:(DSChain*)chain {
++(DSAddressEntity*)findAddressMatching:(NSString*)address onChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context {
 #if (0 && DEBUG) //this is for testing
-    NSArray <DSAddressEntity *>* addressEntities = [DSAddressEntity objectsMatching:@"address == %@ && derivationPath.chain == %@",address,chain.chainEntity];
+    NSArray <DSAddressEntity *>* addressEntities = [DSAddressEntity objectsInContext:context matching:@"address == %@ && derivationPath.chain == %@",address,[chain chainEntityInContext:context]];
     if ([addressEntities count]) {
         NSAssert([addressEntities count] == 1, @"addresses should not be duplicates");
         return [addressEntities firstObject];
     }
     return nil;
 #else
-    return [DSAddressEntity anyObjectMatching:@"address == %@ && derivationPath.chain == %@",address,chain.chainEntity];
+    return [DSAddressEntity anyObjectInContext:context matching:@"address == %@ && derivationPath.chain == %@",address,[chain chainEntityInContext:context]];
 #endif
 }
 
-+(NSArray<DSAddressEntity*>*)findAddressesIn:(NSSet<NSString*>*)addresses onChain:(DSChain*)chain {
-    return [DSAddressEntity objectsMatching:@"address IN %@ && derivationPath.chain == %@",addresses,chain.chainEntity];
++(NSArray<DSAddressEntity*>*)findAddressesIn:(NSSet<NSString*>*)addresses onChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context {
+    return [DSAddressEntity objectsInContext:context matching:@"address IN %@ && derivationPath.chain == %@",addresses,[chain chainEntityInContext:context]];
 }
 
-+(NSDictionary<NSString*,DSAddressEntity*>*)findAddressesAndIndexIn:(NSSet<NSString*>*)addresses onChain:(DSChain*)chain {
-    NSArray * addressEntities = [self findAddressesIn:addresses onChain:chain];
++(NSDictionary<NSString*,DSAddressEntity*>*)findAddressesAndIndexIn:(NSSet<NSString*>*)addresses onChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context {
+    NSArray * addressEntities = [self findAddressesIn:addresses onChain:chain inContext:context];
     NSMutableArray * addressStringsOfEntities = [NSMutableArray array];
     for (DSAddressEntity * addressEntity in addressEntities) {
         [addressStringsOfEntities addObject:addressEntity.address];
@@ -93,9 +93,9 @@
     return [NSDictionary dictionaryWithObjects:addressEntities forKeys:addressStringsOfEntities];
 }
 
-+ (void)deleteAddressesOnChain:(DSChainEntity*)chainEntity {
++ (void)deleteAddressesOnChainEntity:(DSChainEntity*)chainEntity {
     [chainEntity.managedObjectContext performBlockAndWait:^{
-        NSArray * addressesToDelete = [self objectsMatching:@"(derivationPath.chain == %@)",chainEntity];
+        NSArray * addressesToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(derivationPath.chain == %@)",chainEntity];
         for (DSAddressEntity * address in addressesToDelete) {
             [chainEntity.managedObjectContext deleteObject:address];
         }

@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)addKey:(DSKey*)key atIndexPath:(NSIndexPath*)indexPath ofType:(DSKeyType)type withStatus:(DSBlockchainIdentityKeyStatus)status save:(BOOL)save;
 -(BOOL)registerKeyWithStatus:(DSBlockchainIdentityKeyStatus)status atIndexPath:(NSIndexPath*)indexPath ofType:(DSKeyType)type;
 -(DSKey* _Nullable)privateKeyAtIndex:(uint32_t)index ofType:(DSKeyType)type;
--(void)deletePersistentObjectAndSave:(BOOL)save;
+-(void)deletePersistentObjectAndSave:(BOOL)save inContext:(NSManagedObjectContext*)context;
 
 
 -(void)saveInitial;

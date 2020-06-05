@@ -100,7 +100,7 @@
             if (blockchainIdentity.registrationCreditFundingTransaction.blockHeight == BLOCK_UNKNOWN_HEIGHT) {
                 blockchainIdentityCell.confirmationsLabel.text = @"unconfirmed";
             } else {
-            blockchainIdentityCell.confirmationsLabel.text = [NSString stringWithFormat:@"%u",(self.chainManager.chain.lastBlockHeight - blockchainIdentity.registrationCreditFundingTransaction.blockHeight + 1)];
+            blockchainIdentityCell.confirmationsLabel.text = [NSString stringWithFormat:@"%u",(self.chainManager.chain.lastSyncBlockHeight - blockchainIdentity.registrationCreditFundingTransaction.blockHeight + 1)];
             }
         }
         blockchainIdentityCell.registrationL2StatusLabel.text = blockchainIdentity.localizedRegistrationStatusString;

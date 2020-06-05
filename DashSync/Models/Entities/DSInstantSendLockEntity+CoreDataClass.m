@@ -24,14 +24,12 @@
 - (instancetype)setAttributesFromInstantSendTransactionLock:(DSInstantSendTransactionLock *)instantSendTransactionLock
 {
     [self.managedObjectContext performBlockAndWait:^{
-        [DSTransactionEntity setContext:self.managedObjectContext];
-        [DSQuorumEntryEntity setContext:self.managedObjectContext];
         self.validSignature = instantSendTransactionLock.signatureVerified;
         self.signature = [NSData dataWithUInt768:instantSendTransactionLock.signature];
-        DSTransactionEntity * transactionEntity = [DSTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(instantSendTransactionLock.transactionHash)];
+        DSTransactionEntity * transactionEntity = [DSTransactionEntity anyObjectInContext:self.managedObjectContext matching:@"transactionHash.txHash == %@", uint256_data(instantSendTransactionLock.transactionHash)];
         NSAssert(transactionEntity, @"transaction must exist");
         self.transaction = transactionEntity;
-        self.quorum = instantSendTransactionLock.intendedQuorum.matchingQuorumEntryEntity;//the quorum might not yet
+        self.quorum = [instantSendTransactionLock.intendedQuorum matchingQuorumEntryEntityInContext:self.managedObjectContext];//the quorum might not yet
     }];
     
     return self;

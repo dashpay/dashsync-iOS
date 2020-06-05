@@ -19,11 +19,11 @@
 
 @implementation DSProviderRegistrationTransactionEntity
 
-- (instancetype)setAttributesFromTransaction:(DSTransaction *)tx
+- (instancetype)setAttributesFromTransaction:(DSTransaction *)transaction
 {
     [self.managedObjectContext performBlockAndWait:^{
-        [super setAttributesFromTransaction:tx];
-        DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction*)tx;
+        [super setAttributesFromTransaction:transaction];
+        DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction*)transaction;
         self.specialTransactionVersion = providerRegistrationTransaction.providerRegistrationTransactionVersion;
         self.providerType = providerRegistrationTransaction.providerType;
         self.providerMode = providerRegistrationTransaction.providerMode;
@@ -37,30 +37,30 @@
         self.scriptPayout = providerRegistrationTransaction.scriptPayout;
         self.payloadSignature = providerRegistrationTransaction.payloadSignature;
         
-        NSString * ownerAddress = [self.ownerKeyHash addressFromHash160DataForChain:tx.chain];
-        NSString * operatorAddress = [DSKey addressWithPublicKeyData:self.operatorKey forChain:tx.chain];
-        NSString * votingAddress = [self.votingKeyHash addressFromHash160DataForChain:tx.chain];
-        NSString * payoutAddress = [NSString addressWithScriptPubKey:self.scriptPayout onChain:tx.chain];
+        NSString * ownerAddress = [self.ownerKeyHash addressFromHash160DataForChain:transaction.chain];
+        NSString * operatorAddress = [DSKey addressWithPublicKeyData:self.operatorKey forChain:transaction.chain];
+        NSString * votingAddress = [self.votingKeyHash addressFromHash160DataForChain:transaction.chain];
+        NSString * payoutAddress = [NSString addressWithScriptPubKey:self.scriptPayout onChain:transaction.chain];
         
-        NSArray * ownerAddressEntities = [DSAddressEntity objectsMatching:@"address == %@ && derivationPath.chain == %@",ownerAddress,tx.chain.chainEntity];
+        NSArray * ownerAddressEntities = [DSAddressEntity objectsInContext:self.managedObjectContext matching:@"address == %@ && derivationPath.chain == %@",ownerAddress,[transaction.chain chainEntityInContext:self.managedObjectContext]];
         if ([ownerAddressEntities count]) {
             NSAssert([ownerAddressEntities count] == 1, @"addresses should not be duplicates");
             [self addAddressesObject:[ownerAddressEntities firstObject]];
         }
         
-        NSArray * operatorAddressEntities = [DSAddressEntity objectsMatching:@"address == %@ && derivationPath.chain == %@",operatorAddress,tx.chain.chainEntity];
+        NSArray * operatorAddressEntities = [DSAddressEntity objectsInContext:self.managedObjectContext matching:@"address == %@ && derivationPath.chain == %@",operatorAddress,[transaction.chain chainEntityInContext:self.managedObjectContext]];
         if ([operatorAddressEntities count]) {
             NSAssert([operatorAddressEntities count] == 1, @"addresses should not be duplicates");
             [self addAddressesObject:[operatorAddressEntities firstObject]];
         }
         
-        NSArray * votingAddressEntities = [DSAddressEntity objectsMatching:@"address == %@ && derivationPath.chain == %@",votingAddress,tx.chain.chainEntity];
+        NSArray * votingAddressEntities = [DSAddressEntity objectsInContext:self.managedObjectContext matching:@"address == %@ && derivationPath.chain == %@",votingAddress,[transaction.chain chainEntityInContext:self.managedObjectContext]];
         if ([votingAddressEntities count]) {
             NSAssert([votingAddressEntities count] == 1, @"addresses should not be duplicates");
             [self addAddressesObject:[votingAddressEntities firstObject]];
         }
         
-        NSArray * payoutAddressEntities = [DSAddressEntity objectsMatching:@"address == %@ && derivationPath.chain == %@",payoutAddress,tx.chain.chainEntity];
+        NSArray * payoutAddressEntities = [DSAddressEntity objectsInContext:self.managedObjectContext matching:@"address == %@ && derivationPath.chain == %@",payoutAddress,[transaction.chain chainEntityInContext:self.managedObjectContext]];
         if ([payoutAddressEntities count]) {
             NSAssert([payoutAddressEntities count] == 1, @"addresses should not be duplicates");
             [self addAddressesObject:[payoutAddressEntities firstObject]];

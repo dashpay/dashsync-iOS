@@ -22,9 +22,9 @@
 
 @implementation DSFriendRequestEntity
 
-+(void)deleteFriendRequestsOnChain:(DSChainEntity*)chainEntity {
++(void)deleteFriendRequestsOnChainEntity:(DSChainEntity*)chainEntity {
     [chainEntity.managedObjectContext performBlockAndWait:^{
-        NSArray * friendRequestsToDelete = [self objectsMatching:@"(derivationPath.chain == %@)",chainEntity];
+        NSArray * friendRequestsToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(derivationPath.chain == %@)",chainEntity];
         for (DSFriendRequestEntity * friendRequest in friendRequestsToDelete) {
             [friendRequest.managedObjectContext deleteObject:friendRequest];
         }

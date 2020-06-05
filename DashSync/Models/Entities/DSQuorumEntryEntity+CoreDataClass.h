@@ -24,14 +24,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) UInt768 allCommitmentAggregatedSignature;
 @property (nonatomic, readonly) DSQuorumEntry * quorumEntry;
 
-+ (instancetype _Nullable)quorumEntryEntityFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry;
++ (instancetype _Nullable)quorumEntryEntityFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry inContext:(NSManagedObjectContext *)context;
 
 - (void)setAttributesFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry onBlock:(DSMerkleBlockEntity * _Nullable)block;
 
-+ (void)deleteHavingQuorumHashes:(NSArray*)quorumHashes onChain:(DSChainEntity*)chainEntity;
-+ (DSQuorumEntryEntity* _Nullable)quorumEntryForHash:(NSData*)quorumEntryHash onChain:(DSChainEntity* _Nonnull)chainEntity;
++ (void)deleteHavingQuorumHashes:(NSArray*)quorumHashes onChainEntity:(DSChainEntity*)chainEntity;
++ (DSQuorumEntryEntity* _Nullable)quorumEntryForHash:(NSData*)quorumEntryHash onChainEntity:(DSChainEntity*)chainEntity;
 
-+ (void)deleteAllOnChain:(DSChainEntity*)chainEntity;
++ (void)deleteAllOnChainEntity:(DSChainEntity*)chainEntity;
 
 - (UInt256)orderingHashForRequestID:(UInt256)requestID;
 

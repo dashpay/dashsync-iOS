@@ -54,6 +54,10 @@ FOUNDATION_EXPORT NSString* const DSChainManagerNotificationChainKey;
 @property (nonatomic, readonly) DSPeerManager * peerManager;
 @property (nonatomic, readonly) DSChain * chain;
 @property (nonatomic, readonly) BOOL synchronizing;
+@property (nonatomic, readonly) NSData * chainSynchronizationFingerprint;
+
+/*! @brief Returns the sync phase that the chain is currently in.  */
+@property (nonatomic, readonly) DSChainSyncPhase syncPhase;
 
 - (void)startSync;
 

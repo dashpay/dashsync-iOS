@@ -19,20 +19,20 @@
 
 @implementation DSProviderUpdateServiceTransactionEntity
 
-- (instancetype)setAttributesFromTransaction:(DSTransaction *)tx
+- (instancetype)setAttributesFromTransaction:(DSTransaction *)transaction
 {
     [self.managedObjectContext performBlockAndWait:^{
-        [super setAttributesFromTransaction:tx];
-        DSProviderUpdateServiceTransaction * providerUpdateServiceTransaction = (DSProviderUpdateServiceTransaction*)tx;
+        [super setAttributesFromTransaction:transaction];
+        DSProviderUpdateServiceTransaction * providerUpdateServiceTransaction = (DSProviderUpdateServiceTransaction*)transaction;
         self.specialTransactionVersion = providerUpdateServiceTransaction.providerUpdateServiceTransactionVersion;
         self.ipAddress = uint128_data(providerUpdateServiceTransaction.ipAddress);
         self.port = providerUpdateServiceTransaction.port;
         self.scriptPayout = providerUpdateServiceTransaction.scriptPayout;
         self.payloadSignature = providerUpdateServiceTransaction.payloadSignature;
         self.providerRegistrationTransactionHash = [NSData dataWithUInt256:providerUpdateServiceTransaction.providerRegistrationTransactionHash];
-        NSString * payoutAddress = [NSString addressWithScriptPubKey:self.scriptPayout onChain:tx.chain];
+        NSString * payoutAddress = [NSString addressWithScriptPubKey:self.scriptPayout onChain:transaction.chain];
         
-        NSArray * payoutAddressEntities = [DSAddressEntity objectsMatching:@"address == %@ && derivationPath.chain == %@",payoutAddress,tx.chain.chainEntity];
+        NSArray * payoutAddressEntities = [DSAddressEntity objectsInContext:self.managedObjectContext matching:@"address == %@ && derivationPath.chain == %@",payoutAddress,[transaction.chain chainEntityInContext:self.managedObjectContext]];
         if ([payoutAddressEntities count]) {
             NSAssert([payoutAddressEntities count] == 1, @"addresses should not be duplicates");
             [self addAddressesObject:[payoutAddressEntities firstObject]];

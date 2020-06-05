@@ -32,7 +32,7 @@
 #define DGW_PAST_BLOCKS_MIN 24
 #define DGW_PAST_BLOCKS_MAX 24
 
-#if (DEBUG && 1)
+#if (DEBUG && 0)
 #define LLMQ_KEEP_RECENT_BLOCKS 20000
 #else
 #define LLMQ_KEEP_RECENT_BLOCKS (576*8 + 100)
@@ -42,13 +42,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef union _UInt256 UInt256;
 
-@class DSChain, DSChainLock;
+@class DSChain, DSChainLock, DSCheckpoint;
 
 @interface DSMerkleBlock : NSObject <NSCopying>
 
 @property (nonatomic, readonly) UInt256 blockHash;
+@property (nonatomic, readonly) NSValue * blockHashValue;
 @property (nonatomic, readonly) uint32_t version;
 @property (nonatomic, readonly) UInt256 prevBlock;
+@property (nonatomic, readonly) NSValue * prevBlockValue;
 @property (nonatomic, readonly) UInt256 merkleRoot;
 @property (nonatomic, readonly) uint32_t timestamp; // time interval since unix epoch
 @property (nonatomic, readonly) uint32_t target;
@@ -74,12 +76,16 @@ typedef union _UInt256 UInt256;
 + (instancetype)blockWithMessage:(NSData *)message onChain:(DSChain*)chain;
 
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain*)chain;
+- (instancetype)initWithBlockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp height:(uint32_t)height onChain:(DSChain*)chain;
+
 - (instancetype)initWithBlockHash:(UInt256)blockHash onChain:(DSChain*)chain version:(uint32_t)version prevBlock:(UInt256)prevBlock
 merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
 totalTransactions:(uint32_t)totalTransactions hashes:(NSData * _Nullable)hashes flags:(NSData * _Nullable)flags height:(uint32_t)height chainLock:(DSChainLock* _Nullable)chainLock;
 
 // this init is used to check that the coinbase transaction is properly in the merkle tree of a block
 - (instancetype)initWithBlockHash:(UInt256)blockHash merkleRoot:(UInt256)merkleRoot totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags;
+
+- (instancetype)initWithCheckpoint:(DSCheckpoint*)checkpoint onChain:(DSChain*)chain;
 
 // true if the given tx hash is known to be included in the block
 - (BOOL)containsTxHash:(UInt256)txHash;

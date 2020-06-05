@@ -133,7 +133,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     } else {
         //rare case
         NSTimeInterval lastCheckpointTime = [[DSChainsManager sharedInstance] mainnetManager].chain.checkpoints.lastObject.timestamp;
-        NSTimeInterval lastBlockTime = [[DSChainsManager sharedInstance] mainnetManager].chain.lastBlock.timestamp; //this will either be 0 or a real timestamp, both are fine for next check
+        NSTimeInterval lastBlockTime = [[DSChainsManager sharedInstance] mainnetManager].chain.lastSyncBlock.timestamp; //this will either be 0 or a real timestamp, both are fine for next check
         if (serverTime > lastCheckpointTime && serverTime > lastBlockTime) {
             //there was definitely an issue with serverTime at some point.
             [self updateSecureTime:serverTime];
@@ -575,9 +575,10 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
                                          [[DSVersionManager sharedInstance] clearKeychainWalletOldData];
                                          [[DashSync sharedSyncController] stopSyncAllChains];
                                          for (DSChain * chain in [[DSChainsManager sharedInstance] chains]) {
-                                             [[DashSync sharedSyncController] wipeMasternodeDataForChain:chain];
-                                             [[DashSync sharedSyncController] wipeBlockchainDataForChain:chain];
-                                             [[DashSync sharedSyncController] wipeSporkDataForChain:chain];
+                                             NSManagedObjectContext * context = [NSManagedObjectContext chainContext];
+                                             [[DashSync sharedSyncController] wipeMasternodeDataForChain:chain inContext:context];
+                                             [[DashSync sharedSyncController] wipeBlockchainDataForChain:chain inContext:context];
+                                             [[DashSync sharedSyncController] wipeSporkDataForChain:chain inContext:context];
                                              [chain unregisterAllWallets];
                                          }
                                          [self removePin];

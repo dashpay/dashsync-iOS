@@ -36,9 +36,9 @@
 
 @implementation DSDashpayUserEntity
 
-+(void)deleteContactsOnChain:(DSChainEntity*)chainEntity {
++(void)deleteContactsOnChainEntity:(DSChainEntity*)chainEntity {
     [chainEntity.managedObjectContext performBlockAndWait:^{
-        NSArray * contactsToDelete = [self objectsMatching:@"(chain == %@)",chainEntity];
+        NSArray * contactsToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@)",chainEntity];
         for (DSDashpayUserEntity * contact in contactsToDelete) {
             [chainEntity.managedObjectContext deleteObject:contact];
         }

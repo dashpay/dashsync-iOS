@@ -56,6 +56,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) uint32_t accountNumber;
 
+@property (nonatomic, readonly) NSManagedObjectContext * managedObjectContext;
+
 // current wallet balance excluding transactions known to be invalid
 @property (nonatomic, readonly) uint64_t balance;
 
@@ -91,6 +93,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 // all the contacts for an account
 @property (nonatomic, readonly) NSArray <DSPotentialOneWayFriendship*> * _Nonnull contacts;
+
+// has an extended public key missing in one of the account derivation paths
+@property (nonatomic, readonly) BOOL hasAnExtendedPublicKeyMissing;
 
 -(NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit dashpayGapLimit:(NSUInteger)dashpayGapLimit  internal:(BOOL)internal error:(NSError**)error;
 

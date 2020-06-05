@@ -656,12 +656,12 @@
         if (foundCoinbase && rootMNListValid && rootQuorumListValid && validQuorums) {
             NSLog(@"Valid masternode list found at height %u",[chain heightForBlockHash:blockHash]);
             //yay this is the correct masternode list verified deterministically for the given block
-            NSManagedObjectContext * context = [NSManagedObject context];
+            NSManagedObjectContext * context = [NSManagedObjectContext chainContext];
             [context performBlockAndWait:^{
-                DSChainEntity * chainEntity = chain.chainEntity;
-                [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
-                [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
-                [DSMasternodeListEntity deleteAllOnChain:chainEntity];
+                DSChainEntity * chainEntity = [chain chainEntityInContext:context];
+                [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
+                [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
+                [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
             }];
             [DSMasternodeManager saveMasternodeList:masternodeList toChain:chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums inContext:context completion:^(NSError * _Nonnull error) {
                 NSAssert(!error, @"There should not be an error");
@@ -714,12 +714,12 @@
         if (foundCoinbase && rootMNListValid && rootQuorumListValid && validQuorums) {
             NSLog(@"Valid masternode list found at height %u",[chain heightForBlockHash:blockHash]);
             //yay this is the correct masternode list verified deterministically for the given block
-            NSManagedObjectContext * context = [NSManagedObject context];
+            NSManagedObjectContext * context = [NSManagedObjectContext chainContext];
             [context performBlockAndWait:^{
-                DSChainEntity * chainEntity = chain.chainEntity;
-                [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
-                [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
-                [DSMasternodeListEntity deleteAllOnChain:chainEntity];
+                DSChainEntity * chainEntity = [chain chainEntityInContext:context];
+                [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
+                [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
+                [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
             }];
             [DSMasternodeManager saveMasternodeList:masternodeList toChain:chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums inContext:context completion:^(NSError * _Nonnull error) {
                    NSAssert(!error, @"There should not be an error");
@@ -735,12 +735,12 @@
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
     NSString *filePath = [bundle pathForResource:@"MNL_0_122064" ofType:@"dat"];
     
-    __block NSManagedObjectContext * context = [NSManagedObject context];
+    __block NSManagedObjectContext * context = [NSManagedObjectContext chainContext];
     [context performBlockAndWait:^{
-        DSChainEntity * chainEntity = chain.chainEntity;
-        [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
-        [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
-        [DSMasternodeListEntity deleteAllOnChain:chainEntity];
+        DSChainEntity * chainEntity = [chain chainEntityInContext:context];
+        [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
+        [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
+        [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
     }];
     
     NSData * message = [NSData dataWithContentsOfFile:filePath];
@@ -913,42 +913,39 @@
 
 -(void)testSimplifiedMasternodeEntriesDeletion {
     DSChain * chain = [DSChain mainnet];
-    __block NSManagedObjectContext * context = [NSManagedObject context];
+    __block NSManagedObjectContext * context = [NSManagedObjectContext viewContext];
     [context performBlockAndWait:^{
-        [DSSimplifiedMasternodeEntryEntity setContext:context];
-        NSUInteger count = [DSSimplifiedMasternodeEntryEntity countObjectsMatching:@"masternodeLists.@count == 0"];
+        NSUInteger count = [DSSimplifiedMasternodeEntryEntity countObjectsInContext:context matching:@"masternodeLists.@count == 0"];
         NSLog(@"Deleting %lu objects",(unsigned long)count);
     }];
     [[chain.chainManager masternodeManager] setUp];
     [context performBlockAndWait:^{
-        NSUInteger count = [DSSimplifiedMasternodeEntryEntity countObjectsMatching:@"masternodeLists.@count == 0"];
+        NSUInteger count = [DSSimplifiedMasternodeEntryEntity countObjectsInContext:context matching:@"masternodeLists.@count == 0"];
         NSLog(@"has %lu objects",(unsigned long)count);
     }];
     
     [context performBlockAndWait:^{
-        [DSSimplifiedMasternodeEntryEntity setContext:context];
         UInt256 hash = UINT256_ZERO;
-        DSChainEntity * chainEntity = chain.chainEntity;
+        DSChainEntity * chainEntity = [chain chainEntityInContext:context];
         for (int i = 0; i<1000;i++) {
             hash = [NSData dataWithUInt256:hash].SHA256;
             UInt256 confirmedHash = [NSData dataWithUInt256:hash].SHA256;
             UInt128 address = UINT128_ZERO;
             *address.u16 = i;
             DSSimplifiedMasternodeEntry * entry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:hash confirmedHash:confirmedHash address:address port:9999 operatorBLSPublicKey:UINT384_ZERO previousOperatorBLSPublicKeys:@{} keyIDVoting:UINT160_ZERO isValid:YES previousValidity:@{}  simplifiedMasternodeEntryHash:UINT256_ZERO previousSimplifiedMasternodeEntryHashes:@{} onChain:chain];
-            DSSimplifiedMasternodeEntryEntity * managedObject = [DSSimplifiedMasternodeEntryEntity managedObject];
-            [managedObject setAttributesFromSimplifiedMasternodeEntry:entry onChain:chainEntity];
+            DSSimplifiedMasternodeEntryEntity * managedObject = [DSSimplifiedMasternodeEntryEntity managedObjectInContext:context];
+            [managedObject setAttributesFromSimplifiedMasternodeEntry:entry onChainEntity:chainEntity];
         }
-        [DSSimplifiedMasternodeEntryEntity saveContext];
+        [context ds_save];
     }];
     
     [context performBlockAndWait:^{
-        [DSSimplifiedMasternodeEntryEntity setContext:context];
-        NSUInteger count = [DSSimplifiedMasternodeEntryEntity countObjectsMatching:@"masternodeLists.@count == 0"];
+        NSUInteger count = [DSSimplifiedMasternodeEntryEntity countObjectsInContext:context matching:@"masternodeLists.@count == 0"];
         NSLog(@"Deleting %lu objects",(unsigned long)count);
     }];
     [[chain.chainManager masternodeManager] setUp];
     [context performBlockAndWait:^{
-        NSUInteger count = [DSSimplifiedMasternodeEntryEntity countObjectsMatching:@"masternodeLists.@count == 0"];
+        NSUInteger count = [DSSimplifiedMasternodeEntryEntity countObjectsInContext:context matching:@"masternodeLists.@count == 0"];
         NSLog(@"has %lu objects",(unsigned long)count);
     }];
 }
@@ -959,9 +956,9 @@
 //    [chain chainManager];
 //    [context performBlockAndWait:^{
 //        DSChainEntity * chainEntity = chain.chainEntity;
-//        [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
-//        [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
-//        [DSMasternodeListEntity deleteAllOnChain:chainEntity];
+//        [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
+//        [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
+//        [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
 //    }];
 //    [chain.chainManager.masternodeManager reloadMasternodeLists];
 //    NSArray * files = @[@"MNL_0_1090944", @"MNL_1090944_1091520", @"MNL_1091520_1091808", @"MNL_1091808_1092096", @"MNL_1092096_1092336", @"MNL_1092336_1092360", @"MNL_1092360_1092384", @"MNL_1092384_1092408", @"MNL_1092408_1092432", @"MNL_1092432_1092456", @"MNL_1092456_1092480", @"MNL_1092480_1092504", @"MNL_1092504_1092528", @"MNL_1092528_1092552", @"MNL_1092552_1092576", @"MNL_1092576_1092600", @"MNL_1092600_1092624", @"MNL_1092624_1092648", @"MNL_1092648_1092672", @"MNL_1092672_1092696", @"MNL_1092696_1092720", @"MNL_1092720_1092744", @"MNL_1092744_1092768", @"MNL_1092768_1092792", @"MNL_1092792_1092816", @"MNL_1092816_1092840", @"MNL_1092840_1092864", @"MNL_1092864_1092888", @"MNL_1092888_1092916"];
@@ -980,9 +977,9 @@
  [chain chainManager];
  [context performBlockAndWait:^{
  DSChainEntity * chainEntity = chain.chainEntity;
- [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
- [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
- [DSMasternodeListEntity deleteAllOnChain:chainEntity];
+ [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
+ [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
+ [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
  }];
  [chain.chainManager.masternodeManager reloadMasternodeLists];
  NSArray * files = @[@"MNL_0_1093824", @"MNL_1093824_1094400", @"MNL_1094400_1094976"];
@@ -1012,9 +1009,9 @@
  [chain chainManager];
  [context performBlockAndWait:^{
  DSChainEntity * chainEntity = chain.chainEntity;
- [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
- [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
- [DSMasternodeListEntity deleteAllOnChain:chainEntity];
+ [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
+ [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
+ [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
  }];
  [chain.chainManager.masternodeManager reloadMasternodeLists];
  NSArray * files = @[@"MNL_0_1093824", @"MNL_1093824_1094400", @"MNL_1094400_1094976", @"MNL_1094976_1095264", @"MNL_1095264_1095432", @"MNL_1095432_1095456", @"MNL_1095456_1095480", @"MNL_1095480_1095504", @"MNL_1095504_1095528", @"MNL_1095528_1095552", @"MNL_1095552_1095576", @"MNL_1095576_1095600", @"MNL_1095600_1095624", @"MNL_1095624_1095648", @"MNL_1095648_1095672", @"MNL_1095672_1095696", @"MNL_1095696_1095720"];
@@ -1044,9 +1041,9 @@
  [chain chainManager];
  [context performBlockAndWait:^{
  DSChainEntity * chainEntity = chain.chainEntity;
- [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
- [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
- [DSMasternodeListEntity deleteAllOnChain:chainEntity];
+ [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
+ [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
+ [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
  }];
  [chain.chainManager.masternodeManager reloadMasternodeLists];
  NSArray * files = @[@"MNL_0_1093824", @"MNL_1093824_1094400", @"MNL_1094400_1094976", @"MNL_1094976_1095264", @"MNL_1095264_1095432", @"MNL_1095432_1095456", @"MNL_1095456_1095480", @"MNL_1095480_1095504", @"MNL_1095504_1095528", @"MNL_1095528_1095552", @"MNL_1095552_1095576", @"MNL_1095576_1095600", @"MNL_1095600_1095624", @"MNL_1095624_1095648", @"MNL_1095648_1095672", @"MNL_1095672_1095696", @"MNL_1095696_1095720", @"MNL_1095720_1095744", @"MNL_1095744_1095768", @"MNL_1095768_1095792", @"MNL_1095792_1095816", @"MNL_1095816_1095840", @"MNL_1095840_1095864", @"MNL_1095864_1095888", @"MNL_1095888_1095912", @"MNL_1095912_1095936", @"MNL_1095936_1095960", @"MNL_1095960_1095984", @"MNL_1095984_1096003"];
@@ -1077,9 +1074,9 @@
  [chain chainManager];
  [context performBlockAndWait:^{
  DSChainEntity * chainEntity = chain.chainEntity;
- [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
- [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
- [DSMasternodeListEntity deleteAllOnChain:chainEntity];
+ [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
+ [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
+ [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
  }];
  [chain.chainManager.masternodeManager reloadMasternodeLists];
  NSArray * files = @[@"MNL_0_1096704", @"MNL_1096704_1097280", @"MNL_1097280_1097856", @"MNL_1097856_1098144", @"MNL_1098144_1098432", @"MNL_1098432_1098456", @"MNL_1098456_1098480", @"MNL_1098480_1098504", @"MNL_1098504_1098528", @"MNL_1098528_1098552", @"MNL_1098552_1098576", @"MNL_1098576_1098600", @"MNL_1098600_1098624", @"MNL_1098624_1098648", @"MNL_1098648_1098672", @"MNL_1098672_1098696", @"MNL_1098696_1098720", @"MNL_1098720_1098744", @"MNL_1098744_1098768", @"MNL_1098768_1098792", @"MNL_1098792_1098816", @"MNL_1098816_1098840", @"MNL_1098840_1098864", @"MNL_1098864_1098888", @"MNL_1098888_1098912", @"MNL_1098912_1098936", @"MNL_1098936_1098960", @"MNL_1098960_1098984", @"MNL_1098984_1099008"];
@@ -1108,9 +1105,9 @@
  [chain chainManager];
  [context performBlockAndWait:^{
  DSChainEntity * chainEntity = chain.chainEntity;
- [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
- [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
- [DSMasternodeListEntity deleteAllOnChain:chainEntity];
+ [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
+ [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
+ [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
  }];
  [chain.chainManager.masternodeManager reloadMasternodeLists];
  NSArray * files = @[@"MNL_0_1090944", @"MNL_1090944_1091520", @"MNL_1091520_1091808", @"MNL_1091808_1092096", @"MNL_1092096_1092336", @"MNL_1092336_1092360", @"MNL_1092360_1092384", @"MNL_1092384_1092408", @"MNL_1092408_1092432", @"MNL_1092432_1092456", @"MNL_1092456_1092480", @"MNL_1092480_1092504", @"MNL_1092504_1092528", @"MNL_1092528_1092552", @"MNL_1092552_1092576", @"MNL_1092576_1092600", @"MNL_1092600_1092624", @"MNL_1092624_1092648", @"MNL_1092648_1092672", @"MNL_1092672_1092696", @"MNL_1092696_1092720", @"MNL_1092720_1092744", @"MNL_1092744_1092768", @"MNL_1092768_1092792", @"MNL_1092792_1092816", @"MNL_1092816_1092840", @"MNL_1092840_1092864", @"MNL_1092864_1092888", @"MNL_1092888_1092916"];

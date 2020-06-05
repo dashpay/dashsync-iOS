@@ -25,7 +25,7 @@
 #import "DSChainEntity+CoreDataProperties.h"
 #import "DSPeerManager.h"
 #import "NSManagedObject+Sugar.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "NSString+Dash.h"
 #import "NSData+Bitcoin.h"
 
@@ -43,27 +43,42 @@
     __block NSData * data;
     __block uint32_t totalGovernanceObjectsCount;
     __block UInt256 baseBlockHash;
+    __block UInt256 lastPersistedChainSyncBlockHash;
+    __block uint32_t lastPersistedChainSyncBlockHeight;
+    __block NSTimeInterval lastPersistedChainSyncBlockTimestamp;
+    
+    __block NSData * lastPersistedChainSyncLocators;
     [self.managedObjectContext performBlockAndWait:^{
         type = self.type;
         devnetIdentifier = self.devnetIdentifier;
         data = self.checkpoints;
         totalGovernanceObjectsCount = self.totalGovernanceObjectsCount;
         baseBlockHash = self.baseBlockHash.UInt256;
+        lastPersistedChainSyncBlockHash = self.syncBlockHash.UInt256;
+        lastPersistedChainSyncBlockHeight = self.syncBlockHeight;
+        lastPersistedChainSyncLocators = self.syncLocators;
+        lastPersistedChainSyncBlockTimestamp = self.syncBlockTimestamp;
     }];
+    DSChain * chain = nil;
     if (type == DSChainType_MainNet) {
-        return [DSChain mainnet];
+        chain = [DSChain mainnet];
     } else if (type == DSChainType_TestNet) {
-        return [DSChain testnet];
+        chain = [DSChain testnet];
     } else if (type == DSChainType_DevNet) {
         if ([DSChain devnetWithIdentifier:devnetIdentifier]) {
-            return [DSChain devnetWithIdentifier:devnetIdentifier];
+            chain = [DSChain devnetWithIdentifier:devnetIdentifier];
         } else {
             NSArray * checkpointArray = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-            return [DSChain recoverKnownDevnetWithIdentifier:devnetIdentifier withCheckpoints:checkpointArray];
+            chain = [DSChain recoverKnownDevnetWithIdentifier:devnetIdentifier withCheckpoints:checkpointArray];
         }
+    } else {
+        NSAssert(FALSE, @"Unknown DSChainType");
     }
-    NSAssert(FALSE, @"Unknown DSChainType");
-    return [DSChain mainnet];
+    chain.lastPersistedChainSyncLocators = [NSKeyedUnarchiver unarchiveObjectWithData:lastPersistedChainSyncLocators];
+    chain.lastPersistedChainSyncBlockHeight = lastPersistedChainSyncBlockHeight;
+    chain.lastPersistedChainSyncBlockHash = lastPersistedChainSyncBlockHash;
+    chain.lastPersistedChainSyncBlockTimestamp = lastPersistedChainSyncBlockTimestamp;
+    return chain;
 }
 
 + (DSChainEntity*)chainEntityForType:(DSChainType)type devnetIdentifier:(NSString*)devnetIdentifier checkpoints:(NSArray*)checkpoints inContext:(NSManagedObjectContext*)context {

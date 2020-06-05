@@ -38,13 +38,15 @@ NS_ASSUME_NONNULL_BEGIN
 + (BOOL)verify:(UInt256)messageDigest signature:(UInt768)signature withPublicKey:(UInt384)publicKey;
 + (BOOL)verifySecureAggregated:(UInt256)messageDigest signature:(UInt768)signature withPublicKeys:(NSArray*)publicKeys;
 
++ (BOOL)verifyAggregatedSignature:(UInt768)signature withPublicKeys:(NSArray<DSBLSKey*>*)publicKeys withMessages:(NSArray*)messages;
+
 - (UInt768)signDigest:(UInt256)messageDigest;
 - (UInt768)signData:(NSData *)data;
 - (UInt768)signDataSingleSHA256:(NSData *)data;
 
 - (NSData*)encryptData:(NSData*)data;
 
-+ (UInt768)aggregateSignatures:(NSArray*)signatures withPublicKeys:(NSArray*)publicKeys withMessages:(NSArray*)messages;
++ (UInt768)aggregateSignatures:(NSArray*)signatures withPublicKeys:(NSArray<DSBLSKey*>*)publicKeys withMessages:(NSArray*)messages;
 
 @end
 

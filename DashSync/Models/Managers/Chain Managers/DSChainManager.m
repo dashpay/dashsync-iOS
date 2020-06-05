@@ -23,7 +23,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSChainManager.h"
+#import "DSChainManager+Protected.h"
 #import "DSPeerManager+Protected.h"
 #import "DSEventManager.h"
 #import "DSChain+Protected.h"
@@ -55,7 +55,8 @@
 @property (nonatomic, strong) DSTransactionManager * transactionManager;
 @property (nonatomic, strong) DSPeerManager * peerManager;
 @property (nonatomic, assign) uint32_t syncStartHeight;
-@property (nonatomic, assign) NSTimeInterval lastChainRelayTime;
+@property (nonatomic, assign) uint64_t sessionConnectivityNonce;
+@property (nonatomic, assign) BOOL gotSporksAtChainSyncStart;
 
 @end
 
@@ -66,6 +67,7 @@
     if (! (self = [super init])) return nil;
     
     self.chain = chain;
+    self.syncPhase = DSChainSyncPhase_Unknown;
     chain.chainManager = self;
     self.sporkManager = [[DSSporkManager alloc] initWithChain:chain];
     self.masternodeManager = [[DSMasternodeManager alloc] initWithChain:chain];
@@ -75,6 +77,12 @@
     self.transactionManager = [[DSTransactionManager alloc] initWithChain:chain];
     self.peerManager = [[DSPeerManager alloc] initWithChain:chain];
     self.identitiesManager = [[DSIdentitiesManager alloc] initWithChain:chain];
+    self.gotSporksAtChainSyncStart = FALSE;
+    self.sessionConnectivityNonce = (long long) arc4random() << 32 | arc4random();
+    
+    if (self.masternodeManager.currentMasternodeList) {
+        [self.peerManager useMasternodeList:self.masternodeManager.currentMasternodeList withConnectivityNonce:self.sessionConnectivityNonce];
+    }
     
     return self;
 }
@@ -89,9 +97,9 @@
 {
     if (! self.peerManager.downloadPeer && self.syncStartHeight == 0) return 0.0;
     //if (self.downloadPeer.status != DSPeerStatus_Connected) return 0.05;
-    if (self.chain.lastBlockHeight >= self.chain.estimatedBlockHeight) return 1.0;
+    if (self.chain.lastSyncBlockHeight >= self.chain.estimatedBlockHeight) return 1.0;
     
-    double lastBlockHeight = self.chain.lastBlockHeight;
+    double lastBlockHeight = self.chain.lastSyncBlockHeight;
     double estimatedBlockHeight = self.chain.estimatedBlockHeight;
     double syncStartHeight = self.syncStartHeight;
     double progress;
@@ -109,7 +117,7 @@
     if (self.syncStartHeight == 0) self.syncStartHeight = (uint32_t)[userDefaults integerForKey:self.syncStartHeightKey];
     
     if (self.syncStartHeight == 0) {
-        self.syncStartHeight = self.chain.lastBlockHeight;
+        self.syncStartHeight = self.chain.lastSyncBlockHeight;
         [[NSUserDefaults standardUserDefaults] setInteger:self.syncStartHeight forKey:self.syncStartHeightKey];
     }
 }
@@ -141,6 +149,7 @@
             }
         }];
     } else {
+        
         [self.peerManager connect];
     }
     
@@ -152,44 +161,47 @@
 }
 
 -(void)disconnectedRescan {
-    
-    DSChainEntity * chainEntity = self.chain.chainEntity;
+    NSManagedObjectContext * chainContext = [NSManagedObjectContext chainContext];
+    DSChainEntity * chainEntity = [self.chain chainEntityInContext:chainContext];
     [chainEntity.managedObjectContext performBlockAndWait:^{
         [self.chain wipeMasternodesInContext:chainEntity.managedObjectContext];//masternodes and quorums must go first
-        [DSMerkleBlockEntity deleteBlocksOnChain:chainEntity];
-        [DSTransactionHashEntity deleteTransactionHashesOnChain:chainEntity];
+        [DSMerkleBlockEntity deleteBlocksOnChainEntity:chainEntity];
+        [DSTransactionHashEntity deleteTransactionHashesOnChainEntity:chainEntity];
         [self.masternodeManager wipeMasternodeInfo];
-        [self.chain wipeBlockchainInfo];
-        [DSTransactionEntity saveContext];
+        [self.chain wipeBlockchainInfoInContext:chainContext];
+        [chainContext ds_save];
     }];
+    
+    NSManagedObjectContext * peerContext =  [NSManagedObjectContext peerContext];
+    DSChainEntity * chainEntityInPeerContext = [self.chain chainEntityInContext:peerContext];
     
     if (![self.chain isMainnet]) {
         [self.chain.chainManager.peerManager removeTrustedPeerHost];
         [self.chain.chainManager.peerManager clearPeers];
-        [DSPeerEntity deletePeersForChain:chainEntity];
-        [DSPeerEntity saveContext];
+        [DSPeerEntity deletePeersForChainEntity:chainEntityInPeerContext];
+        [peerContext ds_save];
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
         [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
         [[NSNotificationCenter defaultCenter] postNotificationName:DSQuorumListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
         
     });
     
-    self.syncStartHeight = self.chain.lastBlockHeight;
+    self.syncStartHeight = self.chain.lastSyncBlockHeight;
     [[NSUserDefaults standardUserDefaults] setInteger:self.syncStartHeight forKey:self.syncStartHeightKey];
     [self.peerManager connect];
 }
 
 -(void)disconnectedRescanOfMasternodeListsAndQuorums {
-    
-    DSChainEntity * chainEntity = self.chain.chainEntity;
+    NSManagedObjectContext * chainContext = [NSManagedObjectContext chainContext];
+    DSChainEntity * chainEntity = [self.chain chainEntityInContext:chainContext];
     [chainEntity.managedObjectContext performBlockAndWait:^{
         [self.chain wipeMasternodesInContext:chainEntity.managedObjectContext];//masternodes and quorums must go first
         [self.masternodeManager wipeMasternodeInfo];
-        [DSTransactionEntity saveContext];
+        [chainContext ds_save];
     }];
     
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -240,21 +252,35 @@
 }
 
 -(void)chainWillStartSyncingBlockchain:(DSChain*)chain {
-    [self.sporkManager getSporks]; //get the sporks early on
+    if (!self.gotSporksAtChainSyncStart) {
+        [self.sporkManager getSporks]; //get the sporks early on
+    }
+}
+
+-(BOOL)shouldRequestMerkleBlocksInsteadOfHeaders {
+    if (self.chainSynchronizationFingerprint) {
+        //to do
+        return YES;
+        //[self.chainSynchronizationFingerprint getBytes:<#(nonnull void *)#> length:<#(NSUInteger)#>]
+    } else {
+        return YES;
+    }
 }
 
 -(void)chainShouldStartSyncingBlockchain:(DSChain*)chain onPeer:(DSPeer*)peer {
     dispatch_async(self.chain.networkingQueue, ^{
-        if (self.chain.shouldSyncHeadersFirstForMasternodeListVerification) {
+        if ((self.syncPhase != DSChainSyncPhase_ChainSync) && self.chain.needsInitialTerminalHeadersSync) {
         //masternode list should be synced first and the masternode list is old
-            [peer sendGetheadersMessageWithLocators:[self.chain headerLocatorArrayForMasternodeSync] andHashStop:UINT256_ZERO];
+            self.syncPhase = DSChainSyncPhase_InitialTerminalBlocks;
+            [peer sendGetheadersMessageWithLocators:[self.chain terminalBlocksLocatorArray] andHashStop:UINT256_ZERO];
         } else {
-            BOOL startingDevnetSync = [self.chain isDevnetAny] && self.chain.lastBlock.height < 5;
-            if (startingDevnetSync || self.chain.lastBlock.timestamp + (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4 >= self.chain.earliestWalletCreationTime) {
-                [peer sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
+            self.syncPhase = DSChainSyncPhase_ChainSync;
+            BOOL startingDevnetSync = [self.chain isDevnetAny] && self.chain.lastSyncBlock.height < 5;
+            if (startingDevnetSync || self.chain.lastSyncBlockTimestamp + HEADER_WINDOW_BUFFER_TIME >= self.chain.earliestWalletCreationTime) {
+                [peer sendGetblocksMessageWithLocators:[self.chain chainSyncBlockLocatorArray] andHashStop:UINT256_ZERO];
             }
             else {
-                [peer sendGetheadersMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
+                [peer sendGetheadersMessageWithLocators:[self.chain chainSyncBlockLocatorArray] andHashStop:UINT256_ZERO];
             }
         }
     });
@@ -285,22 +311,17 @@
 }
 
 -(void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain*)chain {
+    DSDLog(@"Chain finished syncing masternode list and quorums, it should start syncing chain");
     
-    if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeListFirst)) {
-        if (self.peerManager.connectedPeerCount == 0) {
-            [self.peerManager connect];
-        } else {
-            [self chainShouldStartSyncingBlockchain:chain onPeer:self.peerManager.downloadPeer];
-        }
+    if (self.peerManager.connectedPeerCount == 0) {
+        self.syncPhase = DSChainSyncPhase_ChainSync;
+        [self.peerManager connect];
+    } else if (!self.peerManager.masternodeList && self.masternodeManager.currentMasternodeList) {
+        [self.peerManager useMasternodeList:self.masternodeManager.currentMasternodeList withConnectivityNonce:self.sessionConnectivityNonce];
     } else {
-        if ([self.chain isEvolutionEnabled]) {
-            if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_BlockchainIdentities)) {
-                //this only needs to happen once per session
-                static dispatch_once_t onceToken;
-                dispatch_once(&onceToken, ^{
-                    [self.identitiesManager retrieveAllBlockchainIdentitiesChainStates];
-                });
-            }
+        if (self.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
+            self.syncPhase = DSChainSyncPhase_ChainSync;
+            [self chainShouldStartSyncingBlockchain:chain onPeer:self.peerManager.downloadPeer];
         }
     }
 }
@@ -315,9 +336,9 @@
     if (block.timestamp < [NSDate timeIntervalSince1970] - WEEK_TIME_INTERVAL) return;
     
     // call getblocks, unless we already did with the previous block, or we're still downloading the chain
-    if (self.chain.lastBlockHeight >= peer.lastBlockHeight && ! uint256_eq(self.chain.lastOrphan.blockHash, block.prevBlock)) {
+    if (self.chain.lastSyncBlockHeight >= peer.lastBlockHeight && ! uint256_eq(self.chain.lastOrphan.blockHash, block.prevBlock)) {
         DSDLog(@"%@:%d calling getblocks", peer.host, peer.port);
-        [peer sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
+        [peer sendGetblocksMessageWithLocators:[self.chain chainSyncBlockLocatorArray] andHashStop:UINT256_ZERO];
     }
 }
 
@@ -333,15 +354,15 @@
 
 // MARK: - Count Info
 
--(void)resetSyncCountInfo:(DSSyncCountInfo)syncCountInfo {
-    [self setCount:0 forSyncCountInfo:syncCountInfo];
+-(void)resetSyncCountInfo:(DSSyncCountInfo)syncCountInfo inContext:(NSManagedObjectContext*)context {
+    [self setCount:0 forSyncCountInfo:syncCountInfo inContext:context];
 }
 
--(void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)syncCountInfo {
+-(void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)syncCountInfo inContext:(NSManagedObjectContext*)context {
     switch (syncCountInfo) {
         case DSSyncCountInfo_GovernanceObject:
             self.chain.totalGovernanceObjectsCount = count;
-            [self.chain save];
+            [self.chain saveInContext:context];
             break;
         case DSSyncCountInfo_GovernanceObjectVote:
             self.governanceSyncManager.currentGovernanceSyncObject.totalGovernanceVoteCount = count;
@@ -355,7 +376,7 @@
 // MARK: - DSPeerChainDelegate
 
 - (void)peer:(DSPeer *)peer relayedSyncInfo:(DSSyncCountInfo)syncCountInfo count:(uint32_t)count {
-    [self setCount:count forSyncCountInfo:syncCountInfo];
+    [self setCount:count forSyncCountInfo:syncCountInfo inContext:self.chain.chainManagedObjectContext];
     switch (syncCountInfo) {
         case DSSyncCountInfo_List:
         {

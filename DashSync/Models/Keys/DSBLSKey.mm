@@ -12,6 +12,8 @@
 #import "DSChain.h"
 #import "NSString+Dash.h"
 #import "DSKey+Protected.h"
+#import "NSData+Encryption.h"
+#import <CommonCrypto/CommonCryptor.h>
 
 @interface DSBLSKey ()
 
@@ -191,6 +193,24 @@
     return self;
 }
 
+- (nullable instancetype)initWithDHKeyExchangeWithPublicKey:(DSKey*)publicKey forPrivateKey:(DSKey*)privateKey {
+    NSParameterAssert(publicKey);
+    NSParameterAssert(privateKey);
+    NSAssert([publicKey isKindOfClass:[DSBLSKey class]], @"The public key needs to be a BLS key");
+    NSAssert([privateKey isKindOfClass:[DSBLSKey class]], @"The privateKey key needs to be a BLS key");
+    if (! (self = [self init])) return nil;
+    
+    const bls::PublicKey blsPublicKey = ((DSBLSKey *)publicKey).blsPublicKey;
+    const bls::PrivateKey blsPrivateKey = ((DSBLSKey *)privateKey).blsPrivateKey;
+    
+    const bls::PublicKey dhBLSPublicKey = bls::BLS::DHKeyExchange(blsPrivateKey, blsPublicKey);
+    
+    UInt384 dhPublicKey = UINT384_ZERO;
+    dhBLSPublicKey.Serialize(dhPublicKey.u8);
+    
+    return [self initWithPublicKey:dhPublicKey];
+}
+
 -(uint32_t)publicKeyFingerprint {
     bls::PublicKey blsPublicKey = bls::PublicKey::FromBytes(self.publicKey.u8);
     return blsPublicKey.GetFingerprint();
@@ -352,10 +372,8 @@
 // MARK: - Encryption
 
 - (NSData*)encryptData:(NSData*)data {
-    bls::PublicKey blsPublicKey = [self blsPublicKey];
-    //to do
-    //[data aes]
-    return data;
+    
+    return [data encryptWithDHKey:self];
 }
 
 // MARK: - Verification
@@ -393,6 +411,21 @@
     return blsSignature.Verify();
 }
 
++ (BOOL)verifyAggregatedSignature:(UInt768)signature withPublicKeys:(NSArray*)publicKeys withMessages:(NSArray*)messages {
+    std::vector<bls::AggregationInfo> infos;
+    for (uint32_t i = 0; i< publicKeys.count;i++) {
+        DSBLSKey * key = publicKeys[i];
+        NSData * message = messages[i];
+        bls::AggregationInfo aggregationInfo = bls::AggregationInfo::FromMsgHash([key blsPublicKey], message.UInt256.u8);
+        infos.push_back(aggregationInfo);
+    }
+    
+    bls::AggregationInfo aggregationInfo = bls::AggregationInfo::MergeInfos(infos);
+    bls::Signature blsSignature = bls::Signature::FromBytes(signature.u8, aggregationInfo);
+    
+    return blsSignature.Verify();
+}
+
 // MARK: - Public Key Aggregation
 
 + (bls::PublicKey)aggregatePublicKeys:(NSArray*)publicKeys {
@@ -406,11 +439,11 @@
 
 // MARK: - Signature Aggregation
 
-+ (UInt768)aggregateSignatures:(NSArray*)signatures withPublicKeys:(NSArray*)publicKeys withMessages:(NSArray*)messages {
++ (UInt768)aggregateSignatures:(NSArray*)signatures withPublicKeys:(NSArray<DSBLSKey*>*)publicKeys withMessages:(NSArray*)messages {
     std::vector<bls::Signature> blsSignatures = {};
     for (int i = 0; i < [signatures count];i++) {
         NSData * signatureData = signatures[i];
-        NSData * publicKeyData = publicKeys[i];
+        NSData * publicKeyData = publicKeys[i].publicKeyData;
         NSData * messageData = messages[i];
         UInt768 signature = [signatureData UInt768];
         UInt384 publickey = [publicKeyData UInt384];

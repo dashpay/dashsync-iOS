@@ -141,7 +141,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (uint32_t)blockHeight {
     static uint32_t height = 0;
-    uint32_t h = self.chainManager.chain.lastBlockHeight;
+    uint32_t h = self.chainManager.chain.lastSyncBlockHeight;
     
     if (h > height) height = h;
     return height;

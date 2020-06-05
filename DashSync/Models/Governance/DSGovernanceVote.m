@@ -152,7 +152,7 @@
 
 -(DSSimplifiedMasternodeEntry *)masternode {
     if (!_masternode) {
-    self.masternode = [DSSimplifiedMasternodeEntryEntity anyObjectMatching:@"utxoHash = %@ && utxoIndex = %@",[NSData dataWithUInt256:(UInt256)self.masternodeUTXO.hash],@(self.masternodeUTXO.n)].simplifiedMasternodeEntry;
+    self.masternode = [DSSimplifiedMasternodeEntryEntity anyObjectInContext:[NSManagedObjectContext chainContext] matching:@"utxoHash = %@ && utxoIndex = %@",[NSData dataWithUInt256:(UInt256)self.masternodeUTXO.hash],@(self.masternodeUTXO.n)].simplifiedMasternodeEntry;
 }
     return _masternode;
 }

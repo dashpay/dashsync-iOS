@@ -25,9 +25,8 @@ typedef NS_ENUM(NSUInteger, DSSyncType) {
     DSSyncType_BlockchainIdentities = 1 << 7,
     DSSyncType_DPNS = 1 << 8,
     DSSyncType_Dashpay = 1 << 9,
-    DSSyncType_MasternodeListFirst = (1 << 10) | DSSyncType_VerifiedMasternodeList,
-    DSSyncType_Default = DSSyncType_SPV | DSSyncType_Mempools | DSSyncType_VerifiedMasternodeList | DSSyncType_MasternodeListFirst | DSSyncType_Sporks | DSSyncType_BlockchainIdentities | DSSyncType_DPNS | DSSyncType_Dashpay,
-    DSSyncType_NeedsWalletSyncType = DSSyncType_SPV | DSSyncType_FullBlocks,
+    DSSyncType_Default = DSSyncType_SPV | DSSyncType_Mempools | DSSyncType_VerifiedMasternodeList | DSSyncType_Sporks | DSSyncType_BlockchainIdentities | DSSyncType_DPNS | DSSyncType_Dashpay,
+    DSSyncType_NeedsWalletSyncType = DSSyncType_BaseSPV | DSSyncType_FullBlocks,
     DSSyncType_GetsNewBlocks = DSSyncType_SPV | DSSyncType_FullBlocks,
 };
 

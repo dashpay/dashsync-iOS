@@ -94,6 +94,15 @@
     }
 }
 
++(instancetype)keyWithDHKeyExchangeWithPublicKey:(DSKey *)publicKey forPrivateKey:(DSKey*)privateKey {
+    return [[self alloc] initWithDHKeyExchangeWithPublicKey:publicKey forPrivateKey:privateKey];
+}
+
+- (nullable instancetype)initWithDHKeyExchangeWithPublicKey:(DSKey*)publicKey forPrivateKey:(DSKey*)privateKey {
+    [self doesNotRecognizeSelector:_cmd];
+    return nil;
+}
+
 + (nullable instancetype)keyWithSeedData:(NSData*)data forKeyType:(DSKeyType)keyType {
     switch (keyType) {
         case DSKeyType_BLS:

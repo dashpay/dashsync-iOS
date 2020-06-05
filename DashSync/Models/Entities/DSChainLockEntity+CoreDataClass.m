@@ -23,13 +23,12 @@
 - (instancetype)setAttributesFromChainLock:(DSChainLock *)chainLock
 {
     [self.managedObjectContext performBlockAndWait:^{
-        [DSQuorumEntryEntity setContext:self.managedObjectContext];
         self.validSignature = chainLock.signatureVerified;
         self.signature = [NSData dataWithUInt768:chainLock.signature];
-        DSMerkleBlockEntity * merkleBlockEntity = [DSMerkleBlockEntity anyObjectMatching:@"blockHash == %@", uint256_data(chainLock.blockHash)];
+        DSMerkleBlockEntity * merkleBlockEntity = [DSMerkleBlockEntity anyObjectInContext:self.managedObjectContext matching:@"blockHash == %@", uint256_data(chainLock.blockHash)];
         NSAssert(merkleBlockEntity, @"merkle block must exist");
         self.merkleBlock = merkleBlockEntity;
-        self.quorum = chainLock.intendedQuorum.matchingQuorumEntryEntity;//the quorum might not yet
+        self.quorum = [chainLock.intendedQuorum matchingQuorumEntryEntityInContext:self.managedObjectContext];//the quorum might not yet
     }];
     
     return self;

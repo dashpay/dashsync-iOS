@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic,readonly) NSString * username;
 
-+(void)deleteContactsOnChain:(DSChainEntity*)chainEntity;
++(void)deleteContactsOnChainEntity:(DSChainEntity*)chainEntity;
 
 @end
 

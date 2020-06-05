@@ -52,7 +52,7 @@
     if ([derivationPathEntities count]) {
         return [derivationPathEntities firstObject];
     } else {
-        DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity managedObject];
+        DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity managedObjectInContext:context];
         derivationPathEntity.derivationPath = archivedDerivationPath;
         derivationPathEntity.chain = chainEntity;
         derivationPathEntity.publicKeyIdentifier = derivationPath.standaloneExtendedPublicKeyUniqueID;
@@ -75,16 +75,18 @@
 +(DSDerivationPathEntity* _Nonnull)derivationPathEntityMatchingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath associateWithFriendRequest:(DSFriendRequestEntity*)friendRequest {
     NSAssert(derivationPath.standaloneExtendedPublicKeyUniqueID, @"standaloneExtendedPublicKeyUniqueID must be set");
     NSParameterAssert(friendRequest);
+    
+    NSManagedObjectContext * context = friendRequest.managedObjectContext;
     //DSChain * chain = derivationPath.chain;
     NSData * archivedDerivationPath = [NSKeyedArchiver archivedDataWithRootObject:derivationPath];
-    DSChainEntity * chainEntity = [derivationPath.chain chainEntityInContext:friendRequest.managedObjectContext];
+    DSChainEntity * chainEntity = [derivationPath.chain chainEntityInContext:context];
 
-    NSSet * derivationPathEntities = [chainEntity.derivationPaths filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"publicKeyIdentifier == %@ && chain == %@",derivationPath.standaloneExtendedPublicKeyUniqueID,derivationPath.chain.chainEntity]];
+    NSSet * derivationPathEntities = [chainEntity.derivationPaths filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"publicKeyIdentifier == %@ && chain == %@",derivationPath.standaloneExtendedPublicKeyUniqueID,[derivationPath.chain chainEntityInContext:context]]];
     if ([derivationPathEntities count]) {
         DSDerivationPathEntity * derivationPathEntity = [derivationPathEntities anyObject];
         return derivationPathEntity;
     } else {
-        DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity managedObject];
+        DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity managedObjectInContext:context];
         derivationPathEntity.derivationPath = archivedDerivationPath;
         derivationPathEntity.chain = chainEntity;
         derivationPathEntity.publicKeyIdentifier = derivationPath.standaloneExtendedPublicKeyUniqueID;
@@ -98,9 +100,9 @@
     }
 }
 
-+(void)deleteDerivationPathsOnChain:(DSChainEntity*)chainEntity {
++(void)deleteDerivationPathsOnChainEntity:(DSChainEntity*)chainEntity {
     [chainEntity.managedObjectContext performBlockAndWait:^{
-        NSArray * derivationPathsToDelete = [self objectsMatching:@"(chain == %@)",chainEntity];
+        NSArray * derivationPathsToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@)",chainEntity];
         for (DSDerivationPathEntity * derivationPath in derivationPathsToDelete) {
             [chainEntity.managedObjectContext deleteObject:derivationPath];
         }

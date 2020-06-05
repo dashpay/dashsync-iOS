@@ -284,8 +284,8 @@
         
 }
 
--(DSQuorumEntryEntity*)matchingQuorumEntryEntity {
-    return [DSQuorumEntryEntity anyObjectMatching:@"quorumPublicKeyData == %@",uint384_data(self.quorumPublicKey)];
+-(DSQuorumEntryEntity*)matchingQuorumEntryEntityInContext:(NSManagedObjectContext*)context {
+    return [DSQuorumEntryEntity anyObjectInContext:context matching:@"quorumPublicKeyData == %@",uint384_data(self.quorumPublicKey)];
 }
 
 - (UInt256)orderingHashForRequestID:(UInt256)requestID forQuorumType:(DSLLMQType)quorumType {

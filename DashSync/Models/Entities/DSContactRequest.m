@@ -88,7 +88,7 @@
 }
 
 -(NSData*)decryptedPublicKeyDataWithKey:(DSKey*)key {
-    return [self.encryptedPublicKeyData decryptWithSecretKey:[self secretKeyForDecryptionOfType:key.keyType] fromPeerWithPublicKey:key];
+    return [self.encryptedPublicKeyData decryptWithSecretKey:[self secretKeyForDecryptionOfType:key.keyType] fromPublicKey:key];
 }
 
 -(NSString*)debugDescription {

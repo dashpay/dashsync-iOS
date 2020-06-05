@@ -24,8 +24,6 @@
     @synchronized (self) {
         if (!self.addressesLoaded) {
             [self.managedObjectContext performBlockAndWait:^{
-                [DSAddressEntity setContext:self.managedObjectContext];
-                [DSTransactionEntity setContext:self.managedObjectContext];
                 DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
                 self.syncBlockHeight = derivationPathEntity.syncBlockHeight;
                 NSArray<DSAddressEntity *> *addresses = [derivationPathEntity.addresses sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"index" ascending:YES]]];
@@ -126,9 +124,8 @@
             
             if (!self.wallet.isTransient) {
                 [self.managedObjectContext performBlock:^{ // store new address in core data
-                    [DSDerivationPathEntity setContext:self.managedObjectContext];
                     DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
-                    DSAddressEntity *e = [DSAddressEntity managedObject];
+                    DSAddressEntity *e = [DSAddressEntity managedObjectInContext:self.managedObjectContext];
                     e.derivationPath = derivationPathEntity;
                     NSAssert([addr isValidDashAddressOnChain:self.chain], @"the address is being saved to the wrong derivation path");
                     e.address = addr;
@@ -197,24 +194,40 @@
     return [mArray copy];
 }
 
-- (NSArray *)addressesToIndex:(NSUInteger)index
+- (NSArray *)addressesToIndex:(NSUInteger)index {
+    return [self addressesToIndex:index useCache:NO addToCache:NO];
+}
+
+- (NSArray *)addressesToIndex:(NSUInteger)index useCache:(BOOL)useCache addToCache:(BOOL)addToCache
 {
     NSMutableArray * mArray = [NSMutableArray array];
-    for (NSData * pubKey in [self publicKeyDataArrayToIndex:index]) {
-        NSString *addr = [DSKey addressWithPublicKeyData:pubKey forChain:self.chain];
-        [mArray addObject:addr];
+    for (uint32_t i = 0; i<index;i++) {
+        if (useCache && self.mOrderedAddresses[i]) {
+            [mArray addObject:self.mOrderedAddresses[i]];
+        } else {
+            
+            NSData * pubKey = [self publicKeyDataAtIndex:i];
+            NSString *addr = [DSKey addressWithPublicKeyData:pubKey forChain:self.chain];
+            [mArray addObject:addr];
+            if (addToCache && self.mOrderedAddresses.count == i) {
+                [self.mOrderedAddresses addObject:addr];
+            }
+        }
+    }
+    return [mArray copy];
+}
+
+- (NSArray *)privateKeysForRange:(NSRange)range fromSeed:(NSData *)seed {
+    NSMutableArray * mArray = [NSMutableArray array];
+    for (NSUInteger i = range.location;i<(range.location + range.length);i++) {
+        DSKey *privateKey = [self privateKeyAtIndex:(uint32_t)i fromSeed:seed];
+        [mArray addObject:privateKey];
     }
     return [mArray copy];
 }
 
 - (NSArray *)privateKeysToIndex:(NSUInteger)index fromSeed:(NSData *)seed {
-
-    NSMutableArray * mArray = [NSMutableArray array];
-    for (int i = 0;i<index;i++) {
-        DSKey *privateKey = [self privateKeyAtIndex:i fromSeed:seed];
-        [mArray addObject:privateKey];
-    }
-    return [mArray copy];
+    return [self privateKeysForRange:NSMakeRange(0, index) fromSeed:seed];
 }
 
 @end

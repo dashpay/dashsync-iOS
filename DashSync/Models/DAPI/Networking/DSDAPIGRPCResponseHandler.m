@@ -31,7 +31,7 @@
 @implementation DSDAPIGRPCResponseHandler
 
 - (void)didReceiveInitialMetadata:(nullable NSDictionary *)initialMetadata {
-    NSLog(@"didReceiveInitialMetadata");
+    DSDLog(@"didReceiveInitialMetadata");
 }
 
 - (void)didReceiveProtoMessage:(nullable GPBMessage *)message {

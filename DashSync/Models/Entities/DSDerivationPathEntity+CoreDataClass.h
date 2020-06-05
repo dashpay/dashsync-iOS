@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (DSDerivationPathEntity* _Nonnull)derivationPathEntityMatchingDerivationPath:(DSDerivationPath*)derivationPath inContext:(NSManagedObjectContext*)context;
 + (DSDerivationPathEntity* _Nonnull)derivationPathEntityMatchingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath associateWithFriendRequest:(DSFriendRequestEntity*)friendRequest;
-+(void)deleteDerivationPathsOnChain:(DSChainEntity*)chainEntity;
++(void)deleteDerivationPathsOnChainEntity:(DSChainEntity*)chainEntity;
 
 @end
 

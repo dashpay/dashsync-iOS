@@ -360,3 +360,9 @@
 
 /* No comment provided by engineer. */
 "Attempt to query DAPs for blockchain identity with no active keys" = "Attempt to query DAPs for blockchain identity with no active keys";
+
+/* No comment provided by engineer. */
+"Node at host %@ does not service network" = "Node at host %@ does not service network";
+
+/* No comment provided by engineer. */
+"Node at host %@ does not support bloom filtering" = "Node at host %@ does not support bloom filtering";

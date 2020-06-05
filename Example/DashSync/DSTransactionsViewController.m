@@ -75,7 +75,7 @@ NSString *dateFormat(NSString *_template)
         self.syncStartedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncStartedNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
-                                                               if ([self.chainManager.chain timestampForBlockHeight:self.chainManager.chain.lastBlockHeight] + WEEK_TIME_INTERVAL <
+                                                               if ([self.chainManager.chain timestampForBlockHeight:self.chainManager.chain.lastSyncBlockHeight] + WEEK_TIME_INTERVAL <
                                                                    [NSDate timeIntervalSince1970] &&
                                                                    self.chainManager.chain.earliestWalletCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSince1970]) {
                                                                    self.navigationItem.titleView = nil;
@@ -164,7 +164,7 @@ NSString *dateFormat(NSString *_template)
 - (uint32_t)blockHeight
 {
     static uint32_t height = 0;
-    uint32_t h = self.chainManager.chain.lastBlockHeight;
+    uint32_t h = self.chainManager.chain.lastSyncBlockHeight;
     
     if (h > height) height = h;
     return height;
@@ -173,12 +173,12 @@ NSString *dateFormat(NSString *_template)
 #pragma mark - Automation KVO
 
 -(NSManagedObjectContext*)managedObjectContext {
-    if (!_managedObjectContext) self.managedObjectContext = [NSManagedObject context];
+    if (!_managedObjectContext) self.managedObjectContext = [NSManagedObjectContext viewContext];
     return _managedObjectContext;
 }
 
 -(NSPredicate*)searchPredicate {
-    return [NSPredicate predicateWithFormat:@"transactionHash.chain = %@ && ((ANY outputs.account != nil) || (ANY inputs.prevOutput.account != nil))",self.chainManager.chain.chainEntity];
+    return [NSPredicate predicateWithFormat:@"transactionHash.chain = %@ && ((ANY outputs.account != nil) || (ANY inputs.prevOutput.account != nil))",[self.chainManager.chain chainEntityInContext:self.managedObjectContext]];
 }
 
 - (NSFetchedResultsController *)fetchedResultsController

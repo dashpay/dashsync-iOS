@@ -106,7 +106,7 @@
     NSParameterAssert(seedPhrase);
     NSParameterAssert(chain);
     
-    DSAccount * account = [DSAccount accountWithAccountNumber:0 withDerivationPaths:[chain standardDerivationPathsForAccountNumber:0] inContext:chain.managedObjectContext];
+    DSAccount * account = [DSAccount accountWithAccountNumber:0 withDerivationPaths:[chain standardDerivationPathsForAccountNumber:0] inContext:chain.chainManagedObjectContext];
     
     NSString * uniqueId = [self setSeedPhrase:seedPhrase createdAt:creationDate withAccounts:@[account] storeOnKeychain:store forChain:chain]; //make sure we can create the wallet first
     if (!uniqueId) return nil;
@@ -133,7 +133,7 @@
     NSParameterAssert(derivedData);
     NSParameterAssert(chain);
     
-    DSAccount * account = [DSAccount accountWithAccountNumber:0 withDerivationPaths:[chain standardDerivationPathsForAccountNumber:0] inContext:chain.managedObjectContext];
+    DSAccount * account = [DSAccount accountWithAccountNumber:0 withDerivationPaths:[chain standardDerivationPathsForAccountNumber:0] inContext:chain.chainManagedObjectContext];
     
     NSString * uniqueId = [self setTransientDerivedKeyData:derivedData withAccounts:@[account] forChain:chain]; //make sure we can create the wallet first
     if (!uniqueId) return nil;
@@ -187,7 +187,7 @@
     
     [[DSDerivationPathFactory sharedInstance] loadedSpecializedDerivationPathsForWallet:self];
     
-    self.specialTransactionsHolder = [[DSSpecialTransactionsWalletHolder alloc] initWithWallet:self inContext:self.chain.managedObjectContext];
+    self.specialTransactionsHolder = [[DSSpecialTransactionsWalletHolder alloc] initWithWallet:self inContext:self.chain.chainManagedObjectContext];
     
     self.mBlockchainIdentities = nil;
     [self blockchainIdentities];
@@ -200,7 +200,7 @@
 }
 
 -(void)loadBlockchainIdentities {
-    [self.chain.managedObjectContext performBlockAndWait:^{
+    [self.chain.chainManagedObjectContext performBlockAndWait:^{
         
         NSMutableArray * usedFriendshipIdentifiers = [NSMutableArray array];
         for (NSData * blockchainIdentityData in self.mBlockchainIdentities) {
@@ -211,7 +211,7 @@
                                                                contactBasedDerivationPathWithDestinationBlockchainIdentityUniqueId:friendRequest.destinationContact.associatedBlockchainIdentity.uniqueID.UInt256 sourceBlockchainIdentityUniqueId:blockchainIdentity.uniqueID forAccountNumber:account.accountNumber onChain:self.chain];
                 fundsDerivationPath.wallet = self;
                 fundsDerivationPath.account = account;
-                NSLog(@"%@",blockchainIdentity.matchingDashpayUser.outgoingRequests);
+                //DSDLog(@"%@",blockchainIdentity.matchingDashpayUser.outgoingRequests);
                 [account addIncomingDerivationPath:fundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier];
                 [usedFriendshipIdentifiers addObject:friendRequest.friendshipIdentifier];
             }
@@ -276,7 +276,7 @@
 }
 
 -(instancetype)initWithUniqueID:(NSString*)uniqueID forChain:(DSChain*)chain {
-    if (! (self = [self initWithUniqueID:uniqueID andAccount:[DSAccount accountWithAccountNumber:0 withDerivationPaths:[chain standardDerivationPathsForAccountNumber:0] inContext:chain.managedObjectContext] forChain:chain storeSeedPhrase:NO isTransient:NO])) return nil;
+    if (! (self = [self initWithUniqueID:uniqueID andAccount:[DSAccount accountWithAccountNumber:0 withDerivationPaths:[chain standardDerivationPathsForAccountNumber:0] inContext:chain.chainManagedObjectContext] forChain:chain storeSeedPhrase:NO isTransient:NO])) return nil;
     return self;
 }
 
@@ -872,14 +872,22 @@
     return [[DSDerivationPathFactory sharedInstance] loadedSpecializedDerivationPathsForWallet:self];
 }
 
+-(BOOL)hasAnExtendedPublicKeyMissing {
+    for (DSAccount * account in self.accounts) {
+        if ([account hasAnExtendedPublicKeyMissing]) return YES;
+    }
+    //todo add non funds derivation paths
+    return NO;
+}
+
 // MARK: - Wiping
 
-- (void)wipeBlockchainInfo {
+- (void)wipeBlockchainInfoInContext:(NSManagedObjectContext*)context {
     for (DSAccount * account in self.accounts) {
         [account wipeBlockchainInfo];
     }
     [self.specialTransactionsHolder removeAllTransactions];
-    [self wipeBlockchainIdentities];
+    [self wipeBlockchainIdentitiesInContext:context];
 }
 
 // MARK: - Blockchain Identities
@@ -887,7 +895,7 @@
 -(NSArray*)blockchainIdentityAddresses {
     DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:self];
     if (!derivationPath.hasExtendedPublicKey) return @[];
-    return [derivationPath addressesToIndex:[self unusedBlockchainIdentityIndex] + 10];
+    return [derivationPath addressesToIndex:[self unusedBlockchainIdentityIndex] + 10 useCache:YES addToCache:YES];
 }
 
 //- (DSBlockchainIdentityRegistrationTransition *)registrationTransactionForPublicKeyHash:(UInt160)publicKeyHash {
@@ -954,10 +962,10 @@
     }
 }
 
--(void)wipeBlockchainIdentities {
+-(void)wipeBlockchainIdentitiesInContext:(NSManagedObjectContext*)context {
     for (DSBlockchainIdentity * blockchainIdentity in [_mBlockchainIdentities allValues]) {
         [self unregisterBlockchainIdentity:blockchainIdentity];
-        [blockchainIdentity deletePersistentObjectAndSave:NO];
+        [blockchainIdentity deletePersistentObjectAndSave:NO inContext:context];
     }
     _defaultBlockchainIdentity = nil;
 }
@@ -1005,19 +1013,21 @@
                 //either the identity is known in core data (and we can pull it) or the wallet has been wiped and we need to get it from DAPI (the unique Id was saved in the keychain, so we don't need to resync)
                 //TODO: get the identity from core data
                 
-                [self.chain.managedObjectContext performBlockAndWait:^{
-                    NSUInteger blockchainIdentityEntitiesCount = [DSBlockchainIdentityEntity countObjectsMatching:@"chain == %@",self.chain.chainEntity];
+                NSManagedObjectContext * context = [NSManagedObjectContext chainContext]; //shouldn't matter what context is used
+                
+                [context performBlockAndWait:^{
+                    NSUInteger blockchainIdentityEntitiesCount = [DSBlockchainIdentityEntity countObjectsInContext:context matching:@"chain == %@",[self.chain chainEntityInContext:context]];
                     if (blockchainIdentityEntitiesCount != keyChainDictionary.count) {
                         DSDLog(@"Unmatching blockchain entities count");
                     }
-                    DSBlockchainIdentityEntity * blockchainIdentityEntity = [DSBlockchainIdentityEntity anyObjectMatching:@"uniqueID == %@",uint256_data([dsutxo_data(blockchainIdentityLockedOutpoint) SHA256_2])];
+                    DSBlockchainIdentityEntity * blockchainIdentityEntity = [DSBlockchainIdentityEntity anyObjectInContext:context matching:@"uniqueID == %@",uint256_data([dsutxo_data(blockchainIdentityLockedOutpoint) SHA256_2])];
                     DSBlockchainIdentity * blockchainIdentity = nil;
                     if (blockchainIdentityEntity) {
-                        blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:blockchainIdentityEntity.type atIndex:index withLockedOutpoint:blockchainIdentityLockedOutpoint inWallet:self withBlockchainIdentityEntity:blockchainIdentityEntity inContext:self.chain.managedObjectContext];
+                        blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:blockchainIdentityEntity.type atIndex:index withLockedOutpoint:blockchainIdentityLockedOutpoint inWallet:self withBlockchainIdentityEntity:blockchainIdentityEntity inContext:self.chain.chainManagedObjectContext];
                     } else {
                         //No blockchain identity is known in core data
                         NSData * transactionHashData = uint256_data(uint256_reverse(blockchainIdentityLockedOutpoint.hash));
-                        DSTransactionEntity * creditRegitrationTransactionEntity = [DSTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@",transactionHashData];
+                        DSTransactionEntity * creditRegitrationTransactionEntity = [DSTransactionEntity anyObjectInContext:context matching:@"transactionHash.txHash == %@",transactionHashData];
                         if (creditRegitrationTransactionEntity) {
                             //The registration funding transaction exists
                             //Weird but we should recover in this situation
@@ -1027,12 +1037,12 @@
                             if (!correctIndex) {
                                 NSAssert(FALSE,@"We should implement this");
                             } else {
-                                blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:DSBlockchainIdentityType_Unknown atIndex:index withFundingTransaction:registrationTransaction withUsernameDictionary:nil inWallet:self inContext:self.chain.managedObjectContext];
+                                blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:DSBlockchainIdentityType_Unknown atIndex:index withFundingTransaction:registrationTransaction withUsernameDictionary:nil inWallet:self inContext:self.chain.chainManagedObjectContext];
                                 [blockchainIdentity registerInWallet];
                             }
                         } else {
                             //We also don't have the registration funding transaction
-                            blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:DSBlockchainIdentityType_Unknown atIndex:index withLockedOutpoint:blockchainIdentityLockedOutpoint inWallet:self inContext:self.chain.managedObjectContext];
+                            blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:DSBlockchainIdentityType_Unknown atIndex:index withLockedOutpoint:blockchainIdentityLockedOutpoint inWallet:self inContext:self.chain.chainManagedObjectContext];
                             [blockchainIdentity registerInWalletForBlockchainIdentityUniqueId:[dsutxo_data(blockchainIdentityLockedOutpoint) SHA256_2]];
                         }
                     }
@@ -1064,12 +1074,12 @@
 }
 
 -(DSBlockchainIdentity*)createBlockchainIdentityOfType:(DSBlockchainIdentityType)type {
-    DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:type atIndex:[self unusedBlockchainIdentityIndex] inWallet:self inContext:self.chain.managedObjectContext ];
+    DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:type atIndex:[self unusedBlockchainIdentityIndex] inWallet:self inContext:self.chain.chainManagedObjectContext ];
     return blockchainIdentity;
 }
 
 -(DSBlockchainIdentity*)createBlockchainIdentityOfType:(DSBlockchainIdentityType)type usingDerivationIndex:(uint32_t)index {
-    DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:type atIndex:[self unusedBlockchainIdentityIndex] inWallet:self inContext:self.chain.managedObjectContext ];
+    DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:type atIndex:[self unusedBlockchainIdentityIndex] inWallet:self inContext:self.chain.chainManagedObjectContext ];
     return blockchainIdentity;
 }
 
@@ -1090,7 +1100,7 @@
 -(NSArray*)providerOwnerAddresses {
     DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] providerOwnerKeysDerivationPathForWallet:self];
     if (!derivationPath.hasExtendedPublicKey) return @[];
-    return [derivationPath addressesToIndex:[self unusedProviderOwnerIndex] + 10];
+    return [derivationPath addressesToIndex:[self unusedProviderOwnerIndex] + 10 useCache:YES addToCache:YES];
 }
 
 -(uint32_t)unusedProviderOwnerIndex {
@@ -1102,7 +1112,7 @@
 -(NSArray*)providerVotingAddresses {
     DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] providerVotingKeysDerivationPathForWallet:self];
     if (!derivationPath.hasExtendedPublicKey) return @[];
-    return [derivationPath addressesToIndex:[self unusedProviderVotingIndex] + 10];
+    return [derivationPath addressesToIndex:[self unusedProviderVotingIndex] + 10 useCache:YES addToCache:YES];
 }
 
 -(uint32_t)unusedProviderVotingIndex {
@@ -1114,7 +1124,7 @@
 -(NSArray*)providerOperatorAddresses {
     DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] providerOperatorKeysDerivationPathForWallet:self];
     if (!derivationPath.hasExtendedPublicKey) return @[];
-    return [derivationPath addressesToIndex:[self unusedProviderOperatorIndex] + 10];
+    return [derivationPath addressesToIndex:[self unusedProviderOperatorIndex] + 10 useCache:YES addToCache:YES];
 }
 
 -(uint32_t)unusedProviderOperatorIndex {

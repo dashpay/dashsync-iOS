@@ -20,6 +20,7 @@
 #import "DSDerivationPathFactory.h"
 #import "DSSimpleIndexedDerivationPath+Protected.h"
 #import "DSMasternodeManager.h"
+#import "DSWallet+Protected.h"
 
 @implementation DSCreditFundingDerivationPath
 

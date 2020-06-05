@@ -25,7 +25,7 @@
 
 #import "DSFundsDerivationPath.h"
 #import "DSAccount.h"
-#import "DSWallet.h"
+#import "DSWallet+Protected.h"
 #import "DSECDSAKey.h"
 #import "DSChain+Protected.h"
 
@@ -171,7 +171,7 @@
     }
     self.transactions = [NSMutableOrderedSet orderedSet];
     self.allTx = [NSMutableDictionary dictionary];
-    self.managedObjectContext = context?context:[NSManagedObject context];
+    self.managedObjectContext = context?context:[NSManagedObjectContext chainContext];
     self.transactionsToSave = [NSMutableArray array];
     self.transactionsToSaveInBlockSave = [NSMutableDictionary dictionary];
     self.isViewOnlyAccount = FALSE;
@@ -201,12 +201,7 @@
     if (_wallet.isTransient) return;
     //NSDate *startTime = [NSDate date];
     [self.managedObjectContext performBlockAndWait:^{
-        [DSTransactionEntity setContext:self.managedObjectContext];
-        [DSAccountEntity setContext:self.managedObjectContext];
-        [DSTxInputEntity setContext:self.managedObjectContext];
-        [DSTxOutputEntity setContext:self.managedObjectContext];
-        [DSDerivationPathEntity setContext:self.managedObjectContext];
-        NSUInteger transactionCount = [DSTransactionEntity countObjectsMatching:@"transactionHash.chain == %@",self.wallet.chain.chainEntity];
+        NSUInteger transactionCount = [DSTransactionEntity countObjectsInContext:self.managedObjectContext matching:@"transactionHash.chain == %@",[self.wallet.chain chainEntityInContext:self.managedObjectContext]];
         if (transactionCount > self.allTx.count) {
             // pre-fetch transaction inputs and outputs
             @autoreleasepool {
@@ -262,7 +257,9 @@
 - (void)loadDerivationPaths {
     if (!_wallet.isTransient) {
         for (DSFundsDerivationPath * derivationPath in self.fundDerivationPaths) {
-            [derivationPath loadAddresses];
+            if ([derivationPath hasExtendedPublicKey]) {
+                [derivationPath loadAddresses];
+            }
         }
     } else {
         for (DSFundsDerivationPath * derivationPath in self.fundDerivationPaths) {
@@ -275,9 +272,9 @@
         }
     }
     if (!self.isViewOnlyAccount) {
-        if (self.bip44DerivationPath) {
+        if (self.bip44DerivationPath && [self.bip44DerivationPath hasExtendedPublicKey]) {
             self.defaultDerivationPath = self.bip44DerivationPath;
-        } else if (self.bip32DerivationPath) {
+        } else if (self.bip32DerivationPath && [self.bip32DerivationPath hasExtendedPublicKey]) {
             self.defaultDerivationPath = self.bip32DerivationPath;
         } else if ([self.fundDerivationPaths objectAtIndex:0] && [[self.fundDerivationPaths objectAtIndex:0] isKindOfClass:[DSFundsDerivationPath class]]) {
             self.defaultDerivationPath = (DSFundsDerivationPath*)[self.fundDerivationPaths objectAtIndex:0];
@@ -305,7 +302,7 @@
 - (uint32_t)blockHeight
 {
     static uint32_t height = 0;
-    uint32_t h = self.wallet.chain.lastBlockHeight;
+    uint32_t h = self.wallet.chain.lastSyncBlockHeight;
     
     if (h > height) height = h;
     return height;
@@ -413,6 +410,13 @@
 }
 
 // MARK: - Addresses from Combined Derivation Paths
+
+-(BOOL)hasAnExtendedPublicKeyMissing {
+    for (DSDerivationPath * derivationPath in self.fundDerivationPaths) {
+        if (![derivationPath hasExtendedPublicKey]) return YES;
+    }
+    return NO;
+}
 
 -(NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit dashpayGapLimit:(NSUInteger)dashpayGapLimit internal:(BOOL)internal error:(NSError**)error {
     NSMutableArray * mArray = [NSMutableArray array];
@@ -1125,10 +1129,8 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     
     [self updateBalance];
     
-    [self.managedObjectContext performBlock:^{ // remove transaction from core data
-        [DSTransactionHashEntity deleteObjects:[DSTransactionHashEntity objectsMatching:@"txHash == %@",
-                                                [NSData dataWithUInt256:transactionHash]]];
-    }];
+    [DSTransactionHashEntity deleteObjects:[DSTransactionHashEntity objectsInContext:self.managedObjectContext matching:@"txHash == %@",
+                                                [NSData dataWithUInt256:transactionHash]] inContext:self.managedObjectContext];
     return TRUE;
 }
 
@@ -1391,7 +1393,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     
     if ([transaction isKindOfClass:[DSCoinbaseTransaction class]]) { //only allow these to be spent after 100 inputs
         DSCoinbaseTransaction * coinbaseTransaction = (DSCoinbaseTransaction*)transaction;
-        if (coinbaseTransaction.height + 100 > self.wallet.chain.lastBlockHeight) return YES;
+        if (coinbaseTransaction.height + 100 > self.wallet.chain.lastSyncBlockHeight) return YES;
     }
     return NO;
 }

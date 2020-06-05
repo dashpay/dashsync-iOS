@@ -39,13 +39,6 @@
 
 @implementation DSTransactionEntity
 
-+ (void)setContext:(NSManagedObjectContext *)context
-{
-    [super setContext:context];
-    [DSTxInputEntity setContext:context];
-    [DSTxOutputEntity setContext:context];
-}
-
 - (instancetype)setAttributesFromTransaction:(DSTransaction *)tx
 {
     [self.managedObjectContext performBlockAndWait:^{
@@ -54,10 +47,10 @@
         UInt256 txHash = tx.txHash;
         NSUInteger idx = 0;
         if (!self.transactionHash) {
-            self.transactionHash = [DSTransactionHashEntity managedObject];
-            self.transactionHash.chain = tx.chain.chainEntity;
+            self.transactionHash = [DSTransactionHashEntity managedObjectInContext:self.managedObjectContext];
+            self.transactionHash.chain = [tx.chain chainEntityInContext:self.managedObjectContext];
         } else if (!self.transactionHash.chain) {
-            self.transactionHash.chain = tx.chain.chainEntity;
+            self.transactionHash.chain = [tx.chain chainEntityInContext:self.managedObjectContext];
         }
         self.transactionHash.txHash = uint256_data(txHash);
         self.transactionHash.blockHeight = tx.blockHeight;
@@ -65,7 +58,7 @@
         self.associatedShapeshift = tx.associatedShapeshift;
         
         while (inputs.count < tx.inputHashes.count) {
-            [inputs addObject:[DSTxInputEntity managedObject]];
+            [inputs addObject:[DSTxInputEntity managedObjectInContext:self.managedObjectContext]];
         }
         
         while (inputs.count > tx.inputHashes.count) {
@@ -77,7 +70,7 @@
         }
         
         while (outputs.count < tx.outputAddresses.count) {
-            [outputs addObject:[DSTxOutputEntity managedObject]];
+            [outputs addObject:[DSTxOutputEntity managedObjectInContext:self.managedObjectContext]];
         }
         
         while (outputs.count > tx.outputAddresses.count) {
@@ -107,12 +100,12 @@
 }
 
 - (DSTransaction *)transaction {
-    return [self transactionForChain:[self.chain chain]];
+    return [self transactionForChain:[self.transactionHash chain].chain];
 }
 
 - (DSTransaction *)transactionForChain:(DSChain*)chain
 {
-    if (!chain) chain = [self.chain chain];
+    if (!chain) chain = [self.transactionHash chain].chain;
     DSTransaction *tx = [[[self transactionClass] alloc] initOnChain:chain];
     
     [self.managedObjectContext performBlockAndWait:^{
@@ -147,10 +140,10 @@
 - (void)deleteObject
 {
     for (DSTxInputEntity *e in self.inputs) { // mark inputs as unspent
-        [[DSTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", e.txHash, e.n].lastObject setSpentInInput:nil];
+        [[DSTxOutputEntity objectsInContext:self.managedObjectContext matching:@"txHash == %@ && n == %d", e.txHash, e.n].lastObject setSpentInInput:nil];
     }
     
-    [super deleteObject];
+    [super deleteObjectAndWait];
 }
 
 -(Class)transactionClass {

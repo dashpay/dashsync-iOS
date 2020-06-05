@@ -148,7 +148,7 @@
 //        [transactionEntityClass setContext:self.moc];
 //        [DSTransactionHashEntity setContext:self.moc];
 //        [DSAddressEntity setContext:self.moc];
-//        if ([DSTransactionEntity countObjectsMatching:@"transactionHash.txHash == %@", uint256_data(txHash)] == 0) {
+//        if ([DSTransactionEntity countObjectsInContext:context matching:@"transactionHash.txHash == %@", uint256_data(txHash)] == 0) {
 //
 //            DSTransactionEntity * transactionEntity = [transactionEntityClass managedObject];
 //            [transactionEntity setAttributesFromTransaction:transaction];

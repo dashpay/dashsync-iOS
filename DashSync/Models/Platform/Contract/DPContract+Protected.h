@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DPContract ()
 
-@property (assign, nonatomic) DPContractState contractState;
+-(void)setContractState:(DPContractState)contractState inContext:(NSManagedObjectContext*)context;
 
 -(DSContractTransition*)contractRegistrationTransitionForIdentity:(DSBlockchainIdentity*)blockchainIdentity;
 

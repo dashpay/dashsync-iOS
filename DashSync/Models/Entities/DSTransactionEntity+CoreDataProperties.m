@@ -31,7 +31,6 @@
 }
 
 @dynamic associatedShapeshift;
-@dynamic chain;
 @dynamic inputs;
 @dynamic outputs;
 @dynamic transactionHash;

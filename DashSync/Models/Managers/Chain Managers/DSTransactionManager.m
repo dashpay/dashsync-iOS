@@ -289,13 +289,16 @@
     }
     
     if (transactionsToBeRemoved.count) {
+        NSManagedObjectContext * context = nil;
         for (DSTransaction * transaction in [transactionsToBeRemoved copy]) {
             NSArray * accounts = [self.chain accountsThatCanContainTransaction:transaction];
             for (DSAccount * account in accounts) {
                 [account removeTransaction:transaction];
+                NSAssert(!context || context == account.managedObjectContext, @"All accounts should be on same context");
+                context = account.managedObjectContext;
             }
         }
-        [DSTransactionHashEntity saveContext];
+        [context ds_saveInBlockAndWait];
     }
     
     [self.removeUnrelayedTransactionsLocalRequests removeAllObjects];
@@ -716,7 +719,9 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
                     DSDLog(@"[DSTransactionManager] fetching mempool message success peer %@",peer.host);
                     peer.synced = YES;
                     [self removeUnrelayedTransactionsFromPeer:peer];
-                    [peer sendGetaddrMessage]; // request a list of other dash peers
+                    if (!self.chainManager.peerManager.masternodeList) {
+                        [peer sendGetaddrMessage]; // request a list of other dash peers
+                    }
                     
                     dispatch_async(dispatch_get_main_queue(), ^{
                         [[NSNotificationCenter defaultCenter]
@@ -780,7 +785,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 //It makes sense to keep this in this class because it is not a property of the chain, but intead of a effemeral item used in the synchronization of the chain.
 - (DSBloomFilter *)transactionsBloomFilterForPeer:(DSPeer *)peer
 {
-    self.filterUpdateHeight = self.chain.lastBlockHeight;
+    self.filterUpdateHeight = self.chain.lastSyncBlockHeight;
     self.transactionsBloomFilterFalsePositiveRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
     
     
@@ -904,9 +909,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         for (DSAccount * account in accounts) {
             if (![account transactionForHash:txHash]) {
                 if ([account registerTransaction:transaction saveImmediately:YES]) {
-                    [[DSTransactionEntity context] performBlock:^{
-                        [DSTransactionEntity saveContext]; // persist transactions to core data
-                    }];
+                    [[NSManagedObjectContext chainContext] ds_saveInBlock];
                 }
             }
         }
@@ -936,7 +939,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 - (void)peer:(DSPeer *)peer hasTransactionWithHash:(UInt256)txHash transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock;
 {
     NSValue *hash = uint256_obj(txHash);
-    BOOL syncing = (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight);
+    BOOL syncing = (self.chain.lastSyncBlockHeight < self.chain.estimatedBlockHeight);
     DSTransaction *transaction = self.publishedTx[hash];
     void (^callback)(NSError *error) = self.publishedCallback[hash];
     
@@ -982,7 +985,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 - (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction inBlock:(DSMerkleBlock*)block transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock
 {
     NSValue *hash = uint256_obj(transaction.txHash);
-    BOOL syncing = (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight);
+    BOOL syncing = (self.chain.lastSyncBlockHeight < self.chain.estimatedBlockHeight);
     void (^callback)(NSError *error) = self.publishedCallback[hash];
     
     DSDLog(@"%@:%d relayed transaction %@", peer.host, peer.port, hash);
@@ -1237,13 +1240,15 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 {
     //DSDLog(@"relayed block %@ total transactions %d %u",uint256_hex(block.blockHash), block.totalTransactions,block.timestamp);
     // ignore block headers that are newer than 2 days before earliestKeyTime (headers have 0 totalTransactions)
-    if (!self.chain.shouldSyncHeadersFirstForMasternodeListVerification &&
+    if (!self.chain.needsInitialTerminalHeadersSync &&
         (block.timestamp + DAY_TIME_INTERVAL*2 > self.chain.earliestWalletCreationTime)) {
         DSDLog(@"ignoring header %@",uint256_hex(block.blockHash));
         return;
     }
     
-    [self.chain addHeader:block fromPeer:peer];
+    if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
+    
+    [self.chain addBlock:block fromPeer:peer];
 
 }
 
@@ -1260,7 +1265,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     NSArray *txHashes = block.txHashes;
     
     // track the observed bloom filter false positive rate using a low pass filter to smooth out variance
-    if (peer == self.peerManager.downloadPeer && block.totalTransactions > 0) {
+    if (peer == self.peerManager.downloadPeer && block.txHashes.count > 0) {
         NSMutableSet *falsePositives = [NSMutableSet setWithArray:txHashes];
         
         // 1% low pass filter, also weights each block by total transactions, using 1400 tx per block as typical
@@ -1271,19 +1276,21 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         // false positive rate sanity check
         if (self.peerManager.downloadPeer.status == DSPeerStatus_Connected && self.transactionsBloomFilterFalsePositiveRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10.0) {
             DSDLog(@"%@:%d bloom filter false positive rate %f too high after %d blocks, disconnecting...", peer.host,
-                   peer.port, self.transactionsBloomFilterFalsePositiveRate, self.chain.lastBlockHeight + 1 - self.filterUpdateHeight);
+                   peer.port, self.transactionsBloomFilterFalsePositiveRate, self.chain.lastSyncBlockHeight + 1 - self.filterUpdateHeight);
             [self.peerManager.downloadPeer disconnect];
         }
-        else if (self.chain.lastBlockHeight + 500 < peer.lastBlockHeight && self.transactionsBloomFilterFalsePositiveRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*10.0) {
+        else if (self.chain.lastSyncBlockHeight + 500 < peer.lastBlockHeight && self.transactionsBloomFilterFalsePositiveRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*10.0) {
             [self updateTransactionsBloomFilter]; // rebuild bloom filter when it starts to degrade
         }
     }
     
+    if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
+    
     if (! _bloomFilter) { // ignore potentially incomplete blocks when a filter update is pending
-        if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
         DSDLog(@"ignoring block due to filter update %@",uint256_hex(block.blockHash));
         return;
     }
+    
     
     [self.chain addBlock:block fromPeer:peer];
 }

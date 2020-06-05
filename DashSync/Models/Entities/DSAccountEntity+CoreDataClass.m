@@ -16,7 +16,7 @@
     NSParameterAssert(walletUniqueID);
     NSParameterAssert(chain);
     NSParameterAssert(context);
-    NSArray * accounts = [DSAccountEntity objectsMatching:@"walletUniqueID = %@ && index = %@",walletUniqueID,@(index)];
+    NSArray * accounts = [DSAccountEntity objectsInContext:context matching:@"walletUniqueID = %@ && index = %@",walletUniqueID,@(index)];
     if ([accounts count]) {
         NSAssert([accounts count] == 1, @"There can only be one account per index per wallet");
         return [accounts objectAtIndex:0];

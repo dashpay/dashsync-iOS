@@ -53,11 +53,12 @@
 #import "DSSporkManager.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSMasternodeManager.h"
+#import "DSSimplifiedMasternodeEntry.h"
 
 #define PEER_LOGGING 1
 #define LOG_ALL_HEADERS_IN_ACCEPT_HEADERS 0
 #define LOG_TX_LOCK_VOTES 0
-#define LOG_FULL_TX_MESSAGE 1
+#define LOG_FULL_TX_MESSAGE 0
 
 #if ! PEER_LOGGING
 #define DSDLog(...)
@@ -127,6 +128,10 @@
     return [[self alloc] initWithHost:host onChain:chain];
 }
 
++ (instancetype)peerWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntry {
+    return [[self alloc] initWithSimplifiedMasternodeEntry:simplifiedMasternodeEntry];
+}
+
 - (instancetype)initWithAddress:(UInt128)address andPort:(uint16_t)port onChain:(DSChain*)chain
 {
     if (! (self = [super init])) return nil;
@@ -136,6 +141,10 @@
     self.chain = chain;
     _outputBufferSemaphore = dispatch_semaphore_create(1);
     return self;
+}
+
+- (instancetype)initWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntry {
+    return [self initWithAddress:simplifiedMasternodeEntry.address andPort:simplifiedMasternodeEntry.port onChain:simplifiedMasternodeEntry.chain];
 }
 
 - (instancetype)initWithHost:(NSString *)host onChain:(DSChain*)chain
@@ -255,11 +264,9 @@
     self.currentBlock = nil;
     self.currentBlockTxHashes = nil;
     
-    self.managedObjectContext = [NSManagedObject context];
+    self.managedObjectContext = [NSManagedObjectContext peerContext];
     [self.managedObjectContext performBlockAndWait:^{
-        [DSTransactionHashEntity setContext:self.managedObjectContext];
-        [DSChainEntity setContext:self.managedObjectContext];
-        NSArray<DSTransactionHashEntity*> * transactionHashEntities  = [DSTransactionHashEntity standaloneTransactionHashEntitiesOnChain:self.chain.chainEntity];
+        NSArray<DSTransactionHashEntity*> * transactionHashEntities  = [DSTransactionHashEntity standaloneTransactionHashEntitiesOnChainEntity:[self.chain chainEntityInContext:self.managedObjectContext]];
         for (DSTransactionHashEntity * hashEntity in transactionHashEntities) {
             [self.knownTxHashes addObject:hashEntity.txHash];
         }
@@ -354,7 +361,7 @@
 {
     if (self.status != DSPeerStatus_Connecting || ! self.sentVerack || ! self.gotVerack) return;
     
-    DSDLog(@"%@:%u handshake completed", self.host, self.port);
+    DSDLog(@"%@:%u handshake completed %@", self.host, self.port, (self.peerDelegate.downloadPeer == self)?@"(download peer)":@"");
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending handshake timeout
     _status = DSPeerStatus_Connected;
     
@@ -395,7 +402,7 @@
             }
 #endif
 #if MESSAGE_CONTENT_LOGGING
-            DSDLog(@"%@:%u sending data %@", self.host, self.port, message.hexString);
+            DSDLog(@"%@:%u sending data (%lu bytes) %@", self.host, self.port, (unsigned long)message.length, message.hexString);
 #endif
         }
 #endif
@@ -459,7 +466,7 @@
 - (void)sendFilterloadMessage:(NSData *)filter
 {
     self.sentFilter = YES;
-    DSDLog(@"Sending filter with fingerprint %@ to node %@",[NSData dataWithUInt256:filter.SHA256].shortHexString,self.host);
+    DSDLog(@"Sending filter with fingerprint %@ to node %@ %@",[NSData dataWithUInt256:filter.SHA256].shortHexString,self.host,self.peerDelegate.downloadPeer == self?@"(download peer) ":@"");
     [self sendMessage:filter type:MSG_FILTERLOAD];
 }
 
@@ -1126,7 +1133,7 @@
     }
     
     if (count > 0 && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePing) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePaymentVote) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodeVerify) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_GovernanceObjectVote) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_DSTx)) {
-        DSDLog(@"%@:%u got inv with %u item%@ (first item %@ with hash %@)", self.host, self.port, (int)count,count==1?@"":@"s",[self nameOfInvMessage:[message UInt32AtOffset:l.unsignedIntegerValue]],[NSData dataWithUInt256:[message UInt256AtOffset:l.unsignedIntegerValue + sizeof(uint32_t)]].hexString);
+        DSDLog(@"%@:%u got inv with %u item%@ (first item %@ with hash %@/%@)", self.host, self.port, (int)count,count==1?@"":@"s",[self nameOfInvMessage:[message UInt32AtOffset:l.unsignedIntegerValue]],[NSData dataWithUInt256:[message UInt256AtOffset:l.unsignedIntegerValue + sizeof(uint32_t)]].hexString,[NSData dataWithUInt256:[message UInt256AtOffset:l.unsignedIntegerValue + sizeof(uint32_t)]].reverse.hexString);
     }
     
     BOOL onlyPrivateSendTransactions = NO;
@@ -1397,7 +1404,11 @@
          (int)(((l == 0) ? 1 : l) + count*81), (int)count];
         return;
     }
-    DSDLog(@"%@:%u got %u headers", self.host, self.port, (int)count);
+    if (count == 0) {
+        DSDLog(@"%@:%u got 0 headers (%@)", self.host, self.port, message.hexString);
+    } else {
+        DSDLog(@"%@:%u got %u headers", self.host, self.port, (int)count);
+    }
     
 #if LOG_ALL_HEADERS_IN_ACCEPT_HEADERS
     for (int i =0;i<count;i++) {
@@ -1431,21 +1442,21 @@
     // Devnets can run slower than usual
     NSTimeInterval lastTimestamp = [message UInt32AtOffset:l + 81*(count - 1) + 68];
     NSTimeInterval firstTimestamp = [message UInt32AtOffset:l + 81 + 68];
-    if (!self.chain.shouldSyncHeadersFirstForMasternodeListVerification && (firstTimestamp + DAY_TIME_INTERVAL*2 >= self.earliestKeyTime)) {
+    if (!self.chain.needsInitialTerminalHeadersSync && (firstTimestamp + DAY_TIME_INTERVAL*2 >= self.earliestKeyTime)) {
         //this is a rare scenario where we called getheaders but the first header returned was actually past the cuttoff, but the previous header was before the cuttoff
-        DSDLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, [self.chain blockLocatorArray]);
-        [self sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
+        DSDLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, [self.chain chainSyncBlockLocatorArray]);
+        [self sendGetblocksMessageWithLocators:self.chain.chainSyncBlockLocatorArray andHashStop:UINT256_ZERO];
         return;
     }
     if (!count) return;
-    if (count >= 2000 || (((lastTimestamp + DAY_TIME_INTERVAL*2) >= self.earliestKeyTime) && (!self.chain.shouldSyncHeadersFirstForMasternodeListVerification))) {
+    if (count >= self.chain.headersMaxAmount || (((lastTimestamp + DAY_TIME_INTERVAL*2) >= self.earliestKeyTime) && (!self.chain.needsInitialTerminalHeadersSync))) {
         UInt256 firstBlockHash = [message subdataWithRange:NSMakeRange(l, 80)].x11;
         UInt256 lastBlockHash = [message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].x11;
         NSData *firstHashData = uint256_data(firstBlockHash);
         NSData *lastHashData = uint256_data(lastBlockHash);
         
         
-        if (((lastTimestamp + DAY_TIME_INTERVAL*2) >= self.earliestKeyTime) && (!self.chain.shouldSyncHeadersFirstForMasternodeListVerification)) { // request blocks for the remainder of the chain
+        if (((lastTimestamp + DAY_TIME_INTERVAL*2) >= self.earliestKeyTime) && (!self.chain.needsInitialTerminalHeadersSync)) { // request blocks for the remainder of the chain
             NSTimeInterval timestamp = [message UInt32AtOffset:l + 81 + 68];
             
             for (off = l; timestamp > 0 && ((timestamp + DAY_TIME_INTERVAL*2) < self.earliestKeyTime);) {
@@ -1931,8 +1942,8 @@
 // MARK: - Saving to Disk
 
 -(void)save {
-    [[DSPeerEntity context] performBlock:^{
-        NSArray * peerEntities = [DSPeerEntity objectsMatching:@"address == %@ && port == %@", @(CFSwapInt32BigToHost(self.address.u32[3])),@(self.port)];
+    [self.managedObjectContext performBlock:^{
+        NSArray * peerEntities = [DSPeerEntity objectsInContext:self.managedObjectContext matching:@"address == %@ && port == %@", @(CFSwapInt32BigToHost(self.address.u32[3])),@(self.port)];
         if ([peerEntities count]) {
             DSPeerEntity * e = [peerEntities firstObject];
             
@@ -1947,7 +1958,7 @@
             }
         } else {
             @autoreleasepool {
-                [[DSPeerEntity managedObject] setAttributesFromPeer:self]; // add new peers
+                [[DSPeerEntity managedObjectInContext:self.managedObjectContext] setAttributesFromPeer:self]; // add new peers
             }
         }
     }];

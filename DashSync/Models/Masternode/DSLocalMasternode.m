@@ -120,7 +120,7 @@
     DSWallet * votingWallet = [providerRegistrationTransaction.chain walletHavingProviderVotingAuthenticationHash:providerRegistrationTransaction.votingKeyHash foundAtIndex:&votingAddressIndex];
     DSWallet * operatorWallet = [providerRegistrationTransaction.chain walletHavingProviderOperatorAuthenticationKey:providerRegistrationTransaction.operatorKey foundAtIndex:&operatorAddressIndex];
     DSWallet * holdingWallet = [providerRegistrationTransaction.chain walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:providerRegistrationTransaction foundAtIndex:&holdingAddressIndex];
-    NSLog(@"%@",[uint160_data(providerRegistrationTransaction.ownerKeyHash) addressFromHash160DataForChain:providerRegistrationTransaction.chain]);
+    //DSDLog(@"%@",[uint160_data(providerRegistrationTransaction.ownerKeyHash) addressFromHash160DataForChain:providerRegistrationTransaction.chain]);
     self.operatorKeysWallet = operatorWallet;
     self.holdingKeysWallet = holdingWallet;
     self.ownerKeysWallet = ownerWallet;
@@ -586,28 +586,24 @@
 // MARK: - Persistence
 
 -(void)save {
-    NSManagedObjectContext * context = [DSTransactionEntity context];
+    [self saveInContext:[NSManagedObjectContext chainContext]];
+}
+
+-(void)saveInContext:(NSManagedObjectContext*)context {
     [context performBlockAndWait:^{ // add the transaction to core data
-        [DSChainEntity setContext:context];
-        [DSLocalMasternodeEntity setContext:context];
-        [DSTransactionHashEntity setContext:context];
-        [DSProviderRegistrationTransactionEntity setContext:context];
-        [DSProviderUpdateServiceTransactionEntity setContext:context];
-        [DSProviderUpdateRegistrarTransactionEntity setContext:context];
-        [DSProviderUpdateRevocationTransactionEntity setContext:context];
         if ([DSLocalMasternodeEntity
-             countObjectsMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)] == 0) {
-            DSProviderRegistrationTransactionEntity * providerRegistrationTransactionEntity = [DSProviderRegistrationTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)];
+             countObjectsInContext:context matching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)] == 0) {
+            DSProviderRegistrationTransactionEntity * providerRegistrationTransactionEntity = [DSProviderRegistrationTransactionEntity anyObjectInContext:context matching:@"transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)];
             if (!providerRegistrationTransactionEntity) {
                 [self.providerRegistrationTransaction save];
             }
-            DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity managedObject];
+            DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity managedObjectInContext:context];
             [localMasternode setAttributesFromLocalMasternode:self];
-            [DSLocalMasternodeEntity saveContext];
+            [context ds_save];
         } else {
-            DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity anyObjectMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)];
+            DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity anyObjectInContext:context matching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)];
             [localMasternode setAttributesFromLocalMasternode:self];
-            [DSLocalMasternodeEntity saveContext];
+            [context ds_save];
         }
     }];
 }
