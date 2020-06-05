@@ -72,7 +72,7 @@
         [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
         [[DashSync sharedSyncController] wipeSporkDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
         [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
-        [self.chain.chainManager.peerManager setTrustedPeerHost:@"178.128.228.195:9999"];
+        //[self.chain.chainManager.peerManager setTrustedPeerHost:@"178.128.228.195:9999"];
         
         [self measureWithMetrics:@[[[XCTCPUMetric alloc] init],[[XCTMemoryMetric alloc] init],[[XCTClockMetric alloc] init]] options:options block:^{
             XCTestExpectation *headerFinishedExpectation = [[XCTestExpectation alloc] init];
@@ -94,6 +94,7 @@
 }
 
 - (void)testInitialHeadersSync2000 {
+    [self.chain.chainManager.peerManager removeTrustedPeerHost];
     [self tryInitialHeadersSyncForHeadersAmount:2000];
 }
 
