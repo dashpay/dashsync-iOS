@@ -1297,6 +1297,11 @@ static dispatch_once_t devnetToken = 0;
 
 // MARK: - Checkpoints
 
+-(BOOL)blockHeightHasCheckpoint:(uint32_t)blockHeight {
+    DSCheckpoint * checkpoint = [self lastCheckpointOnOrBeforeHeight:blockHeight];
+    return (checkpoint.height == blockHeight);
+}
+
 -(DSCheckpoint*)lastCheckpoint {
     if (!_lastCheckpoint) {
         _lastCheckpoint = [[self checkpoints] lastObject];
@@ -1757,7 +1762,7 @@ static dispatch_once_t devnetToken = 0;
     } else {
         if ((block.height % 1000) == 0) { //free up some memory from time to time
             @synchronized (self.syncBlocks) {
-                [self saveBlockLocators];
+
                 DSMerkleBlock *b = block;
                 
                 for (uint32_t i = 0; b && i < LLMQ_KEEP_RECENT_BLOCKS; i++) {
@@ -1843,6 +1848,11 @@ static dispatch_once_t devnetToken = 0;
         }
         [self setBlockHeight:block.height andTimestamp:txTime forTransactionHashes:txHashes];
         onMainChain = TRUE;
+        
+        if ([self blockHeightHasCheckpoint:block.height]) {
+            [self saveBlockLocators];
+        }
+        
     } else if (uint256_eq(block.prevBlock, self.lastTerminalBlock.blockHash)) { // new block extends terminal chain
         if ((block.height % 100) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
             DSDLog(@"adding terminal block on %@ at height: %d from peer %@", self.name, block.height,peer.host);
@@ -3144,9 +3154,6 @@ static dispatch_once_t devnetToken = 0;
 -(void)saveBlockLocators {
     NSAssert(self.chainManager.syncPhase == DSChainSyncPhase_ChainSync,@"This should only be happening in chain sync phase");
     [self prepareForIncomingTransactionPersistenceForBlockSaveWithNumber:self.lastSyncBlockHeight];
-    if (self.lastSyncBlockHeight > self.lastCheckpoint.height) {
-        
-    }
     DSMerkleBlock * lastBlock = self.lastSyncBlock;
     UInt256 lastBlockHash = lastBlock.blockHash;
     uint32_t lastBlockHeight = lastBlock.height;

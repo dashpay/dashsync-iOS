@@ -112,7 +112,6 @@
     [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            [self savePeers];
-                                                           [self.chain saveBlockLocators];
                                                            [self.chain saveTerminalBlocks];
                                                            
                                                            if (self.taskId == UIBackgroundTaskInvalid) {
@@ -256,6 +255,18 @@
             
             [_peers addObjectsFromArray:[self registeredDevnetPeers]];
             
+            if (self.masternodeList) {
+                NSArray * masternodePeers = [self.masternodeList peers:8 withConnectivityNonce:self.masternodeListConnectivityNonce];
+                [_peers addObjectsFromArray:masternodePeers];
+            }
+            
+            [self sortPeers];
+            return _peers;
+        }
+        
+        if (self.masternodeList) {
+            NSArray * masternodePeers = [self.masternodeList peers:500 withConnectivityNonce:self.masternodeListConnectivityNonce];
+            [_peers addObjectsFromArray:masternodePeers];
             [self sortPeers];
             return _peers;
         }
@@ -651,7 +662,6 @@
             if (self.taskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
                 self.taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
                     dispatch_async(self.networkingQueue, ^{
-                        [self.chain saveBlockLocators];
                         [self.chain saveTerminalBlocks];
                     });
                     
