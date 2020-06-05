@@ -1826,7 +1826,7 @@ static dispatch_once_t devnetToken = 0;
         self.lastSyncBlock = block;
         [self setBlockHeight:block.height andTimestamp:txTime forTransactionHashes:txHashes];
         onMainChain = TRUE;
-    } else if (uint256_eq(block.prevBlock, self.lastSyncBlockHash)) { // new block extends sync chain
+    } else if ((phase == DSChainSyncPhase_ChainSync) && uint256_eq(block.prevBlock, self.lastSyncBlockHash)) { // new block extends sync chain
         if ((block.height % 100) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
             DSDLog(@"adding sync block on %@ at height: %d from peer %@", self.name, block.height,peer.host);
         }

@@ -486,7 +486,7 @@ inline static int ceil_log2(int x)
         return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
     }];
     NSMutableArray * mArray = [NSMutableArray array];
-    for (uint32_t i = 0; i< peerCount; i++) {
+    for (uint32_t i = 0; i< MIN(peerCount,self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.count); i++) {
         DSSimplifiedMasternodeEntry * masternodeEntry = self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[sortedHashes[i]];
         DSPeer * peer = [DSPeer peerWithSimplifiedMasternodeEntry:masternodeEntry];
         [mArray addObject:peer];

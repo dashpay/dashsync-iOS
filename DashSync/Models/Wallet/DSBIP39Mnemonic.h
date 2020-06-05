@@ -34,6 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 // https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 
 #define BIP39_CREATION_TIME 1425039295.0
+//1546810296.0 <- that would be block 1M
 #define BIP39_WALLET_UNKNOWN_CREATION_TIME 0
 
 typedef NS_ENUM(NSUInteger, DSBIP39Language) {
