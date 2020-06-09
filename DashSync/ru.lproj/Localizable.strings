@@ -361,3 +361,6 @@
 
 /* No comment provided by engineer. */
 "Node at host %@ does not support bloom filtering" = "Node at host %@ does not support bloom filtering";
+
+/* No comment provided by engineer. */
+"The Dashpay contract is not properly set up" = "The Dashpay contract is not properly set up";

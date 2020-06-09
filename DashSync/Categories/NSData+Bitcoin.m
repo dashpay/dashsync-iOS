@@ -1124,13 +1124,21 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
 
 - (UInt128)UInt128
 {
-    if (self.length < sizeof(UInt128)) return UINT128_ZERO;
+    if (self.length < sizeof(UInt128)) {
+        NSMutableData * mData = [self mutableCopy];
+        [mData increaseLengthBy:(sizeof(UInt128)) - self.length];
+        return [mData UInt128];
+    }
     return *(UInt128 *)(self.bytes);
 }
 
 - (UInt160)UInt160AtOffset:(NSUInteger)offset
 {
-    if (self.length < offset + sizeof(UInt160)) return UINT160_ZERO;
+    if (self.length < sizeof(UInt160)) {
+        NSMutableData * mData = [self mutableCopy];
+        [mData increaseLengthBy:(sizeof(UInt160)) - self.length];
+        return [mData UInt160];
+    }
     return *(UInt160 *)(self.bytes + offset);
 }
 
@@ -1148,7 +1156,11 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
 
 - (UInt256)UInt256
 {
-    if (self.length < sizeof(UInt256)) return UINT256_ZERO;
+    if (self.length < sizeof(UInt256)) {
+        NSMutableData * mData = [self mutableCopy];
+        [mData increaseLengthBy:(sizeof(UInt256)) - self.length];
+        return [mData UInt256];
+    }
     return *(UInt256 *)(self.bytes);
 }
 
@@ -1160,7 +1172,11 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
 
 - (UInt384)UInt384
 {
-    if (self.length < sizeof(UInt384)) return UINT384_ZERO;
+    if (self.length < sizeof(UInt384)) {
+        NSMutableData * mData = [self mutableCopy];
+        [mData increaseLengthBy:(sizeof(UInt384)) - self.length];
+        return [mData UInt384];
+    }
     return *(UInt384 *)(self.bytes);
 }
 
@@ -1172,7 +1188,11 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
 
 - (UInt512)UInt512
 {
-    if (self.length < sizeof(UInt512)) return UINT512_ZERO;
+    if (self.length < sizeof(UInt512)) {
+        NSMutableData * mData = [self mutableCopy];
+        [mData increaseLengthBy:(sizeof(UInt512)) - self.length];
+        return [mData UInt512];
+    }
     return *(UInt512 *)(self.bytes);
 }
 
@@ -1184,7 +1204,11 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
 
 - (UInt768)UInt768
 {
-    if (self.length < sizeof(UInt768)) return UINT768_ZERO;
+    if (self.length < sizeof(UInt768)) {
+        NSMutableData * mData = [self mutableCopy];
+        [mData increaseLengthBy:(sizeof(UInt768)) - self.length];
+        return [mData UInt768];
+    }
     return *(UInt768 *)(self.bytes);
 }
 

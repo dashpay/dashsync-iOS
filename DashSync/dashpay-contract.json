@@ -48,7 +48,7 @@
                 "encToUserId": {
                     "type": "string",
                     "maxLength":128,
-                    "minLength":24
+                    "minLength":96
                 },
                 "encryptionKeyIndex": {
                     "type": "integer"
@@ -107,12 +107,12 @@
                 "toUserId": {
                     "type": "string",
                     "maxLength":44,
-                    "minLength":1
+                    "minLength":22
                 },
                 "encryptedPublicKey": {
                     "type": "string",
                     "maxLength":128,
-                    "minLength":128
+                    "minLength":96
                 },
                 "senderKeyIndex": {
                     "type": "integer"
