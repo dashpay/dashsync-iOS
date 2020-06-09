@@ -269,7 +269,7 @@
 
 -(void)chainShouldStartSyncingBlockchain:(DSChain*)chain onPeer:(DSPeer*)peer {
     dispatch_async(self.chain.networkingQueue, ^{
-        if ((self.syncPhase != DSChainSyncPhase_ChainSync) && self.chain.needsInitialTerminalHeadersSync) {
+        if ((self.syncPhase != DSChainSyncPhase_ChainSync && self.syncPhase != DSChainSyncPhase_Synced) && self.chain.needsInitialTerminalHeadersSync) {
         //masternode list should be synced first and the masternode list is old
             self.syncPhase = DSChainSyncPhase_InitialTerminalBlocks;
             [peer sendGetheadersMessageWithLocators:[self.chain terminalBlocksLocatorArray] andHashStop:UINT256_ZERO];
@@ -300,6 +300,7 @@
     if (onMainChain && peer && (peer == self.peerManager.downloadPeer)) self.lastChainRelayTime = [NSDate timeIntervalSince1970];
     DSDLog(@"chain finished syncing");
     self.syncStartHeight = 0;
+    self.syncPhase = DSChainSyncPhase_Synced;
     [self.transactionManager fetchMempoolFromNetwork];
     [self.sporkManager getSporks];
     [self.governanceSyncManager startGovernanceSync];
@@ -314,7 +315,9 @@
     DSDLog(@"Chain finished syncing masternode list and quorums, it should start syncing chain");
     
     if (self.peerManager.connectedPeerCount == 0) {
-        self.syncPhase = DSChainSyncPhase_ChainSync;
+        if (self.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
+            self.syncPhase = DSChainSyncPhase_ChainSync;
+        }
         [self.peerManager connect];
     } else if (!self.peerManager.masternodeList && self.masternodeManager.currentMasternodeList) {
         [self.peerManager useMasternodeList:self.masternodeManager.currentMasternodeList withConnectivityNonce:self.sessionConnectivityNonce];
