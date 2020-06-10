@@ -1691,7 +1691,10 @@ static dispatch_once_t devnetToken = 0;
 
 - (BOOL)addBlock:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer
 {
-    NSAssert(self.chainManager.syncPhase, @"Sync phase should be set");
+    if (!self.chainManager.syncPhase) {
+        DSDLog(@"Block was received after reset, ignoring it");
+        return FALSE;
+    }
     //DSDLog(@"a block %@",uint256_hex(block.blockHash));
     //All blocks will be added from same delegateQueue
     NSArray *txHashes = block.txHashes;
