@@ -12,6 +12,7 @@
 #import "DSContactSentTransactionsTableViewController.h"
 #import "DSContactSendDashViewController.h"
 #import "DSContactRelationshipInfoViewController.h"
+#import "DSContactRelationshipActionsViewController.h"
 
 static NSString * const CellId = @"CellId";
 
@@ -44,7 +45,7 @@ static NSString * const CellId = @"CellId";
             [self showAlertTitle:[errors[0] localizedDescription] result:NO];
         }
         [strongSelf.refreshControl endRefreshing];
-
+        
     }];
 }
 
@@ -110,10 +111,14 @@ static NSString * const CellId = @"CellId";
                 ((DSContactSendDashViewController*)controller).blockchainIdentity = self.blockchainIdentity;
                 ((DSContactSendDashViewController*)controller).contact = dashpayFriend;
             } else if ([controller isKindOfClass:[DSContactRelationshipInfoViewController class]]) {
-               ((DSContactRelationshipInfoViewController*)controller).blockchainIdentity = self.blockchainIdentity;
-               ((DSContactRelationshipInfoViewController*)controller).incomingFriendRequest = friendToMe;
+                ((DSContactRelationshipInfoViewController*)controller).blockchainIdentity = self.blockchainIdentity;
+                ((DSContactRelationshipInfoViewController*)controller).incomingFriendRequest = friendToMe;
                 ((DSContactRelationshipInfoViewController*)controller).outgoingFriendRequest = meToFriend;
-           }
+            }  else if ([controller isKindOfClass:[DSContactRelationshipActionsViewController class]]) {
+                ((DSContactRelationshipInfoViewController*)controller).blockchainIdentity = self.blockchainIdentity;
+                ((DSContactRelationshipInfoViewController*)controller).incomingFriendRequest = friendToMe;
+                ((DSContactRelationshipInfoViewController*)controller).outgoingFriendRequest = meToFriend;
+            }
         }
     }
 }

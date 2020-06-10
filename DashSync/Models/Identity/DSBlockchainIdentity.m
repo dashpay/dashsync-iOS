@@ -1555,24 +1555,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ //this is so we don't get DAPINetworkService immediately
         
-        if (!uint256_is_zero(self.chain.dpnsContractID) && contract.contractState == DPContractState_Unknown) {
-            [self.DAPINetworkService getIdentityByName:@"dashpay" inDomain:@"" success:^(NSDictionary * _Nonnull blockchainIdentity) {
-                if (!blockchainIdentity) {
-                    __strong typeof(weakContract) strongContract = weakContract;
-                    if (!strongContract) {
-                        return;
-                    }
-                    [strongContract setContractState:DPContractState_NotRegistered inContext:context];
-                }
-            } failure:^(NSError * _Nonnull error) {
-                __strong typeof(weakContract) strongContract = weakContract;
-                if (!strongContract) {
-                    return;
-                }
-                [strongContract setContractState:DPContractState_NotRegistered inContext:context];
-                
-            }];
-        } else if ((uint256_is_zero(self.chain.dpnsContractID) && uint256_is_zero(contract.registeredBlockchainIdentityUniqueID)) || contract.contractState == DPContractState_NotRegistered) {
+        if ((uint256_is_zero(self.chain.dashpayContractID) && uint256_is_zero(contract.registeredBlockchainIdentityUniqueID)) || contract.contractState == DPContractState_NotRegistered) {
             [contract registerCreator:self inContext:context];
             __block DSContractTransition * transition = [contract contractRegistrationTransitionForIdentity:self];
             [self signStateTransition:transition completion:^(BOOL success) {
@@ -2733,7 +2716,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 completion(NO, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                            DSLocalizedString(@"Dashpay Contract is not yet registered on network", nil)}]);
+                                                                                            DSLocalizedString(@"The Dashpay contract is not properly set up", nil)}]);
             });
         }
         return;
@@ -2837,6 +2820,16 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 }
 
 - (void)fetchIncomingContactRequests:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
+    DPContract * dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
+    if (dashpayContract.contractState != DPContractState_Registered) {
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(NO, @[[NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                              DSLocalizedString(@"The Dashpay contract is not properly set up", nil)}]]);
+            });
+        }
+        return;
+    }
     NSError * error = nil;
     if (![self activePrivateKeysAreLoadedWithFetchingError:&error]) {
         //The blockchain identity hasn't been intialized on the device, ask the user to activate the blockchain user, this action allows private keys to be cached on the blockchain identity level
@@ -2878,6 +2871,17 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 }
 
 - (void)fetchOutgoingContactRequests:(void (^)(BOOL success,  NSArray<NSError *> *errors))completion {
+    
+    DPContract * dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
+    if (dashpayContract.contractState != DPContractState_Registered) {
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(NO, @[[NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                              DSLocalizedString(@"The Dashpay contract is not properly set up", nil)}]]);
+            });
+        }
+        return;
+    }
     NSError * error = nil;
     if (![self activePrivateKeysAreLoadedWithFetchingError:&error]) {
         //The blockchain identity hasn't been intialized on the device, ask the user to activate the blockchain user, this action allows private keys to be cached on the blockchain identity level

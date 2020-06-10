@@ -154,6 +154,7 @@
 		FB44D621228C73FB00354A4D /* Quorums.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB44D620228C73FB00354A4D /* Quorums.storyboard */; };
 		FB44D625228C774800354A4D /* DSQuorumTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB44D624228C774800354A4D /* DSQuorumTableViewCell.m */; };
 		FB44D628228C77E400354A4D /* DSQuorumListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB44D627228C77E400354A4D /* DSQuorumListViewController.m */; };
+		FB503364248F8879005E0C1E /* DSContactRelationshipActionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB503363248F8879005E0C1E /* DSContactRelationshipActionsViewController.m */; };
 		FB5252F320EE0A34009A2BF1 /* DSProposalCreatorViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB5252F220EE0A34009A2BF1 /* DSProposalCreatorViewController.m */; };
 		FB5252F620EE159B009A2BF1 /* DSAccountChooserViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB5252F520EE159B009A2BF1 /* DSAccountChooserViewController.m */; };
 		FB5252F920F2308E009A2BF1 /* DSTransactionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB5252F820F2308E009A2BF1 /* DSTransactionsViewController.m */; };
@@ -500,6 +501,8 @@
 		FB44D624228C774800354A4D /* DSQuorumTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSQuorumTableViewCell.m; sourceTree = "<group>"; };
 		FB44D626228C77E400354A4D /* DSQuorumListViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSQuorumListViewController.h; sourceTree = "<group>"; };
 		FB44D627228C77E400354A4D /* DSQuorumListViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSQuorumListViewController.m; sourceTree = "<group>"; };
+		FB503362248F8879005E0C1E /* DSContactRelationshipActionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactRelationshipActionsViewController.h; sourceTree = "<group>"; };
+		FB503363248F8879005E0C1E /* DSContactRelationshipActionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactRelationshipActionsViewController.m; sourceTree = "<group>"; };
 		FB5252F120EE0A34009A2BF1 /* DSProposalCreatorViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSProposalCreatorViewController.h; sourceTree = "<group>"; };
 		FB5252F220EE0A34009A2BF1 /* DSProposalCreatorViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSProposalCreatorViewController.m; sourceTree = "<group>"; };
 		FB5252F420EE159B009A2BF1 /* DSAccountChooserViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSAccountChooserViewController.h; sourceTree = "<group>"; };
@@ -758,6 +761,8 @@
 				2AF8A95C2284820F00F8C72D /* DSContactProfileAvatarView.m */,
 				FB0955CA244BBDC400A93675 /* DSContactRelationshipInfoViewController.h */,
 				FB0955CB244BBDC400A93675 /* DSContactRelationshipInfoViewController.m */,
+				FB503362248F8879005E0C1E /* DSContactRelationshipActionsViewController.h */,
+				FB503363248F8879005E0C1E /* DSContactRelationshipActionsViewController.m */,
 			);
 			name = Contacts;
 			sourceTree = "<group>";
@@ -1788,6 +1793,7 @@
 				FB0F15A2210490C3000272E6 /* DSTransactionDetailTableViewCell.m in Sources */,
 				FB5252F320EE0A34009A2BF1 /* DSProposalCreatorViewController.m in Sources */,
 				FB90D2C920C3EF14002B7956 /* DSAccountsViewController.m in Sources */,
+				FB503364248F8879005E0C1E /* DSContactRelationshipActionsViewController.m in Sources */,
 				FB995D9D21101C9600AC37D0 /* DSPeerTableViewCell.m in Sources */,
 				FB5252FC20F232C9009A2BF1 /* DSTransactionDetailViewController.m in Sources */,
 				FB6B78462278D50A0005C9DB /* DSContactReceivedTransactionsTableViewController.m in Sources */,

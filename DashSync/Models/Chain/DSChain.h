@@ -58,7 +58,8 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
     DSChainSyncPhase_Unknown = 0,
     DSChainSyncPhase_InitialTerminalBlocks,
-    DSChainSyncPhase_ChainSync
+    DSChainSyncPhase_ChainSync,
+    DSChainSyncPhase_Synced
 };
 
 @class DSChain, DSChainEntity, DSChainManager, DSWallet, DSMerkleBlock, DSPeer, DSDerivationPath, DSTransaction, DSAccount, DSSimplifiedMasternodeEntry, DSBlockchainIdentity, DSBloomFilter, DSProviderRegistrationTransaction, DSMasternodeList;

@@ -1580,7 +1580,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 - (NSArray <NSData*> *)chainSyncBlockLocatorArray {
-    if (_lastSyncBlock) {
+    if (_lastSyncBlock && !(_lastSyncBlock.height == 1 && self.chainType == DSChainType_DevNet)) {
         return [self blockLocatorArrayForBlock:_lastSyncBlock];
     } else if (!_lastPersistedChainSyncLocators) {
         _lastPersistedChainSyncLocators = [self blockLocatorArrayOnOrBeforeTimestamp:1425039295 includeInitialTerminalBlocks:NO];
@@ -1818,15 +1818,7 @@ static dispatch_once_t devnetToken = 0;
     
     BOOL onMainChain = FALSE;
     
-    if ((phase == DSChainSyncPhase_ChainSync) && equivalentTerminalBlock) {
-        
-        @synchronized (self.syncBlocks) {
-            self.syncBlocks[blockHash] = block;
-        }
-        self.lastSyncBlock = block;
-        [self setBlockHeight:block.height andTimestamp:txTime forTransactionHashes:txHashes];
-        onMainChain = TRUE;
-    } else if ((phase == DSChainSyncPhase_ChainSync) && uint256_eq(block.prevBlock, self.lastSyncBlockHash)) { // new block extends sync chain
+    if ((phase == DSChainSyncPhase_ChainSync || phase == DSChainSyncPhase_Synced) && uint256_eq(block.prevBlock, self.lastSyncBlockHash)) { // new block extends sync chain
         if ((block.height % 100) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
             DSDLog(@"adding sync block on %@ at height: %d from peer %@", self.name, block.height,peer.host);
         }
@@ -1835,7 +1827,7 @@ static dispatch_once_t devnetToken = 0;
         }
         self.lastSyncBlock = block;
         
-        if (uint256_eq(block.prevBlock, self.lastTerminalBlock.blockHash)) {
+        if (!equivalentTerminalBlock && uint256_eq(block.prevBlock, self.lastTerminalBlock.blockHash)) {
             if ((block.height % 100) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
                 DSDLog(@"adding terminal block on %@ (caught up) at height: %d from peer %@", self.name, block.height,peer.host);
             }
@@ -1844,8 +1836,8 @@ static dispatch_once_t devnetToken = 0;
             }
             self.lastTerminalBlock = block;
             peer.currentBlockHeight = block.height; //might be download peer instead
-            if (block.height == self.estimatedBlockHeight) syncDone = YES;
         }
+        if (block.height == self.estimatedBlockHeight) syncDone = YES;
         [self setBlockHeight:block.height andTimestamp:txTime forTransactionHashes:txHashes];
         onMainChain = TRUE;
         
@@ -1864,7 +1856,7 @@ static dispatch_once_t devnetToken = 0;
         peer.currentBlockHeight = block.height; //might be download peer instead
         if (block.height == self.estimatedBlockHeight) syncDone = YES;
         onMainChain = TRUE;
-    } else if ((phase == DSChainSyncPhase_ChainSync) && self.syncBlocks[blockHash] != nil) { // we already have the block (or at least the header)
+    } else if ((phase == DSChainSyncPhase_ChainSync || phase == DSChainSyncPhase_Synced) && self.syncBlocks[blockHash] != nil) { // we already have the block (or at least the header)
         if ((block.height % 1) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
             DSDLog(@"%@:%d relayed existing block at height %d", peer.host, peer.port, block.height);
         }
@@ -1962,7 +1954,7 @@ static dispatch_once_t devnetToken = 0;
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSChainInitialHeadersDidFinishSyncingNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
             });
-        } else if (phase == DSChainSyncPhase_ChainSync) {
+        } else if (phase == DSChainSyncPhase_ChainSync || phase == DSChainSyncPhase_Synced) {
             //we should only save
                 [self saveBlockLocators];
                 savedBlockLocators = YES;
@@ -3152,7 +3144,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 -(void)saveBlockLocators {
-    NSAssert(self.chainManager.syncPhase == DSChainSyncPhase_ChainSync,@"This should only be happening in chain sync phase");
+    NSAssert(self.chainManager.syncPhase == DSChainSyncPhase_ChainSync || self.chainManager.syncPhase == DSChainSyncPhase_Synced,@"This should only be happening in chain sync phase");
     [self prepareForIncomingTransactionPersistenceForBlockSaveWithNumber:self.lastSyncBlockHeight];
     DSMerkleBlock * lastBlock = self.lastSyncBlock;
     UInt256 lastBlockHash = lastBlock.blockHash;
