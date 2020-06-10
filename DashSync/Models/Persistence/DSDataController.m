@@ -81,6 +81,10 @@
 }
 
 -(NSManagedObjectContext*)viewContext {
+    static dispatch_once_t onceViewToken;
+    dispatch_once(&onceViewToken, ^{
+        [self.persistentContainer.viewContext setMergePolicy:NSMergeByPropertyObjectTrumpMergePolicy];
+    });
     return self.persistentContainer.viewContext;
 }
 
