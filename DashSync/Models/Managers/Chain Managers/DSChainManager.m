@@ -67,7 +67,7 @@
     if (! (self = [super init])) return nil;
     
     self.chain = chain;
-    self.syncPhase = DSChainSyncPhase_Unknown;
+    self.syncPhase = DSChainSyncPhase_Offline;
     chain.chainManager = self;
     self.sporkManager = [[DSSporkManager alloc] initWithChain:chain];
     self.masternodeManager = [[DSMasternodeManager alloc] initWithChain:chain];
@@ -158,6 +158,7 @@
 - (void)stopSync {
     
     [self.peerManager disconnect];
+    self.syncPhase = DSChainSyncPhase_Offline;
 }
 
 -(void)disconnectedRescan {

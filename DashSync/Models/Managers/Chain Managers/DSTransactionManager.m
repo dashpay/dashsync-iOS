@@ -1254,6 +1254,10 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 
 - (void)peer:(DSPeer *)peer relayedBlock:(DSMerkleBlock *)block
 {
+    if (!self.chainManager.syncPhase) {
+        DSDLog(@"Block was received after reset, ignoring it");
+        return;
+    }
     //DSDLog(@"relayed block %@ total transactions %d %u",uint256_hex(block.blockHash), block.totalTransactions,block.timestamp);
     // ignore block headers that are newer than 2 days before earliestKeyTime (headers have 0 totalTransactions)
     if (block.totalTransactions == 0 &&
