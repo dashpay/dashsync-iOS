@@ -28,10 +28,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) DSAccount* account;
 @property (nonatomic, readonly) DSBlockchainIdentity * destinationBlockchainIdentity;
 @property (nonatomic, readonly) DSBlockchainIdentity * sourceBlockchainIdentity; //this is the holder of the contacts, not the destination
+@property (nonatomic, readonly) NSTimeInterval createdAt;
 @property (nonatomic, readonly) uint32_t sourceKeyIndex;
 @property (nonatomic, readonly) uint32_t destinationKeyIndex;
 
 -(instancetype)initWithDestinationBlockchainIdentity:(DSBlockchainIdentity*)destinationBlockchainIdentity destinationKeyIndex:(uint32_t)destinationKeyIndex sourceBlockchainIdentity:(DSBlockchainIdentity*)sourceBlockchainIdentity sourceKeyIndex:(uint32_t)sourceKeyIndex account:(DSAccount*)account;
+
+-(instancetype)initWithDestinationBlockchainIdentity:(DSBlockchainIdentity*)destinationBlockchainIdentity destinationKeyIndex:(uint32_t)destinationKeyIndex sourceBlockchainIdentity:(DSBlockchainIdentity*)sourceBlockchainIdentity sourceKeyIndex:(uint32_t)sourceKeyIndex account:(DSAccount*)account createdAt:(NSTimeInterval)createdAt;
 
 //-(DSFriendRequestEntity*)outgoingFriendRequest;
 
