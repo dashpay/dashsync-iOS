@@ -339,11 +339,11 @@ static NSUInteger _fetchBatchSize = 100;
 }
 
 + (NSUInteger)deleteAllObjectsInContext:(NSManagedObjectContext *)context {
-    return [self deleteObjects:[self allObjects] inContext:context];
+    return [self deleteObjects:[self allObjectsInContext:context] inContext:context];
 }
 
 + (NSUInteger)deleteAllObjectsAndWaitInContext:(NSManagedObjectContext *)context {
-    return [self deleteObjectsAndWait:[self allObjects] inContext:context];
+    return [self deleteObjectsAndWait:[self allObjectsInContext:context] inContext:context];
 }
 
 // MARK: - core data stack
