@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonnull, nonatomic, retain) NSData * friendshipIdentifier;
 @property (nonatomic, assign) uint32_t sourceKeyIndex;
 @property (nonatomic, assign) uint32_t destinationKeyIndex;
+@property (nonatomic, assign) uint64_t timestamp;
 
 @end
 

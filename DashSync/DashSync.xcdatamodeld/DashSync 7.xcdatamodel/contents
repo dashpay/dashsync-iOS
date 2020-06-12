@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="15702" systemVersion="18G103" minimumToolsVersion="Xcode 7.3" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="16119" systemVersion="19F101" minimumToolsVersion="Xcode 7.3" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
     <entity name="DSAccountEntity" representedClassName="DSAccountEntity" syncable="YES">
         <attribute name="index" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="walletUniqueID" optional="YES" attributeType="String" syncable="YES"/>
@@ -133,6 +133,7 @@
         <attribute name="destinationKeyIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="friendshipIdentifier" attributeType="Binary" syncable="YES"/>
         <attribute name="sourceKeyIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="timestamp" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="account" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSAccountEntity" inverseName="friendRequests" inverseEntity="DSAccountEntity" syncable="YES"/>
         <relationship name="derivationPath" maxCount="1" deletionRule="Cascade" destinationEntity="DSDerivationPathEntity" inverseName="friendRequest" inverseEntity="DSDerivationPathEntity" syncable="YES"/>
         <relationship name="destinationContact" maxCount="1" deletionRule="Nullify" destinationEntity="DSDashpayUserEntity" inverseName="incomingRequests" inverseEntity="DSDashpayUserEntity" indexed="YES" syncable="YES"/>
@@ -460,7 +461,7 @@
         <element name="DSCreditFundingTransactionEntity" positionX="-2412" positionY="-180" width="128" height="73"/>
         <element name="DSDashpayUserEntity" positionX="-1898.890625" positionY="1279.48828125" width="128" height="193"/>
         <element name="DSDerivationPathEntity" positionX="-2121" positionY="-103.05859375" width="128" height="163"/>
-        <element name="DSFriendRequestEntity" positionX="160" positionY="192" width="128" height="148"/>
+        <element name="DSFriendRequestEntity" positionX="160" positionY="192" width="128" height="163"/>
         <element name="DSGovernanceObjectEntity" positionX="-674.609375" positionY="-171.16796875" width="128" height="270"/>
         <element name="DSGovernanceObjectHashEntity" positionX="-956.1328125" positionY="-21.26171875" width="128" height="105"/>
         <element name="DSGovernanceVoteEntity" positionX="-681.9609375" positionY="527.89453125" width="128" height="180"/>

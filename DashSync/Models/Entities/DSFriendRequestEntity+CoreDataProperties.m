@@ -21,5 +21,6 @@
 @dynamic friendshipIdentifier;
 @dynamic sourceKeyIndex;
 @dynamic destinationKeyIndex;
+@dynamic timestamp;
 
 @end

@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 //-(DSFriendRequestEntity*)outgoingFriendRequest;
 
--(DSFriendRequestEntity*)outgoingFriendRequestForDashpayUserEntity:(DSDashpayUserEntity*)dashpayUserEntity;
+-(DSFriendRequestEntity*)outgoingFriendRequestForDashpayUserEntity:(DSDashpayUserEntity*)dashpayUserEntity atTimestamp:(NSTimeInterval)timestamp;
 
 -(DSDerivationPathEntity*)storeExtendedPublicKeyAssociatedWithFriendRequest:(DSFriendRequestEntity*)friendRequestEntity;
 
