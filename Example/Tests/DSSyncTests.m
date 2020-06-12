@@ -43,11 +43,8 @@
 
 - (void)setUp {
     self.chain = [DSChain mainnet];
-    [self.chain unregisterAllWallets];
-    [self.chain unregisterAllWalletsMissingExtendedPublicKeys];
-    self.wallet = [DSWallet standardWalletWithRandomSeedPhraseForChain:self.chain storeSeedPhrase:YES isTransient:NO];
-
-    [self.chain registerWallet:self.wallet];
+    [self.chain.chainManager.peerManager setTrustedPeerHost:@"178.128.228.195:9999"];
+    self.wallet = [DSWallet standardWalletWithRandomSeedPhraseForChain:self.chain storeSeedPhrase:NO isTransient:YES];
 
     // Put setup code here. This method is called before the invocation of each test method in the class.
 }
@@ -55,24 +52,25 @@
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [self.chain unregisterWallet:self.wallet];
+    [self.chain.chainManager.peerManager removeTrustedPeerHost];
 }
 
-- (void)tryInitialHeadersSyncForHeadersAmount:(uint32_t)headersAmount {
+- (void)testInitialHeadersSync2000 {
     if (@available(iOS 13.0, *)) {
         XCTMeasureOptions * options = [XCTMeasureOptions defaultOptions];
         options.iterationCount = 1;
-        self.chain.headersMaxAmount = headersAmount;
+        self.chain.headersMaxAmount = 2000;
         DSDLog(@"Starting testInitialHeadersSync");
         DSSyncType originalSyncType = [[DSOptionsManager sharedInstance] syncType];
-        self.chain.headersMaxAmount = headersAmount;
         [self.chain useCheckpointBeforeOrOnHeightForSyncingChainBlocks:0];
         [self.chain useCheckpointBeforeOrOnHeightForTerminalBlocksSync:227121];
         [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_BaseSPV];
+        [self.chain.chainManager.peerManager setTrustedPeerHost:@"178.128.228.195:9999"];
         [[DashSync sharedSyncController] wipePeerDataForChain:self.chain inContext:[NSManagedObjectContext peerContext]];
         [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
         [[DashSync sharedSyncController] wipeSporkDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
         [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
-        //[self.chain.chainManager.peerManager setTrustedPeerHost:@"178.128.228.195:9999"];
+        //
         
         [self measureWithMetrics:@[[[XCTCPUMetric alloc] init],[[XCTMemoryMetric alloc] init],[[XCTClockMetric alloc] init]] options:options block:^{
             XCTestExpectation *headerFinishedExpectation = [[XCTestExpectation alloc] init];
@@ -93,14 +91,14 @@
     }
 }
 
-- (void)testInitialHeadersSync2000 {
-    [self.chain.chainManager.peerManager removeTrustedPeerHost];
-    [self tryInitialHeadersSyncForHeadersAmount:2000];
-}
-
-- (void)testInitialHeadersSync4000 {
-    [self tryInitialHeadersSyncForHeadersAmount:4000];
-}
+//- (void)testInitialHeadersSync2000 {
+//
+//    [self tryInitialHeadersSyncForHeadersAmount:2000];
+//}
+//
+//- (void)testInitialHeadersSync4000 {
+//    [self tryInitialHeadersSyncForHeadersAmount:4000];
+//}
 
 - (void)testFullSync {
     if (@available(iOS 13.0, *)) {

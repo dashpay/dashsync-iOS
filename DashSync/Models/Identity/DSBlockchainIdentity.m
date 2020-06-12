@@ -3015,6 +3015,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                             NSAssert(senderDashpayUserEntity, @"The sender should exist");
                             [self addIncomingRequestFromContact:senderDashpayUserEntity
                                            forExtendedPublicKey:extendedPublicKey
+                                                    atTimestamp:contactRequest.timestamp
                                                         context:context];
                         }
                     } else {
@@ -3035,7 +3036,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                     dispatch_group_enter(dispatchGroup);
                     [potentialFriendship createDerivationPathWithCompletion:^(BOOL success, DSIncomingFundsDerivationPath * _Nonnull incomingFundsDerivationPath) {
                         if (success) {
-                            DSFriendRequestEntity * friendRequest = [potentialFriendship outgoingFriendRequestForDashpayUserEntity:self.matchingDashpayUser];
+                            DSFriendRequestEntity * friendRequest = [potentialFriendship outgoingFriendRequestForDashpayUserEntity:self.matchingDashpayUser atTimestamp:contactRequest.timestamp];
                             [potentialFriendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequest];
                             [self.matchingDashpayUser addIncomingRequestsObject:friendRequest];
                             
@@ -3070,6 +3071,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                         }
                         [self addIncomingRequestFromContact:externalBlockchainIdentity.matchingDashpayUser
                                        forExtendedPublicKey:extendedPublicKey
+                                                atTimestamp:contactRequest.timestamp
                                                     context:context];
                         
                         if ([[externalBlockchainIdentity.matchingDashpayUser.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",self.matchingDashpayUser]] count]) {
@@ -3089,6 +3091,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                                 NSAssert(extendedPublicKey, @"A key should be recovered");
                                 [self addIncomingRequestFromContact:externalBlockchainIdentity.matchingDashpayUser
                                                forExtendedPublicKey:extendedPublicKey
+                                                        atTimestamp:contactRequest.timestamp
                                                             context:context];
                                 
                                 if ([[externalBlockchainIdentity.matchingDashpayUser.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",self.matchingDashpayUser]] count]) {
@@ -3240,11 +3243,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 -(void)addIncomingRequestFromContact:(DSDashpayUserEntity*)dashpayUserEntity
                 forExtendedPublicKey:(DSKey*)extendedPublicKey
+                         atTimestamp:(NSTimeInterval)timestamp
                              context:(NSManagedObjectContext *)context {
     NSAssert(self.matchingDashpayUser, @"A matching Dashpay user should exist at this point");
     DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObjectInContext:context];
     friendRequestEntity.sourceContact = dashpayUserEntity;
     friendRequestEntity.destinationContact = self.matchingDashpayUser;
+    friendRequestEntity.timestamp = timestamp;
     NSAssert(friendRequestEntity.sourceContact != friendRequestEntity.destinationContact, @"This must be different contacts");
     
     DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity managedObjectInContext:context];
