@@ -44,18 +44,24 @@
 @property (nonatomic, strong) NSData * encryptedExtendedPublicKeyData;
 @property (nonatomic, assign) uint32_t sourceKeyIndex;
 @property (nonatomic, assign) uint32_t destinationKeyIndex;
+@property (nonatomic, assign) NSTimeInterval createdAt;
 
 @end
 
 @implementation DSPotentialOneWayFriendship
 
 -(instancetype)initWithDestinationBlockchainIdentity:(DSBlockchainIdentity*)destinationBlockchainIdentity destinationKeyIndex:(uint32_t)destinationKeyIndex sourceBlockchainIdentity:(DSBlockchainIdentity*)sourceBlockchainIdentity sourceKeyIndex:(uint32_t)sourceKeyIndex account:(DSAccount*)account {
+    return [self initWithDestinationBlockchainIdentity:destinationBlockchainIdentity destinationKeyIndex:destinationKeyIndex sourceBlockchainIdentity:sourceBlockchainIdentity sourceKeyIndex:sourceKeyIndex account:account createdAt:[[NSDate date] timeIntervalSince1970]];
+}
+
+-(instancetype)initWithDestinationBlockchainIdentity:(DSBlockchainIdentity*)destinationBlockchainIdentity destinationKeyIndex:(uint32_t)destinationKeyIndex sourceBlockchainIdentity:(DSBlockchainIdentity*)sourceBlockchainIdentity sourceKeyIndex:(uint32_t)sourceKeyIndex account:(DSAccount*)account createdAt:(NSTimeInterval)createdAt {
     if (!(self = [super init])) return nil;
     self.destinationBlockchainIdentity = destinationBlockchainIdentity;
     self.account = account;
     self.sourceBlockchainIdentity = sourceBlockchainIdentity;
     self.sourceKeyIndex = sourceKeyIndex;
     self.destinationKeyIndex = destinationKeyIndex;
+    self.createdAt = createdAt;
     
     return self;
 }
@@ -118,7 +124,7 @@
     
     
     DSStringValueDictionary *data = @{
-        @"timestamp": @([[[NSDate alloc] init] timeIntervalSince1970]),
+        @"timestamp": @(self.createdAt),
                            @"toUserId" : uint256_base58([self destinationBlockchainIdentityUniqueId]),
                            @"encryptedPublicKey" : [self.encryptedExtendedPublicKeyData base64EncodedStringWithOptions:0],
         @"senderKeyIndex" : @(self.sourceKeyIndex + 1),
