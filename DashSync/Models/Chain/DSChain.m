@@ -103,6 +103,8 @@
 
 #define LOG_PREV_BLOCKS_ON_ORPHAN 0
 
+#define BLOCK_NO_FORK_DEPTH 25
+
 @interface DSChain ()
 
 @property (nonatomic, strong) DSMerkleBlock *lastSyncBlock, *lastTerminalBlock, *lastOrphan;
@@ -1844,7 +1846,7 @@ static dispatch_once_t devnetToken = 0;
         [self setBlockHeight:block.height andTimestamp:txTime forTransactionHashes:txHashes];
         onMainChain = TRUE;
         
-        if ([self blockHeightHasCheckpoint:block.height]) {
+        if ([self blockHeightHasCheckpoint:block.height] || ((block.height % 1000 == 0) && block.height + BLOCK_NO_FORK_DEPTH < self.lastTerminalBlockHeight) ) {
             [self saveBlockLocators];
         }
         
