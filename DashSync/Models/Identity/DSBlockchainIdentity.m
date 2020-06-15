@@ -176,9 +176,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 BOOL correctIndex = [self.registrationCreditFundingTransaction checkDerivationPathIndexForWallet:self.wallet isIndex:self.index];
                 if (!correctIndex) {
                     NSAssert(FALSE,@"We should implement this");
-                } else {
-                    [self registerInWallet];
                 }
+                //The following should not be needed (and actually causes identities to be recreated on launch each launch, leaving as comment for now
+//                else {
+//                    if (![self isRegisteredInWallet]) {
+//                        [self registerInWallet];
+//                    }
+//                }
             }
         }
     }

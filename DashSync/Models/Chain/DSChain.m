@@ -1844,7 +1844,7 @@ static dispatch_once_t devnetToken = 0;
         [self setBlockHeight:block.height andTimestamp:txTime forTransactionHashes:txHashes];
         onMainChain = TRUE;
         
-        if ([self blockHeightHasCheckpoint:block.height]) {
+        if ([self blockHeightHasCheckpoint:block.height] || ((block.height % 1000 == 0) && block.height + 25 < self.lastTerminalBlockHeight) ) {
             [self saveBlockLocators];
         }
         

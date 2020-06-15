@@ -277,7 +277,8 @@
         } else {
             self.syncPhase = DSChainSyncPhase_ChainSync;
             BOOL startingDevnetSync = [self.chain isDevnetAny] && self.chain.lastSyncBlockHeight < 5;
-            if (startingDevnetSync || self.chain.lastSyncBlockTimestamp + HEADER_WINDOW_BUFFER_TIME >= self.chain.earliestWalletCreationTime) {
+            NSTimeInterval cutoffTime = self.chain.earliestWalletCreationTime - HEADER_WINDOW_BUFFER_TIME;
+            if (startingDevnetSync || self.chain.lastSyncBlockTimestamp >= cutoffTime) {
                 [peer sendGetblocksMessageWithLocators:[self.chain chainSyncBlockLocatorArray] andHashStop:UINT256_ZERO];
             }
             else {
