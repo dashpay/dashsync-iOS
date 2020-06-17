@@ -13,7 +13,7 @@
 [[DSEnvironment sharedInstance].resourceBundle localizedStringForKey:(key) value:@"" table:nil]
 
 #ifdef DEBUG
-#define DSDLog(s, ...) DSLogVerbose(s, ##__VA_ARGS__)
+#define DSDLog(s, ...) //DSLogVerbose(s, ##__VA_ARGS__)
 #else
 #define DSDLog(s, ...)
 #endif

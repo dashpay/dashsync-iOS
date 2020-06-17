@@ -1691,6 +1691,7 @@ static dispatch_once_t devnetToken = 0;
 
 // MARK: From Peer
 
+//TRUE if it was added to the end of the chain
 - (BOOL)addBlock:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer
 {
     if (!self.chainManager.syncPhase) {
@@ -1738,7 +1739,7 @@ static dispatch_once_t devnetToken = 0;
         
         self.orphans[prevBlock] = block; // orphans are indexed by prevBlock instead of blockHash
         self.lastOrphan = block;
-        return TRUE;
+        return FALSE;
     }
     
     uint32_t txTime = 0;

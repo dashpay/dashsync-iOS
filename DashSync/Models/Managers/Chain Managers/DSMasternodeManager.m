@@ -193,6 +193,7 @@
 // MARK: - Set Up and Tear Down
 
 -(void)setUp {
+    [self deleteEmptyMasternodeLists];//this is just for sanity purposes
     [self loadMasternodeLists];
     [self removeOldSimplifiedMasternodeEntries];
     [self loadLocalMasternodes];
@@ -213,6 +214,18 @@
     [self.masternodeListsBlockHashStubs removeAllObjects];
     self.currentMasternodeList = nil;
     [self loadMasternodeLists];
+}
+
+-(void)deleteEmptyMasternodeLists {
+    [self.managedObjectContext performBlockAndWait:^{
+        NSFetchRequest * fetchRequest = [[DSMasternodeListEntity fetchRequest] copy];
+        [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"block.chain == %@ && masternodes.@count == 0",[self.chain chainEntityInContext:self.managedObjectContext]]];
+        NSArray * masternodeListEntities = [DSMasternodeListEntity fetchObjects:fetchRequest inContext:self.managedObjectContext];
+        for (DSMasternodeListEntity * entity in [masternodeListEntities copy]) {
+            [self.managedObjectContext deleteObject:entity];
+        }
+        [self.managedObjectContext ds_save];
+    }];
 }
 
 -(void)loadMasternodeLists {
@@ -1042,6 +1055,8 @@
             NSDictionary<NSString*,DSAddressEntity*>* votingAddresses = [DSAddressEntity findAddressesAndIndexIn:votingAddressStrings onChain:(DSChain*)chain inContext:context];
             NSDictionary<NSString*,DSAddressEntity*>* operatorAddresses = [DSAddressEntity findAddressesAndIndexIn:votingAddressStrings onChain:(DSChain*)chain inContext:context];
             NSDictionary<NSData *,DSLocalMasternodeEntity *> * localMasternodes = [DSLocalMasternodeEntity findLocalMasternodesAndIndexForProviderRegistrationHashes:providerRegistrationTransactionHashes inContext:context];
+            
+            NSAssert(masternodeList.simplifiedMasternodeEntries, @"A masternode must have entries to be saved");
             
             for (DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry in masternodeList.simplifiedMasternodeEntries) {
                 

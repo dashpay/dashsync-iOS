@@ -41,6 +41,7 @@
 #import "NSDate+Utils.h"
 #import "DashSync.h"
 #import "DSChainEntity+CoreDataClass.h"
+#import "RHIntervalTree.h"
 
 #define SYNC_STARTHEIGHT_KEY @"SYNC_STARTHEIGHT"
 
@@ -57,6 +58,10 @@
 @property (nonatomic, assign) uint32_t syncStartHeight;
 @property (nonatomic, assign) uint64_t sessionConnectivityNonce;
 @property (nonatomic, assign) BOOL gotSporksAtChainSyncStart;
+@property (nonatomic, strong) NSData * maxTransactionsInfoData;
+@property (nonatomic, strong) RHIntervalTree * heightTransactionZones;
+@property (nonatomic, assign) uint32_t maxTransactionsInfoDataFirstHeight;
+@property (nonatomic, assign) uint32_t maxTransactionsInfoDataLastHeight;
 
 @end
 
@@ -84,7 +89,162 @@
         [self.peerManager useMasternodeList:self.masternodeManager.currentMasternodeList withConnectivityNonce:self.sessionConnectivityNonce];
     }
     
+    [self loadMaxTransactionInfo];
+    [self loadHeightTransactionZones];
+    
     return self;
+}
+
+// MARK: - Max transaction info
+
+-(void)loadMaxTransactionInfo {
+    NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
+    NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+    NSString *filePath = [bundle pathForResource:[NSString stringWithFormat:@"MaxTransactionInfo_%@",self.chain.name] ofType:@"dat"];
+    self.maxTransactionsInfoData = [NSData dataWithContentsOfFile:filePath];
+    if (self.maxTransactionsInfoData) {
+        self.maxTransactionsInfoDataFirstHeight = [self.maxTransactionsInfoData UInt16AtOffset:0]*500;
+        self.maxTransactionsInfoDataLastHeight = [self.maxTransactionsInfoData UInt16AtOffset:self.maxTransactionsInfoData.length -6] * 500;
+        //We need MaxTransactionsInfoDataLastHeight to be after the last checkpoint so there is no gap in info. We can gather Max Transactions after the last checkpoint from the initial terminal sync.
+        NSAssert(self.maxTransactionsInfoDataLastHeight > self.chain.checkpoints.lastObject.height, @"MaxTransactionsInfoDataLastHeight should always be after the last checkpoint for the system to work");
+    }
+    
+////Some code to log checkpoints, keep it here for some testing in the future.
+//    for (DSCheckpoint * checkpoint in self.chain.checkpoints) {
+//        if (checkpoint.height > 340000) {
+//            NSLog(@"%d:%d",checkpoint.height,[self averageTransactionsFor500RangeAtHeight:checkpoint.height]);
+//        }
+//    }
+//    float average = 0;
+//    uint32_t startRange = self.maxTransactionsInfoDataFirstHeight;
+//    NSMutableData * data = [NSMutableData data];
+//    [data appendUInt16:startRange/500];
+//    while (startRange < self.maxTransactionsInfoDataLastHeight) {
+//        uint32_t endRange = [self firstHeightOutOfAverageRangeWithStart500RangeHeight:startRange rAverage:&average];
+//        NSLog(@"heights %d-%d averageTransactions %.1f",startRange,endRange,average);
+//        startRange = endRange;
+//        [data appendUInt16:(unsigned short)average];
+//        [data appendUInt16:endRange/500];
+//    }
+//
+//    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+//    NSString *documentsDirectory = [paths objectAtIndex:0];
+//    NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"HeightTransactionZones_%@.dat",self.chain.name]];
+//    [data writeToFile:dataPath atomically:YES];
+//
+}
+
+-(void)loadHeightTransactionZones {
+    NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
+    NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+    NSString *filePath = [bundle pathForResource:[NSString stringWithFormat:@"HeightTransactionZones_%@",self.chain.name] ofType:@"dat"];
+    NSData * heightTransactionZonesData = [NSData dataWithContentsOfFile:filePath];
+    if (heightTransactionZonesData) {
+        NSMutableArray * intervals = [NSMutableArray array];
+        for (uint16_t i = 0; i<heightTransactionZonesData.length - 4;i+=4) {
+            uint32_t intervalStartHeight = [heightTransactionZonesData UInt16AtOffset:i]*500;
+            uint16_t average = [heightTransactionZonesData UInt16AtOffset:i + 2];
+            uint32_t intervalEndHeight = [heightTransactionZonesData UInt16AtOffset:i + 4]*500;
+            [intervals addObject:[RHInterval intervalWithStart:intervalStartHeight stop:intervalEndHeight -1 object:@(average)]];
+        }
+        self.heightTransactionZones = [[RHIntervalTree alloc] initWithIntervalObjects:intervals];
+    }
+}
+
+-(uint16_t)averageTransactionsInZoneForStartHeight:(uint32_t)startHeight endHeight:(uint32_t)endHeight {
+    NSArray <RHInterval*>* intervals = [self.heightTransactionZones overlappingObjectsForStart:startHeight andStop:endHeight];
+    if (!intervals.count) return 0;
+    if (intervals.count == 1) return [(NSNumber*)[intervals[0] object] unsignedShortValue];
+    uint64_t aggregate = 0;
+    for (RHInterval * interval in intervals) {
+        uint64_t value = [(NSNumber*)interval.object unsignedLongValue];
+        if (interval == [intervals firstObject]) {
+            aggregate += value*(interval.stop - startHeight + 1);
+        } else if (interval == [intervals lastObject]) {
+            aggregate += value*(endHeight - interval.start + 1);
+        } else {
+            aggregate += value*(interval.stop - interval.start + 1);
+        }
+    }
+    return aggregate / (endHeight - startHeight);
+}
+
+-(uint32_t)firstHeightOutOfAverageRangeWithStart500RangeHeight:(uint32_t)height rAverage:(float*)rAverage {
+    return [self firstHeightOutOfAverageRangeWithStart500RangeHeight:height startingVarianceLevel:1 endingVarianceLevel:0.2 convergencePolynomial:0.33 rAverage:rAverage];
+}
+
+-(uint32_t)firstHeightOutOfAverageRangeWithStart500RangeHeight:(uint32_t)height startingVarianceLevel:(float)startingVarianceLevel endingVarianceLevel:(float)endingVarianceLevel convergencePolynomial:(float)convergencePolynomial rAverage:(float*)rAverage {
+    return [self firstHeightOutOfAverageRangeWithStart500RangeHeight:height startingVarianceLevel:startingVarianceLevel endingVarianceLevel:endingVarianceLevel convergencePolynomial:convergencePolynomial recursionLevel:0 recursionMaxLevel:2 rAverage:rAverage rAverages:nil];
+}
+
+-(uint32_t)firstHeightOutOfAverageRangeWithStart500RangeHeight:(uint32_t)height startingVarianceLevel:(float)startingVarianceLevel endingVarianceLevel:(float)endingVarianceLevel convergencePolynomial:(float)convergencePolynomial recursionLevel:(uint16_t)recursionLevel recursionMaxLevel:(uint16_t)recursionMaxLevel rAverage:(float*)rAverage rAverages:(NSArray**)rAverages {
+    NSMutableArray * averagesAtHeights = [NSMutableArray array];
+    float currentAverage = 0;
+    uint32_t checkHeight = height;
+    uint16_t i = 0;
+    float internalVarianceParameter = ((startingVarianceLevel-endingVarianceLevel)/endingVarianceLevel);
+    while (checkHeight < self.maxTransactionsInfoDataLastHeight) {
+        uint16_t averageValue = [self averageTransactionsFor500RangeAtHeight:checkHeight];
+        
+        if (i != 0 && averageValue > 10) { //before 12 just ignore
+            float maxVariance = endingVarianceLevel*(powf((float)i,convergencePolynomial)+internalVarianceParameter)/powf((float)i,convergencePolynomial);
+            //NSLog(@"height %d averageValue %hu currentAverage %.2f variance %.2f",checkHeight,averageValue,currentAverage,fabsf(averageValue - currentAverage)/currentAverage);
+            if (fabsf(averageValue - currentAverage) > maxVariance*currentAverage) {
+                //there was a big change in variance
+                if (recursionLevel > recursionMaxLevel) break; //don't recurse again
+                //We need to make sure that this wasn't a 1 time variance
+                float nextAverage = 0;
+                NSArray * nextAverages = nil;
+                
+                uint32_t nextHeight = [self firstHeightOutOfAverageRangeWithStart500RangeHeight:checkHeight startingVarianceLevel:startingVarianceLevel endingVarianceLevel:endingVarianceLevel convergencePolynomial:convergencePolynomial recursionLevel:recursionLevel + 1 recursionMaxLevel:recursionMaxLevel rAverage:&nextAverage rAverages:&nextAverages];
+                if (fabsf(nextAverage - currentAverage) > endingVarianceLevel*currentAverage) {
+                    break;
+                } else {
+                    [averagesAtHeights addObjectsFromArray:nextAverages];
+                    checkHeight = nextHeight;
+                }
+            } else {
+                [averagesAtHeights addObject:@(averageValue)];
+                currentAverage =  [[averagesAtHeights valueForKeyPath:@"@avg.self"] floatValue];
+                checkHeight += 500;
+            }
+        } else {
+            [averagesAtHeights addObject:@(averageValue)];
+            currentAverage = [[averagesAtHeights valueForKeyPath:@"@avg.self"] floatValue];
+            checkHeight += 500;
+        }
+        i++;
+        
+    }
+    if (rAverage) {
+        *rAverage = currentAverage;
+    }
+    if (rAverages) {
+        *rAverages = averagesAtHeights;
+    }
+    return checkHeight;
+}
+
+-(uint16_t)averageTransactionsFor500RangeAtHeight:(uint32_t)height {
+    if (height < self.maxTransactionsInfoDataFirstHeight) return 0;
+    if (height > self.maxTransactionsInfoDataFirstHeight + self.maxTransactionsInfoData.length * 500 / 6) return 0;
+    uint32_t offset = floor(((double)height - self.maxTransactionsInfoDataFirstHeight)*2.0/500.0)*3;
+    //uint32_t checkHeight = [self.maxTransactionsInfoData UInt16AtOffset:offset]*500;
+    uint16_t average = [self.maxTransactionsInfoData UInt16AtOffset:offset + 2];
+    uint16_t max = [self.maxTransactionsInfoData UInt16AtOffset:offset + 4];
+    NSAssert(average < max, @"Sanity check that average < max");
+    return average;
+}
+
+-(uint16_t)maxTransactionsFor500RangeAtHeight:(uint32_t)height {
+    if (height < self.maxTransactionsInfoDataFirstHeight) return 0;
+    if (height > self.maxTransactionsInfoDataFirstHeight + self.maxTransactionsInfoData.length * 500 / 6) return 0;
+    uint32_t offset = floor(((double)height - self.maxTransactionsInfoDataFirstHeight)*2.0/500.0)*3;
+    //uint32_t checkHeight = [self.maxTransactionsInfoData UInt16AtOffset:offset]*500;
+    uint16_t average = [self.maxTransactionsInfoData UInt16AtOffset:offset + 2];
+    uint16_t max = [self.maxTransactionsInfoData UInt16AtOffset:offset + 4];
+    NSAssert(average < max, @"Sanity check that average < max");
+    return max;
 }
 
 // MARK: - Info

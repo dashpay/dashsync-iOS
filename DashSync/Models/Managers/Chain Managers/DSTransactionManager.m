@@ -58,6 +58,9 @@
 #import "DSError.h"
 
 #define IX_INPUT_LOCKED_KEY @"IX_INPUT_LOCKED_KEY"
+#define MAX_TOTAL_TRANSACTIONS_FOR_BLOOM_FILTER_RETARGETING 500
+
+#define SAVE_MAX_TRANSACTIONS_INFO (DEBUG && 0)
 
 @interface DSTransactionManager()
 
@@ -77,6 +80,16 @@
 @property (nonatomic, strong) NSMutableDictionary * chainLocksWaitingForMerkleBlocks;
 @property (nonatomic, strong) NSMutableDictionary * chainLocksWaitingForQuorums;
 
+#if SAVE_MAX_TRANSACTIONS_INFO
+
+@property (nonatomic, strong) NSMutableArray * totalTransactionsQueue;
+@property (nonatomic, assign) uint32_t totalTransactionsSum;
+@property (nonatomic, assign) uint32_t totalTransactionsMax;
+@property (nonatomic, assign) uint32_t totalTransactionsMaxLastPosition;
+@property (nonatomic, strong) NSMutableData * totalTransactionData;
+
+#endif
+
 @end
 
 @implementation DSTransactionManager
@@ -85,6 +98,12 @@
 {
     if (! (self = [super init])) return nil;
     _chain = chain;
+    
+#if SAVE_MAX_TRANSACTIONS_INFO
+    self.totalTransactionsQueue = [NSMutableArray array];
+    self.totalTransactionData = [NSMutableData data];
+    self.totalTransactionsSum = 0;
+#endif
     self.txRelays = [NSMutableDictionary dictionary];
     self.txRequests = [NSMutableDictionary dictionary];
     self.publishedTx = [NSMutableDictionary dictionary];
@@ -787,6 +806,8 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 - (DSBloomFilter *)transactionsBloomFilterForPeer:(DSPeer *)peer
 {
     self.filterUpdateHeight = self.chain.lastSyncBlockHeight;
+    
+    //Now lets calculate our ideal bloom filter false positive rate with the following assumptions: while the average 500 block max transactions stays around the same we should receive back on average 1 transaction every 2 days.
     self.transactionsBloomFilterFalsePositiveRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
     
     
@@ -1273,10 +1294,10 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     if (peer == self.peerManager.downloadPeer && block.txHashes.count > 0) {
         NSMutableSet *falsePositives = [NSMutableSet setWithArray:txHashes];
         
-        // 1% low pass filter, also weights each block by total transactions, using 1400 tx per block as typical
+        // 1% low pass filter, also weights each block by total transactions, using 2800 tx per block as typical
         [falsePositives minusSet:self.nonFalsePositiveTransactions]; // wallet tx are not false-positives
         [self.nonFalsePositiveTransactions removeAllObjects];
-        self.transactionsBloomFilterFalsePositiveRate = self.transactionsBloomFilterFalsePositiveRate*(1.0 - 0.01*block.totalTransactions/1400) + 0.01*falsePositives.count/1400;
+        self.transactionsBloomFilterFalsePositiveRate = self.transactionsBloomFilterFalsePositiveRate*(1.0 - 0.01*block.totalTransactions/2800) + 0.01*falsePositives.count/2800;
         
         // false positive rate sanity check
         if (self.peerManager.downloadPeer.status == DSPeerStatus_Connected && self.transactionsBloomFilterFalsePositiveRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10.0) {
@@ -1285,6 +1306,8 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
             [self.peerManager.downloadPeer disconnect];
         }
         else if (self.chain.lastSyncBlockHeight + 500 < peer.lastBlockHeight && self.transactionsBloomFilterFalsePositiveRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*10.0) {
+            DSDLog(@"%@:%d bloom filter false positive rate %f too high after %d blocks, rebuilding", peer.host,
+                   peer.port, self.transactionsBloomFilterFalsePositiveRate, self.chain.lastSyncBlockHeight + 1 - self.filterUpdateHeight);
             [self updateTransactionsBloomFilter]; // rebuild bloom filter when it starts to degrade
         }
     }
@@ -1296,8 +1319,52 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         return;
     }
     
-    
+#if !SAVE_MAX_TRANSACTIONS_INFO
     [self.chain addBlock:block fromPeer:peer];
+#else
+    if ([self.chain addBlock:block fromPeer:peer]) {
+        if (block.height == self.chain.lastSyncBlockHeight) {
+            [self.totalTransactionsQueue addObject:@(block.totalTransactions)];
+            self.totalTransactionsSum += block.totalTransactions;
+            if (block.totalTransactions >= self.totalTransactionsMax) {
+                //NSLog(@"max is %d at %d",block.totalTransactions,block.height);
+                self.totalTransactionsMax = block.totalTransactions;
+                self.totalTransactionsMaxLastPosition = block.height;
+            }
+            if (self.totalTransactionsQueue.count > MAX_TOTAL_TRANSACTIONS_FOR_BLOOM_FILTER_RETARGETING) {
+                self.totalTransactionsSum -= [[self.totalTransactionsQueue objectAtIndex:0] unsignedIntValue];
+                [self.totalTransactionsQueue removeObjectAtIndex:0];
+                if (self.totalTransactionsMaxLastPosition == block.height - MAX_TOTAL_TRANSACTIONS_FOR_BLOOM_FILTER_RETARGETING - 1) {
+                    //NSLog(@"researching max at %d",block.height);
+                    //we must find MAX again
+                    uint32_t maxPosition = 0;
+                    uint32_t max = 0;
+                    for (uint32_t i = 0; i < self.totalTransactionsQueue.count; i++) {
+                        if ([self.totalTransactionsQueue[i] intValue] > max) {
+                            maxPosition = i;
+                            max = [self.totalTransactionsQueue[i] intValue];
+                        }
+                    }
+                    self.totalTransactionsMax = max;
+                    self.totalTransactionsMaxLastPosition = block.height - MAX_TOTAL_TRANSACTIONS_FOR_BLOOM_FILTER_RETARGETING + maxPosition + 1;
+                }
+            }
+            if (self.totalTransactionsQueue.count == MAX_TOTAL_TRANSACTIONS_FOR_BLOOM_FILTER_RETARGETING && (block.height % 500) == 499) {
+                [self.totalTransactionData appendUInt16:(block.height - 499)/500];
+                [self.totalTransactionData appendUInt16:self.totalTransactionsSum/self.totalTransactionsQueue.count];
+                [self.totalTransactionData appendUInt16:self.totalTransactionsMax];
+                NSLog(@"%d;%lu;%u",block.height - 499,self.totalTransactionsSum/self.totalTransactionsQueue.count,self.totalTransactionsMax);
+
+            }
+            if (block.height == self.chain.lastTerminalBlockHeight) {
+                NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+                NSString *documentsDirectory = [paths objectAtIndex:0];
+                NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"MaxTransactionInfo_%@.dat",self.chain.name]];
+                [self.totalTransactionData writeToFile:dataPath atomically:YES];
+            }
+        }
+    }
+#endif
 }
 
 - (void)peer:(DSPeer *)peer relayedTooManyOrphanBlocks:(NSUInteger)orphanBlockCount {
