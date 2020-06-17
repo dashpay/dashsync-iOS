@@ -2590,7 +2590,7 @@ static dispatch_once_t devnetToken = 0;
     return nil;
 }
 
--(NSArray *) allTransactions {
+-(NSArray <DSTransaction*> *) allTransactions {
     NSMutableArray * mArray = [NSMutableArray array];
     for (DSWallet * wallet in self.wallets) {
         [mArray addObjectsFromArray:wallet.allTransactions];

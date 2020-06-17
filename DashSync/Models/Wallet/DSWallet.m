@@ -459,6 +459,49 @@
     }
 }
 
+// MARK: - Chain Synchronization Fingerprint
+
+-(NSData*)chainSynchronizationFingerprint {
+    NSArray * blockHeightsArray = [[[self allTransactions] mutableArrayValueForKey:@"blockheight"] sortedArrayUsingSelector: @selector(compare:)];
+    NSMutableOrderedSet * blockHeightZones = [NSMutableOrderedSet orderedSet];
+    [blockHeightsArray enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        [blockHeightZones addObject:@([obj unsignedLongValue] / 500)];
+    }];
+
+    return [[self class] chainSynchronizationFingerprintForBlockZones:blockHeightZones];
+}
+
++(NSData*)chainSynchronizationFingerprintForBlockZones:(NSOrderedSet *)blockHeightZones {
+    if (!blockHeightZones.count) {
+        return [NSData data];
+    }
+    
+    NSMutableData * fingerprintData = [NSMutableData data];
+    [fingerprintData appendUInt8:1]; //version 1
+    uint16_t blockHeightZone = [blockHeightZones.firstObject unsignedShortValue];
+    [fingerprintData appendUInt16:blockHeightZone];
+    uint8_t currentOffset = 0;
+    uint16_t currentContinuationData = 0;
+    for (NSNumber * blockZoneNumber in blockHeightZones) {
+        uint16_t currentBlockHeightZone = [blockZoneNumber unsignedShortValue];
+        if (currentBlockHeightZone - blockHeightZone > 15) {
+            if (currentContinuationData) {
+                [fingerprintData appendUInt16:currentContinuationData];
+            }
+            [fingerprintData appendUInt16:blockHeightZone];
+        } else {
+            currentOffset = currentBlockHeightZone - blockHeightZone;
+            if (currentOffset > 15) {
+                currentOffset %= 15;
+                [fingerprintData appendUInt16:currentContinuationData];
+                currentContinuationData = 0;
+            }
+            currentContinuationData = currentContinuationData & (1 << (15 - currentOffset));
+        }
+    }
+    return fingerprintData;
+}
+
 // MARK: - Seed
 
 // generates a random seed, saves to keychain and returns the associated seedPhrase
