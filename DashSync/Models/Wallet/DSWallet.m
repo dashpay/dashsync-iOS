@@ -480,24 +480,30 @@
     [fingerprintData appendUInt8:1]; //version 1
     uint16_t blockHeightZone = [blockHeightZones.firstObject unsignedShortValue];
     [fingerprintData appendUInt16:blockHeightZone];
-    uint8_t currentOffset = 0;
+    uint8_t currentOffset = 15;
     uint16_t currentContinuationData = 0;
     for (NSNumber * blockZoneNumber in blockHeightZones) {
         uint16_t currentBlockHeightZone = [blockZoneNumber unsignedShortValue];
-        if (currentBlockHeightZone - blockHeightZone > 15) {
+        if (currentBlockHeightZone - blockHeightZone >= 30 - currentOffset) {
             if (currentContinuationData) {
                 [fingerprintData appendUInt16:currentContinuationData];
+                currentOffset = 15;
+                currentContinuationData = 0;
             }
             [fingerprintData appendUInt16:blockHeightZone];
         } else {
-            currentOffset = currentBlockHeightZone - blockHeightZone;
-            if (currentOffset > 15) {
+            currentOffset += currentBlockHeightZone - blockHeightZone;
+            if (currentOffset >= 15) {
                 currentOffset %= 15;
                 [fingerprintData appendUInt16:currentContinuationData];
-                currentContinuationData = 0;
+                currentContinuationData = 1 << 15;
             }
-            currentContinuationData = currentContinuationData & (1 << (15 - currentOffset));
+            if (!currentContinuationData) {
+                currentContinuationData = 1 << 15; //start with a 1 to show current continuation data
+            }
+            currentContinuationData &= (1 << (15 - currentOffset));
         }
+        blockHeightZone = currentBlockHeightZone;
     }
     return fingerprintData;
 }
