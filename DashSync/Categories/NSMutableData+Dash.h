@@ -53,6 +53,7 @@ CF_IMPLICIT_BRIDGING_DISABLED
 
 - (NSMutableData*)appendUInt8:(uint8_t)i;
 - (NSMutableData*)appendUInt16:(uint16_t)i;
+- (NSMutableData*)appendUInt16BigEndian:(uint16_t)i;
 - (NSMutableData*)appendUInt32:(uint32_t)i;
 - (NSMutableData*)appendUInt64:(uint64_t)i;
 - (NSMutableData*)appendUInt128:(UInt128)i;

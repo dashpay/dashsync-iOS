@@ -144,6 +144,13 @@ CFAllocatorRef SecureAllocator()
     return self;
 }
 
+- (NSMutableData*)appendUInt16BigEndian:(uint16_t)i
+{
+    i = CFSwapInt16HostToBig(i);
+    [self appendBytes:&i length:sizeof(i)];
+    return self;
+}
+
 - (NSMutableData*)appendUInt32:(uint32_t)i
 {
     i = CFSwapInt32HostToLittle(i);

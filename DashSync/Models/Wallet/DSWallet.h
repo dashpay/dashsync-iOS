@@ -100,6 +100,9 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 // the amount of known blockchain users
 @property (nonatomic, readonly) uint32_t blockchainIdentitiesCount;
 
+// The fingerprint for currentTransactions
+@property (nonatomic, readonly) NSData* chainSynchronizationFingerprint;
+
 -(void)authPrivateKey:(void (^ _Nullable)(NSString * _Nullable authKey))completion;
 
 + (DSWallet* _Nullable)standardWalletWithSeedPhrase:(NSString *)seedPhrase setCreationDate:(NSTimeInterval)creationDate forChain:(DSChain * )chain storeSeedPhrase:(BOOL)storeSeedPhrase isTransient:(BOOL)isTransient;
