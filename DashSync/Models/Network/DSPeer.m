@@ -54,6 +54,7 @@
 #import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSMasternodeManager.h"
 #import "DSSimplifiedMasternodeEntry.h"
+#import "DSChainManager+Protected.h"
 
 #define PEER_LOGGING 1
 #define LOG_ALL_HEADERS_IN_ACCEPT_HEADERS 0
@@ -1266,8 +1267,14 @@
     
     // to improve chain download performance, if we received 500 block hashes, we request the next 500 block hashes
     if (blockHashes.count >= 500 && ! self.needsFilterUpdate) {
-        [self sendGetblocksMessageWithLocators:@[uint256_data_from_obj(blockHashes.lastObject), uint256_data_from_obj(blockHashes.firstObject)]
-                                   andHashStop:UINT256_ZERO];
+        if ([self.chain.chainManager shouldRequestHeadersInsteadOfMerkleBlocksForHeight:self.chain.lastSyncBlockHeight + 1]) {
+            [self sendGetheadersMessageWithLocators:@[uint256_data_from_obj(blockHashes.lastObject), uint256_data_from_obj(blockHashes.firstObject)]
+                                       andHashStop:UINT256_ZERO];
+        } else {
+            [self sendGetblocksMessageWithLocators:@[uint256_data_from_obj(blockHashes.lastObject), uint256_data_from_obj(blockHashes.firstObject)]
+                                       andHashStop:UINT256_ZERO];
+        }
+
     }
     
     if (self.mempoolTransactionCompletion && (txHashes.count + governanceObjectHashes.count + sporkHashes.count > 0)) {
@@ -1442,7 +1449,7 @@
     // Devnets can run slower than usual
     NSTimeInterval lastTimestamp = [message UInt32AtOffset:l + 81*(count - 1) + 68];
     NSTimeInterval firstTimestamp = [message UInt32AtOffset:l + 81 + 68];
-    if (!self.chain.needsInitialTerminalHeadersSync && (firstTimestamp + DAY_TIME_INTERVAL*2 >= self.earliestKeyTime)) {
+    if (!self.chain.needsInitialTerminalHeadersSync && (firstTimestamp + DAY_TIME_INTERVAL*2 >= self.earliestKeyTime) && ![self.chain.chainManager shouldRequestHeadersInsteadOfMerkleBlocksForHeight:self.chain.lastSyncBlockHeight + 1]) {
         //this is a rare scenario where we called getheaders but the first header returned was actually past the cuttoff, but the previous header was before the cuttoff
         DSDLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, [self.chain chainSyncBlockLocatorArray]);
         [self sendGetblocksMessageWithLocators:self.chain.chainSyncBlockLocatorArray andHashStop:UINT256_ZERO];
@@ -1456,7 +1463,7 @@
         NSData *lastHashData = uint256_data(lastBlockHash);
         
         
-        if (((lastTimestamp + DAY_TIME_INTERVAL*2) >= self.earliestKeyTime) && (!self.chain.needsInitialTerminalHeadersSync)) { // request blocks for the remainder of the chain
+        if (((lastTimestamp + DAY_TIME_INTERVAL*2) >= self.earliestKeyTime) && (!self.chain.needsInitialTerminalHeadersSync) && ![self.chain.chainManager shouldRequestHeadersInsteadOfMerkleBlocksForHeight:self.chain.lastSyncBlockHeight + 1]) { // request blocks for the remainder of the chain
             NSTimeInterval timestamp = [message UInt32AtOffset:l + 81 + 68];
             
             for (off = l; timestamp > 0 && ((timestamp + DAY_TIME_INTERVAL*2) < self.earliestKeyTime);) {

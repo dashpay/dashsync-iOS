@@ -462,7 +462,7 @@
 // MARK: - Chain Synchronization Fingerprint
 
 -(NSData*)chainSynchronizationFingerprint {
-    NSArray * blockHeightsArray = [[[self allTransactions] mutableArrayValueForKey:@"blockheight"] sortedArrayUsingSelector: @selector(compare:)];
+    NSArray * blockHeightsArray = [[[self allTransactions] mutableArrayValueForKey:@"blockHeight"] sortedArrayUsingSelector: @selector(compare:)];
     NSMutableOrderedSet * blockHeightZones = [NSMutableOrderedSet orderedSet];
     [blockHeightsArray enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         [blockHeightZones addObject:@([obj unsignedLongValue] / 500)];
@@ -471,9 +471,13 @@
     return [[self class] chainSynchronizationFingerprintForBlockZones:blockHeightZones forChainHeight:self.chain.lastSyncBlockHeight];
 }
 
-+(NSOrderedSet*)blockZonesFromChainSynchronizationFingerprint:(NSData*)chainSynchronizationFingerprint {
-    uint8_t version = [chainSynchronizationFingerprint UInt8AtOffset:0];
-    uint16_t chainHeight = [chainSynchronizationFingerprint UInt16BigAtOffset:1];
++(NSOrderedSet*)blockZonesFromChainSynchronizationFingerprint:(NSData*)chainSynchronizationFingerprint rVersion:(uint8_t *)rVersion rChainHeight:(uint32_t*)rChainHeight {
+    if (rVersion) {
+        *rVersion = [chainSynchronizationFingerprint UInt8AtOffset:0];
+    }
+    if (rChainHeight) {
+        *rChainHeight = ((uint32_t)[chainSynchronizationFingerprint UInt16BigAtOffset:1])*500;
+    }
     uint16_t firstBlockZone = [chainSynchronizationFingerprint UInt16BigAtOffset:3];
     NSMutableOrderedSet * blockZones = [NSMutableOrderedSet orderedSet];
     [blockZones addObject:@(firstBlockZone)];

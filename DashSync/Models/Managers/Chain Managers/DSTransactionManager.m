@@ -1263,7 +1263,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     //DSDLog(@"relayed block %@ total transactions %d %u",uint256_hex(block.blockHash), block.totalTransactions,block.timestamp);
     // ignore block headers that are newer than 2 days before earliestKeyTime (headers have 0 totalTransactions)
     if (!self.chain.needsInitialTerminalHeadersSync &&
-        (block.timestamp + DAY_TIME_INTERVAL*2 > self.chain.earliestWalletCreationTime)) {
+        (block.timestamp + DAY_TIME_INTERVAL*2 > self.chain.earliestWalletCreationTime) && !self.chainManager.chainSynchronizationFingerprint) {
         DSDLog(@"ignoring header %@",uint256_hex(block.blockHash));
         return;
     }
