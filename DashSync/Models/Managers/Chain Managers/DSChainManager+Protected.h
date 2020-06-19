@@ -23,7 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)applyChainSynchronizationFingerprint:(NSData*)chainSynchronizationFingerprint;
 
-- (BOOL)shouldRequestHeadersInsteadOfMerkleBlocksForHeight:(uint32_t)blockHeight;
+- (BOOL)shouldRequestMerkleBlocksForZoneBetweenHeight:(uint32_t)blockHeight andEndHeight:(uint32_t)endBlockHeight;
+- (BOOL)shouldRequestMerkleBlocksForZoneAfterHeight:(uint32_t)blockHeight;
 
 @property (nonatomic, assign) DSChainSyncPhase syncPhase;
 

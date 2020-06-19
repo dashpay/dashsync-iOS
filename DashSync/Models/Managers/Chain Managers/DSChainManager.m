@@ -422,9 +422,9 @@
 }
 
 -(NSData*)chainSynchronizationFingerprint {
-    if (!_chainSynchronizationFingerprint) {
-        _chainSynchronizationFingerprint = @"01".hexToData;
-    }
+//    if (!_chainSynchronizationFingerprint) {
+//        _chainSynchronizationFingerprint = @"".hexToData;
+//    }
     return _chainSynchronizationFingerprint;
 }
 
@@ -437,12 +437,26 @@
     return _chainSynchronizationBlockZones;
 }
 
-- (BOOL)shouldRequestHeadersInsteadOfMerkleBlocksForHeight:(uint32_t)blockHeight {
-    int16_t blockZone = blockHeight /500;
+- (BOOL)shouldRequestMerkleBlocksForZoneBetweenHeight:(uint32_t)blockHeight andEndHeight:(uint32_t)endBlockHeight {
+    uint16_t blockZone = blockHeight /500;
+    uint16_t endBlockZone = endBlockHeight/500 + (endBlockHeight%500?1:0);
     if (self.chainSynchronizationFingerprint) {
-        return ![[self chainSynchronizationBlockZones] containsObject:@(blockZone)];
-    } else {
+        while (blockZone < endBlockZone) {
+            if ([[self chainSynchronizationBlockZones] containsObject:@(blockZone)]) return TRUE;
+        }
         return NO;
+    } else {
+        return YES;
+    }
+}
+
+- (BOOL)shouldRequestMerkleBlocksForZoneAfterHeight:(uint32_t)blockHeight {
+    uint16_t blockZone = blockHeight /500;
+    uint16_t leftOver = blockHeight %500;
+    if (self.chainSynchronizationFingerprint) {
+        return [[self chainSynchronizationBlockZones] containsObject:@(blockZone)] || [[self chainSynchronizationBlockZones] containsObject:@(blockZone + 1)] || [[self chainSynchronizationBlockZones] containsObject:@(blockZone + 2)] || [[self chainSynchronizationBlockZones] containsObject:@(blockZone + 3)] || (!leftOver && [self shouldRequestMerkleBlocksForZoneAfterHeight:(blockZone+1)*500]);
+    } else {
+        return YES;
     }
 }
 
@@ -456,7 +470,7 @@
             self.syncPhase = DSChainSyncPhase_ChainSync;
             BOOL startingDevnetSync = [self.chain isDevnetAny] && self.chain.lastSyncBlockHeight < 5;
             NSTimeInterval cutoffTime = self.chain.earliestWalletCreationTime - HEADER_WINDOW_BUFFER_TIME;
-            if (startingDevnetSync || (self.chain.lastSyncBlockTimestamp >= cutoffTime && ![self shouldRequestHeadersInsteadOfMerkleBlocksForHeight:[self.chain lastSyncBlockHeight]]))  {
+            if (startingDevnetSync || (self.chain.lastSyncBlockTimestamp >= cutoffTime && [self shouldRequestMerkleBlocksForZoneAfterHeight:[self.chain lastSyncBlockHeight]]))  {
                 
                 [peer sendGetblocksMessageWithLocators:[self.chain chainSyncBlockLocatorArray] andHashStop:UINT256_ZERO];
             }
