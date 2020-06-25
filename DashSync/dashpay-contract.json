@@ -22,7 +22,6 @@
                     "maxLength":64
                 }
             },
-            "required": ["avatarUrl", "publicMessage"],
             "additionalProperties": false
         },
         "contactInfo": {
