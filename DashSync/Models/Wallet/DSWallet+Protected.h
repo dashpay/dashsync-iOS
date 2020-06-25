@@ -38,7 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 //get the CREATION TIME KEY prefixed unique ID
 + (NSString* _Nonnull)creationTimeUniqueIDForUniqueID:(NSString*)uniqueID;
 
-+ (NSOrderedSet*)blockZonesFromChainSynchronizationFingerprint:(NSData*)chainSynchronizationFingerprint rVersion:(uint8_t *)rVersion rChainHeight:(uint32_t*)rChainHeight;
++ (NSOrderedSet* _Nullable)blockZonesFromChainSynchronizationFingerprint:(NSData*)chainSynchronizationFingerprint rVersion:(uint8_t * _Nullable)rVersion rChainHeight:(uint32_t* _Nullable)rChainHeight;
 
 + (NSData*)chainSynchronizationFingerprintForBlockZones:(NSOrderedSet *)blockHeightZones forChainHeight:(uint32_t)chainHeight;
 
