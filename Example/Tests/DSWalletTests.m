@@ -172,7 +172,7 @@
     NSOrderedSet * blockZones = [NSOrderedSet orderedSetWithArray:randomBlockZones];
     NSData * chainSynchronizationFingerprint = [DSWallet chainSynchronizationFingerprintForBlockZones:blockZones forChainHeight:1000000];
     XCTAssertEqualObjects(chainSynchronizationFingerprint.hexString,@"0107d000070044005b0082a5008040",@"Error with ChainSynchronizationFingerprint");
-    NSOrderedSet * rblockZones = [DSWallet blockZonesFromChainSynchronizationFingerprint:chainSynchronizationFingerprint];
+    NSOrderedSet * rblockZones = [DSWallet blockZonesFromChainSynchronizationFingerprint:chainSynchronizationFingerprint rVersion:0 rChainHeight:0];
     XCTAssertEqualObjects(blockZones,rblockZones,@"Error with ChainSynchronizationFingerprint");
 }
 
@@ -186,7 +186,7 @@
     [randomBlockZones sortUsingSelector:@selector(compare:)];
     NSOrderedSet * blockZones = [NSOrderedSet orderedSetWithArray:randomBlockZones];
     NSData * chainSynchronizationFingerprint = [DSWallet chainSynchronizationFingerprintForBlockZones:blockZones forChainHeight:1000000];
-    NSOrderedSet * rblockZones = [DSWallet blockZonesFromChainSynchronizationFingerprint:chainSynchronizationFingerprint];
+    NSOrderedSet * rblockZones = [DSWallet blockZonesFromChainSynchronizationFingerprint:chainSynchronizationFingerprint rVersion:0 rChainHeight:0];
     XCTAssertEqualObjects(blockZones,rblockZones,@"Error with ChainSynchronizationFingerprint");
 }
 

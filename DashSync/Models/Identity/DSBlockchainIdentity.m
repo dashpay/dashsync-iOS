@@ -1651,7 +1651,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 -(void)addUsername:(NSString*)username status:(DSBlockchainIdentityUsernameStatus)status save:(BOOL)save registerOnNetwork:(BOOL)registerOnNetwork {
     [self.usernameStatuses setObject:@{BLOCKCHAIN_USERNAME_STATUS:@(DSBlockchainIdentityUsernameStatus_Initial)} forKey:username];
     if (save) {
-        [self saveNewUsername:username status:DSBlockchainIdentityUsernameStatus_Initial];
+        [self saveNewUsername:username status:DSBlockchainIdentityUsernameStatus_Initial inContext:self.platformContext];
         if (registerOnNetwork && self.registered && status != DSBlockchainIdentityUsernameStatus_Confirmed) {
             [self registerUsernamesWithCompletion:^(BOOL success, NSError * _Nonnull error) {
                 
@@ -2001,7 +2001,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 }
                 [usernameStatusDictionary setObject:@(DSBlockchainIdentityUsernameStatus_Confirmed) forKey:BLOCKCHAIN_USERNAME_STATUS];
                 [self.usernameStatuses setObject:[usernameStatusDictionary copy] forKey:username];
-                [self saveNewUsername:username status:DSBlockchainIdentityUsernameStatus_Confirmed];
+                [self saveNewUsername:username status:DSBlockchainIdentityUsernameStatus_Confirmed inContext:self.platformContext];
             }
         }
         if (completion) {
@@ -3291,8 +3291,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 // MARK: Saving
 
--(void)saveInitial {
-    [self.managedObjectContext performBlockAndWait:^{
+-(void)saveInitialInContext:(NSManagedObjectContext*)context {
+    [context performBlockAndWait:^{
         DSBlockchainIdentityEntity * entity = [DSBlockchainIdentityEntity managedObjectInContext:self.managedObjectContext];
         entity.uniqueID = uint256_data(self.uniqueID);
         entity.isLocal = self.isLocal;
@@ -3301,7 +3301,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             DSCreditFundingTransactionEntity * transactionEntity = (DSCreditFundingTransactionEntity*)[DSTransactionEntity anyObjectInContext:self.managedObjectContext matching:@"transactionHash.txHash == %@", transactionHash];
             entity.registrationFundingTransaction = transactionEntity;
         }
-        entity.chain = [self.chain chainEntityInContext:self.managedObjectContext];
+        entity.chain = [self.chain chainEntityInContext:context];
         for (NSString * username in self.usernameStatuses) {
             DSBlockchainIdentityUsernameEntity * usernameEntity = [DSBlockchainIdentityUsernameEntity managedObjectInContext:self.managedObjectContext];
             usernameEntity.status = [self statusOfUsername:username];
@@ -3315,7 +3315,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         entity.matchingDashpayUser = dashpayUserEntity;
         
         self.matchingDashpayUser = dashpayUserEntity;
-        [self.managedObjectContext ds_save];
+        [context ds_save];
         if ([self isLocal]) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentityDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain,DSBlockchainIdentityKey:self}];
@@ -3460,8 +3460,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     }];
 }
 
--(void)saveNewUsername:(NSString*)username status:(DSBlockchainIdentityUsernameStatus)status {
-    [self.managedObjectContext performBlockAndWait:^{
+-(void)saveNewUsername:(NSString*)username status:(DSBlockchainIdentityUsernameStatus)status inContext:(NSManagedObjectContext*)context {
+    [context performBlockAndWait:^{
         DSBlockchainIdentityEntity * entity = self.blockchainIdentityEntity;
         DSBlockchainIdentityUsernameEntity * usernameEntity = [DSBlockchainIdentityUsernameEntity managedObjectInContext:self.managedObjectContext];
         usernameEntity.status = status;
@@ -3469,7 +3469,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         usernameEntity.salt = [self saltForUsername:username saveSalt:NO];
         [entity addUsernamesObject:usernameEntity];
         [entity setDashpayUsername:usernameEntity];
-        [self.managedObjectContext ds_save];
+        [context ds_save];
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentityDidUpdateUsernameStatusNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain, DSBlockchainIdentityKey:self}];
         });
