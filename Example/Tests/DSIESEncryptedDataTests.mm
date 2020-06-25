@@ -71,11 +71,14 @@
 
     NSString *secret = @"my little secret is a pony that never sleeps";
     NSData *data = [secret dataUsingEncoding:NSUTF8StringEncoding];
+    
+    DSECDSAKey * key = [DSECDSAKey keyWithDHKeyExchangeWithPublicKey:bobKeyPair forPrivateKey:aliceKeyPair];
+    XCTAssertEqualObjects(key.publicKeyData.hexString, @"fbd27dbb9e7f471bf3de3704a35e884e37d35c676dc2cc8c3cc574c3962376d2", @"they should be the same data");
     //Alice is sending to Bob
     NSData *encryptedData = [data encryptWithSecretKey:aliceKeyPair forPublicKey:bobKeyPair usingInitializationVector:@"eac5bcd6eb85074759e0261497428c9b".hexToData];
     XCTAssertNotNil(encryptedData);
     
-    XCTAssertEqualObjects(encryptedData.hexString, @"eac5bcd6eb85074759e0261497428c9b9eb25942b8fd1b4290a8ad3c1d4e3b74c4fe423e41b22320915f060a6d88da2274b2c69d4bbf44cb1e3c14b01c6fcb70", @"they should be the same data");
+    XCTAssertEqualObjects(encryptedData.hexString, @"eac5bcd6eb85074759e0261497428c9b3725d3b9ec4d739a842116277c6ace81549089be0d11a54ee09a99dcf7ac695a8ea56d41bf0b62def90b6f78f8b0aca9", @"they should be the same data");
     
     //Bob is receiving from Alice
     NSData *decrypted = [encryptedData decryptWithSecretKey:bobKeyPair fromPublicKey:aliceKeyPair];
