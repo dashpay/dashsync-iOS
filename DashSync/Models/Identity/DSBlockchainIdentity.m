@@ -58,6 +58,7 @@
 #import "DSTransactionManager+Protected.h"
 #import "DSMerkleBlock.h"
 #import "DSIdentitiesManager.h"
+#import "DSOptionsManager.h"
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
 #define DEFAULT_SIGNING_ALGORITH DSKeyType_ECDSA
@@ -1341,7 +1342,20 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 -(void)fetchAllNetworkStateInformationWithCompletion:(void (^)(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> * errors))completion {
     dispatch_async(self.identityQueue, ^{
-        [self fetchNetworkStateInformation:self.isLocal ? DSBlockchainIdentityQueryStep_AllForLocalBlockchainIdentity: DSBlockchainIdentityQueryStep_AllForForeignBlockchainIdentity withCompletion:completion];
+        DSBlockchainIdentityQueryStep query = DSBlockchainIdentityQueryStep_None;
+        if ([DSOptionsManager sharedInstance].syncType & DSSyncType_BlockchainIdentities) {
+            query |= DSBlockchainIdentityQueryStep_Identity;
+        }
+        if ([DSOptionsManager sharedInstance].syncType & DSSyncType_DPNS) {
+            query |= DSBlockchainIdentityQueryStep_Username;
+        }
+        if ([DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay) {
+            query |= DSBlockchainIdentityQueryStep_Profile;
+            if (self.isLocal) {
+                query |= DSBlockchainIdentityQueryStep_ContactRequests;
+            }
+        }
+        [self fetchNetworkStateInformation:query withCompletion:completion];
     });
 }
 
@@ -3291,9 +3305,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 // MARK: Saving
 
+-(void)saveInitial {
+    [self saveInitialInContext:self.managedObjectContext];
+}
+
 -(void)saveInitialInContext:(NSManagedObjectContext*)context {
     [context performBlockAndWait:^{
-        DSBlockchainIdentityEntity * entity = [DSBlockchainIdentityEntity managedObjectInContext:self.managedObjectContext];
+        DSBlockchainIdentityEntity * entity = [DSBlockchainIdentityEntity managedObjectInContext:context];
         entity.uniqueID = uint256_data(self.uniqueID);
         entity.isLocal = self.isLocal;
         if (self.isLocal) {
@@ -3310,8 +3328,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             [entity addUsernamesObject:usernameEntity];
             [entity setDashpayUsername:usernameEntity];
         }
-        DSDashpayUserEntity * dashpayUserEntity = [DSDashpayUserEntity managedObjectInContext:self.managedObjectContext];
-        dashpayUserEntity.chain = [self.chain chainEntityInContext:self.managedObjectContext];
+        DSDashpayUserEntity * dashpayUserEntity = [DSDashpayUserEntity managedObjectInContext:context];
+        dashpayUserEntity.chain = [self.chain chainEntityInContext:context];
         entity.matchingDashpayUser = dashpayUserEntity;
         
         self.matchingDashpayUser = dashpayUserEntity;
