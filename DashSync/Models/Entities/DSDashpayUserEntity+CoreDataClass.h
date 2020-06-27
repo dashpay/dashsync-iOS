@@ -30,6 +30,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 +(void)deleteContactsOnChainEntity:(DSChainEntity*)chainEntity;
 
+//-(DPDocument*)profileDocument;
+
+//-(DPDocument*)contactRequestDocument;
+>>>>>>> improvement/palinka12
+
 @end
 
 NS_ASSUME_NONNULL_END

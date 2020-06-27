@@ -369,3 +369,6 @@
 
 /* No comment provided by engineer. */
 "The Dashpay contract is not properly set up" = "The Dashpay contract is not properly set up";
+
+/* No comment provided by engineer. */
+"User has actions to complete before being able to use Dashpay" = "User has actions to complete before being able to use Dashpay";

@@ -22,14 +22,20 @@
 
 #import "NSData+Bitcoin.h"
 #import "BigIntTypes.h"
+#import "NSMutableData+Dash.h"
+#import "NSString+Bitcoin.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DPDocument ()
 
 @property (copy, nonatomic) NSString *tableName;
-@property (copy, nonatomic) NSString *userId;
-@property (copy, nonatomic) NSString *contractId;
+@property (assign, nonatomic) UInt256 ownerId;
+@property (copy, nonatomic) NSString *base58OwnerIdString;
+@property (assign, nonatomic) UInt256 contractId;
+@property (copy, nonatomic) NSString *base58ContractIdString;
+@property (assign, nonatomic) UInt256 documentId;
+@property (copy, nonatomic) NSString *base58DocumentIdString;
 @property (copy, nonatomic) NSString *entropy;
 @property (copy, nonatomic) NSNumber *currentRevision;
 @property (strong, nonatomic) DPDocumentState *currentRegisteredDocumentState;
@@ -40,10 +46,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DPDocument
 
-- (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(NSString*)userId onContractWithId:(NSString*)contractId onTableWithName:(NSString*)tableName usingEntropy:(NSString*)entropy {
+- (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString*)tableName usingEntropy:(NSString*)entropy {
     NSParameterAssert(dataDictionary);
-    NSParameterAssert(userId);
-    NSParameterAssert(contractId);
+    NSAssert(!uint256_is_zero(ownerId), @"Owner Id must be set");
+    NSAssert(!uint256_is_zero(contractId), @"Contract Id must be set");
     NSParameterAssert(tableName);
     NSParameterAssert(entropy);
 
@@ -51,7 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (self) {
         
         self.tableName = tableName;
-        self.userId = userId;
+        self.ownerId = ownerId;
         self.contractId = contractId;
         self.entropy = entropy;
         
@@ -63,8 +69,51 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
-- (nullable DPDocument *)documentWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(NSString*)userId onContractWithId:(NSString*)contractId inTable:(NSString*)table withEntropy:(NSString*)entropy {
-    return [[DPDocument alloc] initWithDataDictionary:dataDictionary createdByUserWithId:userId onContractWithId:contractId onTableWithName:table usingEntropy:entropy];
+-(NSString*)base58OwnerIdString {
+    if (!_base58OwnerIdString) {
+        if (!uint256_is_zero(_ownerId)) {
+            _base58OwnerIdString = uint256_base58(_ownerId);
+        }
+    }
+    return _base58OwnerIdString;
+}
+
+-(NSString*)base58ContractIdString {
+    if (!_base58ContractIdString) {
+        if (!uint256_is_zero(_contractId)) {
+            _base58ContractIdString = uint256_base58(_contractId);
+        }
+    }
+    return _base58ContractIdString;
+}
+
+-(NSString*)base58DocumentIdString {
+    
+    if (!_base58DocumentIdString) {
+        _base58DocumentIdString = uint256_base58(self.documentId);
+    }
+    return _base58DocumentIdString;
+    
+}
+
+-(UInt256)documentId {
+    if (uint256_is_zero(_documentId)) {
+        NSAssert(!uint256_is_zero(_ownerId),@"Owner needs to be set");
+        NSAssert(!uint256_is_zero(_contractId),@"Owner needs to be set");
+        NSAssert(_tableName,@"Table name needs to be set");
+        //NSAssert(!uint160_is_zero(self.entropy),@"Entropy needs to be set");
+        NSMutableData * mData = [NSMutableData data];
+        [mData appendUInt256:_contractId];
+        [mData appendUInt256:_ownerId];
+        [mData appendData:[_tableName dataUsingEncoding:NSUTF8StringEncoding]];
+        [mData appendData:self.entropy.base58ToData];
+        _documentId = [mData SHA256_2];
+    }
+    return _documentId;
+}
+
+- (nullable DPDocument *)documentWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString*)tableName usingEntropy:(NSString*)entropy {
+    return [[DPDocument alloc] initWithDataDictionary:dataDictionary createdByUserWithId:ownerId onContractWithId:contractId onTableWithName:tableName usingEntropy:entropy];
 }
 
 - (void)addStateForChangingData:(DSStringValueDictionary *)dataDictionary {
@@ -83,10 +132,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (DSMutableStringValueDictionary *)objectDictionary {
     DSMutableStringValueDictionary *json = [[DSMutableStringValueDictionary alloc] init];
     json[@"$type"] = self.tableName;
-    json[@"$contractId"] = self.contractId;
-    json[@"$userId"] = self.userId;
+    json[@"$contractId"] = self.base58ContractIdString;
+    json[@"$ownerId"] = self.base58OwnerIdString;
+    json[@"$id"] = self.base58DocumentIdString;
     json[@"$entropy"] = self.entropy;
-    json[@"$rev"] = self.currentRevision;
+    json[@"$action"] = @(0);
     [json addEntriesFromDictionary:self.currentLocalDocumentState.dataChangeDictionary];
     return json;
 }

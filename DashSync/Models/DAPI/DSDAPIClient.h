@@ -47,6 +47,7 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode) {
 - (void)sendDocument:(DPDocument *)document
          forIdentity:(DSBlockchainIdentity*)blockchainIdentity
             contract:(DPContract *)contract
+  usingEntropyString:(NSString*)entropyString
           completion:(void (^)(NSError *_Nullable error))completion;
 
 - (void)publishTransition:(DSTransition*)stateTransition

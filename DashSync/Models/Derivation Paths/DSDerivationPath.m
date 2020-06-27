@@ -442,6 +442,12 @@
         case DSDerivationPathReference_ContactBasedFundsRoot:
             return @"Contact Funds Root";
             break;
+        case DSDerivationPathReference_BlockchainIdentityCreditRegistrationFunding:
+            return @"BI Credit Registration Funding";
+            break;
+        case DSDerivationPathReference_BlockchainIdentityCreditTopupFunding:
+            return @"BI Credit Topup Funding";
+            break;
         default:
             return @"Unknown";
             break;

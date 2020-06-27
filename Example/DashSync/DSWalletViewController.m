@@ -16,6 +16,7 @@
 @interface DSWalletViewController ()
 
 @property (nonatomic,strong) id<NSObject> chainWalletObserver;
+@property (nonatomic,assign) BOOL didAuthenticate;
 
 @end
 
@@ -23,6 +24,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.didAuthenticate = NO;
     self.chainWalletObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSChainWalletsDidChangeNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
@@ -63,10 +65,10 @@
             [lines addObject:[[components subarrayWithRange:NSMakeRange(i, 4)] componentsJoinedByString:@" "]];
         }
         
-        walletCell.passphraseLabel.text = [lines componentsJoinedByString:@"\n"];
+        walletCell.passphraseLabel.text = self.didAuthenticate?[lines componentsJoinedByString:@"\n"]:@"";
         DSAccount * account0 = [wallet accountWithNumber:0];
         walletCell.xPublicKeyLabel.text = [[account0 bip44DerivationPath] serializedExtendedPublicKey];
-        walletCell.showPassphraseButton.hidden = [[DSAuthenticationManager sharedInstance] didAuthenticate];
+        walletCell.showPassphraseButton.hidden = self.didAuthenticate;
         walletCell.actionDelegate = self;
     }
 }
@@ -102,7 +104,8 @@
 
 -(void)walletTableViewCellDidRequestAuthentication:(DSWalletTableViewCell*)cell {
     [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:@"" usingBiometricAuthentication:FALSE alertIfLockout:FALSE completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
-        if (authenticatedOrSuccess) {
+        self.didAuthenticate = authenticatedOrSuccess;
+        if (self.didAuthenticate) {
             [self.tableView reloadData];
         }
     }];

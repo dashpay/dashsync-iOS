@@ -116,7 +116,7 @@
     }];
 }
 
--(DPDocument*)contactRequestDocument {
+-(DPDocument*)contactRequestDocumentWithEntropy:(NSString*)entropyString {
     NSAssert(!uint256_is_zero([self destinationBlockchainIdentityUniqueId]), @"the destination contact's associatedBlockchainIdentityUniqueId must be set before making a friend request");
     NSAssert([self.encryptedExtendedPublicKeyData length] > 0, @"The encrypted extended public key must exist");
     NSAssert(self.extendedPublicKey, @"Problem creating extended public key for potential contact?");
@@ -125,14 +125,14 @@
     
     DSStringValueDictionary *data = @{
         @"timestamp": @(self.createdAt),
-                           @"toUserId" : uint256_base58([self destinationBlockchainIdentityUniqueId]),
+                           @"toOwnerId" : uint256_base58([self destinationBlockchainIdentityUniqueId]),
                            @"encryptedPublicKey" : [self.encryptedExtendedPublicKeyData base64EncodedStringWithOptions:0],
         @"senderKeyIndex" : @(self.sourceKeyIndex + 1),
         @"recipientKeyIndex" : @(self.destinationKeyIndex + 1),
                            };
     
     
-    DPDocument *contact = [self.sourceBlockchainIdentity.dashpayDocumentFactory documentOnTable:@"contactRequest" withDataDictionary:data error:&error];
+    DPDocument *contact = [self.sourceBlockchainIdentity.dashpayDocumentFactory documentOnTable:@"contactRequest" withDataDictionary:data usingEntropy:entropyString error:&error];
     NSAssert(error == nil, @"Failed to build a contact");
     return contact;
 }

@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, retain) NSString *localContractIdentifier;
 @property (nullable, nonatomic, retain) NSData *registeredBlockchainIdentityUniqueID;
+@property (nullable, nonatomic, retain) NSData *entropy;
 @property (assign, nonatomic) uint16_t state;
 @property (nullable, nonatomic, retain) DSChainEntity *chain;
 @property (nullable, nonatomic, retain) DSBlockchainIdentityEntity *creator;

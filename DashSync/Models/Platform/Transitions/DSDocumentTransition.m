@@ -39,41 +39,14 @@
 
 - (DSMutableStringValueDictionary *)baseKeyValueDictionary {
     DSMutableStringValueDictionary *json = [super baseKeyValueDictionary];
-    json[@"documents"] = [self documentsAsArrayOfDictionaries];
-    json[@"actions"] = self.actions;
+    json[@"transitions"] = [self documentsAsArrayOfDictionaries];
     return json;
 }
 
--(instancetype)initForCreatedDocuments:(NSArray<DPDocument*>*)documents withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain {
-    
-    NSMutableArray * createActionArray = [NSMutableArray array];
-    for (uint32_t i =0;i<documents.count;i++) {
-        [createActionArray addObject:@(DSDocumentTransitionType_Create)];
-    }
-
-    if (!(self = [self initForDocuments:documents withActions:createActionArray withTransitionVersion:version blockchainIdentityUniqueId:blockchainIdentityUniqueId onChain:chain])) return nil;
-    
-    return self;
-}
-
--(instancetype)initForUpdatedDocuments:(NSArray<DPDocument*>*)documents withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain {
-    NSMutableArray * updateActionArray = [NSMutableArray array];
-    for (uint32_t i =0;i<documents.count;i++) {
-        [updateActionArray addObject:@(DSDocumentTransitionType_Update)];
-    }
-
-    if (!(self = [self initForDocuments:documents withActions:updateActionArray withTransitionVersion:version blockchainIdentityUniqueId:blockchainIdentityUniqueId onChain:chain])) return nil;
-    
-    return self;
-}
-
-
--(instancetype)initForDocuments:(NSArray<DPDocument*>*)documents withActions:(NSArray<NSNumber*>*)actions withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain {
-    NSAssert(documents.count == actions.count, @"document count must match action count");
-    if (!(self = [super initWithTransitionVersion:version blockchainIdentityUniqueId:blockchainIdentityUniqueId onChain:chain])) return nil;
+-(instancetype)initForDocuments:(NSArray<DPDocument*>*)documents withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId usingEntropyString:(NSString*)entropyString onChain:(DSChain *)chain {
+    if (!(self = [super initWithTransitionVersion:version blockchainIdentityUniqueId:blockchainIdentityUniqueId usingEntropyString:entropyString  onChain:chain])) return nil;
     
     self.documents = documents;
-    self.actions = actions;
     self.type = DSTransitionType_Documents;
     
     return self;

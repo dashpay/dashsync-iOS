@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable DPDocument *)documentOnTable:(NSString *)tableName
                       withDataDictionary:(nullable DSStringValueDictionary *)dataDictionary
+                            usingEntropy:(NSString*)entropy
                                    error:(NSError *_Nullable __autoreleasing *)error;
 
 //- (nullable DPDocument *)documentFromSerialized:(NSData *)data
