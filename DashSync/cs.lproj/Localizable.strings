@@ -240,12 +240,6 @@
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Vaše peněženka možná není synchronizována.\nTo lze často vyřešit opětovným skenováním blockchainu.";
 
 /* No comment provided by engineer. */
-"An identity needs to have its type defined before it can be registered." = "An identity needs to have its type defined before it can be registered.";
-
-/* As a type of Blockchain Identity */
-"Application" = "Application";
-
-/* No comment provided by engineer. */
 "BLS" = "BLS";
 
 /* No comment provided by engineer. */
@@ -340,9 +334,6 @@
 /* No comment provided by engineer. */
 "Unknown Key Type" = "Unknown Key Type";
 
-/* As a type of Blockchain Identity */
-"User" = "User";
-
 /* No comment provided by engineer. */
 "User has actions to complete before being able to use Dashpay" = "User has actions to complete before being able to use Dashpay";
 
@@ -369,6 +360,3 @@
 
 /* No comment provided by engineer. */
 "The Dashpay contract is not properly set up" = "The Dashpay contract is not properly set up";
-
-/* No comment provided by engineer. */
-"User has actions to complete before being able to use Dashpay" = "User has actions to complete before being able to use Dashpay";

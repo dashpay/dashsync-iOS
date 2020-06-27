@@ -33,7 +33,6 @@ NS_ASSUME_NONNULL_BEGIN
 //-(DPDocument*)profileDocument;
 
 //-(DPDocument*)contactRequestDocument;
->>>>>>> improvement/palinka12
 
 @end
 
