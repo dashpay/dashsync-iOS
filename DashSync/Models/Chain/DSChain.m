@@ -2750,6 +2750,20 @@ static dispatch_once_t devnetToken = 0;
     return [self blockchainIdentityForUniqueId:uniqueId foundInWallet:nil];
 }
 
+-(DSBlockchainIdentity* _Nullable)blockchainIdentityThatCreatedContract:(DPContract*)contract withContractId:(UInt256)contractId foundInWallet:(DSWallet**)foundInWallet {
+    NSAssert(!uint256_is_zero(contractId), @"contractId must not be null");
+    for (DSWallet * wallet in self.wallets) {
+        DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityThatCreatedContract:contract withContractId:contractId];
+        if (blockchainIdentity) {
+            if (foundInWallet) {
+                *foundInWallet = wallet;
+            }
+            return blockchainIdentity;
+        }
+    }
+    return nil;
+}
+
 -(DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId foundInWallet:(DSWallet**)foundInWallet {
     NSAssert(!uint256_is_zero(uniqueId), @"uniqueId must not be null");
     for (DSWallet * wallet in self.wallets) {

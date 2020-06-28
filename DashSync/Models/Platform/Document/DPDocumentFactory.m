@@ -65,13 +65,13 @@ NS_ASSUME_NONNULL_BEGIN
         dataDictionary = @{};
     }
     
-    if (uint256_is_zero(self.contract.registeredBlockchainIdentityUniqueID)) {
+    if (uint256_is_zero(self.contract.contractId) && uint256_is_zero(self.contract.registeredBlockchainIdentityUniqueID)) {
         if (error != NULL) {
             *error = [NSError errorWithDomain:DPErrorDomain
                                          code:DPErrorCode_InvalidDocumentType
                                      userInfo:@{
                                          NSLocalizedDescriptionKey :
-                                             [NSString stringWithFormat:DSLocalizedString(@"Contract '%@' needs to first be locally registered",nil),
+                                             [NSString stringWithFormat:DSLocalizedString(@"Contract '%@' needs to first be locally registered or known",nil),
                                                                         self.contract.name],
                                      }];
         }

@@ -24,6 +24,7 @@
 
 @property(nonatomic,strong) NSArray<DPDocument *>* documents;
 @property(nonatomic,strong) NSArray<NSNumber *>* actions;
+@property(nonatomic,assign) UInt256 blockchainIdentityUniqueId;
 
 @end
 
@@ -40,6 +41,7 @@
 - (DSMutableStringValueDictionary *)baseKeyValueDictionary {
     DSMutableStringValueDictionary *json = [super baseKeyValueDictionary];
     json[@"transitions"] = [self documentsAsArrayOfDictionaries];
+    json[@"ownerId"] = uint256_base58(self.blockchainIdentityUniqueId);
     return json;
 }
 
@@ -48,6 +50,7 @@
     
     self.documents = documents;
     self.type = DSTransitionType_Documents;
+    self.blockchainIdentityUniqueId = blockchainIdentityUniqueId;
     
     return self;
 }

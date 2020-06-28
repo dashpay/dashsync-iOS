@@ -62,7 +62,7 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
     DSChainSyncPhase_Synced,
 };
 
-@class DSChain, DSChainEntity, DSChainManager, DSWallet, DSMerkleBlock, DSPeer, DSDerivationPath, DSTransaction, DSAccount, DSSimplifiedMasternodeEntry, DSBlockchainIdentity, DSBloomFilter, DSProviderRegistrationTransaction, DSMasternodeList;
+@class DSChain, DSChainEntity, DSChainManager, DSWallet, DSMerkleBlock, DSPeer, DSDerivationPath, DSTransaction, DSAccount, DSSimplifiedMasternodeEntry, DSBlockchainIdentity, DSBloomFilter, DSProviderRegistrationTransaction, DSMasternodeList,DPContract;
 
 @protocol DSChainDelegate;
 
@@ -415,6 +415,9 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
 
 /*! @brief Returns a blockchain identity by uniqueId, if it exists.  */
 - (DSBlockchainIdentity* _Nullable)blockchainIdentityForUniqueId:(UInt256)uniqueId;
+
+/*! @brief Returns a blockchain identity that could have created this contract.  */
+- (DSBlockchainIdentity* _Nullable)blockchainIdentityThatCreatedContract:(DPContract*)contract withContractId:(UInt256)contractId foundInWallet:(DSWallet*_Nullable*_Nullable)foundInWallet;
 
 /*! @brief Returns a blockchain identity by uniqueId, if it exists. Also returns the wallet it was found in.  */
 - (DSBlockchainIdentity* _Nullable)blockchainIdentityForUniqueId:(UInt256)uniqueId foundInWallet:(DSWallet*_Nullable*_Nullable)foundInWallet;

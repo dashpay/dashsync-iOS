@@ -53,6 +53,7 @@
 
 + (NSString *)addressWithScriptPubKey:(NSData *)script onChain:(DSChain*)chain;
 + (NSString *)addressWithScriptSig:(NSData *)script onChain:(DSChain*)chain;
++ (NSString *)addressWithHash160:(UInt160)hash160 onChain:(DSChain*)chain;
 
 - (NSAttributedString*)attributedStringForDashSymbol;
 - (NSAttributedString*)attributedStringForDashSymbolWithTintColor:(UIColor*)color;

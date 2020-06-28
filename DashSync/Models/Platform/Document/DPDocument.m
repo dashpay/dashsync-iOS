@@ -132,8 +132,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (DSMutableStringValueDictionary *)objectDictionary {
     DSMutableStringValueDictionary *json = [[DSMutableStringValueDictionary alloc] init];
     json[@"$type"] = self.tableName;
-    json[@"$contractId"] = self.base58ContractIdString;
-    json[@"$ownerId"] = self.base58OwnerIdString;
+    json[@"$dataContractId"] = self.base58ContractIdString;
     json[@"$id"] = self.base58DocumentIdString;
     json[@"$entropy"] = self.entropy;
     json[@"$action"] = @(0);

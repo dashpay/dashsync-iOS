@@ -42,7 +42,7 @@
     NSParameterAssert(blockchainIdentity);
     self = [super init];
     if (self) {
-        NSString *recipientString = rawContact[@"toOwnerId"];
+        NSString *recipientString = rawContact[@"toUserId"];
         NSString *senderString = rawContact[@"$ownerId"];
         NSString *encryptedPublicKeyString = rawContact[@"encryptedPublicKey"];
         NSNumber *senderKeyIndex = rawContact[@"senderKeyIndex"];

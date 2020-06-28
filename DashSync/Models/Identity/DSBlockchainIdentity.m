@@ -1230,9 +1230,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 // MARK: Transition
 
--(void)registrationTransitionSignedByPrivateKey:(DSKey*)privateKey atIndex:(uint32_t)index registeringPublicKeys:(NSDictionary <NSNumber*,DSKey*>*)publicKeys completion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction))completion {
+-(void)registrationTransitionSignedByPrivateKey:(DSKey*)privateKey registeringPublicKeys:(NSDictionary <NSNumber*,DSKey*>*)publicKeys usingCreditFundingTransaction:(DSCreditFundingTransaction*)creditFundingTransaction completion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition))completion {
     DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition = [[DSBlockchainIdentityRegistrationTransition alloc] initWithVersion:1 registeringPublicKeys:publicKeys usingLockedOutpoint:self.lockedOutpoint onChain:self.chain];
-    [blockchainIdentityRegistrationTransition signWithKey:privateKey atIndex:index fromIdentity:self];
+    [blockchainIdentityRegistrationTransition signWithKey:privateKey atIndex:UINT32_MAX fromIdentity:self];
     if (completion) {
         completion(blockchainIdentityRegistrationTransition);
     }
@@ -1252,7 +1252,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     
     NSAssert(index == 0, @"The index should be 0 here");
     
-    [self registrationTransitionSignedByPrivateKey:self.registrationFundingPrivateKey atIndex:index registeringPublicKeys:@{@(index):publicKey} completion:^(DSBlockchainIdentityRegistrationTransition *blockchainIdentityRegistrationTransaction) {
+    NSAssert(self.registrationCreditFundingTransaction, @"The registration credit funding transaction must be known");
+    
+    [self registrationTransitionSignedByPrivateKey:self.registrationFundingPrivateKey registeringPublicKeys:@{@(index):publicKey} usingCreditFundingTransaction:self.registrationCreditFundingTransaction  completion:^(DSBlockchainIdentityRegistrationTransition *blockchainIdentityRegistrationTransaction) {
         if (completion) {
             completion(blockchainIdentityRegistrationTransaction, nil);
         }
@@ -1572,8 +1574,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             }];
             
         } else if (contract.contractState == DPContractState_Registered || contract.contractState == DPContractState_Registering) {
-            DSDLog(@"Fetching contract for verification %@",contract.base58ContractID);
-            [self.DAPINetworkService fetchContractForId:contract.base58ContractID success:^(NSDictionary * _Nonnull contractDictionary) {
+            DSDLog(@"Fetching contract for verification %@",contract.base58ContractId);
+            [self.DAPINetworkService fetchContractForId:contract.base58ContractId success:^(NSDictionary * _Nonnull contractDictionary) {
                 __strong typeof(weakContract) strongContract = weakContract;
                 if (!weakContract) {
                     return;
@@ -1699,15 +1701,16 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         [saltedDomain appendData:salt];
         [saltedDomain appendData:@"5620".hexToData]; //56 because SHA256_2 and 20 because 32 bytes
         [saltedDomain appendUInt256:[usernameDomainData SHA256_2]];
-        NSData * saltedDomainHashData = uint256_data([saltedDomain SHA256_2]);
-        [mSaltedDomainHashes setObject:saltedDomainHashData forKey:unregisteredUsername];
+        NSMutableData * saltedDomainHashData = [@"5620".hexToData mutableCopy];
+        [saltedDomainHashData appendData:uint256_data([saltedDomain SHA256_2])];
+        [mSaltedDomainHashes setObject:[saltedDomainHashData copy] forKey:unregisteredUsername];
         [self.usernameSalts setObject:salt forKey:unregisteredUsername];
     }
     return [mSaltedDomainHashes copy];
 }
 
 -(NSString*)topDomainName {
-    return @"";
+    return @"dash";
 }
 
 // MARK: Documents
@@ -1733,7 +1736,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     for (NSString * username in [self saltedDomainHashesForUsernames:unregisteredUsernames]) {
         NSMutableData * nameHashData = [NSMutableData data];
         [nameHashData appendData:@"5620".hexToData]; //56 because SHA256_2 and 20 because 32 bytes
-        NSData * usernameData = [[username lowercaseString] dataUsingEncoding:NSUTF8StringEncoding];
+        NSData * usernameData = nil;
+        if ([self topDomainName]) {
+            usernameData = [[NSString stringWithFormat:@"%@.%@",[username lowercaseString],[self topDomainName]] dataUsingEncoding:NSUTF8StringEncoding];
+        } else {
+            usernameData = [[username lowercaseString] dataUsingEncoding:NSUTF8StringEncoding];
+        }
         [nameHashData appendUInt256:[usernameData SHA256_2]];
         DSStringValueDictionary * dataDictionary = @{
             @"nameHash":nameHashData.hexString,
@@ -2199,7 +2207,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     __weak typeof(self) weakSelf = self;
     NSParameterAssert(contract);
     if (!contract) return;
-    [self.DAPINetworkService fetchContractForId:contract.base58ContractID success:^(id _Nonnull contractDictionary) {
+    [self.DAPINetworkService fetchContractForId:contract.base58ContractId success:^(id _Nonnull contractDictionary) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             if (completion) {
@@ -2209,7 +2217,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             return;
         }
         DSDLog(@"Contract dictionary is %@",contractDictionary);
-        if ([contractDictionary isKindOfClass:[NSDictionary class]] && [contractDictionary[@"contractId"] isEqualToString:contract.base58ContractID]) {
+        if ([contractDictionary isKindOfClass:[NSDictionary class]] && [contractDictionary[@"contractId"] isEqualToString:contract.base58ContractId]) {
             [contract setContractState:DPContractState_Registered inContext:self.managedObjectContext];
             if (completion) {
                 completion(TRUE,nil);
@@ -2733,7 +2741,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 NSAssert(FALSE, @"It is weird to get here");
                 contact = [DSDashpayUserEntity anyObjectInContext:context matching:@"associatedBlockchainIdentity.uniqueID == %@", uint256_data(blockchainIdentityUniqueId)];
             }
-            if (!contact || [[contactDictionary objectForKey:@"$rev"] intValue] != contact.localProfileDocumentRevision) {
+            if (!contact || [[contactDictionary objectForKey:@"$revision"] intValue] != contact.localProfileDocumentRevision) {
                 
                 if (!contact) {
                     contact = [DSDashpayUserEntity managedObjectInContext:context];
@@ -2755,8 +2763,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                     }
                 }
                 if (contactDictionary) {
-                    contact.localProfileDocumentRevision = [[contactDictionary objectForKey:@"$rev"] intValue];
-                    contact.remoteProfileDocumentRevision = [[contactDictionary objectForKey:@"$rev"] intValue];
+                    contact.localProfileDocumentRevision = [[contactDictionary objectForKey:@"$revision"] intValue];
+                    contact.remoteProfileDocumentRevision = [[contactDictionary objectForKey:@"$revision"] intValue];
                     contact.avatarPath = [contactDictionary objectForKey:@"avatarUrl"];
                     contact.publicMessage = [contactDictionary objectForKey:@"about"];
                     contact.displayName = [contactDictionary objectForKey:@"displayName"];

@@ -63,7 +63,7 @@
     NSString * identifier = [[self.contracts allKeys] objectAtIndex:index];
     DPContract * contract = self.contracts[identifier];
     cell.contractNameLabel.text = contract.name;
-    if (!uint256_is_zero(contract.registeredBlockchainIdentityUniqueID) && [contract.ownerID isEqualToString:self.blockchainIdentity.uniqueIdString]) {
+    if (!uint256_is_zero(contract.registeredBlockchainIdentityUniqueID) && [contract.base58OwnerId isEqualToString:self.blockchainIdentity.uniqueIdString]) {
         cell.statusLabel.text = [NSString stringWithFormat:@"%@ - self",contract.statusString];
     } else {
         cell.statusLabel.text = contract.statusString;

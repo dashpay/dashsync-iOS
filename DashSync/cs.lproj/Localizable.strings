@@ -249,9 +249,6 @@
 "Contract '%@' doesn't contain a table named '%@'" = "Contract '%1$@' doesn't contain a table named '%2$@'";
 
 /* No comment provided by engineer. */
-"Contract '%@' needs to first be locally registered" = "Contract '%@' needs to first be locally registered";
-
-/* No comment provided by engineer. */
 "Count not create friendship derivation path" = "Count not create friendship derivation path";
 
 /* No comment provided by engineer. */
@@ -360,3 +357,6 @@
 
 /* No comment provided by engineer. */
 "The Dashpay contract is not properly set up" = "The Dashpay contract is not properly set up";
+
+/* No comment provided by engineer. */
+"Contract '%@' needs to first be locally registered or known" = "Contract '%@' needs to first be locally registered or known";

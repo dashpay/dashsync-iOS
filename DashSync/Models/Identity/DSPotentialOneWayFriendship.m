@@ -125,10 +125,10 @@
     
     DSStringValueDictionary *data = @{
         @"timestamp": @(self.createdAt),
-                           @"toOwnerId" : uint256_base58([self destinationBlockchainIdentityUniqueId]),
+                           @"toUserId" : uint256_base58([self destinationBlockchainIdentityUniqueId]),
                            @"encryptedPublicKey" : [self.encryptedExtendedPublicKeyData base64EncodedStringWithOptions:0],
-        @"senderKeyIndex" : @(self.sourceKeyIndex + 1),
-        @"recipientKeyIndex" : @(self.destinationKeyIndex + 1),
+        @"senderKeyIndex" : @(self.sourceKeyIndex),
+        @"recipientKeyIndex" : @(self.destinationKeyIndex),
                            };
     
     

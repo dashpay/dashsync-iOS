@@ -101,7 +101,7 @@
     platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"toUserId == %@ && timestamp >= %@",userId,@(timestamp)];
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = 100;
-    platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"toOwnerId" ascending:YES],[NSSortDescriptor sortDescriptorWithKey:@"timestamp" ascending:YES]];
+    platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"toUserId" ascending:YES],[NSSortDescriptor sortDescriptorWithKey:@"timestamp" ascending:YES]];
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"contactRequest";
     return platformDocumentsRequest;
@@ -160,7 +160,7 @@
     NSAssert(self.tableName, @"Table name must be set");
     GetDocumentsRequest * getDocumentsRequest = [[GetDocumentsRequest alloc] init];
     getDocumentsRequest.documentType = self.tableName;
-    getDocumentsRequest.dataContractId = self.contract.base58ContractID;
+    getDocumentsRequest.dataContractId = self.contract.base58ContractId;
     getDocumentsRequest.where = [self whereData];
     if ([self.sortDescriptors count]) {
         getDocumentsRequest.orderBy = [self orderByData];

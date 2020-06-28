@@ -1061,6 +1061,17 @@
     _defaultBlockchainIdentity = nil;
 }
 
+-(DSBlockchainIdentity*)blockchainIdentityCreatingContractId:(UInt256)contractId {
+    NSAssert(!uint256_is_zero(contractId), @"uniqueId must not be null");
+    DSBlockchainIdentity * foundBlockchainIdentity = nil;
+    for (DSBlockchainIdentity * blockchainIdentity in [_mBlockchainIdentities allValues]) {
+        if (uint256_eq([blockchainIdentity uniqueID],contractId)) {
+            foundBlockchainIdentity = blockchainIdentity;
+        }
+    }
+    return foundBlockchainIdentity;
+}
+
 -(DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId {
     NSAssert(!uint256_is_zero(uniqueId), @"uniqueId must not be null");
     DSBlockchainIdentity * foundBlockchainIdentity = nil;

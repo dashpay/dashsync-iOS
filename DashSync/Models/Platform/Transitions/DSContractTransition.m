@@ -19,6 +19,7 @@
 #import "DPDocument.h"
 #import "DSTransition+Protected.h"
 #import "DPContract+Protected.h"
+#import "NSString+Dash.h"
 
 @interface DSContractTransition()
 
@@ -31,7 +32,7 @@
 - (DSMutableStringValueDictionary *)baseKeyValueDictionary {
     DSMutableStringValueDictionary *json = [super baseKeyValueDictionary];
     json[@"dataContract"] = self.contract.objectDictionary;
-    json[@"entropy"] = @"yZDZMVEWEQfkrWdKD4EW2Qjn144xP4X6Pi";//[uint256_base58(self.contract.entropy) stringByPaddingToLength:34 withString:@"1" startingAtIndex:0];
+    json[@"entropy"] = [NSString addressWithHash160:self.contract.entropy onChain:self.chain];
     return json;
 }
 

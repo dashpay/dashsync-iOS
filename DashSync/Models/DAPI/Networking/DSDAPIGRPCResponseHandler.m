@@ -76,7 +76,7 @@
         }
         DSDLog(@"error in didCloseWithTrailingMetadata %@",error);
         if (self.request) {
-            DSDLog(@"request contract ID was %@",self.request.contract.base58ContractID);
+            DSDLog(@"request contract ID was %@",self.request.contract.base58ContractId);
         }
         
     } else {
