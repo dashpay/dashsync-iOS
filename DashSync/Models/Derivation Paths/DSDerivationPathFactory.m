@@ -168,6 +168,7 @@
 // MARK: - Blockchain Identity Authentication
 
 - (DSAuthenticationKeysDerivationPath*)blockchainIdentityECDSAKeysDerivationPathForWallet:(DSWallet*)wallet {
+    NSParameterAssert(wallet);
     static dispatch_once_t blockchainIdentityECDSADerivationPathByWalletToken = 0;
     dispatch_once(&blockchainIdentityECDSADerivationPathByWalletToken, ^{
         self.blockchainIdentityECDSADerivationPathByWallet = [NSMutableDictionary dictionary];

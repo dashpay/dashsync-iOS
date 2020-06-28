@@ -70,6 +70,8 @@ typedef NS_ENUM(NSUInteger, DPContractState) {
 + (DPContract *)localDashpayContractForChain:(DSChain*)chain;
 + (DPContract *)localDPNSContractForChain:(DSChain*)chain;
 
+-(UInt256)contractIdIfRegisteredByBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity;
+
 @end
 
 NS_ASSUME_NONNULL_END

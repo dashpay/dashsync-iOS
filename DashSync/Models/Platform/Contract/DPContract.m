@@ -174,12 +174,26 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
         NSAssert(!uint256_is_zero(self.registeredBlockchainIdentityUniqueID),@"Registered Blockchain Identity needs to be set");
         NSAssert(!uint160_is_zero(self.entropy),@"Entropy needs to be set");
         NSMutableData * mData = [NSMutableData data];
-        [mData appendUInt256:self.ownerId];
+        [mData appendUInt256:self.registeredBlockchainIdentityUniqueID];
         NSString * entropyAddress = [NSString addressWithHash160:self.entropy onChain:self.chain];
         [mData appendData:entropyAddress.base58ToData];
         _contractId = [mData SHA256_2];
     }
     return _contractId;
+}
+
+-(UInt256)contractIdIfRegisteredByBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity {
+    NSMutableData * mData = [NSMutableData data];
+    [mData appendUInt256:blockchainIdentity.uniqueID];
+    DSWallet * wallet = blockchainIdentity.wallet;
+    DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentitiesECDSAKeysDerivationPathForWallet:wallet];
+    NSMutableData * entropyData = [self.serializedHash mutableCopy];
+    [entropyData appendUInt256:blockchainIdentity.uniqueID];
+    [entropyData appendData:[derivationPath publicKeyDataAtIndex:UINT32_MAX - 1]]; //use the last key in 32 bit space (it won't probably ever be used anyways)
+    NSString * entropyAddress = [NSString addressWithHash160:[entropyData RMD160] onChain:self.chain];
+    [mData appendData:entropyAddress.base58ToData];
+    UInt256 contractId = [mData SHA256_2];
+    return contractId;
 }
 
 -(NSString*)base58ContractId {
@@ -301,6 +315,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 
 
 - (void)registerCreator:(DSBlockchainIdentity*)blockchainIdentity inContext:(NSManagedObjectContext*)context {
+    NSParameterAssert(blockchainIdentity);
     self.registeredBlockchainIdentityUniqueID = blockchainIdentity?blockchainIdentity.uniqueID:UINT256_ZERO;
     self.contractId = UINT256_ZERO; //will be lazy loaded
     DSWallet * wallet = blockchainIdentity.wallet;
