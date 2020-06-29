@@ -248,12 +248,16 @@
         //DSDLog(@"%@",[NSData dataWithUInt256:_mainnet.checkpoints[0].checkpointHash]);
     });
     if (inSetUp) {
-        [_mainnet setUp];
         [[NSManagedObjectContext chainContext] performBlockAndWait:^{
             DSChainEntity * chainEntity = [_mainnet chainEntityInContext:[NSManagedObjectContext chainContext]];
             _mainnet.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
             _mainnet.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
+            _mainnet.lastPersistedChainSyncLocators = [NSKeyedUnarchiver unarchiveObjectWithData:chainEntity.syncLocators];
+            _mainnet.lastPersistedChainSyncBlockHeight = chainEntity.syncBlockHeight;
+            _mainnet.lastPersistedChainSyncBlockHash = chainEntity.syncBlockHash.UInt256;
+            _mainnet.lastPersistedChainSyncBlockTimestamp = chainEntity.syncBlockTimestamp;
         }];
+        [_mainnet setUp];
     }
     
     return _mainnet;
@@ -268,12 +272,17 @@
         inSetUp = TRUE;
     });
     if (inSetUp) {
-        [_testnet setUp];
+        
         [[NSManagedObjectContext chainContext] performBlockAndWait:^{
             DSChainEntity * chainEntity = [_testnet chainEntityInContext:[NSManagedObjectContext chainContext]];
             _testnet.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
             _testnet.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
+            _testnet.lastPersistedChainSyncLocators = [NSKeyedUnarchiver unarchiveObjectWithData:chainEntity.syncLocators];
+            _testnet.lastPersistedChainSyncBlockHeight = chainEntity.syncBlockHeight;
+            _testnet.lastPersistedChainSyncBlockHash = chainEntity.syncBlockHash.UInt256;
+            _testnet.lastPersistedChainSyncBlockTimestamp = chainEntity.syncBlockTimestamp;
         }];
+        [_testnet setUp];
     }
     
     return _testnet;
@@ -306,12 +315,17 @@ static dispatch_once_t devnetToken = 0;
         }
     }
     if (inSetUp) {
-        [devnetChain setUp];
+        
         [[NSManagedObjectContext chainContext] performBlockAndWait:^{
             DSChainEntity * chainEntity = [devnetChain chainEntityInContext:[NSManagedObjectContext chainContext]];
             devnetChain.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
             devnetChain.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
+            devnetChain.lastPersistedChainSyncLocators = [NSKeyedUnarchiver unarchiveObjectWithData:chainEntity.syncLocators];
+            devnetChain.lastPersistedChainSyncBlockHeight = chainEntity.syncBlockHeight;
+            devnetChain.lastPersistedChainSyncBlockHash = chainEntity.syncBlockHash.UInt256;
+            devnetChain.lastPersistedChainSyncBlockTimestamp = chainEntity.syncBlockTimestamp;
         }];
+        [devnetChain setUp];
     }
     
     return devnetChain;
@@ -337,12 +351,16 @@ static dispatch_once_t devnetToken = 0;
     }
     if (inSetUp && !isTransient) {
         //note: there is no point to load anything if the chain is transient
-        [devnetChain setUp];
         [[NSManagedObjectContext chainContext] performBlockAndWait:^{
             DSChainEntity * chainEntity = [devnetChain chainEntityInContext:[NSManagedObjectContext chainContext]];
             devnetChain.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
             devnetChain.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
+            devnetChain.lastPersistedChainSyncLocators = [NSKeyedUnarchiver unarchiveObjectWithData:chainEntity.syncLocators];
+            devnetChain.lastPersistedChainSyncBlockHeight = chainEntity.syncBlockHeight;
+            devnetChain.lastPersistedChainSyncBlockHash = chainEntity.syncBlockHash.UInt256;
+            devnetChain.lastPersistedChainSyncBlockTimestamp = chainEntity.syncBlockTimestamp;
         }];
+        [devnetChain setUp];
     }
     
     return devnetChain;
@@ -1691,6 +1709,7 @@ static dispatch_once_t devnetToken = 0;
 
 // MARK: From Peer
 
+//TRUE if it was added to the end of the chain
 - (BOOL)addBlock:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer
 {
     if (!self.chainManager.syncPhase) {
@@ -1738,7 +1757,7 @@ static dispatch_once_t devnetToken = 0;
         
         self.orphans[prevBlock] = block; // orphans are indexed by prevBlock instead of blockHash
         self.lastOrphan = block;
-        return TRUE;
+        return FALSE;
     }
     
     uint32_t txTime = 0;
@@ -2589,7 +2608,7 @@ static dispatch_once_t devnetToken = 0;
     return nil;
 }
 
--(NSArray *) allTransactions {
+-(NSArray <DSTransaction*> *) allTransactions {
     NSMutableArray * mArray = [NSMutableArray array];
     for (DSWallet * wallet in self.wallets) {
         [mArray addObjectsFromArray:wallet.allTransactions];

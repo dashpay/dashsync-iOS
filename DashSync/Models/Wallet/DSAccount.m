@@ -482,7 +482,9 @@
     NSParameterAssert(address);
     
     for (DSFundsDerivationPath * derivationPath in self.fundDerivationPaths) {
-        if ([derivationPath containsChangeAddress:address]) return TRUE;
+        if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
+            if ([derivationPath containsChangeAddress:address]) return TRUE;
+        }
     }
     return FALSE;
 }

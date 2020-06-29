@@ -28,8 +28,8 @@
 
 #import <Foundation/Foundation.h>
 
-#define BLOOM_DEFAULT_FALSEPOSITIVE_RATE 0.0005 // same as bitcoinj, use 0.00005 for less data, 0.001 for good anonymity
-#define BLOOM_REDUCED_FALSEPOSITIVE_RATE 0.00005
+#define BLOOM_DEFAULT_FALSEPOSITIVE_RATE 0.0000625 // one eighth of bitcoinj
+#define BLOOM_REDUCED_FALSEPOSITIVE_RATE 0.00000625
 #define BLOOM_UPDATE_NONE                0
 #define BLOOM_UPDATE_ALL                 1
 #define BLOOM_UPDATE_P2PUBKEY_ONLY       2

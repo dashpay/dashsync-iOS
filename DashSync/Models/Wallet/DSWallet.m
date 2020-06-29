@@ -459,6 +459,97 @@
     }
 }
 
+// MARK: - Chain Synchronization Fingerprint
+
+-(NSData*)chainSynchronizationFingerprint {
+    NSArray * blockHeightsArray = [[[self allTransactions] mutableArrayValueForKey:@"blockHeight"] sortedArrayUsingSelector: @selector(compare:)];
+    NSMutableOrderedSet * blockHeightZones = [NSMutableOrderedSet orderedSet];
+    [blockHeightsArray enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        [blockHeightZones addObject:@([obj unsignedLongValue] / 500)];
+    }];
+
+    return [[self class] chainSynchronizationFingerprintForBlockZones:blockHeightZones forChainHeight:self.chain.lastSyncBlockHeight];
+}
+
++(NSOrderedSet*)blockZonesFromChainSynchronizationFingerprint:(NSData*)chainSynchronizationFingerprint rVersion:(uint8_t *)rVersion rChainHeight:(uint32_t*)rChainHeight {
+    if (rVersion) {
+        *rVersion = [chainSynchronizationFingerprint UInt8AtOffset:0];
+    }
+    if (rChainHeight) {
+        *rChainHeight = ((uint32_t)[chainSynchronizationFingerprint UInt16BigAtOffset:1])*500;
+    }
+    uint16_t firstBlockZone = [chainSynchronizationFingerprint UInt16BigAtOffset:3];
+    NSMutableOrderedSet * blockZones = [NSMutableOrderedSet orderedSet];
+    [blockZones addObject:@(firstBlockZone)];
+    uint16_t lastKnownBlockZone = firstBlockZone;
+    uint16_t offset = 0;
+    for (uint32_t i = 5;i< chainSynchronizationFingerprint.length;i+=2) {
+        uint16_t currentData = [chainSynchronizationFingerprint UInt16BigAtOffset:i];
+        if (currentData & (1 << 15)) {
+            //We are in a continuation
+            if (offset) {
+                offset = - 15 + offset;
+            }
+            for (uint8_t i = 1;i<16;i++) {
+                if (currentData & (1 << (15 - i))) {
+                    lastKnownBlockZone = lastKnownBlockZone - offset + i;
+                    offset = i;
+                    [blockZones addObject:@(lastKnownBlockZone)];
+                }
+            }
+        } else { //this is a new zone
+            offset = 0;
+            lastKnownBlockZone = currentData;
+            [blockZones addObject:@(lastKnownBlockZone)];
+        }
+    }
+    return blockZones;
+}
+
++(NSData*)chainSynchronizationFingerprintForBlockZones:(NSOrderedSet *)blockHeightZones forChainHeight:(uint32_t)chainHeight {
+    if (!blockHeightZones.count) {
+        return [NSData data];
+    }
+    
+    NSMutableData * fingerprintData = [NSMutableData data];
+    [fingerprintData appendUInt8:1]; //version 1
+    [fingerprintData appendUInt16BigEndian:chainHeight/500]; //last sync block height
+    uint16_t previousBlockHeightZone = [blockHeightZones.firstObject unsignedShortValue];
+    [fingerprintData appendUInt16BigEndian:previousBlockHeightZone]; //first one
+    uint8_t currentOffset = 0;
+    uint16_t currentContinuationData = 0;
+    for (NSNumber * blockZoneNumber in blockHeightZones) {
+        if (blockHeightZones.firstObject == blockZoneNumber) continue;
+        uint16_t currentBlockHeightZone = [blockZoneNumber unsignedShortValue];
+        uint16_t distance = currentBlockHeightZone - previousBlockHeightZone;
+        if ((!currentOffset && distance >= 15) || (distance >= 30 - currentOffset)) {
+            if (currentContinuationData) {
+                [fingerprintData appendUInt16BigEndian:currentContinuationData];
+                currentOffset = 0;
+                currentContinuationData = 0;
+            }
+            [fingerprintData appendUInt16BigEndian:currentBlockHeightZone];
+        } else {
+            currentOffset += distance;
+            if (currentOffset > 15) {
+                currentOffset %= 15;
+                [fingerprintData appendUInt16BigEndian:currentContinuationData];
+                currentContinuationData = 1 << 15;
+            }
+            if (!currentContinuationData) {
+                currentContinuationData = 1 << 15; //start with a 1 to show current continuation data
+            }
+            uint16_t currentOffsetBit = (1 << (15 - currentOffset));
+            currentContinuationData |= currentOffsetBit;
+        }
+        previousBlockHeightZone = currentBlockHeightZone;
+    }
+    if (currentContinuationData) {
+        [fingerprintData appendUInt16BigEndian:currentContinuationData];
+    }
+    return fingerprintData;
+}
+
 // MARK: - Seed
 
 // generates a random seed, saves to keychain and returns the associated seedPhrase

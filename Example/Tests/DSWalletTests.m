@@ -12,7 +12,7 @@
 #import "DSDerivationPath.h"
 #import "NSString+Bitcoin.h"
 #import "DSAccount.h"
-#import "DSWallet.h"
+#import "DSWallet+Protected.h"
 #import "DSECDSAKey.h"
 #import "DSTransaction.h"
 #import "DSPriceManager.h"
@@ -166,6 +166,29 @@
 //
 //    XCTAssertEqual([w feeForTxSize:tx.size isInstant:FALSE inputCount:0], tx.standardFee, @"[DSWallet feeForTxSize:]");
 //}
+
+-(void)testChainSynchronizationFingerprintFixedData {
+    NSArray * randomBlockZones = @[@(7),@(68),@(91),@(130),@(132),@(135),@(137),@(154)];
+    NSOrderedSet * blockZones = [NSOrderedSet orderedSetWithArray:randomBlockZones];
+    NSData * chainSynchronizationFingerprint = [DSWallet chainSynchronizationFingerprintForBlockZones:blockZones forChainHeight:1000000];
+    XCTAssertEqualObjects(chainSynchronizationFingerprint.hexString,@"0107d000070044005b0082a5008040",@"Error with ChainSynchronizationFingerprint");
+    NSOrderedSet * rblockZones = [DSWallet blockZonesFromChainSynchronizationFingerprint:chainSynchronizationFingerprint rVersion:0 rChainHeight:0];
+    XCTAssertEqualObjects(blockZones,rblockZones,@"Error with ChainSynchronizationFingerprint");
+}
+
+-(void)testChainSynchronizationFingerprint {
+    NSMutableArray * randomBlockZones = [NSMutableArray array];
+    //create 2 zones, zone 1 (<50000) is twice as less populated
+    for (uint16_t i = 0; i< 50;i++) {
+        [randomBlockZones addObject:@(arc4random_uniform(1000))];
+        [randomBlockZones addObject:@(500 + arc4random_uniform(500))];
+    }
+    [randomBlockZones sortUsingSelector:@selector(compare:)];
+    NSOrderedSet * blockZones = [NSOrderedSet orderedSetWithArray:randomBlockZones];
+    NSData * chainSynchronizationFingerprint = [DSWallet chainSynchronizationFingerprintForBlockZones:blockZones forChainHeight:1000000];
+    NSOrderedSet * rblockZones = [DSWallet blockZonesFromChainSynchronizationFingerprint:chainSynchronizationFingerprint rVersion:0 rChainHeight:0];
+    XCTAssertEqualObjects(blockZones,rblockZones,@"Error with ChainSynchronizationFingerprint");
+}
 
 // MARK: - testWalletManager
 

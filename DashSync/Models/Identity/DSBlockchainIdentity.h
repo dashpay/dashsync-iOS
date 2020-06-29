@@ -29,6 +29,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityRegistrationStep) {
     DSBlockchainIdentityRegistrationStep_Cancelled = 1 << 30
 };
 
+typedef NS_ENUM(NSUInteger, DSBlockchainIdentityMonitorOptions) {
+    DSBlockchainIdentityMonitorOptions_None = 0,
+    DSBlockchainIdentityMonitorOptions_AcceptNotFoundAsNotAnError = 1,
+};
+
 typedef NS_ENUM(NSUInteger, DSBlockchainIdentityQueryStep) {
     DSBlockchainIdentityQueryStep_None = DSBlockchainIdentityRegistrationStep_None, //0
     DSBlockchainIdentityQueryStep_Identity = DSBlockchainIdentityRegistrationStep_Identity,

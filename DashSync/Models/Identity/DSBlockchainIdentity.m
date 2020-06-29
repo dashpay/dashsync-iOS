@@ -58,6 +58,7 @@
 #import "DSTransactionManager+Protected.h"
 #import "DSMerkleBlock.h"
 #import "DSIdentitiesManager.h"
+#import "DSOptionsManager.h"
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
 #define DEFAULT_SIGNING_ALGORITH DSKeyType_ECDSA
@@ -1303,14 +1304,14 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     [self registrationTransitionWithCompletion:^(DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition, NSError * registrationTransitionError) {
         if (blockchainIdentityRegistrationTransition) {
             [self.DAPIClient publishTransition:blockchainIdentityRegistrationTransition success:^(NSDictionary * _Nonnull successDictionary) {
-                [self monitorForBlockchainIdentityWithRetryCount:5 retryAbsentCount:5 delay:4 retryDelayType:DSBlockchainIdentityRetryDelayType_Linear completion:^(BOOL success, NSError * error) {
+                [self monitorForBlockchainIdentityWithRetryCount:5 retryAbsentCount:5 delay:4 retryDelayType:DSBlockchainIdentityRetryDelayType_Linear options:DSBlockchainIdentityMonitorOptions_None completion:^(BOOL success, NSError * error) {
                     if (completion) {
                         completion(successDictionary,error);
                     }
                 }];
             } failure:^(NSError * _Nonnull error) {
                 if (error) {
-                    [self monitorForBlockchainIdentityWithRetryCount:1 retryAbsentCount:1 delay:4 retryDelayType:DSBlockchainIdentityRetryDelayType_Linear completion:^(BOOL success, NSError * error) {
+                    [self monitorForBlockchainIdentityWithRetryCount:1 retryAbsentCount:1 delay:4 retryDelayType:DSBlockchainIdentityRetryDelayType_Linear options:DSBlockchainIdentityMonitorOptions_None completion:^(BOOL success, NSError * error) {
                         if (completion) {
                             completion(nil,error);
                         }
@@ -1336,12 +1337,26 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 // MARK: Retrieval
 
 -(void)fetchIdentityNetworkStateInformationWithCompletion:(void (^)(BOOL success, NSError * error))completion {
-    [self monitorForBlockchainIdentityWithRetryCount:5 retryAbsentCount:0 delay:3 retryDelayType:DSBlockchainIdentityRetryDelayType_SlowingDown50Percent completion:completion];
+    //a local identity might not have been published yet
+    [self monitorForBlockchainIdentityWithRetryCount:5 retryAbsentCount:0 delay:3 retryDelayType:DSBlockchainIdentityRetryDelayType_SlowingDown50Percent options:self.isLocal?DSBlockchainIdentityMonitorOptions_AcceptNotFoundAsNotAnError:DSBlockchainIdentityMonitorOptions_None completion:completion];
 }
 
 -(void)fetchAllNetworkStateInformationWithCompletion:(void (^)(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> * errors))completion {
     dispatch_async(self.identityQueue, ^{
-        [self fetchNetworkStateInformation:self.isLocal ? DSBlockchainIdentityQueryStep_AllForLocalBlockchainIdentity: DSBlockchainIdentityQueryStep_AllForForeignBlockchainIdentity withCompletion:completion];
+        DSBlockchainIdentityQueryStep query = DSBlockchainIdentityQueryStep_None;
+        if ([DSOptionsManager sharedInstance].syncType & DSSyncType_BlockchainIdentities) {
+            query |= DSBlockchainIdentityQueryStep_Identity;
+        }
+        if ([DSOptionsManager sharedInstance].syncType & DSSyncType_DPNS) {
+            query |= DSBlockchainIdentityQueryStep_Username;
+        }
+        if ([DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay) {
+            query |= DSBlockchainIdentityQueryStep_Profile;
+            if (self.isLocal) {
+                query |= DSBlockchainIdentityQueryStep_ContactRequests;
+            }
+        }
+        [self fetchNetworkStateInformation:query withCompletion:completion];
     });
 }
 
@@ -1651,7 +1666,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 -(void)addUsername:(NSString*)username status:(DSBlockchainIdentityUsernameStatus)status save:(BOOL)save registerOnNetwork:(BOOL)registerOnNetwork {
     [self.usernameStatuses setObject:@{BLOCKCHAIN_USERNAME_STATUS:@(DSBlockchainIdentityUsernameStatus_Initial)} forKey:username];
     if (save) {
-        [self saveNewUsername:username status:DSBlockchainIdentityUsernameStatus_Initial];
+        [self saveNewUsername:username status:DSBlockchainIdentityUsernameStatus_Initial inContext:self.platformContext];
         if (registerOnNetwork && self.registered && status != DSBlockchainIdentityUsernameStatus_Confirmed) {
             [self registerUsernamesWithCompletion:^(BOOL success, NSError * _Nonnull error) {
                 
@@ -2001,7 +2016,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 }
                 [usernameStatusDictionary setObject:@(DSBlockchainIdentityUsernameStatus_Confirmed) forKey:BLOCKCHAIN_USERNAME_STATUS];
                 [self.usernameStatuses setObject:[usernameStatusDictionary copy] forKey:username];
-                [self saveNewUsername:username status:DSBlockchainIdentityUsernameStatus_Confirmed];
+                [self saveNewUsername:username status:DSBlockchainIdentityUsernameStatus_Confirmed inContext:self.platformContext];
             }
         }
         if (completion) {
@@ -2035,7 +2050,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     });
 }
 
--(void)monitorForBlockchainIdentityWithRetryCount:(uint32_t)retryCount retryAbsentCount:(uint32_t)retryAbsentCount delay:(NSTimeInterval)delay retryDelayType:(DSBlockchainIdentityRetryDelayType)retryDelayType completion:(void (^)(BOOL success, NSError * error))completion {
+-(void)monitorForBlockchainIdentityWithRetryCount:(uint32_t)retryCount retryAbsentCount:(uint32_t)retryAbsentCount delay:(NSTimeInterval)delay retryDelayType:(DSBlockchainIdentityRetryDelayType)retryDelayType options:(DSBlockchainIdentityMonitorOptions)options completion:(void (^)(BOOL success, NSError * error))completion {
     __weak typeof(self) weakSelf = self;
     [self.DAPINetworkService getIdentityById:self.uniqueIdString success:^(NSDictionary * _Nonnull identityDictionary) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -2055,7 +2070,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         uint32_t nextRetryAbsentCount = retryAbsentCount;
         if ([[error localizedDescription] isEqualToString:@"Identity not found"]) {
             if (!retryAbsentCount) {
-                completion(FALSE,error);
+                if (completion) {
+                    if (options & DSBlockchainIdentityMonitorOptions_AcceptNotFoundAsNotAnError) {
+                        completion(YES,nil);
+                    } else {
+                        completion(NO,error);
+                    }
+                }
                 return;
             }
             nextRetryAbsentCount--;
@@ -2074,7 +2095,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                     default:
                         break;
                 }
-                [self monitorForBlockchainIdentityWithRetryCount:retryCount - 1 retryAbsentCount:nextRetryAbsentCount delay:nextDelay retryDelayType:retryDelayType completion:completion];
+                [self monitorForBlockchainIdentityWithRetryCount:retryCount - 1 retryAbsentCount:nextRetryAbsentCount delay:nextDelay retryDelayType:retryDelayType options:options completion:completion];
             });
         } else {
             completion(FALSE,error);
@@ -3292,8 +3313,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 // MARK: Saving
 
 -(void)saveInitial {
-    [self.managedObjectContext performBlockAndWait:^{
-        DSBlockchainIdentityEntity * entity = [DSBlockchainIdentityEntity managedObjectInContext:self.managedObjectContext];
+    [self saveInitialInContext:self.managedObjectContext];
+}
+
+-(void)saveInitialInContext:(NSManagedObjectContext*)context {
+    [context performBlockAndWait:^{
+        DSBlockchainIdentityEntity * entity = [DSBlockchainIdentityEntity managedObjectInContext:context];
         entity.uniqueID = uint256_data(self.uniqueID);
         entity.isLocal = self.isLocal;
         if (self.isLocal) {
@@ -3301,7 +3326,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             DSCreditFundingTransactionEntity * transactionEntity = (DSCreditFundingTransactionEntity*)[DSTransactionEntity anyObjectInContext:self.managedObjectContext matching:@"transactionHash.txHash == %@", transactionHash];
             entity.registrationFundingTransaction = transactionEntity;
         }
-        entity.chain = [self.chain chainEntityInContext:self.managedObjectContext];
+        entity.chain = [self.chain chainEntityInContext:context];
         for (NSString * username in self.usernameStatuses) {
             DSBlockchainIdentityUsernameEntity * usernameEntity = [DSBlockchainIdentityUsernameEntity managedObjectInContext:self.managedObjectContext];
             usernameEntity.status = [self statusOfUsername:username];
@@ -3310,12 +3335,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             [entity addUsernamesObject:usernameEntity];
             [entity setDashpayUsername:usernameEntity];
         }
-        DSDashpayUserEntity * dashpayUserEntity = [DSDashpayUserEntity managedObjectInContext:self.managedObjectContext];
-        dashpayUserEntity.chain = [self.chain chainEntityInContext:self.managedObjectContext];
+        DSDashpayUserEntity * dashpayUserEntity = [DSDashpayUserEntity managedObjectInContext:context];
+        dashpayUserEntity.chain = [self.chain chainEntityInContext:context];
         entity.matchingDashpayUser = dashpayUserEntity;
         
         self.matchingDashpayUser = dashpayUserEntity;
-        [self.managedObjectContext ds_save];
+        [context ds_save];
         if ([self isLocal]) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentityDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain,DSBlockchainIdentityKey:self}];
@@ -3460,8 +3485,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     }];
 }
 
--(void)saveNewUsername:(NSString*)username status:(DSBlockchainIdentityUsernameStatus)status {
-    [self.managedObjectContext performBlockAndWait:^{
+-(void)saveNewUsername:(NSString*)username status:(DSBlockchainIdentityUsernameStatus)status inContext:(NSManagedObjectContext*)context {
+    [context performBlockAndWait:^{
         DSBlockchainIdentityEntity * entity = self.blockchainIdentityEntity;
         DSBlockchainIdentityUsernameEntity * usernameEntity = [DSBlockchainIdentityUsernameEntity managedObjectInContext:self.managedObjectContext];
         usernameEntity.status = status;
@@ -3469,7 +3494,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         usernameEntity.salt = [self saltForUsername:username saveSalt:NO];
         [entity addUsernamesObject:usernameEntity];
         [entity setDashpayUsername:usernameEntity];
-        [self.managedObjectContext ds_save];
+        [context ds_save];
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentityDidUpdateUsernameStatusNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain, DSBlockchainIdentityKey:self}];
         });

@@ -630,7 +630,7 @@
         _peers = [NSMutableOrderedSet orderedSetWithArray:peers];
     } else {
         [self clearPeers];
-        [self.peers addObjectsFromArray:peers];
+        _peers = [NSMutableOrderedSet orderedSetWithArray:peers];
         [self.peers minusSet:self.misbehavingPeers];
     }
     [self sortPeers];
