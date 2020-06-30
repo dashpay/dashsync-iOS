@@ -58,11 +58,16 @@
 
 // MARK: - Derivation Path Addresses
 
-- (void)registerTransactionAddress:(NSString * _Nonnull)address {
-    if (![self.mUsedAddresses containsObject:address]) {
-        [self.mUsedAddresses addObject:address];
-        [self registerAddressesWithDefaultGapLimitWithError:nil];
+- (BOOL)registerTransactionAddress:(NSString * _Nonnull)address {
+    if ([self containsAddress:address]) {
+        if (![self.mUsedAddresses containsObject:address]) {
+            [self.mUsedAddresses addObject:address];
+            [self registerAddressesWithDefaultGapLimitWithError:nil];
+            
+        }
+        return TRUE;
     }
+    return FALSE;
 }
 
 -(NSUInteger)defaultGapLimit {

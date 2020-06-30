@@ -31,7 +31,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSChain,DSAccount,DSWallet,DSTransactionLockVote,DSTransactionEntity,DSInstantSendTransactionLock;
+@class DSChain,DSAccount,DSWallet,DSTransactionLockVote,DSTransactionEntity,DSInstantSendTransactionLock,DSBlockchainIdentity,DSDerivationPath;
 
 #define TX_FEE_PER_B         1ULL    // standard tx fee per b of tx size
 #define TX_FEE_PER_INPUT     10000ULL    // standard ix fee per input
@@ -64,6 +64,9 @@ typedef union _UInt160 UInt160;
 @property (nonatomic, readonly) NSArray *outputAmounts;
 @property (nonatomic, readonly) NSArray *outputAddresses;
 @property (nonatomic, readonly) NSArray *outputScripts;
+
+@property (nonatomic, readonly) NSSet<DSBlockchainIdentity*>* sourceBlockchainIdentities;
+@property (nonatomic, readonly) NSSet<DSBlockchainIdentity*>* destinationBlockchainIdentities;
 
 @property (nonatomic, readonly) BOOL instantSendReceived;
 @property (nonatomic, readonly) BOOL confirmed;
@@ -133,6 +136,8 @@ sequence:(uint32_t)sequence;
 - (BOOL)signWithPrivateKeys:(NSArray *)keys;
 - (BOOL)signWithPreorderedPrivateKeys:(NSArray *)keys;
 
+
+
 - (NSString* _Nullable)shapeshiftOutboundAddress;
 - (NSString* _Nullable)shapeshiftOutboundAddressForceScript;
 + (NSString* _Nullable)shapeshiftOutboundAddressForScript:(NSData*)script;
@@ -155,6 +160,8 @@ sequence:(uint32_t)sequence;
 //instant send
 
 - (void)setInstantSendReceivedWithInstantSendLock:(DSInstantSendTransactionLock*)instantSendLock;
+
+- (void)loadBlockchainIdentitiesFromDerivationPaths:(NSArray<DSDerivationPath*>*)derivationPaths;
 
 @end
 
