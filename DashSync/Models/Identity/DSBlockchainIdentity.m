@@ -144,6 +144,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         NSData * salt = usernameEntity.salt;
         if (salt) {
             [self.usernameStatuses setObject:@{BLOCKCHAIN_USERNAME_STATUS:@(usernameEntity.status),BLOCKCHAIN_USERNAME_SALT:usernameEntity.salt} forKey:usernameEntity.stringValue];
+            [self.usernameSalts setObject:usernameEntity.salt forKey:usernameEntity.stringValue];
         } else {
             [self.usernameStatuses setObject:@{BLOCKCHAIN_USERNAME_STATUS:@(usernameEntity.status)} forKey:usernameEntity.stringValue];
         }
