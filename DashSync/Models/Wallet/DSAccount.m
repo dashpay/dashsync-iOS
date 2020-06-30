@@ -29,7 +29,7 @@
 #import "DSECDSAKey.h"
 #import "DSChain+Protected.h"
 
-#import "DSTransaction.h"
+#import "DSTransaction+Protected.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "DSProviderUpdateRevocationTransaction.h"
 #import "DSProviderUpdateRegistrarTransaction.h"
@@ -225,6 +225,7 @@
                                 if (transaction) {
                                     self.allTx[hash] = transaction;
                                     [self.transactions addObject:transaction];
+                                    [transaction loadBlockchainIdentitiesFromDerivationPaths:self.fundDerivationPaths];
                                 }
                             }
                         }
@@ -1293,11 +1294,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             [derivationPath registerTransactionAddress:address]; //only will register if derivation path contains address
         }
     }
-    for (NSString * address in transaction.outputAddresses) {
-        for (DSFundsDerivationPath * derivationPath in self.fundDerivationPaths) {
-            [derivationPath registerTransactionAddress:address]; //only will register if derivation path contains address
-        }
-    }
+    [transaction loadBlockchainIdentitiesFromDerivationPaths:self.fundDerivationPaths];
     [self updateBalance];
     
     if (saveImmediately) {

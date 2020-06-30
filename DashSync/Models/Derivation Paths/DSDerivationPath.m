@@ -306,12 +306,14 @@
     return [self addressIsUsed:[self addressAtIndexPath:indexPath]];
 }
 
-- (void)registerTransactionAddress:(NSString * _Nonnull)address {
+- (BOOL)registerTransactionAddress:(NSString * _Nonnull)address {
     if ([self containsAddress:address]) {
         if (![self.mUsedAddresses containsObject:address]) {
             [self.mUsedAddresses addObject:address];
         }
+        return TRUE;
     }
+    return FALSE;
 }
 
 -(NSSet*)allAddresses {
