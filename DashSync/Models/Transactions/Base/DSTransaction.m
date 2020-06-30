@@ -734,8 +734,7 @@
     NSMutableSet * sourceBlockchainIdentities = [NSMutableSet set];
     for (NSString * address in self.outputAddresses) {
         for (DSFundsDerivationPath * derivationPath in derivationPaths) {
-            BOOL found = [derivationPath registerTransactionAddress:address]; //only will register if derivation path contains address
-            if (found && [derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
+            if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]] && [derivationPath containsAddress:address]) {
                 DSIncomingFundsDerivationPath * incomingFundsDerivationPath = ((DSIncomingFundsDerivationPath*) derivationPath);
                 UInt256 destinationBlockchainIdentityUniqueId = [incomingFundsDerivationPath contactDestinationBlockchainIdentityUniqueId];
                 UInt256 sourceBlockchainIdentityUniqueId = [incomingFundsDerivationPath contactSourceBlockchainIdentityUniqueId];

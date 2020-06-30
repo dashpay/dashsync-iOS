@@ -223,9 +223,9 @@
                                 DSTransaction *transaction = [e.transaction transactionForChain:self.wallet.chain];
                                 
                                 if (transaction) {
+                                    [transaction loadBlockchainIdentitiesFromDerivationPaths:self.fundDerivationPaths];
                                     self.allTx[hash] = transaction;
                                     [self.transactions addObject:transaction];
-                                    [transaction loadBlockchainIdentitiesFromDerivationPaths:self.fundDerivationPaths];
                                 }
                             }
                         }
@@ -1290,6 +1290,11 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     self.allTx[hash] = transaction;
     [self.transactions insertObject:transaction atIndex:0];
     for (NSString * address in transaction.inputAddresses) {
+        for (DSFundsDerivationPath * derivationPath in self.fundDerivationPaths) {
+            [derivationPath registerTransactionAddress:address]; //only will register if derivation path contains address
+        }
+    }
+    for (NSString * address in transaction.outputAddresses) {
         for (DSFundsDerivationPath * derivationPath in self.fundDerivationPaths) {
             [derivationPath registerTransactionAddress:address]; //only will register if derivation path contains address
         }
