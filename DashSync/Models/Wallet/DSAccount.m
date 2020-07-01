@@ -29,7 +29,7 @@
 #import "DSECDSAKey.h"
 #import "DSChain+Protected.h"
 
-#import "DSTransaction.h"
+#import "DSTransaction+Protected.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "DSProviderUpdateRevocationTransaction.h"
 #import "DSProviderUpdateRegistrarTransaction.h"
@@ -223,6 +223,7 @@
                                 DSTransaction *transaction = [e.transaction transactionForChain:self.wallet.chain];
                                 
                                 if (transaction) {
+                                    [transaction loadBlockchainIdentitiesFromDerivationPaths:self.fundDerivationPaths];
                                     self.allTx[hash] = transaction;
                                     [self.transactions addObject:transaction];
                                 }
@@ -1298,6 +1299,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             [derivationPath registerTransactionAddress:address]; //only will register if derivation path contains address
         }
     }
+    [transaction loadBlockchainIdentitiesFromDerivationPaths:self.fundDerivationPaths];
     [self updateBalance];
     
     if (saveImmediately) {

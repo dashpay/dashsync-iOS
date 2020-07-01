@@ -134,13 +134,15 @@
 
 // MARK: - Derivation Path Addresses
 
-- (void)registerTransactionAddress:(NSString * _Nonnull)address {
+- (BOOL)registerTransactionAddress:(NSString * _Nonnull)address {
     if ([self containsAddress:address]) {
         if (![self.mUsedAddresses containsObject:address]) {
             [self.mUsedAddresses addObject:address];
             [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL error:nil];
         }
+        return TRUE;
     }
+    return FALSE;
 }
 
 
