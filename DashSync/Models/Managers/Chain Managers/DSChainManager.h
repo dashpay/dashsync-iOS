@@ -44,7 +44,9 @@ FOUNDATION_EXPORT NSString* const DSChainManagerNotificationChainKey;
 
 @interface DSChainManager : NSObject <DSChainDelegate,DSPeerChainDelegate>
 
-@property (nonatomic, readonly) double syncProgress;
+@property (nonatomic, readonly) double chainSyncProgress;
+@property (nonatomic, readonly) double terminalHeaderSyncProgress;
+@property (nonatomic, readonly) double combinedSyncProgress;
 @property (nonatomic, readonly) DSSporkManager * sporkManager;
 @property (nonatomic, readonly) DSMasternodeManager * masternodeManager;
 @property (nonatomic, readonly) DSGovernanceSyncManager * governanceSyncManager;

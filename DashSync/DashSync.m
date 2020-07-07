@@ -155,12 +155,15 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
         chainEntity.syncBlockHash = nil;
         chainEntity.syncBlockHeight = 0;
         chainEntity.syncLocators = nil;
+        
         [DSMerkleBlockEntity deleteBlocksOnChainEntity:chainEntity];
         [DSAddressEntity deleteAddressesOnChainEntity:chainEntity];
         [DSTransactionHashEntity deleteTransactionHashesOnChainEntity:chainEntity];
         [DSDerivationPathEntity deleteDerivationPathsOnChainEntity:chainEntity];
         [DSFriendRequestEntity deleteFriendRequestsOnChainEntity:chainEntity];
         [chain wipeBlockchainInfoInContext:context];
+        [chain.chainManager restartChainSyncStartHeight];
+        [chain.chainManager restartTerminalSyncStartHeight];
         chain.chainManager.syncPhase = DSChainSyncPhase_InitialTerminalBlocks;
         [DSBlockchainIdentityEntity deleteBlockchainIdentitiesOnChainEntity:chainEntity];
         [DSDashpayUserEntity deleteContactsOnChainEntity:chainEntity];// this must move after wipeBlockchainInfo where blockchain identities are removed
@@ -190,6 +193,7 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
         [DSDerivationPathEntity deleteDerivationPathsOnChainEntity:chainEntity];
         [DSFriendRequestEntity deleteFriendRequestsOnChainEntity:chainEntity];
         [chain wipeBlockchainNonTerminalInfoInContext:context];
+        [chain.chainManager restartChainSyncStartHeight];
         [DSBlockchainIdentityEntity deleteBlockchainIdentitiesOnChainEntity:chainEntity];
         [DSDashpayUserEntity deleteContactsOnChainEntity:chainEntity];// this must move after wipeBlockchainInfo where blockchain identities are removed
         [context ds_save];
@@ -315,7 +319,7 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
 
 - (void)performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
     DSChainManager *mainnetManager = [[DSChainsManager sharedInstance] mainnetManager];
-    if (mainnetManager.syncProgress >= 1.0) {
+    if (mainnetManager.chainSyncProgress >= 1.0) {
         DSDLog(@"Background fetch: already synced");
         
         if (completionHandler) {
@@ -374,7 +378,7 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
 }
 
 - (void)backgroundFetchTimedOut {
-    const double syncProgress = [[DSChainsManager sharedInstance] mainnetManager].syncProgress;
+    const double syncProgress = [[DSChainsManager sharedInstance] mainnetManager].chainSyncProgress;
     DSDLog(@"Background fetch timeout with progress: %f", syncProgress);
     
     const UIBackgroundFetchResult fetchResult = syncProgress > 0.1

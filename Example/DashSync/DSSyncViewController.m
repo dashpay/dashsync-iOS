@@ -244,7 +244,7 @@
 
 - (void)showSyncing
 {
-    double progress = self.chainManager.syncProgress;
+    double progress = self.chainManager.combinedSyncProgress;
     
     if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0 && self.chainManager.chain.earliestWalletCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSince1970]) {
         self.explanationLabel.text = NSLocalizedString(@"Syncing:", nil);
@@ -279,7 +279,7 @@
 
 - (void)stopActivityWithSuccess:(BOOL)success
 {
-    double progressView = self.chainManager.syncProgress;
+    double progressView = self.chainManager.combinedSyncProgress;
     
     self.start = self.timeout = 0.0;
     if (progressView > DBL_EPSILON && progressView + DBL_EPSILON < 1.0) return; // not done syncing
@@ -315,7 +315,7 @@
     
     static int counter = 0;
     NSTimeInterval elapsed = [NSDate timeIntervalSince1970] - self.start;
-    double progress = self.chainManager.syncProgress;
+    double progress = self.chainManager.combinedSyncProgress;
     uint64_t dbFileSize = [DashSync sharedSyncController].dbSize;
     uint32_t lastBlockHeight = self.chain.lastSyncBlockHeight;
     uint32_t lastHeaderHeight = self.chain.lastTerminalBlockHeight;
