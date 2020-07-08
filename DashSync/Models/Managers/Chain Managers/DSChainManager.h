@@ -42,6 +42,8 @@ FOUNDATION_EXPORT NSString* const DSChainManagerNotificationChainKey;
 
 @class DSGovernanceSyncManager, DSMasternodeManager, DSSporkManager, DSPeerManager, DSGovernanceVote, DSDAPIClient, DSTransactionManager, DSIdentitiesManager, DSBloomFilter;
 
+typedef void (^MiningCompletionBlock)(DSMerkleBlock * block, NSUInteger attempts, NSTimeInterval timeUsed, NSError * error);
+
 @interface DSChainManager : NSObject <DSChainDelegate,DSPeerChainDelegate>
 
 @property (nonatomic, readonly) double syncProgress;
@@ -65,6 +67,8 @@ FOUNDATION_EXPORT NSString* const DSChainManagerNotificationChainKey;
 - (void)rescan;
 
 - (void)rescanMasternodeListsAndQuorums;
+
+- (void)mineBlockWithTimeout:(NSTimeInterval)timeout;
 
 @end
 

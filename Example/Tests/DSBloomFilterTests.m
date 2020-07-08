@@ -120,7 +120,7 @@
      */
     //this block is bloom filtered to only have the first transaction
     NSData *block = @"000000201d5d4e88ffc3d22df1edbb59cdf7e7426676ce1a22ff0d57a4000000000000002aad163c0f2a907f0c304b6c44a706819d393874de7789d888b505021306d7d59e92ce59683d021a86097f070400000003279e9f59938e18a73bb8badf01f7143da64aa3939453497296f69ed226d575e9553240be926b18d5653f58e0fb0fbb77c39d2adff2c0f693b9006da443bb8af609491f56436c3e6a6ca83cb5a21782059559f6ee91abde67f9d4c6f0caa67e3e0107".hexToData;
-    DSMerkleBlock *b = [DSMerkleBlock blockWithMessage:block onChain:self.chain];
+    DSMerkleBlock *b = [DSMerkleBlock merkleBlockWithMessage:block onChain:self.chain];
     UInt256 hash;
     
     hash = *(UInt256 *)@"0000000000000197df9123a822ae2ff2b1108b37d641b2a8c976ba949a78ca51".hexToData.reverse.bytes;

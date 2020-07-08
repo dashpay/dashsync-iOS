@@ -1482,7 +1482,7 @@
         }
     }
     for (NSUInteger off = l; off < l + 81*count; off += 81) {
-        DSMerkleBlock *block = [DSMerkleBlock blockWithMessage:[message subdataWithRange:NSMakeRange(off, 81)] onChain:self.chain];
+        DSMerkleBlock *block = [DSMerkleBlock merkleBlockWithMessage:[message subdataWithRange:NSMakeRange(off, 81)] onChain:self.chain];
         if (! block.valid) {
             [self error:@"invalid block header %@", uint256_obj(block.blockHash)];
             return;
@@ -1672,7 +1672,7 @@
     // Dash nodes don't support querying arbitrary transactions, only transactions not yet accepted in a block. After
     // a merkleblock message, the remote node is expected to send tx messages for the tx referenced in the block. When a
     // non-tx message is received we should have all the tx in the merkleblock.
-    DSMerkleBlock *block = [DSMerkleBlock blockWithMessage:message onChain:self.chain];
+    DSMerkleBlock *block = [DSMerkleBlock merkleBlockWithMessage:message onChain:self.chain];
     
     if (! block.valid) {
         [self error:@"invalid merkleblock: %@", uint256_obj(block.blockHash)];

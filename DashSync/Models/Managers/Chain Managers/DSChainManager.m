@@ -298,6 +298,18 @@
     self.lastChainRelayTime = 0;
 }
 
+// MARK: - Mining
+
+- (void)mineBlockWithTransactions:(NSArray<DSTransaction*>*)transactions withTimeout:(NSTimeInterval)timeout completion:^(BOOL success) {
+    [self disconnectedRescan];
+} {
+    [self mineBlockAfterBlock:self.last withTransactions:<#(NSArray<DSTransaction *> *)#> withTimeout:<#(NSTimeInterval)#>]
+}
+
+- (void)mineBlockAfterBlock:(DSMerkleBlock*)block withTransactions:(NSArray<DSTransaction*>*)transactions withTimeout:(NSTimeInterval)timeout {
+    
+}
+
 // MARK: - Blockchain Sync
 
 - (void)startSync {
