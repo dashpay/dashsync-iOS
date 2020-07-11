@@ -22,7 +22,7 @@
 
 @implementation DSFullBlock
 
--(instancetype)initWithCoinbaseTransaction:(DSCoinbaseTransaction*)coinbaseTransaction transactions:(NSSet<DSTransaction*>*)transactions previousBlocks:(NSDictionary*)previousBlocks timestamp:(uint32_t)timestamp height:(uint32_t)height onChain:(DSChain *)chain {
+-(instancetype)initWithCoinbaseTransaction:(DSCoinbaseTransaction*)coinbaseTransaction transactions:(NSSet<DSTransaction*>*)transactions previousBlockHash:(UInt256)previousBlockHash previousBlocks:(NSDictionary*)previousBlocks timestamp:(uint32_t)timestamp height:(uint32_t)height onChain:(DSChain *)chain {
     if (!(self = [super initWithVersion:2 timestamp:timestamp height:height onChain:chain])) return nil;
     NSMutableSet * totalTransactionsSet = [transactions mutableCopy];
     [totalTransactionsSet addObject:coinbaseTransaction];
@@ -30,6 +30,7 @@
     if (!transactions.count) {
         self.merkleRoot = coinbaseTransaction.txHash;
     }
+    self.prevBlock = previousBlockHash;
     [self setTargetWithPreviousBlocks:previousBlocks];
     return self;
 }
@@ -56,7 +57,7 @@
     NSMutableData * preNonceMutableData = [self preNonceMutableData];
     uint32_t i = 0;
     UInt256 fullTarget = setCompact(block.target);
-    DSDLog(@"Trying to mine a block with target %@",uint256_bin(fullTarget));
+    DSDLog(@"Trying to mine a block at height %d with target %@", block.height, uint256_bin(fullTarget));
     do {
         NSMutableData * d = [preNonceMutableData mutableCopy];
         [d appendUInt32:i];
@@ -64,6 +65,7 @@
         if (!uint256_sup(potentialBlockHash, fullTarget)) {
             //We found a block
             DSDLog(@"A Block was found %@ %@",uint256_bin(fullTarget),uint256_bin(potentialBlockHash));
+            self.blockHash = potentialBlockHash;
             found = TRUE;
             break;
         }

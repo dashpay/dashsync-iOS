@@ -302,33 +302,43 @@
 // MARK: - Mining
 
 - (void)mineEmptyBlocks:(uint32_t)blockCount withTimeout:(NSTimeInterval)timeout completion:(MultipleBlockMiningCompletionBlock)completion {
-    [self mineEmptyBlocks:blockCount afterBlock:self.chain.lastTerminalBlock withTimeout:timeout completion:completion];
+    [self mineEmptyBlocks:blockCount afterBlock:self.chain.lastTerminalBlock previousBlocks:self.chain.terminalBlocks withTimeout:timeout completion:completion];
 }
 
-- (void)mineEmptyBlocks:(uint32_t)blockCount afterBlock:(DSBlock*)block withTimeout:(NSTimeInterval)timeout completion:(MultipleBlockMiningCompletionBlock)completion {
+- (void)mineEmptyBlocks:(uint32_t)blockCount afterBlock:(DSBlock*)previousBlock previousBlocks:(NSDictionary<NSValue*,DSBlock*>*)previousBlocks withTimeout:(NSTimeInterval)timeout completion:(MultipleBlockMiningCompletionBlock)completion {
+    NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
     NSTimeInterval end = [[[NSDate alloc] initWithTimeIntervalSinceNow:timeout] timeIntervalSince1970];
     NSMutableArray * blocksArray = [NSMutableArray array];
     NSMutableArray * attemptsArray = [NSMutableArray array];
-    while ([[NSDate date] timeIntervalSince1970] < end) {
+    __block uint32_t blocksRemaining = blockCount;
+    __block NSMutableDictionary<NSValue*,DSBlock*> * mPreviousBlocks = [previousBlocks mutableCopy];
+    __block DSBlock * currentBlock = previousBlock;
+    while ([[NSDate date] timeIntervalSince1970] < end && blocksRemaining>0) {
         dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-        [self mineBlockAfterBlock:block withTransactions:[NSArray array] withTimeout:timeout completion:^(DSFullBlock * _Nullable block, NSUInteger attempts, NSTimeInterval timeUsed, NSError * _Nullable error) {
+        [self mineBlockAfterBlock:currentBlock withTransactions:[NSArray array] previousBlocks:mPreviousBlocks withTimeout:timeout completion:^(DSFullBlock * _Nullable block, NSUInteger attempts, NSTimeInterval timeUsed, NSError * _Nullable error) {
+            NSAssert(!uint256_is_zero(block.blockHash), @"Block hash must not be empty");
             dispatch_semaphore_signal(sem);
             [blocksArray addObject:block];
+            [mPreviousBlocks setObject:block forKey:uint256_obj(block.blockHash)];
+            currentBlock = block;
+            blocksRemaining--;
             [attemptsArray addObject:@(attempts)];
         }];
         dispatch_semaphore_wait(sem, dispatch_time(DISPATCH_TIME_NOW, 300 * NSEC_PER_SEC));
+    }
+    if (completion) {
+        completion(blocksArray,attemptsArray,[[NSDate date] timeIntervalSince1970] - start,nil);
     }
     
 }
 
 - (void)mineBlockWithTransactions:(NSArray<DSTransaction*>*)transactions withTimeout:(NSTimeInterval)timeout completion:(BlockMiningCompletionBlock)completion {
-    [self mineBlockAfterBlock:self.chain.lastTerminalBlock withTransactions:transactions withTimeout:timeout completion:completion];
+    [self mineBlockAfterBlock:self.chain.lastTerminalBlock withTransactions:transactions previousBlocks:self.chain.terminalBlocks withTimeout:timeout completion:completion];
 }
 
-- (void)mineBlockAfterBlock:(DSBlock*)block withTransactions:(NSArray<DSTransaction*>*)transactions withTimeout:(NSTimeInterval)timeout completion:(nonnull BlockMiningCompletionBlock)completion {
+- (void)mineBlockAfterBlock:(DSBlock*)block withTransactions:(NSArray<DSTransaction*>*)transactions previousBlocks:(NSDictionary<NSValue*,DSBlock*>*)previousBlocks withTimeout:(NSTimeInterval)timeout completion:(nonnull BlockMiningCompletionBlock)completion {
     DSCoinbaseTransaction * coinbaseTransaction = [[DSCoinbaseTransaction alloc] initWithCoinbaseMessage:@"From iOS" atHeight:block.height + 1 onChain:block.chain];
-    ;
-    DSFullBlock * fullblock = [[DSFullBlock alloc] initWithCoinbaseTransaction:coinbaseTransaction transactions:[NSSet set] previousBlocks:self.chain.terminalBlocks timestamp:[[NSDate date] timeIntervalSince1970] height:block.height + 1 onChain:self.chain];
+    DSFullBlock * fullblock = [[DSFullBlock alloc] initWithCoinbaseTransaction:coinbaseTransaction transactions:[NSSet set] previousBlockHash:block.blockHash previousBlocks:previousBlocks timestamp:[[NSDate date] timeIntervalSince1970] height:block.height + 1 onChain:self.chain];
     uint32_t attempts = 0;
     NSDate * startTime = [NSDate date];
     if ([fullblock mineBlockAfterBlock:block withTimeout:timeout rAttempts:&attempts]) {

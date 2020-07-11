@@ -48,15 +48,20 @@
             XCTAssertTrue(self.chain.lastTerminalBlockHeight == 3);
         }];
     }];
-    // This is an example of a functional test case.
-    // Use XCTAssert and related functions to verify your tests produce the correct results.
 }
 
-- (void)testPerformanceExample {
-    // This is an example of a performance test case.
-    [self measureBlock:^{
-        // Put the code you want to measure the time of here.
+
+- (void)testMining100Blocks {
+    
+    [self.chain.chainManager mineEmptyBlocks:100 withTimeout:100000 completion:^(NSArray<DSFullBlock *> * _Nonnull blocks, NSArray<NSNumber *> * _Nonnull attempts, NSTimeInterval timeUsed, NSError * _Nullable error) {
+        uint32_t initialHeight = self.chain.lastTerminalBlockHeight;
+        for (DSBlock * block in blocks) {
+            BOOL success = [self.chain addBlock:block fromPeer:nil];
+            XCTAssertTrue(success);
+        }
+        XCTAssertTrue(self.chain.lastTerminalBlockHeight - initialHeight == 100);
     }];
 }
+
 
 @end

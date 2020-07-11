@@ -180,6 +180,7 @@
     // nTargetTimespan is the time that the CountBlocks should have taken to be generated.
     uint32_t nTargetTimespan = (blockCount - 1)* (60 * 2.5);
     
+    DSDLog(@"Originial dark target for block %d is %@", self.height, uint256_hex(darkTarget));
     // Limit the re-adjustment to 3x or 0.33x
     // We don't want to increase/decrease diff too much.
     if (nActualTimespan < nTargetTimespan/3.0f)

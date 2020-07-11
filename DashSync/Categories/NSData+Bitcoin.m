@@ -951,7 +951,7 @@ UInt256 uInt256Divide (UInt256 a,UInt256 b)
     return r;
 }
 
-UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
+UInt256 uInt256MultiplyUInt32 (UInt256 a, uint32_t b)
 {
     uint64_t carry = 0;
     for (int i = 0; i < 8; i++) {
