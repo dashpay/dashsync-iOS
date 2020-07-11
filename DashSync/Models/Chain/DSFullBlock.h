@@ -15,11 +15,19 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DSBlock.h"
+#import "DSTransaction.h"
+#import "DSCoinbaseTransaction.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSFullBlock : DSBlock
+
+-(instancetype)initWithCoinbaseTransaction:(DSCoinbaseTransaction*)coinbaseTransaction transactions:(NSSet<DSTransaction*>*)transactions previousBlocks:(NSDictionary*)previousBlocks timestamp:(uint32_t)timestamp height:(uint32_t)height onChain:(DSChain *)chain;
+
+-(BOOL)mineBlockAfterBlock:(DSBlock*)block withTimeout:(NSTimeInterval)timeout rAttempts:(uint32_t*)rAttempts;
+
+-(void)setTargetWithPreviousBlocks:(NSDictionary*)previousBlocks;
 
 @end
 

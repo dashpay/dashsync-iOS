@@ -61,15 +61,9 @@ typedef union _UInt256 UInt256;
 
 @property (nonatomic, readonly, getter = toData) NSData *data;
 
-// message can be either a merkleblock or header message
-+ (instancetype)merkleBlockWithMessage:(NSData *)message onChain:(DSChain*)chain;
+- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp height:(uint32_t)height onChain:(DSChain*)chain;
 
-- (instancetype)initWithMessage:(NSData *)message onChain:(DSChain*)chain;
-- (instancetype)initWithBlockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp height:(uint32_t)height onChain:(DSChain*)chain;
-
-- (instancetype)initWithBlockHash:(UInt256)blockHash onChain:(DSChain*)chain version:(uint32_t)version prevBlock:(UInt256)prevBlock
-merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
-totalTransactions:(uint32_t)totalTransactions hashes:(NSData * _Nullable)hashes flags:(NSData * _Nullable)flags height:(uint32_t)height chainLock:(DSChainLock* _Nullable)chainLock;
+- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp merkleRoot:(UInt256)merkleRoot target:(uint32_t)target height:(uint32_t)height onChain:(DSChain*)chain;
 
 - (instancetype)initWithCheckpoint:(DSCheckpoint*)checkpoint onChain:(DSChain*)chain;
 
@@ -77,9 +71,9 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData * _Nullable)hashes 
 - (BOOL)containsTxHash:(UInt256)txHash;
 
 // Verifies the block difficulty target is correct for the block's position in the chain.
-- (BOOL)verifyDifficultyWithPreviousBlocks:(NSMutableDictionary *)previousBlocks;
+- (BOOL)verifyDifficultyWithPreviousBlocks:(NSDictionary *)previousBlocks;
 
-- (int32_t)darkGravityWaveTargetWithPreviousBlocks:(NSMutableDictionary *)previousBlocks;
+- (int32_t)darkGravityWaveTargetWithPreviousBlocks:(NSDictionary *)previousBlocks;
 
 - (void)setChainLockedWithChainLock:(DSChainLock*)chainLock;
 

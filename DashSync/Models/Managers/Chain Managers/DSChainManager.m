@@ -43,6 +43,7 @@
 #import "DSChainEntity+CoreDataClass.h"
 #import "RHIntervalTree.h"
 #import "DSWallet+Protected.h"
+#import "DSFullBlock.h"
 
 #define SYNC_STARTHEIGHT_KEY @"SYNC_STARTHEIGHT"
 
@@ -300,14 +301,46 @@
 
 // MARK: - Mining
 
-- (void)mineBlockWithTransactions:(NSArray<DSTransaction*>*)transactions withTimeout:(NSTimeInterval)timeout completion:^(BOOL success) {
-    [self disconnectedRescan];
-} {
-    [self mineBlockAfterBlock:self.last withTransactions:<#(NSArray<DSTransaction *> *)#> withTimeout:<#(NSTimeInterval)#>]
+- (void)mineEmptyBlocks:(uint32_t)blockCount withTimeout:(NSTimeInterval)timeout completion:(MultipleBlockMiningCompletionBlock)completion {
+    [self mineEmptyBlocks:blockCount afterBlock:self.chain.lastTerminalBlock withTimeout:timeout completion:completion];
 }
 
-- (void)mineBlockAfterBlock:(DSMerkleBlock*)block withTransactions:(NSArray<DSTransaction*>*)transactions withTimeout:(NSTimeInterval)timeout {
+- (void)mineEmptyBlocks:(uint32_t)blockCount afterBlock:(DSBlock*)block withTimeout:(NSTimeInterval)timeout completion:(MultipleBlockMiningCompletionBlock)completion {
+    NSTimeInterval end = [[[NSDate alloc] initWithTimeIntervalSinceNow:timeout] timeIntervalSince1970];
+    NSMutableArray * blocksArray = [NSMutableArray array];
+    NSMutableArray * attemptsArray = [NSMutableArray array];
+    while ([[NSDate date] timeIntervalSince1970] < end) {
+        dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+        [self mineBlockAfterBlock:block withTransactions:[NSArray array] withTimeout:timeout completion:^(DSFullBlock * _Nullable block, NSUInteger attempts, NSTimeInterval timeUsed, NSError * _Nullable error) {
+            dispatch_semaphore_signal(sem);
+            [blocksArray addObject:block];
+            [attemptsArray addObject:@(attempts)];
+        }];
+        dispatch_semaphore_wait(sem, dispatch_time(DISPATCH_TIME_NOW, 300 * NSEC_PER_SEC));
+    }
     
+}
+
+- (void)mineBlockWithTransactions:(NSArray<DSTransaction*>*)transactions withTimeout:(NSTimeInterval)timeout completion:(BlockMiningCompletionBlock)completion {
+    [self mineBlockAfterBlock:self.chain.lastTerminalBlock withTransactions:transactions withTimeout:timeout completion:completion];
+}
+
+- (void)mineBlockAfterBlock:(DSBlock*)block withTransactions:(NSArray<DSTransaction*>*)transactions withTimeout:(NSTimeInterval)timeout completion:(nonnull BlockMiningCompletionBlock)completion {
+    DSCoinbaseTransaction * coinbaseTransaction = [[DSCoinbaseTransaction alloc] initWithCoinbaseMessage:@"From iOS" atHeight:block.height + 1 onChain:block.chain];
+    ;
+    DSFullBlock * fullblock = [[DSFullBlock alloc] initWithCoinbaseTransaction:coinbaseTransaction transactions:[NSSet set] previousBlocks:self.chain.terminalBlocks timestamp:[[NSDate date] timeIntervalSince1970] height:block.height + 1 onChain:self.chain];
+    uint32_t attempts = 0;
+    NSDate * startTime = [NSDate date];
+    if ([fullblock mineBlockAfterBlock:block withTimeout:timeout rAttempts:&attempts]) {
+        if (completion) {
+            completion(fullblock, attempts, -[startTime timeIntervalSinceNow],nil);
+        }
+    } else {
+        if (completion) {
+            NSError * error = [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"A block could not be mined in the selected time interval.", nil)}];
+            completion(nil, attempts, -[startTime timeIntervalSinceNow],error);
+        }
+    }
 }
 
 // MARK: - Blockchain Sync
@@ -541,7 +574,7 @@
     [self.peerManager peerMisbehaving:peer errorMessage:@"Bad block received from peer"];
 }
 
--(void)chain:(DSChain*)chain receivedOrphanBlock:(DSMerkleBlock*)block fromPeer:(DSPeer*)peer {
+-(void)chain:(DSChain*)chain receivedOrphanBlock:(DSBlock*)block fromPeer:(DSPeer*)peer {
     // ignore orphans older than one week ago
     if (block.timestamp < [NSDate timeIntervalSince1970] - WEEK_TIME_INTERVAL) return;
     
@@ -552,7 +585,7 @@
     }
 }
 
--(void)chain:(DSChain*)chain wasExtendedWithBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer {
+-(void)chain:(DSChain*)chain wasExtendedWithBlock:(DSBlock*)merkleBlock fromPeer:(DSPeer*)peer {
     if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList)) {
         // make sure we care about masternode lists
         [self.masternodeManager getCurrentMasternodeListWithSafetyDelay:3];

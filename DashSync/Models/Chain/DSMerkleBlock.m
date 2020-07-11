@@ -35,7 +35,6 @@
 #import "NSDate+Utils.h"
 #import "DSChainLock.h"
 
-#define MAX_TIME_DRIFT    (2*60*60)     // the furthest in the future a block is allowed to be timestamped
 #define LOG_MERKLE_BLOCKS 0
 #define LOG_MERKLE_BLOCKS_FULL (LOG_MERKLE_BLOCKS && 1)
 
@@ -153,9 +152,9 @@ inline static int ceil_log2(int x)
     return self;
 }
 
-- (instancetype)initWithBlockHash:(UInt256)blockHash onChain:(DSChain*)chain version:(uint32_t)version prevBlock:(UInt256)prevBlock
+- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash prevBlock:(UInt256)prevBlock
                        merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
-                totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags height:(uint32_t)height chainLock:(DSChainLock*)chainLock
+                totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags height:(uint32_t)height chainLock:(DSChainLock*)chainLock onChain:(DSChain*)chain
 {
     if (! (self = [self initWithBlockHash:blockHash merkleRoot:merkleRoot totalTransactions:totalTransactions hashes:hashes flags:flags])) return nil;
     
@@ -171,6 +170,48 @@ inline static int ceil_log2(int x)
     
     return self;
 }
+
+- (NSData *)toData
+{
+    NSMutableData *d = [[super toData] mutableCopy];
+    
+    if (self.totalTransactions > 0) {
+        [d appendUInt32:self.totalTransactions];
+        [d appendVarInt:self.hashes.length/sizeof(UInt256)];
+        [d appendData:self.hashes];
+        [d appendVarInt:_flags.length];
+        [d appendData:_flags];
+    }
+    
+    return d;
+}
+
+// true if the given tx hash is included in the block
+- (BOOL)containsTxHash:(UInt256)txHash
+{
+    for (NSUInteger i = 0; i < self.hashes.length/sizeof(UInt256); i += sizeof(UInt256)) {
+        DSDLog(@"transaction Hash %@",[NSData dataWithUInt256:[self.hashes UInt256AtOffset:i]].hexString);
+        DSDLog(@"looking for %@",[NSData dataWithUInt256:txHash].hexString);
+        if (uint256_eq(txHash, [self.hashes UInt256AtOffset:i])) return YES;
+    }
+    
+    return NO;
+}
+
+// returns an array of the matched tx hashes
+- (NSArray *)txHashes
+{
+    int hashIdx = 0, flagIdx = 0;
+    NSArray *txHashes =
+    [self _walk:&hashIdx :&flagIdx :0 :^id (id hash, BOOL flag) {
+        return (flag && hash) ? @[hash] : @[];
+    } :^id (id left, id right) {
+        return [left arrayByAddingObjectsFromArray:right];
+    }];
+    
+    return txHashes;
+}
+
 
 -(BOOL)isMerkleTreeValid {
     NSMutableData *d = [NSMutableData data];
@@ -217,6 +258,26 @@ inline static int ceil_log2(int x)
     id right = [self _walk:hashIdx :flagIdx :depth + 1 :leaf :branch];
     
     return branch(left, right);
+}
+
+-(id)copyWithZone:(NSZone *)zone {
+    DSMerkleBlock * copy = [[[self class] alloc] init];
+    copy.blockHash = self.blockHash;
+    copy.height = self.height;
+    copy.version = self.version;
+    copy.prevBlock = self.prevBlock;
+    copy.merkleRoot = self.merkleRoot;
+    copy.timestamp = self.timestamp;
+    copy.target = self.target;
+    copy.nonce = self.nonce;
+    copy.totalTransactions = self.totalTransactions;
+    copy.hashes = [self.hashes copyWithZone:zone];
+    copy.txHashes = [self.txHashes copyWithZone:zone];
+    copy.flags = [self.flags copyWithZone:zone];
+    copy.valid = self.valid;
+    copy.merkleTreeValid = self.isMerkleTreeValid;
+    copy.data = [self.data copyWithZone:zone];
+    return copy;
 }
 
 

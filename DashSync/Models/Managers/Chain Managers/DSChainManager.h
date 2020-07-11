@@ -40,9 +40,10 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo) {
 
 FOUNDATION_EXPORT NSString* const DSChainManagerNotificationChainKey;
 
-@class DSGovernanceSyncManager, DSMasternodeManager, DSSporkManager, DSPeerManager, DSGovernanceVote, DSDAPIClient, DSTransactionManager, DSIdentitiesManager, DSBloomFilter;
+@class DSGovernanceSyncManager, DSMasternodeManager, DSSporkManager, DSPeerManager, DSGovernanceVote, DSDAPIClient, DSTransactionManager, DSIdentitiesManager, DSBloomFilter, DSBlock, DSFullBlock;
 
-typedef void (^MiningCompletionBlock)(DSMerkleBlock * block, NSUInteger attempts, NSTimeInterval timeUsed, NSError * error);
+typedef void (^BlockMiningCompletionBlock)(DSFullBlock * _Nullable block, NSUInteger attempts, NSTimeInterval timeUsed, NSError * _Nullable error);
+typedef void (^MultipleBlockMiningCompletionBlock)(NSArray<DSFullBlock *>* block, NSArray<NSNumber *>* attempts, NSTimeInterval timeUsed, NSError * _Nullable error);
 
 @interface DSChainManager : NSObject <DSChainDelegate,DSPeerChainDelegate>
 
@@ -68,7 +69,15 @@ typedef void (^MiningCompletionBlock)(DSMerkleBlock * block, NSUInteger attempts
 
 - (void)rescanMasternodeListsAndQuorums;
 
-- (void)mineBlockWithTimeout:(NSTimeInterval)timeout;
+// MARK: - Mining
+
+- (void)mineEmptyBlocks:(uint32_t)blockCount withTimeout:(NSTimeInterval)timeout completion:(MultipleBlockMiningCompletionBlock)completion;
+
+- (void)mineEmptyBlocks:(uint32_t)blockCount afterBlock:(DSBlock*)block withTimeout:(NSTimeInterval)timeout completion:(MultipleBlockMiningCompletionBlock)completion;
+
+- (void)mineBlockWithTransactions:(NSArray<DSTransaction*>* _Nullable)transactions withTimeout:(NSTimeInterval)timeout completion:(BlockMiningCompletionBlock)completion;
+
+- (void)mineBlockAfterBlock:(DSBlock*)block withTransactions:(NSArray<DSTransaction*>* _Nullable)transactions withTimeout:(NSTimeInterval)timeout completion:(BlockMiningCompletionBlock)completion;
 
 @end
 

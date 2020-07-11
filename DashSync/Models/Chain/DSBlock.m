@@ -23,23 +23,35 @@
 #import "NSDate+Utils.h"
 #import "DSChainLock.h"
 
+#define MAX_TIME_DRIFT    (2*60*60)     // the furthest in the future a block is allowed to be timestamped
+
 @implementation DSBlock
 
-- (instancetype)initWithBlockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp height:(uint32_t)height onChain:(DSChain*)chain {
+- (instancetype)initWithVersion:(uint32_t)version timestamp:(uint32_t)timestamp height:(uint32_t)height onChain:(DSChain*)chain {
     if (! (self = [self init])) return nil;
-    _blockHash = blockHash;
     _height = height;
+    _version = version;
     _timestamp = timestamp;
     self.chain = chain;
     
     return self;
 }
 
+- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp height:(uint32_t)height onChain:(DSChain*)chain {
+    if (! (self = [self initWithVersion:version timestamp:timestamp height:height onChain:chain])) return nil;
+    _blockHash = blockHash;
+    return self;
+}
+
+- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp merkleRoot:(UInt256)merkleRoot target:(uint32_t)target height:(uint32_t)height onChain:(DSChain*)chain {
+    if (! (self = [self initWithVersion:version blockHash:blockHash timestamp:timestamp height:height onChain:chain])) return nil;
+    _merkleRoot = merkleRoot;
+    _target = target;
+    return self;
+}
+
 - (instancetype)initWithCheckpoint:(DSCheckpoint*)checkpoint onChain:(DSChain*)chain {
-    if (! (self = [self initWithBlockHash:checkpoint.checkpointHash onChain:chain version:1 prevBlock:UINT256_ZERO
-    merkleRoot:checkpoint.merkleRoot timestamp:checkpoint.timestamp
-        target:checkpoint.target nonce:0 totalTransactions:0 hashes:nil flags:nil
-        height:checkpoint.height chainLock:nil])) return nil;
+    if (! (self = [self initWithVersion:2 blockHash:checkpoint.checkpointHash timestamp:checkpoint.timestamp merkleRoot:checkpoint.merkleRoot target:checkpoint.target height:checkpoint.height onChain:chain])) return nil;
     return self;
 }
 
@@ -76,51 +88,16 @@
     NSMutableData *d = [NSMutableData data];
     
     [d appendUInt32:_version];
-    [d appendBytes:&_prevBlock length:sizeof(_prevBlock)];
-    [d appendBytes:&_merkleRoot length:sizeof(_merkleRoot)];
+    [d appendUInt256:_prevBlock];
+    [d appendUInt256:_merkleRoot];
     [d appendUInt32:_timestamp];
     [d appendUInt32:_target];
     [d appendUInt32:_nonce];
     
-    if (_totalTransactions > 0) {
-        [d appendUInt32:_totalTransactions];
-        [d appendVarInt:_hashes.length/sizeof(UInt256)];
-        [d appendData:_hashes];
-        [d appendVarInt:_flags.length];
-        [d appendData:_flags];
-    }
-    
     return d;
 }
 
-// true if the given tx hash is included in the block
-- (BOOL)containsTxHash:(UInt256)txHash
-{
-    for (NSUInteger i = 0; i < _hashes.length/sizeof(UInt256); i += sizeof(UInt256)) {
-        DSDLog(@"transaction Hash %@",[NSData dataWithUInt256:[_hashes UInt256AtOffset:i]].hexString);
-        DSDLog(@"looking for %@",[NSData dataWithUInt256:txHash].hexString);
-        if (uint256_eq(txHash, [_hashes UInt256AtOffset:i])) return YES;
-    }
-    
-    return NO;
-}
-
-// returns an array of the matched tx hashes
-- (NSArray *)txHashes
-{
-    int hashIdx = 0, flagIdx = 0;
-    NSArray *txHashes =
-    [self _walk:&hashIdx :&flagIdx :0 :^id (id hash, BOOL flag) {
-        return (flag && hash) ? @[hash] : @[];
-    } :^id (id left, id right) {
-        return [left arrayByAddingObjectsFromArray:right];
-    }];
-    
-    return txHashes;
-}
-
-
-- (BOOL)verifyDifficultyWithPreviousBlocks:(NSMutableDictionary *)previousBlocks
+- (BOOL)verifyDifficultyWithPreviousBlocks:(NSDictionary *)previousBlocks
 {
     uint32_t darkGravityWaveTarget = [self darkGravityWaveTargetWithPreviousBlocks:previousBlocks];
     int32_t diff = self.target - darkGravityWaveTarget;
@@ -130,9 +107,9 @@
     return (abs(diff) < 2); //the core client is less precise with a rounding error that can sometimes cause a problem. We are very rarely 1 off
 }
 
--(int32_t)darkGravityWaveTargetWithPreviousBlocks:(NSMutableDictionary *)previousBlocks {
+-(int32_t)darkGravityWaveTargetWithPreviousBlocks:(NSDictionary *)previousBlocks {
     /* current difficulty formula, darkcoin - based on DarkGravity v3, original work done by evan duffield, modified for iOS */
-    DSMerkleBlock *previousBlock = previousBlocks[uint256_obj(self.prevBlock)];
+    DSBlock *previousBlock = previousBlocks[uint256_obj(self.prevBlock)];
     
     int32_t nActualTimespan = 0;
     int64_t lastBlockTime = 0;
@@ -163,7 +140,7 @@
         }
     }
     
-    DSMerkleBlock *currentBlock = previousBlock;
+    DSBlock *currentBlock = previousBlock;
     // loop over the past n blocks, where n == PastBlocksMax
     for (blockCount = 1; currentBlock && currentBlock.height > 0 && blockCount<=DGW_PAST_BLOCKS_MAX; blockCount++) {
         
@@ -224,6 +201,11 @@
     return compact;
 }
 
+- (BOOL)containsTxHash:(UInt256)txHash {
+    NSAssert(NO, @"This should be overridden");
+    return NO;
+}
+
 // v14
 
 -(void)setChainLockedWithChainLock:(DSChainLock*)chainLock {
@@ -252,7 +234,7 @@
 
 - (BOOL)isEqual:(id)obj
 {
-    return self == obj || ([obj isKindOfClass:[DSMerkleBlock class]] && uint256_eq([obj blockHash], _blockHash));
+    return self == obj || ([obj isMemberOfClass:[self class]] && uint256_eq([obj blockHash], _blockHash));
 }
 
 -(NSString*)description {
@@ -260,7 +242,7 @@
 }
 
 -(id)copyWithZone:(NSZone *)zone {
-    DSMerkleBlock * copy = [[[self class] alloc] init];
+    DSBlock * copy = [[[self class] alloc] init];
     copy.blockHash = self.blockHash;
     copy.height = self.height;
     copy.version = self.version;
@@ -270,9 +252,7 @@
     copy.target = self.target;
     copy.nonce = self.nonce;
     copy.totalTransactions = self.totalTransactions;
-    copy.hashes = [self.hashes copyWithZone:zone];
     copy.txHashes = [self.txHashes copyWithZone:zone];
-    copy.flags = [self.flags copyWithZone:zone];
     copy.valid = self.valid;
     copy.merkleTreeValid = self.isMerkleTreeValid;
     copy.data = [self.data copyWithZone:zone];

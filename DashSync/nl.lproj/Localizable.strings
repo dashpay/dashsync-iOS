@@ -364,3 +364,6 @@
 
 /* No comment provided by engineer. */
 "The Dashpay contract is not properly set up" = "The Dashpay contract is not properly set up";
+
+/* No comment provided by engineer. */
+"A block could not be mined in the selected time interval." = "A block could not be mined in the selected time interval.";

@@ -1019,7 +1019,7 @@
         DSMerkleBlockEntity * merkleBlockEntity = [DSMerkleBlockEntity anyObjectInContext:context matching:@"blockHash == %@",uint256_data(masternodeList.blockHash)];
         if (!merkleBlockEntity && ([chain checkpointForBlockHash:masternodeList.blockHash])) {
             DSCheckpoint * checkpoint = [chain checkpointForBlockHash:masternodeList.blockHash];
-            merkleBlockEntity = [[DSMerkleBlockEntity managedObjectInContext:context] setAttributesFromBlock:[checkpoint merkleBlockForChain:chain] forChainEntity:chainEntity];
+            merkleBlockEntity = [[DSMerkleBlockEntity managedObjectInContext:context] setAttributesFromBlock:[checkpoint blockForChain:chain] forChainEntity:chainEntity];
         }
         NSAssert(!merkleBlockEntity || !merkleBlockEntity.masternodeList, @"Merkle block should not have a masternode list already");
         NSError * error = nil;

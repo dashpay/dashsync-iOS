@@ -176,6 +176,7 @@
 		FB83C2E021B7B6D70057A0EF /* Actions.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB83C2DF21B7B6D70057A0EF /* Actions.storyboard */; };
 		FB83C2E421B7B7560057A0EF /* DSActionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB83C2E321B7B7560057A0EF /* DSActionsViewController.m */; };
 		FB83C2E721B91A8D0057A0EF /* DSTransactionFloodingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB83C2E621B91A8D0057A0EF /* DSTransactionFloodingViewController.m */; };
+		FB87A0CE24B7C28700C22DF7 /* DSMiningTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FB87A0CD24B7C28600C22DF7 /* DSMiningTests.m */; };
 		FB89F2D722CC875800CD0232 /* MNL_0_1094976.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB89F2D622CC875800CD0232 /* MNL_0_1094976.dat */; };
 		FB89F2D922CD82EB00CD0232 /* MNL_0_1095720.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB89F2D822CD82EB00CD0232 /* MNL_0_1095720.dat */; };
 		FB90D2B420BD2BDD002B7956 /* DSSporksViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2B320BD2BDD002B7956 /* DSSporksViewController.m */; };
@@ -547,6 +548,7 @@
 		FB83C2E321B7B7560057A0EF /* DSActionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSActionsViewController.m; sourceTree = "<group>"; };
 		FB83C2E521B91A8D0057A0EF /* DSTransactionFloodingViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTransactionFloodingViewController.h; sourceTree = "<group>"; };
 		FB83C2E621B91A8D0057A0EF /* DSTransactionFloodingViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTransactionFloodingViewController.m; sourceTree = "<group>"; };
+		FB87A0CD24B7C28600C22DF7 /* DSMiningTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMiningTests.m; sourceTree = "<group>"; };
 		FB89F2D622CC875800CD0232 /* MNL_0_1094976.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_0_1094976.dat; sourceTree = "<group>"; };
 		FB89F2D822CD82EB00CD0232 /* MNL_0_1095720.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_0_1095720.dat; sourceTree = "<group>"; };
 		FB90D2B220BD2BDD002B7956 /* DSSporksViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSporksViewController.h; sourceTree = "<group>"; };
@@ -949,6 +951,7 @@
 				FBC9248C2414EF0600005D0D /* DSAttackTests.m */,
 				FBE07DD024673AC200A1079C /* DSSyncTests.m */,
 				FBE07DD22467440200A1079C /* DSChainedSigningTests.m */,
+				FB87A0CD24B7C28600C22DF7 /* DSMiningTests.m */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -1861,6 +1864,7 @@
 				2AA2C5EB20E37B74007768B1 /* DSGovernanceTests.m in Sources */,
 				FB1B98D123D6A3BD00D50F69 /* DSTransitionTests.m in Sources */,
 				FB3ADDE6238E62CD00C31D23 /* DSChainLockTests.m in Sources */,
+				FB87A0CE24B7C28700C22DF7 /* DSMiningTests.m in Sources */,
 				FBDB9B7E20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m in Sources */,
 				FBF31B7122328AA900393301 /* DSProviderTransactionsTests.m in Sources */,
 				FBBDF423226B6E770081D673 /* DSBigNumberTests.m in Sources */,

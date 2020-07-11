@@ -62,7 +62,7 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
     DSChainSyncPhase_Synced,
 };
 
-@class DSChain, DSChainEntity, DSChainManager, DSWallet, DSMerkleBlock, DSPeer, DSDerivationPath, DSTransaction, DSAccount, DSSimplifiedMasternodeEntry, DSBlockchainIdentity, DSBloomFilter, DSProviderRegistrationTransaction, DSMasternodeList;
+@class DSChain, DSChainEntity, DSChainManager, DSWallet, DSMerkleBlock, DSBlock, DSPeer, DSDerivationPath, DSTransaction, DSAccount, DSSimplifiedMasternodeEntry, DSBlockchainIdentity, DSBloomFilter, DSProviderRegistrationTransaction, DSMasternodeList;
 
 @protocol DSChainDelegate;
 
@@ -76,7 +76,7 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
 @property (nonatomic, strong) NSString * masternodeListName;
 @property (nonatomic, assign) UInt256 merkleRoot;
 
-- (DSMerkleBlock*)merkleBlockForChain:(DSChain*)chain;
+- (DSBlock*)blockForChain:(DSChain*)chain;
 
 @end
 
@@ -266,19 +266,19 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
 // MARK: - Blocks and Headers
 
 /*! @brief The last known chain sync block on the chain.  */
-@property (nonatomic, readonly, nullable) DSMerkleBlock * lastSyncBlock;
+@property (nonatomic, readonly, nullable) DSBlock * lastSyncBlock;
 
 /*! @brief The last known terminal block on the chain.  */
-@property (nonatomic, readonly, nullable) DSMerkleBlock * lastTerminalBlock;
+@property (nonatomic, readonly, nullable) DSBlock * lastTerminalBlock;
 
 /*! @brief The last known block on the chain before the given timestamp.  */
-- (DSMerkleBlock *)lastChainSyncBlockOnOrBeforeTimestamp:(NSTimeInterval)timestamp;
+- (DSBlock *)lastChainSyncBlockOnOrBeforeTimestamp:(NSTimeInterval)timestamp;
 
 /*! @brief The last known block or header on the chain before the given timestamp.  */
-- (DSMerkleBlock *)lastBlockOnOrBeforeTimestamp:(NSTimeInterval)timestamp;
+- (DSBlock *)lastBlockOnOrBeforeTimestamp:(NSTimeInterval)timestamp;
 
 /*! @brief The last known orphan on the chain. An orphan is a block who's parent is currently not known.  */
-@property (nonatomic, readonly, nullable) DSMerkleBlock * lastOrphan;
+@property (nonatomic, readonly, nullable) DSBlock * lastOrphan;
 
 /*! @brief A dictionary of the the most recent known blocks keyed by block hash.  */
 @property (nonatomic, readonly) NSDictionary <NSValue*,DSMerkleBlock*> *recentBlocks;
@@ -472,8 +472,8 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
 -(void)chainFinishedSyncingTransactionsAndBlocks:(DSChain*)chain fromPeer:(DSPeer* _Nullable)peer onMainChain:(BOOL)onMainChain;
 -(void)chainFinishedSyncingInitialHeaders:(DSChain*)chain fromPeer:(DSPeer* _Nullable)peer onMainChain:(BOOL)onMainChain;
 -(void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain*)chain;
--(void)chain:(DSChain*)chain receivedOrphanBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer;
--(void)chain:(DSChain*)chain wasExtendedWithBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer;
+-(void)chain:(DSChain*)chain receivedOrphanBlock:(DSBlock*)merkleBlock fromPeer:(DSPeer*)peer;
+-(void)chain:(DSChain*)chain wasExtendedWithBlock:(DSBlock*)merkleBlock fromPeer:(DSPeer*)peer;
 -(void)chain:(DSChain*)chain badBlockReceivedFromPeer:(DSPeer*)peer;
 
 @end
