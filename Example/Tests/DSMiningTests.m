@@ -30,7 +30,7 @@
 @implementation DSMiningTests
 
 - (void)setUp {
-    self.chain = [DSChain setUpDevnetWithIdentifier:@"miningTest" withCheckpoints:nil withDefaultPort:3000 withDefaultDapiJRPCPort:3000 withDefaultDapiGRPCPort:3010 dpnsContractID:UINT256_ZERO dashpayContractID:UINT256_ZERO isTransient:YES];
+    self.chain = [DSChain setUpDevnetWithIdentifier:@"miningTest" withCheckpoints:nil withMinimumDifficultyBlocks:0 withDefaultPort:3000 withDefaultDapiJRPCPort:3000 withDefaultDapiGRPCPort:3010 dpnsContractID:UINT256_ZERO dashpayContractID:UINT256_ZERO isTransient:YES];
     // Put setup code here. This method is called before the invocation of each test method in the class.
 }
 

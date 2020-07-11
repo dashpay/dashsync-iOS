@@ -96,6 +96,8 @@
 #define DPNS_CONTRACT_ID  @"DPNS_CONTRACT_ID"
 #define DASHPAY_CONTRACT_ID  @"DASHPAY_CONTRACT_ID"
 
+#define MINIMUM_DIFFICULTY_BLOCKS_COUNT_KEY  @"MINIMUM_DIFFICULTY_BLOCKS_COUNT_KEY"
+
 #define SPORK_PUBLIC_KEY_LOCATION  @"SPORK_PUBLIC_KEY_LOCATION"
 #define SPORK_ADDRESS_LOCATION  @"SPORK_ADDRESS_LOCATION"
 #define SPORK_PRIVATE_KEY_LOCATION  @"SPORK_PRIVATE_KEY_LOCATION"
@@ -119,6 +121,7 @@
 @property (nonatomic, strong) NSString * devnetIdentifier;
 @property (nonatomic, strong) DSAccount * viewingAccount;
 @property (nonatomic, strong) NSMutableDictionary * estimatedBlockHeights;
+@property (nonatomic, assign) uint32_t cachedMinimumDifficultyBlocks;
 @property (nonatomic, assign) uint32_t bestEstimatedBlockHeight;
 //@property (nonatomic, assign) uint32_t headersMaxAmount;
 @property (nonatomic, assign) uint32_t cachedMinProtocolVersion;
@@ -227,7 +230,7 @@
     return self;
 }
 
--(instancetype)initAsDevnetWithIdentifier:(NSString*)identifier checkpoints:(NSArray<DSCheckpoint*>*)checkpoints port:(uint32_t)port dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID isTransient:(BOOL)isTransient
+-(instancetype)initAsDevnetWithIdentifier:(NSString*)identifier checkpoints:(NSArray<DSCheckpoint*>*)checkpoints minimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks port:(uint32_t)port dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID isTransient:(BOOL)isTransient
 {
     //for devnet the genesis checkpoint is really the second block
     if (! (self = [self initAsDevnetWithIdentifier:identifier checkpoints:checkpoints])) return nil;
@@ -236,6 +239,7 @@
     self.standardDapiGRPCPort = dapiGRPCPort;
     self.dpnsContractID = dpnsContractID;
     self.dashpayContractID = dashpayContractID;
+    self.minimumDifficultyBlocks = minimumDifficultyBlocks;
     self.transient = isTransient;
     return self;
 }
@@ -333,11 +337,8 @@ static dispatch_once_t devnetToken = 0;
     
     return devnetChain;
 }
-+(DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID {
-    return [self setUpDevnetWithIdentifier:identifier withCheckpoints:checkpointArray withDefaultPort:port withDefaultDapiJRPCPort:dapiJRPCPort withDefaultDapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID isTransient:NO];
-}
 
-+(DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID isTransient:(BOOL)isTransient {
++(DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID isTransient:(BOOL)isTransient {
     dispatch_once(&devnetToken, ^{
         _devnetDictionary = [NSMutableDictionary dictionary];
     });
@@ -345,7 +346,7 @@ static dispatch_once_t devnetToken = 0;
     __block BOOL inSetUp = FALSE;
     @synchronized(self) {
         if (![_devnetDictionary objectForKey:identifier]) {
-            devnetChain = [[DSChain alloc] initAsDevnetWithIdentifier:identifier checkpoints:checkpointArray port:port dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID isTransient:isTransient];
+            devnetChain = [[DSChain alloc] initAsDevnetWithIdentifier:identifier checkpoints:checkpointArray minimumDifficultyBlocks:minimumDifficultyBlocks port:port dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID isTransient:isTransient];
             [_devnetDictionary setObject:devnetChain forKey:identifier];
             inSetUp = TRUE;
         } else {
@@ -1128,6 +1129,47 @@ static dispatch_once_t devnetToken = 0;
                 setKeychainData(uint256_data(dashpayContractID), [NSString stringWithFormat:@"%@%@",self.devnetIdentifier,DASHPAY_CONTRACT_ID], NO);
             }
             break;
+        }
+        default:
+            break;
+    }
+}
+
+-(void)setMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return;
+        case DSChainType_TestNet:
+            return;
+        case DSChainType_DevNet:
+        {
+            _cachedMinimumDifficultyBlocks = minimumDifficultyBlocks;
+            setKeychainInt(minimumDifficultyBlocks, [NSString stringWithFormat:@"%@%@",self.devnetIdentifier,MINIMUM_DIFFICULTY_BLOCKS_COUNT_KEY], NO);
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+-(uint32_t)minimumDifficultyBlocks {
+    if (_cachedMinimumDifficultyBlocks) return _cachedMinimumDifficultyBlocks;
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            _cachedMinimumDifficultyBlocks = 0;
+            return 0;
+        case DSChainType_TestNet:
+            _cachedMinimumDifficultyBlocks = 0;
+            return 0;
+        case DSChainType_DevNet:
+        {
+            NSError * error = nil;
+            uint32_t cachedMinimumDifficultyBlocks = (uint32_t)getKeychainInt([NSString stringWithFormat:@"%@%@",self.devnetIdentifier,MINIMUM_DIFFICULTY_BLOCKS_COUNT_KEY], &error);
+            if (!error && cachedMinimumDifficultyBlocks) {
+                _cachedMinimumDifficultyBlocks = cachedMinimumDifficultyBlocks;
+                return _cachedMinimumDifficultyBlocks;
+            }
+            else return 0;
         }
         default:
             break;

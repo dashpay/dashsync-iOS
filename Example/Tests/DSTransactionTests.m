@@ -50,10 +50,6 @@
     [super setUp];
     // Put setup code here. This method is called before the invocation of each test method in the class.
     
-    __unused DSChain *devnetDRA = [DSChain setUpDevnetWithIdentifier:@"devnet-DRA" withCheckpoints:nil withDefaultPort:20001 withDefaultDapiJRPCPort:3000 withDefaultDapiGRPCPort:3010 dpnsContractID:UINT256_ZERO dashpayContractID:UINT256_ZERO];
-    
-    __unused DSChain *devnetMaithai = [DSChain setUpDevnetWithIdentifier:@"devnet-maithai" withCheckpoints:nil withDefaultPort:20001 withDefaultDapiJRPCPort:3000 withDefaultDapiGRPCPort:3010 dpnsContractID:UINT256_ZERO dashpayContractID:UINT256_ZERO];
-    
     // the chain to test on
     self.chain = [DSChain mainnet];
 }
