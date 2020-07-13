@@ -119,22 +119,22 @@
     if (uint256_is_zero(_prevBlock) || previousBlock.height == 0 || previousBlock.height < DGW_PAST_BLOCKS_MIN + (self.chain.isDevnetAny?1:0)) {
         // This is the first block or the height is < PastBlocksMin
         // Return minimal required work. (1e0ffff0)
-        return self.chain.maxProofOfWork;
+        return self.chain.maxProofOfWorkTarget;
     }
     
     if (self.chain.allowMinDifficultyBlocks) {
         // recent block is more than 2 hours old
         if (self.timestamp > (previousBlock.timestamp + 2 * 60 * 60)) {
-            return self.chain.maxProofOfWork;
+            return self.chain.maxProofOfWorkTarget;
         }
         // recent block is more than 10 minutes old
         if (self.timestamp > (previousBlock.timestamp + 2.5 * 60 * 4)) {
-            UInt256 previousTarget = setCompact(previousBlock.target);
+            UInt256 previousTarget = setCompactLE(previousBlock.target);
             
-            UInt256 newTarget = uInt256MultiplyUInt32(previousTarget, 10);
-            uint32_t compact = getCompact(newTarget);
-            if (compact > self.chain.maxProofOfWork){
-                compact = self.chain.maxProofOfWork;
+            UInt256 newTarget = uInt256MultiplyUInt32LE(previousTarget, 10);
+            uint32_t compact = getCompactLE(newTarget);
+            if (compact > self.chain.maxProofOfWorkTarget){
+                compact = self.chain.maxProofOfWorkTarget;
             }
             return compact;
         }
@@ -146,14 +146,16 @@
         
         // Calculate average difficulty based on the blocks we iterate over in this for loop
         if(blockCount <= DGW_PAST_BLOCKS_MIN) {
-            UInt256 currentTarget = setCompact(currentBlock.target);
+            UInt256 currentTarget = setCompactLE(currentBlock.target);
+            //DSDLog(@"currentTarget for block %d is %@", currentBlock.height, uint256_hex(currentTarget));
             //if (self.height == 1070917)
             //DSDLog(@"%d",currentTarget);
             if (blockCount == 1) {
-                sumTargets = uInt256Add(currentTarget,currentTarget);
+                sumTargets = uInt256AddLE(currentTarget,currentTarget);
             } else {
-                sumTargets = uInt256Add(sumTargets,currentTarget);
+                sumTargets = uInt256AddLE(sumTargets,currentTarget);
             }
+            //DSDLog(@"sumTarget for block %d is %@", currentBlock.height, uint256_hex(sumTargets));
         }
         
         // If this is the second iteration (LastBlockTime was set)
@@ -175,13 +177,14 @@
     }
     UInt256 blockCount256 = ((UInt256) { .u64 = { blockCount, 0, 0, 0 } });
     // darkTarget is the difficulty
-    UInt256 darkTarget = uInt256Divide(sumTargets,blockCount256);
+    //DSDLog(@"SumTargets for block %d is %@, blockCount is %@", self.height, uint256_hex(sumTargets), uint256_hex(blockCount256));
+    UInt256 darkTarget = uInt256DivideLE(sumTargets,blockCount256);
     
     // nTargetTimespan is the time that the CountBlocks should have taken to be generated.
     uint32_t nTargetTimespan = (blockCount - 1)* (60 * 2.5);
     
-    DSDLog(@"Originial dark target for block %d is %@", self.height, uint256_hex(darkTarget));
-    DSDLog(@"Max proof of work is %@", uint256_hex(setCompact(self.chain.maxProofOfWork)));
+    //DSDLog(@"Original dark target for block %d is %@", self.height, uint256_hex(darkTarget));
+    //DSDLog(@"Max proof of work is %@", uint256_hex(self.chain.maxProofOfWork));
     // Limit the re-adjustment to 3x or 0.33x
     // We don't want to increase/decrease diff too much.
     if (nActualTimespan < nTargetTimespan/3.0f)
@@ -189,18 +192,24 @@
     if (nActualTimespan > nTargetTimespan*3.0f)
         nActualTimespan = nTargetTimespan*3.0f;
     
-    // Calculate the new difficulty based on actual and target timespan.
-    darkTarget = uInt256Divide(uInt256MultiplyUInt32(darkTarget,nActualTimespan),((UInt256) { .u64 = { nTargetTimespan, 0, 0, 0 } }));
     
-    int32_t compact = getCompact(darkTarget);
+    darkTarget = uInt256MultiplyUInt32LE(darkTarget,nActualTimespan);
+    UInt256 nTargetTimespan256 = ((UInt256) { .u64 = { nTargetTimespan, 0, 0, 0 } });
+    
+    //DSDLog(@"Middle dark target for block %d is %@", self.height, uint256_hex(darkTarget));
+    //DSDLog(@"nTargetTimespan256 for block %d is %@", self.height, uint256_hex(nTargetTimespan256));
+    // Calculate the new difficulty based on actual and target timespan.
+    darkTarget = uInt256DivideLE(darkTarget,nTargetTimespan256);
+    
+    //DSDLog(@"Final dark target for block %d is %@", self.height, uint256_hex(darkTarget));
     
     // If calculated difficulty is lower than the minimal diff, set the new difficulty to be the minimal diff.
-    if (compact > self.chain.maxProofOfWork){
-        compact = self.chain.maxProofOfWork;
+    if (uint256_sup(darkTarget, self.chain.maxProofOfWork)) {
+        return self.chain.maxProofOfWorkTarget;
     }
     
     // Return the new diff.
-    return compact;
+    return getCompactLE(darkTarget);
 }
 
 - (BOOL)containsTxHash:(UInt256)txHash {

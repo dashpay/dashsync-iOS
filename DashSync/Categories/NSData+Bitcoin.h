@@ -94,17 +94,17 @@ NSArray *getKeychainArray(NSString *key, NSError **error);
 
 //Compact Size
 
-UInt256 setCompact(int32_t nCompact);
-uint8_t compactBits(UInt256 number);
-int32_t getCompact(UInt256 number);
-UInt256 uInt256Add(UInt256 a, UInt256 b);
-UInt256 uInt256AddOne(UInt256 a);
-UInt256 uInt256Neg(UInt256 a);
-UInt256 uInt256Subtract(UInt256 a, UInt256 b);
-UInt256 uInt256ShiftLeft(UInt256 a, uint8_t bits);
-UInt256 uInt256ShiftRight(UInt256 a, uint8_t bits);
-UInt256 uInt256Divide (UInt256 a,UInt256 b);
-UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b);
+UInt256 setCompactLE(int32_t nCompact);
+uint16_t compactBitsLE(UInt256 number);
+int32_t getCompactLE(UInt256 number);
+UInt256 uInt256AddLE(UInt256 a, UInt256 b);
+UInt256 uInt256AddOneLE(UInt256 a);
+UInt256 uInt256NegLE(UInt256 a);
+UInt256 uInt256SubtractLE(UInt256 a, UInt256 b);
+UInt256 uInt256ShiftLeftLE(UInt256 a, uint8_t bits);
+UInt256 uInt256ShiftRightLE(UInt256 a, uint8_t bits);
+UInt256 uInt256DivideLE (UInt256 a,UInt256 b);
+UInt256 uInt256MultiplyUInt32LE (UInt256 a,uint32_t b);
 
 //Serialization
 
@@ -213,7 +213,7 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 
 - (BOOL)bitIsTrueAtLeftToRightIndex:(uint32_t)index;
 
-- (BOOL)bitIsTrueAtIndex:(uint32_t)index;
+- (BOOL)bitIsTrueAtLEIndex:(uint32_t)index;
 
 @end
 

@@ -121,8 +121,11 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
 /*! @brief headersMaxAmount is the maximum amount of headers that is expected from peers.  */
 @property (nonatomic, assign) uint32_t headersMaxAmount;
 
-/*! @brief protocolVersion is the protocol version that we currently use for this chain.  */
-@property (nonatomic, readonly) uint32_t maxProofOfWork;
+/*! @brief maxProofOfWork is the lowest amount of work effort required to mine a block on the chain.  */
+@property (nonatomic, readonly) UInt256 maxProofOfWork;
+
+/*! @brief maxProofOfWorkTarget is the lowest amount of work effort required to mine a block on the chain. Here it is represented as the compact target.  */
+@property (nonatomic, readonly) uint32_t maxProofOfWorkTarget;
 
 /*! @brief allowMinDifficultyBlocks is set to TRUE on networks where mining is low enough that it can be attacked by increasing difficulty with ASICs and then no longer running ASICs. This is set to NO for Mainnet, and generally should be YES on all other networks.  */
 @property (nonatomic, readonly) BOOL allowMinDifficultyBlocks;

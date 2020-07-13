@@ -17,9 +17,12 @@
 
 #import <XCTest/XCTest.h>
 #import "DSChain+Protected.h"
-#import "NSData+Dash.h"
 #import "DSChainManager.h"
 #import "DSFullBlock.h"
+#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
+#import "NSString+Dash.h"
+#import "BigIntTypes.h"
 
 @interface DSMiningTests : XCTestCase
 
@@ -51,15 +54,15 @@
 }
 
 
-- (void)testMining100Blocks {
+- (void)testMining30Blocks {
     
-    [self.chain.chainManager mineEmptyBlocks:100 withTimeout:100000 completion:^(NSArray<DSFullBlock *> * _Nonnull blocks, NSArray<NSNumber *> * _Nonnull attempts, NSTimeInterval timeUsed, NSError * _Nullable error) {
+    [self.chain.chainManager mineEmptyBlocks:30 withTimeout:100000 completion:^(NSArray<DSFullBlock *> * _Nonnull blocks, NSArray<NSNumber *> * _Nonnull attempts, NSTimeInterval timeUsed, NSError * _Nullable error) {
         uint32_t initialHeight = self.chain.lastTerminalBlockHeight;
         for (DSBlock * block in blocks) {
             BOOL success = [self.chain addBlock:block fromPeer:nil];
             XCTAssertTrue(success);
         }
-        XCTAssertTrue(self.chain.lastTerminalBlockHeight - initialHeight == 100);
+        XCTAssertTrue(self.chain.lastTerminalBlockHeight - initialHeight == 30);
     }];
 }
 

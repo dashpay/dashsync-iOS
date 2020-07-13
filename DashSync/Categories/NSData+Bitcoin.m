@@ -824,22 +824,22 @@ BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerprint, uin
 }
 
 
-UInt256 setCompact(int32_t nCompact)
+UInt256 setCompactLE(int32_t nCompact)
 {
     int nSize = nCompact >> 24;
     UInt256 nWord = UINT256_ZERO;
     nWord.u32[0] = nCompact & 0x007fffff;
     if (nSize <= 3) {
-        nWord = uInt256ShiftRight(nWord, 8 * (3 - nSize));
+        nWord = uInt256ShiftRightLE(nWord, 8 * (3 - nSize));
     } else {
-        nWord = uInt256ShiftLeft(nWord, 8 * (nSize - 3));
+        nWord = uInt256ShiftLeftLE(nWord, 8 * (nSize - 3));
     }
     return nWord;
 }
 
-uint8_t compactBits(UInt256 number)
+uint16_t compactBitsLE(UInt256 number)
 {
-    for (int pos = 8 - 1; pos >= 0; pos--) {
+    for (int pos = 7; pos >= 0; pos--) {
         if (number.u32[pos]) {
             for (int bits = 31; bits > 0; bits--) {
                 if (number.u32[pos] & 1 << bits)
@@ -851,14 +851,14 @@ uint8_t compactBits(UInt256 number)
     return 0;
 }
 
-int32_t getCompact(UInt256 number)
+int32_t getCompactLE(UInt256 number)
 {
-    int nSize = (compactBits(number) + 7) / 8;
+    uint16_t nSize = (compactBitsLE(number) + 7) / 8;
     uint32_t nCompact = 0;
     if (nSize <= 3) {
         nCompact = number.u32[0] << 8 * (3 - nSize);
     } else {
-        UInt256 bn = uInt256ShiftRight(number, 8 * (nSize - 3));
+        UInt256 bn = uInt256ShiftRightLE(number, 8 * (nSize - 3));
         nCompact = bn.u32[0];
     }
     // The 0x00800000 bit denotes the sign.
@@ -873,7 +873,7 @@ int32_t getCompact(UInt256 number)
     return nCompact;
 }
 
-UInt256 uInt256Add(UInt256 a, UInt256 b) {
+UInt256 uInt256AddLE(UInt256 a, UInt256 b) {
     uint64_t carry = 0;
     UInt256 r = UINT256_ZERO;
     for (int i = 0; i < 8; i++) {
@@ -884,12 +884,12 @@ UInt256 uInt256Add(UInt256 a, UInt256 b) {
     return r;
 }
 
-UInt256 uInt256AddOne(UInt256 a) {
+UInt256 uInt256AddOneLE(UInt256 a) {
     UInt256 r = ((UInt256) { .u64 = { 1, 0, 0, 0 } });
-    return uInt256Add(a, r);
+    return uInt256AddLE(a, r);
 }
 
-UInt256 uInt256Neg(UInt256 a) {
+UInt256 uInt256NegLE(UInt256 a) {
     UInt256 r = UINT256_ZERO;
     for (int i = 0; i < 4; i++) {
         r.u64[i] = ~a.u64[i];
@@ -897,11 +897,11 @@ UInt256 uInt256Neg(UInt256 a) {
     return r;
 }
 
-UInt256 uInt256Subtract(UInt256 a, UInt256 b) {
-    return uInt256Add(a,uInt256AddOne(uInt256Neg(b)));
+UInt256 uInt256SubtractLE(UInt256 a, UInt256 b) {
+    return uInt256AddLE(a,uInt256AddOneLE(uInt256NegLE(b)));
 }
 
-UInt256 uInt256ShiftLeft(UInt256 a, uint8_t bits) {
+UInt256 uInt256ShiftLeftLE(UInt256 a, uint8_t bits) {
     UInt256 r = UINT256_ZERO;
     int k = bits / 64;
     bits = bits % 64;
@@ -914,7 +914,7 @@ UInt256 uInt256ShiftLeft(UInt256 a, uint8_t bits) {
     return r;
 }
 
-UInt256 uInt256ShiftRight(UInt256 a, uint8_t bits) {
+UInt256 uInt256ShiftRightLE(UInt256 a, uint8_t bits) {
     UInt256 r = UINT256_ZERO;
     int k = bits / 64;
     bits = bits % 64;
@@ -927,31 +927,31 @@ UInt256 uInt256ShiftRight(UInt256 a, uint8_t bits) {
     return r;
 }
 
-UInt256 uInt256Divide (UInt256 a,UInt256 b)
+UInt256 uInt256DivideLE (UInt256 a,UInt256 b)
 {
     UInt256 div = b;     // make a copy, so we can shift.
     UInt256 num = a;     // make a copy, so we can subtract.
     UInt256 r = UINT256_ZERO;                  // the quotient.
-    int num_bits = compactBits(num);
-    int div_bits = compactBits(div);
+    int16_t num_bits = compactBitsLE(num);
+    int16_t div_bits = compactBitsLE(div);
     assert (div_bits != 0);
     if (div_bits > num_bits) // the result is certainly 0.
         return r;
-    int shift = num_bits - div_bits;
-    div = uInt256ShiftLeft(div, shift); // shift so that div and nun align.
+    int16_t shift = num_bits - div_bits;
+    div = uInt256ShiftLeftLE(div, shift); // shift so that div and nun align.
     while (shift >= 0) {
         if (uint256_supeq(num,div)) {
-            num = uInt256Subtract(num,div);
+            num = uInt256SubtractLE(num,div);
             r.u32[shift / 32] |= (1 << (shift & 31)); // set a bit of the result.
         }
-        div = uInt256ShiftRight(div, 1); // shift back.
+        div = uInt256ShiftRightLE(div, 1); // shift back.
         shift--;
     }
     // num now contains the remainder of the division.
     return r;
 }
 
-UInt256 uInt256MultiplyUInt32 (UInt256 a, uint32_t b)
+UInt256 uInt256MultiplyUInt32LE (UInt256 a, uint32_t b)
 {
     uint64_t carry = 0;
     for (int i = 0; i < 8; i++) {
@@ -1447,7 +1447,7 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a, uint32_t b)
     return trueBitsCount;
 }
 
-- (BOOL)bitIsTrueAtIndex:(uint32_t)index {
+- (BOOL)bitIsTrueAtLEIndex:(uint32_t)index {
     uint32_t offset = index / 8;
     uint32_t bitPosition = index % 8;
     uint8_t bits = [self UInt8AtOffset:offset];

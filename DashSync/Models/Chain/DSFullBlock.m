@@ -56,7 +56,7 @@
     self.prevBlock = block.blockHash;
     NSMutableData * preNonceMutableData = [self preNonceMutableData];
     uint32_t i = 0;
-    UInt256 fullTarget = setCompact(block.target);
+    UInt256 fullTarget = setCompactLE(block.target);
     DSDLog(@"Trying to mine a block at height %d with target %@", block.height, uint256_bin(fullTarget));
     do {
         NSMutableData * d = [preNonceMutableData mutableCopy];

@@ -36,12 +36,12 @@
     
     uint64_t d = 1 << 30;
     UInt256 bigD = uint256_from_long(d);
-    UInt256 bigDLeftShifted = uInt256ShiftLeft(bigD, 34);
+    UInt256 bigDLeftShifted = uInt256ShiftLeftLE(bigD, 34);
     XCTAssert(uint256_eq(bigC, bigDLeftShifted),@"C and D should be equal");
     
     uint32_t e = 1 << 30;
     UInt256 bigE = uint256_from_int(e);
-    UInt256 bigELeftShifted = uInt256ShiftLeft(bigE, 34);
+    UInt256 bigELeftShifted = uInt256ShiftLeftLE(bigE, 34);
     XCTAssert(uint256_eq(bigELeftShifted, bigDLeftShifted),@"D and E should be equal");
 }
 

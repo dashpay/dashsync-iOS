@@ -126,6 +126,7 @@
 //@property (nonatomic, assign) uint32_t headersMaxAmount;
 @property (nonatomic, assign) uint32_t cachedMinProtocolVersion;
 @property (nonatomic, assign) uint32_t cachedProtocolVersion;
+@property (nonatomic, assign) UInt256 cachedMaxProofOfWork;
 @property (nonatomic, assign) uint32_t cachedStandardPort;
 @property (nonatomic, assign) uint32_t cachedStandardDapiJRPCPort;
 @property (nonatomic, assign) uint32_t cachedStandardDapiGRPCPort;
@@ -463,7 +464,7 @@ static dispatch_once_t devnetToken = 0;
 -(DSCheckpoint*)createDevNetGenesisBlockCheckpointForParentCheckpoint:(DSCheckpoint*)checkpoint withIdentifier:(NSString*)identifier {
     uint32_t nTime = checkpoint.timestamp + 1;
     uint32_t nBits = checkpoint.target;
-    UInt256 fullTarget = setCompact(nBits);
+    UInt256 fullTarget = setCompactLE(nBits);
     uint32_t nVersion = 4;
     UInt256 prevHash = checkpoint.checkpointHash;
     UInt256 merkleRoot = [DSTransaction devnetGenesisCoinbaseWithIdentifier:identifier forChain:self].txHash;
@@ -860,16 +861,34 @@ static dispatch_once_t devnetToken = 0;
 
 // MARK: Mining and Dark Gravity Wave Parameters
 
--(uint32_t)maxProofOfWork {
+-(UInt256)maxProofOfWork {
+    if (!uint256_is_zero(_cachedMaxProofOfWork)) return _cachedMaxProofOfWork;
     switch ([self chainType]) {
         case DSChainType_MainNet:
-            return MAX_PROOF_OF_WORK_MAINNET;
+            _cachedMaxProofOfWork = MAX_PROOF_OF_WORK_MAINNET;
+            break;
         case DSChainType_TestNet:
-            return MAX_PROOF_OF_WORK_TESTNET;
+            _cachedMaxProofOfWork = MAX_PROOF_OF_WORK_TESTNET;
+            break;
         case DSChainType_DevNet:
-            return MAX_PROOF_OF_WORK_DEVNET;
+            _cachedMaxProofOfWork = MAX_PROOF_OF_WORK_DEVNET;
+            break;
         default:
-            return MAX_PROOF_OF_WORK_MAINNET;
+            _cachedMaxProofOfWork = MAX_PROOF_OF_WORK_MAINNET;
+    }
+    return _cachedMaxProofOfWork;
+}
+
+-(uint32_t)maxProofOfWorkTarget {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return MAX_TARGET_PROOF_OF_WORK_MAINNET;
+        case DSChainType_TestNet:
+            return MAX_TARGET_PROOF_OF_WORK_TESTNET;
+        case DSChainType_DevNet:
+            return MAX_TARGET_PROOF_OF_WORK_DEVNET;
+        default:
+            return MAX_TARGET_PROOF_OF_WORK_MAINNET;
     }
 }
 
@@ -1871,18 +1890,16 @@ static dispatch_once_t devnetToken = 0;
     }
 
     
-    if (!self.isDevnetAny) {
-        if (!equivalentTerminalBlock) { //no need to check difficulty if we already have terminal blocks
-            if ((block.height > (lastCheckpoint.height + DGW_PAST_BLOCKS_MAX)) &&
-                ![block verifyDifficultyWithPreviousBlocks:isInitialTerminalBlock?self.mTerminalBlocks:self.mSyncBlocks]) {
-                uint32_t foundDifficulty = [block darkGravityWaveTargetWithPreviousBlocks:isInitialTerminalBlock?self.mTerminalBlocks:self.mSyncBlocks];
-                DSDLog(@"%@:%d relayed block with invalid difficulty height %d target %x foundTarget %x, blockHash: %@", peer.host, peer.port,
-                       block.height,block.target,foundDifficulty, blockHash);
-                if (peer) {
-                    [self.chainManager chain:self badBlockReceivedFromPeer:peer];
-                }
-                return FALSE;
+    if (!equivalentTerminalBlock) { //no need to check difficulty if we already have terminal blocks
+        if ((block.height > self.minimumDifficultyBlocks) && (block.height > (lastCheckpoint.height + DGW_PAST_BLOCKS_MAX)) &&
+            ![block verifyDifficultyWithPreviousBlocks:isInitialTerminalBlock?self.mTerminalBlocks:self.mSyncBlocks]) {
+            uint32_t foundDifficulty = [block darkGravityWaveTargetWithPreviousBlocks:isInitialTerminalBlock?self.mTerminalBlocks:self.mSyncBlocks];
+            DSDLog(@"%@:%d relayed block with invalid difficulty height %d target %x foundTarget %x, blockHash: %@", peer.host, peer.port,
+                   block.height,block.target,foundDifficulty, blockHash);
+            if (peer) {
+                [self.chainManager chain:self badBlockReceivedFromPeer:peer];
             }
+            return FALSE;
         }
     }
     
