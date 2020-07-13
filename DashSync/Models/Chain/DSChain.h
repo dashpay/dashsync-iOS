@@ -62,7 +62,7 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
     DSChainSyncPhase_Synced,
 };
 
-@class DSChain, DSChainEntity, DSChainManager, DSWallet, DSMerkleBlock, DSBlock, DSPeer, DSDerivationPath, DSTransaction, DSAccount, DSSimplifiedMasternodeEntry, DSBlockchainIdentity, DSBloomFilter, DSProviderRegistrationTransaction, DSMasternodeList;
+@class DSChain, DSChainEntity, DSChainManager, DSWallet, DSMerkleBlock, DSBlock, DSFullBlock, DSPeer, DSDerivationPath, DSTransaction, DSAccount, DSSimplifiedMasternodeEntry, DSBlockchainIdentity, DSBloomFilter, DSProviderRegistrationTransaction, DSMasternodeList;
 
 @protocol DSChainDelegate;
 

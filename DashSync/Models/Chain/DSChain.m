@@ -33,6 +33,7 @@
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSBlock.h"
 #import "DSMerkleBlock.h"
+#import "DSFullBlock.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSPriceManager.h"
@@ -1783,6 +1784,45 @@ static dispatch_once_t devnetToken = 0;
 // MARK: From Peer
 
 
+- (BOOL)addMinedFullBlock:(DSFullBlock *)block {
+    NSArray *txHashes = block.txHashes;
+    
+    NSValue *blockHash = uint256_obj(block.blockHash), *prevBlock = uint256_obj(block.prevBlock);
+    if (!self.mSyncBlocks[prevBlock] || !self.mTerminalBlocks[prevBlock]) return NO;
+    if (!uint256_eq(self.lastSyncBlock.blockHash,self.mSyncBlocks[prevBlock].blockHash)) return NO;
+    if (!uint256_eq(self.lastTerminalBlock.blockHash,self.mTerminalBlocks[prevBlock].blockHash)) return NO;
+    
+    
+    @synchronized (self.mSyncBlocks) {
+        self.mSyncBlocks[blockHash] = block;
+    }
+    self.lastSyncBlock = block;
+    
+    @synchronized (self.mTerminalBlocks) {
+        self.mTerminalBlocks[blockHash] = block;
+    }
+    self.lastTerminalBlock = block;
+    
+    uint32_t txTime = block.timestamp/2 + self.mTerminalBlocks[prevBlock].timestamp/2;
+    
+    [self setBlockHeight:block.height andTimestamp:txTime forTransactionHashes:txHashes];
+    
+    if (block.height > self.estimatedBlockHeight) {
+        _bestEstimatedBlockHeight = block.height;
+        [self saveBlockLocators];
+        [self saveTerminalBlocks];
+        
+        // notify that transaction confirmations may have changed
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainNewChainTipBlockNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
+        });
+    }
+    
+    return TRUE;
+}
+
 //TRUE if it was added to the end of the chain
 - (BOOL)addBlock:(DSBlock *)block fromPeer:(DSPeer*)peer
 {
@@ -1836,11 +1876,10 @@ static dispatch_once_t devnetToken = 0;
         return FALSE;
     }
     
-    uint32_t txTime = 0;
     BOOL syncDone = NO;
     
     block.height = prev.height + 1;
-    txTime = block.timestamp/2 + prev.timestamp/2;
+    uint32_t txTime = block.timestamp/2 + prev.timestamp/2;
     
     if (isInitialTerminalBlock) {
         if ((block.height % 10000) == 0 || ((block.height == self.estimatedBlockHeight) && (block.height % 100) == 0)) { //free up some memory from time to time
@@ -2078,7 +2117,7 @@ static dispatch_once_t devnetToken = 0;
     
     if (block.height > self.estimatedBlockHeight) {
         _bestEstimatedBlockHeight = block.height;
-        if (!isInitialTerminalBlock && !savedBlockLocators) {
+        if (peer && !isInitialTerminalBlock && !savedBlockLocators) {
             [self saveBlockLocators];
         }
         if (!savedTerminalBlocks) {
@@ -3256,7 +3295,7 @@ static dispatch_once_t devnetToken = 0;
 
 -(void)saveBlockLocators {
     if (self.isTransient) return;
-    NSAssert(self.chainManager.syncPhase == DSChainSyncPhase_ChainSync || self.chainManager.syncPhase == DSChainSyncPhase_Synced,@"This should only be happening in chain sync phase");
+//    NSAssert(self.chainManager.syncPhase == DSChainSyncPhase_ChainSync || self.chainManager.syncPhase == DSChainSyncPhase_Synced,@"This should only be happening in chain sync phase");
     [self prepareForIncomingTransactionPersistenceForBlockSaveWithNumber:self.lastSyncBlockHeight];
     DSBlock * lastBlock = self.lastSyncBlock;
     UInt256 lastBlockHash = lastBlock.blockHash;
@@ -3319,7 +3358,7 @@ static dispatch_once_t devnetToken = 0;
         DSChainEntity * chainEntity = [self chainEntityInContext:self.chainManagedObjectContext];
         for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity objectsInContext:self.chainManagedObjectContext matching:@"blockHash in %@",blocks.allKeys]) {
             @autoreleasepool {
-                [e setAttributesFromMerkleBlock:blocks[e.blockHash] forChainEntity:chainEntity];
+                [e setAttributesFromBlock:blocks[e.blockHash] forChainEntity:chainEntity];
                 [blocks removeObjectForKey:e.blockHash];
             }
         }

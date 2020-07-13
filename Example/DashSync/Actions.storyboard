@@ -102,7 +102,7 @@
                                             </constraints>
                                         </tableViewCellContentView>
                                         <connections>
-                                            <segue destination="8Zi-dW-W8d" kind="show" id="Ncu-MJ-ayd"/>
+                                            <segue destination="8Zi-dW-W8d" kind="show" identifier="MiningSegue" id="Ncu-MJ-ayd"/>
                                         </connections>
                                     </tableViewCell>
                                 </cells>
@@ -649,10 +649,10 @@
             </objects>
             <point key="canvasLocation" x="702" y="823"/>
         </scene>
-        <!--View Controller-->
+        <!--Mining View Controller-->
         <scene sceneID="nmJ-c7-iha">
             <objects>
-                <viewController id="8Zi-dW-W8d" sceneMemberID="viewController">
+                <viewController id="8Zi-dW-W8d" customClass="DSMiningViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="GCJ-Cf-W6V">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -682,8 +682,11 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Oc4-hz-6iZ">
+                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="Oc4-hz-6iZ">
                                 <rect key="frame" x="308" y="62" width="51" height="31"/>
+                                <connections>
+                                    <action selector="miningSwitchDidChangeValue:" destination="8Zi-dW-W8d" eventType="valueChanged" id="VF2-ca-DkX"/>
+                                </connections>
                             </switch>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
@@ -700,6 +703,10 @@
                         <viewLayoutGuide key="safeArea" id="MiE-Ev-Gcg"/>
                     </view>
                     <navigationItem key="navigationItem" id="8TS-2K-u18"/>
+                    <connections>
+                        <outlet property="hashRateLabel" destination="cid-jN-6DK" id="7NF-gx-CN6"/>
+                        <outlet property="miningSwitch" destination="Oc4-hz-6iZ" id="8UY-OM-I1w"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ZgQ-pR-dpb" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>

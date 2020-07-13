@@ -15,5 +15,6 @@
 @property (nonatomic,assign) UInt256 merkleRootLLMQList;
 
 -(instancetype)initWithCoinbaseMessage:(NSString*)coinbaseMessage atHeight:(uint32_t)height onChain:(DSChain*)chain;
+-(instancetype)initWithCoinbaseMessage:(NSString*)coinbaseMessage paymentAddresses:(NSArray<NSString*>*)paymentAddresses atHeight:(uint32_t)height onChain:(DSChain*)chain;
 
 @end

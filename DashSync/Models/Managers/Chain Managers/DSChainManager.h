@@ -71,13 +71,13 @@ typedef void (^MultipleBlockMiningCompletionBlock)(NSArray<DSFullBlock *>* block
 
 // MARK: - Mining
 
-- (void)mineEmptyBlocks:(uint32_t)blockCount withTimeout:(NSTimeInterval)timeout completion:(MultipleBlockMiningCompletionBlock)completion;
+- (void)mineEmptyBlocks:(uint32_t)blockCount toPaymentAddress:(NSString*)paymentAddress withTimeout:(NSTimeInterval)timeout completion:(MultipleBlockMiningCompletionBlock)completion;
 
-- (void)mineEmptyBlocks:(uint32_t)blockCount afterBlock:(DSBlock*)block previousBlocks:(NSDictionary<NSValue*,DSBlock*>*)previousBlocks withTimeout:(NSTimeInterval)timeout completion:(MultipleBlockMiningCompletionBlock)completion;
+- (void)mineEmptyBlocks:(uint32_t)blockCount toPaymentAddress:(NSString*)paymentAddress afterBlock:(DSBlock*)block previousBlocks:(NSDictionary<NSValue*,DSBlock*>*)previousBlocks withTimeout:(NSTimeInterval)timeout completion:(MultipleBlockMiningCompletionBlock)completion;
 
-- (void)mineBlockWithTransactions:(NSArray<DSTransaction*>* _Nullable)transactions withTimeout:(NSTimeInterval)timeout completion:(BlockMiningCompletionBlock)completion;
+- (void)mineBlockToPaymentAddress:(NSString*)paymentAddress withTransactions:(NSArray<DSTransaction*>* _Nullable)transactions withTimeout:(NSTimeInterval)timeout completion:(BlockMiningCompletionBlock)completion;
 
-- (void)mineBlockAfterBlock:(DSBlock*)block withTransactions:(NSArray<DSTransaction*>* _Nullable)transactions previousBlocks:(NSDictionary<NSValue*,DSBlock*>*)previousBlocks withTimeout:(NSTimeInterval)timeout completion:(BlockMiningCompletionBlock)completion;
+- (void)mineBlockAfterBlock:(DSBlock*)block toPaymentAddress:(NSString*)paymentAddress withTransactions:(NSArray<DSTransaction*>* _Nullable)transactions previousBlocks:(NSDictionary<NSValue*,DSBlock*>*)previousBlocks nonceOffset:(uint32_t)nonceOffset withTimeout:(NSTimeInterval)timeout completion:(BlockMiningCompletionBlock)completion;
 
 @end
 

@@ -20,6 +20,12 @@
 #import "NSMutableData+Dash.h"
 #import "NSData+Dash.h"
 
+@interface DSFullBlock()
+
+@property (nonatomic,strong) NSMutableArray <DSTransaction*>* mTransactions;
+
+@end
+
 @implementation DSFullBlock
 
 -(instancetype)initWithCoinbaseTransaction:(DSCoinbaseTransaction*)coinbaseTransaction transactions:(NSSet<DSTransaction*>*)transactions previousBlockHash:(UInt256)previousBlockHash previousBlocks:(NSDictionary*)previousBlocks timestamp:(uint32_t)timestamp height:(uint32_t)height onChain:(DSChain *)chain {
@@ -31,12 +37,22 @@
         self.merkleRoot = coinbaseTransaction.txHash;
     }
     self.prevBlock = previousBlockHash;
+    self.mTransactions = [[transactions allObjects] mutableCopy];
+    [self.mTransactions addObject:coinbaseTransaction];
     [self setTargetWithPreviousBlocks:previousBlocks];
     return self;
 }
 
+-(NSArray<DSTransaction*>*)transactions {
+    return [_mTransactions copy];
+}
+
 -(void)setTargetWithPreviousBlocks:(NSDictionary*)previousBlocks {
-    self.target = [self darkGravityWaveTargetWithPreviousBlocks:previousBlocks];
+    if (self.height <= self.chain.minimumDifficultyBlocks) {
+        self.target = self.chain.maxProofOfWorkTarget;
+    } else {
+        self.target = [self darkGravityWaveTargetWithPreviousBlocks:previousBlocks];
+    }
 }
 
 - (NSMutableData *)preNonceMutableData
@@ -51,7 +67,7 @@
     return d;
 }
 
--(BOOL)mineBlockAfterBlock:(DSBlock*)block withTimeout:(NSTimeInterval)timeout rAttempts:(uint32_t*)rAttempts {
+-(BOOL)mineBlockAfterBlock:(DSBlock*)block withNonceOffset:(uint32_t)nonceOffset withTimeout:(NSTimeInterval)timeout rAttempts:(uint64_t*)rAttempts {
     BOOL found = false;
     self.prevBlock = block.blockHash;
     NSMutableData * preNonceMutableData = [self preNonceMutableData];
@@ -73,7 +89,7 @@
     } while (i != UINT32_MAX);
     if (!found) {
         self.timestamp++;
-        return [self mineBlockAfterBlock:block withTimeout:timeout rAttempts:rAttempts];
+        return [self mineBlockAfterBlock:block withNonceOffset:0 withTimeout:timeout rAttempts:rAttempts];
     }
     rAttempts += i;
     return found;
