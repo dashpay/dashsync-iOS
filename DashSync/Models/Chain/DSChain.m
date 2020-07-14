@@ -1785,6 +1785,7 @@ static dispatch_once_t devnetToken = 0;
 
 
 - (BOOL)addMinedFullBlock:(DSFullBlock *)block {
+    NSAssert(block.txHashes, @"Block must have txHashes");
     NSArray *txHashes = block.txHashes;
     
     NSValue *blockHash = uint256_obj(block.blockHash), *prevBlock = uint256_obj(block.prevBlock);
@@ -2557,7 +2558,7 @@ static dispatch_once_t devnetToken = 0;
     return self.checkpoints[0].timestamp;
 }
 
-- (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)transactionHashes
+- (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray <NSValue*> *)transactionHashes
 {
     if (height != TX_UNCONFIRMED && height > self.bestBlockHeight) _bestBlockHeight = height;
     NSMutableArray *updatedTransactions = [NSMutableArray array];

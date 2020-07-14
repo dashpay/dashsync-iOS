@@ -39,6 +39,11 @@
     self.prevBlock = previousBlockHash;
     self.mTransactions = [[transactions allObjects] mutableCopy];
     [self.mTransactions addObject:coinbaseTransaction];
+    NSMutableArray <NSValue*>* mTxHashes = [NSMutableArray array];
+    for (DSTransaction * transaction in self.mTransactions) {
+        [mTxHashes addObject:uint256_obj(transaction.txHash)];
+    }
+    self.txHashes = [mTxHashes copy];
     [self setTargetWithPreviousBlocks:previousBlocks];
     return self;
 }
@@ -94,6 +99,5 @@
     rAttempts += i;
     return found;
 }
-    
 
 @end

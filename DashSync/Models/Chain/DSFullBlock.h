@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSFullBlock : DSBlock
 
-@property (nonatomic,strong) NSArray <DSTransaction*>* transactions;
+@property (nonatomic,readonly) NSArray <DSTransaction*>* transactions;
 
 -(instancetype)initWithCoinbaseTransaction:(DSCoinbaseTransaction*)coinbaseTransaction transactions:(NSSet<DSTransaction*>*)transactions previousBlockHash:(UInt256)previousBlockHash previousBlocks:(NSDictionary*)previousBlocks timestamp:(uint32_t)timestamp height:(uint32_t)height onChain:(DSChain *)chain;
 
