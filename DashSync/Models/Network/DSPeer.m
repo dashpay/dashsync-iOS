@@ -662,7 +662,6 @@
     [self sendMessage:msg type:MSG_INV];
     txHashes?[self.knownTxHashes unionOrderedSet:txHashes]:nil;
     txLockRequestHashes?[self.knownTxHashes unionOrderedSet:txLockRequestHashes]:nil;
-
 }
 
 -(void)sendGetdataMessageForTxHash:(UInt256)txHash {
