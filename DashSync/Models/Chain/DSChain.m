@@ -1071,8 +1071,6 @@ static dispatch_once_t devnetToken = 0;
             else return UINT256_ZERO;
             break;
         }
-        default:
-            break;
     }
 }
 
@@ -1097,8 +1095,6 @@ static dispatch_once_t devnetToken = 0;
             }
             break;
         }
-        default:
-            break;
     }
 }
 
@@ -1124,8 +1120,6 @@ static dispatch_once_t devnetToken = 0;
             else return UINT256_ZERO;
             break;
         }
-        default:
-            break;
     }
 }
 
@@ -1150,8 +1144,6 @@ static dispatch_once_t devnetToken = 0;
             }
             break;
         }
-        default:
-            break;
     }
 }
 
@@ -1167,8 +1159,6 @@ static dispatch_once_t devnetToken = 0;
             setKeychainInt(minimumDifficultyBlocks, [NSString stringWithFormat:@"%@%@",self.devnetIdentifier,MINIMUM_DIFFICULTY_BLOCKS_COUNT_KEY], NO);
             break;
         }
-        default:
-            break;
     }
 }
 
@@ -1214,8 +1204,6 @@ static dispatch_once_t devnetToken = 0;
             }
             else return DEVNET_DAPI_JRPC_STANDARD_PORT;
         }
-        default:
-            break;
     }
 }
 
@@ -1231,8 +1219,6 @@ static dispatch_once_t devnetToken = 0;
             setKeychainInt(standardDapiJRPCPort,[NSString stringWithFormat:@"%@%@",self.devnetIdentifier,JRPC_PORT_LOCATION], NO);
             break;
         }
-        default:
-            break;
     }
 }
 
