@@ -40,7 +40,7 @@
     UInt256 friendship = uint256_xor(sourceIdentifier, destinationIdentifier);
     if (uint256_sup(sourceIdentifier, destinationIdentifier)) {
         //the destination should always be bigger than the source, otherwise add 1 on the 32nd bit to differenciate them
-        friendship = uInt256Add(friendship,uint256_from_int(1<<31));
+        friendship = uInt256AddLE(friendship,uint256_from_int(1<<31));
     }
     UInt256 friendshipOnAccount = uint256_xor(friendship,uint256_from_int(self.account.index));
     self.friendshipIdentifier = uint256_data(friendshipOnAccount);

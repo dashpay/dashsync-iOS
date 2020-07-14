@@ -40,7 +40,10 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo) {
 
 FOUNDATION_EXPORT NSString* const DSChainManagerNotificationChainKey;
 
-@class DSGovernanceSyncManager, DSMasternodeManager, DSSporkManager, DSPeerManager, DSGovernanceVote, DSDAPIClient, DSTransactionManager, DSIdentitiesManager, DSBloomFilter;
+@class DSGovernanceSyncManager, DSMasternodeManager, DSSporkManager, DSPeerManager, DSGovernanceVote, DSDAPIClient, DSTransactionManager, DSIdentitiesManager, DSBloomFilter, DSBlock, DSFullBlock;
+
+typedef void (^BlockMiningCompletionBlock)(DSFullBlock * _Nullable block, NSUInteger attempts, NSTimeInterval timeUsed, NSError * _Nullable error);
+typedef void (^MultipleBlockMiningCompletionBlock)(NSArray<DSFullBlock *>* block, NSArray<NSNumber *>* attempts, NSTimeInterval timeUsed, NSError * _Nullable error);
 
 @interface DSChainManager : NSObject <DSChainDelegate,DSPeerChainDelegate>
 
@@ -65,6 +68,16 @@ FOUNDATION_EXPORT NSString* const DSChainManagerNotificationChainKey;
 - (void)rescan;
 
 - (void)rescanMasternodeListsAndQuorums;
+
+// MARK: - Mining
+
+- (void)mineEmptyBlocks:(uint32_t)blockCount toPaymentAddress:(NSString*)paymentAddress withTimeout:(NSTimeInterval)timeout completion:(MultipleBlockMiningCompletionBlock)completion;
+
+- (void)mineEmptyBlocks:(uint32_t)blockCount toPaymentAddress:(NSString*)paymentAddress afterBlock:(DSBlock*)block previousBlocks:(NSDictionary<NSValue*,DSBlock*>*)previousBlocks withTimeout:(NSTimeInterval)timeout completion:(MultipleBlockMiningCompletionBlock)completion;
+
+- (void)mineBlockToPaymentAddress:(NSString*)paymentAddress withTransactions:(NSArray<DSTransaction*>* _Nullable)transactions withTimeout:(NSTimeInterval)timeout completion:(BlockMiningCompletionBlock)completion;
+
+- (void)mineBlockAfterBlock:(DSBlock*)block toPaymentAddress:(NSString*)paymentAddress withTransactions:(NSArray<DSTransaction*>* _Nullable)transactions previousBlocks:(NSDictionary<NSValue*,DSBlock*>*)previousBlocks nonceOffset:(uint32_t)nonceOffset withTimeout:(NSTimeInterval)timeout completion:(BlockMiningCompletionBlock)completion;
 
 @end
 

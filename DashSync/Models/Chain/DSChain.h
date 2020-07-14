@@ -62,7 +62,7 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
     DSChainSyncPhase_Synced,
 };
 
-@class DSChain, DSChainEntity, DSChainManager, DSWallet, DSMerkleBlock, DSPeer, DSDerivationPath, DSTransaction, DSAccount, DSSimplifiedMasternodeEntry, DSBlockchainIdentity, DSBloomFilter, DSProviderRegistrationTransaction, DSMasternodeList;
+@class DSChain, DSChainEntity, DSChainManager, DSWallet, DSMerkleBlock, DSBlock, DSFullBlock, DSPeer, DSDerivationPath, DSTransaction, DSAccount, DSSimplifiedMasternodeEntry, DSBlockchainIdentity, DSBloomFilter, DSProviderRegistrationTransaction, DSMasternodeList;
 
 @protocol DSChainDelegate;
 
@@ -76,7 +76,7 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
 @property (nonatomic, strong) NSString * masternodeListName;
 @property (nonatomic, assign) UInt256 merkleRoot;
 
-- (DSMerkleBlock*)merkleBlockForChain:(DSChain*)chain;
+- (DSBlock*)blockForChain:(DSChain*)chain;
 
 @end
 
@@ -121,8 +121,11 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
 /*! @brief headersMaxAmount is the maximum amount of headers that is expected from peers.  */
 @property (nonatomic, assign) uint32_t headersMaxAmount;
 
-/*! @brief protocolVersion is the protocol version that we currently use for this chain.  */
-@property (nonatomic, readonly) uint32_t maxProofOfWork;
+/*! @brief maxProofOfWork is the lowest amount of work effort required to mine a block on the chain.  */
+@property (nonatomic, readonly) UInt256 maxProofOfWork;
+
+/*! @brief maxProofOfWorkTarget is the lowest amount of work effort required to mine a block on the chain. Here it is represented as the compact target.  */
+@property (nonatomic, readonly) uint32_t maxProofOfWorkTarget;
 
 /*! @brief allowMinDifficultyBlocks is set to TRUE on networks where mining is low enough that it can be attacked by increasing difficulty with ASICs and then no longer running ASICs. This is set to NO for Mainnet, and generally should be YES on all other networks.  */
 @property (nonatomic, readonly) BOOL allowMinDifficultyBlocks;
@@ -183,6 +186,9 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
 
 /*! @brief The default transaction version used when sending transactions.  */
 @property (nonatomic, readonly) uint16_t transactionVersion;
+
+/*! @brief The number of minimumDifficultyBlocks.  */
+@property (nonatomic, assign) uint32_t minimumDifficultyBlocks;
 
 /*! @brief Returns all standard derivaton paths used for the chain based on the account number.  */
 - (NSArray<DSDerivationPath*>*)standardDerivationPathsForAccountNumber:(uint32_t)accountNumber;
@@ -266,19 +272,19 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
 // MARK: - Blocks and Headers
 
 /*! @brief The last known chain sync block on the chain.  */
-@property (nonatomic, readonly, nullable) DSMerkleBlock * lastSyncBlock;
+@property (nonatomic, readonly, nullable) DSBlock * lastSyncBlock;
 
 /*! @brief The last known terminal block on the chain.  */
-@property (nonatomic, readonly, nullable) DSMerkleBlock * lastTerminalBlock;
+@property (nonatomic, readonly, nullable) DSBlock * lastTerminalBlock;
 
 /*! @brief The last known block on the chain before the given timestamp.  */
-- (DSMerkleBlock *)lastChainSyncBlockOnOrBeforeTimestamp:(NSTimeInterval)timestamp;
+- (DSBlock *)lastChainSyncBlockOnOrBeforeTimestamp:(NSTimeInterval)timestamp;
 
 /*! @brief The last known block or header on the chain before the given timestamp.  */
-- (DSMerkleBlock *)lastBlockOnOrBeforeTimestamp:(NSTimeInterval)timestamp;
+- (DSBlock *)lastBlockOnOrBeforeTimestamp:(NSTimeInterval)timestamp;
 
 /*! @brief The last known orphan on the chain. An orphan is a block who's parent is currently not known.  */
-@property (nonatomic, readonly, nullable) DSMerkleBlock * lastOrphan;
+@property (nonatomic, readonly, nullable) DSBlock * lastOrphan;
 
 /*! @brief A dictionary of the the most recent known blocks keyed by block hash.  */
 @property (nonatomic, readonly) NSDictionary <NSValue*,DSMerkleBlock*> *recentBlocks;
@@ -430,8 +436,8 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
 /*! @brief Devnet chain with given identifier.  */
 + (DSChain* _Nullable)devnetWithIdentifier:(NSString*)identifier;
 
-/*! @brief Set up a given devnet with an identifier, checkpoints, default L1, JRPC and GRPC ports, a dpns contractId and a dashpay contract id. This devnet will be registered on the keychain.  */
-+ (DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>* _Nullable)checkpointArray withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID;
+/*! @brief Set up a given devnet with an identifier, checkpoints, default L1, JRPC and GRPC ports, a dpns contractId and a dashpay contract id. minimumDifficultyBlocks are used to speed up the initial chain creation. This devnet will be registered on the keychain. The additional isTransient property allows for test usage where you do not wish to persist the devnet.  */
++ (DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>* _Nullable)checkpointArray withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID isTransient:(BOOL)isTransient;
 
 /*! @brief Retrieve from the keychain a devnet with an identifier and add given checkpoints.  */
 + (DSChain*)recoverKnownDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray;
@@ -472,8 +478,8 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
 -(void)chainFinishedSyncingTransactionsAndBlocks:(DSChain*)chain fromPeer:(DSPeer* _Nullable)peer onMainChain:(BOOL)onMainChain;
 -(void)chainFinishedSyncingInitialHeaders:(DSChain*)chain fromPeer:(DSPeer* _Nullable)peer onMainChain:(BOOL)onMainChain;
 -(void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain*)chain;
--(void)chain:(DSChain*)chain receivedOrphanBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer;
--(void)chain:(DSChain*)chain wasExtendedWithBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer;
+-(void)chain:(DSChain*)chain receivedOrphanBlock:(DSBlock*)merkleBlock fromPeer:(DSPeer*)peer;
+-(void)chain:(DSChain*)chain wasExtendedWithBlock:(DSBlock*)merkleBlock fromPeer:(DSPeer*)peer;
 -(void)chain:(DSChain*)chain badBlockReceivedFromPeer:(DSPeer*)peer;
 
 @end

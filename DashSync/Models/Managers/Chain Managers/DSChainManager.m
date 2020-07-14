@@ -43,6 +43,7 @@
 #import "DSChainEntity+CoreDataClass.h"
 #import "RHIntervalTree.h"
 #import "DSWallet+Protected.h"
+#import "DSFullBlock.h"
 
 #define SYNC_STARTHEIGHT_KEY @"SYNC_STARTHEIGHT"
 
@@ -65,6 +66,7 @@
 @property (nonatomic, assign) uint32_t maxTransactionsInfoDataLastHeight;
 @property (nonatomic, strong) NSData * chainSynchronizationFingerprint;
 @property (nonatomic, strong) NSOrderedSet * chainSynchronizationBlockZones;
+@property (nonatomic, strong) dispatch_queue_t miningQueue;
 
 @end
 
@@ -94,6 +96,8 @@
     
     [self loadMaxTransactionInfo];
     [self loadHeightTransactionZones];
+    
+    _miningQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.mining.%@",self.chain.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
     
     return self;
 }
@@ -296,6 +300,64 @@
 
 -(void)resetLastRelayedItemTime {
     self.lastChainRelayTime = 0;
+}
+
+// MARK: - Mining
+
+- (void)mineEmptyBlocks:(uint32_t)blockCount toPaymentAddress:(NSString*)paymentAddress withTimeout:(NSTimeInterval)timeout completion:(MultipleBlockMiningCompletionBlock)completion {
+    [self mineEmptyBlocks:blockCount toPaymentAddress:paymentAddress afterBlock:self.chain.lastTerminalBlock previousBlocks:self.chain.terminalBlocks withTimeout:timeout completion:completion];
+}
+
+- (void)mineEmptyBlocks:(uint32_t)blockCount toPaymentAddress:(NSString*)paymentAddress afterBlock:(DSBlock*)previousBlock previousBlocks:(NSDictionary<NSValue*,DSBlock*>*)previousBlocks withTimeout:(NSTimeInterval)timeout completion:(MultipleBlockMiningCompletionBlock)completion {
+    dispatch_async(_miningQueue, ^{
+        NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
+        NSTimeInterval end = [[[NSDate alloc] initWithTimeIntervalSinceNow:timeout] timeIntervalSince1970];
+        NSMutableArray * blocksArray = [NSMutableArray array];
+        NSMutableArray * attemptsArray = [NSMutableArray array];
+        __block uint32_t blocksRemaining = blockCount;
+        __block NSMutableDictionary<NSValue*,DSBlock*> * mPreviousBlocks = [previousBlocks mutableCopy];
+        __block DSBlock * currentBlock = previousBlock;
+        while ([[NSDate date] timeIntervalSince1970] < end && blocksRemaining>0) {
+            dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+            [self mineBlockAfterBlock:currentBlock toPaymentAddress:paymentAddress withTransactions:[NSArray array] previousBlocks:mPreviousBlocks nonceOffset:0 withTimeout:timeout completion:^(DSFullBlock * _Nullable block, NSUInteger attempts, NSTimeInterval timeUsed, NSError * _Nullable error) {
+                NSAssert(!uint256_is_zero(block.blockHash), @"Block hash must not be empty");
+                dispatch_semaphore_signal(sem);
+                [blocksArray addObject:block];
+                [mPreviousBlocks setObject:block forKey:uint256_obj(block.blockHash)];
+                currentBlock = block;
+                blocksRemaining--;
+                [attemptsArray addObject:@(attempts)];
+            }];
+            dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+        }
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(blocksArray,attemptsArray,[[NSDate date] timeIntervalSince1970] - start,nil);
+            });
+        }
+    });
+    
+}
+
+- (void)mineBlockToPaymentAddress:(NSString*)paymentAddress withTransactions:(NSArray<DSTransaction*>*)transactions withTimeout:(NSTimeInterval)timeout completion:(BlockMiningCompletionBlock)completion {
+    [self mineBlockAfterBlock:self.chain.lastTerminalBlock toPaymentAddress:paymentAddress withTransactions:transactions previousBlocks:self.chain.terminalBlocks nonceOffset:0 withTimeout:timeout completion:completion];
+}
+
+- (void)mineBlockAfterBlock:(DSBlock*)block toPaymentAddress:(NSString*)paymentAddress withTransactions:(NSArray<DSTransaction*>*)transactions previousBlocks:(NSDictionary<NSValue*,DSBlock*>*)previousBlocks nonceOffset:(uint32_t)nonceOffset withTimeout:(NSTimeInterval)timeout completion:(nonnull BlockMiningCompletionBlock)completion {
+    DSCoinbaseTransaction * coinbaseTransaction = [[DSCoinbaseTransaction alloc] initWithCoinbaseMessage:@"From iOS" paymentAddresses:@[paymentAddress] atHeight:block.height + 1 onChain:block.chain];
+    DSFullBlock * fullblock = [[DSFullBlock alloc] initWithCoinbaseTransaction:coinbaseTransaction transactions:[NSSet set] previousBlockHash:block.blockHash previousBlocks:previousBlocks timestamp:[[NSDate date] timeIntervalSince1970] height:block.height + 1 onChain:self.chain];
+    uint64_t attempts = 0;
+    NSDate * startTime = [NSDate date];
+    if ([fullblock mineBlockAfterBlock:block withNonceOffset:nonceOffset withTimeout:timeout rAttempts:&attempts]) {
+        if (completion) {
+            completion(fullblock, attempts, -[startTime timeIntervalSinceNow],nil);
+        }
+    } else {
+        if (completion) {
+            NSError * error = [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"A block could not be mined in the selected time interval.", nil)}];
+            completion(nil, attempts, -[startTime timeIntervalSinceNow],error);
+        }
+    }
 }
 
 // MARK: - Blockchain Sync
@@ -529,7 +591,7 @@
     [self.peerManager peerMisbehaving:peer errorMessage:@"Bad block received from peer"];
 }
 
--(void)chain:(DSChain*)chain receivedOrphanBlock:(DSMerkleBlock*)block fromPeer:(DSPeer*)peer {
+-(void)chain:(DSChain*)chain receivedOrphanBlock:(DSBlock*)block fromPeer:(DSPeer*)peer {
     // ignore orphans older than one week ago
     if (block.timestamp < [NSDate timeIntervalSince1970] - WEEK_TIME_INTERVAL) return;
     
@@ -540,7 +602,7 @@
     }
 }
 
--(void)chain:(DSChain*)chain wasExtendedWithBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer {
+-(void)chain:(DSChain*)chain wasExtendedWithBlock:(DSBlock*)merkleBlock fromPeer:(DSPeer*)peer {
     if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList)) {
         // make sure we care about masternode lists
         [self.masternodeManager getCurrentMasternodeListWithSafetyDelay:3];

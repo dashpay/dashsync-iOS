@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 // BIP39 is method for generating a deterministic wallet seed from a mnemonic phrase
 // https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 
-#define BIP39_CREATION_TIME 1495039295.0 //1425039295.0
+#define BIP39_CREATION_TIME 1425039295.0
 //1546810296.0 <- that would be block 1M
 #define BIP39_WALLET_UNKNOWN_CREATION_TIME 0
 
