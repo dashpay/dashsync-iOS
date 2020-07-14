@@ -1191,8 +1191,6 @@ static dispatch_once_t devnetToken = 0;
             }
             else return 0;
         }
-        default:
-            break;
     }
 }
 
