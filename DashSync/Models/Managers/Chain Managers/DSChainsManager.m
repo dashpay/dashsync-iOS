@@ -180,17 +180,25 @@
     if (!uint256_eq(dpnsContractID, chain.dpnsContractID)) {
         chain.dpnsContractID = dpnsContractID;
         DPContract * contract = [DSDashPlatform sharedInstanceForChain:chain].dpnsContract;
-        DSBlockchainIdentity * blockchainIdentity = [chain blockchainIdentityThatCreatedContract:[DPContract localDPNSContractForChain:chain] withContractId:dpnsContractID foundInWallet:nil];
-        if (blockchainIdentity) {
-            [contract registerCreator:blockchainIdentity inContext:[NSManagedObjectContext platformContext]];
+        if (!uint256_is_zero(dpnsContractID)) {
+            DSBlockchainIdentity * blockchainIdentity = [chain blockchainIdentityThatCreatedContract:[DPContract localDPNSContractForChain:chain] withContractId:dpnsContractID foundInWallet:nil];
+            if (blockchainIdentity) {
+                [contract registerCreator:blockchainIdentity inContext:[NSManagedObjectContext platformContext]];
+            }
+        } else {
+            [contract unregisterCreatorInContext:[NSManagedObjectContext platformContext]];
         }
     }
     if (!uint256_eq(dashpayContractID, chain.dashpayContractID)) {
         chain.dashpayContractID = dashpayContractID;
         DPContract * contract = [DSDashPlatform sharedInstanceForChain:chain].dashPayContract;
-        DSBlockchainIdentity * blockchainIdentity = [chain blockchainIdentityThatCreatedContract:[DPContract localDashpayContractForChain:chain] withContractId:dashpayContractID foundInWallet:nil];
-        if (blockchainIdentity) {
-            [contract registerCreator:blockchainIdentity inContext:[NSManagedObjectContext platformContext]];
+        if (!uint256_is_zero(dashpayContractID)) {
+            DSBlockchainIdentity * blockchainIdentity = [chain blockchainIdentityThatCreatedContract:[DPContract localDashpayContractForChain:chain] withContractId:dashpayContractID foundInWallet:nil];
+            if (blockchainIdentity) {
+                [contract registerCreator:blockchainIdentity inContext:[NSManagedObjectContext platformContext]];
+            }
+        } else {
+            [contract unregisterCreatorInContext:[NSManagedObjectContext platformContext]];
         }
     }
     for (NSString * serviceLocation in serviceLocations) {

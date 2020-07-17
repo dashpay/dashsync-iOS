@@ -349,7 +349,7 @@
 - (NSString *)description
 {
     NSString *txid = [NSString hexWithData:[NSData dataWithBytes:self.txHash.u8 length:sizeof(UInt256)].reverse];
-    return [NSString stringWithFormat:@"%@(id=%@-block=%@)", [self class], txid, (self.blockHeight == TX_UNCONFIRMED)?@"Not mined":@(self.blockHeight)];
+    return [NSString stringWithFormat:@"%@(id=%@-block=%@) + (%@)", [self class], txid, (self.blockHeight == TX_UNCONFIRMED)?@"Not mined":@(self.blockHeight),[super description]];
 }
 
 - (NSString *)longDescription

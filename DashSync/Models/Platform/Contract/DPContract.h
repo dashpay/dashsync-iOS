@@ -66,6 +66,7 @@ typedef NS_ENUM(NSUInteger, DPContractState) {
 - (nullable NSDictionary<NSString *, NSString *> *)documentSchemaRefForType:(NSString *)type;
 
 - (void)registerCreator:(DSBlockchainIdentity*)blockchainIdentity inContext:(NSManagedObjectContext*)context;
+- (void)unregisterCreatorInContext:(NSManagedObjectContext*)context;
 
 + (DPContract *)localDashpayContractForChain:(DSChain*)chain;
 + (DPContract *)localDPNSContractForChain:(DSChain*)chain;

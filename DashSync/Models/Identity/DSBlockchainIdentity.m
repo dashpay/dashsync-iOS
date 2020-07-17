@@ -1156,7 +1156,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         } else if ([type intValue] == DSKeyType_ECDSA) {
             rKey = [DSECDSAKey keyWithPublicKeyData:data];
         }
-        *rIndex = [keyId unsignedIntValue] - 1;
+        *rIndex = [keyId unsignedIntValue];
         *rType = [type unsignedIntValue];
         return rKey;
     }
@@ -1581,7 +1581,17 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 if (!weakContract) {
                     return;
                 }
+                if (!contractDictionary[@"documents"]) {
+                    [strongContract setContractState:DPContractState_NotRegistered inContext:context];
+                    return;
+                }
                 if (strongContract.contractState == DPContractState_Registered) {
+                    NSSet *set1 = [NSSet setWithArray:[contractDictionary[@"documents"] allKeys]];
+                    NSSet *set2 = [NSSet setWithArray:[strongContract.documents allKeys]];
+                    
+                    if (![set1 isEqualToSet:set2]) {
+                        [strongContract setContractState:DPContractState_NotRegistered inContext:context];
+                    }
                     DSDLog(@"Contract dictionary is %@",contractDictionary);
                 }
             } failure:^(NSError * _Nonnull error) {
@@ -2218,7 +2228,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             return;
         }
         DSDLog(@"Contract dictionary is %@",contractDictionary);
-        if ([contractDictionary isKindOfClass:[NSDictionary class]] && [contractDictionary[@"contractId"] isEqualToString:contract.base58ContractId]) {
+        if ([contractDictionary isKindOfClass:[NSDictionary class]] && [contractDictionary[@"$id"] isEqualToString:contract.base58ContractId]) {
             [contract setContractState:DPContractState_Registered inContext:self.managedObjectContext];
             if (completion) {
                 completion(TRUE,nil);

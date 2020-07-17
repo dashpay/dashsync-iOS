@@ -313,6 +313,12 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     return @"Other State";
 }
 
+-(void)unregisterCreatorInContext:(NSManagedObjectContext*)context {
+    self.registeredBlockchainIdentityUniqueID = UINT256_ZERO;
+    self.contractId = UINT256_ZERO; //will be lazy loaded
+    self.entropy = UINT160_ZERO;
+    [self saveAndWaitInContext:context];
+}
 
 - (void)registerCreator:(DSBlockchainIdentity*)blockchainIdentity inContext:(NSManagedObjectContext*)context {
     NSParameterAssert(blockchainIdentity);
