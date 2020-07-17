@@ -71,11 +71,12 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 - (void)sendDocument:(DPDocument *)document
              forIdentity:(DSBlockchainIdentity*)blockchainIdentity
             contract:(DPContract *)contract
+  usingEntropyString:(NSString*)entropyString 
           completion:(void (^)(NSError *_Nullable error))completion {
     NSParameterAssert(document);
     NSParameterAssert(contract);
     
-    DSDocumentTransition * documentTransition = [[DSDocumentTransition alloc] initForCreatedDocuments:@[document] withTransitionVersion:1 blockchainIdentityUniqueId:blockchainIdentity.uniqueID onChain:self.chain];
+    DSDocumentTransition * documentTransition = [[DSDocumentTransition alloc] initForDocuments:@[document] withTransitionVersion:1 blockchainIdentityUniqueId:blockchainIdentity.uniqueID usingEntropyString:entropyString onChain:self.chain];
     
     __weak typeof(self) weakSelf = self;
     [blockchainIdentity signStateTransition:documentTransition

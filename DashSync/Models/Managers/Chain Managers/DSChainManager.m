@@ -46,6 +46,7 @@
 #import "DSFullBlock.h"
 
 #define SYNC_STARTHEIGHT_KEY @"SYNC_STARTHEIGHT"
+#define TERMINAL_SYNC_STARTHEIGHT_KEY @"TERMINAL_SYNC_STARTHEIGHT"
 
 @interface DSChainManager ()
 
@@ -57,7 +58,8 @@
 @property (nonatomic, strong) DSDAPIClient * DAPIClient;
 @property (nonatomic, strong) DSTransactionManager * transactionManager;
 @property (nonatomic, strong) DSPeerManager * peerManager;
-@property (nonatomic, assign) uint32_t syncStartHeight;
+@property (nonatomic, assign) uint32_t chainSyncStartHeight;
+@property (nonatomic, assign) uint32_t terminalSyncStartHeight;
 @property (nonatomic, assign) uint64_t sessionConnectivityNonce;
 @property (nonatomic, assign) BOOL gotSporksAtChainSyncStart;
 @property (nonatomic, strong) NSData * maxTransactionsInfoData;
@@ -256,19 +258,23 @@
 
 // MARK: - Info
 
--(NSString*)syncStartHeightKey {
+-(NSString*)chainSyncStartHeightKey {
     return [NSString stringWithFormat:@"%@_%@",SYNC_STARTHEIGHT_KEY,[self.chain uniqueID]];
 }
 
-- (double)syncProgress
+-(NSString*)terminalSyncStartHeightKey {
+    return [NSString stringWithFormat:@"%@_%@",TERMINAL_SYNC_STARTHEIGHT_KEY,[self.chain uniqueID]];
+}
+
+- (double)chainSyncProgress
 {
-    if (! self.peerManager.downloadPeer && self.syncStartHeight == 0) return 0.0;
+    if (! self.peerManager.downloadPeer && self.chainSyncStartHeight == 0) return 0.0;
     //if (self.downloadPeer.status != DSPeerStatus_Connected) return 0.05;
     if (self.chain.lastSyncBlockHeight >= self.chain.estimatedBlockHeight) return 1.0;
     
     double lastBlockHeight = self.chain.lastSyncBlockHeight;
     double estimatedBlockHeight = self.chain.estimatedBlockHeight;
-    double syncStartHeight = self.syncStartHeight;
+    double syncStartHeight = self.chainSyncStartHeight;
     double progress;
     if (syncStartHeight > lastBlockHeight) {
         progress = lastBlockHeight / estimatedBlockHeight;
@@ -279,19 +285,58 @@
     return MIN(1.0, MAX(0.0, 0.1 + 0.9 * progress));
 }
 
--(void)resetSyncStartHeight {
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    if (self.syncStartHeight == 0) self.syncStartHeight = (uint32_t)[userDefaults integerForKey:self.syncStartHeightKey];
+-(double)terminalHeaderSyncProgress
+{
+    if (! self.peerManager.downloadPeer && self.terminalSyncStartHeight == 0) return 0.0;
+    if (self.chain.lastTerminalBlockHeight >= self.chain.estimatedBlockHeight) return 1.0;
     
-    if (self.syncStartHeight == 0) {
-        self.syncStartHeight = self.chain.lastSyncBlockHeight;
-        [[NSUserDefaults standardUserDefaults] setInteger:self.syncStartHeight forKey:self.syncStartHeightKey];
+    double lastBlockHeight = self.chain.lastTerminalBlockHeight;
+    double estimatedBlockHeight = self.chain.estimatedBlockHeight;
+    double syncStartHeight = self.terminalSyncStartHeight;
+    double progress;
+    if (syncStartHeight > lastBlockHeight) {
+        progress = lastBlockHeight / estimatedBlockHeight;
+    }
+    else {
+        progress = (lastBlockHeight - syncStartHeight) / (estimatedBlockHeight - syncStartHeight);
+    }
+    return MIN(1.0, MAX(0.0, 0.1 + 0.9 * progress));
+}
+
+-(double)combinedSyncProgress
+{
+    return self.terminalHeaderSyncProgress * 0.1 + self.masternodeManager.masternodeListAndQuorumsSyncProgress * 0.2 + self.chainSyncProgress * 0.7;
+}
+
+-(void)resetChainSyncStartHeight {
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    if (self.chainSyncStartHeight == 0) self.chainSyncStartHeight = (uint32_t)[userDefaults integerForKey:self.chainSyncStartHeightKey];
+    
+    if (self.chainSyncStartHeight == 0) {
+        self.chainSyncStartHeight = self.chain.lastSyncBlockHeight;
+        [[NSUserDefaults standardUserDefaults] setInteger:self.chainSyncStartHeight forKey:self.chainSyncStartHeightKey];
     }
 }
 
--(void)restartSyncStartHeight {
-    self.syncStartHeight = 0;
-    [[NSUserDefaults standardUserDefaults] setInteger:0 forKey:self.syncStartHeightKey];
+-(void)restartChainSyncStartHeight {
+    self.chainSyncStartHeight = 0;
+    [[NSUserDefaults standardUserDefaults] setInteger:0 forKey:self.chainSyncStartHeightKey];
+}
+
+
+-(void)resetTerminalSyncStartHeight {
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    if (self.terminalSyncStartHeight == 0) self.terminalSyncStartHeight = (uint32_t)[userDefaults integerForKey:self.terminalSyncStartHeightKey];
+    
+    if (self.terminalSyncStartHeight == 0) {
+        self.terminalSyncStartHeight = self.chain.lastTerminalBlockHeight;
+        [[NSUserDefaults standardUserDefaults] setInteger:self.terminalSyncStartHeight forKey:self.terminalSyncStartHeightKey];
+    }
+}
+
+-(void)restartTerminalSyncStartHeight {
+    self.terminalSyncStartHeight = 0;
+    [[NSUserDefaults standardUserDefaults] setInteger:0 forKey:self.terminalSyncStartHeightKey];
 }
 
 - (void)relayedNewItem {
@@ -416,8 +461,8 @@
         
     });
     
-    self.syncStartHeight = self.chain.lastSyncBlockHeight;
-    [[NSUserDefaults standardUserDefaults] setInteger:self.syncStartHeight forKey:self.syncStartHeightKey];
+    self.chainSyncStartHeight = self.chain.lastSyncBlockHeight;
+    [[NSUserDefaults standardUserDefaults] setInteger:self.chainSyncStartHeight forKey:self.chainSyncStartHeightKey];
     [self.peerManager connect];
 }
 
@@ -556,7 +601,7 @@
 -(void)chainFinishedSyncingTransactionsAndBlocks:(DSChain*)chain fromPeer:(DSPeer*)peer onMainChain:(BOOL)onMainChain {
     if (onMainChain && peer && (peer == self.peerManager.downloadPeer)) self.lastChainRelayTime = [NSDate timeIntervalSince1970];
     DSDLog(@"chain finished syncing");
-    self.syncStartHeight = 0;
+    self.chainSyncStartHeight = 0;
     self.syncPhase = DSChainSyncPhase_Synced;
     [self.transactionManager fetchMempoolFromNetwork];
     [self.sporkManager getSporks];

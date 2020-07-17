@@ -106,6 +106,10 @@
 - (DSTransaction *)transactionForChain:(DSChain*)chain
 {
     if (!chain) chain = [self.transactionHash chain].chain;
+    DSTransaction * transaction = [chain transactionForHash:self.transactionHash.txHash.UInt256];
+    if (transaction) {
+        return transaction;
+    }
     DSTransaction *tx = [[[self transactionClass] alloc] initOnChain:chain];
     
     [self.managedObjectContext performBlockAndWait:^{

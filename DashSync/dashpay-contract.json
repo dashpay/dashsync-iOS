@@ -3,7 +3,7 @@
         "profile": {
             "indices": [{
                 "properties": [{
-                    "$userId": "asc"
+                    "$ownerId": "asc"
                 }],
                 "unique": true
             }],
@@ -27,7 +27,7 @@
         "contactInfo": {
             "indices": [{
                 "properties": [{
-                    "$userId": "asc"
+                    "$ownerId": "asc"
                 }, {
                     "encToUserId": "asc"
                 }],
@@ -35,7 +35,7 @@
             },
             {
                 "properties": [{
-                    "$userId": "asc"
+                    "$ownerId": "asc"
                 }, {
                     "timestamp": "asc"
                 }]
@@ -64,7 +64,7 @@
         "contactRequest": {
             "indices": [{
                 "properties": [{
-                    "$userId": "asc"
+                    "$ownerId": "asc"
                 }, {
                     "toUserId": "asc"
                 }],
@@ -72,7 +72,7 @@
             },
             {
                 "properties": [{
-                    "$userId": "asc"
+                    "$ownerId": "asc"
                 }]
             },
             {
@@ -94,7 +94,7 @@
             },
             {
                 "properties": [{
-                    "$userId": "asc"
+                    "$ownerId": "asc"
                 }, {
                     "timestamp": "asc"
                 }]

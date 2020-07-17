@@ -73,6 +73,7 @@
 @property (nonatomic,strong) NSMutableDictionary<NSData*,NSNumber*>* cachedBlockHashHeights;
 @property (nonatomic,strong) NSMutableDictionary<NSData*,DSLocalMasternode*> *localMasternodesDictionaryByRegistrationTransactionHash;
 @property (nonatomic,strong) NSMutableOrderedSet <NSData*>* masternodeListRetrievalQueue;
+@property (nonatomic,assign) NSUInteger masternodeListRetrievalQueueMaxAmount;
 @property (nonatomic,strong) NSMutableSet <NSData*>* masternodeListsInRetrieval;
 @property (nonatomic,assign) NSTimeInterval timeIntervalForMasternodeRetrievalSafetyDelay;
 @property (nonatomic,assign) uint16_t timedOutAttempt;
@@ -182,13 +183,19 @@
 }
 
 -(BOOL)hasMasternodeAtLocation:(UInt128)IPAddress port:(uint32_t)port {
-    if (self.chain.protocolVersion < 70211) {
-        return FALSE;
-    } else {
-        DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [self simplifiedMasternodeEntryForLocation:IPAddress port:port];
-        return (!!simplifiedMasternodeEntry);
-    }
+    DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [self simplifiedMasternodeEntryForLocation:IPAddress port:port];
+    return (!!simplifiedMasternodeEntry);
 }
+
+-(double)masternodeListAndQuorumsSyncProgress
+{
+    double amountLeft = self.masternodeListRetrievalQueue.count;
+    double maxAmount = self.masternodeListRetrievalQueueMaxAmount;
+    if (!maxAmount) return 0;
+    double progress = MAX(MIN((maxAmount - amountLeft) / maxAmount,1),0);
+    return progress;
+}
+
 
 // MARK: - Set Up and Tear Down
 
@@ -357,6 +364,7 @@
 
 -(void)addToMasternodeRetrievalQueue:(NSData*)masternodeBlockHashData {
     [self.masternodeListRetrievalQueue addObject:masternodeBlockHashData];
+    self.masternodeListRetrievalQueueMaxAmount = MAX(self.masternodeListRetrievalQueueMaxAmount, self.masternodeListRetrievalQueue.count);
     [self.masternodeListRetrievalQueue sortUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
         NSData * obj1BlockHash = (NSData*)obj1;
         NSData * obj2BlockHash = (NSData*)obj2;
@@ -370,6 +378,7 @@
 
 -(void)addToMasternodeRetrievalQueueArray:(NSArray*)masternodeBlockHashDataArray {
     [self.masternodeListRetrievalQueue addObjectsFromArray:masternodeBlockHashDataArray];
+    self.masternodeListRetrievalQueueMaxAmount = MAX(self.masternodeListRetrievalQueueMaxAmount, self.masternodeListRetrievalQueue.count);
     [self.masternodeListRetrievalQueue sortUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
         NSData * obj1BlockHash = (NSData*)obj1;
         NSData * obj2BlockHash = (NSData*)obj2;

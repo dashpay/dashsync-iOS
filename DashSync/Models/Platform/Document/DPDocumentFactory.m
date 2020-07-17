@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DPDocumentFactory ()
 
-@property (copy, nonatomic) NSString *userId;
+@property (assign, nonatomic) UInt256 userId;
 @property (strong, nonatomic) DPContract *contract;
 @property (strong, nonatomic) DSChain * chain;
 
@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     self = [super init];
     if (self) {
-        _userId = [identity.uniqueIdString copy];
+        _userId = identity.uniqueID;
         _contract = contract;
         _chain = chain;
     }
@@ -57,6 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable DPDocument *)documentOnTable:(NSString *)tableName
                                      withDataDictionary:(nullable DSStringValueDictionary *)dataDictionary
+                            usingEntropy:(NSString*)entropy
                                     error:(NSError *_Nullable __autoreleasing *)error {
     NSParameterAssert(tableName);
 
@@ -64,13 +65,13 @@ NS_ASSUME_NONNULL_BEGIN
         dataDictionary = @{};
     }
     
-    if (uint256_is_zero(self.contract.registeredBlockchainIdentityUniqueID)) {
+    if (uint256_is_zero(self.contract.contractId) && uint256_is_zero(self.contract.registeredBlockchainIdentityUniqueID)) {
         if (error != NULL) {
             *error = [NSError errorWithDomain:DPErrorDomain
                                          code:DPErrorCode_InvalidDocumentType
                                      userInfo:@{
                                          NSLocalizedDescriptionKey :
-                                             [NSString stringWithFormat:DSLocalizedString(@"Contract '%@' needs to first be locally registered",nil),
+                                             [NSString stringWithFormat:DSLocalizedString(@"Contract '%@' needs to first be locally registered or known",nil),
                                                                         self.contract.name],
                                      }];
         }
@@ -92,9 +93,7 @@ NS_ASSUME_NONNULL_BEGIN
         return nil;
     }
     
-    NSString * base58String = uint256_base58(self.contract.registeredBlockchainIdentityUniqueID);
-
-    DPDocument *object = [[DPDocument alloc] initWithDataDictionary:dataDictionary createdByUserWithId:self.userId onContractWithId:base58String onTableWithName:tableName usingEntropy:[DSKey randomAddressForChain:[self chain]]];
+    DPDocument *object = [[DPDocument alloc] initWithDataDictionary:dataDictionary createdByUserWithId:self.userId onContractWithId:self.contract.contractId onTableWithName:tableName usingEntropy:[DSKey randomAddressForChain:[self chain]]];
 
     return object;
 }

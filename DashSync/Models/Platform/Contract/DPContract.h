@@ -37,7 +37,11 @@ typedef NS_ENUM(NSUInteger, DPContractState) {
 @property (readonly, copy, nonatomic) NSString *localContractIdentifier;
 @property (readonly, nonatomic) UInt256 registeredBlockchainIdentityUniqueID;
 @property (readonly, copy, nonatomic) NSString *name;
-@property (readonly, copy, nonatomic) NSString *base58ContractID;
+@property (readonly, nonatomic) UInt256 contractId;
+@property (readonly, copy, nonatomic) NSString *base58ContractId;
+@property (readonly, nonatomic) UInt160 entropy;
+@property (readonly, copy, nonatomic) NSString *base58OwnerId;
+@property (readonly, nonatomic) UInt256 ownerId;
 @property (readonly, copy, nonatomic) NSString *statusString;
 @property (readonly, nonatomic) DPContractState contractState;
 @property (readonly, copy, nonatomic) NSString *jsonSchemaId;
@@ -62,9 +66,12 @@ typedef NS_ENUM(NSUInteger, DPContractState) {
 - (nullable NSDictionary<NSString *, NSString *> *)documentSchemaRefForType:(NSString *)type;
 
 - (void)registerCreator:(DSBlockchainIdentity*)blockchainIdentity inContext:(NSManagedObjectContext*)context;
+- (void)unregisterCreatorInContext:(NSManagedObjectContext*)context;
 
 + (DPContract *)localDashpayContractForChain:(DSChain*)chain;
 + (DPContract *)localDPNSContractForChain:(DSChain*)chain;
+
+-(UInt256)contractIdIfRegisteredByBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity;
 
 @end
 

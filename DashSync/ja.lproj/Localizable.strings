@@ -254,15 +254,6 @@
 /* It is Unknown if the Blockchain Identity is registered */
 "Unknown" = "Unknown";
 
-/* As a type of Blockchain Identity */
-"Application" = "Application";
-
-/* As a type of Blockchain Identity */
-"User" = "User";
-
-/* No comment provided by engineer. */
-"An identity needs to have its type defined before it can be registered." = "An identity needs to have its type defined before it can be registered.";
-
 /* Status of Key or Username is Revoked */
 "Revoked" = "Revoked";
 
@@ -321,9 +312,6 @@
 "Contract '%@' doesn't contain a table named '%@'" = "Contract '%1$@' doesn't contain a table named '%2$@'";
 
 /* No comment provided by engineer. */
-"Contract '%@' needs to first be locally registered" = "Contract '%@' needs to first be locally registered";
-
-/* No comment provided by engineer. */
 "Count not create friendship derivation path" = "Count not create friendship derivation path";
 
 /* No comment provided by engineer. */
@@ -364,6 +352,9 @@
 
 /* No comment provided by engineer. */
 "The Dashpay contract is not properly set up" = "The Dashpay contract is not properly set up";
+
+/* No comment provided by engineer. */
+"Contract '%@' needs to first be locally registered or known" = "Contract '%@' needs to first be locally registered or known";
 
 /* No comment provided by engineer. */
 "A block could not be mined in the selected time interval." = "A block could not be mined in the selected time interval.";

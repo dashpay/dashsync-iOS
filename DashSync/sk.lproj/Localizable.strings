@@ -240,12 +240,6 @@
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Vaša peňaženka je možno nesynchronizovaná.\nTo sa môže často vyriešiť opätovným skenovaním blockchainu.";
 
 /* No comment provided by engineer. */
-"An identity needs to have its type defined before it can be registered." = "An identity needs to have its type defined before it can be registered.";
-
-/* As a type of Blockchain Identity */
-"Application" = "Application";
-
-/* No comment provided by engineer. */
 "BLS" = "BLS";
 
 /* No comment provided by engineer. */
@@ -253,9 +247,6 @@
 
 /* No comment provided by engineer. */
 "Contract '%@' doesn't contain a table named '%@'" = "Contract '%1$@' doesn't contain a table named '%2$@'";
-
-/* No comment provided by engineer. */
-"Contract '%@' needs to first be locally registered" = "Contract '%@' needs to first be locally registered";
 
 /* No comment provided by engineer. */
 "Count not create friendship derivation path" = "Count not create friendship derivation path";
@@ -340,9 +331,6 @@
 /* No comment provided by engineer. */
 "Unknown Key Type" = "Unknown Key Type";
 
-/* As a type of Blockchain Identity */
-"User" = "User";
-
 /* No comment provided by engineer. */
 "User has actions to complete before being able to use Dashpay" = "User has actions to complete before being able to use Dashpay";
 
@@ -369,6 +357,9 @@
 
 /* No comment provided by engineer. */
 "The Dashpay contract is not properly set up" = "The Dashpay contract is not properly set up";
+
+/* No comment provided by engineer. */
+"Contract '%@' needs to first be locally registered or known" = "Contract '%@' needs to first be locally registered or known";
 
 /* No comment provided by engineer. */
 "A block could not be mined in the selected time interval." = "A block could not be mined in the selected time interval.";

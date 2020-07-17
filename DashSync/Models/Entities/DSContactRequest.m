@@ -43,7 +43,7 @@
     self = [super init];
     if (self) {
         NSString *recipientString = rawContact[@"toUserId"];
-        NSString *senderString = rawContact[@"$userId"];
+        NSString *senderString = rawContact[@"$ownerId"];
         NSString *encryptedPublicKeyString = rawContact[@"encryptedPublicKey"];
         NSNumber *senderKeyIndex = rawContact[@"senderKeyIndex"];
         NSNumber *recipientKeyIndex = rawContact[@"recipientKeyIndex"];
@@ -56,9 +56,8 @@
         self.senderBlockchainIdentityUniqueId = [senderString base58ToData].UInt256;
         self.encryptedPublicKeyData = [encryptedPublicKeyString base64ToData];
         self.timestamp = [timestamp doubleValue];
-        //todo fix -1
-        self.recipientKeyIndex = [recipientKeyIndex unsignedIntValue] - 1;
-        self.senderKeyIndex = [senderKeyIndex unsignedIntValue] - 1;
+        self.recipientKeyIndex = [recipientKeyIndex unsignedIntValue];
+        self.senderKeyIndex = [senderKeyIndex unsignedIntValue];
         self.blockchainIdentity = blockchainIdentity;
     }
     return self;

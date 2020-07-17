@@ -25,6 +25,7 @@
 @property (nonatomic, strong) DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction;
 
 @property (nonatomic, strong) DSChain * chain;
+@property (nonatomic, strong) NSString * entropyString;
 
 @end
 
@@ -52,13 +53,14 @@
     return self;
 }
 
--(instancetype)initWithTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain * _Nonnull)chain {
+-(instancetype)initWithTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId usingEntropyString:(NSString*)entropyString onChain:(DSChain * _Nonnull)chain {
     NSParameterAssert(chain);
     
     if (!(self = [self initOnChain:chain])) return nil;
     self.type = DSTransitionType_Documents;
     self.version = version;
     self.blockchainIdentityUniqueId = blockchainIdentityUniqueId;
+    self.entropyString = entropyString;
     return self;
 }
 
@@ -87,7 +89,11 @@
 
 -(void)signWithKey:(DSKey*)privateKey atIndex:(uint32_t)index fromIdentity:(DSBlockchainIdentity*)blockchainIdentity {
     NSParameterAssert(privateKey);
-    NSAssert(index != UINT32_MAX, @"index must exist");
+    if ([self isKindOfClass:[DSBlockchainIdentityRegistrationTransition class]]) {
+        NSAssert(index == UINT32_MAX, @"index must not exist");
+    } else {
+        NSAssert(index != UINT32_MAX, @"index must exist");
+    }
     //ATTENTION If this ever changes from ECDSA, change the max signature size defined above
     //DSDLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
     if ([privateKey isMemberOfClass:[DSBLSKey class]]) {
@@ -97,7 +103,7 @@
         self.signatureType = DSKeyType_ECDSA;
         self.signatureData = [((DSECDSAKey*)privateKey) compactSign:[self serializedBaseDataHash].UInt256];
     }
-    self.signaturePublicKeyId = index + 1; //hack for indexes starting at 1
+    self.signaturePublicKeyId = index;
     self.transitionHash = self.data.SHA256_2;
 }
 
@@ -126,7 +132,9 @@
     if (_keyValueDictionary == nil) {
         DSMutableStringValueDictionary *json = [self baseKeyValueDictionary];
         json[@"signature"] = self.signatureData.base64String;
-        json[@"signaturePublicKeyId"] = @(self.signaturePublicKeyId);
+        if (self.signaturePublicKeyId != UINT32_MAX) {
+            json[@"signaturePublicKeyId"] = @(self.signaturePublicKeyId);
+        }
         _keyValueDictionary = json;
     }
     return _keyValueDictionary;

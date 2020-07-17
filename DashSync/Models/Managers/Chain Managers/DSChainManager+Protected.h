@@ -15,8 +15,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithChain:(DSChain*)chain;
 - (void)resetSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo inContext:(NSManagedObjectContext*)context;
-- (void)resetSyncStartHeight;
-- (void)restartSyncStartHeight;
+- (void)resetChainSyncStartHeight;
+- (void)restartChainSyncStartHeight;
+- (void)resetTerminalSyncStartHeight;
+- (void)restartTerminalSyncStartHeight;
 - (void)relayedNewItem;
 - (void)resetLastRelayedItemTime;
 - (void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo inContext:(NSManagedObjectContext*)context;

@@ -19,6 +19,7 @@
 #import "DPDocument.h"
 #import "DSTransition+Protected.h"
 #import "DPContract+Protected.h"
+#import "NSString+Dash.h"
 
 @interface DSContractTransition()
 
@@ -31,11 +32,12 @@
 - (DSMutableStringValueDictionary *)baseKeyValueDictionary {
     DSMutableStringValueDictionary *json = [super baseKeyValueDictionary];
     json[@"dataContract"] = self.contract.objectDictionary;
+    json[@"entropy"] = [NSString addressWithHash160:self.contract.entropy onChain:self.chain];
     return json;
 }
 
--(instancetype)initWithContract:(DPContract*)contract withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain {
-    if (self = [super initWithTransitionVersion:version blockchainIdentityUniqueId:blockchainIdentityUniqueId onChain:chain]) {
+-(instancetype)initWithContract:(DPContract*)contract withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId usingEntropyString:(NSString*)entropyString onChain:(DSChain *)chain {
+    if (self = [super initWithTransitionVersion:version blockchainIdentityUniqueId:blockchainIdentityUniqueId usingEntropyString:entropyString  onChain:chain]) {
         self.contract = contract;
     }
     self.type = DSTransitionType_DataContract;

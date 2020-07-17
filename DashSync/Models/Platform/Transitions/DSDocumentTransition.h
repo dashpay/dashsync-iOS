@@ -29,11 +29,7 @@ typedef NS_ENUM(NSUInteger, DSDocumentTransitionType) {
 
 @property(nonatomic,readonly) NSArray<DPDocument *>* documents;
 
--(instancetype)initForCreatedDocuments:(NSArray<DPDocument*>*)documents withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain;
-
--(instancetype)initForUpdatedDocuments:(NSArray<DPDocument*>*)documents withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain;
-
--(instancetype)initForDocuments:(NSArray<DPDocument*>*)documents withActions:(NSArray<NSNumber*>*)actions withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain;
+-(instancetype)initForDocuments:(NSArray<DPDocument*>*)documents withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId usingEntropyString:(NSString*)entropyString onChain:(DSChain *)chain;
 
 @end
 

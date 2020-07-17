@@ -25,6 +25,9 @@
 #import "NSManagedObject+Sugar.h"
 #import "DSContractEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
+#import "NSMutableData+Dash.h"
+#import "DSWallet.h"
+#import "DSAuthenticationKeysDerivationPath.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -36,7 +39,10 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 
 @property (strong, nonatomic) NSMutableDictionary<NSString *, DSStringValueDictionary *> *mutableDocuments;
 @property (copy, nonatomic, null_resettable) NSString *localContractIdentifier;
+@property (assign, nonatomic) UInt256 contractId;
+@property (assign, nonatomic) UInt256 ownerId;
 @property (assign, nonatomic) UInt256 registeredBlockchainIdentityUniqueID;
+@property (assign, nonatomic) UInt160 entropy;
 @property (strong, nonatomic) DSChain *chain;
 
 @end
@@ -163,7 +169,38 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 
 #pragma mark - Contract Info
 
--(NSString*)base58ContractID {
+-(UInt256)contractId {
+    if (uint256_is_zero(_contractId)) {
+        NSAssert(!uint256_is_zero(self.registeredBlockchainIdentityUniqueID),@"Registered Blockchain Identity needs to be set");
+        NSAssert(!uint160_is_zero(self.entropy),@"Entropy needs to be set");
+        NSMutableData * mData = [NSMutableData data];
+        [mData appendUInt256:self.registeredBlockchainIdentityUniqueID];
+        NSString * entropyAddress = [NSString addressWithHash160:self.entropy onChain:self.chain];
+        [mData appendData:entropyAddress.base58ToData];
+        _contractId = [mData SHA256_2];
+    }
+    return _contractId;
+}
+
+-(UInt256)contractIdIfRegisteredByBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity {
+    NSMutableData * mData = [NSMutableData data];
+    [mData appendUInt256:blockchainIdentity.uniqueID];
+    DSWallet * wallet = blockchainIdentity.wallet;
+    DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentitiesECDSAKeysDerivationPathForWallet:wallet];
+    NSMutableData * entropyData = [self.serializedHash mutableCopy];
+    [entropyData appendUInt256:blockchainIdentity.uniqueID];
+    [entropyData appendData:[derivationPath publicKeyDataAtIndex:UINT32_MAX - 1]]; //use the last key in 32 bit space (it won't probably ever be used anyways)
+    NSString * entropyAddress = [NSString addressWithHash160:[entropyData RMD160] onChain:self.chain];
+    [mData appendData:entropyAddress.base58ToData];
+    UInt256 contractId = [mData SHA256_2];
+    return contractId;
+}
+
+-(NSString*)base58ContractId {
+    return uint256_base58(self.contractId);
+}
+
+-(NSString*)base58OwnerId {
     NSAssert(!uint256_is_zero(self.registeredBlockchainIdentityUniqueID),@"Registered Blockchain Identity can not be 0");
     return uint256_base58(self.registeredBlockchainIdentityUniqueID);
 }
@@ -276,8 +313,23 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     return @"Other State";
 }
 
+-(void)unregisterCreatorInContext:(NSManagedObjectContext*)context {
+    self.registeredBlockchainIdentityUniqueID = UINT256_ZERO;
+    self.contractId = UINT256_ZERO; //will be lazy loaded
+    self.entropy = UINT160_ZERO;
+    [self saveAndWaitInContext:context];
+}
+
 - (void)registerCreator:(DSBlockchainIdentity*)blockchainIdentity inContext:(NSManagedObjectContext*)context {
+    NSParameterAssert(blockchainIdentity);
     self.registeredBlockchainIdentityUniqueID = blockchainIdentity?blockchainIdentity.uniqueID:UINT256_ZERO;
+    self.contractId = UINT256_ZERO; //will be lazy loaded
+    DSWallet * wallet = blockchainIdentity.wallet;
+    DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentitiesECDSAKeysDerivationPathForWallet:wallet];
+    NSMutableData * entropyData = [self.serializedHash mutableCopy];
+    [entropyData appendUInt256:blockchainIdentity.uniqueID];
+    [entropyData appendData:[derivationPath publicKeyDataAtIndex:UINT32_MAX - 1]]; //use the last key in 32 bit space (it won't probably ever be used anyways)
+    self.entropy = [entropyData RMD160];
     [self saveAndWaitInContext:context];
 }
 
@@ -289,7 +341,8 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 #pragma mark - Transitions
 
 -(DSContractTransition*)contractRegistrationTransitionForIdentity:(DSBlockchainIdentity*)blockchainIdentity {
-    return [[DSContractTransition alloc] initWithContract:self withTransitionVersion:1 blockchainIdentityUniqueId:blockchainIdentity.uniqueID onChain:self.chain];
+    NSString * entropyString = [DSKey randomAddressForChain:self.chain];
+    return [[DSContractTransition alloc] initWithContract:self withTransitionVersion:1 blockchainIdentityUniqueId:blockchainIdentity.uniqueID usingEntropyString:entropyString onChain:self.chain];
 }
 
 
@@ -314,6 +367,9 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
             if (!uint256_is_zero(self.registeredBlockchainIdentityUniqueID)) {
                 entity.registeredBlockchainIdentityUniqueID = uint256_data(self.registeredBlockchainIdentityUniqueID);
             }
+            if (!uint160_is_zero(self.entropy)) {
+                entity.entropy = uint160_data(self.entropy);
+            }
             hasChange = YES;
         }
         if (!uint256_is_zero(self.registeredBlockchainIdentityUniqueID) && (!entity.registeredBlockchainIdentityUniqueID || !uint256_eq(entity.registeredBlockchainIdentityUniqueID.UInt256, self.registeredBlockchainIdentityUniqueID))) {
@@ -323,6 +379,15 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
             entity.registeredBlockchainIdentityUniqueID = nil;
             hasChange = YES;
         }
+        
+        if (!uint160_is_zero(self.entropy) && (!entity.entropy || !uint160_eq(entity.entropy.UInt160, self.entropy))) {
+            entity.entropy = uint160_data(self.entropy);
+            hasChange = YES;
+        } else if (uint160_is_zero(self.entropy) && entity.entropy) {
+            entity.entropy = nil;
+            hasChange = YES;
+        }
+        
         if (entity.state != self.contractState) {
             entity.state = self.contractState;
             hasChange = YES;
@@ -358,7 +423,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     NSAssert(error == nil, @"Failed building DPContract");
     if (!uint256_is_zero(chain.dashpayContractID) && contract.contractState == DPContractState_Unknown) {
         [contract setContractState:DPContractState_Registered inContext:[NSManagedObjectContext platformContext]];
-        contract.registeredBlockchainIdentityUniqueID = chain.dashpayContractID;
+        contract.contractId = chain.dashpayContractID;
         [contract saveAndWaitInContext:[NSManagedObjectContext platformContext]];
     }
 
@@ -382,7 +447,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     NSAssert(error == nil, @"Failed building DPContract");
     if (!uint256_is_zero(chain.dpnsContractID) && contract.contractState == DPContractState_Unknown) {
         [contract setContractState:DPContractState_Registered inContext:[NSManagedObjectContext platformContext]];
-        contract.registeredBlockchainIdentityUniqueID = chain.dpnsContractID;
+        contract.contractId = chain.dpnsContractID;
         [contract saveAndWaitInContext:[NSManagedObjectContext platformContext]];
     }
     return contract;
@@ -396,8 +461,10 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     if (_keyValueDictionary == nil) {
         DSMutableStringValueDictionary *json = [[DSMutableStringValueDictionary alloc] init];
         json[@"$schema"] = self.jsonMetaSchema;
-        json[@"version"] = @(self.version);
-        json[@"contractId"] = uint256_base58(self.registeredBlockchainIdentityUniqueID);
+        //json[@"version"] = @(self.version);
+        json[@"ownerId"] = uint256_base58(self.registeredBlockchainIdentityUniqueID);
+        json[@"$id"] = self.base58ContractId;
+//        json[@"$entropy"] = [uint160_base58(self.entropy) stringByPaddingToLength:34 withString:@"1" startingAtIndex:0];
         json[@"documents"] = self.documents;
         if (self.definitions.count > 0) {
             json[@"definitions"] = self.definitions;

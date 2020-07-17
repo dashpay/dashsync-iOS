@@ -11,9 +11,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, DSKeyType) {
-    DSKeyType_Unknown = 0,
-    DSKeyType_ECDSA = 1,
-    DSKeyType_BLS = 2,
+    DSKeyType_ECDSA = 0,
+    DSKeyType_BLS = 1,
 };
 
 @class DSChain, DSDerivationPath;

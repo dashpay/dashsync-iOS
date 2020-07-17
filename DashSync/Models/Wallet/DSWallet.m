@@ -1061,6 +1061,18 @@
     _defaultBlockchainIdentity = nil;
 }
 
+-(DSBlockchainIdentity* _Nullable)blockchainIdentityThatCreatedContract:(DPContract*)contract withContractId:(UInt256)contractId {
+    NSParameterAssert(contract);
+    NSAssert(!uint256_is_zero(contractId), @"contractId must not be null");
+    DSBlockchainIdentity * foundBlockchainIdentity = nil;
+    for (DSBlockchainIdentity * blockchainIdentity in [_mBlockchainIdentities allValues]) {
+        if (uint256_eq([contract contractIdIfRegisteredByBlockchainIdentity:blockchainIdentity],contractId)) {
+            foundBlockchainIdentity = blockchainIdentity;
+        }
+    }
+    return foundBlockchainIdentity;
+}
+
 -(DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId {
     NSAssert(!uint256_is_zero(uniqueId), @"uniqueId must not be null");
     DSBlockchainIdentity * foundBlockchainIdentity = nil;
@@ -1114,7 +1126,7 @@
                     DSBlockchainIdentityEntity * blockchainIdentityEntity = [DSBlockchainIdentityEntity anyObjectInContext:context matching:@"uniqueID == %@",uint256_data([dsutxo_data(blockchainIdentityLockedOutpoint) SHA256_2])];
                     DSBlockchainIdentity * blockchainIdentity = nil;
                     if (blockchainIdentityEntity) {
-                        blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:blockchainIdentityEntity.type atIndex:index withLockedOutpoint:blockchainIdentityLockedOutpoint inWallet:self withBlockchainIdentityEntity:blockchainIdentityEntity inContext:self.chain.chainManagedObjectContext];
+                        blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index withLockedOutpoint:blockchainIdentityLockedOutpoint inWallet:self withBlockchainIdentityEntity:blockchainIdentityEntity inContext:self.chain.chainManagedObjectContext];
                     } else {
                         //No blockchain identity is known in core data
                         NSData * transactionHashData = uint256_data(uint256_reverse(blockchainIdentityLockedOutpoint.hash));
@@ -1128,12 +1140,12 @@
                             if (!correctIndex) {
                                 NSAssert(FALSE,@"We should implement this");
                             } else {
-                                blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:DSBlockchainIdentityType_Unknown atIndex:index withFundingTransaction:registrationTransaction withUsernameDictionary:nil inWallet:self inContext:self.chain.chainManagedObjectContext];
+                                blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index withFundingTransaction:registrationTransaction withUsernameDictionary:nil inWallet:self inContext:self.chain.chainManagedObjectContext];
                                 [blockchainIdentity registerInWallet];
                             }
                         } else {
                             //We also don't have the registration funding transaction
-                            blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:DSBlockchainIdentityType_Unknown atIndex:index withLockedOutpoint:blockchainIdentityLockedOutpoint inWallet:self inContext:self.chain.chainManagedObjectContext];
+                            blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index withLockedOutpoint:blockchainIdentityLockedOutpoint inWallet:self inContext:self.chain.chainManagedObjectContext];
                             [blockchainIdentity registerInWalletForBlockchainIdentityUniqueId:[dsutxo_data(blockchainIdentityLockedOutpoint) SHA256_2]];
                         }
                     }
@@ -1164,24 +1176,24 @@
     return max != nil ? ([max unsignedIntValue] + 1) : 0;
 }
 
--(DSBlockchainIdentity*)createBlockchainIdentityOfType:(DSBlockchainIdentityType)type {
-    DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:type atIndex:[self unusedBlockchainIdentityIndex] inWallet:self inContext:self.chain.chainManagedObjectContext ];
+-(DSBlockchainIdentity*)createBlockchainIdentity {
+    DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:[self unusedBlockchainIdentityIndex] inWallet:self inContext:self.chain.chainManagedObjectContext ];
     return blockchainIdentity;
 }
 
--(DSBlockchainIdentity*)createBlockchainIdentityOfType:(DSBlockchainIdentityType)type usingDerivationIndex:(uint32_t)index {
-    DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:type atIndex:[self unusedBlockchainIdentityIndex] inWallet:self inContext:self.chain.chainManagedObjectContext ];
+-(DSBlockchainIdentity*)createBlockchainIdentityUsingDerivationIndex:(uint32_t)index {
+    DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:[self unusedBlockchainIdentityIndex] inWallet:self inContext:self.chain.chainManagedObjectContext];
     return blockchainIdentity;
 }
 
--(DSBlockchainIdentity*)createBlockchainIdentityOfType:(DSBlockchainIdentityType)type forUsername:(NSString*)username {
-    DSBlockchainIdentity * blockchainIdentity = [self createBlockchainIdentityOfType:type];
+-(DSBlockchainIdentity*)createBlockchainIdentityForUsername:(NSString*)username {
+    DSBlockchainIdentity * blockchainIdentity = [self createBlockchainIdentity];
     [blockchainIdentity addUsername:username save:NO];
     return blockchainIdentity;
 }
 
--(DSBlockchainIdentity*)createBlockchainIdentityOfType:(DSBlockchainIdentityType)type forUsername:(NSString*)username usingDerivationIndex:(uint32_t)index {
-    DSBlockchainIdentity * blockchainIdentity = [self createBlockchainIdentityOfType:type usingDerivationIndex:index];
+-(DSBlockchainIdentity*)createBlockchainIdentityForUsername:(NSString*)username usingDerivationIndex:(uint32_t)index {
+    DSBlockchainIdentity * blockchainIdentity = [self createBlockchainIdentityUsingDerivationIndex:index];
     [blockchainIdentity addUsername:username save:NO];
     return blockchainIdentity;
 }

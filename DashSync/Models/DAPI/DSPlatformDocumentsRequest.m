@@ -87,10 +87,10 @@
 
 +(instancetype)dashpayRequestForContactRequestsForSendingUserId:(NSString*)userId since:(NSTimeInterval)timestamp {
     DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
-    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"%K == %@ && timestamp >= %@",@"$userId",userId,@(timestamp)];
+    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"%K == %@ && timestamp >= %@",@"$ownerId",userId,@(timestamp)];
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = 100;
-    platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"$userId" ascending:YES],[NSSortDescriptor sortDescriptorWithKey:@"timestamp" ascending:YES]];
+    platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"$ownerId" ascending:YES],[NSSortDescriptor sortDescriptorWithKey:@"timestamp" ascending:YES]];
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"contactRequest";
     return platformDocumentsRequest;
@@ -109,7 +109,7 @@
 
 +(instancetype)dashpayRequestForContactRequestForSendingUserId:(NSString*)userId toRecipientUserId:(NSString*)toUserId {
     DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
-    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"%K == %@ && toUserId == %@",@"$userId",userId,toUserId];
+    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"%K == %@ && toUserId == %@",@"$ownerId",userId,toUserId];
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = 1;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
@@ -119,7 +119,7 @@
 
 +(instancetype)dashpayRequestForProfileWithUserId:(NSString*)userId {
     DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
-    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"%K == %@",@"$userId",userId];
+    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"%K == %@",@"$ownerId",userId];
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = 1;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
@@ -160,7 +160,7 @@
     NSAssert(self.tableName, @"Table name must be set");
     GetDocumentsRequest * getDocumentsRequest = [[GetDocumentsRequest alloc] init];
     getDocumentsRequest.documentType = self.tableName;
-    getDocumentsRequest.dataContractId = self.contract.base58ContractID;
+    getDocumentsRequest.dataContractId = self.contract.base58ContractId;
     getDocumentsRequest.where = [self whereData];
     if ([self.sortDescriptors count]) {
         getDocumentsRequest.orderBy = [self orderByData];
