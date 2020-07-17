@@ -19,6 +19,7 @@
 @property (nonatomic,strong) DSKeyValueTableViewCell * sporkAddressTableViewCell;
 @property (nonatomic,strong) DSKeyValueTableViewCell * sporkPrivateKeyTableViewCell;
 @property (nonatomic,strong) DSKeyValueTableViewCell * protocolVersionTableViewCell;
+@property (nonatomic,strong) DSKeyValueTableViewCell * minimumDifficultyBlocksTableViewCell;
 @property (nonatomic,strong) DSKeyValueTableViewCell * minProtocolVersionTableViewCell;
 @property (nonatomic,strong) DSKeyValueTableViewCell * dapiJRPCPortTableViewCell;
 @property (nonatomic,strong) DSKeyValueTableViewCell * dapiGRPCPortTableViewCell;
@@ -46,6 +47,7 @@
     self.dapiJRPCPortTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"DapiJRPCPortCellIdentifier"];
     self.dapiGRPCPortTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"DapiGRPCPortCellIdentifier"];
     self.dashdPortTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"DashdPortCellIdentifier"];
+    self.minimumDifficultyBlocksTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"MinimumDifficultyBlocksCellIdentifier"];
     if (!self.chain) {
         self.insertedIPAddresses = [NSMutableOrderedSet orderedSet];
     } else {
@@ -60,6 +62,7 @@
         self.dashdPortTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u",self.chain.standardPort];
         self.dapiJRPCPortTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u",self.chain.standardDapiJRPCPort];
         self.dapiGRPCPortTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u",self.chain.standardDapiGRPCPort];
+        self.minimumDifficultyBlocksTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u",self.chain.minimumDifficultyBlocks];
         self.dpnsContractIDTableViewCell.valueTextField.text = !uint256_is_zero(self.chain.dpnsContractID)? uint256_base58(self.chain.dpnsContractID):@"";
         self.dashpayContractIDTableViewCell.valueTextField.text = !uint256_is_zero(self.chain.dashpayContractID)?uint256_base58(self.chain.dashpayContractID):@"";
     }
@@ -81,7 +84,7 @@
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     switch (section) {
         case 0:
-            return 6;
+            return 7;
             break;
         case 1:
             return 2;
@@ -119,10 +122,12 @@
                 case 2:
                     return self.minProtocolVersionTableViewCell;
                 case 3:
-                    return self.dashdPortTableViewCell;
+                    return self.minimumDifficultyBlocksTableViewCell;
                 case 4:
-                    return self.dapiJRPCPortTableViewCell;
+                    return self.dashdPortTableViewCell;
                 case 5:
+                    return self.dapiJRPCPortTableViewCell;
+                case 6:
                     return self.dapiGRPCPortTableViewCell;
                 default:
                     NSAssert(NO, @"Unknown cell");
@@ -229,6 +234,7 @@
     NSString * sporkAddress = [self.sporkAddressTableViewCell.valueTextField.text isEqualToString:@""]?nil:self.sporkAddressTableViewCell.valueTextField.text;
     NSString * sporkPrivateKey = [self.sporkPrivateKeyTableViewCell.valueTextField.text isEqualToString:@""]?nil:self.sporkPrivateKeyTableViewCell.valueTextField.text;
     uint32_t dashdPort = [self.dashdPortTableViewCell.valueTextField.text isEqualToString:@""]?DEVNET_STANDARD_PORT:[self.dashdPortTableViewCell.valueTextField.text intValue];
+    uint32_t minimumDifficultyBlocks = [self.minimumDifficultyBlocksTableViewCell.valueTextField.text isEqualToString:@""]?0:[self.minimumDifficultyBlocksTableViewCell.valueTextField.text intValue];
     uint32_t dapiJRPCPort = [self.dapiJRPCPortTableViewCell.valueTextField.text isEqualToString:@""]?DEVNET_DAPI_JRPC_STANDARD_PORT:[self.dapiJRPCPortTableViewCell.valueTextField.text intValue];
     uint32_t dapiGRPCPort = [self.dapiGRPCPortTableViewCell.valueTextField.text isEqualToString:@""]?DEVNET_DAPI_GRPC_STANDARD_PORT:[self.dapiGRPCPortTableViewCell.valueTextField.text intValue];
     UInt256 dpnsContractID = [self.dpnsContractIDTableViewCell.valueTextField.text isEqualToString:@""]?UINT256_ZERO:[self.dpnsContractIDTableViewCell.valueTextField.text base58ToData].UInt256;
@@ -240,10 +246,10 @@
         sporkPrivateKey = nil;
     }
     if (self.chain) {
-        [[DSChainsManager sharedInstance] updateDevnetChain:self.chain forServiceLocations:self.insertedIPAddresses standardPort:dashdPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion sporkAddress:sporkAddress sporkPrivateKey:sporkPrivateKey];
+        [[DSChainsManager sharedInstance] updateDevnetChain:self.chain forServiceLocations:self.insertedIPAddresses withMinimumDifficultyBlocks:minimumDifficultyBlocks standardPort:dashdPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion sporkAddress:sporkAddress sporkPrivateKey:sporkPrivateKey];
     } else {
         NSString * identifier = self.addDevnetNameTableViewCell.valueTextField.text;
-        [[DSChainsManager sharedInstance] registerDevnetChainWithIdentifier:identifier forServiceLocations:self.insertedIPAddresses standardPort:dashdPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion sporkAddress:sporkAddress sporkPrivateKey:sporkPrivateKey];
+        [[DSChainsManager sharedInstance] registerDevnetChainWithIdentifier:identifier forServiceLocations:self.insertedIPAddresses withMinimumDifficultyBlocks:minimumDifficultyBlocks standardPort:dashdPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion sporkAddress:sporkAddress sporkPrivateKey:sporkPrivateKey];
     }
     [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
 }

@@ -31,7 +31,27 @@
 
 @implementation DSMerkleBlockEntity
 
-- (instancetype)setAttributesFromBlock:(DSMerkleBlock *)block forChainEntity:(DSChainEntity*)chainEntity {
+- (instancetype)setAttributesFromBlock:(DSBlock *)block forChainEntity:(DSChainEntity*)chainEntity {
+    if ([block isKindOfClass:[DSMerkleBlock class]]) {
+        return [self setAttributesFromMerkleBlock:(DSMerkleBlock*)block forChainEntity:chainEntity];
+    }
+    [self.managedObjectContext performBlockAndWait:^{
+        self.blockHash = [NSData dataWithBytes:block.blockHash.u8 length:sizeof(UInt256)];
+        self.version = block.version;
+        self.prevBlock = [NSData dataWithBytes:block.prevBlock.u8 length:sizeof(UInt256)];
+        self.merkleRoot = [NSData dataWithBytes:block.merkleRoot.u8 length:sizeof(UInt256)];
+        self.timestamp = block.timestamp;
+        self.target = block.target;
+        self.nonce = block.nonce;
+        self.totalTransactions = block.totalTransactions;
+        self.height = block.height;
+        self.chain = chainEntity;
+    }];
+    
+    return self;
+}
+
+- (instancetype)setAttributesFromMerkleBlock:(DSMerkleBlock *)block forChainEntity:(DSChainEntity*)chainEntity {
     [self.managedObjectContext performBlockAndWait:^{
         self.blockHash = [NSData dataWithBytes:block.blockHash.u8 length:sizeof(UInt256)];
         self.version = block.version;
@@ -66,9 +86,9 @@
         if (self.chainLock) {
             chainLock = [self.chainLock chainLockForChain:chain];
         }
-        block = [[DSMerkleBlock alloc] initWithBlockHash:hash onChain:self.chain.chain version:self.version prevBlock:prev merkleRoot:root
+        block = [[DSMerkleBlock alloc] initWithVersion:self.version blockHash:hash prevBlock:prev merkleRoot:root
                                                timestamp:self.timestamp target:self.target nonce:self.nonce
-                                       totalTransactions:self.totalTransactions hashes:self.hashes flags:self.flags height:self.height chainLock:chainLock];
+                                       totalTransactions:self.totalTransactions hashes:self.hashes flags:self.flags height:self.height chainLock:chainLock onChain:self.chain.chain];
     }];
     
     return block;

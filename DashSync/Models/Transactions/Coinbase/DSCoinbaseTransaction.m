@@ -49,6 +49,32 @@
     return self;
 }
 
+-(instancetype)initWithCoinbaseMessage:(NSString*)coinbaseMessage atHeight:(uint32_t)height onChain:(DSChain*)chain {
+    if (!(self = [super initOnChain:chain])) return nil;
+    NSMutableData * coinbaseData = [NSMutableData data];
+    [coinbaseData appendCoinbaseMessage:coinbaseMessage atHeight:height];
+    [self addInputHash:UINT256_ZERO index:UINT32_MAX script:nil signature:coinbaseData sequence:UINT32_MAX];
+    NSMutableData * outputScript = [NSMutableData data];
+    [outputScript appendUInt8:OP_RETURN];
+    [self addOutputScript:outputScript amount:chain.baseReward];
+    self.txHash = self.toData.SHA256_2;
+    self.height = height;
+    return self;
+}
+
+-(instancetype)initWithCoinbaseMessage:(NSString*)coinbaseMessage paymentAddresses:(NSArray<NSString*>*)paymentAddresses atHeight:(uint32_t)height onChain:(DSChain*)chain {
+    if (!(self = [super initOnChain:chain])) return nil;
+    NSMutableData * coinbaseData = [NSMutableData data];
+    [coinbaseData appendCoinbaseMessage:coinbaseMessage atHeight:height];
+    [self addInputHash:UINT256_ZERO index:UINT32_MAX script:nil signature:coinbaseData sequence:UINT32_MAX];
+    for (NSString * paymentAddress in paymentAddresses) {
+        [self addOutputAddress:paymentAddress amount:chain.baseReward / paymentAddresses.count];
+    }
+    self.txHash = self.toData.SHA256_2;
+    self.height = height;
+    return self;
+}
+
 -(NSData*)payloadData {
     NSMutableData * data = [NSMutableData data];
     [data appendUInt16:self.coinbaseTransactionVersion];

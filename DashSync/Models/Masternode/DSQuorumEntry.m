@@ -255,7 +255,7 @@
     uint32_t i = 0;
     DSMerkleBlock * block = [self.chain blockForBlockHash:masternodeList.blockHash];
     for (DSSimplifiedMasternodeEntry * masternodeEntry in masternodes) {
-        if ([self.signersBitset bitIsTrueAtIndex:i]) {
+        if ([self.signersBitset bitIsTrueAtLEIndex:i]) {
             DSBLSKey * masternodePublicKey = [DSBLSKey keyWithPublicKey:[masternodeEntry operatorPublicKeyAtBlock:block]];
             [publicKeyArray addObject:masternodePublicKey];
         }

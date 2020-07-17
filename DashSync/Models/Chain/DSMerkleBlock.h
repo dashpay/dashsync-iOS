@@ -27,10 +27,7 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
-
-#define BLOCK_UNKNOWN_HEIGHT      INT32_MAX
-#define DGW_PAST_BLOCKS_MIN 24
-#define DGW_PAST_BLOCKS_MAX 24
+#import "DSBlock.h"
 
 #if (DEBUG && 0)
 #define LLMQ_KEEP_RECENT_BLOCKS 20000
@@ -44,58 +41,21 @@ typedef union _UInt256 UInt256;
 
 @class DSChain, DSChainLock, DSCheckpoint;
 
-@interface DSMerkleBlock : NSObject <NSCopying>
+@interface DSMerkleBlock : DSBlock
 
-@property (nonatomic, readonly) UInt256 blockHash;
-@property (nonatomic, readonly) NSValue * blockHashValue;
-@property (nonatomic, readonly) uint32_t version;
-@property (nonatomic, readonly) UInt256 prevBlock;
-@property (nonatomic, readonly) NSValue * prevBlockValue;
-@property (nonatomic, readonly) UInt256 merkleRoot;
-@property (nonatomic, readonly) uint32_t timestamp; // time interval since unix epoch
-@property (nonatomic, readonly) uint32_t target;
-@property (nonatomic, readonly) uint32_t nonce;
-@property (nonatomic, readonly) uint32_t totalTransactions;
+
 @property (nonatomic, readonly) NSData *hashes;
 @property (nonatomic, readonly) NSData *flags;
-@property (nonatomic, assign) uint32_t height;
-@property (nonatomic, readonly) DSChain *chain;
-@property (nonatomic, readonly) BOOL chainLocked;
-
-@property (nonatomic, readonly) NSArray *txHashes; // the matched tx hashes in the block
-
-// true if merkle tree and timestamp are valid, and proof-of-work matches the stated difficulty target
-// NOTE: This only checks if the block difficulty matches the difficulty target in the header. It does not check if the
-// target is correct for the block's height in the chain. Use verifyDifficultyFromPreviousBlock: for that.
-@property (nonatomic, readonly, getter = isValid) BOOL valid;
-@property (nonatomic, readonly, getter = isMerkleTreeValid) BOOL merkleTreeValid;
-
-@property (nonatomic, readonly, getter = toData) NSData *data;
 
 // message can be either a merkleblock or header message
-+ (instancetype)blockWithMessage:(NSData *)message onChain:(DSChain*)chain;
-
-- (instancetype)initWithMessage:(NSData *)message onChain:(DSChain*)chain;
-- (instancetype)initWithBlockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp height:(uint32_t)height onChain:(DSChain*)chain;
-
-- (instancetype)initWithBlockHash:(UInt256)blockHash onChain:(DSChain*)chain version:(uint32_t)version prevBlock:(UInt256)prevBlock
-merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
-totalTransactions:(uint32_t)totalTransactions hashes:(NSData * _Nullable)hashes flags:(NSData * _Nullable)flags height:(uint32_t)height chainLock:(DSChainLock* _Nullable)chainLock;
++ (instancetype)merkleBlockWithMessage:(NSData *)message onChain:(DSChain*)chain;
 
 // this init is used to check that the coinbase transaction is properly in the merkle tree of a block
 - (instancetype)initWithBlockHash:(UInt256)blockHash merkleRoot:(UInt256)merkleRoot totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags;
 
-- (instancetype)initWithCheckpoint:(DSCheckpoint*)checkpoint onChain:(DSChain*)chain;
-
-// true if the given tx hash is known to be included in the block
-- (BOOL)containsTxHash:(UInt256)txHash;
-
-// Verifies the block difficulty target is correct for the block's position in the chain.
-- (BOOL)verifyDifficultyWithPreviousBlocks:(NSMutableDictionary *)previousBlocks;
-
-- (int32_t)darkGravityWaveTargetWithPreviousBlocks:(NSMutableDictionary *)previousBlocks;
-
-- (void)setChainLockedWithChainLock:(DSChainLock*)chainLock;
+- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash prevBlock:(UInt256)prevBlock
+merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
+totalTransactions:(uint32_t)totalTransactions hashes:(NSData * _Nullable)hashes flags:(NSData * _Nullable)flags height:(uint32_t)height chainLock:(DSChainLock* _Nullable)chainLock onChain:(DSChain*)chain;
 
 @end
 

@@ -25,13 +25,14 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSChainEntity, DSMerkleBlock, DSMasternodeListEntity, DSQuorumEntryEntity, DSChainLockEntity;
+@class DSChainEntity, DSBlock, DSMerkleBlock, DSMasternodeListEntity, DSQuorumEntryEntity, DSChainLockEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMerkleBlockEntity : NSManagedObject
 
-- (instancetype)setAttributesFromBlock:(DSMerkleBlock *)block forChainEntity:(DSChainEntity*)chainEntity; //this is faster when you know the chain entity already
+- (instancetype)setAttributesFromBlock:(DSBlock *)block forChainEntity:(DSChainEntity*)chainEntity;
+- (instancetype)setAttributesFromMerkleBlock:(DSMerkleBlock *)merkleBlock forChainEntity:(DSChainEntity*)chainEntity; //this is faster when you know the chain entity already
 - (DSMerkleBlock *)merkleBlock;
 
 + (NSArray<DSMerkleBlockEntity*>*)lastTerminalBlocks:(uint32_t)blockcount onChainEntity:(DSChainEntity*)chainEntity;

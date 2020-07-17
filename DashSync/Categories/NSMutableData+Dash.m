@@ -278,6 +278,7 @@ CFAllocatorRef SecureAllocator()
     return self;
 }
 
+
 - (NSMutableData*)appendString:(NSString *)s
 {
     NSUInteger l = [s lengthOfBytesUsingEncoding:NSUTF8StringEncoding];

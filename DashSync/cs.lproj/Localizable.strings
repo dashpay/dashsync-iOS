@@ -360,3 +360,6 @@
 
 /* No comment provided by engineer. */
 "Contract '%@' needs to first be locally registered or known" = "Contract '%@' needs to first be locally registered or known";
+
+/* No comment provided by engineer. */
+"A block could not be mined in the selected time interval." = "A block could not be mined in the selected time interval.";

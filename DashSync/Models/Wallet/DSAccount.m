@@ -565,20 +565,23 @@
             BOOL pending = NO;
             UInt256 h;
             
-            for (NSValue *hash in tx.inputHashes) {
-                n = [tx.inputIndexes[i++] unsignedIntValue];
-                [hash getValue:&h];
-                [spent addObject:dsutxo_obj(((DSUTXO) { h, n }))];
-            }
-            
-            inputs = [NSSet setWithArray:tx.inputHashes];
-            
-            // check if any inputs are invalid or already spent
-            if (tx.blockHeight == TX_UNCONFIRMED &&
-                ([spent intersectsSet:spentOutputs] || [inputs intersectsSet:invalidTx])) {
-                [invalidTx addObject:uint256_obj(tx.txHash)];
-                [balanceHistory insertObject:@(balance) atIndex:0];
-                continue;
+
+            if (!tx.isCoinbaseClassicTransaction && ![tx isKindOfClass:[DSCoinbaseTransaction class]]) {
+                for (NSValue *hash in tx.inputHashes) {
+                    n = [tx.inputIndexes[i++] unsignedIntValue];
+                    [hash getValue:&h];
+                    [spent addObject:dsutxo_obj(((DSUTXO) { h, n }))];
+                }
+                inputs = [NSSet setWithArray:tx.inputHashes];
+                // check if any inputs are invalid or already spent
+                if (tx.blockHeight == TX_UNCONFIRMED &&
+                    ([spent intersectsSet:spentOutputs] || [inputs intersectsSet:invalidTx])) {
+                    [invalidTx addObject:uint256_obj(tx.txHash)];
+                    [balanceHistory insertObject:@(balance) atIndex:0];
+                    continue;
+                }
+            } else {
+                inputs = [NSSet set];
             }
             
             [spentOutputs unionSet:spent]; // add inputs to spent output set

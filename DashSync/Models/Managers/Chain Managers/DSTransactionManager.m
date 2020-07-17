@@ -35,6 +35,7 @@
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSMerkleBlock.h"
+#import "DSBlock.h"
 #import "DSChainLock.h"
 #import "DSBloomFilter.h"
 #import "NSString+Bitcoin.h"
@@ -1004,22 +1005,34 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 }
 
 //The peer has sent us a transaction we are interested in and that we did not send ourselves
-- (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction inBlock:(DSMerkleBlock*)block transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock
+- (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction inBlock:(DSBlock*)block transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock
 {
     NSValue *hash = uint256_obj(transaction.txHash);
     BOOL syncing = (self.chain.lastSyncBlockHeight < self.chain.estimatedBlockHeight);
     void (^callback)(NSError *error) = self.publishedCallback[hash];
     
-    DSDLog(@"%@:%d relayed transaction %@", peer.host, peer.port, hash);
+    if (peer) {
+        DSDLog(@"%@:%d relayed transaction %@", peer.host, peer.port, hash);
+    } else {
+        DSDLog(@"accepting local transaction %@", hash);
+    }
     
     transaction.timestamp = [NSDate timeIntervalSince1970];
     DSAccount * account = [self.chain firstAccountThatCanContainTransaction:transaction];
     if (!account) {
-        DSDLog(@"%@:%d no account for transaction %@", peer.host, peer.port, hash);
+        if (peer) {
+            DSDLog(@"%@:%d no account for transaction %@", peer.host, peer.port, hash);
+        } else {
+            DSDLog(@"no account for transaction %@", hash);
+        }
         if (![self.chain transactionHasLocalReferences:transaction]) return;
     } else {
         if (![account registerTransaction:transaction saveImmediately:block?NO:YES]) {
-            DSDLog(@"%@:%d could not register transaction %@", peer.host, peer.port, hash);
+            if (peer) {
+                DSDLog(@"%@:%d could not register transaction %@", peer.host, peer.port, hash);
+            } else {
+                DSDLog(@"could not register transaction %@", hash);
+            }
             return;
         }
     }
@@ -1057,7 +1070,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         }
     }
     
-    if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
+    if (peer && peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
     
     
     if (account && [account amountSentByTransaction:transaction] > 0 && [account transactionIsValid:transaction]) {
@@ -1073,9 +1086,11 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     }
     
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
-    if (callback || (!syncing && ! [self.txRelays[hash] containsObject:peer])) {
+    if (callback || !peer || (!syncing && ! [self.txRelays[hash] containsObject:peer])) {
         if (! self.txRelays[hash]) self.txRelays[hash] = [NSMutableSet set];
-        [self.txRelays[hash] addObject:peer];
+        if (peer) {
+            [self.txRelays[hash] addObject:peer];
+        }
         if (callback) [self.publishedCallback removeObjectForKey:hash];
         
         if (account && [self.txRelays[hash] count] >= self.peerManager.maxConnectCount &&
@@ -1108,7 +1123,9 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     
     
     [self.nonFalsePositiveTransactions addObject:hash];
-    [self.txRequests[hash] removeObject:peer];
+    if (peer) {
+        [self.txRequests[hash] removeObject:peer];
+    }
     
     
     if ([transaction isKindOfClass:[DSCreditFundingTransaction class]] && blockchainIdentity && isNewBlockchainIdentity) {

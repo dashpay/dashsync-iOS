@@ -23,10 +23,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly, nullable) NSString * registeredPeersKey;
 
-// MARK: - Init And Setup
+@property (nonatomic, readonly) NSDictionary <NSValue*, DSBlock*> *syncBlocks, *terminalBlocks, *orphans;
 
-/*! @brief Set up a given devnet with an identifier, checkpoints, default L1, JRPC and GRPC ports, a dpns contractId and a dashpay contract id. This devnet will be registered on the keychain. The additional isTransient property allows for test usage where you do not wish to persist the devnet.  */
-+ (DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>* _Nullable)checkpointArray withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID isTransient:(BOOL)isTransient;
+// MARK: - Init And Setup
 
 // MARK: - Network
 
@@ -36,7 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setEstimatedBlockHeight:(uint32_t)estimatedBlockHeight fromPeer:(DSPeer*)peer;
 - (void)removeEstimatedBlockHeightOfPeer:(DSPeer*)peer;
-- (BOOL)addBlock:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer;
+- (BOOL)addBlock:(DSBlock *)block fromPeer:(DSPeer* _Nullable)peer;
+- (BOOL)addMinedFullBlock:(DSFullBlock *)block;
 - (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)txHashes;
 - (void)clearOrphans;
 

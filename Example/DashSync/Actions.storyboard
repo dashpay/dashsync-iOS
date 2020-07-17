@@ -4,6 +4,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -80,6 +81,29 @@
                                                 <constraint firstItem="1qr-Kt-7sJ" firstAttribute="top" secondItem="Ndh-xO-OjE" secondAttribute="top" constant="16" id="rhD-Ul-hFg"/>
                                             </constraints>
                                         </tableViewCellContentView>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" rowHeight="52" id="TdY-gr-Mj2">
+                                        <rect key="frame" x="0.0" y="184" width="375" height="52"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="TdY-gr-Mj2" id="jVT-Xd-koL">
+                                            <rect key="frame" x="0.0" y="0.0" width="348" height="52"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Mining" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="x4I-wf-ZrR">
+                                                    <rect key="frame" x="16" y="16" width="51.5" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="x4I-wf-ZrR" firstAttribute="top" secondItem="jVT-Xd-koL" secondAttribute="top" constant="16" id="Qad-Ja-jPw"/>
+                                                <constraint firstItem="x4I-wf-ZrR" firstAttribute="leading" secondItem="jVT-Xd-koL" secondAttribute="leading" constant="16" id="VLV-Ga-o1o"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                        <connections>
+                                            <segue destination="8Zi-dW-W8d" kind="show" identifier="MiningSegue" id="Ncu-MJ-ayd"/>
+                                        </connections>
                                     </tableViewCell>
                                 </cells>
                             </tableViewSection>
@@ -624,6 +648,97 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ipM-DS-D6w" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="702" y="823"/>
+        </scene>
+        <!--Mining View Controller-->
+        <scene sceneID="nmJ-c7-iha">
+            <objects>
+                <viewController id="8Zi-dW-W8d" customClass="DSMiningViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="GCJ-Cf-W6V">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <containerView opaque="NO" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Isv-Zq-nwD">
+                                <rect key="frame" x="0.0" y="216" width="375" height="451"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                <connections>
+                                    <segue destination="o9I-Xq-41U" kind="embed" id="MI9-K6-ZLU"/>
+                                </connections>
+                            </containerView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lBp-8n-Weo">
+                                <rect key="frame" x="16" y="114" width="0.0" height="0.0"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cid-jN-6DK">
+                                <rect key="frame" x="357" y="114" width="0.0" height="0.0"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Mining" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rX3-Vg-QGC">
+                                <rect key="frame" x="16" y="67" width="52" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="Oc4-hz-6iZ">
+                                <rect key="frame" x="308" y="62" width="51" height="31"/>
+                                <connections>
+                                    <action selector="miningSwitchDidChangeValue:" destination="8Zi-dW-W8d" eventType="valueChanged" id="VF2-ca-DkX"/>
+                                </connections>
+                            </switch>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <constraints>
+                            <constraint firstItem="rX3-Vg-QGC" firstAttribute="top" secondItem="MiE-Ev-Gcg" secondAttribute="top" constant="23" id="2yW-yX-1fL"/>
+                            <constraint firstItem="lBp-8n-Weo" firstAttribute="top" secondItem="rX3-Vg-QGC" secondAttribute="bottom" constant="26" id="69Y-03-4LT"/>
+                            <constraint firstItem="MiE-Ev-Gcg" firstAttribute="trailing" secondItem="Oc4-hz-6iZ" secondAttribute="trailing" constant="18" id="7dd-yt-cbJ"/>
+                            <constraint firstItem="cid-jN-6DK" firstAttribute="trailing" secondItem="Oc4-hz-6iZ" secondAttribute="trailing" id="7nZ-Lf-tjL"/>
+                            <constraint firstItem="rX3-Vg-QGC" firstAttribute="leading" secondItem="MiE-Ev-Gcg" secondAttribute="leading" constant="16" id="CTC-PE-Bp4"/>
+                            <constraint firstItem="Oc4-hz-6iZ" firstAttribute="top" secondItem="MiE-Ev-Gcg" secondAttribute="top" constant="18" id="HJB-W8-sjM"/>
+                            <constraint firstItem="cid-jN-6DK" firstAttribute="firstBaseline" secondItem="lBp-8n-Weo" secondAttribute="firstBaseline" id="qNw-wl-NO8"/>
+                            <constraint firstItem="lBp-8n-Weo" firstAttribute="leading" secondItem="MiE-Ev-Gcg" secondAttribute="leading" constant="16" id="xvG-UR-d1N"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="MiE-Ev-Gcg"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="8TS-2K-u18"/>
+                    <connections>
+                        <outlet property="hashRateLabel" destination="cid-jN-6DK" id="7NF-gx-CN6"/>
+                        <outlet property="miningSwitch" destination="Oc4-hz-6iZ" id="8UY-OM-I1w"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="ZgQ-pR-dpb" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="760.79999999999995" y="-501.49925037481262"/>
+        </scene>
+        <!--Table View Controller-->
+        <scene sceneID="Y89-qR-msx">
+            <objects>
+                <tableViewController id="o9I-Xq-41U" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="ezF-ch-383">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="451"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" id="oPs-ws-8bk">
+                                <rect key="frame" x="0.0" y="28" width="375" height="43.5"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="oPs-ws-8bk" id="Mvu-19-yLl">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                </tableViewCellContentView>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="o9I-Xq-41U" id="wyJ-Q3-rFB"/>
+                            <outlet property="delegate" destination="o9I-Xq-41U" id="Twl-yf-RBR"/>
+                        </connections>
+                    </tableView>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="AGR-Es-mcN" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1528" y="-500"/>
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>

@@ -166,7 +166,7 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 
 typedef void (^MempoolCompletionBlock)(BOOL success, BOOL needed, BOOL interruptedByDisconnect);
 
-@class DSPeer, DSTransaction, DSMerkleBlock, DSChain, DSSpork, DSGovernanceObject, DSGovernanceVote, DSTransactionLockVote, DSInstantSendTransactionLock, DSChainLock;
+@class DSPeer, DSTransaction, DSMerkleBlock, DSBlock, DSChain, DSSpork, DSGovernanceObject, DSGovernanceVote, DSTransactionLockVote, DSInstantSendTransactionLock, DSChainLock;
 
 @protocol DSPeerDelegate<NSObject>
 @required
@@ -195,7 +195,7 @@ typedef void (^MempoolCompletionBlock)(BOOL success, BOOL needed, BOOL interrupt
 - (void)peer:(DSPeer *)peer relayedTooManyOrphanBlocks:(NSUInteger)orphanBlockCount;
 - (void)peer:(DSPeer *)peer relayedNotFoundMessagesWithTransactionHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockhashes;
 - (DSTransaction * _Nullable)peer:(DSPeer *)peer requestedTransaction:(UInt256)txHash;
-- (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction inBlock:(DSMerkleBlock* _Nullable)block transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock;
+- (void)peer:(DSPeer * _Nullable)peer relayedTransaction:(DSTransaction *)transaction inBlock:(DSBlock* _Nullable)block transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock;
 - (void)peer:(DSPeer *)peer hasTransactionWithHash:(UInt256)txHash transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock;
 - (void)peer:(DSPeer *)peer rejectedTransaction:(UInt256)txHash withCode:(uint8_t)code;
 - (void)peer:(DSPeer *)peer hasInstantSendLockHashes:(NSOrderedSet*)instantSendLockHashes;
