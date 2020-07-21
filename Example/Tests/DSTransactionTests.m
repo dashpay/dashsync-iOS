@@ -111,7 +111,7 @@
     
     DSECDSAKey * publicKey = [DSECDSAKey keyWithPublicKeyData:@"AsPvyyh6pkxss/Fespa7HCJIY8IA6ElAf6VKuqVcnPze".base64ToData];
     
-    DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition = [[DSBlockchainIdentityRegistrationTransition alloc] initWithVersion:1 forIdentityType:1 registeringPublicKeys:@{@(1):publicKey} usingLockedOutpoint:fundingTransaction.lockedOutpoint onChain:[DSChain testnet]];
+    DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition = [[DSBlockchainIdentityRegistrationTransition alloc] initWithVersion:1 registeringPublicKeys:@{@(1):publicKey} usingLockedOutpoint:fundingTransaction.lockedOutpoint onChain:[DSChain testnet]];
     
     //cW5w4TRjU96zVwDpy4LcwWAu7BaWJVEPbieYiEm3bM6vPbtM7hcd
     DSECDSAKey * privateKey = [DSECDSAKey keyWithSecret:@"fdbca0cd2be4375f04fcaee5a61c5d170a2a46b1c0c7531f58c430734a668f32".hexToData.UInt256 compressed:YES];

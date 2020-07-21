@@ -24,7 +24,6 @@
 
 @property(nonatomic,strong) NSArray<DPDocument *>* documents;
 @property(nonatomic,strong) NSArray<NSNumber *>* actions;
-@property(nonatomic,assign) UInt256 blockchainIdentityUniqueId;
 
 @end
 
