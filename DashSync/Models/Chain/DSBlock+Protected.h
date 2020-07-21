@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint32_t totalTransactions;
 @property (nonatomic, assign) BOOL chainLocked;
 @property (nonatomic, assign) BOOL hasUnverifiedChainLock;
-@property (nonatomic, strong) DSChainLock * chainLockAwaitingProcessing;
+@property (nonatomic, strong, nullable) DSChainLock * chainLockAwaitingProcessing;
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, strong) NSArray *txHashes; // the matched tx hashes in the block
 @property (nonatomic, assign, getter = isValid) BOOL valid;
