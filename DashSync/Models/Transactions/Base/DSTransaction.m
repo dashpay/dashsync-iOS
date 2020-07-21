@@ -44,6 +44,8 @@
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSInstantSendTransactionLock.h"
 #import "DSCreditFundingTransaction.h"
+#import "DSChainManager.h"
+#import "DSIdentitiesManager.h"
 
 @interface DSTransaction ()
 
@@ -736,15 +738,13 @@
         for (DSFundsDerivationPath * derivationPath in derivationPaths) {
             if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]] && [derivationPath containsAddress:address]) {
                 DSIncomingFundsDerivationPath * incomingFundsDerivationPath = ((DSIncomingFundsDerivationPath*) derivationPath);
-                UInt256 destinationBlockchainIdentityUniqueId = [incomingFundsDerivationPath contactDestinationBlockchainIdentityUniqueId];
-                UInt256 sourceBlockchainIdentityUniqueId = [incomingFundsDerivationPath contactSourceBlockchainIdentityUniqueId];
-                DSBlockchainIdentity * destinationBlockchainIdentity = [self.chain blockchainIdentityForUniqueId:destinationBlockchainIdentityUniqueId];
-                DSBlockchainIdentity * sourceBlockchainIdentity = [self.chain blockchainIdentityForUniqueId:sourceBlockchainIdentityUniqueId];
+                DSBlockchainIdentity * destinationBlockchainIdentity = [incomingFundsDerivationPath contactDestinationBlockchainIdentity];
+                DSBlockchainIdentity * sourceBlockchainIdentity = [incomingFundsDerivationPath contactSourceBlockchainIdentity];
                 if (destinationBlockchainIdentity) {
-                    [destinationBlockchainIdentities addObject:destinationBlockchainIdentity];
+                    [destinationBlockchainIdentities addObject:sourceBlockchainIdentity]; //these need to be inverted since the derivation path is incoming
                 }
                 if (sourceBlockchainIdentity) {
-                    [sourceBlockchainIdentities addObject:sourceBlockchainIdentity];
+                    [sourceBlockchainIdentities addObject:destinationBlockchainIdentity]; //these need to be inverted since the derivation path is incoming
                 }
             }
         }

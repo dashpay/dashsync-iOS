@@ -35,6 +35,8 @@ typedef void (^IdentityCompletionBlock)(BOOL succeess, DSBlockchainIdentity* _Nu
 
 - (DSBlockchainIdentity*)foreignBlockchainIdentityWithUniqueId:(UInt256)uniqueId;
 
+- (DSBlockchainIdentity*)foreignBlockchainIdentityWithUniqueId:(UInt256)uniqueId createIfMissing:(BOOL)addIfMissing;
+
 - (NSArray*)unsyncedBlockchainIdentities;
 
 - (void)syncBlockchainIdentitiesWithCompletion:(IdentitiesCompletionBlock)completion;

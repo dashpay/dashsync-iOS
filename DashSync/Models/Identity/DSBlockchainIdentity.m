@@ -2385,7 +2385,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 potentialContactBlockchainIdentity = [[DSBlockchainIdentity alloc] initWithBlockchainIdentityEntity:potentialContactBlockchainIdentityEntity];
             }
         } else {
-            potentialContactBlockchainIdentity = [self.identitiesManager foreignBlockchainIdentityWithUniqueId:blockchainIdentityContactUniqueId];
+            potentialContactBlockchainIdentity = [self.identitiesManager foreignBlockchainIdentityWithUniqueId:blockchainIdentityContactUniqueId createIfMissing:YES];
         }
         [potentialContactBlockchainIdentity applyIdentityDictionary:blockchainIdentityDictionary];
         [potentialContactBlockchainIdentity save];
@@ -3004,7 +3004,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             if (!externalBlockchainIdentity) {
                 //no externalBlockchainIdentity exists yet, which means no dashpay user
                 dispatch_group_enter(dispatchGroup);
-                DSBlockchainIdentity * senderBlockchainIdentity = [self.identitiesManager foreignBlockchainIdentityWithUniqueId:contactRequest.senderBlockchainIdentityUniqueId];
+                DSBlockchainIdentity * senderBlockchainIdentity = [self.identitiesManager foreignBlockchainIdentityWithUniqueId:contactRequest.senderBlockchainIdentityUniqueId createIfMissing:YES];
                 
                 [senderBlockchainIdentity fetchNeededNetworkStateInformationWithCompletion:^(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> * _Nullable networkErrors) {
                     if (!failureStep) {
@@ -3200,7 +3200,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             if (!recipientBlockchainIdentityEntity) {
                 //no contact exists yet
                 dispatch_group_enter(dispatchGroup);
-                DSBlockchainIdentity * recipientBlockchainIdentity = [self.identitiesManager foreignBlockchainIdentityWithUniqueId:contactRequest.recipientBlockchainIdentityUniqueId];
+                DSBlockchainIdentity * recipientBlockchainIdentity = [self.identitiesManager foreignBlockchainIdentityWithUniqueId:contactRequest.recipientBlockchainIdentityUniqueId createIfMissing:YES];
                 [recipientBlockchainIdentity fetchNeededNetworkStateInformationWithCompletion:^(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> * _Nullable networkErrors) {
                     if (!failureStep) {
                         dispatch_async(self.chain.networkingQueue, ^{

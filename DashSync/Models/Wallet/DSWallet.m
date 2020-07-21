@@ -242,6 +242,7 @@
         for (DSAccount * account in self.accounts) {
             for (DSTransaction * transaction in account.allTransactions) {
                 [transaction loadBlockchainIdentitiesFromDerivationPaths:account.fundDerivationPaths];
+                [transaction loadBlockchainIdentitiesFromDerivationPaths:account.outgoingFundDerivationPaths];
             }
         }
     }];

@@ -80,6 +80,7 @@
 #import "DSTransactionHashEntity+CoreDataProperties.h"
 #import "BigIntTypes.h"
 #import "DSChainCheckpoints.h"
+#import "DSIdentitiesManager.h"
 
 #define FEE_PER_BYTE_KEY          @"FEE_PER_BYTE"
 
@@ -2884,7 +2885,7 @@ static dispatch_once_t devnetToken = 0;
             return blockchainIdentity;
         }
     }
-    return nil;
+    return [self.chainManager.identitiesManager foreignBlockchainIdentityWithUniqueId:uniqueId];
 }
 
 -(void)wipeBlockchainIdentitiesPersistedDataInContext:(NSManagedObjectContext*)context {

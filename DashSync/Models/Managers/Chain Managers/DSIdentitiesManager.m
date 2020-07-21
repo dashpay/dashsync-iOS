@@ -52,16 +52,21 @@
 // MARK: - Identities
 
 - (DSBlockchainIdentity*)foreignBlockchainIdentityWithUniqueId:(UInt256)uniqueId {
+    return [self foreignBlockchainIdentityWithUniqueId:uniqueId createIfMissing:NO];
+}
+
+- (DSBlockchainIdentity*)foreignBlockchainIdentityWithUniqueId:(UInt256)uniqueId createIfMissing:(BOOL)addIfMissing {
     //foreign blockchain identities are for local blockchain identies' contacts, not for search.
     @synchronized (self.foreignBlockchainIdentities) {
         if (self.foreignBlockchainIdentities[uint256_data(uniqueId)]) {
             return self.foreignBlockchainIdentities[uint256_data(uniqueId)];
-        } else {
+        } else if (addIfMissing) {
             DSBlockchainIdentity * foreignBlockchainIdentity = [[DSBlockchainIdentity alloc] initWithUniqueId:uniqueId onChain:self.chain inContext:self.chain.chainManagedObjectContext];
             [foreignBlockchainIdentity saveInitial];
             self.foreignBlockchainIdentities[uint256_data(uniqueId)] = foreignBlockchainIdentity;
+            return self.foreignBlockchainIdentities[uint256_data(uniqueId)];
         }
-        return self.foreignBlockchainIdentities[uint256_data(uniqueId)];
+        return nil;
     }
 }
 
