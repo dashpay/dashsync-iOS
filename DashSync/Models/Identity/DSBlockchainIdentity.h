@@ -122,6 +122,9 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventDashpaySyncroni
 /*! @brief This is if the blockchain identity is present in wallets or not. If this is false then the blockchain identity is known for example from being a dashpay friend. */
 @property (nonatomic,readonly) BOOL isLocal;
 
+/*! @brief This is TRUE if the blockchain identity is an effemeral identity returned when searching. */
+@property (nonatomic,readonly) BOOL isTransient;
+
 /*! @brief This is the bitwise steps that the identity has already performed in registration. */
 @property (nonatomic,readonly) DSBlockchainIdentityRegistrationStep stepsCompleted;
 
@@ -260,6 +263,8 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventDashpaySyncroni
 -(DSKey* _Nullable)keyOfType:(DSKeyType)type atIndex:(uint32_t)rIndex;
 
 // MARK: - Dashpay
+
+- (void)sentNewFriendRequestToBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity completion:(void (^)(BOOL success, NSArray<NSError *> * _Nullable errors))completion;
 
 - (void)sendNewFriendRequestToPotentialContact:(DSPotentialContact*)potentialContact completion:(void (^ _Nullable)(BOOL success, NSArray<NSError *> * errors))completion;
 
