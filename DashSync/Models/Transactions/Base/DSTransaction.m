@@ -740,10 +740,10 @@
                 DSIncomingFundsDerivationPath * incomingFundsDerivationPath = ((DSIncomingFundsDerivationPath*) derivationPath);
                 DSBlockchainIdentity * destinationBlockchainIdentity = [incomingFundsDerivationPath contactDestinationBlockchainIdentity];
                 DSBlockchainIdentity * sourceBlockchainIdentity = [incomingFundsDerivationPath contactSourceBlockchainIdentity];
-                if (destinationBlockchainIdentity) {
+                if (sourceBlockchainIdentity) {
                     [destinationBlockchainIdentities addObject:sourceBlockchainIdentity]; //these need to be inverted since the derivation path is incoming
                 }
-                if (sourceBlockchainIdentity) {
+                if (destinationBlockchainIdentity) {
                     [sourceBlockchainIdentities addObject:destinationBlockchainIdentity]; //these need to be inverted since the derivation path is incoming
                 }
             }

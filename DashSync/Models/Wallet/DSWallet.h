@@ -120,6 +120,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 - (DSAccount* _Nullable)accountForAddress:(NSString *)address;
 
+- (DSAccount* _Nullable)accountForDashpayExternalDerivationPathAddress:(NSString *)address;
+
 // true if the address was previously used as an input or output for this wallet
 - (BOOL)addressIsUsed:(NSString *)address;
 

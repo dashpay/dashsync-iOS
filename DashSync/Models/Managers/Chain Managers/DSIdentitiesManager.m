@@ -27,6 +27,9 @@
 #import "DSCreditFundingTransaction.h"
 #import "DSMerkleBlock.h"
 #import "DSPeerManager.h"
+#import "NSManagedObjectContext+DSSugar.h"
+#import "NSManagedObject+Sugar.h"
+#import "DSBlockchainIdentityEntity+CoreDataClass.h"
 
 @interface DSIdentitiesManager()
 
@@ -45,8 +48,25 @@
     
     self.chain = chain;
     self.foreignBlockchainIdentities = [NSMutableDictionary dictionary];
+    [self loadExternalBlockchainIdentities];
     
     return self;
+}
+
+// MARK: - Loading
+
+-(void)loadExternalBlockchainIdentities {
+    NSManagedObjectContext * context = [NSManagedObjectContext chainContext]; //shouldn't matter what context is used
+    
+    [context performBlockAndWait:^{
+        NSArray <DSBlockchainIdentityEntity*>* externalIdentityEntities = [DSBlockchainIdentityEntity objectsInContext:context matching:@"chain == %@ && isLocal == FALSE",[self.chain chainEntityInContext:context]];
+        for (DSBlockchainIdentityEntity * entity in externalIdentityEntities) {
+            DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithBlockchainIdentityEntity:entity];
+            if (identity) {
+                self.foreignBlockchainIdentities[uint256_data(identity.uniqueID)] = identity;
+            }
+        }
+    }];
 }
 
 // MARK: - Identities

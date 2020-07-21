@@ -150,7 +150,7 @@
                 [currencyIsBitcoinInstead addObject:@FALSE];
             
         }
-        else if ([account externalDerivationPathContainingAddress:address]) {
+        else if ((account = [transaction.chain accountContainingDashpayExternalDerivationPathAddress:address])) {
             DSIncomingFundsDerivationPath * incomingFundsDerivationPath = [account externalDerivationPathContainingAddress:address];
             DSBlockchainIdentityUsernameEntity * contact = [DSBlockchainIdentityUsernameEntity anyObjectInContext:context matching:@"blockchainIdentity.uniqueID == %@",uint256_data(incomingFundsDerivationPath.contactSourceBlockchainIdentityUniqueId)];
             [detail addObject:[NSString stringWithFormat:NSLocalizedString(@"%@'s address", nil),contact.stringValue]];

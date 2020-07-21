@@ -72,7 +72,11 @@
         self.knownDevnetChains = [NSMutableArray array];
         for (NSString * string in registeredDevnetIdentifiers) {
             NSArray<DSCheckpoint*>* checkpointArray = registeredDevnetIdentifiers[string];
-            [self.knownDevnetChains addObject:[DSChain recoverKnownDevnetWithIdentifier:string withCheckpoints:checkpointArray]];
+            DSChain * chain = [DSChain recoverKnownDevnetWithIdentifier:string withCheckpoints:checkpointArray performSetup:NO];
+            chain.chainManager = [self devnetManagerForChain:chain];
+            [self.knownDevnetChains addObject:chain]; //adding this before setup prevents a loop
+            [chain setUp];
+            
         }
         
         self.reachability = [DSReachabilityManager sharedManager];

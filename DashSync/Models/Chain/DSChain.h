@@ -403,6 +403,9 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
 /*! @brief Returns an account to which the given address is contained in a derivation path.  */
 - (DSAccount* _Nullable)accountContainingAddress:(NSString *)address;
 
+/*! @brief Returns an account to which the given address is known by a dashpay outgoing derivation path.  */
+- (DSAccount* _Nullable)accountContainingDashpayExternalDerivationPathAddress:(NSString *)address;
+
 // MARK: - Governance
 
 /*! @brief Returns a count of all governance objects.  */
@@ -428,6 +431,9 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
 /*! @brief Returns a blockchain identity by uniqueId, if it exists. Also returns the wallet it was found in.  */
 - (DSBlockchainIdentity* _Nullable)blockchainIdentityForUniqueId:(UInt256)uniqueId foundInWallet:(DSWallet*_Nullable*_Nullable)foundInWallet;
 
+/*! @brief Returns a blockchain identity by uniqueId, if it exists. Also returns the wallet it was found in. Allows to search foreign blockchain identities too  */
+- (DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId foundInWallet:(DSWallet*_Nullable*_Nullable)foundInWallet includeForeignBlockchainIdentities:(BOOL)includeForeignBlockchainIdentities;
+
 // MARK: - Chain Retrieval methods
 
 /*! @brief Mainnet chain.  */
@@ -443,7 +449,7 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
 + (DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>* _Nullable)checkpointArray withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID isTransient:(BOOL)isTransient;
 
 /*! @brief Retrieve from the keychain a devnet with an identifier and add given checkpoints.  */
-+ (DSChain*)recoverKnownDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray;
++ (DSChain*)recoverKnownDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray performSetup:(BOOL)performSetup;
 
 /*! @brief Retrieve a chain having the specified network name.  */
 + (DSChain* _Nullable)chainForNetworkName:(NSString* _Nullable)networkName;

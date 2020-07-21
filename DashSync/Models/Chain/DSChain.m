@@ -309,7 +309,7 @@ static dispatch_once_t devnetToken = 0;
     return devnetChain;
 }
 
-+(DSChain*)recoverKnownDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray {
++(DSChain*)recoverKnownDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray performSetup:(BOOL)performSetup {
     dispatch_once(&devnetToken, ^{
         _devnetDictionary = [NSMutableDictionary dictionary];
     });
@@ -335,7 +335,9 @@ static dispatch_once_t devnetToken = 0;
             devnetChain.lastPersistedChainSyncBlockHash = chainEntity.syncBlockHash.UInt256;
             devnetChain.lastPersistedChainSyncBlockTimestamp = chainEntity.syncBlockTimestamp;
         }];
-        [devnetChain setUp];
+        if (performSetup) {
+            [devnetChain setUp];
+        }
     }
     
     return devnetChain;
@@ -2671,6 +2673,15 @@ static dispatch_once_t devnetToken = 0;
     return nil;
 }
 
+- (DSAccount* _Nullable)accountContainingDashpayExternalDerivationPathAddress:(NSString *)address {
+    if (!address) return nil;
+    for (DSWallet * wallet in self.wallets) {
+        DSAccount * account = [wallet accountForDashpayExternalDerivationPathAddress:address];
+        if (account) return account;
+    }
+    return nil;
+}
+
 // returns an account to which the given transaction hash is associated with, no account if the transaction hash is not associated with the wallet
 - (DSAccount * _Nullable)firstAccountForTransactionHash:(UInt256)txHash transaction:(DSTransaction **)transaction wallet:(DSWallet **)wallet {
     for (DSWallet * lWallet in self.wallets) {
@@ -2857,7 +2868,12 @@ static dispatch_once_t devnetToken = 0;
 
 -(DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId {
     NSAssert(!uint256_is_zero(uniqueId), @"uniqueId must not be null");
-    return [self blockchainIdentityForUniqueId:uniqueId foundInWallet:nil];
+    return [self blockchainIdentityForUniqueId:uniqueId foundInWallet:nil includeForeignBlockchainIdentities:NO];
+}
+
+-(DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId foundInWallet:(DSWallet**)foundInWallet {
+    NSAssert(!uint256_is_zero(uniqueId), @"uniqueId must not be null");
+    return [self blockchainIdentityForUniqueId:uniqueId foundInWallet:foundInWallet includeForeignBlockchainIdentities:NO];
 }
 
 -(DSBlockchainIdentity* _Nullable)blockchainIdentityThatCreatedContract:(DPContract*)contract withContractId:(UInt256)contractId foundInWallet:(DSWallet**)foundInWallet {
@@ -2874,7 +2890,7 @@ static dispatch_once_t devnetToken = 0;
     return nil;
 }
 
--(DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId foundInWallet:(DSWallet**)foundInWallet {
+-(DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId foundInWallet:(DSWallet**)foundInWallet includeForeignBlockchainIdentities:(BOOL)includeForeignBlockchainIdentities {
     NSAssert(!uint256_is_zero(uniqueId), @"uniqueId must not be null");
     for (DSWallet * wallet in self.wallets) {
         DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForUniqueId:uniqueId];
@@ -2885,7 +2901,11 @@ static dispatch_once_t devnetToken = 0;
             return blockchainIdentity;
         }
     }
-    return [self.chainManager.identitiesManager foreignBlockchainIdentityWithUniqueId:uniqueId];
+    if (includeForeignBlockchainIdentities) {
+        return [self.chainManager.identitiesManager foreignBlockchainIdentityWithUniqueId:uniqueId];
+    } else {
+        return nil;
+    }
 }
 
 -(void)wipeBlockchainIdentitiesPersistedDataInContext:(NSManagedObjectContext*)context {
