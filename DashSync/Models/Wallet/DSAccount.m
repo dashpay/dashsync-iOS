@@ -223,7 +223,6 @@
                                 DSTransaction *transaction = [e.transaction transactionForChain:self.wallet.chain];
                                 
                                 if (transaction) {
-                                    [transaction loadBlockchainIdentitiesFromDerivationPaths:self.fundDerivationPaths];
                                     self.allTx[hash] = transaction;
                                     [self.transactions addObject:transaction];
                                 }

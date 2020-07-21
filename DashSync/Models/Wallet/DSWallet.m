@@ -237,6 +237,13 @@
                 }
             }
         }
+        
+        //this adds the extra information to the transaction and must come after loading all blockchain identities.
+        for (DSAccount * account in self.accounts) {
+            for (DSTransaction * transaction in account.allTransactions) {
+                [transaction loadBlockchainIdentitiesFromDerivationPaths:account.fundDerivationPaths];
+            }
+        }
     }];
 }
 
