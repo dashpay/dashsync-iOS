@@ -2350,7 +2350,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 // MARK: Sending a Friend Request
 
-- (void)sentNewFriendRequestToBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity completion:(void (^)(BOOL success, NSArray<NSError *> * _Nullable errors))completion {
+- (void)sendNewFriendRequestToBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity completion:(void (^)(BOOL success, NSArray<NSError *> * _Nullable errors))completion {
     if (blockchainIdentity.isTransient) {
         blockchainIdentity.isTransient = FALSE;
         [self.identitiesManager registerForeignBlockchainIdentity:blockchainIdentity];
@@ -2456,7 +2456,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         [potentialContactBlockchainIdentity applyIdentityDictionary:blockchainIdentityDictionary save:YES];
         [potentialContactBlockchainIdentity save];
         
-        [self sentNewFriendRequestToBlockchainIdentity:potentialContactBlockchainIdentity completion:completion];
+        [self sendNewFriendRequestToBlockchainIdentity:potentialContactBlockchainIdentity completion:completion];
     } failure:^(NSError *_Nonnull error) {
         DSDLog(@"%@", error);
         
