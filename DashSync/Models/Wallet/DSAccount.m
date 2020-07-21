@@ -1302,6 +1302,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         }
     }
     [transaction loadBlockchainIdentitiesFromDerivationPaths:self.fundDerivationPaths];
+    [transaction loadBlockchainIdentitiesFromDerivationPaths:self.outgoingFundDerivationPaths];
     [self updateBalance];
     
     if (saveImmediately) {
