@@ -205,9 +205,18 @@
         __block NSMutableArray * rBlockchainIdentities = [NSMutableArray array];
         for (NSDictionary * document in documents) {
             NSString * userId = document[@"$ownerId"];
-            NSString * normalizedLabel = document[@"normalizedLabel"];
-            DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 isTransient:TRUE onChain:self.chain inContext:self.chain.chainManagedObjectContext];
-            [identity addUsername:normalizedLabel status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
+            NSString * label = document[@"label"];
+            UInt256 uniqueId = userId.base58ToData.UInt256;
+            DSBlockchainIdentity * identity = [self.chain blockchainIdentityForUniqueId:uniqueId foundInWallet:nil includeForeignBlockchainIdentities:YES];
+            if (!identity) {
+                identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 isTransient:TRUE onChain:self.chain inContext:self.chain.chainManagedObjectContext];
+                [identity addUsername:label status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
+            } else {
+                if (![identity.usernames containsObject:label]) {
+                    [identity addUsername:label status:DSBlockchainIdentityUsernameStatus_Confirmed save:YES registerOnNetwork:NO];
+                }
+            }
+            
             [rBlockchainIdentities addObject:identity];
         }
         if (completion) {
