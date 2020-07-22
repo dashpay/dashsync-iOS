@@ -23,6 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic,readonly) UInt256 contactSourceBlockchainIdentityUniqueId;
 @property (nonatomic,readonly) UInt256 contactDestinationBlockchainIdentityUniqueId;
+@property (nonatomic,readonly) DSBlockchainIdentity * contactSourceBlockchainIdentity;
+@property (nonatomic,readonly) DSBlockchainIdentity * contactDestinationBlockchainIdentity;
 @property (nonatomic,readonly) BOOL sourceIsLocal;
 @property (nonatomic,readonly) BOOL destinationIsLocal;
 

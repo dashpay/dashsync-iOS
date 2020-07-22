@@ -223,7 +223,6 @@
                                 DSTransaction *transaction = [e.transaction transactionForChain:self.wallet.chain];
                                 
                                 if (transaction) {
-                                    [transaction loadBlockchainIdentitiesFromDerivationPaths:self.fundDerivationPaths];
                                     self.allTx[hash] = transaction;
                                     [self.transactions addObject:transaction];
                                 }
@@ -1303,6 +1302,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         }
     }
     [transaction loadBlockchainIdentitiesFromDerivationPaths:self.fundDerivationPaths];
+    [transaction loadBlockchainIdentitiesFromDerivationPaths:self.outgoingFundDerivationPaths];
     [self updateBalance];
     
     if (saveImmediately) {

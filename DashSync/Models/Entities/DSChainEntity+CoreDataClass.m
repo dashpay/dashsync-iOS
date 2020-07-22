@@ -69,7 +69,7 @@
             chain = [DSChain devnetWithIdentifier:devnetIdentifier];
         } else {
             NSArray * checkpointArray = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-            chain = [DSChain recoverKnownDevnetWithIdentifier:devnetIdentifier withCheckpoints:checkpointArray];
+            chain = [DSChain recoverKnownDevnetWithIdentifier:devnetIdentifier withCheckpoints:checkpointArray performSetup:YES];
         }
     } else {
         NSAssert(FALSE, @"Unknown DSChainType");

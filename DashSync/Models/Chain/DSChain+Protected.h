@@ -27,6 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 // MARK: - Init And Setup
 
+-(void)setUp;
+
 // MARK: - Network
 
 @property (nonatomic, strong) dispatch_queue_t networkingQueue;

@@ -27,6 +27,9 @@
 #import "DSCreditFundingTransaction.h"
 #import "DSMerkleBlock.h"
 #import "DSPeerManager.h"
+#import "NSManagedObjectContext+DSSugar.h"
+#import "NSManagedObject+Sugar.h"
+#import "DSBlockchainIdentityEntity+CoreDataClass.h"
 
 @interface DSIdentitiesManager()
 
@@ -45,23 +48,55 @@
     
     self.chain = chain;
     self.foreignBlockchainIdentities = [NSMutableDictionary dictionary];
+    [self loadExternalBlockchainIdentities];
     
     return self;
 }
 
+// MARK: - Loading
+
+-(void)loadExternalBlockchainIdentities {
+    NSManagedObjectContext * context = [NSManagedObjectContext chainContext]; //shouldn't matter what context is used
+    
+    [context performBlockAndWait:^{
+        NSArray <DSBlockchainIdentityEntity*>* externalIdentityEntities = [DSBlockchainIdentityEntity objectsInContext:context matching:@"chain == %@ && isLocal == FALSE",[self.chain chainEntityInContext:context]];
+        for (DSBlockchainIdentityEntity * entity in externalIdentityEntities) {
+            DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithBlockchainIdentityEntity:entity];
+            if (identity) {
+                self.foreignBlockchainIdentities[uint256_data(identity.uniqueID)] = identity;
+            }
+        }
+    }];
+}
+
 // MARK: - Identities
 
+-(void)registerForeignBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity {
+    NSAssert(!blockchainIdentity.isTransient, @"Blockchain Identity should no longer be transient");
+    @synchronized (self.foreignBlockchainIdentities) {
+        if (!self.foreignBlockchainIdentities[uint256_data(blockchainIdentity.uniqueID)]) {
+            [blockchainIdentity saveInitial];
+            self.foreignBlockchainIdentities[uint256_data(blockchainIdentity.uniqueID)] = blockchainIdentity;
+        }
+    }
+}
+
 - (DSBlockchainIdentity*)foreignBlockchainIdentityWithUniqueId:(UInt256)uniqueId {
+    return [self foreignBlockchainIdentityWithUniqueId:uniqueId createIfMissing:NO];
+}
+
+- (DSBlockchainIdentity*)foreignBlockchainIdentityWithUniqueId:(UInt256)uniqueId createIfMissing:(BOOL)addIfMissing {
     //foreign blockchain identities are for local blockchain identies' contacts, not for search.
     @synchronized (self.foreignBlockchainIdentities) {
         if (self.foreignBlockchainIdentities[uint256_data(uniqueId)]) {
             return self.foreignBlockchainIdentities[uint256_data(uniqueId)];
-        } else {
-            DSBlockchainIdentity * foreignBlockchainIdentity = [[DSBlockchainIdentity alloc] initWithUniqueId:uniqueId onChain:self.chain inContext:self.chain.chainManagedObjectContext];
+        } else if (addIfMissing) {
+            DSBlockchainIdentity * foreignBlockchainIdentity = [[DSBlockchainIdentity alloc] initWithUniqueId:uniqueId isTransient:FALSE onChain:self.chain inContext:self.chain.chainManagedObjectContext];
             [foreignBlockchainIdentity saveInitial];
             self.foreignBlockchainIdentities[uint256_data(uniqueId)] = foreignBlockchainIdentity;
+            return self.foreignBlockchainIdentities[uint256_data(uniqueId)];
         }
-        return self.foreignBlockchainIdentities[uint256_data(uniqueId)];
+        return nil;
     }
 }
 
@@ -144,7 +179,7 @@
         for (NSDictionary * document in documents) {
             NSString * userId = document[@"$userId"];
             NSString * normalizedLabel = document[@"normalizedLabel"];
-            DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 onChain:self.chain inContext:self.chain.chainManagedObjectContext];
+            DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 isTransient:TRUE onChain:self.chain inContext:self.chain.chainManagedObjectContext];
             [identity addUsername:normalizedLabel status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
             [rBlockchainIdentities addObject:identity];
         }
@@ -171,7 +206,7 @@
         for (NSDictionary * document in documents) {
             NSString * userId = document[@"$ownerId"];
             NSString * normalizedLabel = document[@"normalizedLabel"];
-            DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 onChain:self.chain inContext:self.chain.chainManagedObjectContext];
+            DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 isTransient:TRUE onChain:self.chain inContext:self.chain.chainManagedObjectContext];
             [identity addUsername:normalizedLabel status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
             [rBlockchainIdentities addObject:identity];
         }
@@ -198,7 +233,7 @@
         for (NSDictionary * document in documents) {
             NSString * userId = document[@"$ownerId"];
             NSString * normalizedLabel = document[@"normalizedLabel"];
-            DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 onChain:self.chain inContext:self.chain.chainManagedObjectContext];
+            DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 isTransient:TRUE onChain:self.chain inContext:self.chain.chainManagedObjectContext];
             [identity addUsername:normalizedLabel status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
             [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, NSError * error) {
                 

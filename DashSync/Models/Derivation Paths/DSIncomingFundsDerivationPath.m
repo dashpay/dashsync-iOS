@@ -315,4 +315,12 @@
 }
 
 
+-(DSBlockchainIdentity *)contactSourceBlockchainIdentity {
+    return [self.chain blockchainIdentityForUniqueId:self.contactSourceBlockchainIdentityUniqueId foundInWallet:nil includeForeignBlockchainIdentities:YES];
+}
+
+-(DSBlockchainIdentity *)contactDestinationBlockchainIdentity {
+    return [self.chain blockchainIdentityForUniqueId:self.contactDestinationBlockchainIdentityUniqueId foundInWallet:nil includeForeignBlockchainIdentities:YES];
+}
+
 @end

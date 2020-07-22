@@ -237,6 +237,14 @@
                 }
             }
         }
+        
+        //this adds the extra information to the transaction and must come after loading all blockchain identities.
+        for (DSAccount * account in self.accounts) {
+            for (DSTransaction * transaction in account.allTransactions) {
+                [transaction loadBlockchainIdentitiesFromDerivationPaths:account.fundDerivationPaths];
+                [transaction loadBlockchainIdentitiesFromDerivationPaths:account.outgoingFundDerivationPaths];
+            }
+        }
     }];
 }
 
@@ -834,6 +842,15 @@
     return nil;
 }
 
+- (DSAccount*)accountForDashpayExternalDerivationPathAddress:(NSString *)address {
+    NSParameterAssert(address);
+    
+    for (DSAccount * account in self.accounts) {
+        if ([account externalDerivationPathContainingAddress:address]) return account;
+    }
+    return nil;
+}
+
 // true if the address was previously used as an input or output in any wallet transaction
 - (BOOL)addressIsUsed:(NSString *)address {
     NSParameterAssert(address);
@@ -1119,7 +1136,7 @@
                 NSManagedObjectContext * context = [NSManagedObjectContext chainContext]; //shouldn't matter what context is used
                 
                 [context performBlockAndWait:^{
-                    NSUInteger blockchainIdentityEntitiesCount = [DSBlockchainIdentityEntity countObjectsInContext:context matching:@"chain == %@",[self.chain chainEntityInContext:context]];
+                    NSUInteger blockchainIdentityEntitiesCount = [DSBlockchainIdentityEntity countObjectsInContext:context matching:@"chain == %@ && isLocal == TRUE",[self.chain chainEntityInContext:context]];
                     if (blockchainIdentityEntitiesCount != keyChainDictionary.count) {
                         DSDLog(@"Unmatching blockchain entities count");
                     }
