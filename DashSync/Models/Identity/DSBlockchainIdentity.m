@@ -1420,16 +1420,36 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 -(void)fetchNeededNetworkStateInformationWithCompletion:(void (^)(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> * errors))completion {
     dispatch_async(self.identityQueue, ^{
         if (!self.activeKeyCount) {
-            [self fetchAllNetworkStateInformationWithCompletion:completion];
+            if (self.isLocal) {
+                [self fetchAllNetworkStateInformationWithCompletion:completion];
+            } else {
+                DSBlockchainIdentityQueryStep stepsNeeded = DSBlockchainIdentityQueryStep_None;
+                if ([DSOptionsManager sharedInstance].syncType & DSSyncType_BlockchainIdentities) {
+                    stepsNeeded |= DSBlockchainIdentityQueryStep_Identity;
+                }
+                if (![self.usernames count] && [DSOptionsManager sharedInstance].syncType & DSSyncType_DPNS) {
+                    stepsNeeded |= DSBlockchainIdentityQueryStep_Username;
+                }
+                if ([DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay) {
+                    stepsNeeded |= DSBlockchainIdentityQueryStep_Profile;
+                }
+                if (stepsNeeded == DSBlockchainIdentityQueryStep_None) {
+                    if (completion) {
+                        completion(DSBlockchainIdentityQueryStep_None,@[]);
+                    }
+                } else {
+                    [self fetchNetworkStateInformation:stepsNeeded withCompletion:completion];
+                }
+            }
         } else {
             DSBlockchainIdentityQueryStep stepsNeeded = DSBlockchainIdentityQueryStep_None;
-            if (![self.usernames count]) {
+            if (![self.usernames count] && [DSOptionsManager sharedInstance].syncType & DSSyncType_DPNS) {
                 stepsNeeded |= DSBlockchainIdentityQueryStep_Username;
             }
-            if (![self.matchingDashpayUser avatarPath]) {
+            if (![self.matchingDashpayUser avatarPath] && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay) {
                 stepsNeeded |= DSBlockchainIdentityQueryStep_Profile;
             }
-            if (self.isLocal) {
+            if (self.isLocal && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay) {
                 stepsNeeded |= DSBlockchainIdentityQueryStep_ContactRequests;
             }
             if (stepsNeeded == DSBlockchainIdentityQueryStep_None) {
@@ -1996,12 +2016,18 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             NSString * username = nameDictionary[@"label"];
             if (username) {
                 NSMutableDictionary * usernameStatusDictionary = [[self.usernameStatuses objectForKey:username] mutableCopy];
+                BOOL isNew = FALSE;
                 if (!usernameStatusDictionary) {
                     usernameStatusDictionary = [NSMutableDictionary dictionary];
+                    isNew = TRUE;
                 }
                 [usernameStatusDictionary setObject:@(DSBlockchainIdentityUsernameStatus_Confirmed) forKey:BLOCKCHAIN_USERNAME_STATUS];
                 [self.usernameStatuses setObject:[usernameStatusDictionary copy] forKey:username];
-                [self saveNewUsername:username status:DSBlockchainIdentityUsernameStatus_Confirmed inContext:self.platformContext];
+                if (isNew) {
+                    [self saveNewUsername:username status:DSBlockchainIdentityUsernameStatus_Confirmed inContext:self.platformContext];
+                } else {
+                    [self saveUsername:username status:DSBlockchainIdentityUsernameStatus_Confirmed salt:nil commitSave:YES];
+                }
             }
         }
         if (completion) {
