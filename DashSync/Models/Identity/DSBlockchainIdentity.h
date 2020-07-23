@@ -305,6 +305,8 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventDashpaySyncroni
 
 -(void)addDashpayUsername:(NSString*)username save:(BOOL)save;
 
+-(void)addUsername:(NSString*)username inDomain:(NSString*)domain save:(BOOL)save;
+
 -(DSBlockchainIdentityUsernameStatus)statusOfUsername:(NSString*)username inDomain:(NSString*)domain;
 
 -(DSBlockchainIdentityUsernameStatus)statusOfDashpayUsername:(NSString*)username;

@@ -33,8 +33,9 @@
 - (IBAction)registerTLD:(id)sender {
     DSChain * chain = self.blockchainIdentity.wallet.chain;
     DPContract * dpnsContract = [DSDashPlatform sharedInstanceForChain:chain].dpnsContract;
-    if (uint256_eq(self.blockchainIdentity.uniqueID, dpnsContract.ownerId)) {
-        //[self.blockchainIdentity registerUsernamesWithCompletion:<#^(BOOL success, NSError * _Nonnull error)completion#>]
+    DSBlockchainIdentity * dpnsBlockchainIdentity = [chain blockchainIdentityThatCreatedContract:dpnsContract withContractId:chain.dpnsContractID foundInWallet:nil];
+    if (self.blockchainIdentity == dpnsBlockchainIdentity) {
+        [self.blockchainIdentity addUsername:self.topLevelDomainTextField.text inDomain:@"" save:YES];
     }
 }
 
