@@ -233,7 +233,7 @@
         self.chainLockAwaitingProcessing = nil;
     }
     if (!chainLock.saved) {
-        [chainLock save];
+        [chainLock saveInitial];
     }
 }
 

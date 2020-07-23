@@ -1082,7 +1082,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     if (transactionLockReceivedEarlier) {
         [self.instantSendLocksWaitingForTransactions removeObjectForKey:uint256_data(transaction.txHash)];
         [transaction setInstantSendReceivedWithInstantSendLock:transactionLockReceivedEarlier];
-        [transactionLockReceivedEarlier save];
+        [transactionLockReceivedEarlier saveInitial];
     }
     
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
@@ -1222,7 +1222,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     
     if (account && transaction) {
         [transaction setInstantSendReceivedWithInstantSendLock:instantSendTransactionLock];
-        [instantSendTransactionLock save];
+        [instantSendTransactionLock saveInitial];
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain, DSTransactionManagerNotificationTransactionKey:transaction, DSTransactionManagerNotificationTransactionChangesKey:@{DSTransactionManagerNotificationInstantSendTransactionLockKey:instantSendTransactionLock, DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey:@(verified)}}];
         });
@@ -1244,7 +1244,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         BOOL verified = [instantSendTransactionLock verifySignature];
         if (verified) {
             DSDLog(@"Verified %@",instantSendTransactionLock);
-            [instantSendTransactionLock save];
+            [instantSendTransactionLock saveSignatureValid];
             DSTransaction * transaction = nil;
             DSWallet * wallet = nil;
             DSAccount * account = [self.chain firstAccountForTransactionHash:instantSendTransactionLock.transactionHash transaction:&transaction wallet:&wallet];
@@ -1397,7 +1397,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     
     if (block) {
         [block setChainLockedWithChainLock:chainLock];
-        [chainLock save];
+        [chainLock saveInitial];
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockWasLockedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain, DSChainNotificationBlockKey:block}];
         });
@@ -1408,6 +1408,36 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     if (!verified && !chainLock.intendedQuorum) {
         //the quorum hasn't been retrieved yet
         [self.chainLocksWaitingForQuorums setObject:chainLock forKey:uint256_data(chainLock.blockHash)];
+    }
+}
+
+- (void)checkChainLocksWaitingForQuorums {
+    DSDLog(@"Checking ChainLocks Waiting For Quorums");
+    for (NSData * chainLockHashData in [self.chainLocksWaitingForQuorums copy]) {
+        if (self.chainLocksWaitingForMerkleBlocks[chainLockHashData]) continue;
+        DSChainLock * chainLock = self.chainLocksWaitingForQuorums[chainLockHashData];
+        BOOL verified = [chainLock verifySignature];
+        if (verified) {
+            DSDLog(@"Verified %@",chainLock);
+            [chainLock saveSignatureValid];
+            DSMerkleBlock * block = [self.chain blockForBlockHash:chainLock.blockHash];
+            [self.chainLocksWaitingForQuorums removeObjectForKey:chainLockHashData];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockWasLockedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain, DSChainNotificationBlockKey:block}];
+            });
+        } else {
+#if DEBUG
+            DSMasternodeList * masternodeList = nil;
+            DSQuorumEntry * quorum = [chainLock findSigningQuorumReturnMasternodeList:&masternodeList];
+            if (quorum && masternodeList) {
+                NSArray<DSQuorumEntry*> * quorumEntries = [masternodeList quorumEntriesRankedForInstantSendRequestID:[chainLock requestID]];
+                NSUInteger index = [quorumEntries indexOfObject:quorum];
+                DSDLog(@"Quorum %@ found at index %lu for masternodeList at height %lu",quorum,(unsigned long)index,(unsigned long)masternodeList.height);
+                DSDLog(@"Quorum entries are %@",quorumEntries);
+            }
+            DSDLog(@"Could not verify %@",chainLock);
+#endif
+        }
     }
 }
 

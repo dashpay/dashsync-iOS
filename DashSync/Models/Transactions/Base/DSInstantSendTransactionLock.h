@@ -26,7 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)verifySignature;
 
-- (void)save;
+- (void)saveInitial;
+- (void)saveSignatureValid;
 
 + (instancetype)instantSendTransactionLockWithMessage:(NSData *)message onChain:(DSChain*)chain;
 

@@ -192,13 +192,13 @@
     return [self verifySignatureWithQuorumOffset:8];
 }
 
--(void)save {
+-(void)saveInitial {
     if (_saved) return;
     
     NSManagedObjectContext * context = self.chain.chainManagedObjectContext;
     //saving here will only create, not update.
     [context performBlockAndWait:^{ // add the transaction to core data
-        if ([DSInstantSendLockEntity countObjectsInContext:self.chain.chainManagedObjectContext matching:@"transaction.transactionHash.txHash == %@", uint256_data(self.transactionHash)] == 0) {
+        if ([DSInstantSendLockEntity countObjectsInContext:context matching:@"transaction.transactionHash.txHash == %@", uint256_data(self.transactionHash)] == 0) {
             DSInstantSendLockEntity * instantSendLockEntity = [DSInstantSendLockEntity managedObjectInContext:context];
             [instantSendLockEntity setAttributesFromInstantSendTransactionLock:self];
             [context ds_save];
@@ -207,4 +207,21 @@
     self.saved = YES;
 }
 
+-(void)saveSignatureValid {
+    if (!_saved) {
+        [self saveInitial];
+        return;
+    };
+    //saving here will only create, not update.
+    NSManagedObjectContext * context = [NSManagedObjectContext chainContext];
+    [context performBlockAndWait:^{ // add the transaction to core data
+        NSArray * instantSendLocks = [DSInstantSendLockEntity objectsInContext:context matching:@"transaction.transactionHash.txHash == %@", uint256_data(self.transactionHash)];
+        
+        DSInstantSendLockEntity * instantSendLockEntity = [instantSendLocks firstObject];
+        if (instantSendLockEntity) {
+            instantSendLockEntity.validSignature = TRUE;
+            [context ds_save];
+        }
+    }];
+}
 @end

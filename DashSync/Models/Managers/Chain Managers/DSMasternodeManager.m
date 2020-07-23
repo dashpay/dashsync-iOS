@@ -593,6 +593,7 @@
                         
                         if (![self.masternodeListRetrievalQueue count]) {
                             [self.chain.chainManager.transactionManager checkInstantSendLocksWaitingForQuorums];
+                            [self.chain.chainManager.transactionManager checkChainLocksWaitingForQuorums];
                         }
                         
                     }];
@@ -958,6 +959,7 @@
                 
                 if (![self.masternodeListRetrievalQueue count]) {
                     [self.chain.chainManager.transactionManager checkInstantSendLocksWaitingForQuorums];
+                    [self.chain.chainManager.transactionManager checkChainLocksWaitingForQuorums];
                 }
                 
                 [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];

@@ -709,7 +709,7 @@
         self.instantSendLockAwaitingProcessing = nil;
     }
     if (!instantSendLock.saved) {
-        [instantSendLock save];
+        [instantSendLock saveInitial];
     }
 }
 

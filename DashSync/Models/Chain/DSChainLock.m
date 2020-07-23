@@ -162,6 +162,7 @@
     }
     if (self.signatureVerified) {
         self.intendedQuorum = quorumEntry;
+        self.quorumVerified = self.intendedQuorum.verified;
     } else if (quorumEntry.verified && offset == 8) {
         //try again a few blocks more in the past
         DSDLog(@"trying with offset 0");
@@ -179,7 +180,7 @@
     return [self verifySignatureWithQuorumOffset:8];
 }
 
--(void)save {
+-(void)saveInitial {
     if (_saved) return;
     //saving here will only create, not update.
     NSManagedObjectContext * context = [NSManagedObjectContext chainContext];
@@ -192,6 +193,24 @@
     }];
     self.saved = YES;
 }
+
+-(void)saveSignatureValid {
+    if (!_saved) {
+        [self saveInitial];
+        return;
+    };
+    NSManagedObjectContext * context = [NSManagedObjectContext chainContext];
+    [context performBlockAndWait:^{ // add the transaction to core data
+        NSArray * chainLocks = [DSChainLockEntity objectsInContext:context matching:@"merkleBlock.blockHash == %@", uint256_data(self.blockHash)];
+        
+        DSChainLockEntity * chainLockEntity = [chainLocks firstObject];
+        if (chainLockEntity) {
+            chainLockEntity.validSignature = TRUE;
+            [context ds_save];
+        }
+    }];
+}
+
 
 
 @end
