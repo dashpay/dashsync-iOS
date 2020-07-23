@@ -38,6 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)updateTransactionsBloomFilter;
 - (void)clearTransactionsBloomFilter;
 - (void)checkInstantSendLocksWaitingForQuorums;
+- (void)checkChainLocksWaitingForQuorums;
 
 - (instancetype)initWithChain:(DSChain*)chain;
 - (void)fetchMempoolFromPeer:(DSPeer*)peer;

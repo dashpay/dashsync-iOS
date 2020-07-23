@@ -27,7 +27,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSChain, DSQuorumEntry;
+@class DSChain, DSQuorumEntry, DSMasternodeList;
 
 @interface DSChainLock : NSObject
 
@@ -48,9 +48,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init NS_UNAVAILABLE;
 
+- (DSQuorumEntry*)findSigningQuorumReturnMasternodeList:(DSMasternodeList*_Nullable*_Nullable)returnMasternodeList;
+
 - (BOOL)verifySignature;
 
-- (void)save;
+- (void)saveInitial;
+
+- (void)saveSignatureValid;
 
 @end
 

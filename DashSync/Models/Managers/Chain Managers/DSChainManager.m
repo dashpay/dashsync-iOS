@@ -96,8 +96,8 @@
         [self.peerManager useMasternodeList:self.masternodeManager.currentMasternodeList withConnectivityNonce:self.sessionConnectivityNonce];
     }
     
-    [self loadMaxTransactionInfo];
-    [self loadHeightTransactionZones];
+    //[self loadMaxTransactionInfo];
+    //[self loadHeightTransactionZones];
     
     _miningQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.mining.%@",self.chain.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
     
@@ -573,6 +573,10 @@
         //masternode list should be synced first and the masternode list is old
             self.syncPhase = DSChainSyncPhase_InitialTerminalBlocks;
             [peer sendGetheadersMessageWithLocators:[self.chain terminalBlocksLocatorArray] andHashStop:UINT256_ZERO];
+        } else if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList) && (self.masternodeManager.lastMasternodeListBlockHeight < self.chain.lastTerminalBlockHeight - 8)) {
+            self.syncPhase = DSChainSyncPhase_InitialTerminalBlocks;
+            [self.masternodeManager getRecentMasternodeList:32 withSafetyDelay:0];
+            [self.masternodeManager getCurrentMasternodeListWithSafetyDelay:0];
         } else {
             self.syncPhase = DSChainSyncPhase_ChainSync;
             BOOL startingDevnetSync = [self.chain isDevnetAny] && self.chain.lastSyncBlockHeight < 5;
