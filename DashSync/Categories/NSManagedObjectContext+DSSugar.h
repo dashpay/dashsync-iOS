@@ -27,6 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (class, nonatomic, readonly) NSManagedObjectContext * chainContext;
 @property (class, nonatomic, readonly) NSManagedObjectContext * platformContext;
 
+- (instancetype)createChildContext;
+
 -(NSError*)ds_save;
 -(void)ds_saveInBlock;
 -(NSError*)ds_saveInBlockAndWait;

@@ -55,22 +55,6 @@ static NSUInteger _fetchBatchSize = 100;
     return obj;
 }
 
-
-+ (instancetype)managedObjectInNewChildContextForParentContext:(NSManagedObjectContext *)context
-{
-    NSManagedObjectContext * childContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
-    [childContext setParentContext:context];
-    __block NSEntityDescription *entity = nil;
-    __block NSManagedObject *obj = nil;
-    
-    [childContext performBlockAndWait:^{
-        entity = [NSEntityDescription entityForName:self.entityName inManagedObjectContext:context];
-        obj = [[self alloc] initWithEntity:entity insertIntoManagedObjectContext:context];
-    }];
-    
-    return obj;
-}
-
 + (NSArray *)managedObjectArrayWithLength:(NSUInteger)length inContext:(NSManagedObjectContext*)context
 {
     __block NSEntityDescription *entity = nil;

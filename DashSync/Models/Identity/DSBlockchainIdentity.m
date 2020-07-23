@@ -3162,8 +3162,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 -(void)addFriendship:(DSPotentialOneWayFriendship*)friendship inContext:(NSManagedObjectContext*)parentContext completion:(void (^)(BOOL success, NSError * error))completion  {
     
     //DSFriendRequestEntity * friendRequestEntity = [friendship outgoingFriendRequestForDashpayUserEntity:friendship.destinationBlockchainIdentity.matchingDashpayUser];
-    DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObjectInNewChildContextForParentContext:parentContext];
-    NSManagedObjectContext * childContext = friendRequestEntity.managedObjectContext;
+    NSManagedObjectContext * childContext = [parentContext createChildContext];
+    DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObjectInContext:childContext];
     friendRequestEntity.sourceContact = [friendship.sourceBlockchainIdentity matchingDashpayUserInContext:childContext];
     friendRequestEntity.destinationContact = [friendship.destinationBlockchainIdentity matchingDashpayUserInContext:childContext];
     friendRequestEntity.timestamp = friendship.createdAt;

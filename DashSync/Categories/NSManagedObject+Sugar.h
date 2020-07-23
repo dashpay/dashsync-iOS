@@ -64,8 +64,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSUInteger)deleteObjects:(NSArray *)objects inContext:(NSManagedObjectContext*)context;
 + (NSUInteger)deleteObjectsAndWait:(NSArray *)objects inContext:(NSManagedObjectContext*)context;
 
-+ (instancetype)managedObjectInNewChildContextForParentContext:(NSManagedObjectContext *)context;
-
 // set the fetchBatchSize to use when fetching objects, default is 100
 + (void)setFetchBatchSize:(NSUInteger)fetchBatchSize;
 

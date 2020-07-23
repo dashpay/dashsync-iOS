@@ -39,6 +39,13 @@
     return [[DSDataController sharedInstance] platformContext];
 }
 
+- (instancetype)createChildContext
+{
+    NSManagedObjectContext * childContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+    [childContext setParentContext:self];
+    return childContext;
+}
+
 -(void)ds_saveInBlock {
     [self performBlock:^{
         [self ds_save];
