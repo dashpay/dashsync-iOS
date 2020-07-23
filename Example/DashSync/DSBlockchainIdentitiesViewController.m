@@ -94,7 +94,7 @@
 -(void)configureCell:(DSBlockchainIdentityTableViewCell*)blockchainIdentityCell atIndexPath:(NSIndexPath *)indexPath {
     @autoreleasepool {
         DSBlockchainIdentity * blockchainIdentity = self.orderedBlockchainIdentities[indexPath.section][indexPath.row];
-        blockchainIdentityCell.usernameLabel.text = blockchainIdentity.currentUsername?blockchainIdentity.currentUsername:@"Not yet set";
+        blockchainIdentityCell.usernameLabel.text = blockchainIdentity.currentDashpayUsername?blockchainIdentity.currentDashpayUsername:@"Not yet set";
         blockchainIdentityCell.creditBalanceLabel.text = [NSString stringWithFormat:@"%llu",blockchainIdentity.creditBalance];
         if (blockchainIdentity.registrationCreditFundingTransaction) {
             if (blockchainIdentity.registrationCreditFundingTransaction.blockHeight == BLOCK_UNKNOWN_HEIGHT) {

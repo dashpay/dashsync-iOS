@@ -31,7 +31,7 @@
     [self setToDefaultAccount];
     if (self.fundingAccount) {
         self.wallet = self.fundingAccount.wallet;
-        self.usernameLabel.text = self.blockchainIdentity.currentUsername;
+        self.usernameLabel.text = self.blockchainIdentity.currentDashpayUsername;
     }
 }
 

@@ -30,7 +30,7 @@ static NSString * const CellId = @"CellId";
 - (void)setBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     _blockchainIdentity = blockchainIdentity;
     
-    self.title = blockchainIdentity.currentUsername;
+    self.title = blockchainIdentity.currentDashpayUsername;
 }
 
 - (IBAction)refreshAction:(id)sender {

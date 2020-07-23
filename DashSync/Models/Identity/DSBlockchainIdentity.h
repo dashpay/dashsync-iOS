@@ -88,12 +88,15 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyStatus) {
 };
 
 #define BLOCKCHAIN_USERNAME_STATUS @"BLOCKCHAIN_USERNAME_STATUS"
+#define BLOCKCHAIN_USERNAME_PROPER @"BLOCKCHAIN_USERNAME_PROPER"
+#define BLOCKCHAIN_USERNAME_DOMAIN @"BLOCKCHAIN_USERNAME_DOMAIN"
 #define BLOCKCHAIN_USERNAME_SALT @"BLOCKCHAIN_USERNAME_SALT"
 
 FOUNDATION_EXPORT NSString* const DSBlockchainIdentityDidUpdateNotification;
 FOUNDATION_EXPORT NSString* const DSBlockchainIdentityDidUpdateUsernameStatusNotification;
 FOUNDATION_EXPORT NSString* const DSBlockchainIdentityKey;
 FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUsernameKey;
+FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUsernameDomainKey;
 
 FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEvents;
 FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventKeyUpdate;
@@ -134,12 +137,15 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventDashpaySyncroni
 /*! @brief This is the index of the blockchain identity in the wallet. The index is the top derivation used to derive an extended set of keys for the identity. No two blockchain identities should be allowed to have the same index in a wallet. For example m/.../.../.../index/key */
 @property (nonatomic,readonly) uint32_t index;
 
-/*! @brief Related to DPNS. This is the list of usernames that are associated to the identity. These usernames however might not yet be registered or might be invalid. This can be used in tandem with the statusOfUsername: method */
-@property (nonatomic,readonly) NSArray <NSString *> * usernames;
+/*! @brief Related to DPNS. This is the list of usernames that are associated to the identity in the domain "dash". These usernames however might not yet be registered or might be invalid. This can be used in tandem with the statusOfUsername: method */
+@property (nonatomic,readonly) NSArray <NSString *> * dashpayUsernames;
+
+/*! @brief Related to DPNS. This is the list of usernames with their .dash domain that are associated to the identity in the domain "dash". These usernames however might not yet be registered or might be invalid. This can be used in tandem with the statusOfUsername: method */
+@property (nonatomic,readonly) NSArray <NSString *> * dashpayUsernameFullPaths;
 
 /*! @brief Related to DPNS. This is current and most likely username associated to the identity. It is not necessarily registered yet on L2 however so its state should be determined with the statusOfUsername: method
     @discussion There are situations where this is nil as it is not yet known or if no username has yet been set. */
-@property (nullable,nonatomic,readonly) NSString * currentUsername;
+@property (nullable,nonatomic,readonly) NSString * currentDashpayUsername;
 
 /*! @brief Related to registering the identity. This is the address used to fund the registration of the identity. Dash sent to this address in the special credit funding transaction will be converted to L2 credits */
 @property (nonatomic,readonly) NSString * registrationFundingAddress;
@@ -297,9 +303,11 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventDashpaySyncroni
 
 // MARK: - DPNS
 
--(void)addUsername:(NSString*)username save:(BOOL)save;
+-(void)addDashpayUsername:(NSString*)username save:(BOOL)save;
 
--(DSBlockchainIdentityUsernameStatus)statusOfUsername:(NSString*)username;
+-(DSBlockchainIdentityUsernameStatus)statusOfUsername:(NSString*)username inDomain:(NSString*)domain;
+
+-(DSBlockchainIdentityUsernameStatus)statusOfDashpayUsername:(NSString*)username;
 
 -(void)registerUsernamesWithCompletion:(void (^ _Nullable)(BOOL success, NSError * error))completion;
 

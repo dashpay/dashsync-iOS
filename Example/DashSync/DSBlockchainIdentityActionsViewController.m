@@ -15,6 +15,7 @@
 #import "DSContactProfileViewController.h"
 #import "DSRegisterContractsViewController.h"
 #import "DSBlockchainIdentityKeysViewController.h"
+#import "DSRegisterTLDViewController.h"
 
 @interface DSBlockchainIdentityActionsViewController () <DSContactProfileViewControllerDelegate>
 @property (strong, nonatomic) IBOutlet UIImageView *avatarImageView;
@@ -33,7 +34,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self loadProfileInitial];
-    if (self.blockchainIdentity.registered && self.blockchainIdentity.currentUsername && [self.blockchainIdentity statusOfUsername:self.blockchainIdentity.currentUsername] == DSBlockchainIdentityUsernameStatus_Confirmed) {
+    if (self.blockchainIdentity.registered && self.blockchainIdentity.currentDashpayUsername && [self.blockchainIdentity statusOfDashpayUsername:self.blockchainIdentity.currentDashpayUsername] == DSBlockchainIdentityUsernameStatus_Confirmed) {
         [self.blockchainIdentity fetchProfileWithCompletion:^(BOOL success, NSError * error) {
             if (success) {
                 [self updateProfile];
@@ -84,12 +85,12 @@
     if (!self.blockchainIdentity.registered) {
         self.aboutMeLabel.text = @"Register Identity";
         self.usernameStatusLabel.text = @"";
-    } else if (!self.blockchainIdentity.currentUsername) {
+    } else if (!self.blockchainIdentity.currentDashpayUsername) {
         self.aboutMeLabel.text = @"Set Username";
         self.usernameStatusLabel.text = @"";
-    } else if ([self.blockchainIdentity statusOfUsername:self.blockchainIdentity.currentUsername] != DSBlockchainIdentityUsernameStatus_Confirmed) {
+    } else if ([self.blockchainIdentity statusOfDashpayUsername:self.blockchainIdentity.currentDashpayUsername] != DSBlockchainIdentityUsernameStatus_Confirmed) {
         self.aboutMeLabel.text = @"Register Username";
-        switch ([self.blockchainIdentity statusOfUsername:self.blockchainIdentity.currentUsername]) {
+        switch ([self.blockchainIdentity statusOfDashpayUsername:self.blockchainIdentity.currentDashpayUsername]) {
             case DSBlockchainIdentityUsernameStatus_Initial:
                 self.usernameStatusLabel.text = @"Initial";
                 break;
@@ -120,7 +121,7 @@
 }
 
 -(void)loadProfileInitial {
-    self.title = self.blockchainIdentity.currentUsername;
+    self.title = self.blockchainIdentity.currentDashpayUsername;
     [self reloadRegistrationInfo];
     
     self.indexLabel.text = [NSString stringWithFormat:@"%d",self.blockchainIdentity.index];
@@ -129,7 +130,7 @@
 }
 
 -(void)updateProfile {
-    self.title = self.blockchainIdentity.currentUsername;
+    self.title = self.blockchainIdentity.currentDashpayUsername;
     if (!self.blockchainIdentity.matchingDashpayUser.remoteProfileDocumentRevision) {
         self.aboutMeLabel.text = @"Register Profile";
         [self.avatarImageView sd_setImageWithURL:nil];
@@ -197,7 +198,7 @@
         if (indexPath.row == 2) { // About me / Register
             if (!self.blockchainIdentity.registered) {
                 [self registerBlockchainIdentity:self];
-            } else if (self.blockchainIdentity.currentUsername && [self.blockchainIdentity statusOfUsername:self.blockchainIdentity.currentUsername] != DSBlockchainIdentityUsernameStatus_Confirmed) {
+            } else if (self.blockchainIdentity.currentDashpayUsername && [self.blockchainIdentity statusOfDashpayUsername:self.blockchainIdentity.currentDashpayUsername] != DSBlockchainIdentityUsernameStatus_Confirmed) {
                 [self.blockchainIdentity registerUsernamesWithCompletion:^(BOOL success, NSError * _Nonnull error) {
                     
                 }];
@@ -262,6 +263,9 @@
         controller.blockchainIdentity = self.blockchainIdentity;
     } else if ([segue.identifier isEqualToString:@"BlockchainIdentityKeysSegue"]) {
         DSBlockchainIdentityKeysViewController * controller = segue.destinationViewController;
+        controller.blockchainIdentity = self.blockchainIdentity;
+    } else if ([segue.identifier isEqualToString:@"BlockchainIdentityRegisterTLDSegue"]) {
+        DSRegisterTLDViewController * controller = segue.destinationViewController;
         controller.blockchainIdentity = self.blockchainIdentity;
     }
 }

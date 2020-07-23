@@ -50,7 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.title = self.blockchainIdentity.currentUsername;
+    self.title = self.blockchainIdentity.currentDashpayUsername;
 
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]
         initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
@@ -122,7 +122,7 @@ NS_ASSUME_NONNULL_BEGIN
         cellModel.autocorrectionType = UITextAutocorrectionTypeNo;
         cellModel.returnKeyType = UIReturnKeyNext;
         cellModel.placeholder = [NSString stringWithFormat:@"https://api.adorable.io/avatars/120/%@.png",
-                                                           self.blockchainIdentity.currentUsername];
+                                                           self.blockchainIdentity.currentDashpayUsername];
         cellModel.text = self.blockchainIdentity.matchingDashpayUser.avatarPath;
         __weak typeof(self) weakSelf = self;
         cellModel.didChangeValueBlock = ^(TextFieldFormCellModel *_Nonnull cellModel) {
@@ -141,7 +141,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (TextViewFormCellModel *)aboutMeCellModel {
     if (!_aboutMeCellModel) {
         TextViewFormCellModel *cellModel = [[TextViewFormCellModel alloc] initWithTitle:@"About me"];
-        cellModel.placeholder = [NSString stringWithFormat:@"Hey I'm a demo user %@", self.blockchainIdentity.currentUsername];
+        cellModel.placeholder = [NSString stringWithFormat:@"Hey I'm a demo user %@", self.blockchainIdentity.currentDashpayUsername];
         cellModel.text = self.blockchainIdentity.matchingDashpayUser.publicMessage;
         _aboutMeCellModel = cellModel;
     }
@@ -149,7 +149,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSArray<BaseFormCellModel *> *)profileItems {
-    if (self.blockchainIdentity.currentUsername) {
+    if (self.blockchainIdentity.currentDashpayUsername) {
         return @[self.avatarCellModel, self.aboutMeCellModel];
     } else {
         //show username model if no username is set
@@ -184,7 +184,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateUsername {
     if (![self.usernameCellModel.text isEqualToString:@""]) {
-        [self.blockchainIdentity addUsername:self.usernameCellModel.text save:YES];
+        [self.blockchainIdentity addDashpayUsername:self.usernameCellModel.text save:YES];
         [self.formTableViewController.tableView reloadData];
     }
 }

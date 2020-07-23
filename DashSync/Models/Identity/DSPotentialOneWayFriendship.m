@@ -201,7 +201,7 @@
 }
 
 -(NSString*)debugDescription {
-    return [NSString stringWithFormat:@"%@ - s:%@ d:%@", [super debugDescription], self.sourceBlockchainIdentity.currentUsername, self.destinationBlockchainIdentity.currentUsername];
+    return [NSString stringWithFormat:@"%@ - s:%@ d:%@", [super debugDescription], self.sourceBlockchainIdentity.currentDashpayUsername, self.destinationBlockchainIdentity.currentDashpayUsername];
 }
 
 @end
