@@ -3321,6 +3321,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     
     [self.matchingDashpayUser addIncomingRequestsObject:friendRequestEntity];
     
+    if ([[friendRequestEntity.sourceContact.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",self.matchingDashpayUser]] count]) {
+        [self.matchingDashpayUser addFriendsObject:friendRequestEntity.sourceContact];
+    }
+    
     [self.managedObjectContext ds_save];
     [self.chain.chainManager.transactionManager updateTransactionsBloomFilter];
 }
