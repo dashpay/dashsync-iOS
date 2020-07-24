@@ -749,8 +749,8 @@
             }
         }
     }
-    self.sourceBlockchainIdentities = [sourceBlockchainIdentities copy];
-    self.destinationBlockchainIdentities = [destinationBlockchainIdentities copy];
+    self.sourceBlockchainIdentities = [self.sourceBlockchainIdentities setByAddingObjectsFromSet:[sourceBlockchainIdentities copy]];
+    self.destinationBlockchainIdentities = [self.destinationBlockchainIdentities setByAddingObjectsFromSet:[destinationBlockchainIdentities copy]];
 }
 
 // MARK: - Polymorphic data
