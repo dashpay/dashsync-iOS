@@ -25,6 +25,8 @@
 @interface DSBIP32Tests : XCTestCase
 
 @property (strong, nonatomic) DSChain *chain;
+@property (strong, nonatomic) DSWallet *wallet;
+@property (strong, nonatomic) NSData *seed;
 
 @end
 
@@ -36,6 +38,13 @@
     
     // the chain to test on
     self.chain = [DSChain mainnet];
+    NSString * seedPhrase = @"upper renew that grow pelican pave subway relief describe enforce suit hedgehog blossom dose swallow";
+    
+    self.seed = [[DSBIP39Mnemonic sharedInstance]
+                     deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
+    
+    self.wallet = [DSWallet standardWalletWithSeedPhrase:seedPhrase
+                                               setCreationDate:0 forChain:self.chain storeSeedPhrase:NO isTransient:YES];
 }
 
 // MARK: - testBIP32BLSSequence
@@ -245,12 +254,7 @@
 - (void)testBIP44SequenceSerializedMasterPublicKey
 {
     
-    NSString * seedPhrase = @"upper renew that grow pelican pave subway relief describe enforce suit hedgehog blossom dose swallow";
-    
-    DSWallet *wallet2 = [DSWallet standardWalletWithSeedPhrase:seedPhrase
-                                               setCreationDate:0 forChain:self.chain storeSeedPhrase:NO isTransient:YES];
-    
-    DSAccount *account2 = [wallet2 accountWithNumber:0];
+    DSAccount *account2 = [self.wallet accountWithNumber:0];
     
     NSData * mpk = [account2.bip44DerivationPath extendedPublicKeyData];
     XCTAssertEqualObjects(mpk.hexString,
@@ -341,17 +345,12 @@
 }
 
 -(void)testECDSAPrivateDerivation {
-    NSString * seedPhrase = @"upper renew that grow pelican pave subway relief describe enforce suit hedgehog blossom dose swallow";
     
-    NSData * seed = [[DSBIP39Mnemonic sharedInstance]
-                     deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
+    DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentitiesECDSAKeysDerivationPathForWallet:self.wallet];
     
-    DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedPhrase
-                                               setCreationDate:0 forChain:self.chain storeSeedPhrase:NO isTransient:YES];
+    XCTAssertNotNil(derivationPath,@"derivationPath should exist");
     
-    DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentitiesECDSAKeysDerivationPathForWallet:wallet];
-    
-    [derivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueIDString storePrivateKey:YES];
+    [derivationPath generateExtendedPublicKeyFromSeed:self.seed storeUnderWalletUniqueId:self.wallet.uniqueIDString storePrivateKey:NO];
     
     const NSUInteger indexes1[] = {1,5};
     const NSUInteger indexes2[] = {4,6};
@@ -369,7 +368,7 @@
     
     XCTAssertEqualObjects(privateKey2.publicKeyData,publicKey2.publicKeyData,@"the public keys must match");
     
-    NSArray * privateKeys = [derivationPath privateKeysAtIndexPaths:@[indexPath1,indexPath2] fromSeed:seed];
+    NSArray * privateKeys = [derivationPath privateKeysAtIndexPaths:@[indexPath1,indexPath2] fromSeed:self.seed];
     DSKey * privateKey1FromMultiIndex = privateKeys[0];
     DSKey * privateKey2FromMultiIndex = privateKeys[1];
     XCTAssertEqualObjects(privateKey1FromMultiIndex.publicKeyData, privateKey1.publicKeyData,@"the public keys must match");
@@ -380,17 +379,10 @@
 }
 
 -(void)testBLSPrivateDerivation {
-    NSString * seedPhrase = @"upper renew that grow pelican pave subway relief describe enforce suit hedgehog blossom dose swallow";
     
-    NSData * seed = [[DSBIP39Mnemonic sharedInstance]
-                     deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
+    DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentitiesBLSKeysDerivationPathForWallet:self.wallet];
     
-    DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedPhrase
-                                               setCreationDate:0 forChain:self.chain storeSeedPhrase:NO isTransient:YES];
-    
-    DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentitiesBLSKeysDerivationPathForWallet:wallet];
-    
-    [derivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueIDString storePrivateKey:YES];
+    [derivationPath generateExtendedPublicKeyFromSeed:self.seed storeUnderWalletUniqueId:self.wallet.uniqueIDString storePrivateKey:YES];
     
     const NSUInteger indexes1[] = {1,5};
     const NSUInteger indexes2[] = {4,6};
@@ -408,7 +400,7 @@
     
     XCTAssertEqualObjects(privateKey2.publicKeyData,publicKey2.publicKeyData,@"the public keys must match");
     
-    NSArray * privateKeys = [derivationPath privateKeysAtIndexPaths:@[indexPath1,indexPath2] fromSeed:seed];
+    NSArray * privateKeys = [derivationPath privateKeysAtIndexPaths:@[indexPath1,indexPath2] fromSeed:self.seed];
     DSKey * privateKey1FromMultiIndex = privateKeys[0];
     DSKey * privateKey2FromMultiIndex = privateKeys[1];
     XCTAssertEqualObjects(privateKey1FromMultiIndex.publicKeyData, privateKey1.publicKeyData,@"the public keys must match");
@@ -499,17 +491,10 @@
 
 
 -(void)testBase64ExtendedPublicKeySize {
-    NSString * seedPhrase = @"upper renew that grow pelican pave subway relief describe enforce suit hedgehog blossom dose swallow";
     
-    NSData * seed = [[DSBIP39Mnemonic sharedInstance]
-                     deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
+    DSAccount *account = [self.wallet accountWithNumber:0];
     
-    DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedPhrase
-                                               setCreationDate:0 forChain:self.chain storeSeedPhrase:NO isTransient:YES];
-    
-    DSAccount *account = [wallet accountWithNumber:0];
-    
-    [account.masterContactsDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
+    [account.masterContactsDerivationPath generateExtendedPublicKeyFromSeed:self.seed storeUnderWalletUniqueId:nil];
     
     //NSData * data = [account.masterContactsDerivationPath extendedPublicKey];
     
@@ -529,8 +514,8 @@
     NSData *bobSeedData = [NSData dataWithBytes:bobSeed length:10];
     DSBLSKey *bobKeyPairBLS = [DSBLSKey keyWithSeedData:bobSeedData];
     
-    DSAuthenticationKeysDerivationPath * derivationPathBLS = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:wallet];
-    DSKey * privateKeyBLS = [derivationPathBLS privateKeyAtIndex:0 fromSeed:seed];
+    DSAuthenticationKeysDerivationPath * derivationPathBLS = [DSAuthenticationKeysDerivationPath blockchainIdentitiesBLSKeysDerivationPathForWallet:self.wallet];
+    DSKey * privateKeyBLS = [derivationPathBLS privateKeyAtIndex:0 fromSeed:self.seed];
     NSData * encryptedDataBLS = [extendedPublicKeyFromMasterContactDerivationPath.extendedPublicKeyData encryptWithSecretKey:privateKeyBLS forPublicKey:bobKeyPairBLS];
     
     NSString * base64DataBLS = encryptedDataBLS.base64String;
@@ -540,10 +525,10 @@
     
     DSECDSAKey *bobKeyPairECDSA = [DSECDSAKey keyWithSecret:bobSecret compressed:YES];
     
-    DSAuthenticationKeysDerivationPath * derivationPathECDSA = [[DSDerivationPathFactory sharedInstance] blockchainIdentityECDSAKeysDerivationPathForWallet:wallet];
-    DSKey * privateKeyECDSA = [derivationPathECDSA privateKeyAtIndex:0 fromSeed:seed];
+    DSAuthenticationKeysDerivationPath * derivationPathECDSA = [DSAuthenticationKeysDerivationPath blockchainIdentitiesECDSAKeysDerivationPathForWallet:self.wallet];
+    DSKey * privateKeyECDSA = [derivationPathECDSA privateKeyAtIndex:0 fromSeed:self.seed];
     NSData * encryptedDataECDSA = [extendedPublicKeyFromMasterContactDerivationPath.extendedPublicKeyData encryptWithSecretKey:privateKeyECDSA forPublicKey:bobKeyPairECDSA];
-    
+
     NSString * base64DataECDSA = encryptedDataECDSA.base64String;
     XCTAssertEqual([base64DataECDSA length], 128, @"The size of the base64 should be 128");
 }

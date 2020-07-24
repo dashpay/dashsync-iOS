@@ -16,7 +16,7 @@
 //
 
 #import <XCTest/XCTest.h>
-
+#import "NSData+Bitcoin.h"
 #import "NSData+Encryption.h"
 #import "DSBLSKey+Private.h"
 #import "DSECDSAKey.h"
@@ -37,11 +37,18 @@
 - (void)testBLSEncryptionAndDecryption {
     uint8_t aliceSeed[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     NSData *aliceSeedData = [NSData dataWithBytes:aliceSeed length:10];
-    DSBLSKey *aliceKeyPair = [DSBLSKey extendedPrivateKeyWithSeedData:aliceSeedData];
+    DSBLSKey *aliceKeyPair = [DSBLSKey keyWithSeedData:aliceSeedData];
+    XCTAssertEqualObjects(aliceKeyPair.publicKeyData.hexString, @"1790635de8740e9a6a6b15fb6b72f3a16afa0973d971979b6ba54761d6e2502c50db76f4d26143f05459a42cfd520d44", @"BLS publicKeyData is incorrect");
+    
+    XCTAssertEqualObjects(aliceKeyPair.privateKeyData.hexString, @"46891c2cec49593c81921e473db7480029e0fc1eb933c6b93d81f5370eb19fbd", @"BLS privateKeyData is incorrect");
     
     uint8_t bobSeed[10] = {10, 9, 8, 7, 6, 6, 7, 8, 9, 10};
     NSData *bobSeedData = [NSData dataWithBytes:bobSeed length:10];
-    DSBLSKey *bobKeyPair = [DSBLSKey extendedPrivateKeyWithSeedData:bobSeedData];
+    DSBLSKey *bobKeyPair = [DSBLSKey keyWithSeedData:bobSeedData];
+    
+    XCTAssertEqualObjects(bobKeyPair.publicKeyData.hexString, @"0e2f9055c17eb13221d8b41833468ab49f7d4e874ddf4b217f5126392a608fd48ccab3510548f1da4f397c1ad4f8e01a", @"BLS publicKeyData is incorrect");
+    
+    XCTAssertEqualObjects(bobKeyPair.privateKeyData.hexString, @"2513a9d824e763f8b3ff4304c5d52d05154a82b4c975da965f124e5dcf915805", @"BLS privateKeyData is incorrect");
     
 
     NSString *secret = @"my little secret is a pony that never sleeps";
