@@ -405,7 +405,7 @@
                 }
             }];
             DSBlockchainIdentity * blockchainIdentity = [self.wallet blockchainIdentityForUniqueId:incomingFundsDerivationPath.contactDestinationBlockchainIdentityUniqueId];
-            [mutableString appendFormat:@"/%@",blockchainIdentity.currentUsername];
+            [mutableString appendFormat:@"/%@",blockchainIdentity.currentDashpayUsername];
         }
     }
     _stringRepresentation = [mutableString copy];

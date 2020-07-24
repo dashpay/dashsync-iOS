@@ -18,5 +18,6 @@
 @dynamic stringValue;
 @dynamic blockchainIdentity;
 @dynamic salt;
+@dynamic domain;
 
 @end

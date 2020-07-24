@@ -40,7 +40,6 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 @property (strong, nonatomic) NSMutableDictionary<NSString *, DSStringValueDictionary *> *mutableDocuments;
 @property (copy, nonatomic, null_resettable) NSString *localContractIdentifier;
 @property (assign, nonatomic) UInt256 contractId;
-@property (assign, nonatomic) UInt256 ownerId;
 @property (assign, nonatomic) UInt256 registeredBlockchainIdentityUniqueID;
 @property (assign, nonatomic) UInt160 entropy;
 @property (strong, nonatomic) DSChain *chain;
@@ -65,13 +64,13 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
         _definitions = @{};
         _chain = chain;
         
-//        [self.managedObjectContext performBlockAndWait:^{
-//            DSContractEntity * entity = self.contractEntity;
+        
+        
+//        [self.chain.chainManagedObjectContext performBlockAndWait:^{
+//            DSContractEntity * entity = [self contractEntityInContext:self.chain.chainManagedObjectContext];
 //            if (entity) {
-//                self.registeredBlockchainIdentity = entity.registeredBlockchainIdentityUniqueID.UInt256;
-//                self.contractState = entity.state;
-//            } else {
-//                [self save];
+//                self.registeredBlockchainIdentityUniqueID = entity.registeredBlockchainIdentityUniqueID.UInt256;
+//                _contractState = entity.state;
 //            }
 //        }];
     }

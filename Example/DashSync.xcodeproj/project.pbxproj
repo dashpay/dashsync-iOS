@@ -237,6 +237,7 @@
 		FBE155FB22B931FA009CA817 /* DSMasternodeListsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBE155FA22B931FA009CA817 /* DSMasternodeListsViewController.m */; };
 		FBE155FE22B954EE009CA817 /* DSMasternodeListTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBE155FD22B954EE009CA817 /* DSMasternodeListTableViewCell.m */; };
 		FBE1560022B99368009CA817 /* MasternodeList1088800.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBE155FF22B99368009CA817 /* MasternodeList1088800.dat */; };
+		FBE2B7A524C9E481000F1108 /* DSRegisterTLDViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBE2B7A424C9E480000F1108 /* DSRegisterTLDViewController.m */; };
 		FBEA6ED722BE671D00CBCA77 /* DiffListTestnet119064to119200.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6ED622BE671D00CBCA77 /* DiffListTestnet119064to119200.dat */; };
 		FBEA6ED922C0636A00CBCA77 /* MNL_0_122928.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6ED822C0636A00CBCA77 /* MNL_0_122928.dat */; };
 		FBEA6EDB22C0637300CBCA77 /* MNL_122928_123000.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EDA22C0637300CBCA77 /* MNL_122928_123000.dat */; };
@@ -655,6 +656,8 @@
 		FBE155FC22B954EE009CA817 /* DSMasternodeListTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMasternodeListTableViewCell.h; sourceTree = "<group>"; };
 		FBE155FD22B954EE009CA817 /* DSMasternodeListTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMasternodeListTableViewCell.m; sourceTree = "<group>"; };
 		FBE155FF22B99368009CA817 /* MasternodeList1088800.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MasternodeList1088800.dat; sourceTree = "<group>"; };
+		FBE2B7A324C9E480000F1108 /* DSRegisterTLDViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSRegisterTLDViewController.h; sourceTree = "<group>"; };
+		FBE2B7A424C9E480000F1108 /* DSRegisterTLDViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSRegisterTLDViewController.m; sourceTree = "<group>"; };
 		FBEA6ED622BE671D00CBCA77 /* DiffListTestnet119064to119200.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = DiffListTestnet119064to119200.dat; sourceTree = "<group>"; };
 		FBEA6ED822C0636A00CBCA77 /* MNL_0_122928.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_0_122928.dat; sourceTree = "<group>"; };
 		FBEA6EDA22C0637300CBCA77 /* MNL_122928_123000.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_122928_123000.dat; sourceTree = "<group>"; };
@@ -777,6 +780,8 @@
 			children = (
 				FB702C6023EDB9FF0099030C /* DSRegisterContractsViewController.h */,
 				FB702C6123EDB9FF0099030C /* DSRegisterContractsViewController.m */,
+				FBE2B7A324C9E480000F1108 /* DSRegisterTLDViewController.h */,
+				FBE2B7A424C9E480000F1108 /* DSRegisterTLDViewController.m */,
 			);
 			name = Contracts;
 			sourceTree = "<group>";
@@ -1766,6 +1771,7 @@
 				FB6B78492278D5210005C9DB /* DSContactSentTransactionsTableViewController.m in Sources */,
 				FBAA7749222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.m in Sources */,
 				FB0955CC244BBDC400A93675 /* DSContactRelationshipInfoViewController.m in Sources */,
+				FBE2B7A524C9E481000F1108 /* DSRegisterTLDViewController.m in Sources */,
 				FB763C622089AF9500CDBA57 /* DSStandaloneAddressesViewController.m in Sources */,
 				6003F5A7195388D20070C39A /* DSSyncViewController.m in Sources */,
 				FB969707246BCA8E00BF56A5 /* DSErrorSimulationsViewController.m in Sources */,

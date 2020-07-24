@@ -53,7 +53,7 @@
     
     DSBlockchainIdentity * identity = self.blockchainIdentities[indexPath.row];
     
-    cell.usernameLabel.text = identity.currentUsername;
+    cell.usernameLabel.text = identity.currentDashpayUsername;
     cell.identityUniqueIDLabel.text = identity.uniqueIdString;
     
     return cell;

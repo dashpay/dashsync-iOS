@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) uint16_t status;
 @property (nullable, nonatomic, copy) NSString *stringValue;
+@property (nullable, nonatomic, copy) NSString *domain;
 @property (nullable, nonatomic, retain) DSBlockchainIdentityEntity *blockchainIdentity;
 @property (nullable, nonatomic, retain) NSData *salt;
 

@@ -89,6 +89,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 @property (nonatomic,strong) DSCreditFundingTransaction * registrationCreditFundingTransaction;
 
 @property(nonatomic,strong) NSMutableDictionary <NSString*,NSData*>* usernameSalts;
+@property(nonatomic,strong) NSMutableDictionary <NSString*,NSData*>* usernameDomains;
 
 @property(nonatomic,readonly) DSDAPIClient* DAPIClient;
 @property(nonatomic,readonly) DSDAPINetworkService* DAPINetworkService;
@@ -129,6 +130,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     _currentMainKeyIndex = 0;
     _currentMainKeyType = DSKeyType_ECDSA;
     self.usernameStatuses = [NSMutableDictionary dictionary];
+    self.usernameDomains = [NSMutableDictionary dictionary];
     self.keyInfoDictionaries = [NSMutableDictionary dictionary];
     _registrationStatus = DSBlockchainIdentityRegistrationStatus_Registered;
     _identityQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.identity.%@",uint256_base58(uniqueId)] UTF8String], DISPATCH_QUEUE_SERIAL);
@@ -145,10 +147,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     for (DSBlockchainIdentityUsernameEntity * usernameEntity in blockchainIdentityEntity.usernames) {
         NSData * salt = usernameEntity.salt;
         if (salt) {
-            [self.usernameStatuses setObject:@{BLOCKCHAIN_USERNAME_STATUS:@(usernameEntity.status),BLOCKCHAIN_USERNAME_SALT:usernameEntity.salt} forKey:usernameEntity.stringValue];
+            [self.usernameStatuses setObject:@{BLOCKCHAIN_USERNAME_PROPER:usernameEntity.stringValue, BLOCKCHAIN_USERNAME_DOMAIN:usernameEntity.domain?usernameEntity.domain:@"", BLOCKCHAIN_USERNAME_STATUS:@(usernameEntity.status), BLOCKCHAIN_USERNAME_SALT:usernameEntity.salt} forKey:[self fullPathForUsername:usernameEntity.stringValue inDomain:usernameEntity.domain]];
             [self.usernameSalts setObject:usernameEntity.salt forKey:usernameEntity.stringValue];
         } else {
-            [self.usernameStatuses setObject:@{BLOCKCHAIN_USERNAME_STATUS:@(usernameEntity.status)} forKey:usernameEntity.stringValue];
+            [self.usernameStatuses setObject:@{BLOCKCHAIN_USERNAME_PROPER:usernameEntity.stringValue, BLOCKCHAIN_USERNAME_DOMAIN:usernameEntity.domain?usernameEntity.domain:@"", BLOCKCHAIN_USERNAME_STATUS:@(usernameEntity.status)} forKey:[self fullPathForUsername:usernameEntity.stringValue inDomain:usernameEntity.domain]];
         }
     }
     _creditBalance = blockchainIdentityEntity.creditBalance;
@@ -287,7 +289,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     DSBlockchainIdentityRegistrationStep stepsCompleted = DSBlockchainIdentityRegistrationStep_None;
     if (self.isRegistered) {
         stepsCompleted = DSBlockchainIdentityRegistrationStep_RegistrationSteps;
-        if ([self usernamesWithStatus:DSBlockchainIdentityUsernameStatus_Confirmed].count) {
+        if ([self usernameFullPathsWithStatus:DSBlockchainIdentityUsernameStatus_Confirmed].count) {
             stepsCompleted |= DSBlockchainIdentityRegistrationStep_Username;
         }
     } else if (self.registrationCreditFundingTransaction) {
@@ -397,7 +399,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         [self registerOnNetwork:steps withFundingAccount:fundingAccount forTopupAmount:topupDuffAmount stepCompletion:stepCompletion completion:completion];
     } else if (self.registrationStatus != DSBlockchainIdentityRegistrationStatus_Registered) {
         [self continueRegisteringIdentityOnNetwork:steps stepsCompleted:DSBlockchainIdentityRegistrationStep_L1Steps stepCompletion:stepCompletion completion:completion];
-    } else if ([self.unregisteredUsernames count]) {
+    } else if ([self.unregisteredUsernameFullPaths count]) {
         [self continueRegisteringUsernamesOnNetwork:steps stepsCompleted:DSBlockchainIdentityRegistrationStep_L1Steps | DSBlockchainIdentityRegistrationStep_Identity stepCompletion:stepCompletion completion:completion];
     } else if (self.matchingDashpayUser.remoteProfileDocumentRevision < 1) {
         [self continueRegisteringProfileOnNetwork:steps stepsCompleted:DSBlockchainIdentityRegistrationStep_L1Steps | DSBlockchainIdentityRegistrationStep_Identity stepCompletion:stepCompletion completion:completion];
@@ -635,8 +637,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     return dsutxo_data(self.lockedOutpoint);
 }
 
--(NSString*)currentUsername {
-    return [self.usernames firstObject];
+-(NSString*)currentDashpayUsername {
+    return [self.dashpayUsernames firstObject];
 }
 
 
@@ -1385,7 +1387,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     __weak typeof(self) weakSelf = self;
     if (completion) {
         dispatch_group_notify(dispatchGroup, dispatch_get_main_queue(), ^{
-            DSDLog(@"Completed fetching of blockchain identity information for user %@ (query %lu - failures %lu)",self.currentUsername?self.currentUsername:self.uniqueIdString,(unsigned long)queryStep,failureStep);
+            DSDLog(@"Completed fetching of blockchain identity information for user %@ (query %lu - failures %lu)",self.currentDashpayUsername?self.currentDashpayUsername:self.uniqueIdString,(unsigned long)queryStep,failureStep);
             if (!(failureStep & DSBlockchainIdentityQueryStep_ContactRequests)) {
                 __strong typeof(weakSelf) strongSelf = weakSelf;
                 if (!strongSelf) {
@@ -1427,7 +1429,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 if ([DSOptionsManager sharedInstance].syncType & DSSyncType_BlockchainIdentities) {
                     stepsNeeded |= DSBlockchainIdentityQueryStep_Identity;
                 }
-                if (![self.usernames count] && [DSOptionsManager sharedInstance].syncType & DSSyncType_DPNS) {
+                if (![self.dashpayUsernameFullPaths count] && [DSOptionsManager sharedInstance].syncType & DSSyncType_DPNS) {
                     stepsNeeded |= DSBlockchainIdentityQueryStep_Username;
                 }
                 if ([DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay) {
@@ -1443,7 +1445,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             }
         } else {
             DSBlockchainIdentityQueryStep stepsNeeded = DSBlockchainIdentityQueryStep_None;
-            if (![self.usernames count] && [DSOptionsManager sharedInstance].syncType & DSSyncType_DPNS) {
+            if (![self.dashpayUsernameFullPaths count] && [DSOptionsManager sharedInstance].syncType & DSSyncType_DPNS) {
                 stepsNeeded |= DSBlockchainIdentityQueryStep_Username;
             }
             if (![self.matchingDashpayUser avatarPath] && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay) {
@@ -1560,8 +1562,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     __weak typeof(contract) weakContract = contract;
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ //this is so we don't get DAPINetworkService immediately
-        
-        if ((uint256_is_zero(self.chain.dashpayContractID) && uint256_is_zero(contract.registeredBlockchainIdentityUniqueID)) || contract.contractState == DPContractState_NotRegistered) {
+        BOOL isDPNSEmpty = [contract.name isEqual:@"DPNS"] && uint256_is_zero(self.chain.dpnsContractID);
+        BOOL isDashpayEmpty = [contract.name isEqual:@"Dashpay"] && uint256_is_zero(self.chain.dashpayContractID);
+        if (((isDPNSEmpty || isDashpayEmpty) && uint256_is_zero(contract.registeredBlockchainIdentityUniqueID)) || contract.contractState == DPContractState_NotRegistered) {
             [contract registerCreator:self inContext:context];
             __block DSContractTransition * transition = [contract contractRegistrationTransitionForIdentity:self];
             [self signStateTransition:transition completion:^(BOOL success) {
@@ -1656,14 +1659,18 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 // MARK: Usernames
 
--(void)addUsername:(NSString*)username save:(BOOL)save {
-    [self addUsername:username status:DSBlockchainIdentityUsernameStatus_Initial save:save registerOnNetwork:YES];
+-(void)addDashpayUsername:(NSString*)username save:(BOOL)save {
+    [self addUsername:username inDomain:[self dashpayDomainName] status:DSBlockchainIdentityUsernameStatus_Initial save:save registerOnNetwork:YES];
 }
 
--(void)addUsername:(NSString*)username status:(DSBlockchainIdentityUsernameStatus)status save:(BOOL)save registerOnNetwork:(BOOL)registerOnNetwork {
-    [self.usernameStatuses setObject:@{BLOCKCHAIN_USERNAME_STATUS:@(DSBlockchainIdentityUsernameStatus_Initial)} forKey:username];
+-(void)addUsername:(NSString*)username inDomain:(NSString*)domain save:(BOOL)save {
+    [self addUsername:username inDomain:domain status:DSBlockchainIdentityUsernameStatus_Initial save:save registerOnNetwork:YES];
+}
+
+-(void)addUsername:(NSString*)username inDomain:(NSString*)domain status:(DSBlockchainIdentityUsernameStatus)status save:(BOOL)save registerOnNetwork:(BOOL)registerOnNetwork {
+    [self.usernameStatuses setObject:@{BLOCKCHAIN_USERNAME_STATUS:@(DSBlockchainIdentityUsernameStatus_Initial), BLOCKCHAIN_USERNAME_PROPER:username, BLOCKCHAIN_USERNAME_DOMAIN:domain} forKey:[self fullPathForUsername:username inDomain:domain]];
     if (save) {
-        [self saveNewUsername:username status:DSBlockchainIdentityUsernameStatus_Initial inContext:self.platformContext];
+        [self saveNewUsername:username inDomain:domain status:DSBlockchainIdentityUsernameStatus_Initial inContext:self.platformContext];
         if (registerOnNetwork && self.registered && status != DSBlockchainIdentityUsernameStatus_Confirmed) {
             [self registerUsernamesWithCompletion:^(BOOL success, NSError * _Nonnull error) {
                 
@@ -1672,19 +1679,48 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     }
 }
 
--(DSBlockchainIdentityUsernameStatus)statusOfUsername:(NSString*)username {
-    return [[[self.usernameStatuses objectForKey:username] objectForKey:BLOCKCHAIN_USERNAME_STATUS] unsignedIntegerValue];
+-(DSBlockchainIdentityUsernameStatus)statusOfUsername:(NSString*)username inDomain:(NSString*)domain {
+    return [self statusOfUsernameFullPath:[self fullPathForUsername:username inDomain:domain]];
 }
 
--(NSArray<NSString*>*)usernames {
+-(DSBlockchainIdentityUsernameStatus)statusOfDashpayUsername:(NSString*)username {
+    return [self statusOfUsernameFullPath:[self fullPathForUsername:username inDomain:[self dashpayDomainName]]];
+}
+
+-(DSBlockchainIdentityUsernameStatus)statusOfUsernameFullPath:(NSString*)usernameFullPath {
+    return [[[self.usernameStatuses objectForKey:usernameFullPath] objectForKey:BLOCKCHAIN_USERNAME_STATUS] unsignedIntegerValue];
+}
+
+-(NSString*)usernameOfUsernameFullPath:(NSString*)usernameFullPath {
+    return [[self.usernameStatuses objectForKey:usernameFullPath] objectForKey:BLOCKCHAIN_USERNAME_PROPER];
+}
+
+-(NSString*)domainOfUsernameFullPath:(NSString*)usernameFullPath {
+    return [[self.usernameStatuses objectForKey:usernameFullPath] objectForKey:BLOCKCHAIN_USERNAME_DOMAIN];
+}
+
+-(NSString*)fullPathForUsername:(NSString*)username inDomain:(NSString*)domain {
+    NSString * fullPath = [[username lowercaseString] stringByAppendingFormat:@".%@",[domain lowercaseString]];
+    return fullPath;
+}
+
+-(NSArray<NSString*>*)dashpayUsernameFullPaths {
     return [self.usernameStatuses allKeys];
 }
 
--(NSArray<NSString*>*)unregisteredUsernames {
-    return [self usernamesWithStatus:DSBlockchainIdentityUsernameStatus_Initial];
+-(NSArray<NSString*>*)dashpayUsernames {
+    NSMutableArray * usernameArray = [NSMutableArray array];
+    for (NSString * usernameFullPath in self.usernameStatuses) {
+        [usernameArray addObject:[self usernameOfUsernameFullPath:usernameFullPath]];
+    }
+    return [usernameArray copy];
 }
 
--(NSArray<NSString*>*)usernamesWithStatus:(DSBlockchainIdentityUsernameStatus)usernameStatus {
+-(NSArray<NSString*>*)unregisteredUsernameFullPaths {
+    return [self usernameFullPathsWithStatus:DSBlockchainIdentityUsernameStatus_Initial];
+}
+
+-(NSArray<NSString*>*)usernameFullPathsWithStatus:(DSBlockchainIdentityUsernameStatus)usernameStatus {
     NSMutableArray * unregisteredUsernames = [NSMutableArray array];
     for (NSString * username in self.usernameStatuses) {
         NSDictionary * usernameInfo = self.usernameStatuses[username];
@@ -1696,7 +1732,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     return [unregisteredUsernames copy];
 }
 
--(NSArray<NSString*>*)preorderedUsernames {
+-(NSArray<NSString*>*)preorderedUsernameFullPaths {
     NSMutableArray * unregisteredUsernames = [NSMutableArray array];
     for (NSString * username in self.usernameStatuses) {
         NSDictionary * usernameInfo = self.usernameStatuses[username];
@@ -1710,48 +1746,47 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 // MARK: Username Helpers
 
--(NSData*)saltForUsername:(NSString*)username saveSalt:(BOOL)saveSalt {
+-(NSData*)saltForUsernameFullPath:(NSString*)usernameFullPath saveSalt:(BOOL)saveSalt {
     NSData * salt;
-    if ([self statusOfUsername:username] == DSBlockchainIdentityUsernameStatus_Initial || !(salt = [self.usernameSalts objectForKey:username])) {
+    if ([self statusOfUsernameFullPath:usernameFullPath] == DSBlockchainIdentityUsernameStatus_Initial || !(salt = [self.usernameSalts objectForKey:usernameFullPath])) {
         UInt160 random160 = uint160_RANDOM;
         salt = uint160_data(random160);
-        [self.usernameSalts setObject:salt forKey:username];
+        [self.usernameSalts setObject:salt forKey:usernameFullPath];
         if (saveSalt) {
-            [self saveUsername:username status:[self statusOfUsername:username] salt:salt commitSave:YES];
+            [self saveUsername:[self usernameOfUsernameFullPath:usernameFullPath] inDomain:[self domainOfUsernameFullPath:usernameFullPath] status:[self statusOfUsernameFullPath:usernameFullPath] salt:salt commitSave:YES];
         }
     } else {
-        salt = [self.usernameSalts objectForKey:username];
+        salt = [self.usernameSalts objectForKey:usernameFullPath];
     }
     return salt;
 }
 
--(NSMutableDictionary<NSString*,NSData*>*)saltedDomainHashesForUsernames:(NSArray*)usernames {
+-(NSMutableDictionary<NSString*,NSData*>*)saltedDomainHashesForUsernameFullPaths:(NSArray*)usernameFullPaths {
     NSMutableDictionary * mSaltedDomainHashes = [NSMutableDictionary dictionary];
-    for (NSString * unregisteredUsername in usernames) {
+    for (NSString * unregisteredUsernameFullPath in usernameFullPaths) {
         NSMutableData * saltedDomain = [NSMutableData data];
-        NSData * salt = [self saltForUsername:unregisteredUsername saveSalt:YES];
-        NSString * usernameDomain = [[self topDomainName] isEqualToString:@""]?[unregisteredUsername lowercaseString]:[NSString stringWithFormat:@"%@.%@",[unregisteredUsername lowercaseString],[self topDomainName]];
-        NSData * usernameDomainData = [usernameDomain dataUsingEncoding:NSUTF8StringEncoding];
+        NSData * salt = [self saltForUsernameFullPath:unregisteredUsernameFullPath saveSalt:YES];
+        NSData * usernameDomainData = [unregisteredUsernameFullPath dataUsingEncoding:NSUTF8StringEncoding];
         [saltedDomain appendData:salt];
         [saltedDomain appendData:@"5620".hexToData]; //56 because SHA256_2 and 20 because 32 bytes
         [saltedDomain appendUInt256:[usernameDomainData SHA256_2]];
         NSMutableData * saltedDomainHashData = [@"5620".hexToData mutableCopy];
         [saltedDomainHashData appendData:uint256_data([saltedDomain SHA256_2])];
-        [mSaltedDomainHashes setObject:[saltedDomainHashData copy] forKey:unregisteredUsername];
-        [self.usernameSalts setObject:salt forKey:unregisteredUsername];
+        [mSaltedDomainHashes setObject:[saltedDomainHashData copy] forKey:unregisteredUsernameFullPath];
+        [self.usernameSalts setObject:salt forKey:unregisteredUsernameFullPath];
     }
     return [mSaltedDomainHashes copy];
 }
 
--(NSString*)topDomainName {
+-(NSString*)dashpayDomainName {
     return @"dash";
 }
 
 // MARK: Documents
 
--(NSArray<DPDocument*>*)preorderDocumentsForUnregisteredUsernames:(NSArray*)unregisteredUsernames usingEntropyString:(NSString*)entropyString  error:(NSError**)error {
+-(NSArray<DPDocument*>*)preorderDocumentsForUnregisteredUsernameFullPaths:(NSArray*)unregisteredUsernameFullPaths usingEntropyString:(NSString*)entropyString  error:(NSError**)error {
     NSMutableArray * usernamePreorderDocuments = [NSMutableArray array];
-    for (NSData * saltedDomainHashData in [[self saltedDomainHashesForUsernames:unregisteredUsernames] allValues]) {
+    for (NSData * saltedDomainHashData in [[self saltedDomainHashesForUsernameFullPaths:unregisteredUsernameFullPaths] allValues]) {
         NSString * saltedDomainHashString = [saltedDomainHashData hexString];
         DSStringValueDictionary * dataDictionary = @{
             @"saltedDomainHash": saltedDomainHashString
@@ -1765,24 +1800,21 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     return usernamePreorderDocuments;
 }
 
--(NSArray<DPDocument*>*)domainDocumentsForUnregisteredUsernames:(NSArray*)unregisteredUsernames usingEntropyString:(NSString*)entropyString  error:(NSError**)error {
+-(NSArray<DPDocument*>*)domainDocumentsForUnregisteredUsernameFullPaths:(NSArray*)unregisteredUsernameFullPaths usingEntropyString:(NSString*)entropyString  error:(NSError**)error {
     NSMutableArray * usernameDomainDocuments = [NSMutableArray array];
-    for (NSString * username in [self saltedDomainHashesForUsernames:unregisteredUsernames]) {
+    for (NSString * usernameFullPath in [self saltedDomainHashesForUsernameFullPaths:unregisteredUsernameFullPaths]) {
         NSMutableData * nameHashData = [NSMutableData data];
         [nameHashData appendData:@"5620".hexToData]; //56 because SHA256_2 and 20 because 32 bytes
-        NSData * usernameData = nil;
-        if ([self topDomainName]) {
-            usernameData = [[NSString stringWithFormat:@"%@.%@",[username lowercaseString],[self topDomainName]] dataUsingEncoding:NSUTF8StringEncoding];
-        } else {
-            usernameData = [[username lowercaseString] dataUsingEncoding:NSUTF8StringEncoding];
-        }
+        NSData * usernameData = [usernameFullPath dataUsingEncoding:NSUTF8StringEncoding];
         [nameHashData appendUInt256:[usernameData SHA256_2]];
+        NSString * username = [self usernameOfUsernameFullPath:usernameFullPath];
+        NSString * domain = [self domainOfUsernameFullPath:usernameFullPath];
         DSStringValueDictionary * dataDictionary = @{
             @"nameHash":nameHashData.hexString,
             @"label":username,
             @"normalizedLabel": [username lowercaseString],
-            @"normalizedParentDomainName":[self topDomainName],
-            @"preorderSalt": [self.usernameSalts objectForKey:username].base58String,
+            @"normalizedParentDomainName":domain,
+            @"preorderSalt": [self.usernameSalts objectForKey:usernameFullPath].base58String,
             @"records" : @{@"dashIdentity":uint256_base58(self.uniqueID)}
         };
         DPDocument * document = [self.dpnsDocumentFactory documentOnTable:@"domain" withDataDictionary:dataDictionary usingEntropy:entropyString error:error];
@@ -1796,17 +1828,17 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 // MARK: Transitions
 
--(DSDocumentTransition*)preorderTransitionForUnregisteredUsernames:(NSArray*)unregisteredUsernames error:(NSError**)error  {
+-(DSDocumentTransition*)preorderTransitionForUnregisteredUsernameFullPaths:(NSArray*)unregisteredUsernameFullPaths error:(NSError**)error  {
     NSString * entropyString = [DSKey randomAddressForChain:self.chain];
-    NSArray * usernamePreorderDocuments = [self preorderDocumentsForUnregisteredUsernames:unregisteredUsernames usingEntropyString:entropyString error:error];
+    NSArray * usernamePreorderDocuments = [self preorderDocumentsForUnregisteredUsernameFullPaths:unregisteredUsernameFullPaths usingEntropyString:entropyString error:error];
     if (![usernamePreorderDocuments count]) return nil;
     DSDocumentTransition * transition = [[DSDocumentTransition alloc] initForDocuments:usernamePreorderDocuments withTransitionVersion:1 blockchainIdentityUniqueId:self.uniqueID usingEntropyString:entropyString onChain:self.chain];
     return transition;
 }
 
--(DSDocumentTransition*)domainTransitionForUnregisteredUsernames:(NSArray*)unregisteredUsernames error:(NSError**)error {
+-(DSDocumentTransition*)domainTransitionForUnregisteredUsernameFullPaths:(NSArray*)unregisteredUsernameFullPaths error:(NSError**)error {
     NSString * entropyString = [DSKey randomAddressForChain:self.chain];
-    NSArray * usernamePreorderDocuments = [self domainDocumentsForUnregisteredUsernames:unregisteredUsernames usingEntropyString:entropyString  error:error];
+    NSArray * usernamePreorderDocuments = [self domainDocumentsForUnregisteredUsernameFullPaths:unregisteredUsernameFullPaths usingEntropyString:entropyString  error:error];
     if (![usernamePreorderDocuments count]) return nil;
     DSDocumentTransition * transition = [[DSDocumentTransition alloc] initForDocuments:usernamePreorderDocuments withTransitionVersion:1 blockchainIdentityUniqueId:self.uniqueID usingEntropyString:entropyString  onChain:self.chain];
     return transition;
@@ -1823,9 +1855,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     switch (blockchainIdentityUsernameStatus) {
         case DSBlockchainIdentityUsernameStatus_Initial:
         {
-            NSArray * usernames = [self usernamesWithStatus:DSBlockchainIdentityUsernameStatus_Initial];
-            if (usernames.count) {
-                [self registerPreorderedSaltedDomainHashesForUsernames:usernames completion:^(BOOL success, NSError * error) {
+            NSArray * usernameFullPaths = [self usernameFullPathsWithStatus:DSBlockchainIdentityUsernameStatus_Initial];
+            if (usernameFullPaths.count) {
+                [self registerPreorderedSaltedDomainHashesForUsernameFullPaths:usernameFullPaths completion:^(BOOL success, NSError * error) {
                     if (success) {
                         [self registerUsernamesAtStage:DSBlockchainIdentityUsernameStatus_PreorderRegistrationPending completion:completion];
                     } else {
@@ -1841,8 +1873,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         }
         case DSBlockchainIdentityUsernameStatus_PreorderRegistrationPending:
         {
-            NSArray * usernames = [self usernamesWithStatus:DSBlockchainIdentityUsernameStatus_PreorderRegistrationPending];
-            NSDictionary<NSString*,NSData *>* saltedDomainHashes = [self saltedDomainHashesForUsernames:usernames];
+            NSArray * usernameFullPaths = [self usernameFullPathsWithStatus:DSBlockchainIdentityUsernameStatus_PreorderRegistrationPending];
+            NSDictionary<NSString*,NSData *>* saltedDomainHashes = [self saltedDomainHashesForUsernameFullPaths:usernameFullPaths];
             if (saltedDomainHashes.count) {
                 [self monitorForDPNSPreorderSaltedDomainHashes:saltedDomainHashes withRetryCount:2 completion:^(BOOL allFound, NSError * error) {
                     if (allFound) {
@@ -1860,11 +1892,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         }
         case DSBlockchainIdentityUsernameStatus_Preordered:
         {
-            NSArray * usernames = [self usernamesWithStatus:DSBlockchainIdentityUsernameStatus_Preordered];
-            if (usernames.count) {
-                [self registerUsernameDomainsForUsernames:usernames completion:^(BOOL success, NSError * error) {
+            NSArray * usernameFullPaths = [self usernameFullPathsWithStatus:DSBlockchainIdentityUsernameStatus_Preordered];
+            if (usernameFullPaths.count) {
+                [self registerUsernameDomainsForUsernameFullPaths:usernameFullPaths completion:^(BOOL success, NSError * error) {
                     if (success) {
-                        [self saveUsernames:usernames toStatus:DSBlockchainIdentityUsernameStatus_RegistrationPending];
+                        [self saveUsernameFullPaths:usernameFullPaths toStatus:DSBlockchainIdentityUsernameStatus_RegistrationPending];
                         [self registerUsernamesAtStage:DSBlockchainIdentityUsernameStatus_RegistrationPending completion:completion];
                     } else {
                         if (completion) {
@@ -1879,9 +1911,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         }
         case DSBlockchainIdentityUsernameStatus_RegistrationPending:
         {
-            NSArray * usernames = [self usernamesWithStatus:DSBlockchainIdentityUsernameStatus_RegistrationPending];
-            if (usernames.count) {
-                [self monitorForDPNSUsernames:usernames withRetryCount:2 completion:completion];
+            NSArray * usernameFullPaths = [self usernameFullPathsWithStatus:DSBlockchainIdentityUsernameStatus_RegistrationPending];
+            if (usernameFullPaths.count) {
+                [self monitorForDPNSUsernameFullPaths:usernameFullPaths withRetryCount:2 completion:completion];
             } else {
                 if (completion) {
                     completion(NO,nil);
@@ -1898,9 +1930,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 }
 
 //Preorder stage
--(void)registerPreorderedSaltedDomainHashesForUsernames:(NSArray*)usernames completion:(void (^ _Nullable)(BOOL success, NSError * error))completion {
+-(void)registerPreorderedSaltedDomainHashesForUsernameFullPaths:(NSArray*)usernameFullPaths completion:(void (^ _Nullable)(BOOL success, NSError * error))completion {
     NSError * error = nil;
-    DSDocumentTransition * transition = [self preorderTransitionForUnregisteredUsernames:usernames error:&error];
+    DSDocumentTransition * transition = [self preorderTransitionForUnregisteredUsernameFullPaths:usernameFullPaths error:&error];
     if (error || !transition) {
         if (completion) {
             completion(NO,error);
@@ -1911,7 +1943,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         if (success) {
             [self.DAPINetworkService publishTransition:transition success:^(NSDictionary * _Nonnull successDictionary) {
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    for (NSString * string in usernames) {
+                    for (NSString * string in usernameFullPaths) {
                         NSMutableDictionary * usernameStatusDictionary = [[self.usernameStatuses objectForKey:string] mutableCopy];
                         if (!usernameStatusDictionary) {
                             usernameStatusDictionary = [NSMutableDictionary dictionary];
@@ -1919,7 +1951,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                         [usernameStatusDictionary setObject:@(DSBlockchainIdentityUsernameStatus_PreorderRegistrationPending) forKey:BLOCKCHAIN_USERNAME_STATUS];
                         [self.usernameStatuses setObject:[usernameStatusDictionary copy] forKey:string];
                     }
-                    [self saveUsernames:usernames toStatus:DSBlockchainIdentityUsernameStatus_PreorderRegistrationPending];
+                    [self saveUsernameFullPaths:usernameFullPaths toStatus:DSBlockchainIdentityUsernameStatus_PreorderRegistrationPending];
                     if (completion) {
                         completion(YES,nil);
                     }
@@ -1945,9 +1977,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     }];
 }
 
--(void)registerUsernameDomainsForUsernames:(NSArray*)usernames completion:(void (^ _Nullable)(BOOL success, NSError * error))completion {
+-(void)registerUsernameDomainsForUsernameFullPaths:(NSArray*)usernameFullPaths completion:(void (^ _Nullable)(BOOL success, NSError * error))completion {
     NSError * error = nil;
-    DSDocumentTransition * transition = [self domainTransitionForUnregisteredUsernames:usernames error:&error];
+    DSDocumentTransition * transition = [self domainTransitionForUnregisteredUsernameFullPaths:usernameFullPaths error:&error];
     if (error || !transition) {
         if (completion) {
             completion(NO,error);
@@ -1958,7 +1990,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         if (success) {
             [self.DAPINetworkService publishTransition:transition success:^(NSDictionary * _Nonnull successDictionary) {
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    for (NSString * string in usernames) {
+                    for (NSString * string in usernameFullPaths) {
                         NSMutableDictionary * usernameStatusDictionary = [[self.usernameStatuses objectForKey:string] mutableCopy];
                         if (!usernameStatusDictionary) {
                             usernameStatusDictionary = [NSMutableDictionary dictionary];
@@ -2014,19 +2046,23 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         //todo verify return is true
         for (NSDictionary * nameDictionary in documents) {
             NSString * username = nameDictionary[@"label"];
-            if (username) {
-                NSMutableDictionary * usernameStatusDictionary = [[self.usernameStatuses objectForKey:username] mutableCopy];
+            NSString * lowercaseUsername = nameDictionary[@"normalizedLabel"];
+            NSString * domain = nameDictionary[@"normalizedParentDomainName"];
+            if (username && lowercaseUsername && domain) {
+                NSMutableDictionary * usernameStatusDictionary = [[self.usernameStatuses objectForKey:[self fullPathForUsername:lowercaseUsername inDomain:domain]] mutableCopy];
                 BOOL isNew = FALSE;
                 if (!usernameStatusDictionary) {
                     usernameStatusDictionary = [NSMutableDictionary dictionary];
                     isNew = TRUE;
+                    [usernameStatusDictionary setObject:domain forKey:BLOCKCHAIN_USERNAME_DOMAIN];
+                    [usernameStatusDictionary setObject:username forKey:BLOCKCHAIN_USERNAME_PROPER];
                 }
                 [usernameStatusDictionary setObject:@(DSBlockchainIdentityUsernameStatus_Confirmed) forKey:BLOCKCHAIN_USERNAME_STATUS];
-                [self.usernameStatuses setObject:[usernameStatusDictionary copy] forKey:username];
+                [self.usernameStatuses setObject:[usernameStatusDictionary copy] forKey:[self fullPathForUsername:username inDomain:domain]];
                 if (isNew) {
-                    [self saveNewUsername:username status:DSBlockchainIdentityUsernameStatus_Confirmed inContext:self.platformContext];
+                    [self saveNewUsername:username inDomain:domain status:DSBlockchainIdentityUsernameStatus_Confirmed inContext:self.platformContext];
                 } else {
-                    [self saveUsername:username status:DSBlockchainIdentityUsernameStatus_Confirmed salt:nil commitSave:YES];
+                    [self saveUsername:username inDomain:domain status:DSBlockchainIdentityUsernameStatus_Confirmed salt:nil commitSave:YES];
                 }
             }
         }
@@ -2114,9 +2150,52 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     }];
 }
 
--(void)monitorForDPNSUsernames:(NSArray*)usernames withRetryCount:(uint32_t)retryCount completion:(void (^)(BOOL allFound, NSError * error))completion {
+-(void)monitorForDPNSUsernameFullPaths:(NSArray*)usernameFullPaths withRetryCount:(uint32_t)retryCount completion:(void (^)(BOOL allFound, NSError * error))completion {
+    NSMutableDictionary * domains = [NSMutableDictionary dictionary];
+    for (NSString * usernameFullPath in usernameFullPaths) {
+        NSArray * components = [usernameFullPath componentsSeparatedByString:@"."];
+        NSString * domain = @"";
+        NSString * name = [components objectAtIndex:0];
+        if (components.count > 1) {
+            NSArray * domainComponents = [components subarrayWithRange:NSMakeRange(1, components.count - 1)];
+            domain = [domainComponents componentsJoinedByString:@"."];
+        }
+        if (!domains[domain]) {
+            domains[domain] = [NSMutableArray array];
+        }
+        
+        [domains[domain] addObject:name];
+    }
+    __block BOOL finished = FALSE;
+    __block NSUInteger countAllFound = 0;
+    __block NSUInteger countReturned = 0;
+    for (NSString * domain in domains) {
+        [self monitorForDPNSUsernames:domains[domain] inDomain:domain withRetryCount:retryCount completion:^(BOOL allFound, NSError *error) {
+            if (finished) return;
+            if (error && !finished) {
+                finished = TRUE;
+                if (completion) {
+                    completion(NO,error);
+                }
+                return;
+            }
+            if (allFound) {
+                countAllFound++;
+            }
+            countReturned++;
+            if (countReturned == domains.count) {
+                finished = TRUE;
+                if (completion) {
+                    completion(countAllFound == domains.count,nil);
+                }
+            }
+        }];
+    }
+}
+
+-(void)monitorForDPNSUsernames:(NSArray*)usernames inDomain:(NSString*)domain withRetryCount:(uint32_t)retryCount completion:(void (^)(BOOL allFound, NSError * error))completion {
     __weak typeof(self) weakSelf = self;
-    [self.DAPINetworkService getDPNSDocumentsForUsernames:usernames inDomain:[self topDomainName] success:^(id _Nonnull domainDocumentArray) {
+    [self.DAPINetworkService getDPNSDocumentsForUsernames:usernames inDomain:domain success:^(id _Nonnull domainDocumentArray) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -2125,20 +2204,25 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             NSMutableArray * usernamesLeft = [usernames mutableCopy];
             for (NSString * username in usernames) {
                 for (NSDictionary * domainDocument in domainDocumentArray) {
-                    if ([[domainDocument objectForKey:@"normalizedLabel"] isEqualToString:[username lowercaseString]]) {
+                    NSString * normalizedLabel = [domainDocument objectForKey:@"normalizedLabel"];
+                    NSString * label = [domainDocument objectForKey:@"label"];
+                    NSString * normalizedParentDomainName = [domainDocument objectForKey:@"normalizedParentDomainName"];
+                    if ([normalizedLabel isEqualToString:[username lowercaseString]]) {
                         NSMutableDictionary * usernameStatusDictionary = [[self.usernameStatuses objectForKey:username] mutableCopy];
                         if (!usernameStatusDictionary) {
                             usernameStatusDictionary = [NSMutableDictionary dictionary];
+                            [usernameStatusDictionary setObject:normalizedParentDomainName forKey:BLOCKCHAIN_USERNAME_DOMAIN];
+                            [usernameStatusDictionary setObject:label forKey:BLOCKCHAIN_USERNAME_PROPER];
                         }
                         [usernameStatusDictionary setObject:@(DSBlockchainIdentityUsernameStatus_Confirmed) forKey:BLOCKCHAIN_USERNAME_STATUS];
-                        [self.usernameStatuses setObject:[usernameStatusDictionary copy] forKey:username];
-                        [strongSelf saveUsername:username status:DSBlockchainIdentityUsernameStatus_Confirmed salt:nil commitSave:YES];
+                        [self.usernameStatuses setObject:[usernameStatusDictionary copy] forKey:[self fullPathForUsername:username inDomain:[self dashpayDomainName]]];
+                        [strongSelf saveUsername:username inDomain:normalizedParentDomainName status:DSBlockchainIdentityUsernameStatus_Confirmed salt:nil commitSave:YES];
                         [usernamesLeft removeObject:username];
                     }
                 }
             }
             if ([usernamesLeft count] && retryCount > 0) {
-                [strongSelf monitorForDPNSUsernames:usernamesLeft withRetryCount:retryCount - 1 completion:completion];
+                [strongSelf monitorForDPNSUsernames:usernamesLeft inDomain:domain withRetryCount:retryCount - 1 completion:completion];
             } else if ([usernamesLeft count]) {
                 if (completion) {
                     completion(FALSE, [NSError errorWithDomain:@"DashSync" code:501 userInfo:@{NSLocalizedDescriptionKey:
@@ -2150,7 +2234,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 }
             }
         } else if (retryCount > 0) {
-            [strongSelf monitorForDPNSUsernames:usernames withRetryCount:retryCount - 1 completion:completion];
+            [strongSelf monitorForDPNSUsernames:usernames inDomain:domain withRetryCount:retryCount - 1 completion:completion];
         } else {
             if (completion) {
                 completion(NO, [NSError errorWithDomain:@"DashSync" code:501 userInfo:@{NSLocalizedDescriptionKey:
@@ -2164,7 +2248,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 if (!strongSelf) {
                     return;
                 }
-                [strongSelf monitorForDPNSUsernames:usernames withRetryCount:retryCount - 1 completion:completion];
+                [strongSelf monitorForDPNSUsernames:usernames inDomain:domain withRetryCount:retryCount - 1 completion:completion];
             });
         } else {
             completion(FALSE, error);
@@ -2185,19 +2269,19 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         }
         if ([preorderDocumentArray isKindOfClass:[NSArray class]]) {
             NSMutableArray * usernamesLeft = [[saltedDomainHashes allKeys] mutableCopy];
-            for (NSString * username in saltedDomainHashes) {
-                NSData * saltedDomainHashData = saltedDomainHashes[username];
+            for (NSString * usernameFullPath in saltedDomainHashes) {
+                NSData * saltedDomainHashData = saltedDomainHashes[usernameFullPath];
                 NSString * saltedDomainHashString = [saltedDomainHashData hexString];
                 for (NSDictionary * preorderDocument in preorderDocumentArray) {
                     if ([[preorderDocument objectForKey:@"saltedDomainHash"] isEqualToString:saltedDomainHashString]) {
-                        NSMutableDictionary * usernameStatusDictionary = [[self.usernameStatuses objectForKey:username] mutableCopy];
+                        NSMutableDictionary * usernameStatusDictionary = [[self.usernameStatuses objectForKey:usernameFullPath] mutableCopy];
                         if (!usernameStatusDictionary) {
                             usernameStatusDictionary = [NSMutableDictionary dictionary];
                         }
                         [usernameStatusDictionary setObject:@(DSBlockchainIdentityUsernameStatus_Preordered) forKey:BLOCKCHAIN_USERNAME_STATUS];
-                        [self.usernameStatuses setObject:[usernameStatusDictionary copy] forKey:username];
-                        [strongSelf saveUsername:username status:DSBlockchainIdentityUsernameStatus_Preordered salt:nil commitSave:YES];
-                        [usernamesLeft removeObject:username];
+                        [self.usernameStatuses setObject:[usernameStatusDictionary copy] forKey:usernameFullPath];
+                        [strongSelf saveUsernameFullPath:usernameFullPath status:DSBlockchainIdentityUsernameStatus_Preordered salt:nil commitSave:YES];
+                        [usernamesLeft removeObject:usernameFullPath];
                     }
                 }
             }
@@ -2334,7 +2418,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             dataDictionary = @{
                 @"publicMessage": self.matchingDashpayUser.publicMessage?self.matchingDashpayUser.publicMessage:@"",
                 @"avatarUrl": self.matchingDashpayUser.avatarPath?self.matchingDashpayUser.avatarPath:@"https://api.adorable.io/avatars/120/example",
-                @"displayName": self.matchingDashpayUser.displayName?self.matchingDashpayUser.displayName:(self.currentUsername?self.currentUsername:@""),
+                @"displayName": self.matchingDashpayUser.displayName?self.matchingDashpayUser.displayName:(self.currentDashpayUsername?self.currentDashpayUsername:@""),
                 @"$revision": @(self.matchingDashpayUser.localProfileDocumentRevision)
             };
         }];
@@ -2443,7 +2527,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     NSAssert(_isLocal, @"This should not be performed on a non local blockchain identity");
     if (!_isLocal) return;
     __weak typeof(self) weakSelf = self;
-    [self.DAPINetworkService getIdentityByName:potentialContact.username inDomain:[self topDomainName] success:^(NSDictionary *_Nonnull blockchainIdentityDictionary) {
+    [self.DAPINetworkService getIdentityByName:potentialContact.username inDomain:[self dashpayDomainName] success:^(NSDictionary *_Nonnull blockchainIdentityDictionary) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             if (completion) {
@@ -3345,10 +3429,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             entity.registrationFundingTransaction = transactionEntity;
         }
         entity.chain = [self.chain chainEntityInContext:context];
-        for (NSString * username in self.usernameStatuses) {
+        for (NSString * usernameFullPath in self.usernameStatuses) {
             DSBlockchainIdentityUsernameEntity * usernameEntity = [DSBlockchainIdentityUsernameEntity managedObjectInContext:self.managedObjectContext];
-            usernameEntity.status = [self statusOfUsername:username];
-            usernameEntity.stringValue = username;
+            usernameEntity.status = [self statusOfUsernameFullPath:usernameFullPath];
+            usernameEntity.stringValue = [self usernameOfUsernameFullPath:usernameFullPath];
+            usernameEntity.domain = [self domainOfUsernameFullPath:usernameFullPath];
             usernameEntity.blockchainIdentity = entity;
             [entity addUsernamesObject:usernameEntity];
             [entity setDashpayUsername:usernameEntity];
@@ -3421,14 +3506,14 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             blockchainIdentityKeyPathEntity.keyStatus = status;
             if (key.privateKeyData) {
                 setKeychainData(key.privateKeyData, [self identifierForKeyAtPath:path fromDerivationPath:derivationPath], YES);
-                DSDLog(@"Saving key at %@ for user %@",[self identifierForKeyAtPath:path fromDerivationPath:derivationPath],self.currentUsername);
+                DSDLog(@"Saving key at %@ for user %@",[self identifierForKeyAtPath:path fromDerivationPath:derivationPath],self.currentDashpayUsername);
             } else {
                 DSKey * privateKey = [self derivePrivateKeyAtIndexPath:path ofType:key.keyType];
                 NSAssert([privateKey.publicKeyData isEqualToData:key.publicKeyData], @"The keys don't seem to match up");
                 NSData * privateKeyData = privateKey.privateKeyData;
                 NSAssert(privateKeyData, @"Private key data should exist");
                 setKeychainData(privateKeyData, [self identifierForKeyAtPath:path fromDerivationPath:derivationPath], YES);
-                DSDLog(@"Saving key after rederivation %@ for user %@",[self identifierForKeyAtPath:path fromDerivationPath:derivationPath],self.currentUsername);
+                DSDLog(@"Saving key after rederivation %@ for user %@",[self identifierForKeyAtPath:path fromDerivationPath:derivationPath],self.currentDashpayUsername);
             }
 
             blockchainIdentityKeyPathEntity.path = keyPathData;
@@ -3505,14 +3590,17 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     }];
 }
 
--(void)saveNewUsername:(NSString*)username status:(DSBlockchainIdentityUsernameStatus)status inContext:(NSManagedObjectContext*)context {
+-(void)saveNewUsername:(NSString*)username inDomain:(NSString*)domain status:(DSBlockchainIdentityUsernameStatus)status inContext:(NSManagedObjectContext*)context {
+    NSAssert(![username containsString:@"."], @"This is most likely an error");
+    NSAssert(domain, @"Domain must not be nil");
     if (self.isTransient) return;
     [context performBlockAndWait:^{
         DSBlockchainIdentityEntity * entity = self.blockchainIdentityEntity;
         DSBlockchainIdentityUsernameEntity * usernameEntity = [DSBlockchainIdentityUsernameEntity managedObjectInContext:self.managedObjectContext];
         usernameEntity.status = status;
         usernameEntity.stringValue = username;
-        usernameEntity.salt = [self saltForUsername:username saveSalt:NO];
+        usernameEntity.salt = [self saltForUsernameFullPath:[self fullPathForUsername:username inDomain:domain] saveSalt:NO];
+        usernameEntity.domain = domain;
         [entity addUsernamesObject:usernameEntity];
         [entity setDashpayUsername:usernameEntity];
         [context ds_save];
@@ -3523,28 +3611,65 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     
 }
 
--(void)saveUsernames:(NSArray*)usernames toStatus:(DSBlockchainIdentityUsernameStatus)status {
+-(void)saveUsernameFullPaths:(NSArray*)usernameFullPaths toStatus:(DSBlockchainIdentityUsernameStatus)status {
+    [self saveUsernamesInDictionary:[self.usernameStatuses dictionaryWithValuesForKeys:usernameFullPaths] toStatus:status];
+}
+
+-(void)saveUsernamesInDictionary:(NSDictionary<NSString*,NSDictionary*>*)fullPathUsernamesDictionary toStatus:(DSBlockchainIdentityUsernameStatus)status {
     if (self.isTransient) return;
     [self.managedObjectContext performBlockAndWait:^{
-        for (NSString * username in usernames) {
-            [self saveUsername:username status:status salt:nil commitSave:NO];
+        for (NSString * fullPathUsername in fullPathUsernamesDictionary) {
+            NSString * username = [fullPathUsernamesDictionary[fullPathUsername] objectForKey:BLOCKCHAIN_USERNAME_PROPER];
+            NSString * domain = [fullPathUsernamesDictionary[fullPathUsername] objectForKey:BLOCKCHAIN_USERNAME_DOMAIN];
+            [self saveUsername:username inDomain:domain status:status salt:nil commitSave:NO];
         }
         [self.managedObjectContext ds_save];
     }];
 }
 
--(void)saveUsernamesToStatuses:(NSDictionary<NSString*,NSNumber*>*)dictionary {
+//-(void)saveUsernamesToStatuses:(NSDictionary<NSString*,NSNumber*>*)dictionary {
+//    if (self.isTransient) return;
+//    [self.managedObjectContext performBlockAndWait:^{
+//        for (NSString * username in statusDictionary) {
+//            DSBlockchainIdentityUsernameStatus status = [statusDictionary[username] intValue];
+//            NSString * domain = domainDictionary[username];
+//            [self saveUsername:username inDomain:domain status:status salt:nil commitSave:NO];
+//        }
+//        [self.managedObjectContext ds_save];
+//    }];
+//}
+
+-(void)saveUsernameFullPath:(NSString*)usernameFullPath status:(DSBlockchainIdentityUsernameStatus)status salt:(NSData*)salt commitSave:(BOOL)commitSave {
     if (self.isTransient) return;
     [self.managedObjectContext performBlockAndWait:^{
-        for (NSString * username in dictionary) {
-            DSBlockchainIdentityUsernameStatus status = [dictionary[username] intValue];
-            [self saveUsername:username status:status salt:nil commitSave:NO];
+        DSBlockchainIdentityEntity * entity = self.blockchainIdentityEntity;
+        NSSet * usernamesPassingTest = [entity.usernames objectsPassingTest:^BOOL(DSBlockchainIdentityUsernameEntity * _Nonnull obj, BOOL * _Nonnull stop) {
+            if ([[self fullPathForUsername:obj.stringValue inDomain:obj.domain] isEqualToString:usernameFullPath]) {
+                *stop = TRUE;
+                return TRUE;
+                
+            } else {
+                return FALSE;
+            }
+        }];
+        if ([usernamesPassingTest count]) {
+            NSAssert([usernamesPassingTest count] == 1, @"There should never be more than 1");
+            DSBlockchainIdentityUsernameEntity * usernameEntity = [usernamesPassingTest anyObject];
+            usernameEntity.status = status;
+            if (salt) {
+                usernameEntity.salt = salt;
+            }
+            if (commitSave) {
+                [self.managedObjectContext ds_save];
+            }
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentityDidUpdateUsernameStatusNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain, DSBlockchainIdentityKey:self, DSBlockchainIdentityUsernameKey:usernameEntity.stringValue, DSBlockchainIdentityUsernameDomainKey:usernameEntity.stringValue}];
+            });
         }
-        [self.managedObjectContext ds_save];
     }];
 }
 
--(void)saveUsername:(NSString*)username status:(DSBlockchainIdentityUsernameStatus)status salt:(NSData*)salt commitSave:(BOOL)commitSave {
+-(void)saveUsername:(NSString*)username inDomain:(NSString*)domain status:(DSBlockchainIdentityUsernameStatus)status salt:(NSData*)salt commitSave:(BOOL)commitSave {
     if (self.isTransient) return;
     [self.managedObjectContext performBlockAndWait:^{
         DSBlockchainIdentityEntity * entity = self.blockchainIdentityEntity;
@@ -3568,7 +3693,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 [self.managedObjectContext ds_save];
             }
             dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentityDidUpdateUsernameStatusNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain, DSBlockchainIdentityKey:self, DSBlockchainIdentityUsernameKey:username}];
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentityDidUpdateUsernameStatusNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain, DSBlockchainIdentityKey:self, DSBlockchainIdentityUsernameKey:username, DSBlockchainIdentityUsernameDomainKey: domain}];
             });
         }
     }];
@@ -3627,7 +3752,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 
 -(NSString*)debugDescription {
-    return [[super debugDescription] stringByAppendingString:[NSString stringWithFormat:@" {%@-%@}",self.currentUsername,self.uniqueIdString]];
+    return [[super debugDescription] stringByAppendingString:[NSString stringWithFormat:@" {%@-%@}",self.currentDashpayUsername,self.uniqueIdString]];
 }
 
 @end

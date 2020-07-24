@@ -157,7 +157,7 @@
                 }
             }];
         } else if (identity.registrationStatus == DSBlockchainIdentityRegistrationStatus_Registered) {
-            if (!identity.currentUsername) {
+            if (!identity.currentDashpayUsername) {
                 if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_DPNS)) {
                     [identity fetchUsernamesWithCompletion:^(BOOL success, NSError * error) {
                         
@@ -212,7 +212,7 @@
                 identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 isTransient:TRUE onChain:self.chain inContext:self.chain.chainManagedObjectContext];
                 [identity addUsername:label status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
             } else {
-                if (![identity.usernames containsObject:label]) {
+                if (![identity.dashpayUsernames containsObject:label]) {
                     [identity addUsername:label status:DSBlockchainIdentityUsernameStatus_Confirmed save:YES registerOnNetwork:NO];
                 }
             }
