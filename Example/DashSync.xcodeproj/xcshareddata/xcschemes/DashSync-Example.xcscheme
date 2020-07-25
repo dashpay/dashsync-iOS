@@ -57,6 +57,26 @@
                BlueprintName = "DashSync_Tests"
                ReferencedContainer = "container:DashSync.xcodeproj">
             </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "DSDeterministicMasternodeListTests/testMNLSavingAndRetrievingFromDisk">
+               </Test>
+               <Test
+                  Identifier = "DSDeterministicMasternodeListTests/testMNLSavingToDisk">
+               </Test>
+               <Test
+                  Identifier = "DSDeterministicMasternodeListTests/testMainnetMasternodeSaving">
+               </Test>
+               <Test
+                  Identifier = "DSDeterministicMasternodeListTests/testSimplifiedMasternodeEntriesDeletion">
+               </Test>
+               <Test
+                  Identifier = "DSSyncTests/testFullSync">
+               </Test>
+               <Test
+                  Identifier = "DSSyncTests/testInitialHeadersSync2000">
+               </Test>
+            </SkippedTests>
          </TestableReference>
       </Testables>
    </TestAction>

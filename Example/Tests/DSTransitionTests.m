@@ -76,7 +76,7 @@
     NSMutableDictionary * usernameStatuses = [NSMutableDictionary dictionary];
     [usernameStatuses setObject:@{BLOCKCHAIN_USERNAME_STATUS:@(DSBlockchainIdentityUsernameStatus_Initial)} forKey:@"Bob"];
     
-    self.blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:DSBlockchainIdentityType_User atIndex:0 withFundingTransaction:fundingTransaction withUsernameDictionary:usernameStatuses inWallet:self.testWallet inContext:nil];
+    self.blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:0 withFundingTransaction:fundingTransaction withUsernameDictionary:usernameStatuses inWallet:self.testWallet inContext:nil];
 }
 
 - (void)tearDown {
@@ -111,12 +111,12 @@
 }
 
 -(void)testIdentityRegistrationData {
-    NSData * identityRegistrationData =  @"a7647479706503697369676e6174757265785851523979496d674d4942304446517061486b696247314248476f716b5130695064637a5a48343452394f6d625a486e6b77664c424e467638696a6e62466e4238313239476a466779624a316b4c5133636a674e6b6432562b6a7075626c69634b65797381a4626964006464617461782c416e68306b5335646a706e4c4570314e446366494b464e447759484579436376695855735a62614d36797955647479706501696973456e61626c6564f56c6964656e7469747954797065016e6c6f636b65644f7574506f696e747830654c66354a4d365a6d433137795646676d4534346f72462b694c715974566739517941525a575843646a3042414141416f70726f746f636f6c56657273696f6e00747369676e61747572655075626c69634b6579496400".hexToData;
+    NSData * identityRegistrationData =  @"a5647479706502697369676e61747572657858494653492f456e44427049443462324e36706b744c6f4a67437a6e56734c32336a594e6d5033414c5562514b4533424d356a696a56356f526f77445565496f455241573559464a5863705551742f64426f4f306e70774d3d6a7075626c69634b65797381a4626964016464617461782c4173507679796836706b7873732f46657370613748434a495938494136456c416636564b757156636e507a65647479706500696973456e61626c6564f56e6c6f636b65644f7574506f696e74783070527463783074453079646b474f446c424566574e49697644327736776876536b7659756e42352b68435541414141416f70726f746f636f6c56657273696f6e00".hexToData;
     DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition = [[DSBlockchainIdentityRegistrationTransition alloc] initWithData:identityRegistrationData onChain:self.chain];
     DSKey * key = [blockchainIdentityRegistrationTransition.publicKeys allValues][0];
-    XCTAssertEqualObjects(key.publicKeyData.hexString, @"027874912e5d8e99cb129d4d0dc7c8285343c181c4c8272f89752c65b68ceb2c94");
+    XCTAssertEqualObjects(key.publicKeyData.hexString, @"02c3efcb287aa64c6cb3f15eb296bb1c224863c200e849407fa54abaa55c9cfcde");
     XCTAssertEqual(key.keyType, DSKeyType_ECDSA);
-    XCTAssertEqualObjects(uint256_hex(blockchainIdentityRegistrationTransition.blockchainIdentityUniqueId), @"fd0851e8705c4989dc4f36e676c0d8c8cae9e5ff278bcbccb4d827b6f078290c");
+    XCTAssertEqualObjects(uint256_hex(blockchainIdentityRegistrationTransition.blockchainIdentityUniqueId), @"ae99d9433fc86f8974094c6a24fcc8cc68f87510c000d714c71ee5f64ceacf4b");
     XCTAssertEqual(blockchainIdentityRegistrationTransition.type, DSTransitionType_IdentityRegistration);
 }
 

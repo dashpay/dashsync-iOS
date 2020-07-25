@@ -730,7 +730,7 @@
 }
 
 - (void)testMNLSavingAndRetrievingFromDisk {
-    
+
     DSChain * chain = [DSChain testnet];
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
     NSString *filePath = [bundle pathForResource:@"MNL_0_122064" ofType:@"dat"];
