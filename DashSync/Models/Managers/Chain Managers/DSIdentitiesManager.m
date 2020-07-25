@@ -179,8 +179,9 @@
         for (NSDictionary * document in documents) {
             NSString * userId = document[@"$userId"];
             NSString * normalizedLabel = document[@"normalizedLabel"];
+            NSString * domain = document[@"normalizedParentDomainName"];
             DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 isTransient:TRUE onChain:self.chain inContext:self.chain.chainManagedObjectContext];
-            [identity addUsername:normalizedLabel status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
+            [identity addUsername:normalizedLabel inDomain:domain status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
             [rBlockchainIdentities addObject:identity];
         }
         if (completion) {
@@ -206,14 +207,15 @@
         for (NSDictionary * document in documents) {
             NSString * userId = document[@"$ownerId"];
             NSString * label = document[@"label"];
+            NSString * domain = document[@"normalizedParentDomainName"];
             UInt256 uniqueId = userId.base58ToData.UInt256;
             DSBlockchainIdentity * identity = [self.chain blockchainIdentityForUniqueId:uniqueId foundInWallet:nil includeForeignBlockchainIdentities:YES];
             if (!identity) {
                 identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 isTransient:TRUE onChain:self.chain inContext:self.chain.chainManagedObjectContext];
-                [identity addUsername:label status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
+                [identity addUsername:label inDomain:domain status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
             } else {
                 if (![identity.dashpayUsernames containsObject:label]) {
-                    [identity addUsername:label status:DSBlockchainIdentityUsernameStatus_Confirmed save:YES registerOnNetwork:NO];
+                    [identity addUsername:label inDomain:domain status:DSBlockchainIdentityUsernameStatus_Confirmed save:YES registerOnNetwork:NO];
                 }
             }
             
@@ -242,8 +244,9 @@
         for (NSDictionary * document in documents) {
             NSString * userId = document[@"$ownerId"];
             NSString * normalizedLabel = document[@"normalizedLabel"];
+            NSString * domain = document[@"normalizedParentDomainName"];
             DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 isTransient:TRUE onChain:self.chain inContext:self.chain.chainManagedObjectContext];
-            [identity addUsername:normalizedLabel status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
+            [identity addUsername:normalizedLabel inDomain:domain status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
             [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, NSError * error) {
                 
             }];
