@@ -104,10 +104,12 @@
     </entity>
     <entity name="DSDashpayUserEntity" representedClassName="DSDashpayUserEntity" syncable="YES">
         <attribute name="avatarPath" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="createdAt" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="displayName" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="localProfileDocumentRevision" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="publicMessage" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="remoteProfileDocumentRevision" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="updatedAt" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="associatedBlockchainIdentity" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityEntity" inverseName="matchingDashpayUser" inverseEntity="DSBlockchainIdentityEntity" indexed="YES" syncable="YES"/>
         <relationship name="chain" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="contacts" inverseEntity="DSChainEntity" syncable="YES"/>
         <relationship name="friends" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSDashpayUserEntity" inverseName="friends" inverseEntity="DSDashpayUserEntity" syncable="YES"/>
@@ -460,7 +462,7 @@
         <element name="DSCoinbaseTransactionEntity" positionX="-2322" positionY="-81" width="128" height="75"/>
         <element name="DSContractEntity" positionX="-2412" positionY="-180" width="128" height="133"/>
         <element name="DSCreditFundingTransactionEntity" positionX="-2412" positionY="-180" width="128" height="73"/>
-        <element name="DSDashpayUserEntity" positionX="-1898.890625" positionY="1279.48828125" width="128" height="193"/>
+        <element name="DSDashpayUserEntity" positionX="-1898.890625" positionY="1279.48828125" width="128" height="223"/>
         <element name="DSDerivationPathEntity" positionX="-2121" positionY="-103.05859375" width="128" height="163"/>
         <element name="DSFriendRequestEntity" positionX="160" positionY="192" width="128" height="163"/>
         <element name="DSGovernanceObjectEntity" positionX="-674.609375" positionY="-171.16796875" width="128" height="270"/>

@@ -69,6 +69,12 @@
     }];
 }
 
+// MARK: - Wiping
+
+-(void)clearExternalBlockchainIdentities {
+    self.foreignBlockchainIdentities = [NSMutableDictionary dictionary];
+}
+
 // MARK: - Identities
 
 -(void)registerForeignBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity {
@@ -82,17 +88,19 @@
 }
 
 - (DSBlockchainIdentity*)foreignBlockchainIdentityWithUniqueId:(UInt256)uniqueId {
-    return [self foreignBlockchainIdentityWithUniqueId:uniqueId createIfMissing:NO];
+    return [self foreignBlockchainIdentityWithUniqueId:uniqueId createIfMissing:NO inContext:nil];
 }
 
-- (DSBlockchainIdentity*)foreignBlockchainIdentityWithUniqueId:(UInt256)uniqueId createIfMissing:(BOOL)addIfMissing {
+- (DSBlockchainIdentity*)foreignBlockchainIdentityWithUniqueId:(UInt256)uniqueId createIfMissing:(BOOL)addIfMissing inContext:(NSManagedObjectContext*)context {
     //foreign blockchain identities are for local blockchain identies' contacts, not for search.
     @synchronized (self.foreignBlockchainIdentities) {
-        if (self.foreignBlockchainIdentities[uint256_data(uniqueId)]) {
-            return self.foreignBlockchainIdentities[uint256_data(uniqueId)];
+        DSBlockchainIdentity * foreignBlockchainIdentity = self.foreignBlockchainIdentities[uint256_data(uniqueId)];
+        if (foreignBlockchainIdentity) {
+            NSAssert(context?[foreignBlockchainIdentity blockchainIdentityEntityInContext:context]: foreignBlockchainIdentity.blockchainIdentityEntity,@"Blockchain identity entity should exist");
+            return foreignBlockchainIdentity;
         } else if (addIfMissing) {
-            DSBlockchainIdentity * foreignBlockchainIdentity = [[DSBlockchainIdentity alloc] initWithUniqueId:uniqueId isTransient:FALSE onChain:self.chain inContext:self.chain.chainManagedObjectContext];
-            [foreignBlockchainIdentity saveInitial];
+            foreignBlockchainIdentity = [[DSBlockchainIdentity alloc] initWithUniqueId:uniqueId isTransient:FALSE onChain:self.chain inContext:context];
+            [foreignBlockchainIdentity saveInitialInContext:context];
             self.foreignBlockchainIdentities[uint256_data(uniqueId)] = foreignBlockchainIdentity;
             return self.foreignBlockchainIdentities[uint256_data(uniqueId)];
         }

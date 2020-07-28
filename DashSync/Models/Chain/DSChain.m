@@ -80,7 +80,7 @@
 #import "DSTransactionHashEntity+CoreDataProperties.h"
 #import "BigIntTypes.h"
 #import "DSChainCheckpoints.h"
-#import "DSIdentitiesManager.h"
+#import "DSIdentitiesManager+Protected.h"
 
 #define FEE_PER_BYTE_KEY          @"FEE_PER_BYTE"
 
@@ -2789,6 +2789,7 @@ static dispatch_once_t devnetToken = 0;
     }
     [self wipeBlockchainIdentitiesPersistedDataInContext:context];
     [self.viewingAccount wipeBlockchainInfo];
+    [self.chainManager.identitiesManager clearExternalBlockchainIdentities];
     _bestBlockHeight = 0;
     _mSyncBlocks = nil;
     _mTerminalBlocks = nil;
@@ -2809,6 +2810,7 @@ static dispatch_once_t devnetToken = 0;
     }
     [self wipeBlockchainIdentitiesPersistedDataInContext:context];
     [self.viewingAccount wipeBlockchainInfo];
+    [self.chainManager.identitiesManager clearExternalBlockchainIdentities];
     _bestBlockHeight = 0;
     _mSyncBlocks = nil;
     _lastSyncBlock = nil;

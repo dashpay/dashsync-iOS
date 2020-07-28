@@ -17,6 +17,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) uint32_t localProfileDocumentRevision;
 @property (nonatomic, assign) uint32_t remoteProfileDocumentRevision;
+@property (nonatomic, assign) uint64_t createdAt;
+@property (nonatomic, assign) uint64_t updatedAt;
 @property (nullable, nonatomic, copy) NSString *displayName;
 @property (nullable, nonatomic, copy) NSString *avatarPath;
 @property (nullable, nonatomic, copy) NSString *publicMessage;
