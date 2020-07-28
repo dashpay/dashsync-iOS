@@ -39,16 +39,23 @@
     NSData *aliceSeedData = [NSData dataWithBytes:aliceSeed length:10];
     DSBLSKey *aliceKeyPair = [DSBLSKey keyWithSeedData:aliceSeedData];
     XCTAssertEqualObjects(aliceKeyPair.publicKeyData.hexString, @"1790635de8740e9a6a6b15fb6b72f3a16afa0973d971979b6ba54761d6e2502c50db76f4d26143f05459a42cfd520d44", @"BLS publicKeyData is incorrect");
+    XCTAssertEqualObjects(aliceKeyPair.publicKeyData.base64String, @"F5BjXeh0DppqaxX7a3LzoWr6CXPZcZeba6VHYdbiUCxQ23b00mFD8FRZpCz9Ug1E", @"BLS publicKeyData is incorrect");
     
     XCTAssertEqualObjects(aliceKeyPair.privateKeyData.hexString, @"46891c2cec49593c81921e473db7480029e0fc1eb933c6b93d81f5370eb19fbd", @"BLS privateKeyData is incorrect");
+    XCTAssertEqualObjects(aliceKeyPair.privateKeyData.base64String, @"RokcLOxJWTyBkh5HPbdIACng/B65M8a5PYH1Nw6xn70=", @"BLS privateKeyData is incorrect");
+    
+    XCTAssertEqualObjects([aliceKeyPair addressForChain:[DSChain testnet]], @"yi4HkZyrJQTKRD6p6p6Akiq7d1j1uBMYFP", @"BLS addressForChain testnet is incorrect");
     
     uint8_t bobSeed[10] = {10, 9, 8, 7, 6, 6, 7, 8, 9, 10};
     NSData *bobSeedData = [NSData dataWithBytes:bobSeed length:10];
     DSBLSKey *bobKeyPair = [DSBLSKey keyWithSeedData:bobSeedData];
     
     XCTAssertEqualObjects(bobKeyPair.publicKeyData.hexString, @"0e2f9055c17eb13221d8b41833468ab49f7d4e874ddf4b217f5126392a608fd48ccab3510548f1da4f397c1ad4f8e01a", @"BLS publicKeyData is incorrect");
-    
+    XCTAssertEqualObjects(bobKeyPair.publicKeyData.base64String, @"Di+QVcF+sTIh2LQYM0aKtJ99TodN30shf1EmOSpgj9SMyrNRBUjx2k85fBrU+OAa", @"BLS publicKeyData is incorrect");
     XCTAssertEqualObjects(bobKeyPair.privateKeyData.hexString, @"2513a9d824e763f8b3ff4304c5d52d05154a82b4c975da965f124e5dcf915805", @"BLS privateKeyData is incorrect");
+    XCTAssertEqualObjects(bobKeyPair.privateKeyData.base64String, @"JROp2CTnY/iz/0MExdUtBRVKgrTJddqWXxJOXc+RWAU=", @"BLS privateKeyData is incorrect");
+    
+    XCTAssertEqualObjects([bobKeyPair addressForChain:[DSChain testnet]], @"yMfTGcBjCLxyefxAdSSyFnSYgU6cJzmrs2", @"BLS addressForChain testnet is incorrect");
     
 
     NSString *secret = @"my little secret is a pony that never sleeps";
