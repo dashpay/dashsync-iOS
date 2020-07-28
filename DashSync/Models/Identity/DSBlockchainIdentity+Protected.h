@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic,readonly) DSBlockchainIdentityEntity* blockchainIdentityEntity;
 
+-(DSBlockchainIdentityEntity*)blockchainIdentityEntityInContext:(NSManagedObjectContext*)context;
+
 -(instancetype)initWithBlockchainIdentityEntity:(DSBlockchainIdentityEntity*)blockchainIdentityEntity;
 
 -(instancetype)initAtIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet*)wallet withBlockchainIdentityEntity:(DSBlockchainIdentityEntity*)blockchainIdentityEntity inContext:(NSManagedObjectContext*)managedObjectContext;
@@ -50,6 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void)saveInitial;
 
+-(void)saveInitialInContext:(NSManagedObjectContext*)context;
 
 -(void)registerInWalletForBlockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId;
 

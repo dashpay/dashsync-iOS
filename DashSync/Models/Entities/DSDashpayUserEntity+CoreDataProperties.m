@@ -24,5 +24,7 @@
 @dynamic friends;
 @dynamic avatarPath;
 @dynamic chain;
+@dynamic createdAt;
+@dynamic updatedAt;
 
 @end
