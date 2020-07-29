@@ -3303,10 +3303,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         
         NSAssert(friendRequestEntity.derivationPath, @"derivation path must be present");
         
-        [[self matchingDashpayUserInContext:childContext] addOutgoingRequestsObject:friendRequestEntity];
+        DSDashpayUserEntity * dashpayUserInChildContext = [self matchingDashpayUserInContext:childContext];
         
-        if ([[[friendship.destinationBlockchainIdentity matchingDashpayUserInContext:childContext].outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact == %@",self.matchingDashpayUser]] count]) {
-            [self.matchingDashpayUser addFriendsObject:friendship.destinationBlockchainIdentity.matchingDashpayUser];
+        [dashpayUserInChildContext addOutgoingRequestsObject:friendRequestEntity];
+        
+        if ([[[friendship.destinationBlockchainIdentity matchingDashpayUserInContext:childContext].outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact == %@",dashpayUserInChildContext]] count]) {
+            [dashpayUserInChildContext addFriendsObject:friendship.destinationBlockchainIdentity.matchingDashpayUser];
         }
         NSError * savingError = nil;
         [childContext save:&savingError];
