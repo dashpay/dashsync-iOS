@@ -41,7 +41,7 @@
                           @"[DSPaymentRequest requestWithString:]");
     
     r = [DSPaymentRequest requestWithString:@"Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emc" onChain:self.chain];
-    XCTAssertFalse(r.isValid);
+    XCTAssertFalse(r.isValidAsNonDashpayPaymentRequest);
     XCTAssertEqualObjects(@"Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emc", r.string,
                           @"[DSPaymentRequest requestWithString:]");
     
@@ -107,7 +107,7 @@
                           @"[DSPaymentRequest requestWithString:]");
     
     r = [DSPaymentRequest requestWithString:@"dash:?r=https://foobar.com" onChain:self.chain];
-    XCTAssertTrue(r.isValid);
+    XCTAssertTrue(r.isValidAsNonDashpayPaymentRequest);
     XCTAssertEqualObjects(@"dash:?r=https://foobar.com", r.string, @"[DSPaymentRequest requestWithString:]");
 }
 

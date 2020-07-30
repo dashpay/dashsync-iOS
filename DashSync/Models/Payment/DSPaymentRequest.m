@@ -34,6 +34,13 @@
 #import "DSChain.h"
 #import "DSPriceManager.h"
 #import "DSCurrencyPriceObject.h"
+#import "DSBlockchainIdentity.h"
+#import "DSDashpayUserEntity+CoreDataClass.h"
+#import "DSFriendRequestEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
+#import "DSIncomingFundsDerivationPath.h"
+#import "DSAccount.h"
 
 @interface DSPaymentRequest()
 
@@ -162,6 +169,9 @@
             else if ([key isEqual:@"local"]) {
                 self.requestedFiatCurrencyAmount = [value floatValue];
             }
+            else if ([key isEqual:@"user"]) {
+                self.dashpayUsername = value;
+            }
         }
     }
     else if (url) self.r = s; // BIP73 url: https://github.com/bitcoin/bips/blob/master/bip-0073.mediawiki
@@ -205,6 +215,10 @@
             [q addObject:[NSString stringWithFormat:@"local=%.02f", self.requestedFiatCurrencyAmount]];
         }
     }
+    
+    if (self.dashpayUsername.length > 0) {
+        [q addObject:[@"user=" stringByAppendingString:self.dashpayUsername]];
+    }
 
     if (q.count > 0) {
         [s appendString:@"?"];
@@ -234,7 +248,7 @@
     return [NSURL URLWithString:self.string];
 }
 
-- (BOOL)isValid
+- (BOOL)isValidAsNonDashpayPaymentRequest
 {
     if ([self.scheme isEqualToString:@"dash"]) {
         BOOL valid = ([self.paymentAddress isValidDashAddressOnChain:self.chain] || (self.r && [NSURL URLWithString:self.r])) ? YES : NO;
@@ -256,6 +270,95 @@
     else {
         return NO;
     }
+}
+
+- (BOOL)isValidAsDashpayPaymentRequestForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity onAccount:(DSAccount*)account inContext:(NSManagedObjectContext*)context
+{
+    if ([self.scheme isEqualToString:@"dash"]) {
+        __block DSIncomingFundsDerivationPath * friendshipDerivationPath = nil;
+        [context performBlockAndWait:^{
+
+            DSDashpayUserEntity * dashpayUserEntity = [blockchainIdentity matchingDashpayUserInContext:context];
+            
+            for (DSFriendRequestEntity * friendRequest in dashpayUserEntity.incomingRequests) {
+                if ([[friendRequest.sourceContact.associatedBlockchainIdentity.dashpayUsername stringValue] isEqualToString:self.dashpayUsername]) {
+                    friendshipDerivationPath = [account derivationPathForFriendshipWithIdentifier:friendRequest.friendshipIdentifier];
+                }
+            }
+            
+            
+        }];
+        BOOL valid = ([self.paymentAddress isValidDashAddressOnChain:self.chain] || (self.r && [NSURL URLWithString:self.r]) || friendshipDerivationPath) ? YES : NO;
+        if (!valid) {
+            DSDLog(@"Not a valid dash request");
+        }
+        return valid;
+    }
+#if SHAPESHIFT_ENABLED
+    else if ([self.scheme isEqualToString:@"bitcoin"]) {
+        BOOL valid = ([self.paymentAddress isValidBitcoinAddressOnChain:self.chain] || (self.r && [NSURL URLWithString:self.r])) ? YES : NO;
+        if (!valid) {
+            DSDLog(@"Not a valid bitcoin request");
+            
+        }
+        return valid;
+    }
+#endif
+    else {
+        return NO;
+    }
+}
+
+- (DSPaymentProtocolRequest *)protocolRequestForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity onAccount:(DSAccount*)account inContext:(NSManagedObjectContext*)context
+{
+    if (!self.dashpayUsername) {
+        return [self protocolRequest];
+    }
+    __block DSIncomingFundsDerivationPath * friendshipDerivationPath = nil;
+    [context performBlockAndWait:^{
+
+        DSDashpayUserEntity * dashpayUserEntity = [blockchainIdentity matchingDashpayUserInContext:context];
+        
+        for (DSFriendRequestEntity * friendRequest in dashpayUserEntity.incomingRequests) {
+            if ([[friendRequest.sourceContact.associatedBlockchainIdentity.dashpayUsername stringValue] isEqualToString:self.dashpayUsername]) {
+                friendshipDerivationPath = [account derivationPathForFriendshipWithIdentifier:friendRequest.friendshipIdentifier];
+            }
+        }
+        
+        
+    }];
+    
+
+    
+    if (!friendshipDerivationPath) {
+        return [self protocolRequest];
+    }
+    NSData *label = [self.label dataUsingEncoding:NSUTF8StringEncoding];
+    NSMutableData *script = [NSMutableData data];
+    [script appendScriptPubKeyForAddress:friendshipDerivationPath.receiveAddress forChain:self.chain];
+
+    if (script.length == 0) return nil;
+    
+    uint64_t sendingAmount = 0;
+    BOOL useFiatPegging = NO;
+    if (self.amount) {
+        sendingAmount = self.amount;
+    } else if (self.requestedFiatCurrencyCode) {
+        DSCurrencyPriceObject * currencyPriceObject = [[DSPriceManager sharedInstance] priceForCurrencyCode:self.requestedFiatCurrencyCode];
+        if (currencyPriceObject) {
+            useFiatPegging = YES;
+            sendingAmount = (uint64_t)[currencyPriceObject.price unsignedLongLongValue]*self.requestedFiatCurrencyAmount;
+        }
+    }
+    
+    DSPaymentProtocolDetails *details =
+        [[DSPaymentProtocolDetails alloc] initWithOutputAmounts:@[@(sendingAmount)]
+         outputScripts:@[script] time:0 expires:0 memo:self.message paymentURL:nil merchantData:nil onChain:self.chain];
+    DSPaymentProtocolRequest *request =
+        [[DSPaymentProtocolRequest alloc] initWithVersion:1 pkiType:@"none" certs:(label ? @[label] : nil) details:details
+                                                signature:nil onChain:self.chain callbackScheme:self.callbackScheme];
+    
+    return request;
 }
 
 // receiver converted to BIP70 request object
