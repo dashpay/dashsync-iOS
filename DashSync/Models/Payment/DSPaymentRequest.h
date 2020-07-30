@@ -28,7 +28,7 @@
 
 #import <Foundation/Foundation.h>
 
-@class DSPaymentProtocolRequest, DSPaymentProtocolPayment, DSPaymentProtocolACK, DSChain;
+@class DSPaymentProtocolRequest, DSPaymentProtocolPayment, DSPaymentProtocolACK, DSChain, DSBlockchainIdentity, DSAccount;
 
 // BIP21 bitcoin payment request URI https://github.com/bitcoin/bips/blob/master/bip-0021.mediawiki
 @interface DSPaymentRequest : NSObject
@@ -37,6 +37,7 @@
 @property (nonatomic, strong) NSString *paymentAddress;
 @property (nonatomic, strong) NSString *label;
 @property (nonatomic, strong) NSString *message;
+@property (nonatomic, strong) NSString *dashpayUsername;
 @property (nonatomic, assign) uint64_t amount;
 @property (nonatomic, strong) NSString *r; // BIP72 URI: https://github.com/bitcoin/bips/blob/master/bip-0072.mediawiki
 @property (nonatomic, strong) NSString *string;
@@ -45,7 +46,7 @@
 @property (nonatomic, strong) NSURL *url;
 @property (nonatomic, strong) NSString *requestedFiatCurrencyCode;
 @property (nonatomic, assign) float requestedFiatCurrencyAmount;
-@property (nonatomic, readonly) BOOL isValid;
+@property (nonatomic, readonly) BOOL isValidAsNonDashpayPaymentRequest;
 @property (nonatomic, readonly) BOOL amountValueImmutable;
 @property (nonatomic, readonly) DSPaymentProtocolRequest *protocolRequest;
 @property (nonatomic, readonly) DSChain * chain;
@@ -57,6 +58,10 @@
 - (instancetype)initWithString:(NSString *)string onChain:(DSChain*)chain;
 - (instancetype)initWithData:(NSData *)data onChain:(DSChain*)chain;
 - (instancetype)initWithURL:(NSURL *)url onChain:(DSChain*)chain;
+
+- (DSPaymentProtocolRequest *)protocolRequestForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity onAccount:(DSAccount*)account inContext:(NSManagedObjectContext*)context;
+
+- (BOOL)isValidAsDashpayPaymentRequestForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity onAccount:(DSAccount*)account inContext:(NSManagedObjectContext*)context;
 
 // fetches a BIP70 request over HTTP and calls completion block
 // https://github.com/bitcoin/bips/blob/master/bip-0070.mediawiki

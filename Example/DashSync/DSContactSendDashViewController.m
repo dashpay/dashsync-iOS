@@ -61,7 +61,7 @@
     DSPaymentRequest * paymentRequest = [DSPaymentRequest requestWithString:self.address onChain:self.account.wallet.chain];
     paymentRequest.amount = [[DSPriceManager sharedInstance] amountForDashString:self.amountTextField.text];
     
-    if ([paymentRequest isValid]) {
+    if ([paymentRequest isValidAsNonDashpayPaymentRequest]) {
         
         __block BOOL displayedSentMessage = FALSE;
         
