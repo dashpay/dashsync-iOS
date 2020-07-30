@@ -60,7 +60,7 @@
 }
 
 -(void)searchByNamePrefix:(NSString*)namePrefix {
-    [self.chainManager.identitiesManager searchIdentitiesByNamePrefix:namePrefix withCompletion:^(BOOL succeess, NSArray<DSBlockchainIdentity *> * _Nullable blockchainIdentities, NSArray<NSError *> * _Nonnull errors) {
+    [self.chainManager.identitiesManager searchIdentitiesByDashpayUsernamePrefix:namePrefix withCompletion:^(BOOL succeess, NSArray<DSBlockchainIdentity *> * _Nullable blockchainIdentities, NSArray<NSError *> * _Nonnull errors) {
         if (succeess) {
             self.blockchainIdentities = blockchainIdentities;
             [self.tableView reloadData];
