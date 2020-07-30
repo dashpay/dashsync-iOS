@@ -176,13 +176,17 @@
     }
 }
 
-- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByNamePrefix:(NSString*)namePrefix withCompletion:(IdentitiesCompletionBlock)completion {
-    return [self searchIdentitiesByNamePrefix:namePrefix offset:0 limit:100 withCompletion:completion];
+- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByDashpayUsernamePrefix:(NSString*)namePrefix withCompletion:(IdentitiesCompletionBlock)completion {
+    return [self searchIdentitiesByNamePrefix:namePrefix inDomain:@"dash" offset:0 limit:100 withCompletion:completion];
 }
 
-- (id<DSDAPINetworkServiceRequest>)searchIdentityByName:(NSString*)name withCompletion:(IdentityCompletionBlock)completion {
+- (id<DSDAPINetworkServiceRequest>)searchIdentityByDashpayUsername:(NSString*)name withCompletion:(IdentityCompletionBlock)completion {
+    return [self searchIdentityByName:name inDomain:@"dash" withCompletion:completion];
+}
+
+- (id<DSDAPINetworkServiceRequest>)searchIdentityByName:(NSString*)name inDomain:(NSString*)domain withCompletion:(IdentityCompletionBlock)completion {
     DSDAPIClient * client = self.chain.chainManager.DAPIClient;
-    id<DSDAPINetworkServiceRequest> call = [client.DAPINetworkService getDPNSDocumentsForUsernames:@[name] inDomain:@"" success:^(NSArray<NSDictionary *> * _Nonnull documents) {
+    id<DSDAPINetworkServiceRequest> call = [client.DAPINetworkService getDPNSDocumentsForUsernames:@[name] inDomain:domain success:^(NSArray<NSDictionary *> * _Nonnull documents) {
         __block NSMutableArray * rBlockchainIdentities = [NSMutableArray array];
         for (NSDictionary * document in documents) {
             NSString * userId = document[@"$userId"];
@@ -208,9 +212,13 @@
     return call;
 }
 
-- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByNamePrefix:(NSString*)namePrefix offset:(uint32_t)offset limit:(uint32_t)limit withCompletion:(IdentitiesCompletionBlock)completion {
+- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByDashpayUsernamePrefix:(NSString*)namePrefix offset:(uint32_t)offset limit:(uint32_t)limit withCompletion:(IdentitiesCompletionBlock)completion {
+    return [self searchIdentitiesByNamePrefix:namePrefix inDomain:@"dash" offset:offset limit:limit withCompletion:completion];
+}
+
+- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByNamePrefix:(NSString*)namePrefix inDomain:(NSString*)domain offset:(uint32_t)offset limit:(uint32_t)limit withCompletion:(IdentitiesCompletionBlock)completion {
     DSDAPIClient * client = self.chain.chainManager.DAPIClient;
-    id<DSDAPINetworkServiceRequest> call = [client.DAPINetworkService searchDPNSDocumentsForUsernamePrefix:namePrefix inDomain:@"dash" offset:offset limit:limit success:^(NSArray<NSDictionary *> * _Nonnull documents) {
+    id<DSDAPINetworkServiceRequest> call = [client.DAPINetworkService searchDPNSDocumentsForUsernamePrefix:namePrefix inDomain:domain offset:offset limit:limit success:^(NSArray<NSDictionary *> * _Nonnull documents) {
         __block NSMutableArray * rBlockchainIdentities = [NSMutableArray array];
         for (NSDictionary * document in documents) {
             NSString * userId = document[@"$ownerId"];
