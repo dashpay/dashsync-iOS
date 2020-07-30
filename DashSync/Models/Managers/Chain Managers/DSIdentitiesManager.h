@@ -47,11 +47,15 @@ typedef void (^IdentityCompletionBlock)(BOOL succeess, DSBlockchainIdentity* _Nu
 
 - (void)checkCreditFundingTransactionForPossibleNewIdentity:(DSCreditFundingTransaction*)creditFundingTransaction;
 
-- (id<DSDAPINetworkServiceRequest>)searchIdentityByName:(NSString*)namePrefix withCompletion:(IdentityCompletionBlock)completion;
+- (id<DSDAPINetworkServiceRequest>)searchIdentityByDashpayUsername:(NSString*)name withCompletion:(IdentityCompletionBlock)completion;
 
-- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByNamePrefix:(NSString*)namePrefix withCompletion:(IdentitiesCompletionBlock)completion;
+- (id<DSDAPINetworkServiceRequest>)searchIdentityByName:(NSString*)namePrefix inDomain:(NSString*)domain withCompletion:(IdentityCompletionBlock)completion;
 
-- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByNamePrefix:(NSString*)namePrefix offset:(uint32_t)offset limit:(uint32_t)limit withCompletion:(IdentitiesCompletionBlock)completion;
+- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByDashpayUsernamePrefix:(NSString*)namePrefix withCompletion:(IdentitiesCompletionBlock)completion;
+
+- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByDashpayUsernamePrefix:(NSString*)namePrefix offset:(uint32_t)offset limit:(uint32_t)limit withCompletion:(IdentitiesCompletionBlock)completion;
+
+- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByNamePrefix:(NSString*)namePrefix inDomain:(NSString*)domain offset:(uint32_t)offset limit:(uint32_t)limit withCompletion:(IdentitiesCompletionBlock)completion;
 
 - (void)searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID:(NSString*)userID withCompletion:(IdentitiesCompletionBlock)completion;
 
