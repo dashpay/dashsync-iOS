@@ -504,12 +504,15 @@
 - (BOOL)containsExternalAddress:(NSString *)address {
     NSParameterAssert(address);
     
-    for (DSFundsDerivationPath * derivationPath in self.fundDerivationPaths) {
-        if ([derivationPath containsReceiveAddress:address]) return TRUE;
-            }
-            return FALSE;
+    for (DSDerivationPath * derivationPath in self.fundDerivationPaths) {
+        if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
+            if ([(DSFundsDerivationPath*)derivationPath containsReceiveAddress:address]) return TRUE;
+        } else if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
+            if ([(DSIncomingFundsDerivationPath*)derivationPath containsAddress:address]) return TRUE;
         }
-
+    }
+    return FALSE;
+}
 - (DSIncomingFundsDerivationPath*)externalDerivationPathContainingAddress:(NSString *)address {
     NSParameterAssert(address);
     
