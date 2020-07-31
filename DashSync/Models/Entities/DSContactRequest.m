@@ -28,7 +28,7 @@
 @property(nonatomic,assign) uint32_t recipientKeyIndex;
 @property(nonatomic,assign) uint32_t senderKeyIndex;
 
-@property(nonatomic,assign) NSTimeInterval timestamp;
+@property(nonatomic,assign) NSTimeInterval createdAt;
 
 @property(nonatomic,strong) NSData * encryptedPublicKeyData;
 @property(nonatomic,strong) DSBlockchainIdentity * blockchainIdentity;
@@ -47,15 +47,15 @@
         NSString *encryptedPublicKeyString = rawContact[@"encryptedPublicKey"];
         NSNumber *senderKeyIndex = rawContact[@"senderKeyIndex"];
         NSNumber *recipientKeyIndex = rawContact[@"recipientKeyIndex"];
-        NSNumber *timestamp = rawContact[@"timestamp"];
-        if (!recipientString || !senderString || !encryptedPublicKeyString || !senderKeyIndex || !recipientKeyIndex || !timestamp) {
+        NSNumber *createdAt = rawContact[@"$createdAt"];
+        if (!recipientString || !senderString || !encryptedPublicKeyString || !senderKeyIndex || !recipientKeyIndex || !createdAt) {
             NSAssert(FALSE, @"malformed server response");
             return nil;
         }
         self.recipientBlockchainIdentityUniqueId = [recipientString base58ToData].UInt256;
         self.senderBlockchainIdentityUniqueId = [senderString base58ToData].UInt256;
         self.encryptedPublicKeyData = [encryptedPublicKeyString base64ToData];
-        self.timestamp = [timestamp doubleValue];
+        self.createdAt = [createdAt doubleValue]/1000.0;
         self.recipientKeyIndex = [recipientKeyIndex unsignedIntValue];
         self.senderKeyIndex = [senderKeyIndex unsignedIntValue];
         self.blockchainIdentity = blockchainIdentity;

@@ -6,6 +6,13 @@
                     "$ownerId": "asc"
                 }],
                 "unique": true
+            },
+            {
+                "properties": [{
+                    "$ownerId": "asc"
+                }, {
+                    "$updatedAt": "asc"
+                }]
             }],
             "properties": {
                 "avatarUrl": {
@@ -22,6 +29,7 @@
                     "maxLength":64
                 }
             },
+            "required": ["$createdAt", "$updatedAt"],
             "additionalProperties": false
         },
         "contactInfo": {
@@ -37,13 +45,10 @@
                 "properties": [{
                     "$ownerId": "asc"
                 }, {
-                    "timestamp": "asc"
+                    "$updatedAt": "asc"
                 }]
             }],
             "properties": {
-                "timestamp": {
-                    "type": "number"
-                },
                 "encToUserId": {
                     "type": "string",
                     "maxLength":128,
@@ -58,7 +63,7 @@
                     "maxLength":2048
                 }
             },
-            "required": ["timestamp", "encToUserId", "privateData", "encryptionKeyIndex"],
+            "required": ["$createdAt", "$updatedAt", "encToUserId", "privateData", "encryptionKeyIndex"],
             "additionalProperties": false
         },
         "contactRequest": {
@@ -82,27 +87,24 @@
             },
             {
                 "properties": [{
-                    "timestamp": "asc"
+                    "$createdAt": "asc"
                 }]
             },
             {
                 "properties": [{
                     "toUserId": "asc"
                 }, {
-                    "timestamp": "asc"
+                    "$createdAt": "asc"
                 }]
             },
             {
                 "properties": [{
                     "$ownerId": "asc"
                 }, {
-                    "timestamp": "asc"
+                    "$createdAt": "asc"
                 }]
             }],
             "properties": {
-                "timestamp": {
-                    "type": "number"
-                },
                 "toUserId": {
                     "type": "string",
                     "maxLength":44,
@@ -120,7 +122,7 @@
                     "type": "integer"
                 }
             },
-            "required": ["timestamp", "toUserId", "encryptedPublicKey", "senderKeyIndex", "recipientKeyIndex"],
+            "required": ["$createdAt", "toUserId", "encryptedPublicKey", "senderKeyIndex", "recipientKeyIndex"],
             "additionalProperties": false
         }
     }

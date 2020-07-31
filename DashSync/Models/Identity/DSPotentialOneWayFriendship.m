@@ -122,9 +122,9 @@
     NSAssert(self.extendedPublicKey, @"Problem creating extended public key for potential contact?");
     NSError *error = nil;
     
-    
+    uint64_t createAtMs = self.createdAt*1000;
     DSStringValueDictionary *data = @{
-        @"timestamp": @(self.createdAt),
+        @"$createdAt": @(createAtMs),
                            @"toUserId" : uint256_base58([self destinationBlockchainIdentityUniqueId]),
                            @"encryptedPublicKey" : [self.encryptedExtendedPublicKeyData base64EncodedStringWithOptions:0],
         @"senderKeyIndex" : @(self.sourceKeyIndex),

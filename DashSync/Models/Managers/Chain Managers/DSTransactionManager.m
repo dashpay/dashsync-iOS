@@ -596,6 +596,8 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
             
             __block BOOL sent = NO;
             
+            [account registerTransaction:tx saveImmediately:YES];
+            
             [self publishTransaction:tx completion:^(NSError *publishingError) {
                 if (publishingError) {
                     if (!sent) {

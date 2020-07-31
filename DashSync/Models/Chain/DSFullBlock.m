@@ -72,6 +72,8 @@
     return d;
 }
 
+#define LOG_MINING_BEST_TRIES 0
+
 -(BOOL)mineBlockAfterBlock:(DSBlock*)block withNonceOffset:(uint32_t)nonceOffset withTimeout:(NSTimeInterval)timeout rAttempts:(uint64_t*)rAttempts {
     BOOL found = false;
     self.prevBlock = block.blockHash;
@@ -79,10 +81,14 @@
     uint32_t i = 0;
     UInt256 fullTarget = setCompactLE(block.target);
     DSDLog(@"Trying to mine a block at height %d with target %@", block.height, uint256_bin(fullTarget));
+#if LOG_MINING_BEST_TRIES
+    UInt256 bestTry = UINT256_MAX;
+#endif
     do {
         NSMutableData * d = [preNonceMutableData mutableCopy];
         [d appendUInt32:i];
         UInt256 potentialBlockHash = d.x11;
+        
         if (!uint256_sup(potentialBlockHash, fullTarget)) {
             //We found a block
             DSDLog(@"A Block was found %@ %@",uint256_bin(fullTarget),uint256_bin(potentialBlockHash));
@@ -90,6 +96,12 @@
             found = TRUE;
             break;
         }
+#if LOG_MINING_BEST_TRIES
+        else if (uint256_sup(bestTry,potentialBlockHash)) {
+            DSDLog(@"New best try (%d) found for target %@ %@",i,uint256_bin(fullTarget),uint256_bin(potentialBlockHash));
+            bestTry = potentialBlockHash;
+        }
+#endif
         i++;
     } while (i != UINT32_MAX);
     if (!found) {
