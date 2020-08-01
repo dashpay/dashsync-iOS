@@ -26,5 +26,8 @@
 @dynamic isLocal;
 @dynamic dashpayUsername;
 @dynamic dashpaySyncronizationBlockHash;
+@dynamic lastCheckedUsernamesTimestamp;
+@dynamic lastCheckedProfileTimestamp;
+@dynamic lastCheckedFriendshipsTimestamp;
 
 @end

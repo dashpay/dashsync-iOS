@@ -113,6 +113,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 @property (nonatomic, strong) dispatch_queue_t identityQueue;
 
+
+@property (nonatomic, assign) uint64_t lastCheckedUsernamesTimestamp;
+@property (nonatomic, assign) uint64_t lastCheckedProfileTimestamp;
+@property (nonatomic, assign) uint64_t lastCheckedFriendshipsTimestamp;
+
 @end
 
 @implementation DSBlockchainIdentity
@@ -155,6 +160,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     }
     _creditBalance = blockchainIdentityEntity.creditBalance;
     _registrationStatus = blockchainIdentityEntity.registrationStatus;
+    
+    _lastCheckedProfileTimestamp = blockchainIdentityEntity.lastCheckedProfileTimestamp;
+    _lastCheckedUsernamesTimestamp = blockchainIdentityEntity.lastCheckedUsernamesTimestamp;
+    _lastCheckedFriendshipsTimestamp = blockchainIdentityEntity.lastCheckedFriendshipsTimestamp;
+    
     self.dashpaySyncronizationBlockHash = blockchainIdentityEntity.dashpaySyncronizationBlockHash.UInt256;
     for (DSBlockchainIdentityKeyPathEntity * keyPath in blockchainIdentityEntity.keyPaths) {
         if ([keyPath path]) {
@@ -626,6 +636,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 // MARK: - Read Only Property Helpers
 
 -(DSDashpayUserEntity*)matchingDashpayUserInContext:(NSManagedObjectContext*)context {
+    if (context == [self.matchingDashpayUser managedObjectContext]) return self.matchingDashpayUser;
     return [context objectWithID:self.matchingDashpayUser.objectID];
 }
 
@@ -1449,10 +1460,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 if ([DSOptionsManager sharedInstance].syncType & DSSyncType_BlockchainIdentities) {
                     stepsNeeded |= DSBlockchainIdentityQueryStep_Identity;
                 }
-                if (![self.dashpayUsernameFullPaths count] && [DSOptionsManager sharedInstance].syncType & DSSyncType_DPNS) {
+                if (![self.dashpayUsernameFullPaths count] && self.lastCheckedUsernamesTimestamp == 0 && [DSOptionsManager sharedInstance].syncType & DSSyncType_DPNS) {
                     stepsNeeded |= DSBlockchainIdentityQueryStep_Username;
                 }
-                if ([DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay) {
+                if ((self.lastCheckedProfileTimestamp < [[NSDate date] timeIntervalSince1970] - HOUR_TIME_INTERVAL) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay) {
                     stepsNeeded |= DSBlockchainIdentityQueryStep_Profile;
                 }
                 if (stepsNeeded == DSBlockchainIdentityQueryStep_None) {
@@ -1465,10 +1476,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             }
         } else {
             DSBlockchainIdentityQueryStep stepsNeeded = DSBlockchainIdentityQueryStep_None;
-            if (![self.dashpayUsernameFullPaths count] && [DSOptionsManager sharedInstance].syncType & DSSyncType_DPNS) {
+            if (![self.dashpayUsernameFullPaths count] && self.lastCheckedUsernamesTimestamp == 0 && [DSOptionsManager sharedInstance].syncType & DSSyncType_DPNS) {
                 stepsNeeded |= DSBlockchainIdentityQueryStep_Username;
             }
-            if (![self.matchingDashpayUser createdAt] && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay) {
+            if (![self.matchingDashpayUser createdAt] && (self.lastCheckedProfileTimestamp < [[NSDate date] timeIntervalSince1970] - HOUR_TIME_INTERVAL) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay) {
                 stepsNeeded |= DSBlockchainIdentityQueryStep_Profile;
             }
             if (self.isLocal && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay) {
@@ -3084,7 +3095,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         
         if (uint256_eq(contactRequest.recipientBlockchainIdentityUniqueId, self.uniqueID)) {
             //we are the recipient, this is an incoming request
-            DSFriendRequestEntity * friendRequest = [DSFriendRequestEntity anyObjectInContext:context matching:@"destinationContact == %@ && sourceContact.associatedBlockchainIdentity.uniqueID == %@",self.matchingDashpayUser,uint256_data(contactRequest.senderBlockchainIdentityUniqueId)];
+            DSFriendRequestEntity * friendRequest = [DSFriendRequestEntity anyObjectInContext:context matching:@"destinationContact == %@ && sourceContact.associatedBlockchainIdentity.uniqueID == %@",[self matchingDashpayUserInContext:context],uint256_data(contactRequest.senderBlockchainIdentityUniqueId)];
             if (!friendRequest) {
                 [incomingNewRequests addObject:contactRequest];
             } else if (friendRequest.sourceContact == nil) {
@@ -3092,7 +3103,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             }
         } else if (uint256_eq(contactRequest.senderBlockchainIdentityUniqueId, self.uniqueID)) {
             //we are the sender, this is an outgoing request
-            BOOL isNew = ![DSFriendRequestEntity countObjectsInContext:context matching:@"sourceContact == %@ && destinationContact.associatedBlockchainIdentity.uniqueID == %@",self.matchingDashpayUser,[NSData dataWithUInt256:contactRequest.recipientBlockchainIdentityUniqueId]];
+            BOOL isNew = ![DSFriendRequestEntity countObjectsInContext:context matching:@"sourceContact == %@ && destinationContact.associatedBlockchainIdentity.uniqueID == %@",[self matchingDashpayUserInContext:context],[NSData dataWithUInt256:contactRequest.recipientBlockchainIdentityUniqueId]];
             if (isNew) {
                 [outgoingNewRequests addObject:contactRequest];
             }
@@ -3184,12 +3195,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                     dispatch_group_enter(dispatchGroup);
                     [potentialFriendship createDerivationPathWithCompletion:^(BOOL success, DSIncomingFundsDerivationPath * _Nonnull incomingFundsDerivationPath) {
                         if (success) {
-                            DSFriendRequestEntity * friendRequest = [potentialFriendship outgoingFriendRequestForDashpayUserEntity:self.matchingDashpayUser atTimestamp:contactRequest.createdAt];
+                            DSDashpayUserEntity * matchingDashpayUserInContext = [self matchingDashpayUserInContext:context];
+                            DSFriendRequestEntity * friendRequest = [potentialFriendship outgoingFriendRequestForDashpayUserEntity:matchingDashpayUserInContext atTimestamp:contactRequest.createdAt];
                             [potentialFriendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequest];
-                            [self.matchingDashpayUser addIncomingRequestsObject:friendRequest];
+                            [matchingDashpayUserInContext addIncomingRequestsObject:friendRequest];
                             
-                            if ([[friendRequest.sourceContact.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",self.matchingDashpayUser]] count]) {
-                                [self.matchingDashpayUser addFriendsObject:friendRequest.sourceContact];
+                            if ([[friendRequest.sourceContact.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",matchingDashpayUserInContext]] count]) {
+                                [matchingDashpayUserInContext addFriendsObject:friendRequest.sourceContact];
                             }
                             
                             [account addIncomingDerivationPath:incomingFundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier];
@@ -3222,8 +3234,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                                                 atTimestamp:contactRequest.createdAt
                                                     context:context];
                         
-                        if ([[externalBlockchainIdentity.matchingDashpayUser.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",self.matchingDashpayUser]] count]) {
-                            [self.matchingDashpayUser addFriendsObject:externalBlockchainIdentity.matchingDashpayUser];
+                        DSDashpayUserEntity * matchingDashpayUserInContext = [self matchingDashpayUserInContext:context];
+                        if ([[externalBlockchainIdentity.matchingDashpayUser.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",matchingDashpayUserInContext]] count]) {
+                            [matchingDashpayUserInContext addFriendsObject:externalBlockchainIdentity.matchingDashpayUser];
                             [sourceBlockchainIdentity.managedObjectContext ds_save];
                         }
                         
@@ -3241,9 +3254,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                                                forExtendedPublicKey:extendedPublicKey
                                                         atTimestamp:contactRequest.createdAt
                                                             context:context];
-                                
-                                if ([[externalBlockchainIdentity.matchingDashpayUser.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",self.matchingDashpayUser]] count]) {
-                                    [self.matchingDashpayUser addFriendsObject:externalBlockchainIdentity.matchingDashpayUser];
+                                DSDashpayUserEntity * matchingDashpayUserInContext = [self matchingDashpayUserInContext:context];
+                                if ([[externalBlockchainIdentity.matchingDashpayUser.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",matchingDashpayUserInContext]] count]) {
+                                    [matchingDashpayUserInContext addFriendsObject:externalBlockchainIdentity.matchingDashpayUser];
                                     [sourceBlockchainIdentity.managedObjectContext ds_save];
                                 }
                             } else {
@@ -3504,12 +3517,29 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             changeOccured = YES;
             [updateEvents addObject:DSBlockchainIdentityUpdateEventDashpaySyncronizationBlockHash];
         }
+        
+        if (entity.lastCheckedFriendshipsTimestamp != self.lastCheckedFriendshipsTimestamp) {
+            entity.lastCheckedFriendshipsTimestamp = self.lastCheckedFriendshipsTimestamp;
+            changeOccured = YES;
+        }
+        
+        if (entity.lastCheckedUsernamesTimestamp != self.lastCheckedUsernamesTimestamp) {
+            entity.lastCheckedUsernamesTimestamp = self.lastCheckedUsernamesTimestamp;
+            changeOccured = YES;
+        }
+        
+        if (entity.lastCheckedProfileTimestamp != self.lastCheckedProfileTimestamp) {
+            entity.lastCheckedProfileTimestamp = self.lastCheckedProfileTimestamp;
+            changeOccured = YES;
+        }
 
         if (changeOccured) {
             [self.managedObjectContext ds_save];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentityDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain,DSBlockchainIdentityKey:self,DSBlockchainIdentityUpdateEvents:updateEvents}];
-            });
+            if (updateEvents.count) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentityDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain,DSBlockchainIdentityKey:self,DSBlockchainIdentityUpdateEvents:updateEvents}];
+                });
+            }
         }
     }];
 }
