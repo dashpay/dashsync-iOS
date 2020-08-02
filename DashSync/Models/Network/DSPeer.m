@@ -1666,6 +1666,8 @@
     });
 }
 
+#define SAVE_INCOMING_BLOCKS 0
+
 - (void)acceptMerkleblockMessage:(NSData *)message
 {
     // Dash nodes don't support querying arbitrary transactions, only transactions not yet accepted in a block. After
@@ -1694,6 +1696,16 @@
     else {
         dispatch_async(self.delegateQueue, ^{
             [self.transactionDelegate peer:self relayedBlock:block];
+            
+            #if SAVE_INCOMING_BLOCKS
+                NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+                NSString *documentsDirectory = [paths objectAtIndex:0];
+                NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"%@-%d-%@.block",self.chain.devnetIdentifier,block.height,uint256_hex(block.blockHash)]];
+
+                 // Save it into file system
+                [message writeToFile:dataPath atomically:YES];
+                
+            #endif
         });
     }
 }
