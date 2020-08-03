@@ -147,7 +147,7 @@
         // Calculate average difficulty based on the blocks we iterate over in this for loop
         if(blockCount <= DGW_PAST_BLOCKS_MIN) {
             UInt256 currentTarget = setCompactLE(currentBlock.target);
-            //DSDLog(@"currentTarget for block %d is %@", currentBlock.height, uint256_hex(currentTarget));
+            DSDLog(@"currentTarget for block %d is %@", currentBlock.height, uint256_hex(currentTarget));
             //if (self.height == 1070917)
             //DSDLog(@"%d",currentTarget);
             if (blockCount == 1) {

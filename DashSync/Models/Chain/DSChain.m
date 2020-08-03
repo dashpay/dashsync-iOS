@@ -2533,6 +2533,7 @@ static dispatch_once_t devnetToken = 0;
     
     for (long i = self.checkpoints.count - 1; i >= 0; i--) { // estimate from checkpoints
         if (self.checkpoints[i].height <= blockHeight) {
+            if (h == self.checkpoints[i].height) return t;
             t = self.checkpoints[i].timestamp + (t - self.checkpoints[i].timestamp)*
             (blockHeight - self.checkpoints[i].height)/(h - self.checkpoints[i].height);
             return t;

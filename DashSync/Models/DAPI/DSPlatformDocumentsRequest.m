@@ -87,10 +87,10 @@
 
 +(instancetype)dashpayRequestForContactRequestsForSendingUserId:(NSString*)userId since:(NSTimeInterval)timestamp {
     DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
-    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"%K == %@ && timestamp >= %@",@"$ownerId",userId,@(timestamp)];
+    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"%K == %@ && %K >= %@",@"$ownerId",userId,@"$createdAt",@(timestamp)];
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = 100;
-    platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"$ownerId" ascending:YES],[NSSortDescriptor sortDescriptorWithKey:@"timestamp" ascending:YES]];
+    platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"$ownerId" ascending:YES],[NSSortDescriptor sortDescriptorWithKey:@"$createdAt" ascending:YES]];
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"contactRequest";
     return platformDocumentsRequest;
@@ -98,10 +98,10 @@
 
 +(instancetype)dashpayRequestForContactRequestsForRecipientUserId:(NSString*)userId since:(NSTimeInterval)timestamp {
     DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
-    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"toUserId == %@ && timestamp >= %@",userId,@(timestamp)];
+    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"toUserId == %@ && %K >= %@",userId,@"$createdAt",@(timestamp)];
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = 100;
-    platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"toUserId" ascending:YES],[NSSortDescriptor sortDescriptorWithKey:@"timestamp" ascending:YES]];
+    platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"toUserId" ascending:YES],[NSSortDescriptor sortDescriptorWithKey:@"$createdAt" ascending:YES]];
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"contactRequest";
     return platformDocumentsRequest;

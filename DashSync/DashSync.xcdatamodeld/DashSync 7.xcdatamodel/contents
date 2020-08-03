@@ -23,6 +23,9 @@
         <attribute name="creditBalance" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="dashpaySyncronizationBlockHash" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="isLocal" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="lastCheckedFriendshipsTimestamp" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="lastCheckedProfileTimestamp" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="lastCheckedUsernamesTimestamp" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="registrationStatus" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="uniqueID" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
         <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="identities" inverseEntity="DSChainEntity" indexed="YES" syncable="YES"/>
@@ -454,7 +457,7 @@
     <elements>
         <element name="DSAccountEntity" positionX="-2135.0703125" positionY="459.18359375" width="128" height="135"/>
         <element name="DSAddressEntity" positionX="-2619.41015625" positionY="308.31640625" width="128" height="180"/>
-        <element name="DSBlockchainIdentityEntity" positionX="-2403" positionY="-171" width="128" height="253"/>
+        <element name="DSBlockchainIdentityEntity" positionX="-2403" positionY="-171" width="128" height="283"/>
         <element name="DSBlockchainIdentityKeyPathEntity" positionX="-2394" positionY="-162" width="128" height="148"/>
         <element name="DSBlockchainIdentityUsernameEntity" positionX="-2421" positionY="-189" width="128" height="133"/>
         <element name="DSChainEntity" positionX="-1151.6328125" positionY="-163.1796875" width="128" height="373"/>

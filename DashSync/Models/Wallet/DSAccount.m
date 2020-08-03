@@ -513,6 +513,7 @@
     }
     return FALSE;
 }
+
 - (DSIncomingFundsDerivationPath*)externalDerivationPathContainingAddress:(NSString *)address {
     NSParameterAssert(address);
     
