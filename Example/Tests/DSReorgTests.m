@@ -60,13 +60,12 @@
     XCTAssertEqual(blocks.count,149);
     NSMutableArray * sortedBlocks105 = [NSMutableArray array];
     NSMutableArray * sortedBlocks106to150 = [NSMutableArray array];
-    NSMutableArray * sortedForkBlocks106to150 = [NSMutableArray array];
     int i = 2;
     
     while (i <= 150) {
         for (NSURL * url in blocks) {
             NSArray * components = [url.lastPathComponent componentsSeparatedByString:@"-"];
-            if ([components[3] intValue] == i && ![components[4] isEqualToString:@"fork"]) {
+            if ([components[3] intValue] == i) {
                 if (i <= 105) {
                     [sortedBlocks105 addObject:url];
                 } else {
@@ -80,28 +79,29 @@
     
     i = 105;
     
-    while (i <= 110) {
-        for (NSURL * url in blocks) {
-            NSArray * components = [url.lastPathComponent componentsSeparatedByString:@"-"];
-            if ([components[3] intValue] == i && [components[4] isEqualToString:@"fork"]) {
-                [sortedForkBlocks106to150 addObject:url];
-                i++;
-                break;
-            }
-        }
-    }
-    
     for (NSURL * url in sortedBlocks105) {
         NSData * blockData = [NSData dataWithContentsOfURL:url];
         DSMerkleBlock * merkleBlock = [DSMerkleBlock merkleBlockWithMessage:blockData onChain:self.chain];
         [self.chain addBlock:merkleBlock fromPeer:nil];
     }
     
+    
     XCTAssertEqual(self.chain.lastTerminalBlockHeight,105);
     XCTAssertEqual(self.chain.lastSyncBlockHeight,1);
     
     DSAccount * account = self.wallet.accounts[0];
     XCTAssertEqualObjects(account.receiveAddress, @"yWq16XLivcRsCLcxWKbKPxJ35XASd4r9RY",@"Not matching receive address");
+    
+    NSData * headerData = @"00000020384621d0c5b5e0f84fe336d37e4cce7d9c2d56493102cf88234254721dd3f35c3da65260508ff789b65b19047cded17bf161fc64916f91365a3edab0a675099de699275fffff7f2001000000".hexToData;
+    
+    NSData * blockData = @"00000020384621d0c5b5e0f84fe336d37e4cce7d9c2d56493102cf88234254721dd3f35c3da65260508ff789b65b19047cded17bf161fc64916f91365a3edab0a675099de699275fffff7f20010000000303000500010000000000000000000000000000000000000000000000000000000000000000ffffffff04016a0101ffffffff01e288526a740000001976a91473483d35610ce83e45bae64ea88714dec7d41e9588ac000000002601006a000000000000000000000000000000000000000000000000000000000000000000000003000600000000000000fd490101006a000000010001f2efb75bd621e59c7115e5c4bdadae772d178f587687c715f88f7f414d34c66b3200000000000000320000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200000001d555f3ff0a86bbe2cd9d8a2c7725935dbbfb2c747f910402e5d050a3f919cec1000000006a4730440220437f15af30180be323ca1a1e0c47de2a597abba2a57d4f76e2584ce7d3e8d40802202705342f334991c9eaa2757ea63c5bb305abf14a66a1ce727ef2689a92bcee55012103a65caff6ca4c0415a3ac182dfc2a6d3a4dceb98e8b831e71501df38aa156f2c1feffffff0200e40b54020000001976a91473483d35610ce83e45bae64ea88714dec7d41e9588ac1ea34616720000001976a914965ef0941e79834ca79b291b940cc18cf516448788ac14000000".hexToData;
+    
+    DSMerkleBlock * merkleBlockFork = [DSMerkleBlock merkleBlockWithMessage:headerData onChain:self.chain];
+    [self.chain addBlock:merkleBlockFork fromPeer:nil];
+    
+    
+    XCTAssertEqual(self.chain.lastTerminalBlockHeight,106);
+    XCTAssertEqual(self.chain.lastSyncBlockHeight,1);
     
     for (NSURL * url in sortedBlocks106to150) {
         NSData * blockData = [NSData dataWithContentsOfURL:url];

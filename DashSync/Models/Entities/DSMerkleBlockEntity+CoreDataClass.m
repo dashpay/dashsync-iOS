@@ -36,16 +36,18 @@
         return [self setAttributesFromMerkleBlock:(DSMerkleBlock*)block forChainEntity:chainEntity];
     }
     [self.managedObjectContext performBlockAndWait:^{
-        self.blockHash = [NSData dataWithBytes:block.blockHash.u8 length:sizeof(UInt256)];
+        self.blockHash = uint256_data(block.blockHash);
         self.version = block.version;
-        self.prevBlock = [NSData dataWithBytes:block.prevBlock.u8 length:sizeof(UInt256)];
-        self.merkleRoot = [NSData dataWithBytes:block.merkleRoot.u8 length:sizeof(UInt256)];
+        self.prevBlock = uint256_data(block.prevBlock);
+        self.merkleRoot = uint256_data(block.merkleRoot);
         self.timestamp = block.timestamp;
         self.target = block.target;
         self.nonce = block.nonce;
         self.totalTransactions = block.totalTransactions;
         self.height = block.height;
         self.chain = chainEntity;
+        self.aggregateWork = uint256_data(block.aggregateWork);
+        NSAssert((block.height == UINT32_MAX) == (uint256_is_zero(block.aggregateWork)), @"if block height is not set then there should be no aggregated work, and opposite is also true");
     }];
     
     return self;
@@ -53,10 +55,10 @@
 
 - (instancetype)setAttributesFromMerkleBlock:(DSMerkleBlock *)block forChainEntity:(DSChainEntity*)chainEntity {
     [self.managedObjectContext performBlockAndWait:^{
-        self.blockHash = [NSData dataWithBytes:block.blockHash.u8 length:sizeof(UInt256)];
+        self.blockHash = uint256_data(block.blockHash);
         self.version = block.version;
-        self.prevBlock = [NSData dataWithBytes:block.prevBlock.u8 length:sizeof(UInt256)];
-        self.merkleRoot = [NSData dataWithBytes:block.merkleRoot.u8 length:sizeof(UInt256)];
+        self.prevBlock = uint256_data(block.prevBlock);
+        self.merkleRoot = uint256_data(block.merkleRoot);
         self.timestamp = block.timestamp;
         self.target = block.target;
         self.nonce = block.nonce;
@@ -65,6 +67,8 @@
         self.flags = [NSData dataWithData:block.flags];
         self.height = block.height;
         self.chain = chainEntity;
+        self.aggregateWork = uint256_data(block.aggregateWork);
+        NSAssert((block.height == UINT32_MAX) == (uint256_is_zero(block.aggregateWork)), @"if block height is not set then there should be no aggregated work, and opposite is also true");
     }];
     
     return self;
@@ -75,10 +79,6 @@
     __block DSMerkleBlock *block = nil;
     
     [self.managedObjectContext performBlockAndWait:^{
-        NSData *blockHash = self.blockHash, *prevBlock = self.prevBlock, *merkleRoot = self.merkleRoot;
-        UInt256 hash = (blockHash.length == sizeof(UInt256)) ? *(const UInt256 *)blockHash.bytes : UINT256_ZERO,
-        prev = (prevBlock.length == sizeof(UInt256)) ? *(const UInt256 *)prevBlock.bytes : UINT256_ZERO,
-        root = (merkleRoot.length == sizeof(UInt256)) ? *(const UInt256 *)merkleRoot.bytes : UINT256_ZERO;
         
         DSChain * chain = self.chain.chain;
         
@@ -86,8 +86,8 @@
         if (self.chainLock) {
             chainLock = [self.chainLock chainLockForChain:chain];
         }
-        block = [[DSMerkleBlock alloc] initWithVersion:self.version blockHash:hash prevBlock:prev merkleRoot:root
-                                               timestamp:self.timestamp target:self.target nonce:self.nonce
+        block = [[DSMerkleBlock alloc] initWithVersion:self.version blockHash:self.blockHash.UInt256 prevBlock:self.prevBlock.UInt256 merkleRoot:self.merkleRoot.UInt256
+                                             timestamp:self.timestamp target:self.target aggregateWork:self.aggregateWork.UInt256 nonce:self.nonce
                                        totalTransactions:self.totalTransactions hashes:self.hashes flags:self.flags height:self.height chainLock:chainLock onChain:self.chain.chain];
     }];
     

@@ -47,9 +47,10 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, readonly) uint32_t target;
 @property (nonatomic, readonly) uint32_t nonce;
 @property (nonatomic, readonly) uint32_t totalTransactions;
-@property (nonatomic, assign) uint32_t height;
+@property (nonatomic, readonly) uint32_t height;
 @property (nonatomic, readonly) DSChain *chain;
 @property (nonatomic, readonly) BOOL chainLocked;
+@property (nonatomic, readonly) UInt256 aggregateWork;
 
 @property (nonatomic, readonly) NSArray *txHashes; // the matched tx hashes in the block
 

@@ -31,7 +31,7 @@
 #import "DSBloomFilter.h"
 #import "DSTransaction.h"
 #import "DSTransactionEntity+CoreDataClass.h"
-#import "DSBlock.h"
+#import "DSBlock+Protected.h"
 #import "DSMerkleBlock.h"
 #import "DSFullBlock.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
@@ -114,8 +114,8 @@
 
 @property (nonatomic, strong) DSBlock *lastSyncBlock, *lastTerminalBlock, *lastOrphan;
 @property (nonatomic, strong) NSMutableDictionary <NSValue*, DSBlock*> *mSyncBlocks, *mTerminalBlocks, *mOrphans;
-@property (nonatomic, strong) NSMutableDictionary <NSData*,DSCheckpoint*> *checkpointsByHashDictionary;
-@property (nonatomic, strong) NSMutableDictionary <NSNumber*,DSCheckpoint*> *checkpointsByHeightDictionary;
+@property (nonatomic, strong) NSMutableDictionary <NSData*, DSCheckpoint*> *checkpointsByHashDictionary;
+@property (nonatomic, strong) NSMutableDictionary <NSNumber*, DSCheckpoint*> *checkpointsByHeightDictionary;
 @property (nonatomic, strong) NSArray<DSCheckpoint*> * checkpoints;
 @property (nonatomic, copy) NSString * uniqueID;
 @property (nonatomic, copy) NSString * networkName;
@@ -1851,7 +1851,7 @@ static dispatch_once_t devnetToken = 0;
             DSDLog(@"printing previous block at height %d : %@",merkleBlock.height,merkleBlock.blockHashValue);
         }
 #endif
-        DSDLog(@"%@:%d relayed orphan block %@, previous %@, height %d, last block is %@, lastBlockHeight %d, time %@", peer.host, peer.port,
+        DSDLog(@"%@:%d relayed orphan block %@, previous %@, height %d, last block is %@, lastBlockHeight %d, time %@", peer.host?peer.host:@"TEST", peer.port,
                uint256_reverse_hex(block.blockHash), uint256_reverse_hex(block.prevBlock), block.height, uint256_reverse_hex(self.lastTerminalBlock.blockHash), self.lastSyncBlockHeight,[NSDate dateWithTimeIntervalSince1970:block.timestamp]);
         
         if (peer) {
@@ -1867,6 +1867,7 @@ static dispatch_once_t devnetToken = 0;
     BOOL syncDone = NO;
     
     block.height = prev.height + 1;
+    block.aggregateWork = uInt256AddLE(prev.aggregateWork, uint256_inverse(block.blockHash));
     uint32_t txTime = block.timestamp/2 + prev.timestamp/2;
     
     if (isInitialTerminalBlock) {
@@ -1958,7 +1959,7 @@ static dispatch_once_t devnetToken = 0;
         
         if (!equivalentTerminalBlock && uint256_eq(block.prevBlock, self.lastTerminalBlock.blockHash)) {
             if ((block.height % 100) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
-                DSDLog(@"adding terminal block on %@ (caught up) at height: %d from peer %@", self.name, block.height,peer.host);
+                DSDLog(@"adding terminal block on %@ (caught up) at height: %d with hash: %@ from peer %@", self.name, block.height,uint256_hex(block.blockHash),peer.host?peer.host:@"TEST");
             }
             @synchronized (self.mTerminalBlocks) {
                 self.mTerminalBlocks[blockHash] = block;
@@ -1978,7 +1979,7 @@ static dispatch_once_t devnetToken = 0;
         
     } else if (uint256_eq(block.prevBlock, self.lastTerminalBlock.blockHash)) { // new block extends terminal chain
         if ((block.height % 100) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
-            DSDLog(@"adding terminal block on %@ at height: %d from peer %@", self.name, block.height,peer.host);
+            DSDLog(@"adding terminal block on %@ at height: %d with hash: %@ from peer %@", self.name, block.height,uint256_hex(block.blockHash),peer.host?peer.host:@"TEST");
         }
         @synchronized (self.mTerminalBlocks) {
             self.mTerminalBlocks[blockHash] = block;

@@ -267,6 +267,7 @@
     copy.valid = self.valid;
     copy.merkleTreeValid = self.isMerkleTreeValid;
     copy.data = [self.data copyWithZone:zone];
+    copy.aggregateWork = self.aggregateWork;
     return copy;
 }
 

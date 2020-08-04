@@ -107,6 +107,8 @@ typedef struct _DSLLMQ {
 
 #define uint256_xor(a, b) ((UInt256) { .u64 = { a.u64[0] ^ b.u64[0], a.u64[1] ^ b.u64[1], a.u64[2] ^ b.u64[2], a.u64[3] ^ b.u64[3] } })//this needs to be tested
 
+#define uint256_inverse(a) ((UInt256) { .u64 = { a.u64[0] ^ 0, a.u64[1] ^ 0, a.u64[2] ^ 0, a.u64[3] ^ 0 } })
+
 #define uint2_firstbits(x) (x & 0x1? 0 : 1)
 #define uint4_firstbits(x) (x & 0x3? uint2_firstbits( x ) : 2+uint2_firstbits( x >> 2 ))
 #define uint8_firstbits(x) (x & 0xF? uint4_firstbits( x ) : 4+uint4_firstbits( x >> 4 ))

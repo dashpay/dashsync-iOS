@@ -41,6 +41,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, getter = isValid) BOOL valid;
 @property (nonatomic, assign, getter = isMerkleTreeValid) BOOL merkleTreeValid;
 @property (nonatomic, strong, getter = toData) NSData *data;
+@property (nonatomic, assign) uint32_t height;
+@property (nonatomic, assign) UInt256 aggregateWork;
 
 - (instancetype)initWithVersion:(uint32_t)version timestamp:(uint32_t)timestamp height:(uint32_t)height onChain:(DSChain*)chain;
 
