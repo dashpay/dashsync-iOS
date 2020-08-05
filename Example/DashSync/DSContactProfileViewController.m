@@ -123,7 +123,7 @@ NS_ASSUME_NONNULL_BEGIN
         cellModel.returnKeyType = UIReturnKeyNext;
         cellModel.placeholder = [NSString stringWithFormat:@"https://api.adorable.io/avatars/120/%@.png",
                                                            self.blockchainIdentity.currentDashpayUsername];
-        cellModel.text = self.blockchainIdentity.matchingDashpayUser.avatarPath;
+        cellModel.text = self.blockchainIdentity.matchingDashpayUserInViewContext.avatarPath;
         __weak typeof(self) weakSelf = self;
         cellModel.didChangeValueBlock = ^(TextFieldFormCellModel *_Nonnull cellModel) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -142,7 +142,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (!_aboutMeCellModel) {
         TextViewFormCellModel *cellModel = [[TextViewFormCellModel alloc] initWithTitle:@"About me"];
         cellModel.placeholder = [NSString stringWithFormat:@"Hey I'm a demo user %@", self.blockchainIdentity.currentDashpayUsername];
-        cellModel.text = self.blockchainIdentity.matchingDashpayUser.publicMessage;
+        cellModel.text = self.blockchainIdentity.matchingDashpayUserInViewContext.publicMessage;
         _aboutMeCellModel = cellModel;
     }
     return _aboutMeCellModel;
@@ -198,7 +198,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.view.userInteractionEnabled = NO;
     // TODO: show HUD
-    BOOL isCreate = !self.blockchainIdentity.matchingDashpayUser;
+    BOOL isCreate = !self.blockchainIdentity.matchingDashpayUserInViewContext;
     NSString *displayName = self.displayNameCellModel.text.length > 0
                             ? self.displayNameCellModel.text
                             : self.displayNameCellModel.placeholder;

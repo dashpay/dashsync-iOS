@@ -41,6 +41,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, nullable, readonly) NSString * standaloneExtendedPublicKeyLocationString;
 @property (nonatomic, readonly) DSDerivationPathEntity * derivationPathEntity;
 
+-(DSDerivationPathEntity*)derivationPathEntityInContext:(NSManagedObjectContext*)context;
+
 
 @end
 
