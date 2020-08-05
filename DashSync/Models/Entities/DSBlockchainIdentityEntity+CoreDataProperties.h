@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) DSBlockchainIdentityUsernameEntity * dashpayUsername;
 @property (nonatomic, assign) uint64_t lastCheckedUsernamesTimestamp;
 @property (nonatomic, assign) uint64_t lastCheckedProfileTimestamp;
+@property (nonatomic, assign) uint64_t lastCheckedContactsTimestamp;
 @property (nonatomic, assign) uint64_t lastCheckedFriendshipsTimestamp;
 
 @end

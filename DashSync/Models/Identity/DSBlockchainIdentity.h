@@ -167,7 +167,7 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventDashpaySyncroni
 @property (nullable,nonatomic,readonly) DSCreditFundingTransaction * registrationCreditFundingTransaction;
 
 /*! @brief In our system a contact is a vue on a blockchain identity for Dashpay. A blockchain identity is therefore represented by a contact that will have relationships in the system. This is in the default backgroundContext. */
-@property (nonatomic,readonly) DSDashpayUserEntity* matchingDashpayUser;
+@property (nonatomic,readonly) DSDashpayUserEntity* matchingDashpayUserInViewContext;
 
 /*! @brief This is the status of the registration of the identity. It starts off in an initial status, and ends in a confirmed status */
 @property (nonatomic,readonly) DSBlockchainIdentityRegistrationStatus registrationStatus;
@@ -293,7 +293,7 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventDashpaySyncroni
 
 - (void)updateDashpayProfileWithDisplayName:(NSString*)displayName publicMessage:(NSString*)publicMessage avatarURLString:(NSString *)avatarURLString;
 
-- (void)signedProfileDocumentTransitionWithCompletion:(void (^)(DSTransition * transition, BOOL cancelled, NSError * error))completion;
+- (void)signedProfileDocumentTransitionInContext:(NSManagedObjectContext*)context withCompletion:(void (^)(DSTransition * transition, BOOL cancelled, NSError * error))completion;
 
 - (void)signAndPublishProfileWithCompletion:(void (^)(BOOL success, BOOL cancelled, NSError * error))completion;
 

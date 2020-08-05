@@ -151,9 +151,9 @@
 -(DSFriendRequestEntity*)outgoingFriendRequestForDashpayUserEntity:(DSDashpayUserEntity*)dashpayUserEntity atTimestamp:(NSTimeInterval)timestamp {
     NSParameterAssert(dashpayUserEntity);
     NSAssert(uint256_eq(dashpayUserEntity.associatedBlockchainIdentity.uniqueID.UInt256, [self destinationBlockchainIdentityUniqueId]), @"contact entity must match");
-    NSAssert(self.sourceBlockchainIdentity.matchingDashpayUser,@"The own contact of the source Identity must be set");
+    NSAssert(self.sourceBlockchainIdentity.matchingDashpayUserInViewContext,@"The own contact of the source Identity must be set");
     DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObjectInContext:dashpayUserEntity.managedObjectContext];
-    friendRequestEntity.sourceContact = self.sourceBlockchainIdentity.matchingDashpayUser;
+    friendRequestEntity.sourceContact = self.sourceBlockchainIdentity.matchingDashpayUserInViewContext;
     friendRequestEntity.destinationContact = dashpayUserEntity;
     NSAssert(friendRequestEntity.sourceContact != friendRequestEntity.destinationContact, @"This must be different contacts");
     friendRequestEntity.derivationPath = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self.fundsDerivationPathForContact inContext:dashpayUserEntity.managedObjectContext];

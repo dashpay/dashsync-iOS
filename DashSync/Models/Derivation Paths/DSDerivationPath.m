@@ -339,6 +339,10 @@
     return [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
 }
 
+-(DSDerivationPathEntity*)derivationPathEntityInContext:(NSManagedObjectContext*)context {
+    return [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:context];
+}
+
 -(NSNumber*)depth {
     if (_depth != nil) return _depth;
     else return @(self.length);

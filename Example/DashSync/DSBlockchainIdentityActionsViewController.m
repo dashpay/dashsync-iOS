@@ -108,14 +108,14 @@
                 break;
         }
         
-    } else if (!self.blockchainIdentity.matchingDashpayUser.remoteProfileDocumentRevision) {
+    } else if (!self.blockchainIdentity.matchingDashpayUserInViewContext.remoteProfileDocumentRevision) {
         self.aboutMeLabel.text = @"Fetching";
         [self.avatarImageView sd_setImageWithURL:nil];
         self.usernameStatusLabel.text = @"";
     }
     else {
-        self.aboutMeLabel.text = self.blockchainIdentity.matchingDashpayUser.publicMessage;
-        [self.avatarImageView sd_setImageWithURL:[NSURL URLWithString:self.blockchainIdentity.matchingDashpayUser.avatarPath]];
+        self.aboutMeLabel.text = self.blockchainIdentity.matchingDashpayUserInViewContext.publicMessage;
+        [self.avatarImageView sd_setImageWithURL:[NSURL URLWithString:self.blockchainIdentity.matchingDashpayUserInViewContext.avatarPath]];
         self.usernameStatusLabel.text = @"";
     }
 }
@@ -131,19 +131,19 @@
 
 -(void)updateProfile {
     self.title = self.blockchainIdentity.currentDashpayUsername;
-    if (!self.blockchainIdentity.matchingDashpayUser.remoteProfileDocumentRevision) {
+    if (!self.blockchainIdentity.matchingDashpayUserInViewContext.remoteProfileDocumentRevision) {
         self.aboutMeLabel.text = @"Register Profile";
         [self.avatarImageView sd_setImageWithURL:nil];
     }
     else {
-        if (!self.blockchainIdentity.matchingDashpayUser.publicMessage) {
+        if (!self.blockchainIdentity.matchingDashpayUserInViewContext.publicMessage) {
             self.aboutMeLabel.text = @"No message set!";
             self.aboutMeLabel.textColor = [UIColor grayColor];
         } else {
-            self.aboutMeLabel.text = self.blockchainIdentity.matchingDashpayUser.publicMessage;
+            self.aboutMeLabel.text = self.blockchainIdentity.matchingDashpayUserInViewContext.publicMessage;
             self.aboutMeLabel.textColor = [UIColor darkTextColor];
         }
-        [self.avatarImageView sd_setImageWithURL:[NSURL URLWithString:self.blockchainIdentity.matchingDashpayUser.avatarPath]];
+        [self.avatarImageView sd_setImageWithURL:[NSURL URLWithString:self.blockchainIdentity.matchingDashpayUserInViewContext.avatarPath]];
     }
 }
 
