@@ -837,6 +837,11 @@ UInt256 setCompactLE(int32_t nCompact)
     return nWord;
 }
 
+UInt256 setCompactBE(int32_t nCompact)
+{
+    return uint256_reverse(setCompactLE(nCompact));
+}
+
 uint16_t compactBitsLE(UInt256 number)
 {
     for (int pos = 7; pos >= 0; pos--) {
@@ -884,6 +889,10 @@ UInt256 uInt256AddLE(UInt256 a, UInt256 b) {
     return r;
 }
 
+UInt256 uInt256AddBE(UInt256 a, UInt256 b) {
+    return uint256_reverse(uInt256AddLE(uint256_reverse(a),uint256_reverse(b)));
+}
+
 UInt256 uInt256AddOneLE(UInt256 a) {
     UInt256 r = ((UInt256) { .u64 = { 1, 0, 0, 0 } });
     return uInt256AddLE(a, r);
@@ -899,6 +908,10 @@ UInt256 uInt256NegLE(UInt256 a) {
 
 UInt256 uInt256SubtractLE(UInt256 a, UInt256 b) {
     return uInt256AddLE(a,uInt256AddOneLE(uInt256NegLE(b)));
+}
+
+UInt256 uInt256SubtractBE(UInt256 a, UInt256 b) {
+    return uint256_reverse(uInt256AddLE(uint256_reverse(a),uInt256AddOneLE(uInt256NegLE(uint256_reverse(b)))));
 }
 
 UInt256 uInt256ShiftLeftLE(UInt256 a, uint8_t bits) {
@@ -1372,6 +1385,59 @@ UInt256 uInt256MultiplyUInt32LE (UInt256 a, uint32_t b)
 - (NSString *)binaryString
 {
     return [NSString binaryWithData:self];
+}
+
+
++(uint8_t)positionOfFirstSetBitInOctal:(uint8_t)value {
+    NSAssert(value < 16, @"value must be under 16");
+    switch(value) {
+        case 0: return UINT8_MAX;//@"0000";
+        case 1: return 3;//@"0001";
+        case 2: return 2;//@"0010";
+        case 3: return 2;//@"0011";
+        case 4: return 1;//@"0100";
+        case 5: return 1;//@"0101";
+        case 6: return 1;//@"0110";
+        case 7: return 1;//@"0111";
+        case 8: return 0;//@"1000";
+        case 9: return 0;//@"1001";
+        case 10: return 0;//@"1010";
+        case 11: return 0;//@"1011";
+        case 12: return 0;//@"1100";
+        case 13: return 0;//@"1101";
+        case 14: return 0;//@"1110";
+        case 15: return 0;//@"1111";
+        default:
+            return UINT8_MAX;
+    }
+}
+
++(uint8_t)positionOfFirstSetBitInSmallInteger:(uint8_t)value {
+    uint8_t positionOfFirstSetBit = [self positionOfFirstSetBitInOctal:value>>4];
+    if (positionOfFirstSetBit == UINT8_MAX) { //not found
+        return [self positionOfFirstSetBitInOctal:value&0xf];
+    } else {
+        return positionOfFirstSetBit;
+    }
+}
+
++ (uint16_t)positionOfFirstSetBitInData:(NSData *)d
+{
+    if (! d) return UINT16_MAX;
+    
+    const uint8_t *bytes = d.bytes;
+    for (NSUInteger i = 0; i < d.length; i++) {
+        uint8_t positionOfFirstSetBit = [self positionOfFirstSetBitInSmallInteger:bytes[i]];
+        if (positionOfFirstSetBit != UINT8_MAX) {
+            return positionOfFirstSetBit + 8*i;
+        }
+    }
+    
+    return UINT16_MAX;
+}
+
+-(uint16_t)positionOfFirstSetBit {
+    return [NSData positionOfFirstSetBitInData:self];
 }
 
 +(NSData*)opReturnScript {

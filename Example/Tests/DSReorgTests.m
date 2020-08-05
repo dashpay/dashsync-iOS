@@ -38,12 +38,53 @@
 @implementation DSReorgTests
 
 - (void)setUp {
-    self.chain = [DSChain setUpDevnetWithIdentifier:@"devnet-mobile-2" withCheckpoints:nil withMinimumDifficultyBlocks:0 withDefaultPort:3000 withDefaultDapiJRPCPort:3000 withDefaultDapiGRPCPort:3010 dpnsContractID:UINT256_ZERO dashpayContractID:UINT256_ZERO isTransient:YES];
+    self.chain = [DSChain setUpDevnetWithIdentifier:@"devnet-mobile-2" withCheckpoints:nil withMinimumDifficultyBlocks:UINT32_MAX withDefaultPort:3000 withDefaultDapiJRPCPort:3000 withDefaultDapiGRPCPort:3010 dpnsContractID:UINT256_ZERO dashpayContractID:UINT256_ZERO isTransient:YES];
     self.wallet = [DSWallet transientWalletWithDerivedKeyData:@"000102030405060708090a0b0c0d0e0f".hexToData forChain:self.chain];
 }
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
+}
+
+-(void)testBEAdding {
+    UInt256 chainWork1 =    @"00000000000000000000000000000000000000000000336e9ee70cf4694c02f9".hexToData.UInt256;
+    UInt256 numberToAdd =   @"0000000000000000000000000000000000000000000000000000000000000111".hexToData.UInt256;
+    UInt256 addition = uInt256AddBE(chainWork1, numberToAdd);
+    XCTAssertEqualObjects(uint256_hex(addition),@"00000000000000000000000000000000000000000000336e9ee70cf4694c040a");
+}
+
+-(void)testBESubstraction1 {
+    UInt256 chainWork1 =          @"00000000000000000000000000000000000000000000336e9ee70cf4694c02f9".hexToData.UInt256;
+    UInt256 numberToSubstract =   @"0000000000000000000000000000000000000000000000000000000000000311".hexToData.UInt256;
+    UInt256 substraction = uInt256SubtractBE(chainWork1, numberToSubstract);
+    XCTAssertEqualObjects(uint256_hex(substraction),@"00000000000000000000000000000000000000000000336e9ee70cf4694bffe8");
+}
+
+-(void)testBESubstraction2 {
+    UInt256 chainWork1 =          @"00000000000000000000000000000000000000000000336ea946ab063dcd3016".hexToData.UInt256;
+    UInt256 numberToSubstract =   @"00000000000000000000000000000000000000000000336e9ee70cf4694c02f9".hexToData.UInt256;
+    UInt256 substraction = uInt256SubtractBE(chainWork1, numberToSubstract);
+    XCTAssertEqualObjects(uint256_hex(substraction),@"0000000000000000000000000000000000000000000000000a5f9e11d4812d1d");
+}
+
+- (void)testChainWork {
+//    block 1283540
+//    chainwork 00000000000000000000000000000000000000000000336e9ee70cf4694c02f9
+//    target 19180f4a
+//    block 1283541
+//    chainwork 00000000000000000000000000000000000000000000336ea946ab063dcd3016
+//    target 1918ada2
+    UInt256 chainWork1 =    @"00000000000000000000000000000000000000000000336ea946ab063dcd3016".hexToData.UInt256;
+    UInt256 chainWork2 =    @"00000000000000000000000000000000000000000000336e9ee70cf4694c02f9".hexToData.UInt256;
+    UInt256 diffChainWork = @"0000000000000000000000000000000000000000000000000a5f9e11d4812d1d".hexToData.UInt256;
+    UInt256 diffChainWorkToVerify = uInt256SubtractBE(chainWork1, chainWork2);
+    XCTAssertEqualObjects(uint256_hex(diffChainWorkToVerify),uint256_hex(diffChainWork));
+    UInt256 target = setCompactLE(0x1918ada2);
+    UInt256 work = uInt256AddOneLE(uInt256DivideLE(uint256_inverse(target), uInt256AddOneLE(target)));
+    XCTAssertEqualObjects(uint256_hex(target),@"00000000000000000000000000000000000000000000a2ad1800000000000000");
+    XCTAssertEqualObjects(uint256_hex(work),@"1d2d81d4119e5f0a000000000000000000000000000000000000000000000000");
+    XCTAssertEqualObjects(uint256_reverse_hex(work),uint256_hex(diffChainWork));
+    
 }
 
 - (void)testSimpleReorg {
@@ -85,7 +126,7 @@
         [self.chain addBlock:merkleBlock fromPeer:nil];
     }
     
-    
+    XCTAssertEqualObjects(uint256_hex(self.chain.lastTerminalBlock.aggregateWork),@"d400000000000000000000000000000000000000000000000000000000000000");
     XCTAssertEqual(self.chain.lastTerminalBlockHeight,105);
     XCTAssertEqual(self.chain.lastSyncBlockHeight,1);
     

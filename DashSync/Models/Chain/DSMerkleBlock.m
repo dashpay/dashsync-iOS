@@ -164,6 +164,7 @@ inline static int ceil_log2(int x)
     self.target = target;
     self.nonce = nonce;
     self.height = height;
+    self.aggregateWork = aggregateWork;
     [self setChainLockedWithChainLock:chainLock];
     self.chain = chain;
     

@@ -133,7 +133,7 @@ static const UniChar base58chars[] = {
     const uint8_t *bytes = d.bytes;
     NSMutableString *binary = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), d.length*16));
     
-    for (NSUInteger i = d.length -1; i != NSUIntegerMax; i--) {
+    for (NSUInteger i = 0; i < d.length; i++) {
         [binary appendFormat:@"%@", [NSString binaryStringFromSmallInteger:bytes[i]]];
     }
     

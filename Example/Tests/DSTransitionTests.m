@@ -76,7 +76,7 @@
     NSMutableDictionary * usernameStatuses = [NSMutableDictionary dictionary];
     [usernameStatuses setObject:@{BLOCKCHAIN_USERNAME_STATUS:@(DSBlockchainIdentityUsernameStatus_Initial)} forKey:@"Bob"];
     
-    self.blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:0 withFundingTransaction:fundingTransaction withUsernameDictionary:usernameStatuses inWallet:self.testWallet inContext:nil];
+    self.blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:0 withFundingTransaction:fundingTransaction withUsernameDictionary:usernameStatuses inWallet:self.testWallet];
 }
 
 - (void)tearDown {

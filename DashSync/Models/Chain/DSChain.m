@@ -483,6 +483,7 @@ static dispatch_once_t devnetToken = 0;
     block2Checkpoint.checkpointHash = blockhash;//*(UInt256*)[NSData dataWithUInt256:blockhash].reverse.bytes;
     block2Checkpoint.target = nBits;
     block2Checkpoint.timestamp = nTime;
+    block2Checkpoint.chainWork = @"0400000000000000000000000000000000000000000000000000000000000000".hexToData.UInt256;
     return block2Checkpoint;
 }
 
@@ -1867,7 +1868,9 @@ static dispatch_once_t devnetToken = 0;
     BOOL syncDone = NO;
     
     block.height = prev.height + 1;
-    block.aggregateWork = uInt256AddLE(prev.aggregateWork, uint256_inverse(block.blockHash));
+    UInt256 target = setCompactLE(block.target);
+    NSAssert(!uint256_is_zero(prev.aggregateWork), @"previous block should have aggregate work set");
+    block.aggregateWork = uInt256AddLE(prev.aggregateWork,uInt256AddOneLE(uInt256DivideLE(uint256_inverse(target), uInt256AddOneLE(target))));
     uint32_t txTime = block.timestamp/2 + prev.timestamp/2;
     
     if (isInitialTerminalBlock) {
@@ -3438,6 +3441,7 @@ static dispatch_once_t devnetToken = 0;
     checkpoint.height = 0;
     checkpoint.timestamp = 1417713337;
     checkpoint.target = 0x207fffffu;
+    checkpoint.chainWork = @"0200000000000000000000000000000000000000000000000000000000000000".hexToData.UInt256;
     return checkpoint;
 }
 
