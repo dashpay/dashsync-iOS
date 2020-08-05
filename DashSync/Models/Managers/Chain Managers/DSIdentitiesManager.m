@@ -99,7 +99,7 @@
             NSAssert(context?[foreignBlockchainIdentity blockchainIdentityEntityInContext:context]: foreignBlockchainIdentity.blockchainIdentityEntity,@"Blockchain identity entity should exist");
             return foreignBlockchainIdentity;
         } else if (addIfMissing) {
-            foreignBlockchainIdentity = [[DSBlockchainIdentity alloc] initWithUniqueId:uniqueId isTransient:FALSE onChain:self.chain inContext:context];
+            foreignBlockchainIdentity = [[DSBlockchainIdentity alloc] initWithUniqueId:uniqueId isTransient:FALSE onChain:self.chain];
             [foreignBlockchainIdentity saveInitialInContext:context];
             self.foreignBlockchainIdentities[uint256_data(uniqueId)] = foreignBlockchainIdentity;
             return self.foreignBlockchainIdentities[uint256_data(uniqueId)];
@@ -192,7 +192,7 @@
             NSString * userId = document[@"$userId"];
             NSString * normalizedLabel = document[@"normalizedLabel"];
             NSString * domain = document[@"normalizedParentDomainName"];
-            DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 isTransient:TRUE onChain:self.chain inContext:self.chain.chainManagedObjectContext];
+            DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 isTransient:TRUE onChain:self.chain];
             [identity addUsername:normalizedLabel inDomain:domain status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
             [rBlockchainIdentities addObject:identity];
         }
@@ -227,7 +227,7 @@
             UInt256 uniqueId = userId.base58ToData.UInt256;
             DSBlockchainIdentity * identity = [self.chain blockchainIdentityForUniqueId:uniqueId foundInWallet:nil includeForeignBlockchainIdentities:YES];
             if (!identity) {
-                identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 isTransient:TRUE onChain:self.chain inContext:self.chain.chainManagedObjectContext];
+                identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 isTransient:TRUE onChain:self.chain];
                 [identity addUsername:label inDomain:domain status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
             } else {
                 if (![identity.dashpayUsernames containsObject:label]) {
@@ -261,7 +261,7 @@
             NSString * userId = document[@"$ownerId"];
             NSString * normalizedLabel = document[@"normalizedLabel"];
             NSString * domain = document[@"normalizedParentDomainName"];
-            DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 isTransient:TRUE onChain:self.chain inContext:self.chain.chainManagedObjectContext];
+            DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 isTransient:TRUE onChain:self.chain];
             [identity addUsername:normalizedLabel inDomain:domain status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
             [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, NSError * error) {
                 
