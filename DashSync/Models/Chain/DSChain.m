@@ -2043,40 +2043,41 @@ static dispatch_once_t devnetToken = 0;
             return TRUE;
         }
         
-        DSDLog(@"chain fork to height %d", block.height);
-        @synchronized (self.mSyncBlocks) {
-            self.mSyncBlocks[blockHash] = block;
+        DSDLog(@"potential chain fork to height %d", block.height);
+        @synchronized (self.mTerminalBlocks) {
+            self.mTerminalBlocks[blockHash] = block;
         }
-        if (block.height <= self.lastSyncBlockHeight) return TRUE; // if fork is shorter than main chain, ignore it for now
+        if (uint256_supeq(self.lastTerminalBlock.aggregateWork, block.aggregateWork)) return TRUE; // if fork is shorter than main chain, ignore it for now
+        DSDLog(@"found chain fork on height %d", block.height);
         
-        NSMutableArray *txHashes = [NSMutableArray array];
-        DSBlock *b = block, *b2 = self.lastSyncBlock;
+        DSBlock *b = block, *b2 = self.lastTerminalBlock;
         
         while (b && b2 && ! uint256_eq(b.blockHash, b2.blockHash)) { // walk back to where the fork joins the main chain
-            b = self.mSyncBlocks[b.prevBlockValue];
-            if (b.height < b2.height) b2 = self.mSyncBlocks[b2.prevBlockValue];
+            b = self.mTerminalBlocks[b.prevBlockValue];
+            if (b.height < b2.height) b2 = self.mTerminalBlocks[b2.prevBlockValue];
         }
         
         DSDLog(@"reorganizing chain from height %d, new height is %d", b.height, block.height);
         
-        // mark transactions after the join point as unconfirmed
-        for (DSWallet * wallet in self.wallets) {
-            for (DSTransaction *tx in wallet.allTransactions) {
-                if (tx.blockHeight <= b.height) break;
-                [txHashes addObject:uint256_obj(tx.txHash)];
-            }
-        }
+//        NSMutableArray *txHashes = [NSMutableArray array];
+//        // mark transactions after the join point as unconfirmed
+//        for (DSWallet * wallet in self.wallets) {
+//            for (DSTransaction *tx in wallet.allTransactions) {
+//                if (tx.blockHeight <= b.height) break;
+//                [txHashes addObject:uint256_obj(tx.txHash)];
+//            }
+//        }
         
-        [self setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTransactionHashes:txHashes];
-        b = block;
+//        [self setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTransactionHashes:txHashes];
+//        b = block;
+//
+//        while (b.height > b2.height) { // set transaction heights for new main chain
+//            [self setBlockHeight:b.height andTimestamp:txTime forTransactionHashes:b.txHashes];
+//            b = self.mSyncBlocks[b.prevBlockValue];
+//            txTime = b.timestamp/2 + ((DSBlock *)self.mSyncBlocks[b.prevBlockValue]).timestamp/2;
+//        }
         
-        while (b.height > b2.height) { // set transaction heights for new main chain
-            [self setBlockHeight:b.height andTimestamp:txTime forTransactionHashes:b.txHashes];
-            b = self.mSyncBlocks[b.prevBlockValue];
-            txTime = b.timestamp/2 + ((DSBlock *)self.mSyncBlocks[b.prevBlockValue]).timestamp/2;
-        }
-        
-        self.lastSyncBlock = block;
+        self.lastTerminalBlock = block;
         if (block.height == self.estimatedBlockHeight) syncDone = YES;
     }
     
