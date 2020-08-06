@@ -52,7 +52,7 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, readonly) BOOL chainLocked;
 @property (nonatomic, readonly) UInt256 aggregateWork;
 
-@property (nonatomic, readonly) NSArray *txHashes; // the matched tx hashes in the block
+@property (nonatomic, readonly) NSArray *transactionHashes; // the matched tx hashes in the block
 
 // true if merkle tree and timestamp are valid, and proof-of-work matches the stated difficulty target
 // NOTE: This only checks if the block difficulty matches the difficulty target in the header. It does not check if the

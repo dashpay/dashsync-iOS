@@ -1685,7 +1685,7 @@
     }
     //else DSDLog(@"%@:%u got merkleblock %@", self.host, self.port, block.blockHash);
     
-    NSMutableOrderedSet *txHashes = [NSMutableOrderedSet orderedSetWithArray:block.txHashes];
+    NSMutableOrderedSet *txHashes = [NSMutableOrderedSet orderedSetWithArray:block.transactionHashes];
     
     [txHashes minusOrderedSet:self.knownTxHashes];
     

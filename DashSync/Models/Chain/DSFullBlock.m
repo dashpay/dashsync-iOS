@@ -123,7 +123,7 @@ inline static int ceil_log2(int x)
     for (DSTransaction * transaction in self.mTransactions) {
         [mTxHashes addObject:uint256_obj(transaction.txHash)];
     }
-    self.txHashes = [mTxHashes copy];
+    self.transactionHashes = [mTxHashes copy];
     [self setTargetWithPreviousBlocks:previousBlocks];
     return self;
 }
@@ -155,13 +155,21 @@ inline static int ceil_log2(int x)
 -(NSArray*)transactionHashes {
     NSMutableArray * mArray = [NSMutableArray array];
     for (DSTransaction * transaction in self.mTransactions) {
+        [mArray addObject:uint256_obj(transaction.txHash)];
+    }
+    return [mArray copy];
+}
+
+-(NSArray*)transactionHashesAsData {
+    NSMutableArray * mArray = [NSMutableArray array];
+    for (DSTransaction * transaction in self.mTransactions) {
         [mArray addObject:uint256_data(transaction.txHash)];
     }
     return [mArray copy];
 }
 
 -(BOOL)isMerkleTreeValid {
-    UInt256 merkleRoot = [NSData merkleRootFromHashes:[self transactionHashes]].UInt256;
+    UInt256 merkleRoot = [NSData merkleRootFromHashes:[self transactionHashesAsData]].UInt256;
     if (self.totalTransactions > 0 && ! uint256_eq(merkleRoot, self.merkleRoot)) return NO; // merkle root check failed
     return YES;
 }

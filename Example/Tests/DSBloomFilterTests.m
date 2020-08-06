@@ -135,7 +135,7 @@
     XCTAssertEqual(b.totalTransactions,4, @"[DSMerkleBlock txHashes]");
     
     hash = @"e975d526d29ef6967249539493a34aa63d14f701dfbab83ba7188e93599f9e27".hexToData.reverse.UInt256;
-    XCTAssertEqualObjects(b.txHashes[0], uint256_obj(hash), @"[DSMerkleBlock txHashes]");
+    XCTAssertEqualObjects(b.transactionHashes[0], uint256_obj(hash), @"[DSMerkleBlock txHashes]");
     
     //TODO: test a block with an odd number of tree rows both at the tx level and merkle node level
     

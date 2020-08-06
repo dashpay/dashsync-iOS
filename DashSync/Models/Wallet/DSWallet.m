@@ -22,7 +22,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSWallet.h"
+#import "DSWallet+Protected.h"
 #import "DSChain+Protected.h"
 #import "DSAccount.h"
 #import "DSAuthenticationManager.h"
@@ -94,7 +94,6 @@
 @property (nonatomic, strong) NSMutableDictionary<NSData *,NSString *> * mMasternodeOwnerPrivateKeyLocations;
 @property (nonatomic, strong) NSMutableDictionary<NSData *,NSString *> * mMasternodeVoterKeyLocations;
 
-@property (nonatomic, strong) SeedRequestBlock seedRequestBlock;
 @property (nonatomic, assign, getter=isTransient) BOOL transient;
 @property (nonatomic, strong) NSMutableDictionary <NSData *,DSBlockchainIdentity*> * mBlockchainIdentities;
 
@@ -135,10 +134,13 @@
     
     DSAccount * account = [DSAccount accountWithAccountNumber:0 withDerivationPaths:[chain standardDerivationPathsForAccountNumber:0] inContext:chain.chainManagedObjectContext];
     
+    
     NSString * uniqueId = [self setTransientDerivedKeyData:derivedData withAccounts:@[account] forChain:chain]; //make sure we can create the wallet first
     if (!uniqueId) return nil;
     //[self registerSpecializedDerivationPathsForSeedPhrase:seedPhrase underUniqueId:uniqueId onChain:chain];
     DSWallet * wallet = [[DSWallet alloc] initWithUniqueID:uniqueId andAccount:account forChain:chain storeSeedPhrase:NO isTransient:YES];
+    
+    wallet.transientDerivedKeyData = derivedData;
     
     return wallet;
 }

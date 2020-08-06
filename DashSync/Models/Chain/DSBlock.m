@@ -265,7 +265,7 @@
     copy.target = self.target;
     copy.nonce = self.nonce;
     copy.totalTransactions = self.totalTransactions;
-    copy.txHashes = [self.txHashes copyWithZone:zone];
+    copy.transactionHashes = [self.transactionHashes copyWithZone:zone];
     copy.valid = self.valid;
     copy.merkleTreeValid = self.isMerkleTreeValid;
     copy.data = [self.data copyWithZone:zone];
