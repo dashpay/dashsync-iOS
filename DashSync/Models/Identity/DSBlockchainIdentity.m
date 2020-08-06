@@ -116,7 +116,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 @property (nonatomic, assign) uint64_t lastCheckedUsernamesTimestamp;
 @property (nonatomic, assign) uint64_t lastCheckedProfileTimestamp;
-@property (nonatomic, assign) uint64_t lastCheckedContactsTimestamp;
+@property (nonatomic, assign) uint64_t lastCheckedIncomingContactsTimestamp;
+@property (nonatomic, assign) uint64_t lastCheckedOutgoingContactsTimestamp;
 @property (nonatomic, assign) uint64_t lastCheckedFriendshipsTimestamp;
 
 @end
@@ -160,7 +161,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     _lastCheckedProfileTimestamp = blockchainIdentityEntity.lastCheckedProfileTimestamp;
     _lastCheckedUsernamesTimestamp = blockchainIdentityEntity.lastCheckedUsernamesTimestamp;
     _lastCheckedFriendshipsTimestamp = blockchainIdentityEntity.lastCheckedFriendshipsTimestamp;
-    _lastCheckedContactsTimestamp = blockchainIdentityEntity.lastCheckedContactsTimestamp;
+    _lastCheckedIncomingContactsTimestamp = blockchainIdentityEntity.lastCheckedIncomingContactsTimestamp;
+    _lastCheckedOutgoingContactsTimestamp = blockchainIdentityEntity.lastCheckedOutgoingContactsTimestamp;
     
     self.dashpaySyncronizationBlockHash = blockchainIdentityEntity.dashpaySyncronizationBlockHash.UInt256;
     for (DSBlockchainIdentityKeyPathEntity * keyPath in blockchainIdentityEntity.keyPaths) {
@@ -1430,19 +1432,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                         if ([errors count]) {
                             [groupedErrors addObjectsFromArray:errors];
                         }
-                        if (!groupedErrors.count) {
-                            [self.platformContext performBlockAndWait:^{
-                                self.lastCheckedContactsTimestamp = [[NSDate date] timeIntervalSince1970];
-                                [self saveInContext:self.platformContext];
-                            }];
-                        }
                         dispatch_group_leave(dispatchGroup);
                     }];
                 } else {
-                    [self.platformContext performBlockAndWait:^{
-                        self.lastCheckedContactsTimestamp = [[NSDate date] timeIntervalSince1970];
-                        [self saveInContext:self.platformContext];
-                    }];
                     dispatch_group_leave(dispatchGroup);
                 }
             }
@@ -1453,12 +1445,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             failureStep |= success & DSBlockchainIdentityQueryStep_IncomingContactRequests;
             if ([errors count]) {
                 [groupedErrors addObjectsFromArray:errors];
-            }
-            if (!groupedErrors.count) {
-                [self.platformContext performBlockAndWait:^{
-                    self.lastCheckedContactsTimestamp = [[NSDate date] timeIntervalSince1970];
-                    [self saveInContext:self.platformContext];
-                }];
             }
             dispatch_group_leave(dispatchGroup);
         }];
@@ -1547,8 +1533,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             if (![[self matchingDashpayUserInContext:context] createdAt] && (self.lastCheckedProfileTimestamp < [[NSDate date] timeIntervalSince1970] - HOUR_TIME_INTERVAL) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay) {
                 stepsNeeded |= DSBlockchainIdentityQueryStep_Profile;
             }
-            if (self.isLocal && (self.lastCheckedContactsTimestamp < [[NSDate date] timeIntervalSince1970] - HOUR_TIME_INTERVAL) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay) {
-                stepsNeeded |= DSBlockchainIdentityQueryStep_ContactRequests;
+            if (self.isLocal && (self.lastCheckedIncomingContactsTimestamp < [[NSDate date] timeIntervalSince1970] - HOUR_TIME_INTERVAL) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay) {
+                stepsNeeded |= DSBlockchainIdentityQueryStep_IncomingContactRequests;
+            }
+            if (self.isLocal && (self.lastCheckedOutgoingContactsTimestamp < [[NSDate date] timeIntervalSince1970] - HOUR_TIME_INTERVAL) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay) {
+                stepsNeeded |= DSBlockchainIdentityQueryStep_OutgoingContactRequests;
             }
             if (stepsNeeded == DSBlockchainIdentityQueryStep_None) {
                 if (completion) {
@@ -1597,8 +1586,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             if (![[self matchingDashpayUserInContext:context] createdAt] && (self.lastCheckedProfileTimestamp < [[NSDate date] timeIntervalSince1970] - HOUR_TIME_INTERVAL) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay) {
                 stepsNeeded |= DSBlockchainIdentityQueryStep_Profile;
             }
-            if (self.isLocal && (self.lastCheckedContactsTimestamp < [[NSDate date] timeIntervalSince1970] - HOUR_TIME_INTERVAL) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay) {
-                stepsNeeded |= DSBlockchainIdentityQueryStep_ContactRequests;
+            if (self.isLocal && (self.lastCheckedIncomingContactsTimestamp < [[NSDate date] timeIntervalSince1970] - HOUR_TIME_INTERVAL) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay) {
+                stepsNeeded |= DSBlockchainIdentityQueryStep_IncomingContactRequests;
+            }
+            if (self.isLocal && (self.lastCheckedOutgoingContactsTimestamp < [[NSDate date] timeIntervalSince1970] - HOUR_TIME_INTERVAL) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay) {
+                stepsNeeded |= DSBlockchainIdentityQueryStep_OutgoingContactRequests;
             }
             if (stepsNeeded == DSBlockchainIdentityQueryStep_None) {
                 if (completion) {
@@ -3158,7 +3150,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         return;
     }
     __weak typeof(self) weakSelf = self;
-    [self.DAPINetworkService getDashpayIncomingContactRequestsForUserId:self.uniqueIdString since:0 success:^(NSArray<NSDictionary *> * _Nonnull documents) {
+    [self.DAPINetworkService getDashpayIncomingContactRequestsForUserId:self.uniqueIdString since:self.lastCheckedFriendshipsTimestamp - HOUR_TIME_INTERVAL success:^(NSArray<NSDictionary *> * _Nonnull documents) {
+        //todo chance the since parameter
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             if (completion) {
@@ -3171,6 +3164,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         }
         
         [strongSelf handleContactRequestObjects:documents context:context completion:^(BOOL success, NSArray<NSError *> *errors) {
+            [self.platformContext performBlockAndWait:^{
+                self.lastCheckedIncomingContactsTimestamp = [[NSDate date] timeIntervalSince1970];
+                [self saveInContext:self.platformContext];
+            }];
             if (completion) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     completion(success, errors);
@@ -3214,7 +3211,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         return;
     }
     __weak typeof(self) weakSelf = self;
-    [self.DAPINetworkService getDashpayOutgoingContactRequestsForUserId:self.uniqueIdString since:0 success:^(NSArray<NSDictionary *> * _Nonnull documents) {
+    [self.DAPINetworkService getDashpayOutgoingContactRequestsForUserId:self.uniqueIdString since:self.lastCheckedFriendshipsTimestamp - HOUR_TIME_INTERVAL success:^(NSArray<NSDictionary *> * _Nonnull documents) {
+        //todo chance the since parameter
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             if (completion) {
@@ -3227,6 +3225,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         }
         
         [strongSelf handleContactRequestObjects:documents context:context completion:^(BOOL success, NSArray<NSError *> *errors) {
+            [self.platformContext performBlockAndWait:^{
+                self.lastCheckedOutgoingContactsTimestamp = [[NSDate date] timeIntervalSince1970];
+                [self saveInContext:self.platformContext];
+            }];
             dispatch_async(dispatch_get_main_queue(), ^{
                 completion(success,errors);
             });
@@ -3693,8 +3695,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             changeOccured = YES;
         }
         
-        if (entity.lastCheckedContactsTimestamp != self.lastCheckedContactsTimestamp) {
-            entity.lastCheckedContactsTimestamp = self.lastCheckedContactsTimestamp;
+        if (entity.lastCheckedIncomingContactsTimestamp != self.lastCheckedIncomingContactsTimestamp) {
+            entity.lastCheckedIncomingContactsTimestamp = self.lastCheckedIncomingContactsTimestamp;
+            changeOccured = YES;
+        }
+        
+        if (entity.lastCheckedOutgoingContactsTimestamp != self.lastCheckedOutgoingContactsTimestamp) {
+            entity.lastCheckedOutgoingContactsTimestamp = self.lastCheckedOutgoingContactsTimestamp;
             changeOccured = YES;
         }
 
