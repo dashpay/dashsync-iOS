@@ -35,6 +35,10 @@
     self.quorumCommitmentHeight = [message UInt32AtOffset:off];
     off += 4;
     
+    if (length - off < 2) return nil;
+    self.qfCommitVersion = [message UInt16AtOffset:off];
+    off += 2;
+    
     if (length - off < 1) return nil;
     self.llmqType = [message UInt8AtOffset:off];
     off += 1;
@@ -116,6 +120,7 @@
     NSMutableData * data = [NSMutableData data];
     [data appendUInt16:self.quorumCommitmentTransactionVersion];
     [data appendUInt32:self.quorumCommitmentHeight];
+    [data appendUInt16:self.qfCommitVersion];
     [data appendUInt8:self.llmqType];
     [data appendUInt256:self.quorumHash];
     [data appendVarInt:self.signersCount];
@@ -143,6 +148,10 @@
 {
     if (! uint256_is_zero(self.txHash)) return self.data.length;
     return [super size] + [NSMutableData sizeOfVarInt:self.payloadData.length] + ([self payloadData].length);
+}
+
+-(BOOL)transactionTypeRequiresInputs {
+    return NO;
 }
 
 -(Class)entityClass {

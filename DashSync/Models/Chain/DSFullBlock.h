@@ -31,6 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void)setTargetWithPreviousBlocks:(NSDictionary*)previousBlocks;
 
++ (instancetype)fullBlockWithMessage:(NSData *)message onChain:(DSChain *)chain;
+
 @end
 
 NS_ASSUME_NONNULL_END
