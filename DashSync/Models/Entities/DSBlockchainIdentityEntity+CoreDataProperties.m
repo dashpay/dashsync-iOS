@@ -28,7 +28,8 @@
 @dynamic dashpaySyncronizationBlockHash;
 @dynamic lastCheckedUsernamesTimestamp;
 @dynamic lastCheckedProfileTimestamp;
-@dynamic lastCheckedContactsTimestamp;
+@dynamic lastCheckedIncomingContactsTimestamp;
+@dynamic lastCheckedOutgoingContactsTimestamp;
 @dynamic lastCheckedFriendshipsTimestamp;
 
 @end
