@@ -28,23 +28,25 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class DSPaymentProtocolRequest, DSPaymentProtocolPayment, DSPaymentProtocolACK, DSChain, DSBlockchainIdentity, DSAccount;
 
 // BIP21 bitcoin payment request URI https://github.com/bitcoin/bips/blob/master/bip-0021.mediawiki
 @interface DSPaymentRequest : NSObject
 
-@property (nonatomic, strong) NSString *scheme;
-@property (nonatomic, strong) NSString *paymentAddress;
-@property (nonatomic, strong) NSString *label;
-@property (nonatomic, strong) NSString *message;
-@property (nonatomic, strong) NSString *dashpayUsername;
+@property (nonatomic, strong, nullable) NSString *scheme;
+@property (nonatomic, strong, nullable) NSString *paymentAddress;
+@property (nonatomic, strong, nullable) NSString *label;
+@property (nonatomic, strong, nullable) NSString *message;
+@property (nonatomic, strong, nullable) NSString *dashpayUsername;
 @property (nonatomic, assign) uint64_t amount;
-@property (nonatomic, strong) NSString *r; // BIP72 URI: https://github.com/bitcoin/bips/blob/master/bip-0072.mediawiki
-@property (nonatomic, strong) NSString *string;
-@property (nonatomic, strong) NSString *callbackScheme;
-@property (nonatomic, strong) NSData *data;
-@property (nonatomic, strong) NSURL *url;
-@property (nonatomic, strong) NSString *requestedFiatCurrencyCode;
+@property (nonatomic, strong, nullable) NSString *r; // BIP72 URI: https://github.com/bitcoin/bips/blob/master/bip-0072.mediawiki
+@property (nonatomic, strong, nullable) NSString *string;
+@property (nonatomic, strong, nullable) NSString *callbackScheme;
+@property (nonatomic, strong, nullable) NSData *data;
+@property (nonatomic, strong, nullable) NSURL *url;
+@property (nonatomic, strong, nullable) NSString *requestedFiatCurrencyCode;
 @property (nonatomic, assign) float requestedFiatCurrencyAmount;
 @property (nonatomic, readonly) BOOL isValidAsNonDashpayPaymentRequest;
 @property (nonatomic, readonly) BOOL amountValueImmutable;
@@ -59,7 +61,7 @@
 - (instancetype)initWithData:(NSData *)data onChain:(DSChain*)chain;
 - (instancetype)initWithURL:(NSURL *)url onChain:(DSChain*)chain;
 
-- (DSPaymentProtocolRequest *)protocolRequestForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity onAccount:(DSAccount*)account inContext:(NSManagedObjectContext*)context;
+- (DSPaymentProtocolRequest *)protocolRequestForBlockchainIdentity:(DSBlockchainIdentity* _Nullable)blockchainIdentity onAccount:(DSAccount*)account inContext:(NSManagedObjectContext*)context;
 
 - (BOOL)isValidAsDashpayPaymentRequestForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity onAccount:(DSAccount*)account inContext:(NSManagedObjectContext*)context;
 
@@ -73,3 +75,6 @@ completion:(void (^)(DSPaymentProtocolRequest *req, NSError *error))completion;
 timeout:(NSTimeInterval)timeout completion:(void (^)(DSPaymentProtocolACK *ack, NSError *error))completion;
 
 @end
+
+
+NS_ASSUME_NONNULL_END
