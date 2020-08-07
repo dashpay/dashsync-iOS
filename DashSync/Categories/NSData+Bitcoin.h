@@ -95,12 +95,15 @@ NSArray *getKeychainArray(NSString *key, NSError **error);
 //Compact Size
 
 UInt256 setCompactLE(int32_t nCompact);
+UInt256 setCompactBE(int32_t nCompact);
 uint16_t compactBitsLE(UInt256 number);
 int32_t getCompactLE(UInt256 number);
 UInt256 uInt256AddLE(UInt256 a, UInt256 b);
+UInt256 uInt256AddBE(UInt256 a, UInt256 b);
 UInt256 uInt256AddOneLE(UInt256 a);
 UInt256 uInt256NegLE(UInt256 a);
 UInt256 uInt256SubtractLE(UInt256 a, UInt256 b);
+UInt256 uInt256SubtractBE(UInt256 a, UInt256 b);
 UInt256 uInt256ShiftLeftLE(UInt256 a, uint8_t bits);
 UInt256 uInt256ShiftRightLE(UInt256 a, uint8_t bits);
 UInt256 uInt256DivideLE (UInt256 a,UInt256 b);
@@ -200,6 +203,8 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 - (NSString *)shortHexString;
 - (NSString *)hexString;
 - (NSString *)binaryString;
+
+- (uint16_t)positionOfFirstSetBit;
     
 + (NSData * _Nullable)merkleRootFromHashes:(NSArray*)hashes;
 

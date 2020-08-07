@@ -233,6 +233,7 @@
         <relationship name="quorums" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSQuorumEntryEntity" inverseName="referencedByMasternodeLists" inverseEntity="DSQuorumEntryEntity" syncable="YES"/>
     </entity>
     <entity name="DSMerkleBlockEntity" representedClassName="DSMerkleBlockEntity" syncable="YES">
+        <attribute name="aggregateWork" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="blockHash" attributeType="Binary" indexed="YES" syncable="YES"/>
         <attribute name="flags" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="hashes" optional="YES" attributeType="Binary" syncable="YES"/>
@@ -477,7 +478,7 @@
         <element name="DSInstantSendLockEntity" positionX="-2376" positionY="-144" width="128" height="103"/>
         <element name="DSLocalMasternodeEntity" positionX="-2434.3828125" positionY="836.92578125" width="128" height="240"/>
         <element name="DSMasternodeListEntity" positionX="-2394" positionY="-162" width="128" height="118"/>
-        <element name="DSMerkleBlockEntity" positionX="-1531.69921875" positionY="-232.9921875" width="128" height="268"/>
+        <element name="DSMerkleBlockEntity" positionX="-1531.69921875" positionY="-232.9921875" width="128" height="283"/>
         <element name="DSPeerEntity" positionX="-1676.0546875" positionY="54.0078125" width="128" height="195"/>
         <element name="DSProviderRegistrationTransactionEntity" positionX="-2225.484375" positionY="1127.91796875" width="128" height="225"/>
         <element name="DSProviderUpdateRegistrarTransactionEntity" positionX="-2512.640625" positionY="-270.0546875" width="128" height="150"/>

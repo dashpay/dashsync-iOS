@@ -1289,7 +1289,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     
     if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
     
-    [self.chain addBlock:block fromPeer:peer];
+    [self.chain addBlock:block receivedAsHeader:YES fromPeer:peer];
 
 }
 
@@ -1307,10 +1307,10 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         return;
     }
     
-    NSArray *txHashes = block.txHashes;
+    NSArray *txHashes = block.transactionHashes;
     
     // track the observed bloom filter false positive rate using a low pass filter to smooth out variance
-    if (peer == self.peerManager.downloadPeer && block.txHashes.count > 0) {
+    if (peer == self.peerManager.downloadPeer && block.transactionHashes.count > 0) {
         NSMutableSet *falsePositives = [NSMutableSet setWithArray:txHashes];
         
         // 1% low pass filter, also weights each block by total transactions, using 2800 tx per block as typical
@@ -1339,9 +1339,9 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     }
     
 #if !SAVE_MAX_TRANSACTIONS_INFO
-    [self.chain addBlock:block fromPeer:peer];
+    [self.chain addBlock:block receivedAsHeader:NO fromPeer:peer];
 #else
-    if ([self.chain addBlock:block fromPeer:peer]) {
+    if ([self.chain addBlock:block isHeaderOnly:NO fromPeer:peer]) {
         if (block.height == self.chain.lastSyncBlockHeight) {
             [self.totalTransactionsQueue addObject:@(block.totalTransactions)];
             self.totalTransactionsSum += block.totalTransactions;

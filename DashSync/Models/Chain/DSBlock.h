@@ -47,11 +47,12 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, readonly) uint32_t target;
 @property (nonatomic, readonly) uint32_t nonce;
 @property (nonatomic, readonly) uint32_t totalTransactions;
-@property (nonatomic, assign) uint32_t height;
+@property (nonatomic, readonly) uint32_t height;
 @property (nonatomic, readonly) DSChain *chain;
 @property (nonatomic, readonly) BOOL chainLocked;
+@property (nonatomic, readonly) UInt256 aggregateWork;
 
-@property (nonatomic, readonly) NSArray *txHashes; // the matched tx hashes in the block
+@property (nonatomic, readonly) NSArray *transactionHashes; // the matched tx hashes in the block
 
 // true if merkle tree and timestamp are valid, and proof-of-work matches the stated difficulty target
 // NOTE: This only checks if the block difficulty matches the difficulty target in the header. It does not check if the
@@ -63,7 +64,7 @@ typedef union _UInt256 UInt256;
 
 - (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp height:(uint32_t)height onChain:(DSChain*)chain;
 
-- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp merkleRoot:(UInt256)merkleRoot target:(uint32_t)target height:(uint32_t)height onChain:(DSChain*)chain;
+- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp merkleRoot:(UInt256)merkleRoot target:(uint32_t)target aggregateWork:(UInt256)aggregateWork height:(uint32_t)height onChain:(DSChain*)chain;
 
 - (instancetype)initWithCheckpoint:(DSCheckpoint*)checkpoint onChain:(DSChain*)chain;
 

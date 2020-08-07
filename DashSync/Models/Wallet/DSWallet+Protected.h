@@ -25,9 +25,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) NSString * creationTimeUniqueID;
 
-@property (nonatomic, readonly) SeedRequestBlock seedRequestBlock;
+@property (nonatomic, strong) SeedRequestBlock seedRequestBlock;
 
 @property (nonatomic, readonly) BOOL hasAnExtendedPublicKeyMissing;
+
+@property (nonatomic, strong) NSData * transientDerivedKeyData;
 
 //this is used from the account to help determine best start sync position for future resync
 - (void)setGuessedWalletCreationTime:(NSTimeInterval)guessedWalletCreationTime;

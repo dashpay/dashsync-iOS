@@ -153,8 +153,7 @@ inline static int ceil_log2(int x)
 }
 
 - (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash prevBlock:(UInt256)prevBlock
-                       merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
-                totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags height:(uint32_t)height chainLock:(DSChainLock*)chainLock onChain:(DSChain*)chain
+                     merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target aggregateWork:(UInt256)aggregateWork nonce:(uint32_t)nonce totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags height:(uint32_t)height chainLock:(DSChainLock*)chainLock onChain:(DSChain*)chain
 {
     if (! (self = [self initWithBlockHash:blockHash merkleRoot:merkleRoot totalTransactions:totalTransactions hashes:hashes flags:flags])) return nil;
     
@@ -165,6 +164,7 @@ inline static int ceil_log2(int x)
     self.target = target;
     self.nonce = nonce;
     self.height = height;
+    self.aggregateWork = aggregateWork;
     [self setChainLockedWithChainLock:chainLock];
     self.chain = chain;
     
@@ -199,7 +199,7 @@ inline static int ceil_log2(int x)
 }
 
 // returns an array of the matched tx hashes
-- (NSArray *)txHashes
+- (NSArray *)transactionHashes
 {
     int hashIdx = 0, flagIdx = 0;
     NSArray *txHashes =
@@ -272,7 +272,7 @@ inline static int ceil_log2(int x)
     copy.nonce = self.nonce;
     copy.totalTransactions = self.totalTransactions;
     copy.hashes = [self.hashes copyWithZone:zone];
-    copy.txHashes = [self.txHashes copyWithZone:zone];
+    copy.transactionHashes = [self.transactionHashes copyWithZone:zone];
     copy.flags = [self.flags copyWithZone:zone];
     copy.valid = self.valid;
     copy.merkleTreeValid = self.isMerkleTreeValid;

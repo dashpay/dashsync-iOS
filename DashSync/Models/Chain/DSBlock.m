@@ -32,6 +32,7 @@
     _height = height;
     _version = version;
     _timestamp = timestamp;
+    
     self.chain = chain;
     
     return self;
@@ -43,15 +44,16 @@
     return self;
 }
 
-- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp merkleRoot:(UInt256)merkleRoot target:(uint32_t)target height:(uint32_t)height onChain:(DSChain*)chain {
+- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp merkleRoot:(UInt256)merkleRoot target:(uint32_t)target aggregateWork:(UInt256)aggregateWork height:(uint32_t)height onChain:(DSChain*)chain {
     if (! (self = [self initWithVersion:version blockHash:blockHash timestamp:timestamp height:height onChain:chain])) return nil;
     _merkleRoot = merkleRoot;
     _target = target;
+    _aggregateWork = aggregateWork;
     return self;
 }
 
 - (instancetype)initWithCheckpoint:(DSCheckpoint*)checkpoint onChain:(DSChain*)chain {
-    if (! (self = [self initWithVersion:2 blockHash:checkpoint.checkpointHash timestamp:checkpoint.timestamp merkleRoot:checkpoint.merkleRoot target:checkpoint.target height:checkpoint.height onChain:chain])) return nil;
+    if (! (self = [self initWithVersion:2 blockHash:checkpoint.checkpointHash timestamp:checkpoint.timestamp merkleRoot:checkpoint.merkleRoot target:checkpoint.target aggregateWork:checkpoint.chainWork height:checkpoint.height onChain:chain])) return nil;
     return self;
 }
 
@@ -263,10 +265,11 @@
     copy.target = self.target;
     copy.nonce = self.nonce;
     copy.totalTransactions = self.totalTransactions;
-    copy.txHashes = [self.txHashes copyWithZone:zone];
+    copy.transactionHashes = [self.transactionHashes copyWithZone:zone];
     copy.valid = self.valid;
     copy.merkleTreeValid = self.isMerkleTreeValid;
     copy.data = [self.data copyWithZone:zone];
+    copy.aggregateWork = self.aggregateWork;
     return copy;
 }
 

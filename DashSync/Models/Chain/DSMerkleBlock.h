@@ -54,7 +54,7 @@ typedef union _UInt256 UInt256;
 - (instancetype)initWithBlockHash:(UInt256)blockHash merkleRoot:(UInt256)merkleRoot totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags;
 
 - (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash prevBlock:(UInt256)prevBlock
-merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
+merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target aggregateWork:(UInt256)aggregateWork nonce:(uint32_t)nonce
 totalTransactions:(uint32_t)totalTransactions hashes:(NSData * _Nullable)hashes flags:(NSData * _Nullable)flags height:(uint32_t)height chainLock:(DSChainLock* _Nullable)chainLock onChain:(DSChain*)chain;
 
 @end

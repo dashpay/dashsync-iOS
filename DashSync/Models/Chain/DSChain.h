@@ -75,6 +75,7 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
 @property (nonatomic, assign) uint32_t target;
 @property (nonatomic, strong) NSString * masternodeListName;
 @property (nonatomic, assign) UInt256 merkleRoot;
+@property (nonatomic, assign) UInt256 chainWork;
 
 - (DSBlock*)blockForChain:(DSChain*)chain;
 
@@ -467,7 +468,7 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
 @protocol DSChainTransactionsDelegate
 @required
 
--(void)chain:(DSChain*)chain didSetBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)txHashes updatedTransactions:(NSArray *)updatedTransactions;
+-(void)chain:(DSChain*)chain didSetBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray <NSData*> *)txHashes updatedTransactions:(NSArray *)updatedTransactions;
 -(void)chainWasWiped:(DSChain*)chain;
 
 @end

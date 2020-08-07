@@ -18,7 +18,13 @@
 #import "DSFullBlock.h"
 #import "DSBlock+Protected.h"
 #import "NSMutableData+Dash.h"
+#import "DSTransactionFactory.h"
 #import "NSData+Dash.h"
+#import "NSMutableData+Dash.h"
+#import "NSData+Bitcoin.h"
+#import "DSChain.h"
+#import "NSDate+Utils.h"
+#import "DSChainLock.h"
 
 @interface DSFullBlock()
 
@@ -27,6 +33,80 @@
 @end
 
 @implementation DSFullBlock
+
+inline static int ceil_log2(int x)
+{
+    int r = (x & (x - 1)) ? 1 : 0;
+    
+    while ((x >>= 1) != 0) r++;
+    return r;
+}
+
+// message can be either a merkleblock or header message
++ (instancetype)fullBlockWithMessage:(NSData *)message onChain:(DSChain *)chain
+{
+    return [[self alloc] initWithMessage:message onChain:chain];
+}
+
+- (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain
+{
+    if (! (self = [self init])) return nil;
+    if (message.length < 80) return nil;
+    NSNumber * l = nil;
+    NSUInteger off = 0, len = 0;
+    NSMutableData *d = [NSMutableData data];
+    
+    self.version = [message UInt32AtOffset:off];
+    off += sizeof(uint32_t);
+    UInt256 prevBlock = [message UInt256AtOffset:off];
+    self.prevBlock = prevBlock;
+    off += sizeof(UInt256);
+    UInt256 merkleRoot = [message UInt256AtOffset:off];
+    self.merkleRoot = merkleRoot;
+    off += sizeof(UInt256);
+    self.timestamp = [message UInt32AtOffset:off];
+    off += sizeof(uint32_t);
+    self.target = [message UInt32AtOffset:off];
+    off += sizeof(uint32_t);
+    self.nonce = [message UInt32AtOffset:off];
+    off += sizeof(uint32_t);
+    len = (NSUInteger)[message varIntAtOffset:off length:&l];
+    off += l.unsignedIntegerValue;
+    NSMutableArray * transactions = [NSMutableArray array];
+    for (int i =0; i<len; i++) {
+        DSTransaction * transaction = [DSTransactionFactory transactionWithMessage:[message subdataWithRange:NSMakeRange(off, message.length - off)] onChain:chain];
+        if (!transaction) break;
+        [transactions addObject:transaction];
+        off += transaction.payloadOffset;
+    }
+    self.height = BLOCK_UNKNOWN_HEIGHT;
+    
+    [d appendUInt32:self.version];
+    [d appendUInt256:prevBlock];
+    [d appendUInt256:merkleRoot];
+    [d appendUInt32:self.timestamp];
+    [d appendUInt32:self.target];
+    [d appendUInt32:self.nonce];
+    self.blockHash = d.x11;
+    self.chain = chain;
+    self.mTransactions = transactions;
+    self.totalTransactions = (uint32_t)transactions.count;
+    
+    if (![self isMerkleTreeValid]) {
+        DSDLog(@"Merkle tree not valid for block");
+        return nil;
+    }
+    
+#if LOG_BLOCKS || LOG_BLOCKS_FULL
+#if LOG_BLOCKS_FULL
+    DSDLog(@"%d - block %@ (%@) has %d transactions",self.height,uint256_hex(self.blockHash),message.hexString,self.totalTransactions);
+#else
+    DSDLog(@"%d - block %@ has %d transactions",self.height,uint256_hex(self.blockHash),self.totalTransactions);
+#endif
+#endif
+    
+    return self;
+}
 
 -(instancetype)initWithCoinbaseTransaction:(DSCoinbaseTransaction*)coinbaseTransaction transactions:(NSSet<DSTransaction*>*)transactions previousBlockHash:(UInt256)previousBlockHash previousBlocks:(NSDictionary*)previousBlocks timestamp:(uint32_t)timestamp height:(uint32_t)height onChain:(DSChain *)chain {
     if (!(self = [super initWithVersion:2 timestamp:timestamp height:height onChain:chain])) return nil;
@@ -43,7 +123,7 @@
     for (DSTransaction * transaction in self.mTransactions) {
         [mTxHashes addObject:uint256_obj(transaction.txHash)];
     }
-    self.txHashes = [mTxHashes copy];
+    self.transactionHashes = [mTxHashes copy];
     [self setTargetWithPreviousBlocks:previousBlocks];
     return self;
 }
@@ -70,6 +150,28 @@
     [d appendUInt32:self.timestamp];
     [d appendUInt32:self.target];
     return d;
+}
+
+-(NSArray*)transactionHashes {
+    NSMutableArray * mArray = [NSMutableArray array];
+    for (DSTransaction * transaction in self.mTransactions) {
+        [mArray addObject:uint256_obj(transaction.txHash)];
+    }
+    return [mArray copy];
+}
+
+-(NSArray*)transactionHashesAsData {
+    NSMutableArray * mArray = [NSMutableArray array];
+    for (DSTransaction * transaction in self.mTransactions) {
+        [mArray addObject:uint256_data(transaction.txHash)];
+    }
+    return [mArray copy];
+}
+
+-(BOOL)isMerkleTreeValid {
+    UInt256 merkleRoot = [NSData merkleRootFromHashes:[self transactionHashesAsData]].UInt256;
+    if (self.totalTransactions > 0 && ! uint256_eq(merkleRoot, self.merkleRoot)) return NO; // merkle root check failed
+    return YES;
 }
 
 #define LOG_MINING_BEST_TRIES 0
