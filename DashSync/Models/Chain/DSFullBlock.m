@@ -34,14 +34,6 @@
 
 @implementation DSFullBlock
 
-inline static int ceil_log2(int x)
-{
-    int r = (x & (x - 1)) ? 1 : 0;
-    
-    while ((x >>= 1) != 0) r++;
-    return r;
-}
-
 // message can be either a merkleblock or header message
 + (instancetype)fullBlockWithMessage:(NSData *)message onChain:(DSChain *)chain
 {

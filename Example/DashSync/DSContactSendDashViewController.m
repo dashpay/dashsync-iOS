@@ -65,7 +65,7 @@
         
         __block BOOL displayedSentMessage = FALSE;
         
-        [self.account.wallet.chain.chainManager.transactionManager confirmPaymentRequest:paymentRequest fromAccount:self.account acceptInternalAddress:NO acceptReusingAddress:YES addressIsFromPasteboard:NO requiresSpendingAuthenticationPrompt:YES keepAuthenticatedIfErrorAfterAuthentication:NO requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {
+        [self.account.wallet.chain.chainManager.transactionManager confirmPaymentRequest:paymentRequest usingUserBlockchainIdentity:nil fromAccount:self.account acceptInternalAddress:NO acceptReusingAddress:YES addressIsFromPasteboard:NO requiresSpendingAuthenticationPrompt:YES keepAuthenticatedIfErrorAfterAuthentication:NO requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {
         } presentChallenge:^(NSString * _Nonnull challengeTitle, NSString * _Nonnull challengeMessage, NSString * _Nonnull actionTitle, void (^ _Nonnull actionBlock)(void), void (^ _Nonnull cancelBlock)(void)) {
             UIAlertController * alert = [UIAlertController
                                          alertControllerWithTitle:challengeTitle

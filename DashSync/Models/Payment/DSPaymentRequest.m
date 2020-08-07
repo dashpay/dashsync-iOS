@@ -311,7 +311,7 @@
 
 - (DSPaymentProtocolRequest *)protocolRequestForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity onAccount:(DSAccount*)account inContext:(NSManagedObjectContext*)context
 {
-    if (!self.dashpayUsername) {
+    if (!blockchainIdentity || !self.dashpayUsername) {
         return [self protocolRequest];
     }
     __block DSIncomingFundsDerivationPath * friendshipDerivationPath = nil;
