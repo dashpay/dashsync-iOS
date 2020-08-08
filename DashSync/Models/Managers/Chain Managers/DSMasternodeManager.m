@@ -296,7 +296,7 @@
     if (!self.currentMasternodeList) {
         DSCheckpoint * checkpoint = [self.chain lastCheckpointHavingMasternodeList];
         if (self.chain.lastTerminalBlockHeight >= checkpoint.height) {
-            [self processRequestFromFileForBlockHash:checkpoint.checkpointHash completion:^(BOOL success) {
+            [self processRequestFromFileForBlockHash:checkpoint.blockHash completion:^(BOOL success) {
                 
             }];
         }

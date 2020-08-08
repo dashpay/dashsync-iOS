@@ -166,7 +166,7 @@
     self.lastNotifiedBlockDidChange = 0;
     
     if (self.checkpoints) {
-        self.genesisHash = self.checkpoints[0].checkpointHash;
+        self.genesisHash = self.checkpoints[0].blockHash;
         dispatch_sync(self.networkingQueue, ^{
             self.chainManagedObjectContext = [NSManagedObjectContext chainContext];
         });
@@ -202,7 +202,7 @@
         }
     }
     self.checkpoints = checkpoints;
-    self.genesisHash = self.checkpoints[0].checkpointHash;
+    self.genesisHash = self.checkpoints[0].blockHash;
     dispatch_sync(self.networkingQueue, ^{
         self.chainManagedObjectContext = [NSManagedObjectContext chainContext];
     });
@@ -219,10 +219,10 @@
         DSCheckpoint * genesisCheckpoint = [DSCheckpoint genesisDevnetCheckpoint];
         DSCheckpoint * secondCheckpoint = [self createDevNetGenesisBlockCheckpointForParentCheckpoint:genesisCheckpoint withIdentifier:identifier];
         self.checkpoints = @[genesisCheckpoint,secondCheckpoint];
-        self.genesisHash = secondCheckpoint.checkpointHash;
+        self.genesisHash = secondCheckpoint.blockHash;
     } else {
         self.checkpoints = checkpoints;
-        self.genesisHash = checkpoints[1].checkpointHash;
+        self.genesisHash = checkpoints[1].blockHash;
     }
     dispatch_sync(self.networkingQueue, ^{
         self.chainManagedObjectContext = [NSManagedObjectContext chainContext];
@@ -465,7 +465,7 @@ static dispatch_once_t devnetToken = 0;
     uint32_t nBits = checkpoint.target;
     UInt256 fullTarget = setCompactLE(nBits);
     uint32_t nVersion = 4;
-    UInt256 prevHash = checkpoint.checkpointHash;
+    UInt256 prevHash = checkpoint.blockHash;
     UInt256 merkleRoot = [DSTransaction devnetGenesisCoinbaseWithIdentifier:identifier forChain:self].txHash;
     UInt256 chainWork = @"0400000000000000000000000000000000000000000000000000000000000000".hexToData.UInt256;
     uint32_t nonce = UINT32_MAX; //+1 => 0;
@@ -1565,11 +1565,11 @@ static dispatch_once_t devnetToken = 0;
 -(void)setLastTerminalBlockFromCheckpoints {
     DSCheckpoint * checkpoint = self.terminalHeadersOverrideUseCheckpoint?self.terminalHeadersOverrideUseCheckpoint:[self lastCheckpoint];
     if (checkpoint) {
-        if (self.mTerminalBlocks[uint256_obj(checkpoint.checkpointHash)]) {
-            _lastTerminalBlock = self.mSyncBlocks[uint256_obj(checkpoint.checkpointHash)];
+        if (self.mTerminalBlocks[uint256_obj(checkpoint.blockHash)]) {
+            _lastTerminalBlock = self.mSyncBlocks[uint256_obj(checkpoint.blockHash)];
         } else {
             _lastTerminalBlock = [[DSMerkleBlock alloc] initWithCheckpoint:checkpoint onChain:self];
-            self.mTerminalBlocks[uint256_obj(checkpoint.checkpointHash)] = _lastTerminalBlock;
+            self.mTerminalBlocks[uint256_obj(checkpoint.blockHash)] = _lastTerminalBlock;
         }
     }
     
@@ -1593,11 +1593,11 @@ static dispatch_once_t devnetToken = 0;
     }
     
     if (checkpoint) {
-        if (self.mSyncBlocks[uint256_obj(checkpoint.checkpointHash)]) {
-            _lastSyncBlock = self.mSyncBlocks[uint256_obj(checkpoint.checkpointHash)];
+        if (self.mSyncBlocks[uint256_obj(checkpoint.blockHash)]) {
+            _lastSyncBlock = self.mSyncBlocks[uint256_obj(checkpoint.blockHash)];
         } else {
             _lastSyncBlock = [[DSMerkleBlock alloc] initWithCheckpoint:checkpoint onChain:self];
-            self.mSyncBlocks[uint256_obj(checkpoint.checkpointHash)] = _lastSyncBlock;
+            self.mSyncBlocks[uint256_obj(checkpoint.blockHash)] = _lastSyncBlock;
         }
     }
     
@@ -1634,7 +1634,7 @@ static dispatch_once_t devnetToken = 0;
         self.checkpointsByHashDictionary = [NSMutableDictionary dictionary];
         self.checkpointsByHeightDictionary = [NSMutableDictionary dictionary];
         for (DSCheckpoint * checkpoint in self.checkpoints) { // add checkpoints to the block collection
-            UInt256 checkpointHash = checkpoint.checkpointHash;
+            UInt256 checkpointHash = checkpoint.blockHash;
             
             self->_mSyncBlocks[uint256_obj(checkpointHash)] = [[DSBlock alloc] initWithCheckpoint:checkpoint onChain:self];
             self.checkpointsByHeightDictionary[@(checkpoint.height)] = checkpoint;
@@ -1695,7 +1695,7 @@ static dispatch_once_t devnetToken = 0;
         }
     }
     if (lastCheckpoint) {
-        [locators addObject:uint256_data(lastCheckpoint.checkpointHash)];
+        [locators addObject:uint256_data(lastCheckpoint.blockHash)];
     }
     return locators;
 }
@@ -1930,9 +1930,9 @@ static dispatch_once_t devnetToken = 0;
         DSCheckpoint * checkpoint = [self.checkpointsByHeightDictionary objectForKey:@(block.height)];
         
         // verify block chain checkpoints
-        if (checkpoint && ! uint256_eq(block.blockHash, checkpoint.checkpointHash)) {
+        if (checkpoint && ! uint256_eq(block.blockHash, checkpoint.blockHash)) {
             DSDLog(@"%@:%d relayed a block that differs from the checkpoint at height %d, blockHash: %@, expected: %@",
-                   peer.host, peer.port, block.height, blockHash, uint256_hex(checkpoint.checkpointHash));
+                   peer.host, peer.port, block.height, blockHash, uint256_hex(checkpoint.blockHash));
             if (peer) {
                 [self.chainManager chain:self badBlockReceivedFromPeer:peer];
             }
@@ -2365,7 +2365,7 @@ static dispatch_once_t devnetToken = 0;
         self.checkpointsByHashDictionary = [NSMutableDictionary dictionary];
         self.checkpointsByHeightDictionary = [NSMutableDictionary dictionary];
         for (DSCheckpoint * checkpoint in self.checkpoints) { // add checkpoints to the block collection
-            UInt256 checkpointHash = checkpoint.checkpointHash;
+            UInt256 checkpointHash = checkpoint.blockHash;
             
             self->_mTerminalBlocks[uint256_obj(checkpointHash)] = [[DSBlock alloc] initWithCheckpoint:checkpoint onChain:self];
             self.checkpointsByHeightDictionary[@(checkpoint.height)] = checkpoint;
@@ -2435,7 +2435,7 @@ static dispatch_once_t devnetToken = 0;
         }
     }
     if (lastCheckpoint) {
-        [locators addObject:uint256_data(lastCheckpoint.checkpointHash)];
+        [locators addObject:uint256_data(lastCheckpoint.blockHash)];
     }
     return locators;
 }
@@ -2515,7 +2515,7 @@ static dispatch_once_t devnetToken = 0;
     }
     
     for (DSCheckpoint * checkpoint in self.checkpoints) {
-        if (uint256_eq(checkpoint.checkpointHash, blockhash)) {
+        if (uint256_eq(checkpoint.blockHash, blockhash)) {
             return checkpoint.height;
         }
     }

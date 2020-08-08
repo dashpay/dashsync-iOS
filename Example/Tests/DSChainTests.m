@@ -28,15 +28,16 @@
 #import "DashSync.h"
 #import "DSMerkleBlock.h"
 #import "DSQuorumCommitmentTransaction.h"
+#import "DSCheckpoint.h"
 
-@interface DSReorgTests : XCTestCase
+@interface DSChainTests : XCTestCase
 
 @property (nonatomic,strong) DSChain * chain;
 @property (nonatomic,strong) DSWallet * wallet;
 
 @end
 
-@implementation DSReorgTests
+@implementation DSChainTests
 
 - (void)setUp {
     self.chain = [DSChain setUpDevnetWithIdentifier:@"devnet-mobile-2" withCheckpoints:nil withMinimumDifficultyBlocks:UINT32_MAX withDefaultPort:3000 withDefaultDapiJRPCPort:3000 withDefaultDapiGRPCPort:3010 dpnsContractID:UINT256_ZERO dashpayContractID:UINT256_ZERO isTransient:YES];
@@ -392,6 +393,78 @@
     
     XCTAssertEqual(self.chain.lastTerminalBlockHeight,150);
     XCTAssertEqual(self.chain.lastSyncBlockHeight,150);
+}
+
+- (void)testCheckpoints {
+    // This is an example of a functional test case.
+    [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+    DSPeer * peer = [DSPeer peerWithHost:@"0.1.2.3:3000" onChain:self.chain];
+    [self.chain setEstimatedBlockHeight:150 fromPeer:peer];
+    NSURL *bundleRoot = [[NSBundle bundleForClass:[self class]] bundleURL];
+    NSArray * directoryContents =
+          [[NSFileManager defaultManager] contentsOfDirectoryAtURL:bundleRoot
+            includingPropertiesForKeys:@[]
+                               options:NSDirectoryEnumerationSkipsHiddenFiles
+                                 error:nil];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"pathExtension == %@",@"block"];
+    NSArray *blocks = [directoryContents filteredArrayUsingPredicate:predicate];
+    XCTAssertEqual(blocks.count,149);
+    NSMutableArray * sortedBlocks105 = [NSMutableArray array];
+    NSMutableArray * sortedBlocks106to150 = [NSMutableArray array];
+    int i = 2;
+
+    while (i <= 150) {
+        for (NSURL * url in blocks) {
+            NSArray * components = [url.lastPathComponent componentsSeparatedByString:@"-"];
+            if ([components[3] intValue] == i) {
+                if (i <= 105) {
+                    [sortedBlocks105 addObject:url];
+                } else {
+                    [sortedBlocks106to150 addObject:url];
+                }
+                i++;
+                break;
+            }
+        }
+    }
+
+    i = 105;
+    
+    NSMutableArray * checkpointsArray = [NSMutableArray array];
+    NSMutableArray * checkpointsSerializedLengthsArray = [NSMutableArray array];
+    NSMutableData * checkpointsData = [NSMutableData data];
+
+    for (NSURL * url in sortedBlocks105) {
+        NSData * blockData = [NSData dataWithContentsOfURL:url];
+        DSMerkleBlock * merkleBlock = [DSMerkleBlock merkleBlockWithMessage:blockData onChain:self.chain];
+        [self.chain addBlock:merkleBlock receivedAsHeader:YES fromPeer:nil];
+        DSCheckpoint * checkpoint = [DSCheckpoint checkpointFromBlock:merkleBlock options:DSCheckpointOptions_None];
+        [checkpointsArray addObject:checkpoint];
+        NSData * data = [checkpoint serialize];
+        [checkpointsSerializedLengthsArray addObject:@(data.length)];
+        [checkpointsData appendData:data];
+    }
+    
+    uint32_t off = 0;
+    
+    NSMutableArray * checkpointsArray2 = [NSMutableArray array];
+    NSMutableArray * checkpointsDeserializedLengthsArray = [NSMutableArray array];
+    while (off < checkpointsData.length) {
+        uint32_t startingOffset = off;
+        DSCheckpoint * deserializedCheckpoint = [[DSCheckpoint alloc] initWithData:checkpointsData atOffset:off finalOffset:&off];
+        [checkpointsDeserializedLengthsArray addObject:@(off - startingOffset)];
+        [checkpointsArray2 addObject:deserializedCheckpoint];
+    }
+    XCTAssertEqualObjects(checkpointsSerializedLengthsArray, checkpointsDeserializedLengthsArray);
+    XCTAssertEqual(checkpointsArray.count,checkpointsArray2.count, @"Checkpoint Arrays should be same size");
+    
+    for (uint32_t i = 0; i < checkpointsArray.count;i++) {
+        DSCheckpoint * a = checkpointsArray[i];
+        DSCheckpoint * b = checkpointsArray2[i];
+        XCTAssertEqualObjects(a, b);
+    }
+    XCTAssertEqualObjects(checkpointsArray, checkpointsArray2);
+    
 }
 
 

@@ -17,8 +17,8 @@
 
 -(UInt256)decodeUInt256ForKey:(NSString*)string {
     NSData * data = [self decodeObjectOfClass:[NSData class] forKey:string];
-    UInt256 r = *(UInt256 *)data.bytes;
-    return r;
+    if (!data.length) return UINT256_ZERO;
+    return data.UInt256;
 }
 
 @end

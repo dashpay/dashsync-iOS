@@ -54,7 +54,7 @@
 }
 
 - (instancetype)initWithCheckpoint:(DSCheckpoint*)checkpoint onChain:(DSChain*)chain {
-    if (! (self = [self initWithVersion:2 blockHash:checkpoint.checkpointHash timestamp:checkpoint.timestamp merkleRoot:checkpoint.merkleRoot target:checkpoint.target aggregateWork:checkpoint.chainWork height:checkpoint.height onChain:chain])) return nil;
+    if (! (self = [self initWithVersion:2 blockHash:checkpoint.blockHash timestamp:checkpoint.timestamp merkleRoot:checkpoint.merkleRoot target:checkpoint.target aggregateWork:checkpoint.chainWork height:checkpoint.height onChain:chain])) return nil;
     return self;
 }
 
