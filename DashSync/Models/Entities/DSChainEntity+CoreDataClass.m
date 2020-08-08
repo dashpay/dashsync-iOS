@@ -91,6 +91,8 @@
                 NSData * archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints];
                 chainEntity.checkpoints = archivedCheckpoints;
             }
+        } else {
+            chainEntity.checkpoints = nil;
         }
         return chainEntity;
     }
