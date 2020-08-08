@@ -17,6 +17,7 @@
 @dynamic syncType;
 @dynamic retrievePriceInfo;
 @dynamic useCheckpointMasternodeLists;
+@dynamic shouldUseCheckpointFile;
 
 + (instancetype)sharedInstance {
     static DSOptionsManager *_sharedInstance = nil;
@@ -37,6 +38,7 @@
         @"syncMasternodeListInterval" : @600,    // 10 min
         @"syncFromHeight" : @0,
         @"retrievePriceInfo" : @YES,
+        @"shouldUseCheckpointFile" :@YES,
         @"syncType" : @(DSSyncType_Default),
     };
 

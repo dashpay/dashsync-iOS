@@ -53,6 +53,7 @@
 #import "NSString+Bitcoin.h"
 #import "DSOptionsManager.h"
 #import "DSDAPIClient.h"
+#import "DSCheckpoint.h"
 
 #define FAULTY_DML_MASTERNODE_PEERS @"FAULTY_DML_MASTERNODE_PEERS"
 #define CHAIN_FAULTY_DML_MASTERNODE_PEERS [NSString stringWithFormat:@"%@_%@",peer.chain.uniqueID,FAULTY_DML_MASTERNODE_PEERS]

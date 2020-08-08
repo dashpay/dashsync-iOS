@@ -81,6 +81,7 @@
 #import "BigIntTypes.h"
 #import "DSChainCheckpoints.h"
 #import "DSIdentitiesManager+Protected.h"
+#import "DSCheckpoint.h"
 
 #define FEE_PER_BYTE_KEY          @"FEE_PER_BYTE"
 
@@ -408,15 +409,9 @@ static dispatch_once_t devnetToken = 0;
 +(NSMutableArray*)createCheckpointsArrayFromCheckpoints:(checkpoint*)checkpoints count:(NSUInteger)checkpointCount {
     NSMutableArray * checkpointMutableArray = [NSMutableArray array];
     for (int i = 0; i <checkpointCount;i++) {
-        DSCheckpoint * check = [DSCheckpoint new];
-        check.height = checkpoints[i].height;
-        check.checkpointHash = *(UInt256 *)[NSString stringWithCString:checkpoints[i].checkpointHash encoding:NSUTF8StringEncoding].hexToData.reverse.bytes;
-        check.target = checkpoints[i].target;
-        check.timestamp = checkpoints[i].timestamp;
-        check.masternodeListName = [NSString stringWithCString:checkpoints[i].masternodeListPath encoding:NSUTF8StringEncoding];
         NSString * merkleRootString = [NSString stringWithCString:checkpoints[i].merkleRoot encoding:NSUTF8StringEncoding];
-        check.merkleRoot = [merkleRootString isEqualToString:@""]?UINT256_ZERO:merkleRootString.hexToData.reverse.UInt256;
-        [checkpointMutableArray addObject:check];
+        DSCheckpoint * checkpoint = [DSCheckpoint checkpointForHeight:checkpoints[i].height blockHash:[NSString stringWithCString:checkpoints[i].checkpointHash encoding:NSUTF8StringEncoding].hexToData.reverse.UInt256 timestamp:checkpoints[i].timestamp target:checkpoints[i].target merkleRoot:[merkleRootString isEqualToString:@""]?UINT256_ZERO:merkleRootString.hexToData.reverse.UInt256 chainWork:UINT256_ZERO masternodeListName:[NSString stringWithCString:checkpoints[i].masternodeListPath encoding:NSUTF8StringEncoding]];
+        [checkpointMutableArray addObject:checkpoint];
     }
     return [checkpointMutableArray copy];
 }
@@ -472,18 +467,14 @@ static dispatch_once_t devnetToken = 0;
     uint32_t nVersion = 4;
     UInt256 prevHash = checkpoint.checkpointHash;
     UInt256 merkleRoot = [DSTransaction devnetGenesisCoinbaseWithIdentifier:identifier forChain:self].txHash;
+    UInt256 chainWork = @"0400000000000000000000000000000000000000000000000000000000000000".hexToData.UInt256;
     uint32_t nonce = UINT32_MAX; //+1 => 0;
     UInt256 blockhash;
     do {
         nonce++; //should start at 0;
         blockhash = [self blockHashForDevNetGenesisBlockWithVersion:nVersion prevHash:prevHash merkleRoot:merkleRoot timestamp:nTime target:nBits nonce:nonce];
     } while (nonce < UINT32_MAX && uint256_sup(blockhash, fullTarget));
-    DSCheckpoint * block2Checkpoint = [[DSCheckpoint alloc] init];
-    block2Checkpoint.height = 1;
-    block2Checkpoint.checkpointHash = blockhash;//*(UInt256*)[NSData dataWithUInt256:blockhash].reverse.bytes;
-    block2Checkpoint.target = nBits;
-    block2Checkpoint.timestamp = nTime;
-    block2Checkpoint.chainWork = @"0400000000000000000000000000000000000000000000000000000000000000".hexToData.UInt256;
+    DSCheckpoint * block2Checkpoint = [DSCheckpoint checkpointForHeight:1 blockHash:blockhash timestamp:nTime target:nBits merkleRoot:merkleRoot chainWork:chainWork masternodeListName:nil];
     return block2Checkpoint;
 }
 
@@ -3449,53 +3440,3 @@ static dispatch_once_t devnetToken = 0;
 
 @end
 
-@implementation DSCheckpoint
-
-#pragma mark NSCoding
-
-#define kHeightKey       @"Height"
-#define kCheckpointHashKey      @"CheckpointHash"
-#define kTimestampKey      @"Timestamp"
-#define kTargetKey      @"Target"
-
-+(DSCheckpoint*)genesisDevnetCheckpoint {
-    DSCheckpoint * checkpoint = [DSCheckpoint new];
-    checkpoint.checkpointHash = *(UInt256 *)[NSString stringWithCString:"000008ca1832a4baf228eb1553c03d3a2c8e02399550dd6ea8d65cec3ef23d2e" encoding:NSUTF8StringEncoding].hexToData.reverse.bytes;
-    checkpoint.height = 0;
-    checkpoint.timestamp = 1417713337;
-    checkpoint.target = 0x207fffffu;
-    checkpoint.chainWork = @"0200000000000000000000000000000000000000000000000000000000000000".hexToData.UInt256;
-    return checkpoint;
-}
-
--(instancetype)initWithHash:(UInt256)checkpointHash height:(uint32_t)height timestamp:(uint32_t)timestamp target:(uint32_t)target {
-    if (! (self = [super init])) return nil;
-    
-    self.checkpointHash = checkpointHash;
-    self.height = height;
-    self.timestamp = timestamp;
-    self.target = target;
-    
-    return self;
-}
-
-- (id)initWithCoder:(NSCoder *)decoder {
-    UInt256 checkpointHash = [decoder decodeUInt256ForKey:kCheckpointHashKey];
-    uint32_t height = [decoder decodeInt32ForKey:kHeightKey];
-    uint32_t timestamp = [decoder decodeInt32ForKey:kTimestampKey];
-    uint32_t target = [decoder decodeInt32ForKey:kTargetKey];
-    return [self initWithHash:checkpointHash height:height timestamp:timestamp target:target];
-}
-
--(DSBlock*)blockForChain:(DSChain*)chain {
-    return [[DSBlock alloc] initWithCheckpoint:self onChain:chain];
-}
-
--(void)encodeWithCoder:(NSCoder *)aCoder {
-    [aCoder encodeUInt256:self.checkpointHash forKey:kCheckpointHashKey];
-    [aCoder encodeInt32:self.height forKey:kHeightKey];
-    [aCoder encodeInt32:self.timestamp forKey:kTimestampKey];
-    [aCoder encodeInt32:self.target forKey:kTargetKey];
-}
-
-@end

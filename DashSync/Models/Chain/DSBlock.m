@@ -22,6 +22,7 @@
 #import "DSChain.h"
 #import "NSDate+Utils.h"
 #import "DSChainLock.h"
+#import "DSCheckpoint.h"
 
 #define MAX_TIME_DRIFT    (2*60*60)     // the furthest in the future a block is allowed to be timestamped
 
