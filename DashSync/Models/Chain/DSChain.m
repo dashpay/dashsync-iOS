@@ -1656,7 +1656,7 @@ static dispatch_once_t devnetToken = 0;
     if (_lastSyncBlock && !(_lastSyncBlock.height == 1 && self.chainType == DSChainType_DevNet)) {
         return [self blockLocatorArrayForBlock:_lastSyncBlock];
     } else if (!_lastPersistedChainSyncLocators) {
-        _lastPersistedChainSyncLocators = [self blockLocatorArrayOnOrBeforeTimestamp:1425039295 includeInitialTerminalBlocks:NO];
+        _lastPersistedChainSyncLocators = [self blockLocatorArrayOnOrBeforeTimestamp:BIP39_CREATION_TIME includeInitialTerminalBlocks:NO];
     }
     return _lastPersistedChainSyncLocators;
 }
@@ -3348,7 +3348,7 @@ static dispatch_once_t devnetToken = 0;
         chainEntity.syncBlockHeight = lastBlockHeight;
         chainEntity.syncBlockTimestamp = lastBlock.timestamp;
         NSArray * array = [self chainSyncBlockLocatorArray];
-        _lastPersistedChainSyncLocators = [self blockLocatorArrayOnOrBeforeTimestamp:1425039295 includeInitialTerminalBlocks:NO];
+        _lastPersistedChainSyncLocators = [self blockLocatorArrayOnOrBeforeTimestamp:BIP39_CREATION_TIME includeInitialTerminalBlocks:NO];
         chainEntity.syncLocators = array?[NSKeyedArchiver archivedDataWithRootObject:array]:nil;
         
         NSMutableSet *entities = [NSMutableSet set];
