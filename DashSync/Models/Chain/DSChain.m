@@ -410,7 +410,9 @@ static dispatch_once_t devnetToken = 0;
     NSMutableArray * checkpointMutableArray = [NSMutableArray array];
     for (int i = 0; i <checkpointCount;i++) {
         NSString * merkleRootString = [NSString stringWithCString:checkpoints[i].merkleRoot encoding:NSUTF8StringEncoding];
-        DSCheckpoint * checkpoint = [DSCheckpoint checkpointForHeight:checkpoints[i].height blockHash:[NSString stringWithCString:checkpoints[i].checkpointHash encoding:NSUTF8StringEncoding].hexToData.reverse.UInt256 timestamp:checkpoints[i].timestamp target:checkpoints[i].target merkleRoot:[merkleRootString isEqualToString:@""]?UINT256_ZERO:merkleRootString.hexToData.reverse.UInt256 chainWork:UINT256_ZERO masternodeListName:[NSString stringWithCString:checkpoints[i].masternodeListPath encoding:NSUTF8StringEncoding]];
+        NSString * chainWorkString = [NSString stringWithCString:checkpoints[i].chainWork encoding:NSUTF8StringEncoding];
+        UInt256 chainWork = chainWorkString.hexToData.reverse.UInt256;
+        DSCheckpoint * checkpoint = [DSCheckpoint checkpointForHeight:checkpoints[i].height blockHash:[NSString stringWithCString:checkpoints[i].checkpointHash encoding:NSUTF8StringEncoding].hexToData.reverse.UInt256 timestamp:checkpoints[i].timestamp target:checkpoints[i].target merkleRoot:[merkleRootString isEqualToString:@""]?UINT256_ZERO:merkleRootString.hexToData.reverse.UInt256 chainWork:chainWork masternodeListName:[NSString stringWithCString:checkpoints[i].masternodeListPath encoding:NSUTF8StringEncoding]];
         [checkpointMutableArray addObject:checkpoint];
     }
     return [checkpointMutableArray copy];
@@ -1860,8 +1862,9 @@ static dispatch_once_t devnetToken = 0;
     
     block.height = prev.height + 1;
     UInt256 target = setCompactLE(block.target);
-    NSAssert(!uint256_is_zero(prev.aggregateWork), @"previous block should have aggregate work set");
-    block.aggregateWork = uInt256AddLE(prev.aggregateWork,uInt256AddOneLE(uInt256DivideLE(uint256_inverse(target), uInt256AddOneLE(target))));
+    NSAssert(!uint256_is_zero(prev.chainWork), @"previous block should have aggregate work set");
+    block.chainWork = uInt256AddLE(prev.chainWork,uInt256AddOneLE(uInt256DivideLE(uint256_inverse(target), uInt256AddOneLE(target))));
+    NSAssert(!uint256_is_zero(block.chainWork), @"block should have aggregate work set");
     uint32_t txTime = block.timestamp/2 + prev.timestamp/2;
     
     if (isTerminalBlock) {
@@ -2039,7 +2042,7 @@ static dispatch_once_t devnetToken = 0;
             @synchronized (self.mTerminalBlocks) {
                 self.mTerminalBlocks[blockHash] = block;
             }
-            if (uint256_supeq(self.lastTerminalBlock.aggregateWork, block.aggregateWork)) return TRUE; // if fork is shorter than main chain, ignore it for now
+            if (uint256_supeq(self.lastTerminalBlock.chainWork, block.chainWork)) return TRUE; // if fork is shorter than main chain, ignore it for now
             DSDLog(@"found chain fork on height %d", block.height);
             
             DSBlock *b = block, *b2 = self.lastTerminalBlock;
@@ -2057,7 +2060,7 @@ static dispatch_once_t devnetToken = 0;
             @synchronized (self.mSyncBlocks) {
                 self.mSyncBlocks[blockHash] = block;
             }
-            if (uint256_supeq(self.lastSyncBlock.aggregateWork, block.aggregateWork)) return TRUE; // if fork is shorter than main chain, ignore it for now
+            if (uint256_supeq(self.lastSyncBlock.chainWork, block.chainWork)) return TRUE; // if fork is shorter than main chain, ignore it for now
             DSDLog(@"found sync chain fork on height %d", block.height);
             
             DSBlock *b = block, *b2 = self.lastSyncBlock;

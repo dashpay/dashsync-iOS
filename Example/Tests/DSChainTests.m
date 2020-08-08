@@ -136,7 +136,7 @@
         [self.chain addBlock:merkleBlock receivedAsHeader:YES fromPeer:nil];
     }
     
-    XCTAssertEqualObjects(uint256_hex(self.chain.lastTerminalBlock.aggregateWork),@"d400000000000000000000000000000000000000000000000000000000000000");
+    XCTAssertEqualObjects(uint256_hex(self.chain.lastTerminalBlock.chainWork),@"d400000000000000000000000000000000000000000000000000000000000000");
     XCTAssertEqual(self.chain.lastTerminalBlockHeight,105);
     XCTAssertEqual(self.chain.lastSyncBlockHeight,1);
     
@@ -253,7 +253,7 @@
         [self.chain addBlock:merkleBlock receivedAsHeader:YES fromPeer:nil];
     }
     
-    XCTAssertEqualObjects(uint256_hex(self.chain.lastTerminalBlock.aggregateWork),@"d400000000000000000000000000000000000000000000000000000000000000");
+    XCTAssertEqualObjects(uint256_hex(self.chain.lastTerminalBlock.chainWork),@"d400000000000000000000000000000000000000000000000000000000000000");
     XCTAssertEqual(self.chain.lastTerminalBlockHeight,105);
     XCTAssertEqual(self.chain.lastSyncBlockHeight,1);
     

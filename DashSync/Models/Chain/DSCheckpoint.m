@@ -114,7 +114,7 @@
 
 + (instancetype)checkpointFromBlock:(DSBlock*)block options:(uint8_t)options {
     NSAssert(block.height != BLOCK_UNKNOWN_HEIGHT,@"Block height must be known");
-    return [[self alloc] initWithHeight:block.height blockHash:block.blockHash timestamp:block.timestamp target:block.target merkleRoot:(options&DSCheckpointOptions_SaveMerkleRoot)?block.merkleRoot:UINT256_ZERO chainWork:block.aggregateWork masternodeListName:nil];
+    return [[self alloc] initWithHeight:block.height blockHash:block.blockHash timestamp:block.timestamp target:block.target merkleRoot:(options&DSCheckpointOptions_SaveMerkleRoot)?block.merkleRoot:UINT256_ZERO chainWork:block.chainWork masternodeListName:nil];
 }
 
 -(uint8_t)chainWorkSize {
@@ -164,6 +164,15 @@
     uint32_t timestamp = [decoder decodeInt32ForKey:kTimestampKey];
     uint32_t target = [decoder decodeInt32ForKey:kTargetKey];
     UInt256 chainWork = [decoder decodeUInt256ForKey:kChainWorkKey];
+    if (uint256_is_zero(chainWork)) {
+        if (height == 0) {
+            chainWork = @"0000000000000000000000000000000000000000000000000000000000000002".hexToData.reverse.UInt256;
+        } else if (height == 1) {
+            chainWork = @"0000000000000000000000000000000000000000000000000000000000000004".hexToData.reverse.UInt256;
+        } else {
+            NSAssert(FALSE,@"We should never reach this spot");
+        }
+    }
     return [self initWithHeight:height blockHash:checkpointHash timestamp:timestamp target:target merkleRoot:UINT256_ZERO chainWork:chainWork masternodeListName:nil];
 }
 

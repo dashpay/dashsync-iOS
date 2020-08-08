@@ -45,16 +45,17 @@
     return self;
 }
 
-- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp merkleRoot:(UInt256)merkleRoot target:(uint32_t)target aggregateWork:(UInt256)aggregateWork height:(uint32_t)height onChain:(DSChain*)chain {
+- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp merkleRoot:(UInt256)merkleRoot target:(uint32_t)target chainWork:(UInt256)chainWork height:(uint32_t)height onChain:(DSChain*)chain {
     if (! (self = [self initWithVersion:version blockHash:blockHash timestamp:timestamp height:height onChain:chain])) return nil;
     _merkleRoot = merkleRoot;
     _target = target;
-    _aggregateWork = aggregateWork;
+    _chainWork = chainWork;
     return self;
 }
 
 - (instancetype)initWithCheckpoint:(DSCheckpoint*)checkpoint onChain:(DSChain*)chain {
-    if (! (self = [self initWithVersion:2 blockHash:checkpoint.blockHash timestamp:checkpoint.timestamp merkleRoot:checkpoint.merkleRoot target:checkpoint.target aggregateWork:checkpoint.chainWork height:checkpoint.height onChain:chain])) return nil;
+    NSAssert(!uint256_is_zero(checkpoint.chainWork), @"Chain work must be set");
+    if (! (self = [self initWithVersion:2 blockHash:checkpoint.blockHash timestamp:checkpoint.timestamp merkleRoot:checkpoint.merkleRoot target:checkpoint.target chainWork:checkpoint.chainWork height:checkpoint.height onChain:chain])) return nil;
     return self;
 }
 
@@ -150,7 +151,7 @@
         // Calculate average difficulty based on the blocks we iterate over in this for loop
         if(blockCount <= DGW_PAST_BLOCKS_MIN) {
             UInt256 currentTarget = setCompactLE(currentBlock.target);
-            DSDLog(@"currentTarget for block %d is %@", currentBlock.height, uint256_hex(currentTarget));
+            //DSDLog(@"currentTarget for block %d is %@", currentBlock.height, uint256_hex(currentTarget));
             //if (self.height == 1070917)
             //DSDLog(@"%d",currentTarget);
             if (blockCount == 1) {
@@ -270,7 +271,7 @@
     copy.valid = self.valid;
     copy.merkleTreeValid = self.isMerkleTreeValid;
     copy.data = [self.data copyWithZone:zone];
-    copy.aggregateWork = self.aggregateWork;
+    copy.chainWork = self.chainWork;
     return copy;
 }
 

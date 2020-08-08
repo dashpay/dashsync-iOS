@@ -50,7 +50,7 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, readonly) uint32_t height;
 @property (nonatomic, readonly) DSChain *chain;
 @property (nonatomic, readonly) BOOL chainLocked;
-@property (nonatomic, readonly) UInt256 aggregateWork;
+@property (nonatomic, readonly) UInt256 chainWork;
 
 @property (nonatomic, readonly) NSArray *transactionHashes; // the matched tx hashes in the block
 
@@ -64,7 +64,7 @@ typedef union _UInt256 UInt256;
 
 - (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp height:(uint32_t)height onChain:(DSChain*)chain;
 
-- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp merkleRoot:(UInt256)merkleRoot target:(uint32_t)target aggregateWork:(UInt256)aggregateWork height:(uint32_t)height onChain:(DSChain*)chain;
+- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp merkleRoot:(UInt256)merkleRoot target:(uint32_t)target chainWork:(UInt256)aggregateWork height:(uint32_t)height onChain:(DSChain*)chain;
 
 - (instancetype)initWithCheckpoint:(DSCheckpoint*)checkpoint onChain:(DSChain*)chain;
 

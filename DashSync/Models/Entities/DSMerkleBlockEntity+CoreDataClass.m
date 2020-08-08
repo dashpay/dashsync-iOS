@@ -46,8 +46,8 @@
         self.totalTransactions = block.totalTransactions;
         self.height = block.height;
         self.chain = chainEntity;
-        self.aggregateWork = uint256_data(block.aggregateWork);
-        NSAssert((block.height == UINT32_MAX) == (uint256_is_zero(block.aggregateWork)), @"if block height is not set then there should be no aggregated work, and opposite is also true");
+        self.chainWork = uint256_data(block.chainWork);
+        NSAssert((block.height == UINT32_MAX) == (uint256_is_zero(block.chainWork)), @"if block height is not set then there should be no aggregated work, and opposite is also true");
     }];
     
     return self;
@@ -67,8 +67,8 @@
         self.flags = [NSData dataWithData:block.flags];
         self.height = block.height;
         self.chain = chainEntity;
-        self.aggregateWork = uint256_data(block.aggregateWork);
-        NSAssert((block.height == UINT32_MAX) == (uint256_is_zero(block.aggregateWork)), @"if block height is not set then there should be no aggregated work, and opposite is also true");
+        self.chainWork = uint256_data(block.chainWork);
+        NSAssert((block.height == UINT32_MAX) == (uint256_is_zero(block.chainWork)), @"if block height is not set then there should be no aggregated work, and opposite is also true");
     }];
     
     return self;
@@ -87,7 +87,7 @@
             chainLock = [self.chainLock chainLockForChain:chain];
         }
         block = [[DSMerkleBlock alloc] initWithVersion:self.version blockHash:self.blockHash.UInt256 prevBlock:self.prevBlock.UInt256 merkleRoot:self.merkleRoot.UInt256
-                                             timestamp:self.timestamp target:self.target aggregateWork:self.aggregateWork.UInt256 nonce:self.nonce
+                                             timestamp:self.timestamp target:self.target chainWork:self.chainWork.UInt256 nonce:self.nonce
                                        totalTransactions:self.totalTransactions hashes:self.hashes flags:self.flags height:self.height chainLock:chainLock onChain:self.chain.chain];
     }];
     

@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSTimeInterval timestamp;
 @property (nonatomic, assign) int32_t totalTransactions;
 @property (nonatomic, assign) int32_t version;
-@property (nullable, nonatomic, retain) NSData *aggregateWork;
+@property (nullable, nonatomic, retain) NSData *chainWork;
 @property (nullable, nonatomic, retain) DSChainEntity *chain;
 @property (nullable, nonatomic, retain) DSChainLockEntity *chainLock;
 @property (nullable, nonatomic, retain) DSMasternodeListEntity *masternodeList;
