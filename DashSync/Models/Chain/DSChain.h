@@ -62,24 +62,9 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
     DSChainSyncPhase_Synced,
 };
 
-@class DSChain, DSChainEntity, DSChainManager, DSWallet, DSMerkleBlock, DSBlock, DSFullBlock, DSPeer, DSDerivationPath, DSTransaction, DSAccount, DSSimplifiedMasternodeEntry, DSBlockchainIdentity, DSBloomFilter, DSProviderRegistrationTransaction, DSMasternodeList, DPContract;
+@class DSChain, DSChainEntity, DSChainManager, DSWallet, DSMerkleBlock, DSBlock, DSFullBlock, DSPeer, DSDerivationPath, DSTransaction, DSAccount, DSSimplifiedMasternodeEntry, DSBlockchainIdentity, DSBloomFilter, DSProviderRegistrationTransaction, DSMasternodeList, DPContract, DSCheckpoint;
 
 @protocol DSChainDelegate;
-
-@interface DSCheckpoint : NSObject <NSCoding>
-
-+ (DSCheckpoint*)genesisDevnetCheckpoint;
-@property (nonatomic, assign) uint32_t height;
-@property (nonatomic, assign) UInt256 checkpointHash;
-@property (nonatomic, assign) uint32_t timestamp;
-@property (nonatomic, assign) uint32_t target;
-@property (nonatomic, strong) NSString * masternodeListName;
-@property (nonatomic, assign) UInt256 merkleRoot;
-@property (nonatomic, assign) UInt256 chainWork;
-
-- (DSBlock*)blockForChain:(DSChain*)chain;
-
-@end
 
 @interface DSChain : NSObject
 

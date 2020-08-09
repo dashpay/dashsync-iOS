@@ -42,6 +42,15 @@
         };
         [items addObject:cellModel];
     }
+    
+    {
+        SwitcherFormCellModel *cellModel = [[SwitcherFormCellModel alloc] initWithTitle:@"Use Checkpoints Files"];
+        cellModel.on = options.shouldUseCheckpointFile;
+        cellModel.didChangeValueBlock = ^(SwitcherFormCellModel *_Nonnull cellModel) {
+            options.shouldUseCheckpointFile = cellModel.on;
+        };
+        [items addObject:cellModel];
+    }
 
     {
         SwitcherFormCellModel *cellModel = [[SwitcherFormCellModel alloc] initWithTitle:@"Retrieve Price Info"];

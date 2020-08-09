@@ -53,6 +53,7 @@
 #import "NSString+Bitcoin.h"
 #import "DSOptionsManager.h"
 #import "DSDAPIClient.h"
+#import "DSCheckpoint.h"
 
 #define FAULTY_DML_MASTERNODE_PEERS @"FAULTY_DML_MASTERNODE_PEERS"
 #define CHAIN_FAULTY_DML_MASTERNODE_PEERS [NSString stringWithFormat:@"%@_%@",peer.chain.uniqueID,FAULTY_DML_MASTERNODE_PEERS]
@@ -295,7 +296,7 @@
     if (!self.currentMasternodeList) {
         DSCheckpoint * checkpoint = [self.chain lastCheckpointHavingMasternodeList];
         if (self.chain.lastTerminalBlockHeight >= checkpoint.height) {
-            [self processRequestFromFileForBlockHash:checkpoint.checkpointHash completion:^(BOOL success) {
+            [self processRequestFromFileForBlockHash:checkpoint.blockHash completion:^(BOOL success) {
                 
             }];
         }
@@ -845,7 +846,7 @@
 #define LOG_MASTERNODE_DIFF 0 && DEBUG
 #define FETCH_NEEDED_QUORUMS 1
 #define KEEP_OLD_QUORUMS 0
-#define SAVE_MASTERNODE_DIFF_TO_FILE (0 && DEBUG)
+#define SAVE_MASTERNODE_DIFF_TO_FILE (1 && DEBUG)
 #define DSFullLog(FORMAT, ...) printf("%s\n", [[NSString stringWithFormat:FORMAT, ##__VA_ARGS__] UTF8String])
 
 -(void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)message {

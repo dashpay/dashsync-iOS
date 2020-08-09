@@ -45,6 +45,7 @@
 #import "DSSetPinViewController.h"
 #import "DSRecoveryViewController.h"
 #import "DSBiometricsAuthenticator.h"
+#import "DSCheckpoint.h"
 
 static NSString *sanitizeString(NSString *s)
 {

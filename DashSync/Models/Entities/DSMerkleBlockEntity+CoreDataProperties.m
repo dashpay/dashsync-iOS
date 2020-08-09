@@ -29,6 +29,6 @@
 @dynamic masternodeList;
 @dynamic usedByQuorums;
 @dynamic chainLock;
-@dynamic aggregateWork;
+@dynamic chainWork;
 
 @end

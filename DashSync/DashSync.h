@@ -14,6 +14,7 @@
 #import "DSEnvironment.h"
 #import "DSPeerManager.h"
 #import "DSChain.h"
+#import "DSCheckpoint.h"
 #import "DSBlockchainIdentity.h"
 
 #import "DSECDSAKey.h"

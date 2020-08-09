@@ -44,6 +44,7 @@
 #import "RHIntervalTree.h"
 #import "DSWallet+Protected.h"
 #import "DSFullBlock.h"
+#import "DSCheckpoint.h"
 
 #define SYNC_STARTHEIGHT_KEY @"SYNC_STARTHEIGHT"
 #define TERMINAL_SYNC_STARTHEIGHT_KEY @"TERMINAL_SYNC_STARTHEIGHT"

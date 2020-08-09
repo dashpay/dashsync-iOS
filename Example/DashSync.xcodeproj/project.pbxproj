@@ -64,7 +64,6 @@
 		6003F5B1195388D20070C39A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58D195388D20070C39A /* Foundation.framework */; };
 		6003F5B2195388D20070C39A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F591195388D20070C39A /* UIKit.framework */; };
 		6003F5BA195388D20070C39A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 6003F5B8195388D20070C39A /* InfoPlist.strings */; };
-		6003F5BC195388D20070C39A /* Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = 6003F5BB195388D20070C39A /* Tests.m */; };
 		71719F9F1E33DC2100824A3D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 71719F9D1E33DC2100824A3D /* LaunchScreen.storyboard */; };
 		83CFCA70892A5DF9F64BA1AA /* libPods-DashSync_Tests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 955D615511918752AF099181 /* libPods-DashSync_Tests.a */; };
 		873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 873B8AEA1B1F5CCA007FD442 /* Main.storyboard */; };
@@ -210,7 +209,7 @@
 		FB1DCE6124D724C70094F776 /* devnet-mobile-2-86-99e40eaab61c0f0947f9bb86dbe10e3a7e870b654b5d8ada56f487fd33ca3937.block in Resources */ = {isa = PBXBuildFile; fileRef = FB1DCDFE24D724C60094F776 /* devnet-mobile-2-86-99e40eaab61c0f0947f9bb86dbe10e3a7e870b654b5d8ada56f487fd33ca3937.block */; };
 		FB1DCE6224D724C70094F776 /* devnet-mobile-2-43-065d056d1f8cea2b708bba366820102abcc9dc86657f69681515660838d57169.block in Resources */ = {isa = PBXBuildFile; fileRef = FB1DCDFF24D724C70094F776 /* devnet-mobile-2-43-065d056d1f8cea2b708bba366820102abcc9dc86657f69681515660838d57169.block */; };
 		FB1DCE6324D724C70094F776 /* devnet-mobile-2-74-f7e5081a38fbb6fe7a6872aa2885d33da825c6e49d35f266835374320ebcc474.block in Resources */ = {isa = PBXBuildFile; fileRef = FB1DCE0024D724C70094F776 /* devnet-mobile-2-74-f7e5081a38fbb6fe7a6872aa2885d33da825c6e49d35f266835374320ebcc474.block */; };
-		FB1DCE6524D7282F0094F776 /* DSReorgTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1DCE6424D7282F0094F776 /* DSReorgTests.m */; };
+		FB1DCE6524D7282F0094F776 /* DSChainTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1DCE6424D7282F0094F776 /* DSChainTests.m */; };
 		FB1DCE9824D7322D0094F776 /* devnet-mobile-2-133-93f79818497556e6ab43a9bde2a825c83d7943948609918dd9cb1543aa88a505.block in Resources */ = {isa = PBXBuildFile; fileRef = FB1DCE6624D732270094F776 /* devnet-mobile-2-133-93f79818497556e6ab43a9bde2a825c83d7943948609918dd9cb1543aa88a505.block */; };
 		FB1DCE9924D7322D0094F776 /* devnet-mobile-2-132-367f3ca9f28e9b30b62d683a088dd5644f6495b374136028b81f88cb12d9b562.block in Resources */ = {isa = PBXBuildFile; fileRef = FB1DCE6724D732270094F776 /* devnet-mobile-2-132-367f3ca9f28e9b30b62d683a088dd5644f6495b374136028b81f88cb12d9b562.block */; };
 		FB1DCE9A24D7322D0094F776 /* devnet-mobile-2-129-7088a0c2b9abad7c1063f2854600f76e4df1fd002516edf6b3348f148a717036.block in Resources */ = {isa = PBXBuildFile; fileRef = FB1DCE6824D732270094F776 /* devnet-mobile-2-129-7088a0c2b9abad7c1063f2854600f76e4df1fd002516edf6b3348f148a717036.block */; };
@@ -533,7 +532,6 @@
 		6003F5AF195388D20070C39A /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		6003F5B7195388D20070C39A /* Tests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Tests-Info.plist"; sourceTree = "<group>"; };
 		6003F5B9195388D20070C39A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		6003F5BB195388D20070C39A /* Tests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Tests.m; sourceTree = "<group>"; };
 		606FC2411953D9B200FFA9A0 /* Tests-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Tests-Prefix.pch"; sourceTree = "<group>"; };
 		64A245673BBAE1DA7DAB4907 /* DashSync.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = DashSync.podspec; path = ../DashSync.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		71719F9E1E33DC2100824A3D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -699,7 +697,7 @@
 		FB1DCDFE24D724C60094F776 /* devnet-mobile-2-86-99e40eaab61c0f0947f9bb86dbe10e3a7e870b654b5d8ada56f487fd33ca3937.block */ = {isa = PBXFileReference; lastKnownFileType = file; path = "devnet-mobile-2-86-99e40eaab61c0f0947f9bb86dbe10e3a7e870b654b5d8ada56f487fd33ca3937.block"; sourceTree = "<group>"; };
 		FB1DCDFF24D724C70094F776 /* devnet-mobile-2-43-065d056d1f8cea2b708bba366820102abcc9dc86657f69681515660838d57169.block */ = {isa = PBXFileReference; lastKnownFileType = file; path = "devnet-mobile-2-43-065d056d1f8cea2b708bba366820102abcc9dc86657f69681515660838d57169.block"; sourceTree = "<group>"; };
 		FB1DCE0024D724C70094F776 /* devnet-mobile-2-74-f7e5081a38fbb6fe7a6872aa2885d33da825c6e49d35f266835374320ebcc474.block */ = {isa = PBXFileReference; lastKnownFileType = file; path = "devnet-mobile-2-74-f7e5081a38fbb6fe7a6872aa2885d33da825c6e49d35f266835374320ebcc474.block"; sourceTree = "<group>"; };
-		FB1DCE6424D7282F0094F776 /* DSReorgTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSReorgTests.m; sourceTree = "<group>"; };
+		FB1DCE6424D7282F0094F776 /* DSChainTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSChainTests.m; sourceTree = "<group>"; };
 		FB1DCE6624D732270094F776 /* devnet-mobile-2-133-93f79818497556e6ab43a9bde2a825c83d7943948609918dd9cb1543aa88a505.block */ = {isa = PBXFileReference; lastKnownFileType = file; path = "devnet-mobile-2-133-93f79818497556e6ab43a9bde2a825c83d7943948609918dd9cb1543aa88a505.block"; sourceTree = "<group>"; };
 		FB1DCE6724D732270094F776 /* devnet-mobile-2-132-367f3ca9f28e9b30b62d683a088dd5644f6495b374136028b81f88cb12d9b562.block */ = {isa = PBXFileReference; lastKnownFileType = file; path = "devnet-mobile-2-132-367f3ca9f28e9b30b62d683a088dd5644f6495b374136028b81f88cb12d9b562.block"; sourceTree = "<group>"; };
 		FB1DCE6824D732270094F776 /* devnet-mobile-2-129-7088a0c2b9abad7c1063f2854600f76e4df1fd002516edf6b3348f148a717036.block */ = {isa = PBXFileReference; lastKnownFileType = file; path = "devnet-mobile-2-129-7088a0c2b9abad7c1063f2854600f76e4df1fd002516edf6b3348f148a717036.block"; sourceTree = "<group>"; };
@@ -1232,36 +1230,15 @@
 		6003F5B5195388D20070C39A /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				FB1DCD9D24D7249C0094F776 /* BlocksForReorgTests */,
+				FBD45D1D24DF1ADE00168EBC /* L2Tests */,
+				FBD45D1C24DF1AB300168EBC /* WalletTests */,
+				FBD45D1B24DF1A6200168EBC /* LibraryTests */,
+				FBD45D1924DF1A0900168EBC /* L1Tests */,
 				FB76C5A822BD7B9700DF2B29 /* MasternodeLists */,
-				6003F5BB195388D20070C39A /* Tests.m */,
-				2AF7296C22789C56001D2D21 /* DSIESEncryptedDataTests.mm */,
-				2A7DCCAD20D9485A0097049F /* DSBIP32Tests.m */,
-				2A7DCCAB20D9474F0097049F /* DSBIP39Tests.m */,
-				2A1ECBD820D8B327000177D8 /* DSHashTests.m */,
-				2A1ECBDA20D8B7EC000177D8 /* DSKeyTests.m */,
-				2A1ECBDC20D8F4BD000177D8 /* DSPaymentRequestTests.m */,
-				2A1ECBDE20D8F7DB000177D8 /* DSTransactionTests.m */,
-				2A90EDA92268C15D00D95B6B /* DSUInt256IndexPathTests.m */,
-				2A7DCCAF20DA080F0097049F /* DSWalletTests.m */,
-				2A7DCCB120DA10870097049F /* DSBloomFilterTests.m */,
-				2A7DCCB320DA198F0097049F /* DSPaymentProtocolTests.m */,
-				2AA2C5EA20E37B74007768B1 /* DSGovernanceTests.m */,
 				FBE155FF22B99368009CA817 /* MasternodeList1088800.dat */,
 				2A5C601322BFC65E00C6003F /* ML_at_122088.dat */,
-				FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */,
 				6003F5B6195388D20070C39A /* Supporting Files */,
-				FBF31B7022328AA800393301 /* DSProviderTransactionsTests.m */,
-				FBD696EB2291A1800012FF51 /* DSDataTests.m */,
-				FBAF79782385CA0200F4944E /* DSSparseMerkleTreeTests.m */,
-				FB3ADDE5238E62CD00C31D23 /* DSChainLockTests.m */,
-				FBBDF422226B6E770081D673 /* DSBigNumberTests.m */,
-				FB1B98D023D6A3BD00D50F69 /* DSTransitionTests.m */,
 				FBC9248C2414EF0600005D0D /* DSAttackTests.m */,
-				FBE07DD024673AC200A1079C /* DSSyncTests.m */,
-				FBE07DD22467440200A1079C /* DSChainedSigningTests.m */,
-				FB87A0CD24B7C28600C22DF7 /* DSMiningTests.m */,
-				FB1DCE6424D7282F0094F776 /* DSReorgTests.m */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -1859,6 +1836,58 @@
 				FBC508CA2426F42500EB3DAB /* DSSearchBlockchainIdentitiesViewController.m */,
 			);
 			name = Searching;
+			sourceTree = "<group>";
+		};
+		FBD45D1924DF1A0900168EBC /* L1Tests */ = {
+			isa = PBXGroup;
+			children = (
+				FB1DCD9D24D7249C0094F776 /* BlocksForReorgTests */,
+				FB87A0CD24B7C28600C22DF7 /* DSMiningTests.m */,
+				FB1DCE6424D7282F0094F776 /* DSChainTests.m */,
+				FBE07DD024673AC200A1079C /* DSSyncTests.m */,
+				2AA2C5EA20E37B74007768B1 /* DSGovernanceTests.m */,
+				FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */,
+				FB3ADDE5238E62CD00C31D23 /* DSChainLockTests.m */,
+				2A1ECBDE20D8F7DB000177D8 /* DSTransactionTests.m */,
+			);
+			name = L1Tests;
+			sourceTree = "<group>";
+		};
+		FBD45D1B24DF1A6200168EBC /* LibraryTests */ = {
+			isa = PBXGroup;
+			children = (
+				FBBDF422226B6E770081D673 /* DSBigNumberTests.m */,
+				FBD696EB2291A1800012FF51 /* DSDataTests.m */,
+				2AF7296C22789C56001D2D21 /* DSIESEncryptedDataTests.mm */,
+				2A7DCCAD20D9485A0097049F /* DSBIP32Tests.m */,
+				2A7DCCAB20D9474F0097049F /* DSBIP39Tests.m */,
+				2A1ECBDA20D8B7EC000177D8 /* DSKeyTests.m */,
+				2A1ECBD820D8B327000177D8 /* DSHashTests.m */,
+				FBAF79782385CA0200F4944E /* DSSparseMerkleTreeTests.m */,
+				FBE07DD22467440200A1079C /* DSChainedSigningTests.m */,
+				2A90EDA92268C15D00D95B6B /* DSUInt256IndexPathTests.m */,
+			);
+			name = LibraryTests;
+			sourceTree = "<group>";
+		};
+		FBD45D1C24DF1AB300168EBC /* WalletTests */ = {
+			isa = PBXGroup;
+			children = (
+				2A1ECBDC20D8F4BD000177D8 /* DSPaymentRequestTests.m */,
+				FBF31B7022328AA800393301 /* DSProviderTransactionsTests.m */,
+				2A7DCCB320DA198F0097049F /* DSPaymentProtocolTests.m */,
+				2A7DCCB120DA10870097049F /* DSBloomFilterTests.m */,
+				2A7DCCAF20DA080F0097049F /* DSWalletTests.m */,
+			);
+			name = WalletTests;
+			sourceTree = "<group>";
+		};
+		FBD45D1D24DF1ADE00168EBC /* L2Tests */ = {
+			isa = PBXGroup;
+			children = (
+				FB1B98D023D6A3BD00D50F69 /* DSTransitionTests.m */,
+			);
+			name = L2Tests;
 			sourceTree = "<group>";
 		};
 		FBEA6EE422C2ADC300CBCA77 /* ReorderTest */ = {
@@ -2489,11 +2518,10 @@
 				FBBDF423226B6E770081D673 /* DSBigNumberTests.m in Sources */,
 				FBE07DD32467440200A1079C /* DSChainedSigningTests.m in Sources */,
 				2A7DCCAC20D9474F0097049F /* DSBIP39Tests.m in Sources */,
-				FB1DCE6524D7282F0094F776 /* DSReorgTests.m in Sources */,
+				FB1DCE6524D7282F0094F776 /* DSChainTests.m in Sources */,
 				2A1ECBDF20D8F7DB000177D8 /* DSTransactionTests.m in Sources */,
 				2A1ECBD920D8B327000177D8 /* DSHashTests.m in Sources */,
 				2A7DCCB420DA198F0097049F /* DSPaymentProtocolTests.m in Sources */,
-				6003F5BC195388D20070C39A /* Tests.m in Sources */,
 				FBAF79792385CA0200F4944E /* DSSparseMerkleTreeTests.m in Sources */,
 				2AF7296E22789C5C001D2D21 /* DSIESEncryptedDataTests.mm in Sources */,
 				2A90EDAA2268C15D00D95B6B /* DSUInt256IndexPathTests.m in Sources */,
