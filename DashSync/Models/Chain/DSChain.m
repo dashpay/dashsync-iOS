@@ -2037,7 +2037,7 @@ static dispatch_once_t devnetToken = 0;
             return TRUE;
         }
         
-        DSDLog(@"potential chain fork to height %d", block.height);
+        DSDLog(@"potential chain fork to height %d isTerminalBlock %@", block.height,isTerminalBlock?@"TRUE":@"FALSE");
         if (isTerminalBlock) {
             @synchronized (self.mTerminalBlocks) {
                 self.mTerminalBlocks[blockHash] = block;
@@ -2057,11 +2057,31 @@ static dispatch_once_t devnetToken = 0;
             self.lastTerminalBlock = block;
             if (block.height == self.estimatedBlockHeight) syncDone = YES;
         } else {
+            
+            if (phase == DSChainSyncPhase_ChainSync || phase == DSChainSyncPhase_Synced) {
+                @synchronized (self.mTerminalBlocks) {
+                    self.mTerminalBlocks[blockHash] = block;
+                }
+            }
+            
             @synchronized (self.mSyncBlocks) {
                 self.mSyncBlocks[blockHash] = block;
             }
+
             if (uint256_supeq(self.lastSyncBlock.chainWork, block.chainWork)) return TRUE; // if fork is shorter than main chain, ignore it for now
             DSDLog(@"found sync chain fork on height %d", block.height);
+            if ((phase == DSChainSyncPhase_ChainSync || phase == DSChainSyncPhase_Synced) && !uint256_supeq(self.lastTerminalBlock.chainWork, block.chainWork)) {
+                DSBlock *b = block, *b2 = self.lastTerminalBlock;
+                
+                while (b && b2 && ! uint256_eq(b.blockHash, b2.blockHash)) { // walk back to where the fork joins the main chain
+                    b = self.mTerminalBlocks[b.prevBlockValue];
+                    if (b.height < b2.height) b2 = self.mTerminalBlocks[b2.prevBlockValue];
+                }
+                
+                DSDLog(@"reorganizing terminal chain from height %d, new height is %d", b.height, block.height);
+                
+                self.lastTerminalBlock = block;
+            }
             
             DSBlock *b = block, *b2 = self.lastSyncBlock;
             
