@@ -1441,7 +1441,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         }];
     } else if (queryStep & DSBlockchainIdentityQueryStep_IncomingContactRequests) {
         dispatch_group_enter(dispatchGroup);
-        [self fetchIncomingContactRequests:^(BOOL success, NSArray<NSError *> *errors) {
+        [self fetchIncomingContactRequestsInContext:context withCompletion:^(BOOL success, NSArray<NSError *> *errors) {
             failureStep |= success & DSBlockchainIdentityQueryStep_IncomingContactRequests;
             if ([errors count]) {
                 [groupedErrors addObjectsFromArray:errors];
@@ -1452,7 +1452,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         
 //    if (queryStep & DSBlockchainIdentityQueryStep_IncomingContactRequests) {
 //        dispatch_group_enter(dispatchGroup);
-//        [self fetchIncomingContactRequests:^(BOOL success, NSArray<NSError *> *errors) {
+//        [self fetchIncomingContactRequestsInContext:context withCompletion:^(BOOL success, NSArray<NSError *> *errors) {
 //            failureStep |= success & DSBlockchainIdentityQueryStep_IncomingContactRequests;
 //            if ([errors count]) {
 //                [groupedErrors addObjectsFromArray:errors];
@@ -2783,7 +2783,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 //                   }
         }];
         
-        [self fetchOutgoingContactRequests:^(BOOL success, NSArray<NSError *> * _Nonnull errors) {
+        [self fetchOutgoingContactRequestsInContext:context withCompletion:^(BOOL success, NSArray<NSError *> * _Nonnull errors) {
            if (completion) {
                dispatch_async(dispatch_get_main_queue(), ^{
                    completion(success,errors);
@@ -3184,7 +3184,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 }
 
 - (void)fetchOutgoingContactRequests:(void (^)(BOOL success,  NSArray<NSError *> *errors))completion {
-    [self fetchIncomingContactRequestsInContext:self.platformContext withCompletion:completion];
+    [self fetchOutgoingContactRequestsInContext:self.platformContext withCompletion:completion];
 }
 
 - (void)fetchOutgoingContactRequestsInContext:(NSManagedObjectContext*)context withCompletion:(void (^)(BOOL success,  NSArray<NSError *> *errors))completion {
@@ -3438,17 +3438,16 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     }];
 }
 
--(void)addFriendship:(DSPotentialOneWayFriendship*)friendship inContext:(NSManagedObjectContext*)parentContext completion:(void (^)(BOOL success, NSError * error))completion  {
+-(void)addFriendship:(DSPotentialOneWayFriendship*)friendship inContext:(NSManagedObjectContext*)context completion:(void (^)(BOOL success, NSError * error))completion  {
     
     //DSFriendRequestEntity * friendRequestEntity = [friendship outgoingFriendRequestForDashpayUserEntity:friendship.destinationBlockchainIdentity.matchingDashpayUser];
-    NSManagedObjectContext * childContext = [parentContext createChildContext];
-    DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObjectInContext:childContext];
-    friendRequestEntity.sourceContact = [friendship.sourceBlockchainIdentity matchingDashpayUserInContext:childContext];
-    friendRequestEntity.destinationContact = [friendship.destinationBlockchainIdentity matchingDashpayUserInContext:childContext];
+    DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObjectInContext:context];
+    friendRequestEntity.sourceContact = [friendship.sourceBlockchainIdentity matchingDashpayUserInContext:context];
+    friendRequestEntity.destinationContact = [friendship.destinationBlockchainIdentity matchingDashpayUserInContext:context];
     friendRequestEntity.timestamp = friendship.createdAt;
     NSAssert(friendRequestEntity.sourceContact != friendRequestEntity.destinationContact, @"This must be different contacts");
 
-    DSAccountEntity * accountEntity = [DSAccountEntity accountEntityForWalletUniqueID:self.wallet.uniqueIDString index:0 onChain:self.chain inContext:childContext];
+    DSAccountEntity * accountEntity = [DSAccountEntity accountEntityForWalletUniqueID:self.wallet.uniqueIDString index:0 onChain:self.chain inContext:context];
 
     friendRequestEntity.account = accountEntity;
 
@@ -3476,15 +3475,15 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         
         NSAssert(friendRequestEntity.derivationPath, @"derivation path must be present");
         
-        DSDashpayUserEntity * dashpayUserInChildContext = [self matchingDashpayUserInContext:childContext];
+        DSDashpayUserEntity * dashpayUserInChildContext = [self matchingDashpayUserInContext:context];
         
         [dashpayUserInChildContext addOutgoingRequestsObject:friendRequestEntity];
         
-        if ([[[friendship.destinationBlockchainIdentity matchingDashpayUserInContext:childContext].outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact == %@",dashpayUserInChildContext]] count]) {
-            [dashpayUserInChildContext addFriendsObject:[friendship.destinationBlockchainIdentity matchingDashpayUserInContext:childContext]];
+        if ([[[friendship.destinationBlockchainIdentity matchingDashpayUserInContext:context].outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact == %@",dashpayUserInChildContext]] count]) {
+            [dashpayUserInChildContext addFriendsObject:[friendship.destinationBlockchainIdentity matchingDashpayUserInContext:context]];
         }
         NSError * savingError = nil;
-        [childContext save:&savingError];
+        [context save:&savingError];
         [self.chain.chainManager.transactionManager updateTransactionsBloomFilter];
         if (completion) {
             completion(savingError?NO:YES,savingError);
