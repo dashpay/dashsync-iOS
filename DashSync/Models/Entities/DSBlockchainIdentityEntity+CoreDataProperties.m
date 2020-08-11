@@ -30,6 +30,5 @@
 @dynamic lastCheckedProfileTimestamp;
 @dynamic lastCheckedIncomingContactsTimestamp;
 @dynamic lastCheckedOutgoingContactsTimestamp;
-@dynamic lastCheckedFriendshipsTimestamp;
 
 @end

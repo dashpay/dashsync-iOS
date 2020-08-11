@@ -118,7 +118,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 @property (nonatomic, assign) uint64_t lastCheckedProfileTimestamp;
 @property (nonatomic, assign) uint64_t lastCheckedIncomingContactsTimestamp;
 @property (nonatomic, assign) uint64_t lastCheckedOutgoingContactsTimestamp;
-@property (nonatomic, assign) uint64_t lastCheckedFriendshipsTimestamp;
 
 @end
 
@@ -160,7 +159,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     
     _lastCheckedProfileTimestamp = blockchainIdentityEntity.lastCheckedProfileTimestamp;
     _lastCheckedUsernamesTimestamp = blockchainIdentityEntity.lastCheckedUsernamesTimestamp;
-    _lastCheckedFriendshipsTimestamp = blockchainIdentityEntity.lastCheckedFriendshipsTimestamp;
     _lastCheckedIncomingContactsTimestamp = blockchainIdentityEntity.lastCheckedIncomingContactsTimestamp;
     _lastCheckedOutgoingContactsTimestamp = blockchainIdentityEntity.lastCheckedOutgoingContactsTimestamp;
     
@@ -3150,7 +3148,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         return;
     }
     __weak typeof(self) weakSelf = self;
-    [self.DAPINetworkService getDashpayIncomingContactRequestsForUserId:self.uniqueIdString since:self.lastCheckedFriendshipsTimestamp - HOUR_TIME_INTERVAL success:^(NSArray<NSDictionary *> * _Nonnull documents) {
+    [self.DAPINetworkService getDashpayIncomingContactRequestsForUserId:self.uniqueIdString since:self.lastCheckedIncomingContactsTimestamp?(self.lastCheckedIncomingContactsTimestamp - HOUR_TIME_INTERVAL):0 success:^(NSArray<NSDictionary *> * _Nonnull documents) {
         //todo chance the since parameter
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
@@ -3211,7 +3209,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         return;
     }
     __weak typeof(self) weakSelf = self;
-    [self.DAPINetworkService getDashpayOutgoingContactRequestsForUserId:self.uniqueIdString since:self.lastCheckedFriendshipsTimestamp - HOUR_TIME_INTERVAL success:^(NSArray<NSDictionary *> * _Nonnull documents) {
+    [self.DAPINetworkService getDashpayOutgoingContactRequestsForUserId:self.uniqueIdString since:self.lastCheckedOutgoingContactsTimestamp?(self.lastCheckedOutgoingContactsTimestamp - HOUR_TIME_INTERVAL):0 success:^(NSArray<NSDictionary *> * _Nonnull documents) {
         //todo chance the since parameter
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
@@ -3677,11 +3675,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             entity.dashpaySyncronizationBlockHash = uint256_data(self.dashpaySyncronizationBlockHash);
             changeOccured = YES;
             [updateEvents addObject:DSBlockchainIdentityUpdateEventDashpaySyncronizationBlockHash];
-        }
-        
-        if (entity.lastCheckedFriendshipsTimestamp != self.lastCheckedFriendshipsTimestamp) {
-            entity.lastCheckedFriendshipsTimestamp = self.lastCheckedFriendshipsTimestamp;
-            changeOccured = YES;
         }
         
         if (entity.lastCheckedUsernamesTimestamp != self.lastCheckedUsernamesTimestamp) {

@@ -31,7 +31,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint64_t lastCheckedProfileTimestamp;
 @property (nonatomic, assign) uint64_t lastCheckedIncomingContactsTimestamp;
 @property (nonatomic, assign) uint64_t lastCheckedOutgoingContactsTimestamp;
-@property (nonatomic, assign) uint64_t lastCheckedFriendshipsTimestamp;
 
 @end
 
