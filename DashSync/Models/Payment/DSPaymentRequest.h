@@ -65,6 +65,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)isValidAsDashpayPaymentRequestForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity onAccount:(DSAccount*)account inContext:(NSManagedObjectContext*)context;
 
+- (NSString *)paymentAddressForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity onAccount:(DSAccount*)account fallbackToPaymentAddressIfIssue:(BOOL)fallbackToPaymentAddressIfIssue inContext:(NSManagedObjectContext*)context;
+
 // fetches a BIP70 request over HTTP and calls completion block
 // https://github.com/bitcoin/bips/blob/master/bip-0070.mediawiki
 + (void)fetch:(NSString *)url scheme:(NSString*)scheme onChain:(DSChain*)chain timeout:(NSTimeInterval)timeout
