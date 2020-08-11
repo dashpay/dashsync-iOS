@@ -41,7 +41,7 @@
 
 @interface DSSporkManager()
 
-@property (nonatomic,strong) NSMutableDictionary <NSNumber*,DSSpork*> * sporkDictionary;
+@property (nonatomic,strong) NSMutableDictionary <NSNumber*,DSSpork*> * mSporkDictionary;
 @property (nonatomic,strong) NSMutableArray * sporkHashesMarkedForRetrieval;
 @property (nonatomic,strong) DSChain * chain;
 @property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
@@ -76,7 +76,7 @@
             [sporkHashesMarkedForRetrieval addObject:sporkHashEntity.sporkHash];
         }
     }];
-    _sporkDictionary = sporkDictionary;
+    self.mSporkDictionary = [sporkDictionary mutableCopy];
     _sporkHashesMarkedForRetrieval = sporkHashesMarkedForRetrieval;
     [self checkTriggers];
     return self;
@@ -123,7 +123,7 @@
 }
 
 -(NSDictionary*)sporkDictionary {
-    return [_sporkDictionary copy];
+    return [_mSporkDictionary copy];
 }
 
 // MARK: - Spork Sync
@@ -214,15 +214,15 @@
 }
 
 -(void)checkTriggers {
-    for (NSNumber * key in _sporkDictionary) {
-        DSSpork * spork = _sporkDictionary[key];
+    for (NSNumber * key in _mSporkDictionary) {
+        DSSpork * spork = _mSporkDictionary[key];
         [self checkTriggersForSpork:spork forKeyIdentifier:spork.identifier];
     }
 }
 
 -(void)checkTriggersForSpork:(DSSpork*)spork forKeyIdentifier:(DSSporkIdentifier)sporkIdentifier {
     BOOL changed = FALSE; //some triggers will require a change, others have different requirements
-    if (![_sporkDictionary objectForKey:@(sporkIdentifier)] || ([_sporkDictionary objectForKey:@(sporkIdentifier)] && (_sporkDictionary[@(sporkIdentifier)].value != spork.value))) {
+    if (![_mSporkDictionary objectForKey:@(sporkIdentifier)] || ([_mSporkDictionary objectForKey:@(sporkIdentifier)] && (_mSporkDictionary[@(sporkIdentifier)].value != spork.value))) {
         changed = TRUE;
     }
     switch (sporkIdentifier) {
@@ -241,14 +241,18 @@
 }
 
 -(void)setSporkValue:(DSSpork*)spork forKeyIdentifier:(DSSporkIdentifier)sporkIdentifier {
-    [self checkTriggersForSpork:spork forKeyIdentifier:sporkIdentifier];
-    _sporkDictionary[@(sporkIdentifier)] = spork;
+    @synchronized (self) {
+        [self checkTriggersForSpork:spork forKeyIdentifier:sporkIdentifier];
+        _mSporkDictionary[@(sporkIdentifier)] = spork;
+    }
 }
 
 
 -(void)wipeSporkInfo {
-    _sporkDictionary = [NSMutableDictionary dictionary];
-    [self stopGettingSporks];
+    @synchronized (self) {
+        _mSporkDictionary = [NSMutableDictionary dictionary];
+        [self stopGettingSporks];
+    }
 }
 
 @end
