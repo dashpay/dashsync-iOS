@@ -309,6 +309,41 @@
     }
 }
 
+- (NSString *)paymentAddressForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity onAccount:(DSAccount*)account fallbackToPaymentAddressIfIssue:(BOOL)fallbackToPaymentAddressIfIssue inContext:(NSManagedObjectContext*)context
+{
+    if (!blockchainIdentity || !self.dashpayUsername) {
+        if (fallbackToPaymentAddressIfIssue) {
+            return [self paymentAddress];
+        } else {
+            return nil;
+        }
+    }
+    __block DSIncomingFundsDerivationPath * friendshipDerivationPath = nil;
+    [context performBlockAndWait:^{
+
+        DSDashpayUserEntity * dashpayUserEntity = [blockchainIdentity matchingDashpayUserInContext:context];
+        
+        for (DSFriendRequestEntity * friendRequest in dashpayUserEntity.incomingRequests) {
+            if ([[friendRequest.sourceContact.associatedBlockchainIdentity.dashpayUsername stringValue] isEqualToString:self.dashpayUsername]) {
+                friendshipDerivationPath = [account derivationPathForFriendshipWithIdentifier:friendRequest.friendshipIdentifier];
+            }
+        }
+        
+        
+    }];
+    
+
+    
+    if (!friendshipDerivationPath) {
+        if (fallbackToPaymentAddressIfIssue) {
+            return [self paymentAddress];
+        } else {
+            return nil;
+        }
+    }
+    return friendshipDerivationPath.receiveAddress;
+}
+
 - (DSPaymentProtocolRequest *)protocolRequestForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity onAccount:(DSAccount*)account inContext:(NSManagedObjectContext*)context
 {
     if (!blockchainIdentity || !self.dashpayUsername) {

@@ -64,15 +64,11 @@
     if (!self.hasChanges) return nil;
     NSUInteger taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
     NSError * error = nil;
-    @try {
-        if (! [self save:&error]) { // persist changes
-                DSDLog(@"%s: %@", __func__, error);
-        #if DEBUG
-                abort();
-        #endif
-            }
-    } @catch (NSException *exception) {
-        DSDLog(@"Saving exception %@",exception.description);
+    if (! [self save:&error]) { // persist changes
+            DSDLog(@"%s: %@", __func__, error);
+    #if DEBUG
+            abort();
+    #endif
     }
     [[UIApplication sharedApplication] endBackgroundTask:taskId];
     return error;
