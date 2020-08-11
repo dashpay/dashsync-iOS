@@ -84,6 +84,7 @@
     static dispatch_once_t onceViewToken;
     dispatch_once(&onceViewToken, ^{
         [self.persistentContainer.viewContext setMergePolicy:NSMergeByPropertyObjectTrumpMergePolicy];
+        [self.persistentContainer.viewContext setAutomaticallyMergesChangesFromParent:YES];
     });
     return self.persistentContainer.viewContext;
 }
