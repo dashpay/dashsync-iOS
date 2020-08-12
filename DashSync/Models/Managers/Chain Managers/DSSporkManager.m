@@ -200,7 +200,11 @@
             @autoreleasepool {
                 DSSporkHashEntity * hashEntity = [DSSporkHashEntity sporkHashEntityWithHash:[NSData dataWithUInt256:spork.sporkHash] onChainEntity:[spork.chain chainEntityInContext:self.managedObjectContext]];
                 if (hashEntity) {
-                    [[DSSporkEntity managedObjectInContext:self.managedObjectContext] setAttributesFromSpork:spork withSporkHash:hashEntity]; // add new peers
+                    DSSporkEntity * sporkEntity = hashEntity.spork;
+                    if (!sporkEntity) {
+                        sporkEntity = [DSSporkEntity managedObjectInContext:self.managedObjectContext];
+                    }
+                    [sporkEntity setAttributesFromSpork:spork withSporkHash:hashEntity]; // add new peers
                     [self.managedObjectContext ds_save];
                 } else {
                     DSDLog(@"Spork was received that wasn't requested");
