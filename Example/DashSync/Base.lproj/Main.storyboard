@@ -1573,7 +1573,7 @@
         <scene sceneID="pe9-5R-h86">
             <objects>
                 <tableViewController title="Explorer" id="dcV-bW-JbZ" customClass="DSBlockchainExplorerViewController" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="142" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="VfN-PC-m1M">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="177" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="VfN-PC-m1M">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -1586,11 +1586,11 @@
                             </connections>
                         </searchBar>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="MerkleBlockCellIdentifier" rowHeight="142" id="Dr4-1h-GI5" userLabel="MerkleBlockCell" customClass="DSMerkleBlockTableViewCell">
-                                <rect key="frame" x="0.0" y="72" width="375" height="142"/>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="MerkleBlockCellIdentifier" rowHeight="177" id="Dr4-1h-GI5" userLabel="MerkleBlockCell" customClass="DSMerkleBlockTableViewCell">
+                                <rect key="frame" x="0.0" y="72" width="375" height="177"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Dr4-1h-GI5" id="EFY-Fy-9Ye">
-                                    <rect key="frame" x="0.0" y="0.0" width="375" height="142"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="177"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Height" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EOK-qI-UWg">
@@ -1611,8 +1611,14 @@
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Chain work" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="W5T-OT-57f">
+                                            <rect key="frame" x="16" y="105" width="86" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Hash" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="8" translatesAutoresizingMaskIntoConstraints="NO" id="PTN-nE-X7f">
-                                            <rect key="frame" x="16" y="105" width="343" height="21"/>
+                                            <rect key="frame" x="16" y="134" width="343" height="21"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
@@ -1635,6 +1641,12 @@
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="00000" textAlignment="right" lineBreakMode="headTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="XSl-XQ-Yly">
+                                            <rect key="frame" x="307.33333333333331" y="105" width="51.666666666666686" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
                                     </subviews>
                                     <constraints>
                                         <constraint firstAttribute="trailing" secondItem="PTN-nE-X7f" secondAttribute="trailing" constant="16" id="4Bj-4n-E5E"/>
@@ -1644,14 +1656,19 @@
                                         <constraint firstItem="EOK-qI-UWg" firstAttribute="top" secondItem="EFY-Fy-9Ye" secondAttribute="top" constant="16" id="CFx-lA-VMD"/>
                                         <constraint firstItem="PTN-nE-X7f" firstAttribute="leading" secondItem="EFY-Fy-9Ye" secondAttribute="leading" constant="16" id="DyM-5N-dtt"/>
                                         <constraint firstItem="G0n-q5-Azn" firstAttribute="top" secondItem="EFY-Fy-9Ye" secondAttribute="top" constant="16" id="EAz-Ty-eZ5"/>
-                                        <constraint firstItem="PTN-nE-X7f" firstAttribute="top" secondItem="hjU-DO-1On" secondAttribute="bottom" constant="8" id="Jg9-hC-Xb6"/>
+                                        <constraint firstItem="XSl-XQ-Yly" firstAttribute="trailing" secondItem="dgI-2R-lK1" secondAttribute="trailing" id="Fy2-fh-EHQ"/>
+                                        <constraint firstItem="W5T-OT-57f" firstAttribute="leading" secondItem="hjU-DO-1On" secondAttribute="leading" id="H0G-E0-CKY"/>
+                                        <constraint firstItem="XSl-XQ-Yly" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="W5T-OT-57f" secondAttribute="trailing" constant="10" id="ISQ-FM-9D1"/>
                                         <constraint firstItem="G0n-q5-Azn" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="EOK-qI-UWg" secondAttribute="trailing" constant="10" id="JlN-pY-PiN"/>
                                         <constraint firstItem="hjU-DO-1On" firstAttribute="leading" secondItem="tor-v5-8qG" secondAttribute="leading" id="RUV-08-4J5"/>
+                                        <constraint firstItem="XSl-XQ-Yly" firstAttribute="firstBaseline" secondItem="W5T-OT-57f" secondAttribute="firstBaseline" id="TFj-lv-bMR"/>
                                         <constraint firstItem="hjU-DO-1On" firstAttribute="top" secondItem="tor-v5-8qG" secondAttribute="bottom" constant="8" id="UIv-Ye-jQb"/>
                                         <constraint firstItem="tor-v5-8qG" firstAttribute="leading" secondItem="EFY-Fy-9Ye" secondAttribute="leading" constant="16" id="ch2-77-Svf"/>
                                         <constraint firstAttribute="trailing" secondItem="G0n-q5-Azn" secondAttribute="trailing" constant="16" id="dMq-4I-0pb"/>
+                                        <constraint firstItem="PTN-nE-X7f" firstAttribute="top" secondItem="W5T-OT-57f" secondAttribute="bottom" constant="8" id="f5X-mp-mPs"/>
                                         <constraint firstItem="AIC-ml-dJH" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="tor-v5-8qG" secondAttribute="trailing" constant="10" id="ftJ-bT-pDM"/>
                                         <constraint firstItem="tor-v5-8qG" firstAttribute="top" secondItem="EOK-qI-UWg" secondAttribute="bottom" constant="10" id="kjT-J9-6bi"/>
+                                        <constraint firstItem="W5T-OT-57f" firstAttribute="top" secondItem="hjU-DO-1On" secondAttribute="bottom" constant="8" id="pjd-kT-7N0"/>
                                         <constraint firstAttribute="trailing" secondItem="AIC-ml-dJH" secondAttribute="trailing" constant="16" id="qqk-mk-1wD"/>
                                         <constraint firstItem="AIC-ml-dJH" firstAttribute="top" secondItem="G0n-q5-Azn" secondAttribute="bottom" constant="10" id="vZm-J2-Wl9"/>
                                     </constraints>
@@ -1660,6 +1677,7 @@
                                     <outlet property="blockHashLabel" destination="PTN-nE-X7f" id="NHR-Ng-w8x"/>
                                     <outlet property="blockHeightLabel" destination="G0n-q5-Azn" id="BkQ-IM-UJj"/>
                                     <outlet property="chainLockedLabel" destination="dgI-2R-lK1" id="3QW-Ch-OPU"/>
+                                    <outlet property="chainWorkLabel" destination="XSl-XQ-Yly" id="PQA-JX-CpW"/>
                                     <outlet property="timestampLabel" destination="AIC-ml-dJH" id="csq-GD-XdM"/>
                                 </connections>
                             </tableViewCell>

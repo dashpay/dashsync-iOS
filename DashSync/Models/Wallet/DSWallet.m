@@ -214,7 +214,7 @@
                 fundsDerivationPath.wallet = self;
                 fundsDerivationPath.account = account;
                 //DSDLog(@"%@",blockchainIdentity.matchingDashpayUser.outgoingRequests);
-                [account addIncomingDerivationPath:fundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier];
+                [account addIncomingDerivationPath:fundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier inContext:self.chain.chainManagedObjectContext];
                 [usedFriendshipIdentifiers addObject:friendRequest.friendshipIdentifier];
             }
         }
@@ -227,7 +227,7 @@
                 DSIncomingFundsDerivationPath * fundsDerivationPath = [account derivationPathForFriendshipWithIdentifier:friendRequest.friendshipIdentifier];
                 if (fundsDerivationPath) {
                     //both contacts are on device
-                    [account addOutgoingDerivationPath:fundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier];
+                    [account addOutgoingDerivationPath:fundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier inContext:self.chain.chainManagedObjectContext];
                 } else {
                     DSDerivationPathEntity * derivationPathEntity = friendRequest.derivationPath;
                     
@@ -235,7 +235,7 @@
                                                                        externalDerivationPathWithExtendedPublicKeyUniqueID:derivationPathEntity.publicKeyIdentifier withDestinationBlockchainIdentityUniqueId:friendRequest.destinationContact.associatedBlockchainIdentity.uniqueID.UInt256 sourceBlockchainIdentityUniqueId:friendRequest.sourceContact.associatedBlockchainIdentity.uniqueID.UInt256 onChain:self.chain];
                     incomingFundsDerivationPath.wallet = self;
                     incomingFundsDerivationPath.account = account;
-                    [account addOutgoingDerivationPath:incomingFundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier];
+                    [account addOutgoingDerivationPath:incomingFundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier inContext:self.chain.chainManagedObjectContext];
                 }
             }
         }

@@ -3364,7 +3364,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                                 [matchingDashpayUserInContext addFriendsObject:friendRequest.sourceContact];
                             }
                             
-                            [account addIncomingDerivationPath:incomingFundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier];
+                            [account addIncomingDerivationPath:incomingFundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier inContext:context];
                             [context ds_save];
                             [self.chain.chainManager.transactionManager updateTransactionsBloomFilter];
                         } else {
@@ -3460,13 +3460,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             NSAssert(friendship.destinationBlockchainIdentity.wallet, @"Wallet should be known");
             DSAccount * recipientAccount = [friendship.destinationBlockchainIdentity.wallet accountWithNumber:0];
             NSAssert(recipientAccount, @"Recipient Wallet should exist");
-            [recipientAccount addIncomingDerivationPath:incomingFundsDerivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
+            [recipientAccount addIncomingDerivationPath:incomingFundsDerivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier inContext:context];
             if (recipientAccount != account) {
-                [account addOutgoingDerivationPath:incomingFundsDerivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
+                [account addOutgoingDerivationPath:incomingFundsDerivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier inContext:context];
             }
         } else {
             //todo update outgoing derivation paths to incoming derivation paths as blockchain users come in
-            [account addIncomingDerivationPath:incomingFundsDerivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
+            [account addIncomingDerivationPath:incomingFundsDerivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier inContext:context];
         }
         
         friendRequestEntity.derivationPath = [friendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequestEntity];
@@ -3595,7 +3595,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     [derivationPath storeExternalDerivationPathExtendedPublicKeyToKeyChain];
     
     //incoming request uses an outgoing derivation path
-    [account addOutgoingDerivationPath:derivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
+    [account addOutgoingDerivationPath:derivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier inContext:dashpayUserEntity.managedObjectContext];
     
     DSDashpayUserEntity * matchingDashpayUser = [self matchingDashpayUserInContext:dashpayUserEntity.managedObjectContext];
     [matchingDashpayUser addIncomingRequestsObject:friendRequestEntity];
