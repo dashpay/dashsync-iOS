@@ -360,24 +360,24 @@
     [self.mFundDerivationPaths addObject:derivationPath];
 }
 
--(void)addIncomingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath forFriendshipIdentifier:(NSData*)friendshipIdentifier {
+-(void)addIncomingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath forFriendshipIdentifier:(NSData*)friendshipIdentifier inContext:(NSManagedObjectContext*)context {
     NSParameterAssert(derivationPath);
     NSParameterAssert(friendshipIdentifier);
     NSAssert(derivationPath.length, @"derivation path must have a length");
     derivationPath.account = self;
     [self addDerivationPath:derivationPath];
     [self.mContactIncomingFundDerivationPathsDictionary setObject:derivationPath forKey:friendshipIdentifier];
-    [derivationPath loadAddresses];
+    [derivationPath loadAddressesInContext:context];
     [self updateBalance];
 }
 
--(void)addOutgoingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath forFriendshipIdentifier:(NSData*)friendshipIdentifier {
+-(void)addOutgoingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath forFriendshipIdentifier:(NSData*)friendshipIdentifier inContext:(NSManagedObjectContext*)context {
     NSParameterAssert(derivationPath);
     NSParameterAssert(friendshipIdentifier);
     NSAssert(derivationPath.sourceIsLocal || !derivationPath.length, @"derivation path must not have a length unless it is on device");
     derivationPath.account = self;
     [self.mContactOutgoingFundDerivationPathsDictionary setObject:derivationPath forKey:friendshipIdentifier];
-    [derivationPath loadAddresses];
+    [derivationPath loadAddressesInContext:context];
 }
 
 -(void)addDerivationPathsFromArray:(NSArray<DSDerivationPath *> *)derivationPaths {

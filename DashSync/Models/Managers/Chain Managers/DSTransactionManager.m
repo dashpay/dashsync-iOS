@@ -1371,7 +1371,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
                 [self.totalTransactionData appendUInt16:(block.height - 499)/500];
                 [self.totalTransactionData appendUInt16:self.totalTransactionsSum/self.totalTransactionsQueue.count];
                 [self.totalTransactionData appendUInt16:self.totalTransactionsMax];
-                NSLog(@"%d;%lu;%u",block.height - 499,self.totalTransactionsSum/self.totalTransactionsQueue.count,self.totalTransactionsMax);
+                DSDLog(@"%d;%lu;%u",block.height - 499,self.totalTransactionsSum/self.totalTransactionsQueue.count,self.totalTransactionsMax);
 
             }
             if (block.height == self.chain.lastTerminalBlockHeight) {
