@@ -35,5 +35,6 @@
 @dynamic syncBlockHeight;
 @dynamic syncLocators;
 @dynamic syncBlockTimestamp;
+@dynamic lastChainLock;
 
 @end

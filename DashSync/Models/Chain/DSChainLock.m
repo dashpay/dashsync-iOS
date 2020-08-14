@@ -26,7 +26,7 @@
 #import "NSMutableData+Dash.h"
 #import "NSData+Bitcoin.h"
 #import "NSData+Dash.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "DSSporkManager.h"
 #import "DSChainManager.h"
 #import "DSMasternodeManager.h"
@@ -163,6 +163,10 @@
     if (self.signatureVerified) {
         self.intendedQuorum = quorumEntry;
         self.quorumVerified = self.intendedQuorum.verified;
+        //We should also set the chain's last chain lock
+        if (!self.chain.lastChainLock || self.chain.lastChainLock.height < self.height) {
+            self.chain.lastChainLock = self;
+        }
     } else if (quorumEntry.verified && offset == 8) {
         //try again a few blocks more in the past
         DSDLog(@"trying with offset 0");

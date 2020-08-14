@@ -62,7 +62,7 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
     DSChainSyncPhase_Synced,
 };
 
-@class DSChain, DSChainEntity, DSChainManager, DSWallet, DSMerkleBlock, DSBlock, DSFullBlock, DSPeer, DSDerivationPath, DSTransaction, DSAccount, DSSimplifiedMasternodeEntry, DSBlockchainIdentity, DSBloomFilter, DSProviderRegistrationTransaction, DSMasternodeList, DPContract, DSCheckpoint;
+@class DSChain, DSChainEntity, DSChainManager, DSWallet, DSMerkleBlock, DSBlock, DSFullBlock, DSPeer, DSDerivationPath, DSTransaction, DSAccount, DSSimplifiedMasternodeEntry, DSBlockchainIdentity, DSBloomFilter, DSProviderRegistrationTransaction, DSMasternodeList, DPContract, DSCheckpoint, DSChainLock;
 
 @protocol DSChainDelegate;
 
@@ -337,6 +337,9 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
 - (uint32_t)heightForBlockHash:(UInt256)blockhash;
 
 // MARK: Chain Lock
+
+/*! @brief Returns the last chainLock known by the chain at the heighest height.  */
+@property (nonatomic, readonly) DSChainLock * lastChainLock;
 
 /*! @brief Returns if there is a block at the following height that is confirmed.  */
 - (BOOL)blockHeightChainLocked:(uint32_t)height;

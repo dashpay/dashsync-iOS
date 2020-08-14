@@ -42,6 +42,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)txHashes;
 - (void)clearOrphans;
 
+// MARK: - ChainLocks
+@property (nonatomic, strong) DSChainLock * lastChainLock;
+
 // MARK: Chain Sync
 
 /*! @brief Returns the hash of the last persisted sync block. The sync block itself most likely is not persisted.  */
