@@ -911,8 +911,8 @@
     else if ([MSG_VERACK isEqual:type]) [self acceptVerackMessage:message];
     else if ([MSG_ADDR isEqual:type]) [self acceptAddrMessage:message];
     else if ([MSG_INV isEqual:type]) [self acceptInvMessage:message];
-    else if ([MSG_TX isEqual:type]) [self acceptTxMessage:message isIxTransaction:NO];
-    else if ([MSG_IX isEqual:type]) [self acceptTxMessage:message isIxTransaction:YES];
+    else if ([MSG_TX isEqual:type]) [self acceptTxMessage:message];
+    else if ([MSG_IX isEqual:type]) [self acceptTxMessage:message];
     else if ([MSG_ISLOCK isEqual:type]) [self acceptIslockMessage:message];
     else if ([MSG_HEADERS isEqual:type]) [self acceptHeadersMessage:message];
     else if ([MSG_GETADDR isEqual:type]) [self acceptGetaddrMessage:message];
@@ -1216,7 +1216,7 @@
             [hash getValue:&h];
             
             dispatch_async(self.delegateQueue, ^{
-                if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasTransactionWithHash:h transactionIsRequestingInstantSendLock:NO];
+                if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasTransactionWithHash:h];
             });
         }
         
@@ -1299,28 +1299,28 @@
     }
 }
 
-- (void)acceptTxMessage:(NSData *)message isIxTransaction:(BOOL)isIxTransaction
+- (void)acceptTxMessage:(NSData *)message
 {
     DSTransaction *tx = [DSTransactionFactory transactionWithMessage:message onChain:self.chain];
     
     if (! tx && ![DSTransactionFactory shouldIgnoreTransactionMessage:message]) {
-        [self error:@"malformed %@ message: %@",isIxTransaction?@"ix":@"tx", message];
+        [self error:@"malformed tx message: %@", message];
         return;
     }
     else if (! self.sentFilter && ! self.sentGetdataTxBlocks) {
-        [self error:@"got %@ message before loading a filter",isIxTransaction?@"ix":@"tx"];
+        [self error:@"got tx message before loading a filter"];
         return;
     }
     
     if (tx) {
         __block DSMerkleBlock * currentBlock = self.currentBlock;
         dispatch_async(self.delegateQueue, ^{
-            [self.transactionDelegate peer:self relayedTransaction:tx inBlock:currentBlock transactionIsRequestingInstantSendLock:isIxTransaction];
+            [self.transactionDelegate peer:self relayedTransaction:tx inBlock:currentBlock];
         });
         #if LOG_FULL_TX_MESSAGE
-            DSDLog(@"%@:%u got %@ %@ %@", self.host, self.port, isIxTransaction?@"ix":@"tx", uint256_obj(tx.txHash),message.hexString);
+            DSDLog(@"%@:%u got tx %@ %@", self.host, self.port, uint256_obj(tx.txHash),message.hexString);
         #else
-            DSDLog(@"%@:%u got %@ %@", self.host, self.port, isIxTransaction?@"ix":@"tx", uint256_obj(tx.txHash));
+            DSDLog(@"%@:%u got tx %@", self.host, self.port, uint256_obj(tx.txHash));
         #endif
     }
 

@@ -223,6 +223,16 @@
 
 // v14
 
+-(void)setChainLockedWithEquivalentBlock:(DSBlock*)block {
+    if (uint256_eq(block.blockHash,self.blockHash)) {
+        self.chainLocked |= block.chainLocked;
+        self.hasUnverifiedChainLock |= block.hasUnverifiedChainLock;
+        if (self.hasUnverifiedChainLock) {
+            self.chainLockAwaitingProcessing = block.chainLockAwaitingProcessing;
+        }
+    }
+}
+
 -(void)setChainLockedWithChainLock:(DSChainLock*)chainLock {
     if (!chainLock) {
         self.chainLocked = FALSE;

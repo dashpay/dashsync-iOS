@@ -52,7 +52,7 @@
             BOOL addingBlockIssue = NO;
             for (DSFullBlock * block in blocks) {
                 for (DSTransaction * transaction in block.transactions) {
-                    [self.chainManager.transactionManager peer:nil relayedTransaction:transaction inBlock:block transactionIsRequestingInstantSendLock:NO];
+                    [self.chainManager.transactionManager peer:nil relayedTransaction:transaction inBlock:block];
                 }
                 addingBlockIssue |= ![self.chainManager.chain addMinedFullBlock:block];
             }

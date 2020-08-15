@@ -78,6 +78,8 @@ typedef union _UInt256 UInt256;
 
 - (void)setChainLockedWithChainLock:(DSChainLock*)chainLock;
 
+- (void)setChainLockedWithEquivalentBlock:(DSBlock*)block;
+
 @end
 
 NS_ASSUME_NONNULL_END

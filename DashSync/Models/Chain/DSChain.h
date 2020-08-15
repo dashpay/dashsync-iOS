@@ -341,6 +341,9 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase) {
 /*! @brief Returns the last chainLock known by the chain at the heighest height.  */
 @property (nonatomic, readonly) DSChainLock * lastChainLock;
 
+/*! @brief Adds a chainLock to the chain and applies it corresponding block. It will be applied to both terminal blocks and sync blocks.  */
+- (BOOL)addChainLock:(DSChainLock*)chainLock;
+
 /*! @brief Returns if there is a block at the following height that is confirmed.  */
 - (BOOL)blockHeightChainLocked:(uint32_t)height;
 
