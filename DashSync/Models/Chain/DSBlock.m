@@ -39,14 +39,15 @@
     return self;
 }
 
-- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp height:(uint32_t)height onChain:(DSChain*)chain {
+- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash prevBlock:(UInt256)prevBlock timestamp:(uint32_t)timestamp height:(uint32_t)height onChain:(DSChain*)chain {
     if (! (self = [self initWithVersion:version timestamp:timestamp height:height onChain:chain])) return nil;
     _blockHash = blockHash;
+    _prevBlock = prevBlock;
     return self;
 }
 
-- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp merkleRoot:(UInt256)merkleRoot target:(uint32_t)target chainWork:(UInt256)chainWork height:(uint32_t)height onChain:(DSChain*)chain {
-    if (! (self = [self initWithVersion:version blockHash:blockHash timestamp:timestamp height:height onChain:chain])) return nil;
+- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash prevBlock:(UInt256)prevBlock timestamp:(uint32_t)timestamp merkleRoot:(UInt256)merkleRoot target:(uint32_t)target chainWork:(UInt256)chainWork height:(uint32_t)height onChain:(DSChain*)chain {
+    if (! (self = [self initWithVersion:version blockHash:blockHash prevBlock:prevBlock timestamp:timestamp height:height onChain:chain])) return nil;
     _merkleRoot = merkleRoot;
     _target = target;
     _chainWork = chainWork;
@@ -55,7 +56,7 @@
 
 - (instancetype)initWithCheckpoint:(DSCheckpoint*)checkpoint onChain:(DSChain*)chain {
     NSAssert(!uint256_is_zero(checkpoint.chainWork), @"Chain work must be set");
-    if (! (self = [self initWithVersion:2 blockHash:checkpoint.blockHash timestamp:checkpoint.timestamp merkleRoot:checkpoint.merkleRoot target:checkpoint.target chainWork:checkpoint.chainWork height:checkpoint.height onChain:chain])) return nil;
+    if (! (self = [self initWithVersion:2 blockHash:checkpoint.blockHash prevBlock:UINT256_ZERO timestamp:checkpoint.timestamp merkleRoot:checkpoint.merkleRoot target:checkpoint.target chainWork:checkpoint.chainWork height:checkpoint.height onChain:chain])) return nil;
     return self;
 }
 
@@ -101,9 +102,12 @@
     return d;
 }
 
-- (BOOL)verifyDifficultyWithPreviousBlocks:(NSDictionary *)previousBlocks
+- (BOOL)verifyDifficultyWithPreviousBlocks:(NSDictionary *)previousBlocks rDifficulty:(uint32_t*)difficulty
 {
     uint32_t darkGravityWaveTarget = [self darkGravityWaveTargetWithPreviousBlocks:previousBlocks];
+    if (difficulty) {
+        *difficulty = darkGravityWaveTarget;
+    }
     int32_t diff = self.target - darkGravityWaveTarget;
     if (abs(diff) > 1) {
         DSDLog(@"weird difficulty for block at height %u (off by %u)",self.height,diff);

@@ -1667,7 +1667,7 @@ static dispatch_once_t devnetToken = 0;
         self->_mSyncBlocks = [NSMutableDictionary dictionary];
         
         if (!uint256_is_zero(self.lastPersistedChainSyncBlockHash)) {
-            self->_mSyncBlocks[uint256_obj(self.lastPersistedChainSyncBlockHash)] = [[DSMerkleBlock alloc] initWithVersion:2 blockHash:self.lastPersistedChainSyncBlockHash timestamp:self.lastPersistedChainSyncBlockTimestamp height:self.lastPersistedChainSyncBlockHeight onChain:self];
+            self->_mSyncBlocks[uint256_obj(self.lastPersistedChainSyncBlockHash)] = [[DSMerkleBlock alloc] initWithVersion:2 blockHash:self.lastPersistedChainSyncBlockHash prevBlock:UINT256_ZERO timestamp:self.lastPersistedChainSyncBlockTimestamp height:self.lastPersistedChainSyncBlockHeight onChain:self];
         }
         
         self.checkpointsByHashDictionary = [NSMutableDictionary dictionary];
@@ -1961,11 +1961,23 @@ static dispatch_once_t devnetToken = 0;
 
     
     if (!equivalentTerminalBlock) { //no need to check difficulty if we already have terminal blocks
+        uint32_t foundDifficulty = 0;
         if ((block.height > self.minimumDifficultyBlocks) && (block.height > (lastCheckpoint.height + DGW_PAST_BLOCKS_MAX)) &&
-            ![block verifyDifficultyWithPreviousBlocks:isTerminalBlock?self.mTerminalBlocks:self.mSyncBlocks]) {
-            uint32_t foundDifficulty = [block darkGravityWaveTargetWithPreviousBlocks:isTerminalBlock?self.mTerminalBlocks:self.mSyncBlocks];
+            ![block verifyDifficultyWithPreviousBlocks:isTerminalBlock?self.mTerminalBlocks:self.mSyncBlocks rDifficulty:&foundDifficulty]) {
             DSDLog(@"%@:%d relayed block with invalid difficulty height %d target %x foundTarget %x, blockHash: %@", peer.host, peer.port,
                    block.height,block.target,foundDifficulty, blockHash);
+            
+            if (peer) {
+                [self.chainManager chain:self badBlockReceivedFromPeer:peer];
+            }
+            return FALSE;
+        }
+        
+        UInt256 difficulty = setCompactLE(block.target);
+        if (uint256_sup(block.blockHash, difficulty)) {
+            DSDLog(@"%@:%d relayed block with invalid block hash %d target %x, blockHash: %@ difficulty: %@", peer.host, peer.port,
+                   block.height,block.target, uint256_bin(block.blockHash),uint256_bin(difficulty));
+            
             if (peer) {
                 [self.chainManager chain:self badBlockReceivedFromPeer:peer];
             }

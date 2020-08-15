@@ -877,6 +877,88 @@
     XCTAssertEqual(self.chain.lastSyncBlockHeight,150);
 }
 
+- (void)testChaintipBadExtension {
+    // This is an example of a functional test case.
+    [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+    DSPeer * peer = [DSPeer peerWithHost:@"0.1.2.3:3000" onChain:self.chain];
+    [self.chain setEstimatedBlockHeight:150 fromPeer:peer];
+    NSURL *bundleRoot = [[NSBundle bundleForClass:[self class]] bundleURL];
+    NSArray * directoryContents =
+          [[NSFileManager defaultManager] contentsOfDirectoryAtURL:bundleRoot
+            includingPropertiesForKeys:@[]
+                               options:NSDirectoryEnumerationSkipsHiddenFiles
+                                 error:nil];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"pathExtension == %@",@"block"];
+    NSArray *blocks = [directoryContents filteredArrayUsingPredicate:predicate];
+    XCTAssertEqual(blocks.count,149);
+    NSMutableArray * sortedBlocks105 = [NSMutableArray array];
+    NSMutableArray * sortedBlocks106to150 = [NSMutableArray array];
+    int i = 2;
+    
+    while (i <= 150) {
+        for (NSURL * url in blocks) {
+            NSArray * components = [url.lastPathComponent componentsSeparatedByString:@"-"];
+            if ([components[3] intValue] == i) {
+                if (i <= 105) {
+                    [sortedBlocks105 addObject:url];
+                } else {
+                    [sortedBlocks106to150 addObject:url];
+                }
+                i++;
+                break;
+            }
+        }
+    }
+    
+    i = 105;
+    
+    for (NSURL * url in sortedBlocks105) {
+        NSData * blockData = [NSData dataWithContentsOfURL:url];
+        DSMerkleBlock * merkleBlock = [DSMerkleBlock merkleBlockWithMessage:blockData onChain:self.chain];
+        BOOL success = [self.chain addBlock:merkleBlock receivedAsHeader:YES fromPeer:nil];
+        XCTAssertTrue(success);
+    }
+    
+    XCTAssertEqualObjects(uint256_hex(self.chain.lastTerminalBlock.chainWork),@"d400000000000000000000000000000000000000000000000000000000000000");
+    XCTAssertEqual(self.chain.lastTerminalBlockHeight,105);
+    XCTAssertEqual(self.chain.lastSyncBlockHeight,1);
+    
+    DSAccount * account = self.wallet.accounts[0];
+    XCTAssertEqualObjects(account.receiveAddress, @"yWq16XLivcRsCLcxWKbKPxJ35XASd4r9RY",@"Not matching receive address");
+    
+    self.chain.chainManager.syncPhase = DSChainSyncPhase_ChainSync;
+    
+    
+    for (NSURL * url in sortedBlocks105) {
+        NSData * blockData = [NSData dataWithContentsOfURL:url];
+        DSMerkleBlock * merkleBlock = [DSMerkleBlock merkleBlockWithMessage:blockData onChain:self.chain];
+        [self.chain addBlock:merkleBlock receivedAsHeader:YES fromPeer:nil]; //test starting sync blocks with headers
+    }
+    
+    XCTAssertEqual(self.chain.lastTerminalBlockHeight,105);
+    XCTAssertEqual(self.chain.lastSyncBlockHeight,105);
+    
+    UInt256 blockHash = UINT256_MAX;
+    UInt256 merkleRoot = uint256_RANDOM;
+    UInt256 chainWork = uInt256AddOneLE(uInt256AddOneLE(self.chain.lastTerminalBlock.chainWork)); //add 2 which is minimum work
+    
+    DSMerkleBlock * fakeBlock106 = [[DSMerkleBlock alloc] initWithVersion:1 blockHash:blockHash prevBlock:self.chain.lastTerminalBlock.blockHash timestamp:self.chain.lastTerminalBlock.timestamp + 75 merkleRoot:merkleRoot target:self.chain.lastTerminalBlock.target chainWork:chainWork height:BLOCK_UNKNOWN_HEIGHT onChain:self.chain];
+    
+    [self.chain addBlock:fakeBlock106 receivedAsHeader:NO fromPeer:nil];
+    
+    XCTAssertEqual(self.chain.lastTerminalBlockHeight,105);
+    XCTAssertEqual(self.chain.lastSyncBlockHeight,105);
+    
+    for (NSURL * url in sortedBlocks106to150) {
+        NSData * blockData = [NSData dataWithContentsOfURL:url];
+        DSMerkleBlock * merkleBlock = [DSMerkleBlock merkleBlockWithMessage:blockData onChain:self.chain];
+        [self.chain addBlock:merkleBlock receivedAsHeader:NO fromPeer:nil];
+    }
+    
+    XCTAssertEqual(self.chain.lastTerminalBlockHeight,150);
+    XCTAssertEqual(self.chain.lastSyncBlockHeight,150);
+}
+
 - (void)testChaintipReorg {
     // This is an example of a functional test case.
     [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
