@@ -28,8 +28,17 @@
 #import "DSChain+Protected.h"
 #import "NSString+Dash.h"
 #import "NSData+Bitcoin.h"
+#import "DSChainLockEntity+CoreDataProperties.h"
+
+@interface DSChainEntity()
+
+@property(nonatomic,strong) DSChain * cachedChain;
+
+@end
 
 @implementation DSChainEntity
+
+@synthesize cachedChain;
 
 - (instancetype)setAttributesFromChain:(DSChain *)chain {
     self.type = chain.chainType;
@@ -38,6 +47,9 @@
 }
 
 - (DSChain *)chain {
+    if (self.cachedChain) {
+        return self.cachedChain;
+    }
     __block DSChainType type;
     __block NSString * devnetIdentifier;
     __block NSData * data;
@@ -46,6 +58,7 @@
     __block UInt256 lastPersistedChainSyncBlockHash;
     __block uint32_t lastPersistedChainSyncBlockHeight;
     __block NSTimeInterval lastPersistedChainSyncBlockTimestamp;
+    __block DSChainLock * lastChainLock;
     
     __block NSData * lastPersistedChainSyncLocators;
     [self.managedObjectContext performBlockAndWait:^{
@@ -74,10 +87,15 @@
     } else {
         NSAssert(FALSE, @"Unknown DSChainType");
     }
+    [self.managedObjectContext performBlockAndWait:^{
+        lastChainLock = [self.lastChainLock chainLockForChain:chain];
+    }];
+    chain.lastChainLock = lastChainLock;
     chain.lastPersistedChainSyncLocators = [NSKeyedUnarchiver unarchiveObjectWithData:lastPersistedChainSyncLocators];
     chain.lastPersistedChainSyncBlockHeight = lastPersistedChainSyncBlockHeight;
     chain.lastPersistedChainSyncBlockHash = lastPersistedChainSyncBlockHash;
     chain.lastPersistedChainSyncBlockTimestamp = lastPersistedChainSyncBlockTimestamp;
+    self.cachedChain = chain;
     return chain;
 }
 

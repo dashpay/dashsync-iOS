@@ -960,14 +960,14 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 // MARK: Incoming Transactions
 
 //The peer is informing us that it has an inventory of a transaction we might be interested in, this might also be a transaction we sent out which we are checking has properly been relayed on the network
-- (void)peer:(DSPeer *)peer hasTransactionWithHash:(UInt256)txHash transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock;
+- (void)peer:(DSPeer *)peer hasTransactionWithHash:(UInt256)txHash;
 {
     NSValue *hash = uint256_obj(txHash);
     BOOL syncing = (self.chain.lastSyncBlockHeight < self.chain.estimatedBlockHeight);
     DSTransaction *transaction = self.publishedTx[hash];
     void (^callback)(NSError *error) = self.publishedCallback[hash];
     
-    DSDLog(@"%@:%d has %@ transaction %@", peer.host, peer.port, transactionIsRequestingInstantSendLock?@"IX":@"TX", hash);
+    DSDLog(@"%@:%d has transaction %@", peer.host, peer.port, hash);
     if (!transaction) transaction = [self.chain transactionForHash:txHash];
     if (!transaction) {
         DSDLog(@"No transaction found on chain for this transaction");
@@ -1006,7 +1006,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 }
 
 //The peer has sent us a transaction we are interested in and that we did not send ourselves
-- (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction inBlock:(DSBlock*)block transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock
+- (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction inBlock:(DSBlock*)block
 {
     NSValue *hash = uint256_obj(transaction.txHash);
     BOOL syncing = (self.chain.lastSyncBlockHeight < self.chain.estimatedBlockHeight);
@@ -1397,7 +1397,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     DSMerkleBlock * block = [self.chain blockForBlockHash:chainLock.blockHash];
     
     if (block) {
-        [block setChainLockedWithChainLock:chainLock];
+        [self.chain addChainLock:chainLock];
         [chainLock saveInitial];
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockWasLockedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain, DSChainNotificationBlockKey:block}];

@@ -62,9 +62,9 @@ typedef union _UInt256 UInt256;
 
 @property (nonatomic, readonly, getter = toData) NSData *data;
 
-- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp height:(uint32_t)height onChain:(DSChain*)chain;
+- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash prevBlock:(UInt256)prevBlock timestamp:(uint32_t)timestamp height:(uint32_t)height onChain:(DSChain*)chain;
 
-- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp merkleRoot:(UInt256)merkleRoot target:(uint32_t)target chainWork:(UInt256)aggregateWork height:(uint32_t)height onChain:(DSChain*)chain;
+- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash prevBlock:(UInt256)prevBlock timestamp:(uint32_t)timestamp merkleRoot:(UInt256)merkleRoot target:(uint32_t)target chainWork:(UInt256)aggregateWork height:(uint32_t)height onChain:(DSChain*)chain;
 
 - (instancetype)initWithCheckpoint:(DSCheckpoint*)checkpoint onChain:(DSChain*)chain;
 
@@ -72,11 +72,13 @@ typedef union _UInt256 UInt256;
 - (BOOL)containsTxHash:(UInt256)txHash;
 
 // Verifies the block difficulty target is correct for the block's position in the chain.
-- (BOOL)verifyDifficultyWithPreviousBlocks:(NSDictionary *)previousBlocks;
+- (BOOL)verifyDifficultyWithPreviousBlocks:(NSDictionary *)previousBlocks rDifficulty:(uint32_t*)difficulty;
 
 - (int32_t)darkGravityWaveTargetWithPreviousBlocks:(NSDictionary *)previousBlocks;
 
 - (void)setChainLockedWithChainLock:(DSChainLock*)chainLock;
+
+- (void)setChainLockedWithEquivalentBlock:(DSBlock*)block;
 
 @end
 

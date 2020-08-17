@@ -358,12 +358,12 @@
     NSIndexPath * indexPath1 = [NSIndexPath indexPathWithIndexes:indexes1 length:2];
     NSIndexPath * indexPath2 = [NSIndexPath indexPathWithIndexes:indexes2 length:2];
     
-    DSKey * privateKey1 = [derivationPath privateKeyAtIndexPath:indexPath1];
+    DSKey * privateKey1 = [derivationPath privateKeyAtIndexPath:indexPath1 fromSeed:self.seed];
     DSKey * publicKey1 = [derivationPath publicKeyAtIndexPath:indexPath1];
     
     XCTAssertEqualObjects(privateKey1.publicKeyData,publicKey1.publicKeyData,@"the public keys must match");
     
-    DSKey * privateKey2 = [derivationPath privateKeyAtIndexPath:indexPath2];
+    DSKey * privateKey2 = [derivationPath privateKeyAtIndexPath:indexPath2 fromSeed:self.seed];
     DSKey * publicKey2 = [derivationPath publicKeyAtIndexPath:indexPath2];
     
     XCTAssertEqualObjects(privateKey2.publicKeyData,publicKey2.publicKeyData,@"the public keys must match");

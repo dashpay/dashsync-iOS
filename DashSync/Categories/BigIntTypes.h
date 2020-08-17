@@ -173,6 +173,8 @@ typedef struct _DSLLMQ {
 #define UINT512_ZERO ((UInt512) { .u64 = { 0, 0, 0, 0, 0, 0, 0, 0 } })
 #define UINT384_ZERO ((UInt384) { .u64 = { 0, 0, 0, 0, 0, 0 } })
 #define UINT256_ZERO ((UInt256) { .u64 = { 0, 0, 0, 0 } })
+#define UINT256_ONE ((UInt256) { .u64 = { 1, 0, 0, 0 } })
+#define UINT256_TWO ((UInt256) { .u64 = { 2, 0, 0, 0 } })
 #define UINT256_MAX ((UInt256) { .u64 = { 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF } })
 #define UINT160_ZERO ((UInt160) { .u32 = { 0, 0, 0, 0, 0 } })
 #define UINT128_ZERO ((UInt128) { .u64 = { 0, 0 } })

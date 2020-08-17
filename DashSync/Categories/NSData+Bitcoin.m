@@ -910,6 +910,10 @@ UInt256 uInt256SubtractLE(UInt256 a, UInt256 b) {
     return uInt256AddLE(a,uInt256AddOneLE(uInt256NegLE(b)));
 }
 
+UInt256 uInt256AbsSubtractLE(UInt256 a, UInt256 b) {
+    return (uint256_sup(a, b))?uInt256AddLE(a,uInt256AddOneLE(uInt256NegLE(b))):uInt256AddLE(b,uInt256AddOneLE(uInt256NegLE(a)));
+}
+
 UInt256 uInt256SubtractBE(UInt256 a, UInt256 b) {
     return uint256_reverse(uInt256AddLE(uint256_reverse(a),uInt256AddOneLE(uInt256NegLE(uint256_reverse(b)))));
 }

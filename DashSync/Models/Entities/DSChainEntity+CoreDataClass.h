@@ -26,7 +26,7 @@
 #import <CoreData/CoreData.h>
 #import "DSChain.h"
 
-@class DSAccountEntity, DSBlockchainIdentityEntity, DSDashpayUserEntity, DSDerivationPathEntity, DSGovernanceObjectHashEntity, DSGovernanceVoteHashEntity, DSMerkleBlockEntity, DSPeerEntity, DSQuorumEntryEntity, DSSimplifiedMasternodeEntryEntity, DSSporkHashEntity, DSTransactionHashEntity;
+@class DSAccountEntity, DSBlockchainIdentityEntity, DSDashpayUserEntity, DSDerivationPathEntity, DSGovernanceObjectHashEntity, DSGovernanceVoteHashEntity, DSMerkleBlockEntity, DSPeerEntity, DSQuorumEntryEntity, DSSimplifiedMasternodeEntryEntity, DSSporkHashEntity, DSTransactionHashEntity, DSChainLockEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 

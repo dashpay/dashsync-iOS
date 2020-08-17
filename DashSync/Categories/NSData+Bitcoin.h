@@ -102,6 +102,7 @@ UInt256 uInt256AddLE(UInt256 a, UInt256 b);
 UInt256 uInt256AddBE(UInt256 a, UInt256 b);
 UInt256 uInt256AddOneLE(UInt256 a);
 UInt256 uInt256NegLE(UInt256 a);
+UInt256 uInt256AbsSubtractLE(UInt256 a, UInt256 b);
 UInt256 uInt256SubtractLE(UInt256 a, UInt256 b);
 UInt256 uInt256SubtractBE(UInt256 a, UInt256 b);
 UInt256 uInt256ShiftLeftLE(UInt256 a, uint8_t bits);

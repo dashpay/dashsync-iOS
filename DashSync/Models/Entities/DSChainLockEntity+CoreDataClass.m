@@ -17,6 +17,7 @@
 #import "NSData+Bitcoin.h"
 #import "DSQuorumEntry.h"
 #import "DSMerkleBlock.h"
+#import "DSChain.h"
 
 @implementation DSChainLockEntity
 
@@ -29,6 +30,12 @@
         NSAssert(merkleBlockEntity, @"merkle block must exist");
         self.merkleBlock = merkleBlockEntity;
         self.quorum = [chainLock.intendedQuorum matchingQuorumEntryEntityInContext:self.managedObjectContext];//the quorum might not yet
+        if (chainLock.signatureVerified) {
+            DSChainEntity * chainEntity = [chainLock.intendedQuorum.chain chainEntityInContext:self.managedObjectContext];
+            if (!chainEntity.lastChainLock || chainEntity.lastChainLock.merkleBlock.height < chainLock.height) {
+                chainEntity.lastChainLock = self;
+            }
+        }
     }];
     
     return self;
