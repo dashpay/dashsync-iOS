@@ -20,6 +20,11 @@
 #import "BigIntTypes.h"
 #import "DSPotentialOneWayFriendship.h"
 
+typedef NS_ENUM(NSUInteger, DSDashpayUserEntityFriendActivityType) {
+    DSDashpayUserEntityFriendActivityType_IncomingTransactions,
+    DSDashpayUserEntityFriendActivityType_OutgoingTransactions
+};
+
 @class DSAccountEntity, DSFriendRequestEntity, DSTransitionEntity, DSBlockchainIdentity,DSPotentialOneWayFriendship,DSWallet,DSIncomingFundsDerivationPath,DSChainEntity, DSBlockchainIdentityEntity, DPDocument;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -33,6 +38,10 @@ NS_ASSUME_NONNULL_BEGIN
 //-(DPDocument*)profileDocument;
 
 //-(DPDocument*)contactRequestDocument;
+
+-(NSArray<DSDashpayUserEntity*>*)mostActiveFriends:(DSDashpayUserEntityFriendActivityType)activityType count:(BOOL)count ascending:(BOOL)ascending;
+
+-(NSDictionary<NSData*,NSNumber*>*)friendsWithActivityForType:(DSDashpayUserEntityFriendActivityType)activityType count:(BOOL)count;
 
 @end
 

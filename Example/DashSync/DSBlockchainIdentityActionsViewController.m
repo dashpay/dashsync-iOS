@@ -24,6 +24,8 @@
 @property (strong, nonatomic) IBOutlet UILabel *keyCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *usernameStatusLabel;
 @property (strong, nonatomic) IBOutlet UILabel *uniqueIdLabel;
+@property (strong, nonatomic) IBOutlet UILabel *mostActiveContactSentToLabel;
+@property (strong, nonatomic) IBOutlet UILabel *mostActiveContactReceivedFromLabel;
 @property (strong, nonatomic) id blockchainIdentityNameObserver;
 @property (strong, nonatomic) id blockchainIdentityRegistrationStatusObserver;
 
@@ -43,6 +45,7 @@
     }
     
     [self reloadKeyInfo];
+    [self reloadContactInfo];
     
     __weak typeof(self) weakSelf = self;
     
@@ -149,6 +152,14 @@
 
 -(void)reloadKeyInfo {
     self.keyCountLabel.text = [NSString stringWithFormat:@"%u/%u",self.blockchainIdentity.activeKeyCount, self.blockchainIdentity.totalKeyCount];
+}
+
+-(void)reloadContactInfo {
+    DSDashpayUserEntity * dashpayUser = [self.blockchainIdentity matchingDashpayUserInViewContext];
+    DSDashpayUserEntity * activeSentToFriend = [[dashpayUser mostActiveFriends:DSDashpayUserEntityFriendActivityType_OutgoingTransactions count:1 ascending:NO] firstObject];
+    DSDashpayUserEntity * activeReceivedFromFriend = [[dashpayUser mostActiveFriends:DSDashpayUserEntityFriendActivityType_IncomingTransactions count:1 ascending:NO] firstObject];
+    self.mostActiveContactSentToLabel.text = activeSentToFriend?[NSString stringWithFormat:@"%@",activeSentToFriend.username]:@"No Txs on Contacts";
+    self.mostActiveContactReceivedFromLabel.text = activeReceivedFromFriend?[NSString stringWithFormat:@"%@",activeReceivedFromFriend.username]:@"No Txs on Contacts";
 }
 
 - (void)didReceiveMemoryWarning {

@@ -33,6 +33,7 @@
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
+#import "DSTxOutputEntity+CoreDataClass.h"
 
 @implementation DSDashpayUserEntity
 
@@ -45,9 +46,54 @@
     }];
 }
 
+-(NSArray<DSDashpayUserEntity*>*)mostActiveFriends:(DSDashpayUserEntityFriendActivityType)activityType count:(BOOL)count ascending:(BOOL)ascending {
+    NSDictionary<NSData*,NSNumber*>* friendsWithActivity = [self friendsWithActivityForType:activityType count:count ascending:ascending];
+    if (!friendsWithActivity.count) return [NSArray array];
+    NSArray *results = [DSDashpayUserEntity objectsInContext:self.managedObjectContext matching:@"associatedBlockchainIdentity.uniqueID IN %@",friendsWithActivity.allKeys];
+    return results;
+}
+    
+
+-(NSDictionary<NSData*,NSNumber*>*)friendsWithActivityForType:(DSDashpayUserEntityFriendActivityType)activityType count:(BOOL)count ascending:(BOOL)ascending {
+    NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:DSTxOutputEntity.entityName];
+
+    NSExpression *keyPathExpression = [NSExpression expressionForKeyPath: @"n"]; // Does not really matter
+    NSExpression *countExpression = [NSExpression expressionForFunction: @"count:"
+                                                              arguments: [NSArray arrayWithObject:keyPathExpression]];
+    NSExpressionDescription *expressionDescription = [[NSExpressionDescription alloc] init];
+    [expressionDescription setName: @"count"];
+    [expressionDescription setExpression: countExpression];
+    [expressionDescription setExpressionResultType: NSInteger32AttributeType];
+    if (activityType == DSDashpayUserEntityFriendActivityType_IncomingTransactions) {
+        [fetchRequest setPropertiesToFetch:[NSArray arrayWithObjects:@"localAddress.derivationPath.friendRequest.destinationContact.associatedBlockchainIdentity.uniqueID", expressionDescription, nil]];
+        [fetchRequest setPropertiesToGroupBy:[NSArray arrayWithObject:@"localAddress.derivationPath.friendRequest.destinationContact.associatedBlockchainIdentity.uniqueID"]];
+        [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"localAddress.derivationPath.friendRequest != NULL && localAddress.derivationPath.friendRequest.sourceContact == %@",self]]; //first part is an optimization for left outer joins
+    } else if (activityType == DSDashpayUserEntityFriendActivityType_OutgoingTransactions) {
+        [fetchRequest setPropertiesToFetch:[NSArray arrayWithObjects:@"localAddress.derivationPath.friendRequest.sourceContact.associatedBlockchainIdentity.uniqueID", expressionDescription, nil]];
+        [fetchRequest setPropertiesToGroupBy:[NSArray arrayWithObject:@"localAddress.derivationPath.friendRequest.sourceContact.associatedBlockchainIdentity.uniqueID"]];
+        [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"localAddress.derivationPath.friendRequest != NULL && localAddress.derivationPath.friendRequest.destinationContact == %@",self]]; //first part is an optimization for left outer joins
+    }
+    [fetchRequest setResultType:NSDictionaryResultType];
+    NSArray *results = [self.managedObjectContext executeFetchRequest:fetchRequest error:NULL];
+    
+    NSArray *orderedResults = [results sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"count" ascending:ascending]]];
+    NSMutableDictionary * rDictionary = [NSMutableDictionary dictionary];
+    NSUInteger i = 0;
+    for (NSDictionary * result in orderedResults) {
+        if (activityType == DSDashpayUserEntityFriendActivityType_IncomingTransactions) {
+            [rDictionary setObject:result[@"count"] forKey:result[@"localAddress.derivationPath.friendRequest.destinationContact.associatedBlockchainIdentity.uniqueID"]];
+        } else if (activityType == DSDashpayUserEntityFriendActivityType_OutgoingTransactions) {
+            [rDictionary setObject:result[@"count"] forKey:result[@"localAddress.derivationPath.friendRequest.sourceContact.associatedBlockchainIdentity.uniqueID"]];
+        }
+        i++;
+        if (i==count) break;
+    }
+    return rDictionary;
+}
+
 -(NSString*)username {
     //todo manage when more than 1 username
-    DSBlockchainIdentityUsernameEntity * username = [self.associatedBlockchainIdentity.usernames anyObject];
+    DSBlockchainIdentityUsernameEntity * username = self.associatedBlockchainIdentity.dashpayUsername?self.associatedBlockchainIdentity.dashpayUsername:[self.associatedBlockchainIdentity.usernames anyObject];
     return username.stringValue;
 }
 
