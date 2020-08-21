@@ -24,7 +24,7 @@ Pod::Spec.new do |s|
   s.public_header_files = 'DashSync/**/*.h'
   s.private_header_files = 'DashSync/crypto/x11/*.h'
   s.libraries = 'bz2', 'sqlite3'
-  s.resource_bundles = {'DashSync' => ['DashSync/*.xcdatamodeld', 'DashSync/*.plist', 'DashSync/*.lproj', 'DashSync/MasternodeLists/*.dat', 'DashSync/*.json']}
+  s.resource_bundles = {'DashSync' => ['DashSync/*.xcdatamodeld', 'DashSync/Models/Persistence/*.xcmappingmodel', 'DashSync/*.plist', 'DashSync/*.lproj', 'DashSync/MasternodeLists/*.dat', 'DashSync/*.json']}
   
   s.framework = 'Foundation', 'UIKit', 'SystemConfiguration', 'CoreData', 'BackgroundTasks'
   s.compiler_flags = '-Wno-comma'
