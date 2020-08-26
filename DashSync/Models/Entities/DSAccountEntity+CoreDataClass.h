@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSTxOutputEntity,DSDerivationPath,DSChainEntity,DSChain;
+@class DSTxOutputEntity,DSDerivationPathEntity,DSChainEntity,DSChain;
 
 NS_ASSUME_NONNULL_BEGIN
 
