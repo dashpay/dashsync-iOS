@@ -39,24 +39,25 @@
     return self;
 }
 
-- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash prevBlock:(UInt256)prevBlock timestamp:(uint32_t)timestamp height:(uint32_t)height onChain:(DSChain*)chain {
+- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash prevBlock:(UInt256)prevBlock timestamp:(uint32_t)timestamp height:(uint32_t)height chainWork:(UInt256)chainWork onChain:(DSChain*)chain {
     if (! (self = [self initWithVersion:version timestamp:timestamp height:height onChain:chain])) return nil;
     _blockHash = blockHash;
     _prevBlock = prevBlock;
+    _chainWork = chainWork;
     return self;
 }
 
 - (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash prevBlock:(UInt256)prevBlock timestamp:(uint32_t)timestamp merkleRoot:(UInt256)merkleRoot target:(uint32_t)target chainWork:(UInt256)chainWork height:(uint32_t)height onChain:(DSChain*)chain {
-    if (! (self = [self initWithVersion:version blockHash:blockHash prevBlock:prevBlock timestamp:timestamp height:height onChain:chain])) return nil;
+    if (! (self = [self initWithVersion:version blockHash:blockHash prevBlock:prevBlock timestamp:timestamp height:height chainWork:chainWork onChain:chain])) return nil;
     _merkleRoot = merkleRoot;
     _target = target;
-    _chainWork = chainWork;
     return self;
 }
 
 - (instancetype)initWithCheckpoint:(DSCheckpoint*)checkpoint onChain:(DSChain*)chain {
     NSAssert(!uint256_is_zero(checkpoint.chainWork), @"Chain work must be set");
     if (! (self = [self initWithVersion:2 blockHash:checkpoint.blockHash prevBlock:UINT256_ZERO timestamp:checkpoint.timestamp merkleRoot:checkpoint.merkleRoot target:checkpoint.target chainWork:checkpoint.chainWork height:checkpoint.height onChain:chain])) return nil;
+    NSAssert(!uint256_is_zero(self.chainWork), @"block should have aggregate work set");
     return self;
 }
 

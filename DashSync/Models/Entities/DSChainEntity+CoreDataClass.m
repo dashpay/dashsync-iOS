@@ -56,6 +56,7 @@
     __block uint32_t totalGovernanceObjectsCount;
     __block UInt256 baseBlockHash;
     __block UInt256 lastPersistedChainSyncBlockHash;
+    __block UInt256 lastPersistedChainSyncBlockChainWork;
     __block uint32_t lastPersistedChainSyncBlockHeight;
     __block NSTimeInterval lastPersistedChainSyncBlockTimestamp;
     __block DSChainLock * lastChainLock;
@@ -68,6 +69,7 @@
         totalGovernanceObjectsCount = self.totalGovernanceObjectsCount;
         baseBlockHash = self.baseBlockHash.UInt256;
         lastPersistedChainSyncBlockHash = self.syncBlockHash.UInt256;
+        lastPersistedChainSyncBlockChainWork = self.syncBlockChainWork.UInt256;
         lastPersistedChainSyncBlockHeight = self.syncBlockHeight;
         lastPersistedChainSyncLocators = self.syncLocators;
         lastPersistedChainSyncBlockTimestamp = self.syncBlockTimestamp;
