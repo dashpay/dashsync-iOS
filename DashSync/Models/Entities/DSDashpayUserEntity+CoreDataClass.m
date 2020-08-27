@@ -46,7 +46,7 @@
     }];
 }
 
--(NSArray<DSDashpayUserEntity*>*)mostActiveFriends:(DSDashpayUserEntityFriendActivityType)activityType count:(BOOL)count ascending:(BOOL)ascending {
+-(NSArray<DSDashpayUserEntity*>*)mostActiveFriends:(DSDashpayUserEntityFriendActivityType)activityType count:(NSUInteger)count ascending:(BOOL)ascending {
     NSDictionary<NSData*,NSNumber*>* friendsWithActivity = [self friendsWithActivityForType:activityType count:count ascending:ascending];
     if (!friendsWithActivity.count) return [NSArray array];
     NSArray *results = [DSDashpayUserEntity objectsInContext:self.managedObjectContext matching:@"associatedBlockchainIdentity.uniqueID IN %@",friendsWithActivity.allKeys];
@@ -54,7 +54,7 @@
 }
     
 
--(NSDictionary<NSData*,NSNumber*>*)friendsWithActivityForType:(DSDashpayUserEntityFriendActivityType)activityType count:(BOOL)count ascending:(BOOL)ascending {
+-(NSDictionary<NSData*,NSNumber*>*)friendsWithActivityForType:(DSDashpayUserEntityFriendActivityType)activityType count:(NSUInteger)count ascending:(BOOL)ascending {
     NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:DSTxOutputEntity.entityName];
 
     NSExpression *keyPathExpression = [NSExpression expressionForKeyPath: @"n"]; // Does not really matter
