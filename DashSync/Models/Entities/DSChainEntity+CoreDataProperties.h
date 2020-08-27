@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, retain) NSData *baseBlockHash;
 @property (nullable, nonatomic, retain) NSData *syncBlockHash;
+@property (nullable, nonatomic, retain) NSData *syncBlockChainWork;
 @property (nonatomic, assign) uint64_t syncBlockTimestamp;
 @property (nonatomic, assign) uint32_t syncBlockHeight;
 @property (nullable, nonatomic, retain) NSData *syncLocators;

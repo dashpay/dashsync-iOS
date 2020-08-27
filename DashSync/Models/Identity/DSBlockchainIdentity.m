@@ -1389,6 +1389,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         if (completion) {
             completion(DSBlockchainIdentityQueryStep_BadQuery,@[[NSError errorWithDomain:@"DashSync" code:501 userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"Attempt to query DAPs for blockchain identity with no active keys", nil)}]]);
         }
+        return;
     }
     
     __block DSBlockchainIdentityQueryStep failureStep = DSBlockchainIdentityQueryStep_None;
