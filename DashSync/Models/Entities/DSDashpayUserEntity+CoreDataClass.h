@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(NSArray<DSDashpayUserEntity*>*)mostActiveFriends:(DSDashpayUserEntityFriendActivityType)activityType count:(BOOL)count ascending:(BOOL)ascending;
 
--(NSDictionary<NSData*,NSNumber*>*)friendsWithActivityForType:(DSDashpayUserEntityFriendActivityType)activityType count:(BOOL)count;
+-(NSDictionary<NSData*,NSNumber*>*)friendsWithActivityForType:(DSDashpayUserEntityFriendActivityType)activityType count:(BOOL)count ascending:(BOOL)ascending;
 
 @end
 

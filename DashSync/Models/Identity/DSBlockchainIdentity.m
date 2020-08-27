@@ -1495,7 +1495,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             [self fetchL3NetworkStateInformation:querySteps inContext:context withCompletion:completion];
         }];
     } else {
-        NSAssert([self blockchainIdentityEntity], @"Blockchain identity entity should be known");
+        NSAssert([self blockchainIdentityEntityInContext:context], @"Blockchain identity entity should be known");
         [self fetchL3NetworkStateInformation:querySteps inContext:context withCompletion:completion];
     }
 }
@@ -3024,68 +3024,70 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             }
             return;
         }
+        dispatch_async(self.identityQueue, ^{
         
-        NSDictionary * contactDictionary = [documents firstObject];
-        [context performBlockAndWait:^{
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                if (completion) {
-                    completion(NO, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                DSLocalizedString(@"Internal memory allocation error", nil)}]);
+            NSDictionary * contactDictionary = [documents firstObject];
+            [context performBlockAndWait:^{
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    if (completion) {
+                        completion(NO, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                                    DSLocalizedString(@"Internal memory allocation error", nil)}]);
+                    }
+                    return;
                 }
-                return;
-            }
-            DSDashpayUserEntity * contact = [[self blockchainIdentityEntityInContext:context] matchingDashpayUser];
-            if (!contact) {
-                NSAssert(FALSE, @"It is weird to get here");
-                contact = [DSDashpayUserEntity anyObjectInContext:context matching:@"associatedBlockchainIdentity.uniqueID == %@", uint256_data(blockchainIdentityUniqueId)];
-            }
-            if (!contact || [[contactDictionary objectForKey:@"$revision"] intValue] != contact.localProfileDocumentRevision) {
-                
+                DSDashpayUserEntity * contact = [[self blockchainIdentityEntityInContext:context] matchingDashpayUser];
                 if (!contact) {
-                    contact = [DSDashpayUserEntity managedObjectInContext:context];
-                    contact.chain = [strongSelf.wallet.chain chainEntityInContext:context];
-                    DSBlockchainIdentity * blockchainIdentity;
-                    if (uint256_eq(blockchainIdentityUniqueId, strongSelf.uniqueID) && (![strongSelf matchingDashpayUserInContext:context])) {
-                        NSAssert([strongSelf blockchainIdentityEntityInContext:context], @"blockchainIdentityEntity must exist");
-                        contact.associatedBlockchainIdentity = [strongSelf blockchainIdentityEntityInContext:context];
-                        if (saveReturnedProfile) {
-                            [context ds_save];
+                    NSAssert(FALSE, @"It is weird to get here");
+                    contact = [DSDashpayUserEntity anyObjectInContext:context matching:@"associatedBlockchainIdentity.uniqueID == %@", uint256_data(blockchainIdentityUniqueId)];
+                }
+                if (!contact || [[contactDictionary objectForKey:@"$revision"] intValue] != contact.localProfileDocumentRevision) {
+                    
+                    if (!contact) {
+                        contact = [DSDashpayUserEntity managedObjectInContext:context];
+                        contact.chain = [strongSelf.wallet.chain chainEntityInContext:context];
+                        DSBlockchainIdentity * blockchainIdentity;
+                        if (uint256_eq(blockchainIdentityUniqueId, strongSelf.uniqueID) && (![strongSelf matchingDashpayUserInContext:context])) {
+                            NSAssert([strongSelf blockchainIdentityEntityInContext:context], @"blockchainIdentityEntity must exist");
+                            contact.associatedBlockchainIdentity = [strongSelf blockchainIdentityEntityInContext:context];
+                            if (saveReturnedProfile) {
+                                [context ds_save];
+                            }
+                        } else if ((blockchainIdentity = [strongSelf.wallet blockchainIdentityForUniqueId:blockchainIdentityUniqueId]) && ![blockchainIdentity matchingDashpayUserInContext:context]) {
+                            //this means we are fetching a contact for another blockchain user on the device
+                            DSBlockchainIdentity * blockchainIdentity = [strongSelf.wallet blockchainIdentityForUniqueId:blockchainIdentityUniqueId];
+                            contact.associatedBlockchainIdentity = [blockchainIdentity blockchainIdentityEntityInContext:context];
+                            NSAssert(contact.associatedBlockchainIdentity, @"blockchainIdentityEntity must exist");
                         }
-                    } else if ((blockchainIdentity = [strongSelf.wallet blockchainIdentityForUniqueId:blockchainIdentityUniqueId]) && ![blockchainIdentity matchingDashpayUserInContext:context]) {
-                        //this means we are fetching a contact for another blockchain user on the device
-                        DSBlockchainIdentity * blockchainIdentity = [strongSelf.wallet blockchainIdentityForUniqueId:blockchainIdentityUniqueId];
-                        contact.associatedBlockchainIdentity = [blockchainIdentity blockchainIdentityEntityInContext:context];
-                        NSAssert(contact.associatedBlockchainIdentity, @"blockchainIdentityEntity must exist");
+                    }
+                    if (contactDictionary) {
+                        contact.localProfileDocumentRevision = [[contactDictionary objectForKey:@"$revision"] intValue];
+                        contact.remoteProfileDocumentRevision = [[contactDictionary objectForKey:@"$revision"] intValue];
+                        contact.avatarPath = [contactDictionary objectForKey:@"avatarUrl"];
+                        contact.publicMessage = [contactDictionary objectForKey:@"about"];
+                        contact.displayName = [contactDictionary objectForKey:@"displayName"];
+                        contact.createdAt = 1; //[contactDictionary objectForKey:@"createdAt"]; //todo
+                        contact.updatedAt = 1; //[contactDictionary objectForKey:@"updatedAt"];
+                    }
+                    
+                    if (saveReturnedProfile) {
+                        [context ds_save];
                     }
                 }
-                if (contactDictionary) {
-                    contact.localProfileDocumentRevision = [[contactDictionary objectForKey:@"$revision"] intValue];
-                    contact.remoteProfileDocumentRevision = [[contactDictionary objectForKey:@"$revision"] intValue];
-                    contact.avatarPath = [contactDictionary objectForKey:@"avatarUrl"];
-                    contact.publicMessage = [contactDictionary objectForKey:@"about"];
-                    contact.displayName = [contactDictionary objectForKey:@"displayName"];
-                    contact.createdAt = 1; //[contactDictionary objectForKey:@"createdAt"]; //todo
-                    contact.updatedAt = 1; //[contactDictionary objectForKey:@"updatedAt"];
-                }
                 
-                if (saveReturnedProfile) {
-                    [context ds_save];
-                }
-            }
-            
-            [self.platformContext performBlockAndWait:^{
-                self.lastCheckedProfileTimestamp = [[NSDate date] timeIntervalSince1970];
-                [self saveInContext:self.platformContext];
-            }];
-            
-            if (completion) {
+                [self.platformContext performBlockAndWait:^{
+                    self.lastCheckedProfileTimestamp = [[NSDate date] timeIntervalSince1970];
+                    //[self saveInContext:self.platformContext];
+                }];
+                
+                if (completion) {
 
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    completion(YES,nil);
-                });
-            }
-        }];
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        completion(YES,nil);
+                    });
+                }
+            }];
+        });
         
     } failure:^(NSError *_Nonnull error) {
         if (completion) {
@@ -3165,7 +3167,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         [strongSelf handleContactRequestObjects:documents context:context completion:^(BOOL success, NSArray<NSError *> *errors) {
             [self.platformContext performBlockAndWait:^{
                 self.lastCheckedIncomingContactsTimestamp = [[NSDate date] timeIntervalSince1970];
-                [self saveInContext:self.platformContext];
+                //[self saveInContext:self.platformContext];
             }];
             if (completion) {
                 dispatch_async(dispatch_get_main_queue(), ^{
@@ -3224,10 +3226,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         }
         
         [strongSelf handleContactRequestObjects:documents context:context completion:^(BOOL success, NSArray<NSError *> *errors) {
-            [self.platformContext performBlockAndWait:^{
-                self.lastCheckedOutgoingContactsTimestamp = [[NSDate date] timeIntervalSince1970];
-                [self saveInContext:self.platformContext];
-            }];
+            dispatch_async(self.identityQueue, ^{
+                [self.platformContext performBlockAndWait:^{
+                    self.lastCheckedOutgoingContactsTimestamp = [[NSDate date] timeIntervalSince1970];
+                    //[self saveInContext:self.platformContext];
+                }];
+            });
+            
             dispatch_async(dispatch_get_main_queue(), ^{
                 completion(success,errors);
             });
@@ -3578,6 +3583,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     derivationPathEntity.chain = [self.chain chainEntityInContext:context];
     
     friendRequestEntity.derivationPath = derivationPathEntity;
+    
+    NSAssert(friendRequestEntity.derivationPath, @"There must be a derivation path");
     
     DSAccount * account = [self.wallet accountWithNumber:0];
     
