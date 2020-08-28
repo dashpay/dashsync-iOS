@@ -156,6 +156,7 @@
     NSAssert([date isKindOfClass:NSDate.class], @"invalid type");
     [chainEntity setValue:@([date timeIntervalSince1970]) forKey:@"syncBlockTimestamp"];
     [chainEntity setValue:[self blockLocatorArrayForBlock:block] forKey:@"syncLocators"];
+    [chainEntity setValue:[self.lastBlockAdded.chainWork copy] forKey:@"syncBlockChainWork"];
     
     return [super endEntityMapping:mapping manager:manager error:error];
 }
