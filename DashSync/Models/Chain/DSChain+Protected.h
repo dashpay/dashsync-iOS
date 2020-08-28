@@ -50,6 +50,9 @@ NS_ASSUME_NONNULL_BEGIN
 /*! @brief Returns the hash of the last persisted sync block. The sync block itself most likely is not persisted.  */
 @property (nonatomic, assign) UInt256 lastPersistedChainSyncBlockHash;
 
+/*! @brief Returns the chain work of the last persisted sync block. The sync block itself most likely is not persisted.  */
+@property (nonatomic, assign) UInt256 lastPersistedChainSyncBlockChainWork;
+
 /*! @brief Returns the height of the last persisted sync block. The sync block itself most likely is not persisted.  */
 @property (nonatomic, assign) uint32_t lastPersistedChainSyncBlockHeight;
 

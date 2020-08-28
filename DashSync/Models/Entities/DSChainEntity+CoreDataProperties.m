@@ -36,5 +36,6 @@
 @dynamic syncLocators;
 @dynamic syncBlockTimestamp;
 @dynamic lastChainLock;
+@dynamic syncBlockChainWork;
 
 @end

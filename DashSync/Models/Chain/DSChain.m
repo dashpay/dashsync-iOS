@@ -268,6 +268,7 @@
             _mainnet.lastPersistedChainSyncBlockHeight = chainEntity.syncBlockHeight;
             _mainnet.lastPersistedChainSyncBlockHash = chainEntity.syncBlockHash.UInt256;
             _mainnet.lastPersistedChainSyncBlockTimestamp = chainEntity.syncBlockTimestamp;
+            _mainnet.lastPersistedChainSyncBlockChainWork = chainEntity.syncBlockChainWork.UInt256;
         }];
         [_mainnet setUp];
     }
@@ -293,6 +294,7 @@
             _testnet.lastPersistedChainSyncBlockHeight = chainEntity.syncBlockHeight;
             _testnet.lastPersistedChainSyncBlockHash = chainEntity.syncBlockHash.UInt256;
             _testnet.lastPersistedChainSyncBlockTimestamp = chainEntity.syncBlockTimestamp;
+            _testnet.lastPersistedChainSyncBlockChainWork = chainEntity.syncBlockChainWork.UInt256;
         }];
         [_testnet setUp];
     }
@@ -336,6 +338,7 @@ static dispatch_once_t devnetToken = 0;
             devnetChain.lastPersistedChainSyncBlockHeight = chainEntity.syncBlockHeight;
             devnetChain.lastPersistedChainSyncBlockHash = chainEntity.syncBlockHash.UInt256;
             devnetChain.lastPersistedChainSyncBlockTimestamp = chainEntity.syncBlockTimestamp;
+            devnetChain.lastPersistedChainSyncBlockChainWork = chainEntity.syncBlockChainWork.UInt256;
         }];
         if (performSetup) {
             [devnetChain setUp];
@@ -370,6 +373,7 @@ static dispatch_once_t devnetToken = 0;
             devnetChain.lastPersistedChainSyncBlockHeight = chainEntity.syncBlockHeight;
             devnetChain.lastPersistedChainSyncBlockHash = chainEntity.syncBlockHash.UInt256;
             devnetChain.lastPersistedChainSyncBlockTimestamp = chainEntity.syncBlockTimestamp;
+            devnetChain.lastPersistedChainSyncBlockChainWork = chainEntity.syncBlockChainWork.UInt256;
         }];
         [devnetChain setUp];
     }
@@ -1667,7 +1671,7 @@ static dispatch_once_t devnetToken = 0;
         self->_mSyncBlocks = [NSMutableDictionary dictionary];
         
         if (!uint256_is_zero(self.lastPersistedChainSyncBlockHash)) {
-            self->_mSyncBlocks[uint256_obj(self.lastPersistedChainSyncBlockHash)] = [[DSMerkleBlock alloc] initWithVersion:2 blockHash:self.lastPersistedChainSyncBlockHash prevBlock:UINT256_ZERO timestamp:self.lastPersistedChainSyncBlockTimestamp height:self.lastPersistedChainSyncBlockHeight onChain:self];
+            self->_mSyncBlocks[uint256_obj(self.lastPersistedChainSyncBlockHash)] = [[DSMerkleBlock alloc] initWithVersion:2 blockHash:self.lastPersistedChainSyncBlockHash prevBlock:UINT256_ZERO timestamp:self.lastPersistedChainSyncBlockTimestamp height:self.lastPersistedChainSyncBlockHeight chainWork:self.lastPersistedChainSyncBlockChainWork onChain:self];
         }
         
         self.checkpointsByHashDictionary = [NSMutableDictionary dictionary];
@@ -2679,6 +2683,10 @@ static dispatch_once_t devnetToken = 0;
     return _lastSyncBlock?_lastSyncBlock.blockHash:(!uint256_is_zero( self.lastPersistedChainSyncBlockHash)?self.lastPersistedChainSyncBlockHash:self.lastSyncBlock.blockHash);
 }
 
+- (UInt256)lastSyncBlockChainWork {
+    return _lastSyncBlock?_lastSyncBlock.chainWork:(!uint256_is_zero( self.lastPersistedChainSyncBlockChainWork)?self.lastPersistedChainSyncBlockChainWork:self.lastSyncBlock.chainWork);
+}
+
 - (uint32_t)lastTerminalBlockHeight {
     return self.lastTerminalBlock.height;
 }
@@ -3019,6 +3027,7 @@ static dispatch_once_t devnetToken = 0;
     _lastTerminalBlock = nil;
     _lastPersistedChainSyncLocators = nil;
     _lastPersistedChainSyncBlockHash = UINT256_ZERO;
+    _lastPersistedChainSyncBlockChainWork = UINT256_ZERO;
     _lastPersistedChainSyncBlockHeight = 0;
     _lastPersistedChainSyncBlockTimestamp = 0;
     [self setLastTerminalBlockFromCheckpoints];
@@ -3038,6 +3047,7 @@ static dispatch_once_t devnetToken = 0;
     _lastSyncBlock = nil;
     _lastPersistedChainSyncLocators = nil;
     _lastPersistedChainSyncBlockHash = UINT256_ZERO;
+    _lastPersistedChainSyncBlockChainWork = UINT256_ZERO;
     _lastPersistedChainSyncBlockHeight = 0;
     _lastPersistedChainSyncBlockTimestamp = 0;
     [self setLastSyncBlockFromCheckpoints];
@@ -3550,6 +3560,7 @@ static dispatch_once_t devnetToken = 0;
         chainEntity.syncBlockHash = uint256_data(lastBlockHash);
         chainEntity.syncBlockHeight = lastBlockHeight;
         chainEntity.syncBlockTimestamp = lastBlock.timestamp;
+        chainEntity.syncBlockChainWork = uint256_data(lastBlock.chainWork);
         NSArray * array = [self chainSyncBlockLocatorArray];
         _lastPersistedChainSyncLocators = [self blockLocatorArrayOnOrBeforeTimestamp:BIP39_CREATION_TIME includeInitialTerminalBlocks:NO];
         chainEntity.syncLocators = array;

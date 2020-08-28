@@ -157,6 +157,7 @@
     friendRequestEntity.destinationContact = dashpayUserEntity;
     NSAssert(friendRequestEntity.sourceContact != friendRequestEntity.destinationContact, @"This must be different contacts");
     friendRequestEntity.derivationPath = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self.fundsDerivationPathForContact inContext:dashpayUserEntity.managedObjectContext];
+    NSAssert(friendRequestEntity.derivationPath, @"There must be a derivation path");
     friendRequestEntity.account = friendRequestEntity.derivationPath.account;
     friendRequestEntity.timestamp = timestamp;
     
