@@ -19,22 +19,6 @@
 
 @implementation DSDeleteEntityMigrationPolicy
 
-//- (BOOL)beginEntityMapping:(NSEntityMapping *)mapping manager:(NSMigrationManager *)manager error:(NSError *__autoreleasing  _Nullable *)error {
-//    if (@available(iOS 9.0, *)) {
-//        NSString *entityName = mapping.sourceEntityName;
-//        NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:entityName];
-//        NSBatchDeleteRequest *request = [[NSBatchDeleteRequest alloc] initWithFetchRequest:fetchRequest];
-//        NSManagedObjectContext *context = manager.sourceContext;
-//        NSError *deleteError = nil;
-//        [context executeRequest:request error:&deleteError];
-//        NSAssert(deleteError == nil, @"Failed to delete all entities %@", deleteError);
-//    } else {
-//        NSAssert(NO, @"not supported");
-//    }
-//
-//    return [super beginEntityMapping:mapping manager:manager error:error];
-//}
-
 - (BOOL)createDestinationInstancesForSourceInstance:(NSManagedObject *)sInstance
                                       entityMapping:(NSEntityMapping *)mapping
                                             manager:(NSMigrationManager *)manager

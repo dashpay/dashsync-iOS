@@ -22,11 +22,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSData *ipv6Address;
 @property (nullable, nonatomic, retain) NSData *keyIDVoting;
 @property (nullable, nonatomic, retain) NSData *operatorBLSPublicKey;
-@property (nullable, nonatomic, retain) NSObject *previousOperatorBLSPublicKeys;
-@property (nullable, nonatomic, retain) NSObject *previousValidity;
+@property (nullable, nonatomic, retain) NSDictionary *previousOperatorBLSPublicKeys;
+@property (nullable, nonatomic, retain) NSDictionary *previousValidity;
 @property (nullable, nonatomic, retain) NSData *providerRegistrationTransactionHash;
 @property (nullable, nonatomic, retain) NSData *simplifiedMasternodeEntryHash;
-@property (nullable, nonatomic, retain) NSObject *previousSimplifiedMasternodeEntryHashes;
+@property (nullable, nonatomic, retain) NSDictionary *previousSimplifiedMasternodeEntryHashes;
 @property (nullable, nonatomic, retain) NSOrderedSet<DSAddressEntity *> *addresses;
 @property (nullable, nonatomic, retain) DSChainEntity *chain;
 @property (nullable, nonatomic, retain) NSSet<DSGovernanceVoteEntity *> *governanceVotes;

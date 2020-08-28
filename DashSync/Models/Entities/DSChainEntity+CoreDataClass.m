@@ -60,7 +60,7 @@
     __block NSTimeInterval lastPersistedChainSyncBlockTimestamp;
     __block DSChainLock * lastChainLock;
     
-    __block NSData * lastPersistedChainSyncLocators;
+    __block NSArray * lastPersistedChainSyncLocators;
     [self.managedObjectContext performBlockAndWait:^{
         type = self.type;
         devnetIdentifier = self.devnetIdentifier;
@@ -90,8 +90,23 @@
     [self.managedObjectContext performBlockAndWait:^{
         lastChainLock = [self.lastChainLock chainLockForChain:chain];
     }];
+    
+    // This fixes an issue after migration (6 -> 7)
+    // After we set syncLocators in DSMerkleBlockEntity6To7MigrationPolicy for some reason
+    // CoreData returns them as a NSData
+    if ([lastPersistedChainSyncLocators isKindOfClass:NSData.class]) {
+        NSError *unarchiveError = nil;
+        if (@available(iOS 11.0, *)) {
+            id object = [NSKeyedUnarchiver unarchivedObjectOfClass:NSArray.class fromData:(NSData*)lastPersistedChainSyncLocators error:&unarchiveError];
+            NSAssert(unarchiveError == nil, @"Failed transforming data to object %@", unarchiveError);
+            lastPersistedChainSyncLocators = object;
+        } else {
+            NSAssert(NO, @"not supported");
+        }
+    }
+    
     chain.lastChainLock = lastChainLock;
-    chain.lastPersistedChainSyncLocators = [NSKeyedUnarchiver unarchiveObjectWithData:lastPersistedChainSyncLocators];
+    chain.lastPersistedChainSyncLocators = lastPersistedChainSyncLocators;
     chain.lastPersistedChainSyncBlockHeight = lastPersistedChainSyncBlockHeight;
     chain.lastPersistedChainSyncBlockHash = lastPersistedChainSyncBlockHash;
     chain.lastPersistedChainSyncBlockTimestamp = lastPersistedChainSyncBlockTimestamp;

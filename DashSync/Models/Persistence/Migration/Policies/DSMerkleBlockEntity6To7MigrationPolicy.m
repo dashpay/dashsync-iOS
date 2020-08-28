@@ -155,8 +155,8 @@
     NSDate *date = [self.lastBlockAdded valueForKey:@"timestamp"];
     NSAssert([date isKindOfClass:NSDate.class], @"invalid type");
     [chainEntity setValue:@([date timeIntervalSince1970]) forKey:@"syncBlockTimestamp"];
-    [chainEntity setValue:[NSKeyedArchiver archivedDataWithRootObject:[self blockLocatorArrayForBlock:block]] forKey:@"syncLocators"];
-
+    [chainEntity setValue:[self blockLocatorArrayForBlock:block] forKey:@"syncLocators"];
+    
     return [super endEntityMapping:mapping manager:manager error:error];
 }
 

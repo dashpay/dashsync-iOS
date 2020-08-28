@@ -191,7 +191,7 @@
     </object>
     <object type="XDDEVATTRIBUTEMAPPING" id="z134">
         <attribute name="name" type="string">previousOperatorBLSPublicKeys</attribute>
-        <relationship name="entitymapping" type="1/1" destination="XDDEVENTITYMAPPING" idrefs="z385"></relationship>
+        <relationship name="entitymapping" type="1/1" destination="XDDEVENTITYMAPPING"></relationship>
     </object>
     <object type="XDDEVRELATIONSHIPMAPPING" id="z135">
         <attribute name="autogenerateexpression" type="bool">1</attribute>
@@ -1120,7 +1120,7 @@ dmVyVCR0b3BYJG9iamVjdHMSAAGGoF8QD05TS2V5ZWRBcmNoaXZlctEAAAAIAAAACVRyb290gAGvESBb
     </object>
     <object type="XDDEVATTRIBUTEMAPPING" id="z329">
         <attribute name="name" type="string">previousSimplifiedMasternodeEntryHashes</attribute>
-        <relationship name="entitymapping" type="1/1" destination="XDDEVENTITYMAPPING" idrefs="z385"></relationship>
+        <relationship name="entitymapping" type="1/1" destination="XDDEVENTITYMAPPING"></relationship>
     </object>
     <object type="XDDEVENTITYMAPPING" id="z330">
         <attribute name="mappingtypename" type="string">Undefined</attribute>
@@ -1410,8 +1410,8 @@ dmVyVCR0b3BYJG9iamVjdHMSAAGGoF8QD05TS2V5ZWRBcmNoaXZlctEAAAAIAAAACVRyb290gAGvESBb
         <attribute name="destinationname" type="string">DSSimplifiedMasternodeEntryEntity</attribute>
         <attribute name="autogenerateexpression" type="bool">1</attribute>
         <relationship name="mappingmodel" type="1/1" destination="XDDEVMAPPINGMODEL" idrefs="z242"></relationship>
-        <relationship name="attributemappings" type="0/0" destination="XDDEVATTRIBUTEMAPPING" idrefs="z465 z388 z246 z329 z301 z127 z259 z134 z211 z248 z364 z487"></relationship>
-        <relationship name="relationshipmappings" type="0/0" destination="XDDEVRELATIONSHIPMAPPING" idrefs="z460 z230 z280 z347 z192"></relationship>
+        <relationship name="attributemappings" type="0/0" destination="XDDEVATTRIBUTEMAPPING" idrefs="z301 z364 z127 z259 z388 z487 z246 z211 z248"></relationship>
+        <relationship name="relationshipmappings" type="0/0" destination="XDDEVRELATIONSHIPMAPPING" idrefs="z347 z192 z280 z230 z460"></relationship>
     </object>
     <object type="XDDEVRELATIONSHIPMAPPING" id="z386">
         <attribute name="autogenerateexpression" type="bool">1</attribute>
@@ -1825,7 +1825,7 @@ dmVyVCR0b3BYJG9iamVjdHMSAAGGoF8QD05TS2V5ZWRBcmNoaXZlctEAAAAIAAAACVRyb290gAGvESBb
     </object>
     <object type="XDDEVATTRIBUTEMAPPING" id="z465">
         <attribute name="name" type="string">previousValidity</attribute>
-        <relationship name="entitymapping" type="1/1" destination="XDDEVENTITYMAPPING" idrefs="z385"></relationship>
+        <relationship name="entitymapping" type="1/1" destination="XDDEVENTITYMAPPING"></relationship>
     </object>
     <object type="XDDEVATTRIBUTEMAPPING" id="z466">
         <attribute name="name" type="string">sourceKeyIndex</attribute>

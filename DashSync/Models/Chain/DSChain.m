@@ -264,7 +264,7 @@
             DSChainEntity * chainEntity = [_mainnet chainEntityInContext:[NSManagedObjectContext chainContext]];
             _mainnet.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
             _mainnet.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
-            _mainnet.lastPersistedChainSyncLocators = [NSKeyedUnarchiver unarchiveObjectWithData:chainEntity.syncLocators];
+            _mainnet.lastPersistedChainSyncLocators = chainEntity.syncLocators;
             _mainnet.lastPersistedChainSyncBlockHeight = chainEntity.syncBlockHeight;
             _mainnet.lastPersistedChainSyncBlockHash = chainEntity.syncBlockHash.UInt256;
             _mainnet.lastPersistedChainSyncBlockTimestamp = chainEntity.syncBlockTimestamp;
@@ -289,7 +289,7 @@
             DSChainEntity * chainEntity = [_testnet chainEntityInContext:[NSManagedObjectContext chainContext]];
             _testnet.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
             _testnet.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
-            _testnet.lastPersistedChainSyncLocators = [NSKeyedUnarchiver unarchiveObjectWithData:chainEntity.syncLocators];
+            _testnet.lastPersistedChainSyncLocators = chainEntity.syncLocators;
             _testnet.lastPersistedChainSyncBlockHeight = chainEntity.syncBlockHeight;
             _testnet.lastPersistedChainSyncBlockHash = chainEntity.syncBlockHash.UInt256;
             _testnet.lastPersistedChainSyncBlockTimestamp = chainEntity.syncBlockTimestamp;
@@ -332,7 +332,7 @@ static dispatch_once_t devnetToken = 0;
             DSChainEntity * chainEntity = [devnetChain chainEntityInContext:[NSManagedObjectContext chainContext]];
             devnetChain.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
             devnetChain.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
-            devnetChain.lastPersistedChainSyncLocators = [NSKeyedUnarchiver unarchiveObjectWithData:chainEntity.syncLocators];
+            devnetChain.lastPersistedChainSyncLocators = chainEntity.syncLocators;
             devnetChain.lastPersistedChainSyncBlockHeight = chainEntity.syncBlockHeight;
             devnetChain.lastPersistedChainSyncBlockHash = chainEntity.syncBlockHash.UInt256;
             devnetChain.lastPersistedChainSyncBlockTimestamp = chainEntity.syncBlockTimestamp;
@@ -366,7 +366,7 @@ static dispatch_once_t devnetToken = 0;
             DSChainEntity * chainEntity = [devnetChain chainEntityInContext:[NSManagedObjectContext chainContext]];
             devnetChain.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
             devnetChain.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
-            devnetChain.lastPersistedChainSyncLocators = [NSKeyedUnarchiver unarchiveObjectWithData:chainEntity.syncLocators];
+            devnetChain.lastPersistedChainSyncLocators = chainEntity.syncLocators;
             devnetChain.lastPersistedChainSyncBlockHeight = chainEntity.syncBlockHeight;
             devnetChain.lastPersistedChainSyncBlockHash = chainEntity.syncBlockHash.UInt256;
             devnetChain.lastPersistedChainSyncBlockTimestamp = chainEntity.syncBlockTimestamp;
@@ -3552,7 +3552,7 @@ static dispatch_once_t devnetToken = 0;
         chainEntity.syncBlockTimestamp = lastBlock.timestamp;
         NSArray * array = [self chainSyncBlockLocatorArray];
         _lastPersistedChainSyncLocators = [self blockLocatorArrayOnOrBeforeTimestamp:BIP39_CREATION_TIME includeInitialTerminalBlocks:NO];
-        chainEntity.syncLocators = array?[NSKeyedArchiver archivedDataWithRootObject:array]:nil;
+        chainEntity.syncLocators = array;
         
         NSMutableSet *entities = [NSMutableSet set];
         

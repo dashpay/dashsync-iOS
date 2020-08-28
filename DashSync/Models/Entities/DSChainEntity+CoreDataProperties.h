@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSData *syncBlockHash;
 @property (nonatomic, assign) uint64_t syncBlockTimestamp;
 @property (nonatomic, assign) uint32_t syncBlockHeight;
-@property (nullable, nonatomic, retain) NSData *syncLocators;
+@property (nullable, nonatomic, retain) NSArray *syncLocators;
 @property (nullable, nonatomic, retain) NSData *checkpoints;
 @property (nullable, nonatomic, copy) NSString *devnetIdentifier;
 @property (nonatomic, assign) uint32_t totalGovernanceObjectsCount;

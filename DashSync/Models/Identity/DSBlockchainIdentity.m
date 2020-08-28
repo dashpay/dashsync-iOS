@@ -164,8 +164,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     
     self.dashpaySyncronizationBlockHash = blockchainIdentityEntity.dashpaySyncronizationBlockHash.UInt256;
     for (DSBlockchainIdentityKeyPathEntity * keyPath in blockchainIdentityEntity.keyPaths) {
-        if ([keyPath path]) {
-            NSIndexPath *keyIndexPath = (NSIndexPath *)[NSKeyedUnarchiver unarchiveObjectWithData:(NSData*)[keyPath path]];
+        NSIndexPath *keyIndexPath = (NSIndexPath *)[keyPath path];
+        if (keyIndexPath) {
             BOOL success = [self registerKeyWithStatus:keyPath.keyStatus atIndexPath:keyIndexPath ofType:keyPath.keyType];
             if (!success) {
                 DSKey * key = [DSKey keyWithPublicKeyData:keyPath.publicKeyData forKeyType:keyPath.keyType];
@@ -3720,8 +3720,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         DSBlockchainIdentityEntity * blockchainIdentityEntity = [self blockchainIdentityEntityInContext:context];
         NSAssert(blockchainIdentityEntity, @"Entity should be present");
         DSDerivationPathEntity * derivationPathEntity = [derivationPath derivationPathEntityInContext:context];
-        NSData *keyPathData = [NSKeyedArchiver archivedDataWithRootObject:path];
-        NSUInteger count = [DSBlockchainIdentityKeyPathEntity countObjectsInContext:context matching:@"blockchainIdentity == %@ && derivationPath == %@ && path == %@",blockchainIdentityEntity,derivationPathEntity,keyPathData];
+        NSUInteger count = [DSBlockchainIdentityKeyPathEntity countObjectsInContext:context matching:@"blockchainIdentity == %@ && derivationPath == %@ && path == %@",blockchainIdentityEntity,derivationPathEntity, path];
         if (!count) {
             DSBlockchainIdentityKeyPathEntity * blockchainIdentityKeyPathEntity = [DSBlockchainIdentityKeyPathEntity managedObjectInContext:context];
             blockchainIdentityKeyPathEntity.derivationPath = derivationPathEntity;
@@ -3739,7 +3738,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 DSDLog(@"Saving key after rederivation %@ for user %@",[self identifierForKeyAtPath:path fromDerivationPath:derivationPath],self.currentDashpayUsername);
             }
 
-            blockchainIdentityKeyPathEntity.path = keyPathData;
+            blockchainIdentityKeyPathEntity.path = path;
             blockchainIdentityKeyPathEntity.publicKeyData = key.publicKeyData;
             blockchainIdentityKeyPathEntity.keyID = (uint32_t)[path indexAtPosition:path.length - 1];
             [blockchainIdentityEntity addKeyPathsObject:blockchainIdentityKeyPathEntity];
@@ -3783,8 +3782,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     [context performBlockAndWait:^{
         DSBlockchainIdentityEntity * entity = [self blockchainIdentityEntityInContext:context];
         DSDerivationPathEntity * derivationPathEntity = [derivationPath derivationPathEntityInContext:context];
-        NSData *keyPathData = [NSKeyedArchiver archivedDataWithRootObject:path];
-        DSBlockchainIdentityKeyPathEntity * blockchainIdentityKeyPathEntity = [[DSBlockchainIdentityKeyPathEntity objectsInContext:context matching:@"blockchainIdentity == %@ && derivationPath == %@ && path == %@",entity, derivationPathEntity,keyPathData] firstObject];
+        DSBlockchainIdentityKeyPathEntity * blockchainIdentityKeyPathEntity = [[DSBlockchainIdentityKeyPathEntity objectsInContext:context matching:@"blockchainIdentity == %@ && derivationPath == %@ && path == %@",entity, derivationPathEntity,path] firstObject];
         if (blockchainIdentityKeyPathEntity && (blockchainIdentityKeyPathEntity.keyStatus != status)) {
             blockchainIdentityKeyPathEntity.keyStatus = status;
             [context ds_save];
