@@ -22,8 +22,12 @@
 @implementation DSIndexPathValueTransformer
 
 + (void)load {
-    [NSValueTransformer setValueTransformer:DSIndexPathValueTransformer.new
-                                    forName:@"DSIndexPathValueTransformer"];
+    if (@available(iOS 12.0, *)) {
+        [NSValueTransformer setValueTransformer:DSIndexPathValueTransformer.new
+                                        forName:@"DSIndexPathValueTransformer"];
+    } else {
+        NSAssert(NO, @"not supported");
+    }
 }
 
 + (NSArray<Class> *)allowedTopLevelClasses {
