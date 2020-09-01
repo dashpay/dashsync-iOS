@@ -157,7 +157,7 @@ NSString *getKeychainString(NSString *key, NSError **error)
 BOOL setKeychainDict(NSDictionary *dict, NSString *key, BOOL authenticated)
 {
     @autoreleasepool {
-        NSData *d = (dict) ? [NSKeyedArchiver archivedDataWithRootObject:dict] : nil;
+        NSData *d = (dict) ? [NSKeyedArchiver archivedDataWithRootObject:dict requiringSecureCoding:NO error:nil] : nil;
         
         return setKeychainData(d, key, authenticated);
     }
@@ -168,14 +168,14 @@ NSDictionary *getKeychainDict(NSString *key, NSError **error)
     @autoreleasepool {
         NSData *d = getKeychainData(key, error);
         
-        return (d) ? [NSKeyedUnarchiver unarchiveObjectWithData:d] : nil;
+        return (d) ? [NSKeyedUnarchiver unarchivedObjectOfClass:[NSDictionary class] fromData:d error:nil] : nil;
     }
 }
 
 BOOL setKeychainArray(NSArray *array, NSString *key, BOOL authenticated)
 {
     @autoreleasepool {
-        NSData *d = (array) ? [NSKeyedArchiver archivedDataWithRootObject:array] : nil;
+        NSData *d = (array) ? [NSKeyedArchiver archivedDataWithRootObject:array requiringSecureCoding:NO error:nil] : nil;
         
         return setKeychainData(d, key, authenticated);
     }
@@ -186,7 +186,7 @@ NSArray *getKeychainArray(NSString *key, NSError **error)
     @autoreleasepool {
         NSData *d = getKeychainData(key, error);
         
-        return (d) ? [NSKeyedUnarchiver unarchiveObjectWithData:d] : nil;
+        return (d) ? [NSKeyedUnarchiver unarchivedObjectOfClass:[NSArray class] fromData:d error:nil] : nil;
     }
 }
 
@@ -195,14 +195,14 @@ NSOrderedSet *getKeychainOrderedSet(NSString *key, NSError **error)
     @autoreleasepool {
         NSData *d = getKeychainData(key, error);
         
-        return (d) ? [NSKeyedUnarchiver unarchiveObjectWithData:d] : nil;
+        return (d) ? [NSKeyedUnarchiver unarchivedObjectOfClass:[NSOrderedSet class] fromData:d error:nil] : nil;
     }
 }
 
 BOOL setKeychainOrderedSet(NSOrderedSet *orderedSet, NSString *key, BOOL authenticated)
 {
     @autoreleasepool {
-        NSData *d = (orderedSet) ? [NSKeyedArchiver archivedDataWithRootObject:orderedSet] : nil;
+        NSData *d = (orderedSet) ? [NSKeyedArchiver archivedDataWithRootObject:orderedSet requiringSecureCoding:NO error:nil] : nil;
         
         return setKeychainData(d, key, authenticated);
     }

@@ -120,6 +120,8 @@
 
 #import "DSNetworking.h"
 
+#import "DSCoreDataMigrator.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 #define SHAPESHIFT_ENABLED 0

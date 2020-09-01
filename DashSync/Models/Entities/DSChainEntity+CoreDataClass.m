@@ -61,7 +61,7 @@
     __block NSTimeInterval lastPersistedChainSyncBlockTimestamp;
     __block DSChainLock * lastChainLock;
     
-    __block NSData * lastPersistedChainSyncLocators;
+    __block NSArray * lastPersistedChainSyncLocators;
     [self.managedObjectContext performBlockAndWait:^{
         type = self.type;
         devnetIdentifier = self.devnetIdentifier;
@@ -83,8 +83,9 @@
         if ([DSChain devnetWithIdentifier:devnetIdentifier]) {
             chain = [DSChain devnetWithIdentifier:devnetIdentifier];
         } else {
-            NSArray * checkpointArray = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-            chain = [DSChain recoverKnownDevnetWithIdentifier:devnetIdentifier withCheckpoints:checkpointArray performSetup:YES];
+            NSError * checkpointRetrievalError = nil;
+            NSArray * checkpointArray = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSArray class] fromData:data error:&checkpointRetrievalError];
+            chain = [DSChain recoverKnownDevnetWithIdentifier:devnetIdentifier withCheckpoints:checkpointRetrievalError?[NSArray array]:checkpointArray performSetup:YES];
         }
     } else {
         NSAssert(FALSE, @"Unknown DSChainType");
@@ -92,8 +93,23 @@
     [self.managedObjectContext performBlockAndWait:^{
         lastChainLock = [self.lastChainLock chainLockForChain:chain];
     }];
+    
+    // This fixes an issue after migration (6 -> 7)
+    // After we set syncLocators in DSMerkleBlockEntity6To7MigrationPolicy for some reason
+    // CoreData returns them as a NSData
+    if ([lastPersistedChainSyncLocators isKindOfClass:NSData.class]) {
+        NSError *unarchiveError = nil;
+        if (@available(iOS 11.0, *)) {
+            id object = [NSKeyedUnarchiver unarchivedObjectOfClass:NSArray.class fromData:(NSData*)lastPersistedChainSyncLocators error:&unarchiveError];
+            NSAssert(unarchiveError == nil, @"Failed transforming data to object %@", unarchiveError);
+            lastPersistedChainSyncLocators = object;
+        } else {
+            NSAssert(NO, @"not supported");
+        }
+    }
+    
     chain.lastChainLock = lastChainLock;
-    chain.lastPersistedChainSyncLocators = [NSKeyedUnarchiver unarchiveObjectWithData:lastPersistedChainSyncLocators];
+    chain.lastPersistedChainSyncLocators = lastPersistedChainSyncLocators;
     chain.lastPersistedChainSyncBlockHeight = lastPersistedChainSyncBlockHeight;
     chain.lastPersistedChainSyncBlockHash = lastPersistedChainSyncBlockHash;
     chain.lastPersistedChainSyncBlockTimestamp = lastPersistedChainSyncBlockTimestamp;
@@ -106,10 +122,16 @@
     if (objects.count) {
         DSChainEntity * chainEntity = [objects objectAtIndex:0];
         if (devnetIdentifier) {
-            NSArray * knownCheckpoints = [NSKeyedUnarchiver unarchiveObjectWithData:[chainEntity checkpoints]];
-            if (checkpoints.count > knownCheckpoints.count) {
-                NSData * archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints];
-                chainEntity.checkpoints = archivedCheckpoints;
+            NSError * error = nil;
+            NSArray * knownCheckpoints = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSArray class] fromData:[chainEntity checkpoints] error:&error];
+            NSAssert(error = nil, @"There should not be an error when decrypting checkpoints");
+            
+            if (error == nil && checkpoints.count > knownCheckpoints.count) {
+                NSData * archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints requiringSecureCoding:NO error:&error];
+                NSAssert(error = nil, @"There should not be an error when decrypting checkpoints");
+                if (!error) {
+                    chainEntity.checkpoints = archivedCheckpoints;
+                }
             }
         } else {
             chainEntity.checkpoints = nil;
@@ -121,8 +143,12 @@
     chainEntity.type = type;
     chainEntity.devnetIdentifier = devnetIdentifier;
     if (checkpoints && devnetIdentifier) {
-        NSData * archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints];
-        chainEntity.checkpoints = archivedCheckpoints;
+        NSError * error = nil;
+        NSData * archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints requiringSecureCoding:NO error:&error];
+        NSAssert(error = nil, @"There should not be an error when decrypting checkpoints");
+        if (!error) {
+            chainEntity.checkpoints = archivedCheckpoints;
+        }
     }
     return chainEntity;
 }

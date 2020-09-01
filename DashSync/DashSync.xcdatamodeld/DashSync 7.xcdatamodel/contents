@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="16119" systemVersion="19F101" minimumToolsVersion="Xcode 7.3" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="16119" systemVersion="19G73" minimumToolsVersion="Xcode 7.3" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
     <entity name="DSAccountEntity" representedClassName="DSAccountEntity" syncable="YES">
         <attribute name="index" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="walletUniqueID" optional="YES" attributeType="String" syncable="YES"/>
@@ -42,7 +42,7 @@
         <attribute name="keyID" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="keyStatus" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="keyType" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="path" optional="YES" attributeType="Transformable" syncable="YES"/>
+        <attribute name="path" optional="YES" attributeType="Transformable" valueTransformerName="DSIndexPathValueTransformer" syncable="YES"/>
         <attribute name="publicKeyData" attributeType="Binary" syncable="YES"/>
         <relationship name="blockchainIdentity" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityEntity" inverseName="keyPaths" inverseEntity="DSBlockchainIdentityEntity" syncable="YES"/>
         <relationship name="derivationPath" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSDerivationPathEntity" inverseName="identityKeyPaths" inverseEntity="DSDerivationPathEntity" syncable="YES"/>
@@ -63,7 +63,7 @@
         <attribute name="syncBlockHash" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="syncBlockHeight" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="syncBlockTimestamp" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="syncLocators" optional="YES" attributeType="Transformable" syncable="YES"/>
+        <attribute name="syncLocators" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" syncable="YES"/>
         <attribute name="totalGovernanceObjectsCount" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="type" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="accounts" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSAccountEntity" inverseName="chain" inverseEntity="DSAccountEntity" syncable="YES"/>
@@ -365,9 +365,9 @@
         <attribute name="keyIDVoting" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="operatorBLSPublicKey" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="port" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="previousOperatorBLSPublicKeys" optional="YES" attributeType="Transformable" syncable="YES"/>
-        <attribute name="previousSimplifiedMasternodeEntryHashes" optional="YES" attributeType="Transformable" syncable="YES"/>
-        <attribute name="previousValidity" optional="YES" attributeType="Transformable" syncable="YES"/>
+        <attribute name="previousOperatorBLSPublicKeys" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" syncable="YES"/>
+        <attribute name="previousSimplifiedMasternodeEntryHashes" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" syncable="YES"/>
+        <attribute name="previousValidity" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" syncable="YES"/>
         <attribute name="providerRegistrationTransactionHash" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="simplifiedMasternodeEntryHash" optional="YES" attributeType="Binary" syncable="YES"/>
         <relationship name="addresses" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="DSAddressEntity" inverseName="usedInSimplifiedMasternodeEntries" inverseEntity="DSAddressEntity" syncable="YES"/>
@@ -489,7 +489,7 @@
         <element name="DSQuorumCommitmentTransactionEntity" positionX="-1939.23046875" positionY="1112.27734375" width="128" height="75"/>
         <element name="DSQuorumEntryEntity" positionX="-1880.47265625" positionY="-335.81640625" width="128" height="328"/>
         <element name="DSShapeshiftEntity" positionX="-946.375" positionY="817.2578125" width="128" height="225"/>
-        <element name="DSSimplifiedMasternodeEntryEntity" positionX="-1511.95703125" positionY="276.51953125" width="128" height="298"/>
+        <element name="DSSimplifiedMasternodeEntryEntity" positionX="-1511.95703125" positionY="276.51953125" width="128" height="28"/>
         <element name="DSSpecialTransactionEntity" positionX="-1145.90625" positionY="1134.63671875" width="128" height="75"/>
         <element name="DSSporkEntity" positionX="-1631.40625" positionY="479.12890625" width="128" height="120"/>
         <element name="DSSporkHashEntity" positionX="-1438.984375" positionY="509.0234375" width="128" height="90"/>

@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   s.author           = { 'quantumexplorer' => 'quantum@dash.org' }
   s.source           = { :git => 'https://github.com/dashevo/dashsync-iOS.git', :tag => s.version.to_s }
 
-  s.ios.deployment_target = '10.0'
+  s.ios.deployment_target = '12.0'
   
   s.requires_arc = true
 
@@ -24,7 +24,7 @@ Pod::Spec.new do |s|
   s.public_header_files = 'DashSync/**/*.h'
   s.private_header_files = 'DashSync/crypto/x11/*.h'
   s.libraries = 'bz2', 'sqlite3'
-  s.resource_bundles = {'DashSync' => ['DashSync/*.xcdatamodeld', 'DashSync/*.plist', 'DashSync/*.lproj', 'DashSync/MasternodeLists/*.dat', 'DashSync/*.json']}
+  s.resource_bundles = {'DashSync' => ['DashSync/*.xcdatamodeld', 'DashSync/MappingModels/*.xcmappingmodel', 'DashSync/*.plist', 'DashSync/*.lproj', 'DashSync/MasternodeLists/*.dat', 'DashSync/*.json']}
   
   s.framework = 'Foundation', 'UIKit', 'SystemConfiguration', 'CoreData', 'BackgroundTasks'
   s.compiler_flags = '-Wno-comma'
