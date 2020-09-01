@@ -41,7 +41,9 @@
     NSAssert(derivationPath.standaloneExtendedPublicKeyUniqueID, @"standaloneExtendedPublicKeyUniqueID must be set");
     //DSChain * chain = derivationPath.chain;
     NSArray * derivationPathEntities;
-    NSData * archivedDerivationPath = [NSKeyedArchiver archivedDataWithRootObject:derivationPath];
+    NSError * archivingError = nil;
+    NSData * archivedDerivationPath = [NSKeyedArchiver archivedDataWithRootObject:derivationPath requiringSecureCoding:NO error:&archivingError];
+    NSAssert(archivedDerivationPath != nil && archivingError == nil, @"Archived derivation path should have been created");
     DSChainEntity * chainEntity = [derivationPath.chain chainEntityInContext:context];
     //NSUInteger count = [chainEntity.derivationPaths count];
     derivationPathEntities = [[chainEntity.derivationPaths objectsPassingTest:^BOOL(DSDerivationPathEntity * _Nonnull obj, BOOL * _Nonnull stop) {
@@ -78,7 +80,9 @@
     
     NSManagedObjectContext * context = friendRequest.managedObjectContext;
     //DSChain * chain = derivationPath.chain;
-    NSData * archivedDerivationPath = [NSKeyedArchiver archivedDataWithRootObject:derivationPath];
+    NSError * archivingError = nil;
+    NSData * archivedDerivationPath = [NSKeyedArchiver archivedDataWithRootObject:derivationPath requiringSecureCoding:NO error:&archivingError];
+    NSAssert(archivedDerivationPath != nil && archivingError == nil, @"Archived derivation path should have been created");
     DSChainEntity * chainEntity = [derivationPath.chain chainEntityInContext:context];
 
     NSSet * derivationPathEntities = [chainEntity.derivationPaths filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"publicKeyIdentifier == %@ && chain == %@",derivationPath.standaloneExtendedPublicKeyUniqueID,[derivationPath.chain chainEntityInContext:context]]];

@@ -83,8 +83,9 @@
         if ([DSChain devnetWithIdentifier:devnetIdentifier]) {
             chain = [DSChain devnetWithIdentifier:devnetIdentifier];
         } else {
-            NSArray * checkpointArray = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-            chain = [DSChain recoverKnownDevnetWithIdentifier:devnetIdentifier withCheckpoints:checkpointArray performSetup:YES];
+            NSError * checkpointRetrievalError = nil;
+            NSArray * checkpointArray = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSArray class] fromData:data error:&checkpointRetrievalError];
+            chain = [DSChain recoverKnownDevnetWithIdentifier:devnetIdentifier withCheckpoints:checkpointRetrievalError?[NSArray array]:checkpointArray performSetup:YES];
         }
     } else {
         NSAssert(FALSE, @"Unknown DSChainType");
@@ -121,10 +122,16 @@
     if (objects.count) {
         DSChainEntity * chainEntity = [objects objectAtIndex:0];
         if (devnetIdentifier) {
-            NSArray * knownCheckpoints = [NSKeyedUnarchiver unarchiveObjectWithData:[chainEntity checkpoints]];
-            if (checkpoints.count > knownCheckpoints.count) {
-                NSData * archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints];
-                chainEntity.checkpoints = archivedCheckpoints;
+            NSError * error = nil;
+            NSArray * knownCheckpoints = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSArray class] fromData:[chainEntity checkpoints] error:&error];
+            NSAssert(error = nil, @"There should not be an error when decrypting checkpoints");
+            
+            if (error == nil && checkpoints.count > knownCheckpoints.count) {
+                NSData * archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints requiringSecureCoding:NO error:&error];
+                NSAssert(error = nil, @"There should not be an error when decrypting checkpoints");
+                if (!error) {
+                    chainEntity.checkpoints = archivedCheckpoints;
+                }
             }
         } else {
             chainEntity.checkpoints = nil;
@@ -136,8 +143,12 @@
     chainEntity.type = type;
     chainEntity.devnetIdentifier = devnetIdentifier;
     if (checkpoints && devnetIdentifier) {
-        NSData * archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints];
-        chainEntity.checkpoints = archivedCheckpoints;
+        NSError * error = nil;
+        NSData * archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints requiringSecureCoding:NO error:&error];
+        NSAssert(error = nil, @"There should not be an error when decrypting checkpoints");
+        if (!error) {
+            chainEntity.checkpoints = archivedCheckpoints;
+        }
     }
     return chainEntity;
 }
