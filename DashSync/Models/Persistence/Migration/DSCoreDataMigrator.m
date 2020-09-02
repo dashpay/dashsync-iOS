@@ -40,8 +40,24 @@
 
 @implementation DSCoreDataMigrator
 
++(NSURL*)documentsStoreURL {
+    static NSURL * storeURL = nil;
+    static dispatch_once_t onceToken = 0;
+    
+    dispatch_once(&onceToken, ^{
+        NSURL *docURL = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].lastObject;
+        NSString *fileName = @"DashSync.sqlite";
+        storeURL = [docURL URLByAppendingPathComponent:fileName];
+    });
+    return storeURL;
+}
+
 + (BOOL)requiresMigration {
     NSURL *storeURL = [DSDataController storeURL];
+    NSDictionary *metadata = [NSPersistentStoreCoordinator ds_metadataAt:storeURL];
+    if (metadata == nil) {
+        storeURL = [self documentsStoreURL];
+    }
     DSCoreDataMigrationVersionValue version = DSCoreDataMigrationVersion.current;
     return [self requiresMigrationAtStoreURL:storeURL version:version];
 }
@@ -50,20 +66,23 @@
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
     
     NSURL *storeURL = [DSDataController storeURL];
+    NSDictionary *metadata = [NSPersistentStoreCoordinator ds_metadataAt:storeURL];
+    if (metadata == nil) {
+        storeURL = [self documentsStoreURL];
+    }
     DSCoreDataMigrationVersionValue version = DSCoreDataMigrationVersion.current;
     if ([self requiresMigrationAtStoreURL:storeURL version:version]) {
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
             [self migrateStoreAtURL:storeURL toVersion:version];
-            
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (completion) {
-                    completion();
-                }
-            });
+            if (completion) {
+                completion();
+            }
         });
     }
     else {
-        completion();
+        if (completion) {
+            completion();
+        }
     }
 }
 

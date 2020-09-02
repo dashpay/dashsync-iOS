@@ -659,6 +659,7 @@
         <relationship name="entitymapping" type="1/1" destination="XDDEVENTITYMAPPING" idrefs="z333"></relationship>
     </object>
     <object type="XDDEVENTITYMAPPING" id="z228">
+        <attribute name="migrationpolicyclassname" type="string">DSDeleteEntityMigrationPolicy</attribute>
         <attribute name="sourcename" type="string">DSChainLockEntity</attribute>
         <attribute name="mappingtypename" type="string">Undefined</attribute>
         <attribute name="mappingnumber" type="int16">37</attribute>
@@ -666,7 +667,7 @@
         <attribute name="autogenerateexpression" type="bool">1</attribute>
         <relationship name="mappingmodel" type="1/1" destination="XDDEVMAPPINGMODEL" idrefs="z354"></relationship>
         <relationship name="attributemappings" type="0/0" destination="XDDEVATTRIBUTEMAPPING" idrefs="z275 z353"></relationship>
-        <relationship name="relationshipmappings" type="0/0" destination="XDDEVRELATIONSHIPMAPPING" idrefs="z276 z407 z418"></relationship>
+        <relationship name="relationshipmappings" type="0/0" destination="XDDEVRELATIONSHIPMAPPING" idrefs="z418 z276 z407"></relationship>
     </object>
     <object type="XDDEVRELATIONSHIPMAPPING" id="z229">
         <attribute name="autogenerateexpression" type="bool">1</attribute>
@@ -1379,15 +1380,15 @@ dmVyVCR0b3BYJG9iamVjdHMSAAGGoF8QD05TS2V5ZWRBcmNoaXZlctEAAAAIAAAACVRyb290gAGvESB4
         <relationship name="entitymapping" type="1/1" destination="XDDEVENTITYMAPPING" idrefs="z365"></relationship>
     </object>
     <object type="XDDEVENTITYMAPPING" id="z373">
-        <attribute name="migrationpolicyclassname" type="string">DSDeleteEntityMigrationPolicy</attribute>
+        <attribute name="migrationpolicyclassname" type="string"></attribute>
         <attribute name="sourcename" type="string">DSLocalMasternodeEntity</attribute>
         <attribute name="mappingtypename" type="string">Undefined</attribute>
         <attribute name="mappingnumber" type="int16">31</attribute>
         <attribute name="destinationname" type="string">DSLocalMasternodeEntity</attribute>
         <attribute name="autogenerateexpression" type="bool">1</attribute>
         <relationship name="mappingmodel" type="1/1" destination="XDDEVMAPPINGMODEL" idrefs="z354"></relationship>
-        <relationship name="attributemappings" type="0/0" destination="XDDEVATTRIBUTEMAPPING" idrefs="z117 z405 z263 z129 z250 z262 z390 z435"></relationship>
-        <relationship name="relationshipmappings" type="0/0" destination="XDDEVRELATIONSHIPMAPPING" idrefs="z391 z171 z132 z463 z296"></relationship>
+        <relationship name="attributemappings" type="0/0" destination="XDDEVATTRIBUTEMAPPING" idrefs="z262 z129 z263 z117 z435 z390 z250 z405"></relationship>
+        <relationship name="relationshipmappings" type="0/0" destination="XDDEVRELATIONSHIPMAPPING" idrefs="z132 z296 z391 z171 z463"></relationship>
     </object>
     <object type="XDDEVATTRIBUTEMAPPING" id="z374">
         <attribute name="name" type="string">shapeshiftStatus</attribute>

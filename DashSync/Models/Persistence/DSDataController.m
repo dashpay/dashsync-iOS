@@ -17,6 +17,7 @@
 
 #import "DSDataController.h"
 #import "DSTransaction.h"
+#import "DSCoreDataMigrator.h"
 
 @interface DSDataController()
 
@@ -34,7 +35,7 @@
     static dispatch_once_t onceToken = 0;
     
     dispatch_once(&onceToken, ^{
-        NSURL *docURL = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].lastObject;
+        NSURL *docURL = [[NSFileManager defaultManager] URLsForDirectory:NSApplicationSupportDirectory inDomains:NSUserDomainMask].lastObject;
         NSString *fileName = @"DashSync.sqlite";
         storeURL = [docURL URLByAppendingPathComponent:fileName];
     });
@@ -46,38 +47,50 @@
     self = [super init];
     if (!self) return nil;
     
-    NSBundle *frameworkBundle = [NSBundle bundleForClass:[DSTransaction class]];
-    NSURL *bundleURL = [[frameworkBundle resourceURL] URLByAppendingPathComponent:@"DashSync.bundle"];
-    NSBundle *resourceBundle = [NSBundle bundleWithURL:bundleURL];
-    NSURL *modelURL = [resourceBundle URLsForResourcesWithExtension:@"momd" subdirectory:nil].lastObject;
+    if ([DSCoreDataMigrator requiresMigration]) {
+        dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+        [DSCoreDataMigrator performMigration:^{
+            dispatch_semaphore_signal(sem);
+        }];
+        dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+    }
     
-    NSManagedObjectModel *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
-    
-    self.persistentContainer = [[NSPersistentContainer alloc] initWithName:@"DashSync" managedObjectModel:model];
-    
-    [self.persistentContainer loadPersistentStoresWithCompletionHandler:^(NSPersistentStoreDescription *description, NSError *error) {
-        if (error != nil) {
-            DSDLog(@"Failed to load Core Data stack: %@", error);
-#if (DEBUG && 1)
-            abort();
-#else
-            NSURL * storeURL = [self.class storeURL];
-            // if this is a not a debug build, attempt to delete and create a new persisent data store before crashing
-            if (! [[NSFileManager defaultManager] removeItemAtURL:storeURL error:&error]) {
-                DSDLog(@"%s: %@", __func__, error);
-            }
-            
-            [self.persistentContainer loadPersistentStoresWithCompletionHandler:^(NSPersistentStoreDescription *description, NSError *error) {
-                if (error != nil) {
-                    DSDLog(@"Failed to load Core Data stack again: %@", error);
-                    abort();
-                }
-            }];
-#endif
-        }
-    }];
+    [self loadPersistentContainer];
     
     return self;
+}
+
+-(void)loadPersistentContainer {
+        NSBundle *frameworkBundle = [NSBundle bundleForClass:[DSTransaction class]];
+        NSURL *bundleURL = [[frameworkBundle resourceURL] URLByAppendingPathComponent:@"DashSync.bundle"];
+        NSBundle *resourceBundle = [NSBundle bundleWithURL:bundleURL];
+        NSURL *modelURL = [resourceBundle URLsForResourcesWithExtension:@"momd" subdirectory:nil].lastObject;
+        
+        NSManagedObjectModel *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
+        
+        self.persistentContainer = [[NSPersistentContainer alloc] initWithName:@"DashSync" managedObjectModel:model];
+        
+        [self.persistentContainer loadPersistentStoresWithCompletionHandler:^(NSPersistentStoreDescription *description, NSError *error) {
+            if (error != nil) {
+                DSDLog(@"Failed to load Core Data stack: %@", error);
+    #if (DEBUG && 1)
+                abort();
+    #else
+                NSURL * storeURL = [self.class storeURL];
+                // if this is a not a debug build, attempt to delete and create a new persisent data store before crashing
+                if (! [[NSFileManager defaultManager] removeItemAtURL:storeURL error:&error]) {
+                    DSDLog(@"%s: %@", __func__, error);
+                }
+                
+                [self.persistentContainer loadPersistentStoresWithCompletionHandler:^(NSPersistentStoreDescription *description, NSError *error) {
+                    if (error != nil) {
+                        DSDLog(@"Failed to load Core Data stack again: %@", error);
+                        abort();
+                    }
+                }];
+    #endif
+            }
+        }];
 }
 
 -(NSManagedObjectContext*)viewContext {
