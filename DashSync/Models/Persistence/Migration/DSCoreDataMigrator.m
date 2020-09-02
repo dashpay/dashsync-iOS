@@ -52,6 +52,30 @@
     return storeURL;
 }
 
++(NSURL*)documentsWALURL {
+    static NSURL * storeURL = nil;
+    static dispatch_once_t onceToken = 0;
+    
+    dispatch_once(&onceToken, ^{
+        NSURL *docURL = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].lastObject;
+        NSString *fileName = @"DashSync.sqlite-wal";
+        storeURL = [docURL URLByAppendingPathComponent:fileName];
+    });
+    return storeURL;
+}
+
++(NSURL*)documentsSHMURL {
+    static NSURL * storeURL = nil;
+    static dispatch_once_t onceToken = 0;
+    
+    dispatch_once(&onceToken, ^{
+        NSURL *docURL = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].lastObject;
+        NSString *fileName = @"DashSync.sqlite-shm";
+        storeURL = [docURL URLByAppendingPathComponent:fileName];
+    });
+    return storeURL;
+}
+
 + (BOOL)requiresMigration {
     NSURL *storeURL = [DSDataController storeURL];
     NSDictionary *metadata = [NSPersistentStoreCoordinator ds_metadataAt:storeURL];
@@ -68,7 +92,13 @@
     NSURL *storeURL = [DSDataController storeURL];
     NSDictionary *metadata = [NSPersistentStoreCoordinator ds_metadataAt:storeURL];
     if (metadata == nil) {
-        storeURL = [self documentsStoreURL];
+        metadata = [NSPersistentStoreCoordinator ds_metadataAt:[self documentsStoreURL]];
+        if (metadata != nil) {
+            //Move to Application Support
+            [[NSFileManager defaultManager] moveItemAtURL:[self documentsStoreURL] toURL:storeURL error:nil];
+            [[NSFileManager defaultManager] moveItemAtURL:[self documentsWALURL] toURL:[DSDataController storeWALURL] error:nil];
+            [[NSFileManager defaultManager] moveItemAtURL:[self documentsSHMURL] toURL:[DSDataController storeSHMURL] error:nil];
+        }
     }
     DSCoreDataMigrationVersionValue version = DSCoreDataMigrationVersion.current;
     if ([self requiresMigrationAtStoreURL:storeURL version:version]) {

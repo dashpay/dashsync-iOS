@@ -31,6 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 // returns the location on disk of the sqlite store file
 + (NSURL*)storeURL;
++ (NSURL*)storeWALURL;
++ (NSURL*)storeSHMURL;
  
 @end
 

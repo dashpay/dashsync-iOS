@@ -42,6 +42,32 @@
     return storeURL;
 }
 
++(NSURL*)storeWALURL {
+    static NSURL * storeURL = nil;
+    static dispatch_once_t onceToken = 0;
+    
+    dispatch_once(&onceToken, ^{
+        NSURL *docURL = [[NSFileManager defaultManager] URLsForDirectory:NSApplicationSupportDirectory inDomains:NSUserDomainMask].lastObject;
+        NSString *fileName = @"DashSync.sqlite-wal";
+        storeURL = [docURL URLByAppendingPathComponent:fileName];
+    });
+    return storeURL;
+}
+
++(NSURL*)storeSHMURL {
+    static NSURL * storeURL = nil;
+    static dispatch_once_t onceToken = 0;
+    
+    dispatch_once(&onceToken, ^{
+        NSURL *docURL = [[NSFileManager defaultManager] URLsForDirectory:NSApplicationSupportDirectory inDomains:NSUserDomainMask].lastObject;
+        NSString *fileName = @"DashSync.sqlite-shm";
+        storeURL = [docURL URLByAppendingPathComponent:fileName];
+    });
+    return storeURL;
+}
+
+
+
 - (id)init
 {
     self = [super init];
