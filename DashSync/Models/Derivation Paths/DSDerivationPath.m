@@ -104,7 +104,7 @@
     if (error) return nil;
     _extendedPublicKey = [DSKey keyWithExtendedPublicKeyData:data forKeyType:DSKeyType_ECDSA];
     
-    NSDictionary * infoDictionary = getKeychainDict([DSDerivationPath standaloneInfoDictionaryLocationStringForUniqueID:extendedPublicKeyIdentifier], &error);
+    NSDictionary * infoDictionary = getKeychainDict([DSDerivationPath standaloneInfoDictionaryLocationStringForUniqueID:extendedPublicKeyIdentifier],@[[NSString class],[NSNumber class]], &error);
     if (error) return nil;
     _depth = infoDictionary[DERIVATION_PATH_STANDALONE_INFO_DEPTH];
     _child = infoDictionary[DERIVATION_PATH_STANDALONE_INFO_CHILD];

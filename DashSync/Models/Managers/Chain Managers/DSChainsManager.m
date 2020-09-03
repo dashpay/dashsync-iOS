@@ -68,7 +68,11 @@
     if (self) {
         self.knownChains = [NSMutableArray array];
         NSError * error = nil;
-        NSMutableDictionary * registeredDevnetIdentifiers = [getKeychainDict(DEVNET_CHAINS_KEY, &error) mutableCopy];
+        NSMutableDictionary * registeredDevnetIdentifiers = [NSMutableDictionary dictionary];
+        NSDictionary * dictionaryFromKeyChain = getKeychainDict(DEVNET_CHAINS_KEY,@[[NSString class],[NSArray class],[DSCheckpoint class]], &error);
+        if (dictionaryFromKeyChain && error == nil) {
+            registeredDevnetIdentifiers = [dictionaryFromKeyChain mutableCopy];
+        }
         self.knownDevnetChains = [NSMutableArray array];
         for (NSString * string in registeredDevnetIdentifiers) {
             NSArray<DSCheckpoint*>* checkpointArray = registeredDevnetIdentifiers[string];
@@ -272,7 +276,7 @@
         [peerManager registerPeerAtLocation:ipAddress port:port?[port intValue]:standardPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort];
     }
     
-    NSMutableDictionary * registeredDevnetsDictionary = [getKeychainDict(DEVNET_CHAINS_KEY, &error) mutableCopy];
+    NSMutableDictionary * registeredDevnetsDictionary = [getKeychainDict(DEVNET_CHAINS_KEY,@[[NSString class],[NSArray class],[DSCheckpoint class]], &error) mutableCopy];
     
     if (!registeredDevnetsDictionary) registeredDevnetsDictionary = [NSMutableDictionary dictionary];
     if (![[registeredDevnetsDictionary allKeys] containsObject:identifier]) {
@@ -294,7 +298,7 @@
             DSChainManager * chainManager = [self chainManagerForChain:chain];
             DSPeerManager * peerManager = chainManager.peerManager;
             [peerManager clearRegisteredPeers];
-            NSMutableDictionary * registeredDevnetsDictionary = [getKeychainDict(DEVNET_CHAINS_KEY, &error) mutableCopy];
+            NSMutableDictionary * registeredDevnetsDictionary = [getKeychainDict(DEVNET_CHAINS_KEY,@[[NSString class],[NSArray class],[DSCheckpoint class]], &error) mutableCopy];
             
             if (!registeredDevnetsDictionary) registeredDevnetsDictionary = [NSMutableDictionary dictionary];
             if ([[registeredDevnetsDictionary allKeys] containsObject:chain.devnetIdentifier]) {

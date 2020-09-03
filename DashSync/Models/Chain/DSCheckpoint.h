@@ -35,7 +35,7 @@ typedef NS_ENUM(uint8_t, DSCheckpointOptions) {
     DSCheckpointOptions_SaveMerkleRoot = 1,
 };
 
-@interface DSCheckpoint : NSObject <NSCoding>
+@interface DSCheckpoint : NSObject <NSCoding,NSSecureCoding>
 
 @property (nonatomic, readonly) uint32_t height;
 @property (nonatomic, readonly) UInt256 blockHash;

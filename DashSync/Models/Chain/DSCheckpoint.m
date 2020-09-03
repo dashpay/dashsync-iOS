@@ -158,6 +158,10 @@
     return [[DSBlock alloc] initWithCheckpoint:self onChain:chain];
 }
 
++(BOOL)supportsSecureCoding {
+    return YES;
+}
+
 - (id)initWithCoder:(NSCoder *)decoder {
     UInt256 checkpointHash = [decoder decodeUInt256ForKey:kCheckpointHashKey];
     uint32_t height = [decoder decodeInt32ForKey:kHeightKey];

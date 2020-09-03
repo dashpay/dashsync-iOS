@@ -572,7 +572,7 @@
 
 -(void)registerPeerAtLocation:(UInt128)IPAddress port:(uint32_t)port dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort {
     NSError * error = nil;
-    NSMutableArray * registeredPeersArray = [getKeychainArray(self.chain.registeredPeersKey, &error) mutableCopy];
+    NSMutableArray * registeredPeersArray = [getKeychainArray(self.chain.registeredPeersKey,@[[NSString class],[NSNumber class],[NSDictionary class],[NSData class]], &error) mutableCopy];
     if (!registeredPeersArray) registeredPeersArray = [NSMutableArray array];
     NSDictionary * insertDictionary = @{@"address":[NSData dataWithUInt128:IPAddress],@"port":@(port),@"dapiJRPCPort":@(dapiJRPCPort),@"dapiGRPCPort":@(dapiGRPCPort)};
     BOOL found = FALSE;
@@ -591,7 +591,7 @@
 
 -(NSArray*)registeredDevnetPeers {
     NSError * error = nil;
-    NSMutableArray * registeredPeersArray = [getKeychainArray(self.chain.registeredPeersKey, &error) mutableCopy];
+    NSMutableArray * registeredPeersArray = [getKeychainArray(self.chain.registeredPeersKey,@[[NSString class],[NSNumber class],[NSDictionary class],[NSData class]], &error) mutableCopy];
     if (error) return @[];
     NSMutableArray * registeredPeers = [NSMutableArray array];
     for (NSDictionary * peerDictionary in registeredPeersArray) {

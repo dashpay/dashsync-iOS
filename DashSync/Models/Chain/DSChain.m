@@ -1274,7 +1274,7 @@ static dispatch_once_t devnetToken = 0;
 
 -(void)retrieveStandaloneDerivationPaths {
     NSError * error = nil;
-    NSArray * standaloneIdentifiers = getKeychainArray(self.chainStandaloneDerivationPathsKey, &error);
+    NSArray * standaloneIdentifiers = getKeychainArray(self.chainStandaloneDerivationPathsKey,@[[NSString class]], &error);
     if (!error) {
         for (NSString * derivationPathIdentifier in standaloneIdentifiers) {
             DSDerivationPath * derivationPath = [[DSDerivationPath alloc] initWithExtendedPublicKeyIdentifier:derivationPathIdentifier onChain:self];
@@ -1294,7 +1294,7 @@ static dispatch_once_t devnetToken = 0;
 
 -(void)unregisterStandaloneDerivationPath:(DSDerivationPath*)derivationPath {
     NSError * error = nil;
-    NSMutableArray * keyChainArray = [getKeychainArray(self.chainStandaloneDerivationPathsKey, &error) mutableCopy];
+    NSMutableArray * keyChainArray = [getKeychainArray(self.chainStandaloneDerivationPathsKey,@[[NSString class]], &error) mutableCopy];
     if (!keyChainArray) return;
     [keyChainArray removeObject:derivationPath.standaloneExtendedPublicKeyUniqueID];
     setKeychainArray(keyChainArray, self.chainStandaloneDerivationPathsKey, NO);
@@ -1313,7 +1313,7 @@ static dispatch_once_t devnetToken = 0;
         [self addStandaloneDerivationPath:derivationPath];
     }
     NSError * error = nil;
-    NSMutableArray * keyChainArray = [getKeychainArray(self.chainStandaloneDerivationPathsKey, &error) mutableCopy];
+    NSMutableArray * keyChainArray = [getKeychainArray(self.chainStandaloneDerivationPathsKey,@[[NSString class]], &error) mutableCopy];
     if (!keyChainArray) keyChainArray = [NSMutableArray array];
     [keyChainArray addObject:derivationPath.standaloneExtendedPublicKeyUniqueID];
     setKeychainArray(keyChainArray, self.chainStandaloneDerivationPathsKey, NO);
@@ -1520,7 +1520,7 @@ static dispatch_once_t devnetToken = 0;
     [wallet wipeWalletInfo];
     [self.mWallets removeObject:wallet];
     NSError * error = nil;
-    NSMutableArray * keyChainArray = [getKeychainArray(self.chainWalletsKey, &error) mutableCopy];
+    NSMutableArray * keyChainArray = [getKeychainArray(self.chainWalletsKey,@[[NSString class]], &error) mutableCopy];
     if (!keyChainArray) keyChainArray = [NSMutableArray array];
     [keyChainArray removeObject:wallet.uniqueIDString];
     setKeychainArray(keyChainArray, self.chainWalletsKey, NO);
@@ -1546,7 +1546,7 @@ static dispatch_once_t devnetToken = 0;
     }
     
     NSError * error = nil;
-    NSMutableArray * keyChainArray = [getKeychainArray(self.chainWalletsKey, &error) mutableCopy];
+    NSMutableArray * keyChainArray = [getKeychainArray(self.chainWalletsKey,@[[NSString class]], &error) mutableCopy];
     if (!keyChainArray) keyChainArray = [NSMutableArray array];
     if (![keyChainArray containsObject:wallet.uniqueIDString]) {
         [keyChainArray addObject:wallet.uniqueIDString];
@@ -1559,7 +1559,7 @@ static dispatch_once_t devnetToken = 0;
 
 -(void)retrieveWallets {
     NSError * error = nil;
-    NSArray * walletIdentifiers = getKeychainArray(self.chainWalletsKey, &error);
+    NSArray * walletIdentifiers = getKeychainArray(self.chainWalletsKey,@[[NSString class]], &error);
     if (!error && walletIdentifiers) {
         for (NSString * uniqueID in walletIdentifiers) {
             DSWallet * wallet = [[DSWallet alloc] initWithUniqueID:uniqueID forChain:self];

@@ -172,7 +172,7 @@
     }
     DSCoreDataMigrationVersionValue sourceVersion = [DSCoreDataMigrationVersion compatibleVersionForStoreMetadata:metadata];
     if (sourceVersion == NSNotFound) {
-        NSAssert(NO, @"unknown store version at URL %@", storeURL);
+        DSDLog(@"unknown source version at URL %@", storeURL);
         return @[];
     }
     

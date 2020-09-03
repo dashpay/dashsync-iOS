@@ -88,9 +88,9 @@ int64_t getKeychainInt(NSString *key, NSError **error);
 BOOL setKeychainString(NSString *s, NSString *key, BOOL authenticated);
 NSString *getKeychainString(NSString *key, NSError **error);
 BOOL setKeychainDict(NSDictionary *dict, NSString *key, BOOL authenticated);
-NSDictionary *getKeychainDict(NSString *key, NSError **error);
+NSDictionary *getKeychainDict(NSString *key, NSArray *classes, NSError **error);
 BOOL setKeychainArray(NSArray *array, NSString *key, BOOL authenticated);
-NSArray *getKeychainArray(NSString *key, NSError **error);
+NSArray *getKeychainArray(NSString *key, NSArray *classes, NSError **error);
 
 //Compact Size
 

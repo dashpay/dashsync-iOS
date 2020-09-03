@@ -29,6 +29,8 @@
 #import "NSString+Dash.h"
 #import "NSData+Bitcoin.h"
 #import "DSChainLockEntity+CoreDataProperties.h"
+#import "DSCompatibilityArrayValueTransformer.h"
+#import "DSCheckpoint.h"
 
 @interface DSChainEntity()
 
@@ -100,7 +102,7 @@
     if ([lastPersistedChainSyncLocators isKindOfClass:NSData.class]) {
         NSError *unarchiveError = nil;
         if (@available(iOS 11.0, *)) {
-            id object = [NSKeyedUnarchiver unarchivedObjectOfClass:NSArray.class fromData:(NSData*)lastPersistedChainSyncLocators error:&unarchiveError];
+            id object = [NSKeyedUnarchiver unarchivedObjectOfClasses:[NSSet setWithArray:@[[NSArray class],[NSData class]]] fromData:(NSData*)lastPersistedChainSyncLocators error:&unarchiveError];
             NSAssert(unarchiveError == nil, @"Failed transforming data to object %@", unarchiveError);
             lastPersistedChainSyncLocators = object;
         } else {
@@ -123,12 +125,10 @@
         DSChainEntity * chainEntity = [objects objectAtIndex:0];
         if (devnetIdentifier) {
             NSError * error = nil;
-            NSArray * knownCheckpoints = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSArray class] fromData:[chainEntity checkpoints] error:&error];
-            NSAssert(error = nil, @"There should not be an error when decrypting checkpoints");
-            
-            if (error == nil && checkpoints.count > knownCheckpoints.count) {
-                NSData * archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints requiringSecureCoding:NO error:&error];
-                NSAssert(error = nil, @"There should not be an error when decrypting checkpoints");
+            NSArray * knownCheckpoints = [NSKeyedUnarchiver unarchivedObjectOfClasses:[NSSet setWithArray:@[[NSArray class],[DSCheckpoint class]]] fromData:[chainEntity checkpoints] error:&error];
+            if (error != nil || checkpoints.count > knownCheckpoints.count) {
+                NSData * archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints requiringSecureCoding:YES error:&error];
+                NSAssert(error == nil, @"There should not be an error when decrypting checkpoints");
                 if (!error) {
                     chainEntity.checkpoints = archivedCheckpoints;
                 }
@@ -145,7 +145,7 @@
     if (checkpoints && devnetIdentifier) {
         NSError * error = nil;
         NSData * archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints requiringSecureCoding:NO error:&error];
-        NSAssert(error = nil, @"There should not be an error when decrypting checkpoints");
+        NSAssert(error == nil, @"There should not be an error when decrypting checkpoints");
         if (!error) {
             chainEntity.checkpoints = archivedCheckpoints;
         }

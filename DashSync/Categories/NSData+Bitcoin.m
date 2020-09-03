@@ -163,13 +163,22 @@ BOOL setKeychainDict(NSDictionary *dict, NSString *key, BOOL authenticated)
     }
 }
 
-NSDictionary *getKeychainDict(NSString *key, NSError **error)
+NSDictionary *getKeychainDict(NSString *key, NSArray *classes, NSError **error)
 {
-    @autoreleasepool {
+    //@autoreleasepool {
         NSData *d = getKeychainData(key, error);
-        
-        return (d) ? [NSKeyedUnarchiver unarchivedObjectOfClass:[NSDictionary class] fromData:d error:nil] : nil;
-    }
+        if (d == nil) return nil;
+        NSSet *set = [NSSet setWithArray:@[
+        [NSDictionary class],
+        [NSMutableDictionary class]
+        ]];
+        set = [set setByAddingObjectsFromArray:classes];
+        NSDictionary * dictionary = [NSKeyedUnarchiver unarchivedObjectOfClasses:set fromData:d error:error];
+        if (*error) {
+            DSDLog(@"error retrieving dictionary from keychain %@",*error);
+        }
+        return dictionary;
+    //}
 }
 
 BOOL setKeychainArray(NSArray *array, NSString *key, BOOL authenticated)
@@ -181,12 +190,21 @@ BOOL setKeychainArray(NSArray *array, NSString *key, BOOL authenticated)
     }
 }
 
-NSArray *getKeychainArray(NSString *key, NSError **error)
+NSArray *getKeychainArray(NSString *key, NSArray *classes, NSError **error)
 {
     @autoreleasepool {
         NSData *d = getKeychainData(key, error);
-        
-        return (d) ? [NSKeyedUnarchiver unarchivedObjectOfClass:[NSArray class] fromData:d error:nil] : nil;
+        if (d == nil) return nil;
+        NSSet *set = [NSSet setWithArray:@[
+        [NSArray class],
+        [NSMutableArray class]
+        ]];
+        set = [set setByAddingObjectsFromArray:classes];
+        NSArray * array = [NSKeyedUnarchiver unarchivedObjectOfClasses:set fromData:d error:error];
+        if (*error) {
+            DSDLog(@"error retrieving array from keychain %@",*error);
+        }
+        return array;
     }
 }
 
