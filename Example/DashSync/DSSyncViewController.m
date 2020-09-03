@@ -30,6 +30,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *percentageLabel;
 @property (strong, nonatomic) IBOutlet UILabel *dbSizeLabel;
 @property (strong, nonatomic) IBOutlet UILabel *lastBlockHeightLabel;
+@property (strong, nonatomic) IBOutlet UILabel *syncProgressLabel;
 @property (strong, nonatomic) IBOutlet UILabel *lastMasternodeBlockHeightLabel;
 @property (strong, nonatomic) IBOutlet UIProgressView *progressView, *pulseView;
 @property (assign, nonatomic) NSTimeInterval timeout, start;
@@ -348,6 +349,7 @@
     self.percentageLabel.text = [NSString stringWithFormat:@"%0.1f%%",(progress > 0.1 ? progress - 0.1 : 0.0)*111.0];
     self.dbSizeLabel.text = [NSString stringWithFormat:@"%0.1llu KB",dbFileSize/1000];
     self.lastBlockHeightLabel.text = [NSString stringWithFormat:@"%d",lastBlockHeight];
+    self.syncProgressLabel.text = [NSString stringWithFormat:@"%f",progress];
     self.lastMasternodeBlockHeightLabel.text = [NSString stringWithFormat:@"%d",lastHeaderHeight];
     self.downloadPeerLabel.text = self.chainManager.peerManager.downloadPeerName;
     self.chainTipLabel.text = self.chain.chainTip;

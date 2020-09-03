@@ -306,7 +306,8 @@
 
 -(double)combinedSyncProgress
 {
-    return self.terminalHeaderSyncProgress * 0.1 + self.masternodeManager.masternodeListAndQuorumsSyncProgress * 0.2 + self.chainSyncProgress * 0.7;
+    DSDLog(@"%f %f %f",self.terminalHeaderSyncProgress,self.masternodeManager.masternodeListAndQuorumsSyncProgress,self.chainSyncProgress);
+    return self.terminalHeaderSyncProgress * 0.2 + self.masternodeManager.masternodeListAndQuorumsSyncProgress * 0.25 + self.chainSyncProgress * 0.55;
 }
 
 -(void)resetChainSyncStartHeight {

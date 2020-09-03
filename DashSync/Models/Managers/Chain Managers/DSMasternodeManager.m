@@ -192,7 +192,13 @@
 {
     double amountLeft = self.masternodeListRetrievalQueue.count;
     double maxAmount = self.masternodeListRetrievalQueueMaxAmount;
-    if (!maxAmount) return 0;
+    if (!amountLeft) {
+        if (self.lastMasternodeListBlockHeight == UINT32_MAX || self.lastMasternodeListBlockHeight < self.chain.lastTerminalBlockHeight - 16) {
+            return 0;
+        } else {
+            return 1;
+        }
+    }
     double progress = MAX(MIN((maxAmount - amountLeft) / maxAmount,1),0);
     return progress;
 }
