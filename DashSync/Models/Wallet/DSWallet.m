@@ -899,6 +899,7 @@
 - (NSArray *)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)txHashes
 {
     NSParameterAssert(txHashes);
+    if (![txHashes count]) return [NSArray array];
     
     NSMutableArray *updated = [NSMutableArray array];
     
@@ -910,7 +911,7 @@
             [self chainUpdatedBlockHeight:height];
         }
     }
-    return updated;
+    return [updated copy];
 }
 
 // this is used to save transactions atomically with the block, needs to be called before switching threads to save the block

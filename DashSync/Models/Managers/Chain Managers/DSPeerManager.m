@@ -656,6 +656,10 @@
         if ([self.chain syncsBlockchain] && ![self.chain canConstructAFilter]) return; // check to make sure the wallet has been created if only are a basic wallet with no dash features
         if (self.connectFailures >= MAX_CONNECT_FAILURES) self.connectFailures = 0; // this attempt is a manual retry
         
+        if (self.chainManager.terminalHeaderSyncProgress < 1.0) {
+            [self.chainManager resetTerminalSyncStartHeight];
+        }
+        
         if (self.chainManager.chainSyncProgress < 1.0) {
             [self.chainManager resetChainSyncStartHeight];
             

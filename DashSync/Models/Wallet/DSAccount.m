@@ -83,7 +83,8 @@
 
 @property (nonatomic, strong) NSArray *balanceHistory;
 
-@property (nonatomic, strong) NSSet *spentOutputs, *invalidTx, *pendingTx;
+@property (nonatomic, strong) NSSet *spentOutputs, *invalidTransactionHashes, *pendingTransactionHashes;
+@property (nonatomic, strong) NSMutableDictionary<NSNumber*,NSSet*> *pendingCoinbaseLockedTransactionHashes;
 @property (nonatomic, strong) NSMutableOrderedSet *transactions;
 
 @property (nonatomic, strong) NSMutableArray <DSTransaction*> *transactionsToSave;
@@ -549,7 +550,8 @@
     
     uint64_t balance = 0, prevBalance = 0, totalSent = 0, totalReceived = 0;
     NSMutableOrderedSet *utxos = [NSMutableOrderedSet orderedSet];
-    NSMutableSet *spentOutputs = [NSMutableSet set], *invalidTx = [NSMutableSet set], *pendingTx = [NSMutableSet set];
+    NSMutableSet *spentOutputs = [NSMutableSet set], *invalidTx = [NSMutableSet set], *pendingTransactionHashes = [NSMutableSet set];
+    NSMutableDictionary *pendingCoinbaseLockedTransactionHashes = [NSMutableDictionary dictionary];
     NSMutableArray *balanceHistory = [NSMutableArray array];
     uint32_t now = [NSDate timeIntervalSince1970];
     
@@ -618,10 +620,19 @@
                 
             }
             
-            if ([self transactionOutputsAreLocked:tx]) pending = YES;
+            if (pending || [inputs intersectsSet:pendingTransactionHashes]) {
+                [pendingTransactionHashes addObject:uint256_obj(tx.txHash)];
+                [balanceHistory insertObject:@(balance) atIndex:0];
+                continue;
+            }
             
-            if (pending || [inputs intersectsSet:pendingTx]) {
-                [pendingTx addObject:uint256_obj(tx.txHash)];
+            uint32_t lockedBlockHeight = [self transactionOutputsAreLockedTill:tx];
+            
+            if (lockedBlockHeight) {
+                if (![pendingCoinbaseLockedTransactionHashes objectForKey:@(lockedBlockHeight)]) {
+                    [pendingCoinbaseLockedTransactionHashes setObject:[NSMutableSet set] forKey:@(lockedBlockHeight)];
+                }
+                [((NSMutableSet*)pendingCoinbaseLockedTransactionHashes[@(lockedBlockHeight)]) addObject:uint256_obj(tx.txHash)];
                 [balanceHistory insertObject:@(balance) atIndex:0];
                 continue;
             }
@@ -682,8 +693,9 @@
         }
     }
     
-    self.invalidTx = invalidTx;
-    self.pendingTx = pendingTx;
+    self.invalidTransactionHashes = invalidTx;
+    self.pendingTransactionHashes = pendingTransactionHashes;
+    self.pendingCoinbaseLockedTransactionHashes = pendingCoinbaseLockedTransactionHashes;
     self.spentOutputs = spentOutputs;
     self.utxos = utxos;
     self.balanceHistory = balanceHistory;
@@ -745,8 +757,8 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         
         if ([tx1.inputHashes containsObject:hash2]) return YES;
         if ([tx2.inputHashes containsObject:hash1]) return NO;
-        if ([self.invalidTx containsObject:hash1] && ! [self.invalidTx containsObject:hash2]) return YES;
-        if ([self.pendingTx containsObject:hash1] && ! [self.pendingTx containsObject:hash2]) return YES;
+        if ([self.invalidTransactionHashes containsObject:hash1] && ! [self.invalidTransactionHashes containsObject:hash2]) return YES;
+        if ([self.pendingTransactionHashes containsObject:hash1] && ! [self.pendingTransactionHashes containsObject:hash2]) return YES;
         
         for (NSValue *hash in tx1.inputHashes) {
             if (_isAscending(self.allTx[hash], tx2)) return YES;
@@ -1058,7 +1070,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 }
 
 - (void)chainUpdatedBlockHeight:(int32_t)height {
-    if ([self.pendingTx count]) {
+    if ([self.pendingCoinbaseLockedTransactionHashes objectForKey:@(height)]) {
         [self updateBalance];
     }
 }
@@ -1087,7 +1099,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             if ((walletCreationTime == BIP39_WALLET_UNKNOWN_CREATION_TIME || walletCreationTime == BIP39_CREATION_TIME) && uint256_eq(h, _firstTransactionHash)) {
                 [self.wallet setGuessedWalletCreationTime:tx.timestamp - HOUR_TIME_INTERVAL - (DAY_TIME_INTERVAL/arc4random()%DAY_TIME_INTERVAL)];
             }
-            if ([self.pendingTx containsObject:hash] || [self.invalidTx containsObject:hash]) needsUpdate = YES;
+            if ([self.pendingTransactionHashes containsObject:hash] || [self.invalidTransactionHashes containsObject:hash]) needsUpdate = YES;
         }
         else if (height != TX_UNCONFIRMED) [self.allTx removeObjectForKey:hash]; // remove confirmed non-wallet tx
     }
@@ -1344,7 +1356,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     if (transaction.blockHeight != TX_UNCONFIRMED) return YES;
     
     if (self.allTx[uint256_obj(transaction.txHash)] != nil) {
-        if ([self.invalidTx containsObject:uint256_obj(transaction.txHash)]) {
+        if ([self.invalidTransactionHashes containsObject:uint256_obj(transaction.txHash)]) {
             return NO;
         } else {
             return YES;
@@ -1398,15 +1410,19 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     return NO;
 }
 
-//true if this transaction outputs can not be used in inputs
 -(BOOL)transactionOutputsAreLocked:(DSTransaction *)transaction {
+    return ([self transactionOutputsAreLockedTill:transaction] != 0);
+}
+
+//true if this transaction outputs can not be used in inputs
+-(uint32_t)transactionOutputsAreLockedTill:(DSTransaction *)transaction {
     NSParameterAssert(transaction);
     
     if ([transaction isKindOfClass:[DSCoinbaseTransaction class]]) { //only allow these to be spent after 100 inputs
         DSCoinbaseTransaction * coinbaseTransaction = (DSCoinbaseTransaction*)transaction;
-        if (coinbaseTransaction.height + 100 > self.wallet.chain.lastSyncBlockHeight) return YES;
+        if (coinbaseTransaction.height + 100 > self.wallet.chain.lastSyncBlockHeight) return coinbaseTransaction.height + 100;
     }
-    return NO;
+    return 0;
 }
 
 // true if tx is considered 0-conf safe (valid and not pending, timestamp is greater than 0, and no unverified inputs)

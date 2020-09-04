@@ -200,6 +200,9 @@ NS_ASSUME_NONNULL_BEGIN
 // true if transaction cannot be immediately spent
 - (BOOL)transactionOutputsAreLocked:(DSTransaction *)transaction;
 
+// block height at which transaction oututs can be spent
+- (uint32_t)transactionOutputsAreLockedTill:(DSTransaction *)transaction;
+
 // true if tx is considered 0-conf safe (valid and not pending, timestamp is greater than 0, and no unverified inputs)
 - (BOOL)transactionIsVerified:(DSTransaction *)transaction;
 

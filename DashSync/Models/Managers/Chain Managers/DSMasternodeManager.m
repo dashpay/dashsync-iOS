@@ -193,7 +193,7 @@
     double amountLeft = self.masternodeListRetrievalQueue.count;
     double maxAmount = self.masternodeListRetrievalQueueMaxAmount;
     if (!amountLeft) {
-        if (self.lastMasternodeListBlockHeight == UINT32_MAX || self.lastMasternodeListBlockHeight < self.chain.lastTerminalBlockHeight - 16) {
+        if (self.lastMasternodeListBlockHeight == UINT32_MAX || self.lastMasternodeListBlockHeight < self.chain.estimatedBlockHeight - 16) {
             return 0;
         } else {
             return 1;

@@ -1617,7 +1617,7 @@ static dispatch_once_t devnetToken = 0;
     }
     
     if (_lastTerminalBlock) {
-        DSDLog(@"last terminal block at height %d chosen from checkpoints (hash is %@)",_lastSyncBlock.height,[NSData dataWithUInt256:_lastTerminalBlock.blockHash].hexString);
+        DSDLog(@"last terminal block at height %d chosen from checkpoints (hash is %@)",_lastTerminalBlock.height,[NSData dataWithUInt256:_lastTerminalBlock.blockHash].hexString);
     }
 }
 

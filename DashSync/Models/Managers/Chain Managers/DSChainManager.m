@@ -288,7 +288,7 @@
 
 -(double)terminalHeaderSyncProgress
 {
-    if (! self.peerManager.downloadPeer && self.terminalSyncStartHeight == 0) return 0.0;
+    if (!self.peerManager.downloadPeer && self.terminalSyncStartHeight == 0) return 0.0;
     if (self.chain.lastTerminalBlockHeight >= self.chain.estimatedBlockHeight) return 1.0;
     
     double lastBlockHeight = self.chain.lastTerminalBlockHeight;
@@ -306,6 +306,7 @@
 
 -(double)combinedSyncProgress
 {
+    DSDLog(@"combinedSyncProgress breakdown %f %f %f",self.terminalHeaderSyncProgress,self.masternodeManager.masternodeListAndQuorumsSyncProgress,self.chainSyncProgress);
     return self.terminalHeaderSyncProgress * 0.2 + self.masternodeManager.masternodeListAndQuorumsSyncProgress * 0.25 + self.chainSyncProgress * 0.55;
 }
 
