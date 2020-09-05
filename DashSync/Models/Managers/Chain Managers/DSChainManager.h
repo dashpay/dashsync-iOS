@@ -67,9 +67,11 @@ typedef void (^MultipleBlockMiningCompletionBlock)(NSArray<DSFullBlock *>* block
 
 - (void)stopSync;
 
-- (void)rescan;
+- (void)syncBlocksRescan;
 
-- (void)rescanMasternodeListsAndQuorums;
+- (void)masternodeListAndBlocksRescan;
+
+- (void)masternodeListRescan;
 
 // MARK: - Mining
 

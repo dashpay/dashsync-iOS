@@ -433,18 +433,7 @@
     self.syncPhase = DSChainSyncPhase_Offline;
 }
 
--(void)disconnectedRescan {
-    NSManagedObjectContext * chainContext = [NSManagedObjectContext chainContext];
-    DSChainEntity * chainEntity = [self.chain chainEntityInContext:chainContext];
-    [chainEntity.managedObjectContext performBlockAndWait:^{
-        [self.chain wipeMasternodesInContext:chainEntity.managedObjectContext];//masternodes and quorums must go first
-        [DSMerkleBlockEntity deleteBlocksOnChainEntity:chainEntity];
-        [DSTransactionHashEntity deleteTransactionHashesOnChainEntity:chainEntity];
-        [self.masternodeManager wipeMasternodeInfo];
-        [self.chain wipeBlockchainInfoInContext:chainContext];
-        [chainContext ds_save];
-    }];
-    
+-(void)removeNonMainnetTrustedPeer {
     NSManagedObjectContext * peerContext =  [NSManagedObjectContext peerContext];
     DSChainEntity * chainEntityInPeerContext = [self.chain chainEntityInContext:peerContext];
     
@@ -454,57 +443,66 @@
         [DSPeerEntity deletePeersForChainEntity:chainEntityInPeerContext];
         [peerContext ds_save];
     }
+}
+
+-(void)disconnectedMasternodeListAndBlocksRescan {
+
+    NSManagedObjectContext * chainContext = [NSManagedObjectContext chainContext];
+    [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chain inContext:chainContext];
+    [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:chainContext];
     
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSQuorumListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
-        
-    });
-    
-    self.chainSyncStartHeight = self.chain.lastSyncBlockHeight;
-    [[NSUserDefaults standardUserDefaults] setInteger:self.chainSyncStartHeight forKey:self.chainSyncStartHeightKey];
+    [self removeNonMainnetTrustedPeer];
     [self.peerManager connect];
 }
 
--(void)disconnectedRescanOfMasternodeListsAndQuorums {
+-(void)disconnectedMasternodeListRescan {
+
     NSManagedObjectContext * chainContext = [NSManagedObjectContext chainContext];
-    DSChainEntity * chainEntity = [self.chain chainEntityInContext:chainContext];
-    [chainEntity.managedObjectContext performBlockAndWait:^{
-        [self.chain wipeMasternodesInContext:chainEntity.managedObjectContext];//masternodes and quorums must go first
-        [self.masternodeManager wipeMasternodeInfo];
-        [chainContext ds_save];
-    }];
+    [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chain inContext:chainContext];
     
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSQuorumListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
-        
-    });
+    [self removeNonMainnetTrustedPeer];
+    [self.peerManager connect];
+}
+
+-(void)disconnectedSyncBlocksRescan {
+    NSManagedObjectContext * chainContext = [NSManagedObjectContext chainContext];
+    [[DashSync sharedSyncController] wipeBlockchainNonTerminalDataForChain:self.chain inContext:chainContext];
+    
+    [self removeNonMainnetTrustedPeer];
     [self.peerManager connect];
 }
 
 // rescans blocks and transactions after earliestKeyTime, a new random download peer is also selected due to the
 // possibility that a malicious node might lie by omitting transactions that match the bloom filter
-- (void)rescan
+- (void)syncBlocksRescan
 {
     if (!self.peerManager.connected) {
-        [self disconnectedRescan];
+        [self disconnectedSyncBlocksRescan];
     } else {
         [self.peerManager disconnectDownloadPeerForError:nil withCompletion:^(BOOL success) {
-            [self disconnectedRescan];
+            [self disconnectedSyncBlocksRescan];
         }];
     }
 }
 
-- (void)rescanMasternodeListsAndQuorums
+- (void)masternodeListAndBlocksRescan
 {
     if (!self.peerManager.connected) {
-        [self disconnectedRescanOfMasternodeListsAndQuorums];
+        [self disconnectedMasternodeListAndBlocksRescan];
     } else {
         [self.peerManager disconnectDownloadPeerForError:nil withCompletion:^(BOOL success) {
-            [self disconnectedRescanOfMasternodeListsAndQuorums];
+            [self disconnectedMasternodeListAndBlocksRescan];
+        }];
+    }
+}
+
+- (void)masternodeListRescan
+{
+    if (!self.peerManager.connected) {
+        [self disconnectedMasternodeListRescan];
+    } else {
+        [self.peerManager disconnectDownloadPeerForError:nil withCompletion:^(BOOL success) {
+            [self disconnectedMasternodeListRescan];
         }];
     }
 }

@@ -51,9 +51,9 @@
 #define MAX_TARGET_PROOF_OF_WORK_TESTNET 0x1e0fffffu
 #define MAX_TARGET_PROOF_OF_WORK_DEVNET 0x207fffffu
 
-#define MAX_PROOF_OF_WORK_MAINNET @"00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff".hexToData.UInt256  // highest value for difficulty target (higher values are less difficult)
-#define MAX_PROOF_OF_WORK_TESTNET @"00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff".hexToData.UInt256
-#define MAX_PROOF_OF_WORK_DEVNET @"7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff".hexToData.UInt256
+#define MAX_PROOF_OF_WORK_MAINNET @"00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff".hexToData.reverse.UInt256  // highest value for difficulty target (higher values are less difficult)
+#define MAX_PROOF_OF_WORK_TESTNET @"00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff".hexToData.reverse.UInt256
+#define MAX_PROOF_OF_WORK_DEVNET @"7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff".hexToData.reverse.UInt256
 
 #define SPORK_PUBLIC_KEY_MAINNET @"04549ac134f694c0243f503e8c8a9a986f5de6610049c40b07816809b0d1d06a21b07be27b9bb555931773f62ba6cf35a25fd52f694d4e1106ccd237a7bb899fdd"
 

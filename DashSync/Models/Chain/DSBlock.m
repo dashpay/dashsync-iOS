@@ -111,7 +111,7 @@
     }
     int32_t diff = self.target - darkGravityWaveTarget;
     if (abs(diff) > 1) {
-        DSDLog(@"weird difficulty for block at height %u (off by %u)",self.height,diff);
+        DSDLog(@"weird difficulty for block at height %u with target %@ (off by %u)",self.height,uint256_hex(setCompactBE(self.target)),diff);
     }
     return (abs(diff) < 2); //the core client is less precise with a rounding error that can sometimes cause a problem. We are very rarely 1 off
 }
@@ -211,7 +211,7 @@
     darkTarget = uInt256DivideLE(darkTarget,nTargetTimespan256);
     
     //DSDLog(@"Final dark target for block %d is %@", self.height, uint256_hex(darkTarget));
-    
+
     // If calculated difficulty is lower than the minimal diff, set the new difficulty to be the minimal diff.
     if (uint256_sup(darkTarget, self.chain.maxProofOfWork)) {
         return self.chain.maxProofOfWorkTarget;

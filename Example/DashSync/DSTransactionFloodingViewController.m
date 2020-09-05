@@ -261,7 +261,7 @@
                         self.alreadySentCount++;
                         uint32_t resetEvery = [self.resetQuorumsTextField.text intValue];
                         if (resetEvery && !(self.alreadySentCount % resetEvery)) {
-                            [self.chainManager rescanMasternodeListsAndQuorums];
+                            [self.chainManager masternodeListAndBlocksRescan];
                             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue()  , ^{
                                 [self send:nil];
                             });

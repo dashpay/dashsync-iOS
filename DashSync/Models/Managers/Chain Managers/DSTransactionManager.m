@@ -342,7 +342,7 @@
                                                actionWithTitle:DSLocalizedString(@"Rescan", nil)
                                                style:UIAlertActionStyleDefault
                                                handler:^(UIAlertAction * action) {
-                                                   [self.chainManager rescan];
+                                                   [self.chainManager syncBlocksRescan];
                                                }];
                 [alert addAction:cancelButton];
                 [alert addAction:rescanButton];
