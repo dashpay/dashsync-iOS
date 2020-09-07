@@ -3335,7 +3335,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                         if (!extendedPublicKey) {
                             succeeded = FALSE;
                             [errors addObject:[NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                           DSLocalizedString(@"Incorrect Key format after contact request decryption", nil)}]];
+                                                                                                           DSLocalizedString(@"Incorrect key format after contact request decryption", nil)}]];
                         } else {
                             DSDashpayUserEntity * senderDashpayUserEntity = [senderBlockchainIdentity blockchainIdentityEntityInContext:context].matchingDashpayUser;
                             NSAssert(senderDashpayUserEntity, @"The sender should exist");
@@ -3376,7 +3376,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                         } else {
                             succeeded = FALSE;
                             [errors addObject:[NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                           DSLocalizedString(@"Count not create friendship derivation path", nil)}]];
+                                                                                                           DSLocalizedString(@"Could not create friendship derivation path", nil)}]];
                         }
                         dispatch_group_leave(dispatchGroup);
                     }];
