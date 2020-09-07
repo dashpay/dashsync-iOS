@@ -75,6 +75,11 @@
     return UINT256_ZERO;
 }
 
+-(DSKey*)sourceKeyAtIndex {
+    NSAssert(self.sourceBlockchainIdentity != nil, @"The source identity should be present");
+    return [self.sourceBlockchainIdentity keyAtIndex:self.sourceKeyIndex];
+}
+
 -(DSKey*)destinationKeyAtIndex {
     if (self.destinationBlockchainIdentity) {
         return [self.destinationBlockchainIdentity keyAtIndex:self.destinationKeyIndex];
@@ -116,6 +121,20 @@
     }];
 }
 
+-(uint32_t)createAccountReference {
+    DSKey * key = [self sourceKeyAtIndex];
+    
+    UInt256 accountSecretKey = uint256_reverse([key HMAC256Data:self.extendedPublicKey.extendedPublicKeyData]);
+    
+    uint32_t accountSecretKey28 = accountSecretKey.u32[0] >> 4;
+    uint32_t shortenedAccountBits = self.account.accountNumber & 0x00FFFFFF;
+    uint32_t version = 0; //currently set to 0
+    uint32_t versionBits = version << 28;
+    uint32_t accountRef = versionBits | (accountSecretKey28 ^ shortenedAccountBits);
+
+    return accountRef;
+}
+
 -(DPDocument*)contactRequestDocumentWithEntropy:(NSString*)entropyString {
     NSAssert(!uint256_is_zero([self destinationBlockchainIdentityUniqueId]), @"the destination contact's associatedBlockchainIdentityUniqueId must be set before making a friend request");
     NSAssert([self.encryptedExtendedPublicKeyData length] > 0, @"The encrypted extended public key must exist");
@@ -125,11 +144,12 @@
     uint64_t createAtMs = (self.createdAt)*1000;
     DSStringValueDictionary *data = @{
         @"$createdAt": @(createAtMs),
-                           @"toUserId" : uint256_base58([self destinationBlockchainIdentityUniqueId]),
-                           @"encryptedPublicKey" : [self.encryptedExtendedPublicKeyData base64EncodedStringWithOptions:0],
+        @"toUserId" : uint256_base58([self destinationBlockchainIdentityUniqueId]),
+        @"encryptedPublicKey" : [self.encryptedExtendedPublicKeyData base64EncodedStringWithOptions:0],
         @"senderKeyIndex" : @(self.sourceKeyIndex),
         @"recipientKeyIndex" : @(self.destinationKeyIndex),
-                           };
+        @"accountReference": @([self createAccountReference])
+    };
     
     
     DPDocument *contact = [self.sourceBlockchainIdentity.dashpayDocumentFactory documentOnTable:@"contactRequest" withDataDictionary:data usingEntropy:entropyString error:&error];

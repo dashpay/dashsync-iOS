@@ -27,6 +27,8 @@
 @property(nonatomic,assign) UInt256 senderBlockchainIdentityUniqueId;
 @property(nonatomic,assign) uint32_t recipientKeyIndex;
 @property(nonatomic,assign) uint32_t senderKeyIndex;
+@property(nonatomic,assign) uint32_t accountReference;
+@property(nonatomic,strong) NSData * encryptedAccountLabel;
 
 @property(nonatomic,assign) NSTimeInterval createdAt;
 
@@ -42,19 +44,23 @@
     NSParameterAssert(blockchainIdentity);
     self = [super init];
     if (self) {
-        NSString *recipientString = rawContact[@"toUserId"];
+        NSData *recipientData = rawContact[@"toUserId"];
         NSString *senderString = rawContact[@"$ownerId"];
-        NSString *encryptedPublicKeyString = rawContact[@"encryptedPublicKey"];
+        NSData *encryptedAccountLabel = rawContact[@"encryptedAccountLabel"];
+        NSData *encryptedPublicKeyData = rawContact[@"encryptedPublicKey"];
+        NSNumber *accountReference = rawContact[@"accountReference"];
         NSNumber *senderKeyIndex = rawContact[@"senderKeyIndex"];
         NSNumber *recipientKeyIndex = rawContact[@"recipientKeyIndex"];
         NSNumber *createdAt = rawContact[@"$createdAt"];
-        if (!recipientString || !senderString || !encryptedPublicKeyString || !senderKeyIndex || !recipientKeyIndex || !createdAt) {
+        if (!recipientData || !senderString || !encryptedPublicKeyData || !senderKeyIndex || !recipientKeyIndex || !createdAt) {
             NSAssert(FALSE, @"malformed server response");
             return nil;
         }
-        self.recipientBlockchainIdentityUniqueId = [recipientString base58ToData].UInt256;
+        self.recipientBlockchainIdentityUniqueId = recipientData.UInt256;
         self.senderBlockchainIdentityUniqueId = [senderString base58ToData].UInt256;
-        self.encryptedPublicKeyData = [encryptedPublicKeyString base64ToData];
+        self.encryptedPublicKeyData = encryptedPublicKeyData;
+        self.encryptedAccountLabel = encryptedAccountLabel;
+        self.accountReference = [accountReference unsignedIntValue];
         self.createdAt = [createdAt doubleValue]/1000.0;
         self.recipientKeyIndex = [recipientKeyIndex unsignedIntValue];
         self.senderKeyIndex = [senderKeyIndex unsignedIntValue];

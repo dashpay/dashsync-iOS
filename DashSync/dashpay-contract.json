@@ -72,22 +72,16 @@
                     "$ownerId": "asc"
                 }, {
                     "toUserId": "asc"
+                }, {
+                    "accountReference": "asc"
                 }],
                 "unique": true
             },
             {
                 "properties": [{
                     "$ownerId": "asc"
-                }]
-            },
-            {
-                "properties": [{
+                }, {
                     "toUserId": "asc"
-                }]
-            },
-            {
-                "properties": [{
-                    "$createdAt": "asc"
                 }]
             },
             {
@@ -107,22 +101,36 @@
             "properties": {
                 "toUserId": {
                     "type": "string",
-                    "maxLength":44,
-                    "minLength":22
+                    "contentEncoding": "base64",
+                    "pattern": "^([A-Za-z0-9+/])*$",
+                    "maxLength":43,
+                    "minLength":43
                 },
                 "encryptedPublicKey": {
                     "type": "string",
+                    "contentEncoding": "base64",
+                    "pattern": "^([A-Za-z0-9+/])*$",
                     "maxLength":128,
-                    "minLength":96
+                    "minLength":128
                 },
                 "senderKeyIndex": {
                     "type": "integer"
                 },
                 "recipientKeyIndex": {
                     "type": "integer"
+                },
+                "accountReference": {
+                    "type": "integer"
+                },
+                "encryptedAccountLabel": {
+                    "type": "string",
+                    "contentEncoding": "base64",
+                    "pattern": "^([A-Za-z0-9+/])*$",
+                    "maxLength":86,
+                    "minLength":43
                 }
             },
-            "required": ["$createdAt", "toUserId", "encryptedPublicKey", "senderKeyIndex", "recipientKeyIndex"],
+            "required": ["$createdAt", "toUserId", "encryptedPublicKey", "senderKeyIndex", "recipientKeyIndex", "accountReference"],
             "additionalProperties": false
         }
     }

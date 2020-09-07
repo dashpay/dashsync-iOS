@@ -29,6 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic,readonly) UInt256 senderBlockchainIdentityUniqueId;
 @property(nonatomic,readonly) uint32_t recipientKeyIndex;
 @property(nonatomic,readonly) uint32_t senderKeyIndex;
+@property(nonatomic,readonly) uint32_t accountReference;
+@property(nonatomic,readonly) NSData * encryptedAccountLabel;
 
 @property(nonatomic,readonly) NSTimeInterval createdAt;
 
