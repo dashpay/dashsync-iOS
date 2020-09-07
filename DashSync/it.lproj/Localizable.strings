@@ -324,9 +324,6 @@
 "The blockchain identity extended public keys need to be registered before you can register a blockchain identity." = "The blockchain identity extended public keys need to be registered before you can register a blockchain identity.";
 
 /* No comment provided by engineer. */
-"Incorrect Key format after contact request decryption" = "Incorrect Key format after contact request decryption";
-
-/* No comment provided by engineer. */
 "Contact request extended public key is incorrectly encrypted." = "Contact request extended public key is incorrectly encrypted.";
 
 /* No comment provided by engineer. */
@@ -358,3 +355,9 @@
 
 /* No comment provided by engineer. */
 "A block could not be mined in the selected time interval." = "A block could not be mined in the selected time interval.";
+
+/* No comment provided by engineer. */
+"Could not create friendship derivation path" = "Could not create friendship derivation path";
+
+/* No comment provided by engineer. */
+"Incorrect key format after contact request decryption" = "Incorrect key format after contact request decryption";

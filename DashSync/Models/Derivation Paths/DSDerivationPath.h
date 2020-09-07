@@ -39,6 +39,8 @@ typedef void (^TransactionValidityCompletionBlock)(BOOL signedTransaction, BOOL 
 #define BIP32_HARD 0x80000000
 
 #define FEATURE_PURPOSE 9
+#define FEATURE_PURPOSE_IDENTITIES 5
+#define FEATURE_PURPOSE_DASHPAY 15
 
 @class DSTransaction,DSKey,DSAccount,DSDerivationPath;
 
