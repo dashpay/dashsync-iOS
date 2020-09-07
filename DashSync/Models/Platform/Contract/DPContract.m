@@ -170,7 +170,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 
 -(UInt256)contractId {
     if (uint256_is_zero(_contractId)) {
-        NSAssert(!uint256_is_zero(self.registeredBlockchainIdentityUniqueID),@"Registered Blockchain Identity needs to be set");
+        NSAssert(!uint256_is_zero(self.registeredBlockchainIdentityUniqueID),@"Registered Identity needs to be set");
         NSAssert(!uint160_is_zero(self.entropy),@"Entropy needs to be set");
         NSMutableData * mData = [NSMutableData data];
         [mData appendUInt256:self.registeredBlockchainIdentityUniqueID];
@@ -200,7 +200,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 }
 
 -(NSString*)base58OwnerId {
-    NSAssert(!uint256_is_zero(self.registeredBlockchainIdentityUniqueID),@"Registered Blockchain Identity can not be 0");
+    NSAssert(!uint256_is_zero(self.registeredBlockchainIdentityUniqueID),@"Registered Identity can not be 0");
     return uint256_base58(self.registeredBlockchainIdentityUniqueID);
 }
 

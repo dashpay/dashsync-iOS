@@ -78,7 +78,7 @@
 // MARK: - Identities
 
 -(void)registerForeignBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity {
-    NSAssert(!blockchainIdentity.isTransient, @"Blockchain Identity should no longer be transient");
+    NSAssert(!blockchainIdentity.isTransient, @"Dash Identity should no longer be transient");
     @synchronized (self.foreignBlockchainIdentities) {
         if (!self.foreignBlockchainIdentities[uint256_data(blockchainIdentity.uniqueID)]) {
             [blockchainIdentity saveInitial];
