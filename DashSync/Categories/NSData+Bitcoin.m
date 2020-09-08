@@ -1086,6 +1086,12 @@ UInt256 uInt256MultiplyUInt32LE (UInt256 a, uint32_t b)
     return sha512;
 }
 
+- (UInt256)HMACSHA256WithKey:(UInt256)secretKey {
+    UInt256 I;
+    HMAC(&I, SHA256, sizeof(UInt256), &secretKey, sizeof(UInt256), self.bytes, self.length);
+    return I;
+}
+
 - (UInt160)RMD160
 {
     UInt160 rmd160;

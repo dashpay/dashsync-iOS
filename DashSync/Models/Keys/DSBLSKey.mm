@@ -13,6 +13,7 @@
 #import "NSString+Dash.h"
 #import "DSKey+Protected.h"
 #import "NSData+Encryption.h"
+#import "NSData+Bitcoin.h"
 #import <CommonCrypto/CommonCryptor.h>
 
 @interface DSBLSKey ()
@@ -372,10 +373,7 @@
 // MARK: - HMAC
 
 - (UInt256)HMAC256Data:(NSData*)data {
-    UInt256 secret = self.secretKey;
-    UInt256 I;
-    HMAC(&I, SHA256, sizeof(UInt256), &secret, sizeof(UInt256), data.bytes, data.length);
-    return I;
+    return [data HMACSHA256WithKey:self.secretKey];
 }
 
 // MARK: - Encryption
