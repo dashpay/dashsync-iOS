@@ -264,9 +264,6 @@
 "Funding transaction could not be created" = "Funding transaction could not be created";
 
 /* No comment provided by engineer. */
-"Incorrect Key format after contact request decryption" = "Incorrect Key format after contact request decryption";
-
-/* No comment provided by engineer. */
 "Internal key handling error" = "Internal key handling error";
 
 /* No comment provided by engineer. */
@@ -363,3 +360,9 @@
 
 /* No comment provided by engineer. */
 "A block could not be mined in the selected time interval." = "A block could not be mined in the selected time interval.";
+
+/* No comment provided by engineer. */
+"Could not create friendship derivation path" = "Could not create friendship derivation path";
+
+/* No comment provided by engineer. */
+"Incorrect key format after contact request decryption" = "Incorrect key format after contact request decryption";

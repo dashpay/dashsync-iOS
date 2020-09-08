@@ -142,6 +142,7 @@
     dispatch_once(&onceChainToken, ^{
         _chainContext = [self.persistentContainer newBackgroundContext];
         [_chainContext setMergePolicy:NSMergeByPropertyObjectTrumpMergePolicy];
+        [_chainContext setAutomaticallyMergesChangesFromParent:YES];
     });
     return _chainContext;
 }

@@ -239,8 +239,10 @@
         if (self.wallet && self.length) {
             NSData * extendedPublicKeyData = getKeychainData([self walletBasedExtendedPublicKeyLocationString], nil);
             NSAssert(extendedPublicKeyData, @"extended public key data not set");
-            _extendedPublicKey = [DSKey keyWithExtendedPublicKeyData:extendedPublicKeyData forKeyType:self.signingAlgorithm];
-            NSAssert(_extendedPublicKey, @"extended public key not set");
+            if (extendedPublicKeyData) {
+                _extendedPublicKey = [DSKey keyWithExtendedPublicKeyData:extendedPublicKeyData forKeyType:self.signingAlgorithm];
+                NSAssert(_extendedPublicKey, @"extended public key not set");
+            }
         } else {
             NSData * extendedPublicKeyData = getKeychainData([self standaloneExtendedPublicKeyLocationString], nil);
                 #ifdef DEBUG
