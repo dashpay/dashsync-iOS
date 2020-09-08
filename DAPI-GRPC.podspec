@@ -33,7 +33,7 @@ Pod::Spec.new do |s|
         --plugin=protoc-gen-grpc=#{plugin} \
         --objc_out=#{dir} \
         --grpc_out=#{dir} \
-        -I #{src} \
+        -I #{src}/core/v0 \
         -I #{protoc_dir} \
         #{src}/core/v0/core.proto
         
@@ -41,7 +41,7 @@ Pod::Spec.new do |s|
         --plugin=protoc-gen-grpc=#{plugin} \
         --objc_out=#{dir} \
         --grpc_out=#{dir} \
-        -I #{src} \
+        -I #{src}/platform/v0 \
         -I #{protoc_dir} \
         #{src}/platform/v0/platform.proto
   CMD

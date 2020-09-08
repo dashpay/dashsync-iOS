@@ -995,7 +995,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 -(DSKey*)derivePrivateKeyAtIdentityKeyIndex:(uint32_t)index ofType:(DSKeyType)type {
     if (!_isLocal) return nil;
-    const NSUInteger indexes[] = {_index | BIP32_HARD, index | BIP32_HARD};
+    const NSUInteger indexes[] = {_index, index};
     NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
     
     return [self derivePrivateKeyAtIndexPath:indexPath ofType:type];
@@ -1006,7 +1006,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     
-    return [derivationPath privateKeyAtIndexPath:indexPath];
+    return [derivationPath privateKeyAtIndexPath:[indexPath hardenAllItems]];
 }
 
 -(DSKey*)privateKeyAtIndex:(uint32_t)index ofType:(DSKeyType)type forSeed:(NSData*)seed {
@@ -1092,7 +1092,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 -(void)addKey:(DSKey*)key atIndex:(uint32_t)index ofType:(DSKeyType)type withStatus:(DSBlockchainIdentityKeyStatus)status save:(BOOL)save inContext:(NSManagedObjectContext*)context {
     if (self.isLocal) {
-        const NSUInteger indexes[] = {_index | BIP32_HARD, index | BIP32_HARD};
+        const NSUInteger indexes[] = {_index, index};
         NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
         [self addKey:key atIndexPath:indexPath ofType:type withStatus:status save:save];
     } else {
@@ -1130,7 +1130,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     //derivationPath will be nil if not local
     
-    DSKey * keyToCheck = [derivationPath publicKeyAtIndexPath:indexPath];
+    DSKey * keyToCheck = [derivationPath publicKeyAtIndexPath:[indexPath hardenAllItems]];
+    NSAssert(keyToCheck != nil, @"This key should be found");
     if ([keyToCheck.publicKeyData isEqualToData:key.publicKeyData]) { //if it isn't local we shouldn't verify
         uint32_t index = (uint32_t)[indexPath indexAtPosition:[indexPath length] - 1];
         if (self.keyInfoDictionaries[@(index)]) {
@@ -1286,7 +1287,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     
     DSKey * publicKey = [self keyAtIndex:index];
     
-    NSAssert(index == 0, @"The index should be 0 here");
+    NSAssert((index & ~(BIP32_HARD)) == 0, @"The index should be 0 here");
     
     NSAssert(self.registrationCreditFundingTransaction, @"The registration credit funding transaction must be known");
     
@@ -1874,8 +1875,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 -(NSData*)saltForUsernameFullPath:(NSString*)usernameFullPath saveSalt:(BOOL)saveSalt inContext:(NSManagedObjectContext*)context {
     NSData * salt;
     if ([self statusOfUsernameFullPath:usernameFullPath] == DSBlockchainIdentityUsernameStatus_Initial || !(salt = [self.usernameSalts objectForKey:usernameFullPath])) {
-        UInt160 random160 = uint160_RANDOM;
-        salt = uint160_data(random160);
+        UInt256 random256 = uint256_RANDOM;
+        salt = uint256_data(random256);
         [self.usernameSalts setObject:salt forKey:usernameFullPath];
         if (saveSalt) {
             [self saveUsername:[self usernameOfUsernameFullPath:usernameFullPath] inDomain:[self domainOfUsernameFullPath:usernameFullPath] status:[self statusOfUsernameFullPath:usernameFullPath] salt:salt commitSave:YES inContext:context];
@@ -1893,11 +1894,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         NSData * salt = [self saltForUsernameFullPath:unregisteredUsernameFullPath saveSalt:YES inContext:context];
         NSData * usernameDomainData = [unregisteredUsernameFullPath dataUsingEncoding:NSUTF8StringEncoding];
         [saltedDomain appendData:salt];
-        [saltedDomain appendData:@"5620".hexToData]; //56 because SHA256_2 and 20 because 32 bytes
+//        [saltedDomain appendData:@"5620".hexToData]; //56 because SHA256_2 and 20 because 32 bytes
         [saltedDomain appendUInt256:[usernameDomainData SHA256_2]];
-        NSMutableData * saltedDomainHashData = [@"5620".hexToData mutableCopy];
-        [saltedDomainHashData appendData:uint256_data([saltedDomain SHA256_2])];
-        [mSaltedDomainHashes setObject:[saltedDomainHashData copy] forKey:unregisteredUsernameFullPath];
+        [mSaltedDomainHashes setObject:uint256_data([saltedDomain SHA256_2]) forKey:unregisteredUsernameFullPath];
         [self.usernameSalts setObject:salt forKey:unregisteredUsernameFullPath];
     }
     return [mSaltedDomainHashes copy];
@@ -1912,9 +1911,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 -(NSArray<DPDocument*>*)preorderDocumentsForUnregisteredUsernameFullPaths:(NSArray*)unregisteredUsernameFullPaths usingEntropyString:(NSString*)entropyString inContext:(NSManagedObjectContext*)context error:(NSError**)error {
     NSMutableArray * usernamePreorderDocuments = [NSMutableArray array];
     for (NSData * saltedDomainHashData in [[self saltedDomainHashesForUsernameFullPaths:unregisteredUsernameFullPaths inContext:context] allValues]) {
-        NSString * saltedDomainHashString = [saltedDomainHashData hexString];
         DSStringValueDictionary * dataDictionary = @{
-            @"saltedDomainHash": saltedDomainHashString
+            @"saltedDomainHash": saltedDomainHashData
         };
         DPDocument * document = [self.dpnsDocumentFactory documentOnTable:@"preorder" withDataDictionary:dataDictionary usingEntropy:entropyString  error:error];
         if (*error) {
@@ -1928,19 +1926,15 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 -(NSArray<DPDocument*>*)domainDocumentsForUnregisteredUsernameFullPaths:(NSArray*)unregisteredUsernameFullPaths usingEntropyString:(NSString*)entropyString inContext:(NSManagedObjectContext*)context error:(NSError**)error {
     NSMutableArray * usernameDomainDocuments = [NSMutableArray array];
     for (NSString * usernameFullPath in [self saltedDomainHashesForUsernameFullPaths:unregisteredUsernameFullPaths inContext:context]) {
-        NSMutableData * nameHashData = [NSMutableData data];
-        [nameHashData appendData:@"5620".hexToData]; //56 because SHA256_2 and 20 because 32 bytes
-        NSData * usernameData = [usernameFullPath dataUsingEncoding:NSUTF8StringEncoding];
-        [nameHashData appendUInt256:[usernameData SHA256_2]];
         NSString * username = [self usernameOfUsernameFullPath:usernameFullPath];
         NSString * domain = [self domainOfUsernameFullPath:usernameFullPath];
         DSStringValueDictionary * dataDictionary = @{
-            @"nameHash":nameHashData.hexString,
             @"label":username,
             @"normalizedLabel": [username lowercaseString],
             @"normalizedParentDomainName":domain,
-            @"preorderSalt": [self.usernameSalts objectForKey:usernameFullPath].base58String,
-            @"records" : @{@"dashIdentity":uint256_base58(self.uniqueID)}
+            @"preorderSalt": [self.usernameSalts objectForKey:usernameFullPath],
+            @"records" : @{@"dashUniqueIdentityId":uint256_base58(self.uniqueID)},
+            @"subdomainRules" : @{@"allowSubdomains":@NO}
         };
         DPDocument * document = [self.dpnsDocumentFactory documentOnTable:@"domain" withDataDictionary:dataDictionary usingEntropy:entropyString error:error];
         if (*error) {
@@ -2400,9 +2394,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             NSMutableArray * usernamesLeft = [[saltedDomainHashes allKeys] mutableCopy];
             for (NSString * usernameFullPath in saltedDomainHashes) {
                 NSData * saltedDomainHashData = saltedDomainHashes[usernameFullPath];
-                NSString * saltedDomainHashString = [saltedDomainHashData hexString];
                 for (NSDictionary * preorderDocument in preorderDocumentArray) {
-                    if ([[preorderDocument objectForKey:@"saltedDomainHash"] isEqualToString:saltedDomainHashString]) {
+                    if ([[preorderDocument objectForKey:@"saltedDomainHash"] isEqualToData:saltedDomainHashData]) {
                         NSMutableDictionary * usernameStatusDictionary = [[self.usernameStatuses objectForKey:usernameFullPath] mutableCopy];
                         if (!usernameStatusDictionary) {
                             usernameStatusDictionary = [NSMutableDictionary dictionary];

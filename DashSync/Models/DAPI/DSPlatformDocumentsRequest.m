@@ -48,7 +48,7 @@
 
 +(instancetype)dpnsRequestForUserId:(NSString*)userId {
     DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
-    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"records.dashIdentity == %@",userId];
+    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"records.dashUniqueIdentityId == %@",userId];
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = 100;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
@@ -130,15 +130,11 @@
 }
 
 +(instancetype)dpnsRequestForPreorderSaltedHashes:(NSArray*)preorderSaltedHashes {
-    NSMutableArray * preorderSaltedHashesAsHex = [NSMutableArray array];
-    for (NSData* data in preorderSaltedHashes) {
-        [preorderSaltedHashesAsHex addObject:data.hexString];
-    }
     DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
-    if (preorderSaltedHashesAsHex.count == 1) {
-        platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"saltedDomainHash == %@",[preorderSaltedHashesAsHex firstObject]];
+    if (preorderSaltedHashes.count == 1) {
+        platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"saltedDomainHash == %@",[preorderSaltedHashes firstObject]];
     } else {
-        platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"saltedDomainHash IN %@",preorderSaltedHashesAsHex];
+        platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"saltedDomainHash IN %@",preorderSaltedHashes];
     }
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = (uint32_t)preorderSaltedHashes.count;

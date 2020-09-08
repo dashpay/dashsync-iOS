@@ -189,4 +189,9 @@
     return nil;
 }
 
+- (UInt256)HMAC256Data:(NSData*)data {
+    NSAssert(NO, @"This should be overridden");
+    return UINT256_ZERO;
+}
+
 @end

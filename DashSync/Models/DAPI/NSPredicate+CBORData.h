@@ -19,6 +19,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, NSPredicateCBORDataOptions) {
+    NSPredicateCBORDataOptions_None = 0,
+    NSPredicateCBORDataOptions_DataToBase64 = 1
+};
+
 @interface NSPredicate (CBORData)
 
 -(NSData*)dashPlatormWhereData;
