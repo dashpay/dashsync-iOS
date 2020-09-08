@@ -1393,6 +1393,7 @@ static dispatch_once_t devnetToken = 0;
                                                                        flags:BLOOM_UPDATE_ALL];
     
     for (NSString *addr in allAddresses) {// add addresses to watch for tx receiveing money to the wallet
+        if (![addr isKindOfClass:[NSString class]]) continue; //sanity check against [NSNull null] (these would be addresses that are not loaded because they were not in the gap limit, but addresses after them existed)
         NSData *hash = addr.addressToHash160;
         
         if (hash && ! [filter containsData:hash]) [filter insertData:hash];

@@ -438,6 +438,9 @@
     for (DSDerivationPath * derivationPath in self.fundDerivationPaths) {
         [mSet addObjectsFromArray:[(id)derivationPath allReceiveAddresses]];
     }
+    if ([mSet containsObject:[NSNull null]]) {
+       [mSet removeObject:[NSNull null]];
+    }
     return [mSet allObjects];
 }
 
@@ -448,6 +451,9 @@
         if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
             [mSet addObjectsFromArray:[(DSFundsDerivationPath*)derivationPath allChangeAddresses]];
         }
+    }
+    if ([mSet containsObject:[NSNull null]]) {
+       [mSet removeObject:[NSNull null]];
     }
     return [mSet allObjects];
 }
