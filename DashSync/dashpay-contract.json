@@ -18,15 +18,15 @@
                 "avatarUrl": {
                     "type": "string",
                     "format": "url",
-                    "maxLength":256
+                    "maxLength":2048
                 },
                 "publicMessage": {
                     "type": "string",
-                    "maxLength":256
+                    "maxLength":140
                 },
                 "displayName": {
                     "type": "string",
-                    "maxLength":64
+                    "maxLength":20
                 }
             },
             "required": ["$createdAt", "$updatedAt"],
@@ -37,7 +37,9 @@
                 "properties": [{
                     "$ownerId": "asc"
                 }, {
-                    "encToUserId": "asc"
+                    "rootEncryptionKeyIndex": "asc"
+                }, {
+                    "derivationEncryptionKeyIndex": "asc"
                 }],
                 "unique": true
             },
@@ -51,19 +53,27 @@
             "properties": {
                 "encToUserId": {
                     "type": "string",
-                    "maxLength":128,
-                    "minLength":96
+                    "contentEncoding": "base64",
+                    "pattern": "^([A-Za-z0-9+/])*$",
+                    "maxLength":43,
+                    "minLength":43
                 },
-                "encryptionKeyIndex": {
+                "rootEncryptionKeyIndex": {
+                    "type": "integer"
+                },
+                "derivationEncryptionKeyIndex": {
                     "type": "integer"
                 },
                 "privateData": {
                     "type": "string",
+                    "contentEncoding": "base64",
+                    "pattern": "^([A-Za-z0-9+/])*$",
                     "description": "This is the encrypted values of aliasName + note + displayHidden encoded as an array in cbor",
-                    "maxLength":2048
+                    "maxLength":2731,
+                    "minLength":64
                 }
             },
-            "required": ["$createdAt", "$updatedAt", "encToUserId", "privateData", "encryptionKeyIndex"],
+            "required": ["$createdAt", "$updatedAt", "encToUserId", "privateData", "rootEncryptionKeyIndex", "derivationEncryptionKeyIndex"],
             "additionalProperties": false
         },
         "contactRequest": {
@@ -126,8 +136,8 @@
                     "type": "string",
                     "contentEncoding": "base64",
                     "pattern": "^([A-Za-z0-9+/])*$",
-                    "maxLength":86,
-                    "minLength":43
+                    "maxLength":107,
+                    "minLength":64
                 }
             },
             "required": ["$createdAt", "toUserId", "encryptedPublicKey", "senderKeyIndex", "recipientKeyIndex", "accountReference"],
