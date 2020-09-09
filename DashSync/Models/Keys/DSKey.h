@@ -52,8 +52,6 @@ typedef NS_ENUM(NSUInteger, DSKeyType) {
 
 - (UInt256)HMAC256Data:(NSData*)data;
 
-- (nullable instancetype)publicCopy;
-
 @end
 
 NS_ASSUME_NONNULL_END

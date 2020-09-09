@@ -144,7 +144,7 @@
     uint64_t createAtMs = (self.createdAt)*1000;
     DSStringValueDictionary *data = @{
         @"$createdAt": @(createAtMs),
-        @"toUserId" : uint256_base58([self destinationBlockchainIdentityUniqueId]),
+        @"toUserId" : uint256_data([self destinationBlockchainIdentityUniqueId]),
         @"encryptedPublicKey" : [self.encryptedExtendedPublicKeyData base64EncodedStringWithOptions:0],
         @"senderKeyIndex" : @(self.sourceKeyIndex),
         @"recipientKeyIndex" : @(self.destinationKeyIndex),

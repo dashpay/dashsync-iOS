@@ -19,6 +19,15 @@
     return [NSIndexPath indexPathWithIndexes:indexes length:self.length];
 }
 
+-(NSIndexPath*)softenAllItems {
+    NSUInteger indexes[[self length]];
+    [self getIndexes:indexes];
+    for (int i =0;i<[self length];i++) {
+        indexes[i] &= ~BIP32_HARD;
+    }
+    return [NSIndexPath indexPathWithIndexes:indexes length:self.length];
+}
+
 -(NSIndexPath*)indexPathByRemovingFirstIndex {
     if (self.length == 1) return [[NSIndexPath alloc] init];
     NSUInteger indexes[[self length]];

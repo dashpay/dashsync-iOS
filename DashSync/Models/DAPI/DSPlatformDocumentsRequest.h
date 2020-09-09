@@ -49,11 +49,11 @@ typedef NS_ENUM(NSUInteger, DSPlatformDocumentType) {
 
 +(instancetype)dpnsRequestForPreorderSaltedHashes:(NSArray*)preorderSaltedHashes;
 
-+(instancetype)dashpayRequestForContactRequestForSendingUserId:(NSString*)userId toRecipientUserId:(NSString*)toUserId;
++(instancetype)dashpayRequestForContactRequestForSendingUserId:(NSString*)userId toRecipientUserId:(NSData*)toUserId;
 
 +(instancetype)dashpayRequestForContactRequestsForSendingUserId:(NSString*)userId since:(NSTimeInterval)timestamp;
 
-+(instancetype)dashpayRequestForContactRequestsForRecipientUserId:(NSString*)userId since:(NSTimeInterval)timestamp;
++(instancetype)dashpayRequestForContactRequestsForRecipientUserId:(NSData*)userId since:(NSTimeInterval)timestamp;
 
 +(instancetype)dashpayRequestForProfileWithUserId:(NSString*)userId;
 

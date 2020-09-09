@@ -460,11 +460,10 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     if (_keyValueDictionary == nil) {
         DSMutableStringValueDictionary *json = [[DSMutableStringValueDictionary alloc] init];
         json[@"$schema"] = self.jsonMetaSchema;
-        //json[@"version"] = @(self.version);
         json[@"ownerId"] = uint256_base58(self.registeredBlockchainIdentityUniqueID);
         json[@"$id"] = self.base58ContractId;
-//        json[@"$entropy"] = [uint160_base58(self.entropy) stringByPaddingToLength:34 withString:@"1" startingAtIndex:0];
         json[@"documents"] = self.documents;
+        json[@"protocolVersion"] = @(0);
         if (self.definitions.count > 0) {
             json[@"definitions"] = self.definitions;
         }

@@ -438,7 +438,7 @@ Get a list of users after matching search criteria
                                      success:(void (^)(NSArray<NSDictionary *> *documents))success
                                      failure:(void (^)(NSError *error))failure;
 
-- (id<DSDAPINetworkServiceRequest>)getDashpayIncomingContactRequestsForUserId:(NSString*)userId
+- (id<DSDAPINetworkServiceRequest>)getDashpayIncomingContactRequestsForUserId:(NSData*)userId
                                              since:(NSTimeInterval)timestamp
                                            success:(void (^)(NSArray<NSDictionary *> *documents))success
                                            failure:(void (^)(NSError *error))failure;

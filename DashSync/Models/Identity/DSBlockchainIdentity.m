@@ -166,7 +166,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     for (DSBlockchainIdentityKeyPathEntity * keyPath in blockchainIdentityEntity.keyPaths) {
         NSIndexPath *keyIndexPath = (NSIndexPath *)[keyPath path];
         if (keyIndexPath) {
-            BOOL success = [self registerKeyWithStatus:keyPath.keyStatus atIndexPath:keyIndexPath ofType:keyPath.keyType];
+            NSIndexPath *nonHardenedKeyIndexPath = [keyIndexPath softenAllItems];
+            BOOL success = [self registerKeyWithStatus:keyPath.keyStatus atIndexPath:nonHardenedKeyIndexPath ofType:keyPath.keyType];
             if (!success) {
                 DSKey * key = [DSKey keyWithPublicKeyData:keyPath.publicKeyData forKeyType:keyPath.keyType];
                 [self registerKey:key withStatus:keyPath.keyStatus atIndex:keyPath.keyID ofType:keyPath.keyType];
@@ -1022,11 +1023,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 -(DSKey*)publicKeyAtIndex:(uint32_t)index ofType:(DSKeyType)type {
     if (!_isLocal) return nil;
     const NSUInteger indexes[] = {_index | BIP32_HARD, index | BIP32_HARD};
-    NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
+    NSIndexPath * hardenedIndexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
     
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     
-    return [derivationPath publicKeyAtIndexPath:indexPath];
+    return [derivationPath publicKeyAtIndexPath:hardenedIndexPath];
 }
 
 -(DSKey*)createNewKeyOfType:(DSKeyType)type saveKey:(BOOL)saveKey returnIndex:(uint32_t *)rIndex {
@@ -1037,13 +1038,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     if (!_isLocal) return nil;
     uint32_t keyIndex = self.keysCreated;
     const NSUInteger indexes[] = {_index | BIP32_HARD, keyIndex | BIP32_HARD};
-    NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
+    NSIndexPath * hardenedIndexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
     
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     
-    DSKey * publicKey = [derivationPath publicKeyAtIndexPath:indexPath];
+    DSKey * publicKey = [derivationPath publicKeyAtIndexPath:hardenedIndexPath];
     NSAssert([derivationPath hasExtendedPrivateKey], @"The derivation path should have an extended private key");
-    DSKey * privateKey = [derivationPath privateKeyAtIndexPath:indexPath];
+    DSKey * privateKey = [derivationPath privateKeyAtIndexPath:hardenedIndexPath];
     NSAssert(privateKey,@"The private key should have been derived");
     NSAssert([publicKey.publicKeyData isEqualToData:privateKey.publicKeyData],@"These should be equal");
     self.keysCreated++;
@@ -1053,7 +1054,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     NSDictionary * keyDictionary = @{@(DSBlockchainIdentityKeyDictionary_Key):publicKey, @(DSBlockchainIdentityKeyDictionary_KeyType):@(type), @(DSBlockchainIdentityKeyDictionary_KeyStatus):@(DSBlockchainIdentityKeyStatus_Registering)};
     [self.keyInfoDictionaries setObject:keyDictionary forKey:@(keyIndex)];
     if (saveKey) {
-        [self saveNewKey:publicKey atPath:indexPath withStatus:DSBlockchainIdentityKeyStatus_Registering fromDerivationPath:derivationPath inContext:context];
+        [self saveNewKey:publicKey atPath:hardenedIndexPath withStatus:DSBlockchainIdentityKeyStatus_Registering fromDerivationPath:derivationPath inContext:context];
     }
     return publicKey;
 }
@@ -1078,11 +1079,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 -(DSKey*)keyOfType:(DSKeyType)type atIndex:(uint32_t)index {
     if (!_isLocal) return nil;
     const NSUInteger indexes[] = {_index | BIP32_HARD, index | BIP32_HARD};
-    NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
+    NSIndexPath * hardenedIndexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
     
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     
-    DSKey * key = [derivationPath publicKeyAtIndexPath:indexPath];
+    DSKey * key = [derivationPath publicKeyAtIndexPath:hardenedIndexPath];
     return key;
 }
 
@@ -1162,7 +1163,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 -(BOOL)registerKeyWithStatus:(DSBlockchainIdentityKeyStatus)status atIndexPath:(NSIndexPath*)indexPath ofType:(DSKeyType)type {
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     
-    DSKey * key = [derivationPath publicKeyAtIndexPath:indexPath];
+    DSKey * key = [derivationPath publicKeyAtIndexPath:[indexPath hardenAllItems]];
     if (!key) return FALSE;
     uint32_t index = (uint32_t)[indexPath indexAtPosition:[indexPath length] - 1];
     self.keysCreated = MAX(self.keysCreated,index + 1);
@@ -1894,8 +1895,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         NSData * salt = [self saltForUsernameFullPath:unregisteredUsernameFullPath saveSalt:YES inContext:context];
         NSData * usernameDomainData = [unregisteredUsernameFullPath dataUsingEncoding:NSUTF8StringEncoding];
         [saltedDomain appendData:salt];
-//        [saltedDomain appendData:@"5620".hexToData]; //56 because SHA256_2 and 20 because 32 bytes
-        [saltedDomain appendUInt256:[usernameDomainData SHA256_2]];
+        [saltedDomain appendData:usernameDomainData];
         [mSaltedDomainHashes setObject:uint256_data([saltedDomain SHA256_2]) forKey:unregisteredUsernameFullPath];
         [self.usernameSalts setObject:salt forKey:unregisteredUsernameFullPath];
     }
@@ -3132,7 +3132,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         return;
     }
     __weak typeof(self) weakSelf = self;
-    [self.DAPINetworkService getDashpayIncomingContactRequestsForUserId:self.uniqueIdString since:self.lastCheckedIncomingContactsTimestamp?(self.lastCheckedIncomingContactsTimestamp - HOUR_TIME_INTERVAL):0 success:^(NSArray<NSDictionary *> * _Nonnull documents) {
+    [self.DAPINetworkService getDashpayIncomingContactRequestsForUserId:self.uniqueIDData since:self.lastCheckedIncomingContactsTimestamp?(self.lastCheckedIncomingContactsTimestamp - HOUR_TIME_INTERVAL):0 success:^(NSArray<NSDictionary *> * _Nonnull documents) {
         //todo chance the since parameter
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
@@ -3698,7 +3698,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 }
 
 -(NSString*)identifierForKeyAtPath:(NSIndexPath*)path fromDerivationPath:(DSDerivationPath*)derivationPath {
-    return [NSString stringWithFormat:@"%@-%@-%@",self.uniqueIdString,derivationPath.standaloneExtendedPublicKeyUniqueID,[path indexPathString]];
+    NSIndexPath * softenedPath = [path softenAllItems];
+    return [NSString stringWithFormat:@"%@-%@-%@",self.uniqueIdString,derivationPath.standaloneExtendedPublicKeyUniqueID,[softenedPath indexPathString]];
 }
 
 -(void)saveNewKey:(DSKey*)key atPath:(NSIndexPath*)path withStatus:(DSBlockchainIdentityKeyStatus)status fromDerivationPath:(DSDerivationPath*)derivationPath inContext:(NSManagedObjectContext*)context {

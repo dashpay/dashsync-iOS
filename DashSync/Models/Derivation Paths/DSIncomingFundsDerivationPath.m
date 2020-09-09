@@ -36,10 +36,10 @@
 + (instancetype)contactBasedDerivationPathWithDestinationBlockchainIdentityUniqueId:(UInt256) destinationBlockchainIdentityUniqueId sourceBlockchainIdentityUniqueId:(UInt256)sourceBlockchainIdentityUniqueId forAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain {
     NSAssert(!uint256_eq(sourceBlockchainIdentityUniqueId,destinationBlockchainIdentityUniqueId), @"source and destination must be different");
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
-    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(FEATURE_PURPOSE_DASHPAY), uint256_from_long(1), uint256_from_long(accountNumber), sourceBlockchainIdentityUniqueId,destinationBlockchainIdentityUniqueId};
-    BOOL hardenedIndexes[] = {YES,YES,YES,YES,YES,NO,NO};
+    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(FEATURE_PURPOSE_DASHPAY), uint256_from_long(accountNumber), sourceBlockchainIdentityUniqueId,destinationBlockchainIdentityUniqueId};
+    BOOL hardenedIndexes[] = {YES,YES,YES,YES,NO,NO};
     //todo full uint256 derivation
-    DSIncomingFundsDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:7 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_ContactBasedFunds onChain:chain];
+    DSIncomingFundsDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:6 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_ContactBasedFunds onChain:chain];
     
     derivationPath.contactSourceBlockchainIdentityUniqueId = sourceBlockchainIdentityUniqueId;
     derivationPath.contactDestinationBlockchainIdentityUniqueId = destinationBlockchainIdentityUniqueId;
