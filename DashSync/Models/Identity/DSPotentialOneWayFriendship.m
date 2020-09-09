@@ -145,7 +145,7 @@
     DSStringValueDictionary *data = @{
         @"$createdAt": @(createAtMs),
         @"toUserId" : uint256_data([self destinationBlockchainIdentityUniqueId]),
-        @"encryptedPublicKey" : [self.encryptedExtendedPublicKeyData base64EncodedStringWithOptions:0],
+        @"encryptedPublicKey" : self.encryptedExtendedPublicKeyData,
         @"senderKeyIndex" : @(self.sourceKeyIndex),
         @"recipientKeyIndex" : @(self.destinationKeyIndex),
         @"accountReference": @([self createAccountReference])

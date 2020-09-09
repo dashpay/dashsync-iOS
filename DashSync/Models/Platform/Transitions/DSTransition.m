@@ -95,7 +95,8 @@
         NSAssert(index != UINT32_MAX, @"index must exist");
     }
     //ATTENTION If this ever changes from ECDSA, change the max signature size defined above
-    //DSDLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
+    DSDLog(@"Private Key is %@",[privateKey serializedPrivateKeyForChain:self.chain]);
+    DSDLog(@"Signing %@ with key %@",[self serializedBaseDataHash].hexString,privateKey.publicKeyData.hexString);
     if ([privateKey isMemberOfClass:[DSBLSKey class]]) {
         self.signatureType = DSKeyType_BLS;
         self.signatureData = uint768_data([((DSBLSKey*)privateKey) signDigest:[self serializedBaseDataHash].UInt256]);
