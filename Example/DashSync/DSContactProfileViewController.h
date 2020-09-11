@@ -28,12 +28,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface DSContactProfileViewController : UIViewController
+@interface DSContactProfileViewController : UITableViewController
 
-@property (readonly, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
+@property (nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
 @property (nullable, nonatomic, weak) id<DSContactProfileViewControllerDelegate> delegate;
-
-- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 
 @end
 

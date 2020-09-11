@@ -39,14 +39,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DSContactProfileViewController
 
-- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
-    self = [super init];
-    if (self) {
-        _blockchainIdentity = blockchainIdentity;
-    }
-    return self;
-}
-
 - (void)viewDidLoad {
     [super viewDidLoad];
 

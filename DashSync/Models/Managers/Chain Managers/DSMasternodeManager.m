@@ -1042,7 +1042,7 @@
         NSAssert(!merkleBlockEntity || !merkleBlockEntity.masternodeList, @"Merkle block should not have a masternode list already");
         NSError * error = nil;
         if (!merkleBlockEntity) {
-            DSDLog(@"Merkle block should exist");
+            DSDLog(@"Merkle block should exist for block hash %@",uint256_data(masternodeList.blockHash));
             error = [NSError errorWithDomain:@"DashSync" code:600 userInfo:@{NSLocalizedDescriptionKey:@"Merkle block should exist"}];
         } else if (merkleBlockEntity.masternodeList) {
             error = [NSError errorWithDomain:@"DashSync" code:600 userInfo:@{NSLocalizedDescriptionKey:@"Merkle block should not have a masternode list already"}];
