@@ -228,7 +228,9 @@
 
 -(void)clearPeers {
     [self disconnect];
-    _peers = nil;
+    @synchronized (self) {
+        _peers = nil;
+    }
 }
 
 - (NSMutableOrderedSet *)peers
@@ -375,20 +377,22 @@
 
 - (void)peerMisbehaving:(DSPeer *)peer errorMessage:(NSString*)errorMessage
 {
-    @synchronized (self.mutableMisbehavingPeers) {
-        peer.misbehaving++;
-        [self.peers removeObject:peer];
-        [self.mutableMisbehavingPeers addObject:peer];
-        if (++self.misbehavingCount >= self.chain.peerMisbehavingThreshold) { // clear out stored peers so we get a fresh list from DNS for next connect
-            self.misbehavingCount = 0;
-            [self.mutableMisbehavingPeers removeAllObjects];
-            [DSPeerEntity deleteAllObjectsInContext:self.managedObjectContext];
-            _peers = nil;
+    @synchronized (self) {
+        @synchronized (self.mutableMisbehavingPeers) {
+            peer.misbehaving++;
+            [self.peers removeObject:peer];
+            [self.mutableMisbehavingPeers addObject:peer];
+            if (++self.misbehavingCount >= self.chain.peerMisbehavingThreshold) { // clear out stored peers so we get a fresh list from DNS for next connect
+                self.misbehavingCount = 0;
+                [self.mutableMisbehavingPeers removeAllObjects];
+                [DSPeerEntity deleteAllObjectsInContext:self.managedObjectContext];
+                _peers = nil;
+            }
+            
+            [peer disconnectWithError:[NSError errorWithDomain:@"DashSync" code:500
+                                                      userInfo:@{NSLocalizedDescriptionKey:errorMessage}]];
+            [self connect];
         }
-        
-        [peer disconnectWithError:[NSError errorWithDomain:@"DashSync" code:500
-                                                  userInfo:@{NSLocalizedDescriptionKey:errorMessage}]];
-        [self connect];
     }
 }
 
@@ -397,22 +401,24 @@
     NSTimeInterval threeHoursAgo = [[NSDate date] timeIntervalSince1970] - 10800;
     BOOL syncsMasternodeList = !!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList);
     BOOL syncsGovernanceObjects = !!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Governance);
-    [_peers sortUsingComparator:^NSComparisonResult(DSPeer *p1, DSPeer *p2) {
-        //the following is to make sure we get
-        if (syncsMasternodeList) {
-            if ((!p1.lastRequestedMasternodeList || p1.lastRequestedMasternodeList < threeHoursAgo) && p2.lastRequestedMasternodeList > threeHoursAgo) return NSOrderedDescending;
-            if (p1.lastRequestedMasternodeList > threeHoursAgo && (!p2.lastRequestedMasternodeList || p2.lastRequestedMasternodeList < threeHoursAgo)) return NSOrderedAscending;
-        }
-        if (syncsGovernanceObjects) {
-            if ((!p1.lastRequestedGovernanceSync || p1.lastRequestedGovernanceSync < threeHoursAgo) && p2.lastRequestedGovernanceSync > threeHoursAgo) return NSOrderedDescending;
-            if (p1.lastRequestedGovernanceSync > threeHoursAgo && (!p2.lastRequestedGovernanceSync || p2.lastRequestedGovernanceSync < threeHoursAgo)) return NSOrderedAscending;
-        }
-        if (p1.priority > p2.priority) return NSOrderedAscending;
-        if (p1.priority < p2.priority) return NSOrderedDescending;
-        if (p1.timestamp > p2.timestamp) return NSOrderedAscending;
-        if (p1.timestamp < p2.timestamp) return NSOrderedDescending;
-        return NSOrderedSame;
-    }];
+    @synchronized (self) {
+        [_peers sortUsingComparator:^NSComparisonResult(DSPeer *p1, DSPeer *p2) {
+            //the following is to make sure we get
+            if (syncsMasternodeList) {
+                if ((!p1.lastRequestedMasternodeList || p1.lastRequestedMasternodeList < threeHoursAgo) && p2.lastRequestedMasternodeList > threeHoursAgo) return NSOrderedDescending;
+                if (p1.lastRequestedMasternodeList > threeHoursAgo && (!p2.lastRequestedMasternodeList || p2.lastRequestedMasternodeList < threeHoursAgo)) return NSOrderedAscending;
+            }
+            if (syncsGovernanceObjects) {
+                if ((!p1.lastRequestedGovernanceSync || p1.lastRequestedGovernanceSync < threeHoursAgo) && p2.lastRequestedGovernanceSync > threeHoursAgo) return NSOrderedDescending;
+                if (p1.lastRequestedGovernanceSync > threeHoursAgo && (!p2.lastRequestedGovernanceSync || p2.lastRequestedGovernanceSync < threeHoursAgo)) return NSOrderedAscending;
+            }
+            if (p1.priority > p2.priority) return NSOrderedAscending;
+            if (p1.priority < p2.priority) return NSOrderedDescending;
+            if (p1.timestamp > p2.timestamp) return NSOrderedAscending;
+            if (p1.timestamp < p2.timestamp) return NSOrderedDescending;
+            return NSOrderedSame;
+        }];
+    }
     //    for (DSPeer * peer in _peers) {
     //        DSDLog(@"%@:%d lastRequestedMasternodeList(%f) lastRequestedGovernanceSync(%f)",peer.host,peer.port,peer.lastRequestedMasternodeList, peer.lastRequestedGovernanceSync);
     //    }
@@ -626,14 +632,16 @@
     
     NSArray * peers = [masternodeList peers:500 withConnectivityNonce:connectivityNonce];
     
-    if (!_peers) {
-        _peers = [NSMutableOrderedSet orderedSetWithArray:peers];
-    } else {
-        [self clearPeers];
-        _peers = [NSMutableOrderedSet orderedSetWithArray:peers];
-        [self.peers minusSet:self.misbehavingPeers];
+    @synchronized (self) {
+        if (!_peers) {
+            _peers = [NSMutableOrderedSet orderedSetWithArray:peers];
+        } else {
+            [self clearPeers];
+            _peers = [NSMutableOrderedSet orderedSetWithArray:peers];
+            [self.peers minusSet:self.misbehavingPeers];
+        }
+        [self sortPeers];
     }
-    [self sortPeers];
     
     if (peers.count > 1 && peers.count < 1000) [self savePeers]; // peer relaying is complete when we receive <1000
     
@@ -924,7 +932,9 @@
             [self.mutableMisbehavingPeers removeAllObjects];
         }
         [DSPeerEntity deleteAllObjectsInContext:self.managedObjectContext];
-        _peers = nil;
+        @synchronized (self) {
+            _peers = nil;
+        }
         
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerSyncFailedNotification
