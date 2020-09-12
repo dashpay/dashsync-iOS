@@ -1464,6 +1464,163 @@
     }];
 }
 
+-(void)testTestnetSizeQuorumVerification {
+    
+    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+    NSString *filePath = [bundle pathForResource:@"MNL_0_370368" ofType:@"dat"];
+    
+    NSData * message = [NSData dataWithContentsOfFile:filePath];
+    
+    DSChain * chain = [DSChain testnet];
+    
+    NSUInteger length = message.length;
+    NSUInteger offset = 0;
+    
+    if (length - offset < 32) return;
+    UInt256 baseBlockHash = [message UInt256AtOffset:offset];
+    offset += 32;
+    
+    if (length - offset < 32) return;
+    
+    __block UInt256 blockHash370368 = [message UInt256AtOffset:offset];
+    offset += 32;
+    
+    NSLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)",uint256_reverse_hex(baseBlockHash), [chain heightForBlockHash:baseBlockHash], uint256_reverse_hex(blockHash370368),[chain heightForBlockHash:blockHash370368]);
+    
+    XCTAssert(uint256_eq(chain.genesisHash, baseBlockHash) || uint256_is_zero(baseBlockHash),@"Base block hash should be from chain origin");
+    
+    
+    [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:nil masternodeListLookup:^DSMasternodeList * _Nonnull(UInt256 blockHash) {
+        return nil; //no known previous lists
+    } lastBlock:nil onChain:chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
+        return 370368;
+    } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList370368, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
+        XCTAssert(foundCoinbase,@"Did not find coinbase at height %u",[chain heightForBlockHash:blockHash370368]);
+        //XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block
+        XCTAssert(rootMNListValid,@"rootMNListValid not valid at height %u",[chain heightForBlockHash:blockHash370368]);
+        XCTAssert(rootQuorumListValid,@"rootQuorumListValid not valid at height %u",[chain heightForBlockHash:blockHash370368]);
+        XCTAssert(validQuorums,@"validQuorums not valid at height %u",[chain heightForBlockHash:blockHash370368]);
+        XCTAssert(masternodeList370368.validMasternodeCount == 302);
+        
+        NSArray<DSSimplifiedMasternodeEntry*> * masternodes = [masternodeList370368 masternodesForQuorumModifier:@"e3628a32060457a1b9d08d23cb10e7b73ff593ecbcdf0d5588af2177271ff961".hexToData.UInt256 quorumCount:400];
+        
+        XCTAssertEqual(masternodes.count, 302, @"All masternodes should be used");
+        
+        if (foundCoinbase && rootMNListValid && rootQuorumListValid && validQuorums) {
+            //yay this is the correct masternode list verified deterministically for the given block
+            
+            
+            NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+            NSString *filePath = [bundle pathForResource:@"MNL_370368_370944" ofType:@"dat"];
+            NSData * message = [NSData dataWithContentsOfFile:filePath];
+            
+            NSUInteger length = message.length;
+            NSUInteger offset = 0;
+            
+            if (length - offset < 32) return;
+            UInt256 baseBlockHash = [message UInt256AtOffset:offset];
+            offset += 32;
+            
+            if (length - offset < 32) return;
+            UInt256 blockHash = [message UInt256AtOffset:offset];
+            offset += 32;
+            
+            NSLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)",uint256_reverse_hex(baseBlockHash), [chain heightForBlockHash:baseBlockHash], uint256_reverse_hex(blockHash),[chain heightForBlockHash:blockHash]);
+            
+            XCTAssert(uint256_eq(blockHash370368, baseBlockHash),@"Base block hash should be from block 119064");
+            
+            
+            [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:masternodeList370368 masternodeListLookup:^DSMasternodeList * _Nonnull(UInt256 blockHash) {
+                return nil; //no known previous lists
+            } lastBlock:nil onChain:chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
+                return 370944;
+            } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList370944, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
+                XCTAssert(foundCoinbase,@"Did not find coinbase at height %u",[chain heightForBlockHash:blockHash]);
+                //XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block
+                XCTAssert(rootMNListValid,@"rootMNListValid not valid at height %u",[chain heightForBlockHash:blockHash]);
+                XCTAssert(rootQuorumListValid,@"rootQuorumListValid not valid at height %u",[chain heightForBlockHash:blockHash]);
+                XCTAssert(validQuorums,@"validQuorums not valid at height %u",[chain heightForBlockHash:blockHash]);
+                
+                DSQuorumEntry * quorumToVerify = [addedQuorums[@1] objectForKey:uint256_data(blockHash370368)];
+                
+                XCTAssert(quorumToVerify,@"There should be a quorum using 119064");
+                
+                NSArray<DSSimplifiedMasternodeEntry*> * masternodes = [masternodeList370944 masternodesForQuorumModifier:quorumToVerify.llmqQuorumHash quorumCount:[DSQuorumEntry quorumSizeForType:quorumToVerify.llmqType]];
+                
+                NSMutableArray * masternodeHashOrder = [NSMutableArray array];
+                
+                for (DSSimplifiedMasternodeEntry * masternode in masternodes) {
+                    [masternodeHashOrder addObject:uint256_reverse_hex([masternode providerRegistrationTransactionHash])];
+                }
+                
+                NSArray<DSSimplifiedMasternodeEntry*> * masternodes2 = [masternodeList370944 masternodesForQuorumModifier:@"e3628a32060457a1b9d08d23cb10e7b73ff593ecbcdf0d5588af2177271ff961".hexToData.UInt256 quorumCount:400];
+                
+                XCTAssertEqual(masternodes2.count, 301, @"All masternodes should be used");
+                
+                NSArray * properOrder = @[@"c24aea30305d539887223fd923df775644b1d86db0aac8c654026e823b549cd7",
+                                          @"869f7f2054a6ed4241967afb74c3b1a07701d2772b368eb0bbfd2e3365adf6f3",
+                                          @"db85af3dad4d35c89f9c2ae0f932c70216b588611f3d250f71145a64cd0cc814",
+                                          @"11eabc1e72394af02bbe86815975d054816fe69006fdc64c6d7a06b585e5c311",
+                                          @"62e9acb81381fd2b2d41ed742af24f39e1dd23237b119e88f37de32bdde477eb",
+                                          @"f5a48b2747f5a7b91b00d00ca510c5f82f1670416ddb17f635634c9d78ecfb56",
+                                          @"f1eb4ac02ab1acbace0a01328e204c4fd7dec5e53a72cccac7729c5802dbeaf4",
+                                          @"72a6a2a5c2fb260fe3d41913ae019feb1d2489867e85f57cd1fa994bbe3458f1",
+                                          @"fbb1a1aa283faeb8082a7331c5010f13272f7ce6cb24845b3d1f260f7cb75423",
+                                          @"8aa3403855cb28266f9ac3a6a86a38598fe73194501b873254377f67fd2bd9d0",
+                                          @"f5ff9fbf1daf5db3539c7e307d9d50b12bb58a491b2f684c123256fd8193aa22",
+                                          @"f773def21e01af33f508b4e978631b99405fd1ad3947984d3bbca5b41b221175",
+                                          @"7d2cf73f05abc970b959e7de9beafeeb953a892f65253c4f17240af69562c157",
+                                          @"7504ff244e65de04c91640380c0c996f1f5b09073a8eb387ceba1a3c1ba18ff7",
+                                          @"82188f383d81425a75be96d075a36a4d553c275b57ebbb6e5d25da1ef03a2a73",
+                                          @"5aa7b0778c53e048abacecf9e63558fea80ea270ffb13ed12cb71f9b5ea08739",
+                                          @"035c55ab6fdd3e67b4aabb21d2baaa4507f5bb3c0954aed2353cabf9ec67e0d9",
+                                          @"7d336336b7e8910f518b2b270c6d72a2d7fc05aec3c6720108da80805ffc3aab",
+                                          @"bac5f35e6bd0bec2b4135ac2056c09714d8e6deb7c837d4f82229ed05ed539d7",
+                                          @"0fb12eef8c8736fc3e537a531facc6a6b445ea4394a008314d06684f4d43de1b",
+                                          @"db7fde05ba97f0e66eb623f6bfeb8f5c59eb3ebe37949033916796c274521d92",
+                                          @"5ab82a5348b5d4c126b0c172665d364352be37c96ce442e710d4a844a6f80bf9",
+                                          @"dfab7fd7e6f141d1ad7ff9fcaf8dafaf85b05dafc9058b376a33c6f4ee1da607",
+                                          @"a79311b6e5dcc1c1e4ac21a7252a7a830df0d784f737abf2bac5e6f2853f4d66",
+                                          @"9d3664f872028a8ac0fe867129f4027e96ee9747a4690a29cae3d6e84311b47d",
+                                          @"cc36055f36345b85a2b8176e79feff0ff822c490691c7f8e8d3348b4b1a1d8ac",
+                                          @"9212f5312730c7881b882b9fb7864dc686fa5a585b7a93253ccf1ce87ee59331",
+                                          @"32e5ad5cf9a06eb13e0f65cb7ecde1a93ef24995d07355fac2ff05ebd5b9ddbf",
+                                          @"8d0fdff45a02323afdbb8807c85b8542314b451611f71fe857d258db50d90fd6",
+                                          @"3005473d3e4b73c7b08e46eaeb59a4aed97b516512d9a4d9bece3d0f8a0a6a1e",
+                                          @"16dd484054212621d9ed312bfa4eb4958a14f4d9596143459304644034f73994",
+                                          @"a0d428edcf2ad412c198e8e914c64911b6a144d665ef6e1df6c9c96819695a5e",
+                                          @"c824bf8b44eeb1fa9c652e2c17b6eb11e91d9dc6567851e0a9c0b4720e75a70d",
+                                          @"725eb7b78e1c2823e8cdf3360ef0afff554866d0264984f82bfd9a440deaea9b",
+                                          @"a2d79b17e6c132dbe348995d6c0f5f36f90bace835748e77778a8ab8f25ba792",
+                                          @"4e60af72569f2922b1bd0dc630e38b3d0be8ec0960467a0aab45abe52696cbf3",
+                                          @"869b6700423da629920dc2101ec88e894f450f66aa751879dce0468945e04179",
+                                          @"87d515401a0fbc402a747e63e7d44c54d68b049cddd58a4a49f12948601b0b70",
+                                          @"fbfd403a9a4f7009be080a818b9804bc7627ad4621bd27322d7e31b1fd698639",
+                                          @"ca6ffccd65d35bc6d31fd5ad79815c3d840ce65351a094484bcdc3f0d4ea3c63",
+                                          @"eacf149c93ee560f91f83c99d0167f586aefd4534432f1593fc9eee39e7c0640",
+                                          @"6c91363d97b286e921afb5cf7672c88a2f1614d36d32058c34bef8b44e026007",
+                                          @"0569ce8b1a5fddf85850b5415b0435c46e198a8f146b1344bd618c8fc6e9e541",
+                                          @"24b8107bc9c59dc4327824a1071d643fda4976131ba64dd4802b5dd3eb79ce6f",
+                                          @"8393d3bd5423068c026bb7c118cfae9f61b94c495bf7898cb63b777b61d5cd1d",
+                                          @"6234c6ef0f64f704045623c2802c6a8871c2a2e168d80190ff8e039ddd8dcef5",
+                                          @"384ef1d5cdbc668f4cd51d0859e801e5ade7d6011cc000d8788c79c5015dc433",
+                                          @"5f7825bb16aa754c5b4fbbe4be4a2e9f1ecc071e4abfbafe710baa2ca21156c1",
+                                          @"78c43475cc270d075a38bf9959c590492dc8682a6feb46157444d29de4a13b8b",
+                                          @"16e4599e188b5551cd6a25e77a64e477f27b8012e07658dee354a8c4f13ed4a8"];
+                
+                //XCTAssertEqualObjects(masternodeHashOrder, properOrder);
+                
+                [quorumToVerify validateWithMasternodeList:masternodeList370368];
+                
+                XCTAssert(quorumToVerify.verified,@"Unable to verify quorum");
+                
+            }];
+            
+        }
+        
+    }];
+}
+
 //-(void)testMasternodeListLoading { // not part of unit tests
 //    DSChain * chain = [DSChain mainnet];
 //    [chain chainManager];

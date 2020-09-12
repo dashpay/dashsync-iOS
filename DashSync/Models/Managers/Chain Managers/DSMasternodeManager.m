@@ -849,10 +849,10 @@
     
 }
 
-#define LOG_MASTERNODE_DIFF 0 && DEBUG
+#define LOG_MASTERNODE_DIFF 1 && DEBUG
 #define FETCH_NEEDED_QUORUMS 1
 #define KEEP_OLD_QUORUMS 0
-#define SAVE_MASTERNODE_DIFF_TO_FILE (0 && DEBUG)
+#define SAVE_MASTERNODE_DIFF_TO_FILE (1 && DEBUG)
 #define DSFullLog(FORMAT, ...) printf("%s\n", [[NSString stringWithFormat:FORMAT, ##__VA_ARGS__] UTF8String])
 
 -(void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)message {

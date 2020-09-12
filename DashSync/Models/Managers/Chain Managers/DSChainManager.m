@@ -577,7 +577,7 @@
         //masternode list should be synced first and the masternode list is old
             self.syncPhase = DSChainSyncPhase_InitialTerminalBlocks;
             [peer sendGetheadersMessageWithLocators:[self.chain terminalBlocksLocatorArray] andHashStop:UINT256_ZERO];
-        } else if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList) && (self.masternodeManager.lastMasternodeListBlockHeight < self.chain.lastTerminalBlockHeight - 8)) {
+        } else if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList) && ((self.masternodeManager.lastMasternodeListBlockHeight < self.chain.lastTerminalBlockHeight - 8) || (self.masternodeManager.lastMasternodeListBlockHeight == UINT32_MAX))) {
             self.syncPhase = DSChainSyncPhase_InitialTerminalBlocks;
             [self.masternodeManager getRecentMasternodeList:32 withSafetyDelay:0];
             [self.masternodeManager getCurrentMasternodeListWithSafetyDelay:0];

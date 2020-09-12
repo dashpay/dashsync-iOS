@@ -261,21 +261,19 @@ inline static int ceil_log2(int x)
         return uint256_sup(hash1, hash2)?NSOrderedAscending:NSOrderedDescending;
     }];
     NSMutableArray * masternodes = [NSMutableArray array];
-    NSUInteger maxCount = MIN(quorumCount, self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.count);
+    NSUInteger masternodesInListCount = self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.count;
     DSMerkleBlock * block = [self.chain blockForBlockHash:self.blockHash];
     if (!block) {
         DSDLog(@"Unknown block %@",uint256_reverse_hex(self.blockHash));
         NSAssert(block, @"Block should be known");
     }
-    for (int i = 0; i<maxCount;i++) {
+    for (int i = 0; i<masternodesInListCount;i++) {
         NSData * score = [scores objectAtIndex:i];
         DSSimplifiedMasternodeEntry * masternode = scoreDictionary[score];
         if ([masternode isValidAtBlock:block]) {
             [masternodes addObject:masternode];
-        } else {
-            maxCount++;
-            if (maxCount > self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.count) break;
         }
+        if (masternodes.count == quorumCount) break;
     }
     return masternodes;
 }
@@ -290,6 +288,11 @@ inline static int ceil_log2(int x)
 
 -(uint64_t)masternodeCount {
     return [self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash count];
+}
+
+-(uint64_t)validMasternodeCount {
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isValid == TRUE"];
+    return [[self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allValues] filteredArrayUsingPredicate:predicate].count;
 }
 
 -(NSUInteger)quorumsCount {

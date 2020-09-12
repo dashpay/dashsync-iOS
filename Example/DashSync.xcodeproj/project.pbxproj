@@ -322,6 +322,9 @@
 		FB763C5620897B0F00CDBA57 /* DSWalletTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB763C5520897B0F00CDBA57 /* DSWalletTableViewCell.m */; };
 		FB763C622089AF9500CDBA57 /* DSStandaloneAddressesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB763C612089AF9500CDBA57 /* DSStandaloneAddressesViewController.m */; };
 		FB763C652089B0A700CDBA57 /* DSAddressTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB763C642089B0A700CDBA57 /* DSAddressTableViewCell.m */; };
+		FB7CC85F250CA0B7005D306C /* MNL_370368_370944.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB7CC85C250CA0B7005D306C /* MNL_370368_370944.dat */; };
+		FB7CC860250CA0B7005D306C /* MNL_0_370368.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB7CC85D250CA0B7005D306C /* MNL_0_370368.dat */; };
+		FB7CC861250CA0B7005D306C /* MNL_0_379567.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB7CC85E250CA0B7005D306C /* MNL_0_379567.dat */; };
 		FB83C2E021B7B6D70057A0EF /* Actions.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB83C2DF21B7B6D70057A0EF /* Actions.storyboard */; };
 		FB83C2E421B7B7560057A0EF /* DSActionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB83C2E321B7B7560057A0EF /* DSActionsViewController.m */; };
 		FB83C2E721B91A8D0057A0EF /* DSTransactionFloodingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB83C2E621B91A8D0057A0EF /* DSTransactionFloodingViewController.m */; };
@@ -843,6 +846,9 @@
 		FB763C612089AF9500CDBA57 /* DSStandaloneAddressesViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSStandaloneAddressesViewController.m; sourceTree = "<group>"; };
 		FB763C632089B0A700CDBA57 /* DSAddressTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSAddressTableViewCell.h; sourceTree = "<group>"; };
 		FB763C642089B0A700CDBA57 /* DSAddressTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAddressTableViewCell.m; sourceTree = "<group>"; };
+		FB7CC85C250CA0B7005D306C /* MNL_370368_370944.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_370368_370944.dat; sourceTree = "<group>"; };
+		FB7CC85D250CA0B7005D306C /* MNL_0_370368.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_0_370368.dat; sourceTree = "<group>"; };
+		FB7CC85E250CA0B7005D306C /* MNL_0_379567.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_0_379567.dat; sourceTree = "<group>"; };
 		FB83C2DF21B7B6D70057A0EF /* Actions.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Actions.storyboard; sourceTree = "<group>"; };
 		FB83C2E221B7B7560057A0EF /* DSActionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSActionsViewController.h; sourceTree = "<group>"; };
 		FB83C2E321B7B7560057A0EF /* DSActionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSActionsViewController.m; sourceTree = "<group>"; };
@@ -1732,6 +1738,7 @@
 		FB76C5A822BD7B9700DF2B29 /* MasternodeLists */ = {
 			isa = PBXGroup;
 			children = (
+				FB7CC85B250CA08C005D306C /* TestnetIssue */,
 				FB27C5FF22DC2DF3002808C4 /* QuorumIssue */,
 				FB1BF8CC22C96DCF003413C6 /* AdvancedReorderTest */,
 				FBEA6EE422C2ADC300CBCA77 /* ReorderTest */,
@@ -1744,6 +1751,16 @@
 				FBEA6ED622BE671D00CBCA77 /* DiffListTestnet119064to119200.dat */,
 			);
 			name = MasternodeLists;
+			sourceTree = "<group>";
+		};
+		FB7CC85B250CA08C005D306C /* TestnetIssue */ = {
+			isa = PBXGroup;
+			children = (
+				FB7CC85D250CA0B7005D306C /* MNL_0_370368.dat */,
+				FB7CC85E250CA0B7005D306C /* MNL_0_379567.dat */,
+				FB7CC85C250CA0B7005D306C /* MNL_370368_370944.dat */,
+			);
+			name = TestnetIssue;
 			sourceTree = "<group>";
 		};
 		FB83C2E121B7B72F0057A0EF /* Actions */ = {
@@ -2067,6 +2084,7 @@
 				FB1DCE3C24D724C70094F776 /* devnet-mobile-2-71-4e86971c42953982698f61b28b0e040eb7b1759140d1a648b3570709b2e9bf15.block in Resources */,
 				FB1BF90122C96DF1003413C6 /* MNL_1095864_1095888.dat in Resources */,
 				FB1DCE9824D7322D0094F776 /* devnet-mobile-2-133-93f79818497556e6ab43a9bde2a825c83d7943948609918dd9cb1543aa88a505.block in Resources */,
+				FB7CC860250CA0B7005D306C /* MNL_0_370368.dat in Resources */,
 				FB1BF90622C96E0D003413C6 /* MNL_0_1093824.dat in Resources */,
 				FB1DCEC524D7322D0094F776 /* devnet-mobile-2-121-ace09b6b5cb027eddc8f9410ea3bde04429884e675f45bc78dc87deae9875263.block in Resources */,
 				FB1DCEA624D7322D0094F776 /* devnet-mobile-2-108-38f8fc2cb17efd209de2d5b8769e660ce04509e939c37fe66d0f88ee70c47432.block in Resources */,
@@ -2199,6 +2217,7 @@
 				FB1DCEAE24D7322D0094F776 /* devnet-mobile-2-147-805837d2b762d133a601f550349cf97066372940b1b0521798a1f363677ec20a.block in Resources */,
 				FB1BF8EA22C96DF1003413C6 /* MNL_1095432_1095456.dat in Resources */,
 				FB1DCE3824D724C70094F776 /* devnet-mobile-2-26-0a0db67a83dbd1ce336259a2a1b88b4cb0b9ff55fcfb3a0afdc1ef239c55ad15.block in Resources */,
+				FB7CC861250CA0B7005D306C /* MNL_0_379567.dat in Resources */,
 				FB27C63522DC3180002808C4 /* MNL_1098600_1098624.dat in Resources */,
 				FB1BF90222C96DF1003413C6 /* MNL_1095816_1095840.dat in Resources */,
 				FB1DCEB524D7322D0094F776 /* devnet-mobile-2-115-24677f5bde818dc3d3289c1089c2b6ed527778e143b915147b0a8cce5dd6e14d.block in Resources */,
@@ -2211,6 +2230,7 @@
 				FB27C62022DC3180002808C4 /* MNL_1098504_1098528.dat in Resources */,
 				FBEA6EDB22C0637300CBCA77 /* MNL_122928_123000.dat in Resources */,
 				FB1DCE0324D724C70094F776 /* devnet-mobile-2-62-e92d849b19cfaa1bd4d27bdcfdca5cdb9088658c85d3b7382d9f0435a6bb8d36.block in Resources */,
+				FB7CC85F250CA0B7005D306C /* MNL_370368_370944.dat in Resources */,
 				FB27C62822DC3180002808C4 /* MNL_1097856_1098144.dat in Resources */,
 				FB1DCE4D24D724C70094F776 /* devnet-mobile-2-37-d5c8bbdb47983080c9118c86805c46cd5e7d5be5d7b480bacca58139ddf10b18.block in Resources */,
 				FB1DCE3324D724C70094F776 /* devnet-mobile-2-84-576114543145f3458341efd562e1131a09e81443ce9178c0e360c0224c69067f.block in Resources */,

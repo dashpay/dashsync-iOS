@@ -264,9 +264,17 @@
     
     BOOL allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:self.commitmentHash signature:self.allCommitmentAggregatedSignature withPublicKeys:publicKeyArray];
     
+#define LOG_COMMITMENT_DATA 1
+    
+
+    
     if (!allCommitmentAggregatedSignatureValidated) {
-        DSDLog(@"Issue with allCommitmentAggregatedSignatureValidated for quorum at height %u",masternodeList.height);
+        DSDLog(@"Issue with allCommitmentAggregatedSignatureValidated for quorum of type %d quorumHash %@ llmqHash %@ commitmentHash %@ signersBitset %@ (%d signers) at height %u", self.llmqType, uint256_hex(self.commitmentHash), uint256_hex(self.quorumHash), uint256_hex(self.commitmentHash), self.signersBitset.hexString, self.signersCount, masternodeList.height);
         return NO;
+    } else {
+        #if LOG_COMMITMENT_DATA
+            DSDLog(@"No Issue with Checking allCommitmentAggregatedSignatureValidated for quorum of type %d quorumHash %@ llmqHash %@ commitmentHash %@ signersBitset %@ (%d signers) at height %u", self.llmqType, uint256_hex(self.commitmentHash), uint256_hex(self.quorumHash), uint256_hex(self.commitmentHash), self.signersBitset.hexString, self.signersCount, masternodeList.height);
+        #endif
     }
     
     //The sig must validate against the commitmentHash and all public keys determined by the signers bitvector. This is an aggregated BLS signature verification.

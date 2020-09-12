@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,readonly) NSUInteger quorumsCount;
 @property (nonatomic,readonly) NSUInteger validQuorumsCount;
 @property (nonatomic,readonly) uint64_t masternodeCount;
+@property (nonatomic,readonly) uint64_t validMasternodeCount;
 @property (nonatomic,readonly) DSChain * chain;
 @property (nonatomic,readonly) NSArray * reversedRegistrationTransactionHashes;
 @property (nonatomic,readonly) NSDictionary<NSData*,DSSimplifiedMasternodeEntry*> *simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash;

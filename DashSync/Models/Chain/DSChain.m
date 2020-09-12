@@ -2234,7 +2234,7 @@ static dispatch_once_t devnetToken = 0;
         }
     }
     
-    if (block.height > self.estimatedBlockHeight) {
+    if ((isTerminalBlock && block.height > self.estimatedBlockHeight) || (!isTerminalBlock && block.height > self.lastTerminalBlockHeight)) {
         _bestEstimatedBlockHeight = block.height;
         if (peer && !isTerminalBlock && !savedBlockLocators) {
             [self saveBlockLocators];
