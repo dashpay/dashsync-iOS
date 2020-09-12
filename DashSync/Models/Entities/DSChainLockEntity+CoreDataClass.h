@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSChainLockEntity : NSManagedObject
 
 - (DSChainLock *)chainLockForChain:(DSChain*)chain;
-- (instancetype)setAttributesFromChainLock:(DSChainLock *)chainLock;
++ (instancetype)chainLockEntityForChainLock:(DSChainLock *)chainLock inContext:(NSManagedObjectContext*)context;
 
 @end
 

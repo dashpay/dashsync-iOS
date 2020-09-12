@@ -3588,7 +3588,7 @@ static dispatch_once_t devnetToken = 0;
 - (void)saveTerminalBlocks
 {
     if (self.isTransient) return;
-    NSMutableDictionary *blocks = [NSMutableDictionary dictionary];
+    NSMutableDictionary <NSData*, DSBlock*> *blocks = [NSMutableDictionary dictionary];
     DSBlock *b = self.lastTerminalBlock;
     uint32_t endHeight = b.height;
     uint32_t startHeight = b.height;
