@@ -347,6 +347,9 @@
     if (!masternodeList && [self.masternodeListsBlockHashStubs containsObject:uint256_data(blockHash)]) {
         masternodeList = [self loadMasternodeListAtBlockHash:uint256_data(blockHash)];
     }
+    if (!masternodeList) {
+        DSDLog(@"No masternode list at %@",uint256_hex(blockHash));
+    }
     return masternodeList;
 }
 
@@ -776,7 +779,7 @@
             DSMasternodeList * quorumMasternodeList = masternodeListLookup(potentialQuorumEntry.quorumHash);
             
             if (quorumMasternodeList) {
-                validQuorums &= [potentialQuorumEntry validateWithMasternodeList:quorumMasternodeList];
+                validQuorums &= [potentialQuorumEntry validateWithMasternodeList:quorumMasternodeList blockHeightLookup:blockHeightLookup];
                 if (!validQuorums) {
                     DSDLog(@"Invalid Quorum Found");
                 }
@@ -802,7 +805,7 @@
     
     DSMasternodeList * masternodeList = [DSMasternodeList masternodeListAtBlockHash:blockHash atBlockHeight:blockHeightLookup(blockHash) fromBaseMasternodeList:baseMasternodeList addedMasternodes:addedMasternodes removedMasternodeHashes:deletedMasternodeHashes modifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums removedQuorumHashesByType:deletedQuorums onChain:chain];
     
-    BOOL rootMNListValid = uint256_eq(coinbaseTransaction.merkleRootMNList, masternodeList.masternodeMerkleRoot);
+    BOOL rootMNListValid = uint256_eq(coinbaseTransaction.merkleRootMNList, [masternodeList masternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]);
     
     if (!rootMNListValid) {
         DSDLog(@"Masternode Merkle root not valid for DML on block %d version %d (%@ wanted - %@ calculated)",coinbaseTransaction.height,coinbaseTransaction.version,uint256_hex(coinbaseTransaction.merkleRootMNList),uint256_hex(masternodeList.masternodeMerkleRoot));
@@ -849,8 +852,7 @@
     
 }
 
-#define LOG_MASTERNODE_DIFF 0 && DEBUG
-#define FETCH_NEEDED_QUORUMS 1
+#define LOG_MASTERNODE_DIFF (0 && DEBUG)
 #define KEEP_OLD_QUORUMS 0
 #define SAVE_MASTERNODE_DIFF_TO_FILE (0 && DEBUG)
 #define DSFullLog(FORMAT, ...) printf("%s\n", [[NSString stringWithFormat:FORMAT, ##__VA_ARGS__] UTF8String])
@@ -938,7 +940,7 @@
             DSDLog(@"Valid masternode list found at height %u",[self heightForBlockHash:blockHash]);
             //yay this is the correct masternode list verified deterministically for the given block
             
-            if (FETCH_NEEDED_QUORUMS && [neededMissingMasternodeLists count] && [self.masternodeListQueriesNeedingQuorumsValidated containsObject:uint256_data(blockHash)]) {
+            if ([neededMissingMasternodeLists count] && [self.masternodeListQueriesNeedingQuorumsValidated containsObject:uint256_data(blockHash)]) {
                 DSDLog(@"Last masternode list is missing previous masternode lists for quorum validation");
                 
                 self.processingMasternodeListBlockHash = UINT256_ZERO;
@@ -1017,7 +1019,7 @@
         
         [[NSNotificationCenter defaultCenter] postNotificationName:DSQuorumListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
     });
-    [DSMasternodeManager saveMasternodeList:masternodeList toChain:self.chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums inContext:self.managedObjectContext completion:^(NSError *error) {
+    [DSMasternodeManager saveMasternodeList:masternodeList toChain:self.chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums createUnknownBlocks:NO inContext:self.managedObjectContext completion:^(NSError *error) {
         if (error) {
             if ([self.masternodeListRetrievalQueue count]) { //if it is 0 then we most likely have wiped chain info
                 [self wipeMasternodeInfo];
@@ -1029,7 +1031,7 @@
     }];
 }
 
-+(void)saveMasternodeList:(DSMasternodeList*)masternodeList toChain:(DSChain*)chain havingModifiedMasternodes:(NSDictionary*)modifiedMasternodes addedQuorums:(NSDictionary*)addedQuorums inContext:(NSManagedObjectContext*)context completion:(void (^)(NSError * error))completion  {
++(void)saveMasternodeList:(DSMasternodeList*)masternodeList toChain:(DSChain*)chain havingModifiedMasternodes:(NSDictionary*)modifiedMasternodes addedQuorums:(NSDictionary*)addedQuorums createUnknownBlocks:(BOOL)createUnknownBlocks inContext:(NSManagedObjectContext*)context completion:(void (^)(NSError * error))completion  {
     
     [context performBlock:^{
         //masternodes
@@ -1042,8 +1044,15 @@
         NSAssert(!merkleBlockEntity || !merkleBlockEntity.masternodeList, @"Merkle block should not have a masternode list already");
         NSError * error = nil;
         if (!merkleBlockEntity) {
-            DSDLog(@"Merkle block should exist");
-            error = [NSError errorWithDomain:@"DashSync" code:600 userInfo:@{NSLocalizedDescriptionKey:@"Merkle block should exist"}];
+            if (createUnknownBlocks) {
+                merkleBlockEntity = [DSMerkleBlockEntity managedObjectInContext:context];
+                merkleBlockEntity.blockHash = uint256_data(masternodeList.blockHash);
+                merkleBlockEntity.height = masternodeList.height;
+                merkleBlockEntity.chain = chainEntity;
+            } else {
+                DSDLog(@"Merkle block should exist for block hash %@",uint256_data(masternodeList.blockHash));
+                error = [NSError errorWithDomain:@"DashSync" code:600 userInfo:@{NSLocalizedDescriptionKey:@"Merkle block should exist"}];
+            }
         } else if (merkleBlockEntity.masternodeList) {
             error = [NSError errorWithDomain:@"DashSync" code:600 userInfo:@{NSLocalizedDescriptionKey:@"Merkle block should not have a masternode list already"}];
         }

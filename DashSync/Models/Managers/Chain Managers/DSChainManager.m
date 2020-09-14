@@ -304,9 +304,13 @@
     return MIN(1.0, MAX(0.0, 0.1 + 0.9 * progress));
 }
 
+#define LOG_COMBINED_SYNC_PROGRESS 0
+
 -(double)combinedSyncProgress
 {
+#if LOG_COMBINED_SYNC_PROGRESS
     DSDLog(@"combinedSyncProgress breakdown %f %f %f",self.terminalHeaderSyncProgress,self.masternodeManager.masternodeListAndQuorumsSyncProgress,self.chainSyncProgress);
+#endif
     return self.terminalHeaderSyncProgress * 0.2 + self.masternodeManager.masternodeListAndQuorumsSyncProgress * 0.25 + self.chainSyncProgress * 0.55;
 }
 
@@ -573,7 +577,7 @@
         //masternode list should be synced first and the masternode list is old
             self.syncPhase = DSChainSyncPhase_InitialTerminalBlocks;
             [peer sendGetheadersMessageWithLocators:[self.chain terminalBlocksLocatorArray] andHashStop:UINT256_ZERO];
-        } else if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList) && (self.masternodeManager.lastMasternodeListBlockHeight < self.chain.lastTerminalBlockHeight - 8)) {
+        } else if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList) && ((self.masternodeManager.lastMasternodeListBlockHeight < self.chain.lastTerminalBlockHeight - 8) || (self.masternodeManager.lastMasternodeListBlockHeight == UINT32_MAX))) {
             self.syncPhase = DSChainSyncPhase_InitialTerminalBlocks;
             [self.masternodeManager getRecentMasternodeList:32 withSafetyDelay:0];
             [self.masternodeManager getCurrentMasternodeListWithSafetyDelay:0];

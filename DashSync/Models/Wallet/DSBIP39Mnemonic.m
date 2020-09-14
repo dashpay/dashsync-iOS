@@ -205,7 +205,7 @@
 
         if (x == (uint32_t)NSNotFound || y == (uint32_t)NSNotFound) {
 #if DEBUG
-            DSDLog(@"phrase contained unknown word: %@", a[i*8/11 + (x == (uint32_t)NSNotFound ? 0 : 1)]);
+            DSDLog(@"phrase contained unknown word: %@ in %lu", a[i*8/11 + (x == (uint32_t)NSNotFound ? 0 : 1)],(unsigned long)language);
 #endif
             return nil;
         }

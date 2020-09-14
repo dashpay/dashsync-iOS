@@ -33,16 +33,16 @@
 
 + (instancetype)blockchainIdentityRegistrationFundingDerivationPathForChain:(DSChain*)chain {
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
-    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(12)};
-    BOOL hardenedIndexes[] = {YES,YES,YES};
-    return [DSCreditFundingDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:3 type:DSDerivationPathType_CreditFunding signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_BlockchainIdentityCreditRegistrationFunding onChain:chain];
+    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(FEATURE_PURPOSE_IDENTITIES), uint256_from_long(1)};
+    BOOL hardenedIndexes[] = {YES,YES,YES,YES};
+    return [DSCreditFundingDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_CreditFunding signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_BlockchainIdentityCreditRegistrationFunding onChain:chain];
 }
 
 + (instancetype)blockchainIdentityTopupFundingDerivationPathForChain:(DSChain*)chain {
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
-    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(13)};
-    BOOL hardenedIndexes[] = {YES,YES,YES};
-    return [DSCreditFundingDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:3 type:DSDerivationPathType_CreditFunding signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_BlockchainIdentityCreditRegistrationFunding onChain:chain];
+    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(FEATURE_PURPOSE_IDENTITIES), uint256_from_long(2)};
+    BOOL hardenedIndexes[] = {YES,YES,YES,YES};
+    return [DSCreditFundingDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_CreditFunding signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_BlockchainIdentityCreditRegistrationFunding onChain:chain];
 }
 
 -(NSString*)receiveAddress {

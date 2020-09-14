@@ -13,6 +13,7 @@
 #import "NSString+Dash.h"
 #import "DSKey+Protected.h"
 #import "NSData+Encryption.h"
+#import "NSData+Bitcoin.h"
 #import <CommonCrypto/CommonCryptor.h>
 
 @interface DSBLSKey ()
@@ -367,6 +368,12 @@
     UInt768 signature = UINT768_ZERO;
     blsSignature.Serialize(signature.u8);
     return signature;
+}
+
+// MARK: - HMAC
+
+- (UInt256)HMAC256Data:(NSData*)data {
+    return [data HMACSHA256WithKey:self.secretKey];
 }
 
 // MARK: - Encryption

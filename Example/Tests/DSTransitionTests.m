@@ -90,7 +90,7 @@
         [self.blockchainIdentity registrationTransitionWithCompletion:^(DSBlockchainIdentityRegistrationTransition * _Nonnull blockchainIdentityRegistrationTransition, NSError * _Nonnull error) {
             XCTAssertNil(error,@"No error should be produced");
             DSKey * key = [blockchainIdentityRegistrationTransition.publicKeys allValues][0];
-            XCTAssertEqualObjects(key.publicKeyData.hexString, @"031dd02c1fda3fa3f17b0e0b6ddd09c6dcf6a9e18ec5b15bd5705763425fba9a78");
+            XCTAssertEqualObjects(key.publicKeyData.hexString, @"02128cef3f329986c01860526499283bbd9a33af2e6747d7488c779be8ed37a409");
             XCTAssertEqual(key.keyType, DSKeyType_ECDSA);
             XCTAssertEqualObjects(uint256_hex(blockchainIdentityRegistrationTransition.blockchainIdentityUniqueId), @"ae99d9433fc86f8974094c6a24fcc8cc68f87510c000d714c71ee5f64ceacf4b");
             XCTAssertEqual(blockchainIdentityRegistrationTransition.type, DSTransitionType_IdentityRegistration);

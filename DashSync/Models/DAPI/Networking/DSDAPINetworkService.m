@@ -584,13 +584,13 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                         failure:(void (^)(NSError *error))failure {
     NSParameterAssert(stateTransition);
 
-    ApplyStateTransitionRequest * updateStateRequest = [[ApplyStateTransitionRequest alloc] init];
-    updateStateRequest.stateTransition = stateTransition.data;
+    BroadcastStateTransitionRequest * broadcastStateRequest = [[BroadcastStateTransitionRequest alloc] init];
+    broadcastStateRequest.stateTransition = stateTransition.data;
     DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.successHandler = success;
     responseHandler.errorHandler = failure;
-    GRPCUnaryProtoCall * call = [self.gRPCClient applyStateTransitionWithMessage:updateStateRequest responseHandler:responseHandler callOptions:nil];
+    GRPCUnaryProtoCall * call = [self.gRPCClient broadcastStateTransitionWithMessage:broadcastStateRequest responseHandler:responseHandler callOptions:nil];
     [call start];
     return (id<DSDAPINetworkServiceRequest>)call;
 }
@@ -599,19 +599,19 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                         success:(void (^)(NSDictionary *successDictionary))success
                                         failure:(void (^)(NSError *error))failure {
     NSParameterAssert(stateTransition);
-    DSDLog(@"Applying state transition with data %@ rawData %@",stateTransition.keyValueDictionary, stateTransition.data.hexString);
-    ApplyStateTransitionRequest * updateStateRequest = [[ApplyStateTransitionRequest alloc] init];
-    updateStateRequest.stateTransition = stateTransition.data;
+    DSDLog(@"Broadcasting state transition with data %@ rawData %@",stateTransition.keyValueDictionary, stateTransition.data.hexString);
+    BroadcastStateTransitionRequest * broadcastStateRequest = [[BroadcastStateTransitionRequest alloc] init];
+    broadcastStateRequest.stateTransition = stateTransition.data;
     DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.successHandler = success;
     responseHandler.errorHandler = failure;
-    GRPCUnaryProtoCall * call = [self.gRPCClient applyStateTransitionWithMessage:updateStateRequest responseHandler:responseHandler callOptions:nil];
+    GRPCUnaryProtoCall * call = [self.gRPCClient broadcastStateTransitionWithMessage:broadcastStateRequest responseHandler:responseHandler callOptions:nil];
     [call start];
     return (id<DSDAPINetworkServiceRequest>)call;
 }
 
-- (id<DSDAPINetworkServiceRequest>)getDashpayIncomingContactRequestsForUserId:(NSString*)userId since:(NSTimeInterval)timestamp
+- (id<DSDAPINetworkServiceRequest>)getDashpayIncomingContactRequestsForUserId:(NSData*)userId since:(NSTimeInterval)timestamp
                              success:(void (^)(NSArray<NSDictionary *> *documents))success
                              failure:(void (^)(NSError *error))failure {
     NSParameterAssert(userId);

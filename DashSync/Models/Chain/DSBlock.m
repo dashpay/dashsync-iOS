@@ -253,7 +253,30 @@
     }
     if (!chainLock.saved) {
         [chainLock saveInitial];
+        if (!chainLock.saved) {
+            //it is still not saved
+            self.chainLockAwaitingSaving = chainLock;
+        }
     }
+}
+
+-(BOOL)hasChainLockAwaitingSaving {
+    return (self.chainLockAwaitingSaving != nil);
+}
+
+-(BOOL)saveAssociatedChainLock {
+    if (self.hasChainLockAwaitingSaving) {
+        if (!self.chainLockAwaitingSaving.saved) {
+            [self.chainLockAwaitingSaving saveInitial];
+            if (self.chainLockAwaitingSaving.saved) {
+                self.chainLockAwaitingSaving = nil;
+                return TRUE;
+            } else {
+                return FALSE;
+            }
+        }
+    }
+    return TRUE;
 }
 
 - (NSUInteger)hash

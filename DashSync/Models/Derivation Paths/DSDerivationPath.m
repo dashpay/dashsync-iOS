@@ -57,10 +57,10 @@
 
 + (instancetype)masterBlockchainIdentityContactsDerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain {
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
-    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE),uint256_from_long(coinType), uint256_from_long(5), uint256_from_long(1), uint256_from_long(accountNumber)};
+    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE),uint256_from_long(coinType), uint256_from_long(FEATURE_PURPOSE_DASHPAY), uint256_from_long(accountNumber)};
     //todo full uint256 derivation
-    BOOL hardenedIndexes[] = {YES,YES,YES,YES,YES};
-    return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:5 type:DSDerivationPathType_PartialPath signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_ContactBasedFundsRoot onChain:chain];
+    BOOL hardenedIndexes[] = {YES,YES,YES,YES};
+    return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_PartialPath signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_ContactBasedFundsRoot onChain:chain];
 }
 
 

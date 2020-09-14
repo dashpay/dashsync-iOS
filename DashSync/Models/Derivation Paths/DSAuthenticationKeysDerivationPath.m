@@ -75,7 +75,7 @@ type:(DSDerivationPathType)type signingAlgorithm:(DSKeyType)signingAlgorithm ref
 
 + (instancetype)blockchainIdentityECDSAKeysDerivationPathForChain:(DSChain*)chain {
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
-    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(5), uint256_from_long(0), uint256_from_long(0)};
+    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(FEATURE_PURPOSE_IDENTITIES), uint256_from_long(FEATURE_PURPOSE_IDENTITIES_SUBFEATURE_AUTHENTICATION), uint256_from_long(0)};
     BOOL hardenedIndexes[] = {YES,YES,YES,YES,YES};
     DSAuthenticationKeysDerivationPath * blockchainIdentityECDSAKeysDerivationPath = [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:5 type:DSDerivationPathType_Authentication signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_BlockchainIdentities onChain:chain];
     blockchainIdentityECDSAKeysDerivationPath.shouldStoreExtendedPrivateKey = YES;
@@ -84,7 +84,7 @@ type:(DSDerivationPathType)type signingAlgorithm:(DSKeyType)signingAlgorithm ref
 
 + (instancetype)blockchainIdentityBLSKeysDerivationPathForChain:(DSChain*)chain {
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
-    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(5), uint256_from_long(0), uint256_from_long(1)};
+    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(FEATURE_PURPOSE_IDENTITIES), uint256_from_long(FEATURE_PURPOSE_IDENTITIES_SUBFEATURE_AUTHENTICATION), uint256_from_long(1)};
     BOOL hardenedIndexes[] = {YES,YES,YES,YES,YES};
     DSAuthenticationKeysDerivationPath * blockchainIdentityBLSKeysDerivationPath = [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:5 type:DSDerivationPathType_Authentication signingAlgorithm:DSKeyType_BLS reference:DSDerivationPathReference_BlockchainIdentities onChain:chain];
     blockchainIdentityBLSKeysDerivationPath.shouldStoreExtendedPrivateKey = YES;
@@ -128,6 +128,26 @@ type:(DSDerivationPathType)type signingAlgorithm:(DSKeyType)signingAlgorithm ref
 - (DSKey * _Nullable)privateKeyAtIndexPath:(NSIndexPath*)indexPath {
     DSKey * extendedPrivateKey = [DSKey keyWithExtendedPrivateKeyData:self.extendedPrivateKeyData forKeyType:self.signingAlgorithm];
     return [extendedPrivateKey privateDeriveToPath:indexPath];
+}
+
+- (NSData *)publicKeyDataAtIndexPath:(NSIndexPath*)indexPath
+{
+    BOOL hasHardenedDerivation = FALSE;
+    for (NSInteger i = 0;i<[indexPath length];i++) {
+        uint32_t derivation = (uint32_t)[indexPath indexAtPosition:i];
+        hasHardenedDerivation |= (derivation & BIP32_HARD);
+        if (hasHardenedDerivation) break;
+    }
+    if (hasHardenedDerivation) {
+        if ([self hasExtendedPrivateKey]) {
+            DSKey * key = [self privateKeyAtIndexPath:indexPath];
+            return key.publicKeyData;
+        } else {
+            return nil;
+        }
+    } else {
+        return [super publicKeyDataAtIndexPath:indexPath];
+    }
 }
 
 @end

@@ -214,10 +214,7 @@
                     
                 }];
             } else {
-                DSContactProfileViewController *controller = [[DSContactProfileViewController alloc] initWithBlockchainIdentity:self.blockchainIdentity];
-                controller.delegate = self;
-                UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:controller];
-                [self presentViewController:navigationController animated:YES completion:nil];
+                [self performSegueWithIdentifier:@"CreateOrEditProfileSegue" sender:self];
             }
         } else if (indexPath.row == 5) { //Keys
             
@@ -278,6 +275,11 @@
     } else if ([segue.identifier isEqualToString:@"BlockchainIdentityRegisterTLDSegue"]) {
         DSRegisterTLDViewController * controller = segue.destinationViewController;
         controller.blockchainIdentity = self.blockchainIdentity;
+    } else if ([segue.identifier isEqualToString:@"CreateOrEditProfileSegue"]) {
+        UINavigationController * navigationController = segue.destinationViewController;
+        DSContactProfileViewController * controller = (DSContactProfileViewController *)navigationController.topViewController;
+        controller.blockchainIdentity = self.blockchainIdentity;
+        controller.delegate = self;
     }
 }
 

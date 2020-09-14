@@ -221,6 +221,8 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 
 - (BOOL)bitIsTrueAtLEIndex:(uint32_t)index;
 
+- (UInt256)HMACSHA256WithKey:(UInt256)secretKey;
+
 @end
 
 

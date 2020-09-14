@@ -21,6 +21,9 @@ NS_ASSUME_NONNULL_BEGIN
                completion:(void (^)(NSArray * utxos, NSArray * amounts, NSArray * scripts,
                                              NSError * _Null_unspecified error))completion;
 
+- (void)blockHeightsForBlockHashes:(NSArray*)blockHashes onChain:(DSChain*)chain completion:(void (^)(NSDictionary * blockHeightDictionary,
+NSError * _Null_unspecified error))completion;
+
 -(void)queryInsightForTransactionWithHash:(UInt256)transactionHash onChain:(DSChain *)chain completion:(void (^)(DSTransaction * transaction, NSError *error))completion;
 
 - (void)queryInsight:(NSString *)insightURL forTransactionWithHash:(UInt256)transactionHash onChain:(DSChain*)chain completion:(void (^)(DSTransaction * transaction, NSError *error))completion;

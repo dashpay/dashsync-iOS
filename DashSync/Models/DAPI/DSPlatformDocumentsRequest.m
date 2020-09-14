@@ -48,7 +48,7 @@
 
 +(instancetype)dpnsRequestForUserId:(NSString*)userId {
     DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
-    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"records.dashIdentity == %@",userId];
+    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"records.dashUniqueIdentityId == %@",userId];
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = 100;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
@@ -97,7 +97,7 @@
     return platformDocumentsRequest;
 }
 
-+(instancetype)dashpayRequestForContactRequestsForRecipientUserId:(NSString*)userId since:(NSTimeInterval)timestamp {
++(instancetype)dashpayRequestForContactRequestsForRecipientUserId:(NSData*)userId since:(NSTimeInterval)timestamp {
     DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     uint64_t millisecondTimestamp = timestamp * 1000;
     platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"toUserId == %@ && %K >= %@",userId,@"$createdAt",@(millisecondTimestamp)];
@@ -109,7 +109,7 @@
     return platformDocumentsRequest;
 }
 
-+(instancetype)dashpayRequestForContactRequestForSendingUserId:(NSString*)userId toRecipientUserId:(NSString*)toUserId {
++(instancetype)dashpayRequestForContactRequestForSendingUserId:(NSString*)userId toRecipientUserId:(NSData*)toUserId {
     DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"%K == %@ && toUserId == %@",@"$ownerId",userId,toUserId];
     platformDocumentsRequest.startAt = 0;
@@ -130,15 +130,11 @@
 }
 
 +(instancetype)dpnsRequestForPreorderSaltedHashes:(NSArray*)preorderSaltedHashes {
-    NSMutableArray * preorderSaltedHashesAsHex = [NSMutableArray array];
-    for (NSData* data in preorderSaltedHashes) {
-        [preorderSaltedHashesAsHex addObject:data.hexString];
-    }
     DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
-    if (preorderSaltedHashesAsHex.count == 1) {
-        platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"saltedDomainHash == %@",[preorderSaltedHashesAsHex firstObject]];
+    if (preorderSaltedHashes.count == 1) {
+        platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"saltedDomainHash == %@",[preorderSaltedHashes firstObject]];
     } else {
-        platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"saltedDomainHash IN %@",preorderSaltedHashesAsHex];
+        platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"saltedDomainHash IN %@",preorderSaltedHashes];
     }
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = (uint32_t)preorderSaltedHashes.count;

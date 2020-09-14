@@ -47,6 +47,9 @@
         self.height = block.height;
         self.chain = chainEntity;
         self.chainWork = uint256_data(block.chainWork);
+        if (!self.chainLock && block.chainLocked && [block hasChainLockAwaitingSaving]) {
+            [block saveAssociatedChainLock];
+        }
         NSAssert((block.height == UINT32_MAX) == (uint256_is_zero(block.chainWork)), @"if block height is not set then there should be no aggregated work, and opposite is also true");
     }];
     
@@ -68,6 +71,9 @@
         self.height = block.height;
         self.chain = chainEntity;
         self.chainWork = uint256_data(block.chainWork);
+        if (!self.chainLock && block.chainLocked && [block hasChainLockAwaitingSaving]) {
+            [block saveAssociatedChainLock];
+        }
         NSAssert((block.height == UINT32_MAX) == (uint256_is_zero(block.chainWork)), @"if block height is not set then there should be no aggregated work, and opposite is also true");
     }];
     

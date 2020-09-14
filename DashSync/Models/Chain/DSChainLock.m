@@ -189,13 +189,15 @@
     //saving here will only create, not update.
     NSManagedObjectContext * context = [NSManagedObjectContext chainContext];
     [context performBlockAndWait:^{ // add the transaction to core data
+        
         if ([DSChainLockEntity countObjectsInContext:context matching:@"merkleBlock.blockHash == %@", uint256_data(self.blockHash)] == 0) {
-            DSChainLockEntity * chainLockEntity = [DSChainLockEntity managedObjectInContext:context];
-            [chainLockEntity setAttributesFromChainLock:self];
-            [context ds_save];
+            DSChainLockEntity * chainLockEntity = [DSChainLockEntity chainLockEntityForChainLock:self inContext:context];
+            if (chainLockEntity) {
+                [context ds_save];
+                self.saved = YES;
+            }
         }
     }];
-    self.saved = YES;
 }
 
 -(void)saveSignatureValid {

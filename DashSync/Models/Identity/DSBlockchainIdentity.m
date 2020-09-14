@@ -166,7 +166,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     for (DSBlockchainIdentityKeyPathEntity * keyPath in blockchainIdentityEntity.keyPaths) {
         NSIndexPath *keyIndexPath = (NSIndexPath *)[keyPath path];
         if (keyIndexPath) {
-            BOOL success = [self registerKeyWithStatus:keyPath.keyStatus atIndexPath:keyIndexPath ofType:keyPath.keyType];
+            NSIndexPath *nonHardenedKeyIndexPath = [keyIndexPath softenAllItems];
+            BOOL success = [self registerKeyWithStatus:keyPath.keyStatus atIndexPath:nonHardenedKeyIndexPath ofType:keyPath.keyType];
             if (!success) {
                 DSKey * key = [DSKey keyWithPublicKeyData:keyPath.publicKeyData forKeyType:keyPath.keyType];
                 [self registerKey:key withStatus:keyPath.keyStatus atIndex:keyPath.keyID ofType:keyPath.keyType];
@@ -956,18 +957,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     
 }
 
--(uint32_t)indexOfKey:(DSKey*)key {
-    NSAssert(_isLocal, @"This should not be performed on a non local blockchain identity");
-    if (!_isLocal) return 0;
-    DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:DSKeyType_ECDSA];
-    NSUInteger index = [derivationPath indexOfKnownAddress:[[NSData dataWithUInt160:key.hash160] addressFromHash160DataForChain:self.chain]];
-    if (index == NSNotFound) {
-        derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:self.wallet];
-        index = [derivationPath indexOfKnownAddress:[[NSData dataWithUInt160:key.hash160] addressFromHash160DataForChain:self.chain]];
-    }
-    return (uint32_t)index;
-}
-
 -(DSAuthenticationKeysDerivationPath*)derivationPathForType:(DSKeyType)type {
     if (!_isLocal) return nil;
     if (type == DSKeyType_ECDSA) {
@@ -980,7 +969,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 -(BOOL)hasPrivateKeyAtIndex:(uint32_t)index ofType:(DSKeyType)type error:(NSError**)error {
     if (!_isLocal) return NO;
-    const NSUInteger indexes[] = {_index,index};
+    const NSUInteger indexes[] = {_index | BIP32_HARD, index | BIP32_HARD};
     NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
     
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
@@ -990,7 +979,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 -(DSKey*)privateKeyAtIndex:(uint32_t)index ofType:(DSKeyType)type {
     if (!_isLocal) return nil;
-    const NSUInteger indexes[] = {_index,index};
+    const NSUInteger indexes[] = {_index | BIP32_HARD, index | BIP32_HARD};
     NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
     
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
@@ -1007,7 +996,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 -(DSKey*)derivePrivateKeyAtIdentityKeyIndex:(uint32_t)index ofType:(DSKeyType)type {
     if (!_isLocal) return nil;
-    const NSUInteger indexes[] = {_index,index};
+    const NSUInteger indexes[] = {_index, index};
     NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
     
     return [self derivePrivateKeyAtIndexPath:indexPath ofType:type];
@@ -1018,12 +1007,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     
-    return [derivationPath privateKeyAtIndexPath:indexPath];
+    return [derivationPath privateKeyAtIndexPath:[indexPath hardenAllItems]];
 }
 
 -(DSKey*)privateKeyAtIndex:(uint32_t)index ofType:(DSKeyType)type forSeed:(NSData*)seed {
     if (!_isLocal) return nil;
-    const NSUInteger indexes[] = {_index,index};
+    const NSUInteger indexes[] = {_index | BIP32_HARD, index | BIP32_HARD};
     NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
     
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
@@ -1033,12 +1022,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 -(DSKey*)publicKeyAtIndex:(uint32_t)index ofType:(DSKeyType)type {
     if (!_isLocal) return nil;
-    const NSUInteger indexes[] = {_index,index};
-    NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
+    const NSUInteger indexes[] = {_index | BIP32_HARD, index | BIP32_HARD};
+    NSIndexPath * hardenedIndexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
     
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     
-    return [derivationPath publicKeyAtIndexPath:indexPath];
+    return [derivationPath publicKeyAtIndexPath:hardenedIndexPath];
 }
 
 -(DSKey*)createNewKeyOfType:(DSKeyType)type saveKey:(BOOL)saveKey returnIndex:(uint32_t *)rIndex {
@@ -1048,14 +1037,14 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 -(DSKey*)createNewKeyOfType:(DSKeyType)type saveKey:(BOOL)saveKey returnIndex:(uint32_t *)rIndex inContext:(NSManagedObjectContext*)context {
     if (!_isLocal) return nil;
     uint32_t keyIndex = self.keysCreated;
-    const NSUInteger indexes[] = {_index,keyIndex};
-    NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
+    const NSUInteger indexes[] = {_index | BIP32_HARD, keyIndex | BIP32_HARD};
+    NSIndexPath * hardenedIndexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
     
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     
-    DSKey * publicKey = [derivationPath publicKeyAtIndexPath:indexPath];
+    DSKey * publicKey = [derivationPath publicKeyAtIndexPath:hardenedIndexPath];
     NSAssert([derivationPath hasExtendedPrivateKey], @"The derivation path should have an extended private key");
-    DSKey * privateKey = [derivationPath privateKeyAtIndexPath:indexPath];
+    DSKey * privateKey = [derivationPath privateKeyAtIndexPath:hardenedIndexPath];
     NSAssert(privateKey,@"The private key should have been derived");
     NSAssert([publicKey.publicKeyData isEqualToData:privateKey.publicKeyData],@"These should be equal");
     self.keysCreated++;
@@ -1065,7 +1054,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     NSDictionary * keyDictionary = @{@(DSBlockchainIdentityKeyDictionary_Key):publicKey, @(DSBlockchainIdentityKeyDictionary_KeyType):@(type), @(DSBlockchainIdentityKeyDictionary_KeyStatus):@(DSBlockchainIdentityKeyStatus_Registering)};
     [self.keyInfoDictionaries setObject:keyDictionary forKey:@(keyIndex)];
     if (saveKey) {
-        [self saveNewKey:publicKey atPath:indexPath withStatus:DSBlockchainIdentityKeyStatus_Registering fromDerivationPath:derivationPath inContext:context];
+        [self saveNewKey:publicKey atPath:hardenedIndexPath withStatus:DSBlockchainIdentityKeyStatus_Registering fromDerivationPath:derivationPath inContext:context];
     }
     return publicKey;
 }
@@ -1089,12 +1078,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 -(DSKey*)keyOfType:(DSKeyType)type atIndex:(uint32_t)index {
     if (!_isLocal) return nil;
-    const NSUInteger indexes[] = {_index,index};
-    NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
+    const NSUInteger indexes[] = {_index | BIP32_HARD, index | BIP32_HARD};
+    NSIndexPath * hardenedIndexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
     
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     
-    DSKey * key = [derivationPath publicKeyAtIndexPath:indexPath];
+    DSKey * key = [derivationPath publicKeyAtIndexPath:hardenedIndexPath];
     return key;
 }
 
@@ -1104,7 +1093,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 -(void)addKey:(DSKey*)key atIndex:(uint32_t)index ofType:(DSKeyType)type withStatus:(DSBlockchainIdentityKeyStatus)status save:(BOOL)save inContext:(NSManagedObjectContext*)context {
     if (self.isLocal) {
-        const NSUInteger indexes[] = {_index,index};
+        const NSUInteger indexes[] = {_index, index};
         NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
         [self addKey:key atIndexPath:indexPath ofType:type withStatus:status save:save];
     } else {
@@ -1142,7 +1131,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     //derivationPath will be nil if not local
     
-    DSKey * keyToCheck = [derivationPath publicKeyAtIndexPath:indexPath];
+    DSKey * keyToCheck = [derivationPath publicKeyAtIndexPath:[indexPath hardenAllItems]];
+    NSAssert(keyToCheck != nil, @"This key should be found");
     if ([keyToCheck.publicKeyData isEqualToData:key.publicKeyData]) { //if it isn't local we shouldn't verify
         uint32_t index = (uint32_t)[indexPath indexAtPosition:[indexPath length] - 1];
         if (self.keyInfoDictionaries[@(index)]) {
@@ -1173,7 +1163,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 -(BOOL)registerKeyWithStatus:(DSBlockchainIdentityKeyStatus)status atIndexPath:(NSIndexPath*)indexPath ofType:(DSKeyType)type {
     DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
     
-    DSKey * key = [derivationPath publicKeyAtIndexPath:indexPath];
+    DSKey * key = [derivationPath publicKeyAtIndexPath:[indexPath hardenAllItems]];
     if (!key) return FALSE;
     uint32_t index = (uint32_t)[indexPath indexAtPosition:[indexPath length] - 1];
     self.keysCreated = MAX(self.keysCreated,index + 1);
@@ -1298,7 +1288,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     
     DSKey * publicKey = [self keyAtIndex:index];
     
-    NSAssert(index == 0, @"The index should be 0 here");
+    NSAssert((index & ~(BIP32_HARD)) == 0, @"The index should be 0 here");
     
     NSAssert(self.registrationCreditFundingTransaction, @"The registration credit funding transaction must be known");
     
@@ -1886,8 +1876,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 -(NSData*)saltForUsernameFullPath:(NSString*)usernameFullPath saveSalt:(BOOL)saveSalt inContext:(NSManagedObjectContext*)context {
     NSData * salt;
     if ([self statusOfUsernameFullPath:usernameFullPath] == DSBlockchainIdentityUsernameStatus_Initial || !(salt = [self.usernameSalts objectForKey:usernameFullPath])) {
-        UInt160 random160 = uint160_RANDOM;
-        salt = uint160_data(random160);
+        UInt256 random256 = uint256_RANDOM;
+        salt = uint256_data(random256);
         [self.usernameSalts setObject:salt forKey:usernameFullPath];
         if (saveSalt) {
             [self saveUsername:[self usernameOfUsernameFullPath:usernameFullPath] inDomain:[self domainOfUsernameFullPath:usernameFullPath] status:[self statusOfUsernameFullPath:usernameFullPath] salt:salt commitSave:YES inContext:context];
@@ -1905,11 +1895,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         NSData * salt = [self saltForUsernameFullPath:unregisteredUsernameFullPath saveSalt:YES inContext:context];
         NSData * usernameDomainData = [unregisteredUsernameFullPath dataUsingEncoding:NSUTF8StringEncoding];
         [saltedDomain appendData:salt];
-        [saltedDomain appendData:@"5620".hexToData]; //56 because SHA256_2 and 20 because 32 bytes
-        [saltedDomain appendUInt256:[usernameDomainData SHA256_2]];
-        NSMutableData * saltedDomainHashData = [@"5620".hexToData mutableCopy];
-        [saltedDomainHashData appendData:uint256_data([saltedDomain SHA256_2])];
-        [mSaltedDomainHashes setObject:[saltedDomainHashData copy] forKey:unregisteredUsernameFullPath];
+        [saltedDomain appendData:usernameDomainData];
+        [mSaltedDomainHashes setObject:uint256_data([saltedDomain SHA256_2]) forKey:unregisteredUsernameFullPath];
         [self.usernameSalts setObject:salt forKey:unregisteredUsernameFullPath];
     }
     return [mSaltedDomainHashes copy];
@@ -1924,9 +1911,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 -(NSArray<DPDocument*>*)preorderDocumentsForUnregisteredUsernameFullPaths:(NSArray*)unregisteredUsernameFullPaths usingEntropyString:(NSString*)entropyString inContext:(NSManagedObjectContext*)context error:(NSError**)error {
     NSMutableArray * usernamePreorderDocuments = [NSMutableArray array];
     for (NSData * saltedDomainHashData in [[self saltedDomainHashesForUsernameFullPaths:unregisteredUsernameFullPaths inContext:context] allValues]) {
-        NSString * saltedDomainHashString = [saltedDomainHashData hexString];
         DSStringValueDictionary * dataDictionary = @{
-            @"saltedDomainHash": saltedDomainHashString
+            @"saltedDomainHash": saltedDomainHashData
         };
         DPDocument * document = [self.dpnsDocumentFactory documentOnTable:@"preorder" withDataDictionary:dataDictionary usingEntropy:entropyString  error:error];
         if (*error) {
@@ -1940,19 +1926,15 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 -(NSArray<DPDocument*>*)domainDocumentsForUnregisteredUsernameFullPaths:(NSArray*)unregisteredUsernameFullPaths usingEntropyString:(NSString*)entropyString inContext:(NSManagedObjectContext*)context error:(NSError**)error {
     NSMutableArray * usernameDomainDocuments = [NSMutableArray array];
     for (NSString * usernameFullPath in [self saltedDomainHashesForUsernameFullPaths:unregisteredUsernameFullPaths inContext:context]) {
-        NSMutableData * nameHashData = [NSMutableData data];
-        [nameHashData appendData:@"5620".hexToData]; //56 because SHA256_2 and 20 because 32 bytes
-        NSData * usernameData = [usernameFullPath dataUsingEncoding:NSUTF8StringEncoding];
-        [nameHashData appendUInt256:[usernameData SHA256_2]];
         NSString * username = [self usernameOfUsernameFullPath:usernameFullPath];
         NSString * domain = [self domainOfUsernameFullPath:usernameFullPath];
         DSStringValueDictionary * dataDictionary = @{
-            @"nameHash":nameHashData.hexString,
             @"label":username,
             @"normalizedLabel": [username lowercaseString],
             @"normalizedParentDomainName":domain,
-            @"preorderSalt": [self.usernameSalts objectForKey:usernameFullPath].base58String,
-            @"records" : @{@"dashIdentity":uint256_base58(self.uniqueID)}
+            @"preorderSalt": [self.usernameSalts objectForKey:usernameFullPath],
+            @"records" : @{@"dashUniqueIdentityId":uint256_base58(self.uniqueID)},
+            @"subdomainRules" : @{@"allowSubdomains":@NO}
         };
         DPDocument * document = [self.dpnsDocumentFactory documentOnTable:@"domain" withDataDictionary:dataDictionary usingEntropy:entropyString error:error];
         if (*error) {
@@ -2412,9 +2394,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             NSMutableArray * usernamesLeft = [[saltedDomainHashes allKeys] mutableCopy];
             for (NSString * usernameFullPath in saltedDomainHashes) {
                 NSData * saltedDomainHashData = saltedDomainHashes[usernameFullPath];
-                NSString * saltedDomainHashString = [saltedDomainHashData hexString];
                 for (NSDictionary * preorderDocument in preorderDocumentArray) {
-                    if ([[preorderDocument objectForKey:@"saltedDomainHash"] isEqualToString:saltedDomainHashString]) {
+                    if ([[preorderDocument objectForKey:@"saltedDomainHash"] isEqualToData:saltedDomainHashData]) {
                         NSMutableDictionary * usernameStatusDictionary = [[self.usernameStatuses objectForKey:usernameFullPath] mutableCopy];
                         if (!usernameStatusDictionary) {
                             usernameStatusDictionary = [NSMutableDictionary dictionary];
@@ -2866,7 +2847,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         } else {
             if (completion) {
                 completion(NO, @[[NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
-                DSLocalizedString(@"Count not create friendship derivation path", nil)}]]);
+                DSLocalizedString(@"Could not create friendship derivation path", nil)}]]);
             }
         }
     }];
@@ -3151,7 +3132,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         return;
     }
     __weak typeof(self) weakSelf = self;
-    [self.DAPINetworkService getDashpayIncomingContactRequestsForUserId:self.uniqueIdString since:self.lastCheckedIncomingContactsTimestamp?(self.lastCheckedIncomingContactsTimestamp - HOUR_TIME_INTERVAL):0 success:^(NSArray<NSDictionary *> * _Nonnull documents) {
+    [self.DAPINetworkService getDashpayIncomingContactRequestsForUserId:self.uniqueIDData since:self.lastCheckedIncomingContactsTimestamp?(self.lastCheckedIncomingContactsTimestamp - HOUR_TIME_INTERVAL):0 success:^(NSArray<NSDictionary *> * _Nonnull documents) {
         //todo chance the since parameter
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
@@ -3717,7 +3698,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 }
 
 -(NSString*)identifierForKeyAtPath:(NSIndexPath*)path fromDerivationPath:(DSDerivationPath*)derivationPath {
-    return [NSString stringWithFormat:@"%@-%@-%@",self.uniqueIdString,derivationPath.standaloneExtendedPublicKeyUniqueID,[path indexPathString]];
+    NSIndexPath * softenedPath = [path softenAllItems];
+    return [NSString stringWithFormat:@"%@-%@-%@",self.uniqueIdString,derivationPath.standaloneExtendedPublicKeyUniqueID,[softenedPath indexPathString]];
 }
 
 -(void)saveNewKey:(DSKey*)key atPath:(NSIndexPath*)path withStatus:(DSBlockchainIdentityKeyStatus)status fromDerivationPath:(DSDerivationPath*)derivationPath inContext:(NSManagedObjectContext*)context {

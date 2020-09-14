@@ -23,19 +23,23 @@
 @implementation NSPredicate (CBORData)
 
 -(NSArray*)whereClauseArray {
+    return [self whereClauseArrayWithOptions:NSPredicateCBORDataOptions_None];
+}
+
+-(NSArray*)whereClauseArrayWithOptions:(NSPredicateCBORDataOptions)options {
     if ([self isMemberOfClass:[NSCompoundPredicate class]]) {
-        return [self whereClauseNestedArray];
+        return [self whereClauseNestedArrayWithOptions:options];
     } else {
-        return @[[self whereClauseNestedArray]];
+        return @[[self whereClauseNestedArrayWithOptions:options]];
     }
 }
 
--(NSArray*)whereClauseNestedArray {
+-(NSArray*)whereClauseNestedArrayWithOptions:(NSPredicateCBORDataOptions)options {
     if ([self isMemberOfClass:[NSCompoundPredicate class]]) {
         NSMutableArray * mArray = [NSMutableArray array];
         NSCompoundPredicate * compoundPredicate = (NSCompoundPredicate *)self;
         for (NSPredicate * predicate in compoundPredicate.subpredicates) {
-            [mArray addObject:[predicate whereClauseNestedArray]];
+            [mArray addObject:[predicate whereClauseNestedArrayWithOptions:options]];
         }
         return mArray;
     } else {
@@ -77,7 +81,11 @@
         }
         switch (leftExpression.expressionType) {
             case NSConstantValueExpressionType:
-                [mArray addObject:leftExpression.constantValue];
+                if (options & NSPredicateCBORDataOptions_DataToBase64 && [rightExpression.constantValue isKindOfClass:[NSData class]]) {
+                    [mArray addObject:[((NSData*)leftExpression.constantValue) base64String]];
+                } else {
+                    [mArray addObject:leftExpression.constantValue];
+                }
                 break;
             case NSKeyPathExpressionType:
                 [mArray addObject:leftExpression.keyPath];
@@ -93,7 +101,11 @@
         [mArray addObject:operator];
         switch (rightExpression.expressionType) {
             case NSConstantValueExpressionType:
-                [mArray addObject:rightExpression.constantValue];
+                if (options & NSPredicateCBORDataOptions_DataToBase64 && [rightExpression.constantValue isKindOfClass:[NSData class]]) {
+                    [mArray addObject:[((NSData*)rightExpression.constantValue) base64String]];
+                } else {
+                    [mArray addObject:rightExpression.constantValue];
+                }
                 break;
             case NSKeyPathExpressionType:
                 [mArray addObject:rightExpression.keyPath];
@@ -124,9 +136,9 @@
 //        [sortDescriptorsArray addObject:@[sortDescriptor.key,sortDescriptor.ascending?@"asc":@"desc"]];
 //    }
 //    [dictionary setObject:sortDescriptorsArray forKey:@"orderBy"];
-    NSData * json = [NSJSONSerialization dataWithJSONObject:[self whereClauseArray] options:0 error:nil];
+    NSData * json = [NSJSONSerialization dataWithJSONObject:[self whereClauseArrayWithOptions:NSPredicateCBORDataOptions_DataToBase64] options:0 error:nil];
     DSDLog(@"json where %@",[[NSString alloc] initWithData:json encoding:NSUTF8StringEncoding]);
- //   DSDLog(@"hex %@",[[self whereClauseArray] ds_cborEncodedObject].hexString);
+    DSDLog(@"cbor hex %@",[[self whereClauseArray] ds_cborEncodedObject].hexString);
     return [[self whereClauseArray] ds_cborEncodedObject];
 }
 

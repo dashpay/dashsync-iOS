@@ -250,8 +250,6 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventDashpaySyncroni
 
 -(BOOL)hasBlockchainIdentityExtendedPublicKeys;
 
--(uint32_t)indexOfKey:(DSKey*)key;
-
 -(DSBlockchainIdentityKeyStatus)statusOfKeyAtIndex:(NSUInteger)index;
 
 -(DSKeyType)typeOfKeyAtIndex:(NSUInteger)index;

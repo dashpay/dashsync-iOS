@@ -17,6 +17,7 @@
 #import "NSManagedObject+Sugar.h"
 #import "DSPeer.h"
 #import "NSData+Dash.h"
+#import "DSMerkleBlock.h"
 
 // from https://en.bitcoin.it/wiki/Protocol_specification#Merkle_Trees
 // Merkle trees are binary trees of hashes. Merkle trees in bitcoin use a double SHA-256, the SHA-256 hash of the
@@ -150,7 +151,16 @@ inline static int ceil_log2(int x)
 
 -(UInt256)masternodeMerkleRoot {
     if (uint256_is_zero(_masternodeMerkleRoot)) {
-        self.masternodeMerkleRoot = [self calculateMasternodeMerkleRoot];
+        return [self masternodeMerkleRootWithBlockHeightLookup:^uint32_t(UInt256 blockHash) {
+            return [self.chain heightForBlockHash:blockHash];
+        }];
+    }
+    return _masternodeMerkleRoot;
+}
+
+-(UInt256)masternodeMerkleRootWithBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup {
+    if (uint256_is_zero(_masternodeMerkleRoot)) {
+        self.masternodeMerkleRoot = [self calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup];
     }
     return _masternodeMerkleRoot;
 }
@@ -165,20 +175,22 @@ inline static int ceil_log2(int x)
     return proTxHashes;
 }
 
--(NSArray*)hashesForMerkleRoot {
+-(NSArray*)hashesForMerkleRootWithBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup {
     
     NSArray * proTxHashes = [self providerTxOrderedHashes];
     
     NSMutableArray * simplifiedMasternodeListByRegistrationTransactionHashHashes = [NSMutableArray array];
     for (NSData * proTxHash in proTxHashes) {
         DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash objectForKey:proTxHash];
-        [simplifiedMasternodeListByRegistrationTransactionHashHashes addObject:[NSData dataWithUInt256:[simplifiedMasternodeEntry simplifiedMasternodeEntryHashAtBlockHash:self.blockHash]]];
+        uint32_t height = blockHeightLookup(self.blockHash);
+        UInt256 simplifiedMasternodeEntryHash = [simplifiedMasternodeEntry simplifiedMasternodeEntryHashAtBlockHeight:height];
+        [simplifiedMasternodeListByRegistrationTransactionHashHashes addObject:uint256_data(simplifiedMasternodeEntryHash)];
     }
     return simplifiedMasternodeListByRegistrationTransactionHashHashes;
 }
 
--(UInt256)calculateMasternodeMerkleRoot {
-    return [[NSData merkleRootFromHashes:[self hashesForMerkleRoot]] UInt256];
+-(UInt256)calculateMasternodeMerkleRootWithBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup {
+    return [[NSData merkleRootFromHashes:[self hashesForMerkleRootWithBlockHeightLookup:blockHeightLookup]] UInt256];
 }
 
 -(UInt256)quorumMerkleRoot {
@@ -254,6 +266,17 @@ inline static int ceil_log2(int x)
 }
 
 -(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount {
+    return [self masternodesForQuorumModifier:quorumModifier quorumCount:quorumCount blockHeightLookup:^uint32_t(UInt256 blockHash) {
+        DSMerkleBlock * block = [self.chain blockForBlockHash:blockHash];
+        if (!block) {
+            DSDLog(@"Unknown block %@",uint256_reverse_hex(blockHash));
+            NSAssert(block, @"block should be known");
+        }
+        return block.height;
+    }];
+}
+
+-(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount blockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup {
     NSDictionary <NSData*,id>* scoreDictionary = [self scoreDictionaryForQuorumModifier:quorumModifier];
     NSArray * scores = [[scoreDictionary allKeys] sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
         UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
@@ -261,21 +284,14 @@ inline static int ceil_log2(int x)
         return uint256_sup(hash1, hash2)?NSOrderedAscending:NSOrderedDescending;
     }];
     NSMutableArray * masternodes = [NSMutableArray array];
-    NSUInteger maxCount = MIN(quorumCount, self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.count);
-    DSMerkleBlock * block = [self.chain blockForBlockHash:self.blockHash];
-    if (!block) {
-        DSDLog(@"Unknown block %@",uint256_reverse_hex(self.blockHash));
-        NSAssert(block, @"Block should be known");
-    }
-    for (int i = 0; i<maxCount;i++) {
+    NSUInteger masternodesInListCount = self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.count;
+    for (int i = 0; i<masternodesInListCount;i++) {
         NSData * score = [scores objectAtIndex:i];
         DSSimplifiedMasternodeEntry * masternode = scoreDictionary[score];
-        if ([masternode isValidAtBlock:block]) {
+        if ([masternode isValidAtBlockHeight:blockHeightLookup(self.blockHash)]) {
             [masternodes addObject:masternode];
-        } else {
-            maxCount++;
-            if (maxCount > self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.count) break;
         }
+        if (masternodes.count == quorumCount) break;
     }
     return masternodes;
 }
@@ -290,6 +306,11 @@ inline static int ceil_log2(int x)
 
 -(uint64_t)masternodeCount {
     return [self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash count];
+}
+
+-(uint64_t)validMasternodeCount {
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isValid == TRUE"];
+    return [[self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allValues] filteredArrayUsingPredicate:predicate].count;
 }
 
 -(NSUInteger)quorumsCount {
@@ -392,12 +413,23 @@ inline static int ceil_log2(int x)
 }
 
 -(NSDictionary*)compareWithPrevious:(DSMasternodeList*)other {
-    return [self compare:other usingOurString:@"current" usingTheirString:@"previous"];
+    return [self compareWithPrevious:other blockHeightLookup:^uint32_t(UInt256 blockHash) {
+        return [self.chain heightForBlockHash:blockHash];
+    }];
 }
 
+-(NSDictionary*)compareWithPrevious:(DSMasternodeList*)other blockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup {
+    return [self compare:other usingOurString:@"current" usingTheirString:@"previous" blockHeightLookup:blockHeightLookup];
+}
 
 -(NSDictionary*)compare:(DSMasternodeList*)other {
-    return [self compare:other usingOurString:@"ours" usingTheirString:@"theirs"];
+    return [self compare:other blockHeightLookup:^uint32_t(UInt256 blockHash) {
+        return [self.chain heightForBlockHash:blockHash];
+    }];
+}
+
+-(NSDictionary*)compare:(DSMasternodeList*)other blockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup {
+    return [self compare:other usingOurString:@"ours" usingTheirString:@"theirs" blockHeightLookup:blockHeightLookup];
 }
 
 -(NSDictionary*)listOfChangedNodesComparedTo:(DSMasternodeList*)previous {
@@ -415,18 +447,30 @@ inline static int ceil_log2(int x)
     return @{MASTERNODE_LIST_ADDED_NODES:added,MASTERNODE_LIST_REMOVED_NODES:removed};
 }
 
--(NSDictionary*)compare:(DSMasternodeList*)other usingOurString:(NSString*)ours usingTheirString:(NSString*)theirs {
+-(NSDictionary*)compare:(DSMasternodeList*)other usingOurString:(NSString*)ours usingTheirString:(NSString*)theirs blockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup {
     NSMutableDictionary * dictionary = [NSMutableDictionary dictionary];
     for (NSData * data in self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash) {
         DSSimplifiedMasternodeEntry * ourEntry = self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[data];
         DSSimplifiedMasternodeEntry * theirEntry = other.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[data];
         if (ourEntry && theirEntry) {
-            NSDictionary * entryComparison = [ourEntry compare:theirEntry ourBlockHash:self.blockHash theirBlockHash:other.blockHash usingOurString:ours usingTheirString:theirs];
+            NSDictionary * entryComparison = [ourEntry compare:theirEntry ourBlockHash:self.blockHash theirBlockHash:other.blockHash usingOurString:ours usingTheirString:theirs blockHeightLookup:blockHeightLookup];
             if (entryComparison.count) {
                 [dictionary setObject:entryComparison forKey:data];
             }
         } else if (ourEntry) {
             [dictionary setObject:@{@"absent":uint256_hex(ourEntry.providerRegistrationTransactionHash)} forKey:data];
+        }
+    }
+    return dictionary;
+}
+
+-(NSDictionary*)toDictionaryUsingBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup {
+    NSMutableDictionary * dictionary = [NSMutableDictionary dictionary];
+    for (NSData * data in self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash) {
+        DSSimplifiedMasternodeEntry * ourEntry = self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[data];
+        if (ourEntry) {
+            NSDictionary * entryDictionary = [ourEntry toDictionaryAtBlockHash:self.blockHash usingBlockHeightLookup:blockHeightLookup];
+            [dictionary setObject:entryDictionary forKey:[data base64String]];
         }
     }
     return dictionary;

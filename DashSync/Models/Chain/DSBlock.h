@@ -51,6 +51,7 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, readonly) DSChain *chain;
 @property (nonatomic, readonly) BOOL chainLocked;
 @property (nonatomic, readonly) UInt256 chainWork;
+@property (nonatomic, readonly) BOOL hasChainLockAwaitingSaving;
 
 @property (nonatomic, readonly) NSArray *transactionHashes; // the matched tx hashes in the block
 
@@ -79,6 +80,8 @@ typedef union _UInt256 UInt256;
 - (void)setChainLockedWithChainLock:(DSChainLock*)chainLock;
 
 - (void)setChainLockedWithEquivalentBlock:(DSBlock*)block;
+
+- (BOOL)saveAssociatedChainLock;
 
 @end
 

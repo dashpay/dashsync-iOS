@@ -693,6 +693,12 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     _seckey = UINT256_ZERO;
 }
 
+// MARK: - HMAC
+
+- (UInt256)HMAC256Data:(NSData*)data {
+    return [data HMACSHA256WithKey:self.seckey];
+}
+
 // MARK: - Derivation
 
 -(DSECDSAKey*)privateDeriveToPath:(NSIndexPath*)indexPath {

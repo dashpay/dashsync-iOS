@@ -50,6 +50,8 @@ typedef NS_ENUM(NSUInteger, DSKeyType) {
 
 - (nullable instancetype)initWithDHKeyExchangeWithPublicKey:(DSKey*)publicKey forPrivateKey:(DSKey*)privateKey;
 
+- (UInt256)HMAC256Data:(NSData*)data;
+
 @end
 
 NS_ASSUME_NONNULL_END
