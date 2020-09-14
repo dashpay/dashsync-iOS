@@ -104,15 +104,19 @@
     if ([self requiresMigrationAtStoreURL:storeURL version:version]) {
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
             [self migrateStoreAtURL:storeURL toVersion:version];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (completion) {
+                    completion();
+                }
+            });
+        });
+    }
+    else {
+        dispatch_async(dispatch_get_main_queue(), ^{
             if (completion) {
                 completion();
             }
         });
-    }
-    else {
-        if (completion) {
-            completion();
-        }
     }
 }
 
