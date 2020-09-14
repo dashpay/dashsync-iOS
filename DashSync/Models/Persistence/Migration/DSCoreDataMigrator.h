@@ -38,7 +38,7 @@ required when adding a new version.
 @interface DSCoreDataMigrator : NSObject
 
 + (BOOL)requiresMigration;
-+ (void)performMigration:(void(^)(void))completion;
++ (void)performMigrationWithCompletionQueue:(dispatch_queue_t)completionQueue completion:(void(^)(void))completion;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
