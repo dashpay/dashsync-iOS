@@ -86,7 +86,7 @@
     return [self requiresMigrationAtStoreURL:storeURL version:version];
 }
 
-+ (void)performMigration:(void(^)(void))completion {
++ (void)performMigrationWithCompletionQueue:(dispatch_queue_t)completionQueue completion:(void(^)(void))completion {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
     
     NSURL *storeURL = [DSDataController storeURL];
@@ -104,15 +104,19 @@
     if ([self requiresMigrationAtStoreURL:storeURL version:version]) {
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
             [self migrateStoreAtURL:storeURL toVersion:version];
+            dispatch_async(completionQueue, ^{
+                if (completion) {
+                    completion();
+                }
+            });
+        });
+    }
+    else {
+        dispatch_async(completionQueue, ^{
             if (completion) {
                 completion();
             }
         });
-    }
-    else {
-        if (completion) {
-            completion();
-        }
     }
 }
 
