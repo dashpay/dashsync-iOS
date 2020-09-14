@@ -2104,14 +2104,6 @@ static dispatch_once_t devnetToken = 0;
             return TRUE;
         }
         
-        // special case, if a new block is mined while we're rescanning the chain, mark as orphan til we're caught up
-        if (self.lastSyncBlockHeight < peer.lastBlockHeight && block.height > self.lastSyncBlockHeight + 1) {
-            DSDLog(@"marking new block at height %d as orphan until rescan completes", block.height);
-            self.mOrphans[prevBlock] = block;
-            self.lastOrphan = block;
-            return TRUE;
-        }
-        
         DSDLog(@"potential chain fork to height %d isTerminalBlock %@", block.height,isTerminalBlock?@"TRUE":@"FALSE");
         if (isTerminalBlock) {
             @synchronized (self.mTerminalBlocks) {
@@ -2234,7 +2226,7 @@ static dispatch_once_t devnetToken = 0;
         }
     }
     
-    if (block.height > self.estimatedBlockHeight) {
+    if ((isTerminalBlock && block.height > self.estimatedBlockHeight) || (!isTerminalBlock && block.height >= self.lastTerminalBlockHeight)) {
         _bestEstimatedBlockHeight = block.height;
         if (peer && !isTerminalBlock && !savedBlockLocators) {
             [self saveBlockLocators];
@@ -3588,7 +3580,7 @@ static dispatch_once_t devnetToken = 0;
 - (void)saveTerminalBlocks
 {
     if (self.isTransient) return;
-    NSMutableDictionary *blocks = [NSMutableDictionary dictionary];
+    NSMutableDictionary <NSData*, DSBlock*> *blocks = [NSMutableDictionary dictionary];
     DSBlock *b = self.lastTerminalBlock;
     uint32_t endHeight = b.height;
     uint32_t startHeight = b.height;
