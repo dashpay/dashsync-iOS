@@ -270,9 +270,13 @@
             [self.chainLockAwaitingSaving saveInitial];
             if (self.chainLockAwaitingSaving.saved) {
                 self.chainLockAwaitingSaving = nil;
+                return TRUE;
+            } else {
+                return FALSE;
             }
         }
     }
+    return TRUE;
 }
 
 - (NSUInteger)hash

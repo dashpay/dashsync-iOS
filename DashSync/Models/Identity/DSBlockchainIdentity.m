@@ -2847,7 +2847,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         } else {
             if (completion) {
                 completion(NO, @[[NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
-                DSLocalizedString(@"Count not create friendship derivation path", nil)}]]);
+                DSLocalizedString(@"Could not create friendship derivation path", nil)}]]);
             }
         }
     }];

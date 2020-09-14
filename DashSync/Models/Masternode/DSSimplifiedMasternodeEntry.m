@@ -196,6 +196,12 @@
     return [self isValidAtBlockHeight:blockHeight];
 }
 
+-(BOOL)isValidAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup {
+    if (![self.previousValidity count]) return self.isValid;
+    uint32_t blockHeight = blockHeightLookup(blockHash);
+    return [self isValidAtBlockHeight:blockHeight];
+}
+
 -(BOOL)isValidAtBlockHeight:(uint32_t)blockHeight {
     if (![self.mPreviousValidity count]) return self.isValid;
     NSAssert(blockHeight != UINT32_MAX, @"block height should be set");
@@ -232,6 +238,12 @@
     return [self simplifiedMasternodeEntryHashAtBlockHeight:blockHeight];
 }
 
+-(UInt256)simplifiedMasternodeEntryHashAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup {
+    if (![self.mPreviousSimplifiedMasternodeEntryHashes count]) return self.simplifiedMasternodeEntryHash;
+    uint32_t blockHeight = blockHeightLookup(blockHash);
+    return [self simplifiedMasternodeEntryHashAtBlockHeight:blockHeight];
+}
+
 -(UInt256)simplifiedMasternodeEntryHashAtBlockHeight:(uint32_t)blockHeight {
     if (![self.mPreviousSimplifiedMasternodeEntryHashes count]) return self.simplifiedMasternodeEntryHash;
     NSAssert(blockHeight != UINT32_MAX, @"block height should be set");
@@ -265,6 +277,12 @@
 -(UInt384)operatorPublicKeyAtBlockHash:(UInt256)blockHash {
     if (![self.mPreviousOperatorPublicKeys count]) return self.operatorPublicKey;
     uint32_t blockHeight = [self.chain heightForBlockHash:blockHash];
+    return [self operatorPublicKeyAtBlockHeight:blockHeight];
+}
+
+-(UInt384)operatorPublicKeyAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup {
+    if (![self.mPreviousOperatorPublicKeys count]) return self.operatorPublicKey;
+    uint32_t blockHeight = blockHeightLookup(blockHash);
     return [self operatorPublicKeyAtBlockHeight:blockHeight];
 }
 
@@ -378,6 +396,8 @@
     return [NSString stringWithFormat:@"<DSSimplifiedMasternodeEntry: %@ {valid:%@}>",self.host,@(self.isValid)];
 }
 
+
+
 - (BOOL)isEqual:(id)other
 {
     DSSimplifiedMasternodeEntry* entry = (DSSimplifiedMasternodeEntry*)other;
@@ -391,11 +411,42 @@
     }
 }
 
+-(NSDictionary*)toDictionaryAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup {
+    NSMutableDictionary * dictionary = [NSMutableDictionary dictionary];
+    
+    dictionary[@"address"] = [uint128_data(_address) base64String];
+    dictionary[@"port"] = @(_port);
+    
+    UInt384 ourOperatorPublicKeyAtBlockHash = [self operatorPublicKeyAtBlockHash:blockHash usingBlockHeightLookup:blockHeightLookup];
+    dictionary[@"operatorPublicKey"] = [uint384_data(ourOperatorPublicKeyAtBlockHash) base64String];
+    dictionary[@"keyIDVoting"] = [uint160_data(_keyIDVoting) base64String];
+    
+    
+    BOOL ourIsValid = [self isValidAtBlockHash:blockHash usingBlockHeightLookup:blockHeightLookup];
+    dictionary[@"isValid"] = ourIsValid?@"YES":@"NO";
+    
+    
+    UInt256 ourSimplifiedMasternodeEntryHash = [self simplifiedMasternodeEntryHashAtBlockHash:blockHash usingBlockHeightLookup:blockHeightLookup];
+    dictionary[@"simplifiedMasternodeEntryHashAtBlockHash"] = @{@"SimplifiedMasternodeEntryHash":uint256_base64(ourSimplifiedMasternodeEntryHash),@"blockHeight":@(blockHeightLookup(blockHash))};
+    dictionary[@"previousSimplifiedMasternodeEntryHashes"] = @{@"PreviousSimplifiedMasternodeEntryHash":self.previousSimplifiedMasternodeEntryHashes};
+    dictionary[@"previousValidity"] = self.previousValidity;
+    dictionary[@"previousOperatorPublicKeys"] = self.previousOperatorPublicKeys;
+    dictionary[@"confirmedHash"] = uint256_base64(_confirmedHash);
+    
+    return dictionary;
+}
+
 -(NSDictionary*)compare:(DSSimplifiedMasternodeEntry*)other ourBlockHash:(UInt256)ourBlockHash theirBlockHash:(UInt256)theirBlockHash {
     return [self compare:other ourBlockHash:ourBlockHash theirBlockHash:theirBlockHash usingOurString:@"ours" usingTheirString:@"theirs"];
 }
 
 -(NSDictionary*)compare:(DSSimplifiedMasternodeEntry*)other ourBlockHash:(UInt256)ourBlockHash theirBlockHash:(UInt256)theirBlockHash usingOurString:(NSString*)ours usingTheirString:(NSString*)theirs {
+    return [self compare:other ourBlockHash:ourBlockHash theirBlockHash:theirBlockHash usingOurString:ours usingTheirString:theirs blockHeightLookup:^uint32_t(UInt256 blockHash) {
+        return [self.chain heightForBlockHash:blockHash];
+    }];
+}
+
+-(NSDictionary*)compare:(DSSimplifiedMasternodeEntry*)other ourBlockHash:(UInt256)ourBlockHash theirBlockHash:(UInt256)theirBlockHash usingOurString:(NSString*)ours usingTheirString:(NSString*)theirs blockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup {
     NSMutableDictionary * differences = [NSMutableDictionary dictionary];
     
     if (!ours) ours = @"ours";
@@ -409,8 +460,8 @@
         differences[@"port"] = @{ours:@(_port),theirs:@(other.port)};
     }
     
-    UInt384 ourOperatorPublicKeyAtBlockHash = [self operatorPublicKeyAtBlockHash:ourBlockHash];
-    UInt384 theirOperatorPublicKeyAtBlockHash = [other operatorPublicKeyAtBlockHash:theirBlockHash];
+    UInt384 ourOperatorPublicKeyAtBlockHash = [self operatorPublicKeyAtBlockHash:ourBlockHash usingBlockHeightLookup:blockHeightLookup];
+    UInt384 theirOperatorPublicKeyAtBlockHash = [other operatorPublicKeyAtBlockHash:theirBlockHash usingBlockHeightLookup:blockHeightLookup];
     
     if (!uint384_eq(ourOperatorPublicKeyAtBlockHash, theirOperatorPublicKeyAtBlockHash)) {
         differences[@"operatorPublicKey"] = @{ours:uint384_data(ourOperatorPublicKeyAtBlockHash),theirs:uint384_data(theirOperatorPublicKeyAtBlockHash)};
@@ -420,18 +471,18 @@
         differences[@"keyIDVoting"] = @{ours:uint160_data(_keyIDVoting),theirs:uint160_data(other.keyIDVoting)};
     }
     
-    BOOL ourIsValid = [self isValidAtBlockHash:ourBlockHash];
-    BOOL theirIsValid = [other isValidAtBlockHash:theirBlockHash];
+    BOOL ourIsValid = [self isValidAtBlockHash:ourBlockHash usingBlockHeightLookup:blockHeightLookup];
+    BOOL theirIsValid = [other isValidAtBlockHash:theirBlockHash usingBlockHeightLookup:blockHeightLookup];
     
     if (ourIsValid != theirIsValid) {
         differences[@"isValid"] = @{ours:ourIsValid?@"YES":@"NO",theirs:theirIsValid?@"YES":@"NO"};
     }
     
-    UInt256 ourSimplifiedMasternodeEntryHash = [self simplifiedMasternodeEntryHashAtBlockHash:ourBlockHash];
-    UInt256 theirSimplifiedMasternodeEntryHash = [other simplifiedMasternodeEntryHashAtBlockHash:theirBlockHash];
+    UInt256 ourSimplifiedMasternodeEntryHash = [self simplifiedMasternodeEntryHashAtBlockHash:ourBlockHash usingBlockHeightLookup:blockHeightLookup];
+    UInt256 theirSimplifiedMasternodeEntryHash = [other simplifiedMasternodeEntryHashAtBlockHash:theirBlockHash usingBlockHeightLookup:blockHeightLookup];
     
     if (!uint256_eq(ourSimplifiedMasternodeEntryHash,theirSimplifiedMasternodeEntryHash)) {
-        differences[@"simplifiedMasternodeEntryHashAtBlockHash"] = @{ours:uint256_hex(ourSimplifiedMasternodeEntryHash),theirs:uint256_hex(theirSimplifiedMasternodeEntryHash),@"ourBlockHeight":@([self.chain heightForBlockHash:ourBlockHash]),@"theirBlockHeight":@([self.chain heightForBlockHash:theirBlockHash])};
+        differences[@"simplifiedMasternodeEntryHashAtBlockHash"] = @{ours:uint256_hex(ourSimplifiedMasternodeEntryHash),theirs:uint256_hex(theirSimplifiedMasternodeEntryHash),@"ourBlockHeight":@(blockHeightLookup(ourBlockHash)),@"theirBlockHeight":@(blockHeightLookup(theirBlockHash))};
     }
     
     if (![self.previousSimplifiedMasternodeEntryHashes isEqualToDictionary:other.previousSimplifiedMasternodeEntryHashes]) {

@@ -49,16 +49,32 @@
 
 -(UInt256)simplifiedMasternodeEntryHashAtBlockHash:(UInt256)blockHash;
 
+-(UInt256)simplifiedMasternodeEntryHashAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
+
+-(UInt256)simplifiedMasternodeEntryHashAtBlockHeight:(uint32_t)blockHeight;
+
 -(UInt384)operatorPublicKeyAtBlock:(DSMerkleBlock*)merkleBlock;
 
 -(UInt384)operatorPublicKeyAtBlockHash:(UInt256)blockHash;
+
+-(UInt384)operatorPublicKeyAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
+
+-(UInt384)operatorPublicKeyAtBlockHeight:(uint32_t)blockHeight;
 
 -(BOOL)isValidAtBlock:(DSMerkleBlock*)merkleBlock;
 
 -(BOOL)isValidAtBlockHash:(UInt256)blockHash;
 
+-(BOOL)isValidAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
+
+-(BOOL)isValidAtBlockHeight:(uint32_t)blockHeight;
+
 -(NSDictionary*)compare:(DSSimplifiedMasternodeEntry*)other ourBlockHash:(UInt256)ourBlockHash theirBlockHash:(UInt256)theirBlockHash usingOurString:(NSString*)ours usingTheirString:(NSString*)theirs;
 
+-(NSDictionary*)compare:(DSSimplifiedMasternodeEntry*)other ourBlockHash:(UInt256)ourBlockHash theirBlockHash:(UInt256)theirBlockHash usingOurString:(NSString*)ours usingTheirString:(NSString*)theirs blockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
+
 -(NSDictionary*)compare:(DSSimplifiedMasternodeEntry*)other atBlockHash:(UInt256)blockHash;
+
+-(NSDictionary*)toDictionaryAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
 
 @end

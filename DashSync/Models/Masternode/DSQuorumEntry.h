@@ -44,7 +44,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 +(instancetype)potentialQuorumEntryWithData:(NSData*)data dataOffset:(uint32_t)dataOffset onChain:(DSChain*)chain;
 
--(BOOL)validateWithMasternodeList:(DSMasternodeList*)dictionary;
+-(BOOL)validateWithMasternodeList:(DSMasternodeList*)masternodeList;
+
+-(BOOL)validateWithMasternodeList:(DSMasternodeList*)masternodeList blockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
 
 -(instancetype)initWithVersion:(uint16_t)version type:(DSLLMQType)type quorumHash:(UInt256)quorumHash quorumPublicKey:(UInt384)quorumPublicKey commitmentHash:(UInt256)commitmentHash verified:(BOOL)verified onChain:(DSChain*)chain;
 

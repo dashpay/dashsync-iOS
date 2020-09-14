@@ -15,6 +15,8 @@
 #import "DSMasternodeList.h"
 #import "DSQuorumEntryEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
+#import "DSBlock.h"
+#import "DSMerkleBlock.h"
 
 @interface DSQuorumEntry()
 
@@ -219,6 +221,17 @@
 }
 
 -(BOOL)validateWithMasternodeList:(DSMasternodeList*)masternodeList {
+    return [self validateWithMasternodeList:masternodeList blockHeightLookup:^uint32_t(UInt256 blockHash) {
+        DSMerkleBlock * block = [self.chain blockForBlockHash:blockHash];
+        if (!block) {
+            DSDLog(@"Unknown block %@",uint256_reverse_hex(blockHash));
+            NSAssert(block, @"block should be known");
+        }
+        return block.height;
+    }];
+}
+
+-(BOOL)validateWithMasternodeList:(DSMasternodeList*)masternodeList blockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup {
     
     if (!masternodeList) {
         DSDLog(@"Trying to validate a quorum without a masternode list");
@@ -250,13 +263,13 @@
     
     //The quorumSig must validate against the quorumPublicKey and the commitmentHash. As this is a recovered threshold signature, normal signature verification can be performed, without the need of the full quorum verification vector. The commitmentHash is calculated in the same way as in the commitment phase.
     
-    NSArray<DSSimplifiedMasternodeEntry*> * masternodes = [masternodeList masternodesForQuorumModifier:self.llmqQuorumHash quorumCount:[DSQuorumEntry quorumSizeForType:self.llmqType]];
+    NSArray<DSSimplifiedMasternodeEntry*> * masternodes = [masternodeList masternodesForQuorumModifier:self.llmqQuorumHash quorumCount:[DSQuorumEntry quorumSizeForType:self.llmqType] blockHeightLookup:blockHeightLookup];
     NSMutableArray * publicKeyArray = [NSMutableArray array];
     uint32_t i = 0;
-    DSMerkleBlock * block = [self.chain blockForBlockHash:masternodeList.blockHash];
+    uint32_t blockHeight = blockHeightLookup(masternodeList.blockHash);
     for (DSSimplifiedMasternodeEntry * masternodeEntry in masternodes) {
         if ([self.signersBitset bitIsTrueAtLEIndex:i]) {
-            DSBLSKey * masternodePublicKey = [DSBLSKey keyWithPublicKey:[masternodeEntry operatorPublicKeyAtBlock:block]];
+            DSBLSKey * masternodePublicKey = [DSBLSKey keyWithPublicKey:[masternodeEntry operatorPublicKeyAtBlockHeight:blockHeight]];
             [publicKeyArray addObject:masternodePublicKey];
         }
         i++;
@@ -264,9 +277,7 @@
     
     BOOL allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:self.commitmentHash signature:self.allCommitmentAggregatedSignature withPublicKeys:publicKeyArray];
     
-#define LOG_COMMITMENT_DATA 1
-    
-
+#define LOG_COMMITMENT_DATA 0
     
     if (!allCommitmentAggregatedSignatureValidated) {
         DSDLog(@"Issue with allCommitmentAggregatedSignatureValidated for quorum of type %d quorumHash %@ llmqHash %@ commitmentHash %@ signersBitset %@ (%d signers) at height %u", self.llmqType, uint256_hex(self.commitmentHash), uint256_hex(self.quorumHash), uint256_hex(self.commitmentHash), self.signersBitset.hexString, self.signersCount, masternodeList.height);

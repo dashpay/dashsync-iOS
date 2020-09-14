@@ -50,19 +50,25 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(NSUInteger)quorumsCountOfType:(DSLLMQType)type;
 
--(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumModifier:(UInt256)quorumHash quorumCount:(NSUInteger)quorumCount;
+-(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount;
+
+-(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount blockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
 
 -(BOOL)validateQuorumsWithMasternodeLists:(NSDictionary*)masternodeLists;
 
--(UInt256)calculateMasternodeMerkleRoot;
+-(UInt256)calculateMasternodeMerkleRootWithBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
 
 -(NSDictionary*)compare:(DSMasternodeList*)other;
 
+-(NSDictionary*)compare:(DSMasternodeList*)other blockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
+
 -(NSDictionary*)compareWithPrevious:(DSMasternodeList*)other;
+
+-(NSDictionary*)compareWithPrevious:(DSMasternodeList*)other blockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
 
 -(NSDictionary*)listOfChangedNodesComparedTo:(DSMasternodeList*)previous;
 
--(NSDictionary*)compare:(DSMasternodeList*)other usingOurString:(NSString*)ours usingTheirString:(NSString*)theirs;
+-(NSDictionary*)compare:(DSMasternodeList*)other usingOurString:(NSString*)ours usingTheirString:(NSString*)theirs blockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
 
 -(DSQuorumEntry* _Nullable)quorumEntryForInstantSendRequestID:(UInt256)requestID;
 
@@ -71,6 +77,10 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSArray<DSQuorumEntry*>*)quorumEntriesRankedForInstantSendRequestID:(UInt256)requestID;
 
 -(NSArray<DSPeer*>*)peers:(uint32_t)peerCount withConnectivityNonce:(uint64_t)connectivityNonce;
+
+-(UInt256)masternodeMerkleRootWithBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
+
+-(NSDictionary*)toDictionaryUsingBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
 
 @end
 

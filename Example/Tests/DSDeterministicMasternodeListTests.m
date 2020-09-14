@@ -21,6 +21,8 @@
 #import "DSMerkleBlock.h"
 #import "DSOptionsManager.h"
 #import <arpa/inet.h>
+#import "DSInsightManager.h"
+#import "DSMerkleBlockEntity+CoreDataClass.h"
 
 #import <DashSync/DSMasternodeList.h>
 #import <DashSync/DSQuorumEntry.h>
@@ -376,7 +378,10 @@
     [self performMNListDiffTestForMessage:hexString
                 shouldBeTotalTransactions:1
                        verifyStringHashes:verifyStringHashes
-                   verifyStringSMLEHashes:verifyStringSMLEHashes onChain:[DSChain testnet]];
+                   verifyStringSMLEHashes:verifyStringSMLEHashes
+                        blockHeightLookup:^uint32_t(UInt256 blockHash) {
+        return [[DSChain testnet] heightForBlockHash:blockHash];
+    } onChain:[DSChain testnet]];
 }
 
 - (void)testMasternodeListDiff2 {
@@ -411,13 +416,17 @@
     [self performMNListDiffTestForMessage:hexString
                 shouldBeTotalTransactions:2
                        verifyStringHashes:verifyStringHashes
-                   verifyStringSMLEHashes:verifyStringSMLEHashes onChain:[DSChain testnet]];
+                   verifyStringSMLEHashes:verifyStringSMLEHashes blockHeightLookup:^uint32_t(UInt256 blockHash) {
+        return [[DSChain testnet] heightForBlockHash:blockHash];
+    } onChain:[DSChain testnet]];
 }
 
 - (void)performMNListDiffTestForMessage:(NSString *)hexString
               shouldBeTotalTransactions:(uint32_t)shouldBeTotalTransactions
                      verifyStringHashes:(NSArray *)verifyStringHashes
-                 verifyStringSMLEHashes:(NSArray *)verifyStringSMLEHashes onChain:(DSChain*)chain {
+                 verifyStringSMLEHashes:(NSArray *)verifyStringSMLEHashes
+                      blockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup
+                                onChain:(DSChain*)chain {
     NSData *message = [hexString hexToData];
     
     NSUInteger length = message.length;
@@ -444,9 +453,7 @@
     DSMerkleBlock *lastBlock = nil;
     [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:baseMasternodeList masternodeListLookup:^DSMasternodeList * _Nonnull(UInt256 blockHash) {
         return nil;
-    } lastBlock:lastBlock onChain:chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
-        return UINT32_MAX;
-    } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
+    } lastBlock:lastBlock onChain:chain blockHeightLookup:blockHeightLookup completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
         
         NSArray * proTxHashes = masternodeList.reversedRegistrationTransactionHashes;
         proTxHashes = [proTxHashes sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
@@ -494,10 +501,13 @@
     [self waitForExpectations:@[expectation] timeout:10];
 }
 
--(void)loadMasternodeListsForFiles:(NSArray*)files baseMasternodeList:(DSMasternodeList* _Nullable)baseMasternodeList withSave:(BOOL)save withReload:(BOOL)reloading onChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context completion:(void (^)(BOOL success, NSDictionary* masternodeLists))completion {
+-(void)loadMasternodeListsForFiles:(NSArray*)files baseMasternodeList:(DSMasternodeList* _Nullable)baseMasternodeList withSave:(BOOL)save withReload:(BOOL)reloading onChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context blockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup completion:(void (^)(BOOL success, NSDictionary* masternodeLists))completion {
     //doing this none recursively for profiler
     __block DSMasternodeList * nextBaseMasternodList = baseMasternodeList;
     __block NSMutableDictionary * dictionary = [NSMutableDictionary dictionary];
+    __block dispatch_group_t dispatch_group = dispatch_group_create();
+    dispatch_group_enter(dispatch_group);
+    __block BOOL stop = FALSE;
     for (NSString * file in files) {
         
         NSBundle *bundle = [NSBundle bundleForClass:[self class]];
@@ -516,23 +526,20 @@
         if (length - offset < 32) return;
         UInt256 blockHash = [message UInt256AtOffset:offset];
         offset += 32;
-        __block BOOL stop = FALSE;
         __block dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-        
+        dispatch_group_enter(dispatch_group);
         [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:nextBaseMasternodList masternodeListLookup:^DSMasternodeList * _Nonnull(UInt256 blockHash) {
             if (save && reloading) {
                 return [chain.chainManager.masternodeManager masternodeListForBlockHash:blockHash];
             } else {
                 return [dictionary objectForKey:uint256_data(blockHash)]; //no known previous lists
             }
-        } lastBlock:nil onChain:chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
-            return UINT32_MAX;
-        } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
-            XCTAssert(foundCoinbase,@"Did not find coinbase at height %u",[chain heightForBlockHash:blockHash]);
+        } lastBlock:nil onChain:chain blockHeightLookup:blockHeightLookup completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
+            XCTAssert(foundCoinbase,@"Did not find coinbase at height %u",blockHeightLookup(blockHash));
             //XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block
-            XCTAssert(rootMNListValid,@"rootMNListValid not valid at height %u",[chain heightForBlockHash:blockHash]);
-            XCTAssert(rootQuorumListValid,@"rootQuorumListValid not valid at height %u",[chain heightForBlockHash:blockHash]);
-            XCTAssert(validQuorums,@"validQuorums not valid at height %u",[chain heightForBlockHash:blockHash]);
+            XCTAssert(rootMNListValid,@"rootMNListValid not valid at height %u",blockHeightLookup(blockHash));
+            XCTAssert(rootQuorumListValid,@"rootQuorumListValid not valid at height %u",blockHeightLookup(blockHash));
+            XCTAssert(validQuorums,@"validQuorums not valid at height %u",blockHeightLookup(blockHash));
             
             
             //            if (nextBaseMasternodList) {
@@ -542,8 +549,11 @@
             if (foundCoinbase && rootMNListValid && rootQuorumListValid && validQuorums) {
                 
                 if (reloading || save) {
-                    [DSMasternodeManager saveMasternodeList:masternodeList toChain:chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums inContext:context completion:^(NSError * _Nonnull error) {
+                    dispatch_group_enter(dispatch_group);
+                    [DSMasternodeManager saveMasternodeList:masternodeList toChain:chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums createUnknownBlocks:YES inContext:context completion:^(NSError * _Nonnull error) {
                         NSAssert(!error, @"There should not be an error");
+                        dispatch_group_leave(dispatch_group);
+                        NSLog(@"%@",dispatch_group);
                     }];
                 }
                 
@@ -553,9 +563,9 @@
                         DSMasternodeList * masternodeListNew = masternodeList;
                         [chain.chainManager.masternodeManager reloadMasternodeLists];
                         DSMasternodeList * reloadedMasternodeListNew = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListNew.blockHash];
-                        NSDictionary * comparisonNew = [masternodeListNew compare:reloadedMasternodeListNew];
+                        NSDictionary * comparisonNew = [masternodeListNew compare:reloadedMasternodeListNew blockHeightLookup:blockHeightLookup];
                         
-                        XCTAssertEqualObjects(uint256_data([reloadedMasternodeListNew calculateMasternodeMerkleRoot]),uint256_data([masternodeListNew calculateMasternodeMerkleRoot]),@"");
+                        XCTAssertEqualObjects(uint256_data([reloadedMasternodeListNew calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]),uint256_data([masternodeListNew calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]),@"");
                         
                     } else {
                         DSMasternodeList * masternodeListNew = masternodeList;
@@ -569,9 +579,9 @@
                         
                         DSMasternodeList * reloadedMasternodeListOld = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListOld.blockHash];
                         
-                        NSDictionary * comparisonOld = [masternodeListOld compare:reloadedMasternodeListOld];
+                        NSDictionary * comparisonOld = [masternodeListOld compare:reloadedMasternodeListOld blockHeightLookup:blockHeightLookup];
                         
-                        NSDictionary * comparisonNew = [masternodeListNew compare:reloadedMasternodeListNew];
+                        NSDictionary * comparisonNew = [masternodeListNew compare:reloadedMasternodeListNew blockHeightLookup:blockHeightLookup];
                         
                         if (![reloadedMasternodeListOld.hashesForMerkleRoot isEqualToArray:masternodeListOld.hashesForMerkleRoot]) {
                             NSMutableSet * reloadedSet = [NSMutableSet setWithArray:reloadedMasternodeListOld.hashesForMerkleRoot];
@@ -582,7 +592,6 @@
                             [missing minusSet:intersection];
                             NSMutableSet * appeared = [reloadedSet mutableCopy];
                             [appeared minusSet:intersection];
-                            NSLog(@"here");
                         }
                         
                         XCTAssertEqualObjects(reloadedMasternodeListNew.providerTxOrderedHashes , masternodeListNew.providerTxOrderedHashes);
@@ -593,8 +602,8 @@
                         
                         XCTAssertEqualObjects(reloadedMasternodeListOld.hashesForMerkleRoot , masternodeListOld.hashesForMerkleRoot);
                         
-                        XCTAssertEqualObjects(uint256_data([reloadedMasternodeListNew calculateMasternodeMerkleRoot]),uint256_data([masternodeListNew calculateMasternodeMerkleRoot]),@"");
-                        XCTAssertEqualObjects(uint256_data([reloadedMasternodeListOld calculateMasternodeMerkleRoot]),uint256_data([masternodeListOld calculateMasternodeMerkleRoot]),@"");
+                        XCTAssertEqualObjects(uint256_data([reloadedMasternodeListNew calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]),uint256_data([masternodeListNew calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]),@"");
+                        XCTAssertEqualObjects(uint256_data([reloadedMasternodeListOld calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]),uint256_data([masternodeListOld calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]),@"");
                     }
                 }
                 
@@ -606,17 +615,22 @@
             } else {
                 [dictionary setObject:masternodeList forKey:uint256_data(masternodeList.blockHash)];
                 stop = TRUE;
-                
             }
             dispatch_semaphore_signal(sem);
+            dispatch_group_leave(dispatch_group);
         }];
-        dispatch_semaphore_wait(sem, 100000);
+        dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
         if (stop) {
-            completion(NO,dictionary);
+            dispatch_group_leave(dispatch_group);
             return;
         }
     }
-    completion(YES,dictionary);
+    if (!stop) {
+        dispatch_group_leave(dispatch_group);
+    }
+    dispatch_group_notify(dispatch_group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+        completion(!stop,dictionary);
+    });
 }
 
 -(void)testMainnetMasternodeSaving {
@@ -663,7 +677,7 @@
                 [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
                 [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
             }];
-            [DSMasternodeManager saveMasternodeList:masternodeList toChain:chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums inContext:context completion:^(NSError * _Nonnull error) {
+            [DSMasternodeManager saveMasternodeList:masternodeList toChain:chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums createUnknownBlocks:YES inContext:context completion:^(NSError * _Nonnull error) {
                 NSAssert(!error, @"There should not be an error");
             }];
         }
@@ -721,16 +735,16 @@
                 [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
                 [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
             }];
-            [DSMasternodeManager saveMasternodeList:masternodeList toChain:chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums inContext:context completion:^(NSError * _Nonnull error) {
-                   NSAssert(!error, @"There should not be an error");
-               }];
+            [DSMasternodeManager saveMasternodeList:masternodeList toChain:chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums createUnknownBlocks:YES inContext:context completion:^(NSError * _Nonnull error) {
+                NSAssert(!error, @"There should not be an error");
+            }];
         }
         
     }];
 }
 
 - (void)testMNLSavingAndRetrievingFromDisk {
-
+    
     DSChain * chain = [DSChain testnet];
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
     NSString *filePath = [bundle pathForResource:@"MNL_0_122064" ofType:@"dat"];
@@ -779,7 +793,7 @@
             
             
             
-            [DSMasternodeManager saveMasternodeList:masternodeList122064 toChain:chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums inContext:context completion:^(NSError * _Nonnull error) {
+            [DSMasternodeManager saveMasternodeList:masternodeList122064 toChain:chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums createUnknownBlocks:YES inContext:context completion:^(NSError * _Nonnull error) {
                 
                 
                 NSBundle *bundle = [NSBundle bundleForClass:[self class]];
@@ -801,12 +815,13 @@
                 
                 XCTAssert(uint256_eq(blockHash122064, baseBlockHash),@"Base block hash should be from block 122064");
                 
+                uint32_t(^blockHeightLookup)(UInt256 blockHash) = ^ uint32_t (UInt256 blockHash){
+                    return 122088;
+                };
                 
                 [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:masternodeList122064 masternodeListLookup:^DSMasternodeList * _Nonnull(UInt256 blockHash) {
                     return nil; //no known previous lists
-                } lastBlock:nil onChain:chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
-                    return UINT32_MAX;
-                } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList122088, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
+                } lastBlock:nil onChain:chain blockHeightLookup:blockHeightLookup completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList122088, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
                     XCTAssert(foundCoinbase,@"Did not find coinbase at height %u",[chain heightForBlockHash:blockHash]);
                     //XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block
                     XCTAssert(rootMNListValid,@"rootMNListValid not valid at height %u",[chain heightForBlockHash:blockHash]);
@@ -817,7 +832,7 @@
                     //XCTAssert(equal, @"MNList merkle root should be valid");
                     
                     
-                    [DSMasternodeManager saveMasternodeList:masternodeList122088 toChain:chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums inContext:context completion:^(NSError * _Nonnull error) {
+                    [DSMasternodeManager saveMasternodeList:masternodeList122088 toChain:chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums createUnknownBlocks:YES inContext:context completion:^(NSError * _Nonnull error) {
                         
                         
                         
@@ -899,8 +914,8 @@
                         XCTAssertEqualObjects(reloadedMasternodeList122064.hashesForMerkleRoot , masternodeList122064.hashesForMerkleRoot);
                         
                         XCTAssertEqualObjects(simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes, reloadedSimplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes);
-                        XCTAssertEqualObjects(uint256_data([reloadedMasternodeList122088 calculateMasternodeMerkleRoot]),uint256_data([masternodeList122088 calculateMasternodeMerkleRoot]),@"");
-                        XCTAssertEqualObjects(uint256_data([reloadedMasternodeList122064 calculateMasternodeMerkleRoot]),uint256_data([masternodeList122064 calculateMasternodeMerkleRoot]),@"");
+                        XCTAssertEqualObjects(uint256_data([reloadedMasternodeList122088 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]),uint256_data([masternodeList122088 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]),@"");
+                        XCTAssertEqualObjects(uint256_data([reloadedMasternodeList122064 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]),uint256_data([masternodeList122064 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]),@"");
                         
                         
                     }];
@@ -950,376 +965,1920 @@
     }];
 }
 
-//-(void)testMNLMainnetReload {
-//    DSChain * chain = [DSChain mainnet];
-//    __block NSManagedObjectContext * context = [NSManagedObject context];
-//    [chain chainManager];
-//    [context performBlockAndWait:^{
-//        DSChainEntity * chainEntity = chain.chainEntity;
-//        [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
-//        [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
-//        [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
-//    }];
-//    [chain.chainManager.masternodeManager reloadMasternodeLists];
-//    NSArray * files = @[@"MNL_0_1090944", @"MNL_1090944_1091520", @"MNL_1091520_1091808", @"MNL_1091808_1092096", @"MNL_1092096_1092336", @"MNL_1092336_1092360", @"MNL_1092360_1092384", @"MNL_1092384_1092408", @"MNL_1092408_1092432", @"MNL_1092432_1092456", @"MNL_1092456_1092480", @"MNL_1092480_1092504", @"MNL_1092504_1092528", @"MNL_1092528_1092552", @"MNL_1092552_1092576", @"MNL_1092576_1092600", @"MNL_1092600_1092624", @"MNL_1092624_1092648", @"MNL_1092648_1092672", @"MNL_1092672_1092696", @"MNL_1092696_1092720", @"MNL_1092720_1092744", @"MNL_1092744_1092768", @"MNL_1092768_1092792", @"MNL_1092792_1092816", @"MNL_1092816_1092840", @"MNL_1092840_1092864", @"MNL_1092864_1092888", @"MNL_1092888_1092916"];
-//
-//
-//    [self loadMasternodeListsForFiles:files baseMasternodeList:nil withSave:YES withReload:NO onChain:chain inContext:context completion:^(BOOL success, NSDictionary * masternodeLists) {
-//        XCTAssert(masternodeLists.count == 29, @"There should be 25 masternode lists");
-//    }];
-//}
+-(void)createBlockHeightLookups {
+    DSChain * chain = [DSChain testnet];
+    __block NSManagedObjectContext * context = [NSManagedObjectContext chainContext];
+    NSArray * files = @[@"MNL_0_122928"];
+    
+    __block NSMutableSet * blockHashes = [NSMutableSet set];
+    for (NSString * file in files) {
+        
+        NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+        NSString *filePath = [bundle pathForResource:file ofType:@"dat"];
+        NSData * message = [NSData dataWithContentsOfFile:filePath];
+        
+        XCTAssert(message.length,@"File must exist for file %@",file);
+        
+        NSUInteger length = message.length;
+        NSUInteger offset = 0;
+        
+        if (length - offset < 32) return;
+        __unused UInt256 baseBlockHash = [message UInt256AtOffset:offset];
+        offset += 32;
+        
+        if (length - offset < 32) return;
+        UInt256 blockHash = [message UInt256AtOffset:offset];
+        offset += 32;
+        [blockHashes addObject:uint256_data(blockHash).reverse];
+    }
+    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+    
+    [self loadMasternodeListsForFiles:files baseMasternodeList:nil withSave:NO withReload:NO onChain:chain inContext:context blockHeightLookup:^uint32_t(UInt256 blockHash) {
+        [blockHashes addObject:uint256_data(blockHash).reverse];
+        return UINT32_MAX;
+    } completion:^(BOOL success, NSDictionary *masternodeLists) {
+        [[DSInsightManager sharedInstance] blockHeightsForBlockHashes:[blockHashes allObjects] onChain:chain completion:^(NSDictionary * _Nonnull blockHeightDictionary, NSError * _Null_unspecified error) {
+            NSLog(@"%@",blockHeightDictionary);
+            XCTAssert(blockHeightDictionary);
+            NSMutableArray * mStringArray = [NSMutableArray array];
+            for (NSData * data in blockHeightDictionary) {
+                NSNumber * blockHeight = blockHeightDictionary[data];
+                [mStringArray addObject:[NSString stringWithFormat:@"if ([blockHashString isEqualToString:@\"%@\"]) {\rreturn %d;\r}",data.hexString,blockHeight.unsignedIntValue]];
+            }
+            NSLog(@"%@",[mStringArray componentsJoinedByString:@" else "]);
+            dispatch_semaphore_signal(sem);
+        }];
+    }];
+    
+    
+    
+    
+    
+    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+    
+    
+}
 
-/*-(void)testMNLChaining {
- DSChain * chain = [DSChain mainnet];
- __block NSManagedObjectContext * context = [NSManagedObject context];
- __block BOOL useCheckpointMasternodeLists = [[DSOptionsManager sharedInstance] useCheckpointMasternodeLists];
- [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:NO];
- [chain chainManager];
- [context performBlockAndWait:^{
- DSChainEntity * chainEntity = chain.chainEntity;
- [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
- [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
- [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
- }];
- [chain.chainManager.masternodeManager reloadMasternodeLists];
- NSArray * files = @[@"MNL_0_1093824", @"MNL_1093824_1094400", @"MNL_1094400_1094976"];
- 
- 
- [self loadMasternodeListsForFiles:files baseMasternodeList:nil withSave:NO withReload:NO onChain:chain inContext:context completion:^(BOOL success1, NSDictionary * masternodeLists1) {
- [self loadMasternodeListsForFiles:@[@"MNL_0_1094976"] baseMasternodeList:nil withSave:NO withReload:NO onChain:chain inContext:context completion:^(BOOL success2, NSDictionary * masternodeLists2) {
- NSData * block1094976Hash = [[masternodeLists2 allKeys] firstObject];
- DSMasternodeList * chainedMasternodeList = [masternodeLists1 objectForKey:block1094976Hash];
- DSMasternodeList * nonChainedMasternodeList = [masternodeLists2 objectForKey:block1094976Hash];
- if (!uint256_eq([chainedMasternodeList masternodeMerkleRoot], [nonChainedMasternodeList calculateMasternodeMerkleRoot])) {
- NSDictionary * comparisonResult = [chainedMasternodeList compare:nonChainedMasternodeList usingOurString:@"chained" usingTheirString:@"non chained"];
- NSLog(@"%@",comparisonResult);
- }
- XCTAssert(uint256_eq([chainedMasternodeList masternodeMerkleRoot], [nonChainedMasternodeList calculateMasternodeMerkleRoot]),@"These should be equal");
- 
- [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:useCheckpointMasternodeLists];
- }];
- }];
- }
- 
- -(void)testMNLDeepChaining {
- DSChain * chain = [DSChain mainnet];
- __block NSManagedObjectContext * context = [NSManagedObject context];
- __block BOOL useCheckpointMasternodeLists = [[DSOptionsManager sharedInstance] useCheckpointMasternodeLists];
- [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:NO];
- [chain chainManager];
- [context performBlockAndWait:^{
- DSChainEntity * chainEntity = chain.chainEntity;
- [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
- [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
- [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
- }];
- [chain.chainManager.masternodeManager reloadMasternodeLists];
- NSArray * files = @[@"MNL_0_1093824", @"MNL_1093824_1094400", @"MNL_1094400_1094976", @"MNL_1094976_1095264", @"MNL_1095264_1095432", @"MNL_1095432_1095456", @"MNL_1095456_1095480", @"MNL_1095480_1095504", @"MNL_1095504_1095528", @"MNL_1095528_1095552", @"MNL_1095552_1095576", @"MNL_1095576_1095600", @"MNL_1095600_1095624", @"MNL_1095624_1095648", @"MNL_1095648_1095672", @"MNL_1095672_1095696", @"MNL_1095696_1095720"];
- 
- 
- [self loadMasternodeListsForFiles:files baseMasternodeList:nil withSave:NO withReload:NO onChain:chain inContext:context completion:^(BOOL success1, NSDictionary * masternodeLists1) {
- [self loadMasternodeListsForFiles:@[@"MNL_0_1095720"] baseMasternodeList:nil withSave:NO withReload:NO onChain:chain inContext:context completion:^(BOOL success2, NSDictionary * masternodeLists2) {
- NSData * block1095720Hash = [[masternodeLists2 allKeys] firstObject];
- DSMasternodeList * chainedMasternodeList = [masternodeLists1 objectForKey:block1095720Hash];
- DSMasternodeList * nonChainedMasternodeList = [masternodeLists2 objectForKey:block1095720Hash];
- if (!uint256_eq([chainedMasternodeList masternodeMerkleRoot], [nonChainedMasternodeList calculateMasternodeMerkleRoot])) {
- NSDictionary * comparisonResult = [chainedMasternodeList compare:nonChainedMasternodeList usingOurString:@"chained" usingTheirString:@"non chained"];
- NSLog(@"%@",comparisonResult);
- }
- XCTAssert(uint256_eq([chainedMasternodeList masternodeMerkleRoot], [nonChainedMasternodeList calculateMasternodeMerkleRoot]),@"These should be equal");
- 
- [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:useCheckpointMasternodeLists];
- }];
- }];
- }
- 
- -(void)testMNLReloadAgain {
- DSChain * chain = [DSChain mainnet];
- __block NSManagedObjectContext * context = [NSManagedObject context];
- __block BOOL useCheckpointMasternodeLists = [[DSOptionsManager sharedInstance] useCheckpointMasternodeLists];
- [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:NO];
- [chain chainManager];
- [context performBlockAndWait:^{
- DSChainEntity * chainEntity = chain.chainEntity;
- [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
- [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
- [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
- }];
- [chain.chainManager.masternodeManager reloadMasternodeLists];
- NSArray * files = @[@"MNL_0_1093824", @"MNL_1093824_1094400", @"MNL_1094400_1094976", @"MNL_1094976_1095264", @"MNL_1095264_1095432", @"MNL_1095432_1095456", @"MNL_1095456_1095480", @"MNL_1095480_1095504", @"MNL_1095504_1095528", @"MNL_1095528_1095552", @"MNL_1095552_1095576", @"MNL_1095576_1095600", @"MNL_1095600_1095624", @"MNL_1095624_1095648", @"MNL_1095648_1095672", @"MNL_1095672_1095696", @"MNL_1095696_1095720", @"MNL_1095720_1095744", @"MNL_1095744_1095768", @"MNL_1095768_1095792", @"MNL_1095792_1095816", @"MNL_1095816_1095840", @"MNL_1095840_1095864", @"MNL_1095864_1095888", @"MNL_1095888_1095912", @"MNL_1095912_1095936", @"MNL_1095936_1095960", @"MNL_1095960_1095984", @"MNL_1095984_1096003"];
- 
- 
- [self loadMasternodeListsForFiles:files baseMasternodeList:nil withSave:YES withReload:YES onChain:chain inContext:context completion:^(BOOL success, NSDictionary * masternodeLists) {
- [chain.chainManager.masternodeManager reloadMasternodeLists];
- for (NSData * masternodeListBlockHash in masternodeLists) {
- NSLog(@"Testing masternode list at height %u",[chain heightForBlockHash:masternodeListBlockHash.UInt256]);
- DSMasternodeList * originalMasternodeList = [masternodeLists objectForKey:masternodeListBlockHash];
- DSMasternodeList * reloadedMasternodeList = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListBlockHash.UInt256];
- if (!uint256_eq([reloadedMasternodeList masternodeMerkleRoot], [reloadedMasternodeList calculateMasternodeMerkleRoot])) {
- NSDictionary * comparisonResult = [originalMasternodeList compare:reloadedMasternodeList usingOurString:@"original" usingTheirString:@"reloaded"];
- NSLog(@"%@",comparisonResult);
- }
- XCTAssert(uint256_eq([reloadedMasternodeList masternodeMerkleRoot], [reloadedMasternodeList calculateMasternodeMerkleRoot]),@"These should be equal");
- }
- 
- [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:useCheckpointMasternodeLists];
- }];
- }
- 
- -(void)testQuorumIssue {
- DSChain * chain = [DSChain mainnet];
- __block NSManagedObjectContext * context = [NSManagedObject context];
- __block BOOL useCheckpointMasternodeLists = [[DSOptionsManager sharedInstance] useCheckpointMasternodeLists];
- [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:NO];
- [chain chainManager];
- [context performBlockAndWait:^{
- DSChainEntity * chainEntity = chain.chainEntity;
- [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
- [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
- [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
- }];
- [chain.chainManager.masternodeManager reloadMasternodeLists];
- NSArray * files = @[@"MNL_0_1096704", @"MNL_1096704_1097280", @"MNL_1097280_1097856", @"MNL_1097856_1098144", @"MNL_1098144_1098432", @"MNL_1098432_1098456", @"MNL_1098456_1098480", @"MNL_1098480_1098504", @"MNL_1098504_1098528", @"MNL_1098528_1098552", @"MNL_1098552_1098576", @"MNL_1098576_1098600", @"MNL_1098600_1098624", @"MNL_1098624_1098648", @"MNL_1098648_1098672", @"MNL_1098672_1098696", @"MNL_1098696_1098720", @"MNL_1098720_1098744", @"MNL_1098744_1098768", @"MNL_1098768_1098792", @"MNL_1098792_1098816", @"MNL_1098816_1098840", @"MNL_1098840_1098864", @"MNL_1098864_1098888", @"MNL_1098888_1098912", @"MNL_1098912_1098936", @"MNL_1098936_1098960", @"MNL_1098960_1098984", @"MNL_1098984_1099008"];
- 
- [self loadMasternodeListsForFiles:files baseMasternodeList:nil withSave:YES withReload:YES onChain:chain inContext:context completion:^(BOOL success, NSDictionary * masternodeLists) {
- [chain.chainManager.masternodeManager reloadMasternodeLists];
- //        for (NSData * masternodeListBlockHash in masternodeLists) {
- //            NSLog(@"Testing quorum of masternode list at height %u",[chain heightForBlockHash:masternodeListBlockHash.UInt256]);
- //            DSMasternodeList * originalMasternodeList = [masternodeLists objectForKey:masternodeListBlockHash];
- //            DSMasternodeList * reloadedMasternodeList = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListBlockHash.UInt256];
- //            if (!uint256_eq([reloadedMasternodeList masternodeMerkleRoot], [reloadedMasternodeList calculateMasternodeMerkleRoot])) {
- //                NSDictionary * comparisonResult = [originalMasternodeList compare:reloadedMasternodeList usingOurString:@"original" usingTheirString:@"reloaded"];
- //                NSLog(@"%@",comparisonResult);
- //            }
- //            XCTAssert(uint256_eq([reloadedMasternodeList masternodeMerkleRoot], [reloadedMasternodeList calculateMasternodeMerkleRoot]),@"These should be equal");
- //            //reloadedMasternodeList.quorums
- //        }
- 
- [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:useCheckpointMasternodeLists];
- }];
- }
- 
- - (void)testMNLSavingAndRetrievingInIncorrectOrderFromDisk {
- DSChain * chain = [DSChain mainnet];
- __block NSManagedObjectContext * context = [NSManagedObject context];
- [chain chainManager];
- [context performBlockAndWait:^{
- DSChainEntity * chainEntity = chain.chainEntity;
- [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
- [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
- [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
- }];
- [chain.chainManager.masternodeManager reloadMasternodeLists];
- NSArray * files = @[@"MNL_0_1090944", @"MNL_1090944_1091520", @"MNL_1091520_1091808", @"MNL_1091808_1092096", @"MNL_1092096_1092336", @"MNL_1092336_1092360", @"MNL_1092360_1092384", @"MNL_1092384_1092408", @"MNL_1092408_1092432", @"MNL_1092432_1092456", @"MNL_1092456_1092480", @"MNL_1092480_1092504", @"MNL_1092504_1092528", @"MNL_1092528_1092552", @"MNL_1092552_1092576", @"MNL_1092576_1092600", @"MNL_1092600_1092624", @"MNL_1092624_1092648", @"MNL_1092648_1092672", @"MNL_1092672_1092696", @"MNL_1092696_1092720", @"MNL_1092720_1092744", @"MNL_1092744_1092768", @"MNL_1092768_1092792", @"MNL_1092792_1092816", @"MNL_1092816_1092840", @"MNL_1092840_1092864", @"MNL_1092864_1092888", @"MNL_1092888_1092916"];
- 
- [self loadMasternodeListsForFiles:files baseMasternodeList:nil withSave:YES withReload:NO onChain:chain inContext:context completion:^(BOOL success, NSDictionary * masternodeLists) {
- DSMasternodeList * masternodeList1092916 = [masternodeLists objectForKey:@"1f5364916bbcca323972a34566cc1d415b691de30bde44b41200000000000000".hexToData];
- 
- DSMasternodeList * masternodeList1092888 = [masternodeLists objectForKey:@"61a87d10f303aefcf9e77592a86dcd3adeed1f133ca2d3bc1d00000000000000".hexToData];
- 
- [chain.chainManager.masternodeManager reloadMasternodeLists]; //simulate that we turned off the phone
- 
- 
- DSMasternodeList * reloadedMasternodeList1092916 = [chain.chainManager.masternodeManager masternodeListForBlockHash:[chain blockAtHeight:1092916].blockHash];
- 
- DSMasternodeList * reloadedMasternodeList1092888 = [chain.chainManager.masternodeManager masternodeListForBlockHash:[chain blockAtHeight:1092888].blockHash];
- 
- 
- NSArray * localProTxHashes1092916 = [masternodeList1092916.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allKeys];
- localProTxHashes1092916 = [localProTxHashes1092916 sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
- UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
- UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
- return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
- }];
- 
- NSArray * proTxHashes1092916 = [reloadedMasternodeList1092916.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allKeys];
- proTxHashes1092916 = [proTxHashes1092916 sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
- UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
- UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
- return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
- }];
- 
- XCTAssertEqualObjects(localProTxHashes1092916, proTxHashes1092916);
- 
- NSArray * localProTxHashes1092888 = [masternodeList1092888.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allKeys];
- localProTxHashes1092888 = [localProTxHashes1092888 sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
- UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
- UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
- return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
- }];
- 
- NSArray * proTxHashes1092888 = [reloadedMasternodeList1092888.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allKeys];
- proTxHashes1092888 = [proTxHashes1092888 sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
- UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
- UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
- return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
- }];
- 
- XCTAssertEqualObjects(localProTxHashes1092888, proTxHashes1092888);
- 
- NSMutableArray * simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes = [NSMutableArray array];
- for (NSData * proTxHash in localProTxHashes1092888) {
- DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [reloadedMasternodeList1092888.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash objectForKey:proTxHash];
- [simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes addObject:[NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash]];
- }
- 
- NSMutableArray * reloadedSimplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes = [NSMutableArray array];
- for (NSData * proTxHash in proTxHashes1092888) {
- DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [reloadedMasternodeList1092888.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash objectForKey:proTxHash];
- [reloadedSimplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes addObject:[NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash]];
- }
- 
- XCTAssertEqualObjects(reloadedMasternodeList1092888.providerTxOrderedHashes , masternodeList1092888.providerTxOrderedHashes);
- 
- 
- XCTAssertEqualObjects(reloadedMasternodeList1092888.hashesForMerkleRoot , masternodeList1092888.hashesForMerkleRoot);
- 
- XCTAssertEqualObjects(simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes, reloadedSimplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes);
- XCTAssertEqualObjects(uint256_data([reloadedMasternodeList1092916 calculateMasternodeMerkleRoot]),uint256_data([masternodeList1092916 calculateMasternodeMerkleRoot]),@"");
- XCTAssertEqualObjects(uint256_data([reloadedMasternodeList1092888 calculateMasternodeMerkleRoot]),uint256_data([masternodeList1092888 calculateMasternodeMerkleRoot]),@"");
- 
- NSBundle *bundle = [NSBundle bundleForClass:[self class]];
- NSString *filePath = [bundle pathForResource:@"MNL_1092888_1092912" ofType:@"dat"];
- NSData * message = [NSData dataWithContentsOfFile:filePath];
- 
- NSUInteger length = message.length;
- NSUInteger offset = 0;
- 
- if (length - offset < 32) return;
- UInt256 baseBlockHash = [message UInt256AtOffset:offset];
- offset += 32;
- 
- if (length - offset < 32) return;
- __block UInt256 blockHash1092912 = [message UInt256AtOffset:offset];
- offset += 32;
- 
- NSLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)",uint256_reverse_hex(baseBlockHash), [chain heightForBlockHash:baseBlockHash], uint256_reverse_hex(blockHash1092912),[chain heightForBlockHash:blockHash1092912]);
- 
- 
- [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:reloadedMasternodeList1092888 masternodeListLookup:^DSMasternodeList * _Nonnull(UInt256 blockHash) {
- if ([masternodeLists objectForKey:uint256_data(blockHash)]) {
- return [masternodeLists objectForKey:uint256_data(blockHash)];
- }
- return nil; //no known previous lists
- } lastBlock:nil onChain:chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
- return UINT32_MAX;
- } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList1092912, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
- XCTAssert(foundCoinbase,@"Did not find coinbase at height %u",[chain heightForBlockHash:blockHash1092912]);
- //XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block
- XCTAssert(rootMNListValid,@"rootMNListValid not valid at height %u",[chain heightForBlockHash:blockHash1092912]);
- XCTAssert(rootQuorumListValid,@"rootQuorumListValid not valid at height %u",[chain heightForBlockHash:blockHash1092912]);
- XCTAssert(validQuorums,@"validQuorums not valid at height %u",[chain heightForBlockHash:blockHash1092912]);
- 
- //BOOL equal = uint256_eq(masternodeListMerkleRoot.UInt256, [masternodeList masternodeMerkleRoot]);
- //XCTAssert(equal, @"MNList merkle root should be valid");
- 
- NSError * error = nil;
- 
- [DSMasternodeManager saveMasternodeList:masternodeList1092912 toChain:chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums inContext:context error:&error];
- 
- NSBundle *bundle = [NSBundle bundleForClass:[self class]];
- NSString *filePath = [bundle pathForResource:@"MNL_1092916_1092940" ofType:@"dat"];
- NSData * message = [NSData dataWithContentsOfFile:filePath];
- 
- NSUInteger length = message.length;
- NSUInteger offset = 0;
- 
- if (length - offset < 32) return;
- UInt256 baseBlockHash = [message UInt256AtOffset:offset];
- offset += 32;
- 
- if (length - offset < 32) return;
- __block UInt256 blockHash1092940 = [message UInt256AtOffset:offset];
- offset += 32;
- 
- NSLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)",uint256_reverse_hex(baseBlockHash), [chain heightForBlockHash:baseBlockHash], uint256_reverse_hex(blockHash1092940),[chain heightForBlockHash:blockHash1092940]);
- 
- [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:reloadedMasternodeList1092916 masternodeListLookup:^DSMasternodeList * _Nonnull(UInt256 blockHash) {
- if ([masternodeLists objectForKey:uint256_data(blockHash)]) {
- return [masternodeLists objectForKey:uint256_data(blockHash)];
- }
- if (uint256_eq(masternodeList1092912.blockHash,blockHash)) {
- return masternodeList1092912;
- }
- return nil;
- } lastBlock:nil onChain:chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
- return UINT32_MAX;
- } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList1092940, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
- XCTAssert(foundCoinbase,@"Did not find coinbase at height %u",[chain heightForBlockHash:blockHash1092940]);
- //XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block
- XCTAssert(rootMNListValid,@"rootMNListValid not valid at height %u",[chain heightForBlockHash:blockHash1092940]);
- XCTAssert(rootQuorumListValid,@"rootQuorumListValid not valid at height %u",[chain heightForBlockHash:blockHash1092940]);
- XCTAssert(validQuorums,@"validQuorums not valid at height %u",[chain heightForBlockHash:blockHash1092940]);
- 
- DSQuorumEntry * quorum1092912 = [[[[addedQuorums allValues] firstObject] allValues] firstObject];
- 
- //1092912 and 1092916 are the same, 1092916 is older though and is original 1092912 is based off a reloaded 109
- 
- NSArray * masternodeScores1092912 = [masternodeList1092912 scoresForQuorumModifier:quorum1092912.llmqQuorumHash];
- 
- NSArray * masternodeScores1092916 = [masternodeList1092916 scoresForQuorumModifier:quorum1092912.llmqQuorumHash];
- 
- //                BOOL a = [quorum1092912 validateWithMasternodeList:masternodeList1092912];
- //
- //                BOOL b = [quorum1092912 validateWithMasternodeList:masternodeList1092916];
- //
- //
- 
- //                NSArray * masternodesWithNoConfirmationHash1092912 = [[[NSSet setWithArray:masternodeList1092912.simplifiedMasternodeEntries] objectsPassingTest:^BOOL(id  _Nonnull obj, BOOL * _Nonnull stop) {
- //                    return uint256_is_zero(((DSSimplifiedMasternodeEntry*)obj).confirmedHash);
- //                }] allObjects];
- //
- //                NSArray * masternodesWithNoConfirmationHash1092916 = [[[NSSet setWithArray:masternodeList1092916.simplifiedMasternodeEntries] objectsPassingTest:^BOOL(id  _Nonnull obj, BOOL * _Nonnull stop) {
- //                    return uint256_is_zero(((DSSimplifiedMasternodeEntry*)obj).confirmedHash);
- //                }] allObjects];
- //
- //                NSArray * reloadedMasternodesWithNoConfirmationHash1092916 = [[[NSSet setWithArray:reloadedMasternodeList1092916.simplifiedMasternodeEntries] objectsPassingTest:^BOOL(id  _Nonnull obj, BOOL * _Nonnull stop) {
- //                    return uint256_is_zero(((DSSimplifiedMasternodeEntry*)obj).confirmedHash);
- //                }] allObjects];
- 
- //ours means reloaded
- 
- //                NSDictionary * interesting = [masternodeList1092912 compare:masternodeList1092916];
- 
- XCTAssertEqualObjects(masternodeScores1092912,masternodeScores1092916,@"These should be the same");
- 
- NSArray<DSSimplifiedMasternodeEntry*> * masternodes1092912 = [masternodeList1092912 masternodesForQuorumModifier:quorum1092912.llmqQuorumHash quorumCount:[DSQuorumEntry quorumSizeForType:quorum1092912.llmqType]];
- 
- NSArray<DSSimplifiedMasternodeEntry*> * masternodes1092916 = [masternodeList1092916 masternodesForQuorumModifier:quorum1092912.llmqQuorumHash quorumCount:[DSQuorumEntry quorumSizeForType:quorum1092912.llmqType]];
- 
- XCTAssertEqualObjects(masternodes1092912,masternodes1092916,@"These should be the same");
- //                NSMutableArray * publicKeyArray = [NSMutableArray array];
- //                uint32_t i = 0;
- //                for (DSSimplifiedMasternodeEntry * masternodeEntry in masternodes) {
- //                    if ([self.signersBitset bitIsTrueAtIndex:i]) {
- //                        DSBLSKey * masternodePublicKey = [DSBLSKey blsKeyWithPublicKey:[masternodeEntry operatorPublicKeyAtBlockHash:masternodeList.blockHash] onChain:self.chain];
- //                        [publicKeyArray addObject:masternodePublicKey];
- //                    }
- //                    i++;
- //                }
- //                [addedQuorums[0] val]
- //
- 
- NSError * error = nil;
- 
- [DSMasternodeManager saveMasternodeList:masternodeList1092940 toChain:chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums inContext:context error:&error];
- 
- 
- }];
- 
- 
- }];
- 
- }];
- 
- 
- 
- }*/
+-(void)testMNLMainnetReload {
+    DSChain * chain = [DSChain mainnet];
+    __block NSManagedObjectContext * context = [NSManagedObjectContext chainContext];
+    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+    [chain chainManager];
+    [context performBlockAndWait:^{
+        DSChainEntity * chainEntity = [chain chainEntityInContext:context];
+        [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
+        [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
+        [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
+    }];
+    [chain.chainManager.masternodeManager reloadMasternodeLists];
+    NSArray * files = @[@"MNL_0_1090944", @"MNL_1090944_1091520", @"MNL_1091520_1091808", @"MNL_1091808_1092096", @"MNL_1092096_1092336", @"MNL_1092336_1092360", @"MNL_1092360_1092384", @"MNL_1092384_1092408", @"MNL_1092408_1092432", @"MNL_1092432_1092456", @"MNL_1092456_1092480", @"MNL_1092480_1092504", @"MNL_1092504_1092528", @"MNL_1092528_1092552", @"MNL_1092552_1092576", @"MNL_1092576_1092600", @"MNL_1092600_1092624", @"MNL_1092624_1092648", @"MNL_1092648_1092672", @"MNL_1092672_1092696", @"MNL_1092696_1092720", @"MNL_1092720_1092744", @"MNL_1092744_1092768", @"MNL_1092768_1092792", @"MNL_1092792_1092816", @"MNL_1092816_1092840", @"MNL_1092840_1092864", @"MNL_1092864_1092888", @"MNL_1092888_1092916"];
+    
+    
+    [self loadMasternodeListsForFiles:files baseMasternodeList:nil withSave:YES withReload:NO onChain:chain inContext:context blockHeightLookup:^uint32_t(UInt256 blockHash) {
+        NSString * blockHashString = uint256_reverse_hex(blockHash);
+        if ([blockHashString isEqualToString:@"000000000000000bf16cfee1f69cd472ac1d0285d74d025caa27cebb0fb6842f"]) {
+            return 1090392;
+        } else if ([blockHashString isEqualToString:@"000000000000000d6f921ffd1b48815407c1d54edc93079b7ec37a14a9c528f7"]) {
+            return 1090776;
+        } else if ([blockHashString isEqualToString:@"000000000000000c559941d24c167053c5c00aea59b8521f5cef764271dbd3c5"]) {
+            return 1091280;
+        } else if ([blockHashString isEqualToString:@"0000000000000003269a36d2ce1eee7753a2d2db392fff364f64f5a409805ca3"]) {
+            return 1092840;
+        } else if ([blockHashString isEqualToString:@"000000000000001a505b133ea44b594b194f12fa08650eb66efb579b1600ed1e"]) {
+            return 1090368;
+        } else if ([blockHashString isEqualToString:@"0000000000000006998d05eff0f4e9b6a7bab1447534eccb330972a7ef89ef65"]) {
+            return 1091424;
+        } else if ([blockHashString isEqualToString:@"000000000000001d9b6925a0bc2b744dfe38ff7da2ca0256aa555bb688e21824"]) {
+            return 1090920;
+        } else if ([blockHashString isEqualToString:@"000000000000000c22e2f5ca2113269ec62193e93158558c8932ba1720cea64f"]) {
+            return 1092648;
+        } else if ([blockHashString isEqualToString:@"0000000000000020019489504beba1d6197857e63c44da3eb9e3b20a24f40d1e"]) {
+            return 1092168;
+        } else if ([blockHashString isEqualToString:@"00000000000000112e41e4b3afda8b233b8cc07c532d2eac5de097b68358c43e"]) {
+            return 1088640;
+        } else if ([blockHashString isEqualToString:@"00000000000000143df6e8e78a3e79f4deed38a27a05766ad38e3152f8237852"]) {
+            return 1090944;
+        } else if ([blockHashString isEqualToString:@"0000000000000028d39e78ee49a950b66215545163b53331115e6e64d4d80328"]) {
+            return 1091184;
+        } else if ([blockHashString isEqualToString:@"00000000000000093b22f6342de731811a5b3fa51f070b7aac6d58390d8bfe8c"]) {
+            return 1091664;
+        } else if ([blockHashString isEqualToString:@"00000000000000037187889dd360aafc49d62a7e76f4ab6cd2813fdf610a7292"]) {
+            return 1092504;
+        } else if ([blockHashString isEqualToString:@"000000000000000aee08f8aaf8a5232cc692ef5fcc016786af72bd9b001ae43b"]) {
+            return 1090992;
+        } else if ([blockHashString isEqualToString:@"000000000000002395b6c4e4cb829556d42c659b585ee4c131a683b9f7e37706"]) {
+            return 1092192;
+        } else if ([blockHashString isEqualToString:@"00000000000000048a9b52e6f46f74d92eb9740e27c1d66e9f2eb63293e18677"]) {
+            return 1091976;
+        } else if ([blockHashString isEqualToString:@"000000000000001b4d519e0a9215e84c3007597cef6823c8f1c637d7a46778f0"]) {
+            return 1091448;
+        } else if ([blockHashString isEqualToString:@"000000000000001730249b150b8fcdb1078cd0dbbfa04fb9a18d26bf7a3e80f2"]) {
+            return 1092528;
+        } else if ([blockHashString isEqualToString:@"000000000000001c3073ff2ee0af660c66762af38e2c5782597e32ed690f0f72"]) {
+            return 1092072;
+        } else if ([blockHashString isEqualToString:@"000000000000000c49954d58132fb8a1c90e4e690995396be91d8f27a07de349"]) {
+            return 1092624;
+        } else if ([blockHashString isEqualToString:@"00000000000000016200a3f98e44f4b9e65da04b86bad799e6bbfa8972f0cead"]) {
+            return 1090080;
+        } else if ([blockHashString isEqualToString:@"000000000000000a80933f2b9b8041fdfc6e94b77ba8786e159669f959431ff2"]) {
+            return 1092600;
+        } else if ([blockHashString isEqualToString:@"00000000000000153afcdccc3186ad2ca4ed10a79bfb01a2c0056c23fe039d86"]) {
+            return 1092456;
+        } else if ([blockHashString isEqualToString:@"00000000000000103bad71d3178a6c9a2f618d9d09419b38e9caee0fddbf664a"]) {
+            return 1092864;
+        } else if ([blockHashString isEqualToString:@"000000000000001b732bc6d52faa8fae97d76753c8e071767a37ba509fe5c24a"]) {
+            return 1092360;
+        } else if ([blockHashString isEqualToString:@"000000000000001a17f82d76a0d5aa2b4f90a6e487df366d437c34e8453f519c"]) {
+            return 1091112;
+        } else if ([blockHashString isEqualToString:@"000000000000000caa00c2c24a385513a1687367157379a57b549007e18869d8"]) {
+            return 1090680;
+        } else if ([blockHashString isEqualToString:@"0000000000000022e463fe13bc19a1fe654c817cb3b8e207cdb4ff73fe0bcd2c"]) {
+            return 1091736;
+        } else if ([blockHashString isEqualToString:@"000000000000001b33b86b6a167d37e3fcc6ba53e02df3cb06e3f272bb89dd7d"]) {
+            return 1092744;
+        } else if ([blockHashString isEqualToString:@"0000000000000006051479afbbb159d722bb8feb10f76b8900370ceef552fc49"]) {
+            return 1092432;
+        } else if ([blockHashString isEqualToString:@"0000000000000008cc37827fd700ec82ee8b54bdd37d4db4319496977f475cf8"]) {
+            return 1091328;
+        } else if ([blockHashString isEqualToString:@"0000000000000006242af03ba5e407c4e8412ef9976da4e7f0fa2cbe9889bcd2"]) {
+            return 1089216;
+        } else if ([blockHashString isEqualToString:@"000000000000001dc4a842ede88a3cc975e2ade4338513d546c52452ab429ba0"]) {
+            return 1091496;
+        } else if ([blockHashString isEqualToString:@"0000000000000010d30c51e8ce1730aae836b00cd43f3e70a1a37d40b47580fd"]) {
+            return 1092816;
+        } else if ([blockHashString isEqualToString:@"00000000000000212441a8ef2495d21b0b7c09e13339dbc34d98c478cc51f8e2"]) {
+            return 1092096;
+        } else if ([blockHashString isEqualToString:@"00000000000000039d7eb80e1bbf6f7f0c43f7f251f30629d858bbcf6a18ab58"]) {
+            return 1090728;
+        } else if ([blockHashString isEqualToString:@"0000000000000004532e9c4a1def38cd71f3297c684bfdb2043c2aec173399e0"]) {
+            return 1091904;
+        } else if ([blockHashString isEqualToString:@"000000000000000b73060901c41d098b91f69fc4f27aef9d7ed7f2296953e407"]) {
+            return 1090560;
+        } else if ([blockHashString isEqualToString:@"0000000000000016659fb35017e1f6560ba7036a3433bfb924d85e3fdfdd3b3d"]) {
+            return 1091256;
+        } else if ([blockHashString isEqualToString:@"000000000000000a3c6796d85c8c49b961363ee88f14bff10c374cd8dd89a9f6"]) {
+            return 1092696;
+        } else if ([blockHashString isEqualToString:@"000000000000000f33533ba1c5d72f678ecd87abe7e974debda238c53b391737"]) {
+            return 1092720;
+        } else if ([blockHashString isEqualToString:@"000000000000000150907537f4408ff4a8610ba8ce2395faa7e44541ce2b6c37"]) {
+            return 1090608;
+        } else if ([blockHashString isEqualToString:@"000000000000001977d3a578e0ac3e4969675a74afe7715b8ffd9f29fbbe7c36"]) {
+            return 1091400;
+        } else if ([blockHashString isEqualToString:@"0000000000000004493e40518e7d3aff585e84564bcd80927f96a07ec80259cb"]) {
+            return 1092480;
+        } else if ([blockHashString isEqualToString:@"000000000000000df5e2e0eb7eaa36fcef28967f7f12e539f74661e03b13bdba"]) {
+            return 1090704;
+        } else if ([blockHashString isEqualToString:@"00000000000000172f1765f4ed1e89ba4b717a475e9e37124626b02d566d31a2"]) {
+            return 1090632;
+        } else if ([blockHashString isEqualToString:@"0000000000000018e62a4938de3428ddaa26e381139489ce1a618ed06d432a38"]) {
+            return 1092024;
+        } else if ([blockHashString isEqualToString:@"000000000000000790bd24e65daaddbaeafdb4383c95d64c0d055e98625746bc"]) {
+            return 1091832;
+        } else if ([blockHashString isEqualToString:@"0000000000000005f28a2cb959b316cd4b43bd29819ea07c27ec96a7d5e18ab7"]) {
+            return 1092408;
+        } else if ([blockHashString isEqualToString:@"00000000000000165a4ace8de9e7a4ba0cddced3434c7badc863ff9e237f0c8a"]) {
+            return 1091088;
+        } else if ([blockHashString isEqualToString:@"00000000000000230ec901e4d372a93c712d972727786a229e98d12694be9d34"]) {
+            return 1090416;
+        } else if ([blockHashString isEqualToString:@"000000000000000bf51de942eb8610caaa55a7f5a0e5ca806c3b631948c5cdcc"]) {
+            return 1092336;
+        } else if ([blockHashString isEqualToString:@"000000000000002323d7ba466a9b671d335c3b2bf630d08f078e4adee735e13a"]) {
+            return 1090464;
+        } else if ([blockHashString isEqualToString:@"0000000000000019db2ad91ab0f67d90df222ce4057f343e176f8786865bcda9"]) {
+            return 1091568;
+        } else if ([blockHashString isEqualToString:@"0000000000000004a38d87062bf37ef978d1fc8718f03d9222c8aa7aa8a4470f"]) {
+            return 1090896;
+        } else if ([blockHashString isEqualToString:@"0000000000000022c909de83351791e0b69d4b4be34b25c8d54c8be3e8708c87"]) {
+            return 1091592;
+        } else if ([blockHashString isEqualToString:@"0000000000000008f3dffcf342279c8b50e49c47e191d3df453fdcd816aced46"]) {
+            return 1092792;
+        } else if ([blockHashString isEqualToString:@"000000000000001d1d7f1b88d6518e6248616c50e4c0abaee6116a72bc998679"]) {
+            return 1092048;
+        } else if ([blockHashString isEqualToString:@"0000000000000020de87be47c5c10a50c9edfd669a586f47f44fa22ae0b2610a"]) {
+            return 1090344;
+        } else if ([blockHashString isEqualToString:@"0000000000000014d1d8d12dd5ff570b06e76e0bbf55d762a94d13b1fe66a922"]) {
+            return 1091760;
+        } else if ([blockHashString isEqualToString:@"000000000000000962d0d319a96d972215f303c588bf50449904f9a1a8cbc7c2"]) {
+            return 1089792;
+        } else if ([blockHashString isEqualToString:@"00000000000000171c58d1d0dbae71973530aa533e4cd9cb2d2597ec30d9b129"]) {
+            return 1091352;
+        } else if ([blockHashString isEqualToString:@"0000000000000004acf649896a7b22783810d5913b31922e3ea224dd4530b717"]) {
+            return 1092144;
+        } else if ([blockHashString isEqualToString:@"0000000000000013479b902955f8ba2d4ce2eb47a7f9f8f1fe477ec4b405bddd"]) {
+            return 1090512;
+        } else if ([blockHashString isEqualToString:@"000000000000001be0bbdb6b326c98ac8a3e181a2a641379c7d4308242bee90b"]) {
+            return 1092216;
+        } else if ([blockHashString isEqualToString:@"000000000000001c09a68353536ccb24b51b74c642d5b6e7e385cff2debc4e64"]) {
+            return 1092120;
+        } else if ([blockHashString isEqualToString:@"0000000000000013974ed8e13d0a50f298be0f2b685bfcfd8896172db6d4a145"]) {
+            return 1090824;
+        } else if ([blockHashString isEqualToString:@"000000000000001dbcd3a23c131fedde3acd6da89275e7f9fcae03f3107da861"]) {
+            return 1092888;
+        } else if ([blockHashString isEqualToString:@"000000000000000a8812d75979aac7c08ac69179037409fd7a368372edd05d23"]) {
+            return 1090872;
+        } else if ([blockHashString isEqualToString:@"000000000000001fafca43cabdb0c6385daffa8a039f3b44b9b17271d7106704"]) {
+            return 1090800;
+        } else if ([blockHashString isEqualToString:@"0000000000000006e9693e34fc55452c82328f31e069df740655b55dd07cb58b"]) {
+            return 1091016;
+        } else if ([blockHashString isEqualToString:@"0000000000000010e7c080046121900cee1c7de7fe063c7d81405293a9764733"]) {
+            return 1092384;
+        } else if ([blockHashString isEqualToString:@"0000000000000022ef41cb09a617d87c12c6841eea47310ae6a4d1e2702bb3d3"]) {
+            return 1090752;
+        } else if ([blockHashString isEqualToString:@"0000000000000017705efcdaefd6a1856becc0b915de6fdccdc9e149c1ff0e8f"]) {
+            return 1091856;
+        } else if ([blockHashString isEqualToString:@"0000000000000000265a9516f35dd85d32d103d4c3b95e81969a03295f46cf0c"]) {
+            return 1091952;
+        } else if ([blockHashString isEqualToString:@"0000000000000002dfd994409f5b6185573ce22eae90b4a1c37003428071f0a8"]) {
+            return 1090968;
+        } else if ([blockHashString isEqualToString:@"000000000000001b8d6aaa56571d987ee50fa2e2e9a28a8482de7a4b52308f25"]) {
+            return 1091136;
+        } else if ([blockHashString isEqualToString:@"0000000000000020635160b49a18336031af2d25d9a37ea211d514f196220e9d"]) {
+            return 1090440;
+        } else if ([blockHashString isEqualToString:@"000000000000001bfb2ac93ebe89d9831995462f965597efcc9008b2d90fd29f"]) {
+            return 1091784;
+        } else if ([blockHashString isEqualToString:@"000000000000000028515b4c442c74e2af945f08ed3b66f05847022cb25bb2ec"]) {
+            return 1091688;
+        } else if ([blockHashString isEqualToString:@"000000000000000ed6b9517da9a1df88d03a5904a780aba1200b474dab0e2e4a"]) {
+            return 1090488;
+        } else if ([blockHashString isEqualToString:@"000000000000000b44a550a61f9751601065ff329c54d20eb306b97d163b8f8c"]) {
+            return 1091712;
+        } else if ([blockHashString isEqualToString:@"000000000000001d831888fbd1899967493856c1abf7219e632b8e73f25e0c81"]) {
+            return 1091064;
+        } else if ([blockHashString isEqualToString:@"00000000000000073b62bf732ab8654d27b1296801ab32b7ac630237665162a5"]) {
+            return 1091304;
+        } else if ([blockHashString isEqualToString:@"0000000000000004c0b03207179143f028c07ede20354fab68c731cb02f95fc8"]) {
+            return 1090656;
+        } else if ([blockHashString isEqualToString:@"000000000000000df9d9376b9c32ea640ecfac406b41445bb3a4b0ee6625e572"]) {
+            return 1091040;
+        } else if ([blockHashString isEqualToString:@"00000000000000145c3e1b3bb6f53d5e2dd441ac41c3cfe48a5746c7b168a415"]) {
+            return 1092240;
+        } else if ([blockHashString isEqualToString:@"000000000000000d8bf4cade14e398d69884e991591cb11ee7fec49167e4ff85"]) {
+            return 1092000;
+        } else if ([blockHashString isEqualToString:@"000000000000001d098ef14fa032b33bcfc8e559351be8cd689e03c9678256a9"]) {
+            return 1091472;
+        } else if ([blockHashString isEqualToString:@"0000000000000000c25139a9227273eb7547a1f558e62c545e62aeb236e66259"]) {
+            return 1090584;
+        } else if ([blockHashString isEqualToString:@"0000000000000010785f105cc7c256b5365c597a9212e99beda94c6eff0647c3"]) {
+            return 1091376;
+        } else if ([blockHashString isEqualToString:@"0000000000000000fafe0f7314104d81ab34ebd066601a38e5e914f2b3cefce9"]) {
+            return 1092552;
+        } else if ([blockHashString isEqualToString:@"000000000000000ddbfad338961f2d900d62f1c3b725fbd72052da062704901c"]) {
+            return 1090848;
+        } else if ([blockHashString isEqualToString:@"000000000000000e5d9359857518aaf3685bf8af55c675cf0d17a45383ca297f"]) {
+            return 1091520;
+        } else if ([blockHashString isEqualToString:@"0000000000000012b444de0be31d695b411dcc6645a3723932cabc6b9164531f"]) {
+            return 1092916;
+        } else if ([blockHashString isEqualToString:@"000000000000001c414007419fc22a2401b07ab430bf433c8cdfb8877fb6b5b7"]) {
+            return 1092672;
+        } else if ([blockHashString isEqualToString:@"000000000000000355efb9a350cc76c7624bf42abea845770a5c3adc2c5b93f4"]) {
+            return 1092576;
+        } else if ([blockHashString isEqualToString:@"000000000000000f327555478a9d580318cb6e15db059642eff84797bf133196"]) {
+            return 1091808;
+        } else if ([blockHashString isEqualToString:@"0000000000000003b3ea97e688f1bec5f95930950b54c1bb01bf67b029739696"]) {
+            return 1091640;
+        } else if ([blockHashString isEqualToString:@"000000000000001a0d96dbc0cac26e445454dd2506702eeee7df6ff35bdcf60e"]) {
+            return 1091544;
+        } else if ([blockHashString isEqualToString:@"000000000000001aac60fafe05124672b19a1c3727dc17f106f11295db1053a3"]) {
+            return 1092288;
+        } else if ([blockHashString isEqualToString:@"000000000000000e37bca1e08dff47ef051199f24e9104dad85014c323464069"]) {
+            return 1091208;
+        } else if ([blockHashString isEqualToString:@"0000000000000013dd0059e5f701a39c0903e7f16d393f55fc896422139a4291"]) {
+            return 1092768;
+        } else if ([blockHashString isEqualToString:@"000000000000000f4c8d5bdf6b89435d3a9789fce401286eb8f3f6eeb84f2a1d"]) {
+            return 1091160;
+        } else if ([blockHashString isEqualToString:@"000000000000001414ff2dd44ee4c01c02e6867228b4e1ff490f635f7de949a5"]) {
+            return 1091232;
+        } else if ([blockHashString isEqualToString:@"0000000000000013b130038d0599cb5a65165fc03b1b38fe2dd1a3bad6e253df"]) {
+            return 1092312;
+        } else if ([blockHashString isEqualToString:@"00000000000000082cb9d6d169dc625f64a6a24756ba796eaab131a998b42910"]) {
+            return 1091928;
+        } else if ([blockHashString isEqualToString:@"0000000000000001e358bce8df79c24def4787bf0bf7af25c040342fae4a18ce"]) {
+            return 1091880;
+        }
+        NSAssert(NO, @"All values must be here");
+        return UINT32_MAX;
+    } completion:^(BOOL success, NSDictionary * masternodeLists) {
+        XCTAssert(masternodeLists.count == 29, @"There should be 29 masternode lists");
+        dispatch_semaphore_signal(sem);
+    }];
+    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+}
+
+-(void)testMNLChaining {
+    DSChain * chain = [DSChain mainnet];
+    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+    __block NSManagedObjectContext * context = [NSManagedObjectContext chainContext];
+    __block BOOL useCheckpointMasternodeLists = [[DSOptionsManager sharedInstance] useCheckpointMasternodeLists];
+    [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:NO];
+    [chain chainManager];
+    [context performBlockAndWait:^{
+        DSChainEntity * chainEntity = [chain chainEntityInContext:context];
+        [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
+        [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
+        [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
+    }];
+    [chain.chainManager.masternodeManager reloadMasternodeLists];
+    NSArray * files = @[@"MNL_0_1093824", @"MNL_1093824_1094400", @"MNL_1094400_1094976"];
+    
+    
+    [self loadMasternodeListsForFiles:files baseMasternodeList:nil withSave:NO withReload:NO onChain:chain inContext:context blockHeightLookup:^uint32_t(UInt256 blockHash) {
+        NSString * blockHashString = uint256_reverse_hex(blockHash);
+        if ([blockHashString isEqualToString:@"0000000000000010a7cd881eeb0d4252bbb8661b1c9f5eb4addebb7e7e726b88"]) {
+            return 1093752;
+        } else if ([blockHashString isEqualToString:@"000000000000000fa538169fbfd621d942d113ae6971b2fe9cffe02a5c9a25ae"]) {
+            return 1094808;
+        } else if ([blockHashString isEqualToString:@"00000000000000094fb5e8f10f035d1c96c7cab5aec44ada91ea535d8778e9ef"]) {
+            return 1093704;
+        } else if ([blockHashString isEqualToString:@"000000000000000e78706ecf6d744a2edc5143d3325ade22940dc14ccfd3f938"]) {
+            return 1094400;
+        } else if ([blockHashString isEqualToString:@"000000000000001583b7dcc1e3c670561e3f3dbd83cc74d2414f3dc839596f27"]) {
+            return 1094736;
+        } else if ([blockHashString isEqualToString:@"0000000000000009568e505b6d4b9b4330d0b4fe34c8602d2d45914aed6924f8"]) {
+            return 1093536;
+        } else if ([blockHashString isEqualToString:@"000000000000000071ae88cee71d08d320ce5091eb3877edb6cef554d6987d7f"]) {
+            return 1094352;
+        } else if ([blockHashString isEqualToString:@"000000000000001ebe8c3542f3a0f65a46d5f5ab4e380393bdbfda68d93221d7"]) {
+            return 1094640;
+        } else if ([blockHashString isEqualToString:@"000000000000001233f0f0963d1214b7cff3e091f56d7469f2ceed92fd0b1913"]) {
+            return 1093272;
+        } else if ([blockHashString isEqualToString:@"000000000000002283cf305dbfc4c37ec890d704eb2d267c9f5a418b0a171bb6"]) {
+            return 1093920;
+        } else if ([blockHashString isEqualToString:@"00000000000000212441a8ef2495d21b0b7c09e13339dbc34d98c478cc51f8e2"]) {
+            return 1092096;
+        } else if ([blockHashString isEqualToString:@"000000000000000c61002a6ef01e82aced8d5b394ae8faa1143fd893abfdd916"]) {
+            return 1094232;
+        } else if ([blockHashString isEqualToString:@"0000000000000003ba06634076289dff42839e247ae84ce1aab47ad902ae4705"]) {
+            return 1093416;
+        } else if ([blockHashString isEqualToString:@"000000000000000f9f34750629b5a2382268e8b6753afbd7c62735b82c452737"]) {
+            return 1094040;
+        } else if ([blockHashString isEqualToString:@"000000000000001cc1d7e03e3d37a6f0f62a8ac92a5c2947719140976559d91d"]) {
+            return 1094280;
+        } else if ([blockHashString isEqualToString:@"0000000000000027a2600911d015441d46e463f0ec693a72b8efb5dd196ff6a1"]) {
+            return 1093320;
+        } else if ([blockHashString isEqualToString:@"0000000000000016a94810e42937ff962a19bb3535b727088cb128c16e28475d"]) {
+            return 1093800;
+        } else if ([blockHashString isEqualToString:@"000000000000000dd26c943b68653b95a9bfc203e80c0050f6569156fe1fc94b"]) {
+            return 1093296;
+        } else if ([blockHashString isEqualToString:@"00000000000000144fabe7b89452957f62635a05c18a37fe9e276b1a623d3251"]) {
+            return 1094496;
+        } else if ([blockHashString isEqualToString:@"000000000000002406ca94753d91bae04ff66d83fbe7ff0e36649d44a09e7c34"]) {
+            return 1094304;
+        } else if ([blockHashString isEqualToString:@"00000000000000196db62f3ac00a290c0de3606d4bf58c550154c358f9d2ee45"]) {
+            return 1094136;
+        } else if ([blockHashString isEqualToString:@"000000000000001613deacecc4a85816e91ce006dee30b352f9ad5c245fad9cc"]) {
+            return 1094448;
+        } else if ([blockHashString isEqualToString:@"0000000000000002fa90f6d204488cb8386938173ed5eab5ab3df178866b058a"]) {
+            return 1094088;
+        } else if ([blockHashString isEqualToString:@"00000000000000019ec163300f2acd0aee00e63f162713096c95a7e9d47dd50f"]) {
+            return 1094208;
+        } else if ([blockHashString isEqualToString:@"00000000000000021eb17ff23549c328301f5df228d773c7d74ff5aae2baa466"]) {
+            return 1093968;
+        } else if ([blockHashString isEqualToString:@"00000000000000025ea597f951845fd9f759d8dd7deb381b8c48bfde0a3c2d28"]) {
+            return 1094328;
+        } else if ([blockHashString isEqualToString:@"000000000000000e5458bc47813b49b23d3a3f015bd74628e1950bc51086891b"]) {
+            return 1094976;
+        } else if ([blockHashString isEqualToString:@"00000000000000145abc88f4a079a42a16768c49381f17572c5ab6099170a09e"]) {
+            return 1094568;
+        } else if ([blockHashString isEqualToString:@"000000000000001463f239c0d3e3b0f466a06ae25d4eb0e81c5799b9ee8192c2"]) {
+            return 1093680;
+        } else if ([blockHashString isEqualToString:@"00000000000000084155d222800a8ea99afe4431dd0161cc888c2ebe177e19db"]) {
+            return 1093656;
+        } else if ([blockHashString isEqualToString:@"000000000000000dcdb06cced0211b9ca62b2947a2bd6e9830340f2c37c64d52"]) {
+            return 1093824;
+        } else if ([blockHashString isEqualToString:@"000000000000000fabcff485b9572368c3a06d985a1e4f77c53d735dc1af8507"]) {
+            return 1094112;
+        } else if ([blockHashString isEqualToString:@"000000000000000dfcb3a329719799a15e19c0be15ebd2338b2220c9bb2fd7af"]) {
+            return 1093344;
+        } else if ([blockHashString isEqualToString:@"000000000000000ff47ccc841c8ef3dfc6dc419b677c0e3399af6badfac4353d"]) {
+            return 1094832;
+        } else if ([blockHashString isEqualToString:@"000000000000000e1f5cb67880ca2ac7c4e93f9636a7117880b1e46702078b01"]) {
+            return 1094592;
+        } else if ([blockHashString isEqualToString:@"000000000000001b0b31e0ec23c1ac6329de09c066720ecf166c474b56231025"]) {
+            return 1093440;
+        } else if ([blockHashString isEqualToString:@"000000000000001a0228d6a5d3f5542eca7395cb91c0d028c8c988051e653fa7"]) {
+            return 1094520;
+        } else if ([blockHashString isEqualToString:@"000000000000002690fa0e9e0358d1088b995f947039fef48e851df2cc8a7c1a"]) {
+            return 1094616;
+        } else if ([blockHashString isEqualToString:@"0000000000000018a586b0d0ec8d74ad60381db5ed6449e4f86e63d28d131782"]) {
+            return 1093464;
+        } else if ([blockHashString isEqualToString:@"000000000000000aff92eefb5543f3afb2f145dd75ef504b2877013abe53a6b5"]) {
+            return 1094904;
+        } else if ([blockHashString isEqualToString:@"000000000000002344ae9bb8432a569ed0c949d86133799baa42d22336cbce2f"]) {
+            return 1094472;
+        } else if ([blockHashString isEqualToString:@"0000000000000000615083ccea9f8d36dc9ca0129ee8932892989e4dee510067"]) {
+            return 1093512;
+        } else if ([blockHashString isEqualToString:@"0000000000000021762a00c91394db56033e60c5031cd721d52767272ee252cc"]) {
+            return 1094256;
+        } else if ([blockHashString isEqualToString:@"00000000000000027ba127cd55d822250977b5d94148c71336745fe8899d886a"]) {
+            return 1093632;
+        } else if ([blockHashString isEqualToString:@"000000000000000edc8ad776fb0f9e407afae36237d2d8410b8f12424e892a6b"]) {
+            return 1094016;
+        } else if ([blockHashString isEqualToString:@"000000000000001577e4d463c654003d03833472a0de98922c98db18c33f92ca"]) {
+            return 1093896;
+        } else if ([blockHashString isEqualToString:@"0000000000000024cdf66dd7b20dd03711b2961b82c627557dfbb9acbba620b9"]) {
+            return 1093776;
+        } else if ([blockHashString isEqualToString:@"000000000000001c12e0007f8ec718282fff6cd63519a4fdc8cca698216def72"]) {
+            return 1094928;
+        } else if ([blockHashString isEqualToString:@"000000000000001c0b637ceb8879087a960cde2cd6b179041df416cf2b5bd731"]) {
+            return 1093728;
+        } else if ([blockHashString isEqualToString:@"0000000000000012d9cd9e407b037e64d33693a654eae85e54a2651d66dd5727"]) {
+            return 1093608;
+        } else if ([blockHashString isEqualToString:@"0000000000000020f1c98f7df0d89d369c9176644776b151ba8c230683b7d68a"]) {
+            return 1094064;
+        } else if ([blockHashString isEqualToString:@"0000000000000000983db6957230406f73a25d9ff929406db3607c62ba064dd3"]) {
+            return 1094544;
+        } else if ([blockHashString isEqualToString:@"0000000000000000ef3b052a6b6cf46fc53e7d700b35a640bea555537c963fe7"]) {
+            return 1094856;
+        } else if ([blockHashString isEqualToString:@"000000000000001bac84d4f9f18082b7f9a838a6b0a3c4d8dbfb9e8f54163432"]) {
+            return 1093584;
+        } else if ([blockHashString isEqualToString:@"000000000000000e5d9359857518aaf3685bf8af55c675cf0d17a45383ca297f"]) {
+            return 1091520;
+        } else if ([blockHashString isEqualToString:@"0000000000000017940e1aeb3bbf23165dabd152a8a8885c8ddf50e614a669d9"]) {
+            return 1094184;
+        } else if ([blockHashString isEqualToString:@"000000000000001c414007419fc22a2401b07ab430bf433c8cdfb8877fb6b5b7"]) {
+            return 1092672;
+        } else if ([blockHashString isEqualToString:@"000000000000001a304f460bd6c35a29a6ba19aba6a7c37818d8870d1b90a757"]) {
+            return 1094376;
+        } else if ([blockHashString isEqualToString:@"000000000000000772dfb8deff195bb86c24c825bd45155fa6abe7e2c824373f"]) {
+            return 1094784;
+        } else if ([blockHashString isEqualToString:@"000000000000001bf5e83d6cf96fce19773074ae4a7bcd1956d59a9e414a0431"]) {
+            return 1094712;
+        } else if ([blockHashString isEqualToString:@"000000000000001aa62cfba8db7fffc42287e3bc9c3a67f07c38369f04b4255d"]) {
+            return 1094952;
+        } else if ([blockHashString isEqualToString:@"0000000000000002c2037e0bdf7678cc1d2f307998d18b20f6799e2c04b861e1"]) {
+            return 1093848;
+        } else if ([blockHashString isEqualToString:@"000000000000001da5926d2dc7cd624bc9576d4e98fcbf2d3cda45c47695f566"]) {
+            return 1094424;
+        } else if ([blockHashString isEqualToString:@"000000000000000d5cadf1de431d8adda171a72296ded5c60a9f75d050cd9528"]) {
+            return 1093248;
+        } else if ([blockHashString isEqualToString:@"00000000000000171bc403369b98ed54ba716c532231d51740316ede6d3bff3a"]) {
+            return 1093392;
+        } else if ([blockHashString isEqualToString:@"000000000000001171446990f2fc89a7ac9e59e8bf33368a7151a0b9a3a3e8ae"]) {
+            return 1093992;
+        } else if ([blockHashString isEqualToString:@"000000000000001b7b535dfeac3eb2cfb481cf9c1fcda57541449962edc3ad01"]) {
+            return 1092960;
+        } else if ([blockHashString isEqualToString:@"000000000000001822bf109723eff5f406422b54736b2384d9d0c69e97276a88"]) {
+            return 1093488;
+        } else if ([blockHashString isEqualToString:@"000000000000002cef7980733f71f6b588a6d03a52103c637dca1ec3ae62296c"]) {
+            return 1093872;
+        } else if ([blockHashString isEqualToString:@"0000000000000016d802959ea0c6d903b4e2c8241f3cc670e002d3ae51347749"]) {
+            return 1094160;
+        } else if ([blockHashString isEqualToString:@"000000000000001e1ca2cf3ca2369e9d7efc4446214c13bf1c2c1970abb0437b"]) {
+            return 1094880;
+        } else if ([blockHashString isEqualToString:@"000000000000000cd0a2f51c3926225af4c8da1a95908ede547d6f6dd84fe72b"]) {
+            return 1094664;
+        } else if ([blockHashString isEqualToString:@"00000000000000132a6410a26e6825470a33cbd8a14d8ef25e569c41c9413f5f"]) {
+            return 1094688;
+        } else if ([blockHashString isEqualToString:@"00000000000000062d649600eb61e4e5167aba3a2fb782920a5cea1955c2689a"]) {
+            return 1093560;
+        } else if ([blockHashString isEqualToString:@"00000000000000260b705a14af12641139fa368795d954d5878b94881edfa455"]) {
+            return 1093368;
+        } else if ([blockHashString isEqualToString:@"000000000000000117e4a3c462adac43c1e34470558241ba5f4a08f32cee9217"]) {
+            return 1094760;
+        }
+        NSAssert(NO, @"All values must be here");
+        return UINT32_MAX;
+    } completion:^(BOOL success1, NSDictionary * masternodeLists1) {
+        uint32_t(^blockHeightLookup)(UInt256 blockHash) = ^uint32_t(UInt256 blockHash) {
+            NSString * blockHashString = uint256_reverse_hex(blockHash);
+            if ([blockHashString isEqualToString:@"000000000000001c12e0007f8ec718282fff6cd63519a4fdc8cca698216def72"]) {
+                return 1094928;
+            } else if ([blockHashString isEqualToString:@"000000000000000e5458bc47813b49b23d3a3f015bd74628e1950bc51086891b"]) {
+                return 1094976;
+            } else if ([blockHashString isEqualToString:@"000000000000001a0228d6a5d3f5542eca7395cb91c0d028c8c988051e653fa7"]) {
+                return 1094520;
+            } else if ([blockHashString isEqualToString:@"000000000000000772dfb8deff195bb86c24c825bd45155fa6abe7e2c824373f"]) {
+                return 1094784;
+            } else if ([blockHashString isEqualToString:@"0000000000000000ef3b052a6b6cf46fc53e7d700b35a640bea555537c963fe7"]) {
+                return 1094856;
+            } else if ([blockHashString isEqualToString:@"00000000000000144fabe7b89452957f62635a05c18a37fe9e276b1a623d3251"]) {
+                return 1094496;
+            } else if ([blockHashString isEqualToString:@"0000000000000000983db6957230406f73a25d9ff929406db3607c62ba064dd3"]) {
+                return 1094544;
+            } else if ([blockHashString isEqualToString:@"000000000000000e78706ecf6d744a2edc5143d3325ade22940dc14ccfd3f938"]) {
+                return 1094400;
+            } else if ([blockHashString isEqualToString:@"000000000000001613deacecc4a85816e91ce006dee30b352f9ad5c245fad9cc"]) {
+                return 1094448;
+            } else if ([blockHashString isEqualToString:@"000000000000001583b7dcc1e3c670561e3f3dbd83cc74d2414f3dc839596f27"]) {
+                return 1094736;
+            } else if ([blockHashString isEqualToString:@"000000000000000fabcff485b9572368c3a06d985a1e4f77c53d735dc1af8507"]) {
+                return 1094112;
+            } else if ([blockHashString isEqualToString:@"000000000000002690fa0e9e0358d1088b995f947039fef48e851df2cc8a7c1a"]) {
+                return 1094616;
+            } else if ([blockHashString isEqualToString:@"000000000000000e1f5cb67880ca2ac7c4e93f9636a7117880b1e46702078b01"]) {
+                return 1094592;
+            } else if ([blockHashString isEqualToString:@"000000000000001bf5e83d6cf96fce19773074ae4a7bcd1956d59a9e414a0431"]) {
+                return 1094712;
+            } else if ([blockHashString isEqualToString:@"000000000000002344ae9bb8432a569ed0c949d86133799baa42d22336cbce2f"]) {
+                return 1094472;
+            } else if ([blockHashString isEqualToString:@"000000000000000ff47ccc841c8ef3dfc6dc419b677c0e3399af6badfac4353d"]) {
+                return 1094832;
+            } else if ([blockHashString isEqualToString:@"000000000000000cd0a2f51c3926225af4c8da1a95908ede547d6f6dd84fe72b"]) {
+                return 1094664;
+            } else if ([blockHashString isEqualToString:@"000000000000001e1ca2cf3ca2369e9d7efc4446214c13bf1c2c1970abb0437b"]) {
+                return 1094880;
+            } else if ([blockHashString isEqualToString:@"000000000000001da5926d2dc7cd624bc9576d4e98fcbf2d3cda45c47695f566"]) {
+                return 1094424;
+            } else if ([blockHashString isEqualToString:@"00000000000000145abc88f4a079a42a16768c49381f17572c5ab6099170a09e"]) {
+                return 1094568;
+            } else if ([blockHashString isEqualToString:@"000000000000000117e4a3c462adac43c1e34470558241ba5f4a08f32cee9217"]) {
+                return 1094760;
+            } else if ([blockHashString isEqualToString:@"000000000000000fa538169fbfd621d942d113ae6971b2fe9cffe02a5c9a25ae"]) {
+                return 1094808;
+            } else if ([blockHashString isEqualToString:@"000000000000000dcdb06cced0211b9ca62b2947a2bd6e9830340f2c37c64d52"]) {
+                return 1093824;
+            } else if ([blockHashString isEqualToString:@"000000000000000d5cadf1de431d8adda171a72296ded5c60a9f75d050cd9528"]) {
+                return 1093248;
+            } else if ([blockHashString isEqualToString:@"000000000000001aa62cfba8db7fffc42287e3bc9c3a67f07c38369f04b4255d"]) {
+                return 1094952;
+            } else if ([blockHashString isEqualToString:@"000000000000001ebe8c3542f3a0f65a46d5f5ab4e380393bdbfda68d93221d7"]) {
+                return 1094640;
+            } else if ([blockHashString isEqualToString:@"000000000000001c414007419fc22a2401b07ab430bf433c8cdfb8877fb6b5b7"]) {
+                return 1092672;
+            } else if ([blockHashString isEqualToString:@"00000000000000132a6410a26e6825470a33cbd8a14d8ef25e569c41c9413f5f"]) {
+                return 1094688;
+            } else if ([blockHashString isEqualToString:@"000000000000000aff92eefb5543f3afb2f145dd75ef504b2877013abe53a6b5"]) {
+                return 1094904;
+            }
+            NSAssert(NO, @"All values must be here");
+            return UINT32_MAX;
+        };
+        [self loadMasternodeListsForFiles:@[@"MNL_0_1094976"] baseMasternodeList:nil withSave:NO withReload:NO onChain:chain inContext:context  blockHeightLookup:blockHeightLookup completion:^(BOOL success2, NSDictionary * masternodeLists2) {
+            NSData * block1094976Hash = [[masternodeLists2 allKeys] firstObject];
+            DSMasternodeList * chainedMasternodeList = [masternodeLists1 objectForKey:block1094976Hash];
+            DSMasternodeList * nonChainedMasternodeList = [masternodeLists2 objectForKey:block1094976Hash];
+            if (!uint256_eq([chainedMasternodeList masternodeMerkleRoot], [nonChainedMasternodeList calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup])) {
+                NSDictionary * comparisonResult = [chainedMasternodeList compare:nonChainedMasternodeList usingOurString:@"chained" usingTheirString:@"non chained" blockHeightLookup:blockHeightLookup];
+                NSLog(@"%@",comparisonResult);
+            }
+            XCTAssert(uint256_eq([chainedMasternodeList masternodeMerkleRoot], [nonChainedMasternodeList calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]),@"These should be equal");
+            
+            [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:useCheckpointMasternodeLists];
+            dispatch_semaphore_signal(sem);
+        }];
+    }];
+    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+}
+
+-(void)testMNLDeepChaining {
+    DSChain * chain = [DSChain mainnet];
+    __block NSManagedObjectContext * context = [NSManagedObjectContext chainContext];
+    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+    __block BOOL useCheckpointMasternodeLists = [[DSOptionsManager sharedInstance] useCheckpointMasternodeLists];
+    [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:NO];
+    [chain chainManager];
+    [context performBlockAndWait:^{
+        DSChainEntity * chainEntity = [chain chainEntityInContext:context];
+        [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
+        [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
+        [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
+    }];
+    [chain.chainManager.masternodeManager reloadMasternodeLists];
+    NSArray * files = @[@"MNL_0_1093824", @"MNL_1093824_1094400", @"MNL_1094400_1094976", @"MNL_1094976_1095264", @"MNL_1095264_1095432", @"MNL_1095432_1095456", @"MNL_1095456_1095480", @"MNL_1095480_1095504", @"MNL_1095504_1095528", @"MNL_1095528_1095552", @"MNL_1095552_1095576", @"MNL_1095576_1095600", @"MNL_1095600_1095624", @"MNL_1095624_1095648", @"MNL_1095648_1095672", @"MNL_1095672_1095696", @"MNL_1095696_1095720"];
+    
+    
+    [self loadMasternodeListsForFiles:files baseMasternodeList:nil withSave:NO withReload:NO onChain:chain inContext:context blockHeightLookup:^uint32_t(UInt256 blockHash) {
+        NSString * blockHashString = uint256_reverse_hex(blockHash);
+        if ([blockHashString isEqualToString:@"000000000000002283cf305dbfc4c37ec890d704eb2d267c9f5a418b0a171bb6"]) {
+            return 1093920;
+        } else if ([blockHashString isEqualToString:@"0000000000000003ba06634076289dff42839e247ae84ce1aab47ad902ae4705"]) {
+            return 1093416;
+        } else if ([blockHashString isEqualToString:@"0000000000000000983db6957230406f73a25d9ff929406db3607c62ba064dd3"]) {
+            return 1094544;
+        } else if ([blockHashString isEqualToString:@"00000000000000063cea204f55fbb2eb56816eacf6134bf338fb6f7d19586e68"]) {
+            return 1095072;
+        } else if ([blockHashString isEqualToString:@"0000000000000003b4e065db18ab97a5556bed3b4a1255f8da813e199a512755"]) {
+            return 1095264;
+        } else if ([blockHashString isEqualToString:@"00000000000000027ba127cd55d822250977b5d94148c71336745fe8899d886a"]) {
+            return 1093632;
+        } else if ([blockHashString isEqualToString:@"00000000000000129ebb2ed2350c8a39ee5c1cecb81baac16dc1e44a199c634a"]) {
+            return 1095216;
+        } else if ([blockHashString isEqualToString:@"00000000000000021eb17ff23549c328301f5df228d773c7d74ff5aae2baa466"]) {
+            return 1093968;
+        } else if ([blockHashString isEqualToString:@"000000000000002406ca94753d91bae04ff66d83fbe7ff0e36649d44a09e7c34"]) {
+            return 1094304;
+        } else if ([blockHashString isEqualToString:@"00000000000000196db62f3ac00a290c0de3606d4bf58c550154c358f9d2ee45"]) {
+            return 1094136;
+        } else if ([blockHashString isEqualToString:@"0000000000000020f1c98f7df0d89d369c9176644776b151ba8c230683b7d68a"]) {
+            return 1094064;
+        } else if ([blockHashString isEqualToString:@"000000000000001da5926d2dc7cd624bc9576d4e98fcbf2d3cda45c47695f566"]) {
+            return 1094424;
+        } else if ([blockHashString isEqualToString:@"000000000000000fa538169fbfd621d942d113ae6971b2fe9cffe02a5c9a25ae"]) {
+            return 1094808;
+        } else if ([blockHashString isEqualToString:@"0000000000000000b9cb58ca605b36d9604fa8e791125e4fe81d329acec4b1a8"]) {
+            return 1095600;
+        } else if ([blockHashString isEqualToString:@"000000000000001a304f460bd6c35a29a6ba19aba6a7c37818d8870d1b90a757"]) {
+            return 1094376;
+        } else if ([blockHashString isEqualToString:@"00000000000000229e6a8a83c7e8c34a6c7ceb105a1ad80c7e7b4f666363b1ba"]) {
+            return 1095168;
+        } else if ([blockHashString isEqualToString:@"0000000000000000ef3b052a6b6cf46fc53e7d700b35a640bea555537c963fe7"]) {
+            return 1094856;
+        } else if ([blockHashString isEqualToString:@"000000000000000d0a9b48693d41fc615193591b158e2ec91de40875514b370c"]) {
+            return 1095024;
+        } else if ([blockHashString isEqualToString:@"0000000000000006e0f176aa2fb71013645fae8f9635c41d79aba03abf2f968b"]) {
+            return 1095696;
+        } else if ([blockHashString isEqualToString:@"000000000000001ebe8c3542f3a0f65a46d5f5ab4e380393bdbfda68d93221d7"]) {
+            return 1094640;
+        } else if ([blockHashString isEqualToString:@"0000000000000003c1e5392b90ce0083fd803797ce039f5b5e93b8581a9cd110"]) {
+            return 1095312;
+        } else if ([blockHashString isEqualToString:@"000000000000001bf5e83d6cf96fce19773074ae4a7bcd1956d59a9e414a0431"]) {
+            return 1094712;
+        } else if ([blockHashString isEqualToString:@"00000000000000020599bb1afc06a0e03f5333d7edf91bf2b038c7b2e9fb4dcb"]) {
+            return 1095648;
+        } else if ([blockHashString isEqualToString:@"00000000000000132a6410a26e6825470a33cbd8a14d8ef25e569c41c9413f5f"]) {
+            return 1094688;
+        } else if ([blockHashString isEqualToString:@"0000000000000016d802959ea0c6d903b4e2c8241f3cc670e002d3ae51347749"]) {
+            return 1094160;
+        } else if ([blockHashString isEqualToString:@"000000000000001a1d7a8959d08fae46d1d77e380f643501045c9619b07cdb7d"]) {
+            return 1095120;
+        } else if ([blockHashString isEqualToString:@"0000000000000002c2037e0bdf7678cc1d2f307998d18b20f6799e2c04b861e1"]) {
+            return 1093848;
+        } else if ([blockHashString isEqualToString:@"0000000000000018a586b0d0ec8d74ad60381db5ed6449e4f86e63d28d131782"]) {
+            return 1093464;
+        } else if ([blockHashString isEqualToString:@"00000000000000212441a8ef2495d21b0b7c09e13339dbc34d98c478cc51f8e2"]) {
+            return 1092096;
+        } else if ([blockHashString isEqualToString:@"000000000000000117e4a3c462adac43c1e34470558241ba5f4a08f32cee9217"]) {
+            return 1094760;
+        } else if ([blockHashString isEqualToString:@"0000000000000002fa90f6d204488cb8386938173ed5eab5ab3df178866b058a"]) {
+            return 1094088;
+        } else if ([blockHashString isEqualToString:@"00000000000000084155d222800a8ea99afe4431dd0161cc888c2ebe177e19db"]) {
+            return 1093656;
+        } else if ([blockHashString isEqualToString:@"0000000000000000615083ccea9f8d36dc9ca0129ee8932892989e4dee510067"]) {
+            return 1093512;
+        } else if ([blockHashString isEqualToString:@"0000000000000027a2600911d015441d46e463f0ec693a72b8efb5dd196ff6a1"]) {
+            return 1093320;
+        } else if ([blockHashString isEqualToString:@"00000000000000019ec163300f2acd0aee00e63f162713096c95a7e9d47dd50f"]) {
+            return 1094208;
+        } else if ([blockHashString isEqualToString:@"0000000000000021762a00c91394db56033e60c5031cd721d52767272ee252cc"]) {
+            return 1094256;
+        } else if ([blockHashString isEqualToString:@"000000000000000dcdb06cced0211b9ca62b2947a2bd6e9830340f2c37c64d52"]) {
+            return 1093824;
+        } else if ([blockHashString isEqualToString:@"000000000000001c12e0007f8ec718282fff6cd63519a4fdc8cca698216def72"]) {
+            return 1094928;
+        } else if ([blockHashString isEqualToString:@"000000000000001bac84d4f9f18082b7f9a838a6b0a3c4d8dbfb9e8f54163432"]) {
+            return 1093584;
+        } else if ([blockHashString isEqualToString:@"000000000000000772dfb8deff195bb86c24c825bd45155fa6abe7e2c824373f"]) {
+            return 1094784;
+        } else if ([blockHashString isEqualToString:@"00000000000000062f90f8928ce313986c71663f868c434cccd455e152b3f2ff"]) {
+            return 1095432;
+        } else if ([blockHashString isEqualToString:@"000000000000000fabcff485b9572368c3a06d985a1e4f77c53d735dc1af8507"]) {
+            return 1094112;
+        } else if ([blockHashString isEqualToString:@"000000000000001171446990f2fc89a7ac9e59e8bf33368a7151a0b9a3a3e8ae"]) {
+            return 1093992;
+        } else if ([blockHashString isEqualToString:@"000000000000001233f0f0963d1214b7cff3e091f56d7469f2ceed92fd0b1913"]) {
+            return 1093272;
+        } else if ([blockHashString isEqualToString:@"00000000000000240088475057f73dd1ec5185a049f9591fe097ea5302fe1377"]) {
+            return 1095720;
+        } else if ([blockHashString isEqualToString:@"00000000000000144fabe7b89452957f62635a05c18a37fe9e276b1a623d3251"]) {
+            return 1094496;
+        } else if ([blockHashString isEqualToString:@"000000000000001aa62cfba8db7fffc42287e3bc9c3a67f07c38369f04b4255d"]) {
+            return 1094952;
+        } else if ([blockHashString isEqualToString:@"000000000000000b90f59f6a103723e4482e1b588a8cd7f122ce27d5d694122d"]) {
+            return 1095504;
+        } else if ([blockHashString isEqualToString:@"000000000000000c89a10adee5dd18be09c10f3997719f448621e3039a7078e2"]) {
+            return 1095096;
+        } else if ([blockHashString isEqualToString:@"0000000000000024cdf66dd7b20dd03711b2961b82c627557dfbb9acbba620b9"]) {
+            return 1093776;
+        } else if ([blockHashString isEqualToString:@"000000000000000f9f34750629b5a2382268e8b6753afbd7c62735b82c452737"]) {
+            return 1094040;
+        } else if ([blockHashString isEqualToString:@"0000000000000012d9cd9e407b037e64d33693a654eae85e54a2651d66dd5727"]) {
+            return 1093608;
+        } else if ([blockHashString isEqualToString:@"000000000000001b7b535dfeac3eb2cfb481cf9c1fcda57541449962edc3ad01"]) {
+            return 1092960;
+        } else if ([blockHashString isEqualToString:@"000000000000000071ae88cee71d08d320ce5091eb3877edb6cef554d6987d7f"]) {
+            return 1094352;
+        } else if ([blockHashString isEqualToString:@"0000000000000003b27df3db412427df13ba3dceb7ac5af75a5a65fa5fd40a7b"]) {
+            return 1095144;
+        } else if ([blockHashString isEqualToString:@"000000000000000ecbdb940a8094d7643859b064fde0ed32096fa493e0cd776c"]) {
+            return 1095048;
+        } else if ([blockHashString isEqualToString:@"000000000000000d5cadf1de431d8adda171a72296ded5c60a9f75d050cd9528"]) {
+            return 1093248;
+        } else if ([blockHashString isEqualToString:@"00000000000000087c9bb2d682436a6f590878b2124cdeba1744ef064065f996"]) {
+            return 1095000;
+        } else if ([blockHashString isEqualToString:@"00000000000000251c624ba68d162f443b9b8662bd41c8cbaf76edf0edf09449"]) {
+            return 1095336;
+        } else if ([blockHashString isEqualToString:@"000000000000001b0b31e0ec23c1ac6329de09c066720ecf166c474b56231025"]) {
+            return 1093440;
+        } else if ([blockHashString isEqualToString:@"000000000000001577e4d463c654003d03833472a0de98922c98db18c33f92ca"]) {
+            return 1093896;
+        } else if ([blockHashString isEqualToString:@"000000000000000ff47ccc841c8ef3dfc6dc419b677c0e3399af6badfac4353d"]) {
+            return 1094832;
+        } else if ([blockHashString isEqualToString:@"000000000000000cd0a2f51c3926225af4c8da1a95908ede547d6f6dd84fe72b"]) {
+            return 1094664;
+        } else if ([blockHashString isEqualToString:@"000000000000000e1f5cb67880ca2ac7c4e93f9636a7117880b1e46702078b01"]) {
+            return 1094592;
+        } else if ([blockHashString isEqualToString:@"00000000000000131b1a04b792ea5f4120014d67261db05da36c3e4cf424ff80"]) {
+            return 1095624;
+        } else if ([blockHashString isEqualToString:@"000000000000001d78e3addb7fb4f4e4de083e10703081d9e5ebbcf94fc94cea"]) {
+            return 1095672;
+        } else if ([blockHashString isEqualToString:@"00000000000000260b705a14af12641139fa368795d954d5878b94881edfa455"]) {
+            return 1093368;
+        } else if ([blockHashString isEqualToString:@"00000000000000010d1ec424a84a28093395309ea79ce7c4b6ab49e08f589750"]) {
+            return 1095456;
+        } else if ([blockHashString isEqualToString:@"000000000000001613deacecc4a85816e91ce006dee30b352f9ad5c245fad9cc"]) {
+            return 1094448;
+        } else if ([blockHashString isEqualToString:@"000000000000002690fa0e9e0358d1088b995f947039fef48e851df2cc8a7c1a"]) {
+            return 1094616;
+        } else if ([blockHashString isEqualToString:@"0000000000000013ddc64c114e35eaa454da80454c7a6abd0fd186bc47b3135c"]) {
+            return 1095384;
+        } else if ([blockHashString isEqualToString:@"000000000000000e78706ecf6d744a2edc5143d3325ade22940dc14ccfd3f938"]) {
+            return 1094400;
+        } else if ([blockHashString isEqualToString:@"000000000000000e5458bc47813b49b23d3a3f015bd74628e1950bc51086891b"]) {
+            return 1094976;
+        } else if ([blockHashString isEqualToString:@"000000000000000dd26c943b68653b95a9bfc203e80c0050f6569156fe1fc94b"]) {
+            return 1093296;
+        } else if ([blockHashString isEqualToString:@"000000000000001e1ca2cf3ca2369e9d7efc4446214c13bf1c2c1970abb0437b"]) {
+            return 1094880;
+        } else if ([blockHashString isEqualToString:@"000000000000002cef7980733f71f6b588a6d03a52103c637dca1ec3ae62296c"]) {
+            return 1093872;
+        } else if ([blockHashString isEqualToString:@"00000000000000062d649600eb61e4e5167aba3a2fb782920a5cea1955c2689a"]) {
+            return 1093560;
+        } else if ([blockHashString isEqualToString:@"000000000000001a0228d6a5d3f5542eca7395cb91c0d028c8c988051e653fa7"]) {
+            return 1094520;
+        } else if ([blockHashString isEqualToString:@"000000000000000dfcb3a329719799a15e19c0be15ebd2338b2220c9bb2fd7af"]) {
+            return 1093344;
+        } else if ([blockHashString isEqualToString:@"000000000000000aff92eefb5543f3afb2f145dd75ef504b2877013abe53a6b5"]) {
+            return 1094904;
+        } else if ([blockHashString isEqualToString:@"00000000000000129dab8cc8befddb59cf7e3c3e249939eb5a00a5394648f1b2"]) {
+            return 1095480;
+        } else if ([blockHashString isEqualToString:@"000000000000000225158fd4c0fad459645bbcd1a93e843fe22b652ab40d7535"]) {
+            return 1095240;
+        } else if ([blockHashString isEqualToString:@"0000000000000010a7cd881eeb0d4252bbb8661b1c9f5eb4addebb7e7e726b88"]) {
+            return 1093752;
+        } else if ([blockHashString isEqualToString:@"000000000000000c61002a6ef01e82aced8d5b394ae8faa1143fd893abfdd916"]) {
+            return 1094232;
+        } else if ([blockHashString isEqualToString:@"000000000000000e5d9359857518aaf3685bf8af55c675cf0d17a45383ca297f"]) {
+            return 1091520;
+        } else if ([blockHashString isEqualToString:@"000000000000001e25b165b99d2e2174d01b8bce715915031bc59d3145a2993c"]) {
+            return 1095288;
+        } else if ([blockHashString isEqualToString:@"0000000000000017940e1aeb3bbf23165dabd152a8a8885c8ddf50e614a669d9"]) {
+            return 1094184;
+        } else if ([blockHashString isEqualToString:@"00000000000000094fb5e8f10f035d1c96c7cab5aec44ada91ea535d8778e9ef"]) {
+            return 1093704;
+        } else if ([blockHashString isEqualToString:@"000000000000001583b7dcc1e3c670561e3f3dbd83cc74d2414f3dc839596f27"]) {
+            return 1094736;
+        } else if ([blockHashString isEqualToString:@"000000000000001822bf109723eff5f406422b54736b2384d9d0c69e97276a88"]) {
+            return 1093488;
+        } else if ([blockHashString isEqualToString:@"000000000000001c414007419fc22a2401b07ab430bf433c8cdfb8877fb6b5b7"]) {
+            return 1092672;
+        } else if ([blockHashString isEqualToString:@"00000000000000025ea597f951845fd9f759d8dd7deb381b8c48bfde0a3c2d28"]) {
+            return 1094328;
+        } else if ([blockHashString isEqualToString:@"000000000000001e91a161d9c3c4d42c108ac1326d746f21646fb5a988cb15da"]) {
+            return 1095360;
+        } else if ([blockHashString isEqualToString:@"000000000000001c0b637ceb8879087a960cde2cd6b179041df416cf2b5bd731"]) {
+            return 1093728;
+        } else if ([blockHashString isEqualToString:@"000000000000000751157bca41a61d1df27a318a59d3234e1cabc4f7c31656e0"]) {
+            return 1095576;
+        } else if ([blockHashString isEqualToString:@"0000000000000024030fa272c48f386c079bfcf655d4b09f0f2d092bb67303bb"]) {
+            return 1095408;
+        } else if ([blockHashString isEqualToString:@"000000000000001463f239c0d3e3b0f466a06ae25d4eb0e81c5799b9ee8192c2"]) {
+            return 1093680;
+        } else if ([blockHashString isEqualToString:@"000000000000000edc8ad776fb0f9e407afae36237d2d8410b8f12424e892a6b"]) {
+            return 1094016;
+        } else if ([blockHashString isEqualToString:@"00000000000000171bc403369b98ed54ba716c532231d51740316ede6d3bff3a"]) {
+            return 1093392;
+        } else if ([blockHashString isEqualToString:@"00000000000000143c121d0ebcc8ac6d22f5f2bf44b1b871569dec0e4df7c69c"]) {
+            return 1095552;
+        } else if ([blockHashString isEqualToString:@"0000000000000009568e505b6d4b9b4330d0b4fe34c8602d2d45914aed6924f8"]) {
+            return 1093536;
+        } else if ([blockHashString isEqualToString:@"000000000000001cc1d7e03e3d37a6f0f62a8ac92a5c2947719140976559d91d"]) {
+            return 1094280;
+        } else if ([blockHashString isEqualToString:@"000000000000002344ae9bb8432a569ed0c949d86133799baa42d22336cbce2f"]) {
+            return 1094472;
+        } else if ([blockHashString isEqualToString:@"000000000000000ea92aa407cf31a16fabca0f0f74718424d91869ad1b58edaa"]) {
+            return 1095192;
+        } else if ([blockHashString isEqualToString:@"00000000000000111d542d60aad39dafafcc65335a4d516388dc51fcba89035b"]) {
+            return 1095528;
+        } else if ([blockHashString isEqualToString:@"0000000000000016a94810e42937ff962a19bb3535b727088cb128c16e28475d"]) {
+            return 1093800;
+        } else if ([blockHashString isEqualToString:@"00000000000000145abc88f4a079a42a16768c49381f17572c5ab6099170a09e"]) {
+            return 1094568;
+        }
+        NSAssert(NO, @"All values must be here");
+        return UINT32_MAX;
+    } completion:^(BOOL success1, NSDictionary * masternodeLists1) {
+        uint32_t(^blockHeightLookup)(UInt256 blockHash) = ^uint32_t(UInt256 blockHash) {
+            NSString * blockHashString = uint256_reverse_hex(blockHash);
+            if ([blockHashString isEqualToString:@"0000000000000024030fa272c48f386c079bfcf655d4b09f0f2d092bb67303bb"]) {
+                return 1095408;
+            } else if ([blockHashString isEqualToString:@"000000000000000e5458bc47813b49b23d3a3f015bd74628e1950bc51086891b"]) {
+                return 1094976;
+            } else if ([blockHashString isEqualToString:@"00000000000000229e6a8a83c7e8c34a6c7ceb105a1ad80c7e7b4f666363b1ba"]) {
+                return 1095168;
+            } else if ([blockHashString isEqualToString:@"0000000000000003b27df3db412427df13ba3dceb7ac5af75a5a65fa5fd40a7b"]) {
+                return 1095144;
+            } else if ([blockHashString isEqualToString:@"00000000000000240088475057f73dd1ec5185a049f9591fe097ea5302fe1377"]) {
+                return 1095720;
+            } else if ([blockHashString isEqualToString:@"00000000000000010d1ec424a84a28093395309ea79ce7c4b6ab49e08f589750"]) {
+                return 1095456;
+            } else if ([blockHashString isEqualToString:@"00000000000000020599bb1afc06a0e03f5333d7edf91bf2b038c7b2e9fb4dcb"]) {
+                return 1095648;
+            } else if ([blockHashString isEqualToString:@"0000000000000000b9cb58ca605b36d9604fa8e791125e4fe81d329acec4b1a8"]) {
+                return 1095600;
+            } else if ([blockHashString isEqualToString:@"000000000000000ea92aa407cf31a16fabca0f0f74718424d91869ad1b58edaa"]) {
+                return 1095192;
+            } else if ([blockHashString isEqualToString:@"000000000000000751157bca41a61d1df27a318a59d3234e1cabc4f7c31656e0"]) {
+                return 1095576;
+            } else if ([blockHashString isEqualToString:@"00000000000000129dab8cc8befddb59cf7e3c3e249939eb5a00a5394648f1b2"]) {
+                return 1095480;
+            } else if ([blockHashString isEqualToString:@"000000000000000225158fd4c0fad459645bbcd1a93e843fe22b652ab40d7535"]) {
+                return 1095240;
+            } else if ([blockHashString isEqualToString:@"0000000000000013ddc64c114e35eaa454da80454c7a6abd0fd186bc47b3135c"]) {
+                return 1095384;
+            } else if ([blockHashString isEqualToString:@"00000000000000251c624ba68d162f443b9b8662bd41c8cbaf76edf0edf09449"]) {
+                return 1095336;
+            } else if ([blockHashString isEqualToString:@"00000000000000131b1a04b792ea5f4120014d67261db05da36c3e4cf424ff80"]) {
+                return 1095624;
+            } else if ([blockHashString isEqualToString:@"00000000000000143c121d0ebcc8ac6d22f5f2bf44b1b871569dec0e4df7c69c"]) {
+                return 1095552;
+            } else if ([blockHashString isEqualToString:@"0000000000000003b4e065db18ab97a5556bed3b4a1255f8da813e199a512755"]) {
+                return 1095264;
+            } else if ([blockHashString isEqualToString:@"0000000000000003c1e5392b90ce0083fd803797ce039f5b5e93b8581a9cd110"]) {
+                return 1095312;
+            } else if ([blockHashString isEqualToString:@"000000000000001d78e3addb7fb4f4e4de083e10703081d9e5ebbcf94fc94cea"]) {
+                return 1095672;
+            } else if ([blockHashString isEqualToString:@"00000000000000111d542d60aad39dafafcc65335a4d516388dc51fcba89035b"]) {
+                return 1095528;
+            } else if ([blockHashString isEqualToString:@"00000000000000062f90f8928ce313986c71663f868c434cccd455e152b3f2ff"]) {
+                return 1095432;
+            } else if ([blockHashString isEqualToString:@"000000000000000e78706ecf6d744a2edc5143d3325ade22940dc14ccfd3f938"]) {
+                return 1094400;
+            } else if ([blockHashString isEqualToString:@"0000000000000006e0f176aa2fb71013645fae8f9635c41d79aba03abf2f968b"]) {
+                return 1095696;
+            } else if ([blockHashString isEqualToString:@"00000000000000129ebb2ed2350c8a39ee5c1cecb81baac16dc1e44a199c634a"]) {
+                return 1095216;
+            } else if ([blockHashString isEqualToString:@"000000000000000b90f59f6a103723e4482e1b588a8cd7f122ce27d5d694122d"]) {
+                return 1095504;
+            } else if ([blockHashString isEqualToString:@"000000000000001e25b165b99d2e2174d01b8bce715915031bc59d3145a2993c"]) {
+                return 1095288;
+            } else if ([blockHashString isEqualToString:@"000000000000000dcdb06cced0211b9ca62b2947a2bd6e9830340f2c37c64d52"]) {
+                return 1093824;
+            } else if ([blockHashString isEqualToString:@"000000000000001e91a161d9c3c4d42c108ac1326d746f21646fb5a988cb15da"]) {
+                return 1095360;
+            } else if ([blockHashString isEqualToString:@"00000000000000132a6410a26e6825470a33cbd8a14d8ef25e569c41c9413f5f"]) {
+                return 1094688;
+            }
+            NSAssert(NO, @"All values must be here");
+            return UINT32_MAX;
+        };
+        [self loadMasternodeListsForFiles:@[@"MNL_0_1095720"] baseMasternodeList:nil withSave:NO withReload:NO onChain:chain inContext:context blockHeightLookup:blockHeightLookup completion:^(BOOL success2, NSDictionary * masternodeLists2) {
+            NSData * block1095720Hash = [[masternodeLists2 allKeys] firstObject];
+            DSMasternodeList * chainedMasternodeList = [masternodeLists1 objectForKey:block1095720Hash];
+            DSMasternodeList * nonChainedMasternodeList = [masternodeLists2 objectForKey:block1095720Hash];
+            if (!uint256_eq([chainedMasternodeList masternodeMerkleRoot], [nonChainedMasternodeList calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup])) {
+                NSDictionary * comparisonResult = [chainedMasternodeList compare:nonChainedMasternodeList usingOurString:@"chained" usingTheirString:@"non chained" blockHeightLookup:blockHeightLookup];
+                NSLog(@"%@",comparisonResult);
+            }
+            XCTAssert(uint256_eq([chainedMasternodeList masternodeMerkleRoot], [nonChainedMasternodeList calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]),@"These should be equal");
+            
+            [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:useCheckpointMasternodeLists];
+            dispatch_semaphore_signal(sem);
+        }];
+    }];
+    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+}
+
+-(void)testMNLReloadAgain {
+    DSChain * chain = [DSChain mainnet];
+    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+    __block NSManagedObjectContext * context = [NSManagedObjectContext chainContext];
+    __block BOOL useCheckpointMasternodeLists = [[DSOptionsManager sharedInstance] useCheckpointMasternodeLists];
+    [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:NO];
+    [chain chainManager];
+    [context performBlockAndWait:^{
+        DSChainEntity * chainEntity = [chain chainEntityInContext:context];
+        [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
+        [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
+        [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
+    }];
+    [chain.chainManager.masternodeManager reloadMasternodeLists];
+    NSArray * files = @[@"MNL_0_1093824", @"MNL_1093824_1094400", @"MNL_1094400_1094976", @"MNL_1094976_1095264", @"MNL_1095264_1095432", @"MNL_1095432_1095456", @"MNL_1095456_1095480", @"MNL_1095480_1095504", @"MNL_1095504_1095528", @"MNL_1095528_1095552", @"MNL_1095552_1095576", @"MNL_1095576_1095600", @"MNL_1095600_1095624", @"MNL_1095624_1095648", @"MNL_1095648_1095672", @"MNL_1095672_1095696", @"MNL_1095696_1095720", @"MNL_1095720_1095744", @"MNL_1095744_1095768", @"MNL_1095768_1095792", @"MNL_1095792_1095816", @"MNL_1095816_1095840", @"MNL_1095840_1095864", @"MNL_1095864_1095888", @"MNL_1095888_1095912", @"MNL_1095912_1095936", @"MNL_1095936_1095960", @"MNL_1095960_1095984", @"MNL_1095984_1096003"];
+    
+    uint32_t(^blockHeightLookup)(UInt256 blockHash) = ^uint32_t(UInt256 blockHash) {
+        NSString * blockHashString = uint256_reverse_hex(blockHash);
+        if ([blockHashString isEqualToString:@"00000000000000063cea204f55fbb2eb56816eacf6134bf338fb6f7d19586e68"]) {
+            return 1095072;
+        } else if ([blockHashString isEqualToString:@"00000000000000229e6a8a83c7e8c34a6c7ceb105a1ad80c7e7b4f666363b1ba"]) {
+            return 1095168;
+        } else if ([blockHashString isEqualToString:@"0000000000000003b4e065db18ab97a5556bed3b4a1255f8da813e199a512755"]) {
+            return 1095264;
+        } else if ([blockHashString isEqualToString:@"000000000000001ebe8c3542f3a0f65a46d5f5ab4e380393bdbfda68d93221d7"]) {
+            return 1094640;
+        } else if ([blockHashString isEqualToString:@"000000000000000225158fd4c0fad459645bbcd1a93e843fe22b652ab40d7535"]) {
+            return 1095240;
+        } else if ([blockHashString isEqualToString:@"00000000000000025ea597f951845fd9f759d8dd7deb381b8c48bfde0a3c2d28"]) {
+            return 1094328;
+        } else if ([blockHashString isEqualToString:@"000000000000001cc1d7e03e3d37a6f0f62a8ac92a5c2947719140976559d91d"]) {
+            return 1094280;
+        } else if ([blockHashString isEqualToString:@"00000000000000129ebb2ed2350c8a39ee5c1cecb81baac16dc1e44a199c634a"]) {
+            return 1095216;
+        } else if ([blockHashString isEqualToString:@"000000000000001c12e0007f8ec718282fff6cd63519a4fdc8cca698216def72"]) {
+            return 1094928;
+        } else if ([blockHashString isEqualToString:@"000000000000001233f0f0963d1214b7cff3e091f56d7469f2ceed92fd0b1913"]) {
+            return 1093272;
+        } else if ([blockHashString isEqualToString:@"000000000000001a304f460bd6c35a29a6ba19aba6a7c37818d8870d1b90a757"]) {
+            return 1094376;
+        } else if ([blockHashString isEqualToString:@"0000000000000002c2037e0bdf7678cc1d2f307998d18b20f6799e2c04b861e1"]) {
+            return 1093848;
+        } else if ([blockHashString isEqualToString:@"0000000000000000ef3b052a6b6cf46fc53e7d700b35a640bea555537c963fe7"]) {
+            return 1094856;
+        } else if ([blockHashString isEqualToString:@"0000000000000024cdf66dd7b20dd03711b2961b82c627557dfbb9acbba620b9"]) {
+            return 1093776;
+        } else if ([blockHashString isEqualToString:@"000000000000002690fa0e9e0358d1088b995f947039fef48e851df2cc8a7c1a"]) {
+            return 1094616;
+        } else if ([blockHashString isEqualToString:@"000000000000001a1d7a8959d08fae46d1d77e380f643501045c9619b07cdb7d"]) {
+            return 1095120;
+        } else if ([blockHashString isEqualToString:@"000000000000002cef7980733f71f6b588a6d03a52103c637dca1ec3ae62296c"]) {
+            return 1093872;
+        } else if ([blockHashString isEqualToString:@"000000000000001a0228d6a5d3f5542eca7395cb91c0d028c8c988051e653fa7"]) {
+            return 1094520;
+        } else if ([blockHashString isEqualToString:@"000000000000001c0b637ceb8879087a960cde2cd6b179041df416cf2b5bd731"]) {
+            return 1093728;
+        } else if ([blockHashString isEqualToString:@"000000000000000772dfb8deff195bb86c24c825bd45155fa6abe7e2c824373f"]) {
+            return 1094784;
+        } else if ([blockHashString isEqualToString:@"0000000000000000615083ccea9f8d36dc9ca0129ee8932892989e4dee510067"]) {
+            return 1093512;
+        } else if ([blockHashString isEqualToString:@"0000000000000000ecede12e065e87251e1637894ef20f5a16195e94d28fabd1"]) {
+            return 1095864;
+        } else if ([blockHashString isEqualToString:@"00000000000000240088475057f73dd1ec5185a049f9591fe097ea5302fe1377"]) {
+            return 1095720;
+        } else if ([blockHashString isEqualToString:@"000000000000001171446990f2fc89a7ac9e59e8bf33368a7151a0b9a3a3e8ae"]) {
+            return 1093992;
+        } else if ([blockHashString isEqualToString:@"000000000000000071ae88cee71d08d320ce5091eb3877edb6cef554d6987d7f"]) {
+            return 1094352;
+        } else if ([blockHashString isEqualToString:@"00000000000000132a6410a26e6825470a33cbd8a14d8ef25e569c41c9413f5f"]) {
+            return 1094688;
+        } else if ([blockHashString isEqualToString:@"000000000000001aa62cfba8db7fffc42287e3bc9c3a67f07c38369f04b4255d"]) {
+            return 1094952;
+        } else if ([blockHashString isEqualToString:@"000000000000002344ae9bb8432a569ed0c949d86133799baa42d22336cbce2f"]) {
+            return 1094472;
+        } else if ([blockHashString isEqualToString:@"00000000000000084155d222800a8ea99afe4431dd0161cc888c2ebe177e19db"]) {
+            return 1093656;
+        } else if ([blockHashString isEqualToString:@"00000000000000196db62f3ac00a290c0de3606d4bf58c550154c358f9d2ee45"]) {
+            return 1094136;
+        } else if ([blockHashString isEqualToString:@"000000000000000e5458bc47813b49b23d3a3f015bd74628e1950bc51086891b"]) {
+            return 1094976;
+        } else if ([blockHashString isEqualToString:@"00000000000000111d542d60aad39dafafcc65335a4d516388dc51fcba89035b"]) {
+            return 1095528;
+        } else if ([blockHashString isEqualToString:@"000000000000001b0b31e0ec23c1ac6329de09c066720ecf166c474b56231025"]) {
+            return 1093440;
+        } else if ([blockHashString isEqualToString:@"000000000000001bac84d4f9f18082b7f9a838a6b0a3c4d8dbfb9e8f54163432"]) {
+            return 1093584;
+        } else if ([blockHashString isEqualToString:@"000000000000001c414007419fc22a2401b07ab430bf433c8cdfb8877fb6b5b7"]) {
+            return 1092672;
+        } else if ([blockHashString isEqualToString:@"000000000000001d78e3addb7fb4f4e4de083e10703081d9e5ebbcf94fc94cea"]) {
+            return 1095672;
+        } else if ([blockHashString isEqualToString:@"0000000000000006e0f176aa2fb71013645fae8f9635c41d79aba03abf2f968b"]) {
+            return 1095696;
+        } else if ([blockHashString isEqualToString:@"000000000000001e91a161d9c3c4d42c108ac1326d746f21646fb5a988cb15da"]) {
+            return 1095360;
+        } else if ([blockHashString isEqualToString:@"0000000000000027a2600911d015441d46e463f0ec693a72b8efb5dd196ff6a1"]) {
+            return 1093320;
+        } else if ([blockHashString isEqualToString:@"00000000000000171bc403369b98ed54ba716c532231d51740316ede6d3bff3a"]) {
+            return 1093392;
+        } else if ([blockHashString isEqualToString:@"00000000000000094fb5e8f10f035d1c96c7cab5aec44ada91ea535d8778e9ef"]) {
+            return 1093704;
+        } else if ([blockHashString isEqualToString:@"000000000000001c7298ff8e8b0ee663fa71fe61972523ba0a358b7975382a7a"]) {
+            return 1096003;
+        } else if ([blockHashString isEqualToString:@"0000000000000018a586b0d0ec8d74ad60381db5ed6449e4f86e63d28d131782"]) {
+            return 1093464;
+        } else if ([blockHashString isEqualToString:@"00000000000000062d649600eb61e4e5167aba3a2fb782920a5cea1955c2689a"]) {
+            return 1093560;
+        } else if ([blockHashString isEqualToString:@"00000000000000145abc88f4a079a42a16768c49381f17572c5ab6099170a09e"]) {
+            return 1094568;
+        } else if ([blockHashString isEqualToString:@"0000000000000012dbe5607c727e5ade78cdf401893be1f733a874c7612c3bd3"]) {
+            return 1095792;
+        } else if ([blockHashString isEqualToString:@"000000000000000117e4a3c462adac43c1e34470558241ba5f4a08f32cee9217"]) {
+            return 1094760;
+        } else if ([blockHashString isEqualToString:@"000000000000000c89a10adee5dd18be09c10f3997719f448621e3039a7078e2"]) {
+            return 1095096;
+        } else if ([blockHashString isEqualToString:@"000000000000000dcdb06cced0211b9ca62b2947a2bd6e9830340f2c37c64d52"]) {
+            return 1093824;
+        } else if ([blockHashString isEqualToString:@"0000000000000012d9cd9e407b037e64d33693a654eae85e54a2651d66dd5727"]) {
+            return 1093608;
+        } else if ([blockHashString isEqualToString:@"00000000000000144fabe7b89452957f62635a05c18a37fe9e276b1a623d3251"]) {
+            return 1094496;
+        } else if ([blockHashString isEqualToString:@"000000000000000fabcff485b9572368c3a06d985a1e4f77c53d735dc1af8507"]) {
+            return 1094112;
+        } else if ([blockHashString isEqualToString:@"000000000000000d0a9b48693d41fc615193591b158e2ec91de40875514b370c"]) {
+            return 1095024;
+        } else if ([blockHashString isEqualToString:@"00000000000000087c9bb2d682436a6f590878b2124cdeba1744ef064065f996"]) {
+            return 1095000;
+        } else if ([blockHashString isEqualToString:@"000000000000001577e4d463c654003d03833472a0de98922c98db18c33f92ca"]) {
+            return 1093896;
+        } else if ([blockHashString isEqualToString:@"000000000000001416a19e61b05a1f5e5956b0d0973e73f70af22500aff56cff"]) {
+            return 1095984;
+        } else if ([blockHashString isEqualToString:@"000000000000000dd26c943b68653b95a9bfc203e80c0050f6569156fe1fc94b"]) {
+            return 1093296;
+        } else if ([blockHashString isEqualToString:@"000000000000000dfcb3a329719799a15e19c0be15ebd2338b2220c9bb2fd7af"]) {
+            return 1093344;
+        } else if ([blockHashString isEqualToString:@"0000000000000009568e505b6d4b9b4330d0b4fe34c8602d2d45914aed6924f8"]) {
+            return 1093536;
+        } else if ([blockHashString isEqualToString:@"00000000000000020599bb1afc06a0e03f5333d7edf91bf2b038c7b2e9fb4dcb"]) {
+            return 1095648;
+        } else if ([blockHashString isEqualToString:@"000000000000001bc20fe2bb69d57c3ce9abc2b55aa8c5669f0fedc1e9a12b07"]) {
+            return 1095888;
+        } else if ([blockHashString isEqualToString:@"000000000000000ff47ccc841c8ef3dfc6dc419b677c0e3399af6badfac4353d"]) {
+            return 1094832;
+        } else if ([blockHashString isEqualToString:@"000000000000000ea92aa407cf31a16fabca0f0f74718424d91869ad1b58edaa"]) {
+            return 1095192;
+        } else if ([blockHashString isEqualToString:@"000000000000001613deacecc4a85816e91ce006dee30b352f9ad5c245fad9cc"]) {
+            return 1094448;
+        } else if ([blockHashString isEqualToString:@"00000000000000021eb17ff23549c328301f5df228d773c7d74ff5aae2baa466"]) {
+            return 1093968;
+        } else if ([blockHashString isEqualToString:@"0000000000000000b9cb58ca605b36d9604fa8e791125e4fe81d329acec4b1a8"]) {
+            return 1095600;
+        } else if ([blockHashString isEqualToString:@"00000000000000019ec163300f2acd0aee00e63f162713096c95a7e9d47dd50f"]) {
+            return 1094208;
+        } else if ([blockHashString isEqualToString:@"000000000000001822bf109723eff5f406422b54736b2384d9d0c69e97276a88"]) {
+            return 1093488;
+        } else if ([blockHashString isEqualToString:@"00000000000000251c624ba68d162f443b9b8662bd41c8cbaf76edf0edf09449"]) {
+            return 1095336;
+        } else if ([blockHashString isEqualToString:@"000000000000001da5926d2dc7cd624bc9576d4e98fcbf2d3cda45c47695f566"]) {
+            return 1094424;
+        } else if ([blockHashString isEqualToString:@"0000000000000012bcfc87a3d4accfa821544c4c43d8f8cd8a71c37cd2caff13"]) {
+            return 1095936;
+        } else if ([blockHashString isEqualToString:@"0000000000000003ba06634076289dff42839e247ae84ce1aab47ad902ae4705"]) {
+            return 1093416;
+        } else if ([blockHashString isEqualToString:@"000000000000000d5cadf1de431d8adda171a72296ded5c60a9f75d050cd9528"]) {
+            return 1093248;
+        } else if ([blockHashString isEqualToString:@"000000000000000aff92eefb5543f3afb2f145dd75ef504b2877013abe53a6b5"]) {
+            return 1094904;
+        } else if ([blockHashString isEqualToString:@"0000000000000020f1c98f7df0d89d369c9176644776b151ba8c230683b7d68a"]) {
+            return 1094064;
+        } else if ([blockHashString isEqualToString:@"000000000000000ecbdb940a8094d7643859b064fde0ed32096fa493e0cd776c"]) {
+            return 1095048;
+        } else if ([blockHashString isEqualToString:@"00000000000000062f90f8928ce313986c71663f868c434cccd455e152b3f2ff"]) {
+            return 1095432;
+        } else if ([blockHashString isEqualToString:@"0000000000000000983db6957230406f73a25d9ff929406db3607c62ba064dd3"]) {
+            return 1094544;
+        } else if ([blockHashString isEqualToString:@"000000000000000c61002a6ef01e82aced8d5b394ae8faa1143fd893abfdd916"]) {
+            return 1094232;
+        } else if ([blockHashString isEqualToString:@"0000000000000010a7cd881eeb0d4252bbb8661b1c9f5eb4addebb7e7e726b88"]) {
+            return 1093752;
+        } else if ([blockHashString isEqualToString:@"000000000000000e5d9359857518aaf3685bf8af55c675cf0d17a45383ca297f"]) {
+            return 1091520;
+        } else if ([blockHashString isEqualToString:@"0000000000000013fea89dca12ca39a3250bab6ff979c682b44c968892e7844e"]) {
+            return 1095840;
+        } else if ([blockHashString isEqualToString:@"0000000000000003c1e5392b90ce0083fd803797ce039f5b5e93b8581a9cd110"]) {
+            return 1095312;
+        } else if ([blockHashString isEqualToString:@"000000000000002283cf305dbfc4c37ec890d704eb2d267c9f5a418b0a171bb6"]) {
+            return 1093920;
+        } else if ([blockHashString isEqualToString:@"000000000000001b7b535dfeac3eb2cfb481cf9c1fcda57541449962edc3ad01"]) {
+            return 1092960;
+        } else if ([blockHashString isEqualToString:@"0000000000000024030fa272c48f386c079bfcf655d4b09f0f2d092bb67303bb"]) {
+            return 1095408;
+        } else if ([blockHashString isEqualToString:@"0000000000000016a94810e42937ff962a19bb3535b727088cb128c16e28475d"]) {
+            return 1093800;
+        } else if ([blockHashString isEqualToString:@"000000000000001b60d1cfaf8a46571472e51b0f9e6fe578049ebff252b53975"]) {
+            return 1095912;
+        } else if ([blockHashString isEqualToString:@"000000000000002406ca94753d91bae04ff66d83fbe7ff0e36649d44a09e7c34"]) {
+            return 1094304;
+        } else if ([blockHashString isEqualToString:@"0000000000000013ddc64c114e35eaa454da80454c7a6abd0fd186bc47b3135c"]) {
+            return 1095384;
+        } else if ([blockHashString isEqualToString:@"00000000000000189aaa0a392ba85175b6288d8685eeca3659c0cbe8feee4b2f"]) {
+            return 1095768;
+        } else if ([blockHashString isEqualToString:@"0000000000000002fa90f6d204488cb8386938173ed5eab5ab3df178866b058a"]) {
+            return 1094088;
+        } else if ([blockHashString isEqualToString:@"00000000000000143c121d0ebcc8ac6d22f5f2bf44b1b871569dec0e4df7c69c"]) {
+            return 1095552;
+        } else if ([blockHashString isEqualToString:@"000000000000001583b7dcc1e3c670561e3f3dbd83cc74d2414f3dc839596f27"]) {
+            return 1094736;
+        } else if ([blockHashString isEqualToString:@"000000000000000f9f34750629b5a2382268e8b6753afbd7c62735b82c452737"]) {
+            return 1094040;
+        } else if ([blockHashString isEqualToString:@"00000000000000010d1ec424a84a28093395309ea79ce7c4b6ab49e08f589750"]) {
+            return 1095456;
+        } else if ([blockHashString isEqualToString:@"000000000000000ebd63619a0cf899405d27aba2c07389de4016bc65a4d85fe1"]) {
+            return 1095816;
+        } else if ([blockHashString isEqualToString:@"000000000000000fa538169fbfd621d942d113ae6971b2fe9cffe02a5c9a25ae"]) {
+            return 1094808;
+        } else if ([blockHashString isEqualToString:@"00000000000000129dab8cc8befddb59cf7e3c3e249939eb5a00a5394648f1b2"]) {
+            return 1095480;
+        } else if ([blockHashString isEqualToString:@"00000000000000131b1a04b792ea5f4120014d67261db05da36c3e4cf424ff80"]) {
+            return 1095624;
+        } else if ([blockHashString isEqualToString:@"000000000000000edc8ad776fb0f9e407afae36237d2d8410b8f12424e892a6b"]) {
+            return 1094016;
+        } else if ([blockHashString isEqualToString:@"000000000000001e25b165b99d2e2174d01b8bce715915031bc59d3145a2993c"]) {
+            return 1095288;
+        } else if ([blockHashString isEqualToString:@"0000000000000016009c6bc3f60a97b8a8904e1f874b6308c3c3896a4aa69b89"]) {
+            return 1095744;
+        } else if ([blockHashString isEqualToString:@"00000000000000260b705a14af12641139fa368795d954d5878b94881edfa455"]) {
+            return 1093368;
+        } else if ([blockHashString isEqualToString:@"000000000000001bf5e83d6cf96fce19773074ae4a7bcd1956d59a9e414a0431"]) {
+            return 1094712;
+        } else if ([blockHashString isEqualToString:@"0000000000000003b27df3db412427df13ba3dceb7ac5af75a5a65fa5fd40a7b"]) {
+            return 1095144;
+        } else if ([blockHashString isEqualToString:@"00000000000000027ba127cd55d822250977b5d94148c71336745fe8899d886a"]) {
+            return 1093632;
+        } else if ([blockHashString isEqualToString:@"000000000000000e1f5cb67880ca2ac7c4e93f9636a7117880b1e46702078b01"]) {
+            return 1094592;
+        } else if ([blockHashString isEqualToString:@"000000000000000751157bca41a61d1df27a318a59d3234e1cabc4f7c31656e0"]) {
+            return 1095576;
+        } else if ([blockHashString isEqualToString:@"0000000000000017940e1aeb3bbf23165dabd152a8a8885c8ddf50e614a669d9"]) {
+            return 1094184;
+        } else if ([blockHashString isEqualToString:@"000000000000000cd0a2f51c3926225af4c8da1a95908ede547d6f6dd84fe72b"]) {
+            return 1094664;
+        } else if ([blockHashString isEqualToString:@"0000000000000021762a00c91394db56033e60c5031cd721d52767272ee252cc"]) {
+            return 1094256;
+        } else if ([blockHashString isEqualToString:@"000000000000000b90f59f6a103723e4482e1b588a8cd7f122ce27d5d694122d"]) {
+            return 1095504;
+        } else if ([blockHashString isEqualToString:@"000000000000001e1ca2cf3ca2369e9d7efc4446214c13bf1c2c1970abb0437b"]) {
+            return 1094880;
+        } else if ([blockHashString isEqualToString:@"000000000000001463f239c0d3e3b0f466a06ae25d4eb0e81c5799b9ee8192c2"]) {
+            return 1093680;
+        } else if ([blockHashString isEqualToString:@"0000000000000015a85e74db313a4b6020f073d0c3559180d22b6585fd51d090"]) {
+            return 1095960;
+        } else if ([blockHashString isEqualToString:@"0000000000000016d802959ea0c6d903b4e2c8241f3cc670e002d3ae51347749"]) {
+            return 1094160;
+        } else if ([blockHashString isEqualToString:@"00000000000000212441a8ef2495d21b0b7c09e13339dbc34d98c478cc51f8e2"]) {
+            return 1092096;
+        } else if ([blockHashString isEqualToString:@"000000000000000e78706ecf6d744a2edc5143d3325ade22940dc14ccfd3f938"]) {
+            return 1094400;
+        }
+        NSAssert(NO, @"All values must be here");
+        return UINT32_MAX;
+    };
+    
+    [self loadMasternodeListsForFiles:files baseMasternodeList:nil withSave:YES withReload:YES onChain:chain inContext:context blockHeightLookup:blockHeightLookup completion:^(BOOL success, NSDictionary * masternodeLists) {
+        [chain.chainManager.masternodeManager reloadMasternodeLists];
+        for (NSData * masternodeListBlockHash in masternodeLists) {
+            NSLog(@"Testing masternode list at height %u",[chain heightForBlockHash:masternodeListBlockHash.UInt256]);
+            DSMasternodeList * originalMasternodeList = [masternodeLists objectForKey:masternodeListBlockHash];
+            DSMasternodeList * reloadedMasternodeList = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListBlockHash.UInt256];
+            if (!uint256_eq([reloadedMasternodeList masternodeMerkleRoot], [reloadedMasternodeList calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup])) {
+                NSDictionary * comparisonResult = [originalMasternodeList compare:reloadedMasternodeList usingOurString:@"original" usingTheirString:@"reloaded" blockHeightLookup:blockHeightLookup];
+                NSLog(@"%@",comparisonResult);
+            }
+            XCTAssert(uint256_eq([reloadedMasternodeList masternodeMerkleRootWithBlockHeightLookup:blockHeightLookup], [reloadedMasternodeList calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]),@"These should be equal");
+        }
+        
+        [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:useCheckpointMasternodeLists];
+                    dispatch_semaphore_signal(sem);
+            
+        }];
+        dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+}
+
+-(void)testQuorumIssue {
+    DSChain * chain = [DSChain mainnet];
+    __block NSManagedObjectContext * context = [NSManagedObjectContext chainContext];
+    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+    __block BOOL useCheckpointMasternodeLists = [[DSOptionsManager sharedInstance] useCheckpointMasternodeLists];
+    [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:NO];
+    [chain chainManager];
+    [context performBlockAndWait:^{
+        DSChainEntity * chainEntity = [chain chainEntityInContext:context];
+        [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
+        [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
+        [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
+    }];
+    [chain.chainManager.masternodeManager reloadMasternodeLists];
+    NSArray * files = @[@"MNL_0_1096704", @"MNL_1096704_1097280", @"MNL_1097280_1097856", @"MNL_1097856_1098144", @"MNL_1098144_1098432", @"MNL_1098432_1098456", @"MNL_1098456_1098480", @"MNL_1098480_1098504", @"MNL_1098504_1098528", @"MNL_1098528_1098552", @"MNL_1098552_1098576", @"MNL_1098576_1098600", @"MNL_1098600_1098624", @"MNL_1098624_1098648", @"MNL_1098648_1098672", @"MNL_1098672_1098696", @"MNL_1098696_1098720", @"MNL_1098720_1098744", @"MNL_1098744_1098768", @"MNL_1098768_1098792", @"MNL_1098792_1098816", @"MNL_1098816_1098840", @"MNL_1098840_1098864", @"MNL_1098864_1098888", @"MNL_1098888_1098912", @"MNL_1098912_1098936", @"MNL_1098936_1098960", @"MNL_1098960_1098984", @"MNL_1098984_1099008"];
+    
+    uint32_t(^blockHeightLookup)(UInt256 blockHash) = ^uint32_t(UInt256 blockHash) {
+        NSString * blockHashString = uint256_reverse_hex(blockHash);
+        if ([blockHashString isEqualToString:@"0000000000000005f05fa51e0552ca6e46780be550da7230cd2d02f8ed4506ef"]) {
+            return 1097808;
+        } else if ([blockHashString isEqualToString:@"000000000000000faf2cac0d4b6b64fc168c3febe54a56a7ffc395cff98a9197"]) {
+            return 1097208;
+        } else if ([blockHashString isEqualToString:@"00000000000000096d80e8274bea062831d5befafae221dfcfd3717ce6cf6014"]) {
+            return 1098576;
+        } else if ([blockHashString isEqualToString:@"00000000000000123be8fccf32a966f94362e7676ff22e3fffc5acd0564478de"]) {
+            return 1096392;
+        } else if ([blockHashString isEqualToString:@"000000000000001d33b9dd2600867da9b4dceb9393bc5352d157dc0755255ae6"]) {
+            return 1096224;
+        } else if ([blockHashString isEqualToString:@"000000000000001aaa7a0a09708d929587fc17ff20e67cbd961e4661c210cd55"]) {
+            return 1098288;
+        } else if ([blockHashString isEqualToString:@"0000000000000005b792156d43ece54c07684f25a3bc68535635a168270c164f"]) {
+            return 1098408;
+        } else if ([blockHashString isEqualToString:@"000000000000000cb19c621f3f6f31890cfe20e96de7f07c7cc87df6e76c0fdb"]) {
+            return 1096248;
+        } else if ([blockHashString isEqualToString:@"000000000000000a4f7cd4fbdd47a1a3dabc82b7f48c5a47340c2440decd1ad1"]) {
+            return 1098264;
+        } else if ([blockHashString isEqualToString:@"000000000000001b6423cb52fefd813e6263dda5fd8e4f611c87c4c10f9efd63"]) {
+            return 1098120;
+        } else if ([blockHashString isEqualToString:@"000000000000000d81a502004fa824e8864fe72cce5e441c94e70781a1d5c248"]) {
+            return 1098912;
+        } else if ([blockHashString isEqualToString:@"000000000000002043543aca7a30d6ce95c030e51734341fdd2a8473eb07c4fc"]) {
+            return 1098216;
+        } else if ([blockHashString isEqualToString:@"00000000000000125044156d05c1b5309521483a76786cb549748b78bc1dd885"]) {
+            return 1096176;
+        } else if ([blockHashString isEqualToString:@"0000000000000008f5ae5a32a484eb829f78eece049e70395de65f0d03e20dd6"]) {
+            return 1097448;
+        } else if ([blockHashString isEqualToString:@"000000000000001168a451504cc254c531a006a77d707a279fbe9dd51a65acda"]) {
+            return 1096824;
+        } else if ([blockHashString isEqualToString:@"0000000000000017b0ee941a07532c47c814ec751854b551e3da2bf8addfc7da"]) {
+            return 1096776;
+        } else if ([blockHashString isEqualToString:@"000000000000000fc7af431ccc9374589ade89b86b826a38b0b36cadb2a0bdbf"]) {
+            return 1096464;
+        } else if ([blockHashString isEqualToString:@"00000000000000086edc17d34df01f002195a5d737063324f3e46930c57350b2"]) {
+            return 1096896;
+        } else if ([blockHashString isEqualToString:@"000000000000000812756367b7f38cc27ca1ac63f26c7ee81248be99b8a399fe"]) {
+            return 1096944;
+        } else if ([blockHashString isEqualToString:@"00000000000000226c79b8624a3b2855d8b84bc68a0b0f8461026e7cada81d4a"]) {
+            return 1096368;
+        } else if ([blockHashString isEqualToString:@"000000000000000e8cd9d448061b1a8198ad4741707b8d01a23b5b71cd7f5688"]) {
+            return 1097784;
+        } else if ([blockHashString isEqualToString:@"00000000000000037258bba0d30a803fd73fc60d27ce93b9f1293b52c78aa35f"]) {
+            return 1097592;
+        } else if ([blockHashString isEqualToString:@"000000000000001c7361f82e8da3d6a7fb34ad5ae4dde3ddcc1d9ddba8cafd39"]) {
+            return 1097664;
+        } else if ([blockHashString isEqualToString:@"000000000000000a37f2a18828ab4d27d2c1aae5e05a606ddba526750c024cd9"]) {
+            return 1096416;
+        } else if ([blockHashString isEqualToString:@"00000000000000015f263e5713680e8c256120ec739828028aa4124e1463f939"]) {
+            return 1096536;
+        } else if ([blockHashString isEqualToString:@"000000000000000dd632855f6ed62d0a421e9fbb6a4ef3a9b28aebf1af65e98b"]) {
+            return 1098552;
+        } else if ([blockHashString isEqualToString:@"0000000000000004586e94967e381843192f972678f1a1f58c4dde5e99d8fc44"]) {
+            return 1097328;
+        } else if ([blockHashString isEqualToString:@"0000000000000018534d3aae537bf48656883e4f441e0bd28670347cc5d0d6b1"]) {
+            return 1097232;
+        } else if ([blockHashString isEqualToString:@"0000000000000019112283be4f21b455b53a1b2ca7c04d4df4db64dc5eaf33e9"]) {
+            return 1096344;
+        } else if ([blockHashString isEqualToString:@"00000000000000120b56f64ed6c173562a814fef9cdb223f98ceb71ec0721453"]) {
+            return 1098816;
+        } else if ([blockHashString isEqualToString:@"000000000000001cc3f58f03c176be5a1aa858358d90d28396f5f14a5841dfc8"]) {
+            return 1096296;
+        } else if ([blockHashString isEqualToString:@"000000000000002021e36a9eb14321eea04df8c2d9f5a98aba4ae110811a265a"]) {
+            return 1098360;
+        } else if ([blockHashString isEqualToString:@"000000000000000080cc4309a7447bb9ece31700769dc379572d22e45798fa2f"]) {
+            return 1098168;
+        } else if ([blockHashString isEqualToString:@"0000000000000002d799bd937089094546ea6910362cdde13305a190cc228966"]) {
+            return 1097760;
+        } else if ([blockHashString isEqualToString:@"000000000000000d02d05da2fa63761aebc1dc6ad313da63b10809026aa32012"]) {
+            return 1096632;
+        } else if ([blockHashString isEqualToString:@"0000000000000016174a372e62c8c18817df356487d539135ead487ecec8d276"]) {
+            return 1097160;
+        } else if ([blockHashString isEqualToString:@"000000000000000b62b169b3621aca12f2a4b1faa5443e52c435118f0a185a1a"]) {
+            return 1098768;
+        } else if ([blockHashString isEqualToString:@"000000000000000e5458bc47813b49b23d3a3f015bd74628e1950bc51086891b"]) {
+            return 1094976;
+        } else if ([blockHashString isEqualToString:@"000000000000001a7eaa4cb338614eaa498c87171a5459c35b1879267896a8b8"]) {
+            return 1096728;
+        } else if ([blockHashString isEqualToString:@"000000000000000cf068c8605300fa6eaabf1cd72f0baa91ebbfc7f615efffb0"]) {
+            return 1097904;
+        } else if ([blockHashString isEqualToString:@"000000000000000a7db9d1cb6e97587548d12f9b15e1d7217c3bb9fc5f7aca62"]) {
+            return 1096992;
+        } else if ([blockHashString isEqualToString:@"00000000000000120aa3e7d582a37cd1ba9e33f7255643886dfce934e608f588"]) {
+            return 1098144;
+        } else if ([blockHashString isEqualToString:@"0000000000000006859c3d9a085c3bbe1aada948f6d573af21b41c68e66b9ac8"]) {
+            return 1098840;
+        } else if ([blockHashString isEqualToString:@"00000000000000199f543a7d3e9f6372d950721a88a9a10aa92917c7a663695b"]) {
+            return 1098672;
+        } else if ([blockHashString isEqualToString:@"00000000000000184ffe2c87ee0e8046b630bbb67e8708a59d78a501c22f7ead"]) {
+            return 1096440;
+        } else if ([blockHashString isEqualToString:@"00000000000000128cc9aebae3ea0753103e4c53286b2370e1dab2655ce68b19"]) {
+            return 1098528;
+        } else if ([blockHashString isEqualToString:@"0000000000000000fd8021168f6be48e6c1444e29f85fa72c654b4f616c071f6"]) {
+            return 1098312;
+        } else if ([blockHashString isEqualToString:@"0000000000000017693260e70c48015796efdbf6cfb36c3ed16a0ce0aa72110e"]) {
+            return 1097520;
+        } else if ([blockHashString isEqualToString:@"000000000000001ffbd9b2b064b32e64c6d3a3dae13780a8f67dd8123a52f824"]) {
+            return 1096680;
+        } else if ([blockHashString isEqualToString:@"000000000000000b08d1bcf29d13fc4cb8972420979a7cca01bb3e76e848b341"]) {
+            return 1097880;
+        } else if ([blockHashString isEqualToString:@"00000000000000138ee64cdd6c5c9eb641be56002a08cc4da3947c9a8427b811"]) {
+            return 1097424;
+        } else if ([blockHashString isEqualToString:@"00000000000000022ba51a9c85c3f2908e050e251031c127c379ed4c84dc3995"]) {
+            return 1098024;
+        } else if ([blockHashString isEqualToString:@"00000000000000069501469ea47bdc919909737c7ae881cb0048dc7406a547f4"]) {
+            return 1098432;
+        } else if ([blockHashString isEqualToString:@"000000000000001d396bfa004a77bc6a590ebd4e62c3be62e17c9f9183b6b2a6"]) {
+            return 1097472;
+        } else if ([blockHashString isEqualToString:@"000000000000000e5442292206c610d87af06af00500a22b3bf478d3ac05ab65"]) {
+            return 1098984;
+        } else if ([blockHashString isEqualToString:@"000000000000001212cd887e2064e0fef2efe30efad366a3043ac618c8d1f7e0"]) {
+            return 1097136;
+        } else if ([blockHashString isEqualToString:@"0000000000000017dd8f722b72713df020c25cd8bb189e1516fbb97f91712276"]) {
+            return 1098000;
+        } else if ([blockHashString isEqualToString:@"0000000000000017bb50e264cebfec81804847bb19b759e1deed6d5ccd54af70"]) {
+            return 1096488;
+        } else if ([blockHashString isEqualToString:@"000000000000000076e6e626df28690678d026dcb7655433cb77cbbce4585ab9"]) {
+            return 1097352;
+        } else if ([blockHashString isEqualToString:@"000000000000000b0e12838219dce4ee33bd3ebf148a6655cdef57f5ac74dec1"]) {
+            return 1098744;
+        } else if ([blockHashString isEqualToString:@"000000000000000ee7034001ad0ed7040a4a55a388824624b2770154cb7b2778"]) {
+            return 1098480;
+        } else if ([blockHashString isEqualToString:@"0000000000000002ae77e6e7922c995ab76163717382c2290699125b017aeb83"]) {
+            return 1096608;
+        } else if ([blockHashString isEqualToString:@"000000000000000e40f843520b37a0299e0f73c03cc09e20e1f7e1d15db0eac3"]) {
+            return 1097496;
+        } else if ([blockHashString isEqualToString:@"000000000000000931d7809849ee2c0520274565043c91011abab799484c2990"]) {
+            return 1097304;
+        } else if ([blockHashString isEqualToString:@"0000000000000000049b8adab54f72710bf6d897597766529325c713de86b5e4"]) {
+            return 1098648;
+        } else if ([blockHashString isEqualToString:@"000000000000002156a89bfcb10462994d1d0953b418583140f2874b84a750ca"]) {
+            return 1097256;
+        } else if ([blockHashString isEqualToString:@"0000000000000012d25cbba3536d24aa5cc53c622eeac03c65412383147f4394"]) {
+            return 1099008;
+        } else if ([blockHashString isEqualToString:@"000000000000000787490f469efdfb1dbf6b86150b86c48f127f7653211b2c41"]) {
+            return 1098096;
+        } else if ([blockHashString isEqualToString:@"000000000000000a3a980aec3a4421b54dbbb407f30ee949c13e3665cc372009"]) {
+            return 1098624;
+        } else if ([blockHashString isEqualToString:@"000000000000001fb0ced1479e7d15e7efed4b92b1d5ec43a1da297e8dc64a1e"]) {
+            return 1097376;
+        } else if ([blockHashString isEqualToString:@"0000000000000016f526c58ea7a5ba4091426d3d9d11434ef422cd6cbfa0a4d1"]) {
+            return 1098960;
+        } else if ([blockHashString isEqualToString:@"00000000000000057f1c57f1183758044c52c33ddd6b8ab2171afcb980062117"]) {
+            return 1096560;
+        } else if ([blockHashString isEqualToString:@"000000000000000c595ba7f4da46fb33fdfb5cbff49a5af1536de6baaf364658"]) {
+            return 1098240;
+        } else if ([blockHashString isEqualToString:@"0000000000000023382f4fda810321271b8d5b32fc5c0a8ae82d6e35e73ea7d5"]) {
+            return 1097064;
+        } else if ([blockHashString isEqualToString:@"000000000000001ad5328d0a3c97209bbbca4bb35d76119a8ac0231a36aa75c9"]) {
+            return 1097280;
+        } else if ([blockHashString isEqualToString:@"00000000000000106c3b9664269e2a92d53266f5485f24266e61d12f902f85ea"]) {
+            return 1098720;
+        } else if ([blockHashString isEqualToString:@"0000000000000018925fd95309371243ef4df332801968084363af572f6c5d45"]) {
+            return 1097616;
+        } else if ([blockHashString isEqualToString:@"0000000000000011038e77a86801cb5f05047d45e57b8a95b715f7f5bed2ac70"]) {
+            return 1096272;
+        } else if ([blockHashString isEqualToString:@"000000000000000f7943a003184c5e99b5951fa80d80d6585721e1819b046617"]) {
+            return 1096512;
+        } else if ([blockHashString isEqualToString:@"000000000000000e0e3a7248d77f94d3013cae7b27090941a944926683c7126c"]) {
+            return 1096152;
+        } else if ([blockHashString isEqualToString:@"000000000000000acc62d1c58e0cf316573ca248fcaefc98f77619d227d93413"]) {
+            return 1096320;
+        } else if ([blockHashString isEqualToString:@"0000000000000012b1e0582fa3c805bb15ebab29792766815ea008254395aebf"]) {
+            return 1096848;
+        } else if ([blockHashString isEqualToString:@"0000000000000016f620befa318c8b40bc5d9a955121261af09ac8ddeef93e5e"]) {
+            return 1097088;
+        } else if ([blockHashString isEqualToString:@"0000000000000017ae9d4db3c6e6fdf7827824423caa4599219f3af795ec6404"]) {
+            return 1096704;
+        } else if ([blockHashString isEqualToString:@"0000000000000013fea89dca12ca39a3250bab6ff979c682b44c968892e7844e"]) {
+            return 1095840;
+        } else if ([blockHashString isEqualToString:@"000000000000000c43df820465cf30f4e9d8a38330c5f7c4fcb90780aa88df38"]) {
+            return 1096656;
+        } else if ([blockHashString isEqualToString:@"0000000000000006b8f4ccbf679f3f5744d879c02851a361ef7e1e0ed9d57e18"]) {
+            return 1097016;
+        } else if ([blockHashString isEqualToString:@"000000000000001ad3de1c97c51b31072ea54380034b01bdf7da610b77f75189"]) {
+            return 1098048;
+        } else if ([blockHashString isEqualToString:@"000000000000001efb6b66a1cd0f2c6a41c9a820db8fc5de159aa186a09a4ce2"]) {
+            return 1098936;
+        } else if ([blockHashString isEqualToString:@"00000000000000005d2b5286b448a25d9c2006849d41fb0c9c4bb3bb8724c42d"]) {
+            return 1098864;
+        } else if ([blockHashString isEqualToString:@"0000000000000008997ba7c5b584a4dbffd17a8b5cd08cae51e7e6371f0ec3ca"]) {
+            return 1098696;
+        } else if ([blockHashString isEqualToString:@"0000000000000022a46ff5bb17d406fa821f70aa80c2b9aa37bc21edaea2569a"]) {
+            return 1098072;
+        } else if ([blockHashString isEqualToString:@"00000000000000125d8731954a9c15b86b34e78c1fbe2ca29bd3a99f38462689"]) {
+            return 1098888;
+        } else if ([blockHashString isEqualToString:@"0000000000000016ad254676362d6cad62acaa1f9900b6c951cfd73303fa0356"]) {
+            return 1098792;
+        } else if ([blockHashString isEqualToString:@"0000000000000020d7ac24b497e420c8eeb9de5ba55a4a204130dda9e09fc85a"]) {
+            return 1097568;
+        } else if ([blockHashString isEqualToString:@"000000000000001e3c72bec566addb499b9f633effe8cb4f1ddab303fa155d13"]) {
+            return 1097544;
+        } else if ([blockHashString isEqualToString:@"00000000000000143c121d0ebcc8ac6d22f5f2bf44b1b871569dec0e4df7c69c"]) {
+            return 1095552;
+        } else if ([blockHashString isEqualToString:@"000000000000001e1c9372e3d2db633498af3c900f87de1c5f19ed05a0df4072"]) {
+            return 1097736;
+        } else if ([blockHashString isEqualToString:@"00000000000000185588f0dcad30cbe720b5bc67abfae54e64d9f92e1e0b2d22"]) {
+            return 1097040;
+        } else if ([blockHashString isEqualToString:@"000000000000000185765bff94d5da02e62261ab2366d2ccaa0d86685c0485de"]) {
+            return 1097976;
+        } else if ([blockHashString isEqualToString:@"000000000000000557d8eb6ecdf684f3b7f3219794047ac4f44eff0d9bfbdb7b"]) {
+            return 1097184;
+        } else if ([blockHashString isEqualToString:@"00000000000000063d1eabcc5c29a51c0aa354b758b33e70f722f78c46741342"]) {
+            return 1096200;
+        } else if ([blockHashString isEqualToString:@"00000000000000134b8226f8db668803ee6abcfe4df2809b36de36205bd80227"]) {
+            return 1096920;
+        } else if ([blockHashString isEqualToString:@"000000000000001afbb65ce325134464e74de2c9e1f67c61501c434e82514094"]) {
+            return 1097688;
+        } else if ([blockHashString isEqualToString:@"000000000000000178d6cb5792aea8a9e51a716df4b20018761509dddd881b6b"]) {
+            return 1097112;
+        } else if ([blockHashString isEqualToString:@"0000000000000020eeb077e77f9e3e60975e2a7426b6084ff8ad5ca43ef17c41"]) {
+            return 1096968;
+        } else if ([blockHashString isEqualToString:@"000000000000000db1e46a7e9890b842506e2775fd4723fbbe2d420609087f21"]) {
+            return 1096128;
+        } else if ([blockHashString isEqualToString:@"00000000000000029151942416b68ff4aada689b12e47cc09ce7b802ded57505"]) {
+            return 1096800;
+        } else if ([blockHashString isEqualToString:@"000000000000001c5cdb520ddc3ec0511790352f6177d5e598656f83690bd734"]) {
+            return 1096584;
+        } else if ([blockHashString isEqualToString:@"0000000000000012bf85edb70e524a05c56644b0bdb0ce4a2d6d12739463c52b"]) {
+            return 1096752;
+        } else if ([blockHashString isEqualToString:@"000000000000000e5535ad543a6bfb463bc8f0636aac6a3e7f79683b7c94bf6f"]) {
+            return 1097832;
+        } else if ([blockHashString isEqualToString:@"0000000000000010404aecc04aff5a2be47a5c6caeeea32160df9fe8c47511ed"]) {
+            return 1097856;
+        } else if ([blockHashString isEqualToString:@"0000000000000001cf3f3937abd607c9ab0a50a354edf3614378aca4fb8fdf5e"]) {
+            return 1098384;
+        } else if ([blockHashString isEqualToString:@"00000000000000157572263a4b5a3c7a22f10c66c423be1d5a51aa24bc9f724b"]) {
+            return 1097400;
+        } else if ([blockHashString isEqualToString:@"000000000000001dcf7e0c3a9130750540511e0cf631ea2f81aac7617c821755"]) {
+            return 1098504;
+        } else if ([blockHashString isEqualToString:@"00000000000000071e19fd57488218254d12b773d3a7f8b2dc53b9d45805c9a8"]) {
+            return 1096872;
+        } else if ([blockHashString isEqualToString:@"00000000000000095ea3c8e00a43086c7d5f6ececc6642721f733eb27229ff86"]) {
+            return 1097712;
+        } else if ([blockHashString isEqualToString:@"000000000000000eb3238f4d8a2f95b0a4692548b6547cf495e4ce790e61d2b5"]) {
+            return 1098192;
+        } else if ([blockHashString isEqualToString:@"0000000000000016570cdc593f871223b3aec795c1049c2d40c702925e0d2800"]) {
+            return 1098456;
+        } else if ([blockHashString isEqualToString:@"00000000000000169f9688971408aadfd3159740d11b9f504719ceaafe117a26"]) {
+            return 1098600;
+        } else if ([blockHashString isEqualToString:@"0000000000000000cfd7003a6aa0b1e0ae1c556a9b83a064771e2ba5a4668169"]) {
+            return 1097640;
+        } else if ([blockHashString isEqualToString:@"00000000000000247cb10a7d823736b672866e1d015ce1446a9e0b3c87eb25e5"]) {
+            return 1098336;
+        } else if ([blockHashString isEqualToString:@"000000000000001df6026dcd49b32b8cda38807cc475d6868679e6eb77e5edf4"]) {
+            return 1097952;
+        } else if ([blockHashString isEqualToString:@"000000000000000e78706ecf6d744a2edc5143d3325ade22940dc14ccfd3f938"]) {
+            return 1094400;
+        }
+        NSAssert(NO, @"All values must be here");
+        return UINT32_MAX;
+    };
+    
+    [self loadMasternodeListsForFiles:files baseMasternodeList:nil withSave:YES withReload:YES onChain:chain inContext:context blockHeightLookup:blockHeightLookup completion:^(BOOL success, NSDictionary * masternodeLists) {
+        [chain.chainManager.masternodeManager reloadMasternodeLists];
+        for (NSData * masternodeListBlockHash in masternodeLists) {
+            NSLog(@"Testing quorum of masternode list at height %u",blockHeightLookup(masternodeListBlockHash.UInt256));
+            DSMasternodeList * originalMasternodeList = [masternodeLists objectForKey:masternodeListBlockHash];
+            DSMasternodeList * reloadedMasternodeList = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListBlockHash.UInt256];
+            XCTAssert(reloadedMasternodeList != nil,@"reloadedMasternodeList should exist");
+#define LOG_QUORUM_ISSUE_COMPARISON_RESULT 1
+            if (!uint256_eq([originalMasternodeList masternodeMerkleRootWithBlockHeightLookup:blockHeightLookup], [reloadedMasternodeList calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup])) {
+                NSLog(@"%u original %@", blockHeightLookup(masternodeListBlockHash.UInt256), [originalMasternodeList toDictionaryUsingBlockHeightLookup:blockHeightLookup]);
+                NSLog(@"%u reloaded %@", blockHeightLookup(masternodeListBlockHash.UInt256), [reloadedMasternodeList toDictionaryUsingBlockHeightLookup:blockHeightLookup]);
+            } else {
+#if LOG_QUORUM_ISSUE_COMPARISON_RESULT
+                if ((blockHeightLookup(masternodeListBlockHash.UInt256)) == 1097280) {
+                    NSDictionary * comparisonResult = [originalMasternodeList compare:reloadedMasternodeList usingOurString:@"original" usingTheirString:@"reloaded" blockHeightLookup:blockHeightLookup];
+                    NSLog(@"%u %@", blockHeightLookup(masternodeListBlockHash.UInt256), comparisonResult);
+                }
+               
+#endif
+            }
+
+            XCTAssert(uint256_eq([originalMasternodeList masternodeMerkleRootWithBlockHeightLookup:blockHeightLookup], [reloadedMasternodeList calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]),@"These should be equal");
+            //reloadedMasternodeList.quorums
+        }
+        
+        [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:useCheckpointMasternodeLists];
+        dispatch_semaphore_signal(sem);
+    }];
+    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+}
+
+- (void)testMNLSavingAndRetrievingInIncorrectOrderFromDisk {
+    DSChain * chain = [DSChain mainnet];
+    __block NSManagedObjectContext * context = [NSManagedObjectContext chainContext];
+    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+    [chain chainManager];
+    [context performBlockAndWait:^{
+        DSChainEntity * chainEntity = [chain chainEntityInContext:context];
+        [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
+        [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
+        [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
+    }];
+    [chain.chainManager.masternodeManager reloadMasternodeLists];
+    NSArray * files = @[@"MNL_0_1090944", @"MNL_1090944_1091520", @"MNL_1091520_1091808", @"MNL_1091808_1092096", @"MNL_1092096_1092336", @"MNL_1092336_1092360", @"MNL_1092360_1092384", @"MNL_1092384_1092408", @"MNL_1092408_1092432", @"MNL_1092432_1092456", @"MNL_1092456_1092480", @"MNL_1092480_1092504", @"MNL_1092504_1092528", @"MNL_1092528_1092552", @"MNL_1092552_1092576", @"MNL_1092576_1092600", @"MNL_1092600_1092624", @"MNL_1092624_1092648", @"MNL_1092648_1092672", @"MNL_1092672_1092696", @"MNL_1092696_1092720", @"MNL_1092720_1092744", @"MNL_1092744_1092768", @"MNL_1092768_1092792", @"MNL_1092792_1092816", @"MNL_1092816_1092840", @"MNL_1092840_1092864", @"MNL_1092864_1092888", @"MNL_1092888_1092916"];
+    
+    uint32_t(^blockHeightLookup)(UInt256 blockHash) =  ^uint32_t(UInt256 blockHash) {
+        NSString * blockHashString = uint256_reverse_hex(blockHash);
+        if ([blockHashString isEqualToString:@"000000000000000bf16cfee1f69cd472ac1d0285d74d025caa27cebb0fb6842f"]) {
+            return 1090392;
+        } else if ([blockHashString isEqualToString:@"000000000000000d6f921ffd1b48815407c1d54edc93079b7ec37a14a9c528f7"]) {
+            return 1090776;
+        } else if ([blockHashString isEqualToString:@"000000000000000c559941d24c167053c5c00aea59b8521f5cef764271dbd3c5"]) {
+            return 1091280;
+        } else if ([blockHashString isEqualToString:@"0000000000000003269a36d2ce1eee7753a2d2db392fff364f64f5a409805ca3"]) {
+            return 1092840;
+        } else if ([blockHashString isEqualToString:@"000000000000001a505b133ea44b594b194f12fa08650eb66efb579b1600ed1e"]) {
+            return 1090368;
+        } else if ([blockHashString isEqualToString:@"0000000000000006998d05eff0f4e9b6a7bab1447534eccb330972a7ef89ef65"]) {
+            return 1091424;
+        } else if ([blockHashString isEqualToString:@"000000000000001d9b6925a0bc2b744dfe38ff7da2ca0256aa555bb688e21824"]) {
+            return 1090920;
+        } else if ([blockHashString isEqualToString:@"000000000000000c22e2f5ca2113269ec62193e93158558c8932ba1720cea64f"]) {
+            return 1092648;
+        } else if ([blockHashString isEqualToString:@"0000000000000020019489504beba1d6197857e63c44da3eb9e3b20a24f40d1e"]) {
+            return 1092168;
+        } else if ([blockHashString isEqualToString:@"00000000000000112e41e4b3afda8b233b8cc07c532d2eac5de097b68358c43e"]) {
+            return 1088640;
+        } else if ([blockHashString isEqualToString:@"00000000000000143df6e8e78a3e79f4deed38a27a05766ad38e3152f8237852"]) {
+            return 1090944;
+        } else if ([blockHashString isEqualToString:@"0000000000000028d39e78ee49a950b66215545163b53331115e6e64d4d80328"]) {
+            return 1091184;
+        } else if ([blockHashString isEqualToString:@"00000000000000093b22f6342de731811a5b3fa51f070b7aac6d58390d8bfe8c"]) {
+            return 1091664;
+        } else if ([blockHashString isEqualToString:@"00000000000000037187889dd360aafc49d62a7e76f4ab6cd2813fdf610a7292"]) {
+            return 1092504;
+        } else if ([blockHashString isEqualToString:@"000000000000000aee08f8aaf8a5232cc692ef5fcc016786af72bd9b001ae43b"]) {
+            return 1090992;
+        } else if ([blockHashString isEqualToString:@"000000000000002395b6c4e4cb829556d42c659b585ee4c131a683b9f7e37706"]) {
+            return 1092192;
+        } else if ([blockHashString isEqualToString:@"00000000000000048a9b52e6f46f74d92eb9740e27c1d66e9f2eb63293e18677"]) {
+            return 1091976;
+        } else if ([blockHashString isEqualToString:@"000000000000001b4d519e0a9215e84c3007597cef6823c8f1c637d7a46778f0"]) {
+            return 1091448;
+        } else if ([blockHashString isEqualToString:@"000000000000001730249b150b8fcdb1078cd0dbbfa04fb9a18d26bf7a3e80f2"]) {
+            return 1092528;
+        } else if ([blockHashString isEqualToString:@"000000000000001c3073ff2ee0af660c66762af38e2c5782597e32ed690f0f72"]) {
+            return 1092072;
+        } else if ([blockHashString isEqualToString:@"000000000000000c49954d58132fb8a1c90e4e690995396be91d8f27a07de349"]) {
+            return 1092624;
+        } else if ([blockHashString isEqualToString:@"00000000000000016200a3f98e44f4b9e65da04b86bad799e6bbfa8972f0cead"]) {
+            return 1090080;
+        } else if ([blockHashString isEqualToString:@"000000000000000a80933f2b9b8041fdfc6e94b77ba8786e159669f959431ff2"]) {
+            return 1092600;
+        } else if ([blockHashString isEqualToString:@"00000000000000153afcdccc3186ad2ca4ed10a79bfb01a2c0056c23fe039d86"]) {
+            return 1092456;
+        } else if ([blockHashString isEqualToString:@"00000000000000103bad71d3178a6c9a2f618d9d09419b38e9caee0fddbf664a"]) {
+            return 1092864;
+        } else if ([blockHashString isEqualToString:@"000000000000001b732bc6d52faa8fae97d76753c8e071767a37ba509fe5c24a"]) {
+            return 1092360;
+        } else if ([blockHashString isEqualToString:@"000000000000001a17f82d76a0d5aa2b4f90a6e487df366d437c34e8453f519c"]) {
+            return 1091112;
+        } else if ([blockHashString isEqualToString:@"000000000000000caa00c2c24a385513a1687367157379a57b549007e18869d8"]) {
+            return 1090680;
+        } else if ([blockHashString isEqualToString:@"0000000000000022e463fe13bc19a1fe654c817cb3b8e207cdb4ff73fe0bcd2c"]) {
+            return 1091736;
+        } else if ([blockHashString isEqualToString:@"000000000000001b33b86b6a167d37e3fcc6ba53e02df3cb06e3f272bb89dd7d"]) {
+            return 1092744;
+        } else if ([blockHashString isEqualToString:@"0000000000000006051479afbbb159d722bb8feb10f76b8900370ceef552fc49"]) {
+            return 1092432;
+        } else if ([blockHashString isEqualToString:@"0000000000000008cc37827fd700ec82ee8b54bdd37d4db4319496977f475cf8"]) {
+            return 1091328;
+        } else if ([blockHashString isEqualToString:@"0000000000000006242af03ba5e407c4e8412ef9976da4e7f0fa2cbe9889bcd2"]) {
+            return 1089216;
+        } else if ([blockHashString isEqualToString:@"000000000000001dc4a842ede88a3cc975e2ade4338513d546c52452ab429ba0"]) {
+            return 1091496;
+        } else if ([blockHashString isEqualToString:@"0000000000000010d30c51e8ce1730aae836b00cd43f3e70a1a37d40b47580fd"]) {
+            return 1092816;
+        } else if ([blockHashString isEqualToString:@"00000000000000212441a8ef2495d21b0b7c09e13339dbc34d98c478cc51f8e2"]) {
+            return 1092096;
+        } else if ([blockHashString isEqualToString:@"00000000000000039d7eb80e1bbf6f7f0c43f7f251f30629d858bbcf6a18ab58"]) {
+            return 1090728;
+        } else if ([blockHashString isEqualToString:@"0000000000000004532e9c4a1def38cd71f3297c684bfdb2043c2aec173399e0"]) {
+            return 1091904;
+        } else if ([blockHashString isEqualToString:@"000000000000000b73060901c41d098b91f69fc4f27aef9d7ed7f2296953e407"]) {
+            return 1090560;
+        } else if ([blockHashString isEqualToString:@"0000000000000016659fb35017e1f6560ba7036a3433bfb924d85e3fdfdd3b3d"]) {
+            return 1091256;
+        } else if ([blockHashString isEqualToString:@"000000000000000a3c6796d85c8c49b961363ee88f14bff10c374cd8dd89a9f6"]) {
+            return 1092696;
+        } else if ([blockHashString isEqualToString:@"000000000000000f33533ba1c5d72f678ecd87abe7e974debda238c53b391737"]) {
+            return 1092720;
+        } else if ([blockHashString isEqualToString:@"000000000000000150907537f4408ff4a8610ba8ce2395faa7e44541ce2b6c37"]) {
+            return 1090608;
+        } else if ([blockHashString isEqualToString:@"000000000000001977d3a578e0ac3e4969675a74afe7715b8ffd9f29fbbe7c36"]) {
+            return 1091400;
+        } else if ([blockHashString isEqualToString:@"0000000000000004493e40518e7d3aff585e84564bcd80927f96a07ec80259cb"]) {
+            return 1092480;
+        } else if ([blockHashString isEqualToString:@"000000000000000df5e2e0eb7eaa36fcef28967f7f12e539f74661e03b13bdba"]) {
+            return 1090704;
+        } else if ([blockHashString isEqualToString:@"00000000000000172f1765f4ed1e89ba4b717a475e9e37124626b02d566d31a2"]) {
+            return 1090632;
+        } else if ([blockHashString isEqualToString:@"0000000000000018e62a4938de3428ddaa26e381139489ce1a618ed06d432a38"]) {
+            return 1092024;
+        } else if ([blockHashString isEqualToString:@"000000000000000790bd24e65daaddbaeafdb4383c95d64c0d055e98625746bc"]) {
+            return 1091832;
+        } else if ([blockHashString isEqualToString:@"0000000000000005f28a2cb959b316cd4b43bd29819ea07c27ec96a7d5e18ab7"]) {
+            return 1092408;
+        } else if ([blockHashString isEqualToString:@"00000000000000165a4ace8de9e7a4ba0cddced3434c7badc863ff9e237f0c8a"]) {
+            return 1091088;
+        } else if ([blockHashString isEqualToString:@"00000000000000230ec901e4d372a93c712d972727786a229e98d12694be9d34"]) {
+            return 1090416;
+        } else if ([blockHashString isEqualToString:@"000000000000000bf51de942eb8610caaa55a7f5a0e5ca806c3b631948c5cdcc"]) {
+            return 1092336;
+        } else if ([blockHashString isEqualToString:@"000000000000002323d7ba466a9b671d335c3b2bf630d08f078e4adee735e13a"]) {
+            return 1090464;
+        } else if ([blockHashString isEqualToString:@"0000000000000019db2ad91ab0f67d90df222ce4057f343e176f8786865bcda9"]) {
+            return 1091568;
+        } else if ([blockHashString isEqualToString:@"0000000000000004a38d87062bf37ef978d1fc8718f03d9222c8aa7aa8a4470f"]) {
+            return 1090896;
+        } else if ([blockHashString isEqualToString:@"0000000000000022c909de83351791e0b69d4b4be34b25c8d54c8be3e8708c87"]) {
+            return 1091592;
+        } else if ([blockHashString isEqualToString:@"0000000000000008f3dffcf342279c8b50e49c47e191d3df453fdcd816aced46"]) {
+            return 1092792;
+        } else if ([blockHashString isEqualToString:@"000000000000001d1d7f1b88d6518e6248616c50e4c0abaee6116a72bc998679"]) {
+            return 1092048;
+        } else if ([blockHashString isEqualToString:@"0000000000000020de87be47c5c10a50c9edfd669a586f47f44fa22ae0b2610a"]) {
+            return 1090344;
+        } else if ([blockHashString isEqualToString:@"0000000000000014d1d8d12dd5ff570b06e76e0bbf55d762a94d13b1fe66a922"]) {
+            return 1091760;
+        } else if ([blockHashString isEqualToString:@"000000000000000962d0d319a96d972215f303c588bf50449904f9a1a8cbc7c2"]) {
+            return 1089792;
+        } else if ([blockHashString isEqualToString:@"00000000000000171c58d1d0dbae71973530aa533e4cd9cb2d2597ec30d9b129"]) {
+            return 1091352;
+        } else if ([blockHashString isEqualToString:@"0000000000000004acf649896a7b22783810d5913b31922e3ea224dd4530b717"]) {
+            return 1092144;
+        } else if ([blockHashString isEqualToString:@"0000000000000013479b902955f8ba2d4ce2eb47a7f9f8f1fe477ec4b405bddd"]) {
+            return 1090512;
+        } else if ([blockHashString isEqualToString:@"000000000000001be0bbdb6b326c98ac8a3e181a2a641379c7d4308242bee90b"]) {
+            return 1092216;
+        } else if ([blockHashString isEqualToString:@"000000000000001c09a68353536ccb24b51b74c642d5b6e7e385cff2debc4e64"]) {
+            return 1092120;
+        } else if ([blockHashString isEqualToString:@"0000000000000013974ed8e13d0a50f298be0f2b685bfcfd8896172db6d4a145"]) {
+            return 1090824;
+        } else if ([blockHashString isEqualToString:@"000000000000001dbcd3a23c131fedde3acd6da89275e7f9fcae03f3107da861"]) {
+            return 1092888;
+        } else if ([blockHashString isEqualToString:@"000000000000000a8812d75979aac7c08ac69179037409fd7a368372edd05d23"]) {
+            return 1090872;
+        } else if ([blockHashString isEqualToString:@"000000000000001fafca43cabdb0c6385daffa8a039f3b44b9b17271d7106704"]) {
+            return 1090800;
+        } else if ([blockHashString isEqualToString:@"0000000000000006e9693e34fc55452c82328f31e069df740655b55dd07cb58b"]) {
+            return 1091016;
+        } else if ([blockHashString isEqualToString:@"0000000000000010e7c080046121900cee1c7de7fe063c7d81405293a9764733"]) {
+            return 1092384;
+        } else if ([blockHashString isEqualToString:@"0000000000000022ef41cb09a617d87c12c6841eea47310ae6a4d1e2702bb3d3"]) {
+            return 1090752;
+        } else if ([blockHashString isEqualToString:@"0000000000000017705efcdaefd6a1856becc0b915de6fdccdc9e149c1ff0e8f"]) {
+            return 1091856;
+        } else if ([blockHashString isEqualToString:@"0000000000000000265a9516f35dd85d32d103d4c3b95e81969a03295f46cf0c"]) {
+            return 1091952;
+        } else if ([blockHashString isEqualToString:@"0000000000000002dfd994409f5b6185573ce22eae90b4a1c37003428071f0a8"]) {
+            return 1090968;
+        } else if ([blockHashString isEqualToString:@"000000000000001b8d6aaa56571d987ee50fa2e2e9a28a8482de7a4b52308f25"]) {
+            return 1091136;
+        } else if ([blockHashString isEqualToString:@"0000000000000020635160b49a18336031af2d25d9a37ea211d514f196220e9d"]) {
+            return 1090440;
+        } else if ([blockHashString isEqualToString:@"000000000000001bfb2ac93ebe89d9831995462f965597efcc9008b2d90fd29f"]) {
+            return 1091784;
+        } else if ([blockHashString isEqualToString:@"000000000000000028515b4c442c74e2af945f08ed3b66f05847022cb25bb2ec"]) {
+            return 1091688;
+        } else if ([blockHashString isEqualToString:@"000000000000000ed6b9517da9a1df88d03a5904a780aba1200b474dab0e2e4a"]) {
+            return 1090488;
+        } else if ([blockHashString isEqualToString:@"000000000000000b44a550a61f9751601065ff329c54d20eb306b97d163b8f8c"]) {
+            return 1091712;
+        } else if ([blockHashString isEqualToString:@"000000000000001d831888fbd1899967493856c1abf7219e632b8e73f25e0c81"]) {
+            return 1091064;
+        } else if ([blockHashString isEqualToString:@"00000000000000073b62bf732ab8654d27b1296801ab32b7ac630237665162a5"]) {
+            return 1091304;
+        } else if ([blockHashString isEqualToString:@"0000000000000004c0b03207179143f028c07ede20354fab68c731cb02f95fc8"]) {
+            return 1090656;
+        } else if ([blockHashString isEqualToString:@"000000000000000df9d9376b9c32ea640ecfac406b41445bb3a4b0ee6625e572"]) {
+            return 1091040;
+        } else if ([blockHashString isEqualToString:@"00000000000000145c3e1b3bb6f53d5e2dd441ac41c3cfe48a5746c7b168a415"]) {
+            return 1092240;
+        } else if ([blockHashString isEqualToString:@"000000000000000d8bf4cade14e398d69884e991591cb11ee7fec49167e4ff85"]) {
+            return 1092000;
+        } else if ([blockHashString isEqualToString:@"000000000000001d098ef14fa032b33bcfc8e559351be8cd689e03c9678256a9"]) {
+            return 1091472;
+        } else if ([blockHashString isEqualToString:@"0000000000000000c25139a9227273eb7547a1f558e62c545e62aeb236e66259"]) {
+            return 1090584;
+        } else if ([blockHashString isEqualToString:@"0000000000000010785f105cc7c256b5365c597a9212e99beda94c6eff0647c3"]) {
+            return 1091376;
+        } else if ([blockHashString isEqualToString:@"0000000000000000fafe0f7314104d81ab34ebd066601a38e5e914f2b3cefce9"]) {
+            return 1092552;
+        } else if ([blockHashString isEqualToString:@"000000000000000ddbfad338961f2d900d62f1c3b725fbd72052da062704901c"]) {
+            return 1090848;
+        } else if ([blockHashString isEqualToString:@"000000000000000e5d9359857518aaf3685bf8af55c675cf0d17a45383ca297f"]) {
+            return 1091520;
+        } else if ([blockHashString isEqualToString:@"0000000000000012b444de0be31d695b411dcc6645a3723932cabc6b9164531f"]) {
+            return 1092916;
+        } else if ([blockHashString isEqualToString:@"000000000000001c414007419fc22a2401b07ab430bf433c8cdfb8877fb6b5b7"]) {
+            return 1092672;
+        } else if ([blockHashString isEqualToString:@"000000000000000355efb9a350cc76c7624bf42abea845770a5c3adc2c5b93f4"]) {
+            return 1092576;
+        } else if ([blockHashString isEqualToString:@"000000000000000f327555478a9d580318cb6e15db059642eff84797bf133196"]) {
+            return 1091808;
+        } else if ([blockHashString isEqualToString:@"0000000000000003b3ea97e688f1bec5f95930950b54c1bb01bf67b029739696"]) {
+            return 1091640;
+        } else if ([blockHashString isEqualToString:@"000000000000001a0d96dbc0cac26e445454dd2506702eeee7df6ff35bdcf60e"]) {
+            return 1091544;
+        } else if ([blockHashString isEqualToString:@"000000000000001aac60fafe05124672b19a1c3727dc17f106f11295db1053a3"]) {
+            return 1092288;
+        } else if ([blockHashString isEqualToString:@"000000000000000e37bca1e08dff47ef051199f24e9104dad85014c323464069"]) {
+            return 1091208;
+        } else if ([blockHashString isEqualToString:@"0000000000000013dd0059e5f701a39c0903e7f16d393f55fc896422139a4291"]) {
+            return 1092768;
+        } else if ([blockHashString isEqualToString:@"000000000000000f4c8d5bdf6b89435d3a9789fce401286eb8f3f6eeb84f2a1d"]) {
+            return 1091160;
+        } else if ([blockHashString isEqualToString:@"000000000000001414ff2dd44ee4c01c02e6867228b4e1ff490f635f7de949a5"]) {
+            return 1091232;
+        } else if ([blockHashString isEqualToString:@"0000000000000013b130038d0599cb5a65165fc03b1b38fe2dd1a3bad6e253df"]) {
+            return 1092312;
+        } else if ([blockHashString isEqualToString:@"00000000000000082cb9d6d169dc625f64a6a24756ba796eaab131a998b42910"]) {
+            return 1091928;
+        } else if ([blockHashString isEqualToString:@"0000000000000001e358bce8df79c24def4787bf0bf7af25c040342fae4a18ce"]) {
+            return 1091880;
+        } else if ([blockHashString isEqualToString:@"00000000000000084005fab00e74c09c1319eaac2fd85fe4d3b2f8119254a058"]) {
+            return 1092912;
+        }
+        NSAssert(NO, @"All values must be here");
+        return UINT32_MAX;
+    };
+    
+    [self loadMasternodeListsForFiles:files baseMasternodeList:nil withSave:YES withReload:NO onChain:chain inContext:context blockHeightLookup:blockHeightLookup completion:^(BOOL success, NSDictionary * masternodeLists) {
+        DSMasternodeList * masternodeList1092916 = [masternodeLists objectForKey:@"1f5364916bbcca323972a34566cc1d415b691de30bde44b41200000000000000".hexToData];
+        
+        DSMasternodeList * masternodeList1092888 = [masternodeLists objectForKey:@"61a87d10f303aefcf9e77592a86dcd3adeed1f133ca2d3bc1d00000000000000".hexToData];
+        
+        [chain.chainManager.masternodeManager reloadMasternodeLists]; //simulate that we turned off the phone
+        
+        
+        DSMasternodeList * reloadedMasternodeList1092916 = [chain.chainManager.masternodeManager masternodeListForBlockHash:@"0000000000000012b444de0be31d695b411dcc6645a3723932cabc6b9164531f".hexToData.reverse.UInt256];
+        
+        DSMasternodeList * reloadedMasternodeList1092888 = [chain.chainManager.masternodeManager masternodeListForBlockHash:@"000000000000001dbcd3a23c131fedde3acd6da89275e7f9fcae03f3107da861".hexToData.reverse.UInt256];
+        
+        
+        NSArray * localProTxHashes1092916 = [masternodeList1092916.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allKeys];
+        localProTxHashes1092916 = [localProTxHashes1092916 sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+            UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
+            UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
+            return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
+        }];
+        
+        NSArray * proTxHashes1092916 = [reloadedMasternodeList1092916.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allKeys];
+        proTxHashes1092916 = [proTxHashes1092916 sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+            UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
+            UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
+            return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
+        }];
+        
+        XCTAssertEqualObjects(localProTxHashes1092916, proTxHashes1092916);
+        
+        NSArray * localProTxHashes1092888 = [masternodeList1092888.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allKeys];
+        localProTxHashes1092888 = [localProTxHashes1092888 sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+            UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
+            UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
+            return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
+        }];
+        
+        NSArray * proTxHashes1092888 = [reloadedMasternodeList1092888.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allKeys];
+        proTxHashes1092888 = [proTxHashes1092888 sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+            UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
+            UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
+            return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
+        }];
+        
+        XCTAssertEqualObjects(localProTxHashes1092888, proTxHashes1092888);
+        
+        NSMutableArray * simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes = [NSMutableArray array];
+        for (NSData * proTxHash in localProTxHashes1092888) {
+            DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [reloadedMasternodeList1092888.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash objectForKey:proTxHash];
+            [simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes addObject:[NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash]];
+        }
+        
+        NSMutableArray * reloadedSimplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes = [NSMutableArray array];
+        for (NSData * proTxHash in proTxHashes1092888) {
+            DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [reloadedMasternodeList1092888.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash objectForKey:proTxHash];
+            [reloadedSimplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes addObject:[NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash]];
+        }
+        
+        XCTAssertEqualObjects(reloadedMasternodeList1092888.providerTxOrderedHashes , masternodeList1092888.providerTxOrderedHashes);
+        
+        
+        XCTAssertEqualObjects(reloadedMasternodeList1092888.hashesForMerkleRoot , masternodeList1092888.hashesForMerkleRoot);
+        
+        XCTAssertEqualObjects(simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes, reloadedSimplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes);
+        XCTAssertEqualObjects(uint256_data([reloadedMasternodeList1092916 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]),uint256_data([masternodeList1092916 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]),@"");
+        XCTAssertEqualObjects(uint256_data([reloadedMasternodeList1092888 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]),uint256_data([masternodeList1092888 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]),@"");
+        
+        NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+        NSString *filePath = [bundle pathForResource:@"MNL_1092888_1092912" ofType:@"dat"];
+        NSData * message = [NSData dataWithContentsOfFile:filePath];
+        
+        NSUInteger length = message.length;
+        NSUInteger offset = 0;
+        
+        if (length - offset < 32) return;
+        UInt256 baseBlockHash = [message UInt256AtOffset:offset];
+        offset += 32;
+        
+        if (length - offset < 32) return;
+        __block UInt256 blockHash1092912 = [message UInt256AtOffset:offset];
+        offset += 32;
+        
+        NSLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)",uint256_reverse_hex(baseBlockHash), blockHeightLookup(baseBlockHash), uint256_reverse_hex(blockHash1092912),blockHeightLookup(blockHash1092912));
+        
+        
+        [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:reloadedMasternodeList1092888 masternodeListLookup:^DSMasternodeList * _Nonnull(UInt256 blockHash) {
+            if ([masternodeLists objectForKey:uint256_data(blockHash)]) {
+                return [masternodeLists objectForKey:uint256_data(blockHash)];
+            }
+            return nil; //no known previous lists
+        } lastBlock:nil onChain:chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
+            NSString * blockHashString = uint256_reverse_hex(blockHash);
+            if ([blockHashString isEqualToString:@"000000000000001dbcd3a23c131fedde3acd6da89275e7f9fcae03f3107da861"]) {
+                return 1092888;
+            } else if ([blockHashString isEqualToString:@"00000000000000084005fab00e74c09c1319eaac2fd85fe4d3b2f8119254a058"]) {
+                return 1092912;
+            }
+            NSAssert(NO, @"All values must be here");
+            return UINT32_MAX;
+        } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList1092912, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
+            XCTAssert(foundCoinbase,@"Did not find coinbase at height %u",[chain heightForBlockHash:blockHash1092912]);
+            //XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block
+            XCTAssert(rootMNListValid,@"rootMNListValid not valid at height %u",[chain heightForBlockHash:blockHash1092912]);
+            XCTAssert(rootQuorumListValid,@"rootQuorumListValid not valid at height %u",[chain heightForBlockHash:blockHash1092912]);
+            XCTAssert(validQuorums,@"validQuorums not valid at height %u",[chain heightForBlockHash:blockHash1092912]);
+            
+            //BOOL equal = uint256_eq(masternodeListMerkleRoot.UInt256, [masternodeList masternodeMerkleRoot]);
+            //XCTAssert(equal, @"MNList merkle root should be valid");
+            
+            
+            [DSMasternodeManager saveMasternodeList:masternodeList1092912 toChain:chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums createUnknownBlocks:YES inContext:context completion:^(NSError * _Nonnull error) {
+                NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+                NSString *filePath = [bundle pathForResource:@"MNL_1092916_1092940" ofType:@"dat"];
+                NSData * message = [NSData dataWithContentsOfFile:filePath];
+                
+                NSUInteger length = message.length;
+                NSUInteger offset = 0;
+                
+                if (length - offset < 32) return;
+                UInt256 baseBlockHash = [message UInt256AtOffset:offset];
+                offset += 32;
+                
+                if (length - offset < 32) return;
+                __block UInt256 blockHash1092940 = [message UInt256AtOffset:offset];
+                offset += 32;
+                
+                NSLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)",uint256_reverse_hex(baseBlockHash), [chain heightForBlockHash:baseBlockHash], uint256_reverse_hex(blockHash1092940),[chain heightForBlockHash:blockHash1092940]);
+                
+                [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:reloadedMasternodeList1092916 masternodeListLookup:^DSMasternodeList * _Nonnull(UInt256 blockHash) {
+                    if ([masternodeLists objectForKey:uint256_data(blockHash)]) {
+                        return [masternodeLists objectForKey:uint256_data(blockHash)];
+                    }
+                    if (uint256_eq(masternodeList1092912.blockHash,blockHash)) {
+                        return masternodeList1092912;
+                    }
+                    return nil;
+                } lastBlock:nil onChain:chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
+                    NSString * blockHashString = uint256_reverse_hex(blockHash);
+                    if ([blockHashString isEqualToString:@"000000000000001e549677be4ad8cb89534b150678a09018da87ffda7d048d32"]) {
+                        return 1092940;
+                    } else if ([blockHashString isEqualToString:@"00000000000000084005fab00e74c09c1319eaac2fd85fe4d3b2f8119254a058"]) {
+                        return 1092912;
+                    }
+                    NSAssert(NO, @"All values must be here");
+                    return UINT32_MAX;
+                } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList1092940, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
+                    XCTAssert(foundCoinbase,@"Did not find coinbase at height %u",[chain heightForBlockHash:blockHash1092940]);
+                    //XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block
+                    XCTAssert(rootMNListValid,@"rootMNListValid not valid at height %u",[chain heightForBlockHash:blockHash1092940]);
+                    XCTAssert(rootQuorumListValid,@"rootQuorumListValid not valid at height %u",[chain heightForBlockHash:blockHash1092940]);
+                    XCTAssert(validQuorums,@"validQuorums not valid at height %u",[chain heightForBlockHash:blockHash1092940]);
+                    
+                    DSQuorumEntry * quorum1092912 = [[[[addedQuorums allValues] firstObject] allValues] firstObject];
+                    
+                    //1092912 and 1092916 are the same, 1092916 is older though and is original 1092912 is based off a reloaded 109
+                    
+                    NSArray * masternodeScores1092912 = [masternodeList1092912 scoresForQuorumModifier:quorum1092912.llmqQuorumHash];
+                    
+                    NSArray * masternodeScores1092916 = [masternodeList1092916 scoresForQuorumModifier:quorum1092912.llmqQuorumHash];
+                    
+                    //                BOOL a = [quorum1092912 validateWithMasternodeList:masternodeList1092912];
+                    //
+                    //                BOOL b = [quorum1092912 validateWithMasternodeList:masternodeList1092916];
+                    //
+                    //
+                    
+                    //                NSArray * masternodesWithNoConfirmationHash1092912 = [[[NSSet setWithArray:masternodeList1092912.simplifiedMasternodeEntries] objectsPassingTest:^BOOL(id  _Nonnull obj, BOOL * _Nonnull stop) {
+                    //                    return uint256_is_zero(((DSSimplifiedMasternodeEntry*)obj).confirmedHash);
+                    //                }] allObjects];
+                    //
+                    //                NSArray * masternodesWithNoConfirmationHash1092916 = [[[NSSet setWithArray:masternodeList1092916.simplifiedMasternodeEntries] objectsPassingTest:^BOOL(id  _Nonnull obj, BOOL * _Nonnull stop) {
+                    //                    return uint256_is_zero(((DSSimplifiedMasternodeEntry*)obj).confirmedHash);
+                    //                }] allObjects];
+                    //
+                    //                NSArray * reloadedMasternodesWithNoConfirmationHash1092916 = [[[NSSet setWithArray:reloadedMasternodeList1092916.simplifiedMasternodeEntries] objectsPassingTest:^BOOL(id  _Nonnull obj, BOOL * _Nonnull stop) {
+                    //                    return uint256_is_zero(((DSSimplifiedMasternodeEntry*)obj).confirmedHash);
+                    //                }] allObjects];
+                    
+                    //ours means reloaded
+                    
+                    //                NSDictionary * interesting = [masternodeList1092912 compare:masternodeList1092916];
+                    
+                    XCTAssertEqualObjects(masternodeScores1092912,masternodeScores1092916,@"These should be the same");
+                    
+                    NSArray<DSSimplifiedMasternodeEntry*> * masternodes1092912 = [masternodeList1092912 masternodesForQuorumModifier:quorum1092912.llmqQuorumHash quorumCount:[DSQuorumEntry quorumSizeForType:quorum1092912.llmqType]];
+                    
+                    NSArray<DSSimplifiedMasternodeEntry*> * masternodes1092916 = [masternodeList1092916 masternodesForQuorumModifier:quorum1092912.llmqQuorumHash quorumCount:[DSQuorumEntry quorumSizeForType:quorum1092912.llmqType]];
+                    
+                    XCTAssertEqualObjects(masternodes1092912,masternodes1092916,@"These should be the same");
+                    //                NSMutableArray * publicKeyArray = [NSMutableArray array];
+                    //                uint32_t i = 0;
+                    //                for (DSSimplifiedMasternodeEntry * masternodeEntry in masternodes) {
+                    //                    if ([self.signersBitset bitIsTrueAtIndex:i]) {
+                    //                        DSBLSKey * masternodePublicKey = [DSBLSKey blsKeyWithPublicKey:[masternodeEntry operatorPublicKeyAtBlockHash:masternodeList.blockHash] onChain:self.chain];
+                    //                        [publicKeyArray addObject:masternodePublicKey];
+                    //                    }
+                    //                    i++;
+                    //                }
+                    //                [addedQuorums[0] val]
+                    //
+                    
+                    NSError * error = nil;
+                    
+                    [DSMasternodeManager saveMasternodeList:masternodeList1092940 toChain:chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums createUnknownBlocks:YES inContext:context completion:^(NSError * _Nonnull error) {
+                        dispatch_semaphore_signal(sem);
+                    }];
+                }];
+            }];
+        }];
+    }];
+    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+}
 
 -(void)testTestnetQuorumVerification {
     
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
     NSString *filePath = [bundle pathForResource:@"MNL_0_122928" ofType:@"dat"];
+    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
     
     NSData * message = [NSData dataWithContentsOfFile:filePath];
     
@@ -1339,13 +2898,66 @@
     
     NSLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)",uint256_reverse_hex(baseBlockHash), [chain heightForBlockHash:baseBlockHash], uint256_reverse_hex(blockHash119064),[chain heightForBlockHash:blockHash119064]);
     
-    XCTAssert(uint256_eq(chain.genesisHash, baseBlockHash) || uint256_is_zero(baseBlockHash),@"Base block hash should be from chain origin");
-    
-    
     [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:nil masternodeListLookup:^DSMasternodeList * _Nonnull(UInt256 blockHash) {
         return nil; //no known previous lists
     } lastBlock:nil onChain:chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
-        return 122928;
+        NSString * blockHashString = uint256_reverse_hex(blockHash);
+        
+        if ([blockHashString isEqualToString:@"0000000009b4a670292967a9cd8da4ecad05586179a60e987a9b71b2c3ea1a58"]) {
+            return 122904;
+        } else if ([blockHashString isEqualToString:@"00000000054437d43f5d12eaa4898d8b85e8521b1897674ee847f070045669ad"]) {
+            return 122664;
+        } else if ([blockHashString isEqualToString:@"000000000525063bee5e6935224a03d160b21965bba60320802c8f3201d0ebae"]) {
+            return 122736;
+        } else if ([blockHashString isEqualToString:@"000000000d201a317e82baaf536f889c83b62add5bd0375744ce1ee77e3d099f"]) {
+            return 122760;
+        } else if ([blockHashString isEqualToString:@"0000000003bb193de9431c474ac0247bc20cfc2a318084329ea88fc642b554e3"]) {
+            return 122616;
+        } else if ([blockHashString isEqualToString:@"000000000821a7211313a614aa3f4379af7870a38740a770d7baffd3bb6578e9"]) {
+            return 122856;
+        } else if ([blockHashString isEqualToString:@"0000000008e87f07d3d1abbaa196d68cd4bf7b19ef0ddb0cbbcf1eb86f7aea46"]) {
+            return 122880;
+        } else if ([blockHashString isEqualToString:@"0000000006cb4b5de2a176af028d859a1499a384f8c88f243f81f01bbc729c91"]) {
+            return 122832;
+        } else if ([blockHashString isEqualToString:@"000000000a7c1dfff2586d2a635dd9b8ae491aae1b6ca72bc9070d1bd0cd50bc"]) {
+            return 122424;
+        } else if ([blockHashString isEqualToString:@"000000000bca30e387a942d9dbcf6ad2273ab6061c50e5dc8282c6ff73cc3c99"]) {
+            return 122376;
+        } else if ([blockHashString isEqualToString:@"0000000002ef3d706192992b6823ed1c6221a794d1225346c97c7a3d75c88b3f"]) {
+            return 122640;
+        } else if ([blockHashString isEqualToString:@"000000000282ab23f92f5b517325e8da93ae470a9de3fe3aeebfcaa54cb48155"]) {
+            return 122352;
+        } else if ([blockHashString isEqualToString:@"0000000003d2d2527624d1509885f0ab3d38d476d67c6fe0da7f5df8c460a675"]) {
+            return 122520;
+        } else if ([blockHashString isEqualToString:@"000000000b6e93b1c97696e5de41fb3e9b94fab2df5654c1c2ddad636a6a85e3"]) {
+            return 122472;
+        } else if ([blockHashString isEqualToString:@"000000000ce60869ccd9258c81307a71457581d4ce0f8e684aeda300a481d9a5"]) {
+            return 122568;
+        } else if ([blockHashString isEqualToString:@"0000000001d975dfc73df9040e894576f27f6c252f1540b1c092c80353cdb823"]) {
+            return 122928;
+        } else if ([blockHashString isEqualToString:@"00000000094f05e8cbf8c8fca55f688f4fbb6ec3624dbda9eab1039f005e64de"]) {
+            return 122448;
+        } else if ([blockHashString isEqualToString:@"000000000108e218babaca583a3bc69f1273e6468e7eb27078da6374cdf14bb8"]) {
+            return 122544;
+        } else if ([blockHashString isEqualToString:@"0000000015f89c20b07c7e6a5df001bd9838a1eee4d33a1468860daeab8d2ba3"]) {
+            return 122808;
+        } else if ([blockHashString isEqualToString:@"0000000003a583ca0e218394876ddce04a94274add270c24ebd21b6570b0b202"]) {
+            return 122712;
+        } else if ([blockHashString isEqualToString:@"0000000004c19db86b34bc9b5288b5af2aaff507e8474fa2db99e1ea03bacdfe"]) {
+            return 122328;
+        } else if ([blockHashString isEqualToString:@"0000000002738de17d2db957ddbdd207d66c2e8977ba8d7d8da541b67d4eb0fa"]) {
+            return 122592;
+        } else if ([blockHashString isEqualToString:@"0000000007697fd69a799bfa26576a177e817bc0e45b9fcfbf48b362b05aeff2"]) {
+            return 72000;
+        } else if ([blockHashString isEqualToString:@"0000000006221f59fb1bc78200724447db51545cc43ffd5a78eed78106bbdb1a"]) {
+            return 122784;
+        } else if ([blockHashString isEqualToString:@"0000000002ed5b13979a23330c5e219ea530ae801293df74d38c6cd6e7be78b9"]) {
+            return 122688;
+        } else if ([blockHashString isEqualToString:@"0000000000bee166c1c3194f50f667900319e1fd9666aef8ec4a10accfbf3df3"]) {
+            return 122400;
+        }
+        NSAssert(NO, @"All values must be here");
+        return UINT32_MAX;
     } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList119064, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
         XCTAssert(foundCoinbase,@"Did not find coinbase at height %u",[chain heightForBlockHash:blockHash119064]);
         //XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block
@@ -1380,7 +2992,18 @@
             [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:masternodeList119064 masternodeListLookup:^DSMasternodeList * _Nonnull(UInt256 blockHash) {
                 return nil; //no known previous lists
             } lastBlock:nil onChain:chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
-                return 123000;
+                NSString * blockHashString = uint256_reverse_hex(blockHash);
+                if ([blockHashString isEqualToString:@"000000000577855d5599ce9a89417628233a6ccf3a86b2938b191f3dfed2e63d"]) {
+                    return 123000;
+                } else if ([blockHashString isEqualToString:@"0000000003b852d8331f850491aeca3d91b43b3ef7af8208c82814c0e06cd75c"]) {
+                    return 122952;
+                } else if ([blockHashString isEqualToString:@"0000000001d975dfc73df9040e894576f27f6c252f1540b1c092c80353cdb823"]) {
+                    return 122928;
+                } else if ([blockHashString isEqualToString:@"0000000005938a06c7e88a5cd3a950655bde3ed7046e9ffad542ad5902395d2b"]) {
+                    return 122976;
+                }
+                NSAssert(NO, @"All values must be here");
+                return UINT32_MAX;
             } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull blockHash119200, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
                 XCTAssert(foundCoinbase,@"Did not find coinbase at height %u",[chain heightForBlockHash:blockHash]);
                 //XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block
@@ -1457,18 +3080,21 @@
                 
                 XCTAssert(quorumToVerify.verified,@"Unable to verify quorum");
                 
+                dispatch_semaphore_signal(sem);
+                
             }];
             
         }
         
     }];
+    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
 }
 
 -(void)testTestnetSizeQuorumVerification {
     
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
     NSString *filePath = [bundle pathForResource:@"MNL_0_370368" ofType:@"dat"];
-    
+    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
     NSData * message = [NSData dataWithContentsOfFile:filePath];
     
     DSChain * chain = [DSChain testnet];
@@ -1557,68 +3183,14 @@
                 
                 XCTAssertEqual(masternodes2.count, 301, @"All masternodes should be used");
                 
-                NSArray * properOrder = @[@"c24aea30305d539887223fd923df775644b1d86db0aac8c654026e823b549cd7",
-                                          @"869f7f2054a6ed4241967afb74c3b1a07701d2772b368eb0bbfd2e3365adf6f3",
-                                          @"db85af3dad4d35c89f9c2ae0f932c70216b588611f3d250f71145a64cd0cc814",
-                                          @"11eabc1e72394af02bbe86815975d054816fe69006fdc64c6d7a06b585e5c311",
-                                          @"62e9acb81381fd2b2d41ed742af24f39e1dd23237b119e88f37de32bdde477eb",
-                                          @"f5a48b2747f5a7b91b00d00ca510c5f82f1670416ddb17f635634c9d78ecfb56",
-                                          @"f1eb4ac02ab1acbace0a01328e204c4fd7dec5e53a72cccac7729c5802dbeaf4",
-                                          @"72a6a2a5c2fb260fe3d41913ae019feb1d2489867e85f57cd1fa994bbe3458f1",
-                                          @"fbb1a1aa283faeb8082a7331c5010f13272f7ce6cb24845b3d1f260f7cb75423",
-                                          @"8aa3403855cb28266f9ac3a6a86a38598fe73194501b873254377f67fd2bd9d0",
-                                          @"f5ff9fbf1daf5db3539c7e307d9d50b12bb58a491b2f684c123256fd8193aa22",
-                                          @"f773def21e01af33f508b4e978631b99405fd1ad3947984d3bbca5b41b221175",
-                                          @"7d2cf73f05abc970b959e7de9beafeeb953a892f65253c4f17240af69562c157",
-                                          @"7504ff244e65de04c91640380c0c996f1f5b09073a8eb387ceba1a3c1ba18ff7",
-                                          @"82188f383d81425a75be96d075a36a4d553c275b57ebbb6e5d25da1ef03a2a73",
-                                          @"5aa7b0778c53e048abacecf9e63558fea80ea270ffb13ed12cb71f9b5ea08739",
-                                          @"035c55ab6fdd3e67b4aabb21d2baaa4507f5bb3c0954aed2353cabf9ec67e0d9",
-                                          @"7d336336b7e8910f518b2b270c6d72a2d7fc05aec3c6720108da80805ffc3aab",
-                                          @"bac5f35e6bd0bec2b4135ac2056c09714d8e6deb7c837d4f82229ed05ed539d7",
-                                          @"0fb12eef8c8736fc3e537a531facc6a6b445ea4394a008314d06684f4d43de1b",
-                                          @"db7fde05ba97f0e66eb623f6bfeb8f5c59eb3ebe37949033916796c274521d92",
-                                          @"5ab82a5348b5d4c126b0c172665d364352be37c96ce442e710d4a844a6f80bf9",
-                                          @"dfab7fd7e6f141d1ad7ff9fcaf8dafaf85b05dafc9058b376a33c6f4ee1da607",
-                                          @"a79311b6e5dcc1c1e4ac21a7252a7a830df0d784f737abf2bac5e6f2853f4d66",
-                                          @"9d3664f872028a8ac0fe867129f4027e96ee9747a4690a29cae3d6e84311b47d",
-                                          @"cc36055f36345b85a2b8176e79feff0ff822c490691c7f8e8d3348b4b1a1d8ac",
-                                          @"9212f5312730c7881b882b9fb7864dc686fa5a585b7a93253ccf1ce87ee59331",
-                                          @"32e5ad5cf9a06eb13e0f65cb7ecde1a93ef24995d07355fac2ff05ebd5b9ddbf",
-                                          @"8d0fdff45a02323afdbb8807c85b8542314b451611f71fe857d258db50d90fd6",
-                                          @"3005473d3e4b73c7b08e46eaeb59a4aed97b516512d9a4d9bece3d0f8a0a6a1e",
-                                          @"16dd484054212621d9ed312bfa4eb4958a14f4d9596143459304644034f73994",
-                                          @"a0d428edcf2ad412c198e8e914c64911b6a144d665ef6e1df6c9c96819695a5e",
-                                          @"c824bf8b44eeb1fa9c652e2c17b6eb11e91d9dc6567851e0a9c0b4720e75a70d",
-                                          @"725eb7b78e1c2823e8cdf3360ef0afff554866d0264984f82bfd9a440deaea9b",
-                                          @"a2d79b17e6c132dbe348995d6c0f5f36f90bace835748e77778a8ab8f25ba792",
-                                          @"4e60af72569f2922b1bd0dc630e38b3d0be8ec0960467a0aab45abe52696cbf3",
-                                          @"869b6700423da629920dc2101ec88e894f450f66aa751879dce0468945e04179",
-                                          @"87d515401a0fbc402a747e63e7d44c54d68b049cddd58a4a49f12948601b0b70",
-                                          @"fbfd403a9a4f7009be080a818b9804bc7627ad4621bd27322d7e31b1fd698639",
-                                          @"ca6ffccd65d35bc6d31fd5ad79815c3d840ce65351a094484bcdc3f0d4ea3c63",
-                                          @"eacf149c93ee560f91f83c99d0167f586aefd4534432f1593fc9eee39e7c0640",
-                                          @"6c91363d97b286e921afb5cf7672c88a2f1614d36d32058c34bef8b44e026007",
-                                          @"0569ce8b1a5fddf85850b5415b0435c46e198a8f146b1344bd618c8fc6e9e541",
-                                          @"24b8107bc9c59dc4327824a1071d643fda4976131ba64dd4802b5dd3eb79ce6f",
-                                          @"8393d3bd5423068c026bb7c118cfae9f61b94c495bf7898cb63b777b61d5cd1d",
-                                          @"6234c6ef0f64f704045623c2802c6a8871c2a2e168d80190ff8e039ddd8dcef5",
-                                          @"384ef1d5cdbc668f4cd51d0859e801e5ade7d6011cc000d8788c79c5015dc433",
-                                          @"5f7825bb16aa754c5b4fbbe4be4a2e9f1ecc071e4abfbafe710baa2ca21156c1",
-                                          @"78c43475cc270d075a38bf9959c590492dc8682a6feb46157444d29de4a13b8b",
-                                          @"16e4599e188b5551cd6a25e77a64e477f27b8012e07658dee354a8c4f13ed4a8"];
-                
-                //XCTAssertEqualObjects(masternodeHashOrder, properOrder);
-                
-                [quorumToVerify validateWithMasternodeList:masternodeList370368];
-                
-                XCTAssert(quorumToVerify.verified,@"Unable to verify quorum");
+                dispatch_semaphore_signal(sem);
                 
             }];
             
         }
         
     }];
+    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
 }
 
 //-(void)testMasternodeListLoading { // not part of unit tests
