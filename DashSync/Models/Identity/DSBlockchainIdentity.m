@@ -1951,7 +1951,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     NSString * entropyString = [DSKey randomAddressForChain:self.chain];
     NSArray * usernamePreorderDocuments = [self preorderDocumentsForUnregisteredUsernameFullPaths:unregisteredUsernameFullPaths usingEntropyString:entropyString inContext:context error:error];
     if (![usernamePreorderDocuments count]) return nil;
-    DSDocumentTransition * transition = [[DSDocumentTransition alloc] initForDocuments:usernamePreorderDocuments withTransitionVersion:1 blockchainIdentityUniqueId:self.uniqueID usingEntropyString:entropyString onChain:self.chain];
+    DSDocumentTransition * transition = [[DSDocumentTransition alloc] initForDocuments:usernamePreorderDocuments withTransitionVersion:1 blockchainIdentityUniqueId:self.uniqueID onChain:self.chain];
     return transition;
 }
 
@@ -1959,7 +1959,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     NSString * entropyString = [DSKey randomAddressForChain:self.chain];
     NSArray * usernamePreorderDocuments = [self domainDocumentsForUnregisteredUsernameFullPaths:unregisteredUsernameFullPaths usingEntropyString:entropyString inContext:context error:error];
     if (![usernamePreorderDocuments count]) return nil;
-    DSDocumentTransition * transition = [[DSDocumentTransition alloc] initForDocuments:usernamePreorderDocuments withTransitionVersion:1 blockchainIdentityUniqueId:self.uniqueID usingEntropyString:entropyString onChain:self.chain];
+    DSDocumentTransition * transition = [[DSDocumentTransition alloc] initForDocuments:usernamePreorderDocuments withTransitionVersion:1 blockchainIdentityUniqueId:self.uniqueID onChain:self.chain];
     return transition;
 }
 
@@ -2531,23 +2531,45 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     return YES;
 }
 
--(DPDocument*)matchingDashpayUserProfileDocumentForEntropyString:(NSString*)entropyString inContext:(NSManagedObjectContext*)context {
+-(DPDocument*)matchingDashpayUserProfileDocumentInContext:(NSManagedObjectContext*)context {
     //The revision must be at least at 1, otherwise nothing was ever done
     DSDashpayUserEntity * matchingDashpayUser = [self matchingDashpayUserInContext:context];
     if (matchingDashpayUser && matchingDashpayUser.localProfileDocumentRevision) {
-        __block DSStringValueDictionary * dataDictionary = nil;
+        __block DSMutableStringValueDictionary * dataDictionary = nil;
         
+        __block NSString * entropyString = nil;
+        __block NSData * documentIdentifier = nil;
         [context performBlockAndWait:^{
-            dataDictionary = @{
-                @"publicMessage": matchingDashpayUser.publicMessage?matchingDashpayUser.publicMessage:@"",
-                @"avatarUrl": matchingDashpayUser.avatarPath?matchingDashpayUser.avatarPath:@"https://api.adorable.io/avatars/120/example",
-                @"displayName": matchingDashpayUser.displayName?matchingDashpayUser.displayName:(self.currentDashpayUsername?self.currentDashpayUsername:@""),
-                @"$revision": @(matchingDashpayUser.localProfileDocumentRevision)
-            };
+            
+            dataDictionary = [@{
+                @"$updatedAt": @(matchingDashpayUser.updatedAt),
+            } mutableCopy];
+            if (matchingDashpayUser.createdAt == matchingDashpayUser.updatedAt) {
+                dataDictionary[@"$createdAt"] = @(matchingDashpayUser.createdAt);
+            } else {
+                dataDictionary[@"$revision"] = @(matchingDashpayUser.localProfileDocumentRevision);
+            }
+            if (matchingDashpayUser.publicMessage) {
+                dataDictionary[@"publicMessage"] = matchingDashpayUser.publicMessage;
+            }
+            if (matchingDashpayUser.avatarPath) {
+                dataDictionary[@"avatarUrl"] = matchingDashpayUser.avatarPath;
+            }
+            if (matchingDashpayUser.displayName) {
+                dataDictionary[@"displayName"] = matchingDashpayUser.displayName;
+            }
+            entropyString = matchingDashpayUser.originalEntropyString;
+            documentIdentifier = matchingDashpayUser.documentIdentifier;
         }];
         NSError * error = nil;
-        DPDocument * document = [self.dashpayDocumentFactory documentOnTable:@"profile" withDataDictionary:dataDictionary usingEntropy:entropyString error:&error];
-        return document;
+        if (documentIdentifier == nil) {
+            NSAssert(entropyString, @"Entropy string must be present");
+            DPDocument * document = [self.dashpayDocumentFactory documentOnTable:@"profile" withDataDictionary:dataDictionary usingEntropy:entropyString error:&error];
+            return document;
+        } else {
+            DPDocument * document = [self.dashpayDocumentFactory documentOnTable:@"profile" withDataDictionary:dataDictionary usingDocumentIdentifier:documentIdentifier error:&error];
+            return document;
+        }
     } else {
         return nil;
     }
@@ -2722,7 +2744,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
     NSString * entropyString = [DSKey randomAddressForChain:self.chain];
     DPDocument * document = [potentialFriendship contactRequestDocumentWithEntropy:entropyString];
-    [self.DAPIClient sendDocument:document forIdentity:self contract:contract usingEntropyString:entropyString completion:^(NSError * _Nullable error) {
+    [self.DAPIClient sendDocument:document forIdentity:self contract:contract completion:^(NSError * _Nullable error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             if (completion) {
@@ -2851,18 +2873,14 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             }
         }
     }];
-    
-    
-    
 }
 
 // MARK: Profile
 
 -(DSDocumentTransition*)profileDocumentTransitionInContext:(NSManagedObjectContext*)context {
-    NSString * entropyString = [DSKey randomAddressForChain:self.chain];
-    DPDocument * profileDocument = [self matchingDashpayUserProfileDocumentForEntropyString:entropyString inContext:context];
+    DPDocument * profileDocument = [self matchingDashpayUserProfileDocumentInContext:context];
     if (!profileDocument) return nil;
-    DSDocumentTransition * transition = [[DSDocumentTransition alloc] initForDocuments:@[profileDocument] withTransitionVersion:1 blockchainIdentityUniqueId:self.uniqueID usingEntropyString:entropyString onChain:self.chain];
+    DSDocumentTransition * transition = [[DSDocumentTransition alloc] initForDocuments:@[profileDocument] withTransitionVersion:1 blockchainIdentityUniqueId:self.uniqueID onChain:self.chain];
     return transition;
 }
 
@@ -2876,6 +2894,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         matchingDashpayUser.displayName = displayName;
         matchingDashpayUser.publicMessage = publicMessage;
         matchingDashpayUser.avatarPath = avatarURLString;
+        if (!matchingDashpayUser.remoteProfileDocumentRevision) {
+            matchingDashpayUser.createdAt = [[NSDate date] timeIntervalSince1970] * 1000;
+            if (!matchingDashpayUser.originalEntropyString) {
+                matchingDashpayUser.originalEntropyString = [DSKey randomAddressForChain:self.chain];
+            }
+        }
+        matchingDashpayUser.updatedAt = [[NSDate date] timeIntervalSince1970] * 1000;
         matchingDashpayUser.localProfileDocumentRevision++;
         [context ds_save];
     }];
@@ -3022,7 +3047,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                     NSAssert(FALSE, @"It is weird to get here");
                     contact = [DSDashpayUserEntity anyObjectInContext:context matching:@"associatedBlockchainIdentity.uniqueID == %@", uint256_data(blockchainIdentityUniqueId)];
                 }
-                if (!contact || [[contactDictionary objectForKey:@"$revision"] intValue] != contact.localProfileDocumentRevision) {
+                if (!contact || [[contactDictionary objectForKey:@"$updatedAt"] unsignedLongValue] > contact.updatedAt) {
                     
                     if (!contact) {
                         contact = [DSDashpayUserEntity managedObjectInContext:context];
@@ -3045,10 +3070,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                         contact.localProfileDocumentRevision = [[contactDictionary objectForKey:@"$revision"] intValue];
                         contact.remoteProfileDocumentRevision = [[contactDictionary objectForKey:@"$revision"] intValue];
                         contact.avatarPath = [contactDictionary objectForKey:@"avatarUrl"];
-                        contact.publicMessage = [contactDictionary objectForKey:@"about"];
+                        contact.publicMessage = [contactDictionary objectForKey:@"publicMessage"];
                         contact.displayName = [contactDictionary objectForKey:@"displayName"];
-                        contact.createdAt = 1; //[contactDictionary objectForKey:@"createdAt"]; //todo
-                        contact.updatedAt = 1; //[contactDictionary objectForKey:@"updatedAt"];
+                        if (!contact.documentIdentifier) {
+                            contact.documentIdentifier = [[contactDictionary objectForKey:@"$id"] base58ToData];
+                        }
+                        contact.createdAt = [[contactDictionary objectForKey:@"$createdAt"] unsignedLongValue];
+                        contact.updatedAt = [[contactDictionary objectForKey:@"$updatedAt"] unsignedLongValue];
                     }
                     
                     if (saveReturnedProfile) {

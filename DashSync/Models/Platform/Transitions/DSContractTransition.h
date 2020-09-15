@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(nonatomic,readonly) DPContract * contract;
 
--(instancetype)initWithContract:(DPContract*)contract withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId usingEntropyString:(NSString*)entropyString onChain:(DSChain *)chain;
+-(instancetype)initWithContract:(DPContract*)contract withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain;
 
 @end
 

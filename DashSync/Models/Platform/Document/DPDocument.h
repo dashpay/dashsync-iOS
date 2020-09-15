@@ -40,11 +40,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString*)tableName usingEntropy:(NSString*)entropy;
 
++ (nullable DPDocument *)documentWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString*)tableName usingEntropy:(NSString*)entropy;
+
+- (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString*)tableName usingDocumentId:(UInt256)documentId;
+
++ (nullable DPDocument *)documentWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString*)tableName usingDocumentId:(UInt256)documentId;
+
 - (instancetype)init NS_UNAVAILABLE;
 
 - (void)addStateForChangingData:(DSStringValueDictionary *)dataDictionary;
 
-- (nullable DPDocument *)documentWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString*)tableName usingEntropy:(NSString*)entropy;
+
 
 @end
 

@@ -189,7 +189,7 @@
     id<DSDAPINetworkServiceRequest> call = [client.DAPINetworkService getDPNSDocumentsForUsernames:@[name] inDomain:domain success:^(NSArray<NSDictionary *> * _Nonnull documents) {
         __block NSMutableArray * rBlockchainIdentities = [NSMutableArray array];
         for (NSDictionary * document in documents) {
-            NSString * userId = document[@"$userId"];
+            NSString * userId = document[@"$ownerId"];
             NSString * normalizedLabel = document[@"normalizedLabel"];
             NSString * domain = document[@"normalizedParentDomainName"];
             DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 isTransient:TRUE onChain:self.chain];

@@ -96,6 +96,7 @@ NS_ASSUME_NONNULL_BEGIN
         cellModel.autocorrectionType = UITextAutocorrectionTypeNo;
         cellModel.returnKeyType = UIReturnKeyNext;
         cellModel.placeholder = @"Enter Display Name";
+        cellModel.text = self.blockchainIdentity.matchingDashpayUserInViewContext.displayName;
         __weak typeof(self) weakSelf = self;
         cellModel.didReturnValueBlock = ^(TextFieldFormCellModel *_Nonnull cellModel) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -142,10 +143,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray<BaseFormCellModel *> *)profileItems {
     if (self.blockchainIdentity.currentDashpayUsername) {
-        return @[self.avatarCellModel, self.aboutMeCellModel];
+        return @[self.displayNameCellModel, self.avatarCellModel, self.aboutMeCellModel];
     } else {
         //show username model if no username is set
-        return @[self.usernameCellModel, self.avatarCellModel, self.aboutMeCellModel];
+        return @[self.usernameCellModel, self.displayNameCellModel, self.avatarCellModel, self.aboutMeCellModel];
     }
 }
 

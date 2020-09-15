@@ -27,6 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSSet<DSFriendRequestEntity *> *incomingRequests;
 @property (nullable, nonatomic, retain) NSSet<DSDashpayUserEntity *> *friends;
 @property (nullable, nonatomic, retain) DSChainEntity *chain;
+@property (nullable, nonatomic, retain) NSData *documentIdentifier;
+@property (nullable, nonatomic, copy) NSString *originalEntropyString;
 
 @end
 

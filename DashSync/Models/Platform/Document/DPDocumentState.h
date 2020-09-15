@@ -24,8 +24,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, DPDocumentStateType) {
     DPDocumentStateType_Initial = 1,
-    DPDocumentStateType_Update = 2,
+    DPDocumentStateType_Replace = 2,
     DPDocumentStateType_Delete = 4,
+    DPDocumentStateType_Update = 8,
 };
 
 @interface DPDocumentState : NSObject

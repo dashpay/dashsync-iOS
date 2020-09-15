@@ -29,7 +29,11 @@
 - (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary {
     if (self = [self init]) {
         self.dataChangeDictionary = dataDictionary;
-        self.documentStateType = DPDocumentStateType_Initial;
+        if (dataDictionary[@"$updatedAt"] && !dataDictionary[@"$createdAt"]) {
+            self.documentStateType = DPDocumentStateType_Replace;
+        } else {
+            self.documentStateType = DPDocumentStateType_Initial;
+        }
     }
     return self;
 }

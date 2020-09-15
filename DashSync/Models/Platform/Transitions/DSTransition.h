@@ -46,7 +46,7 @@ typedef NS_ENUM(NSUInteger, DSTransitionType) {
 @property (nonatomic, readonly) NSData * signatureData;
 @property (nonatomic, readonly) uint32_t signaturePublicKeyId;
 
--(instancetype)initWithTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId usingEntropyString:(NSString*)entropyString onChain:(DSChain * _Nonnull)chain; //local creation
+-(instancetype)initWithTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain * _Nonnull)chain; //local creation
 
 -(instancetype)initWithData:(NSData*)data onChain:(DSChain*)chain;
 

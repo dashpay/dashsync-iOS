@@ -26,5 +26,7 @@
 @dynamic chain;
 @dynamic createdAt;
 @dynamic updatedAt;
+@dynamic documentIdentifier;
+@dynamic originalEntropyString;
 
 @end
