@@ -340,8 +340,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 #pragma mark - Transitions
 
 -(DSContractTransition*)contractRegistrationTransitionForIdentity:(DSBlockchainIdentity*)blockchainIdentity {
-    NSString * entropyString = [DSKey randomAddressForChain:self.chain];
-    return [[DSContractTransition alloc] initWithContract:self withTransitionVersion:1 blockchainIdentityUniqueId:blockchainIdentity.uniqueID usingEntropyString:entropyString onChain:self.chain];
+    return [[DSContractTransition alloc] initWithContract:self withTransitionVersion:1 blockchainIdentityUniqueId:blockchainIdentity.uniqueID onChain:self.chain];
 }
 
 

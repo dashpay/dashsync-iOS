@@ -46,12 +46,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DPDocument
 
-- (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString*)tableName usingEntropy:(NSString*)entropy {
+- (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString*)tableName {
     NSParameterAssert(dataDictionary);
     NSAssert(!uint256_is_zero(ownerId), @"Owner Id must be set");
     NSAssert(!uint256_is_zero(contractId), @"Contract Id must be set");
     NSParameterAssert(tableName);
-    NSParameterAssert(entropy);
 
     self = [super init];
     if (self) {
@@ -59,7 +58,6 @@ NS_ASSUME_NONNULL_BEGIN
         self.tableName = tableName;
         self.ownerId = ownerId;
         self.contractId = contractId;
-        self.entropy = entropy;
         
         self.currentRevision = @1;
         self.currentLocalDocumentState = [DPDocumentState documentStateWithDataDictionary:dataDictionary];
@@ -67,6 +65,36 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     return self;
+}
+
+- (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString*)tableName usingEntropy:(NSString*)entropy {
+    NSParameterAssert(entropy);
+
+    self = [self initWithDataDictionary:dataDictionary createdByUserWithId:ownerId onContractWithId:contractId onTableWithName:tableName];
+    if (self) {
+        self.entropy = entropy;
+    }
+
+    return self;
+}
+
+- (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString*)tableName usingDocumentId:(UInt256)documentId {
+    NSAssert(!uint256_is_zero(documentId), @"Document Id must be set");
+
+    self = [self initWithDataDictionary:dataDictionary createdByUserWithId:ownerId onContractWithId:contractId onTableWithName:tableName];
+    if (self) {
+        self.documentId = documentId;
+    }
+
+    return self;
+}
+
++ (nullable DPDocument *)documentWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString*)tableName usingEntropy:(NSString*)entropy {
+    return [[DPDocument alloc] initWithDataDictionary:dataDictionary createdByUserWithId:ownerId onContractWithId:contractId onTableWithName:tableName usingEntropy:entropy];
+}
+
++ (nullable DPDocument *)documentWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString*)tableName usingDocumentId:(UInt256)documentId {
+    return [[DPDocument alloc] initWithDataDictionary:dataDictionary createdByUserWithId:ownerId onContractWithId:contractId onTableWithName:tableName usingDocumentId:documentId];
 }
 
 -(NSString*)base58OwnerIdString {
@@ -112,10 +140,6 @@ NS_ASSUME_NONNULL_BEGIN
     return _documentId;
 }
 
-- (nullable DPDocument *)documentWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString*)tableName usingEntropy:(NSString*)entropy {
-    return [[DPDocument alloc] initWithDataDictionary:dataDictionary createdByUserWithId:ownerId onContractWithId:contractId onTableWithName:tableName usingEntropy:entropy];
-}
-
 - (void)addStateForChangingData:(DSStringValueDictionary *)dataDictionary {
     DPDocumentState * lastState = [self.documentStates lastObject];
     
@@ -134,8 +158,10 @@ NS_ASSUME_NONNULL_BEGIN
     json[@"$type"] = self.tableName;
     json[@"$dataContractId"] = self.base58ContractIdString;
     json[@"$id"] = self.base58DocumentIdString;
-    json[@"$entropy"] = self.entropy;
-    json[@"$action"] = @(0);
+    json[@"$action"] = @(self.currentLocalDocumentState.documentStateType >> 1);
+    if (!(self.currentLocalDocumentState.documentStateType >> 1)) {
+        json[@"$entropy"] = self.entropy;
+    }
     [json addEntriesFromDictionary:self.currentLocalDocumentState.dataChangeDictionary];
     return json;
 }

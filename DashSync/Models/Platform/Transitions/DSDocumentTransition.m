@@ -44,8 +44,8 @@
     return json;
 }
 
--(instancetype)initForDocuments:(NSArray<DPDocument*>*)documents withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId usingEntropyString:(NSString*)entropyString onChain:(DSChain *)chain {
-    if (!(self = [super initWithTransitionVersion:version blockchainIdentityUniqueId:blockchainIdentityUniqueId usingEntropyString:entropyString  onChain:chain])) return nil;
+-(instancetype)initForDocuments:(NSArray<DPDocument*>*)documents withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain {
+    if (!(self = [super initWithTransitionVersion:version blockchainIdentityUniqueId:blockchainIdentityUniqueId onChain:chain])) return nil;
     
     self.documents = documents;
     self.type = DSTransitionType_Documents;
