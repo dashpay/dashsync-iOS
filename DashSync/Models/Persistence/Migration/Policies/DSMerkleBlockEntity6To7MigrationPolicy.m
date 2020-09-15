@@ -24,6 +24,7 @@
 #import "DSMerkleBlock.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
 #import "DSChainEntity+CoreDataClass.h"
+#import "NSManagedObject+Sugar.h"
 
 @interface DSChain (DSMigrationHelper)
 
@@ -119,11 +120,13 @@
                 NSParameterAssert(destination);
                 [destination setValue:uint256_data(checkpoint.chainWork) forKey:@"chainWork"];
                 
-                if (self.lastBlockAdded == nil) {
-                    self.lastBlockAdded = (DSMerkleBlockEntity *)destination;
-                }
-                else if ([[destination valueForKey:@"height"] intValue] > [[self.lastBlockAdded valueForKey:@"height"] intValue]) {
-                    self.lastBlockAdded = (DSMerkleBlockEntity *)destination;
+                if ([[destination valueForKey:@"height"] intValue] != BLOCK_UNKNOWN_HEIGHT) {
+                    if (self.lastBlockAdded == nil) {
+                        self.lastBlockAdded = (DSMerkleBlockEntity *)destination;
+                    }
+                    else if ([[destination valueForKey:@"height"] intValue] > [[self.lastBlockAdded valueForKey:@"height"] intValue]) {
+                        self.lastBlockAdded = (DSMerkleBlockEntity *)destination;
+                    }
                 }
             }
         }
@@ -140,7 +143,7 @@
         DSCheckpoint *lastCheckpoint = self.checkpointsArray.lastObject;
         
         block = [[DSMerkleBlock alloc] initWithCheckpoint:lastCheckpoint onChain:chain];
-        DSMerkleBlockEntity *entity = [[DSMerkleBlockEntity alloc] initWithContext:manager.destinationContext];
+        DSMerkleBlockEntity *entity = [DSMerkleBlockEntity managedObjectInContext:manager.destinationContext];
         [entity setAttributesFromBlock:block forChainEntity:chainEntity];
         self.lastBlockAdded = entity;
     }
@@ -190,9 +193,7 @@
         return objects.firstObject;
     }
     
-    DSChainEntity * chainEntity = [[DSChainEntity alloc] initWithContext:context];
-    chainEntity.type = type;
-    return chainEntity;
+    return nil;
 }
 
 
