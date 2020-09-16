@@ -597,7 +597,7 @@
             if (!providerRegistrationTransactionEntity) {
                 [self.providerRegistrationTransaction save];
             }
-            DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity managedObjectInContext:context];
+            DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity managedObjectInBlockedContext:context];
             [localMasternode setAttributesFromLocalMasternode:self];
             [context ds_save];
         } else {

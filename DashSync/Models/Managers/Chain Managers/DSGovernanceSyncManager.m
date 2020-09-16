@@ -444,7 +444,7 @@
         }
         //NSAssert(relatedHashEntity, @"There needs to be a relatedHashEntity");
         if (!relatedHashEntity) return;
-        [[DSGovernanceObjectEntity managedObjectInContext:self.managedObjectContext] setAttributesFromGovernanceObject:governanceObject forHashEntity:relatedHashEntity];
+        [[DSGovernanceObjectEntity managedObjectInBlockedContext:self.managedObjectContext] setAttributesFromGovernanceObject:governanceObject forHashEntity:relatedHashEntity];
         [self.governanceObjects addObject:governanceObject];
         if (![self.requestGovernanceObjectHashEntities count]) {
             [self requestGovernanceObjectsFromPeer:peer];

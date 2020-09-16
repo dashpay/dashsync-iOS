@@ -459,7 +459,7 @@
         
         for (DSPeer *p in peers) {
             @autoreleasepool {
-                [[DSPeerEntity managedObjectInContext:self.managedObjectContext] setAttributesFromPeer:p]; // add new peers
+                [[DSPeerEntity managedObjectInBlockedContext:self.managedObjectContext] setAttributesFromPeer:p]; // add new peers
             }
         }
     }];

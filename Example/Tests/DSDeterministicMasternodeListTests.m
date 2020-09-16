@@ -948,7 +948,7 @@
             UInt128 address = UINT128_ZERO;
             *address.u16 = i;
             DSSimplifiedMasternodeEntry * entry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:hash confirmedHash:confirmedHash address:address port:9999 operatorBLSPublicKey:UINT384_ZERO previousOperatorBLSPublicKeys:@{} keyIDVoting:UINT160_ZERO isValid:YES previousValidity:@{}  simplifiedMasternodeEntryHash:UINT256_ZERO previousSimplifiedMasternodeEntryHashes:@{} onChain:chain];
-            DSSimplifiedMasternodeEntryEntity * managedObject = [DSSimplifiedMasternodeEntryEntity managedObjectInContext:context];
+            DSSimplifiedMasternodeEntryEntity * managedObject = [DSSimplifiedMasternodeEntryEntity managedObjectInBlockedContext:context];
             [managedObject setAttributesFromSimplifiedMasternodeEntry:entry onChainEntity:chainEntity];
         }
         [context ds_save];

@@ -31,7 +31,7 @@
         if (potentialQuorumEntry.saved) { //it was deleted in the meantime, and should be ignored
             return nil;
         } else {
-            quorumEntryEntity = [DSQuorumEntryEntity managedObjectInContext:context];
+            quorumEntryEntity = [DSQuorumEntryEntity managedObjectInBlockedContext:context];
             [quorumEntryEntity setAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
         }
     } else {

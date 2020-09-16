@@ -39,10 +39,10 @@ static NSUInteger _fetchBatchSize = 100;
 
 + (instancetype)managedObject
 {
-    return [self managedObjectInContext:[NSManagedObjectContext viewContext]];
+    return [self managedObjectInBlockedContext:[NSManagedObjectContext viewContext]];
 }
 
-+ (instancetype)managedObjectInContext:(NSManagedObjectContext *)context
++ (instancetype)managedObjectInBlockedContext:(NSManagedObjectContext *)context
 {
     __block NSEntityDescription *entity = nil;
     __block NSManagedObject *obj = nil;
@@ -53,6 +53,12 @@ static NSUInteger _fetchBatchSize = 100;
     }];
     
     return obj;
+}
+
++ (instancetype)managedObjectInContext:(NSManagedObjectContext *)context
+{
+    NSEntityDescription *entity = [NSEntityDescription entityForName:self.entityName inManagedObjectContext:context];
+    return [[self alloc] initWithEntity:entity insertIntoManagedObjectContext:context];
 }
 
 + (NSArray *)managedObjectArrayWithLength:(NSUInteger)length inContext:(NSManagedObjectContext*)context

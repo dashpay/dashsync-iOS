@@ -76,7 +76,7 @@
 }
 
 +(DSShapeshiftEntity*)registerShapeshiftWithInputAddress:(NSString*)inputAddress andWithdrawalAddress:(NSString*)withdrawalAddress withStatus:(eShapeshiftAddressStatus)shapeshiftAddressStatus inContext:(NSManagedObjectContext*)context {
-    DSShapeshiftEntity * shapeshift = [DSShapeshiftEntity managedObjectInContext:context];
+    DSShapeshiftEntity * shapeshift = [DSShapeshiftEntity managedObjectInBlockedContext:context];
     shapeshift.inputAddress = inputAddress;
     shapeshift.withdrawalAddress = withdrawalAddress;
     shapeshift.shapeshiftStatus = @(shapeshiftAddressStatus);
@@ -86,7 +86,7 @@
 }
 
 +(DSShapeshiftEntity*)registerShapeshiftWithInputAddress:(NSString*)inputAddress andWithdrawalAddress:(NSString*)withdrawalAddress withStatus:(eShapeshiftAddressStatus)shapeshiftAddressStatus fixedAmountOut:(NSNumber*)amountOut amountIn:(NSNumber*)amountIn inContext:(NSManagedObjectContext*)context {
-    DSShapeshiftEntity * shapeshift = [DSShapeshiftEntity managedObjectInContext:context];
+    DSShapeshiftEntity * shapeshift = [DSShapeshiftEntity managedObjectInBlockedContext:context];
     shapeshift.inputAddress = inputAddress;
     shapeshift.withdrawalAddress = withdrawalAddress;
     shapeshift.outputCoinAmount = amountOut;

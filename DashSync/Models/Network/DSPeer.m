@@ -1976,7 +1976,7 @@
             }
         } else {
             @autoreleasepool {
-                [[DSPeerEntity managedObjectInContext:self.managedObjectContext] setAttributesFromPeer:self]; // add new peers
+                [[DSPeerEntity managedObjectInBlockedContext:self.managedObjectContext] setAttributesFromPeer:self]; // add new peers
             }
         }
     }];

@@ -137,30 +137,35 @@
 
 - (BOOL)endEntityMapping:(NSEntityMapping *)mapping manager:(NSMigrationManager *)manager error:(NSError **)error {
     DSChainEntity *chainEntity = [self chainEntityForType:DSChainType_MainNet inContext:manager.destinationContext];
-    id chain = nil;
-    DSMerkleBlock *block = nil;
-    if (self.lastBlockAdded == nil) {
-        DSCheckpoint *lastCheckpoint = self.checkpointsArray.lastObject;
-        
-        block = [[DSMerkleBlock alloc] initWithCheckpoint:lastCheckpoint onChain:chain];
-        DSMerkleBlockEntity *entity = [DSMerkleBlockEntity managedObjectInContext:manager.destinationContext];
-        [entity setAttributesFromBlock:block forChainEntity:chainEntity];
-        self.lastBlockAdded = entity;
+    if (chainEntity) {
+        id chain = nil;
+        DSMerkleBlock *block = nil;
+        if (self.lastBlockAdded == nil) {
+            DSCheckpoint *lastCheckpoint = self.checkpointsArray.lastObject;
+            
+            DSMerkleBlockEntity *merkleBlockEntity = [DSMerkleBlockEntity managedObjectInContext:manager.destinationContext];
+            [merkleBlockEntity setValue:uint256_data(lastCheckpoint.blockHash) forKey:@"blockHash"];
+            [merkleBlockEntity setValue:uint256_data(lastCheckpoint.merkleRoot) forKey:@"merkleRoot"];
+            [merkleBlockEntity setValue:[NSDate dateWithTimeIntervalSince1970:lastCheckpoint.timestamp] forKey:@"timestamp"];
+            [merkleBlockEntity setValue:@(lastCheckpoint.target) forKey:@"target"];
+            [merkleBlockEntity setValue:@(lastCheckpoint.height) forKey:@"height"];
+            [merkleBlockEntity setValue:chainEntity forKey:@"chain"];
+            [merkleBlockEntity setValue:uint256_data(lastCheckpoint.chainWork) forKey:@"chainWork"];
+            self.lastBlockAdded = merkleBlockEntity;
+        }
+        else {
+            block = [[DSMerkleBlock alloc] initWithVersion:self.lastBlockAdded.version blockHash:self.lastBlockAdded.blockHash.UInt256 prevBlock:self.lastBlockAdded.prevBlock.UInt256 merkleRoot:self.lastBlockAdded.merkleRoot.UInt256
+                                                 timestamp:self.lastBlockAdded.timestamp target:self.lastBlockAdded.target chainWork:self.lastBlockAdded.chainWork.UInt256 nonce:self.lastBlockAdded.nonce
+                                         totalTransactions:self.lastBlockAdded.totalTransactions hashes:self.lastBlockAdded.hashes flags:self.lastBlockAdded.flags height:self.lastBlockAdded.height chainLock:nil onChain:chain];
+            [chainEntity setValue:[self.lastBlockAdded.blockHash copy] forKey:@"syncBlockHash"];
+            [chainEntity setValue:[self.lastBlockAdded valueForKey:@"height"] forKey:@"syncBlockHeight"];
+            NSDate *date = [self.lastBlockAdded valueForKey:@"timestamp"];
+            NSAssert([date isKindOfClass:NSDate.class], @"invalid type");
+            [chainEntity setValue:@([date timeIntervalSince1970]) forKey:@"syncBlockTimestamp"];
+            [chainEntity setValue:[self blockLocatorArrayForBlock:block] forKey:@"syncLocators"];
+            [chainEntity setValue:[self.lastBlockAdded.chainWork copy] forKey:@"syncBlockChainWork"];
+        }
     }
-    else {
-        block = [[DSMerkleBlock alloc] initWithVersion:self.lastBlockAdded.version blockHash:self.lastBlockAdded.blockHash.UInt256 prevBlock:self.lastBlockAdded.prevBlock.UInt256 merkleRoot:self.lastBlockAdded.merkleRoot.UInt256
-                                             timestamp:self.lastBlockAdded.timestamp target:self.lastBlockAdded.target chainWork:self.lastBlockAdded.chainWork.UInt256 nonce:self.lastBlockAdded.nonce
-                                     totalTransactions:self.lastBlockAdded.totalTransactions hashes:self.lastBlockAdded.hashes flags:self.lastBlockAdded.flags height:self.lastBlockAdded.height chainLock:nil onChain:chain];
-    }
-    
-    [chainEntity setValue:[self.lastBlockAdded.blockHash copy] forKey:@"syncBlockHash"];
-    [chainEntity setValue:[self.lastBlockAdded valueForKey:@"height"] forKey:@"syncBlockHeight"];
-    NSDate *date = [self.lastBlockAdded valueForKey:@"timestamp"];
-    NSAssert([date isKindOfClass:NSDate.class], @"invalid type");
-    [chainEntity setValue:@([date timeIntervalSince1970]) forKey:@"syncBlockTimestamp"];
-    [chainEntity setValue:[self blockLocatorArrayForBlock:block] forKey:@"syncLocators"];
-    [chainEntity setValue:[self.lastBlockAdded.chainWork copy] forKey:@"syncBlockChainWork"];
-    
     return [super endEntityMapping:mapping manager:manager error:error];
 }
 

@@ -24,7 +24,7 @@
         if ([sporkHashesFromDisk count]) {
             [rArray addObject:[sporkHashesFromDisk firstObject]];
         } else {
-            DSSporkHashEntity * sporkHashEntity = [self managedObjectInContext:chainEntity.managedObjectContext];
+            DSSporkHashEntity * sporkHashEntity = [self managedObjectInBlockedContext:chainEntity.managedObjectContext];
             sporkHashEntity.sporkHash = sporkHash;
             sporkHashEntity.chain = chainEntity;
             [rArray addObject:sporkHashEntity];

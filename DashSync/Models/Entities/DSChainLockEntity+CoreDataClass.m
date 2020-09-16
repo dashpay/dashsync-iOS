@@ -27,7 +27,7 @@
     if (!merkleBlockEntity) {
         return nil;
     }
-    DSChainLockEntity * chainLockEntity = [DSChainLockEntity managedObjectInContext:context];
+    DSChainLockEntity * chainLockEntity = [DSChainLockEntity managedObjectInBlockedContext:context];
     chainLockEntity.validSignature = chainLock.signatureVerified;
     chainLockEntity.signature = [NSData dataWithUInt768:chainLock.signature];
     chainLockEntity.merkleBlock = merkleBlockEntity;

@@ -60,7 +60,7 @@
         NSAssert([addressEntities count] == 1, @"addresses should not be duplicates");
         return [addressEntities firstObject];
     } else {
-        DSAddressEntity * addressEntity = [DSAddressEntity managedObjectInContext:context];
+        DSAddressEntity * addressEntity = [DSAddressEntity managedObjectInBlockedContext:context];
         addressEntity.address = address;
         addressEntity.index = UINT32_MAX;
         return addressEntity;

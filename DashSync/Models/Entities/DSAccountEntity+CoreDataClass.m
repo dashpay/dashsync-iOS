@@ -21,7 +21,7 @@
         NSAssert([accounts count] == 1, @"There can only be one account per index per wallet");
         return [accounts objectAtIndex:0];
     }
-    DSAccountEntity * accountEntity = [DSAccountEntity managedObjectInContext:context];
+    DSAccountEntity * accountEntity = [DSAccountEntity managedObjectInBlockedContext:context];
     accountEntity.walletUniqueID = walletUniqueID;
     accountEntity.index = index;
     accountEntity.chain = [chain chainEntityInContext:context];

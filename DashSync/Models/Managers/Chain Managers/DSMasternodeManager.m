@@ -1039,13 +1039,13 @@
         DSMerkleBlockEntity * merkleBlockEntity = [DSMerkleBlockEntity anyObjectInContext:context matching:@"blockHash == %@",uint256_data(masternodeList.blockHash)];
         if (!merkleBlockEntity && ([chain checkpointForBlockHash:masternodeList.blockHash])) {
             DSCheckpoint * checkpoint = [chain checkpointForBlockHash:masternodeList.blockHash];
-            merkleBlockEntity = [[DSMerkleBlockEntity managedObjectInContext:context] setAttributesFromBlock:[checkpoint blockForChain:chain] forChainEntity:chainEntity];
+            merkleBlockEntity = [[DSMerkleBlockEntity managedObjectInBlockedContext:context] setAttributesFromBlock:[checkpoint blockForChain:chain] forChainEntity:chainEntity];
         }
         NSAssert(!merkleBlockEntity || !merkleBlockEntity.masternodeList, @"Merkle block should not have a masternode list already");
         NSError * error = nil;
         if (!merkleBlockEntity) {
             if (createUnknownBlocks) {
-                merkleBlockEntity = [DSMerkleBlockEntity managedObjectInContext:context];
+                merkleBlockEntity = [DSMerkleBlockEntity managedObjectInBlockedContext:context];
                 merkleBlockEntity.blockHash = uint256_data(masternodeList.blockHash);
                 merkleBlockEntity.height = masternodeList.height;
                 merkleBlockEntity.chain = chainEntity;
@@ -1057,7 +1057,7 @@
             error = [NSError errorWithDomain:@"DashSync" code:600 userInfo:@{NSLocalizedDescriptionKey:@"Merkle block should not have a masternode list already"}];
         }
         if (!error) {
-            DSMasternodeListEntity * masternodeListEntity = [DSMasternodeListEntity managedObjectInContext:context];
+            DSMasternodeListEntity * masternodeListEntity = [DSMasternodeListEntity managedObjectInBlockedContext:context];
             masternodeListEntity.block = merkleBlockEntity;
             masternodeListEntity.masternodeListMerkleRoot = uint256_data(masternodeList.masternodeMerkleRoot);
             masternodeListEntity.quorumListMerkleRoot = uint256_data(masternodeList.quorumMerkleRoot);
@@ -1089,7 +1089,7 @@
                 
                 DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [indexedKnownSimplifiedMasternodeEntryEntities objectForKey:uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
                 if (!simplifiedMasternodeEntryEntity) {
-                    simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity managedObjectInContext:context];
+                    simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity managedObjectInBlockedContext:context];
                     [simplifiedMasternodeEntryEntity setAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry knownOperatorAddresses:operatorAddresses knownVotingAddresses:votingAddresses localMasternodes:localMasternodes onChainEntity:chainEntity];
                 }
                 

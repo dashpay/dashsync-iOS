@@ -3050,7 +3050,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 if (!contact || [[contactDictionary objectForKey:@"$updatedAt"] unsignedLongValue] > contact.updatedAt) {
                     
                     if (!contact) {
-                        contact = [DSDashpayUserEntity managedObjectInContext:context];
+                        contact = [DSDashpayUserEntity managedObjectInBlockedContext:context];
                         contact.chain = [strongSelf.wallet.chain chainEntityInContext:context];
                         DSBlockchainIdentity * blockchainIdentity;
                         if (uint256_eq(blockchainIdentityUniqueId, strongSelf.uniqueID) && (![strongSelf matchingDashpayUserInContext:context])) {
@@ -3454,7 +3454,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 -(void)addFriendship:(DSPotentialOneWayFriendship*)friendship inContext:(NSManagedObjectContext*)context completion:(void (^)(BOOL success, NSError * error))completion  {
     
     //DSFriendRequestEntity * friendRequestEntity = [friendship outgoingFriendRequestForDashpayUserEntity:friendship.destinationBlockchainIdentity.matchingDashpayUser];
-    DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObjectInContext:context];
+    DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObjectInBlockedContext:context];
     friendRequestEntity.sourceContact = [friendship.sourceBlockchainIdentity matchingDashpayUserInContext:context];
     friendRequestEntity.destinationContact = [friendship.destinationBlockchainIdentity matchingDashpayUserInContext:context];
     friendRequestEntity.timestamp = friendship.createdAt;
@@ -3582,13 +3582,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 forExtendedPublicKey:(DSKey*)extendedPublicKey
                          atTimestamp:(NSTimeInterval)timestamp {
     NSManagedObjectContext * context = dashpayUserEntity.managedObjectContext;
-    DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObjectInContext:context];
+    DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObjectInBlockedContext:context];
     friendRequestEntity.sourceContact = dashpayUserEntity;
     friendRequestEntity.destinationContact = [self matchingDashpayUserInContext:dashpayUserEntity.managedObjectContext];
     friendRequestEntity.timestamp = timestamp;
     NSAssert(friendRequestEntity.sourceContact != friendRequestEntity.destinationContact, @"This must be different contacts");
     
-    DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity managedObjectInContext:context];
+    DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity managedObjectInBlockedContext:context];
     derivationPathEntity.chain = [self.chain chainEntityInContext:context];
     
     friendRequestEntity.derivationPath = derivationPathEntity;
@@ -3636,7 +3636,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 -(void)saveInitialInContext:(NSManagedObjectContext*)context {
     if (self.isTransient) return;
     [context performBlockAndWait:^{
-        DSBlockchainIdentityEntity * entity = [DSBlockchainIdentityEntity managedObjectInContext:context];
+        DSBlockchainIdentityEntity * entity = [DSBlockchainIdentityEntity managedObjectInBlockedContext:context];
         entity.uniqueID = uint256_data(self.uniqueID);
         entity.isLocal = self.isLocal;
         if (self.isLocal) {
@@ -3646,7 +3646,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         }
         entity.chain = [self.chain chainEntityInContext:context];
         for (NSString * usernameFullPath in self.usernameStatuses) {
-            DSBlockchainIdentityUsernameEntity * usernameEntity = [DSBlockchainIdentityUsernameEntity managedObjectInContext:context];
+            DSBlockchainIdentityUsernameEntity * usernameEntity = [DSBlockchainIdentityUsernameEntity managedObjectInBlockedContext:context];
             usernameEntity.status = [self statusOfUsernameFullPath:usernameFullPath];
             usernameEntity.stringValue = [self usernameOfUsernameFullPath:usernameFullPath];
             usernameEntity.domain = [self domainOfUsernameFullPath:usernameFullPath];
@@ -3654,7 +3654,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             [entity addUsernamesObject:usernameEntity];
             [entity setDashpayUsername:usernameEntity];
         }
-        DSDashpayUserEntity * dashpayUserEntity = [DSDashpayUserEntity managedObjectInContext:context];
+        DSDashpayUserEntity * dashpayUserEntity = [DSDashpayUserEntity managedObjectInBlockedContext:context];
         dashpayUserEntity.chain = [self.chain chainEntityInContext:context];
         entity.matchingDashpayUser = dashpayUserEntity;
         
@@ -3740,7 +3740,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         DSDerivationPathEntity * derivationPathEntity = [derivationPath derivationPathEntityInContext:context];
         NSUInteger count = [DSBlockchainIdentityKeyPathEntity countObjectsInContext:context matching:@"blockchainIdentity == %@ && derivationPath == %@ && path == %@",blockchainIdentityEntity,derivationPathEntity, path];
         if (!count) {
-            DSBlockchainIdentityKeyPathEntity * blockchainIdentityKeyPathEntity = [DSBlockchainIdentityKeyPathEntity managedObjectInContext:context];
+            DSBlockchainIdentityKeyPathEntity * blockchainIdentityKeyPathEntity = [DSBlockchainIdentityKeyPathEntity managedObjectInBlockedContext:context];
             blockchainIdentityKeyPathEntity.derivationPath = derivationPathEntity;
             blockchainIdentityKeyPathEntity.keyType = key.keyType;
             blockchainIdentityKeyPathEntity.keyStatus = status;
@@ -3778,7 +3778,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         DSBlockchainIdentityEntity * blockchainIdentityEntity = [self blockchainIdentityEntityInContext:context];
         NSUInteger count = [DSBlockchainIdentityKeyPathEntity countObjectsInContext:context matching:@"blockchainIdentity == %@ && keyID == %@",blockchainIdentityEntity,@(keyID)];
         if (!count) {
-            DSBlockchainIdentityKeyPathEntity * blockchainIdentityKeyPathEntity = [DSBlockchainIdentityKeyPathEntity managedObjectInContext:context];
+            DSBlockchainIdentityKeyPathEntity * blockchainIdentityKeyPathEntity = [DSBlockchainIdentityKeyPathEntity managedObjectInBlockedContext:context];
             blockchainIdentityKeyPathEntity.keyType = key.keyType;
             blockchainIdentityKeyPathEntity.keyStatus = status;
             blockchainIdentityKeyPathEntity.keyID = keyID;
@@ -3819,7 +3819,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         DSBlockchainIdentityEntity * entity = [self blockchainIdentityEntityInContext:context];
         DSBlockchainIdentityKeyPathEntity * blockchainIdentityKeyPathEntity = [[DSBlockchainIdentityKeyPathEntity objectsInContext:context matching:@"blockchainIdentity == %@ && derivationPath == NULL && keyID == %@",entity,@(keyID)] firstObject];
         if (blockchainIdentityKeyPathEntity) {
-            DSBlockchainIdentityKeyPathEntity * blockchainIdentityKeyPathEntity = [DSBlockchainIdentityKeyPathEntity managedObjectInContext:context];
+            DSBlockchainIdentityKeyPathEntity * blockchainIdentityKeyPathEntity = [DSBlockchainIdentityKeyPathEntity managedObjectInBlockedContext:context];
             blockchainIdentityKeyPathEntity.keyStatus = status;
             [context ds_save];
         }
@@ -3835,7 +3835,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     if (self.isTransient) return;
     [context performBlockAndWait:^{
         DSBlockchainIdentityEntity * entity = [self blockchainIdentityEntityInContext:context];
-        DSBlockchainIdentityUsernameEntity * usernameEntity = [DSBlockchainIdentityUsernameEntity managedObjectInContext:context];
+        DSBlockchainIdentityUsernameEntity * usernameEntity = [DSBlockchainIdentityUsernameEntity managedObjectInBlockedContext:context];
         usernameEntity.status = status;
         usernameEntity.stringValue = username;
         usernameEntity.salt = [self saltForUsernameFullPath:[self fullPathForUsername:username inDomain:domain] saveSalt:NO inContext:context];

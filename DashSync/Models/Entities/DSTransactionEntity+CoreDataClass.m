@@ -47,7 +47,7 @@
         UInt256 txHash = tx.txHash;
         NSUInteger idx = 0;
         if (!self.transactionHash) {
-            self.transactionHash = [DSTransactionHashEntity managedObjectInContext:self.managedObjectContext];
+            self.transactionHash = [DSTransactionHashEntity managedObjectInBlockedContext:self.managedObjectContext];
             self.transactionHash.chain = [tx.chain chainEntityInContext:self.managedObjectContext];
         } else if (!self.transactionHash.chain) {
             self.transactionHash.chain = [tx.chain chainEntityInContext:self.managedObjectContext];
@@ -58,7 +58,7 @@
         self.associatedShapeshift = tx.associatedShapeshift;
         
         while (inputs.count < tx.inputHashes.count) {
-            [inputs addObject:[DSTxInputEntity managedObjectInContext:self.managedObjectContext]];
+            [inputs addObject:[DSTxInputEntity managedObjectInBlockedContext:self.managedObjectContext]];
         }
         
         while (inputs.count > tx.inputHashes.count) {
@@ -70,7 +70,7 @@
         }
         
         while (outputs.count < tx.outputAddresses.count) {
-            [outputs addObject:[DSTxOutputEntity managedObjectInContext:self.managedObjectContext]];
+            [outputs addObject:[DSTxOutputEntity managedObjectInBlockedContext:self.managedObjectContext]];
         }
         
         while (outputs.count > tx.outputAddresses.count) {

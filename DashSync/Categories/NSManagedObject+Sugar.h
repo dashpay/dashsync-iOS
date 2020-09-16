@@ -35,6 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface NSManagedObject (Sugar)
 
 // create objects
++ (instancetype)managedObjectInBlockedContext:(NSManagedObjectContext *)context;
 + (instancetype)managedObjectInContext:(NSManagedObjectContext *)context;
 + (NSArray *)managedObjectArrayWithLength:(NSUInteger)length inContext:(NSManagedObjectContext *)context;
 

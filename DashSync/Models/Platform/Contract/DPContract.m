@@ -359,7 +359,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
         DSContractEntity * entity = [self contractEntityInContext:context];
         BOOL hasChange = NO;
         if (!entity) {
-            entity = [DSContractEntity managedObjectInContext:context];
+            entity = [DSContractEntity managedObjectInBlockedContext:context];
             entity.chain = [self.chain chainEntityInContext:context];
             entity.localContractIdentifier = self.localContractIdentifier;
             if (!uint256_is_zero(self.registeredBlockchainIdentityUniqueID)) {

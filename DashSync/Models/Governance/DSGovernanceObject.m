@@ -269,7 +269,7 @@
     if ([governanceObjects count]) {
         return [governanceObjects objectAtIndex:0];
     } else {
-        DSGovernanceObjectEntity * governanceObjectEntity = [DSGovernanceObjectEntity managedObjectInContext:context];
+        DSGovernanceObjectEntity * governanceObjectEntity = [DSGovernanceObjectEntity managedObjectInBlockedContext:context];
         [governanceObjectEntity setAttributesFromGovernanceObject:self forHashEntity:nil];
         return governanceObjectEntity;
     }
@@ -475,7 +475,7 @@
     //NSAssert(relatedHashEntity, @"There needs to be a relatedHashEntity");
     if (!relatedHashEntity) return;
     //todo this seems weird
-    [[DSGovernanceVoteEntity managedObjectInContext:self.managedObjectContext] setAttributesFromGovernanceVote:governanceVote forHashEntity:relatedHashEntity];
+    [[DSGovernanceVoteEntity managedObjectInBlockedContext:self.managedObjectContext] setAttributesFromGovernanceVote:governanceVote forHashEntity:relatedHashEntity];
     [self.needsRequestsGovernanceVoteHashEntities removeObject:relatedHashEntity];
     [self.governanceVotes addObject:governanceVote];
     if (![self.requestGovernanceVoteHashEntities count]) {

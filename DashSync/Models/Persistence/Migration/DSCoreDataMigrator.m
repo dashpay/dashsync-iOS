@@ -89,21 +89,29 @@
 + (void)performMigrationWithCompletionQueue:(dispatch_queue_t)completionQueue completion:(void(^)(void))completion {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
     
-    NSURL *storeURL = [DSDataController storeURL];
+    __block NSURL *storeURL = [DSDataController storeURL];
     NSDictionary *metadata = [NSPersistentStoreCoordinator ds_metadataAt:storeURL];
+    __block BOOL shouldRemoveDocumentsCopy = FALSE;
     if (metadata == nil) {
+        storeURL = [self documentsStoreURL];
         metadata = [NSPersistentStoreCoordinator ds_metadataAt:[self documentsStoreURL]];
         if (metadata != nil) {
             //Move to Application Support
-            [[NSFileManager defaultManager] moveItemAtURL:[self documentsStoreURL] toURL:storeURL error:nil];
-            [[NSFileManager defaultManager] moveItemAtURL:[self documentsWALURL] toURL:[DSDataController storeWALURL] error:nil];
-            [[NSFileManager defaultManager] moveItemAtURL:[self documentsSHMURL] toURL:[DSDataController storeSHMURL] error:nil];
+            [[NSFileManager defaultManager] copyItemAtURL:[self documentsStoreURL] toURL:storeURL error:nil];
+            [[NSFileManager defaultManager] copyItemAtURL:[self documentsWALURL] toURL:[DSDataController storeWALURL] error:nil];
+            [[NSFileManager defaultManager] copyItemAtURL:[self documentsSHMURL] toURL:[DSDataController storeSHMURL] error:nil];
+            shouldRemoveDocumentsCopy = TRUE;
         }
     }
-    DSCoreDataMigrationVersionValue version = DSCoreDataMigrationVersion.current;
+    __block DSCoreDataMigrationVersionValue version = DSCoreDataMigrationVersion.current;
     if ([self requiresMigrationAtStoreURL:storeURL version:version]) {
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
             [self migrateStoreAtURL:storeURL toVersion:version];
+            if (shouldRemoveDocumentsCopy) {
+                [[NSFileManager defaultManager] removeItemAtURL:[self documentsStoreURL] error:nil];
+                [[NSFileManager defaultManager] removeItemAtURL:[self documentsWALURL] error:nil];
+                [[NSFileManager defaultManager] removeItemAtURL:[self documentsSHMURL] error:nil];
+            }
             dispatch_async(completionQueue, ^{
                 if (completion) {
                     completion();

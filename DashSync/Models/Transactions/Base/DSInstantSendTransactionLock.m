@@ -199,7 +199,7 @@
     //saving here will only create, not update.
     [context performBlockAndWait:^{ // add the transaction to core data
         if ([DSInstantSendLockEntity countObjectsInContext:context matching:@"transaction.transactionHash.txHash == %@", uint256_data(self.transactionHash)] == 0) {
-            DSInstantSendLockEntity * instantSendLockEntity = [DSInstantSendLockEntity managedObjectInContext:context];
+            DSInstantSendLockEntity * instantSendLockEntity = [DSInstantSendLockEntity managedObjectInBlockedContext:context];
             [instantSendLockEntity setAttributesFromInstantSendTransactionLock:self];
             [context ds_save];
         }

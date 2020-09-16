@@ -202,7 +202,7 @@
                 if (hashEntity) {
                     DSSporkEntity * sporkEntity = hashEntity.spork;
                     if (!sporkEntity) {
-                        sporkEntity = [DSSporkEntity managedObjectInContext:self.managedObjectContext];
+                        sporkEntity = [DSSporkEntity managedObjectInBlockedContext:self.managedObjectContext];
                     }
                     [sporkEntity setAttributesFromSpork:spork withSporkHash:hashEntity]; // add new peers
                     [self.managedObjectContext ds_save];

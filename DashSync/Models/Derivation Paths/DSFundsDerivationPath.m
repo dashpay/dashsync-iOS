@@ -152,7 +152,7 @@
             if (!self.account.wallet.isTransient) {
                 [self.managedObjectContext performBlock:^{ // store new address in core data
                     DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
-                    DSAddressEntity *e = [DSAddressEntity managedObjectInContext:self.managedObjectContext];
+                    DSAddressEntity *e = [DSAddressEntity managedObjectInBlockedContext:self.managedObjectContext];
                     e.derivationPath = derivationPathEntity;
                     NSAssert([addr isValidDashAddressOnChain:self.chain], @"the address is being saved to the wrong derivation path");
                     e.address = addr;

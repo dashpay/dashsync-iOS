@@ -21,12 +21,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSInteger, DSCoreDataMigrationVersionValue) {
     DSCoreDataMigrationVersionValue_1 = 1,
-    DSCoreDataMigrationVersionValue_2,
-    DSCoreDataMigrationVersionValue_3,
-    DSCoreDataMigrationVersionValue_4,
-    DSCoreDataMigrationVersionValue_5,
-    DSCoreDataMigrationVersionValue_6,
-    DSCoreDataMigrationVersionValue_7,
+    DSCoreDataMigrationVersionValue_2 = 2,
+    DSCoreDataMigrationVersionValue_3 = 3,
+    DSCoreDataMigrationVersionValue_4 = 4,
+    DSCoreDataMigrationVersionValue_5 = 5,
+    DSCoreDataMigrationVersionValue_6 = 6,
+    DSCoreDataMigrationVersionValue_7 = 7,
+    DSCoreDataMigrationVersionValue_8 = 8
 };
 
 @interface DSCoreDataMigrationVersion : NSObject

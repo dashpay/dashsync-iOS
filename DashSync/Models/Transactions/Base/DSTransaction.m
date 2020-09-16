@@ -846,7 +846,7 @@
         Class transactionEntityClass = [self entityClass];
         if ([DSTransactionEntity countObjectsInContext:context matching:@"transactionHash.txHash == %@", uint256_data(self.txHash)] == 0) {
             
-            transactionEntity = [transactionEntityClass managedObjectInContext:context];
+            transactionEntity = [transactionEntityClass managedObjectInBlockedContext:context];
             [transactionEntity setAttributesFromTransaction:self];
             [context ds_save];
         } else {
@@ -862,7 +862,7 @@
     Class transactionEntityClass = [self entityClass];
     if ([DSTransactionEntity countObjectsInContext:context matching:@"transactionHash.txHash == %@", uint256_data(self.txHash)] == 0) {
         
-        DSTransactionEntity * transactionEntity = [transactionEntityClass managedObjectInContext:context];
+        DSTransactionEntity * transactionEntity = [transactionEntityClass managedObjectInBlockedContext:context];
         [transactionEntity setAttributesFromTransaction:self];
         return YES;
     } else {

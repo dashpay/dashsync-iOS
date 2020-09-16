@@ -3613,7 +3613,7 @@ static dispatch_once_t devnetToken = 0;
         
         for (DSBlock *block in blocks.allValues) {
             @autoreleasepool {
-                DSMerkleBlockEntity * e = [DSMerkleBlockEntity managedObjectInContext:self.chainManagedObjectContext];
+                DSMerkleBlockEntity * e = [DSMerkleBlockEntity managedObjectInBlockedContext:self.chainManagedObjectContext];
                 [e setAttributesFromBlock:block forChainEntity:chainEntity];
             }
         }
