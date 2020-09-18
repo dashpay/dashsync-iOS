@@ -93,11 +93,10 @@
     NSDictionary *metadata = [NSPersistentStoreCoordinator ds_metadataAt:storeURL];
     __block BOOL shouldRemoveDocumentsCopy = FALSE;
     if (metadata == nil) {
-        storeURL = [self documentsStoreURL];
         metadata = [NSPersistentStoreCoordinator ds_metadataAt:[self documentsStoreURL]];
         if (metadata != nil) {
             //Move to Application Support
-            [[NSFileManager defaultManager] copyItemAtURL:[self documentsStoreURL] toURL:storeURL error:nil];
+            [[NSFileManager defaultManager] copyItemAtURL:[self documentsStoreURL] toURL:[DSDataController storeURL] error:nil];
             [[NSFileManager defaultManager] copyItemAtURL:[self documentsWALURL] toURL:[DSDataController storeWALURL] error:nil];
             [[NSFileManager defaultManager] copyItemAtURL:[self documentsSHMURL] toURL:[DSDataController storeSHMURL] error:nil];
             shouldRemoveDocumentsCopy = TRUE;
@@ -148,8 +147,8 @@
     for (DSCoreDataMigrationStep *step in migrationSteps) {
         NSMigrationManager *manager = [[NSMigrationManager alloc] initWithSourceModel:step.sourceModel
                                                                      destinationModel:step.destinationModel];
-        NSURL *destinationURL = [[NSURL fileURLWithPath:NSTemporaryDirectory() isDirectory:YES]
-                                 URLByAppendingPathComponent:[NSUUID UUID].UUIDString];
+        NSURL *destinationURL = [[[NSURL fileURLWithPath:NSTemporaryDirectory() isDirectory:YES]
+                                  URLByAppendingPathComponent:[NSUUID UUID].UUIDString] URLByAppendingPathExtension:@"sqlite"];
         NSError *error = nil;
         [manager migrateStoreFromURL:currentURL
                                 type:NSSQLiteStoreType

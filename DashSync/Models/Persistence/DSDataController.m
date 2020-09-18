@@ -73,14 +73,14 @@
     self = [super init];
     if (!self) return nil;
     
-//    if ([DSCoreDataMigrator requiresMigration]) {
-//        dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-//        [DSCoreDataMigrator performMigrationWithCompletionQueue:dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)
-//                                                     completion:^{
-//            dispatch_semaphore_signal(sem);
-//        }];
-//        dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
-//    }
+    if ([DSCoreDataMigrator requiresMigration]) {
+        dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+        [DSCoreDataMigrator performMigrationWithCompletionQueue:dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)
+                                                     completion:^{
+            dispatch_semaphore_signal(sem);
+        }];
+        dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+    }
     
     [self loadPersistentContainer];
     
