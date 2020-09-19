@@ -612,7 +612,7 @@
 
 #define TEST_RANDOM_ERROR_IN_MASTERNODE_DIFF 0
 
--(void)processMasternodeDiffMessage:(NSData*)message baseMasternodeList:(DSMasternodeList*)baseMasternodeList lastBlock:(DSMerkleBlock*)lastBlock completion:(void (^)(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * masternodeList, NSDictionary * addedMasternodes, NSDictionary * modifiedMasternodes, NSDictionary * addedQuorums, NSOrderedSet * neededMissingMasternodeLists))completion {
+-(void)processMasternodeDiffMessage:(NSData*)message baseMasternodeList:(DSMasternodeList*)baseMasternodeList lastBlock:(DSBlock*)lastBlock completion:(void (^)(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * masternodeList, NSDictionary * addedMasternodes, NSDictionary * modifiedMasternodes, NSDictionary * addedQuorums, NSOrderedSet * neededMissingMasternodeLists))completion {
     [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:baseMasternodeList masternodeListLookup:^DSMasternodeList *(UInt256 blockHash) {
         return [self masternodeListForBlockHash:blockHash];
     } lastBlock:lastBlock onChain:self.chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
@@ -620,7 +620,7 @@
     } completion:completion];
 }
 
-+(void)processMasternodeDiffMessage:(NSData*)message baseMasternodeList:(DSMasternodeList*)baseMasternodeList masternodeListLookup:(DSMasternodeList*(^)(UInt256 blockHash))masternodeListLookup lastBlock:(DSMerkleBlock*)lastBlock onChain:(DSChain*)chain blockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup completion:(void (^)(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * masternodeList, NSDictionary * addedMasternodes, NSDictionary * modifiedMasternodes, NSDictionary * addedQuorums, NSOrderedSet * neededMissingMasternodeLists))completion {
++(void)processMasternodeDiffMessage:(NSData*)message baseMasternodeList:(DSMasternodeList*)baseMasternodeList masternodeListLookup:(DSMasternodeList*(^)(UInt256 blockHash))masternodeListLookup lastBlock:(DSBlock*)lastBlock onChain:(DSChain*)chain blockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup completion:(void (^)(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * masternodeList, NSDictionary * addedMasternodes, NSDictionary * modifiedMasternodes, NSDictionary * addedQuorums, NSOrderedSet * neededMissingMasternodeLists))completion {
     
     void(^failureBlock)(void) = ^{
         completion(NO,NO,NO,NO,NO,nil,nil,nil,nil,nil);
@@ -915,9 +915,15 @@
         [self issueWithMasternodeListFromPeer:peer];
         DSDLog(@"No base masternode list");
         return;
-    };
+    }
+    DSBlock * lastBlock = nil;
+    if ([self.chain heightForBlockHash:blockHash]) {
+        lastBlock = [[peer.chain terminalBlocks] objectForKey:uint256_obj(blockHash)];
+    } else {
+        lastBlock = [peer.chain recentTerminalBlockForBlockHash:blockHash];
+    }
     
-    DSMerkleBlock * lastBlock = [peer.chain recentTerminalBlockForBlockHash:blockHash];
+
     
     if (!lastBlock) {
         [self issueWithMasternodeListFromPeer:peer];
