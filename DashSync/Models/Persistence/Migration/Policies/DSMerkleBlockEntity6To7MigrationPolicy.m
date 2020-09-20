@@ -131,19 +131,7 @@
     NSManagedObject *chainEntity = [sInstance valueForKey:@"chain"];
     NSParameterAssert(chainEntity);
     if (height != nil && [height intValue] != BLOCK_UNKNOWN_HEIGHT && [[chainEntity valueForKey:@"type"] intValue] == DSChainType_MainNet) {
-        DSCheckpoint *checkpoint = self.checkpoints[height];
-        if (checkpoint != nil) {
-            NSNumber *version = [sInstance valueForKey:@"version"];
-            NSDate *timestamp = [sInstance valueForKey:@"timestamp"];
-            NSData *blockHash = [sInstance valueForKey:@"blockHash"];
-            NSData *prevBlock = [sInstance valueForKey:@"prevBlock"];
-            if ([height intValue] > self.lastKnownSourceBlockWithCheckpoint.height) {
-                id chain = nil;
-                self.lastKnownSourceBlockWithCheckpoint = [[DSMerkleBlock alloc] initWithVersion:version.unsignedIntValue blockHash:blockHash.UInt256 prevBlock:prevBlock.UInt256 merkleRoot:UINT256_ZERO
-                                                                                       timestamp:[timestamp timeIntervalSinceReferenceDate] target:0 chainWork:UINT256_ZERO nonce:0
-                                                                               totalTransactions:0 hashes:0 flags:0 height:height.unsignedIntValue chainLock:nil onChain:chain];
-            }
-        } else if ((self.lastKnownSourceBlockWithCheckpoint == nil) || ([height intValue] > self.lastKnownSourceBlockHeight)) {
+        if ([height intValue] > self.lastKnownSourceBlockHeight) {
             self.lastKnownSourceBlockHeight = [height unsignedIntValue];
         }
     }

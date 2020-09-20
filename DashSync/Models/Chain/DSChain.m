@@ -2506,7 +2506,7 @@ static dispatch_once_t devnetToken = 0;
             DSCheckpoint * lastCheckpoint = self.terminalHeadersOverrideUseCheckpoint?self.terminalHeadersOverrideUseCheckpoint:self.lastCheckpoint;
             uint32_t lastSyncBlockHeight = self.lastSyncBlockHeight;
             
-            if (lastCheckpoint.height > lastSyncBlockHeight) {
+            if (lastCheckpoint.height >= lastSyncBlockHeight) {
                 [self setLastTerminalBlockFromCheckpoints];
             } else {
                 _lastTerminalBlock = self.lastSyncBlock;
