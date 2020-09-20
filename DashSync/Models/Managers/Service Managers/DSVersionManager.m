@@ -155,6 +155,7 @@
             }
         }];
     } else {
+        [self clearKeychainWalletOldData];
         completion(YES,NO,NO,NO);
     }
 }

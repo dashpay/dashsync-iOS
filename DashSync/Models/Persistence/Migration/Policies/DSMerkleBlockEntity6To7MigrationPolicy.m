@@ -24,6 +24,7 @@
 #import "DSMerkleBlock.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
 #import "DSChainEntity+CoreDataClass.h"
+#import "NSManagedObject+Sugar.h"
 
 @interface DSChain (DSMigrationHelper)
 
@@ -35,7 +36,8 @@
 
 @property (nonatomic, copy) NSDictionary <NSNumber *, DSCheckpoint *> *checkpoints;
 @property (nonatomic, copy) NSArray <DSCheckpoint *> *checkpointsArray;
-@property (nonatomic, strong) DSMerkleBlockEntity *lastBlockAdded;
+@property (nonatomic, strong) DSMerkleBlock * lastKnownSourceBlockWithCheckpoint;
+@property (nonatomic, assign) uint32_t lastKnownSourceBlockHeight;
 
 @end
 
@@ -56,7 +58,8 @@
 
 @property (nonatomic, copy) NSDictionary <NSNumber *, DSCheckpoint *> *checkpoints;
 @property (nonatomic, copy) NSArray <DSCheckpoint *> *checkpointsArray;
-@property (nonatomic, strong) DSMerkleBlockEntity *lastBlockAdded;
+@property (nonatomic, strong) DSMerkleBlock * lastKnownSourceBlockWithCheckpoint;
+@property (nonatomic, assign) uint32_t lastKnownSourceBlockHeight;
 
 @end
 
@@ -78,12 +81,32 @@
     [DSMerkleBlockEntity6To7MigrationPolicyStorage sharedInstance].checkpointsArray = checkpointsArray;
 }
 
-- (DSMerkleBlockEntity *)lastBlockAdded {
-    return [DSMerkleBlockEntity6To7MigrationPolicyStorage sharedInstance].lastBlockAdded;
+- (DSMerkleBlock *)lastKnownSourceBlockWithCheckpoint {
+    return [DSMerkleBlockEntity6To7MigrationPolicyStorage sharedInstance].lastKnownSourceBlockWithCheckpoint;
 }
 
-- (void)setLastBlockAdded:(DSMerkleBlockEntity *)lastBlockAdded {
-    [DSMerkleBlockEntity6To7MigrationPolicyStorage sharedInstance].lastBlockAdded = lastBlockAdded;
+- (void)setLastKnownSourceBlockWithCheckpoint:(DSMerkleBlock *)lastKnownSourceBlockWithCheckpoint {
+    [DSMerkleBlockEntity6To7MigrationPolicyStorage sharedInstance].lastKnownSourceBlockWithCheckpoint = lastKnownSourceBlockWithCheckpoint;
+}
+
+- (uint32_t)lastKnownSourceBlockHeight {
+    return [DSMerkleBlockEntity6To7MigrationPolicyStorage sharedInstance].lastKnownSourceBlockHeight;
+}
+
+- (void)setLastKnownSourceBlockHeight:(uint32_t)lastKnownSourceBlockHeight {
+    [DSMerkleBlockEntity6To7MigrationPolicyStorage sharedInstance].lastKnownSourceBlockHeight = lastKnownSourceBlockHeight;
+}
+
+
+-(DSCheckpoint*)lastMainnetCheckpointOnOrBeforeHeight:(uint32_t)height {
+    NSUInteger genesisHeight = 0;
+    // if we don't have any blocks yet, use the latest checkpoint that's at least a week older than earliestKeyTime
+    for (long i = self.checkpointsArray.count - 1; i >= genesisHeight; i--) {
+        if (i == genesisHeight || (self.checkpointsArray[i].height <= height)) {
+            return self.checkpointsArray[i];
+        }
+    }
+    return nil;
 }
 
 - (BOOL)beginEntityMapping:(NSEntityMapping *)mapping manager:(NSMigrationManager *)manager error:(NSError **)error {
@@ -107,25 +130,9 @@
     NSNumber *height = [sInstance valueForKey:@"height"];
     NSManagedObject *chainEntity = [sInstance valueForKey:@"chain"];
     NSParameterAssert(chainEntity);
-    if (height != nil && [[chainEntity valueForKey:@"type"] intValue] == DSChainType_MainNet) {
-        DSCheckpoint *checkpoint = self.checkpoints[height];
-        if (checkpoint != nil) {
-            BOOL result = [super createDestinationInstancesForSourceInstance:sInstance
-                                                               entityMapping:mapping
-                                                                     manager:manager
-                                                                       error:error];
-            if (result) {
-                NSManagedObject *destination = [manager destinationInstancesForEntityMappingNamed:mapping.name sourceInstances:@[sInstance]].firstObject;
-                NSParameterAssert(destination);
-                [destination setValue:uint256_data(checkpoint.chainWork) forKey:@"chainWork"];
-                
-                if (self.lastBlockAdded == nil) {
-                    self.lastBlockAdded = (DSMerkleBlockEntity *)destination;
-                }
-                else if ([[destination valueForKey:@"height"] intValue] > [[self.lastBlockAdded valueForKey:@"height"] intValue]) {
-                    self.lastBlockAdded = (DSMerkleBlockEntity *)destination;
-                }
-            }
+    if (height != nil && [height intValue] != BLOCK_UNKNOWN_HEIGHT && [[chainEntity valueForKey:@"type"] intValue] == DSChainType_MainNet) {
+        if ([height intValue] > self.lastKnownSourceBlockHeight) {
+            self.lastKnownSourceBlockHeight = [height unsignedIntValue];
         }
     }
     
@@ -133,31 +140,21 @@
 }
 
 - (BOOL)endEntityMapping:(NSEntityMapping *)mapping manager:(NSMigrationManager *)manager error:(NSError **)error {
-    DSChainEntity *chainEntity = [self chainEntityForType:DSChainType_MainNet inContext:manager.destinationContext];
-    id chain = nil;
-    DSMerkleBlock *block = nil;
-    if (self.lastBlockAdded == nil) {
-        DSCheckpoint *lastCheckpoint = self.checkpointsArray.lastObject;
-        
-        block = [[DSMerkleBlock alloc] initWithCheckpoint:lastCheckpoint onChain:chain];
-        DSMerkleBlockEntity *entity = [[DSMerkleBlockEntity alloc] initWithContext:manager.destinationContext];
-        [entity setAttributesFromBlock:block forChainEntity:chainEntity];
-        self.lastBlockAdded = entity;
+    if (self.lastKnownSourceBlockHeight && !self.lastKnownSourceBlockWithCheckpoint) {
+        DSCheckpoint *lastCheckpoint = [self lastMainnetCheckpointOnOrBeforeHeight:self.lastKnownSourceBlockHeight];
+        id chain = nil;
+        self.lastKnownSourceBlockWithCheckpoint = [[DSMerkleBlock alloc] initWithCheckpoint:lastCheckpoint onChain:chain];
     }
-    else {
-        block = [[DSMerkleBlock alloc] initWithVersion:self.lastBlockAdded.version blockHash:self.lastBlockAdded.blockHash.UInt256 prevBlock:self.lastBlockAdded.prevBlock.UInt256 merkleRoot:self.lastBlockAdded.merkleRoot.UInt256
-                                             timestamp:self.lastBlockAdded.timestamp target:self.lastBlockAdded.target chainWork:self.lastBlockAdded.chainWork.UInt256 nonce:self.lastBlockAdded.nonce
-                                     totalTransactions:self.lastBlockAdded.totalTransactions hashes:self.lastBlockAdded.hashes flags:self.lastBlockAdded.flags height:self.lastBlockAdded.height chainLock:nil onChain:chain];
+    if (self.lastKnownSourceBlockWithCheckpoint) {
+        DSChainEntity *chainEntity = [self chainEntityForType:DSChainType_MainNet inContext:manager.destinationContext];
+        if (chainEntity) {
+            [chainEntity setValue:uint256_data(self.lastKnownSourceBlockWithCheckpoint.blockHash) forKey:@"syncBlockHash"];
+            [chainEntity setValue:@(self.lastKnownSourceBlockWithCheckpoint.height) forKey:@"syncBlockHeight"];
+            [chainEntity setValue:@(self.lastKnownSourceBlockWithCheckpoint.timestamp) forKey:@"syncBlockTimestamp"];
+            [chainEntity setValue:[self blockLocatorArrayForBlock:self.lastKnownSourceBlockWithCheckpoint] forKey:@"syncLocators"];
+            [chainEntity setValue:uint256_data(self.lastKnownSourceBlockWithCheckpoint.chainWork) forKey:@"syncBlockChainWork"];
+        }
     }
-    
-    [chainEntity setValue:[self.lastBlockAdded.blockHash copy] forKey:@"syncBlockHash"];
-    [chainEntity setValue:[self.lastBlockAdded valueForKey:@"height"] forKey:@"syncBlockHeight"];
-    NSDate *date = [self.lastBlockAdded valueForKey:@"timestamp"];
-    NSAssert([date isKindOfClass:NSDate.class], @"invalid type");
-    [chainEntity setValue:@([date timeIntervalSince1970]) forKey:@"syncBlockTimestamp"];
-    [chainEntity setValue:[self blockLocatorArrayForBlock:block] forKey:@"syncLocators"];
-    [chainEntity setValue:[self.lastBlockAdded.chainWork copy] forKey:@"syncBlockChainWork"];
-    
     return [super endEntityMapping:mapping manager:manager error:error];
 }
 
@@ -190,9 +187,7 @@
         return objects.firstObject;
     }
     
-    DSChainEntity * chainEntity = [[DSChainEntity alloc] initWithContext:context];
-    chainEntity.type = type;
-    return chainEntity;
+    return nil;
 }
 
 

@@ -459,7 +459,7 @@
         
         for (DSPeer *p in peers) {
             @autoreleasepool {
-                [[DSPeerEntity managedObjectInContext:self.managedObjectContext] setAttributesFromPeer:p]; // add new peers
+                [[DSPeerEntity managedObjectInBlockedContext:self.managedObjectContext] setAttributesFromPeer:p]; // add new peers
             }
         }
     }];
@@ -880,7 +880,7 @@
     peer.currentBlockHeight = self.chain.lastSyncBlockHeight;
     
     
-    if ([self.chain syncsBlockchain] && (self.chain.lastSyncBlockHeight < peer.lastBlockHeight)) { // start blockchain sync
+    if ([self.chain syncsBlockchain] && ((self.chain.lastSyncBlockHeight != self.chain.lastTerminalBlockHeight) || (self.chain.lastSyncBlockHeight < peer.lastBlockHeight))) { // start blockchain sync
         [self.chainManager resetLastRelayedItemTime];
         dispatch_async(dispatch_get_main_queue(), ^{ // setup a timer to detect if the sync stalls
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];

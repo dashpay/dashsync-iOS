@@ -54,7 +54,7 @@
     if ([derivationPathEntities count]) {
         return [derivationPathEntities firstObject];
     } else {
-        DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity managedObjectInContext:context];
+        DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity managedObjectInBlockedContext:context];
         derivationPathEntity.derivationPath = archivedDerivationPath;
         derivationPathEntity.chain = chainEntity;
         derivationPathEntity.publicKeyIdentifier = derivationPath.standaloneExtendedPublicKeyUniqueID;
@@ -90,7 +90,7 @@
         DSDerivationPathEntity * derivationPathEntity = [derivationPathEntities anyObject];
         return derivationPathEntity;
     } else {
-        DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity managedObjectInContext:context];
+        DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity managedObjectInBlockedContext:context];
         derivationPathEntity.derivationPath = archivedDerivationPath;
         derivationPathEntity.chain = chainEntity;
         derivationPathEntity.publicKeyIdentifier = derivationPath.standaloneExtendedPublicKeyUniqueID;

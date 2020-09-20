@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="16119" systemVersion="19G73" minimumToolsVersion="Xcode 7.3" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="16119" systemVersion="19F101" minimumToolsVersion="Xcode 9.0" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
     <entity name="DSAccountEntity" representedClassName="DSAccountEntity" syncable="YES">
         <attribute name="index" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="walletUniqueID" optional="YES" attributeType="String" syncable="YES"/>
@@ -9,15 +9,24 @@
         <relationship name="transactionOutputs" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSTxOutputEntity" inverseName="account" inverseEntity="DSTxOutputEntity" syncable="YES"/>
     </entity>
     <entity name="DSAddressEntity" representedClassName="DSAddressEntity" syncable="YES">
-        <attribute name="address" attributeType="String" indexed="YES" syncable="YES"/>
-        <attribute name="index" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
-        <attribute name="internal" optional="YES" attributeType="Boolean" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <attribute name="address" attributeType="String" syncable="YES"/>
+        <attribute name="index" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="internal" optional="YES" attributeType="Boolean" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="standalone" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="derivationPath" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSDerivationPathEntity" inverseName="addresses" inverseEntity="DSDerivationPathEntity" syncable="YES"/>
         <relationship name="usedInInputs" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSTxInputEntity" inverseName="localAddress" inverseEntity="DSTxInputEntity" syncable="YES"/>
         <relationship name="usedInOutputs" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSTxOutputEntity" inverseName="localAddress" inverseEntity="DSTxOutputEntity" syncable="YES"/>
         <relationship name="usedInSimplifiedMasternodeEntries" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSSimplifiedMasternodeEntryEntity" inverseName="addresses" inverseEntity="DSSimplifiedMasternodeEntryEntity" syncable="YES"/>
         <relationship name="usedInSpecialTransactions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSSpecialTransactionEntity" inverseName="addresses" inverseEntity="DSSpecialTransactionEntity" syncable="YES"/>
+        <fetchIndex name="byAddressIndex">
+            <fetchIndexElement property="address" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byIndexIndex">
+            <fetchIndexElement property="index" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byInternalIndex">
+            <fetchIndexElement property="internal" type="Binary" order="ascending"/>
+        </fetchIndex>
     </entity>
     <entity name="DSBlockchainIdentityEntity" representedClassName="DSBlockchainIdentityEntity" syncable="YES">
         <attribute name="creditBalance" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
@@ -28,8 +37,8 @@
         <attribute name="lastCheckedProfileTimestamp" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="lastCheckedUsernamesTimestamp" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="registrationStatus" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="uniqueID" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
-        <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="identities" inverseEntity="DSChainEntity" indexed="YES" syncable="YES"/>
+        <attribute name="uniqueID" optional="YES" attributeType="Binary" syncable="YES"/>
+        <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="identities" inverseEntity="DSChainEntity" syncable="YES"/>
         <relationship name="createdContracts" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSContractEntity" inverseName="creator" inverseEntity="DSContractEntity" syncable="YES"/>
         <relationship name="dashpayUsername" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityUsernameEntity" inverseName="blockchainIdentityUsedForDashpay" inverseEntity="DSBlockchainIdentityUsernameEntity" syncable="YES"/>
         <relationship name="keyPaths" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSBlockchainIdentityKeyPathEntity" inverseName="blockchainIdentity" inverseEntity="DSBlockchainIdentityKeyPathEntity" syncable="YES"/>
@@ -37,6 +46,12 @@
         <relationship name="registrationFundingTransaction" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSCreditFundingTransactionEntity" inverseName="registeredBlockchainIdentity" inverseEntity="DSCreditFundingTransactionEntity" syncable="YES"/>
         <relationship name="topUpFundingTransactions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSCreditFundingTransactionEntity" inverseName="toppedUpBlockchainIdentity" inverseEntity="DSCreditFundingTransactionEntity" syncable="YES"/>
         <relationship name="usernames" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSBlockchainIdentityUsernameEntity" inverseName="blockchainIdentity" inverseEntity="DSBlockchainIdentityUsernameEntity" syncable="YES"/>
+        <fetchIndex name="byUniqueIDIndex">
+            <fetchIndexElement property="uniqueID" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byChainIndex">
+            <fetchIndexElement property="chain" type="Binary" order="ascending"/>
+        </fetchIndex>
     </entity>
     <entity name="DSBlockchainIdentityKeyPathEntity" representedClassName="DSBlockchainIdentityKeyPathEntity" syncable="YES">
         <attribute name="keyID" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
@@ -94,11 +109,17 @@
     </entity>
     <entity name="DSContractEntity" representedClassName="DSContractEntity" syncable="YES">
         <attribute name="entropy" optional="YES" attributeType="Binary" syncable="YES"/>
-        <attribute name="localContractIdentifier" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
-        <attribute name="registeredBlockchainIdentityUniqueID" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <attribute name="localContractIdentifier" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="registeredBlockchainIdentityUniqueID" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="state" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="chain" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="contracts" inverseEntity="DSChainEntity" syncable="YES"/>
         <relationship name="creator" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityEntity" inverseName="createdContracts" inverseEntity="DSBlockchainIdentityEntity" syncable="YES"/>
+        <fetchIndex name="byLocalContractIdentifierIndex">
+            <fetchIndexElement property="localContractIdentifier" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byRegisteredBlockchainIdentityUniqueIDIndex">
+            <fetchIndexElement property="registeredBlockchainIdentityUniqueID" type="Binary" order="ascending"/>
+        </fetchIndex>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="localContractIdentifier"/>
@@ -107,7 +128,10 @@
     </entity>
     <entity name="DSCreditFundingTransactionEntity" representedClassName="DSCreditFundingTransactionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
         <relationship name="registeredBlockchainIdentity" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityEntity" inverseName="registrationFundingTransaction" inverseEntity="DSBlockchainIdentityEntity" syncable="YES"/>
-        <relationship name="toppedUpBlockchainIdentity" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityEntity" inverseName="topUpFundingTransactions" inverseEntity="DSBlockchainIdentityEntity" indexed="YES" syncable="YES"/>
+        <relationship name="toppedUpBlockchainIdentity" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityEntity" inverseName="topUpFundingTransactions" inverseEntity="DSBlockchainIdentityEntity" syncable="YES"/>
+        <fetchIndex name="byToppedUpBlockchainIdentityIndex">
+            <fetchIndexElement property="toppedUpBlockchainIdentity" type="Binary" order="ascending"/>
+        </fetchIndex>
     </entity>
     <entity name="DSDashpayUserEntity" representedClassName="DSDashpayUserEntity" syncable="YES">
         <attribute name="avatarPath" optional="YES" attributeType="String" syncable="YES"/>
@@ -117,27 +141,34 @@
         <attribute name="publicMessage" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="remoteProfileDocumentRevision" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="updatedAt" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <relationship name="associatedBlockchainIdentity" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityEntity" inverseName="matchingDashpayUser" inverseEntity="DSBlockchainIdentityEntity" indexed="YES" syncable="YES"/>
+        <relationship name="associatedBlockchainIdentity" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityEntity" inverseName="matchingDashpayUser" inverseEntity="DSBlockchainIdentityEntity" syncable="YES"/>
         <relationship name="chain" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="contacts" inverseEntity="DSChainEntity" syncable="YES"/>
         <relationship name="friends" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSDashpayUserEntity" inverseName="friends" inverseEntity="DSDashpayUserEntity" syncable="YES"/>
         <relationship name="incomingRequests" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSFriendRequestEntity" inverseName="destinationContact" inverseEntity="DSFriendRequestEntity" syncable="YES"/>
         <relationship name="outgoingRequests" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSFriendRequestEntity" inverseName="sourceContact" inverseEntity="DSFriendRequestEntity" syncable="YES"/>
+        <fetchIndex name="byAssociatedBlockchainIdentityIndex">
+            <fetchIndexElement property="associatedBlockchainIdentity" type="Binary" order="ascending"/>
+        </fetchIndex>
     </entity>
     <entity name="DSDerivationPathEntity" representedClassName="DSDerivationPathEntity" syncable="YES">
-        <attribute name="derivationPath" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
-        <attribute name="publicKeyIdentifier" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="derivationPath" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="publicKeyIdentifier" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="syncBlockHeight" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="account" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSAccountEntity" inverseName="derivationPaths" inverseEntity="DSAccountEntity" syncable="YES"/>
         <relationship name="addresses" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSAddressEntity" inverseName="derivationPath" inverseEntity="DSAddressEntity" syncable="YES"/>
         <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="derivationPaths" inverseEntity="DSChainEntity" syncable="YES"/>
         <relationship name="friendRequest" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSFriendRequestEntity" inverseName="derivationPath" inverseEntity="DSFriendRequestEntity" syncable="YES"/>
         <relationship name="identityKeyPaths" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSBlockchainIdentityKeyPathEntity" inverseName="derivationPath" inverseEntity="DSBlockchainIdentityKeyPathEntity" syncable="YES"/>
-        <compoundIndexes>
-            <compoundIndex>
-                <index value="chain"/>
-                <index value="syncBlockHeight"/>
-            </compoundIndex>
-        </compoundIndexes>
+        <fetchIndex name="byDerivationPathIndex">
+            <fetchIndexElement property="derivationPath" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byPublicKeyIdentifierIndex">
+            <fetchIndexElement property="publicKeyIdentifier" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="compoundIndex">
+            <fetchIndexElement property="chain" type="Binary" order="ascending"/>
+            <fetchIndexElement property="syncBlockHeight" type="Binary" order="ascending"/>
+        </fetchIndex>
     </entity>
     <entity name="DSFriendRequestEntity" representedClassName="DSFriendRequestEntity" syncable="YES">
         <attribute name="destinationKeyIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
@@ -146,8 +177,14 @@
         <attribute name="timestamp" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="account" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSAccountEntity" inverseName="friendRequests" inverseEntity="DSAccountEntity" syncable="YES"/>
         <relationship name="derivationPath" maxCount="1" deletionRule="Cascade" destinationEntity="DSDerivationPathEntity" inverseName="friendRequest" inverseEntity="DSDerivationPathEntity" syncable="YES"/>
-        <relationship name="destinationContact" maxCount="1" deletionRule="Nullify" destinationEntity="DSDashpayUserEntity" inverseName="incomingRequests" inverseEntity="DSDashpayUserEntity" indexed="YES" syncable="YES"/>
-        <relationship name="sourceContact" maxCount="1" deletionRule="Nullify" destinationEntity="DSDashpayUserEntity" inverseName="outgoingRequests" inverseEntity="DSDashpayUserEntity" indexed="YES" syncable="YES"/>
+        <relationship name="destinationContact" maxCount="1" deletionRule="Nullify" destinationEntity="DSDashpayUserEntity" inverseName="incomingRequests" inverseEntity="DSDashpayUserEntity" syncable="YES"/>
+        <relationship name="sourceContact" maxCount="1" deletionRule="Nullify" destinationEntity="DSDashpayUserEntity" inverseName="outgoingRequests" inverseEntity="DSDashpayUserEntity" syncable="YES"/>
+        <fetchIndex name="byDestinationContactIndex">
+            <fetchIndexElement property="destinationContact" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="bySourceContactIndex">
+            <fetchIndexElement property="sourceContact" type="Binary" order="ascending"/>
+        </fetchIndex>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="friendshipIdentifier"/>
@@ -164,29 +201,30 @@
         <attribute name="revision" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="signature" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="startEpoch" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="timestamp" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <attribute name="timestamp" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="totalVotesCount" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="type" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="url" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="governanceObjectHash" maxCount="1" deletionRule="Nullify" destinationEntity="DSGovernanceObjectHashEntity" inverseName="governanceObject" inverseEntity="DSGovernanceObjectHashEntity" syncable="YES"/>
         <relationship name="voteHashes" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSGovernanceVoteHashEntity" inverseName="governanceObject" inverseEntity="DSGovernanceVoteHashEntity" syncable="YES"/>
+        <fetchIndex name="byTimestampIndex">
+            <fetchIndexElement property="timestamp" type="Binary" order="ascending"/>
+        </fetchIndex>
     </entity>
     <entity name="DSGovernanceObjectHashEntity" representedClassName="DSGovernanceObjectHashEntity" syncable="YES">
         <attribute name="governanceObjectHash" attributeType="Binary" syncable="YES"/>
         <attribute name="timestamp" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="chain" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="governanceObjectHashes" inverseEntity="DSChainEntity" syncable="YES"/>
         <relationship name="governanceObject" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSGovernanceObjectEntity" inverseName="governanceObjectHash" inverseEntity="DSGovernanceObjectEntity" syncable="YES"/>
-        <compoundIndexes>
-            <compoundIndex>
-                <index value="chain"/>
-                <index value="governanceObjectHash"/>
-                <index value="governanceObject"/>
-            </compoundIndex>
-            <compoundIndex>
-                <index value="chain"/>
-                <index value="governanceObjectHash"/>
-            </compoundIndex>
-        </compoundIndexes>
+        <fetchIndex name="compoundIndex">
+            <fetchIndexElement property="chain" type="Binary" order="ascending"/>
+            <fetchIndexElement property="governanceObjectHash" type="Binary" order="ascending"/>
+            <fetchIndexElement property="governanceObject" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="compoundIndex1">
+            <fetchIndexElement property="chain" type="Binary" order="ascending"/>
+            <fetchIndexElement property="governanceObjectHash" type="Binary" order="ascending"/>
+        </fetchIndex>
     </entity>
     <entity name="DSGovernanceVoteEntity" representedClassName="DSGovernanceVoteEntity" syncable="YES">
         <attribute name="masternodeHash" optional="YES" attributeType="Binary" syncable="YES"/>
@@ -214,18 +252,30 @@
     </entity>
     <entity name="DSLocalMasternodeEntity" representedClassName="DSLocalMasternodeEntity" syncable="YES">
         <attribute name="holdingKeysIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="holdingKeysWalletUniqueId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="holdingKeysWalletUniqueId" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="operatorKeysIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="operatorKeysWalletUniqueId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="operatorKeysWalletUniqueId" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="ownerKeysIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="ownerKeysWalletUniqueId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="ownerKeysWalletUniqueId" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="votingKeysIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="votingKeysWalletUniqueId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="votingKeysWalletUniqueId" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="providerRegistrationTransaction" maxCount="1" deletionRule="Nullify" destinationEntity="DSProviderRegistrationTransactionEntity" inverseName="localMasternode" inverseEntity="DSProviderRegistrationTransactionEntity" syncable="YES"/>
         <relationship name="providerUpdateRegistrarTransactions" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="DSProviderUpdateRegistrarTransactionEntity" inverseName="localMasternode" inverseEntity="DSProviderUpdateRegistrarTransactionEntity" syncable="YES"/>
         <relationship name="providerUpdateRevocationTransactions" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="DSProviderUpdateRevocationTransactionEntity" inverseName="localMasternode" inverseEntity="DSProviderUpdateRevocationTransactionEntity" syncable="YES"/>
         <relationship name="providerUpdateServiceTransactions" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="DSProviderUpdateServiceTransactionEntity" inverseName="localMasternode" inverseEntity="DSProviderUpdateServiceTransactionEntity" syncable="YES"/>
         <relationship name="simplifiedMasternodeEntry" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSSimplifiedMasternodeEntryEntity" inverseName="localMasternode" inverseEntity="DSSimplifiedMasternodeEntryEntity" syncable="YES"/>
+        <fetchIndex name="byHoldingKeysWalletUniqueIdIndex">
+            <fetchIndexElement property="holdingKeysWalletUniqueId" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byOperatorKeysWalletUniqueIdIndex">
+            <fetchIndexElement property="operatorKeysWalletUniqueId" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byOwnerKeysWalletUniqueIdIndex">
+            <fetchIndexElement property="ownerKeysWalletUniqueId" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byVotingKeysWalletUniqueIdIndex">
+            <fetchIndexElement property="votingKeysWalletUniqueId" type="Binary" order="ascending"/>
+        </fetchIndex>
     </entity>
     <entity name="DSMasternodeListEntity" representedClassName="DSMasternodeListEntity" syncable="YES">
         <attribute name="masternodeListMerkleRoot" attributeType="Binary" syncable="YES"/>
@@ -235,51 +285,88 @@
         <relationship name="quorums" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSQuorumEntryEntity" inverseName="referencedByMasternodeLists" inverseEntity="DSQuorumEntryEntity" syncable="YES"/>
     </entity>
     <entity name="DSMerkleBlockEntity" representedClassName="DSMerkleBlockEntity" syncable="YES">
-        <attribute name="blockHash" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <attribute name="blockHash" attributeType="Binary" syncable="YES"/>
         <attribute name="chainWork" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="flags" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="hashes" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="height" optional="YES" attributeType="Integer 32" defaultValueString="2147483647" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="merkleRoot" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="nonce" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="prevBlock" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <attribute name="prevBlock" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="target" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="timestamp" optional="YES" attributeType="Date" defaultDateTimeInterval="-3600" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="totalTransactions" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="version" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <relationship name="chain" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="blocks" inverseEntity="DSChainEntity" indexed="YES" syncable="YES"/>
+        <relationship name="chain" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="blocks" inverseEntity="DSChainEntity" syncable="YES"/>
         <relationship name="chainLock" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSChainLockEntity" inverseName="merkleBlock" inverseEntity="DSChainLockEntity" syncable="YES"/>
-        <relationship name="masternodeList" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSMasternodeListEntity" inverseName="block" inverseEntity="DSMasternodeListEntity" indexed="YES" syncable="YES"/>
-        <relationship name="usedByQuorums" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSQuorumEntryEntity" inverseName="block" inverseEntity="DSQuorumEntryEntity" indexed="YES" syncable="YES"/>
-        <compoundIndexes>
-            <compoundIndex>
-                <index value="chain"/>
-                <index value="height"/>
-            </compoundIndex>
-            <compoundIndex>
-                <index value="chain"/>
-                <index value="height"/>
-                <index value="blockHash"/>
-            </compoundIndex>
-            <compoundIndex>
-                <index value="chain"/>
-                <index value="masternodeList"/>
-                <index value="usedByQuorums"/>
-                <index value="blockHash"/>
-            </compoundIndex>
-        </compoundIndexes>
+        <relationship name="masternodeList" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSMasternodeListEntity" inverseName="block" inverseEntity="DSMasternodeListEntity" syncable="YES"/>
+        <relationship name="usedByQuorums" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSQuorumEntryEntity" inverseName="block" inverseEntity="DSQuorumEntryEntity" syncable="YES"/>
+        <fetchIndex name="byBlockHashIndex">
+            <fetchIndexElement property="blockHash" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byPrevBlockIndex">
+            <fetchIndexElement property="prevBlock" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byChainIndex">
+            <fetchIndexElement property="chain" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byMasternodeListIndex">
+            <fetchIndexElement property="masternodeList" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byUsedByQuorumsIndex">
+            <fetchIndexElement property="usedByQuorums" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="compoundIndex">
+            <fetchIndexElement property="chain" type="Binary" order="ascending"/>
+            <fetchIndexElement property="height" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="compoundIndex1">
+            <fetchIndexElement property="chain" type="Binary" order="ascending"/>
+            <fetchIndexElement property="height" type="Binary" order="ascending"/>
+            <fetchIndexElement property="blockHash" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="compoundIndex2">
+            <fetchIndexElement property="chain" type="Binary" order="ascending"/>
+            <fetchIndexElement property="masternodeList" type="Binary" order="ascending"/>
+            <fetchIndexElement property="usedByQuorums" type="Binary" order="ascending"/>
+            <fetchIndexElement property="blockHash" type="Binary" order="ascending"/>
+        </fetchIndex>
     </entity>
     <entity name="DSPeerEntity" representedClassName="DSPeerEntity" syncable="YES">
-        <attribute name="address" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
-        <attribute name="lastRequestedGovernanceSync" optional="YES" attributeType="Date" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
-        <attribute name="lastRequestedMasternodeList" optional="YES" attributeType="Date" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
-        <attribute name="lowPreferenceTill" optional="YES" attributeType="Date" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
-        <attribute name="misbehavin" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
-        <attribute name="port" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
-        <attribute name="priority" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <attribute name="address" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="lastRequestedGovernanceSync" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="lastRequestedMasternodeList" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="lowPreferenceTill" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="misbehavin" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="port" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="priority" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="services" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="timestamp" optional="YES" attributeType="Date" defaultDateTimeInterval="-3600" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <attribute name="timestamp" optional="YES" attributeType="Date" defaultDateTimeInterval="-3600" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="chain" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="peers" inverseEntity="DSChainEntity" syncable="YES"/>
+        <fetchIndex name="byAddressIndex">
+            <fetchIndexElement property="address" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byLastRequestedGovernanceSyncIndex">
+            <fetchIndexElement property="lastRequestedGovernanceSync" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byLastRequestedMasternodeListIndex">
+            <fetchIndexElement property="lastRequestedMasternodeList" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byLowPreferenceTillIndex">
+            <fetchIndexElement property="lowPreferenceTill" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byMisbehavinIndex">
+            <fetchIndexElement property="misbehavin" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byPortIndex">
+            <fetchIndexElement property="port" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byPriorityIndex">
+            <fetchIndexElement property="priority" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byTimestampIndex">
+            <fetchIndexElement property="timestamp" type="Binary" order="ascending"/>
+        </fetchIndex>
     </entity>
     <entity name="DSProviderRegistrationTransactionEntity" representedClassName="DSProviderRegistrationTransactionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
         <attribute name="collateralOutpoint" attributeType="Binary" syncable="YES"/>
@@ -375,25 +462,23 @@
         <relationship name="governanceVotes" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSGovernanceVoteEntity" inverseName="masternode" inverseEntity="DSGovernanceVoteEntity" syncable="YES"/>
         <relationship name="localMasternode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSLocalMasternodeEntity" inverseName="simplifiedMasternodeEntry" inverseEntity="DSLocalMasternodeEntity" syncable="YES"/>
         <relationship name="masternodeLists" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSMasternodeListEntity" inverseName="masternodes" inverseEntity="DSMasternodeListEntity" syncable="YES"/>
-        <compoundIndexes>
-            <compoundIndex>
-                <index value="chain"/>
-                <index value="address"/>
-            </compoundIndex>
-            <compoundIndex>
-                <index value="chain"/>
-                <index value="providerRegistrationTransactionHash"/>
-            </compoundIndex>
-            <compoundIndex>
-                <index value="chain"/>
-                <index value="simplifiedMasternodeEntryHash"/>
-            </compoundIndex>
-            <compoundIndex>
-                <index value="chain"/>
-                <index value="providerRegistrationTransactionHash"/>
-                <index value="confirmedHash"/>
-            </compoundIndex>
-        </compoundIndexes>
+        <fetchIndex name="compoundIndex">
+            <fetchIndexElement property="chain" type="Binary" order="ascending"/>
+            <fetchIndexElement property="address" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="compoundIndex1">
+            <fetchIndexElement property="chain" type="Binary" order="ascending"/>
+            <fetchIndexElement property="providerRegistrationTransactionHash" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="compoundIndex2">
+            <fetchIndexElement property="chain" type="Binary" order="ascending"/>
+            <fetchIndexElement property="simplifiedMasternodeEntryHash" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="compoundIndex3">
+            <fetchIndexElement property="chain" type="Binary" order="ascending"/>
+            <fetchIndexElement property="providerRegistrationTransactionHash" type="Binary" order="ascending"/>
+            <fetchIndexElement property="confirmedHash" type="Binary" order="ascending"/>
+        </fetchIndex>
     </entity>
     <entity name="DSSpecialTransactionEntity" representedClassName="DSSpecialTransactionEntity" parentEntity="DSTransactionEntity" syncable="YES">
         <attribute name="specialTransactionVersion" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
@@ -405,12 +490,10 @@
         <attribute name="timeSigned" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="value" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="sporkHash" maxCount="1" deletionRule="Cascade" destinationEntity="DSSporkHashEntity" inverseName="spork" inverseEntity="DSSporkHashEntity" syncable="YES"/>
-        <compoundIndexes>
-            <compoundIndex>
-                <index value="sporkHash"/>
-                <index value="identifier"/>
-            </compoundIndex>
-        </compoundIndexes>
+        <fetchIndex name="compoundIndex">
+            <fetchIndexElement property="sporkHash" type="Binary" order="ascending"/>
+            <fetchIndexElement property="identifier" type="Binary" order="ascending"/>
+        </fetchIndex>
     </entity>
     <entity name="DSSporkHashEntity" representedClassName="DSSporkHashEntity" syncable="YES">
         <attribute name="sporkHash" optional="YES" attributeType="Binary" syncable="YES"/>
@@ -428,36 +511,55 @@
     <entity name="DSTransactionHashEntity" representedClassName="DSTransactionHashEntity" syncable="YES">
         <attribute name="blockHeight" attributeType="Integer 32" defaultValueString="-1" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="timestamp" attributeType="Double" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
-        <attribute name="txHash" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <attribute name="txHash" optional="YES" attributeType="Binary" syncable="YES"/>
         <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="transactionHashes" inverseEntity="DSChainEntity" syncable="YES"/>
         <relationship name="transaction" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSTransactionEntity" inverseName="transactionHash" inverseEntity="DSTransactionEntity" syncable="YES"/>
-        <compoundIndexes>
-            <compoundIndex>
-                <index value="chain"/>
-                <index value="blockHeight"/>
-            </compoundIndex>
-        </compoundIndexes>
+        <fetchIndex name="byTxHashIndex">
+            <fetchIndexElement property="txHash" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="compoundIndex">
+            <fetchIndexElement property="chain" type="Binary" order="ascending"/>
+            <fetchIndexElement property="blockHeight" type="Binary" order="ascending"/>
+        </fetchIndex>
     </entity>
     <entity name="DSTxInputEntity" representedClassName="DSTxInputEntity" syncable="YES">
-        <attribute name="n" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <attribute name="n" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="sequence" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="signature" optional="YES" attributeType="Binary" syncable="YES"/>
-        <attribute name="txHash" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <attribute name="txHash" optional="YES" attributeType="Binary" syncable="YES"/>
         <relationship name="localAddress" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSAddressEntity" inverseName="usedInInputs" inverseEntity="DSAddressEntity" syncable="YES"/>
         <relationship name="prevOutput" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSTxOutputEntity" inverseName="spentInInput" inverseEntity="DSTxOutputEntity" syncable="YES"/>
         <relationship name="transaction" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="DSTransactionEntity" inverseName="inputs" inverseEntity="DSTransactionEntity" syncable="YES"/>
+        <fetchIndex name="byNIndex">
+            <fetchIndexElement property="n" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byTxHashIndex">
+            <fetchIndexElement property="txHash" type="Binary" order="ascending"/>
+        </fetchIndex>
     </entity>
     <entity name="DSTxOutputEntity" representedClassName="DSTxOutputEntity" syncable="YES">
-        <attribute name="address" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
-        <attribute name="n" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <attribute name="address" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="n" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="script" optional="YES" attributeType="Binary" syncable="YES"/>
-        <attribute name="shapeshiftOutboundAddress" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
-        <attribute name="txHash" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <attribute name="shapeshiftOutboundAddress" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="txHash" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="value" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="account" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSAccountEntity" inverseName="transactionOutputs" inverseEntity="DSAccountEntity" syncable="YES"/>
         <relationship name="localAddress" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSAddressEntity" inverseName="usedInOutputs" inverseEntity="DSAddressEntity" syncable="YES"/>
         <relationship name="spentInInput" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSTxInputEntity" inverseName="prevOutput" inverseEntity="DSTxInputEntity" syncable="YES"/>
         <relationship name="transaction" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="DSTransactionEntity" inverseName="outputs" inverseEntity="DSTransactionEntity" syncable="YES"/>
+        <fetchIndex name="byAddressIndex">
+            <fetchIndexElement property="address" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byNIndex">
+            <fetchIndexElement property="n" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byShapeshiftOutboundAddressIndex">
+            <fetchIndexElement property="shapeshiftOutboundAddress" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byTxHashIndex">
+            <fetchIndexElement property="txHash" type="Binary" order="ascending"/>
+        </fetchIndex>
     </entity>
     <elements>
         <element name="DSAccountEntity" positionX="-2135.0703125" positionY="459.18359375" width="128" height="135"/>

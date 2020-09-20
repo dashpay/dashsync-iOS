@@ -139,7 +139,7 @@
         return chainEntity;
     }
     
-    DSChainEntity * chainEntity = [self managedObjectInContext:context];
+    DSChainEntity * chainEntity = [self managedObjectInBlockedContext:context];
     chainEntity.type = type;
     chainEntity.devnetIdentifier = devnetIdentifier;
     if (checkpoints && devnetIdentifier) {

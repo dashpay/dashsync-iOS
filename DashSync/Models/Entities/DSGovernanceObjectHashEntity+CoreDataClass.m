@@ -21,7 +21,7 @@
     NSMutableArray * rArray = [NSMutableArray arrayWithCapacity:governanceObjectHashes.count];
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
     for (NSData * governanceObjectHash in governanceObjectHashes) {
-        DSGovernanceObjectHashEntity * governanceObjectHashEntity = [self managedObjectInContext:chainEntity.managedObjectContext];
+        DSGovernanceObjectHashEntity * governanceObjectHashEntity = [self managedObjectInBlockedContext:chainEntity.managedObjectContext];
         governanceObjectHashEntity.governanceObjectHash = governanceObjectHash;
         governanceObjectHashEntity.timestamp = now;
         governanceObjectHashEntity.chain = chainEntity;

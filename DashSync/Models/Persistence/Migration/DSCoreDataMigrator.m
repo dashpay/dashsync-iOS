@@ -89,21 +89,59 @@
 + (void)performMigrationWithCompletionQueue:(dispatch_queue_t)completionQueue completion:(void(^)(void))completion {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
     
-    NSURL *storeURL = [DSDataController storeURL];
-    NSDictionary *metadata = [NSPersistentStoreCoordinator ds_metadataAt:storeURL];
+    __block NSURL *originalStoreURL = [DSDataController storeURL];
+    __block NSURL *finalStoreURL = [DSDataController storeURL];
+    __block BOOL shouldRemoveDocumentsCopy = FALSE;
+    NSDictionary *metadata = [NSPersistentStoreCoordinator ds_metadataAt:originalStoreURL];
     if (metadata == nil) {
         metadata = [NSPersistentStoreCoordinator ds_metadataAt:[self documentsStoreURL]];
         if (metadata != nil) {
             //Move to Application Support
-            [[NSFileManager defaultManager] moveItemAtURL:[self documentsStoreURL] toURL:storeURL error:nil];
-            [[NSFileManager defaultManager] moveItemAtURL:[self documentsWALURL] toURL:[DSDataController storeWALURL] error:nil];
-            [[NSFileManager defaultManager] moveItemAtURL:[self documentsSHMURL] toURL:[DSDataController storeSHMURL] error:nil];
+            originalStoreURL = [self documentsStoreURL];
+            NSError * error = nil;
+            NSString *appSupportDir = [NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES) lastObject];
+            //If there isn't an App Support Directory yet ...
+            if (![[NSFileManager defaultManager] fileExistsAtPath:appSupportDir isDirectory:NULL]) {
+            //Create one
+                if (![[NSFileManager defaultManager] createDirectoryAtPath:appSupportDir withIntermediateDirectories:YES attributes:nil error:&error]) {
+                    NSLog(@"%@", error.localizedDescription);
+                }
+                else {
+                    NSURL *url = [NSURL fileURLWithPath:appSupportDir];
+                    if (![url setResourceValue:@YES
+                                        forKey:NSURLIsExcludedFromBackupKey
+                                         error:&error])
+                    {
+                        DSDLog(@"Error excluding %@ from backup %@", url.lastPathComponent, error.localizedDescription);
+                    }
+                    else {
+                        DSDLog(@"Excluding");
+                    }
+                }
+            }
+            NSAssert(!error, @"Creation should have succeeded");
+            if ([[NSFileManager defaultManager] fileExistsAtPath:[[self documentsWALURL] path]]) {
+                [[NSFileManager defaultManager] copyItemAtURL:[self documentsWALURL] toURL:[DSDataController storeWALURL] error:&error];
+                NSAssert(!error, @"Copy should have succeeded");
+            }
+            if ([[NSFileManager defaultManager] fileExistsAtPath:[[self documentsSHMURL] path]]) {
+                [[NSFileManager defaultManager] copyItemAtURL:[self documentsSHMURL] toURL:[DSDataController storeSHMURL] error:&error];
+                NSAssert(!error, @"Copy should have succeeded");
+            }
+            [[NSFileManager defaultManager] copyItemAtURL:[self documentsStoreURL] toURL:[DSDataController storeURL] error:&error];
+            NSAssert(!error, @"Copy should have succeeded");
+            shouldRemoveDocumentsCopy = TRUE;
         }
     }
-    DSCoreDataMigrationVersionValue version = DSCoreDataMigrationVersion.current;
-    if ([self requiresMigrationAtStoreURL:storeURL version:version]) {
+    __block DSCoreDataMigrationVersionValue version = DSCoreDataMigrationVersion.current;
+    if ([self requiresMigrationAtStoreURL:originalStoreURL version:version]) {
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
-            [self migrateStoreAtURL:storeURL toVersion:version];
+            [self migrateStoreAtURL:originalStoreURL toURL:finalStoreURL toVersion:version];
+            if (shouldRemoveDocumentsCopy) {
+                [[NSFileManager defaultManager] removeItemAtURL:[self documentsStoreURL] error:nil];
+                [[NSFileManager defaultManager] removeItemAtURL:[self documentsWALURL] error:nil];
+                [[NSFileManager defaultManager] removeItemAtURL:[self documentsSHMURL] error:nil];
+            }
             dispatch_async(completionQueue, ^{
                 if (completion) {
                     completion();
@@ -131,17 +169,19 @@
     return ([DSCoreDataMigrationVersion compatibleVersionForStoreMetadata:metadata] != version);
 }
 
-+ (void)migrateStoreAtURL:(NSURL *)storeURL toVersion:(DSCoreDataMigrationVersionValue)version {
++ (void)migrateStoreAtURL:(NSURL *)storeURL toURL:(NSURL*)finalStoreURL toVersion:(DSCoreDataMigrationVersionValue)version {
     [self forceWALCheckpointingForStoreAtURL:storeURL];
     
     NSURL *currentURL = storeURL;
     NSArray <DSCoreDataMigrationStep *> *migrationSteps = [self migrationStepsForStoreAtURL:storeURL toVersion:version];
     
+    NSManagedObjectModel * finalModel = migrationSteps.lastObject.destinationModel;
+    
     for (DSCoreDataMigrationStep *step in migrationSteps) {
         NSMigrationManager *manager = [[NSMigrationManager alloc] initWithSourceModel:step.sourceModel
                                                                      destinationModel:step.destinationModel];
-        NSURL *destinationURL = [[NSURL fileURLWithPath:NSTemporaryDirectory() isDirectory:YES]
-                                 URLByAppendingPathComponent:[NSUUID UUID].UUIDString];
+        NSURL *destinationURL = [[[NSURL fileURLWithPath:NSTemporaryDirectory() isDirectory:YES]
+                                  URLByAppendingPathComponent:[NSUUID UUID].UUIDString] URLByAppendingPathExtension:@"sqlite"];
         NSError *error = nil;
         [manager migrateStoreFromURL:currentURL
                                 type:NSSQLiteStoreType
@@ -153,16 +193,16 @@
         NSAssert(error == nil, @"failed attempting to migrate from %@ to %@, error %@",
                  step.sourceModel, step.destinationModel, error);
         
-        if ([currentURL isEqual:storeURL] == NO) {
+        if (![currentURL isEqual:storeURL]) {
             [NSPersistentStoreCoordinator ds_destroyStoreAtURL:currentURL];
         }
         
         currentURL = destinationURL;
     }
     
-    [NSPersistentStoreCoordinator ds_replaceStoreAt:storeURL with:currentURL];
+    [NSPersistentStoreCoordinator ds_replaceStoreAt:finalStoreURL with:currentURL];
     
-    if ([currentURL isEqual:storeURL] == NO) {
+    if (![currentURL isEqual:storeURL]) {
         [NSPersistentStoreCoordinator ds_destroyStoreAtURL:currentURL];
     }
 }

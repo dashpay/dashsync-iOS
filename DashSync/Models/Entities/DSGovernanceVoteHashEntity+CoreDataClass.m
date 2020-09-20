@@ -19,7 +19,7 @@
     NSMutableArray * rArray = [NSMutableArray arrayWithCapacity:governanceVoteHashes.count];
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
     for (NSData * governanceVoteHash in governanceVoteHashes) {
-        DSGovernanceVoteHashEntity * governanceVoteHashEntity = [self managedObjectInContext:governanceObjectEntity.managedObjectContext];
+        DSGovernanceVoteHashEntity * governanceVoteHashEntity = [self managedObjectInBlockedContext:governanceObjectEntity.managedObjectContext];
         governanceVoteHashEntity.governanceVoteHash = governanceVoteHash;
         governanceVoteHashEntity.timestamp = now;
         governanceVoteHashEntity.chain = governanceObjectEntity.governanceObjectHash.chain;
