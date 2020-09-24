@@ -8,9 +8,11 @@
 
 #import <Foundation/Foundation.h>
 
-NSString* const DSTransactionManagerSyncStartedNotification =      @"DSTransactionManagerSyncStartedNotification";
-NSString* const DSTransactionManagerSyncFinishedNotification =     @"DSTransactionManagerSyncFinishedNotification";
-NSString* const DSTransactionManagerSyncFailedNotification =       @"DSTransactionManagerSyncFailedNotification";
+NSString* const DSChainManagerSyncStartedNotification =      @"DSChainManagerSyncStartedNotification";
+NSString* const DSChainManagerSyncParametersUpdatedNotification =      @"DSChainManagerSyncParametersUpdatedNotification";
+NSString* const DSChainManagerSyncFinishedNotification =     @"DSChainManagerSyncFinishedNotification";
+NSString* const DSChainManagerSyncFailedNotification =       @"DSChainManagerSyncFailedNotification";
+
 NSString* const DSTransactionManagerTransactionStatusDidChangeNotification =         @"DSTransactionManagerTransactionStatusDidChangeNotification";
 NSString* const DSTransactionManagerTransactionReceivedNotification =         @"DSTransactionManagerTransactionReceivedNotification";
 

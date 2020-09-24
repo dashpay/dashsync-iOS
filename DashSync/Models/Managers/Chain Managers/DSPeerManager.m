@@ -682,7 +682,7 @@
             }
             
             dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerSyncStartedNotification
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncStartedNotification
                                                                     object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
             });
         }
@@ -731,7 +731,7 @@
                 NSError *error = [NSError errorWithDomain:@"DashSync" code:1
                                                  userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"No peers found", nil)}];
                 
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerSyncFailedNotification
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncFailedNotification
                                                                     object:nil userInfo:@{@"error":error,DSChainManagerNotificationChainKey:self.chain}];
             });
         }
@@ -937,7 +937,7 @@
         }
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerSyncFailedNotification
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncFailedNotification
                                                                 object:nil userInfo:(error) ? @{@"error":error,DSChainManagerNotificationChainKey:self.chain} : @{DSChainManagerNotificationChainKey:self.chain}];
         });
     }
