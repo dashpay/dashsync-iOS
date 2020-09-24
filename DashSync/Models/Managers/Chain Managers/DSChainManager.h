@@ -40,6 +40,11 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo) {
 
 FOUNDATION_EXPORT NSString* const DSChainManagerNotificationChainKey;
 
+FOUNDATION_EXPORT NSString* _Nonnull const DSChainManagerSyncStartedNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSChainManagerSyncParametersUpdatedNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSChainManagerSyncFinishedNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSChainManagerSyncFailedNotification;
+
 @class DSGovernanceSyncManager, DSMasternodeManager, DSSporkManager, DSPeerManager, DSGovernanceVote, DSDAPIClient, DSTransactionManager, DSIdentitiesManager, DSBloomFilter, DSBlock, DSFullBlock;
 
 typedef void (^BlockMiningCompletionBlock)(DSFullBlock * _Nullable block, NSUInteger attempts, NSTimeInterval timeUsed, NSError * _Nullable error);

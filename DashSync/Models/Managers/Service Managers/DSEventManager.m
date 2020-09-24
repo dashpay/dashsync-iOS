@@ -29,6 +29,7 @@
 #import "DSPeerManager.h"
 #import "DSTransactionManager.h"
 #import "UIImage+DSUtils.h"
+#import "DSChainManager.h"
 
 #define HAS_DETERMINED_SAMPLE_GROUP     @"has_determined_sample_group"
 #define IS_IN_SAMPLE_GROUP              @"is_in_sample_group"
@@ -72,9 +73,9 @@
         self.myQueue.maxConcurrentOperationCount = 1;
         self.eventToNotifications = @{@"foreground": UIApplicationDidBecomeActiveNotification,
                                       @"background": UIApplicationDidEnterBackgroundNotification,
-                                      @"sync_started": DSTransactionManagerSyncStartedNotification,
-                                      @"sync_finished": DSTransactionManagerSyncFinishedNotification,
-                                      @"sync_failed": DSTransactionManagerSyncFailedNotification};
+                                      @"sync_started": DSChainManagerSyncStartedNotification,
+                                      @"sync_finished": DSChainManagerSyncFinishedNotification,
+                                      @"sync_failed": DSChainManagerSyncFailedNotification};
         self.isConnected = NO;
         self._buffer = [NSMutableArray array];
     }

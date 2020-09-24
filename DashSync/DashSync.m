@@ -354,7 +354,7 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
     }];
     
     self.syncFinishedNotificationObserver =
-    [notificationCenter addObserverForName:DSTransactionManagerSyncFinishedNotification object:nil
+    [notificationCenter addObserverForName:DSChainManagerSyncFinishedNotification object:nil
                                      queue:nil
                                 usingBlock:^(NSNotification *note) {
         DSDLog(@"Background fetch: sync finished");
@@ -362,7 +362,7 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
     }];
     
     self.syncFailedNotificationObserver =
-    [notificationCenter addObserverForName:DSTransactionManagerSyncFailedNotification
+    [notificationCenter addObserverForName:DSChainManagerSyncFailedNotification
                                     object:nil
                                      queue:nil
                                 usingBlock:^(NSNotification *note) {

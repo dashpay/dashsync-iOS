@@ -73,7 +73,7 @@ NSString *dateFormat(NSString *_template)
     
     if (! self.syncStartedObserver) {
         self.syncStartedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncStartedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainManagerSyncStartedNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
                                                                if ([self.chainManager.chain timestampForBlockHeight:self.chainManager.chain.lastSyncBlockHeight] + WEEK_TIME_INTERVAL <
                                                                    [NSDate timeIntervalSince1970] &&
@@ -86,7 +86,7 @@ NSString *dateFormat(NSString *_template)
     
     if (! self.syncFinishedObserver) {
         self.syncFinishedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFinishedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainManagerSyncFinishedNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
                                                                if (! authenticationManager.didAuthenticate) self.navigationItem.titleView = self.logo;
                                                                else [self updateTitleView];
@@ -95,7 +95,7 @@ NSString *dateFormat(NSString *_template)
     
     if (! self.syncFailedObserver) {
         self.syncFailedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFailedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainManagerSyncFailedNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
                                                                if (! authenticationManager.didAuthenticate) self.navigationItem.titleView = self.logo;
                                                                [self updateTitleView];

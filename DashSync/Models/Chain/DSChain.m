@@ -1646,7 +1646,7 @@ static dispatch_once_t devnetToken = 0;
     }
     
     if (_lastSyncBlock) {
-        DSDLog(@"last sync block at height %d chosen from checkpoints (hash is %@)",_lastSyncBlock.height,[NSData dataWithUInt256:_lastSyncBlock.blockHash].hexString);
+        DSDLog(@"last sync block at height %d chosen from checkpoints for chain %@ (hash is %@)", _lastSyncBlock.height, self.name, [NSData dataWithUInt256:_lastSyncBlock.blockHash].hexString);
     }
 }
 
@@ -2814,6 +2814,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 -(void)setEstimatedBlockHeight:(uint32_t)estimatedBlockHeight fromPeer:(DSPeer*)peer {
+    uint32_t oldEstimatedBlockHeight = self.estimatedBlockHeight;
     _bestEstimatedBlockHeight = 0; //lazy loading
     
     //remove from other heights
@@ -2836,6 +2837,12 @@ static dispatch_once_t devnetToken = 0;
         if (![peersAnnouncingHeight containsObject:peer]) {
             [peersAnnouncingHeight addObject:peer];
         }
+    }
+    uint32_t finalEstimatedBlockHeight = self.estimatedBlockHeight;
+    if (oldEstimatedBlockHeight < finalEstimatedBlockHeight) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncParametersUpdatedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
+        });
     }
 }
 
