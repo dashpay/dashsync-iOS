@@ -21,6 +21,9 @@ NS_ASSUME_NONNULL_BEGIN
                completion:(void (^)(NSArray * utxos, NSArray * amounts, NSArray * scripts,
                                              NSError * _Null_unspecified error))completion;
 
+- (void)findExistingAddresses:(NSArray *)addresses onChain:(DSChain *)chain
+                   completion:(void (^)(NSArray *addresses, NSError *error))completion;
+
 - (void)blockHeightsForBlockHashes:(NSArray*)blockHashes onChain:(DSChain*)chain completion:(void (^)(NSDictionary * blockHeightDictionary,
 NSError * _Null_unspecified error))completion;
 

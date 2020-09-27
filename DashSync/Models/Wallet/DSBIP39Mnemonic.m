@@ -28,6 +28,8 @@
 #import "DSBIP39Mnemonic.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
+#import "DSFundsDerivationPath.h"
+#import "DSInsightManager.h"
 
 #define WORDS @"BIP39Words"
 
@@ -40,6 +42,7 @@
 
 @property (nonatomic, strong) NSArray *words;
 @property (nonatomic, strong) NSSet *allWords;
+@property (nonatomic, strong) NSMutableDictionary *wordsForLanguages;
 
 @end
 
@@ -55,6 +58,15 @@
     });
     
     return singleton;
+}
+
+-(instancetype)init {
+    self = [super init];
+    if (self) {
+        self.wordsForLanguages = [NSMutableDictionary dictionary];
+    }
+    
+    return self;
 }
 
 -(void)setDefaultLanguage:(DSBIP39Language)defaultLanguage {
@@ -124,13 +136,37 @@
 
 - (NSArray *)wordsForLanguage:(DSBIP39Language)language
 {
-    NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
-    NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
-    if (language == DSBIP39Language_Default) {
-        return [NSArray arrayWithContentsOfFile:[bundle pathForResource:WORDS ofType:@"plist"]];
-    } else {
-        return [NSArray arrayWithContentsOfFile:[bundle pathForResource:WORDS ofType:@"plist" inDirectory:nil forLocalization:[DSBIP39Mnemonic identifierForLanguage:language]]];
+    if (!self.wordsForLanguages[@(language)]) {
+        NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
+        NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+        if (language == DSBIP39Language_Default) {
+            self.wordsForLanguages[@(language)] = [NSArray arrayWithContentsOfFile:[bundle pathForResource:WORDS ofType:@"plist"]];
+        } else {
+            self.wordsForLanguages[@(language)] = [NSArray arrayWithContentsOfFile:[bundle pathForResource:WORDS ofType:@"plist" inDirectory:nil forLocalization:[DSBIP39Mnemonic identifierForLanguage:language]]];
+        }
     }
+    return self.wordsForLanguages[@(language)];
+}
+
+- (DSBIP39Language)bestFittingLanguageForWords:(NSArray*)words {
+    NSMutableDictionary * languageCountDictionary = [NSMutableDictionary dictionary];
+    for (NSString * word in words) {
+        for (NSNumber * languageNumber in [self languagesOfWord:word]) {
+            if (languageCountDictionary[languageNumber]) {
+                languageCountDictionary[languageNumber] = @([languageCountDictionary[languageNumber] integerValue] + 1);
+            } else {
+                languageCountDictionary[languageNumber] = @(1);
+            }
+        }
+    }
+    DSBIP39Language bestFittingLanguage = DSBIP39Language_Unknown;
+    NSUInteger max = [[[languageCountDictionary allValues] valueForKeyPath:@"@max.intValue"] unsignedIntegerValue];
+    for (NSNumber * language in languageCountDictionary) {
+        if ([languageCountDictionary[language] unsignedIntValue] == max) {
+            bestFittingLanguage = [language unsignedIntegerValue];
+        }
+    }
+    return bestFittingLanguage;
 }
 
 - (NSSet *)allWords
@@ -175,9 +211,17 @@
 }
 
 // phrase must be normalized
-- (NSData * _Nullable)decodePhrase:(NSString *)phrase inLanguage:(DSBIP39Language)language
-{
+- (NSData * _Nullable)decodePhrase:(NSString *)phrase inLanguage:(DSBIP39Language)language {
     NSParameterAssert(phrase);
+    NSArray *wordArray = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(),
+                                   (CFStringRef)[self normalizePhrase:phrase], CFSTR(" ")));
+    return [self decodeWordArray:wordArray inLanguage:language];
+    
+}
+
+- (NSData * _Nullable)decodeWordArray:(NSArray *)wordArray inLanguage:(DSBIP39Language)language
+{
+    NSParameterAssert(wordArray);
     
     NSArray * words = nil;
     if (language == self.defaultLanguage) {
@@ -186,26 +230,26 @@
         words = [self wordsForLanguage:language];
     }
     
-    NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(),
-                                   (CFStringRef)[self normalizePhrase:phrase], CFSTR(" ")));
-    NSMutableData *d = [NSMutableData secureDataWithCapacity:(a.count*11 + 7)/8];
+    NSMutableData *d = [NSMutableData secureDataWithCapacity:(wordArray.count*11 + 7)/8];
     uint32_t n = (uint32_t)self.words.count, x, y;
     uint8_t b;
+    
+    uint32_t wordArrayCount = (uint32_t)wordArray.count;
 
-    if ((a.count % 3) != 0 || a.count > 24) {
+    if ((wordArrayCount % 3) != 0 || wordArrayCount > 24) {
         #if DEBUG
         DSDLog(@"phrase has wrong number of words");
         #endif
         return nil;
     }
 
-    for (int i = 0; i < (a.count*11 + 7)/8; i++) {
-        x = (uint32_t)[words indexOfObject:a[i*8/11]];
-        y = (i*8/11 + 1 < a.count) ? (uint32_t)[words indexOfObject:a[i*8/11 + 1]] : 0;
+    for (int i = 0; i < (wordArrayCount*11 + 7)/8; i++) {
+        x = (uint32_t)[words indexOfObject:wordArray[i*8/11]];
+        y = (i*8/11 + 1 < wordArrayCount) ? (uint32_t)[words indexOfObject:wordArray[i*8/11 + 1]] : 0;
 
         if (x == (uint32_t)NSNotFound || y == (uint32_t)NSNotFound) {
 #if DEBUG
-            DSDLog(@"phrase contained unknown word: %@ in %lu", a[i*8/11 + (x == (uint32_t)NSNotFound ? 0 : 1)],(unsigned long)language);
+            DSDLog(@"phrase contained unknown word: %@ in %lu", wordArray[i*8/11 + (x == (uint32_t)NSNotFound ? 0 : 1)],(unsigned long)language);
 #endif
             return nil;
         }
@@ -214,11 +258,11 @@
         [d appendBytes:&b length:1];
     }
 
-    b = *((const uint8_t *)d.bytes + a.count*4/3) >> (8 - a.count/3);
-    d.length = a.count*4/3;
+    b = *((const uint8_t *)d.bytes + wordArrayCount*4/3) >> (8 - wordArrayCount/3);
+    d.length = wordArrayCount*4/3;
 
-    if (b != (d.SHA256.u8[0] >> (8 - a.count/3))) {
-        DSDLog(@"incorrect phrase, bad checksum");
+    if (b != (d.SHA256.u8[0] >> (8 - wordArrayCount/3))) {
+//        DSDLog(@"incorrect phrase, bad checksum");
         return nil;
     }
 
@@ -233,6 +277,21 @@
 {
     NSParameterAssert(word);
     return [self.allWords containsObject:word];
+}
+
+// returns an array of languages this word belongs to
+- (NSArray<NSNumber*>*)languagesOfWord:(NSString *)word
+{
+    NSParameterAssert(word);
+    NSMutableArray * validLanguageNumbers = [NSMutableArray array];
+    for (NSNumber * languageNumber in [DSBIP39Mnemonic availableLanguages]) {
+        DSBIP39Language language = [languageNumber unsignedIntValue];
+        if (language == self.defaultLanguage) continue;
+        if ([self wordIsValid:word inLanguage:language]) {
+            [validLanguageNumbers addObject:languageNumber];
+        }
+    }
+    return [validLanguageNumbers copy];
 }
 
 // true if word is a member of the word list for the current locale
@@ -265,6 +324,25 @@
 {
     NSParameterAssert(phrase);
     return ([self decodePhrase:phrase inLanguage:language] == nil) ? NO : YES;
+}
+
+// true if all words and checksum are valid, phrase must be normalized
+- (BOOL)wordArrayIsValid:(NSArray *)wordArray inLanguage:(DSBIP39Language)language
+{
+    NSParameterAssert(wordArray);
+    return ([self decodeWordArray:wordArray inLanguage:language] == nil) ? NO : YES;
+}
+
+- (BOOL)wordIsValid:(NSString *)word inLanguage:(DSBIP39Language)language
+{
+    NSParameterAssert(word);
+    NSArray * words = nil;
+    if (language == self.defaultLanguage) {
+        words = self.words;
+    } else {
+        words = [self wordsForLanguage:language];
+    }
+    return [words containsObject:word];
 }
 
 
@@ -347,6 +425,12 @@
     return s;
 }
 
+- (NSData *)deriveKeyFromWordArray:(NSArray *)wordArray withPassphrase:(NSString * _Nullable)passphrase
+{
+    NSString *phrase = CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (CFArrayRef)wordArray, CFSTR(" ")));
+    return [self deriveKeyFromPhrase:phrase withPassphrase:passphrase];
+}
+
 // phrase must be normalized
 - (NSData *)deriveKeyFromPhrase:(NSString *)phrase withPassphrase:(NSString * _Nullable)passphrase
 {
@@ -367,6 +451,77 @@
 
     PBKDF2(key.mutableBytes, key.length, SHA512, 64, password.bytes, password.length, salt.bytes, salt.length, 2048);
     return key;
+}
+
+- (void)findLastPotentialWordsOfMnemonicForPassphrase:(NSString*)partialPassphrase progressUpdate:(void (^)(float))progress completion:(void (^)(NSArray <NSString*>*))completion {
+    [self findLastPotentialWordsOfMnemonicForPassphrase:partialPassphrase inLanguage:DSBIP39Language_Unknown progressUpdate:progress completion:completion completeInQueue:dispatch_get_main_queue()];
+}
+
+- (void)findLastPotentialWordsOfMnemonicForPassphrase:(NSString*)partialPassphrase inLanguage:(DSBIP39Language)language progressUpdate:(void (^)(float))progressUpdate completion:(void (^)(NSArray <NSString*>*))completion completeInQueue:(dispatch_queue_t)dispatchQueue
+{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+        DSBIP39Mnemonic *m = [DSBIP39Mnemonic sharedInstance];
+        NSArray *words = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(),
+        (CFStringRef)[self normalizePhrase:partialPassphrase], CFSTR(" ")));
+        DSBIP39Language checkLanguage = (language == DSBIP39Language_Unknown)?[self bestFittingLanguageForWords:words]:language;
+        NSUInteger count = words.count;
+        if (count == 10) {
+            __block NSMutableArray * possibleWordArrays = [NSMutableArray array];
+            uint32_t i = 0;
+            __block uint32_t completed = 0;
+            float totalWords = [m wordsForLanguage:checkLanguage].count;
+            dispatch_group_t dispatchGroup = dispatch_group_create();
+            dispatch_semaphore_t dispatchSemaphore = dispatch_semaphore_create(4);
+            for (NSString * word in [m wordsForLanguage:checkLanguage]) {
+                @autoreleasepool {
+                    NSString * passphrase = [NSString stringWithFormat:@"%@ %@", partialPassphrase, word];
+                    dispatch_group_enter(dispatchGroup);
+                    dispatch_semaphore_wait(dispatchSemaphore, DISPATCH_TIME_FOREVER);
+                    [self findLastPotentialWordsOfMnemonicForPassphrase:passphrase inLanguage:checkLanguage progressUpdate:^(float incProgress) {
+                    } completion:^(NSArray<NSString *> * secondWords) {
+                        for (NSString * secondWord in secondWords) {
+                            [possibleWordArrays addObject:[NSString stringWithFormat:@"%@ %@",word,secondWord]];
+                        }
+                        completed++;
+                        progressUpdate(completed/totalWords);
+                        dispatch_group_leave(dispatchGroup);
+                        dispatch_semaphore_signal(dispatchSemaphore);
+                    } completeInQueue:dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)];
+                }
+                i++;
+            }
+            dispatch_group_notify(dispatchGroup, dispatchQueue, ^{
+                completion(possibleWordArrays);
+            });
+            return;
+        } else if (count != 11) {
+            return;
+        }
+    
+        NSMutableDictionary * possibleWordAddresses = [NSMutableDictionary dictionary];
+        for (NSString * word in m.words) {
+            NSArray * passphraseWordArray = [words arrayByAddingObject:word];
+            if ([m wordArrayIsValid:passphraseWordArray inLanguage:checkLanguage]) {
+                NSData * data = [m deriveKeyFromWordArray:passphraseWordArray withPassphrase:nil];
+                DSDerivationPath * derivationPath = [DSFundsDerivationPath bip44DerivationPathForAccountNumber:0 onChain:[DSChain mainnet]];
+                [derivationPath generateExtendedPublicKeyFromSeed:data storeUnderWalletUniqueId:nil];
+                NSUInteger indexArr[] = {0,0};
+                NSString * firstAddress = [derivationPath addressAtIndexPath:[NSIndexPath indexPathWithIndexes:indexArr length:2]];
+                [possibleWordAddresses setObject:word forKey:firstAddress];
+            }
+        }
+        if (possibleWordAddresses.count == 0) {
+            completion([NSArray array]);
+        } else {
+            [[DSInsightManager sharedInstance] findExistingAddresses:[possibleWordAddresses allKeys] onChain:[DSChain mainnet] completion:^(NSArray * _Nonnull addresses, NSError * _Nonnull error) {
+                NSDictionary * reducedDictionary = [possibleWordAddresses dictionaryWithValuesForKeys:addresses];
+                dispatch_async(dispatchQueue, ^{
+                    completion([reducedDictionary allValues]);
+                });
+            }];
+        }
+
+    });
 }
 
 @end

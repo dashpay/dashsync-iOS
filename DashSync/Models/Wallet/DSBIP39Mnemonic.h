@@ -46,6 +46,7 @@ typedef NS_ENUM(NSUInteger, DSBIP39Language) {
     DSBIP39Language_Japanese,
     DSBIP39Language_Korean,
     DSBIP39Language_ChineseSimplified,
+    DSBIP39Language_Unknown = NSUIntegerMax,
 };
 
 @interface DSBIP39Mnemonic : NSObject<DSMnemonic>
@@ -57,6 +58,15 @@ typedef NS_ENUM(NSUInteger, DSBIP39Language) {
 
 + (NSArray*)availableLanguages;
 + (NSString*)identifierForLanguage:(DSBIP39Language)language;
+
+- (NSArray<NSNumber*>*)languagesOfWord:(NSString *)word;
+- (BOOL)wordIsValid:(NSString *)word inLanguage:(DSBIP39Language)language;
+- (BOOL)wordArrayIsValid:(NSArray *)wordArray inLanguage:(DSBIP39Language)language;
+- (DSBIP39Language)bestFittingLanguageForWords:(NSArray*)words;
+
+- (void)findLastPotentialWordsOfMnemonicForPassphrase:(NSString*)partialPassphrase progressUpdate:(void (^)(float progress))progressUpdate completion:(void (^)(NSArray <NSString*>* missingWords))completion;
+
+- (NSData * _Nullable)decodeWordArray:(NSArray *)wordArray inLanguage:(DSBIP39Language)language;
 
 @end
 

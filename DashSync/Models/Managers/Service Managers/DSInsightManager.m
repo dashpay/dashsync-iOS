@@ -15,6 +15,7 @@
 #import "DSMerkleBlock.h"
 
 #define ADDRESS_UTXO_PATH @"addrs/utxo"
+#define ADDRESS_TXS_PATH @"addrs/txs"
 #define TX_PATH @"rawtx"
 #define BLOCK_PATH @"block"
 
@@ -59,6 +60,15 @@
         }
         else completion(utxos, amounts, scripts, error);
     }];
+}
+
+- (void)findExistingAddresses:(NSArray *)addresses onChain:(DSChain *)chain
+                   completion:(void (^)(NSArray *addresses, NSError *error))completion {
+    NSParameterAssert(addresses);
+    NSParameterAssert(chain);
+    
+    NSString * insightURL = [chain isMainnet]?INSIGHT_URL:TESTNET_INSIGHT_URL;
+    [self findExistingAddresses:addresses forInsightURL:insightURL completion:completion];
 }
 
 - (void)blockHeightsForBlockHashes:(NSArray*)blockHashes onChain:(DSChain*)chain completion:(void (^)(NSDictionary * blockHeightDictionary,
@@ -175,6 +185,59 @@
                                                                            onChain:chain];
         
         completion(transaction, nil);
+    }] resume];
+}
+
+- (void)findExistingAddresses:(NSArray *)addresses forInsightURL:(NSString *)insightURL
+                   completion:(void (^)(NSArray *addresses, NSError *error))completion {
+    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:[insightURL stringByAppendingPathComponent:ADDRESS_TXS_PATH]]
+                                                       cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:20.0];
+    NSMutableArray *args = [NSMutableArray array];
+    NSMutableCharacterSet *charset = [[NSCharacterSet URLQueryAllowedCharacterSet] mutableCopy];
+    
+    [charset removeCharactersInString:@"&="];
+    [args addObject:[@"addrs=" stringByAppendingString:[[addresses componentsJoinedByString:@","]
+                                                        stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
+    req.HTTPMethod = @"POST";
+    req.HTTPBody = [[args componentsJoinedByString:@"&"] dataUsingEncoding:NSUTF8StringEncoding];
+    DSDLog(@"%@ POST: %@", req.URL.absoluteString,
+           [[NSString alloc] initWithData:req.HTTPBody encoding:NSUTF8StringEncoding]);
+    
+    [[[NSURLSession sharedSession] dataTaskWithRequest:req
+                                     completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        if (error) {
+            completion(nil, error);
+            return;
+        }
+        
+        NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+        
+        if (error || ! [json isKindOfClass:[NSDictionary class]] || ! [json objectForKey:@"items"]) {
+            DSDLog(@"Error decoding response %@",[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+            completion(nil,[NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                    [NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
+                                                                                     req.URL.host]}]);
+            return;
+        }
+        NSMutableSet * existingAddresses = [NSMutableSet set];
+        
+        for (NSDictionary *item in json[@"items"]) {
+            for (NSDictionary *vin in item[@"vin"]) {
+                if ([addresses containsObject:vin[@"addr"]]) {
+                    [existingAddresses addObject:vin[@"addr"]];
+                }
+            }
+            for (NSDictionary *vout in item[@"vout"]) {
+                NSArray * voutAddresses = vout[@"scriptPubKey"][@"addresses"];
+                for (NSString * address in voutAddresses) {
+                    if ([addresses containsObject:address]) {
+                        [existingAddresses addObject:address];
+                    }
+                }
+            }
+        }
+        
+        completion([existingAddresses allObjects], nil);
     }] resume];
 }
 
