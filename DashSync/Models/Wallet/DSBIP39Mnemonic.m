@@ -453,11 +453,11 @@
     return key;
 }
 
-- (void)findLastPotentialWordsOfMnemonicForPassphrase:(NSString*)partialPassphrase progressUpdate:(void (^)(float))progress completion:(void (^)(NSArray <NSString*>*))completion {
+- (void)findLastPotentialWordsOfMnemonicForPassphrase:(NSString*)partialPassphrase progressUpdate:(void (^)(float, bool *))progress completion:(void (^)(NSArray <NSString*>*))completion {
     [self findLastPotentialWordsOfMnemonicForPassphrase:partialPassphrase inLanguage:DSBIP39Language_Unknown progressUpdate:progress completion:completion completeInQueue:dispatch_get_main_queue()];
 }
 
-- (void)findLastPotentialWordsOfMnemonicForPassphrase:(NSString*)partialPassphrase inLanguage:(DSBIP39Language)language progressUpdate:(void (^)(float))progressUpdate completion:(void (^)(NSArray <NSString*>*))completion completeInQueue:(dispatch_queue_t)dispatchQueue
+- (void)findLastPotentialWordsOfMnemonicForPassphrase:(NSString*)partialPassphrase inLanguage:(DSBIP39Language)language progressUpdate:(void (^)(float, bool *))progressUpdate completion:(void (^)(NSArray <NSString*>*))completion completeInQueue:(dispatch_queue_t)dispatchQueue
 {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
         DSBIP39Mnemonic *m = [DSBIP39Mnemonic sharedInstance];
@@ -471,19 +471,23 @@
             __block uint32_t completed = 0;
             float totalWords = [m wordsForLanguage:checkLanguage].count;
             dispatch_group_t dispatchGroup = dispatch_group_create();
-            dispatch_semaphore_t dispatchSemaphore = dispatch_semaphore_create(4);
+            NSUInteger processorCount = [[NSProcessInfo processInfo] activeProcessorCount];
+            dispatch_semaphore_t dispatchSemaphore = dispatch_semaphore_create(processorCount - 1);
+            __block bool stop = false;
             for (NSString * word in [m wordsForLanguage:checkLanguage]) {
+                if (stop) break;
                 @autoreleasepool {
                     NSString * passphrase = [NSString stringWithFormat:@"%@ %@", partialPassphrase, word];
                     dispatch_group_enter(dispatchGroup);
                     dispatch_semaphore_wait(dispatchSemaphore, DISPATCH_TIME_FOREVER);
-                    [self findLastPotentialWordsOfMnemonicForPassphrase:passphrase inLanguage:checkLanguage progressUpdate:^(float incProgress) {
+                    [self findLastPotentialWordsOfMnemonicForPassphrase:passphrase inLanguage:checkLanguage progressUpdate:^(float incProgress, bool * stop) {
                     } completion:^(NSArray<NSString *> * secondWords) {
                         for (NSString * secondWord in secondWords) {
                             [possibleWordArrays addObject:[NSString stringWithFormat:@"%@ %@",word,secondWord]];
+                            stop = YES;
                         }
                         completed++;
-                        progressUpdate(completed/totalWords);
+                        progressUpdate(completed/totalWords, &stop);
                         dispatch_group_leave(dispatchGroup);
                         dispatch_semaphore_signal(dispatchSemaphore);
                     } completeInQueue:dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)];
