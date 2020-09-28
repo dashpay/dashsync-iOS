@@ -471,8 +471,8 @@
             __block uint32_t completed = 0;
             float totalWords = [m wordsForLanguage:checkLanguage].count;
             dispatch_group_t dispatchGroup = dispatch_group_create();
-            NSUInteger processorCount = [[NSProcessInfo processInfo] activeProcessorCount];
-            dispatch_semaphore_t dispatchSemaphore = dispatch_semaphore_create(processorCount - 1);
+            NSUInteger processorCount = MAX(1,[[NSProcessInfo processInfo] activeProcessorCount]);
+            dispatch_semaphore_t dispatchSemaphore = dispatch_semaphore_create(MAX(1,processorCount - 1));
             __block bool stop = false;
             for (NSString * word in [m wordsForLanguage:checkLanguage]) {
                 if (stop) break;
