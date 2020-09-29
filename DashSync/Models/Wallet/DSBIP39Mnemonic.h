@@ -65,7 +65,7 @@ typedef NS_ENUM(NSUInteger, DSBIP39Language) {
 - (DSBIP39Language)bestFittingLanguageForWords:(NSArray*)words;
 
 - (void)findLastPotentialWordsOfMnemonicForPassphrase:(NSString*)partialPassphrase progressUpdate:(void (^)(float progress, bool * stop))progressUpdate completion:(void (^)(NSArray <NSString*>* missingWords))completion;
-- (void)findPotentialWordsOfMnemonicForPassphrase:(NSString*)passphrase replacementCharacter:(NSString*)replacementCharacter progressUpdate:(void (^)(float, bool *))progress completion:(void (^)(NSArray <NSString*>*))completion;
+- (void)findPotentialWordsOfMnemonicForPassphrase:(NSString*)passphrase replacementString:(NSString*)replacementCharacter progressUpdate:(void (^)(float, bool *))progress completion:(void (^)(NSArray <NSString*>*))completion;
 
 - (NSData * _Nullable)decodeWordArray:(NSArray *)wordArray inLanguage:(DSBIP39Language)language;
 

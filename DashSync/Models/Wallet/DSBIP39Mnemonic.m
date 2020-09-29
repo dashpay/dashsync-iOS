@@ -453,8 +453,8 @@
     return key;
 }
 
-- (void)findPotentialWordsOfMnemonicForPassphrase:(NSString*)passphrase replacementCharacter:(NSString*)replacementCharacter progressUpdate:(void (^)(float, bool *))progress completion:(void (^)(NSArray <NSString*>*))completion {
-    [self findPotentialWordsOfMnemonicForPassphrase:passphrase replacementCharacter:replacementCharacter inLanguage:DSBIP39Language_Unknown progressUpdate:progress completion:completion completeInQueue:dispatch_get_main_queue()];
+- (void)findPotentialWordsOfMnemonicForPassphrase:(NSString*)passphrase replacementString:(NSString*)replacementCharacter progressUpdate:(void (^)(float, bool *))progress completion:(void (^)(NSArray <NSString*>*))completion {
+    [self findPotentialWordsOfMnemonicForPassphrase:passphrase replacementString:replacementCharacter inLanguage:DSBIP39Language_Unknown progressUpdate:progress completion:completion completeInQueue:dispatch_get_main_queue()];
 }
 
 - (void)findLastPotentialWordsOfMnemonicForPassphrase:(NSString*)partialPassphrase progressUpdate:(void (^)(float, bool *))progress completion:(void (^)(NSArray <NSString*>*))completion {
@@ -470,10 +470,10 @@
     } else {
         passphraseWithXs = [partialPassphrase stringByAppendingString:@" x"];
     }
-    [self findPotentialWordsOfMnemonicForPassphrase:passphraseWithXs replacementCharacter:@"x" inLanguage:language progressUpdate:progressUpdate completion:completion completeInQueue:dispatchQueue];
+    [self findPotentialWordsOfMnemonicForPassphrase:passphraseWithXs replacementString:@"x" inLanguage:language progressUpdate:progressUpdate completion:completion completeInQueue:dispatchQueue];
 }
 
-- (void)findPotentialWordsOfMnemonicForPassphrase:(NSString*)partialPassphrase replacementCharacter:(NSString*)replacementCharacter inLanguage:(DSBIP39Language)language progressUpdate:(void (^)(float, bool *))progressUpdate completion:(void (^)(NSArray <NSString*>*))completion completeInQueue:(dispatch_queue_t)dispatchQueue
+- (void)findPotentialWordsOfMnemonicForPassphrase:(NSString*)partialPassphrase replacementString:(NSString*)replacementCharacter inLanguage:(DSBIP39Language)language progressUpdate:(void (^)(float, bool *))progressUpdate completion:(void (^)(NSArray <NSString*>*))completion completeInQueue:(dispatch_queue_t)dispatchQueue
 {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
         DSBIP39Mnemonic *m = [DSBIP39Mnemonic sharedInstance];
@@ -502,7 +502,7 @@
                     NSString *passphrase = CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (CFArrayRef)checkingWords, CFSTR(" ")));
                     dispatch_group_enter(dispatchGroup);
                     dispatch_semaphore_wait(dispatchSemaphore, DISPATCH_TIME_FOREVER);
-                    [self findPotentialWordsOfMnemonicForPassphrase:passphrase replacementCharacter:replacementCharacter inLanguage:checkLanguage progressUpdate:^(float incProgress, bool * stop) {
+                    [self findPotentialWordsOfMnemonicForPassphrase:passphrase replacementString:replacementCharacter inLanguage:checkLanguage progressUpdate:^(float incProgress, bool * stop) {
                     } completion:^(NSArray<NSString *> * secondWords) {
                         for (NSString * secondWord in secondWords) {
                             [possibleWordArrays addObject:[NSString stringWithFormat:@"%@ %@",word,secondWord]];
