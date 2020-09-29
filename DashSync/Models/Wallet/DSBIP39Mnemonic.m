@@ -453,16 +453,35 @@
     return key;
 }
 
+- (void)findPotentialWordsOfMnemonicForPassphrase:(NSString*)passphrase replacementCharacter:(NSString*)replacementCharacter progressUpdate:(void (^)(float, bool *))progress completion:(void (^)(NSArray <NSString*>*))completion {
+    [self findPotentialWordsOfMnemonicForPassphrase:passphrase replacementCharacter:replacementCharacter inLanguage:DSBIP39Language_Unknown progressUpdate:progress completion:completion completeInQueue:dispatch_get_main_queue()];
+}
+
 - (void)findLastPotentialWordsOfMnemonicForPassphrase:(NSString*)partialPassphrase progressUpdate:(void (^)(float, bool *))progress completion:(void (^)(NSArray <NSString*>*))completion {
     [self findLastPotentialWordsOfMnemonicForPassphrase:partialPassphrase inLanguage:DSBIP39Language_Unknown progressUpdate:progress completion:completion completeInQueue:dispatch_get_main_queue()];
 }
 
 - (void)findLastPotentialWordsOfMnemonicForPassphrase:(NSString*)partialPassphrase inLanguage:(DSBIP39Language)language progressUpdate:(void (^)(float, bool *))progressUpdate completion:(void (^)(NSArray <NSString*>*))completion completeInQueue:(dispatch_queue_t)dispatchQueue
 {
+    NSArray *words = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), (CFStringRef)[self normalizePhrase:partialPassphrase], CFSTR(" ")));
+    NSString * passphraseWithXs = nil;
+    if (words.count == 10) {
+        passphraseWithXs = [partialPassphrase stringByAppendingString:@" x x"];
+    } else {
+        passphraseWithXs = [partialPassphrase stringByAppendingString:@" x"];
+    }
+    [self findPotentialWordsOfMnemonicForPassphrase:passphraseWithXs replacementCharacter:@"x" inLanguage:language progressUpdate:progressUpdate completion:completion completeInQueue:dispatchQueue];
+}
+
+- (void)findPotentialWordsOfMnemonicForPassphrase:(NSString*)partialPassphrase replacementCharacter:(NSString*)replacementCharacter inLanguage:(DSBIP39Language)language progressUpdate:(void (^)(float, bool *))progressUpdate completion:(void (^)(NSArray <NSString*>*))completion completeInQueue:(dispatch_queue_t)dispatchQueue
+{
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
         DSBIP39Mnemonic *m = [DSBIP39Mnemonic sharedInstance];
-        NSArray *words = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(),
-        (CFStringRef)[self normalizePhrase:partialPassphrase], CFSTR(" ")));
+        NSMutableArray *words = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), (CFStringRef)[self normalizePhrase:partialPassphrase], CFSTR(" ")));
+        NSIndexSet *indexes = [words indexesOfObjectsPassingTest:^BOOL(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            return [obj isEqualToString:replacementCharacter];
+        }];
+        [words removeObjectsAtIndexes:indexes];
         DSBIP39Language checkLanguage = (language == DSBIP39Language_Unknown)?[self bestFittingLanguageForWords:words]:language;
         NSUInteger count = words.count;
         if (count == 10) {
@@ -477,10 +496,13 @@
             for (NSString * word in [m wordsForLanguage:checkLanguage]) {
                 if (stop) break;
                 @autoreleasepool {
-                    NSString * passphrase = [NSString stringWithFormat:@"%@ %@", partialPassphrase, word];
+                    NSMutableArray * checkingWords = [words mutableCopy];
+                    [checkingWords insertObject:word atIndex:[indexes firstIndex]];
+                    [checkingWords insertObject:replacementCharacter atIndex:[indexes lastIndex]];
+                    NSString *passphrase = CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (CFArrayRef)checkingWords, CFSTR(" ")));
                     dispatch_group_enter(dispatchGroup);
                     dispatch_semaphore_wait(dispatchSemaphore, DISPATCH_TIME_FOREVER);
-                    [self findLastPotentialWordsOfMnemonicForPassphrase:passphrase inLanguage:checkLanguage progressUpdate:^(float incProgress, bool * stop) {
+                    [self findPotentialWordsOfMnemonicForPassphrase:passphrase replacementCharacter:replacementCharacter inLanguage:checkLanguage progressUpdate:^(float incProgress, bool * stop) {
                     } completion:^(NSArray<NSString *> * secondWords) {
                         for (NSString * secondWord in secondWords) {
                             [possibleWordArrays addObject:[NSString stringWithFormat:@"%@ %@",word,secondWord]];
@@ -504,7 +526,8 @@
     
         NSMutableDictionary * possibleWordAddresses = [NSMutableDictionary dictionary];
         for (NSString * word in m.words) {
-            NSArray * passphraseWordArray = [words arrayByAddingObject:word];
+            NSMutableArray * passphraseWordArray = [words mutableCopy];
+            [passphraseWordArray insertObject:word atIndex:[indexes firstIndex]];
             if ([m wordArrayIsValid:passphraseWordArray inLanguage:checkLanguage]) {
                 NSData * data = [m deriveKeyFromWordArray:passphraseWordArray withPassphrase:nil];
                 DSDerivationPath * derivationPath = [DSFundsDerivationPath bip44DerivationPathForAccountNumber:0 onChain:[DSChain mainnet]];
