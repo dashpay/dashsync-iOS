@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonnull, nonatomic, copy) NSString *address;
 @property (nonatomic, assign) uint32_t index;
+@property (nonatomic, assign) uint32_t identityIndex;
 @property (nonatomic, assign) BOOL internal;
 @property (nonatomic, assign) BOOL standalone;
 @property (nullable, nonatomic, retain) DSDerivationPathEntity *derivationPath;

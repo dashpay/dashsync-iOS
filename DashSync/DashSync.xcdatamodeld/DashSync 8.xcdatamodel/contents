@@ -10,6 +10,7 @@
     </entity>
     <entity name="DSAddressEntity" representedClassName="DSAddressEntity" syncable="YES">
         <attribute name="address" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="identityIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="index" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
         <attribute name="internal" optional="YES" attributeType="Boolean" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
         <attribute name="standalone" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="NO" syncable="YES"/>
@@ -18,6 +19,16 @@
         <relationship name="usedInOutputs" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSTxOutputEntity" inverseName="localAddress" inverseEntity="DSTxOutputEntity" syncable="YES"/>
         <relationship name="usedInSimplifiedMasternodeEntries" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSSimplifiedMasternodeEntryEntity" inverseName="addresses" inverseEntity="DSSimplifiedMasternodeEntryEntity" syncable="YES"/>
         <relationship name="usedInSpecialTransactions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSSpecialTransactionEntity" inverseName="addresses" inverseEntity="DSSpecialTransactionEntity" syncable="YES"/>
+        <compoundIndexes>
+            <compoundIndex>
+                <index value="identityIndex"/>
+                <index value="index"/>
+            </compoundIndex>
+            <compoundIndex>
+                <index value="internal"/>
+                <index value="index"/>
+            </compoundIndex>
+        </compoundIndexes>
     </entity>
     <entity name="DSBlockchainIdentityEntity" representedClassName="DSBlockchainIdentityEntity" syncable="YES">
         <attribute name="creditBalance" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
@@ -463,7 +474,7 @@
     </entity>
     <elements>
         <element name="DSAccountEntity" positionX="-2135.0703125" positionY="459.18359375" width="128" height="135"/>
-        <element name="DSAddressEntity" positionX="-2619.41015625" positionY="308.31640625" width="128" height="180"/>
+        <element name="DSAddressEntity" positionX="-2619.41015625" positionY="308.31640625" width="128" height="193"/>
         <element name="DSBlockchainIdentityEntity" positionX="-2403" positionY="-171" width="128" height="298"/>
         <element name="DSBlockchainIdentityKeyPathEntity" positionX="-2394" positionY="-162" width="128" height="148"/>
         <element name="DSBlockchainIdentityUsernameEntity" positionX="-2421" positionY="-189" width="128" height="133"/>

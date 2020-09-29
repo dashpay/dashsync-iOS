@@ -49,11 +49,13 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathType) {
     DSDerivationPathType_ClearFunds = 1,
     DSDerivationPathType_AnonymousFunds = 1 << 1,
     DSDerivationPathType_ViewOnlyFunds = 1 << 2,
-    DSDerivationPathType_Authentication = 1 << 3,
-    DSDerivationPathType_PartialPath = 1 << 4,
-    DSDerivationPathType_ProtectedFunds = 1 << 5,
-    DSDerivationPathType_CreditFunding = 1 << 6,
+    DSDerivationPathType_SingleUserAuthentication = 1 << 3,
+    DSDerivationPathType_MultipleUserAuthentication = 1 << 4,
+    DSDerivationPathType_PartialPath = 1 << 5,
+    DSDerivationPathType_ProtectedFunds = 1 << 6,
+    DSDerivationPathType_CreditFunding = 1 << 7,
     
+    DSDerivationPathType_IsForAuthentication = DSDerivationPathType_SingleUserAuthentication | DSDerivationPathType_MultipleUserAuthentication,
     DSDerivationPathType_IsForFunds = DSDerivationPathType_ClearFunds | DSDerivationPathType_AnonymousFunds | DSDerivationPathType_ViewOnlyFunds | DSDerivationPathType_ProtectedFunds
 };
 

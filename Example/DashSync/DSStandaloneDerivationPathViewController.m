@@ -9,7 +9,7 @@
 #import "DSStandaloneDerivationPathViewController.h"
 #import "DSStandaloneDerivationPathTableViewCell.h"
 #import "DSStandaloneDerivationPathKeyInputViewController.h"
-#import "DSFundsDerivationPathsAddressesViewController.h"
+#import "DSDoubleDerivationPathsAddressesViewController.h"
 
 @interface DSStandaloneDerivationPathViewController ()
 
@@ -88,7 +88,7 @@
         standaloneDerivationPathKeyInputViewController.chain = self.chain;
     } else if ([segue.identifier isEqualToString:@"ViewStandaloneDerivationPathsAddressesSegue"]) {
         NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
-        DSFundsDerivationPathsAddressesViewController * addresses = (DSFundsDerivationPathsAddressesViewController*)segue.destinationViewController;
+        DSDoubleDerivationPathsAddressesViewController * addresses = (DSDoubleDerivationPathsAddressesViewController*)segue.destinationViewController;
         addresses.derivationPath = (DSFundsDerivationPath*)[self.chain.standaloneDerivationPaths objectAtIndex:indexPath.row];
     }
 }

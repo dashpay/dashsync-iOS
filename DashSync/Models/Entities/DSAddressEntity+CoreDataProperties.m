@@ -16,6 +16,7 @@
 
 @dynamic address;
 @dynamic index;
+@dynamic identityIndex;
 @dynamic internal;
 @dynamic standalone;
 @dynamic derivationPath;

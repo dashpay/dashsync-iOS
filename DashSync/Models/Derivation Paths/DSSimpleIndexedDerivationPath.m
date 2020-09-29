@@ -43,7 +43,9 @@
                 }
             }];
             self.addressesLoaded = TRUE;
-            [self registerAddressesWithGapLimit:10 error:nil];
+            if ([self isMemberOfClass:[DSSimpleIndexedDerivationPath class]]) {
+                [self registerAddressesWithGapLimit:10 error:nil];
+            }
         }
     }
 }
@@ -83,7 +85,8 @@
 // following the last used address in the chain.
 - (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit error:(NSError**)error
 {
-    
+    NSAssert(self.type != DSDerivationPathType_MultipleUserAuthentication, @"This should not be called for multiple user authentication. Use '- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit forIdentityIndex:(uint32_t)identityIndex error:(NSError**)error' instead.");
+
     NSMutableArray * rArray = [self.mOrderedAddresses mutableCopy];
     
     if (!self.wallet.isTransient) {
@@ -130,7 +133,7 @@
             if (!self.wallet.isTransient) {
                 [self.managedObjectContext performBlock:^{ // store new address in core data
                     DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
-                    DSAddressEntity *e = [DSAddressEntity managedObjectInBlockedContext:self.managedObjectContext];
+                    DSAddressEntity *e = [DSAddressEntity managedObjectInContext:self.managedObjectContext];
                     e.derivationPath = derivationPathEntity;
                     NSAssert([addr isValidDashAddressOnChain:self.chain], @"the address is being saved to the wrong derivation path");
                     e.address = addr;

@@ -8,7 +8,7 @@
 
 #import "DSAccountsDerivationPathsViewController.h"
 #import "DSDerivationPathTableViewCell.h"
-#import "DSFundsDerivationPathsAddressesViewController.h"
+#import "DSDoubleDerivationPathsAddressesViewController.h"
 #import "DSSendAmountViewController.h"
 
 @interface DSAccountsDerivationPathsViewController ()
@@ -152,7 +152,7 @@
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"ViewAddressesSegue"] || [segue.identifier isEqualToString:@"ViewAddressesSegue2"]) {
         NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
-        DSFundsDerivationPathsAddressesViewController * derivationPathsAddressesViewController = (DSFundsDerivationPathsAddressesViewController*)segue.destinationViewController;
+        DSDoubleDerivationPathsAddressesViewController * derivationPathsAddressesViewController = (DSDoubleDerivationPathsAddressesViewController*)segue.destinationViewController;
         if (indexPath.section == 0) {
             derivationPathsAddressesViewController.derivationPath = (DSFundsDerivationPath*)[self.account.fundDerivationPaths objectAtIndex:indexPath.row];
         } else {
