@@ -6,14 +6,14 @@
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
 
-#import "DSFundsDerivationPathsAddressesViewController.h"
+#import "DSDoubleDerivationPathsAddressesViewController.h"
 #import "DSAddressTableViewCell.h"
 #import <DashSync/DashSync.h>
 #import "BRBubbleView.h"
 #import "DSAddressesExporterViewController.h"
 #import "DSAddressesTransactionsViewController.h"
 
-@interface DSFundsDerivationPathsAddressesViewController ()
+@interface DSDoubleDerivationPathsAddressesViewController ()
 
 @property (nonatomic,strong) NSArray * addresses;
 @property (nonatomic,strong) NSFetchedResultsController * fetchedResultsController;
@@ -23,7 +23,7 @@
 
 @end
 
-@implementation DSFundsDerivationPathsAddressesViewController
+@implementation DSDoubleDerivationPathsAddressesViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
