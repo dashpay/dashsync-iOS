@@ -2027,9 +2027,9 @@ static dispatch_once_t devnetToken = 0;
                 self.mTerminalBlocks[blockHash] = block;
             }
             self.lastTerminalBlock = block;
-            if (peer) {
-                peer.currentBlockHeight = block.height; //might be download peer instead
-            }
+        }
+        if (peer) {
+            peer.currentBlockHeight = block.height; //might be download peer instead
         }
         if (block.height == self.estimatedBlockHeight) syncDone = YES;
         [self setBlockHeight:block.height andTimestamp:txTime forTransactionHashes:txHashes];
@@ -2065,6 +2065,10 @@ static dispatch_once_t devnetToken = 0;
             [block setChainLockedWithEquivalentBlock:equivalentTerminalBlock];
         }
         
+        if (peer) {
+            peer.currentBlockHeight = block.height; //might be download peer instead
+        }
+        
         DSBlock *b = self.lastSyncBlock;
         
         while (b && b.height > block.height) b = self.mSyncBlocks[b.prevBlockValue]; // is block in main chain?
@@ -2073,25 +2077,28 @@ static dispatch_once_t devnetToken = 0;
             [self setBlockHeight:block.height andTimestamp:txTime forTransactionHashes:txHashes];
             if (block.height == self.lastSyncBlockHeight) self.lastSyncBlock = block;
         }
-    }  else if (self.mTerminalBlocks[blockHash] != nil && isTerminalBlock) { // we already have the block (or at least the header)
-           if ((block.height % 1) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
-               DSDLog(@"%@:%d relayed existing block at height %d", peer.host, peer.port, block.height);
-           }
+    } else if (self.mTerminalBlocks[blockHash] != nil && isTerminalBlock) { // we already have the block (or at least the header)
+        if ((block.height % 1) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
+           DSDLog(@"%@:%d relayed existing block at height %d", peer.host, peer.port, block.height);
+        }
+
+        @synchronized (self.mTerminalBlocks) {
+           self.mTerminalBlocks[blockHash] = block;
+        }
+
+        if (peer) {
+            peer.currentBlockHeight = block.height; //might be download peer instead
+        }
            
-           @synchronized (self.mTerminalBlocks) {
-               self.mTerminalBlocks[blockHash] = block;
-           }
-           
-           DSBlock *b = self.lastTerminalBlock;
-           
-           while (b && b.height > block.height) b = self.mTerminalBlocks[b.prevBlockValue]; // is block in main chain?
-           
-           if (b != nil && uint256_eq(b.blockHash, block.blockHash)) { // if it's not on a fork, set block heights for its transactions
-               [self setBlockHeight:block.height andTimestamp:txTime forTransactionHashes:txHashes];
-               if (block.height == self.lastTerminalBlockHeight) self.lastTerminalBlock = block;
-           }
-       }
-    else { // new block is on a fork
+        DSBlock *b = self.lastTerminalBlock;
+
+        while (b && b.height > block.height) b = self.mTerminalBlocks[b.prevBlockValue]; // is block in main chain?
+
+        if (b != nil && uint256_eq(b.blockHash, block.blockHash)) { // if it's not on a fork, set block heights for its transactions
+           [self setBlockHeight:block.height andTimestamp:txTime forTransactionHashes:txHashes];
+           if (block.height == self.lastTerminalBlockHeight) self.lastTerminalBlock = block;
+        }
+    } else { // new block is on a fork
         if (block.height <= [self lastCheckpoint].height) { // fork is older than last checkpoint
             DSDLog(@"ignoring block on fork older than most recent checkpoint, fork height: %d, blockHash: %@",
                    block.height, blockHash);
@@ -2127,6 +2134,9 @@ static dispatch_once_t devnetToken = 0;
             DSDLog(@"reorganizing chain from height %d, new height is %d", b.height, block.height);
             
             self.lastTerminalBlock = block;
+            if (peer) {
+                peer.currentBlockHeight = block.height; //might be download peer instead
+            }
             if (block.height == self.estimatedBlockHeight) syncDone = YES;
         } else {
             
@@ -2159,6 +2169,9 @@ static dispatch_once_t devnetToken = 0;
                 } else {
                     DSDLog(@"reorganizing terminal chain from height %d, new height is %d", b.height, block.height);
                     self.lastTerminalBlock = block;
+                    if (peer) {
+                        peer.currentBlockHeight = block.height; //might be download peer instead
+                    }
                 }
             }
             
