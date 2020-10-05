@@ -525,7 +525,18 @@
         }
     
         NSMutableDictionary * possibleWordAddresses = [NSMutableDictionary dictionary];
-        for (NSString * word in m.words) {
+        NSArray <NSString*>* allWordsForLanguage = [m wordsForLanguage:language];
+        uint32_t totalWordCount = (uint32_t)[allWordsForLanguage count];
+        uint32_t currentWordCount = 0;
+        
+        for (NSString * word in allWordsForLanguage) {
+            if (currentWordCount % 10 == 9) {
+                BOOL stop = NO;
+                progressUpdate(currentWordCount/(float)totalWordCount,&stop);
+                if (stop) {
+                    return;
+                }
+            }
             NSMutableArray * passphraseWordArray = [words mutableCopy];
             [passphraseWordArray insertObject:word atIndex:[indexes firstIndex]];
             if ([m wordArrayIsValid:passphraseWordArray inLanguage:checkLanguage]) {
@@ -536,6 +547,7 @@
                 NSString * firstAddress = [derivationPath addressAtIndexPath:[NSIndexPath indexPathWithIndexes:indexArr length:2]];
                 [possibleWordAddresses setObject:word forKey:firstAddress];
             }
+            currentWordCount++;
         }
         if (possibleWordAddresses.count == 0) {
             completion([NSArray array]);
