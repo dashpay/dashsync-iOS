@@ -1105,6 +1105,8 @@
     }
 }
 
+#define RANDOM_ERROR_INV 0
+
 - (void)acceptInvMessage:(NSData *)message
 {
     NSNumber * l = nil;
@@ -1194,6 +1196,12 @@
         [self error:@"non-standard inv, %u is fewer block hashes than expected", (int)blockHashes.count];
         return;
     }
+#if RANDOM_ERROR_INV
+    if (!(arc4random() % 10)) {
+        [self error:@"random error for testing"];
+        return;
+    }
+#endif
     
     if (blockHashes.count == 1 && [self.lastBlockHash isEqual:blockHashes[0]]) [blockHashes removeAllObjects];
     if (blockHashes.count == 1) self.lastBlockHash = blockHashes[0];

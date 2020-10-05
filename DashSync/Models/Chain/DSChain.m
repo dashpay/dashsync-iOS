@@ -112,6 +112,13 @@
 
 #define BLOCK_NO_FORK_DEPTH 25
 
+typedef NS_ENUM(uint16_t, DSBlockPosition) {
+    DSBlockPosition_Orphan = 0,
+    DSBlockPosition_Terminal = 1,
+    DSBlockPosition_Sync = 2,
+    DSBlockPosition_TerminalSync = DSBlockPosition_Terminal | DSBlockPosition_Sync
+};
+
 @interface DSChain ()
 
 @property (nonatomic, strong) DSBlock *lastSyncBlock, *lastTerminalBlock, *lastOrphan;
@@ -725,7 +732,7 @@ static dispatch_once_t devnetToken = 0;
 -(uint32_t)protocolVersion {
     switch ([self chainType]) {
         case DSChainType_MainNet:
-            return (70216 + (self.headersMaxAmount / 2000));//PROTOCOL_VERSION_MAINNET;
+            return PROTOCOL_VERSION_MAINNET;//(70216 + (self.headersMaxAmount / 2000));
         case DSChainType_TestNet:
             return PROTOCOL_VERSION_TESTNET;
         case DSChainType_DevNet:
@@ -1684,13 +1691,6 @@ static dispatch_once_t devnetToken = 0;
             self.checkpointsByHeightDictionary[@(checkpoint.height)] = checkpoint;
             self.checkpointsByHashDictionary[uint256_data(checkpointHash)] = checkpoint;
         }
-        for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity lastTerminalBlocks:LLMQ_KEEP_RECENT_BLOCKS onChainEntity:[self chainEntityInContext:self.chainManagedObjectContext]]) {
-            @autoreleasepool {
-                DSMerkleBlock *b = e.merkleBlock;
-                
-                if (b) self->_mSyncBlocks[b.blockHashValue] = b;
-            }
-        };
     }];
     
     return _mSyncBlocks;
@@ -1868,21 +1868,26 @@ static dispatch_once_t devnetToken = 0;
     
     NSValue *blockHash = uint256_obj(block.blockHash), *prevBlock = uint256_obj(block.prevBlock);
     DSBlock *prev = nil;
-    BOOL isTerminalBlock = FALSE;
+
+    DSBlockPosition blockPosition = DSBlockPosition_Orphan;
     DSChainSyncPhase phase = self.chainManager.syncPhase;
     if (phase == DSChainSyncPhase_InitialTerminalBlocks) {
         //In this phase all received blocks are treated as terminal blocks
         prev = self.mTerminalBlocks[prevBlock];
         if (prev) {
-            isTerminalBlock = TRUE;
+            blockPosition = DSBlockPosition_Terminal;
         }
     } else {
         prev = self.mSyncBlocks[prevBlock];
         if (!prev) {
             prev = self.mTerminalBlocks[prevBlock];
             if (prev) {
-                isTerminalBlock = TRUE;
+                blockPosition = DSBlockPosition_Terminal;
             }
+        } else if (self.mTerminalBlocks[prevBlock]) {
+            blockPosition = DSBlockPosition_TerminalSync;
+        } else {
+            blockPosition = DSBlockPosition_Sync;
         }
     }
 
@@ -1917,13 +1922,13 @@ static dispatch_once_t devnetToken = 0;
     NSAssert(!uint256_is_zero(block.chainWork), @"block should have aggregate work set");
     uint32_t txTime = block.timestamp/2 + prev.timestamp/2;
     
-    if (isTerminalBlock) {
+    if (blockPosition & DSBlockPosition_Terminal) {
         if ((block.height % 10000) == 0 || ((block.height == self.estimatedBlockHeight) && (block.height % 100) == 0)) { //free up some memory from time to time
             @synchronized (self.mTerminalBlocks) {
                 //[self saveTerminalBlocks];
                 DSBlock *b = block;
                 
-                for (uint32_t i = 0; b && i < LLMQ_KEEP_RECENT_BLOCKS; i++) {
+                for (uint32_t i = 0; b && i < KEEP_RECENT_TERMINAL_BLOCKS; i++) {
                     b = self.mTerminalBlocks[b.prevBlockValue];
                 }
                 NSMutableArray * blocksToRemove = [NSMutableArray array];
@@ -1934,13 +1939,14 @@ static dispatch_once_t devnetToken = 0;
                 [self.mTerminalBlocks removeObjectsForKeys:blocksToRemove];
             }
         }
-    } else { //sync block
+    }
+    if (blockPosition & DSBlockPosition_Sync) {
         if ((block.height % 1000) == 0) { //free up some memory from time to time
             @synchronized (self.mSyncBlocks) {
 
                 DSBlock *b = block;
                 
-                for (uint32_t i = 0; b && i < LLMQ_KEEP_RECENT_BLOCKS; i++) {
+                for (uint32_t i = 0; b && i < KEEP_RECENT_SYNC_BLOCKS; i++) {
                     b = self.mSyncBlocks[b.prevBlockValue];
                 }
                 NSMutableArray * blocksToRemove = [NSMutableArray array];
@@ -1958,17 +1964,17 @@ static dispatch_once_t devnetToken = 0;
     
     DSBlock * equivalentTerminalBlock = nil;
     
-    if (!isTerminalBlock) {
+    if (blockPosition & DSBlockPosition_Sync) {
         if (self.lastSyncBlockHeight + 1 >= lastCheckpoint.height) {
             equivalentTerminalBlock = self.mTerminalBlocks[blockHash];
         }
     }
 
     
-    if (!equivalentTerminalBlock) { //no need to check difficulty if we already have terminal blocks
+    if (!equivalentTerminalBlock && ((blockPosition & DSBlockPosition_Terminal) || [block canCalculateDifficultyWithPreviousBlocks:self.mSyncBlocks])) { //no need to check difficulty if we already have terminal blocks
         uint32_t foundDifficulty = 0;
         if ((block.height > self.minimumDifficultyBlocks) && (block.height > (lastCheckpoint.height + DGW_PAST_BLOCKS_MAX)) &&
-            ![block verifyDifficultyWithPreviousBlocks:isTerminalBlock?self.mTerminalBlocks:self.mSyncBlocks rDifficulty:&foundDifficulty]) {
+            ![block verifyDifficultyWithPreviousBlocks:(blockPosition & DSBlockPosition_Terminal)?self.mTerminalBlocks:self.mSyncBlocks rDifficulty:&foundDifficulty]) {
             DSDLog(@"%@:%d relayed block with invalid difficulty height %d target %x foundTarget %x, blockHash: %@", peer.host, peer.port,
                    block.height,block.target,foundDifficulty, blockHash);
             
@@ -1990,9 +1996,9 @@ static dispatch_once_t devnetToken = 0;
         }
     }
     
+    DSCheckpoint * checkpoint = [self.checkpointsByHeightDictionary objectForKey:@(block.height)];
+    
     if (!equivalentTerminalBlock) {
-        
-        DSCheckpoint * checkpoint = [self.checkpointsByHeightDictionary objectForKey:@(block.height)];
         
         // verify block chain checkpoints
         if (checkpoint && ! uint256_eq(block.blockHash, checkpoint.blockHash)) {
@@ -2027,9 +2033,9 @@ static dispatch_once_t devnetToken = 0;
                 self.mTerminalBlocks[blockHash] = block;
             }
             self.lastTerminalBlock = block;
-            if (peer) {
-                peer.currentBlockHeight = block.height; //might be download peer instead
-            }
+        }
+        if (peer) {
+            peer.currentBlockHeight = block.height; //might be download peer instead
         }
         if (block.height == self.estimatedBlockHeight) syncDone = YES;
         [self setBlockHeight:block.height andTimestamp:txTime forTransactionHashes:txHashes];
@@ -2065,6 +2071,10 @@ static dispatch_once_t devnetToken = 0;
             [block setChainLockedWithEquivalentBlock:equivalentTerminalBlock];
         }
         
+        if (peer) {
+            peer.currentBlockHeight = block.height; //might be download peer instead
+        }
+        
         DSBlock *b = self.lastSyncBlock;
         
         while (b && b.height > block.height) b = self.mSyncBlocks[b.prevBlockValue]; // is block in main chain?
@@ -2073,25 +2083,28 @@ static dispatch_once_t devnetToken = 0;
             [self setBlockHeight:block.height andTimestamp:txTime forTransactionHashes:txHashes];
             if (block.height == self.lastSyncBlockHeight) self.lastSyncBlock = block;
         }
-    }  else if (self.mTerminalBlocks[blockHash] != nil && isTerminalBlock) { // we already have the block (or at least the header)
-           if ((block.height % 1) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
-               DSDLog(@"%@:%d relayed existing block at height %d", peer.host, peer.port, block.height);
-           }
+    } else if (self.mTerminalBlocks[blockHash] != nil && (blockPosition & DSBlockPosition_Terminal)) { // we already have the block (or at least the header)
+        if ((block.height % 1) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
+           DSDLog(@"%@:%d relayed existing block at height %d", peer.host, peer.port, block.height);
+        }
+
+        @synchronized (self.mTerminalBlocks) {
+           self.mTerminalBlocks[blockHash] = block;
+        }
+
+        if (peer) {
+            peer.currentBlockHeight = block.height; //might be download peer instead
+        }
            
-           @synchronized (self.mTerminalBlocks) {
-               self.mTerminalBlocks[blockHash] = block;
-           }
-           
-           DSBlock *b = self.lastTerminalBlock;
-           
-           while (b && b.height > block.height) b = self.mTerminalBlocks[b.prevBlockValue]; // is block in main chain?
-           
-           if (b != nil && uint256_eq(b.blockHash, block.blockHash)) { // if it's not on a fork, set block heights for its transactions
-               [self setBlockHeight:block.height andTimestamp:txTime forTransactionHashes:txHashes];
-               if (block.height == self.lastTerminalBlockHeight) self.lastTerminalBlock = block;
-           }
-       }
-    else { // new block is on a fork
+        DSBlock *b = self.lastTerminalBlock;
+
+        while (b && b.height > block.height) b = self.mTerminalBlocks[b.prevBlockValue]; // is block in main chain?
+
+        if (b != nil && uint256_eq(b.blockHash, block.blockHash)) { // if it's not on a fork, set block heights for its transactions
+           [self setBlockHeight:block.height andTimestamp:txTime forTransactionHashes:txHashes];
+           if (block.height == self.lastTerminalBlockHeight) self.lastTerminalBlock = block;
+        }
+    } else { // new block is on a fork
         if (block.height <= [self lastCheckpoint].height) { // fork is older than last checkpoint
             DSDLog(@"ignoring block on fork older than most recent checkpoint, fork height: %d, blockHash: %@",
                    block.height, blockHash);
@@ -2104,8 +2117,8 @@ static dispatch_once_t devnetToken = 0;
             return TRUE;
         }
         
-        DSDLog(@"potential chain fork to height %d isTerminalBlock %@", block.height,isTerminalBlock?@"TRUE":@"FALSE");
-        if (isTerminalBlock) {
+        DSDLog(@"potential chain fork to height %d blockPosition %d", block.height, blockPosition);
+        if (blockPosition & DSBlockPosition_Terminal) {
             @synchronized (self.mTerminalBlocks) {
                 self.mTerminalBlocks[blockHash] = block;
             }
@@ -2127,6 +2140,9 @@ static dispatch_once_t devnetToken = 0;
             DSDLog(@"reorganizing chain from height %d, new height is %d", b.height, block.height);
             
             self.lastTerminalBlock = block;
+            if (peer) {
+                peer.currentBlockHeight = block.height; //might be download peer instead
+            }
             if (block.height == self.estimatedBlockHeight) syncDone = YES;
         } else {
             
@@ -2159,6 +2175,9 @@ static dispatch_once_t devnetToken = 0;
                 } else {
                     DSDLog(@"reorganizing terminal chain from height %d, new height is %d", b.height, block.height);
                     self.lastTerminalBlock = block;
+                    if (peer) {
+                        peer.currentBlockHeight = block.height; //might be download peer instead
+                    }
                 }
             }
             
@@ -2200,11 +2219,14 @@ static dispatch_once_t devnetToken = 0;
 
     }
     
+    if ((blockPosition & DSBlockPosition_Terminal) && checkpoint && checkpoint == [self lastCheckpointHavingMasternodeList]) {
+        [self.chainManager.masternodeManager loadFileDistributedMasternodeLists];
+    }
     
     BOOL savedBlockLocators = NO;
     BOOL savedTerminalBlocks = NO;
     if (syncDone) { // chain download is complete
-        if (isTerminalBlock) {
+        if (blockPosition & DSBlockPosition_Terminal) {
             [self saveTerminalBlocks];
             savedTerminalBlocks = YES;
             if (peer) {
@@ -2213,7 +2235,8 @@ static dispatch_once_t devnetToken = 0;
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSChainInitialHeadersDidFinishSyncingNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
             });
-        } else if (phase == DSChainSyncPhase_ChainSync || phase == DSChainSyncPhase_Synced) {
+        }
+        if ((blockPosition & DSBlockPosition_Sync) && (phase == DSChainSyncPhase_ChainSync || phase == DSChainSyncPhase_Synced)) {
             //we should only save
             [self saveBlockLocators];
             savedBlockLocators = YES;
@@ -2226,12 +2249,12 @@ static dispatch_once_t devnetToken = 0;
         }
     }
     
-    if ((isTerminalBlock && block.height > self.estimatedBlockHeight) || (!isTerminalBlock && block.height >= self.lastTerminalBlockHeight)) {
+    if (((blockPosition & DSBlockPosition_Terminal) && block.height > self.estimatedBlockHeight) || ((blockPosition & DSBlockPosition_Sync) && block.height >= self.lastTerminalBlockHeight)) {
         _bestEstimatedBlockHeight = block.height;
-        if (peer && !isTerminalBlock && !savedBlockLocators) {
+        if (peer && (blockPosition & DSBlockPosition_Sync) && !savedBlockLocators) {
             [self saveBlockLocators];
         }
-        if (!savedTerminalBlocks) {
+        if ((blockPosition & DSBlockPosition_Terminal) && !savedTerminalBlocks) {
             [self saveTerminalBlocks];
         }
         if (peer) {
@@ -2249,11 +2272,12 @@ static dispatch_once_t devnetToken = 0;
         NSTimeInterval timestamp = [[NSDate date] timeIntervalSince1970];
         if (!self.lastNotifiedBlockDidChange || (timestamp - self.lastNotifiedBlockDidChange > 0.1)) {
             self.lastNotifiedBlockDidChange = timestamp;
-            if (isTerminalBlock)
+            if (blockPosition & DSBlockPosition_Terminal)
             dispatch_async(dispatch_get_main_queue(), ^{
-                if (isTerminalBlock) {
+                if (blockPosition & DSBlockPosition_Terminal) {
                     [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
-                } else {
+                }
+                if (blockPosition & DSBlockPosition_Sync) {
                     [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
                 }
             });
@@ -2308,7 +2332,7 @@ static dispatch_once_t devnetToken = 0;
 //            //[self saveTerminalBlocks];
 //            DSBlock *b = terminalBlock;
 //
-//            for (uint32_t i = 0; b && i < LLMQ_KEEP_RECENT_BLOCKS; i++) {
+//            for (uint32_t i = 0; b && i < KEEP_RECENT_TERMINAL_BLOCKS; i++) {
 //                b = self.terminalBlocks[b.prevBlockValue];
 //            }
 //            NSMutableArray * blocksToRemove = [NSMutableArray array];
@@ -2478,7 +2502,7 @@ static dispatch_once_t devnetToken = 0;
             self.checkpointsByHeightDictionary[@(checkpoint.height)] = checkpoint;
             self.checkpointsByHashDictionary[uint256_data(checkpointHash)] = checkpoint;
         }
-        for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity lastTerminalBlocks:LLMQ_KEEP_RECENT_BLOCKS onChainEntity:[self chainEntityInContext:self.chainManagedObjectContext]]) {
+        for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity lastTerminalBlocks:KEEP_RECENT_TERMINAL_BLOCKS onChainEntity:[self chainEntityInContext:self.chainManagedObjectContext]]) {
             @autoreleasepool {
                 DSMerkleBlock *b = e.merkleBlock;
                 
@@ -3591,7 +3615,7 @@ static dispatch_once_t devnetToken = 0;
     DSBlock *b = self.lastTerminalBlock;
     uint32_t endHeight = b.height;
     uint32_t startHeight = b.height;
-    while (b && (startHeight > self.lastCheckpoint.height) && (endHeight - startHeight < LLMQ_KEEP_RECENT_BLOCKS)) {
+    while (b && (startHeight > self.lastCheckpoint.height) && (endHeight - startHeight < KEEP_RECENT_TERMINAL_BLOCKS)) {
         blocks[[NSData dataWithUInt256:b.blockHash]] = b;
         startHeight = b.height;
         b = self.mTerminalBlocks[b.prevBlockValue];

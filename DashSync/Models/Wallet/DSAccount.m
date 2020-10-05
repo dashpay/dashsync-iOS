@@ -198,10 +198,20 @@
     }
 }
 
+#define TEST_LOG_ALL_TRANSACTIONS 0
+
 -(void)loadTransactions {
     if (_wallet.isTransient) return;
     //NSDate *startTime = [NSDate date];
     [self.managedObjectContext performBlockAndWait:^{
+#if TEST_LOG_ALL_TRANSACTIONS
+        NSArray <DSTransactionEntity *> * transactions = [DSTransactionEntity objectsInContext:self.managedObjectContext matching:@"transactionHash.chain == %@",[self.wallet.chain chainEntityInContext:self.managedObjectContext]];
+        for (DSTransactionEntity * entity in transactions) {
+            DSTransaction *transaction = [entity transactionForChain:self.wallet.chain];
+            DSDLog(@"Transaction %@",[transaction longDescription]);
+        }
+#endif
+        
         NSUInteger transactionCount = [DSTransactionEntity countObjectsInContext:self.managedObjectContext matching:@"transactionHash.chain == %@",[self.wallet.chain chainEntityInContext:self.managedObjectContext]];
         if (transactionCount > self.allTx.count) {
             // pre-fetch transaction inputs and outputs

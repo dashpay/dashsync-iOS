@@ -722,8 +722,11 @@
 -(BOOL)confirmed {
     if (_confirmed) return YES; //because it can't be unconfirmed
     if (self.blockHeight == TX_UNCONFIRMED) return NO;
-    const uint32_t lastHeight = self.chain.lastTerminalBlockHeight;
-    if (self.blockHeight > self.chain.lastTerminalBlockHeight) return NO; //maybe a reorg?
+    const uint32_t lastHeight = self.chain.lastSyncBlockHeight;
+    if (self.blockHeight > self.chain.lastSyncBlockHeight) {
+        //this should only be possible if and only if we have migrated and kept old transactions.
+        return YES;
+    }
     if (lastHeight - self.blockHeight > 6) return YES;
     _confirmed = [self.chain blockHeightChainLocked:self.blockHeight];
     return _confirmed;

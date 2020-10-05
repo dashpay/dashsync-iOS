@@ -298,7 +298,9 @@
 }
 
 -(void)loadFileDistributedMasternodeLists {
-    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList) || ![[DSOptionsManager sharedInstance] useCheckpointMasternodeLists]) return;
+    BOOL syncMasternodeLists = ([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList);
+    BOOL useCheckpointMasternodeLists = [[DSOptionsManager sharedInstance] useCheckpointMasternodeLists];
+    if (!syncMasternodeLists || !useCheckpointMasternodeLists) return;
     if (!self.currentMasternodeList) {
         DSCheckpoint * checkpoint = [self.chain lastCheckpointHavingMasternodeList];
         if (self.chain.lastTerminalBlockHeight >= checkpoint.height) {
