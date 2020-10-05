@@ -188,6 +188,10 @@
     return (!!simplifiedMasternodeEntry);
 }
 
+-(NSUInteger)masternodeListRetrievalQueueCount {
+    return self.masternodeListRetrievalQueue.count;
+}
+
 -(double)masternodeListAndQuorumsSyncProgress
 {
     double amountLeft = self.masternodeListRetrievalQueue.count;
