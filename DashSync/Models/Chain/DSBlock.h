@@ -72,6 +72,9 @@ typedef union _UInt256 UInt256;
 // true if the given tx hash is known to be included in the block
 - (BOOL)containsTxHash:(UInt256)txHash;
 
+// Do we have enough blocks to calculate the difficulty?
+- (BOOL)canCalculateDifficultyWithPreviousBlocks:(NSDictionary *)previousBlocks;
+
 // Verifies the block difficulty target is correct for the block's position in the chain.
 - (BOOL)verifyDifficultyWithPreviousBlocks:(NSDictionary *)previousBlocks rDifficulty:(uint32_t*)difficulty;
 

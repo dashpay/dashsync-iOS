@@ -103,6 +103,39 @@
     return d;
 }
 
+-(BOOL)canCalculateDifficultyWithPreviousBlocks:(NSDictionary *)previousBlocks {
+    DSBlock *previousBlock = previousBlocks[uint256_obj(self.prevBlock)];
+    if (!previousBlock) {
+        return FALSE;
+    }
+    if (uint256_is_zero(_prevBlock) || previousBlock.height == 0 || previousBlock.height < DGW_PAST_BLOCKS_MIN + (self.chain.isDevnetAny?1:0)) {
+        return TRUE;
+    }
+    if (self.chain.allowMinDifficultyBlocks) {
+        // recent block is more than 2 hours old
+        if (self.timestamp > (previousBlock.timestamp + 2 * 60 * 60)) {
+            return TRUE;
+        }
+        // recent block is more than 10 minutes old
+        if (self.timestamp > (previousBlock.timestamp + 2.5 * 60 * 4)) {
+            return TRUE;
+        }
+    }
+    DSBlock *currentBlock = previousBlock;
+    uint32_t blockCount = 0;
+    // loop over the past n blocks, where n == PastBlocksMax
+    for (blockCount = 1; currentBlock && currentBlock.height > 0 && blockCount<=DGW_PAST_BLOCKS_MAX; blockCount++) {
+        
+        if (previousBlock == nil) { assert(currentBlock); break; }
+        currentBlock = previousBlocks[uint256_obj(currentBlock.prevBlock)];
+        if (!currentBlock) {
+            DSDLog(@"Could not retrieve previous block");
+            return FALSE;
+        }
+    }
+    return TRUE;
+}
+
 - (BOOL)verifyDifficultyWithPreviousBlocks:(NSDictionary *)previousBlocks rDifficulty:(uint32_t*)difficulty
 {
     uint32_t darkGravityWaveTarget = [self darkGravityWaveTargetWithPreviousBlocks:previousBlocks];
@@ -178,7 +211,7 @@
         // Set lastBlockTime to the block time for the block in current iteration
         lastBlockTime = currentBlock.timestamp;
         
-        if (previousBlock == NULL) { assert(currentBlock); break; }
+        if (previousBlock == nil) { assert(currentBlock); break; }
         currentBlock = previousBlocks[uint256_obj(currentBlock.prevBlock)];
         if (!currentBlock) {
             DSDLog(@"Block missing for dark gravity wave calculation");
