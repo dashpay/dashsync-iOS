@@ -341,7 +341,7 @@
                     if ([account transactionOutputsAreLocked:self.transaction]) {
                         cell.statusLabel.text = NSLocalizedString(@"recently mined (locked)", nil);
                     } else if (self.transaction.blockHeight != TX_UNCONFIRMED) {
-                        cell.statusLabel.text = [NSString stringWithFormat:NSLocalizedString(@"mined in block #%d", nil),
+                        cell.statusLabel.text = [NSString stringWithFormat:NSLocalizedString(@"mined in block #%d (%@)", nil),
                                                  self.transaction.blockHeight, self.txDateString];
                         cell.moreInfoLabel.text = self.txDateString;
                     }
@@ -353,7 +353,7 @@
                     }
                     else if (! [account transactionIsVerified:self.transaction]) {
                         cell.statusLabel.text = [NSString stringWithFormat:NSLocalizedString(@"seen by %d of %d peers", nil),
-                                                 relayCount, peerCount];
+                                                 (int)relayCount, (int)peerCount];
                     }
                     else cell.statusLabel.text = NSLocalizedString(@"verified, waiting for confirmation", nil);
                     
@@ -389,7 +389,7 @@
                     cell.titleLabel.text = NSLocalizedString(@"size:", nil);
                     uint64_t roundedFeeCostPerByte = self.transaction.roundedFeeCostPerByte;
                     if (roundedFeeCostPerByte != UINT64_MAX) { //otherwise it's being received and can't know.
-                        cell.statusLabel.text = roundedFeeCostPerByte == 1?NSLocalizedString(@"1 duff/byte",nil):[NSString stringWithFormat:NSLocalizedString(@"%d duffs/byte",nil), roundedFeeCostPerByte];
+                        cell.statusLabel.text = roundedFeeCostPerByte == 1?NSLocalizedString(@"1 duff/byte",nil):[NSString stringWithFormat:NSLocalizedString(@"%d duffs/byte",nil), (int)roundedFeeCostPerByte];
                     } else {
                         cell.statusLabel.text = nil;
                     }
