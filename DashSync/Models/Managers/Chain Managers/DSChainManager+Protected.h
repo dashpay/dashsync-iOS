@@ -23,8 +23,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)resetLastRelayedItemTime;
 - (void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo inContext:(NSManagedObjectContext*)context;
 
-- (void)applyChainSynchronizationFingerprint:(NSData*)chainSynchronizationFingerprint;
-
 - (BOOL)shouldRequestMerkleBlocksForZoneBetweenHeight:(uint32_t)blockHeight andEndHeight:(uint32_t)endBlockHeight;
 - (BOOL)shouldRequestMerkleBlocksForZoneAfterHeight:(uint32_t)blockHeight;
 

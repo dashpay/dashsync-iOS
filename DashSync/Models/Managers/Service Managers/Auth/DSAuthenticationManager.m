@@ -868,7 +868,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
             //no longer locked out, give the user a try
             attemptsMessage = [NSString localizedStringWithFormat:
                                DSLocalizedString(@"%ld attempt(s) remaining", @"#bc-ignore!"),
-                               MAX_FAIL_COUNT - failCount];
+                               (long)(MAX_FAIL_COUNT - failCount)];
         }
     }
 
