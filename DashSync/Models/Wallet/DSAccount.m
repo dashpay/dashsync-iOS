@@ -487,6 +487,10 @@
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address {
     NSParameterAssert(address);
+    if (![address isKindOfClass:[NSString class]]) {
+        //in case address is of type [NSNull null]
+        return FALSE;
+    }
     
     for (DSFundsDerivationPath * derivationPath in self.fundDerivationPaths) {
         if ([derivationPath containsAddress:address]) return TRUE;
@@ -497,6 +501,10 @@
 // true if the address is controlled by the wallet
 - (BOOL)containsInternalAddress:(NSString *)address {
     NSParameterAssert(address);
+    if (![address isKindOfClass:[NSString class]]) {
+        //in case address is of type [NSNull null]
+        return FALSE;
+    }
     
     for (DSFundsDerivationPath * derivationPath in self.fundDerivationPaths) {
         if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
@@ -508,6 +516,10 @@
 
 - (BOOL)baseDerivationPathsContainAddress:(NSString *)address {
     NSParameterAssert(address);
+    if (![address isKindOfClass:[NSString class]]) {
+        //in case address is of type [NSNull null]
+        return FALSE;
+    }
     
     for (DSFundsDerivationPath * derivationPath in self.fundDerivationPaths) {
         if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
@@ -520,6 +532,10 @@
 // true if the address is controlled by the wallet
 - (BOOL)containsExternalAddress:(NSString *)address {
     NSParameterAssert(address);
+    if (![address isKindOfClass:[NSString class]]) {
+        //in case address is of type [NSNull null]
+        return FALSE;
+    }
     
     for (DSDerivationPath * derivationPath in self.fundDerivationPaths) {
         if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
@@ -533,6 +549,10 @@
 
 - (DSIncomingFundsDerivationPath*)externalDerivationPathContainingAddress:(NSString *)address {
     NSParameterAssert(address);
+    if (![address isKindOfClass:[NSString class]]) {
+        //in case address is of type [NSNull null]
+        return nil;
+    }
     
     for (DSIncomingFundsDerivationPath * derivationPath in self.mContactOutgoingFundDerivationPathsDictionary.allValues) {
         if ([derivationPath containsAddress:address]) return derivationPath;
@@ -543,6 +563,10 @@
 // true if the address was previously used as an input or output in any wallet transaction
 - (BOOL)addressIsUsed:(NSString *)address {
     NSParameterAssert(address);
+    if (![address isKindOfClass:[NSString class]]) {
+        //in case address is of type [NSNull null]
+        return FALSE;
+    }
     
     for (DSFundsDerivationPath * derivationPath in self.fundDerivationPaths) {
         if ([derivationPath addressIsUsed:address]) return TRUE;
@@ -552,6 +576,10 @@
 
 - (BOOL)transactionAddressAlreadySeenInOutputs:(NSString *)address {
     NSParameterAssert(address);
+    if (![address isKindOfClass:[NSString class]]) {
+        //in case address is of type [NSNull null]
+        return FALSE;
+    }
     
     for (DSTransaction * transaction in self.allTransactions) {
         if ([transaction.outputAddresses containsObject:address]) return TRUE;
