@@ -238,23 +238,23 @@
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Ihr Wallet ist möglicherweise nicht synchron.\nDies kann oft durch erneutes Scannen der Blockchain behoben werden.";
 
+/* No comment provided by engineer. */
+"Unable to create registration transition" = "Registrierungs-Transition konnte nicht erstellt werden";
+
 /* The Blockchain Identity is not registered */
-"Not Registered" = "Not Registered";
+"Not Registered" = "Nicht Registriert";
 
 /* The Blockchain Identity is registered */
-"Registered" = "Registered";
+"Registered" = "Registriert";
 
 /* The Blockchain Identity is being registered */
-"Registering" = "Registering";
-
-/* No comment provided by engineer. */
-"Unable to create registration transition" = "Unable to create registration transition";
+"Registering" = "Registriere";
 
 /* It is Unknown if the Blockchain Identity is registered */
-"Unknown" = "Unknown";
+"Unknown" = "Unbekannt";
 
 /* Status of Key or Username is Revoked */
-"Revoked" = "Revoked";
+"Revoked" = "Widerrufen";
 
 /* No comment provided by engineer. */
 "BLS" = "BLS";
@@ -263,97 +263,97 @@
 "ECDSA" = "ECDSA";
 
 /* No comment provided by engineer. */
-"Unknown Key Type" = "Unknown Key Type";
+"Unknown Key Type" = "Unbekannter Schlüssel-Typ";
 
 /* No comment provided by engineer. */
-"Dashpay Contract is not yet registered on network" = "Dashpay Contract is not yet registered on network";
+"Dashpay Contract is not yet registered on network" = "Dashpay-Contract wurde noch nicht im Netzwerk registriert";
 
 /* No comment provided by engineer. */
-"DPNS Contract is not yet registered on network" = "DPNS Contract is not yet registered on network";
+"DPNS Contract is not yet registered on network" = "DPNS-Contract wurde noch nicht im Netzwerk registriert";
 
 /* No comment provided by engineer. */
-"Funding transaction could not be created" = "Funding transaction could not be created";
+"Funding transaction could not be created" = "Finanzierungstransaktion wurde noch nicht erstellt";
 
 /* No comment provided by engineer. */
-"Internal key handling error" = "Internal key handling error";
+"Internal key handling error" = "Interner Schlüsselverarbeitungsfehler";
 
 /* No comment provided by engineer. */
-"Internal memory allocation error" = "Internal memory allocation error";
+"Internal memory allocation error" = "Interner Speicherzuteilungsfehler";
 
 /* No comment provided by engineer. */
-"Malformed platform response" = "Malformed platform response";
+"Malformed platform response" = "Fehlerhafte Plattformantwort";
 
 /* No comment provided by engineer. */
-"Timeout while waiting for funding transaction to be accepted by network" = "Timeout while waiting for funding transaction to be accepted by network";
+"Timeout while waiting for funding transaction to be accepted by network" = "Zeitüberschreitung während des Wartevorgangs zur Bestätigung der Finanzierungstransaktion durch das Netzwerk";
 
 /* No comment provided by engineer. */
-"Transaction could not be signed" = "Transaction could not be signed";
+"Transaction could not be signed" = "Transaktion konnte nicht signiert werden";
 
 /* No comment provided by engineer. */
-"Unable to register registration transition" = "Unable to register registration transition";
+"Unable to register registration transition" = "Registrierungs-Transition konnte nicht eingetragen werden";
 
 /* No comment provided by engineer. */
-"User has actions to complete before being able to use Dashpay" = "User has actions to complete before being able to use Dashpay";
+"User has actions to complete before being able to use Dashpay" = "Der Nutzer muss noch Schritte abschließen bevor er Dashpay verwenden kann";
 
 /* No comment provided by engineer. */
-"Requested username domain documents not present on platform after timeout" = "Requested username domain documents not present on platform after timeout";
+"Requested username domain documents not present on platform after timeout" = "Angefragte Benutzernamen-Domaindokumente nach dem Timeout nicht auf der Plattform gefunden";
 
 /* No comment provided by engineer. */
-"Requested username preorder documents not present on platform after timeout" = "Requested username preorder documents not present on platform after timeout";
+"Requested username preorder documents not present on platform after timeout" = "Angefragte Benutzernamen-Preorderdokumente nach dem Timeout nicht auf der Plattform gefunden";
 
 /* No comment provided by engineer. */
-"Unable to sign transition" = "Unable to sign transition";
+"Unable to sign transition" = "Transition konnte nicht signiert werden";
 
 /* No comment provided by engineer. */
-"Transition had nothing to update" = "Transition had nothing to update";
+"Transition had nothing to update" = "Transition muss nicht aktualisiert werden";
 
 /* No comment provided by engineer. */
-"Contract '%@' doesn't contain a table named '%@'" = "Contract '%1$@' doesn't contain a table named '%2$@'";
+"Contract '%@' doesn't contain a table named '%@'" = "Contract '%1$@' enthält nicht die Tabelle mit dem Namen '%2$@'";
 
 /* No comment provided by engineer. */
-"The blockchain identity hasn't yet been locally activated" = "The blockchain identity hasn't yet been locally activated";
+"The blockchain identity hasn't yet been locally activated" = "Die Blockchain-Identität wurde noch nicht lokal aktiviert";
 
 /* No comment provided by engineer. */
-"The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion" = "The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion";
+"The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion" = "Der Finanzierungsschlüssel der Blockchain-Identität sollte zuerst mit Hilfe von createFundingPrivateKeyWithCompletion erschaffen werden";
 
 /* No comment provided by engineer. */
-"The blockchain identity extended public keys need to be registered before you can register a blockchain identity." = "The blockchain identity extended public keys need to be registered before you can register a blockchain identity.";
+"The blockchain identity extended public keys need to be registered before you can register a blockchain identity." = "Der erweiterte öffentliche Schlüssel zu dieser Blockchain-Identität muss registriert werden, bevor eine Blockchain-Identität registriert werden kann.";
 
 /* No comment provided by engineer. */
-"Contact request extended public key is incorrectly encrypted." = "Contact request extended public key is incorrectly encrypted.";
+"Contact request extended public key is incorrectly encrypted." = "Der erweiterte öffentliche Schlüssel zu dieser Kontaktanfrage ist fehlerhaft verschlüsselt.";
 
 /* No comment provided by engineer. */
-"Error generating public keys" = "Error generating public keys";
+"Error generating public keys" = "Fehler bei der Generierung öffentlicher Schlüssel";
 
 /* No comment provided by engineer. */
-"Accepting a friend request should only happen from a local blockchain identity" = "Accepting a friend request should only happen from a local blockchain identity";
+"Accepting a friend request should only happen from a local blockchain identity" = "Eine Freundschaftsanfrage sollte nur von einer lokalen Blockchain-Identität angenommen werden";
 
 /* No comment provided by engineer. */
-"You can only accept a friend request from blockchain identity who has sent you one, and none were found" = "You can only accept a friend request from blockchain identity who has sent you one, and none were found";
+"You can only accept a friend request from blockchain identity who has sent you one, and none were found" = "Du kannst eine Freundschaftsanfrage nur von einer Blockchain-Identität annehmen, die dir eine gesendet hat, und es wurde keine gefunden";
 
 /* An error message for notifying that chain sync has timed out */
-"Synchronization Timeout" = "Synchronization Timeout";
+"Synchronization Timeout" = "Synchronisierungs-Timeout";
 
 /* No comment provided by engineer. */
-"Attempt to query DAPs for blockchain identity with no active keys" = "Attempt to query DAPs for blockchain identity with no active keys";
+"Attempt to query DAPs for blockchain identity with no active keys" = "Versuche DAPs nach Blockchain-Identitäten ohne aktive Schlüssel abzufragen";
 
 /* No comment provided by engineer. */
-"Node at host %@ does not service network" = "Node at host %@ does not service network";
+"Node at host %@ does not service network" = "Node unter %@ scheint dem Netzwerk keine Dienste bereitzustellen";
 
 /* No comment provided by engineer. */
-"Node at host %@ does not support bloom filtering" = "Node at host %@ does not support bloom filtering";
+"Node at host %@ does not support bloom filtering" = "Node unter %@ unterstützt keine Bloomfilterung";
 
 /* No comment provided by engineer. */
-"The Dashpay contract is not properly set up" = "The Dashpay contract is not properly set up";
+"The Dashpay contract is not properly set up" = "Der Dashpay-Contract wurde nicht richtig eingerichtet";
 
 /* No comment provided by engineer. */
-"Contract '%@' needs to first be locally registered or known" = "Contract '%@' needs to first be locally registered or known";
+"Contract '%@' needs to first be locally registered or known" = "Contract '%@' muss zuerst lokal registriert oder angezeigt werden";
 
 /* No comment provided by engineer. */
-"A block could not be mined in the selected time interval." = "A block could not be mined in the selected time interval.";
+"A block could not be mined in the selected time interval." = "Während des ausgewählten Zeitraums konnte kein Block gemined werden.";
 
 /* No comment provided by engineer. */
-"Could not create friendship derivation path" = "Could not create friendship derivation path";
+"Could not create friendship derivation path" = "Herleitungspfad der Freundschaft konnte nicht erstellt werden";
 
 /* No comment provided by engineer. */
-"Incorrect key format after contact request decryption" = "Incorrect key format after contact request decryption";
+"Incorrect key format after contact request decryption" = "Falsches Schlüsselformat nach Entschlüsselung der Kontaktanfrage";

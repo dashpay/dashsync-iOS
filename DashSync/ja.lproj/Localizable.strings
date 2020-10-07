@@ -238,6 +238,9 @@
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "あなたのウォレットが同期されていない可能性があります。\nブロックチェーンの再スキャンを行うと直ることが大半です。";
 
+/* No comment provided by engineer. */
+"Unable to create registration transition" = "Unable to create registration transition";
+
 /* The Blockchain Identity is not registered */
 "Not Registered" = "Not Registered";
 
@@ -247,11 +250,8 @@
 /* The Blockchain Identity is being registered */
 "Registering" = "Registering";
 
-/* No comment provided by engineer. */
-"Unable to create registration transition" = "Unable to create registration transition";
-
 /* It is Unknown if the Blockchain Identity is registered */
-"Unknown" = "Unknown";
+"Unknown" = "未知の";
 
 /* Status of Key or Username is Revoked */
 "Revoked" = "Revoked";

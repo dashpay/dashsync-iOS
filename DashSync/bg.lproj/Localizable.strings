@@ -238,20 +238,20 @@
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Твоят портфейл вероятно не е синхронизиран.\nТова обикновено се фиксира след сканиране на блок веригата.";
 
-/* The Dash Identity is not registered */
-"Not Registered" = "Not Registered";
-
-/* The Dash Identity is registered */
-"Registered" = "Registered";
-
-/* The Dash Identity is being registered */
-"Registering" = "Registering";
-
 /* No comment provided by engineer. */
 "Unable to create registration transition" = "Unable to create registration transition";
 
-/* It is Unknown if the Dash Identity is registered */
-"Unknown" = "Unknown";
+/* The Blockchain Identity is not registered */
+"Not Registered" = "Not Registered";
+
+/* The Blockchain Identity is registered */
+"Registered" = "Registered";
+
+/* The Blockchain Identity is being registered */
+"Registering" = "Registering";
+
+/* It is Unknown if the Blockchain Identity is registered */
+"Unknown" = "Непознат";
 
 /* Status of Key or Username is Revoked */
 "Revoked" = "Revoked";
