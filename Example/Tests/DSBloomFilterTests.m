@@ -11,6 +11,7 @@
 #import "DSBloomFilter.h"
 #import "NSString+Bitcoin.h"
 #import "DSMerkleBlock.h"
+#import "DSFullBlock.h"
 #import "DSChain.h"
 #import "NSData+Bitcoin.h"
 
@@ -28,7 +29,7 @@
     // Put setup code here. This method is called before the invocation of each test method in the class.
     
     // the chain to test on
-    self.chain = [DSChain mainnet];
+    self.chain = [DSChain testnet];
 }
 
 // MARK: - testBloomFilter
@@ -120,27 +121,37 @@
      */
     //this block is bloom filtered to only have the first transaction
     NSData *block = @"000000201d5d4e88ffc3d22df1edbb59cdf7e7426676ce1a22ff0d57a4000000000000002aad163c0f2a907f0c304b6c44a706819d393874de7789d888b505021306d7d59e92ce59683d021a86097f070400000003279e9f59938e18a73bb8badf01f7143da64aa3939453497296f69ed226d575e9553240be926b18d5653f58e0fb0fbb77c39d2adff2c0f693b9006da443bb8af609491f56436c3e6a6ca83cb5a21782059559f6ee91abde67f9d4c6f0caa67e3e0107".hexToData;
-    DSMerkleBlock *b = [DSMerkleBlock blockWithMessage:block onChain:self.chain];
-    UInt256 hash;
-    
-    hash = *(UInt256 *)@"0000000000000197df9123a822ae2ff2b1108b37d641b2a8c976ba949a78ca51".hexToData.reverse.bytes;
+    DSMerkleBlock *b = [DSMerkleBlock merkleBlockWithMessage:block onChain:self.chain];
+    UInt256 hash = @"0000000000000197df9123a822ae2ff2b1108b37d641b2a8c976ba949a78ca51".hexToData.reverse.UInt256;
     XCTAssertTrue(uint256_eq(b.blockHash, hash), @"[DSMerkleBlock blockHash]");
     
     XCTAssertEqualObjects(block, b.data, @"[DSMerkleBlock toData]");
     
     XCTAssertTrue(b.valid, @"[DSMerkleBlock isValid]");
     
-    hash = *(UInt256 *)@"e975d526d29ef6967249539493a34aa63d14f701dfbab83ba7188e93599f9e27".hexToData.reverse.bytes;
+    hash = @"e975d526d29ef6967249539493a34aa63d14f701dfbab83ba7188e93599f9e27".hexToData.reverse.UInt256;
     XCTAssertTrue([b containsTxHash:hash], @"[DSMerkleBlock containsTxHash:]");
     
     XCTAssertEqual(b.totalTransactions,4, @"[DSMerkleBlock txHashes]");
     
-    hash = *(UInt256 *)@"e975d526d29ef6967249539493a34aa63d14f701dfbab83ba7188e93599f9e27".hexToData.reverse.bytes;
-    XCTAssertEqualObjects(b.txHashes[0], uint256_obj(hash), @"[DSMerkleBlock txHashes]");
+    hash = @"e975d526d29ef6967249539493a34aa63d14f701dfbab83ba7188e93599f9e27".hexToData.reverse.UInt256;
+    XCTAssertEqualObjects(b.transactionHashes[0], uint256_obj(hash), @"[DSMerkleBlock txHashes]");
     
     //TODO: test a block with an odd number of tree rows both at the tx level and merkle node level
     
     //TODO:XXXX test verifyDifficultyFromPreviousBlock
+}
+
+-(void)testFullBlock {
+    NSData * blockData = @"00000020384621d0c5b5e0f84fe336d37e4cce7d9c2d56493102cf88234254721dd3f35c3da65260508ff789b65b19047cded17bf161fc64916f91365a3edab0a675099de699275fffff7f20010000000303000500010000000000000000000000000000000000000000000000000000000000000000ffffffff04016a0101ffffffff01e288526a740000001976a91473483d35610ce83e45bae64ea88714dec7d41e9588ac000000002601006a000000000000000000000000000000000000000000000000000000000000000000000003000600000000000000fd490101006a000000010001f2efb75bd621e59c7115e5c4bdadae772d178f587687c715f88f7f414d34c66b3200000000000000320000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200000001d555f3ff0a86bbe2cd9d8a2c7725935dbbfb2c747f910402e5d050a3f919cec1000000006a4730440220437f15af30180be323ca1a1e0c47de2a597abba2a57d4f76e2584ce7d3e8d40802202705342f334991c9eaa2757ea63c5bb305abf14a66a1ce727ef2689a92bcee55012103a65caff6ca4c0415a3ac182dfc2a6d3a4dceb98e8b831e71501df38aa156f2c1feffffff0200e40b54020000001976a91473483d35610ce83e45bae64ea88714dec7d41e9588ac1ea34616720000001976a914965ef0941e79834ca79b291b940cc18cf516448788ac14000000".hexToData;
+    
+    DSFullBlock * block = [DSFullBlock fullBlockWithMessage:blockData onChain:self.chain];
+    
+    XCTAssertEqualObjects(@"4f8ddb3f70e9e2ff6b792a37e7391f05901f246ef4f073dc12e2836dba88c9cf", uint256_reverse_hex(block.blockHash), @"[DSFullBlock blockHash]");
+    
+    XCTAssertEqual(block.totalTransactions, 3);
+    
+    
 }
 
 @end

@@ -1,26 +1,10 @@
 //
 //  DSAddressEntity+CoreDataProperties.h
-//  
+//  DashSync
 //
-//  Created by Sam Westrich on 5/20/18.
+//  Created by Sam Westrich on 5/8/19.
 //
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
 //
-//  The above copyright notice and this permission notice shall be included in
-//  all copies or substantial portions of the Software.
-//
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-//  THE SOFTWARE.
 
 #import "DSAddressEntity+CoreDataClass.h"
 
@@ -31,15 +15,40 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSFetchRequest<DSAddressEntity *> *)fetchRequest;
 
-@property (nonatomic, copy) NSString *address;
+@property (nonnull, nonatomic, copy) NSString *address;
 @property (nonatomic, assign) uint32_t index;
+@property (nonatomic, assign) uint32_t identityIndex;
 @property (nonatomic, assign) BOOL internal;
 @property (nonatomic, assign) BOOL standalone;
 @property (nullable, nonatomic, retain) DSDerivationPathEntity *derivationPath;
 @property (nonnull, nonatomic, retain) NSSet<DSTxInputEntity *> *usedInInputs;
 @property (nonnull, nonatomic, retain) NSSet<DSTxOutputEntity *> *usedInOutputs;
-@property (nonnull, nonatomic, retain) NSSet<DSSpecialTransactionEntity *> *usedInSpecialTransactions;
 @property (nonnull, nonatomic, retain) NSSet<DSSimplifiedMasternodeEntryEntity *> *usedInSimplifiedMasternodeEntries;
+@property (nonnull, nonatomic, retain) NSSet<DSSpecialTransactionEntity *> *usedInSpecialTransactions;
+
+@end
+
+@interface DSAddressEntity (CoreDataGeneratedAccessors)
+
+- (void)addUsedInInputsObject:(DSTxInputEntity *)value;
+- (void)removeUsedInInputsObject:(DSTxInputEntity *)value;
+- (void)addUsedInInputs:(NSSet<DSTxInputEntity *> *)values;
+- (void)removeUsedInInputs:(NSSet<DSTxInputEntity *> *)values;
+
+- (void)addUsedInOutputsObject:(DSTxOutputEntity *)value;
+- (void)removeUsedInOutputsObject:(DSTxOutputEntity *)value;
+- (void)addUsedInOutputs:(NSSet<DSTxOutputEntity *> *)values;
+- (void)removeUsedInOutputs:(NSSet<DSTxOutputEntity *> *)values;
+
+- (void)addUsedInSimplifiedMasternodeEntriesObject:(DSSimplifiedMasternodeEntryEntity *)value;
+- (void)removeUsedInSimplifiedMasternodeEntriesObject:(DSSimplifiedMasternodeEntryEntity *)value;
+- (void)addUsedInSimplifiedMasternodeEntries:(NSSet<DSSimplifiedMasternodeEntryEntity *> *)values;
+- (void)removeUsedInSimplifiedMasternodeEntries:(NSSet<DSSimplifiedMasternodeEntryEntity *> *)values;
+
+- (void)addUsedInSpecialTransactionsObject:(DSSpecialTransactionEntity *)value;
+- (void)removeUsedInSpecialTransactionsObject:(DSSpecialTransactionEntity *)value;
+- (void)addUsedInSpecialTransactions:(NSSet<DSSpecialTransactionEntity *> *)values;
+- (void)removeUsedInSpecialTransactions:(NSSet<DSSpecialTransactionEntity *> *)values;
 
 @end
 

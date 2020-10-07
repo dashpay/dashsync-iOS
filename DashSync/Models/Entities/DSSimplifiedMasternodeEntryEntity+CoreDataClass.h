@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSAddressEntity, DSChainEntity, DSGovernanceVoteEntity, DSLocalMasternodeEntity, DSMasternodeListEntity, DSTransactionLockVoteEntity, DSSimplifiedMasternodeEntry,DSMasternodeList;
+@class DSAddressEntity, DSChainEntity, DSGovernanceVoteEntity, DSLocalMasternodeEntity, DSMasternodeListEntity, DSTransactionLockVoteEntity, DSSimplifiedMasternodeEntry, DSMasternodeList;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -17,14 +17,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry * _Nonnull)simplifiedMasternodeEntry;
 - (void)updateAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry * _Nonnull)simplifiedMasternodeEntry knownOperatorAddresses:(NSDictionary<NSString*,DSAddressEntity*>* _Nullable)knownOperatorAddresses knownVotingAddresses:(NSDictionary<NSString*,DSAddressEntity*>* _Nullable)knownVotingAddresses localMasternodes:(NSDictionary<NSData*,DSLocalMasternodeEntity*>* _Nullable)localMasternodes;
-- (void)setAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry knownOperatorAddresses:(NSDictionary<NSString*,DSAddressEntity*>* _Nullable)knownOperatorAddresses knownVotingAddresses:(NSDictionary<NSString*,DSAddressEntity*>* _Nullable)knownVotingAddresses localMasternodes:(NSDictionary<NSData*,DSLocalMasternodeEntity*>* _Nullable)localMasternodes onChain:(DSChainEntity*)chainEntity;
-- (void)setAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry * _Nonnull)simplifiedMasternodeEntry onChain:(DSChainEntity* _Nullable)chainEntity;
-+ (void)deleteHavingProviderTransactionHashes:(NSArray*)providerTransactionHashes onChain:(DSChainEntity* _Nonnull)chainEntity;
-+ (DSSimplifiedMasternodeEntryEntity* _Nullable)simplifiedMasternodeEntryForHash:(NSData*)simplifiedMasternodeEntryHash onChain:(DSChainEntity* _Nonnull)chainEntity;
-+ (DSSimplifiedMasternodeEntryEntity*)simplifiedMasternodeEntryForProviderRegistrationTransactionHash:(NSData*)providerRegistrationTransactionHash onChain:(DSChainEntity*)chainEntity;
+- (void)setAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry knownOperatorAddresses:(NSDictionary<NSString*,DSAddressEntity*>* _Nullable)knownOperatorAddresses knownVotingAddresses:(NSDictionary<NSString*,DSAddressEntity*>* _Nullable)knownVotingAddresses localMasternodes:(NSDictionary<NSData*,DSLocalMasternodeEntity*>* _Nullable)localMasternodes onChainEntity:(DSChainEntity* _Nullable)chainEntity;
+- (void)setAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry * _Nonnull)simplifiedMasternodeEntry onChainEntity:(DSChainEntity* _Nullable)chainEntity;
++ (void)deleteHavingProviderTransactionHashes:(NSArray*)providerTransactionHashes onChainEntity:(DSChainEntity* _Nonnull)chainEntity;
++ (DSSimplifiedMasternodeEntryEntity* _Nullable)simplifiedMasternodeEntryForHash:(NSData*)simplifiedMasternodeEntryHash onChainEntity:(DSChainEntity* _Nonnull)chainEntity;
++ (DSSimplifiedMasternodeEntryEntity*)simplifiedMasternodeEntryForProviderRegistrationTransactionHash:(NSData*)providerRegistrationTransactionHash onChainEntity:(DSChainEntity* _Nonnull)chainEntity;
 
 - (DSSimplifiedMasternodeEntry* _Nullable)simplifiedMasternodeEntry;
-+ (void)deleteAllOnChain:(DSChainEntity*)chainEntity;
++ (void)deleteAllOnChainEntity:(DSChainEntity*)chainEntity;
 
 @end
 

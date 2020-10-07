@@ -64,11 +64,11 @@
     DSPaymentRequest * paymentRequest = [DSPaymentRequest requestWithString:self.addressField.text onChain:self.account.wallet.chain];
     paymentRequest.amount = [[DSPriceManager sharedInstance] amountForDashString:self.amountField.text];
     
-    if ([paymentRequest isValid]) {
+    if ([paymentRequest isValidAsNonDashpayPaymentRequest]) {
         
         __block BOOL displayedSentMessage = FALSE;
         
-        [self.account.wallet.chain.chainManager.transactionManager confirmPaymentRequest:paymentRequest fromAccount:self.account acceptInternalAddress:YES acceptReusingAddress:YES addressIsFromPasteboard:NO requiresSpendingAuthenticationPrompt:NO keepAuthenticatedIfErrorAfterAuthentication:NO requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {
+        [self.account.wallet.chain.chainManager.transactionManager confirmPaymentRequest:paymentRequest usingUserBlockchainIdentity:nil fromAccount:self.account acceptInternalAddress:YES acceptReusingAddress:YES addressIsFromPasteboard:NO requiresSpendingAuthenticationPrompt:NO keepAuthenticatedIfErrorAfterAuthentication:NO requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {
         } presentChallenge:^(NSString * _Nonnull challengeTitle, NSString * _Nonnull challengeMessage, NSString * _Nonnull actionTitle, void (^ _Nonnull actionBlock)(void), void (^ _Nonnull cancelBlock)(void)) {
             UIAlertController * alert = [UIAlertController
                                          alertControllerWithTitle:challengeTitle

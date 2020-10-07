@@ -18,5 +18,6 @@
 @dynamic validSignature;
 @dynamic quorum;
 @dynamic merkleBlock;
+@dynamic chainIfLastChainLock;
 
 @end

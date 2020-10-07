@@ -17,22 +17,29 @@
 #import "NSData+Bitcoin.h"
 #import "DSQuorumEntry.h"
 #import "DSMerkleBlock.h"
+#import "DSChain.h"
 
 @implementation DSChainLockEntity
 
-- (instancetype)setAttributesFromChainLock:(DSChainLock *)chainLock
++ (instancetype)chainLockEntityForChainLock:(DSChainLock *)chainLock inContext:(NSManagedObjectContext*)context
 {
-    [self.managedObjectContext performBlockAndWait:^{
-        [DSQuorumEntryEntity setContext:self.managedObjectContext];
-        self.validSignature = chainLock.signatureVerified;
-        self.signature = [NSData dataWithUInt768:chainLock.signature];
-        DSMerkleBlockEntity * merkleBlockEntity = [DSMerkleBlockEntity anyObjectMatching:@"blockHash == %@", uint256_data(chainLock.blockHash)];
-        NSAssert(merkleBlockEntity, @"merkle block must exist");
-        self.merkleBlock = merkleBlockEntity;
-        self.quorum = chainLock.intendedQuorum.matchingQuorumEntryEntity;//the quorum might not yet
-    }];
-    
-    return self;
+    DSMerkleBlockEntity * merkleBlockEntity = [DSMerkleBlockEntity anyObjectInContext:context matching:@"blockHash == %@", uint256_data(chainLock.blockHash)];
+    if (!merkleBlockEntity) {
+        return nil;
+    }
+    DSChainLockEntity * chainLockEntity = [DSChainLockEntity managedObjectInBlockedContext:context];
+    chainLockEntity.validSignature = chainLock.signatureVerified;
+    chainLockEntity.signature = [NSData dataWithUInt768:chainLock.signature];
+    chainLockEntity.merkleBlock = merkleBlockEntity;
+    chainLockEntity.quorum = [chainLock.intendedQuorum matchingQuorumEntryEntityInContext:context];//the quorum might not yet
+    if (chainLock.signatureVerified) {
+        DSChainEntity * chainEntity = [chainLock.intendedQuorum.chain chainEntityInContext:context];
+        if (!chainEntity.lastChainLock || chainEntity.lastChainLock.merkleBlock.height < chainLock.height) {
+            chainEntity.lastChainLock = chainLockEntity;
+        }
+    }
+
+    return chainLockEntity;
 }
 
 - (DSChainLock *)chainLockForChain:(DSChain*)chain

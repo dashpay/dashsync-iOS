@@ -107,7 +107,7 @@
 
 -(void)viewController:(UIViewController*)controller didChooseAccount:(DSAccount*)account {
     self.account = account;
-    self.accountChooserTableViewCell.accountLabel.text = [NSString stringWithFormat:@"%@-%u",self.account.wallet.uniqueID,self.account.accountNumber];
+    self.accountChooserTableViewCell.accountLabel.text = [NSString stringWithFormat:@"%@-%u",self.account.wallet.uniqueIDString,self.account.accountNumber];
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {

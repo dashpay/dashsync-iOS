@@ -25,86 +25,130 @@
 #import "DSChainEntity+CoreDataProperties.h"
 #import "DSPeerManager.h"
 #import "NSManagedObject+Sugar.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "NSString+Dash.h"
 #import "NSData+Bitcoin.h"
+#import "DSChainLockEntity+CoreDataProperties.h"
+#import "DSCompatibilityArrayValueTransformer.h"
+#import "DSCheckpoint.h"
+
+@interface DSChainEntity()
+
+@property(nonatomic,strong) DSChain * cachedChain;
+
+@end
 
 @implementation DSChainEntity
 
+@synthesize cachedChain;
+
 - (instancetype)setAttributesFromChain:(DSChain *)chain {
-    self.standardPort = chain.standardPort;
     self.type = chain.chainType;
-    self.totalMasternodeCount = chain.totalMasternodeCount;
     self.totalGovernanceObjectsCount = chain.totalGovernanceObjectsCount;
     return self;
 }
 
 - (DSChain *)chain {
+    if (self.cachedChain) {
+        return self.cachedChain;
+    }
     __block DSChainType type;
-    __block uint32_t port;
-    __block uint32_t dapiPort;
     __block NSString * devnetIdentifier;
     __block NSData * data;
-    __block uint32_t totalMasternodeCount;
     __block uint32_t totalGovernanceObjectsCount;
     __block UInt256 baseBlockHash;
+    __block UInt256 lastPersistedChainSyncBlockHash;
+    __block UInt256 lastPersistedChainSyncBlockChainWork;
+    __block uint32_t lastPersistedChainSyncBlockHeight;
+    __block NSTimeInterval lastPersistedChainSyncBlockTimestamp;
+    __block DSChainLock * lastChainLock;
+    
+    __block NSArray * lastPersistedChainSyncLocators;
     [self.managedObjectContext performBlockAndWait:^{
-        port = self.standardPort;
-        dapiPort = self.standardDapiPort;
         type = self.type;
         devnetIdentifier = self.devnetIdentifier;
         data = self.checkpoints;
-        totalMasternodeCount = self.totalMasternodeCount;
         totalGovernanceObjectsCount = self.totalGovernanceObjectsCount;
         baseBlockHash = self.baseBlockHash.UInt256;
+        lastPersistedChainSyncBlockHash = self.syncBlockHash.UInt256;
+        lastPersistedChainSyncBlockChainWork = self.syncBlockChainWork.UInt256;
+        lastPersistedChainSyncBlockHeight = self.syncBlockHeight;
+        lastPersistedChainSyncLocators = self.syncLocators;
+        lastPersistedChainSyncBlockTimestamp = self.syncBlockTimestamp;
     }];
+    DSChain * chain = nil;
     if (type == DSChainType_MainNet) {
-        return [DSChain mainnet];
+        chain = [DSChain mainnet];
     } else if (type == DSChainType_TestNet) {
-        return [DSChain testnet];
+        chain = [DSChain testnet];
     } else if (type == DSChainType_DevNet) {
         if ([DSChain devnetWithIdentifier:devnetIdentifier]) {
-            return [DSChain devnetWithIdentifier:devnetIdentifier];
+            chain = [DSChain devnetWithIdentifier:devnetIdentifier];
         } else {
-            NSArray * checkpointArray = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-            return [DSChain setUpDevnetWithIdentifier:devnetIdentifier withCheckpoints:checkpointArray withDefaultPort:port withDefaultDapiPort:dapiPort];
+            NSError * checkpointRetrievalError = nil;
+            NSArray * checkpointArray = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSArray class] fromData:data error:&checkpointRetrievalError];
+            chain = [DSChain recoverKnownDevnetWithIdentifier:devnetIdentifier withCheckpoints:checkpointRetrievalError?[NSArray array]:checkpointArray performSetup:YES];
+        }
+    } else {
+        NSAssert(FALSE, @"Unknown DSChainType");
+    }
+    [self.managedObjectContext performBlockAndWait:^{
+        lastChainLock = [self.lastChainLock chainLockForChain:chain];
+    }];
+    
+    // This fixes an issue after migration (6 -> 7)
+    // After we set syncLocators in DSMerkleBlockEntity6To7MigrationPolicy for some reason
+    // CoreData returns them as a NSData
+    if ([lastPersistedChainSyncLocators isKindOfClass:NSData.class]) {
+        NSError *unarchiveError = nil;
+        if (@available(iOS 11.0, *)) {
+            id object = [NSKeyedUnarchiver unarchivedObjectOfClasses:[NSSet setWithArray:@[[NSArray class],[NSData class]]] fromData:(NSData*)lastPersistedChainSyncLocators error:&unarchiveError];
+            NSAssert(unarchiveError == nil, @"Failed transforming data to object %@", unarchiveError);
+            lastPersistedChainSyncLocators = object;
+        } else {
+            NSAssert(NO, @"not supported");
         }
     }
-    return nil;
+    
+    chain.lastChainLock = lastChainLock;
+    chain.lastPersistedChainSyncLocators = lastPersistedChainSyncLocators;
+    chain.lastPersistedChainSyncBlockHeight = lastPersistedChainSyncBlockHeight;
+    chain.lastPersistedChainSyncBlockHash = lastPersistedChainSyncBlockHash;
+    chain.lastPersistedChainSyncBlockTimestamp = lastPersistedChainSyncBlockTimestamp;
+    self.cachedChain = chain;
+    return chain;
 }
 
-+ (DSChainEntity*)chainEntityForType:(DSChainType)type devnetIdentifier:(NSString*)devnetIdentifier checkpoints:(NSArray*)checkpoints {
-    NSArray * objects = [DSChainEntity objectsMatching:@"type = %d && ((type != %d) || devnetIdentifier = %@)",type,DSChainType_DevNet,devnetIdentifier];
++ (DSChainEntity*)chainEntityForType:(DSChainType)type devnetIdentifier:(NSString*)devnetIdentifier checkpoints:(NSArray*)checkpoints inContext:(NSManagedObjectContext*)context {
+    NSArray * objects = [DSChainEntity objectsForPredicate:[NSPredicate predicateWithFormat:@"type = %d && ((type != %d) || devnetIdentifier = %@)",type,DSChainType_DevNet,devnetIdentifier] inContext:context];
     if (objects.count) {
         DSChainEntity * chainEntity = [objects objectAtIndex:0];
-        NSArray * knownCheckpoints = [NSKeyedUnarchiver unarchiveObjectWithData:[chainEntity checkpoints]];
-        if (checkpoints.count > knownCheckpoints.count) {
-            NSData * archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints];
-            chainEntity.checkpoints = archivedCheckpoints;
+        if (devnetIdentifier) {
+            NSError * error = nil;
+            NSArray * knownCheckpoints = [NSKeyedUnarchiver unarchivedObjectOfClasses:[NSSet setWithArray:@[[NSArray class],[DSCheckpoint class]]] fromData:[chainEntity checkpoints] error:&error];
+            if (error != nil || checkpoints.count > knownCheckpoints.count) {
+                NSData * archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints requiringSecureCoding:YES error:&error];
+                NSAssert(error == nil, @"There should not be an error when decrypting checkpoints");
+                if (!error) {
+                    chainEntity.checkpoints = archivedCheckpoints;
+                }
+            }
+        } else {
+            chainEntity.checkpoints = nil;
         }
         return chainEntity;
     }
     
-    DSChainEntity * chainEntity = [self managedObject];
+    DSChainEntity * chainEntity = [self managedObjectInBlockedContext:context];
     chainEntity.type = type;
     chainEntity.devnetIdentifier = devnetIdentifier;
-    if (checkpoints) {
-        NSData * archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints];
-        chainEntity.checkpoints = archivedCheckpoints;
-    }
-    if (type == DSChainType_MainNet) {
-        chainEntity.standardPort = MAINNET_STANDARD_PORT;
-    } else if (type == DSChainType_TestNet) {
-        chainEntity.standardPort = TESTNET_STANDARD_PORT;
-    } else {
-        chainEntity.standardPort = DEVNET_STANDARD_PORT;
-    }
-    if (type == DSChainType_MainNet) {
-        chainEntity.standardDapiPort = MAINNET_DAPI_STANDARD_PORT;
-    } else if (type == DSChainType_TestNet) {
-        chainEntity.standardDapiPort = TESTNET_DAPI_STANDARD_PORT;
-    } else {
-        chainEntity.standardDapiPort = DEVNET_DAPI_STANDARD_PORT;
+    if (checkpoints && devnetIdentifier) {
+        NSError * error = nil;
+        NSData * archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints requiringSecureCoding:NO error:&error];
+        NSAssert(error == nil, @"There should not be an error when decrypting checkpoints");
+        if (!error) {
+            chainEntity.checkpoints = archivedCheckpoints;
+        }
     }
     return chainEntity;
 }

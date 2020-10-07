@@ -36,7 +36,18 @@
 #import "../crypto/x11/Simd.h"
 #import "../crypto/x11/Skein.h"
 
+#import "../crypto/blake2/blake2.h"
+
 @implementation NSData (Dash)
+
+-(UInt256)blake2s{
+    UInt256 blake2Data;
+    
+    blake2s( &blake2Data, 32, self.bytes, self.length, 0, 0 );
+    
+    return blake2Data;
+}
+
 
 -(UInt512)blake512{
     UInt512 blakeData;

@@ -14,11 +14,19 @@
 #import "DSAccount.h"
 #import "DSWallet.h"
 #import "DSBLSKey.h"
+#import "DSIncomingFundsDerivationPath.h"
+#import "NSMutableData+Dash.h"
+#import "DSAuthenticationKeysDerivationPath.h"
+#import "DSDerivationPathFactory.h"
+#import "DSECDSAKey.h"
+#import "NSData+Encryption.h"
 
 
 @interface DSBIP32Tests : XCTestCase
 
 @property (strong, nonatomic) DSChain *chain;
+@property (strong, nonatomic) DSWallet *wallet;
+@property (strong, nonatomic) NSData *seed;
 
 @end
 
@@ -30,6 +38,13 @@
     
     // the chain to test on
     self.chain = [DSChain mainnet];
+    NSString * seedPhrase = @"upper renew that grow pelican pave subway relief describe enforce suit hedgehog blossom dose swallow";
+    
+    self.seed = [[DSBIP39Mnemonic sharedInstance]
+                     deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
+    
+    self.wallet = [DSWallet standardWalletWithSeedPhrase:seedPhrase
+                                               setCreationDate:0 forChain:self.chain storeSeedPhrase:NO isTransient:YES];
 }
 
 // MARK: - testBIP32BLSSequence
@@ -55,13 +70,13 @@
 -(void)testBLSFingerprintFromSeed {
     uint8_t seed[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     NSData * seedData = [NSData dataWithBytes:seed length:10];
-    DSBLSKey * keyPair = [DSBLSKey blsKeyWithPrivateKeyFromSeed:seedData onChain:[DSChain mainnet]];
+    DSBLSKey * keyPair = [DSBLSKey keyWithSeedData:seedData];
     uint32_t fingerprint =keyPair.publicKeyFingerprint;
     XCTAssertEqual(fingerprint, 0xddad59bb,@"Testing BLS private child public key fingerprint");
     
     uint8_t seed2[] = {1, 50, 6, 244, 24, 199, 1, 25};
     NSData * seedData2 = [NSData dataWithBytes:seed2 length:8];
-    DSBLSKey * keyPair2 = [DSBLSKey blsKeyWithExtendedPrivateKeyFromSeed:seedData2 onChain:[DSChain mainnet]];
+    DSBLSKey * keyPair2 = [DSBLSKey extendedPrivateKeyWithSeedData:seedData2];
     uint32_t fingerprint2 = keyPair2.publicKeyFingerprint;
     XCTAssertEqual(fingerprint2, 0xa4700b27,@"Testing BLS extended private child public key fingerprint");
 }
@@ -93,24 +108,26 @@
 -(void)testBLSDerivation {
     uint8_t seed[] = {1, 50, 6, 244, 24, 199, 1, 25};
     NSData * seedData = [NSData dataWithBytes:seed length:8];
-    DSBLSKey * keyPair = [DSBLSKey blsKeyWithExtendedPrivateKeyFromSeed:seedData onChain:[DSChain mainnet]];
+    DSBLSKey * keyPair = [DSBLSKey extendedPrivateKeyWithSeedData:seedData];
     
     UInt256 chainCode = keyPair.chainCode;
     XCTAssertEqualObjects([NSData dataWithUInt256:chainCode].hexString, @"d8b12555b4cc5578951e4a7c80031e22019cc0dce168b3ed88115311b8feb1e3",@"Testing BLS derivation chain code");
     
-    NSUInteger derivationPathIndexes1[] = {77 + (1 << 31)};
-    DSDerivationPath * derivationPath1 = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes1 length:1 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_BLS reference:DSDerivationPathReference_Unknown onChain:[DSChain mainnet]];
-    DSBLSKey * keyPair1 = [keyPair deriveToPath:derivationPath1];
+    UInt256 derivationPathIndexes1[] = {uint256_from_long(77)};
+    BOOL hardened1[] = {YES};
+    DSDerivationPath * derivationPath1 = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes1 hardened:hardened1 length:1 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSKeyType_BLS reference:DSDerivationPathReference_Unknown onChain:[DSChain mainnet]];
+    DSBLSKey * keyPair1 = [keyPair privateDeriveToPath:derivationPath1.baseIndexPath];
     UInt256 chainCode1 = keyPair1.chainCode;
     XCTAssertEqualObjects([NSData dataWithUInt256:chainCode1].hexString, @"f2c8e4269bb3e54f8179a5c6976d92ca14c3260dd729981e9d15f53049fd698b",@"Testing BLS private child derivation returning chain code");
     XCTAssertEqual(keyPair1.publicKeyFingerprint, 0xa8063dcf,@"Testing BLS extended private child public key fingerprint");
     
-    NSUInteger derivationPathIndexes2[] = {3,17};
-    DSDerivationPath * derivationPath2 = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes2 length:2 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_BLS reference:DSDerivationPathReference_Unknown onChain:[DSChain mainnet]];
-    DSBLSKey * keyPair2 = [keyPair deriveToPath:derivationPath2];
+    UInt256 derivationPathIndexes2[] = {uint256_from_long(3),uint256_from_long(17)};
+    BOOL hardened2[] = {NO,NO};
+    DSDerivationPath * derivationPath2 = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes2 hardened:hardened2 length:2 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSKeyType_BLS reference:DSDerivationPathReference_Unknown onChain:[DSChain mainnet]];
+    DSBLSKey * keyPair2 = [keyPair privateDeriveToPath:derivationPath2.baseIndexPath];
     XCTAssertEqual(keyPair2.publicKeyFingerprint, 0xff26a31f,@"Testing BLS extended private child public key fingerprint");
     
-    DSBLSKey * keyPair3 = [keyPair publicDeriveToPath:derivationPath2];
+    DSBLSKey * keyPair3 = [keyPair publicDeriveToPath:derivationPath2.baseIndexPath];
     XCTAssertEqual(keyPair3.publicKeyFingerprint, 0xff26a31f,@"Testing BLS extended private child public key fingerprint");
 }
 
@@ -147,110 +164,373 @@
 
 // TODO: some of tests below are disabled because extendedPublicKeyForAccount: method is not implemented yet
 
-//- (void)testBIP32SequenceMasterPublicKeyFromSeed
-//{
-//    DSBIP32Sequence *seq = [DSBIP32Sequence new];
-//    NSData *seed = @"000102030405060708090a0b0c0d0e0f".hexToData;
-//    NSData *mpk = [seq extendedPublicKeyForAccount:0 fromSeed:seed purpose:BIP32_PURPOSE];
-//
-//    NSLog(@"000102030405060708090a0b0c0d0e0f/0' pub+chain = %@", [NSString hexWithData:mpk]);
-//
-//    XCTAssertEqualObjects(mpk, @"3442193e"
-//                          "47fdacbd0f1097043b78c63c20c34ef4ed9a111d980047ad16282c7ae6236141"
-//                          "035a784662a4a20a65bf6aab9ae98a6c068a81c52e4b032c0fb5400c706cfccc56".hexToData,
-//                          @"[DSBIP32Sequence extendedPublicKeyForAccount:0 fromSeed:]");
-//}
+- (void)testBIP32SequenceMasterPublicKeyFromSeed
+{
+    DSWallet *wallet = [DSWallet transientWalletWithDerivedKeyData:@"000102030405060708090a0b0c0d0e0f".hexToData forChain:self.chain];
+    
+    DSAccount *account = [wallet accountWithNumber:0];
+    
+    NSData *mpk = account.bip32DerivationPath.extendedPublicKeyData;
 
-//- (void)testBIP32SequencePublicKey
-//{
-//    DSBIP32Sequence *seq = [DSBIP32Sequence new];
-//    NSData *seed = @"000102030405060708090a0b0c0d0e0f".hexToData;
-//    NSData *mpk = [seq extendedPublicKeyForAccount:0 fromSeed:seed purpose:BIP32_PURPOSE];
-//    NSData *pub = [seq publicKey:0 internal:NO masterPublicKey:mpk];
-//
-//    NSLog(@"000102030405060708090a0b0c0d0e0f/0'/0/0 pub = %@", [NSString hexWithData:pub]);
-//
-//    XCTAssertEqualObjects(pub, @"027b6a7dd645507d775215a9035be06700e1ed8c541da9351b4bd14bd50ab61428".hexToData,
-//                          @"[DSBIP32Sequence publicKey:internal:masterPublicKey:]");
-//}
+    NSLog(@"000102030405060708090a0b0c0d0e0f/0' pub+chain = %@", [NSString hexWithData:mpk]);
+
+    XCTAssertEqualObjects(mpk, @"3442193e"
+                          "47fdacbd0f1097043b78c63c20c34ef4ed9a111d980047ad16282c7ae6236141"
+                          "035a784662a4a20a65bf6aab9ae98a6c068a81c52e4b032c0fb5400c706cfccc56".hexToData,
+                          @"[DSBIP32Sequence extendedPublicKeyForAccount:0 fromSeed:]");
+}
+
+- (void)testBIP32SequencePublicKey
+{
+    DSWallet *wallet = [DSWallet transientWalletWithDerivedKeyData:@"000102030405060708090a0b0c0d0e0f".hexToData forChain:self.chain];
+    
+    DSAccount *account = [wallet accountWithNumber:0];
+    
+    NSData *pub = [account.bip32DerivationPath publicKeyDataAtIndex:0 internal:NO];
+
+    NSLog(@"000102030405060708090a0b0c0d0e0f/0'/0/0 pub = %@", [NSString hexWithData:pub]);
+
+    XCTAssertEqualObjects(pub, @"027b6a7dd645507d775215a9035be06700e1ed8c541da9351b4bd14bd50ab61428".hexToData,
+                          @"[DSBIP32Sequence publicKey:internal:masterPublicKey:]");
+}
 
 - (void)testBIP32SequenceSerializedPrivateMasterFromSeed
 {
-//    DSBIP32Sequence *seq = [DSBIP32Sequence new];
     NSString *seedString = @"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f";
     NSData *seed = seedString.hexToData;
 
-    NSString *xprv = [DSDerivationPath serializedPrivateMasterFromSeed:seed forChain:self.chain];
+    NSString *xprv = [DSECDSAKey serializedPrivateMasterFromSeedData:seed forChain:self.chain];
 
     NSLog(@"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f xpriv = %@", xprv);
 
     XCTAssertEqualObjects(xprv,
                           @"xprv9s21ZrQH143K27s8Yy6TJSKmKUxTBuXJr4RDTjJ5Jqq13d9v2VzYymSoM4VodDK7nrQHTruX6TuBsGuEVXoo91GwZnmBcTaqUhgK7HeysNv",
-                          @"[DSBIP32Sequence serializedPrivateMasterFromSeed:forChain:]");
+                          @"[DSBIP32Sequence serializedPrivateMasterFromSeedData:forChain:]");
 }
 
-//- (void)testBIP32SequenceSerializedMasterPublicKey
-//{
-//    //from Mnemonic stay issue box trade stock chaos raccoon candy obey wet refuse carbon silent guide crystal
-//    DSBIP32Sequence *seq = [DSBIP32Sequence new];
-//    NSData *seed = @"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f".hexToData;
-//    NSData *mpk = [seq extendedPublicKeyForAccount:0 fromSeed:seed purpose:BIP32_PURPOSE];
-//    NSString *xpub = [seq serializedMasterPublicKey:mpk depth:BIP32_PURPOSE_ACCOUNT_DEPTH];
-//
-//    NSLog(@"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f xpub = %@", xpub);
-//
-//    XCTAssertEqualObjects(xpub,
-//                          @"xpub6949NHhpyXW7qCtj5eKxLG14JgbFdxUwRdmZ4M51t2Bcj95bCREEDmvdWhC6c31SbobAf5X86SLg76A5WirhTYFCG5F9wkeY6314q4ZtA68",
-//                          @"[DSBIP32Sequence serializedMasterPublicKey:depth:]");
-//
-//    DSBIP39Mnemonic * mnemonic = [DSBIP39Mnemonic new];
-//    seed = [mnemonic deriveKeyFromPhrase:@"upper renew that grow pelican pave subway relief describe enforce suit hedgehog blossom dose swallow" withPassphrase:nil];
-//
-//    XCTAssertEqualObjects(seed.hexString,
-//                          @"467c2dd58bbd29427fb3c5467eee339021a87b21309eeabfe9459d31eeb6eba9b2a1213c12a173118c84fd49e8b4bf9282272d67bf7b7b394b088eab53b438bc",
-//                          @"[DSBIP39Mnemonic deriveKeyFromPhrase:withPassphrase:]");
-//
-//    mpk = [seq extendedPublicKeyForAccount:0 fromSeed:seed purpose:BIP32_PURPOSE];
-//    XCTAssertEqualObjects(mpk.hexString,
-//                          @"c93fa1867e984d7255df4736e7d7d6243026b9744e62374cbb54a0a47cc0fe0c334f876e02cdfeed62990ac98b6932e0080ce2155b4f5c7a8341271e9ee9c90cd87300009c",
-//                          @"[DSBIP32Sequence extendedPublicKeyForAccount:0 fromSeed:purpose:]");
-//
-//    xpub = [seq serializedMasterPublicKey:mpk depth:BIP32_PURPOSE_ACCOUNT_DEPTH];
-//
-//    XCTAssertEqualObjects(xpub,
-//                          @"xpub69NHuRQrRn5GbT7j881uR64arreu3TFmmPAMnTeHdGd68BmAFxssxhzhmyvQoL3svMWTSbymV5FdHoypDDmaqV1C5pvnKbcse1vgrENbau7",
-//                          @"[DSBIP32Sequence serializedMasterPublicKey:depth:]");
-//}
+- (void)testBIP32SequenceSerializedMasterPublicKey
+{
+    //from Mnemonic stay issue box trade stock chaos raccoon candy obey wet refuse carbon silent guide crystal
+    DSWallet *wallet = [DSWallet transientWalletWithDerivedKeyData:@"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f".hexToData forChain:self.chain];
+    
+    DSAccount *account = [wallet accountWithNumber:0];
+    
+    NSString *xpub = [account.bip32DerivationPath serializedExtendedPublicKey];
 
-//- (void)testBIP44SequenceSerializedMasterPublicKey
-//{
-//    //from Mnemonic stay issue box trade stock chaos raccoon candy obey wet refuse carbon silent guide crystal
-//    DSBIP32Sequence *seq = [DSBIP32Sequence new];
-//    DSBIP39Mnemonic * mnemonic = [DSBIP39Mnemonic new];
-//    NSData * seed = [mnemonic deriveKeyFromPhrase:@"upper renew that grow pelican pave subway relief describe enforce suit hedgehog blossom dose swallow" withPassphrase:nil];
-//
-//    XCTAssertEqualObjects(seed.hexString,
-//                          @"467c2dd58bbd29427fb3c5467eee339021a87b21309eeabfe9459d31eeb6eba9b2a1213c12a173118c84fd49e8b4bf9282272d67bf7b7b394b088eab53b438bc",
-//                          @"[DSBIP39Mnemonic deriveKeyFromPhrase:withPassphrase:]");
-//
-//    NSData *mpk = [seq extendedPublicKeyForAccount:0 fromSeed:seed purpose:BIP44_PURPOSE];
-//    XCTAssertEqualObjects(mpk.hexString,
-//                          @"4687e396a07188bd71458a0e90987f92b18a6451e99eb52f0060be450e0b4b3ce3e49f9f033914476cf503c7c2dcf5a0f90d3e943a84e507551bdf84891dd38c0817cca97a",
-//                          @"[DSBIP32Sequence extendedPublicKeyForAccount:0 fromSeed:purpose:]");
-//
-//    NSString *xpub = [seq serializedMasterPublicKey:mpk depth:BIP44_PURPOSE_ACCOUNT_DEPTH];
-//
-//    NSLog(@"467c2dd58bbd29427fb3c5467eee339021a87b21309eeabfe9459d31eeb6eba9b2a1213c12a173118c84fd49e8b4bf9282272d67bf7b7b394b088eab53b438bc xpub = %@", xpub);
-//
-//    XCTAssertEqualObjects(xpub,
-//                          @"xpub6CAqVZYbGiQCTyzzvvueEoBy8M74VWtPywf2F3zpwbS8AugDSSMSLcewpDaRQxVCxtL4kbTbWb1fzWg2R5933ECsxrEtKBA4gkJu8quduHs",
-//                          @"[DSBIP32Sequence serializedMasterPublicKey:depth:]");
-//
-//    NSData * deserializedMpk = [seq deserializedMasterPublicKey:xpub];
-//
-//    XCTAssertEqualObjects(mpk,
-//                          deserializedMpk,
-//                          @"[DSBIP32Sequence deserializedMasterPublicKey:]");
-//}
+    NSLog(@"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f xpub = %@", xpub);
+
+    XCTAssertEqualObjects(xpub,
+                          @"xpub6949NHhpyXW7qCtj5eKxLG14JgbFdxUwRdmZ4M51t2Bcj95bCREEDmvdWhC6c31SbobAf5X86SLg76A5WirhTYFCG5F9wkeY6314q4ZtA68",
+                          @"[DSBIP32Sequence serializedMasterPublicKey:depth:]");
+
+    
+    NSString * seedPhrase = @"upper renew that grow pelican pave subway relief describe enforce suit hedgehog blossom dose swallow";
+    
+    DSBIP39Mnemonic * mnemonic = [DSBIP39Mnemonic new];
+    NSData * seed = [mnemonic deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
+
+    XCTAssertEqualObjects(seed.hexString,
+                          @"467c2dd58bbd29427fb3c5467eee339021a87b21309eeabfe9459d31eeb6eba9b2a1213c12a173118c84fd49e8b4bf9282272d67bf7b7b394b088eab53b438bc",
+                          @"[DSBIP39Mnemonic deriveKeyFromPhrase:withPassphrase:]");
+    
+    
+    DSWallet *wallet2 = [DSWallet standardWalletWithSeedPhrase:seedPhrase
+                                               setCreationDate:0 forChain:self.chain storeSeedPhrase:NO isTransient:YES];
+    
+    DSAccount *account2 = [wallet2 accountWithNumber:0];
+
+    NSData * mpk = [account2.bip32DerivationPath extendedPublicKeyData];
+    XCTAssertEqualObjects(mpk.hexString,
+                          @"c93fa1867e984d7255df4736e7d7d6243026b9744e62374cbb54a0a47cc0fe0c334f876e02cdfeed62990ac98b6932e0080ce2155b4f5c7a8341271e9ee9c90cd87300009c",
+                          @"[DSDerivationPath extendedPublicKey]");
+
+    xpub = [account2.bip32DerivationPath serializedExtendedPublicKey];
+
+    XCTAssertEqualObjects(xpub,
+                          @"xpub69NHuRQrRn5GbT7j881uR64arreu3TFmmPAMnTeHdGd68BmAFxssxhzhmyvQoL3svMWTSbymV5FdHoypDDmaqV1C5pvnKbcse1vgrENbau7",
+                          @"[DSDerivationPath serializedExtendedPublicKey]");
+}
+
+- (void)testBIP44SequenceSerializedMasterPublicKey
+{
+    
+    DSAccount *account2 = [self.wallet accountWithNumber:0];
+    
+    NSData * mpk = [account2.bip44DerivationPath extendedPublicKeyData];
+    XCTAssertEqualObjects(mpk.hexString,
+                          @"4687e396a07188bd71458a0e90987f92b18a6451e99eb52f0060be450e0b4b3ce3e49f9f033914476cf503c7c2dcf5a0f90d3e943a84e507551bdf84891dd38c0817cca97a",
+                          @"[DSDerivationPath extendedPublicKey]");
+    
+    NSString * xpub = [account2.bip44DerivationPath serializedExtendedPublicKey];
+    
+    XCTAssertEqualObjects(xpub,
+                          @"xpub6CAqVZYbGiQCTyzzvvueEoBy8M74VWtPywf2F3zpwbS8AugDSSMSLcewpDaRQxVCxtL4kbTbWb1fzWg2R5933ECsxrEtKBA4gkJu8quduHs",
+                          @"[DSDerivationPath serializedExtendedPublicKey]");
+
+    NSData * deserializedMpk = [DSDerivationPath deserializedExtendedPublicKey:xpub onChain:self.chain];
+
+    XCTAssertEqualObjects(mpk,
+                          deserializedMpk,
+                          @"[DSDerivationPath deserializedMasterPublicKey: onChain:]");
+}
+
+-(void)test31BitDerivation {
+    
+    NSString * seedPhrase = @"upper renew that grow pelican pave subway relief describe enforce suit hedgehog blossom dose swallow";
+    
+    NSData * seed = [[DSBIP39Mnemonic sharedInstance]
+                     deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
+    
+    UInt512 I;
+    
+    HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
+    
+    UInt256 secret = *(UInt256 *)&I, chain2, chain = chain2 = *(UInt256 *)&I.u8[sizeof(UInt256)];
+    
+    DSECDSAKey * parentSecret = [DSECDSAKey keyWithSecret:secret compressed:YES];
+    
+    NSData * parentPublicKey = parentSecret.publicKeyData;
+    
+    uint32_t derivation = 0;
+    
+    CKDpriv(&secret, &chain, derivation);
+    
+    NSData * publicKey = [DSECDSAKey keyWithSecret:secret compressed:YES].publicKeyData;
+    
+    DSECPoint pubKey = *(const DSECPoint *)((const uint8_t *)parentPublicKey.bytes);
+    
+    CKDpub(&pubKey, &chain2, 0);
+    
+    NSData * publicKey2 = [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
+    
+    XCTAssertEqualObjects(uint256_hex(chain),uint256_hex(chain2),@"the bip32 chains must match");
+    
+    XCTAssertEqualObjects(publicKey,publicKey2,@"the public keys must match");
+    
+}
+
+-(void)test31BitCompatibilityModeDerivation {
+    
+    NSString * seedPhrase = @"upper renew that grow pelican pave subway relief describe enforce suit hedgehog blossom dose swallow";
+    
+    NSData * seed = [[DSBIP39Mnemonic sharedInstance]
+                     deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
+    
+    UInt512 I;
+    
+    HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
+    
+    UInt256 secret = *(UInt256 *)&I, chain2, chain = chain2 = *(UInt256 *)&I.u8[sizeof(UInt256)];
+    
+    DSECDSAKey * parentSecret = [DSECDSAKey keyWithSecret:secret compressed:YES];
+    
+    NSData * parentPublicKey = parentSecret.publicKeyData;
+    
+    UInt256 derivation = UINT256_ZERO;
+    
+    CKDpriv256(&secret, &chain, derivation,NO);
+    
+    NSData * publicKey = [DSECDSAKey keyWithSecret:secret compressed:YES].publicKeyData;
+    
+    DSECPoint pubKey = *(const DSECPoint *)((const uint8_t *)parentPublicKey.bytes);
+    
+    CKDpub256(&pubKey, &chain2, derivation,NO);
+    
+    NSData * publicKey2 = [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
+    
+    XCTAssertEqualObjects(uint256_hex(chain),uint256_hex(chain2),@"the bip32 chains must match");
+    
+    XCTAssertEqualObjects(publicKey,publicKey2,@"the public keys must match");
+    
+}
+
+-(void)testECDSAPrivateDerivation {
+    
+    DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentitiesECDSAKeysDerivationPathForWallet:self.wallet];
+    
+    XCTAssertNotNil(derivationPath,@"derivationPath should exist");
+    
+    [derivationPath generateExtendedPublicKeyFromSeed:self.seed storeUnderWalletUniqueId:self.wallet.uniqueIDString storePrivateKey:NO];
+    
+    const NSUInteger indexes1[] = {1,5};
+    const NSUInteger indexes2[] = {4,6};
+    
+    NSIndexPath * indexPath1 = [NSIndexPath indexPathWithIndexes:indexes1 length:2];
+    NSIndexPath * indexPath2 = [NSIndexPath indexPathWithIndexes:indexes2 length:2];
+    
+    DSKey * privateKey1 = [derivationPath privateKeyAtIndexPath:indexPath1 fromSeed:self.seed];
+    DSKey * publicKey1 = [derivationPath publicKeyAtIndexPath:indexPath1];
+    
+    XCTAssertEqualObjects(privateKey1.publicKeyData,publicKey1.publicKeyData,@"the public keys must match");
+    
+    DSKey * privateKey2 = [derivationPath privateKeyAtIndexPath:indexPath2 fromSeed:self.seed];
+    DSKey * publicKey2 = [derivationPath publicKeyAtIndexPath:indexPath2];
+    
+    XCTAssertEqualObjects(privateKey2.publicKeyData,publicKey2.publicKeyData,@"the public keys must match");
+    
+    NSArray * privateKeys = [derivationPath privateKeysAtIndexPaths:@[indexPath1,indexPath2] fromSeed:self.seed];
+    DSKey * privateKey1FromMultiIndex = privateKeys[0];
+    DSKey * privateKey2FromMultiIndex = privateKeys[1];
+    XCTAssertEqualObjects(privateKey1FromMultiIndex.publicKeyData, privateKey1.publicKeyData,@"the public keys must match");
+    XCTAssertEqualObjects(privateKey2FromMultiIndex.publicKeyData, privateKey2.publicKeyData,@"the public keys must match");
+    
+    XCTAssertEqualObjects(privateKey1FromMultiIndex.privateKeyData, privateKey1.privateKeyData,@"the private keys must match");
+    XCTAssertEqualObjects(privateKey2FromMultiIndex.privateKeyData, privateKey2.privateKeyData,@"the private keys must match");
+}
+
+-(void)testBLSPrivateDerivation {
+    
+    DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentitiesBLSKeysDerivationPathForWallet:self.wallet];
+    
+    [derivationPath generateExtendedPublicKeyFromSeed:self.seed storeUnderWalletUniqueId:self.wallet.uniqueIDString storePrivateKey:YES];
+    
+    const NSUInteger indexes1[] = {1,5};
+    const NSUInteger indexes2[] = {4,6};
+    
+    NSIndexPath * indexPath1 = [NSIndexPath indexPathWithIndexes:indexes1 length:2];
+    NSIndexPath * indexPath2 = [NSIndexPath indexPathWithIndexes:indexes2 length:2];
+    
+    DSKey * privateKey1 = [derivationPath privateKeyAtIndexPath:indexPath1];
+    DSKey * publicKey1 = [derivationPath publicKeyAtIndexPath:indexPath1];
+    
+    XCTAssertEqualObjects(privateKey1.publicKeyData,publicKey1.publicKeyData,@"the public keys must match");
+    
+    DSKey * privateKey2 = [derivationPath privateKeyAtIndexPath:indexPath2];
+    DSKey * publicKey2 = [derivationPath publicKeyAtIndexPath:indexPath2];
+    
+    XCTAssertEqualObjects(privateKey2.publicKeyData,publicKey2.publicKeyData,@"the public keys must match");
+    
+    NSArray * privateKeys = [derivationPath privateKeysAtIndexPaths:@[indexPath1,indexPath2] fromSeed:self.seed];
+    DSKey * privateKey1FromMultiIndex = privateKeys[0];
+    DSKey * privateKey2FromMultiIndex = privateKeys[1];
+    XCTAssertEqualObjects(privateKey1FromMultiIndex.publicKeyData, privateKey1.publicKeyData,@"the public keys must match");
+    XCTAssertEqualObjects(privateKey2FromMultiIndex.publicKeyData, privateKey2.publicKeyData,@"the public keys must match");
+    
+    XCTAssertEqualObjects(privateKey1FromMultiIndex.privateKeyData, privateKey1.privateKeyData,@"the private keys must match");
+    XCTAssertEqualObjects(privateKey2FromMultiIndex.privateKeyData, privateKey2.privateKeyData,@"the private keys must match");
+}
+
+-(void)test256BitDerivation {
+    
+    NSString * seedPhrase = @"upper renew that grow pelican pave subway relief describe enforce suit hedgehog blossom dose swallow";
+    
+    NSData * seed = [[DSBIP39Mnemonic sharedInstance]
+                     deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
+    
+    UInt512 I;
+    
+    HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
+    
+    UInt256 secret = *(UInt256 *)&I, chain2, chain = chain2 = *(UInt256 *)&I.u8[sizeof(UInt256)];
+    
+    DSECDSAKey * parentSecret = [DSECDSAKey keyWithSecret:secret compressed:YES];
+    
+    NSData * parentPublicKey = parentSecret.publicKeyData;
+    
+    UInt256 derivation = ((UInt256){.u64 = {
+        5,
+        12,
+        15,
+        1337,
+    }});
+    
+    CKDpriv256(&secret, &chain, derivation,NO);
+    
+    NSData * publicKey = [DSECDSAKey keyWithSecret:secret compressed:YES].publicKeyData;
+    
+    DSECPoint pubKey = *(const DSECPoint *)((const uint8_t *)parentPublicKey.bytes);
+    
+    CKDpub256(&pubKey, &chain2, derivation,NO);
+    
+    NSData * publicKey2 = [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
+    
+    XCTAssertEqualObjects(uint256_hex(chain),uint256_hex(chain2),@"the bip32 chains must match");
+    
+    XCTAssertEqualObjects(publicKey,publicKey2,@"the public keys must match");
+    
+    XCTAssertEqualObjects(uint256_data(derivation),@"05000000000000000c000000000000000f000000000000003905000000000000".hexToData,@"derivation must match the correct value");
+    
+    XCTAssertEqualObjects(publicKey,@"02909fb2c2cd18c8fb99277bc26ec606e381d27c2af6bd87e222304e3baf450bf7".hexToData,@"the public must match the correct value");
+    
+}
+
+-(void)testDashpayDerivation {
+    
+    NSString * seedPhrase = @"upper renew that grow pelican pave subway relief describe enforce suit hedgehog blossom dose swallow";
+    
+    NSData * seed = [[DSBIP39Mnemonic sharedInstance]
+                     deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
+    
+    DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedPhrase
+                                               setCreationDate:0 forChain:self.chain storeSeedPhrase:NO isTransient:YES];
+    
+    DSAccount *account = [wallet accountWithNumber:0];
+    
+    [account.masterContactsDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
+    
+    //NSData * data = [account.masterContactsDerivationPath extendedPublicKey];
+    
+    UInt256 sourceUser1 = @"01".hexToData.SHA256;
+    
+    UInt256 destinationUser2 = @"02".hexToData.SHA256;
+    
+    DSDerivationPath * masterContactsDerivationPath = [account masterContactsDerivationPath];
+    
+    DSIncomingFundsDerivationPath * incomingFundsDerivationPath = [DSIncomingFundsDerivationPath contactBasedDerivationPathWithDestinationBlockchainIdentityUniqueId:destinationUser2 sourceBlockchainIdentityUniqueId:sourceUser1 forAccountNumber:0 onChain:self.chain];
+    
+    incomingFundsDerivationPath.account = account;
+    
+    DSKey * extendedPublicKeyFromMasterContactDerivationPath = [incomingFundsDerivationPath generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
+    
+    DSKey * extendedPublicKeyFromSeed = [incomingFundsDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
+    
+    XCTAssertEqualObjects(extendedPublicKeyFromMasterContactDerivationPath.extendedPublicKeyData,extendedPublicKeyFromSeed.extendedPublicKeyData,@"The extended public keys should be the same");
+    
+    XCTAssertEqualObjects(extendedPublicKeyFromMasterContactDerivationPath.extendedPublicKeyData.hexString, @"fc3f1831172d918b6a248a76fde2d3b74c29ee90fe920d2a104f586fce0a6e6a43eea5000290b890693380c3e489f58b9c59cdeb2a296c3c6d46616cb5b0b9f36b0c57aaed", @"Incorrect value for extended public key");
+}
+
+
+-(void)testBase64ExtendedPublicKeySize {
+    
+    DSAccount *account = [self.wallet accountWithNumber:0];
+    
+    [account.masterContactsDerivationPath generateExtendedPublicKeyFromSeed:self.seed storeUnderWalletUniqueId:nil];
+    
+    //NSData * data = [account.masterContactsDerivationPath extendedPublicKey];
+    
+    UInt256 sourceUser1 = @"01".hexToData.SHA256;
+    
+    UInt256 destinationUser2 = @"02".hexToData.SHA256;
+    
+    DSDerivationPath * masterContactsDerivationPath = [account masterContactsDerivationPath];
+    
+    DSIncomingFundsDerivationPath * incomingFundsDerivationPath = [DSIncomingFundsDerivationPath contactBasedDerivationPathWithDestinationBlockchainIdentityUniqueId:destinationUser2 sourceBlockchainIdentityUniqueId:sourceUser1 forAccountNumber:0 onChain:self.chain];
+    
+    incomingFundsDerivationPath.account = account;
+    
+    DSKey * extendedPublicKeyFromMasterContactDerivationPath = [incomingFundsDerivationPath generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
+    
+    uint8_t bobSeed[10] = {10, 9, 8, 7, 6, 6, 7, 8, 9, 10};
+    NSData *bobSeedData = [NSData dataWithBytes:bobSeed length:10];
+    DSBLSKey *bobKeyPairBLS = [DSBLSKey keyWithSeedData:bobSeedData];
+    
+    DSAuthenticationKeysDerivationPath * derivationPathBLS = [DSAuthenticationKeysDerivationPath blockchainIdentitiesBLSKeysDerivationPathForWallet:self.wallet];
+    DSKey * privateKeyBLS = [derivationPathBLS privateKeyAtIndex:0 fromSeed:self.seed];
+    NSData * encryptedDataBLS = [extendedPublicKeyFromMasterContactDerivationPath.extendedPublicKeyData encryptWithSecretKey:privateKeyBLS forPublicKey:bobKeyPairBLS];
+    
+    NSString * base64DataBLS = encryptedDataBLS.base64String;
+    XCTAssertEqual([base64DataBLS length], 128, @"The size of the base64 should be 128");
+    
+    UInt256 bobSecret = *(UInt256 *)@"fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364140".hexToData.bytes;
+    
+    DSECDSAKey *bobKeyPairECDSA = [DSECDSAKey keyWithSecret:bobSecret compressed:YES];
+    
+    DSAuthenticationKeysDerivationPath * derivationPathECDSA = [DSAuthenticationKeysDerivationPath blockchainIdentitiesECDSAKeysDerivationPathForWallet:self.wallet];
+    DSKey * privateKeyECDSA = [derivationPathECDSA privateKeyAtIndex:0 fromSeed:self.seed];
+    NSData * encryptedDataECDSA = [extendedPublicKeyFromMasterContactDerivationPath.extendedPublicKeyData encryptWithSecretKey:privateKeyECDSA forPublicKey:bobKeyPairECDSA];
+
+    NSString * base64DataECDSA = encryptedDataECDSA.base64String;
+    XCTAssertEqual([base64DataECDSA length], 128, @"The size of the base64 should be 128");
+}
 
 @end

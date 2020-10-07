@@ -8,7 +8,7 @@
 #import "DSVersionManager.h"
 #import "NSString+Bitcoin.h"
 #import "NSData+Bitcoin.h"
-#import "DSWallet.h"
+#import "DSWallet+Protected.h"
 #import "DSAccount.h"
 #import "DSAuthenticationManager+UpdateSecureTime.h"
 #import "DSBIP39Mnemonic.h"
@@ -155,6 +155,7 @@
             }
         }];
     } else {
+        [self clearKeychainWalletOldData];
         completion(YES,NO,NO,NO);
     }
 }
@@ -191,7 +192,7 @@
                         @autoreleasepool {
                             
                             for (DSDerivationPath * derivationPath in derivationPaths) {
-                                success &= !![derivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueID];
+                                success &= !![derivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueIDString];
                             }
                             
                         }

@@ -14,23 +14,24 @@
 #import "DSMerkleBlockEntity+CoreDataClass.h"
 #import "NSMutableData+Dash.h"
 #import "DSQuorumEntry.h"
+#import "DSChain+Protected.h"
 
 @implementation DSQuorumEntryEntity
 
-+(instancetype)quorumEntryEntityFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry {
-    DSMerkleBlockEntity * block = [DSMerkleBlockEntity anyObjectMatching:@"blockHash == %@",uint256_data(potentialQuorumEntry.quorumHash)];
++(instancetype)quorumEntryEntityFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry inContext:(NSManagedObjectContext *)context {
+    DSMerkleBlockEntity * block = [DSMerkleBlockEntity anyObjectInContext:context matching:@"blockHash == %@",uint256_data(potentialQuorumEntry.quorumHash)];
     DSQuorumEntryEntity * quorumEntryEntity = nil;
     if (block) {
         quorumEntryEntity = [[block.usedByQuorums filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"quorumHashData == %@ && llmqType == %@ ",uint256_data(potentialQuorumEntry.quorumHash),@(potentialQuorumEntry.llmqType)]] anyObject];
     } else {
-        quorumEntryEntity = [DSQuorumEntryEntity anyObjectMatching:@"quorumHashData == %@ && llmqType == %@ ",uint256_data(potentialQuorumEntry.quorumHash),@(potentialQuorumEntry.llmqType)];
+        quorumEntryEntity = [DSQuorumEntryEntity anyObjectInContext:context matching:@"quorumHashData == %@ && llmqType == %@ ",uint256_data(potentialQuorumEntry.quorumHash),@(potentialQuorumEntry.llmqType)];
     }
     
     if (!quorumEntryEntity) {
         if (potentialQuorumEntry.saved) { //it was deleted in the meantime, and should be ignored
             return nil;
         } else {
-            quorumEntryEntity = [DSQuorumEntryEntity managedObject];
+            quorumEntryEntity = [DSQuorumEntryEntity managedObjectInBlockedContext:context];
             [quorumEntryEntity setAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
         }
     } else {
@@ -55,7 +56,7 @@
     self.version = potentialQuorumEntry.version;
     self.allCommitmentAggregatedSignature = potentialQuorumEntry.allCommitmentAggregatedSignature;
     self.commitmentHash = potentialQuorumEntry.quorumEntryHash;
-    self.chain = potentialQuorumEntry.chain.chainEntity;
+    self.chain = [potentialQuorumEntry.chain chainEntityInContext:self.managedObjectContext];
     potentialQuorumEntry.saved = TRUE;
 }
 
@@ -116,22 +117,22 @@
     self.commitmentHashData = [NSData dataWithUInt256:commitmentHash];
 }
 
-+ (void)deleteHavingQuorumHashes:(NSArray*)quorumHashes onChain:(DSChainEntity*)chainEntity {
-    NSArray * hashesToDelete = [self objectsMatching:@"(chain == %@) && (quorumHashData IN %@)",chainEntity,quorumHashes];
++ (void)deleteHavingQuorumHashes:(NSArray*)quorumHashes onChainEntity:(DSChainEntity*)chainEntity {
+    NSArray * hashesToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@) && (quorumHashData IN %@)",chainEntity,quorumHashes];
     for (DSQuorumEntryEntity * quorumEntryEntity in hashesToDelete) {
         [chainEntity.managedObjectContext deleteObject:quorumEntryEntity];
     }
 }
 
-+ (void)deleteAllOnChain:(DSChainEntity*)chainEntity {
-    NSArray * hashesToDelete = [self objectsMatching:@"(chain == %@)",chainEntity];
++ (void)deleteAllOnChainEntity:(DSChainEntity*)chainEntity {
+    NSArray * hashesToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@)",chainEntity];
     for (DSQuorumEntryEntity * quorumEntryEntity in hashesToDelete) {
         [chainEntity.managedObjectContext deleteObject:quorumEntryEntity];
     }
 }
 
-+ (DSQuorumEntryEntity*)quorumEntryForHash:(NSData*)quorumEntryHash onChain:(DSChainEntity*)chainEntity {
-    NSArray * objects = [self objectsMatching:@"(chain == %@) && (quorumEntryHash == %@)",chainEntity,quorumEntryHash];
++ (DSQuorumEntryEntity*)quorumEntryForHash:(NSData*)quorumEntryHash onChainEntity:(DSChainEntity*)chainEntity {
+    NSArray * objects = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@) && (quorumEntryHash == %@)",chainEntity,quorumEntryHash];
     return [objects firstObject];
 }
 

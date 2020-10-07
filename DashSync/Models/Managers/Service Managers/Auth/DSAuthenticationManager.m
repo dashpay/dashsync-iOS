@@ -28,7 +28,7 @@
 #import "DSEventManager.h"
 #import "DSAccount.h"
 #import "DSWallet.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "DSChainsManager.h"
 #import "DSPriceManager.h"
 #import "DSDerivationPath.h"
@@ -45,6 +45,7 @@
 #import "DSSetPinViewController.h"
 #import "DSRecoveryViewController.h"
 #import "DSBiometricsAuthenticator.h"
+#import "DSCheckpoint.h"
 
 static NSString *sanitizeString(NSString *s)
 {
@@ -133,7 +134,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     } else {
         //rare case
         NSTimeInterval lastCheckpointTime = [[DSChainsManager sharedInstance] mainnetManager].chain.checkpoints.lastObject.timestamp;
-        NSTimeInterval lastBlockTime = [[DSChainsManager sharedInstance] mainnetManager].chain.lastBlock.timestamp; //this will either be 0 or a real timestamp, both are fine for next check
+        NSTimeInterval lastBlockTime = [[DSChainsManager sharedInstance] mainnetManager].chain.lastSyncBlock.timestamp; //this will either be 0 or a real timestamp, both are fine for next check
         if (serverTime > lastCheckpointTime && serverTime > lastBlockTime) {
             //there was definitely an issue with serverTime at some point.
             [self updateSecureTime:serverTime];
@@ -454,7 +455,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 
 - (void)seedWithPrompt:(NSString * _Nullable)authprompt forWallet:(DSWallet*)wallet forAmount:(uint64_t)amount forceAuthentication:(BOOL)forceAuthentication completion:(_Nullable SeedCompletionBlock)completion {
     NSParameterAssert(wallet);
-    
+    NSAssert([NSThread isMainThread], @"This should only be called on main thread");
     if (forceAuthentication) {
         [wallet seedWithPrompt:authprompt forAmount:amount completion:completion];
     } else {
@@ -575,9 +576,10 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
                                          [[DSVersionManager sharedInstance] clearKeychainWalletOldData];
                                          [[DashSync sharedSyncController] stopSyncAllChains];
                                          for (DSChain * chain in [[DSChainsManager sharedInstance] chains]) {
-                                             [[DashSync sharedSyncController] wipeMasternodeDataForChain:chain];
-                                             [[DashSync sharedSyncController] wipeBlockchainDataForChain:chain];
-                                             [[DashSync sharedSyncController] wipeSporkDataForChain:chain];
+                                             NSManagedObjectContext * context = [NSManagedObjectContext chainContext];
+                                             [[DashSync sharedSyncController] wipeMasternodeDataForChain:chain inContext:context];
+                                             [[DashSync sharedSyncController] wipeBlockchainDataForChain:chain inContext:context];
+                                             [[DashSync sharedSyncController] wipeSporkDataForChain:chain inContext:context];
                                              [chain unregisterAllWallets];
                                          }
                                          [self removePin];
@@ -866,7 +868,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
             //no longer locked out, give the user a try
             attemptsMessage = [NSString localizedStringWithFormat:
                                DSLocalizedString(@"%ld attempt(s) remaining", @"#bc-ignore!"),
-                               MAX_FAIL_COUNT - failCount];
+                               (long)(MAX_FAIL_COUNT - failCount)];
         }
     }
 

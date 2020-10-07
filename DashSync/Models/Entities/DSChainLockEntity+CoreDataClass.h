@@ -9,14 +9,14 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSMerkleBlockEntity, DSQuorumEntryEntity, DSChain, DSChainLock;
+@class DSMerkleBlockEntity, DSQuorumEntryEntity, DSChain, DSChainLock, DSChainEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSChainLockEntity : NSManagedObject
 
 - (DSChainLock *)chainLockForChain:(DSChain*)chain;
-- (instancetype)setAttributesFromChainLock:(DSChainLock *)chainLock;
++ (instancetype)chainLockEntityForChainLock:(DSChainLock *)chainLock inContext:(NSManagedObjectContext*)context;
 
 @end
 

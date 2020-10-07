@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,assign) uint32_t quorumCommitmentHeight;
 @property (nonatomic,assign) uint16_t llmqType;
 @property (nonatomic,assign) uint16_t quorumCommitmentTransactionVersion;
+@property (nonatomic,assign) uint16_t qfCommitVersion;
 @property (nonatomic,assign) UInt256 quorumHash;
 @property (nonatomic,assign) uint16_t signersCount;
 @property (nonatomic,strong) NSData * signersBitset;

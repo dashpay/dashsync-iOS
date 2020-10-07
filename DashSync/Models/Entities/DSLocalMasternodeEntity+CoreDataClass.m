@@ -54,42 +54,42 @@
 
 -(void)setAttributesFromLocalMasternode:(DSLocalMasternode*)localMasternode {
     self.votingKeysIndex = localMasternode.votingWalletIndex;
-    self.votingKeysWalletUniqueId = localMasternode.votingKeysWallet.uniqueID;
-    self.ownerKeysWalletUniqueId = localMasternode.ownerKeysWallet.uniqueID;
+    self.votingKeysWalletUniqueId = localMasternode.votingKeysWallet.uniqueIDString;
+    self.ownerKeysWalletUniqueId = localMasternode.ownerKeysWallet.uniqueIDString;
     self.ownerKeysIndex = localMasternode.ownerWalletIndex;
     self.operatorKeysIndex = localMasternode.operatorWalletIndex;
-    self.operatorKeysWalletUniqueId = localMasternode.operatorKeysWallet.uniqueID;
-    self.holdingKeysWalletUniqueId = localMasternode.holdingKeysWallet.uniqueID;
+    self.operatorKeysWalletUniqueId = localMasternode.operatorKeysWallet.uniqueIDString;
+    self.holdingKeysWalletUniqueId = localMasternode.holdingKeysWallet.uniqueIDString;
     self.holdingKeysIndex = localMasternode.holdingWalletIndex;
-    DSProviderRegistrationTransactionEntity * providerRegistrationTransactionEntity = [DSProviderRegistrationTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(localMasternode.providerRegistrationTransaction.txHash)];
+    DSProviderRegistrationTransactionEntity * providerRegistrationTransactionEntity = [DSProviderRegistrationTransactionEntity anyObjectInContext:self.managedObjectContext matching:@"transactionHash.txHash == %@", uint256_data(localMasternode.providerRegistrationTransaction.txHash)];
     self.providerRegistrationTransaction = providerRegistrationTransactionEntity;
-    DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity anyObjectMatching:@"providerRegistrationTransactionHash == %@", uint256_data(localMasternode.providerRegistrationTransaction.txHash)];
+    DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity anyObjectInContext:self.managedObjectContext matching:@"providerRegistrationTransactionHash == %@", uint256_data(localMasternode.providerRegistrationTransaction.txHash)];
     self.simplifiedMasternodeEntry = simplifiedMasternodeEntryEntity;
     
     for (DSProviderUpdateServiceTransaction * providerUpdateServiceTransaction in localMasternode.providerUpdateServiceTransactions) {
-        DSProviderUpdateServiceTransactionEntity * providerUpdateServiceTransactionEntity = [DSProviderUpdateServiceTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(providerUpdateServiceTransaction.txHash)];
+        DSProviderUpdateServiceTransactionEntity * providerUpdateServiceTransactionEntity = [DSProviderUpdateServiceTransactionEntity anyObjectInContext:self.managedObjectContext matching:@"transactionHash.txHash == %@", uint256_data(providerUpdateServiceTransaction.txHash)];
         if (![self.providerUpdateServiceTransactions containsObject:providerUpdateServiceTransactionEntity]) {
             [self addProviderUpdateServiceTransactionsObject:providerUpdateServiceTransactionEntity];
         }
     }
     
     for (DSProviderUpdateRegistrarTransaction * providerUpdateRegistrarTransaction in localMasternode.providerUpdateRegistrarTransactions) {
-        DSProviderUpdateRegistrarTransactionEntity * providerUpdateRegistrarTransactionEntity = [DSProviderUpdateRegistrarTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(providerUpdateRegistrarTransaction.txHash)];
+        DSProviderUpdateRegistrarTransactionEntity * providerUpdateRegistrarTransactionEntity = [DSProviderUpdateRegistrarTransactionEntity anyObjectInContext:self.managedObjectContext matching:@"transactionHash.txHash == %@", uint256_data(providerUpdateRegistrarTransaction.txHash)];
         if (![self.providerUpdateRegistrarTransactions containsObject:providerUpdateRegistrarTransactionEntity]) {
             [self addProviderUpdateRegistrarTransactionsObject:providerUpdateRegistrarTransactionEntity];
         }
     }
     
     for (DSProviderUpdateRevocationTransaction * providerUpdateRevocationTransaction in localMasternode.providerUpdateRevocationTransactions) {
-        DSProviderUpdateRevocationTransactionEntity * providerUpdateRevocationTransactionEntity = [DSProviderUpdateRevocationTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(providerUpdateRevocationTransaction.txHash)];
+        DSProviderUpdateRevocationTransactionEntity * providerUpdateRevocationTransactionEntity = [DSProviderUpdateRevocationTransactionEntity anyObjectInContext:self.managedObjectContext matching:@"transactionHash.txHash == %@", uint256_data(providerUpdateRevocationTransaction.txHash)];
         if (![self.providerUpdateRevocationTransactions containsObject:providerUpdateRevocationTransactionEntity]) {
             [self addProviderUpdateRevocationTransactionsObject:providerUpdateRevocationTransactionEntity];
         }
     }
 }
 
-+(NSDictionary<NSData*,DSLocalMasternodeEntity*>*)findLocalMasternodesAndIndexForProviderRegistrationHashes:(NSSet<NSData*>*)providerRegistrationHashes {
-    NSArray * localMasternodeEntities = [self objectsMatching:@"(providerRegistrationTransaction.transactionHash.txHash IN %@)",providerRegistrationHashes];
++(NSDictionary<NSData*,DSLocalMasternodeEntity*>*)findLocalMasternodesAndIndexForProviderRegistrationHashes:(NSSet<NSData*>*)providerRegistrationHashes inContext:(NSManagedObjectContext*)context {
+    NSArray * localMasternodeEntities = [self objectsInContext:context matching:@"(providerRegistrationTransaction.transactionHash.txHash IN %@)",providerRegistrationHashes];
     NSMutableArray * indexedEntities = [NSMutableArray array];
     for (DSLocalMasternodeEntity * localMasternodeEntity in localMasternodeEntities) {
         [indexedEntities addObject:localMasternodeEntity.providerRegistrationTransaction.transactionHash.txHash];
@@ -97,8 +97,8 @@
     return [NSDictionary dictionaryWithObjects:localMasternodeEntities forKeys:indexedEntities];
 }
 
-+ (void)deleteAllOnChain:(DSChainEntity*)chainEntity {
-    NSArray * localMasternodeEntities = [self objectsMatching:@"(providerRegistrationTransaction.transactionHash.chain == %@)",chainEntity];
++ (void)deleteAllOnChainEntity:(DSChainEntity*)chainEntity {
+    NSArray * localMasternodeEntities = [self objectsInContext:chainEntity.managedObjectContext matching:@"(providerRegistrationTransaction.transactionHash.chain == %@)",chainEntity];
     for (DSLocalMasternodeEntity * localMasternodeEntity in localMasternodeEntities) {
         [chainEntity.managedObjectContext deleteObject:localMasternodeEntity];
     }

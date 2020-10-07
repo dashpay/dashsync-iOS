@@ -41,12 +41,12 @@
 #pragma mark - Automation KVO
 
 -(NSManagedObjectContext*)managedObjectContext {
-    if (!_managedObjectContext) self.managedObjectContext = [NSManagedObject context];
+    if (!_managedObjectContext) self.managedObjectContext = [NSManagedObjectContext viewContext];
     return _managedObjectContext;
 }
 
 -(NSPredicate*)searchPredicate {
-    DSDerivationPathEntity * entity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self.derivationPath];
+    DSDerivationPathEntity * entity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self.derivationPath inContext:self.managedObjectContext];
     return [NSPredicate predicateWithFormat:@"(derivationPath == %@)",entity];
 }
 
@@ -134,7 +134,7 @@
     cell.addressLabel.text = addressEntity.address;
     cell.derivationPathLabel.text = [NSString stringWithFormat:@"%@/%u",self.derivationPath.stringRepresentation,addressEntity.index];
     cell.publicKeyLabel.text = [self.derivationPath publicKeyDataAtIndex:addressEntity.index].hexString;
-    cell.privateKeyLabel.text = [[self.derivationPath privateKeyAtIndex:addressEntity.index fromSeed:self.seed] privateKeyStringForChain:self.derivationPath.chain];
+    cell.privateKeyLabel.text = [[self.derivationPath privateKeyAtIndex:addressEntity.index fromSeed:self.seed] serializedPrivateKeyForChain:self.derivationPath.chain];
 }
 
 

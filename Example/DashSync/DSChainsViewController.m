@@ -128,6 +128,9 @@
     if ([segue.identifier isEqualToString:@"ChainDetailsSegue"]) {
         DSSyncViewController * syncViewController = (DSSyncViewController *)segue.destinationViewController;
         DSChain * chain = [self chainForIndex:index];
+        [[DSVersionManager sharedInstance] upgradeExtendedKeysForWallets:chain.wallets withMessage:@"Upgrade keys" withCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
+            
+        }];
         syncViewController.chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
         syncViewController.title = chain.name;
     } else if ([segue.identifier isEqualToString:@"AddDevnetSegue"]) {

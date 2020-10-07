@@ -14,9 +14,9 @@
 
 #define TRANSACTION_CELL_HEIGHT 75
 
-static NSString *dateFormat(NSString *template)
+NSString *dateFormat(NSString *_template)
 {
-    NSString *format = [NSDateFormatter dateFormatFromTemplate:template options:0 locale:[NSLocale currentLocale]];
+    NSString *format = [NSDateFormatter dateFormatFromTemplate:_template options:0 locale:[NSLocale currentLocale]];
     
     format = [format stringByReplacingOccurrencesOfString:@", " withString:@" "];
     format = [format stringByReplacingOccurrencesOfString:@" a" withString:@"a"];
@@ -73,9 +73,9 @@ static NSString *dateFormat(NSString *template)
     
     if (! self.syncStartedObserver) {
         self.syncStartedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncStartedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainManagerSyncStartedNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
-                                                               if ([self.chainManager.chain timestampForBlockHeight:self.chainManager.chain.lastBlockHeight] + WEEK_TIME_INTERVAL <
+                                                               if ([self.chainManager.chain timestampForBlockHeight:self.chainManager.chain.lastSyncBlockHeight] + WEEK_TIME_INTERVAL <
                                                                    [NSDate timeIntervalSince1970] &&
                                                                    self.chainManager.chain.earliestWalletCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSince1970]) {
                                                                    self.navigationItem.titleView = nil;
@@ -86,7 +86,7 @@ static NSString *dateFormat(NSString *template)
     
     if (! self.syncFinishedObserver) {
         self.syncFinishedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFinishedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainManagerSyncFinishedNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
                                                                if (! authenticationManager.didAuthenticate) self.navigationItem.titleView = self.logo;
                                                                else [self updateTitleView];
@@ -95,7 +95,7 @@ static NSString *dateFormat(NSString *template)
     
     if (! self.syncFailedObserver) {
         self.syncFailedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFailedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainManagerSyncFailedNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
                                                                if (! authenticationManager.didAuthenticate) self.navigationItem.titleView = self.logo;
                                                                [self updateTitleView];
@@ -164,7 +164,7 @@ static NSString *dateFormat(NSString *template)
 - (uint32_t)blockHeight
 {
     static uint32_t height = 0;
-    uint32_t h = self.chainManager.chain.lastBlockHeight;
+    uint32_t h = self.chainManager.chain.lastSyncBlockHeight;
     
     if (h > height) height = h;
     return height;
@@ -173,12 +173,12 @@ static NSString *dateFormat(NSString *template)
 #pragma mark - Automation KVO
 
 -(NSManagedObjectContext*)managedObjectContext {
-    if (!_managedObjectContext) self.managedObjectContext = [NSManagedObject context];
+    if (!_managedObjectContext) self.managedObjectContext = [NSManagedObjectContext viewContext];
     return _managedObjectContext;
 }
 
 -(NSPredicate*)searchPredicate {
-    return [NSPredicate predicateWithFormat:@"transactionHash.chain = %@ && ((ANY outputs.account != nil) || (ANY inputs.prevOutput.account != nil))",self.chainManager.chain.chainEntity];
+    return [NSPredicate predicateWithFormat:@"transactionHash.chain = %@ && ((ANY outputs.account != nil) || (ANY inputs.prevOutput.account != nil))",[self.chainManager.chain chainEntityInContext:self.managedObjectContext]];
 }
 
 - (NSFetchedResultsController *)fetchedResultsController
@@ -310,12 +310,11 @@ static NSString *dateFormat(NSString *template)
     DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
     DSTransactionEntity * transactionEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    NSLog(@"%u",transactionEntity.transactionHash.blockHeight);
     DSTransaction *tx = [transactionEntity transactionForChain:self.chainManager.chain];
     [self.transactions setObject:tx forKey:uint256_data(tx.txHash)];
     DSAccount * account = [self.chainManager.chain firstAccountThatCanContainTransaction:tx];
-    uint64_t received = [account amountReceivedFromTransaction:tx],
-    sent = [account amountSentByTransaction:tx],
+    uint64_t received = [tx.chain amountReceivedFromTransaction:tx],
+    sent = [tx.chain amountSentByTransaction:tx],
     balance = [account balanceAfterTransaction:tx];
     uint32_t blockHeight = self.blockHeight;
     uint32_t confirms = (tx.blockHeight > blockHeight) ? 0 : (blockHeight - tx.blockHeight) + 1;

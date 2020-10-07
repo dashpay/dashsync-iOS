@@ -5,30 +5,22 @@
 //  Created by Sam Westrich on 11/3/18.
 //
 
-#import "DSBLSKey.h"
+#import "DSBLSKey+Private.h"
 #import "NSMutableData+Dash.h"
 #import "DSDerivationPath.h"
 #import "NSIndexPath+Dash.h"
 #import "DSChain.h"
 #import "NSString+Dash.h"
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wconversion"
-#pragma clang diagnostic ignored "-Wunused-function"
-#pragma clang diagnostic ignored "-Wconditional-uninitialized"
-#pragma clang diagnostic ignored "-Wdocumentation"
-#pragma clang diagnostic ignored "-Wmacro-redefined"
-#import <bls-signatures-pod/bls.hpp>
-#pragma clang diagnostic pop
+#import "DSKey+Protected.h"
+#import "NSData+Encryption.h"
+#import "NSData+Bitcoin.h"
+#import <CommonCrypto/CommonCryptor.h>
 
 @interface DSBLSKey ()
 
 @property (nonatomic, assign) UInt256 secretKey;
 @property (nonatomic, assign) UInt384 publicKey;
 @property (nonatomic, assign) UInt256 chainCode;
-@property (nonatomic, strong) DSChain * chain;
-@property (nonatomic, strong) NSData * extendedPrivateKeyData;
-@property (nonatomic, strong) NSData * extendedPublicKeyData;
 
 @end
 
@@ -58,15 +50,14 @@
     return [self publicDerive:pkChild indexes:[indexPath indexPathByRemovingFirstIndex]];
 }
 
-
-+ (nullable instancetype)blsKeyWithPrivateKeyFromSeed:(NSData *)seed onChain:(DSChain*)chain {
-    return [[DSBLSKey alloc] initWithPrivateKeyFromSeed:seed onChain:chain];
++ (nullable instancetype)keyWithSeedData:(NSData *)seedData {
+    return [[DSBLSKey alloc] initWithSeedData:seedData];
 }
 
-- (nullable instancetype)initWithPrivateKeyFromSeed:(NSData *)seed onChain:(DSChain*)chain {
+- (nullable instancetype)initWithSeedData:(NSData *)seedData {
     if (!(self = [super init])) return nil;
     
-    bls::PrivateKey blsPrivateKey = bls::PrivateKey::FromSeed((uint8_t *)seed.bytes, seed.length);
+    bls::PrivateKey blsPrivateKey = bls::PrivateKey::FromSeed((uint8_t *)seedData.bytes, seedData.length);
     bls::PublicKey blsPublicKey = blsPrivateKey.GetPublicKey();
     UInt256 secret = UINT256_ZERO;
     blsPrivateKey.Serialize(secret.u8);
@@ -75,41 +66,38 @@
     blsPublicKey.Serialize(publicKey.u8);
     self.publicKey = publicKey;
     
-    self.chain = chain;
-    
     return self;
 }
 
-+ (nullable instancetype)blsKeyWithExtendedPrivateKeyFromSeed:(NSData *)seed onChain:(DSChain*)chain {
-    return [[DSBLSKey alloc] initWithExtendedPrivateKeyFromSeed:seed onChain:chain];
++ (nullable instancetype)extendedPrivateKeyWithSeedData:(NSData *)seed {
+    return [[DSBLSKey alloc] initWithExtendedPrivateKeyWithSeedData:seed];
 }
 
-+ (nullable instancetype)blsKeyWithPublicKey:(UInt384)publicKey onChain:(DSChain*)chain {
-    return [[DSBLSKey alloc] initWithPublicKey:publicKey onChain:chain];
++ (nullable instancetype)keyWithPublicKey:(UInt384)publicKey {
+    return [[DSBLSKey alloc] initWithPublicKey:publicKey];
 }
 
-+ (nullable instancetype)blsKeyByAggregatingPublicKeys:(NSArray<DSBLSKey*>*)publicKeys onChain:(DSChain*)chain {
++ (nullable instancetype)keyByAggregatingPublicKeys:(NSArray<DSBLSKey*>*)publicKeys {
     bls::PublicKey blsPublicKey = [DSBLSKey aggregatePublicKeys:publicKeys];
     
     UInt384 publicKey = UINT384_ZERO;
     blsPublicKey.Serialize(publicKey.u8);
     
-    return [[DSBLSKey alloc] initWithPublicKey:publicKey onChain:chain];
+    return [[DSBLSKey alloc] initWithPublicKey:publicKey];
 }
 
-- (nullable instancetype)initWithPublicKey:(UInt384)publicKey onChain:(DSChain*)chain {
+- (nullable instancetype)initWithPublicKey:(UInt384)publicKey {
     if (!(self = [super init])) return nil;
     self.publicKey = publicKey;
-    self.chain = chain;
     
     return self;
 }
 
-+ (nullable instancetype)blsKeyWithPrivateKey:(UInt256)secretKey onChain:(DSChain*)chain {
-    return [[DSBLSKey alloc] initWithPrivateKey:secretKey onChain:chain];
++ (nullable instancetype)keyWithPrivateKey:(UInt256)secretKey {
+    return [[DSBLSKey alloc] initWithPrivateKey:secretKey];
 }
 
-- (nullable instancetype)initWithPrivateKey:(UInt256)secretKey onChain:(DSChain*)chain {
+- (nullable instancetype)initWithPrivateKey:(UInt256)secretKey {
     if (!(self = [super init])) return nil;
     self.secretKey = secretKey;
     bls::PrivateKey blsPrivateKey = bls::PrivateKey::FromBytes((const uint8_t *)secretKey.u8);
@@ -117,28 +105,37 @@
     UInt384 publicKey = UINT384_ZERO;
     blsPublicKey.Serialize(publicKey.u8);
     self.publicKey = publicKey;
-    self.chain = chain;
     
     return self;
 }
 
-+ (nullable instancetype)blsKeyWithExtendedPublicKeyData:(NSData*)extendedPublicKey onChain:(DSChain*)chain {
-    return [[DSBLSKey alloc] initWithExtendedPublicKeyData:extendedPublicKey onChain:chain];
-}
-- (nullable instancetype)initWithExtendedPublicKeyData:(NSData*)extendedPublicKey onChain:(DSChain*)chain {
-    bls::ExtendedPublicKey extendedPublicBLSKey = bls::ExtendedPublicKey::FromBytes((const uint8_t *)extendedPublicKey.bytes);
-    return [self initWithExtendedBLSPublicKey:extendedPublicBLSKey onChain:chain];
++ (nullable instancetype)keyWithExtendedPublicKeyData:(NSData*)extendedPublicKey {
+    return [[DSBLSKey alloc] initWithExtendedPublicKeyData:extendedPublicKey];
 }
 
-- (nullable instancetype)initWithExtendedPrivateKeyFromSeed:(NSData *)seed onChain:(DSChain*)chain {
++ (nullable instancetype)keyWithExtendedPrivateKeyData:(NSData*)extendedPrivateKey {
+    return [[DSBLSKey alloc] initWithExtendedPrivateKeyData:extendedPrivateKey];
+}
+
+- (nullable instancetype)initWithExtendedPublicKeyData:(NSData*)extendedPublicKey {
+    bls::ExtendedPublicKey extendedPublicBLSKey = bls::ExtendedPublicKey::FromBytes((const uint8_t *)extendedPublicKey.bytes);
+    return [self initWithBLSExtendedPublicKey:extendedPublicBLSKey];
+}
+
+- (nullable instancetype)initWithExtendedPrivateKeyData:(NSData*)extendedPrivateKey {
+    bls::ExtendedPrivateKey extendedPrivateBLSKey = bls::ExtendedPrivateKey::FromBytes((const uint8_t *)extendedPrivateKey.bytes);
+    return [self initWithBLSExtendedPrivateKey:extendedPrivateBLSKey];
+}
+
+- (nullable instancetype)initWithExtendedPrivateKeyWithSeedData:(NSData *)seed {
     if (!(self = [super init])) return nil;
     
     bls::ExtendedPrivateKey blsExtendedPrivateKey = bls::ExtendedPrivateKey::FromSeed((uint8_t *)seed.bytes, seed.length);
     
-    return [self initWithExtendedPrivateKey:blsExtendedPrivateKey onChain:chain];
+    return [self initWithBLSExtendedPrivateKey:blsExtendedPrivateKey];
 }
 
-- (nullable instancetype)initWithExtendedPrivateKey:(bls::ExtendedPrivateKey)blsExtendedPrivateKey onChain:(DSChain*)chain {
+- (nullable instancetype)initWithBLSExtendedPrivateKey:(bls::ExtendedPrivateKey)blsExtendedPrivateKey {
     if (!self || !(self = [super init])) return nil;
     
     uint8_t blsExtendedPrivateKeyBytes[bls::ExtendedPrivateKey::EXTENDED_PRIVATE_KEY_SIZE];
@@ -169,12 +166,10 @@
     blsPublicKey.Serialize(publicKey.u8);
     self.publicKey = publicKey;
     
-    self.chain = chain;
-    
     return self;
 }
 
-- (nullable instancetype)initWithExtendedBLSPublicKey:(bls::ExtendedPublicKey)blsExtendedPublicKey onChain:(DSChain*)chain {
+- (nullable instancetype)initWithBLSExtendedPublicKey:(bls::ExtendedPublicKey)blsExtendedPublicKey {
     if (!self || !(self = [super init])) return nil;
     
     uint8_t blsExtendedPublicKeyBytes[bls::ExtendedPublicKey::EXTENDED_PUBLIC_KEY_SIZE];
@@ -196,9 +191,25 @@
     blsPublicKey.Serialize(publicKey.u8);
     self.publicKey = publicKey;
     
-    self.chain = chain;
-    
     return self;
+}
+
+- (nullable instancetype)initWithDHKeyExchangeWithPublicKey:(DSKey*)publicKey forPrivateKey:(DSKey*)privateKey {
+    NSParameterAssert(publicKey);
+    NSParameterAssert(privateKey);
+    NSAssert([publicKey isKindOfClass:[DSBLSKey class]], @"The public key needs to be a BLS key");
+    NSAssert([privateKey isKindOfClass:[DSBLSKey class]], @"The privateKey key needs to be a BLS key");
+    if (! (self = [self init])) return nil;
+    
+    const bls::PublicKey blsPublicKey = ((DSBLSKey *)publicKey).blsPublicKey;
+    const bls::PrivateKey blsPrivateKey = ((DSBLSKey *)privateKey).blsPrivateKey;
+    
+    const bls::PublicKey dhBLSPublicKey = bls::BLS::DHKeyExchange(blsPrivateKey, blsPublicKey);
+    
+    UInt384 dhPublicKey = UINT384_ZERO;
+    dhBLSPublicKey.Serialize(dhPublicKey.u8);
+    
+    return [self initWithPublicKey:dhPublicKey];
 }
 
 -(uint32_t)publicKeyFingerprint {
@@ -210,7 +221,7 @@
     return [NSData dataWithUInt384:self.publicKey];
 }
 
--(NSData*)secretKeyData {
+-(NSData*)privateKeyData {
     if (uint256_is_zero(self.secretKey)) return nil;
     return [NSData dataWithUInt256:self.secretKey];
 }
@@ -220,7 +231,7 @@
     return [NSData dataWithUInt256:self.secretKey].hexString;
 }
 
-- (NSString *)privateKeyStringForChain:(DSChain*)chain
+- (NSString *)serializedPrivateKeyForChain:(DSChain*)chain
 {
     if (uint256_is_zero(self.secretKey)) return nil;
     
@@ -238,12 +249,24 @@
     return [NSString base58checkWithData:d];
 }
 
+-(DSKeyType)keyType {
+    return DSKeyType_BLS;
+}
+
+- (void)forgetPrivateKey {
+    self.secretKey = UINT256_ZERO;
+}
+
 // MARK: - Derivation
 
--(DSBLSKey*)deriveToPath:(NSIndexPath*)derivationPath {
+- (instancetype)privateDeriveTo256BitDerivationPath:(DSDerivationPath*)derivationPath {
+    return [self privateDeriveToPath:[derivationPath baseIndexPath]];
+}
+
+-(DSBLSKey*)privateDeriveToPath:(NSIndexPath*)derivationPath {
     bls::ExtendedPrivateKey blsExtendedPrivateKey = bls::ExtendedPrivateKey::FromBytes((const uint8_t *)self.extendedPrivateKeyData.bytes);
     bls::ExtendedPrivateKey derivedExtendedPrivateKey = [DSBLSKey derive:blsExtendedPrivateKey indexes:derivationPath];
-    return [[DSBLSKey alloc] initWithExtendedPrivateKey:derivedExtendedPrivateKey onChain:self.chain];
+    return [[DSBLSKey alloc] initWithBLSExtendedPrivateKey:derivedExtendedPrivateKey];
 }
 
 -(DSBLSKey*)publicDeriveToPath:(NSIndexPath*)derivationPath {
@@ -251,7 +274,12 @@
     bls::ExtendedPublicKey blsExtendedPublicKey = [self blsExtendedPublicKey];
 
     bls::ExtendedPublicKey derivedExtendedPublicKey = [DSBLSKey publicDerive:blsExtendedPublicKey indexes:derivationPath];
-    return [[DSBLSKey alloc] initWithExtendedBLSPublicKey:derivedExtendedPublicKey onChain:self.chain];
+    return [[DSBLSKey alloc] initWithBLSExtendedPublicKey:derivedExtendedPublicKey];
+}
+
+-(DSKey*)extendedPublicKey {
+    if (!self.extendedPublicKeyData.length) return nil;
+    return [[DSBLSKey alloc] initWithBLSExtendedPublicKey:[self blsExtendedPublicKey]];
 }
 
 -(bls::ExtendedPublicKey)blsExtendedPublicKey {
@@ -266,6 +294,22 @@
     } else {
         uint8_t bytes[] = {};
         return bls::ExtendedPublicKey::FromBytes(bytes);
+    }
+}
+
+-(DSKey*)extendedPrivateKey {
+    if (!self.extendedPrivateKeyData.length) return nil;
+    return [[DSBLSKey alloc] initWithBLSExtendedPrivateKey:[self blsExtendedPrivateKey]];
+}
+
+-(bls::ExtendedPrivateKey)blsExtendedPrivateKey {
+    if (self.extendedPrivateKeyData.length) {
+        bls::ExtendedPrivateKey blsExtendedPrivateKey = bls::ExtendedPrivateKey::FromBytes((const uint8_t *)self.extendedPrivateKeyData.bytes);
+        
+        return blsExtendedPrivateKey;
+    } else {
+        uint8_t bytes[] = {};
+        return bls::ExtendedPrivateKey::FromBytes(bytes);
     }
 }
 
@@ -326,7 +370,24 @@
     return signature;
 }
 
+// MARK: - HMAC
+
+- (UInt256)HMAC256Data:(NSData*)data {
+    return [data HMACSHA256WithKey:self.secretKey];
+}
+
+// MARK: - Encryption
+
+- (NSData*)encryptData:(NSData*)data {
+    
+    return [data encryptWithDHKey:self];
+}
+
 // MARK: - Verification
+
+- (BOOL)verify:(UInt256)messageDigest signatureData:(NSData*)signatureData {
+    return [self verify:messageDigest signature:signatureData.UInt768];
+}
 
 - (BOOL)verify:(UInt256)messageDigest signature:(UInt768)signature {
     bls::PublicKey blsPublicKey = [self blsPublicKey];
@@ -337,7 +398,7 @@
 
 
 + (BOOL)verify:(UInt256)messageDigest signature:(UInt768)signature withPublicKey:(UInt384)publicKey {
-    bls::PublicKey blsPublicKey = [[[DSBLSKey alloc] initWithPublicKey:publicKey onChain:[DSChain mainnet]] blsPublicKey]; //chain won't matter
+    bls::PublicKey blsPublicKey = [[[DSBLSKey alloc] initWithPublicKey:publicKey] blsPublicKey];
     bls::AggregationInfo aggregationInfo = bls::AggregationInfo::FromMsgHash(blsPublicKey, messageDigest.u8);
     bls::Signature blsSignature = bls::Signature::FromBytes(signature.u8, aggregationInfo);
     return blsSignature.Verify();
@@ -348,6 +409,21 @@
     std::vector<bls::AggregationInfo> infos;
     for (DSBLSKey * key in publicKeys) {
         bls::AggregationInfo aggregationInfo = bls::AggregationInfo::FromMsgHash([key blsPublicKey], messageDigest.u8);
+        infos.push_back(aggregationInfo);
+    }
+    
+    bls::AggregationInfo aggregationInfo = bls::AggregationInfo::MergeInfos(infos);
+    bls::Signature blsSignature = bls::Signature::FromBytes(signature.u8, aggregationInfo);
+    
+    return blsSignature.Verify();
+}
+
++ (BOOL)verifyAggregatedSignature:(UInt768)signature withPublicKeys:(NSArray*)publicKeys withMessages:(NSArray*)messages {
+    std::vector<bls::AggregationInfo> infos;
+    for (uint32_t i = 0; i< publicKeys.count;i++) {
+        DSBLSKey * key = publicKeys[i];
+        NSData * message = messages[i];
+        bls::AggregationInfo aggregationInfo = bls::AggregationInfo::FromMsgHash([key blsPublicKey], message.UInt256.u8);
         infos.push_back(aggregationInfo);
     }
     
@@ -370,11 +446,11 @@
 
 // MARK: - Signature Aggregation
 
-+ (UInt768)aggregateSignatures:(NSArray*)signatures withPublicKeys:(NSArray*)publicKeys withMessages:(NSArray*)messages {
++ (UInt768)aggregateSignatures:(NSArray*)signatures withPublicKeys:(NSArray<DSBLSKey*>*)publicKeys withMessages:(NSArray*)messages {
     std::vector<bls::Signature> blsSignatures = {};
     for (int i = 0; i < [signatures count];i++) {
         NSData * signatureData = signatures[i];
-        NSData * publicKeyData = publicKeys[i];
+        NSData * publicKeyData = publicKeys[i].publicKeyData;
         NSData * messageData = messages[i];
         UInt768 signature = [signatureData UInt768];
         UInt384 publickey = [publicKeyData UInt384];

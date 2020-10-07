@@ -87,7 +87,7 @@
                     if (self.localMasternode.ownerKeysWallet && [self.ownerKeyLabel.text isEqualToString:@"SHOW"]) {
                         [self.localMasternode.ownerKeysWallet seedWithPrompt:@"Show owner key?" forAmount:0 completion:^(NSData * _Nullable seed, BOOL cancelled) {
                             if (seed) {
-                                self.ownerKeyLabel.text = [[self.localMasternode ownerKeyFromSeed:seed] privateKeyStringForChain:self.chain];
+                                self.ownerKeyLabel.text = [[self.localMasternode ownerKeyFromSeed:seed] serializedPrivateKeyForChain:self.chain];
                             }
                         }];
                     }
@@ -137,7 +137,7 @@
     [[DSInsightManager sharedInstance] queryInsightForTransactionWithHash:[NSData dataWithUInt256: self.simplifiedMasternodeEntry.providerRegistrationTransactionHash].reverse.UInt256 onChain:self.simplifiedMasternodeEntry.chain completion:^(DSTransaction *transaction, NSError *error) {
         if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
             DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
-            DSLocalMasternode * localMasternode = [self.simplifiedMasternodeEntry.chain.chainManager.masternodeManager localMasternodeFromProviderRegistrationTransaction:providerRegistrationTransaction save:TRUE];
+            [self.simplifiedMasternodeEntry.chain.chainManager.masternodeManager localMasternodeFromProviderRegistrationTransaction:providerRegistrationTransaction save:TRUE];
         }
     }];
     
@@ -148,7 +148,7 @@
 //        [transactionEntityClass setContext:self.moc];
 //        [DSTransactionHashEntity setContext:self.moc];
 //        [DSAddressEntity setContext:self.moc];
-//        if ([DSTransactionEntity countObjectsMatching:@"transactionHash.txHash == %@", uint256_data(txHash)] == 0) {
+//        if ([DSTransactionEntity countObjectsInContext:context matching:@"transactionHash.txHash == %@", uint256_data(txHash)] == 0) {
 //
 //            DSTransactionEntity * transactionEntity = [transactionEntityClass managedObject];
 //            [transactionEntity setAttributesFromTransaction:transaction];

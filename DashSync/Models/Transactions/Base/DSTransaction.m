@@ -26,7 +26,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSTransaction.h"
+#import "DSTransaction+Protected.h"
 #import "DSTransactionFactory.h"
 #import "DSECDSAKey.h"
 #import "NSString+Dash.h"
@@ -43,15 +43,19 @@
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSInstantSendTransactionLock.h"
+#import "DSCreditFundingTransaction.h"
+#import "DSChainManager.h"
+#import "DSIdentitiesManager.h"
 
 @interface DSTransaction ()
 
 @property (nonatomic, strong) DSChain * chain;
-@property (nonatomic, assign) BOOL saved; //don't trust this
 @property (nonatomic, strong) DSInstantSendTransactionLock * instantSendLockAwaitingProcessing;
 @property (nonatomic, assign) BOOL instantSendReceived;
 @property (nonatomic, assign) BOOL confirmed;
 @property (nonatomic, assign) BOOL hasUnverifiedInstantSendLock;
+@property (nonatomic, strong) NSSet<DSBlockchainIdentity*>* sourceBlockchainIdentities;
+@property (nonatomic, strong) NSSet<DSBlockchainIdentity*>* destinationBlockchainIdentities;
 
 @end
 
@@ -101,7 +105,9 @@
     self.saved = FALSE;
     self.hasUnverifiedInstantSendLock = NO;
     _lockTime = TX_LOCKTIME;
-    _blockHeight = TX_UNCONFIRMED;
+    self.blockHeight = TX_UNCONFIRMED;
+    self.sourceBlockchainIdentities = [NSSet set];
+    self.destinationBlockchainIdentities = [NSSet set];
     return self;
 }
 
@@ -164,13 +170,13 @@
         
         NSString * outboundShapeshiftAddress = [self shapeshiftOutboundAddress];
         if (outboundShapeshiftAddress) {
-            self.associatedShapeshift = [DSShapeshiftEntity shapeshiftHavingWithdrawalAddress:outboundShapeshiftAddress];
+            self.associatedShapeshift = [DSShapeshiftEntity shapeshiftHavingWithdrawalAddress:outboundShapeshiftAddress inContext:[NSManagedObjectContext chainContext]];
             if (self.associatedShapeshift && [self.associatedShapeshift.shapeshiftStatus integerValue] == eShapeshiftAddressStatus_Unused) {
                 self.associatedShapeshift.shapeshiftStatus = @(eShapeshiftAddressStatus_NoDeposits);
             }
             if (!self.associatedShapeshift) {
                 NSString * possibleOutboundShapeshiftAddress = [self shapeshiftOutboundAddressForceScript];
-                self.associatedShapeshift = [DSShapeshiftEntity shapeshiftHavingWithdrawalAddress:possibleOutboundShapeshiftAddress];
+                self.associatedShapeshift = [DSShapeshiftEntity shapeshiftHavingWithdrawalAddress:possibleOutboundShapeshiftAddress inContext:[NSManagedObjectContext chainContext]];
                 if (self.associatedShapeshift && [self.associatedShapeshift.shapeshiftStatus integerValue] == eShapeshiftAddressStatus_Unused) {
                     self.associatedShapeshift.shapeshiftStatus = @(eShapeshiftAddressStatus_NoDeposits);
                 }
@@ -178,7 +184,7 @@
             if (!self.associatedShapeshift && [self.outputAddresses count]) {
                 NSString * mainOutputAddress = nil;
                 NSMutableArray * allAddresses = [NSMutableArray array];
-                for (DSAddressEntity *e in [DSAddressEntity allObjects]) {
+                for (DSAddressEntity *e in [DSAddressEntity allObjectsInContext:chain.chainManagedObjectContext]) {
                     [allAddresses addObject:e.address];
                 }
                 for (NSString * outputAddress in self.outputAddresses) {
@@ -188,7 +194,7 @@
                 }
                 //NSAssert(mainOutputAddress, @"there should always be an output address");
                 if (mainOutputAddress){
-                    self.associatedShapeshift = [DSShapeshiftEntity registerShapeshiftWithInputAddress:mainOutputAddress andWithdrawalAddress:outboundShapeshiftAddress withStatus:eShapeshiftAddressStatus_NoDeposits];
+                    self.associatedShapeshift = [DSShapeshiftEntity registerShapeshiftWithInputAddress:mainOutputAddress andWithdrawalAddress:outboundShapeshiftAddress withStatus:eShapeshiftAddressStatus_NoDeposits inContext:[NSManagedObjectContext chainContext]];
                 }
             }
         }
@@ -243,7 +249,7 @@
     }
     
     _lockTime = TX_LOCKTIME;
-    _blockHeight = TX_UNCONFIRMED;
+    self.blockHeight = TX_UNCONFIRMED;
     return self;
 }
 
@@ -266,15 +272,19 @@
 // MARK: - Attributes
 
 -(NSData*)payloadData {
-    return nil;
+    return [NSData data];
 }
 
 -(NSData*)payloadDataForHash {
-    return nil;
+    return [NSData data];
 }
 
--(DSAccount*)account {
+-(DSAccount*)firstAccount {
     return [self.chain firstAccountThatCanContainTransaction:self];
+}
+
+-(NSArray<DSAccount*>*)accounts {
+    return [self.chain accountsThatCanContainTransaction:self];
 }
 
 - (NSArray *)inputHashes
@@ -341,7 +351,7 @@
 - (NSString *)description
 {
     NSString *txid = [NSString hexWithData:[NSData dataWithBytes:self.txHash.u8 length:sizeof(UInt256)].reverse];
-    return [NSString stringWithFormat:@"%@(id=%@-block=%@)", [self class], txid, (self.blockHeight == TX_UNCONFIRMED)?@"Not mined":@(self.blockHeight)];
+    return [NSString stringWithFormat:@"%@(id=%@-block=%@) + (%@)", [self class], txid, (self.blockHeight == TX_UNCONFIRMED)?@"Not mined":@(self.blockHeight),[super description]];
 }
 
 - (NSString *)longDescription
@@ -407,7 +417,16 @@
         [self.hashes[0] getValue:&firstInputHash];
         if (uint256_is_zero(firstInputHash) && [[self.inputIndexes objectAtIndex:0] integerValue] == UINT32_MAX) return TRUE;
     }
-    return FALSE;
+    return NO;
+}
+
+-(BOOL)isCreditFundingTransaction {
+    for (NSData * script in self.outputScripts) {
+        if ([script UInt8AtOffset:0] == OP_RETURN && script.length == 22) {
+            return YES;
+        }
+    }
+    return NO;
 }
 
 - (NSUInteger)hash
@@ -464,7 +483,7 @@
     }
     
     [d appendUInt32:self.lockTime];
-    if ([self isMemberOfClass:[DSTransaction class]] && subscriptIndex != NSNotFound) [d appendUInt32:SIGHASH_ALL];
+    if (([self isMemberOfClass:[DSTransaction class]] || [self isMemberOfClass:[DSCreditFundingTransaction class]]) && subscriptIndex != NSNotFound) [d appendUInt32:SIGHASH_ALL];
     return d;
 }
 
@@ -487,6 +506,13 @@
 
 - (void)addOutputAddress:(NSString *)address amount:(uint64_t)amount
 {
+    [self.amounts addObject:@(amount)];
+    [self.addresses addObject:address];
+    [self.outScripts addObject:[NSMutableData data]];
+    [self.outScripts.lastObject appendScriptPubKeyForAddress:address forChain:self.chain];
+}
+
+- (void)addOutputCreditAddress:(NSString *)address amount:(uint64_t)amount {
     [self.amounts addObject:@(amount)];
     [self.addresses addObject:address];
     [self.outScripts addObject:[NSMutableData data]];
@@ -516,8 +542,9 @@
 }
 
 
-- (void)addOutputScript:(NSData *)script withAddress:(NSString*)address amount:(uint64_t)amount
+- (void)addOutputScript:(NSData * _Nonnull)script withAddress:(NSString*)address amount:(uint64_t)amount
 {
+    NSParameterAssert(script);
     if (!address && script) {
         address = [NSString addressWithScriptPubKey:script onChain:self.chain];
     }
@@ -562,14 +589,41 @@
     return [self signWithPrivateKeys:keys];
 }
 
-- (BOOL)signWithPrivateKeys:(NSArray *)keys
-{
+- (BOOL)signWithPrivateKeys:(NSArray *)keys {
     NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:keys.count];
     
     for (DSECDSAKey *key in keys) {
         [addresses addObject:[key addressForChain:self.chain]];
     }
     
+    return [self signWithPrivateKeys:keys forAddresses:addresses];
+}
+
+- (BOOL)signWithPreorderedPrivateKeys:(NSArray *)keys {
+    for (NSUInteger i = 0; i < self.hashes.count; i++) {
+        NSMutableData *sig = [NSMutableData data];
+        NSData * data = [self toDataWithSubscriptIndex:i];
+        UInt256 hash = data.SHA256_2;
+        NSMutableData *s = [NSMutableData dataWithData:[keys[i] sign:hash]];
+        NSArray *elem = [self.inScripts[i] scriptElements];
+        
+        [s appendUInt8:SIGHASH_ALL];
+        [sig appendScriptPushData:s];
+        
+        if (elem.count >= 2 && [elem[elem.count - 2] intValue] == OP_EQUALVERIFY) { // pay-to-pubkey-hash scriptSig
+            [sig appendScriptPushData:[keys[i] publicKeyData]];
+        }
+        
+        self.signatures[i] = sig;
+    }
+    
+    if (! self.isSigned) return NO;
+    _txHash = self.data.SHA256_2;
+    return YES;
+}
+
+- (BOOL)signWithPrivateKeys:(NSArray *)keys forAddresses:(NSArray *)addresses
+{
     for (NSUInteger i = 0; i < self.hashes.count; i++) {
         NSString *addr = [NSString addressWithScriptPubKey:self.inScripts[i] onChain:self.chain];
         NSUInteger keyIdx = (addr) ? [addresses indexOfObject:addr] : NSNotFound;
@@ -618,7 +672,8 @@
 // returns the fee for the given transaction if all its inputs are from wallet transactions, UINT64_MAX otherwise
 - (uint64_t)feeUsed
 {
-    return [self.account feeForTransaction:self];
+    //TODO: This most likely does not work when sending from multiple accounts
+    return [self.firstAccount feeForTransaction:self];
 }
 
 - (uint64_t)roundedFeeCostPerByte
@@ -654,24 +709,51 @@
         self.instantSendLockAwaitingProcessing = nil;
     }
     if (!instantSendLock.saved) {
-        [instantSendLock save];
+        [instantSendLock saveInitial];
     }
 }
 
 -(uint32_t)confirmations {
     if (self.blockHeight == TX_UNCONFIRMED) return 0;
-    const uint32_t lastHeight = self.chain.lastBlockHeight;
+    const uint32_t lastHeight = self.chain.lastTerminalBlockHeight;
     return lastHeight - self.blockHeight;
 }
 
 -(BOOL)confirmed {
     if (_confirmed) return YES; //because it can't be unconfirmed
     if (self.blockHeight == TX_UNCONFIRMED) return NO;
-    const uint32_t lastHeight = self.chain.lastBlockHeight;
-    if (self.blockHeight > self.chain.lastBlockHeight) return NO; //maybe a reorg?
+    const uint32_t lastHeight = self.chain.lastSyncBlockHeight;
+    if (self.blockHeight > self.chain.lastSyncBlockHeight) {
+        //this should only be possible if and only if we have migrated and kept old transactions.
+        return YES;
+    }
     if (lastHeight - self.blockHeight > 6) return YES;
     _confirmed = [self.chain blockHeightChainLocked:self.blockHeight];
     return _confirmed;
+}
+
+// MARK: - Blockchain Identities
+
+- (void)loadBlockchainIdentitiesFromDerivationPaths:(NSArray<DSDerivationPath*>*)derivationPaths {
+    NSMutableSet * destinationBlockchainIdentities = [NSMutableSet set];
+    NSMutableSet * sourceBlockchainIdentities = [NSMutableSet set];
+    for (NSString * address in self.outputAddresses) {
+        for (DSFundsDerivationPath * derivationPath in derivationPaths) {
+            if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]] && [derivationPath containsAddress:address]) {
+                DSIncomingFundsDerivationPath * incomingFundsDerivationPath = ((DSIncomingFundsDerivationPath*) derivationPath);
+                DSBlockchainIdentity * destinationBlockchainIdentity = [incomingFundsDerivationPath contactDestinationBlockchainIdentity];
+                DSBlockchainIdentity * sourceBlockchainIdentity = [incomingFundsDerivationPath contactSourceBlockchainIdentity];
+                if (sourceBlockchainIdentity) {
+                    [destinationBlockchainIdentities addObject:sourceBlockchainIdentity]; //these need to be inverted since the derivation path is incoming
+                }
+                if (destinationBlockchainIdentity) {
+                    [sourceBlockchainIdentities addObject:destinationBlockchainIdentity]; //these need to be inverted since the derivation path is incoming
+                }
+            }
+        }
+    }
+    self.sourceBlockchainIdentities = [self.sourceBlockchainIdentities setByAddingObjectsFromSet:[sourceBlockchainIdentities copy]];
+    self.destinationBlockchainIdentities = [self.destinationBlockchainIdentities setByAddingObjectsFromSet:[destinationBlockchainIdentities copy]];
 }
 
 // MARK: - Polymorphic data
@@ -748,36 +830,42 @@
 
 // MARK: - Persistence
 
--(DSTransactionEntity *)save {
-    NSManagedObjectContext * context = [DSTransactionEntity context];
+-(DSTransactionEntity *)transactionEntityInContext:(NSManagedObjectContext*)context {
     __block DSTransactionEntity * transactionEntity = nil;
     [context performBlockAndWait:^{ // add the transaction to core data
-        [DSChainEntity setContext:context];
+        transactionEntity = [DSTransactionEntity anyObjectInContext:context matching:@"transactionHash.txHash == %@", uint256_data(self.txHash)];
+    }];
+    return transactionEntity;
+}
+
+-(DSTransactionEntity *)save {
+    NSManagedObjectContext * context = self.chain.chainManagedObjectContext;
+    return [self saveInContext:context];
+}
+
+-(DSTransactionEntity *)saveInContext:(NSManagedObjectContext*)context {
+    __block DSTransactionEntity * transactionEntity = nil;
+    [context performBlockAndWait:^{ // add the transaction to core data
         Class transactionEntityClass = [self entityClass];
-        [transactionEntityClass setContext:context];
-        [DSTransactionHashEntity setContext:context];
-        if ([DSTransactionEntity countObjectsMatching:@"transactionHash.txHash == %@", uint256_data(self.txHash)] == 0) {
+        if ([DSTransactionEntity countObjectsInContext:context matching:@"transactionHash.txHash == %@", uint256_data(self.txHash)] == 0) {
             
-            transactionEntity = [transactionEntityClass managedObject];
+            transactionEntity = [transactionEntityClass managedObjectInBlockedContext:context];
             [transactionEntity setAttributesFromTransaction:self];
-            [transactionEntityClass saveContext];
+            [context ds_save];
         } else {
-            transactionEntity = [DSTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(self.txHash)];
+            transactionEntity = [DSTransactionEntity anyObjectInContext:context matching:@"transactionHash.txHash == %@", uint256_data(self.txHash)];
             [transactionEntity setAttributesFromTransaction:self];
-            [transactionEntityClass saveContext];
+            [context ds_save];
         }
     }];
     return transactionEntity;
 }
 
 -(BOOL)setInitialPersistentAttributesInContext:(NSManagedObjectContext*)context {
-    [DSChainEntity setContext:context];
     Class transactionEntityClass = [self entityClass];
-    [transactionEntityClass setContext:context];
-    [DSTransactionHashEntity setContext:context];
-    if ([DSTransactionEntity countObjectsMatching:@"transactionHash.txHash == %@", uint256_data(self.txHash)] == 0) {
+    if ([DSTransactionEntity countObjectsInContext:context matching:@"transactionHash.txHash == %@", uint256_data(self.txHash)] == 0) {
         
-        DSTransactionEntity * transactionEntity = [transactionEntityClass managedObject];
+        DSTransactionEntity * transactionEntity = [transactionEntityClass managedObjectInBlockedContext:context];
         [transactionEntity setAttributesFromTransaction:self];
         return YES;
     } else {
@@ -786,13 +874,20 @@
 }
 
 -(BOOL)saveInitial {
+    NSManagedObjectContext * context = self.chain.chainManagedObjectContext;
+    return [self saveInitialInContext:context];
+}
+
+-(BOOL)saveInitialInContext:(NSManagedObjectContext*)context {
     if (self.saved) return nil;
-    NSManagedObjectContext * context = [DSTransactionEntity context];
     __block BOOL didSave = FALSE;
     [context performBlockAndWait:^{ // add the transaction to core data
         if ([self setInitialPersistentAttributesInContext:context]) {
-            [DSTransactionEntity saveContext];
-            didSave = TRUE;
+            if (![context ds_save]) {
+                didSave = TRUE;
+            } else {
+                DSDLog(@"There was an error saving the transaction");
+            }
         }
     }];
     self.saved = didSave;

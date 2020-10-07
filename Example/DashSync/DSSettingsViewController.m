@@ -42,6 +42,15 @@
         };
         [items addObject:cellModel];
     }
+    
+    {
+        SwitcherFormCellModel *cellModel = [[SwitcherFormCellModel alloc] initWithTitle:@"Use Checkpoints Files"];
+        cellModel.on = options.shouldUseCheckpointFile;
+        cellModel.didChangeValueBlock = ^(SwitcherFormCellModel *_Nonnull cellModel) {
+            options.shouldUseCheckpointFile = cellModel.on;
+        };
+        [items addObject:cellModel];
+    }
 
     {
         SwitcherFormCellModel *cellModel = [[SwitcherFormCellModel alloc] initWithTitle:@"Retrieve Price Info"];
@@ -89,6 +98,9 @@
     NSDictionary<NSNumber *, NSString *> *syncTypes = @{
         @(DSSyncType_BaseSPV) : @"Base SPV",
         @(DSSyncType_FullBlocks) : @"Full Blocks",
+        @(DSSyncType_BlockchainIdentities) : @"Blockchain Identities",
+        @(DSSyncType_DPNS) : @"DPNS",
+        @(DSSyncType_Dashpay) : @"Dashpay",
         @(DSSyncType_Mempools) : @"Mempools",
         @(DSSyncType_MasternodeList) : @"Masternode List",
         @(DSSyncType_Governance) : @"Governance",

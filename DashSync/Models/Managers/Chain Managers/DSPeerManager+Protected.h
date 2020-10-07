@@ -40,15 +40,20 @@ typedef NS_ENUM(NSUInteger, DSPeerManagerDesiredState) {
 @property (nonatomic, readonly) NSUInteger connectFailures, misbehavingCount, maxConnectCount;
 @property (nonatomic, readonly) NSSet *connectedPeers;
 @property (nonatomic, readonly) DSPeerManagerDesiredState desiredState;
-@property (nonatomic, readonly) dispatch_queue_t chainPeerManagerQueue;
+@property (nonatomic, readonly) DSMasternodeList * masternodeList;
 
 - (void)peerMisbehaving:(DSPeer *)peer errorMessage:(NSString*)errorMessage;
-- (void)syncStopped;
+- (void)chainSyncStopped;
+
+- (void)pauseBlockchainSynchronizationOnPeers;
+- (void)resumeBlockchainSynchronizationOnPeers;
 - (void)updateFilterOnPeers;
 
-- (void)disconnectDownloadPeerWithCompletion:(void (^ _Nullable)(BOOL success))completion;
+- (void)disconnectDownloadPeerForError:(NSError* _Nullable)error withCompletion:(void (^ _Nullable)(BOOL success))completion;
 
 - (instancetype)initWithChain:(DSChain*)chain;
+
+- (void)useMasternodeList:(DSMasternodeList*)masternodeList withConnectivityNonce:(uint64_t)connectivityNonce;
 
 - (void)clearRegisteredPeers;
 - (void)registerPeerAtLocation:(UInt128)IPAddress port:(uint32_t)port dapiPort:(uint32_t)dapiPort;

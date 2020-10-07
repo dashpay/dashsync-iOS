@@ -27,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, copy, nonatomic) NSString *text;
 
 @property (nullable, copy, nonatomic) void(^didChangeValueBlock)(TextFieldFormCellModel *cellModel);
+@property (nullable, copy, nonatomic) void(^didReturnValueBlock)(TextFieldFormCellModel *cellModel);
 
 // Some of UITextInputTraits protocol params
 @property (assign, nonatomic) UITextAutocapitalizationType autocapitalizationType;

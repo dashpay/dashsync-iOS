@@ -64,10 +64,13 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerPeersDidChangeNotificati
 - (void)setTrustedPeerHost:(NSString * _Nullable)host;
 - (void)removeTrustedPeerHost;
 
-- (void)connect;
+
 - (void)clearPeers;
+- (void)connect;
 - (void)disconnect;
 
+- (void)clearRegisteredPeers;
+- (void)registerPeerAtLocation:(UInt128)IPAddress port:(uint32_t)port dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort;
 
 @end
 

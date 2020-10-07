@@ -17,8 +17,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic) uint32_t index;
 @property (nullable, nonatomic, copy) NSString *walletUniqueID;
+@property (nullable, nonatomic, retain) DSChainEntity * chain;
 @property (nullable, nonatomic, retain) NSSet<DSTxOutputEntity *> *transactionOutputs;
-@property (nullable, nonatomic, retain) NSSet<DSDerivationPath *> *derivationPaths;
+@property (nullable, nonatomic, retain) NSSet<DSDerivationPathEntity *> *derivationPaths;
 
 @end
 
@@ -28,10 +29,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)removeTransactionOutputsObject:(DSTxOutputEntity *)value;
 - (void)addTransactionOutputs:(NSSet<DSTxOutputEntity *> *)values;
 - (void)removeTransactionOutputs:(NSSet<DSTxOutputEntity *> *)values;
-- (void)addDerivationPathsObject:(DSDerivationPath *)value;
-- (void)removeDerivationPathsObject:(DSDerivationPath *)value;
-- (void)addDerivationPaths:(NSSet<DSDerivationPath *> *)values;
-- (void)removeDerivationPaths:(NSSet<DSDerivationPath *> *)values;
+- (void)addDerivationPathsObject:(DSDerivationPathEntity *)value;
+- (void)removeDerivationPathsObject:(DSDerivationPathEntity *)value;
+- (void)addDerivationPaths:(NSSet<DSDerivationPathEntity *> *)values;
+- (void)removeDerivationPaths:(NSSet<DSDerivationPathEntity *> *)values;
 
 @end
 

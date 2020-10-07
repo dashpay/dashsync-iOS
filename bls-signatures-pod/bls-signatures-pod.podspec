@@ -10,7 +10,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'bls-signatures-pod'
-  s.version          = '0.2.9'
+  s.version          = '0.2.10'
   s.summary          = 'BLS signatures in C++, using the relic toolkit'
 
   s.description      = <<-DESC
@@ -25,11 +25,16 @@ Implements BLS signatures with aggregation as in Boneh, Drijvers, Neven 2018, us
   s.source           = { 
     :git => 'https://github.com/Chia-Network/bls-signatures.git',
     :commit => 'f114ffeff4653e5522d1b3e28687fa9f384a557f',
-    :submodules => true
+    :submodules => false
   }
+
+  # Temporary workaround: don't allow CocoaPods to clone and fetch submodules.
+  # Fetch submodules _after_ checking out to the needed commit in prepare command.
 
   s.prepare_command = <<-CMD
     set -x
+
+    git submodule update --init
 
     MIN_IOS="10.0"
     MIN_WATCHOS="2.0"

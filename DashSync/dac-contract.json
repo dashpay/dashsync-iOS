@@ -1,0 +1,17 @@
+{
+    "documents": {
+        "syncInfo": {
+            "properties": {
+                "data": {
+                    "type": "string",
+                    "minLength": 128,
+                    "maxLength": 2048
+                }
+            },
+            "required": [
+                "data"
+            ],
+            "additionalProperties": false
+        }
+    }
+}

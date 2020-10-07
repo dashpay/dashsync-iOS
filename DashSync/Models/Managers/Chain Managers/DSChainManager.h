@@ -40,22 +40,53 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo) {
 
 FOUNDATION_EXPORT NSString* const DSChainManagerNotificationChainKey;
 
-@class DSGovernanceSyncManager, DSMasternodeManager, DSSporkManager, DSPeerManager, DSGovernanceVote, DSDAPIClient, DSTransactionManager, DSBloomFilter;
+FOUNDATION_EXPORT NSString* _Nonnull const DSChainManagerSyncStartedNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSChainManagerSyncParametersUpdatedNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSChainManagerSyncFinishedNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSChainManagerSyncFailedNotification;
+
+@class DSGovernanceSyncManager, DSMasternodeManager, DSSporkManager, DSPeerManager, DSGovernanceVote, DSDAPIClient, DSTransactionManager, DSIdentitiesManager, DSBloomFilter, DSBlock, DSFullBlock;
+
+typedef void (^BlockMiningCompletionBlock)(DSFullBlock * _Nullable block, NSUInteger attempts, NSTimeInterval timeUsed, NSError * _Nullable error);
+typedef void (^MultipleBlockMiningCompletionBlock)(NSArray<DSFullBlock *>* block, NSArray<NSNumber *>* attempts, NSTimeInterval timeUsed, NSError * _Nullable error);
 
 @interface DSChainManager : NSObject <DSChainDelegate,DSPeerChainDelegate>
 
-@property (nonatomic, readonly) double syncProgress;
+@property (nonatomic, readonly) double chainSyncProgress;
+@property (nonatomic, readonly) double terminalHeaderSyncProgress;
+@property (nonatomic, readonly) double combinedSyncProgress;
 @property (nonatomic, readonly) DSSporkManager * sporkManager;
 @property (nonatomic, readonly) DSMasternodeManager * masternodeManager;
 @property (nonatomic, readonly) DSGovernanceSyncManager * governanceSyncManager;
 @property (nonatomic, readonly) DSDAPIClient * DAPIClient;
+@property (nonatomic, readonly) DSIdentitiesManager * identitiesManager;
 @property (nonatomic, readonly) DSTransactionManager * transactionManager;
 @property (nonatomic, readonly) DSPeerManager * peerManager;
 @property (nonatomic, readonly) DSChain * chain;
+@property (nonatomic, readonly) NSData * chainSynchronizationFingerprint;
 
-- (void)rescan;
+/*! @brief Returns the sync phase that the chain is currently in.  */
+@property (nonatomic, readonly) DSChainSyncPhase syncPhase;
 
-- (void)rescanMasternodeListsAndQuorums;
+- (void)startSync;
+
+- (void)stopSync;
+
+- (void)syncBlocksRescan;
+
+- (void)masternodeListAndBlocksRescan;
+
+- (void)masternodeListRescan;
+
+// MARK: - Mining
+
+- (void)mineEmptyBlocks:(uint32_t)blockCount toPaymentAddress:(NSString*)paymentAddress withTimeout:(NSTimeInterval)timeout completion:(MultipleBlockMiningCompletionBlock)completion;
+
+- (void)mineEmptyBlocks:(uint32_t)blockCount toPaymentAddress:(NSString*)paymentAddress afterBlock:(DSBlock*)block previousBlocks:(NSDictionary<NSValue*,DSBlock*>*)previousBlocks withTimeout:(NSTimeInterval)timeout completion:(MultipleBlockMiningCompletionBlock)completion;
+
+- (void)mineBlockToPaymentAddress:(NSString*)paymentAddress withTransactions:(NSArray<DSTransaction*>* _Nullable)transactions withTimeout:(NSTimeInterval)timeout completion:(BlockMiningCompletionBlock)completion;
+
+- (void)mineBlockAfterBlock:(DSBlock*)block toPaymentAddress:(NSString*)paymentAddress withTransactions:(NSArray<DSTransaction*>* _Nullable)transactions previousBlocks:(NSDictionary<NSValue*,DSBlock*>*)previousBlocks nonceOffset:(uint32_t)nonceOffset withTimeout:(NSTimeInterval)timeout completion:(BlockMiningCompletionBlock)completion;
 
 @end
 

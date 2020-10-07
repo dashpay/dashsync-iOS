@@ -11,13 +11,13 @@
 #import "NSManagedObject+Sugar.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "NSData+Dash.h"
+#import "DSChain+Protected.h"
 
 @implementation DSGovernanceObjectEntity
 
 - (void)setAttributesFromGovernanceObject:(DSGovernanceObject *)governanceObject forHashEntity:(DSGovernanceObjectHashEntity*)hashEntity {
     [self.managedObjectContext performBlockAndWait:^{
-        [DSChainEntity setContext:self.managedObjectContext];
-        [DSGovernanceObjectHashEntity setContext:self.managedObjectContext];
+
         self.collateralHash = [NSData dataWithUInt256:governanceObject.collateralHash];
         self.parentHash = [NSData dataWithUInt256:governanceObject.parentHash];
         self.revision = governanceObject.revision;
@@ -27,7 +27,7 @@
         if (hashEntity) {
             self.governanceObjectHash = hashEntity;
         } else {
-            self.governanceObjectHash = [DSGovernanceObjectHashEntity governanceObjectHashEntityWithHash:[NSData dataWithUInt256:governanceObject.governanceObjectHash] onChain:governanceObject.chain.chainEntity];
+            self.governanceObjectHash = [DSGovernanceObjectHashEntity governanceObjectHashEntityWithHash:[NSData dataWithUInt256:governanceObject.governanceObjectHash] onChainEntity:[governanceObject.chain chainEntityInContext:self.managedObjectContext]];
         }
         self.identifier = governanceObject.identifier;
         self.amount = governanceObject.amount;
@@ -38,12 +38,12 @@
     }];
 }
 
-+ (NSUInteger)countForChain:(DSChainEntity*)chain {
++ (NSUInteger)countForChainEntity:(DSChainEntity*)chain {
     __block NSUInteger count = 0;
     [chain.managedObjectContext performBlockAndWait:^{
         NSFetchRequest * fetchRequest = [DSGovernanceObjectEntity fetchReq];
         [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"governanceObjectHash.chain = %@",chain]];
-        count = [DSGovernanceObjectEntity countObjects:fetchRequest];
+        count = [DSGovernanceObjectEntity countObjects:fetchRequest inContext:chain.managedObjectContext];
     }];
     return count;
 }

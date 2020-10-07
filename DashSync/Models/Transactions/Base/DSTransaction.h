@@ -29,7 +29,9 @@
 #import <Foundation/Foundation.h>
 #import "DSShapeshiftEntity+CoreDataClass.h"
 
-@class DSChain,DSAccount,DSWallet,DSTransactionLockVote,DSTransactionEntity,DSInstantSendTransactionLock;
+NS_ASSUME_NONNULL_BEGIN
+
+@class DSChain,DSAccount,DSWallet,DSTransactionLockVote,DSTransactionEntity,DSInstantSendTransactionLock,DSBlockchainIdentity,DSDerivationPath;
 
 #define TX_FEE_PER_B         1ULL    // standard tx fee per b of tx size
 #define TX_FEE_PER_INPUT     10000ULL    // standard ix fee per input
@@ -49,6 +51,7 @@
 #define MAX_ECDSA_SIGNATURE_SIZE 75
 
 typedef union _UInt256 UInt256;
+typedef union _UInt160 UInt160;
 
 @interface DSTransaction : NSObject
 
@@ -61,6 +64,9 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, readonly) NSArray *outputAmounts;
 @property (nonatomic, readonly) NSArray *outputAddresses;
 @property (nonatomic, readonly) NSArray *outputScripts;
+
+@property (nonatomic, readonly) NSSet<DSBlockchainIdentity*>* sourceBlockchainIdentities;
+@property (nonatomic, readonly) NSSet<DSBlockchainIdentity*>* destinationBlockchainIdentities;
 
 @property (nonatomic, readonly) BOOL instantSendReceived;
 @property (nonatomic, readonly) BOOL confirmed;
@@ -90,9 +96,13 @@ typedef union _UInt256 UInt256;
 
 @property (nonatomic, readonly) NSString *longDescription;
 @property (nonatomic, readonly) BOOL isCoinbaseClassicTransaction;
+@property (nonatomic, readonly) BOOL isCreditFundingTransaction;
+@property (nonatomic, readonly) UInt256 creditBurnIdentityIdentifier;
+
 @property (nonatomic, strong) DSShapeshiftEntity * associatedShapeshift;
 @property (nonatomic, readonly) DSChain * chain;
-@property (nonatomic, readonly) DSAccount * account;
+@property (nonatomic, readonly) DSAccount * firstAccount;
+@property (nonatomic, readonly) NSArray * accounts;
 @property (nonatomic, readonly) Class entityClass;
 
 @property (nonatomic, readonly) BOOL transactionTypeRequiresInputs;
@@ -110,23 +120,27 @@ typedef union _UInt256 UInt256;
 
 - (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray*)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts onChain:(DSChain *)chain; //for v2 onwards
 
-- (void)addInputHash:(UInt256)hash index:(NSUInteger)index script:(NSData *)script;
-- (void)addInputHash:(UInt256)hash index:(NSUInteger)index script:(NSData *)script signature:(NSData *)signature
+- (void)addInputHash:(UInt256)hash index:(NSUInteger)index script:(NSData * _Nullable)script;
+- (void)addInputHash:(UInt256)hash index:(NSUInteger)index script:(NSData * _Nullable)script signature:(NSData * _Nullable)signature
 sequence:(uint32_t)sequence;
 - (void)addOutputAddress:(NSString *)address amount:(uint64_t)amount;
-- (void)addOutputScript:(NSData *)script withAddress:(NSString*)address amount:(uint64_t)amount;
+- (void)addOutputScript:(NSData *)script withAddress:(NSString* _Nullable)address amount:(uint64_t)amount;
 - (void)addOutputShapeshiftAddress:(NSString *)address;
 - (void)addOutputBurnAmount:(uint64_t)amount;
+- (void)addOutputCreditAddress:(NSString *)address amount:(uint64_t)amount;
 - (void)addOutputScript:(NSData *)script amount:(uint64_t)amount;
 - (void)setInputAddress:(NSString *)address atIndex:(NSUInteger)index;
 - (void)shuffleOutputOrder;
 - (void)hasSetInputsAndOutputs;
 - (BOOL)signWithSerializedPrivateKeys:(NSArray *)privateKeys;
 - (BOOL)signWithPrivateKeys:(NSArray *)keys;
+- (BOOL)signWithPreorderedPrivateKeys:(NSArray *)keys;
 
-- (NSString*)shapeshiftOutboundAddress;
-- (NSString*)shapeshiftOutboundAddressForceScript;
-+ (NSString*)shapeshiftOutboundAddressForScript:(NSData*)script;
+
+
+- (NSString* _Nullable)shapeshiftOutboundAddress;
+- (NSString* _Nullable)shapeshiftOutboundAddressForceScript;
++ (NSString* _Nullable)shapeshiftOutboundAddressForScript:(NSData*)script;
 
 // priority = sum(input_amount_in_satoshis*input_age_in_blocks)/tx_size_in_bytes
 - (uint64_t)priorityForAmounts:(NSArray *)amounts withAges:(NSArray *)ages;
@@ -137,6 +151,8 @@ sequence:(uint32_t)sequence;
 
 - (DSTransactionEntity *)save;
 
+- (DSTransactionEntity *)saveInContext:(NSManagedObjectContext*)context;
+
 - (BOOL)saveInitial; //returns if the save took place
 
 - (BOOL)setInitialPersistentAttributesInContext:(NSManagedObjectContext*)context;
@@ -145,4 +161,8 @@ sequence:(uint32_t)sequence;
 
 - (void)setInstantSendReceivedWithInstantSendLock:(DSInstantSendTransactionLock*)instantSendLock;
 
+- (void)loadBlockchainIdentitiesFromDerivationPaths:(NSArray<DSDerivationPath*>*)derivationPaths;
+
 @end
+
+NS_ASSUME_NONNULL_END

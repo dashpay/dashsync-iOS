@@ -1,26 +1,10 @@
 //
 //  DSChainEntity+CoreDataProperties.h
-//  
+//  DashSync
 //
-//  Created by Sam Westrich on 5/20/18.
+//  Created by Sam Westrich on 12/31/19.
 //
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
 //
-//  The above copyright notice and this permission notice shall be included in
-//  all copies or substantial portions of the Software.
-//
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-//  THE SOFTWARE.
 
 #import "DSChainEntity+CoreDataClass.h"
 
@@ -31,38 +15,93 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSFetchRequest<DSChainEntity *> *)fetchRequest;
 
-@property (nullable, nonatomic, retain) NSData *checkpoints;
 @property (nullable, nonatomic, retain) NSData *baseBlockHash;
+@property (nullable, nonatomic, retain) NSData *syncBlockHash;
+@property (nullable, nonatomic, retain) NSData *syncBlockChainWork;
+@property (nonatomic, assign) uint64_t syncBlockTimestamp;
+@property (nonatomic, assign) uint32_t syncBlockHeight;
+@property (nullable, nonatomic, retain) NSArray *syncLocators;
+@property (nullable, nonatomic, retain) NSData *checkpoints;
 @property (nullable, nonatomic, copy) NSString *devnetIdentifier;
-@property (nonatomic, assign) uint32_t standardPort;
-@property (nonatomic, assign) uint32_t standardDapiPort;
-@property (nonatomic, assign) uint32_t totalMasternodeCount;
 @property (nonatomic, assign) uint32_t totalGovernanceObjectsCount;
 @property (nonatomic, assign) uint16_t type;
-@property (nonnull, nonatomic, retain) NSSet<DSPeerEntity *> *peers;
-@property (nonnull, nonatomic, retain) NSSet<DSTransactionHashEntity *> *transactionHashes;
-@property (nonnull, nonatomic, retain) NSSet<DSMerkleBlockEntity *> *blocks;
-@property (nonnull, nonatomic, retain) NSSet<DSDerivationPathEntity *> *derivationPaths;
-@property (nonnull, nonatomic, retain) NSSet<DSSimplifiedMasternodeEntry *> *simplifiedMasternodeEntries;
+@property (nullable, nonatomic, retain) DSChainLockEntity * lastChainLock;
+@property (nullable, nonatomic, retain) NSSet<DSAccountEntity *> *accounts;
+@property (nullable, nonatomic, retain) NSSet<DSMerkleBlockEntity *> *blocks;
+@property (nullable, nonatomic, retain) NSSet<DSDashpayUserEntity *> *contacts;
+@property (nullable, nonatomic, retain) NSSet<DSDerivationPathEntity *> *derivationPaths;
+@property (nullable, nonatomic, retain) NSSet<DSGovernanceObjectHashEntity *> *governanceObjectHashes;
+@property (nullable, nonatomic, retain) NSSet<DSPeerEntity *> *peers;
+@property (nullable, nonatomic, retain) NSSet<DSQuorumEntryEntity *> *quorums;
+@property (nullable, nonatomic, retain) NSSet<DSSimplifiedMasternodeEntryEntity *> *simplifiedMasternodeEntries;
+@property (nullable, nonatomic, retain) NSSet<DSSporkHashEntity *> *sporks;
+@property (nullable, nonatomic, retain) NSSet<DSTransactionHashEntity *> *transactionHashes;
+@property (nullable, nonatomic, retain) NSSet<DSGovernanceVoteHashEntity *> *votes;
+@property (nullable, nonatomic, retain) NSSet<DSBlockchainIdentityEntity *> *identities;
 
 @end
 
 @interface DSChainEntity (CoreDataGeneratedAccessors)
+
+- (void)addAccountsObject:(DSAccountEntity *)value;
+- (void)removeAccountsObject:(DSAccountEntity *)value;
+- (void)addAccounts:(NSSet<DSAccountEntity *> *)values;
+- (void)removeAccounts:(NSSet<DSAccountEntity *> *)values;
+
+- (void)addBlocksObject:(DSMerkleBlockEntity *)value;
+- (void)removeBlocksObject:(DSMerkleBlockEntity *)value;
+- (void)addBlocks:(NSSet<DSMerkleBlockEntity *> *)values;
+- (void)removeBlocks:(NSSet<DSMerkleBlockEntity *> *)values;
+
+- (void)addContactsObject:(DSDashpayUserEntity *)value;
+- (void)removeContactsObject:(DSDashpayUserEntity *)value;
+- (void)addContacts:(NSSet<DSDashpayUserEntity *> *)values;
+- (void)removeContacts:(NSSet<DSDashpayUserEntity *> *)values;
+
+- (void)addDerivationPathsObject:(DSDerivationPathEntity *)value;
+- (void)removeDerivationPathsObject:(DSDerivationPathEntity *)value;
+- (void)addDerivationPaths:(NSSet<DSDerivationPathEntity *> *)values;
+- (void)removeDerivationPaths:(NSSet<DSDerivationPathEntity *> *)values;
+
+- (void)addGovernanceObjectHashesObject:(DSGovernanceObjectHashEntity *)value;
+- (void)removeGovernanceObjectHashesObject:(DSGovernanceObjectHashEntity *)value;
+- (void)addGovernanceObjectHashes:(NSSet<DSGovernanceObjectHashEntity *> *)values;
+- (void)removeGovernanceObjectHashes:(NSSet<DSGovernanceObjectHashEntity *> *)values;
 
 - (void)addPeersObject:(DSPeerEntity *)value;
 - (void)removePeersObject:(DSPeerEntity *)value;
 - (void)addPeers:(NSSet<DSPeerEntity *> *)values;
 - (void)removePeers:(NSSet<DSPeerEntity *> *)values;
 
+- (void)addQuorumsObject:(DSQuorumEntryEntity *)value;
+- (void)removeQuorumsObject:(DSQuorumEntryEntity *)value;
+- (void)addQuorums:(NSSet<DSQuorumEntryEntity *> *)values;
+- (void)removeQuorums:(NSSet<DSQuorumEntryEntity *> *)values;
+
+- (void)addSimplifiedMasternodeEntriesObject:(DSSimplifiedMasternodeEntryEntity *)value;
+- (void)removeSimplifiedMasternodeEntriesObject:(DSSimplifiedMasternodeEntryEntity *)value;
+- (void)addSimplifiedMasternodeEntries:(NSSet<DSSimplifiedMasternodeEntryEntity *> *)values;
+- (void)removeSimplifiedMasternodeEntries:(NSSet<DSSimplifiedMasternodeEntryEntity *> *)values;
+
+- (void)addSporksObject:(DSSporkHashEntity *)value;
+- (void)removeSporksObject:(DSSporkHashEntity *)value;
+- (void)addSporks:(NSSet<DSSporkHashEntity *> *)values;
+- (void)removeSporks:(NSSet<DSSporkHashEntity *> *)values;
+
 - (void)addTransactionHashesObject:(DSTransactionHashEntity *)value;
 - (void)removeTransactionHashesObject:(DSTransactionHashEntity *)value;
 - (void)addTransactionHashes:(NSSet<DSTransactionHashEntity *> *)values;
 - (void)removeTransactionHashes:(NSSet<DSTransactionHashEntity *> *)values;
 
-- (void)addBlocksObject:(DSMerkleBlockEntity *)value;
-- (void)removeBlocksObject:(DSMerkleBlockEntity *)value;
-- (void)addBlocks:(NSSet<DSMerkleBlockEntity *> *)values;
-- (void)removeBlocks:(NSSet<DSMerkleBlockEntity *> *)values;
+- (void)addVotesObject:(DSGovernanceVoteHashEntity *)value;
+- (void)removeVotesObject:(DSGovernanceVoteHashEntity *)value;
+- (void)addVotes:(NSSet<DSGovernanceVoteHashEntity *> *)values;
+- (void)removeVotes:(NSSet<DSGovernanceVoteHashEntity *> *)values;
+
+- (void)addIdentitiesObject:(DSBlockchainIdentityEntity *)value;
+- (void)removeIdentitiesObject:(DSBlockchainIdentityEntity *)value;
+- (void)addIdentities:(NSSet<DSBlockchainIdentityEntity *> *)values;
+- (void)removeIdentities:(NSSet<DSBlockchainIdentityEntity *> *)values;
 
 @end
 

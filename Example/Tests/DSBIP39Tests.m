@@ -28,7 +28,8 @@
     
     XCTAssertFalse([m phraseIsValid:s], @"[DSMnemonic phraseIsValid:]"); // test correct handling of bad checksum
     XCTAssertNil([m normalizePhrase:nil]);
-    XCTAssertNil([m deriveKeyFromPhrase:nil withPassphrase:nil]);
+    id aNilValue = nil;
+    XCTAssertNil([m deriveKeyFromPhrase:aNilValue withPassphrase:nil]);
     
     d = @"00000000000000000000000000000000".hexToData;
     s = [m encodePhrase:d];
@@ -308,6 +309,23 @@
     XCTAssertEqualObjects(seed_nfkd, seed_nfd, @"[DSBIP39Mnemonic deriveKeyFromPhrase: withPassphrase:]");
 }
 
+//- (void)testFindPossibleMissingWordOfMnemonic
+//{
+//    DSBIP39Mnemonic *m = [DSBIP39Mnemonic sharedInstance];
+//
+//    NSMutableArray * possibleWords = [NSMutableArray array];
+//    for (NSString * word in [m words]) {
+//        NSString * passphrase = [NSString stringWithFormat:@"front words go here %@ end words go here",word];
+//
+//        if ([m phraseIsValid:passphrase]) {
+//            [possibleWords addObject:word];
+//
+//        }
+//    }
+//    NSLog(@"possible words are %@",possibleWords);
+//    XCTAssert(possibleWords.count,@"words need to exist");
+//}
+//
 //- (void)testFindLastWordOfMnemonic
 //{
 //    DSBIP39Mnemonic *m = [DSBIP39Mnemonic sharedInstance];
@@ -320,7 +338,7 @@
 //        if ([m phraseIsValid:passphrase]) {
 //            [possibleWords addObject:word];
 //            NSData * data = [m deriveKeyFromPhrase:passphrase withPassphrase:nil];
-//            DSDerivationPath * derivationPath = [DSDerivationPath bip44DerivationPathOnChain:[DSChain mainnet] forAccountNumber:0];
+//            DSDerivationPath * derivationPath = [DSFundsDerivationPath bip44DerivationPathForAccountNumber:0 onChain:[DSChain mainnet]];
 //            [derivationPath generateExtendedPublicKeyFromSeed:data storeUnderWalletUniqueId:nil];
 //            NSUInteger indexArr[] = {0,0};
 //            NSString * firstAddress = [derivationPath addressAtIndexPath:[NSIndexPath indexPathWithIndexes:indexArr length:2]];

@@ -14,7 +14,8 @@
 #import "DSEnvironment.h"
 #import "DSPeerManager.h"
 #import "DSChain.h"
-#import "DSBlockchainUser.h"
+#import "DSCheckpoint.h"
+#import "DSBlockchainIdentity.h"
 
 #import "DSECDSAKey.h"
 #import "DSBLSKey.h"
@@ -23,18 +24,24 @@
 #import "DSDerivationPath.h"
 #import "DSDerivationPathFactory.h"
 #import "DSSimpleIndexedDerivationPath.h"
+#import "DSIncomingFundsDerivationPath.h"
 #import "DSAuthenticationKeysDerivationPath.h"
 #import "DSMasternodeHoldingsDerivationPath.h"
+#import "DSCreditFundingDerivationPath.h"
 #import "DSFundsDerivationPath.h"
 
 #import "DSSparseMerkleTree.h"
+
+#import "DSBlockchainIdentity.h"
+#import "DSCreditFundingTransaction.h"
 
 #import "DSChainsManager.h"
 #import "DSChainManager.h"
 #import "DSTransactionManager.h"
 #import "DSPriceManager.h"
 #import "DSMasternodeManager.h"
-#import "DSDAPIClient.h"
+#import "DSDAPINetworkService.h"
+#import "DSIdentitiesManager.h"
 #import "DSGovernanceSyncManager.h"
 #import "DSGovernanceObject.h"
 #import "DSGovernanceVote.h"
@@ -50,7 +57,10 @@
 #import "DSDerivationPath.h"
 #import "NSString+Dash.h"
 #import "NSMutableData+Dash.h"
+
 #import "DSOptionsManager.h"
+#import "DSErrorSimulationManager.h"
+
 #import "NSData+Dash.h"
 #import "NSArray+Dash.h"
 #import "NSDate+Utils.h"
@@ -69,6 +79,7 @@
 #import "DSChainLockEntity+CoreDataProperties.h"
 #import "DSTxOutputEntity+CoreDataProperties.h"
 #import "DSTxInputEntity+CoreDataProperties.h"
+#import "DSAccountEntity+CoreDataClass.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSMasternodeList.h"
 #import "DSLocalMasternode.h"
@@ -81,23 +92,35 @@
 
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
 #import "NSManagedObject+Sugar.h"
+#import "NSPredicate+DSUtils.h"
+#import "NSPredicate+CBORData.h"
 #import "DSPaymentRequest.h"
 #import "DSPaymentProtocol.h"
 
 #import "DSTransactionFactory.h"
 #import "DSTransaction+Utils.h"
 
-#import "DSBlockchainUserTopupTransaction.h"
-#import "DSBlockchainUserRegistrationTransaction.h"
-#import "DSBlockchainUserResetTransaction.h"
-#import "DSBlockchainUserCloseTransaction.h"
+#import "DSBlockchainIdentityTopupTransition.h"
+#import "DSBlockchainIdentityRegistrationTransition.h"
+#import "DSBlockchainIdentityUpdateTransition.h"
+#import "DSBlockchainIdentityCloseTransition.h"
 
 #import "DSMasternodeList.h"
 #import "DSMasternodeListEntity+CoreDataProperties.h"
 #import "DSQuorumEntryEntity+CoreDataProperties.h"
 #import "DSQuorumEntry.h"
+#import "DSBlockchainIdentity.h"
+#import "DSPotentialOneWayFriendship.h"
+#import "DSPotentialContact.h"
+#import "DSDashpayUserEntity+CoreDataClass.h"
+#import "DSFriendRequestEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityKeyPathEntity+CoreDataClass.h"
 
 #import "DSNetworking.h"
+
+#import "DSCoreDataMigrator.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -121,16 +144,17 @@ FOUNDATION_EXPORT const unsigned char DashSyncVersionString[];
 - (void)registerBackgroundFetchOnce;
 - (void)setupDashSyncOnce;
 
--(void)startSyncForChain:(DSChain* _Nonnull)chain;
--(void)stopSyncForChain:(DSChain* _Nonnull)chain;
+-(void)startSyncForChain:(DSChain*)chain;
+-(void)stopSyncForChain:(DSChain*)chain;
 -(void)stopSyncAllChains;
 
--(void)wipePeerDataForChain:(DSChain* _Nonnull)chain;
--(void)wipeBlockchainDataForChain:(DSChain* _Nonnull)chain;
--(void)wipeGovernanceDataForChain:(DSChain* _Nonnull)chain;
--(void)wipeMasternodeDataForChain:(DSChain* _Nonnull)chain;
--(void)wipeSporkDataForChain:(DSChain* _Nonnull)chain;
--(void)wipeWalletDataForChain:(DSChain* _Nonnull)chain forceReauthentication:(BOOL)forceReauthentication;
+-(void)wipePeerDataForChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context;
+-(void)wipeBlockchainDataForChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context;
+-(void)wipeBlockchainNonTerminalDataForChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context;
+-(void)wipeGovernanceDataForChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context;
+-(void)wipeMasternodeDataForChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context;
+-(void)wipeSporkDataForChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context;
+-(void)wipeWalletDataForChain:(DSChain*)chain forceReauthentication:(BOOL)forceReauthentication inContext:(NSManagedObjectContext*)context;
 
 -(uint64_t)dbSize;
 

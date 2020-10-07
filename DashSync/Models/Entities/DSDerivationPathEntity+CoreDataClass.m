@@ -24,41 +24,93 @@
 
 #import "DSDerivationPathEntity+CoreDataClass.h"
 #import "DSChainEntity+CoreDataClass.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "DSWallet.h"
 #import "DSAccount.h"
 #import "DSDerivationPath.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSBIP39Mnemonic.h"
 #import "DSAccountEntity+CoreDataClass.h"
+#import "DSIncomingFundsDerivationPath.h"
+#import "DSFriendRequestEntity+CoreDataClass.h"
+#import "NSManagedObject+Sugar.h"
 
 @implementation DSDerivationPathEntity
 
-+ (DSDerivationPathEntity* _Nonnull)derivationPathEntityMatchingDerivationPath:(DSDerivationPath*)derivationPath {
++ (DSDerivationPathEntity* _Nonnull)derivationPathEntityMatchingDerivationPath:(DSDerivationPath*)derivationPath inContext:(NSManagedObjectContext*)context {
     NSAssert(derivationPath.standaloneExtendedPublicKeyUniqueID, @"standaloneExtendedPublicKeyUniqueID must be set");
     //DSChain * chain = derivationPath.chain;
     NSArray * derivationPathEntities;
-    NSData * archivedDerivationPath = [NSKeyedArchiver archivedDataWithRootObject:derivationPath];
-    DSChainEntity * chainEntity = derivationPath.chain.chainEntity;
-        //NSUInteger count = [chainEntity.derivationPaths count];
-        derivationPathEntities = [[chainEntity.derivationPaths objectsPassingTest:^BOOL(DSDerivationPathEntity * _Nonnull obj, BOOL * _Nonnull stop) {
-            return ([obj.publicKeyIdentifier isEqualToString:derivationPath.standaloneExtendedPublicKeyUniqueID]);
-        }] allObjects];
+    NSError * archivingError = nil;
+    NSData * archivedDerivationPath = [NSKeyedArchiver archivedDataWithRootObject:derivationPath requiringSecureCoding:NO error:&archivingError];
+    NSAssert(archivedDerivationPath != nil && archivingError == nil, @"Archived derivation path should have been created");
+    DSChainEntity * chainEntity = [derivationPath.chain chainEntityInContext:context];
+    //NSUInteger count = [chainEntity.derivationPaths count];
+    derivationPathEntities = [[chainEntity.derivationPaths objectsPassingTest:^BOOL(DSDerivationPathEntity * _Nonnull obj, BOOL * _Nonnull stop) {
+        return ([obj.publicKeyIdentifier isEqualToString:derivationPath.standaloneExtendedPublicKeyUniqueID]);
+    }] allObjects];
     
     //&& [obj.derivationPath isEqualToData:archivedDerivationPath]
     if ([derivationPathEntities count]) {
         return [derivationPathEntities firstObject];
     } else {
-        DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity managedObject];
+        DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity managedObjectInBlockedContext:context];
         derivationPathEntity.derivationPath = archivedDerivationPath;
         derivationPathEntity.chain = chainEntity;
         derivationPathEntity.publicKeyIdentifier = derivationPath.standaloneExtendedPublicKeyUniqueID;
         derivationPathEntity.syncBlockHeight = BIP39_CREATION_TIME;
         if (derivationPath.account) {
-            derivationPathEntity.account = [DSAccountEntity accountEntityForWalletUniqueID:derivationPath.account.wallet.uniqueID index:derivationPath.account.accountNumber];
+            derivationPathEntity.account = [DSAccountEntity accountEntityForWalletUniqueID:derivationPath.account.wallet.uniqueIDString index:derivationPath.account.accountNumber onChain:derivationPath.chain inContext:context];
+        }
+        if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
+            DSIncomingFundsDerivationPath * incomingFundsDerivationPath = (DSIncomingFundsDerivationPath *)derivationPath;
+            NSPredicate * predicatee = [NSPredicate predicateWithFormat:@"sourceContact.associatedBlockchainIdentity.uniqueID == %@ && destinationContact.associatedBlockchainIdentity.uniqueID == %@",uint256_data(incomingFundsDerivationPath.contactSourceBlockchainIdentityUniqueId),uint256_data(incomingFundsDerivationPath.contactDestinationBlockchainIdentityUniqueId)];
+            DSFriendRequestEntity * friendRequest = [DSFriendRequestEntity anyObjectForPredicate:predicatee inContext:context];
+            if (friendRequest) {
+                derivationPathEntity.friendRequest = friendRequest;
+            }
         }
         return derivationPathEntity;
     }
+}
+
++(DSDerivationPathEntity* _Nonnull)derivationPathEntityMatchingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath associateWithFriendRequest:(DSFriendRequestEntity*)friendRequest {
+    NSAssert(derivationPath.standaloneExtendedPublicKeyUniqueID, @"standaloneExtendedPublicKeyUniqueID must be set");
+    NSParameterAssert(friendRequest);
+    
+    NSManagedObjectContext * context = friendRequest.managedObjectContext;
+    //DSChain * chain = derivationPath.chain;
+    NSError * archivingError = nil;
+    NSData * archivedDerivationPath = [NSKeyedArchiver archivedDataWithRootObject:derivationPath requiringSecureCoding:NO error:&archivingError];
+    NSAssert(archivedDerivationPath != nil && archivingError == nil, @"Archived derivation path should have been created");
+    DSChainEntity * chainEntity = [derivationPath.chain chainEntityInContext:context];
+
+    NSSet * derivationPathEntities = [chainEntity.derivationPaths filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"publicKeyIdentifier == %@ && chain == %@",derivationPath.standaloneExtendedPublicKeyUniqueID,[derivationPath.chain chainEntityInContext:context]]];
+    if ([derivationPathEntities count]) {
+        DSDerivationPathEntity * derivationPathEntity = [derivationPathEntities anyObject];
+        return derivationPathEntity;
+    } else {
+        DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity managedObjectInBlockedContext:context];
+        derivationPathEntity.derivationPath = archivedDerivationPath;
+        derivationPathEntity.chain = chainEntity;
+        derivationPathEntity.publicKeyIdentifier = derivationPath.standaloneExtendedPublicKeyUniqueID;
+        derivationPathEntity.syncBlockHeight = BIP39_CREATION_TIME;
+        if (derivationPath.account) {
+            derivationPathEntity.account = [DSAccountEntity accountEntityForWalletUniqueID:derivationPath.account.wallet.uniqueIDString index:derivationPath.account.accountNumber onChain:derivationPath.chain inContext:friendRequest.managedObjectContext];
+        }
+        derivationPathEntity.friendRequest = friendRequest;
+        
+        return derivationPathEntity;
+    }
+}
+
++(void)deleteDerivationPathsOnChainEntity:(DSChainEntity*)chainEntity {
+    [chainEntity.managedObjectContext performBlockAndWait:^{
+        NSArray * derivationPathsToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@)",chainEntity];
+        for (DSDerivationPathEntity * derivationPath in derivationPathsToDelete) {
+            [chainEntity.managedObjectContext deleteObject:derivationPath];
+        }
+    }];
 }
 
 @end

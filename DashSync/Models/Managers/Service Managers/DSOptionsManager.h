@@ -22,8 +22,11 @@ typedef NS_ENUM(NSUInteger, DSSyncType) {
     DSSyncType_GovernanceVotes = 1 << 5,
     DSSyncType_GovernanceVoting = DSSyncType_Governance | DSSyncType_MasternodeList,
     DSSyncType_Sporks = 1 << 6,
-    DSSyncType_Default = DSSyncType_SPV | DSSyncType_Mempools | DSSyncType_VerifiedMasternodeList | DSSyncType_Sporks,
-    DSSyncType_NeedsWalletSyncType = DSSyncType_SPV | DSSyncType_FullBlocks,
+    DSSyncType_BlockchainIdentities = 1 << 7,
+    DSSyncType_DPNS = 1 << 8,
+    DSSyncType_Dashpay = 1 << 9,
+    DSSyncType_Default = DSSyncType_SPV | DSSyncType_Mempools | DSSyncType_VerifiedMasternodeList | DSSyncType_Sporks | DSSyncType_BlockchainIdentities | DSSyncType_DPNS | DSSyncType_Dashpay,
+    DSSyncType_NeedsWalletSyncType = DSSyncType_BaseSPV | DSSyncType_FullBlocks,
     DSSyncType_GetsNewBlocks = DSSyncType_SPV | DSSyncType_FullBlocks,
 };
 
@@ -35,6 +38,7 @@ typedef NS_ENUM(NSUInteger, DSSyncType) {
 @property (nonatomic,assign) BOOL syncFromGenesis;
 @property (nonatomic,assign) BOOL retrievePriceInfo;
 @property (nonatomic,assign) BOOL shouldSyncFromHeight;
+@property (nonatomic,assign) BOOL shouldUseCheckpointFile;
 @property (nonatomic,assign) uint32_t syncFromHeight;
 @property (nonatomic,assign) NSTimeInterval syncGovernanceObjectsInterval;
 @property (nonatomic,assign) NSTimeInterval syncMasternodeListInterval;

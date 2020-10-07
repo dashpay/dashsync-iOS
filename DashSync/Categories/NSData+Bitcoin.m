@@ -157,36 +157,54 @@ NSString *getKeychainString(NSString *key, NSError **error)
 BOOL setKeychainDict(NSDictionary *dict, NSString *key, BOOL authenticated)
 {
     @autoreleasepool {
-        NSData *d = (dict) ? [NSKeyedArchiver archivedDataWithRootObject:dict] : nil;
+        NSData *d = (dict) ? [NSKeyedArchiver archivedDataWithRootObject:dict requiringSecureCoding:NO error:nil] : nil;
         
         return setKeychainData(d, key, authenticated);
     }
 }
 
-NSDictionary *getKeychainDict(NSString *key, NSError **error)
+NSDictionary *getKeychainDict(NSString *key, NSArray *classes, NSError **error)
 {
-    @autoreleasepool {
+    //@autoreleasepool {
         NSData *d = getKeychainData(key, error);
-        
-        return (d) ? [NSKeyedUnarchiver unarchiveObjectWithData:d] : nil;
-    }
+        if (d == nil) return nil;
+        NSSet *set = [NSSet setWithArray:@[
+        [NSDictionary class],
+        [NSMutableDictionary class]
+        ]];
+        set = [set setByAddingObjectsFromArray:classes];
+        NSDictionary * dictionary = [NSKeyedUnarchiver unarchivedObjectOfClasses:set fromData:d error:error];
+        if (*error) {
+            DSDLog(@"error retrieving dictionary from keychain %@",*error);
+        }
+        return dictionary;
+    //}
 }
 
 BOOL setKeychainArray(NSArray *array, NSString *key, BOOL authenticated)
 {
     @autoreleasepool {
-        NSData *d = (array) ? [NSKeyedArchiver archivedDataWithRootObject:array] : nil;
+        NSData *d = (array) ? [NSKeyedArchiver archivedDataWithRootObject:array requiringSecureCoding:NO error:nil] : nil;
         
         return setKeychainData(d, key, authenticated);
     }
 }
 
-NSArray *getKeychainArray(NSString *key, NSError **error)
+NSArray *getKeychainArray(NSString *key, NSArray *classes, NSError **error)
 {
     @autoreleasepool {
         NSData *d = getKeychainData(key, error);
-        
-        return (d) ? [NSKeyedUnarchiver unarchiveObjectWithData:d] : nil;
+        if (d == nil) return nil;
+        NSSet *set = [NSSet setWithArray:@[
+        [NSArray class],
+        [NSMutableArray class]
+        ]];
+        set = [set setByAddingObjectsFromArray:classes];
+        NSArray * array = [NSKeyedUnarchiver unarchivedObjectOfClasses:set fromData:d error:error];
+        if (*error) {
+            DSDLog(@"error retrieving array from keychain %@",*error);
+        }
+        return array;
     }
 }
 
@@ -195,14 +213,14 @@ NSOrderedSet *getKeychainOrderedSet(NSString *key, NSError **error)
     @autoreleasepool {
         NSData *d = getKeychainData(key, error);
         
-        return (d) ? [NSKeyedUnarchiver unarchiveObjectWithData:d] : nil;
+        return (d) ? [NSKeyedUnarchiver unarchivedObjectOfClass:[NSOrderedSet class] fromData:d error:nil] : nil;
     }
 }
 
 BOOL setKeychainOrderedSet(NSOrderedSet *orderedSet, NSString *key, BOOL authenticated)
 {
     @autoreleasepool {
-        NSData *d = (orderedSet) ? [NSKeyedArchiver archivedDataWithRootObject:orderedSet] : nil;
+        NSData *d = (orderedSet) ? [NSKeyedArchiver archivedDataWithRootObject:orderedSet requiringSecureCoding:NO error:nil] : nil;
         
         return setKeychainData(d, key, authenticated);
     }
@@ -519,6 +537,7 @@ void MD5(void *md, const void *data, size_t len)
 void HMAC(void *md, void (*hash)(void *, const void *, size_t), size_t hlen, const void *key, size_t klen,
           const void *data, size_t dlen)
 {
+    //blen is block size length
     size_t blen = (hlen > 32) ? 128 : 64;
     uint8_t k[hlen], kipad[blen + dlen], kopad[blen + hlen];
     
@@ -778,7 +797,7 @@ size_t chacha20Poly1305AEADDecrypt(void *out, size_t outLen, const void *key32, 
 }
 
 // helper function for serializing BIP32 master public/private keys to standard export format
-NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, UInt256 chain, NSData *key,BOOL mainnet)
+NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, UInt256 chain, NSData *key, BOOL mainnet)
 {
     NSMutableData *d = [NSMutableData secureDataWithCapacity:14 + key.length + sizeof(chain)];
     
@@ -823,22 +842,27 @@ BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerprint, uin
 }
 
 
-UInt256 setCompact(int32_t nCompact)
+UInt256 setCompactLE(int32_t nCompact)
 {
     int nSize = nCompact >> 24;
     UInt256 nWord = UINT256_ZERO;
     nWord.u32[0] = nCompact & 0x007fffff;
     if (nSize <= 3) {
-        nWord = uInt256ShiftRight(nWord, 8 * (3 - nSize));
+        nWord = uInt256ShiftRightLE(nWord, 8 * (3 - nSize));
     } else {
-        nWord = uInt256ShiftLeft(nWord, 8 * (nSize - 3));
+        nWord = uInt256ShiftLeftLE(nWord, 8 * (nSize - 3));
     }
     return nWord;
 }
 
-uint8_t compactBits(UInt256 number)
+UInt256 setCompactBE(int32_t nCompact)
 {
-    for (int pos = 8 - 1; pos >= 0; pos--) {
+    return uint256_reverse(setCompactLE(nCompact));
+}
+
+uint16_t compactBitsLE(UInt256 number)
+{
+    for (int pos = 7; pos >= 0; pos--) {
         if (number.u32[pos]) {
             for (int bits = 31; bits > 0; bits--) {
                 if (number.u32[pos] & 1 << bits)
@@ -850,14 +874,14 @@ uint8_t compactBits(UInt256 number)
     return 0;
 }
 
-int32_t getCompact(UInt256 number)
+int32_t getCompactLE(UInt256 number)
 {
-    int nSize = (compactBits(number) + 7) / 8;
+    uint16_t nSize = (compactBitsLE(number) + 7) / 8;
     uint32_t nCompact = 0;
     if (nSize <= 3) {
         nCompact = number.u32[0] << 8 * (3 - nSize);
     } else {
-        UInt256 bn = uInt256ShiftRight(number, 8 * (nSize - 3));
+        UInt256 bn = uInt256ShiftRightLE(number, 8 * (nSize - 3));
         nCompact = bn.u32[0];
     }
     // The 0x00800000 bit denotes the sign.
@@ -872,7 +896,7 @@ int32_t getCompact(UInt256 number)
     return nCompact;
 }
 
-UInt256 uInt256Add(UInt256 a, UInt256 b) {
+UInt256 uInt256AddLE(UInt256 a, UInt256 b) {
     uint64_t carry = 0;
     UInt256 r = UINT256_ZERO;
     for (int i = 0; i < 8; i++) {
@@ -883,12 +907,16 @@ UInt256 uInt256Add(UInt256 a, UInt256 b) {
     return r;
 }
 
-UInt256 uInt256AddOne(UInt256 a) {
-    UInt256 r = ((UInt256) { .u64 = { 1, 0, 0, 0 } });
-    return uInt256Add(a, r);
+UInt256 uInt256AddBE(UInt256 a, UInt256 b) {
+    return uint256_reverse(uInt256AddLE(uint256_reverse(a),uint256_reverse(b)));
 }
 
-UInt256 uInt256Neg(UInt256 a) {
+UInt256 uInt256AddOneLE(UInt256 a) {
+    UInt256 r = ((UInt256) { .u64 = { 1, 0, 0, 0 } });
+    return uInt256AddLE(a, r);
+}
+
+UInt256 uInt256NegLE(UInt256 a) {
     UInt256 r = UINT256_ZERO;
     for (int i = 0; i < 4; i++) {
         r.u64[i] = ~a.u64[i];
@@ -896,11 +924,19 @@ UInt256 uInt256Neg(UInt256 a) {
     return r;
 }
 
-UInt256 uInt256Subtract(UInt256 a, UInt256 b) {
-    return uInt256Add(a,uInt256AddOne(uInt256Neg(b)));
+UInt256 uInt256SubtractLE(UInt256 a, UInt256 b) {
+    return uInt256AddLE(a,uInt256AddOneLE(uInt256NegLE(b)));
 }
 
-UInt256 uInt256ShiftLeft(UInt256 a, uint8_t bits) {
+UInt256 uInt256AbsSubtractLE(UInt256 a, UInt256 b) {
+    return (uint256_sup(a, b))?uInt256AddLE(a,uInt256AddOneLE(uInt256NegLE(b))):uInt256AddLE(b,uInt256AddOneLE(uInt256NegLE(a)));
+}
+
+UInt256 uInt256SubtractBE(UInt256 a, UInt256 b) {
+    return uint256_reverse(uInt256AddLE(uint256_reverse(a),uInt256AddOneLE(uInt256NegLE(uint256_reverse(b)))));
+}
+
+UInt256 uInt256ShiftLeftLE(UInt256 a, uint8_t bits) {
     UInt256 r = UINT256_ZERO;
     int k = bits / 64;
     bits = bits % 64;
@@ -913,7 +949,7 @@ UInt256 uInt256ShiftLeft(UInt256 a, uint8_t bits) {
     return r;
 }
 
-UInt256 uInt256ShiftRight(UInt256 a, uint8_t bits) {
+UInt256 uInt256ShiftRightLE(UInt256 a, uint8_t bits) {
     UInt256 r = UINT256_ZERO;
     int k = bits / 64;
     bits = bits % 64;
@@ -926,31 +962,31 @@ UInt256 uInt256ShiftRight(UInt256 a, uint8_t bits) {
     return r;
 }
 
-UInt256 uInt256Divide (UInt256 a,UInt256 b)
+UInt256 uInt256DivideLE (UInt256 a,UInt256 b)
 {
     UInt256 div = b;     // make a copy, so we can shift.
     UInt256 num = a;     // make a copy, so we can subtract.
     UInt256 r = UINT256_ZERO;                  // the quotient.
-    int num_bits = compactBits(num);
-    int div_bits = compactBits(div);
+    int16_t num_bits = compactBitsLE(num);
+    int16_t div_bits = compactBitsLE(div);
     assert (div_bits != 0);
     if (div_bits > num_bits) // the result is certainly 0.
         return r;
-    int shift = num_bits - div_bits;
-    div = uInt256ShiftLeft(div, shift); // shift so that div and nun align.
+    int16_t shift = num_bits - div_bits;
+    div = uInt256ShiftLeftLE(div, shift); // shift so that div and nun align.
     while (shift >= 0) {
         if (uint256_supeq(num,div)) {
-            num = uInt256Subtract(num,div);
+            num = uInt256SubtractLE(num,div);
             r.u32[shift / 32] |= (1 << (shift & 31)); // set a bit of the result.
         }
-        div = uInt256ShiftRight(div, 1); // shift back.
+        div = uInt256ShiftRightLE(div, 1); // shift back.
         shift--;
     }
     // num now contains the remainder of the division.
     return r;
 }
 
-UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
+UInt256 uInt256MultiplyUInt32LE (UInt256 a, uint32_t b)
 {
     uint64_t carry = 0;
     for (int i = 0; i < 8; i++) {
@@ -1050,6 +1086,12 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     return sha512;
 }
 
+- (UInt256)HMACSHA256WithKey:(UInt256)secretKey {
+    UInt256 I;
+    HMAC(&I, SHA256, sizeof(UInt256), &secretKey, sizeof(UInt256), self.bytes, self.length);
+    return I;
+}
+
 - (UInt160)RMD160
 {
     UInt160 rmd160;
@@ -1102,6 +1144,12 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     return CFSwapInt16LittleToHost(*(const uint16_t *)((const uint8_t *)self.bytes + offset));
 }
 
+- (uint16_t)UInt16BigAtOffset:(NSUInteger)offset
+{
+    if (self.length < offset + sizeof(uint16_t)) return 0;
+    return CFSwapInt16BigToHost(*(const uint16_t *)((const uint8_t *)self.bytes + offset));
+}
+
 
 - (uint32_t)UInt32AtOffset:(NSUInteger)offset
 {
@@ -1123,13 +1171,21 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
 
 - (UInt128)UInt128
 {
-    if (self.length < sizeof(UInt128)) return UINT128_ZERO;
+    if (self.length < sizeof(UInt128)) {
+        NSMutableData * mData = [self mutableCopy];
+        [mData increaseLengthBy:(sizeof(UInt128)) - self.length];
+        return [mData UInt128];
+    }
     return *(UInt128 *)(self.bytes);
 }
 
 - (UInt160)UInt160AtOffset:(NSUInteger)offset
 {
-    if (self.length < offset + sizeof(UInt160)) return UINT160_ZERO;
+    if (self.length < sizeof(UInt160)) {
+        NSMutableData * mData = [self mutableCopy];
+        [mData increaseLengthBy:(sizeof(UInt160)) - self.length];
+        return [mData UInt160];
+    }
     return *(UInt160 *)(self.bytes + offset);
 }
 
@@ -1147,7 +1203,11 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
 
 - (UInt256)UInt256
 {
-    if (self.length < sizeof(UInt256)) return UINT256_ZERO;
+    if (self.length < sizeof(UInt256)) {
+        NSMutableData * mData = [self mutableCopy];
+        [mData increaseLengthBy:(sizeof(UInt256)) - self.length];
+        return [mData UInt256];
+    }
     return *(UInt256 *)(self.bytes);
 }
 
@@ -1159,7 +1219,11 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
 
 - (UInt384)UInt384
 {
-    if (self.length < sizeof(UInt384)) return UINT384_ZERO;
+    if (self.length < sizeof(UInt384)) {
+        NSMutableData * mData = [self mutableCopy];
+        [mData increaseLengthBy:(sizeof(UInt384)) - self.length];
+        return [mData UInt384];
+    }
     return *(UInt384 *)(self.bytes);
 }
 
@@ -1171,7 +1235,11 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
 
 - (UInt512)UInt512
 {
-    if (self.length < sizeof(UInt512)) return UINT512_ZERO;
+    if (self.length < sizeof(UInt512)) {
+        NSMutableData * mData = [self mutableCopy];
+        [mData increaseLengthBy:(sizeof(UInt512)) - self.length];
+        return [mData UInt512];
+    }
     return *(UInt512 *)(self.bytes);
 }
 
@@ -1183,14 +1251,18 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
 
 - (UInt768)UInt768
 {
-    if (self.length < sizeof(UInt768)) return UINT768_ZERO;
+    if (self.length < sizeof(UInt768)) {
+        NSMutableData * mData = [self mutableCopy];
+        [mData increaseLengthBy:(sizeof(UInt768)) - self.length];
+        return [mData UInt768];
+    }
     return *(UInt768 *)(self.bytes);
 }
 
 - (DSUTXO)transactionOutpoint
 {
-    if (self.length < sizeof(DSUTXO)) return DSUTXO_ZERO;
-    return *(DSUTXO *)(self.bytes);
+    if (self.length < 36) return DSUTXO_ZERO;
+    return (DSUTXO) { .hash = [self UInt256], .n = *(uint32_t *)(self.bytes + 32) };
 }
 
 - (DSLLMQ)llmq
@@ -1318,6 +1390,11 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     return [NSString base58WithData:self];
 }
 
+- (NSString *)base64String
+{
+    return [self base64EncodedStringWithOptions:0];
+}
+
 - (NSString *)shortHexString
 {
     NSString * hexData = [NSString hexWithData:self];
@@ -1331,6 +1408,64 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
 - (NSString *)hexString
 {
     return [NSString hexWithData:self];
+}
+
+- (NSString *)binaryString
+{
+    return [NSString binaryWithData:self];
+}
+
+
++(uint8_t)positionOfFirstSetBitInOctal:(uint8_t)value {
+    NSAssert(value < 16, @"value must be under 16");
+    switch(value) {
+        case 0: return UINT8_MAX;//@"0000";
+        case 1: return 3;//@"0001";
+        case 2: return 2;//@"0010";
+        case 3: return 2;//@"0011";
+        case 4: return 1;//@"0100";
+        case 5: return 1;//@"0101";
+        case 6: return 1;//@"0110";
+        case 7: return 1;//@"0111";
+        case 8: return 0;//@"1000";
+        case 9: return 0;//@"1001";
+        case 10: return 0;//@"1010";
+        case 11: return 0;//@"1011";
+        case 12: return 0;//@"1100";
+        case 13: return 0;//@"1101";
+        case 14: return 0;//@"1110";
+        case 15: return 0;//@"1111";
+        default:
+            return UINT8_MAX;
+    }
+}
+
++(uint8_t)positionOfFirstSetBitInSmallInteger:(uint8_t)value {
+    uint8_t positionOfFirstSetBit = [self positionOfFirstSetBitInOctal:value>>4];
+    if (positionOfFirstSetBit == UINT8_MAX) { //not found
+        return [self positionOfFirstSetBitInOctal:value&0xf];
+    } else {
+        return positionOfFirstSetBit;
+    }
+}
+
++ (uint16_t)positionOfFirstSetBitInData:(NSData *)d
+{
+    if (! d) return UINT16_MAX;
+    
+    const uint8_t *bytes = d.bytes;
+    for (NSUInteger i = 0; i < d.length; i++) {
+        uint8_t positionOfFirstSetBit = [self positionOfFirstSetBitInSmallInteger:bytes[i]];
+        if (positionOfFirstSetBit != UINT8_MAX) {
+            return positionOfFirstSetBit + 8*i;
+        }
+    }
+    
+    return UINT16_MAX;
+}
+
+-(uint16_t)positionOfFirstSetBit {
+    return [NSData positionOfFirstSetBitInData:self];
 }
 
 +(NSData*)opReturnScript {
@@ -1373,7 +1508,12 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     return [level objectAtIndex:0];
 }
 
+- (BOOL)isSizedForAddress {
+    return (self.length == 20);
+}
+
 - (NSString*)addressFromHash160DataForChain:(DSChain*)chain {
+    NSAssert(self.length == 20, @"The length of this data should be 20 bytes");
     if (self.length != 20) return nil;
     NSMutableData *d = [NSMutableData data];
     uint8_t v;
@@ -1401,7 +1541,7 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     return trueBitsCount;
 }
 
-- (BOOL)bitIsTrueAtIndex:(uint32_t)index {
+- (BOOL)bitIsTrueAtLEIndex:(uint32_t)index {
     uint32_t offset = index / 8;
     uint32_t bitPosition = index % 8;
     uint8_t bits = [self UInt8AtOffset:offset];

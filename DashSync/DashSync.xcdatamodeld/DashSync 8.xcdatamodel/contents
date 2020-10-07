@@ -1,0 +1,514 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="16119" systemVersion="19F101" minimumToolsVersion="Xcode 7.3" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
+    <entity name="DSAccountEntity" representedClassName="DSAccountEntity" syncable="YES">
+        <attribute name="index" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="walletUniqueID" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="accounts" inverseEntity="DSChainEntity" syncable="YES"/>
+        <relationship name="derivationPaths" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSDerivationPathEntity" inverseName="account" inverseEntity="DSDerivationPathEntity" syncable="YES"/>
+        <relationship name="friendRequests" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSFriendRequestEntity" inverseName="account" inverseEntity="DSFriendRequestEntity" syncable="YES"/>
+        <relationship name="transactionOutputs" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSTxOutputEntity" inverseName="account" inverseEntity="DSTxOutputEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSAddressEntity" representedClassName="DSAddressEntity" syncable="YES">
+        <attribute name="address" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="identityIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="index" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <attribute name="internal" optional="YES" attributeType="Boolean" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <attribute name="standalone" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="derivationPath" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSDerivationPathEntity" inverseName="addresses" inverseEntity="DSDerivationPathEntity" syncable="YES"/>
+        <relationship name="usedInInputs" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSTxInputEntity" inverseName="localAddress" inverseEntity="DSTxInputEntity" syncable="YES"/>
+        <relationship name="usedInOutputs" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSTxOutputEntity" inverseName="localAddress" inverseEntity="DSTxOutputEntity" syncable="YES"/>
+        <relationship name="usedInSimplifiedMasternodeEntries" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSSimplifiedMasternodeEntryEntity" inverseName="addresses" inverseEntity="DSSimplifiedMasternodeEntryEntity" syncable="YES"/>
+        <relationship name="usedInSpecialTransactions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSSpecialTransactionEntity" inverseName="addresses" inverseEntity="DSSpecialTransactionEntity" syncable="YES"/>
+        <compoundIndexes>
+            <compoundIndex>
+                <index value="identityIndex"/>
+                <index value="index"/>
+            </compoundIndex>
+            <compoundIndex>
+                <index value="internal"/>
+                <index value="index"/>
+            </compoundIndex>
+        </compoundIndexes>
+    </entity>
+    <entity name="DSBlockchainIdentityEntity" representedClassName="DSBlockchainIdentityEntity" syncable="YES">
+        <attribute name="creditBalance" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="dashpaySyncronizationBlockHash" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="isLocal" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="lastCheckedIncomingContactsTimestamp" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="lastCheckedOutgoingContactsTimestamp" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="lastCheckedProfileTimestamp" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="lastCheckedUsernamesTimestamp" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="registrationStatus" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="uniqueID" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="identities" inverseEntity="DSChainEntity" indexed="YES" syncable="YES"/>
+        <relationship name="createdContracts" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSContractEntity" inverseName="creator" inverseEntity="DSContractEntity" syncable="YES"/>
+        <relationship name="dashpayUsername" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityUsernameEntity" inverseName="blockchainIdentityUsedForDashpay" inverseEntity="DSBlockchainIdentityUsernameEntity" syncable="YES"/>
+        <relationship name="keyPaths" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSBlockchainIdentityKeyPathEntity" inverseName="blockchainIdentity" inverseEntity="DSBlockchainIdentityKeyPathEntity" syncable="YES"/>
+        <relationship name="matchingDashpayUser" maxCount="1" deletionRule="Cascade" destinationEntity="DSDashpayUserEntity" inverseName="associatedBlockchainIdentity" inverseEntity="DSDashpayUserEntity" syncable="YES"/>
+        <relationship name="registrationFundingTransaction" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSCreditFundingTransactionEntity" inverseName="registeredBlockchainIdentity" inverseEntity="DSCreditFundingTransactionEntity" syncable="YES"/>
+        <relationship name="topUpFundingTransactions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSCreditFundingTransactionEntity" inverseName="toppedUpBlockchainIdentity" inverseEntity="DSCreditFundingTransactionEntity" syncable="YES"/>
+        <relationship name="usernames" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSBlockchainIdentityUsernameEntity" inverseName="blockchainIdentity" inverseEntity="DSBlockchainIdentityUsernameEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSBlockchainIdentityKeyPathEntity" representedClassName="DSBlockchainIdentityKeyPathEntity" syncable="YES">
+        <attribute name="keyID" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="keyStatus" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="keyType" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="path" optional="YES" attributeType="Transformable" valueTransformerName="DSIndexPathValueTransformer" syncable="YES"/>
+        <attribute name="publicKeyData" attributeType="Binary" syncable="YES"/>
+        <relationship name="blockchainIdentity" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityEntity" inverseName="keyPaths" inverseEntity="DSBlockchainIdentityEntity" syncable="YES"/>
+        <relationship name="derivationPath" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSDerivationPathEntity" inverseName="identityKeyPaths" inverseEntity="DSDerivationPathEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSBlockchainIdentityUsernameEntity" representedClassName="DSBlockchainIdentityUsernameEntity" syncable="YES">
+        <attribute name="domain" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="salt" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="status" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="stringValue" attributeType="String" syncable="YES"/>
+        <relationship name="blockchainIdentity" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityEntity" inverseName="usernames" inverseEntity="DSBlockchainIdentityEntity" syncable="YES"/>
+        <relationship name="blockchainIdentityUsedForDashpay" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityEntity" inverseName="dashpayUsername" inverseEntity="DSBlockchainIdentityEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSChainEntity" representedClassName="DSChainEntity" syncable="YES">
+        <attribute name="baseBlockHash" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="checkpoints" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="devnetIdentifier" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="syncBlockChainWork" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="syncBlockHash" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="syncBlockHeight" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="syncBlockTimestamp" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="syncLocators" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" syncable="YES"/>
+        <attribute name="totalGovernanceObjectsCount" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="type" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="accounts" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSAccountEntity" inverseName="chain" inverseEntity="DSAccountEntity" syncable="YES"/>
+        <relationship name="blocks" toMany="YES" deletionRule="Cascade" destinationEntity="DSMerkleBlockEntity" inverseName="chain" inverseEntity="DSMerkleBlockEntity" syncable="YES"/>
+        <relationship name="contacts" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSDashpayUserEntity" inverseName="chain" inverseEntity="DSDashpayUserEntity" syncable="YES"/>
+        <relationship name="contracts" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSContractEntity" inverseName="chain" inverseEntity="DSContractEntity" syncable="YES"/>
+        <relationship name="derivationPaths" toMany="YES" deletionRule="Cascade" destinationEntity="DSDerivationPathEntity" inverseName="chain" inverseEntity="DSDerivationPathEntity" syncable="YES"/>
+        <relationship name="governanceObjectHashes" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSGovernanceObjectHashEntity" inverseName="chain" inverseEntity="DSGovernanceObjectHashEntity" syncable="YES"/>
+        <relationship name="identities" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSBlockchainIdentityEntity" inverseName="chain" inverseEntity="DSBlockchainIdentityEntity" syncable="YES"/>
+        <relationship name="lastChainLock" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainLockEntity" inverseName="chainIfLastChainLock" inverseEntity="DSChainLockEntity" syncable="YES"/>
+        <relationship name="peers" toMany="YES" deletionRule="Cascade" destinationEntity="DSPeerEntity" inverseName="chain" inverseEntity="DSPeerEntity" syncable="YES"/>
+        <relationship name="quorums" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSQuorumEntryEntity" inverseName="chain" inverseEntity="DSQuorumEntryEntity" syncable="YES"/>
+        <relationship name="simplifiedMasternodeEntries" toMany="YES" deletionRule="Cascade" destinationEntity="DSSimplifiedMasternodeEntryEntity" inverseName="chain" inverseEntity="DSSimplifiedMasternodeEntryEntity" syncable="YES"/>
+        <relationship name="sporks" toMany="YES" deletionRule="Cascade" destinationEntity="DSSporkHashEntity" inverseName="chain" inverseEntity="DSSporkHashEntity" syncable="YES"/>
+        <relationship name="transactionHashes" toMany="YES" deletionRule="Cascade" destinationEntity="DSTransactionHashEntity" inverseName="chain" inverseEntity="DSTransactionHashEntity" syncable="YES"/>
+        <relationship name="votes" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSGovernanceVoteHashEntity" inverseName="chain" inverseEntity="DSGovernanceVoteHashEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSChainLockEntity" representedClassName="DSChainLockEntity" syncable="YES">
+        <attribute name="signature" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="validSignature" optional="YES" attributeType="Boolean" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="chainIfLastChainLock" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="lastChainLock" inverseEntity="DSChainEntity" syncable="YES"/>
+        <relationship name="merkleBlock" maxCount="1" deletionRule="Nullify" destinationEntity="DSMerkleBlockEntity" inverseName="chainLock" inverseEntity="DSMerkleBlockEntity" syncable="YES"/>
+        <relationship name="quorum" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSQuorumEntryEntity" inverseName="chainLocks" inverseEntity="DSQuorumEntryEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSCoinbaseTransactionEntity" representedClassName="DSCoinbaseTransactionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
+        <attribute name="height" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="merkleRootMNList" optional="YES" attributeType="Binary" syncable="YES"/>
+    </entity>
+    <entity name="DSContractEntity" representedClassName="DSContractEntity" syncable="YES">
+        <attribute name="entropy" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="localContractIdentifier" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="registeredBlockchainIdentityUniqueID" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <attribute name="state" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="chain" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="contracts" inverseEntity="DSChainEntity" syncable="YES"/>
+        <relationship name="creator" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityEntity" inverseName="createdContracts" inverseEntity="DSBlockchainIdentityEntity" syncable="YES"/>
+        <uniquenessConstraints>
+            <uniquenessConstraint>
+                <constraint value="localContractIdentifier"/>
+            </uniquenessConstraint>
+        </uniquenessConstraints>
+    </entity>
+    <entity name="DSCreditFundingTransactionEntity" representedClassName="DSCreditFundingTransactionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
+        <relationship name="registeredBlockchainIdentity" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityEntity" inverseName="registrationFundingTransaction" inverseEntity="DSBlockchainIdentityEntity" syncable="YES"/>
+        <relationship name="toppedUpBlockchainIdentity" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityEntity" inverseName="topUpFundingTransactions" inverseEntity="DSBlockchainIdentityEntity" indexed="YES" syncable="YES"/>
+    </entity>
+    <entity name="DSDashpayUserEntity" representedClassName="DSDashpayUserEntity" syncable="YES">
+        <attribute name="avatarPath" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="createdAt" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="displayName" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="documentIdentifier" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="localProfileDocumentRevision" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="originalEntropyString" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="publicMessage" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="remoteProfileDocumentRevision" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="updatedAt" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="associatedBlockchainIdentity" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityEntity" inverseName="matchingDashpayUser" inverseEntity="DSBlockchainIdentityEntity" indexed="YES" syncable="YES"/>
+        <relationship name="chain" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="contacts" inverseEntity="DSChainEntity" syncable="YES"/>
+        <relationship name="friends" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSDashpayUserEntity" inverseName="friends" inverseEntity="DSDashpayUserEntity" syncable="YES"/>
+        <relationship name="incomingRequests" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSFriendRequestEntity" inverseName="destinationContact" inverseEntity="DSFriendRequestEntity" syncable="YES"/>
+        <relationship name="outgoingRequests" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSFriendRequestEntity" inverseName="sourceContact" inverseEntity="DSFriendRequestEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSDerivationPathEntity" representedClassName="DSDerivationPathEntity" syncable="YES">
+        <attribute name="derivationPath" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <attribute name="publicKeyIdentifier" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="syncBlockHeight" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="account" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSAccountEntity" inverseName="derivationPaths" inverseEntity="DSAccountEntity" syncable="YES"/>
+        <relationship name="addresses" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSAddressEntity" inverseName="derivationPath" inverseEntity="DSAddressEntity" syncable="YES"/>
+        <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="derivationPaths" inverseEntity="DSChainEntity" syncable="YES"/>
+        <relationship name="friendRequest" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSFriendRequestEntity" inverseName="derivationPath" inverseEntity="DSFriendRequestEntity" syncable="YES"/>
+        <relationship name="identityKeyPaths" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSBlockchainIdentityKeyPathEntity" inverseName="derivationPath" inverseEntity="DSBlockchainIdentityKeyPathEntity" syncable="YES"/>
+        <compoundIndexes>
+            <compoundIndex>
+                <index value="chain"/>
+                <index value="syncBlockHeight"/>
+            </compoundIndex>
+        </compoundIndexes>
+    </entity>
+    <entity name="DSFriendRequestEntity" representedClassName="DSFriendRequestEntity" syncable="YES">
+        <attribute name="destinationKeyIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="friendshipIdentifier" attributeType="Binary" syncable="YES"/>
+        <attribute name="sourceKeyIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="timestamp" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="account" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSAccountEntity" inverseName="friendRequests" inverseEntity="DSAccountEntity" syncable="YES"/>
+        <relationship name="derivationPath" maxCount="1" deletionRule="Cascade" destinationEntity="DSDerivationPathEntity" inverseName="friendRequest" inverseEntity="DSDerivationPathEntity" syncable="YES"/>
+        <relationship name="destinationContact" maxCount="1" deletionRule="Nullify" destinationEntity="DSDashpayUserEntity" inverseName="incomingRequests" inverseEntity="DSDashpayUserEntity" indexed="YES" syncable="YES"/>
+        <relationship name="sourceContact" maxCount="1" deletionRule="Nullify" destinationEntity="DSDashpayUserEntity" inverseName="outgoingRequests" inverseEntity="DSDashpayUserEntity" indexed="YES" syncable="YES"/>
+        <uniquenessConstraints>
+            <uniquenessConstraint>
+                <constraint value="friendshipIdentifier"/>
+            </uniquenessConstraint>
+        </uniquenessConstraints>
+    </entity>
+    <entity name="DSGovernanceObjectEntity" representedClassName="DSGovernanceObjectEntity" syncable="YES">
+        <attribute name="amount" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="collateralHash" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="endEpoch" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="identifier" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="parentHash" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="paymentAddress" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="revision" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="signature" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="startEpoch" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="timestamp" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <attribute name="totalVotesCount" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="type" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="url" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="governanceObjectHash" maxCount="1" deletionRule="Nullify" destinationEntity="DSGovernanceObjectHashEntity" inverseName="governanceObject" inverseEntity="DSGovernanceObjectHashEntity" syncable="YES"/>
+        <relationship name="voteHashes" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSGovernanceVoteHashEntity" inverseName="governanceObject" inverseEntity="DSGovernanceVoteHashEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSGovernanceObjectHashEntity" representedClassName="DSGovernanceObjectHashEntity" syncable="YES">
+        <attribute name="governanceObjectHash" attributeType="Binary" syncable="YES"/>
+        <attribute name="timestamp" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="chain" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="governanceObjectHashes" inverseEntity="DSChainEntity" syncable="YES"/>
+        <relationship name="governanceObject" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSGovernanceObjectEntity" inverseName="governanceObjectHash" inverseEntity="DSGovernanceObjectEntity" syncable="YES"/>
+        <compoundIndexes>
+            <compoundIndex>
+                <index value="chain"/>
+                <index value="governanceObjectHash"/>
+                <index value="governanceObject"/>
+            </compoundIndex>
+            <compoundIndex>
+                <index value="chain"/>
+                <index value="governanceObjectHash"/>
+            </compoundIndex>
+        </compoundIndexes>
+    </entity>
+    <entity name="DSGovernanceVoteEntity" representedClassName="DSGovernanceVoteEntity" syncable="YES">
+        <attribute name="masternodeHash" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="masternodeIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="outcome" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="parentHash" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="signal" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="signature" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="timestampCreated" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="governanceVoteHash" maxCount="1" deletionRule="Nullify" destinationEntity="DSGovernanceVoteHashEntity" inverseName="governanceVote" inverseEntity="DSGovernanceVoteHashEntity" syncable="YES"/>
+        <relationship name="masternode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSSimplifiedMasternodeEntryEntity" inverseName="governanceVotes" inverseEntity="DSSimplifiedMasternodeEntryEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSGovernanceVoteHashEntity" representedClassName="DSGovernanceVoteHashEntity" syncable="YES">
+        <attribute name="governanceVoteHash" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="timestamp" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="votes" inverseEntity="DSChainEntity" syncable="YES"/>
+        <relationship name="governanceObject" maxCount="1" deletionRule="Nullify" destinationEntity="DSGovernanceObjectEntity" inverseName="voteHashes" inverseEntity="DSGovernanceObjectEntity" syncable="YES"/>
+        <relationship name="governanceVote" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSGovernanceVoteEntity" inverseName="governanceVoteHash" inverseEntity="DSGovernanceVoteEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSInstantSendLockEntity" representedClassName="DSInstantSendLockEntity" syncable="YES">
+        <attribute name="signature" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="validSignature" optional="YES" attributeType="Boolean" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="quorum" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSQuorumEntryEntity" inverseName="instantSendLocks" inverseEntity="DSQuorumEntryEntity" syncable="YES"/>
+        <relationship name="transaction" maxCount="1" deletionRule="Nullify" destinationEntity="DSTransactionEntity" inverseName="instantSendLock" inverseEntity="DSTransactionEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSLocalMasternodeEntity" representedClassName="DSLocalMasternodeEntity" syncable="YES">
+        <attribute name="holdingKeysIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="holdingKeysWalletUniqueId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="operatorKeysIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="operatorKeysWalletUniqueId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="ownerKeysIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="ownerKeysWalletUniqueId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="votingKeysIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="votingKeysWalletUniqueId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <relationship name="providerRegistrationTransaction" maxCount="1" deletionRule="Nullify" destinationEntity="DSProviderRegistrationTransactionEntity" inverseName="localMasternode" inverseEntity="DSProviderRegistrationTransactionEntity" syncable="YES"/>
+        <relationship name="providerUpdateRegistrarTransactions" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="DSProviderUpdateRegistrarTransactionEntity" inverseName="localMasternode" inverseEntity="DSProviderUpdateRegistrarTransactionEntity" syncable="YES"/>
+        <relationship name="providerUpdateRevocationTransactions" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="DSProviderUpdateRevocationTransactionEntity" inverseName="localMasternode" inverseEntity="DSProviderUpdateRevocationTransactionEntity" syncable="YES"/>
+        <relationship name="providerUpdateServiceTransactions" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="DSProviderUpdateServiceTransactionEntity" inverseName="localMasternode" inverseEntity="DSProviderUpdateServiceTransactionEntity" syncable="YES"/>
+        <relationship name="simplifiedMasternodeEntry" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSSimplifiedMasternodeEntryEntity" inverseName="localMasternode" inverseEntity="DSSimplifiedMasternodeEntryEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSMasternodeListEntity" representedClassName="DSMasternodeListEntity" syncable="YES">
+        <attribute name="masternodeListMerkleRoot" attributeType="Binary" syncable="YES"/>
+        <attribute name="quorumListMerkleRoot" attributeType="Binary" syncable="YES"/>
+        <relationship name="block" maxCount="1" deletionRule="Nullify" destinationEntity="DSMerkleBlockEntity" inverseName="masternodeList" inverseEntity="DSMerkleBlockEntity" syncable="YES"/>
+        <relationship name="masternodes" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSSimplifiedMasternodeEntryEntity" inverseName="masternodeLists" inverseEntity="DSSimplifiedMasternodeEntryEntity" syncable="YES"/>
+        <relationship name="quorums" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSQuorumEntryEntity" inverseName="referencedByMasternodeLists" inverseEntity="DSQuorumEntryEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSMerkleBlockEntity" representedClassName="DSMerkleBlockEntity" syncable="YES">
+        <attribute name="blockHash" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <attribute name="chainWork" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="flags" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="hashes" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="height" optional="YES" attributeType="Integer 32" defaultValueString="2147483647" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="merkleRoot" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="nonce" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="prevBlock" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <attribute name="target" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="timestamp" optional="YES" attributeType="Date" defaultDateTimeInterval="-3600" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="totalTransactions" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="version" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="chain" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="blocks" inverseEntity="DSChainEntity" indexed="YES" syncable="YES"/>
+        <relationship name="chainLock" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSChainLockEntity" inverseName="merkleBlock" inverseEntity="DSChainLockEntity" syncable="YES"/>
+        <relationship name="masternodeList" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSMasternodeListEntity" inverseName="block" inverseEntity="DSMasternodeListEntity" indexed="YES" syncable="YES"/>
+        <relationship name="usedByQuorums" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSQuorumEntryEntity" inverseName="block" inverseEntity="DSQuorumEntryEntity" indexed="YES" syncable="YES"/>
+        <compoundIndexes>
+            <compoundIndex>
+                <index value="chain"/>
+                <index value="height"/>
+            </compoundIndex>
+            <compoundIndex>
+                <index value="chain"/>
+                <index value="height"/>
+                <index value="blockHash"/>
+            </compoundIndex>
+            <compoundIndex>
+                <index value="chain"/>
+                <index value="masternodeList"/>
+                <index value="usedByQuorums"/>
+                <index value="blockHash"/>
+            </compoundIndex>
+        </compoundIndexes>
+    </entity>
+    <entity name="DSPeerEntity" representedClassName="DSPeerEntity" syncable="YES">
+        <attribute name="address" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <attribute name="lastRequestedGovernanceSync" optional="YES" attributeType="Date" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <attribute name="lastRequestedMasternodeList" optional="YES" attributeType="Date" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <attribute name="lowPreferenceTill" optional="YES" attributeType="Date" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <attribute name="misbehavin" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <attribute name="port" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <attribute name="priority" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <attribute name="services" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="timestamp" optional="YES" attributeType="Date" defaultDateTimeInterval="-3600" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <relationship name="chain" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="peers" inverseEntity="DSChainEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSProviderRegistrationTransactionEntity" representedClassName="DSProviderRegistrationTransactionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
+        <attribute name="collateralOutpoint" attributeType="Binary" syncable="YES"/>
+        <attribute name="ipAddress" attributeType="Binary" syncable="YES"/>
+        <attribute name="operatorKey" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="operatorReward" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="ownerKeyHash" attributeType="Binary" syncable="YES"/>
+        <attribute name="payloadSignature" attributeType="Binary" syncable="YES"/>
+        <attribute name="port" attributeType="Integer 16" defaultValueString="9999" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="providerMode" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="providerType" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="scriptPayout" attributeType="Binary" syncable="YES"/>
+        <attribute name="votingKeyHash" attributeType="Binary" syncable="YES"/>
+        <relationship name="localMasternode" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSLocalMasternodeEntity" inverseName="providerRegistrationTransaction" inverseEntity="DSLocalMasternodeEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSProviderUpdateRegistrarTransactionEntity" representedClassName="DSProviderUpdateRegistrarTransactionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
+        <attribute name="operatorKey" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="payloadSignature" attributeType="Binary" syncable="YES"/>
+        <attribute name="providerMode" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="providerRegistrationTransactionHash" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="scriptPayout" attributeType="Binary" syncable="YES"/>
+        <attribute name="votingKeyHash" attributeType="Binary" syncable="YES"/>
+        <relationship name="localMasternode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSLocalMasternodeEntity" inverseName="providerUpdateRegistrarTransactions" inverseEntity="DSLocalMasternodeEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSProviderUpdateRevocationTransactionEntity" representedClassName="DSProviderUpdateRevocationTransactionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
+        <attribute name="payloadSignature" attributeType="Binary" syncable="YES"/>
+        <attribute name="providerRegistrationTransactionHash" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="reason" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="localMasternode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSLocalMasternodeEntity" inverseName="providerUpdateRevocationTransactions" inverseEntity="DSLocalMasternodeEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSProviderUpdateServiceTransactionEntity" representedClassName="DSProviderUpdateServiceTransactionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
+        <attribute name="ipAddress" attributeType="Binary" syncable="YES"/>
+        <attribute name="payloadSignature" attributeType="Binary" syncable="YES"/>
+        <attribute name="port" attributeType="Integer 16" defaultValueString="9999" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="providerRegistrationTransactionHash" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="scriptPayout" attributeType="Binary" syncable="YES"/>
+        <relationship name="localMasternode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSLocalMasternodeEntity" inverseName="providerUpdateServiceTransactions" inverseEntity="DSLocalMasternodeEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSQuorumCommitmentTransactionEntity" representedClassName="DSQuorumCommitmentTransactionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
+        <attribute name="quorumCommitmentHeight" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="entry" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSQuorumEntryEntity" inverseName="commitmentTransaction" inverseEntity="DSQuorumEntryEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSQuorumEntryEntity" representedClassName="DSQuorumEntryEntity" syncable="YES">
+        <attribute name="allCommitmentAggregatedSignatureData" attributeType="Binary" syncable="YES"/>
+        <attribute name="commitmentHashData" attributeType="Binary" syncable="YES"/>
+        <attribute name="llmqType" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="quorumHashData" attributeType="Binary" syncable="YES"/>
+        <attribute name="quorumPublicKeyData" attributeType="Binary" syncable="YES"/>
+        <attribute name="quorumThresholdSignatureData" attributeType="Binary" syncable="YES"/>
+        <attribute name="quorumVerificationVectorHashData" attributeType="Binary" syncable="YES"/>
+        <attribute name="signersBitset" attributeType="Binary" syncable="YES"/>
+        <attribute name="signersCount" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="validMembersBitset" attributeType="Binary" syncable="YES"/>
+        <attribute name="validMembersCount" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="verified" optional="YES" attributeType="Boolean" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="version" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="block" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSMerkleBlockEntity" inverseName="usedByQuorums" inverseEntity="DSMerkleBlockEntity" syncable="YES"/>
+        <relationship name="chain" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="quorums" inverseEntity="DSChainEntity" syncable="YES"/>
+        <relationship name="chainLocks" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSChainLockEntity" inverseName="quorum" inverseEntity="DSChainLockEntity" syncable="YES"/>
+        <relationship name="commitmentTransaction" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSQuorumCommitmentTransactionEntity" inverseName="entry" inverseEntity="DSQuorumCommitmentTransactionEntity" syncable="YES"/>
+        <relationship name="instantSendLocks" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSInstantSendLockEntity" inverseName="quorum" inverseEntity="DSInstantSendLockEntity" syncable="YES"/>
+        <relationship name="referencedByMasternodeLists" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSMasternodeListEntity" inverseName="quorums" inverseEntity="DSMasternodeListEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSShapeshiftEntity" representedClassName="DSShapeshiftEntity" syncable="YES">
+        <attribute name="errorMessage" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="expiresAt" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="inputAddress" attributeType="String" syncable="YES"/>
+        <attribute name="inputCoinAmount" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="inputCoinType" attributeType="String" defaultValueString="dash" syncable="YES"/>
+        <attribute name="isFixedAmount" attributeType="Boolean" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="outputCoinAmount" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="outputCoinType" attributeType="String" defaultValueString="bitcoin" syncable="YES"/>
+        <attribute name="outputTransactionId" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="shapeshiftStatus" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="withdrawalAddress" attributeType="String" syncable="YES"/>
+        <relationship name="transaction" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSTransactionEntity" inverseName="associatedShapeshift" inverseEntity="DSTransactionEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSSimplifiedMasternodeEntryEntity" representedClassName="DSSimplifiedMasternodeEntryEntity" syncable="YES">
+        <attribute name="address" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="confirmedHash" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="ipv6Address" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="isValid" optional="YES" attributeType="Boolean" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="keyIDVoting" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="operatorBLSPublicKey" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="port" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="previousOperatorBLSPublicKeys" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" syncable="YES"/>
+        <attribute name="previousSimplifiedMasternodeEntryHashes" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" syncable="YES"/>
+        <attribute name="previousValidity" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" syncable="YES"/>
+        <attribute name="providerRegistrationTransactionHash" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="simplifiedMasternodeEntryHash" optional="YES" attributeType="Binary" syncable="YES"/>
+        <relationship name="addresses" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="DSAddressEntity" inverseName="usedInSimplifiedMasternodeEntries" inverseEntity="DSAddressEntity" syncable="YES"/>
+        <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="simplifiedMasternodeEntries" inverseEntity="DSChainEntity" syncable="YES"/>
+        <relationship name="governanceVotes" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSGovernanceVoteEntity" inverseName="masternode" inverseEntity="DSGovernanceVoteEntity" syncable="YES"/>
+        <relationship name="localMasternode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSLocalMasternodeEntity" inverseName="simplifiedMasternodeEntry" inverseEntity="DSLocalMasternodeEntity" syncable="YES"/>
+        <relationship name="masternodeLists" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSMasternodeListEntity" inverseName="masternodes" inverseEntity="DSMasternodeListEntity" syncable="YES"/>
+        <compoundIndexes>
+            <compoundIndex>
+                <index value="chain"/>
+                <index value="address"/>
+            </compoundIndex>
+            <compoundIndex>
+                <index value="chain"/>
+                <index value="providerRegistrationTransactionHash"/>
+            </compoundIndex>
+            <compoundIndex>
+                <index value="chain"/>
+                <index value="simplifiedMasternodeEntryHash"/>
+            </compoundIndex>
+            <compoundIndex>
+                <index value="chain"/>
+                <index value="providerRegistrationTransactionHash"/>
+                <index value="confirmedHash"/>
+            </compoundIndex>
+        </compoundIndexes>
+    </entity>
+    <entity name="DSSpecialTransactionEntity" representedClassName="DSSpecialTransactionEntity" parentEntity="DSTransactionEntity" syncable="YES">
+        <attribute name="specialTransactionVersion" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="addresses" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="DSAddressEntity" inverseName="usedInSpecialTransactions" inverseEntity="DSAddressEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSSporkEntity" representedClassName="DSSporkEntity" syncable="YES">
+        <attribute name="identifier" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="signature" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="timeSigned" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="value" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="sporkHash" maxCount="1" deletionRule="Cascade" destinationEntity="DSSporkHashEntity" inverseName="spork" inverseEntity="DSSporkHashEntity" syncable="YES"/>
+        <compoundIndexes>
+            <compoundIndex>
+                <index value="sporkHash"/>
+                <index value="identifier"/>
+            </compoundIndex>
+        </compoundIndexes>
+    </entity>
+    <entity name="DSSporkHashEntity" representedClassName="DSSporkHashEntity" syncable="YES">
+        <attribute name="sporkHash" optional="YES" attributeType="Binary" syncable="YES"/>
+        <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="sporks" inverseEntity="DSChainEntity" syncable="YES"/>
+        <relationship name="spork" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSSporkEntity" inverseName="sporkHash" inverseEntity="DSSporkEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSTransactionEntity" representedClassName="DSTransactionEntity" syncable="YES">
+        <attribute name="lockTime" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="associatedShapeshift" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSShapeshiftEntity" inverseName="transaction" inverseEntity="DSShapeshiftEntity" syncable="YES"/>
+        <relationship name="inputs" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="DSTxInputEntity" inverseName="transaction" inverseEntity="DSTxInputEntity" syncable="YES"/>
+        <relationship name="instantSendLock" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSInstantSendLockEntity" inverseName="transaction" inverseEntity="DSInstantSendLockEntity" syncable="YES"/>
+        <relationship name="outputs" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="DSTxOutputEntity" inverseName="transaction" inverseEntity="DSTxOutputEntity" syncable="YES"/>
+        <relationship name="transactionHash" maxCount="1" deletionRule="Nullify" destinationEntity="DSTransactionHashEntity" inverseName="transaction" inverseEntity="DSTransactionHashEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSTransactionHashEntity" representedClassName="DSTransactionHashEntity" syncable="YES">
+        <attribute name="blockHeight" attributeType="Integer 32" defaultValueString="-1" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="timestamp" attributeType="Double" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="txHash" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="transactionHashes" inverseEntity="DSChainEntity" syncable="YES"/>
+        <relationship name="transaction" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSTransactionEntity" inverseName="transactionHash" inverseEntity="DSTransactionEntity" syncable="YES"/>
+        <compoundIndexes>
+            <compoundIndex>
+                <index value="chain"/>
+                <index value="blockHeight"/>
+            </compoundIndex>
+        </compoundIndexes>
+    </entity>
+    <entity name="DSTxInputEntity" representedClassName="DSTxInputEntity" syncable="YES">
+        <attribute name="n" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <attribute name="sequence" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="signature" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="txHash" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <relationship name="localAddress" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSAddressEntity" inverseName="usedInInputs" inverseEntity="DSAddressEntity" syncable="YES"/>
+        <relationship name="prevOutput" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSTxOutputEntity" inverseName="spentInInput" inverseEntity="DSTxOutputEntity" syncable="YES"/>
+        <relationship name="transaction" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="DSTransactionEntity" inverseName="inputs" inverseEntity="DSTransactionEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSTxOutputEntity" representedClassName="DSTxOutputEntity" syncable="YES">
+        <attribute name="address" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="n" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <attribute name="script" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="shapeshiftOutboundAddress" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="txHash" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <attribute name="value" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="account" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSAccountEntity" inverseName="transactionOutputs" inverseEntity="DSAccountEntity" syncable="YES"/>
+        <relationship name="localAddress" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSAddressEntity" inverseName="usedInOutputs" inverseEntity="DSAddressEntity" syncable="YES"/>
+        <relationship name="spentInInput" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSTxInputEntity" inverseName="prevOutput" inverseEntity="DSTxInputEntity" syncable="YES"/>
+        <relationship name="transaction" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="DSTransactionEntity" inverseName="outputs" inverseEntity="DSTransactionEntity" syncable="YES"/>
+    </entity>
+    <elements>
+        <element name="DSAccountEntity" positionX="-2135.0703125" positionY="459.18359375" width="128" height="135"/>
+        <element name="DSAddressEntity" positionX="-2619.41015625" positionY="308.31640625" width="128" height="193"/>
+        <element name="DSBlockchainIdentityEntity" positionX="-2403" positionY="-171" width="128" height="298"/>
+        <element name="DSBlockchainIdentityKeyPathEntity" positionX="-2394" positionY="-162" width="128" height="148"/>
+        <element name="DSBlockchainIdentityUsernameEntity" positionX="-2421" positionY="-189" width="128" height="133"/>
+        <element name="DSChainEntity" positionX="-1151.6328125" positionY="-163.1796875" width="128" height="403"/>
+        <element name="DSChainLockEntity" positionX="-2403" positionY="-171" width="128" height="118"/>
+        <element name="DSCoinbaseTransactionEntity" positionX="-2322" positionY="-81" width="128" height="75"/>
+        <element name="DSContractEntity" positionX="-2412" positionY="-180" width="128" height="133"/>
+        <element name="DSCreditFundingTransactionEntity" positionX="-2412" positionY="-180" width="128" height="73"/>
+        <element name="DSDashpayUserEntity" positionX="-1898.890625" positionY="1279.48828125" width="128" height="253"/>
+        <element name="DSDerivationPathEntity" positionX="-2121" positionY="-103.05859375" width="128" height="163"/>
+        <element name="DSFriendRequestEntity" positionX="160" positionY="192" width="128" height="163"/>
+        <element name="DSGovernanceObjectEntity" positionX="-674.609375" positionY="-171.16796875" width="128" height="270"/>
+        <element name="DSGovernanceObjectHashEntity" positionX="-956.1328125" positionY="-21.26171875" width="128" height="105"/>
+        <element name="DSGovernanceVoteEntity" positionX="-681.9609375" positionY="527.89453125" width="128" height="180"/>
+        <element name="DSGovernanceVoteHashEntity" positionX="-896.94921875" positionY="127.3359375" width="128" height="120"/>
+        <element name="DSInstantSendLockEntity" positionX="-2376" positionY="-144" width="128" height="103"/>
+        <element name="DSLocalMasternodeEntity" positionX="-2434.3828125" positionY="836.92578125" width="128" height="240"/>
+        <element name="DSMasternodeListEntity" positionX="-2394" positionY="-162" width="128" height="118"/>
+        <element name="DSMerkleBlockEntity" positionX="-1531.69921875" positionY="-232.9921875" width="128" height="283"/>
+        <element name="DSPeerEntity" positionX="-1676.0546875" positionY="54.0078125" width="128" height="195"/>
+        <element name="DSProviderRegistrationTransactionEntity" positionX="-2225.484375" positionY="1127.91796875" width="128" height="225"/>
+        <element name="DSProviderUpdateRegistrarTransactionEntity" positionX="-2512.640625" positionY="-270.0546875" width="128" height="150"/>
+        <element name="DSProviderUpdateRevocationTransactionEntity" positionX="-2317.35546875" positionY="-292.2109375" width="128" height="105"/>
+        <element name="DSProviderUpdateServiceTransactionEntity" positionX="-2120.90625" positionY="-299.93359375" width="128" height="135"/>
+        <element name="DSQuorumCommitmentTransactionEntity" positionX="-1939.23046875" positionY="1112.27734375" width="128" height="75"/>
+        <element name="DSQuorumEntryEntity" positionX="-1880.47265625" positionY="-335.81640625" width="128" height="328"/>
+        <element name="DSShapeshiftEntity" positionX="-946.375" positionY="817.2578125" width="128" height="225"/>
+        <element name="DSSimplifiedMasternodeEntryEntity" positionX="-1511.95703125" positionY="276.51953125" width="128" height="28"/>
+        <element name="DSSpecialTransactionEntity" positionX="-1145.90625" positionY="1134.63671875" width="128" height="75"/>
+        <element name="DSSporkEntity" positionX="-1631.40625" positionY="479.12890625" width="128" height="120"/>
+        <element name="DSSporkHashEntity" positionX="-1438.984375" positionY="509.0234375" width="128" height="90"/>
+        <element name="DSTransactionEntity" positionX="-1146.0078125" positionY="967.49609375" width="128" height="133"/>
+        <element name="DSTransactionHashEntity" positionX="-1340.45703125" positionY="712.484375" width="128" height="120"/>
+        <element name="DSTxInputEntity" positionX="-2146.4765625" positionY="907.25" width="128" height="150"/>
+        <element name="DSTxOutputEntity" positionX="-1944.3671875" positionY="447.375" width="128" height="195"/>
+    </elements>
+</model>

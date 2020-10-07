@@ -1,0 +1,148 @@
+{
+    "documents": {
+        "profile": {
+            "indices": [{
+                "properties": [{
+                    "$ownerId": "asc"
+                }],
+                "unique": true
+            },
+            {
+                "properties": [{
+                    "$ownerId": "asc"
+                }, {
+                    "$updatedAt": "asc"
+                }]
+            }],
+            "properties": {
+                "avatarUrl": {
+                    "type": "string",
+                    "format": "url",
+                    "maxLength":2048
+                },
+                "publicMessage": {
+                    "type": "string",
+                    "maxLength":140
+                },
+                "displayName": {
+                    "type": "string",
+                    "maxLength":20
+                }
+            },
+            "required": ["$createdAt", "$updatedAt"],
+            "additionalProperties": false
+        },
+        "contactInfo": {
+            "indices": [{
+                "properties": [{
+                    "$ownerId": "asc"
+                }, {
+                    "rootEncryptionKeyIndex": "asc"
+                }, {
+                    "derivationEncryptionKeyIndex": "asc"
+                }],
+                "unique": true
+            },
+            {
+                "properties": [{
+                    "$ownerId": "asc"
+                }, {
+                    "$updatedAt": "asc"
+                }]
+            }],
+            "properties": {
+                "encToUserId": {
+                    "type": "string",
+                    "contentEncoding": "base64",
+                    "pattern": "^([A-Za-z0-9+/])*$",
+                    "maxLength":43,
+                    "minLength":43
+                },
+                "rootEncryptionKeyIndex": {
+                    "type": "integer"
+                },
+                "derivationEncryptionKeyIndex": {
+                    "type": "integer"
+                },
+                "privateData": {
+                    "type": "string",
+                    "contentEncoding": "base64",
+                    "pattern": "^([A-Za-z0-9+/])*$",
+                    "description": "This is the encrypted values of aliasName + note + displayHidden encoded as an array in cbor",
+                    "maxLength":2731,
+                    "minLength":64
+                }
+            },
+            "required": ["$createdAt", "$updatedAt", "encToUserId", "privateData", "rootEncryptionKeyIndex", "derivationEncryptionKeyIndex"],
+            "additionalProperties": false
+        },
+        "contactRequest": {
+            "indices": [{
+                "properties": [{
+                    "$ownerId": "asc"
+                }, {
+                    "toUserId": "asc"
+                }, {
+                    "accountReference": "asc"
+                }],
+                "unique": true
+            },
+            {
+                "properties": [{
+                    "$ownerId": "asc"
+                }, {
+                    "toUserId": "asc"
+                }]
+            },
+            {
+                "properties": [{
+                    "toUserId": "asc"
+                }, {
+                    "$createdAt": "asc"
+                }]
+            },
+            {
+                "properties": [{
+                    "$ownerId": "asc"
+                }, {
+                    "$createdAt": "asc"
+                }]
+            }],
+            "properties": {
+                "toUserId": {
+                    "type": "string",
+                    "contentEncoding": "base64",
+                    "pattern": "^([A-Za-z0-9+/])*$",
+                    "maxLength":43,
+                    "minLength":43
+                },
+                "encryptedPublicKey": {
+                    "type": "string",
+                    "contentEncoding": "base64",
+                    "pattern": "^([A-Za-z0-9+/])*$",
+                    "maxLength":128,
+                    "minLength":128
+                },
+                "senderKeyIndex": {
+                    "type": "integer"
+                },
+                "recipientKeyIndex": {
+                    "type": "integer"
+                },
+                "accountReference": {
+                    "type": "integer"
+                },
+                "encryptedAccountLabel": {
+                    "type": "string",
+                    "contentEncoding": "base64",
+                    "pattern": "^([A-Za-z0-9+/])*$",
+                    "maxLength":107,
+                    "minLength":64
+                }
+            },
+            "required": ["$createdAt", "toUserId", "encryptedPublicKey", "senderKeyIndex", "recipientKeyIndex", "accountReference"],
+            "additionalProperties": false
+        }
+    }
+}
+

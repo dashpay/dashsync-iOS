@@ -39,7 +39,7 @@
 #pragma mark - Automation KVO
 
 -(NSManagedObjectContext*)managedObjectContext {
-    return [NSManagedObject mainContext];
+    return [NSManagedObjectContext viewContext];
 }
 
 - (NSFetchedResultsController *)fetchedResultsController
@@ -59,7 +59,7 @@
     
     [fetchRequest setSortDescriptors:sortDescriptors];
     
-    NSPredicate *filterPredicate = [NSPredicate predicateWithFormat:@"block.chain == %@",self.chain.chainEntity];
+    NSPredicate *filterPredicate = [NSPredicate predicateWithFormat:@"block.chain == %@",[self.chain chainEntityInContext:self.managedObjectContext]];
     [fetchRequest setPredicate:filterPredicate];
     
     // Edit the section name key path and cache name if appropriate.
@@ -153,8 +153,8 @@
         // Delete the row from the data source
         [self.tableView beginUpdates];
         DSMasternodeListEntity *masternodeListEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
-        [masternodeListEntity deleteObject];
-        [DSMasternodeListEntity saveMainContext];
+        [masternodeListEntity deleteObjectAndWait];
+        [masternodeListEntity.managedObjectContext ds_saveInBlockAndWait];
         [self.chain.chainManager.masternodeManager reloadMasternodeLists];
         [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
         [self.tableView endUpdates];
@@ -173,10 +173,10 @@
 }
 
 -(IBAction)fetchMasternodeList:(id)sender {
-    uint32_t blockHeight = (![self.blockHeightTextField.text isEqualToString:@""])?[self.blockHeightTextField.text intValue]:self.chain.lastBlock.height;
+    uint32_t blockHeight = (![self.blockHeightTextField.text isEqualToString:@""])?[self.blockHeightTextField.text intValue]:self.chain.lastSyncBlock.height;
 
     NSError * error = nil;
-    [self.chain.chainManager.masternodeManager getMasternodeListForBlockHeight:blockHeight error:&error];
+    [self.chain.chainManager.masternodeManager requestMasternodeListForBlockHeight:blockHeight error:&error];
     if (error) {
         [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
                                                     center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
@@ -186,11 +186,11 @@
 
 -(IBAction)fetchNextMasternodeList:(id)sender {
     int32_t lastKnownBlockHeight = self.chain.chainManager.masternodeManager.currentMasternodeList.height;
-    if (lastKnownBlockHeight + 24 > self.chain.lastBlock.height) return;
+    if (lastKnownBlockHeight + 24 > self.chain.lastSyncBlock.height) return;
     uint32_t blockHeight = lastKnownBlockHeight + 24;
     
     NSError * error = nil;
-    [self.chain.chainManager.masternodeManager getMasternodeListForBlockHeight:blockHeight error:&error];
+    [self.chain.chainManager.masternodeManager requestMasternodeListForBlockHeight:blockHeight error:&error];
     if (error) {
         [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
                                                     center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]

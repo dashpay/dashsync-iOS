@@ -37,7 +37,7 @@
     if (_fetchedResultsController != nil) {
         return _fetchedResultsController;
     }
-    NSManagedObjectContext * context = [NSManagedObject context];
+    NSManagedObjectContext * context = [NSManagedObjectContext viewContext];
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     NSEntityDescription *entity = [NSEntityDescription
                                    entityForName:@"DSWalletEntity" inManagedObjectContext:context];

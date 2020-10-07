@@ -65,28 +65,28 @@
     }
 }
 
-+(DSShapeshiftEntity*)shapeshiftHavingWithdrawalAddress:(NSString*)withdrawalAddress {
-    DSShapeshiftEntity * previousShapeshift = [DSShapeshiftEntity anyObjectMatching:@"withdrawalAddress == %@",withdrawalAddress];
++(DSShapeshiftEntity*)shapeshiftHavingWithdrawalAddress:(NSString*)withdrawalAddress inContext:(NSManagedObjectContext*)context {
+    DSShapeshiftEntity * previousShapeshift = [DSShapeshiftEntity anyObjectInContext:context matching:@"withdrawalAddress == %@",withdrawalAddress];
     return previousShapeshift;
 }
 
-+(DSShapeshiftEntity*)unusedShapeshiftHavingWithdrawalAddress:(NSString*)withdrawalAddress {
-    DSShapeshiftEntity * previousShapeshift = [DSShapeshiftEntity anyObjectMatching:@"withdrawalAddress == %@ && shapeshiftStatus == %@",withdrawalAddress, @(eShapeshiftAddressStatus_Unused)];
++(DSShapeshiftEntity*)unusedShapeshiftHavingWithdrawalAddress:(NSString*)withdrawalAddress inContext:(NSManagedObjectContext*)context  {
+    DSShapeshiftEntity * previousShapeshift = [DSShapeshiftEntity anyObjectInContext:context matching:@"withdrawalAddress == %@ && shapeshiftStatus == %@",withdrawalAddress, @(eShapeshiftAddressStatus_Unused)];
     return previousShapeshift;
 }
 
-+(DSShapeshiftEntity*)registerShapeshiftWithInputAddress:(NSString*)inputAddress andWithdrawalAddress:(NSString*)withdrawalAddress withStatus:(eShapeshiftAddressStatus)shapeshiftAddressStatus{
-    DSShapeshiftEntity * shapeshift = [DSShapeshiftEntity managedObject];
++(DSShapeshiftEntity*)registerShapeshiftWithInputAddress:(NSString*)inputAddress andWithdrawalAddress:(NSString*)withdrawalAddress withStatus:(eShapeshiftAddressStatus)shapeshiftAddressStatus inContext:(NSManagedObjectContext*)context {
+    DSShapeshiftEntity * shapeshift = [DSShapeshiftEntity managedObjectInBlockedContext:context];
     shapeshift.inputAddress = inputAddress;
     shapeshift.withdrawalAddress = withdrawalAddress;
     shapeshift.shapeshiftStatus = @(shapeshiftAddressStatus);
     shapeshift.isFixedAmount = @NO;
-    [self saveContext];
+    [context ds_save];
     return shapeshift;
 }
 
-+(DSShapeshiftEntity*)registerShapeshiftWithInputAddress:(NSString*)inputAddress andWithdrawalAddress:(NSString*)withdrawalAddress withStatus:(eShapeshiftAddressStatus)shapeshiftAddressStatus fixedAmountOut:(NSNumber*)amountOut amountIn:(NSNumber*)amountIn {
-    DSShapeshiftEntity * shapeshift = [DSShapeshiftEntity managedObject];
++(DSShapeshiftEntity*)registerShapeshiftWithInputAddress:(NSString*)inputAddress andWithdrawalAddress:(NSString*)withdrawalAddress withStatus:(eShapeshiftAddressStatus)shapeshiftAddressStatus fixedAmountOut:(NSNumber*)amountOut amountIn:(NSNumber*)amountIn inContext:(NSManagedObjectContext*)context {
+    DSShapeshiftEntity * shapeshift = [DSShapeshiftEntity managedObjectInBlockedContext:context];
     shapeshift.inputAddress = inputAddress;
     shapeshift.withdrawalAddress = withdrawalAddress;
     shapeshift.outputCoinAmount = amountOut;
@@ -94,16 +94,16 @@
     shapeshift.shapeshiftStatus = @(shapeshiftAddressStatus);
     shapeshift.isFixedAmount = @YES;
     shapeshift.expiresAt = [NSDate dateWithTimeIntervalSinceNow:540];  //9 minutes (leave 1 minute as buffer)
-    [self saveContext];
+    [context ds_save];
     return shapeshift;
 }
 
-+(NSArray*)shapeshiftsInProgress {
++(NSArray*)shapeshiftsInProgressInContext:(NSManagedObjectContext*)context  {
     static uint32_t height = 0;
     DSChainManager * manager = [[DSChainsManager sharedInstance] mainnetManager];
-    uint32_t h = [[manager chain] lastBlockHeight];
+    uint32_t h = [[manager chain] lastSyncBlockHeight];
     if (h > 20) height = h - 20; //only care about shapeshifts in last 20 blocks
-    NSArray * shapeshiftsInProgress = [DSShapeshiftEntity objectsMatching:@"(shapeshiftStatus == %@ || shapeshiftStatus == %@) && transaction.transactionHash.blockHeight > %@",@(eShapeshiftAddressStatus_NoDeposits), @(eShapeshiftAddressStatus_Received),@(height)];
+    NSArray * shapeshiftsInProgress = [DSShapeshiftEntity objectsInContext:context matching:@"(shapeshiftStatus == %@ || shapeshiftStatus == %@) && transaction.transactionHash.blockHeight > %@",@(eShapeshiftAddressStatus_NoDeposits), @(eShapeshiftAddressStatus_Received),@(height)];
     
     return shapeshiftsInProgress;
 }
@@ -127,7 +127,7 @@
                 } else if ([inputCoinAmount isKindOfClass:[NSString class]]) {
                     self.inputCoinAmount = @([inputCoinAmount doubleValue]);
                 }
-                [DSShapeshiftEntity saveContext];
+                [self.managedObjectContext ds_save];
             } else if ([status isEqualToString:@"complete"]) {
                 self.shapeshiftStatus = @(eShapeshiftAddressStatus_Complete);
                 self.outputTransactionId = transactionInfo[@"transaction"];
@@ -144,12 +144,12 @@
                 } else if ([outputCoinAmount isKindOfClass:[NSString class]]) {
                     self.outputCoinAmount = @([outputCoinAmount doubleValue]);
                 }
-                [DSShapeshiftEntity saveContext];
+                [self.managedObjectContext ds_save];
                 [self.checkStatusTimer invalidate];
             } else if ([status isEqualToString:@"failed"]) {
                 self.shapeshiftStatus = @(eShapeshiftAddressStatus_Failed);
                 self.errorMessage = transactionInfo[@"error"];
-                [DSShapeshiftEntity saveContext];
+                [self.managedObjectContext ds_save];
                 [self.checkStatusTimer invalidate];
             }
         }
@@ -167,7 +167,7 @@
 
 -(void)deleteObject {
     [self.checkStatusTimer invalidate];
-    [super deleteObject];
+    [super deleteObjectAndWait];
 }
 
 @end

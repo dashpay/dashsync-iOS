@@ -11,6 +11,10 @@
 #define SEQUENCE_GAP_LIMIT_INTERNAL 5
 #define SEQUENCE_GAP_LIMIT_INITIAL 100
 
+#define SEQUENCE_DASHPAY_GAP_LIMIT_INCOMING 6
+#define SEQUENCE_DASHPAY_GAP_LIMIT_OUTGOING 3
+#define SEQUENCE_DASHPAY_GAP_LIMIT_INITIAL 10
+
 #define EXTENDED_0_PUBKEY_KEY_BIP44_V0   @"masterpubkeyBIP44" //these are old and need to be retired
 #define EXTENDED_0_PUBKEY_KEY_BIP32_V0   @"masterpubkeyBIP32" //these are old and need to be retired
 #define EXTENDED_0_PUBKEY_KEY_BIP44_V1   @"extended0pubkeyBIP44"
@@ -38,18 +42,19 @@ NS_ASSUME_NONNULL_BEGIN
 // used internal addresses
 @property (nonatomic, readonly) NSArray * usedChangeAddresses;
 
-+ (instancetype)bip32DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber;
++ (instancetype)bip32DerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain;
 
-+ (instancetype)bip44DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber;
++ (instancetype)bip44DerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain;
 
 // Derivation paths are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
 // found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
 // following the last used address in the chain. The internal chain is used for change addresses and the external chain
 // for receive addresses.  These have a hardened purpose scheme depending on the derivation path
-- (NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
+- (NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal error:(NSError**)error;
 
 - (NSString * _Nullable)privateKeyStringAtIndex:(uint32_t)n internal:(BOOL)internal fromSeed:(NSData *)seed;
 - (NSArray * _Nullable)serializedPrivateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed;
+- (NSArray * _Nullable)privateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed;
 
 - (NSData * _Nullable)publicKeyDataAtIndex:(uint32_t)n internal:(BOOL)internal;
 

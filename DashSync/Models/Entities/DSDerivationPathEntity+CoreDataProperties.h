@@ -37,6 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSSet<DSAddressEntity *> *addresses;
 @property (nullable, nonatomic, retain) DSChainEntity *chain;
 @property (nullable, nonatomic, retain) DSAccountEntity *account;
+@property (nullable, nonatomic, retain) DSFriendRequestEntity *friendRequest;
 
 @end
 

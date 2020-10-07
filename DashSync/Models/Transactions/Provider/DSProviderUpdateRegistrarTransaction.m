@@ -31,7 +31,7 @@
     return [self initWithMessage:message registrationTransaction:nil onChain:chain];
 }
 
-- (instancetype)initWithMessage:(NSData *)message registrationTransaction:(DSProviderRegistrationTransaction*)registrationTransaction onChain:(DSChain *)chain
+- (instancetype)initWithMessage:(NSData *)message registrationTransaction:(DSProviderRegistrationTransaction* _Nullable)registrationTransaction onChain:(DSChain *)chain
 {
     if (! (self = [super initWithMessage:message onChain:chain])) return nil;
     self.type = DSTransactionType_ProviderUpdateRegistrar;
@@ -148,7 +148,7 @@
 
 -(void)signPayloadWithKey:(DSECDSAKey*)privateKey {
     //ATTENTION If this ever changes from ECDSA, change the max signature size defined above
-    DSDLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
+    DSDLog(@"Private Key is %@",[privateKey serializedPrivateKeyForChain:self.chain]);
     self.payloadSignature = [privateKey compactSign:[self payloadHash]];
 }
 

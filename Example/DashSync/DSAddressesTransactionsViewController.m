@@ -27,7 +27,7 @@
     [self.wallet seedWithPrompt:@"" forAmount:0 completion:^(NSData * _Nullable seed, BOOL cancelled) {
         DSKey * key = [self.wallet privateKeyForAddress:self.address fromSeed:seed];
         if (key) {
-            self.privateKeyLabel.text = [key privateKeyStringForChain:self.wallet.chain];
+            self.privateKeyLabel.text = [key serializedPrivateKeyForChain:self.wallet.chain];
         }
     }];
 }
@@ -41,7 +41,7 @@
 #pragma mark - Automation KVO
 
 -(NSManagedObjectContext*)managedObjectContext {
-    if (!_managedObjectContext) self.managedObjectContext = [NSManagedObject context];
+    if (!_managedObjectContext) self.managedObjectContext = [NSManagedObjectContext viewContext];
     return _managedObjectContext;
 }
 

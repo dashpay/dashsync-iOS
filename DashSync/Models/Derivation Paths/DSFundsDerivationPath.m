@@ -7,6 +7,9 @@
 
 #import "DSDerivationPath+Protected.h"
 #import "DSFundsDerivationPath.h"
+#import "DSBlockchainIdentity.h"
+#import "DSDashpayUserEntity+CoreDataClass.h"
+#import "DSAccount.h"
 
 @interface DSFundsDerivationPath()
 
@@ -16,20 +19,21 @@
 
 @implementation DSFundsDerivationPath
 
-+ (instancetype _Nonnull)bip32DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber {
-    NSUInteger indexes[] = {accountNumber | BIP32_HARD};
-    return [self derivationPathWithIndexes:indexes length:1 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BIP32 onChain:chain];
++ (instancetype _Nonnull)bip32DerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain {
+    UInt256 indexes[] = {uint256_from_long(accountNumber)};
+    BOOL hardenedIndexes[] = {YES};
+    return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:1 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_BIP32 onChain:chain];
 }
-+ (instancetype _Nonnull)bip44DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber {
++ (instancetype _Nonnull)bip44DerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain {
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
-    NSUInteger indexes[] = {44 | BIP32_HARD, coinType | BIP32_HARD, accountNumber | BIP32_HARD};
-    return [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BIP44 onChain:chain];
+    UInt256 indexes[] = {uint256_from_long(44),uint256_from_long(coinType),uint256_from_long(accountNumber)};
+    BOOL hardenedIndexes[] = {YES,YES,YES};
+    return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:3 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_BIP44 onChain:chain];
 }
 
-- (instancetype)initWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
-                           type:(DSDerivationPathType)type signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain {
+- (instancetype)initWithIndexes:(const UInt256 [])indexes hardened:(const BOOL [])hardenedIndexes length:(NSUInteger)length type:(DSDerivationPathType)type signingAlgorithm:(DSKeyType)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain *)chain {
     
-    if (! (self = [super initWithIndexes:indexes length:length type:type signingAlgorithm:signingAlgorithm reference:reference onChain:chain])) return nil;
+    if (! (self = [super initWithIndexes:indexes hardened:hardenedIndexes length:length type:type signingAlgorithm:signingAlgorithm reference:reference onChain:chain])) return nil;
     
     self.internalAddresses = [NSMutableArray array];
     self.externalAddresses = [NSMutableArray array];
@@ -47,10 +51,8 @@
 
 -(void)loadAddresses {
     if (!self.addressesLoaded) {
-        [self.moc performBlockAndWait:^{
-            [DSAddressEntity setContext:self.moc];
-            [DSTransactionEntity setContext:self.moc];
-            DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self];
+        [self.managedObjectContext performBlockAndWait:^{
+            DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
             self.syncBlockHeight = derivationPathEntity.syncBlockHeight;
             for (DSAddressEntity *e in derivationPathEntity.addresses) {
                 @autoreleasepool {
@@ -70,32 +72,34 @@
             }
         }];
         self.addressesLoaded = TRUE;
-        [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:YES];
-        [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:NO];
+        [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:YES error:nil];
+        [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:NO error:nil];
         
     }
 }
 
 // MARK: - Derivation Path Addresses
 
-- (void)registerTransactionAddress:(NSString * _Nonnull)address {
+- (BOOL)registerTransactionAddress:(NSString * _Nonnull)address {
     if ([self containsAddress:address]) {
         if (![self.mUsedAddresses containsObject:address]) {
             [self.mUsedAddresses addObject:address];
             if ([self.internalAddresses containsObject:address]) {
-                [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
+                [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES error:nil];
             } else {
-                [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO];
+                [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO error:nil];
             }
         }
+        return TRUE;
     }
+    return FALSE;
 }
 
 // Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
 // found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
 // following the last used address in the chain. The internal chain is used for change addresses and the external chain
 // for receive addresses.
-- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal
+- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal error:(NSError**)error
 {
     if (!self.account.wallet.isTransient) {
         NSAssert(self.addressesLoaded, @"addresses must be loaded before calling this function");
@@ -134,18 +138,21 @@
         
         while (a.count < gapLimit) { // generate new addresses up to gapLimit
             NSData *pubKey = [self publicKeyDataAtIndex:n internal:internal];
-            NSString *addr = [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
+            NSString *addr = [[DSECDSAKey keyWithPublicKeyData:pubKey] addressForChain:self.chain];
             
             if (! addr) {
                 DSDLog(@"error generating keys");
+                if (error) {
+                    *error = [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                          DSLocalizedString(@"Error generating public keys", nil)}];
+                }
                 return nil;
             }
             
             if (!self.account.wallet.isTransient) {
-                [self.moc performBlock:^{ // store new address in core data
-                    [DSDerivationPathEntity setContext:self.moc];
-                    DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self];
-                    DSAddressEntity *e = [DSAddressEntity managedObject];
+                [self.managedObjectContext performBlock:^{ // store new address in core data
+                    DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self inContext:self.managedObjectContext];
+                    DSAddressEntity *e = [DSAddressEntity managedObjectInContext:self.managedObjectContext];
                     e.derivationPath = derivationPathEntity;
                     NSAssert([addr isValidDashAddressOnChain:self.chain], @"the address is being saved to the wrong derivation path");
                     e.address = addr;
@@ -170,13 +177,13 @@
     NSMutableArray * addresses = [NSMutableArray array];
     for (NSUInteger i = exportInternalRange.location;i<exportInternalRange.length + exportInternalRange.location;i++) {
         NSData *pubKey = [self publicKeyDataAtIndex:(uint32_t)i internal:YES];
-        NSString *addr = [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
+        NSString *addr = [[DSECDSAKey keyWithPublicKeyData:pubKey] addressForChain:self.chain];
         [addresses addObject:addr];
     }
     
     for (NSUInteger i = exportExternalRange.location;i<exportExternalRange.location + exportExternalRange.length;i++) {
         NSData *pubKey = [self publicKeyDataAtIndex:(uint32_t)i internal:NO];
-        NSString *addr = [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
+        NSString *addr = [[DSECDSAKey keyWithPublicKeyData:pubKey] addressForChain:self.chain];
         [addresses addObject:addr];
     }
     
@@ -187,21 +194,21 @@
 - (NSString *)addressAtIndex:(uint32_t)index internal:(BOOL)internal
 {
     NSData *pubKey = [self publicKeyDataAtIndex:index internal:internal];
-    return [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
+    return [[DSECDSAKey keyWithPublicKeyData:pubKey] addressForChain:self.chain];
 }
 
 // returns the first unused external address
 - (NSString *)receiveAddress
 {
     //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
-    NSString *addr = [self registerAddressesWithGapLimit:1 internal:NO].lastObject;
+    NSString *addr = [self registerAddressesWithGapLimit:1 internal:NO error:nil].lastObject;
     return (addr) ? addr : self.externalAddresses.lastObject;
 }
 
 - (NSString *)receiveAddressAtOffset:(NSUInteger)offset
 {
     //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
-    NSString *addr = [self registerAddressesWithGapLimit:offset + 1 internal:NO].lastObject;
+    NSString *addr = [self registerAddressesWithGapLimit:offset + 1 internal:NO error:nil].lastObject;
     return (addr) ? addr : self.externalAddresses.lastObject;
 }
 
@@ -209,7 +216,7 @@
 - (NSString *)changeAddress
 {
     //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
-    return [self registerAddressesWithGapLimit:1 internal:YES].lastObject;
+    return [self registerAddressesWithGapLimit:1 internal:YES error:nil].lastObject;
 }
 
 // all previously generated external addresses
@@ -257,6 +264,17 @@
 - (NSString *)privateKeyStringAtIndex:(uint32_t)n internal:(BOOL)internal fromSeed:(NSData *)seed
 {
     return seed ? [self serializedPrivateKeys:@[@(n)] internal:internal fromSeed:seed].lastObject : nil;
+}
+
+- (NSArray *)privateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed
+{
+    NSMutableArray * mArray = [NSMutableArray array];
+    for (NSNumber * index in n) {
+        NSUInteger indexes[] = {(internal ? 1 : 0),index.unsignedIntValue};
+        [mArray addObject:[NSIndexPath indexPathWithIndexes:indexes length:2]];
+    }
+    
+    return [self privateKeysAtIndexPaths:mArray fromSeed:seed];
 }
 
 - (NSArray *)serializedPrivateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed

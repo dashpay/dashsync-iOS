@@ -41,7 +41,7 @@
     self.signature = (tx.inputSignatures[index] != [NSNull null]) ? tx.inputSignatures[index] : nil;
     self.sequence = [tx.inputSequences[index] intValue];
     self.transaction = transactionEntity;
-    DSTxOutputEntity * outputEntity = [DSTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", self.txHash, self.n].lastObject;
+    DSTxOutputEntity * outputEntity = [DSTxOutputEntity objectsInContext:transactionEntity.managedObjectContext matching:@"txHash == %@ && n == %d", self.txHash, self.n].lastObject;
     self.localAddress = outputEntity.localAddress;
     
     // mark previously unspent outputs as spent

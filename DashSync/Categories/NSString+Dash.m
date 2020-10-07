@@ -90,6 +90,19 @@ static NSString *DashCurrencySymbolAssetName = nil;
     return [self base58checkWithData:d];
 }
 
++ (NSString *)addressWithHash160:(UInt160)hash160 onChain:(DSChain*)chain {
+    uint8_t v;
+    NSMutableData *d = [NSMutableData data];
+    if ([chain isMainnet]) {
+        v = DASH_PUBKEY_ADDRESS;
+    } else {
+        v = DASH_PUBKEY_ADDRESS_TEST;
+    }
+    [d appendBytes:&v length:1];
+    [d appendUInt160:hash160];
+    return [self base58checkWithData:d];
+}
+
 + (NSString *)addressWithScriptSig:(NSData *)script onChain:(DSChain*)chain
 {
     if (script == (id)[NSNull null]) return nil;

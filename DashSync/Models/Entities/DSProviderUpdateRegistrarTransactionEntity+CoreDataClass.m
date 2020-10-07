@@ -14,7 +14,7 @@
 #import "NSData+Bitcoin.h"
 #import "DSKey.h"
 #import "DSChainEntity+CoreDataClass.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "NSString+Dash.h"
 
 @implementation DSProviderUpdateRegistrarTransactionEntity
@@ -36,19 +36,19 @@
         NSString * votingAddress = [self.votingKeyHash addressFromHash160DataForChain:tx.chain];
         NSString * payoutAddress = [NSString addressWithScriptPubKey:self.scriptPayout onChain:tx.chain];
         
-        NSArray * operatorAddressEntities = [DSAddressEntity objectsMatching:@"address == %@ && derivationPath.chain == %@",operatorAddress,tx.chain.chainEntity];
+        NSArray * operatorAddressEntities = [DSAddressEntity objectsInContext:self.managedObjectContext matching:@"address == %@ && derivationPath.chain == %@",operatorAddress,[tx.chain chainEntityInContext:self.managedObjectContext]];
         if ([operatorAddressEntities count]) {
             NSAssert([operatorAddressEntities count] == 1, @"addresses should not be duplicates");
             [self addAddressesObject:[operatorAddressEntities firstObject]];
         }
         
-        NSArray * votingAddressEntities = [DSAddressEntity objectsMatching:@"address == %@ && derivationPath.chain == %@",votingAddress,tx.chain.chainEntity];
+        NSArray * votingAddressEntities = [DSAddressEntity objectsInContext:self.managedObjectContext matching:@"address == %@ && derivationPath.chain == %@",votingAddress,[tx.chain chainEntityInContext:self.managedObjectContext]];
         if ([votingAddressEntities count]) {
             NSAssert([votingAddressEntities count] == 1, @"addresses should not be duplicates");
             [self addAddressesObject:[votingAddressEntities firstObject]];
         }
         
-        NSArray * payoutAddressEntities = [DSAddressEntity objectsMatching:@"address == %@ && derivationPath.chain == %@",payoutAddress,tx.chain.chainEntity];
+        NSArray * payoutAddressEntities = [DSAddressEntity objectsInContext:self.managedObjectContext matching:@"address == %@ && derivationPath.chain == %@",payoutAddress,[tx.chain chainEntityInContext:self.managedObjectContext]];
         if ([payoutAddressEntities count]) {
             NSAssert([payoutAddressEntities count] == 1, @"addresses should not be duplicates");
             [self addAddressesObject:[payoutAddressEntities firstObject]];

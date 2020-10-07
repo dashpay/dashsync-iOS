@@ -98,6 +98,48 @@ static const UniChar base58chars[] = {
     return hex;
 }
 
++(NSString*)binaryStringFromOctal:(uint8_t)value {
+    NSAssert(value < 16, @"value must be under 16");
+    switch(value) {
+        case 0: return @"0000";
+        case 1: return @"0001";
+        case 2: return @"0010";
+        case 3: return @"0011";
+        case 4: return @"0100";
+        case 5: return @"0101";
+        case 6: return @"0110";
+        case 7: return @"0111";
+        case 8: return @"1000";
+        case 9: return @"1001";
+        case 10: return @"1010";
+        case 11: return @"1011";
+        case 12: return @"1100";
+        case 13: return @"1101";
+        case 14: return @"1110";
+        case 15: return @"1111";
+        default:
+            return @"Error";
+    }
+}
+
++(NSString*)binaryStringFromSmallInteger:(uint8_t)value {
+    return [NSString stringWithFormat:@"%@%@",[NSString binaryStringFromOctal:value>>4],[NSString binaryStringFromOctal:value&0xf]];
+}
+
++ (NSString *)binaryWithData:(NSData *)d
+{
+    if (! d) return nil;
+    
+    const uint8_t *bytes = d.bytes;
+    NSMutableString *binary = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), d.length*16));
+    
+    for (NSUInteger i = 0; i < d.length; i++) {
+        [binary appendFormat:@"%@", [NSString binaryStringFromSmallInteger:bytes[i]]];
+    }
+    
+    return binary;
+}
+
 // NOTE: It's important here to be permissive with scriptSig (spends) and strict with scriptPubKey (receives). If we
 // miss a receive transaction, only that transaction's funds are missed, however if we accept a receive transaction that
 // we are unable to correctly sign later, then the entire wallet balance after that point would become stuck with the
@@ -194,6 +236,10 @@ static const UniChar base58chars[] = {
         if (!r) return r;
     }
     return r;
+}
+
+- (NSData *)base64ToData {
+    return [[NSData alloc] initWithBase64EncodedString:self options:0];
 }
 
 - (NSData *)base58ToData

@@ -358,7 +358,7 @@ passphrase:(NSString *)passphrase
     NSData *passpoint = [NSData dataWithBytesNoCopy:(uint8_t *)d.bytes + 16 length:33 freeWhenDone:NO];
     UInt256 factorb = seedb.SHA256_2; // factorb = SHA256(SHA256(seedb))
     NSData *pubKey = point_mul(passpoint, factorb), // pubKey = passpoint*factorb
-           *address = [[[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:chain] dataUsingEncoding:NSUTF8StringEncoding];
+           *address = [[[DSECDSAKey keyWithPublicKeyData:pubKey] addressForChain:chain] dataUsingEncoding:NSUTF8StringEncoding];
     uint16_t prefix = CFSwapInt16HostToBig(BIP38_EC_PREFIX);
     uint8_t flag = BIP38_COMPRESSED_FLAG;
     uint32_t addresshash = (address) ? address.SHA256_2.u32[0] : 0;
@@ -468,7 +468,7 @@ passphrase:(NSString *)passphrase
     NSParameterAssert(passphrase);
     NSParameterAssert(chain);
     
-    NSData *priv = [self privateKeyStringForChain:chain].base58checkToData;
+    NSData *priv = [self serializedPrivateKeyForChain:chain].base58checkToData;
 
     if (priv.length < 33 || ! passphrase) return nil;
 

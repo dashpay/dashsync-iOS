@@ -88,23 +88,27 @@ int64_t getKeychainInt(NSString *key, NSError **error);
 BOOL setKeychainString(NSString *s, NSString *key, BOOL authenticated);
 NSString *getKeychainString(NSString *key, NSError **error);
 BOOL setKeychainDict(NSDictionary *dict, NSString *key, BOOL authenticated);
-NSDictionary *getKeychainDict(NSString *key, NSError **error);
+NSDictionary *getKeychainDict(NSString *key, NSArray *classes, NSError **error);
 BOOL setKeychainArray(NSArray *array, NSString *key, BOOL authenticated);
-NSArray *getKeychainArray(NSString *key, NSError **error);
+NSArray *getKeychainArray(NSString *key, NSArray *classes, NSError **error);
 
 //Compact Size
 
-UInt256 setCompact(int32_t nCompact);
-uint8_t compactBits(UInt256 number);
-int32_t getCompact(UInt256 number);
-UInt256 uInt256Add(UInt256 a, UInt256 b);
-UInt256 uInt256AddOne(UInt256 a);
-UInt256 uInt256Neg(UInt256 a);
-UInt256 uInt256Subtract(UInt256 a, UInt256 b);
-UInt256 uInt256ShiftLeft(UInt256 a, uint8_t bits);
-UInt256 uInt256ShiftRight(UInt256 a, uint8_t bits);
-UInt256 uInt256Divide (UInt256 a,UInt256 b);
-UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b);
+UInt256 setCompactLE(int32_t nCompact);
+UInt256 setCompactBE(int32_t nCompact);
+uint16_t compactBitsLE(UInt256 number);
+int32_t getCompactLE(UInt256 number);
+UInt256 uInt256AddLE(UInt256 a, UInt256 b);
+UInt256 uInt256AddBE(UInt256 a, UInt256 b);
+UInt256 uInt256AddOneLE(UInt256 a);
+UInt256 uInt256NegLE(UInt256 a);
+UInt256 uInt256AbsSubtractLE(UInt256 a, UInt256 b);
+UInt256 uInt256SubtractLE(UInt256 a, UInt256 b);
+UInt256 uInt256SubtractBE(UInt256 a, UInt256 b);
+UInt256 uInt256ShiftLeftLE(UInt256 a, uint8_t bits);
+UInt256 uInt256ShiftRightLE(UInt256 a, uint8_t bits);
+UInt256 uInt256DivideLE (UInt256 a,UInt256 b);
+UInt256 uInt256MultiplyUInt32LE (UInt256 a,uint32_t b);
 
 //Serialization
 
@@ -170,6 +174,7 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 
 - (uint8_t)UInt8AtOffset:(NSUInteger)offset;
 - (uint16_t)UInt16AtOffset:(NSUInteger)offset;
+- (uint16_t)UInt16BigAtOffset:(NSUInteger)offset;
 - (uint32_t)UInt32AtOffset:(NSUInteger)offset;
 - (uint64_t)UInt64AtOffset:(NSUInteger)offset;
 - (UInt128)UInt128AtOffset:(NSUInteger)offset;
@@ -195,12 +200,18 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 - (int)intValue; // returns the opcode used to store the receiver in a script (i.e. OP_PUSHDATA1)
 
 - (NSString *)base58String;
+- (NSString *)base64String;
 - (NSString *)shortHexString;
 - (NSString *)hexString;
+- (NSString *)binaryString;
+
+- (uint16_t)positionOfFirstSetBit;
     
 + (NSData * _Nullable)merkleRootFromHashes:(NSArray*)hashes;
 
-- (NSString*)addressFromHash160DataForChain:(DSChain*)chain;
+- (BOOL)isSizedForAddress;
+
+- (NSString* _Nullable)addressFromHash160DataForChain:(DSChain*)chain;
 
 + (NSData*)scriptPubKeyForAddress:(NSString*)address forChain:(DSChain*)chain;
 
@@ -208,7 +219,9 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 
 - (BOOL)bitIsTrueAtLeftToRightIndex:(uint32_t)index;
 
-- (BOOL)bitIsTrueAtIndex:(uint32_t)index;
+- (BOOL)bitIsTrueAtLEIndex:(uint32_t)index;
+
+- (UInt256)HMACSHA256WithKey:(UInt256)secretKey;
 
 @end
 

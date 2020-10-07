@@ -47,7 +47,7 @@
         self.lowPreferenceTill = peer.lowPreferenceTill;
         self.lastRequestedMasternodeList = peer.lastRequestedMasternodeList;
         self.lastRequestedGovernanceSync = peer.lastRequestedGovernanceSync;
-        self.chain = [DSChainEntity chainEntityForType:peer.chain.chainType devnetIdentifier:peer.chain.devnetIdentifier checkpoints:nil];
+        self.chain = [DSChainEntity chainEntityForType:peer.chain.chainType devnetIdentifier:peer.chain.devnetIdentifier checkpoints:nil inContext:self.managedObjectContext];
     }];
     
     return self;
@@ -70,9 +70,9 @@
     return peer;
 }
 
-+ (void)deletePeersForChain:(DSChainEntity*)chainEntity {
++ (void)deletePeersForChainEntity:(DSChainEntity*)chainEntity {
     [chainEntity.managedObjectContext performBlockAndWait:^{
-        NSArray * peersToDelete = [self objectsMatching:@"(chain == %@)",chainEntity];
+        NSArray * peersToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@)",chainEntity];
         for (DSPeerEntity * peer in peersToDelete) {
             [chainEntity.managedObjectContext deleteObject:peer];
         }

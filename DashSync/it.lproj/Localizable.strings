@@ -1,4 +1,3 @@
-
 /* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\n         totale %1$@ (%2$@)";
 
@@ -19,9 +18,6 @@
 
 /* No comment provided by engineer. */
 "Are you sure you would like to register a masternode at %@:%d?" = "Sei sicuro di voler registrare un masternode a %1$@:%2$d?";
-
-/* No comment provided by engineer. */
-"Are you sure you would like to register the username %@ and spend %@ on credits?" = "Sei sicuro di voler registrare il nome utente%1$@ su spendere %2$@ e crediti?";
 
 /* No comment provided by engineer. */
 "Are you sure you would like to reset this user?" = "Sei sicuro di voler resettare questo utente?";
@@ -241,3 +237,123 @@
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Il tuo portafoglio potrebbe  non essere sincronizzato.\nDi solito si risolve  ri-scansionando la catena di blocchi.";
+
+/* The Blockchain Identity is not registered */
+"Not Registered" = "Not Registered";
+
+/* The Blockchain Identity is registered */
+"Registered" = "Registered";
+
+/* The Blockchain Identity is being registered */
+"Registering" = "Registering";
+
+/* No comment provided by engineer. */
+"Unable to create registration transition" = "Unable to create registration transition";
+
+/* It is Unknown if the Blockchain Identity is registered */
+"Unknown" = "Unknown";
+
+/* Status of Key or Username is Revoked */
+"Revoked" = "Revoked";
+
+/* No comment provided by engineer. */
+"BLS" = "BLS";
+
+/* No comment provided by engineer. */
+"ECDSA" = "ECDSA";
+
+/* No comment provided by engineer. */
+"Unknown Key Type" = "Unknown Key Type";
+
+/* No comment provided by engineer. */
+"Dashpay Contract is not yet registered on network" = "Dashpay Contract is not yet registered on network";
+
+/* No comment provided by engineer. */
+"DPNS Contract is not yet registered on network" = "DPNS Contract is not yet registered on network";
+
+/* No comment provided by engineer. */
+"Funding transaction could not be created" = "Funding transaction could not be created";
+
+/* No comment provided by engineer. */
+"Internal key handling error" = "Internal key handling error";
+
+/* No comment provided by engineer. */
+"Internal memory allocation error" = "Internal memory allocation error";
+
+/* No comment provided by engineer. */
+"Malformed platform response" = "Malformed platform response";
+
+/* No comment provided by engineer. */
+"Timeout while waiting for funding transaction to be accepted by network" = "Timeout while waiting for funding transaction to be accepted by network";
+
+/* No comment provided by engineer. */
+"Transaction could not be signed" = "Transaction could not be signed";
+
+/* No comment provided by engineer. */
+"Unable to register registration transition" = "Unable to register registration transition";
+
+/* No comment provided by engineer. */
+"User has actions to complete before being able to use Dashpay" = "User has actions to complete before being able to use Dashpay";
+
+/* No comment provided by engineer. */
+"Requested username domain documents not present on platform after timeout" = "Requested username domain documents not present on platform after timeout";
+
+/* No comment provided by engineer. */
+"Requested username preorder documents not present on platform after timeout" = "Requested username preorder documents not present on platform after timeout";
+
+/* No comment provided by engineer. */
+"Unable to sign transition" = "Unable to sign transition";
+
+/* No comment provided by engineer. */
+"Transition had nothing to update" = "Transition had nothing to update";
+
+/* No comment provided by engineer. */
+"Contract '%@' doesn't contain a table named '%@'" = "Contract '%1$@' doesn't contain a table named '%2$@'";
+
+/* No comment provided by engineer. */
+"The blockchain identity hasn't yet been locally activated" = "The blockchain identity hasn't yet been locally activated";
+
+/* No comment provided by engineer. */
+"The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion" = "The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion";
+
+/* No comment provided by engineer. */
+"The blockchain identity extended public keys need to be registered before you can register a blockchain identity." = "The blockchain identity extended public keys need to be registered before you can register a blockchain identity.";
+
+/* No comment provided by engineer. */
+"Contact request extended public key is incorrectly encrypted." = "Contact request extended public key is incorrectly encrypted.";
+
+/* No comment provided by engineer. */
+"Error generating public keys" = "Error generating public keys";
+
+/* No comment provided by engineer. */
+"Accepting a friend request should only happen from a local blockchain identity" = "Accepting a friend request should only happen from a local blockchain identity";
+
+/* No comment provided by engineer. */
+"You can only accept a friend request from blockchain identity who has sent you one, and none were found" = "You can only accept a friend request from blockchain identity who has sent you one, and none were found";
+
+/* An error message for notifying that chain sync has timed out */
+"Synchronization Timeout" = "Synchronization Timeout";
+
+/* No comment provided by engineer. */
+"Attempt to query DAPs for blockchain identity with no active keys" = "Attempt to query DAPs for blockchain identity with no active keys";
+
+/* No comment provided by engineer. */
+"Node at host %@ does not service network" = "Node at host %@ does not service network";
+
+/* No comment provided by engineer. */
+"Node at host %@ does not support bloom filtering" = "Node at host %@ does not support bloom filtering";
+
+/* No comment provided by engineer. */
+"The Dashpay contract is not properly set up" = "The Dashpay contract is not properly set up";
+
+/* No comment provided by engineer. */
+"Contract '%@' needs to first be locally registered or known" = "Contract '%@' needs to first be locally registered or known";
+
+/* No comment provided by engineer. */
+"A block could not be mined in the selected time interval." = "A block could not be mined in the selected time interval.";
+
+/* No comment provided by engineer. */
+"Could not create friendship derivation path" = "Could not create friendship derivation path";
+
+/* No comment provided by engineer. */
+"Incorrect key format after contact request decryption" = "Incorrect key format after contact request decryption";

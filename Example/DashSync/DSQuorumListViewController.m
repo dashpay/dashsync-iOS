@@ -32,14 +32,14 @@
 #pragma mark - Automation KVO
 
 -(NSManagedObjectContext*)managedObjectContext {
-    return [NSManagedObject context];
+    return [NSManagedObjectContext viewContext];
 }
 
 -(NSPredicate*)searchPredicate {
     if (self.searchString && ![self.searchString isEqualToString:@""]) {
-        return [NSPredicate predicateWithFormat:@"chain == %@ && block.height == %@",self.chain.chainEntity,self.searchString];
+        return [NSPredicate predicateWithFormat:@"chain == %@ && block.height == %@",[self.chain chainEntityInContext:self.managedObjectContext],self.searchString];
     } else {
-        return [NSPredicate predicateWithFormat:@"chain == %@",self.chain.chainEntity];
+        return [NSPredicate predicateWithFormat:@"chain == %@",[self.chain chainEntityInContext:self.managedObjectContext]];
     }
     
 }
@@ -174,8 +174,8 @@
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"QuorumDetailSegue"]) {
-        NSIndexPath * indexPath = self.tableView.indexPathForSelectedRow;
-        DSQuorumEntryEntity *quorumEntryEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
+//        NSIndexPath * indexPath = self.tableView.indexPathForSelectedRow;
+//        DSQuorumEntryEntity *quorumEntryEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
 //        DSMasternodeDetailViewController * masternodeDetailViewController = (DSMasternodeDetailViewController*)segue.destinationViewController;
 //        masternodeDetailViewController.simplifiedMasternodeEntry = simplifiedMasternodeEntryEntity.simplifiedMasternodeEntry;
 //        masternodeDetailViewController.localMasternode = simplifiedMasternodeEntryEntity.localMasternode?[simplifiedMasternodeEntryEntity.localMasternode loadLocalMasternode]:nil;
