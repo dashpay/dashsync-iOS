@@ -270,17 +270,18 @@
 - (double)chainSyncProgress
 {
     if (! self.peerManager.downloadPeer && self.chainSyncStartHeight == 0) return 0.0;
-    //if (self.downloadPeer.status != DSPeerStatus_Connected) return 0.05;
     if (self.chain.lastSyncBlockHeight >= self.chain.estimatedBlockHeight) return 1.0;
     
     double lastBlockHeight = self.chain.lastSyncBlockHeight;
     double estimatedBlockHeight = self.chain.estimatedBlockHeight;
     double syncStartHeight = self.chainSyncStartHeight;
     double progress;
+    if (estimatedBlockHeight == 0) return 0;
     if (syncStartHeight > lastBlockHeight) {
         progress = lastBlockHeight / estimatedBlockHeight;
     }
     else {
+        if (estimatedBlockHeight - syncStartHeight == 0) return 0;
         progress = (lastBlockHeight - syncStartHeight) / (estimatedBlockHeight - syncStartHeight);
     }
     return MIN(1.0, MAX(0.0, 0.1 + 0.9 * progress));
