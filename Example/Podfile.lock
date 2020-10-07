@@ -390,9 +390,9 @@ PODS:
     - gRPC-RxLibrary/Interface (= 1.32.0)
   - KVO-MVVM (0.5.1)
   - Protobuf (3.13.0)
-  - SDWebImage (5.0.1):
-    - SDWebImage/Core (= 5.0.1)
-  - SDWebImage/Core (5.0.1)
+  - SDWebImage (5.9.2):
+    - SDWebImage/Core (= 5.9.2)
+  - SDWebImage/Core (5.9.2)
   - secp256k1_dash (0.1.3-alpha.2)
   - tinycbor (0.5.4-alpha1)
   - TinyCborObjc (0.4.5):
@@ -402,7 +402,7 @@ DEPENDENCIES:
   - DAPI-GRPC (from `../`)
   - DashSync (from `../`)
   - KVO-MVVM (= 0.5.1)
-  - SDWebImage (= 5.0.1)
+  - SDWebImage (= 5.9.2)
 
 SPEC REPOS:
   trunk:
@@ -448,11 +448,11 @@ SPEC CHECKSUMS:
   gRPC-RxLibrary: 82958ff4e5b7c498fa3332638d15afb4bfac7227
   KVO-MVVM: 4df3afd1f7ebcb69735458b85db59c4271ada7c6
   Protobuf: 3dac39b34a08151c6d949560efe3f86134a3f748
-  SDWebImage: 27dd2c9ea07a2252f94557c9fbb6105ee94b74c9
+  SDWebImage: 0b42b8719ab0c5257177d5894306e8a336b21cbb
   secp256k1_dash: 5a10f3369ea82b75bb655c2f3fa119debbaa10ee
   tinycbor: d4d71dddda1f8392fbb4249f63faf8552f327590
   TinyCborObjc: 4ea865a2fde8e39efce2d1beb540d79c3956b72d
 
-PODFILE CHECKSUM: 7ffa76086d160ddc74abdde3da6a245316c58f15
+PODFILE CHECKSUM: bde5af57a17cd3ec49d4e080aefe7a3240a4450f
 
 COCOAPODS: 1.9.3

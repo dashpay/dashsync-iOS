@@ -174,9 +174,7 @@
     
     NSURL *currentURL = storeURL;
     NSArray <DSCoreDataMigrationStep *> *migrationSteps = [self migrationStepsForStoreAtURL:storeURL toVersion:version];
-    
-    NSManagedObjectModel * finalModel = migrationSteps.lastObject.destinationModel;
-    
+        
     for (DSCoreDataMigrationStep *step in migrationSteps) {
         NSMigrationManager *manager = [[NSMigrationManager alloc] initWithSourceModel:step.sourceModel
                                                                      destinationModel:step.destinationModel];
