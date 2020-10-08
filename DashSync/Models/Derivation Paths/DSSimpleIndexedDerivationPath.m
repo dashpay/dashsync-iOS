@@ -43,9 +43,7 @@
                 }
             }];
             self.addressesLoaded = TRUE;
-            if ([self isMemberOfClass:[DSSimpleIndexedDerivationPath class]]) {
-                [self registerAddressesWithGapLimit:10 error:nil];
-            }
+            [self registerAddressesWithGapLimit:10 error:nil];
         }
     }
 }
