@@ -467,6 +467,18 @@
                 hasBlock = !![DSMerkleBlockEntity countObjectsInContext:self.managedObjectContext matching:@"blockHash == %@",uint256_data(blockHash)];
             }];
         }
+        if (!hasBlock && self.chain.isTestnet) {
+            //We can trust insight if on testnet
+            dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+            [[DSInsightManager sharedInstance] blockForBlockHash:uint256_reverse(blockHash) onChain:self.chain completion:^(DSBlock * _Nullable block, NSError * _Nullable error) {
+                if (!error && block) {
+                    [self.chain addInsightVerifiedBlock:block forBlockHash:blockHash];
+                }
+                dispatch_semaphore_signal(sem);
+            }];
+            dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+            hasBlock = !![[self.chain insightVerifiedBlocksByHashDictionary] objectForKey:uint256_data(blockHash)];
+        }
         if (hasBlock) {
             //there is the rare possibility we have the masternode list as a checkpoint, so lets first try that
             [self processRequestFromFileForBlockHash:blockHash completion:^(BOOL success) {
@@ -945,6 +957,18 @@
         lastBlock = [[peer.chain terminalBlocks] objectForKey:uint256_obj(blockHash)];
         if (!lastBlock && [peer.chain allowInsightBlocksForVerification]) {
             lastBlock = [[peer.chain insightVerifiedBlocksByHashDictionary] objectForKey:uint256_data(blockHash)];
+            if (!lastBlock && peer.chain.isTestnet) {
+                //We can trust insight if on testnet
+                dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+                [[DSInsightManager sharedInstance] blockForBlockHash:uint256_reverse(blockHash) onChain:peer.chain completion:^(DSBlock * _Nullable block, NSError * _Nullable error) {
+                    if (!error && block) {
+                        [peer.chain addInsightVerifiedBlock:block forBlockHash:blockHash];
+                    }
+                    dispatch_semaphore_signal(sem);
+                }];
+                dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+                lastBlock = [[peer.chain insightVerifiedBlocksByHashDictionary] objectForKey:uint256_data(blockHash)];
+            }
         }
     } else {
         lastBlock = [peer.chain recentTerminalBlockForBlockHash:blockHash];
