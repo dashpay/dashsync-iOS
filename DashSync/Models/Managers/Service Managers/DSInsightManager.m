@@ -21,7 +21,6 @@
 
 #define INSIGHT_URL          @"https://insight.dash.org/insight-api-dash"
 #define INSIGHT_FAILOVER_URL @"https://insight.dash.show/api"
-
 #define TESTNET_INSIGHT_URL @"https://testnet-insight.dashevo.org/insight-api-dash"
 
 @implementation DSInsightManager
@@ -83,15 +82,25 @@
         for (NSData* blockHash in blockHashes) {
             dispatch_group_enter(dispatchGroup);
             [self queryInsight:insightURL forBlockWithHash:blockHash.UInt256 onChain:chain completion:^(DSBlock *block, NSError *error) {
-                [blockHeightDictionary setObject:@(block.height) forKey:blockHash];
+                if (error) {
+                    mainError = [error copy];
+                } else {
+                    [blockHeightDictionary setObject:@(block.height) forKey:blockHash];
+                }
                 dispatch_group_leave(dispatchGroup);
-                if (error) mainError = error;
             }];
         }
         dispatch_group_notify(dispatchGroup, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
             completion(blockHeightDictionary,mainError);
         });
     });
+}
+
+-(void)blockForBlockHash:(UInt256)blockHash onChain:(DSChain*)chain completion:(void (^)(DSBlock * block, NSError *error))completion {
+    NSAssert(!uint256_is_zero(blockHash), @"blockHash must be set");
+    NSParameterAssert(chain);
+    NSString * insightURL = [chain isMainnet]?INSIGHT_URL:TESTNET_INSIGHT_URL;
+    [self queryInsight:insightURL forBlockWithHash:blockHash onChain:chain completion:completion];
     
 }
 

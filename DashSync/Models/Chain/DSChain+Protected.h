@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) NSDictionary <NSValue*, DSBlock*> *syncBlocks, *terminalBlocks, *orphans;
 
+@property (nonatomic, strong) NSMutableDictionary <NSData*, DSBlock*> *insightVerifiedBlocksByHashDictionary;
+
 // MARK: - Init And Setup
 
 -(void)setUp;
@@ -41,6 +43,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)addMinedFullBlock:(DSFullBlock *)block;
 - (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)txHashes;
 - (void)clearOrphans;
+- (void)addInsightVerifiedBlock:(DSBlock*)block forBlockHash:(UInt256)blockHash;
+
+@property (nonatomic, readonly) BOOL allowInsightBlocksForVerification;
 
 // MARK: - ChainLocks
 @property (nonatomic, strong) DSChainLock * lastChainLock;

@@ -1748,7 +1748,12 @@ static dispatch_once_t devnetToken = 0;
 - (DSBlock * _Nullable)blockForBlockHash:(UInt256)blockHash {
     DSBlock * b = self.mSyncBlocks[uint256_obj(blockHash)];
     if (b) return b;
-    return self.mTerminalBlocks[uint256_obj(blockHash)];
+    b = self.mTerminalBlocks[uint256_obj(blockHash)];
+    if (b) return b;
+    if ([self allowInsightBlocksForVerification]) {
+        return [self.insightVerifiedBlocksByHashDictionary objectForKey:uint256_data(blockHash)];
+    }
+    return nil;
 }
 
 -(DSBlock*)recentTerminalBlockForBlockHash:(UInt256)blockHash {
@@ -1810,6 +1815,17 @@ static dispatch_once_t devnetToken = 0;
         count++;
     }
     return b;
+}
+
+// MARK: From Insight on Testnet
+
+- (void)addInsightVerifiedBlock:(DSBlock*)block forBlockHash:(UInt256)blockHash {
+    if ([self allowInsightBlocksForVerification]) {
+        if (!self.insightVerifiedBlocksByHashDictionary) {
+            self.insightVerifiedBlocksByHashDictionary = [NSMutableDictionary dictionary];
+        }
+        [self.insightVerifiedBlocksByHashDictionary setObject:block forKey:uint256_data(blockHash)];
+    }
 }
 
 // MARK: From Peer
@@ -2708,6 +2724,11 @@ static dispatch_once_t devnetToken = 0;
     return self.lastTerminalBlock.height;
 }
 
+-(BOOL)allowInsightBlocksForVerification {
+    if (self.isMainnet) return NO;
+    return YES;
+}
+
 - (uint32_t)heightForBlockHash:(UInt256)blockhash {
     DSCheckpoint * checkpoint = [self.checkpointsByHashDictionary objectForKey:uint256_data(blockhash)];
     if (checkpoint) {
@@ -2746,6 +2767,10 @@ static dispatch_once_t devnetToken = 0;
         if (uint256_eq(checkpoint.blockHash, blockhash)) {
             return checkpoint.height;
         }
+    }
+    if ([self allowInsightBlocksForVerification] && [self.insightVerifiedBlocksByHashDictionary objectForKey:uint256_data(blockhash)]) {
+        b = [self.insightVerifiedBlocksByHashDictionary objectForKey:uint256_data(blockhash)];
+        return b.height;
     }
     DSDLog(@"Requesting unknown blockhash %@ (it's probably being added asyncronously)",uint256_reverse_hex(blockhash));
     return UINT32_MAX;
