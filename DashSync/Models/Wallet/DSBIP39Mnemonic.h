@@ -51,7 +51,7 @@ typedef NS_ENUM(NSUInteger, DSBIP39Language) {
 
 typedef NSUInteger DSBIP39RecoveryWordConfidence;
 
-#define DSBIP39RecoveryWordConfidence_Max 0
+extern DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max;
 
 @interface DSBIP39Mnemonic : NSObject<DSMnemonic>
 

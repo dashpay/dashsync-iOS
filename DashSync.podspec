@@ -35,7 +35,6 @@ Pod::Spec.new do |s|
   s.dependency 'DSDynamicOptions', '0.1.1'
   s.dependency 'DAPI-GRPC', '0.0.1'
   s.dependency 'TinyCborObjc', '0.4.5'
-  s.dependency 'MDCDamerauLevenshtein', '0.1.0'
   s.prefix_header_contents = '#import "DSEnvironment.h"'
   
 end
