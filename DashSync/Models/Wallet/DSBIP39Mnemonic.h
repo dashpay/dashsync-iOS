@@ -49,6 +49,10 @@ typedef NS_ENUM(NSUInteger, DSBIP39Language) {
     DSBIP39Language_Unknown = NSUIntegerMax,
 };
 
+typedef NSUInteger DSBIP39RecoveryWordConfidence;
+
+#define DSBIP39RecoveryWordConfidence_Max 0
+
 @interface DSBIP39Mnemonic : NSObject<DSMnemonic>
 
 @property (nonnull, nonatomic, readonly) NSArray *words;
@@ -64,8 +68,8 @@ typedef NS_ENUM(NSUInteger, DSBIP39Language) {
 - (BOOL)wordArrayIsValid:(NSArray *)wordArray inLanguage:(DSBIP39Language)language;
 - (DSBIP39Language)bestFittingLanguageForWords:(NSArray*)words;
 
-- (void)findLastPotentialWordsOfMnemonicForPassphrase:(NSString*)partialPassphrase progressUpdate:(void (^)(float progress, bool * stop))progressUpdate completion:(void (^)(NSArray <NSString*>* missingWords))completion;
-- (void)findPotentialWordsOfMnemonicForPassphrase:(NSString*)passphrase replacementString:(NSString*)replacementCharacter progressUpdate:(void (^)(float, bool *))progress completion:(void (^)(NSArray <NSString*>*))completion;
+- (void)findLastPotentialWordsOfMnemonicForPassphrase:(NSString*)partialPassphrase progressUpdate:(void (^)(float progress, bool * stop))progressUpdate completion:(void (^)(NSDictionary <NSString*,NSNumber*>* missingWords))completion;
+- (void)findPotentialWordsOfMnemonicForPassphrase:(NSString*)passphrase replacementString:(NSString*)replacementCharacter progressUpdate:(void (^)(float, bool *))progress completion:(void (^)(NSDictionary <NSString*,NSNumber*>* missingWords))completion;
 
 - (NSData * _Nullable)decodeWordArray:(NSArray *)wordArray inLanguage:(DSBIP39Language)language;
 
