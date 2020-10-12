@@ -30,10 +30,13 @@
 #import "NSMutableData+Dash.h"
 #import "DSFundsDerivationPath.h"
 #import "DSInsightManager.h"
+#import "NSString+MDCDamerauLevenshteinDistance.h"
 
 #define WORDS @"BIP39Words"
 
 #define IDEO_SP @"\xE3\x80\x80" // ideographic space (utf-8)
+
+DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
 
 // BIP39 is method for generating a deterministic wallet seed from a mnemonic phrase
 // https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
@@ -453,15 +456,15 @@
     return key;
 }
 
-- (void)findPotentialWordsOfMnemonicForPassphrase:(NSString*)passphrase replacementString:(NSString*)replacementCharacter progressUpdate:(void (^)(float, bool *))progress completion:(void (^)(NSArray <NSString*>*))completion {
-    [self findPotentialWordsOfMnemonicForPassphrase:passphrase replacementString:replacementCharacter inLanguage:DSBIP39Language_Unknown progressUpdate:progress completion:completion completeInQueue:dispatch_get_main_queue()];
+- (void)findPotentialWordsOfMnemonicForPassphrase:(NSString*)passphrase replacementString:(NSString*)replacementCharacter progressUpdate:(void (^)(float, bool *))progress completion:(void (^)(NSDictionary <NSString*,NSNumber*>* missingWords))completion {
+    [self findPotentialWordsOfMnemonicForPassphrase:passphrase replacementString:replacementCharacter inLanguage:DSBIP39Language_Unknown useDistanceAsBackup:YES progressUpdate:progress completion:completion completeInQueue:dispatch_get_main_queue()];
 }
 
-- (void)findLastPotentialWordsOfMnemonicForPassphrase:(NSString*)partialPassphrase progressUpdate:(void (^)(float, bool *))progress completion:(void (^)(NSArray <NSString*>*))completion {
+- (void)findLastPotentialWordsOfMnemonicForPassphrase:(NSString*)partialPassphrase progressUpdate:(void (^)(float, bool *))progress completion:(void (^)(NSDictionary <NSString*,NSNumber*>* missingWords))completion {
     [self findLastPotentialWordsOfMnemonicForPassphrase:partialPassphrase inLanguage:DSBIP39Language_Unknown progressUpdate:progress completion:completion completeInQueue:dispatch_get_main_queue()];
 }
 
-- (void)findLastPotentialWordsOfMnemonicForPassphrase:(NSString*)partialPassphrase inLanguage:(DSBIP39Language)language progressUpdate:(void (^)(float, bool *))progressUpdate completion:(void (^)(NSArray <NSString*>*))completion completeInQueue:(dispatch_queue_t)dispatchQueue
+- (void)findLastPotentialWordsOfMnemonicForPassphrase:(NSString*)partialPassphrase inLanguage:(DSBIP39Language)language progressUpdate:(void (^)(float, bool *))progressUpdate completion:(void (^)(NSDictionary <NSString*,NSNumber*>* missingWords))completion completeInQueue:(dispatch_queue_t)dispatchQueue
 {
     NSArray *words = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), (CFStringRef)[self normalizePhrase:partialPassphrase], CFSTR(" ")));
     NSString * passphraseWithXs = nil;
@@ -470,22 +473,22 @@
     } else {
         passphraseWithXs = [partialPassphrase stringByAppendingString:@" x"];
     }
-    [self findPotentialWordsOfMnemonicForPassphrase:passphraseWithXs replacementString:@"x" inLanguage:language progressUpdate:progressUpdate completion:completion completeInQueue:dispatchQueue];
+    [self findPotentialWordsOfMnemonicForPassphrase:passphraseWithXs replacementString:@"x" inLanguage:language useDistanceAsBackup:NO progressUpdate:progressUpdate completion:completion completeInQueue:dispatchQueue];
 }
 
-- (void)findPotentialWordsOfMnemonicForPassphrase:(NSString*)partialPassphrase replacementString:(NSString*)replacementCharacter inLanguage:(DSBIP39Language)language progressUpdate:(void (^)(float, bool *))progressUpdate completion:(void (^)(NSArray <NSString*>*))completion completeInQueue:(dispatch_queue_t)dispatchQueue
+- (void)findPotentialWordsOfMnemonicForPassphrase:(NSString*)partialPassphrase replacementString:(NSString*)replacementString inLanguage:(DSBIP39Language)language useDistanceAsBackup:(BOOL)useDistanceAsBackup progressUpdate:(void (^)(float, bool *))progressUpdate completion:(void (^)(NSDictionary <NSString*,NSNumber*>* missingWords))completion completeInQueue:(dispatch_queue_t)dispatchQueue
 {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
         DSBIP39Mnemonic *m = [DSBIP39Mnemonic sharedInstance];
         NSMutableArray *words = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), (CFStringRef)[self normalizePhrase:partialPassphrase], CFSTR(" ")));
         NSIndexSet *indexes = [words indexesOfObjectsPassingTest:^BOOL(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            return [obj isEqualToString:replacementCharacter];
+            return [obj isEqualToString:replacementString];
         }];
         [words removeObjectsAtIndexes:indexes];
         DSBIP39Language checkLanguage = (language == DSBIP39Language_Unknown)?[self bestFittingLanguageForWords:words]:language;
         NSUInteger count = words.count;
         if (count == 10) {
-            __block NSMutableArray * possibleWordArrays = [NSMutableArray array];
+            __block NSMutableDictionary * possibleWordArrays = [NSMutableDictionary dictionary];
             uint32_t i = 0;
             __block uint32_t completed = 0;
             float totalWords = [m wordsForLanguage:checkLanguage].count;
@@ -498,14 +501,14 @@
                 @autoreleasepool {
                     NSMutableArray * checkingWords = [words mutableCopy];
                     [checkingWords insertObject:word atIndex:[indexes firstIndex]];
-                    [checkingWords insertObject:replacementCharacter atIndex:[indexes lastIndex]];
+                    [checkingWords insertObject:replacementString atIndex:[indexes lastIndex]];
                     NSString *passphrase = CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (CFArrayRef)checkingWords, CFSTR(" ")));
                     dispatch_group_enter(dispatchGroup);
                     dispatch_semaphore_wait(dispatchSemaphore, DISPATCH_TIME_FOREVER);
-                    [self findPotentialWordsOfMnemonicForPassphrase:passphrase replacementString:replacementCharacter inLanguage:checkLanguage progressUpdate:^(float incProgress, bool * stop) {
-                    } completion:^(NSArray<NSString *> * secondWords) {
+                    [self findPotentialWordsOfMnemonicForPassphrase:passphrase replacementString:replacementString inLanguage:checkLanguage useDistanceAsBackup:NO progressUpdate:^(float incProgress, bool * stop) {
+                    } completion:^(NSDictionary <NSString*,NSNumber*>* secondWords) {
                         for (NSString * secondWord in secondWords) {
-                            [possibleWordArrays addObject:[NSString stringWithFormat:@"%@ %@",word,secondWord]];
+                            [possibleWordArrays setObject:@(DSBIP39RecoveryWordConfidence_Max) forKey:[NSString stringWithFormat:@"%@ %@",word,secondWord]];
                             stop = YES;
                         }
                         completed++;
@@ -550,13 +553,35 @@
             currentWordCount++;
         }
         if (possibleWordAddresses.count == 0) {
-            completion([NSArray array]);
+            completion([NSDictionary dictionary]);
         } else {
             [[DSInsightManager sharedInstance] findExistingAddresses:[possibleWordAddresses allKeys] onChain:[DSChain mainnet] completion:^(NSArray * _Nonnull addresses, NSError * _Nonnull error) {
                 NSDictionary * reducedDictionary = [possibleWordAddresses dictionaryWithValuesForKeys:addresses];
-                dispatch_async(dispatchQueue, ^{
-                    completion([reducedDictionary allValues]);
-                });
+                NSArray * perfectConfidenceWords = [reducedDictionary allValues];
+                if (perfectConfidenceWords.count) {
+                    NSMutableDictionary * possibleWordArrays = [NSMutableDictionary dictionary];
+                    for (NSString * address in perfectConfidenceWords) {
+                        [possibleWordArrays setObject:@(DSBIP39RecoveryWordConfidence_Max) forKey:address];
+                    }
+                    dispatch_async(dispatchQueue, ^{
+                        completion(possibleWordArrays);
+                    });
+                } else if (useDistanceAsBackup) {
+                    NSMutableDictionary * possibleWordArrays = [NSMutableDictionary dictionary];
+                    for (NSString * potentialWord in [possibleWordAddresses allValues]) {
+                        NSUInteger distance = [replacementString mdc_damerauLevenshteinDistanceTo:potentialWord];
+                        if ([replacementString mdc_damerauLevenshteinDistanceTo:potentialWord] < 3) {
+                            [possibleWordArrays setObject:@(distance) forKey:potentialWord];
+                        }
+                    }
+                    dispatch_async(dispatchQueue, ^{
+                        completion(possibleWordArrays);
+                    });
+                } else {
+                    dispatch_async(dispatchQueue, ^{
+                        completion([NSDictionary dictionary]);
+                    });
+                }
             }];
         }
 
