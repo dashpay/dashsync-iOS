@@ -2850,6 +2850,11 @@ static dispatch_once_t devnetToken = 0;
 
 -(uint32_t)estimatedBlockHeight {
     if (_bestEstimatedBlockHeight) return _bestEstimatedBlockHeight;
+    _bestEstimatedBlockHeight = [self decideFromPeerSoftConsensusEstimatedBlockHeight];
+    return _bestEstimatedBlockHeight;
+}
+
+-(uint32_t)decideFromPeerSoftConsensusEstimatedBlockHeight {
     uint32_t maxCount = 0;
     uint32_t tempBestEstimatedBlockHeight = 0;
     for (NSNumber * height in self.estimatedBlockHeights) {
@@ -2858,14 +2863,12 @@ static dispatch_once_t devnetToken = 0;
             tempBestEstimatedBlockHeight = [height intValue];
         }
     }
-    _bestEstimatedBlockHeight = tempBestEstimatedBlockHeight;
-    return _bestEstimatedBlockHeight;
+    return tempBestEstimatedBlockHeight;
 }
 
 -(void)setEstimatedBlockHeight:(uint32_t)estimatedBlockHeight fromPeer:(DSPeer*)peer {
     uint32_t oldEstimatedBlockHeight = self.estimatedBlockHeight;
-    _bestEstimatedBlockHeight = 0; //lazy loading
-    
+
     //remove from other heights
     for (NSNumber * height in [self.estimatedBlockHeights copy]) {
         if ([height intValue] == estimatedBlockHeight) continue;
@@ -2887,11 +2890,14 @@ static dispatch_once_t devnetToken = 0;
             [peersAnnouncingHeight addObject:peer];
         }
     }
-    uint32_t finalEstimatedBlockHeight = self.estimatedBlockHeight;
-    if (oldEstimatedBlockHeight < finalEstimatedBlockHeight) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncParametersUpdatedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
-        });
+    if (oldEstimatedBlockHeight != estimatedBlockHeight) {
+        uint32_t finalEstimatedBlockHeight = [self decideFromPeerSoftConsensusEstimatedBlockHeight];
+        if (finalEstimatedBlockHeight > oldEstimatedBlockHeight) {
+            _bestEstimatedBlockHeight = finalEstimatedBlockHeight;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncParametersUpdatedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
+            });
+        }
     }
 }
 
