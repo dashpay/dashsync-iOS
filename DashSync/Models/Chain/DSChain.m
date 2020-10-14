@@ -2857,7 +2857,7 @@ static dispatch_once_t devnetToken = 0;
 -(uint32_t)decideFromPeerSoftConsensusEstimatedBlockHeight {
     uint32_t maxCount = 0;
     uint32_t tempBestEstimatedBlockHeight = 0;
-    for (NSNumber * height in self.estimatedBlockHeights) {
+    for (NSNumber * height in [self.estimatedBlockHeights copy]) {
         NSArray * announcers = self.estimatedBlockHeights[height];
         if (announcers.count > maxCount) {
             tempBestEstimatedBlockHeight = [height intValue];
