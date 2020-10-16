@@ -338,7 +338,7 @@ PODS:
     - DSDynamicOptions (= 0.1.1)
     - DWAlertController (= 0.2.1)
     - secp256k1_dash (= 0.1.3-alpha.2)
-    - TinyCborObjc (= 0.4.5)
+    - TinyCborObjc (= 0.4.6)
   - DSDynamicOptions (0.1.1)
   - DWAlertController (0.2.1)
   - gRPC-Core (1.32.0):
@@ -395,7 +395,7 @@ PODS:
   - SDWebImage/Core (5.9.2)
   - secp256k1_dash (0.1.3-alpha.2)
   - tinycbor (0.5.4-alpha1)
-  - TinyCborObjc (0.4.5):
+  - TinyCborObjc (0.4.6):
     - tinycbor (= 0.5.4-alpha1)
 
 DEPENDENCIES:
@@ -439,7 +439,7 @@ SPEC CHECKSUMS:
   BoringSSL-GRPC: 0cd95890148852684de1b0eaabd54f299a00b129
   CocoaLumberjack: 78b0c238666f4f58db069738ec176f4519557516
   DAPI-GRPC: 1e6b58642afd19d1e7167a40557da02bf43cef7c
-  DashSync: a3842428e7cd8934a2aa3048137dbc589238f86c
+  DashSync: 24579d2a9479e2cd67e88564214d2048368ec503
   DSDynamicOptions: 23229bb4e60e7fc966cc1842eb405ea3b94b042e
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   gRPC: 9f6be4f675ef68e319e8626f7d9d3ea032967552
@@ -451,7 +451,7 @@ SPEC CHECKSUMS:
   SDWebImage: 0b42b8719ab0c5257177d5894306e8a336b21cbb
   secp256k1_dash: 5a10f3369ea82b75bb655c2f3fa119debbaa10ee
   tinycbor: d4d71dddda1f8392fbb4249f63faf8552f327590
-  TinyCborObjc: 4ea865a2fde8e39efce2d1beb540d79c3956b72d
+  TinyCborObjc: 5204540fb90ff0c40fb22d408fa51bab79d78a80
 
 PODFILE CHECKSUM: bde5af57a17cd3ec49d4e080aefe7a3240a4450f
 
