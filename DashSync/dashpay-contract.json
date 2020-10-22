@@ -52,11 +52,10 @@
             }],
             "properties": {
                 "encToUserId": {
-                    "type": "string",
-                    "contentEncoding": "base64",
-                    "pattern": "^([A-Za-z0-9+/])*$",
-                    "maxLength":43,
-                    "minLength":43
+                    "type": "array",
+                    "byteArray": true,
+                    "minItems": 32,
+                    "maxItems": 32
                 },
                 "rootEncryptionKeyIndex": {
                     "type": "integer"
@@ -65,12 +64,11 @@
                     "type": "integer"
                 },
                 "privateData": {
-                    "type": "string",
-                    "contentEncoding": "base64",
-                    "pattern": "^([A-Za-z0-9+/])*$",
-                    "description": "This is the encrypted values of aliasName + note + displayHidden encoded as an array in cbor",
-                    "maxLength":2731,
-                    "minLength":64
+                    "type": "array",
+                    "byteArray": true,
+                    "minItems":48,
+                    "maxItems":2048
+                    "description": "This is the encrypted values of aliasName + note + displayHidden encoded as an array in cbor"
                 }
             },
             "required": ["$createdAt", "$updatedAt", "encToUserId", "privateData", "rootEncryptionKeyIndex", "derivationEncryptionKeyIndex"],
@@ -110,18 +108,16 @@
             }],
             "properties": {
                 "toUserId": {
-                    "type": "string",
-                    "contentEncoding": "base64",
-                    "pattern": "^([A-Za-z0-9+/])*$",
-                    "maxLength":43,
-                    "minLength":43
+                    "type": "array",
+                    "byteArray": true,
+                    "minItems": 32,
+                    "maxItems": 32
                 },
                 "encryptedPublicKey": {
-                    "type": "string",
-                    "contentEncoding": "base64",
-                    "pattern": "^([A-Za-z0-9+/])*$",
-                    "maxLength":128,
-                    "minLength":128
+                    "type": "array",
+                    "byteArray": true,
+                    "minItems": 96,
+                    "maxItems": 96
                 },
                 "senderKeyIndex": {
                     "type": "integer"
@@ -133,11 +129,10 @@
                     "type": "integer"
                 },
                 "encryptedAccountLabel": {
-                    "type": "string",
-                    "contentEncoding": "base64",
-                    "pattern": "^([A-Za-z0-9+/])*$",
-                    "maxLength":107,
-                    "minLength":64
+                    "type": "array",
+                    "byteArray": true,
+                    "minItems": 48,
+                    "maxItems": 80
                 }
             },
             "required": ["$createdAt", "toUserId", "encryptedPublicKey", "senderKeyIndex", "recipientKeyIndex", "accountReference"],
