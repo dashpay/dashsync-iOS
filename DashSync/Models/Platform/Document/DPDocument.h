@@ -31,14 +31,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, copy, nonatomic) NSString *base58ContractIdString;
 @property (readonly, nonatomic) UInt256 documentId;
 @property (readonly, copy, nonatomic) NSString *base58DocumentIdString;
-@property (readonly, copy, nonatomic) NSString *entropy;
+@property (readonly, copy, nonatomic) NSData *entropy;
 @property (readonly, nonatomic) DPDocumentState *currentRegisteredDocumentState;
 @property (readonly, nonatomic) DPDocumentState *currentLocalDocumentState;
 @property (readonly, copy, nonatomic) NSNumber *currentRegisteredRevision;
 @property (readonly, copy, nonatomic) NSNumber *currentLocalRevision;
 @property (readonly, copy, nonatomic) DSStringValueDictionary *objectDictionary;
 
-- (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString*)tableName usingEntropy:(NSString*)entropy;
+- (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString*)tableName usingEntropy:(NSData*)entropy;
 
 + (nullable DPDocument *)documentWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString*)tableName usingEntropy:(NSString*)entropy;
 

@@ -67,7 +67,7 @@
                     "type": "array",
                     "byteArray": true,
                     "minItems":48,
-                    "maxItems":2048
+                    "maxItems":2048,
                     "description": "This is the encrypted values of aliasName + note + displayHidden encoded as an array in cbor"
                 }
             },

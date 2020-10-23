@@ -32,7 +32,7 @@
 - (DSMutableStringValueDictionary *)baseKeyValueDictionary {
     DSMutableStringValueDictionary *json = [super baseKeyValueDictionary];
     json[@"dataContract"] = self.contract.objectDictionary;
-    json[@"entropy"] = [NSString addressWithHash160:self.contract.entropy onChain:self.chain];
+    json[@"entropy"] = uint256_data(self.contract.entropy);
     return json;
 }
 

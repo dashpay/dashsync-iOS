@@ -78,9 +78,11 @@ typedef struct _DSLLMQ {
     UInt256 hash;
 } DSLLMQ;
 
-#define uint256_RANDOM ((UInt256){.u32 = {arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random()}});
+#define uint256_random ((UInt256){.u32 = {arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random()}})
 
-#define uint160_RANDOM ((UInt160){.u32 = {arc4random(), arc4random(), arc4random(), arc4random(), arc4random()}});
+#define uint256_random_data uint256_data(uint256_random)
+
+#define uint160_random ((UInt160){.u32 = {arc4random(), arc4random(), arc4random(), arc4random(), arc4random()}})
 
 #define uint512_concat(a, b) ((UInt512){.u64 = {a.u64[0], a.u64[1], a.u64[2], a.u64[3], b.u64[0], b.u64[1], b.u64[2], b.u64[3]}});
 

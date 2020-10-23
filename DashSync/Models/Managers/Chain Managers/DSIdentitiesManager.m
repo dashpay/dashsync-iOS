@@ -189,10 +189,10 @@
     id<DSDAPINetworkServiceRequest> call = [client.DAPINetworkService getDPNSDocumentsForUsernames:@[name] inDomain:domain success:^(NSArray<NSDictionary *> * _Nonnull documents) {
         __block NSMutableArray * rBlockchainIdentities = [NSMutableArray array];
         for (NSDictionary * document in documents) {
-            NSString * userId = document[@"$ownerId"];
+            NSData * userIdData = document[@"$ownerId"];
             NSString * normalizedLabel = document[@"normalizedLabel"];
             NSString * domain = document[@"normalizedParentDomainName"];
-            DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 isTransient:TRUE onChain:self.chain];
+            DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userIdData.UInt256 isTransient:TRUE onChain:self.chain];
             [identity addUsername:normalizedLabel inDomain:domain status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
             [rBlockchainIdentities addObject:identity];
         }
@@ -221,13 +221,13 @@
     id<DSDAPINetworkServiceRequest> call = [client.DAPINetworkService searchDPNSDocumentsForUsernamePrefix:namePrefix inDomain:domain offset:offset limit:limit success:^(NSArray<NSDictionary *> * _Nonnull documents) {
         __block NSMutableArray * rBlockchainIdentities = [NSMutableArray array];
         for (NSDictionary * document in documents) {
-            NSString * userId = document[@"$ownerId"];
+            NSData * userIdData = document[@"$ownerId"];
             NSString * label = document[@"label"];
             NSString * domain = document[@"normalizedParentDomainName"];
-            UInt256 uniqueId = userId.base58ToData.UInt256;
+            UInt256 uniqueId = userIdData.UInt256;
             DSBlockchainIdentity * identity = [self.chain blockchainIdentityForUniqueId:uniqueId foundInWallet:nil includeForeignBlockchainIdentities:YES];
             if (!identity) {
-                identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 isTransient:TRUE onChain:self.chain];
+                identity = [[DSBlockchainIdentity alloc] initWithUniqueId:uniqueId isTransient:TRUE onChain:self.chain];
                 [identity addUsername:label inDomain:domain status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
             } else {
                 if (![identity.dashpayUsernames containsObject:label]) {
@@ -253,15 +253,15 @@
     return call;
 }
 
-- (void)searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID:(NSString*)userID withCompletion:(IdentitiesCompletionBlock)completion {
+- (void)searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID:(NSData*)userID withCompletion:(IdentitiesCompletionBlock)completion {
     DSDAPIClient * client = self.chain.chainManager.DAPIClient;
     [client.DAPINetworkService getDPNSDocumentsForIdentityWithUserId:userID success:^(NSArray<NSDictionary *> * _Nonnull documents) {
         __block NSMutableArray * rBlockchainIdentities = [NSMutableArray array];
         for (NSDictionary * document in documents) {
-            NSString * userId = document[@"$ownerId"];
+            NSData * userIdData = document[@"$ownerId"];
             NSString * normalizedLabel = document[@"normalizedLabel"];
             NSString * domain = document[@"normalizedParentDomainName"];
-            DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userId.base58ToData.UInt256 isTransient:TRUE onChain:self.chain];
+            DSBlockchainIdentity * identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userIdData.UInt256 isTransient:TRUE onChain:self.chain];
             [identity addUsername:normalizedLabel inDomain:domain status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
             [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, NSError * error) {
                 

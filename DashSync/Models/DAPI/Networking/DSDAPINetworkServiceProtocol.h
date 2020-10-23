@@ -359,7 +359,7 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
  @param success A block object to be executed when the request operation finishes successfully
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
-- (id<DSDAPINetworkServiceRequest>)fetchContractForId:(NSString *)contractId
+- (id<DSDAPINetworkServiceRequest>)fetchContractForId:(NSData *)contractId
                    success:(void (^)(NSDictionary *contract))success
                    failure:(void (^)(NSError *error))failure;
 
@@ -382,7 +382,7 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
  @param success A block object to be executed when the request operation finishes successfully
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
-- (id<DSDAPINetworkServiceRequest>)getIdentityById:(NSString *)userId
+- (id<DSDAPINetworkServiceRequest>)getIdentityById:(NSData *)userId
                 success:(void (^)(NSDictionary *blockchainIdentity))success
                 failure:(void (^)(NSError *error))failure;
 
@@ -417,7 +417,7 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
                              success:(void (^)(NSArray<NSDictionary *> *documents))success
                              failure:(void (^)(NSError *error))failure;
 
-- (id<DSDAPINetworkServiceRequest>)getDPNSDocumentsForIdentityWithUserId:(NSString *)userId
+- (id<DSDAPINetworkServiceRequest>)getDPNSDocumentsForIdentityWithUserId:(NSData *)userId
                                       success:(void (^)(NSArray<NSDictionary *> *documents))success
                                       failure:(void (^)(NSError *error))failure;
 

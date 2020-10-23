@@ -45,19 +45,19 @@
     self = [super init];
     if (self) {
         NSData *recipientData = rawContact[@"toUserId"];
-        NSString *senderString = rawContact[@"$ownerId"];
+        NSData *senderData = rawContact[@"$ownerId"];
         NSData *encryptedAccountLabel = rawContact[@"encryptedAccountLabel"];
         NSData *encryptedPublicKeyData = rawContact[@"encryptedPublicKey"];
         NSNumber *accountReference = rawContact[@"accountReference"];
         NSNumber *senderKeyIndex = rawContact[@"senderKeyIndex"];
         NSNumber *recipientKeyIndex = rawContact[@"recipientKeyIndex"];
         NSNumber *createdAt = rawContact[@"$createdAt"];
-        if (!recipientData || !senderString || !encryptedPublicKeyData || !senderKeyIndex || !recipientKeyIndex || !createdAt) {
+        if (!recipientData || !senderData || !encryptedPublicKeyData || !senderKeyIndex || !recipientKeyIndex || !createdAt) {
             NSAssert(FALSE, @"malformed server response");
             return nil;
         }
         self.recipientBlockchainIdentityUniqueId = recipientData.UInt256;
-        self.senderBlockchainIdentityUniqueId = [senderString base58ToData].UInt256;
+        self.senderBlockchainIdentityUniqueId = senderData.UInt256;
         self.encryptedPublicKeyData = encryptedPublicKeyData;
         self.encryptedAccountLabel = encryptedAccountLabel;
         self.accountReference = [accountReference unsignedIntValue];

@@ -939,7 +939,7 @@
     XCTAssertEqual(self.chain.lastSyncBlockHeight,105);
     
     UInt256 blockHash = UINT256_MAX;
-    UInt256 merkleRoot = uint256_RANDOM;
+    UInt256 merkleRoot = uint256_random;
     UInt256 chainWork = uInt256AddOneLE(uInt256AddOneLE(self.chain.lastTerminalBlock.chainWork)); //add 2 which is minimum work
     
     DSMerkleBlock * fakeBlock106 = [[DSMerkleBlock alloc] initWithVersion:1 blockHash:blockHash prevBlock:self.chain.lastTerminalBlock.blockHash timestamp:self.chain.lastTerminalBlock.timestamp + 75 merkleRoot:merkleRoot target:self.chain.lastTerminalBlock.target chainWork:chainWork height:BLOCK_UNKNOWN_HEIGHT onChain:self.chain];

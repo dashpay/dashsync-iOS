@@ -120,4 +120,12 @@
     XCTAssertEqual(blockchainIdentityRegistrationTransition.type, DSTransitionType_IdentityRegistration);
 }
 
+-(void)testasdasd {
+    NSMutableData * mData = [NSMutableData data];
+    [mData appendUInt256:@"420c298ce157eaae44f33fd3a3096e8c1a6a4574996fca9b51fa0724d62ecb1f".hexToData.UInt256];
+    [mData appendUInt256:@"e8195fc5ba6dfbbd07588cb298f353229e8c6459f6f360afcf56d16b139e4e96".hexToData.UInt256];
+    NSString * result = uint256_hex([mData SHA256_2]);
+    XCTAssertEqualObjects(result,@"7e15b7a80b011338794c32f5f51f26aa83aff8a251d9ccfa111e87f658ca116d");
+}
+
 @end

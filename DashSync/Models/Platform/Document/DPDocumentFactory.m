@@ -57,7 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable DPDocument *)documentOnTable:(NSString *)tableName
                       withDataDictionary:(nullable DSStringValueDictionary *)dataDictionary
-                            usingEntropy:(NSString*)entropy
+                            usingEntropy:(NSData*)entropy
                                    error:(NSError *_Nullable __autoreleasing *)error {
     NSParameterAssert(tableName);
     

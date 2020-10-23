@@ -39,7 +39,7 @@ typedef NS_ENUM(NSUInteger, DPContractState) {
 @property (readonly, copy, nonatomic) NSString *name;
 @property (readonly, nonatomic) UInt256 contractId;
 @property (readonly, copy, nonatomic) NSString *base58ContractId;
-@property (readonly, nonatomic) UInt160 entropy;
+@property (readonly, nonatomic) UInt256 entropy;
 @property (readonly, copy, nonatomic) NSString *base58OwnerId;
 @property (readonly, copy, nonatomic) NSString *statusString;
 @property (readonly, nonatomic) DPContractState contractState;

@@ -50,8 +50,7 @@
         DSMutableStringValueDictionary *platformKeyDictionary = [[DSMutableStringValueDictionary alloc] init];
         platformKeyDictionary[@"id"] = @([indexIdentifier unsignedIntValue]);
         platformKeyDictionary[@"type"] = @(key.keyType);
-        platformKeyDictionary[@"data"] = key.publicKeyData.base64String;
-        platformKeyDictionary[@"isEnabled"] = @YES;
+        platformKeyDictionary[@"data"] = key.publicKeyData;
         [platformKeys addObject:platformKeyDictionary];
     }
     return platformKeys;
@@ -59,22 +58,22 @@
 
 - (DSMutableStringValueDictionary *)baseKeyValueDictionary {
     DSMutableStringValueDictionary *json = [super baseKeyValueDictionary];
-    json[@"lockedOutPoint"] = dsutxo_data(self.lockedOutpoint).base64String;
+    json[@"lockedOutPoint"] = dsutxo_data(self.lockedOutpoint);
     json[@"publicKeys"] = [self platformKeyDictionaries];
     return json;
 }
 
 -(void)applyKeyValueDictionary:(DSMutableStringValueDictionary *)keyValueDictionary {
     [super applyKeyValueDictionary:keyValueDictionary];
-    NSString * lockedOutPointString = keyValueDictionary[@"lockedOutPoint"];
-    self.lockedOutpoint = [lockedOutPointString.base64ToData transactionOutpoint];
+    NSData * lockedOutPointData = keyValueDictionary[@"lockedOutPoint"];
+    self.lockedOutpoint = [lockedOutPointData transactionOutpoint];
     self.blockchainIdentityUniqueId = [dsutxo_data(self.lockedOutpoint) SHA256_2];
     NSArray * publicKeysDictionariesArray = keyValueDictionary[@"publicKeys"];
     NSMutableDictionary * platformKeys = [NSMutableDictionary dictionary];
     for (DSMutableStringValueDictionary * platformKeyDictionary in publicKeysDictionariesArray) {
         DSKeyType keyType = [platformKeyDictionary[@"type"] unsignedIntValue];
         NSUInteger identifier = [platformKeyDictionary[@"id"] unsignedIntValue];
-        NSData* keyData = ((NSString*)platformKeyDictionary[@"data"]).base64ToData;
+        NSData* keyData = platformKeyDictionary[@"data"];
         DSKey * key = [DSKey keyWithPublicKeyData:keyData forKeyType:keyType];
         [platformKeys setObject:key forKey:@(identifier)];
     }
