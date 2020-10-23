@@ -130,7 +130,7 @@
 - (DSMutableStringValueDictionary *)keyValueDictionary {
     if (_keyValueDictionary == nil) {
         DSMutableStringValueDictionary *json = [self baseKeyValueDictionary];
-        json[@"signature"] = self.signatureData.base64String;
+        json[@"signature"] = self.signatureData;
         if (self.signaturePublicKeyId != UINT32_MAX) {
             json[@"signaturePublicKeyId"] = @(self.signaturePublicKeyId);
         }

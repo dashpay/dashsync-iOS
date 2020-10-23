@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void)encryptExtendedPublicKeyWithCompletion:(void (^)(BOOL success))completion;
 
--(DPDocument*)contactRequestDocumentWithEntropy:(NSString*)entropyString;
+-(DPDocument*)contactRequestDocumentWithEntropy:(NSData*)entropyData;
 
 @end
 

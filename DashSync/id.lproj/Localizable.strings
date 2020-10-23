@@ -238,23 +238,23 @@
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Dompet anda mungkin tidak sinkron.\nIni dapat diperbaiki dengan memindai ulang blockchain.";
 
+/* No comment provided by engineer. */
+"Unable to create registration transition" = "Tidak dapat membuat transisi pendaftaran";
+
 /* The Blockchain Identity is not registered */
-"Not Registered" = "Not Registered";
+"Not Registered" = "Tidak terdaftar";
 
 /* The Blockchain Identity is registered */
-"Registered" = "Registered";
+"Registered" = "Terdaftar";
 
 /* The Blockchain Identity is being registered */
-"Registering" = "Registering";
-
-/* No comment provided by engineer. */
-"Unable to create registration transition" = "Unable to create registration transition";
+"Registering" = "Mendaftar";
 
 /* It is Unknown if the Blockchain Identity is registered */
-"Unknown" = "Unknown";
+"Unknown" = "Tidak diketahui";
 
 /* Status of Key or Username is Revoked */
-"Revoked" = "Revoked";
+"Revoked" = "Dicabut";
 
 /* No comment provided by engineer. */
 "BLS" = "BLS";
@@ -263,97 +263,97 @@
 "ECDSA" = "ECDSA";
 
 /* No comment provided by engineer. */
-"Unknown Key Type" = "Unknown Key Type";
+"Unknown Key Type" = "Jenis Kunci Tidak Diketahui";
 
 /* No comment provided by engineer. */
-"Dashpay Contract is not yet registered on network" = "Dashpay Contract is not yet registered on network";
+"Dashpay Contract is not yet registered on network" = "Kontrak Dashpay belum terdaftar di jaringan";
 
 /* No comment provided by engineer. */
-"DPNS Contract is not yet registered on network" = "DPNS Contract is not yet registered on network";
+"DPNS Contract is not yet registered on network" = "Kontrak DPNS belum terdaftar di jaringan";
 
 /* No comment provided by engineer. */
-"Funding transaction could not be created" = "Funding transaction could not be created";
+"Funding transaction could not be created" = "Transaksi pendanaan tidak dapat dibuat";
 
 /* No comment provided by engineer. */
-"Internal key handling error" = "Internal key handling error";
+"Internal key handling error" = "Kesalahan penanganan kunci internal";
 
 /* No comment provided by engineer. */
-"Internal memory allocation error" = "Internal memory allocation error";
+"Internal memory allocation error" = "Kesalahan alokasi memori internal";
 
 /* No comment provided by engineer. */
-"Malformed platform response" = "Malformed platform response";
+"Malformed platform response" = "Respons platform rusak";
 
 /* No comment provided by engineer. */
-"Timeout while waiting for funding transaction to be accepted by network" = "Timeout while waiting for funding transaction to be accepted by network";
+"Timeout while waiting for funding transaction to be accepted by network" = "Waktu habis ketika menunggu transaksi pendanaan diterima oleh jaringan";
 
 /* No comment provided by engineer. */
-"Transaction could not be signed" = "Transaction could not be signed";
+"Transaction could not be signed" = "Transaksi tidak dapat ditandatangani";
 
 /* No comment provided by engineer. */
-"Unable to register registration transition" = "Unable to register registration transition";
+"Unable to register registration transition" = "Tidak dapat mendaftarkan transisi pendaftaran";
 
 /* No comment provided by engineer. */
-"User has actions to complete before being able to use Dashpay" = "User has actions to complete before being able to use Dashpay";
+"User has actions to complete before being able to use Dashpay" = "Pengguna memiliki tindakan yang harus diselesaikan sebelum dapat menggunakan Dashpay";
 
 /* No comment provided by engineer. */
-"Requested username domain documents not present on platform after timeout" = "Requested username domain documents not present on platform after timeout";
+"Requested username domain documents not present on platform after timeout" = "Dokumen domain nama pengguna yang diminta tidak ada di platform setelah waktu tunggu";
 
 /* No comment provided by engineer. */
-"Requested username preorder documents not present on platform after timeout" = "Requested username preorder documents not present on platform after timeout";
+"Requested username preorder documents not present on platform after timeout" = "Dokumen pesanan nama pengguna yang diminta tidak ada di platform setelah waktu tunggu";
 
 /* No comment provided by engineer. */
-"Unable to sign transition" = "Unable to sign transition";
+"Unable to sign transition" = "Tidak dapat menandatangani transisi";
 
 /* No comment provided by engineer. */
-"Transition had nothing to update" = "Transition had nothing to update";
+"Transition had nothing to update" = "Transisi tidak perlu diperbarui";
 
 /* No comment provided by engineer. */
-"Contract '%@' doesn't contain a table named '%@'" = "Contract '%1$@' doesn't contain a table named '%2$@'";
+"Contract '%@' doesn't contain a table named '%@'" = "Kontrak '%1$@' tidak berisi tabel bernama '%2$@'";
 
 /* No comment provided by engineer. */
-"The blockchain identity hasn't yet been locally activated" = "The blockchain identity hasn't yet been locally activated";
+"The blockchain identity hasn't yet been locally activated" = "Identitas blockchain belum diaktifkan secara lokal";
 
 /* No comment provided by engineer. */
-"The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion" = "The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion";
+"The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion" = "Kunci pribadi pendanaan identitas blockchain harus dibuat terlebih dahulu dengan createFundingPrivateKeyWithCompletion";
 
 /* No comment provided by engineer. */
-"The blockchain identity extended public keys need to be registered before you can register a blockchain identity." = "The blockchain identity extended public keys need to be registered before you can register a blockchain identity.";
+"The blockchain identity extended public keys need to be registered before you can register a blockchain identity." = "Kunci publik diperpanjang identitas blockchain perlu didaftarkan sebelum Anda dapat mendaftarkan identitas blockchain.";
 
 /* No comment provided by engineer. */
-"Contact request extended public key is incorrectly encrypted." = "Contact request extended public key is incorrectly encrypted.";
+"Contact request extended public key is incorrectly encrypted." = "Kunci publik tambahan permintaan kontak tidak dienkripsi dengan benar.";
 
 /* No comment provided by engineer. */
-"Error generating public keys" = "Error generating public keys";
+"Error generating public keys" = "Terjadi kesalahan saat membuat kunci publik";
 
 /* No comment provided by engineer. */
-"Accepting a friend request should only happen from a local blockchain identity" = "Accepting a friend request should only happen from a local blockchain identity";
+"Accepting a friend request should only happen from a local blockchain identity" = "Menerima permintaan pertemanan seharusnya hanya terjadi dari identitas blockchain lokal";
 
 /* No comment provided by engineer. */
-"You can only accept a friend request from blockchain identity who has sent you one, and none were found" = "You can only accept a friend request from blockchain identity who has sent you one, and none were found";
+"You can only accept a friend request from blockchain identity who has sent you one, and none were found" = "Anda hanya dapat menerima permintaan pertemanan dari identitas blockchain yang telah mengirimi Anda satu, dan tidak ada yang ditemukan";
 
 /* An error message for notifying that chain sync has timed out */
-"Synchronization Timeout" = "Synchronization Timeout";
+"Synchronization Timeout" = "Waktu Sinkronisasi habis";
 
 /* No comment provided by engineer. */
-"Attempt to query DAPs for blockchain identity with no active keys" = "Attempt to query DAPs for blockchain identity with no active keys";
+"Attempt to query DAPs for blockchain identity with no active keys" = "Mencoba meminta DAPs untuk identitas blockchain tanpa kunci aktif";
 
 /* No comment provided by engineer. */
-"Node at host %@ does not service network" = "Node at host %@ does not service network";
+"Node at host %@ does not service network" = "Node di host %@ tidak melayani jaringan";
 
 /* No comment provided by engineer. */
-"Node at host %@ does not support bloom filtering" = "Node at host %@ does not support bloom filtering";
+"Node at host %@ does not support bloom filtering" = "Node di host %@ tidak mendukung penyaringan mekar";
 
 /* No comment provided by engineer. */
-"The Dashpay contract is not properly set up" = "The Dashpay contract is not properly set up";
+"The Dashpay contract is not properly set up" = "Kontrak Dashpay tidak disiapkan dengan benar";
 
 /* No comment provided by engineer. */
-"Contract '%@' needs to first be locally registered or known" = "Contract '%@' needs to first be locally registered or known";
+"Contract '%@' needs to first be locally registered or known" = "Kontrak '%@' harus terlebih dahulu terdaftar atau dikenal secara lokal";
 
 /* No comment provided by engineer. */
-"A block could not be mined in the selected time interval." = "A block could not be mined in the selected time interval.";
+"A block could not be mined in the selected time interval." = "Blok tidak dapat ditambang dalam interval waktu yang dipilih.";
 
 /* No comment provided by engineer. */
-"Could not create friendship derivation path" = "Could not create friendship derivation path";
+"Could not create friendship derivation path" = "Tidak dapat membuat jalur turunan persahabatan";
 
 /* No comment provided by engineer. */
-"Incorrect key format after contact request decryption" = "Incorrect key format after contact request decryption";
+"Incorrect key format after contact request decryption" = "Format kunci salah setelah dekripsi permintaan kontak";

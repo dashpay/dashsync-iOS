@@ -238,23 +238,23 @@
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "지갑이 동기화 되지 않은 것 같습니다.\n일반적인 경우, 블록체인을 재스캔하면 해결할 수 있습니다.";
 
+/* No comment provided by engineer. */
+"Unable to create registration transition" = "등록 거래를 생성할 수 없습니다";
+
 /* The Blockchain Identity is not registered */
-"Not Registered" = "Not Registered";
+"Not Registered" = "등록되지 않음";
 
 /* The Blockchain Identity is registered */
-"Registered" = "Registered";
+"Registered" = "등록됨";
 
 /* The Blockchain Identity is being registered */
-"Registering" = "Registering";
-
-/* No comment provided by engineer. */
-"Unable to create registration transition" = "Unable to create registration transition";
+"Registering" = "등록 중";
 
 /* It is Unknown if the Blockchain Identity is registered */
-"Unknown" = "Unknown";
+"Unknown" = "알 수 없음";
 
 /* Status of Key or Username is Revoked */
-"Revoked" = "Revoked";
+"Revoked" = "취소됨";
 
 /* No comment provided by engineer. */
 "BLS" = "BLS";
@@ -263,97 +263,97 @@
 "ECDSA" = "ECDSA";
 
 /* No comment provided by engineer. */
-"Unknown Key Type" = "Unknown Key Type";
+"Unknown Key Type" = "알 수 없는 키 유형";
 
 /* No comment provided by engineer. */
-"Dashpay Contract is not yet registered on network" = "Dashpay Contract is not yet registered on network";
+"Dashpay Contract is not yet registered on network" = "대시페이 계약이 아직 네트워크에 등록되지 않았습니다";
 
 /* No comment provided by engineer. */
-"DPNS Contract is not yet registered on network" = "DPNS Contract is not yet registered on network";
+"DPNS Contract is not yet registered on network" = "DPNS 계약이 아직 네트워크에 등록되지 않았습니다";
 
 /* No comment provided by engineer. */
-"Funding transaction could not be created" = "Funding transaction could not be created";
+"Funding transaction could not be created" = "펀딩 계약을 생성하지 못하였습니다";
 
 /* No comment provided by engineer. */
-"Internal key handling error" = "Internal key handling error";
+"Internal key handling error" = "내부 키 처리 오류";
 
 /* No comment provided by engineer. */
-"Internal memory allocation error" = "Internal memory allocation error";
+"Internal memory allocation error" = "내부 메모리 할당 오류";
 
 /* No comment provided by engineer. */
-"Malformed platform response" = "Malformed platform response";
+"Malformed platform response" = "잘못된 플랫폼 응답";
 
 /* No comment provided by engineer. */
-"Timeout while waiting for funding transaction to be accepted by network" = "Timeout while waiting for funding transaction to be accepted by network";
+"Timeout while waiting for funding transaction to be accepted by network" = "네트워크가 펀딩 거래를 수락하기 위해 기다리던 중 타임아웃 되었습니다";
 
 /* No comment provided by engineer. */
-"Transaction could not be signed" = "Transaction could not be signed";
+"Transaction could not be signed" = "거래가 서명되지 않았습니다";
 
 /* No comment provided by engineer. */
-"Unable to register registration transition" = "Unable to register registration transition";
+"Unable to register registration transition" = "등록 거래를 등록하지 못하였습니다";
 
 /* No comment provided by engineer. */
-"User has actions to complete before being able to use Dashpay" = "User has actions to complete before being able to use Dashpay";
+"User has actions to complete before being able to use Dashpay" = "사용자가 대시페이를 사용하기 전 완료해야 할 액션이 남아 있습니다";
 
 /* No comment provided by engineer. */
-"Requested username domain documents not present on platform after timeout" = "Requested username domain documents not present on platform after timeout";
+"Requested username domain documents not present on platform after timeout" = "요청된 사용자 이름 도메인 문서가 타임아웃 후 플랫폼에 나타나지 않습니다";
 
 /* No comment provided by engineer. */
-"Requested username preorder documents not present on platform after timeout" = "Requested username preorder documents not present on platform after timeout";
+"Requested username preorder documents not present on platform after timeout" = "요청된 사용자 이름 프리오더 문서가 타임아웃 후 플랫폼에 나타나지 않습니다";
 
 /* No comment provided by engineer. */
-"Unable to sign transition" = "Unable to sign transition";
+"Unable to sign transition" = "거래에 서명할 수 없습니다";
 
 /* No comment provided by engineer. */
-"Transition had nothing to update" = "Transition had nothing to update";
+"Transition had nothing to update" = "변경에 업데이트 할 사항이 없습니다";
 
 /* No comment provided by engineer. */
-"Contract '%@' doesn't contain a table named '%@'" = "Contract '%1$@' doesn't contain a table named '%2$@'";
+"Contract '%@' doesn't contain a table named '%@'" = "계약 '%1$@'은 '%2$@'이라는 이름의 테이블을 지니지 않습니다";
 
 /* No comment provided by engineer. */
-"The blockchain identity hasn't yet been locally activated" = "The blockchain identity hasn't yet been locally activated";
+"The blockchain identity hasn't yet been locally activated" = "이 블록체인 신원은 아직 로컬에서 활성화되지 않았습니다";
 
 /* No comment provided by engineer. */
-"The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion" = "The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion";
+"The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion" = "개인 키를 펀딩하는 이 블록체인 신원은 우선 createFundingPrivateKeyWithCompletion 를 통해 생성되어야 합니다";
 
 /* No comment provided by engineer. */
-"The blockchain identity extended public keys need to be registered before you can register a blockchain identity." = "The blockchain identity extended public keys need to be registered before you can register a blockchain identity.";
+"The blockchain identity extended public keys need to be registered before you can register a blockchain identity." = "이 블록체인 신원이 포괄하는 공개 키는 블록체인 신원을 등록할 수 있는 시점 전에 등록되어야 합니다.";
 
 /* No comment provided by engineer. */
-"Contact request extended public key is incorrectly encrypted." = "Contact request extended public key is incorrectly encrypted.";
+"Contact request extended public key is incorrectly encrypted." = "계약 요청이 포괄하는 공개 키가 잘못된 방식으로 암호화되었습니다.";
 
 /* No comment provided by engineer. */
-"Error generating public keys" = "Error generating public keys";
+"Error generating public keys" = "공개 키를 생성하는 데 오류가 발생했습니다";
 
 /* No comment provided by engineer. */
-"Accepting a friend request should only happen from a local blockchain identity" = "Accepting a friend request should only happen from a local blockchain identity";
+"Accepting a friend request should only happen from a local blockchain identity" = "친구 요청을 수락하는 것은 로컬 블록체인 신원에서만 가능합니다";
 
 /* No comment provided by engineer. */
-"You can only accept a friend request from blockchain identity who has sent you one, and none were found" = "You can only accept a friend request from blockchain identity who has sent you one, and none were found";
+"You can only accept a friend request from blockchain identity who has sent you one, and none were found" = "당신에게 친구 요청을 보낸 블록체인 신원으로부터의 친구 요청만 수락할 수 있으며, 이러한 요청이 존재하지 않습니다.";
 
 /* An error message for notifying that chain sync has timed out */
-"Synchronization Timeout" = "Synchronization Timeout";
+"Synchronization Timeout" = "동기화 타임아웃";
 
 /* No comment provided by engineer. */
-"Attempt to query DAPs for blockchain identity with no active keys" = "Attempt to query DAPs for blockchain identity with no active keys";
+"Attempt to query DAPs for blockchain identity with no active keys" = "활성화된 키가 없는 블록체인 신원을 위한 DAP를 쿼리하고자 시도합니다";
 
 /* No comment provided by engineer. */
-"Node at host %@ does not service network" = "Node at host %@ does not service network";
+"Node at host %@ does not service network" = "호스트 %@의 노드가 네트워크에 서비스를 제공하지 않습니다";
 
 /* No comment provided by engineer. */
-"Node at host %@ does not support bloom filtering" = "Node at host %@ does not support bloom filtering";
+"Node at host %@ does not support bloom filtering" = "호스트 %@의 노드가 블룸 필터를 지원하지 않습니다 ";
 
 /* No comment provided by engineer. */
-"The Dashpay contract is not properly set up" = "The Dashpay contract is not properly set up";
+"The Dashpay contract is not properly set up" = "대시페이 계약이 제대로 설정되지 않았습니다";
 
 /* No comment provided by engineer. */
-"Contract '%@' needs to first be locally registered or known" = "Contract '%@' needs to first be locally registered or known";
+"Contract '%@' needs to first be locally registered or known" = "계약 '%@' 는 먼저 로컬에 등록되거나 알려져야 합니다";
 
 /* No comment provided by engineer. */
-"A block could not be mined in the selected time interval." = "A block could not be mined in the selected time interval.";
+"A block could not be mined in the selected time interval." = "선택된 타임 인터벌 내에서 블록을 채굴할 수 없습니다";
 
 /* No comment provided by engineer. */
-"Could not create friendship derivation path" = "Could not create friendship derivation path";
+"Could not create friendship derivation path" = "우정 기원 경로를 생성할 수 없습니다";
 
 /* No comment provided by engineer. */
-"Incorrect key format after contact request decryption" = "Incorrect key format after contact request decryption";
+"Incorrect key format after contact request decryption" = "연락처 요청 해독 후 잘못된 키 포맷";

@@ -46,7 +46,7 @@
     return platformDocumentsRequest;
 }
 
-+(instancetype)dpnsRequestForUserId:(NSString*)userId {
++(instancetype)dpnsRequestForUserId:(NSData*)userId {
     DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"records.dashUniqueIdentityId == %@",userId];
     platformDocumentsRequest.startAt = 0;
@@ -85,7 +85,7 @@
     return platformDocumentsRequest;
 }
 
-+(instancetype)dashpayRequestForContactRequestsForSendingUserId:(NSString*)userId since:(NSTimeInterval)timestamp {
++(instancetype)dashpayRequestForContactRequestsForSendingUserId:(NSData*)userId since:(NSTimeInterval)timestamp {
     DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     uint64_t millisecondTimestamp = timestamp * 1000;
     platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"%K == %@ && %K >= %@",@"$ownerId",userId,@"$createdAt",@(millisecondTimestamp)];
@@ -109,7 +109,7 @@
     return platformDocumentsRequest;
 }
 
-+(instancetype)dashpayRequestForContactRequestForSendingUserId:(NSString*)userId toRecipientUserId:(NSData*)toUserId {
++(instancetype)dashpayRequestForContactRequestForSendingUserId:(NSData*)userId toRecipientUserId:(NSData*)toUserId {
     DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"%K == %@ && toUserId == %@",@"$ownerId",userId,toUserId];
     platformDocumentsRequest.startAt = 0;
@@ -119,7 +119,7 @@
     return platformDocumentsRequest;
 }
 
-+(instancetype)dashpayRequestForProfileWithUserId:(NSString*)userId {
++(instancetype)dashpayRequestForProfileWithUserId:(NSData*)userId {
     DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"%K == %@",@"$ownerId",userId];
     platformDocumentsRequest.startAt = 0;
@@ -158,14 +158,14 @@
     NSAssert(self.tableName, @"Table name must be set");
     GetDocumentsRequest * getDocumentsRequest = [[GetDocumentsRequest alloc] init];
     getDocumentsRequest.documentType = self.tableName;
-    getDocumentsRequest.dataContractId = self.contract.base58ContractId;
+    getDocumentsRequest.dataContractId = uint256_data(self.contract.contractId);
     getDocumentsRequest.where = [self whereData];
     if ([self.sortDescriptors count]) {
         getDocumentsRequest.orderBy = [self orderByData];
     }
     getDocumentsRequest.startAt = self.startAt;
     getDocumentsRequest.limit = self.limit;
-    DSDLog(@"Sending request to Contract %@",getDocumentsRequest.dataContractId);
+    DSDLog(@"Sending request to Contract %@",getDocumentsRequest.dataContractId.base58String);
     return getDocumentsRequest;
 }
 

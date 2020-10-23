@@ -54,6 +54,7 @@
 #import "DSOptionsManager.h"
 #import "DSDAPIClient.h"
 #import "DSCheckpoint.h"
+#import "DSInsightManager.h"
 
 #define FAULTY_DML_MASTERNODE_PEERS @"FAULTY_DML_MASTERNODE_PEERS"
 #define CHAIN_FAULTY_DML_MASTERNODE_PEERS [NSString stringWithFormat:@"%@_%@",peer.chain.uniqueID,FAULTY_DML_MASTERNODE_PEERS]
@@ -466,6 +467,18 @@
                 hasBlock = !![DSMerkleBlockEntity countObjectsInContext:self.managedObjectContext matching:@"blockHash == %@",uint256_data(blockHash)];
             }];
         }
+        if (!hasBlock && self.chain.isTestnet) {
+            //We can trust insight if on testnet
+            dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+            [[DSInsightManager sharedInstance] blockForBlockHash:uint256_reverse(blockHash) onChain:self.chain completion:^(DSBlock * _Nullable block, NSError * _Nullable error) {
+                if (!error && block) {
+                    [self.chain addInsightVerifiedBlock:block forBlockHash:blockHash];
+                }
+                dispatch_semaphore_signal(sem);
+            }];
+            dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+            hasBlock = !![[self.chain insightVerifiedBlocksByHashDictionary] objectForKey:uint256_data(blockHash)];
+        }
         if (hasBlock) {
             //there is the rare possibility we have the masternode list as a checkpoint, so lets first try that
             [self processRequestFromFileForBlockHash:blockHash completion:^(BOOL success) {
@@ -794,7 +807,24 @@
                 if (blockHeightLookup(potentialQuorumEntry.quorumHash) != UINT32_MAX) {
                     [neededMasternodeLists addObject:uint256_data(potentialQuorumEntry.quorumHash)];
                 } else {
-                    DSDLog(@"Quorum masternode list not found and block not available");
+                    if (chain.isTestnet) {
+                        //We can trust insight if on testnet
+                        dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+                        [[DSInsightManager sharedInstance] blockForBlockHash:uint256_reverse(potentialQuorumEntry.quorumHash) onChain:chain completion:^(DSBlock * _Nullable block, NSError * _Nullable error) {
+                            if (!error && block) {
+                                [chain addInsightVerifiedBlock:block forBlockHash:potentialQuorumEntry.quorumHash];
+                            }
+                            dispatch_semaphore_signal(sem);
+                        }];
+                        dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+                        if (blockHeightLookup(potentialQuorumEntry.quorumHash) != UINT32_MAX) {
+                            [neededMasternodeLists addObject:uint256_data(potentialQuorumEntry.quorumHash)];
+                        } else {
+                            DSDLog(@"Quorum masternode list not found and block not available");
+                        }
+                    } else {
+                        DSDLog(@"Quorum masternode list not found and block not available");
+                    }
                 }
             }
             
@@ -925,6 +955,21 @@
     DSBlock * lastBlock = nil;
     if ([self.chain heightForBlockHash:blockHash]) {
         lastBlock = [[peer.chain terminalBlocks] objectForKey:uint256_obj(blockHash)];
+        if (!lastBlock && [peer.chain allowInsightBlocksForVerification]) {
+            lastBlock = [[peer.chain insightVerifiedBlocksByHashDictionary] objectForKey:uint256_data(blockHash)];
+            if (!lastBlock && peer.chain.isTestnet) {
+                //We can trust insight if on testnet
+                dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+                [[DSInsightManager sharedInstance] blockForBlockHash:uint256_reverse(blockHash) onChain:peer.chain completion:^(DSBlock * _Nullable block, NSError * _Nullable error) {
+                    if (!error && block) {
+                        [peer.chain addInsightVerifiedBlock:block forBlockHash:blockHash];
+                    }
+                    dispatch_semaphore_signal(sem);
+                }];
+                dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+                lastBlock = [[peer.chain insightVerifiedBlocksByHashDictionary] objectForKey:uint256_data(blockHash)];
+            }
+        }
     } else {
         lastBlock = [peer.chain recentTerminalBlockForBlockHash:blockHash];
     }
@@ -1031,7 +1076,9 @@
         
         [[NSNotificationCenter defaultCenter] postNotificationName:DSQuorumListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
     });
-    [DSMasternodeManager saveMasternodeList:masternodeList toChain:self.chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums createUnknownBlocks:NO inContext:self.managedObjectContext completion:^(NSError *error) {
+    //We will want to create unknown blocks if they came from insight
+    BOOL createUnknownBlocks = masternodeList.chain.allowInsightBlocksForVerification;
+    [DSMasternodeManager saveMasternodeList:masternodeList toChain:self.chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums createUnknownBlocks:createUnknownBlocks inContext:self.managedObjectContext completion:^(NSError *error) {
         if (error) {
             if ([self.masternodeListRetrievalQueue count]) { //if it is 0 then we most likely have wiped chain info
                 [self wipeMasternodeInfo];

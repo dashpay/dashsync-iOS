@@ -27,6 +27,6 @@
 @dynamic createdAt;
 @dynamic updatedAt;
 @dynamic documentIdentifier;
-@dynamic originalEntropyString;
+@dynamic originalEntropyData;
 
 @end

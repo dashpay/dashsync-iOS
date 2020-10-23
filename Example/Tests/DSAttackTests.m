@@ -42,8 +42,8 @@
 }
 
 - (void)testGrindingAttack {
-//    UInt256 randomNumber = uint256_RANDOM;
-//    UInt256 seed = uint256_RANDOM;
+//    UInt256 randomNumber = uint256_random;
+//    UInt256 seed = uint256_random;
 //    NSUInteger maxDepth = 0;
 //    NSTimeInterval timeToRun = 360;
 //    NSDate * startTime = [NSDate date];

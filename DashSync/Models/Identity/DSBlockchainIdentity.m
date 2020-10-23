@@ -1181,17 +1181,15 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 // MARK: From Remote/Network
 
 -(DSKey*)keyFromKeyDictionary:(NSDictionary*)dictionary rType:(uint32_t*)rType rIndex:(uint32_t*)rIndex {
-    NSString * dataString = dictionary[@"data"];
+    NSData * keyData = dictionary[@"data"];
     NSNumber * keyId = dictionary[@"id"];
-    NSNumber * isEnabled = dictionary[@"isEnabled"];
     NSNumber * type = dictionary[@"type"];
-    if (dataString && keyId && isEnabled && type) {
+    if (keyData && keyId && type) {
         DSKey * rKey = nil;
-        NSData * data = [dataString base64ToData];
         if ([type intValue] == DSKeyType_BLS) {
-            rKey = [DSBLSKey keyWithPublicKey:data.UInt384];
+            rKey = [DSBLSKey keyWithPublicKey:keyData.UInt384];
         } else if ([type intValue] == DSKeyType_ECDSA) {
-            rKey = [DSECDSAKey keyWithPublicKeyData:data];
+            rKey = [DSECDSAKey keyWithPublicKeyData:keyData];
         }
         *rIndex = [keyId unsignedIntValue];
         *rType = [type unsignedIntValue];
@@ -1729,7 +1727,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             
         } else if (contract.contractState == DPContractState_Registered || contract.contractState == DPContractState_Registering) {
             DSDLog(@"Fetching contract for verification %@",contract.base58ContractId);
-            [self.DAPINetworkService fetchContractForId:contract.base58ContractId success:^(NSDictionary * _Nonnull contractDictionary) {
+            [self.DAPINetworkService fetchContractForId:uint256_data(contract.contractId) success:^(NSDictionary * _Nonnull contractDictionary) {
                 __strong typeof(weakContract) strongContract = weakContract;
                 if (!weakContract) {
                     return;
@@ -1770,10 +1768,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     });
 }
 
--(void)fetchAndUpdateContractWithIdentifier:(NSString*)identifier {
+-(void)fetchAndUpdateContractWithBase58Identifier:(NSString*)base58Identifier {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ //this is so we don't get DAPINetworkService immediately
         
-        [self.DAPINetworkService fetchContractForId:identifier success:^(NSDictionary * _Nonnull contract) {
+        [self.DAPINetworkService fetchContractForId:base58Identifier.base58ToData success:^(NSDictionary * _Nonnull contract) {
             //[DPContract contr]
             
         } failure:^(NSError * _Nonnull error) {
@@ -1876,7 +1874,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 -(NSData*)saltForUsernameFullPath:(NSString*)usernameFullPath saveSalt:(BOOL)saveSalt inContext:(NSManagedObjectContext*)context {
     NSData * salt;
     if ([self statusOfUsernameFullPath:usernameFullPath] == DSBlockchainIdentityUsernameStatus_Initial || !(salt = [self.usernameSalts objectForKey:usernameFullPath])) {
-        UInt256 random256 = uint256_RANDOM;
+        UInt256 random256 = uint256_random;
         salt = uint256_data(random256);
         [self.usernameSalts setObject:salt forKey:usernameFullPath];
         if (saveSalt) {
@@ -1908,13 +1906,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 // MARK: Documents
 
--(NSArray<DPDocument*>*)preorderDocumentsForUnregisteredUsernameFullPaths:(NSArray*)unregisteredUsernameFullPaths usingEntropyString:(NSString*)entropyString inContext:(NSManagedObjectContext*)context error:(NSError**)error {
+-(NSArray<DPDocument*>*)preorderDocumentsForUnregisteredUsernameFullPaths:(NSArray*)unregisteredUsernameFullPaths usingEntropyData:(NSData*)entropyData inContext:(NSManagedObjectContext*)context error:(NSError**)error {
     NSMutableArray * usernamePreorderDocuments = [NSMutableArray array];
     for (NSData * saltedDomainHashData in [[self saltedDomainHashesForUsernameFullPaths:unregisteredUsernameFullPaths inContext:context] allValues]) {
         DSStringValueDictionary * dataDictionary = @{
             @"saltedDomainHash": saltedDomainHashData
         };
-        DPDocument * document = [self.dpnsDocumentFactory documentOnTable:@"preorder" withDataDictionary:dataDictionary usingEntropy:entropyString  error:error];
+        DPDocument * document = [self.dpnsDocumentFactory documentOnTable:@"preorder" withDataDictionary:dataDictionary usingEntropy:entropyData error:error];
         if (*error) {
             return nil;
         }
@@ -1923,7 +1921,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     return usernamePreorderDocuments;
 }
 
--(NSArray<DPDocument*>*)domainDocumentsForUnregisteredUsernameFullPaths:(NSArray*)unregisteredUsernameFullPaths usingEntropyString:(NSString*)entropyString inContext:(NSManagedObjectContext*)context error:(NSError**)error {
+-(NSArray<DPDocument*>*)domainDocumentsForUnregisteredUsernameFullPaths:(NSArray*)unregisteredUsernameFullPaths usingEntropyData:(NSData*)entropyData inContext:(NSManagedObjectContext*)context error:(NSError**)error {
     NSMutableArray * usernameDomainDocuments = [NSMutableArray array];
     for (NSString * usernameFullPath in [self saltedDomainHashesForUsernameFullPaths:unregisteredUsernameFullPaths inContext:context]) {
         NSString * username = [self usernameOfUsernameFullPath:usernameFullPath];
@@ -1933,10 +1931,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             @"normalizedLabel": [username lowercaseString],
             @"normalizedParentDomainName":domain,
             @"preorderSalt": [self.usernameSalts objectForKey:usernameFullPath],
-            @"records" : @{@"dashUniqueIdentityId":uint256_base58(self.uniqueID)},
+            @"records" : @{@"dashUniqueIdentityId":uint256_data(self.uniqueID)},
             @"subdomainRules" : @{@"allowSubdomains":@NO}
         };
-        DPDocument * document = [self.dpnsDocumentFactory documentOnTable:@"domain" withDataDictionary:dataDictionary usingEntropy:entropyString error:error];
+        DPDocument * document = [self.dpnsDocumentFactory documentOnTable:@"domain" withDataDictionary:dataDictionary usingEntropy:entropyData error:error];
         if (*error) {
             return nil;
         }
@@ -1948,16 +1946,16 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 // MARK: Transitions
 
 -(DSDocumentTransition*)preorderTransitionForUnregisteredUsernameFullPaths:(NSArray*)unregisteredUsernameFullPaths inContext:(NSManagedObjectContext*)context error:(NSError**)error  {
-    NSString * entropyString = [DSKey randomAddressForChain:self.chain];
-    NSArray * usernamePreorderDocuments = [self preorderDocumentsForUnregisteredUsernameFullPaths:unregisteredUsernameFullPaths usingEntropyString:entropyString inContext:context error:error];
+    NSData * entropyData = uint256_random_data;
+    NSArray * usernamePreorderDocuments = [self preorderDocumentsForUnregisteredUsernameFullPaths:unregisteredUsernameFullPaths usingEntropyData:entropyData inContext:context error:error];
     if (![usernamePreorderDocuments count]) return nil;
     DSDocumentTransition * transition = [[DSDocumentTransition alloc] initForDocuments:usernamePreorderDocuments withTransitionVersion:1 blockchainIdentityUniqueId:self.uniqueID onChain:self.chain];
     return transition;
 }
 
 -(DSDocumentTransition*)domainTransitionForUnregisteredUsernameFullPaths:(NSArray*)unregisteredUsernameFullPaths inContext:(NSManagedObjectContext*)context error:(NSError**)error {
-    NSString * entropyString = [DSKey randomAddressForChain:self.chain];
-    NSArray * usernamePreorderDocuments = [self domainDocumentsForUnregisteredUsernameFullPaths:unregisteredUsernameFullPaths usingEntropyString:entropyString inContext:context error:error];
+    NSData * entropyData = uint256_random_data;
+    NSArray * usernamePreorderDocuments = [self domainDocumentsForUnregisteredUsernameFullPaths:unregisteredUsernameFullPaths usingEntropyData:entropyData inContext:context error:error];
     if (![usernamePreorderDocuments count]) return nil;
     DSDocumentTransition * transition = [[DSDocumentTransition alloc] initForDocuments:usernamePreorderDocuments withTransitionVersion:1 blockchainIdentityUniqueId:self.uniqueID onChain:self.chain];
     return transition;
@@ -2151,7 +2149,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         }
         return;
     }
-    [self.DAPINetworkService getDPNSDocumentsForIdentityWithUserId:self.uniqueIdString success:^(NSArray<NSDictionary *> * _Nonnull documents) {
+    [self.DAPINetworkService getDPNSDocumentsForIdentityWithUserId:self.uniqueIDData success:^(NSArray<NSDictionary *> * _Nonnull documents) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             if (completion) {
@@ -2207,7 +2205,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ //this is so we don't get DAPINetworkService immediately
         
-        [self.DAPINetworkService getIdentityById:self.uniqueIdString success:^(NSDictionary * _Nullable profileDictionary) {
+        [self.DAPINetworkService getIdentityById:self.uniqueIDData success:^(NSDictionary * _Nullable profileDictionary) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -2222,7 +2220,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 
 -(void)monitorForBlockchainIdentityWithRetryCount:(uint32_t)retryCount retryAbsentCount:(uint32_t)retryAbsentCount delay:(NSTimeInterval)delay retryDelayType:(DSBlockchainIdentityRetryDelayType)retryDelayType options:(DSBlockchainIdentityMonitorOptions)options inContext:(NSManagedObjectContext*)context completion:(void (^)(BOOL success, NSError * error))completion {
     __weak typeof(self) weakSelf = self;
-    [self.DAPINetworkService getIdentityById:self.uniqueIdString success:^(NSDictionary * _Nonnull identityDictionary) {
+    [self.DAPINetworkService getIdentityById:self.uniqueIDData success:^(NSDictionary * _Nonnull identityDictionary) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -2453,7 +2451,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     __weak typeof(self) weakSelf = self;
     NSParameterAssert(contract);
     if (!contract) return;
-    [self.DAPINetworkService fetchContractForId:contract.base58ContractId success:^(id _Nonnull contractDictionary) {
+    [self.DAPINetworkService fetchContractForId:uint256_data(contract.contractId) success:^(id _Nonnull contractDictionary) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             if (completion) {
@@ -2463,7 +2461,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             return;
         }
         DSDLog(@"Contract dictionary is %@",contractDictionary);
-        if ([contractDictionary isKindOfClass:[NSDictionary class]] && [contractDictionary[@"$id"] isEqualToString:contract.base58ContractId]) {
+        if ([contractDictionary isKindOfClass:[NSDictionary class]] && [contractDictionary[@"$id"] isEqualToData:uint256_data(contract.contractId)]) {
             [contract setContractState:DPContractState_Registered inContext:context];
             if (completion) {
                 completion(TRUE,nil);
@@ -2537,7 +2535,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     if (matchingDashpayUser && matchingDashpayUser.localProfileDocumentRevision) {
         __block DSMutableStringValueDictionary * dataDictionary = nil;
         
-        __block NSString * entropyString = nil;
+        __block NSData * entropyData = nil;
         __block NSData * documentIdentifier = nil;
         [context performBlockAndWait:^{
             
@@ -2558,13 +2556,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             if (matchingDashpayUser.displayName) {
                 dataDictionary[@"displayName"] = matchingDashpayUser.displayName;
             }
-            entropyString = matchingDashpayUser.originalEntropyString;
+            entropyData = matchingDashpayUser.originalEntropyData;
             documentIdentifier = matchingDashpayUser.documentIdentifier;
         }];
         NSError * error = nil;
         if (documentIdentifier == nil) {
-            NSAssert(entropyString, @"Entropy string must be present");
-            DPDocument * document = [self.dashpayDocumentFactory documentOnTable:@"profile" withDataDictionary:dataDictionary usingEntropy:entropyString error:&error];
+            NSAssert(entropyData, @"Entropy string must be present");
+            DPDocument * document = [self.dashpayDocumentFactory documentOnTable:@"profile" withDataDictionary:dataDictionary usingEntropy:entropyData error:&error];
             return document;
         } else {
             DPDocument * document = [self.dashpayDocumentFactory documentOnTable:@"profile" withDataDictionary:dataDictionary usingDocumentIdentifier:documentIdentifier error:&error];
@@ -2685,8 +2683,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             }
             return;
         }
-        NSString * base58String = nil;
-        if (!blockchainIdentityDictionary || !(base58String = blockchainIdentityDictionary[@"id"])) {
+        NSData * identityIdData = nil;
+        if (!blockchainIdentityDictionary || !(identityIdData = blockchainIdentityDictionary[@"id"])) {
             if (completion) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     completion(NO, @[[NSError errorWithDomain:@"DashSync" code:501 userInfo:@{NSLocalizedDescriptionKey:
@@ -2696,7 +2694,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             return;
         }
         
-        UInt256 blockchainIdentityContactUniqueId = base58String.base58ToData.UInt256;
+        UInt256 blockchainIdentityContactUniqueId = identityIdData.UInt256;
         
         NSAssert(!uint256_is_zero(blockchainIdentityContactUniqueId), @"blockchainIdentityContactUniqueId should not be null");
         
@@ -2742,8 +2740,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     
     __weak typeof(self) weakSelf = self;
     DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
-    NSString * entropyString = [DSKey randomAddressForChain:self.chain];
-    DPDocument * document = [potentialFriendship contactRequestDocumentWithEntropy:entropyString];
+    NSData * entropyData = uint256_random_data;
+    DPDocument * document = [potentialFriendship contactRequestDocumentWithEntropy:entropyData];
     [self.DAPIClient sendDocument:document forIdentity:self contract:contract completion:^(NSError * _Nullable error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
@@ -2896,8 +2894,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         matchingDashpayUser.avatarPath = avatarURLString;
         if (!matchingDashpayUser.remoteProfileDocumentRevision) {
             matchingDashpayUser.createdAt = [[NSDate date] timeIntervalSince1970] * 1000;
-            if (!matchingDashpayUser.originalEntropyString) {
-                matchingDashpayUser.originalEntropyString = [DSKey randomAddressForChain:self.chain];
+            if (!matchingDashpayUser.originalEntropyData) {
+                matchingDashpayUser.originalEntropyData = uint256_random_data;
             }
         }
         matchingDashpayUser.updatedAt = [[NSDate date] timeIntervalSince1970] * 1000;
@@ -3073,7 +3071,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                         contact.publicMessage = [contactDictionary objectForKey:@"publicMessage"];
                         contact.displayName = [contactDictionary objectForKey:@"displayName"];
                         if (!contact.documentIdentifier) {
-                            contact.documentIdentifier = [[contactDictionary objectForKey:@"$id"] base58ToData];
+                            contact.documentIdentifier = [contactDictionary objectForKey:@"$id"];
                         }
                         contact.createdAt = [[contactDictionary objectForKey:@"$createdAt"] unsignedLongValue];
                         contact.updatedAt = [[contactDictionary objectForKey:@"$updatedAt"] unsignedLongValue];

@@ -77,7 +77,7 @@
 "Down" = "Bajo";
 
 /* No comment provided by engineer. */
-"Enter old PIN" = "Ingrese PIN antiguo";
+"Enter old PIN" = "Ingresa el PIN antiguo";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Error del servidor de solicitud de pagos %@";
@@ -179,10 +179,10 @@
 "Testnet" = "Red de prueba";
 
 /* No comment provided by engineer. */
-"This payment address is already in your wallet" = "Esta dirección de pago ya está en su billetera";
+"This payment address is already in your wallet" = "Esta dirección de pago ya está en tu billetera";
 
 /* No comment provided by engineer. */
-"This private key is already in your wallet" = "Esta llave privada ya está en su billetera";
+"This private key is already in your wallet" = "Esta llave privada ya está en tu billetera";
 
 /* No comment provided by engineer. */
 "This private key is empty" = "Esta llave privada está vacía";
@@ -236,25 +236,25 @@
 "Wipe" = "Limpiar";
 
 /* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Su cartera puede estar desincronizada.\nCon frecuencia se puede solucionar escaneando de nuevo la cadena de bloques.";
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Tu cartera puede estar desincronizada.\nCon frecuencia se puede solucionar escaneando de nuevo la cadena de bloques.";
 
 /* No comment provided by engineer. */
-"Unable to create registration transition" = "Unable to create registration transition";
+"Unable to create registration transition" = "No se pudo crear la transición de registro";
 
 /* The Blockchain Identity is not registered */
-"Not Registered" = "Not Registered";
+"Not Registered" = "No registrado";
 
 /* The Blockchain Identity is registered */
-"Registered" = "Registered";
+"Registered" = "Registrado";
 
 /* The Blockchain Identity is being registered */
-"Registering" = "Registering";
+"Registering" = "Registrando";
 
 /* It is Unknown if the Blockchain Identity is registered */
-"Unknown" = "Unknown";
+"Unknown" = "Desconocido";
 
 /* Status of Key or Username is Revoked */
-"Revoked" = "Revoked";
+"Revoked" = "Revocado";
 
 /* No comment provided by engineer. */
 "BLS" = "BLS";
@@ -263,97 +263,97 @@
 "ECDSA" = "ECDSA";
 
 /* No comment provided by engineer. */
-"Unknown Key Type" = "Unknown Key Type";
+"Unknown Key Type" = "Tipo de clave desconocido";
 
 /* No comment provided by engineer. */
-"Dashpay Contract is not yet registered on network" = "Dashpay Contract is not yet registered on network";
+"Dashpay Contract is not yet registered on network" = "El contrato de Dashpay aún no está registrado en la red";
 
 /* No comment provided by engineer. */
-"DPNS Contract is not yet registered on network" = "DPNS Contract is not yet registered on network";
+"DPNS Contract is not yet registered on network" = "El contrato DPNS aún no está registrado en la red";
 
 /* No comment provided by engineer. */
-"Funding transaction could not be created" = "Funding transaction could not be created";
+"Funding transaction could not be created" = "No se pudo crear la transacción de financiamiento";
 
 /* No comment provided by engineer. */
-"Internal key handling error" = "Internal key handling error";
+"Internal key handling error" = "Error interno de manejo de clave";
 
 /* No comment provided by engineer. */
-"Internal memory allocation error" = "Internal memory allocation error";
+"Internal memory allocation error" = "Error interno de asignación de memoria ";
 
 /* No comment provided by engineer. */
-"Malformed platform response" = "Malformed platform response";
+"Malformed platform response" = "Respuesta de plataforma mal formada";
 
 /* No comment provided by engineer. */
-"Timeout while waiting for funding transaction to be accepted by network" = "Timeout while waiting for funding transaction to be accepted by network";
+"Timeout while waiting for funding transaction to be accepted by network" = "Tiempo agotado mientras se espera que la red acepte la transacción de financiación";
 
 /* No comment provided by engineer. */
-"Transaction could not be signed" = "Transaction could not be signed";
+"Transaction could not be signed" = "La transacción no se pudo firmar";
 
 /* No comment provided by engineer. */
-"Unable to register registration transition" = "Unable to register registration transition";
+"Unable to register registration transition" = "No se puede registrar la transición de registro";
 
 /* No comment provided by engineer. */
-"User has actions to complete before being able to use Dashpay" = "User has actions to complete before being able to use Dashpay";
+"User has actions to complete before being able to use Dashpay" = "El usuario tiene acciones que completar antes de poder usar Dashpay";
 
 /* No comment provided by engineer. */
-"Requested username domain documents not present on platform after timeout" = "Requested username domain documents not present on platform after timeout";
+"Requested username domain documents not present on platform after timeout" = "Los documentos de dominio de nombre de usuario solicitados no están presentes en la plataforma después de que tiempo se acabe";
 
 /* No comment provided by engineer. */
-"Requested username preorder documents not present on platform after timeout" = "Requested username preorder documents not present on platform after timeout";
+"Requested username preorder documents not present on platform after timeout" = "Los documentos de reserva de nombre de usuario solicitados no están presentes en la plataforma después de que el tiempo se acabe";
 
 /* No comment provided by engineer. */
-"Unable to sign transition" = "Unable to sign transition";
+"Unable to sign transition" = "No se puede firmar la transición";
 
 /* No comment provided by engineer. */
-"Transition had nothing to update" = "Transition had nothing to update";
+"Transition had nothing to update" = "La transición no tenía nada que actualizar";
 
 /* No comment provided by engineer. */
-"Contract '%@' doesn't contain a table named '%@'" = "Contract '%1$@' doesn't contain a table named '%2$@'";
+"Contract '%@' doesn't contain a table named '%@'" = "Contrato '%1$@' no contiene una tabla llamada '%2$@'";
 
 /* No comment provided by engineer. */
-"The blockchain identity hasn't yet been locally activated" = "The blockchain identity hasn't yet been locally activated";
+"The blockchain identity hasn't yet been locally activated" = "La identidad de la cadena de bloques aún no se ha activado localmente";
 
 /* No comment provided by engineer. */
-"The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion" = "The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion";
+"The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion" = "La clave privada de financiación de identidad de cadena de bloques debe crearse primero con createFundingPrivateKeyWithCompletion";
 
 /* No comment provided by engineer. */
-"The blockchain identity extended public keys need to be registered before you can register a blockchain identity." = "The blockchain identity extended public keys need to be registered before you can register a blockchain identity.";
+"The blockchain identity extended public keys need to be registered before you can register a blockchain identity." = "Las claves públicas extendidas de identidad de cadena de bloques deben registrarse antes de poder registrar una identidad de cadena de bloques.";
 
 /* No comment provided by engineer. */
-"Contact request extended public key is incorrectly encrypted." = "Contact request extended public key is incorrectly encrypted.";
+"Contact request extended public key is incorrectly encrypted." = "La clave pública extendida de la solicitud de contacto está cifrada incorrectamente.";
 
 /* No comment provided by engineer. */
-"Error generating public keys" = "Error generating public keys";
+"Error generating public keys" = "Error al generar claves públicas";
 
 /* No comment provided by engineer. */
-"Accepting a friend request should only happen from a local blockchain identity" = "Accepting a friend request should only happen from a local blockchain identity";
+"Accepting a friend request should only happen from a local blockchain identity" = "Aceptar una solicitud de amistad solo debe suceder desde una identidad de cadena de bloques local";
 
 /* No comment provided by engineer. */
-"You can only accept a friend request from blockchain identity who has sent you one, and none were found" = "You can only accept a friend request from blockchain identity who has sent you one, and none were found";
+"You can only accept a friend request from blockchain identity who has sent you one, and none were found" = "Solo puedes aceptar una solicitud de amistad de la identidad de cadena de bloques que te envió una, y no se encontró ninguna";
 
 /* An error message for notifying that chain sync has timed out */
-"Synchronization Timeout" = "Synchronization Timeout";
+"Synchronization Timeout" = "Tiempo sincronización acabado";
 
 /* No comment provided by engineer. */
-"Attempt to query DAPs for blockchain identity with no active keys" = "Attempt to query DAPs for blockchain identity with no active keys";
+"Attempt to query DAPs for blockchain identity with no active keys" = "Intenta consultar DAP para la identidad de la cadena de bloques sin claves activas";
 
 /* No comment provided by engineer. */
-"Node at host %@ does not service network" = "Node at host %@ does not service network";
+"Node at host %@ does not service network" = "Nodo en el anfitrión %@ no da servicio a la red";
 
 /* No comment provided by engineer. */
-"Node at host %@ does not support bloom filtering" = "Node at host %@ does not support bloom filtering";
+"Node at host %@ does not support bloom filtering" = "Nodo en el anfitrión%@ no admite filtrado de flores";
 
 /* No comment provided by engineer. */
-"The Dashpay contract is not properly set up" = "The Dashpay contract is not properly set up";
+"The Dashpay contract is not properly set up" = "El contrato de Dashpay no está configurado correctamente";
 
 /* No comment provided by engineer. */
-"Contract '%@' needs to first be locally registered or known" = "Contract '%@' needs to first be locally registered or known";
+"Contract '%@' needs to first be locally registered or known" = "Contrato '%@' primero debe estar registrado localmente o ser conocido";
 
 /* No comment provided by engineer. */
-"A block could not be mined in the selected time interval." = "A block could not be mined in the selected time interval.";
+"A block could not be mined in the selected time interval." = "No se pudo extraer un bloque en el intervalo de tiempo seleccionado.";
 
 /* No comment provided by engineer. */
-"Could not create friendship derivation path" = "Could not create friendship derivation path";
+"Could not create friendship derivation path" = "No se pudo crear la ruta de derivación de amistad";
 
 /* No comment provided by engineer. */
-"Incorrect key format after contact request decryption" = "Incorrect key format after contact request decryption";
+"Incorrect key format after contact request decryption" = "Formato de clave incorrecto después del descifrado de la solicitud de contacto";

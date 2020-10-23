@@ -1748,7 +1748,12 @@ static dispatch_once_t devnetToken = 0;
 - (DSBlock * _Nullable)blockForBlockHash:(UInt256)blockHash {
     DSBlock * b = self.mSyncBlocks[uint256_obj(blockHash)];
     if (b) return b;
-    return self.mTerminalBlocks[uint256_obj(blockHash)];
+    b = self.mTerminalBlocks[uint256_obj(blockHash)];
+    if (b) return b;
+    if ([self allowInsightBlocksForVerification]) {
+        return [self.insightVerifiedBlocksByHashDictionary objectForKey:uint256_data(blockHash)];
+    }
+    return nil;
 }
 
 -(DSBlock*)recentTerminalBlockForBlockHash:(UInt256)blockHash {
@@ -1810,6 +1815,17 @@ static dispatch_once_t devnetToken = 0;
         count++;
     }
     return b;
+}
+
+// MARK: From Insight on Testnet
+
+- (void)addInsightVerifiedBlock:(DSBlock*)block forBlockHash:(UInt256)blockHash {
+    if ([self allowInsightBlocksForVerification]) {
+        if (!self.insightVerifiedBlocksByHashDictionary) {
+            self.insightVerifiedBlocksByHashDictionary = [NSMutableDictionary dictionary];
+        }
+        [self.insightVerifiedBlocksByHashDictionary setObject:block forKey:uint256_data(blockHash)];
+    }
 }
 
 // MARK: From Peer
@@ -2708,6 +2724,11 @@ static dispatch_once_t devnetToken = 0;
     return self.lastTerminalBlock.height;
 }
 
+-(BOOL)allowInsightBlocksForVerification {
+    if (self.isMainnet) return NO;
+    return YES;
+}
+
 - (uint32_t)heightForBlockHash:(UInt256)blockhash {
     DSCheckpoint * checkpoint = [self.checkpointsByHashDictionary objectForKey:uint256_data(blockhash)];
     if (checkpoint) {
@@ -2746,6 +2767,10 @@ static dispatch_once_t devnetToken = 0;
         if (uint256_eq(checkpoint.blockHash, blockhash)) {
             return checkpoint.height;
         }
+    }
+    if ([self allowInsightBlocksForVerification] && [self.insightVerifiedBlocksByHashDictionary objectForKey:uint256_data(blockhash)]) {
+        b = [self.insightVerifiedBlocksByHashDictionary objectForKey:uint256_data(blockhash)];
+        return b.height;
     }
     DSDLog(@"Requesting unknown blockhash %@ (it's probably being added asyncronously)",uint256_reverse_hex(blockhash));
     return UINT32_MAX;
@@ -2825,22 +2850,25 @@ static dispatch_once_t devnetToken = 0;
 
 -(uint32_t)estimatedBlockHeight {
     if (_bestEstimatedBlockHeight) return _bestEstimatedBlockHeight;
+    _bestEstimatedBlockHeight = [self decideFromPeerSoftConsensusEstimatedBlockHeight];
+    return _bestEstimatedBlockHeight;
+}
+
+-(uint32_t)decideFromPeerSoftConsensusEstimatedBlockHeight {
     uint32_t maxCount = 0;
     uint32_t tempBestEstimatedBlockHeight = 0;
-    for (NSNumber * height in self.estimatedBlockHeights) {
+    for (NSNumber * height in [self.estimatedBlockHeights copy]) {
         NSArray * announcers = self.estimatedBlockHeights[height];
         if (announcers.count > maxCount) {
             tempBestEstimatedBlockHeight = [height intValue];
         }
     }
-    _bestEstimatedBlockHeight = tempBestEstimatedBlockHeight;
-    return _bestEstimatedBlockHeight;
+    return tempBestEstimatedBlockHeight;
 }
 
 -(void)setEstimatedBlockHeight:(uint32_t)estimatedBlockHeight fromPeer:(DSPeer*)peer {
     uint32_t oldEstimatedBlockHeight = self.estimatedBlockHeight;
-    _bestEstimatedBlockHeight = 0; //lazy loading
-    
+
     //remove from other heights
     for (NSNumber * height in [self.estimatedBlockHeights copy]) {
         if ([height intValue] == estimatedBlockHeight) continue;
@@ -2862,11 +2890,14 @@ static dispatch_once_t devnetToken = 0;
             [peersAnnouncingHeight addObject:peer];
         }
     }
-    uint32_t finalEstimatedBlockHeight = self.estimatedBlockHeight;
-    if (oldEstimatedBlockHeight < finalEstimatedBlockHeight) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncParametersUpdatedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
-        });
+    if (oldEstimatedBlockHeight != estimatedBlockHeight) {
+        uint32_t finalEstimatedBlockHeight = [self decideFromPeerSoftConsensusEstimatedBlockHeight];
+        if (finalEstimatedBlockHeight > oldEstimatedBlockHeight) {
+            _bestEstimatedBlockHeight = finalEstimatedBlockHeight;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncParametersUpdatedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
+            });
+        }
     }
 }
 

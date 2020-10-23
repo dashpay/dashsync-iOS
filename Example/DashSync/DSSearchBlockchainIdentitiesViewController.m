@@ -68,7 +68,7 @@
     }];
 }
 
--(void)searchByIdentifier:(NSString*)identifier {
+-(void)searchByIdentifier:(NSData*)identifier {
     [self.chainManager.identitiesManager searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID:identifier withCompletion:^(BOOL succeess, NSArray<DSBlockchainIdentity *> * _Nullable blockchainIdentities, NSArray<NSError *> * _Nonnull errors) {
         if (succeess) {
             self.blockchainIdentities = blockchainIdentities;
@@ -81,7 +81,7 @@
     if (!searchBar.selectedScopeButtonIndex) {
         [self searchByNamePrefix:searchBar.text];
     } else {
-        [self searchByIdentifier:searchBar.text];
+        [self searchByIdentifier:searchBar.text.base58ToData];
     }
 }
 /*

@@ -57,7 +57,7 @@ typedef void (^IdentityCompletionBlock)(BOOL succeess, DSBlockchainIdentity* _Nu
 
 - (id<DSDAPINetworkServiceRequest>)searchIdentitiesByNamePrefix:(NSString*)namePrefix inDomain:(NSString*)domain offset:(uint32_t)offset limit:(uint32_t)limit withCompletion:(IdentitiesCompletionBlock)completion;
 
-- (void)searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID:(NSString*)userID withCompletion:(IdentitiesCompletionBlock)completion;
+- (void)searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID:(NSData*)userID withCompletion:(IdentitiesCompletionBlock)completion;
 
 @end
 

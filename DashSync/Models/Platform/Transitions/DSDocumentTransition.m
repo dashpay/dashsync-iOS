@@ -40,7 +40,7 @@
 - (DSMutableStringValueDictionary *)baseKeyValueDictionary {
     DSMutableStringValueDictionary *json = [super baseKeyValueDictionary];
     json[@"transitions"] = [self documentsAsArrayOfDictionaries];
-    json[@"ownerId"] = uint256_base58(self.blockchainIdentityUniqueId);
+    json[@"ownerId"] = uint256_data(self.blockchainIdentityUniqueId);
     return json;
 }
 

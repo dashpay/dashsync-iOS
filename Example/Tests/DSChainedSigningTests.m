@@ -65,15 +65,15 @@
     DSBLSKey * key2 = (DSBLSKey *)[derivationPath privateKeyAtIndex:2 fromSeed:seed];
     DSBLSKey * key3 = (DSBLSKey *)[derivationPath privateKeyAtIndex:3 fromSeed:seed];
     
-    UInt256 randomInput0 = uint256_RANDOM;
-    UInt256 randomInput1 = uint256_RANDOM;
-    UInt256 randomInput2 = uint256_RANDOM;
-    UInt256 randomInput3 = uint256_RANDOM;
+    UInt256 randomInput0 = uint256_random;
+    UInt256 randomInput1 = uint256_random;
+    UInt256 randomInput2 = uint256_random;
+    UInt256 randomInput3 = uint256_random;
     
-    UInt256 randomOutput0 = uint256_RANDOM;
-    UInt256 randomOutput1 = uint256_RANDOM;
-    UInt256 randomOutput2 = uint256_RANDOM;
-    UInt256 randomOutput3 = uint256_RANDOM;
+    UInt256 randomOutput0 = uint256_random;
+    UInt256 randomOutput1 = uint256_random;
+    UInt256 randomOutput2 = uint256_random;
+    UInt256 randomOutput3 = uint256_random;
     
     UInt512 concat0 = uint512_concat(randomInput0, randomOutput0);
     UInt512 concat1 = uint512_concat(randomInput1, randomOutput1);
@@ -100,7 +100,7 @@
     
     NSArray <DSBLSKey *> * quorums = [derivationPath privateKeysForRange:NSMakeRange(1000, 8) fromSeed:seed]; //simulate 10 quorums
     
-    UInt256 signingSession = uint256_RANDOM;
+    UInt256 signingSession = uint256_random;
     
     NSData * signatureData0 = uint768_data(signature0);
     NSArray * keysForDH0 = [@[key0] arrayByAddingObjectsFromArray:quorums];

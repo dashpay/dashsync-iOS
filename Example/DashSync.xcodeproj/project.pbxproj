@@ -375,6 +375,8 @@
 		FB90D2CF20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2CE20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m */; };
 		FB90D2D220C3F76E002B7956 /* DSDerivationPathTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2D120C3F76E002B7956 /* DSDerivationPathTableViewCell.m */; };
 		FB90D2D520C40DD3002B7956 /* DSDoubleDerivationPathsAddressesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2D420C40DD3002B7956 /* DSDoubleDerivationPathsAddressesViewController.m */; };
+		FB91B2D425325EB100511A44 /* MDCDamerauLevenshteinDistanceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FB91B2D225325EB100511A44 /* MDCDamerauLevenshteinDistanceTests.m */; };
+		FB91B2D525325EB100511A44 /* MDCLevenshteinDistanceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FB91B2D325325EB100511A44 /* MDCLevenshteinDistanceTests.m */; };
 		FB969707246BCA8E00BF56A5 /* DSErrorSimulationsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB969706246BCA8E00BF56A5 /* DSErrorSimulationsViewController.m */; };
 		FB9762F724BC4C3E00CF28EC /* DSMiningViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9762F624BC4C3E00CF28EC /* DSMiningViewController.m */; };
 		FB988321241D64FA00B39F02 /* DSBlockchainIdentityKeysViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB988320241D64FA00B39F02 /* DSBlockchainIdentityKeysViewController.m */; };
@@ -946,6 +948,8 @@
 		FB90D2D120C3F76E002B7956 /* DSDerivationPathTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDerivationPathTableViewCell.m; sourceTree = "<group>"; };
 		FB90D2D320C40DD3002B7956 /* DSDoubleDerivationPathsAddressesViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSDoubleDerivationPathsAddressesViewController.h; sourceTree = "<group>"; };
 		FB90D2D420C40DD3002B7956 /* DSDoubleDerivationPathsAddressesViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDoubleDerivationPathsAddressesViewController.m; sourceTree = "<group>"; };
+		FB91B2D225325EB100511A44 /* MDCDamerauLevenshteinDistanceTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MDCDamerauLevenshteinDistanceTests.m; sourceTree = "<group>"; };
+		FB91B2D325325EB100511A44 /* MDCLevenshteinDistanceTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MDCLevenshteinDistanceTests.m; sourceTree = "<group>"; };
 		FB969705246BCA8E00BF56A5 /* DSErrorSimulationsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSErrorSimulationsViewController.h; sourceTree = "<group>"; };
 		FB969706246BCA8E00BF56A5 /* DSErrorSimulationsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSErrorSimulationsViewController.m; sourceTree = "<group>"; };
 		FB9762F524BC4C3E00CF28EC /* DSMiningViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMiningViewController.h; sourceTree = "<group>"; };
@@ -1309,6 +1313,7 @@
 		6003F5B5195388D20070C39A /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				FB91B2D025325E7900511A44 /* LibraryTests */,
 				FBD45D1D24DF1ADE00168EBC /* L2Tests */,
 				FBD45D1C24DF1AB300168EBC /* WalletTests */,
 				FBD45D1B24DF1A6200168EBC /* LibraryTests */,
@@ -1901,6 +1906,23 @@
 				FB90D2B320BD2BDD002B7956 /* DSSporksViewController.m */,
 			);
 			name = Sporks;
+			sourceTree = "<group>";
+		};
+		FB91B2D025325E7900511A44 /* LibraryTests */ = {
+			isa = PBXGroup;
+			children = (
+				FB91B2D125325E8800511A44 /* MDCDamerauLevenshteinTests */,
+			);
+			name = LibraryTests;
+			sourceTree = "<group>";
+		};
+		FB91B2D125325E8800511A44 /* MDCDamerauLevenshteinTests */ = {
+			isa = PBXGroup;
+			children = (
+				FB91B2D225325EB100511A44 /* MDCDamerauLevenshteinDistanceTests.m */,
+				FB91B2D325325EB100511A44 /* MDCLevenshteinDistanceTests.m */,
+			);
+			path = MDCDamerauLevenshteinTests;
 			sourceTree = "<group>";
 		};
 		FB995D9721101C1E00AC37D0 /* Peers */ = {
@@ -2695,6 +2717,7 @@
 				FB1DCE6524D7282F0094F776 /* DSChainTests.m in Sources */,
 				2A1ECBDF20D8F7DB000177D8 /* DSTransactionTests.m in Sources */,
 				2A1ECBD920D8B327000177D8 /* DSHashTests.m in Sources */,
+				FB91B2D425325EB100511A44 /* MDCDamerauLevenshteinDistanceTests.m in Sources */,
 				2A7DCCB420DA198F0097049F /* DSPaymentProtocolTests.m in Sources */,
 				FBAF79792385CA0200F4944E /* DSSparseMerkleTreeTests.m in Sources */,
 				2AF7296E22789C5C001D2D21 /* DSIESEncryptedDataTests.mm in Sources */,
@@ -2704,6 +2727,7 @@
 				FBD696EC2291A1800012FF51 /* DSDataTests.m in Sources */,
 				2A1ECBDD20D8F4BD000177D8 /* DSPaymentRequestTests.m in Sources */,
 				FBC9248E2414EF4000005D0D /* DSAttackTests.m in Sources */,
+				FB91B2D525325EB100511A44 /* MDCLevenshteinDistanceTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

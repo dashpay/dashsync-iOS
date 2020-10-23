@@ -448,7 +448,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
 
 #pragma mark Layer 2
 
-- (id<DSDAPINetworkServiceRequest>)fetchContractForId:(NSString *)contractId
+- (id<DSDAPINetworkServiceRequest>)fetchContractForId:(NSData *)contractId
                    success:(void (^)(NSDictionary *contract))success
                    failure:(void (^)(NSError *error))failure {
     NSParameterAssert(contractId);
@@ -479,7 +479,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     return (id<DSDAPINetworkServiceRequest>)call;
 }
 
-- (id<DSDAPINetworkServiceRequest>)getDPNSDocumentsForIdentityWithUserId:(NSString *)userId
+- (id<DSDAPINetworkServiceRequest>)getDPNSDocumentsForIdentityWithUserId:(NSData *)userId
                              success:(void (^)(NSArray<NSDictionary *> *documents))success
                              failure:(void (^)(NSError *error))failure {
     NSParameterAssert(userId);
@@ -541,8 +541,8 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     responseHandler.successHandler = ^(NSArray * dpnsDictionaries) {
         if ([dpnsDictionaries count]) {
             NSDictionary * dpnsDictionary = [dpnsDictionaries firstObject];
-            NSString * base58String = nil;
-            if (!dpnsDictionary || !(base58String = dpnsDictionary[@"$ownerId"])) {
+            NSData * ownerIdData = nil;
+            if (!dpnsDictionary || !(ownerIdData = dpnsDictionary[@"$ownerId"])) {
                 if (failure) {
                     failure([NSError errorWithDomain:DPErrorDomain code:DPErrorCode_InvalidDocumentType userInfo:@{
                         NSLocalizedDescriptionKey :
@@ -551,7 +551,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                 }
                 return;
             }
-            [self getIdentityById:base58String success:success failure:failure];
+            [self getIdentityById:ownerIdData success:success failure:failure];
         } else {
             //no identity
             success(nil);
@@ -563,7 +563,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     return (id<DSDAPINetworkServiceRequest>)call;
 }
 
-- (id<DSDAPINetworkServiceRequest>)getIdentityById:(NSString *)userId
+- (id<DSDAPINetworkServiceRequest>)getIdentityById:(NSData *)userId
             success:(void (^)(NSDictionary *blockchainIdentity))success
             failure:(void (^)(NSError *error))failure {
     NSParameterAssert(userId);
@@ -627,7 +627,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     return (id<DSDAPINetworkServiceRequest>)call;
 }
 
-- (id<DSDAPINetworkServiceRequest>)getDashpayOutgoingContactRequestsForUserId:(NSString*)userId since:(NSTimeInterval)timestamp
+- (id<DSDAPINetworkServiceRequest>)getDashpayOutgoingContactRequestsForUserId:(NSData*)userId since:(NSTimeInterval)timestamp
                              success:(void (^)(NSArray<NSDictionary *> *documents))success
                              failure:(void (^)(NSError *error))failure {
     NSParameterAssert(userId);
@@ -643,7 +643,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     return (id<DSDAPINetworkServiceRequest>)call;
 }
 
-- (id<DSDAPINetworkServiceRequest>)getDashpayProfileForUserId:(NSString*)userId
+- (id<DSDAPINetworkServiceRequest>)getDashpayProfileForUserId:(NSData*)userId
                              success:(void (^)(NSArray<NSDictionary *> *documents))success
                              failure:(void (^)(NSError *error))failure {
     NSParameterAssert(userId);

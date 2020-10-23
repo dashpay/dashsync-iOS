@@ -239,126 +239,121 @@
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Vaša peňaženka je možno nesynchronizovaná.\nTo sa môže často vyriešiť opätovným skenovaním blockchainu.";
 
 /* No comment provided by engineer. */
+"Unable to create registration transition" = "Nie je možné vytvoriť presun registrácie";
+
+/* The Blockchain Identity is not registered */
+"Not Registered" = "Neregistrovaný";
+
+/* The Blockchain Identity is registered */
+"Registered" = "Registrovaný";
+
+/* The Blockchain Identity is being registered */
+"Registering" = "Registruje sa";
+
+/* It is Unknown if the Blockchain Identity is registered */
+"Unknown" = "Neznáme";
+
+/* Status of Key or Username is Revoked */
+"Revoked" = "Zrušený";
+
+/* No comment provided by engineer. */
 "BLS" = "BLS";
-
-/* No comment provided by engineer. */
-"Contact request extended public key is incorrectly encrypted." = "Contact request extended public key is incorrectly encrypted.";
-
-/* No comment provided by engineer. */
-"Contract '%@' doesn't contain a table named '%@'" = "Contract '%1$@' doesn't contain a table named '%2$@'";
-
-/* No comment provided by engineer. */
-"Dashpay Contract is not yet registered on network" = "Dashpay Contract is not yet registered on network";
-
-/* No comment provided by engineer. */
-"DPNS Contract is not yet registered on network" = "DPNS Contract is not yet registered on network";
 
 /* No comment provided by engineer. */
 "ECDSA" = "ECDSA";
 
 /* No comment provided by engineer. */
-"Funding transaction could not be created" = "Funding transaction could not be created";
+"Unknown Key Type" = "Neznámy typ kľúča";
 
 /* No comment provided by engineer. */
-"Internal key handling error" = "Internal key handling error";
+"Dashpay Contract is not yet registered on network" = "Kontrakt Dashpay ešte nie je zaregistrovaný v sieti";
 
 /* No comment provided by engineer. */
-"Internal memory allocation error" = "Internal memory allocation error";
+"DPNS Contract is not yet registered on network" = "Kontrakt DPNS ešte nie je zaregistrovaný v sieti";
 
 /* No comment provided by engineer. */
-"Malformed platform response" = "Malformed platform response";
-
-/* Status of Key or Username is Not Registered
-   The Blockchain Identity is not registered */
-"Not Registered" = "Not Registered";
-
-/* Status of Key or Username is Registered
-   The Blockchain Identity is registered */
-"Registered" = "Registered";
-
-/* Status of Key or Username is Registering
-   The Blockchain Identity is being registered */
-"Registering" = "Registering";
+"Funding transaction could not be created" = "Finančnú transakciu sa nepodarilo vytvoriť";
 
 /* No comment provided by engineer. */
-"Requested username domain documents not present on platform after timeout" = "Requested username domain documents not present on platform after timeout";
+"Internal key handling error" = "Chyba internej manipulácie s kľúčom";
 
 /* No comment provided by engineer. */
-"Requested username preorder documents not present on platform after timeout" = "Requested username preorder documents not present on platform after timeout";
-
-/* Status of Key or Username is Revoked */
-"Revoked" = "Revoked";
+"Internal memory allocation error" = "Chyba alokácie vnútornej pamäte";
 
 /* No comment provided by engineer. */
-"The blockchain identity extended public keys need to be registered before you can register a blockchain identity." = "The blockchain identity extended public keys need to be registered before you can register a blockchain identity.";
+"Malformed platform response" = "Chybná odpoveď platformy";
 
 /* No comment provided by engineer. */
-"The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion" = "The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion";
+"Timeout while waiting for funding transaction to be accepted by network" = "Časový limit pri čakaní na prijatie finančnej transakcie akceptovaný sieťou";
 
 /* No comment provided by engineer. */
-"The blockchain identity hasn't yet been locally activated" = "The blockchain identity hasn't yet been locally activated";
+"Transaction could not be signed" = "Transakciu sa nepodarilo podpísať";
 
 /* No comment provided by engineer. */
-"Timeout while waiting for funding transaction to be accepted by network" = "Timeout while waiting for funding transaction to be accepted by network";
+"Unable to register registration transition" = "Nie je možné zaregistrovať presun registrácie";
 
 /* No comment provided by engineer. */
-"Transaction could not be signed" = "Transaction could not be signed";
+"User has actions to complete before being able to use Dashpay" = "Aby mohol používateľ využiť Dashpay, musí vykonať určité kroky.";
 
 /* No comment provided by engineer. */
-"Transition had nothing to update" = "Transition had nothing to update";
+"Requested username domain documents not present on platform after timeout" = "Požadované doménové dokumenty používateľa sa po uplynutí časového limitu na platforme nenachádzajú";
 
 /* No comment provided by engineer. */
-"Unable to create registration transition" = "Unable to create registration transition";
+"Requested username preorder documents not present on platform after timeout" = "Po vypršaní časového limitu nie sú na platforme požadované dokumenty na predobjednávku používateľského mena";
 
 /* No comment provided by engineer. */
-"Unable to register registration transition" = "Unable to register registration transition";
+"Unable to sign transition" = "Presun sa nepodarilo podpísať";
 
 /* No comment provided by engineer. */
-"Unable to sign transition" = "Unable to sign transition";
-
-/* It is Unknown if the Blockchain Identity is registered
-   Status of Key or Username is Unknown
-   Unknown type of Blockchain Identity */
-"Unknown" = "Unknown";
+"Transition had nothing to update" = "Pri presune nebolo čo aktualizovať";
 
 /* No comment provided by engineer. */
-"Unknown Key Type" = "Unknown Key Type";
+"Contract '%@' doesn't contain a table named '%@'" = "Zmluva „%1$@“ neobsahuje tabuľku s názvom „%2$@“";
 
 /* No comment provided by engineer. */
-"User has actions to complete before being able to use Dashpay" = "User has actions to complete before being able to use Dashpay";
+"The blockchain identity hasn't yet been locally activated" = "Blockchainová identita zatiaľ nebola lokálne aktivovaná";
 
 /* No comment provided by engineer. */
-"Error generating public keys" = "Error generating public keys";
+"The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion" = "Súkromný kľúč financovania identity na blockchaine by mal byť najskôr vytvorený pomocou createFundingPrivateKeyWithCompletion";
 
 /* No comment provided by engineer. */
-"Accepting a friend request should only happen from a local blockchain identity" = "Accepting a friend request should only happen from a local blockchain identity";
+"The blockchain identity extended public keys need to be registered before you can register a blockchain identity." = "Pred registráciou identity v blockchaine je potrebné zaregistrovať rozšírené verejné kľúče.";
 
 /* No comment provided by engineer. */
-"You can only accept a friend request from blockchain identity who has sent you one, and none were found" = "You can only accept a friend request from blockchain identity who has sent you one, and none were found";
+"Contact request extended public key is incorrectly encrypted." = "Rozšírený verejný kľúč žiadosti o kontakt je nesprávne zašifrovaný.";
+
+/* No comment provided by engineer. */
+"Error generating public keys" = "Chyba pri generovaní verejných kľúčov";
+
+/* No comment provided by engineer. */
+"Accepting a friend request should only happen from a local blockchain identity" = "K prijatiu žiadosti o priateľstvo by malo dôjsť iba z miestnej identity blockchainu";
+
+/* No comment provided by engineer. */
+"You can only accept a friend request from blockchain identity who has sent you one, and none were found" = "Môžete prijať iba žiadosť o priateľstvo od blockchainovej identity, ktorá vám jednu poslala, a žiadna nebola nájdená";
 
 /* An error message for notifying that chain sync has timed out */
-"Synchronization Timeout" = "Synchronization Timeout";
+"Synchronization Timeout" = "Časový limit synchronizácie vypršal";
 
 /* No comment provided by engineer. */
-"Attempt to query DAPs for blockchain identity with no active keys" = "Attempt to query DAPs for blockchain identity with no active keys";
+"Attempt to query DAPs for blockchain identity with no active keys" = "Pokus o dopytovanie DAP na blockchainovú totožnosť bez aktívnych kľúčov";
 
 /* No comment provided by engineer. */
-"Node at host %@ does not service network" = "Node at host %@ does not service network";
+"Node at host %@ does not service network" = "Uzol na hostiteľovi %@ neobsluhuje sieť";
 
 /* No comment provided by engineer. */
-"Node at host %@ does not support bloom filtering" = "Node at host %@ does not support bloom filtering";
+"Node at host %@ does not support bloom filtering" = "Uzol na hostiteľovi %@ nepodporuje bloom filtrovanie";
 
 /* No comment provided by engineer. */
-"The Dashpay contract is not properly set up" = "The Dashpay contract is not properly set up";
+"The Dashpay contract is not properly set up" = "Dashpay zmluva nie je správne nastavená";
 
 /* No comment provided by engineer. */
-"Contract '%@' needs to first be locally registered or known" = "Contract '%@' needs to first be locally registered or known";
+"Contract '%@' needs to first be locally registered or known" = "Zmluva „%@“ musí byť najskôr lokálne zaregistrovaná alebo známa";
 
 /* No comment provided by engineer. */
-"A block could not be mined in the selected time interval." = "A block could not be mined in the selected time interval.";
+"A block could not be mined in the selected time interval." = "Blok sa vo vybranom časovom intervale nepodarilo vyťažiť.";
 
 /* No comment provided by engineer. */
-"Could not create friendship derivation path" = "Could not create friendship derivation path";
+"Could not create friendship derivation path" = "Nepodarilo sa vytvoriť priateľskú derivačnú cestu";
 
 /* No comment provided by engineer. */
-"Incorrect key format after contact request decryption" = "Incorrect key format after contact request decryption";
+"Incorrect key format after contact request decryption" = "Nesprávny formát kľúča po dešifrovaní žiadosti o kontakt";
