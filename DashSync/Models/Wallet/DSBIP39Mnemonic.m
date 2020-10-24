@@ -528,7 +528,7 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
         }
     
         NSMutableDictionary * possibleWordAddresses = [NSMutableDictionary dictionary];
-        NSArray <NSString*>* allWordsForLanguage = [m wordsForLanguage:language];
+        NSArray <NSString*>* allWordsForLanguage = [m wordsForLanguage:checkLanguage];
         uint32_t totalWordCount = (uint32_t)[allWordsForLanguage count];
         uint32_t currentWordCount = 0;
         
@@ -553,7 +553,9 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
             currentWordCount++;
         }
         if (possibleWordAddresses.count == 0) {
-            completion([NSDictionary dictionary]);
+            dispatch_async(dispatchQueue, ^{
+                completion([NSDictionary dictionary]);
+            });
         } else {
             [[DSInsightManager sharedInstance] findExistingAddresses:[possibleWordAddresses allKeys] onChain:[DSChain mainnet] completion:^(NSArray * _Nonnull addresses, NSError * _Nonnull error) {
                 NSDictionary * reducedDictionary = [possibleWordAddresses dictionaryWithValuesForKeys:addresses];

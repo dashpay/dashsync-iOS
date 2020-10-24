@@ -2030,7 +2030,7 @@ static dispatch_once_t devnetToken = 0;
     BOOL onMainChain = FALSE;
     
     if ((phase == DSChainSyncPhase_ChainSync || phase == DSChainSyncPhase_Synced) && uint256_eq(block.prevBlock, self.lastSyncBlockHash)) { // new block extends sync chain
-        if ((block.height % 100) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
+        if ((block.height % 1000) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
             DSDLog(@"adding sync block on %@ at height: %d from peer %@", self.name, block.height,peer.host);
         }
         @synchronized (self.mSyncBlocks) {
@@ -2042,7 +2042,7 @@ static dispatch_once_t devnetToken = 0;
         self.lastSyncBlock = block;
         
         if (!equivalentTerminalBlock && uint256_eq(block.prevBlock, self.lastTerminalBlock.blockHash)) {
-            if ((block.height % 100) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
+            if ((block.height % 1000) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
                 DSDLog(@"adding terminal block on %@ (caught up) at height: %d with hash: %@ from peer %@", self.name, block.height,uint256_hex(block.blockHash),peer.host?peer.host:@"TEST");
             }
             @synchronized (self.mTerminalBlocks) {
