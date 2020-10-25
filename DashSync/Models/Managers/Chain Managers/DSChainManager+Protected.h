@@ -28,6 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) DSChainSyncPhase syncPhase;
 
+-(void)assingSyncWeights;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -54,7 +54,7 @@
 #import "DSSporkManager.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
-#import "DSChainManager.h"
+#import "DSChainManager+Protected.h"
 #import "DSFundsDerivationPath.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "DSProviderUpdateRevocationTransaction.h"
@@ -2288,7 +2288,6 @@ static dispatch_once_t devnetToken = 0;
         NSTimeInterval timestamp = [[NSDate date] timeIntervalSince1970];
         if (!self.lastNotifiedBlockDidChange || (timestamp - self.lastNotifiedBlockDidChange > 0.1)) {
             self.lastNotifiedBlockDidChange = timestamp;
-            if (blockPosition & DSBlockPosition_Terminal)
             dispatch_async(dispatch_get_main_queue(), ^{
                 if (blockPosition & DSBlockPosition_Terminal) {
                     [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
@@ -2890,12 +2889,23 @@ static dispatch_once_t devnetToken = 0;
             [peersAnnouncingHeight addObject:peer];
         }
     }
+    static dispatch_once_t onceToken;
     if (oldEstimatedBlockHeight != estimatedBlockHeight) {
         uint32_t finalEstimatedBlockHeight = [self decideFromPeerSoftConsensusEstimatedBlockHeight];
         if (finalEstimatedBlockHeight > oldEstimatedBlockHeight) {
             _bestEstimatedBlockHeight = finalEstimatedBlockHeight;
+            dispatch_once(&onceToken, ^{
+                [self.chainManager assingSyncWeights];
+            });
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncParametersUpdatedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
+            });
+        }
+    } else {
+        NSMutableArray * peersAnnouncingHeight = [self estimatedBlockHeights][@(estimatedBlockHeight)];
+        if (peersAnnouncingHeight.count > 2) {
+            dispatch_once(&onceToken, ^{
+                [self.chainManager assingSyncWeights];
             });
         }
     }

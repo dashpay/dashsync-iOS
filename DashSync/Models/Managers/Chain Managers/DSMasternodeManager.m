@@ -193,6 +193,26 @@
     return self.masternodeListRetrievalQueue.count;
 }
 
+-(uint32_t)estimatedMasternodeListsToSync {
+    BOOL syncMasternodeLists = ([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList);
+    if (!syncMasternodeLists) {
+        return 0;
+    }
+    double amountLeft = self.masternodeListRetrievalQueue.count;
+    double maxAmount = self.masternodeListRetrievalQueueMaxAmount;
+    double masternodeListsCount = self.masternodeListsByBlockHash.count;
+    if (!maxAmount || masternodeListsCount <= 1) { //1 because there might be a default
+        if (self.lastMasternodeListBlockHeight == UINT32_MAX) {
+            return 32;
+        } else {
+            float diff = self.chain.estimatedBlockHeight - self.lastMasternodeListBlockHeight;
+            if (diff < 0) return 32;
+            return MIN(32,(uint32_t)ceil(diff / 24.0f));
+        }
+    }
+    return amountLeft;
+}
+
 -(double)masternodeListAndQuorumsSyncProgress
 {
     double amountLeft = self.masternodeListRetrievalQueue.count;

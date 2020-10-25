@@ -1021,12 +1021,20 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     transaction.timestamp = [NSDate timeIntervalSince1970];
     DSAccount * account = [self.chain firstAccountThatCanContainTransaction:transaction];
     if (!account) {
-        if (peer) {
-            DSDLog(@"%@:%d no account for transaction %@", peer.host, peer.port, hash);
+        if (![self.chain transactionHasLocalReferences:transaction]) {
+            if (peer) {
+                DSDLog(@"%@:%d no account or local references for transaction %@", peer.host, peer.port, hash);
+            } else {
+                DSDLog(@"no account or local references for transaction %@", hash);
+            }
+            return;
         } else {
-            DSDLog(@"no account for transaction %@", hash);
+            if (peer) {
+                DSDLog(@"%@:%d no account for transaction with local references %@", peer.host, peer.port, hash);
+            } else {
+                DSDLog(@"no account for transaction with local references %@", hash);
+            }
         }
-        if (![self.chain transactionHasLocalReferences:transaction]) return;
     } else {
         if (![account registerTransaction:transaction saveImmediately:block?NO:YES]) {
             if (peer) {
@@ -1069,13 +1077,21 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
                 [self.chain triggerUpdatesForLocalReferences:transaction];
             }
         }
-    }
-    
-    if (peer && peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
-    
-    
-    if (account && [account amountSentByTransaction:transaction] > 0 && [account transactionIsValid:transaction]) {
-        [self addTransactionToPublishList:transaction]; // add valid send tx to mempool
+        
+        if (peer && peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
+        
+        //While we would only add to publish list is transaction sent amount was over 0 for a normal transaction, other transactions should be published immediately as they have other consequences
+        if (account && [account transactionIsValid:transaction]) {
+            [self addTransactionToPublishList:transaction]; // add valid send tx to mempool
+        } else if (!account && registered) {
+            [self addTransactionToPublishList:transaction];
+        }
+        
+    } else {
+        if (peer && peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
+        if (account && [account amountSentByTransaction:transaction] > 0 && [account transactionIsValid:transaction]) {
+            [self addTransactionToPublishList:transaction]; // add valid send tx to mempool
+        }
     }
     
     DSInstantSendTransactionLock * transactionLockReceivedEarlier = [self.instantSendLocksWaitingForTransactions objectForKey:uint256_data(transaction.txHash)];

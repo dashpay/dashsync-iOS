@@ -55,6 +55,9 @@ typedef void (^MultipleBlockMiningCompletionBlock)(NSArray<DSFullBlock *>* block
 @property (nonatomic, readonly) double chainSyncProgress;
 @property (nonatomic, readonly) double terminalHeaderSyncProgress;
 @property (nonatomic, readonly) double combinedSyncProgress;
+@property (nonatomic, readonly) double chainSyncWeight;
+@property (nonatomic, readonly) double terminalHeaderSyncWeight;
+@property (nonatomic, readonly) double masternodeListSyncWeight;
 @property (nonatomic, readonly) DSSporkManager * sporkManager;
 @property (nonatomic, readonly) DSMasternodeManager * masternodeManager;
 @property (nonatomic, readonly) DSGovernanceSyncManager * governanceSyncManager;

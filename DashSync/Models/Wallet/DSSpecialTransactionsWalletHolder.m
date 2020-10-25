@@ -354,4 +354,23 @@
 //    return lastSubscriptionTransactionHash;
 //}
 
+// set the block heights and timestamps for the given transactions, use a height of TX_UNCONFIRMED and timestamp of 0 to
+// indicate a transaction and it's dependents should remain marked as unverified (not 0-conf safe)
+- (NSArray *)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)txHashes
+{
+    NSMutableArray *updated = [NSMutableArray array];
+    for (NSValue *hash in txHashes) {
+        DSTransaction *tx = [self transactionForHash:uint256_data_from_obj(hash).UInt256];
+        
+        if (! tx || (tx.blockHeight == height && tx.timestamp == timestamp)) continue;
+        DSDLog(@"Setting tx %@ height to %d",tx,height);
+        tx.blockHeight = height;
+        tx.timestamp = timestamp;
+        
+        [updated addObject:tx];
+    }
+    
+    return updated;
+}
+
 @end
