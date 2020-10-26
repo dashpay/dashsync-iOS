@@ -48,10 +48,12 @@ FOUNDATION_EXPORT NSString* const DSQuorumListDidChangeNotification;
 @property (nonatomic,readonly) NSUInteger knownMasternodeListsCount;
 @property (nonatomic,readonly) uint32_t earliestMasternodeListBlockHeight;
 @property (nonatomic,readonly) uint32_t lastMasternodeListBlockHeight;
+@property (nonatomic,readonly) uint32_t estimatedMasternodeListsToSync;
 @property (nonatomic,readonly) DSMasternodeList * currentMasternodeList;
 @property (nonatomic,readonly) double masternodeListAndQuorumsSyncProgress;
 @property (nonatomic,readonly) NSUInteger masternodeListRetrievalQueueCount;
 @property (nonatomic,readonly) NSUInteger masternodeListRetrievalQueueMaxAmount;
+@property (nonatomic,readonly) BOOL hasMasternodeListCurrentlyBeingSaved;
 
 -(instancetype)init NS_UNAVAILABLE;
 

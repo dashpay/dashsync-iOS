@@ -54,7 +54,7 @@
 #import "DSSporkManager.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
-#import "DSChainManager.h"
+#import "DSChainManager+Protected.h"
 #import "DSFundsDerivationPath.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "DSProviderUpdateRevocationTransaction.h"
@@ -2030,7 +2030,7 @@ static dispatch_once_t devnetToken = 0;
     BOOL onMainChain = FALSE;
     
     if ((phase == DSChainSyncPhase_ChainSync || phase == DSChainSyncPhase_Synced) && uint256_eq(block.prevBlock, self.lastSyncBlockHash)) { // new block extends sync chain
-        if ((block.height % 100) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
+        if ((block.height % 1000) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
             DSDLog(@"adding sync block on %@ at height: %d from peer %@", self.name, block.height,peer.host);
         }
         @synchronized (self.mSyncBlocks) {
@@ -2042,7 +2042,7 @@ static dispatch_once_t devnetToken = 0;
         self.lastSyncBlock = block;
         
         if (!equivalentTerminalBlock && uint256_eq(block.prevBlock, self.lastTerminalBlock.blockHash)) {
-            if ((block.height % 100) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
+            if ((block.height % 1000) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
                 DSDLog(@"adding terminal block on %@ (caught up) at height: %d with hash: %@ from peer %@", self.name, block.height,uint256_hex(block.blockHash),peer.host?peer.host:@"TEST");
             }
             @synchronized (self.mTerminalBlocks) {
@@ -2057,7 +2057,7 @@ static dispatch_once_t devnetToken = 0;
         [self setBlockHeight:block.height andTimestamp:txTime forTransactionHashes:txHashes];
         onMainChain = TRUE;
         
-        if ([self blockHeightHasCheckpoint:block.height] || ((block.height % 1000 == 0) && block.height + BLOCK_NO_FORK_DEPTH < self.lastTerminalBlockHeight) ) {
+        if ([self blockHeightHasCheckpoint:block.height] || ((block.height % 1000 == 0) && (block.height + BLOCK_NO_FORK_DEPTH < self.lastTerminalBlockHeight) && !self.chainManager.masternodeManager.hasMasternodeListCurrentlyBeingSaved)) {
             [self saveBlockLocators];
         }
         
@@ -2288,7 +2288,6 @@ static dispatch_once_t devnetToken = 0;
         NSTimeInterval timestamp = [[NSDate date] timeIntervalSince1970];
         if (!self.lastNotifiedBlockDidChange || (timestamp - self.lastNotifiedBlockDidChange > 0.1)) {
             self.lastNotifiedBlockDidChange = timestamp;
-            if (blockPosition & DSBlockPosition_Terminal)
             dispatch_async(dispatch_get_main_queue(), ^{
                 if (blockPosition & DSBlockPosition_Terminal) {
                     [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
@@ -2890,12 +2889,23 @@ static dispatch_once_t devnetToken = 0;
             [peersAnnouncingHeight addObject:peer];
         }
     }
+    static dispatch_once_t onceToken;
     if (oldEstimatedBlockHeight != estimatedBlockHeight) {
         uint32_t finalEstimatedBlockHeight = [self decideFromPeerSoftConsensusEstimatedBlockHeight];
         if (finalEstimatedBlockHeight > oldEstimatedBlockHeight) {
             _bestEstimatedBlockHeight = finalEstimatedBlockHeight;
+            dispatch_once(&onceToken, ^{
+                [self.chainManager assingSyncWeights];
+            });
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncParametersUpdatedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
+            });
+        }
+    } else {
+        NSMutableArray * peersAnnouncingHeight = [self estimatedBlockHeights][@(estimatedBlockHeight)];
+        if (peersAnnouncingHeight.count > 2) {
+            dispatch_once(&onceToken, ^{
+                [self.chainManager assingSyncWeights];
             });
         }
     }

@@ -80,6 +80,7 @@
 @property (nonatomic,assign) NSTimeInterval timeIntervalForMasternodeRetrievalSafetyDelay;
 @property (nonatomic,assign) uint16_t timedOutAttempt;
 @property (nonatomic,assign) uint16_t timeOutObserverTry;
+@property (atomic,assign) uint32_t masternodeListCurrentlyBeingSavedCount;
 @property (nonatomic,strong) NSDictionary <NSData*,NSString*>* fileDistributedMasternodeLists; //string is the path
 
 @end
@@ -105,6 +106,7 @@
     self.processingMasternodeListBlockHash = UINT256_ZERO;
     _timedOutAttempt = 0;
     _timeOutObserverTry = 0;
+    _masternodeListCurrentlyBeingSavedCount = 0;
     return self;
 }
 
@@ -191,6 +193,26 @@
 
 -(NSUInteger)masternodeListRetrievalQueueCount {
     return self.masternodeListRetrievalQueue.count;
+}
+
+-(uint32_t)estimatedMasternodeListsToSync {
+    BOOL syncMasternodeLists = ([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList);
+    if (!syncMasternodeLists) {
+        return 0;
+    }
+    double amountLeft = self.masternodeListRetrievalQueue.count;
+    double maxAmount = self.masternodeListRetrievalQueueMaxAmount;
+    double masternodeListsCount = self.masternodeListsByBlockHash.count;
+    if (!maxAmount || masternodeListsCount <= 1) { //1 because there might be a default
+        if (self.lastMasternodeListBlockHeight == UINT32_MAX) {
+            return 32;
+        } else {
+            float diff = self.chain.estimatedBlockHeight - self.lastMasternodeListBlockHeight;
+            if (diff < 0) return 32;
+            return MIN(32,(uint32_t)ceil(diff / 24.0f));
+        }
+    }
+    return amountLeft;
 }
 
 -(double)masternodeListAndQuorumsSyncProgress
@@ -1069,6 +1091,10 @@
     }
 }
 
+-(BOOL)hasMasternodeListCurrentlyBeingSaved {
+    return !!self.masternodeListCurrentlyBeingSavedCount;
+}
+
 -(void)saveMasternodeList:(DSMasternodeList*)masternodeList havingModifiedMasternodes:(NSDictionary*)modifiedMasternodes addedQuorums:(NSDictionary*)addedQuorums {
     [self.masternodeListsByBlockHash setObject:masternodeList forKey:uint256_data(masternodeList.blockHash)];
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -1078,7 +1104,9 @@
     });
     //We will want to create unknown blocks if they came from insight
     BOOL createUnknownBlocks = masternodeList.chain.allowInsightBlocksForVerification;
+    self.masternodeListCurrentlyBeingSavedCount++;
     [DSMasternodeManager saveMasternodeList:masternodeList toChain:self.chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums createUnknownBlocks:createUnknownBlocks inContext:self.managedObjectContext completion:^(NSError *error) {
+        self.masternodeListCurrentlyBeingSavedCount--;
         if (error) {
             if ([self.masternodeListRetrievalQueue count]) { //if it is 0 then we most likely have wiped chain info
                 [self wipeMasternodeInfo];

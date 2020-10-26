@@ -51,6 +51,9 @@
 
 @interface DSChainManager ()
 
+@property (nonatomic, assign) double chainSyncWeight;
+@property (nonatomic, assign) double terminalHeaderSyncWeight;
+@property (nonatomic, assign) double masternodeListSyncWeight;
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, strong) DSSporkManager * sporkManager;
 @property (nonatomic, strong) DSMasternodeManager * masternodeManager;
@@ -267,6 +270,34 @@
     return [NSString stringWithFormat:@"%@_%@",TERMINAL_SYNC_STARTHEIGHT_KEY,[self.chain uniqueID]];
 }
 
+-(void)assingSyncWeights {
+    uint32_t chainBlocks = [self chainBlocksToSync];
+    uint32_t terminalBlocks = [self terminalHeadersToSync];
+    uint32_t masternodeListsToSync = self.masternodeManager.estimatedMasternodeListsToSync;
+    //a unit of weight is the time it would take to sync 1000 blocks;
+    //terminal headers are 4 times faster the blocks
+    //the first masternode list is worth 20000 blocks
+    //each masternode list after that is worth 2000 blocks
+    uint32_t chainWeight = chainBlocks;
+    uint32_t terminalWeight = terminalBlocks / 4;
+    uint32_t masternodeWeight = masternodeListsToSync?(20000 + 2000 * (masternodeListsToSync - 1)):0;
+    uint32_t totalWeight = chainWeight + terminalWeight + masternodeWeight;
+    if (totalWeight == 0) {
+        self.terminalHeaderSyncWeight = 0;
+        self.masternodeListSyncWeight = 0;
+        self.chainSyncWeight = 1;
+    } else {
+        self.chainSyncWeight = ((float)chainWeight)/totalWeight;
+        self.terminalHeaderSyncWeight = ((float)terminalWeight)/totalWeight;
+        self.masternodeListSyncWeight = ((float)masternodeWeight)/totalWeight;
+    }
+}
+
+-(uint32_t)chainBlocksToSync {
+    if (self.chain.lastSyncBlockHeight >= self.chain.estimatedBlockHeight) return 0;
+    return self.chain.estimatedBlockHeight - self.chain.lastSyncBlockHeight;
+}
+
 - (double)chainSyncProgress
 {
     if (! self.peerManager.downloadPeer && self.chainSyncStartHeight == 0) return 0.0;
@@ -285,6 +316,11 @@
         progress = (lastBlockHeight - syncStartHeight) / (estimatedBlockHeight - syncStartHeight);
     }
     return MIN(1.0, MAX(0.0, 0.1 + 0.9 * progress));
+}
+
+-(uint32_t)terminalHeadersToSync {
+    if (self.chain.lastTerminalBlockHeight >= self.chain.estimatedBlockHeight) return 0;
+    return self.chain.estimatedBlockHeight - self.chain.lastTerminalBlockHeight;
 }
 
 -(double)terminalHeaderSyncProgress
@@ -312,7 +348,16 @@
 #if LOG_COMBINED_SYNC_PROGRESS
     DSDLog(@"combinedSyncProgress breakdown %f %f %f",self.terminalHeaderSyncProgress,self.masternodeManager.masternodeListAndQuorumsSyncProgress,self.chainSyncProgress);
 #endif
-    return self.terminalHeaderSyncProgress * 0.2 + self.masternodeManager.masternodeListAndQuorumsSyncProgress * 0.25 + self.chainSyncProgress * 0.55;
+    if ((self.terminalHeaderSyncWeight + self.chainSyncWeight + self.masternodeListSyncWeight) == 0) {
+        return 1;
+    } else {
+        double progress = self.terminalHeaderSyncProgress * self.terminalHeaderSyncWeight + self.masternodeManager.masternodeListAndQuorumsSyncProgress * self.masternodeListSyncWeight + self.chainSyncProgress * self.chainSyncWeight;
+        if (progress < 0.99995) {
+            return progress;
+        } else {
+            return 1;
+        }
+    }
 }
 
 -(void)resetChainSyncStartHeight {

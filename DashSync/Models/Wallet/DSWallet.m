@@ -911,6 +911,7 @@
             [self chainUpdatedBlockHeight:height];
         }
     }
+    [self.specialTransactionsHolder setBlockHeight:height andTimestamp:timestamp forTransactionHashes:txHashes];
     return [updated copy];
 }
 

@@ -43,6 +43,8 @@ NS_ASSUME_NONNULL_BEGIN
 // this is used to save transactions atomically with the block
 - (void)persistIncomingTransactionsAttributesForBlockSaveWithNumber:(uint32_t)blockNumber inContext:(NSManagedObjectContext*)context;
 
+- (NSArray *)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)txHashes;
+
 @end
 
 NS_ASSUME_NONNULL_END
