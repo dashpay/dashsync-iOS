@@ -20,6 +20,7 @@
 
 #define DPNS_CONTRACT @"DPNS_CONTRACT"
 #define DASHPAY_CONTRACT @"DASHPAY_CONTRACT"
+#define DASHTHUMBNAIL_CONTRACT @"DASHTHUMBNAIL_CONTRACT"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -29,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, strong, nonatomic) DPContract *dashPayContract;
 @property (readonly, strong, nonatomic) DPContract *dpnsContract;
+@property (readonly, strong, nonatomic) DPContract *dashThumbnailContract;
 @property (readonly, strong, nonatomic) NSMutableDictionary* knownContracts;
 
 @property (readonly, strong, nonatomic) DSChain *chain;

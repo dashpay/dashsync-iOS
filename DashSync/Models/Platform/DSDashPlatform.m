@@ -26,6 +26,7 @@
 @property (strong, nonatomic, null_resettable) NSMutableDictionary* knownContracts;
 @property (strong, nonatomic) DPContract *dashPayContract;
 @property (strong, nonatomic) DPContract *dpnsContract;
+@property (strong, nonatomic) DPContract *dashThumbnailContract;
 
 @end
 
@@ -72,13 +73,15 @@ static dispatch_once_t platformChainToken = 0;
         return @"DashPay";
     } else if ([identifier hasPrefix:DPNS_CONTRACT]) {
         return @"DPNS";
+    } else if ([identifier hasPrefix:DASHTHUMBNAIL_CONTRACT]) {
+        return @"DashThumbnail";
     }
     return @"Unnamed Contract";
 }
 
 -(NSMutableDictionary*)knownContracts {
     if (!_knownContracts) {
-        _knownContracts = [NSMutableDictionary dictionaryWithObjects:@[[self dashPayContract], [self dpnsContract]] forKeys:@[DASHPAY_CONTRACT,DPNS_CONTRACT]];
+        _knownContracts = [NSMutableDictionary dictionaryWithObjects:@[[self dashPayContract], [self dpnsContract]] forKeys:@[DASHPAY_CONTRACT, DPNS_CONTRACT, DASHTHUMBNAIL_CONTRACT]];
     }
     return _knownContracts;
 }
@@ -95,6 +98,13 @@ static dispatch_once_t platformChainToken = 0;
         _dpnsContract = [DPContract localDPNSContractForChain:self.chain];
     }
     return _dpnsContract;
+}
+
+-(DPContract*)dashThumbnailContract {
+    if (!_dashThumbnailContract) {
+        _dashThumbnailContract = [DPContract localDashThumbnailContractForChain:self.chain];
+    }
+    return _dashThumbnailContract;
 }
 
 @end
