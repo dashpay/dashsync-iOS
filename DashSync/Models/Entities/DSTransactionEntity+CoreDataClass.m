@@ -117,7 +117,7 @@
         
         if (txHash.length == sizeof(UInt256)) tx.txHash = *(const UInt256 *)txHash.bytes;
         tx.lockTime = self.lockTime;
-        tx.saved = TRUE;
+        tx.persistenceStatus = DSTransactionPersistenceStatus_Saved;
         
         tx.blockHeight = self.transactionHash.blockHeight;
         tx.timestamp = self.transactionHash.timestamp;

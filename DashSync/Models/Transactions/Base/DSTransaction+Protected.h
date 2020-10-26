@@ -9,9 +9,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, DSTransactionPersistenceStatus) {
+    DSTransactionPersistenceStatus_NotSaved,
+    DSTransactionPersistenceStatus_Saving,
+    DSTransactionPersistenceStatus_Saved
+};
+
 @interface DSTransaction ()
 
-@property (nonatomic, assign) BOOL saved; //don't trust this
+@property (nonatomic, assign) DSTransactionPersistenceStatus persistenceStatus;
 @property (nonatomic, readonly) DSTransactionEntity * transactionEntity;
 
 @end

@@ -102,7 +102,7 @@
     self.signatures = [NSMutableArray array];
     self.sequences = [NSMutableArray array];
     self.chain = chain;
-    self.saved = FALSE;
+    self.persistenceStatus = DSTransactionPersistenceStatus_NotSaved;
     self.hasUnverifiedInstantSendLock = NO;
     _lockTime = TX_LOCKTIME;
     self.blockHeight = TX_UNCONFIRMED;
@@ -213,7 +213,7 @@
     
     if (! (self = [super init])) return nil;
     
-    self.saved = FALSE;
+    self.persistenceStatus = DSTransactionPersistenceStatus_NotSaved;
     self.chain = chain;
     _version = chain.transactionVersion;
     self.hashes = [NSMutableArray arrayWithArray:hashes];
@@ -879,19 +879,22 @@
 }
 
 -(BOOL)saveInitialInContext:(NSManagedObjectContext*)context {
-    if (self.saved) return nil;
-    __block BOOL didSave = FALSE;
-    [context performBlockAndWait:^{ // add the transaction to core data
+    if (self.persistenceStatus != DSTransactionPersistenceStatus_NotSaved) return NO;
+    self.persistenceStatus = DSTransactionPersistenceStatus_Saving;
+    [context performBlock:^{ // add the transaction to core data
         if ([self setInitialPersistentAttributesInContext:context]) {
             if (![context ds_save]) {
-                didSave = TRUE;
+                self.persistenceStatus = DSTransactionPersistenceStatus_Saved;
             } else {
                 DSDLog(@"There was an error saving the transaction");
+                self.persistenceStatus = DSTransactionPersistenceStatus_NotSaved;
             }
+        } else {
+            //it already existed
+            self.persistenceStatus = DSTransactionPersistenceStatus_Saved;
         }
     }];
-    self.saved = didSave;
-    return didSave;
+    return YES;
 }
 
 @end
