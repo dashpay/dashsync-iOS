@@ -80,7 +80,7 @@
 @property (nonatomic,assign) NSTimeInterval timeIntervalForMasternodeRetrievalSafetyDelay;
 @property (nonatomic,assign) uint16_t timedOutAttempt;
 @property (nonatomic,assign) uint16_t timeOutObserverTry;
-@property (nonatomic,assign) uint32_t masternodeListCurrentlyBeingSavedCount;
+@property (atomic,assign) uint32_t masternodeListCurrentlyBeingSavedCount;
 @property (nonatomic,strong) NSDictionary <NSData*,NSString*>* fileDistributedMasternodeLists; //string is the path
 
 @end
