@@ -76,9 +76,9 @@
     NSMutableData * outputScript = [NSMutableData data];
     [outputScript appendUInt8:OP_RETURN];
     [transaction addOutputScript:outputScript amount:chain.baseReward];
-    //    DSDLog(@"we are hashing %@",transaction.toData);
+    //    DSLogPrivate(@"we are hashing %@",transaction.toData);
     transaction.txHash = transaction.toData.SHA256_2;
-    //    DSDLog(@"data is %@",[NSData dataWithUInt256:transaction.txHash]);
+    //    DSLogPrivate(@"data is %@",[NSData dataWithUInt256:transaction.txHash]);
     return transaction;
 }
 
@@ -309,7 +309,7 @@
     
     //    for (NSData * data in self.signatures) {
     //        NSString * addr = [NSString addressWithScriptSig:data onChain:self.chain];
-    //                           DSDLog(@"%@",addr);
+    //                           DSLogPrivate(@"%@",addr);
     //    }
     
     for (NSData *script in self.inScripts) {
@@ -886,7 +886,7 @@
             if (![context ds_save]) {
                 self.persistenceStatus = DSTransactionPersistenceStatus_Saved;
             } else {
-                DSDLog(@"There was an error saving the transaction");
+                DSLog(@"There was an error saving the transaction");
                 self.persistenceStatus = DSTransactionPersistenceStatus_NotSaved;
             }
         } else {

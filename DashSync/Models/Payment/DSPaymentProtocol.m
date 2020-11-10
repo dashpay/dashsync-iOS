@@ -237,7 +237,7 @@ typedef enum : NSUInteger {
             case details_payment_url: if (d) _paymentURL = protoBufString(d); break;
             case details_merchant_data: if (d) _merchantData = d; break;
             default: {
-                DSDLog(@"Unknown details type: %lu",(unsigned long)details);
+                DSLog(@"Unknown details type: %lu",(unsigned long)details);
                 break;
             }
         }
@@ -467,12 +467,12 @@ typedef enum : NSUInteger {
         if (status != errSecSuccess) {
             if (status == errSecUnimplemented) {
                 _errorMessage = DSLocalizedString(@"Unsupported signature type", nil);
-                DSDLog(@"%@", _errorMessage);
+                DSLog(@"%@", _errorMessage);
             }
             else {
                 _errorMessage = [NSError errorWithDomain:NSOSStatusErrorDomain code:status
                                  userInfo:nil].localizedDescription;
-                DSDLog(@"SecKeyRawVerify error: %@", _errorMessage);
+                DSLog(@"SecKeyRawVerify error: %@", _errorMessage);
             }
             
             r = NO;

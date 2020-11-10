@@ -60,7 +60,11 @@
                     
                     while (e.index >= a.count) [a addObject:[NSNull null]];
                     if (![e.address isValidDashAddressOnChain:self.account.wallet.chain]) {
-                        DSDLog(@"address %@ loaded but was not valid on chain %@",e.address,self.account.wallet.chain.name);
+#if DEBUG
+                        DSLogPrivate(@"address %@ loaded but was not valid on chain %@",e.address,self.account.wallet.chain.name);
+#else
+                        DSLog(@"address %@ loaded but was not valid on chain %@",@"<REDACTED>",self.account.wallet.chain.name);
+#endif /* DEBUG */
                         continue;
                     }
                     a[e.index] = e.address;
@@ -141,7 +145,7 @@
             NSString *addr = [[DSECDSAKey keyWithPublicKeyData:pubKey] addressForChain:self.chain];
             
             if (! addr) {
-                DSDLog(@"error generating keys");
+                DSLog(@"error generating keys");
                 if (error) {
                     *error = [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
                                                                                           DSLocalizedString(@"Error generating public keys", nil)}];

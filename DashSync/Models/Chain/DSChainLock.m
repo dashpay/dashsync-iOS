@@ -79,7 +79,7 @@
     off += sizeof(UInt768);
     self.chain = chain;
     
-    DSDLog(@"the chain lock signature received for height %d (sig %@) (blockhash %@)",self.height,uint768_hex(_signature),uint256_hex(_blockHash));
+    DSLog(@"the chain lock signature received for height %d (sig %@) (blockhash %@)",self.height,uint768_hex(_signature),uint256_hex(_blockHash));
     
     return self;
 }
@@ -108,7 +108,7 @@
     [data appendString:@"clsig"];
     [data appendUInt32:self.height];
     _requestID = [data SHA256_2];
-    DSDLog(@"the chain lock request ID is %@ for height %d",uint256_hex(_requestID),self.height);
+    DSLog(@"the chain lock request ID is %@ for height %d",uint256_hex(_requestID),self.height);
     return _requestID;
 }
 
@@ -125,7 +125,20 @@
     UInt384 publicKey = quorumEntry.quorumPublicKey;
     DSBLSKey * blsKey = [DSBLSKey keyWithPublicKey:publicKey];
     UInt256 signId = [self signIDForQuorumEntry:quorumEntry];
-    DSDLog(@"verifying signature %@ with public key %@ for transaction hash %@ against quorum %@",[NSData dataWithUInt768:self.signature].hexString, [NSData dataWithUInt384:publicKey].hexString, [NSData dataWithUInt256:self.blockHash].hexString,quorumEntry);
+#if DEBUG
+    DSLogPrivate(@"verifying signature %@ with public key %@ for transaction hash %@ against quorum %@",
+                 [NSData dataWithUInt768:self.signature].hexString,
+                 [NSData dataWithUInt384:publicKey].hexString,
+                 [NSData dataWithUInt256:self.blockHash].hexString,
+                 quorumEntry);
+#else
+    DSLog(@"verifying signature %@ with public key %@ for transaction hash %@ against quorum %@",
+          @"<REDACTED>",
+          @"<REDACTED>",
+          @"<REDACTED>",
+          @"<REDACTED>",
+          quorumEntry);
+#endif /* DEBUG */
     return [blsKey verify:signId signature:self.signature];
 }
 
@@ -150,15 +163,15 @@
     if (quorumEntry && quorumEntry.verified) {
         self.signatureVerified = [self verifySignatureAgainstQuorum:quorumEntry];
         if (!self.signatureVerified) {
-            DSDLog(@"unable to verify signature with offset %d",offset);
+            DSLog(@"unable to verify signature with offset %d",offset);
         } else {
-            DSDLog(@"signature verified with offset %d",offset);
+            DSLog(@"signature verified with offset %d",offset);
         }
         
     } else if (quorumEntry) {
-        DSDLog(@"quorum entry %@ found but is not yet verified",uint256_hex(quorumEntry.quorumHash));
+        DSLog(@"quorum entry %@ found but is not yet verified",uint256_hex(quorumEntry.quorumHash));
     } else {
-        DSDLog(@"no quorum entry found");
+        DSLog(@"no quorum entry found");
     }
     if (self.signatureVerified) {
         self.intendedQuorum = quorumEntry;
@@ -169,14 +182,14 @@
         }
     } else if (quorumEntry.verified && offset == 8) {
         //try again a few blocks more in the past
-        DSDLog(@"trying with offset 0");
+        DSLog(@"trying with offset 0");
         return [self verifySignatureWithQuorumOffset:0];
     }  else if (quorumEntry.verified && offset == 0) {
         //try again a few blocks more in the future
-        DSDLog(@"trying with offset 16");
+        DSLog(@"trying with offset 16");
         return [self verifySignatureWithQuorumOffset:16];
     }
-    DSDLog(@"returning chain lock signature verified %d with offset %d",self.signatureVerified,offset);
+    DSLog(@"returning chain lock signature verified %d with offset %d",self.signatureVerified,offset);
     return self.signatureVerified;
 }
 

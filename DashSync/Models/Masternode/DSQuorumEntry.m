@@ -224,7 +224,7 @@
     return [self validateWithMasternodeList:masternodeList blockHeightLookup:^uint32_t(UInt256 blockHash) {
         DSMerkleBlock * block = [self.chain blockForBlockHash:blockHash];
         if (!block) {
-            DSDLog(@"Unknown block %@",uint256_reverse_hex(blockHash));
+            DSLog(@"Unknown block %@",uint256_reverse_hex(blockHash));
             NSAssert(block, @"block should be known");
         }
         return block.height;
@@ -234,7 +234,7 @@
 -(BOOL)validateWithMasternodeList:(DSMasternodeList*)masternodeList blockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup {
     
     if (!masternodeList) {
-        DSDLog(@"Trying to validate a quorum without a masternode list");
+        DSLog(@"Trying to validate a quorum without a masternode list");
         return NO;
     }
     
@@ -280,11 +280,11 @@
 #define LOG_COMMITMENT_DATA 0
     
     if (!allCommitmentAggregatedSignatureValidated) {
-        DSDLog(@"Issue with allCommitmentAggregatedSignatureValidated for quorum of type %d quorumHash %@ llmqHash %@ commitmentHash %@ signersBitset %@ (%d signers) at height %u", self.llmqType, uint256_hex(self.commitmentHash), uint256_hex(self.quorumHash), uint256_hex(self.commitmentHash), self.signersBitset.hexString, self.signersCount, masternodeList.height);
+        DSLog(@"Issue with allCommitmentAggregatedSignatureValidated for quorum of type %d quorumHash %@ llmqHash %@ commitmentHash %@ signersBitset %@ (%d signers) at height %u", self.llmqType, uint256_hex(self.commitmentHash), uint256_hex(self.quorumHash), uint256_hex(self.commitmentHash), self.signersBitset.hexString, self.signersCount, masternodeList.height);
         return NO;
     } else {
         #if LOG_COMMITMENT_DATA
-            DSDLog(@"No Issue with Checking allCommitmentAggregatedSignatureValidated for quorum of type %d quorumHash %@ llmqHash %@ commitmentHash %@ signersBitset %@ (%d signers) at height %u", self.llmqType, uint256_hex(self.commitmentHash), uint256_hex(self.quorumHash), uint256_hex(self.commitmentHash), self.signersBitset.hexString, self.signersCount, masternodeList.height);
+        DSLog(@"No Issue with Checking allCommitmentAggregatedSignatureValidated for quorum of type %d quorumHash %@ llmqHash %@ commitmentHash %@ signersBitset %@ (%d signers) at height %u", self.llmqType, uint256_hex(self.commitmentHash), uint256_hex(self.quorumHash), uint256_hex(self.commitmentHash), self.signersBitset.hexString, self.signersCount, masternodeList.height);
         #endif
     }
     
@@ -293,7 +293,7 @@
     BOOL quorumSignatureValidated = [DSBLSKey verify:self.commitmentHash signature:self.quorumThresholdSignature withPublicKey:self.quorumPublicKey];
     
     if (!quorumSignatureValidated) {
-        DSDLog(@"Issue with quorumSignatureValidated");
+        DSLog(@"Issue with quorumSignatureValidated");
         return NO;
     }
     

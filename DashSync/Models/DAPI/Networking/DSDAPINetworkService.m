@@ -599,7 +599,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                         success:(void (^)(NSDictionary *successDictionary))success
                                         failure:(void (^)(NSError *error))failure {
     NSParameterAssert(stateTransition);
-    DSDLog(@"Broadcasting state transition with data %@ rawData %@",stateTransition.keyValueDictionary, stateTransition.data.hexString);
+    DSLogPrivate(@"Broadcasting state transition with data %@ rawData %@",stateTransition.keyValueDictionary, stateTransition.data.hexString);
     BroadcastStateTransitionRequest * broadcastStateRequest = [[BroadcastStateTransitionRequest alloc] init];
     broadcastStateRequest.stateTransition = stateTransition.data;
     DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];

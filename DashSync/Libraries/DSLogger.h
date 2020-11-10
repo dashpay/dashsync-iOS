@@ -25,24 +25,24 @@
     static const DDLogLevel ddLogLevel = DDLogLevelInfo;
 #endif /* DEBUG */
 
-#define DSLogError(frmt, ...) DDLogError(frmt, ##__VA_ARGS__)
-#define DSLogWarn(frmt, ...) DDLogWarn(frmt, ##__VA_ARGS__)
-#define DSLogInfo(frmt, ...) DDLogInfo(frmt, ##__VA_ARGS__)
-#define DSLogDebug(frmt, ...) DDLogDebug(frmt, ##__VA_ARGS__)
-#define DSLogVerbose(frmt, ...) DDLogVerbose(frmt, ##__VA_ARGS__)
+#define DSLog(frmt, ...) DDLogInfo(frmt, ##__VA_ARGS__)
+
+#ifdef DEBUG
+#define DSLogPrivate(s, ...) DDLogVerbose(s, ##__VA_ARGS__)
+#else
+#define DSLogPrivate(s, ...)
+#endif /* DEBUG */
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSLogger : NSObject
-
-@property (readonly, nonatomic, assign) BOOL shouldLogHTTPRequests;
-@property (readonly, nonatomic, assign) BOOL shouldLogHTTPResponses;
 
 + (instancetype)sharedInstance;
 
 - (NSArray <NSURL *> *)logFiles;
 
 - (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

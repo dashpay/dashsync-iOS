@@ -142,7 +142,7 @@ static NSString *DashCurrencySymbolAssetName = nil;
         return nil;
     }
     else {
-        DSDLog(@"Unknown script type");
+        DSLog(@"Unknown script type");
         return nil; // unknown script type
     }
     

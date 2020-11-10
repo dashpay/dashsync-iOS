@@ -213,7 +213,7 @@
                                                                contactBasedDerivationPathWithDestinationBlockchainIdentityUniqueId:friendRequest.destinationContact.associatedBlockchainIdentity.uniqueID.UInt256 sourceBlockchainIdentityUniqueId:blockchainIdentity.uniqueID forAccountNumber:account.accountNumber onChain:self.chain];
                 fundsDerivationPath.wallet = self;
                 fundsDerivationPath.account = account;
-                //DSDLog(@"%@",blockchainIdentity.matchingDashpayUser.outgoingRequests);
+                //DSLogPrivate(@"%@",blockchainIdentity.matchingDashpayUser.outgoingRequests);
                 [account addIncomingDerivationPath:fundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier inContext:self.chain.chainManagedObjectContext];
                 [usedFriendshipIdentifiers addObject:friendRequest.friendshipIdentifier];
             }
@@ -447,7 +447,11 @@
             NSTimeInterval realWalletCreationTime = [realWalletCreationDate timeIntervalSince1970];
             if (realWalletCreationTime && (realWalletCreationTime != REFERENCE_DATE_2001)) {
                 _walletCreationTime = MAX(realWalletCreationTime,BIP39_CREATION_TIME); //safeguard
-                DSDLog(@"real wallet creation set to %@",realWalletCreationDate);
+#if DEBUG
+                DSLogPrivate(@"real wallet creation set to %@",realWalletCreationDate);
+#else
+                DSLog(@"real wallet creation set to %@",@"<REDACTED>");
+#endif
                 setKeychainData([NSData dataWithBytes:&realWalletCreationTime length:sizeof(realWalletCreationTime)], self.creationTimeUniqueID, NO);
             } else if (realWalletCreationTime == REFERENCE_DATE_2001) {
                 realWalletCreationTime = 0;
@@ -1129,9 +1133,9 @@
             for (NSData * blockchainIdentityLockedOutpointData in keyChainDictionary) {
                 uint32_t index = [keyChainDictionary[blockchainIdentityLockedOutpointData] unsignedIntValue];
                 DSUTXO blockchainIdentityLockedOutpoint = blockchainIdentityLockedOutpointData.transactionOutpoint;
-                //DSDLog(@"Blockchain identity unique Id is %@",uint256_hex(blockchainIdentityUniqueId));
+                //DSLogPrivate(@"Blockchain identity unique Id is %@",uint256_hex(blockchainIdentityUniqueId));
 //                UInt256 lastTransitionHash = [self.specialTransactionsHolder lastSubscriptionTransactionHashForRegistrationTransactionHash:registrationTransactionHash];
-//                DSDLog(@"reg %@ last %@",uint256_hex(registrationTransactionHash),uint256_hex(lastTransitionHash));
+//                DSLogPrivate(@"reg %@ last %@",uint256_hex(registrationTransactionHash),uint256_hex(lastTransitionHash));
 //                DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction = [self blockchainIdentityRegistrationTransactionForIndex:index];
                 
                 //either the identity is known in core data (and we can pull it) or the wallet has been wiped and we need to get it from DAPI (the unique Id was saved in the keychain, so we don't need to resync)
@@ -1142,7 +1146,7 @@
                 [context performBlockAndWait:^{
                     NSUInteger blockchainIdentityEntitiesCount = [DSBlockchainIdentityEntity countObjectsInContext:context matching:@"chain == %@ && isLocal == TRUE",[self.chain chainEntityInContext:context]];
                     if (blockchainIdentityEntitiesCount != keyChainDictionary.count) {
-                        DSDLog(@"Unmatching blockchain entities count");
+                        DSLog(@"Unmatching blockchain entities count");
                     }
                     DSBlockchainIdentityEntity * blockchainIdentityEntity = [DSBlockchainIdentityEntity anyObjectInContext:context matching:@"uniqueID == %@",uint256_data([dsutxo_data(blockchainIdentityLockedOutpoint) SHA256_2])];
                     DSBlockchainIdentity * blockchainIdentity = nil;

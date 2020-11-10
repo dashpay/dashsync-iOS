@@ -130,9 +130,9 @@ inline static int ceil_log2(int x)
     
 #if LOG_MERKLE_BLOCKS || LOG_MERKLE_BLOCKS_FULL
 #if LOG_MERKLE_BLOCKS_FULL
-    DSDLog(@"%d - merkle block %@ (%@) has %d transactions",self.height,uint256_hex(self.blockHash),message.hexString,self.totalTransactions);
+    DSLog(@"%d - merkle block %@ (%@) has %d transactions",self.height,uint256_hex(self.blockHash),message.hexString,self.totalTransactions);
 #else
-    DSDLog(@"%d - merkle block %@ has %d transactions",self.height,uint256_hex(self.blockHash),self.totalTransactions);
+    DSLog(@"%d - merkle block %@ has %d transactions",self.height,uint256_hex(self.blockHash),self.totalTransactions);
 #endif
 #endif
     
@@ -190,8 +190,8 @@ inline static int ceil_log2(int x)
 - (BOOL)containsTxHash:(UInt256)txHash
 {
     for (NSUInteger i = 0; i < self.hashes.length/sizeof(UInt256); i += sizeof(UInt256)) {
-        DSDLog(@"transaction Hash %@",[NSData dataWithUInt256:[self.hashes UInt256AtOffset:i]].hexString);
-        DSDLog(@"looking for %@",[NSData dataWithUInt256:txHash].hexString);
+        DSLogPrivate(@"transaction Hash %@",[NSData dataWithUInt256:[self.hashes UInt256AtOffset:i]].hexString);
+        DSLogPrivate(@"looking for %@",[NSData dataWithUInt256:txHash].hexString);
         if (uint256_eq(txHash, [self.hashes UInt256AtOffset:i])) return YES;
     }
     
@@ -232,7 +232,7 @@ inline static int ceil_log2(int x)
     }];
     
     [root getValue:&merkleRoot];
-    //DSDLog(@"%@ - %@",uint256_hex(merkleRoot),uint256_hex(_merkleRoot));
+    //DSLog(@"%@ - %@",uint256_hex(merkleRoot),uint256_hex(_merkleRoot));
     if (self.totalTransactions > 0 && ! uint256_eq(merkleRoot, self.merkleRoot)) return NO; // merkle root check failed
     return YES;
 }

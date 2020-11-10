@@ -208,7 +208,7 @@
         NSArray <DSTransactionEntity *> * transactions = [DSTransactionEntity objectsInContext:self.managedObjectContext matching:@"transactionHash.chain == %@",[self.wallet.chain chainEntityInContext:self.managedObjectContext]];
         for (DSTransactionEntity * entity in transactions) {
             DSTransaction *transaction = [entity transactionForChain:self.wallet.chain];
-            DSDLog(@"Transaction %@",[transaction longDescription]);
+            DSLogPrivate(@"Transaction %@",[transaction longDescription]);
         }
 #endif
         
@@ -225,7 +225,7 @@
                 NSError * fetchRequestError = nil;
                 //NSDate *transactionOutputsStartTime = [NSDate date];
                 NSArray * transactionOutputs = [self.managedObjectContext executeFetchRequest:fetchRequest error:&fetchRequestError];
-                //DSDLog(@"TransactionOutputsStartTime: %f", -[transactionOutputsStartTime timeIntervalSinceNow]);
+                //DSLog(@"TransactionOutputsStartTime: %f", -[transactionOutputsStartTime timeIntervalSinceNow]);
                 for (DSTxOutputEntity *e in transactionOutputs) {
                     @autoreleasepool {
                         if (e.transaction.transactionHash) {
@@ -259,7 +259,7 @@
             }
         }
     }];
-    //DSDLog(@"Time: %f", -[startTime timeIntervalSinceNow]);
+    //DSLog(@"Time: %f", -[startTime timeIntervalSinceNow]);
     [self sortTransactions];
     _balance = UINT64_MAX; // trigger balance changed notification even if balance is zero
     [self updateBalance];
@@ -605,7 +605,7 @@
     
     for (DSTransaction *tx in [self.transactions reverseObjectEnumerator]) {
 #if LOG_BALANCE_UPDATE
-        DSDLog(@"updating balance after transaction %@",[NSData dataWithUInt256:tx.txHash].reverse.hexString);
+        DSLogPrivate(@"updating balance after transaction %@",[NSData dataWithUInt256:tx.txHash].reverse.hexString);
 #endif
         @autoreleasepool {
             NSMutableSet *spent = [NSMutableSet set];
@@ -721,17 +721,17 @@
             [balanceHistory insertObject:@(balance) atIndex:0];
             prevBalance = balance;
 #if LOG_BALANCE_UPDATE
-            DSDLog(@"===UTXOS===");
+            DSLog(@"===UTXOS===");
             for (NSValue * utxo in utxos) {
                 DSUTXO o;
                 [utxo getValue:&o];
-                DSDLog(@"--%@ (%lu)",[NSData dataWithUInt256:o.hash].reverse.hexString,o.n);
+                DSLogPrivate(@"--%@ (%lu)",[NSData dataWithUInt256:o.hash].reverse.hexString,o.n);
             }
-            DSDLog(@"===Spent Outputs===");
+            DSLog(@"===Spent Outputs===");
             for (NSValue * utxo in spentOutputs) {
                 DSUTXO o;
                 [utxo getValue:&o];
-                DSDLog(@"--%@ (%lu)",[NSData dataWithUInt256:o.hash].reverse.hexString,o.n);
+                DSLogPrivate(@"--%@ (%lu)",[NSData dataWithUInt256:o.hash].reverse.hexString,o.n);
             }
 #endif
         }
@@ -1051,7 +1051,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             
             // check for sufficient total funds before building a smaller transaction
             if (self.balance < amount + [self.wallet.chain feeForTxSize:txSize + cpfpSize]) {
-                DSDLog(@"Insufficient funds. %llu is less than transaction amount:%llu", self.balance,
+                DSLog(@"Insufficient funds. %llu is less than transaction amount:%llu", self.balance,
                        amount + [self.wallet.chain feeForTxSize:txSize + cpfpSize]);
                 return nil;
             }
@@ -1093,7 +1093,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     }
     
     if (balance < amount + feeAmount) { // insufficient funds
-        DSDLog(@"Insufficient funds. %llu is less than transaction amount:%llu", balance, amount + feeAmount);
+        DSLog(@"Insufficient funds. %llu is less than transaction amount:%llu", balance, amount + feeAmount);
         return nil;
     }
     
@@ -1131,7 +1131,11 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         UInt256 h;
         
         if (! tx || (tx.blockHeight == height && tx.timestamp == timestamp)) continue;
-        DSDLog(@"Setting tx %@ height to %d",tx,height);
+#if DEBUG
+        DSLogPrivate(@"Setting tx %@ height to %d",tx,height);
+#else
+        DSLogPrivate(@"Setting tx %@ height to %d",@"<REDACTED>",height);
+#endif
         tx.blockHeight = height;
         tx.timestamp = timestamp;
         
@@ -1326,7 +1330,11 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 {
     NSParameterAssert(transaction);
     
-    DSDLog(@"[DSAccount] registering transaction %@", transaction);
+#if DEBUG
+    DSLogPrivate(@"[DSAccount] registering transaction %@", transaction);
+#else
+    DSLog(@"[DSAccount] registering transaction %@", @"<REDACTED>");
+#endif
     UInt256 txHash = transaction.txHash;
     NSValue *hash = uint256_obj(txHash);
     
@@ -1342,12 +1350,20 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     }
     
     if (self.allTx[hash] != nil) {
-        DSDLog(@"[DSAccount] transaction already registered %@", transaction);
+#if DEBUG
+        DSLogPrivate(@"[DSAccount] transaction already registered %@", transaction);
+#else
+        DSLog(@"[DSAccount] transaction already registered %@", @"<REDACTED>");
+#endif
         return YES;
     }
     
     //TODO: handle tx replacement with input sequence numbers (now replacements appear invalid until confirmation)
-    DSDLog(@"[DSAccount] received unseen transaction %@", transaction);
+#if DEBUG
+    DSLogPrivate(@"[DSAccount] received unseen transaction %@", transaction);
+#else
+    DSLog(@"[DSAccount] received unseen transaction %@", @"<REDACTED>");
+#endif
     if ([self checkIsFirstTransaction:transaction]) _firstTransactionHash = txHash; //it's okay if this isn't really the first, as it will be close enough (500 blocks close)
     self.allTx[hash] = transaction;
     [self.transactions insertObject:transaction atIndex:0];

@@ -241,7 +241,7 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
 
     if ((wordArrayCount % 3) != 0 || wordArrayCount > 24) {
         #if DEBUG
-        DSDLog(@"phrase has wrong number of words");
+        DSLogPrivate(@"phrase has wrong number of words");
         #endif
         return nil;
     }
@@ -252,7 +252,7 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
 
         if (x == (uint32_t)NSNotFound || y == (uint32_t)NSNotFound) {
 #if DEBUG
-            DSDLog(@"phrase contained unknown word: %@ in %lu", wordArray[i*8/11 + (x == (uint32_t)NSNotFound ? 0 : 1)],(unsigned long)language);
+            DSLogPrivate(@"phrase contained unknown word: %@ in %lu", wordArray[i*8/11 + (x == (uint32_t)NSNotFound ? 0 : 1)],(unsigned long)language);
 #endif
             return nil;
         }
@@ -265,7 +265,7 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
     d.length = wordArrayCount*4/3;
 
     if (b != (d.SHA256.u8[0] >> (8 - wordArrayCount/3))) {
-//        DSDLog(@"incorrect phrase, bad checksum");
+//        DSLog(@"incorrect phrase, bad checksum");
         return nil;
     }
 

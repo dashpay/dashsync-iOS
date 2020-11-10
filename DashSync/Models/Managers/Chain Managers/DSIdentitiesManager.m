@@ -207,7 +207,11 @@
                 completion(NO,nil,error);
             });
         }
-        DSDLog(@"Failure in searchIdentityByName %@",error);
+#if DEBUG
+        DSLogPrivate(@"Failure in searchIdentityByName %@",error);
+#else
+        DSLog(@"Failure in searchIdentityByName %@", @"<REDACTED>");
+#endif
     }];
     return call;
 }
@@ -248,7 +252,11 @@
                 completion(NO, nil, @[error]);
             });
         }
-        DSDLog(@"Failure in searchIdentitiesByNamePrefix %@",error);
+#if DEBUG
+        DSLogPrivate(@"Failure in searchIdentitiesByNamePrefix %@",error);
+#else
+        DSLog(@"Failure in searchIdentitiesByNamePrefix %@", @"<REDACTED>");
+#endif
     }];
     return call;
 }
@@ -279,7 +287,11 @@
                 completion(NO, nil, @[error]);
             });
         }
-        DSDLog(@"Failure in searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID %@",error);
+#if DEBUG
+        DSLogPrivate(@"Failure in searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID %@",error);
+#else
+        DSLog(@"Failure in searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID %@", @"<REDACTED>");
+#endif
     }];
 }
 
@@ -294,7 +306,7 @@
     NSAssert(blockchainIdentity, @"We should have already created the blockchain identity at this point in the transaction manager by calling triggerUpdatesForLocalReferences");
     
     
-    //DSDLog(@"Paused Sync at block %d to gather identity information on %@",block.height,blockchainIdentity.uniqueIdString);
+    //DSLogPrivate(@"Paused Sync at block %d to gather identity information on %@",block.height,blockchainIdentity.uniqueIdString);
     [self fetchNeededNetworkStateInformationForBlockchainIdentity:blockchainIdentity];
 }
 

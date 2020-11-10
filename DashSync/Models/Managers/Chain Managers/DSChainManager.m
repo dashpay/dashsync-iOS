@@ -346,7 +346,7 @@
 -(double)combinedSyncProgress
 {
 #if LOG_COMBINED_SYNC_PROGRESS
-    DSDLog(@"combinedSyncProgress breakdown %f %f %f",self.terminalHeaderSyncProgress,self.masternodeManager.masternodeListAndQuorumsSyncProgress,self.chainSyncProgress);
+    DSLog(@"combinedSyncProgress breakdown %f %f %f",self.terminalHeaderSyncProgress,self.masternodeManager.masternodeListAndQuorumsSyncProgress,self.chainSyncProgress);
 #endif
     if ((self.terminalHeaderSyncWeight + self.chainSyncWeight + self.masternodeListSyncWeight) == 0) {
         return 1;
@@ -654,7 +654,7 @@
 
 -(void)chainFinishedSyncingTransactionsAndBlocks:(DSChain*)chain fromPeer:(DSPeer*)peer onMainChain:(BOOL)onMainChain {
     if (onMainChain && peer && (peer == self.peerManager.downloadPeer)) self.lastChainRelayTime = [NSDate timeIntervalSince1970];
-    DSDLog(@"chain finished syncing");
+    DSLog(@"chain finished syncing");
     self.chainSyncStartHeight = 0;
     self.syncPhase = DSChainSyncPhase_Synced;
     [self.transactionManager fetchMempoolFromNetwork];
@@ -668,7 +668,7 @@
 }
 
 -(void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain*)chain {
-    DSDLog(@"Chain finished syncing masternode list and quorums, it should start syncing chain");
+    DSLog(@"Chain finished syncing masternode list and quorums, it should start syncing chain");
     
     if (self.peerManager.connectedPeerCount == 0) {
         if (self.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
@@ -686,7 +686,7 @@
 }
 
 -(void)chain:(DSChain*)chain badBlockReceivedFromPeer:(DSPeer*)peer {
-    DSDLog(@"peer at address %@ is misbehaving",peer.host);
+    DSLog(@"peer at address %@ is misbehaving",peer.host);
     [self.peerManager peerMisbehaving:peer errorMessage:@"Bad block received from peer"];
 }
 
@@ -696,7 +696,7 @@
     
     // call getblocks, unless we already did with the previous block, or we're still downloading the chain
     if (self.chain.lastSyncBlockHeight >= peer.lastBlockHeight && ! uint256_eq(self.chain.lastOrphan.blockHash, block.prevBlock)) {
-        DSDLog(@"%@:%d calling getblocks", peer.host, peer.port);
+        DSLog(@"%@:%d calling getblocks", peer.host, peer.port);
         [peer sendGetblocksMessageWithLocators:[self.chain chainSyncBlockLocatorArray] andHashStop:UINT256_ZERO];
     }
 }
@@ -754,7 +754,7 @@
             if (peer.governanceRequestState == DSGovernanceRequestState_GovernanceObjectVoteHashesReceived) {
                 if (count == 0) {
                     //there were no votes
-                    DSDLog(@"no votes on object, going to next object");
+                    DSLog(@"no votes on object, going to next object");
                     peer.governanceRequestState = DSGovernanceRequestState_GovernanceObjectVotes;
                     [self.governanceSyncManager finishedGovernanceVoteSyncWithPeer:peer];
                 } else {
