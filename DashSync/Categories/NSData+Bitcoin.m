@@ -54,7 +54,7 @@ BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
         OSStatus status = SecItemAdd((__bridge CFDictionaryRef)item, NULL);
         
         if (status == noErr) return YES;
-        DSDLog(@"SecItemAdd error: %@",
+        DSLogPrivate(@"SecItemAdd error: %@",
               [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription);
         return NO;
     }
@@ -63,7 +63,7 @@ BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
         OSStatus status = SecItemDelete((__bridge CFDictionaryRef)query);
         
         if (status == noErr) return YES;
-        DSDLog(@"SecItemDelete error: %@",
+        DSLogPrivate(@"SecItemDelete error: %@",
               [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription);
         return NO;
     }
@@ -73,7 +73,7 @@ BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
     OSStatus status = SecItemUpdate((__bridge CFDictionaryRef)query, (__bridge CFDictionaryRef)update);
     
     if (status == noErr) return YES;
-    DSDLog(@"SecItemUpdate error: %@",
+    DSLogPrivate(@"SecItemUpdate error: %@",
           [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription);
     return NO;
 }
@@ -92,7 +92,7 @@ BOOL hasKeychainData(NSString *key, NSError **error)
     
     if (status == errSecItemNotFound) return NO;
     if (status == noErr) return YES;
-    DSDLog(@"SecItemCopyMatching error: %@",
+    DSLogPrivate(@"SecItemCopyMatching error: %@",
           [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription);
     if (error) *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil];
     return NO;
@@ -109,7 +109,7 @@ NSData *getKeychainData(NSString *key, NSError **error)
     
     if (status == errSecItemNotFound) return nil;
     if (status == noErr) return CFBridgingRelease(result);
-    DSDLog(@"SecItemCopyMatching error: %@",
+    DSLogPrivate(@"SecItemCopyMatching error: %@",
           [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription);
     if (error) *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil];
     return nil;
@@ -175,7 +175,7 @@ NSDictionary *getKeychainDict(NSString *key, NSArray *classes, NSError **error)
         set = [set setByAddingObjectsFromArray:classes];
         NSDictionary * dictionary = [NSKeyedUnarchiver unarchivedObjectOfClasses:set fromData:d error:error];
         if (*error) {
-            DSDLog(@"error retrieving dictionary from keychain %@",*error);
+            DSLogPrivate(@"error retrieving dictionary from keychain %@",*error);
         }
         return dictionary;
     //}
@@ -202,7 +202,7 @@ NSArray *getKeychainArray(NSString *key, NSArray *classes, NSError **error)
         set = [set setByAddingObjectsFromArray:classes];
         NSArray * array = [NSKeyedUnarchiver unarchivedObjectOfClasses:set fromData:d error:error];
         if (*error) {
-            DSDLog(@"error retrieving array from keychain %@",*error);
+            DSLogPrivate(@"error retrieving array from keychain %@",*error);
         }
         return array;
     }

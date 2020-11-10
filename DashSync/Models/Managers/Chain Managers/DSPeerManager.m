@@ -60,7 +60,7 @@
 #define PEER_LOGGING 1
 
 #if ! PEER_LOGGING
-#define DSDLog(...)
+#define DSLog(...)
 #endif
 
 #define TESTNET_DNS_SEEDS @[@"testnet-seed.dashdot.io"]
@@ -288,7 +288,7 @@
                     struct addrinfo hints = { 0, AF_UNSPEC, SOCK_STREAM, 0, 0, 0, NULL, NULL }, *servinfo, *p;
                     UInt128 addr = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
                     
-                    DSDLog(@"DNS lookup %@", [dnsSeeds objectAtIndex:i]);
+                    DSLog(@"DNS lookup %@", [dnsSeeds objectAtIndex:i]);
                     NSString * dnsSeed = [dnsSeeds objectAtIndex:i];
                     
                     if (getaddrinfo([dnsSeed UTF8String], servname.UTF8String, &hints, &servinfo) == 0) {
@@ -313,7 +313,7 @@
                         
                         freeaddrinfo(servinfo);
                     } else {
-                        DSDLog(@"failed getaddrinfo for %@", dnsSeeds[i]);
+                        DSLog(@"failed getaddrinfo for %@", dnsSeeds[i]);
                     }
                 });
             }
@@ -336,7 +336,7 @@
                     uint32_t ip = ntohl(addrV4.s_addr);
                     ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
                 } else {
-                    DSDLog(@"invalid address");
+                    DSLog(@"invalid address");
                 }
                 [_peers addObject:[[DSPeer alloc] initWithAddress:ipAddress port:port?[port intValue]:self.chain.standardPort onChain:self.chain
                                                         timestamp:now - (WEEK_TIME_INTERVAL + arc4random_uniform(WEEK_TIME_INTERVAL))
@@ -420,14 +420,14 @@
         }];
     }
     //    for (DSPeer * peer in _peers) {
-    //        DSDLog(@"%@:%d lastRequestedMasternodeList(%f) lastRequestedGovernanceSync(%f)",peer.host,peer.port,peer.lastRequestedMasternodeList, peer.lastRequestedGovernanceSync);
+    //        DSLog(@"%@:%d lastRequestedMasternodeList(%f) lastRequestedGovernanceSync(%f)",peer.host,peer.port,peer.lastRequestedMasternodeList, peer.lastRequestedGovernanceSync);
     //    }
-    DSDLog(@"peers sorted");
+    DSLog(@"peers sorted");
 }
 
 - (void)savePeers
 {
-    DSDLog(@"[DSPeerManager] save peers");
+    DSLog(@"[DSPeerManager] save peers");
     NSMutableSet *peers = [[self.peers.set setByAddingObjectsFromSet:self.misbehavingPeers] mutableCopy];
     NSMutableSet *addrs = [NSMutableSet set];
     
@@ -534,12 +534,12 @@
 {
     if (self.downloadPeer.needsFilterUpdate) return;
     self.downloadPeer.needsFilterUpdate = YES;
-    DSDLog(@"filter update needed, waiting for pong");
+    DSLog(@"filter update needed, waiting for pong");
     
     [self.downloadPeer sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so we include already sent tx
         if (! success) return;
         //we are on chainPeerManagerQueue
-        DSDLog(@"updating filter with newly created wallet addresses");
+        DSLog(@"updating filter with newly created wallet addresses");
         [self.transactionManager clearTransactionsBloomFilter];
         
         if (self.chain.lastSyncBlockHeight < self.chain.estimatedBlockHeight) { // if we're syncing, only update download peer
@@ -714,7 +714,7 @@
                         
                         [self.mutableConnectedPeers addObject:peer];
                         
-                        DSDLog(@"Will attempt to connect to peer %@", peer.host);
+                        DSLog(@"Will attempt to connect to peer %@", peer.host);
                         
                         [peer connect];
                     }
@@ -793,7 +793,7 @@
     
     if (peer.timestamp > now + 2*60*60 || peer.timestamp < now - 2*60*60) peer.timestamp = now; //timestamp sanity check
     self.connectFailures = 0;
-    DSDLog(@"%@:%d connected with lastblock %d", peer.host, peer.port, peer.lastBlockHeight);
+    DSLog(@"%@:%d connected with lastblock %d", peer.host, peer.port, peer.lastBlockHeight);
     
     // drop peers that don't carry full blocks, or aren't synced yet
     // TODO: XXXX does this work with 0.11 pruned nodes?
@@ -820,28 +820,28 @@
         }
         if (self.chain.estimatedBlockHeight >= peer.lastBlockHeight || self.chain.lastSyncBlockHeight >= peer.lastBlockHeight) {
             if (self.chain.lastSyncBlockHeight < self.chain.estimatedBlockHeight) {
-                DSDLog(@"self.chain.lastSyncBlockHeight %u, self.chain.estimatedBlockHeight %u",self.chain.lastSyncBlockHeight,self.chain.estimatedBlockHeight);
+                DSLog(@"self.chain.lastSyncBlockHeight %u, self.chain.estimatedBlockHeight %u",self.chain.lastSyncBlockHeight,self.chain.estimatedBlockHeight);
                 return; // don't get mempool yet if we're syncing
             }
 
             [peer sendPingMessageWithPongHandler:^(BOOL success) {
                 if (! success) {
-                    DSDLog(@"[DSTransactionManager] fetching mempool ping on connection failure peer %@",peer.host);
+                    DSLog(@"[DSTransactionManager] fetching mempool ping on connection failure peer %@",peer.host);
                     return;
                 }
-                DSDLog(@"[DSTransactionManager] fetching mempool ping on connection success peer %@",peer.host);
+                DSLog(@"[DSTransactionManager] fetching mempool ping on connection success peer %@",peer.host);
                 [peer sendMempoolMessage:self.transactionManager.publishedTx.allKeys completion:^(BOOL success,BOOL needed,BOOL interruptedByDisconnect) {
                     if (! success) {
                         if (!needed) {
-                            DSDLog(@"[DSTransactionManager] fetching mempool message on connection not needed (already happening) peer %@",peer.host);
+                            DSLog(@"[DSTransactionManager] fetching mempool message on connection not needed (already happening) peer %@",peer.host);
                         } else if (interruptedByDisconnect) {
-                            DSDLog(@"[DSTransactionManager] fetching mempool message on connection failure peer %@",peer.host);
+                            DSLog(@"[DSTransactionManager] fetching mempool message on connection failure peer %@",peer.host);
                         } else {
-                            DSDLog(@"[DSTransactionManager] fetching mempool message on connection failure disconnect peer %@",peer.host);
+                            DSLog(@"[DSTransactionManager] fetching mempool message on connection failure disconnect peer %@",peer.host);
                         }
                         return;
                     }
-                    DSDLog(@"[DSTransactionManager] fetching mempool message on connection success peer %@",peer.host);
+                    DSLog(@"[DSTransactionManager] fetching mempool message on connection success peer %@",peer.host);
                     peer.synced = YES;
                     [self.transactionManager removeUnrelayedTransactionsFromPeer:peer];
                     if (!self.masternodeList) {
@@ -905,7 +905,7 @@
 
 - (void)peer:(DSPeer *)peer disconnectedWithError:(NSError *)error
 {
-    DSDLog(@"%@:%d disconnected%@%@", peer.host, peer.port, (error ? @", " : @""), (error ? error : @""));
+    DSLog(@"%@:%d disconnected%@%@", peer.host, peer.port, (error ? @", " : @""), (error ? error : @""));
     
     if ([error.domain isEqual:@"DashSync"] && error.code != DASH_PEER_TIMEOUT_CODE) {
         [self peerMisbehaving:peer errorMessage:error.localizedDescription]; // if it's protocol error other than timeout, the peer isn't following the rules
@@ -961,7 +961,7 @@
 - (void)peer:(DSPeer *)peer relayedPeers:(NSArray *)peers
 {
     if (self.masternodeList) return;
-    DSDLog(@"%@:%d relayed %d peer(s)", peer.host, peer.port, (int)peers.count);
+    DSLog(@"%@:%d relayed %d peer(s)", peer.host, peer.port, (int)peers.count);
     [self.peers addObjectsFromArray:peers];
     [self.peers minusSet:self.misbehavingPeers];
     [self sortPeers];

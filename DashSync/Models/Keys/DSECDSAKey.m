@@ -80,9 +80,9 @@ void CKDpriv(UInt256 *k, UInt256 *c, uint32_t i)
     else DSSecp256k1PointGen((DSECPoint *)buf, k);
     
     *(uint32_t *)&buf[sizeof(DSECPoint)] = CFSwapInt32HostToBig(i);
-    //DSDLog(@"c is %@, buf is %@",uint256_hex(*c),[NSData dataWithBytes:buf length:sizeof(DSECPoint) + sizeof(i)].hexString);
+    //DSLogPrivate(@"c is %@, buf is %@",uint256_hex(*c),[NSData dataWithBytes:buf length:sizeof(DSECPoint) + sizeof(i)].hexString);
     HMAC(&I, SHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf)); // I = HMAC-SHA512(c, k|P(k) || i)
-    //DSDLog(@"c now is %@, I now is %@",uint256_hex(*c),uint512_hex(I));
+    //DSLogPrivate(@"c now is %@, I now is %@",uint256_hex(*c),uint512_hex(I));
     DSSecp256k1ModAdd(k, (UInt256 *)&I); // k = IL + k (mod n)
     *c = *(UInt256 *)&I.u8[sizeof(UInt256)]; // c = IR
     
@@ -621,7 +621,7 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
 - (NSData *)sign:(UInt256)md
 {
     if (uint256_is_zero(_seckey)) {
-        DSDLog(@"%s: can't sign with a public key", __func__);
+        DSLog(@"%s: can't sign with a public key", __func__);
         return nil;
     }
 
@@ -667,7 +667,7 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
 - (NSData *)compactSign:(UInt256)md
 {
     if (uint256_is_zero(_seckey)) {
-        DSDLog(@"%s: can't sign with a public key", __func__);
+        DSLog(@"%s: can't sign with a public key", __func__);
         return nil;
     }
     

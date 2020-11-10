@@ -314,7 +314,7 @@
     if (!_knownGovernanceVoteHashesForExistingGovernanceVotes) _knownGovernanceVoteHashesForExistingGovernanceVotes = [NSMutableOrderedSet orderedSet];
     for (DSGovernanceVoteEntity * governanceVoteEntity in governanceVoteEntities) {
         DSGovernanceVote * governanceVote = [governanceVoteEntity governanceVote];
-        DSDLog(@"%@ : %@ -> %d/%d",self.identifier,[NSData dataWithUInt256:governanceVote.masternode.simplifiedMasternodeEntryHash].shortHexString,governanceVote.outcome, governanceVote.signal);
+        DSLog(@"%@ : %@ -> %d/%d",self.identifier,[NSData dataWithUInt256:governanceVote.masternode.simplifiedMasternodeEntryHash].shortHexString,governanceVote.outcome, governanceVote.signal);
         [_knownGovernanceVoteHashesForExistingGovernanceVotes addObject:[NSData dataWithUInt256:governanceVote.governanceVoteHash]];
         [_governanceVotes addObject:governanceVote];
     }
@@ -402,7 +402,7 @@
     
     @synchronized(self) {
         if (!(([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GovernanceVotes) == DSSyncType_GovernanceVotes)) return;
-        DSDLog(@"peer relayed governance vote hashes");
+        DSLog(@"peer relayed governance vote hashes");
         if (!self.totalGovernanceVoteCount) {
             [self.delegate governanceObject:self didReceiveUnknownHashes:governanceVoteHashes fromPeer:peer];
         }
@@ -443,11 +443,11 @@
         }
         self.knownGovernanceVoteHashes = rHashes;
         self.needsRequestsGovernanceVoteHashEntities = nil; //just so it can lazy load again
-        DSDLog(@"-> %lu - %lu",(unsigned long)[self.knownGovernanceVoteHashes count],(unsigned long)self.totalGovernanceVoteCount);
+        DSLog(@"-> %lu - %lu",(unsigned long)[self.knownGovernanceVoteHashes count],(unsigned long)self.totalGovernanceVoteCount);
         if ([self.knownGovernanceVoteHashes count] >= self.totalGovernanceVoteCount) {
             //we have more than we should have
             //for a vote it doesn't matter and will happen often
-            DSDLog(@"All governance vote hashes received for object %@",self.identifier);
+            DSLog(@"All governance vote hashes received for object %@",self.identifier);
             //        [self.managedObjectContext performBlockAndWait:^{
             //            [DSGovernanceVoteHashEntity setContext:self.managedObjectContext];
             //            [DSGovernanceVoteHashEntity removeOldest:countAroundNow - self.totalGovernanceVoteCount hashesNotIn:governanceVoteHashes onChain:[self.chain chainEntityInContext:context]];

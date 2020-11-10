@@ -179,11 +179,11 @@
             if (![derivationPath hasExtendedPublicKey]) continue;
             DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:derivationPath inContext:self.managedObjectContext];
             
-            //DSDLog(@"addresses for derivation path entity %@",derivationPathEntity.addresses);
+            //DSLogPrivate(@"addresses for derivation path entity %@",derivationPathEntity.addresses);
             [derivationPathEntities addObject:derivationPathEntity];
         }
 //        NSArray<DSSpecialTransactionEntity *>* specialTransactionEntitiesA = [DSSpecialTransactionEntity allObjectsWithPrefetch:@[@"addresses"] inContext:context];
-        //DSDLog(@"%@",[specialTransactionEntitiesA firstObject].addresses.firstObject);
+        //DSLogPrivate(@"%@",[specialTransactionEntitiesA firstObject].addresses.firstObject);
         NSArray<DSSpecialTransactionEntity *>* specialTransactionEntities = [DSSpecialTransactionEntity objectsInContext:context matching:@"(ANY addresses.derivationPath IN %@)",derivationPathEntities];
         for (DSSpecialTransactionEntity *e in specialTransactionEntities) {
                 DSTransaction *transaction = [e transactionForChain:self.wallet.chain];
@@ -363,7 +363,11 @@
         DSTransaction *tx = [self transactionForHash:uint256_data_from_obj(hash).UInt256];
         
         if (! tx || (tx.blockHeight == height && tx.timestamp == timestamp)) continue;
-        DSDLog(@"Setting tx %@ height to %d",tx,height);
+#if DEBUG
+        DSLogPrivate(@"Setting tx %@ height to %d",tx,height);
+#else
+        DSLog(@"Setting tx %@ height to %d",@"<REDACTED>",height);
+#endif
         tx.blockHeight = height;
         tx.timestamp = timestamp;
         

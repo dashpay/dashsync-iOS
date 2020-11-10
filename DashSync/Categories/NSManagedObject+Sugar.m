@@ -223,7 +223,7 @@ static NSUInteger _fetchBatchSize = 100;
     
     [context performBlockAndWait:^{
         a = [context executeFetchRequest:request error:&error];
-        if (error) DSDLog(@"%s: %@", __func__, error);
+        if (error) DSLog(@"%s: %@", __func__, error);
     }];
     
     return a;
@@ -300,7 +300,7 @@ static NSUInteger _fetchBatchSize = 100;
     
     [context performBlockAndWait:^{
         count = [context countForFetchRequest:request error:&error];
-        if (error) DSDLog(@"%s: %@", __func__, error);
+        if (error) DSLog(@"%s: %@", __func__, error);
     }];
     
     return count;
@@ -448,7 +448,7 @@ static NSUInteger _fetchBatchSize = 100;
 //                [self.context obtainPermanentIDsForObjects:self.context.registeredObjects.allObjects error:nil];
 //
 //                if (! [self.context save:&error]) { // persist changes
-//                    DSDLog(@"%s: %@", __func__, error);
+//                    DSLog(@"%s: %@", __func__, error);
 //#if DEBUG
 //                    abort();
 //#endif
@@ -476,7 +476,7 @@ static NSUInteger _fetchBatchSize = 100;
 //                [self.mainContext obtainPermanentIDsForObjects:self.mainContext.registeredObjects.allObjects error:nil];
 //                
 //                if (! [self.mainContext save:&error]) { // persist changes
-//                    DSDLog(@"%s: %@", __func__, error);
+//                    DSLog(@"%s: %@", __func__, error);
 //#if DEBUG
 //                    abort();
 //#endif

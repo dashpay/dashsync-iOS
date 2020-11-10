@@ -253,7 +253,7 @@
     if ([self.scheme isEqualToString:@"dash"]) {
         BOOL valid = ([self.paymentAddress isValidDashAddressOnChain:self.chain] || (self.r && [NSURL URLWithString:self.r])) ? YES : NO;
         if (!valid) {
-            DSDLog(@"Not a valid dash request");
+            DSLog(@"Not a valid dash request");
         }
         return valid;
     }
@@ -261,7 +261,7 @@
     else if ([self.scheme isEqualToString:@"bitcoin"]) {
         BOOL valid = ([self.paymentAddress isValidBitcoinAddressOnChain:self.chain] || (self.r && [NSURL URLWithString:self.r])) ? YES : NO;
         if (!valid) {
-            DSDLog(@"Not a valid bitcoin request");
+            DSLog(@"Not a valid bitcoin request");
             
         }
         return valid;
@@ -290,7 +290,7 @@
         }];
         BOOL valid = ([self.paymentAddress isValidDashAddressOnChain:self.chain] || (self.r && [NSURL URLWithString:self.r]) || friendshipDerivationPath) ? YES : NO;
         if (!valid) {
-            DSDLog(@"Not a valid dash request");
+            DSLog(@"Not a valid dash request");
         }
         return valid;
     }
@@ -298,7 +298,7 @@
     else if ([self.scheme isEqualToString:@"bitcoin"]) {
         BOOL valid = ([self.paymentAddress isValidBitcoinAddressOnChain:self.chain] || (self.r && [NSURL URLWithString:self.r])) ? YES : NO;
         if (!valid) {
-            DSDLog(@"Not a valid bitcoin request");
+            DSLog(@"Not a valid bitcoin request");
             
         }
         return valid;
@@ -474,7 +474,7 @@ completion:(void (^)(DSPaymentProtocolRequest *req, NSError *error))completion
         }
         
         if (! request) {
-            DSDLog(@"unexpected response from %@:\n%@", req.URL.host,
+            DSLog(@"unexpected response from %@:\n%@", req.URL.host,
                   [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             completion(nil, [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:
                              [NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
@@ -524,7 +524,7 @@ completion:(void (^)(DSPaymentProtocolRequest *req, NSError *error))completion
         }
 
         if (! ack) {
-            DSDLog(@"unexpected response from %@:\n%@", req.URL.host,
+            DSLog(@"unexpected response from %@:\n%@", req.URL.host,
                   [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             if (completion) {
                 completion(nil, [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:

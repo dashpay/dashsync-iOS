@@ -745,7 +745,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 //        
 //        DSBlockchainIdentityUpdateTransition * blockchainIdentityResetTransaction = [[DSBlockchainIdentityUpdateTransition alloc] initWithBlockchainIdentityResetTransactionVersion:1 registrationTransactionHash:self.registrationTransitionHash previousBlockchainIdentityTransactionHash:self.lastTransitionHash replacementPublicKeyHash:[privateKey.publicKeyData hash160] creditFee:1000 onChain:self.chain];
 //        [blockchainIdentityResetTransaction signPayloadWithKey:oldPrivateKey];
-//        DSDLog(@"%@",blockchainIdentityResetTransaction.toData);
+//        DSLogPrivate(@"%@",blockchainIdentityResetTransaction.toData);
 //        completion(blockchainIdentityResetTransaction);
 //    }];
 //}
@@ -1107,7 +1107,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 }
             } else {
                 NSAssert(FALSE, @"these should really match up");
-                DSDLog(@"these should really match up");
+                DSLog(@"these should really match up");
                 return;
             }
         } else {
@@ -1144,7 +1144,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 }
             } else {
                 NSAssert(FALSE, @"these should really match up");
-                DSDLog(@"these should really match up");
+                DSLog(@"these should really match up");
                 return;
             }
         } else {
@@ -1156,7 +1156,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         NSDictionary * keyDictionary = @{@(DSBlockchainIdentityKeyDictionary_Key):key, @(DSBlockchainIdentityKeyDictionary_KeyType):@(type), @(DSBlockchainIdentityKeyDictionary_KeyStatus):@(status)};
         [self.keyInfoDictionaries setObject:keyDictionary forKey:@(index)];
     } else {
-        DSDLog(@"these should really match up");
+        DSLog(@"these should really match up");
     }
 }
 
@@ -1451,7 +1451,17 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     __weak typeof(self) weakSelf = self;
     if (completion) {
         dispatch_group_notify(dispatchGroup, dispatch_get_main_queue(), ^{
-            DSDLog(@"Completed fetching of blockchain identity information for user %@ (query %lu - failures %lu)",self.currentDashpayUsername?self.currentDashpayUsername:self.uniqueIdString,(unsigned long)queryStep,failureStep);
+#if DEBUG
+            DSLogPrivate(@"Completed fetching of blockchain identity information for user %@ (query %lu - failures %lu)",
+                         self.currentDashpayUsername ? self.currentDashpayUsername : self.uniqueIdString,
+                         (unsigned long)queryStep,
+                         failureStep);
+#else
+            DSLog(@"Completed fetching of blockchain identity information for user %@ (query %lu - failures %lu)",
+                  @"<REDACTED>",
+                  (unsigned long)queryStep,
+                  failureStep);
+#endif /* DEBUG */
             if (!(failureStep & DSBlockchainIdentityQueryStep_ContactRequests)) {
                 __strong typeof(weakSelf) strongSelf = weakSelf;
                 if (!strongSelf) {
@@ -1726,7 +1736,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             }];
             
         } else if (contract.contractState == DPContractState_Registered || contract.contractState == DPContractState_Registering) {
-            DSDLog(@"Fetching contract for verification %@",contract.base58ContractId);
+            DSLog(@"Fetching contract for verification %@",contract.base58ContractId);
             [self.DAPINetworkService fetchContractForId:uint256_data(contract.contractId) success:^(NSDictionary * _Nonnull contractDictionary) {
                 __strong typeof(weakContract) strongContract = weakContract;
                 if (!weakContract) {
@@ -1743,7 +1753,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                     if (![set1 isEqualToSet:set2]) {
                         [strongContract setContractState:DPContractState_NotRegistered inContext:context];
                     }
-                    DSDLog(@"Contract dictionary is %@",contractDictionary);
+                    DSLog(@"Contract dictionary is %@",contractDictionary);
                 }
             } failure:^(NSError * _Nonnull error) {
                 NSString * debugDescription1 = [error.userInfo objectForKey:@"NSDebugDescription"];
@@ -1968,7 +1978,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 }
 
 -(void)registerUsernamesAtStage:(DSBlockchainIdentityUsernameStatus)blockchainIdentityUsernameStatus inContext:(NSManagedObjectContext*)context completion:(void (^ _Nullable)(BOOL success, NSError * error))completion {
-    DSDLog(@"registerUsernamesAtStage %lu",(unsigned long)blockchainIdentityUsernameStatus);
+    DSLog(@"registerUsernamesAtStage %lu",(unsigned long)blockchainIdentityUsernameStatus);
     switch (blockchainIdentityUsernameStatus) {
         case DSBlockchainIdentityUsernameStatus_Initial:
         {
@@ -2075,7 +2085,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 });
                 
             } failure:^(NSError * _Nonnull error) {
-                DSDLog(@"%@", error);
+                DSLogPrivate(@"%@", error);
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (completion) {
@@ -2121,7 +2131,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
                 });
                 
             } failure:^(NSError * _Nonnull error) {
-                DSDLog(@"%@", error);
+                DSLogPrivate(@"%@", error);
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (completion) {
@@ -2460,7 +2470,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             }
             return;
         }
-        DSDLog(@"Contract dictionary is %@",contractDictionary);
+        DSLog(@"Contract dictionary is %@",contractDictionary);
         if ([contractDictionary isKindOfClass:[NSDictionary class]] && [contractDictionary[@"$id"] isEqualToData:uint256_data(contract.contractId)]) {
             [contract setContractState:DPContractState_Registered inContext:context];
             if (completion) {
@@ -2715,7 +2725,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         
         [self sendNewFriendRequestToBlockchainIdentity:potentialContactBlockchainIdentity completion:completion];
     } failure:^(NSError *_Nonnull error) {
-        DSDLog(@"%@", error);
+        DSLogPrivate(@"%@", error);
         
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -3744,14 +3754,22 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             blockchainIdentityKeyPathEntity.keyStatus = status;
             if (key.privateKeyData) {
                 setKeychainData(key.privateKeyData, [self identifierForKeyAtPath:path fromDerivationPath:derivationPath], YES);
-                DSDLog(@"Saving key at %@ for user %@",[self identifierForKeyAtPath:path fromDerivationPath:derivationPath],self.currentDashpayUsername);
+#if DEBUG
+                DSLogPrivate(@"Saving key at %@ for user %@",[self identifierForKeyAtPath:path fromDerivationPath:derivationPath],self.currentDashpayUsername);
+#else
+                DSLog(@"Saving key at %@ for user %@", @"<REDACTED>", @"<REDACTED>");
+#endif
             } else {
                 DSKey * privateKey = [self derivePrivateKeyAtIndexPath:path ofType:key.keyType];
                 NSAssert([privateKey.publicKeyData isEqualToData:key.publicKeyData], @"The keys don't seem to match up");
                 NSData * privateKeyData = privateKey.privateKeyData;
                 NSAssert(privateKeyData, @"Private key data should exist");
                 setKeychainData(privateKeyData, [self identifierForKeyAtPath:path fromDerivationPath:derivationPath], YES);
-                DSDLog(@"Saving key after rederivation %@ for user %@",[self identifierForKeyAtPath:path fromDerivationPath:derivationPath],self.currentDashpayUsername);
+#if DEBUG
+                DSLogPrivate(@"Saving key after rederivation %@ for user %@",[self identifierForKeyAtPath:path fromDerivationPath:derivationPath],self.currentDashpayUsername);
+#else
+                DSLog(@"Saving key after rederivation %@ for user %@", @"<REDACTED>", @"<REDACTED>");
+#endif
             }
 
             blockchainIdentityKeyPathEntity.path = path;
@@ -3760,7 +3778,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
             [blockchainIdentityEntity addKeyPathsObject:blockchainIdentityKeyPathEntity];
             [context ds_save];
         } else {
-            DSDLog(@"Already had saved this key %@",path);
+#if DEBUG
+            DSLogPrivate(@"Already had saved this key %@",path);
+#else
+            DSLog(@"Already had saved this key %@", @"<REDACTED>");
+#endif
         }
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentityDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain,DSBlockchainIdentityKey:self,DSBlockchainIdentityUpdateEvents:@[DSBlockchainIdentityUpdateEventKeyUpdate]}];

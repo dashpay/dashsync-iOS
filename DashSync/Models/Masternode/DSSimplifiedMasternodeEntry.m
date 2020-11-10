@@ -19,7 +19,7 @@
 #define LOG_SMNE_CHANGES 0
 
 #if LOG_SMNE_CHANGES
-#define DSDSMNELog(s, ...) DSDLog(s, ##__VA_ARGS__)
+#define DSDSMNELog(s, ...) DSLog(s, ##__VA_ARGS__)
 #else
 #define DSDSMNELog(s, ...)
 #endif

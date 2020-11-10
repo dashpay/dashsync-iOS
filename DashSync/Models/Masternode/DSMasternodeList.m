@@ -112,7 +112,7 @@ inline static int ceil_log2(int x)
     [tentativeMasternodeList addEntriesFromDictionary:addedMasternodes];
     
 #if LOG_DIFFS_BETWEEN_MASTERNODE_LISTS
-    DSDLog(@"MNDiff: %lu added, %lu removed, %lu modified ",(unsigned long)addedMasternodes.count,(unsigned long)removedMasternodeHashes.count,(unsigned long)modifiedMasternodes.count);
+    DSLog(@"MNDiff: %lu added, %lu removed, %lu modified ",(unsigned long)addedMasternodes.count,(unsigned long)removedMasternodeHashes.count,(unsigned long)modifiedMasternodes.count);
 #endif
     
     for (NSData * data in modifiedMasternodes) {
@@ -269,7 +269,7 @@ inline static int ceil_log2(int x)
     return [self masternodesForQuorumModifier:quorumModifier quorumCount:quorumCount blockHeightLookup:^uint32_t(UInt256 blockHash) {
         DSMerkleBlock * block = [self.chain blockForBlockHash:blockHash];
         if (!block) {
-            DSDLog(@"Unknown block %@",uint256_reverse_hex(blockHash));
+            DSLog(@"Unknown block %@",uint256_reverse_hex(blockHash));
             NSAssert(block, @"block should be known");
         }
         return block.height;

@@ -149,7 +149,11 @@
 - (void)addTransactionToPublishList:(DSTransaction *)transaction
 {
     if (transaction.blockHeight == TX_UNCONFIRMED) {
-        DSDLog(@"[DSTransactionManager] add transaction to publish list %@ (%@)", transaction, transaction.toData);
+#if DEBUG
+        DSLogPrivate(@"[DSTransactionManager] add transaction to publish list %@ (%@)", transaction, transaction.toData);
+#else
+        DSLog(@"[DSTransactionManager] add transaction to publish list");
+#endif
         if (!self.publishedTx[uint256_obj(transaction.txHash)]) {
             self.publishedTx[uint256_obj(transaction.txHash)] = transaction;
             
@@ -168,7 +172,11 @@
 
 - (void)publishTransaction:(DSTransaction *)transaction completion:(void (^)(NSError *error))completion
 {
-    DSDLog(@"[DSTransactionManager] publish transaction %@ %@", transaction,transaction.toData);
+#if DEBUG
+    DSLogPrivate(@"[DSTransactionManager] publish transaction %@ %@", transaction,transaction.toData);
+#else
+    DSLog(@"[DSTransactionManager] publish transaction");
+#endif
     if ([transaction transactionTypeRequiresInputs] && !transaction.isSigned) {
         if (completion) {
             [[DSEventManager sharedEventManager] saveEvent:@"transaction_manager:not_signed"];
@@ -240,15 +248,15 @@
     [self.removeUnrelayedTransactionsLocalRequests addObject:peer.location];
     // don't remove transactions until we're connected to maxConnectCount peers
     if (self.removeUnrelayedTransactionsLocalRequests.count < 2) {
-        DSDLog(@"[DSTransactionManager] not removing unrelayed transactions until we have synced mempools from 2 peers %lu",(unsigned long)self.peerManager.connectedPeerCount);
+DSLog(@"[DSTransactionManager] not removing unrelayed transactions until we have synced mempools from 2 peers %lu",(unsigned long)self.peerManager.connectedPeerCount);
         return;
     }
     
     for (DSPeer *p in self.peerManager.connectedPeers) { // don't remove tx until all peers have finished relaying their mempools
-        DSDLog(@"[DSTransactionManager] not removing unrelayed transactions because %@ is not synced yet",p.host);
+DSLog(@"[DSTransactionManager] not removing unrelayed transactions because %@ is not synced yet",p.host);
         if (! p.synced) return;
     }
-    DSDLog(@"[DSTransactionManager] removing unrelayed transactions");
+DSLog(@"[DSTransactionManager] removing unrelayed transactions");
     NSMutableSet * transactionsSet = [NSMutableSet set];
     NSMutableSet * specialTransactionsSet = [NSMutableSet set];
     
@@ -269,9 +277,9 @@
     for (DSTransaction *transaction in transactionsSet) {
         if (transaction.blockHeight != TX_UNCONFIRMED) continue;
         hash = uint256_obj(transaction.txHash);
-        DSDLog(@"checking published callback -> %@", self.publishedCallback[hash]?@"OK":@"no callback");
+DSLog(@"checking published callback -> %@", self.publishedCallback[hash]?@"OK":@"no callback");
         if (self.publishedCallback[hash] != NULL) continue;
-        DSDLog(@"transaction relays count %lu, transaction requests count %lu",(unsigned long)[self.txRelays[hash] count],(unsigned long)[self.txRequests[hash] count]);
+DSLog(@"transaction relays count %lu, transaction requests count %lu",(unsigned long)[self.txRelays[hash] count],(unsigned long)[self.txRequests[hash] count]);
         DSAccount * account = [self.chain firstAccountThatCanContainTransaction:transaction];
         if (!account && ![specialTransactionsSet containsObject:transaction]) {
             //the following might be needed, it was in evopayments branch
@@ -284,7 +292,11 @@
         if ([self.txRelays[hash] count] == 0 && [self.txRequests[hash] count] == 0) {
             // if this is for a transaction we sent, and it wasn't already known to be invalid, notify user of failure
             if (! rescan && account && [account amountSentByTransaction:transaction] > 0 && [account transactionIsValid:transaction]) {
-                DSDLog(@"failed transaction %@", transaction);
+#if DEBUG
+                DSLogPrivate(@"failed transaction %@", transaction);
+#else
+                DSLog(@"failed transaction <REDACTED>");
+#endif
                 rescan = notify = YES;
                 
                 for (NSValue *hash in transaction.inputHashes) { // only recommend a rescan if all inputs are confirmed
@@ -294,17 +306,33 @@
                     break;
                 }
             } else if (!account) {
-                DSDLog(@"serious issue in masternode transaction %@", transaction);
+#if DEBUG
+                DSLogPrivate(@"serious issue in masternode transaction %@", transaction);
+#else
+                DSLog(@"serious issue in masternode transaction <REDACTED>");
+#endif
             } else {
-                DSDLog(@"serious issue in transaction %@", transaction);
+#if DEBUG
+                DSLogPrivate(@"serious issue in transaction %@", transaction);
+#else
+                DSLog(@"serious issue in transaction <REDACTED>");
+#endif
             }
-            DSDLog(@"removing transaction %@", transaction);
+#if DEBUG
+            DSLogPrivate(@"removing transaction %@", transaction);
+#else
+            DSLog(@"removing transaction <REDACTED>");
+#endif
             [transactionsToBeRemoved addObject:transaction];
             
         }
         else if ([self.txRelays[hash] count] < self.peerManager.maxConnectCount) {
             // set timestamp 0 to mark as unverified
-            DSDLog(@"setting transaction as unverified %@", transaction);
+#if DEBUG
+            DSLogPrivate(@"setting transaction as unverified %@", transaction);
+#else
+            DSLog(@"setting transaction as unverified <REDACTED>");
+#endif
             [self.chain setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTransactionHashes:@[hash]];
         }
     }
@@ -625,7 +653,11 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
                     [[DSPaymentProtocolPayment alloc] initWithMerchantData:protocolRequest.details.merchantData
                                                               transactions:@[tx] refundToAmounts:@[@(refundAmount)] refundToScripts:@[refundScript] memo:nil onChain:account.wallet.chain];
                     
-                    DSDLog(@"posting payment to: %@", protocolRequest.details.paymentURL);
+#if DEBUG
+                    DSLogPrivate(@"posting payment to: %@", protocolRequest.details.paymentURL);
+#else
+                    DSLog(@"posting payment to: <REDACTED>");
+#endif
                     
                     [DSPaymentRequest postPayment:payment scheme:@"dash" to:protocolRequest.details.paymentURL onChain:account.wallet.chain timeout:20.0
                                        completion:^(DSPaymentProtocolACK *ack, NSError *error) {
@@ -724,21 +756,21 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 // MARK: - Mempools Sync
 
 - (void)fetchMempoolFromPeer:(DSPeer*)peer {
-    DSDLog(@"[DSTransactionManager] fetching mempool from peer %@",peer.host);
+    DSLog(@"[DSTransactionManager] fetching mempool from peer %@",peer.host);
     if (peer.status != DSPeerStatus_Connected) return;
     
     if ([self.chain canConstructAFilter] && (peer != self.peerManager.downloadPeer || self.transactionsBloomFilterFalsePositiveRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*5.0)) {
-        DSDLog(@"[DSTransactionManager] sending filterload message from peer %@",peer.host);
+        DSLog(@"[DSTransactionManager] sending filterload message from peer %@",peer.host);
         [peer sendFilterloadMessage:[self transactionsBloomFilterForPeer:peer].data];
     }
     
     [peer sendInvMessageForHashes:self.publishedCallback.allKeys ofType:DSInvType_Tx]; // publish pending tx
     [peer sendPingMessageWithPongHandler:^(BOOL success) {
         if (success) {
-            DSDLog(@"[DSTransactionManager] fetching mempool ping success peer %@",peer.host);
+            DSLog(@"[DSTransactionManager] fetching mempool ping success peer %@",peer.host);
             [peer sendMempoolMessage:self.publishedTx.allKeys completion:^(BOOL success,BOOL needed,BOOL interruptedByDisconnect) {
                 if (success) {
-                    DSDLog(@"[DSTransactionManager] fetching mempool message success peer %@",peer.host);
+                    DSLog(@"[DSTransactionManager] fetching mempool message success peer %@",peer.host);
                     peer.synced = YES;
                     [self removeUnrelayedTransactionsFromPeer:peer];
                     if (!self.chainManager.peerManager.masternodeList) {
@@ -751,11 +783,11 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
                     });
                 } else {
                     if (!needed) {
-                        DSDLog(@"[DSTransactionManager] fetching mempool message not needed peer %@",peer.host);
+                        DSLog(@"[DSTransactionManager] fetching mempool message not needed peer %@",peer.host);
                     } else if (interruptedByDisconnect) {
-                        DSDLog(@"[DSTransactionManager] fetching mempool message failure by disconnect peer %@",peer.host);
+                        DSLog(@"[DSTransactionManager] fetching mempool message failure by disconnect peer %@",peer.host);
                     } else {
-                        DSDLog(@"[DSTransactionManager] fetching mempool message failure peer %@",peer.host);
+                        DSLog(@"[DSTransactionManager] fetching mempool message failure peer %@",peer.host);
                     }
                     
                 }
@@ -771,7 +803,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
             }];
         }
         else if (peer == self.peerManager.downloadPeer) {
-            DSDLog(@"[DSTransactionManager] fetching mempool ping failure on download peer %@",peer.host);
+            DSLog(@"[DSTransactionManager] fetching mempool ping failure on download peer %@",peer.host);
             [self.peerManager chainSyncStopped];
             
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -779,7 +811,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
                  postNotificationName:DSChainManagerSyncFinishedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
             });
         } else {
-            DSDLog(@"[DSTransactionManager] fetching mempool ping failure on peer %@",peer.host);
+            DSLog(@"[DSTransactionManager] fetching mempool ping failure on peer %@",peer.host);
         }
     }];
 }
@@ -891,7 +923,11 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 - (DSTransaction *)peer:(DSPeer *)peer requestedTransaction:(UInt256)txHash
 {
     NSValue *hash = uint256_obj(txHash);
-    DSDLog(@"Peer requested transaction with hash %@",hash);
+#if DEBUG
+    DSLogPrivate(@"Peer requested transaction with hash %@",hash);
+#else
+    DSLog(@"Peer requested transaction with hash <REDACTED>");
+#endif
     DSTransaction *transaction = self.publishedTx[hash];
     BOOL transactionIsPublished = !!transaction;
     NSArray<DSAccount *> * accounts = nil;
@@ -906,7 +942,11 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         accounts = [self.chain accountsForTransactionHash:txHash transaction:&transaction];
     }
     if (![accounts count]) {
-        DSDLog(@"No transaction could be found on any account for hash %@",hash);
+#if DEBUG
+        DSLogPrivate(@"No transaction could be found on any account for hash %@",hash);
+#else
+        DSLog(@"No transaction could be found on any account for hash <REDACTED>");
+#endif
         return nil;
     }
     void (^callback)(NSError *error) = self.publishedCallback[hash];
@@ -967,15 +1007,19 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     DSTransaction *transaction = self.publishedTx[hash];
     void (^callback)(NSError *error) = self.publishedCallback[hash];
     
-    DSDLog(@"%@:%d has transaction %@", peer.host, peer.port, hash);
+#if DEBUG
+    DSLogPrivate(@"%@:%d has transaction %@", peer.host, peer.port, hash);
+#else
+    DSLog(@"%@:%d has transaction %@", peer.host, peer.port, @"<REDACTED>");
+#endif
     if (!transaction) transaction = [self.chain transactionForHash:txHash];
     if (!transaction) {
-        DSDLog(@"No transaction found on chain for this transaction");
+        DSLog(@"No transaction found on chain for this transaction");
         return;
     }
     DSAccount * account = [self.chain firstAccountThatCanContainTransaction:transaction];
     if (syncing && !account) {
-        DSDLog(@"No account found for this transaction");
+        DSLog(@"No account found for this transaction");
         return;
     }
     if (![account registerTransaction:transaction saveImmediately:YES]) return;
@@ -1013,9 +1057,17 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     void (^callback)(NSError *error) = self.publishedCallback[hash];
     
     if (peer) {
-        DSDLog(@"%@:%d relayed transaction %@", peer.host, peer.port, hash);
+#if DEBUG
+        DSLogPrivate(@"%@:%d relayed transaction %@", peer.host, peer.port, hash);
+#else
+        DSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, @"<REDACTEd>");
+#endif
     } else {
-        DSDLog(@"accepting local transaction %@", hash);
+#if DEBUG
+        DSLogPrivate(@"accepting local transaction %@", hash);
+#else
+        DSLog(@"accepting local transaction %@", @"<REDACTED>");
+#endif
     }
     
     transaction.timestamp = [NSDate timeIntervalSince1970];
@@ -1023,24 +1075,48 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     if (!account) {
         if (![self.chain transactionHasLocalReferences:transaction]) {
             if (peer) {
-                DSDLog(@"%@:%d no account or local references for transaction %@", peer.host, peer.port, hash);
+#if DEBUG
+                DSLogPrivate(@"%@:%d no account or local references for transaction %@", peer.host, peer.port, hash);
+#else
+                DSLog(@"%@:%d no account or local references for transaction %@", peer.host, peer.port, @"<REDACTED>");
+#endif
             } else {
-                DSDLog(@"no account or local references for transaction %@", hash);
+#if DEBUG
+                DSLogPrivate(@"no account or local references for transaction %@", hash);
+#else
+                DSLog(@"no account or local references for transaction %@", @"<REDACTED>");
+#endif
             }
             return;
         } else {
             if (peer) {
-                DSDLog(@"%@:%d no account for transaction with local references %@", peer.host, peer.port, hash);
+#if DEBUG
+                DSLogPrivate(@"%@:%d no account for transaction with local references %@", peer.host, peer.port, hash);
+#else
+                DSLog(@"%@:%d no account for transaction with local references %@", peer.host, peer.port, @"<REDACTED>");
+#endif
             } else {
-                DSDLog(@"no account for transaction with local references %@", hash);
+#if DEBUG
+                DSLogPrivate(@"no account for transaction with local references %@", hash);
+#else
+                DSLog(@"no account for transaction with local references %@", @"<REDACTED>");
+#endif
             }
         }
     } else {
         if (![account registerTransaction:transaction saveImmediately:block?NO:YES]) {
             if (peer) {
-                DSDLog(@"%@:%d could not register transaction %@", peer.host, peer.port, hash);
+#if DEBUG
+                DSLogPrivate(@"%@:%d could not register transaction %@", peer.host, peer.port, hash);
+#else
+                DSLog(@"%@:%d could not register transaction %@", peer.host, peer.port, @"<REDACTED>");
+#endif
             } else {
-                DSDLog(@"could not register transaction %@", hash);
+#if DEBUG
+                DSLogPrivate(@"could not register transaction %@", hash);
+#else
+                DSLog(@"could not register transaction %@", @"<REDACTED>");
+#endif
             }
             return;
         }
@@ -1231,7 +1307,11 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     
     BOOL verified = [instantSendTransactionLock verifySignature];
     
-    DSDLog(@"%@:%d relayed instant send transaction lock %@ %@", peer.host, peer.port,verified?@"Verified":@"Not Verified", uint256_reverse_hex(instantSendTransactionLock.transactionHash));
+#if DEBUG
+    DSLogPrivate(@"%@:%d relayed instant send transaction lock %@ %@", peer.host, peer.port,verified?@"Verified":@"Not Verified", uint256_reverse_hex(instantSendTransactionLock.transactionHash));
+#else
+    DSLog(@"%@:%d relayed instant send transaction lock %@ %@", peer.host, peer.port,verified?@"Verified":@"Not Verified", @"<REDACTED>");
+#endif
     
     DSTransaction * transaction = nil;
     DSWallet * wallet = nil;
@@ -1254,13 +1334,13 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 }
 
 - (void)checkInstantSendLocksWaitingForQuorums {
-    DSDLog(@"Checking InstantSendLocks Waiting For Quorums");
+    DSLog(@"Checking InstantSendLocks Waiting For Quorums");
     for (NSData * transactionHashData in [self.instantSendLocksWaitingForQuorums copy]) {
         if (self.instantSendLocksWaitingForTransactions[transactionHashData]) continue;
         DSInstantSendTransactionLock * instantSendTransactionLock = self.instantSendLocksWaitingForQuorums[transactionHashData];
         BOOL verified = [instantSendTransactionLock verifySignature];
         if (verified) {
-            DSDLog(@"Verified %@",instantSendTransactionLock);
+            DSLogPrivate(@"Verified %@",instantSendTransactionLock);
             [instantSendTransactionLock saveSignatureValid];
             DSTransaction * transaction = nil;
             DSWallet * wallet = nil;
@@ -1280,10 +1360,10 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
             if (quorum && masternodeList) {
                 NSArray<DSQuorumEntry*> * quorumEntries = [masternodeList quorumEntriesRankedForInstantSendRequestID:[instantSendTransactionLock requestID]];
                 NSUInteger index = [quorumEntries indexOfObject:quorum];
-                DSDLog(@"Quorum %@ found at index %lu for masternodeList at height %lu",quorum,(unsigned long)index,(unsigned long)masternodeList.height);
-                DSDLog(@"Quorum entries are %@",quorumEntries);
+                DSLog(@"Quorum %@ found at index %lu for masternodeList at height %lu",quorum,(unsigned long)index,(unsigned long)masternodeList.height);
+                DSLog(@"Quorum entries are %@",quorumEntries);
             }
-            DSDLog(@"Could not verify %@",instantSendTransactionLock);
+            DSLog(@"Could not verify %@",instantSendTransactionLock);
 #endif
         }
     }
@@ -1294,11 +1374,11 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 
 - (void)peer:(DSPeer *)peer relayedHeader:(DSMerkleBlock *)block
 {
-    //DSDLog(@"relayed block %@ total transactions %d %u",uint256_hex(block.blockHash), block.totalTransactions,block.timestamp);
+    //DSLogPrivate(@"relayed block %@ total transactions %d %u",uint256_hex(block.blockHash), block.totalTransactions,block.timestamp);
     // ignore block headers that are newer than 2 days before earliestKeyTime (headers have 0 totalTransactions)
     if (!self.chain.needsInitialTerminalHeadersSync &&
         (block.timestamp + DAY_TIME_INTERVAL*2 > self.chain.earliestWalletCreationTime) && !self.chainManager.chainSynchronizationFingerprint) {
-        DSDLog(@"ignoring header %@",uint256_hex(block.blockHash));
+        DSLog(@"ignoring header %@",uint256_hex(block.blockHash));
         return;
     }
     
@@ -1311,14 +1391,14 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 - (void)peer:(DSPeer *)peer relayedBlock:(DSMerkleBlock *)block
 {
     if (!self.chainManager.syncPhase) {
-        DSDLog(@"Block was received after reset, ignoring it");
+        DSLog(@"Block was received after reset, ignoring it");
         return;
     }
-    //DSDLog(@"relayed block %@ total transactions %d %u",uint256_hex(block.blockHash), block.totalTransactions,block.timestamp);
+    //DSLog(@"relayed block %@ total transactions %d %u",uint256_hex(block.blockHash), block.totalTransactions,block.timestamp);
     // ignore block headers that are newer than 2 days before earliestKeyTime (headers have 0 totalTransactions)
     if (block.totalTransactions == 0 &&
         block.timestamp + DAY_TIME_INTERVAL*2 > self.chain.earliestWalletCreationTime) {
-        DSDLog(@"ignoring block %@",uint256_hex(block.blockHash));
+        DSLog(@"ignoring block %@",uint256_hex(block.blockHash));
         return;
     }
     
@@ -1335,12 +1415,12 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         
         // false positive rate sanity check
         if (self.peerManager.downloadPeer.status == DSPeerStatus_Connected && self.transactionsBloomFilterFalsePositiveRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10.0) {
-            DSDLog(@"%@:%d bloom filter false positive rate %f too high after %d blocks, disconnecting...", peer.host,
+            DSLog(@"%@:%d bloom filter false positive rate %f too high after %d blocks, disconnecting...", peer.host,
                    peer.port, self.transactionsBloomFilterFalsePositiveRate, self.chain.lastSyncBlockHeight + 1 - self.filterUpdateHeight);
             [self.peerManager.downloadPeer disconnect];
         }
         else if (self.chain.lastSyncBlockHeight + 500 < peer.lastBlockHeight && self.transactionsBloomFilterFalsePositiveRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*10.0) {
-            DSDLog(@"%@:%d bloom filter false positive rate %f too high after %d blocks, rebuilding", peer.host,
+            DSLog(@"%@:%d bloom filter false positive rate %f too high after %d blocks, rebuilding", peer.host,
                    peer.port, self.transactionsBloomFilterFalsePositiveRate, self.chain.lastSyncBlockHeight + 1 - self.filterUpdateHeight);
             [self updateTransactionsBloomFilter]; // rebuild bloom filter when it starts to degrade
         }
@@ -1349,7 +1429,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
     
     if (! _bloomFilter) { // ignore potentially incomplete blocks when a filter update is pending
-        DSDLog(@"ignoring block due to filter update %@",uint256_hex(block.blockHash));
+        DSLog(@"ignoring block due to filter update %@",uint256_hex(block.blockHash));
         return;
     }
     
@@ -1387,7 +1467,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
                 [self.totalTransactionData appendUInt16:(block.height - 499)/500];
                 [self.totalTransactionData appendUInt16:self.totalTransactionsSum/self.totalTransactionsQueue.count];
                 [self.totalTransactionData appendUInt16:self.totalTransactionsMax];
-                DSDLog(@"%d;%lu;%u",block.height - 499,self.totalTransactionsSum/self.totalTransactionsQueue.count,self.totalTransactionsMax);
+                DSLog(@"%d;%lu;%u",block.height - 499,self.totalTransactionsSum/self.totalTransactionsQueue.count,self.totalTransactionsMax);
 
             }
             if (block.height == self.chain.lastTerminalBlockHeight) {
@@ -1408,7 +1488,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 - (void)peer:(DSPeer *)peer relayedChainLock:(DSChainLock *)chainLock {
     BOOL verified = [chainLock verifySignature];
     
-    DSDLog(@"%@:%d relayed chain lock %@", peer.host, peer.port, uint256_reverse_hex(chainLock.blockHash));
+    DSLog(@"%@:%d relayed chain lock %@", peer.host, peer.port, uint256_reverse_hex(chainLock.blockHash));
     
     DSMerkleBlock * block = [self.chain blockForBlockHash:chainLock.blockHash];
     
@@ -1429,13 +1509,13 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
 }
 
 - (void)checkChainLocksWaitingForQuorums {
-    DSDLog(@"Checking ChainLocks Waiting For Quorums");
+    DSLog(@"Checking ChainLocks Waiting For Quorums");
     for (NSData * chainLockHashData in [self.chainLocksWaitingForQuorums copy]) {
         if (self.chainLocksWaitingForMerkleBlocks[chainLockHashData]) continue;
         DSChainLock * chainLock = self.chainLocksWaitingForQuorums[chainLockHashData];
         BOOL verified = [chainLock verifySignature];
         if (verified) {
-            DSDLog(@"Verified %@",chainLock);
+            DSLog(@"Verified %@",chainLock);
             [chainLock saveSignatureValid];
             DSMerkleBlock * block = [self.chain blockForBlockHash:chainLock.blockHash];
             [self.chainLocksWaitingForQuorums removeObjectForKey:chainLockHashData];
@@ -1449,10 +1529,10 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
             if (quorum && masternodeList) {
                 NSArray<DSQuorumEntry*> * quorumEntries = [masternodeList quorumEntriesRankedForInstantSendRequestID:[chainLock requestID]];
                 NSUInteger index = [quorumEntries indexOfObject:quorum];
-                DSDLog(@"Quorum %@ found at index %lu for masternodeList at height %lu",quorum,(unsigned long)index,(unsigned long)masternodeList.height);
-                DSDLog(@"Quorum entries are %@",quorumEntries);
+                DSLog(@"Quorum %@ found at index %lu for masternodeList at height %lu",quorum,(unsigned long)index,(unsigned long)masternodeList.height);
+                DSLog(@"Quorum entries are %@",quorumEntries);
             }
-            DSDLog(@"Could not verify %@",chainLock);
+            DSLog(@"Could not verify %@",chainLock);
 #endif
         }
     }
@@ -1471,7 +1551,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     
     if (secondFeePerByte*2 > MIN_FEE_PER_B && secondFeePerByte*2 <= MAX_FEE_PER_B &&
         secondFeePerByte*2 > self.chain.feePerByte) {
-        DSDLog(@"increasing feePerKb to %llu based on feefilter messages from peers", secondFeePerByte*2);
+        DSLog(@"increasing feePerKb to %llu based on feefilter messages from peers", secondFeePerByte*2);
         self.chain.feePerByte = secondFeePerByte*2;
     }
 }

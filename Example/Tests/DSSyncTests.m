@@ -60,7 +60,7 @@
         XCTMeasureOptions * options = [XCTMeasureOptions defaultOptions];
         options.iterationCount = 1;
         self.chain.headersMaxAmount = 2000;
-        DSDLog(@"Starting testInitialHeadersSync");
+        DSLogPrivate(@"Starting testInitialHeadersSync");
         DSSyncType originalSyncType = [[DSOptionsManager sharedInstance] syncType];
         [self.chain useCheckpointBeforeOrOnHeightForSyncingChainBlocks:0];
         [self.chain useCheckpointBeforeOrOnHeightForTerminalBlocksSync:227121];
@@ -78,7 +78,7 @@
             self.txStatusObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:DSChainInitialHeadersDidFinishSyncingNotification object:nil
                                                                queue:nil usingBlock:^(NSNotification *note) {
-                DSDLog(@"Finished sync");
+                DSLogPrivate(@"Finished sync");
                 [[DashSync sharedSyncController] stopSyncForChain:self.chain];
                 [self.chain.chainManager.peerManager removeTrustedPeerHost];
                 [[DSOptionsManager sharedInstance] setSyncType:originalSyncType];
@@ -114,7 +114,7 @@
             self.txStatusObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:DSChainBlocksDidFinishSyncingNotification object:nil
                                                                queue:nil usingBlock:^(NSNotification *note) {
-                DSDLog(@"Finished sync");
+                DSLogPrivate(@"Finished sync");
                 [headerFinishedExpectation fulfill];
             }];
             [self waitForExpectations:@[headerFinishedExpectation] timeout:36000];

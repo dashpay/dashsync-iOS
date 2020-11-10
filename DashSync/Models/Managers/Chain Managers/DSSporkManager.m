@@ -207,7 +207,7 @@
                     [sporkEntity setAttributesFromSpork:spork withSporkHash:hashEntity]; // add new peers
                     [self.managedObjectContext ds_save];
                 } else {
-                    DSDLog(@"Spork was received that wasn't requested");
+                    DSLog(@"Spork was received that wasn't requested");
                 }
             }
         }];

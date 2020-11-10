@@ -315,7 +315,7 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
         NSError *error = nil;
         [[BGTaskScheduler sharedScheduler] submitTaskRequest:request error:&error];
         if (error) {
-            DSDLog(@"Error scheduling background refresh");
+            DSLog(@"Error scheduling background refresh");
         }
     }
 }
@@ -323,7 +323,7 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
 - (void)performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
     DSChainManager *mainnetManager = [[DSChainsManager sharedInstance] mainnetManager];
     if (mainnetManager.chainSyncProgress >= 1.0) {
-        DSDLog(@"Background fetch: already synced");
+        DSLog(@"Background fetch: already synced");
         
         if (completionHandler) {
             completionHandler(UIBackgroundFetchResultNoData);
@@ -352,7 +352,7 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
                                     object:nil
                                      queue:nil
                                 usingBlock:^(NSNotification *note) {
-        DSDLog(@"Background fetch: protected data available");
+        DSLog(@"Background fetch: protected data available");
         [[[DSChainsManager sharedInstance] mainnetManager] startSync];
     }];
     
@@ -360,7 +360,7 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
     [notificationCenter addObserverForName:DSChainManagerSyncFinishedNotification object:nil
                                      queue:nil
                                 usingBlock:^(NSNotification *note) {
-        DSDLog(@"Background fetch: sync finished");
+        DSLog(@"Background fetch: sync finished");
         [self finishBackgroundFetchWithResult:UIBackgroundFetchResultNewData];
     }];
     
@@ -369,11 +369,11 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
                                     object:nil
                                      queue:nil
                                 usingBlock:^(NSNotification *note) {
-        DSDLog(@"Background fetch: sync failed");
+        DSLog(@"Background fetch: sync failed");
         [self finishBackgroundFetchWithResult:UIBackgroundFetchResultFailed];
     }];
     
-    DSDLog(@"Background fetch: starting");
+    DSLog(@"Background fetch: starting");
     [mainnetManager startSync];
     
     // sync events to the server
@@ -382,7 +382,7 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
 
 - (void)backgroundFetchTimedOut {
     const double syncProgress = [[DSChainsManager sharedInstance] mainnetManager].chainSyncProgress;
-    DSDLog(@"Background fetch timeout with progress: %f", syncProgress);
+    DSLog(@"Background fetch timeout with progress: %f", syncProgress);
     
     const UIBackgroundFetchResult fetchResult = syncProgress > 0.1
         ? UIBackgroundFetchResultNewData
