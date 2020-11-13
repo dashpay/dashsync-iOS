@@ -1,7 +1,7 @@
 {
     "documents": {
         "thumbnailField": {
-            {
+            "indices": [{
                 "properties": [{
                     "$ownerId": "asc"
                 }, {
@@ -33,19 +33,19 @@
                 },
                 "resizeValues": {
                     "type": "array",
-                    "contains": {
+                    "items": {
                         "type": "array",
-                        "contains": {
+                        "items": {
                             "type": "number"
                         },
                         "minItems": 2,
                         "maxItems": 2
                     },
+                    "maxItems": 128,
                     "uniqueItems": true
                 },
                 "allowAnimatedGIFs": {
-                    "type": "boolean",
-                    "default": false
+                    "type": "boolean"
                 }
             },
             "required": ["contractId", "documentType", "field", "resizeValues"],

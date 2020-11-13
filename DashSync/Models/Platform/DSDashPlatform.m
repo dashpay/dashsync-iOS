@@ -81,7 +81,7 @@ static dispatch_once_t platformChainToken = 0;
 
 -(NSMutableDictionary*)knownContracts {
     if (!_knownContracts) {
-        _knownContracts = [NSMutableDictionary dictionaryWithObjects:@[[self dashPayContract], [self dpnsContract]] forKeys:@[DASHPAY_CONTRACT, DPNS_CONTRACT, DASHTHUMBNAIL_CONTRACT]];
+        _knownContracts = [NSMutableDictionary dictionaryWithObjects:@[[self dashPayContract], [self dpnsContract], [self dashThumbnailContract]] forKeys:@[DASHPAY_CONTRACT, DPNS_CONTRACT, DASHTHUMBNAIL_CONTRACT]];
     }
     return _knownContracts;
 }

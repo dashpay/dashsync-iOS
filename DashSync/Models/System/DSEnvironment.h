@@ -12,11 +12,21 @@
 #define DSLocalizedString(key, comment) \
 [[DSEnvironment sharedInstance].resourceBundle localizedStringForKey:(key) value:@"" table:nil]
 
+#define DS_LOG_ENABLED ([DSOptionsManager sharedInstance].isLoggingEnabled)
+
+
 #ifdef DEBUG
 #define DSDLog(s, ...) DSLogVerbose(s, ##__VA_ARGS__)
 #else
-#define DSDLog(s, ...)
+#define DSDLog(s, ...) ((void)(DS_LOG_ENABLED && ((void)DSLogVerbose(s, ##__VA_ARGS__))))
 #endif
+
+#ifdef DEBUG
+#define DSDSecretLog(s, ...) DSLogVerbose(s, ##__VA_ARGS__)
+#else
+#define DSDSecretLog(s, ...)
+#endif
+
 
 @interface DSEnvironment : NSObject
 

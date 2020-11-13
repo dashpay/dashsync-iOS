@@ -1689,7 +1689,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ //this is so we don't get DAPINetworkService immediately
         BOOL isDPNSEmpty = [contract.name isEqual:@"DPNS"] && uint256_is_zero(self.chain.dpnsContractID);
         BOOL isDashpayEmpty = [contract.name isEqual:@"DashPay"] && uint256_is_zero(self.chain.dashpayContractID);
-        if (((isDPNSEmpty || isDashpayEmpty) && uint256_is_zero(contract.registeredBlockchainIdentityUniqueID)) || contract.contractState == DPContractState_NotRegistered) {
+        BOOL isOtherContract = !([contract.name isEqual:@"DashPay"] || [contract.name isEqual:@"DPNS"]);
+        if (((isDPNSEmpty || isDashpayEmpty || isOtherContract) && uint256_is_zero(contract.registeredBlockchainIdentityUniqueID)) || contract.contractState == DPContractState_NotRegistered) {
             [contract registerCreator:self inContext:context];
             __block DSContractTransition * transition = [contract contractRegistrationTransitionForIdentity:self];
             [self signStateTransition:transition completion:^(BOOL success) {

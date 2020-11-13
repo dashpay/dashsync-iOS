@@ -37,6 +37,7 @@ typedef NS_ENUM(NSUInteger, DSSyncType) {
 @property (nonatomic,assign) BOOL smartOutputs;
 @property (nonatomic,assign) BOOL syncFromGenesis;
 @property (nonatomic,assign) BOOL retrievePriceInfo;
+@property (nonatomic,assign,getter=isLoggingEnabled) BOOL loggingEnabled;
 @property (nonatomic,assign) BOOL shouldSyncFromHeight;
 @property (nonatomic,assign) BOOL shouldUseCheckpointFile;
 @property (nonatomic,assign) uint32_t syncFromHeight;
