@@ -1,0 +1,56 @@
+{
+    "documents": {
+        "thumbnailField": {
+            "indices": [{
+                "properties": [{
+                    "$ownerId": "asc"
+                }, {
+                    "contractId": "asc"
+                }, {
+                    "field": "asc"
+                }]
+            }],
+            "properties": {
+                "contractId": {
+                    "type": "array",
+                    "byteArray": true,
+                    "minItems": 32,
+                    "maxItems": 32
+                },
+                "documentType": {
+                    "type": "string",
+                    "maxLength":256
+                },
+                "field": {
+                    "type": "string",
+                    "maxLength":256
+                },
+                "maxImportSize": {
+                    "type": "integer"
+                },
+                "cacheDuration": {
+                    "type": "integer"
+                },
+                "resizeValues": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "number"
+                        },
+                        "minItems": 2,
+                        "maxItems": 2
+                    },
+                    "maxItems": 128,
+                    "uniqueItems": true
+                },
+                "allowAnimatedGIFs": {
+                    "type": "boolean"
+                }
+            },
+            "required": ["contractId", "documentType", "field", "resizeValues"],
+            "additionalProperties": false
+        }
+    }
+}
+
