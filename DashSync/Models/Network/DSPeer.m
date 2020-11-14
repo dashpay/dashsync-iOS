@@ -62,7 +62,7 @@
 #define LOG_FULL_TX_MESSAGE 0
 
 #if ! PEER_LOGGING
-#define DSDLog(...)
+#define DSLog(...)
 #endif
 
 #define MESSAGE_LOGGING (1 & DEBUG)
@@ -221,7 +221,7 @@
     if (! self.reachability) self.reachability = [DSReachabilityManager sharedManager];
     
     if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) { // delay connect until network is reachable
-        DSDLog(@"%@:%u not reachable, waiting...", self.host, self.port);
+        DSLog(@"%@:%u not reachable, waiting...", self.host, self.port);
         
         dispatch_async(dispatch_get_main_queue(), ^{
             if (! self.reachabilityObserver) {
@@ -281,7 +281,7 @@
         CFReadStreamRef readStream = NULL;
         CFWriteStreamRef writeStream = NULL;
         
-        DSDLog(@"%@:%u connecting", self.host, self.port);
+        DSLog(@"%@:%u connecting", self.host, self.port);
         CFStreamCreatePairWithSocketToHost(NULL, (__bridge CFStringRef)self.host, self.port, &readStream, &writeStream);
         self.inputStream = CFBridgingRelease(readStream);
         self.outputStream = CFBridgingRelease(writeStream);
@@ -312,9 +312,9 @@
 {
     if (_status == DSPeerStatus_Disconnected) return;
     if (!error) {
-        DSDLog(@"Disconnected from peer %@ (%@ protocol %d) with no error",self.host,self.useragent,self.version);
+        DSLog(@"Disconnected from peer %@ (%@ protocol %d) with no error",self.host,self.useragent,self.version);
     } else {
-        DSDLog(@"Disconnected from peer %@ (%@ protocol %d) with error %@",self.host,self.useragent,self.version,error);
+        DSLog(@"Disconnected from peer %@ (%@ protocol %d) with error %@",self.host,self.useragent,self.version,error);
     }
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel connect timeout
 
@@ -362,7 +362,7 @@
 {
     if (self.status != DSPeerStatus_Connecting || ! self.sentVerack || ! self.gotVerack) return;
     
-    DSDLog(@"%@:%u handshake completed %@", self.host, self.port, (self.peerDelegate.downloadPeer == self)?@"(download peer)":@"");
+    DSLog(@"%@:%u handshake completed %@", self.host, self.port, (self.peerDelegate.downloadPeer == self)?@"(download peer)":@"");
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending handshake timeout
     _status = DSPeerStatus_Connected;
     
@@ -383,7 +383,7 @@
 - (void)sendMessage:(NSData *)message type:(NSString *)type
 {
     if (message.length > MAX_MSG_LENGTH) {
-        DSDLog(@"%@:%u failed to send %@, length %u is too long", self.host, self.port, type, (int)message.length);
+        DSLog(@"%@:%u failed to send %@, length %u is too long", self.host, self.port, type, (int)message.length);
 #if DEBUG
         abort();
 #endif
@@ -395,15 +395,23 @@
     CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
 #if MESSAGE_LOGGING
         if (![type isEqualToString:MSG_GETDATA] && ![type isEqualToString:MSG_VERSION] && ![type isEqualToString:MSG_GETBLOCKS]) { //we log this somewhere else for better accuracy of what data is being got
-            DSDLog(@"%@:%u %@sending %@", self.host, self.port, self.peerDelegate.downloadPeer == self?@"(download peer) ":@"",type);
+            DSLog(@"%@:%u %@sending %@", self.host, self.port, self.peerDelegate.downloadPeer == self?@"(download peer) ":@"",type);
 #if MESSAGE_IN_DEPTH_TX_LOGGING
             if ([type isEqualToString:@"ix"] || [type isEqualToString:@"tx"]) {
                 DSTransaction * transactionBeingSent = [DSTransaction transactionWithMessage:message onChain:self.chain];
-                DSDLog(@"%@:%u transaction %@", self.host, self.port, transactionBeingSent.longDescription);
+#if DEBUG
+                DSLogPrivate(@"%@:%u transaction %@", self.host, self.port, transactionBeingSent.longDescription);
+#else
+                DSLog(@"%@:%u transaction %@", self.host, self.port, @"<REDACTED>");
+#endif
             }
 #endif
 #if MESSAGE_CONTENT_LOGGING
-            DSDLog(@"%@:%u sending data (%lu bytes) %@", self.host, self.port, (unsigned long)message.length, message.hexString);
+#if DEBUG
+            DSLogPrivate(@"%@:%u sending data (%lu bytes) %@", self.host, self.port, (unsigned long)message.length, message.hexString);
+#else
+            DSLog(@"%@:%u sending data (%lu bytes) %@", self.host, self.port, (unsigned long)message.length, @"<REDACTED>");
+#endif
 #endif
         }
 #endif
@@ -416,7 +424,7 @@
             NSInteger l = [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
             
             if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
-            //if (self.outputBuffer.length == 0) DSDLog(@"%@:%u output buffer cleared", self.host, self.port);
+            //if (self.outputBuffer.length == 0) DSLog(@"%@:%u output buffer cleared", self.host, self.port);
         }
         
         UNLOCK(self.outputBufferSemaphore);
@@ -450,7 +458,7 @@
     self.pingStartTime = [NSDate timeIntervalSince1970];
     
 #if MESSAGE_LOGGING
-        DSDLog(@"%@:%u %@sending version with protocol version %d", self.host, self.port, self.peerDelegate.downloadPeer == self?@"(download peer) ":@"",self.chain.protocolVersion);
+        DSLog(@"%@:%u %@sending version with protocol version %d", self.host, self.port, self.peerDelegate.downloadPeer == self?@"(download peer) ":@"",self.chain.protocolVersion);
 #endif
     
     [self sendMessage:msg type:MSG_VERSION];
@@ -467,13 +475,17 @@
 - (void)sendFilterloadMessage:(NSData *)filter
 {
     self.sentFilter = YES;
-    DSDLog(@"Sending filter with fingerprint %@ to node %@ %@",[NSData dataWithUInt256:filter.SHA256].shortHexString,self.host,self.peerDelegate.downloadPeer == self?@"(download peer) ":@"");
+#if DEBUG
+    DSLogPrivate(@"Sending filter with fingerprint %@ to node %@ %@",[NSData dataWithUInt256:filter.SHA256].shortHexString,self.host,self.peerDelegate.downloadPeer == self?@"(download peer) ":@"");
+#else
+    DSLog(@"Sending filter with fingerprint %@ to node %@ %@", @"<REDACTED>",self.host,self.peerDelegate.downloadPeer == self?@"(download peer) ":@"");
+#endif
     [self sendMessage:filter type:MSG_FILTERLOAD];
 }
 
 - (void)mempoolTimeout
 {
-    DSDLog(@"[DSPeer] mempool time out %@",self.host);
+    DSLog(@"[DSPeer] mempool time out %@",self.host);
     
     __block MempoolCompletionBlock completion = self.mempoolTransactionCompletion;
     [self sendPingMessageWithPongHandler:^(BOOL success) {
@@ -487,7 +499,11 @@
 
 - (void)sendMempoolMessage:(NSArray *)publishedTxHashes completion:(MempoolCompletionBlock)completion
 {
-    DSDLog(@"%@:%u sendMempoolMessage %@",self.host,self.port,publishedTxHashes);
+#if DEBUG
+    DSLogPrivate(@"%@:%u sendMempoolMessage %@",self.host,self.port,publishedTxHashes);
+#else
+    DSLog(@"%@:%u sendMempoolMessage %@",self.host,self.port,@"<REDACTED>");
+#endif
     [self.knownTxHashes addObjectsFromArray:publishedTxHashes];
     self.sentMempool = YES;
     
@@ -587,9 +603,17 @@
             [locatorHexes addObject:[NSString stringWithFormat:@"%@ (block %d)",((NSData*)obj).reverse.hexString,knownHeight]];
         }
     }];
-    DSDLog(@"%@:%u %@sending getblocks with locators %@", self.host, self.port, self.peerDelegate.downloadPeer == self?@"(download peer) ":@"",locatorHexes);
+#if DEBUG
+    DSLogPrivate(@"%@:%u %@sending getblocks with locators %@", self.host, self.port, self.peerDelegate.downloadPeer == self?@"(download peer) ":@"",locatorHexes);
+#else
+    DSLog(@"%@:%u %@sending getblocks with locators %@", self.host, self.port, self.peerDelegate.downloadPeer == self?@"(download peer) ":@"",@"<REDACTED>");
+#endif
 #if MESSAGE_CONTENT_LOGGING
-        DSDLog(@"%@:%u sending data %@", self.host, self.port, msg.hexString);
+#if DEBUG
+    DSLogPrivate(@"%@:%u sending data %@", self.host, self.port, msg.hexString);
+#else
+    DSLog(@"%@:%u sending data %@", self.host, self.port, @"<REDACTED>");
+#endif
 #endif
 #endif
     
@@ -598,7 +622,7 @@
 
 - (void)sendInvMessageForHashes:(NSArray *)invHashes ofType:(DSInvType)invType
 {
-    DSDLog(@"%@:%u sending inv message of type %@ hashes count %lu", self.host, self.port, [self nameOfInvMessage:invType],(unsigned long)invHashes.count);
+    DSLogPrivate(@"%@:%u sending inv message of type %@ hashes count %lu", self.host, self.port, [self nameOfInvMessage:invType],(unsigned long)invHashes.count);
     NSMutableOrderedSet *hashes = [NSMutableOrderedSet orderedSetWithArray:invHashes];
     NSMutableData *msg = [NSMutableData data];
     UInt256 h;
@@ -671,7 +695,11 @@
     [msg appendUInt32:DSInvType_Tx];
     [msg appendUInt256:txHash];
 #if MESSAGE_LOGGING
-    DSDLog(@"%@:%u sending getdata for transaction %@", self.host, self.port,uint256_hex(txHash));
+#if DEBUG
+    DSLogPrivate(@"%@:%u sending getdata for transaction %@", self.host, self.port,uint256_hex(txHash));
+#else
+    DSLog(@"%@:%u sending getdata for transaction %@", self.host, self.port,@"<REDACTED>");
+#endif
 #endif
     [self sendMessage:msg type:MSG_GETDATA];
 }
@@ -680,7 +708,7 @@
 {
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GetsNewBlocks)) return;
     if (txHashes.count + instantSendLockHashes.count + blockHashes.count + chainLockHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
-        DSDLog(@"%@:%u couldn't send getdata, %u is too many items, max is %u", self.host, self.port,
+        DSLog(@"%@:%u couldn't send getdata, %u is too many items, max is %u", self.host, self.port,
               (int)txHashes.count + (int)instantSendLockHashes.count + (int)blockHashes.count + (int)chainLockHashes.count, MAX_GETDATA_HASHES);
         return;
     }
@@ -717,7 +745,7 @@
     
     self.sentGetdataTxBlocks = YES;
 #if MESSAGE_LOGGING
-    DSDLog(@"%@:%u sending getdata (transactions and blocks)", self.host, self.port);
+    DSLog(@"%@:%u sending getdata (transactions and blocks)", self.host, self.port);
 #endif
     [self sendMessage:msg type:MSG_GETDATA];
 }
@@ -732,7 +760,7 @@
 - (void)sendGetdataMessageWithGovernanceObjectHashes:(NSArray<NSData*> *)governanceObjectHashes
 {
     if (governanceObjectHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
-        DSDLog(@"%@:%u couldn't send governance getdata, %u is too many items, max is %u", self.host, self.port,
+        DSLog(@"%@:%u couldn't send governance getdata, %u is too many items, max is %u", self.host, self.port,
               (int)governanceObjectHashes.count, MAX_GETDATA_HASHES);
         return;
     }
@@ -750,14 +778,14 @@
     
     self.sentGetdataGovernance = YES;
 #if MESSAGE_LOGGING
-    DSDLog(@"%@:%u sending getdata (governance objects)", self.host, self.port);
+    DSLog(@"%@:%u sending getdata (governance objects)", self.host, self.port);
 #endif
     [self sendMessage:msg type:MSG_GETDATA];
 }
 
 - (void)sendGetdataMessageWithGovernanceVoteHashes:(NSArray<NSData*> *)governanceVoteHashes {
     if (governanceVoteHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
-        DSDLog(@"%@:%u couldn't send governance votes getdata, %u is too many items, max is %u", self.host, self.port,
+        DSLog(@"%@:%u couldn't send governance votes getdata, %u is too many items, max is %u", self.host, self.port,
               (int)governanceVoteHashes.count, MAX_GETDATA_HASHES);
         return;
     }
@@ -775,7 +803,7 @@
     
     self.sentGetdataGovernanceVotes = YES;
 #if MESSAGE_LOGGING
-    DSDLog(@"%@:%u sending getdata (governance votes)", self.host, self.port);
+    DSLog(@"%@:%u sending getdata (governance votes)", self.host, self.port);
 #endif
     [self sendMessage:msg type:MSG_GETDATA];
 }
@@ -798,7 +826,7 @@
         self.pingStartTime = [NSDate timeIntervalSince1970];
         
 #if MESSAGE_LOGGING
-        DSDLog(@"%@:%u sending ping", self.host, self.port);
+        DSLog(@"%@:%u sending ping", self.host, self.port);
 #endif
         
         [self sendMessage:msg type:MSG_PING];
@@ -812,7 +840,7 @@
     
     if (i != NSNotFound) {
         [self.knownBlockHashes removeObjectsInRange:NSMakeRange(0, i)];
-        DSDLog(@"%@:%u re-requesting %u blocks", self.host, self.port, (int)self.knownBlockHashes.count);
+        DSLog(@"%@:%u re-requesting %u blocks", self.host, self.port, (int)self.knownBlockHashes.count);
         [self sendGetdataMessageWithTxHashes:nil instantSendLockHashes:nil blockHashes:self.knownBlockHashes.array chainLockHashes:nil];
     }
 }
@@ -829,10 +857,10 @@
     NSMutableData *msg = [NSMutableData data];
     [msg appendUInt256:utxo.hash];
     if (uint256_is_zero(utxo.hash)) {
-        DSDLog(@"%@:%u Requesting Masternode List",self.host, self.port);
+        DSLog(@"%@:%u Requesting Masternode List",self.host, self.port);
         [msg appendUInt32:UINT32_MAX];
     } else {
-        DSDLog(@"%@:%u Requesting Masternode Entry",self.host, self.port);
+        DSLog(@"%@:%u Requesting Masternode Entry",self.host, self.port);
         [msg appendUInt32:(uint32_t)utxo.n];
     }
     
@@ -845,11 +873,11 @@
 
 - (void)sendGovSync:(UInt256)parentHash { //for votes
     if (self.governanceRequestState != DSGovernanceRequestState_None) {  //Make sure we aren't in a governance sync process
-        DSDLog(@"%@:%u Requesting Governance Vote Hashes out of resting state",self.host, self.port);
+        DSLog(@"%@:%u Requesting Governance Vote Hashes out of resting state",self.host, self.port);
         return;
     }
     self.sentGovSync = TRUE;
-    DSDLog(@"%@:%u Requesting Governance Object Vote Hashes",self.host, self.port);
+    DSLog(@"%@:%u Requesting Governance Object Vote Hashes",self.host, self.port);
     NSMutableData *msg = [NSMutableData data];
     //UInt256 reversed = *(UInt256*)[NSData dataWithUInt256:parentHash].reverse.bytes;
     [msg appendBytes:&parentHash length:sizeof(parentHash)];
@@ -860,10 +888,10 @@
 
 - (void)sendGovSync { //for governance objects
     if (self.governanceRequestState != DSGovernanceRequestState_None) {//Make sure we aren't in a governance sync process
-        DSDLog(@"%@:%u Requesting Governance Object Hashes out of resting state",self.host, self.port);
+        DSLog(@"%@:%u Requesting Governance Object Hashes out of resting state",self.host, self.port);
         return;
     }
-    DSDLog(@"%@:%u Requesting Governance Object Hashes",self.host, self.port);
+    DSLog(@"%@:%u Requesting Governance Object Hashes",self.host, self.port);
     UInt256 h = UINT256_ZERO;
     NSMutableData *msg = [NSMutableData data];
     
@@ -875,7 +903,7 @@
     //we aren't afraid of coming back here within 5 seconds because a peer can only sendGovSync once every 3 hours
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         if (self.governanceRequestState == DSGovernanceRequestState_GovernanceObjectHashes) {
-            DSDLog(@"%@:%u Peer ignored request for governance object hashes",self.host, self.port);
+            DSLog(@"%@:%u Peer ignored request for governance object hashes",self.host, self.port);
             [self.governanceDelegate peer:self ignoredGovernanceSync:DSGovernanceRequestState_GovernanceObjectHashes];
         }
     });
@@ -896,7 +924,7 @@
 {
 #if MESSAGE_LOGGING
     if (![type isEqualToString:MSG_INV] && ![type isEqualToString:MSG_GOVOBJVOTE] && ![type isEqualToString:MSG_MERKLEBLOCK]) {
-        DSDLog(@"%@:%u accept message %@", self.host, self.port, type);
+        DSLog(@"%@:%u accept message %@", self.host, self.port, type);
     }
 #endif
     if (self.currentBlock && (! ([MSG_TX isEqual:type] || [MSG_IX isEqual:type] ))) { // if we receive a non-tx message, merkleblock is done
@@ -946,7 +974,7 @@
     else if ([MSG_DARKSENDTX isEqual:type]) [self acceptDarksendTransactionMessage:message];
     else {
 #if DROP_MESSAGE_LOGGING
-        DSDLog(@"%@:%u dropping %@, len:%u, not implemented", self.host, self.port, type, (int)message.length);
+        DSLog(@"%@:%u dropping %@, len:%u, not implemented", self.host, self.port, type, (int)message.length);
 #endif
     }
 }
@@ -974,13 +1002,13 @@
 
     if (self.version < self.chain.minProtocolVersion) {
 #if MESSAGE_LOGGING
-        DSDLog(@"%@:%u protocol version %u not supported, useragent:\"%@\"", self.host, self.port, self.version, self.useragent);
+        DSLog(@"%@:%u protocol version %u not supported, useragent:\"%@\"", self.host, self.port, self.version, self.useragent);
 #endif
         [self error:@"protocol version %u not supported", self.version];
         return;
     } else {
 #if MESSAGE_LOGGING
-        DSDLog(@"%@:%u got version %u, useragent:\"%@\"", self.host, self.port, self.version, self.useragent);
+        DSLog(@"%@:%u got version %u, useragent:\"%@\"", self.host, self.port, self.version, self.useragent);
 #endif
     }
     
@@ -990,14 +1018,14 @@
 - (void)acceptVerackMessage:(NSData *)message
 {
     if (self.gotVerack) {
-        DSDLog(@"%@:%u got unexpected verack", self.host, self.port);
+        DSLog(@"%@:%u got unexpected verack", self.host, self.port);
         return;
     }
     
     _pingTime = [NSDate timeIntervalSince1970] - self.pingStartTime; // use verack time as initial ping time
     self.pingStartTime = 0;
 #if MESSAGE_LOGGING
-    DSDLog(@"%@:%u got verack in %fs", self.host, self.port, self.pingTime);
+    DSLog(@"%@:%u got verack in %fs", self.host, self.port, self.pingTime);
 #endif
     self.gotVerack = YES;
     [self didConnect];
@@ -1007,7 +1035,7 @@
 - (void)acceptAddrMessage:(NSData *)message
 {
     if (message.length > 0 && [message UInt8AtOffset:0] == 0) {
-        DSDLog(@"%@:%u got addr with 0 addresses", self.host, self.port);
+        DSLog(@"%@:%u got addr with 0 addresses", self.host, self.port);
         return;
     }
     else if (message.length < 5) {
@@ -1022,7 +1050,7 @@
     NSMutableArray *peers = [NSMutableArray array];
     
     if (count > 1000) {
-        DSDLog(@"%@:%u dropping addr message, %u is too many addresses (max 1000)", self.host, self.port, (int)count);
+        DSLog(@"%@:%u dropping addr message, %u is too many addresses (max 1000)", self.host, self.port, (int)count);
         return;
     }
     else if (message.length < l.unsignedIntegerValue + count*30) {
@@ -1030,7 +1058,7 @@
          (int)(l.unsignedIntegerValue + count*30), (int)count];
         return;
     }
-    else DSDLog(@"%@:%u got addr with %u addresses", self.host, self.port, (int)count);
+    else DSLog(@"%@:%u got addr with %u addresses", self.host, self.port, (int)count);
     
     for (NSUInteger off = l.unsignedIntegerValue; off < l.unsignedIntegerValue + 30*count; off += 30) {
         NSTimeInterval timestamp = [message UInt32AtOffset:off];
@@ -1125,17 +1153,17 @@
         return;
     }
     else if (count > MAX_GETDATA_HASHES) {
-        DSDLog(@"%@:%u dropping inv message, %u is too many items, max is %u", self.host, self.port, (int)count,
+        DSLog(@"%@:%u dropping inv message, %u is too many items, max is %u", self.host, self.port, (int)count,
               MAX_GETDATA_HASHES);
         return;
     }
     
     if (count == 0) {
-        DSDLog(@"Got empty Inv message");
+        DSLog(@"Got empty Inv message");
     }
     
     if (count > 0 && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePing) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePaymentVote) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodeVerify) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_GovernanceObjectVote) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_DSTx)) {
-        DSDLog(@"%@:%u got inv with %u item%@ (first item %@ with hash %@/%@)", self.host, self.port, (int)count,count==1?@"":@"s",[self nameOfInvMessage:[message UInt32AtOffset:l.unsignedIntegerValue]],[NSData dataWithUInt256:[message UInt256AtOffset:l.unsignedIntegerValue + sizeof(uint32_t)]].hexString,[NSData dataWithUInt256:[message UInt256AtOffset:l.unsignedIntegerValue + sizeof(uint32_t)]].reverse.hexString);
+        DSLog(@"%@:%u got inv with %u item%@ (first item %@ with hash %@/%@)", self.host, self.port, (int)count,count==1?@"":@"s",[self nameOfInvMessage:[message UInt32AtOffset:l.unsignedIntegerValue]],[NSData dataWithUInt256:[message UInt256AtOffset:l.unsignedIntegerValue + sizeof(uint32_t)]].hexString,[NSData dataWithUInt256:[message UInt256AtOffset:l.unsignedIntegerValue + sizeof(uint32_t)]].reverse.hexString);
     }
     
     BOOL onlyPrivateSendTransactions = NO;
@@ -1187,7 +1215,7 @@
         return;
     }
     else if (txHashes.count + instantSendLockHashes.count > 10000) { // this was happening on testnet, some sort of DOS/spam attack?
-        DSDLog(@"%@:%u too many transactions, disconnecting", self.host, self.port);
+        DSLog(@"%@:%u too many transactions, disconnecting", self.host, self.port);
         [self disconnect]; // disconnecting seems to be the easiest way to mitigate it
         return;
     }
@@ -1286,7 +1314,7 @@
     
     if (self.mempoolTransactionCompletion && (txHashes.count + governanceObjectHashes.count + sporkHashes.count > 0)) {
         self.mempoolRequestTime = [NSDate timeIntervalSince1970]; // this will cancel the mempool timeout
-        DSDLog(@"[DSPeer] got mempool tx inv messages %@",self.host);
+        DSLog(@"[DSPeer] got mempool tx inv messages %@",self.host);
         __block MempoolCompletionBlock completion = self.mempoolTransactionCompletion;
         [self sendPingMessageWithPongHandler:^(BOOL success) {
             if (completion) {
@@ -1326,9 +1354,17 @@
             [self.transactionDelegate peer:self relayedTransaction:tx inBlock:currentBlock];
         });
         #if LOG_FULL_TX_MESSAGE
-            DSDLog(@"%@:%u got tx %@ %@", self.host, self.port, uint256_obj(tx.txHash),message.hexString);
+#if DEBUG
+        DSLogPrivate(@"%@:%u got tx %@ %@", self.host, self.port, uint256_obj(tx.txHash),message.hexString);
+#else
+        DSLog(@"%@:%u got tx %@ %@", self.host, self.port, @"<REDACTED>", @"<REDACTED>");
+#endif
         #else
-            DSDLog(@"%@:%u got tx %@", self.host, self.port, uint256_obj(tx.txHash));
+#if DEBUG
+        DSLogPrivate(@"%@:%u got tx %@", self.host, self.port, uint256_obj(tx.txHash));
+#else
+        DSLog(@"%@:%u got tx %@", self.host, self.port, @"<REDACTED>");
+#endif
         #endif
     }
 
@@ -1338,13 +1374,17 @@
         if ([self.currentBlockTxHashes containsObject:uint256_obj(txHash)]) {
             [self.currentBlockTxHashes removeObject:uint256_obj(txHash)];
         } else {
-            DSDLog(@"%@:%u current block does not contain transaction %@ (contains %@)", self.host, self.port,uint256_hex(txHash),self.currentBlockTxHashes);
+#if DEBUG
+            DSLogPrivate(@"%@:%u current block does not contain transaction %@ (contains %@)", self.host, self.port,uint256_hex(txHash),self.currentBlockTxHashes);
+#else
+            DSLog(@"%@:%u current block does not contain transaction %@ (contains %@)", self.host, self.port,@"<REDACTED>",@"<REDACTED>");
+#endif
         }
         
         if (self.currentBlockTxHashes.count == 0) { // we received the entire block including all matched tx
             DSMerkleBlock *block = self.currentBlock;
             
-            DSDLog(@"%@:%u clearing current block", self.host, self.port);
+            DSLog(@"%@:%u clearing current block", self.host, self.port);
             
             self.currentBlock = nil;
             self.currentBlockTxHashes = nil;
@@ -1354,7 +1394,7 @@
             });
         }
     } else {
-        DSDLog(@"%@:%u no current block", self.host, self.port);
+        DSLog(@"%@:%u no current block", self.host, self.port);
     }
     
 }
@@ -1364,14 +1404,14 @@
 - (void)acceptIslockMessage:(NSData *)message
 {
 #if LOG_TX_LOCK_VOTES
-    DSDLog(@"peer relayed islock message: %@", message.hexString);
+    DSLog(@"peer relayed islock message: %@", message.hexString);
 #endif
     if (![self.chain.chainManager.sporkManager deterministicMasternodeListEnabled]) {
-        DSDLog(@"returned instant send lock message when DML not enabled: %@", message);//no error here
+        DSLog(@"returned instant send lock message when DML not enabled: %@", message);//no error here
         return;
     }
     if (![self.chain.chainManager.sporkManager llmqInstantSendEnabled]) {
-        DSDLog(@"returned instant send lock message when llmq instant send is not enabled: %@", message);//no error here
+        DSLog(@"returned instant send lock message when llmq instant send is not enabled: %@", message);//no error here
         return;
     }
     DSInstantSendTransactionLock *instantSendTransactionLock = [DSInstantSendTransactionLock instantSendTransactionLockWithMessage:message onChain:self.chain];
@@ -1419,24 +1459,28 @@
         return;
     }
     if (count == 0) {
-        DSDLog(@"%@:%u got 0 headers (%@)", self.host, self.port, message.hexString);
+#if DEBUG
+        DSLogPrivate(@"%@:%u got 0 headers (%@)", self.host, self.port, message.hexString);
+#else
+        DSLog(@"%@:%u got 0 headers (%@)", self.host, self.port, @"<REDACTED>");
+#endif
     } else {
-        DSDLog(@"%@:%u got %u headers", self.host, self.port, (int)count);
+        DSLog(@"%@:%u got %u headers", self.host, self.port, (int)count);
     }
     
 #if LOG_ALL_HEADERS_IN_ACCEPT_HEADERS
     for (int i =0;i<count;i++) {
         NSData * headerData = [message subdataWithRange:NSMakeRange(l+ 81*i, 80)];
-        DSDLog(@"BLOCK HEADER ----------");
-        DSDLog(@"block version %u",[headerData UInt8AtOffset:0]);
-        DSDLog(@"previous blockheader hash %@ (%@)",[NSData dataWithUInt256:[headerData UInt256AtOffset:4]].hexString,[NSData dataWithUInt256:[headerData UInt256AtOffset:4]].reverse.hexString);
-        DSDLog(@"merkle root %@",[NSData dataWithUInt256:[headerData UInt256AtOffset:36]].hexString);
+        DSLogPrivate(@"BLOCK HEADER ----------");
+        DSLogPrivate(@"block version %u",[headerData UInt8AtOffset:0]);
+        DSLogPrivate(@"previous blockheader hash %@ (%@)",[NSData dataWithUInt256:[headerData UInt256AtOffset:4]].hexString,[NSData dataWithUInt256:[headerData UInt256AtOffset:4]].reverse.hexString);
+        DSLogPrivate(@"merkle root %@",[NSData dataWithUInt256:[headerData UInt256AtOffset:36]].hexString);
         uint32_t timestamp = [headerData UInt32AtOffset:68];
-        DSDLog(@"timestamp %x (%u) time is %@",timestamp,timestamp,[NSDate dateWithTimeIntervalSince1970:timestamp]);
-        DSDLog(@"target is %x",[headerData UInt32AtOffset:72]);
-        DSDLog(@"nonce is %x",[headerData UInt32AtOffset:76]);
-        DSDLog(@"transaction count is %u",[headerData UInt8AtOffset:80]);
-        DSDLog(@"-----------------------");
+        DSLogPrivate(@"timestamp %x (%u) time is %@",timestamp,timestamp,[NSDate dateWithTimeIntervalSince1970:timestamp]);
+        DSLogPrivate(@"target is %x",[headerData UInt32AtOffset:72]);
+        DSLogPrivate(@"nonce is %x",[headerData UInt32AtOffset:76]);
+        DSLogPrivate(@"transaction count is %u",[headerData UInt8AtOffset:80]);
+        DSLogPrivate(@"-----------------------");
     }
 #endif
     
@@ -1449,7 +1493,7 @@
     }
     //    for (int i = 0; i < count; i++) {
     //        UInt256 locator = [message subdataWithRange:NSMakeRange(l + 81*i, 80)].x11;
-    //        DSDLog(@"%@:%u header: %@", self.host, self.port, uint256_obj(locator));
+    //        DSLog(@"%@:%u header: %@", self.host, self.port, uint256_obj(locator));
     //    }
     // To improve chain download performance, if this message contains 2000 headers then request the next 2000 headers
     // immediately, and switch to requesting blocks when we receive a header newer than earliestKeyTime
@@ -1458,7 +1502,7 @@
     NSTimeInterval firstTimestamp = [message UInt32AtOffset:l + 81 + 68];
     if (!self.chain.needsInitialTerminalHeadersSync && (firstTimestamp + DAY_TIME_INTERVAL*2 >= self.earliestKeyTime) && [self.chain.chainManager shouldRequestMerkleBlocksForZoneAfterHeight:self.chain.lastSyncBlockHeight + 1]) {
         //this is a rare scenario where we called getheaders but the first header returned was actually past the cuttoff, but the previous header was before the cuttoff
-        DSDLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, [self.chain chainSyncBlockLocatorArray]);
+        DSLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, [self.chain chainSyncBlockLocatorArray]);
         [self sendGetblocksMessageWithLocators:self.chain.chainSyncBlockLocatorArray andHashStop:UINT256_ZERO];
         return;
     }
@@ -1479,11 +1523,11 @@
             }
             lastBlockHash = [message subdataWithRange:NSMakeRange(off, 80)].x11;
             lastHashData = uint256_data(lastBlockHash);
-            DSDLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, @[lastHashData.reverse.hexString, firstHashData.reverse.hexString]);
+            DSLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, @[lastHashData.reverse.hexString, firstHashData.reverse.hexString]);
             [self sendGetblocksMessageWithLocators:@[lastHashData, firstHashData] andHashStop:UINT256_ZERO];
         }
         else {
-            DSDLog(@"%@:%u calling getheaders with locators: %@", self.host, self.port,
+            DSLog(@"%@:%u calling getheaders with locators: %@", self.host, self.port,
                   @[lastHashData.reverse.hexString, firstHashData.reverse.hexString]);
             [self sendGetheadersMessageWithLocators:@[lastHashData, firstHashData] andHashStop:UINT256_ZERO];
         }
@@ -1503,7 +1547,7 @@
 
 - (void)acceptGetaddrMessage:(NSData *)message
 {
-    DSDLog(@"%@:%u got getaddr", self.host, self.port);
+    DSLog(@"%@:%u got getaddr", self.host, self.port);
     [self sendAddrMessage];
 }
 
@@ -1519,12 +1563,12 @@
         return;
     }
     else if (count > MAX_GETDATA_HASHES) {
-        DSDLog(@"%@:%u dropping getdata message, %u is too many items, max is %u", self.host, self.port, (int)count,
+        DSLog(@"%@:%u dropping getdata message, %u is too many items, max is %u", self.host, self.port, (int)count,
               MAX_GETDATA_HASHES);
         return;
     }
     
-    DSDLog(@"%@:%u %@got getdata for %u item%@", self.host, self.port, self.peerDelegate.downloadPeer == self?@"(download peer)":@"", (int)count,count==1?@"":@"s");
+    DSLog(@"%@:%u %@got getdata for %u item%@", self.host, self.port, self.peerDelegate.downloadPeer == self?@"(download peer)":@"", (int)count,count==1?@"":@"s");
     
     dispatch_async(self.delegateQueue, ^{
         NSMutableData *notfound = [NSMutableData data];
@@ -1545,7 +1589,11 @@
                         [self sendMessage:transaction.data type:MSG_TX];
                         break;
                     } else {
-                        DSDLog(@"peer %@ requested transaction was not found with hash %@ reversed %@",self.host,[NSData dataWithUInt256:hash].hexString,[NSData dataWithUInt256:hash].reverse.hexString);
+#if DEBUG
+                        DSLogPrivate(@"peer %@ requested transaction was not found with hash %@ reversed %@",self.host,[NSData dataWithUInt256:hash].hexString,[NSData dataWithUInt256:hash].reverse.hexString);
+#else
+                        DSLog(@"peer %@ requested transaction was not found with hash %@ reversed %@",self.host,@"<REDACTED>",@"<DETCADER>");
+#endif
                         [notfound appendUInt32:type];
                         [notfound appendBytes:&hash length:sizeof(hash)];
                         break;
@@ -1607,7 +1655,7 @@
         return;
     }
     
-    DSDLog(@"%@:%u got notfound with %u item%@ (first item %@)", self.host, self.port, (int)count,count==1?@"":@"s",[self nameOfInvMessage:[message UInt32AtOffset:l]]);
+    DSLog(@"%@:%u got notfound with %u item%@ (first item %@)", self.host, self.port, (int)count,count==1?@"":@"s",[self nameOfInvMessage:[message UInt32AtOffset:l]]);
     
     for (NSUInteger off = l; off < l + 36*count; off += 36) {
         if ([message UInt32AtOffset:off] == DSInvType_Tx) {
@@ -1633,7 +1681,7 @@
         return;
     }
 #if MESSAGE_LOGGING
-    DSDLog(@"%@:%u got ping", self.host, self.port);
+    DSLog(@"%@:%u got ping", self.host, self.port);
 #endif
     [self sendMessage:message type:MSG_PONG];
 }
@@ -1650,7 +1698,7 @@
         return;
     }
     else if (! self.pongHandlers.count) {
-        DSDLog(@"%@:%u got unexpected pong", self.host, self.port);
+        DSLog(@"%@:%u got unexpected pong", self.host, self.port);
         return;
     }
     
@@ -1663,7 +1711,7 @@
     }
     
 #if MESSAGE_LOGGING
-    DSDLog(@"%@:%u got pong in %fs", self.host, self.port, self.pingTime);
+    DSLog(@"%@:%u got pong in %fs", self.host, self.port, self.pingTime);
 #endif
     
     dispatch_async(self.delegateQueue, ^{
@@ -1691,7 +1739,7 @@
         [self error:@"got merkleblock message before loading a filter"];
         return;
     }
-    //else DSDLog(@"%@:%u got merkleblock %@", self.host, self.port, block.blockHash);
+    //else DSLog(@"%@:%u got merkleblock %@", self.host, self.port, block.blockHash);
     
     NSMutableOrderedSet *txHashes = [NSMutableOrderedSet orderedSetWithArray:block.transactionHashes];
     
@@ -1723,7 +1771,11 @@
 {
     
     if (![self.chain.chainManager.sporkManager chainLocksEnabled]) {
-        DSDLog(@"returned chain lock message when chain locks are not enabled: %@", message);//no error here
+#if DEBUG
+        DSLogPrivate(@"returned chain lock message when chain locks are not enabled: %@", message);//no error here
+#else
+        DSLog(@"returned chain lock message when chain locks are not enabled: %@", @"<REDACTED>");//no error here
+#endif
         return;
     }
     DSChainLock *chainLock = [DSChainLock chainLockWithMessage:message onChain:self.chain];
@@ -1754,8 +1806,13 @@
     l = lNumber.unsignedIntegerValue;
     UInt256 txHash = ([MSG_TX isEqual:type] || [MSG_IX isEqual:type]) ? [message UInt256AtOffset:off + l] : UINT256_ZERO;
     
-    DSDLog(@"%@:%u rejected %@ code: 0x%x reason: \"%@\"%@%@", self.host, self.port, type, code, reason,
+#if DEBUG
+    DSLogPrivate(@"%@:%u rejected %@ code: 0x%x reason: \"%@\"%@%@", self.host, self.port, type, code, reason,
           (uint256_is_zero(txHash) ? @"" : @" txid: "), (uint256_is_zero(txHash) ? @"" : uint256_obj(txHash)));
+#else
+    DSLog(@"%@:%u rejected %@ code: 0x%x reason: \"%@\"%@%@", self.host, self.port, type, code, reason,
+          (uint256_is_zero(txHash) ? @"" : @" txid: "), (uint256_is_zero(txHash) ? @"" : @"<REDACTED>"));
+#endif
     reason = nil; // fixes an unused variable warning for non-debug builds
     
     if (! uint256_is_zero(txHash)) {
@@ -1774,7 +1831,7 @@
     }
     
     _feePerByte = ceilf((float)[message UInt64AtOffset:0]/1000.0f);
-    DSDLog(@"%@:%u got feefilter with rate %llu per Byte", self.host, self.port, self.feePerByte);
+    DSLog(@"%@:%u got feefilter with rate %llu per Byte", self.host, self.port, self.feePerByte);
     
     dispatch_async(self.delegateQueue, ^{
         [self.transactionDelegate peer:self setFeePerByte:self.feePerByte];
@@ -1786,7 +1843,7 @@
 - (void)acceptSporkMessage:(NSData *)message
 {
     DSSpork * spork = [DSSpork sporkWithMessage:message onChain:self.chain];
-    DSDLog(@"received spork %@ with message %@",spork.identifierString,message.hexString);
+    DSLog(@"received spork %@ with message %@",spork.identifierString,message.hexString);
     [self.sporkDelegate peer:self relayedSpork:spork];
 }
 
@@ -1797,7 +1854,7 @@
     
     DSSyncCountInfo syncCountInfo = [message UInt32AtOffset:0];
     uint32_t count = [message UInt32AtOffset:4];
-    DSDLog(@"received ssc message %d %d",syncCountInfo,count);
+    DSLog(@"received ssc message %d %d",syncCountInfo,count);
     switch (syncCountInfo) {
         case DSSyncCountInfo_GovernanceObject:
             if (self.governanceRequestState == DSGovernanceRequestState_GovernanceObjectHashes) {
@@ -1858,7 +1915,7 @@
 
 - (void)acceptGovObjectSyncMessage:(NSData *)message
 {
-    DSDLog(@"Gov Object Sync");
+    DSLog(@"Gov Object Sync");
 }
 
 // MARK: - Accept Dark send
@@ -1911,7 +1968,7 @@
     //        return;
     //    }
     //
-    //    DSDLog(@"%@:%u got tx %@", self.host, self.port, uint256_obj(tx.txHash));
+    //    DSLogPrivate(@"%@:%u got tx %@", self.host, self.port, uint256_obj(tx.txHash));
     //
     //    dispatch_async(self.delegateQueue, ^{
     //        [self.delegate peer:self relayedTransaction:tx];
@@ -2006,7 +2063,7 @@
 {
     switch (eventCode) {
         case NSStreamEventOpenCompleted:
-            DSDLog(@"%@:%u %@ stream connected in %fs", self.host, self.port,
+            DSLog(@"%@:%u %@ stream connected in %fs", self.host, self.port,
                   (aStream == self.inputStream) ? @"input" : (aStream == self.outputStream ? @"output" : @"unknown"),
                   [NSDate timeIntervalSince1970] - self.pingStartTime);
             
@@ -2050,7 +2107,7 @@
                                          maxLength:self.msgHeader.length - headerLen];
                         
                         if (l < 0) {
-                            DSDLog(@"%@:%u error reading message", self.host, self.port);
+                            DSLog(@"%@:%u error reading message", self.host, self.port);
                             goto reset;
                         }
                         
@@ -2088,7 +2145,7 @@
                                          maxLength:self.msgPayload.length - payloadLen];
                         
                         if (l < 0) {
-                            DSDLog(@"%@:%u error reading %@", self.host, self.port, type);
+                            DSLog(@"%@:%u error reading %@", self.host, self.port, type);
                             goto reset;
                         }
                         
@@ -2115,17 +2172,17 @@
             break;
             
         case NSStreamEventErrorOccurred:
-            DSDLog(@"%@:%u error connecting, %@", self.host, self.port, aStream.streamError);
+            DSLog(@"%@:%u error connecting, %@", self.host, self.port, aStream.streamError);
             [self disconnectWithError:aStream.streamError];
             break;
             
         case NSStreamEventEndEncountered:
-            DSDLog(@"%@:%u connection closed", self.host, self.port);
+            DSLog(@"%@:%u connection closed", self.host, self.port);
             [self disconnectWithError:nil];
             break;
             
         default:
-            DSDLog(@"%@:%u unknown network stream eventCode:%u", self.host, self.port, (int)eventCode);
+            DSLog(@"%@:%u unknown network stream eventCode:%u", self.host, self.port, (int)eventCode);
     }
 }
 

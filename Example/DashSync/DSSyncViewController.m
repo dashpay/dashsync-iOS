@@ -88,7 +88,7 @@
     self.syncFinishedObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSChainManagerSyncFinishedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
-                                                           DSDLog(@"background fetch sync finished");
+                                                           DSLogPrivate(@"background fetch sync finished");
                                                            [self syncFinished];
                                                        }];
     
@@ -96,7 +96,7 @@
     [[NSNotificationCenter defaultCenter] addObserverForName:DSChainManagerSyncFailedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
-                                                               DSDLog(@"background fetch sync failed");
+                                                               DSLogPrivate(@"background fetch sync failed");
                                                                [self syncFailed];
                                                            }
                                                        }];
@@ -122,7 +122,7 @@
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            
                                                            if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
-                                                               DSDLog(@"update blockheight");
+                                                               DSLogPrivate(@"update blockheight");
                                                                [self updateBlockHeight];
                                                                [self updateHeaderHeight];
                                                            }
@@ -153,14 +153,14 @@
     [[NSNotificationCenter defaultCenter] addObserverForName:DSSporkListDidUpdateNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
-                                                               DSDLog(@"update spork count");
+                                                               DSLogPrivate(@"update spork count");
                                                                [self updateSporks];
                                                            }
                                                        }];
     self.masternodeObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSMasternodeListDidChangeNotification object:nil
                                                                                  queue:nil usingBlock:^(NSNotification *note) {
                                                                                      if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
-                                                                                         DSDLog(@"update masternode list");
+                                                                                         DSLogPrivate(@"update masternode list");
                                                                                          [self updateKnownMasternodes];
                                                                                          [self updateMasternodeLists];
                                                                                      }
@@ -170,7 +170,7 @@
     self.quorumObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSQuorumListDidChangeNotification object:nil
                                                                                  queue:nil usingBlock:^(NSNotification *note) {
                                                                                      if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
-                                                                                         DSDLog(@"update quorums");
+                                                                                         DSLogPrivate(@"update quorums");
                                                                                          [self updateQuorumsList];
                                                                                      }
                                                                                  }];
@@ -184,7 +184,7 @@
     self.governanceObjectReceivedCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSGovernanceObjectListDidChangeNotification object:nil
                                                                                                     queue:nil usingBlock:^(NSNotification *note) {
                                                                                                         if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
-                                                                                                            DSDLog(@"update governance received object count");
+                                                                                                            DSLogPrivate(@"update governance received object count");
                                                                                                             [self updateReceivedGovernanceProposalCount];
                                                                                                         }
                                                                                                     }];
@@ -192,14 +192,14 @@
     self.governanceVoteCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSGovernanceVoteCountUpdateNotification object:nil
                                                                                           queue:nil usingBlock:^(NSNotification *note) {
                                                                                               if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
-                                                                                                  DSDLog(@"update governance vote count");
+                                                                                                  DSLogPrivate(@"update governance vote count");
                                                                                                   [self updateReceivedGovernanceVoteCount];
                                                                                               }
                                                                                           }];
     self.governanceVoteReceivedCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSGovernanceVotesDidChangeNotification object:nil
                                                                                                   queue:nil usingBlock:^(NSNotification *note) {
                                                                                                       if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
-                                                                                                          DSDLog(@"update governance received vote count");
+                                                                                                          DSLogPrivate(@"update governance received vote count");
                                                                                                           [self updateReceivedGovernanceVoteCount];
                                                                                                       }
                                                                                                   }];

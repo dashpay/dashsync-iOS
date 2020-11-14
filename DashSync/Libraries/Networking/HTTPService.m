@@ -323,11 +323,6 @@ NS_ASSUME_NONNULL_BEGIN
 
     NSURLRequest *urlRequest = request.urlRequest;
     
-    NSString *cURLSting = [urlRequest dc_cURL];
-    if ([DSLogger sharedInstance].shouldLogHTTPRequests) {
-        DSLogInfo(@"<< Request: %@", cURLSting);
-    }
-
     HTTPRateLimiter *rateLimiter = [self.rateLimiterMap rateLimiterForURL:request.URL];
     NSURLSessionTask *task;
     if (request.downloadTaskPolicy == HTTPRequestDownloadTaskPolicyAlways) {

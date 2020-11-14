@@ -27,22 +27,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DSLogger
 
-- (BOOL)shouldLogHTTPRequests {
-#ifdef DEBUG
-    return NO;
-#else
-    return YES;
-#endif /* DEBUG */
-}
-
-- (BOOL)shouldLogHTTPResponses {
-#ifdef DEBUG
-    return NO;
-#else
-    return YES;
-#endif /* DEBUG */
-}
-
 + (instancetype)sharedInstance {
     static DSLogger *_sharedInstance = nil;
     static dispatch_once_t onceToken;

@@ -61,10 +61,6 @@ NS_ASSUME_NONNULL_BEGIN
             id _Nullable parsedData = [self parseResponse:response.body statusCode:response.statusCode request:httpRequest error:&error];
             NSAssert((!error && parsedData) || (error && !parsedData), nil); // sanity check
             
-            if ([DSLogger sharedInstance].shouldLogHTTPResponses) {
-                DSLogInfo(@">> Response OK: %@, error: %@", parsedData, error);
-            }
-
             // store server timestamp
             [[DSAuthenticationManager sharedInstance] updateSecureTimeFromResponseIfNeeded:response.responseHeaders];
 
@@ -81,16 +77,6 @@ NS_ASSUME_NONNULL_BEGIN
             }
             else {
                 error = response.error;
-            }
-            
-            if ([DSLogger sharedInstance].shouldLogHTTPResponses) {
-                id parsedData = response.body ?
-                    [NSJSONSerialization JSONObjectWithData:response.body
-                                                    options:httpRequest.jsonReadingOptions
-                                                      error:nil]
-                    : nil;
-                
-                DSLogInfo(@">> Response Failed: %@, error: %@", parsedData, error);
             }
             
             if (completion) {

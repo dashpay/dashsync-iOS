@@ -91,7 +91,7 @@
         self.inputOutpoints = [mutableInputOutpoints copy];
         
         self.transactionHash = [message UInt256AtOffset:off]; // tx
-        //DSDLog(@"transactionHash is %@",uint256_reverse_hex(self.transactionHash));
+        //DSLogPrivate(@"transactionHash is %@",uint256_reverse_hex(self.transactionHash));
         off += sizeof(UInt256);
         
         self.signature = [message UInt768AtOffset:off];
@@ -121,7 +121,7 @@
         [data appendData:input];
     }
     _requestID = [data SHA256_2];
-    DSDLog(@"the request ID is %@",uint256_hex(_requestID));
+    DSLogPrivate(@"the request ID is %@",uint256_hex(_requestID));
     return _requestID;
 }
 
@@ -138,7 +138,7 @@
     UInt384 publicKey = quorumEntry.quorumPublicKey;
     DSBLSKey * blsKey = [DSBLSKey keyWithPublicKey:publicKey];
     UInt256 signId = [self signIDForQuorumEntry:quorumEntry];
-    DSDLog(@"verifying signature %@ with public key %@ for transaction hash %@ against quorum %@",[NSData dataWithUInt768:self.signature].hexString, [NSData dataWithUInt384:publicKey].hexString, [NSData dataWithUInt256:self.transactionHash].hexString,quorumEntry);
+    DSLogPrivate(@"verifying signature %@ with public key %@ for transaction hash %@ against quorum %@",[NSData dataWithUInt768:self.signature].hexString, [NSData dataWithUInt384:publicKey].hexString, [NSData dataWithUInt256:self.transactionHash].hexString,quorumEntry);
     return [blsKey verify:signId signature:self.signature];
 }
 
@@ -163,28 +163,28 @@
     if (quorumEntry && quorumEntry.verified) {
         self.signatureVerified = [self verifySignatureAgainstQuorum:quorumEntry];
         if (!self.signatureVerified) {
-            DSDLog(@"unable to verify IS signature with offset %d",offset);
+            DSLog(@"unable to verify IS signature with offset %d",offset);
         } else {
-            DSDLog(@"IS signature verified with offset %d",offset);
+            DSLog(@"IS signature verified with offset %d",offset);
         }
         
     } else if (quorumEntry) {
-        DSDLog(@"quorum entry %@ found but is not yet verified",uint256_hex(quorumEntry.quorumHash));
+        DSLog(@"quorum entry %@ found but is not yet verified",uint256_hex(quorumEntry.quorumHash));
     } else {
-        DSDLog(@"no quorum entry found");
+        DSLog(@"no quorum entry found");
     }
     if (self.signatureVerified) {
         self.intendedQuorum = quorumEntry;
     } else if (quorumEntry.verified && offset == 8) {
         //try again a few blocks more in the past
-        DSDLog(@"trying with offset 0");
+        DSLog(@"trying with offset 0");
         return [self verifySignatureWithQuorumOffset:0];
     }  else if (quorumEntry.verified && offset == 0) {
         //try again a few blocks more in the future
-        DSDLog(@"trying with offset 16");
+        DSLog(@"trying with offset 16");
         return [self verifySignatureWithQuorumOffset:16];
     }
-    DSDLog(@"returning signature verified %d with offset %d",self.signatureVerified,offset);
+    DSLog(@"returning signature verified %d with offset %d",self.signatureVerified,offset);
     return self.signatureVerified;
 }
 

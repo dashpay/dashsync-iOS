@@ -137,8 +137,8 @@
 //    }
 //    [dictionary setObject:sortDescriptorsArray forKey:@"orderBy"];
     NSData * json = [NSJSONSerialization dataWithJSONObject:[self whereClauseArrayWithOptions:NSPredicateCBORDataOptions_DataToBase64] options:0 error:nil];
-    DSDLog(@"json where %@",[[NSString alloc] initWithData:json encoding:NSUTF8StringEncoding]);
-    DSDLog(@"cbor hex %@",[[self whereClauseArray] ds_cborEncodedObject].hexString);
+    DSLogPrivate(@"json where %@",[[NSString alloc] initWithData:json encoding:NSUTF8StringEncoding]);
+    DSLogPrivate(@"cbor hex %@",[[self whereClauseArray] ds_cborEncodedObject].hexString);
     return [[self whereClauseArray] ds_cborEncodedObject];
 }
 

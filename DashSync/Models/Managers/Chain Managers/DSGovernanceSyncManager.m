@@ -88,7 +88,7 @@
 // MARK: - Governance Sync
 
 -(void)continueGovernanceSync {
-    DSDLog(@"--> Continuing Governance Sync");
+    DSLog(@"--> Continuing Governance Sync");
     NSUInteger last3HoursStandaloneBroadcastHashesCount = [self last3HoursStandaloneGovernanceObjectHashesCount];
     if (last3HoursStandaloneBroadcastHashesCount) {
         DSPeer * downloadPeer = nil;
@@ -144,13 +144,13 @@
     }
     
     //We need to sync
-    DSDLog(@"--> Trying to start governance sync");
+    DSLog(@"--> Trying to start governance sync");
     NSArray * sortedPeers = [self.peerManager.connectedPeers sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"lastRequestedGovernanceSync" ascending:YES]]];
     BOOL startedGovernanceSync = FALSE;
     for (DSPeer * peer in sortedPeers) {
         if (peer.status != DSPeerStatus_Connected) continue;
         if ([[NSDate date] timeIntervalSince1970] - peer.lastRequestedGovernanceSync < 10800) {
-            DSDLog(@"--> Peer recently used");
+            DSLog(@"--> Peer recently used");
             continue; //don't request less than every 3 hours from a peer
         }
         peer.lastRequestedGovernanceSync = [[NSDate date] timeIntervalSince1970]; //we are requesting the list from this peer
@@ -185,7 +185,7 @@
 -(void)startNextGoveranceVoteSyncWithPeer:(DSPeer*)peer {
     self.currentGovernanceSyncObject = [self.needVoteSyncGovernanceObjects firstObject];
     self.currentGovernanceSyncObject.delegate = self;
-    DSDLog(@"Getting votes for %@",self.currentGovernanceSyncObject.identifier);
+    DSLog(@"Getting votes for %@",self.currentGovernanceSyncObject.identifier);
     [peer sendGovSync:self.currentGovernanceSyncObject.governanceObjectHash];
 }
 
@@ -358,7 +358,7 @@
                 return;
             }
         }
-        DSDLog(@"peer %@ relayed governance objects",peer.host);
+        DSLog(@"peer %@ relayed governance objects",peer.host);
         NSMutableOrderedSet * hashesToInsert = [[NSOrderedSet orderedSetWithSet:governanceObjectHashes] mutableCopy];
         NSMutableOrderedSet * hashesToUpdate = [[NSOrderedSet orderedSetWithSet:governanceObjectHashes] mutableCopy];
         NSMutableOrderedSet * hashesToQuery = [[NSOrderedSet orderedSetWithSet:governanceObjectHashes] mutableCopy];
@@ -386,7 +386,7 @@
                 NSError * error = nil;
                 [self.managedObjectContext save:&error];
                 if (error) {
-                    DSDLog(@"%@",error);
+                    DSLog(@"%@",error);
                 }
             }];
             if ([hashesToInsert count]) {
@@ -400,11 +400,11 @@
         }
         
         self.knownGovernanceObjectHashes = rHashes;
-        DSDLog(@"-> %lu - %lu",(unsigned long)[self.knownGovernanceObjectHashes count],(unsigned long)self.chain.totalGovernanceObjectsCount);
+        DSLog(@"-> %lu - %lu",(unsigned long)[self.knownGovernanceObjectHashes count],(unsigned long)self.chain.totalGovernanceObjectsCount);
         NSUInteger countAroundNow = [self recentGovernanceObjectHashesCount];
         if ([self.knownGovernanceObjectHashes count] > self.chain.totalGovernanceObjectsCount) {
             [self.managedObjectContext performBlockAndWait:^{
-                DSDLog(@"countAroundNow -> %lu - %lu",(unsigned long)countAroundNow,(unsigned long)self.chain.totalGovernanceObjectsCount);
+                DSLog(@"countAroundNow -> %lu - %lu",(unsigned long)countAroundNow,(unsigned long)self.chain.totalGovernanceObjectsCount);
                 if (countAroundNow > self.chain.totalGovernanceObjectsCount) {
                     [DSGovernanceObjectHashEntity removeOldest:countAroundNow - self.chain.totalGovernanceObjectsCount onChainEntity:[self.chain chainEntityInContext:self.managedObjectContext]];
                     [self.managedObjectContext ds_save];
@@ -418,7 +418,7 @@
                 
             }];
         } else if (countAroundNow == self.chain.totalGovernanceObjectsCount) {
-            DSDLog(@"%@",@"All governance object hashes received");
+            DSLog(@"All governance object hashes received");
             //we have all hashes, let's request objects.
             if (peer.governanceRequestState == DSGovernanceRequestState_GovernanceObjectHashesCountReceived) {
                 peer.governanceRequestState = DSGovernanceRequestState_GovernanceObjects;
@@ -468,7 +468,7 @@
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Governance)) return nil; // make sure we care about Governance objects
     DSGovernanceObject * proposal = [self.publishGovernanceObjects objectForKey:[NSData dataWithUInt256:governanceObjectHash]];
     if (!proposal) {
-        DSDLog(@"Peer requested unknown proposal");
+        DSLog(@"Peer requested unknown proposal");
     }
     return proposal;
 }
@@ -507,7 +507,7 @@
             [self finishedGovernanceVoteSyncWithPeer:peer];
         }
     } else {
-        DSDLog(@"no parent hash");
+        DSLog(@"no parent hash");
     }
 }
 
@@ -521,7 +521,7 @@
                 DSGovernanceVoteEntity * voteEntity = [votes firstObject];
                 vote = [voteEntity governanceVote];
             } else {
-                DSDLog(@"Peer requested unknown vote");
+                DSLog(@"Peer requested unknown vote");
             }
         }];
     }

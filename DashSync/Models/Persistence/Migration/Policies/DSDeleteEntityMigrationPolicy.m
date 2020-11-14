@@ -23,7 +23,7 @@
                                       entityMapping:(NSEntityMapping *)mapping
                                             manager:(NSMigrationManager *)manager
                                               error:(NSError *__autoreleasing  _Nullable *)error {
-    DSDLog(@"Deleting Instance %@",sInstance);
+    DSLog(@"Deleting Instance %@",sInstance);
     return YES;
 }
 
@@ -31,7 +31,7 @@
                                     entityMapping:(NSEntityMapping *)mapping
                                           manager:(NSMigrationManager *)manager
                                             error:(NSError *__autoreleasing  _Nullable *)error {
-    DSDLog(@"Deleting relationships on %@",dInstance);
+    DSLog(@"Deleting relationships on %@",dInstance);
     return YES;
 }
 

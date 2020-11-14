@@ -31,7 +31,7 @@
 @implementation DSDAPIGRPCResponseHandler
 
 - (void)didReceiveInitialMetadata:(nullable NSDictionary *)initialMetadata {
-    DSDLog(@"didReceiveInitialMetadata");
+    DSLog(@"didReceiveInitialMetadata");
 }
 
 - (void)didReceiveProtoMessage:(nullable GPBMessage *)message {
@@ -62,7 +62,7 @@
             self.decodingError = error;
         }
     }
-    DSDLog(@"didReceiveProtoMessage");
+    DSLog(@"didReceiveProtoMessage");
 }
 
 - (void)didCloseWithTrailingMetadata:(nullable NSDictionary *)trailingMetadata
@@ -74,19 +74,19 @@
         if (self.errorHandler) {
             self.errorHandler(error);
         }
-        DSDLog(@"error in didCloseWithTrailingMetadata %@",error);
+        DSLog(@"error in didCloseWithTrailingMetadata %@",error);
         if (self.request) {
-            DSDLog(@"request contract ID was %@",self.request.contract.base58ContractId);
+            DSLog(@"request contract ID was %@",self.request.contract.base58ContractId);
         }
         
     } else {
         self.successHandler(self.responseObject);
     }
-    DSDLog(@"didCloseWithTrailingMetadata");
+    DSLog(@"didCloseWithTrailingMetadata");
 }
 
 -(void)didWriteMessage {
-    DSDLog(@"didWriteMessage");
+    DSLog(@"didWriteMessage");
 }
 
 

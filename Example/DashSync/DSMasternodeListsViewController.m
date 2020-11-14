@@ -210,7 +210,7 @@
     [self.validMerkleRootDictionary setObject:@(equal) forKey:uint256_data(masternodeList.blockHash)];
     [tableViewCell.validButton setTitle:(equal?@"V":@"X") forState:UIControlStateNormal];
     if (!equal) {
-        DSDLog(@"The merkle roots are not equal, from disk we have <%@> calculated we have <%@>",masternodeListEntity.masternodeListMerkleRoot.hexString,uint256_hex([masternodeList masternodeMerkleRoot]));
+        DSLogPrivate(@"The merkle roots are not equal, from disk we have <%@> calculated we have <%@>",masternodeListEntity.masternodeListMerkleRoot.hexString,uint256_hex([masternodeList masternodeMerkleRoot]));
     }
 }
 

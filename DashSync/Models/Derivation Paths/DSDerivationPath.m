@@ -254,8 +254,14 @@
 
                     DSBlockchainIdentityUsernameEntity * sourceUsernameEntity = [friendRequest.sourceContact.associatedBlockchainIdentity.usernames anyObject];
                     DSBlockchainIdentityUsernameEntity * destinationUsernameEntity = [friendRequest.destinationContact.associatedBlockchainIdentity.usernames anyObject];
-                    DSDLog(@"No extended public key set for the relationship between %@ and %@ (%@ receiving payments) ",sourceUsernameEntity.stringValue,destinationUsernameEntity.stringValue,sourceUsernameEntity.stringValue);
-
+#if DEBUG
+                    DSLogPrivate(@"No extended public key set for the relationship between %@ and %@ (%@ receiving payments) ",sourceUsernameEntity.stringValue,destinationUsernameEntity.stringValue,sourceUsernameEntity.stringValue);
+#else
+                    DSLog(@"No extended public key set for the relationship between %@ and %@ (%@ receiving payments) ",
+                                 @"<REDACTED-1>",
+                                 @"<REDACTED-2>",
+                                 @"<REDACTED-1>");
+#endif /* DEBUG */
                 }
             }
             #endif

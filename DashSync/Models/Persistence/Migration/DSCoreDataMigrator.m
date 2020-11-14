@@ -112,10 +112,10 @@
                                         forKey:NSURLIsExcludedFromBackupKey
                                          error:&error])
                     {
-                        DSDLog(@"Error excluding %@ from backup %@", url.lastPathComponent, error.localizedDescription);
+                        DSLog(@"Error excluding %@ from backup %@", url.lastPathComponent, error.localizedDescription);
                     }
                     else {
-                        DSDLog(@"Excluding");
+                        DSLog(@"Excluding");
                     }
                 }
             }
@@ -214,7 +214,7 @@
     }
     DSCoreDataMigrationVersionValue sourceVersion = [DSCoreDataMigrationVersion compatibleVersionForStoreMetadata:metadata];
     if (sourceVersion == NSNotFound) {
-        DSDLog(@"unknown source version at URL %@", storeURL);
+        DSLog(@"unknown source version at URL %@", storeURL);
         return @[];
     }
     

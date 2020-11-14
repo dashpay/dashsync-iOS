@@ -111,7 +111,7 @@
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:path]
                                                        cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:20.0];
     req.HTTPMethod = @"GET";
-    DSDLog(@"%@ GET: %@", req.URL.absoluteString,
+    DSLogPrivate(@"%@ GET: %@", req.URL.absoluteString,
            [[NSString alloc] initWithData:req.HTTPBody encoding:NSUTF8StringEncoding]);
     
     [[[NSURLSession sharedSession] dataTaskWithRequest:req
@@ -124,7 +124,7 @@
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
         
         if (error) {
-            DSDLog(@"Error decoding response %@",[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+            DSLogPrivate(@"Error decoding response %@",[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             completion(nil,
                        [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:
                                                                                     [NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
@@ -168,7 +168,7 @@
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:path]
                                                        cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:20.0];
     req.HTTPMethod = @"GET";
-    DSDLog(@"%@ GET: %@", req.URL.absoluteString,
+    DSLogPrivate(@"%@ GET: %@", req.URL.absoluteString,
            [[NSString alloc] initWithData:req.HTTPBody encoding:NSUTF8StringEncoding]);
     
     [[[NSURLSession sharedSession] dataTaskWithRequest:req
@@ -181,7 +181,7 @@
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
         
         if (error) {
-            DSDLog(@"Error decoding response %@",[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+            DSLogPrivate(@"Error decoding response %@",[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             completion(nil,
                        [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:
                                                                                     [NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
@@ -209,7 +209,7 @@
                                                         stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
     req.HTTPMethod = @"POST";
     req.HTTPBody = [[args componentsJoinedByString:@"&"] dataUsingEncoding:NSUTF8StringEncoding];
-    DSDLog(@"%@ POST: %@", req.URL.absoluteString,
+    DSLogPrivate(@"%@ POST: %@", req.URL.absoluteString,
            [[NSString alloc] initWithData:req.HTTPBody encoding:NSUTF8StringEncoding]);
     
     [[[NSURLSession sharedSession] dataTaskWithRequest:req
@@ -222,7 +222,7 @@
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
         
         if (error || ! [json isKindOfClass:[NSDictionary class]] || ! [json objectForKey:@"items"]) {
-            DSDLog(@"Error decoding response %@",[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+            DSLogPrivate(@"Error decoding response %@",[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             completion(nil,[NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:
                                                                                     [NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
                                                                                      req.URL.host]}]);
@@ -263,7 +263,7 @@
                                                         stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
     req.HTTPMethod = @"POST";
     req.HTTPBody = [[args componentsJoinedByString:@"&"] dataUsingEncoding:NSUTF8StringEncoding];
-    DSDLog(@"%@ POST: %@", req.URL.absoluteString,
+    DSLogPrivate(@"%@ POST: %@", req.URL.absoluteString,
            [[NSString alloc] initWithData:req.HTTPBody encoding:NSUTF8StringEncoding]);
     
     [[[NSURLSession sharedSession] dataTaskWithRequest:req
@@ -279,7 +279,7 @@
         DSUTXO o;
         
         if (error || ! [json isKindOfClass:[NSArray class]]) {
-            DSDLog(@"Error decoding response %@",[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+            DSLogPrivate(@"Error decoding response %@",[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             completion(nil, nil, nil,
                        [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:
                                                                                     [NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),

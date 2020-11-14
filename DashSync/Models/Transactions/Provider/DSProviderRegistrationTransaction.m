@@ -121,7 +121,7 @@
     self.votingKeyHash = votingKeyHash;
     self.operatorReward = operatorReward;
     self.scriptPayout = scriptPayout;
-    DSDLog(@"Creating provider (masternode) with ownerKeyHash %@",uint160_data(ownerKeyHash));
+    DSLogPrivate(@"Creating provider (masternode) with ownerKeyHash %@",uint160_data(ownerKeyHash));
     return self;
 }
 
@@ -151,7 +151,7 @@
     self.scriptPayout = scriptPayout;
     [self hasSetInputsAndOutputs];
     
-    DSDLog(@"Creating provider (masternode) with ownerKeyHash %@",uint160_data(ownerKeyHash));
+    DSLogPrivate(@"Creating provider (masternode) with ownerKeyHash %@",uint160_data(ownerKeyHash));
     return self;
 }
 

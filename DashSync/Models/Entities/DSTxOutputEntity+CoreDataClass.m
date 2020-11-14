@@ -55,7 +55,7 @@
             self.account = self.localAddress.derivationPath.account; //this is to make the outputs easily accessible for an account
         }
     } else {
-        DSDLog(@"Output had no address");
+        DSLog(@"Output had no address");
     }
     return self;
 }

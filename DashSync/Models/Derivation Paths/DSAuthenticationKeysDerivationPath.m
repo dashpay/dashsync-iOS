@@ -107,7 +107,11 @@ type:(DSDerivationPathType)type signingAlgorithm:(DSKeyType)signingAlgorithm ref
                     @autoreleasepool {
                         while (e.index >= self.mOrderedAddresses.count) [self.mOrderedAddresses addObject:[NSNull null]];
                         if (![e.address isValidDashAddressOnChain:self.wallet.chain]) {
-                            DSDLog(@"address %@ loaded but was not valid on chain %@",e.address,self.wallet.chain.name);
+#if DEBUG
+                            DSLogPrivate(@"address %@ loaded but was not valid on chain %@",e.address,self.wallet.chain.name);
+#else
+                            DSLog(@"address %@ loaded but was not valid on chain %@",@"<REDACTED>",self.wallet.chain.name);
+#endif
                             continue;
                         }
                         self.mOrderedAddresses[e.index] = e.address;
@@ -177,7 +181,7 @@ type:(DSDerivationPathType)type signingAlgorithm:(DSKeyType)signingAlgorithm ref
             NSString *addr = [[DSKey keyWithPublicKeyData:pubKey forKeyType:self.signingAlgorithm] addressForChain:self.chain];
             
             if (! addr) {
-                DSDLog(@"error generating keys");
+                DSLog(@"error generating keys");
                 if (error) {
                     *error = [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
                                                                                           DSLocalizedString(@"Error generating public keys", nil)}];

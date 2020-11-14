@@ -70,7 +70,7 @@
     if (inet_aton([ipAddressString UTF8String], &addrV4) != 0) {
         uint32_t ip = ntohl(addrV4.s_addr);
         ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
-        DSDLog(@"%08x", ip);
+        DSLogPrivate(@"%08x", ip);
     }
     uint16_t port = [portString intValue];
     [self.localMasternode updateTransactionFundedByAccount:self.account toIPAddress:ipAddress port:port payoutAddress:nil completion:^(DSProviderUpdateServiceTransaction * _Nonnull providerUpdateServiceTransaction) {

@@ -235,8 +235,8 @@ typedef NS_ENUM(uint16_t, DSBlockPosition) {
     dispatch_sync(self.networkingQueue, ^{
         self.chainManagedObjectContext = [NSManagedObjectContext chainContext];
     });
-    //    DSDLog(@"%@",[NSData dataWithUInt256:self.checkpoints[0].checkpointHash]);
-    //    DSDLog(@"%@",[NSData dataWithUInt256:self.genesisHash]);
+    //    DSLog(@"%@",[NSData dataWithUInt256:self.checkpoints[0].checkpointHash]);
+    //    DSLog(@"%@",[NSData dataWithUInt256:self.genesisHash]);
     self.devnetIdentifier = identifier;
     self.headersMaxAmount = DEVNET_DEFAULT_HEADERS_MAX_AMOUNT;
     return self;
@@ -264,7 +264,7 @@ typedef NS_ENUM(uint16_t, DSBlockPosition) {
         _mainnet = [[DSChain alloc] initWithType:DSChainType_MainNet checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:mainnet_checkpoint_array count:(sizeof(mainnet_checkpoint_array)/sizeof(*mainnet_checkpoint_array))]];
         
         inSetUp = TRUE;
-        //DSDLog(@"%@",[NSData dataWithUInt256:_mainnet.checkpoints[0].checkpointHash]);
+        //DSLog(@"%@",[NSData dataWithUInt256:_mainnet.checkpoints[0].checkpointHash]);
     });
     if (inSetUp) {
         [[NSManagedObjectContext chainContext] performBlockAndWait:^{
@@ -1373,11 +1373,11 @@ static dispatch_once_t devnetToken = 0;
     for (DSWallet * wallet in self.wallets) {
         for (DSTransaction *tx in wallet.allTransactions) { // find TXOs spent within the last 100 blocks
             if (tx.blockHeight != TX_UNCONFIRMED && tx.blockHeight + 100 < self.lastSyncBlockHeight) {
-                //DSDLog(@"Not adding transaction %@ inputs to bloom filter",uint256_hex(tx.txHash));
+                //DSLog(@"Not adding transaction %@ inputs to bloom filter",uint256_hex(tx.txHash));
                 continue; // the transaction is confirmed for at least 100 blocks, then break
             }
             
-            //DSDLog(@"Adding transaction %@ inputs to bloom filter",uint256_hex(tx.txHash));
+            //DSLog(@"Adding transaction %@ inputs to bloom filter",uint256_hex(tx.txHash));
             
             i = 0;
             
@@ -1625,7 +1625,7 @@ static dispatch_once_t devnetToken = 0;
     }
     
     if (_lastTerminalBlock) {
-        DSDLog(@"last terminal block at height %d chosen from checkpoints (hash is %@)",_lastTerminalBlock.height,[NSData dataWithUInt256:_lastTerminalBlock.blockHash].hexString);
+        DSLog(@"last terminal block at height %d chosen from checkpoints (hash is %@)",_lastTerminalBlock.height,[NSData dataWithUInt256:_lastTerminalBlock.blockHash].hexString);
     }
 }
 
@@ -1653,7 +1653,7 @@ static dispatch_once_t devnetToken = 0;
     }
     
     if (_lastSyncBlock) {
-        DSDLog(@"last sync block at height %d chosen from checkpoints for chain %@ (hash is %@)", _lastSyncBlock.height, self.name, [NSData dataWithUInt256:_lastSyncBlock.blockHash].hexString);
+        DSLog(@"last sync block at height %d chosen from checkpoints for chain %@ (hash is %@)", _lastSyncBlock.height, self.name, [NSData dataWithUInt256:_lastSyncBlock.blockHash].hexString);
     }
 }
 
@@ -1875,10 +1875,10 @@ static dispatch_once_t devnetToken = 0;
 - (BOOL)addBlock:(DSBlock *)block receivedAsHeader:(BOOL)isHeaderOnly fromPeer:(DSPeer*)peer
 {
     if (peer && !self.chainManager.syncPhase) {
-        DSDLog(@"Block was received from peer after reset, ignoring it");
+        DSLog(@"Block was received from peer after reset, ignoring it");
         return FALSE;
     }
-    //DSDLog(@"a block %@",uint256_hex(block.blockHash));
+    //DSLog(@"a block %@",uint256_hex(block.blockHash));
     //All blocks will be added from same delegateQueue
     NSArray *txHashes = block.transactionHashes;
     
@@ -1913,10 +1913,10 @@ static dispatch_once_t devnetToken = 0;
 #if LOG_PREV_BLOCKS_ON_ORPHAN
         NSSortDescriptor * sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"height" ascending:TRUE];
         for (DSBlock * merkleBlock in [[self.blocks allValues] sortedArrayUsingDescriptors:@[sortDescriptor]]) {
-            DSDLog(@"printing previous block at height %d : %@",merkleBlock.height,merkleBlock.blockHashValue);
+            DSLog(@"printing previous block at height %d : %@",merkleBlock.height,merkleBlock.blockHashValue);
         }
 #endif
-        DSDLog(@"%@:%d relayed orphan block %@, previous %@, height %d, last block is %@, lastBlockHeight %d, time %@", peer.host?peer.host:@"TEST", peer.port,
+        DSLog(@"%@:%d relayed orphan block %@, previous %@, height %d, last block is %@, lastBlockHeight %d, time %@", peer.host?peer.host:@"TEST", peer.port,
                uint256_reverse_hex(block.blockHash), uint256_reverse_hex(block.prevBlock), block.height, uint256_reverse_hex(self.lastTerminalBlock.blockHash), self.lastSyncBlockHeight,[NSDate dateWithTimeIntervalSince1970:block.timestamp]);
         
         if (peer) {
@@ -1991,7 +1991,7 @@ static dispatch_once_t devnetToken = 0;
         uint32_t foundDifficulty = 0;
         if ((block.height > self.minimumDifficultyBlocks) && (block.height > (lastCheckpoint.height + DGW_PAST_BLOCKS_MAX)) &&
             ![block verifyDifficultyWithPreviousBlocks:(blockPosition & DSBlockPosition_Terminal)?self.mTerminalBlocks:self.mSyncBlocks rDifficulty:&foundDifficulty]) {
-            DSDLog(@"%@:%d relayed block with invalid difficulty height %d target %x foundTarget %x, blockHash: %@", peer.host, peer.port,
+            DSLog(@"%@:%d relayed block with invalid difficulty height %d target %x foundTarget %x, blockHash: %@", peer.host, peer.port,
                    block.height,block.target,foundDifficulty, blockHash);
             
             if (peer) {
@@ -2002,7 +2002,7 @@ static dispatch_once_t devnetToken = 0;
         
         UInt256 difficulty = setCompactLE(block.target);
         if (uint256_sup(block.blockHash, difficulty)) {
-            DSDLog(@"%@:%d relayed block with invalid block hash %d target %x, blockHash: %@ difficulty: %@", peer.host, peer.port,
+            DSLog(@"%@:%d relayed block with invalid block hash %d target %x, blockHash: %@ difficulty: %@", peer.host, peer.port,
                    block.height,block.target, uint256_bin(block.blockHash),uint256_bin(difficulty));
             
             if (peer) {
@@ -2018,7 +2018,7 @@ static dispatch_once_t devnetToken = 0;
         
         // verify block chain checkpoints
         if (checkpoint && ! uint256_eq(block.blockHash, checkpoint.blockHash)) {
-            DSDLog(@"%@:%d relayed a block that differs from the checkpoint at height %d, blockHash: %@, expected: %@",
+            DSLog(@"%@:%d relayed a block that differs from the checkpoint at height %d, blockHash: %@, expected: %@",
                    peer.host, peer.port, block.height, blockHash, uint256_hex(checkpoint.blockHash));
             if (peer) {
                 [self.chainManager chain:self badBlockReceivedFromPeer:peer];
@@ -2031,7 +2031,7 @@ static dispatch_once_t devnetToken = 0;
     
     if ((phase == DSChainSyncPhase_ChainSync || phase == DSChainSyncPhase_Synced) && uint256_eq(block.prevBlock, self.lastSyncBlockHash)) { // new block extends sync chain
         if ((block.height % 1000) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
-            DSDLog(@"adding sync block on %@ at height: %d from peer %@", self.name, block.height,peer.host);
+            DSLog(@"adding sync block on %@ at height: %d from peer %@", self.name, block.height,peer.host);
         }
         @synchronized (self.mSyncBlocks) {
             self.mSyncBlocks[blockHash] = block;
@@ -2043,7 +2043,7 @@ static dispatch_once_t devnetToken = 0;
         
         if (!equivalentTerminalBlock && uint256_eq(block.prevBlock, self.lastTerminalBlock.blockHash)) {
             if ((block.height % 1000) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
-                DSDLog(@"adding terminal block on %@ (caught up) at height: %d with hash: %@ from peer %@", self.name, block.height,uint256_hex(block.blockHash),peer.host?peer.host:@"TEST");
+                DSLog(@"adding terminal block on %@ (caught up) at height: %d with hash: %@ from peer %@", self.name, block.height,uint256_hex(block.blockHash),peer.host?peer.host:@"TEST");
             }
             @synchronized (self.mTerminalBlocks) {
                 self.mTerminalBlocks[blockHash] = block;
@@ -2063,7 +2063,7 @@ static dispatch_once_t devnetToken = 0;
         
     } else if (uint256_eq(block.prevBlock, self.lastTerminalBlock.blockHash)) { // new block extends terminal chain
         if ((block.height % 100) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
-            DSDLog(@"adding terminal block on %@ at height: %d with hash: %@ from peer %@", self.name, block.height,uint256_hex(block.blockHash),peer.host?peer.host:@"TEST");
+            DSLog(@"adding terminal block on %@ at height: %d with hash: %@ from peer %@", self.name, block.height,uint256_hex(block.blockHash),peer.host?peer.host:@"TEST");
         }
         @synchronized (self.mTerminalBlocks) {
             self.mTerminalBlocks[blockHash] = block;
@@ -2076,7 +2076,7 @@ static dispatch_once_t devnetToken = 0;
         onMainChain = TRUE;
     } else if ((phase == DSChainSyncPhase_ChainSync || phase == DSChainSyncPhase_Synced) && self.mSyncBlocks[blockHash] != nil) { // we already have the block (or at least the header)
         if ((block.height % 1) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
-            DSDLog(@"%@:%d relayed existing block at height %d", peer.host, peer.port, block.height);
+            DSLog(@"%@:%d relayed existing block at height %d", peer.host, peer.port, block.height);
         }
         
         @synchronized (self.mSyncBlocks) {
@@ -2101,7 +2101,7 @@ static dispatch_once_t devnetToken = 0;
         }
     } else if (self.mTerminalBlocks[blockHash] != nil && (blockPosition & DSBlockPosition_Terminal)) { // we already have the block (or at least the header)
         if ((block.height % 1) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
-           DSDLog(@"%@:%d relayed existing block at height %d", peer.host, peer.port, block.height);
+            DSLog(@"%@:%d relayed existing block at height %d", peer.host, peer.port, block.height);
         }
 
         @synchronized (self.mTerminalBlocks) {
@@ -2122,24 +2122,24 @@ static dispatch_once_t devnetToken = 0;
         }
     } else { // new block is on a fork
         if (block.height <= [self lastCheckpoint].height) { // fork is older than last checkpoint
-            DSDLog(@"ignoring block on fork older than most recent checkpoint, fork height: %d, blockHash: %@",
+            DSLog(@"ignoring block on fork older than most recent checkpoint, fork height: %d, blockHash: %@",
                    block.height, blockHash);
             return TRUE;
         }
         
         if (block.height <= self.lastChainLock.height) {
-            DSDLog(@"ignoring block on fork when main chain is chainlocked: %d, blockHash: %@",
+            DSLog(@"ignoring block on fork when main chain is chainlocked: %d, blockHash: %@",
                    block.height, blockHash);
             return TRUE;
         }
         
-        DSDLog(@"potential chain fork to height %d blockPosition %d", block.height, blockPosition);
+        DSLog(@"potential chain fork to height %d blockPosition %d", block.height, blockPosition);
         if (blockPosition & DSBlockPosition_Terminal) {
             @synchronized (self.mTerminalBlocks) {
                 self.mTerminalBlocks[blockHash] = block;
             }
             if (uint256_supeq(self.lastTerminalBlock.chainWork, block.chainWork)) return TRUE; // if fork is shorter than main chain, ignore it for now
-            DSDLog(@"found potential chain fork on height %d", block.height);
+            DSLog(@"found potential chain fork on height %d", block.height);
             
             DSBlock *b = block, *b2 = self.lastTerminalBlock;
             
@@ -2149,11 +2149,11 @@ static dispatch_once_t devnetToken = 0;
             }
             
             if (!uint256_eq(b.blockHash, b2.blockHash) && b2.chainLocked) { //intermediate chain locked block
-                DSDLog(@"no reorganizing chain to height %d because of chainlock at height %d", block.height, b2.height);
+                DSLog(@"no reorganizing chain to height %d because of chainlock at height %d", block.height, b2.height);
                 return TRUE;
             }
             
-            DSDLog(@"reorganizing chain from height %d, new height is %d", b.height, block.height);
+            DSLog(@"reorganizing chain from height %d, new height is %d", b.height, block.height);
             
             self.lastTerminalBlock = block;
             if (peer) {
@@ -2177,7 +2177,7 @@ static dispatch_once_t devnetToken = 0;
             }
 
             if (uint256_supeq(self.lastSyncBlock.chainWork, block.chainWork)) return TRUE; // if fork is shorter than main chain, ignore it for now
-            DSDLog(@"found sync chain fork on height %d", block.height);
+            DSLog(@"found sync chain fork on height %d", block.height);
             if ((phase == DSChainSyncPhase_ChainSync || phase == DSChainSyncPhase_Synced) && !uint256_supeq(self.lastTerminalBlock.chainWork, block.chainWork)) {
                 DSBlock *b = block, *b2 = self.lastTerminalBlock;
                 
@@ -2187,9 +2187,9 @@ static dispatch_once_t devnetToken = 0;
                 }
                 
                 if (!uint256_eq(b.blockHash, b2.blockHash) && b2.chainLocked) { //intermediate chain locked block
-                    DSDLog(@"no reorganizing chain to height %d because of chainlock at height %d", block.height, b2.height);
+                    DSLog(@"no reorganizing chain to height %d because of chainlock at height %d", block.height, b2.height);
                 } else {
-                    DSDLog(@"reorganizing terminal chain from height %d, new height is %d", b.height, block.height);
+                    DSLog(@"reorganizing terminal chain from height %d, new height is %d", b.height, block.height);
                     self.lastTerminalBlock = block;
                     if (peer) {
                         peer.currentBlockHeight = block.height; //might be download peer instead
@@ -2205,11 +2205,11 @@ static dispatch_once_t devnetToken = 0;
             }
             
             if (!uint256_eq(b.blockHash, b2.blockHash) && b2.chainLocked) { //intermediate chain locked block
-                DSDLog(@"no reorganizing sync chain to height %d because of chainlock at height %d", block.height, b2.height);
+                DSLog(@"no reorganizing sync chain to height %d because of chainlock at height %d", block.height, b2.height);
                 return TRUE;
             }
             
-            DSDLog(@"reorganizing chain from height %d, new height is %d", b.height, block.height);
+            DSLog(@"reorganizing chain from height %d, new height is %d", b.height, block.height);
             
             NSMutableArray *txHashes = [NSMutableArray array];
             // mark transactions after the join point as unconfirmed
@@ -2320,10 +2320,10 @@ static dispatch_once_t devnetToken = 0;
 //#if LOG_PREV_BLOCKS_ON_ORPHAN
 //        NSSortDescriptor * sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"height" ascending:TRUE];
 //        for (DSBlock * merkleBlock in [[self.blocks allValues] sortedArrayUsingDescriptors:@[sortDescriptor]]) {
-//            DSDLog(@"printing previous block at height %d : %@",merkleBlock.height,merkleBlock.blockHashValue);
+//            DSLog(@"printing previous block at height %d : %@",merkleBlock.height,merkleBlock.blockHashValue);
 //        }
 //#endif
-//        DSDLog(@"%@:%d relayed orphan block %@, previous %@, height %d, last block is %@, lastBlockHeight %d, time %@", peer.host, peer.port,
+//        DSLog(@"%@:%d relayed orphan block %@, previous %@, height %d, last block is %@, lastBlockHeight %d, time %@", peer.host, peer.port,
 //               uint256_reverse_hex(terminalBlock.blockHash), uint256_reverse_hex(terminalBlock.prevBlock), terminalBlock.height, uint256_reverse_hex(self.lastTerminalBlock.blockHash), self.lastSyncBlockHeight,[NSDate dateWithTimeIntervalSince1970:terminalBlock.timestamp]);
 //
 //        [self.chainManager chain:self receivedOrphanBlock:terminalBlock fromPeer:peer];
@@ -2338,7 +2338,7 @@ static dispatch_once_t devnetToken = 0;
 //    txTime = terminalBlock.timestamp/2 + prev.timestamp/2;
 //
 //    if (terminalBlock.height % 1 == 0) {
-//        DSDLog(@"Adding terminal block at height %d %@",terminalBlock.height,uint256_hex(terminalBlock.blockHash));
+//        DSLog(@"Adding terminal block at height %d %@",terminalBlock.height,uint256_hex(terminalBlock.blockHash));
 //    }
 //
 //
@@ -2356,7 +2356,7 @@ static dispatch_once_t devnetToken = 0;
 //                b = self.terminalBlocks[b.prevBlockValue];
 //            }
 //            [self.terminalBlocks removeObjectsForKeys:blocksToRemove];
-//            //DSDLog(@"%lu blocks remaining",(unsigned long)[self.blocks count]);
+//            //DSLog(@"%lu blocks remaining",(unsigned long)[self.blocks count]);
 //        }
 //    }
 //
@@ -2368,7 +2368,7 @@ static dispatch_once_t devnetToken = 0;
 //        if ((terminalBlock.height > (lastCheckpoint.height + DGW_PAST_BLOCKS_MAX)) &&
 //            ![terminalBlock verifyDifficultyWithPreviousBlocks:self.terminalBlocks]) {
 //            uint32_t foundDifficulty = [terminalBlock darkGravityWaveTargetWithPreviousBlocks:self.terminalBlocks];
-//            DSDLog(@"%@:%d relayed header with invalid difficulty height %d target %x foundTarget %x, blockHash: %@", peer.host, peer.port,
+//            DSLog(@"%@:%d relayed header with invalid difficulty height %d target %x foundTarget %x, blockHash: %@", peer.host, peer.port,
 //                   terminalBlock.height,terminalBlock.target,foundDifficulty, blockHash);
 //            [self.chainManager chain:self badBlockReceivedFromPeer:peer];
 //            return FALSE;
@@ -2379,7 +2379,7 @@ static dispatch_once_t devnetToken = 0;
 //
 //    // verify block chain checkpoints
 //    if (checkpoint && ! uint256_eq(terminalBlock.blockHash, checkpoint.checkpointHash)) {
-//        DSDLog(@"%@:%d relayed a block that differs from the checkpoint at height %d, blockHash: %@, expected: %@",
+//        DSLog(@"%@:%d relayed a block that differs from the checkpoint at height %d, blockHash: %@, expected: %@",
 //               peer.host, peer.port, terminalBlock.height, blockHash, uint256_hex(checkpoint.checkpointHash));
 //        [self.chainManager chain:self badBlockReceivedFromPeer:peer];
 //        return FALSE;
@@ -2389,7 +2389,7 @@ static dispatch_once_t devnetToken = 0;
 //
 //    if (uint256_eq(terminalBlock.prevBlock, self.lastTerminalBlock.blockHash)) { // new block extends main chain
 //        if ((terminalBlock.height % self.headersMaxAmount) == 0 || terminalBlock.height > peer.lastBlockHeight) {
-//            DSDLog(@"adding header on %@ at height: %d from peer %@", self.name, terminalBlock.height,peer.host);
+//            DSLog(@"adding header on %@ at height: %d from peer %@", self.name, terminalBlock.height,peer.host);
 //        }
 //        @synchronized (self.terminalBlocks) {
 //            self.terminalBlocks[blockHash] = terminalBlock;
@@ -2401,13 +2401,13 @@ static dispatch_once_t devnetToken = 0;
 //    }
 //    else if (self.terminalBlocks[blockHash] == nil) { // new header is a new orphan
 //        if (terminalBlock.height <= [self lastCheckpoint].height) { // fork is older than last checkpoint
-//            DSDLog(@"ignoring header on fork older than most recent checkpoint, fork height: %d, blockHash: %@",
+//            DSLog(@"ignoring header on fork older than most recent checkpoint, fork height: %d, blockHash: %@",
 //                   terminalBlock.height, blockHash);
 //            return TRUE;
 //        }
 //
 //
-//        DSDLog(@"chain header fork to height %d", terminalBlock.height);
+//        DSLog(@"chain header fork to height %d", terminalBlock.height);
 //        @synchronized (self.terminalBlocks) {
 //            self.terminalBlocks[blockHash] = terminalBlock;
 //        }
@@ -2421,7 +2421,7 @@ static dispatch_once_t devnetToken = 0;
 //            if (b.height < b2.height) b2 = self.terminalBlocks[b2.prevBlockValue];
 //        }
 //
-//        DSDLog(@"reorganizing chain from height %d, new height is %d", b.height, terminalBlock.height);
+//        DSLog(@"reorganizing chain from height %d, new height is %d", b.height, terminalBlock.height);
 //
 //        // mark transactions after the join point as unconfirmed
 //        for (DSWallet * wallet in self.wallets) {
@@ -2445,7 +2445,7 @@ static dispatch_once_t devnetToken = 0;
 //
 //    DSBlock * lastTerminalBlock = self.lastTerminalBlock;
 //
-//    //DSDLog(@"%@:%d added block at height %d target %x blockHash: %@", peer.host, peer.port,
+//    //DSLog(@"%@:%d added block at height %d target %x blockHash: %@", peer.host, peer.port,
 //    //      block.height,block.target, blockHash);
 //
 //    if (checkpoint && checkpoint == [self lastCheckpointHavingMasternodeList]) {
@@ -2536,7 +2536,7 @@ static dispatch_once_t devnetToken = 0;
             DSMerkleBlock * lastTerminalBlock = [[lastTerminalBlocks firstObject] merkleBlock];
             self->_lastTerminalBlock = lastTerminalBlock;
             if (lastTerminalBlock) {
-                DSDLog(@"last terminal block at height %d recovered from db (hash is %@)",lastTerminalBlock.height,[NSData dataWithUInt256:lastTerminalBlock.blockHash].hexString);
+                DSLog(@"last terminal block at height %d recovered from db (hash is %@)",lastTerminalBlock.height,[NSData dataWithUInt256:lastTerminalBlock.blockHash].hexString);
             }
         }];
         if (!_lastTerminalBlock) {
@@ -2771,7 +2771,7 @@ static dispatch_once_t devnetToken = 0;
         b = [self.insightVerifiedBlocksByHashDictionary objectForKey:uint256_data(blockhash)];
         return b.height;
     }
-    DSDLog(@"Requesting unknown blockhash %@ (it's probably being added asyncronously)",uint256_reverse_hex(blockhash));
+    DSLog(@"Requesting unknown blockhash %@ (it's probably being added asyncronously)",uint256_reverse_hex(blockhash));
     return UINT32_MAX;
 }
 
@@ -3640,7 +3640,7 @@ static dispatch_once_t devnetToken = 0;
             [entities addObject:e];
         }
         for (DSTransactionHashEntity *e in entities) {
-            DSDLog(@"blockHeight is %u for %@",e.blockHeight,e.txHash);
+            DSLogPrivate(@"blockHeight is %u for %@",e.blockHeight,e.txHash);
         }
         self.transactionHashHeights = [NSMutableDictionary dictionary];
         self.transactionHashTimestamps = [NSMutableDictionary dictionary];
@@ -3668,7 +3668,7 @@ static dispatch_once_t devnetToken = 0;
         if ([[DSOptionsManager sharedInstance] keepHeaders]) {
             //only remove orphan chains
             NSArray<DSMerkleBlockEntity *> * recentOrphans = [DSMerkleBlockEntity objectsInContext:self.chainManagedObjectContext matching:@"(chain == %@) && (height > %u) && !(blockHash in %@)",[self chainEntityInContext:self.chainManagedObjectContext],startHeight,blocks.allKeys];
-            if ([recentOrphans count])  DSDLog(@"%lu recent orphans will be removed from disk",(unsigned long)[recentOrphans count]);
+            if ([recentOrphans count])  DSLog(@"%lu recent orphans will be removed from disk",(unsigned long)[recentOrphans count]);
             [DSMerkleBlockEntity deleteObjects:recentOrphans inContext:self.chainManagedObjectContext];
         } else {
             //remember to not delete blocks needed for quorums

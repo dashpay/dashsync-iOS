@@ -287,7 +287,7 @@
                 [self.cachedBlockHashHeights setObject:@(masternodeListEntity.block.height) forKey:uint256_data(masternodeList.blockHash)];
                 [simplifiedMasternodeEntryPool addEntriesFromDictionary:masternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash];
                 [quorumEntryPool addEntriesFromDictionary:masternodeList.quorums];
-                DSDLog(@"Loading Masternode List at height %u for blockHash %@ with %lu entries",masternodeList.height,uint256_hex(masternodeList.blockHash),(unsigned long)masternodeList.simplifiedMasternodeEntries.count);
+                DSLog(@"Loading Masternode List at height %u for blockHash %@ with %lu entries",masternodeList.height,uint256_hex(masternodeList.blockHash),(unsigned long)masternodeList.simplifiedMasternodeEntries.count);
                 if (i == masternodeListEntities.count - 1) {
                     self.currentMasternodeList = masternodeList;
                 }
@@ -349,7 +349,7 @@
         if (masternodeList) {
             [self.masternodeListsByBlockHash setObject:masternodeList forKey:blockHash];
             [self.masternodeListsBlockHashStubs removeObject:blockHash];
-            DSDLog(@"Loading Masternode List at height %u for blockHash %@ with %lu entries",masternodeList.height,uint256_hex(masternodeList.blockHash),(unsigned long)masternodeList.simplifiedMasternodeEntries.count);
+            DSLog(@"Loading Masternode List at height %u for blockHash %@ with %lu entries",masternodeList.height,uint256_hex(masternodeList.blockHash),(unsigned long)masternodeList.simplifiedMasternodeEntries.count);
         }
     }];
     return masternodeList;
@@ -377,7 +377,7 @@
         masternodeList = [self loadMasternodeListAtBlockHash:uint256_data(blockHash)];
     }
     if (!masternodeList) {
-        DSDLog(@"No masternode list at %@",uint256_hex(blockHash));
+        DSLog(@"No masternode list at %@",uint256_hex(blockHash));
     }
     return masternodeList;
 }
@@ -444,7 +444,7 @@
         [leftToGet removeObject:uint256_data(self.processingMasternodeListBlockHash)];
         if ((masternodeListCount == [self knownMasternodeListsCount]) && [masternodeListsInRetrieval isEqualToSet:leftToGet]) {
             //Nothing has changed
-            DSDLog(@"TimedOut");
+            DSLog(@"TimedOut");
             //timeout
             self.timedOutAttempt++;
             [self.peerManager.downloadPeer disconnect];
@@ -457,14 +457,14 @@
 }
 
 -(void)dequeueMasternodeListRequest {
-    DSDLog(@"Dequeued Masternode List Request");
+    DSLog(@"Dequeued Masternode List Request");
     if (![self.masternodeListRetrievalQueue count]) {
-        DSDLog(@"No masternode lists in retrieval");
+        DSLog(@"No masternode lists in retrieval");
         [self.chain.chainManager chainFinishedSyncingMasternodeListsAndQuorums:self.chain];
         return;
     }
     if ([self.masternodeListsInRetrieval count]) {
-        DSDLog(@"A masternode list is already in retrieval");
+        DSLog(@"A masternode list is already in retrieval");
         return;
     }
     if (!self.peerManager.downloadPeer || (self.peerManager.downloadPeer.status != DSPeerStatus_Connected)) {
@@ -514,7 +514,7 @@
                     uint32_t previousMasternodeInQueueHeight = (pos?[self heightForBlockHash:previousMasternodeInQueueBlockHash]:UINT32_MAX);
                     UInt256 previousBlockHash = pos?(previousMasternodeAlreadyKnownHeight > previousMasternodeInQueueHeight? previousMasternodeAlreadyKnownBlockHash : previousMasternodeInQueueBlockHash):previousMasternodeAlreadyKnownBlockHash;
                     
-                    DSDLog(@"Requesting masternode list and quorums from %u to %u (%@ to %@)",[self heightForBlockHash:previousBlockHash],[self heightForBlockHash:blockHash], uint256_reverse_hex(previousBlockHash), uint256_reverse_hex(blockHash));
+                    DSLog(@"Requesting masternode list and quorums from %u to %u (%@ to %@)",[self heightForBlockHash:previousBlockHash],[self heightForBlockHash:blockHash], uint256_reverse_hex(previousBlockHash), uint256_reverse_hex(blockHash));
                     NSAssert(([self heightForBlockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash),@"This block height should be known");
                     [self.peerManager.downloadPeer sendGetMasternodeListFromPreviousBlockHash:previousBlockHash forBlockHash:blockHash];
                     [self.masternodeListsInRetrieval addObject:uint256_data(blockHash)];
@@ -524,7 +524,7 @@
                 }
             }];
         } else {
-            DSDLog(@"Missing block (%@)",uint256_reverse_hex(blockHash));
+            DSLog(@"Missing block (%@)",uint256_reverse_hex(blockHash));
             [self.masternodeListRetrievalQueue removeObject:uint256_data(blockHash)];
         }
     }
@@ -539,17 +539,17 @@
             return;
         }
         if ([self.masternodeListsByBlockHash.allKeys containsObject:uint256_data(merkleBlock.blockHash)]) {
-            DSDLog(@"Already have that masternode list %u",merkleBlock.height);
+            DSLog(@"Already have that masternode list %u",merkleBlock.height);
             return;
         }
         if ([self.masternodeListsBlockHashStubs containsObject:uint256_data(merkleBlock.blockHash)]) {
-            DSDLog(@"Already have that masternode list in stub %u",merkleBlock.height);
+            DSLog(@"Already have that masternode list in stub %u",merkleBlock.height);
             return;
         }
         
         self.lastQueriedBlockHash = merkleBlock.blockHash;
         [self.masternodeListQueriesNeedingQuorumsValidated addObject:uint256_data(merkleBlock.blockHash)];
-        DSDLog(@"Getting masternode list %u",merkleBlock.height);
+        DSLog(@"Getting masternode list %u",merkleBlock.height);
         BOOL emptyRequestQueue = ![self.masternodeListRetrievalQueue count];
         [self addToMasternodeRetrievalQueue:uint256_data(merkleBlock.blockHash)];
         if (emptyRequestQueue) {
@@ -581,7 +581,7 @@
             return (height1>height2)?NSOrderedDescending:NSOrderedAscending;
         }];
         for (NSData * blockHash in orderedBlockHashes) {
-            DSDLog(@"adding retrieval of masternode list at height %u to queue (%@)",[self  heightForBlockHash:blockHash.UInt256],blockHash.reverse.hexString);
+            DSLog(@"adding retrieval of masternode list at height %u to queue (%@)",[self  heightForBlockHash:blockHash.UInt256],blockHash.reverse.hexString);
         }
         [self addToMasternodeRetrievalQueueArray:orderedBlockHashes];
     }
@@ -613,7 +613,7 @@
 -(void)processRequestFromFileForBlockHash:(UInt256)blockHash completion:(void (^)(BOOL success))completion {
     DSCheckpoint * checkpoint = [self.chain checkpointForBlockHash:blockHash];
     if (!checkpoint || !checkpoint.masternodeListName || [checkpoint.masternodeListName isEqualToString:@""]) {
-        DSDLog(@"No masternode list checkpoint found at height %u",[self heightForBlockHash:blockHash]);
+        DSLog(@"No masternode list checkpoint found at height %u",[self heightForBlockHash:blockHash]);
         completion(NO);
         return;
     }
@@ -630,13 +630,13 @@
                     baseMasternodeList:nil lastBlock:block completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *masternodeList, NSDictionary *addedMasternodes, NSDictionary *modifiedMasternodes, NSDictionary *addedQuorums, NSOrderedSet *neededMissingMasternodeLists) {
                         if (!foundCoinbase || !rootMNListValid || !rootQuorumListValid || !validQuorums) {
                             completion(NO);
-                            DSDLog(@"Invalid File for block at height %u with merkleRoot %@",block.height,uint256_hex(block.merkleRoot));
+                            DSLog(@"Invalid File for block at height %u with merkleRoot %@",block.height,uint256_hex(block.merkleRoot));
                             return;
                         }
                         
                         //valid Coinbase might be false if no merkle block
                         if (block && !validCoinbase) {
-                            DSDLog(@"Invalid Coinbase for block at height %u with merkleRoot %@",block.height,uint256_hex(block.merkleRoot));
+                            DSLog(@"Invalid Coinbase for block at height %u with merkleRoot %@",block.height,uint256_hex(block.merkleRoot));
                             completion(NO);
                             return;
                         }
@@ -822,7 +822,7 @@
             if (quorumMasternodeList) {
                 validQuorums &= [potentialQuorumEntry validateWithMasternodeList:quorumMasternodeList blockHeightLookup:blockHeightLookup];
                 if (!validQuorums) {
-                    DSDLog(@"Invalid Quorum Found");
+                    DSLog(@"Invalid Quorum Found");
                 }
             } else {
                 
@@ -842,10 +842,10 @@
                         if (blockHeightLookup(potentialQuorumEntry.quorumHash) != UINT32_MAX) {
                             [neededMasternodeLists addObject:uint256_data(potentialQuorumEntry.quorumHash)];
                         } else {
-                            DSDLog(@"Quorum masternode list not found and block not available");
+                            DSLog(@"Quorum masternode list not found and block not available");
                         }
                     } else {
-                        DSDLog(@"Quorum masternode list not found and block not available");
+                        DSLog(@"Quorum masternode list not found and block not available");
                     }
                 }
             }
@@ -866,7 +866,7 @@
     BOOL rootMNListValid = uint256_eq(coinbaseTransaction.merkleRootMNList, [masternodeList masternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]);
     
     if (!rootMNListValid) {
-        DSDLog(@"Masternode Merkle root not valid for DML on block %d version %d (%@ wanted - %@ calculated)",coinbaseTransaction.height,coinbaseTransaction.version,uint256_hex(coinbaseTransaction.merkleRootMNList),uint256_hex(masternodeList.masternodeMerkleRoot));
+        DSLog(@"Masternode Merkle root not valid for DML on block %d version %d (%@ wanted - %@ calculated)",coinbaseTransaction.height,coinbaseTransaction.version,uint256_hex(coinbaseTransaction.merkleRootMNList),uint256_hex(masternodeList.masternodeMerkleRoot));
     }
     
     BOOL rootQuorumListValid = TRUE;
@@ -875,7 +875,7 @@
         rootQuorumListValid = uint256_eq(coinbaseTransaction.merkleRootLLMQList, masternodeList.quorumMerkleRoot);
         
         if (!rootQuorumListValid) {
-            DSDLog(@"Quorum Merkle root not valid for DML on block %d version %d (%@ wanted - %@ calculated)",coinbaseTransaction.height,coinbaseTransaction.version,uint256_hex(coinbaseTransaction.merkleRootLLMQList),uint256_hex(masternodeList.quorumMerkleRoot));
+            DSLog(@"Quorum Merkle root not valid for DML on block %d version %d (%@ wanted - %@ calculated)",coinbaseTransaction.height,coinbaseTransaction.version,uint256_hex(coinbaseTransaction.merkleRootLLMQList),uint256_hex(masternodeList.quorumMerkleRoot));
         }
     }
     
@@ -918,7 +918,7 @@
 -(void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)message {
 #if LOG_MASTERNODE_DIFF
     DSFullLog(@"Logging masternode DIFF message %@", message.hexString);
-    DSDLog(@"Logging masternode DIFF message hash %@",[NSData dataWithUInt256:message.SHA256].hexString);
+    DSLog(@"Logging masternode DIFF message hash %@",[NSData dataWithUInt256:message.SHA256].hexString);
 #endif
     
     self.timedOutAttempt = 0;
@@ -946,7 +946,7 @@
     NSData * blockHashData = uint256_data(blockHash);
     
     if (![self.masternodeListsInRetrieval containsObject:blockHashData]) {
-        DSDLog(@"A masternode list was received that is not in our queue");
+        DSLog(@"A masternode list was received that is not in our queue");
         return;
     }
     
@@ -954,24 +954,24 @@
     
     if ([self.masternodeListsByBlockHash objectForKey:blockHashData]) {
         //we already have this
-        DSDLog(@"We already have this masternodeList %@ (%u)",blockHashData.reverse.hexString,[self heightForBlockHash:blockHash]);
+        DSLog(@"We already have this masternodeList %@ (%u)",blockHashData.reverse.hexString,[self heightForBlockHash:blockHash]);
         return; //no need to do anything more
     }
     
     if ([self.masternodeListsBlockHashStubs containsObject:blockHashData]) {
         //we already have this
-        DSDLog(@"We already have a stub for %@ (%u)",blockHashData.reverse.hexString,[self heightForBlockHash:blockHash]);
+        DSLog(@"We already have a stub for %@ (%u)",blockHashData.reverse.hexString,[self heightForBlockHash:blockHash]);
         return; //no need to do anything more
     }
     
-    DSDLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)",uint256_reverse_hex(baseBlockHash), [self heightForBlockHash:baseBlockHash], blockHashData.reverse.hexString,[self heightForBlockHash:blockHash]);
+    DSLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)",uint256_reverse_hex(baseBlockHash), [self heightForBlockHash:baseBlockHash], blockHashData.reverse.hexString,[self heightForBlockHash:blockHash]);
     
     DSMasternodeList * baseMasternodeList = [self masternodeListForBlockHash:baseBlockHash];
     
     if (!baseMasternodeList && !uint256_eq(self.chain.genesisHash, baseBlockHash) && !uint256_is_zero(baseBlockHash)) {
         //this could have been deleted in the meantime, if so rerequest
         [self issueWithMasternodeListFromPeer:peer];
-        DSDLog(@"No base masternode list");
+        DSLog(@"No base masternode list");
         return;
     }
     DSBlock * lastBlock = nil;
@@ -1000,7 +1000,7 @@
     
     if (!lastBlock) {
         [self issueWithMasternodeListFromPeer:peer];
-        DSDLog(@"Last Block missing");
+        DSLog(@"Last Block missing");
         return;
     }
     
@@ -1016,11 +1016,11 @@
         }
         
         if (foundCoinbase && validCoinbase && rootMNListValid && rootQuorumListValid && validQuorums) {
-            DSDLog(@"Valid masternode list found at height %u",[self heightForBlockHash:blockHash]);
+            DSLog(@"Valid masternode list found at height %u",[self heightForBlockHash:blockHash]);
             //yay this is the correct masternode list verified deterministically for the given block
             
             if ([neededMissingMasternodeLists count] && [self.masternodeListQueriesNeedingQuorumsValidated containsObject:uint256_data(blockHash)]) {
-                DSDLog(@"Last masternode list is missing previous masternode lists for quorum validation");
+                DSLog(@"Last masternode list is missing previous masternode lists for quorum validation");
                 
                 self.processingMasternodeListBlockHash = UINT256_ZERO;
                 
@@ -1053,11 +1053,11 @@
                 [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
             }
         } else {
-            if (!foundCoinbase) DSDLog(@"Did not find coinbase at height %u",[self heightForBlockHash:blockHash]);
-            if (!validCoinbase) DSDLog(@"Coinbase not valid at height %u",[self heightForBlockHash:blockHash]);
-            if (!rootMNListValid) DSDLog(@"rootMNListValid not valid at height %u",[self heightForBlockHash:blockHash]);
-            if (!rootQuorumListValid) DSDLog(@"rootQuorumListValid not valid at height %u",[self heightForBlockHash:blockHash]);
-            if (!validQuorums) DSDLog(@"validQuorums not valid at height %u",[self heightForBlockHash:blockHash]);
+            if (!foundCoinbase) DSLog(@"Did not find coinbase at height %u",[self heightForBlockHash:blockHash]);
+            if (!validCoinbase) DSLog(@"Coinbase not valid at height %u",[self heightForBlockHash:blockHash]);
+            if (!rootMNListValid) DSLog(@"rootMNListValid not valid at height %u",[self heightForBlockHash:blockHash]);
+            if (!rootQuorumListValid) DSLog(@"rootQuorumListValid not valid at height %u",[self heightForBlockHash:blockHash]);
+            if (!validQuorums) DSLog(@"validQuorums not valid at height %u",[self heightForBlockHash:blockHash]);
             
             self.processingMasternodeListBlockHash = UINT256_ZERO;
             
@@ -1137,7 +1137,7 @@
                 merkleBlockEntity.height = masternodeList.height;
                 merkleBlockEntity.chain = chainEntity;
             } else {
-                DSDLog(@"Merkle block should exist for block hash %@",uint256_data(masternodeList.blockHash));
+                DSLog(@"Merkle block should exist for block hash %@",uint256_data(masternodeList.blockHash));
                 error = [NSError errorWithDomain:@"DashSync" code:600 userInfo:@{NSLocalizedDescriptionKey:@"Merkle block should exist"}];
             }
         } else if (merkleBlockEntity.masternodeList) {
@@ -1194,7 +1194,7 @@
                 if (!futureMasternodeLists.count) {
                     [simplifiedMasternodeEntryEntity updateAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry knownOperatorAddresses:operatorAddresses knownVotingAddresses:votingAddresses localMasternodes:localMasternodes];
                 } else {
-                    DSDLog(@"Not updating simplified masternode entry because a more recent version should exist");
+                    DSLog(@"Not updating simplified masternode entry because a more recent version should exist");
                 }
             }
             for (NSNumber * llmqType in masternodeList.quorums) {
@@ -1211,7 +1211,7 @@
             
             error = [context ds_save];
             
-            DSDLog(@"Finished saving MNL at height %u",masternodeList.height);
+            DSLog(@"Finished saving MNL at height %u",masternodeList.height);
         }
         if (error) {
             chainEntity.baseBlockHash = uint256_data(chain.genesisHash);
@@ -1236,8 +1236,8 @@
         BOOL removedItems = !!masternodeListEntities.count;
         for (DSMasternodeListEntity * masternodeListEntity in [masternodeListEntities copy]) {
             
-            DSDLog(@"Removing masternodeList at height %u",masternodeListEntity.block.height);
-            DSDLog(@"quorums are %@",masternodeListEntity.block.usedByQuorums);
+            DSLog(@"Removing masternodeList at height %u",masternodeListEntity.block.height);
+            DSLog(@"quorums are %@",masternodeListEntity.block.usedByQuorums);
             //A quorum is on a block that can only have one masternode list.
             //A block can have one quorum of each type.
             //A quorum references the masternode list by it's block
@@ -1297,7 +1297,7 @@
     NSArray * faultyPeers = [[NSUserDefaults standardUserDefaults] arrayForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
     
     if (faultyPeers.count >= MAX_FAULTY_DML_PEERS) {
-        DSDLog(@"Exceeded max failures for masternode list, starting from scratch");
+        DSLog(@"Exceeded max failures for masternode list, starting from scratch");
         //no need to remove local masternodes
         [self.masternodeListRetrievalQueue removeAllObjects];
         
@@ -1337,11 +1337,11 @@
     DSMerkleBlock * merkleBlock = [self.chain blockFromChainTip:blockHeightOffset];
     DSMasternodeList * masternodeList = [self masternodeListBeforeBlockHash:merkleBlock.blockHash];
     if (!masternodeList) {
-        DSDLog(@"No masternode list found yet");
+        DSLog(@"No masternode list found yet");
         return nil;
     }
     if (merkleBlock.height - masternodeList.height > 24) {
-        DSDLog(@"Masternode list is too old");
+        DSLog(@"Masternode list is too old");
         return nil;
     }
     return [masternodeList quorumEntryForInstantSendRequestID:requestID];
@@ -1360,11 +1360,11 @@
 -(DSQuorumEntry*)quorumEntryForChainLockRequestID:(UInt256)requestID forMerkleBlock:(DSMerkleBlock*)merkleBlock {
     DSMasternodeList * masternodeList = [self masternodeListBeforeBlockHash:merkleBlock.blockHash];
     if (!masternodeList) {
-        DSDLog(@"No masternode list found yet");
+        DSLog(@"No masternode list found yet");
         return nil;
     }
     if (merkleBlock.height - masternodeList.height > 24) {
-        DSDLog(@"Masternode list is too old");
+        DSLog(@"Masternode list is too old");
         return nil;
     }
     return [masternodeList quorumEntryForChainLockRequestID:requestID];

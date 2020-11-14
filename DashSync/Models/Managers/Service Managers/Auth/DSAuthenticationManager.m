@@ -282,7 +282,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 -(void)removePin {
     //You can only remove pin if there are no wallets
     if ([[DSChainsManager sharedInstance] hasAWallet]) {
-        DSDLog(@"Tried to remove a pin, but wallets exist on device");
+        DSLog(@"Tried to remove a pin, but wallets exist on device");
         return;
     }
     setKeychainInt(0, BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY, NO);
@@ -857,7 +857,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
         NSAssert(error == nil, @"Error is not handled");
 
         const CGFloat lockoutTimeLeft = [self lockoutWaitTime];
-        DSDLog(@"locked out for %f more seconds", lockoutTimeLeft);
+        DSLog(@"locked out for %f more seconds", lockoutTimeLeft);
 
         if (lockoutTimeLeft > 0) { // locked out
             completion(NO, NO, YES, nil);

@@ -455,7 +455,7 @@ passphrase:(NSString *)passphrase
     NSData *address = [[self addressForChain:chain] dataUsingEncoding:NSUTF8StringEncoding];
 
     if (! address || address.SHA256_2.u32[0] != addresshash) {
-        DSDLog(@"BIP38 bad passphrase");
+        DSLog(@"BIP38 bad passphrase");
         return nil;
     }
 
