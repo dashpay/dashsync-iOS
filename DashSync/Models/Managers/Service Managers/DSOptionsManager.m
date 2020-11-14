@@ -18,7 +18,6 @@
 @dynamic retrievePriceInfo;
 @dynamic useCheckpointMasternodeLists;
 @dynamic shouldUseCheckpointFile;
-@dynamic loggingEnabled;
 
 + (instancetype)sharedInstance {
     static DSOptionsManager *_sharedInstance = nil;
@@ -41,7 +40,6 @@
         @"retrievePriceInfo" : @YES,
         @"shouldUseCheckpointFile" :@YES,
         @"syncType" : @(DSSyncType_Default),
-        @"loggingEnabled" : @NO,
     };
 
     self = [super initWithUserDefaults:nil defaults:defaults];
