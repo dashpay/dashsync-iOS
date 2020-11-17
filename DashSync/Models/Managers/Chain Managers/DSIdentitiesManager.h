@@ -20,12 +20,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSChain, DSBlockchainIdentity, DSCreditFundingTransaction;
+@class DSChain, DSBlockchainIdentity, DSCreditFundingTransaction, DSTransientDashpayUser;
 
 @protocol DSDAPINetworkServiceRequest;
 
-typedef void (^IdentitiesCompletionBlock)(BOOL succeess, NSArray <DSBlockchainIdentity*> * _Nullable blockchainIdentities, NSArray<NSError *> * errors);
-typedef void (^IdentityCompletionBlock)(BOOL succeess, DSBlockchainIdentity* _Nullable blockchainIdentity, NSError * _Nullable error);
+typedef void (^IdentitiesCompletionBlock)(BOOL success, NSArray <DSBlockchainIdentity*> * _Nullable blockchainIdentities, NSArray<NSError *> * errors);
+typedef void (^IdentityCompletionBlock)(BOOL success, DSBlockchainIdentity* _Nullable blockchainIdentity, NSError * _Nullable error);
+typedef void (^DashpayUserInfoCompletionBlock)(BOOL success, DSTransientDashpayUser* _Nullable dashpayUserInfo, NSError * _Nullable error);
+typedef void (^DashpayUserInfosCompletionBlock)(BOOL success, NSDictionary <NSData*, DSTransientDashpayUser*> * _Nullable dashpayUserInfosByBlockchainIdentityUniqueId, NSError * _Nullable error);
 
 @interface DSIdentitiesManager : NSObject <DSChainIdentitiesDelegate>
 
@@ -56,6 +58,10 @@ typedef void (^IdentityCompletionBlock)(BOOL succeess, DSBlockchainIdentity* _Nu
 - (id<DSDAPINetworkServiceRequest>)searchIdentitiesByDashpayUsernamePrefix:(NSString*)namePrefix offset:(uint32_t)offset limit:(uint32_t)limit withCompletion:(IdentitiesCompletionBlock)completion;
 
 - (id<DSDAPINetworkServiceRequest>)searchIdentitiesByNamePrefix:(NSString*)namePrefix inDomain:(NSString*)domain offset:(uint32_t)offset limit:(uint32_t)limit withCompletion:(IdentitiesCompletionBlock)completion;
+
+- (id<DSDAPINetworkServiceRequest>)fetchProfileForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity inContext:(NSManagedObjectContext*)context saveContext:(BOOL)saveContext completion:(DashpayUserInfoCompletionBlock)completion;
+
+- (id<DSDAPINetworkServiceRequest>)fetchProfilesForBlockchainIdentities:(NSArray<DSBlockchainIdentity *> *)blockchainIdentities inContext:(NSManagedObjectContext*)context saveContext:(BOOL)saveContext withCompletion:(DashpayUserInfosCompletionBlock)completion;
 
 - (void)searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID:(NSData*)userID withCompletion:(IdentitiesCompletionBlock)completion;
 

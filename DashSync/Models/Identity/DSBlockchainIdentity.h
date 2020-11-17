@@ -11,7 +11,7 @@
 #import "DSDerivationPath.h"
 
 NS_ASSUME_NONNULL_BEGIN
-@class DSWallet,DSBlockchainIdentityRegistrationTransition,DSBlockchainIdentityTopupTransition,DSBlockchainIdentityUpdateTransition,DSBlockchainIdentityCloseTransition,DSAccount,DSChain,DSTransition,DSDashpayUserEntity,DSPotentialOneWayFriendship,DSTransaction,DSFriendRequestEntity,DSPotentialContact,DSCreditFundingTransaction,DSDocumentTransition,DSKey,DPDocumentFactory;
+@class DSWallet,DSBlockchainIdentityRegistrationTransition,DSBlockchainIdentityTopupTransition,DSBlockchainIdentityUpdateTransition,DSBlockchainIdentityCloseTransition,DSAccount,DSChain,DSTransition,DSDashpayUserEntity,DSPotentialOneWayFriendship,DSTransaction,DSFriendRequestEntity,DSPotentialContact,DSCreditFundingTransaction,DSDocumentTransition,DSKey,DPDocumentFactory,DSTransientDashpayUser;
 
 typedef NS_ENUM(NSUInteger, DSBlockchainIdentityRegistrationStep) {
     DSBlockchainIdentityRegistrationStep_None = 0,
@@ -127,6 +127,9 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventDashpaySyncroni
 
 /*! @brief This is TRUE if the blockchain identity is an effemeral identity returned when searching. */
 @property (nonatomic,readonly) BOOL isTransient;
+
+/*! @brief This references transient Dashpay user info if on a transient blockchain identity. */
+@property (nonatomic,readonly) DSTransientDashpayUser * transientDashpayUser;
 
 /*! @brief This is the bitwise steps that the identity has already performed in registration. */
 @property (nonatomic,readonly) DSBlockchainIdentityRegistrationStep stepsCompleted;

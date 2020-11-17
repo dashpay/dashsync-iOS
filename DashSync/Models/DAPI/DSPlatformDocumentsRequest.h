@@ -57,6 +57,8 @@ typedef NS_ENUM(NSUInteger, DSPlatformDocumentType) {
 
 +(instancetype)dashpayRequestForProfileWithUserId:(NSData*)userId;
 
++(instancetype)dashpayRequestForProfilesWithUserIds:(NSArray<NSData*>*)userIds;
+
 -(GetDocumentsRequest*)getDocumentsRequest;
 
 @end

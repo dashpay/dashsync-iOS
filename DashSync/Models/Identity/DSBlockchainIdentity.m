@@ -3006,110 +3006,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         return;
     }
     
-    [self fetchProfileForBlockchainIdentityUniqueId:self.uniqueID saveReturnedProfile:TRUE inContext:context completion:^(BOOL success, NSError * error) {
+    [self fetchProfileForBlockchainIdentityUniqueId:self.uniqueID inContext:context saveContext:TRUE completion:^(BOOL success, NSError * error) {
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 completion(success, error);
-            });
-        }
-    }];
-}
-
-- (void)fetchProfileForBlockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId saveReturnedProfile:(BOOL)saveReturnedProfile inContext:(NSManagedObjectContext*)context completion:(void (^)(BOOL success, NSError * error))completion {
-    __weak typeof(self) weakSelf = self;
-    
-    DPContract * dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
-    if ([dashpayContract contractState] != DPContractState_Registered) {
-        if (completion) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completion(NO, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                            DSLocalizedString(@"The Dashpay contract is not properly set up", nil)}]);
-            });
-        }
-        return;
-    }
-    
-    [self.DAPINetworkService getDashpayProfileForUserId:uint256_base58(blockchainIdentityUniqueId) success:^(NSArray<NSDictionary *> * _Nonnull documents) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            if (completion) {
-                completion(NO, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                            DSLocalizedString(@"Internal memory allocation error", nil)}]);
-            }
-            return;
-        }
-        dispatch_async(self.identityQueue, ^{
-        
-            NSDictionary * contactDictionary = [documents firstObject];
-            [context performBlockAndWait:^{
-                __strong typeof(weakSelf) strongSelf = weakSelf;
-                if (!strongSelf) {
-                    if (completion) {
-                        completion(NO, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                    DSLocalizedString(@"Internal memory allocation error", nil)}]);
-                    }
-                    return;
-                }
-                DSDashpayUserEntity * contact = [[self blockchainIdentityEntityInContext:context] matchingDashpayUser];
-                if (!contact) {
-                    NSAssert(FALSE, @"It is weird to get here");
-                    contact = [DSDashpayUserEntity anyObjectInContext:context matching:@"associatedBlockchainIdentity.uniqueID == %@", uint256_data(blockchainIdentityUniqueId)];
-                }
-                if (!contact || [[contactDictionary objectForKey:@"$updatedAt"] unsignedLongValue] > contact.updatedAt) {
-                    
-                    if (!contact) {
-                        contact = [DSDashpayUserEntity managedObjectInBlockedContext:context];
-                        contact.chain = [strongSelf.wallet.chain chainEntityInContext:context];
-                        DSBlockchainIdentity * blockchainIdentity;
-                        if (uint256_eq(blockchainIdentityUniqueId, strongSelf.uniqueID) && (![strongSelf matchingDashpayUserInContext:context])) {
-                            NSAssert([strongSelf blockchainIdentityEntityInContext:context], @"blockchainIdentityEntity must exist");
-                            contact.associatedBlockchainIdentity = [strongSelf blockchainIdentityEntityInContext:context];
-                            if (saveReturnedProfile) {
-                                [context ds_save];
-                            }
-                        } else if ((blockchainIdentity = [strongSelf.wallet blockchainIdentityForUniqueId:blockchainIdentityUniqueId]) && ![blockchainIdentity matchingDashpayUserInContext:context]) {
-                            //this means we are fetching a contact for another blockchain user on the device
-                            DSBlockchainIdentity * blockchainIdentity = [strongSelf.wallet blockchainIdentityForUniqueId:blockchainIdentityUniqueId];
-                            contact.associatedBlockchainIdentity = [blockchainIdentity blockchainIdentityEntityInContext:context];
-                            NSAssert(contact.associatedBlockchainIdentity, @"blockchainIdentityEntity must exist");
-                        }
-                    }
-                    if (contactDictionary) {
-                        contact.localProfileDocumentRevision = [[contactDictionary objectForKey:@"$revision"] intValue];
-                        contact.remoteProfileDocumentRevision = [[contactDictionary objectForKey:@"$revision"] intValue];
-                        contact.avatarPath = [contactDictionary objectForKey:@"avatarUrl"];
-                        contact.publicMessage = [contactDictionary objectForKey:@"publicMessage"];
-                        contact.displayName = [contactDictionary objectForKey:@"displayName"];
-                        if (!contact.documentIdentifier) {
-                            contact.documentIdentifier = [contactDictionary objectForKey:@"$id"];
-                        }
-                        contact.createdAt = [[contactDictionary objectForKey:@"$createdAt"] unsignedLongValue];
-                        contact.updatedAt = [[contactDictionary objectForKey:@"$updatedAt"] unsignedLongValue];
-                    }
-                    
-                    if (saveReturnedProfile) {
-                        [context ds_save];
-                    }
-                }
-                
-                [self.platformContext performBlockAndWait:^{
-                    self.lastCheckedProfileTimestamp = [[NSDate date] timeIntervalSince1970];
-                    //[self saveInContext:self.platformContext];
-                }];
-                
-                if (completion) {
-
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        completion(YES,nil);
-                    });
-                }
-            }];
-        });
-        
-    } failure:^(NSError *_Nonnull error) {
-        if (completion) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completion(NO,error);
             });
         }
     }];
@@ -3265,6 +3165,74 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 }
 
 // MARK: Response Processing
+
+- (void)applyProfileChanges:(NSDictionary*)contactDictionary inContext:(NSManagedObjectContext *)context saveContext:(BOOL)saveContext completion:(void (^)(BOOL success, NSError * error))completion {
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(self.identityQueue, ^{
+        [context performBlockAndWait:^{
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                if (completion) {
+                    completion(NO, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                                DSLocalizedString(@"Internal memory allocation error", nil)}]);
+                }
+                return;
+            }
+            DSDashpayUserEntity * contact = [[self blockchainIdentityEntityInContext:context] matchingDashpayUser];
+            if (!contact) {
+                NSAssert(FALSE, @"It is weird to get here");
+                contact = [DSDashpayUserEntity anyObjectInContext:context matching:@"associatedBlockchainIdentity.uniqueID == %@", self.uniqueIDData];
+            }
+            if (!contact || [[contactDictionary objectForKey:@"$updatedAt"] unsignedLongValue] > contact.updatedAt) {
+                
+                if (!contact) {
+                    contact = [DSDashpayUserEntity managedObjectInBlockedContext:context];
+                    contact.chain = [strongSelf.wallet.chain chainEntityInContext:context];
+                    DSBlockchainIdentity * blockchainIdentity;
+                    if (uint256_eq(blockchainIdentityUniqueId, strongSelf.uniqueID) && (![strongSelf matchingDashpayUserInContext:context])) {
+                        NSAssert([strongSelf blockchainIdentityEntityInContext:context], @"blockchainIdentityEntity must exist");
+                        contact.associatedBlockchainIdentity = [strongSelf blockchainIdentityEntityInContext:context];
+                        if (saveContext) {
+                            [context ds_save];
+                        }
+                    } else if ((blockchainIdentity = [strongSelf.wallet blockchainIdentityForUniqueId:blockchainIdentityUniqueId]) && ![blockchainIdentity matchingDashpayUserInContext:context]) {
+                        //this means we are fetching a contact for another blockchain user on the device
+                        DSBlockchainIdentity * blockchainIdentity = [strongSelf.wallet blockchainIdentityForUniqueId:blockchainIdentityUniqueId];
+                        contact.associatedBlockchainIdentity = [blockchainIdentity blockchainIdentityEntityInContext:context];
+                        NSAssert(contact.associatedBlockchainIdentity, @"blockchainIdentityEntity must exist");
+                    }
+                }
+                if (contactDictionary) {
+                    contact.localProfileDocumentRevision = [[contactDictionary objectForKey:@"$revision"] intValue];
+                    contact.remoteProfileDocumentRevision = [[contactDictionary objectForKey:@"$revision"] intValue];
+                    contact.avatarPath = [contactDictionary objectForKey:@"avatarUrl"];
+                    contact.publicMessage = [contactDictionary objectForKey:@"publicMessage"];
+                    contact.displayName = [contactDictionary objectForKey:@"displayName"];
+                    if (!contact.documentIdentifier) {
+                        contact.documentIdentifier = [contactDictionary objectForKey:@"$id"];
+                    }
+                    contact.createdAt = [[contactDictionary objectForKey:@"$createdAt"] unsignedLongValue];
+                    contact.updatedAt = [[contactDictionary objectForKey:@"$updatedAt"] unsignedLongValue];
+                }
+                
+                if (saveContext) {
+                    [context ds_save];
+                }
+            }
+            
+            [self.platformContext performBlockAndWait:^{
+                self.lastCheckedProfileTimestamp = [[NSDate date] timeIntervalSince1970];
+                //[self saveInContext:self.platformContext];
+            }];
+            
+            if (completion) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completion(YES,nil);
+                });
+            }
+        }];
+    });
+}
 
 /// Handle an array of contact requests. This method will split contact requests into either incoming contact requests or outgoing contact requests and then call methods for handling them if applicable.
 /// @param rawContactRequests A dictionary of rawContactRequests, these are returned by the network.

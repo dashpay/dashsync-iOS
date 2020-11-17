@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSBlockchainIdentity ()
 
 @property (nonatomic,readonly) DSBlockchainIdentityEntity* blockchainIdentityEntity;
+@property (nonatomic,strong) DSTransientDashpayUser * transientDashpayUser;
 
 -(DSBlockchainIdentityEntity*)blockchainIdentityEntityInContext:(NSManagedObjectContext*)context;
 
@@ -49,7 +50,6 @@ NS_ASSUME_NONNULL_BEGIN
 -(DSKey* _Nullable)privateKeyAtIndex:(uint32_t)index ofType:(DSKeyType)type;
 -(void)deletePersistentObjectAndSave:(BOOL)save inContext:(NSManagedObjectContext*)context;
 
-
 -(void)saveInitial;
 
 -(void)saveInitialInContext:(NSManagedObjectContext*)context;
@@ -59,6 +59,8 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)registrationTransitionWithCompletion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationTransition * _Nullable blockchainIdentityRegistrationTransition, NSError * _Nullable error))completion;
 
 -(void)createFundingPrivateKeyWithSeed:(NSData*)seed completion:(void (^ _Nullable)(BOOL success))completion;
+
+- (void)applyProfileChanges:(NSDictionary*)contactDictionary inContext:(NSManagedObjectContext *)context saveContext:(BOOL)saveContext completion:(void (^)(BOOL success, NSError * error))completion;
 
 //-(void)topupTransitionForForFundingTransaction:(DSTransaction*)fundingTransaction completion:(void (^ _Nullable)(DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransition))completion;
 //

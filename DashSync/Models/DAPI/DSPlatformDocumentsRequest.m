@@ -129,6 +129,16 @@
     return platformDocumentsRequest;
 }
 
++(instancetype)dashpayRequestForProfilesWithUserIds:(NSArray<NSData*>*)userIds {
+    DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
+    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"%K IN %@",@"$ownerId",userIds];
+    platformDocumentsRequest.startAt = 0;
+    platformDocumentsRequest.limit = (uint32_t)userIds.count;
+    platformDocumentsRequest.type = DSPlatformDocumentType_Document;
+    platformDocumentsRequest.tableName = @"profile";
+    return platformDocumentsRequest;
+}
+
 +(instancetype)dpnsRequestForPreorderSaltedHashes:(NSArray*)preorderSaltedHashes {
     DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     if (preorderSaltedHashes.count == 1) {
