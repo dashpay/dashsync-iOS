@@ -357,3 +357,6 @@
 
 /* No comment provided by engineer. */
 "Incorrect key format after contact request decryption" = "Formato de clave incorrecto después del descifrado de la solicitud de contacto";
+
+/* No comment provided by engineer. */
+"Error when updating profile information" = "Error when updating profile information";

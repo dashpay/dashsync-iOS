@@ -25,7 +25,7 @@ typedef NS_ENUM(NSUInteger, DSDashpayUserEntityFriendActivityType) {
     DSDashpayUserEntityFriendActivityType_OutgoingTransactions
 };
 
-@class DSAccountEntity, DSFriendRequestEntity, DSTransitionEntity, DSBlockchainIdentity,DSPotentialOneWayFriendship,DSWallet,DSIncomingFundsDerivationPath,DSChainEntity, DSBlockchainIdentityEntity, DPDocument;
+@class DSAccountEntity, DSFriendRequestEntity, DSTransitionEntity, DSTransientDashpayUser, DSBlockchainIdentity,DSPotentialOneWayFriendship,DSWallet,DSIncomingFundsDerivationPath,DSChainEntity, DSBlockchainIdentityEntity, DPDocument;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -42,6 +42,8 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSArray<DSDashpayUserEntity*>*)mostActiveFriends:(DSDashpayUserEntityFriendActivityType)activityType count:(NSUInteger)count ascending:(BOOL)ascending;
 
 -(NSDictionary<NSData*,NSNumber*>*)friendsWithActivityForType:(DSDashpayUserEntityFriendActivityType)activityType count:(NSUInteger)count ascending:(BOOL)ascending;
+
+-(NSError*)applyTransientDashpayUser:(DSTransientDashpayUser*)transientDashpayUser save:(BOOL)save;
 
 @end
 

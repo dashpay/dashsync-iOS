@@ -215,7 +215,7 @@
     return call;
 }
 
-- (id<DSDAPINetworkServiceRequest>)fetchProfileForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity inContext:(NSManagedObjectContext*)context saveContext:(BOOL)saveContext completion:(DashpayUserInfoCompletionBlock)completion {
+- (id<DSDAPINetworkServiceRequest>)fetchProfileForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity withCompletion:(DashpayUserInfoCompletionBlock)completion {
     
     DPContract * dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
     if ([dashpayContract contractState] != DPContractState_Registered) {
@@ -282,32 +282,26 @@
             }
             return;
         }
-        __block NSMutableArray * groupedErrors = [NSMutableArray array];
-        __block BOOL combinedSuccess;
-        dispatch_group_t dispatchGroup = dispatch_group_create();
-        for (NSDictionary * document in documents) {
-            NSData * userIdData = document[@"$ownerId"];
-            dispatch_group_enter(dispatchGroup);
-            DSBlockchainIdentity * blockchainIdentity = [self.chain blockchainIdentityForUniqueId:userIdData.UInt256 foundInWallet:nil includeForeignBlockchainIdentities:YES];
-            [blockchainIdentity applyProfileChanges:document inContext:context saveContext:YES completion:^(BOOL success, NSError * _Nonnull error) {
-                [groupedErrors addObject:error];
-                combinedSuccess &= success;
-            }];
+
+        NSMutableDictionary * dashpayUserDictionary = [NSMutableDictionary dictionary];
+        for (NSDictionary * documentDictionary in documents) {
+            NSData * userIdData = documentDictionary[@"$ownerId"];
+            DSTransientDashpayUser * transientDashpayUser = [[DSTransientDashpayUser alloc] initWithDashpayProfileDocument:documentDictionary];
+            [dashpayUserDictionary setObject:transientDashpayUser forKey:userIdData];
+            
         }
         __weak typeof(self) weakSelf = self;
         if (completion) {
-            dispatch_group_notify(dispatchGroup, dispatch_get_main_queue(), ^{
-                __strong typeof(weakSelf) strongSelf = weakSelf;
-                if (!strongSelf) {
-                    return;
-                }
-                completion(combinedSuccess, blockchainIdentities, groupedErrors);
-            });
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            completion(YES, dashpayUserDictionary, nil);
         }
     } failure:^(NSError *_Nonnull error) {
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                completion(NO, blockchainIdentities, @[error]);
+                completion(NO, nil, error);
             });
         }
     }];

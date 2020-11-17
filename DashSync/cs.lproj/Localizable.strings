@@ -357,3 +357,6 @@
 
 /* No comment provided by engineer. */
 "Incorrect key format after contact request decryption" = "Formát klíče byl po dešifrování žádosti o přidání mezi kontakty neplatný";
+
+/* No comment provided by engineer. */
+"Error when updating profile information" = "Error when updating profile information";
