@@ -22,6 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSBlockchainIdentitySearchTableViewCell : UITableViewCell
 
 @property (strong, nonatomic) IBOutlet UILabel *usernameLabel;
+@property (strong, nonatomic) IBOutlet UILabel *displayNameLabel;
+@property (strong, nonatomic) IBOutlet UILabel *avatarPathLabel;
 @property (strong, nonatomic) IBOutlet UILabel *identityUniqueIDLabel;
 
 @end

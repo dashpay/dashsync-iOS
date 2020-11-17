@@ -831,6 +831,32 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     return self.chain.chainManager.identitiesManager;
 }
 
+// MARK: Dashpay helpers
+
+-(NSString*)avatarPath {
+    if (self.transientDashpayUser) {
+        return self.transientDashpayUser.avatarPath;
+    } else {
+        return self.matchingDashpayUserInViewContext.avatarPath;
+    }
+}
+
+-(NSString*)displayName {
+    if (self.transientDashpayUser) {
+        return self.transientDashpayUser.displayName;
+    } else {
+        return self.matchingDashpayUserInViewContext.displayName;
+    }
+}
+
+-(NSString*)publicMessage {
+    if (self.transientDashpayUser) {
+        return self.transientDashpayUser.publicMessage;
+    } else {
+        return self.matchingDashpayUserInViewContext.publicMessage;
+    }
+}
+
 // MARK: - Keys
 
 -(void)createFundingPrivateKeyWithSeed:(NSData*)seed completion:(void (^ _Nullable)(BOOL success))completion {
@@ -2623,7 +2649,15 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
         blockchainIdentity.isTransient = FALSE;
         [self.identitiesManager registerForeignBlockchainIdentity:blockchainIdentity];
         if (blockchainIdentity.transientDashpayUser) {
-            [blockchainIdentity applyProfileChanges:blockchainIdentity.transientDashpayUser inContext:context saveContext:YES completion:nil];
+            [blockchainIdentity applyProfileChanges:blockchainIdentity.transientDashpayUser inContext:context saveContext:YES completion:^(BOOL success, NSError * _Nullable error) {
+                if (success && !error) {
+                    DSDashpayUserEntity * dashpayUser = [blockchainIdentity matchingDashpayUserInContext:context];
+                    if (blockchainIdentity.transientDashpayUser.revision == dashpayUser.remoteProfileDocumentRevision) {
+                        blockchainIdentity.transientDashpayUser = nil;
+                    }
+                }
+            }];
+            
         }
     }
     [blockchainIdentity fetchNeededNetworkStateInformationWithCompletion:^(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> * _Nullable errors) {
@@ -3011,7 +3045,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     }
     
     [self.identitiesManager fetchProfileForBlockchainIdentity:self withCompletion:^(BOOL success, DSTransientDashpayUser * _Nullable dashpayUserInfo, NSError * _Nullable error) {
-        if (!success || error) {
+        if (!success || error || dashpayUserInfo == nil) {
             if (completion) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     completion(success, error);

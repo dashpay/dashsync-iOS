@@ -308,8 +308,8 @@
     return call;
 }
 
-- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByDashpayUsernamePrefix:(NSString*)namePrefix withCompletion:(IdentitiesCompletionBlock)completion {
-    return [self searchIdentitiesByNamePrefix:namePrefix inDomain:@"dash" offset:0 limit:100 withCompletion:completion];
+- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByDashpayUsernamePrefix:(NSString*)namePrefix queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo withCompletion:(IdentitiesCompletionBlock)completion {
+    return [self searchIdentitiesByDashpayUsernamePrefix:namePrefix offset:0 limit:100 queryDashpayProfileInfo:queryDashpayProfileInfo withCompletion:completion];
 }
 
 - (id<DSDAPINetworkServiceRequest>)searchIdentitiesByDashpayUsernamePrefix:(NSString*)namePrefix offset:(uint32_t)offset limit:(uint32_t)limit queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo withCompletion:(IdentitiesCompletionBlock)completion {
@@ -320,7 +320,7 @@
                     completion(success, blockchainIdentities, errors);
                 });
             }
-        } else if (queryDashpayProfileInfo) {
+        } else if (queryDashpayProfileInfo && blockchainIdentities.count) {
             __block NSMutableDictionary <NSData*, DSBlockchainIdentity*> * blockchainIdentityDictionary = [NSMutableDictionary dictionary];
             for (DSBlockchainIdentity * blockchainIdentity in blockchainIdentities) {
                 [blockchainIdentityDictionary setObject:blockchainIdentity forKey:blockchainIdentity.uniqueIDData];

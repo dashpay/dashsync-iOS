@@ -271,6 +271,15 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventDashpaySyncroni
 
 // MARK: - Dashpay
 
+/*! @brief This is a helper to easily get the avatar path of the matching dashpay user. */
+@property (nonatomic,readonly,nullable) NSString* avatarPath;
+
+/*! @brief This is a helper to easily get the display name of the matching dashpay user. */
+@property (nonatomic,readonly,nullable) NSString* displayName;
+
+/*! @brief This is a helper to easily get the public message of the matching dashpay user. */
+@property (nonatomic,readonly,nullable) NSString* publicMessage;
+
 - (void)sendNewFriendRequestToBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity completion:(void (^)(BOOL success, NSArray<NSError *> * _Nullable errors))completion;
 
 - (void)sendNewFriendRequestToPotentialContact:(DSPotentialContact*)potentialContact completion:(void (^ _Nullable)(BOOL success, NSArray<NSError *> * errors))completion;

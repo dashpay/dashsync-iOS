@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSBlockchainIdentity ()
 
 @property (nonatomic,readonly) DSBlockchainIdentityEntity* blockchainIdentityEntity;
-@property (nonatomic,strong) DSTransientDashpayUser * transientDashpayUser;
+@property (nullable,nonatomic,strong) DSTransientDashpayUser * transientDashpayUser;
 
 -(DSBlockchainIdentityEntity*)blockchainIdentityEntityInContext:(NSManagedObjectContext*)context;
 

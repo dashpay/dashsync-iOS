@@ -55,13 +55,15 @@
     
     cell.usernameLabel.text = identity.currentDashpayUsername;
     cell.identityUniqueIDLabel.text = identity.uniqueIdString;
+    cell.avatarPathLabel.text = identity.avatarPath;
+    cell.displayNameLabel.text = identity.displayName;
     
     return cell;
 }
 
 -(void)searchByNamePrefix:(NSString*)namePrefix {
-    [self.chainManager.identitiesManager searchIdentitiesByDashpayUsernamePrefix:namePrefix withCompletion:^(BOOL succeess, NSArray<DSBlockchainIdentity *> * _Nullable blockchainIdentities, NSArray<NSError *> * _Nonnull errors) {
-        if (succeess) {
+    [self.chainManager.identitiesManager searchIdentitiesByDashpayUsernamePrefix:namePrefix queryDashpayProfileInfo:YES withCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> * _Nullable blockchainIdentities, NSArray<NSError *> * _Nonnull errors) {
+        if (success) {
             self.blockchainIdentities = blockchainIdentities;
             [self.tableView reloadData];
         }

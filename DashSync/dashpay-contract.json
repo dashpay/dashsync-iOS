@@ -26,7 +26,7 @@
                 },
                 "displayName": {
                     "type": "string",
-                    "maxLength":20
+                    "maxLength":25
                 }
             },
             "required": ["$createdAt", "$updatedAt"],
