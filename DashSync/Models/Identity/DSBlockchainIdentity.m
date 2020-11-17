@@ -2985,7 +2985,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     __weak typeof(self) weakSelf = self;
     __block uint32_t profileDocumentRevision;
     [context performBlockAndWait:^{
-        profileDocumentRevision = [self matchingDashpayUserInContext:context].localProfileDocumentRevision;
+        DSDashpayUserEntity * matchingDashpayUser = [self matchingDashpayUserInContext:context];
+        if (matchingDashpayUser.localProfileDocumentRevision > matchingDashpayUser.remoteProfileDocumentRevision) {
+            matchingDashpayUser.localProfileDocumentRevision = matchingDashpayUser.remoteProfileDocumentRevision + 1;
+        }
+        profileDocumentRevision = matchingDashpayUser.localProfileDocumentRevision;
         [context ds_save];
     }];
     [self signedProfileDocumentTransitionInContext:context withCompletion:^(DSTransition *transition, BOOL cancelled, NSError *error) {
