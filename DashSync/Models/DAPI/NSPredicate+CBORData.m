@@ -103,7 +103,18 @@
             case NSConstantValueExpressionType:
                 if (options & NSPredicateCBORDataOptions_DataToBase64 && [rightExpression.constantValue isKindOfClass:[NSData class]]) {
                     [mArray addObject:[((NSData*)rightExpression.constantValue) base64String]];
-                } else {
+                } else if (options & NSPredicateCBORDataOptions_DataToBase64 && [rightExpression.constantValue isKindOfClass:[NSArray class]]) {
+                    //We might have an array of data
+                    NSMutableArray * base64Array = [NSMutableArray array];
+                    for (NSObject * member in rightExpression.constantValue) {
+                        if ([member isKindOfClass:[NSData class]]) {
+                            [base64Array addObject:[((NSData*)member) base64String]];
+                        } else {
+                            [base64Array addObject:member];
+                        }
+                    }
+                    [mArray addObject:base64Array];
+                } else  {
                     [mArray addObject:rightExpression.constantValue];
                 }
                 break;
@@ -123,22 +134,10 @@
 }
 
 -(NSData*)dashPlatormWhereData {
-//    NSMutableDictionary * dictionary = [NSMutableDictionary dictionary];
-//    if (startAt) {
-//        [dictionary setObject:startAt forKey:@"startAt"];
-//    }
-//    if (limit) {
-//        [dictionary setObject:limit forKey:@"limit"];
-//    }
-//    [dictionary setObject:[self whereClauseArray] forKey:@"where"];
-//    NSMutableArray * sortDescriptorsArray = [NSMutableArray array];
-//    for (NSSortDescriptor * sortDescriptor in sortDescriptors) {
-//        [sortDescriptorsArray addObject:@[sortDescriptor.key,sortDescriptor.ascending?@"asc":@"desc"]];
-//    }
-//    [dictionary setObject:sortDescriptorsArray forKey:@"orderBy"];
-    NSData * json = [NSJSONSerialization dataWithJSONObject:[self whereClauseArrayWithOptions:NSPredicateCBORDataOptions_DataToBase64] options:0 error:nil];
-    DSLogPrivate(@"json where %@",[[NSString alloc] initWithData:json encoding:NSUTF8StringEncoding]);
-    DSLogPrivate(@"cbor hex %@",[[self whereClauseArray] ds_cborEncodedObject].hexString);
+    NSArray * array = [self whereClauseArrayWithOptions:NSPredicateCBORDataOptions_DataToBase64];
+    NSData * json = [NSJSONSerialization dataWithJSONObject:array options:0 error:nil];
+    DSLogPrivate(@"json where %@", [[NSString alloc] initWithData:json encoding:NSUTF8StringEncoding]);
+    DSLogPrivate(@"cbor hex %@", [[self whereClauseArray] ds_cborEncodedObject].hexString);
     return [[self whereClauseArray] ds_cborEncodedObject];
 }
 

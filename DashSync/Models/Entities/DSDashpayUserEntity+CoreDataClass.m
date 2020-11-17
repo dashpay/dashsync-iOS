@@ -34,6 +34,7 @@
 #import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSTxOutputEntity+CoreDataClass.h"
+#import "DSTransientDashpayUser.h"
 
 @implementation DSDashpayUserEntity
 
@@ -95,6 +96,28 @@
     //todo manage when more than 1 username
     DSBlockchainIdentityUsernameEntity * username = self.associatedBlockchainIdentity.dashpayUsername?self.associatedBlockchainIdentity.dashpayUsername:[self.associatedBlockchainIdentity.usernames anyObject];
     return username.stringValue;
+}
+
+-(NSError*)applyTransientDashpayUser:(DSTransientDashpayUser*)transientDashpayUser save:(BOOL)save {
+    if (!self.documentIdentifier) {
+        self.documentIdentifier = transientDashpayUser.documentIdentifier;
+    } else if (self.documentIdentifier ){
+        return [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                                                                             DSLocalizedString(@"Error when updating profile information", nil)}];
+    }
+    self.localProfileDocumentRevision = transientDashpayUser.revision;
+    self.remoteProfileDocumentRevision = transientDashpayUser.revision;
+    self.avatarPath = transientDashpayUser.avatarPath;
+    self.publicMessage = transientDashpayUser.publicMessage;
+    self.displayName = transientDashpayUser.displayName;
+
+    self.createdAt = transientDashpayUser.createdAt;
+    self.updatedAt = transientDashpayUser.updatedAt;
+    
+    if (save) {
+        [self.managedObjectContext ds_save];
+    }
+    return nil;
 }
 
 @end

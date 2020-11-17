@@ -357,3 +357,6 @@
 
 /* No comment provided by engineer. */
 "Incorrect key format after contact request decryption" = "Định dạng khoá không đúng sau khi yêu cầu liên hệ được giải mã";
+
+/* No comment provided by engineer. */
+"Error when updating profile information" = "Error when updating profile information";
