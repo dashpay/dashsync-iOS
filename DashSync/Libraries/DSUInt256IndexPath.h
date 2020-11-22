@@ -36,11 +36,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithIndex:(UInt256)index;
 
 - (DSUInt256IndexPath *)indexPathByAddingIndex:(UInt256)index;
+- (DSUInt256IndexPath *)indexPathAppendingIndexPath:(DSUInt256IndexPath *)indexPath;
 - (DSUInt256IndexPath *)indexPathByRemovingLastIndex;
+
++ (DSUInt256IndexPath *)randomIndexPathOfLength:(NSUInteger)length;
 
 - (UInt256)indexAtPosition:(NSUInteger)position;
 @property (readonly) NSUInteger length;
 
+- (void)getIndexes:(UInt256 *)indexes;
 - (void)getIndexes:(UInt256 *)indexes range:(NSRange)positionRange;
 
 - (NSComparisonResult)compare:(DSUInt256IndexPath *)otherObject;

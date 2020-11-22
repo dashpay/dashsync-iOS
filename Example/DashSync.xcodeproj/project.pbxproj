@@ -428,6 +428,7 @@
 		FBE155FE22B954EE009CA817 /* DSMasternodeListTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBE155FD22B954EE009CA817 /* DSMasternodeListTableViewCell.m */; };
 		FBE1560022B99368009CA817 /* MasternodeList1088800.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBE155FF22B99368009CA817 /* MasternodeList1088800.dat */; };
 		FBE2B7A524C9E481000F1108 /* DSRegisterTLDViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBE2B7A424C9E480000F1108 /* DSRegisterTLDViewController.m */; };
+		FBE4603C256B1AEF0052A6DE /* DSDIP13Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = FBE4603B256B1AEF0052A6DE /* DSDIP13Tests.m */; };
 		FBEA6ED722BE671D00CBCA77 /* DiffListTestnet119064to119200.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6ED622BE671D00CBCA77 /* DiffListTestnet119064to119200.dat */; };
 		FBEA6ED922C0636A00CBCA77 /* MNL_0_122928.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6ED822C0636A00CBCA77 /* MNL_0_122928.dat */; };
 		FBEA6EDB22C0637300CBCA77 /* MNL_122928_123000.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EDA22C0637300CBCA77 /* MNL_122928_123000.dat */; };
@@ -1039,6 +1040,7 @@
 		FBE155FF22B99368009CA817 /* MasternodeList1088800.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MasternodeList1088800.dat; sourceTree = "<group>"; };
 		FBE2B7A324C9E480000F1108 /* DSRegisterTLDViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSRegisterTLDViewController.h; sourceTree = "<group>"; };
 		FBE2B7A424C9E480000F1108 /* DSRegisterTLDViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSRegisterTLDViewController.m; sourceTree = "<group>"; };
+		FBE4603B256B1AEF0052A6DE /* DSDIP13Tests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDIP13Tests.m; sourceTree = "<group>"; };
 		FBEA6ED622BE671D00CBCA77 /* DiffListTestnet119064to119200.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = DiffListTestnet119064to119200.dat; sourceTree = "<group>"; };
 		FBEA6ED822C0636A00CBCA77 /* MNL_0_122928.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_0_122928.dat; sourceTree = "<group>"; };
 		FBEA6EDA22C0637300CBCA77 /* MNL_122928_123000.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_122928_123000.dat; sourceTree = "<group>"; };
@@ -2023,6 +2025,7 @@
 				FBAF79782385CA0200F4944E /* DSSparseMerkleTreeTests.m */,
 				FBE07DD22467440200A1079C /* DSChainedSigningTests.m */,
 				2A90EDA92268C15D00D95B6B /* DSUInt256IndexPathTests.m */,
+				FBE4603B256B1AEF0052A6DE /* DSDIP13Tests.m */,
 			);
 			name = LibraryTests;
 			sourceTree = "<group>";
@@ -2708,6 +2711,7 @@
 				2AA2C5EB20E37B74007768B1 /* DSGovernanceTests.m in Sources */,
 				FB1B98D123D6A3BD00D50F69 /* DSTransitionTests.m in Sources */,
 				FB3ADDE6238E62CD00C31D23 /* DSChainLockTests.m in Sources */,
+				FBE4603C256B1AEF0052A6DE /* DSDIP13Tests.m in Sources */,
 				FB87A0CE24B7C28700C22DF7 /* DSMiningTests.m in Sources */,
 				FBDB9B7E20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m in Sources */,
 				FBF31B7122328AA900393301 /* DSProviderTransactionsTests.m in Sources */,

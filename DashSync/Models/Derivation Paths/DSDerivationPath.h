@@ -46,6 +46,7 @@ typedef void (^TransactionValidityCompletionBlock)(BOOL signedTransaction, BOOL 
 @class DSTransaction,DSKey,DSAccount,DSDerivationPath;
 
 typedef NS_ENUM(NSUInteger, DSDerivationPathType) {
+    DSDerivationPathType_Unknown = 0,
     DSDerivationPathType_ClearFunds = 1,
     DSDerivationPathType_AnonymousFunds = 1 << 1,
     DSDerivationPathType_ViewOnlyFunds = 1 << 2,

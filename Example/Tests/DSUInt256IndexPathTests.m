@@ -51,7 +51,7 @@
     NSUInteger maxIndexesCount = 1000;
     for (NSUInteger length = 1; length < maxIndexesCount; length++) {
         @autoreleasepool {
-            UInt256 *indexes = [self generateIndexesForLength:length];
+            UInt256 *indexes = [self generateRandomIndexesForLength:length];
             [self performTestsForIndexes:indexes length:length];
         }
     }
@@ -104,7 +104,7 @@
     
     // Methods
     
-    UInt256 index = [self randomUInt256];
+    UInt256 index = uint256_random;
     DSUInt256IndexPath *newIndexPath = [indexPath indexPathByAddingIndex:index];
     UInt256 returnedIndex = [newIndexPath indexAtPosition:length];
     XCTAssert(uint256_eq(returnedIndex, index), @"Failed for length %ld", length);
@@ -123,29 +123,16 @@
     }
 }
 
-- (UInt256 *)generateIndexesForLength:(NSUInteger)length {
+- (UInt256 *)generateRandomIndexesForLength:(NSUInteger)length {
     size_t size = sizeof(UInt256);
     size_t memorySize = length * size;
     UInt256 *indexes = calloc(memorySize, size); // creates array in heap
-    
+
     for (NSUInteger i = 0; i < length; i++) {
-        indexes[i] = [self randomUInt256];
+        indexes[i] = uint256_random;
     }
     
     return indexes;
-}
-
-- (UInt256)randomUInt256 {
-    return ((UInt256){.u32 = {
-        arc4random(),
-        arc4random(),
-        arc4random(),
-        arc4random(),
-        arc4random(),
-        arc4random(),
-        arc4random(),
-        arc4random()
-    }});
 }
 
 @end
