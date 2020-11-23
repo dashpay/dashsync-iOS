@@ -434,13 +434,13 @@
         1337,
     }});
     
-    CKDpriv256(&secret, &chain, derivation,NO);
+    CKDpriv256(&secret, &chain, derivation, NO);
     
     NSData * publicKey = [DSECDSAKey keyWithSecret:secret compressed:YES].publicKeyData;
     
     DSECPoint pubKey = *(const DSECPoint *)((const uint8_t *)parentPublicKey.bytes);
     
-    CKDpub256(&pubKey, &chain2, derivation,NO);
+    CKDpub256(&pubKey, &chain2, derivation, NO);
     
     NSData * publicKey2 = [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
     
@@ -450,7 +450,7 @@
     
     XCTAssertEqualObjects(uint256_data(derivation),@"05000000000000000c000000000000000f000000000000003905000000000000".hexToData,@"derivation must match the correct value");
     
-    XCTAssertEqualObjects(publicKey,@"02909fb2c2cd18c8fb99277bc26ec606e381d27c2af6bd87e222304e3baf450bf7".hexToData,@"the public must match the correct value");
+    XCTAssertEqualObjects(publicKey.hexString,@"029d469d2a7070d6367afc099be3d0a8d6467ced43228b8ce3d1723f6f4f78cac7",@"the public must match the correct value");
     
 }
 

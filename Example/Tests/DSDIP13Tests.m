@@ -73,7 +73,7 @@
     
     DSECDSAKey * key = (DSECDSAKey *)[derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:0] fromSeed:self.seed];
     
-    XCTAssertEqualObjects(key.secretKeyString,@"2dee19b1109f6b6b041b838e23029f7969d34c598e4ae9abd03a9b8673141864",@"keys should match");
+    XCTAssertEqualObjects(key.secretKeyString,@"e8781fdef72862968cd9a4d2df34edaf9dcc5b17629ec505f0d2d1a8ed6f9f09",@"keys should match");
     
 }
 
@@ -90,24 +90,7 @@
     
     DSECDSAKey * key = (DSECDSAKey *)[derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:0] fromSeed:self.seed];
     
-    XCTAssertEqualObjects(key.secretKeyString,@"bd9a5258c0617325d7c295f9b0402eba9b03d94516be3379c8da09428f717397",@"keys should match");
-    
-}
-
--(void)test256BitPathBLSDerivation2 {
-    /* m/9'/5'/15'/0'/0x555d3854c910b7dee436869c4724bed2fe0784e198b8a39f02bbb49d8ebcfc3a'/0xa137439f36d04a15474ff7423e4b904a14373fafb37a41db74c84f1dbb5c89b5'/0
-     */
-    int length = 6;
-    UInt256 index0 = @"555d3854c910b7dee436869c4724bed2fe0784e198b8a39f02bbb49d8ebcfc3a".hexToData.UInt256;
-    UInt256 index1 = @"a137439f36d04a15474ff7423e4b904a14373fafb37a41db74c84f1dbb5c89b5".hexToData.UInt256;
-    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE),uint256_from_long(5), uint256_from_long(FEATURE_PURPOSE_DASHPAY), uint256_from_long(0), index0, index1};
-    BOOL hardened1[] = {YES, YES, YES, YES, YES, YES};
-    
-    DSDerivationPath * derivationPath = [DSDerivationPath derivationPathWithIndexes:indexes hardened:hardened1 length:length type:DSDerivationPathType_Unknown signingAlgorithm:DSKeyType_BLS reference:DSDerivationPathReference_Unknown onChain:self.chain];
-    
-    DSECDSAKey * key = (DSECDSAKey *)[derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:0] fromSeed:self.seed];
-    
-    XCTAssertEqualObjects(key.secretKeyString,@"2af809d2c24791b9336ebbf6a828c4797f378ef91f627cb6a375bd2e002f3dc4",@"keys should match");
+    XCTAssertEqualObjects(key.secretKeyString,@"fac40790776d171ee1db90899b5eb2df2f7d2aaf35ad56f07ffb8ed2c57f8e60",@"keys should match");
     
 }
 
