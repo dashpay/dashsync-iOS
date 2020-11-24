@@ -15,17 +15,18 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
-NS_ASSUME_NONNULL_BEGIN
+#import "DSTransientDashpayUser.h"
 
-@interface DSBlockchainIdentitySearchTableViewCell : UITableViewCell
+@interface DSTransientDashpayUser()
 
-@property (strong, nonatomic) IBOutlet UILabel *usernameLabel;
-@property (strong, nonatomic) IBOutlet UILabel *displayNameLabel;
-@property (strong, nonatomic) IBOutlet UILabel *avatarPathLabel;
-@property (strong, nonatomic) IBOutlet UILabel *identityUniqueIDLabel;
+@property (nullable, nonatomic, copy) NSString *displayName;
+@property (nullable, nonatomic, copy) NSString *avatarPath;
+@property (nullable, nonatomic, copy) NSString *publicMessage;
+@property (nonatomic, assign) int32_t revision;
+@property (nonnull, nonatomic, strong) NSData* documentIdentifier;
+@property (nonatomic, assign) NSTimeInterval createdAt;
+@property (nonatomic, assign) NSTimeInterval updatedAt;
 
 @end
-
-NS_ASSUME_NONNULL_END

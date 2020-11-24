@@ -30,6 +30,9 @@
 #import "NSManagedObjectContext+DSSugar.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
+#import "DSDashPlatform.h"
+#import "DSBlockchainIdentity+Protected.h"
+#import "DSTransientDashpayUser+Protected.h"
 
 @interface DSIdentitiesManager()
 
@@ -176,10 +179,6 @@
     }
 }
 
-- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByDashpayUsernamePrefix:(NSString*)namePrefix withCompletion:(IdentitiesCompletionBlock)completion {
-    return [self searchIdentitiesByNamePrefix:namePrefix inDomain:@"dash" offset:0 limit:100 withCompletion:completion];
-}
-
 - (id<DSDAPINetworkServiceRequest>)searchIdentityByDashpayUsername:(NSString*)name withCompletion:(IdentityCompletionBlock)completion {
     return [self searchIdentityByName:name inDomain:@"dash" withCompletion:completion];
 }
@@ -216,8 +215,135 @@
     return call;
 }
 
-- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByDashpayUsernamePrefix:(NSString*)namePrefix offset:(uint32_t)offset limit:(uint32_t)limit withCompletion:(IdentitiesCompletionBlock)completion {
-    return [self searchIdentitiesByNamePrefix:namePrefix inDomain:@"dash" offset:offset limit:limit withCompletion:completion];
+- (id<DSDAPINetworkServiceRequest>)fetchProfileForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity withCompletion:(DashpayUserInfoCompletionBlock)completion {
+    
+    DPContract * dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
+    if ([dashpayContract contractState] != DPContractState_Registered) {
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(NO, nil, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                            DSLocalizedString(@"The Dashpay contract is not properly set up", nil)}]);
+            });
+        }
+        return nil;
+    }
+    DSDAPIClient * client = self.chain.chainManager.DAPIClient;
+    id<DSDAPINetworkServiceRequest> call = [client.DAPINetworkService getDashpayProfileForUserId:blockchainIdentity.uniqueIDData success:^(NSArray<NSDictionary *> * _Nonnull documents) {
+        if (documents.count == 0) {
+            if (completion) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completion(YES, nil, nil);
+                });
+            }
+            return;
+        }
+        NSDictionary * contactDictionary = documents.firstObject;
+        
+        DSTransientDashpayUser * transientDashpayUser = [[DSTransientDashpayUser alloc] initWithDashpayProfileDocument:contactDictionary];
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(YES, transientDashpayUser, nil);
+            });
+        }
+    } failure:^(NSError *_Nonnull error) {
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(NO, nil, error);
+            });
+        }
+    }];
+    return call;
+}
+
+- (id<DSDAPINetworkServiceRequest>)fetchProfilesForBlockchainIdentities:(NSArray<DSBlockchainIdentity *> *)blockchainIdentities withCompletion:(DashpayUserInfosCompletionBlock)completion {
+    __weak typeof(self) weakSelf = self;
+    
+    DPContract * dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
+    if ([dashpayContract contractState] != DPContractState_Registered) {
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(NO, nil, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                            DSLocalizedString(@"The Dashpay contract is not properly set up", nil)}]);
+            });
+        }
+        return nil;
+    }
+    NSMutableArray * blockchainIdentityUserIds = [NSMutableArray array];
+    for (DSBlockchainIdentity * blockchainIdentity in blockchainIdentities) {
+        [blockchainIdentityUserIds addObject:blockchainIdentity.uniqueIDData];
+    }
+    DSDAPIClient * client = self.chain.chainManager.DAPIClient;
+    id<DSDAPINetworkServiceRequest> call = [client.DAPINetworkService getDashpayProfilesForUserIds:blockchainIdentityUserIds success:^(NSArray<NSDictionary *> * _Nonnull documents) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            if (completion) {
+                completion(NO, nil, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                            DSLocalizedString(@"Internal memory allocation error", nil)}]);
+            }
+            return;
+        }
+
+        NSMutableDictionary * dashpayUserDictionary = [NSMutableDictionary dictionary];
+        for (NSDictionary * documentDictionary in documents) {
+            NSData * userIdData = documentDictionary[@"$ownerId"];
+            DSTransientDashpayUser * transientDashpayUser = [[DSTransientDashpayUser alloc] initWithDashpayProfileDocument:documentDictionary];
+            [dashpayUserDictionary setObject:transientDashpayUser forKey:userIdData];
+            
+        }
+        __weak typeof(self) weakSelf = self;
+        if (completion) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            completion(YES, dashpayUserDictionary, nil);
+        }
+    } failure:^(NSError *_Nonnull error) {
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(NO, nil, error);
+            });
+        }
+    }];
+    return call;
+}
+
+- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByDashpayUsernamePrefix:(NSString*)namePrefix queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo withCompletion:(IdentitiesCompletionBlock)completion {
+    return [self searchIdentitiesByDashpayUsernamePrefix:namePrefix offset:0 limit:100 queryDashpayProfileInfo:queryDashpayProfileInfo withCompletion:completion];
+}
+
+- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByDashpayUsernamePrefix:(NSString*)namePrefix offset:(uint32_t)offset limit:(uint32_t)limit queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo withCompletion:(IdentitiesCompletionBlock)completion {
+    return [self searchIdentitiesByNamePrefix:namePrefix inDomain:@"dash" offset:offset limit:limit withCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> * _Nullable blockchainIdentities, NSArray<NSError *> * _Nonnull errors) {
+        if (errors.count) {
+            if (completion) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completion(success, blockchainIdentities, errors);
+                });
+            }
+        } else if (queryDashpayProfileInfo && blockchainIdentities.count) {
+            __block NSMutableDictionary <NSData*, DSBlockchainIdentity*> * blockchainIdentityDictionary = [NSMutableDictionary dictionary];
+            for (DSBlockchainIdentity * blockchainIdentity in blockchainIdentities) {
+                [blockchainIdentityDictionary setObject:blockchainIdentity forKey:blockchainIdentity.uniqueIDData];
+            }
+            [self fetchProfilesForBlockchainIdentities:blockchainIdentities withCompletion:^(BOOL success, NSDictionary<NSData *,DSTransientDashpayUser *> * _Nullable dashpayUserInfosByBlockchainIdentityUniqueId, NSError * _Nullable error) {
+                for (NSData * blockchainIdentityUniqueIdData in dashpayUserInfosByBlockchainIdentityUniqueId) {
+                    DSBlockchainIdentity * blockchainIdentity = blockchainIdentityDictionary[blockchainIdentityUniqueIdData];
+                    blockchainIdentity.transientDashpayUser = dashpayUserInfosByBlockchainIdentityUniqueId[blockchainIdentityUniqueIdData];
+                }
+                if (completion) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        completion(success, blockchainIdentities, errors);
+                    });
+                }
+            }];
+        } else {
+            if (completion) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completion(success, blockchainIdentities, errors);
+                });
+            }
+        }
+    }];
 }
 
 - (id<DSDAPINetworkServiceRequest>)searchIdentitiesByNamePrefix:(NSString*)namePrefix inDomain:(NSString*)domain offset:(uint32_t)offset limit:(uint32_t)limit withCompletion:(IdentitiesCompletionBlock)completion {
@@ -243,7 +369,7 @@
         }
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                completion(YES,[rBlockchainIdentities copy],@[]);
+                completion(YES, [rBlockchainIdentities copy], @[]);
             });
         }
     } failure:^(NSError * _Nonnull error) {
@@ -278,7 +404,7 @@
         }
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                completion(YES,[rBlockchainIdentities copy],@[]);
+                completion(YES, [rBlockchainIdentities copy], @[]);
             });
         }
     } failure:^(NSError * _Nonnull error) {

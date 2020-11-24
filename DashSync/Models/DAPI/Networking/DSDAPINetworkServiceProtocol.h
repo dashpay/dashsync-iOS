@@ -448,9 +448,14 @@ Get a list of users after matching search criteria
                                            success:(void (^)(NSArray<NSDictionary *> *documents))success
                                            failure:(void (^)(NSError *error))failure;
 
-- (id<DSDAPINetworkServiceRequest>)getDashpayProfileForUserId:(NSString*)userId
+- (id<DSDAPINetworkServiceRequest>)getDashpayProfileForUserId:(NSData*)userId
                            success:(void (^)(NSArray<NSDictionary *> *documents))success
                            failure:(void (^)(NSError *error))failure;
+
+- (id<DSDAPINetworkServiceRequest>)getDashpayProfilesForUserIds:(NSArray<NSData*>*)userId
+                           success:(void (^)(NSArray<NSDictionary *> *documents))success
+                           failure:(void (^)(NSError *error))failure;
+
 
 @end
 

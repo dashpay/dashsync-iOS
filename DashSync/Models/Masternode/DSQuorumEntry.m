@@ -206,6 +206,9 @@
         case 100:
             return 3;
             break;
+        case 101:
+            return 10;
+            break;
         default:
             NSAssert(FALSE, @"Unknown llmq type");
             return UINT32_MAX;
@@ -319,6 +322,8 @@
     switch (type) {
         case DSLLMQType_5_60:
             return 5;
+        case DSLLMQType_10_60:
+            return 10;
         case DSLLMQType_50_60:
             return 50;
         case DSLLMQType_400_60:
