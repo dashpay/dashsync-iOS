@@ -175,7 +175,7 @@ inline static int ceil_log2(int x)
     return proTxHashes;
 }
 
--(NSArray*)hashesForMerkleRootWithBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup {
+-(NSArray<NSData*>*)hashesForMerkleRootWithBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup {
     
     NSArray * proTxHashes = [self providerTxOrderedHashes];
     
@@ -183,6 +183,10 @@ inline static int ceil_log2(int x)
     for (NSData * proTxHash in proTxHashes) {
         DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash objectForKey:proTxHash];
         uint32_t height = blockHeightLookup(self.blockHash);
+        if (height == UINT32_MAX) {
+            DSLog(@"Block height lookup queried an unknown block %@", uint256_hex(self.blockHash));
+            return nil; //this should never happen
+        }
         UInt256 simplifiedMasternodeEntryHash = [simplifiedMasternodeEntry simplifiedMasternodeEntryHashAtBlockHeight:height];
         [simplifiedMasternodeListByRegistrationTransactionHashHashes addObject:uint256_data(simplifiedMasternodeEntryHash)];
     }
@@ -190,7 +194,15 @@ inline static int ceil_log2(int x)
 }
 
 -(UInt256)calculateMasternodeMerkleRootWithBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup {
-    return [[NSData merkleRootFromHashes:[self hashesForMerkleRootWithBlockHeightLookup:blockHeightLookup]] UInt256];
+    NSArray * hashes = [self hashesForMerkleRootWithBlockHeightLookup:blockHeightLookup];
+    if (hashes == nil || hashes.count == 0) {
+        return UINT256_ZERO;
+    }
+    NSData * data = [NSData merkleRootFromHashes:hashes];
+    if (data == nil || data.length == 0) {
+        return UINT256_ZERO;
+    }
+    return [data UInt256];
 }
 
 -(UInt256)quorumMerkleRoot {

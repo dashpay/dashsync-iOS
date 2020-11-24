@@ -270,7 +270,7 @@
     return [NSString stringWithFormat:@"%@_%@",TERMINAL_SYNC_STARTHEIGHT_KEY,[self.chain uniqueID]];
 }
 
--(void)assingSyncWeights {
+-(void)assignSyncWeights {
     uint32_t chainBlocks = [self chainBlocksToSync];
     uint32_t terminalBlocks = [self terminalHeadersToSync];
     uint32_t masternodeListsToSync = self.masternodeManager.estimatedMasternodeListsToSync;

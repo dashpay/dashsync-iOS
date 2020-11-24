@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
+NSString* const DSChainManagerSyncConnectionInitiatedNotification =      @"DSChainManagerSyncConnectionInitiatedNotification";
 NSString* const DSChainManagerSyncStartedNotification =      @"DSChainManagerSyncStartedNotification";
 NSString* const DSChainManagerSyncParametersUpdatedNotification =      @"DSChainManagerSyncParametersUpdatedNotification";
 NSString* const DSChainManagerSyncFinishedNotification =     @"DSChainManagerSyncFinishedNotification";
@@ -50,6 +51,7 @@ NSString* const DSGovernanceVoteCountUpdateNotification = @"DSGovernanceVoteCoun
 NSString* const DSChainsDidChangeNotification = @"DSChainsDidChangeNotification";
 
 NSString* const DSChainManagerNotificationChainKey = @"DSChainManagerNotificationChainKey";
+NSString* const DSPeerManagerNotificationPeerKey = @"DSPeerManagerNotificationPeerKey";
 
 NSString* const DSTransactionManagerNotificationTransactionKey =         @"DSTransactionManagerNotificationTransactionKey";
 NSString* const DSTransactionManagerNotificationTransactionChangesKey =         @"DSTransactionManagerNotificationTransactionChangesKey";
