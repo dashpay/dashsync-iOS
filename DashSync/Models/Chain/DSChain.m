@@ -131,7 +131,7 @@ typedef NS_ENUM(uint16_t, DSBlockPosition) {
 @property (nonatomic, strong) NSMutableArray<DSWallet *> * mWallets;
 @property (nonatomic, strong) NSString * devnetIdentifier;
 @property (nonatomic, strong) DSAccount * viewingAccount;
-@property (nonatomic, strong) NSMutableDictionary * estimatedBlockHeights;
+@property (nonatomic, strong) NSMutableDictionary <NSNumber*, NSMutableArray<DSPeer*>*> * estimatedBlockHeights;
 @property (nonatomic, assign) uint32_t cachedMinimumDifficultyBlocks;
 @property (nonatomic, assign) uint32_t bestEstimatedBlockHeight;
 //@property (nonatomic, assign) uint32_t headersMaxAmount;
@@ -2860,12 +2860,24 @@ static dispatch_once_t devnetToken = 0;
         NSArray * announcers = self.estimatedBlockHeights[height];
         if (announcers.count > maxCount) {
             tempBestEstimatedBlockHeight = [height intValue];
+        } else if (announcers.count == maxCount && tempBestEstimatedBlockHeight < [height intValue]) {
+            //use the latest if deadlocked
+            tempBestEstimatedBlockHeight = [height intValue];
         }
     }
     return tempBestEstimatedBlockHeight;
 }
 
--(void)setEstimatedBlockHeight:(uint32_t)estimatedBlockHeight fromPeer:(DSPeer*)peer {
+-(NSUInteger)countEstimatedBlockHeightAnnouncers {
+    NSMutableSet * announcers = [NSMutableSet set];
+    for (NSNumber * height in [self.estimatedBlockHeights copy]) {
+        NSArray <DSPeer*> * announcersAtHeight = self.estimatedBlockHeights[height];
+        [announcers addObjectsFromArray:announcersAtHeight];
+    }
+    return [announcers count];
+}
+
+-(void)setEstimatedBlockHeight:(uint32_t)estimatedBlockHeight fromPeer:(DSPeer*)peer thresholdPeerCount:(uint32_t)thresholdPeerCount {
     uint32_t oldEstimatedBlockHeight = self.estimatedBlockHeight;
 
     //remove from other heights
@@ -2889,23 +2901,20 @@ static dispatch_once_t devnetToken = 0;
             [peersAnnouncingHeight addObject:peer];
         }
     }
-    static dispatch_once_t onceToken;
-    if (oldEstimatedBlockHeight != estimatedBlockHeight) {
+    if ([self countEstimatedBlockHeightAnnouncers] > thresholdPeerCount) {
+        static dispatch_once_t onceToken;
         uint32_t finalEstimatedBlockHeight = [self decideFromPeerSoftConsensusEstimatedBlockHeight];
         if (finalEstimatedBlockHeight > oldEstimatedBlockHeight) {
             _bestEstimatedBlockHeight = finalEstimatedBlockHeight;
             dispatch_once(&onceToken, ^{
-                [self.chainManager assingSyncWeights];
+                [self.chainManager assignSyncWeights];
             });
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncParametersUpdatedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
             });
-        }
-    } else {
-        NSMutableArray * peersAnnouncingHeight = [self estimatedBlockHeights][@(estimatedBlockHeight)];
-        if (peersAnnouncingHeight.count > 2) {
+        } else {
             dispatch_once(&onceToken, ^{
-                [self.chainManager assingSyncWeights];
+                [self.chainManager assignSyncWeights];
             });
         }
     }

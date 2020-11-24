@@ -40,6 +40,7 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo) {
 
 FOUNDATION_EXPORT NSString* const DSChainManagerNotificationChainKey;
 
+FOUNDATION_EXPORT NSString* _Nonnull const DSChainManagerSyncConnectionInitiatedNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainManagerSyncStartedNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainManagerSyncParametersUpdatedNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainManagerSyncFinishedNotification;

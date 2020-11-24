@@ -80,6 +80,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(UInt256)masternodeMerkleRootWithBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
 
+-(NSArray<NSData*>*)hashesForMerkleRootWithBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
+
 -(NSDictionary*)toDictionaryUsingBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
 
 @end

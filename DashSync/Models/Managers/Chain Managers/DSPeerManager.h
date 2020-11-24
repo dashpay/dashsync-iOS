@@ -33,11 +33,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerNotificationPeerKey;
+
 FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerConnectedPeersDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerDownloadPeerDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerPeersDidChangeNotification;
 
-#define PEER_MAX_CONNECTIONS 3
+#define PEER_MAX_CONNECTIONS 10
 #define SETTINGS_FIXED_PEER_KEY @"SETTINGS_FIXED_PEER"
 
 

@@ -33,4 +33,13 @@
     return returnValue;
 }
 
+-(NSArray*)transformToArrayOfHexStrings {
+    NSMutableArray * mArray = [NSMutableArray array];
+    for (NSData * data in self) {
+        NSAssert([data isKindOfClass:[NSData class]], @"all elements must be of type NSData");
+        [mArray addObject:[data hexString]];
+    }
+    return [mArray copy];
+}
+
 @end
