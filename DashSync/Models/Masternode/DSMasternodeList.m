@@ -180,13 +180,13 @@ inline static int ceil_log2(int x)
     NSArray * proTxHashes = [self providerTxOrderedHashes];
     
     NSMutableArray * simplifiedMasternodeListByRegistrationTransactionHashHashes = [NSMutableArray array];
+    uint32_t height = blockHeightLookup(self.blockHash);
+    if (height == UINT32_MAX) {
+        DSLog(@"Block height lookup queried an unknown block %@", uint256_hex(self.blockHash));
+        return nil; //this should never happen
+    }
     for (NSData * proTxHash in proTxHashes) {
         DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash objectForKey:proTxHash];
-        uint32_t height = blockHeightLookup(self.blockHash);
-        if (height == UINT32_MAX) {
-            DSLog(@"Block height lookup queried an unknown block %@", uint256_hex(self.blockHash));
-            return nil; //this should never happen
-        }
         UInt256 simplifiedMasternodeEntryHash = [simplifiedMasternodeEntry simplifiedMasternodeEntryHashAtBlockHeight:height];
         [simplifiedMasternodeListByRegistrationTransactionHashHashes addObject:uint256_data(simplifiedMasternodeEntryHash)];
     }
