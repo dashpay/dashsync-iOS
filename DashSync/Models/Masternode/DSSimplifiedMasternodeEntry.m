@@ -16,7 +16,7 @@
 #import <arpa/inet.h>
 #import "DSWallet.h"
 
-#define LOG_SMNE_CHANGES 0
+#define LOG_SMNE_CHANGES 1
 
 #if LOG_SMNE_CHANGES
 #define DSDSMNELog(s, ...) DSLog(s, ##__VA_ARGS__)
@@ -258,7 +258,7 @@
         uint32_t distance = previousBlock.height - blockHeight;
         if (distance < minDistance) {
             minDistance = distance;
-            DSDSMNELog(@"SME Hash : Using %@ instead of %@ for list at block height %u",uint256_hex(previousSimplifiedMasternodeEntryHashes[previousBlock].UInt256),uint256_hex(usedSimplifiedMasternodeEntryHash), blockHeight);
+            DSDSMNELog(@"SME Hash for proTxHash %@ : Using %@ instead of %@ for list at block height %u",uint256_hex(self.providerRegistrationTransactionHash),  uint256_hex(previousSimplifiedMasternodeEntryHashes[previousBlock].UInt256), uint256_hex(usedSimplifiedMasternodeEntryHash), blockHeight);
             usedSimplifiedMasternodeEntryHash = previousSimplifiedMasternodeEntryHashes[previousBlock].UInt256;
         }
     }

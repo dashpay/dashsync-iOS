@@ -56,10 +56,18 @@
 #import "DSCheckpoint.h"
 #import "DSInsightManager.h"
 #import "NSArray+Dash.h"
+#import "NSDictionary+Dash.h"
 
 #define FAULTY_DML_MASTERNODE_PEERS @"FAULTY_DML_MASTERNODE_PEERS"
 #define CHAIN_FAULTY_DML_MASTERNODE_PEERS [NSString stringWithFormat:@"%@_%@",peer.chain.uniqueID,FAULTY_DML_MASTERNODE_PEERS]
 #define MAX_FAULTY_DML_PEERS 2
+
+#define LOG_MASTERNODE_DIFF (0 && DEBUG)
+#define KEEP_OLD_QUORUMS 0
+#define SAVE_MASTERNODE_DIFF_TO_FILE (0 && DEBUG)
+#define SAVE_MASTERNODE_ERROR_TO_FILE (0 && DEBUG)
+#define SAVE_MASTERNODE_NO_ERROR_TO_FILE (1 && DEBUG)
+#define DSFullLog(FORMAT, ...) printf("%s\n", [[NSString stringWithFormat:FORMAT, ##__VA_ARGS__] UTF8String])
 
 
 @interface DSMasternodeManager()
@@ -868,7 +876,38 @@
     
     if (!rootMNListValid) {
         DSLog(@"Masternode Merkle root not valid for DML on block %d version %d (%@ wanted - %@ calculated)", coinbaseTransaction.height, coinbaseTransaction.version, uint256_hex(coinbaseTransaction.merkleRootMNList), uint256_hex(masternodeList.masternodeMerkleRoot));
-        DSLog(@"Hashes are %@", [[masternodeList hashesForMerkleRootWithBlockHeightLookup:blockHeightLookup] transformToArrayOfHexStrings]);
+        int i = 0;
+        for (NSString * string in [[masternodeList hashesForMerkleRootWithBlockHeightLookup:blockHeightLookup] transformToArrayOfHexStrings]) {
+            DSLog(@"Hash %i is %@",i++, string);
+        }
+#if SAVE_MASTERNODE_ERROR_TO_FILE
+        NSMutableData * message = [NSMutableData data];
+        NSDictionary <NSData*, NSData*> * hashDictionary = [masternodeList hashDictionaryForMerkleRootWithBlockHeightLookup:blockHeightLookup];
+        for (NSData * proTxHashData in [masternodeList providerTxOrderedHashes]) {
+            NSString * line = [NSString stringWithFormat:@"%@ -> %@\n", [proTxHashData hexString], [hashDictionary[proTxHashData] hexString]];
+            [message appendData:[line dataUsingEncoding:NSUTF8StringEncoding]];
+        }
+        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+        NSString *documentsDirectory = [paths objectAtIndex:0];
+        NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"MNL_SME_ERROR_%d.txt", masternodeList.height]];
+        
+        // Save it into file system
+        [message writeToFile:dataPath atomically:YES];
+#elif SAVE_MASTERNODE_NO_ERROR_TO_FILE
+    } else {
+        NSMutableData * message = [NSMutableData data];
+        NSDictionary <NSData*, NSData*> * hashDictionary = [masternodeList hashDictionaryForMerkleRootWithBlockHeightLookup:blockHeightLookup];
+        for (NSData * proTxHashData in [masternodeList providerTxOrderedHashes]) {
+            NSString * line = [NSString stringWithFormat:@"%@ -> %@\n", [proTxHashData hexString], [hashDictionary[proTxHashData] hexString]];
+            [message appendData:[line dataUsingEncoding:NSUTF8StringEncoding]];
+        }
+        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+        NSString *documentsDirectory = [paths objectAtIndex:0];
+        NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"MNL_SME_NO_ERROR_%d.txt", masternodeList.height]];
+        
+        // Save it into file system
+        [message writeToFile:dataPath atomically:YES];
+#endif
     }
     
     BOOL rootQuorumListValid = TRUE;
@@ -911,11 +950,6 @@
     
     
 }
-
-#define LOG_MASTERNODE_DIFF (0 && DEBUG)
-#define KEEP_OLD_QUORUMS 0
-#define SAVE_MASTERNODE_DIFF_TO_FILE (0 && DEBUG)
-#define DSFullLog(FORMAT, ...) printf("%s\n", [[NSString stringWithFormat:FORMAT, ##__VA_ARGS__] UTF8String])
 
 -(void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)message {
 #if LOG_MASTERNODE_DIFF
