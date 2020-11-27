@@ -66,7 +66,7 @@
 #define KEEP_OLD_QUORUMS 0
 #define SAVE_MASTERNODE_DIFF_TO_FILE (0 && DEBUG)
 #define SAVE_MASTERNODE_ERROR_TO_FILE (0 && DEBUG)
-#define SAVE_MASTERNODE_NO_ERROR_TO_FILE (1 && DEBUG)
+#define SAVE_MASTERNODE_NO_ERROR_TO_FILE (0 && DEBUG)
 #define DSFullLog(FORMAT, ...) printf("%s\n", [[NSString stringWithFormat:FORMAT, ##__VA_ARGS__] UTF8String])
 
 
@@ -756,10 +756,12 @@
     
     NSMutableDictionary * addedOrModifiedMasternodes = [NSMutableDictionary dictionary];
     
+    uint32_t blockHeight = blockHeightLookup(blockHash);
+    
     while (addedMasternodeCount >= 1) {
         if (length - offset < [DSSimplifiedMasternodeEntry payloadLength]) return;
         NSData * data = [message subdataWithRange:NSMakeRange(offset, [DSSimplifiedMasternodeEntry payloadLength])];
-        DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithData:data onChain:chain];
+        DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithData:data atBlockHeight:blockHeight onChain:chain];
         [addedOrModifiedMasternodes setObject:simplifiedMasternodeEntry forKey:[NSData dataWithUInt256:simplifiedMasternodeEntry.providerRegistrationTransactionHash].reverse];
         offset += [DSSimplifiedMasternodeEntry payloadLength];
         addedMasternodeCount--;
@@ -893,7 +895,8 @@
         
         // Save it into file system
         [message writeToFile:dataPath atomically:YES];
-#elif SAVE_MASTERNODE_NO_ERROR_TO_FILE
+#endif
+#if SAVE_MASTERNODE_NO_ERROR_TO_FILE
     } else {
         NSMutableData * message = [NSMutableData data];
         NSDictionary <NSData*, NSData*> * hashDictionary = [masternodeList hashDictionaryForMerkleRootWithBlockHeightLookup:blockHeightLookup];
@@ -1213,9 +1216,11 @@
                 DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [indexedKnownSimplifiedMasternodeEntryEntities objectForKey:uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
                 if (!simplifiedMasternodeEntryEntity) {
                     simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity managedObjectInBlockedContext:context];
-                    [simplifiedMasternodeEntryEntity setAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry knownOperatorAddresses:operatorAddresses knownVotingAddresses:votingAddresses localMasternodes:localMasternodes onChainEntity:chainEntity];
+                    [simplifiedMasternodeEntryEntity setAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry atBlockHeight:masternodeList.height knownOperatorAddresses:operatorAddresses knownVotingAddresses:votingAddresses localMasternodes:localMasternodes onChainEntity:chainEntity];
+                } else if (simplifiedMasternodeEntry.updateHeight >= masternodeList.height) {
+                    //it was updated in this masternode list
+                    [simplifiedMasternodeEntryEntity updateAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry atBlockHeight:masternodeList.height knownOperatorAddresses:operatorAddresses knownVotingAddresses:votingAddresses localMasternodes:localMasternodes];
                 }
-                
                 [masternodeListEntity addMasternodesObject:simplifiedMasternodeEntryEntity];
                 i++;
             }
@@ -1224,14 +1229,7 @@
                 DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = modifiedMasternodes[simplifiedMasternodeEntryHash];
                 DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [indexedKnownSimplifiedMasternodeEntryEntities objectForKey:uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
                 NSAssert(simplifiedMasternodeEntryEntity, @"this must be present");
-                NSSet * futureMasternodeLists = [simplifiedMasternodeEntryEntity.masternodeLists objectsPassingTest:^BOOL(DSMasternodeListEntity * _Nonnull obj, BOOL * _Nonnull stop) {
-                    return (obj.block.height > masternodeList.height);
-                }];
-                if (!futureMasternodeLists.count) {
-                    [simplifiedMasternodeEntryEntity updateAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry knownOperatorAddresses:operatorAddresses knownVotingAddresses:votingAddresses localMasternodes:localMasternodes];
-                } else {
-                    DSLog(@"Not updating simplified masternode entry because a more recent version should exist");
-                }
+                [simplifiedMasternodeEntryEntity updateAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry atBlockHeight:masternodeList.height knownOperatorAddresses:operatorAddresses knownVotingAddresses:votingAddresses localMasternodes:localMasternodes];
             }
             for (NSNumber * llmqType in masternodeList.quorums) {
                 NSDictionary * quorumsForMasternodeType = masternodeList.quorums[llmqType];

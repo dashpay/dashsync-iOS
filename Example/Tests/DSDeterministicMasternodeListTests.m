@@ -2817,9 +2817,9 @@
                     
                     //1092912 and 1092916 are the same, 1092916 is older though and is original 1092912 is based off a reloaded 109
                     
-                    NSArray * masternodeScores1092912 = [masternodeList1092912 scoresForQuorumModifier:quorum1092912.llmqQuorumHash];
+                    NSArray * masternodeScores1092912 = [masternodeList1092912 scoresForQuorumModifier:quorum1092912.llmqQuorumHash atBlockHeight:1092912];
                     
-                    NSArray * masternodeScores1092916 = [masternodeList1092916 scoresForQuorumModifier:quorum1092912.llmqQuorumHash];
+                    NSArray * masternodeScores1092916 = [masternodeList1092916 scoresForQuorumModifier:quorum1092912.llmqQuorumHash atBlockHeight:1092912];
                     
                     //                BOOL a = [quorum1092912 validateWithMasternodeList:masternodeList1092912];
                     //
