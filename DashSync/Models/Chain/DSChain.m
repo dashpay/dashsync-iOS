@@ -1900,8 +1900,17 @@ static dispatch_once_t devnetToken = 0;
             if (prev) {
                 blockPosition = DSBlockPosition_Terminal;
             }
-        } else if (self.mTerminalBlocks[prevBlock]) {
-            blockPosition = DSBlockPosition_TerminalSync;
+        }
+        else if (self.mTerminalBlocks[prevBlock]) {
+            //lets see if we are at the chain tip
+            if (self.mTerminalBlocks[blockHash]) {
+                //we already had this block, we are not at chain tip
+                blockPosition = DSBlockPosition_Sync;
+            } else {
+                //we do not have this block as a terminal block, we are at chain tip
+                blockPosition = DSBlockPosition_TerminalSync;
+            }
+            
         } else {
             blockPosition = DSBlockPosition_Sync;
         }
@@ -2101,7 +2110,7 @@ static dispatch_once_t devnetToken = 0;
         }
     } else if (self.mTerminalBlocks[blockHash] != nil && (blockPosition & DSBlockPosition_Terminal)) { // we already have the block (or at least the header)
         if ((block.height % 1) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
-            DSLog(@"%@:%d relayed existing block at height %d", peer.host, peer.port, block.height);
+            DSLog(@"%@:%d relayed existing terminal block at height %d", peer.host, peer.port, block.height);
         }
 
         @synchronized (self.mTerminalBlocks) {
@@ -2134,7 +2143,8 @@ static dispatch_once_t devnetToken = 0;
         }
         
         DSLog(@"potential chain fork to height %d blockPosition %d", block.height, blockPosition);
-        if (blockPosition & DSBlockPosition_Terminal) {
+        if (!(blockPosition & DSBlockPosition_Sync)) {
+            //this is only a reorg of the terminal blocks
             @synchronized (self.mTerminalBlocks) {
                 self.mTerminalBlocks[blockHash] = block;
             }
@@ -2153,7 +2163,7 @@ static dispatch_once_t devnetToken = 0;
                 return TRUE;
             }
             
-            DSLog(@"reorganizing chain from height %d, new height is %d", b.height, block.height);
+            DSLog(@"reorganizing terminal chain from height %d, new height is %d", b.height, block.height);
             
             self.lastTerminalBlock = block;
             if (peer) {
@@ -2209,7 +2219,7 @@ static dispatch_once_t devnetToken = 0;
                 return TRUE;
             }
             
-            DSLog(@"reorganizing chain from height %d, new height is %d", b.height, block.height);
+            DSLog(@"reorganizing sync chain from height %d, new height is %d", b.height, block.height);
             
             NSMutableArray *txHashes = [NSMutableArray array];
             // mark transactions after the join point as unconfirmed
