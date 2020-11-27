@@ -158,7 +158,7 @@
         if (![self.blockchainIdentityBLSDerivationPathByWallet objectForKey:wallet.uniqueIDString]) {
             DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentityBLSKeysDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
-            if (derivationPath.hasExtendedPublicKey) {
+            if (derivationPath.hasExtendedPrivateKey || (derivationPath.hasExtendedPublicKey && !derivationPath.usesHardenedKeys)) {
                 [derivationPath loadAddresses];
             }
             [self.blockchainIdentityBLSDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueIDString];
@@ -177,7 +177,7 @@
         if (![self.blockchainIdentityECDSADerivationPathByWallet objectForKey:wallet.uniqueIDString]) {
             DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentityECDSAKeysDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
-            if (derivationPath.hasExtendedPublicKey) {
+            if (derivationPath.hasExtendedPrivateKey || (derivationPath.hasExtendedPublicKey && !derivationPath.usesHardenedKeys)) {
                 [derivationPath loadAddresses];
             }
             [self.blockchainIdentityECDSADerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueIDString];

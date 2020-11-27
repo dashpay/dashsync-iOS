@@ -40,9 +40,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 +(instancetype)masternodeListAtBlockHash:(UInt256)blockHash atBlockHeight:(uint32_t)blockHeight fromBaseMasternodeList:(DSMasternodeList*)baseMasternodeList addedMasternodes:(NSDictionary*)addedMasternodes removedMasternodeHashes:(NSArray*)removedMasternodeHashes modifiedMasternodes:(NSDictionary*)modifiedMasternodes addedQuorums:(NSDictionary*)addedQuorums removedQuorumHashesByType:(NSDictionary*)removedQuorumHashesByType onChain:(DSChain*)chain;
 
--(NSDictionary <NSData*,id>*)scoreDictionaryForQuorumModifier:(UInt256)quorumModifier;
+-(NSDictionary <NSData*,id>*)scoreDictionaryForQuorumModifier:(UInt256)quorumModifier atBlockHeight:(uint32_t)blockHeight ;
 
--(NSArray*)scoresForQuorumModifier:(UInt256)quorumModifier;
+-(NSArray*)scoresForQuorumModifier:(UInt256)quorumModifier atBlockHeight:(uint32_t)blockHeight;
 
 -(NSUInteger)validQuorumsCountOfType:(DSLLMQType)type;
 
@@ -50,9 +50,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(NSUInteger)quorumsCountOfType:(DSLLMQType)type;
 
--(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount;
+-(NSArray<DSSimplifiedMasternodeEntry*>*)validMasternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount;
 
--(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount blockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
+-(NSArray<DSSimplifiedMasternodeEntry*>*)allMasternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount blockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
+
+-(NSArray<DSSimplifiedMasternodeEntry*>*)validMasternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount blockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
 
 -(BOOL)validateQuorumsWithMasternodeLists:(NSDictionary*)masternodeLists;
 
@@ -81,6 +83,8 @@ NS_ASSUME_NONNULL_BEGIN
 -(UInt256)masternodeMerkleRootWithBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
 
 -(NSArray<NSData*>*)hashesForMerkleRootWithBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
+
+-(NSDictionary<NSData*,NSData*>*)hashDictionaryForMerkleRootWithBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
 
 -(NSDictionary*)toDictionaryUsingBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
 

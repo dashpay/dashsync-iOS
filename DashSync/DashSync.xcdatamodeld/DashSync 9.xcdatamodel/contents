@@ -376,6 +376,7 @@
         <attribute name="ipv6Address" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="isValid" optional="YES" attributeType="Boolean" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="keyIDVoting" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="knownConfirmedAtHeight" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="operatorBLSPublicKey" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="port" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="previousOperatorBLSPublicKeys" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" syncable="YES"/>
@@ -383,6 +384,7 @@
         <attribute name="previousValidity" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" syncable="YES"/>
         <attribute name="providerRegistrationTransactionHash" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="simplifiedMasternodeEntryHash" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="updateHeight" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="addresses" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="DSAddressEntity" inverseName="usedInSimplifiedMasternodeEntries" inverseEntity="DSAddressEntity" syncable="YES"/>
         <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="simplifiedMasternodeEntries" inverseEntity="DSChainEntity" syncable="YES"/>
         <relationship name="governanceVotes" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSGovernanceVoteEntity" inverseName="masternode" inverseEntity="DSGovernanceVoteEntity" syncable="YES"/>
@@ -502,7 +504,7 @@
         <element name="DSQuorumCommitmentTransactionEntity" positionX="-1939.23046875" positionY="1112.27734375" width="128" height="75"/>
         <element name="DSQuorumEntryEntity" positionX="-1880.47265625" positionY="-335.81640625" width="128" height="328"/>
         <element name="DSShapeshiftEntity" positionX="-946.375" positionY="817.2578125" width="128" height="225"/>
-        <element name="DSSimplifiedMasternodeEntryEntity" positionX="-1511.95703125" positionY="276.51953125" width="128" height="28"/>
+        <element name="DSSimplifiedMasternodeEntryEntity" positionX="-1511.95703125" positionY="276.51953125" width="128" height="328"/>
         <element name="DSSpecialTransactionEntity" positionX="-1145.90625" positionY="1134.63671875" width="128" height="75"/>
         <element name="DSSporkEntity" positionX="-1631.40625" positionY="479.12890625" width="128" height="120"/>
         <element name="DSSporkHashEntity" positionX="-1438.984375" positionY="509.0234375" width="128" height="90"/>

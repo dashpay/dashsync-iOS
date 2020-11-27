@@ -56,10 +56,18 @@
 #import "DSCheckpoint.h"
 #import "DSInsightManager.h"
 #import "NSArray+Dash.h"
+#import "NSDictionary+Dash.h"
 
 #define FAULTY_DML_MASTERNODE_PEERS @"FAULTY_DML_MASTERNODE_PEERS"
 #define CHAIN_FAULTY_DML_MASTERNODE_PEERS [NSString stringWithFormat:@"%@_%@",peer.chain.uniqueID,FAULTY_DML_MASTERNODE_PEERS]
 #define MAX_FAULTY_DML_PEERS 2
+
+#define LOG_MASTERNODE_DIFF (0 && DEBUG)
+#define KEEP_OLD_QUORUMS 0
+#define SAVE_MASTERNODE_DIFF_TO_FILE (0 && DEBUG)
+#define SAVE_MASTERNODE_ERROR_TO_FILE (0 && DEBUG)
+#define SAVE_MASTERNODE_NO_ERROR_TO_FILE (0 && DEBUG)
+#define DSFullLog(FORMAT, ...) printf("%s\n", [[NSString stringWithFormat:FORMAT, ##__VA_ARGS__] UTF8String])
 
 
 @interface DSMasternodeManager()
@@ -748,10 +756,12 @@
     
     NSMutableDictionary * addedOrModifiedMasternodes = [NSMutableDictionary dictionary];
     
+    uint32_t blockHeight = blockHeightLookup(blockHash);
+    
     while (addedMasternodeCount >= 1) {
         if (length - offset < [DSSimplifiedMasternodeEntry payloadLength]) return;
         NSData * data = [message subdataWithRange:NSMakeRange(offset, [DSSimplifiedMasternodeEntry payloadLength])];
-        DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithData:data onChain:chain];
+        DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithData:data atBlockHeight:blockHeight onChain:chain];
         [addedOrModifiedMasternodes setObject:simplifiedMasternodeEntry forKey:[NSData dataWithUInt256:simplifiedMasternodeEntry.providerRegistrationTransactionHash].reverse];
         offset += [DSSimplifiedMasternodeEntry payloadLength];
         addedMasternodeCount--;
@@ -868,7 +878,39 @@
     
     if (!rootMNListValid) {
         DSLog(@"Masternode Merkle root not valid for DML on block %d version %d (%@ wanted - %@ calculated)", coinbaseTransaction.height, coinbaseTransaction.version, uint256_hex(coinbaseTransaction.merkleRootMNList), uint256_hex(masternodeList.masternodeMerkleRoot));
-        DSLog(@"Hashes are %@", [[masternodeList hashesForMerkleRootWithBlockHeightLookup:blockHeightLookup] transformToArrayOfHexStrings]);
+        int i = 0;
+        for (NSString * string in [[masternodeList hashesForMerkleRootWithBlockHeightLookup:blockHeightLookup] transformToArrayOfHexStrings]) {
+            DSLog(@"Hash %i is %@",i++, string);
+        }
+#if SAVE_MASTERNODE_ERROR_TO_FILE
+        NSMutableData * message = [NSMutableData data];
+        NSDictionary <NSData*, NSData*> * hashDictionary = [masternodeList hashDictionaryForMerkleRootWithBlockHeightLookup:blockHeightLookup];
+        for (NSData * proTxHashData in [masternodeList providerTxOrderedHashes]) {
+            NSString * line = [NSString stringWithFormat:@"%@ -> %@\n", [proTxHashData hexString], [hashDictionary[proTxHashData] hexString]];
+            [message appendData:[line dataUsingEncoding:NSUTF8StringEncoding]];
+        }
+        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+        NSString *documentsDirectory = [paths objectAtIndex:0];
+        NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"MNL_SME_ERROR_%d.txt", masternodeList.height]];
+        
+        // Save it into file system
+        [message writeToFile:dataPath atomically:YES];
+#endif
+#if SAVE_MASTERNODE_NO_ERROR_TO_FILE
+    } else {
+        NSMutableData * message = [NSMutableData data];
+        NSDictionary <NSData*, NSData*> * hashDictionary = [masternodeList hashDictionaryForMerkleRootWithBlockHeightLookup:blockHeightLookup];
+        for (NSData * proTxHashData in [masternodeList providerTxOrderedHashes]) {
+            NSString * line = [NSString stringWithFormat:@"%@ -> %@\n", [proTxHashData hexString], [hashDictionary[proTxHashData] hexString]];
+            [message appendData:[line dataUsingEncoding:NSUTF8StringEncoding]];
+        }
+        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+        NSString *documentsDirectory = [paths objectAtIndex:0];
+        NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"MNL_SME_NO_ERROR_%d.txt", masternodeList.height]];
+        
+        // Save it into file system
+        [message writeToFile:dataPath atomically:YES];
+#endif
     }
     
     BOOL rootQuorumListValid = TRUE;
@@ -911,11 +953,6 @@
     
     
 }
-
-#define LOG_MASTERNODE_DIFF (0 && DEBUG)
-#define KEEP_OLD_QUORUMS 0
-#define SAVE_MASTERNODE_DIFF_TO_FILE (0 && DEBUG)
-#define DSFullLog(FORMAT, ...) printf("%s\n", [[NSString stringWithFormat:FORMAT, ##__VA_ARGS__] UTF8String])
 
 -(void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)message {
 #if LOG_MASTERNODE_DIFF
@@ -1179,9 +1216,11 @@
                 DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [indexedKnownSimplifiedMasternodeEntryEntities objectForKey:uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
                 if (!simplifiedMasternodeEntryEntity) {
                     simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity managedObjectInBlockedContext:context];
-                    [simplifiedMasternodeEntryEntity setAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry knownOperatorAddresses:operatorAddresses knownVotingAddresses:votingAddresses localMasternodes:localMasternodes onChainEntity:chainEntity];
+                    [simplifiedMasternodeEntryEntity setAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry atBlockHeight:masternodeList.height knownOperatorAddresses:operatorAddresses knownVotingAddresses:votingAddresses localMasternodes:localMasternodes onChainEntity:chainEntity];
+                } else if (simplifiedMasternodeEntry.updateHeight >= masternodeList.height) {
+                    //it was updated in this masternode list
+                    [simplifiedMasternodeEntryEntity updateAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry atBlockHeight:masternodeList.height knownOperatorAddresses:operatorAddresses knownVotingAddresses:votingAddresses localMasternodes:localMasternodes];
                 }
-                
                 [masternodeListEntity addMasternodesObject:simplifiedMasternodeEntryEntity];
                 i++;
             }
@@ -1190,14 +1229,7 @@
                 DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = modifiedMasternodes[simplifiedMasternodeEntryHash];
                 DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [indexedKnownSimplifiedMasternodeEntryEntities objectForKey:uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
                 NSAssert(simplifiedMasternodeEntryEntity, @"this must be present");
-                NSSet * futureMasternodeLists = [simplifiedMasternodeEntryEntity.masternodeLists objectsPassingTest:^BOOL(DSMasternodeListEntity * _Nonnull obj, BOOL * _Nonnull stop) {
-                    return (obj.block.height > masternodeList.height);
-                }];
-                if (!futureMasternodeLists.count) {
-                    [simplifiedMasternodeEntryEntity updateAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry knownOperatorAddresses:operatorAddresses knownVotingAddresses:votingAddresses localMasternodes:localMasternodes];
-                } else {
-                    DSLog(@"Not updating simplified masternode entry because a more recent version should exist");
-                }
+                [simplifiedMasternodeEntryEntity updateAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry atBlockHeight:masternodeList.height knownOperatorAddresses:operatorAddresses knownVotingAddresses:votingAddresses localMasternodes:localMasternodes];
             }
             for (NSNumber * llmqType in masternodeList.quorums) {
                 NSDictionary * quorumsForMasternodeType = masternodeList.quorums[llmqType];
