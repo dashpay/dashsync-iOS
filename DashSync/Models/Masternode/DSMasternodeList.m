@@ -295,7 +295,7 @@ inline static int ceil_log2(int x)
     return scores;
 }
 
--(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount {
+-(NSArray<DSSimplifiedMasternodeEntry*>*)validMasternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount {
     return [self validMasternodesForQuorumModifier:quorumModifier quorumCount:quorumCount blockHeightLookup:^uint32_t(UInt256 blockHash) {
         DSMerkleBlock * block = [self.chain blockForBlockHash:blockHash];
         if (!block) {

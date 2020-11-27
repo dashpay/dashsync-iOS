@@ -50,7 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(NSUInteger)quorumsCountOfType:(DSLLMQType)type;
 
--(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount;
+-(NSArray<DSSimplifiedMasternodeEntry*>*)validMasternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount;
 
 -(NSArray<DSSimplifiedMasternodeEntry*>*)allMasternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount blockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
 
