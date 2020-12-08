@@ -140,6 +140,10 @@ type:(DSDerivationPathType)type signingAlgorithm:(DSKeyType)signingAlgorithm ref
     }
     NSAssert(self.type != DSDerivationPathType_SingleUserAuthentication, @"This should not be called for single user authentication. Use '- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit error:(NSError**)error' instead.");
     
+    if (self.usesHardenedKeys && !self.hasExtendedPrivateKey) {
+        return [NSArray array];
+    }
+    
     if (![self.addressesByIdentity objectForKey:@(identityIndex)]) {
         [self.addressesByIdentity setObject:[NSMutableArray array] forKey:@(identityIndex)];
     }
@@ -171,9 +175,6 @@ type:(DSDerivationPathType)type signingAlgorithm:(DSKeyType)signingAlgorithm ref
         if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
         
         while (a.count < gapLimit) { // generate new addresses up to gapLimit
-            if (self.usesHardenedKeys) {
-                
-            }
             const NSUInteger hardenedIndexes[] = {identityIndex | BIP32_HARD,n | BIP32_HARD};
             const NSUInteger softIndexes[] = {identityIndex,n};
             const NSUInteger * indexes = self.usesHardenedKeys?hardenedIndexes:softIndexes;
