@@ -833,7 +833,7 @@
             if (quorumMasternodeList) {
                 validQuorums &= [potentialQuorumEntry validateWithMasternodeList:quorumMasternodeList blockHeightLookup:blockHeightLookup];
                 if (!validQuorums) {
-                    DSLog(@"Invalid Quorum Found");
+                    DSLog(@"Invalid Quorum Found For Quorum at height %d", quorumMasternodeList.height);
                 }
             } else {
                 
@@ -947,7 +947,7 @@
 #else
     
     //normal completion
-    completion(foundCoinbase,validCoinbase,rootMNListValid,rootQuorumListValid,validQuorums, masternodeList, addedMasternodes, modifiedMasternodes, addedQuorums, neededMasternodeLists);
+    completion(foundCoinbase, validCoinbase, rootMNListValid, rootQuorumListValid, validQuorums, masternodeList, addedMasternodes, modifiedMasternodes, addedQuorums, neededMasternodeLists);
     
 #endif
     
