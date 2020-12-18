@@ -23,6 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, readonly) NSString *displayName;
 @property (nullable, nonatomic, readonly) NSString *avatarPath;
+@property (nullable, nonatomic, readonly) NSData *avatarFingerprint;
+@property (nullable, nonatomic, readonly) NSData *avatarHash;
 @property (nullable, nonatomic, readonly) NSString *publicMessage;
 @property (nonatomic, readonly) int32_t revision;
 @property (nonatomic, readonly) NSData* documentIdentifier;

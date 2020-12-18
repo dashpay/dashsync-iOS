@@ -160,6 +160,7 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 + (instancetype)dataWithUInt160:(UInt160)n;
 + (instancetype)dataWithUInt160Value:(NSValue*)value;
 + (instancetype)dataWithUInt128:(UInt128)n;
++ (instancetype)dataWithUInt64:(uint64_t)n;
 + (instancetype)dataWithBase58String:(NSString *)b58str;
 + (NSData*)opReturnScript;
 
