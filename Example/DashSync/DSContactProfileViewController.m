@@ -115,7 +115,7 @@ NS_ASSUME_NONNULL_BEGIN
         cellModel.autocorrectionType = UITextAutocorrectionTypeNo;
         cellModel.returnKeyType = UIReturnKeyNext;
         cellModel.placeholder = [NSString stringWithFormat:@"https://api.adorable.io/avatars/120/%@.png",
-                                                           self.blockchainIdentity.currentDashpayUsername];
+                                 self.blockchainIdentity.currentDashpayUsername?self.blockchainIdentity.currentDashpayUsername:@"default"];
         cellModel.text = self.blockchainIdentity.matchingDashpayUserInViewContext.avatarPath;
         __weak typeof(self) weakSelf = self;
         cellModel.didChangeValueBlock = ^(TextFieldFormCellModel *_Nonnull cellModel) {
@@ -202,20 +202,27 @@ NS_ASSUME_NONNULL_BEGIN
                                     ? self.avatarCellModel.text
                                     : self.avatarCellModel.placeholder;
     
-    [self.blockchainIdentity updateDashpayProfileWithDisplayName:displayName publicMessage:aboutMe avatarURLString:avatarURLString];
-    __weak typeof(self) weakSelf = self;
-    [self.blockchainIdentity signAndPublishProfileWithCompletion:^(BOOL success, BOOL cancelled, NSError * _Nonnull error) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
+    NSURL * avatarURL = [NSURL URLWithString:avatarURLString];
+    NSURLSessionDataTask * dataTask = [[NSURLSession sharedSession] dataTaskWithURL:avatarURL completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+            if (!error) {
+                UIImage * image = [UIImage imageWithData:data];
+                [self.blockchainIdentity updateDashpayProfileWithDisplayName:displayName publicMessage:aboutMe avatarImage:image avatarData:data avatarURLString:avatarURLString];
+                __weak typeof(self) weakSelf = self;
+                [self.blockchainIdentity signAndPublishProfileWithCompletion:^(BOOL success, BOOL cancelled, NSError * _Nonnull error) {
+                    __strong typeof(weakSelf) strongSelf = weakSelf;
+                    if (!strongSelf) {
+                        return;
+                    }
 
-        [strongSelf showAlertTitle:isCreate ? @"Create profile result:" : @"Update profile result:" result:success completion:^{
-            if (success) {
-                [strongSelf.delegate contactProfileViewControllerDidUpdateProfile:self];
+                    [strongSelf showAlertTitle:isCreate ? @"Create profile result:" : @"Update profile result:" result:success completion:^{
+                        if (success) {
+                            [strongSelf.delegate contactProfileViewControllerDidUpdateProfile:self];
+                        }
+                    }];
+                }];
             }
-        }];
     }];
+    [dataTask resume];
 }
 
 - (void)showAlertTitle:(NSString *)title result:(BOOL)result completion:(void (^)(void))completion {

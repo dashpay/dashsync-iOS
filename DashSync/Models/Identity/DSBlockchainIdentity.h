@@ -274,6 +274,12 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventDashpaySyncroni
 /*! @brief This is a helper to easily get the avatar path of the matching dashpay user. */
 @property (nonatomic,readonly,nullable) NSString* avatarPath;
 
+/*! @brief This is a helper to easily get the avatar fingerprint of the matching dashpay user. */
+@property (nonatomic,readonly) NSData* avatarFingerprint;
+
+/*! @brief This is a helper to easily get the avatar hash of the matching dashpay user. */
+@property (nonatomic,readonly,nullable) NSData* avatarHash;
+
 /*! @brief This is a helper to easily get the display name of the matching dashpay user. */
 @property (nonatomic,readonly,nullable) NSString* displayName;
 
@@ -301,7 +307,23 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentityUpdateEventDashpaySyncroni
 
 - (void)fetchProfileWithCompletion:(void (^ _Nullable)(BOOL success, NSError * error))completion;
 
+- (void)updateDashpayProfileWithDisplayName:(NSString*)displayName;
+
+- (void)updateDashpayProfileWithPublicMessage:(NSString*)publicMessage;
+
+- (void)updateDashpayProfileWithAvatarURLString:(NSString *)avatarURLString;
+
+- (void)updateDashpayProfileWithAvatarURLString:(NSString *)avatarURLString avatarHash:(NSData*)avatarHash avatarFingerprint:(NSData*)avatarFingerprint;
+
+- (void)updateDashpayProfileWithAvatarImage:(UIImage*)avatarImage avatarData:(NSData*)data avatarURLString:(NSString *)avatarURLString;
+
+- (void)updateDashpayProfileWithDisplayName:(NSString*)displayName publicMessage:(NSString*)publicMessage;
+
+- (void)updateDashpayProfileWithDisplayName:(NSString*)displayName publicMessage:(NSString*)publicMessage avatarImage:(UIImage*)avatarImage avatarData:(NSData*)data avatarURLString:(NSString *)avatarURLString;
+
 - (void)updateDashpayProfileWithDisplayName:(NSString*)displayName publicMessage:(NSString*)publicMessage avatarURLString:(NSString *)avatarURLString;
+
+- (void)updateDashpayProfileWithDisplayName:(NSString*)displayName publicMessage:(NSString*)publicMessage avatarURLString:(NSString *)avatarURLString avatarHash:(NSData*)avatarHash avatarFingerprint:(NSData*)avatarFingerprint;
 
 - (void)signedProfileDocumentTransitionInContext:(NSManagedObjectContext*)context withCompletion:(void (^)(DSTransition * transition, BOOL cancelled, NSError * error))completion;
 

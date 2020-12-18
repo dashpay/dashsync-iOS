@@ -24,6 +24,8 @@
     if (self) {
         self.revision = [[profileDocument objectForKey:@"$revision"] intValue];
         self.avatarPath = [profileDocument objectForKey:@"avatarUrl"];
+        self.avatarFingerprint = [profileDocument objectForKey:@"avatarFingerprint"];
+        self.avatarHash = [profileDocument objectForKey:@"avatarHash"];
         self.publicMessage = [profileDocument objectForKey:@"publicMessage"];
         self.displayName = [profileDocument objectForKey:@"displayName"];
         self.createdAt = [[profileDocument objectForKey:@"$createdAt"] unsignedLongValue];

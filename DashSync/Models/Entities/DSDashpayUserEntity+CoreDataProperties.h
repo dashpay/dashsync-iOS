@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint64_t updatedAt;
 @property (nullable, nonatomic, copy) NSString *displayName;
 @property (nullable, nonatomic, copy) NSString *avatarPath;
+@property (nullable, nonatomic, retain) NSData *avatarHash;
+@property (nullable, nonatomic, retain) NSData *avatarFingerprint;
 @property (nullable, nonatomic, copy) NSString *publicMessage;
 @property (nullable, nonatomic, retain) DSBlockchainIdentityEntity *associatedBlockchainIdentity;
 @property (nullable, nonatomic, retain) NSSet<DSFriendRequestEntity *> *outgoingRequests;

@@ -23,6 +23,8 @@
 
 @property (nullable, nonatomic, copy) NSString *displayName;
 @property (nullable, nonatomic, copy) NSString *avatarPath;
+@property (nullable, nonatomic, strong) NSData *avatarFingerprint;
+@property (nullable, nonatomic, strong) NSData *avatarHash;
 @property (nullable, nonatomic, copy) NSString *publicMessage;
 @property (nonatomic, assign) int32_t revision;
 @property (nonnull, nonatomic, strong) NSData* documentIdentifier;
