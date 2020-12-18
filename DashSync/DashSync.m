@@ -169,7 +169,7 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
         [DSDashpayUserEntity deleteContactsOnChainEntity:chainEntity];// this must move after wipeBlockchainInfo where blockchain identities are removed
         [context ds_save];
         [chain reloadDerivationPaths];
-        [chain.chainManager assingSyncWeights];
+        [chain.chainManager assignSyncWeights];
         
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil];
@@ -199,7 +199,7 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
         [DSDashpayUserEntity deleteContactsOnChainEntity:chainEntity];// this must move after wipeBlockchainInfo where blockchain identities are removed
         [context ds_save];
         [chain reloadDerivationPaths];
-        [chain.chainManager assingSyncWeights];
+        [chain.chainManager assignSyncWeights];
         
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil];
@@ -222,7 +222,7 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
         DSChainManager * chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
         [chainManager.masternodeManager wipeMasternodeInfo];
         [context ds_save];
-        [chain.chainManager assingSyncWeights];
+        [chain.chainManager assignSyncWeights];
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@_%@",chain.uniqueID,LAST_SYNCED_MASTERNODE_LIST]];
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];

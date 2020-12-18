@@ -402,21 +402,26 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 
 #pragma mark - Special Contracts
 
-+ (DPContract *)localDashpayContractForChain:(DSChain*)chain {
++ (DPContract*)contractAtPath:(NSString*)resource ofType:(NSString*)type identifier:(NSString*)identifier forChain:(DSChain*)chain {
     // TODO: read async'ly
     NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
     NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
-    NSString *path = [bundle pathForResource:@"dashpay-contract" ofType:@"json"];
+    NSString *path = [bundle pathForResource:resource ofType:type];
     NSError *error = nil;
     NSData *data = [NSData dataWithContentsOfFile:path options:NSDataReadingUncached error:&error];
     NSAssert(error == nil, @"Failed reading contract json");
     DSStringValueDictionary *jsonObject = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&error];
     NSAssert(error == nil, @"Failed parsing json");
     
-    NSString * localIdentifier = [NSString stringWithFormat:@"%@-%@",DASHPAY_CONTRACT,chain.uniqueID];
+    NSString * localIdentifier = [NSString stringWithFormat:@"%@-%@",identifier,chain.uniqueID];
     
     DPContract *contract = [self contractFromDictionary:jsonObject withLocalIdentifier:localIdentifier onChain:chain error:&error];
     NSAssert(error == nil, @"Failed building DPContract");
+    return contract;
+}
+
++ (DPContract *)localDashpayContractForChain:(DSChain*)chain {
+    DPContract *contract = [self contractAtPath:@"dashpay-contract" ofType:@"json" identifier:DASHPAY_CONTRACT forChain:chain];
     if (!uint256_is_zero(chain.dashpayContractID) && contract.contractState == DPContractState_Unknown) {
         [contract setContractState:DPContractState_Registered inContext:[NSManagedObjectContext platformContext]];
         contract.contractId = chain.dashpayContractID;
@@ -427,25 +432,17 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 }
 
 + (DPContract *)localDPNSContractForChain:(DSChain*)chain {
-    // TODO: read async'ly
-    NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
-    NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
-    NSString *path = [bundle pathForResource:@"dpns-contract" ofType:@"json"];
-    NSError *error = nil;
-    NSData *data = [NSData dataWithContentsOfFile:path options:NSDataReadingUncached error:&error];
-    NSAssert(error == nil, @"Failed reading contract json");
-    DSStringValueDictionary *jsonObject = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&error];
-    NSAssert(error == nil, @"Failed parsing json");
-    
-    NSString * localIdentifier = [NSString stringWithFormat:@"%@-%@",DPNS_CONTRACT,chain.uniqueID];
-    
-    DPContract *contract = [self contractFromDictionary:jsonObject withLocalIdentifier:localIdentifier onChain:chain error:&error];
-    NSAssert(error == nil, @"Failed building DPContract");
+    DPContract *contract = [self contractAtPath:@"dpns-contract" ofType:@"json" identifier:DPNS_CONTRACT forChain:chain];
     if (!uint256_is_zero(chain.dpnsContractID) && contract.contractState == DPContractState_Unknown) {
         [contract setContractState:DPContractState_Registered inContext:[NSManagedObjectContext platformContext]];
         contract.contractId = chain.dpnsContractID;
         [contract saveAndWaitInContext:[NSManagedObjectContext platformContext]];
     }
+    return contract;
+}
+
++ (DPContract *)localDashThumbnailContractForChain:(DSChain*)chain {
+    DPContract *contract = [self contractAtPath:@"dashthumbnail-contract" ofType:@"json" identifier:DASHTHUMBNAIL_CONTRACT forChain:chain];
     return contract;
 }
 

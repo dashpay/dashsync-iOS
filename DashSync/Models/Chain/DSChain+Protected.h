@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // MARK: - Blocks
 
-- (void)setEstimatedBlockHeight:(uint32_t)estimatedBlockHeight fromPeer:(DSPeer*)peer;
+- (void)setEstimatedBlockHeight:(uint32_t)estimatedBlockHeight fromPeer:(DSPeer*)peer thresholdPeerCount:(uint32_t)thresholdPeerCount;
 - (void)removeEstimatedBlockHeightOfPeer:(DSPeer*)peer;
 - (BOOL)addBlock:(DSBlock *)block receivedAsHeader:(BOOL)isHeaderOnly fromPeer:(DSPeer* _Nullable)peer;
 - (BOOL)addMinedFullBlock:(DSFullBlock *)block;

@@ -10,7 +10,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'bls-signatures-pod'
-  s.version          = '0.2.10'
+  s.version          = '0.2.11'
   s.summary          = 'BLS signatures in C++, using the relic toolkit'
 
   s.description      = <<-DESC
@@ -391,7 +391,7 @@ EOF
 
     prepare
 
-    build_all "macos" "${MACOS};x86_64"
+    build_all "macos" "${MACOS};x86_64" || build_all "macos" "${MACOS};arm64"
     build_all "watchos" "${WATCHOS};armv7k|${WATCHOS};arm64_32|${WATCHSIMULATOR};i386"
     build_all "tvos" "${TVOS};arm64|${TVSIMULATOR};x86_64"
     build_all "ios" "${IPHONEOS};arm64|${IPHONESIMULATOR};i386|${IPHONESIMULATOR};x86_64"

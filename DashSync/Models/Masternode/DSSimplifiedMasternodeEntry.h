@@ -25,6 +25,8 @@
 @property(nonatomic,readonly) NSDictionary * previousOperatorPublicKeys;
 @property(nonatomic,readonly) NSDictionary * previousSimplifiedMasternodeEntryHashes;
 @property(nonatomic,readonly) NSDictionary * previousValidity;
+@property(nonatomic,readonly) uint32_t knownConfirmedAtHeight;
+@property(nonatomic,readonly) uint32_t updateHeight;
 @property(nonatomic,readonly) UInt160 keyIDVoting;
 @property(nonatomic,readonly) NSString * votingAddress;
 @property(nonatomic,readonly) NSString * operatorAddress;
@@ -35,9 +37,9 @@
 @property(nonatomic,readonly) NSString * uniqueID;
 @property(nonatomic,readonly,class) uint32_t payloadLength;
 
-+(instancetype)simplifiedMasternodeEntryWithData:(NSData*)data onChain:(DSChain*)chain;
++(instancetype)simplifiedMasternodeEntryWithData:(NSData*)data atBlockHeight:(uint32_t)blockHeight onChain:(DSChain*)chain;
 
-+(instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash confirmedHash:(UInt256)confirmedHash address:(UInt128)address port:(uint16_t)port operatorBLSPublicKey:(UInt384)operatorBLSPublicKey previousOperatorBLSPublicKeys:(NSDictionary <DSMerkleBlock*,NSData*>*)previousOperatorBLSPublicKeys keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid previousValidity:(NSDictionary <DSMerkleBlock*,NSData*>*)previousValidity simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash previousSimplifiedMasternodeEntryHashes:(NSDictionary <DSMerkleBlock*,NSData*>*)previousSimplifiedMasternodeEntryHashes onChain:(DSChain*)chain;
++(instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash confirmedHash:(UInt256)confirmedHash address:(UInt128)address port:(uint16_t)port operatorBLSPublicKey:(UInt384)operatorBLSPublicKey previousOperatorBLSPublicKeys:(NSDictionary <DSMerkleBlock*,NSData*>*)previousOperatorBLSPublicKeys keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid previousValidity:(NSDictionary <DSMerkleBlock*,NSData*>*)previousValidity knownConfirmedAtHeight:(uint32_t)knownConfirmedAtHeight updateHeight:(uint32_t)updateHeight simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash previousSimplifiedMasternodeEntryHashes:(NSDictionary <DSMerkleBlock*,NSData*>*)previousSimplifiedMasternodeEntryHashes onChain:(DSChain*)chain;
 
 -(DSSimplifiedMasternodeEntryEntity*)simplifiedMasternodeEntryEntityInContext:(NSManagedObjectContext*)context;
 
@@ -68,6 +70,16 @@
 -(BOOL)isValidAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
 
 -(BOOL)isValidAtBlockHeight:(uint32_t)blockHeight;
+
+-(UInt256)confirmedHashAtBlock:(DSMerkleBlock*)merkleBlock;
+
+-(UInt256)confirmedHashAtBlockHash:(UInt256)blockHash;
+
+-(UInt256)confirmedHashAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
+
+-(UInt256)confirmedHashAtBlockHeight:(uint32_t)blockHeight;
+
+-(UInt256)confirmedHashHashedWithProviderRegistrationTransactionHashAtBlockHeight:(uint32_t)blockHeight;
 
 -(NSDictionary*)compare:(DSSimplifiedMasternodeEntry*)other ourBlockHash:(UInt256)ourBlockHash theirBlockHash:(UInt256)theirBlockHash usingOurString:(NSString*)ours usingTheirString:(NSString*)theirs;
 

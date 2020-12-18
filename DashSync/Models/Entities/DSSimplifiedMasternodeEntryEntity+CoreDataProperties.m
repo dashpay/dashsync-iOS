@@ -31,5 +31,7 @@
 @dynamic masternodeLists;
 @dynamic previousSimplifiedMasternodeEntryHashes;
 @dynamic ipv6Address;
+@dynamic updateHeight;
+@dynamic knownConfirmedAtHeight;
 
 @end

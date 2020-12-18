@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface NSArray (Dash)
 
 -(UInt256)hashDataComponents;
+-(NSArray*)transformToArrayOfHexStrings;
 -(UInt256)hashDataComponentsWithSelector:(SEL)hashFunction;
 
 @end

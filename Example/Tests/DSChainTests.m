@@ -101,7 +101,8 @@
     // This is an example of a functional test case.
     [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
     DSPeer * peer = [DSPeer peerWithHost:@"0.1.2.3:3000" onChain:self.chain];
-    [self.chain setEstimatedBlockHeight:150 fromPeer:peer];
+    [self.chain setEstimatedBlockHeight:150 fromPeer:peer thresholdPeerCount:0];
+    XCTAssertEqual(self.chain.estimatedBlockHeight, 150);
     NSURL *bundleRoot = [[NSBundle bundleForClass:[self class]] bundleURL];
     NSArray * directoryContents =
           [[NSFileManager defaultManager] contentsOfDirectoryAtURL:bundleRoot
@@ -139,11 +140,11 @@
     }
     
     XCTAssertEqualObjects(uint256_hex(self.chain.lastTerminalBlock.chainWork),@"d400000000000000000000000000000000000000000000000000000000000000");
-    XCTAssertEqual(self.chain.lastTerminalBlockHeight,105);
-    XCTAssertEqual(self.chain.lastSyncBlockHeight,1);
+    XCTAssertEqual(self.chain.lastTerminalBlockHeight, 105);
+    XCTAssertEqual(self.chain.lastSyncBlockHeight, 1);
     
     DSAccount * account = self.wallet.accounts[0];
-    XCTAssertEqualObjects(account.receiveAddress, @"yWq16XLivcRsCLcxWKbKPxJ35XASd4r9RY",@"Not matching receive address");
+    XCTAssertEqualObjects(account.receiveAddress, @"yWq16XLivcRsCLcxWKbKPxJ35XASd4r9RY", @"Not matching receive address");
     
     NSData * headerData = @"00000020384621d0c5b5e0f84fe336d37e4cce7d9c2d56493102cf88234254721dd3f35c3da65260508ff789b65b19047cded17bf161fc64916f91365a3edab0a675099de699275fffff7f2001000000".hexToData;
     
@@ -218,7 +219,7 @@
     // This is an example of a functional test case.
     [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
     DSPeer * peer = [DSPeer peerWithHost:@"0.1.2.3:3000" onChain:self.chain];
-    [self.chain setEstimatedBlockHeight:150 fromPeer:peer];
+    [self.chain setEstimatedBlockHeight:150 fromPeer:peer thresholdPeerCount:0];
     NSURL *bundleRoot = [[NSBundle bundleForClass:[self class]] bundleURL];
     NSArray * directoryContents =
           [[NSFileManager defaultManager] contentsOfDirectoryAtURL:bundleRoot
@@ -407,7 +408,7 @@
     // This is an example of a functional test case.
     [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
     DSPeer * peer = [DSPeer peerWithHost:@"0.1.2.3:3000" onChain:self.chain];
-    [self.chain setEstimatedBlockHeight:150 fromPeer:peer];
+    [self.chain setEstimatedBlockHeight:150 fromPeer:peer thresholdPeerCount:0];
     NSURL *bundleRoot = [[NSBundle bundleForClass:[self class]] bundleURL];
     NSArray * directoryContents =
           [[NSFileManager defaultManager] contentsOfDirectoryAtURL:bundleRoot
@@ -600,7 +601,7 @@
     // This is an example of a functional test case.
     [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
     DSPeer * peer = [DSPeer peerWithHost:@"0.1.2.3:3000" onChain:self.chain];
-    [self.chain setEstimatedBlockHeight:150 fromPeer:peer];
+    [self.chain setEstimatedBlockHeight:150 fromPeer:peer thresholdPeerCount:0];
     NSURL *bundleRoot = [[NSBundle bundleForClass:[self class]] bundleURL];
     NSArray * directoryContents =
           [[NSFileManager defaultManager] contentsOfDirectoryAtURL:bundleRoot
@@ -811,7 +812,7 @@
     // This is an example of a functional test case.
     [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
     DSPeer * peer = [DSPeer peerWithHost:@"0.1.2.3:3000" onChain:self.chain];
-    [self.chain setEstimatedBlockHeight:150 fromPeer:peer];
+    [self.chain setEstimatedBlockHeight:150 fromPeer:peer thresholdPeerCount:0];
     NSURL *bundleRoot = [[NSBundle bundleForClass:[self class]] bundleURL];
     NSArray * directoryContents =
           [[NSFileManager defaultManager] contentsOfDirectoryAtURL:bundleRoot
@@ -881,7 +882,7 @@
     // This is an example of a functional test case.
     [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
     DSPeer * peer = [DSPeer peerWithHost:@"0.1.2.3:3000" onChain:self.chain];
-    [self.chain setEstimatedBlockHeight:150 fromPeer:peer];
+    [self.chain setEstimatedBlockHeight:150 fromPeer:peer thresholdPeerCount:0];
     NSURL *bundleRoot = [[NSBundle bundleForClass:[self class]] bundleURL];
     NSArray * directoryContents =
           [[NSFileManager defaultManager] contentsOfDirectoryAtURL:bundleRoot
@@ -963,7 +964,7 @@
     // This is an example of a functional test case.
     [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
     DSPeer * peer = [DSPeer peerWithHost:@"0.1.2.3:3000" onChain:self.chain];
-    [self.chain setEstimatedBlockHeight:150 fromPeer:peer];
+    [self.chain setEstimatedBlockHeight:150 fromPeer:peer thresholdPeerCount:0];
     NSURL *bundleRoot = [[NSBundle bundleForClass:[self class]] bundleURL];
     NSArray * directoryContents =
           [[NSFileManager defaultManager] contentsOfDirectoryAtURL:bundleRoot
@@ -1125,7 +1126,7 @@
     // This is an example of a functional test case.
     [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
     DSPeer * peer = [DSPeer peerWithHost:@"0.1.2.3:3000" onChain:self.chain];
-    [self.chain setEstimatedBlockHeight:150 fromPeer:peer];
+    [self.chain setEstimatedBlockHeight:150 fromPeer:peer thresholdPeerCount:0];
     NSURL *bundleRoot = [[NSBundle bundleForClass:[self class]] bundleURL];
     NSArray * directoryContents =
           [[NSFileManager defaultManager] contentsOfDirectoryAtURL:bundleRoot
@@ -1316,7 +1317,7 @@
     // This is an example of a functional test case.
     [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
     DSPeer * peer = [DSPeer peerWithHost:@"0.1.2.3:3000" onChain:self.chain];
-    [self.chain setEstimatedBlockHeight:150 fromPeer:peer];
+    [self.chain setEstimatedBlockHeight:150 fromPeer:peer thresholdPeerCount:0];
     NSURL *bundleRoot = [[NSBundle bundleForClass:[self class]] bundleURL];
     NSArray * directoryContents =
           [[NSFileManager defaultManager] contentsOfDirectoryAtURL:bundleRoot

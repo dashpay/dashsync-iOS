@@ -81,7 +81,7 @@
 
 @property (nonatomic, strong) NSMutableSet *mutableConnectedPeers, *mutableMisbehavingPeers;
 @property (nonatomic, strong) DSPeer *downloadPeer, *fixedPeer;
-@property (nonatomic, assign) NSUInteger taskId, connectFailures, misbehavingCount, maxConnectCount;
+@property (nonatomic, assign) NSUInteger terminalHeadersSaveTaskId, blockLocatorsSaveTaskId, connectFailures, misbehavingCount, maxConnectCount;
 @property (nonatomic, strong) id backgroundObserver, walletAddedObserver;
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, assign) DSPeerManagerDesiredState desiredState;
@@ -104,7 +104,7 @@
     self.chain = chain;
     self.mutableConnectedPeers = [NSMutableSet set];
     self.mutableMisbehavingPeers = [NSMutableSet set];
-    self.taskId = UIBackgroundTaskInvalid;
+    self.terminalHeadersSaveTaskId = UIBackgroundTaskInvalid;
     
     self.maxConnectCount = PEER_MAX_CONNECTIONS;
     
@@ -114,7 +114,7 @@
                                                            [self savePeers];
                                                            [self.chain saveTerminalBlocks];
                                                            
-                                                           if (self.taskId == UIBackgroundTaskInvalid) {
+                                                           if (self.terminalHeadersSaveTaskId == UIBackgroundTaskInvalid) {
                                                                self.misbehavingCount = 0;
                                                                dispatch_async(self.networkingQueue, ^{
                                                                    [self.connectedPeers makeObjectsPerformSelector:@selector(disconnect)];
@@ -666,13 +666,22 @@
         
         if (self.chainManager.terminalHeaderSyncProgress < 1.0) {
             [self.chainManager resetTerminalSyncStartHeight];
+            if (self.blockLocatorsSaveTaskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
+                self.blockLocatorsSaveTaskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+                    dispatch_async(self.networkingQueue, ^{
+                        [self.chain saveBlockLocators];
+                    });
+                    
+                    [self chainSyncStopped];
+                }];
+            }
         }
         
         if (self.chainManager.chainSyncProgress < 1.0) {
             [self.chainManager resetChainSyncStartHeight];
             
-            if (self.taskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
-                self.taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+            if (self.terminalHeadersSaveTaskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
+                self.terminalHeadersSaveTaskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
                     dispatch_async(self.networkingQueue, ^{
                         [self.chain saveTerminalBlocks];
                     });
@@ -680,11 +689,6 @@
                     [self chainSyncStopped];
                 }];
             }
-            
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncStartedNotification
-                                                                    object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
-            });
         }
         
         @synchronized (self.mutableConnectedPeers) {
@@ -722,6 +726,10 @@
                     [peers removeObject:peer];
                 }
             }
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncConnectionInitiatedNotification
+                                                                    object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+            });
         }
         
         if (self.connectedPeers.count == 0) {
@@ -778,10 +786,16 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
         
-        if (self.taskId != UIBackgroundTaskInvalid) {
-            [[UIApplication sharedApplication] endBackgroundTask:self.taskId];
-            self.taskId = UIBackgroundTaskInvalid;
+        if (self.terminalHeadersSaveTaskId != UIBackgroundTaskInvalid) {
+            [[UIApplication sharedApplication] endBackgroundTask:self.terminalHeadersSaveTaskId];
+            self.terminalHeadersSaveTaskId = UIBackgroundTaskInvalid;
         }
+        
+        if (self.blockLocatorsSaveTaskId != UIBackgroundTaskInvalid) {
+            [[UIApplication sharedApplication] endBackgroundTask:self.blockLocatorsSaveTaskId];
+            self.blockLocatorsSaveTaskId = UIBackgroundTaskInvalid;
+        }
+
     });
 }
 
@@ -865,31 +879,44 @@
     // select the peer with the lowest ping time to download the chain from if we're behind
     // BUG: XXX a malicious peer can report a higher lastblock to make us select them as the download peer, if two
     // peers agree on lastblock, use one of them instead
+    NSMutableArray * reallyConnectedPeers = [NSMutableArray array];
     for (DSPeer *p in self.connectedPeers) {
         if (p.status != DSPeerStatus_Connected) continue;
-        if ((p.pingTime < peer.pingTime && p.lastBlockHeight >= peer.lastBlockHeight) || p.lastBlockHeight > peer.lastBlockHeight) peer = p;
+        [reallyConnectedPeers addObject:p];
+    }
+    
+    if (reallyConnectedPeers.count < self.maxConnectCount) {
+        //we didn't connect to all connected peers yet
+        return;
+    }
+    
+    DSPeer * bestPeer = peer;
+    
+    for (DSPeer *p in reallyConnectedPeers) {
+        if ((p.pingTime < bestPeer.pingTime && p.lastBlockHeight >= bestPeer.lastBlockHeight) || p.lastBlockHeight > bestPeer.lastBlockHeight) bestPeer = p;
+        [self.chain setEstimatedBlockHeight:p.lastBlockHeight fromPeer:p thresholdPeerCount:(uint32_t)reallyConnectedPeers.count*2/3];
     }
     
     [self.downloadPeer disconnect];
-    self.downloadPeer = peer;
+    self.downloadPeer = bestPeer;
     _connected = YES;
-    [self.chain setEstimatedBlockHeight:peer.lastBlockHeight fromPeer:peer];
     if ([self.chain syncsBlockchain] && [self.chain canConstructAFilter]) {
-        [peer sendFilterloadMessage:[self.transactionManager transactionsBloomFilterForPeer:peer].data];
+        [bestPeer sendFilterloadMessage:[self.transactionManager transactionsBloomFilterForPeer:bestPeer].data];
     }
-    peer.currentBlockHeight = self.chain.lastSyncBlockHeight;
+    bestPeer.currentBlockHeight = self.chain.lastSyncBlockHeight;
     
-    
-    if ([self.chain syncsBlockchain] && ((self.chain.lastSyncBlockHeight != self.chain.lastTerminalBlockHeight) || (self.chain.lastSyncBlockHeight < peer.lastBlockHeight))) { // start blockchain sync
+    if ([self.chain syncsBlockchain] && ((self.chain.lastSyncBlockHeight != self.chain.lastTerminalBlockHeight) || (self.chain.lastSyncBlockHeight < bestPeer.lastBlockHeight))) { // start blockchain sync
         [self.chainManager resetLastRelayedItemTime];
         dispatch_async(dispatch_get_main_queue(), ^{ // setup a timer to detect if the sync stalls
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
             [self performSelector:@selector(syncTimeout) withObject:nil afterDelay:PROTOCOL_TIMEOUT];
             
             [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncStartedNotification
+                                                                object:nil userInfo:@{DSChainManagerNotificationChainKey:self, DSPeerManagerNotificationPeerKey:peer}];
             
             [self.chainManager chainWillStartSyncingBlockchain:self.chain];
-            [self.chainManager chainShouldStartSyncingBlockchain:self.chain onPeer:peer];
+            [self.chainManager chainShouldStartSyncingBlockchain:self.chain onPeer:bestPeer];
         });
     }
     else { // we're already synced
@@ -943,7 +970,7 @@
     }
     else if (self.connectFailures < MAX_CONNECT_FAILURES) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            if ((self.desiredState == DSPeerManagerDesiredState_Connected) && (self.taskId != UIBackgroundTaskInvalid ||
+            if ((self.desiredState == DSPeerManagerDesiredState_Connected) && (self.terminalHeadersSaveTaskId != UIBackgroundTaskInvalid ||
                 [UIApplication sharedApplication].applicationState != UIApplicationStateBackground)) {
                 [self connect]; // try connecting to another peer
             }
