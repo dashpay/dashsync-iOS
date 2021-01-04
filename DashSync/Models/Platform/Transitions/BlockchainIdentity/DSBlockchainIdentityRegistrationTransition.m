@@ -13,11 +13,14 @@
 #import "DSTransactionFactory.h"
 #import "DSTransition+Protected.h"
 #import "BigIntTypes.h"
+#import "DSCreditFundingTransaction.h"
+#import "DSInstantSendTransactionLock.h"
+#import "DSTransaction+Protected.h"
 
 @interface DSBlockchainIdentityRegistrationTransition()
 
 @property (nonatomic,strong) NSDictionary <NSNumber*,DSKey*>* publicKeys;
-@property (nonatomic,assign) DSUTXO lockedOutpoint;
+@property (nonatomic,strong) DSCreditFundingTransaction * creditFundingTransaction;
 
 @end
 
@@ -30,15 +33,15 @@
     return self;
 }
 
--(instancetype)initWithVersion:(uint16_t)version registeringPublicKeys:(NSDictionary <NSNumber*,DSKey*>*)publicKeys usingLockedOutpoint:(DSUTXO)lockedOutpoint onChain:(DSChain *)chain {
+-(instancetype)initWithVersion:(uint16_t)version registeringPublicKeys:(NSDictionary <NSNumber*,DSKey*>*)publicKeys usingCreditFundingTransaction:(DSCreditFundingTransaction*)creditFundingTransaction onChain:(DSChain *)chain {
     NSParameterAssert(chain);
     NSParameterAssert(publicKeys);
     NSAssert(publicKeys.count, @"There must be at least one key when registering a user");
 
     if (!(self = [self initOnChain:chain])) return nil;
     self.version = 1;
-    self.lockedOutpoint = lockedOutpoint;
-    self.blockchainIdentityUniqueId = [dsutxo_data(lockedOutpoint) SHA256_2];
+    self.creditFundingTransaction = creditFundingTransaction;
+    self.blockchainIdentityUniqueId = [dsutxo_data(creditFundingTransaction.lockedOutpoint) SHA256_2];
     self.publicKeys = publicKeys;
     return self;
 }
@@ -56,17 +59,41 @@
     return platformKeys;
 }
 
+- (DSMutableStringValueDictionary *)proofDictionary {
+    NSAssert(self.creditFundingTransaction.instantSendLockAwaitingProcessing != nil, @"instantSendLockAwaitingProcessing must not be nil");
+    DSMutableStringValueDictionary * proofDictionary = [DSMutableStringValueDictionary dictionary];
+    proofDictionary[@"type"] = @(0);
+    proofDictionary[@"instantLock"] = self.creditFundingTransaction.instantSendLockAwaitingProcessing.toData;
+    return proofDictionary;
+}
+
+- (DSMutableStringValueDictionary *)assetLockDictionary {
+    DSMutableStringValueDictionary * assetLockDictionary = [DSMutableStringValueDictionary dictionary];
+    assetLockDictionary[@"outputIndex"] = @(self.creditFundingTransaction.lockedOutpoint.n);
+    assetLockDictionary[@"transaction"] = [self.creditFundingTransaction toData];
+    assetLockDictionary[@"proof"] = [self proofDictionary];
+    return assetLockDictionary;
+}
+
 - (DSMutableStringValueDictionary *)baseKeyValueDictionary {
     DSMutableStringValueDictionary *json = [super baseKeyValueDictionary];
-    json[@"lockedOutPoint"] = dsutxo_data(self.lockedOutpoint);
+    json[@"assetLock"] = [self assetLockDictionary];
     json[@"publicKeys"] = [self platformKeyDictionaries];
     return json;
 }
 
 -(void)applyKeyValueDictionary:(DSMutableStringValueDictionary *)keyValueDictionary {
     [super applyKeyValueDictionary:keyValueDictionary];
-    NSData * lockedOutPointData = keyValueDictionary[@"lockedOutPoint"];
-    self.lockedOutpoint = [lockedOutPointData transactionOutpoint];
+    NSDictionary * assetLockDictionary = keyValueDictionary[@"assetLock"];
+    self.creditFundingTransaction = [DSCreditFundingTransaction transactionWithMessage:assetLockDictionary[@"transaction"] onChain:self.chain];
+    NSDictionary * proofDictionary = keyValueDictionary[@"proof"];
+    NSNumber * proofType = proofDictionary[@"type"];
+    if ([proofType integerValue] == 0) {
+        //this is an instant send proof
+        NSData * instantSendLockData = proofDictionary[@"instantLock"];
+        self.creditFundingTransaction.instantSendLockAwaitingProcessing = [DSInstantSendTransactionLock instantSendTransactionLockWithMessage:instantSendLockData onChain:self.chain];
+    }
+    
     self.blockchainIdentityUniqueId = [dsutxo_data(self.lockedOutpoint) SHA256_2];
     NSArray * publicKeysDictionariesArray = keyValueDictionary[@"publicKeys"];
     NSMutableDictionary * platformKeys = [NSMutableDictionary dictionary];

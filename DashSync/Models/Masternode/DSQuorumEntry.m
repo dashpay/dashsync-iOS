@@ -194,19 +194,22 @@
 
 -(uint32_t)quorumThreshold {
     switch (self.llmqType) {
-        case 1:
+        case DSLLMQType_50_60:
             return 30;
             break;
-        case 2:
+        case DSLLMQType_400_60:
             return 240;
             break;
-        case 3:
+        case DSLLMQType_400_85:
             return 340;
             break;
-        case 100:
+        case DSLLMQType_100_67:
+            return 67;
+            break;
+        case DSLLMQType_5_60:
             return 3;
             break;
-        case 101:
+        case DSLLMQType_10_60:
             return 6;
             break;
         default:
@@ -424,6 +427,8 @@
             return 400;
         case DSLLMQType_400_85:
             return 400;
+        case DSLLMQType_100_67:
+            return 100;
         default:
             NSAssert(FALSE, @"Unknown quorum type");
             return 50;

@@ -329,6 +329,7 @@
 		FB27C63822DC3180002808C4 /* MNL_1098672_1098696.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB27C61C22DC3180002808C4 /* MNL_1098672_1098696.dat */; };
 		FB27C63922DC3180002808C4 /* MNL_1098960_1098984.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB27C61D22DC3180002808C4 /* MNL_1098960_1098984.dat */; };
 		FB27C63C22DC346C002808C4 /* MNL_0_1096704.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB27C63A22DC318B002808C4 /* MNL_0_1096704.dat */; };
+		FB29C31425A3595D001F4F43 /* DSInstantSendLockTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FB29C31325A3595D001F4F43 /* DSInstantSendLockTests.m */; };
 		FB2B21AB20D6FC0B000DF537 /* BRBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB2B21A920D6FC0B000DF537 /* BRBubbleView.m */; };
 		FB3A390E22BE62D900801F39 /* MasternodeListTestnet119064.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB3A390D22BE62D900801F39 /* MasternodeListTestnet119064.dat */; };
 		FB3ADDE6238E62CD00C31D23 /* DSChainLockTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FB3ADDE5238E62CD00C31D23 /* DSChainLockTests.m */; };
@@ -864,6 +865,7 @@
 		FB27C61C22DC3180002808C4 /* MNL_1098672_1098696.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1098672_1098696.dat; sourceTree = "<group>"; };
 		FB27C61D22DC3180002808C4 /* MNL_1098960_1098984.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1098960_1098984.dat; sourceTree = "<group>"; };
 		FB27C63A22DC318B002808C4 /* MNL_0_1096704.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_0_1096704.dat; sourceTree = "<group>"; };
+		FB29C31325A3595D001F4F43 /* DSInstantSendLockTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSInstantSendLockTests.m; sourceTree = "<group>"; };
 		FB2B21A920D6FC0B000DF537 /* BRBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBubbleView.m; sourceTree = "<group>"; };
 		FB2B21AA20D6FC0B000DF537 /* BRBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBubbleView.h; sourceTree = "<group>"; };
 		FB3A390D22BE62D900801F39 /* MasternodeListTestnet119064.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MasternodeListTestnet119064.dat; sourceTree = "<group>"; };
@@ -2008,6 +2010,7 @@
 				FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */,
 				FB3ADDE5238E62CD00C31D23 /* DSChainLockTests.m */,
 				2A1ECBDE20D8F7DB000177D8 /* DSTransactionTests.m */,
+				FB29C31325A3595D001F4F43 /* DSInstantSendLockTests.m */,
 			);
 			name = L1Tests;
 			sourceTree = "<group>";
@@ -2710,6 +2713,7 @@
 				2A7DCCB220DA10870097049F /* DSBloomFilterTests.m in Sources */,
 				2AA2C5EB20E37B74007768B1 /* DSGovernanceTests.m in Sources */,
 				FB1B98D123D6A3BD00D50F69 /* DSTransitionTests.m in Sources */,
+				FB29C31425A3595D001F4F43 /* DSInstantSendLockTests.m in Sources */,
 				FB3ADDE6238E62CD00C31D23 /* DSChainLockTests.m in Sources */,
 				FBE4603C256B1AEF0052A6DE /* DSDIP13Tests.m in Sources */,
 				FB87A0CE24B7C28700C22DF7 /* DSMiningTests.m in Sources */,

@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,readonly) NSDictionary <NSNumber*,DSKey*>* publicKeys;
 @property (nonatomic,readonly) DSUTXO lockedOutpoint;
 
--(instancetype)initWithVersion:(uint16_t)version registeringPublicKeys:(NSDictionary <NSNumber*,DSKey*>*)publicKeys usingLockedOutpoint:(DSUTXO)lockedOutpoint onChain:(DSChain *)chain;
+-(instancetype)initWithVersion:(uint16_t)version registeringPublicKeys:(NSDictionary <NSNumber*,DSKey*>*)publicKeys usingCreditFundingTransaction:(DSCreditFundingTransaction*)creditFundingTransaction onChain:(DSChain *)chain;
 
 @end
 

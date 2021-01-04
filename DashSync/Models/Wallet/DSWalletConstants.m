@@ -60,7 +60,7 @@ NSString* const DSTransactionManagerNotificationInstantSendTransactionLockKey = 
 
 NSString* const DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey =         @"DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey";
 
-NSString* const DSTransactionManagerNotificationInstantSendTransactionAcceptedStatusKey =         @"DSTransactionManagerNotificationInstantSendTransactionAcceptedStatusKey";
+NSString* const DSTransactionManagerNotificationTransactionAcceptedStatusKey =         @"DSTransactionManagerNotificationTransactionAcceptedStatusKey";
 
 NSString* const DPContractDidUpdateNotification = @"DPContractDidUpdateNotification";
 

@@ -22,6 +22,8 @@
 #import "DSWallet.h"
 #import "DSAccount.h"
 #import "DSCreditFundingDerivationPath.h"
+#import "DSInstantSendTransactionLock.h"
+#import "DSTransaction+Protected.h"
 
 @implementation DSCreditFundingTransaction
 
@@ -87,6 +89,19 @@
             if (derivation != UINT32_MAX) return derivation;
         }
         return UINT32_MAX;
+    }
+}
+
+-(void)setInstantSendReceivedWithInstantSendLock:(DSInstantSendTransactionLock*)instantSendLock {
+    self.instantSendReceived = instantSendLock.signatureVerified;
+    self.hasUnverifiedInstantSendLock = (instantSendLock && !instantSendLock.signatureVerified);
+    if (self.hasUnverifiedInstantSendLock) {
+        self.instantSendLockAwaitingProcessing = instantSendLock;
+    } else {
+        self.instantSendLockAwaitingProcessing = nil;
+    }
+    if (!instantSendLock.saved) {
+        [instantSendLock saveInitial];
     }
 }
 

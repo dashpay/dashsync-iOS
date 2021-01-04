@@ -19,6 +19,9 @@ typedef NS_ENUM(NSUInteger, DSTransactionPersistenceStatus) {
 
 @property (nonatomic, assign) DSTransactionPersistenceStatus persistenceStatus;
 @property (nonatomic, readonly) DSTransactionEntity * transactionEntity;
+@property (nonatomic, strong) DSInstantSendTransactionLock * instantSendLockAwaitingProcessing;
+@property (nonatomic, assign) BOOL instantSendReceived;
+@property (nonatomic, assign) BOOL hasUnverifiedInstantSendLock;
 
 @end
 

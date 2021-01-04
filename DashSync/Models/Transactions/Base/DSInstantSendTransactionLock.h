@@ -24,6 +24,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) BOOL saved;
 @property (nonatomic, readonly) UInt256 requestID;
 
+- (NSData*)toData;
+
 - (BOOL)verifySignature;
 
 - (void)saveInitial;
