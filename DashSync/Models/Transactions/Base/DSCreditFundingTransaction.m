@@ -95,11 +95,8 @@
 -(void)setInstantSendReceivedWithInstantSendLock:(DSInstantSendTransactionLock*)instantSendLock {
     self.instantSendReceived = instantSendLock.signatureVerified;
     self.hasUnverifiedInstantSendLock = (instantSendLock && !instantSendLock.signatureVerified);
-    if (self.hasUnverifiedInstantSendLock) {
-        self.instantSendLockAwaitingProcessing = instantSendLock;
-    } else {
-        self.instantSendLockAwaitingProcessing = nil;
-    }
+    //we will always need to send this platform
+    self.instantSendLockAwaitingProcessing = instantSendLock;
     if (!instantSendLock.saved) {
         [instantSendLock saveInitial];
     }

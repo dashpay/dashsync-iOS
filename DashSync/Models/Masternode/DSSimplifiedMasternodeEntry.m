@@ -45,6 +45,8 @@
 @property(nonatomic,strong) NSMutableDictionary <DSMerkleBlock*,NSData*> * mPreviousOperatorPublicKeys;
 @property(nonatomic,strong) NSMutableDictionary <DSMerkleBlock*,NSNumber*> * mPreviousValidity;
 @property(nonatomic,strong) NSMutableDictionary <DSMerkleBlock*,NSData*> * mPreviousSimplifiedMasternodeEntryHashes;
+@property(nonatomic,assign) uint64_t platformPing;
+@property(nonatomic,strong) NSDate * platformPingDate;
 
 @end
 
@@ -596,6 +598,11 @@
 
 -(NSDictionary*)compare:(DSSimplifiedMasternodeEntry*)other atBlockHash:(UInt256)blockHash {
     return [self compare:other ourBlockHash:blockHash theirBlockHash:blockHash];
+}
+
+-(void)setPlatformPing:(uint64_t)platformPing at:(NSDate*)time {
+    self.platformPing = platformPing;
+    self.platformPingDate = time;
 }
 
 @end

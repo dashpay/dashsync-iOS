@@ -113,11 +113,12 @@
     return [mData copy];
 }
 
-- (instancetype)initWithTransactionHash:(UInt256)transactionHash withInputOutpoints:(NSArray*)inputOutpoints signatureVerified:(BOOL)signatureVerified quorumVerified:(BOOL)quorumVerified onChain:(DSChain*)chain {
+- (instancetype)initWithTransactionHash:(UInt256)transactionHash withInputOutpoints:(NSArray*)inputOutpoints signature:(UInt768)signature signatureVerified:(BOOL)signatureVerified quorumVerified:(BOOL)quorumVerified onChain:(DSChain*)chain {
     if (! (self = [self initOnChain:chain])) return nil;
     self.transactionHash = transactionHash;
     self.inputOutpoints = inputOutpoints;
     self.signatureVerified = signatureVerified;
+    self.signature = signature;
     self.quorumVerified = quorumVerified;
     self.saved = YES; //this is coming already from the persistant store and not from the network
     return self;

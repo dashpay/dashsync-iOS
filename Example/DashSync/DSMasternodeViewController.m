@@ -172,6 +172,12 @@
     char s[INET6_ADDRSTRLEN];
     uint32_t ipAddress = CFSwapInt32BigToHost((uint32_t)simplifiedMasternodeEntryEntity.address);
     cell.masternodeLocationLabel.text = [NSString stringWithFormat:@"%s:%d",inet_ntop(AF_INET, &ipAddress, s, sizeof(s)),simplifiedMasternodeEntryEntity.port];
+    cell.ping.text = [NSString stringWithFormat:@"%llu ms",simplifiedMasternodeEntryEntity.platformPing];
+    NSString *dateString = [NSDateFormatter localizedStringFromDate:simplifiedMasternodeEntryEntity.platformPingDate
+                                                          dateStyle:NSDateFormatterShortStyle
+                                                          timeStyle:NSDateFormatterMediumStyle];
+    cell.pingDate.text = dateString;
+    cell.protocolLabel.text = simplifiedMasternodeEntryEntity.protocol
     cell.outputLabel.text = [NSString stringWithFormat:@"%@",simplifiedMasternodeEntryEntity.providerRegistrationTransactionHash];
 }
 
@@ -185,6 +191,24 @@
     self.searchString = searchBar.text;
     _fetchedResultsController = nil;
     [self.tableView reloadData];
+}
+
+-(IBAction)showAvailableActions:(id)sender {
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Actions"
+                                                                             message:nil
+                                                                      preferredStyle:UIAlertControllerStyleActionSheet];
+
+    [alertController addAction:[UIAlertAction actionWithTitle:@"Register"
+                                                            style:UIAlertActionStyleDefault
+                                                          handler:^(UIAlertAction *_Nonnull action) {
+        [self performSegueWithIdentifier:@"RegisterMasternodeSegue" sender:self];
+                                                          }]];
+    [alertController addAction:[UIAlertAction actionWithTitle:@"Ping Platform"
+                                                            style:UIAlertActionStyleDefault
+                                                          handler:^(UIAlertAction *_Nonnull action) {
+
+                                                          }]];
+    [self presentViewController:alertController animated:YES completion:nil];
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
@@ -207,4 +231,5 @@
         registerMasternodeViewController.chain = self.chain;
     }
 }
+
 @end

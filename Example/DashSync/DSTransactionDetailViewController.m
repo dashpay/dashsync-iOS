@@ -210,7 +210,7 @@
     NSInteger realSection = section;
     if ([self.transaction type] == DSTransactionType_Coinbase && section == 1) realSection++;
     switch (section) {
-        case 0: return self.transaction.associatedShapeshift?(([self.transaction.associatedShapeshift.shapeshiftStatus integerValue]| eShapeshiftAddressStatus_Finished)?8:7):6;
+        case 0: return self.transaction.associatedShapeshift?(([self.transaction.associatedShapeshift.shapeshiftStatus integerValue]| eShapeshiftAddressStatus_Finished)?9:8):7;
         case 1: return (self.sent > 0) ? self.outputText.count : self.inputAddresses.count;
         case 2: return (self.sent > 0) ? self.inputAddresses.count : self.outputText.count;
         case 3: {
@@ -385,6 +385,29 @@
                 {
                     DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
                     cell.selectionStyle = UITableViewCellSelectionStyleNone;
+                    
+                    [self setBackgroundForCell:cell indexPath:indexPath];
+                    cell.titleLabel.text = @"IS received/locked/memory:";
+                    cell.statusLabel.text = [NSString stringWithFormat:@"%@/%@/%@",self.transaction.instantSendLockAwaitingProcessing || self.transaction.instantSendReceived ?@"YES":@"NO",
+                                             self.transaction.instantSendReceived?@"YES":@"NO", self.transaction.instantSendLockAwaitingProcessing?@"YES":@"NO"];
+                    if (self.transaction.confirmations < 6) {
+                        BOOL chainLocked = [self.transaction.chain blockHeightChainLocked:self.transaction.blockHeight];
+                        if (chainLocked) {
+                            cell.moreInfoLabel.text = @"Using chain lock";
+                        } else {
+                            cell.moreInfoLabel.text = nil;
+                        }
+                    } else {
+                        cell.moreInfoLabel.text = @"More than 6 confirmations";
+                    }
+                    
+                    
+                    return cell;
+                }
+                case 7:
+                {
+                    DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
+                    cell.selectionStyle = UITableViewCellSelectionStyleNone;
                     [self setBackgroundForCell:cell indexPath:indexPath];
                     cell.titleLabel.text = NSLocalizedString(@"size:", nil);
                     uint64_t roundedFeeCostPerByte = self.transaction.roundedFeeCostPerByte;
@@ -397,7 +420,7 @@
                     
                     return cell;
                 }
-                case 7:
+                case 8:
                 {
                     DSTransactionAmountTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TransactionCellIdentifier"];
                     [self setBackgroundForCell:cell indexPath:indexPath];

@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype)instantSendTransactionLockWithMessage:(NSData *)message onChain:(DSChain*)chain;
 
-- (instancetype)initWithTransactionHash:(UInt256)transactionHash withInputOutpoints:(NSArray*)inputOutpoints signatureVerified:(BOOL)signatureVerified quorumVerified:(BOOL)quorumVerified onChain:(DSChain*)chain;
+- (instancetype)initWithTransactionHash:(UInt256)transactionHash withInputOutpoints:(NSArray*)inputOutpoints signature:(UInt768)signature signatureVerified:(BOOL)signatureVerified quorumVerified:(BOOL)quorumVerified onChain:(DSChain*)chain;
 
 - (DSQuorumEntry* _Nullable)findSigningQuorumReturnMasternodeList:(DSMasternodeList*_Nullable*_Nullable)returnMasternodeList;
 

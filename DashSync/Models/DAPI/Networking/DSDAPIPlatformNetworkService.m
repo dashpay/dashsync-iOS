@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import "DSDAPINetworkService.h"
+#import "DSDAPIPlatformNetworkService.h"
 
 #import "DSHTTPJSONRPCClient.h"
 #import "DSChain.h"
@@ -31,7 +31,7 @@
 NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.error";
 
 
-@interface DSDAPINetworkService ()
+@interface DSDAPIPlatformNetworkService ()
 
 @property (strong, nonatomic) DSHTTPJSONRPCClient *httpJSONRPCClient;
 @property (strong, nonatomic) Platform *gRPCClient;
@@ -41,7 +41,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
 
 @end
 
-@implementation DSDAPINetworkService
+@implementation DSDAPIPlatformNetworkService
 
 - (instancetype)initWithDAPINodeIPAddress:(NSString*)ipAddress httpLoaderFactory:(HTTPLoaderFactory *)httpLoaderFactory usingGRPCDispatchQueue:(dispatch_queue_t)grpcDispatchQueue onChain:(DSChain*)chain {
     NSParameterAssert(ipAddress);
@@ -57,6 +57,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
         // this example does not use TLS (secure channel); use insecure channel instead
         options.transportType = GRPCTransportTypeInsecure;
         options.userAgentPrefix = USER_AGENT;
+        options.timeout = 30;
         self.grpcDispatchQueue = grpcDispatchQueue;
         
         NSString *dapiGRPCHost = [NSString stringWithFormat:@"%@:%d",ipAddress,3010];
@@ -599,7 +600,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                         success:(void (^)(NSDictionary *successDictionary))success
                                         failure:(void (^)(NSError *error))failure {
     NSParameterAssert(stateTransition);
-    DSLogPrivate(@"Broadcasting state transition with data %@ rawData %@",stateTransition.keyValueDictionary, stateTransition.data.hexString);
+    DSLogPrivate(@"Broadcasting state transition to ip %@ with data %@ rawData %@", self.ipAddress, stateTransition.keyValueDictionary, stateTransition.data.hexString);
     BroadcastStateTransitionRequest * broadcastStateRequest = [[BroadcastStateTransitionRequest alloc] init];
     broadcastStateRequest.stateTransition = stateTransition.data;
     DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
@@ -686,6 +687,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     [call start];
     return (id<DSDAPINetworkServiceRequest>)call;
 }
+
 
 #pragma mark - Private
 

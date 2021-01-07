@@ -28,7 +28,7 @@
 #import <TinyCborObjc/NSObject+DSCborEncoding.h>
 #import <CocoaImageHashing/CocoaImageHashing.h>
 #import "DSChainManager.h"
-#import "DSDAPINetworkService.h"
+#import "DSDAPIPlatformNetworkService.h"
 #import "DSDashpayUserEntity+CoreDataClass.h"
 #import "DSFriendRequestEntity+CoreDataClass.h"
 #import "DSAccountEntity+CoreDataClass.h"
@@ -94,7 +94,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
 @property(nonatomic,strong) NSMutableDictionary <NSString*,NSData*>* usernameDomains;
 
 @property(nonatomic,readonly) DSDAPIClient* DAPIClient;
-@property(nonatomic,readonly) DSDAPINetworkService* DAPINetworkService;
+@property(nonatomic,readonly) DSDAPIPlatformNetworkService* DAPINetworkService;
 
 @property(nonatomic,strong) DPDocumentFactory* dashpayDocumentFactory;
 @property(nonatomic,strong) DPDocumentFactory* dpnsDocumentFactory;
@@ -1696,7 +1696,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary) {
     return self.chain.chainManager.DAPIClient;
 }
 
--(DSDAPINetworkService*)DAPINetworkService {
+-(DSDAPIPlatformNetworkService*)DAPINetworkService {
     return self.DAPIClient.DAPINetworkService;
 }
 

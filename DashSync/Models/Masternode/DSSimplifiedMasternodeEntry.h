@@ -36,6 +36,8 @@
 @property(nonatomic,readonly) NSData * payloadData;
 @property(nonatomic,readonly) NSString * uniqueID;
 @property(nonatomic,readonly,class) uint32_t payloadLength;
+@property(nonatomic,readonly) uint64_t platformPing;
+@property(nonatomic,readonly) NSDate * platformPingDate;
 
 +(instancetype)simplifiedMasternodeEntryWithData:(NSData*)data atBlockHeight:(uint32_t)blockHeight onChain:(DSChain*)chain;
 
@@ -88,5 +90,7 @@
 -(NSDictionary*)compare:(DSSimplifiedMasternodeEntry*)other atBlockHash:(UInt256)blockHash;
 
 -(NSDictionary*)toDictionaryAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup;
+
+-(void)setPlatformPing:(uint64_t)platformPing at:(NSDate*)time;
 
 @end

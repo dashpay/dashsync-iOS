@@ -33,5 +33,11 @@
 @dynamic ipv6Address;
 @dynamic updateHeight;
 @dynamic knownConfirmedAtHeight;
+@dynamic platformPingDate;
+@dynamic platformPing;
+@dynamic coreVersion;
+@dynamic coreProtocol;
+@dynamic coreLastConnectionDate;
+@dynamic platformVersion;
 
 @end
