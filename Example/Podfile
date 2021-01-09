@@ -5,7 +5,7 @@ target 'DashSync_Example' do
   pod 'KVO-MVVM', '0.5.1'
   pod 'DAPI-GRPC', :path => '../'
   pod 'SDWebImage', '5.9.2'
-  pod 'CocoaImageHashing', :git => 'https://github.com/ameingast/cocoaimagehashing.git', :commit => '5830cb0dcd4e4ce08f348991d78a4445fb44a93f'
+  pod 'CocoaImageHashing', :git => 'https://github.com/ameingast/cocoaimagehashing.git', :commit => 'ad01eee'
   
   target 'DashSync_Tests' do
     inherit! :search_paths
