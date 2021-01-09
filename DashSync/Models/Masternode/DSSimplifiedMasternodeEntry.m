@@ -605,4 +605,10 @@
     self.platformPingDate = time;
 }
 
+-(void)savePlatformPingInfoInContext:(NSManagedObjectContext*)context {
+    DSSimplifiedMasternodeEntryEntity * masternodeEntity = [self simplifiedMasternodeEntryEntityInContext:context];
+    masternodeEntity.platformPing = self.platformPing;
+    masternodeEntity.platformPingDate = self.platformPingDate;
+}
+
 @end

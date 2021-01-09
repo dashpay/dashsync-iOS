@@ -170,17 +170,35 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 }
 
 //check ping times of all DAPI nodes
--(void)checkPingTimesForMasternodes:(NSArray<DSSimplifiedMasternodeEntry*>*)masternodes {
-    HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
-    for (DSSimplifiedMasternodeEntry * masternode in masternodes) {
-        DSDAPICoreNetworkService * coreNetworkService = [[DSDAPICoreNetworkService alloc] initWithDAPINodeIPAddress:masternode.host httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.dispatchQueue onChain:self.chain];
-        [coreNetworkService getStatusWithSuccess:^(NSDictionary * _Nonnull status) {
-            [masternode setPlatformPing:1 at:[NSDate date]];
-        } failure:^(NSError * _Nonnull error) {
-            
-        }];
-    }
+-(void)checkPingTimesForMasternodes:(NSArray<DSSimplifiedMasternodeEntry*>*)masternodes completion:(void (^)(NSMutableDictionary <NSData*, NSError*> *))completion {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+        HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
+        __block dispatch_group_t dispatch_group = dispatch_group_create();
+        __block NSMutableDictionary <NSData*, NSError*> * errorDictionary = [NSMutableDictionary dictionary];
+        dispatch_semaphore_t dispatchSemaphore = dispatch_semaphore_create(32);
+        
+        for (DSSimplifiedMasternodeEntry * masternode in masternodes) {
+            if (uint128_is_zero(masternode.address)) continue;
+            if (!masternode.isValid) continue;
+            dispatch_semaphore_wait(dispatchSemaphore, DISPATCH_TIME_FOREVER);
+            dispatch_group_enter(dispatch_group);
+            DSDAPICoreNetworkService * coreNetworkService = [[DSDAPICoreNetworkService alloc] initWithDAPINodeIPAddress:masternode.ipAddressString httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.dispatchQueue onChain:self.chain];
+            __block NSDate * time  = [NSDate date];
+            [coreNetworkService getStatusWithSuccess:^(NSDictionary * _Nonnull status) {
+                [masternode setPlatformPing:-[time timeIntervalSinceNow]*1000 at:[NSDate date]];
+                dispatch_semaphore_signal(dispatchSemaphore);
+                dispatch_group_leave(dispatch_group);
+            } failure:^(NSError * _Nonnull error) {
+                [errorDictionary setObject:error forKey:uint256_data(masternode.providerRegistrationTransactionHash)];
+                dispatch_semaphore_signal(dispatchSemaphore);
+                dispatch_group_leave(dispatch_group);
+            }];
+        }
 
+        dispatch_group_notify(dispatch_group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+            completion(errorDictionary);
+        });
+    });
 }
 
 #pragma mark - Peers

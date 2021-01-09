@@ -314,17 +314,29 @@
     if (self.chain.isEvolutionEnabled) {
         if (!_currentMasternodeList) {
             for (DSSimplifiedMasternodeEntry * masternodeEntry in currentMasternodeList.simplifiedMasternodeEntries) {
-                [self.chain.chainManager.DAPIClient addDAPINodeByAddress:masternodeEntry.ipAddressString];
+                if (masternodeEntry.isValid) {
+                    [self.chain.chainManager.DAPIClient addDAPINodeByAddress:masternodeEntry.ipAddressString];
+                }
             }
         } else {
             NSDictionary * updates = [currentMasternodeList listOfChangedNodesComparedTo:_currentMasternodeList];
             NSArray * added = updates[MASTERNODE_LIST_ADDED_NODES];
             NSArray * removed = updates[MASTERNODE_LIST_ADDED_NODES];
+            NSArray * addedValidity = updates[MASTERNODE_LIST_ADDED_VALIDITY];
+            NSArray * removedValidity = updates[MASTERNODE_LIST_REMOVED_VALIDITY];
             for (DSSimplifiedMasternodeEntry * masternodeEntry in added) {
+                if (masternodeEntry.isValid) {
+                    [self.chain.chainManager.DAPIClient addDAPINodeByAddress:masternodeEntry.ipAddressString];
+                }
+            }
+            for (DSSimplifiedMasternodeEntry * masternodeEntry in addedValidity) {
                 [self.chain.chainManager.DAPIClient addDAPINodeByAddress:masternodeEntry.ipAddressString];
             }
             for (DSSimplifiedMasternodeEntry * masternodeEntry in removed) {
-                [self.chain.chainManager.DAPIClient addDAPINodeByAddress:masternodeEntry.ipAddressString];
+                [self.chain.chainManager.DAPIClient removeDAPINodeByAddress:masternodeEntry.ipAddressString];
+            }
+            for (DSSimplifiedMasternodeEntry * masternodeEntry in removedValidity) {
+                [self.chain.chainManager.DAPIClient removeDAPINodeByAddress:masternodeEntry.ipAddressString];
             }
         }
         
@@ -1402,6 +1414,27 @@
         return nil;
     }
     return [masternodeList quorumEntryForChainLockRequestID:requestID];
+}
+
+// MARK: - Meta information
+
+-(void)checkPingTimesForCurrentMasternodeListInContext:(NSManagedObjectContext*)context withCompletion:(void (^)(NSMutableDictionary <NSData*, NSError*> *))completion {
+    __block NSArray <DSSimplifiedMasternodeEntry*> * entries = self.currentMasternodeList.simplifiedMasternodeEntries;
+    [self.chain.chainManager.DAPIClient checkPingTimesForMasternodes:entries completion:^(NSMutableDictionary<NSData *,NSError *> * _Nonnull errors) {
+        [context performBlockAndWait:^{
+            for (DSSimplifiedMasternodeEntry * entry in entries) {
+                [entry savePlatformPingInfoInContext:context];
+            }
+            NSError * savingError = nil;
+            [context save:&savingError];
+        }];
+
+        if (completion != nil) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(errors);
+            });
+        }
+    }];
 }
 
 // MARK: - Local Masternodes

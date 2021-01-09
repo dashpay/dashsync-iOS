@@ -53,7 +53,7 @@
         options.timeout = 30;
         self.grpcDispatchQueue = grpcDispatchQueue;
         
-        NSString *dapiGRPCHost = [NSString stringWithFormat:@"%@:%d",ipAddress,3010];
+        NSString *dapiGRPCHost = [NSString stringWithFormat:@"%@:%d",ipAddress,chain.standardDapiGRPCPort];
         
         _gRPCClient = [Core serviceWithHost:dapiGRPCHost callOptions:options];
     }
@@ -64,6 +64,7 @@
                                                 failure:(void (^)(NSError *error))failure {
     GetStatusRequest * statusRequest = [[GetStatusRequest alloc] init];
     DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
+    responseHandler.host = [NSString stringWithFormat:@"%@:%d", self.ipAddress, self.chain.standardDapiGRPCPort];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.successHandler = success;
     responseHandler.errorHandler = failure;

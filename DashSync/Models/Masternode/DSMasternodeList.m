@@ -484,16 +484,29 @@ inline static int ceil_log2(int x)
 -(NSDictionary*)listOfChangedNodesComparedTo:(DSMasternodeList*)previous {
     NSMutableArray * added = [NSMutableArray array];
     NSMutableArray * removed = [NSMutableArray array];
+    NSMutableArray * addedValidity = [NSMutableArray array];
+    NSMutableArray * removedValidity = [NSMutableArray array];
     for (NSData * data in self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash) {
         DSSimplifiedMasternodeEntry * currentEntry = self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[data];
         DSSimplifiedMasternodeEntry * previousEntry = previous.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[data];
         if (currentEntry && !previousEntry) {
             [added addObject:currentEntry];
-        } else if (!currentEntry && previousEntry) {
-            [removed addObject:previousEntry];
+        } else if ([currentEntry isValidAtBlockHeight:self.height] && ![previousEntry isValidAtBlockHeight:previous.height]) {
+            [addedValidity addObject:currentEntry];
+        } else if (![currentEntry isValidAtBlockHeight:self.height] && [previousEntry isValidAtBlockHeight:previous.height]) {
+            [removedValidity addObject:currentEntry];
         }
     }
-    return @{MASTERNODE_LIST_ADDED_NODES:added,MASTERNODE_LIST_REMOVED_NODES:removed};
+    
+    for (NSData * data in previous.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash) {
+        DSSimplifiedMasternodeEntry * currentEntry = self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[data];
+        DSSimplifiedMasternodeEntry * previousEntry = previous.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[data];
+        if (!currentEntry && previousEntry) {
+            [removed addObject:currentEntry];
+        }
+    }
+
+    return @{MASTERNODE_LIST_ADDED_NODES:added, MASTERNODE_LIST_REMOVED_NODES:removed, MASTERNODE_LIST_ADDED_VALIDITY:addedValidity, MASTERNODE_LIST_REMOVED_VALIDITY:removedValidity};
 }
 
 -(NSDictionary*)compare:(DSMasternodeList*)other usingOurString:(NSString*)ours usingTheirString:(NSString*)theirs blockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup {

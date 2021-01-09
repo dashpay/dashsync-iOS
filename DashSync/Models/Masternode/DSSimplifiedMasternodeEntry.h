@@ -93,4 +93,6 @@
 
 -(void)setPlatformPing:(uint64_t)platformPing at:(NSDate*)time;
 
+-(void)savePlatformPingInfoInContext:(NSManagedObjectContext*)context;
+
 @end

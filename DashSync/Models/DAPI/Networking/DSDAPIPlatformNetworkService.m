@@ -60,7 +60,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
         options.timeout = 30;
         self.grpcDispatchQueue = grpcDispatchQueue;
         
-        NSString *dapiGRPCHost = [NSString stringWithFormat:@"%@:%d",ipAddress,3010];
+        NSString *dapiGRPCHost = [NSString stringWithFormat:@"%@:%d",ipAddress,chain.standardDapiGRPCPort];
         
         _gRPCClient = [Platform serviceWithHost:dapiGRPCHost callOptions:options];
     }

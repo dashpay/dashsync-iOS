@@ -263,6 +263,12 @@
         
         [mArray addObject:blockchainIdentitiesTopupDerivationPath];
         
+        for (DSAccount* account in wallet.accounts) {
+            DSDerivationPath * masterBlockchainIdentityContactsDerivationPath = [DSDerivationPath masterBlockchainIdentityContactsDerivationPathForAccountNumber:account.accountNumber onChain:wallet.chain];
+            masterBlockchainIdentityContactsDerivationPath.wallet = wallet;
+            [mArray addObject:masterBlockchainIdentityContactsDerivationPath];
+        }
+        
     }
     
     return [mArray copy];
