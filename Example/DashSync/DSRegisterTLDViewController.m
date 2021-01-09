@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -31,9 +31,9 @@
 }
 
 - (IBAction)registerTLD:(id)sender {
-    DSChain * chain = self.blockchainIdentity.wallet.chain;
-    DPContract * dpnsContract = [DSDashPlatform sharedInstanceForChain:chain].dpnsContract;
-    DSBlockchainIdentity * dpnsBlockchainIdentity = [chain blockchainIdentityThatCreatedContract:dpnsContract withContractId:chain.dpnsContractID foundInWallet:nil];
+    DSChain *chain = self.blockchainIdentity.wallet.chain;
+    DPContract *dpnsContract = [DSDashPlatform sharedInstanceForChain:chain].dpnsContract;
+    DSBlockchainIdentity *dpnsBlockchainIdentity = [chain blockchainIdentityThatCreatedContract:dpnsContract withContractId:chain.dpnsContractID foundInWallet:nil];
     if (self.blockchainIdentity == dpnsBlockchainIdentity) {
         [self.blockchainIdentity addUsername:self.topLevelDomainTextField.text inDomain:@"" save:YES];
     }

@@ -23,13 +23,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint32_t revision;
 @property (nonatomic, assign) uint64_t totalVotesCount;
 @property (nullable, nonatomic, retain) NSData *signature;
-@property (nullable, nonatomic, retain) NSString * url;
+@property (nullable, nonatomic, retain) NSString *url;
 @property (nonatomic, assign) uint64_t startEpoch;
 @property (nonatomic, assign) uint64_t endEpoch;
 @property (nonatomic, assign) uint64_t timestamp;
 @property (nonatomic, assign) uint32_t type;
 @property (nullable, nonatomic, retain) DSGovernanceObjectHashEntity *governanceObjectHash;
-@property (nullable, nonatomic, retain) NSString * identifier;
+@property (nullable, nonatomic, retain) NSString *identifier;
 @property (nonatomic, assign) uint64_t amount;
 @property (nonatomic, retain) NSOrderedSet<DSGovernanceVoteHashEntity *> *voteHashes;
 

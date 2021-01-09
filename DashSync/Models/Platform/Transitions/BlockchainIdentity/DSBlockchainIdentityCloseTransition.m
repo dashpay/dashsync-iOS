@@ -6,11 +6,11 @@
 //
 
 #import "DSBlockchainIdentityCloseTransition.h"
+#import "DSECDSAKey.h"
+#import "DSTransactionFactory.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
-#import "DSECDSAKey.h"
 #import "NSString+Bitcoin.h"
-#import "DSTransactionFactory.h"
 
 @implementation DSBlockchainIdentityCloseTransition
 
@@ -20,38 +20,38 @@
 //    self.type = DSTransactionType_SubscriptionCloseAccount;
 //    NSUInteger length = message.length;
 //    uint32_t off = self.payloadOffset;
-//    
+//
 //    if (length - off < 1) return nil;
 //    NSNumber * payloadLengthSize = nil;
 //    uint64_t payloadLength = [message varIntAtOffset:off length:&payloadLengthSize];
 //    off += payloadLengthSize.unsignedLongValue;
-//    
+//
 //    if (length - off < 2) return nil;
 //    self.blockchainIdentityCloseTransactionVersion = [message UInt16AtOffset:off];
 //    off += 2;
-//    
+//
 //    if (length - off < 32) return nil;
 //    self.registrationTransactionHash = [message UInt256AtOffset:off];
 //    off += 32;
-//    
+//
 //    if (length - off < 32) return nil;
 //    self.previousBlockchainIdentityTransactionHash = [message UInt256AtOffset:off];
 //    off += 32;
-//    
+//
 //    if (length - off < 8) return nil;
 //    self.creditFee = [message UInt64AtOffset:off];
 //    off += 8;
-//    
+//
 //    if (length - off < 1) return nil;
 //    NSNumber * payloadSignatureLength = nil;
 //    self.payloadSignature = [message dataAtOffset:off length:&payloadSignatureLength];
 //    off += payloadSignatureLength.unsignedLongValue;
-//    
-//    
+//
+//
 //    self.payloadOffset = off;
 //    if ([self payloadData].length != payloadLength) return nil;
 //    self.txHash = self.data.SHA256_2;
-//    
+//
 //    return self;
 //}
 //

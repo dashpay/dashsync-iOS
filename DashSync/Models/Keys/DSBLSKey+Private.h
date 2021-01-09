@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -32,10 +32,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSBLSKey (Private)
 
--(bls::ExtendedPublicKey)blsExtendedPublicKey;
+- (bls::ExtendedPublicKey)blsExtendedPublicKey;
 
--(bls::PrivateKey)blsPrivateKey;
--(bls::PublicKey)blsPublicKey;
+- (bls::PrivateKey)blsPrivateKey;
+- (bls::PublicKey)blsPublicKey;
 
 @end
 

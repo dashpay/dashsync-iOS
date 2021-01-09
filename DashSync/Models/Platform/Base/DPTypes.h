@@ -18,7 +18,7 @@
 #ifndef DPTypes_h
 #define DPTypes_h
 
-typedef NSDictionary<NSString *, id>        DSStringValueDictionary;
+typedef NSDictionary<NSString *, id> DSStringValueDictionary;
 typedef NSMutableDictionary<NSString *, id> DSMutableStringValueDictionary;
 
 #endif /* DPTypes_h */

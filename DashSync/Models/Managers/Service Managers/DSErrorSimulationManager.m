@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -34,9 +34,9 @@
 
 - (instancetype)init {
     NSDictionary *defaults = @{
-        @"enabled":@NO,
-        @"peerRandomDisconnectionFrequency" : @0, // 10 min
-        @"peerByzantineTransactionOmissionFrequency" : @0,    // 10 min
+        @"enabled": @NO,
+        @"peerRandomDisconnectionFrequency": @0,          // 10 min
+        @"peerByzantineTransactionOmissionFrequency": @0, // 10 min
     };
 
     self = [super initWithUserDefaults:nil defaults:defaults];

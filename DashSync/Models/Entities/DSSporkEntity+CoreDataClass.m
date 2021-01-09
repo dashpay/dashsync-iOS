@@ -6,18 +6,17 @@
 //
 //
 
-#import "DSSporkEntity+CoreDataClass.h"
-#import "DSSpork.h"
 #import "DSChain+Protected.h"
-#import "DSSporkHashEntity+CoreDataClass.h"
 #import "DSChainEntity+CoreDataClass.h"
-#import "NSManagedObject+Sugar.h"
+#import "DSSpork.h"
+#import "DSSporkEntity+CoreDataClass.h"
+#import "DSSporkHashEntity+CoreDataClass.h"
 #import "NSData+Bitcoin.h"
+#import "NSManagedObject+Sugar.h"
 
 @implementation DSSporkEntity
 
-- (void)setAttributesFromSpork:(DSSpork *)spork withSporkHash:(DSSporkHashEntity*)sporkHash
-{
+- (void)setAttributesFromSpork:(DSSpork *)spork withSporkHash:(DSSporkHashEntity *)sporkHash {
     [self.managedObjectContext performBlockAndWait:^{
         self.identifier = spork.identifier;
         self.signature = spork.signature;
@@ -28,23 +27,23 @@
         } else {
             self.sporkHash = [DSSporkHashEntity sporkHashEntityWithHash:[NSData dataWithUInt256:spork.sporkHash] onChainEntity:[spork.chain chainEntityInContext:self.managedObjectContext]];
         }
-        
+
         NSAssert(self.sporkHash, @"There should be a spork hash");
     }];
 }
 
-+ (NSArray<DSSporkEntity*>*)sporksonChainEntity:(DSChainEntity*)chainEntity {
-    __block NSArray * sporksOnChain;
++ (NSArray<DSSporkEntity *> *)sporksonChainEntity:(DSChainEntity *)chainEntity {
+    __block NSArray *sporksOnChain;
     [chainEntity.managedObjectContext performBlockAndWait:^{
-        sporksOnChain = [self objectsInContext:chainEntity.managedObjectContext matching:@"(sporkHash.chain == %@)",chainEntity];
+        sporksOnChain = [self objectsInContext:chainEntity.managedObjectContext matching:@"(sporkHash.chain == %@)", chainEntity];
     }];
     return sporksOnChain;
 }
 
-+ (void)deleteSporksOnChainEntity:(DSChainEntity*)chainEntity {
++ (void)deleteSporksOnChainEntity:(DSChainEntity *)chainEntity {
     [chainEntity.managedObjectContext performBlockAndWait:^{
-        NSArray * sporksToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(sporkHash.chain == %@)",chainEntity];
-        for (DSSporkEntity * sporkEntity in sporksToDelete) {
+        NSArray *sporksToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(sporkHash.chain == %@)", chainEntity];
+        for (DSSporkEntity *sporkEntity in sporksToDelete) {
             [chainEntity.managedObjectContext deleteObject:sporkEntity];
         }
     }];

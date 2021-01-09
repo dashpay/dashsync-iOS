@@ -6,9 +6,9 @@
 //
 //
 
-#import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
 #import "BigIntTypes.h"
+#import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
 @class DSChainEntity, DSInstantSendLockEntity, DSMasternodeListEntity, DSMerkleBlockEntity, DSQuorumCommitmentTransactionEntity, DSChain, DSQuorumEntry, DSChainLockEntity;
 
@@ -22,16 +22,16 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) UInt768 quorumThresholdSignature;
 @property (nonatomic, assign) UInt256 quorumVerificationVectorHash;
 @property (nonatomic, assign) UInt768 allCommitmentAggregatedSignature;
-@property (nonatomic, readonly) DSQuorumEntry * quorumEntry;
+@property (nonatomic, readonly) DSQuorumEntry *quorumEntry;
 
 + (instancetype _Nullable)quorumEntryEntityFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry inContext:(NSManagedObjectContext *)context;
 
-- (void)setAttributesFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry onBlock:(DSMerkleBlockEntity * _Nullable)block;
+- (void)setAttributesFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry onBlock:(DSMerkleBlockEntity *_Nullable)block;
 
-+ (void)deleteHavingQuorumHashes:(NSArray*)quorumHashes onChainEntity:(DSChainEntity*)chainEntity;
-+ (DSQuorumEntryEntity* _Nullable)quorumEntryForHash:(NSData*)quorumEntryHash onChainEntity:(DSChainEntity*)chainEntity;
++ (void)deleteHavingQuorumHashes:(NSArray *)quorumHashes onChainEntity:(DSChainEntity *)chainEntity;
++ (DSQuorumEntryEntity *_Nullable)quorumEntryForHash:(NSData *)quorumEntryHash onChainEntity:(DSChainEntity *)chainEntity;
 
-+ (void)deleteAllOnChainEntity:(DSChainEntity*)chainEntity;
++ (void)deleteAllOnChainEntity:(DSChainEntity *)chainEntity;
 
 - (UInt256)orderingHashForRequestID:(UInt256)requestID;
 

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -20,7 +20,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSInteger, DSBiometricsAuthenticationResult) {
+typedef NS_ENUM(NSInteger, DSBiometricsAuthenticationResult)
+{
     DSBiometricsAuthenticationResultSucceeded,
     DSBiometricsAuthenticationResultFailed,
     DSBiometricsAuthenticationResultCancelled,
@@ -36,7 +37,7 @@ typedef NS_ENUM(NSInteger, DSBiometricsAuthenticationResult) {
 
 + (void)performBiometricsAuthenticationWithReason:(NSString *)reason
                                     fallbackTitle:(nullable NSString *)fallbackTitle
-                                       completion:(void(^)(DSBiometricsAuthenticationResult result))completion;
+                                       completion:(void (^)(DSBiometricsAuthenticationResult result))completion;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

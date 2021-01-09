@@ -57,15 +57,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)removePinForced;
 
 - (void)performAuthenticationPrecheck:(void (^)(BOOL shouldContinueAuthentication,
-                                                BOOL authenticated,
-                                                BOOL shouldLockout,
-                                                NSString *_Nullable attemptsMessage))completion;
+                                          BOOL authenticated,
+                                          BOOL shouldLockout,
+                                          NSString *_Nullable attemptsMessage))completion;
 
 - (void)performPinVerificationAgainstCurrentPin:(NSString *)inputPin
                                      completion:(void (^)(BOOL allowedNextVerificationRound,
-                                                          BOOL authenticated,
-                                                          BOOL cancelled,
-                                                          BOOL shouldLockout))completion;
+                                                    BOOL authenticated,
+                                                    BOOL cancelled,
+                                                    BOOL shouldLockout))completion;
 
 - (BOOL)updateBiometricsAmountLeftAfterSpendingAmount:(uint64_t)amount;
 

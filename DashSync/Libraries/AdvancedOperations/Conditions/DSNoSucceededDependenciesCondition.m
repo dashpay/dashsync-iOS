@@ -44,8 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (anyDependencySucceeded) {
         NSError *error = [NSError ds_operationErrorWithCode:DSOperationErrorConditionFailed userInfo:nil];
         completion([DSOperationConditionResult failedResultWithError:error]);
-    }
-    else {
+    } else {
         completion([DSOperationConditionResult satisfiedResult]);
     }
 }

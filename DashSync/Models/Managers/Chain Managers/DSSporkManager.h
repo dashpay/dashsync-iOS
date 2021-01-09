@@ -23,28 +23,28 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
-#import "DSSpork.h"
 #import "DSPeer.h"
+#import "DSSpork.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-FOUNDATION_EXPORT NSString* const DSSporkListDidUpdateNotification;
+FOUNDATION_EXPORT NSString *const DSSporkListDidUpdateNotification;
 
-@class DSPeer,DSChain;
+@class DSPeer, DSChain;
 
 @interface DSSporkManager : NSObject <DSPeerSporkDelegate>
 
-@property (nonatomic,readonly) NSTimeInterval lastRequestedSporks; //this is the time after a successful spork sync, this is not persisted between sessions
-@property (nonatomic,readonly) NSTimeInterval lastSyncedSporks; //this is the time after a successful spork sync, this is not persisted between sessions
-@property (nonatomic,readonly) BOOL instantSendActive; //spork 2
-@property (nonatomic,readonly) BOOL deterministicMasternodeListEnabled; //spork 15
-@property (nonatomic,readonly) BOOL llmqInstantSendEnabled; // spork 20
-@property (nonatomic,readonly) BOOL quorumDKGEnabled; // spork 17
-@property (nonatomic,readonly) BOOL chainLocksEnabled; // spork 19
+@property (nonatomic, readonly) NSTimeInterval lastRequestedSporks;      //this is the time after a successful spork sync, this is not persisted between sessions
+@property (nonatomic, readonly) NSTimeInterval lastSyncedSporks;         //this is the time after a successful spork sync, this is not persisted between sessions
+@property (nonatomic, readonly) BOOL instantSendActive;                  //spork 2
+@property (nonatomic, readonly) BOOL deterministicMasternodeListEnabled; //spork 15
+@property (nonatomic, readonly) BOOL llmqInstantSendEnabled;             // spork 20
+@property (nonatomic, readonly) BOOL quorumDKGEnabled;                   // spork 17
+@property (nonatomic, readonly) BOOL chainLocksEnabled;                  // spork 19
 
-@property (nonatomic,readonly) NSDictionary * sporkDictionary;
-@property (nonatomic,readonly) DSChain * chain;
+@property (nonatomic, readonly) NSDictionary *sporkDictionary;
+@property (nonatomic, readonly) DSChain *chain;
 
 @end
 

@@ -1,6 +1,6 @@
 //
 //  DSDerivationPathEntity+CoreDataClass.h
-//  
+//
 //
 //  Created by Sam Westrich on 5/20/18.
 //
@@ -22,18 +22,18 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
-@class DSAddressEntity, DSChainEntity,DSDerivationPath,DSChain,DSWallet,DSTxInputEntity,DSTxOutputEntity,DSAccountEntity,DSFriendRequestEntity,DSIncomingFundsDerivationPath;
+@class DSAddressEntity, DSChainEntity, DSDerivationPath, DSChain, DSWallet, DSTxInputEntity, DSTxOutputEntity, DSAccountEntity, DSFriendRequestEntity, DSIncomingFundsDerivationPath;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSDerivationPathEntity : NSManagedObject
 
-+ (DSDerivationPathEntity* _Nonnull)derivationPathEntityMatchingDerivationPath:(DSDerivationPath*)derivationPath inContext:(NSManagedObjectContext*)context;
-+ (DSDerivationPathEntity* _Nonnull)derivationPathEntityMatchingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath associateWithFriendRequest:(DSFriendRequestEntity*)friendRequest;
-+(void)deleteDerivationPathsOnChainEntity:(DSChainEntity*)chainEntity;
++ (DSDerivationPathEntity *_Nonnull)derivationPathEntityMatchingDerivationPath:(DSDerivationPath *)derivationPath inContext:(NSManagedObjectContext *)context;
++ (DSDerivationPathEntity *_Nonnull)derivationPathEntityMatchingDerivationPath:(DSIncomingFundsDerivationPath *)derivationPath associateWithFriendRequest:(DSFriendRequestEntity *)friendRequest;
++ (void)deleteDerivationPathsOnChainEntity:(DSChainEntity *)chainEntity;
 
 @end
 

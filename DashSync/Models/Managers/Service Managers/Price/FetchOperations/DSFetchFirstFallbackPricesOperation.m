@@ -120,8 +120,7 @@ NS_ASSUME_NONNULL_BEGIN
         double price = 0.0;
         if ([code isEqualToString:@"VES"]) {
             price = dashrateNumber.doubleValue;
-        }
-        else {
+        } else {
             double btcPrice = [pricesByCode[code] doubleValue];
             price = btcPrice * dashBtcPrice;
         }

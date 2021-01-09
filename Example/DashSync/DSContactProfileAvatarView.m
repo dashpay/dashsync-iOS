@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
     self = [super initWithFrame:frame];
     if (self) {
         self.backgroundColor = [UIColor groupTableViewBackgroundColor];
-        
+
         UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectZero];
         imageView.translatesAutoresizingMaskIntoConstraints = NO;
         imageView.contentMode = UIViewContentModeScaleAspectFit;
@@ -42,8 +42,10 @@ NS_ASSUME_NONNULL_BEGIN
         _imageView = imageView;
 
         [NSLayoutConstraint activateConstraints:@[
-            [imageView.topAnchor constraintEqualToAnchor:self.topAnchor constant:10.0],
-            [imageView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor constant:-10.0],
+            [imageView.topAnchor constraintEqualToAnchor:self.topAnchor
+                                                constant:10.0],
+            [imageView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor
+                                                   constant:-10.0],
             [imageView.heightAnchor constraintEqualToAnchor:imageView.widthAnchor],
             [imageView.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
         ]];

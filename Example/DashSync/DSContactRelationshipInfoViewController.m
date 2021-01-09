@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -25,25 +25,25 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
-    DSAccount * account = [self.blockchainIdentity.wallet accountWithNumber:0];
-    
-    DSBlockchainIdentity * friend = self.incomingFriendRequest.sourceContact.associatedBlockchainIdentity.blockchainIdentity;
-    
-    DSIncomingFundsDerivationPath * incomingDerivationPath = [account derivationPathForFriendshipWithIdentifier:self.incomingFriendRequest.friendshipIdentifier];
+
+    DSAccount *account = [self.blockchainIdentity.wallet accountWithNumber:0];
+
+    DSBlockchainIdentity *friend = self.incomingFriendRequest.sourceContact.associatedBlockchainIdentity.blockchainIdentity;
+
+    DSIncomingFundsDerivationPath *incomingDerivationPath = [account derivationPathForFriendshipWithIdentifier:self.incomingFriendRequest.friendshipIdentifier];
     NSAssert(incomingDerivationPath.extendedPublicKey, @"Extended public key must exist already");
-    
-    DSIncomingFundsDerivationPath * outgoingDerivationPath = [account derivationPathForFriendshipWithIdentifier:self.outgoingFriendRequest.friendshipIdentifier];
+
+    DSIncomingFundsDerivationPath *outgoingDerivationPath = [account derivationPathForFriendshipWithIdentifier:self.outgoingFriendRequest.friendshipIdentifier];
     NSAssert(outgoingDerivationPath.extendedPublicKey, @"Extended public key must exist already");
-    
+
     self.incomingExtendedPublicKeyLabel.text = incomingDerivationPath.extendedPublicKeyData.hexString;
     self.outgoingExtendedPublicKeyLabel.text = outgoingDerivationPath.extendedPublicKeyData.hexString;
-    
-    self.incomingOurKeyIndexUsedForEncryptionLabel.text = [NSString stringWithFormat:@"%@",@(self.incomingFriendRequest.destinationKeyIndex)];
-    self.incomingFriendKeyIndexUsedForEncryptionLabel.text = [NSString stringWithFormat:@"%@",@(self.incomingFriendRequest.sourceKeyIndex)];
-    self.outgoingOurKeyIndexUsedForEncryptionLabel.text = [NSString stringWithFormat:@"%@",@(self.outgoingFriendRequest.sourceKeyIndex)];
-    self.outgoingFriendKeyIndexUsedForEncryptionLabel.text = [NSString stringWithFormat:@"%@",@(self.outgoingFriendRequest.destinationKeyIndex)];
-    
+
+    self.incomingOurKeyIndexUsedForEncryptionLabel.text = [NSString stringWithFormat:@"%@", @(self.incomingFriendRequest.destinationKeyIndex)];
+    self.incomingFriendKeyIndexUsedForEncryptionLabel.text = [NSString stringWithFormat:@"%@", @(self.incomingFriendRequest.sourceKeyIndex)];
+    self.outgoingOurKeyIndexUsedForEncryptionLabel.text = [NSString stringWithFormat:@"%@", @(self.outgoingFriendRequest.sourceKeyIndex)];
+    self.outgoingFriendKeyIndexUsedForEncryptionLabel.text = [NSString stringWithFormat:@"%@", @(self.outgoingFriendRequest.destinationKeyIndex)];
+
     self.incomingOurKeyUsedForEncryptionLabel.text = [self.blockchainIdentity keyAtIndex:self.incomingFriendRequest.destinationKeyIndex].publicKeyData.hexString;
     self.incomingFriendKeyUsedForEncryptionLabel.text = [friend keyAtIndex:self.incomingFriendRequest.sourceKeyIndex].publicKeyData.hexString;
     self.outgoingOurKeyUsedForEncryptionLabel.text = [self.blockchainIdentity keyAtIndex:self.incomingFriendRequest.sourceKeyIndex].publicKeyData.hexString;

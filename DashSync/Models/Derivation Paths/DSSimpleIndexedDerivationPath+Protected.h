@@ -5,8 +5,8 @@
 //  Created by Sam Westrich on 2/20/19.
 //
 
-#import "DSSimpleIndexedDerivationPath.h"
 #import "DSDerivationPath+Protected.h"
+#import "DSSimpleIndexedDerivationPath.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) NSMutableArray *mOrderedAddresses;
 
-- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit error:(NSError* _Nullable * _Nullable)error;
+- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit error:(NSError *_Nullable *_Nullable)error;
 
 @end
 

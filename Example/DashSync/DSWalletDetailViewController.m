@@ -13,8 +13,8 @@
 
 @interface DSWalletDetailViewController ()
 
-@property (nonatomic,strong) UITableViewCell * accountsCell;
-@property (nonatomic,strong) UITableViewCell * specialDerivationPathsCell;
+@property (nonatomic, strong) UITableViewCell *accountsCell;
+@property (nonatomic, strong) UITableViewCell *specialDerivationPathsCell;
 
 @end
 
@@ -22,11 +22,11 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     self.accountsCell = [self.tableView dequeueReusableCellWithIdentifier:@"AccountsCellIdentifier"];
-    self.accountsCell.detailTextLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)self.wallet.accounts.count];
+    self.accountsCell.detailTextLabel.text = [NSString stringWithFormat:@"%lu", (unsigned long)self.wallet.accounts.count];
     self.specialDerivationPathsCell = [self.tableView dequeueReusableCellWithIdentifier:@"SpecialDerivationPathsCellIdentifier"];
-    self.specialDerivationPathsCell.detailTextLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[[DSDerivationPathFactory sharedInstance] loadedSpecializedDerivationPathsForWallet:self.wallet].count];
+    self.specialDerivationPathsCell.detailTextLabel.text = [NSString stringWithFormat:@"%lu", (unsigned long)[[DSDerivationPathFactory sharedInstance] loadedSpecializedDerivationPathsForWallet:self.wallet].count];
 }
 
 #pragma mark - Table view data source
@@ -40,8 +40,7 @@
 }
 
 
-
--(UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     switch (indexPath.row) {
         case 0:
             return self.accountsCell;
@@ -53,12 +52,12 @@
     return nil;
 }
 
--(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"ViewAccountsSegue"]) {
-        DSAccountsViewController * accountsViewController = (DSAccountsViewController*)segue.destinationViewController;
+        DSAccountsViewController *accountsViewController = (DSAccountsViewController *)segue.destinationViewController;
         accountsViewController.wallet = self.wallet;
     } else if ([segue.identifier isEqualToString:@"ViewSpecializedDerivationPathsSegue"]) {
-        DSSpecializedDerivationPathsViewController * specializedDerivationPathsViewController = (DSSpecializedDerivationPathsViewController*)segue.destinationViewController;
+        DSSpecializedDerivationPathsViewController *specializedDerivationPathsViewController = (DSSpecializedDerivationPathsViewController *)segue.destinationViewController;
         specializedDerivationPathsViewController.wallet = self.wallet;
     }
 }

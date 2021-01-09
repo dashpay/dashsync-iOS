@@ -37,24 +37,24 @@
 */
 
 - (IBAction)export:(id)sender {
-    for (int i = 0;i<60;i++) {
+    for (int i = 0; i < 60; i++) {
         @autoreleasepool {
-    NSArray * addressesArray = [self.derivationPath addressesForExportWithInternalRange:NSMakeRange(i*50000, 50000) externalCount:NSMakeRange(i*50000, 50000)];
-    NSError * error = nil;
-    NSData * data = [NSJSONSerialization dataWithJSONObject:addressesArray options:0 error:&error];
-    
-    NSString* filePath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-        NSString* fileAtPath = [filePath stringByAppendingPathComponent:[NSString stringWithFormat:@"addresses%d.txt",i]];
-    
-    [data writeToFile:fileAtPath atomically:FALSE];
+            NSArray *addressesArray = [self.derivationPath addressesForExportWithInternalRange:NSMakeRange(i * 50000, 50000) externalCount:NSMakeRange(i * 50000, 50000)];
+            NSError *error = nil;
+            NSData *data = [NSJSONSerialization dataWithJSONObject:addressesArray options:0 error:&error];
+
+            NSString *filePath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+            NSString *fileAtPath = [filePath stringByAppendingPathComponent:[NSString stringWithFormat:@"addresses%d.txt", i]];
+
+            [data writeToFile:fileAtPath atomically:FALSE];
         }
     }
-    
-//    UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
-//    pasteboard.string = string;
+
+    //    UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+    //    pasteboard.string = string;
     [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"copied", nil)
-                                                center:CGPointMake(self.view.bounds.size.width/2.0, self.view.bounds.size.height/2.0 - 130.0)] popIn]
-                           popOutAfterDelay:2.0]];
+                                                center:CGPointMake(self.view.bounds.size.width / 2.0, self.view.bounds.size.height / 2.0 - 130.0)] popIn]
+                              popOutAfterDelay:2.0]];
 }
 
 @end

@@ -11,7 +11,7 @@
 @implementation DSMerkleBlockEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSMerkleBlockEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSMerkleBlockEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSMerkleBlockEntity"];
 }
 
 @dynamic blockHash;

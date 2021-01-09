@@ -36,9 +36,10 @@
 #endif
 #endif
 
-typedef NS_ENUM(NSInteger, DSReachabilityStatus) {
-    DSReachabilityStatusUnknown          = -1,
-    DSReachabilityStatusNotReachable     = 0,
+typedef NS_ENUM(NSInteger, DSReachabilityStatus)
+{
+    DSReachabilityStatusUnknown = -1,
+    DSReachabilityStatusNotReachable = 0,
     DSReachabilityStatusReachableViaWWAN = 1,
     DSReachabilityStatusReachableViaWiFi = 2,
 };
@@ -61,17 +62,17 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Whether or not the network is currently reachable.
  */
-@property (readonly, nonatomic, assign, getter = isReachable) BOOL reachable;
+@property (readonly, nonatomic, assign, getter=isReachable) BOOL reachable;
 
 /**
  Whether or not the network is currently reachable via WWAN.
  */
-@property (readonly, nonatomic, assign, getter = isReachableViaWWAN) BOOL reachableViaWWAN;
+@property (readonly, nonatomic, assign, getter=isReachableViaWWAN) BOOL reachableViaWWAN;
 
 /**
  Whether or not the network is currently reachable via WiFi.
  */
-@property (readonly, nonatomic, assign, getter = isReachableViaWiFi) BOOL reachableViaWiFi;
+@property (readonly, nonatomic, assign, getter=isReachableViaWiFi) BOOL reachableViaWiFi;
 
 @property (readonly, nonatomic, assign, getter=isMonitoring) BOOL monitoring;
 
@@ -170,8 +171,8 @@ NS_ASSUME_NONNULL_BEGIN
  This notification assigns no notification object. The `userInfo` dictionary contains an `NSNumber` object under the `DSingReachabilityNotificationStatusItem` key, representing the `DSReachabilityStatus` value for the current network reachability.
  @warning In order for network reachability to be monitored, include the `SystemConfiguration` framework in the active target's "Link Binary With Library" build phase, and add `#import <SystemConfiguration/SystemConfiguration.h>` to the header prefix of the project (`Prefix.pch`).
  */
-extern NSString * const _Nonnull DSReachabilityDidChangeNotification;
-extern NSString * const _Nonnull DSReachabilityNotificationStatusItem;
+extern NSString *const _Nonnull DSReachabilityDidChangeNotification;
+extern NSString *const _Nonnull DSReachabilityNotificationStatusItem;
 
 NS_ASSUME_NONNULL_END
 #endif

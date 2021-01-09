@@ -24,28 +24,29 @@
 //  THE SOFTWARE.
 
 
-#import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM (uint16_t, DSSparseMerkleTreeProofType) {
+typedef NS_ENUM(uint16_t, DSSparseMerkleTreeProofType)
+{
     DSSparseMerkleTreeProofType_Inclusion,
     DSSparseMerkleTreeProofType_NonInclusion,
 };
 
-typedef void (^ProofVerificationCompletionBlock)(BOOL verified, NSError * _Nullable error);
+typedef void (^ProofVerificationCompletionBlock)(BOOL verified, NSError *_Nullable error);
 
 
 @interface DSSparseMerkleTree : NSObject
 
-+(void)verifyInclusionWithRoot:(UInt256)root forKey:(UInt256)key withValueData:(NSData*)valueData againstProofHashes:(NSArray*)hashes completion:(ProofVerificationCompletionBlock)completion;
++ (void)verifyInclusionWithRoot:(UInt256)root forKey:(UInt256)key withValueData:(NSData *)valueData againstProofHashes:(NSArray *)hashes completion:(ProofVerificationCompletionBlock)completion;
 
-+(void)verifyNonInclusionWithRoot:(UInt256)root forKey:(UInt256)key withProofKeyData:(NSData* _Nullable)proofKey withProofValueData:(NSData* _Nullable)valueData againstProofHashes:(NSArray*)hashes completion:(ProofVerificationCompletionBlock)completion;
++ (void)verifyNonInclusionWithRoot:(UInt256)root forKey:(UInt256)key withProofKeyData:(NSData *_Nullable)proofKey withProofValueData:(NSData *_Nullable)valueData againstProofHashes:(NSArray *)hashes completion:(ProofVerificationCompletionBlock)completion;
 
-+(void)verifyCompressedInclusionWithRoot:(UInt256)root forKey:(UInt256)key withValueData:(NSData*)valueData againstProofHashes:(NSArray*)hashes compressionData:(NSData*)compressionData length:(uint32_t)length completion:(ProofVerificationCompletionBlock)completion;
++ (void)verifyCompressedInclusionWithRoot:(UInt256)root forKey:(UInt256)key withValueData:(NSData *)valueData againstProofHashes:(NSArray *)hashes compressionData:(NSData *)compressionData length:(uint32_t)length completion:(ProofVerificationCompletionBlock)completion;
 
-+(void)verifyCompressedNonInclusionWithRoot:(UInt256)root forKey:(UInt256)key withProofKeyData:(NSData* _Nullable)proofKeyData withProofValueData:(NSData*)proofValueData againstProofHashes:(NSArray*)hashes compressionData:(NSData*)compressionData length:(uint32_t)length completion:(ProofVerificationCompletionBlock)completion;
++ (void)verifyCompressedNonInclusionWithRoot:(UInt256)root forKey:(UInt256)key withProofKeyData:(NSData *_Nullable)proofKeyData withProofValueData:(NSData *)proofValueData againstProofHashes:(NSArray *)hashes compressionData:(NSData *)compressionData length:(uint32_t)length completion:(ProofVerificationCompletionBlock)completion;
 
 @end
 

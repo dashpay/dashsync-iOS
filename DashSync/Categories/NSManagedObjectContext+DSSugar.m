@@ -15,60 +15,60 @@
 //  limitations under the License.
 //
 
-#import "NSManagedObjectContext+DSSugar.h"
 #import "DSDataController.h"
+#import "NSManagedObjectContext+DSSugar.h"
 
 
 @implementation NSManagedObjectContext (DSSugar)
 
 // MARK: - context helpers
 
-+(NSManagedObjectContext*)viewContext {
++ (NSManagedObjectContext *)viewContext {
     return [[DSDataController sharedInstance] viewContext];
 }
 
-+(NSManagedObjectContext*)peerContext {
++ (NSManagedObjectContext *)peerContext {
     return [[DSDataController sharedInstance] peerContext];
 }
 
-+(NSManagedObjectContext*)chainContext {
++ (NSManagedObjectContext *)chainContext {
     return [[DSDataController sharedInstance] chainContext];
 }
 
-+(NSManagedObjectContext*)platformContext {
++ (NSManagedObjectContext *)platformContext {
     return [[DSDataController sharedInstance] platformContext];
 }
 
-- (instancetype)createChildContext
-{
-    NSManagedObjectContext * childContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+- (instancetype)createChildContext {
+    NSManagedObjectContext *childContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
     [childContext setParentContext:self];
     return childContext;
 }
 
--(void)ds_saveInBlock {
+- (void)ds_saveInBlock {
     [self performBlock:^{
         [self ds_save];
     }];
 }
 
--(NSError*)ds_saveInBlockAndWait {
-    __block NSError * error = nil;
+- (NSError *)ds_saveInBlockAndWait {
+    __block NSError *error = nil;
     [self performBlockAndWait:^{
         error = [self ds_save];
     }];
     return error;
 }
 
--(NSError*)ds_save {
+- (NSError *)ds_save {
     if (!self.hasChanges) return nil;
-    NSUInteger taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
-    NSError * error = nil;
-    if (! [self save:&error]) { // persist changes
-            DSLog(@"%s: %@", __func__, error);
-    #if DEBUG
-            abort();
-    #endif
+    NSUInteger taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+    }];
+    NSError *error = nil;
+    if (![self save:&error]) { // persist changes
+        DSLog(@"%s: %@", __func__, error);
+#if DEBUG
+        abort();
+#endif
     }
     [[UIApplication sharedApplication] endBackgroundTask:taskId];
     return error;

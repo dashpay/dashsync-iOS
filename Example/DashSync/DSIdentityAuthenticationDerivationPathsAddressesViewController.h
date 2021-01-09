@@ -6,12 +6,12 @@
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
-#import <DashSync/DashSync.h>
 #import <CoreData/CoreData.h>
+#import <DashSync/DashSync.h>
+#import <UIKit/UIKit.h>
 
-@interface DSIdentityAuthenticationDerivationPathsAddressesViewController : UITableViewController <NSFetchedResultsControllerDelegate,UISearchBarDelegate>
+@interface DSIdentityAuthenticationDerivationPathsAddressesViewController : UITableViewController <NSFetchedResultsControllerDelegate, UISearchBarDelegate>
 
-@property(nonatomic,strong) DSAuthenticationKeysDerivationPath * derivationPath;
+@property (nonatomic, strong) DSAuthenticationKeysDerivationPath *derivationPath;
 
 @end

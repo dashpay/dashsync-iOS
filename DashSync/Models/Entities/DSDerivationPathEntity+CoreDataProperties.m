@@ -1,6 +1,6 @@
 //
 //  DSDerivationPathEntity+CoreDataProperties.m
-//  
+//
 //
 //  Created by Sam Westrich on 5/20/18.
 //
@@ -27,7 +27,7 @@
 @implementation DSDerivationPathEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSDerivationPathEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSDerivationPathEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSDerivationPathEntity"];
 }
 
 @dynamic derivationPath;

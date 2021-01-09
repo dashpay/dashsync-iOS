@@ -11,7 +11,7 @@
 @implementation DSSpecialTransactionEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSSpecialTransactionEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSSpecialTransactionEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSSpecialTransactionEntity"];
 }
 
 @dynamic specialTransactionVersion;

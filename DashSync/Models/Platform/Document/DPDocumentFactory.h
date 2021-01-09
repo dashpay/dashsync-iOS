@@ -27,9 +27,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DPDocumentFactory : NSObject <DPDocumentProtocol>
 
-- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity*)identity
+- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)identity
                                   contract:(DPContract *)contract
-                                   onChain:(DSChain*)chain;
+                                   onChain:(DSChain *)chain;
 
 - (instancetype)init NS_UNAVAILABLE;
 

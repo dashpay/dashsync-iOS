@@ -21,10 +21,10 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.saveButton.enabled = FALSE;
-    
+
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
-    
+
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
@@ -44,19 +44,23 @@
 
 - (IBAction)save:(id)sender {
     if ([self.inputTextView.text isValidDashPrivateKeyOnChain:self.chain]) {
-        DSECDSAKey * key = [DSECDSAKey keyWithPrivateKey:self.inputTextView.text onChain:self.chain];
+        DSECDSAKey *key = [DSECDSAKey keyWithPrivateKey:self.inputTextView.text onChain:self.chain];
         UInt160 publicKeyHash = [key hash160];
         if (uint160_eq(publicKeyHash, self.masternode.keyIDVoting)) {
             //[self.chain registerVotingKey:self.inputTextView.text.base58ToData forMasternodeEntry:self.masternode];
             [self.navigationController popViewControllerAnimated:TRUE];
         } else {
-            UIAlertController * alertController = [UIAlertController alertControllerWithTitle:@"Mismatched Key" message:@"This private key is valid but does not correspond to this masternode" preferredStyle:UIAlertControllerStyleAlert];
-            [alertController addAction:[UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
-                
-            }]];
-            [self presentViewController:alertController animated:TRUE completion:^{
-                
-            }];
+            UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Mismatched Key" message:@"This private key is valid but does not correspond to this masternode" preferredStyle:UIAlertControllerStyleAlert];
+            [alertController addAction:[UIAlertAction actionWithTitle:@"Ok"
+                                                                style:UIAlertActionStyleCancel
+                                                              handler:^(UIAlertAction *_Nonnull action){
+
+                                                              }]];
+            [self presentViewController:alertController
+                               animated:TRUE
+                             completion:^{
+
+                             }];
         }
     }
 }

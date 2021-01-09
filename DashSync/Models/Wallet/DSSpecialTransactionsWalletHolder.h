@@ -5,8 +5,8 @@
 //  Created by Sam Westrich on 3/5/19.
 //
 
-#import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
+#import <Foundation/Foundation.h>
 
 
 @class DSWallet, DSTransaction, DSCreditFundingTransaction, DSBlockchainIdentityRegistrationTransition, DSBlockchainIdentityUpdateTransition;
@@ -15,17 +15,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSSpecialTransactionsWalletHolder : NSObject
 
-@property (nonatomic,readonly) NSArray * allTransactions;
+@property (nonatomic, readonly) NSArray *allTransactions;
 
--(instancetype)initWithWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
+- (instancetype)initWithWallet:(DSWallet *)wallet inContext:(NSManagedObjectContext *_Nullable)managedObjectContext;
 
--(DSTransaction* _Nullable)transactionForHash:(UInt256)transactionHash;
+- (DSTransaction *_Nullable)transactionForHash:(UInt256)transactionHash;
 
-- (BOOL)registerTransaction:(DSTransaction*)transaction saveImmediately:(BOOL)saveImmediately;
+- (BOOL)registerTransaction:(DSTransaction *)transaction saveImmediately:(BOOL)saveImmediately;
 
 - (void)removeAllTransactions;
 
--(DSCreditFundingTransaction*)creditFundingTransactionForBlockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId;
+- (DSCreditFundingTransaction *)creditFundingTransactionForBlockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId;
 
 //// This gets a blockchain user registration transaction that has a specific public key hash (will change to BLS pub key)
 //- (DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransactionForPublicKeyHash:(UInt160)publicKeyHash;
@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)prepareForIncomingTransactionPersistenceForBlockSaveWithNumber:(uint32_t)blockNumber;
 
 // this is used to save transactions atomically with the block
-- (void)persistIncomingTransactionsAttributesForBlockSaveWithNumber:(uint32_t)blockNumber inContext:(NSManagedObjectContext*)context;
+- (void)persistIncomingTransactionsAttributesForBlockSaveWithNumber:(uint32_t)blockNumber inContext:(NSManagedObjectContext *)context;
 
 - (NSArray *)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)txHashes;
 

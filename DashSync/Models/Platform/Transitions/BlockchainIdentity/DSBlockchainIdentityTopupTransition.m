@@ -6,13 +6,13 @@
 //
 
 #import "DSBlockchainIdentityTopupTransition.h"
+#import "DSECDSAKey.h"
+#import "DSTransactionFactory.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
-#import "DSECDSAKey.h"
 #import "NSString+Bitcoin.h"
-#import "DSTransactionFactory.h"
 
-@interface DSBlockchainIdentityTopupTransition()
+@interface DSBlockchainIdentityTopupTransition ()
 
 @end
 

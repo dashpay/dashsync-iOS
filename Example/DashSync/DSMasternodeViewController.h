@@ -6,12 +6,12 @@
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
 #import <DashSync/DashSync.h>
+#import <UIKit/UIKit.h>
 
-@interface DSMasternodeViewController : UITableViewController<NSFetchedResultsControllerDelegate,UISearchBarDelegate>
+@interface DSMasternodeViewController : UITableViewController <NSFetchedResultsControllerDelegate, UISearchBarDelegate>
 
-@property (nonatomic,strong) DSChain * chain;
-@property (nonatomic,strong) DSMasternodeList * masternodeList;
+@property (nonatomic, strong) DSChain *chain;
+@property (nonatomic, strong) DSMasternodeList *masternodeList;
 
 @end

@@ -30,13 +30,13 @@
 
 @protocol DSEventConfirmViewProtocol
 
-@property (nonatomic, copy) void(^completionHandler)(BOOL);
+@property (nonatomic, copy) void (^completionHandler)(BOOL);
 
 @end
 
 @interface DSEventManager : NSObject
 
-@property (nonatomic,strong) UIView<DSEventConfirmViewProtocol> * eventConfirmView;
+@property (nonatomic, strong) UIView<DSEventConfirmViewProtocol> *eventConfirmView;
 
 // typically this class is used as a singleton so this is how you should get a handle on the global event manager
 + (instancetype)sharedEventManager;

@@ -6,12 +6,12 @@
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
-#import "DSWalletChooserViewController.h"
 #import "DSAccountChooserViewController.h"
+#import "DSWalletChooserViewController.h"
+#import <UIKit/UIKit.h>
 
-@interface DSCreateBlockchainIdentityViewController : UITableViewController <DSWalletChooserDelegate,DSAccountChooserDelegate>
+@interface DSCreateBlockchainIdentityViewController : UITableViewController <DSWalletChooserDelegate, DSAccountChooserDelegate>
 
-@property (nonatomic,strong) DSChainManager * chainManager;
+@property (nonatomic, strong) DSChainManager *chainManager;
 
 @end

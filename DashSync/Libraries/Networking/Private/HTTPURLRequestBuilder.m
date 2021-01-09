@@ -51,8 +51,7 @@ extern NSArray *QueryStringPairsFromDictionary(NSDictionary *dictionary);
 - (NSString *)URLEncodedStringValue {
     if (!self.value || [self.value isEqual:[NSNull null]]) {
         return PercentEscapedStringFromString([self.field description]);
-    }
-    else {
+    } else {
         return [NSString stringWithFormat:@"%@=%@", PercentEscapedStringFromString([self.field description]), PercentEscapedStringFromString([self.value description])];
     }
 }
@@ -118,7 +117,7 @@ NSArray *QueryStringPairsFromKeyAndValue(NSString *key, id value) {
         // is important when deserializing potentially ambiguous sequences, such as
         // an array of dictionaries
         for (id nestedKey in
-             [dictionary.allKeys sortedArrayUsingDescriptors:@[ sortDescriptor ]]) {
+            [dictionary.allKeys sortedArrayUsingDescriptors:@[sortDescriptor]]) {
             id nestedValue = dictionary[nestedKey];
             if (nestedValue) {
                 NSCAssert(nestedValue != value, @"Infinite recursion");
@@ -126,22 +125,19 @@ NSArray *QueryStringPairsFromKeyAndValue(NSString *key, id value) {
                                                   QueryStringPairsFromKeyAndValue((key ? [NSString stringWithFormat:@"%@[%@]", key, nestedKey] : nestedKey), nestedValue)];
             }
         }
-    }
-    else if ([value isKindOfClass:[NSArray class]]) {
+    } else if ([value isKindOfClass:[NSArray class]]) {
         NSArray *array = value;
         for (id nestedValue in array) {
             NSCAssert(nestedValue != value, @"Infinite recursion");
             [mutableQueryStringComponents addObjectsFromArray:QueryStringPairsFromKeyAndValue([NSString stringWithFormat:@"%@[]", key], nestedValue)];
         }
-    }
-    else if ([value isKindOfClass:[NSSet class]]) {
+    } else if ([value isKindOfClass:[NSSet class]]) {
         NSSet *set = value;
-        for (id obj in [set sortedArrayUsingDescriptors:@[ sortDescriptor ]]) {
+        for (id obj in [set sortedArrayUsingDescriptors:@[sortDescriptor]]) {
             NSCAssert(obj != value, @"Infinite recursion");
             [mutableQueryStringComponents addObjectsFromArray:QueryStringPairsFromKeyAndValue(key, obj)];
         }
-    }
-    else {
+    } else {
         [mutableQueryStringComponents addObject:[[MLWQueryStringPair alloc] initWithField:key value:value]];
     }
 

@@ -30,16 +30,16 @@
 
 - (instancetype)init {
     NSDictionary *defaults = @{
-        @"useCheckpointMasternodeLists":@YES,
-        @"keepHeaders" : @NO,
-        @"shouldSyncFromHeight":@NO,
-        @"smartOutputs":@YES,
-        @"syncGovernanceObjectsInterval" : @600, // 10 min
-        @"syncMasternodeListInterval" : @600,    // 10 min
-        @"syncFromHeight" : @0,
-        @"retrievePriceInfo" : @YES,
-        @"shouldUseCheckpointFile" :@YES,
-        @"syncType" : @(DSSyncType_Default),
+        @"useCheckpointMasternodeLists": @YES,
+        @"keepHeaders": @NO,
+        @"shouldSyncFromHeight": @NO,
+        @"smartOutputs": @YES,
+        @"syncGovernanceObjectsInterval": @600, // 10 min
+        @"syncMasternodeListInterval": @600,    // 10 min
+        @"syncFromHeight": @0,
+        @"retrievePriceInfo": @YES,
+        @"shouldUseCheckpointFile": @YES,
+        @"syncType": @(DSSyncType_Default),
     };
 
     self = [super initWithUserDefaults:nil defaults:defaults];
@@ -56,8 +56,7 @@
     if (syncFromGenesis) {
         self.syncFromHeight = 0;
         self.shouldSyncFromHeight = TRUE;
-    }
-    else if ([self.userDefaults objectForKey:key]) {
+    } else if ([self.userDefaults objectForKey:key]) {
         uint32_t height = self.syncFromHeight;
         if (height == 0) {
             [[self userDefaults] removeObjectForKey:key];
@@ -71,8 +70,7 @@
     id syncFromHeight = [self.userDefaults objectForKey:key];
     if (syncFromHeight) {
         return !self.syncFromHeight && self.shouldSyncFromHeight;
-    }
-    else {
+    } else {
         return NO;
     }
 }

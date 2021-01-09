@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2021 Dash Core Group. All rights reserved.
 //
@@ -18,8 +18,8 @@
 #import <Foundation/Foundation.h>
 
 #import "DSDAPICoreNetworkServiceProtocol.h"
-#import <DAPI-GRPC/Core.pbrpc.h>
 #import <DAPI-GRPC/Core.pbobjc.h>
+#import <DAPI-GRPC/Core.pbrpc.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -27,9 +27,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSDAPICoreNetworkService : NSObject <DSDAPICoreNetworkServiceProtocol>
 
-@property (readonly, nonatomic) NSString * ipAddress;
+@property (readonly, nonatomic) NSString *ipAddress;
 
-- (instancetype)initWithDAPINodeIPAddress:(NSString*)ipAddress httpLoaderFactory:(HTTPLoaderFactory *)httpLoaderFactory usingGRPCDispatchQueue:(dispatch_queue_t)grpcDispatchQueue onChain:(DSChain*)chain NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithDAPINodeIPAddress:(NSString *)ipAddress httpLoaderFactory:(HTTPLoaderFactory *)httpLoaderFactory usingGRPCDispatchQueue:(dispatch_queue_t)grpcDispatchQueue onChain:(DSChain *)chain NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
 @end

@@ -12,17 +12,16 @@
 @interface DSSporksViewController ()
 
 
-
 @end
 
 @implementation DSSporksViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
-    
+
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
@@ -35,28 +34,26 @@
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-
     return 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-
     return [self.sporksArray count];
 }
 
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     DSSporkTableViewCell *cell = (DSSporkTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"SporkCellIdentifier" forIndexPath:indexPath];
-    DSSpork * spork = [_sporksArray objectAtIndex:indexPath.row];
+    DSSpork *spork = [_sporksArray objectAtIndex:indexPath.row];
     // Configure the cell...
     cell.sporkNameLabel.text = spork.identifierString;
-    cell.sporkValueLabel.text = [NSString stringWithFormat:@"%llu",spork.value];
-    cell.sporkIdentifierLabel.text = [NSString stringWithFormat:@"%u",spork.identifier];
-    NSDateFormatter * dateFormatter = [[NSDateFormatter alloc] init];
+    cell.sporkValueLabel.text = [NSString stringWithFormat:@"%llu", spork.value];
+    cell.sporkIdentifierLabel.text = [NSString stringWithFormat:@"%u", spork.identifier];
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     [dateFormatter setDateStyle:NSDateFormatterShortStyle];
-    NSString * signedTime = [dateFormatter stringFromDate:[NSDate dateWithTimeIntervalSince1970:spork.timeSigned]];
+    NSString *signedTime = [dateFormatter stringFromDate:[NSDate dateWithTimeIntervalSince1970:spork.timeSigned]];
     cell.sporkTimeSignedLabel.text = signedTime;
-    
+
     return cell;
 }
 

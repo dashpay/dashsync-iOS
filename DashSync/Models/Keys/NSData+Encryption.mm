@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -15,52 +15,50 @@
 //  limitations under the License.
 //
 
-#import "NSData+Encryption.h"
 #import "DSBLSKey+Private.h"
-#import "DSKey.h"
 #import "DSECDSAKey.h"
+#import "DSKey.h"
+#import "NSData+Encryption.h"
 
 #import <CommonCrypto/CommonCryptor.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 static NSData *_Nullable AES256EncryptDecrypt(CCOperation operation,
-                                       NSData *data,
-                                       const void *key,
-                                       const void *iv) {
-    
+    NSData *data,
+    const void *key,
+    const void *iv) {
     size_t bufferSize = [data length] + kCCBlockSizeAES128;
     void *buffer = malloc(bufferSize);
-    
+
     size_t encryptedSize = 0;
     CCCryptorStatus cryptStatus = CCCrypt(operation,
-                                          kCCAlgorithmAES,
-                                          kCCOptionPKCS7Padding,
-                                          key,
-                                          kCCKeySizeAES256,
-                                          iv,
-                                          data.bytes,
-                                          data.length,
-                                          buffer,
-                                          bufferSize,
-                                          &encryptedSize);
-    
+        kCCAlgorithmAES,
+        kCCOptionPKCS7Padding,
+        key,
+        kCCKeySizeAES256,
+        iv,
+        data.bytes,
+        data.length,
+        buffer,
+        bufferSize,
+        &encryptedSize);
+
     if (cryptStatus == kCCSuccess) {
         NSData *result = [NSData dataWithBytes:buffer length:encryptedSize];
         free(buffer);
-        
+
         return result;
-    }
-    else {
+    } else {
         free(buffer);
-        
+
         return nil;
     }
 }
 
 @implementation NSData (Encryption)
 
-+ (NSData*)randomInitializationVectorOfSize:(NSUInteger)size {
++ (NSData *)randomInitializationVectorOfSize:(NSUInteger)size {
     unsigned char iv[size]; //16
     for (int i = 0; i < sizeof(iv); i++) {
         iv[i] = arc4random_uniform(UCHAR_MAX - 1);
@@ -68,218 +66,212 @@ static NSData *_Nullable AES256EncryptDecrypt(CCOperation operation,
     return [NSData dataWithBytes:&iv length:size];
 }
 
-- (nullable NSData *)encryptWithBLSSecretKey:(DSBLSKey*)secretKey forPublicKey:(DSBLSKey*)publicKey {
-    
-    NSData * ivData = [NSData randomInitializationVectorOfSize:kCCBlockSizeAES128];
-    
+- (nullable NSData *)encryptWithBLSSecretKey:(DSBLSKey *)secretKey forPublicKey:(DSBLSKey *)publicKey {
+    NSData *ivData = [NSData randomInitializationVectorOfSize:kCCBlockSizeAES128];
+
     return [self encryptWithBLSSecretKey:secretKey forPublicKey:publicKey usingInitializationVector:ivData];
 }
 
-- (nullable NSData *)encryptWithBLSSecretKey:(DSBLSKey*)secretKey forPublicKey:(DSBLSKey*)peerPubKey usingInitializationVector:(NSData*)ivData {
-    
+- (nullable NSData *)encryptWithBLSSecretKey:(DSBLSKey *)secretKey forPublicKey:(DSBLSKey *)peerPubKey usingInitializationVector:(NSData *)ivData {
     bls::PublicKey pk = bls::BLS::DHKeyExchange(secretKey.blsPrivateKey, peerPubKey.blsPublicKey);
-    
+
     std::vector<uint8_t> symKey = pk.Serialize();
     symKey.resize(32);
-    
+
     NSData *resultData = AES256EncryptDecrypt(kCCEncrypt, self, (uint8_t *)symKey.data(), ivData.bytes);
-    
-    NSMutableData * finalData = [ivData mutableCopy];
+
+    NSMutableData *finalData = [ivData mutableCopy];
     [finalData appendData:resultData];
     return finalData;
 }
 
-- (nullable NSData *)encryptWithDHBLSKey:(DSBLSKey*)dhKey {
-    NSData * ivData = [NSData randomInitializationVectorOfSize:kCCBlockSizeAES128];
-    
+- (nullable NSData *)encryptWithDHBLSKey:(DSBLSKey *)dhKey {
+    NSData *ivData = [NSData randomInitializationVectorOfSize:kCCBlockSizeAES128];
+
     return [self encryptWithDHBLSKey:dhKey usingInitializationVector:ivData];
 }
 
-- (nullable NSData *)encryptWithDHBLSKey:(DSBLSKey*)dhKey usingInitializationVector:(NSData*)initializationVector {
-    
-    unsigned char * iv = (unsigned char *)initializationVector.bytes;
-    
+- (nullable NSData *)encryptWithDHBLSKey:(DSBLSKey *)dhKey usingInitializationVector:(NSData *)initializationVector {
+    unsigned char *iv = (unsigned char *)initializationVector.bytes;
+
     std::vector<uint8_t> symKey = dhKey.blsPublicKey.Serialize();
     symKey.resize(32);
-    
-    NSData *resultData = AES256EncryptDecrypt(kCCEncrypt, self, (uint8_t *)symKey.data(), initializationVector.length?iv:0);
-    
-    NSMutableData * finalData = [initializationVector mutableCopy];
+
+    NSData *resultData = AES256EncryptDecrypt(kCCEncrypt, self, (uint8_t *)symKey.data(), initializationVector.length ? iv : 0);
+
+    NSMutableData *finalData = [initializationVector mutableCopy];
     [finalData appendData:resultData];
     return finalData;
 }
 
-- (nullable NSData *)decryptWithBLSSecretKey:(DSBLSKey*)secretKey fromPublicKey:(DSBLSKey*)peerPubKey usingIVSize:(NSUInteger)ivSize {
+- (nullable NSData *)decryptWithBLSSecretKey:(DSBLSKey *)secretKey fromPublicKey:(DSBLSKey *)peerPubKey usingIVSize:(NSUInteger)ivSize {
     if (self.length < ivSize) {
         return nil;
     }
-    
+
     bls::PublicKey pk = bls::BLS::DHKeyExchange(secretKey.blsPrivateKey, peerPubKey.blsPublicKey);
     std::vector<uint8_t> symKey = pk.Serialize();
     symKey.resize(32);
-    
+
     unsigned char iv[ivSize];
-    
+
     [self getBytes:iv length:ivSize];
-    
+
     NSData *encryptedData = [self subdataWithRange:NSMakeRange(ivSize, self.length - ivSize)];
-    
-    NSData *resultData = AES256EncryptDecrypt(kCCDecrypt, encryptedData, (uint8_t *)symKey.data(), ivSize?iv:0);
-    
+
+    NSData *resultData = AES256EncryptDecrypt(kCCDecrypt, encryptedData, (uint8_t *)symKey.data(), ivSize ? iv : 0);
+
     return resultData;
 }
 
-- (nullable NSData *)decryptWithDHBLSKey:(DSBLSKey*)key {
+- (nullable NSData *)decryptWithDHBLSKey:(DSBLSKey *)key {
     return [self decryptWithDHBLSKey:key usingIVSize:kCCBlockSizeAES128];
 }
 
-- (nullable NSData *)decryptWithDHBLSKey:(DSBLSKey*)key usingIVSize:(NSUInteger)ivSize {
+- (nullable NSData *)decryptWithDHBLSKey:(DSBLSKey *)key usingIVSize:(NSUInteger)ivSize {
     if (self.length < ivSize) {
         return nil;
     }
-    
+
     bls::PublicKey pk = key.blsPublicKey;
     std::vector<uint8_t> symKey = pk.Serialize();
     symKey.resize(32);
-    
+
     unsigned char iv[ivSize];
-    
+
     [self getBytes:iv length:ivSize];
-    
+
     NSData *encryptedData = [self subdataWithRange:NSMakeRange(ivSize, self.length - ivSize)];
-    
-    NSData *resultData = AES256EncryptDecrypt(kCCDecrypt, encryptedData, (uint8_t *)symKey.data(), ivSize?iv:0);
-    
+
+    NSData *resultData = AES256EncryptDecrypt(kCCDecrypt, encryptedData, (uint8_t *)symKey.data(), ivSize ? iv : 0);
+
     return resultData;
 }
 
-- (nullable NSData *)encryptWithECDSASecretKey:(DSECDSAKey*)secretKey forPublicKey:(DSECDSAKey*)peerPubKey {
-    
-    DSECDSAKey * key = [DSECDSAKey keyWithDHKeyExchangeWithPublicKey:peerPubKey forPrivateKey:secretKey];
+- (nullable NSData *)encryptWithECDSASecretKey:(DSECDSAKey *)secretKey forPublicKey:(DSECDSAKey *)peerPubKey {
+    DSECDSAKey *key = [DSECDSAKey keyWithDHKeyExchangeWithPublicKey:peerPubKey forPrivateKey:secretKey];
 
     return [self encryptWithECDSAKey:key];
 }
 
-- (nullable NSData *)encryptWithECDSASecretKey:(DSECDSAKey*)secretKey forPublicKey:(DSECDSAKey*)peerPubKey useInitializationVectorForTesting:(NSData*)initializationVector {
-    
-    DSECDSAKey * key = [DSECDSAKey keyWithDHKeyExchangeWithPublicKey:peerPubKey forPrivateKey:secretKey];
+- (nullable NSData *)encryptWithECDSASecretKey:(DSECDSAKey *)secretKey forPublicKey:(DSECDSAKey *)peerPubKey useInitializationVectorForTesting:(NSData *)initializationVector {
+    DSECDSAKey *key = [DSECDSAKey keyWithDHKeyExchangeWithPublicKey:peerPubKey forPrivateKey:secretKey];
 
     return [self encryptWithDHECDSAKey:key usingInitializationVector:initializationVector];
 }
 
-- (nullable NSData *)encryptWithECDSAKey:(DSECDSAKey*)dhKey {
-    NSData * ivData = [NSData randomInitializationVectorOfSize:kCCBlockSizeAES128];
-    
+- (nullable NSData *)encryptWithECDSAKey:(DSECDSAKey *)dhKey {
+    NSData *ivData = [NSData randomInitializationVectorOfSize:kCCBlockSizeAES128];
+
     return [self encryptWithDHECDSAKey:dhKey usingInitializationVector:ivData];
 }
 
-- (nullable NSData *)encryptWithDHECDSAKey:(DSECDSAKey*)dhKey usingInitializationVector:(NSData*)initializationVector {
-    
-    unsigned char * iv = (unsigned char *)initializationVector.bytes;
-    
-    NSData *resultData = AES256EncryptDecrypt(kCCEncrypt, self, (uint8_t *)dhKey.publicKeyData.bytes, initializationVector.length?iv:0);
-    
-    NSMutableData * finalData = [initializationVector mutableCopy];
+- (nullable NSData *)encryptWithDHECDSAKey:(DSECDSAKey *)dhKey usingInitializationVector:(NSData *)initializationVector {
+    unsigned char *iv = (unsigned char *)initializationVector.bytes;
+
+    NSData *resultData = AES256EncryptDecrypt(kCCEncrypt, self, (uint8_t *)dhKey.publicKeyData.bytes, initializationVector.length ? iv : 0);
+
+    NSMutableData *finalData = [initializationVector mutableCopy];
     [finalData appendData:resultData];
     return finalData;
 }
 
-- (nullable NSData *)decryptWithECDSASecretKey:(DSECDSAKey*)secretKey fromPublicKey:(DSECDSAKey*)peerPubKey usingIVSize:(NSUInteger)ivSize {
+- (nullable NSData *)decryptWithECDSASecretKey:(DSECDSAKey *)secretKey fromPublicKey:(DSECDSAKey *)peerPubKey usingIVSize:(NSUInteger)ivSize {
     if (self.length < ivSize) {
         return nil;
     }
-    
-    DSECDSAKey * key = [DSECDSAKey keyWithDHKeyExchangeWithPublicKey:peerPubKey forPrivateKey:secretKey];
-    
+
+    DSECDSAKey *key = [DSECDSAKey keyWithDHKeyExchangeWithPublicKey:peerPubKey forPrivateKey:secretKey];
+
     return [self decryptWithDHECDSAKey:key usingIVSize:ivSize];
 }
 
-- (nullable NSData *)decryptWithDHECDSAKey:(DSECDSAKey*)key {
+- (nullable NSData *)decryptWithDHECDSAKey:(DSECDSAKey *)key {
     return [self decryptWithDHECDSAKey:key usingIVSize:kCCBlockSizeAES128];
 }
 
-- (nullable NSData *)decryptWithDHECDSAKey:(DSECDSAKey*)key usingIVSize:(NSUInteger)ivSize {
+- (nullable NSData *)decryptWithDHECDSAKey:(DSECDSAKey *)key usingIVSize:(NSUInteger)ivSize {
     if (self.length < ivSize) {
         return nil;
     }
-    
+
     unsigned char iv[ivSize];
-    
+
     [self getBytes:iv length:ivSize];
-    
+
     NSData *encryptedData = [self subdataWithRange:NSMakeRange(ivSize, self.length - ivSize)];
-    
-    NSData *resultData = AES256EncryptDecrypt(kCCDecrypt, encryptedData, (uint8_t *)key.publicKeyData.bytes, ivSize?iv:0);
-    
+
+    NSData *resultData = AES256EncryptDecrypt(kCCDecrypt, encryptedData, (uint8_t *)key.publicKeyData.bytes, ivSize ? iv : 0);
+
     return resultData;
 }
 
-- (nullable NSData *)encryptWithSecretKey:(DSKey*)secretKey forPublicKey:(DSKey*)peerPubKey {
+- (nullable NSData *)encryptWithSecretKey:(DSKey *)secretKey forPublicKey:(DSKey *)peerPubKey {
     if ([secretKey isMemberOfClass:[DSBLSKey class]] && [peerPubKey isMemberOfClass:[DSBLSKey class]]) {
-        return [self encryptWithBLSSecretKey:(DSBLSKey*)secretKey forPublicKey:(DSBLSKey*)peerPubKey];
+        return [self encryptWithBLSSecretKey:(DSBLSKey *)secretKey forPublicKey:(DSBLSKey *)peerPubKey];
     } else if ([secretKey isMemberOfClass:[DSECDSAKey class]] && [peerPubKey isMemberOfClass:[DSECDSAKey class]]) {
-        return [self encryptWithECDSASecretKey:(DSECDSAKey*)secretKey forPublicKey:(DSECDSAKey*)peerPubKey];
+        return [self encryptWithECDSASecretKey:(DSECDSAKey *)secretKey forPublicKey:(DSECDSAKey *)peerPubKey];
     } else {
-        NSAssert(FALSE,@"Keys should be of same type");
+        NSAssert(FALSE, @"Keys should be of same type");
     }
     return nil;
 }
 
-- (nullable NSData *)encryptWithSecretKey:(DSKey*)secretKey forPublicKey:(DSKey*)peerPubKey usingInitializationVector:(NSData*)initializationVector {
+- (nullable NSData *)encryptWithSecretKey:(DSKey *)secretKey forPublicKey:(DSKey *)peerPubKey usingInitializationVector:(NSData *)initializationVector {
     if ([secretKey isMemberOfClass:[DSBLSKey class]] && [peerPubKey isMemberOfClass:[DSBLSKey class]]) {
-        return [self encryptWithBLSSecretKey:(DSBLSKey*)secretKey forPublicKey:(DSBLSKey*)peerPubKey usingInitializationVector:initializationVector];
+        return [self encryptWithBLSSecretKey:(DSBLSKey *)secretKey forPublicKey:(DSBLSKey *)peerPubKey usingInitializationVector:initializationVector];
     } else if ([secretKey isMemberOfClass:[DSECDSAKey class]] && [peerPubKey isMemberOfClass:[DSECDSAKey class]]) {
-        return [self encryptWithECDSASecretKey:(DSECDSAKey*)secretKey forPublicKey:(DSECDSAKey*)peerPubKey useInitializationVectorForTesting:initializationVector];
+        return [self encryptWithECDSASecretKey:(DSECDSAKey *)secretKey forPublicKey:(DSECDSAKey *)peerPubKey useInitializationVectorForTesting:initializationVector];
     } else {
-        NSAssert(FALSE,@"Keys should be of same type");
+        NSAssert(FALSE, @"Keys should be of same type");
     }
     return nil;
 }
 
-- (nullable NSData *)decryptWithSecretKey:(DSKey*)secretKey fromPublicKey:(DSKey*)peerPubKey {
+- (nullable NSData *)decryptWithSecretKey:(DSKey *)secretKey fromPublicKey:(DSKey *)peerPubKey {
     return [self decryptWithSecretKey:secretKey fromPublicKey:peerPubKey usingIVSize:kCCBlockSizeAES128];
 }
 
-- (nullable NSData *)decryptWithSecretKey:(DSKey*)secretKey fromPublicKey:(DSKey*)peerPubKey usingIVSize:(NSUInteger)ivSize {
+- (nullable NSData *)decryptWithSecretKey:(DSKey *)secretKey fromPublicKey:(DSKey *)peerPubKey usingIVSize:(NSUInteger)ivSize {
     if ([secretKey isMemberOfClass:[DSBLSKey class]] && [peerPubKey isMemberOfClass:[DSBLSKey class]]) {
-        return [self decryptWithBLSSecretKey:(DSBLSKey*)secretKey fromPublicKey:(DSBLSKey*)peerPubKey usingIVSize:ivSize];
+        return [self decryptWithBLSSecretKey:(DSBLSKey *)secretKey fromPublicKey:(DSBLSKey *)peerPubKey usingIVSize:ivSize];
     } else if ([secretKey isMemberOfClass:[DSECDSAKey class]] && [peerPubKey isMemberOfClass:[DSECDSAKey class]]) {
-        return [self decryptWithECDSASecretKey:(DSECDSAKey*)secretKey fromPublicKey:(DSECDSAKey*)peerPubKey usingIVSize:ivSize];
+        return [self decryptWithECDSASecretKey:(DSECDSAKey *)secretKey fromPublicKey:(DSECDSAKey *)peerPubKey usingIVSize:ivSize];
     } else {
-        NSAssert(FALSE,@"Keys should be of same type");
+        NSAssert(FALSE, @"Keys should be of same type");
     }
     return nil;
 }
 
-- (nullable NSData *)encryptWithDHKey:(DSKey*)dhKey {
+- (nullable NSData *)encryptWithDHKey:(DSKey *)dhKey {
     if ([dhKey isMemberOfClass:[DSBLSKey class]]) {
-        return [self encryptWithDHBLSKey:(DSBLSKey*)dhKey];
+        return [self encryptWithDHBLSKey:(DSBLSKey *)dhKey];
     } else if ([dhKey isMemberOfClass:[DSECDSAKey class]]) {
-        return [self encryptWithECDSAKey:(DSECDSAKey*)dhKey];
+        return [self encryptWithECDSAKey:(DSECDSAKey *)dhKey];
     } else {
-        NSAssert(FALSE,@"Keys should be of a known type");
+        NSAssert(FALSE, @"Keys should be of a known type");
     }
     return nil;
 }
 
-- (nullable NSData *)decryptWithDHKey:(DSKey*)dhKey {
+- (nullable NSData *)decryptWithDHKey:(DSKey *)dhKey {
     if ([dhKey isMemberOfClass:[DSBLSKey class]]) {
-        return [self decryptWithDHBLSKey:(DSBLSKey*)dhKey];
+        return [self decryptWithDHBLSKey:(DSBLSKey *)dhKey];
     } else if ([dhKey isMemberOfClass:[DSECDSAKey class]]) {
-        return [self decryptWithDHECDSAKey:(DSECDSAKey*)dhKey];
+        return [self decryptWithDHECDSAKey:(DSECDSAKey *)dhKey];
     } else {
-        NSAssert(FALSE,@"Keys should be of a known type");
+        NSAssert(FALSE, @"Keys should be of a known type");
     }
     return nil;
 }
 
-- (nullable NSData *)encapsulatedDHDecryptionWithKeys:(NSArray<DSKey*>*)keys usingIVSize:(NSUInteger)ivSize {
+- (nullable NSData *)encapsulatedDHDecryptionWithKeys:(NSArray<DSKey *> *)keys usingIVSize:(NSUInteger)ivSize {
     NSAssert(keys.count > 1, @"There should be at least two key (first pair)");
     if ([keys count] < 2) return self;
 
-    DSKey * firstKey = [keys firstObject];
-    DSKey * secondKey = [keys objectAtIndex:1];
-    NSData * encryptedData = [self decryptWithSecretKey:secondKey fromPublicKey:firstKey usingIVSize:ivSize];
+    DSKey *firstKey = [keys firstObject];
+    DSKey *secondKey = [keys objectAtIndex:1];
+    NSData *encryptedData = [self decryptWithSecretKey:secondKey fromPublicKey:firstKey usingIVSize:ivSize];
     if (keys.count == 2) { //not really necessary but easier to read
         return encryptedData;
     } else {
@@ -288,17 +280,17 @@ static NSData *_Nullable AES256EncryptDecrypt(CCOperation operation,
     return nil;
 }
 
-- (nullable NSData *)encapsulatedDHDecryptionWithKeys:(NSArray<DSKey*>*)keys {
+- (nullable NSData *)encapsulatedDHDecryptionWithKeys:(NSArray<DSKey *> *)keys {
     NSAssert(keys.count > 0, @"There should be at least one key");
     if (![keys count]) return self;
-    NSData * encryptedData = nil;
-    DSKey * firstKey = [keys firstObject];
+    NSData *encryptedData = nil;
+    DSKey *firstKey = [keys firstObject];
     if ([firstKey isMemberOfClass:[DSBLSKey class]]) {
-        encryptedData = [self decryptWithDHBLSKey:(DSBLSKey*)firstKey];
+        encryptedData = [self decryptWithDHBLSKey:(DSBLSKey *)firstKey];
     } else if ([firstKey isMemberOfClass:[DSECDSAKey class]]) {
-        encryptedData = [self decryptWithDHECDSAKey:(DSECDSAKey*)firstKey];
+        encryptedData = [self decryptWithDHECDSAKey:(DSECDSAKey *)firstKey];
     } else {
-        NSAssert(FALSE,@"Keys should be of a known type");
+        NSAssert(FALSE, @"Keys should be of a known type");
     }
     if (keys.count == 1) { //not really necessary but easier to read
         return encryptedData;
@@ -308,17 +300,17 @@ static NSData *_Nullable AES256EncryptDecrypt(CCOperation operation,
     return nil;
 }
 
-- (nullable NSData *)encapsulatedDHEncryptionWithKeys:(NSArray<DSKey*>*)keys {
+- (nullable NSData *)encapsulatedDHEncryptionWithKeys:(NSArray<DSKey *> *)keys {
     NSAssert(keys.count > 0, @"There should be at least one key");
     if (![keys count]) return self;
-    NSData * encryptedData = nil;
-    DSKey * firstKey = [keys firstObject];
+    NSData *encryptedData = nil;
+    DSKey *firstKey = [keys firstObject];
     if ([firstKey isMemberOfClass:[DSBLSKey class]]) {
-        encryptedData = [self encryptWithDHBLSKey:(DSBLSKey*)firstKey];
+        encryptedData = [self encryptWithDHBLSKey:(DSBLSKey *)firstKey];
     } else if ([firstKey isMemberOfClass:[DSECDSAKey class]]) {
-        encryptedData = [self encryptWithECDSAKey:(DSECDSAKey*)firstKey];
+        encryptedData = [self encryptWithECDSAKey:(DSECDSAKey *)firstKey];
     } else {
-        NSAssert(FALSE,@"Keys should be of a known type");
+        NSAssert(FALSE, @"Keys should be of a known type");
     }
     if (keys.count == 1) { //not really necessary but easier to read
         return encryptedData;
@@ -328,13 +320,13 @@ static NSData *_Nullable AES256EncryptDecrypt(CCOperation operation,
     return nil;
 }
 
-- (nullable NSData *)encapsulatedDHEncryptionWithKeys:(NSArray<DSKey*>*)keys usingInitializationVector:(NSData*)initializationVector {
+- (nullable NSData *)encapsulatedDHEncryptionWithKeys:(NSArray<DSKey *> *)keys usingInitializationVector:(NSData *)initializationVector {
     NSAssert(keys.count > 1, @"There should be at least two key (first pair)");
     if ([keys count] < 2) return self;
-    
-    DSKey * firstKey = [keys firstObject];
-    DSKey * secondKey = [keys objectAtIndex:1];
-    NSData * encryptedData = [self encryptWithSecretKey:firstKey forPublicKey:secondKey usingInitializationVector:initializationVector];
+
+    DSKey *firstKey = [keys firstObject];
+    DSKey *secondKey = [keys objectAtIndex:1];
+    NSData *encryptedData = [self encryptWithSecretKey:firstKey forPublicKey:secondKey usingInitializationVector:initializationVector];
     if (keys.count == 2) { //not really necessary but easier to read
         return encryptedData;
     } else {

@@ -23,7 +23,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, DSOperationState) {
+typedef NS_ENUM(NSUInteger, DSOperationState)
+{
     /// The initial state of an `DSOperation`.
     DSOperationStateInitialized,
 

@@ -1,6 +1,6 @@
 //
 //  DSTxInputEntity+CoreDataClass.h
-//  
+//
 //
 //  Created by Sam Westrich on 5/20/18.
 //
@@ -22,20 +22,20 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
 #import "BigIntTypes.h"
+#import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
-@class DSTransactionEntity,DSDerivationPathEntity,DSAddressEntity,DSTransaction,DSTxOutputEntity;
+@class DSTransactionEntity, DSDerivationPathEntity, DSAddressEntity, DSTransaction, DSTxOutputEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSTxInputEntity : NSManagedObject
 
 
-@property (nonatomic,readonly) DSUTXO outpoint;
+@property (nonatomic, readonly) DSUTXO outpoint;
 
-- (instancetype)setAttributesFromTransaction:(DSTransaction *)tx inputIndex:(NSUInteger)index forTransactionEntity:(DSTransactionEntity*)transactionEntity;
+- (instancetype)setAttributesFromTransaction:(DSTransaction *)tx inputIndex:(NSUInteger)index forTransactionEntity:(DSTransactionEntity *)transactionEntity;
 
 @end
 

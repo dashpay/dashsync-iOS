@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -15,8 +15,8 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
 #import "DSBlock.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -24,10 +24,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 @property (nonatomic, assign) UInt256 blockHash;
-@property (nonatomic, strong) NSValue * blockHashValue;
+@property (nonatomic, strong) NSValue *blockHashValue;
 @property (nonatomic, assign) uint32_t version;
 @property (nonatomic, assign) UInt256 prevBlock;
-@property (nonatomic, strong) NSValue * prevBlockValue;
+@property (nonatomic, strong) NSValue *prevBlockValue;
 @property (nonatomic, assign) UInt256 merkleRoot;
 @property (nonatomic, assign) uint32_t timestamp; // time interval since unix epoch
 @property (nonatomic, assign) uint32_t target;
@@ -35,17 +35,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint32_t totalTransactions;
 @property (nonatomic, assign) BOOL chainLocked;
 @property (nonatomic, assign) BOOL hasUnverifiedChainLock;
-@property (nonatomic, strong, nullable) DSChainLock * chainLockAwaitingProcessing;
-@property (nonatomic, strong, nullable) DSChainLock * chainLockAwaitingSaving;
-@property (nonatomic, strong) DSChain * chain;
+@property (nonatomic, strong, nullable) DSChainLock *chainLockAwaitingProcessing;
+@property (nonatomic, strong, nullable) DSChainLock *chainLockAwaitingSaving;
+@property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, strong) NSArray *transactionHashes; // the matched tx hashes in the block
-@property (nonatomic, assign, getter = isValid) BOOL valid;
-@property (nonatomic, assign, getter = isMerkleTreeValid) BOOL merkleTreeValid;
-@property (nonatomic, strong, getter = toData) NSData *data;
+@property (nonatomic, assign, getter=isValid) BOOL valid;
+@property (nonatomic, assign, getter=isMerkleTreeValid) BOOL merkleTreeValid;
+@property (nonatomic, strong, getter=toData) NSData *data;
 @property (nonatomic, assign) uint32_t height;
 @property (nonatomic, assign) UInt256 chainWork;
 
-- (instancetype)initWithVersion:(uint32_t)version timestamp:(uint32_t)timestamp height:(uint32_t)height onChain:(DSChain*)chain;
+- (instancetype)initWithVersion:(uint32_t)version timestamp:(uint32_t)timestamp height:(uint32_t)height onChain:(DSChain *)chain;
 
 @end
 

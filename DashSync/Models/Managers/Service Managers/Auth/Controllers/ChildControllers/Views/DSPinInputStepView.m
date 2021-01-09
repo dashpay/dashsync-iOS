@@ -65,7 +65,7 @@ static CGFloat const TITLE_MESSAGE_SPACING = 16.0;
         messageLabel.hidden = YES;
         _messageLabel = messageLabel;
 
-        UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:@[ titleLabel, messageLabel ]];
+        UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:@[titleLabel, messageLabel]];
         stackView.translatesAutoresizingMaskIntoConstraints = NO;
         stackView.axis = UILayoutConstraintAxisVertical;
         stackView.alignment = UIStackViewAlignmentCenter;
@@ -100,7 +100,7 @@ static CGFloat const TITLE_MESSAGE_SPACING = 16.0;
 - (void)setTitleText:(nullable NSString *)titleText {
     self.titleLabel.text = titleText;
     self.titleLabel.hidden = titleText.length == 0;
-    
+
     [self setNeedsLayout];
 }
 
@@ -111,7 +111,7 @@ static CGFloat const TITLE_MESSAGE_SPACING = 16.0;
 - (void)setMessageText:(nullable NSString *)messageText {
     self.messageLabel.text = messageText;
     self.messageLabel.hidden = messageText.length == 0;
-    
+
     [self setNeedsLayout];
 }
 

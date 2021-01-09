@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
     DSContactsTabBarViewController *tabbar = [storyboard instantiateInitialViewController];
     tabbar.chainManager = chainManager;
     tabbar.blockchainIdentity = blockchainIdentity;
-    
+
     DSContactsNavigationController *navigation = [[DSContactsNavigationController alloc] initWithRootViewController:tabbar];
     return navigation;
 }

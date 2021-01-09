@@ -105,8 +105,7 @@ const double SPTDataLoaderExponentialTimerDefaultJitter = 0.11304999836;
 
     if (self.jitter < 0.0001) {
         self.timeInterval = nextTime;
-    }
-    else {
+    } else {
         const double sigma = self.jitter * nextTime;
         self.timeInterval = [self.class normalWithMu:nextTime sigma:sigma];
     }

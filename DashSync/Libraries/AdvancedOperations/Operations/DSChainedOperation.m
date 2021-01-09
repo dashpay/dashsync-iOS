@@ -98,7 +98,6 @@
     if (self.internalQueue.operationCount > nextOperationIndex) {
         NSOperation<DSChainableOperationProtocol> *nextOperation = self.internalQueue.operations[nextOperationIndex];
         if ([nextOperation conformsToProtocol:@protocol(DSChainableOperationProtocol)]) {
-
             id additionalObject = nil;
             if ([operation conformsToProtocol:@protocol(DSChainableOperationProtocol)] && [operation respondsToSelector:@selector(additionalDataToPassForChainedOperation)]) {
                 additionalObject = [(id<DSChainableOperationProtocol>)operation additionalDataToPassForChainedOperation];
@@ -132,14 +131,12 @@
         if (self.internalQueue.operations.count > 0) {
             [self.internalQueue cancelAllOperations];
         }
-    }
-    else if (self.finishIfProducedAnyError && self.aggregatedErrors.count) {
+    } else if (self.finishIfProducedAnyError && self.aggregatedErrors.count) {
         self.internalQueue.suspended = YES;
         [self.internalQueue cancelAllOperations];
         self.internalQueue.suspended = NO;
         [self finishWithErrors:[self.aggregatedErrors copy]];
-    }
-    else {
+    } else {
         [self operationDidFinish:operation withErrors:errors];
     }
 }

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)ds_replaceStoreAt:(NSURL *)targetURL with:(NSURL *)sourceURL;
 
-+ (nullable NSDictionary <NSString *, id> *)ds_metadataAt:(NSURL *)storeURL;
++ (nullable NSDictionary<NSString *, id> *)ds_metadataAt:(NSURL *)storeURL;
 
 - (NSPersistentStore *)ds_addPersistentStoreAt:(NSURL *)storeURL options:(NSDictionary *)options;
 

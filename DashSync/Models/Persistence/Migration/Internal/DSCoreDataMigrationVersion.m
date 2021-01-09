@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -36,7 +36,7 @@
         case DSCoreDataMigrationVersionValue_9: return @"DashSync 9";
         case DSCoreDataMigrationVersionValue_10: return @"DashSync 10";
         default:
-            return [NSString stringWithFormat:@"DashSync %ld",(long)version];
+            return [NSString stringWithFormat:@"DashSync %ld", (long)version];
     }
 }
 

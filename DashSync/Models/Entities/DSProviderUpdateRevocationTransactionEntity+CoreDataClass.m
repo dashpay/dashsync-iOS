@@ -6,30 +6,28 @@
 //
 //
 
-#import "DSProviderUpdateRevocationTransactionEntity+CoreDataClass.h"
 #import "DSProviderUpdateRevocationTransaction.h"
+#import "DSProviderUpdateRevocationTransactionEntity+CoreDataClass.h"
 #import "DSTransactionFactory.h"
 #import "NSData+Bitcoin.h"
 
 @implementation DSProviderUpdateRevocationTransactionEntity
 
-- (instancetype)setAttributesFromTransaction:(DSTransaction *)tx
-{
+- (instancetype)setAttributesFromTransaction:(DSTransaction *)tx {
     [self.managedObjectContext performBlockAndWait:^{
         [super setAttributesFromTransaction:tx];
-        DSProviderUpdateRevocationTransaction * providerUpdateRevocationTransaction = (DSProviderUpdateRevocationTransaction*)tx;
+        DSProviderUpdateRevocationTransaction *providerUpdateRevocationTransaction = (DSProviderUpdateRevocationTransaction *)tx;
         self.specialTransactionVersion = providerUpdateRevocationTransaction.providerUpdateRevocationTransactionVersion;
         self.reason = providerUpdateRevocationTransaction.reason;
         self.payloadSignature = providerUpdateRevocationTransaction.payloadSignature;
         self.providerRegistrationTransactionHash = [NSData dataWithUInt256:providerUpdateRevocationTransaction.providerRegistrationTransactionHash];
     }];
-    
+
     return self;
 }
 
-- (DSTransaction *)transactionForChain:(DSChain*)chain
-{
-    DSProviderUpdateRevocationTransaction * transaction = (DSProviderUpdateRevocationTransaction *)[super transactionForChain:chain];
+- (DSTransaction *)transactionForChain:(DSChain *)chain {
+    DSProviderUpdateRevocationTransaction *transaction = (DSProviderUpdateRevocationTransaction *)[super transactionForChain:chain];
     transaction.type = DSTransactionType_ProviderUpdateRevocation;
     [self.managedObjectContext performBlockAndWait:^{
         transaction.providerUpdateRevocationTransactionVersion = self.specialTransactionVersion;
@@ -37,11 +35,11 @@
         transaction.reason = self.reason;
         transaction.payloadSignature = self.payloadSignature;
     }];
-    
+
     return transaction;
 }
 
--(Class)transactionClass {
+- (Class)transactionClass {
     return [DSProviderUpdateRevocationTransaction class];
 }
 

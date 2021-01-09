@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (copy, nonatomic) NSArray<id<NamedObject>> *values;
 @property (nullable, strong, nonatomic) id<NamedObject> selectedValue;
-@property (nullable, copy, nonatomic) void(^didChangeValueBlock)(SelectorFormCellModel *cellModel);
+@property (nullable, copy, nonatomic) void (^didChangeValueBlock)(SelectorFormCellModel *cellModel);
 
 @end
 

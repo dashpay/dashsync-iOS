@@ -39,7 +39,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSInteger, HTTPRequestMethod) {
+typedef NS_ENUM(NSInteger, HTTPRequestMethod)
+{
     HTTPRequestMethod_GET,
     HTTPRequestMethod_POST,
     HTTPRequestMethod_PUT,
@@ -48,18 +49,21 @@ typedef NS_ENUM(NSInteger, HTTPRequestMethod) {
     HTTPRequestMethod_HEAD,
 };
 
-typedef NS_ENUM(NSUInteger, HTTPContentType) {
+typedef NS_ENUM(NSUInteger, HTTPContentType)
+{
     HTTPContentType_JSON,
     HTTPContentType_UrlEncoded,
 };
 
-typedef NS_ENUM(NSUInteger, HTTPRequestDownloadTaskPolicy) {
+typedef NS_ENUM(NSUInteger, HTTPRequestDownloadTaskPolicy)
+{
     HTTPRequestDownloadTaskPolicyNone,
     HTTPRequestDownloadTaskPolicyOnDemand,
     HTTPRequestDownloadTaskPolicyAlways,
 };
 
-typedef NS_ENUM(NSInteger, HTTPRequestErrorCode) {
+typedef NS_ENUM(NSInteger, HTTPRequestErrorCode)
+{
     HTTPRequestErrorCode_Timeout,
     HTTPRequestErrorCode_ChunkedRequestWithoutChunkedDelegate
 };

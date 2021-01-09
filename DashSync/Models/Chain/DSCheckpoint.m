@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -16,19 +16,19 @@
 //
 
 #import "DSCheckpoint.h"
+#import "DSBlock.h"
+#import "NSCoder+Dash.h"
 #import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Dash.h"
-#import "NSCoder+Dash.h"
-#import "DSBlock.h"
 
-@interface DSCheckpoint()
+@interface DSCheckpoint ()
 
 @property (nonatomic, assign) uint32_t height;
 @property (nonatomic, assign) UInt256 blockHash;
 @property (nonatomic, assign) uint32_t timestamp;
 @property (nonatomic, assign) uint32_t target;
-@property (nonatomic, strong) NSString * masternodeListName;
+@property (nonatomic, strong) NSString *masternodeListName;
 @property (nonatomic, assign) UInt256 merkleRoot;
 @property (nonatomic, assign) UInt256 chainWork;
 
@@ -38,14 +38,14 @@
 
 #pragma mark NSCoding
 
-#define kHeightKey       @"Height"
-#define kCheckpointHashKey      @"CheckpointHash"
-#define kTimestampKey      @"Timestamp"
-#define kTargetKey      @"Target"
-#define kChainWorkKey      @"ChainWork"
+#define kHeightKey @"Height"
+#define kCheckpointHashKey @"CheckpointHash"
+#define kTimestampKey @"Timestamp"
+#define kTargetKey @"Target"
+#define kChainWorkKey @"ChainWork"
 
-+(DSCheckpoint*)genesisDevnetCheckpoint {
-    DSCheckpoint * checkpoint = [DSCheckpoint new];
++ (DSCheckpoint *)genesisDevnetCheckpoint {
+    DSCheckpoint *checkpoint = [DSCheckpoint new];
     checkpoint.blockHash = [NSString stringWithCString:"000008ca1832a4baf228eb1553c03d3a2c8e02399550dd6ea8d65cec3ef23d2e" encoding:NSUTF8StringEncoding].hexToData.reverse.UInt256;
     checkpoint.height = 0;
     checkpoint.timestamp = 1417713337;
@@ -54,9 +54,9 @@
     return checkpoint;
 }
 
--(instancetype)initWithHeight:(uint32_t)height blockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp target:(uint32_t)target merkleRoot:(UInt256)merkleRoot chainWork:(UInt256)chainWork masternodeListName:(NSString* _Nullable)masternodeListName {
-    if (! (self = [super init])) return nil;
-    
+- (instancetype)initWithHeight:(uint32_t)height blockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp target:(uint32_t)target merkleRoot:(UInt256)merkleRoot chainWork:(UInt256)chainWork masternodeListName:(NSString *_Nullable)masternodeListName {
+    if (!(self = [super init])) return nil;
+
     self.blockHash = blockHash;
     self.height = height;
     self.timestamp = timestamp;
@@ -64,16 +64,16 @@
     self.merkleRoot = merkleRoot;
     self.chainWork = chainWork;
     self.masternodeListName = masternodeListName;
-    
+
     return self;
 }
 
--(instancetype)initWithData:(NSData*)data {
+- (instancetype)initWithData:(NSData *)data {
     return [self initWithData:data atOffset:0 finalOffset:0];
 }
 
--(instancetype)initWithData:(NSData*)data atOffset:(uint32_t)offset finalOffset:(uint32_t*)finalOffset {
-    if (! (self = [super init])) return nil;
+- (instancetype)initWithData:(NSData *)data atOffset:(uint32_t)offset finalOffset:(uint32_t *)finalOffset {
+    if (!(self = [super init])) return nil;
     uint32_t off = offset;
     uint8_t parameters = [data UInt8AtOffset:0];
     off++;
@@ -98,7 +98,7 @@
         off += 32;
     }
     if (parameters & DSCheckpointParameter_MasternodeList) {
-        NSNumber * l;
+        NSNumber *l;
         self.masternodeListName = [data stringAtOffset:off length:&l];
         off += l.unsignedIntegerValue;
     }
@@ -108,18 +108,18 @@
     return self;
 }
 
-+ (instancetype)checkpointForHeight:(uint32_t)height blockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp target:(uint32_t)target merkleRoot:(UInt256)merkleRoot chainWork:(UInt256)chainWork masternodeListName:(NSString* _Nullable)masternodeListName {
++ (instancetype)checkpointForHeight:(uint32_t)height blockHash:(UInt256)blockHash timestamp:(uint32_t)timestamp target:(uint32_t)target merkleRoot:(UInt256)merkleRoot chainWork:(UInt256)chainWork masternodeListName:(NSString *_Nullable)masternodeListName {
     return [[self alloc] initWithHeight:height blockHash:blockHash timestamp:timestamp target:target merkleRoot:merkleRoot chainWork:chainWork masternodeListName:masternodeListName];
 }
 
-+ (instancetype)checkpointFromBlock:(DSBlock*)block options:(uint8_t)options {
-    NSAssert(block.height != BLOCK_UNKNOWN_HEIGHT,@"Block height must be known");
-    return [[self alloc] initWithHeight:block.height blockHash:block.blockHash timestamp:block.timestamp target:block.target merkleRoot:(options&DSCheckpointOptions_SaveMerkleRoot)?block.merkleRoot:UINT256_ZERO chainWork:block.chainWork masternodeListName:nil];
++ (instancetype)checkpointFromBlock:(DSBlock *)block options:(uint8_t)options {
+    NSAssert(block.height != BLOCK_UNKNOWN_HEIGHT, @"Block height must be known");
+    return [[self alloc] initWithHeight:block.height blockHash:block.blockHash timestamp:block.timestamp target:block.target merkleRoot:(options & DSCheckpointOptions_SaveMerkleRoot) ? block.merkleRoot : UINT256_ZERO chainWork:block.chainWork masternodeListName:nil];
 }
 
--(uint8_t)chainWorkSize {
+- (uint8_t)chainWorkSize {
     uint8_t chainWorkSize = 8;
-    for (uint8_t i = 7; i != UINT8_MAX;i--) {
+    for (uint8_t i = 7; i != UINT8_MAX; i--) {
         if (self.chainWork.u32[i] == 0) {
             chainWorkSize--;
         }
@@ -127,7 +127,7 @@
     return chainWorkSize;
 }
 
--(uint8_t)parameters {
+- (uint8_t)parameters {
     uint8_t parameters = 0;
     if (!uint256_is_zero(self.merkleRoot)) parameters |= DSCheckpointParameter_MerkleRoot;
     if (self.masternodeListName) parameters |= DSCheckpointParameter_MasternodeList;
@@ -135,8 +135,8 @@
     return parameters;
 }
 
--(NSData*)serialize {
-    NSMutableData * mData = [NSMutableData data];
+- (NSData *)serialize {
+    NSMutableData *mData = [NSMutableData data];
     [mData appendUInt8:[self parameters]];
     [mData appendUInt32:self.height];
     [mData appendUInt256:self.blockHash];
@@ -154,11 +154,11 @@
     return [mData copy];
 }
 
--(DSBlock*)blockForChain:(DSChain*)chain {
+- (DSBlock *)blockForChain:(DSChain *)chain {
     return [[DSBlock alloc] initWithCheckpoint:self onChain:chain];
 }
 
-+(BOOL)supportsSecureCoding {
++ (BOOL)supportsSecureCoding {
     return YES;
 }
 
@@ -174,13 +174,13 @@
         } else if (height == 1) {
             chainWork = @"0000000000000000000000000000000000000000000000000000000000000004".hexToData.reverse.UInt256;
         } else {
-            NSAssert(FALSE,@"We should never reach this spot");
+            NSAssert(FALSE, @"We should never reach this spot");
         }
     }
     return [self initWithHeight:height blockHash:checkpointHash timestamp:timestamp target:target merkleRoot:UINT256_ZERO chainWork:chainWork masternodeListName:nil];
 }
 
--(void)encodeWithCoder:(NSCoder *)aCoder {
+- (void)encodeWithCoder:(NSCoder *)aCoder {
     [aCoder encodeUInt256:self.blockHash forKey:kCheckpointHashKey];
     [aCoder encodeInt32:self.height forKey:kHeightKey];
     [aCoder encodeInt32:self.timestamp forKey:kTimestampKey];
@@ -188,13 +188,12 @@
     [aCoder encodeUInt256:self.chainWork forKey:kChainWorkKey];
 }
 
--(BOOL)isEqual:(id)object {
+- (BOOL)isEqual:(id)object {
     return [[self serialize] isEqualToData:[object serialize]];
 }
 
--(NSUInteger)hash {
+- (NSUInteger)hash {
     return [self serialize].SHA256_2.u64[0];
 }
 
 @end
-

@@ -15,8 +15,8 @@
 //  limitations under the License.
 //
 
-#import "DPBaseObject.h"
 #import "BigIntTypes.h"
+#import "DPBaseObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -38,18 +38,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, copy, nonatomic) NSNumber *currentLocalRevision;
 @property (readonly, copy, nonatomic) DSStringValueDictionary *objectDictionary;
 
-- (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString*)tableName usingEntropy:(NSData*)entropy;
+- (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString *)tableName usingEntropy:(NSData *)entropy;
 
-+ (nullable DPDocument *)documentWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString*)tableName usingEntropy:(NSString*)entropy;
++ (nullable DPDocument *)documentWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString *)tableName usingEntropy:(NSString *)entropy;
 
-- (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString*)tableName usingDocumentId:(UInt256)documentId;
+- (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString *)tableName usingDocumentId:(UInt256)documentId;
 
-+ (nullable DPDocument *)documentWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString*)tableName usingDocumentId:(UInt256)documentId;
++ (nullable DPDocument *)documentWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString *)tableName usingDocumentId:(UInt256)documentId;
 
 - (instancetype)init NS_UNAVAILABLE;
 
 - (void)addStateForChangingData:(DSStringValueDictionary *)dataDictionary;
-
 
 
 @end

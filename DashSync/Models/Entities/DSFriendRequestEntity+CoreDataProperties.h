@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonnull, nonatomic, retain) DSDashpayUserEntity *sourceContact;
 @property (nonnull, nonatomic, retain) DSDerivationPathEntity *derivationPath;
 @property (nonnull, nonatomic, retain) DSAccountEntity *account;
-@property (nonnull, nonatomic, retain) NSData * friendshipIdentifier;
+@property (nonnull, nonatomic, retain) NSData *friendshipIdentifier;
 @property (nonatomic, assign) uint32_t sourceKeyIndex;
 @property (nonatomic, assign) uint32_t destinationKeyIndex;
 @property (nonatomic, assign) uint64_t timestamp;

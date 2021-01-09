@@ -36,8 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     if ([NSThread isMainThread]) {
         block();
-    }
-    else {
+    } else {
         dispatch_async(dispatch_get_main_queue(), block);
     }
 }
@@ -49,8 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     if ([NSThread isMainThread]) {
         block();
-    }
-    else {
+    } else {
         dispatch_async(dispatch_get_main_queue(), block);
     }
 }
@@ -78,7 +76,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)decreaseActivityCounter {
     if (self.counter == 0) {
-        DSLog(@"activity counter < 0, something went wrong in class %@",[self class]);
+        DSLog(@"activity counter < 0, something went wrong in class %@", [self class]);
 
         return;
     }

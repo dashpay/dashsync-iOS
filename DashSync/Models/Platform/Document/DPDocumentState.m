@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -17,7 +17,7 @@
 
 #import "DPDocumentState.h"
 
-@interface DPDocumentState()
+@interface DPDocumentState ()
 
 @property (assign, nonatomic) DPDocumentStateType documentStateType;
 @property (strong, nonatomic) DSStringValueDictionary *dataChangeDictionary;
@@ -38,12 +38,12 @@
     return self;
 }
 
-+ (DPDocumentState*)documentStateWithDataDictionary:(DSStringValueDictionary *)dataDictionary {
++ (DPDocumentState *)documentStateWithDataDictionary:(DSStringValueDictionary *)dataDictionary {
     return [[DPDocumentState alloc] initWithDataDictionary:dataDictionary];
 }
 
-+ (DPDocumentState*)documentStateWithDataDictionary:(DSStringValueDictionary *)dataDictionary ofType:(DPDocumentStateType)documentStateType {
-    DPDocumentState * documentState =  [[DPDocumentState alloc] initWithDataDictionary:dataDictionary];
++ (DPDocumentState *)documentStateWithDataDictionary:(DSStringValueDictionary *)dataDictionary ofType:(DPDocumentStateType)documentStateType {
+    DPDocumentState *documentState = [[DPDocumentState alloc] initWithDataDictionary:dataDictionary];
     documentState.documentStateType = documentStateType;
     return documentState;
 }

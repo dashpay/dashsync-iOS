@@ -26,238 +26,213 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "NSMutableData+Dash.h"
-#import "NSData+Dash.h"
-#import "NSString+Dash.h"
 #import "DSChain.h"
+#import "NSData+Dash.h"
+#import "NSMutableData+Dash.h"
+#import "NSString+Dash.h"
 
-static void *secureAllocate(CFIndex allocSize, CFOptionFlags hint, void *info)
-{
+static void *secureAllocate(CFIndex allocSize, CFOptionFlags hint, void *info) {
     void *ptr = malloc(sizeof(CFIndex) + allocSize);
-    
+
     if (ptr) { // we need to keep track of the size of the allocation so it can be cleansed before deallocation
         *(CFIndex *)ptr = allocSize;
         return (CFIndex *)ptr + 1;
-    }
-    else return NULL;
+    } else
+        return NULL;
 }
 
-static void secureDeallocate(void *ptr, void *info)
-{
+static void secureDeallocate(void *ptr, void *info) {
     CFIndex size = *((CFIndex *)ptr - 1);
-    
+
     if (size) {
         memset(ptr, 0, size);
         free((CFIndex *)ptr - 1);
     }
 }
 
-static void *secureReallocate(void *ptr, CFIndex newsize, CFOptionFlags hint, void *info)
-{
+static void *secureReallocate(void *ptr, CFIndex newsize, CFOptionFlags hint, void *info) {
     // There's no way to tell ahead of time if the original memory will be deallocted even if the new size is smaller
     // than the old size, so just cleanse and deallocate every time.
     void *newptr = secureAllocate(newsize, hint, info);
     CFIndex size = *((CFIndex *)ptr - 1);
-    
+
     if (newptr && size) {
         memcpy(newptr, ptr, (size < newsize) ? size : newsize);
         secureDeallocate(ptr, info);
     }
-    
+
     return newptr;
 }
 
 // Since iOS does not page memory to storage, all we need to do is cleanse allocated memory prior to deallocation.
-CFAllocatorRef SecureAllocator()
-{
+CFAllocatorRef SecureAllocator() {
     static CFAllocatorRef alloc = NULL;
     static dispatch_once_t onceToken = 0;
-    
+
     dispatch_once(&onceToken, ^{
         CFAllocatorContext context;
-        
+
         context.version = 0;
         CFAllocatorGetContext(kCFAllocatorDefault, &context);
         context.allocate = secureAllocate;
         context.reallocate = secureReallocate;
         context.deallocate = secureDeallocate;
-        
+
         alloc = CFAllocatorCreate(kCFAllocatorDefault, &context);
     });
-    
+
     return alloc;
 }
 
 @implementation NSMutableData (Dash)
 
-+ (NSMutableData *)secureData
-{
++ (NSMutableData *)secureData {
     return [self secureDataWithCapacity:0];
 }
 
-+ (NSMutableString *)secureString
-{
++ (NSMutableString *)secureString {
     return [self secureStringWithLength:0];
 }
 
-+ (NSMutableData *)secureDataWithCapacity:(NSUInteger)aNumItems
-{
++ (NSMutableData *)secureDataWithCapacity:(NSUInteger)aNumItems {
     return CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), aNumItems));
 }
 
-+ (NSMutableString *)secureStringWithLength:(NSUInteger)length
-{
++ (NSMutableString *)secureStringWithLength:(NSUInteger)length {
     return CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), length));
 }
 
-+ (NSMutableData *)secureDataWithLength:(NSUInteger)length
-{
++ (NSMutableData *)secureDataWithLength:(NSUInteger)length {
     NSMutableData *d = [self secureDataWithCapacity:length];
 
     d.length = length;
     return d;
 }
 
-+ (NSMutableData *)secureDataWithData:(NSData *)data
-{
++ (NSMutableData *)secureDataWithData:(NSData *)data {
     return CFBridgingRelease(CFDataCreateMutableCopy(SecureAllocator(), 0, (CFDataRef)data));
 }
 
-+ (size_t)sizeOfVarInt:(uint64_t)i
-{
-    if (i < VAR_INT16_HEADER) return sizeof(uint8_t);
-    else if (i <= UINT16_MAX) return sizeof(uint8_t) + sizeof(uint16_t);
-    else if (i <= UINT32_MAX) return sizeof(uint8_t) + sizeof(uint32_t);
-    else return sizeof(uint8_t) + sizeof(uint64_t);
++ (size_t)sizeOfVarInt:(uint64_t)i {
+    if (i < VAR_INT16_HEADER)
+        return sizeof(uint8_t);
+    else if (i <= UINT16_MAX)
+        return sizeof(uint8_t) + sizeof(uint16_t);
+    else if (i <= UINT32_MAX)
+        return sizeof(uint8_t) + sizeof(uint32_t);
+    else
+        return sizeof(uint8_t) + sizeof(uint64_t);
 }
 
-- (NSMutableData*)appendUInt8:(uint8_t)i
-{
+- (NSMutableData *)appendUInt8:(uint8_t)i {
     [self appendBytes:&i length:sizeof(i)];
     return self;
 }
 
-- (NSMutableData*)appendUInt16:(uint16_t)i
-{
+- (NSMutableData *)appendUInt16:(uint16_t)i {
     i = CFSwapInt16HostToLittle(i);
     [self appendBytes:&i length:sizeof(i)];
     return self;
 }
 
-- (NSMutableData*)appendUInt16BigEndian:(uint16_t)i
-{
+- (NSMutableData *)appendUInt16BigEndian:(uint16_t)i {
     i = CFSwapInt16HostToBig(i);
     [self appendBytes:&i length:sizeof(i)];
     return self;
 }
 
-- (NSMutableData*)appendUInt32:(uint32_t)i
-{
+- (NSMutableData *)appendUInt32:(uint32_t)i {
     i = CFSwapInt32HostToLittle(i);
     [self appendBytes:&i length:sizeof(i)];
     return self;
 }
 
-- (NSMutableData*)appendUInt64:(uint64_t)i
-{
+- (NSMutableData *)appendUInt64:(uint64_t)i {
     i = CFSwapInt64HostToLittle(i);
     [self appendBytes:&i length:sizeof(i)];
     return self;
 }
 
-- (NSMutableData*)appendUInt128:(UInt128)i
-{
+- (NSMutableData *)appendUInt128:(UInt128)i {
     [self appendBytes:&i length:sizeof(i)];
     return self;
 }
 
-- (NSMutableData*)appendUInt160:(UInt160)i
-{
+- (NSMutableData *)appendUInt160:(UInt160)i {
     [self appendBytes:&i length:sizeof(i)];
     return self;
 }
 
-- (NSMutableData*)appendUInt256:(UInt256)i
-{
+- (NSMutableData *)appendUInt256:(UInt256)i {
     [self appendBytes:&i length:sizeof(i)];
     return self;
 }
 
-- (NSMutableData*)appendUInt384:(UInt384)i
-{
+- (NSMutableData *)appendUInt384:(UInt384)i {
     [self appendBytes:&i length:sizeof(i)];
     return self;
 }
 
-- (NSMutableData*)appendUInt512:(UInt512)i
-{
+- (NSMutableData *)appendUInt512:(UInt512)i {
     [self appendBytes:&i length:sizeof(i)];
     return self;
 }
 
-- (NSMutableData*)appendUInt768:(UInt768)i
-{
+- (NSMutableData *)appendUInt768:(UInt768)i {
     [self appendBytes:&i length:sizeof(i)];
     return self;
 }
 
--(NSMutableData*)appendUTXO:(DSUTXO)utxo {
+- (NSMutableData *)appendUTXO:(DSUTXO)utxo {
     [self appendUInt256:utxo.hash];
     [self appendUInt32:(uint32_t)utxo.n];
     return self;
 }
 
-- (NSMutableData*)appendVarInt:(uint64_t)i
-{
+- (NSMutableData *)appendVarInt:(uint64_t)i {
     if (i < VAR_INT16_HEADER) {
         uint8_t payload = (uint8_t)i;
-        
+
         [self appendBytes:&payload length:sizeof(payload)];
-    }
-    else if (i <= UINT16_MAX) {
+    } else if (i <= UINT16_MAX) {
         uint8_t header = VAR_INT16_HEADER;
         uint16_t payload = CFSwapInt16HostToLittle((uint16_t)i);
-        
+
         [self appendBytes:&header length:sizeof(header)];
         [self appendBytes:&payload length:sizeof(payload)];
-    }
-    else if (i <= UINT32_MAX) {
+    } else if (i <= UINT32_MAX) {
         uint8_t header = VAR_INT32_HEADER;
         uint32_t payload = CFSwapInt32HostToLittle((uint32_t)i);
-        
+
         [self appendBytes:&header length:sizeof(header)];
         [self appendBytes:&payload length:sizeof(payload)];
-    }
-    else {
+    } else {
         uint8_t header = VAR_INT64_HEADER;
         uint64_t payload = CFSwapInt64HostToLittle(i);
-        
+
         [self appendBytes:&header length:sizeof(header)];
         [self appendBytes:&payload length:sizeof(payload)];
     }
     return self;
 }
 
-- (NSMutableData*)appendCoinbaseMessage:(NSString *)message atHeight:(uint32_t)height
-{
+- (NSMutableData *)appendCoinbaseMessage:(NSString *)message atHeight:(uint32_t)height {
     NSUInteger l = [message lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
     if (height < VAR_INT16_HEADER) {
         uint8_t header = l;
         uint8_t payload = (uint8_t)height;
         [self appendBytes:&header length:sizeof(header)];
         [self appendBytes:&payload length:sizeof(payload)];
-    }
-    else if (height <= UINT16_MAX) {
+    } else if (height <= UINT16_MAX) {
         uint8_t header = VAR_INT16_HEADER + l;
         uint16_t payload = CFSwapInt16HostToLittle((uint16_t)height);
-        
+
         [self appendBytes:&header length:sizeof(header)];
         [self appendBytes:&payload length:sizeof(payload)];
-    }
-    else if (height <= UINT32_MAX) {
+    } else if (height <= UINT32_MAX) {
         uint8_t header = VAR_INT32_HEADER + l;
         uint32_t payload = CFSwapInt32HostToLittle((uint32_t)height);
-        
+
         [self appendBytes:&header length:sizeof(header)];
         [self appendBytes:&payload length:sizeof(payload)];
     }
@@ -265,8 +240,7 @@ CFAllocatorRef SecureAllocator()
     return self;
 }
 
-- (NSMutableData*)appendDevnetGenesisCoinbaseMessage:(NSString *)message
-{
+- (NSMutableData *)appendDevnetGenesisCoinbaseMessage:(NSString *)message {
     //A little weirder
     uint8_t l = (uint8_t)[message lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
     uint8_t a = 0x51;
@@ -279,8 +253,7 @@ CFAllocatorRef SecureAllocator()
 }
 
 
-- (NSMutableData*)appendString:(NSString *)s
-{
+- (NSMutableData *)appendString:(NSString *)s {
     NSUInteger l = [s lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
 
     [self appendVarInt:l];
@@ -290,34 +263,28 @@ CFAllocatorRef SecureAllocator()
 
 // MARK: - Dash script
 
-- (NSMutableData*)appendScriptPushData:(NSData *)d
-{
+- (NSMutableData *)appendScriptPushData:(NSData *)d {
     if (d.length == 0) {
         return nil;
-    }
-    else if (d.length < OP_PUSHDATA1) {
+    } else if (d.length < OP_PUSHDATA1) {
         [self appendUInt8:d.length];
-    }
-    else if (d.length < UINT8_MAX) {
+    } else if (d.length < UINT8_MAX) {
         [self appendUInt8:OP_PUSHDATA1];
         [self appendUInt8:d.length];
-    }
-    else if (d.length < UINT16_MAX) {
+    } else if (d.length < UINT16_MAX) {
         [self appendUInt8:OP_PUSHDATA2];
         [self appendUInt16:d.length];
-    }
-    else {
+    } else {
         [self appendUInt8:OP_PUSHDATA4];
         [self appendUInt32:(uint32_t)d.length];
     }
 
     [self appendData:d];
-    
+
     return self;
 }
 
-- (NSMutableData*)appendScriptPubKeyForAddress:(NSString *)address forChain:(DSChain*)chain
-{
+- (NSMutableData *)appendScriptPubKeyForAddress:(NSString *)address forChain:(DSChain *)chain {
     uint8_t pubkeyAddress, scriptAddress;
     NSData *d = address.base58checkToData;
 
@@ -340,49 +307,46 @@ CFAllocatorRef SecureAllocator()
         [self appendScriptPushData:hash];
         [self appendUInt8:OP_EQUALVERIFY];
         [self appendUInt8:OP_CHECKSIG];
-    }
-    else if (version == scriptAddress) {
+    } else if (version == scriptAddress) {
         [self appendUInt8:OP_HASH160];
         [self appendScriptPushData:hash];
         [self appendUInt8:OP_EQUAL];
     }
-    
+
     return self;
 }
 
-- (NSMutableData*)appendCreditBurnScriptPubKeyForHashDataOfAddress:(NSData *)hashData forChain:(DSChain*)chain
-{
+- (NSMutableData *)appendCreditBurnScriptPubKeyForHashDataOfAddress:(NSData *)hashData forChain:(DSChain *)chain {
     if (hashData.length != 20) return nil;
-    
+
     [self appendUInt8:OP_RETURN];
     [self appendScriptPushData:hashData];
-    
+
     return self;
 
-//    if ([chain isMainnet]) {
-//        pubkeyAddress = DASH_PUBKEY_ADDRESS;
-//        scriptAddress = DASH_SCRIPT_ADDRESS;
-//    } else {
-//        pubkeyAddress = DASH_PUBKEY_ADDRESS_TEST;
-//        scriptAddress = DASH_SCRIPT_ADDRESS_TEST;
-//    }
-//
-//    if (version == pubkeyAddress) {
-//        [self appendUInt8:OP_DUP];
-//        [self appendUInt8:OP_HASH160];
-//        [self appendScriptPushData:hash];
-//        [self appendUInt8:OP_EQUALVERIFY];
-//        [self appendUInt8:OP_CHECKSIG];
-//    }
-//    else if (version == scriptAddress) {
-//        [self appendUInt8:OP_HASH160];
-//        [self appendScriptPushData:hash];
-//        [self appendUInt8:OP_EQUAL];
-//    }
+    //    if ([chain isMainnet]) {
+    //        pubkeyAddress = DASH_PUBKEY_ADDRESS;
+    //        scriptAddress = DASH_SCRIPT_ADDRESS;
+    //    } else {
+    //        pubkeyAddress = DASH_PUBKEY_ADDRESS_TEST;
+    //        scriptAddress = DASH_SCRIPT_ADDRESS_TEST;
+    //    }
+    //
+    //    if (version == pubkeyAddress) {
+    //        [self appendUInt8:OP_DUP];
+    //        [self appendUInt8:OP_HASH160];
+    //        [self appendScriptPushData:hash];
+    //        [self appendUInt8:OP_EQUALVERIFY];
+    //        [self appendUInt8:OP_CHECKSIG];
+    //    }
+    //    else if (version == scriptAddress) {
+    //        [self appendUInt8:OP_HASH160];
+    //        [self appendScriptPushData:hash];
+    //        [self appendUInt8:OP_EQUAL];
+    //    }
 }
 
-- (NSMutableData*)appendCreditBurnScriptPubKeyForAddress:(NSString *)address forChain:(DSChain*)chain
-{
+- (NSMutableData *)appendCreditBurnScriptPubKeyForAddress:(NSString *)address forChain:(DSChain *)chain {
     //uint8_t pubkeyAddress, scriptAddress;
     NSData *d = address.base58checkToData;
 
@@ -390,44 +354,43 @@ CFAllocatorRef SecureAllocator()
 
     //uint8_t version = *(const uint8_t *)d.bytes;
     NSData *hash = [d subdataWithRange:NSMakeRange(1, d.length - 1)];
-    
+
     [self appendUInt8:OP_RETURN];
     [self appendScriptPushData:hash];
-    
+
     return self;
 
-//    if ([chain isMainnet]) {
-//        pubkeyAddress = DASH_PUBKEY_ADDRESS;
-//        scriptAddress = DASH_SCRIPT_ADDRESS;
-//    } else {
-//        pubkeyAddress = DASH_PUBKEY_ADDRESS_TEST;
-//        scriptAddress = DASH_SCRIPT_ADDRESS_TEST;
-//    }
-//
-//    if (version == pubkeyAddress) {
-//        [self appendUInt8:OP_DUP];
-//        [self appendUInt8:OP_HASH160];
-//        [self appendScriptPushData:hash];
-//        [self appendUInt8:OP_EQUALVERIFY];
-//        [self appendUInt8:OP_CHECKSIG];
-//    }
-//    else if (version == scriptAddress) {
-//        [self appendUInt8:OP_HASH160];
-//        [self appendScriptPushData:hash];
-//        [self appendUInt8:OP_EQUAL];
-//    }
+    //    if ([chain isMainnet]) {
+    //        pubkeyAddress = DASH_PUBKEY_ADDRESS;
+    //        scriptAddress = DASH_SCRIPT_ADDRESS;
+    //    } else {
+    //        pubkeyAddress = DASH_PUBKEY_ADDRESS_TEST;
+    //        scriptAddress = DASH_SCRIPT_ADDRESS_TEST;
+    //    }
+    //
+    //    if (version == pubkeyAddress) {
+    //        [self appendUInt8:OP_DUP];
+    //        [self appendUInt8:OP_HASH160];
+    //        [self appendScriptPushData:hash];
+    //        [self appendUInt8:OP_EQUALVERIFY];
+    //        [self appendUInt8:OP_CHECKSIG];
+    //    }
+    //    else if (version == scriptAddress) {
+    //        [self appendUInt8:OP_HASH160];
+    //        [self appendScriptPushData:hash];
+    //        [self appendUInt8:OP_EQUAL];
+    //    }
 }
 
-- (NSMutableData*)appendShapeshiftMemoForAddress:(NSString *)address
-{
+- (NSMutableData *)appendShapeshiftMemoForAddress:(NSString *)address {
     static uint8_t scriptAddress = BITCOIN_SCRIPT_ADDRESS;
     NSData *d = address.base58checkToData;
-    
+
     if (d.length != 21) return nil;
-    
+
     uint8_t version = *(const uint8_t *)d.bytes;
     NSData *hash = [d subdataWithRange:NSMakeRange(1, d.length - 1)];
-    NSMutableData * hashMutableData = [[NSMutableData alloc] init];
+    NSMutableData *hashMutableData = [[NSMutableData alloc] init];
     if (version == scriptAddress) {
         [hashMutableData appendUInt8:OP_SHAPESHIFT_SCRIPT];
     } else {
@@ -440,17 +403,16 @@ CFAllocatorRef SecureAllocator()
 }
 
 
-- (NSMutableData*)appendBitcoinScriptPubKeyForAddress:(NSString *)address forChain:(DSChain*)chain
-{
+- (NSMutableData *)appendBitcoinScriptPubKeyForAddress:(NSString *)address forChain:(DSChain *)chain {
     uint8_t pubkeyAddress, scriptAddress;
     NSData *d = address.base58checkToData;
-    
+
     if (d.length != 21) return nil;
-    
+
     uint8_t version = *(const uint8_t *)d.bytes;
     NSData *hash = [d subdataWithRange:NSMakeRange(1, d.length - 1)];
-    
-    
+
+
     if ([chain isMainnet]) {
         pubkeyAddress = BITCOIN_PUBKEY_ADDRESS;
         scriptAddress = BITCOIN_SCRIPT_ADDRESS;
@@ -458,15 +420,14 @@ CFAllocatorRef SecureAllocator()
         pubkeyAddress = BITCOIN_PUBKEY_ADDRESS_TEST;
         scriptAddress = BITCOIN_SCRIPT_ADDRESS_TEST;
     }
-    
+
     if (version == pubkeyAddress) {
         [self appendUInt8:OP_DUP];
         [self appendUInt8:OP_HASH160];
         [self appendScriptPushData:hash];
         [self appendUInt8:OP_EQUALVERIFY];
         [self appendUInt8:OP_CHECKSIG];
-    }
-    else if (version == scriptAddress) {
+    } else if (version == scriptAddress) {
         [self appendUInt8:OP_HASH160];
         [self appendScriptPushData:hash];
         [self appendUInt8:OP_EQUAL];
@@ -475,8 +436,8 @@ CFAllocatorRef SecureAllocator()
 }
 // MARK: - dash protocol
 
-- (NSMutableData*)appendProposalInfo:(NSData*)proposalInfo {
-    NSMutableData * hashMutableData = [[NSMutableData alloc] init];
+- (NSMutableData *)appendProposalInfo:(NSData *)proposalInfo {
+    NSMutableData *hashMutableData = [[NSMutableData alloc] init];
 
     [hashMutableData appendUInt256:proposalInfo.SHA256_2];
     [self appendUInt8:OP_RETURN];
@@ -484,8 +445,7 @@ CFAllocatorRef SecureAllocator()
     return self;
 }
 
-- (NSMutableData*)appendMessage:(NSData *)message type:(NSString *)type forChain:(DSChain*)chain
-{
+- (NSMutableData *)appendMessage:(NSData *)message type:(NSString *)type forChain:(DSChain *)chain {
     [self appendUInt32:chain.magicNumber];
     [self appendNullPaddedString:type length:12];
     [self appendUInt32:(uint32_t)message.length];
@@ -494,8 +454,7 @@ CFAllocatorRef SecureAllocator()
     return self;
 }
 
-- (NSMutableData*)appendNullPaddedString:(NSString *)s length:(NSUInteger)length
-{
+- (NSMutableData *)appendNullPaddedString:(NSString *)s length:(NSUInteger)length {
     NSUInteger l = [s lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
 
     [self appendBytes:s.UTF8String length:l];
@@ -506,11 +465,10 @@ CFAllocatorRef SecureAllocator()
     return self;
 }
 
-- (NSMutableData*)appendNetAddress:(uint32_t)address port:(uint16_t)port services:(uint64_t)services
-{
+- (NSMutableData *)appendNetAddress:(uint32_t)address port:(uint16_t)port services:(uint64_t)services {
     address = CFSwapInt32HostToBig(address);
     port = CFSwapInt16HostToBig(port);
-    
+
     [self appendUInt64:services];
     [self appendBytes:"\0\0\0\0\0\0\0\0\0\0\xFF\xFF" length:12]; // IPv4 mapped IPv6 header
     [self appendBytes:&address length:sizeof(address)];

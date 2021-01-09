@@ -11,7 +11,7 @@
 @implementation DSDashpayUserEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSDashpayUserEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSDashpayUserEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSDashpayUserEntity"];
 }
 
 @dynamic localProfileDocumentRevision;

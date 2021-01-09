@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -21,8 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSCreditFundingDerivationPath ()
 
-+ (instancetype)blockchainIdentityRegistrationFundingDerivationPathForChain:(DSChain*)chain;
-+ (instancetype)blockchainIdentityTopupFundingDerivationPathForChain:(DSChain*)chain;
++ (instancetype)blockchainIdentityRegistrationFundingDerivationPathForChain:(DSChain *)chain;
++ (instancetype)blockchainIdentityTopupFundingDerivationPathForChain:(DSChain *)chain;
 
 @end
 

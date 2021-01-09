@@ -11,7 +11,7 @@
 @implementation DSSporkHashEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSSporkHashEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSSporkHashEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSSporkHashEntity"];
 }
 
 @dynamic sporkHash;

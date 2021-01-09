@@ -36,25 +36,22 @@ NS_ASSUME_NONNULL_BEGIN
 
         return;
     }
-    
+
     NSDictionary *exchangeData = response[@"VES"];
     if (![exchangeData isKindOfClass:NSDictionary.class]) {
         [self cancelWithInvalidResponse:response];
-        
+
         return;
     }
-    
+
     NSString *vesPrice = nil;
     if (exchangeData[@"avg_1h"]) {
         vesPrice = exchangeData[@"avg_1h"];
-    }
-    else if (exchangeData[@"avg_6h"]) {
+    } else if (exchangeData[@"avg_6h"]) {
         vesPrice = exchangeData[@"avg_6h"];
-    }
-    else if (exchangeData[@"avg_12h"]) {
+    } else if (exchangeData[@"avg_12h"]) {
         vesPrice = exchangeData[@"avg_12h"];
-    }
-    else if (exchangeData[@"avg_24h"]) {
+    } else if (exchangeData[@"avg_24h"]) {
         vesPrice = exchangeData[@"avg_24h"];
     }
     self.vesPrice = @(vesPrice.doubleValue);

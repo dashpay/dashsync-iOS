@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2021 Dash Core Group. All rights reserved.
 //
@@ -16,34 +16,34 @@
 //
 
 #import "DSDAPICoreNetworkService.h"
-#import "DSHTTPJSONRPCClient.h"
+#import "DPErrors.h"
 #import "DSChain.h"
-#import "DSPeer.h"
 #import "DSDAPIGRPCResponseHandler.h"
 #import "DSDashPlatform.h"
+#import "DSHTTPJSONRPCClient.h"
+#import "DSPeer.h"
 #import "NSData+Bitcoin.h"
-#import "DPErrors.h"
 
 @interface DSDAPICoreNetworkService ()
 
 @property (strong, nonatomic) DSHTTPJSONRPCClient *httpJSONRPCClient;
 @property (strong, nonatomic) Core *gRPCClient;
-@property (strong, nonatomic) DSChain * chain;
-@property (strong, nonatomic) NSString * ipAddress;
+@property (strong, nonatomic) DSChain *chain;
+@property (strong, nonatomic) NSString *ipAddress;
 @property (strong, atomic) dispatch_queue_t grpcDispatchQueue;
 
 @end
 
 @implementation DSDAPICoreNetworkService
 
-- (instancetype)initWithDAPINodeIPAddress:(NSString*)ipAddress httpLoaderFactory:(HTTPLoaderFactory *)httpLoaderFactory usingGRPCDispatchQueue:(dispatch_queue_t)grpcDispatchQueue onChain:(DSChain*)chain {
+- (instancetype)initWithDAPINodeIPAddress:(NSString *)ipAddress httpLoaderFactory:(HTTPLoaderFactory *)httpLoaderFactory usingGRPCDispatchQueue:(dispatch_queue_t)grpcDispatchQueue onChain:(DSChain *)chain {
     NSParameterAssert(ipAddress);
     NSParameterAssert(httpLoaderFactory);
 
     self = [super init];
     if (self) {
         self.ipAddress = ipAddress;
-        NSURL *dapiNodeURL = [NSURL URLWithString:[NSString stringWithFormat:@"http://%@:%d",ipAddress,chain.standardDapiJRPCPort]];
+        NSURL *dapiNodeURL = [NSURL URLWithString:[NSString stringWithFormat:@"http://%@:%d", ipAddress, chain.standardDapiJRPCPort]];
         _httpJSONRPCClient = [DSHTTPJSONRPCClient clientWithEndpointURL:dapiNodeURL httpLoaderFactory:httpLoaderFactory];
         self.chain = chain;
         GRPCMutableCallOptions *options = [[GRPCMutableCallOptions alloc] init];
@@ -52,23 +52,23 @@
         options.userAgentPrefix = USER_AGENT;
         options.timeout = 30;
         self.grpcDispatchQueue = grpcDispatchQueue;
-        
-        NSString *dapiGRPCHost = [NSString stringWithFormat:@"%@:%d",ipAddress,chain.standardDapiGRPCPort];
-        
+
+        NSString *dapiGRPCHost = [NSString stringWithFormat:@"%@:%d", ipAddress, chain.standardDapiGRPCPort];
+
         _gRPCClient = [Core serviceWithHost:dapiGRPCHost callOptions:options];
     }
     return self;
 }
 
-- (id<DSDAPINetworkServiceRequest>)getStatusWithSuccess:(void (^)(NSDictionary * status))success
+- (id<DSDAPINetworkServiceRequest>)getStatusWithSuccess:(void (^)(NSDictionary *status))success
                                                 failure:(void (^)(NSError *error))failure {
-    GetStatusRequest * statusRequest = [[GetStatusRequest alloc] init];
-    DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
+    GetStatusRequest *statusRequest = [[GetStatusRequest alloc] init];
+    DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
     responseHandler.host = [NSString stringWithFormat:@"%@:%d", self.ipAddress, self.chain.standardDapiGRPCPort];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.successHandler = success;
     responseHandler.errorHandler = failure;
-    GRPCUnaryProtoCall * call = [self.gRPCClient getStatusWithMessage:statusRequest responseHandler:responseHandler callOptions:nil];
+    GRPCUnaryProtoCall *call = [self.gRPCClient getStatusWithMessage:statusRequest responseHandler:responseHandler callOptions:nil];
     [call start];
     return (id<DSDAPINetworkServiceRequest>)call;
 }

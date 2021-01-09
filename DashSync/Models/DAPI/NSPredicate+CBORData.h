@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -19,14 +19,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, NSPredicateCBORDataOptions) {
+typedef NS_ENUM(NSUInteger, NSPredicateCBORDataOptions)
+{
     NSPredicateCBORDataOptions_None = 0,
     NSPredicateCBORDataOptions_DataToBase64 = 1
 };
 
 @interface NSPredicate (CBORData)
 
--(NSData*)dashPlatormWhereData;
+- (NSData *)dashPlatormWhereData;
 
 @end
 

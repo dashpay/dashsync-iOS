@@ -15,8 +15,8 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
 #import "DPTypes.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -26,12 +26,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable DPDocument *)documentOnTable:(NSString *)tableName
                       withDataDictionary:(nullable DSStringValueDictionary *)dataDictionary
-                            usingEntropy:(NSData*)entropy
+                            usingEntropy:(NSData *)entropy
                                    error:(NSError *_Nullable __autoreleasing *)error;
 
 - (nullable DPDocument *)documentOnTable:(NSString *)tableName
                       withDataDictionary:(nullable DSStringValueDictionary *)dataDictionary
-                         usingDocumentIdentifier:(NSData*)identifier
+                 usingDocumentIdentifier:(NSData *)identifier
                                    error:(NSError *_Nullable __autoreleasing *)error;
 
 //- (nullable DPDocument *)documentFromSerialized:(NSData *)data

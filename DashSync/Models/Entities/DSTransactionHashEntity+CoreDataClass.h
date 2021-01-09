@@ -6,8 +6,8 @@
 //
 //
 
-#import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
 @class DSChainEntity, DSTransactionEntity;
 
@@ -15,8 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSTransactionHashEntity : NSManagedObject
 
-+(NSArray*)standaloneTransactionHashEntitiesOnChainEntity:(DSChainEntity*)chainEntity;
-+ (void)deleteTransactionHashesOnChainEntity:(DSChainEntity*)chainEntity;
++ (NSArray *)standaloneTransactionHashEntitiesOnChainEntity:(DSChainEntity *)chainEntity;
++ (void)deleteTransactionHashesOnChainEntity:(DSChainEntity *)chainEntity;
 
 @end
 

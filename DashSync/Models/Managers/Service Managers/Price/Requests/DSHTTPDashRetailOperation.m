@@ -42,8 +42,8 @@ NS_ASSUME_NONNULL_BEGIN
     BOOL responseIsValid = YES;
     for (id value in response) {
         responseIsValid = [value isKindOfClass:NSDictionary.class] &&
-            [value[@"price"] isKindOfClass:NSString.class] &&
-            [value[@"symbol"] isKindOfClass:NSString.class];
+                          [value[@"price"] isKindOfClass:NSString.class] &&
+                          [value[@"symbol"] isKindOfClass:NSString.class];
         if (!responseIsValid) {
             break;
         }

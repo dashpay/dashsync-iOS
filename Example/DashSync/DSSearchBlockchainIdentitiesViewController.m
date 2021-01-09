@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -20,7 +20,7 @@
 
 @interface DSSearchBlockchainIdentitiesViewController ()
 
-@property (nonatomic,strong) NSArray * blockchainIdentities;
+@property (nonatomic, strong) NSArray *blockchainIdentities;
 
 @end
 
@@ -29,10 +29,10 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.blockchainIdentities = [NSArray array];
-    
+
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
-    
+
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
@@ -50,33 +50,36 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     DSBlockchainIdentitySearchTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"BlockchainIdentityNameCellIdentifier" forIndexPath:indexPath];
-    
-    DSBlockchainIdentity * identity = self.blockchainIdentities[indexPath.row];
-    
+
+    DSBlockchainIdentity *identity = self.blockchainIdentities[indexPath.row];
+
     cell.usernameLabel.text = identity.currentDashpayUsername;
     cell.identityUniqueIDLabel.text = identity.uniqueIdString;
     cell.avatarPathLabel.text = identity.avatarPath;
     cell.displayNameLabel.text = identity.displayName;
-    
+
     return cell;
 }
 
--(void)searchByNamePrefix:(NSString*)namePrefix {
-    [self.chainManager.identitiesManager searchIdentitiesByDashpayUsernamePrefix:namePrefix queryDashpayProfileInfo:YES withCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> * _Nullable blockchainIdentities, NSArray<NSError *> * _Nonnull errors) {
-        if (success) {
-            self.blockchainIdentities = blockchainIdentities;
-            [self.tableView reloadData];
-        }
-    }];
+- (void)searchByNamePrefix:(NSString *)namePrefix {
+    [self.chainManager.identitiesManager searchIdentitiesByDashpayUsernamePrefix:namePrefix
+                                                         queryDashpayProfileInfo:YES
+                                                                  withCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *_Nonnull errors) {
+                                                                      if (success) {
+                                                                          self.blockchainIdentities = blockchainIdentities;
+                                                                          [self.tableView reloadData];
+                                                                      }
+                                                                  }];
 }
 
--(void)searchByIdentifier:(NSData*)identifier {
-    [self.chainManager.identitiesManager searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID:identifier withCompletion:^(BOOL succeess, NSArray<DSBlockchainIdentity *> * _Nullable blockchainIdentities, NSArray<NSError *> * _Nonnull errors) {
-        if (succeess) {
-            self.blockchainIdentities = blockchainIdentities;
-            [self.tableView reloadData];
-        }
-    }];
+- (void)searchByIdentifier:(NSData *)identifier {
+    [self.chainManager.identitiesManager searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID:identifier
+                                                                                     withCompletion:^(BOOL succeess, NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *_Nonnull errors) {
+                                                                                         if (succeess) {
+                                                                                             self.blockchainIdentities = blockchainIdentities;
+                                                                                             [self.tableView reloadData];
+                                                                                         }
+                                                                                     }];
 }
 
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {

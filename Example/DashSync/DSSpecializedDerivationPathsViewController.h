@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSSpecializedDerivationPathsViewController : UITableViewController
 
-@property (nonatomic, strong) DSWallet * wallet;
+@property (nonatomic, strong) DSWallet *wallet;
 
 @end
 

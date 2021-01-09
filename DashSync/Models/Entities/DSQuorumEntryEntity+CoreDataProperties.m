@@ -11,7 +11,7 @@
 @implementation DSQuorumEntryEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSQuorumEntryEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSQuorumEntryEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSQuorumEntryEntity"];
 }
 
 @dynamic allCommitmentAggregatedSignatureData;

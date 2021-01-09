@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -21,15 +21,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSChain ()
 
-@property (nonatomic, readonly, nullable) NSString * registeredPeersKey;
+@property (nonatomic, readonly, nullable) NSString *registeredPeersKey;
 
-@property (nonatomic, readonly) NSDictionary <NSValue*, DSBlock*> *syncBlocks, *terminalBlocks, *orphans;
+@property (nonatomic, readonly) NSDictionary<NSValue *, DSBlock *> *syncBlocks, *terminalBlocks, *orphans;
 
-@property (nonatomic, strong) NSMutableDictionary <NSData*, DSBlock*> *insightVerifiedBlocksByHashDictionary;
+@property (nonatomic, strong) NSMutableDictionary<NSData *, DSBlock *> *insightVerifiedBlocksByHashDictionary;
 
 // MARK: - Init And Setup
 
--(void)setUp;
+- (void)setUp;
 
 // MARK: - Network
 
@@ -37,18 +37,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 // MARK: - Blocks
 
-- (void)setEstimatedBlockHeight:(uint32_t)estimatedBlockHeight fromPeer:(DSPeer*)peer thresholdPeerCount:(uint32_t)thresholdPeerCount;
-- (void)removeEstimatedBlockHeightOfPeer:(DSPeer*)peer;
-- (BOOL)addBlock:(DSBlock *)block receivedAsHeader:(BOOL)isHeaderOnly fromPeer:(DSPeer* _Nullable)peer;
+- (void)setEstimatedBlockHeight:(uint32_t)estimatedBlockHeight fromPeer:(DSPeer *)peer thresholdPeerCount:(uint32_t)thresholdPeerCount;
+- (void)removeEstimatedBlockHeightOfPeer:(DSPeer *)peer;
+- (BOOL)addBlock:(DSBlock *)block receivedAsHeader:(BOOL)isHeaderOnly fromPeer:(DSPeer *_Nullable)peer;
 - (BOOL)addMinedFullBlock:(DSFullBlock *)block;
 - (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)txHashes;
 - (void)clearOrphans;
-- (void)addInsightVerifiedBlock:(DSBlock*)block forBlockHash:(UInt256)blockHash;
+- (void)addInsightVerifiedBlock:(DSBlock *)block forBlockHash:(UInt256)blockHash;
 
 @property (nonatomic, readonly) BOOL allowInsightBlocksForVerification;
 
 // MARK: - ChainLocks
-@property (nonatomic, strong) DSChainLock * lastChainLock;
+@property (nonatomic, strong) DSChainLock *lastChainLock;
 
 // MARK: Chain Sync
 
@@ -65,64 +65,64 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSTimeInterval lastPersistedChainSyncBlockTimestamp;
 
 /*! @brief Returns the locators of the last persisted chain sync block. The sync block itself most likely is not persisted.  */
-@property (nullable, nonatomic, strong) NSArray * lastPersistedChainSyncLocators;
+@property (nullable, nonatomic, strong) NSArray *lastPersistedChainSyncLocators;
 
 // MARK: - Wallet, Accounts and Transactions
 
 /*! @brief Add a wallet to the chain. It is only temporarily in the chain if externaly added this way.  */
-- (void)addWallet:(DSWallet*)wallet;
+- (void)addWallet:(DSWallet *)wallet;
 
-- (BOOL)registerSpecialTransaction:(DSTransaction*)transaction saveImmediately:(BOOL)saveImmediately;
+- (BOOL)registerSpecialTransaction:(DSTransaction *)transaction saveImmediately:(BOOL)saveImmediately;
 
-- (void)triggerUpdatesForLocalReferences:(DSTransaction*)transaction;
+- (void)triggerUpdatesForLocalReferences:(DSTransaction *)transaction;
 
 - (void)reloadDerivationPaths;
 
 // MARK: Wallet Discovery
 
-- (DSWallet* _Nullable)walletHavingBlockchainIdentityCreditFundingRegistrationHash:(UInt160)creditFundingRegistrationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
+- (DSWallet *_Nullable)walletHavingBlockchainIdentityCreditFundingRegistrationHash:(UInt160)creditFundingRegistrationHash foundAtIndex:(uint32_t *_Nullable)rIndex;
 
-- (DSWallet* _Nullable)walletHavingBlockchainIdentityCreditFundingTopupHash:(UInt160)creditFundingTopupHash foundAtIndex:(uint32_t*)rIndex;
+- (DSWallet *_Nullable)walletHavingBlockchainIdentityCreditFundingTopupHash:(UInt160)creditFundingTopupHash foundAtIndex:(uint32_t *)rIndex;
 
-- (DSWallet* _Nullable)walletHavingProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
+- (DSWallet *_Nullable)walletHavingProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash foundAtIndex:(uint32_t *_Nullable)rIndex;
 
-- (DSWallet* _Nullable)walletHavingProviderOwnerAuthenticationHash:(UInt160)owningAuthenticationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
+- (DSWallet *_Nullable)walletHavingProviderOwnerAuthenticationHash:(UInt160)owningAuthenticationHash foundAtIndex:(uint32_t *_Nullable)rIndex;
 
-- (DSWallet* _Nullable)walletHavingProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey foundAtIndex:(uint32_t* _Nullable)rIndex;
+- (DSWallet *_Nullable)walletHavingProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey foundAtIndex:(uint32_t *_Nullable)rIndex;
 
-- (DSWallet * _Nullable)walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:(DSProviderRegistrationTransaction * _Nonnull)transaction foundAtIndex:(uint32_t* _Nullable)rIndex;
+- (DSWallet *_Nullable)walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:(DSProviderRegistrationTransaction *_Nonnull)transaction foundAtIndex:(uint32_t *_Nullable)rIndex;
 
 // MARK: - Standalone Derivation Paths
 
 /*! @brief Add a standalone derivation path to the chain. It is only temporarily in the chain if externaly added this way.  */
-- (void)addStandaloneDerivationPath:(DSDerivationPath*)derivationPath;
+- (void)addStandaloneDerivationPath:(DSDerivationPath *)derivationPath;
 
 // MARK: - Masternodes
 
 @property (nonatomic, assign) UInt256 masternodeBaseBlockHash;
 
-- (void)updateAddressUsageOfSimplifiedMasternodeEntries:(NSArray*)simplifiedMasternodeEntries;
+- (void)updateAddressUsageOfSimplifiedMasternodeEntries:(NSArray *)simplifiedMasternodeEntries;
 
 /*! @brief The header locator array is an array of the 10 most recent block hashes in decending order followed by block hashes that double the step back each iteration in decending order and finishing with the previous known checkpoint after that last hash. Something like (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -15, -23, -39, -71, -135, ..., 0).  */
-@property (nonatomic, readonly, nullable) NSArray * terminalBlocksLocatorArray;
+@property (nonatomic, readonly, nullable) NSArray *terminalBlocksLocatorArray;
 
 // MARK: - Wiping
 
 - (void)wipeWalletsAndDerivatives;
 
-- (void)wipeMasternodesInContext:(NSManagedObjectContext*)context;
+- (void)wipeMasternodesInContext:(NSManagedObjectContext *)context;
 
 /*! @brief This removes all blockchain information from the chain's wallets and derivation paths. */
-- (void)wipeBlockchainInfoInContext:(NSManagedObjectContext*)context;
+- (void)wipeBlockchainInfoInContext:(NSManagedObjectContext *)context;
 
-- (void)wipeBlockchainNonTerminalInfoInContext:(NSManagedObjectContext*)context;
+- (void)wipeBlockchainNonTerminalInfoInContext:(NSManagedObjectContext *)context;
 
 // MARK: - Persistence
 
 /*! @brief Save chain info, this rarely needs to be called.  */
 - (void)save;
 
-- (void)saveInContext:(NSManagedObjectContext*)context;
+- (void)saveInContext:(NSManagedObjectContext *)context;
 
 - (void)saveBlockLocators;
 - (void)saveTerminalBlocks;

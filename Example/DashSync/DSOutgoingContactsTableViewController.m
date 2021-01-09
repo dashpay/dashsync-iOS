@@ -17,7 +17,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     self.title = @"Pending";
 }
 
@@ -29,7 +29,7 @@
         if (!strongSelf) {
             return;
         }
-        
+
         [strongSelf.refreshControl endRefreshing];
     }];
 }
@@ -38,16 +38,16 @@
     return @"DSFriendRequestEntity";
 }
 
--(NSPredicate*)predicate {
-    return [NSPredicate predicateWithFormat:@"sourceContact == %@ && (SUBQUERY(sourceContact.incomingRequests, $friendRequest, $friendRequest.sourceContact == SELF.destinationContact).@count == 0)",[self.blockchainIdentity matchingDashpayUserInContext:self.context]];
+- (NSPredicate *)predicate {
+    return [NSPredicate predicateWithFormat:@"sourceContact == %@ && (SUBQUERY(sourceContact.incomingRequests, $friendRequest, $friendRequest.sourceContact == SELF.destinationContact).@count == 0)", [self.blockchainIdentity matchingDashpayUserInContext:self.context]];
 }
 
--(BOOL)requiredInvertedPredicate {
+- (BOOL)requiredInvertedPredicate {
     return YES;
 }
 
--(NSPredicate*)invertedPredicate {
-    return [NSPredicate predicateWithFormat:@"destinationContact == %@ && (SUBQUERY(destinationContact.outgoingRequests, $friendRequest, $friendRequest.destinationContact == SELF.sourceContact).@count > 0)",[self.blockchainIdentity matchingDashpayUserInContext:self.context]];
+- (NSPredicate *)invertedPredicate {
+    return [NSPredicate predicateWithFormat:@"destinationContact == %@ && (SUBQUERY(destinationContact.outgoingRequests, $friendRequest, $friendRequest.destinationContact == SELF.sourceContact).@count > 0)", [self.blockchainIdentity matchingDashpayUserInContext:self.context]];
 }
 
 
@@ -61,16 +61,16 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     DSContactTableViewCell *cell = (DSContactTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"ContactCellIdentifier" forIndexPath:indexPath];
-    
+
     // Configure the cell...
     [self configureCell:cell atIndexPath:indexPath];
     return cell;
 }
 
--(void)configureCell:(DSContactTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
-    DSFriendRequestEntity * friendRequest = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    DSBlockchainIdentityEntity * destinationBlockchainIdentity = friendRequest.destinationContact.associatedBlockchainIdentity;
-    DSBlockchainIdentityUsernameEntity * username = [destinationBlockchainIdentity.usernames anyObject];
+- (void)configureCell:(DSContactTableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath {
+    DSFriendRequestEntity *friendRequest = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    DSBlockchainIdentityEntity *destinationBlockchainIdentity = friendRequest.destinationContact.associatedBlockchainIdentity;
+    DSBlockchainIdentityUsernameEntity *username = [destinationBlockchainIdentity.usernames anyObject];
     cell.textLabel.text = username.stringValue;
 }
 
@@ -87,4 +87,3 @@
 }
 
 @end
-

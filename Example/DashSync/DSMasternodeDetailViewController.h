@@ -10,13 +10,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSLocalMasternode, DSSimplifiedMasternodeEntry,DSChain;
+@class DSLocalMasternode, DSSimplifiedMasternodeEntry, DSChain;
 
 @interface DSMasternodeDetailViewController : UITableViewController
 
-@property (nonatomic,strong) DSLocalMasternode * localMasternode;
-@property (nonatomic,strong) DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry;
-@property (nonatomic,strong) DSChain * chain;
+@property (nonatomic, strong) DSLocalMasternode *localMasternode;
+@property (nonatomic, strong) DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry;
+@property (nonatomic, strong) DSChain *chain;
 
 
 @end

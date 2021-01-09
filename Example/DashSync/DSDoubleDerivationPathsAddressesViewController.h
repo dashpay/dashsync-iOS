@@ -6,12 +6,12 @@
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
-#import <DashSync/DashSync.h>
 #import <CoreData/CoreData.h>
+#import <DashSync/DashSync.h>
+#import <UIKit/UIKit.h>
 
-@interface DSDoubleDerivationPathsAddressesViewController : UITableViewController <NSFetchedResultsControllerDelegate,UISearchBarDelegate>
+@interface DSDoubleDerivationPathsAddressesViewController : UITableViewController <NSFetchedResultsControllerDelegate, UISearchBarDelegate>
 
-@property(nonatomic,strong) DSFundsDerivationPath * derivationPath;
+@property (nonatomic, strong) DSFundsDerivationPath *derivationPath;
 
 @end

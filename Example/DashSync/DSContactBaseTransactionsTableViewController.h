@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -19,7 +19,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, DSContactTransactionDirection) {
+typedef NS_ENUM(NSUInteger, DSContactTransactionDirection)
+{
     DSContactTransactionDirectionSent,
     DSContactTransactionDirectionReceived,
 };
@@ -28,7 +29,7 @@ typedef NS_ENUM(NSUInteger, DSContactTransactionDirection) {
 
 @interface DSContactBaseTransactionsTableViewController : DSFetchedResultsTableViewController
 
-@property (nonatomic,strong) DSChainManager *chainManager;
+@property (nonatomic, strong) DSChainManager *chainManager;
 @property (nonatomic, assign) DSContactTransactionDirection direction;
 
 @end

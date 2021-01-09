@@ -11,7 +11,7 @@
 @implementation DSMasternodeListEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSMasternodeListEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSMasternodeListEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSMasternodeListEntity"];
 }
 
 @dynamic block;

@@ -30,14 +30,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    
-    [self mvvm_observe:@"cellModel.title" with:^(typeof(self) self, NSString * value) {
-        self.titleLabel.text = value;
-    }];
-    
-    [self mvvm_observe:@"cellModel.on" with:^(typeof(self) self, NSNumber * value) {
-        [self.switcher setOn:value.boolValue animated:NO];
-    }];
+
+    [self mvvm_observe:@"cellModel.title"
+                  with:^(typeof(self) self, NSString *value) {
+                      self.titleLabel.text = value;
+                  }];
+
+    [self mvvm_observe:@"cellModel.on"
+                  with:^(typeof(self) self, NSNumber *value) {
+                      [self.switcher setOn:value.boolValue animated:NO];
+                  }];
 }
 
 - (IBAction)switcherAction:(UISwitch *)sender {

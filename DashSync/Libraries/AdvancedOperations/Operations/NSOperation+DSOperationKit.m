@@ -38,8 +38,7 @@
                 block(strongSelf);
             });
         };
-    }
-    else {
+    } else {
         self.completionBlock = ^() {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -73,8 +72,7 @@
             existing();
             block(strongSelf);
         };
-    }
-    else {
+    } else {
         self.completionBlock = ^() {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {

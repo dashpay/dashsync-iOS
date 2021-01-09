@@ -217,8 +217,7 @@ NS_ASSUME_NONNULL_BEGIN
                    needsNewBodyStream:completionHandler
                            forRequest:request];
         }];
-    }
-    else {
+    } else {
         completionHandler(request.bodyStream);
     }
 }
@@ -242,8 +241,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)executeDelegateBlock:(dispatch_block_t)block {
     if (self.delegateQueue == dispatch_get_main_queue() && [NSThread isMainThread]) {
         block();
-    }
-    else {
+    } else {
         dispatch_async(self.delegateQueue, block);
     }
 }

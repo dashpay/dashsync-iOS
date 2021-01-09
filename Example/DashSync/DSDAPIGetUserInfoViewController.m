@@ -11,10 +11,10 @@
 
 @interface DSDAPIGetUserInfoViewController ()
 
-@property (nonatomic,strong) DSKeyValueTableViewCell * usernameCell;
-@property (nonatomic,strong) DSKeyValueTableViewCell * regTxIdCell;
+@property (nonatomic, strong) DSKeyValueTableViewCell *usernameCell;
+@property (nonatomic, strong) DSKeyValueTableViewCell *regTxIdCell;
 
-@property (nonatomic,strong) NSDictionary * userInfo;
+@property (nonatomic, strong) NSDictionary *userInfo;
 
 @end
 
@@ -25,7 +25,6 @@
     self.usernameCell = [self.tableView dequeueReusableCellWithIdentifier:@"UsernameCellIdentifier"];
     self.regTxIdCell = [self.tableView dequeueReusableCellWithIdentifier:@"RegTxIdCellIdentifier"];
     self.userInfo = nil;
-
 }
 
 - (void)didReceiveMemoryWarning {
@@ -36,7 +35,6 @@
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-
     return 1 + !!self.userInfo;
 }
 
@@ -64,9 +62,8 @@
                     NSAssert(NO, @"Unknown cell");
                     return [[UITableViewCell alloc] init];
             }
-        case 1:
-        {
-            UITableViewCell * cell = [self.tableView dequeueReusableCellWithIdentifier:@"UsernameCellIdentifier"];
+        case 1: {
+            UITableViewCell *cell = [self.tableView dequeueReusableCellWithIdentifier:@"UsernameCellIdentifier"];
             return cell;
         }
         default:
@@ -75,24 +72,26 @@
     }
 }
 
--(IBAction)search:(id)sender {
+- (IBAction)search:(id)sender {
     NSString *username = nil;
     if (self.usernameCell.valueTextField.text && ![self.usernameCell.valueTextField.text isEqualToString:@""]) {
         username = self.usernameCell.valueTextField.text;
     } else if (self.regTxIdCell.valueTextField.text && ![self.regTxIdCell.valueTextField.text isEqualToString:@""]) {
         username = self.regTxIdCell.valueTextField.text;
     }
-    
+
     if (!username) {
         return;
     }
-    
-    [self.chainManager.DAPIClient.DAPINetworkService getIdentityByName:username inDomain:@"dash" success:^(NSDictionary * _Nonnull blockchainIdentity) {
-        NSLog(@"%@", blockchainIdentity);
-    } failure:^(NSError * _Nonnull error) {
-        NSLog(@"%@", error);
-    }];
 
+    [self.chainManager.DAPIClient.DAPINetworkService getIdentityByName:username
+        inDomain:@"dash"
+        success:^(NSDictionary *_Nonnull blockchainIdentity) {
+            NSLog(@"%@", blockchainIdentity);
+        }
+        failure:^(NSError *_Nonnull error) {
+            NSLog(@"%@", error);
+        }];
 }
 
 @end

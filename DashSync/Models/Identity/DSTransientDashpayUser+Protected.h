@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -19,7 +19,7 @@
 
 #import "DSTransientDashpayUser.h"
 
-@interface DSTransientDashpayUser()
+@interface DSTransientDashpayUser ()
 
 @property (nullable, nonatomic, copy) NSString *displayName;
 @property (nullable, nonatomic, copy) NSString *avatarPath;
@@ -27,7 +27,7 @@
 @property (nullable, nonatomic, strong) NSData *avatarHash;
 @property (nullable, nonatomic, copy) NSString *publicMessage;
 @property (nonatomic, assign) int32_t revision;
-@property (nonnull, nonatomic, strong) NSData* documentIdentifier;
+@property (nonnull, nonatomic, strong) NSData *documentIdentifier;
 @property (nonatomic, assign) NSTimeInterval createdAt;
 @property (nonatomic, assign) NSTimeInterval updatedAt;
 

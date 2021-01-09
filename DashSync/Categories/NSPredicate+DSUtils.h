@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSPredicate (DSUtils)
 
--(NSPredicate*)predicateInContext:(NSManagedObjectContext*)context;
+- (NSPredicate *)predicateInContext:(NSManagedObjectContext *)context;
 
 @end
 

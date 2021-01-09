@@ -23,7 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 extern NSString *const DSOperationErrorDomain;
 extern NSString *const DSOperationErrorConditionKey;
 
-typedef NS_ENUM(NSUInteger, DSOperationError) {
+typedef NS_ENUM(NSUInteger, DSOperationError)
+{
     DSOperationErrorConditionFailed = 1,
     DSOperationErrorExecutionFailed = 2
 };

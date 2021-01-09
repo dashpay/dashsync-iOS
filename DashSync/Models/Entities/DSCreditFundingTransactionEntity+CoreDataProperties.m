@@ -11,7 +11,7 @@
 @implementation DSCreditFundingTransactionEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSCreditFundingTransactionEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSCreditFundingTransactionEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSCreditFundingTransactionEntity"];
 }
 
 @dynamic blockchainIdentity;

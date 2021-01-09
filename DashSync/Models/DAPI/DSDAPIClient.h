@@ -21,7 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 extern NSErrorDomain const DSDAPIClientErrorDomain;
 
-typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode) {
+typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode)
+{
     DSDAPIClientErrorCodeSignTransitionFailed = 1,
     DSDAPIClientErrorCodeNoKnownDAPINodes = 2,
 };
@@ -30,30 +31,30 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode) {
 
 @interface DSDAPIClient : NSObject
 
-@property (readonly, nonatomic) DSChain * chain;
-@property (nonatomic, nullable, readonly) DSDAPIPlatformNetworkService * DAPINetworkService;
+@property (readonly, nonatomic) DSChain *chain;
+@property (nonatomic, nullable, readonly) DSDAPIPlatformNetworkService *DAPINetworkService;
 @property (atomic, readonly) dispatch_queue_t dispatchQueue;
 
 - (instancetype)initWithChain:(DSChain *)chain NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-- (void)addDAPINodeByAddress:(NSString*)host;
+- (void)addDAPINodeByAddress:(NSString *)host;
 
-- (void)removeDAPINodeByAddress:(NSString*)host;
+- (void)removeDAPINodeByAddress:(NSString *)host;
 
-- (void)getAllStateTransitionsForUser:(DSBlockchainIdentity*)blockchainIdentity completion:(void (^)(NSError *_Nullable error))completion;
+- (void)getAllStateTransitionsForUser:(DSBlockchainIdentity *)blockchainIdentity completion:(void (^)(NSError *_Nullable error))completion;
 
 - (void)sendDocument:(DPDocument *)document
-         forIdentity:(DSBlockchainIdentity*)blockchainIdentity
+         forIdentity:(DSBlockchainIdentity *)blockchainIdentity
             contract:(DPContract *)contract
           completion:(void (^)(NSError *_Nullable error))completion;
 
-- (void)publishTransition:(DSTransition*)stateTransition
+- (void)publishTransition:(DSTransition *)stateTransition
                   success:(void (^)(NSDictionary *successDictionary))success
                   failure:(void (^)(NSError *error))failure;
 
--(void)checkPingTimesForMasternodes:(NSArray<DSSimplifiedMasternodeEntry*>*)masternodes completion:(void (^)(NSMutableDictionary <NSData*, NSError*> *))completion;
+- (void)checkPingTimesForMasternodes:(NSArray<DSSimplifiedMasternodeEntry *> *)masternodes completion:(void (^)(NSMutableDictionary<NSData *, NSError *> *))completion;
 
 
 @end

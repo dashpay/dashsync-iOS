@@ -1,6 +1,6 @@
 //
 //  DSChainEntity+CoreDataClass.h
-//  
+//
 //
 //  Created by Sam Westrich on 5/20/18.
 //
@@ -22,9 +22,9 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
 #import "DSChain.h"
+#import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
 @class DSAccountEntity, DSBlockchainIdentityEntity, DSDashpayUserEntity, DSDerivationPathEntity, DSGovernanceObjectHashEntity, DSGovernanceVoteHashEntity, DSMerkleBlockEntity, DSPeerEntity, DSQuorumEntryEntity, DSSimplifiedMasternodeEntryEntity, DSSporkHashEntity, DSTransactionHashEntity, DSChainLockEntity;
 
@@ -32,9 +32,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSChainEntity : NSManagedObject
 
-+ (DSChainEntity* _Nonnull)chainEntityForType:(DSChainType)type devnetIdentifier:(NSString* _Nullable)devnetIdentifier checkpoints:(NSArray* _Nullable)checkpoints inContext:(NSManagedObjectContext*)context;
-- (instancetype)setAttributesFromChain:(DSChain * _Nonnull)chain;
-- (DSChain * _Nonnull)chain;
++ (DSChainEntity *_Nonnull)chainEntityForType:(DSChainType)type devnetIdentifier:(NSString *_Nullable)devnetIdentifier checkpoints:(NSArray *_Nullable)checkpoints inContext:(NSManagedObjectContext *)context;
+- (instancetype)setAttributesFromChain:(DSChain *_Nonnull)chain;
+- (DSChain *_Nonnull)chain;
 
 @end
 

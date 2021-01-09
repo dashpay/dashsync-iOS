@@ -47,34 +47,22 @@
 #ifndef SPH_TYPES
 #define SPH_TYPES 1
 
-#define AESx(x)   SPH_C32(x)
-#define AES0      AES0_LE
-#define AES1      AES1_LE
-#define AES2      AES2_LE
-#define AES3      AES3_LE
+#define AESx(x) SPH_C32(x)
+#define AES0 AES0_LE
+#define AES1 AES1_LE
+#define AES2 AES2_LE
+#define AES3 AES3_LE
 
-#define AES_ROUND_LE(X0, X1, X2, X3, K0, K1, K2, K3, Y0, Y1, Y2, Y3)   do { \
-(Y0) = AES0[(X0) & 0xFF] \
-^ AES1[((X1) >> 8) & 0xFF] \
-^ AES2[((X2) >> 16) & 0xFF] \
-^ AES3[((X3) >> 24) & 0xFF] ^ (K0); \
-(Y1) = AES0[(X1) & 0xFF] \
-^ AES1[((X2) >> 8) & 0xFF] \
-^ AES2[((X3) >> 16) & 0xFF] \
-^ AES3[((X0) >> 24) & 0xFF] ^ (K1); \
-(Y2) = AES0[(X2) & 0xFF] \
-^ AES1[((X3) >> 8) & 0xFF] \
-^ AES2[((X0) >> 16) & 0xFF] \
-^ AES3[((X1) >> 24) & 0xFF] ^ (K2); \
-(Y3) = AES0[(X3) & 0xFF] \
-^ AES1[((X0) >> 8) & 0xFF] \
-^ AES2[((X1) >> 16) & 0xFF] \
-^ AES3[((X2) >> 24) & 0xFF] ^ (K3); \
-} while (0)
+#define AES_ROUND_LE(X0, X1, X2, X3, K0, K1, K2, K3, Y0, Y1, Y2, Y3)                                                      \
+	do {                                                                                                                  \
+		(Y0) = AES0[(X0)&0xFF] ^ AES1[((X1) >> 8) & 0xFF] ^ AES2[((X2) >> 16) & 0xFF] ^ AES3[((X3) >> 24) & 0xFF] ^ (K0); \
+		(Y1) = AES0[(X1)&0xFF] ^ AES1[((X2) >> 8) & 0xFF] ^ AES2[((X3) >> 16) & 0xFF] ^ AES3[((X0) >> 24) & 0xFF] ^ (K1); \
+		(Y2) = AES0[(X2)&0xFF] ^ AES1[((X3) >> 8) & 0xFF] ^ AES2[((X0) >> 16) & 0xFF] ^ AES3[((X1) >> 24) & 0xFF] ^ (K2); \
+		(Y3) = AES0[(X3)&0xFF] ^ AES1[((X0) >> 8) & 0xFF] ^ AES2[((X1) >> 16) & 0xFF] ^ AES3[((X2) >> 24) & 0xFF] ^ (K3); \
+	} while (0)
 
 #define AES_ROUND_NOKEY_LE(X0, X1, X2, X3, Y0, Y1, Y2, Y3) \
-AES_ROUND_LE(X0, X1, X2, X3, 0, 0, 0, 0, Y0, Y1, Y2, Y3)
-
+	AES_ROUND_LE(X0, X1, X2, X3, 0, 0, 0, 0, Y0, Y1, Y2, Y3)
 
 static const sph_u32 AES0[256] = {
     AESx(0xA56363C6), AESx(0x847C7CF8), AESx(0x997777EE), AESx(0x8D7B7BF6),
@@ -140,8 +128,7 @@ static const sph_u32 AES0[256] = {
     AESx(0x8F8C8C03), AESx(0xF8A1A159), AESx(0x80898909), AESx(0x170D0D1A),
     AESx(0xDABFBF65), AESx(0x31E6E6D7), AESx(0xC6424284), AESx(0xB86868D0),
     AESx(0xC3414182), AESx(0xB0999929), AESx(0x772D2D5A), AESx(0x110F0F1E),
-    AESx(0xCBB0B07B), AESx(0xFC5454A8), AESx(0xD6BBBB6D), AESx(0x3A16162C)
-};
+    AESx(0xCBB0B07B), AESx(0xFC5454A8), AESx(0xD6BBBB6D), AESx(0x3A16162C)};
 
 static const sph_u32 AES1[256] = {
     AESx(0x6363C6A5), AESx(0x7C7CF884), AESx(0x7777EE99), AESx(0x7B7BF68D),
@@ -207,8 +194,7 @@ static const sph_u32 AES1[256] = {
     AESx(0x8C8C038F), AESx(0xA1A159F8), AESx(0x89890980), AESx(0x0D0D1A17),
     AESx(0xBFBF65DA), AESx(0xE6E6D731), AESx(0x424284C6), AESx(0x6868D0B8),
     AESx(0x414182C3), AESx(0x999929B0), AESx(0x2D2D5A77), AESx(0x0F0F1E11),
-    AESx(0xB0B07BCB), AESx(0x5454A8FC), AESx(0xBBBB6DD6), AESx(0x16162C3A)
-};
+    AESx(0xB0B07BCB), AESx(0x5454A8FC), AESx(0xBBBB6DD6), AESx(0x16162C3A)};
 
 static const sph_u32 AES2[256] = {
     AESx(0x63C6A563), AESx(0x7CF8847C), AESx(0x77EE9977), AESx(0x7BF68D7B),
@@ -274,8 +260,7 @@ static const sph_u32 AES2[256] = {
     AESx(0x8C038F8C), AESx(0xA159F8A1), AESx(0x89098089), AESx(0x0D1A170D),
     AESx(0xBF65DABF), AESx(0xE6D731E6), AESx(0x4284C642), AESx(0x68D0B868),
     AESx(0x4182C341), AESx(0x9929B099), AESx(0x2D5A772D), AESx(0x0F1E110F),
-    AESx(0xB07BCBB0), AESx(0x54A8FC54), AESx(0xBB6DD6BB), AESx(0x162C3A16)
-};
+    AESx(0xB07BCBB0), AESx(0x54A8FC54), AESx(0xBB6DD6BB), AESx(0x162C3A16)};
 
 static const sph_u32 AES3[256] = {
     AESx(0xC6A56363), AESx(0xF8847C7C), AESx(0xEE997777), AESx(0xF68D7B7B),
@@ -341,7 +326,6 @@ static const sph_u32 AES3[256] = {
     AESx(0x038F8C8C), AESx(0x59F8A1A1), AESx(0x09808989), AESx(0x1A170D0D),
     AESx(0x65DABFBF), AESx(0xD731E6E6), AESx(0x84C64242), AESx(0xD0B86868),
     AESx(0x82C34141), AESx(0x29B09999), AESx(0x5A772D2D), AESx(0x1E110F0F),
-    AESx(0x7BCBB0B0), AESx(0xA8FC5454), AESx(0x6DD6BBBB), AESx(0x2C3A1616)
-};
+    AESx(0x7BCBB0B0), AESx(0xA8FC5454), AESx(0x6DD6BBBB), AESx(0x2C3A1616)};
 
 #endif

@@ -7,8 +7,8 @@
 //
 
 #import "DSActionsViewController.h"
-#import "DSTransactionFloodingViewController.h"
 #import "DSMiningViewController.h"
+#import "DSTransactionFloodingViewController.h"
 
 @interface DSActionsViewController ()
 
@@ -18,10 +18,10 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
-    
+
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
@@ -32,10 +32,10 @@
 // In a storyboard-based application, you will often want to do a little preparation before navigation
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"TransactionFloodingSegue"]) {
-        DSTransactionFloodingViewController * transactionFloodingViewController = (DSTransactionFloodingViewController*)segue.destinationViewController;
+        DSTransactionFloodingViewController *transactionFloodingViewController = (DSTransactionFloodingViewController *)segue.destinationViewController;
         transactionFloodingViewController.chainManager = self.chainManager;
     } else if ([segue.identifier isEqualToString:@"MiningSegue"]) {
-        DSMiningViewController * miningViewController = (DSMiningViewController*)segue.destinationViewController;
+        DSMiningViewController *miningViewController = (DSMiningViewController *)segue.destinationViewController;
         miningViewController.chainManager = self.chainManager;
     }
 }

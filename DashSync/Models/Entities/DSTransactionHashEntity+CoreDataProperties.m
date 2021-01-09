@@ -11,7 +11,7 @@
 @implementation DSTransactionHashEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSTransactionHashEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSTransactionHashEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSTransactionHashEntity"];
 }
 
 @dynamic blockHeight;

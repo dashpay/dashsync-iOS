@@ -6,104 +6,101 @@
 //
 
 #import "DSKey.h"
-#import "NSString+Dash.h"
-#import "NSData+Dash.h"
-#import "NSString+Bitcoin.h"
-#import "NSData+Bitcoin.h"
-#import "NSMutableData+Dash.h"
-#import "DSChain.h"
 #import "DSBLSKey.h"
+#import "DSChain.h"
 #import "DSECDSAKey.h"
+#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
+#import "NSMutableData+Dash.h"
+#import "NSString+Bitcoin.h"
+#import "NSString+Dash.h"
 
-@interface DSKey()
+@interface DSKey ()
 
-@property (nonatomic, strong) NSData * extendedPrivateKeyData;
-@property (nonatomic, strong) NSData * extendedPublicKeyData;
+@property (nonatomic, strong) NSData *extendedPrivateKeyData;
+@property (nonatomic, strong) NSData *extendedPublicKeyData;
 
 @end
 
 @implementation DSKey
 
-- (UInt160)hash160
-{
+- (UInt160)hash160 {
     return self.publicKeyData.hash160;
 }
 
-+ (NSString *)addressWithPublicKeyData:(NSData*)data forChain:(DSChain*)chain
-{
++ (NSString *)addressWithPublicKeyData:(NSData *)data forChain:(DSChain *)chain {
     NSParameterAssert(data);
     NSParameterAssert(chain);
-    
-    NSMutableData *d = [NSMutableData secureDataWithCapacity:160/8 + 1];
+
+    NSMutableData *d = [NSMutableData secureDataWithCapacity:160 / 8 + 1];
     uint8_t version;
     UInt160 hash160 = data.hash160;
-    
+
     if ([chain isMainnet]) {
         version = DASH_PUBKEY_ADDRESS;
     } else {
         version = DASH_PUBKEY_ADDRESS_TEST;
     }
-    
+
     [d appendBytes:&version length:1];
     [d appendBytes:&hash160 length:sizeof(hash160)];
     return [NSString base58checkWithData:d];
 }
 
-- (NSString *)addressForChain:(DSChain*)chain
-{
+- (NSString *)addressForChain:(DSChain *)chain {
     NSParameterAssert(chain);
-    
+
     return [DSKey addressWithPublicKeyData:self.publicKeyData forChain:chain];
 }
 
-+ (NSString *)randomAddressForChain:(DSChain*)chain {
++ (NSString *)randomAddressForChain:(DSChain *)chain {
     NSParameterAssert(chain);
-    
+
     UInt160 randomNumber = UINT160_ZERO;
-    for (int i =0;i<5;i++) {
+    for (int i = 0; i < 5; i++) {
         randomNumber.u32[i] = arc4random();
     }
-    
+
     return [[NSData dataWithUInt160:randomNumber] addressFromHash160DataForChain:chain];
 }
 
-- (NSString *)serializedPrivateKeyForChain:(DSChain*)chain {
+- (NSString *)serializedPrivateKeyForChain:(DSChain *)chain {
     return nil;
 }
 
--(DSKeyType)keyType {
+- (DSKeyType)keyType {
     return 0;
 }
 
--(BOOL)verify:(UInt256)messageDigest signatureData:(NSData *)signature {
+- (BOOL)verify:(UInt256)messageDigest signatureData:(NSData *)signature {
     NSAssert(NO, @"This should be overridden");
     return NO;
 }
 
--(NSString*)localizedKeyType {
+- (NSString *)localizedKeyType {
     switch (self.keyType) {
         case 1:
-            return DSLocalizedString(@"ECDSA",nil);
+            return DSLocalizedString(@"ECDSA", nil);
             break;
         case 2:
-            return DSLocalizedString(@"BLS",nil);
+            return DSLocalizedString(@"BLS", nil);
             break;
         default:
-            return DSLocalizedString(@"Unknown Key Type",nil);
+            return DSLocalizedString(@"Unknown Key Type", nil);
             break;
     }
 }
 
-+(instancetype)keyWithDHKeyExchangeWithPublicKey:(DSKey *)publicKey forPrivateKey:(DSKey*)privateKey {
++ (instancetype)keyWithDHKeyExchangeWithPublicKey:(DSKey *)publicKey forPrivateKey:(DSKey *)privateKey {
     return [[self alloc] initWithDHKeyExchangeWithPublicKey:publicKey forPrivateKey:privateKey];
 }
 
-- (nullable instancetype)initWithDHKeyExchangeWithPublicKey:(DSKey*)publicKey forPrivateKey:(DSKey*)privateKey {
+- (nullable instancetype)initWithDHKeyExchangeWithPublicKey:(DSKey *)publicKey forPrivateKey:(DSKey *)privateKey {
     [self doesNotRecognizeSelector:_cmd];
     return nil;
 }
 
-+ (nullable instancetype)keyWithSeedData:(NSData*)data forKeyType:(DSKeyType)keyType {
++ (nullable instancetype)keyWithSeedData:(NSData *)data forKeyType:(DSKeyType)keyType {
     switch (keyType) {
         case DSKeyType_BLS:
             return [DSBLSKey extendedPrivateKeyWithSeedData:data];
@@ -114,7 +111,7 @@
     }
 }
 
-+ (DSKey*)keyWithPublicKeyData:(NSData*)data forKeyType:(DSKeyType)keyType {
++ (DSKey *)keyWithPublicKeyData:(NSData *)data forKeyType:(DSKeyType)keyType {
     switch (keyType) {
         case DSKeyType_BLS:
             return [DSBLSKey keyWithPublicKey:data.UInt384];
@@ -123,10 +120,9 @@
         default:
             return nil;
     }
-
 }
 
-+ (DSKey*)keyWithPrivateKeyData:(NSData*)data forKeyType:(DSKeyType)keyType {
++ (DSKey *)keyWithPrivateKeyData:(NSData *)data forKeyType:(DSKeyType)keyType {
     switch (keyType) {
         case DSKeyType_BLS:
             return [DSBLSKey keyWithPrivateKey:data.UInt256];
@@ -137,7 +133,7 @@
     }
 }
 
-+ (DSKey*)keyWithExtendedPublicKeyData:(NSData*)data forKeyType:(DSKeyType)keyType {
++ (DSKey *)keyWithExtendedPublicKeyData:(NSData *)data forKeyType:(DSKeyType)keyType {
     if (!data) return nil;
     switch (keyType) {
         case DSKeyType_BLS:
@@ -149,7 +145,7 @@
     }
 }
 
-+ (DSKey*)keyWithExtendedPrivateKeyData:(NSData*)data forKeyType:(DSKeyType)keyType {
++ (DSKey *)keyWithExtendedPrivateKeyData:(NSData *)data forKeyType:(DSKeyType)keyType {
     if (!data) return nil;
     switch (keyType) {
         case DSKeyType_BLS:
@@ -162,34 +158,33 @@
 }
 
 - (void)forgetPrivateKey {
-    
 }
 
-- (instancetype)privateDeriveToPath:(NSIndexPath*)derivationPath {
+- (instancetype)privateDeriveToPath:(NSIndexPath *)derivationPath {
     NSAssert(NO, @"This should be overridden");
     return nil;
 }
 
-- (instancetype)publicDeriveToPath:(NSIndexPath*)derivationPath {
+- (instancetype)publicDeriveToPath:(NSIndexPath *)derivationPath {
     NSAssert(NO, @"This should be overridden");
     return nil;
 }
 
-- (nullable instancetype)privateDeriveTo256BitDerivationPath:(DSDerivationPath*)derivationPath {
+- (nullable instancetype)privateDeriveTo256BitDerivationPath:(DSDerivationPath *)derivationPath {
     NSAssert(NO, @"This should be overridden");
     return nil;
 }
-- (nullable instancetype)publicDeriveTo256BitDerivationPath:(DSDerivationPath*)derivationPath {
-    NSAssert(NO, @"This should be overridden");
-    return nil;
-}
-
-- (nullable instancetype)publicDeriveTo256BitDerivationPath:(DSDerivationPath*)derivationPath derivationPathOffset:(NSUInteger)derivationPathOffset {
+- (nullable instancetype)publicDeriveTo256BitDerivationPath:(DSDerivationPath *)derivationPath {
     NSAssert(NO, @"This should be overridden");
     return nil;
 }
 
-- (UInt256)HMAC256Data:(NSData*)data {
+- (nullable instancetype)publicDeriveTo256BitDerivationPath:(DSDerivationPath *)derivationPath derivationPathOffset:(NSUInteger)derivationPathOffset {
+    NSAssert(NO, @"This should be overridden");
+    return nil;
+}
+
+- (UInt256)HMAC256Data:(NSData *)data {
     NSAssert(NO, @"This should be overridden");
     return UINT256_ZERO;
 }
