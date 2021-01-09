@@ -502,7 +502,7 @@ inline static int ceil_log2(int x)
         DSSimplifiedMasternodeEntry * currentEntry = self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[data];
         DSSimplifiedMasternodeEntry * previousEntry = previous.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[data];
         if (!currentEntry && previousEntry) {
-            [removed addObject:currentEntry];
+            [removed addObject:previousEntry];
         }
     }
 
