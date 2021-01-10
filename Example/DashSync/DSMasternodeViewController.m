@@ -86,9 +86,10 @@
     
     // Edit the sort key as appropriate.
     NSSortDescriptor *claimSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"localMasternode" ascending:NO];
+    NSSortDescriptor *validDescriptor = [[NSSortDescriptor alloc] initWithKey:@"isValid" ascending:NO];
     NSSortDescriptor *addressSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"address" ascending:YES];
     NSSortDescriptor *portSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"port" ascending:YES];
-    NSArray *sortDescriptors = @[claimSortDescriptor,addressSortDescriptor,portSortDescriptor];
+    NSArray *sortDescriptors = @[claimSortDescriptor,validDescriptor,addressSortDescriptor,portSortDescriptor];
     
     [fetchRequest setSortDescriptors:sortDescriptors];
     
@@ -171,8 +172,14 @@
     DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
     char s[INET6_ADDRSTRLEN];
     uint32_t ipAddress = CFSwapInt32BigToHost((uint32_t)simplifiedMasternodeEntryEntity.address);
-    cell.masternodeLocationLabel.text = [NSString stringWithFormat:@"%s:%d",inet_ntop(AF_INET, &ipAddress, s, sizeof(s)),simplifiedMasternodeEntryEntity.port];
-    cell.outputLabel.text = [NSString stringWithFormat:@"%@",simplifiedMasternodeEntryEntity.providerRegistrationTransactionHash];
+    cell.masternodeLocationLabel.text = [NSString stringWithFormat:@"%s:%d %@",inet_ntop(AF_INET, &ipAddress, s, sizeof(s)),simplifiedMasternodeEntryEntity.port, (simplifiedMasternodeEntryEntity.isValid?@"":@"(Not Valid)")];
+    cell.ping.text = [NSString stringWithFormat:@"%llu ms",simplifiedMasternodeEntryEntity.platformPing];
+    NSString *dateString = [NSDateFormatter localizedStringFromDate:simplifiedMasternodeEntryEntity.platformPingDate
+                                                          dateStyle:NSDateFormatterShortStyle
+                                                          timeStyle:NSDateFormatterMediumStyle];
+    cell.pingDate.text = dateString;
+    cell.protocolLabel.text = [NSString stringWithFormat:@"%llu",simplifiedMasternodeEntryEntity.coreProtocol];
+    cell.outputLabel.text = simplifiedMasternodeEntryEntity.providerRegistrationTransactionHash.hexString;
 }
 
 -(void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {
@@ -185,6 +192,30 @@
     self.searchString = searchBar.text;
     _fetchedResultsController = nil;
     [self.tableView reloadData];
+}
+
+-(void)pingPlatform {
+    [self.chain.chainManager.masternodeManager checkPingTimesForCurrentMasternodeListInContext:[NSManagedObjectContext viewContext] withCompletion:^(NSMutableDictionary<NSData *,NSError *> * _Nonnull errors) {
+        [self.tableView reloadData];
+    }];
+}
+
+-(IBAction)showAvailableActions:(id)sender {
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Actions"
+                                                                             message:nil
+                                                                      preferredStyle:UIAlertControllerStyleActionSheet];
+
+    [alertController addAction:[UIAlertAction actionWithTitle:@"Register"
+                                                            style:UIAlertActionStyleDefault
+                                                          handler:^(UIAlertAction *_Nonnull action) {
+        [self performSegueWithIdentifier:@"RegisterMasternodeSegue" sender:self];
+                                                          }]];
+    [alertController addAction:[UIAlertAction actionWithTitle:@"Ping Platform"
+                                                            style:UIAlertActionStyleDefault
+                                                          handler:^(UIAlertAction *_Nonnull action) {
+        [self pingPlatform];
+                                                          }]];
+    [self presentViewController:alertController animated:YES completion:nil];
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
@@ -207,4 +238,5 @@
         registerMasternodeViewController.chain = self.chain;
     }
 }
+
 @end

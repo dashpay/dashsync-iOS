@@ -37,7 +37,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerNotificationTrans
 FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerNotificationTransactionChangesKey;
 FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerNotificationInstantSendTransactionLockKey;
 FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey;
-FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerNotificationInstantSendTransactionAcceptedStatusKey;
+FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerNotificationTransactionAcceptedStatusKey;
 
 
 typedef NS_ENUM(NSUInteger, DSRequestingAdditionalInfo) {

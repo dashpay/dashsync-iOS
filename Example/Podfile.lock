@@ -336,6 +336,7 @@ PODS:
   - BoringSSL-GRPC/Implementation (0.0.14):
     - BoringSSL-GRPC/Interface (= 0.0.14)
   - BoringSSL-GRPC/Interface (0.0.14)
+  - CocoaImageHashing (1.9.0)
   - CocoaLumberjack (3.6.0):
     - CocoaLumberjack/Core (= 3.6.0)
   - CocoaLumberjack/Core (3.6.0)
@@ -419,6 +420,7 @@ PODS:
     - tinycbor (= 0.5.4-alpha1)
 
 DEPENDENCIES:
+  - CocoaImageHashing (from `https://github.com/ameingast/cocoaimagehashing.git`, commit `ad01eee`)
   - DAPI-GRPC (from `../`)
   - DashSync (from `../`)
   - KVO-MVVM (= 0.5.1)
@@ -446,10 +448,18 @@ SPEC REPOS:
     - TinyCborObjc
 
 EXTERNAL SOURCES:
+  CocoaImageHashing:
+    :commit: ad01eee
+    :git: https://github.com/ameingast/cocoaimagehashing.git
   DAPI-GRPC:
     :path: "../"
   DashSync:
     :path: "../"
+
+CHECKOUT OPTIONS:
+  CocoaImageHashing:
+    :commit: ad01eee
+    :git: https://github.com/ameingast/cocoaimagehashing.git
 
 SPEC CHECKSUMS:
   "!ProtoCompiler": 5d2653f7510f8c4a15ebf03ad1516c3684fb68dd
@@ -457,6 +467,7 @@ SPEC CHECKSUMS:
   abseil: 1e1630cfaceb6f2f6d49c3659e83932095e42b30
   bls-signatures-pod: 6bca9f1d2c67d321d935713d49c272880989f169
   BoringSSL-GRPC: 63bef04e04730659f5125c3f27d72df324f68f59
+  CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
   CocoaLumberjack: 78b0c238666f4f58db069738ec176f4519557516
   DAPI-GRPC: 1e6b58642afd19d1e7167a40557da02bf43cef7c
   DashSync: f4b0c036ddd9ebe00f8f45ef0db47fdf7809d1ef
@@ -473,6 +484,6 @@ SPEC CHECKSUMS:
   tinycbor: d4d71dddda1f8392fbb4249f63faf8552f327590
   TinyCborObjc: 5204540fb90ff0c40fb22d408fa51bab79d78a80
 
-PODFILE CHECKSUM: bde5af57a17cd3ec49d4e080aefe7a3240a4450f
+PODFILE CHECKSUM: 7f429b63e7a664f815f605b6bdc4a6aee79ca2f5
 
 COCOAPODS: 1.10.0

@@ -22,7 +22,7 @@
 #import "DSBlockchainIdentity+Protected.h"
 #import "NSString+Dash.h"
 #import "DSDAPIClient.h"
-#import "DSDAPINetworkService.h"
+#import "DSDAPIPlatformNetworkService.h"
 #import "DSOptionsManager.h"
 #import "DSCreditFundingTransaction.h"
 #import "DSMerkleBlock.h"

@@ -60,7 +60,7 @@
             if (tx) {
                 NSDictionary * changes = [note.userInfo objectForKey:DSTransactionManagerNotificationTransactionChangesKey];
                 if (changes) {
-                    NSNumber * accepted = [changes objectForKey:DSTransactionManagerNotificationInstantSendTransactionAcceptedStatusKey];
+                    NSNumber * accepted = [changes objectForKey:DSTransactionManagerNotificationTransactionAcceptedStatusKey];
                     NSNumber * lockVerified = [changes objectForKey:DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey];
                     if (accepted) {
                         NSNumber * previousSuccessValue = [self.transactionSuccessDictionary objectForKey:uint256_data(tx.txHash)];

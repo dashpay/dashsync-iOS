@@ -74,7 +74,7 @@
         if (self.errorHandler) {
             self.errorHandler(error);
         }
-        DSLog(@"error in didCloseWithTrailingMetadata %@",error);
+        DSLog(@"error in didCloseWithTrailingMetadata from IP %@ %@",self.host?self.host:@"Unknown",error);
         if (self.request) {
             DSLog(@"request contract ID was %@",self.request.contract.base58ContractId);
         }

@@ -536,6 +536,15 @@ static dispatch_once_t devnetToken = 0;
     return _networkingQueue;
 }
 
+-(dispatch_queue_t)dapiMetadataQueue {
+    if (!_dapiMetadataQueue) {
+        NSAssert(!uint256_is_zero(self.genesisHash), @"genesisHash must be set");
+        _dapiMetadataQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.dapimeta.%@",self.uniqueID] UTF8String], DISPATCH_QUEUE_CONCURRENT);
+    }
+    return _dapiMetadataQueue;
+}
+
+
 // MARK: - Check Type
 
 -(BOOL)isMainnet {
@@ -555,7 +564,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 -(BOOL)isEvolutionEnabled {
-    return [self isDevnetAny];
+    return [self isDevnetAny] || [self isTestnet];
 }
 
 -(BOOL)isDevnetWithGenesisHash:(UInt256)genesisHash {
@@ -1099,11 +1108,11 @@ static dispatch_once_t devnetToken = 0;
     switch ([self chainType]) {
         case DSChainType_MainNet:
             if (!self.isEvolutionEnabled) return UINT256_ZERO;
-            _cachedDpnsContractID = MAINNET_DPNS_CONTRACT_ID.hexToData.UInt256;
+            _cachedDpnsContractID = MAINNET_DPNS_CONTRACT_ID.base58ToData.UInt256;
             return _cachedDpnsContractID;
         case DSChainType_TestNet:
             if (!self.isEvolutionEnabled) return UINT256_ZERO;
-            _cachedDpnsContractID = TESTNET_DPNS_CONTRACT_ID.hexToData.UInt256;
+            _cachedDpnsContractID = TESTNET_DPNS_CONTRACT_ID.base58ToData.UInt256;
             return _cachedDpnsContractID;
         case DSChainType_DevNet:
         {
@@ -1148,11 +1157,11 @@ static dispatch_once_t devnetToken = 0;
     switch ([self chainType]) {
         case DSChainType_MainNet:
             if (!self.isEvolutionEnabled) return UINT256_ZERO;
-            _cachedDashpayContractID = MAINNET_DASHPAY_CONTRACT_ID.hexToData.UInt256;
+            _cachedDashpayContractID = MAINNET_DASHPAY_CONTRACT_ID.base58ToData.UInt256;
             return _cachedDashpayContractID;
         case DSChainType_TestNet:
             if (!self.isEvolutionEnabled) return UINT256_ZERO;
-            _cachedDashpayContractID = TESTNET_DASHPAY_CONTRACT_ID.hexToData.UInt256;
+            _cachedDashpayContractID = TESTNET_DASHPAY_CONTRACT_ID.base58ToData.UInt256;
             return _cachedDashpayContractID;
         case DSChainType_DevNet:
         {

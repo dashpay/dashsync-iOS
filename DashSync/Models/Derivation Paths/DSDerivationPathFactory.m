@@ -241,7 +241,7 @@
     [mArray addObject:providerFundsDerivationPath];
     
     
-    if (wallet.chain.isDevnetAny) {
+    if (wallet.chain.isEvolutionEnabled) {
         //Blockchain Identities
         DSAuthenticationKeysDerivationPath * blockchainIdentitiesECDSADerivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentityECDSAKeysDerivationPathForChain:wallet.chain];
         blockchainIdentitiesECDSADerivationPath.wallet = wallet;
@@ -262,6 +262,12 @@
         blockchainIdentitiesTopupDerivationPath.wallet = wallet;
         
         [mArray addObject:blockchainIdentitiesTopupDerivationPath];
+        
+        for (DSAccount* account in wallet.accounts) {
+            DSDerivationPath * masterBlockchainIdentityContactsDerivationPath = [DSDerivationPath masterBlockchainIdentityContactsDerivationPathForAccountNumber:account.accountNumber onChain:wallet.chain];
+            masterBlockchainIdentityContactsDerivationPath.wallet = wallet;
+            [mArray addObject:masterBlockchainIdentityContactsDerivationPath];
+        }
         
     }
     

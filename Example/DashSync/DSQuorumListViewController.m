@@ -112,6 +112,9 @@
         case DSLLMQType_50_60:
             return @"1 Hour Quorums";
             break;
+        case DSLLMQType_100_67:
+            return @"1 Hour Platform Quorums";
+            break;
         case DSLLMQType_400_60:
             return @"Day Quorums";
             break;

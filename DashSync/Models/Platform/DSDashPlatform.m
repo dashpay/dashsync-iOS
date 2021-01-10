@@ -18,7 +18,7 @@
 #import "DSDashPlatform.h"
 #import "DSChain.h"
 #import "DPContract.h"
-#import "DSDAPINetworkService.h"
+#import "DSDAPIPlatformNetworkService.h"
 
 @interface DSDashPlatform ()
 

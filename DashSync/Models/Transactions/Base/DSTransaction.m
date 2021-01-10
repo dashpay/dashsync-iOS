@@ -50,10 +50,7 @@
 @interface DSTransaction ()
 
 @property (nonatomic, strong) DSChain * chain;
-@property (nonatomic, strong) DSInstantSendTransactionLock * instantSendLockAwaitingProcessing;
-@property (nonatomic, assign) BOOL instantSendReceived;
 @property (nonatomic, assign) BOOL confirmed;
-@property (nonatomic, assign) BOOL hasUnverifiedInstantSendLock;
 @property (nonatomic, strong) NSSet<DSBlockchainIdentity*>* sourceBlockchainIdentities;
 @property (nonatomic, strong) NSSet<DSBlockchainIdentity*>* destinationBlockchainIdentities;
 

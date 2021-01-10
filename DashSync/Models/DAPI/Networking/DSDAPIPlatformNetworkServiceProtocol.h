@@ -30,7 +30,7 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
 
 @class DSTransition, DSPlatformDocumentsRequest;
 
-@protocol DSDAPINetworkServiceProtocol <NSObject>
+@protocol DSDAPIPlatformNetworkServiceProtocol <NSObject>
 
 ///--------------
 /// @name Layer 1
@@ -455,7 +455,6 @@ Get a list of users after matching search criteria
 - (id<DSDAPINetworkServiceRequest>)getDashpayProfilesForUserIds:(NSArray<NSData*>*)userId
                            success:(void (^)(NSArray<NSDictionary *> *documents))success
                            failure:(void (^)(NSError *error))failure;
-
 
 @end
 

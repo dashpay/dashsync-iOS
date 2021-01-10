@@ -50,7 +50,7 @@
     
     self.indexLabel.text = [NSString stringWithFormat:@"%d",[self.wallet unusedBlockchainIdentityIndex]];
     
-    self.topupAmountLabel.text = [NSString stringWithFormat:@"%d",10000000]; //0.1 Dash
+    self.topupAmountLabel.text = [NSString stringWithFormat:@"%d",1000000]; //0.01 Dash
 }
 
 -(IBAction)registerOnL2SwitchValueChanged:(UISwitch*)sender {

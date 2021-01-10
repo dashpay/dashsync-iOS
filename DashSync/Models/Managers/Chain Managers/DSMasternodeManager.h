@@ -93,6 +93,8 @@ FOUNDATION_EXPORT NSString* const DSQuorumListDidChangeNotification;
 
 -(void)reloadMasternodeLists;
 
+-(void)checkPingTimesForCurrentMasternodeListInContext:(NSManagedObjectContext*)context withCompletion:(void (^)(NSMutableDictionary <NSData*, NSError*> *))completion;
+
 @end
 
 @protocol DSMasternodeManagerDelegate

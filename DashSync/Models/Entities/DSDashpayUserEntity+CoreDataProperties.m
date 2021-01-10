@@ -28,5 +28,7 @@
 @dynamic updatedAt;
 @dynamic documentIdentifier;
 @dynamic originalEntropyData;
+@dynamic avatarHash;
+@dynamic avatarFingerprint;
 
 @end

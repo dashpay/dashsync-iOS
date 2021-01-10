@@ -17,7 +17,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DSDAPINetworkServiceProtocol.h"
+#import "DSDAPIPlatformNetworkServiceProtocol.h"
 #import <DAPI-GRPC/Platform.pbrpc.h>
 #import <DAPI-GRPC/Platform.pbobjc.h>
 
@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class HTTPLoaderFactory, DSChain;
 
-@interface DSDAPINetworkService : NSObject <DSDAPINetworkServiceProtocol>
+@interface DSDAPIPlatformNetworkService : NSObject <DSDAPIPlatformNetworkServiceProtocol>
 
 @property (readonly, nonatomic) NSString * ipAddress;
 

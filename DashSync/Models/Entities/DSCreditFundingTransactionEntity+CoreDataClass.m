@@ -11,12 +11,26 @@
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSBlockchainIdentity+Protected.h"
 #import "DSAccount.h"
+#import "DSTransactionFactory.h"
 #import "DSWallet.h"
+#import "DSInstantSendLockEntity+CoreDataClass.h"
+#import "DSTransaction+Protected.h"
 
 @implementation DSCreditFundingTransactionEntity
 
 -(Class)transactionClass {
     return [DSCreditFundingTransaction class];
+}
+
+- (DSTransaction *)transactionForChain:(DSChain*)chain
+{
+    DSCreditFundingTransaction * transaction = (DSCreditFundingTransaction *)[super transactionForChain:chain];
+    transaction.type = DSTransactionType_Classic;
+    [self.managedObjectContext performBlockAndWait:^{
+        transaction.instantSendLockAwaitingProcessing = [self.instantSendLock instantSendTransactionLockForChain:chain];
+    }];
+    
+    return transaction;
 }
 
 //- (instancetype)setAttributesFromTransaction:(DSTransaction *)tx

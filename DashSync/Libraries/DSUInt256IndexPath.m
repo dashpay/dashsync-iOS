@@ -112,6 +112,25 @@ NS_ASSUME_NONNULL_BEGIN
     return [[DSUInt256IndexPath alloc] _initWithIndexesNoCopy:indexes length:_length + 1];
 }
 
+- (DSUInt256IndexPath *)indexPathAppendingIndexPath:(DSUInt256IndexPath *)indexPath {
+    const size_t size = sizeof(UInt256);
+    const size_t memorySize = (_length + indexPath.length) * size;
+    UInt256 *indexes = calloc(memorySize, size);
+    if (indexes == NULL) {
+        @throw [NSException exceptionWithName:NSMallocException
+                                       reason:@"DSUInt256IndexPath could not allocate memory"
+                                     userInfo:nil];
+    }
+
+    if (_length > 0) {
+        memcpy(indexes, _indexes, _length * size);
+    }
+    for (int i = 0; i < indexPath.length; i++) {
+        indexes[_length + i] = [indexPath indexAtPosition:i];
+    }
+    return [[DSUInt256IndexPath alloc] _initWithIndexesNoCopy:indexes length:_length + indexPath.length];
+}
+
 - (DSUInt256IndexPath *)indexPathByRemovingLastIndex {
     if (_length > 0) {
         return [[DSUInt256IndexPath alloc] initWithIndexes:_indexes length:_length - 1];
@@ -132,8 +151,12 @@ NS_ASSUME_NONNULL_BEGIN
     return _length;
 }
 
+- (void)getIndexes:(UInt256 *)indexes {
+    [self getIndexes:indexes range:NSMakeRange(0, self.length)];
+}
+
 - (void)getIndexes:(UInt256 *)indexes range:(NSRange)positionRange {
-    if (positionRange.location == NSNotFound || positionRange.location + positionRange.length >= _length) {
+    if (positionRange.location == NSNotFound || positionRange.location + positionRange.length > _length) {
         NSString *reason = [NSString stringWithFormat:@"Range '%@' is out of indexes length '%ld'",
                                                       NSStringFromRange(positionRange), _length];
         @throw [NSException exceptionWithName:NSRangeException reason:reason userInfo:nil];
@@ -174,6 +197,23 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     return NSOrderedSame;
+}
+
++ (UInt256 *)generateRandomIndexesForLength:(NSUInteger)length {
+    size_t size = sizeof(UInt256);
+    size_t memorySize = length * size;
+    UInt256 *indexes = calloc(memorySize, size); // creates array in heap
+
+    for (NSUInteger i = 0; i < length; i++) {
+        indexes[i] = uint256_random;
+    }
+    
+    return indexes;
+}
+
++ (DSUInt256IndexPath *)randomIndexPathOfLength:(NSUInteger)length {
+    UInt256 *indexes = [self generateRandomIndexesForLength:length];
+    return [DSUInt256IndexPath indexPathWithIndexes:indexes length:length];
 }
 
 #pragma mark - NSObject

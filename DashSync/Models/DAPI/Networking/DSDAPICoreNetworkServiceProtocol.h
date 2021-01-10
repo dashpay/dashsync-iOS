@@ -1,6 +1,6 @@
 //  
 //  Created by Sam Westrich
-//  Copyright © 2020 Dash Core Group. All rights reserved.
+//  Copyright © 2021 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -16,20 +16,15 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <DAPI-GRPC/Platform.pbrpc.h>
-#import <DAPI-GRPC/Platform.pbobjc.h>
-#import "DSPlatformDocumentsRequest.h"
+#import "DSDAPINetworkServiceRequest.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSDAPIGRPCResponseHandler : NSObject <GRPCProtoResponseHandler>
+@protocol DSDAPICoreNetworkServiceProtocol <NSObject>
 
-@property (atomic, strong) dispatch_queue_t dispatchQueue;
-@property (nonatomic, strong) NSString * host; //for debuging purposes
-@property (nonatomic, strong) DSPlatformDocumentsRequest * request; //for debuging purposes
+- (id<DSDAPINetworkServiceRequest>)getStatusWithSuccess:(void (^)(NSDictionary * status))success
+                           failure:(void (^)(NSError *error))failure;
 
-@property (nonatomic, copy) void (^successHandler)(id successObject);
-@property (nonatomic, copy) void (^errorHandler)(NSError * error);
 
 @end
 

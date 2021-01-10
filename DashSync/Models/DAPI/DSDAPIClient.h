@@ -26,13 +26,14 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode) {
     DSDAPIClientErrorCodeNoKnownDAPINodes = 2,
 };
 
-@class DSChain, DSBlockchainIdentity, DPDocument, DSTransition, DPSTPacket, DPContract, DSDAPINetworkService, DSPeer;
+@class DSChain, DSBlockchainIdentity, DPDocument, DSTransition, DPSTPacket, DPContract, DSDAPIPlatformNetworkService, DSPeer, DSSimplifiedMasternodeEntry;
 
 @interface DSDAPIClient : NSObject
 
 @property (readonly, nonatomic) DSChain * chain;
-@property (nonatomic, nullable, readonly) DSDAPINetworkService * DAPINetworkService;
-@property (atomic, readonly) dispatch_queue_t dispatchQueue;
+@property (nonatomic, nullable, readonly) DSDAPIPlatformNetworkService * DAPINetworkService;
+@property (atomic, readonly) dispatch_queue_t coreNetworkingDispatchQueue;
+@property (atomic, readonly) dispatch_queue_t platformMetadataDispatchQueue;
 
 - (instancetype)initWithChain:(DSChain *)chain NS_DESIGNATED_INITIALIZER;
 
@@ -52,6 +53,8 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode) {
 - (void)publishTransition:(DSTransition*)stateTransition
                   success:(void (^)(NSDictionary *successDictionary))success
                   failure:(void (^)(NSError *error))failure;
+
+-(void)checkPingTimesForMasternodes:(NSArray<DSSimplifiedMasternodeEntry*>*)masternodes completion:(void (^)(NSMutableDictionary <NSData*, NSError*> *))completion;
 
 
 @end

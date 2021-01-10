@@ -94,7 +94,7 @@ void CKDpriv256(UInt256 *k, UInt256 *c, UInt256 i, BOOL hardened)
 {
     BOOL iIs31Bits = uint256_is_31_bits(i);
     uint32_t smallI;
-    uint32_t length = sizeof(DSECPoint) + (iIs31Bits?sizeof(smallI):((sizeof(i) + sizeof(hardened))));
+    uint32_t length = sizeof(DSECPoint) + (iIs31Bits?sizeof(smallI):(sizeof(i)));
     uint8_t buf[length];
     UInt512 I;
     
@@ -111,8 +111,7 @@ void CKDpriv256(UInt256 *k, UInt256 *c, UInt256 i, BOOL hardened)
         smallI = CFSwapInt32HostToBig(smallI);
         *(uint32_t *)&buf[sizeof(DSECPoint)] = smallI;
     } else {
-        *(BOOL *)&buf[sizeof(DSECPoint)] = hardened;
-        *(UInt256 *)&buf[sizeof(DSECPoint) + sizeof(hardened)] = i;
+        *(UInt256 *)&buf[sizeof(DSECPoint)] = i;
     }
     HMAC(&I, SHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf)); // I = HMAC-SHA512(c, k|P(k) || i)
     DSSecp256k1ModAdd(k, (UInt256 *)&I); // k = IL + k (mod n)
@@ -160,7 +159,7 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
     if (hardened) return; // can't derive private child key from public parent key
     BOOL iIs31Bits = uint256_is_31_bits(i);
     uint32_t smallI;
-    uint32_t length = sizeof(*K) + (iIs31Bits?sizeof(smallI):(sizeof(i) + sizeof(hardened)));
+    uint32_t length = sizeof(*K) + (iIs31Bits?sizeof(smallI):(sizeof(i)));
     uint8_t buf[length];
     UInt512 I;
     
@@ -172,8 +171,7 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
         
         *(uint32_t *)&buf[sizeof(*K)] = smallI;
     } else {
-        *(BOOL *)&buf[sizeof(*K)] = hardened;
-        *(UInt256 *)&buf[sizeof(*K) + sizeof(hardened)] = i;
+        *(UInt256 *)&buf[sizeof(*K)] = i;
     }
     
     HMAC(&I, SHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf)); // I = HMAC-SHA512(c, P(K) || i)
