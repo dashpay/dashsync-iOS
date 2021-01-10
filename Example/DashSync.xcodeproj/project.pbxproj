@@ -6,6 +6,20 @@
 	objectVersion = 46;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		FB29C3B125AA500D001F4F43 /* OCLint */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = FB29C3B425AA500E001F4F43 /* Build configuration list for PBXAggregateTarget "OCLint" */;
+			buildPhases = (
+				FB29C3B825AA501F001F4F43 /* ShellScript */,
+			);
+			dependencies = (
+			);
+			name = OCLint;
+			productName = OCLint;
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXBuildFile section */
 		2A1AC63C20F9012A00B3B79F /* FormSectionModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1AC63B20F9012A00B3B79F /* FormSectionModel.m */; };
 		2A1B55BE2226B3C5008FED65 /* Contacts.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A1B55BD2226B3C4008FED65 /* Contacts.storyboard */; };
@@ -2150,6 +2164,11 @@
 					6003F5AD195388D20070C39A = {
 						TestTargetID = 6003F589195388D20070C39A;
 					};
+					FB29C3B125AA500D001F4F43 = {
+						CreatedOnToolsVersion = 12.0.1;
+						DevelopmentTeam = 44RJ69WHFF;
+						ProvisioningStyle = Automatic;
+					};
 				};
 			};
 			buildConfigurationList = 6003F585195388D10070C39A /* Build configuration list for PBXProject "DashSync" */;
@@ -2169,6 +2188,7 @@
 			targets = (
 				6003F589195388D20070C39A /* DashSync_Example */,
 				6003F5AD195388D20070C39A /* DashSync_Tests */,
+				FB29C3B125AA500D001F4F43 /* OCLint */,
 			);
 		};
 /* End PBXProject section */
@@ -2572,6 +2592,23 @@
 			shellPath = /bin/sh;
 			shellScript = "#!/bin/bash\n\necho \"Reformatting code with clang-format\"\n\nfunction formatObjCFiles() {\n    find \"$1\" -name '*.h' -print0 | xargs -0 clang-format -i -style=file\n    find \"$1\" -name '*.m' -print0 | xargs -0 clang-format -i -style=file\n    find \"$1\" -name '*.mm' -print0 | xargs -0 clang-format -i -style=file\n}\n\nif which clang-format >/dev/null; then    \n    formatObjCFiles ../DashSync\n    formatObjCFiles DashSync\nelse\n    echo \"warning: clang-format not installed, install it by running `brew install clang-format`\"\nfi\n";
 		};
+		FB29C3B825AA501F001F4F43 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "source ~/.bash_profile\n\nunset LLVM_TARGET_TRIPLE_SUFFIX\n\nxcodebuild clean\nxcodebuild COMPILER_INDEX_STORE_ENABLE=NO | xcpretty -r json-compilation-database --output compile_commands.json\n\n# Rules\nLINT_LONG_LINE=300\nLINT_LONG_VARIABLE_NAME=64\nLINT_LONG_METHOD=150\n\nLINT_RULES=\"-rc LONG_LINE=${LINT_LONG_LINE} \\\n    -rc LONG_VARIABLE_NAME=${LINT_LONG_VARIABLE_NAME} \\\n    -rc LONG_METHOD=${LINT_LONG_METHOD}\"\n\n# Threshold.\nLINT_PRIORITY_1_THRESHOLD=0\nLINT_PRIORITY_2_THRESHOLD=20\nLINT_PRIORITY_3_THRESHOLD=30\nLINT_THRESHOLD = \"-max-priority-1=${LINT_PRIORITY_1_THRESHOLD} \\\n    -max-priority-2=${LINT_PRIORITY_2_THRESHOLD} \\\n    -max-priority-3=${LINT_PRIORITY_3_THRESHOLD}\"\n\n# Excludes\n# you can use grep-like regular expressions syntax,\nLINT_EXCLUDES=\"Pods|lib\"\n\noclint-json-compilation-database \\\n    -exclude ${LINT_EXCLUDES} \\\n    -- \\\n    -report-type xcode \\\n    ${LINT_RULES} \\\n    ${LINT_THRESHOLD} \\\n";
+		};
 		FB5A0FA7219506140079CF42 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -2972,6 +3009,24 @@
 			};
 			name = Release;
 		};
+		FB29C3B225AA500E001F4F43 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		FB29C3B325AA500E001F4F43 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -2998,6 +3053,15 @@
 			buildConfigurations = (
 				6003F5C3195388D20070C39A /* Debug */,
 				6003F5C4195388D20070C39A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FB29C3B425AA500E001F4F43 /* Build configuration list for PBXAggregateTarget "OCLint" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FB29C3B225AA500E001F4F43 /* Debug */,
+				FB29C3B325AA500E001F4F43 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
