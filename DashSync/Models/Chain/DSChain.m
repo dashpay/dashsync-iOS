@@ -529,6 +529,15 @@ static dispatch_once_t devnetToken = 0;
     return _networkingQueue;
 }
 
+- (dispatch_queue_t)dapiMetadataQueue {
+    if (!_dapiMetadataQueue) {
+        NSAssert(!uint256_is_zero(self.genesisHash), @"genesisHash must be set");
+        _dapiMetadataQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.dapimeta.%@", self.uniqueID] UTF8String], DISPATCH_QUEUE_CONCURRENT);
+    }
+    return _dapiMetadataQueue;
+}
+
+
 // MARK: - Check Type
 
 - (BOOL)isMainnet {
