@@ -86,9 +86,10 @@
     
     // Edit the sort key as appropriate.
     NSSortDescriptor *claimSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"localMasternode" ascending:NO];
+    NSSortDescriptor *validDescriptor = [[NSSortDescriptor alloc] initWithKey:@"isValid" ascending:NO];
     NSSortDescriptor *addressSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"address" ascending:YES];
     NSSortDescriptor *portSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"port" ascending:YES];
-    NSArray *sortDescriptors = @[claimSortDescriptor,addressSortDescriptor,portSortDescriptor];
+    NSArray *sortDescriptors = @[claimSortDescriptor,validDescriptor,addressSortDescriptor,portSortDescriptor];
     
     [fetchRequest setSortDescriptors:sortDescriptors];
     

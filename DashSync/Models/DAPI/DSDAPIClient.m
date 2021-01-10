@@ -34,7 +34,8 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 @property (nonatomic, strong) NSMutableSet<NSString *>* availablePeers;
 @property (nonatomic, strong) NSMutableSet<NSString *>* usedPeers;
 @property (nonatomic, strong) NSMutableArray<DSDAPIPlatformNetworkService *>* activeServices;
-@property (atomic, strong) dispatch_queue_t dispatchQueue;
+@property (atomic, strong) dispatch_queue_t coreNetworkingDispatchQueue;
+@property (atomic, strong) dispatch_queue_t platformMetadataDispatchQueue;
 
 @end
 
@@ -46,8 +47,8 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
         _chain = chain;
         self.availablePeers = [NSMutableSet set];
         self.activeServices = [NSMutableArray array];
-        self.dispatchQueue = self.chain.networkingQueue;
-
+        self.coreNetworkingDispatchQueue = self.chain.networkingQueue;
+        self.platformMetadataDispatchQueue = self.chain.dapiMetadataQueue;
     }
     return self;
 }
@@ -171,7 +172,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 
 //check ping times of all DAPI nodes
 -(void)checkPingTimesForMasternodes:(NSArray<DSSimplifiedMasternodeEntry*>*)masternodes completion:(void (^)(NSMutableDictionary <NSData*, NSError*> *))completion {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+    dispatch_async(self.platformMetadataDispatchQueue, ^{
         HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
         __block dispatch_group_t dispatch_group = dispatch_group_create();
         __block NSMutableDictionary <NSData*, NSError*> * errorDictionary = [NSMutableDictionary dictionary];
@@ -182,7 +183,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
             if (!masternode.isValid) continue;
             dispatch_semaphore_wait(dispatchSemaphore, DISPATCH_TIME_FOREVER);
             dispatch_group_enter(dispatch_group);
-            DSDAPICoreNetworkService * coreNetworkService = [[DSDAPICoreNetworkService alloc] initWithDAPINodeIPAddress:masternode.ipAddressString httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.dispatchQueue onChain:self.chain];
+            DSDAPICoreNetworkService * coreNetworkService = [[DSDAPICoreNetworkService alloc] initWithDAPINodeIPAddress:masternode.ipAddressString httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.coreNetworkingDispatchQueue onChain:self.chain];
             __block NSDate * time  = [NSDate date];
             [coreNetworkService getStatusWithSuccess:^(NSDictionary * _Nonnull status) {
                 [masternode setPlatformPing:-[time timeIntervalSinceNow]*1000 at:[NSDate date]];
@@ -214,7 +215,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     }
     if (!foundNetworkService) {
         HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
-        DSDAPIPlatformNetworkService * DAPINetworkService = [[DSDAPIPlatformNetworkService alloc] initWithDAPINodeIPAddress:host httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.dispatchQueue onChain:self.chain];
+        DSDAPIPlatformNetworkService * DAPINetworkService = [[DSDAPIPlatformNetworkService alloc] initWithDAPINodeIPAddress:host httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.coreNetworkingDispatchQueue onChain:self.chain];
         [self.activeServices addObject:DAPINetworkService];
     }
 }
@@ -238,7 +239,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
         } else if ([self.availablePeers count]) {
             for (NSString * peerHost in self.availablePeers) {
                 HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
-                DSDAPIPlatformNetworkService * DAPINetworkService = [[DSDAPIPlatformNetworkService alloc] initWithDAPINodeIPAddress:peerHost httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.dispatchQueue onChain:self.chain];
+                DSDAPIPlatformNetworkService * DAPINetworkService = [[DSDAPIPlatformNetworkService alloc] initWithDAPINodeIPAddress:peerHost httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.coreNetworkingDispatchQueue onChain:self.chain];
                 [self.activeServices addObject:DAPINetworkService];
                 return DAPINetworkService;
             }

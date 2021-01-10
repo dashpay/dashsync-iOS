@@ -31,9 +31,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void)setUp;
 
-// MARK: - Network
+// MARK: - Network Queues
 
 @property (nonatomic, strong) dispatch_queue_t networkingQueue;
+@property (nonatomic, strong) dispatch_queue_t dapiMetadataQueue;
+
 
 // MARK: - Blocks
 
