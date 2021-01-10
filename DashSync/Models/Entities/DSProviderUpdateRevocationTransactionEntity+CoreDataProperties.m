@@ -11,7 +11,7 @@
 @implementation DSProviderUpdateRevocationTransactionEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSProviderUpdateRevocationTransactionEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSProviderUpdateRevocationTransactionEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSProviderUpdateRevocationTransactionEntity"];
 }
 
 @dynamic payloadSignature;

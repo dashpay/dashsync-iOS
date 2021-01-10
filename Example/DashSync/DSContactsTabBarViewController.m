@@ -9,8 +9,8 @@
 #import "DSContactsTabBarViewController.h"
 
 #import "DSContactsViewController.h"
-#import "DSOutgoingContactsTableViewController.h"
 #import "DSIncomingContactsTableViewController.h"
+#import "DSOutgoingContactsTableViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -23,14 +23,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     self.delegate = self;
-    
-    for (UIViewController * viewController in self.viewControllers) {
+
+    for (UIViewController *viewController in self.viewControllers) {
         if ([viewController respondsToSelector:@selector(setBlockchainIdentity:)]) {
             [(id)viewController setBlockchainIdentity:self.blockchainIdentity];
         }
-        
+
         if ([viewController respondsToSelector:@selector(setChainManager:)]) {
             [(id)viewController setChainManager:self.chainManager];
         }
@@ -46,31 +46,34 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (IBAction)addContactAction:(id)sender {
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Enter username to send contact request" message:nil preferredStyle:UIAlertControllerStyleAlert];
-    [alert addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
-        
+    [alert addTextFieldWithConfigurationHandler:^(UITextField *_Nonnull textField){
+
     }];
-    
+
     [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
-    [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        UITextField *textField = alert.textFields.firstObject;
-        NSString *username = textField.text;
-        
-        __weak typeof(self) weakSelf = self;
-        NSParameterAssert(self.blockchainIdentity);
-        DSAccount * account = [self.blockchainIdentity.wallet accountWithNumber:0];
-        NSParameterAssert(account);
-        
-        DSPotentialContact * potentialContact = [[DSPotentialContact alloc] initWithUsername:username];
-        
-        [self.blockchainIdentity sendNewFriendRequestToPotentialContact:potentialContact completion:^(BOOL success, NSArray<NSError *> * _Nonnull errors) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
-            
-            [strongSelf showAlertTitle:errors.firstObject.localizedDescription result:success];
-        }];
-    }]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"OK"
+                                              style:UIAlertActionStyleDefault
+                                            handler:^(UIAlertAction *_Nonnull action) {
+                                                UITextField *textField = alert.textFields.firstObject;
+                                                NSString *username = textField.text;
+
+                                                __weak typeof(self) weakSelf = self;
+                                                NSParameterAssert(self.blockchainIdentity);
+                                                DSAccount *account = [self.blockchainIdentity.wallet accountWithNumber:0];
+                                                NSParameterAssert(account);
+
+                                                DSPotentialContact *potentialContact = [[DSPotentialContact alloc] initWithUsername:username];
+
+                                                [self.blockchainIdentity sendNewFriendRequestToPotentialContact:potentialContact
+                                                                                                     completion:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
+                                                                                                         __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                                                                         if (!strongSelf) {
+                                                                                                             return;
+                                                                                                         }
+
+                                                                                                         [strongSelf showAlertTitle:errors.firstObject.localizedDescription result:success];
+                                                                                                     }];
+                                            }]];
     [self presentViewController:alert animated:YES completion:nil];
 }
 

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -17,8 +17,8 @@
 
 #import "DSCoreDataMigrationStep.h"
 
-#import "NSManagedObjectModel+DS.h"
 #import "DSTransaction.h"
+#import "NSManagedObjectModel+DS.h"
 
 @implementation DSCoreDataMigrationStep
 
@@ -40,7 +40,7 @@
     if (custom != nil) {
         return custom;
     }
-    
+
     return [self inferredMappingModelFromSourceModel:sourceModel toDestinationModel:destinationModel];
 }
 

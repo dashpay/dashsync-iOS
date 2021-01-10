@@ -47,13 +47,12 @@ NS_ASSUME_NONNULL_BEGIN
     [authManager
         performPinVerificationAgainstCurrentPin:inputPin
                                      completion:^(BOOL allowedNextVerificationRound,
-                                                  BOOL authenticated,
-                                                  BOOL cancelled,
-                                                  BOOL shouldLockout) {
+                                         BOOL authenticated,
+                                         BOOL cancelled,
+                                         BOOL shouldLockout) {
                                          if (allowedNextVerificationRound) {
                                              [self pinVerificationDidFail];
-                                         }
-                                         else {
+                                         } else {
                                              [self pinVerificationDidFinishWithAuthenticated:authenticated
                                                                                    cancelled:cancelled
                                                                                shouldLockOut:shouldLockout];

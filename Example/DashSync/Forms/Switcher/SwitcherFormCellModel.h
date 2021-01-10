@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface SwitcherFormCellModel : BaseFormCellModel
 
 @property (assign, nonatomic, getter=isOn) BOOL on;
-@property (nullable, copy, nonatomic) void(^didChangeValueBlock)(SwitcherFormCellModel *cellModel);
+@property (nullable, copy, nonatomic) void (^didChangeValueBlock)(SwitcherFormCellModel *cellModel);
 
 - (instancetype)initWithTitle:(nullable NSString *)title isOn:(BOOL)on NS_DESIGNATED_INITIALIZER;
 

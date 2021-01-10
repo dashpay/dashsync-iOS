@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -16,15 +16,15 @@
 //
 
 #import "DSDAPIGRPCResponseHandler.h"
-#import <DAPI-GRPC/Platform.pbrpc.h>
-#import <DAPI-GRPC/Platform.pbobjc.h>
-#import "NSData+DSCborDecoding.h"
 #import "DPContract.h"
+#import "NSData+DSCborDecoding.h"
+#import <DAPI-GRPC/Platform.pbobjc.h>
+#import <DAPI-GRPC/Platform.pbrpc.h>
 
-@interface DSDAPIGRPCResponseHandler()
+@interface DSDAPIGRPCResponseHandler ()
 
-@property(nonatomic,strong) id responseObject;
-@property(nonatomic,strong) NSError * decodingError;
+@property (nonatomic, strong) id responseObject;
+@property (nonatomic, strong) NSError *decodingError;
 
 @end
 
@@ -36,17 +36,17 @@
 
 - (void)didReceiveProtoMessage:(nullable GPBMessage *)message {
     if ([message isMemberOfClass:[GetIdentityResponse class]]) {
-        GetIdentityResponse * identityResponse = (GetIdentityResponse*)message;
-        NSError * error = nil;
+        GetIdentityResponse *identityResponse = (GetIdentityResponse *)message;
+        NSError *error = nil;
         self.responseObject = [[identityResponse identity] ds_decodeCborError:&error];
         if (error) {
             self.decodingError = error;
         }
     } else if ([message isMemberOfClass:[GetDocumentsResponse class]]) {
-        GetDocumentsResponse * documentsResponse = (GetDocumentsResponse*)message;
-        NSError * error = nil;
-        NSMutableArray * mArray = [NSMutableArray array];
-        for (NSData * cborData in [documentsResponse documentsArray]) {
+        GetDocumentsResponse *documentsResponse = (GetDocumentsResponse *)message;
+        NSError *error = nil;
+        NSMutableArray *mArray = [NSMutableArray array];
+        for (NSData *cborData in [documentsResponse documentsArray]) {
             [mArray addObject:[cborData ds_decodeCborError:&error]];
             if (error) break;
         }
@@ -55,8 +55,8 @@
             self.decodingError = error;
         }
     } else if ([message isMemberOfClass:[GetDataContractResponse class]]) {
-        GetDataContractResponse * contractResponse = (GetDataContractResponse*)message;
-        NSError * error = nil;
+        GetDataContractResponse *contractResponse = (GetDataContractResponse *)message;
+        NSError *error = nil;
         self.responseObject = [[contractResponse dataContract] ds_decodeCborError:&error];
         if (error) {
             self.decodingError = error;
@@ -74,18 +74,18 @@
         if (self.errorHandler) {
             self.errorHandler(error);
         }
-        DSLog(@"error in didCloseWithTrailingMetadata from IP %@ %@",self.host?self.host:@"Unknown",error);
+        DSLog(@"error in didCloseWithTrailingMetadata from IP %@ %@", self.host ? self.host : @"Unknown", error);
         if (self.request) {
-            DSLog(@"request contract ID was %@",self.request.contract.base58ContractId);
+            DSLog(@"request contract ID was %@", self.request.contract.base58ContractId);
         }
-        
+
     } else {
         self.successHandler(self.responseObject);
     }
     DSLog(@"didCloseWithTrailingMetadata");
 }
 
--(void)didWriteMessage {
+- (void)didWriteMessage {
     DSLog(@"didWriteMessage");
 }
 

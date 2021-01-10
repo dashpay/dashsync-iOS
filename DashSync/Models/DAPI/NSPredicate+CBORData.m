@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -15,18 +15,18 @@
 //  limitations under the License.
 //
 
-#import "NSPredicate+CBORData.h"
-#import "NSObject+DSCborEncoding.h"
 #import "NSData+Bitcoin.h"
+#import "NSObject+DSCborEncoding.h"
+#import "NSPredicate+CBORData.h"
 
 
 @implementation NSPredicate (CBORData)
 
--(NSArray*)whereClauseArray {
+- (NSArray *)whereClauseArray {
     return [self whereClauseArrayWithOptions:NSPredicateCBORDataOptions_None];
 }
 
--(NSArray*)whereClauseArrayWithOptions:(NSPredicateCBORDataOptions)options {
+- (NSArray *)whereClauseArrayWithOptions:(NSPredicateCBORDataOptions)options {
     if ([self isMemberOfClass:[NSCompoundPredicate class]]) {
         return [self whereClauseNestedArrayWithOptions:options];
     } else {
@@ -34,55 +34,55 @@
     }
 }
 
--(NSArray*)whereClauseNestedArrayWithOptions:(NSPredicateCBORDataOptions)options {
+- (NSArray *)whereClauseNestedArrayWithOptions:(NSPredicateCBORDataOptions)options {
     if ([self isMemberOfClass:[NSCompoundPredicate class]]) {
-        NSMutableArray * mArray = [NSMutableArray array];
-        NSCompoundPredicate * compoundPredicate = (NSCompoundPredicate *)self;
-        for (NSPredicate * predicate in compoundPredicate.subpredicates) {
+        NSMutableArray *mArray = [NSMutableArray array];
+        NSCompoundPredicate *compoundPredicate = (NSCompoundPredicate *)self;
+        for (NSPredicate *predicate in compoundPredicate.subpredicates) {
             [mArray addObject:[predicate whereClauseNestedArrayWithOptions:options]];
         }
         return mArray;
     } else {
-        NSMutableArray * mArray = [NSMutableArray array];
-        NSComparisonPredicate * comparisonPredicate = (NSComparisonPredicate*)self;
-        NSExpression * leftExpression = comparisonPredicate.leftExpression;
-        NSExpression * rightExpression = comparisonPredicate.rightExpression;
-        NSString * operator;
+        NSMutableArray *mArray = [NSMutableArray array];
+        NSComparisonPredicate *comparisonPredicate = (NSComparisonPredicate *)self;
+        NSExpression *leftExpression = comparisonPredicate.leftExpression;
+        NSExpression *rightExpression = comparisonPredicate.rightExpression;
+        NSString *operator;
         switch (comparisonPredicate.predicateOperatorType) {
             case NSEqualToPredicateOperatorType:
-                operator = @"==";
+                operator= @"==";
                 break;
             case NSLessThanPredicateOperatorType:
-                operator = @"<";
+                operator= @"<";
                 break;
             case NSLessThanOrEqualToPredicateOperatorType:
-                operator = @"<=";
+                operator= @"<=";
                 break;
             case NSGreaterThanPredicateOperatorType:
-                operator = @"==";
+                operator= @"==";
                 break;
             case NSGreaterThanOrEqualToPredicateOperatorType:
-                operator = @">=";
+                operator= @">=";
                 break;
             case NSNotEqualToPredicateOperatorType:
-                operator = @"!=";
+                operator= @"!=";
                 NSAssert(FALSE, @"Not supported yet");
                 break;
             case NSBeginsWithPredicateOperatorType:
-                operator = @"startsWith";
+                operator= @"startsWith";
                 break;
             case NSInPredicateOperatorType:
-                    operator = @"in";
-                    break;
+                operator= @"in";
+                break;
             default:
-                operator = @"!";
+                operator= @"!";
                 NSAssert(FALSE, @"Not supported yet");
                 break;
         }
         switch (leftExpression.expressionType) {
             case NSConstantValueExpressionType:
                 if (options & NSPredicateCBORDataOptions_DataToBase64 && [rightExpression.constantValue isKindOfClass:[NSData class]]) {
-                    [mArray addObject:[((NSData*)leftExpression.constantValue) base64String]];
+                    [mArray addObject:[((NSData *)leftExpression.constantValue) base64String]];
                 } else {
                     [mArray addObject:leftExpression.constantValue];
                 }
@@ -93,7 +93,7 @@
             case NSVariableExpressionType:
                 [mArray addObject:leftExpression.variable];
                 break;
-                
+
             default:
                 NSAssert(FALSE, @"Not supported yet");
                 break;
@@ -102,19 +102,19 @@
         switch (rightExpression.expressionType) {
             case NSConstantValueExpressionType:
                 if (options & NSPredicateCBORDataOptions_DataToBase64 && [rightExpression.constantValue isKindOfClass:[NSData class]]) {
-                    [mArray addObject:[((NSData*)rightExpression.constantValue) base64String]];
+                    [mArray addObject:[((NSData *)rightExpression.constantValue) base64String]];
                 } else if (options & NSPredicateCBORDataOptions_DataToBase64 && [rightExpression.constantValue isKindOfClass:[NSArray class]]) {
                     //We might have an array of data
-                    NSMutableArray * base64Array = [NSMutableArray array];
-                    for (NSObject * member in rightExpression.constantValue) {
+                    NSMutableArray *base64Array = [NSMutableArray array];
+                    for (NSObject *member in rightExpression.constantValue) {
                         if ([member isKindOfClass:[NSData class]]) {
-                            [base64Array addObject:[((NSData*)member) base64String]];
+                            [base64Array addObject:[((NSData *)member) base64String]];
                         } else {
                             [base64Array addObject:member];
                         }
                     }
                     [mArray addObject:base64Array];
-                } else  {
+                } else {
                     [mArray addObject:rightExpression.constantValue];
                 }
                 break;
@@ -124,7 +124,7 @@
             case NSVariableExpressionType:
                 [mArray addObject:rightExpression.variable];
                 break;
-                
+
             default:
                 NSAssert(FALSE, @"Not supported yet");
                 break;
@@ -133,9 +133,9 @@
     }
 }
 
--(NSData*)dashPlatormWhereData {
-    NSArray * array = [self whereClauseArrayWithOptions:NSPredicateCBORDataOptions_DataToBase64];
-    NSData * json = [NSJSONSerialization dataWithJSONObject:array options:0 error:nil];
+- (NSData *)dashPlatormWhereData {
+    NSArray *array = [self whereClauseArrayWithOptions:NSPredicateCBORDataOptions_DataToBase64];
+    NSData *json = [NSJSONSerialization dataWithJSONObject:array options:0 error:nil];
     DSLogPrivate(@"json where %@", [[NSString alloc] initWithData:json encoding:NSUTF8StringEncoding]);
     DSLogPrivate(@"cbor hex %@", [[self whereClauseArray] ds_cborEncodedObject].hexString);
     return [[self whereClauseArray] ds_cborEncodedObject];

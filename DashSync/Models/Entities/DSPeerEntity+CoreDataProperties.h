@@ -1,6 +1,6 @@
 //
 //  DSPeerEntity+CoreDataProperties.h
-//  
+//
 //
 //  Created by Sam Westrich on 5/20/18.
 //

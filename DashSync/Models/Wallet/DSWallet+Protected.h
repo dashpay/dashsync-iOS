@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -21,28 +21,28 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSWallet ()
 
-@property (nonatomic, readonly) NSString * mnemonicUniqueID;
+@property (nonatomic, readonly) NSString *mnemonicUniqueID;
 
-@property (nonatomic, readonly) NSString * creationTimeUniqueID;
+@property (nonatomic, readonly) NSString *creationTimeUniqueID;
 
 @property (nonatomic, strong) SeedRequestBlock seedRequestBlock;
 
 @property (nonatomic, readonly) BOOL hasAnExtendedPublicKeyMissing;
 
-@property (nonatomic, strong) NSData * transientDerivedKeyData;
+@property (nonatomic, strong) NSData *transientDerivedKeyData;
 
 //this is used from the account to help determine best start sync position for future resync
 - (void)setGuessedWalletCreationTime:(NSTimeInterval)guessedWalletCreationTime;
 
 //get the MNEMONIC KEY prefixed unique ID
-+ (NSString* _Nonnull)mnemonicUniqueIDForUniqueID:(NSString*)uniqueID;
++ (NSString *_Nonnull)mnemonicUniqueIDForUniqueID:(NSString *)uniqueID;
 
 //get the CREATION TIME KEY prefixed unique ID
-+ (NSString* _Nonnull)creationTimeUniqueIDForUniqueID:(NSString*)uniqueID;
++ (NSString *_Nonnull)creationTimeUniqueIDForUniqueID:(NSString *)uniqueID;
 
-+ (NSOrderedSet* _Nullable)blockZonesFromChainSynchronizationFingerprint:(NSData*)chainSynchronizationFingerprint rVersion:(uint8_t * _Nullable)rVersion rChainHeight:(uint32_t* _Nullable)rChainHeight;
++ (NSOrderedSet *_Nullable)blockZonesFromChainSynchronizationFingerprint:(NSData *)chainSynchronizationFingerprint rVersion:(uint8_t *_Nullable)rVersion rChainHeight:(uint32_t *_Nullable)rChainHeight;
 
-+ (NSData*)chainSynchronizationFingerprintForBlockZones:(NSOrderedSet *)blockHeightZones forChainHeight:(uint32_t)chainHeight;
++ (NSData *)chainSynchronizationFingerprintForBlockZones:(NSOrderedSet *)blockHeightZones forChainHeight:(uint32_t)chainHeight;
 
 - (void)loadBlockchainIdentities;
 

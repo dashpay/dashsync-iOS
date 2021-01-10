@@ -6,8 +6,8 @@
 //
 //
 
-#import "DSQuorumEntryEntity+CoreDataClass.h"
 #import "DSQuorumEntry.h"
+#import "DSQuorumEntryEntity+CoreDataClass.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -1,6 +1,6 @@
 //
 //  DSTxInputEntity+CoreDataProperties.h
-//  
+//
 //
 //  Created by Sam Westrich on 5/20/18.
 //
@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) int32_t sequence;
 @property (nonatomic, retain) DSTransactionEntity *transaction;
 @property (nonatomic, retain) DSAddressEntity *localAddress;
-@property (nullable, nonatomic, retain) DSTxOutputEntity * prevOutput;
+@property (nullable, nonatomic, retain) DSTxOutputEntity *prevOutput;
 
 @end
 

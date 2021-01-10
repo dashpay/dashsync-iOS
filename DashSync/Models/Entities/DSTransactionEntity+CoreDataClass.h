@@ -1,6 +1,6 @@
 //
 //  DSTransactionEntity+CoreDataClass.h
-//  
+//
 //
 //  Created by Sam Westrich on 5/20/18.
 //
@@ -22,10 +22,10 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
-@class DSChainEntity, DSShapeshiftEntity, DSTxInputEntity, DSTxOutputEntity,DSTransaction,DSChain,DSTransactionHashEntity,DSTransactionLockVoteEntity,DSInstantSendLockEntity;
+@class DSChainEntity, DSShapeshiftEntity, DSTxInputEntity, DSTxOutputEntity, DSTransaction, DSChain, DSTransactionHashEntity, DSTransactionLockVoteEntity, DSInstantSendLockEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -33,8 +33,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)setAttributesFromTransaction:(DSTransaction *)tx;
 - (DSTransaction *)transaction;
-- (DSTransaction *)transactionForChain:(DSChain*)chain;
-+ (NSArray<DSTransactionEntity*> * _Nonnull)transactionsForChain:(DSChainEntity*)chain;
+- (DSTransaction *)transactionForChain:(DSChain *)chain;
++ (NSArray<DSTransactionEntity *> *_Nonnull)transactionsForChain:(DSChainEntity *)chain;
 
 @property (nonatomic, readonly) Class transactionClass;
 

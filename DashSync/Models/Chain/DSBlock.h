@@ -25,7 +25,7 @@
 
 #import <Foundation/Foundation.h>
 
-#define BLOCK_UNKNOWN_HEIGHT      INT32_MAX
+#define BLOCK_UNKNOWN_HEIGHT INT32_MAX
 #define DGW_PAST_BLOCKS_MIN 24
 #define DGW_PAST_BLOCKS_MAX 24
 
@@ -38,10 +38,10 @@ typedef union _UInt256 UInt256;
 @interface DSBlock : NSObject <NSCopying>
 
 @property (nonatomic, readonly) UInt256 blockHash;
-@property (nonatomic, readonly) NSValue * blockHashValue;
+@property (nonatomic, readonly) NSValue *blockHashValue;
 @property (nonatomic, readonly) uint32_t version;
 @property (nonatomic, readonly) UInt256 prevBlock;
-@property (nonatomic, readonly) NSValue * prevBlockValue;
+@property (nonatomic, readonly) NSValue *prevBlockValue;
 @property (nonatomic, readonly) UInt256 merkleRoot;
 @property (nonatomic, readonly) uint32_t timestamp; // time interval since unix epoch
 @property (nonatomic, readonly) uint32_t target;
@@ -58,16 +58,16 @@ typedef union _UInt256 UInt256;
 // true if merkle tree and timestamp are valid, and proof-of-work matches the stated difficulty target
 // NOTE: This only checks if the block difficulty matches the difficulty target in the header. It does not check if the
 // target is correct for the block's height in the chain. Use verifyDifficultyFromPreviousBlock: for that.
-@property (nonatomic, readonly, getter = isValid) BOOL valid;
-@property (nonatomic, readonly, getter = isMerkleTreeValid) BOOL merkleTreeValid;
+@property (nonatomic, readonly, getter=isValid) BOOL valid;
+@property (nonatomic, readonly, getter=isMerkleTreeValid) BOOL merkleTreeValid;
 
-@property (nonatomic, readonly, getter = toData) NSData *data;
+@property (nonatomic, readonly, getter=toData) NSData *data;
 
-- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash prevBlock:(UInt256)prevBlock timestamp:(uint32_t)timestamp height:(uint32_t)height chainWork:(UInt256)chainWork onChain:(DSChain*)chain;
+- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash prevBlock:(UInt256)prevBlock timestamp:(uint32_t)timestamp height:(uint32_t)height chainWork:(UInt256)chainWork onChain:(DSChain *)chain;
 
-- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash prevBlock:(UInt256)prevBlock timestamp:(uint32_t)timestamp merkleRoot:(UInt256)merkleRoot target:(uint32_t)target chainWork:(UInt256)aggregateWork height:(uint32_t)height onChain:(DSChain*)chain;
+- (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash prevBlock:(UInt256)prevBlock timestamp:(uint32_t)timestamp merkleRoot:(UInt256)merkleRoot target:(uint32_t)target chainWork:(UInt256)aggregateWork height:(uint32_t)height onChain:(DSChain *)chain;
 
-- (instancetype)initWithCheckpoint:(DSCheckpoint*)checkpoint onChain:(DSChain*)chain;
+- (instancetype)initWithCheckpoint:(DSCheckpoint *)checkpoint onChain:(DSChain *)chain;
 
 // true if the given tx hash is known to be included in the block
 - (BOOL)containsTxHash:(UInt256)txHash;
@@ -76,13 +76,13 @@ typedef union _UInt256 UInt256;
 - (BOOL)canCalculateDifficultyWithPreviousBlocks:(NSDictionary *)previousBlocks;
 
 // Verifies the block difficulty target is correct for the block's position in the chain.
-- (BOOL)verifyDifficultyWithPreviousBlocks:(NSDictionary *)previousBlocks rDifficulty:(uint32_t*)difficulty;
+- (BOOL)verifyDifficultyWithPreviousBlocks:(NSDictionary *)previousBlocks rDifficulty:(uint32_t *)difficulty;
 
 - (int32_t)darkGravityWaveTargetWithPreviousBlocks:(NSDictionary *)previousBlocks;
 
-- (void)setChainLockedWithChainLock:(DSChainLock*)chainLock;
+- (void)setChainLockedWithChainLock:(DSChainLock *)chainLock;
 
-- (void)setChainLockedWithEquivalentBlock:(DSBlock*)block;
+- (void)setChainLockedWithEquivalentBlock:(DSBlock *)block;
 
 - (BOOL)saveAssociatedChainLock;
 

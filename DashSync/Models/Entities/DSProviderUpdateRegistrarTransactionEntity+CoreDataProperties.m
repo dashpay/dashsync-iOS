@@ -11,7 +11,7 @@
 @implementation DSProviderUpdateRegistrarTransactionEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSProviderUpdateRegistrarTransactionEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSProviderUpdateRegistrarTransactionEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSProviderUpdateRegistrarTransactionEntity"];
 }
 
 @dynamic operatorKey;

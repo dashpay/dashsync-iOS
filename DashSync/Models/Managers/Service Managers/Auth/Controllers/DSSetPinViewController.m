@@ -58,8 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (shouldVerifyOldPin) {
         controller.firstTitleText = [self.class defaultTitle];
         controller.firstMessageText = DSLocalizedString(@"Enter old PIN", nil);
-    }
-    else {
+    } else {
         [controller setSecondPageVisible];
         controller.firstTitleText = DSLocalizedString(@"Confirm PIN", nil);
     }
@@ -125,8 +124,7 @@ NS_ASSUME_NONNULL_BEGIN
     didFinishInputFirstPageWithPin:(NSString *)inputPin {
     if (self.shouldVerifyOldPin) {
         [self performPinVerificationAgainstCurrentPin:inputPin];
-    }
-    else {
+    } else {
         NSString *firstPin = controller.secondPin;
         NSString *secondPin = inputPin;
         if ([firstPin isEqualToString:secondPin]) {
@@ -134,8 +132,7 @@ NS_ASSUME_NONNULL_BEGIN
             [authManager setupNewPin:secondPin];
 
             [self doneSuccess:YES];
-        }
-        else {
+        } else {
             [controller secondClear];
 
             [controller firstClearAndShakePin:^{
@@ -188,8 +185,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                                    [self.view layoutIfNeeded];
                                                                }];
                                           }];
-    }
-    else {
+    } else {
         void (^completion)(BOOL success) = [self.completion copy];
         self.completion = nil;
         NSParameterAssert(completion);

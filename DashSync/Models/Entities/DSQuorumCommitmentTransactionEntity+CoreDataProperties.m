@@ -11,7 +11,7 @@
 @implementation DSQuorumCommitmentTransactionEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSQuorumCommitmentTransactionEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSQuorumCommitmentTransactionEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSQuorumCommitmentTransactionEntity"];
 }
 
 @dynamic quorumCommitmentHeight;

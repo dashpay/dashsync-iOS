@@ -58,26 +58,23 @@
         [[DSReachabilityManager sharedManager] addSingleCallReachabilityStatusChangeBlock:^(DSReachabilityStatus status) {
             if (status <= DSReachabilityStatusNotReachable) {
                 NSError *error = [NSError ds_operationErrorWithCode:DSOperationErrorConditionFailed
-                                                           userInfo:@{DSOperationErrorConditionKey : NSStringFromClass([self class])}];
+                                                           userInfo:@{DSOperationErrorConditionKey: NSStringFromClass([self class])}];
                 if (completion) {
                     completion([DSOperationConditionResult failedResultWithError:error]);
                 }
-            }
-            else {
+            } else {
                 if (completion) {
                     completion([DSOperationConditionResult satisfiedResult]);
                 }
             }
         }];
-    }
-    else if (status <= DSReachabilityStatusNotReachable) {
+    } else if (status <= DSReachabilityStatusNotReachable) {
         NSError *error = [NSError ds_operationErrorWithCode:DSOperationErrorConditionFailed
-                                                   userInfo:@{DSOperationErrorConditionKey : NSStringFromClass([self class])}];
+                                                   userInfo:@{DSOperationErrorConditionKey: NSStringFromClass([self class])}];
         if (completion) {
             completion([DSOperationConditionResult failedResultWithError:error]);
         }
-    }
-    else {
+    } else {
         if (completion) {
             completion([DSOperationConditionResult satisfiedResult]);
         }

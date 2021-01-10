@@ -74,8 +74,7 @@
 
     if (self.block) {
         self.block(self, completion);
-    }
-    else {
+    } else {
         completion();
     }
 }

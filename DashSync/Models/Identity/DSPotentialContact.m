@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -17,22 +17,22 @@
 
 #import "DSPotentialContact.h"
 #import "BigIntTypes.h"
-#import "DSDashpayUserEntity+CoreDataClass.h"
-#import "NSData+Bitcoin.h"
-#import "DSKey.h"
 #import "DSBlockchainIdentity.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
+#import "DSDashpayUserEntity+CoreDataClass.h"
+#import "DSKey.h"
+#import "NSData+Bitcoin.h"
 
-@interface DSPotentialContact()
+@interface DSPotentialContact ()
 
-@property (nonatomic, strong) NSMutableDictionary * keyDictionary;
+@property (nonatomic, strong) NSMutableDictionary *keyDictionary;
 
 @end
 
 @implementation DSPotentialContact
 
--(instancetype)initWithUsername:(NSString*)username {
+- (instancetype)initWithUsername:(NSString *)username {
     self = [super init];
     if (self) {
         _username = username;
@@ -42,7 +42,7 @@
     return self;
 }
 
--(instancetype)initWithUsername:(NSString*)username avatarPath:(NSString*)avatarPath publicMessage:(NSString*)publicMessage {
+- (instancetype)initWithUsername:(NSString *)username avatarPath:(NSString *)avatarPath publicMessage:(NSString *)publicMessage {
     self = [self initWithUsername:username];
     if (self) {
         _avatarPath = avatarPath;
@@ -51,8 +51,8 @@
     return self;
 }
 
--(instancetype)initWithDashpayUser:(DSDashpayUserEntity*)dashpayUserEntity {
-    DSBlockchainIdentityUsernameEntity * usernameEntity = [dashpayUserEntity.associatedBlockchainIdentity.usernames anyObject];
+- (instancetype)initWithDashpayUser:(DSDashpayUserEntity *)dashpayUserEntity {
+    DSBlockchainIdentityUsernameEntity *usernameEntity = [dashpayUserEntity.associatedBlockchainIdentity.usernames anyObject];
     self = [self initWithUsername:usernameEntity.stringValue avatarPath:dashpayUserEntity.avatarPath publicMessage:dashpayUserEntity.publicMessage];
     if (self) {
         _associatedBlockchainIdentityUniqueId = dashpayUserEntity.associatedBlockchainIdentity.uniqueID.UInt256;
@@ -60,15 +60,15 @@
     return self;
 }
 
--(NSString*)debugDescription {
+- (NSString *)debugDescription {
     return [NSString stringWithFormat:@"%@ - %@ - %@", [super debugDescription], self.username, uint256_hex(self.associatedBlockchainIdentityUniqueId)];
 }
 
--(void)addPublicKey:(DSKey *)key atIndex:(NSUInteger)index {
+- (void)addPublicKey:(DSKey *)key atIndex:(NSUInteger)index {
     self.keyDictionary[@(index)] = key;
 }
 
--(DSKey*)publicKeyAtIndex:(NSUInteger)index {
+- (DSKey *)publicKeyAtIndex:(NSUInteger)index {
     return self.keyDictionary[@(index)];
 }
 

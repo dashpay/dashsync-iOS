@@ -9,7 +9,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, DSTransactionPersistenceStatus) {
+typedef NS_ENUM(NSUInteger, DSTransactionPersistenceStatus)
+{
     DSTransactionPersistenceStatus_NotSaved,
     DSTransactionPersistenceStatus_Saving,
     DSTransactionPersistenceStatus_Saved
@@ -18,8 +19,8 @@ typedef NS_ENUM(NSUInteger, DSTransactionPersistenceStatus) {
 @interface DSTransaction ()
 
 @property (nonatomic, assign) DSTransactionPersistenceStatus persistenceStatus;
-@property (nonatomic, readonly) DSTransactionEntity * transactionEntity;
-@property (nonatomic, strong, nullable) DSInstantSendTransactionLock * instantSendLockAwaitingProcessing;
+@property (nonatomic, readonly) DSTransactionEntity *transactionEntity;
+@property (nonatomic, strong, nullable) DSInstantSendTransactionLock *instantSendLockAwaitingProcessing;
 @property (nonatomic, assign) BOOL instantSendReceived;
 @property (nonatomic, assign) BOOL hasUnverifiedInstantSendLock;
 

@@ -7,18 +7,18 @@
 //
 
 #import "DSAuthenticationKeysDerivationPathsAddressesViewController.h"
-#import "DSAddressTableViewCell.h"
-#import <DashSync/DashSync.h>
 #import "BRBubbleView.h"
+#import "DSAddressTableViewCell.h"
 #import "DSAddressesExporterViewController.h"
 #import "DSAddressesTransactionsViewController.h"
+#import <DashSync/DashSync.h>
 
 @interface DSAuthenticationKeysDerivationPathsAddressesViewController ()
 
-@property (nonatomic,strong) NSArray * addresses;
-@property (nonatomic,strong) NSFetchedResultsController * fetchedResultsController;
-@property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
-@property (nonatomic,strong) NSData * seed;
+@property (nonatomic, strong) NSArray *addresses;
+@property (nonatomic, strong) NSFetchedResultsController *fetchedResultsController;
+@property (nonatomic, strong) NSManagedObjectContext *managedObjectContext;
+@property (nonatomic, strong) NSData *seed;
 
 @end
 
@@ -26,11 +26,13 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
-    [self.derivationPath.wallet seedWithPrompt:@"" forAmount:0 completion:^(NSData * _Nullable seed, BOOL cancelled) {
-         self.seed = seed;
-        [self.tableView reloadData];
-    }];
+
+    [self.derivationPath.wallet seedWithPrompt:@""
+                                     forAmount:0
+                                    completion:^(NSData *_Nullable seed, BOOL cancelled) {
+                                        self.seed = seed;
+                                        [self.tableView reloadData];
+                                    }];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -40,36 +42,35 @@
 
 #pragma mark - Automation KVO
 
--(NSManagedObjectContext*)managedObjectContext {
+- (NSManagedObjectContext *)managedObjectContext {
     if (!_managedObjectContext) self.managedObjectContext = [NSManagedObjectContext viewContext];
     return _managedObjectContext;
 }
 
--(NSPredicate*)searchPredicate {
-    DSDerivationPathEntity * entity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self.derivationPath inContext:self.managedObjectContext];
-    return [NSPredicate predicateWithFormat:@"(derivationPath == %@)",entity];
+- (NSPredicate *)searchPredicate {
+    DSDerivationPathEntity *entity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self.derivationPath inContext:self.managedObjectContext];
+    return [NSPredicate predicateWithFormat:@"(derivationPath == %@)", entity];
 }
 
-- (NSFetchedResultsController *)fetchedResultsController
-{
+- (NSFetchedResultsController *)fetchedResultsController {
     if (_fetchedResultsController) return _fetchedResultsController;
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     // Edit the entity name as appropriate.
     NSEntityDescription *entity = [NSEntityDescription entityForName:@"DSAddressEntity" inManagedObjectContext:self.managedObjectContext];
     [fetchRequest setEntity:entity];
-    
+
     // Set the batch size to a suitable number.
     [fetchRequest setFetchBatchSize:12];
-    
+
     // Edit the sort key as appropriate.
     NSSortDescriptor *indexSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"index" ascending:YES];
     NSArray *sortDescriptors = @[indexSortDescriptor];
-    
+
     [fetchRequest setSortDescriptors:sortDescriptors];
-    
+
     NSPredicate *filterPredicate = [self searchPredicate];
     [fetchRequest setPredicate:filterPredicate];
-    
+
     // Edit the section name key path and cache name if appropriate.
     // nil for section name key path means "no sections".
     NSFetchedResultsController *aFetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest managedObjectContext:self.managedObjectContext sectionNameKeyPath:nil cacheName:nil];
@@ -82,61 +83,55 @@
         NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
         abort();
     }
-    
+
     return aFetchedResultsController;
 }
 
 - (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
-    
 }
 
 
-- (void)controller:(NSFetchedResultsController *)controller didChangeSection:(id <NSFetchedResultsSectionInfo>)sectionInfo
-           atIndex:(NSUInteger)sectionIndex forChangeType:(NSFetchedResultsChangeType)type {
-    
+- (void)controller:(NSFetchedResultsController *)controller didChangeSection:(id<NSFetchedResultsSectionInfo>)sectionInfo
+             atIndex:(NSUInteger)sectionIndex
+       forChangeType:(NSFetchedResultsChangeType)type {
 }
 
 - (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject
-       atIndexPath:(NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)changeType
-      newIndexPath:(NSIndexPath *)newIndexPath {
-    
+        atIndexPath:(NSIndexPath *)indexPath
+      forChangeType:(NSFetchedResultsChangeType)changeType
+       newIndexPath:(NSIndexPath *)newIndexPath {
 }
 
 
 - (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
-    
-    
 }
 
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    
     return 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    
     return [[self.fetchedResultsController fetchedObjects] count];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     DSAddressTableViewCell *cell = (DSAddressTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"AddressCellIdentifier" forIndexPath:indexPath];
-    
+
     // Configure the cell...
     [self configureCell:cell atIndexPath:indexPath];
     return cell;
 }
 
 
--(void)configureCell:(DSAddressTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
+- (void)configureCell:(DSAddressTableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath {
     DSAddressEntity *addressEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
     cell.addressLabel.text = addressEntity.address;
-    cell.derivationPathLabel.text = [NSString stringWithFormat:@"%@/%u",self.derivationPath.stringRepresentation,addressEntity.index];
+    cell.derivationPathLabel.text = [NSString stringWithFormat:@"%@/%u", self.derivationPath.stringRepresentation, addressEntity.index];
     cell.publicKeyLabel.text = [self.derivationPath publicKeyDataAtIndex:addressEntity.index].hexString;
     cell.privateKeyLabel.text = [[self.derivationPath privateKeyAtIndex:addressEntity.index fromSeed:self.seed] serializedPrivateKeyForChain:self.derivationPath.chain];
 }
-
 
 
 //-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
@@ -151,7 +146,6 @@
 //        addressesTransactionsViewController.wallet = self.derivationPath.wallet;
 //    }
 //}
-
 
 
 @end

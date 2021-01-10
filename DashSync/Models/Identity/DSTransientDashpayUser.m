@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -19,7 +19,7 @@
 
 @implementation DSTransientDashpayUser
 
--(instancetype)initWithDashpayProfileDocument:(NSDictionary*)profileDocument {
+- (instancetype)initWithDashpayProfileDocument:(NSDictionary *)profileDocument {
     self = [super init];
     if (self) {
         self.revision = [[profileDocument objectForKey:@"$revision"] intValue];

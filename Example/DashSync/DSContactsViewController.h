@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSContactsViewController : DSFetchedResultsTableViewController
 
-@property (nonatomic,strong) DSChainManager *chainManager;
+@property (nonatomic, strong) DSChainManager *chainManager;
 @property (strong, nonatomic) DSBlockchainIdentity *blockchainIdentity;
 
 @end

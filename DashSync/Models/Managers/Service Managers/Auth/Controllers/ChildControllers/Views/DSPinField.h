@@ -21,10 +21,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DSPinField;
 
-typedef NS_ENUM(NSUInteger, DSPinFieldStyle) {
-    DSPinFieldStyle_Default, // 50pt field size
+typedef NS_ENUM(NSUInteger, DSPinFieldStyle)
+{
+    DSPinFieldStyle_Default,      // 50pt field size
     DSPinFieldStyle_DefaultWhite, // 50pt field size, white bg
-    DSPinFieldStyle_Small,   // 44pt
+    DSPinFieldStyle_Small,        // 44pt
 };
 
 @protocol DSPinFieldDelegate <NSObject>

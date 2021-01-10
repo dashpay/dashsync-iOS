@@ -25,8 +25,8 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
 #import "DSMnemonic.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -37,7 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
 //1546810296.0 <- that would be block 1M
 #define BIP39_WALLET_UNKNOWN_CREATION_TIME 0
 
-typedef NS_ENUM(NSUInteger, DSBIP39Language) {
+typedef NS_ENUM(NSUInteger, DSBIP39Language)
+{
     DSBIP39Language_Default,
     DSBIP39Language_English,
     DSBIP39Language_French,
@@ -53,25 +54,25 @@ typedef NSUInteger DSBIP39RecoveryWordConfidence;
 
 extern DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max;
 
-@interface DSBIP39Mnemonic : NSObject<DSMnemonic>
+@interface DSBIP39Mnemonic : NSObject <DSMnemonic>
 
 @property (nonnull, nonatomic, readonly) NSArray *words;
 @property (nonatomic, assign) DSBIP39Language defaultLanguage;
 
 + (instancetype _Nullable)sharedInstance;
 
-+ (NSArray*)availableLanguages;
-+ (NSString*)identifierForLanguage:(DSBIP39Language)language;
++ (NSArray *)availableLanguages;
++ (NSString *)identifierForLanguage:(DSBIP39Language)language;
 
-- (NSArray<NSNumber*>*)languagesOfWord:(NSString *)word;
+- (NSArray<NSNumber *> *)languagesOfWord:(NSString *)word;
 - (BOOL)wordIsValid:(NSString *)word inLanguage:(DSBIP39Language)language;
 - (BOOL)wordArrayIsValid:(NSArray *)wordArray inLanguage:(DSBIP39Language)language;
-- (DSBIP39Language)bestFittingLanguageForWords:(NSArray*)words;
+- (DSBIP39Language)bestFittingLanguageForWords:(NSArray *)words;
 
-- (void)findLastPotentialWordsOfMnemonicForPassphrase:(NSString*)partialPassphrase progressUpdate:(void (^)(float progress, bool * stop))progressUpdate completion:(void (^)(NSDictionary <NSString*,NSNumber*>* missingWords))completion;
-- (void)findPotentialWordsOfMnemonicForPassphrase:(NSString*)passphrase replacementString:(NSString*)replacementCharacter progressUpdate:(void (^)(float, bool *))progress completion:(void (^)(NSDictionary <NSString*,NSNumber*>* missingWords))completion;
+- (void)findLastPotentialWordsOfMnemonicForPassphrase:(NSString *)partialPassphrase progressUpdate:(void (^)(float progress, bool *stop))progressUpdate completion:(void (^)(NSDictionary<NSString *, NSNumber *> *missingWords))completion;
+- (void)findPotentialWordsOfMnemonicForPassphrase:(NSString *)passphrase replacementString:(NSString *)replacementCharacter progressUpdate:(void (^)(float, bool *))progress completion:(void (^)(NSDictionary<NSString *, NSNumber *> *missingWords))completion;
 
-- (NSData * _Nullable)decodeWordArray:(NSArray *)wordArray inLanguage:(DSBIP39Language)language;
+- (NSData *_Nullable)decodeWordArray:(NSArray *)wordArray inLanguage:(DSBIP39Language)language;
 
 @end
 

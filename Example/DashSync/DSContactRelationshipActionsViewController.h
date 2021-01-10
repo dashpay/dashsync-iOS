@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -25,9 +25,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) DSFriendRequestEntity *incomingFriendRequest;
 @property (strong, nonatomic) DSFriendRequestEntity *outgoingFriendRequest;
 
-@property (strong, nonatomic) IBOutlet UISwitch * displayRelationHiddenSwitch;
-@property (strong, nonatomic) IBOutlet UITextField * nicknameTextField;
-@property (strong, nonatomic) IBOutlet UITextView * noteTextView;
+@property (strong, nonatomic) IBOutlet UISwitch *displayRelationHiddenSwitch;
+@property (strong, nonatomic) IBOutlet UITextField *nicknameTextField;
+@property (strong, nonatomic) IBOutlet UITextView *noteTextView;
 
 @end
 

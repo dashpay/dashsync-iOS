@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2021 Dash Core Group. All rights reserved.
 //
@@ -15,15 +15,15 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
 #import "DSDAPINetworkServiceRequest.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol DSDAPICoreNetworkServiceProtocol <NSObject>
 
-- (id<DSDAPINetworkServiceRequest>)getStatusWithSuccess:(void (^)(NSDictionary * status))success
-                           failure:(void (^)(NSError *error))failure;
+- (id<DSDAPINetworkServiceRequest>)getStatusWithSuccess:(void (^)(NSDictionary *status))success
+                                                failure:(void (^)(NSError *error))failure;
 
 
 @end

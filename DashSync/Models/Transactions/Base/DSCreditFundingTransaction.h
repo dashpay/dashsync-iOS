@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -15,22 +15,22 @@
 //  limitations under the License.
 //
 
-#import "DSTransaction.h"
 #import "BigIntTypes.h"
+#import "DSTransaction.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSCreditFundingTransaction : DSTransaction
 
-@property (nonatomic,readonly) uint64_t fundingAmount;
-@property (nonatomic,readonly) UInt256 creditBurnIdentityIdentifier;
-@property (nonatomic,readonly) DSUTXO lockedOutpoint;
-@property (nonatomic,readonly) UInt160 creditBurnPublicKeyHash;
-@property (nonatomic,readonly) uint32_t usedDerivationPathIndex;
+@property (nonatomic, readonly) uint64_t fundingAmount;
+@property (nonatomic, readonly) UInt256 creditBurnIdentityIdentifier;
+@property (nonatomic, readonly) DSUTXO lockedOutpoint;
+@property (nonatomic, readonly) UInt160 creditBurnPublicKeyHash;
+@property (nonatomic, readonly) uint32_t usedDerivationPathIndex;
 
--(uint32_t)usedDerivationPathIndexForWallet:(DSWallet*)wallet;
--(void)markAddressAsUsedInWallet:(DSWallet*)wallet;
--(BOOL)checkDerivationPathIndexForWallet:(DSWallet*)wallet isIndex:(uint32_t)index;
+- (uint32_t)usedDerivationPathIndexForWallet:(DSWallet *)wallet;
+- (void)markAddressAsUsedInWallet:(DSWallet *)wallet;
+- (BOOL)checkDerivationPathIndexForWallet:(DSWallet *)wallet isIndex:(uint32_t)index;
 
 @end
 

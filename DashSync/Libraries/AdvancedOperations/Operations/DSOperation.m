@@ -44,21 +44,21 @@
 
 // use the KVO mechanism to indicate that changes to "state" affect other properties as well
 + (NSSet *)keyPathsForValuesAffectingValueForKey:(NSString *)key {
-    if ([@[ @"isReady" ] containsObject:key]) {
-        return [NSSet setWithArray:@[ @"state", @"cancelledState" ]];
+    if ([@[@"isReady"] containsObject:key]) {
+        return [NSSet setWithArray:@[@"state", @"cancelledState"]];
     }
-    if ([@[ @"isExecuting", @"isFinished" ] containsObject:key]) {
-        return [NSSet setWithArray:@[ @"state" ]];
+    if ([@[@"isExecuting", @"isFinished"] containsObject:key]) {
+        return [NSSet setWithArray:@[@"state"]];
     }
-    if ([@[ @"isCancelled" ] containsObject:key]) {
-        return [NSSet setWithArray:@[ @"cancelledState" ]];
+    if ([@[@"isCancelled"] containsObject:key]) {
+        return [NSSet setWithArray:@[@"cancelledState"]];
     }
 
     return [super keyPathsForValuesAffectingValueForKey:key];
 }
 
 + (BOOL)automaticallyNotifiesObserversForKey:(NSString *)key {
-    if ([@[ @"state", @"cancelledState" ] containsObject:key]) {
+    if ([@[@"state", @"cancelledState"] containsObject:key]) {
         return NO;
     }
 
@@ -163,24 +163,25 @@
     // If evaluating will take too long and opearation was cancelled and deleted from queue
     // make sure that DSOperationConditionResult will not retain and call on self
     __weak typeof(self) weakSelf = self;
-    [DSOperationConditionResult evaluateConditions:self.conditions operation:self completion:^(NSArray *failures) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
+    [DSOperationConditionResult evaluateConditions:self.conditions
+                                         operation:self
+                                        completion:^(NSArray *failures) {
+                                            __strong typeof(weakSelf) strongSelf = weakSelf;
+                                            if (!strongSelf) {
+                                                return;
+                                            }
 
-        if (strongSelf.isCancelled) {
-            return;
-        }
+                                            if (strongSelf.isCancelled) {
+                                                return;
+                                            }
 
-        if (failures.count != 0) {
-            [strongSelf cancelWithErrors:failures];
-        }
-        else if (strongSelf.state < DSOperationStateReady) {
-            //We must preceed to have the operation exit the queue
-            strongSelf.state = DSOperationStateReady;
-        }
-    }];
+                                            if (failures.count != 0) {
+                                                [strongSelf cancelWithErrors:failures];
+                                            } else if (strongSelf.state < DSOperationStateReady) {
+                                                //We must preceed to have the operation exit the queue
+                                                strongSelf.state = DSOperationStateReady;
+                                            }
+                                        }];
 }
 
 - (void)willEnqueueInOperationQueue:(DSOperationQueue *)operationQueue {
@@ -270,8 +271,7 @@
     self.cancelled = YES;
     if (self.state > DSOperationStateReady) {
         [self finish];
-    }
-    else if (self.state < DSOperationStateReady) {
+    } else if (self.state < DSOperationStateReady) {
         self.state = DSOperationStateReady;
     }
 }
@@ -336,9 +336,8 @@
 
 - (void)finishWithError:(NSError *)error {
     if (error) {
-        [self finishWithErrors:@[ error ]];
-    }
-    else {
+        [self finishWithErrors:@[error]];
+    } else {
         [self finish];
     }
 }

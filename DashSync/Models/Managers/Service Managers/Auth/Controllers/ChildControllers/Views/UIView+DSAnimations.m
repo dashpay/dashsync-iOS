@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
     CAKeyframeAnimation *shakeAnimation = [CAKeyframeAnimation animationWithKeyPath:@"transform.translation.x"];
     shakeAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
     shakeAnimation.duration = 0.5;
-    shakeAnimation.values = @[ @(-24), @(24), @(-16), @(16), @(-8), @(8), @(-4), @(4), @(0) ];
+    shakeAnimation.values = @[@(-24), @(24), @(-16), @(16), @(-8), @(8), @(-4), @(4), @(0)];
     [self.layer addAnimation:shakeAnimation forKey:@"DSShakeAnimation"];
 }
 

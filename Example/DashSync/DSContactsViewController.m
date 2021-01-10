@@ -7,14 +7,14 @@
 //
 
 #import "DSContactsViewController.h"
-#import "DSContactTableViewCell.h"
 #import "DSContactReceivedTransactionsTableViewController.h"
-#import "DSContactSentTransactionsTableViewController.h"
-#import "DSContactSendDashViewController.h"
-#import "DSContactRelationshipInfoViewController.h"
 #import "DSContactRelationshipActionsViewController.h"
+#import "DSContactRelationshipInfoViewController.h"
+#import "DSContactSendDashViewController.h"
+#import "DSContactSentTransactionsTableViewController.h"
+#import "DSContactTableViewCell.h"
 
-static NSString * const CellId = @"CellId";
+static NSString *const CellId = @"CellId";
 
 @interface DSContactsViewController ()
 
@@ -24,12 +24,11 @@ static NSString * const CellId = @"CellId";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
 }
 
 - (void)setBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     _blockchainIdentity = blockchainIdentity;
-    
+
     self.title = blockchainIdentity.currentDashpayUsername;
 }
 
@@ -45,7 +44,6 @@ static NSString * const CellId = @"CellId";
             [self showAlertTitle:[errors[0] localizedDescription] result:NO];
         }
         [strongSelf.refreshControl endRefreshing];
-        
     }];
 }
 
@@ -53,8 +51,8 @@ static NSString * const CellId = @"CellId";
     return @"DSDashpayUserEntity";
 }
 
--(NSPredicate*)predicate {
-    return [NSPredicate predicateWithFormat:@"ANY friends == %@",[self.blockchainIdentity matchingDashpayUserInContext:self.context]];
+- (NSPredicate *)predicate {
+    return [NSPredicate predicateWithFormat:@"ANY friends == %@", [self.blockchainIdentity matchingDashpayUserInContext:self.context]];
 }
 
 - (NSArray<NSSortDescriptor *> *)sortDescriptors {
@@ -66,14 +64,14 @@ static NSString * const CellId = @"CellId";
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     DSContactTableViewCell *cell = (DSContactTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"ContactCellIdentifier" forIndexPath:indexPath];
-    
+
     // Configure the cell...
     [self configureCell:cell atIndexPath:indexPath];
     return cell;
 }
 
--(void)configureCell:(DSContactTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
-    DSDashpayUserEntity * friend = [self.fetchedResultsController objectAtIndexPath:indexPath];
+- (void)configureCell:(DSContactTableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath {
+    DSDashpayUserEntity *friend = [self.fetchedResultsController objectAtIndexPath:indexPath];
     cell.textLabel.text = friend.username;
 }
 
@@ -85,18 +83,18 @@ static NSString * const CellId = @"CellId";
     [self presentViewController:alert animated:YES completion:nil];
 }
 
--(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    NSIndexPath * selectedIndex = self.tableView.indexPathForSelectedRow;
-    DSDashpayUserEntity * dashpayFriend = [self.fetchedResultsController objectAtIndexPath:selectedIndex];
-    DSDashpayUserEntity * me = [self.blockchainIdentity matchingDashpayUserInContext:self.context];
-    DSFriendRequestEntity * meToFriend = [[me.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact == %@",dashpayFriend]] anyObject];
-    DSFriendRequestEntity * friendToMe = [[me.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",dashpayFriend]] anyObject];
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    NSIndexPath *selectedIndex = self.tableView.indexPathForSelectedRow;
+    DSDashpayUserEntity *dashpayFriend = [self.fetchedResultsController objectAtIndexPath:selectedIndex];
+    DSDashpayUserEntity *me = [self.blockchainIdentity matchingDashpayUserInContext:self.context];
+    DSFriendRequestEntity *meToFriend = [[me.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact == %@", dashpayFriend]] anyObject];
+    DSFriendRequestEntity *friendToMe = [[me.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@", dashpayFriend]] anyObject];
     NSAssert(meToFriend, @"We are friends after all - us to them");
     NSAssert(friendToMe, @"We are friends after all - them to us");
     if ([segue.identifier isEqualToString:@"ContactTransactionsSegue"]) {
-        UITabBarController * tabBarController = segue.destinationViewController;
+        UITabBarController *tabBarController = segue.destinationViewController;
         tabBarController.title = dashpayFriend.username;
-        for (UIViewController * controller in tabBarController.viewControllers) {
+        for (UIViewController *controller in tabBarController.viewControllers) {
             if ([controller isKindOfClass:[DSContactReceivedTransactionsTableViewController class]]) {
                 DSContactReceivedTransactionsTableViewController *receivedTransactionsController = (DSContactReceivedTransactionsTableViewController *)controller;
                 receivedTransactionsController.chainManager = self.chainManager;
@@ -108,16 +106,16 @@ static NSString * const CellId = @"CellId";
                 sentTransactionsController.blockchainIdentity = self.blockchainIdentity;
                 sentTransactionsController.friendRequest = friendToMe;
             } else if ([controller isKindOfClass:[DSContactSendDashViewController class]]) {
-                ((DSContactSendDashViewController*)controller).blockchainIdentity = self.blockchainIdentity;
-                ((DSContactSendDashViewController*)controller).contact = dashpayFriend;
+                ((DSContactSendDashViewController *)controller).blockchainIdentity = self.blockchainIdentity;
+                ((DSContactSendDashViewController *)controller).contact = dashpayFriend;
             } else if ([controller isKindOfClass:[DSContactRelationshipInfoViewController class]]) {
-                ((DSContactRelationshipInfoViewController*)controller).blockchainIdentity = self.blockchainIdentity;
-                ((DSContactRelationshipInfoViewController*)controller).incomingFriendRequest = friendToMe;
-                ((DSContactRelationshipInfoViewController*)controller).outgoingFriendRequest = meToFriend;
-            }  else if ([controller isKindOfClass:[DSContactRelationshipActionsViewController class]]) {
-                ((DSContactRelationshipInfoViewController*)controller).blockchainIdentity = self.blockchainIdentity;
-                ((DSContactRelationshipInfoViewController*)controller).incomingFriendRequest = friendToMe;
-                ((DSContactRelationshipInfoViewController*)controller).outgoingFriendRequest = meToFriend;
+                ((DSContactRelationshipInfoViewController *)controller).blockchainIdentity = self.blockchainIdentity;
+                ((DSContactRelationshipInfoViewController *)controller).incomingFriendRequest = friendToMe;
+                ((DSContactRelationshipInfoViewController *)controller).outgoingFriendRequest = meToFriend;
+            } else if ([controller isKindOfClass:[DSContactRelationshipActionsViewController class]]) {
+                ((DSContactRelationshipInfoViewController *)controller).blockchainIdentity = self.blockchainIdentity;
+                ((DSContactRelationshipInfoViewController *)controller).incomingFriendRequest = friendToMe;
+                ((DSContactRelationshipInfoViewController *)controller).outgoingFriendRequest = meToFriend;
             }
         }
     }

@@ -19,14 +19,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) Boolean isLocal;
 @property (nonatomic, assign) uint16_t registrationStatus;
 @property (nonatomic, assign) uint64_t creditBalance;
-@property (nullable, nonatomic, retain) NSData * dashpaySyncronizationBlockHash;
+@property (nullable, nonatomic, retain) NSData *dashpaySyncronizationBlockHash;
 @property (nullable, nonatomic, retain) NSSet<DSCreditFundingTransactionEntity *> *topUpFundingTransactions;
-@property (nullable, nonatomic, retain) DSCreditFundingTransactionEntity * registrationFundingTransaction;
+@property (nullable, nonatomic, retain) DSCreditFundingTransactionEntity *registrationFundingTransaction;
 @property (nullable, nonatomic, retain) NSSet<DSBlockchainIdentityKeyPathEntity *> *keyPaths;
 @property (nullable, nonatomic, retain) DSDashpayUserEntity *matchingDashpayUser;
 @property (nullable, nonatomic, retain) NSSet<DSBlockchainIdentityUsernameEntity *> *usernames;
 @property (nullable, nonatomic, retain) DSChainEntity *chain;
-@property (nullable, nonatomic, retain) DSBlockchainIdentityUsernameEntity * dashpayUsername;
+@property (nullable, nonatomic, retain) DSBlockchainIdentityUsernameEntity *dashpayUsername;
 @property (nonatomic, assign) uint64_t lastCheckedUsernamesTimestamp;
 @property (nonatomic, assign) uint64_t lastCheckedProfileTimestamp;
 @property (nonatomic, assign) uint64_t lastCheckedIncomingContactsTimestamp;

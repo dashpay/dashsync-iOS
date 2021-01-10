@@ -6,16 +6,16 @@
 //
 //
 
-#import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
-@class DSTxOutputEntity,DSDerivationPathEntity,DSChainEntity,DSChain;
+@class DSTxOutputEntity, DSDerivationPathEntity, DSChainEntity, DSChain;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSAccountEntity : NSManagedObject
 
-+ (DSAccountEntity* _Nonnull)accountEntityForWalletUniqueID:(NSString*)walletUniqueID index:(uint32_t)index onChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context;
++ (DSAccountEntity *_Nonnull)accountEntityForWalletUniqueID:(NSString *)walletUniqueID index:(uint32_t)index onChain:(DSChain *)chain inContext:(NSManagedObjectContext *)context;
 
 @end
 

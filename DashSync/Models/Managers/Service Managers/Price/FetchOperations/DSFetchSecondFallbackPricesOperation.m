@@ -19,9 +19,9 @@
 
 #import "DSCurrencyPriceObject.h"
 #import "DSHTTPBitPayOperation.h"
-#import "DSHTTPVesLocalBitcoinsOperation.h"
 #import "DSHTTPDashCentralOperation.h"
 #import "DSHTTPPoloniexOperation.h"
+#import "DSHTTPVesLocalBitcoinsOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -132,7 +132,6 @@ NS_ASSUME_NONNULL_BEGIN
         !(poloniexPriceNumber || dashcentralPriceNumber) ||
         !vesPrice ||
         currencyCodes.count != currencyPrices.count) {
-
         self.fetchCompletion(nil, [self.class priceSourceInfo]);
 
         return;
@@ -144,12 +143,10 @@ NS_ASSUME_NONNULL_BEGIN
     if (poloniexPrice > 0.0) {
         if (dashcentralPrice > 0.0) {
             dashBtcPrice = (poloniexPrice + dashcentralPrice) / 2.0;
-        }
-        else {
+        } else {
             dashBtcPrice = poloniexPrice;
         }
-    }
-    else if (dashcentralPrice > 0.0) {
+    } else if (dashcentralPrice > 0.0) {
         dashBtcPrice = dashcentralPrice;
     }
 
@@ -164,8 +161,7 @@ NS_ASSUME_NONNULL_BEGIN
         double price = 0.0;
         if ([code isEqualToString:@"VES"]) {
             price = vesPrice.doubleValue * dashBtcPrice;
-        }
-        else {
+        } else {
             NSUInteger index = [currencyCodes indexOfObject:code];
             NSNumber *btcPrice = currencyPrices[index];
             price = btcPrice.doubleValue * dashBtcPrice;

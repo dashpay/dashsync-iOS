@@ -11,7 +11,7 @@
 @implementation DSGovernanceObjectEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSGovernanceObjectEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSGovernanceObjectEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSGovernanceObjectEntity"];
 }
 
 @dynamic collateralHash;

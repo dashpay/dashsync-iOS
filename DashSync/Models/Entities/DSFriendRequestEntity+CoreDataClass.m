@@ -6,32 +6,32 @@
 //
 //
 
-#import "DSFriendRequestEntity+CoreDataClass.h"
 #import "BigIntTypes.h"
-#import "DSDashpayUserEntity+CoreDataClass.h"
+#import "DSAccountEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
-#import "DSAccountEntity+CoreDataClass.h"
-#import "NSData+Bitcoin.h"
 #import "DSChainEntity+CoreDataClass.h"
+#import "DSDashpayUserEntity+CoreDataClass.h"
+#import "DSFriendRequestEntity+CoreDataClass.h"
+#import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 
-@interface DSFriendRequestEntity()
+@interface DSFriendRequestEntity ()
 
 @end
 
 @implementation DSFriendRequestEntity
 
-+(void)deleteFriendRequestsOnChainEntity:(DSChainEntity*)chainEntity {
++ (void)deleteFriendRequestsOnChainEntity:(DSChainEntity *)chainEntity {
     [chainEntity.managedObjectContext performBlockAndWait:^{
-        NSArray * friendRequestsToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(derivationPath.chain == %@)",chainEntity];
-        for (DSFriendRequestEntity * friendRequest in friendRequestsToDelete) {
+        NSArray *friendRequestsToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(derivationPath.chain == %@)", chainEntity];
+        for (DSFriendRequestEntity *friendRequest in friendRequestsToDelete) {
             [friendRequest.managedObjectContext deleteObject:friendRequest];
         }
     }];
 }
 
--(NSData*)finalizeWithFriendshipIdentifier {
+- (NSData *)finalizeWithFriendshipIdentifier {
     NSAssert(self.sourceContact, @"source contact must exist");
     NSAssert(self.destinationContact, @"destination contact must exist");
     NSAssert(self.account, @"account must exist");
@@ -40,15 +40,15 @@
     UInt256 friendship = uint256_xor(sourceIdentifier, destinationIdentifier);
     if (uint256_sup(sourceIdentifier, destinationIdentifier)) {
         //the destination should always be bigger than the source, otherwise add 1 on the 32nd bit to differenciate them
-        friendship = uInt256AddLE(friendship,uint256_from_int(1<<31));
+        friendship = uInt256AddLE(friendship, uint256_from_int(1 << 31));
     }
-    UInt256 friendshipOnAccount = uint256_xor(friendship,uint256_from_int(self.account.index));
+    UInt256 friendshipOnAccount = uint256_xor(friendship, uint256_from_int(self.account.index));
     self.friendshipIdentifier = uint256_data(friendshipOnAccount);
     return self.friendshipIdentifier;
 }
 
--(NSString*)debugDescription {
-    return [NSString stringWithFormat:@"%@ - { %@ -> %@ / %d }",[super debugDescription],self.sourceContact.associatedBlockchainIdentity.dashpayUsername.stringValue,self.destinationContact.associatedBlockchainIdentity.dashpayUsername.stringValue,self.account.index];
+- (NSString *)debugDescription {
+    return [NSString stringWithFormat:@"%@ - { %@ -> %@ / %d }", [super debugDescription], self.sourceContact.associatedBlockchainIdentity.dashpayUsername.stringValue, self.destinationContact.associatedBlockchainIdentity.dashpayUsername.stringValue, self.account.index];
 }
 
 @end

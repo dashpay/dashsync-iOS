@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -15,8 +15,8 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
 #import <DSDynamicOptions/DSDynamicOptions.h>
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

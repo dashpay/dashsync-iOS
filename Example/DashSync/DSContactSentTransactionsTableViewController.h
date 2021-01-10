@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSContactSentTransactionsTableViewController : DSContactBaseTransactionsTableViewController
 
 @property (strong, nonatomic) DSBlockchainIdentity *blockchainIdentity;
-@property (strong, nonatomic) DSFriendRequestEntity * friendRequest;
+@property (strong, nonatomic) DSFriendRequestEntity *friendRequest;
 
 @end
 

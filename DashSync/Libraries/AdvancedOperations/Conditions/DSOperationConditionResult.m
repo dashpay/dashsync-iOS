@@ -33,8 +33,7 @@
 - (NSError *)error {
     if (!self.success) {
         return _error;
-    }
-    else {
+    } else {
         return nil;
     }
 }
@@ -64,13 +63,13 @@
 
     // Ask each condition to evaluate and store its result in the "results" array.
     [conditions enumerateObjectsUsingBlock:^(NSObject<DSOperationConditionProtocol> *condition, NSUInteger idx, BOOL *stop) {
-
         dispatch_group_enter(conditionGroup);
-        [condition evaluateForOperation:operation completion:^(DSOperationConditionResult *result) {
-            [results addObject:result];
+        [condition evaluateForOperation:operation
+                             completion:^(DSOperationConditionResult *result) {
+                                 [results addObject:result];
 
-            dispatch_group_leave(conditionGroup);
-        }];
+                                 dispatch_group_leave(conditionGroup);
+                             }];
     }];
 
     // After all the conditions have evaluated, this block will execute.

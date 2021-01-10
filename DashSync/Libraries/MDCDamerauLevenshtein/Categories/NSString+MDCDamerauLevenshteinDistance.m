@@ -6,8 +6,8 @@
 //
 //
 
-#import "NSString+MDCDamerauLevenshteinDistance.h"
 #import "MDCDamerauLevenshteinDistance.h"
+#import "NSString+MDCDamerauLevenshteinDistance.h"
 
 @implementation NSString (MDCDamerauLevenshteinDistance)
 

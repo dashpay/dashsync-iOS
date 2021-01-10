@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -15,38 +15,38 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
 #import "DSDashPlatform.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainIdentity,DSAccount,DSBlockchainIdentityRegistrationTransition,DSFriendRequestEntity,DSPotentialContact,DSDashpayUserEntity,DSIncomingFundsDerivationPath,DSDerivationPathEntity;
+@class DSBlockchainIdentity, DSAccount, DSBlockchainIdentityRegistrationTransition, DSFriendRequestEntity, DSPotentialContact, DSDashpayUserEntity, DSIncomingFundsDerivationPath, DSDerivationPathEntity;
 
 @interface DSPotentialOneWayFriendship : NSObject
 
-@property (nonatomic, readonly) DSAccount* account;
-@property (nonatomic, readonly) DSBlockchainIdentity * destinationBlockchainIdentity;
-@property (nonatomic, readonly) DSBlockchainIdentity * sourceBlockchainIdentity; //this is the holder of the contacts, not the destination
+@property (nonatomic, readonly) DSAccount *account;
+@property (nonatomic, readonly) DSBlockchainIdentity *destinationBlockchainIdentity;
+@property (nonatomic, readonly) DSBlockchainIdentity *sourceBlockchainIdentity; //this is the holder of the contacts, not the destination
 @property (nonatomic, readonly) NSTimeInterval createdAt;
 @property (nonatomic, readonly) uint32_t sourceKeyIndex;
 @property (nonatomic, readonly) uint32_t destinationKeyIndex;
 
--(instancetype)initWithDestinationBlockchainIdentity:(DSBlockchainIdentity*)destinationBlockchainIdentity destinationKeyIndex:(uint32_t)destinationKeyIndex sourceBlockchainIdentity:(DSBlockchainIdentity*)sourceBlockchainIdentity sourceKeyIndex:(uint32_t)sourceKeyIndex account:(DSAccount*)account;
+- (instancetype)initWithDestinationBlockchainIdentity:(DSBlockchainIdentity *)destinationBlockchainIdentity destinationKeyIndex:(uint32_t)destinationKeyIndex sourceBlockchainIdentity:(DSBlockchainIdentity *)sourceBlockchainIdentity sourceKeyIndex:(uint32_t)sourceKeyIndex account:(DSAccount *)account;
 
--(instancetype)initWithDestinationBlockchainIdentity:(DSBlockchainIdentity*)destinationBlockchainIdentity destinationKeyIndex:(uint32_t)destinationKeyIndex sourceBlockchainIdentity:(DSBlockchainIdentity*)sourceBlockchainIdentity sourceKeyIndex:(uint32_t)sourceKeyIndex account:(DSAccount*)account createdAt:(NSTimeInterval)createdAt;
+- (instancetype)initWithDestinationBlockchainIdentity:(DSBlockchainIdentity *)destinationBlockchainIdentity destinationKeyIndex:(uint32_t)destinationKeyIndex sourceBlockchainIdentity:(DSBlockchainIdentity *)sourceBlockchainIdentity sourceKeyIndex:(uint32_t)sourceKeyIndex account:(DSAccount *)account createdAt:(NSTimeInterval)createdAt;
 
 //-(DSFriendRequestEntity*)outgoingFriendRequest;
 
--(DSFriendRequestEntity*)outgoingFriendRequestForDashpayUserEntity:(DSDashpayUserEntity*)dashpayUserEntity atTimestamp:(NSTimeInterval)timestamp;
+- (DSFriendRequestEntity *)outgoingFriendRequestForDashpayUserEntity:(DSDashpayUserEntity *)dashpayUserEntity atTimestamp:(NSTimeInterval)timestamp;
 
--(DSDerivationPathEntity*)storeExtendedPublicKeyAssociatedWithFriendRequest:(DSFriendRequestEntity*)friendRequestEntity;
+- (DSDerivationPathEntity *)storeExtendedPublicKeyAssociatedWithFriendRequest:(DSFriendRequestEntity *)friendRequestEntity;
 
--(void)createDerivationPathWithCompletion:(void (^)(BOOL success, DSIncomingFundsDerivationPath * incomingFundsDerivationPath))completion;
+- (void)createDerivationPathWithCompletion:(void (^)(BOOL success, DSIncomingFundsDerivationPath *incomingFundsDerivationPath))completion;
 
--(void)encryptExtendedPublicKeyWithCompletion:(void (^)(BOOL success))completion;
+- (void)encryptExtendedPublicKeyWithCompletion:(void (^)(BOOL success))completion;
 
--(DPDocument*)contactRequestDocumentWithEntropy:(NSData*)entropyData;
+- (DPDocument *)contactRequestDocumentWithEntropy:(NSData *)entropyData;
 
 @end
 

@@ -6,8 +6,8 @@
 //
 //
 
-#import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
 @class DSDashpayUserEntity, DSTransitionEntity, DSDerivationPathEntity, DSAccountEntity, DSChainEntity;
 
@@ -15,8 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSFriendRequestEntity : NSManagedObject
 
--(NSData*)finalizeWithFriendshipIdentifier;
-+(void)deleteFriendRequestsOnChainEntity:(DSChainEntity*)chainEntity;
+- (NSData *)finalizeWithFriendshipIdentifier;
++ (void)deleteFriendRequestsOnChainEntity:(DSChainEntity *)chainEntity;
 
 @end
 

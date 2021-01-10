@@ -1,6 +1,6 @@
 //
 //  DSTxInputEntity+CoreDataProperties.m
-//  
+//
 //
 //  Created by Sam Westrich on 5/20/18.
 //
@@ -27,7 +27,7 @@
 @implementation DSTxInputEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSTxInputEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSTxInputEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSTxInputEntity"];
 }
 
 @dynamic n;

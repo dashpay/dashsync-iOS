@@ -29,13 +29,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSGovernanceSyncManager (Protected)
 
--(instancetype)initWithChain:(DSChain*)chain;
+- (instancetype)initWithChain:(DSChain *)chain;
 
-@property (nonatomic,readonly) NSUInteger last3HoursStandaloneGovernanceObjectHashesCount;
+@property (nonatomic, readonly) NSUInteger last3HoursStandaloneGovernanceObjectHashesCount;
 
--(void)requestGovernanceObjectsFromPeer:(DSPeer*)peer;
+- (void)requestGovernanceObjectsFromPeer:(DSPeer *)peer;
 
--(void)finishedGovernanceVoteSyncWithPeer:(DSPeer*)peer;
+- (void)finishedGovernanceVoteSyncWithPeer:(DSPeer *)peer;
 
 @end
 

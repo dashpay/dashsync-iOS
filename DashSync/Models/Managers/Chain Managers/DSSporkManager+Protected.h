@@ -29,9 +29,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSSporkManager (Protected)
 
-@property (nonatomic,readonly) BOOL sporksUpdatedSignatures;
+@property (nonatomic, readonly) BOOL sporksUpdatedSignatures;
 
-- (instancetype)initWithChain:(DSChain*)chain;
+- (instancetype)initWithChain:(DSChain *)chain;
 
 - (void)getSporks;
 

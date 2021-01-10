@@ -172,8 +172,7 @@ static UIViewAnimationOptions const ANIMATION_OPTIONS = UIViewAnimationOptionCur
 
     if (self.secondPinView.hidden) {
         [self.firstPinView.pinField becomeFirstResponder];
-    }
-    else {
+    } else {
         [self.secondPinView.pinField becomeFirstResponder];
     }
 }
@@ -248,8 +247,7 @@ static UIViewAnimationOptions const ANIMATION_OPTIONS = UIViewAnimationOptionCur
 - (void)pinFieldDidFinishInput:(DSPinField *)pinField {
     if (self.firstPinView.pinField == pinField) {
         [self.delegate twoPagePinViewController:self didFinishInputFirstPageWithPin:pinField.text];
-    }
-    else {
+    } else {
         [self.delegate twoPagePinViewController:self didFinishInputSecondPageWithPin:pinField.text];
     }
 }

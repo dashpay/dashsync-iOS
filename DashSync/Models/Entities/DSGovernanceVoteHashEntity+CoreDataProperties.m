@@ -11,7 +11,7 @@
 @implementation DSGovernanceVoteHashEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSGovernanceVoteHashEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSGovernanceVoteHashEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSGovernanceVoteHashEntity"];
 }
 
 @dynamic governanceVoteHash;

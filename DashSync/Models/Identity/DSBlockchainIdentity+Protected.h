@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -23,44 +23,44 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSBlockchainIdentity ()
 
-@property (nonatomic,readonly) DSBlockchainIdentityEntity* blockchainIdentityEntity;
-@property (nullable,nonatomic,strong) DSTransientDashpayUser * transientDashpayUser;
+@property (nonatomic, readonly) DSBlockchainIdentityEntity *blockchainIdentityEntity;
+@property (nullable, nonatomic, strong) DSTransientDashpayUser *transientDashpayUser;
 
--(DSBlockchainIdentityEntity*)blockchainIdentityEntityInContext:(NSManagedObjectContext*)context;
+- (DSBlockchainIdentityEntity *)blockchainIdentityEntityInContext:(NSManagedObjectContext *)context;
 
--(instancetype)initWithBlockchainIdentityEntity:(DSBlockchainIdentityEntity*)blockchainIdentityEntity;
+- (instancetype)initWithBlockchainIdentityEntity:(DSBlockchainIdentityEntity *)blockchainIdentityEntity;
 
--(instancetype)initAtIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet*)wallet withBlockchainIdentityEntity:(DSBlockchainIdentityEntity*)blockchainIdentityEntity;
+- (instancetype)initAtIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet *)wallet withBlockchainIdentityEntity:(DSBlockchainIdentityEntity *)blockchainIdentityEntity;
 
--(instancetype)initWithUniqueId:(UInt256)uniqueId isTransient:(BOOL)isTransient onChain:(DSChain*)chain;
+- (instancetype)initWithUniqueId:(UInt256)uniqueId isTransient:(BOOL)isTransient onChain:(DSChain *)chain;
 
--(instancetype)initAtIndex:(uint32_t)index inWallet:(DSWallet*)wallet;
+- (instancetype)initAtIndex:(uint32_t)index inWallet:(DSWallet *)wallet;
 
--(instancetype)initAtIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet*)wallet;
+- (instancetype)initAtIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet *)wallet;
 
--(instancetype)initAtIndex:(uint32_t)index withFundingTransaction:(DSCreditFundingTransaction*)transaction withUsernameDictionary:(NSDictionary <NSString *,NSDictionary *> * _Nullable)usernameDictionary inWallet:(DSWallet*)wallet;
+- (instancetype)initAtIndex:(uint32_t)index withFundingTransaction:(DSCreditFundingTransaction *)transaction withUsernameDictionary:(NSDictionary<NSString *, NSDictionary *> *_Nullable)usernameDictionary inWallet:(DSWallet *)wallet;
 
--(instancetype)initAtIndex:(uint32_t)index withFundingTransaction:(DSCreditFundingTransaction*)transaction withUsernameDictionary:(NSDictionary <NSString *,NSDictionary *> * _Nullable)usernameDictionary havingCredits:(uint64_t)credits registrationStatus:(DSBlockchainIdentityRegistrationStatus)registrationStatus inWallet:(DSWallet*)wallet;
+- (instancetype)initAtIndex:(uint32_t)index withFundingTransaction:(DSCreditFundingTransaction *)transaction withUsernameDictionary:(NSDictionary<NSString *, NSDictionary *> *_Nullable)usernameDictionary havingCredits:(uint64_t)credits registrationStatus:(DSBlockchainIdentityRegistrationStatus)registrationStatus inWallet:(DSWallet *)wallet;
 
--(void)addUsername:(NSString*)username inDomain:(NSString*)domain status:(DSBlockchainIdentityUsernameStatus)status save:(BOOL)save registerOnNetwork:(BOOL)registerOnNetwork;
+- (void)addUsername:(NSString *)username inDomain:(NSString *)domain status:(DSBlockchainIdentityUsernameStatus)status save:(BOOL)save registerOnNetwork:(BOOL)registerOnNetwork;
 
--(void)addKey:(DSKey*)key atIndex:(uint32_t)index ofType:(DSKeyType)type withStatus:(DSBlockchainIdentityKeyStatus)status save:(BOOL)save;
--(void)addKey:(DSKey*)key atIndexPath:(NSIndexPath*)indexPath ofType:(DSKeyType)type withStatus:(DSBlockchainIdentityKeyStatus)status save:(BOOL)save;
--(BOOL)registerKeyWithStatus:(DSBlockchainIdentityKeyStatus)status atIndexPath:(NSIndexPath*)indexPath ofType:(DSKeyType)type;
--(DSKey* _Nullable)privateKeyAtIndex:(uint32_t)index ofType:(DSKeyType)type;
--(void)deletePersistentObjectAndSave:(BOOL)save inContext:(NSManagedObjectContext*)context;
+- (void)addKey:(DSKey *)key atIndex:(uint32_t)index ofType:(DSKeyType)type withStatus:(DSBlockchainIdentityKeyStatus)status save:(BOOL)save;
+- (void)addKey:(DSKey *)key atIndexPath:(NSIndexPath *)indexPath ofType:(DSKeyType)type withStatus:(DSBlockchainIdentityKeyStatus)status save:(BOOL)save;
+- (BOOL)registerKeyWithStatus:(DSBlockchainIdentityKeyStatus)status atIndexPath:(NSIndexPath *)indexPath ofType:(DSKeyType)type;
+- (DSKey *_Nullable)privateKeyAtIndex:(uint32_t)index ofType:(DSKeyType)type;
+- (void)deletePersistentObjectAndSave:(BOOL)save inContext:(NSManagedObjectContext *)context;
 
--(void)saveInitial;
+- (void)saveInitial;
 
--(void)saveInitialInContext:(NSManagedObjectContext*)context;
+- (void)saveInitialInContext:(NSManagedObjectContext *)context;
 
--(void)registerInWalletForBlockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId;
+- (void)registerInWalletForBlockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId;
 
--(void)registrationTransitionWithCompletion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationTransition * _Nullable blockchainIdentityRegistrationTransition, NSError * _Nullable error))completion;
+- (void)registrationTransitionWithCompletion:(void (^_Nullable)(DSBlockchainIdentityRegistrationTransition *_Nullable blockchainIdentityRegistrationTransition, NSError *_Nullable error))completion;
 
--(void)createFundingPrivateKeyWithSeed:(NSData*)seed completion:(void (^ _Nullable)(BOOL success))completion;
+- (void)createFundingPrivateKeyWithSeed:(NSData *)seed completion:(void (^_Nullable)(BOOL success))completion;
 
-- (void)applyProfileChanges:(DSTransientDashpayUser*)transientDashpayUser inContext:(NSManagedObjectContext *)context saveContext:(BOOL)saveContext completion:(void (^ _Nullable)(BOOL success, NSError * _Nullable error))completion;
+- (void)applyProfileChanges:(DSTransientDashpayUser *)transientDashpayUser inContext:(NSManagedObjectContext *)context saveContext:(BOOL)saveContext completion:(void (^_Nullable)(BOOL success, NSError *_Nullable error))completion;
 
 //-(void)topupTransitionForForFundingTransaction:(DSTransaction*)fundingTransaction completion:(void (^ _Nullable)(DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransition))completion;
 //

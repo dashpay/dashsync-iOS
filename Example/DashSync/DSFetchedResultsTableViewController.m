@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -16,8 +16,8 @@
 //
 
 #import "DSFetchedResultsTableViewController.h"
-#import <DashSync/NSPredicate+DSUtils.h>
 #import <DashSync/NSManagedObject+Sugar.h>
+#import <DashSync/NSPredicate+DSUtils.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -29,44 +29,44 @@ static NSUInteger FETCH_BATCH_SIZE = 20;
     [super viewDidLoad];
 }
 
--(void)viewWillAppear:(BOOL)animated {
+- (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     if ([self dynamicUpdate]) {
         //todo fix this with new core data stack
-//        [[NSNotificationCenter defaultCenter] addObserver:self
-//                                                 selector:@selector(backgroundManagedObjectContextDidSaveNotification:)
-//                                                     name:NSManagedObjectContextDidSaveNotification object:self.context];
+        //        [[NSNotificationCenter defaultCenter] addObserver:self
+        //                                                 selector:@selector(backgroundManagedObjectContextDidSaveNotification:)
+        //                                                     name:NSManagedObjectContextDidSaveNotification object:self.context];
     }
     [self fetchedResultsController];
     [self.tableView reloadData];
 }
 
--(void)viewDidDisappear:(BOOL)animated {
+- (void)viewDidDisappear:(BOOL)animated {
     [super viewDidDisappear:animated];
     self.fetchedResultsController = nil;
     if ([self dynamicUpdate]) {
-//        [[NSNotificationCenter defaultCenter] removeObserver:self name:NSManagedObjectContextDidSaveNotification object:[NSManagedObjectContext context]];
+        //        [[NSNotificationCenter defaultCenter] removeObserver:self name:NSManagedObjectContextDidSaveNotification object:[NSManagedObjectContext context]];
     }
 }
 
 - (void)backgroundManagedObjectContextDidSaveNotification:(NSNotification *)notification {
     BOOL (^objectsHaveChanged)(NSSet *) = ^BOOL(NSSet *objects) {
-        NSSet * foundObjects = [objects filteredSetUsingPredicate:[self fullPredicateInContext]];
+        NSSet *foundObjects = [objects filteredSetUsingPredicate:[self fullPredicateInContext]];
         if (foundObjects.count) return TRUE;
         return FALSE;
     };
-    
+
     BOOL (^objectsHaveChangedInverted)(NSSet *) = ^BOOL(NSSet *objects) {
         if (![self requiredInvertedPredicate]) return FALSE;
-        NSSet * foundObjects = [objects filteredSetUsingPredicate:[self fullInvertedPredicateInContext]];
+        NSSet *foundObjects = [objects filteredSetUsingPredicate:[self fullInvertedPredicateInContext]];
         if (foundObjects.count) return TRUE;
         return FALSE;
     };
 
 
-    NSSet <NSManagedObject *> *insertedObjects = notification.userInfo[NSInsertedObjectsKey];
-    NSSet <NSManagedObject *> *updatedObjects = notification.userInfo[NSUpdatedObjectsKey];
-    NSSet <NSManagedObject *> *deletedObjects = notification.userInfo[NSDeletedObjectsKey];
+    NSSet<NSManagedObject *> *insertedObjects = notification.userInfo[NSInsertedObjectsKey];
+    NSSet<NSManagedObject *> *updatedObjects = notification.userInfo[NSUpdatedObjectsKey];
+    NSSet<NSManagedObject *> *deletedObjects = notification.userInfo[NSDeletedObjectsKey];
     BOOL inserted = FALSE;
     BOOL updated = FALSE;
     BOOL deleted = FALSE;
@@ -101,32 +101,32 @@ static NSUInteger FETCH_BATCH_SIZE = 20;
     return @"";
 }
 
--(BOOL)dynamicUpdate {
+- (BOOL)dynamicUpdate {
     return TRUE;
 }
 
--(BOOL)requiredInvertedPredicate {
+- (BOOL)requiredInvertedPredicate {
     return FALSE;
 }
 
--(NSPredicate *)classPredicate {
+- (NSPredicate *)classPredicate {
     return [NSPredicate predicateWithFormat:@"self isKindOfClass: %@", NSClassFromString([self entityName])];
 }
 
--(NSPredicate *)predicateInContext {
+- (NSPredicate *)predicateInContext {
     return [[self predicate] predicateInContext:self.context];
 }
 
--(NSPredicate *)invertedPredicateInContext {
+- (NSPredicate *)invertedPredicateInContext {
     return [[self invertedPredicate] predicateInContext:self.context];
 }
 
--(NSPredicate *)fullPredicateInContext {
-    return [NSCompoundPredicate andPredicateWithSubpredicates:@[[self classPredicate],[self predicateInContext]]];
+- (NSPredicate *)fullPredicateInContext {
+    return [NSCompoundPredicate andPredicateWithSubpredicates:@[[self classPredicate], [self predicateInContext]]];
 }
 
--(NSPredicate *)fullInvertedPredicateInContext {
-    return [NSCompoundPredicate andPredicateWithSubpredicates:@[[self classPredicate],[self invertedPredicateInContext]]];
+- (NSPredicate *)fullInvertedPredicateInContext {
+    return [NSCompoundPredicate andPredicateWithSubpredicates:@[[self classPredicate], [self invertedPredicateInContext]]];
 }
 
 - (NSPredicate *)predicate {
@@ -147,31 +147,31 @@ static NSUInteger FETCH_BATCH_SIZE = 20;
     if (_fetchedResultsController != nil) {
         return _fetchedResultsController;
     }
-    
+
     NSManagedObjectContext *context = self.context;
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     // Edit the entity name as appropriate.
     NSEntityDescription *entity = [NSEntityDescription entityForName:self.entityName
                                               inManagedObjectContext:context];
     [fetchRequest setEntity:entity];
-    
+
     // Set the batch size to a suitable number.
     [fetchRequest setFetchBatchSize:FETCH_BATCH_SIZE];
-    
+
     // Edit the sort key as appropriate.
     NSArray *sortDescriptors = self.sortDescriptors;
     [fetchRequest setSortDescriptors:sortDescriptors];
-    
+
     NSPredicate *filterPredicate = self.predicate;
     [fetchRequest setPredicate:filterPredicate];
-    
+
     // Edit the section name key path and cache name if appropriate.
     // nil for section name key path means "no sections".
     NSFetchedResultsController *aFetchedResultsController =
-    [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest
-                                        managedObjectContext:context
-                                          sectionNameKeyPath:nil
-                                                   cacheName:nil];
+        [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest
+                                            managedObjectContext:context
+                                              sectionNameKeyPath:nil
+                                                       cacheName:nil];
     _fetchedResultsController = aFetchedResultsController;
     aFetchedResultsController.delegate = self;
     NSError *error = nil;
@@ -181,7 +181,7 @@ static NSUInteger FETCH_BATCH_SIZE = 20;
         NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
         abort();
     }
-    
+
     return _fetchedResultsController;
 }
 
@@ -206,27 +206,27 @@ static NSUInteger FETCH_BATCH_SIZE = 20;
 }
 
 - (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject atIndexPath:(nullable NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)type newIndexPath:(nullable NSIndexPath *)newIndexPath {
-        UITableView *tableView = self.tableView;
-        
-        switch (type) {
-            case NSFetchedResultsChangeInsert: {
-                [tableView insertRowsAtIndexPaths:@[ newIndexPath ] withRowAnimation:UITableViewRowAnimationFade];
-                break;
-            }
-            case NSFetchedResultsChangeDelete: {
-                [tableView deleteRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationFade];
-                break;
-            }
-            case NSFetchedResultsChangeMove: {
-                [tableView moveRowAtIndexPath:indexPath toIndexPath:newIndexPath];
-                break;
-            }
-            case NSFetchedResultsChangeUpdate: {
-                [self configureCell:[tableView cellForRowAtIndexPath:indexPath]
-                        atIndexPath:indexPath];
-                break;
-            }
+    UITableView *tableView = self.tableView;
+
+    switch (type) {
+        case NSFetchedResultsChangeInsert: {
+            [tableView insertRowsAtIndexPaths:@[newIndexPath] withRowAnimation:UITableViewRowAnimationFade];
+            break;
         }
+        case NSFetchedResultsChangeDelete: {
+            [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+            break;
+        }
+        case NSFetchedResultsChangeMove: {
+            [tableView moveRowAtIndexPath:indexPath toIndexPath:newIndexPath];
+            break;
+        }
+        case NSFetchedResultsChangeUpdate: {
+            [self configureCell:[tableView cellForRowAtIndexPath:indexPath]
+                    atIndexPath:indexPath];
+            break;
+        }
+    }
 }
 
 - (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {

@@ -16,14 +16,14 @@
 //
 
 #import "DSDashPlatform.h"
-#import "DSChain.h"
 #import "DPContract.h"
+#import "DSChain.h"
 #import "DSDAPIPlatformNetworkService.h"
 
 @interface DSDashPlatform ()
 
 @property (strong, nonatomic) DSChain *chain;
-@property (strong, nonatomic, null_resettable) NSMutableDictionary* knownContracts;
+@property (strong, nonatomic, null_resettable) NSMutableDictionary *knownContracts;
 @property (strong, nonatomic) DPContract *dashPayContract;
 @property (strong, nonatomic) DPContract *dpnsContract;
 @property (strong, nonatomic) DPContract *dashThumbnailContract;
@@ -32,8 +32,7 @@
 
 @implementation DSDashPlatform
 
-- (instancetype)initWithChain:(DSChain*)chain {
-
+- (instancetype)initWithChain:(DSChain *)chain {
     self = [super init];
     if (self) {
         _chain = chain; //must come first
@@ -41,34 +40,33 @@
     return self;
 }
 
-static NSMutableDictionary * _platformChainDictionary = nil;
+static NSMutableDictionary *_platformChainDictionary = nil;
 static dispatch_once_t platformChainToken = 0;
 
-+(instancetype)sharedInstanceForChain:(DSChain*)chain {
-    
++ (instancetype)sharedInstanceForChain:(DSChain *)chain {
     NSParameterAssert(chain);
-    
+
     dispatch_once(&platformChainToken, ^{
         _platformChainDictionary = [NSMutableDictionary dictionary];
     });
-       DSDashPlatform * platformForChain = nil;
-       @synchronized(self) {
-           if (![_platformChainDictionary objectForKey:chain.uniqueID]) {
-               platformForChain = [[DSDashPlatform alloc] initWithChain:chain];
-               [_platformChainDictionary setObject:platformForChain forKey:chain.uniqueID];
-           } else {
-               platformForChain = [_platformChainDictionary objectForKey:chain.uniqueID];
-           }
-       }
+    DSDashPlatform *platformForChain = nil;
+    @synchronized(self) {
+        if (![_platformChainDictionary objectForKey:chain.uniqueID]) {
+            platformForChain = [[DSDashPlatform alloc] initWithChain:chain];
+            [_platformChainDictionary setObject:platformForChain forKey:chain.uniqueID];
+        } else {
+            platformForChain = [_platformChainDictionary objectForKey:chain.uniqueID];
+        }
+    }
     return platformForChain;
 }
 
-- (DPDocumentFactory*)documentFactoryForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity forContract:(DPContract*)contract {
-    DPDocumentFactory * documentFactory = [[DPDocumentFactory alloc] initWithBlockchainIdentity:blockchainIdentity contract:contract onChain:self.chain];
+- (DPDocumentFactory *)documentFactoryForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity forContract:(DPContract *)contract {
+    DPDocumentFactory *documentFactory = [[DPDocumentFactory alloc] initWithBlockchainIdentity:blockchainIdentity contract:contract onChain:self.chain];
     return documentFactory;
 }
 
-+ (NSString*)nameForContractWithIdentifier:(NSString*)identifier {
++ (NSString *)nameForContractWithIdentifier:(NSString *)identifier {
     if ([identifier hasPrefix:DASHPAY_CONTRACT]) {
         return @"DashPay";
     } else if ([identifier hasPrefix:DPNS_CONTRACT]) {
@@ -79,28 +77,28 @@ static dispatch_once_t platformChainToken = 0;
     return @"Unnamed Contract";
 }
 
--(NSMutableDictionary*)knownContracts {
+- (NSMutableDictionary *)knownContracts {
     if (!_knownContracts) {
         _knownContracts = [NSMutableDictionary dictionaryWithObjects:@[[self dashPayContract], [self dpnsContract], [self dashThumbnailContract]] forKeys:@[DASHPAY_CONTRACT, DPNS_CONTRACT, DASHTHUMBNAIL_CONTRACT]];
     }
     return _knownContracts;
 }
 
--(DPContract*)dashPayContract {
+- (DPContract *)dashPayContract {
     if (!_dashPayContract) {
         _dashPayContract = [DPContract localDashpayContractForChain:self.chain];
     }
     return _dashPayContract;
 }
 
--(DPContract*)dpnsContract {
+- (DPContract *)dpnsContract {
     if (!_dpnsContract) {
         _dpnsContract = [DPContract localDPNSContractForChain:self.chain];
     }
     return _dpnsContract;
 }
 
--(DPContract*)dashThumbnailContract {
+- (DPContract *)dashThumbnailContract {
     if (!_dashThumbnailContract) {
         _dashThumbnailContract = [DPContract localDashThumbnailContractForChain:self.chain];
     }
@@ -108,4 +106,3 @@ static dispatch_once_t platformChainToken = 0;
 }
 
 @end
-

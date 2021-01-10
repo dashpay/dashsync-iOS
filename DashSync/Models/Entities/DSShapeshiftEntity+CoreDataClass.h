@@ -23,10 +23,11 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
-typedef enum eShapeshiftAddressStatus {
+typedef enum eShapeshiftAddressStatus
+{
     eShapeshiftAddressStatus_Unused = 0,
     eShapeshiftAddressStatus_NoDeposits = 1,
     eShapeshiftAddressStatus_Received = 2,
@@ -39,23 +40,22 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSShapeshiftEntity : NSManagedObject
 
--(NSString*)shapeshiftStatusString;
+- (NSString *)shapeshiftStatusString;
 
--(void)checkStatus;
+- (void)checkStatus;
 
-+(NSArray*)shapeshiftsInProgressInContext:(NSManagedObjectContext*)context;
++ (NSArray *)shapeshiftsInProgressInContext:(NSManagedObjectContext *)context;
 
-+(DSShapeshiftEntity*)shapeshiftHavingWithdrawalAddress:(NSString*)withdrawalAddress inContext:(NSManagedObjectContext*)context;
-+(DSShapeshiftEntity*)unusedShapeshiftHavingWithdrawalAddress:(NSString*)withdrawalAddress inContext:(NSManagedObjectContext*)context;
-+(DSShapeshiftEntity*)registerShapeshiftWithInputAddress:(NSString*)inputAddress andWithdrawalAddress:(NSString*)withdrawalAddress withStatus:(eShapeshiftAddressStatus)shapeshiftAddressStatus inContext:(NSManagedObjectContext*)context ;
-+(DSShapeshiftEntity*)registerShapeshiftWithInputAddress:(NSString*)inputAddress andWithdrawalAddress:(NSString*)withdrawalAddress withStatus:(eShapeshiftAddressStatus)shapeshiftAddressStatus fixedAmountOut:(NSNumber*)amountOut amountIn:(NSNumber*)amountIn inContext:(NSManagedObjectContext*)context;
++ (DSShapeshiftEntity *)shapeshiftHavingWithdrawalAddress:(NSString *)withdrawalAddress inContext:(NSManagedObjectContext *)context;
++ (DSShapeshiftEntity *)unusedShapeshiftHavingWithdrawalAddress:(NSString *)withdrawalAddress inContext:(NSManagedObjectContext *)context;
++ (DSShapeshiftEntity *)registerShapeshiftWithInputAddress:(NSString *)inputAddress andWithdrawalAddress:(NSString *)withdrawalAddress withStatus:(eShapeshiftAddressStatus)shapeshiftAddressStatus inContext:(NSManagedObjectContext *)context;
++ (DSShapeshiftEntity *)registerShapeshiftWithInputAddress:(NSString *)inputAddress andWithdrawalAddress:(NSString *)withdrawalAddress withStatus:(eShapeshiftAddressStatus)shapeshiftAddressStatus fixedAmountOut:(NSNumber *)amountOut amountIn:(NSNumber *)amountIn inContext:(NSManagedObjectContext *)context;
 
--(void)routinelyCheckStatusAtInterval:(NSTimeInterval)timeInterval;
+- (void)routinelyCheckStatusAtInterval:(NSTimeInterval)timeInterval;
 
 @end
 
 NS_ASSUME_NONNULL_END
-
 
 
 #import "DSShapeshiftEntity+CoreDataProperties.h"

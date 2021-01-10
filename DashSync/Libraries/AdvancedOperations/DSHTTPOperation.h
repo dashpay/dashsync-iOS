@@ -23,7 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 extern NSString *const DSHTTPOperationErrorDomain;
 
-typedef NS_ENUM(NSUInteger, DSHTTPOperationErrorCode) {
+typedef NS_ENUM(NSUInteger, DSHTTPOperationErrorCode)
+{
     DSHTTPOperationErrorCodeInvalidResponse = 1,
 };
 

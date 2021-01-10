@@ -6,15 +6,15 @@
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
-#import <DashSync/DashSync.h>
 #import <CoreData/CoreData.h>
+#import <DashSync/DashSync.h>
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSAuthenticationKeysDerivationPathsAddressesViewController : UITableViewController <NSFetchedResultsControllerDelegate,UISearchBarDelegate>
+@interface DSAuthenticationKeysDerivationPathsAddressesViewController : UITableViewController <NSFetchedResultsControllerDelegate, UISearchBarDelegate>
 
-@property(nonatomic,strong) DSSimpleIndexedDerivationPath * derivationPath;
+@property (nonatomic, strong) DSSimpleIndexedDerivationPath *derivationPath;
 
 @end
 

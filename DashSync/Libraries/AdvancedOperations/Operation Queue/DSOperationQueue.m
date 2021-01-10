@@ -67,8 +67,7 @@
         }];
 
         [operation willEnqueueInOperationQueue:self];
-    }
-    else {
+    } else {
         /*
          For regular `NSOperation`s, we'll manually call out to the queue's
          delegate we don't want to just capture "operation" because that
@@ -84,8 +83,7 @@
                 if ([operationQueue.delegate respondsToSelector:@selector(operationQueue:operationDidFinish:withErrors:)]) {
                     [operationQueue.delegate operationQueue:operationQueue operationDidFinish:operation withErrors:nil];
                 }
-            }
-            else {
+            } else {
                 return;
             }
         }];

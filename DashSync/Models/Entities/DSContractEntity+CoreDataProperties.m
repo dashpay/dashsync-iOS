@@ -11,7 +11,7 @@
 @implementation DSContractEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSContractEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSContractEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSContractEntity"];
 }
 
 @dynamic localContractIdentifier;

@@ -13,9 +13,10 @@
 #pragma mark - Public Interface
 
 + (BOOL)mdc_sameCharacterAtLeft:(NSString *)left index:(NSUInteger)leftIndex
-                          right:(NSString *)right index:(NSUInteger)rightIndex {
+                          right:(NSString *)right
+                          index:(NSUInteger)rightIndex {
     return [@([left characterAtIndex:leftIndex])
-                compare:@([right characterAtIndex:rightIndex])] == NSOrderedSame;
+               compare:@([right characterAtIndex:rightIndex])] == NSOrderedSame;
 }
 
 @end

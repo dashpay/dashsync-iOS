@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -15,15 +15,15 @@
 //  limitations under the License.
 //
 
+#import "NSData+Bitcoin.h"
 #import "NSDictionary+Dash.h"
 #import "NSMutableData+Dash.h"
-#import "NSData+Bitcoin.h"
 
 @implementation NSDictionary (Dash)
 
--(NSDictionary*)transformToDictionaryOfHexStringsToHexStrings {
-    NSMutableDictionary * mDictionary = [NSMutableDictionary dictionary];
-    for (NSData * data in self) {
+- (NSDictionary *)transformToDictionaryOfHexStringsToHexStrings {
+    NSMutableDictionary *mDictionary = [NSMutableDictionary dictionary];
+    for (NSData *data in self) {
         [mDictionary setObject:[[self objectForKey:data] hexString] forKey:[data hexString]];
     }
     return [mDictionary copy];

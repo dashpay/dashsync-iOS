@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -23,9 +23,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSContractTransition : DSTransition
 
-@property(nonatomic,readonly) DPContract * contract;
+@property (nonatomic, readonly) DPContract *contract;
 
--(instancetype)initWithContract:(DPContract*)contract withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain;
+- (instancetype)initWithContract:(DPContract *)contract withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain;
 
 @end
 

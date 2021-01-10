@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -19,7 +19,7 @@
 
 @interface DSContactReceivedTransactionsTableViewController ()
 
-@property (nonatomic,strong) DSAccount * account;
+@property (nonatomic, strong) DSAccount *account;
 
 @end
 
@@ -27,18 +27,18 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     self.direction = DSContactTransactionDirectionReceived;
 }
 
--(void)setBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+- (void)setBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     _blockchainIdentity = blockchainIdentity;
     if (_friendRequest) {
         self.account = [blockchainIdentity.wallet accountWithNumber:_friendRequest.account.index];
     }
 }
 
--(void)setFriendRequest:(DSFriendRequestEntity *)friendRequest {
+- (void)setFriendRequest:(DSFriendRequestEntity *)friendRequest {
     _friendRequest = friendRequest;
     if (_blockchainIdentity) {
         self.account = [_blockchainIdentity.wallet accountWithNumber:_friendRequest.account.index];
@@ -49,8 +49,8 @@
     return @"DSTxOutputEntity";
 }
 
-- (NSPredicate*)predicate {
-    return [NSPredicate predicateWithFormat:@"localAddress.derivationPath.friendRequest == %@",self.friendRequest];
+- (NSPredicate *)predicate {
+    return [NSPredicate predicateWithFormat:@"localAddress.derivationPath.friendRequest == %@", self.friendRequest];
 }
 
 - (NSArray<NSSortDescriptor *> *)sortDescriptors {

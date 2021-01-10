@@ -49,24 +49,24 @@
 
 @interface RHIntervalTree : NSObject
 
--(instancetype _Nonnull)initWithIntervalObjects:(NSArray* _Nonnull)intervals; //all added objects should implement the RHIntervalProtocol
+- (instancetype _Nonnull)initWithIntervalObjects:(NSArray *_Nonnull)intervals; //all added objects should implement the RHIntervalProtocol
 
 @property (nonatomic, readonly) NSInteger minStart;
 @property (nonatomic, readonly) NSInteger maxStop;
 
-@property (nonatomic, readonly, copy) NSArray* _Nonnull allObjects;
+@property (nonatomic, readonly, copy) NSArray *_Nonnull allObjects;
 
 //Contained methods return objects fully contained within the start and stop(inclusive) coordinates.
--(NSArray* _Nonnull)containedObjectsInRange:(NSRange)range;
--(NSArray* _Nonnull)containedObjectsBetweenStart:(NSInteger)start andStop:(NSInteger)stop;
+- (NSArray *_Nonnull)containedObjectsInRange:(NSRange)range;
+- (NSArray *_Nonnull)containedObjectsBetweenStart:(NSInteger)start andStop:(NSInteger)stop;
 
 //Overlapping methods return objects which are contained or partially overlap the start and stop(inclusive) coordinates.
--(NSArray* _Nonnull)overlappingObjectsForIndex:(NSUInteger)idx;
--(NSArray* _Nonnull)overlappingObjectsForRange:(NSRange)range;
--(NSArray* _Nonnull)overlappingObjectsForStart:(NSInteger)start andStop:(NSInteger)stop;
+- (NSArray *_Nonnull)overlappingObjectsForIndex:(NSUInteger)idx;
+- (NSArray *_Nonnull)overlappingObjectsForRange:(NSRange)range;
+- (NSArray *_Nonnull)overlappingObjectsForStart:(NSInteger)start andStop:(NSInteger)stop;
 
--(NSArray* _Nonnull)overlappingObjectsInRange:(NSRange)range __attribute((deprecated(("Please use -overlappingObjectsForRange: instead."))));
--(NSArray* _Nonnull)overlappingObjectsBetweenStart:(NSInteger)start andStop:(NSInteger)stop __attribute((deprecated(("Please use -overlappingObjectsForStart:andStop: instead."))));
+- (NSArray *_Nonnull)overlappingObjectsInRange:(NSRange)range __attribute((deprecated(("Please use -overlappingObjectsForRange: instead."))));
+- (NSArray *_Nonnull)overlappingObjectsBetweenStart:(NSInteger)start andStop:(NSInteger)stop __attribute((deprecated(("Please use -overlappingObjectsForStart:andStop: instead."))));
 
 @end
 
@@ -77,10 +77,9 @@
 @property (nonatomic, readonly, strong) id<NSObject> _Nullable object;
 @property (nonatomic, readonly, assign) NSRange range;
 
-+(instancetype _Nonnull)intervalWithRange:(NSRange)range object:(id<NSObject> _Nullable)object;
-+(instancetype _Nonnull)intervalWithStart:(NSInteger)start stop:(NSInteger)stop object:(id<NSObject> _Nullable)object;
++ (instancetype _Nonnull)intervalWithRange:(NSRange)range object:(id<NSObject> _Nullable)object;
++ (instancetype _Nonnull)intervalWithStart:(NSInteger)start stop:(NSInteger)stop object:(id<NSObject> _Nullable)object;
 
--(instancetype _Nonnull)initWithStart:(NSInteger)start stop:(NSInteger)stop object:(id<NSObject> _Nullable)object;
+- (instancetype _Nonnull)initWithStart:(NSInteger)start stop:(NSInteger)stop object:(id<NSObject> _Nullable)object;
 
 @end
-

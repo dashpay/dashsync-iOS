@@ -36,28 +36,28 @@
 
 typedef struct {
 #ifndef DOXYGEN_IGNORE
-    unsigned char buf[64];    /* first field, for alignment */
-    size_t ptr;
-    union {
+	unsigned char buf[64]; /* first field, for alignment */
+	size_t ptr;
+	union {
 #if SPH_64
-        sph_u64 wide[16];
+		sph_u64 wide[16];
 #endif
-        sph_u32 narrow[32];
-    } H;
+		sph_u32 narrow[32];
+	} H;
 #if SPH_64
-    sph_u64 block_count;
+	sph_u64 block_count;
 #else
-    sph_u32 block_count_high, block_count_low;
+	sph_u32 block_count_high, block_count_low;
 #endif
 #endif
 } sph_jh_context;
 
 #if SPH_SMALL_FOOTPRINT && !defined SPH_SMALL_FOOTPRINT_JH
-#define SPH_SMALL_FOOTPRINT_JH   1
+#define SPH_SMALL_FOOTPRINT_JH 1
 #endif
 
 #if !defined SPH_JH_64 && SPH_64_TRUE
-#define SPH_JH_64   1
+#define SPH_JH_64 1
 #endif
 
 #if !SPH_64
@@ -65,7 +65,7 @@ typedef struct {
 #endif
 
 #ifdef _MSC_VER
-#pragma warning (disable: 4146)
+#pragma warning(disable : 4146)
 #endif
 
 /*
@@ -79,63 +79,55 @@ typedef struct {
 
 #if SPH_LITTLE_ENDIAN
 
-#define C32e(x)     ((SPH_C32(x) >> 24) \
-| ((SPH_C32(x) >>  8) & SPH_C32(0x0000FF00)) \
-| ((SPH_C32(x) <<  8) & SPH_C32(0x00FF0000)) \
-| ((SPH_C32(x) << 24) & SPH_C32(0xFF000000)))
-#define dec32e_aligned   sph_dec32le_aligned
-#define enc32e           sph_enc32le
+#define C32e(x) ((SPH_C32(x) >> 24) | ((SPH_C32(x) >> 8) & SPH_C32(0x0000FF00)) | ((SPH_C32(x) << 8) & SPH_C32(0x00FF0000)) | ((SPH_C32(x) << 24) & SPH_C32(0xFF000000)))
+#define dec32e_aligned sph_dec32le_aligned
+#define enc32e sph_enc32le
 
 #if SPH_64
-#define C64e(x)     ((SPH_C64(x) >> 56) \
-| ((SPH_C64(x) >> 40) & SPH_C64(0x000000000000FF00)) \
-| ((SPH_C64(x) >> 24) & SPH_C64(0x0000000000FF0000)) \
-| ((SPH_C64(x) >>  8) & SPH_C64(0x00000000FF000000)) \
-| ((SPH_C64(x) <<  8) & SPH_C64(0x000000FF00000000)) \
-| ((SPH_C64(x) << 24) & SPH_C64(0x0000FF0000000000)) \
-| ((SPH_C64(x) << 40) & SPH_C64(0x00FF000000000000)) \
-| ((SPH_C64(x) << 56) & SPH_C64(0xFF00000000000000)))
-#define dec64e_aligned   sph_dec64le_aligned
-#define enc64e           sph_enc64le
+#define C64e(x) ((SPH_C64(x) >> 56) | ((SPH_C64(x) >> 40) & SPH_C64(0x000000000000FF00)) | ((SPH_C64(x) >> 24) & SPH_C64(0x0000000000FF0000)) | ((SPH_C64(x) >> 8) & SPH_C64(0x00000000FF000000)) | ((SPH_C64(x) << 8) & SPH_C64(0x000000FF00000000)) | ((SPH_C64(x) << 24) & SPH_C64(0x0000FF0000000000)) | ((SPH_C64(x) << 40) & SPH_C64(0x00FF000000000000)) | ((SPH_C64(x) << 56) & SPH_C64(0xFF00000000000000)))
+#define dec64e_aligned sph_dec64le_aligned
+#define enc64e sph_enc64le
 #endif
 
 #else
 
-#define C32e(x)     SPH_C32(x)
-#define dec32e_aligned   sph_dec32be_aligned
-#define enc32e           sph_enc32be
+#define C32e(x) SPH_C32(x)
+#define dec32e_aligned sph_dec32be_aligned
+#define enc32e sph_enc32be
 #if SPH_64
-#define C64e(x)     SPH_C64(x)
-#define dec64e_aligned   sph_dec64be_aligned
-#define enc64e           sph_enc64be
+#define C64e(x) SPH_C64(x)
+#define dec64e_aligned sph_dec64be_aligned
+#define enc64e sph_enc64be
 #endif
 
 #endif
 
-#define Sb(x0, x1, x2, x3, c)   do { \
-x3 = ~x3; \
-x0 ^= (c) & ~x2; \
-tmp = (c) ^ (x0 & x1); \
-x0 ^= x2 & x3; \
-x3 ^= ~x1 & x2; \
-x1 ^= x0 & x2; \
-x2 ^= x0 & ~x3; \
-x0 ^= x1 | x3; \
-x3 ^= x1 & x2; \
-x1 ^= tmp & x0; \
-x2 ^= tmp; \
-} while (0)
+#define Sb(x0, x1, x2, x3, c)  \
+	do {                       \
+		x3 = ~x3;              \
+		x0 ^= (c) & ~x2;       \
+		tmp = (c) ^ (x0 & x1); \
+		x0 ^= x2 & x3;         \
+		x3 ^= ~x1 & x2;        \
+		x1 ^= x0 & x2;         \
+		x2 ^= x0 & ~x3;        \
+		x0 ^= x1 | x3;         \
+		x3 ^= x1 & x2;         \
+		x1 ^= tmp & x0;        \
+		x2 ^= tmp;             \
+	} while (0)
 
-#define Lb(x0, x1, x2, x3, x4, x5, x6, x7)   do { \
-x4 ^= x1; \
-x5 ^= x2; \
-x6 ^= x3 ^ x0; \
-x7 ^= x0; \
-x0 ^= x5; \
-x1 ^= x6; \
-x2 ^= x7 ^ x4; \
-x3 ^= x4; \
-} while (0)
+#define Lb(x0, x1, x2, x3, x4, x5, x6, x7) \
+	do {                                   \
+		x4 ^= x1;                          \
+		x5 ^= x2;                          \
+		x6 ^= x3 ^ x0;                     \
+		x7 ^= x0;                          \
+		x0 ^= x5;                          \
+		x1 ^= x6;                          \
+		x2 ^= x7 ^ x4;                     \
+		x3 ^= x4;                          \
+	} while (0)
 
 #if SPH_JH_64
 
@@ -223,115 +215,120 @@ static const sph_u64 C[] = {
     C64e(0xaa25ce93bd0269d8), C64e(0x5af643fd1a7308f9),
     C64e(0xc05fefda174a19a5), C64e(0x974d66334cfd216a),
     C64e(0x35b49831db411570), C64e(0xea1e0fbbedcd549b),
-    C64e(0x9ad063a151974072), C64e(0xf6759dbf91476fe2)
-};
+    C64e(0x9ad063a151974072), C64e(0xf6759dbf91476fe2)};
 
-#define Ceven_hi(r)   (C[((r) << 2) + 0])
-#define Ceven_lo(r)   (C[((r) << 2) + 1])
-#define Codd_hi(r)    (C[((r) << 2) + 2])
-#define Codd_lo(r)    (C[((r) << 2) + 3])
+#define Ceven_hi(r) (C[((r) << 2) + 0])
+#define Ceven_lo(r) (C[((r) << 2) + 1])
+#define Codd_hi(r) (C[((r) << 2) + 2])
+#define Codd_lo(r) (C[((r) << 2) + 3])
 
-#define S(x0, x1, x2, x3, cb, r)   do { \
-Sb(x0 ## h, x1 ## h, x2 ## h, x3 ## h, cb ## hi(r)); \
-Sb(x0 ## l, x1 ## l, x2 ## l, x3 ## l, cb ## lo(r)); \
-} while (0)
+#define S(x0, x1, x2, x3, cb, r)                   \
+	do {                                           \
+		Sb(x0##h, x1##h, x2##h, x3##h, cb##hi(r)); \
+		Sb(x0##l, x1##l, x2##l, x3##l, cb##lo(r)); \
+	} while (0)
 
-#define L(x0, x1, x2, x3, x4, x5, x6, x7)   do { \
-Lb(x0 ## h, x1 ## h, x2 ## h, x3 ## h, \
-x4 ## h, x5 ## h, x6 ## h, x7 ## h); \
-Lb(x0 ## l, x1 ## l, x2 ## l, x3 ## l, \
-x4 ## l, x5 ## l, x6 ## l, x7 ## l); \
-} while (0)
+#define L(x0, x1, x2, x3, x4, x5, x6, x7) \
+	do {                                  \
+		Lb(x0##h, x1##h, x2##h, x3##h,    \
+		   x4##h, x5##h, x6##h, x7##h);   \
+		Lb(x0##l, x1##l, x2##l, x3##l,    \
+		   x4##l, x5##l, x6##l, x7##l);   \
+	} while (0)
 
-#define Wz(x, c, n)   do { \
-sph_u64 t = (x ## h & (c)) << (n); \
-x ## h = ((x ## h >> (n)) & (c)) | t; \
-t = (x ## l & (c)) << (n); \
-x ## l = ((x ## l >> (n)) & (c)) | t; \
-} while (0)
+#define Wz(x, c, n)                       \
+	do {                                  \
+		sph_u64 t = (x##h & (c)) << (n);  \
+		x##h = ((x##h >> (n)) & (c)) | t; \
+		t = (x##l & (c)) << (n);          \
+		x##l = ((x##l >> (n)) & (c)) | t; \
+	} while (0)
 
-#define W0(x)   Wz(x, SPH_C64(0x5555555555555555),  1)
-#define W1(x)   Wz(x, SPH_C64(0x3333333333333333),  2)
-#define W2(x)   Wz(x, SPH_C64(0x0F0F0F0F0F0F0F0F),  4)
-#define W3(x)   Wz(x, SPH_C64(0x00FF00FF00FF00FF),  8)
-#define W4(x)   Wz(x, SPH_C64(0x0000FFFF0000FFFF), 16)
-#define W5(x)   Wz(x, SPH_C64(0x00000000FFFFFFFF), 32)
-#define W6(x)   do { \
-sph_u64 t = x ## h; \
-x ## h = x ## l; \
-x ## l = t; \
-} while (0)
+#define W0(x) Wz(x, SPH_C64(0x5555555555555555), 1)
+#define W1(x) Wz(x, SPH_C64(0x3333333333333333), 2)
+#define W2(x) Wz(x, SPH_C64(0x0F0F0F0F0F0F0F0F), 4)
+#define W3(x) Wz(x, SPH_C64(0x00FF00FF00FF00FF), 8)
+#define W4(x) Wz(x, SPH_C64(0x0000FFFF0000FFFF), 16)
+#define W5(x) Wz(x, SPH_C64(0x00000000FFFFFFFF), 32)
+#define W6(x)             \
+	do {                  \
+		sph_u64 t = x##h; \
+		x##h = x##l;      \
+		x##l = t;         \
+	} while (0)
 
-#define JH_DECL_STATE \
-sph_u64 h0h, h1h, h2h, h3h, h4h, h5h, h6h, h7h; \
-sph_u64 h0l, h1l, h2l, h3l, h4l, h5l, h6l, h7l; \
-sph_u64 tmp;
+#define JH_DECL_STATE                               \
+	sph_u64 h0h, h1h, h2h, h3h, h4h, h5h, h6h, h7h; \
+	sph_u64 h0l, h1l, h2l, h3l, h4l, h5l, h6l, h7l; \
+	sph_u64 tmp;
 
-#define JH_READ_STATE(state)   do { \
-h0h = (state)->H.wide[ 0]; \
-h0l = (state)->H.wide[ 1]; \
-h1h = (state)->H.wide[ 2]; \
-h1l = (state)->H.wide[ 3]; \
-h2h = (state)->H.wide[ 4]; \
-h2l = (state)->H.wide[ 5]; \
-h3h = (state)->H.wide[ 6]; \
-h3l = (state)->H.wide[ 7]; \
-h4h = (state)->H.wide[ 8]; \
-h4l = (state)->H.wide[ 9]; \
-h5h = (state)->H.wide[10]; \
-h5l = (state)->H.wide[11]; \
-h6h = (state)->H.wide[12]; \
-h6l = (state)->H.wide[13]; \
-h7h = (state)->H.wide[14]; \
-h7l = (state)->H.wide[15]; \
-} while (0)
+#define JH_READ_STATE(state)       \
+	do {                           \
+		h0h = (state)->H.wide[0];  \
+		h0l = (state)->H.wide[1];  \
+		h1h = (state)->H.wide[2];  \
+		h1l = (state)->H.wide[3];  \
+		h2h = (state)->H.wide[4];  \
+		h2l = (state)->H.wide[5];  \
+		h3h = (state)->H.wide[6];  \
+		h3l = (state)->H.wide[7];  \
+		h4h = (state)->H.wide[8];  \
+		h4l = (state)->H.wide[9];  \
+		h5h = (state)->H.wide[10]; \
+		h5l = (state)->H.wide[11]; \
+		h6h = (state)->H.wide[12]; \
+		h6l = (state)->H.wide[13]; \
+		h7h = (state)->H.wide[14]; \
+		h7l = (state)->H.wide[15]; \
+	} while (0)
 
-#define JH_WRITE_STATE(state)   do { \
-(state)->H.wide[ 0] = h0h; \
-(state)->H.wide[ 1] = h0l; \
-(state)->H.wide[ 2] = h1h; \
-(state)->H.wide[ 3] = h1l; \
-(state)->H.wide[ 4] = h2h; \
-(state)->H.wide[ 5] = h2l; \
-(state)->H.wide[ 6] = h3h; \
-(state)->H.wide[ 7] = h3l; \
-(state)->H.wide[ 8] = h4h; \
-(state)->H.wide[ 9] = h4l; \
-(state)->H.wide[10] = h5h; \
-(state)->H.wide[11] = h5l; \
-(state)->H.wide[12] = h6h; \
-(state)->H.wide[13] = h6l; \
-(state)->H.wide[14] = h7h; \
-(state)->H.wide[15] = h7l; \
-} while (0)
+#define JH_WRITE_STATE(state)      \
+	do {                           \
+		(state)->H.wide[0] = h0h;  \
+		(state)->H.wide[1] = h0l;  \
+		(state)->H.wide[2] = h1h;  \
+		(state)->H.wide[3] = h1l;  \
+		(state)->H.wide[4] = h2h;  \
+		(state)->H.wide[5] = h2l;  \
+		(state)->H.wide[6] = h3h;  \
+		(state)->H.wide[7] = h3l;  \
+		(state)->H.wide[8] = h4h;  \
+		(state)->H.wide[9] = h4l;  \
+		(state)->H.wide[10] = h5h; \
+		(state)->H.wide[11] = h5l; \
+		(state)->H.wide[12] = h6h; \
+		(state)->H.wide[13] = h6l; \
+		(state)->H.wide[14] = h7h; \
+		(state)->H.wide[15] = h7l; \
+	} while (0)
 
-#define INPUT_BUF1 \
-sph_u64 m0h = dec64e_aligned(buf +  0); \
-sph_u64 m0l = dec64e_aligned(buf +  8); \
-sph_u64 m1h = dec64e_aligned(buf + 16); \
-sph_u64 m1l = dec64e_aligned(buf + 24); \
-sph_u64 m2h = dec64e_aligned(buf + 32); \
-sph_u64 m2l = dec64e_aligned(buf + 40); \
-sph_u64 m3h = dec64e_aligned(buf + 48); \
-sph_u64 m3l = dec64e_aligned(buf + 56); \
-h0h ^= m0h; \
-h0l ^= m0l; \
-h1h ^= m1h; \
-h1l ^= m1l; \
-h2h ^= m2h; \
-h2l ^= m2l; \
-h3h ^= m3h; \
-h3l ^= m3l;
+#define INPUT_BUF1                          \
+	sph_u64 m0h = dec64e_aligned(buf + 0);  \
+	sph_u64 m0l = dec64e_aligned(buf + 8);  \
+	sph_u64 m1h = dec64e_aligned(buf + 16); \
+	sph_u64 m1l = dec64e_aligned(buf + 24); \
+	sph_u64 m2h = dec64e_aligned(buf + 32); \
+	sph_u64 m2l = dec64e_aligned(buf + 40); \
+	sph_u64 m3h = dec64e_aligned(buf + 48); \
+	sph_u64 m3l = dec64e_aligned(buf + 56); \
+	h0h ^= m0h;                             \
+	h0l ^= m0l;                             \
+	h1h ^= m1h;                             \
+	h1l ^= m1l;                             \
+	h2h ^= m2h;                             \
+	h2l ^= m2l;                             \
+	h3h ^= m3h;                             \
+	h3l ^= m3l;
 
 #define INPUT_BUF2 \
-h4h ^= m0h; \
-h4l ^= m0l; \
-h5h ^= m1h; \
-h5l ^= m1l; \
-h6h ^= m2h; \
-h6l ^= m2l; \
-h7h ^= m3h; \
-h7l ^= m3l;
+	h4h ^= m0h;    \
+	h4l ^= m0l;    \
+	h5h ^= m1h;    \
+	h5l ^= m1l;    \
+	h6h ^= m2h;    \
+	h6l ^= m2l;    \
+	h7h ^= m3h;    \
+	h7l ^= m3l;
 
 static const sph_u64 IV224[] = {
     C64e(0x2dfedd62f99a98ac), C64e(0xae7cacd619d634e7),
@@ -341,8 +338,7 @@ static const sph_u64 IV224[] = {
     C64e(0x1b4f1b5cd8c840b3), C64e(0x97f6a17f6e738099),
     C64e(0xdcdf93a5adeaa3d3), C64e(0xa431e8dec9539a68),
     C64e(0x22b4a98aec86a1e4), C64e(0xd574ac959ce56cf0),
-    C64e(0x15960deab5ab2bbf), C64e(0x9611dcf0dd64ea6e)
-};
+    C64e(0x15960deab5ab2bbf), C64e(0x9611dcf0dd64ea6e)};
 
 static const sph_u64 IV256[] = {
     C64e(0xeb98a3412c20d3eb), C64e(0x92cdbe7b9cb245c1),
@@ -352,8 +348,7 @@ static const sph_u64 IV256[] = {
     C64e(0x71a396897f2e4d75), C64e(0x1d144908f77de262),
     C64e(0x277695f776248f94), C64e(0x87d5b6574780296c),
     C64e(0x5c5e272dac8e0d6c), C64e(0x518450c657057a0f),
-    C64e(0x7be4d367702412ea), C64e(0x89e3ab13d31cd769)
-};
+    C64e(0x7be4d367702412ea), C64e(0x89e3ab13d31cd769)};
 
 static const sph_u64 IV384[] = {
     C64e(0x481e3bc6d813398a), C64e(0x6d3b5e894ade879b),
@@ -363,8 +358,7 @@ static const sph_u64 IV384[] = {
     C64e(0x569b7f8a27db454c), C64e(0x9efcbd496397af0e),
     C64e(0x589fc27d26aa80cd), C64e(0x80c08b8c9deb2eda),
     C64e(0x8a7981e8f8d5373a), C64e(0xf43967adddd17a71),
-    C64e(0xa9b4d3bda475d394), C64e(0x976c3fba9842737f)
-};
+    C64e(0xa9b4d3bda475d394), C64e(0x976c3fba9842737f)};
 
 static const sph_u64 IV512[] = {
     C64e(0x6fd14b963e00aa17), C64e(0x636a2e057a15d543),
@@ -374,8 +368,7 @@ static const sph_u64 IV512[] = {
     C64e(0x0169e60541e34a69), C64e(0x46b58a8e2e6fe65a),
     C64e(0x1047a7d0c1843c24), C64e(0x3b6e71b12d5ac199),
     C64e(0xcf57f6ec9db1f856), C64e(0xa706887c5716b156),
-    C64e(0xe3c2fcdfe68517fb), C64e(0x545a4678cc8cdd4b)
-};
+    C64e(0xe3c2fcdfe68517fb), C64e(0x545a4678cc8cdd4b)};
 
 #else
 
@@ -491,197 +484,203 @@ static const sph_u32 C[] = {
     C32e(0xc05fefda), C32e(0x174a19a5), C32e(0x974d6633),
     C32e(0x4cfd216a), C32e(0x35b49831), C32e(0xdb411570),
     C32e(0xea1e0fbb), C32e(0xedcd549b), C32e(0x9ad063a1),
-    C32e(0x51974072), C32e(0xf6759dbf), C32e(0x91476fe2)
-};
+    C32e(0x51974072), C32e(0xf6759dbf), C32e(0x91476fe2)};
 
-#define Ceven_w3(r)   (C[((r) << 3) + 0])
-#define Ceven_w2(r)   (C[((r) << 3) + 1])
-#define Ceven_w1(r)   (C[((r) << 3) + 2])
-#define Ceven_w0(r)   (C[((r) << 3) + 3])
-#define Codd_w3(r)    (C[((r) << 3) + 4])
-#define Codd_w2(r)    (C[((r) << 3) + 5])
-#define Codd_w1(r)    (C[((r) << 3) + 6])
-#define Codd_w0(r)    (C[((r) << 3) + 7])
+#define Ceven_w3(r) (C[((r) << 3) + 0])
+#define Ceven_w2(r) (C[((r) << 3) + 1])
+#define Ceven_w1(r) (C[((r) << 3) + 2])
+#define Ceven_w0(r) (C[((r) << 3) + 3])
+#define Codd_w3(r) (C[((r) << 3) + 4])
+#define Codd_w2(r) (C[((r) << 3) + 5])
+#define Codd_w1(r) (C[((r) << 3) + 6])
+#define Codd_w0(r) (C[((r) << 3) + 7])
 
-#define S(x0, x1, x2, x3, cb, r)   do { \
-Sb(x0 ## 3, x1 ## 3, x2 ## 3, x3 ## 3, cb ## w3(r)); \
-Sb(x0 ## 2, x1 ## 2, x2 ## 2, x3 ## 2, cb ## w2(r)); \
-Sb(x0 ## 1, x1 ## 1, x2 ## 1, x3 ## 1, cb ## w1(r)); \
-Sb(x0 ## 0, x1 ## 0, x2 ## 0, x3 ## 0, cb ## w0(r)); \
-} while (0)
+#define S(x0, x1, x2, x3, cb, r)                   \
+	do {                                           \
+		Sb(x0##3, x1##3, x2##3, x3##3, cb##w3(r)); \
+		Sb(x0##2, x1##2, x2##2, x3##2, cb##w2(r)); \
+		Sb(x0##1, x1##1, x2##1, x3##1, cb##w1(r)); \
+		Sb(x0##0, x1##0, x2##0, x3##0, cb##w0(r)); \
+	} while (0)
 
-#define L(x0, x1, x2, x3, x4, x5, x6, x7)   do { \
-Lb(x0 ## 3, x1 ## 3, x2 ## 3, x3 ## 3, \
-x4 ## 3, x5 ## 3, x6 ## 3, x7 ## 3); \
-Lb(x0 ## 2, x1 ## 2, x2 ## 2, x3 ## 2, \
-x4 ## 2, x5 ## 2, x6 ## 2, x7 ## 2); \
-Lb(x0 ## 1, x1 ## 1, x2 ## 1, x3 ## 1, \
-x4 ## 1, x5 ## 1, x6 ## 1, x7 ## 1); \
-Lb(x0 ## 0, x1 ## 0, x2 ## 0, x3 ## 0, \
-x4 ## 0, x5 ## 0, x6 ## 0, x7 ## 0); \
-} while (0)
+#define L(x0, x1, x2, x3, x4, x5, x6, x7) \
+	do {                                  \
+		Lb(x0##3, x1##3, x2##3, x3##3,    \
+		   x4##3, x5##3, x6##3, x7##3);   \
+		Lb(x0##2, x1##2, x2##2, x3##2,    \
+		   x4##2, x5##2, x6##2, x7##2);   \
+		Lb(x0##1, x1##1, x2##1, x3##1,    \
+		   x4##1, x5##1, x6##1, x7##1);   \
+		Lb(x0##0, x1##0, x2##0, x3##0,    \
+		   x4##0, x5##0, x6##0, x7##0);   \
+	} while (0)
 
-#define Wz(x, c, n)   do { \
-sph_u32 t = (x ## 3 & (c)) << (n); \
-x ## 3 = ((x ## 3 >> (n)) & (c)) | t; \
-t = (x ## 2 & (c)) << (n); \
-x ## 2 = ((x ## 2 >> (n)) & (c)) | t; \
-t = (x ## 1 & (c)) << (n); \
-x ## 1 = ((x ## 1 >> (n)) & (c)) | t; \
-t = (x ## 0 & (c)) << (n); \
-x ## 0 = ((x ## 0 >> (n)) & (c)) | t; \
-} while (0)
+#define Wz(x, c, n)                       \
+	do {                                  \
+		sph_u32 t = (x##3 & (c)) << (n);  \
+		x##3 = ((x##3 >> (n)) & (c)) | t; \
+		t = (x##2 & (c)) << (n);          \
+		x##2 = ((x##2 >> (n)) & (c)) | t; \
+		t = (x##1 & (c)) << (n);          \
+		x##1 = ((x##1 >> (n)) & (c)) | t; \
+		t = (x##0 & (c)) << (n);          \
+		x##0 = ((x##0 >> (n)) & (c)) | t; \
+	} while (0)
 
-#define W0(x)   Wz(x, SPH_C32(0x55555555),  1)
-#define W1(x)   Wz(x, SPH_C32(0x33333333),  2)
-#define W2(x)   Wz(x, SPH_C32(0x0F0F0F0F),  4)
-#define W3(x)   Wz(x, SPH_C32(0x00FF00FF),  8)
-#define W4(x)   Wz(x, SPH_C32(0x0000FFFF), 16)
-#define W5(x)   do { \
-sph_u32 t = x ## 3; \
-x ## 3 = x ## 2; \
-x ## 2 = t; \
-t = x ## 1; \
-x ## 1 = x ## 0; \
-x ## 0 = t; \
-} while (0)
-#define W6(x)   do { \
-sph_u32 t = x ## 3; \
-x ## 3 = x ## 1; \
-x ## 1 = t; \
-t = x ## 2; \
-x ## 2 = x ## 0; \
-x ## 0 = t; \
-} while (0)
+#define W0(x) Wz(x, SPH_C32(0x55555555), 1)
+#define W1(x) Wz(x, SPH_C32(0x33333333), 2)
+#define W2(x) Wz(x, SPH_C32(0x0F0F0F0F), 4)
+#define W3(x) Wz(x, SPH_C32(0x00FF00FF), 8)
+#define W4(x) Wz(x, SPH_C32(0x0000FFFF), 16)
+#define W5(x)             \
+	do {                  \
+		sph_u32 t = x##3; \
+		x##3 = x##2;      \
+		x##2 = t;         \
+		t = x##1;         \
+		x##1 = x##0;      \
+		x##0 = t;         \
+	} while (0)
+#define W6(x)             \
+	do {                  \
+		sph_u32 t = x##3; \
+		x##3 = x##1;      \
+		x##1 = t;         \
+		t = x##2;         \
+		x##2 = x##0;      \
+		x##0 = t;         \
+	} while (0)
 
-#define JH_DECL_STATE \
-sph_u32 h03, h02, h01, h00, h13, h12, h11, h10; \
-sph_u32 h23, h22, h21, h20, h33, h32, h31, h30; \
-sph_u32 h43, h42, h41, h40, h53, h52, h51, h50; \
-sph_u32 h63, h62, h61, h60, h73, h72, h71, h70; \
-sph_u32 tmp;
+#define JH_DECL_STATE                               \
+	sph_u32 h03, h02, h01, h00, h13, h12, h11, h10; \
+	sph_u32 h23, h22, h21, h20, h33, h32, h31, h30; \
+	sph_u32 h43, h42, h41, h40, h53, h52, h51, h50; \
+	sph_u32 h63, h62, h61, h60, h73, h72, h71, h70; \
+	sph_u32 tmp;
 
-#define JH_READ_STATE(state)   do { \
-h03 = (state)->H.narrow[ 0]; \
-h02 = (state)->H.narrow[ 1]; \
-h01 = (state)->H.narrow[ 2]; \
-h00 = (state)->H.narrow[ 3]; \
-h13 = (state)->H.narrow[ 4]; \
-h12 = (state)->H.narrow[ 5]; \
-h11 = (state)->H.narrow[ 6]; \
-h10 = (state)->H.narrow[ 7]; \
-h23 = (state)->H.narrow[ 8]; \
-h22 = (state)->H.narrow[ 9]; \
-h21 = (state)->H.narrow[10]; \
-h20 = (state)->H.narrow[11]; \
-h33 = (state)->H.narrow[12]; \
-h32 = (state)->H.narrow[13]; \
-h31 = (state)->H.narrow[14]; \
-h30 = (state)->H.narrow[15]; \
-h43 = (state)->H.narrow[16]; \
-h42 = (state)->H.narrow[17]; \
-h41 = (state)->H.narrow[18]; \
-h40 = (state)->H.narrow[19]; \
-h53 = (state)->H.narrow[20]; \
-h52 = (state)->H.narrow[21]; \
-h51 = (state)->H.narrow[22]; \
-h50 = (state)->H.narrow[23]; \
-h63 = (state)->H.narrow[24]; \
-h62 = (state)->H.narrow[25]; \
-h61 = (state)->H.narrow[26]; \
-h60 = (state)->H.narrow[27]; \
-h73 = (state)->H.narrow[28]; \
-h72 = (state)->H.narrow[29]; \
-h71 = (state)->H.narrow[30]; \
-h70 = (state)->H.narrow[31]; \
-} while (0)
+#define JH_READ_STATE(state)         \
+	do {                             \
+		h03 = (state)->H.narrow[0];  \
+		h02 = (state)->H.narrow[1];  \
+		h01 = (state)->H.narrow[2];  \
+		h00 = (state)->H.narrow[3];  \
+		h13 = (state)->H.narrow[4];  \
+		h12 = (state)->H.narrow[5];  \
+		h11 = (state)->H.narrow[6];  \
+		h10 = (state)->H.narrow[7];  \
+		h23 = (state)->H.narrow[8];  \
+		h22 = (state)->H.narrow[9];  \
+		h21 = (state)->H.narrow[10]; \
+		h20 = (state)->H.narrow[11]; \
+		h33 = (state)->H.narrow[12]; \
+		h32 = (state)->H.narrow[13]; \
+		h31 = (state)->H.narrow[14]; \
+		h30 = (state)->H.narrow[15]; \
+		h43 = (state)->H.narrow[16]; \
+		h42 = (state)->H.narrow[17]; \
+		h41 = (state)->H.narrow[18]; \
+		h40 = (state)->H.narrow[19]; \
+		h53 = (state)->H.narrow[20]; \
+		h52 = (state)->H.narrow[21]; \
+		h51 = (state)->H.narrow[22]; \
+		h50 = (state)->H.narrow[23]; \
+		h63 = (state)->H.narrow[24]; \
+		h62 = (state)->H.narrow[25]; \
+		h61 = (state)->H.narrow[26]; \
+		h60 = (state)->H.narrow[27]; \
+		h73 = (state)->H.narrow[28]; \
+		h72 = (state)->H.narrow[29]; \
+		h71 = (state)->H.narrow[30]; \
+		h70 = (state)->H.narrow[31]; \
+	} while (0)
 
-#define JH_WRITE_STATE(state)   do { \
-(state)->H.narrow[ 0] = h03; \
-(state)->H.narrow[ 1] = h02; \
-(state)->H.narrow[ 2] = h01; \
-(state)->H.narrow[ 3] = h00; \
-(state)->H.narrow[ 4] = h13; \
-(state)->H.narrow[ 5] = h12; \
-(state)->H.narrow[ 6] = h11; \
-(state)->H.narrow[ 7] = h10; \
-(state)->H.narrow[ 8] = h23; \
-(state)->H.narrow[ 9] = h22; \
-(state)->H.narrow[10] = h21; \
-(state)->H.narrow[11] = h20; \
-(state)->H.narrow[12] = h33; \
-(state)->H.narrow[13] = h32; \
-(state)->H.narrow[14] = h31; \
-(state)->H.narrow[15] = h30; \
-(state)->H.narrow[16] = h43; \
-(state)->H.narrow[17] = h42; \
-(state)->H.narrow[18] = h41; \
-(state)->H.narrow[19] = h40; \
-(state)->H.narrow[20] = h53; \
-(state)->H.narrow[21] = h52; \
-(state)->H.narrow[22] = h51; \
-(state)->H.narrow[23] = h50; \
-(state)->H.narrow[24] = h63; \
-(state)->H.narrow[25] = h62; \
-(state)->H.narrow[26] = h61; \
-(state)->H.narrow[27] = h60; \
-(state)->H.narrow[28] = h73; \
-(state)->H.narrow[29] = h72; \
-(state)->H.narrow[30] = h71; \
-(state)->H.narrow[31] = h70; \
-} while (0)
+#define JH_WRITE_STATE(state)        \
+	do {                             \
+		(state)->H.narrow[0] = h03;  \
+		(state)->H.narrow[1] = h02;  \
+		(state)->H.narrow[2] = h01;  \
+		(state)->H.narrow[3] = h00;  \
+		(state)->H.narrow[4] = h13;  \
+		(state)->H.narrow[5] = h12;  \
+		(state)->H.narrow[6] = h11;  \
+		(state)->H.narrow[7] = h10;  \
+		(state)->H.narrow[8] = h23;  \
+		(state)->H.narrow[9] = h22;  \
+		(state)->H.narrow[10] = h21; \
+		(state)->H.narrow[11] = h20; \
+		(state)->H.narrow[12] = h33; \
+		(state)->H.narrow[13] = h32; \
+		(state)->H.narrow[14] = h31; \
+		(state)->H.narrow[15] = h30; \
+		(state)->H.narrow[16] = h43; \
+		(state)->H.narrow[17] = h42; \
+		(state)->H.narrow[18] = h41; \
+		(state)->H.narrow[19] = h40; \
+		(state)->H.narrow[20] = h53; \
+		(state)->H.narrow[21] = h52; \
+		(state)->H.narrow[22] = h51; \
+		(state)->H.narrow[23] = h50; \
+		(state)->H.narrow[24] = h63; \
+		(state)->H.narrow[25] = h62; \
+		(state)->H.narrow[26] = h61; \
+		(state)->H.narrow[27] = h60; \
+		(state)->H.narrow[28] = h73; \
+		(state)->H.narrow[29] = h72; \
+		(state)->H.narrow[30] = h71; \
+		(state)->H.narrow[31] = h70; \
+	} while (0)
 
-#define INPUT_BUF1 \
-sph_u32 m03 = dec32e_aligned(buf +  0); \
-sph_u32 m02 = dec32e_aligned(buf +  4); \
-sph_u32 m01 = dec32e_aligned(buf +  8); \
-sph_u32 m00 = dec32e_aligned(buf + 12); \
-sph_u32 m13 = dec32e_aligned(buf + 16); \
-sph_u32 m12 = dec32e_aligned(buf + 20); \
-sph_u32 m11 = dec32e_aligned(buf + 24); \
-sph_u32 m10 = dec32e_aligned(buf + 28); \
-sph_u32 m23 = dec32e_aligned(buf + 32); \
-sph_u32 m22 = dec32e_aligned(buf + 36); \
-sph_u32 m21 = dec32e_aligned(buf + 40); \
-sph_u32 m20 = dec32e_aligned(buf + 44); \
-sph_u32 m33 = dec32e_aligned(buf + 48); \
-sph_u32 m32 = dec32e_aligned(buf + 52); \
-sph_u32 m31 = dec32e_aligned(buf + 56); \
-sph_u32 m30 = dec32e_aligned(buf + 60); \
-h03 ^= m03; \
-h02 ^= m02; \
-h01 ^= m01; \
-h00 ^= m00; \
-h13 ^= m13; \
-h12 ^= m12; \
-h11 ^= m11; \
-h10 ^= m10; \
-h23 ^= m23; \
-h22 ^= m22; \
-h21 ^= m21; \
-h20 ^= m20; \
-h33 ^= m33; \
-h32 ^= m32; \
-h31 ^= m31; \
-h30 ^= m30;
+#define INPUT_BUF1                          \
+	sph_u32 m03 = dec32e_aligned(buf + 0);  \
+	sph_u32 m02 = dec32e_aligned(buf + 4);  \
+	sph_u32 m01 = dec32e_aligned(buf + 8);  \
+	sph_u32 m00 = dec32e_aligned(buf + 12); \
+	sph_u32 m13 = dec32e_aligned(buf + 16); \
+	sph_u32 m12 = dec32e_aligned(buf + 20); \
+	sph_u32 m11 = dec32e_aligned(buf + 24); \
+	sph_u32 m10 = dec32e_aligned(buf + 28); \
+	sph_u32 m23 = dec32e_aligned(buf + 32); \
+	sph_u32 m22 = dec32e_aligned(buf + 36); \
+	sph_u32 m21 = dec32e_aligned(buf + 40); \
+	sph_u32 m20 = dec32e_aligned(buf + 44); \
+	sph_u32 m33 = dec32e_aligned(buf + 48); \
+	sph_u32 m32 = dec32e_aligned(buf + 52); \
+	sph_u32 m31 = dec32e_aligned(buf + 56); \
+	sph_u32 m30 = dec32e_aligned(buf + 60); \
+	h03 ^= m03;                             \
+	h02 ^= m02;                             \
+	h01 ^= m01;                             \
+	h00 ^= m00;                             \
+	h13 ^= m13;                             \
+	h12 ^= m12;                             \
+	h11 ^= m11;                             \
+	h10 ^= m10;                             \
+	h23 ^= m23;                             \
+	h22 ^= m22;                             \
+	h21 ^= m21;                             \
+	h20 ^= m20;                             \
+	h33 ^= m33;                             \
+	h32 ^= m32;                             \
+	h31 ^= m31;                             \
+	h30 ^= m30;
 
 #define INPUT_BUF2 \
-h43 ^= m03; \
-h42 ^= m02; \
-h41 ^= m01; \
-h40 ^= m00; \
-h53 ^= m13; \
-h52 ^= m12; \
-h51 ^= m11; \
-h50 ^= m10; \
-h63 ^= m23; \
-h62 ^= m22; \
-h61 ^= m21; \
-h60 ^= m20; \
-h73 ^= m33; \
-h72 ^= m32; \
-h71 ^= m31; \
-h70 ^= m30;
+	h43 ^= m03;    \
+	h42 ^= m02;    \
+	h41 ^= m01;    \
+	h40 ^= m00;    \
+	h53 ^= m13;    \
+	h52 ^= m12;    \
+	h51 ^= m11;    \
+	h50 ^= m10;    \
+	h63 ^= m23;    \
+	h62 ^= m22;    \
+	h61 ^= m21;    \
+	h60 ^= m20;    \
+	h73 ^= m33;    \
+	h72 ^= m32;    \
+	h71 ^= m31;    \
+	h70 ^= m30;
 
 static const sph_u32 IV224[] = {
     C32e(0x2dfedd62), C32e(0xf99a98ac), C32e(0xae7cacd6), C32e(0x19d634e7),
@@ -691,8 +690,7 @@ static const sph_u32 IV224[] = {
     C32e(0x1b4f1b5c), C32e(0xd8c840b3), C32e(0x97f6a17f), C32e(0x6e738099),
     C32e(0xdcdf93a5), C32e(0xadeaa3d3), C32e(0xa431e8de), C32e(0xc9539a68),
     C32e(0x22b4a98a), C32e(0xec86a1e4), C32e(0xd574ac95), C32e(0x9ce56cf0),
-    C32e(0x15960dea), C32e(0xb5ab2bbf), C32e(0x9611dcf0), C32e(0xdd64ea6e)
-};
+    C32e(0x15960dea), C32e(0xb5ab2bbf), C32e(0x9611dcf0), C32e(0xdd64ea6e)};
 
 static const sph_u32 IV256[] = {
     C32e(0xeb98a341), C32e(0x2c20d3eb), C32e(0x92cdbe7b), C32e(0x9cb245c1),
@@ -702,8 +700,7 @@ static const sph_u32 IV256[] = {
     C32e(0x71a39689), C32e(0x7f2e4d75), C32e(0x1d144908), C32e(0xf77de262),
     C32e(0x277695f7), C32e(0x76248f94), C32e(0x87d5b657), C32e(0x4780296c),
     C32e(0x5c5e272d), C32e(0xac8e0d6c), C32e(0x518450c6), C32e(0x57057a0f),
-    C32e(0x7be4d367), C32e(0x702412ea), C32e(0x89e3ab13), C32e(0xd31cd769)
-};
+    C32e(0x7be4d367), C32e(0x702412ea), C32e(0x89e3ab13), C32e(0xd31cd769)};
 
 static const sph_u32 IV384[] = {
     C32e(0x481e3bc6), C32e(0xd813398a), C32e(0x6d3b5e89), C32e(0x4ade879b),
@@ -713,8 +710,7 @@ static const sph_u32 IV384[] = {
     C32e(0x569b7f8a), C32e(0x27db454c), C32e(0x9efcbd49), C32e(0x6397af0e),
     C32e(0x589fc27d), C32e(0x26aa80cd), C32e(0x80c08b8c), C32e(0x9deb2eda),
     C32e(0x8a7981e8), C32e(0xf8d5373a), C32e(0xf43967ad), C32e(0xddd17a71),
-    C32e(0xa9b4d3bd), C32e(0xa475d394), C32e(0x976c3fba), C32e(0x9842737f)
-};
+    C32e(0xa9b4d3bd), C32e(0xa475d394), C32e(0x976c3fba), C32e(0x9842737f)};
 
 static const sph_u32 IV512[] = {
     C32e(0x6fd14b96), C32e(0x3e00aa17), C32e(0x636a2e05), C32e(0x7a15d543),
@@ -724,22 +720,22 @@ static const sph_u32 IV512[] = {
     C32e(0x0169e605), C32e(0x41e34a69), C32e(0x46b58a8e), C32e(0x2e6fe65a),
     C32e(0x1047a7d0), C32e(0xc1843c24), C32e(0x3b6e71b1), C32e(0x2d5ac199),
     C32e(0xcf57f6ec), C32e(0x9db1f856), C32e(0xa706887c), C32e(0x5716b156),
-    C32e(0xe3c2fcdf), C32e(0xe68517fb), C32e(0x545a4678), C32e(0xcc8cdd4b)
-};
+    C32e(0xe3c2fcdf), C32e(0xe68517fb), C32e(0x545a4678), C32e(0xcc8cdd4b)};
 
 #endif
 
-#define SL(ro)   SLu(r + ro, ro)
+#define SL(ro) SLu(r + ro, ro)
 
-#define SLu(r, ro)   do { \
-S(h0, h2, h4, h6, Ceven_, r); \
-S(h1, h3, h5, h7, Codd_, r); \
-L(h0, h2, h4, h6, h1, h3, h5, h7); \
-W ## ro(h1); \
-W ## ro(h3); \
-W ## ro(h5); \
-W ## ro(h7); \
-} while (0)
+#define SLu(r, ro)                         \
+	do {                                   \
+		S(h0, h2, h4, h6, Ceven_, r);      \
+		S(h1, h3, h5, h7, Codd_, r);       \
+		L(h0, h2, h4, h6, h1, h3, h5, h7); \
+		W##ro(h1);                         \
+		W##ro(h3);                         \
+		W##ro(h5);                         \
+		W##ro(h7);                         \
+	} while (0)
 
 #if SPH_SMALL_FOOTPRINT_JH
 
@@ -750,75 +746,77 @@ W ## ro(h7); \
  * loop.
  */
 
-#define E8   do { \
-unsigned r; \
-for (r = 0; r < 42; r += 7) { \
-SL(0); \
-SL(1); \
-SL(2); \
-SL(3); \
-SL(4); \
-SL(5); \
-SL(6); \
-} \
-} while (0)
+#define E8                            \
+	do {                              \
+		unsigned r;                   \
+		for (r = 0; r < 42; r += 7) { \
+			SL(0);                    \
+			SL(1);                    \
+			SL(2);                    \
+			SL(3);                    \
+			SL(4);                    \
+			SL(5);                    \
+			SL(6);                    \
+		}                             \
+	} while (0)
 
 #else
 
-#define E8   do { \
-unsigned r, g; \
-for (r = g = 0; r < 42; r ++) { \
-S(h0, h2, h4, h6, Ceven_, r); \
-S(h1, h3, h5, h7, Codd_, r); \
-L(h0, h2, h4, h6, h1, h3, h5, h7); \
-switch (g) { \
-case 0: \
-W0(h1); \
-W0(h3); \
-W0(h5); \
-W0(h7); \
-break; \
-case 1: \
-W1(h1); \
-W1(h3); \
-W1(h5); \
-W1(h7); \
-break; \
-case 2: \
-W2(h1); \
-W2(h3); \
-W2(h5); \
-W2(h7); \
-break; \
-case 3: \
-W3(h1); \
-W3(h3); \
-W3(h5); \
-W3(h7); \
-break; \
-case 4: \
-W4(h1); \
-W4(h3); \
-W4(h5); \
-W4(h7); \
-break; \
-case 5: \
-W5(h1); \
-W5(h3); \
-W5(h5); \
-W5(h7); \
-break; \
-case 6: \
-W6(h1); \
-W6(h3); \
-W6(h5); \
-W6(h7); \
-break; \
-} \
-if (++ g == 7) \
-g = 0; \
-} \
-} while (0)
+#define E8                                     \
+	do {                                       \
+		unsigned r, g;                         \
+		for (r = g = 0; r < 42; r++) {         \
+			S(h0, h2, h4, h6, Ceven_, r);      \
+			S(h1, h3, h5, h7, Codd_, r);       \
+			L(h0, h2, h4, h6, h1, h3, h5, h7); \
+			switch (g) {                       \
+				case 0:                        \
+					W0(h1);                    \
+					W0(h3);                    \
+					W0(h5);                    \
+					W0(h7);                    \
+					break;                     \
+				case 1:                        \
+					W1(h1);                    \
+					W1(h3);                    \
+					W1(h5);                    \
+					W1(h7);                    \
+					break;                     \
+				case 2:                        \
+					W2(h1);                    \
+					W2(h3);                    \
+					W2(h5);                    \
+					W2(h7);                    \
+					break;                     \
+				case 3:                        \
+					W3(h1);                    \
+					W3(h3);                    \
+					W3(h5);                    \
+					W3(h7);                    \
+					break;                     \
+				case 4:                        \
+					W4(h1);                    \
+					W4(h3);                    \
+					W4(h5);                    \
+					W4(h7);                    \
+					break;                     \
+				case 5:                        \
+					W5(h1);                    \
+					W5(h3);                    \
+					W5(h5);                    \
+					W5(h7);                    \
+					break;                     \
+				case 6:                        \
+					W6(h1);                    \
+					W6(h3);                    \
+					W6(h5);                    \
+					W6(h7);                    \
+					break;                     \
+			}                                  \
+			if (++g == 7)                      \
+				g = 0;                         \
+		}                                      \
+	} while (0)
 
 #endif
 
@@ -830,50 +828,51 @@ g = 0; \
  * On a "true 64-bit" architecture, we can unroll at will.
  */
 
-#define E8   do { \
-SLu( 0, 0); \
-SLu( 1, 1); \
-SLu( 2, 2); \
-SLu( 3, 3); \
-SLu( 4, 4); \
-SLu( 5, 5); \
-SLu( 6, 6); \
-SLu( 7, 0); \
-SLu( 8, 1); \
-SLu( 9, 2); \
-SLu(10, 3); \
-SLu(11, 4); \
-SLu(12, 5); \
-SLu(13, 6); \
-SLu(14, 0); \
-SLu(15, 1); \
-SLu(16, 2); \
-SLu(17, 3); \
-SLu(18, 4); \
-SLu(19, 5); \
-SLu(20, 6); \
-SLu(21, 0); \
-SLu(22, 1); \
-SLu(23, 2); \
-SLu(24, 3); \
-SLu(25, 4); \
-SLu(26, 5); \
-SLu(27, 6); \
-SLu(28, 0); \
-SLu(29, 1); \
-SLu(30, 2); \
-SLu(31, 3); \
-SLu(32, 4); \
-SLu(33, 5); \
-SLu(34, 6); \
-SLu(35, 0); \
-SLu(36, 1); \
-SLu(37, 2); \
-SLu(38, 3); \
-SLu(39, 4); \
-SLu(40, 5); \
-SLu(41, 6); \
-} while (0)
+#define E8          \
+	do {            \
+		SLu(0, 0);  \
+		SLu(1, 1);  \
+		SLu(2, 2);  \
+		SLu(3, 3);  \
+		SLu(4, 4);  \
+		SLu(5, 5);  \
+		SLu(6, 6);  \
+		SLu(7, 0);  \
+		SLu(8, 1);  \
+		SLu(9, 2);  \
+		SLu(10, 3); \
+		SLu(11, 4); \
+		SLu(12, 5); \
+		SLu(13, 6); \
+		SLu(14, 0); \
+		SLu(15, 1); \
+		SLu(16, 2); \
+		SLu(17, 3); \
+		SLu(18, 4); \
+		SLu(19, 5); \
+		SLu(20, 6); \
+		SLu(21, 0); \
+		SLu(22, 1); \
+		SLu(23, 2); \
+		SLu(24, 3); \
+		SLu(25, 4); \
+		SLu(26, 5); \
+		SLu(27, 6); \
+		SLu(28, 0); \
+		SLu(29, 1); \
+		SLu(30, 2); \
+		SLu(31, 3); \
+		SLu(32, 4); \
+		SLu(33, 5); \
+		SLu(34, 6); \
+		SLu(35, 0); \
+		SLu(36, 1); \
+		SLu(37, 2); \
+		SLu(38, 3); \
+		SLu(39, 4); \
+		SLu(40, 5); \
+		SLu(41, 6); \
+	} while (0)
 
 #else
 
@@ -883,242 +882,207 @@ SLu(41, 6); \
  * cache on some "big" architectures (32 kB L1 cache).
  */
 
-#define E8   do { \
-unsigned r; \
-for (r = 0; r < 42; r += 7) { \
-SL(0); \
-SL(1); \
-SL(2); \
-SL(3); \
-SL(4); \
-SL(5); \
-SL(6); \
-} \
-} while (0)
+#define E8                            \
+	do {                              \
+		unsigned r;                   \
+		for (r = 0; r < 42; r += 7) { \
+			SL(0);                    \
+			SL(1);                    \
+			SL(2);                    \
+			SL(3);                    \
+			SL(4);                    \
+			SL(5);                    \
+			SL(6);                    \
+		}                             \
+	} while (0)
 
 #endif
 
 #endif
 
 static void
-jh_init(sph_jh_context *sc, const void *iv)
-{
-    sc->ptr = 0;
+    jh_init(sph_jh_context *sc, const void *iv) {
+	sc->ptr = 0;
 #if SPH_JH_64
-    memcpy(sc->H.wide, iv, sizeof sc->H.wide);
+	memcpy(sc->H.wide, iv, sizeof sc->H.wide);
 #else
-    memcpy(sc->H.narrow, iv, sizeof sc->H.narrow);
+	memcpy(sc->H.narrow, iv, sizeof sc->H.narrow);
 #endif
 #if SPH_64
-    sc->block_count = 0;
+	sc->block_count = 0;
 #else
-    sc->block_count_high = 0;
-    sc->block_count_low = 0;
+	sc->block_count_high = 0;
+	sc->block_count_low = 0;
 #endif
 }
 
 static void
-jh_core(sph_jh_context *sc, const void *data, size_t len)
-{
-    unsigned char *buf;
-    size_t ptr;
-    JH_DECL_STATE
-    
-    buf = sc->buf;
-    ptr = sc->ptr;
-    if (len < (sizeof sc->buf) - ptr) {
-        memcpy(buf + ptr, data, len);
-        ptr += len;
-        sc->ptr = ptr;
-        return;
-    }
-    
-    JH_READ_STATE(sc);
-    while (len > 0) {
-        size_t clen;
-        
-        clen = (sizeof sc->buf) - ptr;
-        if (clen > len)
-            clen = len;
-        memcpy(buf + ptr, data, clen);
-        ptr += clen;
-        data = (const unsigned char *)data + clen;
-        len -= clen;
-        if (ptr == sizeof sc->buf) {
-            INPUT_BUF1;
-            E8;
-            INPUT_BUF2;
+    jh_core(sph_jh_context *sc, const void *data, size_t len) {
+	unsigned char *buf;
+	size_t ptr;
+	JH_DECL_STATE
+
+	buf = sc->buf;
+	ptr = sc->ptr;
+	if (len < (sizeof sc->buf) - ptr) {
+		memcpy(buf + ptr, data, len);
+		ptr += len;
+		sc->ptr = ptr;
+		return;
+	}
+
+	JH_READ_STATE(sc);
+	while (len > 0) {
+		size_t clen;
+
+		clen = (sizeof sc->buf) - ptr;
+		if (clen > len)
+			clen = len;
+		memcpy(buf + ptr, data, clen);
+		ptr += clen;
+		data = (const unsigned char *)data + clen;
+		len -= clen;
+		if (ptr == sizeof sc->buf) {
+			INPUT_BUF1;
+			E8;
+			INPUT_BUF2;
 #if SPH_64
-            sc->block_count ++;
+			sc->block_count++;
 #else
-            if ((sc->block_count_low = SPH_T32(
-                                               sc->block_count_low + 1)) == 0)
-                sc->block_count_high ++;
+			if ((sc->block_count_low = SPH_T32(
+			         sc->block_count_low + 1)) == 0)
+				sc->block_count_high++;
 #endif
-            ptr = 0;
-        }
-    }
-    JH_WRITE_STATE(sc);
-    sc->ptr = ptr;
+			ptr = 0;
+		}
+	}
+	JH_WRITE_STATE(sc);
+	sc->ptr = ptr;
 }
 
 static void
-jh_close(sph_jh_context *sc, unsigned ub, unsigned n,
-         void *dst, size_t out_size_w32, const void *iv)
-{
-    unsigned z;
-    unsigned char buf[128];
-    size_t numz, u;
+    jh_close(sph_jh_context *sc, unsigned ub, unsigned n,
+             void *dst, size_t out_size_w32, const void *iv) {
+	unsigned z;
+	unsigned char buf[128];
+	size_t numz, u;
 #if SPH_64
-    sph_u64 l0, l1;
+	sph_u64 l0, l1;
 #else
-    sph_u32 l0, l1, l2, l3;
+	sph_u32 l0, l1, l2, l3;
 #endif
-    
-    z = 0x80 >> n;
-    buf[0] = ((ub & -z) | z) & 0xFF;
-    if (sc->ptr == 0 && n == 0) {
-        numz = 47;
-    } else {
-        numz = 111 - sc->ptr;
-    }
-    memset(buf + 1, 0, numz);
+
+	z = 0x80 >> n;
+	buf[0] = ((ub & -z) | z) & 0xFF;
+	if (sc->ptr == 0 && n == 0) {
+		numz = 47;
+	} else {
+		numz = 111 - sc->ptr;
+	}
+	memset(buf + 1, 0, numz);
 #if SPH_64
-    l0 = SPH_T64(sc->block_count << 9) + (sc->ptr << 3) + n;
-    l1 = SPH_T64(sc->block_count >> 55);
-    sph_enc64be(buf + numz + 1, l1);
-    sph_enc64be(buf + numz + 9, l0);
+	l0 = SPH_T64(sc->block_count << 9) + (sc->ptr << 3) + n;
+	l1 = SPH_T64(sc->block_count >> 55);
+	sph_enc64be(buf + numz + 1, l1);
+	sph_enc64be(buf + numz + 9, l0);
 #else
-    l0 = SPH_T32(sc->block_count_low << 9) + (sc->ptr << 3) + n;
-    l1 = SPH_T32(sc->block_count_low >> 23)
-    + SPH_T32(sc->block_count_high << 9);
-    l2 = SPH_T32(sc->block_count_high >> 23);
-    l3 = 0;
-    sph_enc32be(buf + numz +  1, l3);
-    sph_enc32be(buf + numz +  5, l2);
-    sph_enc32be(buf + numz +  9, l1);
-    sph_enc32be(buf + numz + 13, l0);
+	l0 = SPH_T32(sc->block_count_low << 9) + (sc->ptr << 3) + n;
+	l1 = SPH_T32(sc->block_count_low >> 23) + SPH_T32(sc->block_count_high << 9);
+	l2 = SPH_T32(sc->block_count_high >> 23);
+	l3 = 0;
+	sph_enc32be(buf + numz + 1, l3);
+	sph_enc32be(buf + numz + 5, l2);
+	sph_enc32be(buf + numz + 9, l1);
+	sph_enc32be(buf + numz + 13, l0);
 #endif
-    jh_core(sc, buf, numz + 17);
+	jh_core(sc, buf, numz + 17);
 #if SPH_JH_64
-    for (u = 0; u < 8; u ++)
-        enc64e(buf + (u << 3), sc->H.wide[u + 8]);
+	for (u = 0; u < 8; u++)
+		enc64e(buf + (u << 3), sc->H.wide[u + 8]);
 #else
-    for (u = 0; u < 16; u ++)
-        enc32e(buf + (u << 2), sc->H.narrow[u + 16]);
+	for (u = 0; u < 16; u++)
+		enc32e(buf + (u << 2), sc->H.narrow[u + 16]);
 #endif
-    memcpy(dst, buf + ((16 - out_size_w32) << 2), out_size_w32 << 2);
-    jh_init(sc, iv);
+	memcpy(dst, buf + ((16 - out_size_w32) << 2), out_size_w32 << 2);
+	jh_init(sc, iv);
 }
 
 /* see sph_jh.h */
-void
-sph_jh224_init(void *cc)
-{
-    jh_init(cc, IV224);
+void sph_jh224_init(void *cc) {
+	jh_init(cc, IV224);
 }
 
 /* see sph_jh.h */
-void
-sph_jh224(void *cc, const void *data, size_t len)
-{
-    jh_core(cc, data, len);
+void sph_jh224(void *cc, const void *data, size_t len) {
+	jh_core(cc, data, len);
 }
 
 /* see sph_jh.h */
-void
-sph_jh224_close(void *cc, void *dst)
-{
-    jh_close(cc, 0, 0, dst, 7, IV224);
+void sph_jh224_close(void *cc, void *dst) {
+	jh_close(cc, 0, 0, dst, 7, IV224);
 }
 
 /* see sph_jh.h */
-void
-sph_jh224_addbits_and_close(void *cc, unsigned ub, unsigned n, void *dst)
-{
-    jh_close(cc, ub, n, dst, 7, IV224);
+void sph_jh224_addbits_and_close(void *cc, unsigned ub, unsigned n, void *dst) {
+	jh_close(cc, ub, n, dst, 7, IV224);
 }
 
 /* see sph_jh.h */
-void
-sph_jh256_init(void *cc)
-{
-    jh_init(cc, IV256);
+void sph_jh256_init(void *cc) {
+	jh_init(cc, IV256);
 }
 
 /* see sph_jh.h */
-void
-sph_jh256(void *cc, const void *data, size_t len)
-{
-    jh_core(cc, data, len);
+void sph_jh256(void *cc, const void *data, size_t len) {
+	jh_core(cc, data, len);
 }
 
 /* see sph_jh.h */
-void
-sph_jh256_close(void *cc, void *dst)
-{
-    jh_close(cc, 0, 0, dst, 8, IV256);
+void sph_jh256_close(void *cc, void *dst) {
+	jh_close(cc, 0, 0, dst, 8, IV256);
 }
 
 /* see sph_jh.h */
-void
-sph_jh256_addbits_and_close(void *cc, unsigned ub, unsigned n, void *dst)
-{
-    jh_close(cc, ub, n, dst, 8, IV256);
+void sph_jh256_addbits_and_close(void *cc, unsigned ub, unsigned n, void *dst) {
+	jh_close(cc, ub, n, dst, 8, IV256);
 }
 
 /* see sph_jh.h */
-void
-sph_jh384_init(void *cc)
-{
-    jh_init(cc, IV384);
+void sph_jh384_init(void *cc) {
+	jh_init(cc, IV384);
 }
 
 /* see sph_jh.h */
-void
-sph_jh384(void *cc, const void *data, size_t len)
-{
-    jh_core(cc, data, len);
+void sph_jh384(void *cc, const void *data, size_t len) {
+	jh_core(cc, data, len);
 }
 
 /* see sph_jh.h */
-void
-sph_jh384_close(void *cc, void *dst)
-{
-    jh_close(cc, 0, 0, dst, 12, IV384);
+void sph_jh384_close(void *cc, void *dst) {
+	jh_close(cc, 0, 0, dst, 12, IV384);
 }
 
 /* see sph_jh.h */
-void
-sph_jh384_addbits_and_close(void *cc, unsigned ub, unsigned n, void *dst)
-{
-    jh_close(cc, ub, n, dst, 12, IV384);
+void sph_jh384_addbits_and_close(void *cc, unsigned ub, unsigned n, void *dst) {
+	jh_close(cc, ub, n, dst, 12, IV384);
 }
 
 /* see sph_jh.h */
-void
-sph_jh512_init(void *cc)
-{
-    jh_init(cc, IV512);
+void sph_jh512_init(void *cc) {
+	jh_init(cc, IV512);
 }
 
 /* see sph_jh.h */
-void
-sph_jh512(void *cc, const void *data, size_t len)
-{
-    jh_core(cc, data, len);
+void sph_jh512(void *cc, const void *data, size_t len) {
+	jh_core(cc, data, len);
 }
 
 /* see sph_jh.h */
-void
-sph_jh512_close(void *cc, void *dst)
-{
-    jh_close(cc, 0, 0, dst, 16, IV512);
+void sph_jh512_close(void *cc, void *dst) {
+	jh_close(cc, 0, 0, dst, 16, IV512);
 }
 
 /* see sph_jh.h */
-void
-sph_jh512_addbits_and_close(void *cc, unsigned ub, unsigned n, void *dst)
-{
-    jh_close(cc, ub, n, dst, 16, IV512);
+void sph_jh512_addbits_and_close(void *cc, unsigned ub, unsigned n, void *dst) {
+	jh_close(cc, ub, n, dst, 16, IV512);
 }

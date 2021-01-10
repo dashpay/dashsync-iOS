@@ -19,10 +19,10 @@
 #import "DPDocument.h"
 #import "DPErrors.h"
 
-#import "NSData+Bitcoin.h"
 #import "BigIntTypes.h"
-#import <TinyCborObjc/NSData+DSCborDecoding.h>
 #import "DSKey.h"
+#import "NSData+Bitcoin.h"
+#import <TinyCborObjc/NSData+DSCborDecoding.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -32,18 +32,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (assign, nonatomic) UInt256 userId;
 @property (strong, nonatomic) DPContract *contract;
-@property (strong, nonatomic) DSChain * chain;
+@property (strong, nonatomic) DSChain *chain;
 
 @end
 
 @implementation DPDocumentFactory
 
-- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity*)identity
+- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)identity
                                   contract:(DPContract *)contract
-                                   onChain:(DSChain*)chain {
+                                   onChain:(DSChain *)chain {
     NSParameterAssert(identity);
     NSParameterAssert(contract);
-    
+
     self = [super init];
     if (self) {
         _userId = identity.uniqueID;
@@ -57,87 +57,87 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable DPDocument *)documentOnTable:(NSString *)tableName
                       withDataDictionary:(nullable DSStringValueDictionary *)dataDictionary
-                            usingEntropy:(NSData*)entropy
+                            usingEntropy:(NSData *)entropy
                                    error:(NSError *_Nullable __autoreleasing *)error {
     NSParameterAssert(tableName);
-    
+
     if (!dataDictionary) {
         dataDictionary = @{};
     }
-    
+
     if (uint256_is_zero(self.contract.contractId) && uint256_is_zero(self.contract.registeredBlockchainIdentityUniqueID)) {
         if (error != NULL) {
             *error = [NSError errorWithDomain:DPErrorDomain
                                          code:DPErrorCode_InvalidDocumentType
                                      userInfo:@{
-                                         NSLocalizedDescriptionKey :
-                                             [NSString stringWithFormat:DSLocalizedString(@"Contract '%@' needs to first be locally registered or known",nil),
-                                              self.contract.name],
+                                         NSLocalizedDescriptionKey:
+                                             [NSString stringWithFormat:DSLocalizedString(@"Contract '%@' needs to first be locally registered or known", nil),
+                                                       self.contract.name],
                                      }];
         }
-        
+
         return nil;
     }
-    
+
     if (![self.contract isDocumentDefinedForType:tableName]) {
         if (error != NULL) {
             *error = [NSError errorWithDomain:DPErrorDomain
                                          code:DPErrorCode_UnknownContract
                                      userInfo:@{
-                                         NSLocalizedDescriptionKey :
+                                         NSLocalizedDescriptionKey:
                                              [NSString stringWithFormat:DSLocalizedString(@"Contract '%@' doesn't contain a table named '%@'", nil),
-                                              self.contract.name, tableName],
+                                                       self.contract.name, tableName],
                                      }];
         }
-        
+
         return nil;
     }
-    
+
     DPDocument *object = [[DPDocument alloc] initWithDataDictionary:dataDictionary createdByUserWithId:self.userId onContractWithId:self.contract.contractId onTableWithName:tableName usingEntropy:entropy];
-    
+
     return object;
 }
 
 - (nullable DPDocument *)documentOnTable:(NSString *)tableName
                       withDataDictionary:(nullable DSStringValueDictionary *)dataDictionary
-                         usingDocumentIdentifier:(NSData*)identifier
+                 usingDocumentIdentifier:(NSData *)identifier
                                    error:(NSError *_Nullable __autoreleasing *)error {
     NSParameterAssert(tableName);
-    
+
     if (!dataDictionary) {
         dataDictionary = @{};
     }
-    
+
     if (uint256_is_zero(self.contract.contractId) && uint256_is_zero(self.contract.registeredBlockchainIdentityUniqueID)) {
         if (error != NULL) {
             *error = [NSError errorWithDomain:DPErrorDomain
                                          code:DPErrorCode_InvalidDocumentType
                                      userInfo:@{
-                                         NSLocalizedDescriptionKey :
-                                             [NSString stringWithFormat:DSLocalizedString(@"Contract '%@' needs to first be locally registered or known",nil),
-                                              self.contract.name],
+                                         NSLocalizedDescriptionKey:
+                                             [NSString stringWithFormat:DSLocalizedString(@"Contract '%@' needs to first be locally registered or known", nil),
+                                                       self.contract.name],
                                      }];
         }
-        
+
         return nil;
     }
-    
+
     if (![self.contract isDocumentDefinedForType:tableName]) {
         if (error != NULL) {
             *error = [NSError errorWithDomain:DPErrorDomain
                                          code:DPErrorCode_UnknownContract
                                      userInfo:@{
-                                         NSLocalizedDescriptionKey :
+                                         NSLocalizedDescriptionKey:
                                              [NSString stringWithFormat:DSLocalizedString(@"Contract '%@' doesn't contain a table named '%@'", nil),
-                                              self.contract.name, tableName],
+                                                       self.contract.name, tableName],
                                      }];
         }
-        
+
         return nil;
     }
-    
+
     DPDocument *object = [[DPDocument alloc] initWithDataDictionary:dataDictionary createdByUserWithId:self.userId onContractWithId:self.contract.contractId onTableWithName:tableName usingDocumentId:identifier.UInt256];
-    
+
     return object;
 }
 

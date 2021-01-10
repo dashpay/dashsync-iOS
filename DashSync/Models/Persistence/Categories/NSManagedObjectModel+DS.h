@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface NSManagedObjectModel (DS)
 
 + (NSManagedObjectModel *)ds_managedObjectModelForResource:(NSString *)resource;
-+ (NSManagedObjectModel *)ds_compatibleModelForStoreMetadata:(NSDictionary <NSString *, id> *)metadata;
++ (NSManagedObjectModel *)ds_compatibleModelForStoreMetadata:(NSDictionary<NSString *, id> *)metadata;
 
 @end
 

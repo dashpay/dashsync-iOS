@@ -53,43 +53,41 @@ NS_ASSUME_NONNULL_BEGIN
 - (id<HTTPLoaderOperationProtocol>)sendRequest:(HTTPRequest *)httpRequest
                                        factory:(HTTPLoaderFactory *)factory
                                     completion:(HTTPLoaderCompletionBlock)completion {
-    return [self sendRequest:httpRequest factory:factory rawCompletion:^(BOOL success, BOOL cancelled, HTTPResponse *_Nullable response) {
-        NSAssert([NSThread isMainThread], nil);
+    return [self sendRequest:httpRequest
+                     factory:factory
+               rawCompletion:^(BOOL success, BOOL cancelled, HTTPResponse *_Nullable response) {
+                   NSAssert([NSThread isMainThread], nil);
 
-        if (success) {
-            NSError *_Nullable error = nil;
-            id _Nullable parsedData = [self parseResponse:response.body statusCode:response.statusCode request:httpRequest error:&error];
-            NSAssert((!error && parsedData) || (error && !parsedData), nil); // sanity check
-            
-            // store server timestamp
-            [[DSAuthenticationManager sharedInstance] updateSecureTimeFromResponseIfNeeded:response.responseHeaders];
+                   if (success) {
+                       NSError *_Nullable error = nil;
+                       id _Nullable parsedData = [self parseResponse:response.body statusCode:response.statusCode request:httpRequest error:&error];
+                       NSAssert((!error && parsedData) || (error && !parsedData), nil); // sanity check
 
-            if (completion) {
-                completion(parsedData, response.responseHeaders, response.statusCode, error ?: response.error);
-            }
-        }
-        else {
-            NSError *error = nil;
-            if (cancelled) {
-                error = [NSError errorWithDomain:NSURLErrorDomain
-                                            code:NSURLErrorCancelled
-                                        userInfo:nil];
-            }
-            else {
-                error = response.error;
-            }
-            
-            if (completion) {
-                if (cancelled) {
-                    completion(nil, nil, HTTPResponseStatusCode_Invalid, error);
-                }
-                else {
-                    completion(nil, response.responseHeaders, response.statusCode, error);
-                }
-            }
-        }
+                       // store server timestamp
+                       [[DSAuthenticationManager sharedInstance] updateSecureTimeFromResponseIfNeeded:response.responseHeaders];
 
-    }];
+                       if (completion) {
+                           completion(parsedData, response.responseHeaders, response.statusCode, error ?: response.error);
+                       }
+                   } else {
+                       NSError *error = nil;
+                       if (cancelled) {
+                           error = [NSError errorWithDomain:NSURLErrorDomain
+                                                       code:NSURLErrorCancelled
+                                                   userInfo:nil];
+                       } else {
+                           error = response.error;
+                       }
+
+                       if (completion) {
+                           if (cancelled) {
+                               completion(nil, nil, HTTPResponseStatusCode_Invalid, error);
+                           } else {
+                               completion(nil, response.responseHeaders, response.statusCode, error);
+                           }
+                       }
+                   }
+               }];
 }
 
 - (id<HTTPLoaderOperationProtocol>)sendRequest:(HTTPRequest *)httpRequest
@@ -105,7 +103,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable id)parseResponse:(nullable NSData *)data statusCode:(NSInteger)statusCode request:(HTTPRequest *)request error:(NSError *__autoreleasing *)error {
     NSError *statusCodeError = nil;
     if (statusCode < 200 || statusCode > 300) {
-        NSDictionary *userInfo = @{NSLocalizedDescriptionKey : [NSHTTPURLResponse localizedStringForStatusCode:statusCode]};
+        NSDictionary *userInfo = @{NSLocalizedDescriptionKey: [NSHTTPURLResponse localizedStringForStatusCode:statusCode]};
         statusCodeError = [NSError errorWithDomain:HTTPResponseErrorDomain
                                               code:statusCode
                                           userInfo:userInfo];

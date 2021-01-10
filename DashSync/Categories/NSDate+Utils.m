@@ -9,7 +9,7 @@
 
 @implementation NSDate (Utils)
 
-+(NSTimeInterval)timeIntervalSince1970 {
++ (NSTimeInterval)timeIntervalSince1970 {
     return [[NSDate date] timeIntervalSince1970];
 }
 

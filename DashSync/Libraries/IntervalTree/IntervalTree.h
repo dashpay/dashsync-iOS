@@ -27,212 +27,202 @@
 #ifndef __INTERVAL_TREE_H
 #define __INTERVAL_TREE_H
 
-#include <vector>
 #include <algorithm>
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
-
 template <class T, typename K = long>
 class Interval {
-public:
-    K start;
-    K stop;
-    T value;
-    Interval(K s, K e, const T& v)
-        : start(s)
-        , stop(e)
-        , value(v)
-    { }
+  public:
+	K start;
+	K stop;
+	T value;
+	Interval(K s, K e, const T &v)
+	    : start(s), stop(e), value(v) {
+	}
 };
 
 template <class T, typename K = long>
-long intervalStart(const Interval<T,K>& i) {
-    return i.start;
+long intervalStart(const Interval<T, K> &i) {
+	return i.start;
 }
 
 template <class T, typename K = long>
-long intervalStop(const Interval<T,K>& i) {
-    return i.stop;
+long intervalStop(const Interval<T, K> &i) {
+	return i.stop;
 }
 
 template <class T, typename K = long>
-ostream& operator<<(ostream& out, Interval<T,K>& i) {
-    out << "Interval(" << i.start << ", " << i.stop << "): " << i.value;
-    return out;
+ostream &operator<<(ostream &out, Interval<T, K> &i) {
+	out << "Interval(" << i.start << ", " << i.stop << "): " << i.value;
+	return out;
 }
 
 template <class T, typename K = long>
 class IntervalStartSorter {
-public:
-    bool operator() (const Interval<T,K>& a, const Interval<T,K>& b) {
-        return a.start < b.start;
-    }
+  public:
+	bool operator()(const Interval<T, K> &a, const Interval<T, K> &b) {
+		return a.start < b.start;
+	}
 };
 
 template <class T, typename K = long>
 class IntervalTree {
 
-public:
-    typedef Interval<T,K> interval;
-    typedef vector<interval> intervalVector;
-    typedef IntervalTree<T,K> intervalTree;
-    
-    intervalVector intervals;
-    intervalTree* left;
-    intervalTree* right;
-    long center;
+  public:
+	typedef Interval<T, K> interval;
+	typedef vector<interval> intervalVector;
+	typedef IntervalTree<T, K> intervalTree;
 
-    IntervalTree<T,K>(void)
-        : left(NULL)
-        , right(NULL)
-        , center(0)
-    { }
+	intervalVector intervals;
+	intervalTree *left;
+	intervalTree *right;
+	long center;
 
-    IntervalTree<T,K>(const intervalTree& other) {
-        center = other.center;
-        intervals = other.intervals;
-        if (other.left) {
-            left = (intervalTree*) malloc(sizeof(intervalTree));
-            *left = *other.left;
-        } else {
-            left = NULL;
-        }
-        if (other.right) {
-            right = new intervalTree();
-            *right = *other.right;
-        } else {
-            right = NULL;
-        }
-    }
+	IntervalTree<T, K>(void)
+	    : left(NULL), right(NULL), center(0) {
+	}
 
-    IntervalTree<T,K>& operator=(const intervalTree& other) {
-        center = other.center;
-        intervals = other.intervals;
-        if (other.left) {
-            left = new intervalTree();
-            *left = *other.left;
-        } else {
-            left = NULL;
-        }
-        if (other.right) {
-            right = new intervalTree();
-            *right = *other.right;
-        } else {
-            right = NULL;
-        }
-        return *this;
-    }
+	IntervalTree<T, K>(const intervalTree &other) {
+		center = other.center;
+		intervals = other.intervals;
+		if (other.left) {
+			left = (intervalTree *)malloc(sizeof(intervalTree));
+			*left = *other.left;
+		} else {
+			left = NULL;
+		}
+		if (other.right) {
+			right = new intervalTree();
+			*right = *other.right;
+		} else {
+			right = NULL;
+		}
+	}
 
-    IntervalTree<T,K>(intervalVector& ivals, unsigned int depth = 16, unsigned int minbucket = 64, long leftextent = 0, long rightextent = 0, unsigned int maxbucket = 512)
-        : left(NULL)
-        , right(NULL)
-    {
+	IntervalTree<T, K> &operator=(const intervalTree &other) {
+		center = other.center;
+		intervals = other.intervals;
+		if (other.left) {
+			left = new intervalTree();
+			*left = *other.left;
+		} else {
+			left = NULL;
+		}
+		if (other.right) {
+			right = new intervalTree();
+			*right = *other.right;
+		} else {
+			right = NULL;
+		}
+		return *this;
+	}
 
-        --depth;
-        if (depth == 0 || (ivals.size() < minbucket && ivals.size() < maxbucket)) {
-            intervals = ivals;
-        } else {
-            if (leftextent == 0 && rightextent == 0) {
-                // sort intervals by start
-                IntervalStartSorter<T,K> intervalStartSorter;
-                sort(ivals.begin(), ivals.end(), intervalStartSorter);
-            }
+	IntervalTree<T, K>(intervalVector &ivals, unsigned int depth = 16, unsigned int minbucket = 64, long leftextent = 0, long rightextent = 0, unsigned int maxbucket = 512)
+	    : left(NULL), right(NULL) {
 
-            long leftp = 0;
-            long rightp = 0;
-            long centerp = 0;
-            
-            if (leftextent || rightextent) {
-                leftp = leftextent;
-                rightp = rightextent;
-            } else {
-                leftp = ivals.front().start;
-                vector<K> stops;
-                stops.resize(ivals.size());
-                transform(ivals.begin(), ivals.end(), stops.begin(), intervalStop<T,K>);
-                rightp = *max_element(stops.begin(), stops.end());
-            }
+		--depth;
+		if (depth == 0 || (ivals.size() < minbucket && ivals.size() < maxbucket)) {
+			intervals = ivals;
+		} else {
+			if (leftextent == 0 && rightextent == 0) {
+				// sort intervals by start
+				IntervalStartSorter<T, K> intervalStartSorter;
+				sort(ivals.begin(), ivals.end(), intervalStartSorter);
+			}
 
-            //centerp = ( leftp + rightp ) / 2;
-            centerp = ivals.at(ivals.size() / 2).start;
-            center = centerp;
+			long leftp = 0;
+			long rightp = 0;
+			long centerp = 0;
 
-            intervalVector lefts;
-            intervalVector rights;
+			if (leftextent || rightextent) {
+				leftp = leftextent;
+				rightp = rightextent;
+			} else {
+				leftp = ivals.front().start;
+				vector<K> stops;
+				stops.resize(ivals.size());
+				transform(ivals.begin(), ivals.end(), stops.begin(), intervalStop<T, K>);
+				rightp = *max_element(stops.begin(), stops.end());
+			}
 
-            for (typename intervalVector::iterator i = ivals.begin(); i != ivals.end(); ++i) {
-                interval& interval = *i;
-                if (interval.stop < center) {
-                    lefts.push_back(interval);
-                } else if (interval.start > center) {
-                    rights.push_back(interval);
-                } else {
-                    intervals.push_back(interval);
-                }
-            }
+			//centerp = ( leftp + rightp ) / 2;
+			centerp = ivals.at(ivals.size() / 2).start;
+			center = centerp;
 
-            if (!lefts.empty()) {
-                left = new intervalTree(lefts, depth, minbucket, leftp, centerp);
-            }
-            if (!rights.empty()) {
-                right = new intervalTree(rights, depth, minbucket, centerp, rightp);
-            }
-        }
-    }
+			intervalVector lefts;
+			intervalVector rights;
 
-    void findOverlapping(K start, K stop, intervalVector& overlapping) {
-        if (!intervals.empty() && ! (stop < intervals.front().start)) {
-            for (typename intervalVector::iterator i = intervals.begin(); i != intervals.end(); ++i) {
-                interval& interval = *i;
-                if (interval.stop >= start && interval.start <= stop) {
-                    overlapping.push_back(interval);
-                }
-            }
-        }
+			for (typename intervalVector::iterator i = ivals.begin(); i != ivals.end(); ++i) {
+				interval &interval = *i;
+				if (interval.stop < center) {
+					lefts.push_back(interval);
+				} else if (interval.start > center) {
+					rights.push_back(interval);
+				} else {
+					intervals.push_back(interval);
+				}
+			}
 
-        if (left && start <= center) {
-            left->findOverlapping(start, stop, overlapping);
-        }
+			if (!lefts.empty()) {
+				left = new intervalTree(lefts, depth, minbucket, leftp, centerp);
+			}
+			if (!rights.empty()) {
+				right = new intervalTree(rights, depth, minbucket, centerp, rightp);
+			}
+		}
+	}
 
-        if (right && stop >= center) {
-            right->findOverlapping(start, stop, overlapping);
-        }
+	void findOverlapping(K start, K stop, intervalVector &overlapping) {
+		if (!intervals.empty() && !(stop < intervals.front().start)) {
+			for (typename intervalVector::iterator i = intervals.begin(); i != intervals.end(); ++i) {
+				interval &interval = *i;
+				if (interval.stop >= start && interval.start <= stop) {
+					overlapping.push_back(interval);
+				}
+			}
+		}
 
-    }
+		if (left && start <= center) {
+			left->findOverlapping(start, stop, overlapping);
+		}
 
-    void findContained(K start, K stop, intervalVector& contained) {
-        if (!intervals.empty() && ! (stop < intervals.front().start)) {
-            for (typename intervalVector::iterator i = intervals.begin(); i != intervals.end(); ++i) {
-                interval& interval = *i;
-                if (interval.start >= start && interval.stop <= stop) {
-                    contained.push_back(interval);
-                }
-            }
-        }
+		if (right && stop >= center) {
+			right->findOverlapping(start, stop, overlapping);
+		}
+	}
 
-        if (left && start <= center) {
-            left->findContained(start, stop, contained);
-        }
+	void findContained(K start, K stop, intervalVector &contained) {
+		if (!intervals.empty() && !(stop < intervals.front().start)) {
+			for (typename intervalVector::iterator i = intervals.begin(); i != intervals.end(); ++i) {
+				interval &interval = *i;
+				if (interval.start >= start && interval.stop <= stop) {
+					contained.push_back(interval);
+				}
+			}
+		}
 
-        if (right && stop >= center) {
-            right->findContained(start, stop, contained);
-        }
+		if (left && start <= center) {
+			left->findContained(start, stop, contained);
+		}
 
-    }
+		if (right && stop >= center) {
+			right->findContained(start, stop, contained);
+		}
+	}
 
-    ~IntervalTree(void) {
-        // traverse the left and right
-        // delete them all the way down
-        if (left) {
-            delete left;
-        }
-        if (right) {
-            delete right;
-        }
-    }
-
+	~IntervalTree(void) {
+		// traverse the left and right
+		// delete them all the way down
+		if (left) {
+			delete left;
+		}
+		if (right) {
+			delete right;
+		}
+	}
 };
 
 #endif

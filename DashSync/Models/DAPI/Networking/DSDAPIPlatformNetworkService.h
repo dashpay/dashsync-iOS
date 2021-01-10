@@ -18,8 +18,8 @@
 #import <Foundation/Foundation.h>
 
 #import "DSDAPIPlatformNetworkServiceProtocol.h"
-#import <DAPI-GRPC/Platform.pbrpc.h>
 #import <DAPI-GRPC/Platform.pbobjc.h>
+#import <DAPI-GRPC/Platform.pbrpc.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -27,9 +27,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSDAPIPlatformNetworkService : NSObject <DSDAPIPlatformNetworkServiceProtocol>
 
-@property (readonly, nonatomic) NSString * ipAddress;
+@property (readonly, nonatomic) NSString *ipAddress;
 
-- (instancetype)initWithDAPINodeIPAddress:(NSString*)ipAddress httpLoaderFactory:(HTTPLoaderFactory *)httpLoaderFactory usingGRPCDispatchQueue:(dispatch_queue_t)grpcDispatchQueue onChain:(DSChain*)chain NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithDAPINodeIPAddress:(NSString *)ipAddress httpLoaderFactory:(HTTPLoaderFactory *)httpLoaderFactory usingGRPCDispatchQueue:(dispatch_queue_t)grpcDispatchQueue onChain:(DSChain *)chain NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
 @end

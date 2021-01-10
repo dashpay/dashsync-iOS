@@ -59,5 +59,5 @@ void MDCDistanceMatrixDestroy(MDCDistanceMatrix *matrix) {
 }
 
 NSUInteger MDCDistanceMatrixCornerValue(MDCDistanceMatrix *matrix) {
-    return matrix->distances[matrix->height-1][matrix->width-1];
+    return matrix->distances[matrix->height - 1][matrix->width - 1];
 }

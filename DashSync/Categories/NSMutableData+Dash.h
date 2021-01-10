@@ -51,35 +51,35 @@ CF_IMPLICIT_BRIDGING_DISABLED
 
 + (size_t)sizeOfVarInt:(uint64_t)i;
 
-- (NSMutableData*)appendUInt8:(uint8_t)i;
-- (NSMutableData*)appendUInt16:(uint16_t)i;
-- (NSMutableData*)appendUInt16BigEndian:(uint16_t)i;
-- (NSMutableData*)appendUInt32:(uint32_t)i;
-- (NSMutableData*)appendUInt64:(uint64_t)i;
-- (NSMutableData*)appendUInt128:(UInt128)i;
-- (NSMutableData*)appendUInt160:(UInt160)i;
-- (NSMutableData*)appendUInt256:(UInt256)i;
-- (NSMutableData*)appendUInt384:(UInt384)i;
-- (NSMutableData*)appendUInt512:(UInt512)i;
-- (NSMutableData*)appendUInt768:(UInt768)i;
-- (NSMutableData*)appendUTXO:(DSUTXO)utxo;
-- (NSMutableData*)appendVarInt:(uint64_t)i;
-- (NSMutableData*)appendString:(NSString *)s;
+- (NSMutableData *)appendUInt8:(uint8_t)i;
+- (NSMutableData *)appendUInt16:(uint16_t)i;
+- (NSMutableData *)appendUInt16BigEndian:(uint16_t)i;
+- (NSMutableData *)appendUInt32:(uint32_t)i;
+- (NSMutableData *)appendUInt64:(uint64_t)i;
+- (NSMutableData *)appendUInt128:(UInt128)i;
+- (NSMutableData *)appendUInt160:(UInt160)i;
+- (NSMutableData *)appendUInt256:(UInt256)i;
+- (NSMutableData *)appendUInt384:(UInt384)i;
+- (NSMutableData *)appendUInt512:(UInt512)i;
+- (NSMutableData *)appendUInt768:(UInt768)i;
+- (NSMutableData *)appendUTXO:(DSUTXO)utxo;
+- (NSMutableData *)appendVarInt:(uint64_t)i;
+- (NSMutableData *)appendString:(NSString *)s;
 
-- (NSMutableData*)appendDevnetGenesisCoinbaseMessage:(NSString *)message;
-- (NSMutableData*)appendCoinbaseMessage:(NSString *)message atHeight:(uint32_t)height;
+- (NSMutableData *)appendDevnetGenesisCoinbaseMessage:(NSString *)message;
+- (NSMutableData *)appendCoinbaseMessage:(NSString *)message atHeight:(uint32_t)height;
 
-- (NSMutableData*)appendBitcoinScriptPubKeyForAddress:(NSString *)address forChain:(DSChain*)chain;
-- (NSMutableData*)appendScriptPubKeyForAddress:(NSString *)address forChain:(DSChain*)chain;
-- (NSMutableData*)appendCreditBurnScriptPubKeyForHashDataOfAddress:(NSData *)hashData forChain:(DSChain*)chain;
-- (NSMutableData*)appendCreditBurnScriptPubKeyForAddress:(NSString *)address forChain:(DSChain*)chain;
-- (NSMutableData*)appendScriptPushData:(NSData *)d;
+- (NSMutableData *)appendBitcoinScriptPubKeyForAddress:(NSString *)address forChain:(DSChain *)chain;
+- (NSMutableData *)appendScriptPubKeyForAddress:(NSString *)address forChain:(DSChain *)chain;
+- (NSMutableData *)appendCreditBurnScriptPubKeyForHashDataOfAddress:(NSData *)hashData forChain:(DSChain *)chain;
+- (NSMutableData *)appendCreditBurnScriptPubKeyForAddress:(NSString *)address forChain:(DSChain *)chain;
+- (NSMutableData *)appendScriptPushData:(NSData *)d;
 
-- (NSMutableData*)appendShapeshiftMemoForAddress:(NSString *)address;
-- (NSMutableData*)appendProposalInfo:(NSData*)proposalInfo;
+- (NSMutableData *)appendShapeshiftMemoForAddress:(NSString *)address;
+- (NSMutableData *)appendProposalInfo:(NSData *)proposalInfo;
 
-- (NSMutableData*)appendMessage:(NSData *)message type:(NSString *)type forChain:(DSChain*)chain;
-- (NSMutableData*)appendNullPaddedString:(NSString *)s length:(NSUInteger)length;
-- (NSMutableData*)appendNetAddress:(uint32_t)address port:(uint16_t)port services:(uint64_t)services;
+- (NSMutableData *)appendMessage:(NSData *)message type:(NSString *)type forChain:(DSChain *)chain;
+- (NSMutableData *)appendNullPaddedString:(NSString *)s length:(NSUInteger)length;
+- (NSMutableData *)appendNetAddress:(uint32_t)address port:(uint16_t)port services:(uint64_t)services;
 
 @end

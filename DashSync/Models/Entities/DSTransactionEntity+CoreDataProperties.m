@@ -1,6 +1,6 @@
 //
 //  DSTransactionEntity+CoreDataProperties.m
-//  
+//
 //
 //  Created by Sam Westrich on 5/20/18.
 //
@@ -27,7 +27,7 @@
 @implementation DSTransactionEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSTransactionEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSTransactionEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSTransactionEntity"];
 }
 
 @dynamic associatedShapeshift;

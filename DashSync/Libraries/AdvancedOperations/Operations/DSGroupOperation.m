@@ -97,8 +97,7 @@
     if (operation == self.finishingOperation) {
         self.internalQueue.suspended = YES;
         [self finishWithErrors:[self.aggregatedErrors copy]];
-    }
-    else {
+    } else {
         [self operationDidFinish:operation withErrors:errors];
     }
 }

@@ -125,7 +125,7 @@ static NSString *DSJSONRPCLocalizedErrorMessageForCode(NSInteger code) {
     }
 
     NSAssert([parameters isKindOfClass:NSDictionary.class] || [parameters isKindOfClass:NSArray.class],
-             @"Expect NSArray or NSDictionary in JSONRPC parameters");
+        @"Expect NSArray or NSDictionary in JSONRPC parameters");
 
     if (!requestId) {
         requestId = @(1);
@@ -144,73 +144,68 @@ static NSString *DSJSONRPCLocalizedErrorMessageForCode(NSInteger code) {
                                                        body:nil
                                            sourceIdentifier:nil];
     [request addValue:@"application/json" forHeader:@"Accept"];
-    [self.httpManager sendRequest:request completion:^(id _Nullable responseObject, NSDictionary *_Nullable responseHeaders, NSInteger statusCode, NSError *_Nullable httpError) {
+    [self.httpManager sendRequest:request
+                       completion:^(id _Nullable responseObject, NSDictionary *_Nullable responseHeaders, NSInteger statusCode, NSError *_Nullable httpError) {
+                           if (httpError) {
+                               if (failure) {
+                                   failure(httpError);
+                               }
 
-        if (httpError) {
-            if (failure) {
-                failure(httpError);
-            }
+                               return;
+                           }
 
-            return;
-        }
+                           NSInteger code = 0;
+                           NSString *message = nil;
+                           id data = nil;
 
-        NSInteger code = 0;
-        NSString *message = nil;
-        id data = nil;
+                           if ([responseObject isKindOfClass:NSDictionary.class]) {
+                               id result = responseObject[@"result"];
+                               id error = responseObject[@"error"];
 
-        if ([responseObject isKindOfClass:NSDictionary.class]) {
-            id result = responseObject[@"result"];
-            id error = responseObject[@"error"];
+                               if (result && result != NSNull.null) {
+                                   if (success) {
+                                       success(result);
 
-            if (result && result != NSNull.null) {
-                if (success) {
-                    success(result);
+                                       return;
+                                   }
+                               } else if (error && error != NSNull.null) {
+                                   if ([error isKindOfClass:NSDictionary.class]) {
+                                       if (error[@"code"]) {
+                                           code = [error[@"code"] integerValue];
+                                       }
 
-                    return;
-                }
-            }
-            else if (error && error != NSNull.null) {
-                if ([error isKindOfClass:NSDictionary.class]) {
-                    if (error[@"code"]) {
-                        code = [error[@"code"] integerValue];
-                    }
+                                       if (error[@"message"]) {
+                                           message = error[@"message"];
+                                       } else if (code) {
+                                           message = DSJSONRPCLocalizedErrorMessageForCode(code);
+                                       }
 
-                    if (error[@"message"]) {
-                        message = error[@"message"];
-                    }
-                    else if (code) {
-                        message = DSJSONRPCLocalizedErrorMessageForCode(code);
-                    }
+                                       data = error[@"data"];
+                                   } else {
+                                       message = DSLocalizedString(@"Unknown Error", nil);
+                                   }
+                               } else {
+                                   message = DSLocalizedString(@"Unknown JSON-RPC Response", nil);
+                               }
+                           } else {
+                               message = DSLocalizedString(@"Unknown JSON-RPC Response", nil);
+                           }
 
-                    data = error[@"data"];
-                }
-                else {
-                    message = DSLocalizedString(@"Unknown Error", nil);
-                }
-            }
-            else {
-                message = DSLocalizedString(@"Unknown JSON-RPC Response", nil);
-            }
-        }
-        else {
-            message = DSLocalizedString(@"Unknown JSON-RPC Response", nil);
-        }
+                           if (failure) {
+                               NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
+                               if (message) {
+                                   userInfo[NSLocalizedDescriptionKey] = message;
+                               }
 
-        if (failure) {
-            NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
-            if (message) {
-                userInfo[NSLocalizedDescriptionKey] = message;
-            }
+                               if (data) {
+                                   userInfo[@"data"] = data;
+                               }
 
-            if (data) {
-                userInfo[@"data"] = data;
-            }
+                               NSError *error = [NSError errorWithDomain:DSJSONRPCClientErrorDomain code:code userInfo:userInfo];
 
-            NSError *error = [NSError errorWithDomain:DSJSONRPCClientErrorDomain code:code userInfo:userInfo];
-
-            failure(error);
-        }
-    }];
+                               failure(error);
+                           }
+                       }];
 }
 
 - (id)proxyWithProtocol:(Protocol *)protocol {

@@ -15,6 +15,7 @@
  otherwise returns NO.
  */
 + (BOOL)mdc_sameCharacterAtLeft:(NSString *)left index:(NSUInteger)leftIndex
-                          right:(NSString *)right index:(NSUInteger)rightIndex;
+                          right:(NSString *)right
+                          index:(NSUInteger)rightIndex;
 
 @end

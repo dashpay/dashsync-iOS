@@ -8,7 +8,7 @@
 
 #import "DSAddressTableViewCell.h"
 
-@interface DSAddressTableViewCell()
+@interface DSAddressTableViewCell ()
 
 @end
 

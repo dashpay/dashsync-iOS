@@ -40,7 +40,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /// http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
-typedef NS_ENUM(NSInteger, HTTPResponseStatusCode) {
+typedef NS_ENUM(NSInteger, HTTPResponseStatusCode)
+{
     HTTPResponseStatusCode_Invalid = 0,
     // Informational
     HTTPResponseStatusCode_Continue = 100,
