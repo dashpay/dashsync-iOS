@@ -2607,7 +2607,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "source ~/.bash_profile\n\nunset LLVM_TARGET_TRIPLE_SUFFIX\n\nxcodebuild clean\nxcodebuild COMPILER_INDEX_STORE_ENABLE=NO | xcpretty -r json-compilation-database --output compile_commands.json\n\n# Rules\nLINT_LONG_LINE=300\nLINT_LONG_VARIABLE_NAME=64\nLINT_LONG_METHOD=150\n\nLINT_RULES=\"-rc LONG_LINE=${LINT_LONG_LINE} \\\n    -rc LONG_VARIABLE_NAME=${LINT_LONG_VARIABLE_NAME} \\\n    -rc LONG_METHOD=${LINT_LONG_METHOD}\"\n\n# Threshold.\nLINT_PRIORITY_1_THRESHOLD=0\nLINT_PRIORITY_2_THRESHOLD=20\nLINT_PRIORITY_3_THRESHOLD=30\nLINT_THRESHOLD = \"-max-priority-1=${LINT_PRIORITY_1_THRESHOLD} \\\n    -max-priority-2=${LINT_PRIORITY_2_THRESHOLD} \\\n    -max-priority-3=${LINT_PRIORITY_3_THRESHOLD}\"\n\n# Excludes\n# you can use grep-like regular expressions syntax,\nLINT_EXCLUDES=\"Pods|lib\"\n\noclint-json-compilation-database \\\n    -exclude ${LINT_EXCLUDES} \\\n    -- \\\n    -report-type xcode \\\n    ${LINT_RULES} \\\n    ${LINT_THRESHOLD} \\\n";
+			shellScript = "source ~/.bash_profile\ncd ${SRCROOT}\nxcodebuild clean\nxcodebuild | xcpretty -r json-compilation-database\noclint-json-compilation-database -- -report-type xcode\n";
 		};
 		FB5A0FA7219506140079CF42 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
