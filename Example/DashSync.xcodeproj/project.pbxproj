@@ -969,6 +969,7 @@
 		FB91B2D325325EB100511A44 /* MDCLevenshteinDistanceTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MDCLevenshteinDistanceTests.m; sourceTree = "<group>"; };
 		FB969705246BCA8E00BF56A5 /* DSErrorSimulationsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSErrorSimulationsViewController.h; sourceTree = "<group>"; };
 		FB969706246BCA8E00BF56A5 /* DSErrorSimulationsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSErrorSimulationsViewController.m; sourceTree = "<group>"; };
+		FB974EC725AC3BAE00A1DCE7 /* CODE_OF_CONDUCT.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CODE_OF_CONDUCT.md; sourceTree = "<group>"; };
 		FB9762F524BC4C3E00CF28EC /* DSMiningViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMiningViewController.h; sourceTree = "<group>"; };
 		FB9762F624BC4C3E00CF28EC /* DSMiningViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMiningViewController.m; sourceTree = "<group>"; };
 		FB98831F241D64FA00B39F02 /* DSBlockchainIdentityKeysViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainIdentityKeysViewController.h; sourceTree = "<group>"; };
@@ -1359,6 +1360,7 @@
 			isa = PBXGroup;
 			children = (
 				64A245673BBAE1DA7DAB4907 /* DashSync.podspec */,
+				FB974EC725AC3BAE00A1DCE7 /* CODE_OF_CONDUCT.md */,
 				E47ABFD6469F1FD556CDA6C7 /* README.md */,
 				27552411E6D7D4041AC16526 /* LICENSE */,
 			);
@@ -2607,7 +2609,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "source ~/.bash_profile\ncd ${SRCROOT}\nxcodebuild clean\nxcodebuild | xcpretty -r json-compilation-database\noclint-json-compilation-database -- -report-type xcode\n";
+			shellScript = "source ~/.bash_profile\ncd ${SRCROOT}\nXCPRT=`which xcpretty`\necho $XCPRT\nxcodebuild clean\nxcodebuild | $XCPRT -r json-compilation-database\noclint-json-compilation-database -- -report-type xcode\n";
 		};
 		FB5A0FA7219506140079CF42 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
