@@ -3537,7 +3537,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
         return;
     }
     __weak typeof(self) weakSelf = self;
-    [self.DAPINetworkService getDashpayOutgoingContactRequestsForUserId:self.uniqueIdString
+    [self.DAPINetworkService getDashpayOutgoingContactRequestsForUserId:self.uniqueIDData
         since:self.lastCheckedOutgoingContactsTimestamp ? (self.lastCheckedOutgoingContactsTimestamp - HOUR_TIME_INTERVAL) : 0
         success:^(NSArray<NSDictionary *> *_Nonnull documents) {
             //todo chance the since parameter
