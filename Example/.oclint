@@ -3,6 +3,9 @@ disable-rules:
   - ShortVariableName
   - UnnecessaryElseStatement
   - BitwiseOperatorInConditional
+  - InvertedLogic
+  - UselessParentheses
+  - RedundantIfStatement
 rule-configurations:
   - key: CYCLOMATIC_COMPLEXITY
     value: 20

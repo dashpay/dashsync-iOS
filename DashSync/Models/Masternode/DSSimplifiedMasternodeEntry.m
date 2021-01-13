@@ -153,12 +153,11 @@
 - (void)updateKnownConfirmedHashAtHeight:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlock:(DSMerkleBlock *)block {
     //if the masternodeEntry.confirmedHash is not set we do not need to do anything
     //the knownConfirmedHashAtHeight will be higher
-    if (uint256_is_not_zero(masternodeEntry.confirmedHash)) {
-        //if the masternodeEntry.confirmedHash is set we might need to update our knownConfirmedAtHeight
-        if (masternodeEntry.knownConfirmedAtHeight > block.height) {
-            //we found it confirmed at a previous height
-            masternodeEntry.knownConfirmedAtHeight = block.height;
-        }
+    //and
+    //if the masternodeEntry.confirmedHash is set we might need to update our knownConfirmedAtHeight
+    if (uint256_is_not_zero(masternodeEntry.confirmedHash) && (masternodeEntry.knownConfirmedAtHeight > block.height)) {
+        //we found it confirmed at a previous height
+        masternodeEntry.knownConfirmedAtHeight = block.height;
     }
 }
 

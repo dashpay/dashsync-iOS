@@ -177,11 +177,9 @@
         }
     }
 
-    if (uint256_is_not_zero(self.confirmedHash.UInt256) && uint256_is_not_zero(simplifiedMasternodeEntry.confirmedHash)) {
-        if (self.knownConfirmedAtHeight > blockHeight) {
-            //we now know it was confirmed earlier so update to earlier
-            self.knownConfirmedAtHeight = blockHeight;
-        }
+    if (uint256_is_not_zero(self.confirmedHash.UInt256) && uint256_is_not_zero(simplifiedMasternodeEntry.confirmedHash) && (self.knownConfirmedAtHeight > blockHeight)) {
+        //we now know it was confirmed earlier so update to earlier
+        self.knownConfirmedAtHeight = blockHeight;
     }
 }
 

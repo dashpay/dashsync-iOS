@@ -44,19 +44,15 @@
         NSExpression *leftExpressionInContext = comparisonPredicate.leftExpression;
         NSExpression *rightExpressionInContext = comparisonPredicate.rightExpression;
 
-        if (leftExpression.expressionType == NSConstantValueExpressionType) {
-            if ([leftExpression.constantValue isKindOfClass:[NSManagedObject class]]) {
-                NSManagedObject *managedObject = (NSManagedObject *)leftExpression.constantValue;
-                NSManagedObject *managedObjectInContext = [context objectWithID:managedObject.objectID];
-                leftExpressionInContext = [NSExpression expressionForConstantValue:managedObjectInContext];
-            }
+        if ((leftExpression.expressionType == NSConstantValueExpressionType) && [leftExpression.constantValue isKindOfClass:[NSManagedObject class]]) {
+            NSManagedObject *managedObject = (NSManagedObject *)leftExpression.constantValue;
+            NSManagedObject *managedObjectInContext = [context objectWithID:managedObject.objectID];
+            leftExpressionInContext = [NSExpression expressionForConstantValue:managedObjectInContext];
         }
-        if (rightExpression.expressionType == NSConstantValueExpressionType) {
-            if ([rightExpression.constantValue isKindOfClass:[NSManagedObject class]]) {
-                NSManagedObject *managedObject = (NSManagedObject *)rightExpression.constantValue;
-                NSManagedObject *managedObjectInContext = [context objectWithID:managedObject.objectID];
-                rightExpressionInContext = [NSExpression expressionForConstantValue:managedObjectInContext];
-            }
+        if ((rightExpression.expressionType == NSConstantValueExpressionType) && [rightExpression.constantValue isKindOfClass:[NSManagedObject class]]) {
+            NSManagedObject *managedObject = (NSManagedObject *)rightExpression.constantValue;
+            NSManagedObject *managedObjectInContext = [context objectWithID:managedObject.objectID];
+            rightExpressionInContext = [NSExpression expressionForConstantValue:managedObjectInContext];
         }
         return [NSComparisonPredicate predicateWithLeftExpression:leftExpressionInContext rightExpression:rightExpressionInContext modifier:comparisonPredicate.comparisonPredicateModifier type:comparisonPredicate.predicateOperatorType options:comparisonPredicate.options];
     }

@@ -122,8 +122,8 @@
         _type = [message UInt16AtOffset:off]; // tx type
         off += sizeof(uint16_t);
         count = [message varIntAtOffset:off length:&l]; // input count
-        if (count == 0) {
-            if ([self transactionTypeRequiresInputs]) return nil; // at least one input is required
+        if (count == 0 && [self transactionTypeRequiresInputs]) {
+            return nil; // at least one input is required
         }
         off += l.unsignedIntegerValue;
 

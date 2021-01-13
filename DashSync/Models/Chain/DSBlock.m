@@ -299,15 +299,13 @@
 }
 
 - (BOOL)saveAssociatedChainLock {
-    if (self.hasChainLockAwaitingSaving) {
-        if (!self.chainLockAwaitingSaving.saved) {
-            [self.chainLockAwaitingSaving saveInitial];
-            if (self.chainLockAwaitingSaving.saved) {
-                self.chainLockAwaitingSaving = nil;
-                return TRUE;
-            } else {
-                return FALSE;
-            }
+    if (self.hasChainLockAwaitingSaving && !self.chainLockAwaitingSaving.saved) {
+        [self.chainLockAwaitingSaving saveInitial];
+        if (self.chainLockAwaitingSaving.saved) {
+            self.chainLockAwaitingSaving = nil;
+            return TRUE;
+        } else {
+            return FALSE;
         }
     }
     return TRUE;

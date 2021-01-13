@@ -98,19 +98,15 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSString *)base58OwnerIdString {
-    if (!_base58OwnerIdString) {
-        if (uint256_is_not_zero(_ownerId)) {
-            _base58OwnerIdString = uint256_base58(_ownerId);
-        }
+    if (!_base58OwnerIdString && uint256_is_not_zero(_ownerId)) {
+        _base58OwnerIdString = uint256_base58(_ownerId);
     }
     return _base58OwnerIdString;
 }
 
 - (NSString *)base58ContractIdString {
-    if (!_base58ContractIdString) {
-        if (uint256_is_not_zero(_contractId)) {
-            _base58ContractIdString = uint256_base58(_contractId);
-        }
+    if (!_base58ContractIdString && uint256_is_not_zero(_contractId)) {
+        _base58ContractIdString = uint256_base58(_contractId);
     }
     return _base58ContractIdString;
 }

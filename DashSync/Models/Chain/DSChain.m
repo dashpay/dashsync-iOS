@@ -1914,39 +1914,35 @@ static dispatch_once_t devnetToken = 0;
     NSAssert(uint256_is_not_zero(block.chainWork), @"block should have aggregate work set");
     uint32_t txTime = block.timestamp / 2 + prev.timestamp / 2;
 
-    if (blockPosition & DSBlockPosition_Terminal) {
-        if ((block.height % 10000) == 0 || ((block.height == self.estimatedBlockHeight) && (block.height % 100) == 0)) { //free up some memory from time to time
-            @synchronized(self.mTerminalBlocks) {
-                //[self saveTerminalBlocks];
-                DSBlock *b = block;
+    if ((blockPosition & DSBlockPosition_Terminal) && ((block.height % 10000) == 0 || ((block.height == self.estimatedBlockHeight) && (block.height % 100) == 0))) { //free up some memory from time to time
+        @synchronized(self.mTerminalBlocks) {
+            //[self saveTerminalBlocks];
+            DSBlock *b = block;
 
-                for (uint32_t i = 0; b && i < KEEP_RECENT_TERMINAL_BLOCKS; i++) {
-                    b = self.mTerminalBlocks[b.prevBlockValue];
-                }
-                NSMutableArray *blocksToRemove = [NSMutableArray array];
-                while (b) { // free up some memory
-                    [blocksToRemove addObject:b.blockHashValue];
-                    b = self.mTerminalBlocks[b.prevBlockValue];
-                }
-                [self.mTerminalBlocks removeObjectsForKeys:blocksToRemove];
+            for (uint32_t i = 0; b && i < KEEP_RECENT_TERMINAL_BLOCKS; i++) {
+                b = self.mTerminalBlocks[b.prevBlockValue];
             }
+            NSMutableArray *blocksToRemove = [NSMutableArray array];
+            while (b) { // free up some memory
+                [blocksToRemove addObject:b.blockHashValue];
+                b = self.mTerminalBlocks[b.prevBlockValue];
+            }
+            [self.mTerminalBlocks removeObjectsForKeys:blocksToRemove];
         }
     }
-    if (blockPosition & DSBlockPosition_Sync) {
-        if ((block.height % 1000) == 0) { //free up some memory from time to time
-            @synchronized(self.mSyncBlocks) {
-                DSBlock *b = block;
+    if ((blockPosition & DSBlockPosition_Sync) && ((block.height % 1000) == 0)) { //free up some memory from time to time
+        @synchronized(self.mSyncBlocks) {
+            DSBlock *b = block;
 
-                for (uint32_t i = 0; b && i < KEEP_RECENT_SYNC_BLOCKS; i++) {
-                    b = self.mSyncBlocks[b.prevBlockValue];
-                }
-                NSMutableArray *blocksToRemove = [NSMutableArray array];
-                while (b) { // free up some memory
-                    [blocksToRemove addObject:b.blockHashValue];
-                    b = self.mSyncBlocks[b.prevBlockValue];
-                }
-                [self.mSyncBlocks removeObjectsForKeys:blocksToRemove];
+            for (uint32_t i = 0; b && i < KEEP_RECENT_SYNC_BLOCKS; i++) {
+                b = self.mSyncBlocks[b.prevBlockValue];
             }
+            NSMutableArray *blocksToRemove = [NSMutableArray array];
+            while (b) { // free up some memory
+                [blocksToRemove addObject:b.blockHashValue];
+                b = self.mSyncBlocks[b.prevBlockValue];
+            }
+            [self.mSyncBlocks removeObjectsForKeys:blocksToRemove];
         }
     }
 
@@ -1955,10 +1951,8 @@ static dispatch_once_t devnetToken = 0;
 
     DSBlock *equivalentTerminalBlock = nil;
 
-    if (blockPosition & DSBlockPosition_Sync) {
-        if (self.lastSyncBlockHeight + 1 >= lastCheckpoint.height) {
-            equivalentTerminalBlock = self.mTerminalBlocks[blockHash];
-        }
+    if ((blockPosition & DSBlockPosition_Sync) && (self.lastSyncBlockHeight + 1 >= lastCheckpoint.height)) {
+        equivalentTerminalBlock = self.mTerminalBlocks[blockHash];
     }
 
 
@@ -1989,16 +1983,14 @@ static dispatch_once_t devnetToken = 0;
 
     DSCheckpoint *checkpoint = [self.checkpointsByHeightDictionary objectForKey:@(block.height)];
 
-    if (!equivalentTerminalBlock) {
+    if ((!equivalentTerminalBlock) && (checkpoint && !uint256_eq(block.blockHash, checkpoint.blockHash))) {
         // verify block chain checkpoints
-        if (checkpoint && !uint256_eq(block.blockHash, checkpoint.blockHash)) {
-            DSLog(@"%@:%d relayed a block that differs from the checkpoint at height %d, blockHash: %@, expected: %@",
-                peer.host, peer.port, block.height, blockHash, uint256_hex(checkpoint.blockHash));
-            if (peer) {
-                [self.chainManager chain:self badBlockReceivedFromPeer:peer];
-            }
-            return FALSE;
+        DSLog(@"%@:%d relayed a block that differs from the checkpoint at height %d, blockHash: %@, expected: %@",
+            peer.host, peer.port, block.height, blockHash, uint256_hex(checkpoint.blockHash));
+        if (peer) {
+            [self.chainManager chain:self badBlockReceivedFromPeer:peer];
         }
+        return FALSE;
     }
 
     BOOL onMainChain = FALSE;
@@ -2570,90 +2562,86 @@ static dispatch_once_t devnetToken = 0;
 - (BOOL)addChainLock:(DSChainLock *)chainLock {
     DSBlock *terminalBlock = self.mTerminalBlocks[uint256_obj(chainLock.blockHash)];
     [terminalBlock setChainLockedWithChainLock:chainLock];
-    if (terminalBlock.chainLocked) {
-        if (![self recentTerminalBlockForBlockHash:terminalBlock.blockHash]) {
-            //the newly chain locked block is not in the main chain, we will need to reorg to it
-            DSBlock *b = terminalBlock, *b2 = self.lastTerminalBlock;
+    if ((terminalBlock.chainLocked) && (![self recentTerminalBlockForBlockHash:terminalBlock.blockHash])) {
+        //the newly chain locked block is not in the main chain, we will need to reorg to it
+        DSBlock *b = terminalBlock, *b2 = self.lastTerminalBlock;
 
-            while (b && b2 && !uint256_eq(b.blockHash, b2.blockHash)) { // walk back to where the fork joins the main chain
-                b = self.mTerminalBlocks[b.prevBlockValue];
-                if (b.height < b2.height) b2 = self.mTerminalBlocks[b2.prevBlockValue];
+        while (b && b2 && !uint256_eq(b.blockHash, b2.blockHash)) { // walk back to where the fork joins the main chain
+            b = self.mTerminalBlocks[b.prevBlockValue];
+            if (b.height < b2.height) b2 = self.mTerminalBlocks[b2.prevBlockValue];
+        }
+
+        self.lastTerminalBlock = terminalBlock;
+        NSMutableDictionary *forkChainsTerminalBlocks = [[self forkChainsTerminalBlocks] mutableCopy];
+        NSMutableArray *addedBlocks = [NSMutableArray array];
+        BOOL done = FALSE;
+        while (!done) {
+            BOOL found = NO;
+            for (NSValue *blockHash in forkChainsTerminalBlocks) {
+                if ([addedBlocks containsObject:blockHash]) continue;
+                DSBlock *potentialNextTerminalBlock = self.mTerminalBlocks[blockHash];
+                if (uint256_eq(potentialNextTerminalBlock.prevBlock, self.lastTerminalBlock.blockHash)) {
+                    [self addBlock:potentialNextTerminalBlock receivedAsHeader:YES fromPeer:nil];
+                    [addedBlocks addObject:blockHash];
+                    found = TRUE;
+                    break;
+                }
             }
-
-            self.lastTerminalBlock = terminalBlock;
-            NSMutableDictionary *forkChainsTerminalBlocks = [[self forkChainsTerminalBlocks] mutableCopy];
-            NSMutableArray *addedBlocks = [NSMutableArray array];
-            BOOL done = FALSE;
-            while (!done) {
-                BOOL found = NO;
-                for (NSValue *blockHash in forkChainsTerminalBlocks) {
-                    if ([addedBlocks containsObject:blockHash]) continue;
-                    DSBlock *potentialNextTerminalBlock = self.mTerminalBlocks[blockHash];
-                    if (uint256_eq(potentialNextTerminalBlock.prevBlock, self.lastTerminalBlock.blockHash)) {
-                        [self addBlock:potentialNextTerminalBlock receivedAsHeader:YES fromPeer:nil];
-                        [addedBlocks addObject:blockHash];
-                        found = TRUE;
-                        break;
-                    }
-                }
-                if (!found) {
-                    done = TRUE;
-                }
+            if (!found) {
+                done = TRUE;
             }
         }
     }
     DSBlock *syncBlock = self.mSyncBlocks[uint256_obj(chainLock.blockHash)];
     [syncBlock setChainLockedWithChainLock:chainLock];
-    if (syncBlock.chainLocked) {
-        if (![self recentSyncBlockForBlockHash:syncBlock.blockHash]) {
-            //the newly chain locked block is not in the main chain, we will need to reorg to it
-            DSBlock *b = syncBlock, *b2 = self.lastSyncBlock;
+    if ((syncBlock.chainLocked) && ![self recentSyncBlockForBlockHash:syncBlock.blockHash]) {
+        //the newly chain locked block is not in the main chain, we will need to reorg to it
+        DSBlock *b = syncBlock, *b2 = self.lastSyncBlock;
 
-            while (b && b2 && !uint256_eq(b.blockHash, b2.blockHash)) { // walk back to where the fork joins the main chain
-                b = self.mSyncBlocks[b.prevBlockValue];
-                if (b.height < b2.height) b2 = self.mSyncBlocks[b2.prevBlockValue];
+        while (b && b2 && !uint256_eq(b.blockHash, b2.blockHash)) { // walk back to where the fork joins the main chain
+            b = self.mSyncBlocks[b.prevBlockValue];
+            if (b.height < b2.height) b2 = self.mSyncBlocks[b2.prevBlockValue];
+        }
+
+        self.lastSyncBlock = syncBlock;
+
+
+        NSMutableArray *txHashes = [NSMutableArray array];
+        // mark transactions after the join point as unconfirmed
+        for (DSWallet *wallet in self.wallets) {
+            for (DSTransaction *tx in wallet.allTransactions) {
+                if (tx.blockHeight <= b.height) break;
+                [txHashes addObject:uint256_obj(tx.txHash)];
             }
+        }
 
-            self.lastSyncBlock = syncBlock;
+        [self setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTransactionHashes:txHashes];
+        b = syncBlock;
 
+        while (b.height > b2.height) { // set transaction heights for new main chain
+            DSBlock *prevBlock = self.mSyncBlocks[b.prevBlockValue];
+            NSTimeInterval txTime = prevBlock ? ((prevBlock.timestamp + b.timestamp) / 2) : b.timestamp;
+            [self setBlockHeight:b.height andTimestamp:txTime forTransactionHashes:b.transactionHashes];
+            b = prevBlock;
+        }
 
-            NSMutableArray *txHashes = [NSMutableArray array];
-            // mark transactions after the join point as unconfirmed
-            for (DSWallet *wallet in self.wallets) {
-                for (DSTransaction *tx in wallet.allTransactions) {
-                    if (tx.blockHeight <= b.height) break;
-                    [txHashes addObject:uint256_obj(tx.txHash)];
+        NSMutableDictionary *forkChainsTerminalBlocks = [[self forkChainsSyncBlocks] mutableCopy];
+        NSMutableArray *addedBlocks = [NSMutableArray array];
+        BOOL done = FALSE;
+        while (!done) {
+            BOOL found = NO;
+            for (NSValue *blockHash in forkChainsTerminalBlocks) {
+                if ([addedBlocks containsObject:blockHash]) continue;
+                DSBlock *potentialNextTerminalBlock = self.mSyncBlocks[blockHash];
+                if (uint256_eq(potentialNextTerminalBlock.prevBlock, self.lastSyncBlock.blockHash)) {
+                    [self addBlock:potentialNextTerminalBlock receivedAsHeader:NO fromPeer:nil];
+                    [addedBlocks addObject:blockHash];
+                    found = TRUE;
+                    break;
                 }
             }
-
-            [self setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTransactionHashes:txHashes];
-            b = syncBlock;
-
-            while (b.height > b2.height) { // set transaction heights for new main chain
-                DSBlock *prevBlock = self.mSyncBlocks[b.prevBlockValue];
-                NSTimeInterval txTime = prevBlock ? ((prevBlock.timestamp + b.timestamp) / 2) : b.timestamp;
-                [self setBlockHeight:b.height andTimestamp:txTime forTransactionHashes:b.transactionHashes];
-                b = prevBlock;
-            }
-
-            NSMutableDictionary *forkChainsTerminalBlocks = [[self forkChainsSyncBlocks] mutableCopy];
-            NSMutableArray *addedBlocks = [NSMutableArray array];
-            BOOL done = FALSE;
-            while (!done) {
-                BOOL found = NO;
-                for (NSValue *blockHash in forkChainsTerminalBlocks) {
-                    if ([addedBlocks containsObject:blockHash]) continue;
-                    DSBlock *potentialNextTerminalBlock = self.mSyncBlocks[blockHash];
-                    if (uint256_eq(potentialNextTerminalBlock.prevBlock, self.lastSyncBlock.blockHash)) {
-                        [self addBlock:potentialNextTerminalBlock receivedAsHeader:NO fromPeer:nil];
-                        [addedBlocks addObject:blockHash];
-                        found = TRUE;
-                        break;
-                    }
-                }
-                if (!found) {
-                    done = TRUE;
-                }
+            if (!found) {
+                done = TRUE;
             }
         }
     }
@@ -2857,10 +2845,8 @@ static dispatch_once_t devnetToken = 0;
         if ([announcers containsObject:peer]) {
             [announcers removeObject:peer];
         }
-        if (![announcers count]) {
-            if (self.estimatedBlockHeights[height]) {
-                [self.estimatedBlockHeights removeObjectForKey:height];
-            }
+        if ((![announcers count]) && (self.estimatedBlockHeights[height])) {
+            [self.estimatedBlockHeights removeObjectForKey:height];
         }
     }
     if (![self estimatedBlockHeights][@(estimatedBlockHeight)]) {
@@ -2896,13 +2882,12 @@ static dispatch_once_t devnetToken = 0;
         if ([announcers containsObject:peer]) {
             [announcers removeObject:peer];
         }
-        if (![announcers count]) {
-            if (self.estimatedBlockHeights[height]) {
-                [self.estimatedBlockHeights removeObjectForKey:height];
-            }
+        if ((![announcers count]) && (self.estimatedBlockHeights[height])) {
+            [self.estimatedBlockHeights removeObjectForKey:height];
         }
-        if ([self.estimatedBlockHeights count]) { //keep best estimate if no other peers reporting on estimate
-            if ([height intValue] == _bestEstimatedBlockHeight) _bestEstimatedBlockHeight = 0;
+        //keep best estimate if no other peers reporting on estimate
+        if ([self.estimatedBlockHeights count] && ([height intValue] == _bestEstimatedBlockHeight)) {
+            _bestEstimatedBlockHeight = 0;
         }
     }
 }

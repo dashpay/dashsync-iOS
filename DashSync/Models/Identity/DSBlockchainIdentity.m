@@ -3642,7 +3642,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             DSFriendRequestEntity *friendRequest = [DSFriendRequestEntity anyObjectInContext:context matching:@"destinationContact == %@ && sourceContact.associatedBlockchainIdentity.uniqueID == %@", [self matchingDashpayUserInContext:context], uint256_data(contactRequest.senderBlockchainIdentityUniqueId)];
             if (!friendRequest) {
                 [incomingNewRequests addObject:contactRequest];
-            } else if (friendRequest.sourceContact == nil) {
             }
         } else if (uint256_eq(contactRequest.senderBlockchainIdentityUniqueId, self.uniqueID)) {
             //we are the sender, this is an outgoing request
