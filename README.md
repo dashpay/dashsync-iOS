@@ -1,6 +1,6 @@
 # DashSync - iOS
 
-![banner](docs/github-dashsync-image)
+![banner](docs/github-dashsync-image.jpg)
 
 [![CI Status](http://img.shields.io/travis/quantumexplorer/DashSyncPod.svg?style=flat)](https://travis-ci.org/quantumexplorer/DashSyncPod)
 [![Version](https://img.shields.io/cocoapods/v/DashSyncPod.svg?style=flat)](http://cocoapods.org/pods/DashSyncPod)
