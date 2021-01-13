@@ -151,9 +151,9 @@ static NSString *DashCurrencySymbolAssetName = nil;
 
     uint8_t version = *(const uint8_t *)d.bytes;
     if ([chain isMainnet]) {
-        return (version == DASH_PUBKEY_ADDRESS || version == DASH_SCRIPT_ADDRESS) ? YES : NO;
+        return (version == DASH_PUBKEY_ADDRESS || version == DASH_SCRIPT_ADDRESS);
     } else {
-        return (version == DASH_PUBKEY_ADDRESS_TEST || version == DASH_SCRIPT_ADDRESS_TEST) ? YES : NO;
+        return (version == DASH_PUBKEY_ADDRESS_TEST || version == DASH_SCRIPT_ADDRESS_TEST);
     }
 }
 
@@ -166,7 +166,7 @@ static NSString *DashCurrencySymbolAssetName = nil;
 
     uint8_t version = *(const uint8_t *)d.bytes;
 
-    return (version == DASH_PUBKEY_ADDRESS_TEST || version == DASH_SCRIPT_ADDRESS_TEST) ? YES : NO;
+    return (version == DASH_PUBKEY_ADDRESS_TEST || version == DASH_SCRIPT_ADDRESS_TEST);
 }
 
 - (BOOL)isValidDashPrivateKeyOnChain:(DSChain *)chain {
@@ -175,12 +175,12 @@ static NSString *DashCurrencySymbolAssetName = nil;
 
     if (d.length == 33 || d.length == 34) { // wallet import format: https://en.bitcoin.it/wiki/Wallet_import_format
         if ([chain isMainnet]) {
-            return (*(const uint8_t *)d.bytes == DASH_PRIVKEY) ? YES : NO;
+            return (*(const uint8_t *)d.bytes == DASH_PRIVKEY);
         } else {
-            return (*(const uint8_t *)d.bytes == DASH_PRIVKEY_TEST) ? YES : NO;
+            return (*(const uint8_t *)d.bytes == DASH_PRIVKEY_TEST);
         }
     } else
-        return (self.hexToData.length == 32) ? YES : NO; // hex encoded key
+        return (self.hexToData.length == 32); // hex encoded key
 }
 
 - (BOOL)isValidDashDevnetPrivateKey {
@@ -188,9 +188,9 @@ static NSString *DashCurrencySymbolAssetName = nil;
     NSData *d = self.base58checkToData;
 
     if (d.length == 33 || d.length == 34) { // wallet import format: https://en.bitcoin.it/wiki/Wallet_import_format
-        return (*(const uint8_t *)d.bytes == DASH_PRIVKEY_TEST) ? YES : NO;
+        return (*(const uint8_t *)d.bytes == DASH_PRIVKEY_TEST);
     } else
-        return (self.hexToData.length == 32) ? YES : NO; // hex encoded key
+        return (self.hexToData.length == 32); // hex encoded key
 }
 
 - (BOOL)isValidDashExtendedPublicKeyOnChain:(DSChain *)chain {
@@ -218,11 +218,9 @@ static NSString *DashCurrencySymbolAssetName = nil;
 
     if (prefix == BIP38_NOEC_PREFIX) { // non EC multiplied key
         return ((flag & BIP38_NOEC_FLAG) == BIP38_NOEC_FLAG && (flag & BIP38_LOTSEQUENCE_FLAG) == 0 &&
-                   (flag & BIP38_INVALID_FLAG) == 0) ?
-                   YES :
-                   NO;
+                   (flag & BIP38_INVALID_FLAG) == 0);
     } else if (prefix == BIP38_EC_PREFIX) { // EC multiplied key
-        return ((flag & BIP38_NOEC_FLAG) == 0 && (flag & BIP38_INVALID_FLAG) == 0) ? YES : NO;
+        return ((flag & BIP38_NOEC_FLAG) == 0 && (flag & BIP38_INVALID_FLAG) == 0);
     } else
         return NO; // invalid prefix
 }

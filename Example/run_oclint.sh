@@ -5,7 +5,7 @@ xcodebuild clean build -workspace DashSync.xcworkspace -scheme DashSync-Example 
 
 # Excludes
 # grep-like syntax
-LINT_EXCLUDES="Pods|Example"
+LINT_EXCLUDES="Pods|Example|Libraries"
 
 oclint-json-compilation-database -exclude ${LINT_EXCLUDES} -- -report-type xcode ${LINT_RULES} ${LINT_THRESHOLD}
 

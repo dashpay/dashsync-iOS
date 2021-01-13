@@ -16,6 +16,8 @@ rule-configurations:
     value: 30
   - key: LONG_METHOD
     value: 200
+  - key: NCSS_METHOD
+    value: 128
 output: oclint.xml
 report-type: xml
 max-priority-1: 0
