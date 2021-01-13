@@ -53,7 +53,7 @@ static dispatch_once_t platformChainToken = 0;
     @synchronized(self) {
         if (![_platformChainDictionary objectForKey:chain.uniqueID]) {
             platformForChain = [[DSDashPlatform alloc] initWithChain:chain];
-            [_platformChainDictionary setObject:platformForChain forKey:chain.uniqueID];
+            _platformChainDictionary[chain.uniqueID] = platformForChain;
         } else {
             platformForChain = [_platformChainDictionary objectForKey:chain.uniqueID];
         }

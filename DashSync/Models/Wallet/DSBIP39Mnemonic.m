@@ -502,7 +502,8 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
                         }
                         completion:^(NSDictionary<NSString *, NSNumber *> *secondWords) {
                             for (NSString *secondWord in secondWords) {
-                                [possibleWordArrays setObject:@(DSBIP39RecoveryWordConfidence_Max) forKey:[NSString stringWithFormat:@"%@ %@", word, secondWord]];
+                                NSString * key = [NSString stringWithFormat:@"%@ %@", word, secondWord];
+                                possibleWordArrays[key] = @(DSBIP39RecoveryWordConfidence_Max);
                                 stop = YES;
                             }
                             completed++;
@@ -543,7 +544,7 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
                 [derivationPath generateExtendedPublicKeyFromSeed:data storeUnderWalletUniqueId:nil];
                 NSUInteger indexArr[] = {0, 0};
                 NSString *firstAddress = [derivationPath addressAtIndexPath:[NSIndexPath indexPathWithIndexes:indexArr length:2]];
-                [possibleWordAddresses setObject:word forKey:firstAddress];
+                possibleWordAddresses[firstAddress] = word;
             }
             currentWordCount++;
         }
@@ -560,7 +561,7 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
                                                               if (perfectConfidenceWords.count) {
                                                                   NSMutableDictionary *possibleWordArrays = [NSMutableDictionary dictionary];
                                                                   for (NSString *address in perfectConfidenceWords) {
-                                                                      [possibleWordArrays setObject:@(DSBIP39RecoveryWordConfidence_Max) forKey:address];
+                                                                      possibleWordArrays[address] = @(DSBIP39RecoveryWordConfidence_Max);
                                                                   }
                                                                   dispatch_async(dispatchQueue, ^{
                                                                       completion(possibleWordArrays);
@@ -570,7 +571,7 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
                                                                   for (NSString *potentialWord in [possibleWordAddresses allValues]) {
                                                                       NSUInteger distance = [replacementString mdc_damerauLevenshteinDistanceTo:potentialWord];
                                                                       if ([replacementString mdc_damerauLevenshteinDistanceTo:potentialWord] < 3) {
-                                                                          [possibleWordArrays setObject:@(distance) forKey:potentialWord];
+                                                                          possibleWordArrays[potentialWord] = @(distance);
                                                                       }
                                                                   }
                                                                   dispatch_async(dispatchQueue, ^{

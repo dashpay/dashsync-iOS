@@ -276,7 +276,7 @@
     for (NSData *blockHash in blockHashDictionary) {
         DSMerkleBlock *block = [chain blockForBlockHash:blockHash.UInt256];
         if (block) {
-            [rDictionary setObject:blockHashDictionary[blockHash] forKey:block];
+            rDictionary[block] = blockHashDictionary[blockHash];
         }
     }
     return rDictionary;
@@ -287,7 +287,7 @@
     for (DSMerkleBlock *merkleBlock in blockHashDictionary) {
         NSData *blockHash = uint256_data(merkleBlock.blockHash);
         if (blockHash) {
-            [rDictionary setObject:blockHashDictionary[merkleBlock] forKey:blockHash];
+            rDictionary[blockHash] = blockHashDictionary[merkleBlock];
         }
     }
     return rDictionary;

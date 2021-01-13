@@ -324,7 +324,7 @@ static dispatch_once_t devnetToken = 0;
     @synchronized(self) {
         if (![_devnetDictionary objectForKey:identifier]) {
             devnetChain = [[DSChain alloc] initAsDevnetWithIdentifier:identifier checkpoints:checkpointArray];
-            [_devnetDictionary setObject:devnetChain forKey:identifier];
+            _devnetDictionary[identifier] = devnetChain;
             inSetUp = TRUE;
         } else {
             devnetChain = [_devnetDictionary objectForKey:identifier];
@@ -358,7 +358,7 @@ static dispatch_once_t devnetToken = 0;
     @synchronized(self) {
         if (![_devnetDictionary objectForKey:identifier]) {
             devnetChain = [[DSChain alloc] initAsDevnetWithIdentifier:identifier checkpoints:checkpointArray minimumDifficultyBlocks:minimumDifficultyBlocks port:port dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID isTransient:isTransient];
-            [_devnetDictionary setObject:devnetChain forKey:identifier];
+            _devnetDictionary[identifier] = devnetChain;
             inSetUp = TRUE;
         } else {
             devnetChain = [_devnetDictionary objectForKey:identifier];
@@ -3142,7 +3142,7 @@ static dispatch_once_t devnetToken = 0;
     NSMutableDictionary *rAllBlockchainIdentities = [NSMutableDictionary dictionary];
     for (DSWallet *wallet in self.wallets) {
         for (DSBlockchainIdentity *blockchainIdentity in [wallet.blockchainIdentities allValues]) {
-            [rAllBlockchainIdentities setObject:blockchainIdentity forKey:blockchainIdentity.uniqueIDData];
+            rAllBlockchainIdentities[blockchainIdentity.uniqueIDData] = blockchainIdentity;
         }
     }
     return rAllBlockchainIdentities;

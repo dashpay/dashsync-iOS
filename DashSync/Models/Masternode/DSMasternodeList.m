@@ -448,7 +448,7 @@ inline static int ceil_log2(int x) {
     for (DSQuorumEntry *quorum in self.quorums) {
         BOOL verified = quorum.verified;
         if (!verified) {
-            DSMasternodeList *quorumMasternodeList = [masternodeLists objectForKey:uint256_data(quorum.quorumHash)];
+            DSMasternodeList *quorumMasternodeList = masternodeLists[uint256_data(quorum.quorumHash)];
             BOOL valid = [quorum validateWithMasternodeList:quorumMasternodeList];
             if (!valid) return FALSE;
         }
@@ -522,7 +522,7 @@ inline static int ceil_log2(int x) {
         if (ourEntry && theirEntry) {
             NSDictionary *entryComparison = [ourEntry compare:theirEntry ourBlockHash:self.blockHash theirBlockHash:other.blockHash usingOurString:ours usingTheirString:theirs blockHeightLookup:blockHeightLookup];
             if (entryComparison.count) {
-                [dictionary setObject:entryComparison forKey:data];
+                dictionary[data] = entryComparison;
             }
         } else if (ourEntry) {
             dictionary[data] = @{@"absent": uint256_hex(ourEntry.providerRegistrationTransactionHash)};

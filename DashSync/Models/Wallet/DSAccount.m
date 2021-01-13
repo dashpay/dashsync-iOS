@@ -667,7 +667,7 @@
 
             if (lockedBlockHeight) {
                 if (![pendingCoinbaseLockedTransactionHashes objectForKey:@(lockedBlockHeight)]) {
-                    [pendingCoinbaseLockedTransactionHashes setObject:[NSMutableSet set] forKey:@(lockedBlockHeight)];
+                    pendingCoinbaseLockedTransactionHashes[@(lockedBlockHeight)] = [NSMutableSet set];
                 }
                 [((NSMutableSet *)pendingCoinbaseLockedTransactionHashes[@(lockedBlockHeight)]) addObject:uint256_obj(tx.txHash)];
                 [balanceHistory insertObject:@(balance) atIndex:0];

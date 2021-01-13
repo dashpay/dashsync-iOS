@@ -80,7 +80,7 @@
 - (DSTransaction *)transactionForHash:(UInt256)transactionHash {
     NSData *transactionHashData = uint256_data(transactionHash);
     for (NSDictionary *transactionDictionary in [self transactionDictionaries]) {
-        DSTransaction *transaction = [transactionDictionary objectForKey:transactionHashData];
+        DSTransaction *transaction = transactionDictionary[transactionHashData];
         if (transaction) return transaction;
     }
     return nil;

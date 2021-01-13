@@ -193,12 +193,12 @@
         }
 
         if (proposalDictionary) {
-            identifier = [proposalDictionary objectForKey:@"name"];
-            startEpoch = [[proposalDictionary objectForKey:@"start_epoch"] longLongValue];
-            endEpoch = [[proposalDictionary objectForKey:@"end_epoch"] longLongValue];
-            paymentAddress = [proposalDictionary objectForKey:@"payment_address"];
-            amount = [[[NSDecimalNumber decimalNumberWithDecimal:[[proposalDictionary objectForKey:@"payment_amount"] decimalValue]] decimalNumberByMultiplyingByPowerOf10:8] unsignedLongLongValue];
-            url = [proposalDictionary objectForKey:@"url"];
+            identifier = proposalDictionary[@"name"];
+            startEpoch = [proposalDictionary[@"start_epoch"] longLongValue];
+            endEpoch = [proposalDictionary[@"end_epoch"] longLongValue];
+            paymentAddress = proposalDictionary[@"payment_address"];
+            amount = [[[NSDecimalNumber decimalNumberWithDecimal:[proposalDictionary[@"payment_amount"] decimalValue]] decimalNumberByMultiplyingByPowerOf10:8] unsignedLongLongValue];
+            url = proposalDictionary[@"url"];
         }
     }
 
@@ -263,7 +263,7 @@
 - (DSGovernanceObjectEntity *)governanceObjectEntityInContext:(NSManagedObjectContext *)context {
     NSArray *governanceObjects = [DSGovernanceObjectEntity objectsInContext:context matching:@"governanceObjectHash.governanceObjectHash = %@", [NSData dataWithUInt256:self.governanceObjectHash]];
     if ([governanceObjects count]) {
-        return [governanceObjects objectAtIndex:0];
+        return governanceObjects[0];
     } else {
         DSGovernanceObjectEntity *governanceObjectEntity = [DSGovernanceObjectEntity managedObjectInBlockedContext:context];
         [governanceObjectEntity setAttributesFromGovernanceObject:self forHashEntity:nil];
@@ -491,13 +491,13 @@
 
 - (NSData *)proposalInfo {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-    [dictionary setObject:self.identifier forKey:@"name"];
-    [dictionary setObject:@(self.startEpoch) forKey:@"start_epoch"];
-    [dictionary setObject:@(self.endEpoch) forKey:@"end_epoch"];
-    [dictionary setObject:@(1) forKey:@"type"];
-    [dictionary setObject:self.paymentAddress forKey:@"payment_address"];
-    [dictionary setObject:[NSDecimalNumber decimalNumberWithMantissa:self.amount exponent:-8 isNegative:FALSE] forKey:@"payment_amount"];
-    [dictionary setObject:self.url forKey:@"url"];
+    dictionary[@"name"] = self.identifier;
+    dictionary[@"start_epoch"] = @(self.startEpoch);
+    dictionary[@"end_epoch"] = @(self.endEpoch);
+    dictionary[@"type"] = @(1);
+    dictionary[@"payment_address"] = self.paymentAddress;
+    dictionary[@"payment_amount"] = [NSDecimalNumber decimalNumberWithMantissa:self.amount exponent:-8 isNegative:FALSE];
+    dictionary[@"url"] = self.url;
     NSArray *proposalArray = @[@[@"proposal", dictionary]];
     NSError *error = nil;
     if (@available(iOS 11.0, *)) {

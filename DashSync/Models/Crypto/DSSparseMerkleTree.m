@@ -35,7 +35,7 @@
     if (keyIndex == hashes.count) {
         return leafHash;
     }
-    NSData *nodeValue = [hashes objectAtIndex:hashes.count - keyIndex - 1];
+    NSData *nodeValue = hashes[hashes.count - keyIndex - 1];
     if ([key bitIsTrueAtLeftToRightIndex:keyIndex]) {
         UInt256 returnHash = [@[nodeValue, [self verifyInclusionForKey:key forKeyIndex:keyIndex + 1 withLeafHash:leafHash againstHashes:hashes]] hashDataComponents];
         return uint256_data(returnHash);
@@ -103,7 +103,7 @@
     }
     if ([key bitIsTrueAtLeftToRightIndex:keyIndex]) {
         if ([compressionData bitIsTrueAtLeftToRightIndex:length - keyIndex - 1]) {
-            UInt256 returnHash = [@[[hashes objectAtIndex:hashes.count - hashIndex - 1], [self verifyCompressedInclusionForKey:key forKeyIndex:keyIndex + 1 forHashIndex:hashIndex + 1 withLeafHash:leafHash againstHashes:hashes compressionData:compressionData length:length]] hashDataComponents];
+            UInt256 returnHash = [@[hashes[hashes.count - hashIndex - 1], [self verifyCompressedInclusionForKey:key forKeyIndex:keyIndex + 1 forHashIndex:hashIndex + 1 withLeafHash:leafHash againstHashes:hashes compressionData:compressionData length:length]] hashDataComponents];
             return uint256_data(returnHash);
         } else {
             uint8_t zero = 0;
@@ -113,7 +113,7 @@
         }
     } else {
         if ([compressionData bitIsTrueAtLeftToRightIndex:length - keyIndex - 1]) {
-            UInt256 returnHash = [@[[self verifyCompressedInclusionForKey:key forKeyIndex:keyIndex + 1 forHashIndex:hashIndex + 1 withLeafHash:leafHash againstHashes:hashes compressionData:compressionData length:length], [hashes objectAtIndex:hashes.count - hashIndex - 1]] hashDataComponents];
+            UInt256 returnHash = [@[[self verifyCompressedInclusionForKey:key forKeyIndex:keyIndex + 1 forHashIndex:hashIndex + 1 withLeafHash:leafHash againstHashes:hashes compressionData:compressionData length:length], hashes[hashes.count - hashIndex - 1]] hashDataComponents];
             return uint256_data(returnHash);
         } else {
             uint8_t zero = 0;
