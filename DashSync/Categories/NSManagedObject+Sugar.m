@@ -171,7 +171,7 @@ static NSUInteger _fetchBatchSize = 100;
 + (instancetype)anyObjectMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext *)context {
     NSArray *array = [self objectsMatching:predicateFormat arguments:args inContext:context];
     if ([array count]) {
-        return a[0];
+        return array[0];
     } else
         return nil;
 }

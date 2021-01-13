@@ -960,6 +960,7 @@
 		FB974F1025AE596A00A1DCE7 /* run_oclint.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = run_oclint.sh; sourceTree = "<group>"; };
 		FB974F1125AE597700A1DCE7 /* .oclint */ = {isa = PBXFileReference; lastKnownFileType = text; path = .oclint; sourceTree = "<group>"; };
 		FB974F3225AE7B6200A1DCE7 /* ci.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; name = ci.yml; path = ../.github/workflows/ci.yml; sourceTree = "<group>"; };
+		FB974F4F25AE8D4700A1DCE7 /* github-dashsync-image.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "github-dashsync-image.jpg"; sourceTree = "<group>"; };
 		FB9762F524BC4C3E00CF28EC /* DSMiningViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMiningViewController.h; sourceTree = "<group>"; };
 		FB9762F624BC4C3E00CF28EC /* DSMiningViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMiningViewController.m; sourceTree = "<group>"; };
 		FB98831F241D64FA00B39F02 /* DSBlockchainIdentityKeysViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainIdentityKeysViewController.h; sourceTree = "<group>"; };
@@ -1250,6 +1251,7 @@
 		6003F581195388D10070C39A = {
 			isa = PBXGroup;
 			children = (
+				FB974F4E25AE8D0300A1DCE7 /* Docs */,
 				60FF7A9C1954A5C5007DD14C /* Podspec Metadata */,
 				6003F593195388D20070C39A /* Example for DashSync */,
 				6003F5B5195388D20070C39A /* Tests */,
@@ -1953,6 +1955,14 @@
 				FB974F3225AE7B6200A1DCE7 /* ci.yml */,
 			);
 			name = CI;
+			sourceTree = "<group>";
+		};
+		FB974F4E25AE8D0300A1DCE7 /* Docs */ = {
+			isa = PBXGroup;
+			children = (
+				FB974F4F25AE8D4700A1DCE7 /* github-dashsync-image.jpg */,
+			);
+			path = Docs;
 			sourceTree = "<group>";
 		};
 		FB995D9721101C1E00AC37D0 /* Peers */ = {
