@@ -1004,7 +1004,6 @@ static dispatch_once_t devnetToken = 0;
         default:
             return nil;
     }
-    
 }
 
 - (void)setSporkPrivateKeyBase58String:(NSString *)sporkPrivateKey {
@@ -1096,9 +1095,8 @@ static dispatch_once_t devnetToken = 0;
             if (!error && cachedDpnsContractIDData) {
                 _cachedDpnsContractID = cachedDpnsContractIDData.UInt256;
                 return _cachedDpnsContractID;
-            } else
-                return UINT256_ZERO;
-            break;
+            }
+            return UINT256_ZERO;
         }
     }
 }
