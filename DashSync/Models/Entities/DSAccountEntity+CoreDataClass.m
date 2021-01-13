@@ -19,7 +19,7 @@
     NSArray *accounts = [DSAccountEntity objectsInContext:context matching:@"walletUniqueID = %@ && index = %@", walletUniqueID, @(index)];
     if ([accounts count]) {
         NSAssert([accounts count] == 1, @"There can only be one account per index per wallet");
-        return [accounts objectAtIndex:0];
+        return accounts[0];
     }
     DSAccountEntity *accountEntity = [DSAccountEntity managedObjectInBlockedContext:context];
     accountEntity.walletUniqueID = walletUniqueID;

@@ -1600,7 +1600,6 @@
                         [notfound appendBytes:&hash length:sizeof(hash)];
                         break;
                     }
-                    break;
                 }
                 case DSInvType_GovernanceObject: {
                     DSGovernanceObject *governanceObject = [self.governanceDelegate peer:self requestedGovernanceObject:hash];
@@ -1612,7 +1611,6 @@
                         [notfound appendBytes:&hash length:sizeof(hash)];
                         break;
                     }
-                    break;
                 }
                     // fall through
                 default:

@@ -269,7 +269,6 @@
         [governanceObjectEntity setAttributesFromGovernanceObject:self forHashEntity:nil];
         return governanceObjectEntity;
     }
-    return nil;
 }
 
 // MARK:- Governance Vote

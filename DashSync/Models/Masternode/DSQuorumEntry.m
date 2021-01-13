@@ -193,26 +193,19 @@
     switch (self.llmqType) {
         case DSLLMQType_50_60:
             return 30;
-            break;
         case DSLLMQType_400_60:
             return 240;
-            break;
         case DSLLMQType_400_85:
             return 340;
-            break;
         case DSLLMQType_100_67:
             return 67;
-            break;
         case DSLLMQType_5_60:
             return 3;
-            break;
         case DSLLMQType_10_60:
             return 6;
-            break;
         default:
             NSAssert(FALSE, @"Unknown llmq type");
             return UINT32_MAX;
-            break;
     }
 }
 
@@ -428,7 +421,6 @@
         default:
             NSAssert(FALSE, @"Unknown quorum type");
             return 50;
-            break;
     }
 }
 

@@ -93,28 +93,20 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
     switch (language) {
         case DSBIP39Language_English:
             return @"en";
-            break;
         case DSBIP39Language_French:
             return @"fr";
-            break;
         case DSBIP39Language_Spanish:
             return @"es";
-            break;
         case DSBIP39Language_Korean:
             return @"ko";
-            break;
         case DSBIP39Language_Japanese:
             return @"ja";
-            break;
         case DSBIP39Language_ChineseSimplified:
             return @"zh-Hans";
-            break;
         case DSBIP39Language_Italian:
             return @"it";
-            break;
         default:
             return @"en"; //return english as default
-            break;
     }
 }
 
@@ -502,7 +494,7 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
                         }
                         completion:^(NSDictionary<NSString *, NSNumber *> *secondWords) {
                             for (NSString *secondWord in secondWords) {
-                                NSString * key = [NSString stringWithFormat:@"%@ %@", word, secondWord];
+                                NSString *key = [NSString stringWithFormat:@"%@ %@", word, secondWord];
                                 possibleWordArrays[key] = @(DSBIP39RecoveryWordConfidence_Max);
                                 stop = YES;
                             }

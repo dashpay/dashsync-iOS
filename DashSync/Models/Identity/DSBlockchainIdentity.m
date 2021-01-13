@@ -1316,17 +1316,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     switch (self.registrationStatus) {
         case DSBlockchainIdentityRegistrationStatus_Registered:
             return DSLocalizedString(@"Registered", @"The Dash Identity is registered");
-            break;
         case DSBlockchainIdentityRegistrationStatus_Unknown:
             return DSLocalizedString(@"Unknown", @"It is Unknown if the Dash Identity is registered");
-            break;
         case DSBlockchainIdentityRegistrationStatus_Registering:
             return DSLocalizedString(@"Registering", @"The Dash Identity is being registered");
-            break;
         case DSBlockchainIdentityRegistrationStatus_NotRegistered:
             return DSLocalizedString(@"Not Registered", @"The Dash Identity is not registered");
-            break;
-
         default:
             break;
     }

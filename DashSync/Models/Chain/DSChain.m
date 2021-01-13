@@ -664,7 +664,6 @@ static dispatch_once_t devnetToken = 0;
             return 3;
         default:
             return 3;
-            break;
     }
 }
 
@@ -726,7 +725,6 @@ static dispatch_once_t devnetToken = 0;
             return DASH_MAGIC_NUMBER_DEVNET;
         default:
             return DASH_MAGIC_NUMBER_MAINNET;
-            break;
     }
 }
 
@@ -838,9 +836,8 @@ static dispatch_once_t devnetToken = 0;
             if (!error && cachedStandardPort) {
                 _cachedStandardPort = cachedStandardPort;
                 return _cachedStandardPort;
-            } else
-                return DEVNET_STANDARD_PORT;
-            break;
+            }
+            return DEVNET_STANDARD_PORT;
         }
         default:
             break;
@@ -1001,14 +998,13 @@ static dispatch_once_t devnetToken = 0;
             NSString *publicKey = getKeychainString([NSString stringWithFormat:@"%@%@", self.devnetIdentifier, SPORK_PRIVATE_KEY_LOCATION], &error);
             if (!error && publicKey) {
                 return publicKey;
-            } else {
-                return nil;
             }
+            return nil;
         }
         default:
-            break;
+            return nil;
     }
-    return nil;
+    
 }
 
 - (void)setSporkPrivateKeyBase58String:(NSString *)sporkPrivateKey {
@@ -1147,9 +1143,8 @@ static dispatch_once_t devnetToken = 0;
             if (!error && cachedDashpayContractIDData) {
                 _cachedDashpayContractID = cachedDashpayContractIDData.UInt256;
                 return _cachedDashpayContractID;
-            } else
-                return UINT256_ZERO;
-            break;
+            }
+            return UINT256_ZERO;
         }
     }
 }

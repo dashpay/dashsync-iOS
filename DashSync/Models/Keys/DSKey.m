@@ -81,13 +81,10 @@
     switch (self.keyType) {
         case 1:
             return DSLocalizedString(@"ECDSA", nil);
-            break;
         case 2:
             return DSLocalizedString(@"BLS", nil);
-            break;
         default:
             return DSLocalizedString(@"Unknown Key Type", nil);
-            break;
     }
 }
 

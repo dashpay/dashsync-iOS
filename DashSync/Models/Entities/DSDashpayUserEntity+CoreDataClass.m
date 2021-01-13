@@ -81,9 +81,9 @@
     NSUInteger i = 0;
     for (NSDictionary *result in orderedResults) {
         if (activityType == DSDashpayUserEntityFriendActivityType_IncomingTransactions) {
-            [rDictionary setObject:result[@"count"] forKey:result[@"localAddress.derivationPath.friendRequest.destinationContact.associatedBlockchainIdentity.uniqueID"]];
+            rDictionary[result[@"localAddress.derivationPath.friendRequest.destinationContact.associatedBlockchainIdentity.uniqueID"]] = result[@"count"];
         } else if (activityType == DSDashpayUserEntityFriendActivityType_OutgoingTransactions) {
-            [rDictionary setObject:result[@"count"] forKey:result[@"localAddress.derivationPath.friendRequest.sourceContact.associatedBlockchainIdentity.uniqueID"]];
+            rDictionary[result[@"localAddress.derivationPath.friendRequest.sourceContact.associatedBlockchainIdentity.uniqueID"]] = result[@"count"];
         }
         i++;
         if (i == count) break;

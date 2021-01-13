@@ -145,7 +145,6 @@
             return @"LLMQ based Instant Send";
         default:
             return @"Unknown spork";
-            break;
     }
 }
 

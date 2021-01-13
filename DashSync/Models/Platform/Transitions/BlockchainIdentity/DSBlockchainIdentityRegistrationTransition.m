@@ -101,7 +101,7 @@
         NSUInteger identifier = [platformKeyDictionary[@"id"] unsignedIntValue];
         NSData *keyData = platformKeyDictionary[@"data"];
         DSKey *key = [DSKey keyWithPublicKeyData:keyData forKeyType:keyType];
-        [platformKeys setObject:key forKey:@(identifier)];
+        platformKeys[@(identifier)] = key;
     }
     self.publicKeys = [platformKeys copy];
 }
