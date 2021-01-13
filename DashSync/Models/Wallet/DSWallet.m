@@ -1073,7 +1073,7 @@
     if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
 
     NSAssert(!uint256_is_zero(blockchainIdentity.uniqueID), @"registrationTransactionHashData must not be null");
-    [keyChainDictionary setObject:@(blockchainIdentity.index) forKey:blockchainIdentity.lockedOutpointData];
+    keyChainDictionary[blockchainIdentity.lockedOutpointData] = @(blockchainIdentity.index);
     setKeychainDict(keyChainDictionary, self.walletBlockchainIdentitiesKey, NO);
 
     if (!_defaultBlockchainIdentity && (blockchainIdentity.index == 0)) {
@@ -1178,7 +1178,7 @@
                         }
                     }
                     if (blockchainIdentity) {
-                        [rDictionary setObject:blockchainIdentity forKey:blockchainIdentityLockedOutpointData];
+                        rDictionary[blockchainIdentityLockedOutpointData] = blockchainIdentity;
                         if (index == defaultIndex) {
                             _defaultBlockchainIdentity = blockchainIdentity;
                         }
@@ -1271,7 +1271,7 @@
         NSError *error = nil;
         NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletMasternodeOperatorsKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
         if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
-        [keyChainDictionary setObject:@(masternode.operatorWalletIndex) forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
+        keyChainDictionary[uint256_data(masternode.providerRegistrationTransaction.txHash)] = @(masternode.operatorWalletIndex);
         setKeychainDict(keyChainDictionary, self.walletMasternodeOperatorsKey, NO);
     }
 }
@@ -1286,7 +1286,7 @@
         NSError *error = nil;
         NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletMasternodeOperatorsKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
         if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
-        [keyChainDictionary setObject:hashedOperatorKey forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
+        keyChainDictionary[uint256_data(masternode.providerRegistrationTransaction.txHash)] = hashedOperatorKey;
         setKeychainDict(keyChainDictionary, self.walletMasternodeOperatorsKey, NO);
         setKeychainData([operatorKey publicKeyData], operatorKeyStorageLocation, NO);
     }
@@ -1301,7 +1301,7 @@
             NSError *error = nil;
             NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletMasternodeOwnersKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
             if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
-            [keyChainDictionary setObject:@(masternode.ownerWalletIndex) forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
+            keyChainDictionary[uint256_data(masternode.providerRegistrationTransaction.txHash)] = @(masternode.ownerWalletIndex);
             setKeychainDict(keyChainDictionary, self.walletMasternodeOwnersKey, NO);
         }
     }
@@ -1317,7 +1317,7 @@
         NSError *error = nil;
         NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletMasternodeOwnersKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
         if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
-        [keyChainDictionary setObject:hashedOwnerKey forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
+        keyChainDictionary[uint256_data(masternode.providerRegistrationTransaction.txHash)] = hashedOwnerKey;
         setKeychainDict(keyChainDictionary, self.walletMasternodeOwnersKey, NO);
         setKeychainData([ownerKey privateKeyData], ownerKeyStorageLocation, NO);
     }
@@ -1330,7 +1330,7 @@
         NSError *error = nil;
         NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletMasternodeVotersKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
         if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
-        [keyChainDictionary setObject:@(masternode.votingWalletIndex) forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
+        keyChainDictionary[uint256_data(masternode.providerRegistrationTransaction.txHash)] = @(masternode.votingWalletIndex);
         setKeychainDict(keyChainDictionary, self.walletMasternodeVotersKey, NO);
     }
 }
@@ -1343,7 +1343,7 @@
         NSError *error = nil;
         NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletMasternodeVotersKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
         if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
-        [keyChainDictionary setObject:hashedVoterKey forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
+        keyChainDictionary[uint256_data(masternode.providerRegistrationTransaction.txHash)] = hashedVoterKey;
         setKeychainDict(keyChainDictionary, self.walletMasternodeVotersKey, NO);
         if ([votingKey hasPrivateKey]) {
             setKeychainData([votingKey privateKeyData], ownerKeyStorageLocation, NO);

@@ -298,7 +298,7 @@ static NSString *const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.back
     if (attributesError) {
         return 0;
     } else {
-        NSNumber *fileSizeNumber = [fileAttributes objectForKey:NSFileSize];
+        NSNumber *fileSizeNumber = fileAttributes[NSFileSize];
         long long fileSize = [fileSizeNumber longLongValue];
         return fileSize;
     }
