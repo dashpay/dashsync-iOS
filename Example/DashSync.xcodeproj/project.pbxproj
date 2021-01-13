@@ -6,20 +6,6 @@
 	objectVersion = 46;
 	objects = {
 
-/* Begin PBXAggregateTarget section */
-		FB29C3B125AA500D001F4F43 /* OCLint */ = {
-			isa = PBXAggregateTarget;
-			buildConfigurationList = FB29C3B425AA500E001F4F43 /* Build configuration list for PBXAggregateTarget "OCLint" */;
-			buildPhases = (
-				2A4EB9A725ACEC3F00892E4D /* ShellScript */,
-			);
-			dependencies = (
-			);
-			name = OCLint;
-			productName = OCLint;
-		};
-/* End PBXAggregateTarget section */
-
 /* Begin PBXBuildFile section */
 		2A1AC63C20F9012A00B3B79F /* FormSectionModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1AC63B20F9012A00B3B79F /* FormSectionModel.m */; };
 		2A1B55BE2226B3C5008FED65 /* Contacts.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A1B55BD2226B3C4008FED65 /* Contacts.storyboard */; };
@@ -971,6 +957,9 @@
 		FB969706246BCA8E00BF56A5 /* DSErrorSimulationsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSErrorSimulationsViewController.m; sourceTree = "<group>"; };
 		FB974EC725AC3BAE00A1DCE7 /* CODE_OF_CONDUCT.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CODE_OF_CONDUCT.md; sourceTree = "<group>"; };
 		FB974EC825AC3E0400A1DCE7 /* CONTRIBUTING.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CONTRIBUTING.md; sourceTree = "<group>"; };
+		FB974F1025AE596A00A1DCE7 /* run_oclint.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = run_oclint.sh; sourceTree = "<group>"; };
+		FB974F1125AE597700A1DCE7 /* .oclint */ = {isa = PBXFileReference; lastKnownFileType = text; path = .oclint; sourceTree = "<group>"; };
+		FB974F3225AE7B6200A1DCE7 /* ci.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; name = ci.yml; path = ../.github/workflows/ci.yml; sourceTree = "<group>"; };
 		FB9762F524BC4C3E00CF28EC /* DSMiningViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMiningViewController.h; sourceTree = "<group>"; };
 		FB9762F624BC4C3E00CF28EC /* DSMiningViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMiningViewController.m; sourceTree = "<group>"; };
 		FB98831F241D64FA00B39F02 /* DSBlockchainIdentityKeysViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainIdentityKeysViewController.h; sourceTree = "<group>"; };
@@ -1266,6 +1255,8 @@
 				6003F5B5195388D20070C39A /* Tests */,
 				6003F58C195388D20070C39A /* Frameworks */,
 				6003F58B195388D20070C39A /* Products */,
+				FB974F3125AE7A2200A1DCE7 /* CI */,
+				FB974F0F25AE595700A1DCE7 /* Linting */,
 				83DC6095687FDE098549FF30 /* Pods */,
 			);
 			sourceTree = "<group>";
@@ -1947,6 +1938,23 @@
 			path = MDCDamerauLevenshteinTests;
 			sourceTree = "<group>";
 		};
+		FB974F0F25AE595700A1DCE7 /* Linting */ = {
+			isa = PBXGroup;
+			children = (
+				FB974F1125AE597700A1DCE7 /* .oclint */,
+				FB974F1025AE596A00A1DCE7 /* run_oclint.sh */,
+			);
+			name = Linting;
+			sourceTree = "<group>";
+		};
+		FB974F3125AE7A2200A1DCE7 /* CI */ = {
+			isa = PBXGroup;
+			children = (
+				FB974F3225AE7B6200A1DCE7 /* ci.yml */,
+			);
+			name = CI;
+			sourceTree = "<group>";
+		};
 		FB995D9721101C1E00AC37D0 /* Peers */ = {
 			isa = PBXGroup;
 			children = (
@@ -2168,11 +2176,6 @@
 					6003F5AD195388D20070C39A = {
 						TestTargetID = 6003F589195388D20070C39A;
 					};
-					FB29C3B125AA500D001F4F43 = {
-						CreatedOnToolsVersion = 12.0.1;
-						DevelopmentTeam = 44RJ69WHFF;
-						ProvisioningStyle = Automatic;
-					};
 				};
 			};
 			buildConfigurationList = 6003F585195388D10070C39A /* Build configuration list for PBXProject "DashSync" */;
@@ -2192,7 +2195,6 @@
 			targets = (
 				6003F589195388D20070C39A /* DashSync_Example */,
 				6003F5AD195388D20070C39A /* DashSync_Tests */,
-				FB29C3B125AA500D001F4F43 /* OCLint */,
 			);
 		};
 /* End PBXProject section */
@@ -2539,23 +2541,6 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
-		};
-		2A4EB9A725ACEC3F00892E4D /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "./run_oclint.sh\n";
 		};
 		BA464DCB59BC59A2B2C9AAD7 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -3015,24 +3000,6 @@
 			};
 			name = Release;
 		};
-		FB29C3B225AA500E001F4F43 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 44RJ69WHFF;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Debug;
-		};
-		FB29C3B325AA500E001F4F43 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 44RJ69WHFF;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -3059,15 +3026,6 @@
 			buildConfigurations = (
 				6003F5C3195388D20070C39A /* Debug */,
 				6003F5C4195388D20070C39A /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		FB29C3B425AA500E001F4F43 /* Build configuration list for PBXAggregateTarget "OCLint" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				FB29C3B225AA500E001F4F43 /* Debug */,
-				FB29C3B325AA500E001F4F43 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
