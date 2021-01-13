@@ -128,7 +128,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 - (instancetype)initWithUniqueId:(UInt256)uniqueId isTransient:(BOOL)isTransient onChain:(DSChain *)chain {
     //this is the initialization of a non local blockchain identity
     if (!(self = [super init])) return nil;
-    NSAssert(!uint256_is_zero(uniqueId), @"uniqueId must not be null");
+    NSAssert(uint256_is_not_zero(uniqueId), @"uniqueId must not be null");
     _uniqueID = uniqueId;
     _isLocal = FALSE;
     _isTransient = isTransient;
@@ -237,7 +237,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
 - (instancetype)initAtIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet *)wallet {
     if (!(self = [self initAtIndex:index inWallet:wallet])) return nil;
-    NSAssert(!dsutxo_is_zero(lockedOutpoint), @"utxo must not be nil");
+    NSAssert(dsutxo_hash_is_not_zero(lockedOutpoint), @"utxo must not be nil");
     self.lockedOutpoint = lockedOutpoint;
     self.uniqueID = [dsutxo_data(lockedOutpoint) SHA256_2];
     _identityQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.identity.%@", uint256_base58(self.uniqueID)] UTF8String], DISPATCH_QUEUE_SERIAL);
@@ -2751,8 +2751,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     __block BOOL isIncoming;
     __block BOOL isOutgoing;
     [self.matchingDashpayUserInViewContext.managedObjectContext performBlockAndWait:^{
-        isIncoming = !![self.matchingDashpayUserInViewContext.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact.associatedBlockchainIdentity.uniqueID == %@", uint256_data(otherBlockchainIdentity.uniqueID)]].count;
-        isOutgoing = !![self.matchingDashpayUserInViewContext.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact.associatedBlockchainIdentity.uniqueID == %@", uint256_data(otherBlockchainIdentity.uniqueID)]].count;
+        isIncoming = ([self.matchingDashpayUserInViewContext.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact.associatedBlockchainIdentity.uniqueID == %@", uint256_data(otherBlockchainIdentity.uniqueID)]].count > 0);
+        isOutgoing = ([self.matchingDashpayUserInViewContext.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact.associatedBlockchainIdentity.uniqueID == %@", uint256_data(otherBlockchainIdentity.uniqueID)]].count > 0);
     }];
     return ((isIncoming << 1) | isOutgoing);
 }
@@ -2894,7 +2894,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
             UInt256 blockchainIdentityContactUniqueId = identityIdData.UInt256;
 
-            NSAssert(!uint256_is_zero(blockchainIdentityContactUniqueId), @"blockchainIdentityContactUniqueId should not be null");
+            NSAssert(uint256_is_not_zero(blockchainIdentityContactUniqueId), @"blockchainIdentityContactUniqueId should not be null");
 
             DSBlockchainIdentityEntity *potentialContactBlockchainIdentityEntity = [DSBlockchainIdentityEntity anyObjectInContext:self.platformContext matching:@"uniqueID == %@", uint256_data(blockchainIdentityContactUniqueId)];
 
@@ -4158,7 +4158,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 }
 
 - (void)saveNewRemoteIdentityKey:(DSKey *)key forKeyWithIndexID:(uint32_t)keyID withStatus:(DSBlockchainIdentityKeyStatus)status inContext:(NSManagedObjectContext *)context {
-    NSAssert(!self.isLocal, @"This should only be called on non local blockchain identities");
+    NSAssert(self.isLocal == FALSE, @"This should only be called on non local blockchain identities");
     if (self.isLocal) return;
     if (self.isTransient) return;
     [context performBlockAndWait:^{
@@ -4207,7 +4207,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 }
 
 - (void)updateStatus:(DSBlockchainIdentityKeyStatus)status forKeyWithIndexID:(uint32_t)keyID inContext:(NSManagedObjectContext *)context {
-    NSAssert(!self.isLocal, @"This should only be called on non local blockchain identities");
+    NSAssert(self.isLocal == FALSE, @"This should only be called on non local blockchain identities");
     if (self.isLocal) return;
     if (self.isTransient) return;
     [context performBlockAndWait:^{
@@ -4229,7 +4229,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 }
 
 - (void)saveNewUsername:(NSString *)username inDomain:(NSString *)domain status:(DSBlockchainIdentityUsernameStatus)status inContext:(NSManagedObjectContext *)context {
-    NSAssert(![username containsString:@"."], @"This is most likely an error");
+    NSAssert([username containsString:@"."] == FALSE, @"This is most likely an error");
     NSAssert(domain, @"Domain must not be nil");
     if (self.isTransient) return;
     [context performBlockAndWait:^{

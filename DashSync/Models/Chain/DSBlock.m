@@ -55,9 +55,9 @@
 }
 
 - (instancetype)initWithCheckpoint:(DSCheckpoint *)checkpoint onChain:(DSChain *)chain {
-    NSAssert(!uint256_is_zero(checkpoint.chainWork), @"Chain work must be set");
+    NSAssert(uint256_is_not_zero(checkpoint.chainWork), @"Chain work must be set");
     if (!(self = [self initWithVersion:2 blockHash:checkpoint.blockHash prevBlock:UINT256_ZERO timestamp:checkpoint.timestamp merkleRoot:checkpoint.merkleRoot target:checkpoint.target chainWork:checkpoint.chainWork height:checkpoint.height onChain:chain])) return nil;
-    NSAssert(!uint256_is_zero(self.chainWork), @"block should have aggregate work set");
+    NSAssert(uint256_is_not_zero(self.chainWork), @"block should have aggregate work set");
     return self;
 }
 

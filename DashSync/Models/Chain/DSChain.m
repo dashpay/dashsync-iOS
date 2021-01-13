@@ -523,7 +523,7 @@ static dispatch_once_t devnetToken = 0;
 
 - (dispatch_queue_t)networkingQueue {
     if (!_networkingQueue) {
-        NSAssert(!uint256_is_zero(self.genesisHash), @"genesisHash must be set");
+        NSAssert(uint256_is_not_zero(self.genesisHash), @"genesisHash must be set");
         _networkingQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.network.%@", self.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
     }
     return _networkingQueue;
@@ -531,7 +531,7 @@ static dispatch_once_t devnetToken = 0;
 
 - (dispatch_queue_t)dapiMetadataQueue {
     if (!_dapiMetadataQueue) {
-        NSAssert(!uint256_is_zero(self.genesisHash), @"genesisHash must be set");
+        NSAssert(uint256_is_not_zero(self.genesisHash), @"genesisHash must be set");
         _dapiMetadataQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.dapimeta.%@", self.uniqueID] UTF8String], DISPATCH_QUEUE_CONCURRENT);
     }
     return _dapiMetadataQueue;
@@ -682,7 +682,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 - (BOOL)syncsBlockchain { //required for SPV wallets
-    return !!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_NeedsWalletSyncType);
+    return ([[DSOptionsManager sharedInstance] syncType] & DSSyncType_NeedsWalletSyncType) != 0;
 }
 
 - (BOOL)needsInitialTerminalHeadersSync {
@@ -902,7 +902,7 @@ static dispatch_once_t devnetToken = 0;
 // MARK: Mining and Dark Gravity Wave Parameters
 
 - (UInt256)maxProofOfWork {
-    if (!uint256_is_zero(_cachedMaxProofOfWork)) return _cachedMaxProofOfWork;
+    if (uint256_is_not_zero(_cachedMaxProofOfWork)) return _cachedMaxProofOfWork;
     switch ([self chainType]) {
         case DSChainType_MainNet:
             _cachedMaxProofOfWork = MAX_PROOF_OF_WORK_MAINNET;
@@ -1079,7 +1079,7 @@ static dispatch_once_t devnetToken = 0;
 // MARK: - L2 Chain Parameters
 
 - (UInt256)dpnsContractID {
-    if (!uint256_is_zero(_cachedDpnsContractID)) return _cachedDpnsContractID;
+    if (uint256_is_not_zero(_cachedDpnsContractID)) return _cachedDpnsContractID;
     switch ([self chainType]) {
         case DSChainType_MainNet:
             if (!self.isEvolutionEnabled) return UINT256_ZERO;
@@ -1125,7 +1125,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 - (UInt256)dashpayContractID {
-    if (!uint256_is_zero(_cachedDashpayContractID)) return _cachedDashpayContractID;
+    if (uint256_is_not_zero(_cachedDashpayContractID)) return _cachedDashpayContractID;
     switch ([self chainType]) {
         case DSChainType_MainNet:
             if (!self.isEvolutionEnabled) return UINT256_ZERO;
@@ -1244,7 +1244,7 @@ static dispatch_once_t devnetToken = 0;
 // MARK: - Standalone Derivation Paths
 
 - (BOOL)hasAStandaloneDerivationPath {
-    return !![self.viewingAccount.fundDerivationPaths count];
+    return [self.viewingAccount.fundDerivationPaths count] > 0;
 }
 
 - (DSAccount *)viewingAccount {
@@ -1475,7 +1475,7 @@ static dispatch_once_t devnetToken = 0;
 // MARK: - Wallet
 
 - (BOOL)hasAWallet {
-    return !![self.mWallets count];
+    return [self.mWallets count] > 0;
 }
 
 - (NSArray *)wallets {
@@ -1649,7 +1649,7 @@ static dispatch_once_t devnetToken = 0;
         if (self->_mSyncBlocks.count > 0) return;
         self->_mSyncBlocks = [NSMutableDictionary dictionary];
 
-        if (!uint256_is_zero(self.lastPersistedChainSyncBlockHash)) {
+        if (uint256_is_not_zero(self.lastPersistedChainSyncBlockHash)) {
             self->_mSyncBlocks[uint256_obj(self.lastPersistedChainSyncBlockHash)] = [[DSMerkleBlock alloc] initWithVersion:2 blockHash:self.lastPersistedChainSyncBlockHash prevBlock:UINT256_ZERO timestamp:self.lastPersistedChainSyncBlockTimestamp height:self.lastPersistedChainSyncBlockHeight chainWork:self.lastPersistedChainSyncBlockChainWork onChain:self];
         }
 
@@ -1909,9 +1909,9 @@ static dispatch_once_t devnetToken = 0;
 
     block.height = prev.height + 1;
     UInt256 target = setCompactLE(block.target);
-    NSAssert(!uint256_is_zero(prev.chainWork), @"previous block should have aggregate work set");
+    NSAssert(uint256_is_not_zero(prev.chainWork), @"previous block should have aggregate work set");
     block.chainWork = uInt256AddLE(prev.chainWork, uInt256AddOneLE(uInt256DivideLE(uint256_inverse(target), uInt256AddOneLE(target))));
-    NSAssert(!uint256_is_zero(block.chainWork), @"block should have aggregate work set");
+    NSAssert(uint256_is_not_zero(block.chainWork), @"block should have aggregate work set");
     uint32_t txTime = block.timestamp / 2 + prev.timestamp / 2;
 
     if (blockPosition & DSBlockPosition_Terminal) {
@@ -2683,11 +2683,11 @@ static dispatch_once_t devnetToken = 0;
 }
 
 - (UInt256)lastSyncBlockHash {
-    return _lastSyncBlock ? _lastSyncBlock.blockHash : (!uint256_is_zero(self.lastPersistedChainSyncBlockHash) ? self.lastPersistedChainSyncBlockHash : self.lastSyncBlock.blockHash);
+    return _lastSyncBlock ? _lastSyncBlock.blockHash : (uint256_is_not_zero(self.lastPersistedChainSyncBlockHash) ? self.lastPersistedChainSyncBlockHash : self.lastSyncBlock.blockHash);
 }
 
 - (UInt256)lastSyncBlockChainWork {
-    return _lastSyncBlock ? _lastSyncBlock.chainWork : (!uint256_is_zero(self.lastPersistedChainSyncBlockChainWork) ? self.lastPersistedChainSyncBlockChainWork : self.lastSyncBlock.chainWork);
+    return _lastSyncBlock ? _lastSyncBlock.chainWork : (uint256_is_not_zero(self.lastPersistedChainSyncBlockChainWork) ? self.lastPersistedChainSyncBlockChainWork : self.lastSyncBlock.chainWork);
 }
 
 - (uint32_t)lastTerminalBlockHeight {
@@ -3143,17 +3143,17 @@ static dispatch_once_t devnetToken = 0;
 
 
 - (DSBlockchainIdentity *)blockchainIdentityForUniqueId:(UInt256)uniqueId {
-    NSAssert(!uint256_is_zero(uniqueId), @"uniqueId must not be null");
+    NSAssert(uint256_is_not_zero(uniqueId), @"uniqueId must not be null");
     return [self blockchainIdentityForUniqueId:uniqueId foundInWallet:nil includeForeignBlockchainIdentities:NO];
 }
 
 - (DSBlockchainIdentity *)blockchainIdentityForUniqueId:(UInt256)uniqueId foundInWallet:(DSWallet **)foundInWallet {
-    NSAssert(!uint256_is_zero(uniqueId), @"uniqueId must not be null");
+    NSAssert(uint256_is_not_zero(uniqueId), @"uniqueId must not be null");
     return [self blockchainIdentityForUniqueId:uniqueId foundInWallet:foundInWallet includeForeignBlockchainIdentities:NO];
 }
 
 - (DSBlockchainIdentity *_Nullable)blockchainIdentityThatCreatedContract:(DPContract *)contract withContractId:(UInt256)contractId foundInWallet:(DSWallet **)foundInWallet {
-    NSAssert(!uint256_is_zero(contractId), @"contractId must not be null");
+    NSAssert(uint256_is_not_zero(contractId), @"contractId must not be null");
     for (DSWallet *wallet in self.wallets) {
         DSBlockchainIdentity *blockchainIdentity = [wallet blockchainIdentityThatCreatedContract:contract withContractId:contractId];
         if (blockchainIdentity) {
@@ -3167,7 +3167,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 - (DSBlockchainIdentity *)blockchainIdentityForUniqueId:(UInt256)uniqueId foundInWallet:(DSWallet **)foundInWallet includeForeignBlockchainIdentities:(BOOL)includeForeignBlockchainIdentities {
-    NSAssert(!uint256_is_zero(uniqueId), @"uniqueId must not be null");
+    NSAssert(uint256_is_not_zero(uniqueId), @"uniqueId must not be null");
     for (DSWallet *wallet in self.wallets) {
         DSBlockchainIdentity *blockchainIdentity = [wallet blockchainIdentityForUniqueId:uniqueId];
         if (blockchainIdentity) {

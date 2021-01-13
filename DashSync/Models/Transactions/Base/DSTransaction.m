@@ -371,7 +371,7 @@
 
 // size in bytes if signed, or estimated size assuming compact pubkey sigs
 - (size_t)size {
-    if (!uint256_is_zero(_txHash)) return self.data.length;
+    if (uint256_is_not_zero(_txHash)) return self.data.length;
     return 8 + [NSMutableData sizeOfVarInt:self.hashes.count] + [NSMutableData sizeOfVarInt:self.addresses.count] +
            TX_INPUT_SIZE * self.hashes.count + TX_OUTPUT_SIZE * self.addresses.count;
 }

@@ -254,7 +254,7 @@
     _url = url;
 
     _governanceVotes = [NSMutableArray array];
-    if (!uint256_is_zero(governanceObjectHash)) [self loadGovernanceVotes:0];
+    if (uint256_is_not_zero(governanceObjectHash)) [self loadGovernanceVotes:0];
     self.managedObjectContext = [NSManagedObjectContext chainContext];
 
     return self;
@@ -534,7 +534,7 @@
         if (!self.paymentAddress) return FALSE;
         if (!self.amount) return FALSE;
         if (!self.url) return FALSE;
-        if (!uint256_is_zero(self.parentHash)) return FALSE;
+        if (uint256_is_not_zero(self.parentHash)) return FALSE;
         if (uint256_is_zero(self.collateralHash)) return FALSE;
 
     } else if (self.type == DSGovernanceObjectType_Trigger) {

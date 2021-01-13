@@ -1790,7 +1790,7 @@
 #endif
     reason = nil; // fixes an unused variable warning for non-debug builds
 
-    if (!uint256_is_zero(txHash)) {
+    if (uint256_is_not_zero(txHash)) {
         dispatch_async(self.delegateQueue, ^{
             [self.transactionDelegate peer:self rejectedTransaction:txHash withCode:code];
         });

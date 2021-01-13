@@ -41,7 +41,7 @@
 }
 
 - (void)setAttributesFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry onBlock:(DSMerkleBlockEntity *)block {
-    self.verified = !!block && potentialQuorumEntry.verified;
+    self.verified = (block != nil) && potentialQuorumEntry.verified;
     self.block = block;
     self.quorumHash = potentialQuorumEntry.quorumHash;
     self.quorumPublicKey = potentialQuorumEntry.quorumPublicKey;
@@ -61,7 +61,7 @@
 
 - (void)updateAttributesFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry onBlock:(DSMerkleBlockEntity *)block {
     if (!self.verified) {
-        self.verified = !!block && potentialQuorumEntry.verified;
+        self.verified = (block != nil) && potentialQuorumEntry.verified;
     }
     if (!self.block) {
         self.block = block;

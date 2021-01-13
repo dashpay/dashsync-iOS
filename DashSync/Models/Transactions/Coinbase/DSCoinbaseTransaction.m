@@ -99,7 +99,7 @@
 }
 
 - (size_t)size {
-    if (!uint256_is_zero(self.txHash)) return self.data.length;
+    if (uint256_is_not_zero(self.txHash)) return self.data.length;
     return [super size] + [NSMutableData sizeOfVarInt:self.payloadData.length];
 }
 

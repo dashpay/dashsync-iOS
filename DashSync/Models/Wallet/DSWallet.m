@@ -1072,7 +1072,7 @@
     NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletBlockchainIdentitiesKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
     if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
 
-    NSAssert(!uint256_is_zero(blockchainIdentity.uniqueID), @"registrationTransactionHashData must not be null");
+    NSAssert(uint256_is_not_zero(blockchainIdentity.uniqueID), @"registrationTransactionHashData must not be null");
     keyChainDictionary[blockchainIdentity.lockedOutpointData] = @(blockchainIdentity.index);
     setKeychainDict(keyChainDictionary, self.walletBlockchainIdentitiesKey, NO);
 
@@ -1091,7 +1091,7 @@
 
 - (DSBlockchainIdentity *_Nullable)blockchainIdentityThatCreatedContract:(DPContract *)contract withContractId:(UInt256)contractId {
     NSParameterAssert(contract);
-    NSAssert(!uint256_is_zero(contractId), @"contractId must not be null");
+    NSAssert(uint256_is_not_zero(contractId), @"contractId must not be null");
     DSBlockchainIdentity *foundBlockchainIdentity = nil;
     for (DSBlockchainIdentity *blockchainIdentity in [_mBlockchainIdentities allValues]) {
         if (uint256_eq([contract contractIdIfRegisteredByBlockchainIdentity:blockchainIdentity], contractId)) {
@@ -1102,7 +1102,7 @@
 }
 
 - (DSBlockchainIdentity *)blockchainIdentityForUniqueId:(UInt256)uniqueId {
-    NSAssert(!uint256_is_zero(uniqueId), @"uniqueId must not be null");
+    NSAssert(uint256_is_not_zero(uniqueId), @"uniqueId must not be null");
     DSBlockchainIdentity *foundBlockchainIdentity = nil;
     for (DSBlockchainIdentity *blockchainIdentity in [_mBlockchainIdentities allValues]) {
         if (uint256_eq([blockchainIdentity uniqueID], uniqueId)) {

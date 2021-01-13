@@ -189,7 +189,7 @@
     if (!uint256_eq(dpnsContractID, chain.dpnsContractID)) {
         chain.dpnsContractID = dpnsContractID;
         DPContract *contract = [DSDashPlatform sharedInstanceForChain:chain].dpnsContract;
-        if (!uint256_is_zero(dpnsContractID)) {
+        if (uint256_is_not_zero(dpnsContractID)) {
             DSBlockchainIdentity *blockchainIdentity = [chain blockchainIdentityThatCreatedContract:[DPContract localDPNSContractForChain:chain] withContractId:dpnsContractID foundInWallet:nil];
             if (blockchainIdentity) {
                 [contract registerCreator:blockchainIdentity inContext:[NSManagedObjectContext platformContext]];
@@ -201,7 +201,7 @@
     if (!uint256_eq(dashpayContractID, chain.dashpayContractID)) {
         chain.dashpayContractID = dashpayContractID;
         DPContract *contract = [DSDashPlatform sharedInstanceForChain:chain].dashPayContract;
-        if (!uint256_is_zero(dashpayContractID)) {
+        if (uint256_is_not_zero(dashpayContractID)) {
             DSBlockchainIdentity *blockchainIdentity = [chain blockchainIdentityThatCreatedContract:[DPContract localDashpayContractForChain:chain] withContractId:dashpayContractID foundInWallet:nil];
             if (blockchainIdentity) {
                 [contract registerCreator:blockchainIdentity inContext:[NSManagedObjectContext platformContext]];

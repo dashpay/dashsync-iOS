@@ -129,7 +129,7 @@
 
 - (uint8_t)parameters {
     uint8_t parameters = 0;
-    if (!uint256_is_zero(self.merkleRoot)) parameters |= DSCheckpointParameter_MerkleRoot;
+    if (uint256_is_not_zero(self.merkleRoot)) parameters |= DSCheckpointParameter_MerkleRoot;
     if (self.masternodeListName) parameters |= DSCheckpointParameter_MasternodeList;
     parameters |= DSCheckpointParameter_ChainWorkSize * [self chainWorkSize];
     return parameters;
@@ -145,7 +145,7 @@
     for (uint32_t i = 0; i < [self chainWorkSize]; i++) {
         [mData appendUInt32:self.chainWork.u32[0]];
     }
-    if (!uint256_is_zero(self.merkleRoot)) {
+    if (uint256_is_not_zero(self.merkleRoot)) {
         [mData appendUInt256:self.merkleRoot];
     }
     if (self.masternodeListName) {

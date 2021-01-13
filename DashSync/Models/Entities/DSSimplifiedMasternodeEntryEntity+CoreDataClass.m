@@ -177,7 +177,7 @@
         }
     }
 
-    if (!uint256_is_zero(self.confirmedHash.UInt256) && !uint256_is_zero(simplifiedMasternodeEntry.confirmedHash)) {
+    if (uint256_is_not_zero(self.confirmedHash.UInt256) && uint256_is_not_zero(simplifiedMasternodeEntry.confirmedHash)) {
         if (self.knownConfirmedAtHeight > blockHeight) {
             //we now know it was confirmed earlier so update to earlier
             self.knownConfirmedAtHeight = blockHeight;
@@ -193,7 +193,7 @@
     NSParameterAssert(simplifiedMasternodeEntry);
     self.providerRegistrationTransactionHash = [NSData dataWithUInt256:simplifiedMasternodeEntry.providerRegistrationTransactionHash];
     self.confirmedHash = [NSData dataWithUInt256:simplifiedMasternodeEntry.confirmedHash];
-    if (!uint256_is_zero(simplifiedMasternodeEntry.confirmedHash)) {
+    if (uint256_is_not_zero(simplifiedMasternodeEntry.confirmedHash)) {
         self.knownConfirmedAtHeight = blockHeight;
     }
     self.ipv6Address = uint128_data(simplifiedMasternodeEntry.address);

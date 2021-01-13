@@ -48,8 +48,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString *)tableName {
     NSParameterAssert(dataDictionary);
-    NSAssert(!uint256_is_zero(ownerId), @"Owner Id must be set");
-    NSAssert(!uint256_is_zero(contractId), @"Contract Id must be set");
+    NSAssert(uint256_is_not_zero(ownerId), @"Owner Id must be set");
+    NSAssert(uint256_is_not_zero(contractId), @"Contract Id must be set");
     NSParameterAssert(tableName);
 
     self = [super init];
@@ -79,7 +79,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString *)tableName usingDocumentId:(UInt256)documentId {
-    NSAssert(!uint256_is_zero(documentId), @"Document Id must be set");
+    NSAssert(uint256_is_not_zero(documentId), @"Document Id must be set");
 
     self = [self initWithDataDictionary:dataDictionary createdByUserWithId:ownerId onContractWithId:contractId onTableWithName:tableName];
     if (self) {
@@ -99,7 +99,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSString *)base58OwnerIdString {
     if (!_base58OwnerIdString) {
-        if (!uint256_is_zero(_ownerId)) {
+        if (uint256_is_not_zero(_ownerId)) {
             _base58OwnerIdString = uint256_base58(_ownerId);
         }
     }
@@ -108,7 +108,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSString *)base58ContractIdString {
     if (!_base58ContractIdString) {
-        if (!uint256_is_zero(_contractId)) {
+        if (uint256_is_not_zero(_contractId)) {
             _base58ContractIdString = uint256_base58(_contractId);
         }
     }
@@ -125,8 +125,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (UInt256)documentId {
     if (uint256_is_zero(_documentId)) {
-        NSAssert(!uint256_is_zero(_ownerId), @"Owner needs to be set");
-        NSAssert(!uint256_is_zero(_contractId), @"Owner needs to be set");
+        NSAssert(uint256_is_not_zero(_ownerId), @"Owner needs to be set");
+        NSAssert(uint256_is_not_zero(_contractId), @"Owner needs to be set");
         NSAssert(_tableName, @"Table name needs to be set");
         //NSAssert(!uint160_is_zero(self.entropy),@"Entropy needs to be set");
         NSMutableData *mData = [NSMutableData data];

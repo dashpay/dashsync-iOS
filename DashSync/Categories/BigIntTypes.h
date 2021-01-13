@@ -127,11 +127,21 @@ typedef struct _DSLLMQ {
     (((u).u64[0] | (u).u64[1] | (u).u64[2] | (u).u64[3] | (u).u64[4] | (u).u64[5] | (u).u64[6] | (u).u64[7]) == 0)
 #define uint384_is_zero(u) \
     (((u).u64[0] | (u).u64[1] | (u).u64[2] | (u).u64[3] | (u).u64[4] | (u).u64[5]) == 0)
-
-#define uint256_is_31_bits(u) ((((u).u64[1] | (u).u64[2] | (u).u64[3]) == 0) && ((u).u32[1] == 0) && (((u).u32[0] & 0x80000000) == 0))
 #define uint256_is_zero(u) (((u).u64[0] | (u).u64[1] | (u).u64[2] | (u).u64[3]) == 0)
 #define uint160_is_zero(u) (((u).u32[0] | (u).u32[1] | (u).u32[2] | (u).u32[3] | (u).u32[4]) == 0)
 #define uint128_is_zero(u) (((u).u64[0] | (u).u64[1]) == 0)
+
+#define uint768_is_not_zero(u) \
+    (((u).u64[0] | (u).u64[1] | (u).u64[2] | (u).u64[3] | (u).u64[4] | (u).u64[5] | (u).u64[6] | (u).u64[7] | (u).u64[8] | (u).u64[9] | (u).u64[10] | (u).u64[11]) != 0)
+#define uint512_is_not_zero(u) \
+    (((u).u64[0] | (u).u64[1] | (u).u64[2] | (u).u64[3] | (u).u64[4] | (u).u64[5] | (u).u64[6] | (u).u64[7]) != 0)
+#define uint384_is_not_zero(u) \
+    (((u).u64[0] | (u).u64[1] | (u).u64[2] | (u).u64[3] | (u).u64[4] | (u).u64[5]) != 0)
+#define uint256_is_not_zero(u) (((u).u64[0] | (u).u64[1] | (u).u64[2] | (u).u64[3]) != 0)
+#define uint160_is_not_zero(u) (((u).u32[0] | (u).u32[1] | (u).u32[2] | (u).u32[3] | (u).u32[4]) != 0)
+#define uint128_is_not_zero(u) (((u).u64[0] | (u).u64[1]) != 0)
+
+#define uint256_is_31_bits(u) ((((u).u64[1] | (u).u64[2] | (u).u64[3]) == 0) && ((u).u32[1] == 0) && (((u).u32[0] & 0x80000000) == 0))
 
 #define uint768_obj(u) ([NSValue value:(u).u8 withObjCType:@encode(UInt768)])
 #define uint512_obj(u) ([NSValue value:(u).u8 withObjCType:@encode(UInt512)])
@@ -186,6 +196,7 @@ typedef struct _DSLLMQ {
 
 #define dsutxo_eq(a, b) (uint256_eq(a.hash, b.hash) && (a.n == b.n))
 #define dsutxo_is_zero(a) (uint256_is_zero(a.hash) && (a.n == 0))
+#define dsutxo_hash_is_not_zero(a) (uint256_is_not_zero(a.hash))
 
 #define dsutxo_obj(o) [NSValue value:&(o) withObjCType:@encode(DSUTXO)]
 #define dsutxo_data(o) [NSData dataWithBytes:&((struct { uint32_t u[256 / 32 + 1]; }){ \
