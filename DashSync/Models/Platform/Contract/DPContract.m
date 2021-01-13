@@ -187,8 +187,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     [entropyData appendUInt256:blockchainIdentity.uniqueID];
     [entropyData appendData:[derivationPath publicKeyDataAtIndex:UINT32_MAX - 1]]; //use the last key in 32 bit space (it won't probably ever be used anyways)
     [mData appendData:uint256_data([entropyData SHA256])];
-    UInt256 contractId = [mData SHA256_2];
-    return contractId;
+    return [mData SHA256_2]; //this is the contract ID
 }
 
 - (NSString *)base58ContractId {
@@ -242,9 +241,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
         return NO;
     }
 
-    BOOL isDefined = self.mutableDocuments[type] != nil;
-
-    return isDefined;
+    return (self.mutableDocuments[type] != nil);
 }
 
 - (void)setDocumentSchema:(DSStringValueDictionary *)schema forType:(NSString *)type {

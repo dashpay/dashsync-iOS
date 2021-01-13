@@ -12,6 +12,8 @@ disable-rules:
   - UnnecessaryDefaultStatement
   - MissingDefaultStatement
   - RedundantConditionalOperator
+  - ParameterReassignment
+  - TooFewBranchesInSwitchStatement
 rule-configurations:
   - key: CYCLOMATIC_COMPLEXITY
     value: 2000000000
@@ -20,13 +22,17 @@ rule-configurations:
   - key: LONG_VARIABLE_NAME
     value: 100
   - key: TOO_MANY_METHODS
-    value: 100
+    value: 512
   - key: TOO_MANY_PARAMETERS
     value: 30
   - key: LONG_METHOD
-    value: 200
+    value: 512
+  - key: LONG_CLASS
+    value: 8192
   - key: NCSS_METHOD
     value: 512
+  - key: NESTED_BLOCK_DEPTH
+    value: 16
 output: oclint.xml
 report-type: xml
 max-priority-1: 0

@@ -7,6 +7,10 @@
 [![License](https://img.shields.io/cocoapods/l/DashSyncPod.svg?style=flat)](http://cocoapods.org/pods/DashSyncPod)
 [![Platform](https://img.shields.io/cocoapods/p/DashSyncPod.svg?style=flat)](http://cocoapods.org/pods/DashSyncPod)
 
+| Branch | Tests                                                                                      | Coverage                                                                                                                             | Linting                                                                    |
+|--------|--------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------|
+| master | ![Tests](https://github.com/dashevo/dashsync-iOS/workflows/Tests/badge.svg?branch=master) | [![codecov](https://codecov.io/gh/dashevo/dashsync-iOS/branch/master/graph/badge.svg)](https://codecov.io/gh/dashevo/dashsync-iOS) | ![Lint](https://github.com/dashevo/dashsync-iOS/workflows/Lint/badge.svg) |
+
 ## Example
 
 To run the example project, clone the repo, and run `pod install` from the Example directory first.

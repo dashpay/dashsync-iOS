@@ -598,8 +598,7 @@
 
 - (BOOL)hasSeedPhrase {
     NSError *error = nil;
-    BOOL hasSeed = hasKeychainData(self.uniqueIDString, &error);
-    return hasSeed;
+    return hasKeychainData(self.uniqueIDString, &error);
 }
 
 + (NSString *)setTransientDerivedKeyData:(NSData *)derivedKeyData withAccounts:(NSArray *)accounts forChain:(DSChain *)chain {

@@ -2058,7 +2058,7 @@
 
                         if (l < 0) {
                             DSLog(@"%@:%u error reading message", self.host, self.port);
-                            goto reset;
+                            goto reset; //!OCLINT
                         }
 
                         self.msgHeader.length = headerLen + l;
@@ -2088,7 +2088,7 @@
 
                     if (length > MAX_MSG_LENGTH) { // check message length
                         [self error:@"error reading %@, message length %u is too long", type, length];
-                        goto reset;
+                        goto reset; //!OCLINT
                     }
 
                     if (payloadLen < length) { // read message payload
@@ -2098,7 +2098,7 @@
 
                         if (l < 0) {
                             DSLog(@"%@:%u error reading %@", self.host, self.port, type);
-                            goto reset;
+                            goto reset; //!OCLINT
                         }
 
                         self.msgPayload.length = payloadLen + l;
@@ -2110,14 +2110,14 @@
                                      "length:%u, SHA256_2:%@",
                               type, self.msgPayload.SHA256_2.u32[0], checksum,
                               (int)self.msgPayload.length, length, uint256_obj(self.msgPayload.SHA256_2)];
-                        goto reset;
+                        goto reset; //!OCLINT
                     }
 
                     message = self.msgPayload;
                     self.msgPayload = [NSMutableData data];
                     [self acceptMessage:message type:type]; // process message
 
-                reset: // reset for next message
+                reset: //!OCLINT // reset for next message
                     self.msgHeader.length = self.msgPayload.length = 0;
                 }
             }

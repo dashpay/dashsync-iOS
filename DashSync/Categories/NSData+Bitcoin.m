@@ -1483,16 +1483,14 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
     uint32_t offset = index / 8;
     uint32_t bitPosition = index % 8;
     uint8_t bits = [self UInt8AtOffset:offset];
-    BOOL bitIsSet = ((bits >> bitPosition) & 1);
-    return bitIsSet;
+    return ((bits >> bitPosition) & 1);
 }
 
 - (BOOL)bitIsTrueAtLeftToRightIndex:(uint32_t)index {
     uint32_t offset = index / 8;
     uint32_t bitPosition = 7 - (index % 8);
     uint8_t bits = [self UInt8AtOffset:offset];
-    BOOL bitIsSet = ((bits >> bitPosition) & 1);
-    return bitIsSet;
+    return ((bits >> bitPosition) & 1);
 }
 
 @end

@@ -464,6 +464,10 @@ static dispatch_once_t devnetToken = 0;
     return self == obj || ([obj isKindOfClass:[DSChain class]] && uint256_eq([obj genesisHash], _genesisHash));
 }
 
+- (NSUInteger)hash {
+    return self.genesisHash.u64[0];
+}
+
 // MARK: Devnet Helpers
 
 //static CBlock CreateDevNetGenesisBlock(const uint256 &prevBlockHash, const std::string& devNetName, uint32_t nTime, uint32_t nNonce, uint32_t nBits, const CAmount& genesisReward)
@@ -1016,7 +1020,7 @@ static dispatch_once_t devnetToken = 0;
 
 // fee that will be added for a transaction of the given size in bytes
 - (uint64_t)feeForTxSize:(NSUInteger)size {
-    uint64_t standardFee = size * TX_FEE_PER_B; // standard fee based on tx size
+    uint64_t standardFee = size * TX_FEE_PER_B; //!OCLINT // standard fee based on tx size
 
 #if (!!FEE_PER_KB_URL)
     uint64_t fee = ((size * self.feePerByte + 99) / 100) * 100; // fee using feePerByte, rounded up to nearest 100 satoshi

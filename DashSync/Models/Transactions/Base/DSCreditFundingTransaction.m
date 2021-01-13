@@ -37,7 +37,7 @@
     for (int i = 0; i < self.outputScripts.count; i++) {
         NSData *script = self.outputScripts[i];
         if ([script UInt8AtOffset:0] == OP_RETURN && script.length == 22) {
-            DSUTXO outpoint = {.hash = uint256_reverse(self.txHash), .n = i};
+            DSUTXO outpoint = {.hash = uint256_reverse(self.txHash), .n = i}; //!OCLINT
             return outpoint;
         }
     }

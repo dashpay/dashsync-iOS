@@ -496,6 +496,10 @@
     }
 }
 
+- (NSUInteger)hash {
+    return self.providerRegistrationTransactionHash.u64[0];
+}
+
 - (NSDictionary *)toDictionaryAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
 
