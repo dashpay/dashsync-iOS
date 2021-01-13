@@ -34,8 +34,6 @@
                 return [NSCompoundPredicate orPredicateWithSubpredicates:mArray];
             case NSNotPredicateType:
                 return [NSCompoundPredicate notPredicateWithSubpredicate:[mArray firstObject]];
-            default:
-                return [NSCompoundPredicate andPredicateWithSubpredicates:mArray];
         }
     } else {
         NSComparisonPredicate *comparisonPredicate = (NSComparisonPredicate *)self;

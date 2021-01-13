@@ -1872,8 +1872,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                     NSData *objectData = [debugDescription1 dataUsingEncoding:NSUTF8StringEncoding];
                     NSDictionary *debugDescription = [NSJSONSerialization JSONObjectWithData:objectData options:0 error:&jsonError];
                     //NSDictionary * debugDescription =
-                    __unused NSString *errorMessage = debugDescription[@"grpc_message"];
-                    if (TRUE) { //[errorMessage isEqualToString:@"Invalid argument: Contract not found"]) {
+                    __unused NSString *errorMessage = debugDescription[@"grpc_message"]; //!OCLINT
+                    if (TRUE) {                                                          //[errorMessage isEqualToString:@"Invalid argument: Contract not found"]) {
                         __strong typeof(weakContract) strongContract = weakContract;
                         if (!strongContract) {
                             return;

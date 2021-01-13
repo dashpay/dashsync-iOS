@@ -43,28 +43,26 @@
 
 - (id)copyWithZone:(NSZone *)zone {
     DSQuorumEntry *copy = [[[self class] alloc] init];
+    if (!copy) return nil;
+    // Copy NSObject subclasses
+    [copy setSignersBitset:self.signersBitset];
+    [copy setValidMembersBitset:self.validMembersBitset];
 
-    if (copy) {
-        // Copy NSObject subclasses
-        [copy setSignersBitset:self.signersBitset];
-        [copy setValidMembersBitset:self.validMembersBitset];
+    // Set primitives
+    [copy setVersion:self.version];
+    [copy setQuorumHash:self.quorumHash];
+    [copy setQuorumPublicKey:self.quorumPublicKey];
+    [copy setQuorumThresholdSignature:self.quorumThresholdSignature];
+    [copy setQuorumVerificationVectorHash:self.quorumVerificationVectorHash];
+    [copy setAllCommitmentAggregatedSignature:self.allCommitmentAggregatedSignature];
+    [copy setSignersCount:self.signersCount];
+    [copy setLlmqType:self.llmqType];
+    [copy setValidMembersCount:self.validMembersCount];
+    [copy setQuorumEntryHash:self.quorumEntryHash];
+    [copy setCommitmentHash:self.commitmentHash];
+    [copy setLength:self.length];
 
-        // Set primitives
-        [copy setVersion:self.version];
-        [copy setQuorumHash:self.quorumHash];
-        [copy setQuorumPublicKey:self.quorumPublicKey];
-        [copy setQuorumThresholdSignature:self.quorumThresholdSignature];
-        [copy setQuorumVerificationVectorHash:self.quorumVerificationVectorHash];
-        [copy setAllCommitmentAggregatedSignature:self.allCommitmentAggregatedSignature];
-        [copy setSignersCount:self.signersCount];
-        [copy setLlmqType:self.llmqType];
-        [copy setValidMembersCount:self.validMembersCount];
-        [copy setQuorumEntryHash:self.quorumEntryHash];
-        [copy setCommitmentHash:self.commitmentHash];
-        [copy setLength:self.length];
-
-        [copy setChain:self.chain];
-    }
+    [copy setChain:self.chain];
 
     return copy;
 }
@@ -190,7 +188,7 @@
 }
 
 - (uint32_t)quorumThreshold {
-    switch (self.llmqType) {
+    switch (self.llmqType) { //!OCLINT
         case DSLLMQType_50_60:
             return 30;
         case DSLLMQType_400_60:
@@ -341,7 +339,9 @@
         }
 #endif
         return NO;
-    } else {
+    }
+#if LOG_COMMITMENT_DATA || SAVE_QUORUM_ERROR_PUBLIC_KEY_ARRAY_TO_FILE || SAVE_MNL_ERROR_TO_FILE
+    else {
 #if LOG_COMMITMENT_DATA
         DSLog(@"No Issue with Checking allCommitmentAggregatedSignatureValidated for quorum of type %d quorumHash %@ llmqHash %@ commitmentHash %@ signersBitset %@ (%d signers) at height %u", self.llmqType, uint256_hex(self.commitmentHash), uint256_hex(self.quorumHash), uint256_hex(self.commitmentHash), self.signersBitset.hexString, self.signersCount, masternodeList.height);
 #endif
@@ -377,6 +377,7 @@
         }
 #endif
     }
+#endif
 
     //The sig must validate against the commitmentHash and all public keys determined by the signers bitvector. This is an aggregated BLS signature verification.
 
@@ -405,7 +406,7 @@
 }
 
 + (uint32_t)quorumSizeForType:(DSLLMQType)type {
-    switch (type) {
+    switch (type) { //!OCLINT
         case DSLLMQType_5_60:
             return 5;
         case DSLLMQType_10_60:

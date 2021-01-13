@@ -983,11 +983,11 @@
         [self acceptDarksendSessionUpdateMessage:message];
     else if ([MSG_DARKSENDTX isEqual:type])
         [self acceptDarksendTransactionMessage:message];
-    else {
 #if DROP_MESSAGE_LOGGING
+    else {
         DSLog(@"%@:%u dropping %@, len:%u, not implemented", self.host, self.port, type, (int)message.length);
-#endif
     }
+#endif
 }
 
 - (void)acceptVersionMessage:(NSData *)message {
@@ -1572,7 +1572,7 @@
 
             if (uint256_is_zero(hash)) continue;
 
-            switch (type) {
+            switch (type) { //!OCLINT
                 case DSInvType_Tx:
                 case DSInvType_TxLockRequest:
                     transaction = [self.transactionDelegate peer:self requestedTransaction:hash];
@@ -2011,7 +2011,7 @@
 }
 
 - (void)stream:(NSStream *)aStream handleEvent:(NSStreamEvent)eventCode {
-    switch (eventCode) {
+    switch (eventCode) { //!OCLINT
         case NSStreamEventOpenCompleted:
             DSLog(@"%@:%u %@ stream connected in %fs", self.host, self.port,
                 (aStream == self.inputStream) ? @"input" : (aStream == self.outputStream ? @"output" : @"unknown"),

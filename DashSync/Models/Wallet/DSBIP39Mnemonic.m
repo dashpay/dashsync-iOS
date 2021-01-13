@@ -353,35 +353,35 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
 
     [s replaceOccurrencesOfString:@"\n" withString:@" " options:0 range:NSMakeRange(0, s.length)];
     while ([s replaceOccurrencesOfString:@"  " withString:@" " options:0 range:NSMakeRange(0, s.length)] > 0)
-        ;
+        ;                                                                                               //!OCLINT
     while ([s rangeOfCharacterFromSet:ws].location == 0) [s deleteCharactersInRange:NSMakeRange(0, 1)]; // trim lead ws
     phrase = [self normalizePhrase:s];
 
-    if (![self phraseIsValid:phrase]) {
-        NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(),
-            (CFStringRef)phrase, CFSTR(" ")));
+    if ([self phraseIsValid:phrase]) return s;
 
-        for (NSString *word in a) { // add spaces between words for ideographic langauges
-            if (word.length < 1 || [word characterAtIndex:0] < 0x3000 || [self wordIsValid:word]) continue;
+    NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(),
+        (CFStringRef)phrase, CFSTR(" ")));
 
-            for (NSUInteger i = 0; i < word.length; i++) {
-                for (NSUInteger j = (word.length - i > 8) ? 8 : word.length - i; j; j--) {
-                    NSString *w = [word substringWithRange:NSMakeRange(i, j)];
+    for (NSString *word in a) { // add spaces between words for ideographic langauges
+        if (word.length < 1 || [word characterAtIndex:0] < 0x3000 || [self wordIsValid:word]) continue;
 
-                    if (![self wordIsValid:w]) continue;
-                    [s replaceOccurrencesOfString:w
-                                       withString:[NSString stringWithFormat:IDEO_SP @"%@" IDEO_SP, w]
-                                          options:0
-                                            range:NSMakeRange(0, s.length)];
-                    while ([s replaceOccurrencesOfString:IDEO_SP IDEO_SP
-                                              withString:IDEO_SP
-                                                 options:0
-                                                   range:NSMakeRange(0, s.length)] > 0)
-                        ;
-                    CFStringTrimWhitespace((CFMutableStringRef)s);
-                    i += j - 1;
-                    break;
-                }
+        for (NSUInteger i = 0; i < word.length; i++) {
+            for (NSUInteger j = (word.length - i > 8) ? 8 : word.length - i; j; j--) {
+                NSString *w = [word substringWithRange:NSMakeRange(i, j)];
+
+                if (![self wordIsValid:w]) continue;
+                [s replaceOccurrencesOfString:w
+                                   withString:[NSString stringWithFormat:IDEO_SP @"%@" IDEO_SP, w]
+                                      options:0
+                                        range:NSMakeRange(0, s.length)];
+                while ([s replaceOccurrencesOfString:IDEO_SP IDEO_SP
+                                          withString:IDEO_SP
+                                             options:0
+                                               range:NSMakeRange(0, s.length)] > 0)
+                    ; //!OCLINT
+                CFStringTrimWhitespace((CFMutableStringRef)s);
+                i += j - 1;
+                break; //!OCLINT
             }
         }
     }
@@ -542,7 +542,7 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
         }
         if (possibleWordAddresses.count == 0) {
             dispatch_async(dispatchQueue, ^{
-                completion([NSDictionary dictionary]);
+                completion(@{}); //return empty dictionary
             });
         } else {
             [[DSInsightManager sharedInstance] findExistingAddresses:[possibleWordAddresses allKeys]
@@ -571,7 +571,7 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
                                                                   });
                                                               } else {
                                                                   dispatch_async(dispatchQueue, ^{
-                                                                      completion([NSDictionary dictionary]);
+                                                                      completion(@{}); //return empty dictionary
                                                                   });
                                                               }
                                                           }];

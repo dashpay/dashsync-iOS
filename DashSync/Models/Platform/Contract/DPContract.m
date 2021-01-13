@@ -56,24 +56,21 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     NSParameterAssert(localContractIdentifier);
     NSParameterAssert(documents);
 
-    self = [super init];
-    if (self) {
-        _version = DEFAULT_VERSION;
-        _localContractIdentifier = localContractIdentifier;
-        _jsonMetaSchema = DEFAULT_SCHEMA;
-        _mutableDocuments = [documents mutableCopy];
-        _definitions = @{};
-        _chain = chain;
+    if (!(self = [super init])) return nil;
+    _version = DEFAULT_VERSION;
+    _localContractIdentifier = localContractIdentifier;
+    _jsonMetaSchema = DEFAULT_SCHEMA;
+    _mutableDocuments = [documents mutableCopy];
+    _definitions = @{};
+    _chain = chain;
 
-
-        //        [self.chain.chainManagedObjectContext performBlockAndWait:^{
-        //            DSContractEntity * entity = [self contractEntityInContext:self.chain.chainManagedObjectContext];
-        //            if (entity) {
-        //                self.registeredBlockchainIdentityUniqueID = entity.registeredBlockchainIdentityUniqueID.UInt256;
-        //                _contractState = entity.state;
-        //            }
-        //        }];
-    }
+    //        [self.chain.chainManagedObjectContext performBlockAndWait:^{
+    //            DSContractEntity * entity = [self contractEntityInContext:self.chain.chainManagedObjectContext];
+    //            if (entity) {
+    //                self.registeredBlockchainIdentityUniqueID = entity.registeredBlockchainIdentityUniqueID.UInt256;
+    //                _contractState = entity.state;
+    //            }
+    //        }];
     return self;
 }
 
@@ -305,8 +302,6 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
             return @"Registering";
         case DPContractState_NotRegistered:
             return @"Not Registered";
-        default:
-            break;
     }
     return @"Other State";
 }

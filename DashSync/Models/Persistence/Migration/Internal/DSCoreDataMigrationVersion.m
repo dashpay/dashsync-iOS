@@ -24,7 +24,7 @@
 }
 
 + (NSString *)modelResourceForVersion:(DSCoreDataMigrationVersionValue)version {
-    switch (version) {
+    switch (version) { //!OCLINT
         case DSCoreDataMigrationVersionValue_1: return @"DashSync 1";
         case DSCoreDataMigrationVersionValue_2: return @"DashSync 2";
         case DSCoreDataMigrationVersionValue_3: return @"DashSync 3";

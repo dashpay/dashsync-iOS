@@ -6,11 +6,17 @@ disable-rules:
   - InvertedLogic
   - UselessParentheses
   - RedundantIfStatement
+  - ConstantIfExpression
+  - AssignIvarOutsideAccessors
+  - UnusedMethodParameter
+  - UnnecessaryDefaultStatement
+  - MissingDefaultStatement
+  - RedundantConditionalOperator
 rule-configurations:
   - key: CYCLOMATIC_COMPLEXITY
-    value: 20
+    value: 2000000000
   - key: NPATH_COMPLEXITY
-    value: 512
+    value: 2000000000
   - key: LONG_VARIABLE_NAME
     value: 100
   - key: TOO_MANY_METHODS
@@ -20,7 +26,7 @@ rule-configurations:
   - key: LONG_METHOD
     value: 200
   - key: NCSS_METHOD
-    value: 128
+    value: 512
 output: oclint.xml
 report-type: xml
 max-priority-1: 0

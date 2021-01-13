@@ -447,9 +447,9 @@
             //            [DSGovernanceVoteHashEntity saveContext];
             //        }];
             [self requestGovernanceVotesFromPeer:peer];
-        } else {
-            //things are missing, most likely they will come in later
-        }
+        } // else {
+          //things are missing, most likely they will come in later
+        //}
     }
 }
 

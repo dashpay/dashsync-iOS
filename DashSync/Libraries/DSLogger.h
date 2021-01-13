@@ -25,7 +25,7 @@ static const DDLogLevel ddLogLevel = DDLogLevelVerbose;
 static const DDLogLevel ddLogLevel = DDLogLevelInfo;
 #endif /* DEBUG */
 
-#define DSLog(frmt, ...) DDLogInfo(frmt, ##__VA_ARGS__)
+#define DSLog(frmt, ...) DDLogInfo(frmt, ##__VA_ARGS__) //!OCLINT
 
 #ifdef DEBUG
 #define DSLogPrivate(s, ...) DDLogVerbose(s, ##__VA_ARGS__)

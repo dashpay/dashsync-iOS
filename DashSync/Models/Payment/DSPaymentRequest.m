@@ -453,9 +453,10 @@
                                          } else if ([response.MIMEType.lowercaseString isEqual:@"text/uri-list"] && data.length <= 50000) {
                                              for (NSString *url in [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]
                                                       componentsSeparatedByString:@"\n"]) {
-                                                 if ([url hasPrefix:@"#"]) continue;                                               // skip comments
-                                                 request = [DSPaymentRequest requestWithString:url onChain:chain].protocolRequest; // use first url and ignore the rest
-                                                 break;
+                                                 if (![url hasPrefix:@"#"]) {                                                          // skip comments
+                                                     request = [DSPaymentRequest requestWithString:url onChain:chain].protocolRequest; // use first url and ignore the rest
+                                                     break;                                                                            //we only are looking for one
+                                                 }
                                              }
                                          }
 

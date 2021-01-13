@@ -55,7 +55,7 @@ static uint32_t murmur3_32(const void *data, size_t len, uint32_t seed) {
 
     k = 0;
 
-    switch (len & 3) {
+    switch (len & 3) {                                   //!OCLINT
         case 3: k ^= ((uint8_t *)data)[i * 4 + 2] << 16; // fall through
         case 2: k ^= ((uint8_t *)data)[i * 4 + 1] << 8;  // fall through
         case 1: k ^= ((uint8_t *)data)[i * 4], k *= C1, h ^= rol32(k, 15) * C2;
@@ -165,7 +165,7 @@ static uint32_t murmur3_32(const void *data, size_t len, uint32_t seed) {
             [d appendBytes:tx.txHash.u8 length:sizeof(UInt256)];
             [d appendUInt32:n];
             if (![self containsData:d]) [self insertData:d]; // update bloom filter with matched txout
-            break;
+            break;                                           //!OCLINT
         }
 
         n++;

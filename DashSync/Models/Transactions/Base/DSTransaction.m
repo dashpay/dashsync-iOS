@@ -160,35 +160,36 @@
             _txHash = self.data.SHA256_2;
         }
     }
-    if ([self type] == DSTransactionType_Classic) {
-        NSString *outboundShapeshiftAddress = [self shapeshiftOutboundAddress];
-        if (outboundShapeshiftAddress) {
-            self.associatedShapeshift = [DSShapeshiftEntity shapeshiftHavingWithdrawalAddress:outboundShapeshiftAddress inContext:[NSManagedObjectContext chainContext]];
+
+    if ([self type] != DSTransactionType_Classic) return self; //only classic transactions are shapeshifted
+
+    NSString *outboundShapeshiftAddress = [self shapeshiftOutboundAddress];
+    if (outboundShapeshiftAddress) {
+        self.associatedShapeshift = [DSShapeshiftEntity shapeshiftHavingWithdrawalAddress:outboundShapeshiftAddress inContext:[NSManagedObjectContext chainContext]];
+        if (self.associatedShapeshift && [self.associatedShapeshift.shapeshiftStatus integerValue] == eShapeshiftAddressStatus_Unused) {
+            self.associatedShapeshift.shapeshiftStatus = @(eShapeshiftAddressStatus_NoDeposits);
+        }
+        if (!self.associatedShapeshift) {
+            NSString *possibleOutboundShapeshiftAddress = [self shapeshiftOutboundAddressForceScript];
+            self.associatedShapeshift = [DSShapeshiftEntity shapeshiftHavingWithdrawalAddress:possibleOutboundShapeshiftAddress inContext:[NSManagedObjectContext chainContext]];
             if (self.associatedShapeshift && [self.associatedShapeshift.shapeshiftStatus integerValue] == eShapeshiftAddressStatus_Unused) {
                 self.associatedShapeshift.shapeshiftStatus = @(eShapeshiftAddressStatus_NoDeposits);
             }
-            if (!self.associatedShapeshift) {
-                NSString *possibleOutboundShapeshiftAddress = [self shapeshiftOutboundAddressForceScript];
-                self.associatedShapeshift = [DSShapeshiftEntity shapeshiftHavingWithdrawalAddress:possibleOutboundShapeshiftAddress inContext:[NSManagedObjectContext chainContext]];
-                if (self.associatedShapeshift && [self.associatedShapeshift.shapeshiftStatus integerValue] == eShapeshiftAddressStatus_Unused) {
-                    self.associatedShapeshift.shapeshiftStatus = @(eShapeshiftAddressStatus_NoDeposits);
-                }
+        }
+        if (!self.associatedShapeshift && [self.outputAddresses count]) {
+            NSString *mainOutputAddress = nil;
+            NSMutableArray *allAddresses = [NSMutableArray array];
+            for (DSAddressEntity *e in [DSAddressEntity allObjectsInContext:chain.chainManagedObjectContext]) {
+                [allAddresses addObject:e.address];
             }
-            if (!self.associatedShapeshift && [self.outputAddresses count]) {
-                NSString *mainOutputAddress = nil;
-                NSMutableArray *allAddresses = [NSMutableArray array];
-                for (DSAddressEntity *e in [DSAddressEntity allObjectsInContext:chain.chainManagedObjectContext]) {
-                    [allAddresses addObject:e.address];
-                }
-                for (NSString *outputAddress in self.outputAddresses) {
-                    if (outputAddress && [allAddresses containsObject:address]) continue;
-                    if ([outputAddress isEqual:[NSNull null]]) continue;
-                    mainOutputAddress = outputAddress;
-                }
-                //NSAssert(mainOutputAddress, @"there should always be an output address");
-                if (mainOutputAddress) {
-                    self.associatedShapeshift = [DSShapeshiftEntity registerShapeshiftWithInputAddress:mainOutputAddress andWithdrawalAddress:outboundShapeshiftAddress withStatus:eShapeshiftAddressStatus_NoDeposits inContext:[NSManagedObjectContext chainContext]];
-                }
+            for (NSString *outputAddress in self.outputAddresses) {
+                if (outputAddress && [allAddresses containsObject:address]) continue;
+                if ([outputAddress isEqual:[NSNull null]]) continue;
+                mainOutputAddress = outputAddress;
+            }
+            //NSAssert(mainOutputAddress, @"there should always be an output address");
+            if (mainOutputAddress) {
+                self.associatedShapeshift = [DSShapeshiftEntity registerShapeshiftWithInputAddress:mainOutputAddress andWithdrawalAddress:outboundShapeshiftAddress withStatus:eShapeshiftAddressStatus_NoDeposits inContext:[NSManagedObjectContext chainContext]];
             }
         }
     }

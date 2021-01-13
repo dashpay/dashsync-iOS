@@ -79,9 +79,9 @@
 
 - (NSString *)localizedKeyType {
     switch (self.keyType) {
-        case 1:
+        case DSKeyType_ECDSA:
             return DSLocalizedString(@"ECDSA", nil);
-        case 2:
+        case DSKeyType_BLS:
             return DSLocalizedString(@"BLS", nil);
         default:
             return DSLocalizedString(@"Unknown Key Type", nil);

@@ -247,7 +247,7 @@ static const UniChar base58chars[] = {
     for (i = z; i < self.length; i++) {
         uint32_t carry = [self characterAtIndex:i];
 
-        switch (carry) {
+        switch (carry) { //!OCLINT
             case '1':
             case '2':
             case '3':

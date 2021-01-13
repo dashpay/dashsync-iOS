@@ -606,8 +606,6 @@ static dispatch_once_t devnetToken = 0;
         case DSChainType_DevNet:
             if (_networkName) return _networkName;
             return @"dev";
-        default:
-            break;
     }
     if (_networkName) return _networkName;
 }
@@ -621,8 +619,6 @@ static dispatch_once_t devnetToken = 0;
         case DSChainType_DevNet:
             if (_networkName) return _networkName;
             return [@"Devnet - " stringByAppendingString:self.devnetIdentifier];
-        default:
-            break;
     }
     if (_networkName) return _networkName;
 }
@@ -636,8 +632,6 @@ static dispatch_once_t devnetToken = 0;
         case DSChainType_DevNet:
             if (_networkName) return _networkName;
             return [NSString stringWithFormat:@"%@ - %@", DSLocalizedString(@"Devnet", nil), self.devnetIdentifier];
-        default:
-            break;
     }
     if (_networkName) return _networkName;
 }
@@ -662,8 +656,6 @@ static dispatch_once_t devnetToken = 0;
             return 1;
         case DSChainType_DevNet:
             return 3;
-        default:
-            return 3;
     }
 }
 
@@ -675,8 +667,6 @@ static dispatch_once_t devnetToken = 0;
             return 40;
         case DSChainType_DevNet:
             return 3;
-        default:
-            break;
     }
     return 20;
 }
@@ -723,8 +713,6 @@ static dispatch_once_t devnetToken = 0;
             return DASH_MAGIC_NUMBER_TESTNET;
         case DSChainType_DevNet:
             return DASH_MAGIC_NUMBER_DEVNET;
-        default:
-            return DASH_MAGIC_NUMBER_MAINNET;
     }
 }
 
@@ -742,8 +730,6 @@ static dispatch_once_t devnetToken = 0;
             else
                 return PROTOCOL_VERSION_DEVNET;
         }
-        default:
-            break;
     }
 }
 
@@ -757,8 +743,6 @@ static dispatch_once_t devnetToken = 0;
             setKeychainInt(protocolVersion, [NSString stringWithFormat:@"%@%@", self.devnetIdentifier, PROTOCOL_VERSION_LOCATION], NO);
             break;
         }
-        default:
-            break;
     }
 }
 
@@ -793,8 +777,6 @@ static dispatch_once_t devnetToken = 0;
                 _cachedMinProtocolVersion = DEFAULT_MIN_PROTOCOL_VERSION_DEVNET;
             break;
         }
-        default:
-            break;
     }
     return _cachedMinProtocolVersion;
 }
@@ -816,8 +798,6 @@ static dispatch_once_t devnetToken = 0;
             _cachedMinProtocolVersion = MAX(minProtocolVersion, DEFAULT_MIN_PROTOCOL_VERSION_DEVNET);
             break;
         }
-        default:
-            break;
     }
 }
 
@@ -839,8 +819,6 @@ static dispatch_once_t devnetToken = 0;
             }
             return DEVNET_STANDARD_PORT;
         }
-        default:
-            break;
     }
 }
 
@@ -855,8 +833,6 @@ static dispatch_once_t devnetToken = 0;
             setKeychainInt(standardPort, [NSString stringWithFormat:@"%@%@", self.devnetIdentifier, STANDARD_PORT_LOCATION], NO);
             break;
         }
-        default:
-            break;
     }
 }
 
@@ -878,8 +854,6 @@ static dispatch_once_t devnetToken = 0;
             } else
                 return DEVNET_DAPI_GRPC_STANDARD_PORT;
         }
-        default:
-            break;
     }
 }
 
@@ -894,8 +868,6 @@ static dispatch_once_t devnetToken = 0;
             setKeychainInt(standardDapiGRPCPort, [NSString stringWithFormat:@"%@%@", self.devnetIdentifier, GRPC_PORT_LOCATION], NO);
             break;
         }
-        default:
-            break;
     }
 }
 
@@ -913,8 +885,6 @@ static dispatch_once_t devnetToken = 0;
         case DSChainType_DevNet:
             _cachedMaxProofOfWork = MAX_PROOF_OF_WORK_DEVNET;
             break;
-        default:
-            _cachedMaxProofOfWork = MAX_PROOF_OF_WORK_MAINNET;
     }
     return _cachedMaxProofOfWork;
 }
@@ -927,8 +897,6 @@ static dispatch_once_t devnetToken = 0;
             return MAX_TARGET_PROOF_OF_WORK_TESTNET;
         case DSChainType_DevNet:
             return MAX_TARGET_PROOF_OF_WORK_DEVNET;
-        default:
-            return MAX_TARGET_PROOF_OF_WORK_MAINNET;
     }
 }
 
@@ -940,8 +908,6 @@ static dispatch_once_t devnetToken = 0;
             return YES;
         case DSChainType_DevNet:
             return YES;
-        default:
-            return NO;
     }
 }
 
@@ -967,8 +933,6 @@ static dispatch_once_t devnetToken = 0;
                 return nil;
             }
         }
-        default:
-            break;
     }
     return nil;
 }
@@ -981,9 +945,8 @@ static dispatch_once_t devnetToken = 0;
             return;
         case DSChainType_DevNet: {
             setKeychainString(sporkPublicKey, [NSString stringWithFormat:@"%@%@", self.devnetIdentifier, SPORK_PUBLIC_KEY_LOCATION], NO);
-        }
-        default:
             break;
+        }
     }
 }
 
@@ -1001,8 +964,6 @@ static dispatch_once_t devnetToken = 0;
             }
             return nil;
         }
-        default:
-            return nil;
     }
 }
 
@@ -1014,9 +975,8 @@ static dispatch_once_t devnetToken = 0;
             return;
         case DSChainType_DevNet: {
             setKeychainString(sporkPrivateKey, [NSString stringWithFormat:@"%@%@", self.devnetIdentifier, SPORK_PRIVATE_KEY_LOCATION], YES);
-        }
-        default:
             break;
+        }
     }
 }
 
@@ -1035,8 +995,6 @@ static dispatch_once_t devnetToken = 0;
                 return nil;
             }
         }
-        default:
-            break;
     }
     return nil;
 }
@@ -1049,9 +1007,8 @@ static dispatch_once_t devnetToken = 0;
             return;
         case DSChainType_DevNet: {
             setKeychainString(sporkAddress, [NSString stringWithFormat:@"%@%@", self.devnetIdentifier, SPORK_ADDRESS_LOCATION], NO);
-        }
-        default:
             break;
+        }
     }
 }
 
@@ -2494,29 +2451,31 @@ static dispatch_once_t devnetToken = 0;
 }
 
 - (DSBlock *)lastTerminalBlock {
-    if (!_lastTerminalBlock) {
-        [self.chainManagedObjectContext performBlockAndWait:^{
-            NSArray *lastTerminalBlocks = [DSMerkleBlockEntity lastTerminalBlocks:1 onChainEntity:[self chainEntityInContext:self.chainManagedObjectContext]];
-            DSMerkleBlock *lastTerminalBlock = [[lastTerminalBlocks firstObject] merkleBlock];
-            self->_lastTerminalBlock = lastTerminalBlock;
-            if (lastTerminalBlock) {
-                DSLog(@"last terminal block at height %d recovered from db (hash is %@)", lastTerminalBlock.height, [NSData dataWithUInt256:lastTerminalBlock.blockHash].hexString);
-            }
-        }];
-        if (!_lastTerminalBlock) {
-            // if we don't have any headers yet, use the latest checkpoint
-            DSCheckpoint *lastCheckpoint = self.terminalHeadersOverrideUseCheckpoint ? self.terminalHeadersOverrideUseCheckpoint : self.lastCheckpoint;
-            uint32_t lastSyncBlockHeight = self.lastSyncBlockHeight;
+    if (_lastTerminalBlock) return _lastTerminalBlock;
 
-            if (lastCheckpoint.height >= lastSyncBlockHeight) {
-                [self setLastTerminalBlockFromCheckpoints];
-            } else {
-                _lastTerminalBlock = self.lastSyncBlock;
-            }
+    [self.chainManagedObjectContext performBlockAndWait:^{
+        NSArray *lastTerminalBlocks = [DSMerkleBlockEntity lastTerminalBlocks:1 onChainEntity:[self chainEntityInContext:self.chainManagedObjectContext]];
+        DSMerkleBlock *lastTerminalBlock = [[lastTerminalBlocks firstObject] merkleBlock];
+        self->_lastTerminalBlock = lastTerminalBlock;
+        if (lastTerminalBlock) {
+            DSLog(@"last terminal block at height %d recovered from db (hash is %@)", lastTerminalBlock.height, [NSData dataWithUInt256:lastTerminalBlock.blockHash].hexString);
         }
+    }];
 
-        if (_lastTerminalBlock.height > self.estimatedBlockHeight) _bestEstimatedBlockHeight = _lastTerminalBlock.height;
+    if (!_lastTerminalBlock) {
+        // if we don't have any headers yet, use the latest checkpoint
+        DSCheckpoint *lastCheckpoint = self.terminalHeadersOverrideUseCheckpoint ? self.terminalHeadersOverrideUseCheckpoint : self.lastCheckpoint;
+        uint32_t lastSyncBlockHeight = self.lastSyncBlockHeight;
+
+        if (lastCheckpoint.height >= lastSyncBlockHeight) {
+            [self setLastTerminalBlockFromCheckpoints];
+        } else {
+            _lastTerminalBlock = self.lastSyncBlock;
+        }
     }
+
+    if (_lastTerminalBlock.height > self.estimatedBlockHeight) _bestEstimatedBlockHeight = _lastTerminalBlock.height;
+
     return _lastTerminalBlock;
 }
 
@@ -2594,7 +2553,7 @@ static dispatch_once_t devnetToken = 0;
     }
     DSBlock *syncBlock = self.mSyncBlocks[uint256_obj(chainLock.blockHash)];
     [syncBlock setChainLockedWithChainLock:chainLock];
-    if ((syncBlock.chainLocked) && ![self recentSyncBlockForBlockHash:syncBlock.blockHash]) {
+    if ((syncBlock.chainLocked) && ![self recentSyncBlockForBlockHash:syncBlock.blockHash]) { //!OCLINT
         //the newly chain locked block is not in the main chain, we will need to reorg to it
         DSBlock *b = syncBlock, *b2 = self.lastSyncBlock;
 

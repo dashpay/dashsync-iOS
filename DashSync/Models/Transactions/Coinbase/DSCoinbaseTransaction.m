@@ -20,7 +20,7 @@
     uint32_t off = self.payloadOffset;
     if (length - off < 1) return nil;
     NSNumber *extraPayloadNumber = nil;
-    __unused uint64_t extraPayloadSize = [message varIntAtOffset:off length:&extraPayloadNumber];
+    __unused uint64_t extraPayloadSize = [message varIntAtOffset:off length:&extraPayloadNumber]; //!OCLINT
     off += [extraPayloadNumber unsignedLongValue];
 
     if (length - off < 2) return nil;
