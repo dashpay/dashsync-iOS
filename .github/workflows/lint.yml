@@ -22,12 +22,8 @@ jobs:
         run: |
           brew tap oclint/formulae
           brew install oclint
-      - name: Bundle Update
-        run: gem install bundler
-      - name: Bundle Install
-        run: bundle install
       - name: Dependencies
-        run: bundle exec pod install
+        run: pod install
         env:
           DEVELOPER_DIR: ${{ matrix.xcode }}
       - name: Lint
