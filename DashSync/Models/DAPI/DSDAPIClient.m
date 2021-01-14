@@ -242,12 +242,11 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
             if ([self.activeServices count] == 1) return [self.activeServices objectAtIndex:0];                   //if only 1 service, just use first one
             return [self.activeServices objectAtIndex:arc4random_uniform((uint32_t)[self.activeServices count])]; //use a random service
         } else if ([self.availablePeers count]) {
-            for (NSString *peerHost in self.availablePeers) {
-                HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
-                DSDAPIPlatformNetworkService *DAPINetworkService = [[DSDAPIPlatformNetworkService alloc] initWithDAPINodeIPAddress:peerHost httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.coreNetworkingDispatchQueue onChain:self.chain];
-                [self.activeServices addObject:DAPINetworkService];
-                return DAPINetworkService;
-            }
+            NSString *peerHost = self.availablePeers.anyObject;
+            HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
+            DSDAPIPlatformNetworkService *DAPINetworkService = [[DSDAPIPlatformNetworkService alloc] initWithDAPINodeIPAddress:peerHost httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.coreNetworkingDispatchQueue onChain:self.chain];
+            [self.activeServices addObject:DAPINetworkService];
+            return DAPINetworkService;
         }
         return nil;
     }

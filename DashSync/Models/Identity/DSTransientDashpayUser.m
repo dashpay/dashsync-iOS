@@ -22,15 +22,15 @@
 - (instancetype)initWithDashpayProfileDocument:(NSDictionary *)profileDocument {
     self = [super init];
     if (self) {
-        self.revision = [[profileDocument objectForKey:@"$revision"] intValue];
-        self.avatarPath = [profileDocument objectForKey:@"avatarUrl"];
-        self.avatarFingerprint = [profileDocument objectForKey:@"avatarFingerprint"];
-        self.avatarHash = [profileDocument objectForKey:@"avatarHash"];
-        self.publicMessage = [profileDocument objectForKey:@"publicMessage"];
-        self.displayName = [profileDocument objectForKey:@"displayName"];
-        self.createdAt = [[profileDocument objectForKey:@"$createdAt"] unsignedLongValue];
-        self.updatedAt = [[profileDocument objectForKey:@"$updatedAt"] unsignedLongValue];
-        self.documentIdentifier = [profileDocument objectForKey:@"$id"];
+        self.revision = [profileDocument[@"$revision"] intValue];
+        self.avatarPath = profileDocument[@"avatarUrl"];
+        self.avatarFingerprint = profileDocument[@"avatarFingerprint"];
+        self.avatarHash = profileDocument[@"avatarHash"];
+        self.publicMessage = profileDocument[@"publicMessage"];
+        self.displayName = profileDocument[@"displayName"];
+        self.createdAt = [profileDocument[@"$createdAt"] unsignedLongValue];
+        self.updatedAt = [profileDocument[@"$updatedAt"] unsignedLongValue];
+        self.documentIdentifier = profileDocument[@"$id"];
     }
     return self;
 }

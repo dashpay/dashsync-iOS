@@ -110,7 +110,7 @@
 }
 
 - (NSString *)identifierString {
-    switch (self.identifier) {
+    switch (self.identifier) { //!OCLINT
         case DSSporkIdentifier_Spork2InstantSendEnabled:
             return @"Instant Send enabled";
         case DSSporkIdentifier_Spork3InstantSendBlockFiltering:
@@ -145,7 +145,6 @@
             return @"LLMQ based Instant Send";
         default:
             return @"Unknown spork";
-            break;
     }
 }
 

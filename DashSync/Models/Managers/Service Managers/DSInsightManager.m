@@ -100,7 +100,7 @@
 }
 
 - (void)blockForBlockHash:(UInt256)blockHash onChain:(DSChain *)chain completion:(void (^)(DSBlock *block, NSError *error))completion {
-    NSAssert(!uint256_is_zero(blockHash), @"blockHash must be set");
+    NSAssert(uint256_is_not_zero(blockHash), @"blockHash must be set");
     NSParameterAssert(chain);
     NSString *insightURL = [chain isMainnet] ? INSIGHT_URL : TESTNET_INSIGHT_URL;
     [self queryInsight:insightURL forBlockWithHash:blockHash onChain:chain completion:completion];

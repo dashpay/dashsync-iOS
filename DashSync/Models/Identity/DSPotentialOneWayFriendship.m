@@ -90,7 +90,7 @@
 }
 
 - (void)createDerivationPathWithCompletion:(void (^)(BOOL success, DSIncomingFundsDerivationPath *incomingFundsDerivationPath))completion {
-    NSAssert(!uint256_is_zero([self destinationBlockchainIdentityUniqueId]), @"destinationBlockchainIdentityUniqueId must not be null");
+    NSAssert(uint256_is_not_zero([self destinationBlockchainIdentityUniqueId]), @"destinationBlockchainIdentityUniqueId must not be null");
     self.fundsDerivationPathForContact = [DSIncomingFundsDerivationPath
         contactBasedDerivationPathWithDestinationBlockchainIdentityUniqueId:[self destinationBlockchainIdentityUniqueId]
                                            sourceBlockchainIdentityUniqueId:self.sourceBlockchainIdentity.uniqueID
@@ -136,13 +136,11 @@
     uint32_t shortenedAccountBits = self.account.accountNumber & 0x0FFFFFFF;
     uint32_t version = 0; //currently set to 0
     uint32_t versionBits = version << 28;
-    uint32_t accountRef = versionBits | (accountSecretKey28 ^ shortenedAccountBits);
-
-    return accountRef;
+    return versionBits | (accountSecretKey28 ^ shortenedAccountBits); //this is the account ref
 }
 
 - (DPDocument *)contactRequestDocumentWithEntropy:(NSData *)entropyData {
-    NSAssert(!uint256_is_zero([self destinationBlockchainIdentityUniqueId]), @"the destination contact's associatedBlockchainIdentityUniqueId must be set before making a friend request");
+    NSAssert(uint256_is_not_zero([self destinationBlockchainIdentityUniqueId]), @"the destination contact's associatedBlockchainIdentityUniqueId must be set before making a friend request");
     NSAssert([self.encryptedExtendedPublicKeyData length] > 0, @"The encrypted extended public key must exist");
     NSAssert(self.extendedPublicKey, @"Problem creating extended public key for potential contact?");
     NSError *error = nil;
@@ -193,7 +191,7 @@
 
 
 //-(DSFriendRequestEntity*)outgoingFriendRequest {
-//    NSAssert(!uint256_is_zero(self.destinationContact.associatedBlockchainIdentityUniqueId), @"destination contact must be known");
+//    NSAssert(uint256_is_not_zero(self.destinationContact.associatedBlockchainIdentityUniqueId), @"destination contact must be known");
 //    DSDashpayUserEntity * dashpayUserEntity = [DSDashpayUserEntity anyObjectInContext:context matching:@"associatedBlockchainIdentityUniqueId == %@",uint256_data(self.destinationContact.associatedBlockchainIdentityUniqueId)];
 //    if (!dashpayUserEntity) {
 //        dashpayUserEntity =  [DSDashpayUserEntity managedObject];

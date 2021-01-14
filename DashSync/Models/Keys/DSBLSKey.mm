@@ -313,7 +313,7 @@
 }
 
 - (bls::PrivateKey)blsPrivateKey {
-    if (!uint256_is_zero(self.secretKey)) {
+    if (uint256_is_not_zero(self.secretKey)) {
         bls::PrivateKey blsPrivateKey = bls::PrivateKey::FromBytes(self.secretKey.u8);
 
         return blsPrivateKey;

@@ -50,7 +50,7 @@
         NSArray *addressEntities = [DSAddressEntity objectsInContext:transactionEntity.managedObjectContext matching:@"address == %@ && derivationPath.chain == %@", self.address, chainEntity ? chainEntity : [transaction.chain chainEntityInContext:transactionEntity.managedObjectContext]];
         if ([addressEntities count]) {
             NSAssert([addressEntities count] == 1, @"addresses should not be duplicates");
-            self.localAddress = [addressEntities objectAtIndex:0];
+            self.localAddress = addressEntities[0];
             self.account = self.localAddress.derivationPath.account; //this is to make the outputs easily accessible for an account
         }
     } else {

@@ -24,7 +24,7 @@
 - (NSDictionary *)transformToDictionaryOfHexStringsToHexStrings {
     NSMutableDictionary *mDictionary = [NSMutableDictionary dictionary];
     for (NSData *data in self) {
-        [mDictionary setObject:[[self objectForKey:data] hexString] forKey:[data hexString]];
+        mDictionary[[data hexString]] = [self[data] hexString];
     }
     return [mDictionary copy];
 }

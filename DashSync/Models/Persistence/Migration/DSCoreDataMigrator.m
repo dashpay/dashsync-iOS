@@ -116,17 +116,17 @@
                     }
                 }
             }
-            NSAssert(!error, @"Creation should have succeeded");
+            NSAssert(error == nil, @"Creation should have succeeded");
             if ([[NSFileManager defaultManager] fileExistsAtPath:[[self documentsWALURL] path]]) {
                 [[NSFileManager defaultManager] copyItemAtURL:[self documentsWALURL] toURL:[DSDataController storeWALURL] error:&error];
-                NSAssert(!error, @"Copy should have succeeded");
+                NSAssert(error == nil, @"Copy should have succeeded");
             }
             if ([[NSFileManager defaultManager] fileExistsAtPath:[[self documentsSHMURL] path]]) {
                 [[NSFileManager defaultManager] copyItemAtURL:[self documentsSHMURL] toURL:[DSDataController storeSHMURL] error:&error];
-                NSAssert(!error, @"Copy should have succeeded");
+                NSAssert(error == nil, @"Copy should have succeeded");
             }
             [[NSFileManager defaultManager] copyItemAtURL:[self documentsStoreURL] toURL:[DSDataController storeURL] error:&error];
-            NSAssert(!error, @"Copy should have succeeded");
+            NSAssert(error == nil, @"Copy should have succeeded");
             shouldRemoveDocumentsCopy = TRUE;
         }
     }

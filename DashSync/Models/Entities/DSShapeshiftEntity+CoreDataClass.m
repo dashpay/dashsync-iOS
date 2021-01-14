@@ -47,19 +47,14 @@
     switch ([self.shapeshiftStatus integerValue]) {
         case eShapeshiftAddressStatus_Complete:
             return @"Completed";
-            break;
         case eShapeshiftAddressStatus_Failed:
             return self.errorMessage;
-            break;
         case eShapeshiftAddressStatus_Unused:
             return @"Started Shapeshift";
-            break;
         case eShapeshiftAddressStatus_NoDeposits:
             return @"Shapeshift Depositing";
-            break;
         case eShapeshiftAddressStatus_Received:
             return @"Shapeshift in Progress";
-            break;
         default:
             return @"Unknown";
     }

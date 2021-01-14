@@ -177,11 +177,9 @@
         }
     }
 
-    if (!uint256_is_zero(self.confirmedHash.UInt256) && !uint256_is_zero(simplifiedMasternodeEntry.confirmedHash)) {
-        if (self.knownConfirmedAtHeight > blockHeight) {
-            //we now know it was confirmed earlier so update to earlier
-            self.knownConfirmedAtHeight = blockHeight;
-        }
+    if (uint256_is_not_zero(self.confirmedHash.UInt256) && uint256_is_not_zero(simplifiedMasternodeEntry.confirmedHash) && (self.knownConfirmedAtHeight > blockHeight)) {
+        //we now know it was confirmed earlier so update to earlier
+        self.knownConfirmedAtHeight = blockHeight;
     }
 }
 
@@ -193,7 +191,7 @@
     NSParameterAssert(simplifiedMasternodeEntry);
     self.providerRegistrationTransactionHash = [NSData dataWithUInt256:simplifiedMasternodeEntry.providerRegistrationTransactionHash];
     self.confirmedHash = [NSData dataWithUInt256:simplifiedMasternodeEntry.confirmedHash];
-    if (!uint256_is_zero(simplifiedMasternodeEntry.confirmedHash)) {
+    if (uint256_is_not_zero(simplifiedMasternodeEntry.confirmedHash)) {
         self.knownConfirmedAtHeight = blockHeight;
     }
     self.ipv6Address = uint128_data(simplifiedMasternodeEntry.address);
@@ -276,7 +274,7 @@
     for (NSData *blockHash in blockHashDictionary) {
         DSMerkleBlock *block = [chain blockForBlockHash:blockHash.UInt256];
         if (block) {
-            [rDictionary setObject:blockHashDictionary[blockHash] forKey:block];
+            rDictionary[block] = blockHashDictionary[blockHash];
         }
     }
     return rDictionary;
@@ -287,7 +285,7 @@
     for (DSMerkleBlock *merkleBlock in blockHashDictionary) {
         NSData *blockHash = uint256_data(merkleBlock.blockHash);
         if (blockHash) {
-            [rDictionary setObject:blockHashDictionary[merkleBlock] forKey:blockHash];
+            rDictionary[blockHash] = blockHashDictionary[merkleBlock];
         }
     }
     return rDictionary;

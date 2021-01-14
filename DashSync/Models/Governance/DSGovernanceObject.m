@@ -193,12 +193,12 @@
         }
 
         if (proposalDictionary) {
-            identifier = [proposalDictionary objectForKey:@"name"];
-            startEpoch = [[proposalDictionary objectForKey:@"start_epoch"] longLongValue];
-            endEpoch = [[proposalDictionary objectForKey:@"end_epoch"] longLongValue];
-            paymentAddress = [proposalDictionary objectForKey:@"payment_address"];
-            amount = [[[NSDecimalNumber decimalNumberWithDecimal:[[proposalDictionary objectForKey:@"payment_amount"] decimalValue]] decimalNumberByMultiplyingByPowerOf10:8] unsignedLongLongValue];
-            url = [proposalDictionary objectForKey:@"url"];
+            identifier = proposalDictionary[@"name"];
+            startEpoch = [proposalDictionary[@"start_epoch"] longLongValue];
+            endEpoch = [proposalDictionary[@"end_epoch"] longLongValue];
+            paymentAddress = proposalDictionary[@"payment_address"];
+            amount = [[[NSDecimalNumber decimalNumberWithDecimal:[proposalDictionary[@"payment_amount"] decimalValue]] decimalNumberByMultiplyingByPowerOf10:8] unsignedLongLongValue];
+            url = proposalDictionary[@"url"];
         }
     }
 
@@ -254,7 +254,7 @@
     _url = url;
 
     _governanceVotes = [NSMutableArray array];
-    if (!uint256_is_zero(governanceObjectHash)) [self loadGovernanceVotes:0];
+    if (uint256_is_not_zero(governanceObjectHash)) [self loadGovernanceVotes:0];
     self.managedObjectContext = [NSManagedObjectContext chainContext];
 
     return self;
@@ -263,13 +263,12 @@
 - (DSGovernanceObjectEntity *)governanceObjectEntityInContext:(NSManagedObjectContext *)context {
     NSArray *governanceObjects = [DSGovernanceObjectEntity objectsInContext:context matching:@"governanceObjectHash.governanceObjectHash = %@", [NSData dataWithUInt256:self.governanceObjectHash]];
     if ([governanceObjects count]) {
-        return [governanceObjects objectAtIndex:0];
+        return governanceObjects[0];
     } else {
         DSGovernanceObjectEntity *governanceObjectEntity = [DSGovernanceObjectEntity managedObjectInBlockedContext:context];
         [governanceObjectEntity setAttributesFromGovernanceObject:self forHashEntity:nil];
         return governanceObjectEntity;
     }
-    return nil;
 }
 
 // MARK:- Governance Vote
@@ -448,9 +447,9 @@
             //            [DSGovernanceVoteHashEntity saveContext];
             //        }];
             [self requestGovernanceVotesFromPeer:peer];
-        } else {
-            //things are missing, most likely they will come in later
-        }
+        } // else {
+          //things are missing, most likely they will come in later
+        //}
     }
 }
 
@@ -491,13 +490,13 @@
 
 - (NSData *)proposalInfo {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-    [dictionary setObject:self.identifier forKey:@"name"];
-    [dictionary setObject:@(self.startEpoch) forKey:@"start_epoch"];
-    [dictionary setObject:@(self.endEpoch) forKey:@"end_epoch"];
-    [dictionary setObject:@(1) forKey:@"type"];
-    [dictionary setObject:self.paymentAddress forKey:@"payment_address"];
-    [dictionary setObject:[NSDecimalNumber decimalNumberWithMantissa:self.amount exponent:-8 isNegative:FALSE] forKey:@"payment_amount"];
-    [dictionary setObject:self.url forKey:@"url"];
+    dictionary[@"name"] = self.identifier;
+    dictionary[@"start_epoch"] = @(self.startEpoch);
+    dictionary[@"end_epoch"] = @(self.endEpoch);
+    dictionary[@"type"] = @(1);
+    dictionary[@"payment_address"] = self.paymentAddress;
+    dictionary[@"payment_amount"] = [NSDecimalNumber decimalNumberWithMantissa:self.amount exponent:-8 isNegative:FALSE];
+    dictionary[@"url"] = self.url;
     NSArray *proposalArray = @[@[@"proposal", dictionary]];
     NSError *error = nil;
     if (@available(iOS 11.0, *)) {
@@ -535,7 +534,7 @@
         if (!self.paymentAddress) return FALSE;
         if (!self.amount) return FALSE;
         if (!self.url) return FALSE;
-        if (!uint256_is_zero(self.parentHash)) return FALSE;
+        if (uint256_is_not_zero(self.parentHash)) return FALSE;
         if (uint256_is_zero(self.collateralHash)) return FALSE;
 
     } else if (self.type == DSGovernanceObjectType_Trigger) {

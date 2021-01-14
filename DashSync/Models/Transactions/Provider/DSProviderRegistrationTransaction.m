@@ -233,7 +233,7 @@
 - (NSString *)holdingAddress {
     if (uint256_is_zero(self.collateralOutpoint.hash) && [self.outputAmounts containsObject:@(MASTERNODE_COST)]) {
         NSUInteger index = [self.outputAmounts indexOfObject:@(MASTERNODE_COST)];
-        return [[self outputAddresses] objectAtIndex:index];
+        return [self outputAddresses][index];
     } else {
         return nil;
     }
@@ -254,7 +254,7 @@
 }
 
 - (size_t)size {
-    if (!uint256_is_zero(self.txHash)) return self.data.length;
+    if (uint256_is_not_zero(self.txHash)) return self.data.length;
     return [super size] + [NSMutableData sizeOfVarInt:self.payloadData.length] + ([self basePayloadData].length + MAX_ECDSA_SIGNATURE_SIZE);
 }
 

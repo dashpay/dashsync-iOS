@@ -40,23 +40,23 @@
     NSParameterAssert(ipAddress);
     NSParameterAssert(httpLoaderFactory);
 
-    self = [super init];
-    if (self) {
-        self.ipAddress = ipAddress;
-        NSURL *dapiNodeURL = [NSURL URLWithString:[NSString stringWithFormat:@"http://%@:%d", ipAddress, chain.standardDapiJRPCPort]];
-        _httpJSONRPCClient = [DSHTTPJSONRPCClient clientWithEndpointURL:dapiNodeURL httpLoaderFactory:httpLoaderFactory];
-        self.chain = chain;
-        GRPCMutableCallOptions *options = [[GRPCMutableCallOptions alloc] init];
-        // this example does not use TLS (secure channel); use insecure channel instead
-        options.transportType = GRPCTransportTypeInsecure;
-        options.userAgentPrefix = USER_AGENT;
-        options.timeout = 30;
-        self.grpcDispatchQueue = grpcDispatchQueue;
+    if (!(self = [super init])) return nil;
 
-        NSString *dapiGRPCHost = [NSString stringWithFormat:@"%@:%d", ipAddress, chain.standardDapiGRPCPort];
+    self.ipAddress = ipAddress;
+    NSURL *dapiNodeURL = [NSURL URLWithString:[NSString stringWithFormat:@"http://%@:%d", ipAddress, chain.standardDapiJRPCPort]];
+    _httpJSONRPCClient = [DSHTTPJSONRPCClient clientWithEndpointURL:dapiNodeURL httpLoaderFactory:httpLoaderFactory];
+    self.chain = chain;
+    GRPCMutableCallOptions *options = [[GRPCMutableCallOptions alloc] init];
+    // this example does not use TLS (secure channel); use insecure channel instead
+    options.transportType = GRPCTransportTypeInsecure;
+    options.userAgentPrefix = USER_AGENT;
+    options.timeout = 30;
+    self.grpcDispatchQueue = grpcDispatchQueue;
 
-        _gRPCClient = [Core serviceWithHost:dapiGRPCHost callOptions:options];
-    }
+    NSString *dapiGRPCHost = [NSString stringWithFormat:@"%@:%d", ipAddress, chain.standardDapiGRPCPort];
+
+    _gRPCClient = [Core serviceWithHost:dapiGRPCHost callOptions:options];
+
     return self;
 }
 

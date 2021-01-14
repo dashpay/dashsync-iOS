@@ -118,7 +118,7 @@ static NSUInteger _fetchBatchSize = 100;
     a = [self objectsMatching:predicateFormat arguments:args];
     va_end(args);
     if ([a count]) {
-        return [a objectAtIndex:0];
+        return a[0];
     } else
         return nil;
 }
@@ -131,7 +131,7 @@ static NSUInteger _fetchBatchSize = 100;
     a = [self objectsMatching:predicateFormat arguments:args inContext:context];
     va_end(args);
     if ([a count]) {
-        return [a objectAtIndex:0];
+        return a[0];
     } else
         return nil;
 }
@@ -144,7 +144,7 @@ static NSUInteger _fetchBatchSize = 100;
     a = [self objectsMatching:predicateFormat arguments:args inContext:context];
     va_end(args);
     if ([a count]) {
-        return [a objectAtIndex:0];
+        return a[0];
     } else
         return nil;
 }
@@ -171,7 +171,7 @@ static NSUInteger _fetchBatchSize = 100;
 + (instancetype)anyObjectMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext *)context {
     NSArray *array = [self objectsMatching:predicateFormat arguments:args inContext:context];
     if ([array count]) {
-        return [array objectAtIndex:0];
+        return array[0];
     } else
         return nil;
 }

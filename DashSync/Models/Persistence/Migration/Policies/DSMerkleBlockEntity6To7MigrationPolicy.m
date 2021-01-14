@@ -130,10 +130,8 @@
     NSNumber *height = [sInstance valueForKey:@"height"];
     NSManagedObject *chainEntity = [sInstance valueForKey:@"chain"];
     NSParameterAssert(chainEntity);
-    if (height != nil && [height intValue] != BLOCK_UNKNOWN_HEIGHT && [[chainEntity valueForKey:@"type"] intValue] == DSChainType_MainNet) {
-        if ([height intValue] > self.lastKnownSourceBlockHeight) {
-            self.lastKnownSourceBlockHeight = [height unsignedIntValue];
-        }
+    if (height != nil && [height intValue] != BLOCK_UNKNOWN_HEIGHT && [[chainEntity valueForKey:@"type"] intValue] == DSChainType_MainNet && [height intValue] > self.lastKnownSourceBlockHeight) {
+        self.lastKnownSourceBlockHeight = [height unsignedIntValue];
     }
 
     return YES;

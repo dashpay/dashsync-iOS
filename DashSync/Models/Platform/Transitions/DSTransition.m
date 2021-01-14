@@ -107,7 +107,7 @@
 
 // size in bytes if signed, or estimated size assuming compact pubkey sigs
 - (size_t)size {
-    if (!uint256_is_zero(_transitionHash)) return self.data.length;
+    if (uint256_is_not_zero(_transitionHash)) return self.data.length;
     return [self serialized].length; //todo figure this out (probably wrong)
 }
 

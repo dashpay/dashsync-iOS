@@ -90,7 +90,7 @@
     for (DSAddressEntity *addressEntity in addressEntities) {
         [addressStringsOfEntities addObject:addressEntity.address];
     }
-    return [NSDictionary dictionaryWithObjects:addressEntities forKeys:addressStringsOfEntities];
+    return [NSDictionary dictionaryWithObjects:addressEntities forKeys:addressStringsOfEntities]; //!OCLINT
 }
 
 + (void)deleteAddressesOnChainEntity:(DSChainEntity *)chainEntity {

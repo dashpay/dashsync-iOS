@@ -1024,7 +1024,7 @@
 
     DSMasternodeList *baseMasternodeList = [self masternodeListForBlockHash:baseBlockHash];
 
-    if (!baseMasternodeList && !uint256_eq(self.chain.genesisHash, baseBlockHash) && !uint256_is_zero(baseBlockHash)) {
+    if (!baseMasternodeList && !uint256_eq(self.chain.genesisHash, baseBlockHash) && uint256_is_not_zero(baseBlockHash)) {
         //this could have been deleted in the meantime, if so rerequest
         [self issueWithMasternodeListFromPeer:peer];
         DSLog(@"No base masternode list");

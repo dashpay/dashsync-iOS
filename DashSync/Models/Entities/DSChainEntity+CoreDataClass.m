@@ -87,7 +87,7 @@
         } else {
             NSError *checkpointRetrievalError = nil;
             NSArray *checkpointArray = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSArray class] fromData:data error:&checkpointRetrievalError];
-            chain = [DSChain recoverKnownDevnetWithIdentifier:devnetIdentifier withCheckpoints:checkpointRetrievalError ? [NSArray array] : checkpointArray performSetup:YES];
+            chain = [DSChain recoverKnownDevnetWithIdentifier:devnetIdentifier withCheckpoints:checkpointRetrievalError ? @[] : checkpointArray performSetup:YES];
         }
     } else {
         NSAssert(FALSE, @"Unknown DSChainType");
@@ -122,7 +122,7 @@
 + (DSChainEntity *)chainEntityForType:(DSChainType)type devnetIdentifier:(NSString *)devnetIdentifier checkpoints:(NSArray *)checkpoints inContext:(NSManagedObjectContext *)context {
     NSArray *objects = [DSChainEntity objectsForPredicate:[NSPredicate predicateWithFormat:@"type = %d && ((type != %d) || devnetIdentifier = %@)", type, DSChainType_DevNet, devnetIdentifier] inContext:context];
     if (objects.count) {
-        DSChainEntity *chainEntity = [objects objectAtIndex:0];
+        DSChainEntity *chainEntity = objects[0];
         if (devnetIdentifier) {
             NSError *error = nil;
             NSArray *knownCheckpoints = [NSKeyedUnarchiver unarchivedObjectOfClasses:[NSSet setWithArray:@[[NSArray class], [DSCheckpoint class]]] fromData:[chainEntity checkpoints] error:&error];

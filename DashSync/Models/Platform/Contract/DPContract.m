@@ -56,24 +56,21 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     NSParameterAssert(localContractIdentifier);
     NSParameterAssert(documents);
 
-    self = [super init];
-    if (self) {
-        _version = DEFAULT_VERSION;
-        _localContractIdentifier = localContractIdentifier;
-        _jsonMetaSchema = DEFAULT_SCHEMA;
-        _mutableDocuments = [documents mutableCopy];
-        _definitions = @{};
-        _chain = chain;
+    if (!(self = [super init])) return nil;
+    _version = DEFAULT_VERSION;
+    _localContractIdentifier = localContractIdentifier;
+    _jsonMetaSchema = DEFAULT_SCHEMA;
+    _mutableDocuments = [documents mutableCopy];
+    _definitions = @{};
+    _chain = chain;
 
-
-        //        [self.chain.chainManagedObjectContext performBlockAndWait:^{
-        //            DSContractEntity * entity = [self contractEntityInContext:self.chain.chainManagedObjectContext];
-        //            if (entity) {
-        //                self.registeredBlockchainIdentityUniqueID = entity.registeredBlockchainIdentityUniqueID.UInt256;
-        //                _contractState = entity.state;
-        //            }
-        //        }];
-    }
+    //        [self.chain.chainManagedObjectContext performBlockAndWait:^{
+    //            DSContractEntity * entity = [self contractEntityInContext:self.chain.chainManagedObjectContext];
+    //            if (entity) {
+    //                self.registeredBlockchainIdentityUniqueID = entity.registeredBlockchainIdentityUniqueID.UInt256;
+    //                _contractState = entity.state;
+    //            }
+    //        }];
     return self;
 }
 
@@ -171,8 +168,8 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 
 - (UInt256)contractId {
     if (uint256_is_zero(_contractId)) {
-        NSAssert(!uint256_is_zero(self.registeredBlockchainIdentityUniqueID), @"Registered Identity needs to be set");
-        NSAssert(!uint256_is_zero(self.entropy), @"Entropy needs to be set");
+        NSAssert(uint256_is_not_zero(self.registeredBlockchainIdentityUniqueID), @"Registered Identity needs to be set");
+        NSAssert(uint256_is_not_zero(self.entropy), @"Entropy needs to be set");
         NSMutableData *mData = [NSMutableData data];
         [mData appendUInt256:self.registeredBlockchainIdentityUniqueID];
         [mData appendUInt256:self.entropy];
@@ -190,8 +187,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     [entropyData appendUInt256:blockchainIdentity.uniqueID];
     [entropyData appendData:[derivationPath publicKeyDataAtIndex:UINT32_MAX - 1]]; //use the last key in 32 bit space (it won't probably ever be used anyways)
     [mData appendData:uint256_data([entropyData SHA256])];
-    UInt256 contractId = [mData SHA256_2];
-    return contractId;
+    return [mData SHA256_2]; //this is the contract ID
 }
 
 - (NSString *)base58ContractId {
@@ -199,7 +195,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 }
 
 - (NSString *)base58OwnerId {
-    NSAssert(!uint256_is_zero(self.registeredBlockchainIdentityUniqueID), @"Registered Identity can not be 0");
+    NSAssert(uint256_is_not_zero(self.registeredBlockchainIdentityUniqueID), @"Registered Identity can not be 0");
     return uint256_base58(self.registeredBlockchainIdentityUniqueID);
 }
 
@@ -245,9 +241,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
         return NO;
     }
 
-    BOOL isDefined = self.mutableDocuments[type] != nil;
-
-    return isDefined;
+    return (self.mutableDocuments[type] != nil);
 }
 
 - (void)setDocumentSchema:(DSStringValueDictionary *)schema forType:(NSString *)type {
@@ -305,8 +299,6 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
             return @"Registering";
         case DPContractState_NotRegistered:
             return @"Not Registered";
-        default:
-            break;
     }
     return @"Other State";
 }
@@ -361,15 +353,15 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
             entity = [DSContractEntity managedObjectInBlockedContext:context];
             entity.chain = [self.chain chainEntityInContext:context];
             entity.localContractIdentifier = self.localContractIdentifier;
-            if (!uint256_is_zero(self.registeredBlockchainIdentityUniqueID)) {
+            if (uint256_is_not_zero(self.registeredBlockchainIdentityUniqueID)) {
                 entity.registeredBlockchainIdentityUniqueID = uint256_data(self.registeredBlockchainIdentityUniqueID);
             }
-            if (!uint256_is_zero(self.entropy)) {
+            if (uint256_is_not_zero(self.entropy)) {
                 entity.entropy = uint256_data(self.entropy);
             }
             hasChange = YES;
         }
-        if (!uint256_is_zero(self.registeredBlockchainIdentityUniqueID) && (!entity.registeredBlockchainIdentityUniqueID || !uint256_eq(entity.registeredBlockchainIdentityUniqueID.UInt256, self.registeredBlockchainIdentityUniqueID))) {
+        if (uint256_is_not_zero(self.registeredBlockchainIdentityUniqueID) && (!entity.registeredBlockchainIdentityUniqueID || !uint256_eq(entity.registeredBlockchainIdentityUniqueID.UInt256, self.registeredBlockchainIdentityUniqueID))) {
             entity.registeredBlockchainIdentityUniqueID = uint256_data(self.registeredBlockchainIdentityUniqueID);
             hasChange = YES;
         } else if (uint256_is_zero(self.registeredBlockchainIdentityUniqueID) && entity.registeredBlockchainIdentityUniqueID) {
@@ -377,7 +369,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
             hasChange = YES;
         }
 
-        if (!uint256_is_zero(self.entropy) && (!entity.entropy || !uint256_eq(entity.entropy.UInt256, self.entropy))) {
+        if (uint256_is_not_zero(self.entropy) && (!entity.entropy || !uint256_eq(entity.entropy.UInt256, self.entropy))) {
             entity.entropy = uint256_data(self.entropy);
             hasChange = YES;
         } else if (uint256_is_zero(self.entropy) && entity.entropy) {
@@ -422,7 +414,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 
 + (DPContract *)localDashpayContractForChain:(DSChain *)chain {
     DPContract *contract = [self contractAtPath:@"dashpay-contract" ofType:@"json" identifier:DASHPAY_CONTRACT forChain:chain];
-    if (!uint256_is_zero(chain.dashpayContractID) && contract.contractState == DPContractState_Unknown) {
+    if (uint256_is_not_zero(chain.dashpayContractID) && contract.contractState == DPContractState_Unknown) {
         [contract setContractState:DPContractState_Registered inContext:[NSManagedObjectContext platformContext]];
         contract.contractId = chain.dashpayContractID;
         [contract saveAndWaitInContext:[NSManagedObjectContext platformContext]];
@@ -433,7 +425,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 
 + (DPContract *)localDPNSContractForChain:(DSChain *)chain {
     DPContract *contract = [self contractAtPath:@"dpns-contract" ofType:@"json" identifier:DPNS_CONTRACT forChain:chain];
-    if (!uint256_is_zero(chain.dpnsContractID) && contract.contractState == DPContractState_Unknown) {
+    if (uint256_is_not_zero(chain.dpnsContractID) && contract.contractState == DPContractState_Unknown) {
         [contract setContractState:DPContractState_Registered inContext:[NSManagedObjectContext platformContext]];
         contract.contractId = chain.dpnsContractID;
         [contract saveAndWaitInContext:[NSManagedObjectContext platformContext]];

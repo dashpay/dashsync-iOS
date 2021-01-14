@@ -983,11 +983,11 @@
         [self acceptDarksendSessionUpdateMessage:message];
     else if ([MSG_DARKSENDTX isEqual:type])
         [self acceptDarksendTransactionMessage:message];
-    else {
 #if DROP_MESSAGE_LOGGING
+    else {
         DSLog(@"%@:%u dropping %@, len:%u, not implemented", self.host, self.port, type, (int)message.length);
-#endif
     }
+#endif
 }
 
 - (void)acceptVersionMessage:(NSData *)message {
@@ -1572,7 +1572,7 @@
 
             if (uint256_is_zero(hash)) continue;
 
-            switch (type) {
+            switch (type) { //!OCLINT
                 case DSInvType_Tx:
                 case DSInvType_TxLockRequest:
                     transaction = [self.transactionDelegate peer:self requestedTransaction:hash];
@@ -1600,7 +1600,6 @@
                         [notfound appendBytes:&hash length:sizeof(hash)];
                         break;
                     }
-                    break;
                 }
                 case DSInvType_GovernanceObject: {
                     DSGovernanceObject *governanceObject = [self.governanceDelegate peer:self requestedGovernanceObject:hash];
@@ -1612,7 +1611,6 @@
                         [notfound appendBytes:&hash length:sizeof(hash)];
                         break;
                     }
-                    break;
                 }
                     // fall through
                 default:
@@ -1792,7 +1790,7 @@
 #endif
     reason = nil; // fixes an unused variable warning for non-debug builds
 
-    if (!uint256_is_zero(txHash)) {
+    if (uint256_is_not_zero(txHash)) {
         dispatch_async(self.delegateQueue, ^{
             [self.transactionDelegate peer:self rejectedTransaction:txHash withCode:code];
         });
@@ -2013,7 +2011,7 @@
 }
 
 - (void)stream:(NSStream *)aStream handleEvent:(NSStreamEvent)eventCode {
-    switch (eventCode) {
+    switch (eventCode) { //!OCLINT
         case NSStreamEventOpenCompleted:
             DSLog(@"%@:%u %@ stream connected in %fs", self.host, self.port,
                 (aStream == self.inputStream) ? @"input" : (aStream == self.outputStream ? @"output" : @"unknown"),
@@ -2060,7 +2058,7 @@
 
                         if (l < 0) {
                             DSLog(@"%@:%u error reading message", self.host, self.port);
-                            goto reset;
+                            goto reset; //!OCLINT
                         }
 
                         self.msgHeader.length = headerLen + l;
@@ -2090,7 +2088,7 @@
 
                     if (length > MAX_MSG_LENGTH) { // check message length
                         [self error:@"error reading %@, message length %u is too long", type, length];
-                        goto reset;
+                        goto reset; //!OCLINT
                     }
 
                     if (payloadLen < length) { // read message payload
@@ -2100,7 +2098,7 @@
 
                         if (l < 0) {
                             DSLog(@"%@:%u error reading %@", self.host, self.port, type);
-                            goto reset;
+                            goto reset; //!OCLINT
                         }
 
                         self.msgPayload.length = payloadLen + l;
@@ -2112,14 +2110,14 @@
                                      "length:%u, SHA256_2:%@",
                               type, self.msgPayload.SHA256_2.u32[0], checksum,
                               (int)self.msgPayload.length, length, uint256_obj(self.msgPayload.SHA256_2)];
-                        goto reset;
+                        goto reset; //!OCLINT
                     }
 
                     message = self.msgPayload;
                     self.msgPayload = [NSMutableData data];
                     [self acceptMessage:message type:type]; // process message
 
-                reset: // reset for next message
+                reset: //!OCLINT // reset for next message
                     self.msgHeader.length = self.msgPayload.length = 0;
                 }
             }

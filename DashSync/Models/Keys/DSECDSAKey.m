@@ -542,7 +542,7 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i) {
 }
 
 - (NSData *)publicKeyData {
-    if (self.pubkey.length == 0 && !uint256_is_zero(_seckey)) {
+    if (self.pubkey.length == 0 && uint256_is_not_zero(_seckey)) {
         NSMutableData *d = [NSMutableData secureDataWithLength:self.compressed ? 33 : 65];
         size_t len = d.length;
         secp256k1_pubkey pk;

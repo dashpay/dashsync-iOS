@@ -48,7 +48,7 @@
 
 - (NSArray<DSDashpayUserEntity *> *)mostActiveFriends:(DSDashpayUserEntityFriendActivityType)activityType count:(NSUInteger)count ascending:(BOOL)ascending {
     NSDictionary<NSData *, NSNumber *> *friendsWithActivity = [self friendsWithActivityForType:activityType count:count ascending:ascending];
-    if (!friendsWithActivity.count) return [NSArray array];
+    if (!friendsWithActivity.count) return @[];
     NSArray *results = [DSDashpayUserEntity objectsInContext:self.managedObjectContext matching:@"associatedBlockchainIdentity.uniqueID IN %@", friendsWithActivity.allKeys];
     return results;
 }
@@ -59,18 +59,18 @@
 
     NSExpression *keyPathExpression = [NSExpression expressionForKeyPath:@"n"]; // Does not really matter
     NSExpression *countExpression = [NSExpression expressionForFunction:@"count:"
-                                                              arguments:[NSArray arrayWithObject:keyPathExpression]];
+                                                              arguments:@[keyPathExpression]];
     NSExpressionDescription *expressionDescription = [[NSExpressionDescription alloc] init];
     [expressionDescription setName:@"count"];
     [expressionDescription setExpression:countExpression];
     [expressionDescription setExpressionResultType:NSInteger32AttributeType];
     if (activityType == DSDashpayUserEntityFriendActivityType_IncomingTransactions) {
-        [fetchRequest setPropertiesToFetch:[NSArray arrayWithObjects:@"localAddress.derivationPath.friendRequest.destinationContact.associatedBlockchainIdentity.uniqueID", expressionDescription, nil]];
-        [fetchRequest setPropertiesToGroupBy:[NSArray arrayWithObject:@"localAddress.derivationPath.friendRequest.destinationContact.associatedBlockchainIdentity.uniqueID"]];
+        [fetchRequest setPropertiesToFetch:@[@"localAddress.derivationPath.friendRequest.destinationContact.associatedBlockchainIdentity.uniqueID", expressionDescription]];
+        [fetchRequest setPropertiesToGroupBy:@[@"localAddress.derivationPath.friendRequest.destinationContact.associatedBlockchainIdentity.uniqueID"]];
         [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"localAddress.derivationPath.friendRequest != NULL && localAddress.derivationPath.friendRequest.sourceContact == %@", self]]; //first part is an optimization for left outer joins
     } else if (activityType == DSDashpayUserEntityFriendActivityType_OutgoingTransactions) {
-        [fetchRequest setPropertiesToFetch:[NSArray arrayWithObjects:@"localAddress.derivationPath.friendRequest.sourceContact.associatedBlockchainIdentity.uniqueID", expressionDescription, nil]];
-        [fetchRequest setPropertiesToGroupBy:[NSArray arrayWithObject:@"localAddress.derivationPath.friendRequest.sourceContact.associatedBlockchainIdentity.uniqueID"]];
+        [fetchRequest setPropertiesToFetch:@[@"localAddress.derivationPath.friendRequest.sourceContact.associatedBlockchainIdentity.uniqueID", expressionDescription]];
+        [fetchRequest setPropertiesToGroupBy:@[@"localAddress.derivationPath.friendRequest.sourceContact.associatedBlockchainIdentity.uniqueID"]];
         [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"localAddress.derivationPath.friendRequest != NULL && localAddress.derivationPath.friendRequest.destinationContact == %@", self]]; //first part is an optimization for left outer joins
     }
     [fetchRequest setResultType:NSDictionaryResultType];
@@ -81,9 +81,9 @@
     NSUInteger i = 0;
     for (NSDictionary *result in orderedResults) {
         if (activityType == DSDashpayUserEntityFriendActivityType_IncomingTransactions) {
-            [rDictionary setObject:result[@"count"] forKey:result[@"localAddress.derivationPath.friendRequest.destinationContact.associatedBlockchainIdentity.uniqueID"]];
+            rDictionary[result[@"localAddress.derivationPath.friendRequest.destinationContact.associatedBlockchainIdentity.uniqueID"]] = result[@"count"];
         } else if (activityType == DSDashpayUserEntityFriendActivityType_OutgoingTransactions) {
-            [rDictionary setObject:result[@"count"] forKey:result[@"localAddress.derivationPath.friendRequest.sourceContact.associatedBlockchainIdentity.uniqueID"]];
+            rDictionary[result[@"localAddress.derivationPath.friendRequest.sourceContact.associatedBlockchainIdentity.uniqueID"]] = result[@"count"];
         }
         i++;
         if (i == count) break;

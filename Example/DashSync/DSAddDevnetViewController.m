@@ -63,8 +63,8 @@
         self.dapiJRPCPortTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u", self.chain.standardDapiJRPCPort];
         self.dapiGRPCPortTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u", self.chain.standardDapiGRPCPort];
         self.minimumDifficultyBlocksTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u", self.chain.minimumDifficultyBlocks];
-        self.dpnsContractIDTableViewCell.valueTextField.text = !uint256_is_zero(self.chain.dpnsContractID) ? uint256_base58(self.chain.dpnsContractID) : @"";
-        self.dashpayContractIDTableViewCell.valueTextField.text = !uint256_is_zero(self.chain.dashpayContractID) ? uint256_base58(self.chain.dashpayContractID) : @"";
+        self.dpnsContractIDTableViewCell.valueTextField.text = uint256_is_not_zero(self.chain.dpnsContractID) ? uint256_base58(self.chain.dpnsContractID) : @"";
+        self.dashpayContractIDTableViewCell.valueTextField.text = uint256_is_not_zero(self.chain.dashpayContractID) ? uint256_base58(self.chain.dashpayContractID) : @"";
     }
 
     // Do any additional setup after loading the view.

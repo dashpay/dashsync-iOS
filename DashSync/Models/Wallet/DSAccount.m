@@ -143,10 +143,10 @@
         }
         for (int j = i + 1; j < [derivationPaths count]; j++) {
             DSDerivationPath *derivationPath2 = [derivationPaths objectAtIndex:j];
-            NSAssert(![derivationPath isDerivationPathEqual:derivationPath2], @"Derivation paths should all be different");
+            NSAssert([derivationPath isDerivationPathEqual:derivationPath2] == NO, @"Derivation paths should all be different");
         }
         for (DSDerivationPath *derivationPath3 in self.mFundDerivationPaths) {
-            NSAssert(![derivationPath isDerivationPathEqual:derivationPath3], @"Added derivation paths should be different from existing ones on account");
+            NSAssert([derivationPath isDerivationPathEqual:derivationPath3] == NO, @"Added derivation paths should be different from existing ones on account");
         }
         //to do redo this check
         //        if ([self.mFundDerivationPaths count] || i != 0) {
@@ -242,16 +242,14 @@
 
                         DSTxInputEntity *spentInInput = e.spentInInput;
 
-                        if (spentInInput) { //this has been spent, also add the transaction where it is being spent
-                            if (spentInInput.transaction.transactionHash) {
-                                NSValue *hash = uint256_obj(spentInInput.transaction.transactionHash.txHash.UInt256);
-                                if (self.allTx[hash] == nil) {
-                                    DSTransaction *transaction = [spentInInput.transaction transactionForChain:self.wallet.chain];
+                        if (spentInInput && (spentInInput.transaction.transactionHash)) { //this has been spent, also add the transaction where it is being spent
+                            NSValue *hash = uint256_obj(spentInInput.transaction.transactionHash.txHash.UInt256);
+                            if (self.allTx[hash] == nil) {
+                                DSTransaction *transaction = [spentInInput.transaction transactionForChain:self.wallet.chain];
 
-                                    if (!transaction) continue;
-                                    self.allTx[hash] = transaction;
-                                    [self.transactions addObject:transaction];
-                                }
+                                if (!transaction) continue;
+                                self.allTx[hash] = transaction;
+                                [self.transactions addObject:transaction];
                             }
                         }
                     }
@@ -503,8 +501,8 @@
     }
 
     for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
-        if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
-            if ([derivationPath containsChangeAddress:address]) return TRUE;
+        if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]] && [derivationPath containsChangeAddress:address]) {
+            return TRUE;
         }
     }
     return FALSE;
@@ -518,8 +516,8 @@
     }
 
     for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
-        if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
-            if ([derivationPath containsAddress:address]) return TRUE;
+        if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]] && [derivationPath containsAddress:address]) {
+            return TRUE;
         }
     }
     return FALSE;
@@ -536,8 +534,8 @@
     for (DSDerivationPath *derivationPath in self.fundDerivationPaths) {
         if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
             if ([(DSFundsDerivationPath *)derivationPath containsReceiveAddress:address]) return TRUE;
-        } else if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
-            if ([(DSIncomingFundsDerivationPath *)derivationPath containsAddress:address]) return TRUE;
+        } else if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {              //!OCLINT
+            if ([(DSIncomingFundsDerivationPath *)derivationPath containsAddress:address]) return TRUE; //!OCLINT
         }
     }
     return FALSE;
@@ -667,7 +665,7 @@
 
             if (lockedBlockHeight) {
                 if (![pendingCoinbaseLockedTransactionHashes objectForKey:@(lockedBlockHeight)]) {
-                    [pendingCoinbaseLockedTransactionHashes setObject:[NSMutableSet set] forKey:@(lockedBlockHeight)];
+                    pendingCoinbaseLockedTransactionHashes[@(lockedBlockHeight)] = [NSMutableSet set];
                 }
                 [((NSMutableSet *)pendingCoinbaseLockedTransactionHashes[@(lockedBlockHeight)]) addObject:uint256_obj(tx.txHash)];
                 [balanceHistory insertObject:@(balance) atIndex:0];
@@ -1131,11 +1129,9 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             [self.allTx removeObjectForKey:hash]; // remove confirmed non-wallet tx
     }
 
-    if (hashes.count > 0) {
-        if (needsUpdate) {
-            [self sortTransactions];
-            [self updateBalance];
-        }
+    if (hashes.count > 0 && needsUpdate) {
+        [self sortTransactions];
+        [self updateBalance];
     }
 
     return updated;
@@ -1434,8 +1430,8 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     }
 
     for (NSValue *txHash in transaction.inputHashes) { // check if any inputs are known to be pending
-        if (self.allTx[txHash]) {
-            if ([self transactionIsPending:self.allTx[txHash]]) return YES;
+        if (self.allTx[txHash] && [self transactionIsPending:self.allTx[txHash]]) {
+            return YES;
         }
     }
 

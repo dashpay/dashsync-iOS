@@ -128,7 +128,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 - (instancetype)initWithUniqueId:(UInt256)uniqueId isTransient:(BOOL)isTransient onChain:(DSChain *)chain {
     //this is the initialization of a non local blockchain identity
     if (!(self = [super init])) return nil;
-    NSAssert(!uint256_is_zero(uniqueId), @"uniqueId must not be null");
+    NSAssert(uint256_is_not_zero(uniqueId), @"uniqueId must not be null");
     _uniqueID = uniqueId;
     _isLocal = FALSE;
     _isTransient = isTransient;
@@ -237,7 +237,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
 - (instancetype)initAtIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet *)wallet {
     if (!(self = [self initAtIndex:index inWallet:wallet])) return nil;
-    NSAssert(!dsutxo_is_zero(lockedOutpoint), @"utxo must not be nil");
+    NSAssert(dsutxo_hash_is_not_zero(lockedOutpoint), @"utxo must not be nil");
     self.lockedOutpoint = lockedOutpoint;
     self.uniqueID = [dsutxo_data(lockedOutpoint) SHA256_2];
     _identityQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.identity.%@", uint256_base58(self.uniqueID)] UTF8String], DISPATCH_QUEUE_SERIAL);
@@ -263,9 +263,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
         NSMutableDictionary *usernameSalts = [NSMutableDictionary dictionary];
         for (NSString *username in usernameDictionary) {
             NSDictionary *subDictionary = usernameDictionary[username];
-            NSData *salt = [subDictionary objectForKey:BLOCKCHAIN_USERNAME_SALT];
+            NSData *salt = subDictionary[BLOCKCHAIN_USERNAME_SALT];
             if (salt) {
-                [usernameSalts setObject:salt forKey:username];
+                usernameSalts[username] = salt;
             }
         }
         self.usernameStatuses = [usernameDictionary mutableCopy];
@@ -501,9 +501,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                                                                                                                      if ([tx isEqual:fundingTransaction]) {
                                                                                                                                          NSDictionary *changes = [note.userInfo objectForKey:DSTransactionManagerNotificationTransactionChangesKey];
                                                                                                                                          if (changes) {
-                                                                                                                                             NSNumber *accepted = [changes objectForKey:DSTransactionManagerNotificationTransactionAcceptedStatusKey];
-                                                                                                                                             NSNumber *lockVerified = [changes objectForKey:DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey];
-                                                                                                                                             DSInstantSendTransactionLock *lock = [changes objectForKey:DSTransactionManagerNotificationInstantSendTransactionLockKey];
+                                                                                                                                             NSNumber *accepted = changes[DSTransactionManagerNotificationTransactionAcceptedStatusKey];
+                                                                                                                                             NSNumber *lockVerified = changes[DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey];
+                                                                                                                                             DSInstantSendTransactionLock *lock = changes[DSTransactionManagerNotificationInstantSendTransactionLockKey];
                                                                                                                                              if ([lockVerified boolValue] && lock != nil) {
                                                                                                                                                  instantSendLock = lock;
                                                                                                                                                  dispatch_semaphore_signal(sem);
@@ -1316,17 +1316,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     switch (self.registrationStatus) {
         case DSBlockchainIdentityRegistrationStatus_Registered:
             return DSLocalizedString(@"Registered", @"The Dash Identity is registered");
-            break;
         case DSBlockchainIdentityRegistrationStatus_Unknown:
             return DSLocalizedString(@"Unknown", @"It is Unknown if the Dash Identity is registered");
-            break;
         case DSBlockchainIdentityRegistrationStatus_Registering:
             return DSLocalizedString(@"Registering", @"The Dash Identity is being registered");
-            break;
         case DSBlockchainIdentityRegistrationStatus_NotRegistered:
             return DSLocalizedString(@"Not Registered", @"The Dash Identity is not registered");
-            break;
-
         default:
             break;
     }
@@ -1877,8 +1872,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                     NSData *objectData = [debugDescription1 dataUsingEncoding:NSUTF8StringEncoding];
                     NSDictionary *debugDescription = [NSJSONSerialization JSONObjectWithData:objectData options:0 error:&jsonError];
                     //NSDictionary * debugDescription =
-                    __unused NSString *errorMessage = [debugDescription objectForKey:@"grpc_message"];
-                    if (TRUE) { //[errorMessage isEqualToString:@"Invalid argument: Contract not found"]) {
+                    __unused NSString *errorMessage = debugDescription[@"grpc_message"]; //!OCLINT
+                    if (TRUE) {                                                          //[errorMessage isEqualToString:@"Invalid argument: Contract not found"]) {
                         __strong typeof(weakContract) strongContract = weakContract;
                         if (!strongContract) {
                             return;
@@ -1975,7 +1970,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     NSMutableArray *unregisteredUsernames = [NSMutableArray array];
     for (NSString *username in self.usernameStatuses) {
         NSDictionary *usernameInfo = self.usernameStatuses[username];
-        DSBlockchainIdentityUsernameStatus status = [[usernameInfo objectForKey:BLOCKCHAIN_USERNAME_STATUS] unsignedIntegerValue];
+        DSBlockchainIdentityUsernameStatus status = [usernameInfo[BLOCKCHAIN_USERNAME_STATUS] unsignedIntegerValue];
         if (status == usernameStatus) {
             [unregisteredUsernames addObject:username];
         }
@@ -1987,7 +1982,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     NSMutableArray *unregisteredUsernames = [NSMutableArray array];
     for (NSString *username in self.usernameStatuses) {
         NSDictionary *usernameInfo = self.usernameStatuses[username];
-        DSBlockchainIdentityUsernameStatus status = [[usernameInfo objectForKey:BLOCKCHAIN_USERNAME_STATUS] unsignedIntegerValue];
+        DSBlockchainIdentityUsernameStatus status = [usernameInfo[BLOCKCHAIN_USERNAME_STATUS] unsignedIntegerValue];
         if (status == DSBlockchainIdentityUsernameStatus_Preordered) {
             [unregisteredUsernames addObject:username];
         }
@@ -2020,7 +2015,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
         NSData *usernameDomainData = [unregisteredUsernameFullPath dataUsingEncoding:NSUTF8StringEncoding];
         [saltedDomain appendData:salt];
         [saltedDomain appendData:usernameDomainData];
-        [mSaltedDomainHashes setObject:uint256_data([saltedDomain SHA256_2]) forKey:unregisteredUsernameFullPath];
+        mSaltedDomainHashes[unregisteredUsernameFullPath] = uint256_data([saltedDomain SHA256_2]);
         [self.usernameSalts setObject:salt forKey:unregisteredUsernameFullPath];
     }
     return [mSaltedDomainHashes copy];
@@ -2196,7 +2191,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                            if (!usernameStatusDictionary) {
                                                usernameStatusDictionary = [NSMutableDictionary dictionary];
                                            }
-                                           [usernameStatusDictionary setObject:@(DSBlockchainIdentityUsernameStatus_PreorderRegistrationPending) forKey:BLOCKCHAIN_USERNAME_STATUS];
+                                           usernameStatusDictionary[BLOCKCHAIN_USERNAME_STATUS] = @(DSBlockchainIdentityUsernameStatus_PreorderRegistrationPending);
                                            [self.usernameStatuses setObject:[usernameStatusDictionary copy] forKey:string];
                                        }
                                        [self saveUsernameFullPaths:usernameFullPaths toStatus:DSBlockchainIdentityUsernameStatus_PreorderRegistrationPending inContext:context];
@@ -2247,7 +2242,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                            if (!usernameStatusDictionary) {
                                                usernameStatusDictionary = [NSMutableDictionary dictionary];
                                            }
-                                           [usernameStatusDictionary setObject:@(DSBlockchainIdentityUsernameStatus_RegistrationPending) forKey:BLOCKCHAIN_USERNAME_STATUS];
+                                           usernameStatusDictionary[BLOCKCHAIN_USERNAME_STATUS] = @(DSBlockchainIdentityUsernameStatus_RegistrationPending);
                                            [self.usernameStatuses setObject:[usernameStatusDictionary copy] forKey:string];
                                        }
                                        if (completion) {
@@ -2315,10 +2310,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                     if (!usernameStatusDictionary) {
                         usernameStatusDictionary = [NSMutableDictionary dictionary];
                         isNew = TRUE;
-                        [usernameStatusDictionary setObject:domain forKey:BLOCKCHAIN_USERNAME_DOMAIN];
-                        [usernameStatusDictionary setObject:username forKey:BLOCKCHAIN_USERNAME_PROPER];
+                        usernameStatusDictionary[BLOCKCHAIN_USERNAME_DOMAIN] = domain;
+                        usernameStatusDictionary[BLOCKCHAIN_USERNAME_PROPER] = username;
                     }
-                    [usernameStatusDictionary setObject:@(DSBlockchainIdentityUsernameStatus_Confirmed) forKey:BLOCKCHAIN_USERNAME_STATUS];
+                    usernameStatusDictionary[BLOCKCHAIN_USERNAME_STATUS] = @(DSBlockchainIdentityUsernameStatus_Confirmed);
                     [self.usernameStatuses setObject:[usernameStatusDictionary copy] forKey:[self fullPathForUsername:username inDomain:domain]];
                     if (isNew) {
                         [self saveNewUsername:username inDomain:domain status:DSBlockchainIdentityUsernameStatus_Confirmed inContext:context];
@@ -2419,7 +2414,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     for (NSString *usernameFullPath in usernameFullPaths) {
         NSArray *components = [usernameFullPath componentsSeparatedByString:@"."];
         NSString *domain = @"";
-        NSString *name = [components objectAtIndex:0];
+        NSString *name = components[0];
         if (components.count > 1) {
             NSArray *domainComponents = [components subarrayWithRange:NSMakeRange(1, components.count - 1)];
             domain = [domainComponents componentsJoinedByString:@"."];
@@ -2474,17 +2469,17 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                 NSMutableArray *usernamesLeft = [usernames mutableCopy];
                 for (NSString *username in usernames) {
                     for (NSDictionary *domainDocument in domainDocumentArray) {
-                        NSString *normalizedLabel = [domainDocument objectForKey:@"normalizedLabel"];
-                        NSString *label = [domainDocument objectForKey:@"label"];
-                        NSString *normalizedParentDomainName = [domainDocument objectForKey:@"normalizedParentDomainName"];
+                        NSString *normalizedLabel = domainDocument[@"normalizedLabel"];
+                        NSString *label = domainDocument[@"label"];
+                        NSString *normalizedParentDomainName = domainDocument[@"normalizedParentDomainName"];
                         if ([normalizedLabel isEqualToString:[username lowercaseString]]) {
                             NSMutableDictionary *usernameStatusDictionary = [[self.usernameStatuses objectForKey:username] mutableCopy];
                             if (!usernameStatusDictionary) {
                                 usernameStatusDictionary = [NSMutableDictionary dictionary];
-                                [usernameStatusDictionary setObject:normalizedParentDomainName forKey:BLOCKCHAIN_USERNAME_DOMAIN];
-                                [usernameStatusDictionary setObject:label forKey:BLOCKCHAIN_USERNAME_PROPER];
+                                usernameStatusDictionary[BLOCKCHAIN_USERNAME_DOMAIN] = normalizedParentDomainName;
+                                usernameStatusDictionary[BLOCKCHAIN_USERNAME_PROPER] = label;
                             }
-                            [usernameStatusDictionary setObject:@(DSBlockchainIdentityUsernameStatus_Confirmed) forKey:BLOCKCHAIN_USERNAME_STATUS];
+                            usernameStatusDictionary[BLOCKCHAIN_USERNAME_STATUS] = @(DSBlockchainIdentityUsernameStatus_Confirmed);
                             [self.usernameStatuses setObject:[usernameStatusDictionary copy] forKey:[self fullPathForUsername:username inDomain:[self dashpayDomainName]]];
                             [strongSelf saveUsername:username inDomain:normalizedParentDomainName status:DSBlockchainIdentityUsernameStatus_Confirmed salt:nil commitSave:YES inContext:context];
                             [usernamesLeft removeObject:username];
@@ -2550,12 +2545,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                 for (NSString *usernameFullPath in saltedDomainHashes) {
                     NSData *saltedDomainHashData = saltedDomainHashes[usernameFullPath];
                     for (NSDictionary *preorderDocument in preorderDocumentArray) {
-                        if ([[preorderDocument objectForKey:@"saltedDomainHash"] isEqualToData:saltedDomainHashData]) {
+                        if ([preorderDocument[@"saltedDomainHash"] isEqualToData:saltedDomainHashData]) {
                             NSMutableDictionary *usernameStatusDictionary = [[self.usernameStatuses objectForKey:usernameFullPath] mutableCopy];
                             if (!usernameStatusDictionary) {
                                 usernameStatusDictionary = [NSMutableDictionary dictionary];
                             }
-                            [usernameStatusDictionary setObject:@(DSBlockchainIdentityUsernameStatus_Preordered) forKey:BLOCKCHAIN_USERNAME_STATUS];
+                            usernameStatusDictionary[BLOCKCHAIN_USERNAME_STATUS] = @(DSBlockchainIdentityUsernameStatus_Preordered);
                             [self.usernameStatuses setObject:[usernameStatusDictionary copy] forKey:usernameFullPath];
                             [strongSelf saveUsernameFullPath:usernameFullPath status:DSBlockchainIdentityUsernameStatus_Preordered salt:nil commitSave:YES inContext:context];
                             [usernamesLeft removeObject:usernameFullPath];
@@ -2756,8 +2751,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     __block BOOL isIncoming;
     __block BOOL isOutgoing;
     [self.matchingDashpayUserInViewContext.managedObjectContext performBlockAndWait:^{
-        isIncoming = !![self.matchingDashpayUserInViewContext.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact.associatedBlockchainIdentity.uniqueID == %@", uint256_data(otherBlockchainIdentity.uniqueID)]].count;
-        isOutgoing = !![self.matchingDashpayUserInViewContext.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact.associatedBlockchainIdentity.uniqueID == %@", uint256_data(otherBlockchainIdentity.uniqueID)]].count;
+        isIncoming = ([self.matchingDashpayUserInViewContext.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact.associatedBlockchainIdentity.uniqueID == %@", uint256_data(otherBlockchainIdentity.uniqueID)]].count > 0);
+        isOutgoing = ([self.matchingDashpayUserInViewContext.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact.associatedBlockchainIdentity.uniqueID == %@", uint256_data(otherBlockchainIdentity.uniqueID)]].count > 0);
     }];
     return ((isIncoming << 1) | isOutgoing);
 }
@@ -2899,7 +2894,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
             UInt256 blockchainIdentityContactUniqueId = identityIdData.UInt256;
 
-            NSAssert(!uint256_is_zero(blockchainIdentityContactUniqueId), @"blockchainIdentityContactUniqueId should not be null");
+            NSAssert(uint256_is_not_zero(blockchainIdentityContactUniqueId), @"blockchainIdentityContactUniqueId should not be null");
 
             DSBlockchainIdentityEntity *potentialContactBlockchainIdentityEntity = [DSBlockchainIdentityEntity anyObjectInContext:self.platformContext matching:@"uniqueID == %@", uint256_data(blockchainIdentityContactUniqueId)];
 
@@ -3647,7 +3642,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             DSFriendRequestEntity *friendRequest = [DSFriendRequestEntity anyObjectInContext:context matching:@"destinationContact == %@ && sourceContact.associatedBlockchainIdentity.uniqueID == %@", [self matchingDashpayUserInContext:context], uint256_data(contactRequest.senderBlockchainIdentityUniqueId)];
             if (!friendRequest) {
                 [incomingNewRequests addObject:contactRequest];
-            } else if (friendRequest.sourceContact == nil) {
             }
         } else if (uint256_eq(contactRequest.senderBlockchainIdentityUniqueId, self.uniqueID)) {
             //we are the sender, this is an outgoing request
@@ -4163,7 +4157,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 }
 
 - (void)saveNewRemoteIdentityKey:(DSKey *)key forKeyWithIndexID:(uint32_t)keyID withStatus:(DSBlockchainIdentityKeyStatus)status inContext:(NSManagedObjectContext *)context {
-    NSAssert(!self.isLocal, @"This should only be called on non local blockchain identities");
+    NSAssert(self.isLocal == FALSE, @"This should only be called on non local blockchain identities");
     if (self.isLocal) return;
     if (self.isTransient) return;
     [context performBlockAndWait:^{
@@ -4212,7 +4206,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 }
 
 - (void)updateStatus:(DSBlockchainIdentityKeyStatus)status forKeyWithIndexID:(uint32_t)keyID inContext:(NSManagedObjectContext *)context {
-    NSAssert(!self.isLocal, @"This should only be called on non local blockchain identities");
+    NSAssert(self.isLocal == FALSE, @"This should only be called on non local blockchain identities");
     if (self.isLocal) return;
     if (self.isTransient) return;
     [context performBlockAndWait:^{
@@ -4234,7 +4228,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 }
 
 - (void)saveNewUsername:(NSString *)username inDomain:(NSString *)domain status:(DSBlockchainIdentityUsernameStatus)status inContext:(NSManagedObjectContext *)context {
-    NSAssert(![username containsString:@"."], @"This is most likely an error");
+    NSAssert([username containsString:@"."] == FALSE, @"This is most likely an error");
     NSAssert(domain, @"Domain must not be nil");
     if (self.isTransient) return;
     [context performBlockAndWait:^{

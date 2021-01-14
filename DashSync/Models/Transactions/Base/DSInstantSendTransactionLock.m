@@ -93,7 +93,7 @@
         off += sizeof(UInt256);
 
         self.signature = [message UInt768AtOffset:off];
-        NSAssert(!uint768_is_zero(self.signature), @"signature must be set");
+        NSAssert(uint768_is_not_zero(self.signature), @"signature must be set");
     }
 
     return self;
@@ -123,7 +123,7 @@
 
 
 - (UInt256)requestID {
-    if (!uint256_is_zero(_requestID)) return _requestID;
+    if (uint256_is_not_zero(_requestID)) return _requestID;
     NSMutableData *data = [NSMutableData data];
     [data appendString:@"islock"];
     [data appendVarInt:self.inputOutpoints.count];

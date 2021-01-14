@@ -458,9 +458,10 @@ typedef enum : NSUInteger
 
             if (trust) {
                 for (NSDictionary *property in CFBridgingRelease(SecTrustCopyProperties(trust))) {
-                    if (![property[@"type"] isEqual:(__bridge id)kSecPropertyTypeError]) continue;
-                    _errorMessage = [_errorMessage stringByAppendingFormat:@" - %@", property[@"value"]];
-                    break;
+                    if ([property[@"type"] isEqual:(__bridge id)kSecPropertyTypeError]) {
+                        _errorMessage = [_errorMessage stringByAppendingFormat:@" - %@", property[@"value"]];
+                        break;
+                    }
                 }
             }
 

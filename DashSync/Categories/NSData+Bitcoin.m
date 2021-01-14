@@ -1421,19 +1421,19 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
 + (NSData *)merkleRootFromHashes:(NSArray *)hashes {
     NSMutableArray *higherLevel = [NSMutableArray array];
     NSArray *level = hashes;
-    if (hashes.count == 1) return [hashes objectAtIndex:0];
+    if (hashes.count == 1) return hashes[0];
     if (hashes.count == 0) return nil;
     while (level.count != 1) {
         for (int i = 0; i < level.count; i += 2) {
             if ([level count] - i > 1) {
-                NSData *left = [level objectAtIndex:i + 0];
-                NSData *right = [level objectAtIndex:i + 1];
+                NSData *left = level[i + 0];
+                NSData *right = level[i + 1];
                 NSMutableData *combined = [NSMutableData data];
                 [combined appendData:left];
                 [combined appendData:right];
                 [higherLevel addObject:[NSData dataWithUInt256:combined.SHA256_2]];
             } else {
-                NSData *left = [level objectAtIndex:i];
+                NSData *left = level[i];
                 NSMutableData *combined = [NSMutableData data];
                 [combined appendData:left];
                 [combined appendData:left];
@@ -1443,7 +1443,7 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
         level = [higherLevel copy];
         higherLevel = [NSMutableArray array];
     }
-    return [level objectAtIndex:0];
+    return level[0];
 }
 
 - (BOOL)isSizedForAddress {
@@ -1483,16 +1483,14 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
     uint32_t offset = index / 8;
     uint32_t bitPosition = index % 8;
     uint8_t bits = [self UInt8AtOffset:offset];
-    BOOL bitIsSet = ((bits >> bitPosition) & 1);
-    return bitIsSet;
+    return ((bits >> bitPosition) & 1);
 }
 
 - (BOOL)bitIsTrueAtLeftToRightIndex:(uint32_t)index {
     uint32_t offset = index / 8;
     uint32_t bitPosition = 7 - (index % 8);
     uint8_t bits = [self UInt8AtOffset:offset];
-    BOOL bitIsSet = ((bits >> bitPosition) & 1);
-    return bitIsSet;
+    return ((bits >> bitPosition) & 1);
 }
 
 @end

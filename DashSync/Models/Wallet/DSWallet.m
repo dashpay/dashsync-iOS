@@ -416,7 +416,7 @@
 }
 
 - (void)wipeWalletInfo {
-    _walletCreationTime = 0;
+    self.walletCreationTime = 0;
     setKeychainData(nil, self.creationTimeUniqueID, NO);
     setKeychainData(nil, self.creationGuessTimeUniqueID, NO);
     setKeychainData(nil, self.didVerifyCreationTimeUniqueID, NO);
@@ -598,8 +598,7 @@
 
 - (BOOL)hasSeedPhrase {
     NSError *error = nil;
-    BOOL hasSeed = hasKeychainData(self.uniqueIDString, &error);
-    return hasSeed;
+    return hasKeychainData(self.uniqueIDString, &error);
 }
 
 + (NSString *)setTransientDerivedKeyData:(NSData *)derivedKeyData withAccounts:(NSArray *)accounts forChain:(DSChain *)chain {
@@ -909,7 +908,7 @@
 // indicate a transaction and it's dependents should remain marked as unverified (not 0-conf safe)
 - (NSArray *)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)txHashes {
     NSParameterAssert(txHashes);
-    if (![txHashes count]) return [NSArray array];
+    if (![txHashes count]) return @[];
 
     NSMutableArray *updated = [NSMutableArray array];
 
@@ -1072,8 +1071,8 @@
     NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletBlockchainIdentitiesKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
     if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
 
-    NSAssert(!uint256_is_zero(blockchainIdentity.uniqueID), @"registrationTransactionHashData must not be null");
-    [keyChainDictionary setObject:@(blockchainIdentity.index) forKey:blockchainIdentity.lockedOutpointData];
+    NSAssert(uint256_is_not_zero(blockchainIdentity.uniqueID), @"registrationTransactionHashData must not be null");
+    keyChainDictionary[blockchainIdentity.lockedOutpointData] = @(blockchainIdentity.index);
     setKeychainDict(keyChainDictionary, self.walletBlockchainIdentitiesKey, NO);
 
     if (!_defaultBlockchainIdentity && (blockchainIdentity.index == 0)) {
@@ -1091,7 +1090,7 @@
 
 - (DSBlockchainIdentity *_Nullable)blockchainIdentityThatCreatedContract:(DPContract *)contract withContractId:(UInt256)contractId {
     NSParameterAssert(contract);
-    NSAssert(!uint256_is_zero(contractId), @"contractId must not be null");
+    NSAssert(uint256_is_not_zero(contractId), @"contractId must not be null");
     DSBlockchainIdentity *foundBlockchainIdentity = nil;
     for (DSBlockchainIdentity *blockchainIdentity in [_mBlockchainIdentities allValues]) {
         if (uint256_eq([contract contractIdIfRegisteredByBlockchainIdentity:blockchainIdentity], contractId)) {
@@ -1102,7 +1101,7 @@
 }
 
 - (DSBlockchainIdentity *)blockchainIdentityForUniqueId:(UInt256)uniqueId {
-    NSAssert(!uint256_is_zero(uniqueId), @"uniqueId must not be null");
+    NSAssert(uint256_is_not_zero(uniqueId), @"uniqueId must not be null");
     DSBlockchainIdentity *foundBlockchainIdentity = nil;
     for (DSBlockchainIdentity *blockchainIdentity in [_mBlockchainIdentities allValues]) {
         if (uint256_eq([blockchainIdentity uniqueID], uniqueId)) {
@@ -1120,74 +1119,73 @@
 //This loads all the identities that the wallet knows about. If the app was deleted and reinstalled the identity information will remain from the keychain but must be reaquired from the network.
 - (NSMutableDictionary *)blockchainIdentities {
     //setKeychainDict(@{}, self.walletBlockchainIdentitiesKey, NO);
-    if (!_mBlockchainIdentities) {
-        NSError *error = nil;
-        NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletBlockchainIdentitiesKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
-        if (error) {
-            return nil;
-        }
-        uint64_t defaultIndex = getKeychainInt(self.walletBlockchainIdentitiesDefaultIndexKey, &error);
-        if (error) {
-            return nil;
-        }
-        NSMutableDictionary *rDictionary = [NSMutableDictionary dictionary];
-
-        if (keyChainDictionary) {
-            for (NSData *blockchainIdentityLockedOutpointData in keyChainDictionary) {
-                uint32_t index = [keyChainDictionary[blockchainIdentityLockedOutpointData] unsignedIntValue];
-                DSUTXO blockchainIdentityLockedOutpoint = blockchainIdentityLockedOutpointData.transactionOutpoint;
-                //DSLogPrivate(@"Blockchain identity unique Id is %@",uint256_hex(blockchainIdentityUniqueId));
-                //                UInt256 lastTransitionHash = [self.specialTransactionsHolder lastSubscriptionTransactionHashForRegistrationTransactionHash:registrationTransactionHash];
-                //                DSLogPrivate(@"reg %@ last %@",uint256_hex(registrationTransactionHash),uint256_hex(lastTransitionHash));
-                //                DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction = [self blockchainIdentityRegistrationTransactionForIndex:index];
-
-                //either the identity is known in core data (and we can pull it) or the wallet has been wiped and we need to get it from DAPI (the unique Id was saved in the keychain, so we don't need to resync)
-                //TODO: get the identity from core data
-
-                NSManagedObjectContext *context = [NSManagedObjectContext chainContext]; //shouldn't matter what context is used
-
-                [context performBlockAndWait:^{
-                    NSUInteger blockchainIdentityEntitiesCount = [DSBlockchainIdentityEntity countObjectsInContext:context matching:@"chain == %@ && isLocal == TRUE", [self.chain chainEntityInContext:context]];
-                    if (blockchainIdentityEntitiesCount != keyChainDictionary.count) {
-                        DSLog(@"Unmatching blockchain entities count");
-                    }
-                    DSBlockchainIdentityEntity *blockchainIdentityEntity = [DSBlockchainIdentityEntity anyObjectInContext:context matching:@"uniqueID == %@", uint256_data([dsutxo_data(blockchainIdentityLockedOutpoint) SHA256_2])];
-                    DSBlockchainIdentity *blockchainIdentity = nil;
-                    if (blockchainIdentityEntity) {
-                        blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index withLockedOutpoint:blockchainIdentityLockedOutpoint inWallet:self withBlockchainIdentityEntity:blockchainIdentityEntity];
-                    } else {
-                        //No blockchain identity is known in core data
-                        NSData *transactionHashData = uint256_data(uint256_reverse(blockchainIdentityLockedOutpoint.hash));
-                        DSTransactionEntity *creditRegitrationTransactionEntity = [DSTransactionEntity anyObjectInContext:context matching:@"transactionHash.txHash == %@", transactionHashData];
-                        if (creditRegitrationTransactionEntity) {
-                            //The registration funding transaction exists
-                            //Weird but we should recover in this situation
-                            DSCreditFundingTransaction *registrationTransaction = (DSCreditFundingTransaction *)[creditRegitrationTransactionEntity transactionForChain:self.chain];
-
-                            BOOL correctIndex = [registrationTransaction checkDerivationPathIndexForWallet:self isIndex:index];
-                            if (!correctIndex) {
-                                NSAssert(FALSE, @"We should implement this");
-                            } else {
-                                blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index withFundingTransaction:registrationTransaction withUsernameDictionary:nil inWallet:self];
-                                [blockchainIdentity registerInWallet];
-                            }
-                        } else {
-                            //We also don't have the registration funding transaction
-                            blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index withLockedOutpoint:blockchainIdentityLockedOutpoint inWallet:self];
-                            [blockchainIdentity registerInWalletForBlockchainIdentityUniqueId:[dsutxo_data(blockchainIdentityLockedOutpoint) SHA256_2]];
-                        }
-                    }
-                    if (blockchainIdentity) {
-                        [rDictionary setObject:blockchainIdentity forKey:blockchainIdentityLockedOutpointData];
-                        if (index == defaultIndex) {
-                            _defaultBlockchainIdentity = blockchainIdentity;
-                        }
-                    }
-                }];
-            }
-        }
-        _mBlockchainIdentities = rDictionary;
+    if (_mBlockchainIdentities) return _mBlockchainIdentities;
+    NSError *error = nil;
+    NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletBlockchainIdentitiesKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
+    if (error) {
+        return nil;
     }
+    uint64_t defaultIndex = getKeychainInt(self.walletBlockchainIdentitiesDefaultIndexKey, &error);
+    if (error) {
+        return nil;
+    }
+    NSMutableDictionary *rDictionary = [NSMutableDictionary dictionary];
+
+    if (keyChainDictionary) {
+        for (NSData *blockchainIdentityLockedOutpointData in keyChainDictionary) {
+            uint32_t index = [keyChainDictionary[blockchainIdentityLockedOutpointData] unsignedIntValue];
+            DSUTXO blockchainIdentityLockedOutpoint = blockchainIdentityLockedOutpointData.transactionOutpoint;
+            //DSLogPrivate(@"Blockchain identity unique Id is %@",uint256_hex(blockchainIdentityUniqueId));
+            //                UInt256 lastTransitionHash = [self.specialTransactionsHolder lastSubscriptionTransactionHashForRegistrationTransactionHash:registrationTransactionHash];
+            //                DSLogPrivate(@"reg %@ last %@",uint256_hex(registrationTransactionHash),uint256_hex(lastTransitionHash));
+            //                DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction = [self blockchainIdentityRegistrationTransactionForIndex:index];
+
+            //either the identity is known in core data (and we can pull it) or the wallet has been wiped and we need to get it from DAPI (the unique Id was saved in the keychain, so we don't need to resync)
+            //TODO: get the identity from core data
+
+            NSManagedObjectContext *context = [NSManagedObjectContext chainContext]; //shouldn't matter what context is used
+
+            [context performBlockAndWait:^{
+                NSUInteger blockchainIdentityEntitiesCount = [DSBlockchainIdentityEntity countObjectsInContext:context matching:@"chain == %@ && isLocal == TRUE", [self.chain chainEntityInContext:context]];
+                if (blockchainIdentityEntitiesCount != keyChainDictionary.count) {
+                    DSLog(@"Unmatching blockchain entities count");
+                }
+                DSBlockchainIdentityEntity *blockchainIdentityEntity = [DSBlockchainIdentityEntity anyObjectInContext:context matching:@"uniqueID == %@", uint256_data([dsutxo_data(blockchainIdentityLockedOutpoint) SHA256_2])];
+                DSBlockchainIdentity *blockchainIdentity = nil;
+                if (blockchainIdentityEntity) {
+                    blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index withLockedOutpoint:blockchainIdentityLockedOutpoint inWallet:self withBlockchainIdentityEntity:blockchainIdentityEntity];
+                } else {
+                    //No blockchain identity is known in core data
+                    NSData *transactionHashData = uint256_data(uint256_reverse(blockchainIdentityLockedOutpoint.hash));
+                    DSTransactionEntity *creditRegitrationTransactionEntity = [DSTransactionEntity anyObjectInContext:context matching:@"transactionHash.txHash == %@", transactionHashData];
+                    if (creditRegitrationTransactionEntity) {
+                        //The registration funding transaction exists
+                        //Weird but we should recover in this situation
+                        DSCreditFundingTransaction *registrationTransaction = (DSCreditFundingTransaction *)[creditRegitrationTransactionEntity transactionForChain:self.chain];
+
+                        BOOL correctIndex = [registrationTransaction checkDerivationPathIndexForWallet:self isIndex:index];
+                        if (!correctIndex) {
+                            NSAssert(FALSE, @"We should implement this");
+                        } else {
+                            blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index withFundingTransaction:registrationTransaction withUsernameDictionary:nil inWallet:self];
+                            [blockchainIdentity registerInWallet];
+                        }
+                    } else {
+                        //We also don't have the registration funding transaction
+                        blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index withLockedOutpoint:blockchainIdentityLockedOutpoint inWallet:self];
+                        [blockchainIdentity registerInWalletForBlockchainIdentityUniqueId:[dsutxo_data(blockchainIdentityLockedOutpoint) SHA256_2]];
+                    }
+                }
+                if (blockchainIdentity) {
+                    rDictionary[blockchainIdentityLockedOutpointData] = blockchainIdentity;
+                    if (index == defaultIndex) {
+                        _defaultBlockchainIdentity = blockchainIdentity;
+                    }
+                }
+            }];
+        }
+    }
+    _mBlockchainIdentities = rDictionary;
     return _mBlockchainIdentities;
 }
 
@@ -1271,7 +1269,7 @@
         NSError *error = nil;
         NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletMasternodeOperatorsKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
         if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
-        [keyChainDictionary setObject:@(masternode.operatorWalletIndex) forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
+        keyChainDictionary[uint256_data(masternode.providerRegistrationTransaction.txHash)] = @(masternode.operatorWalletIndex);
         setKeychainDict(keyChainDictionary, self.walletMasternodeOperatorsKey, NO);
     }
 }
@@ -1286,7 +1284,7 @@
         NSError *error = nil;
         NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletMasternodeOperatorsKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
         if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
-        [keyChainDictionary setObject:hashedOperatorKey forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
+        keyChainDictionary[uint256_data(masternode.providerRegistrationTransaction.txHash)] = hashedOperatorKey;
         setKeychainDict(keyChainDictionary, self.walletMasternodeOperatorsKey, NO);
         setKeychainData([operatorKey publicKeyData], operatorKeyStorageLocation, NO);
     }
@@ -1295,15 +1293,13 @@
 - (void)registerMasternodeOwner:(DSLocalMasternode *)masternode {
     NSParameterAssert(masternode);
 
-    if ([self.mMasternodeOwnerIndexes objectForKey:uint256_data(masternode.providerRegistrationTransaction.txHash)] == nil) {
-        if (masternode.ownerWalletIndex != UINT32_MAX) {
-            [self.mMasternodeOwnerIndexes setObject:@(masternode.ownerWalletIndex) forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
-            NSError *error = nil;
-            NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletMasternodeOwnersKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
-            if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
-            [keyChainDictionary setObject:@(masternode.ownerWalletIndex) forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
-            setKeychainDict(keyChainDictionary, self.walletMasternodeOwnersKey, NO);
-        }
+    if ([self.mMasternodeOwnerIndexes objectForKey:uint256_data(masternode.providerRegistrationTransaction.txHash)] == nil && masternode.ownerWalletIndex != UINT32_MAX) {
+        [self.mMasternodeOwnerIndexes setObject:@(masternode.ownerWalletIndex) forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
+        NSError *error = nil;
+        NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletMasternodeOwnersKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
+        if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
+        keyChainDictionary[uint256_data(masternode.providerRegistrationTransaction.txHash)] = @(masternode.ownerWalletIndex);
+        setKeychainDict(keyChainDictionary, self.walletMasternodeOwnersKey, NO);
     }
 }
 
@@ -1317,7 +1313,7 @@
         NSError *error = nil;
         NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletMasternodeOwnersKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
         if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
-        [keyChainDictionary setObject:hashedOwnerKey forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
+        keyChainDictionary[uint256_data(masternode.providerRegistrationTransaction.txHash)] = hashedOwnerKey;
         setKeychainDict(keyChainDictionary, self.walletMasternodeOwnersKey, NO);
         setKeychainData([ownerKey privateKeyData], ownerKeyStorageLocation, NO);
     }
@@ -1330,7 +1326,7 @@
         NSError *error = nil;
         NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletMasternodeVotersKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
         if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
-        [keyChainDictionary setObject:@(masternode.votingWalletIndex) forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
+        keyChainDictionary[uint256_data(masternode.providerRegistrationTransaction.txHash)] = @(masternode.votingWalletIndex);
         setKeychainDict(keyChainDictionary, self.walletMasternodeVotersKey, NO);
     }
 }
@@ -1343,7 +1339,7 @@
         NSError *error = nil;
         NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletMasternodeVotersKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
         if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
-        [keyChainDictionary setObject:hashedVoterKey forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
+        keyChainDictionary[uint256_data(masternode.providerRegistrationTransaction.txHash)] = hashedVoterKey;
         setKeychainDict(keyChainDictionary, self.walletMasternodeVotersKey, NO);
         if ([votingKey hasPrivateKey]) {
             setKeychainData([votingKey privateKeyData], ownerKeyStorageLocation, NO);

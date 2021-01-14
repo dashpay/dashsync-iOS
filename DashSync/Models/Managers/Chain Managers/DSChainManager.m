@@ -416,7 +416,7 @@
                           nonceOffset:0
                           withTimeout:timeout
                            completion:^(DSFullBlock *_Nullable block, NSUInteger attempts, NSTimeInterval timeUsed, NSError *_Nullable error) {
-                               NSAssert(!uint256_is_zero(block.blockHash), @"Block hash must not be empty");
+                               NSAssert(uint256_is_not_zero(block.blockHash), @"Block hash must not be empty");
                                dispatch_semaphore_signal(sem);
                                [blocksArray addObject:block];
                                [mPreviousBlocks setObject:block forKey:uint256_obj(block.blockHash)];

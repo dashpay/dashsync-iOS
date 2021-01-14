@@ -277,7 +277,6 @@ static NSData *_Nullable AES256EncryptDecrypt(CCOperation operation,
     } else {
         return [encryptedData encapsulatedDHDecryptionWithKeys:[keys subarrayWithRange:NSMakeRange(1, keys.count - 1)] usingIVSize:ivSize];
     }
-    return nil;
 }
 
 - (nullable NSData *)encapsulatedDHDecryptionWithKeys:(NSArray<DSKey *> *)keys {
@@ -297,7 +296,6 @@ static NSData *_Nullable AES256EncryptDecrypt(CCOperation operation,
     } else {
         return [encryptedData encapsulatedDHDecryptionWithKeys:[keys subarrayWithRange:NSMakeRange(1, keys.count - 1)]];
     }
-    return nil;
 }
 
 - (nullable NSData *)encapsulatedDHEncryptionWithKeys:(NSArray<DSKey *> *)keys {
@@ -317,7 +315,6 @@ static NSData *_Nullable AES256EncryptDecrypt(CCOperation operation,
     } else {
         return [encryptedData encapsulatedDHEncryptionWithKeys:[keys subarrayWithRange:NSMakeRange(1, keys.count - 1)]];
     }
-    return nil;
 }
 
 - (nullable NSData *)encapsulatedDHEncryptionWithKeys:(NSArray<DSKey *> *)keys usingInitializationVector:(NSData *)initializationVector {
@@ -332,7 +329,6 @@ static NSData *_Nullable AES256EncryptDecrypt(CCOperation operation,
     } else {
         return [encryptedData encapsulatedDHEncryptionWithKeys:[keys subarrayWithRange:NSMakeRange(1, keys.count - 1)] usingInitializationVector:initializationVector];
     }
-    return nil;
 }
 
 @end

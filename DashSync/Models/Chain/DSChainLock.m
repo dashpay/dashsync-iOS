@@ -98,7 +98,7 @@
 }
 
 - (UInt256)requestID {
-    if (!uint256_is_zero(_requestID)) return _requestID;
+    if (uint256_is_not_zero(_requestID)) return _requestID;
     NSMutableData *data = [NSMutableData data];
     [data appendString:@"clsig"];
     [data appendUInt32:self.height];

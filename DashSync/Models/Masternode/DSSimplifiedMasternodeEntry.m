@@ -85,7 +85,7 @@
     simplifiedMasternodeEntry.isValid = isValid;
     simplifiedMasternodeEntry.knownConfirmedAtHeight = knownConfirmedAtHeight;
     simplifiedMasternodeEntry.updateHeight = updateHeight;
-    simplifiedMasternodeEntry.simplifiedMasternodeEntryHash = !uint256_is_zero(simplifiedMasternodeEntryHash) ? simplifiedMasternodeEntryHash : [simplifiedMasternodeEntry calculateSimplifiedMasternodeEntryHash];
+    simplifiedMasternodeEntry.simplifiedMasternodeEntryHash = uint256_is_not_zero(simplifiedMasternodeEntryHash) ? simplifiedMasternodeEntryHash : [simplifiedMasternodeEntry calculateSimplifiedMasternodeEntryHash];
     simplifiedMasternodeEntry.chain = chain;
     simplifiedMasternodeEntry.mPreviousOperatorPublicKeys = previousOperatorBLSPublicKeys ? [previousOperatorBLSPublicKeys mutableCopy] : [NSMutableDictionary dictionary];
     simplifiedMasternodeEntry.mPreviousSimplifiedMasternodeEntryHashes = previousSimplifiedMasternodeEntryHashes ? [previousSimplifiedMasternodeEntryHashes mutableCopy] : [NSMutableDictionary dictionary];
@@ -105,7 +105,7 @@
     self.confirmedHash = [message UInt256AtOffset:offset];
     offset += 32;
 
-    if (!uint256_is_zero(self.confirmedHash) && blockHeight != UINT32_MAX) {
+    if (uint256_is_not_zero(self.confirmedHash) && blockHeight != UINT32_MAX) {
         self.knownConfirmedAtHeight = blockHeight;
     }
 
@@ -153,12 +153,11 @@
 - (void)updateKnownConfirmedHashAtHeight:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlock:(DSMerkleBlock *)block {
     //if the masternodeEntry.confirmedHash is not set we do not need to do anything
     //the knownConfirmedHashAtHeight will be higher
-    if (!uint256_is_zero(masternodeEntry.confirmedHash)) {
-        //if the masternodeEntry.confirmedHash is set we might need to update our knownConfirmedAtHeight
-        if (masternodeEntry.knownConfirmedAtHeight > block.height) {
-            //we found it confirmed at a previous height
-            masternodeEntry.knownConfirmedAtHeight = block.height;
-        }
+    //and
+    //if the masternodeEntry.confirmedHash is set we might need to update our knownConfirmedAtHeight
+    if (uint256_is_not_zero(masternodeEntry.confirmedHash) && (masternodeEntry.knownConfirmedAtHeight > block.height)) {
+        //we found it confirmed at a previous height
+        masternodeEntry.knownConfirmedAtHeight = block.height;
     }
 }
 
@@ -392,14 +391,14 @@
 
 - (void)setConfirmedHash:(UInt256)confirmedHash {
     _confirmedHash = confirmedHash;
-    if (!uint256_is_zero(self.providerRegistrationTransactionHash)) {
+    if (uint256_is_not_zero(self.providerRegistrationTransactionHash)) {
         [self updateConfirmedHashHashedWithProviderRegistrationTransactionHash];
     }
 }
 
 - (void)setProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash {
     _providerRegistrationTransactionHash = providerRegistrationTransactionHash;
-    if (!uint256_is_zero(self.confirmedHash)) {
+    if (uint256_is_not_zero(self.confirmedHash)) {
         [self updateConfirmedHashHashedWithProviderRegistrationTransactionHash];
     }
 }
@@ -495,6 +494,10 @@
     } else {
         return NO;
     }
+}
+
+- (NSUInteger)hash {
+    return self.providerRegistrationTransactionHash.u64[0];
 }
 
 - (NSDictionary *)toDictionaryAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
