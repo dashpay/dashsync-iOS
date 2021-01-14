@@ -26,6 +26,10 @@ jobs:
         run: gem install bundler
       - name: Bundle Install
         run: bundle install
+      - name: Dependencies
+        run: bundle exec pod install
+        env:
+          DEVELOPER_DIR: ${{ matrix.xcode }}
       - name: Lint
         working-directory: ./Example
         run: |
