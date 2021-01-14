@@ -1,0 +1,28 @@
+name: Lint
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+      - nightly
+  pull_request:
+    branches:
+      - master
+      - develop
+
+jobs:
+  build:
+    name: Objective-C Linter
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: OCLint
+        run: |
+          brew tap oclint/formulae
+          brew install oclint
+      - name: Lint
+        run: |
+          sh Example/run_oclint.sh
+
