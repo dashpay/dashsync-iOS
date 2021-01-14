@@ -23,9 +23,8 @@ jobs:
           brew tap oclint/formulae
           brew install oclint
       - name: Dependencies
+        working-directory: ./Example
         run: pod install
-        env:
-          DEVELOPER_DIR: ${{ matrix.xcode }}
       - name: Lint
         working-directory: ./Example
         run: |
