@@ -23,6 +23,7 @@ jobs:
           brew tap oclint/formulae
           brew install oclint
       - name: Lint
+        working-directory: ./Example
         run: |
-          sh Example/run_oclint.sh
+          sh run_oclint.sh
 
