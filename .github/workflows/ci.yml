@@ -34,7 +34,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pods-
       - name: Build
-        working-directory: ./Example
+        working-directory: ./dashsync/Example
         env:
           scheme: ${{ 'default' }}
           platform: ${{ 'iOS Simulator' }}
@@ -42,7 +42,7 @@ jobs:
           device=`instruments -s -devices | grep -oE 'iPhone.*?[^\(]+' | head -1 | awk '{$1=$1;print}'`
           xcodebuild build-for-testing -scheme "DashSync-Example" -workspace "DashSync.xcworkspace" -destination "platform=$platform,name=$device"
       - name: Test
-        working-directory: ./Example
+        working-directory: ./dashsync/Example
         env:
           scheme: ${{ 'default' }}
           platform: ${{ 'iOS Simulator' }}

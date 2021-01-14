@@ -26,15 +26,15 @@ jobs:
           path: dapi-grpc
           repository: 'dashevo/dapi-grpc'
           ref: 'v0.16.0-dev.3'
+      - name: Dependencies
+        working-directory: ./dashsync/Example
+        run: pod install
       - name: OCLint
         run: |
           brew tap oclint/formulae
           brew install oclint
-      - name: Dependencies
-        working-directory: ./Example
-        run: pod install
       - name: Lint
-        working-directory: ./Example
+        working-directory: ./dashsync/Example
         run: |
           sh run_oclint.sh
 
