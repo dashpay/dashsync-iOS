@@ -78,6 +78,8 @@ typedef struct _DSLLMQ {
     UInt256 hash;
 } DSLLMQ;
 
+#define uint768_random ((UInt768){.u32 = {arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random()}})
+
 #define uint256_random ((UInt256){.u32 = {arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random()}})
 
 #define uint256_random_data uint256_data(uint256_random)
@@ -183,6 +185,7 @@ typedef struct _DSLLMQ {
 #define uint256_from_long(u) ((UInt256){.u64 = {u, 0, 0, 0}})
 
 #define UINT768_ZERO ((UInt768){.u64 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}})
+#define UINT768_ONE ((UInt768){.u64 = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}})
 #define UINT512_ZERO ((UInt512){.u64 = {0, 0, 0, 0, 0, 0, 0, 0}})
 #define UINT384_ZERO ((UInt384){.u64 = {0, 0, 0, 0, 0, 0}})
 #define UINT256_ZERO ((UInt256){.u64 = {0, 0, 0, 0}})
