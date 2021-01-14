@@ -16,8 +16,16 @@ jobs:
     name: Objective-C Linter
     runs-on: macOS-latest
     steps:
-      - name: Checkout
+      - name: Checkout DashSync
         uses: actions/checkout@v2
+        with:
+          path: dashsync
+      - name: Checkout DashGRPC
+        uses: actions/checkout@v2
+        with:
+          path: dapi-grpc
+          repository: 'dashevo/dapi-grpc'
+          ref: 'v0.16.0-dev.3'
       - name: OCLint
         run: |
           brew tap oclint/formulae
