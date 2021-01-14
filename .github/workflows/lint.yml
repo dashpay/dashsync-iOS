@@ -22,6 +22,10 @@ jobs:
         run: |
           brew tap oclint/formulae
           brew install oclint
+      - name: Bundle Update
+        run: gem install bundler
+      - name: Bundle Install
+        run: bundle install
       - name: Lint
         working-directory: ./Example
         run: |
