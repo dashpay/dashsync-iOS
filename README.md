@@ -4,7 +4,7 @@
 
 [![CI Status](http://img.shields.io/travis/quantumexplorer/DashSyncPod.svg?style=flat)](https://travis-ci.org/quantumexplorer/DashSyncPod)
 [![Version](https://img.shields.io/cocoapods/v/DashSyncPod.svg?style=flat)](http://cocoapods.org/pods/DashSyncPod)
-[![License](https://img.shields.io/github/license/tendermint/tendermint.svg)](https://github.com/dashevo/dashsync-iOS/blob/master/LICENSE)
+[![License](https://img.shields.io/github/license/dashevo/dashsync-iOS)](https://github.com/dashevo/dashsync-iOS/blob/master/LICENSE)
 [![dashevo/dashsync-iOS](https://tokei.rs/b1/github/dashevo/dashsync-iOS?category=lines)](https://github.com/dashevo/dashsync-iOS)
 ![Platform](https://img.shields.io/badge/platform-iOS-lightgrey)
 
