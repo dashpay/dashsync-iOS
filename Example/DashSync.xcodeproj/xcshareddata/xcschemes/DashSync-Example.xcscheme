@@ -49,14 +49,32 @@
       </CodeCoverageTargets>
       <TestPlans>
          <TestPlanReference
-            reference = "container:Tests/CryptoTests.xctestplan"
-            default = "YES">
+            reference = "container:Tests/CryptoTests.xctestplan">
          </TestPlanReference>
          <TestPlanReference
             reference = "container:Tests/DerivationTests.xctestplan">
          </TestPlanReference>
          <TestPlanReference
             reference = "container:Tests/LibraryTests.xctestplan">
+         </TestPlanReference>
+         <TestPlanReference
+            reference = "container:Tests/GovernanceTests.xctestplan">
+         </TestPlanReference>
+         <TestPlanReference
+            reference = "container:Tests/PaymentTests.xctestplan">
+         </TestPlanReference>
+         <TestPlanReference
+            reference = "container:Tests/MasternodeListTests.xctestplan">
+         </TestPlanReference>
+         <TestPlanReference
+            reference = "container:Tests/WalletTests.xctestplan">
+         </TestPlanReference>
+         <TestPlanReference
+            reference = "container:Tests/PlatformTransitionTests.xctestplan">
+         </TestPlanReference>
+         <TestPlanReference
+            reference = "container:Tests/FullUnitTestPlan.xctestplan"
+            default = "YES">
          </TestPlanReference>
       </TestPlans>
       <Testables>

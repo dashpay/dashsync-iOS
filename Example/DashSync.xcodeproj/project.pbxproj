@@ -966,6 +966,12 @@
 		FB974FC525B1715300A1DCE7 /* CryptoTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = CryptoTests.xctestplan; sourceTree = "<group>"; };
 		FB974FC825B171EE00A1DCE7 /* DerivationTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = DerivationTests.xctestplan; sourceTree = "<group>"; };
 		FB974FC925B1726200A1DCE7 /* LibraryTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = LibraryTests.xctestplan; sourceTree = "<group>"; };
+		FB974FCC25B1895800A1DCE7 /* GovernanceTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = GovernanceTests.xctestplan; sourceTree = "<group>"; };
+		FB974FCD25B1898D00A1DCE7 /* PaymentTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = PaymentTests.xctestplan; sourceTree = "<group>"; };
+		FB974FD025B18A3100A1DCE7 /* MasternodeListTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = MasternodeListTests.xctestplan; sourceTree = "<group>"; };
+		FB974FD125B18ADE00A1DCE7 /* WalletTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = WalletTests.xctestplan; sourceTree = "<group>"; };
+		FB974FD225B18B4800A1DCE7 /* PlatformTransitionTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = PlatformTransitionTests.xctestplan; sourceTree = "<group>"; };
+		FB974FD525B1908C00A1DCE7 /* FullUnitTestPlan.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = FullUnitTestPlan.xctestplan; sourceTree = "<group>"; };
 		FB9762F524BC4C3E00CF28EC /* DSMiningViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMiningViewController.h; sourceTree = "<group>"; };
 		FB9762F624BC4C3E00CF28EC /* DSMiningViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMiningViewController.m; sourceTree = "<group>"; };
 		FB98831F241D64FA00B39F02 /* DSBlockchainIdentityKeysViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainIdentityKeysViewController.h; sourceTree = "<group>"; };
@@ -1344,6 +1350,12 @@
 				2A5C601322BFC65E00C6003F /* ML_at_122088.dat */,
 				6003F5B6195388D20070C39A /* Supporting Files */,
 				FBC9248C2414EF0600005D0D /* DSAttackTests.m */,
+				FB974FCC25B1895800A1DCE7 /* GovernanceTests.xctestplan */,
+				FB974FCD25B1898D00A1DCE7 /* PaymentTests.xctestplan */,
+				FB974FD025B18A3100A1DCE7 /* MasternodeListTests.xctestplan */,
+				FB974FD125B18ADE00A1DCE7 /* WalletTests.xctestplan */,
+				FB974FD225B18B4800A1DCE7 /* PlatformTransitionTests.xctestplan */,
+				FB974FD525B1908C00A1DCE7 /* FullUnitTestPlan.xctestplan */,
 			);
 			path = Tests;
 			sourceTree = "<group>";

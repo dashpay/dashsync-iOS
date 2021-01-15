@@ -1,0 +1,51 @@
+{
+  "configurations" : [
+    {
+      "id" : "8D78AA10-A823-4F01-993F-3F91DD8C2DA3",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "skippedTests" : [
+        "DSAttackTests",
+        "DSBIP32Tests",
+        "DSBIP39Tests",
+        "DSBigNumberTests",
+        "DSBloomFilterTests",
+        "DSChainLockTests",
+        "DSChainTests",
+        "DSChainedSigningTests",
+        "DSDIP13Tests",
+        "DSDataTests",
+        "DSDeterministicMasternodeListTests",
+        "DSGovernanceTests",
+        "DSHashTests",
+        "DSIESEncryptedDataTests",
+        "DSInstantSendLockTests",
+        "DSKeyTests",
+        "DSMiningTests",
+        "DSSparseMerkleTreeTests",
+        "DSSyncTests",
+        "DSTransactionTests",
+        "DSTransitionTests",
+        "DSUInt256IndexPathTests",
+        "DSWalletTests",
+        "MDCDamerauLevenshteinDistanceTests",
+        "MDCLevenshteinDistanceTests"
+      ],
+      "target" : {
+        "containerPath" : "container:DashSync.xcodeproj",
+        "identifier" : "6003F5AD195388D20070C39A",
+        "name" : "DashSync_Tests"
+      }
+    }
+  ],
+  "version" : 1
+}

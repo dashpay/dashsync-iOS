@@ -67,3 +67,43 @@ jobs:
         run: |
           device=`instruments -s -devices | grep -oE 'iPhone.*?[^\(]+' | head -1 | awk '{$1=$1;print}'`
           xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=$device" -testPlan LibraryTests
+      - name: Test Governance
+        working-directory: ./dashsync/Example
+        env:
+          scheme: ${{ 'default' }}
+          platform: ${{ 'iOS Simulator' }}
+        run: |
+          device=`instruments -s -devices | grep -oE 'iPhone.*?[^\(]+' | head -1 | awk '{$1=$1;print}'`
+          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=$device" -testPlan GovernanceTests
+      - name: Test Payments
+        working-directory: ./dashsync/Example
+        env:
+          scheme: ${{ 'default' }}
+          platform: ${{ 'iOS Simulator' }}
+        run: |
+          device=`instruments -s -devices | grep -oE 'iPhone.*?[^\(]+' | head -1 | awk '{$1=$1;print}'`
+          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=$device" -testPlan PaymentTests
+      - name: Test Masternode Lists
+        working-directory: ./dashsync/Example
+        env:
+          scheme: ${{ 'default' }}
+          platform: ${{ 'iOS Simulator' }}
+        run: |
+          device=`instruments -s -devices | grep -oE 'iPhone.*?[^\(]+' | head -1 | awk '{$1=$1;print}'`
+          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=$device" -testPlan MasternodeListTests
+      - name: Test Wallet
+        working-directory: ./dashsync/Example
+        env:
+          scheme: ${{ 'default' }}
+          platform: ${{ 'iOS Simulator' }}
+        run: |
+          device=`instruments -s -devices | grep -oE 'iPhone.*?[^\(]+' | head -1 | awk '{$1=$1;print}'`
+          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=$device" -testPlan WalletTests
+      - name: Test Platform Transitions
+        working-directory: ./dashsync/Example
+        env:
+          scheme: ${{ 'default' }}
+          platform: ${{ 'iOS Simulator' }}
+        run: |
+          device=`instruments -s -devices | grep -oE 'iPhone.*?[^\(]+' | head -1 | awk '{$1=$1;print}'`
+          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=$device" -testPlan PlatformTransitionTests

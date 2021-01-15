@@ -1,0 +1,28 @@
+{
+  "configurations" : [
+    {
+      "id" : "CF2F1505-4E49-41A2-ADE2-266392EBA7F3",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "skippedTests" : [
+        "DSAttackTests",
+        "DSSyncTests"
+      ],
+      "target" : {
+        "containerPath" : "container:DashSync.xcodeproj",
+        "identifier" : "6003F5AD195388D20070C39A",
+        "name" : "DashSync_Tests"
+      }
+    }
+  ],
+  "version" : 1
+}
