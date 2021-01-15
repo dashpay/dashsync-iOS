@@ -14,8 +14,7 @@ on:
 jobs:
   build:
     name: Build and Test using iPhone simulator
-    runs-on: macos-latest
-
+    runs-on: macOS-latest
     steps:
       - name: Checkout DashSync
         uses: actions/checkout@v2
@@ -27,12 +26,15 @@ jobs:
           path: dapi-grpc
           repository: 'dashevo/dapi-grpc'
           ref: 'v0.16.0-dev.3'
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         with:
-          path: Pods
-          key: ${{ runner.os }}-pods-${{ hashFiles('**/Example/Podfile.lock') }}
+          path: ./dashsync/Example/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pods-
+      - name: Dependencies
+        working-directory: ./dashsync/Example
+        run: pod install
       - name: Build
         working-directory: ./dashsync/Example
         env:
