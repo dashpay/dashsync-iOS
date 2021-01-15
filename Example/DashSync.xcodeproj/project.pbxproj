@@ -959,9 +959,10 @@
 		FB974EC825AC3E0400A1DCE7 /* CONTRIBUTING.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CONTRIBUTING.md; sourceTree = "<group>"; };
 		FB974F1025AE596A00A1DCE7 /* run_oclint.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = run_oclint.sh; sourceTree = "<group>"; };
 		FB974F1125AE597700A1DCE7 /* .oclint */ = {isa = PBXFileReference; lastKnownFileType = text; path = .oclint; sourceTree = "<group>"; };
-		FB974F3225AE7B6200A1DCE7 /* ci.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; name = ci.yml; path = ../.github/workflows/ci.yml; sourceTree = "<group>"; };
+		FB974F3225AE7B6200A1DCE7 /* test.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; name = test.yml; path = ../.github/workflows/test.yml; sourceTree = "<group>"; };
 		FB974F5125AE8E7000A1DCE7 /* github-dashsync-image.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "github-dashsync-image.jpg"; sourceTree = "<group>"; };
 		FB974FA425B1012C00A1DCE7 /* lint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; name = lint.yml; path = ../.github/workflows/lint.yml; sourceTree = "<group>"; };
+		FB974FC225B130B800A1DCE7 /* build.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; name = build.yml; path = ../.github/workflows/build.yml; sourceTree = "<group>"; };
 		FB9762F524BC4C3E00CF28EC /* DSMiningViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMiningViewController.h; sourceTree = "<group>"; };
 		FB9762F624BC4C3E00CF28EC /* DSMiningViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMiningViewController.m; sourceTree = "<group>"; };
 		FB98831F241D64FA00B39F02 /* DSBlockchainIdentityKeysViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainIdentityKeysViewController.h; sourceTree = "<group>"; };
@@ -1953,8 +1954,9 @@
 		FB974F3125AE7A2200A1DCE7 /* CI */ = {
 			isa = PBXGroup;
 			children = (
+				FB974FC225B130B800A1DCE7 /* build.yml */,
 				FB974FA425B1012C00A1DCE7 /* lint.yml */,
-				FB974F3225AE7B6200A1DCE7 /* ci.yml */,
+				FB974F3225AE7B6200A1DCE7 /* test.yml */,
 			);
 			name = CI;
 			sourceTree = "<group>";
