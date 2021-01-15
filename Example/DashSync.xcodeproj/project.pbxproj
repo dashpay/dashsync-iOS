@@ -963,6 +963,9 @@
 		FB974F5125AE8E7000A1DCE7 /* github-dashsync-image.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "github-dashsync-image.jpg"; sourceTree = "<group>"; };
 		FB974FA425B1012C00A1DCE7 /* lint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; name = lint.yml; path = ../.github/workflows/lint.yml; sourceTree = "<group>"; };
 		FB974FC225B130B800A1DCE7 /* build.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; name = build.yml; path = ../.github/workflows/build.yml; sourceTree = "<group>"; };
+		FB974FC525B1715300A1DCE7 /* CryptoTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = CryptoTests.xctestplan; sourceTree = "<group>"; };
+		FB974FC825B171EE00A1DCE7 /* DerivationTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = DerivationTests.xctestplan; sourceTree = "<group>"; };
+		FB974FC925B1726200A1DCE7 /* LibraryTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = LibraryTests.xctestplan; sourceTree = "<group>"; };
 		FB9762F524BC4C3E00CF28EC /* DSMiningViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMiningViewController.h; sourceTree = "<group>"; };
 		FB9762F624BC4C3E00CF28EC /* DSMiningViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMiningViewController.m; sourceTree = "<group>"; };
 		FB98831F241D64FA00B39F02 /* DSBlockchainIdentityKeysViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainIdentityKeysViewController.h; sourceTree = "<group>"; };
@@ -1328,6 +1331,9 @@
 		6003F5B5195388D20070C39A /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				FB974FC525B1715300A1DCE7 /* CryptoTests.xctestplan */,
+				FB974FC825B171EE00A1DCE7 /* DerivationTests.xctestplan */,
+				FB974FC925B1726200A1DCE7 /* LibraryTests.xctestplan */,
 				FB91B2D025325E7900511A44 /* LibraryTests */,
 				FBD45D1D24DF1ADE00168EBC /* L2Tests */,
 				FBD45D1C24DF1AB300168EBC /* WalletTests */,
