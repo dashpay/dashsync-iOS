@@ -776,17 +776,23 @@
     
     XCTAssert(uint256_eq(chain.genesisHash, baseBlockHash) || uint256_is_zero(baseBlockHash),@"Base block hash should be from chain origin");
     
+    XCTestExpectation *expectation = [[XCTestExpectation alloc] init];
+    
+    uint32_t(^blockHeightLookup122064)(UInt256 blockHash) = ^ uint32_t (UInt256 blockHash){
+        return 122064;
+    };
+    
     
     [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:nil masternodeListLookup:^DSMasternodeList * _Nonnull(UInt256 blockHash) {
         return nil; //no known previous lists
-    } lastBlock:nil onChain:chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
-        return 122064;
-    } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList122064, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
+    } lastBlock:nil onChain:chain blockHeightLookup:blockHeightLookup122064 completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList122064, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
         XCTAssert(foundCoinbase,@"Did not find coinbase at height %u",[chain heightForBlockHash:blockHash122064]);
         //XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block
         XCTAssert(rootMNListValid,@"rootMNListValid not valid at height %u",[chain heightForBlockHash:blockHash122064]);
         XCTAssert(rootQuorumListValid,@"rootQuorumListValid not valid at height %u",[chain heightForBlockHash:blockHash122064]);
         XCTAssert(validQuorums,@"validQuorums not valid at height %u",[chain heightForBlockHash:blockHash122064]);
+        
+        XCTAssertEqualObjects(uint256_data([masternodeList122064 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup122064]).hexString,@"86cfe9b759dfd012f8d00e980c560c5c1d9c487bfa8b59305e14c7fc60ef1150",@"");
         
         if (foundCoinbase && rootMNListValid && rootQuorumListValid && validQuorums) {
             //yay this is the correct masternode list verified deterministically for the given block
@@ -815,13 +821,13 @@
                 
                 XCTAssert(uint256_eq(blockHash122064, baseBlockHash),@"Base block hash should be from block 122064");
                 
-                uint32_t(^blockHeightLookup)(UInt256 blockHash) = ^ uint32_t (UInt256 blockHash){
+                uint32_t(^blockHeightLookup122088)(UInt256 blockHash) = ^ uint32_t (UInt256 blockHash){
                     return 122088;
                 };
                 
                 [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:masternodeList122064 masternodeListLookup:^DSMasternodeList * _Nonnull(UInt256 blockHash) {
                     return nil; //no known previous lists
-                } lastBlock:nil onChain:chain blockHeightLookup:blockHeightLookup completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList122088, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
+                } lastBlock:nil onChain:chain blockHeightLookup:blockHeightLookup122088 completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList122088, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
                     XCTAssert(foundCoinbase,@"Did not find coinbase at height %u",[chain heightForBlockHash:blockHash]);
                     //XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block
                     XCTAssert(rootMNListValid,@"rootMNListValid not valid at height %u",[chain heightForBlockHash:blockHash]);
@@ -914,9 +920,11 @@
                         XCTAssertEqualObjects(reloadedMasternodeList122064.hashesForMerkleRoot , masternodeList122064.hashesForMerkleRoot);
                         
                         XCTAssertEqualObjects(simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes, reloadedSimplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes);
-                        XCTAssertEqualObjects(uint256_data([reloadedMasternodeList122088 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]),uint256_data([masternodeList122088 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]),@"");
-                        XCTAssertEqualObjects(uint256_data([reloadedMasternodeList122064 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]),uint256_data([masternodeList122064 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]),@"");
+                        XCTAssertEqualObjects(uint256_data([reloadedMasternodeList122088 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup122088]).hexString,uint256_data([masternodeList122088 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup122088]).hexString,@"");
+                        XCTAssertEqualObjects(uint256_data([reloadedMasternodeList122064 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup122064]).hexString,uint256_data([masternodeList122064 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup122064]).hexString,@"");
+                        XCTAssertEqualObjects(uint256_data([masternodeList122064 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup122088]).hexString,@"86cfe9b759dfd012f8d00e980c560c5c1d9c487bfa8b59305e14c7fc60ef1150",@"");
                         
+                        [expectation fulfill];
                         
                     }];
                 }];
@@ -924,6 +932,8 @@
             }];
         }
     }];
+    
+    [self waitForExpectations:@[expectation] timeout:10];
 }
 
 -(void)testSimplifiedMasternodeEntriesDeletion {
