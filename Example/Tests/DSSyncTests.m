@@ -20,7 +20,7 @@
 #import "DSAccount.h"
 #import "DSAuthenticationKeysDerivationPath.h"
 #import "DSBLSKey.h"
-#import "DSChain.h"
+#import "DSChain+Protected.h"
 #import "DSDerivationPath.h"
 #import "DSDerivationPathFactory.h"
 #import "DSECDSAKey.h"
@@ -43,15 +43,12 @@
 
 - (void)setUp {
     self.chain = [DSChain mainnet];
-    [self.chain.chainManager.peerManager setTrustedPeerHost:@"178.128.228.195:9999"];
     self.wallet = [DSWallet standardWalletWithRandomSeedPhraseForChain:self.chain storeSeedPhrase:NO isTransient:YES];
-
-    // Put setup code here. This method is called before the invocation of each test method in the class.
+    [self.chain unregisterAllWallets];
+    [self.chain addWallet:self.wallet];
 }
 
 - (void)tearDown {
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
-    [self.chain unregisterWallet:self.wallet];
     [self.chain.chainManager.peerManager removeTrustedPeerHost];
 }
 
@@ -65,7 +62,6 @@
         [self.chain useCheckpointBeforeOrOnHeightForSyncingChainBlocks:0];
         [self.chain useCheckpointBeforeOrOnHeightForTerminalBlocksSync:227121];
         [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_BaseSPV];
-        [self.chain.chainManager.peerManager setTrustedPeerHost:@"178.128.228.195:9999"];
         [[DashSync sharedSyncController] wipePeerDataForChain:self.chain inContext:[NSManagedObjectContext peerContext]];
         [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
         [[DashSync sharedSyncController] wipeSporkDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
