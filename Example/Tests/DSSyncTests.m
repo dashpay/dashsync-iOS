@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -17,19 +17,19 @@
 
 #import <XCTest/XCTest.h>
 
+#import "DSAccount.h"
+#import "DSAuthenticationKeysDerivationPath.h"
+#import "DSBLSKey.h"
 #import "DSChain.h"
 #import "DSDerivationPath.h"
-#import "NSString+Bitcoin.h"
-#import "DSAccount.h"
-#import "DSWallet.h"
-#import "DSBLSKey.h"
-#import "DSIncomingFundsDerivationPath.h"
-#import "NSMutableData+Dash.h"
-#import "DSAuthenticationKeysDerivationPath.h"
 #import "DSDerivationPathFactory.h"
 #import "DSECDSAKey.h"
-#import "NSData+Encryption.h"
+#import "DSIncomingFundsDerivationPath.h"
+#import "DSWallet.h"
 #import "DashSync.h"
+#import "NSData+Encryption.h"
+#import "NSMutableData+Dash.h"
+#import "NSString+Bitcoin.h"
 
 @interface DSSyncTests : XCTestCase
 
@@ -57,7 +57,7 @@
 
 - (void)testInitialHeadersSync2000 {
     if (@available(iOS 13.0, *)) {
-        XCTMeasureOptions * options = [XCTMeasureOptions defaultOptions];
+        XCTMeasureOptions *options = [XCTMeasureOptions defaultOptions];
         options.iterationCount = 1;
         self.chain.headersMaxAmount = 2000;
         DSLogPrivate(@"Starting testInitialHeadersSync");
@@ -71,21 +71,25 @@
         [[DashSync sharedSyncController] wipeSporkDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
         [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
         //
-        
-        [self measureWithMetrics:@[[[XCTCPUMetric alloc] init],[[XCTMemoryMetric alloc] init],[[XCTClockMetric alloc] init]] options:options block:^{
-            XCTestExpectation *headerFinishedExpectation = [[XCTestExpectation alloc] init];
-            [[DashSync sharedSyncController] startSyncForChain:self.chain];
-            self.txStatusObserver =
-            [[NSNotificationCenter defaultCenter] addObserverForName:DSChainInitialHeadersDidFinishSyncingNotification object:nil
-                                                               queue:nil usingBlock:^(NSNotification *note) {
-                DSLogPrivate(@"Finished sync");
-                [[DashSync sharedSyncController] stopSyncForChain:self.chain];
-                [self.chain.chainManager.peerManager removeTrustedPeerHost];
-                [[DSOptionsManager sharedInstance] setSyncType:originalSyncType];
-                [headerFinishedExpectation fulfill];
-            }];
-            [self waitForExpectations:@[headerFinishedExpectation] timeout:360000];
-        }];
+
+        [self measureWithMetrics:@[[[XCTCPUMetric alloc] init], [[XCTMemoryMetric alloc] init], [[XCTClockMetric alloc] init]]
+                         options:options
+                           block:^{
+                               XCTestExpectation *headerFinishedExpectation = [[XCTestExpectation alloc] init];
+                               [[DashSync sharedSyncController] startSyncForChain:self.chain];
+                               self.txStatusObserver =
+                                   [[NSNotificationCenter defaultCenter] addObserverForName:DSChainInitialHeadersDidFinishSyncingNotification
+                                                                                     object:nil
+                                                                                      queue:nil
+                                                                                 usingBlock:^(NSNotification *note) {
+                                                                                     DSLogPrivate(@"Finished sync");
+                                                                                     [[DashSync sharedSyncController] stopSyncForChain:self.chain];
+                                                                                     [self.chain.chainManager.peerManager removeTrustedPeerHost];
+                                                                                     [[DSOptionsManager sharedInstance] setSyncType:originalSyncType];
+                                                                                     [headerFinishedExpectation fulfill];
+                                                                                 }];
+                               [self waitForExpectations:@[headerFinishedExpectation] timeout:360000];
+                           }];
     } else {
         // Fallback on earlier versions
     }
@@ -102,23 +106,26 @@
 
 - (void)testFullSync {
     if (@available(iOS 13.0, *)) {
-        [self measureWithMetrics:@[[[XCTCPUMetric alloc] init],[[XCTMemoryMetric alloc] init],[[XCTClockMetric alloc] init]] block:^{
-            [self.chain useCheckpointBeforeOrOnHeightForSyncingChainBlocks:227121];
-            [self.chain useCheckpointBeforeOrOnHeightForTerminalBlocksSync:UINT32_MAX];
-            [[DashSync sharedSyncController] wipePeerDataForChain:self.chain inContext:[NSManagedObjectContext peerContext]];
-            [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
-            [[DashSync sharedSyncController] wipeSporkDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
-            [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
-            XCTestExpectation *headerFinishedExpectation = [[XCTestExpectation alloc] init];
-            [[DashSync sharedSyncController] startSyncForChain:self.chain];
-            self.txStatusObserver =
-            [[NSNotificationCenter defaultCenter] addObserverForName:DSChainBlocksDidFinishSyncingNotification object:nil
-                                                               queue:nil usingBlock:^(NSNotification *note) {
-                DSLogPrivate(@"Finished sync");
-                [headerFinishedExpectation fulfill];
-            }];
-            [self waitForExpectations:@[headerFinishedExpectation] timeout:36000];
-        }];
+        [self measureWithMetrics:@[[[XCTCPUMetric alloc] init], [[XCTMemoryMetric alloc] init], [[XCTClockMetric alloc] init]]
+                           block:^{
+                               [self.chain useCheckpointBeforeOrOnHeightForSyncingChainBlocks:227121];
+                               [self.chain useCheckpointBeforeOrOnHeightForTerminalBlocksSync:UINT32_MAX];
+                               [[DashSync sharedSyncController] wipePeerDataForChain:self.chain inContext:[NSManagedObjectContext peerContext]];
+                               [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+                               [[DashSync sharedSyncController] wipeSporkDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+                               [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+                               XCTestExpectation *headerFinishedExpectation = [[XCTestExpectation alloc] init];
+                               [[DashSync sharedSyncController] startSyncForChain:self.chain];
+                               self.txStatusObserver =
+                                   [[NSNotificationCenter defaultCenter] addObserverForName:DSChainBlocksDidFinishSyncingNotification
+                                                                                     object:nil
+                                                                                      queue:nil
+                                                                                 usingBlock:^(NSNotification *note) {
+                                                                                     DSLogPrivate(@"Finished sync");
+                                                                                     [headerFinishedExpectation fulfill];
+                                                                                 }];
+                               [self waitForExpectations:@[headerFinishedExpectation] timeout:36000];
+                           }];
     } else {
         // Fallback on earlier versions
     }

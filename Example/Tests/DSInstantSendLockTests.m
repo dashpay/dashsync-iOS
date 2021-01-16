@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2021 Dash Core Group. All rights reserved.
 //
@@ -37,7 +37,6 @@
 }
 
 - (void)testInstantSendLockDeserialization {
-    
 }
 
 @end

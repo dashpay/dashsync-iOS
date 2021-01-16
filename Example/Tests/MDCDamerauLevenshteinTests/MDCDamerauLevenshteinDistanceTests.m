@@ -24,22 +24,22 @@
 
 - (void)testDistanceBetweenEqualStringsIsZero {
     XCTAssertEqual(mdc_damerauLevenshteinDistance(@"Menlo", @"Menlo"), 0,
-                   @"Expected distance between identical strings to be zero");
+        @"Expected distance between identical strings to be zero");
 }
 
 - (void)testDistanceBetweenStringsUsesEfficientTranspositions {
     XCTAssertEqual(mdc_damerauLevenshteinDistance(@"Menlo Prak", @"Melno Park"), 2,
-                   @"Expected Damerau-Levenshtein to transpose 'ln' and 'ra' for a distance of 2");
+        @"Expected Damerau-Levenshtein to transpose 'ln' and 'ra' for a distance of 2");
 }
 
 - (void)testDistanceBetweenEmptyStringsIsZero {
     XCTAssertEqual(mdc_damerauLevenshteinDistance(@"", @""), 0,
-                   @"Expected distance between two empty strings to be zero");
+        @"Expected distance between two empty strings to be zero");
 }
 
 - (void)testDistanceBetweenAnyStringAndEmptyStringsIsLengthOfString {
     XCTAssertEqual(mdc_damerauLevenshteinDistance(@"", @"1 Infinite Loop"), 15,
-                   @"Expected distance between string and empty string to be length of string");
+        @"Expected distance between string and empty string to be length of string");
 }
 
 @end

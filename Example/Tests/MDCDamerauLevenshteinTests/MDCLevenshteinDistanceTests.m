@@ -24,32 +24,32 @@
 
 - (void)testDistanceBetweenEqualStringsIsZero {
     XCTAssertEqual(mdc_levenshteinDistance(@"Menlo", @"Menlo"), 0,
-                   @"Expected distance between identical strings to be zero");
+        @"Expected distance between identical strings to be zero");
 }
 
 - (void)testDistanceBetweenSimilarStrings {
     XCTAssertEqual(mdc_levenshteinDistance(@"Menlo", @"Menloh"), 1,
-                   @"Expected distance between similar strings to be one");
+        @"Expected distance between similar strings to be one");
 }
 
 - (void)testDistanceBetweenDifferentStrings {
     XCTAssertEqual(mdc_levenshteinDistance(@"Menlo", @"Portland"), 7,
-                   @"Expected distance between radically different strings to be a large number");
+        @"Expected distance between radically different strings to be a large number");
 }
 
 - (void)testDistanceBetweenStringsDoesNotUseEfficientTranspositions {
     XCTAssertEqual(mdc_levenshteinDistance(@"Menlo Park", @"Melno Park"), 2,
-                   @"Expected Levenshtein to remove and insert 'n' for a distance of 2");
+        @"Expected Levenshtein to remove and insert 'n' for a distance of 2");
 }
 
 - (void)testDistanceBetweenEmptyStringsIsZero {
     XCTAssertEqual(mdc_levenshteinDistance(@"", @""), 0,
-                   @"Expected distance between two empty strings to be zero");
+        @"Expected distance between two empty strings to be zero");
 }
 
 - (void)testDistanceBetweenAnyStringAndEmptyStringsIsLengthOfString {
     XCTAssertEqual(mdc_levenshteinDistance(@"", @"1 Infinite Loop"), 15,
-                   @"Expected distance between string and empty string to be length of string");
+        @"Expected distance between string and empty string to be length of string");
 }
 
 @end
