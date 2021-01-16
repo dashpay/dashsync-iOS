@@ -2211,16 +2211,16 @@
                             inContext:context
                     blockHeightLookup:blockHeightLookup
                            completion:^(BOOL success, NSDictionary *masternodeLists) {
-                               [chain.chainManager.masternodeManager reloadMasternodeLists];
+                               [chain.chainManager.masternodeManager reloadMasternodeListsWithBlockHeightLookup:blockHeightLookup];
                                for (NSData *masternodeListBlockHash in masternodeLists) {
                                    NSLog(@"Testing masternode list at height %u", [chain heightForBlockHash:masternodeListBlockHash.UInt256]);
                                    DSMasternodeList *originalMasternodeList = [masternodeLists objectForKey:masternodeListBlockHash];
                                    DSMasternodeList *reloadedMasternodeList = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListBlockHash.UInt256 withBlockHeightLookup:blockHeightLookup];
-                                   if (!uint256_eq([reloadedMasternodeList masternodeMerkleRoot], [reloadedMasternodeList calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup])) {
+                                   if (!uint256_eq([reloadedMasternodeList masternodeMerkleRootWithBlockHeightLookup:blockHeightLookup], [reloadedMasternodeList calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup])) {
                                        NSDictionary *comparisonResult = [originalMasternodeList compare:reloadedMasternodeList usingOurString:@"original" usingTheirString:@"reloaded" blockHeightLookup:blockHeightLookup];
                                        NSLog(@"Error comparison result is %@", comparisonResult);
                                    }
-                                   XCTAssert(uint256_eq([reloadedMasternodeList masternodeMerkleRootWithBlockHeightLookup:blockHeightLookup], [reloadedMasternodeList calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]), @"These should be equal");
+                                   XCTAssertEqualObjects(uint256_hex([reloadedMasternodeList masternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]), uint256_hex([reloadedMasternodeList calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]), @"These should be equal for height %d", reloadedMasternodeList.height);
                                }
 
                                [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:useCheckpointMasternodeLists];
