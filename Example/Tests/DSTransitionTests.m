@@ -16,6 +16,7 @@
 //
 
 #import <XCTest/XCTest.h>
+
 #import "DSECDSAKey.h"
 #import "DSChain+Protected.h"
 #import "NSString+Bitcoin.h"

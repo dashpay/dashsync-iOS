@@ -7,6 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
+
 #import "DSChainLock.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"

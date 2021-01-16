@@ -7,6 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
+
 #import "MDCDamerauLevenshteinDistance.h"
 
 @interface MDCDamerauLevenshteinDistanceTests : XCTestCase

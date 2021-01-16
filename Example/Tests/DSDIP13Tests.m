@@ -16,6 +16,7 @@
 //
 
 #import <XCTest/XCTest.h>
+
 #import "DSChain.h"
 #import "DSDerivationPath.h"
 #import "NSString+Bitcoin.h"

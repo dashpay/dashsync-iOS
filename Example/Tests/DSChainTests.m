@@ -16,6 +16,7 @@
 //
 
 #import <XCTest/XCTest.h>
+
 #import "DSChain+Protected.h"
 #import "DSWallet+Protected.h"
 #import "DSAccount.h"

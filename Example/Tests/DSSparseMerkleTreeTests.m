@@ -7,6 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
+
 #import "DSSparseMerkleTree.h"
 #import "NSData+Bitcoin.h"
 #import "NSString+Dash.h"

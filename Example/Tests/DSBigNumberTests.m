@@ -16,6 +16,7 @@
 //
 
 #import <XCTest/XCTest.h>
+
 #import <DashSync/DashSync.h>
 
 @interface DSBigNumberTests : XCTestCase
