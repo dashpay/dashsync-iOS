@@ -2215,10 +2215,10 @@
                                for (NSData *masternodeListBlockHash in masternodeLists) {
                                    NSLog(@"Testing masternode list at height %u", [chain heightForBlockHash:masternodeListBlockHash.UInt256]);
                                    DSMasternodeList *originalMasternodeList = [masternodeLists objectForKey:masternodeListBlockHash];
-                                   DSMasternodeList *reloadedMasternodeList = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListBlockHash.UInt256];
+                                   DSMasternodeList *reloadedMasternodeList = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListBlockHash.UInt256 withBlockHeightLookup:blockHeightLookup];
                                    if (!uint256_eq([reloadedMasternodeList masternodeMerkleRoot], [reloadedMasternodeList calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup])) {
                                        NSDictionary *comparisonResult = [originalMasternodeList compare:reloadedMasternodeList usingOurString:@"original" usingTheirString:@"reloaded" blockHeightLookup:blockHeightLookup];
-                                       NSLog(@"%@", comparisonResult);
+                                       NSLog(@"Error comparison result is %@", comparisonResult);
                                    }
                                    XCTAssert(uint256_eq([reloadedMasternodeList masternodeMerkleRootWithBlockHeightLookup:blockHeightLookup], [reloadedMasternodeList calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]), @"These should be equal");
                                }
