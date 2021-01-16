@@ -9,10 +9,11 @@
     }
   ],
   "defaultOptions" : {
-
+    "codeCoverage" : false
   },
   "testTargets" : [
     {
+      "parallelizable" : true,
       "skippedTests" : [
         "DSAttackTests",
         "DSBigNumberTests",

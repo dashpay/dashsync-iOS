@@ -24,7 +24,7 @@
 
 @implementation DSBigNumberTests
 
-- (void)testExample {
+- (void)testSuperiorAndEqualUInt256 {
     NSUInteger a = 7;
     NSUInteger b = 5;
     UInt256 bigA = uint256_from_long(a);

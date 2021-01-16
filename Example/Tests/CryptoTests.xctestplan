@@ -9,15 +9,7 @@
     }
   ],
   "defaultOptions" : {
-    "codeCoverage" : {
-      "targets" : [
-        {
-          "containerPath" : "container:Pods\/Pods.xcodeproj",
-          "identifier" : "C115A3EB8FE5B2C3B60D8479702718D0",
-          "name" : "DashSync"
-        }
-      ]
-    },
+    "codeCoverage" : false,
     "commandLineArgumentEntries" : [
       {
         "argument" : "-com.apple.CoreData.SQLDebug 1",

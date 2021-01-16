@@ -9,10 +9,11 @@
     }
   ],
   "defaultOptions" : {
-
+    "codeCoverage" : false
   },
   "testTargets" : [
     {
+      "parallelizable" : true,
       "skippedTests" : [
         "DSAttackTests",
         "DSBIP32Tests",
@@ -22,7 +23,6 @@
         "DSChainTests",
         "DSChainedSigningTests",
         "DSDIP13Tests",
-        "DSDataTests",
         "DSDeterministicMasternodeListTests",
         "DSGovernanceTests",
         "DSHashTests",
