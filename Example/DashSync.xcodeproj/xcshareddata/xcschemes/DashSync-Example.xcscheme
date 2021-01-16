@@ -80,7 +80,7 @@
             reference = "container:Tests/TransactionTests.xctestplan">
          </TestPlanReference>
          <TestPlanReference
-            reference = "container:Tests/SyncTests.xctestplan">
+            reference = "container:Tests/MainnetSyncTests.xctestplan">
          </TestPlanReference>
          <TestPlanReference
             reference = "container:Tests/LockTests.xctestplan">

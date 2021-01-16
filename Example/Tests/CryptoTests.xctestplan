@@ -24,7 +24,8 @@
       "containerPath" : "container:DashSync.xcodeproj",
       "identifier" : "6003F589195388D20070C39A",
       "name" : "DashSync_Example"
-    }
+    },
+    "uiTestingScreenshotsLifetime" : "keepNever"
   },
   "testTargets" : [
     {
@@ -42,6 +43,8 @@
         "DSDeterministicMasternodeListTests\/testSimplifiedMasternodeEntriesDeletion",
         "DSGovernanceTests",
         "DSInstantSendLockTests",
+        "DSMainnetE2ETests",
+        "DSMainnetSyncTests",
         "DSMiningTests",
         "DSPaymentProtocolTests",
         "DSPaymentRequestTests",
@@ -50,6 +53,8 @@
         "DSSyncTests",
         "DSSyncTests\/testFullSync",
         "DSSyncTests\/testInitialHeadersSync2000",
+        "DSTestnetE2ETests",
+        "DSTestnetSyncTests",
         "DSTransactionTests",
         "DSTransitionTests",
         "DSUInt256IndexPathTests",

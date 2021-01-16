@@ -9,13 +9,17 @@
     }
   ],
   "defaultOptions" : {
-
+    "uiTestingScreenshotsLifetime" : "keepNever"
   },
   "testTargets" : [
     {
       "skippedTests" : [
         "DSAttackTests",
-        "DSSyncTests"
+        "DSMainnetE2ETests",
+        "DSMainnetSyncTests",
+        "DSSyncTests",
+        "DSTestnetE2ETests",
+        "DSTestnetSyncTests"
       ],
       "target" : {
         "containerPath" : "container:DashSync.xcodeproj",

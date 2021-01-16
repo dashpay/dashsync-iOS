@@ -31,7 +31,7 @@
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 
-@interface DSSyncTests : XCTestCase
+@interface DSMainnetSyncTests : XCTestCase
 
 @property (strong, nonatomic) DSChain *chain;
 @property (strong, nonatomic) DSWallet *wallet;
@@ -39,7 +39,7 @@
 
 @end
 
-@implementation DSSyncTests
+@implementation DSMainnetSyncTests
 
 - (void)setUp {
     self.chain = [DSChain mainnet];
@@ -52,7 +52,7 @@
     [self.chain.chainManager.peerManager removeTrustedPeerHost];
 }
 
-- (void)testInitialHeadersSync2000 {
+- (void)testMainnetInitialHeadersSync2000 {
     if (@available(iOS 13.0, *)) {
         XCTMeasureOptions *options = [XCTMeasureOptions defaultOptions];
         options.iterationCount = 1;
@@ -100,7 +100,7 @@
 //    [self tryInitialHeadersSyncForHeadersAmount:4000];
 //}
 
-- (void)testFullSync {
+- (void)testMainnetFullSync {
     if (@available(iOS 13.0, *)) {
         [self measureWithMetrics:@[[[XCTCPUMetric alloc] init], [[XCTMemoryMetric alloc] init], [[XCTClockMetric alloc] init]]
                            block:^{

@@ -9,7 +9,8 @@
     }
   ],
   "defaultOptions" : {
-    "codeCoverage" : false
+    "codeCoverage" : false,
+    "uiTestingScreenshotsLifetime" : "keepNever"
   },
   "testTargets" : [
     {
@@ -29,11 +30,15 @@
         "DSIESEncryptedDataTests",
         "DSInstantSendLockTests",
         "DSKeyTests",
+        "DSMainnetE2ETests",
+        "DSMainnetSyncTests",
         "DSMiningTests",
         "DSPaymentProtocolTests",
         "DSPaymentRequestTests",
         "DSProviderTransactionsTests",
         "DSSyncTests",
+        "DSTestnetE2ETests",
+        "DSTestnetSyncTests",
         "DSTransactionTests",
         "DSTransitionTests",
         "DSWalletTests"

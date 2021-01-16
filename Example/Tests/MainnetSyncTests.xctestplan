@@ -1,7 +1,7 @@
 {
   "configurations" : [
     {
-      "id" : "8D78AA10-A823-4F01-993F-3F91DD8C2DA3",
+      "id" : "150E93F6-E941-4623-954B-F099D9EE6D55",
       "name" : "Configuration 1",
       "options" : {
 
@@ -31,6 +31,7 @@
         "DSIESEncryptedDataTests",
         "DSInstantSendLockTests",
         "DSKeyTests",
+        "DSMainnetE2ETests",
         "DSMiningTests",
         "DSPaymentProtocolTests",
         "DSPaymentRequestTests",
