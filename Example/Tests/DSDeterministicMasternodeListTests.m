@@ -510,7 +510,7 @@
 
 - (void)loadMasternodeListsForFiles:(NSArray *)files baseMasternodeList:(DSMasternodeList *_Nullable)baseMasternodeList withSave:(BOOL)save withReload:(BOOL)reloading onChain:(DSChain *)chain inContext:(NSManagedObjectContext *)context blockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup completion:(void (^)(BOOL success, NSDictionary *masternodeLists))completion {
     //doing this none recursively for profiler
-    __block DSMasternodeList *nextBaseMasternodList = baseMasternodeList;
+    __block DSMasternodeList *nextBaseMasternodeList = baseMasternodeList;
     __block NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
     __block dispatch_group_t dispatch_group = dispatch_group_create();
     dispatch_group_enter(dispatch_group);
@@ -535,7 +535,7 @@
         __block dispatch_semaphore_t sem = dispatch_semaphore_create(0);
         dispatch_group_enter(dispatch_group);
         [DSMasternodeManager processMasternodeDiffMessage:message
-            baseMasternodeList:nextBaseMasternodList
+            baseMasternodeList:nextBaseMasternodeList
             masternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
                 if (save && reloading) {
                     return [chain.chainManager.masternodeManager masternodeListForBlockHash:blockHash];
@@ -561,6 +561,7 @@
                 if (foundCoinbase && rootMNListValid && rootQuorumListValid && validQuorums) {
                     if (reloading || save) {
                         dispatch_group_enter(dispatch_group);
+                        dispatch_semaphore_t sem = dispatch_semaphore_create(0);
                         [DSMasternodeManager saveMasternodeList:masternodeList
                                                         toChain:chain
                                       havingModifiedMasternodes:modifiedMasternodes
@@ -569,15 +570,16 @@
                                                       inContext:context
                                                      completion:^(NSError *_Nonnull error) {
                                                          NSAssert(!error, @"There should not be an error");
+                                                         dispatch_semaphore_signal(sem);
                                                          dispatch_group_leave(dispatch_group);
-                                                         NSLog(@"%@", dispatch_group);
                                                      }];
+                        dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
                     }
 
                     if (reloading) {
-                        if (!nextBaseMasternodList) {
+                        if (!nextBaseMasternodeList) {
                             DSMasternodeList *masternodeListNew = masternodeList;
-                            [chain.chainManager.masternodeManager reloadMasternodeLists];
+                            [chain.chainManager.masternodeManager reloadMasternodeListsWithBlockHeightLookup:blockHeightLookup];
                             DSMasternodeList *reloadedMasternodeListNew = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListNew.blockHash];
                             NSDictionary *comparisonNew = [masternodeListNew compare:reloadedMasternodeListNew blockHeightLookup:blockHeightLookup];
 
@@ -586,9 +588,9 @@
                         } else {
                             DSMasternodeList *masternodeListNew = masternodeList;
 
-                            DSMasternodeList *masternodeListOld = nextBaseMasternodList;
+                            DSMasternodeList *masternodeListOld = nextBaseMasternodeList;
 
-                            [chain.chainManager.masternodeManager reloadMasternodeLists]; //simulate that we turned off the phone
+                            [chain.chainManager.masternodeManager reloadMasternodeListsWithBlockHeightLookup:blockHeightLookup]; //simulate that we turned off the phone
 
 
                             DSMasternodeList *reloadedMasternodeListNew = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListNew.blockHash];
@@ -597,11 +599,14 @@
 
                             NSDictionary *comparisonOld = [masternodeListOld compare:reloadedMasternodeListOld blockHeightLookup:blockHeightLookup];
 
+
                             NSDictionary *comparisonNew = [masternodeListNew compare:reloadedMasternodeListNew blockHeightLookup:blockHeightLookup];
 
-                            if (![reloadedMasternodeListOld.hashesForMerkleRoot isEqualToArray:masternodeListOld.hashesForMerkleRoot]) {
-                                NSMutableSet *reloadedSet = [NSMutableSet setWithArray:reloadedMasternodeListOld.hashesForMerkleRoot];
-                                NSMutableSet *originalSet = [NSMutableSet setWithArray:masternodeListOld.hashesForMerkleRoot];
+                            NSArray *reloadedHashes = [reloadedMasternodeListOld hashesForMerkleRootWithBlockHeightLookup:blockHeightLookup];
+                            NSArray *hashes = [masternodeListOld hashesForMerkleRootWithBlockHeightLookup:blockHeightLookup];
+                            if (![reloadedHashes isEqualToArray:hashes]) {
+                                NSMutableSet *reloadedSet = [NSMutableSet setWithArray:reloadedHashes];
+                                NSMutableSet *originalSet = [NSMutableSet setWithArray:hashes];
                                 NSMutableSet *intersection = [reloadedSet mutableCopy];
                                 [intersection intersectSet:originalSet];
                                 NSMutableSet *missing = [originalSet mutableCopy];
@@ -615,7 +620,7 @@
                             XCTAssertEqualObjects(reloadedMasternodeListOld.providerTxOrderedHashes, masternodeListOld.providerTxOrderedHashes);
 
 
-                            XCTAssertEqualObjects(reloadedMasternodeListOld.hashesForMerkleRoot, masternodeListOld.hashesForMerkleRoot);
+                            XCTAssertEqualObjects(reloadedHashes, hashes);
 
                             XCTAssertEqualObjects(uint256_data([reloadedMasternodeListNew calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]), uint256_data([masternodeListNew calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]), @"");
                             XCTAssertEqualObjects(uint256_data([reloadedMasternodeListOld calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]), uint256_data([masternodeListOld calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]), @"");
@@ -625,7 +630,7 @@
                     [dictionary setObject:masternodeList forKey:uint256_data(masternodeList.blockHash)];
 
 
-                    nextBaseMasternodList = masternodeList;
+                    nextBaseMasternodeList = masternodeList;
 
                 } else {
                     [dictionary setObject:masternodeList forKey:uint256_data(masternodeList.blockHash)];
@@ -970,7 +975,7 @@
                                                                                           XCTAssertEqualObjects(reloadedMasternodeList122064.providerTxOrderedHashes, masternodeList122064.providerTxOrderedHashes);
 
 
-                                                                                          XCTAssertEqualObjects(reloadedMasternodeList122064.hashesForMerkleRoot, masternodeList122064.hashesForMerkleRoot);
+                                                                                          XCTAssertEqualObjects([reloadedMasternodeList122064 hashesForMerkleRootWithBlockHeightLookup:blockHeightLookup122064], [masternodeList122064 hashesForMerkleRootWithBlockHeightLookup:blockHeightLookup122088]);
 
                                                                                           XCTAssertEqualObjects(simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes, reloadedSimplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes);
                                                                                           XCTAssertEqualObjects(uint256_data([reloadedMasternodeList122088 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup122088]).hexString, uint256_data([masternodeList122088 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup122088]).hexString, @"");
@@ -2503,27 +2508,28 @@
                             inContext:context
                     blockHeightLookup:blockHeightLookup
                            completion:^(BOOL success, NSDictionary *masternodeLists) {
-                               [chain.chainManager.masternodeManager reloadMasternodeLists];
+                               [chain.chainManager.masternodeManager reloadMasternodeListsWithBlockHeightLookup:blockHeightLookup];
                                for (NSData *masternodeListBlockHash in masternodeLists) {
                                    NSLog(@"Testing quorum of masternode list at height %u", blockHeightLookup(masternodeListBlockHash.UInt256));
                                    DSMasternodeList *originalMasternodeList = [masternodeLists objectForKey:masternodeListBlockHash];
-                                   DSMasternodeList *reloadedMasternodeList = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListBlockHash.UInt256];
+                                   DSMasternodeList *reloadedMasternodeList = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListBlockHash.UInt256 withBlockHeightLookup:blockHeightLookup];
                                    XCTAssert(reloadedMasternodeList != nil, @"reloadedMasternodeList should exist");
 #define LOG_QUORUM_ISSUE_COMPARISON_RESULT 1
                                    if (!uint256_eq([originalMasternodeList masternodeMerkleRootWithBlockHeightLookup:blockHeightLookup], [reloadedMasternodeList calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup])) {
                                        NSLog(@"%u original %@", blockHeightLookup(masternodeListBlockHash.UInt256), [originalMasternodeList toDictionaryUsingBlockHeightLookup:blockHeightLookup]);
                                        NSLog(@"%u reloaded %@", blockHeightLookup(masternodeListBlockHash.UInt256), [reloadedMasternodeList toDictionaryUsingBlockHeightLookup:blockHeightLookup]);
+                                       NSDictionary *comparisonResult = [originalMasternodeList compare:reloadedMasternodeList usingOurString:@"original" usingTheirString:@"reloaded" blockHeightLookup:blockHeightLookup];
+                                       NSLog(@"QUORUM_ISSUE_COMPARISON_RESULT %u %@", blockHeightLookup(masternodeListBlockHash.UInt256), comparisonResult);
                                    } else {
 #if LOG_QUORUM_ISSUE_COMPARISON_RESULT
                                        if ((blockHeightLookup(masternodeListBlockHash.UInt256)) == 1097280) {
                                            NSDictionary *comparisonResult = [originalMasternodeList compare:reloadedMasternodeList usingOurString:@"original" usingTheirString:@"reloaded" blockHeightLookup:blockHeightLookup];
-                                           NSLog(@"%u %@", blockHeightLookup(masternodeListBlockHash.UInt256), comparisonResult);
+                                           NSLog(@"QUORUM_ISSUE_COMPARISON_RESULT %u %@", blockHeightLookup(masternodeListBlockHash.UInt256), comparisonResult);
                                        }
 
 #endif
                                    }
-
-                                   XCTAssert(uint256_eq([originalMasternodeList masternodeMerkleRootWithBlockHeightLookup:blockHeightLookup], [reloadedMasternodeList calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]), @"These should be equal");
+                                   XCTAssertEqualObjects(uint256_hex([originalMasternodeList masternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]), uint256_hex([reloadedMasternodeList calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]), @"These should be equal for height %d", originalMasternodeList.height);
                                    //reloadedMasternodeList.quorums
                                }
 
@@ -2786,7 +2792,7 @@
 
                                DSMasternodeList *masternodeList1092888 = [masternodeLists objectForKey:@"61a87d10f303aefcf9e77592a86dcd3adeed1f133ca2d3bc1d00000000000000".hexToData];
 
-                               [chain.chainManager.masternodeManager reloadMasternodeLists]; //simulate that we turned off the phone
+                               [chain.chainManager.masternodeManager reloadMasternodeListsWithBlockHeightLookup:blockHeightLookup]; //simulate that we turned off the phone
 
 
                                DSMasternodeList *reloadedMasternodeList1092916 = [chain.chainManager.masternodeManager masternodeListForBlockHash:@"0000000000000012b444de0be31d695b411dcc6645a3723932cabc6b9164531f".hexToData.reverse.UInt256];
@@ -2841,7 +2847,7 @@
                                XCTAssertEqualObjects(reloadedMasternodeList1092888.providerTxOrderedHashes, masternodeList1092888.providerTxOrderedHashes);
 
 
-                               XCTAssertEqualObjects(reloadedMasternodeList1092888.hashesForMerkleRoot, masternodeList1092888.hashesForMerkleRoot);
+                               XCTAssertEqualObjects([reloadedMasternodeList1092888 hashesForMerkleRootWithBlockHeightLookup:blockHeightLookup], [masternodeList1092888 hashesForMerkleRootWithBlockHeightLookup:blockHeightLookup]);
 
                                XCTAssertEqualObjects(simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes, reloadedSimplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes);
                                XCTAssertEqualObjects(uint256_data([reloadedMasternodeList1092916 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]), uint256_data([masternodeList1092916 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]), @"");

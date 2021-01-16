@@ -7,6 +7,7 @@
 
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSBLSKey.h"
+#import "DSBlock.h"
 #import "DSMerkleBlock.h"
 #import "DSMutableOrderedDataKeyDictionary.h"
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
@@ -42,9 +43,9 @@
 @property (null_resettable, nonatomic, copy) NSString *ipAddressString;
 @property (null_resettable, nonatomic, copy) NSString *portString;
 @property (nonatomic, strong) DSBLSKey *operatorPublicBLSKey;
-@property (nonatomic, strong) NSMutableDictionary<DSMerkleBlock *, NSData *> *mPreviousOperatorPublicKeys;
-@property (nonatomic, strong) NSMutableDictionary<DSMerkleBlock *, NSNumber *> *mPreviousValidity;
-@property (nonatomic, strong) NSMutableDictionary<DSMerkleBlock *, NSData *> *mPreviousSimplifiedMasternodeEntryHashes;
+@property (nonatomic, strong) NSMutableDictionary<DSBlock *, NSData *> *mPreviousOperatorPublicKeys;
+@property (nonatomic, strong) NSMutableDictionary<DSBlock *, NSNumber *> *mPreviousValidity;
+@property (nonatomic, strong) NSMutableDictionary<DSBlock *, NSData *> *mPreviousSimplifiedMasternodeEntryHashes;
 @property (nonatomic, assign) uint64_t platformPing;
 @property (nonatomic, strong) NSDate *platformPingDate;
 
@@ -74,7 +75,7 @@
     return [[self alloc] initWithMessage:data atBlockHeight:blockHeight onChain:chain];
 }
 
-+ (instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash confirmedHash:(UInt256)confirmedHash address:(UInt128)address port:(uint16_t)port operatorBLSPublicKey:(UInt384)operatorBLSPublicKey previousOperatorBLSPublicKeys:(NSDictionary<DSMerkleBlock *, NSData *> *)previousOperatorBLSPublicKeys keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid previousValidity:(NSDictionary<DSMerkleBlock *, NSData *> *)previousValidity knownConfirmedAtHeight:(uint32_t)knownConfirmedAtHeight updateHeight:(uint32_t)updateHeight simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash previousSimplifiedMasternodeEntryHashes:(NSDictionary<DSMerkleBlock *, NSData *> *)previousSimplifiedMasternodeEntryHashes onChain:(DSChain *)chain {
++ (instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash confirmedHash:(UInt256)confirmedHash address:(UInt128)address port:(uint16_t)port operatorBLSPublicKey:(UInt384)operatorBLSPublicKey previousOperatorBLSPublicKeys:(NSDictionary<DSBlock *, NSData *> *)previousOperatorBLSPublicKeys keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid previousValidity:(NSDictionary<DSBlock *, NSData *> *)previousValidity knownConfirmedAtHeight:(uint32_t)knownConfirmedAtHeight updateHeight:(uint32_t)updateHeight simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash previousSimplifiedMasternodeEntryHashes:(NSDictionary<DSBlock *, NSData *> *)previousSimplifiedMasternodeEntryHashes onChain:(DSChain *)chain {
     DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [[DSSimplifiedMasternodeEntry alloc] init];
     simplifiedMasternodeEntry.providerRegistrationTransactionHash = providerRegistrationTransactionHash;
     simplifiedMasternodeEntry.confirmedHash = confirmedHash;
@@ -139,9 +140,9 @@
     return self;
 }
 
-- (void)keepInfoOfPreviousEntryVersion:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlockHash:(UInt256)blockHash {
-    DSMerkleBlock *block = [self.chain blockForBlockHash:blockHash];
-    if (!block) return;
+- (void)keepInfoOfPreviousEntryVersion:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlockHash:(UInt256)blockHash atBlockHeight:(uint32_t)blockHeight {
+    DSBlock *block = [self.chain blockForBlockHash:blockHash];
+    if (!block) block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:self.chain];
     if (masternodeEntry.updateHeight < self.updateHeight) {
         [self updatePreviousValidity:masternodeEntry atBlock:block];
         [self updatePreviousOperatorPublicKeysFromPreviousSimplifiedMasternodeEntry:masternodeEntry atBlock:block];
@@ -150,7 +151,7 @@
     }
 }
 
-- (void)updateKnownConfirmedHashAtHeight:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlock:(DSMerkleBlock *)block {
+- (void)updateKnownConfirmedHashAtHeight:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlock:(DSBlock *)block {
     //if the masternodeEntry.confirmedHash is not set we do not need to do anything
     //the knownConfirmedHashAtHeight will be higher
     //and
@@ -161,7 +162,7 @@
     }
 }
 
-- (void)updatePreviousValidity:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlock:(DSMerkleBlock *)block {
+- (void)updatePreviousValidity:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlock:(DSBlock *)block {
     if (!uint256_eq(self.providerRegistrationTransactionHash, masternodeEntry.providerRegistrationTransactionHash)) return;
     self.mPreviousValidity = [NSMutableDictionary dictionary];
     //if for example we are getting a masternode list at block 402 when we already got the masternode list at block 414
@@ -179,15 +180,15 @@
     }
 }
 
-- (void)updatePreviousOperatorPublicKeysFromPreviousSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlock:(DSMerkleBlock *)block {
+- (void)updatePreviousOperatorPublicKeysFromPreviousSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlock:(DSBlock *)block {
     if (!uint256_eq(self.providerRegistrationTransactionHash, masternodeEntry.providerRegistrationTransactionHash)) return;
     self.mPreviousOperatorPublicKeys = [NSMutableDictionary dictionary];
     //if for example we are getting a masternode list at block 402 when we already got the masternode list at block 414
     //then the other sme might have previousOperatorPublicKeys that is in our future
     //we need to ignore them
-    for (DSBlock *block in masternodeEntry.previousOperatorPublicKeys) {
-        if (block.height < self.updateHeight) {
-            [self.mPreviousOperatorPublicKeys setObject:masternodeEntry.previousOperatorPublicKeys[block] forKey:block];
+    for (DSBlock *pBlock in masternodeEntry.previousOperatorPublicKeys) {
+        if (pBlock.height < self.updateHeight) {
+            [self.mPreviousOperatorPublicKeys setObject:masternodeEntry.previousOperatorPublicKeys[pBlock] forKey:pBlock];
         }
     }
     if (!uint384_eq([masternodeEntry operatorPublicKeyAtBlockHeight:self.updateHeight], self.operatorPublicKey)) {
@@ -197,16 +198,16 @@
     }
 }
 
-- (void)updatePreviousSimplifiedMasternodeEntryHashesFromPreviousSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlock:(DSMerkleBlock *)block {
+- (void)updatePreviousSimplifiedMasternodeEntryHashesFromPreviousSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlock:(DSBlock *)block {
     NSAssert(masternodeEntry, @"Masternode entry must be present");
     if (!uint256_eq(self.providerRegistrationTransactionHash, masternodeEntry.providerRegistrationTransactionHash)) return;
     self.mPreviousSimplifiedMasternodeEntryHashes = [NSMutableDictionary dictionary];
     //if for example we are getting a masternode list at block 402 when we already got the masternode list at block 414
     //then the other sme might have previousSimplifiedMasternodeEntryHashes that is in our future
     //we need to ignore them
-    for (DSBlock *block in masternodeEntry.previousSimplifiedMasternodeEntryHashes) {
-        if (block.height < self.updateHeight) {
-            [self.mPreviousSimplifiedMasternodeEntryHashes setObject:masternodeEntry.previousSimplifiedMasternodeEntryHashes[block] forKey:block];
+    for (DSBlock *pBlock in masternodeEntry.previousSimplifiedMasternodeEntryHashes) {
+        if (pBlock.height < self.updateHeight) {
+            [self.mPreviousSimplifiedMasternodeEntryHashes setObject:masternodeEntry.previousSimplifiedMasternodeEntryHashes[pBlock] forKey:pBlock];
         }
     }
     if (!uint256_eq([masternodeEntry simplifiedMasternodeEntryHashAtBlockHeight:self.updateHeight], self.simplifiedMasternodeEntryHash)) {
@@ -228,13 +229,13 @@
     return [self.mPreviousSimplifiedMasternodeEntryHashes copy];
 }
 
-- (BOOL)isValidAtBlock:(DSMerkleBlock *)merkleBlock {
-    if (!merkleBlock || merkleBlock.height == UINT32_MAX) {
-        NSAssert(NO, @"Merkle Block should be set");
+- (BOOL)isValidAtBlock:(DSBlock *)block {
+    if (!block || block.height == UINT32_MAX) {
+        NSAssert(NO, @"Block should be set");
         return self.isValid;
     }
     if (![self.previousValidity count]) return self.isValid;
-    return [self isValidAtBlockHeight:merkleBlock.height];
+    return [self isValidAtBlockHeight:block.height];
 }
 
 - (BOOL)isValidAtBlockHash:(UInt256)blockHash {
@@ -255,10 +256,10 @@
     if (blockHeight == UINT32_MAX) {
         return self.isValid;
     }
-    NSDictionary<DSMerkleBlock *, NSNumber *> *previousValidity = self.previousValidity;
+    NSDictionary<DSBlock *, NSNumber *> *previousValidity = self.previousValidity;
     uint32_t minDistance = UINT32_MAX;
     BOOL isValid = self.isValid;
-    for (DSMerkleBlock *previousBlock in previousValidity) {
+    for (DSBlock *previousBlock in previousValidity) {
         if (previousBlock.height <= blockHeight) continue;
         uint32_t distance = previousBlock.height - blockHeight;
         if (distance < minDistance) {
@@ -270,13 +271,13 @@
     return isValid;
 }
 
-- (UInt256)simplifiedMasternodeEntryHashAtBlock:(DSMerkleBlock *)merkleBlock {
-    if (!merkleBlock || merkleBlock.height == UINT32_MAX) {
-        NSAssert(NO, @"Merkle Block should be set");
+- (UInt256)simplifiedMasternodeEntryHashAtBlock:(DSBlock *)block {
+    if (!block || block.height == UINT32_MAX) {
+        NSAssert(NO, @"Block should be set");
         return self.simplifiedMasternodeEntryHash;
     }
     if (![self.mPreviousSimplifiedMasternodeEntryHashes count]) return self.simplifiedMasternodeEntryHash;
-    return [self simplifiedMasternodeEntryHashAtBlockHeight:merkleBlock.height];
+    return [self simplifiedMasternodeEntryHashAtBlockHeight:block.height];
 }
 
 - (UInt256)simplifiedMasternodeEntryHashAtBlockHash:(UInt256)blockHash {
@@ -297,10 +298,10 @@
     if (blockHeight == UINT32_MAX) {
         return self.simplifiedMasternodeEntryHash;
     }
-    NSDictionary<DSMerkleBlock *, NSData *> *previousSimplifiedMasternodeEntryHashes = self.previousSimplifiedMasternodeEntryHashes;
+    NSDictionary<DSBlock *, NSData *> *previousSimplifiedMasternodeEntryHashes = self.previousSimplifiedMasternodeEntryHashes;
     uint32_t minDistance = UINT32_MAX;
     UInt256 usedSimplifiedMasternodeEntryHash = self.simplifiedMasternodeEntryHash;
-    for (DSMerkleBlock *previousBlock in previousSimplifiedMasternodeEntryHashes) {
+    for (DSBlock *previousBlock in previousSimplifiedMasternodeEntryHashes) {
         if (previousBlock.height <= blockHeight) continue;
         uint32_t distance = previousBlock.height - blockHeight;
         if (distance < minDistance) {
@@ -312,13 +313,13 @@
     return usedSimplifiedMasternodeEntryHash;
 }
 
-- (UInt384)operatorPublicKeyAtBlock:(DSMerkleBlock *)merkleBlock {
-    if (!merkleBlock || merkleBlock.height == UINT32_MAX) {
-        NSAssert(NO, @"Merkle Block should be set");
+- (UInt384)operatorPublicKeyAtBlock:(DSBlock *)block {
+    if (!block || block.height == UINT32_MAX) {
+        NSAssert(NO, @"Block should be set");
         return self.operatorPublicKey;
     }
     if (![self.mPreviousOperatorPublicKeys count]) return self.operatorPublicKey;
-    return [self operatorPublicKeyAtBlockHeight:merkleBlock.height];
+    return [self operatorPublicKeyAtBlockHeight:block.height];
 }
 
 - (UInt384)operatorPublicKeyAtBlockHash:(UInt256)blockHash {
@@ -335,10 +336,10 @@
 
 - (UInt384)operatorPublicKeyAtBlockHeight:(uint32_t)blockHeight {
     if (![self.mPreviousOperatorPublicKeys count]) return self.operatorPublicKey;
-    NSDictionary<DSMerkleBlock *, NSData *> *previousOperatorPublicKeyAtBlockHashes = self.previousOperatorPublicKeys;
+    NSDictionary<DSBlock *, NSData *> *previousOperatorPublicKeyAtBlockHashes = self.previousOperatorPublicKeys;
     uint32_t minDistance = UINT32_MAX;
     UInt384 usedPreviousOperatorPublicKeyAtBlockHash = self.operatorPublicKey;
-    for (DSMerkleBlock *previousBlock in previousOperatorPublicKeyAtBlockHashes) {
+    for (DSBlock *previousBlock in previousOperatorPublicKeyAtBlockHashes) {
         if (previousBlock.height <= blockHeight) continue;
         uint32_t distance = previousBlock.height - blockHeight;
         if (distance < minDistance) {
@@ -350,13 +351,13 @@
     return usedPreviousOperatorPublicKeyAtBlockHash;
 }
 
-- (UInt256)confirmedHashAtBlock:(DSMerkleBlock *)merkleBlock {
-    if (!merkleBlock || merkleBlock.height == UINT32_MAX) {
-        NSAssert(NO, @"Merkle Block should be set");
+- (UInt256)confirmedHashAtBlock:(DSBlock *)block {
+    if (!block || block.height == UINT32_MAX) {
+        NSAssert(NO, @"Block should be set");
         return self.confirmedHash;
     }
     if (!self.knownConfirmedAtHeight) return self.confirmedHash;
-    return [self confirmedHashAtBlockHeight:merkleBlock.height];
+    return [self confirmedHashAtBlockHeight:block.height];
 }
 
 - (UInt256)confirmedHashAtBlockHash:(UInt256)blockHash {
@@ -570,6 +571,7 @@
 
     if (ourIsValid != theirIsValid) {
         differences[@"isValid"] = @{ours: ourIsValid ? @"YES" : @"NO", theirs: theirIsValid ? @"YES" : @"NO"};
+        differences[@"previousValidity"] = @{ours: self.previousValidity, theirs: other.previousValidity};
     }
 
     UInt256 ourSimplifiedMasternodeEntryHash = [self simplifiedMasternodeEntryHashAtBlockHash:ourBlockHash usingBlockHeightLookup:blockHeightLookup];
@@ -583,7 +585,7 @@
         differences[@"previousSimplifiedMasternodeEntryHashes"] = @{ours: self.previousSimplifiedMasternodeEntryHashes, theirs: other.previousSimplifiedMasternodeEntryHashes};
     }
 
-    if (![self.previousValidity isEqualToDictionary:other.previousValidity]) {
+    if (![self.previousValidity isEqualToDictionary:other.previousValidity] && ourIsValid == theirIsValid) {
         differences[@"previousValidity"] = @{ours: self.previousValidity, theirs: other.previousValidity};
     }
 

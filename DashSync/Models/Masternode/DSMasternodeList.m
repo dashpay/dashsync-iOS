@@ -118,7 +118,7 @@ inline static int ceil_log2(int x) {
         DSSimplifiedMasternodeEntry *oldMasternodeEntry = tentativeMasternodeList[masternodeHashData];
         //the masternode has changed
         DSSimplifiedMasternodeEntry *modifiedMasternode = modifiedMasternodes[masternodeHashData];
-        [modifiedMasternode keepInfoOfPreviousEntryVersion:oldMasternodeEntry atBlockHash:blockHash];
+        [modifiedMasternode keepInfoOfPreviousEntryVersion:oldMasternodeEntry atBlockHash:blockHash atBlockHeight:blockHeight];
         tentativeMasternodeList[masternodeHashData] = modifiedMasternode;
     }
 

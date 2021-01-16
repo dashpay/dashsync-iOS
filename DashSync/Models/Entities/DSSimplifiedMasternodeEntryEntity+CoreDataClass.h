@@ -6,6 +6,7 @@
 //
 //
 
+#import "BigIntTypes.h"
 #import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
 
@@ -24,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (DSSimplifiedMasternodeEntryEntity *)simplifiedMasternodeEntryForProviderRegistrationTransactionHash:(NSData *)providerRegistrationTransactionHash onChainEntity:(DSChainEntity *_Nonnull)chainEntity;
 
 - (DSSimplifiedMasternodeEntry *_Nullable)simplifiedMasternodeEntry;
+- (DSSimplifiedMasternodeEntry *_Nullable)simplifiedMasternodeEntryWithBlockHeightLookup:(uint32_t (^_Nullable)(UInt256 blockHash))blockHeightLookup;
 + (void)deleteAllOnChainEntity:(DSChainEntity *)chainEntity;
 
 @end
