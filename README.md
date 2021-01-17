@@ -9,7 +9,7 @@
 
 | Branch | Tests                                                                                      | Coverage                                                                                                                             | Linting                                                                    |
 |--------|--------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------|
-| master | [![Tests](https://github.com/dashevo/dashsync-iOS/workflows/DashSync-iOS/badge.svg?branch=master)](https://github.com/dashevo/dashsync-iOS/actions) | [![codecov](https://codecov.io/gh/dashevo/dashsync-iOS/branch/master/graph/badge.svg)](https://codecov.io/gh/dashevo/dashsync-iOS) | ![Lint](https://github.com/dashevo/dashsync-iOS/workflows/Lint/badge.svg) |
+| master | [![Tests](https://github.com/dashevo/dashsync-iOS/workflows/Continuous%20Integration/badge.svg?branch=master)](https://github.com/dashevo/dashsync-iOS/actions) | [![codecov](https://codecov.io/gh/dashevo/dashsync-iOS/branch/master/graph/badge.svg)](https://codecov.io/gh/dashevo/dashsync-iOS) | ![Lint](https://github.com/dashevo/dashsync-iOS/workflows/Lint/badge.svg) |
 
 ## Example
 
