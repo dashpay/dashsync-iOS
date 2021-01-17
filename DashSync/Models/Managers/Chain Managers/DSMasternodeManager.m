@@ -448,7 +448,14 @@
 }
 
 - (void)addToMasternodeRetrievalQueueArray:(NSArray *)masternodeBlockHashDataArray {
-    [self.masternodeListRetrievalQueue addObjectsFromArray:masternodeBlockHashDataArray];
+    NSMutableArray *nonEmptyBlockHashes = [NSMutableArray array];
+    for (NSData *blockHashData in masternodeBlockHashDataArray) {
+        NSAssert(uint256_is_not_zero(blockHashData.UInt256), @"We should not be adding an empty block hash");
+        if (uint256_is_not_zero(blockHashData.UInt256)) {
+            [nonEmptyBlockHashes addObject:blockHashData];
+        }
+    }
+    [self.masternodeListRetrievalQueue addObjectsFromArray:nonEmptyBlockHashes];
     self.masternodeListRetrievalQueueMaxAmount = MAX(self.masternodeListRetrievalQueueMaxAmount, self.masternodeListRetrievalQueue.count);
     [self.masternodeListRetrievalQueue sortUsingComparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2) {
         NSData *obj1BlockHash = (NSData *)obj1;

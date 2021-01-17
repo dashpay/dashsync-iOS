@@ -1,6 +1,6 @@
-//  
+//
 //  Created by Sam Westrich
-//  Copyright © 2021 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,30 +17,98 @@
 
 #import <XCTest/XCTest.h>
 
+#import "DSAccount.h"
+#import "DSAuthenticationKeysDerivationPath.h"
+#import "DSBLSKey.h"
+#import "DSChain+Protected.h"
+#import "DSDerivationPath.h"
+#import "DSDerivationPathFactory.h"
+#import "DSECDSAKey.h"
+#import "DSIncomingFundsDerivationPath.h"
+#import "DSWallet.h"
+#import "DashSync.h"
+#import "NSData+Encryption.h"
+#import "NSMutableData+Dash.h"
+#import "NSString+Bitcoin.h"
+
 @interface DSTestnetSyncTests : XCTestCase
+
+@property (strong, nonatomic) DSChain *chain;
+@property (strong, nonatomic) DSWallet *wallet;
+@property (strong, nonatomic) id blocksObserver, txStatusObserver;
 
 @end
 
 @implementation DSTestnetSyncTests
 
 - (void)setUp {
-    // Put setup code here. This method is called before the invocation of each test method in the class.
+    self.chain = [DSChain testnet];
+    self.wallet = [DSWallet standardWalletWithRandomSeedPhraseForChain:self.chain storeSeedPhrase:NO isTransient:YES];
+    [self.chain unregisterAllWallets];
+    [self.chain addWallet:self.wallet];
 }
 
 - (void)tearDown {
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
 
-- (void)testExample {
-    // This is an example of a functional test case.
-    // Use XCTAssert and related functions to verify your tests produce the correct results.
+- (void)testTestnetQuickHeadersSync {
+    [[DashSync sharedSyncController] wipePeerDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+    [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+    [[DashSync sharedSyncController] wipeSporkDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+    [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+    XCTestExpectation *headerFinishedExpectation = [[XCTestExpectation alloc] init];
+    [[DashSync sharedSyncController] startSyncForChain:self.chain];
+    self.txStatusObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainInitialHeadersDidFinishSyncingNotification
+                                                          object:nil
+                                                           queue:nil
+                                                      usingBlock:^(NSNotification *note) {
+                                                          DSLogPrivate(@"Finished sync");
+                                                          [[DashSync sharedSyncController] stopSyncForChain:self.chain];
+                                                          [headerFinishedExpectation fulfill];
+                                                      }];
+    [self waitForExpectations:@[headerFinishedExpectation] timeout:120];
 }
 
-- (void)testPerformanceExample {
-    // This is an example of a performance test case.
-    [self measureBlock:^{
-        // Put the code you want to measure the time of here.
-    }];
+- (void)testTestnetFullHeadersSync {
+    [self.chain useCheckpointBeforeOrOnHeightForTerminalBlocksSync:2000]; //not genesis, but good enough
+    XCTestExpectation *headerFinishedExpectation = [[XCTestExpectation alloc] init];
+    [[DashSync sharedSyncController] wipePeerDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+    [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+    [[DashSync sharedSyncController] wipeSporkDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+    [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+    [[DashSync sharedSyncController] startSyncForChain:self.chain];
+    self.txStatusObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainInitialHeadersDidFinishSyncingNotification
+                                                          object:nil
+                                                           queue:nil
+                                                      usingBlock:^(NSNotification *note) {
+                                                          DSLogPrivate(@"Finished sync");
+                                                          [[DashSync sharedSyncController] stopSyncForChain:self.chain];
+                                                          [headerFinishedExpectation fulfill];
+                                                      }];
+    [self waitForExpectations:@[headerFinishedExpectation] timeout:600];
+}
+
+- (void)testTestnetFullSync {
+    [self.chain useCheckpointBeforeOrOnHeightForSyncingChainBlocks:2000];
+    [self.chain useCheckpointBeforeOrOnHeightForTerminalBlocksSync:UINT32_MAX];
+    [[DashSync sharedSyncController] wipePeerDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+    [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+    [[DashSync sharedSyncController] wipeSporkDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+    [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+    XCTestExpectation *headerFinishedExpectation = [[XCTestExpectation alloc] init];
+    [[DashSync sharedSyncController] startSyncForChain:self.chain];
+    self.txStatusObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainBlocksDidFinishSyncingNotification
+                                                          object:nil
+                                                           queue:nil
+                                                      usingBlock:^(NSNotification *note) {
+                                                          DSLogPrivate(@"Finished sync");
+                                                          [[DashSync sharedSyncController] stopSyncForChain:self.chain];
+                                                          [headerFinishedExpectation fulfill];
+                                                      }];
+    [self waitForExpectations:@[headerFinishedExpectation] timeout:1200];
 }
 
 @end

@@ -16,9 +16,11 @@
       "skippedTests" : [
         "DSAttackTests",
         "DSMainnetE2ETests",
+        "DSMainnetMetricSyncTests",
         "DSMainnetSyncTests",
         "DSSyncTests",
         "DSTestnetE2ETests",
+        "DSTestnetMetricSyncTests",
         "DSTestnetSyncTests"
       ],
       "target" : {

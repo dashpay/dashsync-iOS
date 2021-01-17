@@ -379,9 +379,11 @@
 		FB91B2D425325EB100511A44 /* MDCDamerauLevenshteinDistanceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FB91B2D225325EB100511A44 /* MDCDamerauLevenshteinDistanceTests.m */; };
 		FB91B2D525325EB100511A44 /* MDCLevenshteinDistanceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FB91B2D325325EB100511A44 /* MDCLevenshteinDistanceTests.m */; };
 		FB969707246BCA8E00BF56A5 /* DSErrorSimulationsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB969706246BCA8E00BF56A5 /* DSErrorSimulationsViewController.m */; };
-		FB97500825B3881B00A1DCE7 /* DSTestnetSyncTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FB97500725B3881B00A1DCE7 /* DSTestnetSyncTests.m */; };
+		FB97500825B3881B00A1DCE7 /* DSTestnetMetricSyncTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FB97500725B3881B00A1DCE7 /* DSTestnetMetricSyncTests.m */; };
 		FB97501025B3888800A1DCE7 /* DSMainnetE2ETests.m in Sources */ = {isa = PBXBuildFile; fileRef = FB97500F25B3888800A1DCE7 /* DSMainnetE2ETests.m */; };
 		FB97501625B388A500A1DCE7 /* DSTestnetE2ETests.m in Sources */ = {isa = PBXBuildFile; fileRef = FB97501525B388A500A1DCE7 /* DSTestnetE2ETests.m */; };
+		FB97502725B3AFB000A1DCE7 /* DSTestnetSyncTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FB97502625B3AFAF00A1DCE7 /* DSTestnetSyncTests.m */; };
+		FB97502B25B3BC2D00A1DCE7 /* DSMainnetSyncTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FB97502A25B3BC2D00A1DCE7 /* DSMainnetSyncTests.m */; };
 		FB9762F724BC4C3E00CF28EC /* DSMiningViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9762F624BC4C3E00CF28EC /* DSMiningViewController.m */; };
 		FB988321241D64FA00B39F02 /* DSBlockchainIdentityKeysViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB988320241D64FA00B39F02 /* DSBlockchainIdentityKeysViewController.m */; };
 		FB988324241D6C3300B39F02 /* DSBlockchainIdentityKeyTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB988323241D6C3300B39F02 /* DSBlockchainIdentityKeyTableViewCell.m */; };
@@ -426,7 +428,7 @@
 		FBD967AA212571DC005CBE0B /* DSTopupBlockchainIdentityViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967A9212571DC005CBE0B /* DSTopupBlockchainIdentityViewController.m */; };
 		FBD967AD21270DD6005CBE0B /* DSUsernameTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967AC21270DD6005CBE0B /* DSUsernameTableViewCell.m */; };
 		FBDB9B7E20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */; };
-		FBE07DD124673AC200A1079C /* DSMainnetSyncTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FBE07DD024673AC200A1079C /* DSMainnetSyncTests.m */; };
+		FBE07DD124673AC200A1079C /* DSMainnetMetricSyncTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FBE07DD024673AC200A1079C /* DSMainnetMetricSyncTests.m */; };
 		FBE07DD32467440200A1079C /* DSChainedSigningTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FBE07DD22467440200A1079C /* DSChainedSigningTests.m */; };
 		FBE155FB22B931FA009CA817 /* DSMasternodeListsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBE155FA22B931FA009CA817 /* DSMasternodeListsViewController.m */; };
 		FBE155FE22B954EE009CA817 /* DSMasternodeListTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBE155FD22B954EE009CA817 /* DSMasternodeListTableViewCell.m */; };
@@ -978,11 +980,15 @@
 		FB974FD825B2868700A1DCE7 /* TransactionTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = TransactionTests.xctestplan; sourceTree = "<group>"; };
 		FB974FD925B2870300A1DCE7 /* LockTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = LockTests.xctestplan; sourceTree = "<group>"; };
 		FB974FDC25B2889000A1DCE7 /* MainnetSyncTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = MainnetSyncTests.xctestplan; sourceTree = "<group>"; };
-		FB974FDF25B2894200A1DCE7 /* syncTest.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; name = syncTest.yml; path = ../.github/workflows/syncTest.yml; sourceTree = "<group>"; };
+		FB974FDF25B2894200A1DCE7 /* syncTestMainnet.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; name = syncTestMainnet.yml; path = ../.github/workflows/syncTestMainnet.yml; sourceTree = "<group>"; };
 		FB97500625B3876D00A1DCE7 /* TestnetSyncTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = TestnetSyncTests.xctestplan; sourceTree = "<group>"; };
-		FB97500725B3881B00A1DCE7 /* DSTestnetSyncTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTestnetSyncTests.m; sourceTree = "<group>"; };
+		FB97500725B3881B00A1DCE7 /* DSTestnetMetricSyncTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTestnetMetricSyncTests.m; sourceTree = "<group>"; };
 		FB97500F25B3888800A1DCE7 /* DSMainnetE2ETests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMainnetE2ETests.m; sourceTree = "<group>"; };
 		FB97501525B388A500A1DCE7 /* DSTestnetE2ETests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTestnetE2ETests.m; sourceTree = "<group>"; };
+		FB97501C25B3A29100A1DCE7 /* syncTestTestnet.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; name = syncTestTestnet.yml; path = ../.github/workflows/syncTestTestnet.yml; sourceTree = "<group>"; };
+		FB97501F25B3AD1400A1DCE7 /* Metrics.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = Metrics.xctestplan; sourceTree = "<group>"; };
+		FB97502625B3AFAF00A1DCE7 /* DSTestnetSyncTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTestnetSyncTests.m; sourceTree = "<group>"; };
+		FB97502A25B3BC2D00A1DCE7 /* DSMainnetSyncTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSMainnetSyncTests.m; sourceTree = "<group>"; };
 		FB9762F524BC4C3E00CF28EC /* DSMiningViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMiningViewController.h; sourceTree = "<group>"; };
 		FB9762F624BC4C3E00CF28EC /* DSMiningViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMiningViewController.m; sourceTree = "<group>"; };
 		FB98831F241D64FA00B39F02 /* DSBlockchainIdentityKeysViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainIdentityKeysViewController.h; sourceTree = "<group>"; };
@@ -1061,7 +1067,7 @@
 		FBD967AB21270DD6005CBE0B /* DSUsernameTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSUsernameTableViewCell.h; sourceTree = "<group>"; };
 		FBD967AC21270DD6005CBE0B /* DSUsernameTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSUsernameTableViewCell.m; sourceTree = "<group>"; };
 		FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDeterministicMasternodeListTests.m; sourceTree = "<group>"; };
-		FBE07DD024673AC200A1079C /* DSMainnetSyncTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMainnetSyncTests.m; sourceTree = "<group>"; };
+		FBE07DD024673AC200A1079C /* DSMainnetMetricSyncTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMainnetMetricSyncTests.m; sourceTree = "<group>"; };
 		FBE07DD22467440200A1079C /* DSChainedSigningTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSChainedSigningTests.m; sourceTree = "<group>"; };
 		FBE155F922B931FA009CA817 /* DSMasternodeListsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMasternodeListsViewController.h; sourceTree = "<group>"; };
 		FBE155FA22B931FA009CA817 /* DSMasternodeListsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMasternodeListsViewController.m; sourceTree = "<group>"; };
@@ -1977,7 +1983,8 @@
 		FB974F3125AE7A2200A1DCE7 /* CI */ = {
 			isa = PBXGroup;
 			children = (
-				FB974FDF25B2894200A1DCE7 /* syncTest.yml */,
+				FB974FDF25B2894200A1DCE7 /* syncTestMainnet.yml */,
+				FB97501C25B3A29100A1DCE7 /* syncTestTestnet.yml */,
 				FB974FC225B130B800A1DCE7 /* build.yml */,
 				FB974FA425B1012C00A1DCE7 /* lint.yml */,
 				FB974F3225AE7B6200A1DCE7 /* test.yml */,
@@ -1997,8 +2004,10 @@
 		FB97500D25B3882B00A1DCE7 /* SyncTests */ = {
 			isa = PBXGroup;
 			children = (
-				FBE07DD024673AC200A1079C /* DSMainnetSyncTests.m */,
-				FB97500725B3881B00A1DCE7 /* DSTestnetSyncTests.m */,
+				FBE07DD024673AC200A1079C /* DSMainnetMetricSyncTests.m */,
+				FB97500725B3881B00A1DCE7 /* DSTestnetMetricSyncTests.m */,
+				FB97502A25B3BC2D00A1DCE7 /* DSMainnetSyncTests.m */,
+				FB97502625B3AFAF00A1DCE7 /* DSTestnetSyncTests.m */,
 			);
 			name = SyncTests;
 			sourceTree = "<group>";
@@ -2028,6 +2037,7 @@
 				FB974FD925B2870300A1DCE7 /* LockTests.xctestplan */,
 				FB974FDC25B2889000A1DCE7 /* MainnetSyncTests.xctestplan */,
 				FB97500625B3876D00A1DCE7 /* TestnetSyncTests.xctestplan */,
+				FB97501F25B3AD1400A1DCE7 /* Metrics.xctestplan */,
 			);
 			name = TestPlans;
 			sourceTree = "<group>";
@@ -2848,7 +2858,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2A7DCCAE20D9485A0097049F /* DSBIP32Tests.m in Sources */,
-				FBE07DD124673AC200A1079C /* DSMainnetSyncTests.m in Sources */,
+				FBE07DD124673AC200A1079C /* DSMainnetMetricSyncTests.m in Sources */,
 				FB97501625B388A500A1DCE7 /* DSTestnetE2ETests.m in Sources */,
 				2A7DCCB220DA10870097049F /* DSBloomFilterTests.m in Sources */,
 				2AA2C5EB20E37B74007768B1 /* DSGovernanceTests.m in Sources */,
@@ -2869,13 +2879,15 @@
 				2A7DCCB420DA198F0097049F /* DSPaymentProtocolTests.m in Sources */,
 				FBAF79792385CA0200F4944E /* DSSparseMerkleTreeTests.m in Sources */,
 				FB97501025B3888800A1DCE7 /* DSMainnetE2ETests.m in Sources */,
-				FB97500825B3881B00A1DCE7 /* DSTestnetSyncTests.m in Sources */,
+				FB97502B25B3BC2D00A1DCE7 /* DSMainnetSyncTests.m in Sources */,
+				FB97500825B3881B00A1DCE7 /* DSTestnetMetricSyncTests.m in Sources */,
 				2AF7296E22789C5C001D2D21 /* DSIESEncryptedDataTests.mm in Sources */,
 				2A90EDAA2268C15D00D95B6B /* DSUInt256IndexPathTests.m in Sources */,
 				2A7DCCB020DA080F0097049F /* DSWalletTests.m in Sources */,
 				2A1ECBDB20D8B7EC000177D8 /* DSKeyTests.m in Sources */,
 				FBD696EC2291A1800012FF51 /* DSDataTests.m in Sources */,
 				2A1ECBDD20D8F4BD000177D8 /* DSPaymentRequestTests.m in Sources */,
+				FB97502725B3AFB000A1DCE7 /* DSTestnetSyncTests.m in Sources */,
 				FBC9248E2414EF4000005D0D /* DSAttackTests.m in Sources */,
 				FB91B2D525325EB100511A44 /* MDCLevenshteinDistanceTests.m in Sources */,
 			);

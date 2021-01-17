@@ -85,6 +85,12 @@
          <TestPlanReference
             reference = "container:Tests/LockTests.xctestplan">
          </TestPlanReference>
+         <TestPlanReference
+            reference = "container:Tests/TestnetSyncTests.xctestplan">
+         </TestPlanReference>
+         <TestPlanReference
+            reference = "container:Tests/Metrics.xctestplan">
+         </TestPlanReference>
       </TestPlans>
       <Testables>
          <TestableReference

@@ -1,4 +1,4 @@
-name: Continuous Integration
+name: Sync Tests
 
 on:
   push:
@@ -13,7 +13,7 @@ on:
 
 jobs:
   build:
-    name: Network Sync Tests
+    name: Mainnet Chain
     runs-on: macOS-latest
     steps:
       - name: Checkout DashSync
@@ -50,4 +50,4 @@ jobs:
           platform: ${{ 'iOS Simulator' }}
         run: |
           device=`instruments -s -devices | grep -oE 'iPhone.*?[^\(]+' | head -1 | awk '{$1=$1;print}'`
-          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=$device" -testPlan SyncTests
+          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=$device" -testPlan MainnetSyncTests

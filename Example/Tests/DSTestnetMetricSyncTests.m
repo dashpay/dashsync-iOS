@@ -31,7 +31,7 @@
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 
-@interface DSMainnetSyncTests : XCTestCase
+@interface DSTestnetMetricSyncTests : XCTestCase
 
 @property (strong, nonatomic) DSChain *chain;
 @property (strong, nonatomic) DSWallet *wallet;
@@ -39,38 +39,31 @@
 
 @end
 
-@implementation DSMainnetSyncTests
+@implementation DSTestnetMetricSyncTests
 
 - (void)setUp {
-    self.chain = [DSChain mainnet];
+    self.chain = [DSChain testnet];
     self.wallet = [DSWallet standardWalletWithRandomSeedPhraseForChain:self.chain storeSeedPhrase:NO isTransient:YES];
     [self.chain unregisterAllWallets];
     [self.chain addWallet:self.wallet];
 }
 
 - (void)tearDown {
-    [self.chain.chainManager.peerManager removeTrustedPeerHost];
 }
 
-- (void)testMainnetInitialHeadersSync2000 {
+- (void)testTestnetQuickHeadersSyncMetric {
     if (@available(iOS 13.0, *)) {
         XCTMeasureOptions *options = [XCTMeasureOptions defaultOptions];
-        options.iterationCount = 1;
-        self.chain.headersMaxAmount = 2000;
+        options.iterationCount = 3;
         DSLogPrivate(@"Starting testInitialHeadersSync");
-        DSSyncType originalSyncType = [[DSOptionsManager sharedInstance] syncType];
-        [self.chain useCheckpointBeforeOrOnHeightForSyncingChainBlocks:0];
-        [self.chain useCheckpointBeforeOrOnHeightForTerminalBlocksSync:227121];
-        [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_BaseSPV];
-        [[DashSync sharedSyncController] wipePeerDataForChain:self.chain inContext:[NSManagedObjectContext peerContext]];
-        [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
-        [[DashSync sharedSyncController] wipeSporkDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
-        [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
-        //
 
         [self measureWithMetrics:@[[[XCTCPUMetric alloc] init], [[XCTMemoryMetric alloc] init], [[XCTClockMetric alloc] init]]
                          options:options
                            block:^{
+                               [[DashSync sharedSyncController] wipePeerDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+                               [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+                               [[DashSync sharedSyncController] wipeSporkDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+                               [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
                                XCTestExpectation *headerFinishedExpectation = [[XCTestExpectation alloc] init];
                                [[DashSync sharedSyncController] startSyncForChain:self.chain];
                                self.txStatusObserver =
@@ -80,8 +73,6 @@
                                                                                  usingBlock:^(NSNotification *note) {
                                                                                      DSLogPrivate(@"Finished sync");
                                                                                      [[DashSync sharedSyncController] stopSyncForChain:self.chain];
-                                                                                     [self.chain.chainManager.peerManager removeTrustedPeerHost];
-                                                                                     [[DSOptionsManager sharedInstance] setSyncType:originalSyncType];
                                                                                      [headerFinishedExpectation fulfill];
                                                                                  }];
                                [self waitForExpectations:@[headerFinishedExpectation] timeout:360000];
@@ -91,20 +82,46 @@
     }
 }
 
-//- (void)testInitialHeadersSync2000 {
-//
-//    [self tryInitialHeadersSyncForHeadersAmount:2000];
-//}
-//
-//- (void)testInitialHeadersSync4000 {
-//    [self tryInitialHeadersSyncForHeadersAmount:4000];
-//}
-
-- (void)testMainnetFullSync {
+- (void)testTestnetInitialHeadersSync2000Metric {
     if (@available(iOS 13.0, *)) {
+        XCTMeasureOptions *options = [XCTMeasureOptions defaultOptions];
+        options.iterationCount = 2;
+        self.chain.headersMaxAmount = 2000;
+        DSLogPrivate(@"Starting testInitialHeadersSync");
+
         [self measureWithMetrics:@[[[XCTCPUMetric alloc] init], [[XCTMemoryMetric alloc] init], [[XCTClockMetric alloc] init]]
+                         options:options
                            block:^{
-                               [self.chain useCheckpointBeforeOrOnHeightForSyncingChainBlocks:227121];
+                               XCTestExpectation *headerFinishedExpectation = [[XCTestExpectation alloc] init];
+                               [[DashSync sharedSyncController] wipePeerDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+                               [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+                               [[DashSync sharedSyncController] wipeSporkDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+                               [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+                               [[DashSync sharedSyncController] startSyncForChain:self.chain];
+                               self.txStatusObserver =
+                                   [[NSNotificationCenter defaultCenter] addObserverForName:DSChainInitialHeadersDidFinishSyncingNotification
+                                                                                     object:nil
+                                                                                      queue:nil
+                                                                                 usingBlock:^(NSNotification *note) {
+                                                                                     DSLogPrivate(@"Finished sync");
+                                                                                     [[DashSync sharedSyncController] stopSyncForChain:self.chain];
+                                                                                     [headerFinishedExpectation fulfill];
+                                                                                 }];
+                               [self waitForExpectations:@[headerFinishedExpectation] timeout:360000];
+                           }];
+    } else {
+        // Fallback on earlier versions
+    }
+}
+
+- (void)testTestnetFullSyncMetric {
+    if (@available(iOS 13.0, *)) {
+        XCTMeasureOptions *options = [XCTMeasureOptions defaultOptions];
+        options.iterationCount = 2;
+        [self measureWithMetrics:@[[[XCTCPUMetric alloc] init], [[XCTMemoryMetric alloc] init], [[XCTClockMetric alloc] init]]
+                         options:options
+                           block:^{
+                               [self.chain useCheckpointBeforeOrOnHeightForSyncingChainBlocks:1];
                                [self.chain useCheckpointBeforeOrOnHeightForTerminalBlocksSync:UINT32_MAX];
                                [[DashSync sharedSyncController] wipePeerDataForChain:self.chain inContext:[NSManagedObjectContext peerContext]];
                                [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
@@ -118,6 +135,7 @@
                                                                                       queue:nil
                                                                                  usingBlock:^(NSNotification *note) {
                                                                                      DSLogPrivate(@"Finished sync");
+                                                                                     [[DashSync sharedSyncController] stopSyncForChain:self.chain];
                                                                                      [headerFinishedExpectation fulfill];
                                                                                  }];
                                [self waitForExpectations:@[headerFinishedExpectation] timeout:36000];
