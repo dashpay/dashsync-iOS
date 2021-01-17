@@ -109,7 +109,7 @@
                                                           [[DashSync sharedSyncController] stopSyncForChain:self.chain];
                                                           [headerFinishedExpectation fulfill];
                                                       }];
-    [self waitForExpectations:@[headerFinishedExpectation] timeout:3600];
+    [self waitForExpectations:@[headerFinishedExpectation] timeout:7200];
 }
 
 @end
