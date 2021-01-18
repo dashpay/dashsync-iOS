@@ -35,7 +35,7 @@ jobs:
       - name: Dependencies
         working-directory: ./dashsync/Example
         run: pod install
-      - name: OCLint
+      - name: Install OCLint
         run: |
           brew tap oclint/formulae
           brew install oclint
@@ -43,4 +43,8 @@ jobs:
         working-directory: ./dashsync/Example
         run: |
           sh run_oclint.sh
+      - name: Check Lint
+        working-directory: ./dashsync/Example
+        run: |
+          sh check_lint.sh
 
