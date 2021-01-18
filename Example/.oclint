@@ -1,5 +1,4 @@
 disable-rules:
-  - LongLine
   - ShortVariableName
   - UnnecessaryElseStatement
   - BitwiseOperatorInConditional
