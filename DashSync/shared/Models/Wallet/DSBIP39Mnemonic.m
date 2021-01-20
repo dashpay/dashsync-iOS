@@ -522,7 +522,7 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
 
         for (NSString *word in allWordsForLanguage) {
             if (currentWordCount % 10 == 9) {
-                BOOL stop = NO;
+                bool stop = NO;
                 progressUpdate(currentWordCount / (float)totalWordCount, &stop);
                 if (stop) {
                     return;

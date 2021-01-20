@@ -436,7 +436,6 @@ typedef enum : NSUInteger
         NSMutableArray *certs = [NSMutableArray array];
         NSArray *policies = @[CFBridgingRelease(SecPolicyCreateBasicX509())];
         SecTrustRef trust = NULL;
-        SecTrustResultType trustResult = kSecTrustResultInvalid;
 
         for (NSData *d in self.certs) {
             SecCertificateRef cert = SecCertificateCreateWithData(NULL, (__bridge CFDataRef)d);
@@ -449,10 +448,14 @@ typedef enum : NSUInteger
         }
 
         SecTrustCreateWithCertificates((__bridge CFArrayRef)certs, (__bridge CFArrayRef)policies, &trust);
-        if (trust) SecTrustEvaluate(trust, &trustResult); // verify certificate chain
+        CFErrorRef error = NULL;
+        BOOL isValid = FALSE;
+        if (trust) {
+            isValid = SecTrustEvaluateWithError(trust, &error); // verify certificate chain
+        }
 
         // kSecTrustResultUnspecified indicates a positive result that wasn't decided by the user
-        if (trustResult != kSecTrustResultUnspecified && trustResult != kSecTrustResultProceed) {
+        if (error) {
             _errorMessage = (certs.count > 0) ? DSLocalizedString(@"Untrusted certificate", nil) :
                                                 DSLocalizedString(@"Missing certificate", nil);
 

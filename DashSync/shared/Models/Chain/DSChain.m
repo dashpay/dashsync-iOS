@@ -1073,7 +1073,7 @@ static dispatch_once_t devnetToken = 0;
             if (uint256_is_zero(dpnsContractID)) {
                 NSError *error = nil;
                 NSString *identifier = [NSString stringWithFormat:@"%@%@", self.devnetIdentifier, DPNS_CONTRACT_ID];
-                BOOL hasDashpayContractID = getKeychainData(identifier, &error);
+                BOOL hasDashpayContractID = (getKeychainData(identifier, &error) != nil);
                 if (hasDashpayContractID) {
                     setKeychainData(nil, identifier, NO);
                 }
@@ -1119,7 +1119,7 @@ static dispatch_once_t devnetToken = 0;
             if (uint256_is_zero(dashpayContractID)) {
                 NSError *error = nil;
                 NSString *identifier = [NSString stringWithFormat:@"%@%@", self.devnetIdentifier, DASHPAY_CONTRACT_ID];
-                BOOL hasDashpayContractID = getKeychainData(identifier, &error);
+                BOOL hasDashpayContractID = (getKeychainData(identifier, &error) != nil);
                 if (hasDashpayContractID) {
                     setKeychainData(nil, identifier, NO);
                 }

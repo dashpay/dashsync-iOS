@@ -528,7 +528,7 @@
         UInt256 blockHash = blockHashData.UInt256;
 
         //we should check the associated block still exists
-        __block BOOL hasBlock = [self.chain blockForBlockHash:blockHash];
+        __block BOOL hasBlock = ([self.chain blockForBlockHash:blockHash] != nil);
         if (!hasBlock) {
             [self.managedObjectContext performBlockAndWait:^{
                 hasBlock = !![DSMerkleBlockEntity countObjectsInContext:self.managedObjectContext matching:@"blockHash == %@", uint256_data(blockHash)];

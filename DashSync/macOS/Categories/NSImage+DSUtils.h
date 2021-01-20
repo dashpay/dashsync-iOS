@@ -27,10 +27,9 @@
 //  THE SOFTWARE.
 
 #import <Cocoa/Cocoa.h>
-@class CIColor;
 
 @interface NSImage (DSUtils)
 
-- (UIImage *)ds_imageWithTintColor:(UIColor *)tintColor;
+- (NSImage *)ds_imageWithTintColor:(NSColor *)tintColor;
 
 @end

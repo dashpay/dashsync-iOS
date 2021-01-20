@@ -31,15 +31,15 @@ typedef NS_ENUM(NSInteger, DSAppearanceMode)
 
 @interface NSColor (DSStyle)
 
-+ (UIColor *)ds_dashBlueColor;
++ (NSColor *)ds_dashBlueColor;
 
-+ (UIColor *)ds_labelColorForMode:(DSAppearanceMode)appearanceMode;
++ (NSColor *)ds_labelColorForMode:(DSAppearanceMode)appearanceMode;
 
-+ (UIColor *)ds_pinBackgroundColor;
-+ (UIColor *)ds_pinLockScreenBackgroundColor;
-+ (UIColor *)ds_pinInputDotColor;
++ (NSColor *)ds_pinBackgroundColor;
++ (NSColor *)ds_pinLockScreenBackgroundColor;
++ (NSColor *)ds_pinInputDotColor;
 
-+ (UIColor *)ds_passphraseBackgroundColorForMode:(DSAppearanceMode)appearanceMode;
++ (NSColor *)ds_passphraseBackgroundColorForMode:(DSAppearanceMode)appearanceMode;
 
 @end
 

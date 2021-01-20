@@ -68,9 +68,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (int64_t)amountForDashString:(NSString *)string;
 - (int64_t)amountForBitcoinString:(NSString *)string DEPRECATED_ATTRIBUTE;
 - (NSAttributedString *_Nullable)attributedStringForDashAmount:(int64_t)amount;
+#if TARGET_OS_IOS
 - (NSAttributedString *_Nullable)attributedStringForDashAmount:(int64_t)amount withTintColor:(UIColor *)color;
 - (NSAttributedString *_Nullable)attributedStringForDashAmount:(int64_t)amount withTintColor:(UIColor *)color useSignificantDigits:(BOOL)useSignificantDigits;
 - (NSAttributedString *_Nullable)attributedStringForDashAmount:(int64_t)amount withTintColor:(UIColor *)color dashSymbolSize:(CGSize)dashSymbolSize;
+#else
+- (NSAttributedString *_Nullable)attributedStringForDashAmount:(int64_t)amount withTintColor:(NSColor *)color;
+- (NSAttributedString *_Nullable)attributedStringForDashAmount:(int64_t)amount withTintColor:(NSColor *)color useSignificantDigits:(BOOL)useSignificantDigits;
+- (NSAttributedString *_Nullable)attributedStringForDashAmount:(int64_t)amount withTintColor:(NSColor *)color dashSymbolSize:(CGSize)dashSymbolSize;
+#endif
 - (NSNumber *)numberForAmount:(int64_t)amount;
 - (NSString *_Nullable)stringForBitcoinAmount:(int64_t)amount;
 - (NSString *_Nullable)stringForDashAmount:(int64_t)amount;

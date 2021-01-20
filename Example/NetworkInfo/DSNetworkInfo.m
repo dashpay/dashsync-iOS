@@ -126,16 +126,4 @@
     }];
 }
 
-
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    [DSLogger sharedInstance];
-    [[DSAuthenticationManager sharedInstance] setOneTimeShouldUseAuthentication:TRUE];
-    [DashSync sharedSyncController];
-    
-    [self getTestnetInfo];
-    
-    // Override point for customization after application launch.
-    return YES;
-}
-
 @end

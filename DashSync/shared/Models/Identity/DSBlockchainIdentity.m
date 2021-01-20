@@ -3203,6 +3203,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     }];
 }
 
+#if TARGET_OS_IOS
+
 - (void)updateDashpayProfileWithDisplayName:(NSString *)displayName publicMessage:(NSString *)publicMessage avatarImage:(UIImage *)avatarImage avatarData:(NSData *)data avatarURLString:(NSString *)avatarURLString {
     [self updateDashpayProfileWithDisplayName:displayName publicMessage:publicMessage avatarImage:avatarImage avatarData:data avatarURLString:avatarURLString inContext:self.platformContext];
 }
@@ -3222,6 +3224,30 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     uint64_t fingerprint = [[OSImageHashing sharedInstance] hashImage:avatarImage withProviderId:OSImageHashingProviderDHash];
     [self updateDashpayProfileWithAvatarURLString:avatarURLString avatarHash:avatarHash avatarFingerprint:[NSData dataWithUInt64:fingerprint] inContext:context];
 }
+
+#else
+
+- (void)updateDashpayProfileWithDisplayName:(NSString *)displayName publicMessage:(NSString *)publicMessage avatarImage:(NSImage *)avatarImage avatarData:(NSData *)data avatarURLString:(NSString *)avatarURLString {
+    [self updateDashpayProfileWithDisplayName:displayName publicMessage:publicMessage avatarImage:avatarImage avatarData:data avatarURLString:avatarURLString inContext:self.platformContext];
+}
+
+- (void)updateDashpayProfileWithDisplayName:(NSString *)displayName publicMessage:(NSString *)publicMessage avatarImage:(NSImage *)avatarImage avatarData:(NSData *)avatarData avatarURLString:(NSString *)avatarURLString inContext:(NSManagedObjectContext *)context {
+    NSData *avatarHash = uint256_data(avatarData.SHA256);
+    uint64_t fingerprint = [[OSImageHashing sharedInstance] hashImage:avatarImage withProviderId:OSImageHashingProviderDHash];
+    [self updateDashpayProfileWithDisplayName:displayName publicMessage:publicMessage avatarURLString:avatarURLString avatarHash:avatarHash avatarFingerprint:[NSData dataWithUInt64:fingerprint] inContext:context];
+}
+
+- (void)updateDashpayProfileWithAvatarImage:(NSImage *)avatarImage avatarData:(NSData *)data avatarURLString:(NSString *)avatarURLString {
+    [self updateDashpayProfileWithAvatarImage:avatarImage avatarData:data avatarURLString:avatarURLString inContext:self.platformContext];
+}
+
+- (void)updateDashpayProfileWithAvatarImage:(NSImage *)avatarImage avatarData:(NSData *)avatarData avatarURLString:(NSString *)avatarURLString inContext:(NSManagedObjectContext *)context {
+    NSData *avatarHash = uint256_data(avatarData.SHA256);
+    uint64_t fingerprint = [[OSImageHashing sharedInstance] hashImage:avatarImage withProviderId:OSImageHashingProviderDHash];
+    [self updateDashpayProfileWithAvatarURLString:avatarURLString avatarHash:avatarHash avatarFingerprint:[NSData dataWithUInt64:fingerprint] inContext:context];
+}
+
+#endif
 
 
 - (void)updateDashpayProfileWithDisplayName:(NSString *)displayName publicMessage:(NSString *)publicMessage avatarURLString:(NSString *)avatarURLString avatarHash:(NSData *)avatarHash avatarFingerprint:(NSData *)avatarFingerprint {

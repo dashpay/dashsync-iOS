@@ -334,6 +334,8 @@
     return [string attributedStringForDashSymbol];
 }
 
+#if TARGET_OS_IOS
+
 - (NSAttributedString *)attributedStringForDashAmount:(int64_t)amount withTintColor:(UIColor *)color {
     NSParameterAssert(color);
 
@@ -357,6 +359,34 @@
                                                              decimalNumberByMultiplyingByPowerOf10:-self.dashFormat.maximumFractionDigits]];
     return [string attributedStringForDashSymbolWithTintColor:color dashSymbolSize:dashSymbolSize];
 }
+
+#else
+
+- (NSAttributedString *)attributedStringForDashAmount:(int64_t)amount withTintColor:(NSColor *)color {
+    NSParameterAssert(color);
+
+    NSString *string = [self.dashFormat stringFromNumber:[(id)[NSDecimalNumber numberWithLongLong:amount]
+                                                             decimalNumberByMultiplyingByPowerOf10:-self.dashFormat.maximumFractionDigits]];
+    return [string attributedStringForDashSymbolWithTintColor:color];
+}
+
+- (NSAttributedString *)attributedStringForDashAmount:(int64_t)amount withTintColor:(NSColor *)color useSignificantDigits:(BOOL)useSignificantDigits {
+    NSParameterAssert(color);
+
+    NSString *string = [(useSignificantDigits ? self.dashSignificantFormat : self.dashFormat) stringFromNumber:[(id)[NSDecimalNumber numberWithLongLong:amount]
+                                                                                                                   decimalNumberByMultiplyingByPowerOf10:-self.dashFormat.maximumFractionDigits]];
+    return [string attributedStringForDashSymbolWithTintColor:color];
+}
+
+- (NSAttributedString *)attributedStringForDashAmount:(int64_t)amount withTintColor:(NSColor *)color dashSymbolSize:(CGSize)dashSymbolSize {
+    NSParameterAssert(color);
+
+    NSString *string = [self.dashFormat stringFromNumber:[(id)[NSDecimalNumber numberWithLongLong:amount]
+                                                             decimalNumberByMultiplyingByPowerOf10:-self.dashFormat.maximumFractionDigits]];
+    return [string attributedStringForDashSymbolWithTintColor:color dashSymbolSize:dashSymbolSize];
+}
+
+#endif
 
 - (NSNumber *)numberForAmount:(int64_t)amount {
     return (id)[(id)[NSDecimalNumber numberWithLongLong:amount]

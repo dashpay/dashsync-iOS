@@ -323,11 +323,22 @@ FOUNDATION_EXPORT NSString *const DSBlockchainIdentityUpdateEventDashpaySyncroni
 
 - (void)updateDashpayProfileWithAvatarURLString:(NSString *)avatarURLString avatarHash:(NSData *)avatarHash avatarFingerprint:(NSData *)avatarFingerprint;
 
-- (void)updateDashpayProfileWithAvatarImage:(UIImage *)avatarImage avatarData:(NSData *)data avatarURLString:(NSString *)avatarURLString;
-
 - (void)updateDashpayProfileWithDisplayName:(NSString *)displayName publicMessage:(NSString *)publicMessage;
 
+#if TARGET_OS_IOS
+
+- (void)updateDashpayProfileWithAvatarImage:(UIImage *)avatarImage avatarData:(NSData *)data avatarURLString:(NSString *)avatarURLString;
+
 - (void)updateDashpayProfileWithDisplayName:(NSString *)displayName publicMessage:(NSString *)publicMessage avatarImage:(UIImage *)avatarImage avatarData:(NSData *)data avatarURLString:(NSString *)avatarURLString;
+
+#else
+
+- (void)updateDashpayProfileWithAvatarImage:(NSImage *)avatarImage avatarData:(NSData *)data avatarURLString:(NSString *)avatarURLString;
+
+- (void)updateDashpayProfileWithDisplayName:(NSString *)displayName publicMessage:(NSString *)publicMessage avatarImage:(NSImage *)avatarImage avatarData:(NSData *)data avatarURLString:(NSString *)avatarURLString;
+
+
+#endif
 
 - (void)updateDashpayProfileWithDisplayName:(NSString *)displayName publicMessage:(NSString *)publicMessage avatarURLString:(NSString *)avatarURLString;
 
