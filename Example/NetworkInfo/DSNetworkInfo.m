@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import "AppDelegate.h"
+#import "DSNetworkInfo.h"
 #import <DashSync/DashSync.h>
 #import "DSChain+Protected.h"
 
@@ -66,7 +66,7 @@
             void (^pingTimeCompletionBlock)(NSMutableDictionary<NSData *, NSNumber *> *_Nonnull pingTimes, NSMutableDictionary<NSData *, NSError *> *_Nonnull errors) = ^(NSMutableDictionary<NSData *, NSNumber *> *_Nonnull pingTimes, NSMutableDictionary<NSData *, NSError *> *_Nonnull errors) {
                 DSLogPrivate(@"Finished ping times");
                 
-                NSString *dirPath = [[AppDelegate applicationDocumentsDirectory] path];
+                NSString *dirPath = [[DSNetworkInfo applicationDocumentsDirectory] path];
                 
                 NSString *filePath = [dirPath stringByAppendingPathComponent:@"networkHealth.json"];
                 

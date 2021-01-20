@@ -33,7 +33,11 @@
 #import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Dash.h"
+#if TARGET_OS_IOS
 #import "UIImage+DSUtils.h"
+#else
+#import "NSImage+DSUtils.h"
+#endif
 
 static NSString *DashCurrencySymbolAssetName = nil;
 
@@ -41,7 +45,9 @@ static NSString *DashCurrencySymbolAssetName = nil;
 
 + (void)setDashCurrencySymbolAssetName:(NSString *)imageName {
     NSParameterAssert(imageName);
+#if TARGET_OS_IOS
     NSAssert([UIImage imageNamed:imageName], @"Dash currency symbol asset doesn't exist");
+#endif
     DashCurrencySymbolAssetName = imageName;
 }
 
@@ -225,6 +231,8 @@ static NSString *DashCurrencySymbolAssetName = nil;
         return NO; // invalid prefix
 }
 
+#if TARGET_OS_IOS
+
 - (NSAttributedString *)attributedStringForDashSymbol {
     return [self attributedStringForDashSymbolWithTintColor:[UIColor blackColor]];
 }
@@ -261,6 +269,47 @@ static NSString *DashCurrencySymbolAssetName = nil;
     }
     return attributedString;
 }
+
+#else
+
+- (NSAttributedString *)attributedStringForDashSymbol {
+    return [self attributedStringForDashSymbolWithTintColor:[NSColor blackColor]];
+}
+
+- (NSAttributedString *)attributedStringForDashSymbolWithTintColor:(NSColor *)color {
+    return [self attributedStringForDashSymbolWithTintColor:color dashSymbolSize:CGSizeMake(12, 12)];
+}
+
++ (NSAttributedString *)dashSymbolAttributedStringWithTintColor:(NSColor *)color forDashSymbolSize:(CGSize)dashSymbolSize {
+    NSAssert(DashCurrencySymbolAssetName, @"Provide Dash currency symbol asset by calling setDashCurrencySymbolAssetName:");
+
+    NSTextAttachment *dashSymbol = [[NSTextAttachment alloc] init];
+
+    dashSymbol.bounds = CGRectMake(0, 0, dashSymbolSize.width, dashSymbolSize.height);
+    dashSymbol.image = [[NSImage imageNamed:DashCurrencySymbolAssetName] ds_imageWithTintColor:color];
+    return [NSAttributedString attributedStringWithAttachment:dashSymbol];
+}
+
+
+- (NSAttributedString *)attributedStringForDashSymbolWithTintColor:(NSColor *)color dashSymbolSize:(CGSize)dashSymbolSize {
+    NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc]
+        initWithString:[self stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
+
+    NSRange range = [attributedString.string rangeOfString:DASH];
+    if (range.location == NSNotFound) {
+        [attributedString insertAttributedString:[[NSAttributedString alloc] initWithString:@" "] atIndex:0];
+        [attributedString insertAttributedString:[NSString dashSymbolAttributedStringWithTintColor:color forDashSymbolSize:dashSymbolSize] atIndex:0];
+
+        [attributedString addAttribute:NSForegroundColorAttributeName value:color range:NSMakeRange(0, attributedString.length)];
+    } else {
+        [attributedString replaceCharactersInRange:range
+                              withAttributedString:[NSString dashSymbolAttributedStringWithTintColor:color forDashSymbolSize:dashSymbolSize]];
+        [attributedString addAttribute:NSForegroundColorAttributeName value:color range:NSMakeRange(0, attributedString.length)];
+    }
+    return attributedString;
+}
+
+#endif
 
 
 - (NSInteger)indexOfCharacter:(unichar)character {

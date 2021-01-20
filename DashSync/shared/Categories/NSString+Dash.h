@@ -55,9 +55,15 @@
 + (NSString *)addressWithHash160:(UInt160)hash160 onChain:(DSChain *)chain;
 
 - (NSAttributedString *)attributedStringForDashSymbol;
+#if TARGET_OS_IOS
 - (NSAttributedString *)attributedStringForDashSymbolWithTintColor:(UIColor *)color;
 - (NSAttributedString *)attributedStringForDashSymbolWithTintColor:(UIColor *)color dashSymbolSize:(CGSize)dashSymbolSize;
 + (NSAttributedString *)dashSymbolAttributedStringWithTintColor:(UIColor *)color forDashSymbolSize:(CGSize)dashSymbolSize;
+#else
+- (NSAttributedString *)attributedStringForDashSymbolWithTintColor:(NSColor *)color;
+- (NSAttributedString *)attributedStringForDashSymbolWithTintColor:(NSColor *)color dashSymbolSize:(CGSize)dashSymbolSize;
++ (NSAttributedString *)dashSymbolAttributedStringWithTintColor:(NSColor *)color forDashSymbolSize:(CGSize)dashSymbolSize;
+#endif
 
 - (BOOL)isValidDashAddressOnChain:(DSChain *)chain;
 - (BOOL)isValidDashPrivateKeyOnChain:(DSChain *)chain;

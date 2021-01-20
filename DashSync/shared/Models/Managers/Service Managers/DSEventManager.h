@@ -38,7 +38,9 @@
 
 @interface DSEventManager : NSObject
 
+#if TARGET_OS_IOS
 @property (nonatomic, strong) UIView<DSEventConfirmViewProtocol> *eventConfirmView;
+#endif
 
 // typically this class is used as a singleton so this is how you should get a handle on the global event manager
 + (instancetype)sharedEventManager;

@@ -157,8 +157,10 @@ FOUNDATION_EXPORT const unsigned char DashSyncVersionString[];
 
 - (uint64_t)dbSize;
 
+#if TARGET_OS_IOS
 - (void)scheduleBackgroundFetch;
 - (void)performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler;
+#endif
 
 @end
 

@@ -61,8 +61,10 @@
 
 - (NSError *)ds_save {
     if (!self.hasChanges) return nil;
+#if TARGET_OS_IOS
     NSUInteger taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
     }];
+#endif
     NSError *error = nil;
     if (![self save:&error]) { // persist changes
         DSLog(@"%s: %@", __func__, error);
@@ -70,7 +72,9 @@
         abort();
 #endif
     }
+#if TARGET_OS_IOS
     [[UIApplication sharedApplication] endBackgroundTask:taskId];
+#endif
     return error;
 }
 

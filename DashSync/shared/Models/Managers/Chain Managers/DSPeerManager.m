@@ -81,13 +81,18 @@
 
 @property (nonatomic, strong) NSMutableSet *mutableConnectedPeers, *mutableMisbehavingPeers;
 @property (nonatomic, strong) DSPeer *downloadPeer, *fixedPeer;
-@property (nonatomic, assign) NSUInteger terminalHeadersSaveTaskId, blockLocatorsSaveTaskId, connectFailures, misbehavingCount, maxConnectCount;
+
+@property (nonatomic, assign) NSUInteger connectFailures, misbehavingCount, maxConnectCount;
 @property (nonatomic, strong) id backgroundObserver, walletAddedObserver;
 @property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, assign) DSPeerManagerDesiredState desiredState;
 @property (nonatomic, assign) uint64_t masternodeListConnectivityNonce;
 @property (nonatomic, strong) DSMasternodeList *masternodeList;
 @property (nonatomic, readonly) dispatch_queue_t networkingQueue;
+
+#if TARGET_OS_IOS
+@property (nonatomic, assign) NSUInteger terminalHeadersSaveTaskId, blockLocatorsSaveTaskId;
+#endif
 
 @property (nonatomic, strong) NSManagedObjectContext *managedObjectContext;
 
@@ -103,9 +108,11 @@
     self.chain = chain;
     self.mutableConnectedPeers = [NSMutableSet set];
     self.mutableMisbehavingPeers = [NSMutableSet set];
-    self.terminalHeadersSaveTaskId = UIBackgroundTaskInvalid;
-
+    
     self.maxConnectCount = PEER_MAX_CONNECTIONS;
+    
+#if TARGET_OS_IOS
+    self.terminalHeadersSaveTaskId = UIBackgroundTaskInvalid;
 
     self.backgroundObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification
@@ -122,6 +129,7 @@
                                                               });
                                                           }
                                                       }];
+#endif
 
     self.walletAddedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:DSChainWalletsDidChangeNotification
@@ -668,6 +676,7 @@
 
         if (self.chainManager.terminalHeaderSyncProgress < 1.0) {
             [self.chainManager resetTerminalSyncStartHeight];
+#if TARGET_OS_IOS
             if (self.blockLocatorsSaveTaskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
                 self.blockLocatorsSaveTaskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
                     dispatch_async(self.networkingQueue, ^{
@@ -677,11 +686,12 @@
                     [self chainSyncStopped];
                 }];
             }
+#endif
         }
 
         if (self.chainManager.chainSyncProgress < 1.0) {
             [self.chainManager resetChainSyncStartHeight];
-
+#if TARGET_OS_IOS
             if (self.terminalHeadersSaveTaskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
                 self.terminalHeadersSaveTaskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
                     dispatch_async(self.networkingQueue, ^{
@@ -691,6 +701,7 @@
                     [self chainSyncStopped];
                 }];
             }
+#endif
         }
 
         @synchronized(self.mutableConnectedPeers) {
@@ -791,7 +802,7 @@
 - (void)chainSyncStopped {
     dispatch_async(dispatch_get_main_queue(), ^{
         [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
-
+#if TARGET_OS_IOS
         if (self.terminalHeadersSaveTaskId != UIBackgroundTaskInvalid) {
             [[UIApplication sharedApplication] endBackgroundTask:self.terminalHeadersSaveTaskId];
             self.terminalHeadersSaveTaskId = UIBackgroundTaskInvalid;
@@ -801,6 +812,7 @@
             [[UIApplication sharedApplication] endBackgroundTask:self.blockLocatorsSaveTaskId];
             self.blockLocatorsSaveTaskId = UIBackgroundTaskInvalid;
         }
+#endif
     });
 }
 
@@ -979,10 +991,16 @@
         });
     } else if (self.connectFailures < MAX_CONNECT_FAILURES) {
         dispatch_async(dispatch_get_main_queue(), ^{
+#if TARGET_OS_IOS
             if ((self.desiredState == DSPeerManagerDesiredState_Connected) && (self.terminalHeadersSaveTaskId != UIBackgroundTaskInvalid ||
                                                                                   [UIApplication sharedApplication].applicationState != UIApplicationStateBackground)) {
                 [self connect]; // try connecting to another peer
             }
+#else
+            if (self.desiredState == DSPeerManagerDesiredState_Connected) {
+                [self connect]; // try connecting to another peer
+            }
+#endif
         });
     }
 

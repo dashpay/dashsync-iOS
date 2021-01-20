@@ -56,7 +56,6 @@
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 #import "NSString+Dash.h"
-#import "UIWindow+DSUtils.h"
 
 #define IX_INPUT_LOCKED_KEY @"IX_INPUT_LOCKED_KEY"
 #define MAX_TOTAL_TRANSACTIONS_FOR_BLOOM_FILTER_RETARGETING 500
@@ -138,9 +137,11 @@
 
 // MARK: - Helpers
 
+#if TARGET_OS_IOS
 - (UIViewController *)presentingViewController {
     return [[[UIApplication sharedApplication] keyWindow] ds_presentingViewController];
 }
+#endif
 
 // MARK: - Blockchain Transactions
 
@@ -356,6 +357,7 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             if (rescan) {
                 [[DSEventManager sharedEventManager] saveEvent:@"transaction_manager:tx_rejected_rescan"];
+#if TARGET_OS_IOS
                 UIAlertController *alert = [UIAlertController
                     alertControllerWithTitle:DSLocalizedString(@"Transaction rejected", nil)
                                      message:DSLocalizedString(@"Your wallet may be out of sync.\n"
@@ -376,9 +378,10 @@
                 [alert addAction:cancelButton];
                 [alert addAction:rescanButton];
                 [[self presentingViewController] presentViewController:alert animated:YES completion:nil];
-
+#endif
             } else {
                 [[DSEventManager sharedEventManager] saveEvent:@"transaction_manager_tx_rejected"];
+#if TARGET_OS_IOS
                 UIAlertController *alert = [UIAlertController
                     alertControllerWithTitle:DSLocalizedString(@"Transaction rejected", nil)
                                      message:@""
@@ -390,6 +393,7 @@
                             }];
                 [alert addAction:okButton];
                 [[self presentingViewController] presentViewController:alert animated:YES completion:nil];
+#endif
             }
         });
     }
@@ -1353,6 +1357,7 @@
                                                                   DSTransactionManagerNotificationTransactionKey: transaction,
                                                                   DSTransactionManagerNotificationTransactionChangesKey: @{DSTransactionManagerNotificationTransactionAcceptedStatusKey: @(NO)}}];
             [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
+#if TARGET_OS_IOS
 #if DEBUG
             UIAlertController *alert = [UIAlertController
                 alertControllerWithTitle:@"Transaction rejected"
@@ -1365,6 +1370,7 @@
                         }];
             [alert addAction:okButton];
             [[self presentingViewController] presentViewController:alert animated:YES completion:nil];
+#endif
 #endif
         });
     }

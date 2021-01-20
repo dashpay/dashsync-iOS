@@ -21,7 +21,8 @@
 int main(int argc, const char * argv[]) {
 
     @autoreleasepool {
-        [DSNetworkInfo getTestnetInfo];
+        DSNetworkInfo * networkInfo = [[DSNetworkInfo alloc] init];
+        [networkInfo getTestnetInfo];
     }
     return 0;
 }

@@ -42,7 +42,9 @@ static NSString *const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.back
 @property (nullable, nonatomic, strong) id protectedDataNotificationObserver;
 @property (nullable, nonatomic, strong) id syncFinishedNotificationObserver;
 @property (nullable, nonatomic, strong) id syncFailedNotificationObserver;
+#if TARGET_OS_IOS
 @property (nullable, nonatomic, copy) void (^backgroundFetchCompletion)(UIBackgroundFetchResult);
+#endif
 
 @end
 
@@ -57,6 +59,7 @@ static NSString *const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.back
     return _sharedInstance;
 }
 
+#if TARGET_OS_IOS
 - (void)registerBackgroundFetchOnce {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -86,6 +89,7 @@ static NSString *const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.back
         }
     });
 }
+#endif
 
 - (void)setupDashSyncOnce {
     static dispatch_once_t onceToken;
@@ -104,7 +108,7 @@ static NSString *const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.back
             if (strstr(_dyld_get_image_name(i), "MobileSubstrate")) self.deviceIsJailbroken = YES;
         }
 
-#if TARGET_IPHONE_SIMULATOR
+#if TARGET_IPHONE_SIMULATOR || !TARGET_OS_IOS
         self.deviceIsJailbroken = NO;
 #endif
     });
@@ -304,6 +308,9 @@ static NSString *const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.back
     }
 }
 
+// MARK: - iOS specific
+
+#if TARGET_OS_IOS
 - (void)scheduleBackgroundFetch {
     if (@available(iOS 13.0, *)) {
         BGAppRefreshTaskRequest *request = [[BGAppRefreshTaskRequest alloc] initWithIdentifier:BG_TASK_REFRESH_IDENTIFIER];
@@ -409,6 +416,7 @@ static NSString *const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.back
     self.syncFinishedNotificationObserver = nil;
     self.syncFailedNotificationObserver = nil;
 }
+#endif
 
 @end
 
