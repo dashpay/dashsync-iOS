@@ -29,7 +29,6 @@
 #import "BigIntTypes.h"
 #import "NSString+Bitcoin.h"
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
 
 #define DASH_PUBKEY_ADDRESS 76
 #define DASH_SCRIPT_ADDRESS 16

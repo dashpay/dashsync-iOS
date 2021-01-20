@@ -19,7 +19,7 @@
 #import <DashSync/DashSync.h>
 #import "DSChain+Protected.h"
 
-@interface AppDelegate ()
+@interface DSNetworkInfo ()
 
 @property (strong, nonatomic) DSChain *mainnetChain;
 @property (strong, nonatomic) DSWallet *mainnetWallet;
@@ -29,9 +29,10 @@
 
 @end
 
-@implementation AppDelegate
+@implementation DSNetworkInfo
 
-- (void)setUp {
+- (id)init {
+    if (!(self = [super init])) return nil;
     self.mainnetChain = [DSChain testnet];
     self.mainnetWallet = [DSWallet standardWalletWithRandomSeedPhraseForChain:self.mainnetChain storeSeedPhrase:NO isTransient:YES];
     [self.mainnetChain unregisterAllWallets];
@@ -41,6 +42,7 @@
     self.testnetWallet = [DSWallet standardWalletWithRandomSeedPhraseForChain:self.testnetChain storeSeedPhrase:NO isTransient:YES];
     [self.testnetChain unregisterAllWallets];
     [self.testnetChain addWallet:self.testnetWallet];
+    return self;
 }
 
 + (NSURL *)applicationDocumentsDirectory
@@ -105,7 +107,7 @@
                 NSAssert(error == nil, error.localizedDescription);
                 
                 [data writeToFile:filePath atomically:YES];
-                exit(0);
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"FinishedGatheringNetworkInfo" object:nil];
             };
             
             [self.testnetChain.chainManager.masternodeManager checkPingTimesForCurrentMasternodeListInContext:[NSManagedObjectContext viewContext]
@@ -129,8 +131,6 @@
     [DSLogger sharedInstance];
     [[DSAuthenticationManager sharedInstance] setOneTimeShouldUseAuthentication:TRUE];
     [DashSync sharedSyncController];
-    
-    [self setUp];
     
     [self getTestnetInfo];
     

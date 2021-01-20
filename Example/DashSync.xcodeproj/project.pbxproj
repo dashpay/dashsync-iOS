@@ -51,7 +51,7 @@
 		2AF8A95622847ACB00F8C72D /* TextViewFormCellModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF8A95522847ACB00F8C72D /* TextViewFormCellModel.m */; };
 		2AF8A95A22847E5300F8C72D /* DSContactProfileViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF8A95922847E5200F8C72D /* DSContactProfileViewController.m */; };
 		2AF8A95D2284820F00F8C72D /* DSContactProfileAvatarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF8A95C2284820F00F8C72D /* DSContactProfileAvatarView.m */; };
-		3AA51EC63AC415DEBC299B24 /* libPods-NetworkInfo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6675EA01A2AC0589160069A4 /* libPods-NetworkInfo.a */; };
+		404946170FF870F9FBA4B3C7 /* libPods-NetworkInfo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6675EA01A2AC0589160069A4 /* libPods-NetworkInfo.a */; };
 		4E82B138191525F4D3E4D175 /* libPods-DashSync_Example.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 825B33F19FEBBA03353877A6 /* libPods-DashSync_Example.a */; };
 		6003F58E195388D20070C39A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58D195388D20070C39A /* Foundation.framework */; };
 		6003F590195388D20070C39A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58F195388D20070C39A /* CoreGraphics.framework */; };
@@ -395,12 +395,8 @@
 		FB9A106C20D8362F006883E2 /* DSKeyValueTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A106B20D8362F006883E2 /* DSKeyValueTableViewCell.m */; };
 		FB9A106F20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A106E20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m */; };
 		FB9A107220D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A107120D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m */; };
-		FB9C9E4D25B7F2B60039880E /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9C9E4C25B7F2B60039880E /* AppDelegate.m */; };
-		FB9C9E5325B7F2B60039880E /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9C9E5225B7F2B60039880E /* ViewController.m */; };
-		FB9C9E5625B7F2B60039880E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB9C9E5425B7F2B60039880E /* Main.storyboard */; };
-		FB9C9E5825B7F2B80039880E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FB9C9E5725B7F2B80039880E /* Assets.xcassets */; };
-		FB9C9E5B25B7F2B80039880E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB9C9E5925B7F2B80039880E /* LaunchScreen.storyboard */; };
-		FB9C9E5E25B7F2B80039880E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9C9E5D25B7F2B80039880E /* main.m */; };
+		FB9C9F0525B80DE30039880E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9C9F0425B80DE30039880E /* main.m */; };
+		FB9C9F4225B832E30039880E /* DSNetworkInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9C9E4C25B7F2B60039880E /* DSNetworkInfo.m */; };
 		FBA676322235A7920069EC2F /* BlockchainIdentities.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBA676312235A7920069EC2F /* BlockchainIdentities.storyboard */; };
 		FBA676342235A9620069EC2F /* Helpers.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBA676332235A9620069EC2F /* Helpers.storyboard */; };
 		FBA676362235AD090069EC2F /* Governance.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBA676352235AD090069EC2F /* Governance.storyboard */; };
@@ -497,6 +493,18 @@
 			remoteInfo = DashSync;
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		FB9C9EF825B80DB40039880E /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		131B02E9F838D9B0B88342E6 /* Pods-NetworkInfo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NetworkInfo.release.xcconfig"; path = "Pods/Target Support Files/Pods-NetworkInfo/Pods-NetworkInfo.release.xcconfig"; sourceTree = "<group>"; };
@@ -1021,17 +1029,11 @@
 		FB9A107120D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAddDevnetAddIPAddressTableViewCell.m; sourceTree = "<group>"; };
 		FB9C9E1025B599FE0039880E /* check_lint.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = check_lint.sh; sourceTree = "<group>"; };
 		FB9C9E1125B6094B0039880E /* coverage.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; name = coverage.yml; path = ../.github/workflows/coverage.yml; sourceTree = "<group>"; };
-		FB9C9E4925B7F2B60039880E /* NetworkInfo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NetworkInfo.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		FB9C9E4B25B7F2B60039880E /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
-		FB9C9E4C25B7F2B60039880E /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		FB9C9E5125B7F2B60039880E /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
-		FB9C9E5225B7F2B60039880E /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
-		FB9C9E5525B7F2B60039880E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		FB9C9E5725B7F2B80039880E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		FB9C9E5A25B7F2B80039880E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		FB9C9E5C25B7F2B80039880E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		FB9C9E5D25B7F2B80039880E /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		FB9C9E4B25B7F2B60039880E /* DSNetworkInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSNetworkInfo.h; sourceTree = "<group>"; };
+		FB9C9E4C25B7F2B60039880E /* DSNetworkInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSNetworkInfo.m; sourceTree = "<group>"; };
 		FB9C9EBB25B7FD3D0039880E /* network.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; name = network.yml; path = ../.github/workflows/network.yml; sourceTree = "<group>"; };
+		FB9C9EFA25B80DB40039880E /* NetworkInfo */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = NetworkInfo; sourceTree = BUILT_PRODUCTS_DIR; };
+		FB9C9F0425B80DE30039880E /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		FBA676312235A7920069EC2F /* BlockchainIdentities.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = BlockchainIdentities.storyboard; sourceTree = "<group>"; };
 		FBA676332235A9620069EC2F /* Helpers.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Helpers.storyboard; sourceTree = "<group>"; };
 		FBA676352235AD090069EC2F /* Governance.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Governance.storyboard; sourceTree = "<group>"; };
@@ -1175,11 +1177,11 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		FB9C9E4625B7F2B60039880E /* Frameworks */ = {
+		FB9C9EF725B80DB40039880E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3AA51EC63AC415DEBC299B24 /* libPods-NetworkInfo.a in Frameworks */,
+				404946170FF870F9FBA4B3C7 /* libPods-NetworkInfo.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1313,7 +1315,7 @@
 				60FF7A9C1954A5C5007DD14C /* Podspec Metadata */,
 				6003F593195388D20070C39A /* Example for DashSync */,
 				6003F5B5195388D20070C39A /* Tests */,
-				FB9C9E4A25B7F2B60039880E /* NetworkInfo */,
+				FB9C9EFB25B80DB40039880E /* NetworkInfo */,
 				6003F58C195388D20070C39A /* Frameworks */,
 				6003F58B195388D20070C39A /* Products */,
 				FB974F3125AE7A2200A1DCE7 /* CI */,
@@ -1328,7 +1330,7 @@
 			children = (
 				6003F58A195388D20070C39A /* DashSync_Example.app */,
 				6003F5AE195388D20070C39A /* DashSync_Tests.xctest */,
-				FB9C9E4925B7F2B60039880E /* NetworkInfo.app */,
+				FB9C9EFA25B80DB40039880E /* NetworkInfo */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2090,18 +2092,12 @@
 			name = Peers;
 			sourceTree = "<group>";
 		};
-		FB9C9E4A25B7F2B60039880E /* NetworkInfo */ = {
+		FB9C9EFB25B80DB40039880E /* NetworkInfo */ = {
 			isa = PBXGroup;
 			children = (
-				FB9C9E4B25B7F2B60039880E /* AppDelegate.h */,
-				FB9C9E4C25B7F2B60039880E /* AppDelegate.m */,
-				FB9C9E5125B7F2B60039880E /* ViewController.h */,
-				FB9C9E5225B7F2B60039880E /* ViewController.m */,
-				FB9C9E5425B7F2B60039880E /* Main.storyboard */,
-				FB9C9E5725B7F2B80039880E /* Assets.xcassets */,
-				FB9C9E5925B7F2B80039880E /* LaunchScreen.storyboard */,
-				FB9C9E5C25B7F2B80039880E /* Info.plist */,
-				FB9C9E5D25B7F2B80039880E /* main.m */,
+				FB9C9E4B25B7F2B60039880E /* DSNetworkInfo.h */,
+				FB9C9E4C25B7F2B60039880E /* DSNetworkInfo.m */,
+				FB9C9F0425B80DE30039880E /* main.m */,
 			);
 			path = NetworkInfo;
 			sourceTree = "<group>";
@@ -2302,15 +2298,15 @@
 			productReference = 6003F5AE195388D20070C39A /* DashSync_Tests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		FB9C9E4825B7F2B60039880E /* NetworkInfo */ = {
+		FB9C9EF925B80DB40039880E /* NetworkInfo */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = FB9C9E5F25B7F2B80039880E /* Build configuration list for PBXNativeTarget "NetworkInfo" */;
+			buildConfigurationList = FB9C9EFE25B80DB40039880E /* Build configuration list for PBXNativeTarget "NetworkInfo" */;
 			buildPhases = (
-				E20FACA5542B035C73B70371 /* [CP] Check Pods Manifest.lock */,
-				FB9C9E4525B7F2B60039880E /* Sources */,
-				FB9C9E4625B7F2B60039880E /* Frameworks */,
-				FB9C9E4725B7F2B60039880E /* Resources */,
-				94D6739E1DFC043B3E07D02B /* [CP] Copy Pods Resources */,
+				2B9966A4344269C863326096 /* [CP] Check Pods Manifest.lock */,
+				FB9C9EF625B80DB40039880E /* Sources */,
+				FB9C9EF725B80DB40039880E /* Frameworks */,
+				FB9C9EF825B80DB40039880E /* CopyFiles */,
+				2B57EF3BDD3D325283813C84 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -2318,8 +2314,8 @@
 			);
 			name = NetworkInfo;
 			productName = NetworkInfo;
-			productReference = FB9C9E4925B7F2B60039880E /* NetworkInfo.app */;
-			productType = "com.apple.product-type.application";
+			productReference = FB9C9EFA25B80DB40039880E /* NetworkInfo */;
+			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
 
@@ -2337,7 +2333,7 @@
 					6003F5AD195388D20070C39A = {
 						TestTargetID = 6003F589195388D20070C39A;
 					};
-					FB9C9E4825B7F2B60039880E = {
+					FB9C9EF925B80DB40039880E = {
 						CreatedOnToolsVersion = 12.3;
 						DevelopmentTeam = 44RJ69WHFF;
 						ProvisioningStyle = Automatic;
@@ -2361,7 +2357,7 @@
 			targets = (
 				6003F589195388D20070C39A /* DashSync_Example */,
 				6003F5AD195388D20070C39A /* DashSync_Tests */,
-				FB9C9E4825B7F2B60039880E /* NetworkInfo */,
+				FB9C9EF925B80DB40039880E /* NetworkInfo */,
 			);
 		};
 /* End PBXProject section */
@@ -2688,16 +2684,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		FB9C9E4725B7F2B60039880E /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				FB9C9E5B25B7F2B80039880E /* LaunchScreen.storyboard in Resources */,
-				FB9C9E5825B7F2B80039880E /* Assets.xcassets in Resources */,
-				FB9C9E5625B7F2B60039880E /* Main.storyboard in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
@@ -2719,15 +2705,15 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		94D6739E1DFC043B3E07D02B /* [CP] Copy Pods Resources */ = {
+		2B57EF3BDD3D325283813C84 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-NetworkInfo/Pods-NetworkInfo-resources.sh",
-				"${PODS_CONFIGURATION_BUILD_DIR}/DashSync/DashSync.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/gRPC/gRPCCertificates.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/DashSync-macOS/DashSync.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/gRPC-macOS/gRPCCertificates.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
@@ -2739,25 +2725,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-NetworkInfo/Pods-NetworkInfo-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		BA464DCB59BC59A2B2C9AAD7 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-DashSync_Example-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		E20FACA5542B035C73B70371 /* [CP] Check Pods Manifest.lock */ = {
+		2B9966A4344269C863326096 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -2779,6 +2747,24 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		BA464DCB59BC59A2B2C9AAD7 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-DashSync_Example-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
 		F3524DD5332FD019D466B225 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -2786,8 +2772,8 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-DashSync_Example/Pods-DashSync_Example-resources.sh",
-				"${PODS_CONFIGURATION_BUILD_DIR}/DashSync/DashSync.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/gRPC/gRPCCertificates.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/DashSync-iOS/DashSync.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/gRPC-iOS/gRPCCertificates.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
@@ -3025,13 +3011,12 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		FB9C9E4525B7F2B60039880E /* Sources */ = {
+		FB9C9EF625B80DB40039880E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FB9C9E5325B7F2B60039880E /* ViewController.m in Sources */,
-				FB9C9E4D25B7F2B60039880E /* AppDelegate.m in Sources */,
-				FB9C9E5E25B7F2B80039880E /* main.m in Sources */,
+				FB9C9F0525B80DE30039880E /* main.m in Sources */,
+				FB9C9F4225B832E30039880E /* DSNetworkInfo.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3069,22 +3054,6 @@
 			children = (
 				71719F9E1E33DC2100824A3D /* Base */,
 				FB5A0FA821951CFC0079CF42 /* fr */,
-			);
-			name = LaunchScreen.storyboard;
-			sourceTree = "<group>";
-		};
-		FB9C9E5425B7F2B60039880E /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				FB9C9E5525B7F2B60039880E /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-		FB9C9E5925B7F2B80039880E /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				FB9C9E5A25B7F2B80039880E /* Base */,
 			);
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
@@ -3267,12 +3236,10 @@
 			};
 			name = Release;
 		};
-		FB9C9E6025B7F2B80039880E /* Debug */ = {
+		FB9C9EFF25B80DB40039880E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = D1B8FECBB1652E781A9E4620 /* Pods-NetworkInfo.debug.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -3282,24 +3249,20 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
+				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
-				INFOPLIST_FILE = NetworkInfo/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.NetworkInfo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
+				SDKROOT = macosx;
 			};
 			name = Debug;
 		};
-		FB9C9E6125B7F2B80039880E /* Release */ = {
+		FB9C9F0025B80DB40039880E /* Release */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 131B02E9F838D9B0B88342E6 /* Pods-NetworkInfo.release.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -3310,15 +3273,13 @@
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
+				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
-				INFOPLIST_FILE = NetworkInfo/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.NetworkInfo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
+				SDKROOT = macosx;
 			};
 			name = Release;
 		};
@@ -3352,11 +3313,11 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		FB9C9E5F25B7F2B80039880E /* Build configuration list for PBXNativeTarget "NetworkInfo" */ = {
+		FB9C9EFE25B80DB40039880E /* Build configuration list for PBXNativeTarget "NetworkInfo" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				FB9C9E6025B7F2B80039880E /* Debug */,
-				FB9C9E6125B7F2B80039880E /* Release */,
+				FB9C9EFF25B80DB40039880E /* Debug */,
+				FB9C9F0025B80DB40039880E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

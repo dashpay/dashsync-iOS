@@ -15,18 +15,12 @@
 //  limitations under the License.
 //
 
-#import "ViewController.h"
+#import <Foundation/Foundation.h>
 
-@interface ViewController ()
+@interface DSNetworkInfo : NSObject
 
-@end
-
-@implementation ViewController
-
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    // Do any additional setup after loading the view.
-}
-
+-(void)getTestnetInfo;
+-(void)getMainnetInfo;
 
 @end
+

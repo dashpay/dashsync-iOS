@@ -26,7 +26,9 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
+#if TARGET_OS_IOS
 #import <UIKit/UIKit.h>
+#endif
 
 @protocol DSEventConfirmViewProtocol
 
@@ -76,10 +78,12 @@
 // user of the application before
 - (BOOL)hasAcquiredPermission;
 
+#if TARGET_OS_IOS
 // displays a UI in the view controller prompting the user for permission to save event data
 // the value of whether or not the user agrees will be returned to the completionCallback
 - (void)acquireUserPermissionInViewController:(UIViewController *)viewController
                                  withCallback:(void (^)(BOOL didGetPermission))completionCallback;
+#endif
 
 
 @end

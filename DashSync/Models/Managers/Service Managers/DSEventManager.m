@@ -29,7 +29,6 @@
 #import "DSChainManager.h"
 #import "DSPeerManager.h"
 #import "DSTransactionManager.h"
-#import "UIImage+DSUtils.h"
 
 #define HAS_DETERMINED_SAMPLE_GROUP @"has_determined_sample_group"
 #define IS_IN_SAMPLE_GROUP @"is_in_sample_group"
@@ -70,11 +69,17 @@
         CFRelease(uuid);
         self.myQueue = [[NSOperationQueue alloc] init];
         self.myQueue.maxConcurrentOperationCount = 1;
+#if TARGET_OS_IOS
         self.eventToNotifications = @{@"foreground": UIApplicationDidBecomeActiveNotification,
             @"background": UIApplicationDidEnterBackgroundNotification,
             @"sync_started": DSChainManagerSyncStartedNotification,
             @"sync_finished": DSChainManagerSyncFinishedNotification,
             @"sync_failed": DSChainManagerSyncFailedNotification};
+#else
+        self.eventToNotifications = @{@"sync_started": DSChainManagerSyncStartedNotification,
+            @"sync_finished": DSChainManagerSyncFinishedNotification,
+            @"sync_failed": DSChainManagerSyncFailedNotification};
+#endif
         self.isConnected = NO;
         self._buffer = [NSMutableArray array];
     }
@@ -125,10 +130,12 @@
                     usingBlock:^(NSNotification *note) {
                         [self saveEvent:key];
                         DSLog(@"DSEventManager received notification %@", note.name);
+#if TARGET_OS_IOS
                         if ([note.name isEqualToString:UIApplicationDidEnterBackgroundNotification]) {
                             [self _persistToDisk];
                             [self _sendToServer];
                         }
+#endif
                     }];
     }];
     self.isConnected = YES;
@@ -176,7 +183,7 @@
     return [self isInSampleGroup] && [self hasAcquiredPermission];
 }
 
-
+#if TARGET_OS_IOS
 - (void)acquireUserPermissionInViewController:(UIViewController *)viewController
                                  withCallback:(void (^)(BOOL))completionCallback {
     if (!self.eventConfirmView) {
@@ -217,6 +224,7 @@
             }];
     };
 }
+#endif
 
 - (void)sync {
     if ([self shouldRecordData]) {

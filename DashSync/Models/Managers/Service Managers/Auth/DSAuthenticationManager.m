@@ -36,16 +36,19 @@
 #import "DSMerkleBlock.h"
 #import "DSPeer.h"
 #import "DSPriceManager.h"
-#import "DSRecoveryViewController.h"
-#import "DSRequestPinViewController.h"
-#import "DSSetPinViewController.h"
 #import "DSVersionManager.h"
 #import "DSWallet.h"
 #import "DashSync.h"
 #import "NSData+Bitcoin.h"
 #import "NSDate+Utils.h"
 #import "NSMutableData+Dash.h"
+
+#if TARGET_OS_IOS
 #import "UIWindow+DSUtils.h"
+#import "DSRecoveryViewController.h"
+#import "DSRequestPinViewController.h"
+#import "DSSetPinViewController.h"
+#endif
 
 static NSString *sanitizeString(NSString *s) {
     NSMutableString *sane = [NSMutableString stringWithString:(s) ? s : @""];
@@ -91,10 +94,12 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
             self.usesAuthentication = [self shouldUseAuthentication] && hasSetPin;
         }
 
+#if TARGET_OS_IOS
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(applicationDidEnterBackgroundNotification)
                                                      name:UIApplicationDidEnterBackgroundNotification
                                                    object:nil];
+#endif
     }
     return self;
 }
@@ -162,6 +167,9 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 }
 
 - (BOOL)shouldUseAuthentication {
+#if !TARGET_OS_IOS
+    return NO; //disable authentication temporarily for macos
+#endif
     NSError *error = nil;
     if (!hasKeychainData(USES_AUTHENTICATION_KEY, &error)) {
         return TRUE; //default true;
@@ -241,10 +249,11 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 
         return;
     }
-
+#if TARGET_OS_IOS
     DSRecoveryViewController *controller = [[DSRecoveryViewController alloc] initWithWipeHandler:wipeHandler
                                                                                       completion:completion];
     [self presentController:controller animated:YES completion:nil];
+#endif
 }
 
 - (void)setPinIfNeededWithCompletion:(void (^)(BOOL needed, BOOL success))completion {
@@ -270,8 +279,12 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 
 // prompts the user to set or change their wallet pin and returns true if the pin was successfully set
 - (void)setPinWithCompletion:(void (^_Nullable)(BOOL success))completion {
+#if TARGET_OS_IOS
     DSSetPinViewController *alert = [[DSSetPinViewController alloc] initWithCompletion:completion];
     [self presentController:alert animated:YES completion:nil];
+#else
+    completion(FALSE);
+#endif
 }
 
 - (void)removePin {
@@ -423,6 +436,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     };
 
     if (prompt && shouldPreprompt) {
+#if TARGET_OS_IOS
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:DSLocalizedString(@"Confirm", nil)
                                                                        message:prompt
                                                                 preferredStyle:UIAlertControllerStyleAlert];
@@ -439,6 +453,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
                                                          }];
         [alert addAction:okAction];
         [self presentController:alert animated:YES completion:nil];
+#endif
     } else {
         localAuthBlock();
     }
@@ -534,6 +549,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     } else {
         message = DSLocalizedString(@"No attempts remaining", nil);
     }
+#if TARGET_OS_IOS
     UIAlertController *alertController = [UIAlertController
         alertControllerWithTitle:DSLocalizedString(@"Wallet disabled", nil)
                          message:message
@@ -579,13 +595,13 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     }
 
     [self presentController:alertController animated:YES completion:nil];
+#endif
 }
 
 - (void)authenticatePinWithMessage:(NSString *)message
                     alertIfLockout:(BOOL)alertIfLockout
                         completion:(PinCompletionBlock)completion {
-    [self
-        performAuthenticationPrecheck:^(BOOL shouldContinueAuthentication,
+    [self performAuthenticationPrecheck:^(BOOL shouldContinueAuthentication,
             BOOL authenticated,
             BOOL shouldLockout,
             NSString *_Nullable attemptsMessage) {
@@ -600,12 +616,13 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
                 } else {
                     resultMessage = message;
                 }
-
+#if TARGET_OS_IOS
                 DSRequestPinViewController *alert =
                     [[DSRequestPinViewController alloc] initWithAuthPrompt:resultMessage
                                                             alertIfLockout:alertIfLockout
                                                                 completion:completion];
                 [self presentController:alert animated:YES completion:nil];
+#endif
             } else {
                 if (shouldLockout) {
                     [self userLockedOut];
@@ -621,7 +638,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     NSParameterAssert(userInfo);
     NSParameterAssert(completion);
     NSParameterAssert(cancel);
-
+#if TARGET_OS_IOS
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:DSLocalizedString(@"Password protected key", nil) message:nil preferredStyle:UIAlertControllerStyleAlert];
     [alert addTextFieldWithConfigurationHandler:^(UITextField *_Nonnull textField) {
         textField.secureTextEntry = true;
@@ -644,13 +661,14 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     [alert addAction:cancelButton];
     [alert addAction:okButton];
     [self presentController:alert animated:YES completion:nil];
+#endif
 }
 
 
 - (void)badKeyPasswordForSweepCompletion:(void (^_Nonnull)(void))completion cancel:(void (^_Nonnull)(void))cancel {
     NSParameterAssert(completion);
     NSParameterAssert(cancel);
-
+#if TARGET_OS_IOS
     UIAlertController *alert = [UIAlertController
         alertControllerWithTitle:DSLocalizedString(@"Password protected key", nil)
                          message:DSLocalizedString(@"Bad password, try again", nil)
@@ -677,6 +695,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     [alert addAction:okButton];
     [alert addAction:cancelButton];
     [self presentController:alert animated:YES completion:nil];
+#endif
 }
 
 #pragma mark - Low Level
@@ -925,11 +944,14 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 - (void)applicationDidEnterBackgroundNotification {
     // lockdown the app
     self.didAuthenticate = NO;
+#if TARGET_OS_IOS
     [UIApplication sharedApplication].applicationIconBadgeNumber = 0; // reset app badge number
+#endif
 }
 
 #pragma mark - Private
 
+#if TARGET_OS_IOS
 - (void)presentController:(UIViewController *)controller
                  animated:(BOOL)animated
                completion:(void (^_Nullable)(void))completion {
@@ -938,5 +960,6 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     NSParameterAssert(presentingController);
     [presentingController presentViewController:controller animated:animated completion:completion];
 }
+#endif
 
 @end

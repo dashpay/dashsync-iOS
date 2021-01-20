@@ -15,7 +15,9 @@
 //  limitations under the License.
 //
 
+#if TARGET_OS_IOS
 #import <UIKit/UIKit.h>
+#endif
 
 #import "DSNetworkActivityIndicatorManager.h"
 

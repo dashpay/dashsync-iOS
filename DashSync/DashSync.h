@@ -6,8 +6,6 @@
 //  Copyright © 2019 dashcore. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
-
 #import "DSError.h"
 
 #import "DSBlockchainIdentity.h"
