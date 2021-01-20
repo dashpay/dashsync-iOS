@@ -348,7 +348,13 @@
             }
         }
     }
+    bool changed = _currentMasternodeList != currentMasternodeList;
     _currentMasternodeList = currentMasternodeList;
+    if (changed) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSCurrentMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSMasternodeManagerNotificationMasternodeListKey: self.currentMasternodeList ? self.currentMasternodeList : [NSNull null]}];
+        });
+    }
 }
 
 - (void)loadFileDistributedMasternodeLists {

@@ -394,6 +394,7 @@
 		FB9A106C20D8362F006883E2 /* DSKeyValueTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A106B20D8362F006883E2 /* DSKeyValueTableViewCell.m */; };
 		FB9A106F20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A106E20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m */; };
 		FB9A107220D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A107120D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m */; };
+		FB9C9E1425B677550039880E /* DSNetworkTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9C9E1325B677550039880E /* DSNetworkTests.m */; };
 		FBA676322235A7920069EC2F /* BlockchainIdentities.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBA676312235A7920069EC2F /* BlockchainIdentities.storyboard */; };
 		FBA676342235A9620069EC2F /* Helpers.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBA676332235A9620069EC2F /* Helpers.storyboard */; };
 		FBA676362235AD090069EC2F /* Governance.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBA676352235AD090069EC2F /* Governance.storyboard */; };
@@ -1011,6 +1012,8 @@
 		FB9A107120D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAddDevnetAddIPAddressTableViewCell.m; sourceTree = "<group>"; };
 		FB9C9E1025B599FE0039880E /* check_lint.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = check_lint.sh; sourceTree = "<group>"; };
 		FB9C9E1125B6094B0039880E /* coverage.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; name = coverage.yml; path = ../.github/workflows/coverage.yml; sourceTree = "<group>"; };
+		FB9C9E1325B677550039880E /* DSNetworkTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSNetworkTests.m; sourceTree = "<group>"; };
+		FB9C9E3225B6777A0039880E /* NetworkReport.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = NetworkReport.xctestplan; sourceTree = "<group>"; };
 		FBA676312235A7920069EC2F /* BlockchainIdentities.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = BlockchainIdentities.storyboard; sourceTree = "<group>"; };
 		FBA676332235A9620069EC2F /* Helpers.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Helpers.storyboard; sourceTree = "<group>"; };
 		FBA676352235AD090069EC2F /* Governance.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Governance.storyboard; sourceTree = "<group>"; };
@@ -1356,6 +1359,7 @@
 		6003F5B5195388D20070C39A /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				FB9C9E1225B66B650039880E /* NetworkTests */,
 				FB97501925B3898000A1DCE7 /* TestPlans */,
 				FB97500E25B3884500A1DCE7 /* e2eTests */,
 				FB97500D25B3882B00A1DCE7 /* SyncTests */,
@@ -2042,6 +2046,7 @@
 				FB974FDC25B2889000A1DCE7 /* MainnetSyncTests.xctestplan */,
 				FB97500625B3876D00A1DCE7 /* TestnetSyncTests.xctestplan */,
 				FB97501F25B3AD1400A1DCE7 /* Metrics.xctestplan */,
+				FB9C9E3225B6777A0039880E /* NetworkReport.xctestplan */,
 			);
 			name = TestPlans;
 			sourceTree = "<group>";
@@ -2053,6 +2058,14 @@
 				FB995D9921101C4200AC37D0 /* DSPeersViewController.m */,
 			);
 			name = Peers;
+			sourceTree = "<group>";
+		};
+		FB9C9E1225B66B650039880E /* NetworkTests */ = {
+			isa = PBXGroup;
+			children = (
+				FB9C9E1325B677550039880E /* DSNetworkTests.m */,
+			);
+			name = NetworkTests;
 			sourceTree = "<group>";
 		};
 		FBB25BEC20C5CD040037F5BE /* Blocks */ = {
@@ -2888,6 +2901,7 @@
 				2AF7296E22789C5C001D2D21 /* DSIESEncryptedDataTests.mm in Sources */,
 				2A90EDAA2268C15D00D95B6B /* DSUInt256IndexPathTests.m in Sources */,
 				2A7DCCB020DA080F0097049F /* DSWalletTests.m in Sources */,
+				FB9C9E1425B677550039880E /* DSNetworkTests.m in Sources */,
 				2A1ECBDB20D8B7EC000177D8 /* DSKeyTests.m in Sources */,
 				FBD696EC2291A1800012FF51 /* DSDataTests.m in Sources */,
 				2A1ECBDD20D8F4BD000177D8 /* DSPaymentRequestTests.m in Sources */,

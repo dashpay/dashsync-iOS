@@ -39,6 +39,10 @@ NSString *const DSSporkListDidUpdateNotification = @"DSSporkListDidUpdateNotific
 
 NSString *const DSMasternodeListDidChangeNotification = @"DSMasternodeListDidChangeNotification";
 
+NSString *const DSCurrentMasternodeListDidChangeNotification = @"DSCurrentMasternodeListDidChangeNotification";
+
+NSString *const DSMasternodeManagerNotificationMasternodeListKey = @"DSMasternodeManagerNotificationMasternodeListKey";
+
 NSString *const DSQuorumListDidChangeNotification = @"DSQuorumListDidChangeNotification";
 
 NSString *const DSMasternodeListDiffValidationErrorNotification = @"DSMasternodeListDiffValidationErrorNotification"; //Also for Quorums
