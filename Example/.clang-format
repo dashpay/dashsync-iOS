@@ -1,7 +1,7 @@
 ---
 Language: ObjC
 AccessModifierOffset: -2
-AlignAfterOpenBracket: false
+AlignAfterOpenBracket: DontAlign
 AlignEscapedNewlines: DontAlign
 AlignTrailingComments: true
 AllowAllArgumentsOnNextLine: true
@@ -33,6 +33,7 @@ IndentWrappedFunctionNames: false
 IndentFunctionDeclarationAfterType: true
 IndentWidth: 4
 KeepEmptyLinesAtTheStartOfBlocks: false
+Language: ObjC
 MaxEmptyLinesToKeep: 2
 NamespaceIndentation: None
 ObjCSpaceAfterProperty: true

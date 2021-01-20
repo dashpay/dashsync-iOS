@@ -189,7 +189,7 @@
 
 - (void)pingPlatform {
     [self.chain.chainManager.masternodeManager checkPingTimesForCurrentMasternodeListInContext:[NSManagedObjectContext viewContext]
-                                                                                withCompletion:^(NSMutableDictionary<NSData *, NSError *> *_Nonnull errors) {
+                                                                                withCompletion:^(NSMutableDictionary<NSData *, NSNumber *> *_Nonnull pingTimes, NSMutableDictionary<NSData *, NSError *> *_Nonnull errors) {
                                                                                     [self.tableView reloadData];
                                                                                 }];
 }

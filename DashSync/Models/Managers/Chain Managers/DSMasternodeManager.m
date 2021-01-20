@@ -1450,10 +1450,10 @@
 
 // MARK: - Meta information
 
-- (void)checkPingTimesForCurrentMasternodeListInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(NSMutableDictionary<NSData *, NSError *> *))completion {
+- (void)checkPingTimesForCurrentMasternodeListInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(NSMutableDictionary<NSData *, NSNumber *> *pingTimes, NSMutableDictionary<NSData *, NSError *> *errors))completion {
     __block NSArray<DSSimplifiedMasternodeEntry *> *entries = self.currentMasternodeList.simplifiedMasternodeEntries;
     [self.chain.chainManager.DAPIClient checkPingTimesForMasternodes:entries
-                                                          completion:^(NSMutableDictionary<NSData *, NSError *> *_Nonnull errors) {
+                                                          completion:^(NSMutableDictionary<NSData *, NSNumber *> *_Nonnull pingTimes, NSMutableDictionary<NSData *, NSError *> *_Nonnull errors) {
                                                               [context performBlockAndWait:^{
                                                                   for (DSSimplifiedMasternodeEntry *entry in entries) {
                                                                       [entry savePlatformPingInfoInContext:context];
@@ -1464,7 +1464,7 @@
 
                                                               if (completion != nil) {
                                                                   dispatch_async(dispatch_get_main_queue(), ^{
-                                                                      completion(errors);
+                                                                      completion(pingTimes, errors);
                                                                   });
                                                               }
                                                           }];

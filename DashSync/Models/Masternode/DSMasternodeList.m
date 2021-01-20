@@ -605,4 +605,8 @@ inline static int ceil_log2(int x) {
     return mArray;
 }
 
+- (DSSimplifiedMasternodeEntry *)masternodeForRegistrationHash:(UInt256)registrationHash {
+    return self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[uint256_data(registrationHash)];
+}
+
 @end

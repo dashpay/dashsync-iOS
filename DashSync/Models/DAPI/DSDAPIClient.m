@@ -174,11 +174,12 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 }
 
 //check ping times of all DAPI nodes
-- (void)checkPingTimesForMasternodes:(NSArray<DSSimplifiedMasternodeEntry *> *)masternodes completion:(void (^)(NSMutableDictionary<NSData *, NSError *> *))completion {
+- (void)checkPingTimesForMasternodes:(NSArray<DSSimplifiedMasternodeEntry *> *)masternodes completion:(void (^)(NSMutableDictionary<NSData *, NSNumber *> *pingTimes, NSMutableDictionary<NSData *, NSError *> *))completion {
     dispatch_async(self.platformMetadataDispatchQueue, ^{
         HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
         __block dispatch_group_t dispatch_group = dispatch_group_create();
         __block NSMutableDictionary<NSData *, NSError *> *errorDictionary = [NSMutableDictionary dictionary];
+        __block NSMutableDictionary<NSData *, NSNumber *> *pingTimeDictionary = [NSMutableDictionary dictionary];
         dispatch_semaphore_t dispatchSemaphore = dispatch_semaphore_create(32);
 
         for (DSSimplifiedMasternodeEntry *masternode in masternodes) {
@@ -190,19 +191,23 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
             __block NSDate *time = [NSDate date];
             [coreNetworkService
                 getStatusWithSuccess:^(NSDictionary *_Nonnull status) {
-                    [masternode setPlatformPing:-[time timeIntervalSinceNow] * 1000 at:[NSDate date]];
+                    NSTimeInterval platformPing = -[time timeIntervalSinceNow] * 1000;
+                    pingTimeDictionary[uint256_data(masternode.providerRegistrationTransactionHash)] = @(platformPing);
+                    [masternode setPlatformPing:platformPing at:[NSDate date]];
                     dispatch_semaphore_signal(dispatchSemaphore);
                     dispatch_group_leave(dispatch_group);
                 }
                 failure:^(NSError *_Nonnull error) {
-                    [errorDictionary setObject:error forKey:uint256_data(masternode.providerRegistrationTransactionHash)];
+                    errorDictionary[uint256_data(masternode.providerRegistrationTransactionHash)] = error;
                     dispatch_semaphore_signal(dispatchSemaphore);
                     dispatch_group_leave(dispatch_group);
                 }];
         }
 
         dispatch_group_notify(dispatch_group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-            completion(errorDictionary);
+            if (completion) {
+                completion(pingTimeDictionary, errorDictionary);
+            }
         });
     });
 }

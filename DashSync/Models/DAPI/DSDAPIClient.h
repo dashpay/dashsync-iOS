@@ -55,9 +55,7 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode)
                   success:(void (^)(NSDictionary *successDictionary))success
                   failure:(void (^)(NSError *error))failure;
 
-- (void)checkPingTimesForMasternodes:(NSArray<DSSimplifiedMasternodeEntry *> *)masternodes completion:(void (^)(NSMutableDictionary<NSData *, NSError *> *))completion;
-
-
+- (void)checkPingTimesForMasternodes:(NSArray<DSSimplifiedMasternodeEntry *> *)masternodes completion:(void (^)(NSMutableDictionary<NSData *, NSNumber *> *pingTimes, NSMutableDictionary<NSData *, NSError *> *))completion;
 @end
 
 NS_ASSUME_NONNULL_END

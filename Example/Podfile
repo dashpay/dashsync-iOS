@@ -12,6 +12,15 @@ target 'DashSync_Example' do
   end
 end
 
+target 'NetworkInfo' do
+  platform :ios, '12.0'
+  
+  pod 'DashSync', :path => '../'
+  pod 'DAPI-GRPC', :path => '../'
+  pod 'SDWebImage', '5.9.2'
+  pod 'CocoaImageHashing', :git => 'https://github.com/ameingast/cocoaimagehashing.git', :commit => 'ad01eee'
+end
+
 post_install do |installer|
     installer.pods_project.targets.each do |target|
         # fixes warnings about unsupported Deployment Target in Xcode 10
