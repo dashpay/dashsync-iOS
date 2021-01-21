@@ -139,8 +139,6 @@ FOUNDATION_EXPORT const unsigned char DashSyncVersionString[];
 
 + (instancetype)sharedSyncController;
 
-/// Registration must be complete before the end of application:didFinishLaunchingWithOptions:
-- (void)registerBackgroundFetchOnce;
 - (void)setupDashSyncOnce;
 
 - (void)startSyncForChain:(DSChain *)chain;
@@ -158,6 +156,9 @@ FOUNDATION_EXPORT const unsigned char DashSyncVersionString[];
 - (uint64_t)dbSize;
 
 #if TARGET_OS_IOS
+/// Registration must be complete before the end of application:didFinishLaunchingWithOptions:
+- (void)registerBackgroundFetchOnce;
+
 - (void)scheduleBackgroundFetch;
 - (void)performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler;
 #endif
