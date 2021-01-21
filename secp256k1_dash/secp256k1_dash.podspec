@@ -6,7 +6,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'secp256k1_dash'
-  s.version          = '0.1.3-alpha.2'
+  s.version          = '0.1.4-alpha.1'
   s.summary          = 'Optimized C library for EC operations on curve secp256k1'
   s.description      = <<-DESC
 Optimized C library for EC operations on curve secp256k1.
@@ -23,19 +23,21 @@ Configured with following defines: `USE_BASIC_CONFIG`, `ENABLE_MODULE_RECOVERY`,
                        DESC
 
   s.homepage         = 'https://github.com/dashevo/dashsync-iOS'
-  s.license          = { :type => 'MIT', :file => 'LICENSE' }
+  s.license          = { :type => 'MIT', :file => 'COPYING' }
   s.author           = { 'Andrew Podkovyrin' => 'podkovyrin@gmail.com' }
-  s.source           = { :git => 'https://github.com/bitcoin-core/secp256k1.git', :commit => '84973d393ac240a90b2e1a6538c5368202bc2224' }
+  s.source           = { :git => 'https://github.com/bitcoin-core/secp256k1.git', :commit => 'f2d9aeae6d5a7c7fbbba8bbb38b1849b784beef7' }
 
   s.ios.deployment_target = '9.0'
+  s.osx.deployment_target = '10.15'
   s.watchos.deployment_target = '2.0'
 
   s.libraries = 'c++'
   s.source_files = 'src/*.{h,c}', 'src/modules/**/*.h', 'include/*.h'
-  s.exclude_files = 'src/bench*', 'src/test*', 'src/gen_context.c', 'src/libsecp256k1-config.h', 'src/**/test*'
+  s.exclude_files = 'src/bench*', 'src/test*', 'src/gen_context.c', 'src/libsecp256k1-config.h', 'src/**/test*', 'src/valgrind_ctime_test.c'
   s.public_header_files = 'include/*.h'
   s.private_header_files = 'src/*.h'
   s.header_mappings_dir = '.'
+  s.prepare_command = './autogen.sh'
 
   s.pod_target_xcconfig = { 
     'HEADER_SEARCH_PATHS' => '${PODS_ROOT}/**',
@@ -50,17 +52,125 @@ Configured with following defines: `USE_BASIC_CONFIG`, `ENABLE_MODULE_RECOVERY`,
     'GCC_WARN_UNUSED_VARIABLE' => 'NO'
   }
   s.prefix_header_contents = <<-PREFIX_HEADER_CONTENTS
-  /* DASH specific secp256k1 configuration */
-#define USE_BASIC_CONFIG 1
-#define ENABLE_MODULE_RECOVERY 1
-#define DETERMINISTIC          1
-#if __BIG_ENDIAN__
-#define WORDS_BIGENDIAN        1
+/* Define if building universal (internal helper macro) */
+#define AC_APPLE_UNIVERSAL_BUILD 1
+/* Define this symbol if OpenSSL EC functions are available */
+/* #undef ENABLE_OPENSSL_TESTS */
+/* Define this symbol if __builtin_expect is available */
+#define HAVE_BUILTIN_EXPECT 1
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#define HAVE_DLFCN_H 1
+/* Define to 1 if you have the <inttypes.h> header file. */
+#define HAVE_INTTYPES_H 1
+/* Define this symbol if libcrypto is installed */
+/* #undef HAVE_LIBCRYPTO */
+/* Define this symbol if libgmp is installed */
+/* #undef HAVE_LIBGMP */
+/* Define to 1 if you have the <memory.h> header file. */
+#define HAVE_MEMORY_H 1
+/* Define to 1 if you have the <stdint.h> header file. */
+#define HAVE_STDINT_H 1
+/* Define to 1 if you have the <stdlib.h> header file. */
+#define HAVE_STDLIB_H 1
+/* Define to 1 if you have the <strings.h> header file. */
+#define HAVE_STRINGS_H 1
+/* Define to 1 if you have the <string.h> header file. */
+#define HAVE_STRING_H 1
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#define HAVE_SYS_STAT_H 1
+/* Define to 1 if you have the <sys/types.h> header file. */
+#define HAVE_SYS_TYPES_H 1
+/* Define to 1 if you have the <unistd.h> header file. */
+#define HAVE_UNISTD_H 1
+/* Define to 1 if the system has the type `__int128'. */
+/* #undef HAVE___INT128 */
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
+#define LT_OBJDIR ".libs/"
+/* Name of package */
+#define PACKAGE "libsecp256k1"
+/* Define to the address where bug reports for this package should be sent. */
+#define PACKAGE_BUGREPORT ""
+/* Define to the full name of this package. */
+#define PACKAGE_NAME "libsecp256k1"
+/* Define to the full name and version of this package. */
+#define PACKAGE_STRING "libsecp256k1 0.1"
+/* Define to the one symbol short name of this package. */
+#define PACKAGE_TARNAME "libsecp256k1"
+/* Define to the home page for this package. */
+#define PACKAGE_URL ""
+/* Define to the version of this package. */
+#define PACKAGE_VERSION "0.1"
+/* Define to 1 if you have the ANSI C header files. */
+#define STDC_HEADERS 1
+/* Define this symbol to enable x86_64 assembly optimizations */
+/* #undef USE_ASM_X86_64 */
+/* Define this symbol to use endomorphism optimization */
+/* #undef USE_ENDOMORPHISM */
+/* Define this symbol to use the FIELD_10X26 implementation */
+#define USE_FIELD_10X26 1
+/* Define this symbol to use the FIELD_5X52 implementation */
+/* #undef USE_FIELD_5X52 */
+/* Define this symbol to use the native field inverse implementation */
+#define USE_FIELD_INV_BUILTIN 1
+/* Define this symbol to use the num-based field inverse implementation */
+/* #undef USE_FIELD_INV_NUM */
+/* Define this symbol to use the gmp implementation for num */
+/* #undef USE_NUM_GMP */
+/* Define this symbol to use no num implementation */
+#define USE_NUM_NONE 1
+/* Define this symbol to use the 4x64 scalar implementation */
+/* #undef USE_SCALAR_4X64 */
+/* Define this symbol to use the 8x32 scalar implementation */
+#define USE_SCALAR_8X32 1
+/* Define this symbol to use the native scalar inverse implementation */
+#define USE_SCALAR_INV_BUILTIN 1
+/* Define this symbol to use the num-based scalar inverse implementation */
+/* #undef USE_SCALAR_INV_NUM */
+/* Version number of package */
+#define VERSION "0.1"
+/* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
+   significant byte first (like Motorola and SPARC, unlike Intel). */
+#if defined AC_APPLE_UNIVERSAL_BUILD
+# if defined __BIG_ENDIAN__
+#  define WORDS_BIGENDIAN 1
+# endif
+#else
+# ifndef WORDS_BIGENDIAN
+/* #  undef WORDS_BIGENDIAN */
+# endif
 #endif
+#define DETERMINISTIC 1
 
+
+
+/* Dash: Basic Config Overrides */
+#undef USE_ASM_X86_64
+#undef USE_ECMULT_STATIC_PRECOMPUTATION
+#undef USE_EXTERNAL_ASM
+#undef USE_EXTERNAL_DEFAULT_CALLBACKS
+#undef USE_FIELD_INV_BUILTIN
+#undef USE_FIELD_INV_NUM
+#undef USE_NUM_GMP
+#undef USE_NUM_NONE
+#undef USE_SCALAR_INV_BUILTIN
+#undef USE_SCALAR_INV_NUM
+#undef USE_FORCE_WIDEMUL_INT64
+#undef USE_FORCE_WIDEMUL_INT128
+#undef ECMULT_WINDOW_SIZE
+
+#define USE_NUM_NONE 1
+#define USE_FIELD_INV_BUILTIN 1
+#define USE_SCALAR_INV_BUILTIN 1
+#define USE_WIDEMUL_64 1
+#define ECMULT_WINDOW_SIZE 15
+
+/* Dash: specific secp256k1 configuration */
+#define ENABLE_MODULE_RECOVERY 1
 #define ENABLE_MODULE_ECDH 1
+#define ECMULT_GEN_PREC_BITS 4
 
-#include <secp256k1_dash/src/basic-config.h>
+
+#import "secp256k1.h"
 
 PREFIX_HEADER_CONTENTS
 
