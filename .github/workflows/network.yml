@@ -3,13 +3,13 @@ name: Network
 on:
   push:
     branches:
-      - master
-      - develop
-      - nightly
+#      - master
+#      - develop
+#      - nightly
   pull_request:
     branches:
-      - master
-      - develop
+#      - master
+#      - develop
 
 jobs:
   build:
