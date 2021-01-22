@@ -8,7 +8,7 @@
 #import "BigIntTypes.h"
 #import <Foundation/Foundation.h>
 
-@class DSChain, DSSimplifiedMasternodeEntryEntity, DSWallet, DSMerkleBlock;
+@class DSChain, DSSimplifiedMasternodeEntryEntity, DSWallet, DSBlock;
 
 @interface DSSimplifiedMasternodeEntry : NSObject
 
@@ -41,15 +41,15 @@
 
 + (instancetype)simplifiedMasternodeEntryWithData:(NSData *)data atBlockHeight:(uint32_t)blockHeight onChain:(DSChain *)chain;
 
-+ (instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash confirmedHash:(UInt256)confirmedHash address:(UInt128)address port:(uint16_t)port operatorBLSPublicKey:(UInt384)operatorBLSPublicKey previousOperatorBLSPublicKeys:(NSDictionary<DSMerkleBlock *, NSData *> *)previousOperatorBLSPublicKeys keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid previousValidity:(NSDictionary<DSMerkleBlock *, NSData *> *)previousValidity knownConfirmedAtHeight:(uint32_t)knownConfirmedAtHeight updateHeight:(uint32_t)updateHeight simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash previousSimplifiedMasternodeEntryHashes:(NSDictionary<DSMerkleBlock *, NSData *> *)previousSimplifiedMasternodeEntryHashes onChain:(DSChain *)chain;
++ (instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash confirmedHash:(UInt256)confirmedHash address:(UInt128)address port:(uint16_t)port operatorBLSPublicKey:(UInt384)operatorBLSPublicKey previousOperatorBLSPublicKeys:(NSDictionary<DSBlock *, NSData *> *)previousOperatorBLSPublicKeys keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid previousValidity:(NSDictionary<DSBlock *, NSData *> *)previousValidity knownConfirmedAtHeight:(uint32_t)knownConfirmedAtHeight updateHeight:(uint32_t)updateHeight simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash previousSimplifiedMasternodeEntryHashes:(NSDictionary<DSBlock *, NSData *> *)previousSimplifiedMasternodeEntryHashes onChain:(DSChain *)chain;
 
 - (DSSimplifiedMasternodeEntryEntity *)simplifiedMasternodeEntryEntityInContext:(NSManagedObjectContext *)context;
 
 - (BOOL)verifySignature:(UInt768)signature forMessageDigest:(UInt256)messageDigest;
 
-- (void)keepInfoOfPreviousEntryVersion:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlockHash:(UInt256)blockHash;
+- (void)keepInfoOfPreviousEntryVersion:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlockHash:(UInt256)blockHash atBlockHeight:(uint32_t)blockHeight;
 
-- (UInt256)simplifiedMasternodeEntryHashAtBlock:(DSMerkleBlock *)merkleBlock;
+- (UInt256)simplifiedMasternodeEntryHashAtBlock:(DSBlock *)merkleBlock;
 
 - (UInt256)simplifiedMasternodeEntryHashAtBlockHash:(UInt256)blockHash;
 
@@ -57,7 +57,7 @@
 
 - (UInt256)simplifiedMasternodeEntryHashAtBlockHeight:(uint32_t)blockHeight;
 
-- (UInt384)operatorPublicKeyAtBlock:(DSMerkleBlock *)merkleBlock;
+- (UInt384)operatorPublicKeyAtBlock:(DSBlock *)merkleBlock;
 
 - (UInt384)operatorPublicKeyAtBlockHash:(UInt256)blockHash;
 
@@ -65,7 +65,7 @@
 
 - (UInt384)operatorPublicKeyAtBlockHeight:(uint32_t)blockHeight;
 
-- (BOOL)isValidAtBlock:(DSMerkleBlock *)merkleBlock;
+- (BOOL)isValidAtBlock:(DSBlock *)merkleBlock;
 
 - (BOOL)isValidAtBlockHash:(UInt256)blockHash;
 
@@ -73,7 +73,7 @@
 
 - (BOOL)isValidAtBlockHeight:(uint32_t)blockHeight;
 
-- (UInt256)confirmedHashAtBlock:(DSMerkleBlock *)merkleBlock;
+- (UInt256)confirmedHashAtBlock:(DSBlock *)merkleBlock;
 
 - (UInt256)confirmedHashAtBlockHash:(UInt256)blockHash;
 

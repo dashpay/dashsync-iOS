@@ -29,6 +29,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 FOUNDATION_EXPORT NSString *const DSMasternodeListDidChangeNotification;
+FOUNDATION_EXPORT NSString *const DSCurrentMasternodeListDidChangeNotification;
+FOUNDATION_EXPORT NSString *const DSMasternodeManagerNotificationMasternodeListKey;
 FOUNDATION_EXPORT NSString *const DSMasternodeListDiffValidationErrorNotification;
 FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 
@@ -85,6 +87,8 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 
 - (DSQuorumEntry *_Nullable)quorumEntryForChainLockRequestID:(UInt256)requestID forBlockHeight:(uint32_t)blockHeight;
 
+- (DSMasternodeList *_Nullable)masternodeListForBlockHash:(UInt256)blockHash withBlockHeightLookup:(uint32_t (^_Nullable)(UInt256 blockHash))blockHeightLookup;
+
 - (DSMasternodeList *_Nullable)masternodeListForBlockHash:(UInt256)blockHash;
 
 - (BOOL)requestMasternodeListForBlockHeight:(uint32_t)blockHeight error:(NSError *_Nullable *_Nullable)error;
@@ -93,7 +97,9 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 
 - (void)reloadMasternodeLists;
 
-- (void)checkPingTimesForCurrentMasternodeListInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(NSMutableDictionary<NSData *, NSError *> *))completion;
+- (void)reloadMasternodeListsWithBlockHeightLookup:(uint32_t (^_Nullable)(UInt256 blockHash))blockHeightLookup;
+
+- (void)checkPingTimesForCurrentMasternodeListInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(NSMutableDictionary<NSData *, NSNumber *> *pingTimes, NSMutableDictionary<NSData *, NSError *> *errors))completion;
 
 @end
 

@@ -1,0 +1,50 @@
+name: Lint
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+      - nightly
+  pull_request:
+    branches:
+      - master
+      - develop
+
+jobs:
+  build:
+    name: Objective-C Linter
+    runs-on: macOS-latest
+    steps:
+      - name: Checkout DashSync
+        uses: actions/checkout@v2
+        with:
+          path: dashsync
+      - name: Checkout DashGRPC
+        uses: actions/checkout@v2
+        with:
+          path: dapi-grpc
+          repository: 'dashevo/dapi-grpc'
+          ref: 'v0.16.0-dev.3'
+      - uses: actions/cache@v2
+        with:
+          path: ./dashsync/Example/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+      - name: Dependencies
+        working-directory: ./dashsync/Example
+        run: pod install
+      - name: Install OCLint
+        run: |
+          brew tap oclint/formulae
+          brew install oclint
+      - name: Lint
+        working-directory: ./dashsync/Example
+        run: |
+          sh run_oclint.sh
+      - name: Check Lint
+        working-directory: ./dashsync/Example
+        run: |
+          sh check_lint.sh
+

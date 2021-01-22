@@ -28,6 +28,16 @@
 
 @implementation DSBlock
 
+- (instancetype)initWithBlockHash:(UInt256)blockHash height:(uint32_t)height onChain:(DSChain *)chain {
+    if (!(self = [self init])) return nil;
+    _height = height;
+    _blockHash = blockHash;
+
+    self.chain = chain;
+
+    return self;
+}
+
 - (instancetype)initWithVersion:(uint32_t)version timestamp:(uint32_t)timestamp height:(uint32_t)height onChain:(DSChain *)chain {
     if (!(self = [self init])) return nil;
     _height = height;

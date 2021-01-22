@@ -19,11 +19,15 @@
 @implementation DSMasternodeListEntity
 
 - (DSMasternodeList *)masternodeListWithSimplifiedMasternodeEntryPool:(NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *)simplifiedMasternodeEntries quorumEntryPool:(NSDictionary<NSNumber *, NSDictionary *> *)quorumEntries {
+    return [self masternodeListWithSimplifiedMasternodeEntryPool:simplifiedMasternodeEntries quorumEntryPool:quorumEntries withBlockHeightLookup:nil];
+}
+
+- (DSMasternodeList *)masternodeListWithSimplifiedMasternodeEntryPool:(NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *)simplifiedMasternodeEntries quorumEntryPool:(NSDictionary<NSNumber *, NSDictionary *> *)quorumEntries withBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
     NSMutableArray *masternodeEntriesArray = [NSMutableArray array];
     for (DSSimplifiedMasternodeEntryEntity *masternodeEntity in self.masternodes) {
         DSSimplifiedMasternodeEntry *masternodeEntry = [simplifiedMasternodeEntries objectForKey:masternodeEntity.providerRegistrationTransactionHash];
         if (!masternodeEntry) {
-            masternodeEntry = masternodeEntity.simplifiedMasternodeEntry;
+            masternodeEntry = [masternodeEntity simplifiedMasternodeEntryWithBlockHeightLookup:blockHeightLookup];
         }
         [masternodeEntriesArray addObject:masternodeEntry];
     }

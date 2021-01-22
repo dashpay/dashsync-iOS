@@ -136,7 +136,7 @@
     //oldPrevious means the old set of previous values
 
     //SimplifiedMasternodeEntryHashes
-    NSDictionary *oldPreviousSimplifiedMasternodeEntryHashesDictionary = [self blockHashDictionaryFromMerkleBlockDictionary:simplifiedMasternodeEntry.previousSimplifiedMasternodeEntryHashes];
+    NSDictionary *oldPreviousSimplifiedMasternodeEntryHashesDictionary = [self blockHashDictionaryFromBlockDictionary:simplifiedMasternodeEntry.previousSimplifiedMasternodeEntryHashes];
     if (oldPreviousSimplifiedMasternodeEntryHashesDictionary && oldPreviousSimplifiedMasternodeEntryHashesDictionary.count) {
         NSDictionary *currentPreviousSimplifiedMasternodeEntryHashesDictionary = self.previousSimplifiedMasternodeEntryHashes;
         if (!currentPreviousSimplifiedMasternodeEntryHashesDictionary || currentPreviousSimplifiedMasternodeEntryHashesDictionary.count == 0) {
@@ -150,7 +150,7 @@
     }
 
     //OperatorBLSPublicKeys
-    NSDictionary *oldPreviousOperatorBLSPublicKeysDictionary = [self blockHashDictionaryFromMerkleBlockDictionary:simplifiedMasternodeEntry.previousOperatorPublicKeys];
+    NSDictionary *oldPreviousOperatorBLSPublicKeysDictionary = [self blockHashDictionaryFromBlockDictionary:simplifiedMasternodeEntry.previousOperatorPublicKeys];
     if (oldPreviousOperatorBLSPublicKeysDictionary && oldPreviousOperatorBLSPublicKeysDictionary.count) {
         NSDictionary *currentPreviousOperatorBLSPublicKeysDictionary = self.previousOperatorBLSPublicKeys;
         if (!currentPreviousOperatorBLSPublicKeysDictionary || currentPreviousOperatorBLSPublicKeysDictionary.count == 0) {
@@ -164,7 +164,7 @@
     }
 
     //MasternodeValidity
-    NSDictionary *oldPreviousValidityDictionary = [self blockHashDictionaryFromMerkleBlockDictionary:simplifiedMasternodeEntry.previousValidity];
+    NSDictionary *oldPreviousValidityDictionary = [self blockHashDictionaryFromBlockDictionary:simplifiedMasternodeEntry.previousValidity];
     if (oldPreviousValidityDictionary && oldPreviousValidityDictionary.count) {
         NSDictionary *currentPreviousValidityDictionary = self.previousValidity;
         if (!currentPreviousValidityDictionary || currentPreviousValidityDictionary.count == 0) {
@@ -268,31 +268,45 @@
     return [self anyObjectInContext:chainEntity.managedObjectContext matching:@"(simplifiedMasternodeEntryHash == %@) && (chain == %@)", simplifiedMasternodeEntryHash, chainEntity];
 }
 
-- (NSDictionary<DSMerkleBlock *, id> *)merkleBlockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, id> *)blockHashDictionary {
+- (NSDictionary<DSBlock *, id> *)blockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, id> *)blockHashDictionary {
+    return [self blockDictionaryFromBlockHashDictionary:blockHashDictionary blockHeightLookup:nil];
+}
+
+- (NSDictionary<DSBlock *, id> *)blockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, id> *)blockHashDictionary blockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
     NSMutableDictionary *rDictionary = [NSMutableDictionary dictionary];
     DSChain *chain = self.chain.chain;
     for (NSData *blockHash in blockHashDictionary) {
-        DSMerkleBlock *block = [chain blockForBlockHash:blockHash.UInt256];
+        DSBlock *block = [chain blockForBlockHash:blockHash.UInt256];
         if (block) {
             rDictionary[block] = blockHashDictionary[blockHash];
+        } else if (blockHeightLookup) {
+            uint32_t blockHeight = blockHeightLookup(blockHash.UInt256);
+            if (blockHeight && blockHeight != UINT32_MAX) {
+                DSBlock *block = [[DSBlock alloc] initWithBlockHash:blockHash.UInt256 height:blockHeight onChain:chain];
+                rDictionary[block] = blockHashDictionary[blockHash];
+            }
         }
     }
     return rDictionary;
 }
 
-- (NSDictionary<NSData *, id> *)blockHashDictionaryFromMerkleBlockDictionary:(NSDictionary<DSMerkleBlock *, id> *)blockHashDictionary {
+- (NSDictionary<NSData *, id> *)blockHashDictionaryFromBlockDictionary:(NSDictionary<DSBlock *, id> *)blockHashDictionary {
     NSMutableDictionary *rDictionary = [NSMutableDictionary dictionary];
-    for (DSMerkleBlock *merkleBlock in blockHashDictionary) {
-        NSData *blockHash = uint256_data(merkleBlock.blockHash);
+    for (DSBlock *block in blockHashDictionary) {
+        NSData *blockHash = uint256_data(block.blockHash);
         if (blockHash) {
-            rDictionary[blockHash] = blockHashDictionary[merkleBlock];
+            rDictionary[blockHash] = blockHashDictionary[block];
         }
     }
     return rDictionary;
 }
 
 - (DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry {
-    DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:[self.providerRegistrationTransactionHash UInt256] confirmedHash:[self.confirmedHash UInt256] address:self.ipv6Address.UInt128 port:self.port operatorBLSPublicKey:[self.operatorBLSPublicKey UInt384] previousOperatorBLSPublicKeys:[self merkleBlockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, NSData *> *)self.previousOperatorBLSPublicKeys] keyIDVoting:[self.keyIDVoting UInt160] isValid:self.isValid previousValidity:[self merkleBlockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, NSData *> *)self.previousValidity] knownConfirmedAtHeight:self.knownConfirmedAtHeight updateHeight:self.updateHeight simplifiedMasternodeEntryHash:[self.simplifiedMasternodeEntryHash UInt256] previousSimplifiedMasternodeEntryHashes:[self merkleBlockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, NSData *> *)self.previousSimplifiedMasternodeEntryHashes] onChain:self.chain.chain];
+    return [self simplifiedMasternodeEntryWithBlockHeightLookup:nil];
+}
+
+- (DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntryWithBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+    DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:[self.providerRegistrationTransactionHash UInt256] confirmedHash:[self.confirmedHash UInt256] address:self.ipv6Address.UInt128 port:self.port operatorBLSPublicKey:[self.operatorBLSPublicKey UInt384] previousOperatorBLSPublicKeys:[self blockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, NSData *> *)self.previousOperatorBLSPublicKeys blockHeightLookup:blockHeightLookup] keyIDVoting:[self.keyIDVoting UInt160] isValid:self.isValid previousValidity:[self blockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, NSData *> *)self.previousValidity blockHeightLookup:blockHeightLookup] knownConfirmedAtHeight:self.knownConfirmedAtHeight updateHeight:self.updateHeight simplifiedMasternodeEntryHash:[self.simplifiedMasternodeEntryHash UInt256] previousSimplifiedMasternodeEntryHashes:[self blockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, NSData *> *)self.previousSimplifiedMasternodeEntryHashes blockHeightLookup:blockHeightLookup] onChain:self.chain.chain];
     return simplifiedMasternodeEntry;
 }
 

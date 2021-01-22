@@ -65,6 +65,8 @@ typedef union _UInt256 UInt256;
 
 - (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash prevBlock:(UInt256)prevBlock timestamp:(uint32_t)timestamp height:(uint32_t)height chainWork:(UInt256)chainWork onChain:(DSChain *)chain;
 
+- (instancetype)initWithBlockHash:(UInt256)blockHash height:(uint32_t)height onChain:(DSChain *)chain;
+
 - (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash prevBlock:(UInt256)prevBlock timestamp:(uint32_t)timestamp merkleRoot:(UInt256)merkleRoot target:(uint32_t)target chainWork:(UInt256)aggregateWork height:(uint32_t)height onChain:(DSChain *)chain;
 
 - (instancetype)initWithCheckpoint:(DSCheckpoint *)checkpoint onChain:(DSChain *)chain;

@@ -260,10 +260,14 @@
 }
 
 - (void)reloadMasternodeLists {
+    [self reloadMasternodeListsWithBlockHeightLookup:nil];
+}
+
+- (void)reloadMasternodeListsWithBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
     [self.masternodeListsByBlockHash removeAllObjects];
     [self.masternodeListsBlockHashStubs removeAllObjects];
     self.currentMasternodeList = nil;
-    [self loadMasternodeLists];
+    [self loadMasternodeListsWithBlockHeightLookup:blockHeightLookup];
 }
 
 - (void)deleteEmptyMasternodeLists {
@@ -279,6 +283,10 @@
 }
 
 - (void)loadMasternodeLists {
+    [self loadMasternodeListsWithBlockHeightLookup:nil];
+}
+
+- (void)loadMasternodeListsWithBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
     [self.managedObjectContext performBlockAndWait:^{
         NSFetchRequest *fetchRequest = [[DSMasternodeListEntity fetchRequest] copy];
         [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"block.chain == %@", [self.chain chainEntityInContext:self.managedObjectContext]]];
@@ -291,7 +299,7 @@
             DSMasternodeListEntity *masternodeListEntity = [masternodeListEntities objectAtIndex:i];
             if ((i == masternodeListEntities.count - 1) || ((self.masternodeListsByBlockHash.count < 3) && (neededMasternodeListHeight >= masternodeListEntity.block.height))) { //either last one or there are less than 3 (we aim for 3)
                 //we only need a few in memory as new quorums will mostly be verified against recent masternode lists
-                DSMasternodeList *masternodeList = [masternodeListEntity masternodeListWithSimplifiedMasternodeEntryPool:[simplifiedMasternodeEntryPool copy] quorumEntryPool:quorumEntryPool];
+                DSMasternodeList *masternodeList = [masternodeListEntity masternodeListWithSimplifiedMasternodeEntryPool:[simplifiedMasternodeEntryPool copy] quorumEntryPool:quorumEntryPool withBlockHeightLookup:blockHeightLookup];
                 [self.masternodeListsByBlockHash setObject:masternodeList forKey:uint256_data(masternodeList.blockHash)];
                 [self.cachedBlockHashHeights setObject:@(masternodeListEntity.block.height) forKey:uint256_data(masternodeList.blockHash)];
                 [simplifiedMasternodeEntryPool addEntriesFromDictionary:masternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash];
@@ -340,7 +348,13 @@
             }
         }
     }
+    bool changed = _currentMasternodeList != currentMasternodeList;
     _currentMasternodeList = currentMasternodeList;
+    if (changed) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSCurrentMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSMasternodeManagerNotificationMasternodeListKey: self.currentMasternodeList ? self.currentMasternodeList : [NSNull null]}];
+        });
+    }
 }
 
 - (void)loadFileDistributedMasternodeLists {
@@ -358,14 +372,14 @@
     }
 }
 
-- (DSMasternodeList *)loadMasternodeListAtBlockHash:(NSData *)blockHash {
+- (DSMasternodeList *)loadMasternodeListAtBlockHash:(NSData *)blockHash withBlockHeightLookup:(uint32_t (^_Nullable)(UInt256 blockHash))blockHeightLookup {
     __block DSMasternodeList *masternodeList = nil;
     [self.managedObjectContext performBlockAndWait:^{
         DSMasternodeListEntity *masternodeListEntity = [DSMasternodeListEntity anyObjectInContext:self.managedObjectContext matching:@"block.chain == %@ && block.blockHash == %@", [self.chain chainEntityInContext:self.managedObjectContext], blockHash];
         NSMutableDictionary *simplifiedMasternodeEntryPool = [NSMutableDictionary dictionary];
         NSMutableDictionary *quorumEntryPool = [NSMutableDictionary dictionary];
 
-        masternodeList = [masternodeListEntity masternodeListWithSimplifiedMasternodeEntryPool:[simplifiedMasternodeEntryPool copy] quorumEntryPool:quorumEntryPool];
+        masternodeList = [masternodeListEntity masternodeListWithSimplifiedMasternodeEntryPool:[simplifiedMasternodeEntryPool copy] quorumEntryPool:quorumEntryPool withBlockHeightLookup:blockHeightLookup];
         if (masternodeList) {
             [self.masternodeListsByBlockHash setObject:masternodeList forKey:blockHash];
             [self.masternodeListsBlockHashStubs removeObject:blockHash];
@@ -392,9 +406,13 @@
 // MARK: - Masternode List Helpers
 
 - (DSMasternodeList *)masternodeListForBlockHash:(UInt256)blockHash {
+    return [self masternodeListForBlockHash:blockHash withBlockHeightLookup:nil];
+}
+
+- (DSMasternodeList *)masternodeListForBlockHash:(UInt256)blockHash withBlockHeightLookup:(uint32_t (^_Nullable)(UInt256 blockHash))blockHeightLookup {
     DSMasternodeList *masternodeList = [self.masternodeListsByBlockHash objectForKey:uint256_data(blockHash)];
     if (!masternodeList && [self.masternodeListsBlockHashStubs containsObject:uint256_data(blockHash)]) {
-        masternodeList = [self loadMasternodeListAtBlockHash:uint256_data(blockHash)];
+        masternodeList = [self loadMasternodeListAtBlockHash:uint256_data(blockHash) withBlockHeightLookup:blockHeightLookup];
     }
     if (!masternodeList) {
         DSLog(@"No masternode list at %@", uint256_hex(blockHash));
@@ -436,7 +454,14 @@
 }
 
 - (void)addToMasternodeRetrievalQueueArray:(NSArray *)masternodeBlockHashDataArray {
-    [self.masternodeListRetrievalQueue addObjectsFromArray:masternodeBlockHashDataArray];
+    NSMutableArray *nonEmptyBlockHashes = [NSMutableArray array];
+    for (NSData *blockHashData in masternodeBlockHashDataArray) {
+        NSAssert(uint256_is_not_zero(blockHashData.UInt256), @"We should not be adding an empty block hash");
+        if (uint256_is_not_zero(blockHashData.UInt256)) {
+            [nonEmptyBlockHashes addObject:blockHashData];
+        }
+    }
+    [self.masternodeListRetrievalQueue addObjectsFromArray:nonEmptyBlockHashes];
     self.masternodeListRetrievalQueueMaxAmount = MAX(self.masternodeListRetrievalQueueMaxAmount, self.masternodeListRetrievalQueue.count);
     [self.masternodeListRetrievalQueue sortUsingComparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2) {
         NSData *obj1BlockHash = (NSData *)obj1;
@@ -1425,10 +1450,10 @@
 
 // MARK: - Meta information
 
-- (void)checkPingTimesForCurrentMasternodeListInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(NSMutableDictionary<NSData *, NSError *> *))completion {
+- (void)checkPingTimesForCurrentMasternodeListInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(NSMutableDictionary<NSData *, NSNumber *> *pingTimes, NSMutableDictionary<NSData *, NSError *> *errors))completion {
     __block NSArray<DSSimplifiedMasternodeEntry *> *entries = self.currentMasternodeList.simplifiedMasternodeEntries;
     [self.chain.chainManager.DAPIClient checkPingTimesForMasternodes:entries
-                                                          completion:^(NSMutableDictionary<NSData *, NSError *> *_Nonnull errors) {
+                                                          completion:^(NSMutableDictionary<NSData *, NSNumber *> *_Nonnull pingTimes, NSMutableDictionary<NSData *, NSError *> *_Nonnull errors) {
                                                               [context performBlockAndWait:^{
                                                                   for (DSSimplifiedMasternodeEntry *entry in entries) {
                                                                       [entry savePlatformPingInfoInContext:context];
@@ -1439,7 +1464,7 @@
 
                                                               if (completion != nil) {
                                                                   dispatch_async(dispatch_get_main_queue(), ^{
-                                                                      completion(errors);
+                                                                      completion(pingTimes, errors);
                                                                   });
                                                               }
                                                           }];

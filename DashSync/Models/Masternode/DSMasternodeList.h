@@ -22,7 +22,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) NSArray<DSSimplifiedMasternodeEntry *> *simplifiedMasternodeEntries;
 @property (nonatomic, readonly) NSArray<NSData *> *providerTxOrderedHashes;
-@property (nonatomic, readonly) NSArray<NSData *> *hashesForMerkleRoot;
 @property (nonatomic, readonly) NSDictionary<NSNumber *, NSDictionary<NSData *, DSQuorumEntry *> *> *quorums;
 @property (nonatomic, readonly) UInt256 blockHash;
 @property (nonatomic, readonly) uint32_t height;
@@ -89,6 +88,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSDictionary<NSData *, NSData *> *)hashDictionaryForMerkleRootWithBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup;
 
 - (NSDictionary *)toDictionaryUsingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup;
+
+- (DSSimplifiedMasternodeEntry *)masternodeForRegistrationHash:(UInt256)registrationHash;
 
 @end
 
