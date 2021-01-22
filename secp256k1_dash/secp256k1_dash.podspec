@@ -6,7 +6,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'secp256k1_dash'
-  s.version          = '0.1.4-alpha.1'
+  s.version          = '0.1.4-alpha.2'
   s.summary          = 'Optimized C library for EC operations on curve secp256k1'
   s.description      = <<-DESC
 Optimized C library for EC operations on curve secp256k1.
@@ -29,18 +29,32 @@ Configured with following defines: `USE_BASIC_CONFIG`, `ENABLE_MODULE_RECOVERY`,
 
   s.ios.deployment_target = '9.0'
   s.osx.deployment_target = '10.15'
-  s.watchos.deployment_target = '2.0'
+  # s.watchos.deployment_target = '2.0'
 
   s.libraries = 'c++'
-  s.source_files = 'src/*.{h,c}', 'src/modules/**/*.h', 'include/*.h'
-  s.exclude_files = 'src/bench*', 'src/test*', 'src/gen_context.c', 'src/libsecp256k1-config.h', 'src/**/test*', 'src/valgrind_ctime_test.c'
-  s.public_header_files = 'include/*.h'
-  s.private_header_files = 'src/*.h'
-  s.header_mappings_dir = '.'
+  s.source_files = 'src/**.{h,c}',
+    'include/secp256k1.h',
+    'include/secp256k1_ecdh.h', 
+    'include/secp256k1_recovery.h',
+    'include/secp256k1_preallocated.h',
+    'src/modules/ecdh/*.h',
+    'src/modules/recovery/*.h'
+  s.exclude_files = 'src/bench*',
+    'src/test*',
+    'src/gen_context.c', 
+    'src/libsecp256k1-config.h', 
+    'src/**/test*', 
+    'src/valgrind_ctime_test.c'
+  s.public_header_files = 'include/secp256k1.h',
+    'include/secp256k1_ecdh.h', 
+    'include/secp256k1_recovery.h'
+    # 'include/secp256k1_preallocated.h'
+  # s.private_header_files = 'include/secp256k1_preallocated.h', 
+  # s.header_mappings_dir = '.'
   s.prepare_command = './autogen.sh'
 
   s.pod_target_xcconfig = { 
-    'HEADER_SEARCH_PATHS' => '${PODS_ROOT}/**',
+    'HEADER_SEARCH_PATHS' => '${PODS_ROOT}/secp256k1_dash',
     'CLANG_WARN_DOCUMENTATION_COMMENTS' => 'NO',
     'GCC_WARN_64_TO_32_BIT_CONVERSION' => 'NO',
     'GCC_WARN_INHIBIT_ALL_WARNINGS' => 'YES',
