@@ -17,7 +17,7 @@ Pod::Spec.new do |s|
   s.source           = { :git => 'https://github.com/dashevo/dashsync-iOS.git', :tag => s.version.to_s }
 
   s.ios.deployment_target = '12.0'
-  s.macos.deployment_target = '10.15'
+  s.osx.deployment_target = '10.15'
   
   s.requires_arc = true
 
@@ -35,7 +35,7 @@ Pod::Spec.new do |s|
   s.ios.framework = 'UIKit'
   s.macos.framework = 'Cocoa'
   s.compiler_flags = '-Wno-comma'
-  s.dependency 'secp256k1_dash', '0.1.4-alpha.1'
+  s.dependency 'secp256k1_dash', '0.1.4-alpha.2'
   s.dependency 'bls-signatures-pod', '0.2.11'
   s.dependency 'CocoaLumberjack', '3.6.0'
   s.ios.dependency 'DWAlertController', '0.2.1'
