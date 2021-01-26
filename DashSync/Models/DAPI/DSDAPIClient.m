@@ -306,7 +306,9 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
                                                mErrorsPerAttempt[@(currentAttempt)] = error;
                                            }
                                            if (retryCount) {
-                                               [self publishTransition:transition retryCount:retryCount - 1 delay:delay + delayIncrease delayIncrease:delayIncrease currentAttempt:currentAttempt + 1 currentErrors:mErrorsPerAttempt success:success failure:failure];
+                                               dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), self.coreNetworkingDispatchQueue, ^{
+                                                   [self publishTransition:transition retryCount:retryCount - 1 delay:delay + delayIncrease delayIncrease:delayIncrease currentAttempt:currentAttempt + 1 currentErrors:mErrorsPerAttempt success:success failure:failure];
+                                               });
                                            } else if (failure) {
                                                failure([mErrorsPerAttempt copy]);
                                            }

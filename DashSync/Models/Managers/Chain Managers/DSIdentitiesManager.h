@@ -61,6 +61,12 @@ typedef void (^DashpayUserInfosCompletionBlock)(BOOL success, NSDictionary<NSDat
 
 - (id<DSDAPINetworkServiceRequest>)fetchProfileForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity withCompletion:(DashpayUserInfoCompletionBlock)completion;
 
+- (id<DSDAPINetworkServiceRequest>)fetchProfileForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity
+                                                          retryCount:(uint32_t)retryCount
+                                                               delay:(uint32_t)delay
+                                                       delayIncrease:(uint32_t)delayIncrease
+                                                      withCompletion:(DashpayUserInfoCompletionBlock)completion;
+
 - (id<DSDAPINetworkServiceRequest>)fetchProfilesForBlockchainIdentities:(NSArray<DSBlockchainIdentity *> *)blockchainIdentities withCompletion:(DashpayUserInfosCompletionBlock)completion;
 
 - (void)searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID:(NSData *)userID withCompletion:(IdentitiesCompletionBlock)completion;
