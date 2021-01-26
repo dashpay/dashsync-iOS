@@ -1031,7 +1031,7 @@
 		FB9C9E5A25B7F2B80039880E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		FB9C9E5C25B7F2B80039880E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FB9C9E5D25B7F2B80039880E /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		FB9C9EBB25B7FD3D0039880E /* network.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; name = network.yml; path = ../.github/workflows/network.yml; sourceTree = "<group>"; };
+		FB9C9EBB25B7FD3D0039880E /* network.backupyml */ = {isa = PBXFileReference; lastKnownFileType = text; name = network.backupyml; path = ../.github/workflows/network.backupyml; sourceTree = "<group>"; };
 		FBA676312235A7920069EC2F /* BlockchainIdentities.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = BlockchainIdentities.storyboard; sourceTree = "<group>"; };
 		FBA676332235A9620069EC2F /* Helpers.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Helpers.storyboard; sourceTree = "<group>"; };
 		FBA676352235AD090069EC2F /* Governance.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Governance.storyboard; sourceTree = "<group>"; };
@@ -2026,7 +2026,7 @@
 				FB974FA425B1012C00A1DCE7 /* lint.yml */,
 				FB9C9E1125B6094B0039880E /* coverage.yml */,
 				FB974F3225AE7B6200A1DCE7 /* test.yml */,
-				FB9C9EBB25B7FD3D0039880E /* network.yml */,
+				FB9C9EBB25B7FD3D0039880E /* network.backupyml */,
 			);
 			name = CI;
 			sourceTree = "<group>";
