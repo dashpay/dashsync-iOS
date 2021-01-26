@@ -6,6 +6,7 @@
 //
 //
 
+#import "DSTransactionManager.h"
 #import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
 
@@ -17,6 +18,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSData *)finalizeWithFriendshipIdentifier;
 + (void)deleteFriendRequestsOnChainEntity:(DSChainEntity *)chainEntity;
+- (void)sendAmount:(uint64_t)amount fromAccount:(DSAccount *)account requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest
+                 presentChallenge:(DSTransactionChallengeBlock)challenge
+    transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion
+                 signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion
+              publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion
+           errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock;
 
 @end
 

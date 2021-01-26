@@ -1305,13 +1305,39 @@
     }
 
     // to improve chain download performance, if we received 500 block hashes, we request the next 500 block hashes
-    if (blockHashes.count >= 500 && !self.needsFilterUpdate) {
-        if ([self.chain.chainManager shouldRequestMerkleBlocksForZoneAfterHeight:self.chain.lastSyncBlockHeight + 1]) {
-            [self sendGetblocksMessageWithLocators:@[uint256_data_from_obj(blockHashes.lastObject), uint256_data_from_obj(blockHashes.firstObject)]
-                                       andHashStop:UINT256_ZERO];
-        } else {
-            [self sendGetheadersMessageWithLocators:@[uint256_data_from_obj(blockHashes.lastObject), uint256_data_from_obj(blockHashes.firstObject)]
-                                        andHashStop:UINT256_ZERO];
+    if (!self.needsFilterUpdate) {
+        if (blockHashes.count >= 500) {
+            if ([self.chain.chainManager shouldRequestMerkleBlocksForZoneAfterHeight:self.chain.lastSyncBlockHeight + 1]) {
+                [self sendGetblocksMessageWithLocators:@[uint256_data_from_obj(blockHashes.lastObject), uint256_data_from_obj(blockHashes.firstObject)]
+                                           andHashStop:UINT256_ZERO];
+            } else {
+                [self sendGetheadersMessageWithLocators:@[uint256_data_from_obj(blockHashes.lastObject), uint256_data_from_obj(blockHashes.firstObject)]
+                                            andHashStop:UINT256_ZERO];
+            }
+        } else if (blockHashes.count >= 2 && self.chain.chainManager.syncPhase == DSChainSyncPhase_ChainSync) {
+            BOOL foundLastHash = FALSE;
+            UInt256 lastTerminalBlockHash = self.chain.lastTerminalBlock.blockHash;
+            for (NSValue *blockHash in blockHashes) {
+                if (uint256_eq(uint256_data_from_obj(blockHash).UInt256, lastTerminalBlockHash)) {
+                    foundLastHash = TRUE;
+                }
+            }
+            if (!foundLastHash) {
+                //we did not find the last hash, lets ask the remote again for blocks as a race condition might have occured
+                [self sendGetblocksMessageWithLocators:@[uint256_data_from_obj(blockHashes.lastObject), uint256_data_from_obj(blockHashes.firstObject)]
+                                           andHashStop:UINT256_ZERO];
+            }
+        } else if (blockHashes.count == 1 && self.chain.chainManager.syncPhase == DSChainSyncPhase_ChainSync) {
+            //this could either be a terminal block, or very rarely (1 in 500) the race condition dealt with above but block hashes being 1
+            //First we ust find if the blockHash is a terminal block hash
+            //
+
+            BOOL foundInTerminalBlocks = (self.chain.terminalBlocks[blockHashes.firstObject] != nil);
+            BOOL isLastTerminalBlock = uint256_eq(self.chain.lastTerminalBlock.blockHash, uint256_data_from_obj(blockHashes.firstObject).UInt256);
+            if (foundInTerminalBlocks && !isLastTerminalBlock) {
+                [self sendGetblocksMessageWithLocators:@[uint256_data_from_obj(blockHashes.lastObject), uint256_data_from_obj(blockHashes.firstObject)]
+                                           andHashStop:UINT256_ZERO];
+            }
         }
     }
 

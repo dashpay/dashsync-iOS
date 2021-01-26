@@ -7,12 +7,16 @@
 //
 
 #import "BigIntTypes.h"
+#import "DSAccount.h"
 #import "DSAccountEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
 #import "DSChainEntity+CoreDataClass.h"
+#import "DSChainManager.h"
 #import "DSDashpayUserEntity+CoreDataClass.h"
 #import "DSFriendRequestEntity+CoreDataClass.h"
+#import "DSPaymentRequest.h"
+#import "DSWallet.h"
 #import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 
@@ -49,6 +53,37 @@
 
 - (NSString *)debugDescription {
     return [NSString stringWithFormat:@"%@ - { %@ -> %@ / %d }", [super debugDescription], self.sourceContact.associatedBlockchainIdentity.dashpayUsername.stringValue, self.destinationContact.associatedBlockchainIdentity.dashpayUsername.stringValue, self.account.index];
+}
+
+- (void)sendAmount:(uint64_t)amount fromAccount:(DSAccount *)account requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest
+                 presentChallenge:(DSTransactionChallengeBlock)challenge
+    transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion
+                 signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion
+              publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion
+           errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock {
+    DSIncomingFundsDerivationPath *derivationPath = [account derivationPathForFriendshipWithIdentifier:self.friendshipIdentifier];
+    NSAssert(derivationPath.extendedPublicKeyData, @"Extended public key must exist already");
+    NSString *address = [derivationPath receiveAddress];
+
+    DSPaymentRequest *paymentRequest = [DSPaymentRequest requestWithString:address onChain:account.wallet.chain];
+    paymentRequest.amount = amount;
+
+    NSAssert([paymentRequest isValidAsNonDashpayPaymentRequest], @"Payment request must be valid");
+
+    [account.wallet.chain.chainManager.transactionManager confirmPaymentRequest:paymentRequest
+                                                    usingUserBlockchainIdentity:nil
+                                                                    fromAccount:account
+                                                          acceptInternalAddress:NO
+                                                           acceptReusingAddress:YES
+                                                        addressIsFromPasteboard:NO
+                                           requiresSpendingAuthenticationPrompt:YES
+                                    keepAuthenticatedIfErrorAfterAuthentication:NO
+                                                       requestingAdditionalInfo:additionalInfoRequest
+                                                               presentChallenge:challenge
+                                                  transactionCreationCompletion:transactionCreationCompletion
+                                                               signedCompletion:signedCompletion
+                                                            publishedCompletion:publishedCompletion
+                                                         errorNotificationBlock:errorNotificationBlock];
 }
 
 @end

@@ -187,10 +187,24 @@
     [self.tableView reloadData];
 }
 
+- (void)showAlertForPingTimes:(NSMutableDictionary<NSData *, NSNumber *> *)pingTimes errors:(NSMutableDictionary<NSData *, NSError *> *)errors {
+    NSString *report = [NSString stringWithFormat:@"success : %lu | errors : %lu", (unsigned long)pingTimes.count, errors.count];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Report" message:report preferredStyle:UIAlertControllerStyleAlert];
+
+    [alert addAction:[UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleCancel handler:nil]];
+
+    [self presentViewController:alert
+                       animated:YES
+                     completion:^{
+
+                     }];
+}
+
 - (void)pingPlatform {
     [self.chain.chainManager.masternodeManager checkPingTimesForCurrentMasternodeListInContext:[NSManagedObjectContext viewContext]
                                                                                 withCompletion:^(NSMutableDictionary<NSData *, NSNumber *> *_Nonnull pingTimes, NSMutableDictionary<NSData *, NSError *> *_Nonnull errors) {
                                                                                     [self.tableView reloadData];
+                                                                                    [self showAlertForPingTimes:pingTimes errors:errors];
                                                                                 }];
 }
 

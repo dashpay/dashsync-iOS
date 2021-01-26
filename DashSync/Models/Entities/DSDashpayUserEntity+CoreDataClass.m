@@ -26,9 +26,12 @@
 #import "DSDashpayUserEntity+CoreDataClass.h"
 #import "DSDerivationPathEntity+CoreDataClass.h"
 #import "DSDerivationPathFactory.h"
+#import "DSFriendRequestEntity+CoreDataClass.h"
 #import "DSFundsDerivationPath.h"
 #import "DSIncomingFundsDerivationPath.h"
+#import "DSPaymentRequest.h"
 #import "DSPotentialOneWayFriendship.h"
+#import "DSTransactionManager.h"
 #import "DSTransientDashpayUser.h"
 #import "DSTxOutputEntity+CoreDataClass.h"
 #import "DSWallet.h"
@@ -119,6 +122,28 @@
         [self.managedObjectContext ds_save];
     }
     return nil;
+}
+
+- (void)sendAmount:(uint64_t)amount fromAccount:(DSAccount *)account toFriend:(DSDashpayUserEntity *)friend requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest
+                 presentChallenge:(DSTransactionChallengeBlock)challenge
+    transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion
+                 signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion
+              publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion
+           errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock {
+    DSFriendRequestEntity *friendRequest = [[self.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@", friend]] anyObject];
+    NSAssert(friendRequest, @"there must be a friendRequest");
+    [friendRequest sendAmount:amount fromAccount:account requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion errorNotificationBlock:errorNotificationBlock];
+}
+
+- (void)sendAmount:(uint64_t)amount fromAccount:(DSAccount *)account toFriendWithIdentityIdentifier:(UInt256)identityIdentifier requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest
+                  presentChallenge:(DSTransactionChallengeBlock)challenge
+     transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion
+                  signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion
+               publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion
+            errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock {
+    DSFriendRequestEntity *friendRequest = [[self.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact.associatedBlockchainIdentity.uniqueID == %@", uint256_data(identityIdentifier)]] anyObject];
+    NSAssert(friendRequest, @"there must be a friendRequest");
+    [friendRequest sendAmount:amount fromAccount:account requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion errorNotificationBlock:errorNotificationBlock];
 }
 
 @end
