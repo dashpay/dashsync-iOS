@@ -257,20 +257,60 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     }
 }
 
-- (void)publishTransition:(DSTransition *)transition
+- (void)publishTransition:(DSTransition *)stateTransition
                   success:(void (^)(NSDictionary *successDictionary))success
                   failure:(void (^)(NSError *error))failure {
+    //default to 5 attempts
+    [self publishTransition:stateTransition
+                 retryCount:5
+                      delay:2
+              delayIncrease:1
+             currentAttempt:0
+              currentErrors:@{}
+                    success:success
+                    failure:^(NSDictionary<NSNumber *, NSError *> *_Nonnull errorPerAttempt) {
+                        if (failure) {
+                            failure(errorPerAttempt[@(4)]);
+                        }
+                    }];
+}
+
+- (void)publishTransition:(DSTransition *)transition
+               retryCount:(uint32_t)retryCount
+                    delay:(uint32_t)delay
+            delayIncrease:(uint32_t)delayIncrease
+           currentAttempt:(uint32_t)currentAttempt
+            currentErrors:(NSDictionary<NSNumber *, NSError *> *)errorPerAttempt
+                  success:(void (^)(NSDictionary *successDictionary))success
+                  failure:(void (^)(NSDictionary<NSNumber *, NSError *> *errorPerAttempt))failure {
     DSDAPIPlatformNetworkService *service = self.DAPINetworkService;
     if (!service) {
-        failure([NSError errorWithDomain:DSDAPIClientErrorDomain
-                                    code:DSDAPIClientErrorCodeNoKnownDAPINodes
-                                userInfo:@{NSLocalizedDescriptionKey: @"No known DAPI Nodes"}]);
+        NSMutableDictionary *mErrorsPerAttempt = [errorPerAttempt mutableCopy];
+        NSError *error = [NSError errorWithDomain:DSDAPIClientErrorDomain
+                                             code:DSDAPIClientErrorCodeNoKnownDAPINodes
+                                         userInfo:@{NSLocalizedDescriptionKey: @"No known DAPI Nodes"}];
+        mErrorsPerAttempt[@(currentAttempt)] = error;
+        if (retryCount) {
+            [self publishTransition:transition retryCount:retryCount - 1 delay:delay + delayIncrease delayIncrease:delayIncrease currentAttempt:currentAttempt + 1 currentErrors:mErrorsPerAttempt success:success failure:failure];
+        } else if (failure) {
+            failure([mErrorsPerAttempt copy]);
+        }
         return;
     }
 
     [self.DAPINetworkService publishTransition:transition
                                        success:success
-                                       failure:failure];
+                                       failure:^(NSError *_Nonnull error) {
+                                           NSMutableDictionary *mErrorsPerAttempt = [errorPerAttempt mutableCopy];
+                                           if (error) {
+                                               mErrorsPerAttempt[@(currentAttempt)] = error;
+                                           }
+                                           if (retryCount) {
+                                               [self publishTransition:transition retryCount:retryCount - 1 delay:delay + delayIncrease delayIncrease:delayIncrease currentAttempt:currentAttempt + 1 currentErrors:mErrorsPerAttempt success:success failure:failure];
+                                           } else if (failure) {
+                                               failure([mErrorsPerAttempt copy]);
+                                           }
+                                       }];
 }
 
 
