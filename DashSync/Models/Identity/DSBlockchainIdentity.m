@@ -2115,7 +2115,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             NSDictionary<NSString *, NSData *> *saltedDomainHashes = [self saltedDomainHashesForUsernameFullPaths:usernameFullPaths inContext:context];
             if (saltedDomainHashes.count) {
                 [self monitorForDPNSPreorderSaltedDomainHashes:saltedDomainHashes
-                                                withRetryCount:2
+                                                withRetryCount:4
                                                      inContext:context
                                                     completion:^(BOOL allFound, NSError *error) {
                                                         if (allFound) {

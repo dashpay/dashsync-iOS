@@ -125,7 +125,7 @@
 
                                   [self.transactionManager publishTransaction:transaction
                                                                    completion:^(NSError *error) {
-                                                                       XCTAssert(error == nil, @"There should not be an error");
+                                                                       XCTAssertNil(error, @"There should not be an error");
                                                                        if (!sent) {
                                                                            sent = YES;
                                                                            [self.fundingAccount registerTransaction:transaction saveImmediately:YES]; //not sure this is needed
@@ -181,7 +181,9 @@
                                                                                                                                completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
                                                                                                                                    XCTAssertNil(error, @"There should not be an error");
                                                                                                                                    XCTAssert(stepsCompleted = steps, @"We should have completed the same amount of steps that were requested");
-                                                                                                                                   [identityRegistrationFinishedExpectation fulfill];
+                                                                                                                                   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                                                                                                                                       [identityRegistrationFinishedExpectation fulfill];
+                                                                                                                                   });
                                                                                                                                }];
                                                                                                                        }
                                                                                                                    }];
@@ -206,7 +208,7 @@
                                                  [identityB sendNewFriendRequestToBlockchainIdentity:identityA
                                                                                           completion:^(BOOL success, NSArray<NSError *> *_Nullable errors) {
                                                                                               XCTAssert(success, @"This must succeed");
-                                                                                              XCTAssert(errors.count == 0, @"There should be no errors");
+                                                                                              XCTAssertEqualObjects(errors, @[], @"There should be no errors");
                                                                                               [friendshipFinishedExpectation fulfill];
                                                                                           }];
                                              }];
