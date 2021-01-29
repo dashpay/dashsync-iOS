@@ -373,7 +373,9 @@
     derivationPath.account = self;
     [self addDerivationPath:derivationPath];
     [self.mContactIncomingFundDerivationPathsDictionary setObject:derivationPath forKey:friendshipIdentifier];
-    [derivationPath loadAddressesInContext:context];
+    if ([derivationPath hasExtendedPublicKey]) {
+        [derivationPath loadAddressesInContext:context];
+    }
     [self updateBalance];
 }
 
@@ -383,7 +385,9 @@
     NSAssert(derivationPath.sourceIsLocal || !derivationPath.length, @"derivation path must not have a length unless it is on device");
     derivationPath.account = self;
     [self.mContactOutgoingFundDerivationPathsDictionary setObject:derivationPath forKey:friendshipIdentifier];
-    [derivationPath loadAddressesInContext:context];
+    if ([derivationPath hasExtendedPublicKey]) {
+        [derivationPath loadAddressesInContext:context];
+    }
 }
 
 - (void)addDerivationPathsFromArray:(NSArray<DSDerivationPath *> *)derivationPaths {

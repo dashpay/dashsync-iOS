@@ -1441,10 +1441,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 }
 
 - (void)fetchAllNetworkStateInformationWithCompletion:(void (^)(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion {
-    [self fetchAllNetworkStateInformationInContext:self.platformContext withCompletion:completion];
+    [self fetchAllNetworkStateInformationInContext:self.platformContext withCompletion:completion onCompletionQueue:dispatch_get_main_queue()];
 }
 
-- (void)fetchAllNetworkStateInformationInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion {
+- (void)fetchAllNetworkStateInformationInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
     dispatch_async(self.identityQueue, ^{
         DSBlockchainIdentityQueryStep query = DSBlockchainIdentityQueryStep_None;
         if ([DSOptionsManager sharedInstance].syncType & DSSyncType_BlockchainIdentities) {
@@ -1459,15 +1459,15 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                 query |= DSBlockchainIdentityQueryStep_ContactRequests;
             }
         }
-        [self fetchNetworkStateInformation:query inContext:context withCompletion:completion];
+        [self fetchNetworkStateInformation:query inContext:context withCompletion:completion onCompletionQueue:completionQueue];
     });
 }
 
 - (void)fetchL3NetworkStateInformation:(DSBlockchainIdentityQueryStep)queryStep withCompletion:(void (^)(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion {
-    [self fetchL3NetworkStateInformation:queryStep inContext:self.platformContext withCompletion:completion];
+    [self fetchL3NetworkStateInformation:queryStep inContext:self.platformContext withCompletion:completion onCompletionQueue:dispatch_get_main_queue()];
 }
 
-- (void)fetchL3NetworkStateInformation:(DSBlockchainIdentityQueryStep)queryStep inContext:(NSManagedObjectContext *)context withCompletion:(void (^)(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion {
+- (void)fetchL3NetworkStateInformation:(DSBlockchainIdentityQueryStep)queryStep inContext:(NSManagedObjectContext *)context withCompletion:(void (^)(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
     if (!(queryStep & DSBlockchainIdentityQueryStep_Identity) && (!self.activeKeyCount)) {
         //We need to fetch keys if we want to query other information
         if (completion) {
@@ -1520,12 +1520,14 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                                                                       [groupedErrors addObjectsFromArray:errors];
                                                                                   }
                                                                                   dispatch_group_leave(dispatchGroup);
-                                                                              }];
+                                                                              }
+                                                                           onCompletionQueue:completionQueue];
                                              } else {
                                                  dispatch_group_leave(dispatchGroup);
                                              }
                                          }
-                                     }];
+                                     }
+                                  onCompletionQueue:completionQueue];
     } else if (queryStep & DSBlockchainIdentityQueryStep_IncomingContactRequests) {
         dispatch_group_enter(dispatchGroup);
         [self fetchIncomingContactRequestsInContext:context
@@ -1535,7 +1537,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                              [groupedErrors addObjectsFromArray:errors];
                                          }
                                          dispatch_group_leave(dispatchGroup);
-                                     }];
+                                     }
+                                  onCompletionQueue:completionQueue];
     }
 
     //    if (queryStep & DSBlockchainIdentityQueryStep_IncomingContactRequests) {
@@ -1551,7 +1554,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
     __weak typeof(self) weakSelf = self;
     if (completion) {
-        dispatch_group_notify(dispatchGroup, dispatch_get_main_queue(), ^{
+        dispatch_group_notify(dispatchGroup, completionQueue, ^{
 #if DEBUG
             DSLogPrivate(@"Completed fetching of blockchain identity information for user %@ (query %lu - failures %lu)",
                 self.currentDashpayUsername ? self.currentDashpayUsername : self.uniqueIdString,
@@ -1577,33 +1580,33 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 }
 
 - (void)fetchNetworkStateInformation:(DSBlockchainIdentityQueryStep)querySteps withCompletion:(void (^)(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion {
-    [self fetchNetworkStateInformation:querySteps inContext:self.platformContext withCompletion:completion];
+    [self fetchNetworkStateInformation:querySteps inContext:self.platformContext withCompletion:completion onCompletionQueue:dispatch_get_main_queue()];
 }
 
-- (void)fetchNetworkStateInformation:(DSBlockchainIdentityQueryStep)querySteps inContext:(NSManagedObjectContext *)context withCompletion:(void (^)(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion {
+- (void)fetchNetworkStateInformation:(DSBlockchainIdentityQueryStep)querySteps inContext:(NSManagedObjectContext *)context withCompletion:(void (^)(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
     if (querySteps & DSBlockchainIdentityQueryStep_Identity) {
         [self fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, NSError *error) {
             if (!success) {
                 if (completion) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
+                    dispatch_async(completionQueue, ^{
                         completion(DSBlockchainIdentityQueryStep_Identity, @[error]);
                     });
                 }
                 return;
             }
-            [self fetchL3NetworkStateInformation:querySteps inContext:context withCompletion:completion];
+            [self fetchL3NetworkStateInformation:querySteps inContext:context withCompletion:completion onCompletionQueue:completionQueue];
         }];
     } else {
         NSAssert([self blockchainIdentityEntityInContext:context], @"Blockchain identity entity should be known");
-        [self fetchL3NetworkStateInformation:querySteps inContext:context withCompletion:completion];
+        [self fetchL3NetworkStateInformation:querySteps inContext:context withCompletion:completion onCompletionQueue:completionQueue];
     }
 }
 
-- (void)fetchIfNeededNetworkStateInformation:(DSBlockchainIdentityQueryStep)querySteps inContext:(NSManagedObjectContext *)context withCompletion:(void (^)(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion {
+- (void)fetchIfNeededNetworkStateInformation:(DSBlockchainIdentityQueryStep)querySteps inContext:(NSManagedObjectContext *)context withCompletion:(void (^)(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
     dispatch_async(self.identityQueue, ^{
         if (!self.activeKeyCount) {
             if (self.isLocal) {
-                [self fetchNetworkStateInformation:querySteps inContext:context withCompletion:completion];
+                [self fetchNetworkStateInformation:querySteps inContext:context withCompletion:completion onCompletionQueue:completionQueue];
             } else {
                 DSBlockchainIdentityQueryStep stepsNeeded = DSBlockchainIdentityQueryStep_None;
                 if ([DSOptionsManager sharedInstance].syncType & DSSyncType_BlockchainIdentities) {
@@ -1620,7 +1623,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                         completion(DSBlockchainIdentityQueryStep_None, @[]);
                     }
                 } else {
-                    [self fetchNetworkStateInformation:stepsNeeded & querySteps inContext:context withCompletion:completion];
+                    [self fetchNetworkStateInformation:stepsNeeded & querySteps inContext:context withCompletion:completion onCompletionQueue:completionQueue];
                 }
             }
         } else {
@@ -1642,17 +1645,17 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                     completion(DSBlockchainIdentityQueryStep_None, @[]);
                 }
             } else {
-                [self fetchNetworkStateInformation:stepsNeeded & querySteps inContext:context withCompletion:completion];
+                [self fetchNetworkStateInformation:stepsNeeded & querySteps inContext:context withCompletion:completion onCompletionQueue:completionQueue];
             }
         }
     });
 }
 
 - (void)fetchNeededNetworkStateInformationWithCompletion:(void (^)(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion {
-    [self fetchNeededNetworkStateInformationInContext:self.platformContext withCompletion:completion];
+    [self fetchNeededNetworkStateInformationInContext:self.platformContext withCompletion:completion onCompletionQueue:dispatch_get_main_queue()];
 }
 
-- (void)fetchNeededNetworkStateInformationInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion {
+- (void)fetchNeededNetworkStateInformationInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
     dispatch_async(self.identityQueue, ^{
         if (!self.activeKeyCount) {
             if (self.isLocal) {
@@ -1673,7 +1676,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                         completion(DSBlockchainIdentityQueryStep_None, @[]);
                     }
                 } else {
-                    [self fetchNetworkStateInformation:stepsNeeded inContext:context withCompletion:completion];
+                    [self fetchNetworkStateInformation:stepsNeeded inContext:context withCompletion:completion onCompletionQueue:completionQueue];
                 }
             }
         } else {
@@ -1695,7 +1698,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                     completion(DSBlockchainIdentityQueryStep_None, @[]);
                 }
             } else {
-                [self fetchNetworkStateInformation:stepsNeeded inContext:context withCompletion:completion];
+                [self fetchNetworkStateInformation:stepsNeeded inContext:context withCompletion:completion onCompletionQueue:completionQueue];
             }
         }
     });
@@ -2776,10 +2779,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 // MARK: Sending a Friend Request
 
 - (void)sendNewFriendRequestToBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity completion:(void (^)(BOOL success, NSArray<NSError *> *_Nullable errors))completion {
-    [self sendNewFriendRequestToBlockchainIdentity:blockchainIdentity inContext:self.platformContext completion:completion];
+    [self sendNewFriendRequestToBlockchainIdentity:blockchainIdentity inContext:self.platformContext completion:completion onCompletionQueue:dispatch_get_main_queue()];
 }
 
-- (void)sendNewFriendRequestToBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity inContext:(NSManagedObjectContext *)context completion:(void (^)(BOOL success, NSArray<NSError *> *_Nullable errors))completion {
+- (void)sendNewFriendRequestToBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity inContext:(NSManagedObjectContext *)context completion:(void (^)(BOOL success, NSArray<NSError *> *_Nullable errors))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
     if (blockchainIdentity.isTransient) {
         blockchainIdentity.isTransient = FALSE;
         [self.identitiesManager registerForeignBlockchainIdentity:blockchainIdentity];
@@ -2803,7 +2806,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             return;
         }
         if (![blockchainIdentity isDashpayReady]) {
-            dispatch_async(dispatch_get_main_queue(), ^{
+            dispatch_async(completionQueue, ^{
                 completion(NO, @[[NSError errorWithDomain:@"DashSync"
                                                      code:501
                                                  userInfo:@{NSLocalizedDescriptionKey:
@@ -2821,7 +2824,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             //to do register a new key
             NSAssert(FALSE, @"we shouldn't be getting here");
             if (completion) {
-                dispatch_async(dispatch_get_main_queue(), ^{
+                dispatch_async(completionQueue, ^{
                     completion(NO, @[[NSError errorWithDomain:@"DashSync"
                                                          code:501
                                                      userInfo:@{NSLocalizedDescriptionKey:
@@ -2835,7 +2838,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
         [potentialFriendship createDerivationPathWithCompletion:^(BOOL success, DSIncomingFundsDerivationPath *_Nonnull incomingFundsDerivationPath) {
             if (!success) {
                 if (completion) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
+                    dispatch_async(completionQueue, ^{
                         completion(NO, @[[NSError errorWithDomain:@"DashSync"
                                                              code:501
                                                          userInfo:@{NSLocalizedDescriptionKey:
@@ -2847,7 +2850,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             [potentialFriendship encryptExtendedPublicKeyWithCompletion:^(BOOL success) {
                 if (!success) {
                     if (completion) {
-                        dispatch_async(dispatch_get_main_queue(), ^{
+                        dispatch_async(completionQueue, ^{
                             completion(NO, @[[NSError errorWithDomain:@"DashSync"
                                                                  code:501
                                                              userInfo:@{NSLocalizedDescriptionKey:
@@ -2856,7 +2859,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                     }
                     return;
                 }
-                [self sendNewFriendRequestMatchingPotentialFriendship:potentialFriendship inContext:context completion:completion];
+                [self sendNewFriendRequestMatchingPotentialFriendship:potentialFriendship inContext:context completion:completion onCompletionQueue:completionQueue];
             }];
         }];
     }];
@@ -2925,10 +2928,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 }
 
 - (void)sendNewFriendRequestMatchingPotentialFriendship:(DSPotentialOneWayFriendship *)potentialFriendship completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
-    [self sendNewFriendRequestMatchingPotentialFriendship:potentialFriendship inContext:self.platformContext completion:completion];
+    [self sendNewFriendRequestMatchingPotentialFriendship:potentialFriendship inContext:self.platformContext completion:completion onCompletionQueue:dispatch_get_main_queue()];
 }
 
-- (void)sendNewFriendRequestMatchingPotentialFriendship:(DSPotentialOneWayFriendship *)potentialFriendship inContext:(NSManagedObjectContext *)context completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
+- (void)sendNewFriendRequestMatchingPotentialFriendship:(DSPotentialOneWayFriendship *)potentialFriendship inContext:(NSManagedObjectContext *)context completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
     NSAssert(_isLocal, @"This should not be performed on a non local blockchain identity");
     if (!_isLocal) return;
     DSDashpayUserEntity *destinationDashpayUser = [potentialFriendship.destinationBlockchainIdentity matchingDashpayUserInContext:context];
@@ -2996,15 +2999,16 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                                                     completion(success, errors);
                                                                 });
                                                             }
-                                                        }];
+                                                        }
+                                                     onCompletionQueue:completionQueue];
                        }];
 }
 
 - (void)acceptFriendRequestFromBlockchainIdentity:(DSBlockchainIdentity *)otherBlockchainIdentity completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
-    [self acceptFriendRequestFromBlockchainIdentity:otherBlockchainIdentity inContext:self.platformContext completion:completion];
+    [self acceptFriendRequestFromBlockchainIdentity:otherBlockchainIdentity inContext:self.platformContext completion:completion onCompletionQueue:dispatch_get_main_queue()];
 }
 
-- (void)acceptFriendRequestFromBlockchainIdentity:(DSBlockchainIdentity *)otherBlockchainIdentity inContext:(NSManagedObjectContext *)context completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
+- (void)acceptFriendRequestFromBlockchainIdentity:(DSBlockchainIdentity *)otherBlockchainIdentity inContext:(NSManagedObjectContext *)context completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
     NSAssert(_isLocal, @"This should not be performed on a non local blockchain identity");
     if (!_isLocal) {
         if (completion) {
@@ -3027,12 +3031,16 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                                               DSLocalizedString(@"You can only accept a friend request from blockchain identity who has sent you one, and none were found", nil)}]]);
             }
         } else {
-            [self acceptFriendRequest:friendRequest completion:completion];
+            [self acceptFriendRequest:friendRequest completion:completion onCompletionQueue:completionQueue];
         }
     }];
 }
 
 - (void)acceptFriendRequest:(DSFriendRequestEntity *)friendRequest completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
+    [self acceptFriendRequest:friendRequest completion:completion onCompletionQueue:dispatch_get_main_queue()];
+}
+
+- (void)acceptFriendRequest:(DSFriendRequestEntity *)friendRequest completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
     NSAssert(_isLocal, @"This should not be performed on a non local blockchain identity");
     if (!_isLocal) {
         if (completion) {
@@ -3077,7 +3085,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                     }
                     return;
                 }
-                [self sendNewFriendRequestMatchingPotentialFriendship:potentialFriendship inContext:friendRequest.managedObjectContext completion:completion];
+                [self sendNewFriendRequestMatchingPotentialFriendship:potentialFriendship inContext:friendRequest.managedObjectContext completion:completion onCompletionQueue:completionQueue];
             }];
         } else {
             if (completion) {
@@ -3402,10 +3410,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 }
 
 - (void)fetchContactRequests:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
-    [self fetchContactRequestsInContext:self.platformContext withCompletion:completion];
+    [self fetchContactRequestsInContext:self.platformContext withCompletion:completion onCompletionQueue:dispatch_get_main_queue()];
 }
 
-- (void)fetchContactRequestsInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
+- (void)fetchContactRequestsInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
     __weak typeof(self) weakSelf = self;
     [self fetchIncomingContactRequestsInContext:context
                                  withCompletion:^(BOOL success, NSArray<NSError *> *errors) {
@@ -3426,19 +3434,20 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                          return;
                                      }
 
-                                     [strongSelf fetchOutgoingContactRequestsInContext:context withCompletion:completion];
-                                 }];
+                                     [strongSelf fetchOutgoingContactRequestsInContext:context withCompletion:completion onCompletionQueue:completionQueue];
+                                 }
+                              onCompletionQueue:completionQueue];
 }
 
 - (void)fetchIncomingContactRequests:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion {
-    [self fetchIncomingContactRequestsInContext:self.platformContext withCompletion:completion];
+    [self fetchIncomingContactRequestsInContext:self.platformContext withCompletion:completion onCompletionQueue:dispatch_get_main_queue()];
 }
 
-- (void)fetchIncomingContactRequestsInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
+- (void)fetchIncomingContactRequestsInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
     DPContract *dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
     if (dashpayContract.contractState != DPContractState_Registered) {
         if (completion) {
-            dispatch_async(dispatch_get_main_queue(), ^{
+            dispatch_async(completionQueue, ^{
                 completion(NO, @[[NSError errorWithDomain:@"DashSync"
                                                      code:500
                                                  userInfo:@{NSLocalizedDescriptionKey:
@@ -3451,7 +3460,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     if (![self activePrivateKeysAreLoadedWithFetchingError:&error]) {
         //The blockchain identity hasn't been intialized on the device, ask the user to activate the blockchain user, this action allows private keys to be cached on the blockchain identity level
         if (completion) {
-            dispatch_async(dispatch_get_main_queue(), ^{
+            dispatch_async(completionQueue, ^{
                 completion(NO, @[error ? error : [NSError errorWithDomain:@"DashSync"
                                                                      code:500
                                                                  userInfo:@{NSLocalizedDescriptionKey:
@@ -3468,7 +3477,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 if (completion) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
+                    dispatch_async(completionQueue, ^{
                         completion(NO, @[[NSError errorWithDomain:@"DashSync"
                                                              code:500
                                                          userInfo:@{NSLocalizedDescriptionKey:
@@ -3490,11 +3499,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                                      completion(success, errors);
                                                  });
                                              }
-                                         }];
+                                         }
+                                  onCompletionQueue:completionQueue];
         }
         failure:^(NSError *_Nonnull error) {
             if (completion) {
-                dispatch_async(dispatch_get_main_queue(), ^{
+                dispatch_async(completionQueue, ^{
                     completion(NO, @[error]);
                 });
             }
@@ -3502,14 +3512,14 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 }
 
 - (void)fetchOutgoingContactRequests:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
-    [self fetchOutgoingContactRequestsInContext:self.platformContext withCompletion:completion];
+    [self fetchOutgoingContactRequestsInContext:self.platformContext withCompletion:completion onCompletionQueue:dispatch_get_main_queue()];
 }
 
-- (void)fetchOutgoingContactRequestsInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
+- (void)fetchOutgoingContactRequestsInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
     DPContract *dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
     if (dashpayContract.contractState != DPContractState_Registered) {
         if (completion) {
-            dispatch_async(dispatch_get_main_queue(), ^{
+            dispatch_async(completionQueue, ^{
                 completion(NO, @[[NSError errorWithDomain:@"DashSync"
                                                      code:500
                                                  userInfo:@{NSLocalizedDescriptionKey:
@@ -3522,7 +3532,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     if (![self activePrivateKeysAreLoadedWithFetchingError:&error]) {
         //The blockchain identity hasn't been intialized on the device, ask the user to activate the blockchain user, this action allows private keys to be cached on the blockchain identity level
         if (completion) {
-            dispatch_async(dispatch_get_main_queue(), ^{
+            dispatch_async(completionQueue, ^{
                 completion(NO, @[error ? error : [NSError errorWithDomain:@"DashSync"
                                                                      code:500
                                                                  userInfo:@{NSLocalizedDescriptionKey:
@@ -3539,7 +3549,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 if (completion) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
+                    dispatch_async(completionQueue, ^{
                         completion(NO, @[[NSError errorWithDomain:@"DashSync"
                                                              code:500
                                                          userInfo:@{NSLocalizedDescriptionKey:
@@ -3562,11 +3572,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                              dispatch_async(dispatch_get_main_queue(), ^{
                                                  completion(success, errors);
                                              });
-                                         }];
+                                         }
+                                  onCompletionQueue:completionQueue];
         }
         failure:^(NSError *_Nonnull error) {
             if (completion) {
-                dispatch_async(dispatch_get_main_queue(), ^{
+                dispatch_async(completionQueue, ^{
                     completion(NO, @[error]);
                 });
             }
@@ -3630,7 +3641,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 /// @param rawContactRequests A dictionary of rawContactRequests, these are returned by the network.
 /// @param context The managed object context in which to process results.
 /// @param completion Completion callback with success boolean.
-- (void)handleContactRequestObjects:(NSArray<NSDictionary *> *)rawContactRequests context:(NSManagedObjectContext *)context completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
+- (void)handleContactRequestObjects:(NSArray<NSDictionary *> *)rawContactRequests context:(NSManagedObjectContext *)context completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
     NSMutableArray<DSContactRequest *> *incomingNewRequests = [NSMutableArray array];
     NSMutableArray<DSContactRequest *> *outgoingNewRequests = [NSMutableArray array];
     __block NSMutableArray *rErrors = [NSMutableArray array];
@@ -3668,7 +3679,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                   [rErrors addObjectsFromArray:errors];
                               }
                               dispatch_group_leave(dispatchGroup);
-                          }];
+                          }
+                   onCompletionQueue:completionQueue];
     }
     if ([outgoingNewRequests count]) {
         dispatch_group_enter(dispatchGroup);
@@ -3680,10 +3692,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                   [rErrors addObjectsFromArray:errors];
                               }
                               dispatch_group_leave(dispatchGroup);
-                          }];
+                          }
+                   onCompletionQueue:completionQueue];
     }
 
-    dispatch_group_notify(dispatchGroup, dispatch_get_main_queue(), ^{
+    dispatch_group_notify(dispatchGroup, completionQueue, ^{
         if (completion) {
             completion(succeeded, [rErrors copy]);
         }
@@ -3692,7 +3705,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
 - (void)handleIncomingRequests:(NSArray<DSContactRequest *> *)incomingRequests
                        context:(NSManagedObjectContext *)context
-                    completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
+                    completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion
+             onCompletionQueue:(dispatch_queue_t)completionQueue {
     [context performBlockAndWait:^{
         __block BOOL succeeded = YES;
         __block NSMutableArray *errors = [NSMutableArray array];
@@ -3816,7 +3830,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             }
         }
 
-        dispatch_group_notify(dispatchGroup, dispatch_get_main_queue(), ^{
+        dispatch_group_notify(dispatchGroup, completionQueue, ^{
             if (completion) {
                 completion(succeeded, [errors copy]);
             }
@@ -3886,7 +3900,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
 - (void)handleOutgoingRequests:(NSArray<DSContactRequest *> *)outgoingRequests
                        context:(NSManagedObjectContext *)context
-                    completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
+                    completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion
+             onCompletionQueue:(dispatch_queue_t)completionQueue {
     [context performBlockAndWait:^{
         __block NSMutableArray *errors = [NSMutableArray array];
 
@@ -3936,11 +3951,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                                                            [errors addObjectsFromArray:networkErrors];
                                                                        }
                                                                        dispatch_group_leave(dispatchGroup);
-                                                                   }];
+                                                                   }
+                                                                onCompletionQueue:completionQueue];
             }
         }
 
-        dispatch_group_notify(dispatchGroup, dispatch_get_main_queue(), ^{
+        dispatch_group_notify(dispatchGroup, completionQueue, ^{
             if (completion) {
                 completion(succeeded, [errors copy]);
             }

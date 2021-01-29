@@ -200,6 +200,25 @@
     return mArray;
 }
 
+- (NSArray<DSDerivationPath *> *)unloadedFundDerivationPathsNeedingExtendedPublicKeyForWallet:(DSWallet *)wallet {
+    NSMutableArray *mArray = [NSMutableArray array];
+
+    for (DSAccount *account in wallet.accounts) {
+        for (DSDerivationPath *fundsDerivationPath in account.outgoingFundDerivationPaths) {
+            if (![fundsDerivationPath hasExtendedPublicKey]) {
+                [mArray addObject:fundsDerivationPath];
+            }
+        }
+        for (DSDerivationPath *fundsDerivationPath in account.fundDerivationPaths) {
+            if (![fundsDerivationPath hasExtendedPublicKey]) {
+                [mArray addObject:fundsDerivationPath];
+            }
+        }
+    }
+
+    return [mArray copy];
+}
+
 - (NSArray<DSDerivationPath *> *)unloadedSpecializedDerivationPathsNeedingExtendedPublicKeyForWallet:(DSWallet *)wallet {
     NSMutableArray *mArray = [NSMutableArray array];
 
