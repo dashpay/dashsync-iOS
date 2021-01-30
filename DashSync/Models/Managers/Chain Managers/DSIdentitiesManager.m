@@ -36,6 +36,7 @@
 @interface DSIdentitiesManager ()
 
 @property (nonatomic, strong) DSChain *chain;
+@property (nonatomic, strong) dispatch_queue_t identityQueue;
 @property (nonatomic, strong) NSMutableDictionary *foreignBlockchainIdentities;
 
 @end
@@ -48,6 +49,7 @@
     if (!(self = [super init])) return nil;
 
     self.chain = chain;
+    _identityQueue = dispatch_queue_create([@"org.dashcore.dashsync.identity" UTF8String], DISPATCH_QUEUE_SERIAL);
     self.foreignBlockchainIdentities = [NSMutableDictionary dictionary];
     [self loadExternalBlockchainIdentities];
 
@@ -185,6 +187,7 @@
     DSDAPIClient *client = self.chain.chainManager.DAPIClient;
     id<DSDAPINetworkServiceRequest> call = [client.DAPINetworkService getDPNSDocumentsForUsernames:@[name]
         inDomain:domain
+        completionQueue:self.identityQueue
         success:^(NSArray<NSDictionary *> *_Nonnull documents) {
             __block NSMutableArray *rBlockchainIdentities = [NSMutableArray array];
             for (NSDictionary *document in documents) {
@@ -239,6 +242,7 @@
     }
     DSDAPIClient *client = self.chain.chainManager.DAPIClient;
     id<DSDAPINetworkServiceRequest> call = [client.DAPINetworkService getDashpayProfileForUserId:blockchainIdentity.uniqueIDData
+        completionQueue:self.identityQueue
         success:^(NSArray<NSDictionary *> *_Nonnull documents) {
             if (documents.count == 0) {
                 if (completion) {
@@ -294,6 +298,7 @@
     }
     DSDAPIClient *client = self.chain.chainManager.DAPIClient;
     id<DSDAPINetworkServiceRequest> call = [client.DAPINetworkService getDashpayProfilesForUserIds:blockchainIdentityUserIds
+        completionQueue:self.identityQueue
         success:^(NSArray<NSDictionary *> *_Nonnull documents) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
@@ -380,6 +385,7 @@
         inDomain:domain
         offset:offset
         limit:limit
+        completionQueue:self.identityQueue
         success:^(NSArray<NSDictionary *> *_Nonnull documents) {
             __block NSMutableArray *rBlockchainIdentities = [NSMutableArray array];
             for (NSDictionary *document in documents) {
@@ -423,6 +429,7 @@
 - (void)searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID:(NSData *)userID withCompletion:(IdentitiesCompletionBlock)completion {
     DSDAPIClient *client = self.chain.chainManager.DAPIClient;
     [client.DAPINetworkService getDPNSDocumentsForIdentityWithUserId:userID
+        completionQueue:self.identityQueue
         success:^(NSArray<NSDictionary *> *_Nonnull documents) {
             __block NSMutableArray *rBlockchainIdentities = [NSMutableArray array];
             for (NSDictionary *document in documents) {

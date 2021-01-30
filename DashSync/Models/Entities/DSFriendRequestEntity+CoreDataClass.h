@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSFriendRequestEntity : NSManagedObject
 
++ (NSData *)friendshipIdentifierWithSourceIdentifier:(UInt256)sourceIdentifier destinationIdentifier:(UInt256)destinationIdentifier onAccountIndex:(uint32_t)accountIndex;
 - (NSData *)finalizeWithFriendshipIdentifier;
 + (void)deleteFriendRequestsOnChainEntity:(DSChainEntity *)chainEntity;
 - (void)sendAmount:(uint64_t)amount fromAccount:(DSAccount *)account requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest

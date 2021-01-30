@@ -86,6 +86,7 @@
 
     [self.chainManager.DAPIClient.DAPINetworkService getIdentityByName:username
         inDomain:@"dash"
+        completionQueue:dispatch_get_main_queue()
         success:^(NSDictionary *_Nonnull blockchainIdentity) {
             NSLog(@"%@", blockchainIdentity);
         }

@@ -361,6 +361,7 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode)
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
 - (id<DSDAPINetworkServiceRequest>)fetchContractForId:(NSData *)contractId
+                                      completionQueue:(dispatch_queue_t)completionQueue
                                               success:(void (^)(NSDictionary *contract))success
                                               failure:(void (^)(NSError *error))failure;
 
@@ -373,6 +374,7 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode)
  */
 - (id<DSDAPINetworkServiceRequest> _Nullable)getIdentityByName:(NSString *)username
                                                       inDomain:(NSString *)domain
+                                               completionQueue:(dispatch_queue_t)completionQueue
                                                        success:(void (^)(NSDictionary *_Nullable blockchainIdentity))success
                                                        failure:(void (^)(NSError *error))failure;
 
@@ -384,6 +386,7 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode)
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
 - (id<DSDAPINetworkServiceRequest>)getIdentityById:(NSData *)userId
+                                   completionQueue:(dispatch_queue_t)completionQueue
                                            success:(void (^)(NSDictionary *blockchainIdentity))success
                                            failure:(void (^)(NSError *error))failure;
 
@@ -395,6 +398,7 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode)
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
 - (id<DSDAPINetworkServiceRequest>)publishTransition:(DSTransition *)stateTransition
+                                     completionQueue:(dispatch_queue_t)completionQueue
                                              success:(void (^)(NSDictionary *successDictionary))success
                                              failure:(void (^)(NSError *error))failure;
 
@@ -406,19 +410,23 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode)
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
 - (id<DSDAPINetworkServiceRequest>)fetchDocumentsWithRequest:(DSPlatformDocumentsRequest *)platformDocumentsRequest
+                                             completionQueue:(dispatch_queue_t)completionQueue
                                                      success:(void (^)(NSArray<NSDictionary *> *documents))success
                                                      failure:(void (^)(NSError *error))failure;
 
 - (id<DSDAPINetworkServiceRequest>)getDPNSDocumentsForPreorderSaltedDomainHashes:(NSArray *)saltedDomainHashes
+                                                                 completionQueue:(dispatch_queue_t)completionQueue
                                                                          success:(void (^)(NSArray<NSDictionary *> *documents))success
                                                                          failure:(void (^)(NSError *error))failure;
 
 - (id<DSDAPINetworkServiceRequest>)getDPNSDocumentsForUsernames:(NSArray *)usernames
                                                        inDomain:(NSString *)domain
+                                                completionQueue:(dispatch_queue_t)completionQueue
                                                         success:(void (^)(NSArray<NSDictionary *> *documents))success
                                                         failure:(void (^)(NSError *error))failure;
 
 - (id<DSDAPINetworkServiceRequest>)getDPNSDocumentsForIdentityWithUserId:(NSData *)userId
+                                                         completionQueue:(dispatch_queue_t)completionQueue
                                                                  success:(void (^)(NSArray<NSDictionary *> *documents))success
                                                                  failure:(void (^)(NSError *error))failure;
 
@@ -436,24 +444,29 @@ Get a list of users after matching search criteria
                                                                inDomain:(NSString *)domain
                                                                  offset:(uint32_t)offset
                                                                   limit:(uint32_t)limit
+                                                        completionQueue:(dispatch_queue_t)completionQueue
                                                                 success:(void (^)(NSArray<NSDictionary *> *documents))success
                                                                 failure:(void (^)(NSError *error))failure;
 
 - (id<DSDAPINetworkServiceRequest>)getDashpayIncomingContactRequestsForUserId:(NSData *)userId
                                                                         since:(NSTimeInterval)timestamp
+                                                              completionQueue:(dispatch_queue_t)completionQueue
                                                                       success:(void (^)(NSArray<NSDictionary *> *documents))success
                                                                       failure:(void (^)(NSError *error))failure;
 
 - (id<DSDAPINetworkServiceRequest>)getDashpayOutgoingContactRequestsForUserId:(NSData *)userId
                                                                         since:(NSTimeInterval)timestamp
+                                                              completionQueue:(dispatch_queue_t)completionQueue
                                                                       success:(void (^)(NSArray<NSDictionary *> *documents))success
                                                                       failure:(void (^)(NSError *error))failure;
 
 - (id<DSDAPINetworkServiceRequest>)getDashpayProfileForUserId:(NSData *)userId
+                                              completionQueue:(dispatch_queue_t)completionQueue
                                                       success:(void (^)(NSArray<NSDictionary *> *documents))success
                                                       failure:(void (^)(NSError *error))failure;
 
 - (id<DSDAPINetworkServiceRequest>)getDashpayProfilesForUserIds:(NSArray<NSData *> *)userId
+                                                completionQueue:(dispatch_queue_t)completionQueue
                                                         success:(void (^)(NSArray<NSDictionary *> *documents))success
                                                         failure:(void (^)(NSError *error))failure;
 
