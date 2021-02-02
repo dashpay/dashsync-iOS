@@ -171,8 +171,8 @@
         __block BOOL authenticated = NO;
         __block BOOL cancelledAuth = NO;
         for (DSWallet *wallet in wallets) {
-            NSArray *fundDerivationPaths = [[DSDerivationPathFactory sharedInstance] unloadedFundDerivationPathsNeedingExtendedPublicKeyForWallet:wallet];
-            NSArray *specializedDerivationPaths = [[DSDerivationPathFactory sharedInstance] unloadedSpecializedDerivationPathsNeedingExtendedPublicKeyForWallet:wallet];
+            NSArray *fundDerivationPaths = [[DSDerivationPathFactory sharedInstance] fundDerivationPathsNeedingExtendedPublicKeyForWallet:wallet];
+            NSArray *specializedDerivationPaths = [[DSDerivationPathFactory sharedInstance] specializedDerivationPathsNeedingExtendedPublicKeyForWallet:wallet];
             NSArray *derivationPaths = [fundDerivationPaths arrayByAddingObjectsFromArray:specializedDerivationPaths];
             if (derivationPaths.count) {
                 //upgrade scenario

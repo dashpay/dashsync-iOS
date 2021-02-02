@@ -167,6 +167,9 @@
 - (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit inContext:(NSManagedObjectContext *)context error:(NSError **)error {
     NSAssert(self.account, @"Account must be set");
     if (!self.account.wallet.isTransient) {
+        if (!self.addressesLoaded) {
+            sleep(1); //quite hacky, we need to fix this
+        }
         NSAssert(self.addressesLoaded, @"addresses must be loaded before calling this function");
     }
 

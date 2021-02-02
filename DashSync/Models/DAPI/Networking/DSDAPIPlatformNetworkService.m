@@ -453,7 +453,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                               success:(void (^)(NSDictionary *contract))success
                                               failure:(void (^)(NSError *error))failure {
     NSParameterAssert(contractId);
-
+    NSParameterAssert(completionQueue);
     GetDataContractRequest *getDataContractRequest = [[GetDataContractRequest alloc] init];
     getDataContractRequest.id_p = contractId;
     DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
@@ -471,6 +471,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                                                          success:(void (^)(NSArray<NSDictionary *> *documents))success
                                                                          failure:(void (^)(NSError *error))failure {
     NSAssert(saltedDomainHashes.count, @"saltedDomainHash must not be empty");
+    NSParameterAssert(completionQueue);
     DSPlatformDocumentsRequest *platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForPreorderSaltedHashes:saltedDomainHashes];
     platformDocumentsRequest.contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
     DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
@@ -488,6 +489,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                                                  success:(void (^)(NSArray<NSDictionary *> *documents))success
                                                                  failure:(void (^)(NSError *error))failure {
     NSParameterAssert(userId);
+    NSParameterAssert(completionQueue);
     DSPlatformDocumentsRequest *platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForUserId:userId];
     platformDocumentsRequest.contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
     DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
@@ -506,6 +508,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                                         success:(void (^)(NSArray<NSDictionary *> *documents))success
                                                         failure:(void (^)(NSError *error))failure {
     NSAssert(usernames.count, @"usernames must not be empty");
+    NSParameterAssert(completionQueue);
     DSPlatformDocumentsRequest *platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForUsernames:usernames inDomain:domain];
     platformDocumentsRequest.contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
     DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
@@ -526,6 +529,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                                                 success:(void (^)(NSArray<NSDictionary *> *documents))success
                                                                 failure:(void (^)(NSError *error))failure {
     NSParameterAssert(usernamePrefix);
+    NSParameterAssert(completionQueue);
     DSPlatformDocumentsRequest *platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForUsernameStartsWithSearch:[usernamePrefix lowercaseString] inDomain:domain offset:offset limit:limit];
     platformDocumentsRequest.contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
     DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
@@ -544,6 +548,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                              success:(void (^)(NSDictionary *_Nullable blockchainIdentity))success
                                              failure:(void (^)(NSError *error))failure {
     NSParameterAssert(username);
+    NSParameterAssert(completionQueue);
     DSPlatformDocumentsRequest *platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForUsername:username inDomain:domain];
     if (uint256_is_zero(self.chain.dpnsContractID)) return nil;
     platformDocumentsRequest.contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
@@ -582,6 +587,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                            success:(void (^)(NSDictionary *blockchainIdentity))success
                                            failure:(void (^)(NSError *error))failure {
     NSParameterAssert(userId);
+    NSParameterAssert(completionQueue);
 
     GetIdentityRequest *getIdentityRequest = [[GetIdentityRequest alloc] init];
     getIdentityRequest.id_p = userId;
@@ -600,7 +606,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                             success:(void (^)(NSDictionary *successDictionary))success
                                             failure:(void (^)(NSError *error))failure {
     NSParameterAssert(stateTransition);
-
+    NSParameterAssert(completionQueue);
     BroadcastStateTransitionRequest *broadcastStateRequest = [[BroadcastStateTransitionRequest alloc] init];
     broadcastStateRequest.stateTransition = stateTransition.data;
     DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
@@ -618,6 +624,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                              success:(void (^)(NSDictionary *successDictionary))success
                                              failure:(void (^)(NSError *error))failure {
     NSParameterAssert(stateTransition);
+    NSParameterAssert(completionQueue);
     DSLogPrivate(@"Broadcasting state transition to ip %@ with data %@ rawData %@", self.ipAddress, stateTransition.keyValueDictionary, stateTransition.data.hexString);
     BroadcastStateTransitionRequest *broadcastStateRequest = [[BroadcastStateTransitionRequest alloc] init];
     broadcastStateRequest.stateTransition = stateTransition.data;
@@ -636,6 +643,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                                                       success:(void (^)(NSArray<NSDictionary *> *documents))success
                                                                       failure:(void (^)(NSError *error))failure {
     NSParameterAssert(userId);
+    NSParameterAssert(completionQueue);
     DSPlatformDocumentsRequest *platformDocumentsRequest = [DSPlatformDocumentsRequest dashpayRequestForContactRequestsForRecipientUserId:userId since:timestamp];
     platformDocumentsRequest.contract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
     DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
@@ -654,6 +662,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                                                       success:(void (^)(NSArray<NSDictionary *> *documents))success
                                                                       failure:(void (^)(NSError *error))failure {
     NSParameterAssert(userId);
+    NSParameterAssert(completionQueue);
     DSPlatformDocumentsRequest *platformDocumentsRequest = [DSPlatformDocumentsRequest dashpayRequestForContactRequestsForSendingUserId:userId since:timestamp];
     platformDocumentsRequest.contract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
     DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
@@ -672,6 +681,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                                       success:(void (^)(NSArray<NSDictionary *> *documents))success
                                                       failure:(void (^)(NSError *error))failure {
     NSParameterAssert(userId);
+    NSParameterAssert(completionQueue);
     DSPlatformDocumentsRequest *platformDocumentsRequest = [DSPlatformDocumentsRequest dashpayRequestForProfileWithUserId:userId];
     platformDocumentsRequest.contract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
     DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
@@ -689,6 +699,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                                         success:(void (^)(NSArray<NSDictionary *> *documents))success
                                                         failure:(void (^)(NSError *error))failure {
     NSParameterAssert(userIds);
+    NSParameterAssert(completionQueue);
     NSAssert(userIds.count > 0, @"You must query at least 1 userId");
     DSPlatformDocumentsRequest *platformDocumentsRequest = [DSPlatformDocumentsRequest dashpayRequestForProfilesWithUserIds:userIds];
     platformDocumentsRequest.contract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
@@ -707,6 +718,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                                      success:(void (^)(NSArray<NSDictionary *> *documents))success
                                                      failure:(void (^)(NSError *error))failure {
     NSParameterAssert(platformDocumentsRequest);
+    NSParameterAssert(completionQueue);
     DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.completionQueue = completionQueue;

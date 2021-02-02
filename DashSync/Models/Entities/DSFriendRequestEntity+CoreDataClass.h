@@ -16,6 +16,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSFriendRequestEntity : NSManagedObject
 
++ (DSFriendRequestEntity *)existingFriendRequestEntityOnFriendshipIdentifier:(NSData *)friendshipIdentifier inContext:(NSManagedObjectContext *)context;
++ (DSFriendRequestEntity *)existingFriendRequestEntityWithSourceIdentifier:(UInt256)sourceIdentifier destinationIdentifier:(UInt256)destinationIdentifier onAccountIndex:(uint32_t)accountIndex inContext:(NSManagedObjectContext *)context;
 + (NSData *)friendshipIdentifierWithSourceIdentifier:(UInt256)sourceIdentifier destinationIdentifier:(UInt256)destinationIdentifier onAccountIndex:(uint32_t)accountIndex;
 - (NSData *)finalizeWithFriendshipIdentifier;
 + (void)deleteFriendRequestsOnChainEntity:(DSChainEntity *)chainEntity;

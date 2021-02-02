@@ -200,7 +200,7 @@
     return mArray;
 }
 
-- (NSArray<DSDerivationPath *> *)unloadedFundDerivationPathsNeedingExtendedPublicKeyForWallet:(DSWallet *)wallet {
+- (NSArray<DSDerivationPath *> *)fundDerivationPathsNeedingExtendedPublicKeyForWallet:(DSWallet *)wallet {
     NSMutableArray *mArray = [NSMutableArray array];
 
     for (DSAccount *account in wallet.accounts) {
@@ -219,12 +219,21 @@
     return [mArray copy];
 }
 
-- (NSArray<DSDerivationPath *> *)unloadedSpecializedDerivationPathsNeedingExtendedPublicKeyForWallet:(DSWallet *)wallet {
+- (NSArray<DSDerivationPath *> *)specializedDerivationPathsNeedingExtendedPublicKeyForWallet:(DSWallet *)wallet {
     NSMutableArray *mArray = [NSMutableArray array];
 
     for (DSDerivationPath *derivationPath in [self unloadedSpecializedDerivationPathsForWallet:wallet]) {
         if (![derivationPath hasExtendedPublicKey]) {
             [mArray addObject:derivationPath];
+        }
+    }
+    if (wallet.chain.isEvolutionEnabled) {
+        for (DSAccount *account in wallet.accounts) {
+            DSDerivationPath *masterBlockchainIdentityContactsDerivationPath = [DSDerivationPath masterBlockchainIdentityContactsDerivationPathForAccountNumber:account.accountNumber onChain:wallet.chain];
+            masterBlockchainIdentityContactsDerivationPath.wallet = wallet;
+            if (![masterBlockchainIdentityContactsDerivationPath hasExtendedPublicKey]) {
+                [mArray addObject:masterBlockchainIdentityContactsDerivationPath];
+            }
         }
     }
     return [mArray copy];
@@ -280,12 +289,6 @@
         blockchainIdentitiesTopupDerivationPath.wallet = wallet;
 
         [mArray addObject:blockchainIdentitiesTopupDerivationPath];
-
-        for (DSAccount *account in wallet.accounts) {
-            DSDerivationPath *masterBlockchainIdentityContactsDerivationPath = [DSDerivationPath masterBlockchainIdentityContactsDerivationPathForAccountNumber:account.accountNumber onChain:wallet.chain];
-            masterBlockchainIdentityContactsDerivationPath.wallet = wallet;
-            [mArray addObject:masterBlockchainIdentityContactsDerivationPath];
-        }
     }
 
     return [mArray copy];

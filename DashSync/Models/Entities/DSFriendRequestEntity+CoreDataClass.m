@@ -35,6 +35,19 @@
     }];
 }
 
++ (DSFriendRequestEntity *)existingFriendRequestEntityOnFriendshipIdentifier:(NSData *)friendshipIdentifier inContext:(NSManagedObjectContext *)context {
+    DSFriendRequestEntity *friendRequestEntity = [self anyObjectInContext:context matching:@"(friendshipIdentifier == %@)", friendshipIdentifier];
+//    if (!friendRequestEntity) {
+//        DSLog(@"No friend request entity on friendship identifier %@ %@", friendshipIdentifier.hexString, [NSThread callStackSymbols]);
+//    }
+    return friendRequestEntity;
+}
+
++ (DSFriendRequestEntity *)existingFriendRequestEntityWithSourceIdentifier:(UInt256)sourceIdentifier destinationIdentifier:(UInt256)destinationIdentifier onAccountIndex:(uint32_t)accountIndex inContext:(NSManagedObjectContext *)context {
+    NSData *friendshipIdentifier = [self friendshipIdentifierWithSourceIdentifier:sourceIdentifier destinationIdentifier:destinationIdentifier onAccountIndex:accountIndex];
+    return [self existingFriendRequestEntityOnFriendshipIdentifier:friendshipIdentifier inContext:context];
+}
+
 + (NSData *)friendshipIdentifierWithSourceIdentifier:(UInt256)sourceIdentifier destinationIdentifier:(UInt256)destinationIdentifier onAccountIndex:(uint32_t)accountIndex {
     UInt256 friendship = uint256_xor(sourceIdentifier, destinationIdentifier);
     if (uint256_sup(sourceIdentifier, destinationIdentifier)) {
@@ -52,6 +65,7 @@
     UInt256 sourceIdentifier = self.sourceContact.associatedBlockchainIdentity.uniqueID.UInt256;
     UInt256 destinationIdentifier = self.destinationContact.associatedBlockchainIdentity.uniqueID.UInt256;
     self.friendshipIdentifier = [DSFriendRequestEntity friendshipIdentifierWithSourceIdentifier:sourceIdentifier destinationIdentifier:destinationIdentifier onAccountIndex:self.account.index];
+    //DSLog(@"Creating friend request on friendship identifier %@ %@", self.friendshipIdentifier.hexString, [NSThread callStackSymbols]);
     return self.friendshipIdentifier;
 }
 

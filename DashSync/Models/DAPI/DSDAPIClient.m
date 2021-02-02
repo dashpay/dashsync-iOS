@@ -191,7 +191,8 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
             DSDAPICoreNetworkService *coreNetworkService = [[DSDAPICoreNetworkService alloc] initWithDAPINodeIPAddress:masternode.ipAddressString httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.coreNetworkingDispatchQueue onChain:self.chain];
             __block NSDate *time = [NSDate date];
             [coreNetworkService
-                getStatusWithSuccess:^(NSDictionary *_Nonnull status) {
+                getStatusWithCompletionQueue:self.platformMetadataDispatchQueue
+                success:^(NSDictionary *_Nonnull status) {
                     NSTimeInterval platformPing = -[time timeIntervalSinceNow] * 1000;
                     pingTimeDictionary[uint256_data(masternode.providerRegistrationTransactionHash)] = @(platformPing);
                     [masternode setPlatformPing:platformPing at:[NSDate date]];

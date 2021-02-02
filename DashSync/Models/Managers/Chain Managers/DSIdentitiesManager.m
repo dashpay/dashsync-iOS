@@ -219,19 +219,20 @@
     return call;
 }
 
-- (id<DSDAPINetworkServiceRequest>)fetchProfileForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity withCompletion:(DashpayUserInfoCompletionBlock)completion {
-    return [self fetchProfileForBlockchainIdentity:blockchainIdentity retryCount:5 delay:2 delayIncrease:1 withCompletion:completion];
+- (id<DSDAPINetworkServiceRequest>)fetchProfileForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity withCompletion:(DashpayUserInfoCompletionBlock)completion onCompletionQueue:(dispatch_queue_t)completionQueue {
+    return [self fetchProfileForBlockchainIdentity:blockchainIdentity retryCount:5 delay:2 delayIncrease:1 withCompletion:completion onCompletionQueue:completionQueue];
 }
 
 - (id<DSDAPINetworkServiceRequest>)fetchProfileForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity
                                                           retryCount:(uint32_t)retryCount
                                                                delay:(uint32_t)delay
                                                        delayIncrease:(uint32_t)delayIncrease
-                                                      withCompletion:(DashpayUserInfoCompletionBlock)completion {
+                                                      withCompletion:(DashpayUserInfoCompletionBlock)completion
+                                                   onCompletionQueue:(dispatch_queue_t)completionQueue {
     DPContract *dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
     if ([dashpayContract contractState] != DPContractState_Registered) {
         if (completion) {
-            dispatch_async(dispatch_get_main_queue(), ^{
+            dispatch_async(completionQueue, ^{
                 completion(NO, nil, [NSError errorWithDomain:@"DashSync"
                                                         code:500
                                                     userInfo:@{NSLocalizedDescriptionKey:
@@ -263,12 +264,12 @@
         }
         failure:^(NSError *_Nonnull error) {
             if (retryCount > 0) {
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                    [self fetchProfileForBlockchainIdentity:blockchainIdentity retryCount:retryCount - 1 delay:delay + delayIncrease delayIncrease:delayIncrease withCompletion:completion];
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), self.identityQueue, ^{
+                    [self fetchProfileForBlockchainIdentity:blockchainIdentity retryCount:retryCount - 1 delay:delay + delayIncrease delayIncrease:delayIncrease withCompletion:completion onCompletionQueue:completionQueue];
                 });
             } else {
                 if (completion) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
+                    dispatch_async(completionQueue, ^{
                         completion(NO, nil, error);
                     });
                 }
