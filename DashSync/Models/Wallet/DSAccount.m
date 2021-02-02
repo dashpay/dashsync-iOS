@@ -122,6 +122,16 @@
     return [[self alloc] initWithAccountNumber:accountNumber withDerivationPaths:derivationPaths inContext:context];
 }
 
+- (BOOL)verifyDerivationPathNotAlreadyPresent:(DSDerivationPath *)derivationPath {
+    for (DSDerivationPath *derivationPath3 in self.mFundDerivationPaths) {
+        if ([derivationPath isDerivationPathEqual:derivationPath3]) {
+            //Added derivation paths should be different from existing ones on account
+            return FALSE;
+        }
+    }
+    return TRUE;
+}
+
 - (void)verifyAndAssignAddedDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths {
     for (int i = 0; i < [derivationPaths count]; i++) {
         DSDerivationPath *derivationPath = [derivationPaths objectAtIndex:i];
@@ -144,9 +154,6 @@
         for (int j = i + 1; j < [derivationPaths count]; j++) {
             DSDerivationPath *derivationPath2 = [derivationPaths objectAtIndex:j];
             NSAssert([derivationPath isDerivationPathEqual:derivationPath2] == NO, @"Derivation paths should all be different");
-        }
-        for (DSDerivationPath *derivationPath3 in self.mFundDerivationPaths) {
-            NSAssert([derivationPath isDerivationPathEqual:derivationPath3] == NO, @"Added derivation paths should be different from existing ones on account");
         }
         //to do redo this check
         //        if ([self.mFundDerivationPaths count] || i != 0) {
@@ -363,7 +370,9 @@
     if (!_isViewOnlyAccount) {
         [self verifyAndAssignAddedDerivationPaths:@[derivationPath]];
     }
-    [self.mFundDerivationPaths addObject:derivationPath];
+    if ([self verifyDerivationPathNotAlreadyPresent:derivationPath]) {
+        [self.mFundDerivationPaths addObject:derivationPath];
+    }
 }
 
 - (void)addIncomingDerivationPath:(DSIncomingFundsDerivationPath *)derivationPath forFriendshipIdentifier:(NSData *)friendshipIdentifier inContext:(NSManagedObjectContext *)context {
@@ -373,7 +382,9 @@
     derivationPath.account = self;
     [self addDerivationPath:derivationPath];
     [self.mContactIncomingFundDerivationPathsDictionary setObject:derivationPath forKey:friendshipIdentifier];
-    [derivationPath loadAddressesInContext:context];
+    if ([derivationPath hasExtendedPublicKey]) {
+        [derivationPath loadAddressesInContext:context];
+    }
     [self updateBalance];
 }
 
@@ -383,7 +394,9 @@
     NSAssert(derivationPath.sourceIsLocal || !derivationPath.length, @"derivation path must not have a length unless it is on device");
     derivationPath.account = self;
     [self.mContactOutgoingFundDerivationPathsDictionary setObject:derivationPath forKey:friendshipIdentifier];
-    [derivationPath loadAddressesInContext:context];
+    if ([derivationPath hasExtendedPublicKey]) {
+        [derivationPath loadAddressesInContext:context];
+    }
 }
 
 - (void)addDerivationPathsFromArray:(NSArray<DSDerivationPath *> *)derivationPaths {
@@ -392,7 +405,11 @@
     if (!_isViewOnlyAccount) {
         [self verifyAndAssignAddedDerivationPaths:derivationPaths];
     }
-    [self.mFundDerivationPaths addObjectsFromArray:derivationPaths];
+    for (DSDerivationPath *derivationPath in derivationPaths) {
+        if ([self verifyDerivationPathNotAlreadyPresent:derivationPath]) {
+            [self.mFundDerivationPaths addObject:derivationPath];
+        }
+    }
 }
 
 - (NSArray *)fundDerivationPaths {

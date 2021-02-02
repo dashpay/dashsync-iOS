@@ -67,12 +67,15 @@
 
 - (void)didCloseWithTrailingMetadata:(nullable NSDictionary *)trailingMetadata
                                error:(nullable NSError *)error {
+    NSAssert(self.completionQueue, @"Completion queue must be set");
     if (!error && self.decodingError) {
         error = self.decodingError;
     }
     if (error) {
         if (self.errorHandler) {
-            self.errorHandler(error);
+            dispatch_async(self.completionQueue, ^{
+                self.errorHandler(error);
+            });
         }
         DSLog(@"error in didCloseWithTrailingMetadata from IP %@ %@", self.host ? self.host : @"Unknown", error);
         if (self.request) {
@@ -80,7 +83,9 @@
         }
 
     } else {
-        self.successHandler(self.responseObject);
+        dispatch_async(self.completionQueue, ^{
+            self.successHandler(self.responseObject);
+        });
     }
     DSLog(@"didCloseWithTrailingMetadata");
 }

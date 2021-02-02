@@ -22,6 +22,7 @@
 #import "DSDAPIPlatformNetworkService.h"
 #import "DSDashPlatform.h"
 #import "DSDocumentTransition.h"
+#import "DSIdentitiesManager+Protected.h"
 #import <DashSync/DSTransition.h>
 #import <DashSync/DashSync.h>
 #import <arpa/inet.h>
@@ -190,7 +191,8 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
             DSDAPICoreNetworkService *coreNetworkService = [[DSDAPICoreNetworkService alloc] initWithDAPINodeIPAddress:masternode.ipAddressString httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.coreNetworkingDispatchQueue onChain:self.chain];
             __block NSDate *time = [NSDate date];
             [coreNetworkService
-                getStatusWithSuccess:^(NSDictionary *_Nonnull status) {
+                getStatusWithCompletionQueue:self.platformMetadataDispatchQueue
+                success:^(NSDictionary *_Nonnull status) {
                     NSTimeInterval platformPing = -[time timeIntervalSinceNow] * 1000;
                     pingTimeDictionary[uint256_data(masternode.providerRegistrationTransactionHash)] = @(platformPing);
                     [masternode setPlatformPing:platformPing at:[NSDate date]];
@@ -262,11 +264,23 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
                   failure:(void (^)(NSError *error))failure {
     //default to 5 attempts
     [self publishTransition:stateTransition
+            completionQueue:self.chain.chainManager.identitiesManager.identityQueue
+                    success:success
+                    failure:failure];
+}
+
+- (void)publishTransition:(DSTransition *)stateTransition
+          completionQueue:(dispatch_queue_t)completionQueue
+                  success:(void (^)(NSDictionary *successDictionary))success
+                  failure:(void (^)(NSError *error))failure {
+    //default to 5 attempts
+    [self publishTransition:stateTransition
                  retryCount:5
                       delay:2
               delayIncrease:1
              currentAttempt:0
               currentErrors:@{}
+            completionQueue:completionQueue
                     success:success
                     failure:^(NSDictionary<NSNumber *, NSError *> *_Nonnull errorPerAttempt) {
                         if (failure) {
@@ -281,6 +295,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
             delayIncrease:(uint32_t)delayIncrease
            currentAttempt:(uint32_t)currentAttempt
             currentErrors:(NSDictionary<NSNumber *, NSError *> *)errorPerAttempt
+          completionQueue:(dispatch_queue_t)completionQueue
                   success:(void (^)(NSDictionary *successDictionary))success
                   failure:(void (^)(NSDictionary<NSNumber *, NSError *> *errorPerAttempt))failure {
     DSDAPIPlatformNetworkService *service = self.DAPINetworkService;
@@ -291,7 +306,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
                                          userInfo:@{NSLocalizedDescriptionKey: @"No known DAPI Nodes"}];
         mErrorsPerAttempt[@(currentAttempt)] = error;
         if (retryCount) {
-            [self publishTransition:transition retryCount:retryCount - 1 delay:delay + delayIncrease delayIncrease:delayIncrease currentAttempt:currentAttempt + 1 currentErrors:mErrorsPerAttempt success:success failure:failure];
+            [self publishTransition:transition retryCount:retryCount - 1 delay:delay + delayIncrease delayIncrease:delayIncrease currentAttempt:currentAttempt + 1 currentErrors:mErrorsPerAttempt completionQueue:completionQueue success:success failure:failure];
         } else if (failure) {
             failure([mErrorsPerAttempt copy]);
         }
@@ -299,6 +314,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     }
 
     [self.DAPINetworkService publishTransition:transition
+                               completionQueue:completionQueue
                                        success:success
                                        failure:^(NSError *_Nonnull error) {
                                            NSMutableDictionary *mErrorsPerAttempt = [errorPerAttempt mutableCopy];
@@ -307,7 +323,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
                                            }
                                            if (retryCount) {
                                                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), self.coreNetworkingDispatchQueue, ^{
-                                                   [self publishTransition:transition retryCount:retryCount - 1 delay:delay + delayIncrease delayIncrease:delayIncrease currentAttempt:currentAttempt + 1 currentErrors:mErrorsPerAttempt success:success failure:failure];
+                                                   [self publishTransition:transition retryCount:retryCount - 1 delay:delay + delayIncrease delayIncrease:delayIncrease currentAttempt:currentAttempt + 1 currentErrors:mErrorsPerAttempt completionQueue:completionQueue success:success failure:failure];
                                                });
                                            } else if (failure) {
                                                failure([mErrorsPerAttempt copy]);

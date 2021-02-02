@@ -46,7 +46,7 @@
 
 @implementation DSTestnetE2ETests
 
-#define TE2ERESETNETWORK 0
+#define TE2ERESETNETWORK 1
 
 - (void)setUp {
     //this will be run before each test
@@ -73,11 +73,8 @@
         [self.chain useCheckpointBeforeOrOnHeightForSyncingChainBlocks:414106];
         [self.chain useCheckpointBeforeOrOnHeightForTerminalBlocksSync:UINT32_MAX];
 #if TE2ERESETNETWORK
-        [[DashSync sharedSyncController] wipePeerDataForChain:self.chain
-                                                    inContext:[NSManagedObjectContext chainContext]];
-        [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
-        [[DashSync sharedSyncController] wipeSporkDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
-        [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chain inContext:[NSManagedObjectContext chainContext]];
+        [[DashSync sharedSyncController] wipeBlockchainNonTerminalDataForChain:self.chain
+                                                                     inContext:[NSManagedObjectContext chainContext]];
 #endif
     });
 }
@@ -100,7 +97,7 @@
                                                               [headerFinishedExpectation fulfill];
                                                           });
                                                       }];
-    [self waitForExpectations:@[headerFinishedExpectation] timeout:1200];
+    [self waitForExpectations:@[headerFinishedExpectation] timeout:1800];
 }
 
 - (void)testBWalletHasFunds {

@@ -89,14 +89,20 @@
     return nil;
 }
 
-- (void)createDerivationPathWithCompletion:(void (^)(BOOL success, DSIncomingFundsDerivationPath *incomingFundsDerivationPath))completion {
+- (DSIncomingFundsDerivationPath *)derivationPath {
     NSAssert(uint256_is_not_zero([self destinationBlockchainIdentityUniqueId]), @"destinationBlockchainIdentityUniqueId must not be null");
-    self.fundsDerivationPathForContact = [DSIncomingFundsDerivationPath
+    DSIncomingFundsDerivationPath *fundsDerivationPathForContact = [DSIncomingFundsDerivationPath
         contactBasedDerivationPathWithDestinationBlockchainIdentityUniqueId:[self destinationBlockchainIdentityUniqueId]
                                            sourceBlockchainIdentityUniqueId:self.sourceBlockchainIdentity.uniqueID
                                                            forAccountNumber:self.account.accountNumber
                                                                     onChain:self.sourceBlockchainIdentity.wallet.chain];
-    self.fundsDerivationPathForContact.account = self.account;
+    fundsDerivationPathForContact.account = self.account;
+    return fundsDerivationPathForContact;
+}
+
+- (void)createDerivationPathAndSaveExtendedPublicKeyWithCompletion:(void (^)(BOOL success, DSIncomingFundsDerivationPath *incomingFundsDerivationPath))completion {
+    NSAssert(uint256_is_not_zero([self destinationBlockchainIdentityUniqueId]), @"destinationBlockchainIdentityUniqueId must not be null");
+    self.fundsDerivationPathForContact = [self derivationPath];
     DSDerivationPath *masterContactsDerivationPath = [self.account masterContactsDerivationPath];
 
     self.extendedPublicKey = [self.fundsDerivationPathForContact generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];

@@ -52,6 +52,11 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode)
           completion:(void (^)(NSError *_Nullable error))completion;
 
 - (void)publishTransition:(DSTransition *)stateTransition
+          completionQueue:(dispatch_queue_t)completionQueue
+                  success:(void (^)(NSDictionary *successDictionary))success
+                  failure:(void (^)(NSError *error))failure;
+
+- (void)publishTransition:(DSTransition *)stateTransition
                   success:(void (^)(NSDictionary *successDictionary))success
                   failure:(void (^)(NSError *error))failure;
 

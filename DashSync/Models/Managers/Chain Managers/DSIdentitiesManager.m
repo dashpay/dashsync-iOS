@@ -36,6 +36,7 @@
 @interface DSIdentitiesManager ()
 
 @property (nonatomic, strong) DSChain *chain;
+@property (nonatomic, strong) dispatch_queue_t identityQueue;
 @property (nonatomic, strong) NSMutableDictionary *foreignBlockchainIdentities;
 
 @end
@@ -48,6 +49,7 @@
     if (!(self = [super init])) return nil;
 
     self.chain = chain;
+    _identityQueue = dispatch_queue_create([@"org.dashcore.dashsync.identity" UTF8String], DISPATCH_QUEUE_SERIAL);
     self.foreignBlockchainIdentities = [NSMutableDictionary dictionary];
     [self loadExternalBlockchainIdentities];
 
@@ -185,6 +187,7 @@
     DSDAPIClient *client = self.chain.chainManager.DAPIClient;
     id<DSDAPINetworkServiceRequest> call = [client.DAPINetworkService getDPNSDocumentsForUsernames:@[name]
         inDomain:domain
+        completionQueue:self.identityQueue
         success:^(NSArray<NSDictionary *> *_Nonnull documents) {
             __block NSMutableArray *rBlockchainIdentities = [NSMutableArray array];
             for (NSDictionary *document in documents) {
@@ -216,19 +219,20 @@
     return call;
 }
 
-- (id<DSDAPINetworkServiceRequest>)fetchProfileForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity withCompletion:(DashpayUserInfoCompletionBlock)completion {
-    return [self fetchProfileForBlockchainIdentity:blockchainIdentity retryCount:5 delay:2 delayIncrease:1 withCompletion:completion];
+- (id<DSDAPINetworkServiceRequest>)fetchProfileForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity withCompletion:(DashpayUserInfoCompletionBlock)completion onCompletionQueue:(dispatch_queue_t)completionQueue {
+    return [self fetchProfileForBlockchainIdentity:blockchainIdentity retryCount:5 delay:2 delayIncrease:1 withCompletion:completion onCompletionQueue:completionQueue];
 }
 
 - (id<DSDAPINetworkServiceRequest>)fetchProfileForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity
                                                           retryCount:(uint32_t)retryCount
                                                                delay:(uint32_t)delay
                                                        delayIncrease:(uint32_t)delayIncrease
-                                                      withCompletion:(DashpayUserInfoCompletionBlock)completion {
+                                                      withCompletion:(DashpayUserInfoCompletionBlock)completion
+                                                   onCompletionQueue:(dispatch_queue_t)completionQueue {
     DPContract *dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
     if ([dashpayContract contractState] != DPContractState_Registered) {
         if (completion) {
-            dispatch_async(dispatch_get_main_queue(), ^{
+            dispatch_async(completionQueue, ^{
                 completion(NO, nil, [NSError errorWithDomain:@"DashSync"
                                                         code:500
                                                     userInfo:@{NSLocalizedDescriptionKey:
@@ -239,6 +243,7 @@
     }
     DSDAPIClient *client = self.chain.chainManager.DAPIClient;
     id<DSDAPINetworkServiceRequest> call = [client.DAPINetworkService getDashpayProfileForUserId:blockchainIdentity.uniqueIDData
+        completionQueue:self.identityQueue
         success:^(NSArray<NSDictionary *> *_Nonnull documents) {
             if (documents.count == 0) {
                 if (completion) {
@@ -259,12 +264,12 @@
         }
         failure:^(NSError *_Nonnull error) {
             if (retryCount > 0) {
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                    [self fetchProfileForBlockchainIdentity:blockchainIdentity retryCount:retryCount - 1 delay:delay + delayIncrease delayIncrease:delayIncrease withCompletion:completion];
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), self.identityQueue, ^{
+                    [self fetchProfileForBlockchainIdentity:blockchainIdentity retryCount:retryCount - 1 delay:delay + delayIncrease delayIncrease:delayIncrease withCompletion:completion onCompletionQueue:completionQueue];
                 });
             } else {
                 if (completion) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
+                    dispatch_async(completionQueue, ^{
                         completion(NO, nil, error);
                     });
                 }
@@ -294,6 +299,7 @@
     }
     DSDAPIClient *client = self.chain.chainManager.DAPIClient;
     id<DSDAPINetworkServiceRequest> call = [client.DAPINetworkService getDashpayProfilesForUserIds:blockchainIdentityUserIds
+        completionQueue:self.identityQueue
         success:^(NSArray<NSDictionary *> *_Nonnull documents) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
@@ -380,6 +386,7 @@
         inDomain:domain
         offset:offset
         limit:limit
+        completionQueue:self.identityQueue
         success:^(NSArray<NSDictionary *> *_Nonnull documents) {
             __block NSMutableArray *rBlockchainIdentities = [NSMutableArray array];
             for (NSDictionary *document in documents) {
@@ -423,6 +430,7 @@
 - (void)searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID:(NSData *)userID withCompletion:(IdentitiesCompletionBlock)completion {
     DSDAPIClient *client = self.chain.chainManager.DAPIClient;
     [client.DAPINetworkService getDPNSDocumentsForIdentityWithUserId:userID
+        completionQueue:self.identityQueue
         success:^(NSArray<NSDictionary *> *_Nonnull documents) {
             __block NSMutableArray *rBlockchainIdentities = [NSMutableArray array];
             for (NSDictionary *document in documents) {
