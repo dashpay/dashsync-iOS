@@ -72,7 +72,7 @@ NS_ASSUME_NONNULL_BEGIN
 // MARK: - Wallet, Accounts and Transactions
 
 /*! @brief Add a wallet to the chain. It is only temporarily in the chain if externaly added this way.  */
-- (void)addWallet:(DSWallet *)wallet;
+- (BOOL)addWallet:(DSWallet *)wallet;
 
 - (BOOL)registerSpecialTransaction:(DSTransaction *)transaction saveImmediately:(BOOL)saveImmediately;
 

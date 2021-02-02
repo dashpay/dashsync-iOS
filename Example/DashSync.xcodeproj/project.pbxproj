@@ -1031,7 +1031,7 @@
 		FB9C9E5A25B7F2B80039880E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		FB9C9E5C25B7F2B80039880E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FB9C9E5D25B7F2B80039880E /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		FB9C9EBB25B7FD3D0039880E /* network.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; name = network.yml; path = ../.github/workflows/network.yml; sourceTree = "<group>"; };
+		FB9C9EBB25B7FD3D0039880E /* network.backupyml */ = {isa = PBXFileReference; lastKnownFileType = text; name = network.backupyml; path = ../.github/workflows/network.backupyml; sourceTree = "<group>"; };
 		FBA676312235A7920069EC2F /* BlockchainIdentities.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = BlockchainIdentities.storyboard; sourceTree = "<group>"; };
 		FBA676332235A9620069EC2F /* Helpers.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Helpers.storyboard; sourceTree = "<group>"; };
 		FBA676352235AD090069EC2F /* Governance.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Governance.storyboard; sourceTree = "<group>"; };
@@ -1069,6 +1069,8 @@
 		FBB5D728221DF9390021764A /* DSUpdateMasternodeServiceViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSUpdateMasternodeServiceViewController.m; sourceTree = "<group>"; };
 		FBB5D73A221FE5F40021764A /* DSUpdateMasternodeRegistrarViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSUpdateMasternodeRegistrarViewController.h; sourceTree = "<group>"; };
 		FBB5D73B221FE5F40021764A /* DSUpdateMasternodeRegistrarViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSUpdateMasternodeRegistrarViewController.m; sourceTree = "<group>"; };
+		FBBB464C25C0547F00ACDF35 /* e2eTestsTestnet.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; name = e2eTestsTestnet.yml; path = ../.github/workflows/e2eTestsTestnet.yml; sourceTree = "<group>"; };
+		FBBB464D25C054DE00ACDF35 /* TestnetE2ETests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = TestnetE2ETests.xctestplan; sourceTree = "<group>"; };
 		FBBDF422226B6E770081D673 /* DSBigNumberTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBigNumberTests.m; sourceTree = "<group>"; };
 		FBBDF424226C843C0081D673 /* DSBlockchainIdentityTransitionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainIdentityTransitionsViewController.h; sourceTree = "<group>"; };
 		FBBDF425226C843C0081D673 /* DSBlockchainIdentityTransitionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainIdentityTransitionsViewController.m; sourceTree = "<group>"; };
@@ -2020,13 +2022,14 @@
 		FB974F3125AE7A2200A1DCE7 /* CI */ = {
 			isa = PBXGroup;
 			children = (
+				FBBB464C25C0547F00ACDF35 /* e2eTestsTestnet.yml */,
 				FB974FDF25B2894200A1DCE7 /* syncTestMainnet.yml */,
 				FB97501C25B3A29100A1DCE7 /* syncTestTestnet.yml */,
 				FB974FC225B130B800A1DCE7 /* build.yml */,
 				FB974FA425B1012C00A1DCE7 /* lint.yml */,
 				FB9C9E1125B6094B0039880E /* coverage.yml */,
 				FB974F3225AE7B6200A1DCE7 /* test.yml */,
-				FB9C9EBB25B7FD3D0039880E /* network.yml */,
+				FB9C9EBB25B7FD3D0039880E /* network.backupyml */,
 			);
 			name = CI;
 			sourceTree = "<group>";
@@ -2077,6 +2080,7 @@
 				FB974FDC25B2889000A1DCE7 /* MainnetSyncTests.xctestplan */,
 				FB97500625B3876D00A1DCE7 /* TestnetSyncTests.xctestplan */,
 				FB97501F25B3AD1400A1DCE7 /* Metrics.xctestplan */,
+				FBBB464D25C054DE00ACDF35 /* TestnetE2ETests.xctestplan */,
 			);
 			name = TestPlans;
 			sourceTree = "<group>";

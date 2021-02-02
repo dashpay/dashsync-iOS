@@ -62,12 +62,14 @@
             derivationPathEntity.account = [DSAccountEntity accountEntityForWalletUniqueID:derivationPath.account.wallet.uniqueIDString index:derivationPath.account.accountNumber onChain:derivationPath.chain inContext:context];
         }
         if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
+            //NSLog(@"--->creating derivation path entity on path %@ (%@) with no friendship identifier %@", derivationPath, derivationPath.stringRepresentation, [NSThread callStackSymbols]);
             DSIncomingFundsDerivationPath *incomingFundsDerivationPath = (DSIncomingFundsDerivationPath *)derivationPath;
             NSPredicate *predicatee = [NSPredicate predicateWithFormat:@"sourceContact.associatedBlockchainIdentity.uniqueID == %@ && destinationContact.associatedBlockchainIdentity.uniqueID == %@", uint256_data(incomingFundsDerivationPath.contactSourceBlockchainIdentityUniqueId), uint256_data(incomingFundsDerivationPath.contactDestinationBlockchainIdentityUniqueId)];
             DSFriendRequestEntity *friendRequest = [DSFriendRequestEntity anyObjectForPredicate:predicatee inContext:context];
             if (friendRequest) {
                 derivationPathEntity.friendRequest = friendRequest;
             }
+            //NSLog(@"--->associated friendship identifier %@", friendRequest.friendshipIdentifier.hexString);
         }
         return derivationPathEntity;
     }
@@ -87,8 +89,16 @@
     NSSet *derivationPathEntities = [chainEntity.derivationPaths filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"publicKeyIdentifier == %@ && chain == %@", derivationPath.standaloneExtendedPublicKeyUniqueID, [derivationPath.chain chainEntityInContext:context]]];
     if ([derivationPathEntities count]) {
         DSDerivationPathEntity *derivationPathEntity = [derivationPathEntities anyObject];
+        if (derivationPathEntity.friendRequest) {
+            //DSLog(@"Derivation path entity found with friendship identifier %@ %@", derivationPathEntity.friendRequest.friendshipIdentifier.hexString, [NSThread callStackSymbols]);
+            DSFriendRequestEntity *a = [DSFriendRequestEntity existingFriendRequestEntityOnFriendshipIdentifier:derivationPathEntity.friendRequest.friendshipIdentifier inContext:friendRequest.managedObjectContext];
+            //DSLog(@"%@", a);
+        }
         return derivationPathEntity;
     } else {
+        //NSLog(@"-->creating derivation path entity on derivation path (%@) with friendship identifier %@ %@", derivationPath.stringRepresentation, friendRequest.friendshipIdentifier.hexString, [NSThread callStackSymbols]);
+        //NSLog(@"-->friend request is %@ %@", friendRequest, friendRequest.derivationPath);
+        NSAssert(friendRequest.derivationPath == nil, @"The friend request should not already have a derivationPath");
         DSDerivationPathEntity *derivationPathEntity = [DSDerivationPathEntity managedObjectInBlockedContext:context];
         derivationPathEntity.derivationPath = archivedDerivationPath;
         derivationPathEntity.chain = chainEntity;
