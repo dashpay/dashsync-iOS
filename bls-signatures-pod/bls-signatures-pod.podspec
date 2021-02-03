@@ -10,7 +10,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'bls-signatures-pod'
-  s.version          = '0.2.12'
+  s.version          = '0.2.11'
   s.summary          = 'BLS signatures in C++, using the relic toolkit'
 
   s.description      = <<-DESC
@@ -30,8 +30,6 @@ Implements BLS signatures with aggregation as in Boneh, Drijvers, Neven 2018, us
 
   # Temporary workaround: don't allow CocoaPods to clone and fetch submodules.
   # Fetch submodules _after_ checking out to the needed commit in prepare command.
-
-  # patch_relic_header - workaround to fix compilation issue targeting macOS
 
   s.prepare_command = <<-CMD
     set -x
@@ -391,26 +389,6 @@ EOF
         mv "contrib/relic/${RELIC_TARGET_DIR}/include/relic_conf.h.new" "contrib/relic/${RELIC_TARGET_DIR}/include/relic_conf.h"   
     }
 
-    patch_relic_header()
-    {
-        read -r -d '' RELIC_PATCH << EndOfRelicPatch
-diff --git i/contrib/relic/include/relic_err.h w/contrib/relic/include/relic_err.h
-index 1e81f62..b253637 100755
---- i/contrib/relic/include/relic_err.h
-+++ w/contrib/relic/include/relic_err.h
-@@ -360,6 +360,6 @@ void err_get_msg(err_t *e, char **msg);
-  *
-  * @returns ERR_OK if no errors occurred in the function, ERR_ERR otherwise.
-  */
--int err_get_code(void);
-+int _err_get_code(void);
-
- #endif /* !RELIC_ERROR_H */
-EndOfRelicPatch
-
-        echo "$RELIC_PATCH" | git apply
-    }
-
     prepare
 
     build_all "macos" "${MACOS};x86_64" || build_all "macos" "${MACOS};arm64"
@@ -419,8 +397,6 @@ EndOfRelicPatch
     build_all "ios" "${IPHONEOS};arm64|${IPHONESIMULATOR};i386|${IPHONESIMULATOR};x86_64"
 
     make_relic_universal
-
-    patch_relic_header
 
   CMD
 
