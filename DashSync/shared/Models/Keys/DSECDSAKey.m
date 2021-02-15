@@ -437,7 +437,6 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i) {
 
     UInt256 key;
 
-#warning fix last two NULLs
     if (secp256k1_ecdh(_ctx, (unsigned char *)&key, &pk, (const uint8_t *)((DSECDSAKey *)privateKey).secretKey, NULL, NULL) != 1) {
         return nil;
     }

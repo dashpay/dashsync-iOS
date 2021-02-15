@@ -51,9 +51,7 @@
 
 + (nullable NSMappingModel *)customMappingModelFromSourceModel:(NSManagedObjectModel *)sourceModel
                                             toDestinationModel:(NSManagedObjectModel *)destinationModel {
-    NSBundle *frameworkBundle = [NSBundle bundleForClass:[DSTransaction class]];
-    NSURL *bundleURL = [[frameworkBundle resourceURL] URLByAppendingPathComponent:@"DashSync.bundle"];
-    NSBundle *resourceBundle = [NSBundle bundleWithURL:bundleURL];
+    NSBundle *resourceBundle = [[DSEnvironment sharedInstance] resourceBundle];
     NSParameterAssert(resourceBundle);
     return [NSMappingModel mappingModelFromBundles:@[resourceBundle]
                                     forSourceModel:sourceModel

@@ -116,8 +116,7 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
 
 - (NSArray *)words {
     if (!_words) {
-        NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
-        NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+        NSBundle *bundle = [[DSEnvironment sharedInstance] resourceBundle];
         if (self.defaultLanguage == DSBIP39Language_Default) {
             _words = [NSArray arrayWithContentsOfFile:[bundle pathForResource:WORDS ofType:@"plist"]];
         } else {
@@ -129,8 +128,7 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
 
 - (NSArray *)wordsForLanguage:(DSBIP39Language)language {
     if (!self.wordsForLanguages[@(language)]) {
-        NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
-        NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+        NSBundle *bundle = [[DSEnvironment sharedInstance] resourceBundle];
         if (language == DSBIP39Language_Default) {
             self.wordsForLanguages[@(language)] = [NSArray arrayWithContentsOfFile:[bundle pathForResource:WORDS ofType:@"plist"]];
         } else {
@@ -165,8 +163,7 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
     if (!_allWords) {
         NSMutableSet *allWords = [NSMutableSet set];
 
-        NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
-        NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+        NSBundle *bundle = [[DSEnvironment sharedInstance] resourceBundle];
         for (NSString *lang in bundle.localizations) {
             [allWords addObjectsFromArray:[NSArray arrayWithContentsOfFile:[bundle
                                                                                pathForResource:WORDS
@@ -181,7 +178,9 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
 
 - (NSString *_Nullable)encodePhrase:(NSData *_Nullable)data {
     if (!data || (data.length % 4) != 0) return nil; // data length must be a multiple of 32 bits
-
+    
+    NSAssert(self.words.count > 0, @"There must be words");
+    
     uint32_t n = (uint32_t)self.words.count, x;
     NSMutableArray *a =
         CFBridgingRelease(CFArrayCreateMutable(SecureAllocator(), data.length * 3 / 4, &kCFTypeArrayCallBacks));

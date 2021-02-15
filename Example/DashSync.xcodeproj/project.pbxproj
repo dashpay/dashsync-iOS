@@ -347,6 +347,8 @@
 		FB5252F920F2308E009A2BF1 /* DSTransactionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB5252F820F2308E009A2BF1 /* DSTransactionsViewController.m */; };
 		FB5252FC20F232C9009A2BF1 /* DSTransactionDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB5252FB20F232C9009A2BF1 /* DSTransactionDetailViewController.m */; };
 		FB5252FF20F2377E009A2BF1 /* BRCopyLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = FB5252FE20F2377D009A2BF1 /* BRCopyLabel.m */; };
+		FB57818225DAC11100FB9B37 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = FB57818025DAC11000FB9B37 /* main.m */; };
+		FB57818325DAC11100FB9B37 /* DSNetworkInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = FB57818125DAC11100FB9B37 /* DSNetworkInfo.m */; };
 		FB6B78462278D50A0005C9DB /* DSContactReceivedTransactionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6B78452278D50A0005C9DB /* DSContactReceivedTransactionsTableViewController.m */; };
 		FB6B78492278D5210005C9DB /* DSContactSentTransactionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6B78482278D5210005C9DB /* DSContactSentTransactionsTableViewController.m */; };
 		FB6B784C2278FB3A0005C9DB /* DSContactSendDashViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6B784B2278FB3A0005C9DB /* DSContactSendDashViewController.m */; };
@@ -395,8 +397,7 @@
 		FB9A106C20D8362F006883E2 /* DSKeyValueTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A106B20D8362F006883E2 /* DSKeyValueTableViewCell.m */; };
 		FB9A106F20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A106E20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m */; };
 		FB9A107220D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A107120D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m */; };
-		FB9C9F0525B80DE30039880E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9C9F0425B80DE30039880E /* main.m */; };
-		FB9C9F4225B832E30039880E /* DSNetworkInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9C9E4C25B7F2B60039880E /* DSNetworkInfo.m */; };
+		FB9C9F0525B80DE30039880E /* (null) in Sources */ = {isa = PBXBuildFile; };
 		FBA676322235A7920069EC2F /* BlockchainIdentities.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBA676312235A7920069EC2F /* BlockchainIdentities.storyboard */; };
 		FBA676342235A9620069EC2F /* Helpers.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBA676332235A9620069EC2F /* Helpers.storyboard */; };
 		FBA676362235AD090069EC2F /* Governance.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBA676352235AD090069EC2F /* Governance.storyboard */; };
@@ -918,6 +919,9 @@
 		FB5252FB20F232C9009A2BF1 /* DSTransactionDetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTransactionDetailViewController.m; sourceTree = "<group>"; };
 		FB5252FD20F2377D009A2BF1 /* BRCopyLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCopyLabel.h; sourceTree = "<group>"; };
 		FB5252FE20F2377D009A2BF1 /* BRCopyLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCopyLabel.m; sourceTree = "<group>"; };
+		FB57817F25DAC10F00FB9B37 /* DSNetworkInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSNetworkInfo.h; sourceTree = "<group>"; };
+		FB57818025DAC11000FB9B37 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		FB57818125DAC11100FB9B37 /* DSNetworkInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSNetworkInfo.m; sourceTree = "<group>"; };
 		FB5A0FA821951CFC0079CF42 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
 		FB5A0FA921951CFC0079CF42 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		FB5A0FAA21951CFD0079CF42 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -1029,20 +1033,8 @@
 		FB9A107120D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAddDevnetAddIPAddressTableViewCell.m; sourceTree = "<group>"; };
 		FB9C9E1025B599FE0039880E /* check_lint.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = check_lint.sh; sourceTree = "<group>"; };
 		FB9C9E1125B6094B0039880E /* coverage.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; name = coverage.yml; path = ../.github/workflows/coverage.yml; sourceTree = "<group>"; };
-		FB9C9E4B25B7F2B60039880E /* DSNetworkInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSNetworkInfo.h; sourceTree = "<group>"; };
-		FB9C9E4C25B7F2B60039880E /* DSNetworkInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSNetworkInfo.m; sourceTree = "<group>"; };
 		FB9C9EBB25B7FD3D0039880E /* network.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; name = network.yml; path = ../.github/workflows/network.yml; sourceTree = "<group>"; };
 		FB9C9EFA25B80DB40039880E /* NetworkInfo */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = NetworkInfo; sourceTree = BUILT_PRODUCTS_DIR; };
-		FB9C9E4925B7F2B60039880E /* NetworkInfo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NetworkInfo.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		FB9C9E4B25B7F2B60039880E /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
-		FB9C9E4C25B7F2B60039880E /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		FB9C9E5125B7F2B60039880E /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
-		FB9C9E5225B7F2B60039880E /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
-		FB9C9E5525B7F2B60039880E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		FB9C9E5725B7F2B80039880E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		FB9C9E5A25B7F2B80039880E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		FB9C9E5C25B7F2B80039880E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		FB9C9E5D25B7F2B80039880E /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		FBA676312235A7920069EC2F /* BlockchainIdentities.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = BlockchainIdentities.storyboard; sourceTree = "<group>"; };
 		FBA676332235A9620069EC2F /* Helpers.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Helpers.storyboard; sourceTree = "<group>"; };
 		FBA676352235AD090069EC2F /* Governance.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Governance.storyboard; sourceTree = "<group>"; };
@@ -2040,7 +2032,7 @@
 				FB974FA425B1012C00A1DCE7 /* lint.yml */,
 				FB9C9E1125B6094B0039880E /* coverage.yml */,
 				FB974F3225AE7B6200A1DCE7 /* test.yml */,
-				FB9C9EBB25B7FD3D0039880E /* network.backupyml */,
+				FB9C9EBB25B7FD3D0039880E /* network.yml */,
 			);
 			name = CI;
 			sourceTree = "<group>";
@@ -2108,9 +2100,9 @@
 		FB9C9EFB25B80DB40039880E /* NetworkInfo */ = {
 			isa = PBXGroup;
 			children = (
-				FB9C9E4B25B7F2B60039880E /* DSNetworkInfo.h */,
-				FB9C9E4C25B7F2B60039880E /* DSNetworkInfo.m */,
-				FB9C9F0425B80DE30039880E /* main.m */,
+				FB57817F25DAC10F00FB9B37 /* DSNetworkInfo.h */,
+				FB57818125DAC11100FB9B37 /* DSNetworkInfo.m */,
+				FB57818025DAC11000FB9B37 /* main.m */,
 			);
 			path = NetworkInfo;
 			sourceTree = "<group>";
@@ -3028,8 +3020,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FB9C9F0525B80DE30039880E /* main.m in Sources */,
-				FB9C9F4225B832E30039880E /* DSNetworkInfo.m in Sources */,
+				FB9C9F0525B80DE30039880E /* (null) in Sources */,
+				FB57818225DAC11100FB9B37 /* main.m in Sources */,
+				FB57818325DAC11100FB9B37 /* DSNetworkInfo.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

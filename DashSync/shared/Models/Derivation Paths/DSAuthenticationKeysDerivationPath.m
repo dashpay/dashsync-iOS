@@ -262,7 +262,7 @@
     BOOL hasHardenedDerivation = FALSE;
     for (NSInteger i = 0; i < [indexPath length]; i++) {
         uint32_t derivation = (uint32_t)[indexPath indexAtPosition:i];
-        hasHardenedDerivation |= (derivation & BIP32_HARD);
+        hasHardenedDerivation |= ((derivation & BIP32_HARD) > 0);
         if (hasHardenedDerivation) break;
     }
     if (hasHardenedDerivation) {

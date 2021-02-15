@@ -22,9 +22,7 @@
 @implementation NSManagedObjectModel (DS)
 
 + (NSManagedObjectModel *)ds_managedObjectModelForResource:(NSString *)resource {
-    NSBundle *frameworkBundle = [NSBundle bundleForClass:[DSTransaction class]];
-    NSURL *bundleURL = [[frameworkBundle resourceURL] URLByAppendingPathComponent:@"DashSync.bundle"];
-    NSBundle *resourceBundle = [NSBundle bundleWithURL:bundleURL];
+    NSBundle *resourceBundle = [[DSEnvironment sharedInstance] resourceBundle];
     NSParameterAssert(resourceBundle);
 
     NSString *subdirectory = @"DashSync.momd";
@@ -45,9 +43,7 @@
 }
 
 + (NSManagedObjectModel *)ds_compatibleModelForStoreMetadata:(NSDictionary<NSString *, id> *)metadata {
-    NSBundle *frameworkBundle = [NSBundle bundleForClass:[DSTransaction class]];
-    NSURL *bundleURL = [[frameworkBundle resourceURL] URLByAppendingPathComponent:@"DashSync.bundle"];
-    NSBundle *resourceBundle = [NSBundle bundleWithURL:bundleURL];
+    NSBundle *resourceBundle = [[DSEnvironment sharedInstance] resourceBundle];
     return [NSManagedObjectModel mergedModelFromBundles:@[resourceBundle] forStoreMetadata:metadata];
 }
 
