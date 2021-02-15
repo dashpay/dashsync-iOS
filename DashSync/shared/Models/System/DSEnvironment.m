@@ -52,9 +52,9 @@
     dispatch_once(&onceToken, ^{
         NSBundle *frameworkBundle = [NSBundle bundleForClass:[DSTransaction class]];
 #if TARGET_OS_IOS
-    NSURL *bundleURL = [[frameworkBundle resourceURL] URLByAppendingPathComponent:@"DashSync.bundle"];
+        NSURL *bundleURL = [[frameworkBundle resourceURL] URLByAppendingPathComponent:@"DashSync.bundle"];
 #else
-    NSURL *bundleURL = [[[frameworkBundle resourceURL] URLByAppendingPathComponent:@"DashSync-macOS"] URLByAppendingPathComponent:@"DashSync.bundle"];
+            NSURL *bundleURL = [[[frameworkBundle resourceURL] URLByAppendingPathComponent:@"DashSync-macOS"] URLByAppendingPathComponent:@"DashSync.bundle"];
 #endif
         resourceBundle = [NSBundle bundleWithURL:bundleURL];
     });

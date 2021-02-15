@@ -33,14 +33,14 @@
 
 - (id)init {
     if (!(self = [super init])) return nil;
-    self.mainnetChain = [DSChain testnet];
-    self.mainnetWallet = [DSWallet standardWalletWithRandomSeedPhraseForChain:self.mainnetChain storeSeedPhrase:NO isTransient:YES];
-    [self.mainnetChain unregisterAllWallets];
-    [self.mainnetChain addWallet:self.mainnetWallet];
+//    self.mainnetChain = [DSChain mainnet];
+//    self.mainnetWallet = [DSWallet standardWalletWithRandomSeedPhraseForChain:self.mainnetChain storeSeedPhrase:NO isTransient:YES];
+//    [self.mainnetChain unregisterAllWallets];
+//    [self.mainnetChain addWallet:self.mainnetWallet];
     
     self.testnetChain = [DSChain testnet];
-    self.testnetWallet = [DSWallet standardWalletWithRandomSeedPhraseForChain:self.testnetChain storeSeedPhrase:NO isTransient:YES];
     [self.testnetChain unregisterAllWallets];
+    self.testnetWallet = [DSWallet standardWalletWithRandomSeedPhraseForChain:self.testnetChain storeSeedPhrase:YES isTransient:NO];
     [self.testnetChain addWallet:self.testnetWallet];
     return self;
 }
@@ -108,7 +108,9 @@
                 
                 [data writeToFile:filePath atomically:YES];
                 [[NSNotificationCenter defaultCenter] postNotificationName:@"FinishedGatheringNetworkInfo" object:nil];
+                exit(0);
             };
+            
             
             [self.testnetChain.chainManager.masternodeManager checkPingTimesForCurrentMasternodeListInContext:[NSManagedObjectContext viewContext]
                                                                                                withCompletion:pingTimeCompletionBlock];
@@ -121,9 +123,16 @@
                                                                                           queue:nil
                                                                                      usingBlock:currentMasternodeListDidChangeBlock];
     
-    [NSTimer scheduledTimerWithTimeInterval:300 repeats:NO block:^(NSTimer * _Nonnull timer) {
+    NSTimer * timeoutTimer = [NSTimer timerWithTimeInterval:300 repeats:NO block:^(NSTimer * _Nonnull timer) {
         exit(1); //fail after 5 mins
     }];
+    
+    NSRunLoop * runLoop = [NSRunLoop currentRunLoop];
+    
+    [runLoop addTimer:timeoutTimer forMode:NSDefaultRunLoopMode];
+    
+    [runLoop run];
+    
 }
 
 @end

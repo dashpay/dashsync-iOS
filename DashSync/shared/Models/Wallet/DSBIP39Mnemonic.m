@@ -178,9 +178,9 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
 
 - (NSString *_Nullable)encodePhrase:(NSData *_Nullable)data {
     if (!data || (data.length % 4) != 0) return nil; // data length must be a multiple of 32 bits
-    
+
     NSAssert(self.words.count > 0, @"There must be words");
-    
+
     uint32_t n = (uint32_t)self.words.count, x;
     NSMutableArray *a =
         CFBridgingRelease(CFArrayCreateMutable(SecureAllocator(), data.length * 3 / 4, &kCFTypeArrayCallBacks));
