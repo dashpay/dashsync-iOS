@@ -102,16 +102,15 @@
         derivationPathEntity.friendRequest = friendRequest;
 
         return derivationPathEntity;
+    } else {
+        DSDerivationPathEntity *derivationPathEntity = [derivationPathEntities anyObject];
+        //            if (derivationPathEntity.friendRequest) {
+        //                //DSLog(@"Derivation path entity found with friendship identifier %@ %@", derivationPathEntity.friendRequest.friendshipIdentifier.hexString, [NSThread callStackSymbols]);
+        //                //DSFriendRequestEntity *a = [DSFriendRequestEntity existingFriendRequestEntityOnFriendshipIdentifier:derivationPathEntity.friendRequest.friendshipIdentifier inContext:friendRequest.managedObjectContext];
+        //                //DSLog(@"%@", a);
+        //            }
+        return derivationPathEntity;
     }
-//    else {
-//        DSDerivationPathEntity *derivationPathEntity = [derivationPathEntities anyObject];
-//        if (derivationPathEntity.friendRequest) {
-//            //DSLog(@"Derivation path entity found with friendship identifier %@ %@", derivationPathEntity.friendRequest.friendshipIdentifier.hexString, [NSThread callStackSymbols]);
-//            //DSFriendRequestEntity *a = [DSFriendRequestEntity existingFriendRequestEntityOnFriendshipIdentifier:derivationPathEntity.friendRequest.friendshipIdentifier inContext:friendRequest.managedObjectContext];
-//            //DSLog(@"%@", a);
-//        }
-//        return derivationPathEntity;
-//    }
 }
 
 + (void)deleteDerivationPathsOnChainEntity:(DSChainEntity *)chainEntity {

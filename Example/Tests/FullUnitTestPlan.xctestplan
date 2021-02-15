@@ -18,6 +18,7 @@
         "DSMainnetE2ETests",
         "DSMainnetMetricSyncTests",
         "DSMainnetSyncTests",
+        "DSMiningTests",
         "DSSyncTests",
         "DSTestnetMetricSyncTests"
       ],
