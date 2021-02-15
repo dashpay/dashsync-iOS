@@ -10,6 +10,9 @@ jobs:
     name: Check Network
     runs-on: macOS-latest
     steps:
+      - name: Install automake
+        run: |
+          brew install automake
       - name: Checkout DashSync
         uses: actions/checkout@v2
         with:
