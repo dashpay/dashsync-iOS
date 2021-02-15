@@ -22,10 +22,10 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
-    
+
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
@@ -42,16 +42,16 @@
 
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    static NSString * reuseIdentifier = @"ServiceTransactionCellIdentifier";
-    DSProviderUpdateServiceTableViewCell *cell = (DSProviderUpdateServiceTableViewCell*)[tableView dequeueReusableCellWithIdentifier:reuseIdentifier forIndexPath:indexPath];
-    
-    DSProviderUpdateServiceTransaction * transaction = [self.localMasternode.providerUpdateServiceTransactions objectAtIndex:indexPath.row];
-    
-    cell.blockHeightLabel.text = [NSString stringWithFormat:@"%d",transaction.blockHeight];
-    cell.operatorRewardPayoutAddressLabel.text = (transaction.scriptPayout.length?[NSString addressWithScriptPubKey:transaction.scriptPayout onChain:transaction.chain]:@"");
+    static NSString *reuseIdentifier = @"ServiceTransactionCellIdentifier";
+    DSProviderUpdateServiceTableViewCell *cell = (DSProviderUpdateServiceTableViewCell *)[tableView dequeueReusableCellWithIdentifier:reuseIdentifier forIndexPath:indexPath];
+
+    DSProviderUpdateServiceTransaction *transaction = [self.localMasternode.providerUpdateServiceTransactions objectAtIndex:indexPath.row];
+
+    cell.blockHeightLabel.text = [NSString stringWithFormat:@"%d", transaction.blockHeight];
+    cell.operatorRewardPayoutAddressLabel.text = (transaction.scriptPayout.length ? [NSString addressWithScriptPubKey:transaction.scriptPayout onChain:transaction.chain] : @"");
     char s[INET6_ADDRSTRLEN];
     uint32_t ipAddress = transaction.ipAddress.u32[3];
-    cell.locationLabel.text = [NSString stringWithFormat:@"%s:%d",inet_ntop(AF_INET, &ipAddress, s, sizeof(s)),self.localMasternode.port];
+    cell.locationLabel.text = [NSString stringWithFormat:@"%s:%d", inet_ntop(AF_INET, &ipAddress, s, sizeof(s)), self.localMasternode.port];
     return cell;
 }
 

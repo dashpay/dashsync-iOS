@@ -8,7 +8,7 @@
 
 #import "DSChainTableViewCell.h"
 
-@interface DSChainTableViewCell()
+@interface DSChainTableViewCell ()
 
 @end
 

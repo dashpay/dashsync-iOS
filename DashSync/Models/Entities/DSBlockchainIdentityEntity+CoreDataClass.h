@@ -6,8 +6,8 @@
 //
 //
 
-#import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
 @class DSBlockchainIdentityKeyPathEntity, DSChainEntity, DSDashpayUserEntity, DSCreditFundingTransactionEntity, DSTransitionEntity, DSBlockchainIdentityUsernameEntity, DSBlockchainIdentity;
 
@@ -15,9 +15,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSBlockchainIdentityEntity : NSManagedObject
 
--(DSBlockchainIdentity*)blockchainIdentity;
+- (DSBlockchainIdentity *)blockchainIdentity;
 
-+(void)deleteBlockchainIdentitiesOnChainEntity:(DSChainEntity*)chainEntity;
++ (void)deleteBlockchainIdentitiesOnChainEntity:(DSChainEntity *)chainEntity;
 
 @end
 

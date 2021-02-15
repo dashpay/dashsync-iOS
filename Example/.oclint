@@ -1,0 +1,41 @@
+disable-rules:
+  - LongLine
+  - ShortVariableName
+  - UnnecessaryElseStatement
+  - BitwiseOperatorInConditional
+  - InvertedLogic
+  - UselessParentheses
+  - RedundantIfStatement
+  - ConstantIfExpression
+  - AssignIvarOutsideAccessors
+  - UnusedMethodParameter
+  - UnnecessaryDefaultStatement
+  - MissingDefaultStatement
+  - RedundantConditionalOperator
+  - ParameterReassignment
+  - TooFewBranchesInSwitchStatement
+rule-configurations:
+  - key: CYCLOMATIC_COMPLEXITY
+    value: 2000000000
+  - key: NPATH_COMPLEXITY
+    value: 2000000000
+  - key: LONG_VARIABLE_NAME
+    value: 100
+  - key: TOO_MANY_METHODS
+    value: 512
+  - key: TOO_MANY_PARAMETERS
+    value: 30
+  - key: LONG_METHOD
+    value: 512
+  - key: LONG_CLASS
+    value: 8192
+  - key: NCSS_METHOD
+    value: 512
+  - key: NESTED_BLOCK_DEPTH
+    value: 16
+output: oclint.xml
+report-type: xml
+max-priority-1: 0
+max-priority-2: 200
+max-priority-3: 300
+enable-clang-static-analyzer: false

@@ -21,7 +21,7 @@
     [self.tableView.refreshControl addTarget:self action:@selector(fetch:) forControlEvents:UIControlEventValueChanged];
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
-    
+
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
@@ -33,13 +33,13 @@
 
 #pragma mark - Table view data source
 
--(IBAction)fetch:(id)sender {
+- (IBAction)fetch:(id)sender {
     // TODO: searchDapContracts was removed from JS dapi-client as outdated
 }
 
--(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"AddDAPSegue"]) {
-        DSAddDAPViewController * addDAPViewController = (DSAddDAPViewController*)segue.destinationViewController;
+        DSAddDAPViewController *addDAPViewController = (DSAddDAPViewController *)segue.destinationViewController;
         addDAPViewController.chainManager = self.chainManager;
     }
 }

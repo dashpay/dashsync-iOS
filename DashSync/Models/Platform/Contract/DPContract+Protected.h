@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -23,9 +23,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DPContract ()
 
--(void)setContractState:(DPContractState)contractState inContext:(NSManagedObjectContext*)context;
+- (void)setContractState:(DPContractState)contractState inContext:(NSManagedObjectContext *)context;
 
--(DSContractTransition*)contractRegistrationTransitionForIdentity:(DSBlockchainIdentity*)blockchainIdentity;
+- (DSContractTransition *)contractRegistrationTransitionForIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 
 @end
 

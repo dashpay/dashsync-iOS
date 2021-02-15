@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -16,73 +16,75 @@
 //
 
 #import "DSCreditFundingTransaction.h"
-#import "DSCreditFundingTransactionEntity+CoreDataClass.h"
-#import "NSData+Bitcoin.h"
-#import "DSDerivationPathFactory.h"
-#import "DSWallet.h"
 #import "DSAccount.h"
 #import "DSCreditFundingDerivationPath.h"
+#import "DSCreditFundingTransactionEntity+CoreDataClass.h"
+#import "DSDerivationPathFactory.h"
+#import "DSInstantSendTransactionLock.h"
+#import "DSTransaction+Protected.h"
+#import "DSWallet.h"
+#import "NSData+Bitcoin.h"
 
 @implementation DSCreditFundingTransaction
 
--(UInt256)creditBurnIdentityIdentifier {
+- (UInt256)creditBurnIdentityIdentifier {
     DSUTXO outpoint = [self lockedOutpoint];
     if (dsutxo_is_zero(outpoint)) return UINT256_ZERO;
     return [dsutxo_data(outpoint) SHA256_2];
 }
 
--(DSUTXO)lockedOutpoint {
-    for (int i = 0; i<self.outputScripts.count;i++) {
-        NSData * script = self.outputScripts[i];
+- (DSUTXO)lockedOutpoint {
+    for (int i = 0; i < self.outputScripts.count; i++) {
+        NSData *script = self.outputScripts[i];
         if ([script UInt8AtOffset:0] == OP_RETURN && script.length == 22) {
-            DSUTXO outpoint = { .hash = uint256_reverse(self.txHash), .n = i };
+            DSUTXO outpoint = {.hash = uint256_reverse(self.txHash), .n = i}; //!OCLINT
             return outpoint;
         }
     }
     return DSUTXO_ZERO;
 }
 
--(UInt160)creditBurnPublicKeyHash {
-    for (NSData * script in self.outputScripts) {
+- (UInt160)creditBurnPublicKeyHash {
+    for (NSData *script in self.outputScripts) {
         if ([script UInt8AtOffset:0] == OP_RETURN && script.length == 22) {
-            return [script subdataWithRange:NSMakeRange(2,20)].UInt160;
+            return [script subdataWithRange:NSMakeRange(2, 20)].UInt160;
         }
     }
     return UINT160_ZERO;
 }
 
--(uint32_t)usedDerivationPathIndexForWallet:(DSWallet*)wallet {
-    DSCreditFundingDerivationPath * registrationFundingDerivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:wallet];
-    NSString * address = [[NSData dataWithUInt160:[self creditBurnPublicKeyHash]] addressFromHash160DataForChain:self.chain];
+- (uint32_t)usedDerivationPathIndexForWallet:(DSWallet *)wallet {
+    DSCreditFundingDerivationPath *registrationFundingDerivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:wallet];
+    NSString *address = [[NSData dataWithUInt160:[self creditBurnPublicKeyHash]] addressFromHash160DataForChain:self.chain];
     return (uint32_t)[registrationFundingDerivationPath indexOfKnownAddress:address];
 }
 
--(BOOL)checkDerivationPathIndexForWallet:(DSWallet*)wallet isIndex:(uint32_t)index {
-    DSCreditFundingDerivationPath * registrationFundingDerivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:wallet];
-    NSString * address = [[NSData dataWithUInt160:[self creditBurnPublicKeyHash]] addressFromHash160DataForChain:self.chain];
+- (BOOL)checkDerivationPathIndexForWallet:(DSWallet *)wallet isIndex:(uint32_t)index {
+    DSCreditFundingDerivationPath *registrationFundingDerivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:wallet];
+    NSString *address = [[NSData dataWithUInt160:[self creditBurnPublicKeyHash]] addressFromHash160DataForChain:self.chain];
     return [[registrationFundingDerivationPath addressAtIndex:index] isEqualToString:address];
 }
 
--(void)markAddressAsUsedInWallet:(DSWallet*)wallet {
-    DSCreditFundingDerivationPath * registrationFundingDerivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:wallet];
-    NSString * address = [[NSData dataWithUInt160:[self creditBurnPublicKeyHash]] addressFromHash160DataForChain:self.chain];
+- (void)markAddressAsUsedInWallet:(DSWallet *)wallet {
+    DSCreditFundingDerivationPath *registrationFundingDerivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:wallet];
+    NSString *address = [[NSData dataWithUInt160:[self creditBurnPublicKeyHash]] addressFromHash160DataForChain:self.chain];
     [registrationFundingDerivationPath registerTransactionAddress:address];
     [registrationFundingDerivationPath registerAddressesWithGapLimit:10 error:nil];
 }
 
--(uint32_t)usedDerivationPathIndex {
+- (uint32_t)usedDerivationPathIndex {
     if (!self.accounts.count) return UINT32_MAX;
     if (self.accounts.count == 1) {
         return [self usedDerivationPathIndexForWallet:self.firstAccount.wallet];
     } else {
-        NSMutableArray * wallets = [NSMutableArray array];
-        for (DSAccount * account in self.accounts) {
+        NSMutableArray *wallets = [NSMutableArray array];
+        for (DSAccount *account in self.accounts) {
             if (!account.wallet) continue;
             if (![wallets containsObject:account.wallet]) {
                 [wallets addObject:account.wallet];
             }
         }
-        for (DSWallet * wallet in wallets) {
+        for (DSWallet *wallet in wallets) {
             uint32_t derivation = [self usedDerivationPathIndexForWallet:wallet];
             if (derivation != UINT32_MAX) return derivation;
         }
@@ -90,7 +92,17 @@
     }
 }
 
--(Class)entityClass {
+- (void)setInstantSendReceivedWithInstantSendLock:(DSInstantSendTransactionLock *)instantSendLock {
+    self.instantSendReceived = instantSendLock.signatureVerified;
+    self.hasUnverifiedInstantSendLock = (instantSendLock && !instantSendLock.signatureVerified);
+    //we will always need to send this platform
+    self.instantSendLockAwaitingProcessing = instantSendLock;
+    if (!instantSendLock.saved) {
+        [instantSendLock saveInitial];
+    }
+}
+
+- (Class)entityClass {
     return [DSCreditFundingTransactionEntity class];
 }
 

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -19,7 +19,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, DSDocumentTransitionType) {
+typedef NS_ENUM(NSUInteger, DSDocumentTransitionType)
+{
     DSDocumentTransitionType_Create = 1,
     DSDocumentTransitionType_Update = 2,
     DSDocumentTransitionType_Delete = 3,
@@ -27,9 +28,9 @@ typedef NS_ENUM(NSUInteger, DSDocumentTransitionType) {
 
 @interface DSDocumentTransition : DSTransition
 
-@property(nonatomic,readonly) NSArray<DPDocument *>* documents;
+@property (nonatomic, readonly) NSArray<DPDocument *> *documents;
 
--(instancetype)initForDocuments:(NSArray<DPDocument*>*)documents withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain;
+- (instancetype)initForDocuments:(NSArray<DPDocument *> *)documents withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain;
 
 @end
 

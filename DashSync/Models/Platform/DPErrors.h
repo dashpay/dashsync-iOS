@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -21,7 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 extern NSErrorDomain const DPErrorDomain;
 
-typedef NS_ENUM(NSInteger, DPErrorCode) {
+typedef NS_ENUM(NSInteger, DPErrorCode)
+{
     /// Data is not allowed for objects with $action DELETE
     DPErrorCode_DataIsNotAllowedWithActionDelete,
     DPErrorCode_InvalidDPObject,

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -35,14 +35,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSTimeInterval createdTimestamp;
 @property (nonatomic, assign) NSTimeInterval registeredTimestamp;
 
-@property (nonatomic, copy) NSData * signatureData;
+@property (nonatomic, copy) NSData *signatureData;
 @property (nonatomic, assign) DSKeyType signatureType;
 @property (nonatomic, assign) uint32_t signaturePublicKeyId;
 
-@property (nonatomic, readonly) DSMutableStringValueDictionary * keyValueDictionary;
+@property (nonatomic, readonly) DSMutableStringValueDictionary *keyValueDictionary;
 
--(instancetype)initOnChain:(DSChain*)chain;
--(void)applyKeyValueDictionary:(DSMutableStringValueDictionary *)keyValueDictionary;
+- (instancetype)initOnChain:(DSChain *)chain;
+- (void)applyKeyValueDictionary:(DSMutableStringValueDictionary *)keyValueDictionary;
 
 @end
 

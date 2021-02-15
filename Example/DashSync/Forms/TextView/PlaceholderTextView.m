@@ -54,13 +54,12 @@ NS_ASSUME_NONNULL_BEGIN
     NSMutableDictionary<NSString *, id> *attributes = nil;
     if (self.isFirstResponder) {
         attributes = [self.typingAttributes mutableCopy];
-    }
-    else {
+    } else {
         attributes = [@{
-            NSFontAttributeName : self.font ?: [UIFont systemFontOfSize:14.0],
+            NSFontAttributeName: self.font ?: [UIFont systemFontOfSize:14.0],
         } mutableCopy];
     }
-    
+
     UIColor *color = attributes[NSForegroundColorAttributeName] ?: [UIColor colorWithRed:0.0 green:0.0 blue:0.1 alpha:0.22];
     attributes[NSForegroundColorAttributeName] = [color colorWithAlphaComponent:0.22];
 

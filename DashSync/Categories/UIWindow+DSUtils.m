@@ -25,20 +25,17 @@ NS_ASSUME_NONNULL_BEGIN
             return tabBarController;
         }
         return [self ds_topViewControllerWithRootViewController:tabBarController.selectedViewController];
-    }
-    else if ([rootViewController isKindOfClass:UINavigationController.class]) {
+    } else if ([rootViewController isKindOfClass:UINavigationController.class]) {
         UINavigationController *navigationController = (UINavigationController *)rootViewController;
         if (!navigationController.visibleViewController || (navigationController.visibleViewController == navigationController)) {
             return navigationController;
         }
         return [self ds_topViewControllerWithRootViewController:navigationController.visibleViewController];
-    }
-    else if (rootViewController.presentedViewController) {
+    } else if (rootViewController.presentedViewController) {
         UIViewController *presentedViewController = rootViewController.presentedViewController;
         if (presentedViewController == rootViewController) return presentedViewController;
         return [self ds_topViewControllerWithRootViewController:presentedViewController];
-    }
-    else {
+    } else {
         return rootViewController;
     }
 }

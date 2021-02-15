@@ -6,16 +6,16 @@
 //
 //
 
-#import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
-@class DSQuorumEntryEntity, DSTransactionEntity,DSInstantSendTransactionLock,DSChain;
+@class DSQuorumEntryEntity, DSTransactionEntity, DSInstantSendTransactionLock, DSChain;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSInstantSendLockEntity : NSManagedObject
 
-- (DSInstantSendTransactionLock *)instantSendTransactionLockForChain:(DSChain*)chain;
+- (DSInstantSendTransactionLock *)instantSendTransactionLockForChain:(DSChain *)chain;
 - (instancetype)setAttributesFromInstantSendTransactionLock:(DSInstantSendTransactionLock *)instantSendTransactionLock;
 
 @end

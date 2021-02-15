@@ -11,7 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSDate (Utils)
 
-+(NSTimeInterval)timeIntervalSince1970;
++ (NSTimeInterval)timeIntervalSince1970;
 
 @end
 

@@ -108,17 +108,14 @@ static NSUInteger const HTTPRequestOperationMaxRedirects = 10;
 
 - (void)receiveData:(NSData *)data {
     [data enumerateByteRangesUsingBlock:^(const void *bytes, NSRange byteRange, BOOL *stop) {
-
         NSData *dataRange = [NSData dataWithBytes:bytes length:byteRange.length];
 
         if (self.request.chunks) {
             [self.requestOperationHandler receivedDataChunk:dataRange forResponse:self.response];
-        }
-        else {
+        } else {
             if (!self.receivedData) {
                 self.receivedData = [dataRange mutableCopy];
-            }
-            else {
+            } else {
                 [self.receivedData appendData:dataRange];
             }
         }
@@ -129,8 +126,7 @@ static NSUInteger const HTTPRequestOperationMaxRedirects = 10;
     id<HTTPRequestOperationHandler> requestOperationHandler = self.requestOperationHandler;
     if (!self.response) {
         self.response = [[HTTPResponse alloc] initWithRequest:self.request response:response];
-    }
-    else {
+    } else {
         [self.response updateResponseIfNeeded:response];
     }
 
@@ -184,8 +180,7 @@ static NSUInteger const HTTPRequestOperationMaxRedirects = 10;
 
     if (self.request.downloadTaskPolicy == HTTPRequestDownloadTaskPolicyOnDemand) {
         return NSURLSessionResponseBecomeDownload;
-    }
-    else {
+    } else {
         return NSURLSessionResponseAllow;
     }
 }
@@ -212,12 +207,11 @@ static NSUInteger const HTTPRequestOperationMaxRedirects = 10;
     NSTimeInterval waitTime = [self.rateLimiter earliestTimeUntilRequestCanBeExecuted];
     if (waitTime == 0.0) {
         [self checkRetryLimiterAndExecute];
-    }
-    else {
+    } else {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
-                                     (int64_t)(waitTime * NSEC_PER_SEC)),
-                       self.retryQueue,
-                       self.executionBlock);
+                           (int64_t)(waitTime * NSEC_PER_SEC)),
+            self.retryQueue,
+            self.executionBlock);
     }
 }
 
@@ -226,13 +220,12 @@ static NSUInteger const HTTPRequestOperationMaxRedirects = 10;
         self.waitCount++;
         if (self.waitCount == 1) {
             self.executionBlock();
-        }
-        else {
+        } else {
             NSTimeInterval waitTime = self.exponentialTimer.timeIntervalAndCalculateNext;
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
-                                         (int64_t)(waitTime * NSEC_PER_SEC)),
-                           self.retryQueue,
-                           self.executionBlock);
+                               (int64_t)(waitTime * NSEC_PER_SEC)),
+                self.retryQueue,
+                self.executionBlock);
         }
         return;
     }

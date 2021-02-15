@@ -1,6 +1,6 @@
 //
 //  DSTxOutputEntity+CoreDataProperties.h
-//  
+//
 //
 //  Created by Sam Westrich on 5/20/18.
 //
@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, retain) NSData *script;
 @property (nonatomic, retain) NSString *shapeshiftOutboundAddress;
 @property (nonatomic) int64_t value;
-@property (nullable, nonatomic, retain) DSTxInputEntity * spentInInput;
+@property (nullable, nonatomic, retain) DSTxInputEntity *spentInInput;
 @property (nonatomic, retain) DSTransactionEntity *transaction;
 @property (nonatomic, retain) DSAddressEntity *localAddress;
 @property (nonatomic, retain) DSAccountEntity *account;

@@ -18,8 +18,8 @@
 #import "DSPinField.h"
 
 #import "DSAuthenticationManager+Private.h"
-#import "UIColor+DSStyle.h"
 #import "NSMutableData+Dash.h" // SecureAllocator()
+#import "UIColor+DSStyle.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -44,9 +44,9 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
     CAShapeLayer *layer = [CAShapeLayer layer];
     layer.fillColor = [UIColor ds_pinInputDotColor].CGColor;
     CGRect rect = CGRectMake((fieldSize - PIN_DOT_SIZE) / 2.0,
-                             (fieldSize - PIN_DOT_SIZE) / 2.0,
-                             PIN_DOT_SIZE,
-                             PIN_DOT_SIZE);
+        (fieldSize - PIN_DOT_SIZE) / 2.0,
+        PIN_DOT_SIZE,
+        PIN_DOT_SIZE);
     UIBezierPath *path = [UIBezierPath bezierPathWithOvalInRect:rect];
     layer.path = path.CGPath;
     layer.opacity = 0.0;
@@ -83,20 +83,20 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
             case DSPinFieldStyle_Default:
             case DSPinFieldStyle_Small: {
                 emptyFieldColor = [UIColor ds_pinBackgroundColor];
-                
+
                 break;
             }
             case DSPinFieldStyle_DefaultWhite: {
                 emptyFieldColor = [UIColor ds_pinLockScreenBackgroundColor];
-                
+
                 break;
             }
         }
         _emptyFieldColor = emptyFieldColor;
 
         _value = CFBridgingRelease(CFArrayCreateMutable(SecureAllocator(),
-                                                        4,
-                                                        &kCFTypeArrayCallBacks));
+            4,
+            &kCFTypeArrayCallBacks));
         _inputEnabled = YES;
 
         _supportedCharacters = [NSCharacterSet characterSetWithCharactersInString:@"0123456789"];
@@ -143,7 +143,7 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
 }
 
 - (NSString *)text {
-    return CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (__bridge CFArrayRef)self.value, (__bridge CFStringRef)@""));
+    return CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (__bridge CFArrayRef)self.value, (__bridge CFStringRef) @""));
 }
 
 - (void)clear {
@@ -164,7 +164,7 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
 // Clean up pin from memory once window's gone.
 - (void)willMoveToWindow:(nullable UIWindow *)newWindow {
     [super willMoveToWindow:newWindow];
-    
+
     if (newWindow == nil) {
         [self clear];
     }

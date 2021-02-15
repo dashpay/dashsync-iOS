@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -26,10 +26,10 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
-    
+
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
@@ -46,9 +46,9 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     DSBlockchainIdentityKeyTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"BlockchainIdentityKeyCellIdentifier" forIndexPath:indexPath];
-    
-    DSKey * key = [self.blockchainIdentity keyAtIndex:indexPath.row];
-    cell.indexLabel.text = [NSString stringWithFormat:@"%ld",(long)indexPath.row];
+
+    DSKey *key = [self.blockchainIdentity keyAtIndex:indexPath.row];
+    cell.indexLabel.text = [NSString stringWithFormat:@"%ld", (long)indexPath.row];
     cell.publicKeyLabel.text = key.publicKeyData.base64String;
     cell.statusLabel.text = [self.blockchainIdentity localizedStatusOfKeyAtIndex:indexPath.row];
     cell.typeLabel.text = key.localizedKeyType;

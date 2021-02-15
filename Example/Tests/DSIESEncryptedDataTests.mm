@@ -16,6 +16,7 @@
 //
 
 #import <XCTest/XCTest.h>
+
 #import "NSData+Bitcoin.h"
 #import "NSData+Encryption.h"
 #import "DSBLSKey+Private.h"

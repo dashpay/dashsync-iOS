@@ -1,6 +1,6 @@
 //
 //  DSDerivationPathEntity+CoreDataClass.m
-//  
+//
 //
 //  Created by Sam Westrich on 5/20/18.
 //
@@ -22,39 +22,38 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSDerivationPathEntity+CoreDataClass.h"
-#import "DSChainEntity+CoreDataClass.h"
-#import "DSChain+Protected.h"
-#import "DSWallet.h"
 #import "DSAccount.h"
-#import "DSDerivationPath.h"
-#import "NSManagedObject+Sugar.h"
-#import "DSBIP39Mnemonic.h"
 #import "DSAccountEntity+CoreDataClass.h"
-#import "DSIncomingFundsDerivationPath.h"
+#import "DSBIP39Mnemonic.h"
+#import "DSChain+Protected.h"
+#import "DSChainEntity+CoreDataClass.h"
+#import "DSDerivationPath.h"
+#import "DSDerivationPathEntity+CoreDataClass.h"
 #import "DSFriendRequestEntity+CoreDataClass.h"
+#import "DSIncomingFundsDerivationPath.h"
+#import "DSWallet.h"
 #import "NSManagedObject+Sugar.h"
 
 @implementation DSDerivationPathEntity
 
-+ (DSDerivationPathEntity* _Nonnull)derivationPathEntityMatchingDerivationPath:(DSDerivationPath*)derivationPath inContext:(NSManagedObjectContext*)context {
++ (DSDerivationPathEntity *_Nonnull)derivationPathEntityMatchingDerivationPath:(DSDerivationPath *)derivationPath inContext:(NSManagedObjectContext *)context {
     NSAssert(derivationPath.standaloneExtendedPublicKeyUniqueID, @"standaloneExtendedPublicKeyUniqueID must be set");
     //DSChain * chain = derivationPath.chain;
-    NSArray * derivationPathEntities;
-    NSError * archivingError = nil;
-    NSData * archivedDerivationPath = [NSKeyedArchiver archivedDataWithRootObject:derivationPath requiringSecureCoding:NO error:&archivingError];
+    NSArray *derivationPathEntities;
+    NSError *archivingError = nil;
+    NSData *archivedDerivationPath = [NSKeyedArchiver archivedDataWithRootObject:derivationPath requiringSecureCoding:NO error:&archivingError];
     NSAssert(archivedDerivationPath != nil && archivingError == nil, @"Archived derivation path should have been created");
-    DSChainEntity * chainEntity = [derivationPath.chain chainEntityInContext:context];
+    DSChainEntity *chainEntity = [derivationPath.chain chainEntityInContext:context];
     //NSUInteger count = [chainEntity.derivationPaths count];
-    derivationPathEntities = [[chainEntity.derivationPaths objectsPassingTest:^BOOL(DSDerivationPathEntity * _Nonnull obj, BOOL * _Nonnull stop) {
+    derivationPathEntities = [[chainEntity.derivationPaths objectsPassingTest:^BOOL(DSDerivationPathEntity *_Nonnull obj, BOOL *_Nonnull stop) {
         return ([obj.publicKeyIdentifier isEqualToString:derivationPath.standaloneExtendedPublicKeyUniqueID]);
     }] allObjects];
-    
+
     //&& [obj.derivationPath isEqualToData:archivedDerivationPath]
     if ([derivationPathEntities count]) {
         return [derivationPathEntities firstObject];
     } else {
-        DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity managedObjectInBlockedContext:context];
+        DSDerivationPathEntity *derivationPathEntity = [DSDerivationPathEntity managedObjectInBlockedContext:context];
         derivationPathEntity.derivationPath = archivedDerivationPath;
         derivationPathEntity.chain = chainEntity;
         derivationPathEntity.publicKeyIdentifier = derivationPath.standaloneExtendedPublicKeyUniqueID;
@@ -63,34 +62,44 @@
             derivationPathEntity.account = [DSAccountEntity accountEntityForWalletUniqueID:derivationPath.account.wallet.uniqueIDString index:derivationPath.account.accountNumber onChain:derivationPath.chain inContext:context];
         }
         if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
-            DSIncomingFundsDerivationPath * incomingFundsDerivationPath = (DSIncomingFundsDerivationPath *)derivationPath;
-            NSPredicate * predicatee = [NSPredicate predicateWithFormat:@"sourceContact.associatedBlockchainIdentity.uniqueID == %@ && destinationContact.associatedBlockchainIdentity.uniqueID == %@",uint256_data(incomingFundsDerivationPath.contactSourceBlockchainIdentityUniqueId),uint256_data(incomingFundsDerivationPath.contactDestinationBlockchainIdentityUniqueId)];
-            DSFriendRequestEntity * friendRequest = [DSFriendRequestEntity anyObjectForPredicate:predicatee inContext:context];
+            //NSLog(@"--->creating derivation path entity on path %@ (%@) with no friendship identifier %@", derivationPath, derivationPath.stringRepresentation, [NSThread callStackSymbols]);
+            DSIncomingFundsDerivationPath *incomingFundsDerivationPath = (DSIncomingFundsDerivationPath *)derivationPath;
+            NSPredicate *predicatee = [NSPredicate predicateWithFormat:@"sourceContact.associatedBlockchainIdentity.uniqueID == %@ && destinationContact.associatedBlockchainIdentity.uniqueID == %@", uint256_data(incomingFundsDerivationPath.contactSourceBlockchainIdentityUniqueId), uint256_data(incomingFundsDerivationPath.contactDestinationBlockchainIdentityUniqueId)];
+            DSFriendRequestEntity *friendRequest = [DSFriendRequestEntity anyObjectForPredicate:predicatee inContext:context];
             if (friendRequest) {
                 derivationPathEntity.friendRequest = friendRequest;
             }
+            //NSLog(@"--->associated friendship identifier %@", friendRequest.friendshipIdentifier.hexString);
         }
         return derivationPathEntity;
     }
 }
 
-+(DSDerivationPathEntity* _Nonnull)derivationPathEntityMatchingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath associateWithFriendRequest:(DSFriendRequestEntity*)friendRequest {
++ (DSDerivationPathEntity *_Nonnull)derivationPathEntityMatchingDerivationPath:(DSIncomingFundsDerivationPath *)derivationPath associateWithFriendRequest:(DSFriendRequestEntity *)friendRequest {
     NSAssert(derivationPath.standaloneExtendedPublicKeyUniqueID, @"standaloneExtendedPublicKeyUniqueID must be set");
     NSParameterAssert(friendRequest);
-    
-    NSManagedObjectContext * context = friendRequest.managedObjectContext;
-    //DSChain * chain = derivationPath.chain;
-    NSError * archivingError = nil;
-    NSData * archivedDerivationPath = [NSKeyedArchiver archivedDataWithRootObject:derivationPath requiringSecureCoding:NO error:&archivingError];
-    NSAssert(archivedDerivationPath != nil && archivingError == nil, @"Archived derivation path should have been created");
-    DSChainEntity * chainEntity = [derivationPath.chain chainEntityInContext:context];
 
-    NSSet * derivationPathEntities = [chainEntity.derivationPaths filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"publicKeyIdentifier == %@ && chain == %@",derivationPath.standaloneExtendedPublicKeyUniqueID,[derivationPath.chain chainEntityInContext:context]]];
+    NSManagedObjectContext *context = friendRequest.managedObjectContext;
+    //DSChain * chain = derivationPath.chain;
+    NSError *archivingError = nil;
+    NSData *archivedDerivationPath = [NSKeyedArchiver archivedDataWithRootObject:derivationPath requiringSecureCoding:NO error:&archivingError];
+    NSAssert(archivedDerivationPath != nil && archivingError == nil, @"Archived derivation path should have been created");
+    DSChainEntity *chainEntity = [derivationPath.chain chainEntityInContext:context];
+
+    NSSet *derivationPathEntities = [chainEntity.derivationPaths filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"publicKeyIdentifier == %@ && chain == %@", derivationPath.standaloneExtendedPublicKeyUniqueID, [derivationPath.chain chainEntityInContext:context]]];
     if ([derivationPathEntities count]) {
-        DSDerivationPathEntity * derivationPathEntity = [derivationPathEntities anyObject];
+        DSDerivationPathEntity *derivationPathEntity = [derivationPathEntities anyObject];
+        if (derivationPathEntity.friendRequest) {
+            //DSLog(@"Derivation path entity found with friendship identifier %@ %@", derivationPathEntity.friendRequest.friendshipIdentifier.hexString, [NSThread callStackSymbols]);
+            //DSFriendRequestEntity *a = [DSFriendRequestEntity existingFriendRequestEntityOnFriendshipIdentifier:derivationPathEntity.friendRequest.friendshipIdentifier inContext:friendRequest.managedObjectContext];
+            //DSLog(@"%@", a);
+        }
         return derivationPathEntity;
     } else {
-        DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity managedObjectInBlockedContext:context];
+        //NSLog(@"-->creating derivation path entity on derivation path (%@) with friendship identifier %@ %@", derivationPath.stringRepresentation, friendRequest.friendshipIdentifier.hexString, [NSThread callStackSymbols]);
+        //NSLog(@"-->friend request is %@ %@", friendRequest, friendRequest.derivationPath);
+        NSAssert(friendRequest.derivationPath == nil, @"The friend request should not already have a derivationPath");
+        DSDerivationPathEntity *derivationPathEntity = [DSDerivationPathEntity managedObjectInBlockedContext:context];
         derivationPathEntity.derivationPath = archivedDerivationPath;
         derivationPathEntity.chain = chainEntity;
         derivationPathEntity.publicKeyIdentifier = derivationPath.standaloneExtendedPublicKeyUniqueID;
@@ -99,15 +108,15 @@
             derivationPathEntity.account = [DSAccountEntity accountEntityForWalletUniqueID:derivationPath.account.wallet.uniqueIDString index:derivationPath.account.accountNumber onChain:derivationPath.chain inContext:friendRequest.managedObjectContext];
         }
         derivationPathEntity.friendRequest = friendRequest;
-        
+
         return derivationPathEntity;
     }
 }
 
-+(void)deleteDerivationPathsOnChainEntity:(DSChainEntity*)chainEntity {
++ (void)deleteDerivationPathsOnChainEntity:(DSChainEntity *)chainEntity {
     [chainEntity.managedObjectContext performBlockAndWait:^{
-        NSArray * derivationPathsToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@)",chainEntity];
-        for (DSDerivationPathEntity * derivationPath in derivationPathsToDelete) {
+        NSArray *derivationPathsToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@)", chainEntity];
+        for (DSDerivationPathEntity *derivationPath in derivationPathsToDelete) {
             [chainEntity.managedObjectContext deleteObject:derivationPath];
         }
     }];

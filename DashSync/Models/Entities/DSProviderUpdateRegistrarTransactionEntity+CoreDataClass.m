@@ -6,24 +6,23 @@
 //
 //
 
-#import "DSProviderUpdateRegistrarTransactionEntity+CoreDataClass.h"
-#import "DSProviderUpdateRegistrarTransaction.h"
 #import "DSAddressEntity+CoreDataClass.h"
-#import "NSManagedObject+Sugar.h"
+#import "DSChain+Protected.h"
+#import "DSChainEntity+CoreDataClass.h"
+#import "DSKey.h"
+#import "DSProviderUpdateRegistrarTransaction.h"
+#import "DSProviderUpdateRegistrarTransactionEntity+CoreDataClass.h"
 #import "DSTransactionFactory.h"
 #import "NSData+Bitcoin.h"
-#import "DSKey.h"
-#import "DSChainEntity+CoreDataClass.h"
-#import "DSChain+Protected.h"
+#import "NSManagedObject+Sugar.h"
 #import "NSString+Dash.h"
 
 @implementation DSProviderUpdateRegistrarTransactionEntity
 
-- (instancetype)setAttributesFromTransaction:(DSTransaction *)tx
-{
+- (instancetype)setAttributesFromTransaction:(DSTransaction *)tx {
     [self.managedObjectContext performBlockAndWait:^{
         [super setAttributesFromTransaction:tx];
-        DSProviderUpdateRegistrarTransaction * providerUpdateRegistrarTransaction = (DSProviderUpdateRegistrarTransaction*)tx;
+        DSProviderUpdateRegistrarTransaction *providerUpdateRegistrarTransaction = (DSProviderUpdateRegistrarTransaction *)tx;
         self.specialTransactionVersion = providerUpdateRegistrarTransaction.providerUpdateRegistrarTransactionVersion;
         self.providerMode = providerUpdateRegistrarTransaction.providerMode;
         self.operatorKey = [NSData dataWithUInt384:providerUpdateRegistrarTransaction.operatorKey];
@@ -31,37 +30,35 @@
         self.payloadSignature = providerUpdateRegistrarTransaction.payloadSignature;
         self.votingKeyHash = [NSData dataWithUInt160:providerUpdateRegistrarTransaction.votingKeyHash];
         self.providerRegistrationTransactionHash = [NSData dataWithUInt256:providerUpdateRegistrarTransaction.providerRegistrationTransactionHash];
-        
-        NSString * operatorAddress = [DSKey addressWithPublicKeyData:self.operatorKey forChain:tx.chain];
-        NSString * votingAddress = [self.votingKeyHash addressFromHash160DataForChain:tx.chain];
-        NSString * payoutAddress = [NSString addressWithScriptPubKey:self.scriptPayout onChain:tx.chain];
-        
-        NSArray * operatorAddressEntities = [DSAddressEntity objectsInContext:self.managedObjectContext matching:@"address == %@ && derivationPath.chain == %@",operatorAddress,[tx.chain chainEntityInContext:self.managedObjectContext]];
+
+        NSString *operatorAddress = [DSKey addressWithPublicKeyData:self.operatorKey forChain:tx.chain];
+        NSString *votingAddress = [self.votingKeyHash addressFromHash160DataForChain:tx.chain];
+        NSString *payoutAddress = [NSString addressWithScriptPubKey:self.scriptPayout onChain:tx.chain];
+
+        NSArray *operatorAddressEntities = [DSAddressEntity objectsInContext:self.managedObjectContext matching:@"address == %@ && derivationPath.chain == %@", operatorAddress, [tx.chain chainEntityInContext:self.managedObjectContext]];
         if ([operatorAddressEntities count]) {
             NSAssert([operatorAddressEntities count] == 1, @"addresses should not be duplicates");
             [self addAddressesObject:[operatorAddressEntities firstObject]];
         }
-        
-        NSArray * votingAddressEntities = [DSAddressEntity objectsInContext:self.managedObjectContext matching:@"address == %@ && derivationPath.chain == %@",votingAddress,[tx.chain chainEntityInContext:self.managedObjectContext]];
+
+        NSArray *votingAddressEntities = [DSAddressEntity objectsInContext:self.managedObjectContext matching:@"address == %@ && derivationPath.chain == %@", votingAddress, [tx.chain chainEntityInContext:self.managedObjectContext]];
         if ([votingAddressEntities count]) {
             NSAssert([votingAddressEntities count] == 1, @"addresses should not be duplicates");
             [self addAddressesObject:[votingAddressEntities firstObject]];
         }
-        
-        NSArray * payoutAddressEntities = [DSAddressEntity objectsInContext:self.managedObjectContext matching:@"address == %@ && derivationPath.chain == %@",payoutAddress,[tx.chain chainEntityInContext:self.managedObjectContext]];
+
+        NSArray *payoutAddressEntities = [DSAddressEntity objectsInContext:self.managedObjectContext matching:@"address == %@ && derivationPath.chain == %@", payoutAddress, [tx.chain chainEntityInContext:self.managedObjectContext]];
         if ([payoutAddressEntities count]) {
             NSAssert([payoutAddressEntities count] == 1, @"addresses should not be duplicates");
             [self addAddressesObject:[payoutAddressEntities firstObject]];
         }
-        
     }];
-    
+
     return self;
 }
 
-- (DSTransaction *)transactionForChain:(DSChain*)chain
-{
-    DSProviderUpdateRegistrarTransaction * transaction = (DSProviderUpdateRegistrarTransaction *)[super transactionForChain:chain];
+- (DSTransaction *)transactionForChain:(DSChain *)chain {
+    DSProviderUpdateRegistrarTransaction *transaction = (DSProviderUpdateRegistrarTransaction *)[super transactionForChain:chain];
     transaction.type = DSTransactionType_ProviderUpdateRegistrar;
     [self.managedObjectContext performBlockAndWait:^{
         transaction.providerUpdateRegistrarTransactionVersion = self.specialTransactionVersion;
@@ -72,11 +69,11 @@
         transaction.votingKeyHash = self.votingKeyHash.UInt160;
         transaction.providerRegistrationTransactionHash = self.providerRegistrationTransactionHash.UInt256;
     }];
-    
+
     return transaction;
 }
 
--(Class)transactionClass {
+- (Class)transactionClass {
     return [DSProviderUpdateRegistrarTransaction class];
 }
 

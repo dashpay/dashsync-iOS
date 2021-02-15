@@ -24,55 +24,54 @@
 //  THE SOFTWARE.
 
 #import "DSSporkManager.h"
-#import "DSSpork.h"
-#import "DSSporkHashEntity+CoreDataProperties.h"
-#import "DSSporkEntity+CoreDataProperties.h"
-#import "NSManagedObject+Sugar.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataProperties.h"
-#import "DSPeerManager+Protected.h"
-#import "DSOptionsManager.h"
 #import "DSChainManager+Protected.h"
 #import "DSMerkleBlock.h"
+#import "DSOptionsManager.h"
+#import "DSPeerManager+Protected.h"
+#import "DSSpork.h"
+#import "DSSporkEntity+CoreDataProperties.h"
+#import "DSSporkHashEntity+CoreDataProperties.h"
 #import "NSData+Bitcoin.h"
 #import "NSDate+Utils.h"
+#import "NSManagedObject+Sugar.h"
 
 #define SPORK_15_MIN_PROTOCOL_VERSION 70213
 
-@interface DSSporkManager()
+@interface DSSporkManager ()
 
-@property (nonatomic,strong) NSMutableDictionary <NSNumber*,DSSpork*> * mSporkDictionary;
-@property (nonatomic,strong) NSMutableArray * sporkHashesMarkedForRetrieval;
-@property (nonatomic,strong) DSChain * chain;
-@property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
-@property (nonatomic,assign) NSTimeInterval lastRequestedSporks;
-@property (nonatomic,assign) NSTimeInterval lastSyncedSporks;
-@property (nonatomic,strong) NSTimer * sporkTimer;
+@property (nonatomic, strong) NSMutableDictionary<NSNumber *, DSSpork *> *mSporkDictionary;
+@property (nonatomic, strong) NSMutableArray *sporkHashesMarkedForRetrieval;
+@property (nonatomic, strong) DSChain *chain;
+@property (nonatomic, strong) NSManagedObjectContext *managedObjectContext;
+@property (nonatomic, assign) NSTimeInterval lastRequestedSporks;
+@property (nonatomic, assign) NSTimeInterval lastSyncedSporks;
+@property (nonatomic, strong) NSTimer *sporkTimer;
 
 @end
 
 @implementation DSSporkManager
 
-- (instancetype)initWithChain:(DSChain *)chain
-{
+- (instancetype)initWithChain:(DSChain *)chain {
     NSParameterAssert(chain);
-    
-    if (! (self = [super init])) return nil;
+
+    if (!(self = [super init])) return nil;
     _chain = chain;
-    __block NSMutableArray * sporkHashesMarkedForRetrieval = [NSMutableArray array];
-    __block NSMutableDictionary * sporkDictionary = [NSMutableDictionary dictionary];
+    __block NSMutableArray *sporkHashesMarkedForRetrieval = [NSMutableArray array];
+    __block NSMutableDictionary *sporkDictionary = [NSMutableDictionary dictionary];
     self.lastRequestedSporks = 0;
     self.lastSyncedSporks = 0;
     self.managedObjectContext = [NSManagedObjectContext chainContext];
     [self.managedObjectContext performBlockAndWait:^{
-        DSChainEntity * chainEntity = [self.chain chainEntityInContext:self.managedObjectContext];
-        NSArray * sporkEntities = [DSSporkEntity sporksonChainEntity:chainEntity];
-        for (DSSporkEntity * sporkEntity in sporkEntities) {
-            DSSpork * spork = [[DSSpork alloc] initWithIdentifier:sporkEntity.identifier value:sporkEntity.value timeSigned:sporkEntity.timeSigned signature:sporkEntity.signature onChain:chain];
+        DSChainEntity *chainEntity = [self.chain chainEntityInContext:self.managedObjectContext];
+        NSArray *sporkEntities = [DSSporkEntity sporksonChainEntity:chainEntity];
+        for (DSSporkEntity *sporkEntity in sporkEntities) {
+            DSSpork *spork = [[DSSpork alloc] initWithIdentifier:sporkEntity.identifier value:sporkEntity.value timeSigned:sporkEntity.timeSigned signature:sporkEntity.signature onChain:chain];
             sporkDictionary[@(spork.identifier)] = spork;
         }
-        NSArray * sporkHashEntities = [DSSporkHashEntity standaloneSporkHashEntitiesOnChainEntity:chainEntity];
-        for (DSSporkHashEntity * sporkHashEntity in sporkHashEntities) {
+        NSArray *sporkHashEntities = [DSSporkHashEntity standaloneSporkHashEntitiesOnChainEntity:chainEntity];
+        for (DSSporkHashEntity *sporkHashEntity in sporkHashEntities) {
             [sporkHashesMarkedForRetrieval addObject:sporkHashEntity.sporkHash];
         }
     }];
@@ -82,56 +81,56 @@
     return self;
 }
 
--(DSPeerManager*)peerManager {
+- (DSPeerManager *)peerManager {
     return self.chain.chainManager.peerManager;
 }
 
--(BOOL)instantSendActive {
-    DSSpork * instantSendSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork2InstantSendEnabled)];
-    if (!instantSendSpork) return TRUE;//assume true
+- (BOOL)instantSendActive {
+    DSSpork *instantSendSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork2InstantSendEnabled)];
+    if (!instantSendSpork) return TRUE; //assume true
     return instantSendSpork.value <= self.chain.lastTerminalBlockHeight;
 }
 
--(BOOL)sporksUpdatedSignatures {
-    DSSpork * updateSignatureSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork6NewSigs)];
-    if (!updateSignatureSpork) return FALSE;//assume false
+- (BOOL)sporksUpdatedSignatures {
+    DSSpork *updateSignatureSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork6NewSigs)];
+    if (!updateSignatureSpork) return FALSE; //assume false
     return updateSignatureSpork.value <= self.chain.lastTerminalBlockHeight;
 }
 
--(BOOL)deterministicMasternodeListEnabled {
-    DSSpork * dmlSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork15DeterministicMasternodesEnabled)];
-    if (!dmlSpork) return TRUE;//assume true
+- (BOOL)deterministicMasternodeListEnabled {
+    DSSpork *dmlSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork15DeterministicMasternodesEnabled)];
+    if (!dmlSpork) return TRUE; //assume true
     return dmlSpork.value <= self.chain.lastTerminalBlockHeight;
 }
 
--(BOOL)llmqInstantSendEnabled {
-    DSSpork * llmqSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork20InstantSendLLMQBased)];
-    if (!llmqSpork) return TRUE;//assume true
+- (BOOL)llmqInstantSendEnabled {
+    DSSpork *llmqSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork20InstantSendLLMQBased)];
+    if (!llmqSpork) return TRUE; //assume true
     return llmqSpork.value <= self.chain.lastTerminalBlockHeight;
 }
 
--(BOOL)quorumDKGEnabled {
-    DSSpork * dkgSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork17QuorumDKGEnabled)];
-    if (!dkgSpork) return TRUE;//assume true
+- (BOOL)quorumDKGEnabled {
+    DSSpork *dkgSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork17QuorumDKGEnabled)];
+    if (!dkgSpork) return TRUE; //assume true
     return dkgSpork.value <= self.chain.lastTerminalBlockHeight;
 }
 
--(BOOL)chainLocksEnabled {
-    DSSpork * chainLockSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork19ChainLocksEnabled)];
-    if (!chainLockSpork) return TRUE;//assume true
+- (BOOL)chainLocksEnabled {
+    DSSpork *chainLockSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork19ChainLocksEnabled)];
+    if (!chainLockSpork) return TRUE; //assume true
     return chainLockSpork.value <= self.chain.lastTerminalBlockHeight;
 }
 
--(NSDictionary*)sporkDictionary {
+- (NSDictionary *)sporkDictionary {
     return [_mSporkDictionary copy];
 }
 
 // MARK: - Spork Sync
 
--(void)performSporkRequest {
+- (void)performSporkRequest {
     for (DSPeer *p in self.peerManager.connectedPeers) { // after syncing, get sporks from other peers
         if (p.status != DSPeerStatus_Connected) continue;
-        
+
         [p sendPingMessageWithPongHandler:^(BOOL success) {
             if (success) {
                 self.lastRequestedSporks = [NSDate timeIntervalSince1970];
@@ -141,16 +140,18 @@
     }
 }
 
--(void)getSporks {
+- (void)getSporks {
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Sporks)) return; // make sure we care about sporks
-    
+
     if (!self.sporkTimer) {
         [self performSporkRequest];
-        self.sporkTimer = [NSTimer scheduledTimerWithTimeInterval:600 repeats:TRUE block:^(NSTimer * _Nonnull timer) {
-            if (self.lastSyncedSporks < [NSDate timeIntervalSince1970] - 60 * 10) { //wait 10 minutes between requests
-                [self performSporkRequest];
-            }
-        }];
+        self.sporkTimer = [NSTimer scheduledTimerWithTimeInterval:600
+                                                          repeats:TRUE
+                                                            block:^(NSTimer *_Nonnull timer) {
+                                                                if (self.lastSyncedSporks < [NSDate timeIntervalSince1970] - 60 * 10) { //wait 10 minutes between requests
+                                                                    [self performSporkRequest];
+                                                                }
+                                                            }];
     }
 }
 
@@ -159,9 +160,9 @@
     self.sporkTimer = nil;
 }
 
-- (void)peer:(DSPeer * _Nonnull)peer hasSporkHashes:(NSSet* _Nonnull)sporkHashes {
+- (void)peer:(DSPeer *_Nonnull)peer hasSporkHashes:(NSSet *_Nonnull)sporkHashes {
     BOOL hasNew = FALSE;
-    for (NSData * sporkHash in sporkHashes) {
+    for (NSData *sporkHash in sporkHashes) {
         if (![_sporkHashesMarkedForRetrieval containsObject:sporkHash]) {
             [_sporkHashesMarkedForRetrieval addObject:sporkHash];
             hasNew = TRUE;
@@ -176,9 +177,9 @@
         return;
     }
     self.lastSyncedSporks = [NSDate timeIntervalSince1970];
-    DSSpork * currentSpork = self.sporkDictionary[@(spork.identifier)];
+    DSSpork *currentSpork = self.sporkDictionary[@(spork.identifier)];
     BOOL updatedSpork = FALSE;
-    __block NSMutableDictionary * dictionary = [[NSMutableDictionary alloc] init];
+    __block NSMutableDictionary *dictionary = [[NSMutableDictionary alloc] init];
     if (currentSpork) {
         //there was already a spork
         if (![currentSpork isEqualToSpork:spork]) {
@@ -198,9 +199,9 @@
     if (!currentSpork || updatedSpork) {
         [self.managedObjectContext performBlockAndWait:^{
             @autoreleasepool {
-                DSSporkHashEntity * hashEntity = [DSSporkHashEntity sporkHashEntityWithHash:[NSData dataWithUInt256:spork.sporkHash] onChainEntity:[spork.chain chainEntityInContext:self.managedObjectContext]];
+                DSSporkHashEntity *hashEntity = [DSSporkHashEntity sporkHashEntityWithHash:[NSData dataWithUInt256:spork.sporkHash] onChainEntity:[spork.chain chainEntityInContext:self.managedObjectContext]];
                 if (hashEntity) {
-                    DSSporkEntity * sporkEntity = hashEntity.spork;
+                    DSSporkEntity *sporkEntity = hashEntity.spork;
                     if (!sporkEntity) {
                         sporkEntity = [DSSporkEntity managedObjectInBlockedContext:self.managedObjectContext];
                     }
@@ -217,43 +218,40 @@
     }
 }
 
--(void)checkTriggers {
-    for (NSNumber * key in _mSporkDictionary) {
-        DSSpork * spork = _mSporkDictionary[key];
+- (void)checkTriggers {
+    for (NSNumber *key in _mSporkDictionary) {
+        DSSpork *spork = _mSporkDictionary[key];
         [self checkTriggersForSpork:spork forKeyIdentifier:spork.identifier];
     }
 }
 
--(void)checkTriggersForSpork:(DSSpork*)spork forKeyIdentifier:(DSSporkIdentifier)sporkIdentifier {
+- (void)checkTriggersForSpork:(DSSpork *)spork forKeyIdentifier:(DSSporkIdentifier)sporkIdentifier {
     BOOL changed = FALSE; //some triggers will require a change, others have different requirements
     if (![_mSporkDictionary objectForKey:@(sporkIdentifier)] || ([_mSporkDictionary objectForKey:@(sporkIdentifier)] && (_mSporkDictionary[@(sporkIdentifier)].value != spork.value))) {
         changed = TRUE;
     }
     switch (sporkIdentifier) {
-        case DSSporkIdentifier_Spork15DeterministicMasternodesEnabled:
-        {
+        case DSSporkIdentifier_Spork15DeterministicMasternodesEnabled: {
             if (!self.chain.isDevnetAny && self.chain.estimatedBlockHeight >= spork.value && self.chain.minProtocolVersion < SPORK_15_MIN_PROTOCOL_VERSION) { //use estimated block height here instead
                 [self.chain setMinProtocolVersion:SPORK_15_MIN_PROTOCOL_VERSION];
             }
-        }
-            break;
-            
+        } break;
+
         default:
             break;
     }
-    
 }
 
--(void)setSporkValue:(DSSpork*)spork forKeyIdentifier:(DSSporkIdentifier)sporkIdentifier {
-    @synchronized (self) {
+- (void)setSporkValue:(DSSpork *)spork forKeyIdentifier:(DSSporkIdentifier)sporkIdentifier {
+    @synchronized(self) {
         [self checkTriggersForSpork:spork forKeyIdentifier:sporkIdentifier];
         _mSporkDictionary[@(sporkIdentifier)] = spork;
     }
 }
 
 
--(void)wipeSporkInfo {
-    @synchronized (self) {
+- (void)wipeSporkInfo {
+    @synchronized(self) {
         _mSporkDictionary = [NSMutableDictionary dictionary];
         [self stopGettingSporks];
     }

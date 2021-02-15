@@ -6,9 +6,9 @@
 //
 //
 
-#import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
 #import "DSGovernanceObject.h"
+#import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
 @class DSChainEntity, DSGovernanceObjectHashEntity;
 
@@ -16,9 +16,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSGovernanceObjectEntity : NSManagedObject
 
-- (void)setAttributesFromGovernanceObject:(DSGovernanceObject * _Nonnull)governanceObject forHashEntity:(DSGovernanceObjectHashEntity* _Nullable)hashEntity;
-+ (NSUInteger)countForChainEntity:(DSChainEntity* _Nonnull)chain;
-- (DSGovernanceObject*)governanceObject;
+- (void)setAttributesFromGovernanceObject:(DSGovernanceObject *_Nonnull)governanceObject forHashEntity:(DSGovernanceObjectHashEntity *_Nullable)hashEntity;
++ (NSUInteger)countForChainEntity:(DSChainEntity *_Nonnull)chain;
+- (DSGovernanceObject *)governanceObject;
 
 @end
 

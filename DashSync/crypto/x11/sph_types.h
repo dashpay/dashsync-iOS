@@ -845,10 +845,10 @@ typedef int_fast64_t sph_s64;
 #endif
 #endif
 
-#define SPH_C32(x)    ((sph_u32)(x))
+#define SPH_C32(x) ((sph_u32)(x))
 #if !SPH_NO_64
-#define SPH_C64(x)    ((sph_u64)(x))
-#define SPH_64  1
+#define SPH_C64(x) ((sph_u64)(x))
+#define SPH_64 1
 #endif
 
 #else
@@ -865,14 +865,14 @@ typedef int_fast64_t sph_s64;
 typedef unsigned int sph_u32;
 typedef int sph_s32;
 
-#define SPH_C32(x)    ((sph_u32)(x ## U))
+#define SPH_C32(x) ((sph_u32)(x##U))
 
 #else
 
 typedef unsigned long sph_u32;
 typedef long sph_s32;
 
-#define SPH_C32(x)    ((sph_u32)(x ## UL))
+#define SPH_C32(x) ((sph_u32)(x##UL))
 
 #endif
 
@@ -891,18 +891,18 @@ typedef long sph_s32;
 typedef unsigned long sph_u64;
 typedef long sph_s64;
 
-#define SPH_C64(x)    ((sph_u64)(x ## UL))
+#define SPH_C64(x) ((sph_u64)(x##UL))
 
-#define SPH_64  1
+#define SPH_64 1
 
 #elif ((ULLONG_MAX >> 31) >> 31) >= 3 || defined __GNUC__
 
 typedef unsigned long long sph_u64;
 typedef long long sph_s64;
 
-#define SPH_C64(x)    ((sph_u64)(x ## ULL))
+#define SPH_C64(x) ((sph_u64)(x##ULL))
 
-#define SPH_64  1
+#define SPH_64 1
 
 #else
 
@@ -922,7 +922,7 @@ typedef long long sph_s64;
  * amd64, even though the "long" type is limited to 32 bits.
  */
 #if SPH_64 && (((ULONG_MAX >> 31) >> 31) >= 3 || defined _M_X64)
-#define SPH_64_TRUE   1
+#define SPH_64_TRUE 1
 #endif
 
 /*
@@ -931,15 +931,15 @@ typedef long long sph_s64;
  * use the relevant opcodes, when appropriate.
  */
 
-#define SPH_T32(x)    ((x) & SPH_C32(0xFFFFFFFF))
-#define SPH_ROTL32(x, n)   SPH_T32(((x) << (n)) | ((x) >> (32 - (n))))
-#define SPH_ROTR32(x, n)   SPH_ROTL32(x, (32 - (n)))
+#define SPH_T32(x) ((x)&SPH_C32(0xFFFFFFFF))
+#define SPH_ROTL32(x, n) SPH_T32(((x) << (n)) | ((x) >> (32 - (n))))
+#define SPH_ROTR32(x, n) SPH_ROTL32(x, (32 - (n)))
 
 #if SPH_64
 
-#define SPH_T64(x)    ((x) & SPH_C64(0xFFFFFFFFFFFFFFFF))
-#define SPH_ROTL64(x, n)   SPH_T64(((x) << (n)) | ((x) >> (64 - (n))))
-#define SPH_ROTR64(x, n)   SPH_ROTL64(x, (64 - (n)))
+#define SPH_T64(x) ((x)&SPH_C64(0xFFFFFFFFFFFFFFFF))
+#define SPH_ROTL64(x, n) SPH_T64(((x) << (n)) | ((x) >> (64 - (n))))
+#define SPH_ROTR64(x, n) SPH_ROTL64(x, (64 - (n)))
 
 #endif
 
@@ -1001,14 +1001,14 @@ typedef long long sph_s64;
  */
 #if defined __i386__ || defined _M_IX86
 
-#define SPH_DETECT_UNALIGNED         1
-#define SPH_DETECT_LITTLE_ENDIAN     1
-#define SPH_DETECT_UPTR              sph_u32
+#define SPH_DETECT_UNALIGNED 1
+#define SPH_DETECT_LITTLE_ENDIAN 1
+#define SPH_DETECT_UPTR sph_u32
 #ifdef __GNUC__
-#define SPH_DETECT_I386_GCC          1
+#define SPH_DETECT_I386_GCC 1
 #endif
 #ifdef _MSC_VER
-#define SPH_DETECT_I386_MSVC         1
+#define SPH_DETECT_I386_MSVC 1
 #endif
 
 /*
@@ -1016,40 +1016,38 @@ typedef long long sph_s64;
  */
 #elif defined __x86_64 || defined _M_X64
 
-#define SPH_DETECT_UNALIGNED         1
-#define SPH_DETECT_LITTLE_ENDIAN     1
-#define SPH_DETECT_UPTR              sph_u64
+#define SPH_DETECT_UNALIGNED 1
+#define SPH_DETECT_LITTLE_ENDIAN 1
+#define SPH_DETECT_UPTR sph_u64
 #ifdef __GNUC__
-#define SPH_DETECT_AMD64_GCC         1
+#define SPH_DETECT_AMD64_GCC 1
 #endif
 #ifdef _MSC_VER
-#define SPH_DETECT_AMD64_MSVC        1
+#define SPH_DETECT_AMD64_MSVC 1
 #endif
 
 /*
  * 64-bit Sparc architecture (implies v9).
  */
-#elif ((defined __sparc__ || defined __sparc) && defined __arch64__) \
-	|| defined __sparcv9
+#elif ((defined __sparc__ || defined __sparc) && defined __arch64__) || defined __sparcv9
 
-#define SPH_DETECT_BIG_ENDIAN        1
-#define SPH_DETECT_UPTR              sph_u64
+#define SPH_DETECT_BIG_ENDIAN 1
+#define SPH_DETECT_UPTR sph_u64
 #ifdef __GNUC__
-#define SPH_DETECT_SPARCV9_GCC_64    1
-#define SPH_DETECT_LITTLE_FAST       1
+#define SPH_DETECT_SPARCV9_GCC_64 1
+#define SPH_DETECT_LITTLE_FAST 1
 #endif
 
 /*
  * 32-bit Sparc.
  */
-#elif (defined __sparc__ || defined __sparc) \
-	&& !(defined __sparcv9 || defined __arch64__)
+#elif (defined __sparc__ || defined __sparc) && !(defined __sparcv9 || defined __arch64__)
 
-#define SPH_DETECT_BIG_ENDIAN        1
-#define SPH_DETECT_UPTR              sph_u32
+#define SPH_DETECT_BIG_ENDIAN 1
+#define SPH_DETECT_UPTR sph_u32
 #if defined __GNUC__ && defined __sparc_v9__
-#define SPH_DETECT_SPARCV9_GCC_32    1
-#define SPH_DETECT_LITTLE_FAST       1
+#define SPH_DETECT_SPARCV9_GCC_32 1
+#define SPH_DETECT_LITTLE_FAST 1
 #endif
 
 /*
@@ -1057,27 +1055,26 @@ typedef long long sph_s64;
  */
 #elif defined __arm__ && __ARMEL__
 
-#define SPH_DETECT_LITTLE_ENDIAN     1
+#define SPH_DETECT_LITTLE_ENDIAN 1
 
 /*
  * MIPS, little-endian.
  */
 #elif MIPSEL || _MIPSEL || __MIPSEL || __MIPSEL__
 
-#define SPH_DETECT_LITTLE_ENDIAN     1
+#define SPH_DETECT_LITTLE_ENDIAN 1
 
 /*
  * MIPS, big-endian.
  */
 #elif MIPSEB || _MIPSEB || __MIPSEB || __MIPSEB__
 
-#define SPH_DETECT_BIG_ENDIAN        1
+#define SPH_DETECT_BIG_ENDIAN 1
 
 /*
  * PowerPC.
  */
-#elif defined __powerpc__ || defined __POWERPC__ || defined __ppc__ \
-	|| defined _ARCH_PPC
+#elif defined __powerpc__ || defined __POWERPC__ || defined __ppc__ || defined _ARCH_PPC
 
 /*
  * Note: we do not declare cross-endian access to be "fast": even if
@@ -1087,92 +1084,91 @@ typedef long long sph_s64;
  */
 #if defined __GNUC__
 #if SPH_64_TRUE
-#define SPH_DETECT_PPC64_GCC         1
+#define SPH_DETECT_PPC64_GCC 1
 #else
-#define SPH_DETECT_PPC32_GCC         1
+#define SPH_DETECT_PPC32_GCC 1
 #endif
 #endif
 
 #if defined __BIG_ENDIAN__ || defined _BIG_ENDIAN
-#define SPH_DETECT_BIG_ENDIAN        1
+#define SPH_DETECT_BIG_ENDIAN 1
 #elif defined __LITTLE_ENDIAN__ || defined _LITTLE_ENDIAN
-#define SPH_DETECT_LITTLE_ENDIAN     1
+#define SPH_DETECT_LITTLE_ENDIAN 1
 #endif
 
 /*
  * Itanium, 64-bit.
  */
-#elif defined __ia64 || defined __ia64__ \
-	|| defined __itanium__ || defined _M_IA64
+#elif defined __ia64 || defined __ia64__ || defined __itanium__ || defined _M_IA64
 
 #if defined __BIG_ENDIAN__ || defined _BIG_ENDIAN
-#define SPH_DETECT_BIG_ENDIAN        1
+#define SPH_DETECT_BIG_ENDIAN 1
 #else
-#define SPH_DETECT_LITTLE_ENDIAN     1
+#define SPH_DETECT_LITTLE_ENDIAN 1
 #endif
 #if defined __LP64__ || defined _LP64
-#define SPH_DETECT_UPTR              sph_u64
+#define SPH_DETECT_UPTR sph_u64
 #else
-#define SPH_DETECT_UPTR              sph_u32
+#define SPH_DETECT_UPTR sph_u32
 #endif
 
 #endif
 
 #if defined SPH_DETECT_SPARCV9_GCC_32 || defined SPH_DETECT_SPARCV9_GCC_64
-#define SPH_DETECT_SPARCV9_GCC       1
+#define SPH_DETECT_SPARCV9_GCC 1
 #endif
 
 #if defined SPH_DETECT_UNALIGNED && !defined SPH_UNALIGNED
-#define SPH_UNALIGNED         SPH_DETECT_UNALIGNED
+#define SPH_UNALIGNED SPH_DETECT_UNALIGNED
 #endif
 #if defined SPH_DETECT_UPTR && !defined SPH_UPTR
-#define SPH_UPTR              SPH_DETECT_UPTR
+#define SPH_UPTR SPH_DETECT_UPTR
 #endif
 #if defined SPH_DETECT_LITTLE_ENDIAN && !defined SPH_LITTLE_ENDIAN
-#define SPH_LITTLE_ENDIAN     SPH_DETECT_LITTLE_ENDIAN
+#define SPH_LITTLE_ENDIAN SPH_DETECT_LITTLE_ENDIAN
 #endif
 #if defined SPH_DETECT_BIG_ENDIAN && !defined SPH_BIG_ENDIAN
-#define SPH_BIG_ENDIAN        SPH_DETECT_BIG_ENDIAN
+#define SPH_BIG_ENDIAN SPH_DETECT_BIG_ENDIAN
 #endif
 #if defined SPH_DETECT_LITTLE_FAST && !defined SPH_LITTLE_FAST
-#define SPH_LITTLE_FAST       SPH_DETECT_LITTLE_FAST
+#define SPH_LITTLE_FAST SPH_DETECT_LITTLE_FAST
 #endif
 #if defined SPH_DETECT_BIG_FAST && !defined SPH_BIG_FAST
-#define SPH_BIG_FAST    SPH_DETECT_BIG_FAST
+#define SPH_BIG_FAST SPH_DETECT_BIG_FAST
 #endif
 #if defined SPH_DETECT_SPARCV9_GCC_32 && !defined SPH_SPARCV9_GCC_32
-#define SPH_SPARCV9_GCC_32    SPH_DETECT_SPARCV9_GCC_32
+#define SPH_SPARCV9_GCC_32 SPH_DETECT_SPARCV9_GCC_32
 #endif
 #if defined SPH_DETECT_SPARCV9_GCC_64 && !defined SPH_SPARCV9_GCC_64
-#define SPH_SPARCV9_GCC_64    SPH_DETECT_SPARCV9_GCC_64
+#define SPH_SPARCV9_GCC_64 SPH_DETECT_SPARCV9_GCC_64
 #endif
 #if defined SPH_DETECT_SPARCV9_GCC && !defined SPH_SPARCV9_GCC
-#define SPH_SPARCV9_GCC       SPH_DETECT_SPARCV9_GCC
+#define SPH_SPARCV9_GCC SPH_DETECT_SPARCV9_GCC
 #endif
 #if defined SPH_DETECT_I386_GCC && !defined SPH_I386_GCC
-#define SPH_I386_GCC          SPH_DETECT_I386_GCC
+#define SPH_I386_GCC SPH_DETECT_I386_GCC
 #endif
 #if defined SPH_DETECT_I386_MSVC && !defined SPH_I386_MSVC
-#define SPH_I386_MSVC         SPH_DETECT_I386_MSVC
+#define SPH_I386_MSVC SPH_DETECT_I386_MSVC
 #endif
 #if defined SPH_DETECT_AMD64_GCC && !defined SPH_AMD64_GCC
-#define SPH_AMD64_GCC         SPH_DETECT_AMD64_GCC
+#define SPH_AMD64_GCC SPH_DETECT_AMD64_GCC
 #endif
 #if defined SPH_DETECT_AMD64_MSVC && !defined SPH_AMD64_MSVC
-#define SPH_AMD64_MSVC        SPH_DETECT_AMD64_MSVC
+#define SPH_AMD64_MSVC SPH_DETECT_AMD64_MSVC
 #endif
 #if defined SPH_DETECT_PPC32_GCC && !defined SPH_PPC32_GCC
-#define SPH_PPC32_GCC         SPH_DETECT_PPC32_GCC
+#define SPH_PPC32_GCC SPH_DETECT_PPC32_GCC
 #endif
 #if defined SPH_DETECT_PPC64_GCC && !defined SPH_PPC64_GCC
-#define SPH_PPC64_GCC         SPH_DETECT_PPC64_GCC
+#define SPH_PPC64_GCC SPH_DETECT_PPC64_GCC
 #endif
 
 #if SPH_LITTLE_ENDIAN && !defined SPH_LITTLE_FAST
-#define SPH_LITTLE_FAST              1
+#define SPH_LITTLE_FAST 1
 #endif
 #if SPH_BIG_ENDIAN && !defined SPH_BIG_FAST
-#define SPH_BIG_FAST                 1
+#define SPH_BIG_FAST 1
 #endif
 
 #if defined SPH_UPTR && !(SPH_LITTLE_ENDIAN || SPH_BIG_ENDIAN)
@@ -1187,19 +1183,18 @@ typedef long long sph_s64;
  */
 
 static SPH_INLINE sph_u32
-sph_bswap32(sph_u32 x)
-{
-	__asm__ __volatile__ ("bswapl %0" : "=r" (x) : "0" (x));
+    sph_bswap32(sph_u32 x) {
+	__asm__ __volatile__("bswapl %0"
+	                     : "=r"(x)
+	                     : "0"(x));
 	return x;
 }
 
 #if SPH_64
 
 static SPH_INLINE sph_u64
-sph_bswap64(sph_u64 x)
-{
-	return ((sph_u64)sph_bswap32((sph_u32)x) << 32)
-		| (sph_u64)sph_bswap32((sph_u32)(x >> 32));
+    sph_bswap64(sph_u64 x) {
+	return ((sph_u64)sph_bswap32((sph_u32)x) << 32) | (sph_u64)sph_bswap32((sph_u32)(x >> 32));
 }
 
 #endif
@@ -1212,18 +1207,20 @@ sph_bswap64(sph_u64 x)
  */
 
 static SPH_INLINE sph_u32
-sph_bswap32(sph_u32 x)
-{
-	__asm__ __volatile__ ("bswapl %0" : "=r" (x) : "0" (x));
+    sph_bswap32(sph_u32 x) {
+	__asm__ __volatile__("bswapl %0"
+	                     : "=r"(x)
+	                     : "0"(x));
 	return x;
 }
 
 #if SPH_64
 
 static SPH_INLINE sph_u64
-sph_bswap64(sph_u64 x)
-{
-	__asm__ __volatile__ ("bswapq %0" : "=r" (x) : "0" (x));
+    sph_bswap64(sph_u64 x) {
+	__asm__ __volatile__("bswapq %0"
+	                     : "=r"(x)
+	                     : "0"(x));
 	return x;
 }
 
@@ -1265,11 +1262,9 @@ sph_bswap64(sph_u64 x)
 #else
 
 static SPH_INLINE sph_u32
-sph_bswap32(sph_u32 x)
-{
+    sph_bswap32(sph_u32 x) {
 	x = SPH_T32((x << 16) | (x >> 16));
-	x = ((x & SPH_C32(0xFF00FF00)) >> 8)
-		| ((x & SPH_C32(0x00FF00FF)) << 8);
+	x = ((x & SPH_C32(0xFF00FF00)) >> 8) | ((x & SPH_C32(0x00FF00FF)) << 8);
 	return x;
 }
 
@@ -1282,13 +1277,10 @@ sph_bswap32(sph_u32 x)
  * @return  the byte-swapped value
  */
 static SPH_INLINE sph_u64
-sph_bswap64(sph_u64 x)
-{
+    sph_bswap64(sph_u64 x) {
 	x = SPH_T64((x << 32) | (x >> 32));
-	x = ((x & SPH_C64(0xFFFF0000FFFF0000)) >> 16)
-		| ((x & SPH_C64(0x0000FFFF0000FFFF)) << 16);
-	x = ((x & SPH_C64(0xFF00FF00FF00FF00)) >> 8)
-		| ((x & SPH_C64(0x00FF00FF00FF00FF)) << 8);
+	x = ((x & SPH_C64(0xFFFF0000FFFF0000)) >> 16) | ((x & SPH_C64(0x0000FFFF0000FFFF)) << 16);
+	x = ((x & SPH_C64(0xFF00FF00FF00FF00)) >> 8) | ((x & SPH_C64(0x00FF00FF00FF00FF)) << 8);
 	return x;
 }
 
@@ -1314,49 +1306,47 @@ sph_bswap64(sph_u64 x)
  * assembly.
  */
 
-#define SPH_SPARCV9_SET_ASI   \
-	sph_u32 sph_sparcv9_asi; \
-	__asm__ __volatile__ ( \
-		"rd %%asi,%0\n\twr %%g0,0x88,%%asi" : "=r" (sph_sparcv9_asi));
+#define SPH_SPARCV9_SET_ASI                 \
+	sph_u32 sph_sparcv9_asi;                \
+	__asm__ __volatile__(                   \
+	    "rd %%asi,%0\n\twr %%g0,0x88,%%asi" \
+	    : "=r"(sph_sparcv9_asi));
 
-#define SPH_SPARCV9_RESET_ASI  \
-	__asm__ __volatile__ ("wr %%g0,%0,%%asi" : : "r" (sph_sparcv9_asi));
+#define SPH_SPARCV9_RESET_ASI               \
+	__asm__ __volatile__("wr %%g0,%0,%%asi" \
+	                     :                  \
+	                     : "r"(sph_sparcv9_asi));
 
-#define SPH_SPARCV9_DEC32LE(base, idx)   ({ \
-		sph_u32 sph_sparcv9_tmp; \
-		__asm__ __volatile__ ("lda [%1+" #idx "*4]%%asi,%0" \
-			: "=r" (sph_sparcv9_tmp) : "r" (base)); \
-		sph_sparcv9_tmp; \
-	})
+#define SPH_SPARCV9_DEC32LE(base, idx) ({              \
+	sph_u32 sph_sparcv9_tmp;                           \
+	__asm__ __volatile__("lda [%1+" #idx "*4]%%asi,%0" \
+		                 : "=r"(sph_sparcv9_tmp)       \
+		                 : "r"(base));                 \
+	sph_sparcv9_tmp;                                   \
+})
 
 #endif
 
 static SPH_INLINE void
-sph_enc16be(void *dst, unsigned val)
-{
+    sph_enc16be(void *dst, unsigned val) {
 	((unsigned char *)dst)[0] = (val >> 8);
 	((unsigned char *)dst)[1] = val;
 }
 
 static SPH_INLINE unsigned
-sph_dec16be(const void *src)
-{
-	return ((unsigned)(((const unsigned char *)src)[0]) << 8)
-		| (unsigned)(((const unsigned char *)src)[1]);
+    sph_dec16be(const void *src) {
+	return ((unsigned)(((const unsigned char *)src)[0]) << 8) | (unsigned)(((const unsigned char *)src)[1]);
 }
 
 static SPH_INLINE void
-sph_enc16le(void *dst, unsigned val)
-{
+    sph_enc16le(void *dst, unsigned val) {
 	((unsigned char *)dst)[0] = val;
 	((unsigned char *)dst)[1] = val >> 8;
 }
 
 static SPH_INLINE unsigned
-sph_dec16le(const void *src)
-{
-	return (unsigned)(((const unsigned char *)src)[0])
-		| ((unsigned)(((const unsigned char *)src)[1]) << 8);
+    sph_dec16le(const void *src) {
+	return (unsigned)(((const unsigned char *)src)[0]) | ((unsigned)(((const unsigned char *)src)[1]) << 8);
 }
 
 /**
@@ -1366,8 +1356,7 @@ sph_dec16le(const void *src)
  * @param val   the 32-bit value to encode
  */
 static SPH_INLINE void
-sph_enc32be(void *dst, sph_u32 val)
-{
+    sph_enc32be(void *dst, sph_u32 val) {
 #if defined SPH_UPTR
 #if SPH_UNALIGNED
 #if SPH_LITTLE_ENDIAN
@@ -1403,8 +1392,7 @@ sph_enc32be(void *dst, sph_u32 val)
  * @param val   the value to encode
  */
 static SPH_INLINE void
-sph_enc32be_aligned(void *dst, sph_u32 val)
-{
+    sph_enc32be_aligned(void *dst, sph_u32 val) {
 #if SPH_LITTLE_ENDIAN
 	*(sph_u32 *)dst = sph_bswap32(val);
 #elif SPH_BIG_ENDIAN
@@ -1424,8 +1412,7 @@ sph_enc32be_aligned(void *dst, sph_u32 val)
  * @return  the decoded value
  */
 static SPH_INLINE sph_u32
-sph_dec32be(const void *src)
-{
+    sph_dec32be(const void *src) {
 #if defined SPH_UPTR
 #if SPH_UNALIGNED
 #if SPH_LITTLE_ENDIAN
@@ -1441,17 +1428,11 @@ sph_dec32be(const void *src)
 		return *(const sph_u32 *)src;
 #endif
 	} else {
-		return ((sph_u32)(((const unsigned char *)src)[0]) << 24)
-			| ((sph_u32)(((const unsigned char *)src)[1]) << 16)
-			| ((sph_u32)(((const unsigned char *)src)[2]) << 8)
-			| (sph_u32)(((const unsigned char *)src)[3]);
+		return ((sph_u32)(((const unsigned char *)src)[0]) << 24) | ((sph_u32)(((const unsigned char *)src)[1]) << 16) | ((sph_u32)(((const unsigned char *)src)[2]) << 8) | (sph_u32)(((const unsigned char *)src)[3]);
 	}
 #endif
 #else
-	return ((sph_u32)(((const unsigned char *)src)[0]) << 24)
-		| ((sph_u32)(((const unsigned char *)src)[1]) << 16)
-		| ((sph_u32)(((const unsigned char *)src)[2]) << 8)
-		| (sph_u32)(((const unsigned char *)src)[3]);
+	return ((sph_u32)(((const unsigned char *)src)[0]) << 24) | ((sph_u32)(((const unsigned char *)src)[1]) << 16) | ((sph_u32)(((const unsigned char *)src)[2]) << 8) | (sph_u32)(((const unsigned char *)src)[3]);
 #endif
 }
 
@@ -1463,17 +1444,13 @@ sph_dec32be(const void *src)
  * @return  the decoded value
  */
 static SPH_INLINE sph_u32
-sph_dec32be_aligned(const void *src)
-{
+    sph_dec32be_aligned(const void *src) {
 #if SPH_LITTLE_ENDIAN
 	return sph_bswap32(*(const sph_u32 *)src);
 #elif SPH_BIG_ENDIAN
 	return *(const sph_u32 *)src;
 #else
-	return ((sph_u32)(((const unsigned char *)src)[0]) << 24)
-		| ((sph_u32)(((const unsigned char *)src)[1]) << 16)
-		| ((sph_u32)(((const unsigned char *)src)[2]) << 8)
-		| (sph_u32)(((const unsigned char *)src)[3]);
+	return ((sph_u32)(((const unsigned char *)src)[0]) << 24) | ((sph_u32)(((const unsigned char *)src)[1]) << 16) | ((sph_u32)(((const unsigned char *)src)[2]) << 8) | (sph_u32)(((const unsigned char *)src)[3]);
 #endif
 }
 
@@ -1484,8 +1461,7 @@ sph_dec32be_aligned(const void *src)
  * @param val   the 32-bit value to encode
  */
 static SPH_INLINE void
-sph_enc32le(void *dst, sph_u32 val)
-{
+    sph_enc32le(void *dst, sph_u32 val) {
 #if defined SPH_UPTR
 #if SPH_UNALIGNED
 #if SPH_BIG_ENDIAN
@@ -1521,8 +1497,7 @@ sph_enc32le(void *dst, sph_u32 val)
  * @param val   the value to encode
  */
 static SPH_INLINE void
-sph_enc32le_aligned(void *dst, sph_u32 val)
-{
+    sph_enc32le_aligned(void *dst, sph_u32 val) {
 #if SPH_LITTLE_ENDIAN
 	*(sph_u32 *)dst = val;
 #elif SPH_BIG_ENDIAN
@@ -1542,8 +1517,7 @@ sph_enc32le_aligned(void *dst, sph_u32 val)
  * @return  the decoded value
  */
 static SPH_INLINE sph_u32
-sph_dec32le(const void *src)
-{
+    sph_dec32le(const void *src) {
 #if defined SPH_UPTR
 #if SPH_UNALIGNED
 #if SPH_BIG_ENDIAN
@@ -1563,8 +1537,10 @@ sph_dec32le(const void *src)
 		 * access before the test on the address, thus triggering
 		 * a bus error...
 		 */
-		__asm__ __volatile__ (
-			"lda [%1]0x88,%0" : "=r" (tmp) : "r" (src));
+		__asm__ __volatile__(
+		    "lda [%1]0x88,%0"
+		    : "=r"(tmp)
+		    : "r"(src));
 		return tmp;
 /*
  * On PowerPC, this turns out not to be worth the effort: the inline
@@ -1592,17 +1568,11 @@ sph_dec32le(const void *src)
 		return *(const sph_u32 *)src;
 #endif
 	} else {
-		return (sph_u32)(((const unsigned char *)src)[0])
-			| ((sph_u32)(((const unsigned char *)src)[1]) << 8)
-			| ((sph_u32)(((const unsigned char *)src)[2]) << 16)
-			| ((sph_u32)(((const unsigned char *)src)[3]) << 24);
+		return (sph_u32)(((const unsigned char *)src)[0]) | ((sph_u32)(((const unsigned char *)src)[1]) << 8) | ((sph_u32)(((const unsigned char *)src)[2]) << 16) | ((sph_u32)(((const unsigned char *)src)[3]) << 24);
 	}
 #endif
 #else
-	return (sph_u32)(((const unsigned char *)src)[0])
-		| ((sph_u32)(((const unsigned char *)src)[1]) << 8)
-		| ((sph_u32)(((const unsigned char *)src)[2]) << 16)
-		| ((sph_u32)(((const unsigned char *)src)[3]) << 24);
+	return (sph_u32)(((const unsigned char *)src)[0]) | ((sph_u32)(((const unsigned char *)src)[1]) << 8) | ((sph_u32)(((const unsigned char *)src)[2]) << 16) | ((sph_u32)(((const unsigned char *)src)[3]) << 24);
 #endif
 }
 
@@ -1614,15 +1584,16 @@ sph_dec32le(const void *src)
  * @return  the decoded value
  */
 static SPH_INLINE sph_u32
-sph_dec32le_aligned(const void *src)
-{
+    sph_dec32le_aligned(const void *src) {
 #if SPH_LITTLE_ENDIAN
 	return *(const sph_u32 *)src;
 #elif SPH_BIG_ENDIAN
 #if SPH_SPARCV9_GCC && !SPH_NO_ASM
 	sph_u32 tmp;
 
-	__asm__ __volatile__ ("lda [%1]0x88,%0" : "=r" (tmp) : "r" (src));
+	__asm__ __volatile__("lda [%1]0x88,%0"
+	                     : "=r"(tmp)
+	                     : "r"(src));
 	return tmp;
 /*
  * Not worth it generally.
@@ -1637,10 +1608,7 @@ sph_dec32le_aligned(const void *src)
 	return sph_bswap32(*(const sph_u32 *)src);
 #endif
 #else
-	return (sph_u32)(((const unsigned char *)src)[0])
-		| ((sph_u32)(((const unsigned char *)src)[1]) << 8)
-		| ((sph_u32)(((const unsigned char *)src)[2]) << 16)
-		| ((sph_u32)(((const unsigned char *)src)[3]) << 24);
+	return (sph_u32)(((const unsigned char *)src)[0]) | ((sph_u32)(((const unsigned char *)src)[1]) << 8) | ((sph_u32)(((const unsigned char *)src)[2]) << 16) | ((sph_u32)(((const unsigned char *)src)[3]) << 24);
 #endif
 }
 
@@ -1653,8 +1621,7 @@ sph_dec32le_aligned(const void *src)
  * @param val   the 64-bit value to encode
  */
 static SPH_INLINE void
-sph_enc64be(void *dst, sph_u64 val)
-{
+    sph_enc64be(void *dst, sph_u64 val) {
 #if defined SPH_UPTR
 #if SPH_UNALIGNED
 #if SPH_LITTLE_ENDIAN
@@ -1698,8 +1665,7 @@ sph_enc64be(void *dst, sph_u64 val)
  * @param val   the value to encode
  */
 static SPH_INLINE void
-sph_enc64be_aligned(void *dst, sph_u64 val)
-{
+    sph_enc64be_aligned(void *dst, sph_u64 val) {
 #if SPH_LITTLE_ENDIAN
 	*(sph_u64 *)dst = sph_bswap64(val);
 #elif SPH_BIG_ENDIAN
@@ -1723,8 +1689,7 @@ sph_enc64be_aligned(void *dst, sph_u64 val)
  * @return  the decoded value
  */
 static SPH_INLINE sph_u64
-sph_dec64be(const void *src)
-{
+    sph_dec64be(const void *src) {
 #if defined SPH_UPTR
 #if SPH_UNALIGNED
 #if SPH_LITTLE_ENDIAN
@@ -1740,25 +1705,11 @@ sph_dec64be(const void *src)
 		return *(const sph_u64 *)src;
 #endif
 	} else {
-		return ((sph_u64)(((const unsigned char *)src)[0]) << 56)
-			| ((sph_u64)(((const unsigned char *)src)[1]) << 48)
-			| ((sph_u64)(((const unsigned char *)src)[2]) << 40)
-			| ((sph_u64)(((const unsigned char *)src)[3]) << 32)
-			| ((sph_u64)(((const unsigned char *)src)[4]) << 24)
-			| ((sph_u64)(((const unsigned char *)src)[5]) << 16)
-			| ((sph_u64)(((const unsigned char *)src)[6]) << 8)
-			| (sph_u64)(((const unsigned char *)src)[7]);
+		return ((sph_u64)(((const unsigned char *)src)[0]) << 56) | ((sph_u64)(((const unsigned char *)src)[1]) << 48) | ((sph_u64)(((const unsigned char *)src)[2]) << 40) | ((sph_u64)(((const unsigned char *)src)[3]) << 32) | ((sph_u64)(((const unsigned char *)src)[4]) << 24) | ((sph_u64)(((const unsigned char *)src)[5]) << 16) | ((sph_u64)(((const unsigned char *)src)[6]) << 8) | (sph_u64)(((const unsigned char *)src)[7]);
 	}
 #endif
 #else
-	return ((sph_u64)(((const unsigned char *)src)[0]) << 56)
-		| ((sph_u64)(((const unsigned char *)src)[1]) << 48)
-		| ((sph_u64)(((const unsigned char *)src)[2]) << 40)
-		| ((sph_u64)(((const unsigned char *)src)[3]) << 32)
-		| ((sph_u64)(((const unsigned char *)src)[4]) << 24)
-		| ((sph_u64)(((const unsigned char *)src)[5]) << 16)
-		| ((sph_u64)(((const unsigned char *)src)[6]) << 8)
-		| (sph_u64)(((const unsigned char *)src)[7]);
+	return ((sph_u64)(((const unsigned char *)src)[0]) << 56) | ((sph_u64)(((const unsigned char *)src)[1]) << 48) | ((sph_u64)(((const unsigned char *)src)[2]) << 40) | ((sph_u64)(((const unsigned char *)src)[3]) << 32) | ((sph_u64)(((const unsigned char *)src)[4]) << 24) | ((sph_u64)(((const unsigned char *)src)[5]) << 16) | ((sph_u64)(((const unsigned char *)src)[6]) << 8) | (sph_u64)(((const unsigned char *)src)[7]);
 #endif
 }
 
@@ -1770,21 +1721,13 @@ sph_dec64be(const void *src)
  * @return  the decoded value
  */
 static SPH_INLINE sph_u64
-sph_dec64be_aligned(const void *src)
-{
+    sph_dec64be_aligned(const void *src) {
 #if SPH_LITTLE_ENDIAN
 	return sph_bswap64(*(const sph_u64 *)src);
 #elif SPH_BIG_ENDIAN
 	return *(const sph_u64 *)src;
 #else
-	return ((sph_u64)(((const unsigned char *)src)[0]) << 56)
-		| ((sph_u64)(((const unsigned char *)src)[1]) << 48)
-		| ((sph_u64)(((const unsigned char *)src)[2]) << 40)
-		| ((sph_u64)(((const unsigned char *)src)[3]) << 32)
-		| ((sph_u64)(((const unsigned char *)src)[4]) << 24)
-		| ((sph_u64)(((const unsigned char *)src)[5]) << 16)
-		| ((sph_u64)(((const unsigned char *)src)[6]) << 8)
-		| (sph_u64)(((const unsigned char *)src)[7]);
+	return ((sph_u64)(((const unsigned char *)src)[0]) << 56) | ((sph_u64)(((const unsigned char *)src)[1]) << 48) | ((sph_u64)(((const unsigned char *)src)[2]) << 40) | ((sph_u64)(((const unsigned char *)src)[3]) << 32) | ((sph_u64)(((const unsigned char *)src)[4]) << 24) | ((sph_u64)(((const unsigned char *)src)[5]) << 16) | ((sph_u64)(((const unsigned char *)src)[6]) << 8) | (sph_u64)(((const unsigned char *)src)[7]);
 #endif
 }
 
@@ -1795,8 +1738,7 @@ sph_dec64be_aligned(const void *src)
  * @param val   the 64-bit value to encode
  */
 static SPH_INLINE void
-sph_enc64le(void *dst, sph_u64 val)
-{
+    sph_enc64le(void *dst, sph_u64 val) {
 #if defined SPH_UPTR
 #if SPH_UNALIGNED
 #if SPH_BIG_ENDIAN
@@ -1840,8 +1782,7 @@ sph_enc64le(void *dst, sph_u64 val)
  * @param val   the value to encode
  */
 static SPH_INLINE void
-sph_enc64le_aligned(void *dst, sph_u64 val)
-{
+    sph_enc64le_aligned(void *dst, sph_u64 val) {
 #if SPH_LITTLE_ENDIAN
 	*(sph_u64 *)dst = val;
 #elif SPH_BIG_ENDIAN
@@ -1865,8 +1806,7 @@ sph_enc64le_aligned(void *dst, sph_u64 val)
  * @return  the decoded value
  */
 static SPH_INLINE sph_u64
-sph_dec64le(const void *src)
-{
+    sph_dec64le(const void *src) {
 #if defined SPH_UPTR
 #if SPH_UNALIGNED
 #if SPH_BIG_ENDIAN
@@ -1880,8 +1820,10 @@ sph_dec64le(const void *src)
 #if SPH_SPARCV9_GCC_64 && !SPH_NO_ASM
 		sph_u64 tmp;
 
-		__asm__ __volatile__ (
-			"ldxa [%1]0x88,%0" : "=r" (tmp) : "r" (src));
+		__asm__ __volatile__(
+		    "ldxa [%1]0x88,%0"
+		    : "=r"(tmp)
+		    : "r"(src));
 		return tmp;
 /*
  * Not worth it generally.
@@ -1904,25 +1846,11 @@ sph_dec64le(const void *src)
 		return *(const sph_u64 *)src;
 #endif
 	} else {
-		return (sph_u64)(((const unsigned char *)src)[0])
-			| ((sph_u64)(((const unsigned char *)src)[1]) << 8)
-			| ((sph_u64)(((const unsigned char *)src)[2]) << 16)
-			| ((sph_u64)(((const unsigned char *)src)[3]) << 24)
-			| ((sph_u64)(((const unsigned char *)src)[4]) << 32)
-			| ((sph_u64)(((const unsigned char *)src)[5]) << 40)
-			| ((sph_u64)(((const unsigned char *)src)[6]) << 48)
-			| ((sph_u64)(((const unsigned char *)src)[7]) << 56);
+		return (sph_u64)(((const unsigned char *)src)[0]) | ((sph_u64)(((const unsigned char *)src)[1]) << 8) | ((sph_u64)(((const unsigned char *)src)[2]) << 16) | ((sph_u64)(((const unsigned char *)src)[3]) << 24) | ((sph_u64)(((const unsigned char *)src)[4]) << 32) | ((sph_u64)(((const unsigned char *)src)[5]) << 40) | ((sph_u64)(((const unsigned char *)src)[6]) << 48) | ((sph_u64)(((const unsigned char *)src)[7]) << 56);
 	}
 #endif
 #else
-	return (sph_u64)(((const unsigned char *)src)[0])
-		| ((sph_u64)(((const unsigned char *)src)[1]) << 8)
-		| ((sph_u64)(((const unsigned char *)src)[2]) << 16)
-		| ((sph_u64)(((const unsigned char *)src)[3]) << 24)
-		| ((sph_u64)(((const unsigned char *)src)[4]) << 32)
-		| ((sph_u64)(((const unsigned char *)src)[5]) << 40)
-		| ((sph_u64)(((const unsigned char *)src)[6]) << 48)
-		| ((sph_u64)(((const unsigned char *)src)[7]) << 56);
+	return (sph_u64)(((const unsigned char *)src)[0]) | ((sph_u64)(((const unsigned char *)src)[1]) << 8) | ((sph_u64)(((const unsigned char *)src)[2]) << 16) | ((sph_u64)(((const unsigned char *)src)[3]) << 24) | ((sph_u64)(((const unsigned char *)src)[4]) << 32) | ((sph_u64)(((const unsigned char *)src)[5]) << 40) | ((sph_u64)(((const unsigned char *)src)[6]) << 48) | ((sph_u64)(((const unsigned char *)src)[7]) << 56);
 #endif
 }
 
@@ -1934,15 +1862,16 @@ sph_dec64le(const void *src)
  * @return  the decoded value
  */
 static SPH_INLINE sph_u64
-sph_dec64le_aligned(const void *src)
-{
+    sph_dec64le_aligned(const void *src) {
 #if SPH_LITTLE_ENDIAN
 	return *(const sph_u64 *)src;
 #elif SPH_BIG_ENDIAN
 #if SPH_SPARCV9_GCC_64 && !SPH_NO_ASM
 	sph_u64 tmp;
 
-	__asm__ __volatile__ ("ldxa [%1]0x88,%0" : "=r" (tmp) : "r" (src));
+	__asm__ __volatile__("ldxa [%1]0x88,%0"
+	                     : "=r"(tmp)
+	                     : "r"(src));
 	return tmp;
 /*
  * Not worth it generally.
@@ -1960,14 +1889,7 @@ sph_dec64le_aligned(const void *src)
 	return sph_bswap64(*(const sph_u64 *)src);
 #endif
 #else
-	return (sph_u64)(((const unsigned char *)src)[0])
-		| ((sph_u64)(((const unsigned char *)src)[1]) << 8)
-		| ((sph_u64)(((const unsigned char *)src)[2]) << 16)
-		| ((sph_u64)(((const unsigned char *)src)[3]) << 24)
-		| ((sph_u64)(((const unsigned char *)src)[4]) << 32)
-		| ((sph_u64)(((const unsigned char *)src)[5]) << 40)
-		| ((sph_u64)(((const unsigned char *)src)[6]) << 48)
-		| ((sph_u64)(((const unsigned char *)src)[7]) << 56);
+	return (sph_u64)(((const unsigned char *)src)[0]) | ((sph_u64)(((const unsigned char *)src)[1]) << 8) | ((sph_u64)(((const unsigned char *)src)[2]) << 16) | ((sph_u64)(((const unsigned char *)src)[3]) << 24) | ((sph_u64)(((const unsigned char *)src)[4]) << 32) | ((sph_u64)(((const unsigned char *)src)[5]) << 40) | ((sph_u64)(((const unsigned char *)src)[6]) << 48) | ((sph_u64)(((const unsigned char *)src)[7]) << 56);
 #endif
 }
 

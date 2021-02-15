@@ -15,17 +15,18 @@
 //  limitations under the License.
 //
 
-#import "DPBaseObject.h"
 #import "BigIntTypes.h"
+#import "DPBaseObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-FOUNDATION_EXPORT NSString* const DPContractDidUpdateNotification;
-FOUNDATION_EXPORT NSString* const DSContractUpdateNotificationKey;
+FOUNDATION_EXPORT NSString *const DPContractDidUpdateNotification;
+FOUNDATION_EXPORT NSString *const DSContractUpdateNotificationKey;
 
-@class DSChain,DSContractTransition,DSBlockchainIdentity;
+@class DSChain, DSContractTransition, DSBlockchainIdentity;
 
-typedef NS_ENUM(NSUInteger, DPContractState) {
+typedef NS_ENUM(NSUInteger, DPContractState)
+{
     DPContractState_Unknown,
     DPContractState_NotRegistered,
     DPContractState_Registered,
@@ -54,7 +55,8 @@ typedef NS_ENUM(NSUInteger, DPContractState) {
 @property (copy, nonatomic) NSDictionary<NSString *, DSStringValueDictionary *> *definitions;
 
 - (instancetype)initWithLocalContractIdentifier:(NSString *)contractID
-                   documents:(NSDictionary<NSString *, DSStringValueDictionary *> *)documents onChain:(DSChain*)chain;
+                                      documents:(NSDictionary<NSString *, DSStringValueDictionary *> *)documents
+                                        onChain:(DSChain *)chain;
 
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -64,15 +66,15 @@ typedef NS_ENUM(NSUInteger, DPContractState) {
 
 - (nullable NSDictionary<NSString *, NSString *> *)documentSchemaRefForType:(NSString *)type;
 
-- (void)registerCreator:(DSBlockchainIdentity*)blockchainIdentity inContext:(NSManagedObjectContext*)context;
-- (void)unregisterCreatorInContext:(NSManagedObjectContext*)context;
+- (void)registerCreator:(DSBlockchainIdentity *)blockchainIdentity inContext:(NSManagedObjectContext *)context;
+- (void)unregisterCreatorInContext:(NSManagedObjectContext *)context;
 
-+ (DPContract *)localDashpayContractForChain:(DSChain*)chain;
-+ (DPContract *)localDPNSContractForChain:(DSChain*)chain;
-+ (DPContract *)localDashThumbnailContractForChain:(DSChain*)chain;
++ (DPContract *)localDashpayContractForChain:(DSChain *)chain;
++ (DPContract *)localDPNSContractForChain:(DSChain *)chain;
++ (DPContract *)localDashThumbnailContractForChain:(DSChain *)chain;
 
 
--(UInt256)contractIdIfRegisteredByBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity;
+- (UInt256)contractIdIfRegisteredByBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 
 @end
 

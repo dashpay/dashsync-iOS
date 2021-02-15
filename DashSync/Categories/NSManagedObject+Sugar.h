@@ -26,9 +26,9 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <UIKit/UIKit.h>
-#import <CoreData/CoreData.h>
 #import "NSManagedObjectContext+DSSugar.h"
+#import <CoreData/CoreData.h>
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -41,29 +41,29 @@ NS_ASSUME_NONNULL_BEGIN
 
 // fetch existing objects
 + (NSArray *)allObjectsInContext:(NSManagedObjectContext *)context;
-+ (NSArray *)allObjectsWithPrefetch:(NSArray<NSString*> *)prefetchArray inContext:(NSManagedObjectContext*)context;
++ (NSArray *)allObjectsWithPrefetch:(NSArray<NSString *> *)prefetchArray inContext:(NSManagedObjectContext *)context;
 + (NSArray *)objectsInContext:(NSManagedObjectContext *)context matching:(NSString *)predicateFormat, ...;
 + (instancetype)anyObjectInContext:(NSManagedObjectContext *)context matching:(NSString *)predicateFormat, ...;
 
-+ (NSArray *)objectsForPredicate:(NSPredicate*)predicate inContext:(NSManagedObjectContext*)context;
-+ (instancetype)anyObjectForPredicate:(NSPredicate*)predicate inContext:(NSManagedObjectContext*)context;
++ (NSArray *)objectsForPredicate:(NSPredicate *)predicate inContext:(NSManagedObjectContext *)context;
++ (instancetype)anyObjectForPredicate:(NSPredicate *)predicate inContext:(NSManagedObjectContext *)context;
 
-+ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending inContext:(NSManagedObjectContext*)context;
-+ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending offset:(NSUInteger)offset limit:(NSUInteger)lim inContext:(NSManagedObjectContext*)context;
++ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending inContext:(NSManagedObjectContext *)context;
++ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending offset:(NSUInteger)offset limit:(NSUInteger)lim inContext:(NSManagedObjectContext *)context;
 
-+ (NSArray *)fetchObjects:(NSFetchRequest *)request inContext:(NSManagedObjectContext*)context;
++ (NSArray *)fetchObjects:(NSFetchRequest *)request inContext:(NSManagedObjectContext *)context;
 
 // count existing objects
 + (NSUInteger)countAllObjectsInContext:(NSManagedObjectContext *)context;
 + (NSUInteger)countObjectsInContext:(NSManagedObjectContext *)context matching:(NSString *)predicateFormat, ...;
-+ (NSUInteger)countObjects:(NSFetchRequest *)request inContext:(NSManagedObjectContext*)context;
++ (NSUInteger)countObjects:(NSFetchRequest *)request inContext:(NSManagedObjectContext *)context;
 + (NSUInteger)countObjectsMatchingInContext:(NSManagedObjectContext *)context withPredicate:(NSString *)predicateFormat, ...;
 
 // delete objects
-+ (NSUInteger)deleteAllObjectsInContext:(NSManagedObjectContext*)context;
-+ (NSUInteger)deleteAllObjectsAndWaitInContext:(NSManagedObjectContext*)context;
-+ (NSUInteger)deleteObjects:(NSArray *)objects inContext:(NSManagedObjectContext*)context;
-+ (NSUInteger)deleteObjectsAndWait:(NSArray *)objects inContext:(NSManagedObjectContext*)context;
++ (NSUInteger)deleteAllObjectsInContext:(NSManagedObjectContext *)context;
++ (NSUInteger)deleteAllObjectsAndWaitInContext:(NSManagedObjectContext *)context;
++ (NSUInteger)deleteObjects:(NSArray *)objects inContext:(NSManagedObjectContext *)context;
++ (NSUInteger)deleteObjectsAndWait:(NSArray *)objects inContext:(NSManagedObjectContext *)context;
 
 // set the fetchBatchSize to use when fetching objects, default is 100
 + (void)setFetchBatchSize:(NSUInteger)fetchBatchSize;
@@ -71,7 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)entityName; // override this if entity name differs from class name
 + (NSFetchRequest *)fetchReq;
 
-- (id)objectForKeyedSubscript:(id<NSCopying>)key; // id value = entity[@"key"]; thread safe valueForKey:
+- (id)objectForKeyedSubscript:(id<NSCopying>)key;               // id value = entity[@"key"]; thread safe valueForKey:
 - (void)setObject:(id)obj forKeyedSubscript:(id<NSCopying>)key; // entity[@"key"] = value; thread safe setValue:forKey:
 - (void)deleteObject;
 - (void)deleteObjectAndWait;

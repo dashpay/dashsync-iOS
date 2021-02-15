@@ -17,11 +17,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSFetchRequest<DSSporkEntity *> *)fetchRequest;
 
-@property (nullable,nonatomic,retain) NSData * signature;
+@property (nullable, nonatomic, retain) NSData *signature;
 @property (nonatomic) int64_t timeSigned;
 @property (nonatomic) int64_t value;
 @property (nonatomic) int32_t identifier;
-@property (nonatomic,retain) DSSporkHashEntity * sporkHash;
+@property (nonatomic, retain) DSSporkHashEntity *sporkHash;
 
 @end
 

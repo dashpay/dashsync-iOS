@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -20,11 +20,11 @@
 @implementation DSCoreDataMigrationVersion
 
 + (DSCoreDataMigrationVersionValue)current {
-    return DSCoreDataMigrationVersionValue_9;
+    return DSCoreDataMigrationVersionValue_10;
 }
 
 + (NSString *)modelResourceForVersion:(DSCoreDataMigrationVersionValue)version {
-    switch (version) {
+    switch (version) { //!OCLINT
         case DSCoreDataMigrationVersionValue_1: return @"DashSync 1";
         case DSCoreDataMigrationVersionValue_2: return @"DashSync 2";
         case DSCoreDataMigrationVersionValue_3: return @"DashSync 3";
@@ -34,8 +34,9 @@
         case DSCoreDataMigrationVersionValue_7: return @"DashSync 7";
         case DSCoreDataMigrationVersionValue_8: return @"DashSync 8";
         case DSCoreDataMigrationVersionValue_9: return @"DashSync 9";
+        case DSCoreDataMigrationVersionValue_10: return @"DashSync 10";
         default:
-            return [NSString stringWithFormat:@"DashSync %ld",(long)version];
+            return [NSString stringWithFormat:@"DashSync %ld", (long)version];
     }
 }
 

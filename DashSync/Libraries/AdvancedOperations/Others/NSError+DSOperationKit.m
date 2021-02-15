@@ -16,8 +16,8 @@
 //  limitations under the License.
 //
 
-#import "NSError+DSOperationKit.h"
 #import "DSReachabilityCondition.h"
+#import "NSError+DSOperationKit.h"
 
 NSString *const DSOperationErrorDomain = @"DSOperationErrorDomain";
 

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -15,21 +15,21 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
 #import "DSKey.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface NSData (Encryption)
 
-- (nullable NSData *)encryptWithSecretKey:(DSKey*)secretKey forPublicKey:(DSKey*)peerPubKey;
-- (nullable NSData *)encryptWithSecretKey:(DSKey*)secretKey forPublicKey:(DSKey*)peerPubKey usingInitializationVector:(NSData*)initializationVector;
-- (nullable NSData *)decryptWithSecretKey:(DSKey*)secretKey fromPublicKey:(DSKey*)peerPubKey;
-- (nullable NSData *)encryptWithDHKey:(DSKey*)dhKey;
-- (nullable NSData *)encapsulatedDHEncryptionWithKeys:(NSArray<DSKey*>*)keys;
-- (nullable NSData *)encapsulatedDHDecryptionWithKeys:(NSArray<DSKey*>*)keys;
-- (nullable NSData *)encapsulatedDHEncryptionWithKeys:(NSArray<DSKey*>*)keys usingInitializationVector:(NSData*)initializationVector;
-- (nullable NSData *)encapsulatedDHDecryptionWithKeys:(NSArray<DSKey*>*)keys usingIVSize:(NSUInteger)ivSize;
+- (nullable NSData *)encryptWithSecretKey:(DSKey *)secretKey forPublicKey:(DSKey *)peerPubKey;
+- (nullable NSData *)encryptWithSecretKey:(DSKey *)secretKey forPublicKey:(DSKey *)peerPubKey usingInitializationVector:(NSData *)initializationVector;
+- (nullable NSData *)decryptWithSecretKey:(DSKey *)secretKey fromPublicKey:(DSKey *)peerPubKey;
+- (nullable NSData *)encryptWithDHKey:(DSKey *)dhKey;
+- (nullable NSData *)encapsulatedDHEncryptionWithKeys:(NSArray<DSKey *> *)keys;
+- (nullable NSData *)encapsulatedDHDecryptionWithKeys:(NSArray<DSKey *> *)keys;
+- (nullable NSData *)encapsulatedDHEncryptionWithKeys:(NSArray<DSKey *> *)keys usingInitializationVector:(NSData *)initializationVector;
+- (nullable NSData *)encapsulatedDHDecryptionWithKeys:(NSArray<DSKey *> *)keys usingIVSize:(NSUInteger)ivSize;
 
 @end
 

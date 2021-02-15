@@ -17,19 +17,19 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DSDAPINetworkServiceProtocol.h"
-#import <DAPI-GRPC/Platform.pbrpc.h>
+#import "DSDAPIPlatformNetworkServiceProtocol.h"
 #import <DAPI-GRPC/Platform.pbobjc.h>
+#import <DAPI-GRPC/Platform.pbrpc.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class HTTPLoaderFactory, DSChain;
 
-@interface DSDAPINetworkService : NSObject <DSDAPINetworkServiceProtocol>
+@interface DSDAPIPlatformNetworkService : NSObject <DSDAPIPlatformNetworkServiceProtocol>
 
-@property (readonly, nonatomic) NSString * ipAddress;
+@property (readonly, nonatomic) NSString *ipAddress;
 
-- (instancetype)initWithDAPINodeIPAddress:(NSString*)ipAddress httpLoaderFactory:(HTTPLoaderFactory *)httpLoaderFactory usingGRPCDispatchQueue:(dispatch_queue_t)grpcDispatchQueue onChain:(DSChain*)chain NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithDAPINodeIPAddress:(NSString *)ipAddress httpLoaderFactory:(HTTPLoaderFactory *)httpLoaderFactory usingGRPCDispatchQueue:(dispatch_queue_t)grpcDispatchQueue onChain:(DSChain *)chain NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
 @end

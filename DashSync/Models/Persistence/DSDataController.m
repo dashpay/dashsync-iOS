@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -16,24 +16,24 @@
 //
 
 #import "DSDataController.h"
-#import "DSTransaction.h"
 #import "DSCoreDataMigrator.h"
+#import "DSTransaction.h"
 
-@interface DSDataController()
+@interface DSDataController ()
 
-@property (nonatomic, strong) NSPersistentContainer * persistentContainer;
-@property (nonatomic, strong) NSManagedObjectContext * peerContext;
-@property (nonatomic, strong) NSManagedObjectContext * chainContext;
-@property (nonatomic, strong) NSManagedObjectContext * platformContext;
+@property (nonatomic, strong) NSPersistentContainer *persistentContainer;
+@property (nonatomic, strong) NSManagedObjectContext *peerContext;
+@property (nonatomic, strong) NSManagedObjectContext *chainContext;
+@property (nonatomic, strong) NSManagedObjectContext *platformContext;
 
 @end
 
 @implementation DSDataController
 
-+(NSURL*)storeURL {
-    static NSURL * storeURL = nil;
++ (NSURL *)storeURL {
+    static NSURL *storeURL = nil;
     static dispatch_once_t onceToken = 0;
-    
+
     dispatch_once(&onceToken, ^{
         NSURL *docURL = [[NSFileManager defaultManager] URLsForDirectory:NSApplicationSupportDirectory inDomains:NSUserDomainMask].lastObject;
         NSString *fileName = @"DashSync.sqlite";
@@ -42,10 +42,10 @@
     return storeURL;
 }
 
-+(NSURL*)storeWALURL {
-    static NSURL * storeURL = nil;
++ (NSURL *)storeWALURL {
+    static NSURL *storeURL = nil;
     static dispatch_once_t onceToken = 0;
-    
+
     dispatch_once(&onceToken, ^{
         NSURL *docURL = [[NSFileManager defaultManager] URLsForDirectory:NSApplicationSupportDirectory inDomains:NSUserDomainMask].lastObject;
         NSString *fileName = @"DashSync.sqlite-wal";
@@ -54,10 +54,10 @@
     return storeURL;
 }
 
-+(NSURL*)storeSHMURL {
-    static NSURL * storeURL = nil;
++ (NSURL *)storeSHMURL {
+    static NSURL *storeURL = nil;
     static dispatch_once_t onceToken = 0;
-    
+
     dispatch_once(&onceToken, ^{
         NSURL *docURL = [[NSFileManager defaultManager] URLsForDirectory:NSApplicationSupportDirectory inDomains:NSUserDomainMask].lastObject;
         NSString *fileName = @"DashSync.sqlite-shm";
@@ -67,60 +67,58 @@
 }
 
 
-
-- (id)init
-{
+- (id)init {
     self = [super init];
     if (!self) return nil;
-    
+
     if ([DSCoreDataMigrator requiresMigration]) {
         dispatch_semaphore_t sem = dispatch_semaphore_create(0);
         [DSCoreDataMigrator performMigrationWithCompletionQueue:dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)
                                                      completion:^{
-            dispatch_semaphore_signal(sem);
-        }];
+                                                         dispatch_semaphore_signal(sem);
+                                                     }];
         dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
     }
-    
+
     [self loadPersistentContainer];
-    
+
     return self;
 }
 
--(void)loadPersistentContainer {
-        NSBundle *frameworkBundle = [NSBundle bundleForClass:[DSTransaction class]];
-        NSURL *bundleURL = [[frameworkBundle resourceURL] URLByAppendingPathComponent:@"DashSync.bundle"];
-        NSBundle *resourceBundle = [NSBundle bundleWithURL:bundleURL];
-        NSURL *modelURL = [resourceBundle URLsForResourcesWithExtension:@"momd" subdirectory:nil].lastObject;
-        
-        NSManagedObjectModel *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
-        
-        self.persistentContainer = [[NSPersistentContainer alloc] initWithName:@"DashSync" managedObjectModel:model];
-        
-        [self.persistentContainer loadPersistentStoresWithCompletionHandler:^(NSPersistentStoreDescription *description, NSError *error) {
-            if (error != nil) {
-                DSLog(@"Failed to load Core Data stack: %@", error);
-    #if (DEBUG && 1)
-                abort();
-    #else
-                NSURL * storeURL = [self.class storeURL];
+- (void)loadPersistentContainer {
+    NSBundle *frameworkBundle = [NSBundle bundleForClass:[DSTransaction class]];
+    NSURL *bundleURL = [[frameworkBundle resourceURL] URLByAppendingPathComponent:@"DashSync.bundle"];
+    NSBundle *resourceBundle = [NSBundle bundleWithURL:bundleURL];
+    NSURL *modelURL = [resourceBundle URLsForResourcesWithExtension:@"momd" subdirectory:nil].lastObject;
+
+    NSManagedObjectModel *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
+
+    self.persistentContainer = [[NSPersistentContainer alloc] initWithName:@"DashSync" managedObjectModel:model];
+
+    [self.persistentContainer loadPersistentStoresWithCompletionHandler:^(NSPersistentStoreDescription *description, NSError *error) {
+        if (error != nil) {
+            DSLog(@"Failed to load Core Data stack: %@", error);
+#if (DEBUG && 1)
+            abort();
+#else
+                NSURL *storeURL = [self.class storeURL];
                 // if this is a not a debug build, attempt to delete and create a new persisent data store before crashing
-                if (! [[NSFileManager defaultManager] removeItemAtURL:storeURL error:&error]) {
+                if (![[NSFileManager defaultManager] removeItemAtURL:storeURL error:&error]) {
                     DSLog(@"%s: %@", __func__, error);
                 }
-                
+
                 [self.persistentContainer loadPersistentStoresWithCompletionHandler:^(NSPersistentStoreDescription *description, NSError *error) {
                     if (error != nil) {
                         DSLog(@"Failed to load Core Data stack again: %@", error);
                         abort();
                     }
                 }];
-    #endif
-            }
-        }];
+#endif
+        }
+    }];
 }
 
--(NSManagedObjectContext*)viewContext {
+- (NSManagedObjectContext *)viewContext {
     static dispatch_once_t onceViewToken;
     dispatch_once(&onceViewToken, ^{
         [self.persistentContainer.viewContext setMergePolicy:NSMergeByPropertyObjectTrumpMergePolicy];
@@ -129,7 +127,7 @@
     return self.persistentContainer.viewContext;
 }
 
--(NSManagedObjectContext*)peerContext {
+- (NSManagedObjectContext *)peerContext {
     static dispatch_once_t oncePeerToken;
     dispatch_once(&oncePeerToken, ^{
         _peerContext = [self.persistentContainer newBackgroundContext];
@@ -138,7 +136,7 @@
     return _peerContext;
 }
 
--(NSManagedObjectContext*)chainContext {
+- (NSManagedObjectContext *)chainContext {
     static dispatch_once_t onceChainToken;
     dispatch_once(&onceChainToken, ^{
         _chainContext = [self.persistentContainer newBackgroundContext];
@@ -148,7 +146,7 @@
     return _chainContext;
 }
 
--(NSManagedObjectContext*)platformContext {
+- (NSManagedObjectContext *)platformContext {
     static dispatch_once_t oncePlatformToken;
     dispatch_once(&oncePlatformToken, ^{
         _platformContext = [self.persistentContainer newBackgroundContext];
@@ -157,15 +155,14 @@
     return _platformContext;
 }
 
-+ (instancetype)sharedInstance
-{
++ (instancetype)sharedInstance {
     static id singleton = nil;
     static dispatch_once_t onceToken = 0;
-    
+
     dispatch_once(&onceToken, ^{
         singleton = [self new];
     });
-    
+
     return singleton;
 }
 

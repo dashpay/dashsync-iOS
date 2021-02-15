@@ -6,8 +6,8 @@
 //
 //
 
-#import <Foundation/Foundation.h>
 #import "DSSpecialTransactionEntity+CoreDataClass.h"
+#import <Foundation/Foundation.h>
 
 @class DSLocalMasternodeEntity;
 

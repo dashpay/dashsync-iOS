@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -33,8 +33,7 @@ static LAPolicy const POLICY = LAPolicyDeviceOwnerAuthenticationWithBiometrics;
     const BOOL canEvaluatePolicy = [context canEvaluatePolicy:POLICY error:&error];
     if (canEvaluatePolicy) {
         return YES;
-    }
-    else {
+    } else {
         return (error && error.code == LAErrorPasscodeNotSet) ? NO : YES;
     }
 }
@@ -42,7 +41,7 @@ static LAPolicy const POLICY = LAPolicyDeviceOwnerAuthenticationWithBiometrics;
 + (BOOL)isTouchIDEnabled {
     LAContext *context = [[LAContext alloc] init];
     const BOOL canEvaluatePolicy = [context canEvaluatePolicy:POLICY error:nil];
-    
+
     if (@available(iOS 11.0, *)) {
         return canEvaluatePolicy && context.biometryType == LABiometryTypeTouchID;
     } else {
@@ -53,7 +52,7 @@ static LAPolicy const POLICY = LAPolicyDeviceOwnerAuthenticationWithBiometrics;
 + (BOOL)isFaceIDEnabled {
     LAContext *context = [[LAContext alloc] init];
     const BOOL canEvaluatePolicy = [context canEvaluatePolicy:POLICY error:nil];
-    
+
     if (@available(iOS 11.0, *)) {
         return canEvaluatePolicy && context.biometryType == LABiometryTypeFaceID;
     } else {
@@ -69,30 +68,30 @@ static LAPolicy const POLICY = LAPolicyDeviceOwnerAuthenticationWithBiometrics;
 
 + (void)performBiometricsAuthenticationWithReason:(NSString *)reason
                                     fallbackTitle:(nullable NSString *)fallbackTitle
-                                       completion:(void(^)(DSBiometricsAuthenticationResult result))completion {
+                                       completion:(void (^)(DSBiometricsAuthenticationResult result))completion {
     LAContext *context = [[LAContext alloc] init];
     context.localizedFallbackTitle = fallbackTitle;
-    [context evaluatePolicy:POLICY localizedReason:reason reply:^(BOOL success, NSError * _Nullable error) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            DSBiometricsAuthenticationResult result;
-            if (success) {
-                result = DSBiometricsAuthenticationResultSucceeded;
-            }
-            else {
-                const NSInteger code = error.code;
-                if (code == LAErrorUserCancel || code == LAErrorSystemCancel) {
-                    result = DSBiometricsAuthenticationResultCancelled;
-                }
-                else {
-                    result = DSBiometricsAuthenticationResultFailed;
-                }
-            }
-            
-            if (completion) {
-                completion(result);
-            }
-        });
-    }];
+    [context evaluatePolicy:POLICY
+            localizedReason:reason
+                      reply:^(BOOL success, NSError *_Nullable error) {
+                          dispatch_async(dispatch_get_main_queue(), ^{
+                              DSBiometricsAuthenticationResult result;
+                              if (success) {
+                                  result = DSBiometricsAuthenticationResultSucceeded;
+                              } else {
+                                  const NSInteger code = error.code;
+                                  if (code == LAErrorUserCancel || code == LAErrorSystemCancel) {
+                                      result = DSBiometricsAuthenticationResultCancelled;
+                                  } else {
+                                      result = DSBiometricsAuthenticationResultFailed;
+                                  }
+                              }
+
+                              if (completion) {
+                                  completion(result);
+                              }
+                          });
+                      }];
 }
 
 @end

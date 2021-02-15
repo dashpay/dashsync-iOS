@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -25,18 +25,18 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) DSFriendRequestEntity *incomingFriendRequest;
 @property (strong, nonatomic) DSFriendRequestEntity *outgoingFriendRequest;
 
-@property (strong, nonatomic) IBOutlet UILabel * outgoingExtendedPublicKeyLabel;
-@property (strong, nonatomic) IBOutlet UILabel * incomingExtendedPublicKeyLabel;
+@property (strong, nonatomic) IBOutlet UILabel *outgoingExtendedPublicKeyLabel;
+@property (strong, nonatomic) IBOutlet UILabel *incomingExtendedPublicKeyLabel;
 
-@property (strong, nonatomic) IBOutlet UILabel * outgoingFriendKeyUsedForEncryptionLabel;
-@property (strong, nonatomic) IBOutlet UILabel * outgoingOurKeyUsedForEncryptionLabel;
-@property (strong, nonatomic) IBOutlet UILabel * incomingFriendKeyUsedForEncryptionLabel;
-@property (strong, nonatomic) IBOutlet UILabel * incomingOurKeyUsedForEncryptionLabel;
+@property (strong, nonatomic) IBOutlet UILabel *outgoingFriendKeyUsedForEncryptionLabel;
+@property (strong, nonatomic) IBOutlet UILabel *outgoingOurKeyUsedForEncryptionLabel;
+@property (strong, nonatomic) IBOutlet UILabel *incomingFriendKeyUsedForEncryptionLabel;
+@property (strong, nonatomic) IBOutlet UILabel *incomingOurKeyUsedForEncryptionLabel;
 
-@property (strong, nonatomic) IBOutlet UILabel * outgoingFriendKeyIndexUsedForEncryptionLabel;
-@property (strong, nonatomic) IBOutlet UILabel * outgoingOurKeyIndexUsedForEncryptionLabel;
-@property (strong, nonatomic) IBOutlet UILabel * incomingFriendKeyIndexUsedForEncryptionLabel;
-@property (strong, nonatomic) IBOutlet UILabel * incomingOurKeyIndexUsedForEncryptionLabel;
+@property (strong, nonatomic) IBOutlet UILabel *outgoingFriendKeyIndexUsedForEncryptionLabel;
+@property (strong, nonatomic) IBOutlet UILabel *outgoingOurKeyIndexUsedForEncryptionLabel;
+@property (strong, nonatomic) IBOutlet UILabel *incomingFriendKeyIndexUsedForEncryptionLabel;
+@property (strong, nonatomic) IBOutlet UILabel *incomingOurKeyIndexUsedForEncryptionLabel;
 
 @end
 

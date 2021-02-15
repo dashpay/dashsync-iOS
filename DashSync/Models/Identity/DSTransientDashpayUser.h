@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -23,13 +23,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, readonly) NSString *displayName;
 @property (nullable, nonatomic, readonly) NSString *avatarPath;
+@property (nullable, nonatomic, readonly) NSData *avatarFingerprint;
+@property (nullable, nonatomic, readonly) NSData *avatarHash;
 @property (nullable, nonatomic, readonly) NSString *publicMessage;
 @property (nonatomic, readonly) int32_t revision;
-@property (nonatomic, readonly) NSData* documentIdentifier;
+@property (nonatomic, readonly) NSData *documentIdentifier;
 @property (nonatomic, readonly) NSTimeInterval createdAt;
 @property (nonatomic, readonly) NSTimeInterval updatedAt;
 
--(instancetype)initWithDashpayProfileDocument:(NSDictionary*)profileDocument;
+- (instancetype)initWithDashpayProfileDocument:(NSDictionary *)profileDocument;
 
 @end
 

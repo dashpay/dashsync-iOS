@@ -6,13 +6,13 @@
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
-#import <DashSync/DashSync.h>
 #import "DSWalletTableViewCell.h"
+#import <DashSync/DashSync.h>
+#import <UIKit/UIKit.h>
 
 @interface DSWalletViewController : UITableViewController <DSWalletTableViewCellDelegate>
 
 @property (nonatomic, strong) NSFetchedResultsController *fetchedResultsController;
-@property (nonatomic, strong) DSChain * chain;
+@property (nonatomic, strong) DSChain *chain;
 
 @end

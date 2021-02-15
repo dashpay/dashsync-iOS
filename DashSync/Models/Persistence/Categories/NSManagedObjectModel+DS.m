@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -26,25 +26,25 @@
     NSURL *bundleURL = [[frameworkBundle resourceURL] URLByAppendingPathComponent:@"DashSync.bundle"];
     NSBundle *resourceBundle = [NSBundle bundleWithURL:bundleURL];
     NSParameterAssert(resourceBundle);
-    
+
     NSString *subdirectory = @"DashSync.momd";
     NSURL *omoURL = [resourceBundle URLForResource:resource
                                      withExtension:@"omo"
                                       subdirectory:subdirectory];
     NSURL *momURL = [resourceBundle URLForResource:resource
-    withExtension:@"mom"
-     subdirectory:subdirectory];
-    
+                                     withExtension:@"mom"
+                                      subdirectory:subdirectory];
+
     NSAssert(omoURL || momURL, @"unable to find model");
 
     NSURL *url = omoURL ?: momURL;
     NSManagedObjectModel *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
     NSParameterAssert(model);
-    
+
     return model;
 }
 
-+ (NSManagedObjectModel *)ds_compatibleModelForStoreMetadata:(NSDictionary <NSString *, id> *)metadata {
++ (NSManagedObjectModel *)ds_compatibleModelForStoreMetadata:(NSDictionary<NSString *, id> *)metadata {
     NSBundle *frameworkBundle = [NSBundle bundleForClass:[DSTransaction class]];
     NSURL *bundleURL = [[frameworkBundle resourceURL] URLByAppendingPathComponent:@"DashSync.bundle"];
     NSBundle *resourceBundle = [NSBundle bundleWithURL:bundleURL];

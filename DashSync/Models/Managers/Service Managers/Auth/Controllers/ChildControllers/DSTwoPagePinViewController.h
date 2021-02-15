@@ -19,7 +19,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, DSTwoPagePinAnimationDirection) {
+typedef NS_ENUM(NSUInteger, DSTwoPagePinAnimationDirection)
+{
     /// RTL
     DSTwoPagePinAnimationDirection_Forward,
     /// LTR

@@ -8,81 +8,84 @@
 
 #import <Foundation/Foundation.h>
 
-NSString* const DSChainManagerSyncConnectionInitiatedNotification =      @"DSChainManagerSyncConnectionInitiatedNotification";
-NSString* const DSChainManagerSyncStartedNotification =      @"DSChainManagerSyncStartedNotification";
-NSString* const DSChainManagerSyncParametersUpdatedNotification =      @"DSChainManagerSyncParametersUpdatedNotification";
-NSString* const DSChainManagerSyncFinishedNotification =     @"DSChainManagerSyncFinishedNotification";
-NSString* const DSChainManagerSyncFailedNotification =       @"DSChainManagerSyncFailedNotification";
+NSString *const DSChainManagerSyncConnectionInitiatedNotification = @"DSChainManagerSyncConnectionInitiatedNotification";
+NSString *const DSChainManagerSyncStartedNotification = @"DSChainManagerSyncStartedNotification";
+NSString *const DSChainManagerSyncParametersUpdatedNotification = @"DSChainManagerSyncParametersUpdatedNotification";
+NSString *const DSChainManagerSyncFinishedNotification = @"DSChainManagerSyncFinishedNotification";
+NSString *const DSChainManagerSyncFailedNotification = @"DSChainManagerSyncFailedNotification";
 
-NSString* const DSTransactionManagerTransactionStatusDidChangeNotification =         @"DSTransactionManagerTransactionStatusDidChangeNotification";
-NSString* const DSTransactionManagerTransactionReceivedNotification =         @"DSTransactionManagerTransactionReceivedNotification";
+NSString *const DSTransactionManagerTransactionStatusDidChangeNotification = @"DSTransactionManagerTransactionStatusDidChangeNotification";
+NSString *const DSTransactionManagerTransactionReceivedNotification = @"DSTransactionManagerTransactionReceivedNotification";
 
-NSString* const DSChainNewChainTipBlockNotification =         @"DSChainNewChainTipBlockNotification";
-NSString* const DSPeerManagerPeersDidChangeNotification =      @"DSPeerManagerPeersDidChangeNotification";
-NSString* const DSPeerManagerConnectedPeersDidChangeNotification =      @"DSPeerManagerConnectedPeersDidChangeNotification";
-NSString* const DSPeerManagerDownloadPeerDidChangeNotification =      @"DSPeerManagerDownloadPeerDidChangeNotification";
+NSString *const DSChainNewChainTipBlockNotification = @"DSChainNewChainTipBlockNotification";
+NSString *const DSPeerManagerPeersDidChangeNotification = @"DSPeerManagerPeersDidChangeNotification";
+NSString *const DSPeerManagerConnectedPeersDidChangeNotification = @"DSPeerManagerConnectedPeersDidChangeNotification";
+NSString *const DSPeerManagerDownloadPeerDidChangeNotification = @"DSPeerManagerDownloadPeerDidChangeNotification";
 
-NSString* const DSChainWalletsDidChangeNotification =    @"DSChainWalletsDidChangeNotification";
+NSString *const DSChainWalletsDidChangeNotification = @"DSChainWalletsDidChangeNotification";
 
-NSString* const DSChainStandaloneDerivationPathsDidChangeNotification =    @"DSChainStandaloneDerivationPathsDidChangeNotification";
-NSString* const DSChainStandaloneAddressesDidChangeNotification = @"DSChainStandaloneAddressesDidChangeNotification";
-NSString* const DSChainChainSyncBlocksDidChangeNotification = @"DSChainChainSyncBlocksDidChangeNotification";
-NSString* const DSChainTerminalBlocksDidChangeNotification = @"DSChainTerminalBlocksDidChangeNotification";
-NSString* const DSChainInitialHeadersDidFinishSyncingNotification = @"DSChainInitialHeadersDidFinishSyncingNotification";
-NSString* const DSChainBlocksDidFinishSyncingNotification = @"DSChainBlocksDidFinishSyncingNotification";
-NSString* const DSChainBlockWasLockedNotification = @"DSChainBlockWasLockedNotification";
-NSString* const DSChainNotificationBlockKey = @"DSChainNotificationBlockKey";
+NSString *const DSChainStandaloneDerivationPathsDidChangeNotification = @"DSChainStandaloneDerivationPathsDidChangeNotification";
+NSString *const DSChainStandaloneAddressesDidChangeNotification = @"DSChainStandaloneAddressesDidChangeNotification";
+NSString *const DSChainChainSyncBlocksDidChangeNotification = @"DSChainChainSyncBlocksDidChangeNotification";
+NSString *const DSChainTerminalBlocksDidChangeNotification = @"DSChainTerminalBlocksDidChangeNotification";
+NSString *const DSChainInitialHeadersDidFinishSyncingNotification = @"DSChainInitialHeadersDidFinishSyncingNotification";
+NSString *const DSChainBlocksDidFinishSyncingNotification = @"DSChainBlocksDidFinishSyncingNotification";
+NSString *const DSChainBlockWasLockedNotification = @"DSChainBlockWasLockedNotification";
+NSString *const DSChainNotificationBlockKey = @"DSChainNotificationBlockKey";
 
-NSString* const DSWalletBalanceDidChangeNotification =        @"DSWalletBalanceChangedNotification";
+NSString *const DSWalletBalanceDidChangeNotification = @"DSWalletBalanceChangedNotification";
 
-NSString* const DSSporkListDidUpdateNotification =     @"DSSporkListDidUpdateNotification";
+NSString *const DSSporkListDidUpdateNotification = @"DSSporkListDidUpdateNotification";
 
-NSString* const DSMasternodeListDidChangeNotification = @"DSMasternodeListDidChangeNotification";
+NSString *const DSMasternodeListDidChangeNotification = @"DSMasternodeListDidChangeNotification";
 
-NSString* const DSQuorumListDidChangeNotification = @"DSQuorumListDidChangeNotification";
+NSString *const DSCurrentMasternodeListDidChangeNotification = @"DSCurrentMasternodeListDidChangeNotification";
 
-NSString* const DSMasternodeListDiffValidationErrorNotification = @"DSMasternodeListDiffValidationErrorNotification"; //Also for Quorums
+NSString *const DSMasternodeManagerNotificationMasternodeListKey = @"DSMasternodeManagerNotificationMasternodeListKey";
 
-NSString* const DSGovernanceObjectListDidChangeNotification = @"DSGovernanceObjectListDidChangeNotification";
-NSString* const DSGovernanceVotesDidChangeNotification = @"DSGovernanceVotesDidChangeNotification";
-NSString* const DSGovernanceObjectCountUpdateNotification = @"DSGovernanceObjectCountUpdateNotification";
-NSString* const DSGovernanceVoteCountUpdateNotification = @"DSGovernanceVoteCountUpdateNotification";
+NSString *const DSQuorumListDidChangeNotification = @"DSQuorumListDidChangeNotification";
 
-NSString* const DSChainsDidChangeNotification = @"DSChainsDidChangeNotification";
+NSString *const DSMasternodeListDiffValidationErrorNotification = @"DSMasternodeListDiffValidationErrorNotification"; //Also for Quorums
 
-NSString* const DSChainManagerNotificationChainKey = @"DSChainManagerNotificationChainKey";
-NSString* const DSPeerManagerNotificationPeerKey = @"DSPeerManagerNotificationPeerKey";
+NSString *const DSGovernanceObjectListDidChangeNotification = @"DSGovernanceObjectListDidChangeNotification";
+NSString *const DSGovernanceVotesDidChangeNotification = @"DSGovernanceVotesDidChangeNotification";
+NSString *const DSGovernanceObjectCountUpdateNotification = @"DSGovernanceObjectCountUpdateNotification";
+NSString *const DSGovernanceVoteCountUpdateNotification = @"DSGovernanceVoteCountUpdateNotification";
 
-NSString* const DSTransactionManagerNotificationTransactionKey =         @"DSTransactionManagerNotificationTransactionKey";
-NSString* const DSTransactionManagerNotificationTransactionChangesKey =         @"DSTransactionManagerNotificationTransactionChangesKey";
+NSString *const DSChainsDidChangeNotification = @"DSChainsDidChangeNotification";
 
-NSString* const DSTransactionManagerNotificationInstantSendTransactionLockKey =         @"DSTransactionManagerNotificationInstantSendTransactionLockKey";
+NSString *const DSChainManagerNotificationChainKey = @"DSChainManagerNotificationChainKey";
+NSString *const DSPeerManagerNotificationPeerKey = @"DSPeerManagerNotificationPeerKey";
 
-NSString* const DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey =         @"DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey";
+NSString *const DSTransactionManagerNotificationTransactionKey = @"DSTransactionManagerNotificationTransactionKey";
+NSString *const DSTransactionManagerNotificationTransactionChangesKey = @"DSTransactionManagerNotificationTransactionChangesKey";
 
-NSString* const DSTransactionManagerNotificationInstantSendTransactionAcceptedStatusKey =         @"DSTransactionManagerNotificationInstantSendTransactionAcceptedStatusKey";
+NSString *const DSTransactionManagerNotificationInstantSendTransactionLockKey = @"DSTransactionManagerNotificationInstantSendTransactionLockKey";
 
-NSString* const DPContractDidUpdateNotification = @"DPContractDidUpdateNotification";
+NSString *const DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey = @"DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey";
 
-NSString* const DSContractUpdateNotificationKey = @"DSContractUpdateNotificationKey";
+NSString *const DSTransactionManagerNotificationTransactionAcceptedStatusKey = @"DSTransactionManagerNotificationTransactionAcceptedStatusKey";
 
-NSString* const DSBlockchainIdentityDidUpdateNotification = @"DSBlockchainIdentitiesDidUpdateNotification";
+NSString *const DPContractDidUpdateNotification = @"DPContractDidUpdateNotification";
 
-NSString* const DSBlockchainIdentityDidUpdateUsernameStatusNotification = @"DSBlockchainIdentityDidUpdateUsernameStatusNotification";
+NSString *const DSContractUpdateNotificationKey = @"DSContractUpdateNotificationKey";
 
-NSString* const DSBlockchainIdentityKey = @"DSBlockchainIdentityKey";
+NSString *const DSBlockchainIdentityDidUpdateNotification = @"DSBlockchainIdentitiesDidUpdateNotification";
 
-NSString* const DSBlockchainIdentityUsernameKey = @"DSBlockchainIdentityUsernameKey";
+NSString *const DSBlockchainIdentityDidUpdateUsernameStatusNotification = @"DSBlockchainIdentityDidUpdateUsernameStatusNotification";
 
-NSString* const DSBlockchainIdentityUsernameDomainKey = @"DSBlockchainIdentityUsernameDomainKey";
+NSString *const DSBlockchainIdentityKey = @"DSBlockchainIdentityKey";
 
-NSString* const DSBlockchainIdentityUpdateEvents = @"DSBlockchainIdentityUpdateEvents";
+NSString *const DSBlockchainIdentityUsernameKey = @"DSBlockchainIdentityUsernameKey";
 
-NSString* const DSBlockchainIdentityUpdateEventKeyUpdate = @"DSBlockchainIdentityUpdateEventKeyUpdate";
+NSString *const DSBlockchainIdentityUsernameDomainKey = @"DSBlockchainIdentityUsernameDomainKey";
 
-NSString* const DSBlockchainIdentityUpdateEventRegistration = @"DSBlockchainIdentityUpdateEventRegistration";
+NSString *const DSBlockchainIdentityUpdateEvents = @"DSBlockchainIdentityUpdateEvents";
 
-NSString* const DSBlockchainIdentityUpdateEventCreditBalance = @"DSBlockchainIdentityUpdateEventCreditBalance";
+NSString *const DSBlockchainIdentityUpdateEventKeyUpdate = @"DSBlockchainIdentityUpdateEventKeyUpdate";
 
-NSString* const DSBlockchainIdentityUpdateEventDashpaySyncronizationBlockHash = @"DSBlockchainIdentityUpdateEventDashpaySyncronizationBlockHash";
+NSString *const DSBlockchainIdentityUpdateEventRegistration = @"DSBlockchainIdentityUpdateEventRegistration";
 
+NSString *const DSBlockchainIdentityUpdateEventCreditBalance = @"DSBlockchainIdentityUpdateEventCreditBalance";
+
+NSString *const DSBlockchainIdentityUpdateEventDashpaySyncronizationBlockHash = @"DSBlockchainIdentityUpdateEventDashpaySyncronizationBlockHash";

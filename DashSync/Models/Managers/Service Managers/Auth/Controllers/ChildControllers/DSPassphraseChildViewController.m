@@ -66,11 +66,11 @@ static CGFloat const TEXTVIEW_HEIGHT = 120.0;
     }
 
     DSChain *chain = [[DSChainsManager sharedInstance] mainnetManager].chain;
-    
+
     if (![chain hasAWallet]) {
         chain = [[DSChainsManager sharedInstance] testnetManager].chain;
         if (![chain hasAWallet]) {
-            for (DSChain * devnetChain in [[DSChainsManager sharedInstance] devnetChains]) {
+            for (DSChain *devnetChain in [[DSChainsManager sharedInstance] devnetChains]) {
                 if ([devnetChain hasAWallet]) {
                     chain = devnetChain;
                     break;
@@ -111,8 +111,7 @@ static CGFloat const TEXTVIEW_HEIGHT = 120.0;
 
         [self.feedbackGenerator notificationOccurred:UINotificationFeedbackTypeError];
         [self.feedbackGenerator prepare];
-    }
-    else {
+    } else {
         if (oldData) {
             [[DSVersionManager sharedInstance] clearKeychainWalletOldData];
         }
@@ -177,8 +176,7 @@ static CGFloat const TEXTVIEW_HEIGHT = 120.0;
     if ([text isEqual:@"\n"]) {
         [self verifySeedPharse];
         return NO;
-    }
-    else {
+    } else {
         return YES;
     }
 }

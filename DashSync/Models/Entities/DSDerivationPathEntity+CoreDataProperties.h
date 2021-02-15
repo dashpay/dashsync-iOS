@@ -1,6 +1,6 @@
 //
 //  DSDerivationPathEntity+CoreDataProperties.h
-//  
+//
 //
 //  Created by Sam Westrich on 5/20/18.
 //
@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSFetchRequest<DSDerivationPathEntity *> *)fetchRequest;
 
-@property (nonatomic,assign) uint32_t syncBlockHeight; //at what height are we synced for this derivation Path
+@property (nonatomic, assign) uint32_t syncBlockHeight; //at what height are we synced for this derivation Path
 @property (nullable, nonatomic, retain) NSData *derivationPath;
 @property (nonnull, nonatomic, retain) NSString *publicKeyIdentifier;
 @property (nullable, nonatomic, retain) NSSet<DSAddressEntity *> *addresses;

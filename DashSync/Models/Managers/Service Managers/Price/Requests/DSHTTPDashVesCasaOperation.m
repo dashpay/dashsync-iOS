@@ -43,7 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
 
         return;
     }
-    
+
     self.vesPrice = vesPrice;
 
     [self finish];

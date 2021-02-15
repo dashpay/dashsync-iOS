@@ -1,6 +1,6 @@
 //
 //  DSMerkleBlockEntity+CoreDataClass.m
-//  
+//
 //  Created by Sam Westrich on 5/20/18.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,19 +21,19 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSMerkleBlockEntity+CoreDataClass.h"
-#import "DSMerkleBlock.h"
-#import "NSData+Bitcoin.h"
+#import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainLockEntity+CoreDataClass.h"
+#import "DSMerkleBlock.h"
+#import "DSMerkleBlockEntity+CoreDataClass.h"
+#import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
-#import "DSChain+Protected.h"
 
 @implementation DSMerkleBlockEntity
 
-- (instancetype)setAttributesFromBlock:(DSBlock *)block forChainEntity:(DSChainEntity*)chainEntity {
+- (instancetype)setAttributesFromBlock:(DSBlock *)block forChainEntity:(DSChainEntity *)chainEntity {
     if ([block isKindOfClass:[DSMerkleBlock class]]) {
-        return [self setAttributesFromMerkleBlock:(DSMerkleBlock*)block forChainEntity:chainEntity];
+        return [self setAttributesFromMerkleBlock:(DSMerkleBlock *)block forChainEntity:chainEntity];
     }
     [self.managedObjectContext performBlockAndWait:^{
         self.blockHash = uint256_data(block.blockHash);
@@ -52,11 +52,11 @@
         }
         NSAssert((block.height == UINT32_MAX) == (uint256_is_zero(block.chainWork)), @"if block height is not set then there should be no aggregated work, and opposite is also true");
     }];
-    
+
     return self;
 }
 
-- (instancetype)setAttributesFromMerkleBlock:(DSMerkleBlock *)block forChainEntity:(DSChainEntity*)chainEntity {
+- (instancetype)setAttributesFromMerkleBlock:(DSMerkleBlock *)block forChainEntity:(DSChainEntity *)chainEntity {
     [self.managedObjectContext performBlockAndWait:^{
         self.blockHash = uint256_data(block.blockHash);
         self.version = block.version;
@@ -76,35 +76,44 @@
         }
         NSAssert((block.height == UINT32_MAX) == (uint256_is_zero(block.chainWork)), @"if block height is not set then there should be no aggregated work, and opposite is also true");
     }];
-    
+
     return self;
 }
 
-- (DSMerkleBlock *)merkleBlock
-{
+- (DSMerkleBlock *)merkleBlock {
     __block DSMerkleBlock *block = nil;
-    
+
     [self.managedObjectContext performBlockAndWait:^{
-        
-        DSChain * chain = self.chain.chain;
-        
-        DSChainLock * chainLock = nil;
+        DSChain *chain = self.chain.chain;
+
+        DSChainLock *chainLock = nil;
         if (self.chainLock) {
             chainLock = [self.chainLock chainLockForChain:chain];
         }
-        block = [[DSMerkleBlock alloc] initWithVersion:self.version blockHash:self.blockHash.UInt256 prevBlock:self.prevBlock.UInt256 merkleRoot:self.merkleRoot.UInt256
-                                             timestamp:self.timestamp target:self.target chainWork:self.chainWork.UInt256 nonce:self.nonce
-                                       totalTransactions:self.totalTransactions hashes:self.hashes flags:self.flags height:self.height chainLock:chainLock onChain:self.chain.chain];
+        block = [[DSMerkleBlock alloc] initWithVersion:self.version
+                                             blockHash:self.blockHash.UInt256
+                                             prevBlock:self.prevBlock.UInt256
+                                            merkleRoot:self.merkleRoot.UInt256
+                                             timestamp:self.timestamp
+                                                target:self.target
+                                             chainWork:self.chainWork.UInt256
+                                                 nonce:self.nonce
+                                     totalTransactions:self.totalTransactions
+                                                hashes:self.hashes
+                                                 flags:self.flags
+                                                height:self.height
+                                             chainLock:chainLock
+                                               onChain:self.chain.chain];
     }];
-    
+
     return block;
 }
 
-+ (NSArray<DSMerkleBlockEntity*>*)lastTerminalBlocks:(uint32_t)blockcount onChainEntity:(DSChainEntity*)chainEntity {
-    __block NSArray * blocks = nil;
++ (NSArray<DSMerkleBlockEntity *> *)lastTerminalBlocks:(uint32_t)blockcount onChainEntity:(DSChainEntity *)chainEntity {
+    __block NSArray *blocks = nil;
     [chainEntity.managedObjectContext performBlockAndWait:^{
-        NSFetchRequest * fetchRequest = [DSMerkleBlockEntity fetchReq];
-        [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"(chain == %@)",chainEntity]];
+        NSFetchRequest *fetchRequest = [DSMerkleBlockEntity fetchReq];
+        [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"(chain == %@)", chainEntity]];
         [fetchRequest setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"height" ascending:FALSE]]];
         [fetchRequest setFetchLimit:blockcount];
         blocks = [DSMerkleBlockEntity fetchObjects:fetchRequest inContext:chainEntity.managedObjectContext];
@@ -112,10 +121,10 @@
     return blocks;
 }
 
-+ (void)deleteBlocksOnChainEntity:(DSChainEntity*)chainEntity {
++ (void)deleteBlocksOnChainEntity:(DSChainEntity *)chainEntity {
     [chainEntity.managedObjectContext performBlockAndWait:^{
-        NSArray * merkleBlocksToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@)",chainEntity];
-        for (DSMerkleBlockEntity * merkleBlock in merkleBlocksToDelete) {
+        NSArray *merkleBlocksToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@)", chainEntity];
+        for (DSMerkleBlockEntity *merkleBlock in merkleBlocksToDelete) {
             [chainEntity.managedObjectContext deleteObject:merkleBlock];
         }
     }];

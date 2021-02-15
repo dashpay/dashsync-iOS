@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -19,7 +19,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSInteger, DSCoreDataMigrationVersionValue) {
+typedef NS_ENUM(NSInteger, DSCoreDataMigrationVersionValue)
+{
     DSCoreDataMigrationVersionValue_1 = 1,
     DSCoreDataMigrationVersionValue_2 = 2,
     DSCoreDataMigrationVersionValue_3 = 3,
@@ -29,6 +30,7 @@ typedef NS_ENUM(NSInteger, DSCoreDataMigrationVersionValue) {
     DSCoreDataMigrationVersionValue_7 = 7,
     DSCoreDataMigrationVersionValue_8 = 8,
     DSCoreDataMigrationVersionValue_9 = 9,
+    DSCoreDataMigrationVersionValue_10 = 10,
 };
 
 @interface DSCoreDataMigrationVersion : NSObject

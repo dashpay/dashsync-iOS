@@ -11,7 +11,7 @@
 @implementation DSCoinbaseTransactionEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSCoinbaseTransactionEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSCoinbaseTransactionEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSCoinbaseTransactionEntity"];
 }
 
 @dynamic height;

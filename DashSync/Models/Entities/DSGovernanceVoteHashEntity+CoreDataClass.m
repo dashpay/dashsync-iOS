@@ -6,20 +6,20 @@
 //
 //
 
-#import "DSGovernanceVoteHashEntity+CoreDataClass.h"
+#import "DSChainEntity+CoreDataClass.h"
 #import "DSGovernanceObjectEntity+CoreDataClass.h"
 #import "DSGovernanceObjectHashEntity+CoreDataClass.h"
-#import "DSChainEntity+CoreDataClass.h"
+#import "DSGovernanceVoteHashEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
 
 @implementation DSGovernanceVoteHashEntity
 
-+(NSArray*)governanceVoteHashEntitiesWithHashes:(NSOrderedSet*)governanceVoteHashes forGovernanceObjectEntity:(DSGovernanceObjectEntity*)governanceObjectEntity {
++ (NSArray *)governanceVoteHashEntitiesWithHashes:(NSOrderedSet *)governanceVoteHashes forGovernanceObjectEntity:(DSGovernanceObjectEntity *)governanceObjectEntity {
     NSAssert(governanceObjectEntity, @"governance object entity is not set");
-    NSMutableArray * rArray = [NSMutableArray arrayWithCapacity:governanceVoteHashes.count];
+    NSMutableArray *rArray = [NSMutableArray arrayWithCapacity:governanceVoteHashes.count];
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
-    for (NSData * governanceVoteHash in governanceVoteHashes) {
-        DSGovernanceVoteHashEntity * governanceVoteHashEntity = [self managedObjectInBlockedContext:governanceObjectEntity.managedObjectContext];
+    for (NSData *governanceVoteHash in governanceVoteHashes) {
+        DSGovernanceVoteHashEntity *governanceVoteHashEntity = [self managedObjectInBlockedContext:governanceObjectEntity.managedObjectContext];
         governanceVoteHashEntity.governanceVoteHash = governanceVoteHash;
         governanceVoteHashEntity.timestamp = now;
         governanceVoteHashEntity.chain = governanceObjectEntity.governanceObjectHash.chain;
@@ -29,19 +29,19 @@
     return [rArray copy];
 }
 
-+(void)updateTimestampForGovernanceVoteHashEntitiesWithGovernanceVoteHashes:(NSOrderedSet*)governanceVoteHashes forGovernanceObjectEntity:(DSGovernanceObjectEntity*)governanceObjectEntity {
++ (void)updateTimestampForGovernanceVoteHashEntitiesWithGovernanceVoteHashes:(NSOrderedSet *)governanceVoteHashes forGovernanceObjectEntity:(DSGovernanceObjectEntity *)governanceObjectEntity {
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
-    NSArray * entitiesToUpdate = [self objectsInContext:governanceObjectEntity.managedObjectContext matching:@"(governanceObject == %@) && (governanceVoteHash in %@)",governanceObjectEntity,governanceVoteHashes];
-    for (DSGovernanceVoteHashEntity * entityToUpdate in entitiesToUpdate) {
+    NSArray *entitiesToUpdate = [self objectsInContext:governanceObjectEntity.managedObjectContext matching:@"(governanceObject == %@) && (governanceVoteHash in %@)", governanceObjectEntity, governanceVoteHashes];
+    for (DSGovernanceVoteHashEntity *entityToUpdate in entitiesToUpdate) {
         entityToUpdate.timestamp = now;
     }
 }
 
-+(void)removeOldest:(NSUInteger)count hashesNotIn:(NSSet*)governanceVoteHashes forGovernanceObjectEntity:(DSGovernanceObjectEntity*)governanceObjectEntity {
-    NSFetchRequest * fetchRequest = [self fetchReq];
-    [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"(governanceObject == %@) && (governanceVoteHash in %@)",governanceObjectEntity.managedObjectContext,governanceVoteHashes]];
++ (void)removeOldest:(NSUInteger)count hashesNotIn:(NSSet *)governanceVoteHashes forGovernanceObjectEntity:(DSGovernanceObjectEntity *)governanceObjectEntity {
+    NSFetchRequest *fetchRequest = [self fetchReq];
+    [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"(governanceObject == %@) && (governanceVoteHash in %@)", governanceObjectEntity.managedObjectContext, governanceVoteHashes]];
     [fetchRequest setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"timestamp" ascending:TRUE]]];
-    NSArray * oldObjects = [self fetchObjects:fetchRequest inContext:governanceObjectEntity.managedObjectContext];
+    NSArray *oldObjects = [self fetchObjects:fetchRequest inContext:governanceObjectEntity.managedObjectContext];
     NSUInteger remainingToDeleteCount = count;
     for (NSManagedObject *obj in oldObjects) {
         [governanceObjectEntity.managedObjectContext deleteObject:obj];
@@ -50,20 +50,20 @@
     }
 }
 
-+(NSUInteger)countAroundNowOnChainEntity:(DSChainEntity*)chainEntity {
++ (NSUInteger)countAroundNowOnChainEntity:(DSChainEntity *)chainEntity {
     NSTimeInterval aMinuteAgo = [[NSDate date] timeIntervalSince1970] - 60;
-    return [self countObjectsInContext:chainEntity.managedObjectContext matching:@"chain == %@ && timestamp > %@",chainEntity,@(aMinuteAgo)];
+    return [self countObjectsInContext:chainEntity.managedObjectContext matching:@"chain == %@ && timestamp > %@", chainEntity, @(aMinuteAgo)];
 }
 
-+(NSUInteger)standaloneCountInLast3hoursOnChainEntity:(DSChainEntity*)chainEntity {
++ (NSUInteger)standaloneCountInLast3hoursOnChainEntity:(DSChainEntity *)chainEntity {
     NSTimeInterval threeHoursAgo = [[NSDate date] timeIntervalSince1970] - 10800;
-    return [self countObjectsInContext:chainEntity.managedObjectContext matching:@"chain == %@ && timestamp > %@ && governanceVote == nil",chainEntity,@(threeHoursAgo)];
+    return [self countObjectsInContext:chainEntity.managedObjectContext matching:@"chain == %@ && timestamp > %@ && governanceVote == nil", chainEntity, @(threeHoursAgo)];
 }
 
-+ (void)deleteHashesOnChainEntity:(DSChainEntity*)chainEntity {
++ (void)deleteHashesOnChainEntity:(DSChainEntity *)chainEntity {
     [chainEntity.managedObjectContext performBlockAndWait:^{
-        NSArray * hashesToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@)",chainEntity];
-        for (DSGovernanceVoteHashEntity * governanceVoteHashEntity in hashesToDelete) {
+        NSArray *hashesToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@)", chainEntity];
+        for (DSGovernanceVoteHashEntity *governanceVoteHashEntity in hashesToDelete) {
             [chainEntity.managedObjectContext deleteObject:governanceVoteHashEntity];
         }
     }];

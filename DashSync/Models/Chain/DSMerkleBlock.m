@@ -28,12 +28,12 @@
 
 #import "DSMerkleBlock.h"
 #import "DSBlock+Protected.h"
-#import "NSMutableData+Dash.h"
+#import "DSChain.h"
+#import "DSChainLock.h"
 #import "NSData+Bitcoin.h"
 #import "NSData+Dash.h"
-#import "DSChain.h"
 #import "NSDate+Utils.h"
-#import "DSChainLock.h"
+#import "NSMutableData+Dash.h"
 
 #define LOG_MERKLE_BLOCKS 0
 #define LOG_MERKLE_BLOCKS_FULL (LOG_MERKLE_BLOCKS && 1)
@@ -65,10 +65,9 @@
 // flag bits (little endian): 00001011 [merkleRoot = 1, m1 = 1, tx1 = 0, tx2 = 1, m2 = 0, byte padding = 000]
 // hashes: [tx1, tx2, m2]
 
-inline static int ceil_log2(int x)
-{
+inline static int ceil_log2(int x) {
     int r = (x & (x - 1)) ? 1 : 0;
-    
+
     while ((x >>= 1) != 0) r++;
     return r;
 }
@@ -83,19 +82,17 @@ inline static int ceil_log2(int x)
 @implementation DSMerkleBlock
 
 // message can be either a merkleblock or header message
-+ (instancetype)merkleBlockWithMessage:(NSData *)message onChain:(DSChain *)chain
-{
++ (instancetype)merkleBlockWithMessage:(NSData *)message onChain:(DSChain *)chain {
     return [[self alloc] initWithMessage:message onChain:chain];
 }
 
-- (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain
-{
-    if (! (self = [self init])) return nil;
+- (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain {
+    if (!(self = [self init])) return nil;
     if (message.length < 80) return nil;
-    NSNumber * l = nil;
+    NSNumber *l = nil;
     NSUInteger off = 0, len = 0;
     NSMutableData *d = [NSMutableData data];
-    
+
     self.version = [message UInt32AtOffset:off];
     off += sizeof(uint32_t);
     UInt256 prevBlock = [message UInt256AtOffset:off];
@@ -112,13 +109,13 @@ inline static int ceil_log2(int x)
     off += sizeof(uint32_t);
     self.totalTransactions = [message UInt32AtOffset:off];
     off += sizeof(uint32_t);
-    len = (NSUInteger)[message varIntAtOffset:off length:&l]*sizeof(UInt256);
+    len = (NSUInteger)[message varIntAtOffset:off length:&l] * sizeof(UInt256);
     off += l.unsignedIntegerValue;
     _hashes = (off + len > message.length) ? nil : [message subdataWithRange:NSMakeRange(off, len)];
     off += len;
     _flags = [message dataAtOffset:off length:&l];
     self.height = BLOCK_UNKNOWN_HEIGHT;
-    
+
     [d appendUInt32:self.version];
     [d appendUInt256:prevBlock];
     [d appendUInt256:merkleRoot];
@@ -127,22 +124,21 @@ inline static int ceil_log2(int x)
     [d appendUInt32:self.nonce];
     self.blockHash = d.x11;
     self.chain = chain;
-    
+
 #if LOG_MERKLE_BLOCKS || LOG_MERKLE_BLOCKS_FULL
 #if LOG_MERKLE_BLOCKS_FULL
-    DSLog(@"%d - merkle block %@ (%@) has %d transactions",self.height,uint256_hex(self.blockHash),message.hexString,self.totalTransactions);
+    DSLog(@"%d - merkle block %@ (%@) has %d transactions", self.height, uint256_hex(self.blockHash), message.hexString, self.totalTransactions);
 #else
-    DSLog(@"%d - merkle block %@ has %d transactions",self.height,uint256_hex(self.blockHash),self.totalTransactions);
+    DSLog(@"%d - merkle block %@ has %d transactions", self.height, uint256_hex(self.blockHash), self.totalTransactions);
 #endif
 #endif
-    
+
     return self;
 }
 
-- (instancetype)initWithBlockHash:(UInt256)blockHash merkleRoot:(UInt256)merkleRoot totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags
-{
-    if (! (self = [self init])) return nil;
-    
+- (instancetype)initWithBlockHash:(UInt256)blockHash merkleRoot:(UInt256)merkleRoot totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags {
+    if (!(self = [self init])) return nil;
+
     self.blockHash = blockHash;
     self.merkleRoot = merkleRoot;
     self.totalTransactions = totalTransactions;
@@ -153,10 +149,19 @@ inline static int ceil_log2(int x)
 }
 
 - (instancetype)initWithVersion:(uint32_t)version blockHash:(UInt256)blockHash prevBlock:(UInt256)prevBlock
-                     merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target chainWork:(UInt256)aggregateWork nonce:(uint32_t)nonce totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags height:(uint32_t)height chainLock:(DSChainLock*)chainLock onChain:(DSChain*)chain
-{
-    if (! (self = [self initWithBlockHash:blockHash merkleRoot:merkleRoot totalTransactions:totalTransactions hashes:hashes flags:flags])) return nil;
-    
+                     merkleRoot:(UInt256)merkleRoot
+                      timestamp:(uint32_t)timestamp
+                         target:(uint32_t)target
+                      chainWork:(UInt256)aggregateWork
+                          nonce:(uint32_t)nonce
+              totalTransactions:(uint32_t)totalTransactions
+                         hashes:(NSData *)hashes
+                          flags:(NSData *)flags
+                         height:(uint32_t)height
+                      chainLock:(DSChainLock *)chainLock
+                        onChain:(DSChain *)chain {
+    if (!(self = [self initWithBlockHash:blockHash merkleRoot:merkleRoot totalTransactions:totalTransactions hashes:hashes flags:flags])) return nil;
+
     self.version = version;
     self.prevBlock = prevBlock;
     self.merkleRoot = merkleRoot;
@@ -167,101 +172,104 @@ inline static int ceil_log2(int x)
     self.chainWork = aggregateWork;
     [self setChainLockedWithChainLock:chainLock];
     self.chain = chain;
-    
+
     return self;
 }
 
-- (NSData *)toData
-{
+- (NSData *)toData {
     NSMutableData *d = [[super toData] mutableCopy];
-    
+
     if (self.totalTransactions > 0) {
         [d appendUInt32:self.totalTransactions];
-        [d appendVarInt:self.hashes.length/sizeof(UInt256)];
+        [d appendVarInt:self.hashes.length / sizeof(UInt256)];
         [d appendData:self.hashes];
         [d appendVarInt:_flags.length];
         [d appendData:_flags];
     }
-    
+
     return d;
 }
 
 // true if the given tx hash is included in the block
-- (BOOL)containsTxHash:(UInt256)txHash
-{
-    for (NSUInteger i = 0; i < self.hashes.length/sizeof(UInt256); i += sizeof(UInt256)) {
-        DSLogPrivate(@"transaction Hash %@",[NSData dataWithUInt256:[self.hashes UInt256AtOffset:i]].hexString);
-        DSLogPrivate(@"looking for %@",[NSData dataWithUInt256:txHash].hexString);
+- (BOOL)containsTxHash:(UInt256)txHash {
+    for (NSUInteger i = 0; i < self.hashes.length / sizeof(UInt256); i += sizeof(UInt256)) {
+        DSLogPrivate(@"transaction Hash %@", [NSData dataWithUInt256:[self.hashes UInt256AtOffset:i]].hexString);
+        DSLogPrivate(@"looking for %@", [NSData dataWithUInt256:txHash].hexString);
         if (uint256_eq(txHash, [self.hashes UInt256AtOffset:i])) return YES;
     }
-    
+
     return NO;
 }
 
 // returns an array of the matched tx hashes
-- (NSArray *)transactionHashes
-{
+- (NSArray *)transactionHashes {
     int hashIdx = 0, flagIdx = 0;
     NSArray *txHashes =
-    [self _walk:&hashIdx :&flagIdx :0 :^id (id hash, BOOL flag) {
-        return (flag && hash) ? @[hash] : @[];
-    } :^id (id left, id right) {
-        return [left arrayByAddingObjectsFromArray:right];
-    }];
-    
+        [self _walk:&
+            hashIdx:&
+            flagIdx:0:^id(id hash, BOOL flag) {
+                return (flag && hash) ? @[hash] : @[];
+            }:^id(id left, id right) {
+                return [left arrayByAddingObjectsFromArray:right];
+            }];
+
     return txHashes;
 }
 
 
--(BOOL)isMerkleTreeValid {
+- (BOOL)isMerkleTreeValid {
     NSMutableData *d = [NSMutableData data];
     UInt256 merkleRoot = UINT256_ZERO;
     int hashIdx = 0, flagIdx = 0;
-    NSValue *root = [self _walk:&hashIdx :&flagIdx :0 :^id (id hash, BOOL flag) {
-        return hash;
-    } :^id (id left, id right) {
-        UInt256 l, r;
-        
-        if (! right) right = left; // if right branch is missing, duplicate left branch
-        [left getValue:&l];
-        [right getValue:&r];
-        d.length = 0;
-        [d appendBytes:&l length:sizeof(l)];
-        [d appendBytes:&r length:sizeof(r)];
-        return uint256_obj(d.SHA256_2);
-    }];
-    
+    NSValue *root = [self _walk:&
+        hashIdx:&
+        flagIdx:0:^id(id hash, BOOL flag) {
+            return hash;
+        }:^id(id left, id right) {
+            UInt256 l, r;
+
+            if (!right) right = left; // if right branch is missing, duplicate left branch
+            [left getValue:&l];
+            [right getValue:&r];
+            d.length = 0;
+            [d appendBytes:&l length:sizeof(l)];
+            [d appendBytes:&r length:sizeof(r)];
+            return uint256_obj(d.SHA256_2);
+        }];
+
     [root getValue:&merkleRoot];
     //DSLog(@"%@ - %@",uint256_hex(merkleRoot),uint256_hex(_merkleRoot));
-    if (self.totalTransactions > 0 && ! uint256_eq(merkleRoot, self.merkleRoot)) return NO; // merkle root check failed
+    if (self.totalTransactions > 0 && !uint256_eq(merkleRoot, self.merkleRoot)) return NO; // merkle root check failed
     return YES;
 }
 
 // recursively walks the merkle tree in depth first order, calling leaf(hash, flag) for each stored hash, and
 // branch(left, right) with the result from each branch
-- (id)_walk:(int *)hashIdx :(int *)flagIdx :(int)depth :(id (^)(id, BOOL))leaf :(id (^)(id, id))branch
-{
-    if ((*flagIdx)/8 >= _flags.length || (*hashIdx + 1)*sizeof(UInt256) > _hashes.length) return leaf(nil, NO);
-    
-    BOOL flag = (((const uint8_t *)_flags.bytes)[*flagIdx/8] & (1 << (*flagIdx % 8)));
-    
+- (id)_walk:(int *)hashIdx:(int *)flagIdx
+           :(int)depth
+           :(id (^)(id, BOOL))leaf
+           :(id (^)(id, id))branch {
+    if ((*flagIdx) / 8 >= _flags.length || (*hashIdx + 1) * sizeof(UInt256) > _hashes.length) return leaf(nil, NO);
+
+    BOOL flag = (((const uint8_t *)_flags.bytes)[*flagIdx / 8] & (1 << (*flagIdx % 8)));
+
     (*flagIdx)++;
-    
-    if (! flag || depth == ceil_log2(self.totalTransactions)) {
-        UInt256 hash = [_hashes UInt256AtOffset:(*hashIdx)*sizeof(UInt256)];
-        
+
+    if (!flag || depth == ceil_log2(self.totalTransactions)) {
+        UInt256 hash = [_hashes UInt256AtOffset:(*hashIdx) * sizeof(UInt256)];
+
         (*hashIdx)++;
         return leaf(uint256_obj(hash), flag);
     }
-    
-    id left = [self _walk:hashIdx :flagIdx :depth + 1 :leaf :branch];
-    id right = [self _walk:hashIdx :flagIdx :depth + 1 :leaf :branch];
-    
+
+    id left = [self _walk:hashIdx:flagIdx:depth + 1:leaf:branch];
+    id right = [self _walk:hashIdx:flagIdx:depth + 1:leaf:branch];
+
     return branch(left, right);
 }
 
--(id)copyWithZone:(NSZone *)zone {
-    DSMerkleBlock * copy = [[[self class] alloc] init];
+- (id)copyWithZone:(NSZone *)zone {
+    DSMerkleBlock *copy = [[[self class] alloc] init];
     copy.blockHash = self.blockHash;
     copy.height = self.height;
     copy.version = self.version;

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -24,8 +24,7 @@
     NSError *error = nil;
     if (@available(iOS 9.0, *)) {
         [psc destroyPersistentStoreAtURL:url withType:NSSQLiteStoreType options:nil error:&error];
-    }
-    else {
+    } else {
         NSCAssert(NO, @"not supported");
     }
     NSCAssert(error == nil, @"Failed to destroy persistent store %@", error);
@@ -47,9 +46,9 @@
     NSCAssert(error == nil, @"Failed to replace persistent store %@", error);
 }
 
-+ (NSDictionary <NSString *, id> *)ds_metadataAt:(NSURL *)storeURL {
++ (NSDictionary<NSString *, id> *)ds_metadataAt:(NSURL *)storeURL {
     NSError *error = nil;
-   NSDictionary <NSString *, id> *result = [NSPersistentStoreCoordinator metadataForPersistentStoreOfType:NSSQLiteStoreType
+    NSDictionary<NSString *, id> *result = [NSPersistentStoreCoordinator metadataForPersistentStoreOfType:NSSQLiteStoreType
                                                                                                       URL:storeURL
                                                                                                   options:nil
                                                                                                     error:&error];
@@ -58,7 +57,7 @@
 
 - (NSPersistentStore *)ds_addPersistentStoreAt:(NSURL *)storeURL options:(NSDictionary *)options {
     NSError *error = nil;
-   NSPersistentStore *store = [self addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:options error:&error];
+    NSPersistentStore *store = [self addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:options error:&error];
     NSCAssert(error == nil, @"Failed to add persistent store %@", error);
     return store;
 }

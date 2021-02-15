@@ -28,8 +28,8 @@
 
 #import "DSBloomFilter.h"
 #import "DSTransaction.h"
-#import "NSMutableData+Dash.h"
 #import "NSData+Bitcoin.h"
+#import "NSMutableData+Dash.h"
 
 #define BLOOM_MAX_HASH_FUNCS 50
 
@@ -42,26 +42,25 @@
 #define fmix32(h) (h ^= h >> 16, h *= 0x85ebca6b, h ^= h >> 13, h *= 0xc2b2ae35, h ^= h >> 16)
 
 // murmurHash3 (x86_32): https://code.google.com/p/smhasher/
-static uint32_t murmur3_32(const void *data, size_t len, uint32_t seed)
-{
+static uint32_t murmur3_32(const void *data, size_t len, uint32_t seed) {
     uint32_t h = seed, k = 0;
-    size_t i, count = len/4;
-    
+    size_t i, count = len / 4;
+
     for (i = 0; i < count; i++) {
-        k = CFSwapInt32LittleToHost(((uint32_t *)data)[i])*C1;
-        k = rol32(k, 15)*C2;
+        k = CFSwapInt32LittleToHost(((uint32_t *)data)[i]) * C1;
+        k = rol32(k, 15) * C2;
         h ^= k;
-        h = rol32(h, 13)*5 + 0xe6546b64;
+        h = rol32(h, 13) * 5 + 0xe6546b64;
     }
-    
+
     k = 0;
-    
-    switch (len & 3) {
-        case 3: k ^= ((uint8_t *)data)[i*4 + 2] << 16; // fall through
-        case 2: k ^= ((uint8_t *)data)[i*4 + 1] << 8; // fall through
-        case 1: k ^= ((uint8_t *)data)[i*4], k *= C1, h ^= rol32(k, 15)*C2;
+
+    switch (len & 3) {                                   //!OCLINT
+        case 3: k ^= ((uint8_t *)data)[i * 4 + 2] << 16; // fall through
+        case 2: k ^= ((uint8_t *)data)[i * 4 + 1] << 8;  // fall through
+        case 1: k ^= ((uint8_t *)data)[i * 4], k *= C1, h ^= rol32(k, 15) * C2;
     }
-    
+
     h ^= len;
     fmix32(h);
     return h;
@@ -77,24 +76,21 @@ static uint32_t murmur3_32(const void *data, size_t len, uint32_t seed)
 
 @implementation DSBloomFilter
 
-+ (instancetype)filterWithMessage:(NSData *)message
-{
++ (instancetype)filterWithMessage:(NSData *)message {
     return [[self alloc] initWithMessage:message];
 }
 
 // a bloom filter that matches everything is useful if a full node wants to use the filtered block protocol, which
 // doesn't send transactions with blocks if the receiving node already received the tx prior to its inclusion in the
 // block, allowing a full node to operate while using about half the network traffic.
-+ (instancetype)filterWithFullMatch
-{
++ (instancetype)filterWithFullMatch {
     return [[self alloc] initWithFullMatch];
 }
 
-- (instancetype)initWithMessage:(NSData *)message
-{
-    if (! (self = [self init])) return nil;
+- (instancetype)initWithMessage:(NSData *)message {
+    if (!(self = [self init])) return nil;
 
-    NSNumber * off = 0;
+    NSNumber *off = 0;
 
     self.filter = [NSMutableData dataWithData:[message dataAtOffset:0 length:&off]];
     self.hashFuncs = [message UInt32AtOffset:off.unsignedIntegerValue];
@@ -105,10 +101,9 @@ static uint32_t murmur3_32(const void *data, size_t len, uint32_t seed)
     return self;
 }
 
-- (instancetype)initWithFullMatch
-{
-    if (! (self = [self init])) return nil;
-    
+- (instancetype)initWithFullMatch {
+    if (!(self = [self init])) return nil;
+
     self.filter = [NSMutableData dataWithBytes:"\xFF" length:1];
     self.hashFuncs = 0;
     _tweak = 0;
@@ -117,41 +112,37 @@ static uint32_t murmur3_32(const void *data, size_t len, uint32_t seed)
 }
 
 - (instancetype)initWithFalsePositiveRate:(double)transactionsBloomFilterFalsePositiveRate forElementCount:(NSUInteger)count tweak:(uint32_t)tweak
-flags:(uint8_t)flags
-{
-    if (! (self = [self init])) return nil;
+                                    flags:(uint8_t)flags {
+    if (!(self = [self init])) return nil;
 
-    NSUInteger length = (transactionsBloomFilterFalsePositiveRate < DBL_EPSILON) ? BLOOM_MAX_FILTER_LENGTH : (-1.0/(M_LN2*M_LN2))*count*log(transactionsBloomFilterFalsePositiveRate)/8.0;
+    NSUInteger length = (transactionsBloomFilterFalsePositiveRate < DBL_EPSILON) ? BLOOM_MAX_FILTER_LENGTH : (-1.0 / (M_LN2 * M_LN2)) * count * log(transactionsBloomFilterFalsePositiveRate) / 8.0;
 
     if (length > BLOOM_MAX_FILTER_LENGTH) length = BLOOM_MAX_FILTER_LENGTH;
     self.filter = [NSMutableData dataWithLength:(length < 1) ? 1 : length];
-    self.hashFuncs = ((self.filter.length*8.0)/count)*M_LN2;
+    self.hashFuncs = ((self.filter.length * 8.0) / count) * M_LN2;
     if (self.hashFuncs > BLOOM_MAX_HASH_FUNCS) self.hashFuncs = BLOOM_MAX_HASH_FUNCS;
     _tweak = tweak;
     _flags = flags;
     return self;
 }
 
-- (uint32_t)hash:(NSData *)data hashNum:(uint32_t)hashNum
-{
-    return murmur3_32(data.bytes, data.length, hashNum*0xfba4c795 + self.tweak) % (self.filter.length*8);
+- (uint32_t)hash:(NSData *)data hashNum:(uint32_t)hashNum {
+    return murmur3_32(data.bytes, data.length, hashNum * 0xfba4c795 + self.tweak) % (self.filter.length * 8);
 }
 
-- (BOOL)containsData:(NSData *)data
-{
+- (BOOL)containsData:(NSData *)data {
     const uint8_t *b = self.filter.bytes;
-    
+
     for (uint32_t i = 0; i < self.hashFuncs; i++) {
         uint32_t idx = [self hash:data hashNum:i];
-        
-        if (! (b[idx >> 3] & (1 << (7 & idx)))) return NO;
+
+        if (!(b[idx >> 3] & (1 << (7 & idx)))) return NO;
     }
 
     return YES;
 }
 
-- (void)insertData:(NSData *)data
-{
+- (void)insertData:(NSData *)data {
     uint8_t *b = self.filter.mutableBytes;
 
     for (uint32_t i = 0; i < self.hashFuncs; i++) {
@@ -163,34 +154,31 @@ flags:(uint8_t)flags
     _elementCount++;
 }
 
-- (void)updateWithTransaction:(DSTransaction *)tx
-{
+- (void)updateWithTransaction:(DSTransaction *)tx {
     NSMutableData *d = [NSMutableData data];
     int n = 0;
 
     for (NSData *script in tx.outputScripts) {
         for (NSData *elem in [script scriptElements]) {
-            if ([elem intValue] > OP_PUSHDATA4 || [elem intValue] == 0 || ! [self containsData:elem]) continue;
+            if ([elem intValue] > OP_PUSHDATA4 || [elem intValue] == 0 || ![self containsData:elem]) continue;
             d.length = 0;
             [d appendBytes:tx.txHash.u8 length:sizeof(UInt256)];
             [d appendUInt32:n];
-            if (! [self containsData:d]) [self insertData:d]; // update bloom filter with matched txout
-            break;
+            if (![self containsData:d]) [self insertData:d]; // update bloom filter with matched txout
+            break;                                           //!OCLINT
         }
 
         n++;
     }
 }
 
-- (double)falsePositiveRate
-{
-    return pow(1 - pow(M_E, -1.0*self.hashFuncs*self.elementCount/(self.filter.length*8.0)), self.hashFuncs);
+- (double)falsePositiveRate {
+    return pow(1 - pow(M_E, -1.0 * self.hashFuncs * self.elementCount / (self.filter.length * 8.0)), self.hashFuncs);
 }
 
-- (NSData *)toData
-{
+- (NSData *)toData {
     NSMutableData *d = [NSMutableData data];
-    
+
     [d appendVarInt:self.length];
     [d appendData:self.filter];
     [d appendUInt32:self.hashFuncs];
@@ -199,7 +187,7 @@ flags:(uint8_t)flags
     return d;
 }
 
-+(NSData *) emptyBloomFilterData {
++ (NSData *)emptyBloomFilterData {
     NSMutableData *d = [NSMutableData data];
     [d appendVarInt:0];
     [d appendUInt32:0];
@@ -208,8 +196,7 @@ flags:(uint8_t)flags
     return d;
 }
 
-- (NSUInteger)length
-{
+- (NSUInteger)length {
     return self.filter.length;
 }
 

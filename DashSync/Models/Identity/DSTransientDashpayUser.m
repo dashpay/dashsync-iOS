@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -19,16 +19,18 @@
 
 @implementation DSTransientDashpayUser
 
--(instancetype)initWithDashpayProfileDocument:(NSDictionary*)profileDocument {
+- (instancetype)initWithDashpayProfileDocument:(NSDictionary *)profileDocument {
     self = [super init];
     if (self) {
-        self.revision = [[profileDocument objectForKey:@"$revision"] intValue];
-        self.avatarPath = [profileDocument objectForKey:@"avatarUrl"];
-        self.publicMessage = [profileDocument objectForKey:@"publicMessage"];
-        self.displayName = [profileDocument objectForKey:@"displayName"];
-        self.createdAt = [[profileDocument objectForKey:@"$createdAt"] unsignedLongValue];
-        self.updatedAt = [[profileDocument objectForKey:@"$updatedAt"] unsignedLongValue];
-        self.documentIdentifier = [profileDocument objectForKey:@"$id"];
+        self.revision = [profileDocument[@"$revision"] intValue];
+        self.avatarPath = profileDocument[@"avatarUrl"];
+        self.avatarFingerprint = profileDocument[@"avatarFingerprint"];
+        self.avatarHash = profileDocument[@"avatarHash"];
+        self.publicMessage = profileDocument[@"publicMessage"];
+        self.displayName = profileDocument[@"displayName"];
+        self.createdAt = [profileDocument[@"$createdAt"] unsignedLongValue];
+        self.updatedAt = [profileDocument[@"$updatedAt"] unsignedLongValue];
+        self.documentIdentifier = profileDocument[@"$id"];
     }
     return self;
 }

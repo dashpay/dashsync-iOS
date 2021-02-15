@@ -31,9 +31,9 @@
 
 @class DSDerivationPath;
 
-@protocol DSKeySequence<NSObject>
+@protocol DSKeySequence <NSObject>
 
-@property (nonatomic,readonly) DSDerivationPath * derivationPath;
+@property (nonatomic, readonly) DSDerivationPath *derivationPath;
 
 @optional
 - (NSData *)deprecatedIncorrectExtendedPublicKeyFromSeed:(NSData *)seed;

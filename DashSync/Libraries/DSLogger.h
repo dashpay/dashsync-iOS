@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -20,12 +20,12 @@
 #import <CocoaLumberjack/CocoaLumberjack.h>
 
 #ifdef DEBUG
-    static const DDLogLevel ddLogLevel = DDLogLevelVerbose;
+static const DDLogLevel ddLogLevel = DDLogLevelVerbose;
 #else
-    static const DDLogLevel ddLogLevel = DDLogLevelInfo;
+static const DDLogLevel ddLogLevel = DDLogLevelInfo;
 #endif /* DEBUG */
 
-#define DSLog(frmt, ...) DDLogInfo(frmt, ##__VA_ARGS__)
+#define DSLog(frmt, ...) DDLogInfo(frmt, ##__VA_ARGS__) //!OCLINT
 
 #ifdef DEBUG
 #define DSLogPrivate(s, ...) DDLogVerbose(s, ##__VA_ARGS__)
@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype)sharedInstance;
 
-- (NSArray <NSURL *> *)logFiles;
+- (NSArray<NSURL *> *)logFiles;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

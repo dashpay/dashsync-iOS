@@ -12,6 +12,6 @@
 
 @interface DSSyncViewController : UITableViewController
 
-@property (nonatomic,strong) DSChainManager * chainManager;
+@property (nonatomic, strong) DSChainManager *chainManager;
 
 @end

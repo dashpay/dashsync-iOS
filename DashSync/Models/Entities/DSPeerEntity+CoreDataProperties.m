@@ -1,6 +1,6 @@
 //
 //  DSPeerEntity+CoreDataProperties.m
-//  
+//
 //
 //  Created by Sam Westrich on 5/20/18.
 //
@@ -27,7 +27,7 @@
 @implementation DSPeerEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSPeerEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSPeerEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSPeerEntity"];
 }
 
 @dynamic address;

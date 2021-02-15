@@ -49,8 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
         self.lastTradePriceNumber = @((lastTradePriceNumberAsks.floatValue + lastTradePriceNumberBids.floatValue) / 2.0);
 
         [self finish];
-    }
-    else {
+    } else {
         [self cancelWithInvalidResponse:response];
     }
 }

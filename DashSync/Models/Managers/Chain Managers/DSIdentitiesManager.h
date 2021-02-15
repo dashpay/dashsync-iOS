@@ -15,8 +15,8 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
 #import "DSChain.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -24,46 +24,53 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DSDAPINetworkServiceRequest;
 
-typedef void (^IdentitiesCompletionBlock)(BOOL success, NSArray <DSBlockchainIdentity*> * _Nullable blockchainIdentities, NSArray<NSError *> * errors);
-typedef void (^IdentityCompletionBlock)(BOOL success, DSBlockchainIdentity* _Nullable blockchainIdentity, NSError * _Nullable error);
-typedef void (^DashpayUserInfoCompletionBlock)(BOOL success, DSTransientDashpayUser* _Nullable dashpayUserInfo, NSError * _Nullable error);
-typedef void (^DashpayUserInfosCompletionBlock)(BOOL success, NSDictionary <NSData*, DSTransientDashpayUser*> * _Nullable dashpayUserInfosByBlockchainIdentityUniqueId, NSError * _Nullable error);
+typedef void (^IdentitiesCompletionBlock)(BOOL success, NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *errors);
+typedef void (^IdentityCompletionBlock)(BOOL success, DSBlockchainIdentity *_Nullable blockchainIdentity, NSError *_Nullable error);
+typedef void (^DashpayUserInfoCompletionBlock)(BOOL success, DSTransientDashpayUser *_Nullable dashpayUserInfo, NSError *_Nullable error);
+typedef void (^DashpayUserInfosCompletionBlock)(BOOL success, NSDictionary<NSData *, DSTransientDashpayUser *> *_Nullable dashpayUserInfosByBlockchainIdentityUniqueId, NSError *_Nullable error);
 
 @interface DSIdentitiesManager : NSObject <DSChainIdentitiesDelegate>
 
-@property (nonatomic, readonly) DSChain * chain;
+@property (nonatomic, readonly) DSChain *chain;
 
-- (instancetype)initWithChain:(DSChain*)chain;
+- (instancetype)initWithChain:(DSChain *)chain;
 
-- (void)registerForeignBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity;
+- (void)registerForeignBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 
-- (DSBlockchainIdentity*)foreignBlockchainIdentityWithUniqueId:(UInt256)uniqueId;
+- (DSBlockchainIdentity *)foreignBlockchainIdentityWithUniqueId:(UInt256)uniqueId;
 
-- (DSBlockchainIdentity*)foreignBlockchainIdentityWithUniqueId:(UInt256)uniqueId createIfMissing:(BOOL)addIfMissing inContext:(NSManagedObjectContext* _Nullable)context;
+- (DSBlockchainIdentity *)foreignBlockchainIdentityWithUniqueId:(UInt256)uniqueId createIfMissing:(BOOL)addIfMissing inContext:(NSManagedObjectContext *_Nullable)context;
 
-- (NSArray*)unsyncedBlockchainIdentities;
+- (NSArray *)unsyncedBlockchainIdentities;
 
 - (void)syncBlockchainIdentitiesWithCompletion:(IdentitiesCompletionBlock)completion;
 
 - (void)retrieveAllBlockchainIdentitiesChainStates;
 
-- (void)checkCreditFundingTransactionForPossibleNewIdentity:(DSCreditFundingTransaction*)creditFundingTransaction;
+- (void)checkCreditFundingTransactionForPossibleNewIdentity:(DSCreditFundingTransaction *)creditFundingTransaction;
 
-- (id<DSDAPINetworkServiceRequest>)searchIdentityByDashpayUsername:(NSString*)name withCompletion:(IdentityCompletionBlock)completion;
+- (id<DSDAPINetworkServiceRequest>)searchIdentityByDashpayUsername:(NSString *)name withCompletion:(IdentityCompletionBlock)completion;
 
-- (id<DSDAPINetworkServiceRequest>)searchIdentityByName:(NSString*)namePrefix inDomain:(NSString*)domain withCompletion:(IdentityCompletionBlock)completion;
+- (id<DSDAPINetworkServiceRequest>)searchIdentityByName:(NSString *)namePrefix inDomain:(NSString *)domain withCompletion:(IdentityCompletionBlock)completion;
 
-- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByDashpayUsernamePrefix:(NSString*)namePrefix queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo withCompletion:(IdentitiesCompletionBlock)completion;
+- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo withCompletion:(IdentitiesCompletionBlock)completion;
 
-- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByDashpayUsernamePrefix:(NSString*)namePrefix offset:(uint32_t)offset limit:(uint32_t)limit queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo withCompletion:(IdentitiesCompletionBlock)completion;
+- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByDashpayUsernamePrefix:(NSString *)namePrefix offset:(uint32_t)offset limit:(uint32_t)limit queryDashpayProfileInfo:(BOOL)queryDashpayProfileInfo withCompletion:(IdentitiesCompletionBlock)completion;
 
-- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByNamePrefix:(NSString*)namePrefix inDomain:(NSString*)domain offset:(uint32_t)offset limit:(uint32_t)limit withCompletion:(IdentitiesCompletionBlock)completion;
+- (id<DSDAPINetworkServiceRequest>)searchIdentitiesByNamePrefix:(NSString *)namePrefix inDomain:(NSString *)domain offset:(uint32_t)offset limit:(uint32_t)limit withCompletion:(IdentitiesCompletionBlock)completion;
 
-- (id<DSDAPINetworkServiceRequest>)fetchProfileForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity withCompletion:(DashpayUserInfoCompletionBlock)completion;
+- (id<DSDAPINetworkServiceRequest>)fetchProfileForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity withCompletion:(DashpayUserInfoCompletionBlock)completion onCompletionQueue:(dispatch_queue_t)completionQueue;
+
+- (id<DSDAPINetworkServiceRequest>)fetchProfileForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity
+                                                          retryCount:(uint32_t)retryCount
+                                                               delay:(uint32_t)delay
+                                                       delayIncrease:(uint32_t)delayIncrease
+                                                      withCompletion:(DashpayUserInfoCompletionBlock)completion
+                                                   onCompletionQueue:(dispatch_queue_t)completionQueue;
 
 - (id<DSDAPINetworkServiceRequest>)fetchProfilesForBlockchainIdentities:(NSArray<DSBlockchainIdentity *> *)blockchainIdentities withCompletion:(DashpayUserInfosCompletionBlock)completion;
 
-- (void)searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID:(NSData*)userID withCompletion:(IdentitiesCompletionBlock)completion;
+- (void)searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID:(NSData *)userID withCompletion:(IdentitiesCompletionBlock)completion;
 
 @end
 

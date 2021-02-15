@@ -11,7 +11,7 @@
 @implementation DSSimplifiedMasternodeEntryEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSSimplifiedMasternodeEntryEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSSimplifiedMasternodeEntryEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSSimplifiedMasternodeEntryEntity"];
 }
 
 @dynamic address;
@@ -33,5 +33,11 @@
 @dynamic ipv6Address;
 @dynamic updateHeight;
 @dynamic knownConfirmedAtHeight;
+@dynamic platformPingDate;
+@dynamic platformPing;
+@dynamic coreVersion;
+@dynamic coreProtocol;
+@dynamic coreLastConnectionDate;
+@dynamic platformVersion;
 
 @end

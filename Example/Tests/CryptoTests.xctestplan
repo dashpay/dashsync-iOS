@@ -1,0 +1,75 @@
+{
+  "configurations" : [
+    {
+      "id" : "FACFDED6-87E0-4C3B-9A70-FDDF32712542",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false,
+    "commandLineArgumentEntries" : [
+      {
+        "argument" : "-com.apple.CoreData.SQLDebug 1",
+        "enabled" : false
+      },
+      {
+        "argument" : "-com.apple.CoreData.ConcurrencyDebug 1",
+        "enabled" : false
+      }
+    ],
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:DashSync.xcodeproj",
+      "identifier" : "6003F589195388D20070C39A",
+      "name" : "DashSync_Example"
+    },
+    "uiTestingScreenshotsLifetime" : "keepNever"
+  },
+  "testTargets" : [
+    {
+      "skippedTests" : [
+        "DSAttackTests",
+        "DSBloomFilterTests",
+        "DSChainLockTests",
+        "DSChainTests",
+        "DSDIP13Tests",
+        "DSDataTests",
+        "DSDeterministicMasternodeListTests",
+        "DSDeterministicMasternodeListTests\/testMNLSavingAndRetrievingFromDisk",
+        "DSDeterministicMasternodeListTests\/testMNLSavingToDisk",
+        "DSDeterministicMasternodeListTests\/testMainnetMasternodeSaving",
+        "DSDeterministicMasternodeListTests\/testSimplifiedMasternodeEntriesDeletion",
+        "DSGovernanceTests",
+        "DSInstantSendLockTests",
+        "DSMainnetE2ETests",
+        "DSMainnetMetricSyncTests",
+        "DSMainnetSyncTests",
+        "DSMiningTests",
+        "DSPaymentProtocolTests",
+        "DSPaymentRequestTests",
+        "DSProviderTransactionsTests",
+        "DSSparseMerkleTreeTests",
+        "DSSyncTests",
+        "DSSyncTests\/testFullSync",
+        "DSSyncTests\/testInitialHeadersSync2000",
+        "DSTestnetE2ETests",
+        "DSTestnetMetricSyncTests",
+        "DSTestnetSyncTests",
+        "DSTransactionTests",
+        "DSTransitionTests",
+        "DSUInt256IndexPathTests",
+        "DSWalletTests",
+        "MDCDamerauLevenshteinDistanceTests",
+        "MDCLevenshteinDistanceTests"
+      ],
+      "target" : {
+        "containerPath" : "container:DashSync.xcodeproj",
+        "identifier" : "6003F5AD195388D20070C39A",
+        "name" : "DashSync_Tests"
+      }
+    }
+  ],
+  "version" : 1
+}

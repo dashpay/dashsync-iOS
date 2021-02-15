@@ -34,7 +34,7 @@ NSString *const DSHTTPOperationErrorDomain = @"DSHTTPOperation.error";
 
 - (instancetype)initWithRequest:(HTTPRequest *)request {
     NSParameterAssert(request);
-    
+
     self = [super init];
     if (self) {
         _request = request;
@@ -45,21 +45,21 @@ NSString *const DSHTTPOperationErrorDomain = @"DSHTTPOperation.error";
 - (void)execute {
     __weak typeof(self) weakSelf = self;
     HTTPLoaderManager *loaderManager = [DSNetworkingCoordinator sharedInstance].loaderManager;
-    self.loaderOperation = [loaderManager sendRequest:self.request completion:^(id _Nullable parsedData, NSDictionary *_Nullable responseHeaders, NSInteger statusCode, NSError *_Nullable error) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
-        
-        strongSelf.loaderOperation = nil;
+    self.loaderOperation = [loaderManager sendRequest:self.request
+                                           completion:^(id _Nullable parsedData, NSDictionary *_Nullable responseHeaders, NSInteger statusCode, NSError *_Nullable error) {
+                                               __strong typeof(weakSelf) strongSelf = weakSelf;
+                                               if (!strongSelf) {
+                                                   return;
+                                               }
 
-        if (error) {
-            [strongSelf cancelWithError:error];
-        }
-        else {
-            [strongSelf processSuccessResponse:parsedData responseHeaders:responseHeaders statusCode:statusCode];
-        }
-    }];
+                                               strongSelf.loaderOperation = nil;
+
+                                               if (error) {
+                                                   [strongSelf cancelWithError:error];
+                                               } else {
+                                                   [strongSelf processSuccessResponse:parsedData responseHeaders:responseHeaders statusCode:statusCode];
+                                               }
+                                           }];
 }
 
 - (void)cancel {
@@ -79,7 +79,7 @@ NSString *const DSHTTPOperationErrorDomain = @"DSHTTPOperation.error";
     NSParameterAssert(responseData);
     NSError *error = [NSError errorWithDomain:DSHTTPOperationErrorDomain
                                          code:DSHTTPOperationErrorCodeInvalidResponse
-                                     userInfo:@{NSDebugDescriptionErrorKey : responseData}];
+                                     userInfo:@{NSDebugDescriptionErrorKey: responseData}];
     [self cancelWithError:error];
 }
 

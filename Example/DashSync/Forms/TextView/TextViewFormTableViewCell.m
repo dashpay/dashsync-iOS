@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -32,26 +32,29 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    
+
     self.textView.textContainerInset = UIEdgeInsetsZero;
     self.textView.textContainer.lineFragmentPadding = 0.0;
-    
-    [self mvvm_observe:@"cellModel.title" with:^(typeof(self) self, NSString * value) {
-        self.titleLabel.text = value;
-    }];
-    
-    [self mvvm_observe:@"cellModel.placeholder" with:^(typeof(self) self, NSString * value) {
-        self.textView.placeholderText = value;
-    }];
-    
-    [self mvvm_observe:@"cellModel.text" with:^(typeof(self) self, NSString * value) {
-        self.textView.text = value;
-    }];
+
+    [self mvvm_observe:@"cellModel.title"
+                  with:^(typeof(self) self, NSString *value) {
+                      self.titleLabel.text = value;
+                  }];
+
+    [self mvvm_observe:@"cellModel.placeholder"
+                  with:^(typeof(self) self, NSString *value) {
+                      self.textView.placeholderText = value;
+                  }];
+
+    [self mvvm_observe:@"cellModel.text"
+                  with:^(typeof(self) self, NSString *value) {
+                      self.textView.text = value;
+                  }];
 }
 
 - (void)setCellModel:(nullable TextViewFormCellModel *)cellModel {
     _cellModel = cellModel;
-    
+
     self.textView.autocapitalizationType = cellModel.autocapitalizationType;
     self.textView.autocorrectionType = cellModel.autocorrectionType;
     self.textView.keyboardType = cellModel.keyboardType;
@@ -73,12 +76,12 @@ NS_ASSUME_NONNULL_BEGIN
     if (!allowed) {
         return NO;
     }
-    
+
     self.cellModel.text = [textView.text stringByReplacingCharactersInRange:range withString:text];
     if (self.cellModel.didChangeValueBlock) {
         self.cellModel.didChangeValueBlock(self.cellModel);
     }
-    
+
     return NO;
 }
 

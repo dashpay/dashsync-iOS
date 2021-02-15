@@ -17,9 +17,9 @@
 
 #import "DSCompatibilityArrayValueTransformer.h"
 
-@interface DSCompatibilityArrayValueTransformer()
+@interface DSCompatibilityArrayValueTransformer ()
 
-@property(nonatomic,strong) id decodedObject;
+@property (nonatomic, strong) id decodedObject;
 
 @end
 
@@ -59,7 +59,7 @@
     NSAssert([value isKindOfClass:NSData.class], @"invalid");
     if (@available(iOS 11.0, *)) {
         NSError *error = nil;
-        NSKeyedUnarchiver * unarchiver = [[NSKeyedUnarchiver alloc] initForReadingFromData:value error:&error];
+        NSKeyedUnarchiver *unarchiver = [[NSKeyedUnarchiver alloc] initForReadingFromData:value error:&error];
         unarchiver.requiresSecureCoding = FALSE;
         unarchiver.delegate = self;
         [unarchiver finishDecoding];

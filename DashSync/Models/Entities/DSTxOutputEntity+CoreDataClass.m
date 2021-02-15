@@ -1,6 +1,6 @@
 //
 //  DSTxOutputEntity+CoreDataClass.m
-//  
+//
 //
 //  Created by Sam Westrich on 5/20/18.
 //
@@ -22,23 +22,22 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSTxOutputEntity+CoreDataClass.h"
+#import "DSAddressEntity+CoreDataClass.h"
+#import "DSChain+Protected.h"
+#import "DSChainEntity+CoreDataClass.h"
+#import "DSDerivationPathEntity+CoreDataClass.h"
+#import "DSTransaction.h"
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
-#import "DSAddressEntity+CoreDataClass.h"
-#import "DSTransaction.h"
+#import "DSTxOutputEntity+CoreDataClass.h"
 #import "NSData+Bitcoin.h"
-#import "DSChainEntity+CoreDataClass.h"
-#import "DSChain+Protected.h"
 #import "NSManagedObject+Sugar.h"
-#import "DSDerivationPathEntity+CoreDataClass.h"
 
 @implementation DSTxOutputEntity
 
-- (instancetype)setAttributesFromTransaction:(DSTransaction *)transaction outputIndex:(NSUInteger)index forTransactionEntity:(DSTransactionEntity*)transactionEntity
-{
+- (instancetype)setAttributesFromTransaction:(DSTransaction *)transaction outputIndex:(NSUInteger)index forTransactionEntity:(DSTransactionEntity *)transactionEntity {
     UInt256 txHash = transaction.txHash;
-    
+
     self.txHash = [NSData dataWithBytes:&txHash length:sizeof(txHash)];
     self.n = (int32_t)index;
     self.address = (transaction.outputAddresses[index] == [NSNull null]) ? nil : transaction.outputAddresses[index];
@@ -47,11 +46,11 @@
     self.shapeshiftOutboundAddress = [DSTransaction shapeshiftOutboundAddressForScript:self.script];
     self.transaction = transactionEntity;
     if (self.address) {
-        DSChainEntity * chainEntity = transactionEntity.transactionHash.chain;
-        NSArray * addressEntities = [DSAddressEntity objectsInContext:transactionEntity.managedObjectContext matching:@"address == %@ && derivationPath.chain == %@",self.address,chainEntity?chainEntity:[transaction.chain chainEntityInContext:transactionEntity.managedObjectContext]];
+        DSChainEntity *chainEntity = transactionEntity.transactionHash.chain;
+        NSArray *addressEntities = [DSAddressEntity objectsInContext:transactionEntity.managedObjectContext matching:@"address == %@ && derivationPath.chain == %@", self.address, chainEntity ? chainEntity : [transaction.chain chainEntityInContext:transactionEntity.managedObjectContext]];
         if ([addressEntities count]) {
             NSAssert([addressEntities count] == 1, @"addresses should not be duplicates");
-            self.localAddress = [addressEntities objectAtIndex:0];
+            self.localAddress = addressEntities[0];
             self.account = self.localAddress.derivationPath.account; //this is to make the outputs easily accessible for an account
         }
     } else {

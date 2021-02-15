@@ -12,9 +12,9 @@
 
 @interface DSAddDevnetViewController : UITableViewController <UITextFieldDelegate>
 
-@property (nonatomic,strong) DSChain * chain;
+@property (nonatomic, strong) DSChain *chain;
 
--(IBAction)save;
--(IBAction)cancel;
+- (IBAction)save;
+- (IBAction)cancel;
 
 @end

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -51,34 +51,31 @@
     NSMutableArray<BaseFormCellModel *> *items = [NSMutableArray array];
 
     DSErrorSimulationManager *options = [DSErrorSimulationManager sharedInstance];
-    
+
     NumberTextFieldFormCellModel *l1DisconnectionFrequencyCellModel = [[NumberTextFieldFormCellModel alloc] initWithTitle:@"Disconnection Frequency"
-                                                                                                placeholder:@"Frequency"];
+                                                                                                              placeholder:@"Frequency"];
 
     l1DisconnectionFrequencyCellModel.text = [NSString stringWithFormat:@"%u", options.peerRandomDisconnectionFrequency];
     l1DisconnectionFrequencyCellModel.didReturnValueBlock = ^(TextFieldFormCellModel *_Nonnull cellModel) {
         options.peerRandomDisconnectionFrequency = (uint32_t)cellModel.text.longLongValue;
-        
     };
     [items addObject:l1DisconnectionFrequencyCellModel];
-    
+
     NumberTextFieldFormCellModel *l1ByzantineOmissionCellModel = [[NumberTextFieldFormCellModel alloc] initWithTitle:@"Byzantine Omission Frequency"
-                                                                                                placeholder:@"Frequency"];
+                                                                                                         placeholder:@"Frequency"];
 
     l1ByzantineOmissionCellModel.text = [NSString stringWithFormat:@"%u", options.peerByzantineTransactionOmissionFrequency];
     l1ByzantineOmissionCellModel.didReturnValueBlock = ^(TextFieldFormCellModel *_Nonnull cellModel) {
         options.peerByzantineTransactionOmissionFrequency = (uint32_t)cellModel.text.longLongValue;
-        
     };
     [items addObject:l1ByzantineOmissionCellModel];
-    
+
     NumberTextFieldFormCellModel *l1ByzantineReportingHigherEstimatedBlockHeightFrequencyCellModel = [[NumberTextFieldFormCellModel alloc] initWithTitle:@"Higher Est. Block Height Frequency"
-                                                                                                placeholder:@"Frequency"];
+                                                                                                                                             placeholder:@"Frequency"];
 
     l1ByzantineReportingHigherEstimatedBlockHeightFrequencyCellModel.text = [NSString stringWithFormat:@"%u", options.peerByzantineReportingHigherEstimatedBlockHeightFrequency];
     l1ByzantineReportingHigherEstimatedBlockHeightFrequencyCellModel.didReturnValueBlock = ^(TextFieldFormCellModel *_Nonnull cellModel) {
         options.peerByzantineReportingHigherEstimatedBlockHeightFrequency = (uint32_t)cellModel.text.longLongValue;
-        
     };
     [items addObject:l1ByzantineReportingHigherEstimatedBlockHeightFrequencyCellModel];
 

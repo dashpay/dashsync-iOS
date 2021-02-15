@@ -42,8 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
         self.btcDashPrice = btcDashPrice;
 
         [self finish];
-    }
-    else {
+    } else {
         [self cancelWithInvalidResponse:response];
     }
 }

@@ -203,8 +203,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)requestOperationHandler:(id<HTTPRequestOperationHandler>)requestOperationHandler
-                  cancelRequest:(HTTPRequest *)request
-  producingResumeDataCompletion:(nonnull void (^)(NSData *_Nullable))completionHandler {
+                    cancelRequest:(HTTPRequest *)request
+    producingResumeDataCompletion:(nonnull void (^)(NSData *_Nullable))completionHandler {
     [self.requestOperationHandlerDelegate requestOperationHandler:requestOperationHandler
                                                     cancelRequest:request
                                     producingResumeDataCompletion:completionHandler];

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -31,14 +31,14 @@
 #define TESTNET_DAPI_GRPC_STANDARD_PORT 3010
 #define DEVNET_DAPI_GRPC_STANDARD_PORT 3010
 
-#define PROTOCOL_VERSION_MAINNET   70218
-#define DEFAULT_MIN_PROTOCOL_VERSION_MAINNET  70218
+#define PROTOCOL_VERSION_MAINNET 70218
+#define DEFAULT_MIN_PROTOCOL_VERSION_MAINNET 70218
 
-#define PROTOCOL_VERSION_TESTNET   70218
-#define DEFAULT_MIN_PROTOCOL_VERSION_TESTNET  70218
+#define PROTOCOL_VERSION_TESTNET 70218
+#define DEFAULT_MIN_PROTOCOL_VERSION_TESTNET 70218
 
-#define PROTOCOL_VERSION_DEVNET   70218
-#define DEFAULT_MIN_PROTOCOL_VERSION_DEVNET  70216
+#define PROTOCOL_VERSION_DEVNET 70218
+#define DEFAULT_MIN_PROTOCOL_VERSION_DEVNET 70216
 
 #define MAX_VALID_MIN_PROTOCOL_VERSION 70218
 #define MIN_VALID_MIN_PROTOCOL_VERSION 70215
@@ -47,11 +47,11 @@
 #define DASH_MAGIC_NUMBER_MAINNET 0xbd6b0cbf
 #define DASH_MAGIC_NUMBER_DEVNET 0xceffcae2
 
-#define MAX_TARGET_PROOF_OF_WORK_MAINNET 0x1e0fffffu   // highest value for difficulty target (higher values are less difficult)
+#define MAX_TARGET_PROOF_OF_WORK_MAINNET 0x1e0fffffu // highest value for difficulty target (higher values are less difficult)
 #define MAX_TARGET_PROOF_OF_WORK_TESTNET 0x1e0fffffu
 #define MAX_TARGET_PROOF_OF_WORK_DEVNET 0x207fffffu
 
-#define MAX_PROOF_OF_WORK_MAINNET @"00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff".hexToData.reverse.UInt256  // highest value for difficulty target (higher values are less difficult)
+#define MAX_PROOF_OF_WORK_MAINNET @"00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff".hexToData.reverse.UInt256 // highest value for difficulty target (higher values are less difficult)
 #define MAX_PROOF_OF_WORK_TESTNET @"00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff".hexToData.reverse.UInt256
 #define MAX_PROOF_OF_WORK_DEVNET @"7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff".hexToData.reverse.UInt256
 
@@ -66,12 +66,12 @@
 #define MAINNET_DASHPAY_CONTRACT_ID @""
 #define MAINNET_DPNS_CONTRACT_ID @""
 
-#define TESTNET_DASHPAY_CONTRACT_ID @""
-#define TESTNET_DPNS_CONTRACT_ID @""
+#define TESTNET_DASHPAY_CONTRACT_ID @"2DAncD4YTjfhSQZYrsQ659xbM7M5dNEkyfBEAg9SsS3W"
+#define TESTNET_DPNS_CONTRACT_ID @"36ez8VqoDbR8NkdXwFaf9Tp8ukBdQxN8eYs8JNMnUyKz"
 
 
 #define DEFAULT_FEE_PER_B TX_FEE_PER_B
-#define MIN_FEE_PER_B     TX_FEE_PER_B // minimum relay fee on a 191byte tx
-#define MAX_FEE_PER_B     1000 // slightly higher than a 1000bit fee on a 191byte tx
+#define MIN_FEE_PER_B TX_FEE_PER_B // minimum relay fee on a 191byte tx
+#define MAX_FEE_PER_B 1000         // slightly higher than a 1000bit fee on a 191byte tx
 
-#define HEADER_WINDOW_BUFFER_TIME (WEEK_TIME_INTERVAL/2) //This is about the time if we consider a block every 10 mins (for 500 blocks)
+#define HEADER_WINDOW_BUFFER_TIME (WEEK_TIME_INTERVAL / 2) //This is about the time if we consider a block every 10 mins (for 500 blocks)

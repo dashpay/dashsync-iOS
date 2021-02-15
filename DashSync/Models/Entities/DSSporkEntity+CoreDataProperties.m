@@ -11,7 +11,7 @@
 @implementation DSSporkEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSSporkEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSSporkEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSSporkEntity"];
 }
 
 @dynamic identifier;

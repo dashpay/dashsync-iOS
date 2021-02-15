@@ -6,8 +6,8 @@
 //
 //
 
-#import "NSString+MDCLevenshteinDistance.h"
 #import "MDCLevenshteinDistance.h"
+#import "NSString+MDCLevenshteinDistance.h"
 
 @implementation NSString (MDCLevenshteinDistance)
 

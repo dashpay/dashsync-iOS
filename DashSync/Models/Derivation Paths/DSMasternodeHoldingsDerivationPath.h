@@ -12,9 +12,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMasternodeHoldingsDerivationPath : DSSimpleIndexedDerivationPath
 
-+ (instancetype)providerFundsDerivationPathForWallet:(DSWallet*)wallet;
++ (instancetype)providerFundsDerivationPathForWallet:(DSWallet *)wallet;
 
-- (NSString*)receiveAddress;
+- (NSString *)receiveAddress;
 
 - (void)signTransaction:(DSTransaction *)transaction withPrompt:(NSString *)authprompt completion:(TransactionValidityCompletionBlock)completion;
 

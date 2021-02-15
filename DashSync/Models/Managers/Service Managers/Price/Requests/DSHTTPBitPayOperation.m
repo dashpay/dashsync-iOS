@@ -49,7 +49,6 @@ NS_ASSUME_NONNULL_BEGIN
     if (![testPrice isKindOfClass:NSDictionary.class] ||
         ![testPrice[@"code"] isKindOfClass:NSString.class] ||
         ![testPrice[@"rate"] isKindOfClass:NSNumber.class]) {
-
         [self cancelWithInvalidResponse:response];
 
         return;

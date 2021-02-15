@@ -7,21 +7,21 @@
 //
 
 #import "DSAccountEntity+CoreDataClass.h"
-#import "NSManagedObject+Sugar.h"
 #import "DSChain.h"
+#import "NSManagedObject+Sugar.h"
 
 @implementation DSAccountEntity
 
-+ (DSAccountEntity* _Nonnull)accountEntityForWalletUniqueID:(NSString*)walletUniqueID index:(uint32_t)index onChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context {
++ (DSAccountEntity *_Nonnull)accountEntityForWalletUniqueID:(NSString *)walletUniqueID index:(uint32_t)index onChain:(DSChain *)chain inContext:(NSManagedObjectContext *)context {
     NSParameterAssert(walletUniqueID);
     NSParameterAssert(chain);
     NSParameterAssert(context);
-    NSArray * accounts = [DSAccountEntity objectsInContext:context matching:@"walletUniqueID = %@ && index = %@",walletUniqueID,@(index)];
+    NSArray *accounts = [DSAccountEntity objectsInContext:context matching:@"walletUniqueID = %@ && index = %@", walletUniqueID, @(index)];
     if ([accounts count]) {
         NSAssert([accounts count] == 1, @"There can only be one account per index per wallet");
-        return [accounts objectAtIndex:0];
+        return accounts[0];
     }
-    DSAccountEntity * accountEntity = [DSAccountEntity managedObjectInBlockedContext:context];
+    DSAccountEntity *accountEntity = [DSAccountEntity managedObjectInBlockedContext:context];
     accountEntity.walletUniqueID = walletUniqueID;
     accountEntity.index = index;
     accountEntity.chain = [chain chainEntityInContext:context];

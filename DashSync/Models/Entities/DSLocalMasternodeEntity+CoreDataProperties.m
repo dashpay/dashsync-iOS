@@ -11,7 +11,7 @@
 @implementation DSLocalMasternodeEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSLocalMasternodeEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSLocalMasternodeEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSLocalMasternodeEntity"];
 }
 
 @dynamic holdingKeysIndex;

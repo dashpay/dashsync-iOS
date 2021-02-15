@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -22,22 +22,22 @@
 - (BOOL)createDestinationInstancesForSourceInstance:(NSManagedObject *)sInstance
                                       entityMapping:(NSEntityMapping *)mapping
                                             manager:(NSMigrationManager *)manager
-                                              error:(NSError *__autoreleasing  _Nullable *)error {
-    DSLog(@"Deleting Instance %@",sInstance);
+                                              error:(NSError *__autoreleasing _Nullable *)error {
+    DSLog(@"Deleting Instance %@", sInstance);
     return YES;
 }
 
 - (BOOL)createRelationshipsForDestinationInstance:(NSManagedObject *)dInstance
                                     entityMapping:(NSEntityMapping *)mapping
                                           manager:(NSMigrationManager *)manager
-                                            error:(NSError *__autoreleasing  _Nullable *)error {
-    DSLog(@"Deleting relationships on %@",dInstance);
+                                            error:(NSError *__autoreleasing _Nullable *)error {
+    DSLog(@"Deleting relationships on %@", dInstance);
     return YES;
 }
 
 - (BOOL)performCustomValidationForEntityMapping:(NSEntityMapping *)mapping
                                         manager:(NSMigrationManager *)manager
-                                          error:(NSError *__autoreleasing  _Nullable *)error {
+                                          error:(NSError *__autoreleasing _Nullable *)error {
     return YES;
 }
 

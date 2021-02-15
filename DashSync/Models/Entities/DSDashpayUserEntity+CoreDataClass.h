@@ -15,35 +15,51 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
 #import "BigIntTypes.h"
 #import "DSPotentialOneWayFriendship.h"
+#import "DSTransactionManager.h"
+#import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
-typedef NS_ENUM(NSUInteger, DSDashpayUserEntityFriendActivityType) {
+typedef NS_ENUM(NSUInteger, DSDashpayUserEntityFriendActivityType)
+{
     DSDashpayUserEntityFriendActivityType_IncomingTransactions,
     DSDashpayUserEntityFriendActivityType_OutgoingTransactions
 };
 
-@class DSAccountEntity, DSFriendRequestEntity, DSTransitionEntity, DSTransientDashpayUser, DSBlockchainIdentity,DSPotentialOneWayFriendship,DSWallet,DSIncomingFundsDerivationPath,DSChainEntity, DSBlockchainIdentityEntity, DPDocument;
+@class DSAccountEntity, DSFriendRequestEntity, DSTransitionEntity, DSTransientDashpayUser, DSBlockchainIdentity, DSPotentialOneWayFriendship, DSWallet, DSIncomingFundsDerivationPath, DSChainEntity, DSBlockchainIdentityEntity, DPDocument;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSDashpayUserEntity : NSManagedObject
 
-@property (nonatomic,readonly) NSString * username;
+@property (nonatomic, readonly) NSString *username;
 
-+(void)deleteContactsOnChainEntity:(DSChainEntity*)chainEntity;
++ (void)deleteContactsOnChainEntity:(DSChainEntity *)chainEntity;
 
 //-(DPDocument*)profileDocument;
 
 //-(DPDocument*)contactRequestDocument;
 
--(NSArray<DSDashpayUserEntity*>*)mostActiveFriends:(DSDashpayUserEntityFriendActivityType)activityType count:(NSUInteger)count ascending:(BOOL)ascending;
+- (NSArray<DSDashpayUserEntity *> *)mostActiveFriends:(DSDashpayUserEntityFriendActivityType)activityType count:(NSUInteger)count ascending:(BOOL)ascending;
 
--(NSDictionary<NSData*,NSNumber*>*)friendsWithActivityForType:(DSDashpayUserEntityFriendActivityType)activityType count:(NSUInteger)count ascending:(BOOL)ascending;
+- (NSDictionary<NSData *, NSNumber *> *)friendsWithActivityForType:(DSDashpayUserEntityFriendActivityType)activityType count:(NSUInteger)count ascending:(BOOL)ascending;
 
--(NSError*)applyTransientDashpayUser:(DSTransientDashpayUser*)transientDashpayUser save:(BOOL)save;
+- (NSError *)applyTransientDashpayUser:(DSTransientDashpayUser *)transientDashpayUser save:(BOOL)save;
+
+- (void)sendAmount:(uint64_t)amount fromAccount:(DSAccount *)account toFriendWithIdentityIdentifier:(UInt256)identityIdentifier requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest
+                  presentChallenge:(DSTransactionChallengeBlock)challenge
+     transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion
+                  signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion
+               publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion
+            errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock;
+
+- (void)sendAmount:(uint64_t)amount fromAccount:(DSAccount *)account toFriend:(DSDashpayUserEntity *)friend requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest
+                 presentChallenge:(DSTransactionChallengeBlock)challenge
+    transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion
+                 signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion
+              publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion
+           errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock;
 
 @end
 

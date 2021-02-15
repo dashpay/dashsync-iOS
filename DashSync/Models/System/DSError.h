@@ -21,10 +21,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 extern NSErrorDomain const DSErrorDomain;
 
-NS_ERROR_ENUM(DSErrorDomain) {
+NS_ERROR_ENUM(DSErrorDomain){
     DSErrorInsufficientFunds = 1000,
     DSErrorInsufficientFundsForNetworkFee = 1001,
-    
+
     DSErrorPaymentRequestExpired = 1002,
     DSErrorPaymentAmountLessThenMinOutputAmount = 1003,
     DSErrorPaymentTransactionOutputTooSmall = 1004,

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -15,25 +15,25 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSDataController : NSObject
 
-@property (nonatomic, readonly) NSManagedObjectContext * viewContext;
-@property (nonatomic, readonly) NSManagedObjectContext * peerContext;
-@property (nonatomic, readonly) NSManagedObjectContext * chainContext;
-@property (nonatomic, readonly) NSManagedObjectContext * platformContext;
+@property (nonatomic, readonly) NSManagedObjectContext *viewContext;
+@property (nonatomic, readonly) NSManagedObjectContext *peerContext;
+@property (nonatomic, readonly) NSManagedObjectContext *chainContext;
+@property (nonatomic, readonly) NSManagedObjectContext *platformContext;
 
 + (instancetype)sharedInstance;
 
 // returns the location on disk of the sqlite store file
-+ (NSURL*)storeURL;
-+ (NSURL*)storeWALURL;
-+ (NSURL*)storeSHMURL;
- 
++ (NSURL *)storeURL;
++ (NSURL *)storeWALURL;
++ (NSURL *)storeSHMURL;
+
 @end
 
 NS_ASSUME_NONNULL_END

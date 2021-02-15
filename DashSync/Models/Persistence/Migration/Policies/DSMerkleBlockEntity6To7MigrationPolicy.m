@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -17,26 +17,26 @@
 
 #import "DSMerkleBlockEntity6To7MigrationPolicy.h"
 
-#import "DSChainCheckpoints.h"
 #import "DSChain.h"
+#import "DSChainCheckpoints.h"
+#import "DSChainEntity+CoreDataClass.h"
 #import "DSCheckpoint.h"
-#import "NSData+Bitcoin.h"
 #import "DSMerkleBlock.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
-#import "DSChainEntity+CoreDataClass.h"
+#import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 
 @interface DSChain (DSMigrationHelper)
 
-+ (NSMutableArray *)createCheckpointsArrayFromCheckpoints:(checkpoint*)checkpoints count:(NSUInteger)checkpointCount;
++ (NSMutableArray *)createCheckpointsArrayFromCheckpoints:(checkpoint *)checkpoints count:(NSUInteger)checkpointCount;
 
 @end
 
 @interface DSMerkleBlockEntity6To7MigrationPolicyStorage : NSObject
 
-@property (nonatomic, copy) NSDictionary <NSNumber *, DSCheckpoint *> *checkpoints;
-@property (nonatomic, copy) NSArray <DSCheckpoint *> *checkpointsArray;
-@property (nonatomic, strong) DSMerkleBlock * lastKnownSourceBlockWithCheckpoint;
+@property (nonatomic, copy) NSDictionary<NSNumber *, DSCheckpoint *> *checkpoints;
+@property (nonatomic, copy) NSArray<DSCheckpoint *> *checkpointsArray;
+@property (nonatomic, strong) DSMerkleBlock *lastKnownSourceBlockWithCheckpoint;
 @property (nonatomic, assign) uint32_t lastKnownSourceBlockHeight;
 
 @end
@@ -56,20 +56,20 @@
 
 @interface DSMerkleBlockEntity6To7MigrationPolicy ()
 
-@property (nonatomic, copy) NSDictionary <NSNumber *, DSCheckpoint *> *checkpoints;
-@property (nonatomic, copy) NSArray <DSCheckpoint *> *checkpointsArray;
-@property (nonatomic, strong) DSMerkleBlock * lastKnownSourceBlockWithCheckpoint;
+@property (nonatomic, copy) NSDictionary<NSNumber *, DSCheckpoint *> *checkpoints;
+@property (nonatomic, copy) NSArray<DSCheckpoint *> *checkpointsArray;
+@property (nonatomic, strong) DSMerkleBlock *lastKnownSourceBlockWithCheckpoint;
 @property (nonatomic, assign) uint32_t lastKnownSourceBlockHeight;
 
 @end
 
 @implementation DSMerkleBlockEntity6To7MigrationPolicy
 
-- (NSDictionary<NSNumber *,DSCheckpoint *> *)checkpoints {
+- (NSDictionary<NSNumber *, DSCheckpoint *> *)checkpoints {
     return [DSMerkleBlockEntity6To7MigrationPolicyStorage sharedInstance].checkpoints;
 }
 
-- (void)setCheckpoints:(NSDictionary<NSNumber *,DSCheckpoint *> *)checkpoints {
+- (void)setCheckpoints:(NSDictionary<NSNumber *, DSCheckpoint *> *)checkpoints {
     [DSMerkleBlockEntity6To7MigrationPolicyStorage sharedInstance].checkpoints = checkpoints;
 }
 
@@ -98,7 +98,7 @@
 }
 
 
--(DSCheckpoint*)lastMainnetCheckpointOnOrBeforeHeight:(uint32_t)height {
+- (DSCheckpoint *)lastMainnetCheckpointOnOrBeforeHeight:(uint32_t)height {
     NSUInteger genesisHeight = 0;
     // if we don't have any blocks yet, use the latest checkpoint that's at least a week older than earliestKeyTime
     for (long i = self.checkpointsArray.count - 1; i >= genesisHeight; i--) {
@@ -111,10 +111,10 @@
 
 - (BOOL)beginEntityMapping:(NSEntityMapping *)mapping manager:(NSMigrationManager *)manager error:(NSError **)error {
     BOOL result = [super beginEntityMapping:mapping manager:manager error:error];
-    NSUInteger count = (sizeof(mainnet_checkpoint_array)/sizeof(*mainnet_checkpoint_array));
-    NSArray <DSCheckpoint *> *checkpointsArray = [DSChain createCheckpointsArrayFromCheckpoints:mainnet_checkpoint_array
-                                                                count:count];
-    NSMutableDictionary <NSNumber *, DSCheckpoint *> *checkpoints = [NSMutableDictionary dictionary];
+    NSUInteger count = (sizeof(mainnet_checkpoint_array) / sizeof(*mainnet_checkpoint_array));
+    NSArray<DSCheckpoint *> *checkpointsArray = [DSChain createCheckpointsArrayFromCheckpoints:mainnet_checkpoint_array
+                                                                                         count:count];
+    NSMutableDictionary<NSNumber *, DSCheckpoint *> *checkpoints = [NSMutableDictionary dictionary];
     for (DSCheckpoint *checkpoint in checkpointsArray) {
         checkpoints[@(checkpoint.height)] = checkpoint;
     }
@@ -126,16 +126,14 @@
 - (BOOL)createDestinationInstancesForSourceInstance:(NSManagedObject *)sInstance
                                       entityMapping:(NSEntityMapping *)mapping
                                             manager:(NSMigrationManager *)manager
-                                              error:(NSError *__autoreleasing  _Nullable *)error {
+                                              error:(NSError *__autoreleasing _Nullable *)error {
     NSNumber *height = [sInstance valueForKey:@"height"];
     NSManagedObject *chainEntity = [sInstance valueForKey:@"chain"];
     NSParameterAssert(chainEntity);
-    if (height != nil && [height intValue] != BLOCK_UNKNOWN_HEIGHT && [[chainEntity valueForKey:@"type"] intValue] == DSChainType_MainNet) {
-        if ([height intValue] > self.lastKnownSourceBlockHeight) {
-            self.lastKnownSourceBlockHeight = [height unsignedIntValue];
-        }
+    if (height != nil && [height intValue] != BLOCK_UNKNOWN_HEIGHT && [[chainEntity valueForKey:@"type"] intValue] == DSChainType_MainNet && [height intValue] > self.lastKnownSourceBlockHeight) {
+        self.lastKnownSourceBlockHeight = [height unsignedIntValue];
     }
-    
+
     return YES;
 }
 
@@ -158,13 +156,13 @@
     return [super endEntityMapping:mapping manager:manager error:error];
 }
 
-- (NSArray <NSData*> *)blockLocatorArrayForBlock:(DSBlock*)block {
+- (NSArray<NSData *> *)blockLocatorArrayForBlock:(DSBlock *)block {
     NSMutableArray *locators = [NSMutableArray arrayWithObject:uint256_data(block.blockHash)];
-    
+
     uint32_t lastHeight = block.height;
-    DSCheckpoint * lastCheckpoint = nil;
+    DSCheckpoint *lastCheckpoint = nil;
     //then add the last checkpoint we know about previous to this block
-    for (DSCheckpoint * checkpoint in self.checkpointsArray) {
+    for (DSCheckpoint *checkpoint in self.checkpointsArray) {
         if (checkpoint.height < lastHeight && checkpoint.timestamp < block.timestamp) {
             lastCheckpoint = checkpoint;
         } else {
@@ -178,15 +176,15 @@
 }
 
 
-- (DSChainEntity*)chainEntityForType:(DSChainType)type inContext:(NSManagedObjectContext*)context {
+- (DSChainEntity *)chainEntityForType:(DSChainType)type inContext:(NSManagedObjectContext *)context {
     NSFetchRequest *fetchRequest = [DSChainEntity fetchRequest];
-    fetchRequest.predicate = [NSPredicate predicateWithFormat:@"type = %d",type];
+    fetchRequest.predicate = [NSPredicate predicateWithFormat:@"type = %d", type];
     NSError *error = nil;
     NSArray *objects = [context executeFetchRequest:fetchRequest error:&error];
     if (objects.count) {
         return objects.firstObject;
     }
-    
+
     return nil;
 }
 

@@ -16,10 +16,16 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSFetchRequest<DSSimplifiedMasternodeEntryEntity *> *)fetchRequest;
 
 @property (nonatomic, assign) uint64_t address; //it's really on 32 bits but unsigned
+@property (nonatomic, assign) uint64_t platformPing;
 @property (nonatomic, assign) uint16_t port;
 @property (nonatomic, assign) uint32_t updateHeight;
 @property (nonatomic, assign) uint32_t knownConfirmedAtHeight;
 @property (nonatomic, assign) BOOL isValid;
+@property (nullable, nonatomic, retain) NSString *coreVersion;
+@property (nonatomic, assign) uint64_t coreProtocol;
+@property (nullable, nonatomic, retain) NSDate *coreLastConnectionDate;
+@property (nullable, nonatomic, retain) NSString *platformVersion;
+@property (nullable, nonatomic, retain) NSDate *platformPingDate;
 @property (nullable, nonatomic, retain) NSData *confirmedHash;
 @property (nullable, nonatomic, retain) NSData *ipv6Address;
 @property (nullable, nonatomic, retain) NSData *keyIDVoting;

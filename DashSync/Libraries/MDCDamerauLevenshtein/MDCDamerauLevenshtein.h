@@ -8,5 +8,5 @@
 
 #import <Foundation/Foundation.h>
 
-#import "NSString+MDCLevenshteinDistance.h"
 #import "NSString+MDCDamerauLevenshteinDistance.h"
+#import "NSString+MDCLevenshteinDistance.h"

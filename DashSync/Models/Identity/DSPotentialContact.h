@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -15,8 +15,8 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -24,21 +24,21 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSPotentialContact : NSObject
 
-@property (nonatomic, copy) NSString * username;
-@property (nonatomic, copy) NSString * displayName;
-@property (nonatomic, copy) NSString * avatarPath;
-@property (nonatomic, copy) NSString * publicMessage;
+@property (nonatomic, copy) NSString *username;
+@property (nonatomic, copy) NSString *displayName;
+@property (nonatomic, copy) NSString *avatarPath;
+@property (nonatomic, copy) NSString *publicMessage;
 @property (nonatomic, assign) UInt256 associatedBlockchainIdentityUniqueId;
 
--(instancetype)initWithUsername:(NSString*)username;
+- (instancetype)initWithUsername:(NSString *)username;
 
--(instancetype)initWithUsername:(NSString*)username avatarPath:(NSString*)avatarPath publicMessage:(NSString*)publicMessage;
+- (instancetype)initWithUsername:(NSString *)username avatarPath:(NSString *)avatarPath publicMessage:(NSString *)publicMessage;
 
--(instancetype)initWithDashpayUser:(DSDashpayUserEntity*)contactEntity;
+- (instancetype)initWithDashpayUser:(DSDashpayUserEntity *)contactEntity;
 
--(void)addPublicKey:(DSKey *)key atIndex:(NSUInteger)index;
+- (void)addPublicKey:(DSKey *)key atIndex:(NSUInteger)index;
 
--(DSKey*)publicKeyAtIndex:(NSUInteger)index;
+- (DSKey *)publicKeyAtIndex:(NSUInteger)index;
 
 @end
 

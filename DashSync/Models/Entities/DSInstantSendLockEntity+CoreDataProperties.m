@@ -11,7 +11,7 @@
 @implementation DSInstantSendLockEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSInstantSendLockEntity *> *)fetchRequest {
-	return [NSFetchRequest fetchRequestWithEntityName:@"DSInstantSendLockEntity"];
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSInstantSendLockEntity"];
 }
 
 @dynamic signature;

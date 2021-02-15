@@ -114,13 +114,11 @@ static NSString *NSStringFromHTTPRequestMethod(HTTPRequestMethod requestMethod) 
         if (query && query.length > 0 && absoluteString.length > 0) {
             requestURL = [NSURL URLWithString:[absoluteString stringByAppendingFormat:URL.query ? @"&%@" : @"?%@", query]];
         }
-    }
-    else if (parameters && contentType == HTTPContentType_JSON) {
+    } else if (parameters && contentType == HTTPContentType_JSON) {
         resultBody = [HTTPURLRequestBuilder jsonDataFromParameters:parameters];
         mutableHeaders[@"Content-Type"] = @"application/json";
         mutableHeaders[@"Content-Length"] = @(resultBody.length).stringValue;
-    }
-    else if (parameters && contentType == HTTPContentType_UrlEncoded) {
+    } else if (parameters && contentType == HTTPContentType_UrlEncoded) {
         NSString *query = [HTTPURLRequestBuilder queryStringFromParameters:parameters] ?: @""; // an empty string is a valid x-www-form-urlencoded payload
         resultBody = [query dataUsingEncoding:NSUTF8StringEncoding];
         mutableHeaders[@"Content-Type"] = @"application/x-www-form-urlencoded; charset=utf-8";
@@ -245,8 +243,7 @@ static NSString *NSStringFromHTTPRequestMethod(HTTPRequestMethod requestMethod) 
 
     if (self.bodyStream != nil) {
         urlRequest.HTTPBodyStream = self.bodyStream;
-    }
-    else if (self.body) {
+    } else if (self.body) {
         [urlRequest addValue:@(self.body.length).stringValue forHTTPHeaderField:HTTPRequestContentLengthHeader];
         urlRequest.HTTPBody = self.body;
     }

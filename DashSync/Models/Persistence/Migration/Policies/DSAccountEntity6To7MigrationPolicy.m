@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -22,18 +22,17 @@
 
 @implementation DSAccountEntity6To7MigrationPolicy
 
-- (BOOL)createRelationshipsForDestinationInstance:(NSManagedObject *)dInstance entityMapping:(NSEntityMapping *)mapping manager:(NSMigrationManager *)manager error:(NSError *__autoreleasing  _Nullable *)error {
+- (BOOL)createRelationshipsForDestinationInstance:(NSManagedObject *)dInstance entityMapping:(NSEntityMapping *)mapping manager:(NSMigrationManager *)manager error:(NSError *__autoreleasing _Nullable *)error {
     BOOL result = [super createRelationshipsForDestinationInstance:dInstance entityMapping:mapping manager:manager error:error];
-    
+
     DSAccountEntity *account = (DSAccountEntity *)dInstance;
     DSDerivationPathEntity *derivationPath = account.derivationPaths.anyObject;
     if (derivationPath != nil) {
         account.chain = derivationPath.chain;
-    }
-    else {
+    } else {
         NSAssert(NO, @"This is not possible");
     }
-    
+
     return result;
 }
 

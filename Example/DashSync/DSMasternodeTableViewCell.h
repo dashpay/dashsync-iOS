@@ -10,6 +10,8 @@
 
 @interface DSMasternodeTableViewCell : UITableViewCell
 @property (strong, nonatomic) IBOutlet UILabel *masternodeLocationLabel;
+@property (strong, nonatomic) IBOutlet UILabel *ping;
+@property (strong, nonatomic) IBOutlet UILabel *pingDate;
 @property (strong, nonatomic) IBOutlet UILabel *protocolLabel;
 @property (strong, nonatomic) IBOutlet UILabel *outputLabel;
 

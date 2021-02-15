@@ -111,8 +111,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)requestOperationHandler:(id<HTTPRequestOperationHandler>)requestOperationHandler
-                  cancelRequest:(HTTPRequest *)request
-  producingResumeDataCompletion:(void (^)(NSData *_Nullable resumeData))completionHandler {
+                    cancelRequest:(HTTPRequest *)request
+    producingResumeDataCompletion:(void (^)(NSData *_Nullable resumeData))completionHandler {
     NSArray *operations = nil;
     @synchronized(self.operations) {
         operations = [self.operations copy];
@@ -131,8 +131,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (completionHandler) {
         if ([NSThread isMainThread]) {
             completionHandler(nil);
-        }
-        else {
+        } else {
             dispatch_async(dispatch_get_main_queue(), ^{
                 completionHandler(nil);
             });
@@ -153,7 +152,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark NSURLSessionDataDelegate
 
 - (void)URLSession:(NSURLSession *)session
-          dataTask:(NSURLSessionDataTask *)dataTask
+              dataTask:(NSURLSessionDataTask *)dataTask
     didReceiveResponse:(NSURLResponse *)response
      completionHandler:(void (^)(NSURLSessionResponseDisposition disposition))completionHandler {
     HTTPRequestOperation *operation = [self handlerForTask:dataTask];
@@ -177,9 +176,9 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)URLSession:(NSURLSession *)session
-          dataTask:(NSURLSessionDataTask *)dataTask
- willCacheResponse:(NSCachedURLResponse *)proposedResponse
- completionHandler:(void (^)(NSCachedURLResponse *cachedResponse))completionHandler {
+             dataTask:(NSURLSessionDataTask *)dataTask
+    willCacheResponse:(NSCachedURLResponse *)proposedResponse
+    completionHandler:(void (^)(NSCachedURLResponse *cachedResponse))completionHandler {
     if (!completionHandler) {
         return;
     }
@@ -202,8 +201,7 @@ NS_ASSUME_NONNULL_BEGIN
         SecTrustRef trust = challenge.protectionSpace.serverTrust;
         disposition = NSURLSessionAuthChallengeUseCredential;
         credential = [NSURLCredential credentialForTrust:trust];
-    }
-    else {
+    } else {
         // No-op
         // Use default handing
     }
@@ -223,11 +221,9 @@ NS_ASSUME_NONNULL_BEGIN
     NSData *resumeData = error.userInfo[NSURLSessionDownloadTaskResumeData];
     if (resumeData) {
         operation.task = [self.session downloadTaskWithResumeData:resumeData];
-    }
-    else if (operation.request.downloadTaskPolicy == HTTPRequestDownloadTaskPolicyAlways) {
+    } else if (operation.request.downloadTaskPolicy == HTTPRequestDownloadTaskPolicyAlways) {
         operation.task = [self.session downloadTaskWithRequest:operation.request.urlRequest];
-    }
-    else {
+    } else {
         operation.task = [self.session dataTaskWithRequest:operation.request.urlRequest];
     }
     HTTPResponse *response = [operation completeWithError:error response:task.response];
@@ -241,8 +237,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)URLSession:(NSURLSession *)session
-              task:(NSURLSessionTask *)task
- needNewBodyStream:(void (^)(NSInputStream *_Nullable))completionHandler {
+                 task:(NSURLSessionTask *)task
+    needNewBodyStream:(void (^)(NSInputStream *_Nullable))completionHandler {
     HTTPRequestOperation *operation = [self handlerForTask:task];
     [operation provideNewBodyStreamWithCompletion:completionHandler];
 }
@@ -267,16 +263,15 @@ NS_ASSUME_NONNULL_BEGIN
                withIntermediateDirectories:YES
                                 attributes:nil
                                      error:nil];
-        filePath = [cachePath stringByAppendingPathComponent:(NSString * _Nonnull)location.lastPathComponent];
+        filePath = [cachePath stringByAppendingPathComponent:(NSString * _Nonnull) location.lastPathComponent];
         operation.request.downloadLocationPath = filePath;
     }
 
     NSError *fileError;
-    if ([fileManager moveItemAtPath:(NSString * _Nonnull)location.path toPath:filePath error:&fileError]) {
+    if ([fileManager moveItemAtPath:(NSString * _Nonnull) location.path toPath:filePath error:&fileError]) {
         if (operation.request.downloadTaskPolicy == HTTPRequestDownloadTaskPolicyAlways) {
             [self URLSession:session task:downloadTask didCompleteWithError:nil];
-        }
-        else {
+        } else {
             [self.sessionQueue addOperationWithBlock:^{
                 NSError *readError;
                 NSData *data = [NSData dataWithContentsOfFile:filePath options:NSDataReadingUncached error:&readError];
@@ -290,8 +285,7 @@ NS_ASSUME_NONNULL_BEGIN
                 [self URLSession:session task:downloadTask didCompleteWithError:readError];
             }];
         }
-    }
-    else {
+    } else {
         [self URLSession:session task:downloadTask didCompleteWithError:fileError];
     }
 }
@@ -322,18 +316,16 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     NSURLRequest *urlRequest = request.urlRequest;
-    
+
     HTTPRateLimiter *rateLimiter = [self.rateLimiterMap rateLimiterForURL:request.URL];
     NSURLSessionTask *task;
     if (request.downloadTaskPolicy == HTTPRequestDownloadTaskPolicyAlways) {
         if (request.resumeData) {
             task = [self.session downloadTaskWithResumeData:request.resumeData];
-        }
-        else {
+        } else {
             task = [self.session downloadTaskWithRequest:urlRequest];
         }
-    }
-    else {
+    } else {
         NSAssert(!request.resumeData, @"Inconsistent HTTPRequest configuration");
         task = [self.session dataTaskWithRequest:urlRequest];
     }

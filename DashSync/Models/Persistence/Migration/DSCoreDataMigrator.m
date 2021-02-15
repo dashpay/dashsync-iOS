@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -17,15 +17,15 @@
 
 #import "DSCoreDataMigrator.h"
 
-#import "NSPersistentStoreCoordinator+DS.h"
-#import "NSManagedObjectModel+DS.h"
 #import "DSCoreDataMigrationStep.h"
-#import "DSDataController.h"
 #import "DSCoreDataMigrationVersion.h"
+#import "DSDataController.h"
+#import "NSManagedObjectModel+DS.h"
+#import "NSPersistentStoreCoordinator+DS.h"
 
 @implementation DSCoreDataMigrationVersion (DSMigrator)
 
-+ (DSCoreDataMigrationVersionValue)compatibleVersionForStoreMetadata:(NSDictionary <NSString *, id> *)metadata {
++ (DSCoreDataMigrationVersionValue)compatibleVersionForStoreMetadata:(NSDictionary<NSString *, id> *)metadata {
     for (NSUInteger version = DSCoreDataMigrationVersionValue_1; version <= self.current; version++) {
         NSString *resource = [self modelResourceForVersion:version];
         NSManagedObjectModel *model = [NSManagedObjectModel ds_managedObjectModelForResource:resource];
@@ -40,10 +40,10 @@
 
 @implementation DSCoreDataMigrator
 
-+(NSURL*)documentsStoreURL {
-    static NSURL * storeURL = nil;
++ (NSURL *)documentsStoreURL {
+    static NSURL *storeURL = nil;
     static dispatch_once_t onceToken = 0;
-    
+
     dispatch_once(&onceToken, ^{
         NSURL *docURL = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].lastObject;
         NSString *fileName = @"DashSync.sqlite";
@@ -52,10 +52,10 @@
     return storeURL;
 }
 
-+(NSURL*)documentsWALURL {
-    static NSURL * storeURL = nil;
++ (NSURL *)documentsWALURL {
+    static NSURL *storeURL = nil;
     static dispatch_once_t onceToken = 0;
-    
+
     dispatch_once(&onceToken, ^{
         NSURL *docURL = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].lastObject;
         NSString *fileName = @"DashSync.sqlite-wal";
@@ -64,10 +64,10 @@
     return storeURL;
 }
 
-+(NSURL*)documentsSHMURL {
-    static NSURL * storeURL = nil;
++ (NSURL *)documentsSHMURL {
+    static NSURL *storeURL = nil;
     static dispatch_once_t onceToken = 0;
-    
+
     dispatch_once(&onceToken, ^{
         NSURL *docURL = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].lastObject;
         NSString *fileName = @"DashSync.sqlite-shm";
@@ -86,9 +86,9 @@
     return [self requiresMigrationAtStoreURL:storeURL version:version];
 }
 
-+ (void)performMigrationWithCompletionQueue:(dispatch_queue_t)completionQueue completion:(void(^)(void))completion {
++ (void)performMigrationWithCompletionQueue:(dispatch_queue_t)completionQueue completion:(void (^)(void))completion {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
-    
+
     __block NSURL *originalStoreURL = [DSDataController storeURL];
     __block NSURL *finalStoreURL = [DSDataController storeURL];
     __block BOOL shouldRemoveDocumentsCopy = FALSE;
@@ -98,38 +98,35 @@
         if (metadata != nil) {
             //Move to Application Support
             originalStoreURL = [self documentsStoreURL];
-            NSError * error = nil;
+            NSError *error = nil;
             NSString *appSupportDir = [NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES) lastObject];
             //If there isn't an App Support Directory yet ...
             if (![[NSFileManager defaultManager] fileExistsAtPath:appSupportDir isDirectory:NULL]) {
-            //Create one
+                //Create one
                 if (![[NSFileManager defaultManager] createDirectoryAtPath:appSupportDir withIntermediateDirectories:YES attributes:nil error:&error]) {
                     NSLog(@"%@", error.localizedDescription);
-                }
-                else {
+                } else {
                     NSURL *url = [NSURL fileURLWithPath:appSupportDir];
                     if (![url setResourceValue:@YES
                                         forKey:NSURLIsExcludedFromBackupKey
-                                         error:&error])
-                    {
+                                         error:&error]) {
                         DSLog(@"Error excluding %@ from backup %@", url.lastPathComponent, error.localizedDescription);
-                    }
-                    else {
+                    } else {
                         DSLog(@"Excluding");
                     }
                 }
             }
-            NSAssert(!error, @"Creation should have succeeded");
+            NSAssert(error == nil, @"Creation should have succeeded");
             if ([[NSFileManager defaultManager] fileExistsAtPath:[[self documentsWALURL] path]]) {
                 [[NSFileManager defaultManager] copyItemAtURL:[self documentsWALURL] toURL:[DSDataController storeWALURL] error:&error];
-                NSAssert(!error, @"Copy should have succeeded");
+                NSAssert(error == nil, @"Copy should have succeeded");
             }
             if ([[NSFileManager defaultManager] fileExistsAtPath:[[self documentsSHMURL] path]]) {
                 [[NSFileManager defaultManager] copyItemAtURL:[self documentsSHMURL] toURL:[DSDataController storeSHMURL] error:&error];
-                NSAssert(!error, @"Copy should have succeeded");
+                NSAssert(error == nil, @"Copy should have succeeded");
             }
             [[NSFileManager defaultManager] copyItemAtURL:[self documentsStoreURL] toURL:[DSDataController storeURL] error:&error];
-            NSAssert(!error, @"Copy should have succeeded");
+            NSAssert(error == nil, @"Copy should have succeeded");
             shouldRemoveDocumentsCopy = TRUE;
         }
     }
@@ -148,8 +145,7 @@
                 }
             });
         });
-    }
-    else {
+    } else {
         dispatch_async(completionQueue, ^{
             if (completion) {
                 completion();
@@ -165,21 +161,21 @@
     if (metadata == nil) {
         return NO;
     }
-    
+
     return ([DSCoreDataMigrationVersion compatibleVersionForStoreMetadata:metadata] != version);
 }
 
-+ (void)migrateStoreAtURL:(NSURL *)storeURL toURL:(NSURL*)finalStoreURL toVersion:(DSCoreDataMigrationVersionValue)version {
++ (void)migrateStoreAtURL:(NSURL *)storeURL toURL:(NSURL *)finalStoreURL toVersion:(DSCoreDataMigrationVersionValue)version {
     [self forceWALCheckpointingForStoreAtURL:storeURL];
-    
+
     NSURL *currentURL = storeURL;
-    NSArray <DSCoreDataMigrationStep *> *migrationSteps = [self migrationStepsForStoreAtURL:storeURL toVersion:version];
-        
+    NSArray<DSCoreDataMigrationStep *> *migrationSteps = [self migrationStepsForStoreAtURL:storeURL toVersion:version];
+
     for (DSCoreDataMigrationStep *step in migrationSteps) {
         NSMigrationManager *manager = [[NSMigrationManager alloc] initWithSourceModel:step.sourceModel
                                                                      destinationModel:step.destinationModel];
         NSURL *destinationURL = [[[NSURL fileURLWithPath:NSTemporaryDirectory() isDirectory:YES]
-                                  URLByAppendingPathComponent:[NSUUID UUID].UUIDString] URLByAppendingPathExtension:@"sqlite"];
+            URLByAppendingPathComponent:[NSUUID UUID].UUIDString] URLByAppendingPathExtension:@"sqlite"];
         NSError *error = nil;
         [manager migrateStoreFromURL:currentURL
                                 type:NSSQLiteStoreType
@@ -187,27 +183,28 @@
                     withMappingModel:step.mappingModel
                     toDestinationURL:destinationURL
                      destinationType:NSSQLiteStoreType
-                  destinationOptions:nil error:&error];
+                  destinationOptions:nil
+                               error:&error];
         NSAssert(error == nil, @"failed attempting to migrate from %@ to %@, error %@",
-                 step.sourceModel, step.destinationModel, error);
-        
+            step.sourceModel, step.destinationModel, error);
+
         if (![currentURL isEqual:storeURL]) {
             [NSPersistentStoreCoordinator ds_destroyStoreAtURL:currentURL];
         }
-        
+
         currentURL = destinationURL;
     }
-    
+
     [NSPersistentStoreCoordinator ds_replaceStoreAt:finalStoreURL with:currentURL];
-    
+
     if (![currentURL isEqual:storeURL]) {
         [NSPersistentStoreCoordinator ds_destroyStoreAtURL:currentURL];
     }
 }
 
-+ (NSArray <DSCoreDataMigrationStep *> *)migrationStepsForStoreAtURL:(NSURL *)storeURL
-                                                           toVersion:(DSCoreDataMigrationVersionValue)destinationVersion {
-    NSDictionary <NSString *, id> *metadata = [NSPersistentStoreCoordinator ds_metadataAt:storeURL];
++ (NSArray<DSCoreDataMigrationStep *> *)migrationStepsForStoreAtURL:(NSURL *)storeURL
+                                                          toVersion:(DSCoreDataMigrationVersionValue)destinationVersion {
+    NSDictionary<NSString *, id> *metadata = [NSPersistentStoreCoordinator ds_metadataAt:storeURL];
     if (metadata == nil) {
         NSAssert(NO, @"unknown store version at URL %@", storeURL);
         return @[];
@@ -217,27 +214,27 @@
         DSLog(@"unknown source version at URL %@", storeURL);
         return @[];
     }
-    
+
     return [self migrationStepsFromSourceVersion:sourceVersion destinationVersion:destinationVersion];
 }
 
-+ (NSArray <DSCoreDataMigrationStep *> *)migrationStepsFromSourceVersion:(DSCoreDataMigrationVersionValue)sourceVersion
-    destinationVersion:(DSCoreDataMigrationVersionValue)destinationVersion {
-    NSMutableArray <DSCoreDataMigrationStep *> *steps = [NSMutableArray array];
-    
++ (NSArray<DSCoreDataMigrationStep *> *)migrationStepsFromSourceVersion:(DSCoreDataMigrationVersionValue)sourceVersion
+                                                     destinationVersion:(DSCoreDataMigrationVersionValue)destinationVersion {
+    NSMutableArray<DSCoreDataMigrationStep *> *steps = [NSMutableArray array];
+
     while (sourceVersion != destinationVersion && [DSCoreDataMigrationVersion nextVersionAfter:sourceVersion] != NSNotFound) {
         DSCoreDataMigrationVersionValue nextVersion = [DSCoreDataMigrationVersion nextVersionAfter:sourceVersion];
         DSCoreDataMigrationStep *step = [[DSCoreDataMigrationStep alloc] initWithSourceVersion:sourceVersion destinationVersion:nextVersion];
         [steps addObject:step];
-        
+
         sourceVersion = nextVersion;
     }
-    
+
     return steps;
 }
 
 + (void)forceWALCheckpointingForStoreAtURL:(NSURL *)storeURL {
-    NSDictionary <NSString *, id> *metadata = [NSPersistentStoreCoordinator ds_metadataAt:storeURL];
+    NSDictionary<NSString *, id> *metadata = [NSPersistentStoreCoordinator ds_metadataAt:storeURL];
     if (metadata == nil) {
         return;
     }
@@ -245,9 +242,11 @@
     if (currentModel == nil) {
         return;
     }
-    
+
     NSPersistentStoreCoordinator *psc = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:currentModel];
-    NSDictionary *options = @{ NSSQLitePragmasOption: @{ @"journal_mode": @"DELETE" }, };
+    NSDictionary *options = @{
+        NSSQLitePragmasOption: @{@"journal_mode": @"DELETE"},
+    };
     NSPersistentStore *store = [psc ds_addPersistentStoreAt:storeURL options:options];
     NSError *error = nil;
     [psc removePersistentStore:store error:&error];
