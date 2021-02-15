@@ -57,6 +57,10 @@
 #import "NSString+Bitcoin.h"
 #import "NSString+Dash.h"
 
+#if TARGET_OS_IOS
+#import "UIWindow+DSUtils.h"
+#endif
+
 #define IX_INPUT_LOCKED_KEY @"IX_INPUT_LOCKED_KEY"
 #define MAX_TOTAL_TRANSACTIONS_FOR_BLOOM_FILTER_RETARGETING 500
 

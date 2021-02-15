@@ -23,8 +23,8 @@ Pod::Spec.new do |s|
 
   s.source_files = "DashSync/shared/**/*.{h,m,mm}"
   s.public_header_files = 'DashSync/shared/**/*.h'
-  s.ios.source_files = "DashSync/iOS/*.{h,m,mm}"
-  s.ios.public_header_files = 'DashSync/iOS/*.h'
+  s.ios.source_files = "DashSync/iOS/**/*.{h,m,mm}"
+  s.ios.public_header_files = 'DashSync/iOS/**/*.h'
   s.macos.source_files = "DashSync/macOS/**/*.{h,m,mm}"
   s.macos.public_header_files = 'DashSync/macOS/**/*.h'
   s.private_header_files = 'DashSync/crypto/x11/*.h'
