@@ -1,4 +1,4 @@
-name: Continuous Integration
+name: E2E Tests
 
 on:
   push:
@@ -13,7 +13,7 @@ on:
 
 jobs:
   build:
-    name: Build
+    name: Mainnet Chain
     runs-on: macOS-latest
     steps:
       - name: Checkout DashSync
@@ -42,4 +42,12 @@ jobs:
           platform: ${{ 'iOS Simulator' }}
         run: |
           device=`instruments -s -devices | grep -oE 'iPhone.*?[^\(]+' | head -1 | awk '{$1=$1;print}'`
-          xcodebuild build -scheme "DashSync-Example" -workspace "DashSync.xcworkspace" -destination "platform=$platform,name=$device"
+          xcodebuild build-for-testing -scheme "DashSync-Example" -workspace "DashSync.xcworkspace" -destination "platform=$platform,name=$device"
+      - name: Test Syncing Chain
+        working-directory: ./dashsync/Example
+        env:
+          scheme: ${{ 'default' }}
+          platform: ${{ 'iOS Simulator' }}
+        run: |
+          device=`instruments -s -devices | grep -oE 'iPhone.*?[^\(]+' | head -1 | awk '{$1=$1;print}'`
+          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=$device" -testPlan TestnetE2ETests

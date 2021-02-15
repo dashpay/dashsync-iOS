@@ -213,6 +213,7 @@
                                                        sourceBlockchainIdentityUniqueId:blockchainIdentity.uniqueID
                                                                        forAccountNumber:account.accountNumber
                                                                                 onChain:self.chain];
+                fundsDerivationPath.standaloneExtendedPublicKeyUniqueID = friendRequest.derivationPath.publicKeyIdentifier;
                 fundsDerivationPath.wallet = self;
                 fundsDerivationPath.account = account;
                 //DSLogPrivate(@"%@",blockchainIdentity.matchingDashpayUser.outgoingRequests);

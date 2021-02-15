@@ -315,7 +315,8 @@ static NSString *const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.back
     if (@available(iOS 13.0, *)) {
         BGAppRefreshTaskRequest *request = [[BGAppRefreshTaskRequest alloc] initWithIdentifier:BG_TASK_REFRESH_IDENTIFIER];
         // Fetch no earlier than 15 minutes from now
-        request.earliestBeginDate = [NSDate dateWithTimeIntervalSinceNow:15.0 * 60.0];
+        // Disabled as we'd like to be run asap
+        // request.earliestBeginDate = [NSDate dateWithTimeIntervalSinceNow:15.0 * 60.0];
 
         NSError *error = nil;
         [[BGTaskScheduler sharedScheduler] submitTaskRequest:request error:&error];

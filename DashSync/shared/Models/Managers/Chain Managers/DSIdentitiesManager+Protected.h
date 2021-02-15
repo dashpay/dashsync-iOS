@@ -31,6 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)clearExternalBlockchainIdentities;
 
+@property (nonatomic, readonly) dispatch_queue_t identityQueue;
+
 @end
 
 NS_ASSUME_NONNULL_END

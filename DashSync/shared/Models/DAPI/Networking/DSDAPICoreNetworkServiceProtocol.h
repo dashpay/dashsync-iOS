@@ -22,8 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DSDAPICoreNetworkServiceProtocol <NSObject>
 
-- (id<DSDAPINetworkServiceRequest>)getStatusWithSuccess:(void (^)(NSDictionary *status))success
-                                                failure:(void (^)(NSError *error))failure;
+- (id<DSDAPINetworkServiceRequest>)getStatusWithCompletionQueue:(dispatch_queue_t)completionQueue success:(void (^)(NSDictionary *status))success
+                                                        failure:(void (^)(NSError *error))failure;
 
 
 @end

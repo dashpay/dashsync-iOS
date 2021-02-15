@@ -91,6 +91,9 @@
          <TestPlanReference
             reference = "container:Tests/Metrics.xctestplan">
          </TestPlanReference>
+         <TestPlanReference
+            reference = "container:Tests/TestnetE2ETests.xctestplan">
+         </TestPlanReference>
       </TestPlans>
       <Testables>
          <TestableReference

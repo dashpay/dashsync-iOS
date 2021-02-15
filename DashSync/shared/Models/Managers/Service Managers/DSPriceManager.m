@@ -105,9 +105,12 @@
     self.dashFormat.lenient = YES;
     self.dashFormat.numberStyle = NSNumberFormatterCurrencyStyle;
     self.dashFormat.generatesDecimalNumbers = YES;
-    self.dashFormat.negativeFormat = [self.dashFormat.positiveFormat
-        stringByReplacingCharactersInRange:[self.dashFormat.positiveFormat rangeOfString:@"#"]
-                                withString:@"-#"];
+    NSRange positiveFormatRange = [self.dashFormat.positiveFormat rangeOfString:@"#"];
+    if (positiveFormatRange.location != NSNotFound) {
+        self.dashFormat.negativeFormat = [self.dashFormat.positiveFormat
+            stringByReplacingCharactersInRange:positiveFormatRange
+                                    withString:@"-#"];
+    }
     self.dashFormat.currencyCode = @"DASH";
     if (@available(iOS 13.0, *)) {
         self.dashFormat.currencySymbol = DASH;
@@ -122,9 +125,11 @@
     self.dashSignificantFormat.lenient = YES;
     self.dashSignificantFormat.numberStyle = NSNumberFormatterCurrencyStyle;
     self.dashSignificantFormat.generatesDecimalNumbers = YES;
-    self.dashSignificantFormat.negativeFormat = [self.dashFormat.positiveFormat
-        stringByReplacingCharactersInRange:[self.dashFormat.positiveFormat rangeOfString:@"#"]
-                                withString:@"-#"];
+    if (positiveFormatRange.location != NSNotFound) {
+        self.dashSignificantFormat.negativeFormat = [self.dashFormat.positiveFormat
+            stringByReplacingCharactersInRange:positiveFormatRange
+                                    withString:@"-#"];
+    }
     self.dashSignificantFormat.currencyCode = @"DASH";
     if (@available(iOS 13.0, *)) {
         self.dashSignificantFormat.currencySymbol = DASH;
@@ -142,9 +147,12 @@
     self.bitcoinFormat.lenient = YES;
     self.bitcoinFormat.numberStyle = NSNumberFormatterCurrencyStyle;
     self.bitcoinFormat.generatesDecimalNumbers = YES;
-    self.bitcoinFormat.negativeFormat = [self.bitcoinFormat.positiveFormat
-        stringByReplacingCharactersInRange:[self.bitcoinFormat.positiveFormat rangeOfString:@"#"]
-                                withString:@"-#"];
+    NSRange bitcoinPositiveFormatRange = [self.bitcoinFormat.positiveFormat rangeOfString:@"#"];
+    if (bitcoinPositiveFormatRange.location != NSNotFound) {
+        self.bitcoinFormat.negativeFormat = [self.bitcoinFormat.positiveFormat
+            stringByReplacingCharactersInRange:bitcoinPositiveFormatRange
+                                    withString:@"-#"];
+    }
     self.bitcoinFormat.currencyCode = @"BTC";
     if (@available(iOS 13.0, *)) {
         self.bitcoinFormat.currencySymbol = BTC;
@@ -159,9 +167,12 @@
     self.unknownFormat.lenient = YES;
     self.unknownFormat.numberStyle = NSNumberFormatterDecimalStyle;
     self.unknownFormat.generatesDecimalNumbers = YES;
-    self.unknownFormat.negativeFormat = [self.unknownFormat.positiveFormat
-        stringByReplacingCharactersInRange:[self.unknownFormat.positiveFormat rangeOfString:@"#"]
-                                withString:@"-#"];
+    NSRange unknownPositivieFormatRange = [self.unknownFormat.positiveFormat rangeOfString:@"#"];
+    if (unknownPositivieFormatRange.location != NSNotFound) {
+        self.unknownFormat.negativeFormat = [self.unknownFormat.positiveFormat
+            stringByReplacingCharactersInRange:unknownPositivieFormatRange
+                                    withString:@"-#"];
+    }
     self.unknownFormat.maximumFractionDigits = 8;
     self.unknownFormat.minimumFractionDigits = 0; // iOS 8 bug, minimumFractionDigits now has to be set after currencySymbol
 

@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) DSBlockchainIdentity *destinationBlockchainIdentity;
 @property (nonatomic, readonly) DSBlockchainIdentity *sourceBlockchainIdentity; //this is the holder of the contacts, not the destination
 @property (nonatomic, readonly) NSTimeInterval createdAt;
+@property (nonatomic, readonly) DSIncomingFundsDerivationPath *derivationPath;
 @property (nonatomic, readonly) uint32_t sourceKeyIndex;
 @property (nonatomic, readonly) uint32_t destinationKeyIndex;
 
@@ -42,7 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DSDerivationPathEntity *)storeExtendedPublicKeyAssociatedWithFriendRequest:(DSFriendRequestEntity *)friendRequestEntity;
 
-- (void)createDerivationPathWithCompletion:(void (^)(BOOL success, DSIncomingFundsDerivationPath *incomingFundsDerivationPath))completion;
+- (void)createDerivationPathAndSaveExtendedPublicKeyWithCompletion:(void (^)(BOOL success, DSIncomingFundsDerivationPath *incomingFundsDerivationPath))completion;
 
 - (void)encryptExtendedPublicKeyWithCompletion:(void (^)(BOOL success))completion;
 

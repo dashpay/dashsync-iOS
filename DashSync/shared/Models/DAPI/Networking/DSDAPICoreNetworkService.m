@@ -60,12 +60,14 @@
     return self;
 }
 
-- (id<DSDAPINetworkServiceRequest>)getStatusWithSuccess:(void (^)(NSDictionary *status))success
-                                                failure:(void (^)(NSError *error))failure {
+- (id<DSDAPINetworkServiceRequest>)getStatusWithCompletionQueue:(dispatch_queue_t)completionQueue success:(void (^)(NSDictionary *status))success
+                                                        failure:(void (^)(NSError *error))failure {
+    NSParameterAssert(completionQueue);
     GetStatusRequest *statusRequest = [[GetStatusRequest alloc] init];
     DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
     responseHandler.host = [NSString stringWithFormat:@"%@:%d", self.ipAddress, self.chain.standardDapiGRPCPort];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
+    responseHandler.completionQueue = completionQueue;
     responseHandler.successHandler = success;
     responseHandler.errorHandler = failure;
     GRPCUnaryProtoCall *call = [self.gRPCClient getStatusWithMessage:statusRequest responseHandler:responseHandler callOptions:nil];

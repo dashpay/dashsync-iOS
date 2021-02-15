@@ -769,27 +769,27 @@
 }
 
 + (NSString *)shapeshiftOutboundAddressForScript:(NSData *)script {
-#warning this should be reenabled for mainnet
-    //    if ([script UInt8AtOffset:0] == OP_RETURN) {
-    //        UInt8 length = [script UInt8AtOffset:1];
-    //        if ([script UInt8AtOffset:2] == OP_SHAPESHIFT) {
-    //            NSMutableData * data = [NSMutableData data];
-    //            uint8_t v = BITCOIN_PUBKEY_ADDRESS;
-    //            [data appendBytes:&v length:1];
-    //            NSData * addressData = [script subdataWithRange:NSMakeRange(3, length - 1)];
-    //
-    //            [data appendData:addressData];
-    //            return [NSString base58checkWithData:data];
-    //        } else if ([script UInt8AtOffset:2] == OP_SHAPESHIFT_SCRIPT) {
-    //            NSMutableData * data = [NSMutableData data];
-    //            uint8_t v = BITCOIN_SCRIPT_ADDRESS;
-    //            [data appendBytes:&v length:1];
-    //            NSData * addressData = [script subdataWithRange:NSMakeRange(3, length - 1)];
-    //
-    //            [data appendData:addressData];
-    //            return [NSString base58checkWithData:data];
-    //        }
-    //    }
+    //#warning this should be reenabled for mainnet
+    if ([script UInt8AtOffset:0] == OP_RETURN) {
+        UInt8 length = [script UInt8AtOffset:1];
+        if ([script UInt8AtOffset:2] == OP_SHAPESHIFT) {
+            NSMutableData *data = [NSMutableData data];
+            uint8_t v = BITCOIN_PUBKEY_ADDRESS;
+            [data appendBytes:&v length:1];
+            NSData *addressData = [script subdataWithRange:NSMakeRange(3, length - 1)];
+
+            [data appendData:addressData];
+            return [NSString base58checkWithData:data];
+        } else if ([script UInt8AtOffset:2] == OP_SHAPESHIFT_SCRIPT) {
+            NSMutableData *data = [NSMutableData data];
+            uint8_t v = BITCOIN_SCRIPT_ADDRESS;
+            [data appendBytes:&v length:1];
+            NSData *addressData = [script subdataWithRange:NSMakeRange(3, length - 1)];
+
+            [data appendData:addressData];
+            return [NSString base58checkWithData:data];
+        }
+    }
     return nil;
 }
 

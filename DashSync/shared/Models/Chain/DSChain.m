@@ -1472,8 +1472,18 @@ static dispatch_once_t devnetToken = 0;
     });
 }
 
-- (void)addWallet:(DSWallet *)wallet {
-    [self.mWallets addObject:wallet];
+- (BOOL)addWallet:(DSWallet *)walletToAdd {
+    BOOL alreadyPresent = FALSE;
+    for (DSWallet *cWallet in self.mWallets) {
+        if ([cWallet.uniqueIDString isEqual:walletToAdd.uniqueIDString]) {
+            alreadyPresent = TRUE;
+        }
+    }
+    if (!alreadyPresent) {
+        [self.mWallets addObject:walletToAdd];
+        return TRUE;
+    }
+    return FALSE;
 }
 
 - (void)registerWallet:(DSWallet *)wallet {
@@ -2781,6 +2791,7 @@ static dispatch_once_t devnetToken = 0;
         NSArray *announcers = self.estimatedBlockHeights[height];
         if (announcers.count > maxCount) {
             tempBestEstimatedBlockHeight = [height intValue];
+            maxCount = (uint32_t)announcers.count;
         } else if (announcers.count == maxCount && tempBestEstimatedBlockHeight < [height intValue]) {
             //use the latest if deadlocked
             tempBestEstimatedBlockHeight = [height intValue];
