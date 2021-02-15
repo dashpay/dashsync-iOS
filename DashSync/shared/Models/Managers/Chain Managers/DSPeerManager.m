@@ -108,9 +108,9 @@
     self.chain = chain;
     self.mutableConnectedPeers = [NSMutableSet set];
     self.mutableMisbehavingPeers = [NSMutableSet set];
-    
+
     self.maxConnectCount = PEER_MAX_CONNECTIONS;
-    
+
 #if TARGET_OS_IOS
     self.terminalHeadersSaveTaskId = UIBackgroundTaskInvalid;
 
@@ -997,9 +997,9 @@
                 [self connect]; // try connecting to another peer
             }
 #else
-            if (self.desiredState == DSPeerManagerDesiredState_Connected) {
-                [self connect]; // try connecting to another peer
-            }
+                if (self.desiredState == DSPeerManagerDesiredState_Connected) {
+                    [self connect]; // try connecting to another peer
+                }
 #endif
         });
     }

@@ -49,9 +49,10 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSPeerManagerPeersDidChangeNotificati
 
 @interface DSPeerManager : NSObject <DSPeerDelegate
 #if TARGET_OS_IOS
-, UIAlertViewDelegate
+                               ,
+                               UIAlertViewDelegate
 #endif
->
+                               >
 
 @property (nonatomic, readonly) BOOL connected;
 @property (nonatomic, readonly) NSUInteger peerCount;

@@ -44,10 +44,10 @@
 #import "NSMutableData+Dash.h"
 
 #if TARGET_OS_IOS
-#import "UIWindow+DSUtils.h"
 #import "DSRecoveryViewController.h"
 #import "DSRequestPinViewController.h"
 #import "DSSetPinViewController.h"
+#import "UIWindow+DSUtils.h"
 #endif
 
 static NSString *sanitizeString(NSString *s) {
@@ -602,35 +602,35 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
                     alertIfLockout:(BOOL)alertIfLockout
                         completion:(PinCompletionBlock)completion {
     [self performAuthenticationPrecheck:^(BOOL shouldContinueAuthentication,
-            BOOL authenticated,
-            BOOL shouldLockout,
-            NSString *_Nullable attemptsMessage) {
-            if (shouldContinueAuthentication) {
-                NSString *resultMessage;
-                if (attemptsMessage != nil) {
-                    resultMessage = attemptsMessage;
+        BOOL authenticated,
+        BOOL shouldLockout,
+        NSString *_Nullable attemptsMessage) {
+        if (shouldContinueAuthentication) {
+            NSString *resultMessage;
+            if (attemptsMessage != nil) {
+                resultMessage = attemptsMessage;
 
-                    if (message) {
-                        resultMessage = [resultMessage stringByAppendingFormat:@"\n%@", message];
-                    }
-                } else {
-                    resultMessage = message;
+                if (message) {
+                    resultMessage = [resultMessage stringByAppendingFormat:@"\n%@", message];
                 }
-#if TARGET_OS_IOS
-                DSRequestPinViewController *alert =
-                    [[DSRequestPinViewController alloc] initWithAuthPrompt:resultMessage
-                                                            alertIfLockout:alertIfLockout
-                                                                completion:completion];
-                [self presentController:alert animated:YES completion:nil];
-#endif
             } else {
-                if (shouldLockout) {
-                    [self userLockedOut];
-                }
-
-                completion(authenticated, NO, NO);
+                resultMessage = message;
             }
-        }];
+#if TARGET_OS_IOS
+            DSRequestPinViewController *alert =
+                [[DSRequestPinViewController alloc] initWithAuthPrompt:resultMessage
+                                                        alertIfLockout:alertIfLockout
+                                                            completion:completion];
+            [self presentController:alert animated:YES completion:nil];
+#endif
+        } else {
+            if (shouldLockout) {
+                [self userLockedOut];
+            }
+
+            completion(authenticated, NO, NO);
+        }
+    }];
 }
 
 - (void)requestKeyPasswordForSweepCompletion:(void (^_Nonnull)(DSTransaction *tx, uint64_t fee, NSError *error))sweepCompletion userInfo:(NSDictionary *)userInfo completion:(void (^_Nonnull)(void (^sweepCompletion)(DSTransaction *tx, uint64_t fee, NSError *error), NSDictionary *userInfo, NSString *password))completion cancel:(void (^_Nonnull)(void))cancel {

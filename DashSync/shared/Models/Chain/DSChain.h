@@ -25,8 +25,8 @@
 
 #import "BigIntTypes.h"
 #import "DSChainConstants.h"
-#import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
