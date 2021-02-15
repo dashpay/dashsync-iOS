@@ -87,15 +87,7 @@
     DSChainEntity *chainEntity = [derivationPath.chain chainEntityInContext:context];
 
     NSSet *derivationPathEntities = [chainEntity.derivationPaths filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"publicKeyIdentifier == %@ && chain == %@", derivationPath.standaloneExtendedPublicKeyUniqueID, [derivationPath.chain chainEntityInContext:context]]];
-    if ([derivationPathEntities count]) {
-        DSDerivationPathEntity *derivationPathEntity = [derivationPathEntities anyObject];
-        if (derivationPathEntity.friendRequest) {
-            //DSLog(@"Derivation path entity found with friendship identifier %@ %@", derivationPathEntity.friendRequest.friendshipIdentifier.hexString, [NSThread callStackSymbols]);
-            //DSFriendRequestEntity *a = [DSFriendRequestEntity existingFriendRequestEntityOnFriendshipIdentifier:derivationPathEntity.friendRequest.friendshipIdentifier inContext:friendRequest.managedObjectContext];
-            //DSLog(@"%@", a);
-        }
-        return derivationPathEntity;
-    } else {
+    if (![derivationPathEntities count]) {
         //NSLog(@"-->creating derivation path entity on derivation path (%@) with friendship identifier %@ %@", derivationPath.stringRepresentation, friendRequest.friendshipIdentifier.hexString, [NSThread callStackSymbols]);
         //NSLog(@"-->friend request is %@ %@", friendRequest, friendRequest.derivationPath);
         NSAssert(friendRequest.derivationPath == nil, @"The friend request should not already have a derivationPath");
@@ -111,6 +103,15 @@
 
         return derivationPathEntity;
     }
+//    else {
+//        DSDerivationPathEntity *derivationPathEntity = [derivationPathEntities anyObject];
+//        if (derivationPathEntity.friendRequest) {
+//            //DSLog(@"Derivation path entity found with friendship identifier %@ %@", derivationPathEntity.friendRequest.friendshipIdentifier.hexString, [NSThread callStackSymbols]);
+//            //DSFriendRequestEntity *a = [DSFriendRequestEntity existingFriendRequestEntityOnFriendshipIdentifier:derivationPathEntity.friendRequest.friendshipIdentifier inContext:friendRequest.managedObjectContext];
+//            //DSLog(@"%@", a);
+//        }
+//        return derivationPathEntity;
+//    }
 }
 
 + (void)deleteDerivationPathsOnChainEntity:(DSChainEntity *)chainEntity {
