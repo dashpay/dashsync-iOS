@@ -31,6 +31,19 @@
 #import "NSData+Bitcoin.h"
 #import "NSDate+Utils.h"
 
+#if TARGET_OS_OSX
+// SecKeyRawVerify is not exposed in the public header. Declare it manually.
+// https://github.com/lionheart/openradar-mirror/issues/50
+OSStatus SecKeyRawVerify(
+    SecKeyRef key,
+    SecPadding padding,
+    const uint8_t *signedData,
+    size_t signedDataLen,
+    const uint8_t *sig,
+    size_t sigLen)
+    __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_2_0);
+#endif /* TARGET_OS_OSX */
+
 // BIP70 payment protocol: https://github.com/bitcoin/bips/blob/master/bip-0070.mediawiki
 
 #define PROTOBUF_VARINT 0   // int32, int64, uint32, uint64, sint32, sint64, bool, enum

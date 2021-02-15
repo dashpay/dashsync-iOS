@@ -437,7 +437,8 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i) {
 
     UInt256 key;
 
-    if (secp256k1_ecdh(_ctx, (unsigned char *)&key, &pk, (const uint8_t *)((DSECDSAKey *)privateKey).secretKey) != 1) {
+#warning fix last two NULLs
+    if (secp256k1_ecdh(_ctx, (unsigned char *)&key, &pk, (const uint8_t *)((DSECDSAKey *)privateKey).secretKey, NULL, NULL) != 1) {
         return nil;
     }
     self.pubkey = uint256_data(key);
