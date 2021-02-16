@@ -397,7 +397,6 @@
 		FB9A106C20D8362F006883E2 /* DSKeyValueTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A106B20D8362F006883E2 /* DSKeyValueTableViewCell.m */; };
 		FB9A106F20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A106E20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m */; };
 		FB9A107220D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A107120D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m */; };
-		FB9C9F0525B80DE30039880E /* (null) in Sources */ = {isa = PBXBuildFile; };
 		FBA676322235A7920069EC2F /* BlockchainIdentities.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBA676312235A7920069EC2F /* BlockchainIdentities.storyboard */; };
 		FBA676342235A9620069EC2F /* Helpers.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBA676332235A9620069EC2F /* Helpers.storyboard */; };
 		FBA676362235AD090069EC2F /* Governance.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBA676352235AD090069EC2F /* Governance.storyboard */; };
@@ -3020,7 +3019,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FB9C9F0525B80DE30039880E /* (null) in Sources */,
 				FB57818225DAC11100FB9B37 /* main.m in Sources */,
 				FB57818325DAC11100FB9B37 /* DSNetworkInfo.m in Sources */,
 			);
