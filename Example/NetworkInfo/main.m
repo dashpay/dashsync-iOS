@@ -20,13 +20,22 @@
 #import <DashSync/DashSync.h>
 
 int main(int argc, const char * argv[]) {
-
     @autoreleasepool {
+        NSString * outputDirectory;
+
+        if (argc < 3 || ![[NSString stringWithUTF8String:argv[1]] isEqualToString:@"-outputDir"]) { // Remind user of how to use this program
+            NSLog(@"Usage: requires -outputDir to be set");
+            exit(1);
+        } else {
+            outputDirectory = [NSString stringWithUTF8String:argv[2]];
+        }
+
+        
         [DSLogger sharedInstance];
         [[DSAuthenticationManager sharedInstance] setOneTimeShouldUseAuthentication:FALSE];
         [DashSync sharedSyncController];
         DSNetworkInfo * networkInfo = [[DSNetworkInfo alloc] init];
-        [networkInfo getTestnetInfo];
+        [networkInfo getTestnetInfo:outputDirectory];
     }
     return 0;
 }

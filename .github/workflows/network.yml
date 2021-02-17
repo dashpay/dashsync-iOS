@@ -1,9 +1,8 @@
 name: Network
 
 on:
-  push:
-    branches:
-      - master
+  schedule:
+    - cron: "*/20 * * * *"
 
 jobs:
   build:
@@ -36,20 +35,18 @@ jobs:
         working-directory: ./dashsync/Example
         env:
           scheme: ${{ 'default' }}
-          platform: ${{ 'iOS Simulator' }}
+          platform: ${{ 'macOS' }}
         run: |
-          device=`instruments -s -devices | grep -oE 'iPhone.*?[^\(]+' | head -1 | awk '{$1=$1;print}'`
-          xcodebuild build -scheme "NetworkInfo" -workspace "DashSync.xcworkspace" -destination "platform=$platform,name=$device"
+          xcodebuild build -scheme "NetworkInfo" -workspace "DashSync.xcworkspace" -derivedDataPath './build/NetworkInfo/'
       - name: Get Network Info and Ping Nodes
-        working-directory: ./dashsync/Example
+        working-directory: ./dashsync/Example/build/NetworkInfo/Build/Products/Debug
         env:
           scheme: ${{ 'default' }}
-          platform: ${{ 'iOS Simulator' }}
+          platform: ${{ 'macOS' }}
         run: |
-          device=`instruments -s -devices | grep -oE 'iPhone.*?[^\(]+' | head -1 | awk '{$1=$1;print}'`
-          xcodebuild test-without-building -scheme "NetworkInfo" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=$device"
+          ./NetworkInfo -outputDir /
       - name: Archive network ping results
         uses: actions/upload-artifact@v2
         with:
           name: testnet-network-report
-          path: output/test/testnet-network.json
+          path: /networkHealth.json
