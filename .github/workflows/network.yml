@@ -26,20 +26,23 @@ jobs:
           path: dapi-grpc
           repository: 'dashevo/dapi-grpc'
           ref: 'v0.16.0-dev.3'
-      - uses: actions/cache@v2
-        with:
-          path: ./dashsync/Example/Pods
-          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pods-
       - name: Dependencies
         working-directory: ./dashsync/Example
         run: pod install
+      - name: Cache network info build
+        id: cache-network-info-build
+        uses: actions/cache@v2
+        with:
+          path: ./dashsync/Example/build/NetworkInfo/Build/Products/Debug
+          key: ${{ runner.os }}-NetworkInfo-${{ hashFiles('NetworkInfo') }}
+          restore-keys: |
+            ${{ runner.os }}-NetworkInfo-
       - name: Build
         working-directory: ./dashsync/Example
         env:
           scheme: ${{ 'default' }}
           platform: ${{ 'macOS' }}
+        if: steps.cache-network-info-build.outputs.cache-hit != 'true'
         run: |
           xcodebuild build -scheme "NetworkInfo" -workspace "DashSync.xcworkspace" -derivedDataPath './build/NetworkInfo/' CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
       - name: Get Network Info and Ping Nodes
