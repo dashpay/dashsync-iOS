@@ -41,7 +41,7 @@ jobs:
           scheme: ${{ 'default' }}
           platform: ${{ 'macOS' }}
         run: |
-          xcodebuild build -scheme "NetworkInfo" -workspace "DashSync.xcworkspace" -derivedDataPath './build/NetworkInfo/'
+          xcodebuild build -scheme "NetworkInfo" -workspace "DashSync.xcworkspace" -derivedDataPath './build/NetworkInfo/' CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
       - name: Get Network Info and Ping Nodes
         working-directory: ./dashsync/Example/build/NetworkInfo/Build/Products/Debug
         env:
