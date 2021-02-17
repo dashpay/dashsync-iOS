@@ -16,17 +16,11 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "DSNetworkInfo.h"
-#import <DashSync/DashSync.h>
 
-int main(int argc, const char * argv[]) {
+@interface DSNetworkInfo : NSObject
 
-    @autoreleasepool {
-        [DSLogger sharedInstance];
-        [[DSAuthenticationManager sharedInstance] setOneTimeShouldUseAuthentication:FALSE];
-        [DashSync sharedSyncController];
-        DSNetworkInfo * networkInfo = [[DSNetworkInfo alloc] init];
-        [networkInfo getTestnetInfo];
-    }
-    return 0;
-}
+-(void)getTestnetInfo;
+-(void)getMainnetInfo;
+
+@end
+
