@@ -57,9 +57,9 @@ jobs:
           scheme: ${{ 'default' }}
           platform: ${{ 'macOS' }}
         run: |
-          ./NetworkInfo -outputDir /
+          ./NetworkInfo -outputDir ~/
       - name: Archive network ping results
         uses: actions/upload-artifact@v2
         with:
           name: testnet-network-report
-          path: /networkHealth.json
+          path: ~/networkHealth.json

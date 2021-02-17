@@ -105,6 +105,9 @@
                 NSAssert(error == nil, error.localizedDescription);
                 
                 [data writeToFile:filePath atomically:YES];
+                
+                NSLog(@"Writing network info to file %@", filePath);
+                
                 [[NSNotificationCenter defaultCenter] postNotificationName:@"FinishedGatheringNetworkInfo" object:nil];
                 exit(0);
             };
