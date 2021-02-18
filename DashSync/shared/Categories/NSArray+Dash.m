@@ -7,6 +7,7 @@
 
 #import "NSArray+Dash.h"
 #import "NSMutableData+Dash.h"
+#import "NSMutableArray+Dash.h"
 
 @implementation NSArray (Dash)
 
@@ -40,6 +41,10 @@
         [mArray addObject:[data hexString]];
     }
     return [mArray copy];
+}
+
+- (NSMutableArray*)secureMutableCopy {
+    return [NSMutableArray secureArrayWithArray:self];
 }
 
 @end
