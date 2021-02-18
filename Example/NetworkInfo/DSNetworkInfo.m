@@ -50,7 +50,7 @@
      return [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
 }
 
--(void)getTestnetInfo {
+-(void)getTestnetInfo:(NSString*)outputDirectory {
     [[DashSync sharedSyncController] wipePeerDataForChain:self.testnetChain inContext:[NSManagedObjectContext chainContext]];
     [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.testnetChain inContext:[NSManagedObjectContext chainContext]];
     [[DashSync sharedSyncController] wipeSporkDataForChain:self.testnetChain inContext:[NSManagedObjectContext chainContext]];
@@ -66,9 +66,7 @@
             void (^pingTimeCompletionBlock)(NSMutableDictionary<NSData *, NSNumber *> *_Nonnull pingTimes, NSMutableDictionary<NSData *, NSError *> *_Nonnull errors) = ^(NSMutableDictionary<NSData *, NSNumber *> *_Nonnull pingTimes, NSMutableDictionary<NSData *, NSError *> *_Nonnull errors) {
                 DSLogPrivate(@"Finished ping times");
                 
-                NSString *dirPath = [[DSNetworkInfo applicationDocumentsDirectory] path];
-                
-                NSString *filePath = [dirPath stringByAppendingPathComponent:@"networkHealth.json"];
+                NSString *filePath = [[outputDirectory stringByExpandingTildeInPath] stringByAppendingPathComponent:@"networkHealth.json"];
                 
                 NSMutableDictionary *reportDictionary = [NSMutableDictionary dictionary];
                 
@@ -107,6 +105,9 @@
                 NSAssert(error == nil, error.localizedDescription);
                 
                 [data writeToFile:filePath atomically:YES];
+                
+                NSLog(@"Writing network info to file %@", filePath);
+                
                 [[NSNotificationCenter defaultCenter] postNotificationName:@"FinishedGatheringNetworkInfo" object:nil];
                 exit(0);
             };

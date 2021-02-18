@@ -1,9 +1,12 @@
 name: Network
 
 on:
-  push:
+  pull_request:
     branches:
       - master
+      - develop
+  schedule:
+    - cron: "*/20 * * * *"
 
 jobs:
   build:
@@ -32,24 +35,31 @@ jobs:
       - name: Dependencies
         working-directory: ./dashsync/Example
         run: pod install
+      - name: Cache network info build
+        id: cache-network-info-build
+        uses: actions/cache@v2
+        with:
+          path: ./dashsync/Example/build/NetworkInfo/Build/Products/Debug
+          key: ${{ runner.os }}-NetworkInfo-${{ hashFiles('NetworkInfo') }}
+          restore-keys: |
+            ${{ runner.os }}-NetworkInfo-
       - name: Build
         working-directory: ./dashsync/Example
         env:
           scheme: ${{ 'default' }}
-          platform: ${{ 'iOS Simulator' }}
+          platform: ${{ 'macOS' }}
+        if: steps.cache-network-info-build.outputs.cache-hit != 'true'
         run: |
-          device=`instruments -s -devices | grep -oE 'iPhone.*?[^\(]+' | head -1 | awk '{$1=$1;print}'`
-          xcodebuild build -scheme "NetworkInfo" -workspace "DashSync.xcworkspace" -destination "platform=$platform,name=$device"
+          xcodebuild build -scheme "NetworkInfo" -workspace "DashSync.xcworkspace" -derivedDataPath './build/NetworkInfo/' CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
       - name: Get Network Info and Ping Nodes
-        working-directory: ./dashsync/Example
+        working-directory: ./dashsync/Example/build/NetworkInfo/Build/Products/Debug
         env:
           scheme: ${{ 'default' }}
-          platform: ${{ 'iOS Simulator' }}
+          platform: ${{ 'macOS' }}
         run: |
-          device=`instruments -s -devices | grep -oE 'iPhone.*?[^\(]+' | head -1 | awk '{$1=$1;print}'`
-          xcodebuild test-without-building -scheme "NetworkInfo" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=$device"
+          ./NetworkInfo -outputDir ~/
       - name: Archive network ping results
         uses: actions/upload-artifact@v2
         with:
           name: testnet-network-report
-          path: output/test/testnet-network.json
+          path: ~/networkHealth.json
