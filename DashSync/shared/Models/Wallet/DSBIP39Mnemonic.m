@@ -31,6 +31,7 @@
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+MDCDamerauLevenshteinDistance.h"
+#import "NSArray+Dash.h"
 
 #define WORDS @"BIP39Words"
 
@@ -462,7 +463,7 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
         DSBIP39Mnemonic *m = [DSBIP39Mnemonic sharedInstance];
         NSArray *originalPassphraseWords = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), (CFStringRef)[self normalizePhrase:partialPassphrase], CFSTR(" ")));
         
-        NSMutableArray * passphraseWords = [originalPassphraseWords mutableCopy];
+        NSMutableArray * passphraseWords = [originalPassphraseWords secureMutableCopy];
         
         NSMutableIndexSet * passphraseReplacementIndexes = [NSMutableIndexSet indexSet];
         
@@ -486,7 +487,7 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
             for (NSString *word in [m wordsForLanguage:checkLanguage]) {
                 if (stop) break;
                 @autoreleasepool {
-                    NSMutableArray *checkingWords = [passphraseWords mutableCopy];
+                    NSMutableArray *checkingWords = [passphraseWords secureMutableCopy];
                     [checkingWords insertObject:word atIndex:[passphraseReplacementIndexes firstIndex]];
                     [checkingWords insertObject:replacementString atIndex:[passphraseReplacementIndexes lastIndex]];
                     NSString *passphrase = CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (CFArrayRef)checkingWords, CFSTR(" ")));
@@ -534,7 +535,7 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
                     return;
                 }
             }
-            NSMutableArray *passphraseWordArray = [passphraseWords mutableCopy];
+            NSMutableArray *passphraseWordArray = [passphraseWords secureMutableCopy];
             [passphraseWordArray insertObject:word atIndex:[passphraseReplacementIndexes firstIndex]];
             if ([m wordArrayIsValid:passphraseWordArray inLanguage:checkLanguage]) {
                 NSData *data = [m deriveKeyFromWordArray:passphraseWordArray withPassphrase:nil];
