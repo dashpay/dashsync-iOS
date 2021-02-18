@@ -92,7 +92,7 @@
                 [formatter setMaximumFractionDigits:2];
                 NSString * formattedNumberString = [formatter stringFromNumber:@(totalPingTime/(1000*pingTimes.count))];
                 
-                [reportDictionary setObject:[NSString stringWithFormat:@"%@ ms", formattedNumberString] forKey:@"averagePing"];
+                [reportDictionary setObject:[NSString stringWithFormat:@"%@ s", formattedNumberString] forKey:@"averagePing"];
                 [reportDictionary setObject:pingDictionary forKey:@"pings"];
                 [reportDictionary setObject:errorDictionary forKey:@"errors"];
                 

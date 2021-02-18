@@ -154,7 +154,7 @@
 
 - (DSQuorumEntry *)findSigningQuorumReturnMasternodeList:(DSMasternodeList **)returnMasternodeList {
     DSQuorumEntry *foundQuorum = nil;
-    for (DSMasternodeList *masternodeList in self.chain.chainManager.masternodeManager.recentMasternodeLists) {
+    for (DSMasternodeList *masternodeList in [self.chain.chainManager.masternodeManager.recentMasternodeLists copy]) {
         for (DSQuorumEntry *quorumEntry in [[masternodeList quorumsOfType:DSLLMQType_50_60] allValues]) {
             BOOL signatureVerified = [self verifySignatureAgainstQuorum:quorumEntry];
             if (signatureVerified) {

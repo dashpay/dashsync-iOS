@@ -206,7 +206,7 @@
 - (NSArray *)addressesToIndex:(NSUInteger)index useCache:(BOOL)useCache addToCache:(BOOL)addToCache {
     NSMutableArray *mArray = [NSMutableArray array];
     for (uint32_t i = 0; i < index; i++) {
-        if (useCache && self.mOrderedAddresses[i]) {
+        if (useCache && self.mOrderedAddresses.count > i && self.mOrderedAddresses[i]) {
             [mArray addObject:self.mOrderedAddresses[i]];
         } else {
             NSData *pubKey = [self publicKeyDataAtIndex:i];
