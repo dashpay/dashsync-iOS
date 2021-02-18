@@ -147,10 +147,10 @@
 
 - (uint32_t)lastMasternodeListBlockHeight {
     uint32_t last = 0;
-    for (NSData *blockHash in self.masternodeListsBlockHashStubs) {
+    for (NSData *blockHash in [self.masternodeListsBlockHashStubs copy]) {
         last = MAX(last, [self heightForBlockHash:blockHash.UInt256]);
     }
-    for (NSData *blockHash in self.masternodeListsByBlockHash) {
+    for (NSData *blockHash in [self.masternodeListsByBlockHash copy]) {
         last = MAX(last, [self heightForBlockHash:blockHash.UInt256]);
     }
     return last ? last : UINT32_MAX;
