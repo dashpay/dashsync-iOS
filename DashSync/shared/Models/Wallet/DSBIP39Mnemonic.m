@@ -460,13 +460,20 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
 - (void)findPotentialWordsOfMnemonicForPassphrase:(NSString *)partialPassphrase replacementString:(NSString *)replacementString inLanguage:(DSBIP39Language)language useDistanceAsBackup:(BOOL)useDistanceAsBackup progressUpdate:(void (^)(float, bool *))progressUpdate completion:(void (^)(NSDictionary<NSString *, NSNumber *> *missingWords))completion completeInQueue:(dispatch_queue_t)dispatchQueue {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
         DSBIP39Mnemonic *m = [DSBIP39Mnemonic sharedInstance];
-        NSMutableArray *words = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), (CFStringRef)[self normalizePhrase:partialPassphrase], CFSTR(" ")));
-        NSIndexSet *indexes = [words indexesOfObjectsPassingTest:^BOOL(id _Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
-            return [obj isEqualToString:replacementString];
-        }];
-        [words removeObjectsAtIndexes:indexes];
-        DSBIP39Language checkLanguage = (language == DSBIP39Language_Unknown) ? [self bestFittingLanguageForWords:words] : language;
-        NSUInteger count = words.count;
+        NSArray *originalPassphraseWords = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), (CFStringRef)[self normalizePhrase:partialPassphrase], CFSTR(" ")));
+        
+        NSMutableArray * passphraseWords = [originalPassphraseWords mutableCopy];
+        
+        NSMutableIndexSet * passphraseReplacementIndexes = [NSMutableIndexSet indexSet];
+        
+        for (NSInteger i = originalPassphraseWords.count - 1; i >=0; i--) {
+            if ([passphraseWords[i] isEqualToString:replacementString]) {
+                [passphraseWords removeObjectAtIndex:i];
+                [passphraseReplacementIndexes addIndex:i];
+            }
+        }
+        DSBIP39Language checkLanguage = (language == DSBIP39Language_Unknown) ? [self bestFittingLanguageForWords:passphraseWords] : language;
+        NSUInteger count = passphraseWords.count;
         if (count == 10) {
             __block NSMutableDictionary *possibleWordArrays = [NSMutableDictionary dictionary];
             uint32_t i = 0;
@@ -479,9 +486,9 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
             for (NSString *word in [m wordsForLanguage:checkLanguage]) {
                 if (stop) break;
                 @autoreleasepool {
-                    NSMutableArray *checkingWords = [words mutableCopy];
-                    [checkingWords insertObject:word atIndex:[indexes firstIndex]];
-                    [checkingWords insertObject:replacementString atIndex:[indexes lastIndex]];
+                    NSMutableArray *checkingWords = [passphraseWords mutableCopy];
+                    [checkingWords insertObject:word atIndex:[passphraseReplacementIndexes firstIndex]];
+                    [checkingWords insertObject:replacementString atIndex:[passphraseReplacementIndexes lastIndex]];
                     NSString *passphrase = CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (CFArrayRef)checkingWords, CFSTR(" ")));
                     dispatch_group_enter(dispatchGroup);
                     dispatch_semaphore_wait(dispatchSemaphore, DISPATCH_TIME_FOREVER);
@@ -527,8 +534,8 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
                     return;
                 }
             }
-            NSMutableArray *passphraseWordArray = [words mutableCopy];
-            [passphraseWordArray insertObject:word atIndex:[indexes firstIndex]];
+            NSMutableArray *passphraseWordArray = [passphraseWords mutableCopy];
+            [passphraseWordArray insertObject:word atIndex:[passphraseReplacementIndexes firstIndex]];
             if ([m wordArrayIsValid:passphraseWordArray inLanguage:checkLanguage]) {
                 NSData *data = [m deriveKeyFromWordArray:passphraseWordArray withPassphrase:nil];
                 DSDerivationPath *derivationPath = [DSFundsDerivationPath bip44DerivationPathForAccountNumber:0 onChain:[DSChain mainnet]];
