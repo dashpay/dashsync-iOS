@@ -79,6 +79,16 @@
     DSECDSAKey *key = (DSECDSAKey *)[derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:0] fromSeed:self.seed];
 
     XCTAssertEqualObjects(key.secretKeyString, @"e8781fdef72862968cd9a4d2df34edaf9dcc5b17629ec505f0d2d1a8ed6f9f09", @"keys should match");
+
+    [derivationPath generateExtendedPublicKeyFromSeed:self.seed storeUnderWalletUniqueId:nil storePrivateKey:NO];
+
+    NSString *serializedExtendedPublicKey = [derivationPath serializedExtendedPublicKey];
+
+    NSString *serializedExtendedPrivateKey = [derivationPath serializedExtendedPrivateKeyFromSeed:self.seed];
+
+    XCTAssertEqualObjects(serializedExtendedPublicKey, @"dptp1CjRySByBWNBUgwM6mo6RE3zncnqhfSSedX7De8HzSEdoYgzyuUs1Pdbprcu27dEZ6ahLrnHapqswbbMoExT3ZMq7CaaBKPfS2xqwMJLsxU3kLhXp4kfsYcpeB7ksLFseMGGFqaQ8qtpjLGHhx4", @"serializedExtendedPublicKey should match");
+
+    XCTAssertEqualObjects(serializedExtendedPrivateKey, @"dpts1wFAhgR9neEBu3nwrDoCwmKE7obaqwaBBWf429cgs2bBppZeuXRqPfA1aG2uqNuf9j5C3bpDkdzgmWddGAPu1TXU8Me2FyjWkf7MujnHdG8Qp1YR8K7X3iQtLn6YXP3eQGW4LFpfBgiz3iDGzGr", @"serializedExtendedPrivateKey should match");
 }
 
 - (void)test256BitPathECDSADerivation1 {

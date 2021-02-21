@@ -519,7 +519,7 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i) {
 
     UInt256 secret = *(UInt256 *)&I, lChain = *(UInt256 *)&I.u8[sizeof(UInt256)];
 
-    return serialize(0, 0, 0, lChain, [NSData dataWithBytes:&secret length:sizeof(secret)], [chain isMainnet]);
+    return serialize(0, 0, false, UINT256_ZERO, lChain, [NSData dataWithBytes:&secret length:sizeof(secret)], [chain isMainnet]);
 }
 
 - (nullable NSString *)serializedPrivateKeyForChain:(DSChain *)chain {

@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (UInt256)hashDataComponents;
 - (NSArray *)transformToArrayOfHexStrings;
 - (UInt256)hashDataComponentsWithSelector:(SEL)hashFunction;
-- (NSMutableArray*)secureMutableCopy;
+- (NSMutableArray *)secureMutableCopy;
 
 @end
 

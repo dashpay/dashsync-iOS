@@ -54,6 +54,12 @@ NS_ASSUME_NONNULL_BEGIN
 #define BIP32_XPRV_MAINNET "\x04\x88\xAD\xE4"
 #define BIP32_XPUB_MAINNET "\x04\x88\xB2\x1E"
 
+#define DIP14_DPTS_TESTNET "\x0E\xED\x27\x74"
+#define DIP14_DPTP_TESTNET "\x0E\xED\x27\x0B"
+
+#define DIP14_DPMS_MAINNET "\x0E\xEC\xF0\x2E"
+#define DIP14_DPMP_MAINNET "\x0E\xEC\xEF\xC5"
+
 
 #endif
 
@@ -113,9 +119,9 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b);
 //Serialization
 
 // helper function for serializing BIP32 master public/private keys to standard export format
-NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, UInt256 chain, NSData *key, BOOL mainnet);
+NSString *serialize(uint8_t depth, uint32_t fingerprint, BOOL hardened, UInt256 child, UInt256 chain, NSData *key, BOOL mainnet);
 // helper function for deserializing BIP32 master public/private keys to standard export format
-BOOL deserialize(NSString *string, uint8_t *depth, uint32_t *fingerprint, uint32_t *child, UInt256 *chain, NSData *_Nonnull *_Nonnull key, BOOL mainnet);
+BOOL deserialize(NSString *string, uint8_t *depth, uint32_t *fingerprint, BOOL *hardened, UInt256 *child, UInt256 *chain, NSData *_Nonnull *_Nonnull key, BOOL mainnet);
 
 //Hashing
 
@@ -173,6 +179,7 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 - (UInt128)MD5;
 - (NSData *)reverse;
 
+- (BOOL)BOOLAtOffset:(NSUInteger)offset;
 - (uint8_t)UInt8AtOffset:(NSUInteger)offset;
 - (uint16_t)UInt16AtOffset:(NSUInteger)offset;
 - (uint16_t)UInt16BigAtOffset:(NSUInteger)offset;
