@@ -32,10 +32,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef struct {
-    uint8_t p[33];
-} DSECPoint;
-
 extern void CKDpriv(UInt256 *k, UInt256 *c, uint32_t i);
 extern void CKDpriv256(UInt256 *k, UInt256 *c, UInt256 i, BOOL hardened);
 extern void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i);

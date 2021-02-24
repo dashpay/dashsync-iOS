@@ -78,6 +78,10 @@ typedef struct _DSLLMQ {
     UInt256 hash;
 } DSLLMQ;
 
+typedef struct {
+    uint8_t p[33];
+} DSECPoint;
+
 #define uint768_random ((UInt768){.u32 = {arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random()}})
 
 #define uint256_random ((UInt256){.u32 = {arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random()}})
@@ -196,6 +200,7 @@ typedef struct _DSLLMQ {
 #define UINT128_ZERO ((UInt128){.u64 = {0, 0}})
 #define DSUTXO_ZERO ((DSUTXO){.hash = UINT256_ZERO, .n = 0})
 #define DSLLMQ_ZERO ((DSLLMQ){.type = 0, .hash = UINT256_ZERO})
+#define DSECPOINT_ZERO ((DSECPoint){.p = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}})
 
 #define dsutxo_eq(a, b) (uint256_eq(a.hash, b.hash) && (a.n == b.n))
 #define dsutxo_is_zero(a) (uint256_is_zero(a.hash) && (a.n == 0))

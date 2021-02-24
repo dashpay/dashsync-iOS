@@ -37,6 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 typedef void (^TransactionValidityCompletionBlock)(BOOL signedTransaction, BOOL cancelled);
 
 #define BIP32_HARD 0x80000000
+#define BIP32_HARD_LE 0x00000080
 
 #define FEATURE_PURPOSE 9
 #define FEATURE_PURPOSE_IDENTITIES 5
@@ -76,6 +77,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference)
     DSDerivationPathReference_ContactBasedFundsExternal = 10,
     DSDerivationPathReference_BlockchainIdentityCreditRegistrationFunding = 11,
     DSDerivationPathReference_BlockchainIdentityCreditTopupFunding = 12,
+    DSDerivationPathReference_Root = 13,
 };
 
 @interface DSDerivationPath : DSUInt256IndexPath {

@@ -498,15 +498,15 @@
         *rVersion = [chainSynchronizationFingerprint UInt8AtOffset:0];
     }
     if (rChainHeight) {
-        *rChainHeight = ((uint32_t)[chainSynchronizationFingerprint UInt16BigAtOffset:1]) * 500;
+        *rChainHeight = ((uint32_t)[chainSynchronizationFingerprint UInt16BigToHostAtOffset:1]) * 500;
     }
-    uint16_t firstBlockZone = [chainSynchronizationFingerprint UInt16BigAtOffset:3];
+    uint16_t firstBlockZone = [chainSynchronizationFingerprint UInt16BigToHostAtOffset:3];
     NSMutableOrderedSet *blockZones = [NSMutableOrderedSet orderedSet];
     [blockZones addObject:@(firstBlockZone)];
     uint16_t lastKnownBlockZone = firstBlockZone;
     uint16_t offset = 0;
     for (uint32_t i = 5; i < chainSynchronizationFingerprint.length; i += 2) {
-        uint16_t currentData = [chainSynchronizationFingerprint UInt16BigAtOffset:i];
+        uint16_t currentData = [chainSynchronizationFingerprint UInt16BigToHostAtOffset:i];
         if (currentData & (1 << 15)) {
             //We are in a continuation
             if (offset) {

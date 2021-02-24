@@ -251,7 +251,7 @@
 
 - (DSKey *)extendedPublicKey {
     if (!_extendedPublicKey) {
-        if (self.wallet && self.length) {
+        if (self.wallet && (self.length || self.reference == DSDerivationPathReference_Root)) {
             NSData *extendedPublicKeyData = getKeychainData([self walletBasedExtendedPublicKeyLocationString], nil);
             NSAssert(extendedPublicKeyData, @"extended public key data not set");
             if (extendedPublicKeyData) {
@@ -436,6 +436,9 @@
 
 - (NSString *)referenceName {
     switch (self.reference) {
+        case DSDerivationPathReference_Root:
+            return @"Root";
+            break;
         case DSDerivationPathReference_BIP32:
             return @"BIP 32";
             break;
@@ -563,7 +566,7 @@
 
 - (DSKey *)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString *)walletUniqueId storePrivateKey:(BOOL)storePrivateKey {
     if (!seed) return nil;
-    if (![self length]) return nil; //there needs to be at least 1 length
+    if (![self length] && self.reference != DSDerivationPathReference_Root) return nil; //there needs to be at least 1 length
     DSKey *seedKey = [DSKey keyWithSeedData:seed forKeyType:self.signingAlgorithm];
     if (!seedKey) return nil;
     _extendedPublicKey = [seedKey privateDeriveTo256BitDerivationPath:self];
@@ -750,13 +753,20 @@
 
         UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
 
-        for (NSInteger i = 0; i < [self length] - 1; i++) {
-            CKDpriv256(&secret, &chain, [self indexAtPosition:i], [self isHardenedAtPosition:i]);
+        uint32_t fingerprint = 0;
+        UInt256 index = UINT256_ZERO;
+        BOOL hardened = NO;
+
+        if (self.length) {
+            for (NSInteger i = 0; i < [self length] - 1; i++) {
+                CKDpriv256(&secret, &chain, [self indexAtPosition:i], [self isHardenedAtPosition:i]);
+            }
+            fingerprint = [DSECDSAKey keyWithSecret:secret compressed:YES].hash160.u32[0];
+            index = [self indexAtPosition:[self length] - 1];
+            hardened = [self isHardenedAtPosition:[self length] - 1];
+            CKDpriv256(&secret, &chain, index, hardened); // account 0H
         }
-        uint32_t fingerprint = [DSECDSAKey keyWithSecret:secret compressed:YES].hash160.u32[0];
-        UInt256 index = [self indexAtPosition:[self length] - 1];
-        BOOL hardened = [self isHardenedAtPosition:[self length] - 1];
-        CKDpriv256(&secret, &chain, index, hardened); // account 0H
+
         return serialize([self length], fingerprint, hardened, index, chain, [NSData dataWithBytes:&secret length:sizeof(secret)], [self.chain isMainnet]);
     }
 }
@@ -783,11 +793,16 @@
     //todo make sure this works with BLS keys
     if (self.extendedPublicKeyData.length < 36) return nil;
 
-    uint32_t fingerprint = CFSwapInt32BigToHost(*(const uint32_t *)self.extendedPublicKeyData.bytes);
-    UInt256 chain = *(UInt256 *)((const uint8_t *)self.extendedPublicKeyData.bytes + 4);
-    DSECPoint pubKey = *(DSECPoint *)((const uint8_t *)self.extendedPublicKeyData.bytes + 36);
-    UInt256 child = [self indexAtPosition:[self length] - 1];
-    BOOL isHardened = [self isHardenedAtPosition:[self length] - 1];
+    uint32_t fingerprint = [self.extendedPublicKeyData UInt32AtOffset:0];
+    UInt256 chain = [self.extendedPublicKeyData UInt256AtOffset:4];
+    DSECPoint pubKey = [self.extendedPublicKeyData ECPointAtOffset:36];
+    UInt256 child = UINT256_ZERO;
+    BOOL isHardened = NO;
+    if (self.length) {
+        child = [self indexAtPosition:[self length] - 1];
+        isHardened = [self isHardenedAtPosition:[self length] - 1];
+    }
+
     return serialize([self.depth unsignedCharValue], fingerprint, isHardened, child, chain, [NSData dataWithBytes:&pubKey length:sizeof(pubKey)], [self.chain isMainnet]);
 }
 

@@ -182,8 +182,9 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 - (BOOL)BOOLAtOffset:(NSUInteger)offset;
 - (uint8_t)UInt8AtOffset:(NSUInteger)offset;
 - (uint16_t)UInt16AtOffset:(NSUInteger)offset;
-- (uint16_t)UInt16BigAtOffset:(NSUInteger)offset;
+- (uint16_t)UInt16BigToHostAtOffset:(NSUInteger)offset;
 - (uint32_t)UInt32AtOffset:(NSUInteger)offset;
+- (uint32_t)UInt32BigToHostAtOffset:(NSUInteger)offset;
 - (uint64_t)UInt64AtOffset:(NSUInteger)offset;
 - (UInt128)UInt128AtOffset:(NSUInteger)offset;
 - (UInt160)UInt160AtOffset:(NSUInteger)offset;
@@ -197,6 +198,10 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 - (UInt384)UInt384;
 - (UInt512)UInt512;
 - (UInt768)UInt768;
+
+- (DSECPoint)ECPointAtOffset:(NSUInteger)offset;
+- (DSECPoint)ECPoint;
+
 - (DSUTXO)transactionOutpoint;
 - (DSLLMQ)llmq;
 - (uint64_t)varIntAtOffset:(NSUInteger)offset length:(NSNumber *_Nullable *_Nullable)length;

@@ -783,9 +783,6 @@ size_t chacha20Poly1305AEADDecrypt(void *out, size_t outLen, const void *key32, 
 NSString *serialize32(uint8_t depth, uint32_t fingerprint, uint32_t child, UInt256 chain, NSData *key, BOOL mainnet) {
     NSMutableData *d = [NSMutableData secureDataWithCapacity:14 + key.length + sizeof(chain)];
 
-    fingerprint = CFSwapInt32HostToBig(fingerprint);
-    child = CFSwapInt32HostToBig(child);
-
     [d appendBytes:key.length < 33 ? mainnet ? BIP32_XPRV_MAINNET : BIP32_XPRV_TESTNET : mainnet ? BIP32_XPUB_MAINNET :
                                                                                                    BIP32_XPUB_TESTNET
             length:4];                                       //4
@@ -827,8 +824,6 @@ BOOL deserialize32(NSString *string, uint8_t *depth, uint32_t *fingerprint, uint
 // helper function for serializing BIP32 master public/private keys to standard export format
 NSString *serialize256(uint8_t depth, uint32_t fingerprint, bool hardened, UInt256 child, UInt256 chain, NSData *key, BOOL mainnet) {
     NSMutableData *d = [NSMutableData secureDataWithCapacity:47 + key.length + sizeof(chain)];
-
-    fingerprint = CFSwapInt32HostToBig(fingerprint);
 
     [d appendBytes:key.length < 33 ? mainnet ? DIP14_DPMS_MAINNET : DIP14_DPTS_TESTNET : mainnet ? DIP14_DPMP_MAINNET :
                                                                                                    DIP14_DPTP_TESTNET
@@ -876,6 +871,7 @@ NSString *serialize(uint8_t depth, uint32_t fingerprint, BOOL hardened, UInt256 
     if (uint256_is_31_bits(child)) {
         uint32_t smallI = child.u32[0];
         if (hardened) smallI |= BIP32_HARD;
+        smallI = CFSwapInt32(smallI);
         return serialize32(depth, fingerprint, smallI, chain, key, mainnet);
     } else {
         return serialize256(depth, fingerprint, hardened, child, chain, key, mainnet);
@@ -1190,7 +1186,7 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
     return CFSwapInt16LittleToHost(*(const uint16_t *)((const uint8_t *)self.bytes + offset));
 }
 
-- (uint16_t)UInt16BigAtOffset:(NSUInteger)offset {
+- (uint16_t)UInt16BigToHostAtOffset:(NSUInteger)offset {
     if (self.length < offset + sizeof(uint16_t)) return 0;
     return CFSwapInt16BigToHost(*(const uint16_t *)((const uint8_t *)self.bytes + offset));
 }
@@ -1198,6 +1194,11 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
 - (uint32_t)UInt32AtOffset:(NSUInteger)offset {
     if (self.length < offset + sizeof(uint32_t)) return 0;
     return CFSwapInt32LittleToHost(*(const uint32_t *)((const uint8_t *)self.bytes + offset));
+}
+
+- (uint32_t)UInt32BigToHostAtOffset:(NSUInteger)offset {
+    if (self.length < offset + sizeof(uint32_t)) return 0;
+    return CFSwapInt32BigToHost(*(const uint32_t *)((const uint8_t *)self.bytes + offset));
 }
 
 - (uint64_t)UInt64AtOffset:(NSUInteger)offset {
@@ -1287,6 +1288,16 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
         return [mData UInt768];
     }
     return *(UInt768 *)(self.bytes);
+}
+
+- (DSECPoint)ECPointAtOffset:(NSUInteger)offset {
+    if (self.length < offset + sizeof(DSECPoint)) return DSECPOINT_ZERO;
+    return *(DSECPoint *)(self.bytes + offset);
+}
+
+- (DSECPoint)ECPoint {
+    if (self.length < sizeof(DSECPoint)) return DSECPOINT_ZERO;
+    return *(DSECPoint *)(self.bytes);
 }
 
 - (DSUTXO)transactionOutpoint {
