@@ -810,11 +810,11 @@ BOOL deserialize32(NSString *string, uint8_t *depth, uint32_t *fingerprint, uint
     NSUInteger offset = 4;
     *depth = bytes[4];
     offset++;
-    *fingerprint = CFSwapInt32BigToHost(*(uint32_t *)(&bytes[offset]));
+    *fingerprint = [data UInt32AtOffset:offset];
     offset += sizeof(uint32_t);
-    *child = CFSwapInt32BigToHost(*(uint32_t *)(&bytes[offset]));
+    *child = [data UInt32AtOffset:offset];
     offset += sizeof(uint32_t);
-    *chain = *(UInt256 *)(&bytes[offset]);
+    *chain = [data UInt256AtOffset:offset];
     offset += sizeof(UInt256);
     if (memcmp(bytes, mainnet ? BIP32_XPRV_MAINNET : BIP32_XPRV_TESTNET, 4) == 0) offset++;
     *key = [data subdataWithRange:NSMakeRange(offset, data.length - offset)];
@@ -853,7 +853,7 @@ BOOL deserialize256(NSString *string, uint8_t *depth, uint32_t *fingerprint, BOO
     NSUInteger offset = 4;
     *depth = bytes[4];
     offset++;
-    *fingerprint = CFSwapInt32BigToHost(*(uint32_t *)(&bytes[offset]));
+    *fingerprint = [data UInt32AtOffset:offset];
     offset += sizeof(uint32_t);
     *hardened = [data BOOLAtOffset:offset];
     offset += sizeof(BOOL);
@@ -886,6 +886,7 @@ BOOL deserialize(NSString *string, uint8_t *depth, uint32_t *fingerprint, BOOL *
             uint32_t child32;
             BOOL deserialized = deserialize32(string, depth, fingerprint, &child32, chain, key, mainnet);
             if (!deserialized) return deserialized;
+            child32 = CFSwapInt32(child32);
             *hardened = ((child32 & BIP32_HARD) > 0);
             *child = uint256_from_int(child32 & ~BIP32_HARD);
             return deserialized;

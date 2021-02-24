@@ -782,7 +782,7 @@
         NSMutableData *masterPrivateKey = [NSMutableData secureData];
         BOOL valid = deserialize(extendedPrivateKeyString, &depth, &fingerprint, &hardened, &child, &chainHash, &privkey, [chain isMainnet]);
         if (!valid) return nil;
-        [masterPrivateKey appendUInt32:CFSwapInt32HostToBig(fingerprint)];
+        [masterPrivateKey appendUInt32:fingerprint];
         [masterPrivateKey appendBytes:&chainHash length:32];
         [masterPrivateKey appendData:privkey];
         return [masterPrivateKey copy];
@@ -813,7 +813,7 @@
     NSMutableData *masterPublicKey = [NSMutableData secureData];
     BOOL valid = deserialize(extendedPublicKeyString, depth, &fingerprint, terminalHardened, terminalIndex, &chainHash, &pubkey, [chain isMainnet]);
     if (!valid) return nil;
-    [masterPublicKey appendUInt32:CFSwapInt32HostToBig(fingerprint)];
+    [masterPublicKey appendUInt32:fingerprint];
     [masterPublicKey appendBytes:&chainHash length:32];
     [masterPublicKey appendData:pubkey];
     return [masterPublicKey copy];
