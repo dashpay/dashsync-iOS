@@ -35,6 +35,7 @@
         "DSChainLockTests",
         "DSChainTests",
         "DSDIP13Tests",
+        "DSDIP14Tests",
         "DSDataTests",
         "DSDeterministicMasternodeListTests",
         "DSDeterministicMasternodeListTests\/testMNLSavingAndRetrievingFromDisk",
