@@ -24,6 +24,7 @@
         "DSChainTests",
         "DSChainedSigningTests",
         "DSDIP13Tests",
+        "DSDIP14Tests",
         "DSDeterministicMasternodeListTests",
         "DSGovernanceTests",
         "DSHashTests",
