@@ -165,7 +165,368 @@
         @"[DSBIP32Sequence privateKey:internal:fromSeed:]");
 }
 
-// TODO: some of tests below are disabled because extendedPublicKeyForAccount: method is not implemented yet
+- (void)testBIP32SerializationsBasic {
+    NSData *seedData = @"000102030405060708090a0b0c0d0e0f".hexToData;
+
+    DSWallet *wallet = [DSWallet transientWalletWithDerivedKeyData:seedData forChain:self.chain];
+
+
+    //--------------------------------------------------------------------------------------------------//
+    // m //
+    //--------------------------------------------------------------------------------------------------//
+
+    {
+        UInt256 derivationPathIndexesRoot[] = {};
+        BOOL hardenedRoot[] = {};
+
+        DSDerivationPath *rootDerivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexesRoot hardened:hardenedRoot length:0 type:DSDerivationPathType_Unknown signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_Root onChain:self.chain];
+
+        rootDerivationPath.wallet = wallet;
+
+        [rootDerivationPath generateExtendedPublicKeyFromSeed:seedData storeUnderWalletUniqueId:nil];
+
+        NSString *serializedRootExtendedPublicKey = [rootDerivationPath serializedExtendedPublicKey];
+
+        XCTAssertEqualObjects(serializedRootExtendedPublicKey, @"xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8",
+            @"[DSDerivationPath serializedExtendedPublicKey]");
+
+        NSString *serializedRootExtendedPrivateKey = [rootDerivationPath serializedExtendedPrivateKeyFromSeed:seedData];
+
+        XCTAssertEqualObjects(serializedRootExtendedPrivateKey, @"xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi",
+            @"[DSDerivationPath serializedExtendedPrivateKeyFromSeed]");
+    }
+
+    //--------------------------------------------------------------------------------------------------//
+    // m/0' //
+    //--------------------------------------------------------------------------------------------------//
+
+    {
+        DSAccount *account = [wallet accountWithNumber:0];
+        DSFundsDerivationPath *derivationPath = account.bip32DerivationPath;
+
+        NSString *serializedBip32ExtendedPublicKey = [derivationPath serializedExtendedPublicKey];
+
+        XCTAssertEqualObjects(serializedBip32ExtendedPublicKey, @"xpub68Gmy5EdvgibQVfPdqkBBCHxA5htiqg55crXYuXoQRKfDBFA1WEjWgP6LHhwBZeNK1VTsfTFUHCdrfp1bgwQ9xv5ski8PX9rL2dZXvgGDnw",
+            @"[DSDerivationPath serializedExtendedPublicKey:]");
+
+        NSString *serializedBip32ExtendedPrivateKey = [derivationPath serializedExtendedPrivateKeyFromSeed:seedData];
+
+        XCTAssertEqualObjects(serializedBip32ExtendedPrivateKey, @"xprv9uHRZZhk6KAJC1avXpDAp4MDc3sQKNxDiPvvkX8Br5ngLNv1TxvUxt4cV1rGL5hj6KCesnDYUhd7oWgT11eZG7XnxHrnYeSvkzY7d2bhkJ7",
+            @"[DSDerivationPath serializedExtendedPrivateKeyFromSeed:]");
+    }
+
+    //--------------------------------------------------------------------------------------------------//
+    // m/0'/1 //
+    //--------------------------------------------------------------------------------------------------//
+
+    {
+        UInt256 derivationPathIndexes[] = {uint256_from_long(0), uint256_from_long(1)};
+        BOOL hardened[] = {YES, NO};
+
+        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:2 type:DSDerivationPathType_Unknown signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_Root onChain:self.chain];
+
+        derivationPath.wallet = wallet;
+
+        [derivationPath generateExtendedPublicKeyFromSeed:seedData storeUnderWalletUniqueId:nil];
+
+        NSString *serializedRootExtendedPublicKey = [derivationPath serializedExtendedPublicKey];
+
+        XCTAssertEqualObjects(serializedRootExtendedPublicKey, @"xpub6ASuArnXKPbfEwhqN6e3mwBcDTgzisQN1wXN9BJcM47sSikHjJf3UFHKkNAWbWMiGj7Wf5uMash7SyYq527Hqck2AxYysAA7xmALppuCkwQ",
+            @"[DSDerivationPath serializedExtendedPublicKey]");
+
+        NSString *serializedRootExtendedPrivateKey = [derivationPath serializedExtendedPrivateKeyFromSeed:seedData];
+
+        XCTAssertEqualObjects(serializedRootExtendedPrivateKey, @"xprv9wTYmMFdV23N2TdNG573QoEsfRrWKQgWeibmLntzniatZvR9BmLnvSxqu53Kw1UmYPxLgboyZQaXwTCg8MSY3H2EU4pWcQDnRnrVA1xe8fs",
+            @"[DSDerivationPath serializedExtendedPrivateKeyFromSeed]");
+    }
+
+    //--------------------------------------------------------------------------------------------------//
+    // m/0'/1/2' //
+    //--------------------------------------------------------------------------------------------------//
+
+    {
+        UInt256 derivationPathIndexes[] = {uint256_from_long(0), uint256_from_long(1), uint256_from_long(2)};
+        BOOL hardened[] = {YES, NO, YES};
+
+        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:3 type:DSDerivationPathType_Unknown signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_Root onChain:self.chain];
+
+        derivationPath.wallet = wallet;
+
+        [derivationPath generateExtendedPublicKeyFromSeed:seedData storeUnderWalletUniqueId:nil];
+
+        NSString *serializedRootExtendedPublicKey = [derivationPath serializedExtendedPublicKey];
+
+        XCTAssertEqualObjects(serializedRootExtendedPublicKey, @"xpub6D4BDPcP2GT577Vvch3R8wDkScZWzQzMMUm3PWbmWvVJrZwQY4VUNgqFJPMM3No2dFDFGTsxxpG5uJh7n7epu4trkrX7x7DogT5Uv6fcLW5",
+            @"[DSDerivationPath serializedExtendedPublicKey]");
+
+        NSString *serializedRootExtendedPrivateKey = [derivationPath serializedExtendedPrivateKeyFromSeed:seedData];
+
+        XCTAssertEqualObjects(serializedRootExtendedPrivateKey, @"xprv9z4pot5VBttmtdRTWfWQmoH1taj2axGVzFqSb8C9xaxKymcFzXBDptWmT7FwuEzG3ryjH4ktypQSAewRiNMjANTtpgP4mLTj34bhnZX7UiM",
+            @"[DSDerivationPath serializedExtendedPrivateKeyFromSeed]");
+    }
+
+    //--------------------------------------------------------------------------------------------------//
+    // m/0'/1/2'/2 //
+    //--------------------------------------------------------------------------------------------------//
+
+    {
+        UInt256 derivationPathIndexes[] = {uint256_from_long(0), uint256_from_long(1), uint256_from_long(2), uint256_from_long(2)};
+        BOOL hardened[] = {YES, NO, YES, NO};
+
+        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:4 type:DSDerivationPathType_Unknown signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_Root onChain:self.chain];
+
+        derivationPath.wallet = wallet;
+
+        [derivationPath generateExtendedPublicKeyFromSeed:seedData storeUnderWalletUniqueId:nil];
+
+        NSString *serializedRootExtendedPublicKey = [derivationPath serializedExtendedPublicKey];
+
+        XCTAssertEqualObjects(serializedRootExtendedPublicKey, @"xpub6FHa3pjLCk84BayeJxFW2SP4XRrFd1JYnxeLeU8EqN3vDfZmbqBqaGJAyiLjTAwm6ZLRQUMv1ZACTj37sR62cfN7fe5JnJ7dh8zL4fiyLHV",
+            @"[DSDerivationPath serializedExtendedPublicKey]");
+
+        NSString *serializedRootExtendedPrivateKey = [derivationPath serializedExtendedPrivateKeyFromSeed:seedData];
+
+        XCTAssertEqualObjects(serializedRootExtendedPrivateKey, @"xprvA2JDeKCSNNZky6uBCviVfJSKyQ1mDYahRjijr5idH2WwLsEd4Hsb2Tyh8RfQMuPh7f7RtyzTtdrbdqqsunu5Mm3wDvUAKRHSC34sJ7in334",
+            @"[DSDerivationPath serializedExtendedPrivateKeyFromSeed]");
+    }
+
+    //--------------------------------------------------------------------------------------------------//
+    // m/0'/1/2'/2/1000000000 //
+    //--------------------------------------------------------------------------------------------------//
+
+    {
+        UInt256 derivationPathIndexes[] = {uint256_from_long(0), uint256_from_long(1), uint256_from_long(2), uint256_from_long(2), uint256_from_long(1000000000)};
+        BOOL hardened[] = {YES, NO, YES, NO, NO};
+
+        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:5 type:DSDerivationPathType_Unknown signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_Root onChain:self.chain];
+
+        derivationPath.wallet = wallet;
+
+        [derivationPath generateExtendedPublicKeyFromSeed:seedData storeUnderWalletUniqueId:nil];
+
+        NSString *serializedRootExtendedPublicKey = [derivationPath serializedExtendedPublicKey];
+
+        XCTAssertEqualObjects(serializedRootExtendedPublicKey, @"xpub6H1LXWLaKsWFhvm6RVpEL9P4KfRZSW7abD2ttkWP3SSQvnyA8FSVqNTEcYFgJS2UaFcxupHiYkro49S8yGasTvXEYBVPamhGW6cFJodrTHy",
+            @"[DSDerivationPath serializedExtendedPublicKey]");
+
+        NSString *serializedRootExtendedPrivateKey = [derivationPath serializedExtendedPrivateKeyFromSeed:seedData];
+
+        XCTAssertEqualObjects(serializedRootExtendedPrivateKey, @"xprvA41z7zogVVwxVSgdKUHDy1SKmdb533PjDz7J6N6mV6uS3ze1ai8FHa8kmHScGpWmj4WggLyQjgPie1rFSruoUihUZREPSL39UNdE3BBDu76",
+            @"[DSDerivationPath serializedExtendedPrivateKeyFromSeed]");
+    }
+}
+
+- (void)testBIP32SerializationsAdvanced {
+    NSData *seedData = @"fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542".hexToData;
+
+    DSWallet *wallet = [DSWallet transientWalletWithDerivedKeyData:seedData forChain:self.chain];
+
+    //--------------------------------------------------------------------------------------------------//
+    // m //
+    //--------------------------------------------------------------------------------------------------//
+
+    {
+        UInt256 derivationPathIndexesRoot[] = {};
+        BOOL hardenedRoot[] = {};
+
+        DSDerivationPath *rootDerivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexesRoot hardened:hardenedRoot length:0 type:DSDerivationPathType_Unknown signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_Root onChain:self.chain];
+
+        rootDerivationPath.wallet = wallet;
+
+        [rootDerivationPath generateExtendedPublicKeyFromSeed:seedData storeUnderWalletUniqueId:nil];
+
+        NSString *serializedRootExtendedPublicKey = [rootDerivationPath serializedExtendedPublicKey];
+
+        XCTAssertEqualObjects(serializedRootExtendedPublicKey, @"xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB",
+            @"[DSDerivationPath serializedExtendedPublicKey]");
+
+        NSString *serializedRootExtendedPrivateKey = [rootDerivationPath serializedExtendedPrivateKeyFromSeed:seedData];
+
+        XCTAssertEqualObjects(serializedRootExtendedPrivateKey, @"xprv9s21ZrQH143K31xYSDQpPDxsXRTUcvj2iNHm5NUtrGiGG5e2DtALGdso3pGz6ssrdK4PFmM8NSpSBHNqPqm55Qn3LqFtT2emdEXVYsCzC2U",
+            @"[DSDerivationPath serializedExtendedPrivateKeyFromSeed]");
+    }
+
+    //--------------------------------------------------------------------------------------------------//
+    // m/0 //
+    //--------------------------------------------------------------------------------------------------//
+
+    {
+        UInt256 derivationPathIndexes[] = {uint256_from_long(0)};
+        BOOL hardened[] = {NO};
+
+        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:1 type:DSDerivationPathType_Unknown signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_Root onChain:self.chain];
+
+        derivationPath.wallet = wallet;
+
+        [derivationPath generateExtendedPublicKeyFromSeed:seedData storeUnderWalletUniqueId:nil];
+
+        NSString *serializedRootExtendedPublicKey = [derivationPath serializedExtendedPublicKey];
+
+        XCTAssertEqualObjects(serializedRootExtendedPublicKey, @"xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9LgpeyGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH",
+            @"[DSDerivationPath serializedExtendedPublicKey]");
+
+        NSString *serializedRootExtendedPrivateKey = [derivationPath serializedExtendedPrivateKeyFromSeed:seedData];
+
+        XCTAssertEqualObjects(serializedRootExtendedPrivateKey, @"xprv9vHkqa6EV4sPZHYqZznhT2NPtPCjKuDKGY38FBWLvgaDx45zo9WQRUT3dKYnjwih2yJD9mkrocEZXo1ex8G81dwSM1fwqWpWkeS3v86pgKt",
+            @"[DSDerivationPath serializedExtendedPrivateKeyFromSeed]");
+    }
+
+    //--------------------------------------------------------------------------------------------------//
+    // m/0/2147483647' //
+    //--------------------------------------------------------------------------------------------------//
+
+    {
+        UInt256 derivationPathIndexes[] = {uint256_from_long(0), uint256_from_long(2147483647)};
+        BOOL hardened[] = {NO, YES};
+
+        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:2 type:DSDerivationPathType_Unknown signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_Root onChain:self.chain];
+
+        derivationPath.wallet = wallet;
+
+        [derivationPath generateExtendedPublicKeyFromSeed:seedData storeUnderWalletUniqueId:nil];
+
+        NSString *serializedRootExtendedPublicKey = [derivationPath serializedExtendedPublicKey];
+
+        XCTAssertEqualObjects(serializedRootExtendedPublicKey, @"xpub6ASAVgeehLbnwdqV6UKMHVzgqAG8Gr6riv3Fxxpj8ksbH9ebxaEyBLZ85ySDhKiLDBrQSARLq1uNRts8RuJiHjaDMBU4Zn9h8LZNnBC5y4a",
+            @"[DSDerivationPath serializedExtendedPublicKey]");
+
+        NSString *serializedRootExtendedPrivateKey = [derivationPath serializedExtendedPrivateKeyFromSeed:seedData];
+
+        XCTAssertEqualObjects(serializedRootExtendedPrivateKey, @"xprv9wSp6B7kry3Vj9m1zSnLvN3xH8RdsPP1Mh7fAaR7aRLcQMKTR2vidYEeEg2mUCTAwCd6vnxVrcjfy2kRgVsFawNzmjuHc2YmYRmagcEPdU9",
+            @"[DSDerivationPath serializedExtendedPrivateKeyFromSeed]");
+    }
+
+    //--------------------------------------------------------------------------------------------------//
+    // m/0/2147483647'/1 //
+    //--------------------------------------------------------------------------------------------------//
+
+    {
+        UInt256 derivationPathIndexes[] = {uint256_from_long(0), uint256_from_long(2147483647), uint256_from_long(1)};
+        BOOL hardened[] = {NO, YES, NO};
+
+        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:3 type:DSDerivationPathType_Unknown signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_Root onChain:self.chain];
+
+        derivationPath.wallet = wallet;
+
+        [derivationPath generateExtendedPublicKeyFromSeed:seedData storeUnderWalletUniqueId:nil];
+
+        NSString *serializedRootExtendedPublicKey = [derivationPath serializedExtendedPublicKey];
+
+        XCTAssertEqualObjects(serializedRootExtendedPublicKey, @"xpub6DF8uhdarytz3FWdA8TvFSvvAh8dP3283MY7p2V4SeE2wyWmG5mg5EwVvmdMVCQcoNJxGoWaU9DCWh89LojfZ537wTfunKau47EL2dhHKon",
+            @"[DSDerivationPath serializedExtendedPublicKey]");
+
+        NSString *serializedRootExtendedPrivateKey = [derivationPath serializedExtendedPrivateKeyFromSeed:seedData];
+
+        XCTAssertEqualObjects(serializedRootExtendedPrivateKey, @"xprv9zFnWC6h2cLgpmSA46vutJzBcfJ8yaJGg8cX1e5StJh45BBciYTRXSd25UEPVuesF9yog62tGAQtHjXajPPdbRCHuWS6T8XA2ECKADdw4Ef",
+            @"[DSDerivationPath serializedExtendedPrivateKeyFromSeed]");
+    }
+
+    //--------------------------------------------------------------------------------------------------//
+    // m/0/2147483647'/1/2147483646' //
+    //--------------------------------------------------------------------------------------------------//
+
+    {
+        UInt256 derivationPathIndexes[] = {uint256_from_long(0), uint256_from_long(2147483647), uint256_from_long(1), uint256_from_long(2147483646)};
+        BOOL hardened[] = {NO, YES, NO, YES};
+
+        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:4 type:DSDerivationPathType_Unknown signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_Root onChain:self.chain];
+
+        derivationPath.wallet = wallet;
+
+        [derivationPath generateExtendedPublicKeyFromSeed:seedData storeUnderWalletUniqueId:nil];
+
+        NSString *serializedRootExtendedPublicKey = [derivationPath serializedExtendedPublicKey];
+
+        XCTAssertEqualObjects(serializedRootExtendedPublicKey, @"xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4koxb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL",
+            @"[DSDerivationPath serializedExtendedPublicKey]");
+
+        NSString *serializedRootExtendedPrivateKey = [derivationPath serializedExtendedPrivateKeyFromSeed:seedData];
+
+        XCTAssertEqualObjects(serializedRootExtendedPrivateKey, @"xprvA1RpRA33e1JQ7ifknakTFpgNXPmW2YvmhqLQYMmrj4xJXXWYpDPS3xz7iAxn8L39njGVyuoseXzU6rcxFLJ8HFsTjSyQbLYnMpCqE2VbFWc",
+            @"[DSDerivationPath serializedExtendedPrivateKeyFromSeed]");
+    }
+
+    //--------------------------------------------------------------------------------------------------//
+    // m/0/2147483647'/1/2147483646'/2 //
+    //--------------------------------------------------------------------------------------------------//
+
+    {
+        UInt256 derivationPathIndexes[] = {uint256_from_long(0), uint256_from_long(2147483647), uint256_from_long(1), uint256_from_long(2147483646), uint256_from_long(2)};
+        BOOL hardened[] = {NO, YES, NO, YES, NO};
+
+        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:5 type:DSDerivationPathType_Unknown signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_Root onChain:self.chain];
+
+        derivationPath.wallet = wallet;
+
+        [derivationPath generateExtendedPublicKeyFromSeed:seedData storeUnderWalletUniqueId:nil];
+
+        NSString *serializedRootExtendedPublicKey = [derivationPath serializedExtendedPublicKey];
+
+        XCTAssertEqualObjects(serializedRootExtendedPublicKey, @"xpub6FnCn6nSzZAw5Tw7cgR9bi15UV96gLZhjDstkXXxvCLsUXBGXPdSnLFbdpq8p9HmGsApME5hQTZ3emM2rnY5agb9rXpVGyy3bdW6EEgAtqt",
+            @"[DSDerivationPath serializedExtendedPublicKey]");
+
+        NSString *serializedRootExtendedPrivateKey = [derivationPath serializedExtendedPrivateKeyFromSeed:seedData];
+
+        XCTAssertEqualObjects(serializedRootExtendedPrivateKey, @"xprvA2nrNbFZABcdryreWet9Ea4LvTJcGsqrMzxHx98MMrotbir7yrKCEXw7nadnHM8Dq38EGfSh6dqA9QWTyefMLEcBYJUuekgW4BYPJcr9E7j",
+            @"[DSDerivationPath serializedExtendedPrivateKeyFromSeed]");
+    }
+}
+
+- (void)testBIP32SerializationsLeadingZeros {
+    NSData *seedData = @"4b381541583be4423346c643850da4b320e46a87ae3d2a4e6da11eba819cd4acba45d239319ac14f863b8d5ab5a0d0c64d2e8a1e7d1457df2e5a3c51c73235be".hexToData;
+
+    DSWallet *wallet = [DSWallet transientWalletWithDerivedKeyData:seedData forChain:self.chain];
+
+    //--------------------------------------------------------------------------------------------------//
+    // m //
+    //--------------------------------------------------------------------------------------------------//
+
+    {
+        UInt256 derivationPathIndexesRoot[] = {};
+        BOOL hardenedRoot[] = {};
+
+        DSDerivationPath *rootDerivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexesRoot hardened:hardenedRoot length:0 type:DSDerivationPathType_Unknown signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_Root onChain:self.chain];
+
+        rootDerivationPath.wallet = wallet;
+
+        [rootDerivationPath generateExtendedPublicKeyFromSeed:seedData storeUnderWalletUniqueId:nil];
+
+        NSString *serializedRootExtendedPublicKey = [rootDerivationPath serializedExtendedPublicKey];
+
+        XCTAssertEqualObjects(serializedRootExtendedPublicKey, @"xpub661MyMwAqRbcEZVB4dScxMAdx6d4nFc9nvyvH3v4gJL378CSRZiYmhRoP7mBy6gSPSCYk6SzXPTf3ND1cZAceL7SfJ1Z3GC8vBgp2epUt13",
+            @"[DSDerivationPath serializedExtendedPublicKey]");
+
+        NSString *serializedRootExtendedPrivateKey = [rootDerivationPath serializedExtendedPrivateKeyFromSeed:seedData];
+
+        XCTAssertEqualObjects(serializedRootExtendedPrivateKey, @"xprv9s21ZrQH143K25QhxbucbDDuQ4naNntJRi4KUfWT7xo4EKsHt2QJDu7KXp1A3u7Bi1j8ph3EGsZ9Xvz9dGuVrtHHs7pXeTzjuxBrCmmhgC6",
+            @"[DSDerivationPath serializedExtendedPrivateKeyFromSeed]");
+    }
+
+    //--------------------------------------------------------------------------------------------------//
+    // m/0' //
+    //--------------------------------------------------------------------------------------------------//
+
+    {
+        UInt256 derivationPathIndexes[] = {uint256_from_long(0)};
+        BOOL hardened[] = {YES};
+
+        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes hardened:hardened length:1 type:DSDerivationPathType_Unknown signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_Root onChain:self.chain];
+
+        derivationPath.wallet = wallet;
+
+        [derivationPath generateExtendedPublicKeyFromSeed:seedData storeUnderWalletUniqueId:nil];
+
+        NSString *serializedRootExtendedPublicKey = [derivationPath serializedExtendedPublicKey];
+
+        XCTAssertEqualObjects(serializedRootExtendedPublicKey, @"xpub68NZiKmJWnxxS6aaHmn81bvJeTESw724CRDs6HbuccFQN9Ku14VQrADWgqbhhTHBaohPX4CjNLf9fq9MYo6oDaPPLPxSb7gwQN3ih19Zm4Y",
+            @"[DSDerivationPath serializedExtendedPublicKey]");
+
+        NSString *serializedRootExtendedPrivateKey = [derivationPath serializedExtendedPrivateKeyFromSeed:seedData];
+
+        XCTAssertEqualObjects(serializedRootExtendedPrivateKey, @"xprv9uPDJpEQgRQfDcW7BkF7eTya6RPxXeJCqCJGHuCJ4GiRVLzkTXBAJMu2qaMWPrS7AANYqdq6vcBcBUdJCVVFceUvJFjaPdGZ2y9WACViL4L",
+            @"[DSDerivationPath serializedExtendedPrivateKeyFromSeed]");
+    }
+}
 
 - (void)testBIP32SequenceMasterPublicKeyFromSeed {
     DSWallet *wallet = [DSWallet transientWalletWithDerivedKeyData:@"000102030405060708090a0b0c0d0e0f".hexToData forChain:self.chain];

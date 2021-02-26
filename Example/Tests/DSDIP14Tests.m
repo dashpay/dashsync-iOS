@@ -31,7 +31,7 @@
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 
-@interface DSDIP13Tests : XCTestCase
+@interface DSDIP14Tests : XCTestCase
 
 @property (strong, nonatomic) DSChain *chain;
 @property (strong, nonatomic) DSWallet *wallet;
@@ -39,7 +39,7 @@
 
 @end
 
-@implementation DSDIP13Tests
+@implementation DSDIP14Tests
 
 - (void)setUp {
     [super setUp];
@@ -79,6 +79,16 @@
     DSECDSAKey *key = (DSECDSAKey *)[derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:0] fromSeed:self.seed];
 
     XCTAssertEqualObjects(key.secretKeyString, @"e8781fdef72862968cd9a4d2df34edaf9dcc5b17629ec505f0d2d1a8ed6f9f09", @"keys should match");
+
+    [derivationPath generateExtendedPublicKeyFromSeed:self.seed storeUnderWalletUniqueId:nil storePrivateKey:NO];
+
+    NSString *serializedExtendedPublicKey = [derivationPath serializedExtendedPublicKey];
+
+    XCTAssertEqualObjects(serializedExtendedPublicKey, @"dptp1CjRySByBWNBUgwM6mo6RE3zncnqhfSSedX7De8HzSEdoYgzyuUs1Pdbprcu27dEZ6ahLrnHapqswbbMoExT3ZMq7CaaBKPfS2xqwMJLsxU3kLhXp4kfsYcpeB7ksLFseMGGFqaQ8qtpjLGHhx4", @"serializedExtendedPublicKey should match");
+
+    NSString *serializedExtendedPrivateKey = [derivationPath serializedExtendedPrivateKeyFromSeed:self.seed];
+
+    XCTAssertEqualObjects(serializedExtendedPrivateKey, @"dpts1wL7C3vjxN7SNxNTC12E4nmD7VKVSyCQmdwW9yLM8ehJcCPjWuGHYE8wK7tRNWj764Ec7FGB25Aji74VzURCDZusNq3hvszaQmj8C5WxDjDmLgYZuhxrVyiGBXuda3Uzk5qYcnGTZC6KtJvvMo6", @"serializedExtendedPrivateKey should match");
 }
 
 - (void)test256BitPathECDSADerivation1 {

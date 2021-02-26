@@ -6,8 +6,8 @@
 //
 
 #import "NSArray+Dash.h"
-#import "NSMutableData+Dash.h"
 #import "NSMutableArray+Dash.h"
+#import "NSMutableData+Dash.h"
 
 @implementation NSArray (Dash)
 
@@ -43,7 +43,7 @@
     return [mArray copy];
 }
 
-- (NSMutableArray*)secureMutableCopy {
+- (NSMutableArray *)secureMutableCopy {
     return [NSMutableArray secureArrayWithArray:self];
 }
 

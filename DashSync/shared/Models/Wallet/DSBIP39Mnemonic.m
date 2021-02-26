@@ -28,10 +28,10 @@
 #import "DSBIP39Mnemonic.h"
 #import "DSFundsDerivationPath.h"
 #import "DSInsightManager.h"
+#import "NSArray+Dash.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+MDCDamerauLevenshteinDistance.h"
-#import "NSArray+Dash.h"
 
 #define WORDS @"BIP39Words"
 
@@ -462,12 +462,12 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
         DSBIP39Mnemonic *m = [DSBIP39Mnemonic sharedInstance];
         NSArray *originalPassphraseWords = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), (CFStringRef)[self normalizePhrase:partialPassphrase], CFSTR(" ")));
-        
-        NSMutableArray * passphraseWords = [originalPassphraseWords secureMutableCopy];
-        
-        NSMutableIndexSet * passphraseReplacementIndexes = [NSMutableIndexSet indexSet];
-        
-        for (NSInteger i = originalPassphraseWords.count - 1; i >=0; i--) {
+
+        NSMutableArray *passphraseWords = [originalPassphraseWords secureMutableCopy];
+
+        NSMutableIndexSet *passphraseReplacementIndexes = [NSMutableIndexSet indexSet];
+
+        for (NSInteger i = originalPassphraseWords.count - 1; i >= 0; i--) {
             if ([passphraseWords[i] isEqualToString:replacementString]) {
                 [passphraseWords removeObjectAtIndex:i];
                 [passphraseReplacementIndexes addIndex:i];

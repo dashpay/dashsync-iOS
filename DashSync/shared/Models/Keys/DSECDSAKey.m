@@ -519,7 +519,7 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i) {
 
     UInt256 secret = *(UInt256 *)&I, lChain = *(UInt256 *)&I.u8[sizeof(UInt256)];
 
-    return serialize(0, 0, 0, lChain, [NSData dataWithBytes:&secret length:sizeof(secret)], [chain isMainnet]);
+    return serialize(0, 0, false, UINT256_ZERO, lChain, [NSData dataWithBytes:&secret length:sizeof(secret)], [chain isMainnet]);
 }
 
 - (nullable NSString *)serializedPrivateKeyForChain:(DSChain *)chain {
@@ -721,13 +721,17 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i) {
 - (instancetype)privateDeriveTo256BitDerivationPath:(DSDerivationPath *)derivationPath {
     UInt256 chain = self.chaincode;
     UInt256 secret = self.seckey;
-    for (NSInteger i = 0; i < [derivationPath length] - 1; i++) {
-        UInt256 derivation = [derivationPath indexAtPosition:i];
-        BOOL isHardenedAtPosition = [derivationPath isHardenedAtPosition:i];
-        CKDpriv256(&secret, &chain, derivation, isHardenedAtPosition);
+    uint32_t fingerprint = 0;
+    if (derivationPath.length) {
+        for (NSInteger i = 0; i < [derivationPath length] - 1; i++) {
+            UInt256 derivation = [derivationPath indexAtPosition:i];
+            BOOL isHardenedAtPosition = [derivationPath isHardenedAtPosition:i];
+            CKDpriv256(&secret, &chain, derivation, isHardenedAtPosition);
+        }
+        fingerprint = [DSECDSAKey keyWithSecret:secret compressed:YES].hash160.u32[0];
+        CKDpriv256(&secret, &chain, [derivationPath indexAtPosition:[derivationPath length] - 1], [derivationPath isHardenedAtPosition:[derivationPath length] - 1]);
     }
-    uint32_t fingerprint = [DSECDSAKey keyWithSecret:secret compressed:YES].hash160.u32[0];
-    CKDpriv256(&secret, &chain, [derivationPath indexAtPosition:[derivationPath length] - 1], [derivationPath isHardenedAtPosition:[derivationPath length] - 1]);
+
     DSECDSAKey *childKey = [DSECDSAKey keyWithSecret:secret compressed:YES];
     childKey.chaincode = chain;
     childKey.fingerprint = fingerprint;
