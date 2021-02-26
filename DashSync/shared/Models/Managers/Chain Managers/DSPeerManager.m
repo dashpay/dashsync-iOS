@@ -906,7 +906,7 @@
         [reallyConnectedPeers addObject:p];
     }
 
-    if (reallyConnectedPeers.count < self.maxConnectCount) {
+    if (!self.chain.isDevnetAny && reallyConnectedPeers.count < self.maxConnectCount) {
         //we didn't connect to all connected peers yet
         return;
     }

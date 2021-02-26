@@ -102,7 +102,7 @@
         self.signatureData = [((DSECDSAKey *)privateKey) compactSign:[self serializedBaseDataHash].UInt256];
     }
     self.signaturePublicKeyId = index;
-    self.transitionHash = self.data.SHA256_2;
+    self.transitionHash = self.data.SHA256;
 }
 
 // size in bytes if signed, or estimated size assuming compact pubkey sigs
