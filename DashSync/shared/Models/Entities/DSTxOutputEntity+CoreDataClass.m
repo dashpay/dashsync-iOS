@@ -43,7 +43,7 @@
     self.address = (transaction.outputAddresses[index] == [NSNull null]) ? nil : transaction.outputAddresses[index];
     self.script = transaction.outputScripts[index];
     self.value = [transaction.outputAmounts[index] longLongValue];
-    self.shapeshiftOutboundAddress = [DSTransaction shapeshiftOutboundAddressForScript:self.script];
+    self.shapeshiftOutboundAddress = [DSTransaction shapeshiftOutboundAddressForScript:self.script onChain:transaction.chain];
     self.transaction = transactionEntity;
     if (self.address) {
         DSChainEntity *chainEntity = transactionEntity.transactionHash.chain;

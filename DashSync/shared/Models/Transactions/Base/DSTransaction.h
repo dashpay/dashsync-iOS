@@ -141,7 +141,7 @@ typedef union _UInt160 UInt160;
 
 - (NSString *_Nullable)shapeshiftOutboundAddress;
 - (NSString *_Nullable)shapeshiftOutboundAddressForceScript;
-+ (NSString *_Nullable)shapeshiftOutboundAddressForScript:(NSData *)script;
++ (NSString *_Nullable)shapeshiftOutboundAddressForScript:(NSData *)script onChain:(DSChain *)chain;
 
 // priority = sum(input_amount_in_satoshis*input_age_in_blocks)/tx_size_in_bytes
 - (uint64_t)priorityForAmounts:(NSArray *)amounts withAges:(NSArray *)ages;

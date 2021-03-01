@@ -26,7 +26,7 @@ jobs:
         with:
           path: dapi-grpc
           repository: 'dashevo/dapi-grpc'
-          ref: 'v0.16.0-dev.3'
+          ref: 'v0.18.0-dev.3'
       - uses: actions/cache@v2
         with:
           path: ./dashsync/Example/Pods

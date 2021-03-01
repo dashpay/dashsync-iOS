@@ -96,7 +96,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 
                                      if (success) {
                                          [strongSelf publishTransition:documentTransition
-                                             success:^(NSDictionary *_Nonnull successDictionary) {
+                                             success:^(NSDictionary *_Nonnull successDictionary, BOOL added) {
                                                  if (completion) {
                                                      completion(nil);
                                                  }
@@ -260,7 +260,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 }
 
 - (void)publishTransition:(DSTransition *)stateTransition
-                  success:(void (^)(NSDictionary *successDictionary))success
+                  success:(void (^)(NSDictionary *successDictionary, BOOL added))success
                   failure:(void (^)(NSError *error))failure {
     //default to 5 attempts
     [self publishTransition:stateTransition
@@ -271,7 +271,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 
 - (void)publishTransition:(DSTransition *)stateTransition
           completionQueue:(dispatch_queue_t)completionQueue
-                  success:(void (^)(NSDictionary *successDictionary))success
+                  success:(void (^)(NSDictionary *successDictionary, BOOL added))success
                   failure:(void (^)(NSError *error))failure {
     //default to 5 attempts
     [self publishTransition:stateTransition
@@ -296,7 +296,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
            currentAttempt:(uint32_t)currentAttempt
             currentErrors:(NSDictionary<NSNumber *, NSError *> *)errorPerAttempt
           completionQueue:(dispatch_queue_t)completionQueue
-                  success:(void (^)(NSDictionary *successDictionary))success
+                  success:(void (^)(NSDictionary *successDictionary, BOOL added))success
                   failure:(void (^)(NSDictionary<NSNumber *, NSError *> *errorPerAttempt))failure {
     DSDAPIPlatformNetworkService *service = self.DAPINetworkService;
     if (!service) {

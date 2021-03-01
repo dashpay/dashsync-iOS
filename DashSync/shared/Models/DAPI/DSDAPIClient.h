@@ -53,11 +53,11 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode)
 
 - (void)publishTransition:(DSTransition *)stateTransition
           completionQueue:(dispatch_queue_t)completionQueue
-                  success:(void (^)(NSDictionary *successDictionary))success
+                  success:(void (^)(NSDictionary *successDictionary, BOOL added))success
                   failure:(void (^)(NSError *error))failure;
 
 - (void)publishTransition:(DSTransition *)stateTransition
-                  success:(void (^)(NSDictionary *successDictionary))success
+                  success:(void (^)(NSDictionary *successDictionary, BOOL added))success
                   failure:(void (^)(NSError *error))failure;
 
 - (void)checkPingTimesForMasternodes:(NSArray<DSSimplifiedMasternodeEntry *> *)masternodes completion:(void (^)(NSMutableDictionary<NSData *, NSNumber *> *pingTimes, NSMutableDictionary<NSData *, NSError *> *))completion;

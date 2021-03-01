@@ -61,6 +61,21 @@
         if (error) {
             self.decodingError = error;
         }
+    } else if ([message isMemberOfClass:[WaitForStateTransitionResultResponse class]]) {
+        WaitForStateTransitionResultResponse *waitResponse = (WaitForStateTransitionResultResponse *)message;
+        NSError *error = nil;
+        NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
+        if (([waitResponse responsesOneOfCase] & WaitForStateTransitionResultResponse_Responses_OneOfCase_Proof) > 0) {
+            [dictionary setObject:[[waitResponse proof] rootTreeProof] forKey:@"rootTreeProof"];
+            [dictionary setObject:[[waitResponse proof] storeTreeProof] forKey:@"storeTreeProof"];
+        }
+        if (([waitResponse responsesOneOfCase] & WaitForStateTransitionResultResponse_Responses_OneOfCase_Error) > 0) {
+            [dictionary setObject:[waitResponse error] forKey:@"platformError"];
+        }
+        self.responseObject = dictionary;
+        if (error) {
+            self.decodingError = error;
+        }
     }
     DSLog(@"didReceiveProtoMessage");
 }
@@ -83,9 +98,11 @@
         }
 
     } else {
-        dispatch_async(self.completionQueue, ^{
-            self.successHandler(self.responseObject);
-        });
+        if (self.successHandler) {
+            dispatch_async(self.completionQueue, ^{
+                self.successHandler(self.responseObject);
+            });
+        }
     }
     DSLog(@"didCloseWithTrailingMetadata");
 }
