@@ -399,7 +399,7 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode)
  */
 - (id<DSDAPINetworkServiceRequest>)publishTransition:(DSTransition *)stateTransition
                                      completionQueue:(dispatch_queue_t)completionQueue
-                                             success:(void (^)(NSDictionary *successDictionary))success
+                                             success:(void (^)(NSDictionary *successDictionary, BOOL added))success
                                              failure:(void (^)(NSError *error))failure;
 
 /**

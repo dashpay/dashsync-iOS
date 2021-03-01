@@ -603,7 +603,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
 
 - (id<DSDAPINetworkServiceRequest>)publishTransition:(DSTransition *)stateTransition
                                      completionQueue:(dispatch_queue_t)completionQueue
-                                             success:(void (^)(NSDictionary *successDictionary))success
+                                             success:(void (^)(NSDictionary *successDictionary, BOOL added))success
                                              failure:(void (^)(NSError *error))failure {
     NSParameterAssert(stateTransition);
     NSParameterAssert(completionQueue);
@@ -616,7 +616,14 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     DSDAPIGRPCResponseHandler *waitResponseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
     waitResponseHandler.dispatchQueue = self.grpcDispatchQueue;
     waitResponseHandler.completionQueue = completionQueue;
-    waitResponseHandler.successHandler = success;
+    waitResponseHandler.successHandler = ^(NSDictionary *successDictionary) {
+        NSLog(@"%@", successDictionary);
+
+        //todo : verify proof
+        if (success) {
+            success(successDictionary, TRUE);
+        }
+    };
     waitResponseHandler.errorHandler = failure;
 
     GRPCUnaryProtoCall *waitCall = [self.gRPCClient waitForStateTransitionResultWithMessage:waitForStateTransitionResultRequest responseHandler:waitResponseHandler callOptions:nil];
@@ -627,8 +634,12 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.completionQueue = completionQueue;
-    //    responseHandler.successHandler = success;
-    //    responseHandler.errorHandler = failure;
+    responseHandler.successHandler = ^(NSDictionary *successDictionary) {
+        NSLog(@"%@", successDictionary);
+    };
+    responseHandler.errorHandler = ^(NSError *error) {
+
+    };
     GRPCUnaryProtoCall *call = [self.gRPCClient broadcastStateTransitionWithMessage:broadcastStateRequest responseHandler:responseHandler callOptions:nil];
     [call start];
     return (id<DSDAPINetworkServiceRequest>)call;

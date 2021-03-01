@@ -150,6 +150,7 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
 @property (nonatomic, strong) DSCheckpoint *syncHeadersOverrideUseCheckpoint;
 @property (nonatomic, strong) DSCheckpoint *lastCheckpoint;
 @property (nonatomic, assign) NSTimeInterval lastNotifiedBlockDidChange;
+@property (nonatomic, strong) NSTimer *lastNotifiedBlockDidChangeTimer;
 @property (nonatomic, assign, getter=isTransient) BOOL transient;
 
 @property (nonatomic, readonly) NSString *chainWalletsKey;
@@ -2214,16 +2215,41 @@ static dispatch_once_t devnetToken = 0;
         }
 
         // notify that transaction confirmations may have changed
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainNewChainTipBlockNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-        });
+        NSTimeInterval timestamp = [[NSDate date] timeIntervalSince1970];
+        if (!self.lastNotifiedBlockDidChange || (timestamp - self.lastNotifiedBlockDidChange > 0.1)) {
+            self.lastNotifiedBlockDidChange = timestamp;
+            if (self.lastNotifiedBlockDidChangeTimer) {
+                [self.lastNotifiedBlockDidChangeTimer invalidate];
+                self.lastNotifiedBlockDidChangeTimer = nil;
+            }
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainNewChainTipBlockNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
+            });
+        } else {
+            if (!self.lastNotifiedBlockDidChangeTimer) {
+                self.lastNotifiedBlockDidChangeTimer = [NSTimer timerWithTimeInterval:1
+                                                                              repeats:NO
+                                                                                block:^(NSTimer *_Nonnull timer) {
+                                                                                    dispatch_async(dispatch_get_main_queue(), ^{
+                                                                                        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainNewChainTipBlockNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
+                                                                                        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
+                                                                                        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
+                                                                                    });
+                                                                                }];
+                [[NSRunLoop mainRunLoop] addTimer:self.lastNotifiedBlockDidChangeTimer forMode:NSRunLoopCommonModes];
+            }
+        }
     } else {
         //we should avoid dispatching this message too frequently
         NSTimeInterval timestamp = [[NSDate date] timeIntervalSince1970];
         if (!self.lastNotifiedBlockDidChange || (timestamp - self.lastNotifiedBlockDidChange > 0.1)) {
             self.lastNotifiedBlockDidChange = timestamp;
+            if (self.lastNotifiedBlockDidChangeTimer) {
+                [self.lastNotifiedBlockDidChangeTimer invalidate];
+                self.lastNotifiedBlockDidChangeTimer = nil;
+            }
             dispatch_async(dispatch_get_main_queue(), ^{
                 if (blockPosition & DSBlockPosition_Terminal) {
                     [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
@@ -2232,6 +2258,22 @@ static dispatch_once_t devnetToken = 0;
                     [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
                 }
             });
+        } else {
+            if (!self.lastNotifiedBlockDidChangeTimer) {
+                self.lastNotifiedBlockDidChangeTimer = [NSTimer timerWithTimeInterval:1
+                                                                              repeats:NO
+                                                                                block:^(NSTimer *_Nonnull timer) {
+                                                                                    dispatch_async(dispatch_get_main_queue(), ^{
+                                                                                        if (blockPosition & DSBlockPosition_Terminal) {
+                                                                                            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
+                                                                                        }
+                                                                                        if (blockPosition & DSBlockPosition_Sync) {
+                                                                                            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
+                                                                                        }
+                                                                                    });
+                                                                                }];
+                [[NSRunLoop mainRunLoop] addTimer:self.lastNotifiedBlockDidChangeTimer forMode:NSRunLoopCommonModes];
+            }
         }
     }
 
@@ -2244,192 +2286,6 @@ static dispatch_once_t devnetToken = 0;
     }
     return TRUE;
 }
-
-//- (BOOL)addTerminalBlock:(DSBlock *)terminalBlock fromPeer:(DSPeer*)peer
-//{
-//    NSValue *blockHash = terminalBlock.blockHashValue, *prevBlock = terminalBlock.prevBlockValue;
-//    DSBlock *prev = self.terminalBlocks[prevBlock];
-//    uint32_t txTime = 0;
-//    BOOL syncDone = NO;
-//
-//    if (! prev) { // header is an orphan
-//#if LOG_PREV_BLOCKS_ON_ORPHAN
-//        NSSortDescriptor * sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"height" ascending:TRUE];
-//        for (DSBlock * merkleBlock in [[self.blocks allValues] sortedArrayUsingDescriptors:@[sortDescriptor]]) {
-//            DSLog(@"printing previous block at height %d : %@",merkleBlock.height,merkleBlock.blockHashValue);
-//        }
-//#endif
-//        DSLog(@"%@:%d relayed orphan block %@, previous %@, height %d, last block is %@, lastBlockHeight %d, time %@", peer.host, peer.port,
-//               uint256_reverse_hex(terminalBlock.blockHash), uint256_reverse_hex(terminalBlock.prevBlock), terminalBlock.height, uint256_reverse_hex(self.lastTerminalBlock.blockHash), self.lastSyncBlockHeight,[NSDate dateWithTimeIntervalSince1970:terminalBlock.timestamp]);
-//
-//        [self.chainManager chain:self receivedOrphanBlock:terminalBlock fromPeer:peer];
-//        [peer receivedOrphanBlock];
-//
-//        self.orphans[prevBlock] = terminalBlock; // orphans are indexed by prevBlock instead of blockHash
-//        self.lastOrphan = terminalBlock;
-//        return TRUE;
-//    }
-//
-//    terminalBlock.height = prev.height + 1;
-//    txTime = terminalBlock.timestamp/2 + prev.timestamp/2;
-//
-//    if (terminalBlock.height % 1 == 0) {
-//        DSLog(@"Adding terminal block at height %d %@",terminalBlock.height,uint256_hex(terminalBlock.blockHash));
-//    }
-//
-//
-//    if ((terminalBlock.height % 10000) == 0 || ((terminalBlock.height == self.estimatedBlockHeight) && (terminalBlock.height % 100) == 0)) { //free up some memory from time to time
-//        @synchronized (self.terminalBlocks) {
-//            //[self saveTerminalBlocks];
-//            DSBlock *b = terminalBlock;
-//
-//            for (uint32_t i = 0; b && i < KEEP_RECENT_TERMINAL_BLOCKS; i++) {
-//                b = self.terminalBlocks[b.prevBlockValue];
-//            }
-//            NSMutableArray * blocksToRemove = [NSMutableArray array];
-//            while (b) { // free up some memory
-//                [blocksToRemove addObject:b.blockHashValue];
-//                b = self.terminalBlocks[b.prevBlockValue];
-//            }
-//            [self.terminalBlocks removeObjectsForKeys:blocksToRemove];
-//            //DSLog(@"%lu blocks remaining",(unsigned long)[self.blocks count]);
-//        }
-//    }
-//
-//
-//    // verify block difficulty if block is past last checkpoint
-//    DSCheckpoint * lastCheckpoint = [self lastCheckpoint];
-//
-//    if (!self.isDevnetAny) {
-//        if ((terminalBlock.height > (lastCheckpoint.height + DGW_PAST_BLOCKS_MAX)) &&
-//            ![terminalBlock verifyDifficultyWithPreviousBlocks:self.terminalBlocks]) {
-//            uint32_t foundDifficulty = [terminalBlock darkGravityWaveTargetWithPreviousBlocks:self.terminalBlocks];
-//            DSLog(@"%@:%d relayed header with invalid difficulty height %d target %x foundTarget %x, blockHash: %@", peer.host, peer.port,
-//                   terminalBlock.height,terminalBlock.target,foundDifficulty, blockHash);
-//            [self.chainManager chain:self badBlockReceivedFromPeer:peer];
-//            return FALSE;
-//        }
-//    }
-//
-//    DSCheckpoint * checkpoint = [self.checkpointsByHeightDictionary objectForKey:@(terminalBlock.height)];
-//
-//    // verify block chain checkpoints
-//    if (checkpoint && ! uint256_eq(terminalBlock.blockHash, checkpoint.checkpointHash)) {
-//        DSLog(@"%@:%d relayed a block that differs from the checkpoint at height %d, blockHash: %@, expected: %@",
-//               peer.host, peer.port, terminalBlock.height, blockHash, uint256_hex(checkpoint.checkpointHash));
-//        [self.chainManager chain:self badBlockReceivedFromPeer:peer];
-//        return FALSE;
-//    }
-//
-//    BOOL onMainChain = FALSE;
-//
-//    if (uint256_eq(terminalBlock.prevBlock, self.lastTerminalBlock.blockHash)) { // new block extends main chain
-//        if ((terminalBlock.height % self.headersMaxAmount) == 0 || terminalBlock.height > peer.lastBlockHeight) {
-//            DSLog(@"adding header on %@ at height: %d from peer %@", self.name, terminalBlock.height,peer.host);
-//        }
-//        @synchronized (self.terminalBlocks) {
-//            self.terminalBlocks[blockHash] = terminalBlock;
-//        }
-//        self.lastTerminalBlock = terminalBlock;
-//        peer.currentBlockHeight = terminalBlock.height; //might be download peer instead
-//        if (terminalBlock.height == self.estimatedBlockHeight) syncDone = YES;
-//        onMainChain = TRUE;
-//    }
-//    else if (self.terminalBlocks[blockHash] == nil) { // new header is a new orphan
-//        if (terminalBlock.height <= [self lastCheckpoint].height) { // fork is older than last checkpoint
-//            DSLog(@"ignoring header on fork older than most recent checkpoint, fork height: %d, blockHash: %@",
-//                   terminalBlock.height, blockHash);
-//            return TRUE;
-//        }
-//
-//
-//        DSLog(@"chain header fork to height %d", terminalBlock.height);
-//        @synchronized (self.terminalBlocks) {
-//            self.terminalBlocks[blockHash] = terminalBlock;
-//        }
-//        if (terminalBlock.height <= self.lastSyncBlockHeight) return TRUE; // if fork is shorter than main chain, ignore it for now
-//
-//        NSMutableArray *txHashes = [NSMutableArray array];
-//        DSBlock *b = terminalBlock, *b2 = self.lastTerminalBlock;
-//
-//        while (b && b2 && ! uint256_eq(b.blockHash, b2.blockHash)) { // walk back to where the fork joins the main chain
-//            b = self.terminalBlocks[b.prevBlockValue];
-//            if (b.height < b2.height) b2 = self.terminalBlocks[b2.prevBlockValue];
-//        }
-//
-//        DSLog(@"reorganizing chain from height %d, new height is %d", b.height, terminalBlock.height);
-//
-//        // mark transactions after the join point as unconfirmed
-//        for (DSWallet * wallet in self.wallets) {
-//            for (DSTransaction *tx in wallet.allTransactions) {
-//                if (tx.blockHeight <= b.height) break;
-//                [txHashes addObject:uint256_obj(tx.txHash)];
-//            }
-//        }
-//
-//        b = terminalBlock;
-//
-//        while (b.height > b2.height) { // set transaction heights for new main chain
-//            [self setBlockHeight:b.height andTimestamp:txTime forTransactionHashes:b.txHashes];
-//            b = self.terminalBlocks[b.prevBlockValue];
-//            txTime = b.timestamp/2 + ((DSBlock *)self.syncBlocks[b.prevBlockValue]).timestamp/2;
-//        }
-//
-//        self.lastTerminalBlock = terminalBlock;
-//        if (terminalBlock.height == self.estimatedBlockHeight) syncDone = YES;
-//    }
-//
-//    DSBlock * lastTerminalBlock = self.lastTerminalBlock;
-//
-//    //DSLog(@"%@:%d added block at height %d target %x blockHash: %@", peer.host, peer.port,
-//    //      block.height,block.target, blockHash);
-//
-//    if (checkpoint && checkpoint == [self lastCheckpointHavingMasternodeList]) {
-//        [self.chainManager.masternodeManager loadFileDistributedMasternodeLists];
-//    }
-//
-//    BOOL savedTerminalBlocks = NO;
-//    if (syncDone) { // chain download is complete
-//        [self saveTerminalBlocks];
-//        savedTerminalBlocks = YES;
-//        [self.chainManager chainFinishedSyncingInitialHeaders:self fromPeer:peer onMainChain:onMainChain];
-//        dispatch_async(dispatch_get_main_queue(), ^{
-//            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainInitialHeadersDidFinishSyncingNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
-//        });
-//    }
-//
-//    if (terminalBlock.height > self.estimatedBlockHeight) {
-//        _bestEstimatedBlockHeight = terminalBlock.height;
-//        if (!savedTerminalBlocks) {
-//            [self saveTerminalBlocks];
-//        }
-//        [self.chainManager chain:self wasExtendedWithBlock:terminalBlock fromPeer:peer];
-//
-//        // notify that transaction confirmations may have changed
-//        dispatch_async(dispatch_get_main_queue(), ^{
-//            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainNewChainTipBlockNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
-//            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
-//        });
-//    } else {
-//        //we should avoid dispatching this message too frequently
-//        NSTimeInterval timestamp = [[NSDate date] timeIntervalSince1970];
-//        if (!self.lastNotifiedBlockDidChange || (timestamp - self.lastNotifiedBlockDidChange > 0.1)) {
-//            self.lastNotifiedBlockDidChange = timestamp;
-//            dispatch_async(dispatch_get_main_queue(), ^{
-//                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
-//            });
-//        }
-//    }
-//
-//    // check if the next block was received as an orphan
-//    if (terminalBlock == lastTerminalBlock && self.orphans[blockHash]) {
-//        DSBlock *b = self.orphans[blockHash];
-//
-//        [self.orphans removeObjectForKey:blockHash];
-//        [self addTerminalBlock:b fromPeer:peer];
-//    }
-//    return TRUE;
-//}
 
 // MARK: Terminal Blocks
 

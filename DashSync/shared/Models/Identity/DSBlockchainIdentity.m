@@ -1384,7 +1384,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
         if (blockchainIdentityRegistrationTransition) {
             [self.DAPIClient publishTransition:blockchainIdentityRegistrationTransition
                 completionQueue:self.identityQueue
-                success:^(NSDictionary *_Nonnull successDictionary) {
+                success:^(NSDictionary *_Nonnull successDictionary, BOOL added) {
                     [self monitorForBlockchainIdentityWithRetryCount:5
                                                     retryAbsentCount:5
                                                                delay:4
@@ -1820,7 +1820,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                if (success) {
                                    [self.DAPINetworkService publishTransition:transition
                                        completionQueue:self.identityQueue
-                                       success:^(NSDictionary *_Nonnull successDictionary) {
+                                       success:^(NSDictionary *_Nonnull successDictionary, BOOL added) {
                                            __strong typeof(weakContract) strongContract = weakContract;
                                            if (!strongContract) {
                                                return;
@@ -2216,7 +2216,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                        if (success) {
                            [self.DAPINetworkService publishTransition:transition
                                completionQueue:self.identityQueue
-                               success:^(NSDictionary *_Nonnull successDictionary) {
+                               success:^(NSDictionary *_Nonnull successDictionary, BOOL added) {
                                    for (NSString *string in usernameFullPaths) {
                                        NSMutableDictionary *usernameStatusDictionary = [[self.usernameStatuses objectForKey:string] mutableCopy];
                                        if (!usernameStatusDictionary) {
@@ -2269,7 +2269,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                        if (success) {
                            [self.DAPINetworkService publishTransition:transition
                                completionQueue:self.identityQueue
-                               success:^(NSDictionary *_Nonnull successDictionary) {
+                               success:^(NSDictionary *_Nonnull successDictionary, BOOL added) {
                                    for (NSString *string in usernameFullPaths) {
                                        NSMutableDictionary *usernameStatusDictionary = [[self.usernameStatuses objectForKey:string] mutableCopy];
                                        if (!usernameStatusDictionary) {
@@ -3432,7 +3432,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                         }
                                         [self.DAPINetworkService publishTransition:transition
                                             completionQueue:self.identityQueue
-                                            success:^(NSDictionary *_Nonnull successDictionary) {
+                                            success:^(NSDictionary *_Nonnull successDictionary, BOOL added) {
                                                 __strong typeof(weakSelf) strongSelf = weakSelf;
                                                 if (!strongSelf) {
                                                     if (completion) {
