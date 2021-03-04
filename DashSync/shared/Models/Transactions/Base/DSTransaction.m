@@ -768,7 +768,7 @@
     return nil;
 }
 
-+ (NSString *)shapeshiftOutboundAddressForScript:(NSData *)script onChain:(DSChain*)chain {
++ (NSString *)shapeshiftOutboundAddressForScript:(NSData *)script onChain:(DSChain *)chain {
     if (chain.isMainnet) {
         if ([script UInt8AtOffset:0] != OP_RETURN) return nil;
         UInt8 length = [script UInt8AtOffset:1];
