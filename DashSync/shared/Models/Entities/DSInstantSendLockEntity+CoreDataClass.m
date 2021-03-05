@@ -21,10 +21,10 @@
 
 @implementation DSInstantSendLockEntity
 
-+ (DSInstantSendLockEntity *)instantSendLockEntityFromInstantSendLock:(DSInstantSendTransactionLock *)instantSendTransactionLock inContext:(NSManagedObjectContext*)context {
++ (DSInstantSendLockEntity *)instantSendLockEntityFromInstantSendLock:(DSInstantSendTransactionLock *)instantSendTransactionLock inContext:(NSManagedObjectContext *)context {
     DSTransactionEntity *transactionEntity = [DSTransactionEntity anyObjectInContext:context matching:@"transactionHash.txHash == %@", uint256_data(instantSendTransactionLock.transactionHash)];
     if (transactionEntity) {
-        DSInstantSendLockEntity * entity = [DSInstantSendLockEntity managedObjectInContext:context];
+        DSInstantSendLockEntity *entity = [DSInstantSendLockEntity managedObjectInContext:context];
         entity.validSignature = instantSendTransactionLock.signatureVerified;
         entity.signature = [NSData dataWithUInt768:instantSendTransactionLock.signature];
 
