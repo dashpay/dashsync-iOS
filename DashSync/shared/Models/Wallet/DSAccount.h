@@ -181,10 +181,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)persistIncomingTransactionsAttributesForBlockSaveWithNumber:(uint32_t)blockNumber inContext:(NSManagedObjectContext *)context;
 
 // removes a transaction from the account along with any transactions that depend on its outputs, returns TRUE if a transaction was removed
-- (BOOL)removeTransaction:(DSTransaction *)transaction;
+- (BOOL)removeTransaction:(DSTransaction *)transaction saveImmediately:(BOOL)saveImmediately;
 
 // removes a transaction by hash from the account along with any transactions that depend on its outputs, returns TRUE if a transaction was removed
-- (BOOL)removeTransactionWithHash:(UInt256)txHash;
+- (BOOL)removeTransactionWithHash:(UInt256)txHash saveImmediately:(BOOL)saveImmediately;
 
 // returns the transaction with the given hash if it's been registered in the account (might also return non-registered)
 - (DSTransaction *_Nullable)transactionForHash:(UInt256)txHash;

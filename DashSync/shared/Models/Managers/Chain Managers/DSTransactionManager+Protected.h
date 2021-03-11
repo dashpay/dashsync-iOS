@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSDictionary *txRelays, *txRequests;
 @property (nonatomic, readonly) NSDictionary *publishedTx, *publishedCallback;
 
-- (void)addTransactionToPublishList:(DSTransaction *)transaction;
+- (void)addUnconfirmedTransactionToPublishList:(DSTransaction *)transaction;
 - (void)clearTransactionRelaysForPeer:(DSPeer *)peer;
 - (void)removeUnrelayedTransactionsFromPeer:(DSPeer *)peer;
 - (void)updateTransactionsBloomFilter;

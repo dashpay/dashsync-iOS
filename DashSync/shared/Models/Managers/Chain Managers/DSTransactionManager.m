@@ -150,7 +150,7 @@
 // MARK: - Blockchain Transactions
 
 // adds transaction to list of tx to be published, along with any unconfirmed inputs
-- (void)addTransactionToPublishList:(DSTransaction *)transaction {
+- (void)addUnconfirmedTransactionToPublishList:(DSTransaction *)transaction {
     if (transaction.blockHeight == TX_UNCONFIRMED) {
 #if DEBUG
         DSLogPrivate(@"[DSTransactionManager] add transaction to publish list %@ (%@)", transaction, transaction.toData);
@@ -166,7 +166,7 @@
                 [hash getValue:&h];
                 DSTransaction *inputTransaction = [self.chain transactionForHash:h];
                 if (inputTransaction) {
-                    [self addTransactionToPublishList:inputTransaction];
+                    [self addUnconfirmedTransactionToPublishList:inputTransaction];
                 }
             }
         }
@@ -204,7 +204,7 @@
     NSMutableSet *peers = [NSMutableSet setWithSet:self.peerManager.connectedPeers];
     NSValue *hash = uint256_obj(transaction.txHash);
 
-    [self addTransactionToPublishList:transaction];
+    [self addUnconfirmedTransactionToPublishList:transaction];
     if (completion) self.publishedCallback[hash] = completion;
 
     NSArray *txHashes = self.publishedTx.allKeys;
@@ -238,7 +238,9 @@
 - (void)recreatePublishedTransactionList {
     for (DSWallet *wallet in self.chain.wallets) {
         for (DSTransaction *tx in wallet.allTransactions) { // find TXOs spent within the last 100 blocks
-            [self addTransactionToPublishList:tx];          // also populate the tx publish list
+            if (tx.blockHeight == TX_UNCONFIRMED) {
+                [self addUnconfirmedTransactionToPublishList:tx]; // also populate the tx publish list
+            }
             if (tx.hasUnverifiedInstantSendLock) {
                 [self.instantSendLocksWaitingForQuorums setObject:tx.instantSendLockAwaitingProcessing forKey:uint256_data(tx.txHash)];
             }
@@ -347,7 +349,7 @@
         for (DSTransaction *transaction in [transactionsToBeRemoved copy]) {
             NSArray *accounts = [self.chain accountsThatCanContainTransaction:transaction];
             for (DSAccount *account in accounts) {
-                [account removeTransaction:transaction];
+                [account removeTransaction:transaction saveImmediately:NO];
                 NSAssert(!context || context == account.managedObjectContext, @"All accounts should be on same context");
                 context = account.managedObjectContext;
             }
@@ -692,12 +694,13 @@
 
                           __block BOOL sent = NO;
 
-                          [account registerTransaction:tx saveImmediately:YES];
+                          [account registerTransaction:tx saveImmediately:NO];
 
                           [self publishTransaction:tx
                                         completion:^(NSError *publishingError) {
                                             if (publishingError) {
                                                 if (!sent) {
+                                                    [account removeTransaction:tx saveImmediately:YES]; //we save in case the transaction was registered and saved from another process
                                                     publishedCompletion(tx, publishingError, sent);
                                                 }
                                             } else if (!sent) {
@@ -860,7 +863,7 @@
         [peer sendFilterloadMessage:[self transactionsBloomFilterForPeer:peer].data];
     }
 
-    [peer sendInvMessageForHashes:self.publishedCallback.allKeys ofType:DSInvType_Tx]; // publish pending tx
+    [peer sendInvMessageForHashes:self.publishedTx.allKeys ofType:DSInvType_Tx]; // publish pending tx
     [peer sendPingMessageWithPongHandler:^(BOOL success) {
         if (success) {
             DSLog(@"[DSTransactionManager] fetching mempool ping success peer %@", peer.host);
@@ -1098,8 +1101,14 @@
 // MARK: Incoming Transactions
 
 //The peer is informing us that it has an inventory of a transaction we might be interested in, this might also be a transaction we sent out which we are checking has properly been relayed on the network
+
+#define TEST_NO_RELAY (0 && !DEBUG)
+
 - (void)peer:(DSPeer *)peer hasTransactionWithHash:(UInt256)txHash;
 {
+#if TEST_NO_RELAY
+    return;
+#endif
     NSValue *hash = uint256_obj(txHash);
     BOOL syncing = (self.chain.lastSyncBlockHeight < self.chain.estimatedBlockHeight);
     DSTransaction *transaction = self.publishedTx[hash];
@@ -1255,15 +1264,15 @@
 
         //While we would only add to publish list is transaction sent amount was over 0 for a normal transaction, other transactions should be published immediately as they have other consequences
         if (account && [account transactionIsValid:transaction]) {
-            [self addTransactionToPublishList:transaction]; // add valid send tx to mempool
+            [self addUnconfirmedTransactionToPublishList:transaction]; // add valid send tx to mempool
         } else if (!account && registered) {
-            [self addTransactionToPublishList:transaction];
+            [self addUnconfirmedTransactionToPublishList:transaction];
         }
 
     } else {
         if (peer && peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
         if (account && [account amountSentByTransaction:transaction] > 0 && [account transactionIsValid:transaction]) {
-            [self addTransactionToPublishList:transaction]; // add valid send tx to mempool
+            [self addUnconfirmedTransactionToPublishList:transaction]; // add valid send tx to mempool
         }
     }
 
