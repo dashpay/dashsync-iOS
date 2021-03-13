@@ -1126,9 +1126,9 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 
         if (!tx || (tx.blockHeight == height && tx.timestamp == timestamp)) continue;
 #if DEBUG
-        DSLogPrivate(@"Setting tx %@ height to %d", tx, height);
+        DSLogPrivate(@"Setting account tx %@ height to %d", tx, height);
 #else
-        DSLogPrivate(@"Setting tx %@ height to %d", @"<REDACTED>", height);
+        DSLogPrivate(@"Setting account tx %@ height to %d", @"<REDACTED>", height);
 #endif
         tx.blockHeight = height;
         tx.timestamp = timestamp;
@@ -1157,13 +1157,13 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 // MARK: = Removal
 
 // removes a transaction from the wallet along with any transactions that depend on its outputs
-- (BOOL)removeTransactionWithHash:(UInt256)txHash {
+- (BOOL)removeTransactionWithHash:(UInt256)txHash saveImmediately:(BOOL)saveImmediately {
     DSTransaction *transaction = self.allTx[uint256_obj(txHash)];
     if (!transaction) return FALSE;
-    return [self removeTransaction:transaction];
+    return [self removeTransaction:transaction saveImmediately:saveImmediately];
 }
 
-- (BOOL)removeTransaction:(DSTransaction *)baseTransaction {
+- (BOOL)removeTransaction:(DSTransaction *)baseTransaction saveImmediately:(BOOL)saveImmediately {
     NSParameterAssert(baseTransaction);
 
     NSMutableSet *dependentTransactions = [NSMutableSet set];
@@ -1181,7 +1181,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 
     for (DSTransaction *transaction in dependentTransactions) {
         //remove all dependent transactions
-        [self removeTransaction:transaction];
+        [self removeTransaction:transaction saveImmediately:NO];
     }
 
     [self.allTx removeObjectForKey:uint256_obj(transactionHash)];
@@ -1189,10 +1189,16 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 
     [self updateBalance];
 
-    [DSTransactionHashEntity deleteObjects:[DSTransactionHashEntity objectsInContext:self.managedObjectContext
-                                                                            matching:@"txHash == %@",
-                                                                            [NSData dataWithUInt256:transactionHash]]
-                                 inContext:self.managedObjectContext];
+    [self.managedObjectContext performBlockAndWait:^{
+        [DSTransactionHashEntity deleteObjects:[DSTransactionHashEntity objectsInContext:self.managedObjectContext
+                                                                                matching:@"txHash == %@",
+                                                                                [NSData dataWithUInt256:transactionHash]]
+                                     inContext:self.managedObjectContext];
+        if (saveImmediately) {
+            [self.managedObjectContext ds_save];
+        }
+    }];
+
     return TRUE;
 }
 

@@ -21,6 +21,21 @@
 
 @implementation DSInstantSendLockEntity
 
++ (DSInstantSendLockEntity *)instantSendLockEntityFromInstantSendLock:(DSInstantSendTransactionLock *)instantSendTransactionLock inContext:(NSManagedObjectContext *)context {
+    DSTransactionEntity *transactionEntity = [DSTransactionEntity anyObjectInContext:context matching:@"transactionHash.txHash == %@", uint256_data(instantSendTransactionLock.transactionHash)];
+    if (transactionEntity) {
+        DSInstantSendLockEntity *entity = [DSInstantSendLockEntity managedObjectInContext:context];
+        entity.validSignature = instantSendTransactionLock.signatureVerified;
+        entity.signature = [NSData dataWithUInt768:instantSendTransactionLock.signature];
+
+        NSAssert(transactionEntity, @"transaction must exist");
+        entity.transaction = transactionEntity;
+        entity.quorum = [instantSendTransactionLock.intendedQuorum matchingQuorumEntryEntityInContext:context]; //the quorum might not yet
+    }
+
+    return nil;
+}
+
 - (instancetype)setAttributesFromInstantSendTransactionLock:(DSInstantSendTransactionLock *)instantSendTransactionLock {
     [self.managedObjectContext performBlockAndWait:^{
         self.validSignature = instantSendTransactionLock.signatureVerified;

@@ -823,7 +823,7 @@
 
     if (peer.timestamp > now + 2 * 60 * 60 || peer.timestamp < now - 2 * 60 * 60) peer.timestamp = now; //timestamp sanity check
     self.connectFailures = 0;
-    DSLog(@"%@:%d connected with lastblock %d", peer.host, peer.port, peer.lastBlockHeight);
+    DSLog(@"%@:%d connected with lastblock %d (our last header %d - last block %d)", peer.host, peer.port, peer.lastBlockHeight, self.chain.lastTerminalBlockHeight, self.chain.lastSyncBlockHeight);
 
     // drop peers that don't carry full blocks, or aren't synced yet
     // TODO: XXXX does this work with 0.11 pruned nodes?
