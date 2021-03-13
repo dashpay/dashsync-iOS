@@ -1126,9 +1126,9 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 
         if (!tx || (tx.blockHeight == height && tx.timestamp == timestamp)) continue;
 #if DEBUG
-        DSLogPrivate(@"Setting tx %@ height to %d", tx, height);
+        DSLogPrivate(@"Setting account tx %@ height to %d", tx, height);
 #else
-        DSLogPrivate(@"Setting tx %@ height to %d", @"<REDACTED>", height);
+        DSLogPrivate(@"Setting account tx %@ height to %d", @"<REDACTED>", height);
 #endif
         tx.blockHeight = height;
         tx.timestamp = timestamp;

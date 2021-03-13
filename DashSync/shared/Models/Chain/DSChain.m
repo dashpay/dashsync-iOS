@@ -1604,6 +1604,7 @@ static dispatch_once_t devnetToken = 0;
 
 - (DSBlock *)lastSyncBlock {
     if (!_lastSyncBlock) {
+        DSLog(@"No last Sync Block, setting it from checkpoints");
         [self setLastSyncBlockFromCheckpoints];
     }
 
@@ -2393,31 +2394,51 @@ static dispatch_once_t devnetToken = 0;
     [terminalBlock setChainLockedWithChainLock:chainLock];
     if ((terminalBlock.chainLocked) && (![self recentTerminalBlockForBlockHash:terminalBlock.blockHash])) {
         //the newly chain locked block is not in the main chain, we will need to reorg to it
-        DSBlock *b = terminalBlock, *b2 = self.lastTerminalBlock;
+        NSLog(@"Added a chain lock for block %@ that was not on the main terminal chain ending in %@, reorginizing", terminalBlock, self.lastSyncBlock);
+        //clb chain locked block
+        //tbmc terminal block
+        DSBlock *clb = terminalBlock, *tbmc = self.lastTerminalBlock;
+        BOOL cancelReorg = FALSE;
 
-        while (b && b2 && !uint256_eq(b.blockHash, b2.blockHash)) { // walk back to where the fork joins the main chain
-            b = self.mTerminalBlocks[b.prevBlockValue];
-            if (b.height < b2.height) b2 = self.mTerminalBlocks[b2.prevBlockValue];
+        while (clb && tbmc && !uint256_eq(clb.blockHash, tbmc.blockHash)) { // walk back to where the fork joins the main chain
+            if (tbmc.chainLocked) {
+                //if a block is already chain locked then do not reorg
+                cancelReorg = TRUE;
+            }
+            if (clb.height < tbmc.height) {
+                tbmc = self.mTerminalBlocks[tbmc.prevBlockValue];
+            } else if (clb.height > tbmc.height) {
+                clb = self.mTerminalBlocks[clb.prevBlockValue];
+            } else {
+                tbmc = self.mTerminalBlocks[tbmc.prevBlockValue];
+                clb = self.mTerminalBlocks[clb.prevBlockValue];
+            }
         }
 
-        self.lastTerminalBlock = terminalBlock;
-        NSMutableDictionary *forkChainsTerminalBlocks = [[self forkChainsTerminalBlocks] mutableCopy];
-        NSMutableArray *addedBlocks = [NSMutableArray array];
-        BOOL done = FALSE;
-        while (!done) {
-            BOOL found = NO;
-            for (NSValue *blockHash in forkChainsTerminalBlocks) {
-                if ([addedBlocks containsObject:blockHash]) continue;
-                DSBlock *potentialNextTerminalBlock = self.mTerminalBlocks[blockHash];
-                if (uint256_eq(potentialNextTerminalBlock.prevBlock, self.lastTerminalBlock.blockHash)) {
-                    [self addBlock:potentialNextTerminalBlock receivedAsHeader:YES fromPeer:nil];
-                    [addedBlocks addObject:blockHash];
-                    found = TRUE;
-                    break;
+        if (cancelReorg) {
+            NSLog(@"Cancelling terminal reorg because block %@ is already chain locked", tbmc);
+        } else {
+            NSLog(@"Reorginizing to height %d", clb.height);
+
+            self.lastTerminalBlock = terminalBlock;
+            NSMutableDictionary *forkChainsTerminalBlocks = [[self forkChainsTerminalBlocks] mutableCopy];
+            NSMutableArray *addedBlocks = [NSMutableArray array];
+            BOOL done = FALSE;
+            while (!done) {
+                BOOL found = NO;
+                for (NSValue *blockHash in forkChainsTerminalBlocks) {
+                    if ([addedBlocks containsObject:blockHash]) continue;
+                    DSBlock *potentialNextTerminalBlock = self.mTerminalBlocks[blockHash];
+                    if (uint256_eq(potentialNextTerminalBlock.prevBlock, self.lastTerminalBlock.blockHash)) {
+                        [self addBlock:potentialNextTerminalBlock receivedAsHeader:YES fromPeer:nil];
+                        [addedBlocks addObject:blockHash];
+                        found = TRUE;
+                        break;
+                    }
                 }
-            }
-            if (!found) {
-                done = TRUE;
+                if (!found) {
+                    done = TRUE;
+                }
             }
         }
     }
@@ -2425,52 +2446,72 @@ static dispatch_once_t devnetToken = 0;
     [syncBlock setChainLockedWithChainLock:chainLock];
     if ((syncBlock.chainLocked) && ![self recentSyncBlockForBlockHash:syncBlock.blockHash]) { //!OCLINT
         //the newly chain locked block is not in the main chain, we will need to reorg to it
-        DSBlock *b = syncBlock, *b2 = self.lastSyncBlock;
+        NSLog(@"Added a chain lock for block %@ that was not on the main sync chain ending in %@, reorginizing", syncBlock, self.lastSyncBlock);
 
-        while (b && b2 && !uint256_eq(b.blockHash, b2.blockHash)) { // walk back to where the fork joins the main chain
-            b = self.mSyncBlocks[b.prevBlockValue];
-            if (b.height < b2.height) b2 = self.mSyncBlocks[b2.prevBlockValue];
-        }
+        //clb chain locked block
+        //sbmc sync block main chain
+        DSBlock *clb = syncBlock, *sbmc = self.lastSyncBlock;
+        BOOL cancelReorg = FALSE;
 
-        self.lastSyncBlock = syncBlock;
-
-
-        NSMutableArray *txHashes = [NSMutableArray array];
-        // mark transactions after the join point as unconfirmed
-        for (DSWallet *wallet in self.wallets) {
-            for (DSTransaction *tx in wallet.allTransactions) {
-                if (tx.blockHeight <= b.height) break;
-                [txHashes addObject:uint256_obj(tx.txHash)];
+        while (clb && sbmc && !uint256_eq(clb.blockHash, sbmc.blockHash)) { // walk back to where the fork joins the main chain
+            if (sbmc.chainLocked) {
+                //if a block is already chain locked then do not reorg
+                cancelReorg = TRUE;
+            } else if (clb.height < sbmc.height) {
+                sbmc = self.mSyncBlocks[sbmc.prevBlockValue];
+            } else if (clb.height > sbmc.height) {
+                clb = self.mSyncBlocks[clb.prevBlockValue];
+            } else {
+                sbmc = self.mSyncBlocks[sbmc.prevBlockValue];
+                clb = self.mSyncBlocks[clb.prevBlockValue];
             }
         }
 
-        [self setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTransactionHashes:txHashes];
-        b = syncBlock;
+        if (cancelReorg) {
+            NSLog(@"Cancelling sync reorg because block %@ is already chain locked", sbmc);
+        } else {
+            self.lastSyncBlock = syncBlock;
 
-        while (b.height > b2.height) { // set transaction heights for new main chain
-            DSBlock *prevBlock = self.mSyncBlocks[b.prevBlockValue];
-            NSTimeInterval txTime = prevBlock ? ((prevBlock.timestamp + b.timestamp) / 2) : b.timestamp;
-            [self setBlockHeight:b.height andTimestamp:txTime forTransactionHashes:b.transactionHashes];
-            b = prevBlock;
-        }
+            NSLog(@"Reorginizing to height %d (last sync block %@)", clb.height, self.lastSyncBlock);
 
-        NSMutableDictionary *forkChainsTerminalBlocks = [[self forkChainsSyncBlocks] mutableCopy];
-        NSMutableArray *addedBlocks = [NSMutableArray array];
-        BOOL done = FALSE;
-        while (!done) {
-            BOOL found = NO;
-            for (NSValue *blockHash in forkChainsTerminalBlocks) {
-                if ([addedBlocks containsObject:blockHash]) continue;
-                DSBlock *potentialNextTerminalBlock = self.mSyncBlocks[blockHash];
-                if (uint256_eq(potentialNextTerminalBlock.prevBlock, self.lastSyncBlock.blockHash)) {
-                    [self addBlock:potentialNextTerminalBlock receivedAsHeader:NO fromPeer:nil];
-                    [addedBlocks addObject:blockHash];
-                    found = TRUE;
-                    break;
+
+            NSMutableArray *txHashes = [NSMutableArray array];
+            // mark transactions after the join point as unconfirmed
+            for (DSWallet *wallet in self.wallets) {
+                for (DSTransaction *tx in wallet.allTransactions) {
+                    if (tx.blockHeight <= clb.height) break;
+                    [txHashes addObject:uint256_obj(tx.txHash)];
                 }
             }
-            if (!found) {
-                done = TRUE;
+
+            [self setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTransactionHashes:txHashes];
+            clb = syncBlock;
+
+            while (clb.height > sbmc.height) { // set transaction heights for new main chain
+                DSBlock *prevBlock = self.mSyncBlocks[clb.prevBlockValue];
+                NSTimeInterval txTime = prevBlock ? ((prevBlock.timestamp + clb.timestamp) / 2) : clb.timestamp;
+                [self setBlockHeight:clb.height andTimestamp:txTime forTransactionHashes:clb.transactionHashes];
+                clb = prevBlock;
+            }
+
+            NSMutableDictionary *forkChainsTerminalBlocks = [[self forkChainsSyncBlocks] mutableCopy];
+            NSMutableArray *addedBlocks = [NSMutableArray array];
+            BOOL done = FALSE;
+            while (!done) {
+                BOOL found = NO;
+                for (NSValue *blockHash in forkChainsTerminalBlocks) {
+                    if ([addedBlocks containsObject:blockHash]) continue;
+                    DSBlock *potentialNextTerminalBlock = self.mSyncBlocks[blockHash];
+                    if (uint256_eq(potentialNextTerminalBlock.prevBlock, self.lastSyncBlock.blockHash)) {
+                        [self addBlock:potentialNextTerminalBlock receivedAsHeader:NO fromPeer:nil];
+                        [addedBlocks addObject:blockHash];
+                        found = TRUE;
+                        break;
+                    }
+                }
+                if (!found) {
+                    done = TRUE;
+                }
             }
         }
     }
@@ -2871,6 +2912,7 @@ static dispatch_once_t devnetToken = 0;
 // MARK: - Wiping
 
 - (void)wipeBlockchainInfoInContext:(NSManagedObjectContext *)context {
+    DSLog(@"Wiping Blockchain Info");
     for (DSWallet *wallet in self.wallets) {
         [wallet wipeBlockchainInfoInContext:context];
     }
@@ -2893,6 +2935,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 - (void)wipeBlockchainNonTerminalInfoInContext:(NSManagedObjectContext *)context {
+    DSLog(@"Wiping Blockchain Non Terminal Info");
     for (DSWallet *wallet in self.wallets) {
         [wallet wipeBlockchainInfoInContext:context];
     }
@@ -2912,6 +2955,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 - (void)wipeMasternodesInContext:(NSManagedObjectContext *)context {
+    DSLog(@"Wiping Masternode Info");
     DSChainEntity *chainEntity = [self chainEntityInContext:context];
     [DSLocalMasternodeEntity deleteAllOnChainEntity:chainEntity];
     [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
@@ -2922,6 +2966,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 - (void)wipeWalletsAndDerivatives {
+    DSLog(@"Wiping Wallets and Derivatives");
     [self unregisterAllWallets];
     [self unregisterAllStandaloneDerivationPaths];
     self.mWallets = [NSMutableArray array];

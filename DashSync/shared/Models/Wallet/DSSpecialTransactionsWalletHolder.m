@@ -362,9 +362,9 @@
 
         if (!tx || (tx.blockHeight == height && tx.timestamp == timestamp)) continue;
 #if DEBUG
-        DSLogPrivate(@"Setting tx %@ height to %d", tx, height);
+        DSLogPrivate(@"Setting special tx %@ height to %d", tx, height);
 #else
-        DSLog(@"Setting tx %@ height to %d", @"<REDACTED>", height);
+        DSLog(@"Setting special tx %@ height to %d", @"<REDACTED>", height);
 #endif
         tx.blockHeight = height;
         tx.timestamp = timestamp;
