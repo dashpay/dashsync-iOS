@@ -296,12 +296,6 @@
 "User has actions to complete before being able to use Dashpay" = "ผู้ใช้ต้องมีการดำเนินการที่สมบูรณ์ก่อนที่จะสามารถใช้ Dashpay";
 
 /* No comment provided by engineer. */
-"Requested username domain documents not present on platform after timeout" = "คำร้องเอกสารโดเมนชื่อผู้ใช้จะไม่แสดงอยู่บนแพลตฟอร์มอยู่หลังจากที่หมดเวลา";
-
-/* No comment provided by engineer. */
-"Requested username preorder documents not present on platform after timeout" = "คำร้องขอเอกสารการสั่งซื้อล่วงหน้าชื่อผู้ใช้จะไม่แสดงอยู่บนแพลตฟอร์มอยู่หลังจากที่หมดเวลา";
-
-/* No comment provided by engineer. */
 "Unable to sign transition" = "ไม่สามารถที่จะลงนามการเปลี่ยนแปลง";
 
 /* No comment provided by engineer. */

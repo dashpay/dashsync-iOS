@@ -121,6 +121,21 @@
     return blocks;
 }
 
++ (DSMerkleBlockEntity *)blockWithHash:(UInt256)hash onChainEntity:(DSChainEntity *)chainEntity {
+    __block NSArray *blocks = nil;
+    [chainEntity.managedObjectContext performBlockAndWait:^{
+        NSFetchRequest *fetchRequest = [DSMerkleBlockEntity fetchReq];
+        [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"(chain == %@) && (blockHash == %@)", chainEntity, uint256_data(hash)]];
+        [fetchRequest setFetchLimit:1];
+        blocks = [DSMerkleBlockEntity fetchObjects:fetchRequest inContext:chainEntity.managedObjectContext];
+    }];
+    if (blocks.count) {
+        return [blocks firstObject];
+    } else {
+        return nil;
+    }
+}
+
 + (void)deleteBlocksOnChainEntity:(DSChainEntity *)chainEntity {
     [chainEntity.managedObjectContext performBlockAndWait:^{
         NSArray *merkleBlocksToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@)", chainEntity];

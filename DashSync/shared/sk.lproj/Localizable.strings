@@ -296,12 +296,6 @@
 "User has actions to complete before being able to use Dashpay" = "Aby mohol používateľ využiť Dashpay, musí vykonať určité kroky.";
 
 /* No comment provided by engineer. */
-"Requested username domain documents not present on platform after timeout" = "Požadované doménové dokumenty používateľa sa po uplynutí časového limitu na platforme nenachádzajú";
-
-/* No comment provided by engineer. */
-"Requested username preorder documents not present on platform after timeout" = "Po vypršaní časového limitu nie sú na platforme požadované dokumenty na predobjednávku používateľského mena";
-
-/* No comment provided by engineer. */
 "Unable to sign transition" = "Presun sa nepodarilo podpísať";
 
 /* No comment provided by engineer. */

@@ -296,12 +296,6 @@
 "User has actions to complete before being able to use Dashpay" = "Der Nutzer muss noch Schritte abschließen bevor er Dashpay verwenden kann";
 
 /* No comment provided by engineer. */
-"Requested username domain documents not present on platform after timeout" = "Angefragte Benutzernamen-Domaindokumente nach dem Timeout nicht auf der Plattform gefunden";
-
-/* No comment provided by engineer. */
-"Requested username preorder documents not present on platform after timeout" = "Angefragte Benutzernamen-Preorderdokumente nach dem Timeout nicht auf der Plattform gefunden";
-
-/* No comment provided by engineer. */
 "Unable to sign transition" = "Transition konnte nicht signiert werden";
 
 /* No comment provided by engineer. */

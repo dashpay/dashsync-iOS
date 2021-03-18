@@ -264,6 +264,9 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 /*! @brief The last known chain sync block on the chain.  */
 @property (nonatomic, readonly, nullable) DSBlock *lastSyncBlock;
 
+/*! @brief The last known chain sync block on the chain, don't recover from checkpoints if it is not known.  */
+@property (nonatomic, readonly, nullable) DSBlock *lastSyncBlockDontUseCheckpoints;
+
 /*! @brief The last known terminal block on the chain.  */
 @property (nonatomic, readonly, nullable) DSBlock *lastTerminalBlock;
 

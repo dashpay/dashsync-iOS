@@ -296,12 +296,6 @@
 "User has actions to complete before being able to use Dashpay" = "사용자가 대시페이를 사용하기 전 완료해야 할 액션이 남아 있습니다";
 
 /* No comment provided by engineer. */
-"Requested username domain documents not present on platform after timeout" = "요청된 사용자 이름 도메인 문서가 타임아웃 후 플랫폼에 나타나지 않습니다";
-
-/* No comment provided by engineer. */
-"Requested username preorder documents not present on platform after timeout" = "요청된 사용자 이름 프리오더 문서가 타임아웃 후 플랫폼에 나타나지 않습니다";
-
-/* No comment provided by engineer. */
 "Unable to sign transition" = "거래에 서명할 수 없습니다";
 
 /* No comment provided by engineer. */

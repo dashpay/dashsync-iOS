@@ -1602,7 +1602,33 @@ static dispatch_once_t devnetToken = 0;
     }
 }
 
+- (DSBlock *)lastSyncBlockDontUseCheckpoints {
+    return [self lastSyncBlockWithUseCheckpoints:NO];
+}
+
 - (DSBlock *)lastSyncBlock {
+    return [self lastSyncBlockWithUseCheckpoints:YES];
+}
+
+- (DSBlock *)lastSyncBlockWithUseCheckpoints:(BOOL)useCheckpoints {
+    if (_lastSyncBlock) return _lastSyncBlock;
+
+    if (uint256_is_not_zero(self.lastPersistedChainSyncBlockHash)) {
+        [self.chainManagedObjectContext performBlockAndWait:^{
+            DSMerkleBlockEntity *lastSyncBlockEntity = [DSMerkleBlockEntity blockWithHash:self.lastPersistedChainSyncBlockHash onChainEntity:[self chainEntityInContext:self.chainManagedObjectContext]];
+
+            if (lastSyncBlockEntity) {
+                DSMerkleBlock *lastSyncBlock = [lastSyncBlockEntity merkleBlock];
+                self->_lastSyncBlock = lastSyncBlock;
+                DSLog(@"last sync block at height %d recovered from db (hash is %@)", lastSyncBlock.height, [NSData dataWithUInt256:lastSyncBlock.blockHash].hexString);
+            }
+        }];
+    }
+
+    if (!_lastSyncBlock) {
+        _lastSyncBlock = [[DSMerkleBlock alloc] initWithVersion:2 blockHash:self.lastPersistedChainSyncBlockHash prevBlock:UINT256_ZERO timestamp:self.lastPersistedChainSyncBlockTimestamp height:self.lastPersistedChainSyncBlockHeight chainWork:self.lastPersistedChainSyncBlockChainWork onChain:self];
+    }
+
     if (!_lastSyncBlock) {
         DSLog(@"No last Sync Block, setting it from checkpoints");
         [self setLastSyncBlockFromCheckpoints];
@@ -1719,7 +1745,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 - (DSBlock *)recentSyncBlockForBlockHash:(UInt256)blockHash {
-    DSBlock *b = self.lastSyncBlock;
+    DSBlock *b = [self lastSyncBlockDontUseCheckpoints];
     while (b && b.height > 0 && !uint256_eq(b.blockHash, blockHash)) {
         b = self.mSyncBlocks[b.prevBlockValue];
     }
@@ -2015,7 +2041,7 @@ static dispatch_once_t devnetToken = 0;
         onMainChain = TRUE;
     } else if ((phase == DSChainSyncPhase_ChainSync || phase == DSChainSyncPhase_Synced) && self.mSyncBlocks[blockHash] != nil) { // we already have the block (or at least the header)
         if ((block.height % 1) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
-            DSLog(@"%@:%d relayed existing block at height %d", peer.host, peer.port, block.height);
+            DSLog(@"%@:%d relayed existing sync block at height %d", peer.host, peer.port, block.height);
         }
 
         @synchronized(self.mSyncBlocks) {
@@ -2040,7 +2066,7 @@ static dispatch_once_t devnetToken = 0;
         }
     } else if (self.mTerminalBlocks[blockHash] != nil && (blockPosition & DSBlockPosition_Terminal)) { // we already have the block (or at least the header)
         if ((block.height % 1) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
-            DSLog(@"%@:%d relayed existing terminal block at height %d", peer.host, peer.port, block.height);
+            DSLog(@"%@:%d relayed existing terminal block at height %d (last sync height %d)", peer.host, peer.port, block.height, self.lastSyncBlockHeight);
         }
 
         @synchronized(self.mTerminalBlocks) {
@@ -2444,13 +2470,14 @@ static dispatch_once_t devnetToken = 0;
     }
     DSBlock *syncBlock = self.mSyncBlocks[uint256_obj(chainLock.blockHash)];
     [syncBlock setChainLockedWithChainLock:chainLock];
-    if ((syncBlock.chainLocked) && ![self recentSyncBlockForBlockHash:syncBlock.blockHash]) { //!OCLINT
+    DSBlock *sbmc = self.lastSyncBlockDontUseCheckpoints;
+    if (sbmc && (syncBlock.chainLocked) && ![self recentSyncBlockForBlockHash:syncBlock.blockHash]) { //!OCLINT
         //the newly chain locked block is not in the main chain, we will need to reorg to it
         NSLog(@"Added a chain lock for block %@ that was not on the main sync chain ending in %@, reorginizing", syncBlock, self.lastSyncBlock);
 
         //clb chain locked block
         //sbmc sync block main chain
-        DSBlock *clb = syncBlock, *sbmc = self.lastSyncBlock;
+        DSBlock *clb = syncBlock;
         BOOL cancelReorg = FALSE;
 
         while (clb && sbmc && !uint256_eq(clb.blockHash, sbmc.blockHash)) { // walk back to where the fork joins the main chain

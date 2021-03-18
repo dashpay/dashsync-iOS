@@ -296,12 +296,6 @@
 "User has actions to complete before being able to use Dashpay" = "Пользователю нужно выполнить все действия, прежде чем он сможет воспользоваться Dashpay";
 
 /* No comment provided by engineer. */
-"Requested username domain documents not present on platform after timeout" = "Запрошенные доменные документы имени пользователя отсутствуют на платформе после истекшего времени ожидания";
-
-/* No comment provided by engineer. */
-"Requested username preorder documents not present on platform after timeout" = "Запрошенные документы о предварительном заказе имени пользователя отсутствуют на платформе после истекшего времени ожидания";
-
-/* No comment provided by engineer. */
 "Unable to sign transition" = "Невозможно подписать транзакцию";
 
 /* No comment provided by engineer. */

@@ -2137,8 +2137,14 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                                 withRetryCount:4
                                                      inContext:context
                                                     completion:^(BOOL allFound, NSError *error) {
-                                                        if (allFound) {
-                                                            [self registerUsernamesAtStage:DSBlockchainIdentityUsernameStatus_Preordered inContext:context completion:completion onCompletionQueue:completionQueue];
+                                                        if (!error) {
+                                                            if (!allFound) {
+                                                                //todo: This needs to be done per username and not for all usernames
+                                                                [self setAndSaveUsernameFullPaths:usernameFullPaths toStatus:DSBlockchainIdentityUsernameStatus_Initial inContext:context];
+                                                                [self registerUsernamesAtStage:DSBlockchainIdentityUsernameStatus_Initial inContext:context completion:completion onCompletionQueue:completionQueue];
+                                                            } else {
+                                                                [self registerUsernamesAtStage:DSBlockchainIdentityUsernameStatus_Preordered inContext:context completion:completion onCompletionQueue:completionQueue];
+                                                            }
                                                         } else {
                                                             if (completion) {
                                                                 dispatch_async(completionQueue, ^{
@@ -2160,7 +2166,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                                         inContext:context
                                                        completion:^(BOOL success, NSError *error) {
                                                            if (success) {
-                                                               [self saveUsernameFullPaths:usernameFullPaths toStatus:DSBlockchainIdentityUsernameStatus_RegistrationPending inContext:context];
                                                                [self registerUsernamesAtStage:DSBlockchainIdentityUsernameStatus_RegistrationPending inContext:context completion:completion onCompletionQueue:completionQueue];
                                                            } else {
                                                                if (completion) {
@@ -2179,7 +2184,33 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
         case DSBlockchainIdentityUsernameStatus_RegistrationPending: {
             NSArray *usernameFullPaths = [self usernameFullPathsWithStatus:DSBlockchainIdentityUsernameStatus_RegistrationPending];
             if (usernameFullPaths.count) {
-                [self monitorForDPNSUsernameFullPaths:usernameFullPaths withRetryCount:2 inContext:context completion:completion onCompletionQueue:completionQueue];
+                [self monitorForDPNSUsernameFullPaths:usernameFullPaths
+                                       withRetryCount:5
+                                            inContext:context
+                                           completion:^(BOOL allFound, NSError *error) {
+                                               if (!error) {
+                                                   if (!allFound) {
+                                                       //todo: This needs to be done per username and not for all usernames
+                                                       [self setAndSaveUsernameFullPaths:usernameFullPaths toStatus:DSBlockchainIdentityUsernameStatus_Preordered inContext:context];
+                                                       [self registerUsernamesAtStage:DSBlockchainIdentityUsernameStatus_Preordered inContext:context completion:completion onCompletionQueue:completionQueue];
+                                                   } else {
+                                                       //all were found
+                                                       if (completion) {
+                                                           dispatch_async(completionQueue, ^{
+                                                               completion(NO, nil);
+                                                           });
+                                                       }
+                                                   }
+
+                                               } else {
+                                                   if (completion) {
+                                                       dispatch_async(completionQueue, ^{
+                                                           completion(NO, error);
+                                                       });
+                                                   }
+                                               }
+                                           }
+                                    onCompletionQueue:completionQueue];
             } else {
                 if (completion) {
                     dispatch_async(completionQueue, ^{
@@ -2214,18 +2245,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     [self signStateTransition:transition
                    completion:^(BOOL success) {
                        if (success) {
+                           //let's start by putting the usernames in an undetermined state
+                           [self setAndSaveUsernameFullPaths:usernameFullPaths toStatus:DSBlockchainIdentityUsernameStatus_PreorderRegistrationPending inContext:context];
                            [self.DAPINetworkService publishTransition:transition
                                completionQueue:self.identityQueue
                                success:^(NSDictionary *_Nonnull successDictionary, BOOL added) {
-                                   for (NSString *string in usernameFullPaths) {
-                                       NSMutableDictionary *usernameStatusDictionary = [[self.usernameStatuses objectForKey:string] mutableCopy];
-                                       if (!usernameStatusDictionary) {
-                                           usernameStatusDictionary = [NSMutableDictionary dictionary];
-                                       }
-                                       usernameStatusDictionary[BLOCKCHAIN_USERNAME_STATUS] = @(DSBlockchainIdentityUsernameStatus_PreorderRegistrationPending);
-                                       [self.usernameStatuses setObject:[usernameStatusDictionary copy] forKey:string];
-                                   }
-                                   [self saveUsernameFullPaths:usernameFullPaths toStatus:DSBlockchainIdentityUsernameStatus_PreorderRegistrationPending inContext:context];
+                                   [self setAndSaveUsernameFullPaths:usernameFullPaths toStatus:DSBlockchainIdentityUsernameStatus_Preordered inContext:context];
                                    if (completion) {
                                        dispatch_async(completionQueue, ^{
                                            completion(YES, nil);
@@ -2267,17 +2292,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     [self signStateTransition:transition
                    completion:^(BOOL success) {
                        if (success) {
+                           [self setAndSaveUsernameFullPaths:usernameFullPaths toStatus:DSBlockchainIdentityUsernameStatus_RegistrationPending inContext:context];
                            [self.DAPINetworkService publishTransition:transition
                                completionQueue:self.identityQueue
                                success:^(NSDictionary *_Nonnull successDictionary, BOOL added) {
-                                   for (NSString *string in usernameFullPaths) {
-                                       NSMutableDictionary *usernameStatusDictionary = [[self.usernameStatuses objectForKey:string] mutableCopy];
-                                       if (!usernameStatusDictionary) {
-                                           usernameStatusDictionary = [NSMutableDictionary dictionary];
-                                       }
-                                       usernameStatusDictionary[BLOCKCHAIN_USERNAME_STATUS] = @(DSBlockchainIdentityUsernameStatus_RegistrationPending);
-                                       [self.usernameStatuses setObject:[usernameStatusDictionary copy] forKey:string];
-                                   }
+                                   [self setAndSaveUsernameFullPaths:usernameFullPaths toStatus:DSBlockchainIdentityUsernameStatus_Confirmed inContext:context];
                                    if (completion) {
                                        dispatch_async(completionQueue, ^{
                                            completion(YES, nil);
@@ -2542,10 +2561,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                 } else if ([usernamesLeft count]) {
                     if (completion) {
                         dispatch_async(completionQueue, ^{
-                            completion(FALSE, [NSError errorWithDomain:@"DashSync"
-                                                                  code:501
-                                                              userInfo:@{NSLocalizedDescriptionKey:
-                                                                           DSLocalizedString(@"Requested username domain documents not present on platform after timeout", nil)}]);
+                            completion(FALSE, nil);
                         });
                     }
                 } else {
@@ -2625,10 +2641,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                 } else if ([usernamesLeft count]) {
                     if (completion) {
                         dispatch_async(completionQueue, ^{
-                            completion(FALSE, [NSError errorWithDomain:@"DashSync"
-                                                                  code:501
-                                                              userInfo:@{NSLocalizedDescriptionKey:
-                                                                           DSLocalizedString(@"Requested username preorder documents not present on platform after timeout", nil)}]);
+                            completion(FALSE, nil);
                         });
                     }
                 } else {
@@ -4377,6 +4390,22 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentityDidUpdateUsernameStatusNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSBlockchainIdentityKey: self}];
         });
     }];
+}
+
+- (void)setUsernameFullPaths:(NSArray *)usernameFullPaths toStatus:(DSBlockchainIdentityUsernameStatus)status {
+    for (NSString *string in usernameFullPaths) {
+        NSMutableDictionary *usernameStatusDictionary = [[self.usernameStatuses objectForKey:string] mutableCopy];
+        if (!usernameStatusDictionary) {
+            usernameStatusDictionary = [NSMutableDictionary dictionary];
+        }
+        usernameStatusDictionary[BLOCKCHAIN_USERNAME_STATUS] = @(status);
+        [self.usernameStatuses setObject:[usernameStatusDictionary copy] forKey:string];
+    }
+}
+
+- (void)setAndSaveUsernameFullPaths:(NSArray *)usernameFullPaths toStatus:(DSBlockchainIdentityUsernameStatus)status inContext:(NSManagedObjectContext *)context {
+    [self setUsernameFullPaths:usernameFullPaths toStatus:status];
+    [self saveUsernamesInDictionary:[self.usernameStatuses dictionaryWithValuesForKeys:usernameFullPaths] toStatus:status inContext:context];
 }
 
 - (void)saveUsernameFullPaths:(NSArray *)usernameFullPaths toStatus:(DSBlockchainIdentityUsernameStatus)status inContext:(NSManagedObjectContext *)context {
