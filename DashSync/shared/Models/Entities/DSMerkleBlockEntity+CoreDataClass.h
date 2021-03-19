@@ -22,6 +22,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+#import "BigIntTypes.h"
 #import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
 
@@ -36,6 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (DSMerkleBlock *)merkleBlock;
 
 + (NSArray<DSMerkleBlockEntity *> *)lastTerminalBlocks:(uint32_t)blockcount onChainEntity:(DSChainEntity *)chainEntity;
++ (DSMerkleBlockEntity *)blockWithHash:(UInt256)hash onChainEntity:(DSChainEntity *)chainEntity;
 + (void)deleteBlocksOnChainEntity:(DSChainEntity *)chainEntity;
 
 @end
