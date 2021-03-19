@@ -1613,23 +1613,11 @@ static dispatch_once_t devnetToken = 0;
 - (DSBlock *)lastSyncBlockWithUseCheckpoints:(BOOL)useCheckpoints {
     if (_lastSyncBlock) return _lastSyncBlock;
 
-    if (uint256_is_not_zero(self.lastPersistedChainSyncBlockHash)) {
-        [self.chainManagedObjectContext performBlockAndWait:^{
-            DSMerkleBlockEntity *lastSyncBlockEntity = [DSMerkleBlockEntity blockWithHash:self.lastPersistedChainSyncBlockHash onChainEntity:[self chainEntityInContext:self.chainManagedObjectContext]];
-
-            if (lastSyncBlockEntity) {
-                DSMerkleBlock *lastSyncBlock = [lastSyncBlockEntity merkleBlock];
-                self->_lastSyncBlock = lastSyncBlock;
-                DSLog(@"last sync block at height %d recovered from db (hash is %@)", lastSyncBlock.height, [NSData dataWithUInt256:lastSyncBlock.blockHash].hexString);
-            }
-        }];
-    }
-
-    if (!_lastSyncBlock) {
+    if (!_lastSyncBlock && uint256_is_not_zero(self.lastPersistedChainSyncBlockHash) && self.lastPersistedChainSyncBlockHeight != BLOCK_UNKNOWN_HEIGHT) {
         _lastSyncBlock = [[DSMerkleBlock alloc] initWithVersion:2 blockHash:self.lastPersistedChainSyncBlockHash prevBlock:UINT256_ZERO timestamp:self.lastPersistedChainSyncBlockTimestamp height:self.lastPersistedChainSyncBlockHeight chainWork:self.lastPersistedChainSyncBlockChainWork onChain:self];
     }
 
-    if (!_lastSyncBlock) {
+    if (!_lastSyncBlock && useCheckpoints) {
         DSLog(@"No last Sync Block, setting it from checkpoints");
         [self setLastSyncBlockFromCheckpoints];
     }
