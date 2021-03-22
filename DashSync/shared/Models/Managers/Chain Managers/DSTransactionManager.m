@@ -1166,7 +1166,7 @@
 #if DEBUG
         DSLogPrivate(@"%@:%d relayed transaction %@", peer.host, peer.port, hash);
 #else
-        DSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, @"<REDACTEd>");
+        DSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, @"<REDACTED>");
 #endif
     } else {
 #if DEBUG
