@@ -652,22 +652,34 @@
                 }
 
                 for (NSNumber *sequence in tx.inputSequences) {
-                    if (sequence.unsignedIntValue < UINT32_MAX - 1) {
-                        pending = YES; // check for replace-by-fee
-                    }
                     if (sequence.unsignedIntValue < UINT32_MAX && tx.lockTime < TX_MAX_LOCK_HEIGHT &&
                         tx.lockTime > self.wallet.chain.bestBlockHeight + 1) {
                         pending = YES; // future lockTime
+#if DEBUG
+                        DSLogPrivate(@"received input lockTime %d for transaction %@", tx.lockTime, [NSData dataWithUInt256:tx.txHash].reverse.hexString);
+#else
+                        DSLog(@"received input lockTime %d for transaction %@", tx.lockTime, @"<REDACTED>");
+#endif
                     }
                     if (sequence.unsignedIntValue < UINT32_MAX && tx.lockTime >= TX_MAX_LOCK_HEIGHT &&
                         tx.lockTime > now) {
                         pending = YES; // future locktime
+#if DEBUG
+                        DSLogPrivate(@"received input lockTime %d for transaction %@", tx.lockTime, [NSData dataWithUInt256:tx.txHash].reverse.hexString);
+#else
+                        DSLog(@"received input lockTime %d for transaction %@", tx.lockTime, @"<REDACTED>");
+#endif
                     }
                 }
 
                 for (NSNumber *amount in tx.outputAmounts) { // check that no outputs are dust
                     if (amount.unsignedLongLongValue < TX_MIN_OUTPUT_AMOUNT) {
                         pending = YES;
+#if DEBUG
+                        DSLogPrivate(@"received dust output %llu for transaction %@", amount.unsignedLongLongValue, [NSData dataWithUInt256:tx.txHash].reverse.hexString);
+#else
+                        DSLog(@"received dust output %llu for transaction %@", amount.unsignedLongLongValue, @"<REDACTED>");
+#endif
                     }
                 }
             }
@@ -1441,7 +1453,6 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 
     // check for future lockTime or replace-by-fee: https://github.com/bitcoin/bips/blob/master/bip-0125.mediawiki
     for (NSNumber *sequence in transaction.inputSequences) {
-        if (sequence.unsignedIntValue < UINT32_MAX - 1) return YES;
         if (sequence.unsignedIntValue < UINT32_MAX && transaction.lockTime < TX_MAX_LOCK_HEIGHT &&
             transaction.lockTime > self.wallet.chain.bestBlockHeight + 1) return YES;
         if (sequence.unsignedIntValue < UINT32_MAX && transaction.lockTime >= TX_MAX_LOCK_HEIGHT &&
