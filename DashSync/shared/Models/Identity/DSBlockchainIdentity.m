@@ -510,6 +510,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                                                                                                                              DSInstantSendTransactionLock *lock = changes[DSTransactionManagerNotificationInstantSendTransactionLockKey];
                                                                                                                                              if ([lockVerified boolValue] && lock != nil) {
                                                                                                                                                  instantSendLock = lock;
+                                                                                                                                                 transactionSuccessfullyPublished = TRUE;
                                                                                                                                                  dispatch_semaphore_signal(sem);
                                                                                                                                              } else if ([accepted boolValue]) {
                                                                                                                                                  transactionSuccessfullyPublished = TRUE;
@@ -532,7 +533,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                                                                                                      }
 
                                                                                                                      dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-                                                                                                                         dispatch_semaphore_wait(sem, dispatch_time(DISPATCH_TIME_NOW, 300 * NSEC_PER_SEC));
+                                                                                                                         dispatch_semaphore_wait(sem, dispatch_time(DISPATCH_TIME_NOW, 25 * NSEC_PER_SEC));
 
                                                                                                                          [[NSNotificationCenter defaultCenter] removeObserver:observer];
 
@@ -555,7 +556,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                                                                                                          if (!instantSendLock) {
                                                                                                                              if (completion) {
                                                                                                                                  dispatch_async(dispatch_get_main_queue(), ^{
-                                                                                                                                     completion(stepsCompleted, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Timeout while waiting for funding transaction to be accepted by network", nil)}]);
+                                                                                                                                     completion(stepsCompleted, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Timeout while waiting for funding transaction to aquire an instant send lock", nil)}]);
                                                                                                                                  });
                                                                                                                              }
                                                                                                                              return;
@@ -564,10 +565,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
                                                                                                                          if (stepCompletion) {
                                                                                                                              dispatch_async(dispatch_get_main_queue(), ^{
-                                                                                                                                 stepCompletion(DSBlockchainIdentityRegistrationStep_FundingTransactionAccepted);
+                                                                                                                                 stepCompletion(DSBlockchainIdentityRegistrationStep_ProofAvailable);
                                                                                                                              });
                                                                                                                          }
-                                                                                                                         stepsCompleted |= DSBlockchainIdentityRegistrationStep_FundingTransactionAccepted;
+                                                                                                                         stepsCompleted |= DSBlockchainIdentityRegistrationStep_ProofAvailable;
 
 
                                                                                                                          [self continueRegisteringIdentityOnNetwork:steps stepsCompleted:stepsCompleted stepCompletion:stepCompletion completion:completion];
@@ -2197,7 +2198,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                                        //all were found
                                                        if (completion) {
                                                            dispatch_async(completionQueue, ^{
-                                                               completion(NO, nil);
+                                                               completion(YES, nil);
                                                            });
                                                        }
                                                    }
@@ -2214,7 +2215,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             } else {
                 if (completion) {
                     dispatch_async(completionQueue, ^{
-                        completion(NO, nil);
+                        completion(YES, nil);
                     });
                 }
             }

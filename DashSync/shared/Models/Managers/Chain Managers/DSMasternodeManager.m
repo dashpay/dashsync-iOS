@@ -1433,7 +1433,7 @@
         return nil;
     }
     if (merkleBlock.height - masternodeList.height > 24) {
-        DSLog(@"Masternode list is too old");
+        DSLog(@"Masternode list for IS is too old (age: %d masternodeList height %d merkle block height %d)", merkleBlock.height - masternodeList.height, masternodeList.height, merkleBlock.height);
         return nil;
     }
     return [masternodeList quorumEntryForInstantSendRequestID:requestID];
