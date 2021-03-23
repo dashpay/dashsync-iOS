@@ -565,10 +565,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
                                                                                                                          if (stepCompletion) {
                                                                                                                              dispatch_async(dispatch_get_main_queue(), ^{
-                                                                                                                                 stepCompletion(DSBlockchainIdentityRegistrationStep_FundingTransactionAccepted);
+                                                                                                                                 stepCompletion(DSBlockchainIdentityRegistrationStep_ProofAvailable);
                                                                                                                              });
                                                                                                                          }
-                                                                                                                         stepsCompleted |= DSBlockchainIdentityRegistrationStep_FundingTransactionAccepted;
+                                                                                                                         stepsCompleted |= DSBlockchainIdentityRegistrationStep_ProofAvailable;
 
 
                                                                                                                          [self continueRegisteringIdentityOnNetwork:steps stepsCompleted:stepsCompleted stepCompletion:stepCompletion completion:completion];
