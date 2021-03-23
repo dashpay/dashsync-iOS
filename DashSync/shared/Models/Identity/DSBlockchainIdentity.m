@@ -2198,7 +2198,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                                        //all were found
                                                        if (completion) {
                                                            dispatch_async(completionQueue, ^{
-                                                               completion(NO, nil);
+                                                               completion(YES, nil);
                                                            });
                                                        }
                                                    }
@@ -2215,7 +2215,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             } else {
                 if (completion) {
                     dispatch_async(completionQueue, ^{
-                        completion(NO, nil);
+                        completion(YES, nil);
                     });
                 }
             }
