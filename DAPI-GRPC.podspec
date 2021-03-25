@@ -5,7 +5,7 @@ Pod::Spec.new do |s|
   s.authors  = { 'Dash Core Group, Inc.' => 'contact@dash.org' }
   s.homepage = "https://github.com/dashevo/dapi-grpc"
   s.summary = "Decentralized API GRPC"
-  s.source = { :git => 'https://github.com/dashevo/dapi-grpc.git' }
+  s.source = { :git => 'https://github.com/dashevo/dapi-grpc.git', :tag => 'v0.18.0' }
 
   s.ios.deployment_target = "12.0"
   s.osx.deployment_target = "10.9"
@@ -17,7 +17,7 @@ Pod::Spec.new do |s|
   s.dependency "!ProtoCompiler-gRPCPlugin", "~> 1.0"
 
   # Pods directory corresponding to this app's Podfile, relative to the location of this podspec.
-  pods_root = 'Example/Pods'
+  pods_root = 'Pods'
 
   # Path where Cocoapods downloads protoc and the gRPC plugin.
   protoc_dir = "#{pods_root}/!ProtoCompiler"
@@ -28,6 +28,7 @@ Pod::Spec.new do |s|
   dir = "#{pods_root}/#{s.name}"
 
   s.prepare_command = <<-CMD
+    pwd
     mkdir -p #{dir}
     #{protoc} \
         --plugin=protoc-gen-grpc=#{plugin} \
