@@ -237,7 +237,7 @@
 
 - (BOOL)hasExtendedPublicKey {
     if (_extendedPublicKey) return YES;
-    if (self.wallet) {
+    if (self.wallet && (self.length || self.reference == DSDerivationPathReference_Root)) {
         return hasKeychainData([self walletBasedExtendedPublicKeyLocationString], nil);
     } else {
         return hasKeychainData([self standaloneExtendedPublicKeyLocationString], nil);
