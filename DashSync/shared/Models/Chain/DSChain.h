@@ -343,6 +343,9 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 /*! @brief Returns the height of a block having the given hash. If no block is found returns UINT32_MAX  */
 - (uint32_t)heightForBlockHash:(UInt256)blockhash;
 
+/*! @brief Returns the height of a block having the given hash. This does less expensive checks than heightForBlockHash and is not garanteed to be accurate, but can be used for logging. If no block is found returns UINT32_MAX  */
+- (uint32_t)quickHeightForBlockHash:(UInt256)blockhash;
+
 // MARK: Chain Lock
 
 /*! @brief Returns the last chainLock known by the chain at the heighest height.  */

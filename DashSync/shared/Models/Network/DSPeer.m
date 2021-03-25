@@ -576,7 +576,7 @@
 #if MESSAGE_LOGGING
     NSMutableArray *locatorHexes = [NSMutableArray arrayWithCapacity:[locators count]];
     [locators enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        uint32_t knownHeight = [self.chain heightForBlockHash:((NSData *)obj).UInt256];
+        uint32_t knownHeight = [self.chain quickHeightForBlockHash:((NSData *)obj).UInt256];
         if (knownHeight == UINT32_MAX) {
             [locatorHexes addObject:[NSString stringWithFormat:@"%@ (block height unknown)", ((NSData *)obj).reverse.hexString]];
         } else {

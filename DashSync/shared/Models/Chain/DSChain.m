@@ -2572,6 +2572,31 @@ static dispatch_once_t devnetToken = 0;
     return YES;
 }
 
+- (uint32_t)quickHeightForBlockHash:(UInt256)blockhash {
+    DSCheckpoint *checkpoint = [self.checkpointsByHashDictionary objectForKey:uint256_data(blockhash)];
+    if (checkpoint) {
+        return checkpoint.height;
+    }
+
+    DSBlock *syncBlock = [self.mSyncBlocks objectForKey:uint256_obj(blockhash)];
+    if (syncBlock && (syncBlock.height != UINT32_MAX)) {
+        return syncBlock.height;
+    }
+
+    DSBlock *terminalBlock = [self.mTerminalBlocks objectForKey:uint256_obj(blockhash)];
+    if (terminalBlock && (terminalBlock.height != UINT32_MAX)) {
+        return terminalBlock.height;
+    }
+
+    for (DSCheckpoint *checkpoint in self.checkpoints) {
+        if (uint256_eq(checkpoint.blockHash, blockhash)) {
+            return checkpoint.height;
+        }
+    }
+    DSLog(@"Requesting unknown quick blockhash %@", uint256_reverse_hex(blockhash));
+    return UINT32_MAX;
+}
+
 - (uint32_t)heightForBlockHash:(UInt256)blockhash {
     DSCheckpoint *checkpoint = [self.checkpointsByHashDictionary objectForKey:uint256_data(blockhash)];
     if (checkpoint) {

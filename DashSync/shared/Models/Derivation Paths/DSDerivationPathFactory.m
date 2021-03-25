@@ -205,7 +205,9 @@
 
     for (DSAccount *account in wallet.accounts) {
         for (DSDerivationPath *fundsDerivationPath in account.outgoingFundDerivationPaths) {
-            if (![fundsDerivationPath hasExtendedPublicKey]) {
+            // We should only add derivation paths that are local (ie where we can rederivate)
+            // The ones that come from the network should be refetched.
+            if (fundsDerivationPath.length && ![fundsDerivationPath hasExtendedPublicKey]) {
                 [mArray addObject:fundsDerivationPath];
             }
         }

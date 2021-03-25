@@ -479,14 +479,9 @@
 }
 
 - (void)removeNonMainnetTrustedPeer {
-    NSManagedObjectContext *peerContext = [NSManagedObjectContext peerContext];
-    DSChainEntity *chainEntityInPeerContext = [self.chain chainEntityInContext:peerContext];
-
     if (![self.chain isMainnet]) {
-        [self.chain.chainManager.peerManager removeTrustedPeerHost];
-        [self.chain.chainManager.peerManager clearPeers];
-        [DSPeerEntity deletePeersForChainEntity:chainEntityInPeerContext];
-        [peerContext ds_save];
+        NSManagedObjectContext *chainContext = [NSManagedObjectContext chainContext];
+        [[DashSync sharedSyncController] wipePeerDataForChain:self.chain inContext:chainContext];
     }
 }
 

@@ -206,7 +206,8 @@
         NSMutableArray *usedFriendshipIdentifiers = [NSMutableArray array];
         for (NSData *blockchainIdentityData in self.mBlockchainIdentities) {
             DSBlockchainIdentity *blockchainIdentity = [self.mBlockchainIdentities objectForKey:blockchainIdentityData];
-            for (DSFriendRequestEntity *friendRequest in blockchainIdentity.matchingDashpayUserInViewContext.outgoingRequests) {
+            NSSet * outgoingRequests = [blockchainIdentity matchingDashpayUserInContext:self.chain.chainManagedObjectContext].outgoingRequests;
+            for (DSFriendRequestEntity *friendRequest in outgoingRequests) {
                 DSAccount *account = [self accountWithNumber:friendRequest.account.index];
                 DSIncomingFundsDerivationPath *fundsDerivationPath = [DSIncomingFundsDerivationPath
                     contactBasedDerivationPathWithDestinationBlockchainIdentityUniqueId:friendRequest.destinationContact.associatedBlockchainIdentity.uniqueID.UInt256
@@ -224,7 +225,8 @@
 
         for (NSData *blockchainUniqueIdData in self.mBlockchainIdentities) {
             DSBlockchainIdentity *blockchainIdentity = [self.mBlockchainIdentities objectForKey:blockchainUniqueIdData];
-            for (DSFriendRequestEntity *friendRequest in blockchainIdentity.matchingDashpayUserInViewContext.incomingRequests) {
+            NSSet * incomingRequests = [blockchainIdentity matchingDashpayUserInContext:self.chain.chainManagedObjectContext].incomingRequests;
+            for (DSFriendRequestEntity *friendRequest in incomingRequests) {
                 DSAccount *account = [self accountWithNumber:friendRequest.account.index];
                 DSIncomingFundsDerivationPath *fundsDerivationPath = [account derivationPathForFriendshipWithIdentifier:friendRequest.friendshipIdentifier];
                 if (fundsDerivationPath) {

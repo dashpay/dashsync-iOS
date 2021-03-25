@@ -1550,17 +1550,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                   onCompletionQueue:self.identityQueue];
     }
 
-    //    if (queryStep & DSBlockchainIdentityQueryStep_IncomingContactRequests) {
-    //        dispatch_group_enter(dispatchGroup);
-    //        [self fetchIncomingContactRequestsInContext:context withCompletion:^(BOOL success, NSArray<NSError *> *errors) {
-    //            failureStep |= success & DSBlockchainIdentityQueryStep_IncomingContactRequests;
-    //            if ([errors count]) {
-    //                [groupedErrors addObjectsFromArray:errors];
-    //            }
-    //            dispatch_group_leave(dispatchGroup);
-    //        }];
-    //    }
-
     __weak typeof(self) weakSelf = self;
     if (completion) {
         dispatch_group_notify(dispatchGroup, self.identityQueue, ^{
