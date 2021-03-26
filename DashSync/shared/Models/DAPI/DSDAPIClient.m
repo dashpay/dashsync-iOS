@@ -313,10 +313,13 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
         return;
     }
 
-    [self.DAPINetworkService publishTransition:transition
+    [service publishTransition:transition
                                completionQueue:completionQueue
                                        success:success
                                        failure:^(NSError *_Nonnull error) {
+        if (error.code == 12) { //UNIMPLEMENTED, this would mean that we are connecting to an old node
+            [self removeDAPINodeByAddress:service.ipAddress];
+        }
                                            NSMutableDictionary *mErrorsPerAttempt = [errorPerAttempt mutableCopy];
                                            if (error) {
                                                mErrorsPerAttempt[@(currentAttempt)] = error;
