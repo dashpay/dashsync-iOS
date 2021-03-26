@@ -1808,7 +1808,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             [self signStateTransition:transition
                            completion:^(BOOL success) {
                                if (success) {
-                                   [self.DAPINetworkService publishTransition:transition
+                                   [self.DAPIClient publishTransition:transition
                                        completionQueue:self.identityQueue
                                        success:^(NSDictionary *_Nonnull successDictionary, BOOL added) {
                                            __strong typeof(weakContract) strongContract = weakContract;
@@ -2237,7 +2237,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                        if (success) {
                            //let's start by putting the usernames in an undetermined state
                            [self setAndSaveUsernameFullPaths:usernameFullPaths toStatus:DSBlockchainIdentityUsernameStatus_PreorderRegistrationPending inContext:context];
-                           [self.DAPINetworkService publishTransition:transition
+                           [self.DAPIClient publishTransition:transition
                                completionQueue:self.identityQueue
                                success:^(NSDictionary *_Nonnull successDictionary, BOOL added) {
                                    [self setAndSaveUsernameFullPaths:usernameFullPaths toStatus:DSBlockchainIdentityUsernameStatus_Preordered inContext:context];
@@ -2283,7 +2283,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                    completion:^(BOOL success) {
                        if (success) {
                            [self setAndSaveUsernameFullPaths:usernameFullPaths toStatus:DSBlockchainIdentityUsernameStatus_RegistrationPending inContext:context];
-                           [self.DAPINetworkService publishTransition:transition
+                           [self.DAPIClient publishTransition:transition
                                completionQueue:self.identityQueue
                                success:^(NSDictionary *_Nonnull successDictionary, BOOL added) {
                                    [self setAndSaveUsernameFullPaths:usernameFullPaths toStatus:DSBlockchainIdentityUsernameStatus_Confirmed inContext:context];
@@ -2326,7 +2326,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
         }
         return;
     }
-    [self.DAPINetworkService getDPNSDocumentsForIdentityWithUserId:self.uniqueIDData
+    DSDAPIPlatformNetworkService * dapiNetworkService = self.DAPINetworkService;
+    [dapiNetworkService getDPNSDocumentsForIdentityWithUserId:self.uniqueIDData
         completionQueue:self.identityQueue
         success:^(NSArray<NSDictionary *> *_Nonnull documents) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -2379,10 +2380,15 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             }
         }
         failure:^(NSError *_Nonnull error) {
-            if (completion) {
-                dispatch_async(completionQueue, ^{
-                    completion(NO, error);
-                });
+            if (error.code == 12) { //UNIMPLEMENTED, this would mean that we are connecting to an old node
+                [self.DAPIClient removeDAPINodeByAddress:dapiNetworkService.ipAddress];
+                [self fetchUsernamesInContext:context withCompletion:completion onCompletionQueue:completionQueue];
+            } else {
+                if (completion) {
+                    dispatch_async(completionQueue, ^{
+                        completion(NO, error);
+                    });
+                }
             }
         }];
 }
@@ -2393,7 +2399,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 - (void)updateCreditBalance {
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ //this is so we don't get DAPINetworkService immediately
-        [self.DAPINetworkService getIdentityById:self.uniqueIDData
+        DSDAPIPlatformNetworkService * dapiNetworkService = self.DAPINetworkService;
+        [dapiNetworkService getIdentityById:self.uniqueIDData
                                  completionQueue:self.identityQueue
                                          success:^(NSDictionary *_Nullable profileDictionary) {
                                              __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -2406,14 +2413,17 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                              });
                                          }
                                          failure:^(NSError *_Nonnull error){
-
+                                                if (error.code == 12) { //UNIMPLEMENTED, this would mean that we are connecting to an old node
+                                                    [self.DAPIClient removeDAPINodeByAddress:dapiNetworkService.ipAddress];
+                                                }
                                          }];
     });
 }
 
 - (void)monitorForBlockchainIdentityWithRetryCount:(uint32_t)retryCount retryAbsentCount:(uint32_t)retryAbsentCount delay:(NSTimeInterval)delay retryDelayType:(DSBlockchainIdentityRetryDelayType)retryDelayType options:(DSBlockchainIdentityMonitorOptions)options inContext:(NSManagedObjectContext *)context completion:(void (^)(BOOL success, NSError *error))completion {
     __weak typeof(self) weakSelf = self;
-    [self.DAPINetworkService getIdentityById:self.uniqueIDData
+    DSDAPIPlatformNetworkService * dapiNetworkService = self.DAPINetworkService;
+    [dapiNetworkService getIdentityById:self.uniqueIDData
         completionQueue:self.identityQueue
         success:^(NSDictionary *_Nonnull identityDictionary) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -2431,6 +2441,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             }
         }
         failure:^(NSError *_Nonnull error) {
+            if (error.code == 12) { //UNIMPLEMENTED, this would mean that we are connecting to an old node
+                [self.DAPIClient removeDAPINodeByAddress:dapiNetworkService.ipAddress];
+            }
             uint32_t nextRetryAbsentCount = retryAbsentCount;
             if ([[error localizedDescription] isEqualToString:@"Identity not found"]) {
                 if (!retryAbsentCount) {
@@ -2517,7 +2530,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
 - (void)monitorForDPNSUsernames:(NSArray *)usernames inDomain:(NSString *)domain withRetryCount:(uint32_t)retryCount inContext:(NSManagedObjectContext *)context completion:(void (^)(BOOL allFound, NSError *error))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
     __weak typeof(self) weakSelf = self;
-    [self.DAPINetworkService getDPNSDocumentsForUsernames:usernames
+    DSDAPIPlatformNetworkService * dapiNetworkService = self.DAPINetworkService;
+    [dapiNetworkService getDPNSDocumentsForUsernames:usernames
         inDomain:domain
         completionQueue:self.identityQueue
         success:^(id _Nonnull domainDocumentArray) {
@@ -2575,6 +2589,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             }
         }
         failure:^(NSError *_Nonnull error) {
+            if (error.code == 12) { //UNIMPLEMENTED, this would mean that we are connecting to an old node
+                [self.DAPIClient removeDAPINodeByAddress:dapiNetworkService.ipAddress];
+            }
             if (retryCount > 0) {
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), self.identityQueue, ^{
                     __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -2593,7 +2610,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
 - (void)monitorForDPNSPreorderSaltedDomainHashes:(NSDictionary *)saltedDomainHashes withRetryCount:(uint32_t)retryCount inContext:(NSManagedObjectContext *)context completion:(void (^)(BOOL allFound, NSError *error))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
     __weak typeof(self) weakSelf = self;
-    [self.DAPINetworkService getDPNSDocumentsForPreorderSaltedDomainHashes:[saltedDomainHashes allValues]
+    DSDAPIPlatformNetworkService * dapiNetworkService = self.DAPINetworkService;
+    [dapiNetworkService getDPNSDocumentsForPreorderSaltedDomainHashes:[saltedDomainHashes allValues]
         completionQueue:self.identityQueue
         success:^(id _Nonnull preorderDocumentArray) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -2655,6 +2673,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             }
         }
         failure:^(NSError *_Nonnull error) {
+            if (error.code == 12) { //UNIMPLEMENTED, this would mean that we are connecting to an old node
+                [self.DAPIClient removeDAPINodeByAddress:dapiNetworkService.ipAddress];
+            }
             if (retryCount > 0) {
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), self.identityQueue, ^{
                     __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -2685,7 +2706,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     __weak typeof(self) weakSelf = self;
     NSParameterAssert(contract);
     if (!contract) return;
-    [self.DAPINetworkService fetchContractForId:uint256_data(contract.contractId)
+    DSDAPIPlatformNetworkService * dapiNetworkService = self.DAPINetworkService;
+    [dapiNetworkService fetchContractForId:uint256_data(contract.contractId)
         completionQueue:self.identityQueue
         success:^(id _Nonnull contractDictionary) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -2716,6 +2738,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             }
         }
         failure:^(NSError *_Nonnull error) {
+            if (error.code == 12) { //UNIMPLEMENTED, this would mean that we are connecting to an old node
+                [self.DAPIClient removeDAPINodeByAddress:dapiNetworkService.ipAddress];
+            }
             if (retryCount > 0) {
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                     __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -2943,7 +2968,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     NSAssert(_isLocal, @"This should not be performed on a non local blockchain identity");
     if (!_isLocal) return;
     __weak typeof(self) weakSelf = self;
-    [self.DAPINetworkService getIdentityByName:potentialContact.username
+    DSDAPIPlatformNetworkService * dapiNetworkService = self.DAPINetworkService;
+    [dapiNetworkService getIdentityByName:potentialContact.username
         inDomain:[self dashpayDomainName]
         completionQueue:self.identityQueue
         success:^(NSDictionary *_Nonnull blockchainIdentityDictionary) {
@@ -2992,6 +3018,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             [self sendNewFriendRequestToBlockchainIdentity:potentialContactBlockchainIdentity completion:completion];
         }
         failure:^(NSError *_Nonnull error) {
+            if (error.code == 12) { //UNIMPLEMENTED, this would mean that we are connecting to an old node
+                [self.DAPIClient removeDAPINodeByAddress:dapiNetworkService.ipAddress];
+            }
             DSLogPrivate(@"%@", error);
 
             if (completion) {
@@ -3433,7 +3462,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                             }
                                             return;
                                         }
-                                        [self.DAPINetworkService publishTransition:transition
+                                        [self.DAPIClient publishTransition:transition
                                             completionQueue:self.identityQueue
                                             success:^(NSDictionary *_Nonnull successDictionary, BOOL added) {
                                                 __strong typeof(weakSelf) strongSelf = weakSelf;
