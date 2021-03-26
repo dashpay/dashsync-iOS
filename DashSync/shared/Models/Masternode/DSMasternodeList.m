@@ -599,8 +599,10 @@ inline static int ceil_log2(int x) {
     NSMutableArray *mArray = [NSMutableArray array];
     for (uint32_t i = 0; i < MIN(peerCount, self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.count); i++) {
         DSSimplifiedMasternodeEntry *masternodeEntry = self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[sortedHashes[i]];
-        DSPeer *peer = [DSPeer peerWithSimplifiedMasternodeEntry:masternodeEntry];
-        [mArray addObject:peer];
+        if (masternodeEntry.isValid) {
+            DSPeer *peer = [DSPeer peerWithSimplifiedMasternodeEntry:masternodeEntry];
+            [mArray addObject:peer];
+        }
     }
     return mArray;
 }
