@@ -29,6 +29,7 @@
 #import "DSAuthenticationManager+Private.h"
 #import "DSAuthenticationManager.h"
 #import "DSBIP39Mnemonic.h"
+#import "DSBlockchainInvitation+Protected.h"
 #import "DSBlockchainIdentity+Protected.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityKeyPathEntity+CoreDataClass.h"
@@ -206,7 +207,7 @@
         NSMutableArray *usedFriendshipIdentifiers = [NSMutableArray array];
         for (NSData *blockchainIdentityData in self.mBlockchainIdentities) {
             DSBlockchainIdentity *blockchainIdentity = [self.mBlockchainIdentities objectForKey:blockchainIdentityData];
-            NSSet * outgoingRequests = [blockchainIdentity matchingDashpayUserInContext:self.chain.chainManagedObjectContext].outgoingRequests;
+            NSSet *outgoingRequests = [blockchainIdentity matchingDashpayUserInContext:self.chain.chainManagedObjectContext].outgoingRequests;
             for (DSFriendRequestEntity *friendRequest in outgoingRequests) {
                 DSAccount *account = [self accountWithNumber:friendRequest.account.index];
                 DSIncomingFundsDerivationPath *fundsDerivationPath = [DSIncomingFundsDerivationPath
@@ -225,7 +226,7 @@
 
         for (NSData *blockchainUniqueIdData in self.mBlockchainIdentities) {
             DSBlockchainIdentity *blockchainIdentity = [self.mBlockchainIdentities objectForKey:blockchainUniqueIdData];
-            NSSet * incomingRequests = [blockchainIdentity matchingDashpayUserInContext:self.chain.chainManagedObjectContext].incomingRequests;
+            NSSet *incomingRequests = [blockchainIdentity matchingDashpayUserInContext:self.chain.chainManagedObjectContext].incomingRequests;
             for (DSFriendRequestEntity *friendRequest in incomingRequests) {
                 DSAccount *account = [self accountWithNumber:friendRequest.account.index];
                 DSIncomingFundsDerivationPath *fundsDerivationPath = [account derivationPathForFriendshipWithIdentifier:friendRequest.friendshipIdentifier];
@@ -1051,6 +1052,7 @@
     [keyChainDictionary removeObjectForKey:blockchainIdentity.lockedOutpointData];
     setKeychainDict(keyChainDictionary, self.walletBlockchainIdentitiesKey, NO);
 }
+
 - (void)addBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     NSParameterAssert(blockchainIdentity);
     [self.mBlockchainIdentities setObject:blockchainIdentity forKey:blockchainIdentity.lockedOutpointData];
@@ -1210,7 +1212,7 @@
 }
 
 - (DSBlockchainIdentity *)createBlockchainIdentityUsingDerivationIndex:(uint32_t)index {
-    DSBlockchainIdentity *blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:[self unusedBlockchainIdentityIndex] inWallet:self];
+    DSBlockchainIdentity *blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index inWallet:self];
     return blockchainIdentity;
 }
 
@@ -1224,6 +1226,25 @@
     DSBlockchainIdentity *blockchainIdentity = [self createBlockchainIdentityUsingDerivationIndex:index];
     [blockchainIdentity addDashpayUsername:username save:NO];
     return blockchainIdentity;
+}
+
+// MARK: - Invitations
+
+- (uint32_t)unusedBlockchainInvitationIndex {
+    []
+    NSArray *blockchainIdentities = [_mBlockchainIdentities allValues];
+    NSNumber *max = [blockchainIdentities valueForKeyPath:@"index.@max.intValue"];
+    return max != nil ? ([max unsignedIntValue] + 1) : 0;
+}
+
+- (DSBlockchainInvitation *)createBlockchainInvitation {
+    DSBlockchainInvitation *blockchainInvitation = [[DSBlockchainInvitation alloc] initAtIndex:[self unusedBlockchainInvitationIndex] inWallet:self];
+    return blockchainInvitation;
+}
+
+- (DSBlockchainInvitation *)createBlockchainInvitationUsingDerivationIndex:(uint32_t)index {
+    DSBlockchainInvitation *blockchainInvitation = [[DSBlockchainInvitation alloc] initAtIndex:index inWallet:self];
+    return blockchainInvitation;
 }
 
 // MARK: - Masternodes (Providers)
@@ -1414,6 +1435,11 @@
 - (NSUInteger)indexOfBlockchainIdentityCreditFundingTopupHash:(UInt160)creditFundingTopupHash {
     DSCreditFundingDerivationPath *derivationPath = [DSCreditFundingDerivationPath blockchainIdentityTopupFundingDerivationPathForWallet:self];
     return [derivationPath indexOfKnownAddress:[[NSData dataWithUInt160:creditFundingTopupHash] addressFromHash160DataForChain:self.chain]];
+}
+
+- (NSUInteger)indexOfBlockchainIdentityCreditFundingInvitationHash:(UInt160)creditFundingInvitationHash {
+    DSCreditFundingDerivationPath *derivationPath = [DSCreditFundingDerivationPath blockchainIdentityInvitationFundingDerivationPathForWallet:self];
+    return [derivationPath indexOfKnownAddress:[[NSData dataWithUInt160:creditFundingInvitationHash] addressFromHash160DataForChain:self.chain]];
 }
 
 @end

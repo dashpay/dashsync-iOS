@@ -31,6 +31,7 @@
 #import "DSSparseMerkleTree.h"
 
 #import "DSBlockchainIdentity.h"
+#import "DSBlockchainInvitation.h"
 #import "DSCreditFundingTransaction.h"
 
 #import "DSAccount.h"

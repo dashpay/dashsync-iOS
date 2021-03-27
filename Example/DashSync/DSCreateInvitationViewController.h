@@ -1,6 +1,6 @@
-//
-//  Created by Sam Westrich
-//  Copyright © 2020 Dash Core Group. All rights reserved.
+//  
+//  Created by Samuel Westrich
+//  Copyright © 2564 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,16 +15,17 @@
 //  limitations under the License.
 //
 
-#import "DSCreditFundingDerivationPath.h"
+#import <UIKit/UIKit.h>
+#import "DSAccountChooserViewController.h"
+#import "DSWalletChooserViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSCreditFundingDerivationPath ()
+@interface DSCreateInvitationViewController : UITableViewController <DSWalletChooserDelegate, DSAccountChooserDelegate>
 
-+ (instancetype)blockchainIdentityRegistrationFundingDerivationPathForChain:(DSChain *)chain;
-+ (instancetype)blockchainIdentityTopupFundingDerivationPathForChain:(DSChain *)chain;
-+ (instancetype)blockchainIdentityInvitationFundingDerivationPathForChain:(DSChain *)chain;
+@property (nonatomic, strong) DSChainManager *chainManager;
 
 @end
+
 
 NS_ASSUME_NONNULL_END

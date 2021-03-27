@@ -1,6 +1,6 @@
 //
-//  Created by Sam Westrich
-//  Copyright © 2020 Dash Core Group. All rights reserved.
+//  Created by Samuel Westrich
+//  Copyright © 2564 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,16 +15,19 @@
 //  limitations under the License.
 //
 
-#import "DSCreditFundingDerivationPath.h"
+#import "DSInvitationTableViewCell.h"
 
-NS_ASSUME_NONNULL_BEGIN
+@implementation DSInvitationTableViewCell
 
-@interface DSCreditFundingDerivationPath ()
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Initialization code
+}
 
-+ (instancetype)blockchainIdentityRegistrationFundingDerivationPathForChain:(DSChain *)chain;
-+ (instancetype)blockchainIdentityTopupFundingDerivationPathForChain:(DSChain *)chain;
-+ (instancetype)blockchainIdentityInvitationFundingDerivationPathForChain:(DSChain *)chain;
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
 
 @end
-
-NS_ASSUME_NONNULL_END

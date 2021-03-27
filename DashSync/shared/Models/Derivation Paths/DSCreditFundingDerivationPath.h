@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype)blockchainIdentityRegistrationFundingDerivationPathForWallet:(DSWallet *)wallet;
 + (instancetype)blockchainIdentityTopupFundingDerivationPathForWallet:(DSWallet *)wallet;
++ (instancetype)blockchainIdentityInvitationFundingDerivationPathForWallet:(DSWallet *)wallet;
 
 - (NSString *)receiveAddress;
 

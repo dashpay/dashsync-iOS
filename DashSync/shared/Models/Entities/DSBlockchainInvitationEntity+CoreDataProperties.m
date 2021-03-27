@@ -1,6 +1,6 @@
-//
-//  Created by Sam Westrich
-//  Copyright © 2020 Dash Core Group. All rights reserved.
+//  
+//  Created by Samuel Westrich
+//  Copyright © 2564 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -14,17 +14,18 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
+//
 
-#import "DSCreditFundingDerivationPath.h"
+#import "DSBlockchainInvitationEntity+CoreDataProperties.h"
 
-NS_ASSUME_NONNULL_BEGIN
+@implementation DSBlockchainInvitationEntity (CoreDataProperties)
 
-@interface DSCreditFundingDerivationPath ()
++ (NSFetchRequest<DSBlockchainInvitationEntity *> *)fetchRequest {
+	return [NSFetchRequest fetchRequestWithEntityName:@"DSBlockchainInvitationEntity"];
+}
 
-+ (instancetype)blockchainIdentityRegistrationFundingDerivationPathForChain:(DSChain *)chain;
-+ (instancetype)blockchainIdentityTopupFundingDerivationPathForChain:(DSChain *)chain;
-+ (instancetype)blockchainIdentityInvitationFundingDerivationPathForChain:(DSChain *)chain;
+@dynamic link;
+@dynamic chain;
+@dynamic blockchainIdentity;
 
 @end
-
-NS_ASSUME_NONNULL_END

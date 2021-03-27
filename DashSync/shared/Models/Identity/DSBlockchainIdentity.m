@@ -2326,7 +2326,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
         }
         return;
     }
-    DSDAPIPlatformNetworkService * dapiNetworkService = self.DAPINetworkService;
+    DSDAPIPlatformNetworkService *dapiNetworkService = self.DAPINetworkService;
     [dapiNetworkService getDPNSDocumentsForIdentityWithUserId:self.uniqueIDData
         completionQueue:self.identityQueue
         success:^(NSArray<NSDictionary *> *_Nonnull documents) {
@@ -2399,30 +2399,30 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 - (void)updateCreditBalance {
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ //this is so we don't get DAPINetworkService immediately
-        DSDAPIPlatformNetworkService * dapiNetworkService = self.DAPINetworkService;
+        DSDAPIPlatformNetworkService *dapiNetworkService = self.DAPINetworkService;
         [dapiNetworkService getIdentityById:self.uniqueIDData
-                                 completionQueue:self.identityQueue
-                                         success:^(NSDictionary *_Nullable profileDictionary) {
-                                             __strong typeof(weakSelf) strongSelf = weakSelf;
-                                             if (!strongSelf) {
-                                                 return;
-                                             }
-                                             dispatch_async(self.identityQueue, ^{
-                                                 uint64_t creditBalance = (uint64_t)[profileDictionary[@"credits"] longLongValue];
-                                                 strongSelf.creditBalance = creditBalance;
-                                             });
-                                         }
-                                         failure:^(NSError *_Nonnull error){
-                                                if (error.code == 12) { //UNIMPLEMENTED, this would mean that we are connecting to an old node
-                                                    [self.DAPIClient removeDAPINodeByAddress:dapiNetworkService.ipAddress];
-                                                }
-                                         }];
+            completionQueue:self.identityQueue
+            success:^(NSDictionary *_Nullable profileDictionary) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+                dispatch_async(self.identityQueue, ^{
+                    uint64_t creditBalance = (uint64_t)[profileDictionary[@"credits"] longLongValue];
+                    strongSelf.creditBalance = creditBalance;
+                });
+            }
+            failure:^(NSError *_Nonnull error) {
+                if (error.code == 12) { //UNIMPLEMENTED, this would mean that we are connecting to an old node
+                    [self.DAPIClient removeDAPINodeByAddress:dapiNetworkService.ipAddress];
+                }
+            }];
     });
 }
 
 - (void)monitorForBlockchainIdentityWithRetryCount:(uint32_t)retryCount retryAbsentCount:(uint32_t)retryAbsentCount delay:(NSTimeInterval)delay retryDelayType:(DSBlockchainIdentityRetryDelayType)retryDelayType options:(DSBlockchainIdentityMonitorOptions)options inContext:(NSManagedObjectContext *)context completion:(void (^)(BOOL success, NSError *error))completion {
     __weak typeof(self) weakSelf = self;
-    DSDAPIPlatformNetworkService * dapiNetworkService = self.DAPINetworkService;
+    DSDAPIPlatformNetworkService *dapiNetworkService = self.DAPINetworkService;
     [dapiNetworkService getIdentityById:self.uniqueIDData
         completionQueue:self.identityQueue
         success:^(NSDictionary *_Nonnull identityDictionary) {
@@ -2530,7 +2530,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
 - (void)monitorForDPNSUsernames:(NSArray *)usernames inDomain:(NSString *)domain withRetryCount:(uint32_t)retryCount inContext:(NSManagedObjectContext *)context completion:(void (^)(BOOL allFound, NSError *error))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
     __weak typeof(self) weakSelf = self;
-    DSDAPIPlatformNetworkService * dapiNetworkService = self.DAPINetworkService;
+    DSDAPIPlatformNetworkService *dapiNetworkService = self.DAPINetworkService;
     [dapiNetworkService getDPNSDocumentsForUsernames:usernames
         inDomain:domain
         completionQueue:self.identityQueue
@@ -2610,7 +2610,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
 - (void)monitorForDPNSPreorderSaltedDomainHashes:(NSDictionary *)saltedDomainHashes withRetryCount:(uint32_t)retryCount inContext:(NSManagedObjectContext *)context completion:(void (^)(BOOL allFound, NSError *error))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
     __weak typeof(self) weakSelf = self;
-    DSDAPIPlatformNetworkService * dapiNetworkService = self.DAPINetworkService;
+    DSDAPIPlatformNetworkService *dapiNetworkService = self.DAPINetworkService;
     [dapiNetworkService getDPNSDocumentsForPreorderSaltedDomainHashes:[saltedDomainHashes allValues]
         completionQueue:self.identityQueue
         success:^(id _Nonnull preorderDocumentArray) {
@@ -2706,7 +2706,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     __weak typeof(self) weakSelf = self;
     NSParameterAssert(contract);
     if (!contract) return;
-    DSDAPIPlatformNetworkService * dapiNetworkService = self.DAPINetworkService;
+    DSDAPIPlatformNetworkService *dapiNetworkService = self.DAPINetworkService;
     [dapiNetworkService fetchContractForId:uint256_data(contract.contractId)
         completionQueue:self.identityQueue
         success:^(id _Nonnull contractDictionary) {
@@ -2968,7 +2968,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     NSAssert(_isLocal, @"This should not be performed on a non local blockchain identity");
     if (!_isLocal) return;
     __weak typeof(self) weakSelf = self;
-    DSDAPIPlatformNetworkService * dapiNetworkService = self.DAPINetworkService;
+    DSDAPIPlatformNetworkService *dapiNetworkService = self.DAPINetworkService;
     [dapiNetworkService getIdentityByName:potentialContact.username
         inDomain:[self dashpayDomainName]
         completionQueue:self.identityQueue

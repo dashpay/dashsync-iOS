@@ -38,6 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSSet<DSTransactionHashEntity *> *transactionHashes;
 @property (nullable, nonatomic, retain) NSSet<DSGovernanceVoteHashEntity *> *votes;
 @property (nullable, nonatomic, retain) NSSet<DSBlockchainIdentityEntity *> *identities;
+@property (nullable, nonatomic, retain) NSSet<DSBlockchainIdentityEntity *> *invitations;
 
 @end
 
@@ -102,6 +103,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)removeIdentitiesObject:(DSBlockchainIdentityEntity *)value;
 - (void)addIdentities:(NSSet<DSBlockchainIdentityEntity *> *)values;
 - (void)removeIdentities:(NSSet<DSBlockchainIdentityEntity *> *)values;
+
+- (void)addInvitationsObject:(DSBlockchainIdentityEntity *)value;
+- (void)removeInvitationsObject:(DSBlockchainIdentityEntity *)value;
+- (void)addInvitations:(NSSet<DSBlockchainIdentityEntity *> *)values;
+- (void)removeInvitations:(NSSet<DSBlockchainIdentityEntity *> *)values;
 
 @end
 

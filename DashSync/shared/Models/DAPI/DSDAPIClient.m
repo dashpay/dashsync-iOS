@@ -314,24 +314,24 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     }
 
     [service publishTransition:transition
-                               completionQueue:completionQueue
-                                       success:success
-                                       failure:^(NSError *_Nonnull error) {
-        if (error.code == 12) { //UNIMPLEMENTED, this would mean that we are connecting to an old node
-            [self removeDAPINodeByAddress:service.ipAddress];
-        }
-                                           NSMutableDictionary *mErrorsPerAttempt = [errorPerAttempt mutableCopy];
-                                           if (error) {
-                                               mErrorsPerAttempt[@(currentAttempt)] = error;
-                                           }
-                                           if (retryCount) {
-                                               dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), self.coreNetworkingDispatchQueue, ^{
-                                                   [self publishTransition:transition retryCount:retryCount - 1 delay:delay + delayIncrease delayIncrease:delayIncrease currentAttempt:currentAttempt + 1 currentErrors:mErrorsPerAttempt completionQueue:completionQueue success:success failure:failure];
-                                               });
-                                           } else if (failure) {
-                                               failure([mErrorsPerAttempt copy]);
-                                           }
-                                       }];
+               completionQueue:completionQueue
+                       success:success
+                       failure:^(NSError *_Nonnull error) {
+                           if (error.code == 12) { //UNIMPLEMENTED, this would mean that we are connecting to an old node
+                               [self removeDAPINodeByAddress:service.ipAddress];
+                           }
+                           NSMutableDictionary *mErrorsPerAttempt = [errorPerAttempt mutableCopy];
+                           if (error) {
+                               mErrorsPerAttempt[@(currentAttempt)] = error;
+                           }
+                           if (retryCount) {
+                               dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), self.coreNetworkingDispatchQueue, ^{
+                                   [self publishTransition:transition retryCount:retryCount - 1 delay:delay + delayIncrease delayIncrease:delayIncrease currentAttempt:currentAttempt + 1 currentErrors:mErrorsPerAttempt completionQueue:completionQueue success:success failure:failure];
+                               });
+                           } else if (failure) {
+                               failure([mErrorsPerAttempt copy]);
+                           }
+                       }];
 }
 
 
