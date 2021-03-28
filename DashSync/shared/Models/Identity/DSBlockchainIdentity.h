@@ -11,7 +11,7 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-@class DSWallet, DSBlockchainIdentityRegistrationTransition, DSBlockchainIdentityTopupTransition, DSBlockchainIdentityUpdateTransition, DSBlockchainIdentityCloseTransition, DSAccount, DSChain, DSTransition, DSDashpayUserEntity, DSPotentialOneWayFriendship, DSTransaction, DSFriendRequestEntity, DSPotentialContact, DSCreditFundingTransaction, DSDocumentTransition, DSKey, DPDocumentFactory, DSTransientDashpayUser;
+@class DSWallet, DSBlockchainIdentityRegistrationTransition, DSBlockchainIdentityTopupTransition, DSBlockchainIdentityUpdateTransition, DSBlockchainIdentityCloseTransition, DSAccount, DSChain, DSTransition, DSDashpayUserEntity, DSPotentialOneWayFriendship, DSTransaction, DSFriendRequestEntity, DSPotentialContact, DSCreditFundingTransaction, DSDocumentTransition, DSKey, DPDocumentFactory, DSTransientDashpayUser, DSBlockchainInvitation;
 
 typedef NS_ENUM(NSUInteger, DSBlockchainIdentityRegistrationStep)
 {
@@ -148,6 +148,9 @@ FOUNDATION_EXPORT NSString *const DSBlockchainIdentityUpdateEventDashpaySyncroni
 
 /*! @brief This is the wallet holding the blockchain identity. There should always be a wallet associated to a blockchain identity if the blockchain identity is local, but never if it is not. */
 @property (nonatomic, weak, readonly) DSWallet *wallet;
+
+/*! @brief This is invitation that is identity originated from. */
+@property (nonatomic, weak, readonly) DSBlockchainInvitation *associatedInvitation;
 
 /*! @brief This is the index of the blockchain identity in the wallet. The index is the top derivation used to derive an extended set of keys for the identity. No two local blockchain identities should be allowed to have the same index in a wallet. For example m/.../.../.../index/key */
 @property (nonatomic, readonly) uint32_t index;

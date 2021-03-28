@@ -102,8 +102,11 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 // the first unused index for invitations
 @property (nonatomic, readonly) uint32_t unusedBlockchainInvitationIndex;
 
-// the amount of known blockchain users
+// the amount of known blockchain identities
 @property (nonatomic, readonly) uint32_t blockchainIdentitiesCount;
+
+// the amount of known blockchain invitations
+@property (nonatomic, readonly) uint32_t blockchainInvitationsCount;
 
 // The fingerprint for currentTransactions
 @property (nonatomic, readonly) NSData *chainSynchronizationFingerprint;

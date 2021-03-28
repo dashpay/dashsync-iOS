@@ -195,7 +195,9 @@
     self.specialTransactionsHolder = [[DSSpecialTransactionsWalletHolder alloc] initWithWallet:self inContext:self.chain.chainManagedObjectContext];
 
     self.mBlockchainIdentities = nil;
+    self.mBlockchainInvitations = nil;
     [self blockchainIdentities];
+    [self blockchainInvitations];
 
     //blockchain users are loaded
 

@@ -376,7 +376,7 @@
                                             </constraints>
                                         </tableViewCellContentView>
                                         <connections>
-                                            <segue destination="uuE-vS-qtf" kind="show" id="OYQ-lR-htP"/>
+                                            <segue destination="uuE-vS-qtf" kind="show" identifier="BlockchainInvitationsSegue" id="OYQ-lR-htP"/>
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" rowHeight="52" id="Cc6-gH-MgF">
@@ -877,6 +877,7 @@
                     <navigationItem key="navigationItem" title="Main" id="pKD-Zb-38g"/>
                     <connections>
                         <outlet property="blockchainIdentitiesCountLabel" destination="eo8-KO-kUy" id="jNb-o8-DhB"/>
+                        <outlet property="blockchainInvitationsCountLabel" destination="loc-r5-QVJ" id="rEl-Wx-oKv"/>
                         <outlet property="chainTipLabel" destination="nvn-mA-9nN" id="P9a-Qf-lsA"/>
                         <outlet property="connectedPeerCountLabel" destination="f7t-e5-oBX" id="PdX-jR-R6q"/>
                         <outlet property="dbSizeLabel" destination="enN-S4-Ij7" id="W5f-i8-SqM"/>

@@ -46,7 +46,8 @@
     if (!(self = [super init])) return nil;
     self.wallet = wallet;
     self.isTransient = FALSE;
-    self.identity = [[DSBlockchainIdentity alloc] initAtIndex:index isForInvitation:YES inWallet:wallet];
+    self.identity = [[DSBlockchainIdentity alloc] initAtIndex:index inWallet:wallet];
+    [self.identity setAssociatedInvitation:self];
     self.chain = wallet.chain;
     return self;
 }
@@ -59,6 +60,7 @@
     self.wallet = wallet;
     self.isTransient = FALSE;
     self.identity = [[DSBlockchainIdentity alloc] initAtIndex:index withFundingTransaction:transaction withUsernameDictionary:nil inWallet:wallet];
+    [self.identity setAssociatedInvitation:self];
     self.chain = wallet.chain;
 
     return self;
@@ -71,6 +73,7 @@
     self.wallet = wallet;
     self.isTransient = FALSE;
     self.identity = [[DSBlockchainIdentity alloc] initAtIndex:index withLockedOutpoint:lockedOutpoint inWallet:wallet];
+    [self.identity setAssociatedInvitation:self];
     self.chain = wallet.chain;
     return self;
 }
@@ -80,6 +83,7 @@
     self.wallet = wallet;
     self.isTransient = FALSE;
     self.identity = [[DSBlockchainIdentity alloc] initAtIndex:index withLockedOutpoint:lockedOutpoint inWallet:wallet withBlockchainIdentityEntity:blockchainInvitationEntity.blockchainIdentity];
+    [self.identity setAssociatedInvitation:self];
     self.link = blockchainInvitationEntity.link;
     self.chain = wallet.chain;
     return self;

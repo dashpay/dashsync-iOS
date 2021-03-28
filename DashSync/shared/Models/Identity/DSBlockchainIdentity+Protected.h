@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) DSBlockchainIdentityEntity *blockchainIdentityEntity;
 @property (nullable, nonatomic, strong) DSTransientDashpayUser *transientDashpayUser;
+@property (nonatomic, weak) DSBlockchainInvitation *associatedInvitation;
 
 - (DSBlockchainIdentityEntity *)blockchainIdentityEntityInContext:(NSManagedObjectContext *)context;
 
@@ -35,8 +36,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithUniqueId:(UInt256)uniqueId isTransient:(BOOL)isTransient onChain:(DSChain *)chain;
 
 - (instancetype)initAtIndex:(uint32_t)index inWallet:(DSWallet *)wallet;
-
-- (instancetype)initAtIndex:(uint32_t)index isForInvitation:(BOOL)isForInvitation inWallet:(DSWallet *)wallet;
 
 - (instancetype)initAtIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet *)wallet;
 

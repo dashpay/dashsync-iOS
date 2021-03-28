@@ -3024,6 +3024,14 @@ static dispatch_once_t devnetToken = 0;
     return blockchainIdentitiesCount;
 }
 
+- (uint32_t)localBlockchainInvitationsCount {
+    uint32_t blockchainInvitationsCount = 0;
+    for (DSWallet *lWallet in self.wallets) {
+        blockchainInvitationsCount += [lWallet blockchainInvitationsCount];
+    }
+    return blockchainInvitationsCount;
+}
+
 - (NSArray<DSBlockchainIdentity *> *)localBlockchainIdentities {
     NSMutableArray *rAllBlockchainIdentities = [NSMutableArray array];
     for (DSWallet *wallet in self.wallets) {

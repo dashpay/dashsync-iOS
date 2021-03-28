@@ -33,6 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initAtIndex:(uint32_t)index withFundingTransaction:(DSCreditFundingTransaction *)transaction inWallet:(DSWallet *)wallet;
 
 - (void)registerInWalletForBlockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId;
+- (void)registerInWalletForRegistrationFundingTransaction:(DSCreditFundingTransaction *)fundingTransaction;
 
 - (void)deletePersistentObjectAndSave:(BOOL)save inContext:(NSManagedObjectContext *)context;
 

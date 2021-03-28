@@ -20,6 +20,7 @@
 #import "DSBlockchainIdentityTopupTransition.h"
 #import "DSBlockchainIdentityUpdateTransition.h"
 #import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
+#import "DSBlockchainInvitation+Protected.h"
 #import "DSBlockchainInvitationEntity+CoreDataClass.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataClass.h"
@@ -237,14 +238,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     return self;
 }
 
-- (instancetype)initAtIndex:(uint32_t)index isForInvitation:(BOOL)isForInvitation inWallet:(DSWallet *)wallet {
-    //this is the creation of a new blockchain identity
-    NSParameterAssert(wallet);
-
-    if (!(self = [self initAtIndex:index inWallet:wallet])) return nil;
-    self.isInvitation = isForInvitation;
-    self.isLocal = !isForInvitation;
-    return self;
+- (void)setAssociatedInvitation:(DSBlockchainInvitation *)associatedInvitation {
+    _associatedInvitation = associatedInvitation;
+    self.isInvitation = TRUE;
+    self.isLocal = FALSE;
 }
 
 - (instancetype)initAtIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet *)wallet {
@@ -489,7 +486,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                                                  }
                                                                  return;
                                                              }
-                                                             [self registerInWalletForRegistrationFundingTransaction:fundingTransaction];
+                                                             if (self.isInvitation) {
+                                                                 [self.associatedInvitation registerInWalletForRegistrationFundingTransaction:fundingTransaction];
+                                                             } else {
+                                                                 [self registerInWalletForRegistrationFundingTransaction:fundingTransaction];
+                                                             }
+
                                                              if (stepCompletion) {
                                                                  dispatch_async(dispatch_get_main_queue(), ^{
                                                                      stepCompletion(DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence);

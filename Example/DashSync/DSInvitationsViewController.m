@@ -8,8 +8,8 @@
 
 #import "DSInvitationsViewController.h"
 #import "DSBlockchainIdentityActionsViewController.h"
-#import "DSBlockchainIdentityTableViewCell.h"
-#import "DSCreateBlockchainIdentityViewController.h"
+#import "DSCreateInvitationViewController.h"
+#import "DSInvitationTableViewCell.h"
 #import "DSMerkleBlock.h"
 #import <DashSync/DSCreditFundingTransaction.h>
 
@@ -83,27 +83,26 @@
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    DSBlockchainIdentityTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"BlockchainIdentityCellIdentifier"];
+    DSInvitationTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"BlockchainInvitationCellIdentifier"];
 
     // Set up the cell...
     [self configureCell:cell atIndexPath:indexPath];
     return cell;
 }
 
-- (void)configureCell:(DSBlockchainIdentityTableViewCell *)blockchainIdentityCell atIndexPath:(NSIndexPath *)indexPath {
+- (void)configureCell:(DSInvitationTableViewCell *)blockchainInvitationCell atIndexPath:(NSIndexPath *)indexPath {
     @autoreleasepool {
-        DSBlockchainIdentity *blockchainIdentity = self.orderedBlockchainInvitations[indexPath.section][indexPath.row];
-        blockchainIdentityCell.usernameLabel.text = blockchainIdentity.currentDashpayUsername ? blockchainIdentity.currentDashpayUsername : @"Not yet set";
-        blockchainIdentityCell.creditBalanceLabel.text = [NSString stringWithFormat:@"%llu", blockchainIdentity.creditBalance];
-        if (blockchainIdentity.registrationCreditFundingTransaction) {
-            if (blockchainIdentity.registrationCreditFundingTransaction.blockHeight == BLOCK_UNKNOWN_HEIGHT) {
-                blockchainIdentityCell.confirmationsLabel.text = @"unconfirmed";
+        DSBlockchainInvitation *blockchainInvitation = self.orderedBlockchainInvitations[indexPath.section][indexPath.row];
+        blockchainInvitationCell.usernameLabel.text = blockchainInvitation.identity.currentDashpayUsername ? blockchainInvitation.identity.currentDashpayUsername : @"Not yet set";
+        blockchainInvitationCell.creditBalanceLabel.text = [NSString stringWithFormat:@"%llu", blockchainInvitation.identity.creditBalance];
+        if (blockchainInvitation.identity.registrationCreditFundingTransaction) {
+            if (blockchainInvitation.identity.registrationCreditFundingTransaction.blockHeight == BLOCK_UNKNOWN_HEIGHT) {
+                blockchainInvitationCell.confirmationsLabel.text = @"unconfirmed";
             } else {
-                blockchainIdentityCell.confirmationsLabel.text = [NSString stringWithFormat:@"%u", (self.chainManager.chain.lastSyncBlockHeight - blockchainIdentity.registrationCreditFundingTransaction.blockHeight + 1)];
+                blockchainInvitationCell.confirmationsLabel.text = [NSString stringWithFormat:@"%u", (self.chainManager.chain.lastSyncBlockHeight - blockchainInvitation.identity.registrationCreditFundingTransaction.blockHeight + 1)];
             }
         }
-        blockchainIdentityCell.registrationL2StatusLabel.text = blockchainIdentity.localizedRegistrationStatusString;
-        blockchainIdentityCell.publicKeysLabel.text = [NSString stringWithFormat:@"%u/%u", blockchainIdentity.activeKeyCount, blockchainIdentity.totalKeyCount];
+        blockchainInvitationCell.registrationL2StatusLabel.text = blockchainInvitation.identity.localizedRegistrationStatusString;
     }
 }
 
@@ -129,9 +128,9 @@
 
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    if ([segue.identifier isEqualToString:@"CreateBlockchainIdentitySegue"]) {
-        DSCreateBlockchainIdentityViewController *createBlockchainIdentityViewController = (DSCreateBlockchainIdentityViewController *)((UINavigationController *)segue.destinationViewController).topViewController;
-        createBlockchainIdentityViewController.chainManager = self.chainManager;
+    if ([segue.identifier isEqualToString:@"CreateBlockchainInvitationSegue"]) {
+        DSCreateInvitationViewController *createBlockchainInvitationViewController = (DSCreateInvitationViewController *)((UINavigationController *)segue.destinationViewController).topViewController;
+        createBlockchainInvitationViewController.chainManager = self.chainManager;
     } else if ([segue.identifier isEqualToString:@"BlockchainIdentityActionsSegue"]) {
         DSBlockchainIdentityActionsViewController *blockchainIdentityActionsViewController = segue.destinationViewController;
         blockchainIdentityActionsViewController.chainManager = self.chainManager;

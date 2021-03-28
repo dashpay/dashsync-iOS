@@ -10,7 +10,7 @@
         <!--New Invitation-->
         <scene sceneID="0pU-rD-edF">
             <objects>
-                <tableViewController id="428-hi-lld" customClass="DSCreateBlockchainIdentityViewController" sceneMemberID="viewController">
+                <tableViewController id="428-hi-lld" customClass="DSCreateInvitationViewController" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="sUj-TB-bb4">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="842"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -80,6 +80,9 @@
                                                 <constraint firstAttribute="trailing" secondItem="i5H-2d-P0x" secondAttribute="trailing" constant="16" id="wet-qb-bdi"/>
                                             </constraints>
                                         </tableViewCellContentView>
+                                        <connections>
+                                            <segue destination="hih-JD-wBs" kind="show" identifier="BlockchainInvitationChooseWalletSegue" id="cC0-We-PeM"/>
+                                        </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" id="7Fq-4k-5jy" userLabel="WalletCell" customClass="DSAccountChooserTableViewCell">
                                         <rect key="frame" x="0.0" y="116" width="414" height="44"/>
@@ -109,6 +112,9 @@
                                                 <constraint firstItem="d2r-F5-vxa" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="347-Aw-A0h" secondAttribute="trailing" constant="10" id="eKj-RC-Kkx"/>
                                             </constraints>
                                         </tableViewCellContentView>
+                                        <connections>
+                                            <segue destination="O1j-c0-LWC" kind="show" identifier="BlockchainInvitationChooseAccountSegue" id="up7-LU-QGx"/>
+                                        </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" id="Wvb-Hc-uMo" userLabel="UsernameCell" customClass="DSKeyValueTableViewCell">
                                         <rect key="frame" x="0.0" y="160" width="414" height="44"/>
@@ -175,6 +181,26 @@
             </objects>
             <point key="canvasLocation" x="-2212" y="-486"/>
         </scene>
+        <!--ChooseWalletIdentifier-->
+        <scene sceneID="RXR-hT-oVR">
+            <objects>
+                <viewControllerPlaceholder storyboardName="Helpers" referencedIdentifier="ChooseWalletIdentifier" id="hih-JD-wBs" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="NOQ-cq-Ysu"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="XvZ-YX-2Gb" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-1309" y="-591"/>
+        </scene>
+        <!--ChooseAccountIdentifier-->
+        <scene sceneID="x0t-NN-CMj">
+            <objects>
+                <viewControllerPlaceholder storyboardName="Helpers" referencedIdentifier="ChooseAccountIdentifier" id="O1j-c0-LWC" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="j7r-yu-swx"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="CBG-3q-D7z" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-1320" y="-448"/>
+        </scene>
         <!--Invitations-->
         <scene sceneID="0V4-th-AkE">
             <objects>
@@ -184,7 +210,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="BlockchainIdentityCellIdentifier" rowHeight="152" id="XKA-3m-B0b" customClass="DSInvitationTableViewCell">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="BlockchainInvitationCellIdentifier" rowHeight="152" id="XKA-3m-B0b" customClass="DSInvitationTableViewCell">
                                 <rect key="frame" x="0.0" y="28" width="414" height="152"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="XKA-3m-B0b" id="sQ4-ac-D0M">
@@ -275,7 +301,7 @@
                     <navigationItem key="navigationItem" title="Invitations" id="xOM-93-pQP" userLabel="Invitations">
                         <barButtonItem key="rightBarButtonItem" systemItem="add" id="1po-y4-Pbf">
                             <connections>
-                                <segue destination="pcp-Tg-rQR" kind="presentation" identifier="CreateBlockchainIdentitySegue" id="Rrc-al-dJf"/>
+                                <segue destination="pcp-Tg-rQR" kind="presentation" identifier="CreateBlockchainInvitationSegue" id="Rrc-al-dJf"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
