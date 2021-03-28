@@ -75,6 +75,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 @property (nonatomic, strong) NSMutableDictionary<NSString *, NSDictionary *> *usernameStatuses;
 @property (nonatomic, assign) UInt256 uniqueID;
 @property (nonatomic, assign) BOOL isLocal;
+@property (nonatomic, assign) BOOL isInvitation;
 @property (nonatomic, assign) BOOL isTransient;
 @property (nonatomic, assign) DSUTXO lockedOutpoint;
 @property (nonatomic, assign) uint32_t index;
@@ -221,6 +222,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     if (!(self = [super init])) return nil;
     self.wallet = wallet;
     self.isLocal = YES;
+    self.isInvitation = NO;
     self.isTransient = FALSE;
     self.keysCreated = 0;
     self.currentMainKeyIndex = 0;
@@ -231,6 +233,16 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     self.registrationStatus = DSBlockchainIdentityRegistrationStatus_Unknown;
     self.usernameSalts = [NSMutableDictionary dictionary];
     self.chain = wallet.chain;
+    return self;
+}
+
+- (instancetype)initAtIndex:(uint32_t)index isForInvitation:(BOOL)isForInvitation inWallet:(DSWallet *)wallet {
+    //this is the creation of a new blockchain identity
+    NSParameterAssert(wallet);
+
+    if (!(self = [self initAtIndex:index inWallet:wallet])) return nil;
+    self.isInvitation = isForInvitation;
+    self.isLocal = !isForInvitation;
     return self;
 }
 
@@ -581,28 +593,33 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 // MARK: - Local Registration and Generation
 
 - (BOOL)hasBlockchainIdentityExtendedPublicKeys {
-    NSAssert(_isLocal, @"This should not be performed on a non local blockchain identity");
-    if (!_isLocal) return FALSE;
-    DSAuthenticationKeysDerivationPath *derivationPathBLS = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:self.wallet];
-    DSAuthenticationKeysDerivationPath *derivationPathECDSA = [[DSDerivationPathFactory sharedInstance] blockchainIdentityECDSAKeysDerivationPathForWallet:self.wallet];
-    DSCreditFundingDerivationPath *derivationPathRegistrationFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:self.wallet];
-    DSCreditFundingDerivationPath *derivationPathTopupFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityTopupFundingDerivationPathForWallet:self.wallet];
-    if ([derivationPathBLS hasExtendedPublicKey] && [derivationPathECDSA hasExtendedPublicKey] && [derivationPathRegistrationFunding hasExtendedPublicKey] && [derivationPathTopupFunding hasExtendedPublicKey]) {
-        return YES;
-    } else {
-        return NO;
+    NSAssert(_isLocal || _isInvitation, @"This should not be performed on a non local blockchain identity (but can be done for an invitation)");
+    if (!_isLocal && !_isInvitation) return FALSE;
+    if (_isLocal) {
+        DSAuthenticationKeysDerivationPath *derivationPathBLS = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:self.wallet];
+        DSAuthenticationKeysDerivationPath *derivationPathECDSA = [[DSDerivationPathFactory sharedInstance] blockchainIdentityECDSAKeysDerivationPathForWallet:self.wallet];
+        DSCreditFundingDerivationPath *derivationPathRegistrationFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:self.wallet];
+        DSCreditFundingDerivationPath *derivationPathTopupFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityTopupFundingDerivationPathForWallet:self.wallet];
+        if ([derivationPathBLS hasExtendedPublicKey] && [derivationPathECDSA hasExtendedPublicKey] && [derivationPathRegistrationFunding hasExtendedPublicKey] && [derivationPathTopupFunding hasExtendedPublicKey]) {
+            return YES;
+        } else {
+            return NO;
+        }
     }
+    if (_isInvitation) {
+        DSCreditFundingDerivationPath *derivationPathInvitationFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityInvitationFundingDerivationPathForWallet:self.wallet];
+        return [derivationPathInvitationFunding hasExtendedPublicKey];
+    }
+    return NO;
 }
 
 - (void)generateBlockchainIdentityExtendedPublicKeysWithPrompt:(NSString *)prompt completion:(void (^_Nullable)(BOOL registered))completion {
-    NSAssert(_isLocal, @"This should not be performed on a non local blockchain identity");
-    if (!_isLocal) return;
-    __block DSAuthenticationKeysDerivationPath *derivationPathBLS = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:self.wallet];
-    __block DSAuthenticationKeysDerivationPath *derivationPathECDSA = [[DSDerivationPathFactory sharedInstance] blockchainIdentityECDSAKeysDerivationPathForWallet:self.wallet];
-    __block DSCreditFundingDerivationPath *derivationPathRegistrationFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:self.wallet];
-    __block DSCreditFundingDerivationPath *derivationPathTopupFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityTopupFundingDerivationPathForWallet:self.wallet];
-    if ([derivationPathBLS hasExtendedPublicKey] && [derivationPathECDSA hasExtendedPublicKey] && [derivationPathRegistrationFunding hasExtendedPublicKey] && [derivationPathTopupFunding hasExtendedPublicKey]) {
-        completion(YES);
+    NSAssert(_isLocal || _isInvitation, @"This should not be performed on a non local blockchain identity (but can be done for an invitation)");
+    if (!_isLocal && !_isInvitation) return;
+    if ([self hasBlockchainIdentityExtendedPublicKeys]) {
+        if (completion) {
+            completion(YES);
+        }
         return;
     }
     [[DSAuthenticationManager sharedInstance] seedWithPrompt:prompt
@@ -614,10 +631,20 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                                           completion(NO);
                                                           return;
                                                       }
+        if (self->_isLocal) {
+        DSAuthenticationKeysDerivationPath *derivationPathBLS = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:self.wallet];
+        DSAuthenticationKeysDerivationPath *derivationPathECDSA = [[DSDerivationPathFactory sharedInstance] blockchainIdentityECDSAKeysDerivationPathForWallet:self.wallet];
+        DSCreditFundingDerivationPath *derivationPathRegistrationFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:self.wallet];
+        DSCreditFundingDerivationPath *derivationPathTopupFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityTopupFundingDerivationPathForWallet:self.wallet];
                                                       [derivationPathBLS generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.wallet.uniqueIDString];
                                                       [derivationPathECDSA generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.wallet.uniqueIDString];
                                                       [derivationPathRegistrationFunding generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.wallet.uniqueIDString];
                                                       [derivationPathTopupFunding generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.wallet.uniqueIDString];
+        }
+        if (self->_isInvitation) {
+            DSCreditFundingDerivationPath *derivationPathInvitationFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityInvitationFundingDerivationPathForWallet:self.wallet];
+            [derivationPathInvitationFunding generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.wallet.uniqueIDString];
+        }
                                                       completion(YES);
                                                   }];
 }
@@ -661,6 +688,20 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     [self.wallet unregisterBlockchainIdentity:self];
     [self deletePersistentObjectAndSave:YES inContext:self.platformContext];
     return TRUE;
+}
+
+-(void)setInvitationUniqueId:(UInt256)uniqueId {
+    NSAssert(_isInvitation, @"This can only be done on an invitation");
+    if (!_isInvitation) return;
+    self.uniqueID = uniqueId;
+}
+
+-(void)setInvitationRegistrationCreditFundingTransaction:(DSCreditFundingTransaction*)creditFundingTransaction {
+    NSParameterAssert(creditFundingTransaction);
+    NSAssert(_isInvitation, @"This can only be done on an invitation");
+    if (!_isInvitation) return;
+    self.registrationCreditFundingTransaction = creditFundingTransaction;
+    self.lockedOutpoint = creditFundingTransaction.lockedOutpoint;
 }
 
 // MARK: - Read Only Property Helpers
@@ -714,141 +755,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     if (!_isLocal) return nil;
     return [[DSDerivationPathFactory sharedInstance] unloadedSpecializedDerivationPathsForWallet:self.wallet];
 }
-
-//-(void)loadTransitions {
-//    if (_wallet.isTransient) return;
-////    [self.managedObjectContext performBlockAndWait:^{
-////        [DSTransitionEntity setContext:self.managedObjectContext];
-////        [DSBlockchainIdentityRegistrationTransitionEntity setContext:self.managedObjectContext];
-////        [DSDerivationPathEntity setContext:self.managedObjectContext];
-////        NSArray<DSTransitionEntity *>* specialTransactionEntities = [DSTransitionEntity objectsInContext:context matching:@"(blockchainIdentity.uniqueId == %@)",self.uniqueIDData];
-////        for (DSTransitionEntity *e in specialTransactionEntities) {
-////            DSTransition *transition = [e transitionForChain:self.chain];
-////
-////            if (! transition) continue;
-////            if ([transition isMemberOfClass:[DSBlockchainIdentityRegistrationTransition class]]) {
-////                self.blockchainIdentityRegistrationTransition = (DSBlockchainIdentityRegistrationTransition*)transition;
-////            } else if ([transition isMemberOfClass:[DSBlockchainIdentityTopupTransition class]]) {
-////                [self.blockchainIdentityTopupTransitions addObject:(DSBlockchainIdentityTopupTransition*)transition];
-////            } else if ([transition isMemberOfClass:[DSBlockchainIdentityUpdateTransition class]]) {
-////                [self.blockchainIdentityUpdateTransitions addObject:(DSBlockchainIdentityUpdateTransition*)transition];
-////            } else if ([transition isMemberOfClass:[DSBlockchainIdentityCloseTransition class]]) {
-////                [self.blockchainIdentityCloseTransitions addObject:(DSBlockchainIdentityCloseTransition*)transition];
-////            } else if ([transition isMemberOfClass:[DSDocumentTransition class]]) {
-////                [self.documentTransitions addObject:(DSDocumentTransition*)transition];
-////            } else { //the other ones don't have addresses in payload
-////                NSAssert(FALSE, @"Unknown special transaction type");
-////            }
-////        }
-////    }];
-//}
-//
-//
-//
-//-(void)topupTransitionForFundingTransaction:(DSTransaction*)fundingTransaction completion:(void (^ _Nullable)(DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransaction))completion {
-//    NSParameterAssert(fundingTransaction);
-//
-//    //    NSString * question = [NSString stringWithFormat:DSLocalizedString(@"Are you sure you would like to topup %@ and spend %@ on credits?", nil),self.username,[[DSPriceManager sharedInstance] stringForDashAmount:topupAmount]];
-//    //    [[DSAuthenticationManager sharedInstance] seedWithPrompt:question forWallet:self.wallet forAmount:topupAmount forceAuthentication:YES completion:^(NSData * _Nullable seed, BOOL cancelled) {
-//    //        if (!seed) {
-//    //            completion(nil);
-//    //            return;
-//    //        }
-//    //        DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransaction = [[DSBlockchainIdentityTopupTransition alloc] initWithBlockchainIdentityTopupTransactionVersion:1 registrationTransactionHash:self.registrationTransitionHash onChain:self.chain];
-//    //
-//    //        NSMutableData * opReturnScript = [NSMutableData data];
-//    //        [opReturnScript appendUInt8:OP_RETURN];
-//    //        [fundingAccount updateTransaction:blockchainIdentityTopupTransaction forAmounts:@[@(topupAmount)] toOutputScripts:@[opReturnScript] withFee:YES isInstant:NO];
-//    //
-//    //        completion(blockchainIdentityTopupTransaction);
-//    //    }];
-//    //
-//}
-//
-//-(void)updateTransitionUsingNewIndex:(uint32_t)index completion:(void (^ _Nullable)(DSBlockchainIdentityUpdateTransition * blockchainIdentityUpdateTransition))completion {
-//
-//}
-
-//-(void)resetTransactionUsingNewIndex:(uint32_t)index completion:(void (^ _Nullable)(DSBlockchainIdentityUpdateTransition * blockchainIdentityResetTransaction))completion {
-//    NSString * question = DSLocalizedString(@"Are you sure you would like to reset this user?", nil);
-//    [[DSAuthenticationManager sharedInstance] seedWithPrompt:question forWallet:self.wallet forAmount:0 forceAuthentication:YES completion:^(NSData * _Nullable seed, BOOL cancelled) {
-//        if (!seed) {
-//            completion(nil);
-//            return;
-//        }
-//        DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:self.wallet];
-//        DSECDSAKey * oldPrivateKey = (DSECDSAKey *)[derivationPath privateKeyAtIndex:self.index fromSeed:seed];
-//        DSECDSAKey * privateKey = (DSECDSAKey *)[derivationPath privateKeyAtIndex:index fromSeed:seed];
-//
-//        DSBlockchainIdentityUpdateTransition * blockchainIdentityResetTransaction = [[DSBlockchainIdentityUpdateTransition alloc] initWithBlockchainIdentityResetTransactionVersion:1 registrationTransactionHash:self.registrationTransitionHash previousBlockchainIdentityTransactionHash:self.lastTransitionHash replacementPublicKeyHash:[privateKey.publicKeyData hash160] creditFee:1000 onChain:self.chain];
-//        [blockchainIdentityResetTransaction signPayloadWithKey:oldPrivateKey];
-//        DSLogPrivate(@"%@",blockchainIdentityResetTransaction.toData);
-//        completion(blockchainIdentityResetTransaction);
-//    }];
-//}
-
-//-(void)updateWithTopupTransition:(DSBlockchainIdentityTopupTransition*)blockchainIdentityTopupTransition save:(BOOL)save {
-//    NSParameterAssert(blockchainIdentityTopupTransition);
-//
-//    if (![_blockchainIdentityTopupTransitions containsObject:blockchainIdentityTopupTransition]) {
-//        [_blockchainIdentityTopupTransitions addObject:blockchainIdentityTopupTransition];
-//        if (save) {
-//            [self.managedObjectContext performBlockAndWait:^{
-//                DSBlockchainIdentityEntity * entity = [self blockchainIdentityEntityInContext:context];
-//                [entity addTransitionsObject:blockchainIdentityTopupTransition.transitionEntity];
-//                [DSBlockchainIdentityEntity saveContext];
-//            }];
-//        }
-//    }
-//}
-//
-//-(void)updateWithUpdateTransition:(DSBlockchainIdentityUpdateTransition*)blockchainIdentityUpdateTransition save:(BOOL)save {
-//    NSParameterAssert(blockchainIdentityUpdateTransition);
-//
-//    if (![_blockchainIdentityUpdateTransitions containsObject:blockchainIdentityUpdateTransition]) {
-//        [_blockchainIdentityUpdateTransitions addObject:blockchainIdentityUpdateTransition];
-//        [_allTransitions addObject:blockchainIdentityUpdateTransition];
-//        if (save) {
-//            [self.managedObjectContext performBlockAndWait:^{
-//                DSBlockchainIdentityEntity * entity = [self blockchainIdentityEntityInContext:context];
-//                [entity addTransitionsObject:blockchainIdentityUpdateTransition.transitionEntity];
-//                [DSBlockchainIdentityEntity saveContext];
-//            }];
-//        }
-//    }
-//}
-//
-//-(void)updateWithCloseTransition:(DSBlockchainIdentityCloseTransition*)blockchainIdentityCloseTransition save:(BOOL)save {
-//    NSParameterAssert(blockchainIdentityCloseTransition);
-//
-//    if (![_blockchainIdentityCloseTransitions containsObject:blockchainIdentityCloseTransition]) {
-//        [_blockchainIdentityCloseTransitions addObject:blockchainIdentityCloseTransition];
-//        [_allTransitions addObject:blockchainIdentityCloseTransition];
-//        if (save) {
-//            [self.managedObjectContext performBlockAndWait:^{
-//                DSBlockchainIdentityEntity * entity = [self blockchainIdentityEntityInContext:context];
-//                [entity addTransitionsObject:blockchainIdentityCloseTransition.transitionEntity];
-//                [DSBlockchainIdentityEntity saveContext];
-//            }];
-//        }
-//    }
-//}
-//
-//-(void)updateWithTransition:(DSDocumentTransition*)transition save:(BOOL)save {
-//    NSParameterAssert(transition);
-//
-//    if (![_documentTransitions containsObject:transition]) {
-//        [_documentTransitions addObject:transition];
-//        [_allTransitions addObject:transition];
-//        if (save) {
-//            [self.managedObjectContext performBlockAndWait:^{
-//                DSBlockchainIdentityEntity * entity = [self blockchainIdentityEntityInContext:context];
-//                [entity addTransitionsObject:transition.transitionEntity];
-//                [DSBlockchainIdentityEntity saveContext];
-//            }];
-//        }
-//    }
-//}
 
 - (NSString *)uniqueIdString {
     return [uint256_data(self.uniqueID) base58String];
@@ -911,8 +817,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
 // MARK: - Keys
 
-- (void)createFundingPrivateKeyWithSeed:(NSData *)seed completion:(void (^_Nullable)(BOOL success))completion {
-    DSCreditFundingDerivationPath *derivationPathRegistrationFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:self.wallet];
+- (void)createFundingPrivateKeyWithSeed:(NSData *)seed isForInvitation:(BOOL)isForInvitation completion:(void (^_Nullable)(BOOL success))completion {
+    DSCreditFundingDerivationPath *derivationPathRegistrationFunding;
+    if (isForInvitation) {
+        derivationPathRegistrationFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityInvitationFundingDerivationPathForWallet:self.wallet];
+    } else {
+        derivationPathRegistrationFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:self.wallet];
+    }
 
     self.registrationFundingPrivateKey = (DSECDSAKey *)[derivationPathRegistrationFunding privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.index] fromSeed:seed];
     if (self.registrationFundingPrivateKey) {
@@ -930,7 +841,15 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     }
 }
 
+- (void)createFundingPrivateKeyForInvitationWithPrompt:(NSString *)prompt completion:(void (^_Nullable)(BOOL success, BOOL cancelled))completion {
+    [self createFundingPrivateKeyWithPrompt:prompt isForInvitation:YES completion:completion];
+}
+
 - (void)createFundingPrivateKeyWithPrompt:(NSString *)prompt completion:(void (^_Nullable)(BOOL success, BOOL cancelled))completion {
+    [self createFundingPrivateKeyWithPrompt:prompt isForInvitation:NO completion:completion];
+}
+
+- (void)createFundingPrivateKeyWithPrompt:(NSString *)prompt isForInvitation:(BOOL)isForInvitation completion:(void (^_Nullable)(BOOL success, BOOL cancelled))completion {
     dispatch_async(dispatch_get_main_queue(), ^{
         [[DSAuthenticationManager sharedInstance] seedWithPrompt:prompt
                                                        forWallet:self.wallet
@@ -946,6 +865,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
                                                           dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
                                                               [self createFundingPrivateKeyWithSeed:seed
+                                                               isForInvitation:isForInvitation
                                                                                          completion:^(BOOL success) {
                                                                                              if (completion) {
                                                                                                  completion(success, NO);

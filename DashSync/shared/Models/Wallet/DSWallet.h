@@ -204,6 +204,11 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 - (void)registerBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 - (BOOL)containsBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 
+- (void)unregisterBlockchainInvitation:(DSBlockchainInvitation *)blockchainInvitation;
+- (void)addBlockchainInvitation:(DSBlockchainInvitation *)blockchainInvitation;
+- (void)registerBlockchainInvitation:(DSBlockchainInvitation *)blockchainInvitation;
+- (BOOL)containsBlockchainInvitation:(DSBlockchainInvitation *)blockchainInvitation;
+
 - (DSBlockchainIdentity *)createBlockchainIdentity;
 - (DSBlockchainIdentity *)createBlockchainIdentityUsingDerivationIndex:(uint32_t)index;
 - (DSBlockchainIdentity *)createBlockchainIdentityForUsername:(NSString *_Nullable)username;
@@ -215,6 +220,8 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 - (DSBlockchainIdentity *_Nullable)blockchainIdentityThatCreatedContract:(DPContract *)contract withContractId:(UInt256)contractId;
 
 - (DSBlockchainIdentity *_Nullable)blockchainIdentityForUniqueId:(UInt256)uniqueId;
+
+- (DSBlockchainInvitation *_Nullable)blockchainInvitationForUniqueId:(UInt256)uniqueId;
 
 - (void)seedWithPrompt:(NSString *_Nullable)authprompt forAmount:(uint64_t)amount completion:(_Nullable SeedCompletionBlock)completion;
 

@@ -36,6 +36,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initAtIndex:(uint32_t)index inWallet:(DSWallet *)wallet;
 
+- (instancetype)initAtIndex:(uint32_t)index isForInvitation:(BOOL)isForInvitation inWallet:(DSWallet *)wallet;
+
 - (instancetype)initAtIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet *)wallet;
 
 - (instancetype)initAtIndex:(uint32_t)index withFundingTransaction:(DSCreditFundingTransaction *)transaction withUsernameDictionary:(NSDictionary<NSString *, NSDictionary *> *_Nullable)usernameDictionary inWallet:(DSWallet *)wallet;
@@ -58,9 +60,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)registrationTransitionWithCompletion:(void (^_Nullable)(DSBlockchainIdentityRegistrationTransition *_Nullable blockchainIdentityRegistrationTransition, NSError *_Nullable error))completion;
 
-- (void)createFundingPrivateKeyWithSeed:(NSData *)seed completion:(void (^_Nullable)(BOOL success))completion;
+- (void)createFundingPrivateKeyWithSeed:(NSData *)seed isForInvitation:(BOOL)isForInvitation completion:(void (^_Nullable)(BOOL success))completion;
 
 - (void)applyProfileChanges:(DSTransientDashpayUser *)transientDashpayUser inContext:(NSManagedObjectContext *)context saveContext:(BOOL)saveContext completion:(void (^_Nullable)(BOOL success, NSError *_Nullable error))completion onCompletionQueue:(dispatch_queue_t)completionQueue;
+
+-(void)setInvitationUniqueId:(UInt256)uniqueId;
+
+-(void)setInvitationRegistrationCreditFundingTransaction:(DSCreditFundingTransaction*)creditFundingTransaction;
 
 //-(void)topupTransitionForForFundingTransaction:(DSTransaction*)fundingTransaction completion:(void (^ _Nullable)(DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransition))completion;
 //

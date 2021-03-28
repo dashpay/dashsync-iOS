@@ -67,6 +67,7 @@
 #define WALLET_MNEMONIC_KEY @"WALLET_MNEMONIC_KEY"
 #define WALLET_MASTER_PUBLIC_KEY @"WALLET_MASTER_PUBLIC_KEY"
 #define WALLET_BLOCKCHAIN_USERS_KEY @"WALLET_BLOCKCHAIN_USERS_KEY"
+#define WALLET_BLOCKCHAIN_INVITATIONS_KEY @"WALLET_BLOCKCHAIN_INVITATIONS_KEY"
 
 #define WALLET_MASTERNODE_VOTERS_KEY @"WALLET_MASTERNODE_VOTERS_KEY"
 #define WALLET_MASTERNODE_OWNERS_KEY @"WALLET_MASTERNODE_OWNERS_KEY"
@@ -97,6 +98,7 @@
 
 @property (nonatomic, assign, getter=isTransient) BOOL transient;
 @property (nonatomic, strong) NSMutableDictionary<NSData *, DSBlockchainIdentity *> *mBlockchainIdentities;
+@property (nonatomic, strong) NSMutableDictionary<NSData *, DSBlockchainInvitation *> *mBlockchainInvitations;
 
 @end
 
@@ -290,6 +292,9 @@
 
                 DSCreditFundingDerivationPath *blockchainIdentityTopupFundingDerivationPath = [DSCreditFundingDerivationPath blockchainIdentityTopupFundingDerivationPathForChain:chain];
                 [blockchainIdentityTopupFundingDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:walletUniqueId];
+                
+                DSCreditFundingDerivationPath *blockchainIdentityInvitationFundingDerivationPath = [DSCreditFundingDerivationPath blockchainIdentityInvitationFundingDerivationPathForChain:chain];
+                [blockchainIdentityInvitationFundingDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:walletUniqueId];
             }
         }
     }
@@ -306,6 +311,10 @@
 
 - (NSString *)walletBlockchainIdentitiesDefaultIndexKey {
     return [NSString stringWithFormat:@"%@_%@_DEFAULT_INDEX", WALLET_BLOCKCHAIN_USERS_KEY, [self uniqueIDString]];
+}
+
+- (NSString *)walletBlockchainInvitationsKey {
+    return [NSString stringWithFormat:@"%@_%@", WALLET_BLOCKCHAIN_INVITATIONS_KEY, [self uniqueIDString]];
 }
 
 - (NSString *)walletMasternodeVotersKey {
@@ -1230,10 +1239,92 @@
 
 // MARK: - Invitations
 
+
+- (uint32_t)blockchainInvitationsCount {
+    return (uint32_t)[self.mBlockchainInvitations count];
+}
+
+
+//This loads all the identities that the wallet knows about. If the app was deleted and reinstalled the identity information will remain from the keychain but must be reaquired from the network.
+- (NSMutableDictionary *)blockchainInvitations {
+    //setKeychainDict(@{}, self.walletBlockchainInvitationsKey, NO);
+    if (_mBlockchainInvitations) return _mBlockchainInvitations;
+    NSError *error = nil;
+    NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletBlockchainInvitationsKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
+    if (error) {
+        return nil;
+    }
+    NSMutableDictionary *rDictionary = [NSMutableDictionary dictionary];
+
+    if (keyChainDictionary) {
+        for (NSData *blockchainInvitationLockedOutpointData in keyChainDictionary) {
+            uint32_t index = [keyChainDictionary[blockchainInvitationLockedOutpointData] unsignedIntValue];
+            DSUTXO blockchainInvitationLockedOutpoint = blockchainInvitationLockedOutpointData.transactionOutpoint;
+            //DSLogPrivate(@"Blockchain identity unique Id is %@",uint256_hex(blockchainInvitationUniqueId));
+            //                UInt256 lastTransitionHash = [self.specialTransactionsHolder lastSubscriptionTransactionHashForRegistrationTransactionHash:registrationTransactionHash];
+            //                DSLogPrivate(@"reg %@ last %@",uint256_hex(registrationTransactionHash),uint256_hex(lastTransitionHash));
+            //                DSBlockchainInvitationRegistrationTransition * blockchainInvitationRegistrationTransaction = [self blockchainInvitationRegistrationTransactionForIndex:index];
+
+            //either the identity is known in core data (and we can pull it) or the wallet has been wiped and we need to get it from DAPI (the unique Id was saved in the keychain, so we don't need to resync)
+            //TODO: get the identity from core data
+
+            NSManagedObjectContext *context = [NSManagedObjectContext chainContext]; //shouldn't matter what context is used
+
+            [context performBlockAndWait:^{
+                NSUInteger blockchainInvitationEntitiesCount = [DSBlockchainInvitationEntity countObjectsInContext:context matching:@"chain == %@ && isLocal == TRUE", [self.chain chainEntityInContext:context]];
+                if (blockchainInvitationEntitiesCount != keyChainDictionary.count) {
+                    DSLog(@"Unmatching blockchain entities count");
+                }
+                DSBlockchainInvitationEntity *blockchainInvitationEntity = [DSBlockchainInvitationEntity anyObjectInContext:context matching:@"uniqueID == %@", uint256_data([dsutxo_data(blockchainInvitationLockedOutpoint) SHA256_2])];
+                DSBlockchainInvitation *blockchainInvitation = nil;
+                if (blockchainInvitationEntity) {
+                    blockchainInvitation = [[DSBlockchainInvitation alloc] initAtIndex:index withLockedOutpoint:blockchainInvitationLockedOutpoint inWallet:self withBlockchainInvitationEntity:blockchainInvitationEntity];
+                } else {
+                    //No blockchain identity is known in core data
+                    NSData *transactionHashData = uint256_data(uint256_reverse(blockchainInvitationLockedOutpoint.hash));
+                    DSTransactionEntity *creditRegitrationTransactionEntity = [DSTransactionEntity anyObjectInContext:context matching:@"transactionHash.txHash == %@", transactionHashData];
+                    if (creditRegitrationTransactionEntity) {
+                        //The registration funding transaction exists
+                        //Weird but we should recover in this situation
+                        DSCreditFundingTransaction *registrationTransaction = (DSCreditFundingTransaction *)[creditRegitrationTransactionEntity transactionForChain:self.chain];
+
+                        BOOL correctIndex = [registrationTransaction checkInvitationDerivationPathIndexForWallet:self isIndex:index];
+                        if (!correctIndex) {
+                            NSAssert(FALSE, @"We should implement this");
+                        } else {
+                            blockchainInvitation = [[DSBlockchainInvitation alloc] initAtIndex:index withFundingTransaction:registrationTransaction inWallet:self];
+                            [blockchainInvitation registerInWallet];
+                        }
+                    } else {
+                        //We also don't have the registration funding transaction
+                        blockchainInvitation = [[DSBlockchainInvitation alloc] initAtIndex:index withLockedOutpoint:blockchainInvitationLockedOutpoint inWallet:self];
+                        [blockchainInvitation registerInWalletForBlockchainIdentityUniqueId:[dsutxo_data(blockchainInvitationLockedOutpoint) SHA256_2]];
+                    }
+                }
+                if (blockchainInvitation) {
+                    rDictionary[blockchainInvitationLockedOutpointData] = blockchainInvitation;
+                }
+            }];
+        }
+    }
+    _mBlockchainInvitations = rDictionary;
+    return _mBlockchainInvitations;
+}
+
+- (DSBlockchainInvitation *)blockchainInvitationForUniqueId:(UInt256)uniqueId {
+    NSAssert(uint256_is_not_zero(uniqueId), @"uniqueId must not be null");
+    DSBlockchainInvitation *foundBlockchainInvitation = nil;
+    for (DSBlockchainInvitation *blockchainInvitation in [_mBlockchainInvitations allValues]) {
+        if (uint256_eq([blockchainInvitation.identity uniqueID], uniqueId)) {
+            foundBlockchainInvitation = blockchainInvitation;
+        }
+    }
+    return foundBlockchainInvitation;
+}
+
 - (uint32_t)unusedBlockchainInvitationIndex {
-    []
-    NSArray *blockchainIdentities = [_mBlockchainIdentities allValues];
-    NSNumber *max = [blockchainIdentities valueForKeyPath:@"index.@max.intValue"];
+    NSArray *blockchainInvitations = [_mBlockchainInvitations allValues];
+    NSNumber *max = [blockchainInvitations valueForKeyPath:@"identity.index.@max.intValue"];
     return max != nil ? ([max unsignedIntValue] + 1) : 0;
 }
 
@@ -1246,6 +1337,56 @@
     DSBlockchainInvitation *blockchainInvitation = [[DSBlockchainInvitation alloc] initAtIndex:index inWallet:self];
     return blockchainInvitation;
 }
+
+- (void)unregisterBlockchainInvitation:(DSBlockchainInvitation *)blockchainInvitation {
+    NSParameterAssert(blockchainInvitation);
+    NSAssert(blockchainInvitation.wallet == self, @"the blockchainInvitation you are trying to remove is not in this wallet");
+    NSAssert(blockchainInvitation.identity != nil, @"the blockchainInvitation you are trying to remove has no identity");
+
+    [self.mBlockchainInvitations removeObjectForKey:blockchainInvitation.identity.lockedOutpointData];
+    NSError *error = nil;
+    NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletBlockchainInvitationsKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
+    if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
+    [keyChainDictionary removeObjectForKey:blockchainInvitation.identity.lockedOutpointData];
+    setKeychainDict(keyChainDictionary, self.walletBlockchainInvitationsKey, NO);
+}
+
+- (void)addBlockchainInvitation:(DSBlockchainInvitation *)blockchainInvitation {
+    NSParameterAssert(blockchainInvitation);
+    [self.mBlockchainInvitations setObject:blockchainInvitation forKey:blockchainInvitation.identity.lockedOutpointData];
+}
+
+- (void)registerBlockchainInvitation:(DSBlockchainInvitation *)blockchainInvitation {
+    NSParameterAssert(blockchainInvitation);
+    NSAssert(blockchainInvitation.identity != nil, @"the blockchainInvitation you are trying to remove has no identity");
+
+    if ([self.mBlockchainInvitations objectForKey:blockchainInvitation.identity.lockedOutpointData] == nil) {
+        [self addBlockchainInvitation:blockchainInvitation];
+    }
+    NSError *error = nil;
+    NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletBlockchainInvitationsKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
+    if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
+
+    NSAssert(uint256_is_not_zero(blockchainInvitation.identity.uniqueID), @"registrationTransactionHashData must not be null");
+    keyChainDictionary[blockchainInvitation.identity.lockedOutpointData] = @(blockchainInvitation.identity.index);
+    setKeychainDict(keyChainDictionary, self.walletBlockchainInvitationsKey, NO);
+}
+
+- (BOOL)containsBlockchainInvitation:(DSBlockchainInvitation *)blockchainInvitation {
+    if (blockchainInvitation.identity.lockedOutpointData) {
+        return ([self.mBlockchainInvitations objectForKey:blockchainInvitation.identity.lockedOutpointData] != nil);
+    } else {
+        return FALSE;
+    }
+}
+
+- (void)wipeBlockchainInvitationsInContext:(NSManagedObjectContext *)context {
+    for (DSBlockchainInvitation *blockchainInvitation in [_mBlockchainInvitations allValues]) {
+        [self unregisterBlockchainInvitation:blockchainInvitation];
+        [blockchainInvitation deletePersistentObjectAndSave:NO inContext:context];
+    }
+}
+
 
 // MARK: - Masternodes (Providers)
 

@@ -47,7 +47,7 @@
         self.wallet = self.fundingAccount.wallet;
     }
 
-    self.indexLabel.text = [NSString stringWithFormat:@"%d", [self.wallet unusedBlockchainIdentityIndex]];
+    self.indexLabel.text = [NSString stringWithFormat:@"%d", [self.wallet unusedBlockchainInvitationIndex]];
 
     self.topupAmountLabel.text = [NSString stringWithFormat:@"%d", 1000000]; //0.01 Dash
 }
@@ -113,20 +113,20 @@
     uint64_t topupAmount = 0;
     [scanner scanUnsignedLongLong:&topupAmount];
     if (!_wallet) {
-        [self raiseIssue:@"No wallet with balance" message:@"To create a blockchain user you must have a wallet with enough balance to pay the minimum credit fee"];
+        [self raiseIssue:@"No wallet with balance" message:@"To create an invitation you must have a wallet with enough balance to pay the minimum credit fee"];
         return;
     } else if (!_fundingAccount) {
-        [self raiseIssue:@"No funding account with balance" message:@"To create a blockchain user you must have a wallet with enough balance to pay the minimum credit fee"];
+        [self raiseIssue:@"No funding account with balance" message:@"To create an invitation you must have a wallet with enough balance to pay the minimum credit fee"];
         return;
     }
     DSBlockchainInvitation *blockchainInvitation = [self.wallet createBlockchainInvitationUsingDerivationIndex:[self.indexLabel.text intValue]];
     DSBlockchainIdentityRegistrationStep steps = DSBlockchainIdentityRegistrationStep_L1Steps;
-    [blockchainInvitation.blockchainIdentity generateBlockchainIdentityExtendedPublicKeysWithPrompt:@"Update wallet to allow for Evolution features?"
+    [blockchainInvitation generateBlockchainInvitationsExtendedPublicKeysWithPrompt:@"Update wallet to allow for Evolution features?"
                                                                     completion:^(BOOL registered) {
-                                                                        [blockchainIdentity createFundingPrivateKeyWithPrompt:@"Register?"
+                                                                        [blockchainInvitation.identity createFundingPrivateKeyForInvitationWithPrompt:@"Register?"
                                                                                                                    completion:^(BOOL success, BOOL cancelled) {
                                                                                                                        if (success && !cancelled) {
-                                                                                                                           [blockchainIdentity registerOnNetwork:steps
+                                                                                                                           [blockchainInvitation.identity registerOnNetwork:steps
                                                                                                                                withFundingAccount:self.fundingAccount
                                                                                                                                forTopupAmount:topupAmount
                                                                                                                                stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {
@@ -155,11 +155,11 @@
 
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    if ([segue.identifier isEqualToString:@"BlockchainIdentityChooseWalletSegue"]) {
+    if ([segue.identifier isEqualToString:@"BlockchainInvitationChooseWalletSegue"]) {
         DSWalletChooserViewController *chooseWalletSegue = (DSWalletChooserViewController *)segue.destinationViewController;
         chooseWalletSegue.chain = self.chainManager.chain;
         chooseWalletSegue.delegate = self;
-    } else if ([segue.identifier isEqualToString:@"BlockchainIdentityChooseAccountSegue"]) {
+    } else if ([segue.identifier isEqualToString:@"BlockchainInvitationChooseAccountSegue"]) {
         DSAccountChooserViewController *chooseAccountSegue = (DSAccountChooserViewController *)segue.destinationViewController;
         chooseAccountSegue.chain = self.chainManager.chain;
         chooseAccountSegue.delegate = self;

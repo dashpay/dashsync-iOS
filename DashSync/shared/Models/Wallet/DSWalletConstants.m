@@ -89,3 +89,11 @@ NSString *const DSBlockchainIdentityUpdateEventRegistration = @"DSBlockchainIden
 NSString *const DSBlockchainIdentityUpdateEventCreditBalance = @"DSBlockchainIdentityUpdateEventCreditBalance";
 
 NSString *const DSBlockchainIdentityUpdateEventDashpaySyncronizationBlockHash = @"DSBlockchainIdentityUpdateEventDashpaySyncronizationBlockHash";
+
+NSString *const DSBlockchainInvitationDidUpdateNotification = @"DSBlockchainInvitationDidUpdateNotification";
+
+NSString *const DSBlockchainInvitationKey = @"DSBlockchainInvitationKey";
+
+NSString *const DSBlockchainInvitationUpdateEvents = @"DSBlockchainInvitationUpdateEvents";
+
+NSString *const DSBlockchainInvitationUpdateEventLink = @"DSBlockchainInvitationUpdateLink";

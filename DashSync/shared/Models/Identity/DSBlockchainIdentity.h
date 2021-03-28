@@ -134,6 +134,9 @@ FOUNDATION_EXPORT NSString *const DSBlockchainIdentityUpdateEventDashpaySyncroni
 /*! @brief This is if the blockchain identity is present in wallets or not. If this is false then the blockchain identity is known for example from being a dashpay friend. */
 @property (nonatomic, readonly) BOOL isLocal;
 
+/*! @brief This is if the blockchain identity is made for being an invitation. All invitations should be marked as non local as well. */
+@property (nonatomic, readonly) BOOL isInvitation;
+
 /*! @brief This is TRUE if the blockchain identity is an effemeral identity returned when searching. */
 @property (nonatomic, readonly) BOOL isTransient;
 
@@ -146,7 +149,7 @@ FOUNDATION_EXPORT NSString *const DSBlockchainIdentityUpdateEventDashpaySyncroni
 /*! @brief This is the wallet holding the blockchain identity. There should always be a wallet associated to a blockchain identity if the blockchain identity is local, but never if it is not. */
 @property (nonatomic, weak, readonly) DSWallet *wallet;
 
-/*! @brief This is the index of the blockchain identity in the wallet. The index is the top derivation used to derive an extended set of keys for the identity. No two blockchain identities should be allowed to have the same index in a wallet. For example m/.../.../.../index/key */
+/*! @brief This is the index of the blockchain identity in the wallet. The index is the top derivation used to derive an extended set of keys for the identity. No two local blockchain identities should be allowed to have the same index in a wallet. For example m/.../.../.../index/key */
 @property (nonatomic, readonly) uint32_t index;
 
 /*! @brief Related to DPNS. This is the list of usernames that are associated to the identity in the domain "dash". These usernames however might not yet be registered or might be invalid. This can be used in tandem with the statusOfUsername: method */
@@ -233,6 +236,8 @@ FOUNDATION_EXPORT NSString *const DSBlockchainIdentityUpdateEventDashpaySyncroni
 - (BOOL)verifySignature:(NSData *)signature ofType:(DSKeyType)signingAlgorithm forMessageDigest:(UInt256)messageDigest;
 
 - (void)createFundingPrivateKeyWithPrompt:(NSString *)prompt completion:(void (^_Nullable)(BOOL success, BOOL cancelled))completion;
+
+- (void)createFundingPrivateKeyForInvitationWithPrompt:(NSString *)prompt completion:(void (^_Nullable)(BOOL success, BOOL cancelled))completion;
 
 - (void)createAndPublishRegistrationTransitionWithCompletion:(void (^_Nullable)(NSDictionary *_Nullable successInfo, NSError *_Nullable error))completion;
 

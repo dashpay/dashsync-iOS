@@ -28,6 +28,7 @@
 #import "DSBIP39Mnemonic.h"
 #import "DSBlock+Protected.h"
 #import "DSBlockchainIdentity+Protected.h"
+#import "DSBlockchainInvitation+Protected.h"
 #import "DSBlockchainIdentityCloseTransition.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
@@ -3328,6 +3329,15 @@ static dispatch_once_t devnetToken = 0;
                 blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:[creditFundingTransaction usedDerivationPathIndex] withFundingTransaction:creditFundingTransaction withUsernameDictionary:nil inWallet:wallet];
                 [blockchainIdentity registerInWalletForRegistrationFundingTransaction:creditFundingTransaction];
             }
+        } else {
+            wallet = [self walletHavingBlockchainIdentityCreditFundingInvitationHash:creditFundingTransaction.creditBurnPublicKeyHash foundAtIndex:&index];
+            if (wallet) {
+                DSBlockchainInvitation *blockchainInvitation = [wallet blockchainInvitationForUniqueId:creditFundingTransaction.creditBurnIdentityIdentifier];
+                if (!blockchainInvitation) {
+                    blockchainInvitation = [[DSBlockchainInvitation alloc] initAtIndex:[creditFundingTransaction usedDerivationPathIndex] withFundingTransaction:creditFundingTransaction inWallet:wallet];
+                    [blockchainInvitation registerInWalletForInvitationFundingTransaction:creditFundingTransaction];
+                }
+            }
         }
     }
 }
@@ -3403,6 +3413,18 @@ static dispatch_once_t devnetToken = 0;
 - (DSWallet *)walletHavingBlockchainIdentityCreditFundingTopupHash:(UInt160)creditFundingTopupHash foundAtIndex:(uint32_t *)rIndex {
     for (DSWallet *wallet in self.wallets) {
         NSUInteger index = [wallet indexOfBlockchainIdentityCreditFundingTopupHash:creditFundingTopupHash];
+        if (index != NSNotFound) {
+            if (rIndex) *rIndex = (uint32_t)index;
+            return wallet;
+        }
+    }
+    if (rIndex) *rIndex = UINT32_MAX;
+    return nil;
+}
+
+- (DSWallet *)walletHavingBlockchainIdentityCreditFundingInvitationHash:(UInt160)creditFundingInvitationHash foundAtIndex:(uint32_t *)rIndex {
+    for (DSWallet *wallet in self.wallets) {
+        NSUInteger index = [wallet indexOfBlockchainIdentityCreditFundingInvitationHash:creditFundingInvitationHash];
         if (index != NSNotFound) {
             if (rIndex) *rIndex = (uint32_t)index;
             return wallet;
