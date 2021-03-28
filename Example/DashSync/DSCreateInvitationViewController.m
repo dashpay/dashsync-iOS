@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Samuel Westrich
 //  Copyright © 2564 Dash Core Group. All rights reserved.
 //
@@ -17,11 +17,11 @@
 
 #import "DSCreateInvitationViewController.h"
 #import "DSAccountChooserViewController.h"
+#import "DSBlockchainIdentity.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
+#import "DSBlockchainInvitation.h"
 #import "DSCreditFundingTransaction.h"
 #import "DSWalletChooserViewController.h"
-#import "DSBlockchainIdentity.h"
-#import "DSBlockchainInvitation.h"
 
 @interface DSCreateInvitationViewController ()
 - (IBAction)cancel:(id)sender;
@@ -122,27 +122,27 @@
     DSBlockchainInvitation *blockchainInvitation = [self.wallet createBlockchainInvitationUsingDerivationIndex:[self.indexLabel.text intValue]];
     DSBlockchainIdentityRegistrationStep steps = DSBlockchainIdentityRegistrationStep_L1Steps;
     [blockchainInvitation generateBlockchainInvitationsExtendedPublicKeysWithPrompt:@"Update wallet to allow for Evolution features?"
-                                                                    completion:^(BOOL registered) {
-                                                                        [blockchainInvitation.identity createFundingPrivateKeyForInvitationWithPrompt:@"Register?"
-                                                                                                                   completion:^(BOOL success, BOOL cancelled) {
-                                                                                                                       if (success && !cancelled) {
-                                                                                                                           [blockchainInvitation.identity registerOnNetwork:steps
-                                                                                                                               withFundingAccount:self.fundingAccount
-                                                                                                                               forTopupAmount:topupAmount
-                                                                                                                               stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {
+                                                                         completion:^(BOOL registered) {
+                                                                             [blockchainInvitation.identity createFundingPrivateKeyForInvitationWithPrompt:@"Register?"
+                                                                                                                                                completion:^(BOOL success, BOOL cancelled) {
+                                                                                                                                                    if (success && !cancelled) {
+                                                                                                                                                        [blockchainInvitation.identity registerOnNetwork:steps
+                                                                                                                                                            withFundingAccount:self.fundingAccount
+                                                                                                                                                            forTopupAmount:topupAmount
+                                                                                                                                                            stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {
 
-                                                                                                                               }
-                                                                                                                               completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
-                                                                                                                                   if (error) {
-                                                                                                                                       [self raiseIssue:@"Error" message:error.localizedDescription];
-                                                                                                                                       return;
-                                                                                                                                   } else {
-                                                                                                                                       [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
-                                                                                                                                   }
-                                                                                                                               }];
-                                                                                                                       }
-                                                                                                                   }];
-                                                                    }];
+                                                                                                                                                            }
+                                                                                                                                                            completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
+                                                                                                                                                                if (error) {
+                                                                                                                                                                    [self raiseIssue:@"Error" message:error.localizedDescription];
+                                                                                                                                                                    return;
+                                                                                                                                                                } else {
+                                                                                                                                                                    [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
+                                                                                                                                                                }
+                                                                                                                                                            }];
+                                                                                                                                                    }
+                                                                                                                                                }];
+                                                                         }];
 }
 
 - (void)viewController:(UIViewController *)controller didChooseWallet:(DSWallet *)wallet {

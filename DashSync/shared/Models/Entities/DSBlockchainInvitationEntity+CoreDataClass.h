@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Samuel Westrich
 //  Copyright © 2564 Dash Core Group. All rights reserved.
 //
@@ -16,8 +16,8 @@
 //
 //
 
-#import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
 
 @class DSBlockchainIdentityEntity, DSChainEntity;
 

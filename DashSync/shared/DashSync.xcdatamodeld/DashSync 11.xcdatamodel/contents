@@ -40,10 +40,10 @@
         <attribute name="lastCheckedUsernamesTimestamp" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="registrationStatus" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="uniqueID" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <relationship name="associatedInvitation" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainInvitationEntity" inverseName="blockchainIdentity" inverseEntity="DSBlockchainInvitationEntity" syncable="YES"/>
         <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="identities" inverseEntity="DSChainEntity" indexed="YES" syncable="YES"/>
         <relationship name="createdContracts" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSContractEntity" inverseName="creator" inverseEntity="DSContractEntity" syncable="YES"/>
         <relationship name="dashpayUsername" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityUsernameEntity" inverseName="blockchainIdentityUsedForDashpay" inverseEntity="DSBlockchainIdentityUsernameEntity" syncable="YES"/>
-        <relationship name="fromInvitation" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainInvitationEntity" inverseName="blockchainIdentity" inverseEntity="DSBlockchainInvitationEntity" syncable="YES"/>
         <relationship name="keyPaths" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSBlockchainIdentityKeyPathEntity" inverseName="blockchainIdentity" inverseEntity="DSBlockchainIdentityKeyPathEntity" syncable="YES"/>
         <relationship name="matchingDashpayUser" maxCount="1" deletionRule="Cascade" destinationEntity="DSDashpayUserEntity" inverseName="associatedBlockchainIdentity" inverseEntity="DSDashpayUserEntity" syncable="YES"/>
         <relationship name="registrationFundingTransaction" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSCreditFundingTransactionEntity" inverseName="registeredBlockchainIdentity" inverseEntity="DSCreditFundingTransactionEntity" syncable="YES"/>
@@ -69,7 +69,7 @@
     </entity>
     <entity name="DSBlockchainInvitationEntity" representedClassName="DSBlockchainInvitationEntity" syncable="YES">
         <attribute name="link" optional="YES" attributeType="String" syncable="YES"/>
-        <relationship name="blockchainIdentity" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityEntity" inverseName="fromInvitation" inverseEntity="DSBlockchainIdentityEntity" syncable="YES"/>
+        <relationship name="blockchainIdentity" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityEntity" inverseName="associatedInvitation" inverseEntity="DSBlockchainIdentityEntity" syncable="YES"/>
         <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="invitations" inverseEntity="DSChainEntity" syncable="YES"/>
     </entity>
     <entity name="DSChainEntity" representedClassName="DSChainEntity" syncable="YES">

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Samuel Westrich
 //  Copyright © 2564 Dash Core Group. All rights reserved.
 //
@@ -22,6 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSBlockchainInvitation (Protected)
 
+- (instancetype)initAtIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet *)wallet;
+
 - (instancetype)initAtIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet *)wallet withBlockchainInvitationEntity:(DSBlockchainInvitationEntity *)blockchainInvitationEntity;
 
 - (instancetype)initWithUniqueId:(UInt256)uniqueId isTransient:(BOOL)isTransient onChain:(DSChain *)chain;
@@ -31,6 +33,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initAtIndex:(uint32_t)index withFundingTransaction:(DSCreditFundingTransaction *)transaction inWallet:(DSWallet *)wallet;
 
 - (void)registerInWalletForBlockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId;
+
+- (void)deletePersistentObjectAndSave:(BOOL)save inContext:(NSManagedObjectContext *)context;
 
 @end
 

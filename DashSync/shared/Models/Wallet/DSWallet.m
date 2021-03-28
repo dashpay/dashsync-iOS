@@ -29,13 +29,13 @@
 #import "DSAuthenticationManager+Private.h"
 #import "DSAuthenticationManager.h"
 #import "DSBIP39Mnemonic.h"
-#import "DSBlockchainInvitation+Protected.h"
 #import "DSBlockchainIdentity+Protected.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityKeyPathEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSBlockchainIdentityUpdateTransition.h"
 #import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
+#import "DSBlockchainInvitation+Protected.h"
 #import "DSChain+Protected.h"
 #import "DSChainsManager.h"
 #import "DSCreditFundingDerivationPath+Protected.h"
@@ -292,7 +292,7 @@
 
                 DSCreditFundingDerivationPath *blockchainIdentityTopupFundingDerivationPath = [DSCreditFundingDerivationPath blockchainIdentityTopupFundingDerivationPathForChain:chain];
                 [blockchainIdentityTopupFundingDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:walletUniqueId];
-                
+
                 DSCreditFundingDerivationPath *blockchainIdentityInvitationFundingDerivationPath = [DSCreditFundingDerivationPath blockchainIdentityInvitationFundingDerivationPathForChain:chain];
                 [blockchainIdentityInvitationFundingDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:walletUniqueId];
             }
@@ -1271,11 +1271,11 @@
             NSManagedObjectContext *context = [NSManagedObjectContext chainContext]; //shouldn't matter what context is used
 
             [context performBlockAndWait:^{
-                NSUInteger blockchainInvitationEntitiesCount = [DSBlockchainInvitationEntity countObjectsInContext:context matching:@"chain == %@ && isLocal == TRUE", [self.chain chainEntityInContext:context]];
+                NSUInteger blockchainInvitationEntitiesCount = [DSBlockchainInvitationEntity countObjectsInContext:context matching:@"chain == %@", [self.chain chainEntityInContext:context]];
                 if (blockchainInvitationEntitiesCount != keyChainDictionary.count) {
-                    DSLog(@"Unmatching blockchain entities count");
+                    DSLog(@"Unmatching blockchain invitations count");
                 }
-                DSBlockchainInvitationEntity *blockchainInvitationEntity = [DSBlockchainInvitationEntity anyObjectInContext:context matching:@"uniqueID == %@", uint256_data([dsutxo_data(blockchainInvitationLockedOutpoint) SHA256_2])];
+                DSBlockchainInvitationEntity *blockchainInvitationEntity = [DSBlockchainInvitationEntity anyObjectInContext:context matching:@"blockchainIdentity.uniqueID == %@", uint256_data([dsutxo_data(blockchainInvitationLockedOutpoint) SHA256_2])];
                 DSBlockchainInvitation *blockchainInvitation = nil;
                 if (blockchainInvitationEntity) {
                     blockchainInvitation = [[DSBlockchainInvitation alloc] initAtIndex:index withLockedOutpoint:blockchainInvitationLockedOutpoint inWallet:self withBlockchainInvitationEntity:blockchainInvitationEntity];

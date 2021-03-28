@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Samuel Westrich
 //  Copyright © 2564 Dash Core Group. All rights reserved.
 //
@@ -24,12 +24,12 @@ NS_ASSUME_NONNULL_BEGIN
 FOUNDATION_EXPORT NSString *const DSBlockchainInvitationDidUpdateNotification;
 FOUNDATION_EXPORT NSString *const DSBlockchainInvitationKey;
 FOUNDATION_EXPORT NSString *const DSBlockchainInvitationUpdateEvents;
-FOUNDATION_EXPORT NSString *const DSBlockchainInvitationUpdateLink;
+FOUNDATION_EXPORT NSString *const DSBlockchainInvitationUpdateEventLink;
 
 @interface DSBlockchainInvitation : NSObject
 
 /*! @brief This is the identity that was made from the invitation. There should always be an identity associated to a blockchain invitation. This identity might not yet be registered on Dash Platform. */
-@property (nonatomic,readonly) DSBlockchainIdentity * identity;
+@property (nonatomic, readonly) DSBlockchainIdentity *identity;
 
 /*! @brief This is the wallet holding the blockchain invitation. There should always be a wallet associated to a blockchain invitation. */
 @property (nonatomic, weak, readonly) DSWallet *wallet;

@@ -23,6 +23,7 @@
 @dynamic usernames;
 @dynamic creditBalance;
 @dynamic registrationStatus;
+@dynamic associatedInvitation;
 @dynamic isLocal;
 @dynamic dashpayUsername;
 @dynamic dashpaySyncronizationBlockHash;

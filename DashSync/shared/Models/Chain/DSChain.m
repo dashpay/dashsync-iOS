@@ -28,12 +28,12 @@
 #import "DSBIP39Mnemonic.h"
 #import "DSBlock+Protected.h"
 #import "DSBlockchainIdentity+Protected.h"
-#import "DSBlockchainInvitation+Protected.h"
 #import "DSBlockchainIdentityCloseTransition.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSBlockchainIdentityTopupTransition.h"
 #import "DSBlockchainIdentityUpdateTransition.h"
+#import "DSBlockchainInvitation+Protected.h"
 #import "DSBloomFilter.h"
 #import "DSChain+Protected.h"
 #import "DSChainCheckpoints.h"
@@ -3335,7 +3335,7 @@ static dispatch_once_t devnetToken = 0;
                 DSBlockchainInvitation *blockchainInvitation = [wallet blockchainInvitationForUniqueId:creditFundingTransaction.creditBurnIdentityIdentifier];
                 if (!blockchainInvitation) {
                     blockchainInvitation = [[DSBlockchainInvitation alloc] initAtIndex:[creditFundingTransaction usedDerivationPathIndex] withFundingTransaction:creditFundingTransaction inWallet:wallet];
-                    [blockchainInvitation registerInWalletForInvitationFundingTransaction:creditFundingTransaction];
+                    [blockchainInvitation registerInWalletForRegistrationFundingTransaction:creditFundingTransaction];
                 }
             }
         }

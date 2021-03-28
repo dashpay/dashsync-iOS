@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Samuel Westrich
 //  Copyright © 2564 Dash Core Group. All rights reserved.
 //
@@ -15,9 +15,9 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
 #import "DSAccountChooserViewController.h"
 #import "DSWalletChooserViewController.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

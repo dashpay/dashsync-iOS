@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Samuel Westrich
 //  Copyright © 2564 Dash Core Group. All rights reserved.
 //
@@ -17,22 +17,22 @@
 
 #import "DSBlockchainInvitation.h"
 #import "DSAuthenticationManager.h"
-#import "DSDerivationPathFactory.h"
-#import "DSCreditFundingDerivationPath.h"
-#import "DSWallet.h"
 #import "DSBlockchainIdentity+Protected.h"
-#import "DSCreditFundingTransaction.h"
 #import "DSBlockchainInvitationEntity+CoreDataClass.h"
-#import "NSManagedObjectContext+DSSugar.h"
-#import "NSManagedObject+Sugar.h"
 #import "DSChainManager.h"
+#import "DSCreditFundingDerivationPath.h"
+#import "DSCreditFundingTransaction.h"
+#import "DSDerivationPathFactory.h"
+#import "DSWallet.h"
+#import "NSManagedObject+Sugar.h"
+#import "NSManagedObjectContext+DSSugar.h"
 
-@interface DSBlockchainInvitation()
+@interface DSBlockchainInvitation ()
 
 @property (nonatomic, weak) DSWallet *wallet;
 @property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, copy) NSString *link;
-@property (nonatomic, strong) DSBlockchainIdentity * identity;
+@property (nonatomic, strong) DSBlockchainIdentity *identity;
 @property (nonatomic, assign) BOOL isTransient;
 
 @end
@@ -57,9 +57,31 @@
     NSAssert(index != UINT32_MAX, @"index must be found");
     if (!(self = [super init])) return nil;
     self.wallet = wallet;
+    self.isTransient = FALSE;
     self.identity = [[DSBlockchainIdentity alloc] initAtIndex:index withFundingTransaction:transaction withUsernameDictionary:nil inWallet:wallet];
     self.chain = wallet.chain;
 
+    return self;
+}
+
+- (instancetype)initAtIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet *)wallet {
+    NSParameterAssert(wallet);
+    NSAssert(index != UINT32_MAX, @"index must be found");
+    if (!(self = [super init])) return nil;
+    self.wallet = wallet;
+    self.isTransient = FALSE;
+    self.identity = [[DSBlockchainIdentity alloc] initAtIndex:index withLockedOutpoint:lockedOutpoint inWallet:wallet];
+    self.chain = wallet.chain;
+    return self;
+}
+
+- (instancetype)initAtIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet *)wallet withBlockchainInvitationEntity:(DSBlockchainInvitationEntity *)blockchainInvitationEntity {
+    if (!(self = [super init])) return nil;
+    self.wallet = wallet;
+    self.isTransient = FALSE;
+    self.identity = [[DSBlockchainIdentity alloc] initAtIndex:index withLockedOutpoint:lockedOutpoint inWallet:wallet withBlockchainIdentityEntity:blockchainInvitationEntity.blockchainIdentity];
+    self.link = blockchainInvitationEntity.link;
+    self.chain = wallet.chain;
     return self;
 }
 
@@ -108,7 +130,10 @@
     NSAssert(self.identity.isInvitation, @"The underlying identity is not from an invitation");
     if (!self.identity.isInvitation) return;
     [self.wallet registerBlockchainInvitation:self];
-    [self saveInitial];
+    [self.identity saveInitial];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainInvitationDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSBlockchainInvitationKey: self}];
+    });
 }
 
 - (BOOL)unregisterLocally {
@@ -120,22 +145,6 @@
     return TRUE;
 }
 
-
-- (void)saveInitial {
-    [self saveInitialInContext:[NSManagedObjectContext platformContext]];
-}
-
-- (void)saveInitialInContext:(NSManagedObjectContext *)context {
-    if (self.isTransient) return;
-    [context performBlockAndWait:^{
-        DSBlockchainInvitationEntity *entity = [DSBlockchainInvitationEntity managedObjectInBlockedContext:context];
-        entity.chain = [self.chain chainEntityInContext:context];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainInvitationDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSBlockchainInvitationKey: self}];
-        });
-    }];
-}
-
 - (void)saveInContext:(NSManagedObjectContext *)context {
     if (self.isTransient) return;
     [context performBlockAndWait:^{
@@ -145,7 +154,7 @@
         if (entity.link != self.link) {
             entity.link = self.link;
             changeOccured = YES;
-            [updateEvents addObject:DSBlockchainInvitationUpdateLink];
+            [updateEvents addObject:DSBlockchainInvitationUpdateEventLink];
         }
         if (changeOccured) {
             [context ds_save];
@@ -164,12 +173,6 @@
     [context performBlockAndWait:^{
         DSBlockchainInvitationEntity *blockchainInvitationEntity = [self blockchainInvitationEntityInContext:context];
         if (blockchainInvitationEntity) {
-            NSSet<DSFriendRequestEntity *> *friendRequests = [blockchainInvitationEntity.matchingDashpayUser outgoingRequests];
-            for (DSFriendRequestEntity *friendRequest in friendRequests) {
-                uint32_t accountNumber = friendRequest.account.index;
-                DSAccount *account = [self.wallet accountWithNumber:accountNumber];
-                [account removeIncomingDerivationPathForFriendshipWithIdentifier:friendRequest.friendshipIdentifier];
-            }
             [blockchainInvitationEntity deleteObjectAndWait];
             if (save) {
                 [context ds_save];
@@ -190,14 +193,14 @@
 - (DSBlockchainInvitationEntity *)blockchainInvitationEntityInContext:(NSManagedObjectContext *)context {
     __block DSBlockchainInvitationEntity *entity = nil;
     [context performBlockAndWait:^{
-        entity = [DSBlockchainInvitationEntity anyObjectInContext:context matching:@"uniqueID == %@", self.uniqueIDData];
+        entity = [DSBlockchainInvitationEntity anyObjectInContext:context matching:@"blockchainIdentity.uniqueID == %@", self.identity.uniqueIDData];
     }];
     NSAssert(entity, @"An entity should always be found");
     return entity;
 }
 
 - (NSString *)debugDescription {
-    return [[super debugDescription] stringByAppendingString:[NSString stringWithFormat:@" {%d-%@-%@}", self.identity.index, self.identity.currentDashpayUsername, self.uniqueIdString]];
+    return [[super debugDescription] stringByAppendingString:[NSString stringWithFormat:@" {%d-%@-%@}", self.identity.index, self.identity.currentDashpayUsername, self.identity.uniqueIdString]];
 }
 
 

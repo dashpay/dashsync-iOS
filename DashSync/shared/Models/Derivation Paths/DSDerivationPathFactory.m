@@ -310,7 +310,7 @@
         blockchainIdentitiesTopupDerivationPath.wallet = wallet;
 
         [mArray addObject:blockchainIdentitiesTopupDerivationPath];
-        
+
         DSCreditFundingDerivationPath *blockchainIdentitiesInvitationsDerivationPath = [DSCreditFundingDerivationPath blockchainIdentityInvitationFundingDerivationPathForChain:wallet.chain];
         blockchainIdentitiesInvitationsDerivationPath.wallet = wallet;
 

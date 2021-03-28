@@ -64,9 +64,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)applyProfileChanges:(DSTransientDashpayUser *)transientDashpayUser inContext:(NSManagedObjectContext *)context saveContext:(BOOL)saveContext completion:(void (^_Nullable)(BOOL success, NSError *_Nullable error))completion onCompletionQueue:(dispatch_queue_t)completionQueue;
 
--(void)setInvitationUniqueId:(UInt256)uniqueId;
+- (void)setInvitationUniqueId:(UInt256)uniqueId;
 
--(void)setInvitationRegistrationCreditFundingTransaction:(DSCreditFundingTransaction*)creditFundingTransaction;
+- (void)setInvitationRegistrationCreditFundingTransaction:(DSCreditFundingTransaction *)creditFundingTransaction;
 
 //-(void)topupTransitionForForFundingTransaction:(DSTransaction*)fundingTransaction completion:(void (^ _Nullable)(DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransition))completion;
 //

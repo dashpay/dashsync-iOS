@@ -96,4 +96,4 @@ NSString *const DSBlockchainInvitationKey = @"DSBlockchainInvitationKey";
 
 NSString *const DSBlockchainInvitationUpdateEvents = @"DSBlockchainInvitationUpdateEvents";
 
-NSString *const DSBlockchainInvitationUpdateEventLink = @"DSBlockchainInvitationUpdateLink";
+NSString *const DSBlockchainInvitationUpdateEventLink = @"DSBlockchainInvitationUpdateEventLink";
