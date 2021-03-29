@@ -12,6 +12,7 @@
 #import "DSBlockchainExplorerViewController.h"
 #import "DSBlockchainIdentitiesViewController.h"
 #import "DSGovernanceObjectListViewController.h"
+#import "DSInvitationsViewController.h"
 #import "DSLayer2ViewController.h"
 #import "DSMasternodeListsViewController.h"
 #import "DSMasternodeViewController.h"
@@ -50,11 +51,12 @@
 @property (strong, nonatomic) IBOutlet UILabel *receivedProposalCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *receivedVotesCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *blockchainIdentitiesCountLabel;
+@property (strong, nonatomic) IBOutlet UILabel *blockchainInvitationsCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *receivingAddressLabel;
 @property (strong, nonatomic) IBOutlet UILabel *masternodeListsCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *earliestMasternodeListLabel;
 @property (strong, nonatomic) IBOutlet UILabel *lastMasternodeListLabel;
-@property (strong, nonatomic) id syncFinishedObserver, syncFailedObserver, balanceObserver, blocksObserver, blocksResetObserver, headersResetObserver, sporkObserver, masternodeObserver, masternodeCountObserver, chainWalletObserver, chainStandaloneDerivationPathObserver, chainSingleAddressObserver, governanceObjectCountObserver, governanceObjectReceivedCountObserver, governanceVoteCountObserver, governanceVoteReceivedCountObserver, connectedPeerConnectionObserver, peerConnectionObserver, blockchainIdentitiesObserver, quorumObserver;
+@property (strong, nonatomic) id syncFinishedObserver, syncFailedObserver, balanceObserver, blocksObserver, blocksResetObserver, headersResetObserver, sporkObserver, masternodeObserver, masternodeCountObserver, chainWalletObserver, chainStandaloneDerivationPathObserver, chainSingleAddressObserver, governanceObjectCountObserver, governanceObjectReceivedCountObserver, governanceVoteCountObserver, governanceVoteReceivedCountObserver, connectedPeerConnectionObserver, peerConnectionObserver, blockchainIdentitiesObserver, blockchainInvitationsObserver, quorumObserver;
 
 - (IBAction)startSync:(id)sender;
 - (IBAction)stopSync:(id)sender;
@@ -81,6 +83,7 @@
     [self updateReceivedGovernanceProposalCount];
     [self updateReceivedGovernanceVoteCount];
     [self updateBlockchainIdentitiesCount];
+    [self updateBlockchainInvitationsCount];
     [self updatePeerCount];
     [self updateConnectedPeerCount];
 
@@ -249,6 +252,15 @@
                                                                                               [self updateBlockchainIdentitiesCount];
                                                                                           }
                                                                                       }];
+
+    self.blockchainInvitationsObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSBlockchainInvitationDidUpdateNotification
+                                                                                           object:nil
+                                                                                            queue:nil
+                                                                                       usingBlock:^(NSNotification *note) {
+                                                                                           if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                                                               [self updateBlockchainInvitationsCount];
+                                                                                           }
+                                                                                       }];
     self.chainStandaloneDerivationPathObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:DSChainStandaloneDerivationPathsDidChangeNotification
                                                           object:nil
@@ -555,6 +567,10 @@
     self.blockchainIdentitiesCountLabel.text = [NSString stringWithFormat:@"%u", self.chainManager.chain.localBlockchainIdentitiesCount];
 }
 
+- (void)updateBlockchainInvitationsCount {
+    self.blockchainInvitationsCountLabel.text = [NSString stringWithFormat:@"%u", self.chainManager.chain.localBlockchainInvitationsCount];
+}
+
 - (void)updateReceivedGovernanceProposalCount {
     self.receivedProposalCountLabel.text = [NSString stringWithFormat:@"%lu / %lu / %u", (unsigned long)[self.chainManager.governanceSyncManager proposalObjectsCount], (unsigned long)[self.chainManager.governanceSyncManager governanceObjectsCount], self.chainManager.chain.totalGovernanceObjectsCount];
 }
@@ -594,6 +610,9 @@
     } else if ([segue.identifier isEqualToString:@"BlockchainIdentitiesSegue"]) {
         DSBlockchainIdentitiesViewController *blockchainIdentitiesViewController = (DSBlockchainIdentitiesViewController *)segue.destinationViewController;
         blockchainIdentitiesViewController.chainManager = self.chainManager;
+    } else if ([segue.identifier isEqualToString:@"BlockchainInvitationsSegue"]) {
+        DSInvitationsViewController *invitationsViewController = (DSInvitationsViewController *)segue.destinationViewController;
+        invitationsViewController.chainManager = self.chainManager;
     } else if ([segue.identifier isEqualToString:@"ShowPeersSegue"]) {
         DSPeersViewController *peersViewController = (DSPeersViewController *)segue.destinationViewController;
         peersViewController.chainManager = self.chainManager;

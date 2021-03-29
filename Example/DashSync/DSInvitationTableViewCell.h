@@ -1,6 +1,6 @@
 //
-//  Created by Sam Westrich
-//  Copyright © 2020 Dash Core Group. All rights reserved.
+//  Created by Samuel Westrich
+//  Copyright © 2564 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,15 +15,15 @@
 //  limitations under the License.
 //
 
-#import "DSCreditFundingDerivationPath.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSCreditFundingDerivationPath ()
-
-+ (instancetype)blockchainIdentityRegistrationFundingDerivationPathForChain:(DSChain *)chain;
-+ (instancetype)blockchainIdentityTopupFundingDerivationPathForChain:(DSChain *)chain;
-+ (instancetype)blockchainIdentityInvitationFundingDerivationPathForChain:(DSChain *)chain;
+@interface DSInvitationTableViewCell : UITableViewCell
+@property (strong, nonatomic) IBOutlet UILabel *usernameLabel;
+@property (strong, nonatomic) IBOutlet UILabel *creditBalanceLabel;
+@property (strong, nonatomic) IBOutlet UILabel *confirmationsLabel;
+@property (strong, nonatomic) IBOutlet UILabel *registrationL2StatusLabel;
 
 @end
 

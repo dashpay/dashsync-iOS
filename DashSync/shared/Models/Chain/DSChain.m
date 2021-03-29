@@ -33,6 +33,7 @@
 #import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSBlockchainIdentityTopupTransition.h"
 #import "DSBlockchainIdentityUpdateTransition.h"
+#import "DSBlockchainInvitation+Protected.h"
 #import "DSBloomFilter.h"
 #import "DSChain+Protected.h"
 #import "DSChainCheckpoints.h"
@@ -1613,7 +1614,7 @@ static dispatch_once_t devnetToken = 0;
 - (DSBlock *)lastSyncBlockWithUseCheckpoints:(BOOL)useCheckpoints {
     if (_lastSyncBlock) return _lastSyncBlock;
 
-    if (!_lastSyncBlock && uint256_is_not_zero(self.lastPersistedChainSyncBlockHash) && self.lastPersistedChainSyncBlockHeight != BLOCK_UNKNOWN_HEIGHT) {
+    if (!_lastSyncBlock && uint256_is_not_zero(self.lastPersistedChainSyncBlockHash) && uint256_is_not_zero(self.lastPersistedChainSyncBlockChainWork) && self.lastPersistedChainSyncBlockHeight != BLOCK_UNKNOWN_HEIGHT) {
         _lastSyncBlock = [[DSMerkleBlock alloc] initWithVersion:2 blockHash:self.lastPersistedChainSyncBlockHash prevBlock:UINT256_ZERO timestamp:self.lastPersistedChainSyncBlockTimestamp height:self.lastPersistedChainSyncBlockHeight chainWork:self.lastPersistedChainSyncBlockChainWork onChain:self];
     }
 
@@ -1983,7 +1984,7 @@ static dispatch_once_t devnetToken = 0;
     BOOL onMainChain = FALSE;
 
     if ((phase == DSChainSyncPhase_ChainSync || phase == DSChainSyncPhase_Synced) && uint256_eq(block.prevBlock, self.lastSyncBlockHash)) { // new block extends sync chain
-        if ((block.height % 1000) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
+        if ((block.height % 1000) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight || block.height > 471035) {
             DSLog(@"adding sync block on %@ at height: %d from peer %@", self.name, block.height, peer.host);
         }
         @synchronized(self.mSyncBlocks) {
@@ -2957,6 +2958,7 @@ static dispatch_once_t devnetToken = 0;
         [wallet wipeBlockchainInfoInContext:context];
     }
     [self wipeBlockchainIdentitiesPersistedDataInContext:context];
+    [self wipeBlockchainInvitationsPersistedDataInContext:context];
     [self.viewingAccount wipeBlockchainInfo];
     [self.chainManager.identitiesManager clearExternalBlockchainIdentities];
     _bestBlockHeight = 0;
@@ -2980,6 +2982,7 @@ static dispatch_once_t devnetToken = 0;
         [wallet wipeBlockchainInfoInContext:context];
     }
     [self wipeBlockchainIdentitiesPersistedDataInContext:context];
+    [self wipeBlockchainInvitationsPersistedDataInContext:context];
     [self.viewingAccount wipeBlockchainInfo];
     [self.chainManager.identitiesManager clearExternalBlockchainIdentities];
     _bestBlockHeight = 0;
@@ -3090,6 +3093,24 @@ static dispatch_once_t devnetToken = 0;
         [DSBlockchainIdentityEntity deleteObjects:objects inContext:context];
     }];
 }
+
+// MARK: - Invitations
+
+- (uint32_t)localBlockchainInvitationsCount {
+    uint32_t blockchainInvitationsCount = 0;
+    for (DSWallet *lWallet in self.wallets) {
+        blockchainInvitationsCount += [lWallet blockchainInvitationsCount];
+    }
+    return blockchainInvitationsCount;
+}
+
+- (void)wipeBlockchainInvitationsPersistedDataInContext:(NSManagedObjectContext *)context {
+    [context performBlockAndWait:^{
+        NSArray *objects = [DSBlockchainInvitationEntity objectsInContext:context matching:@"chain == %@", [self chainEntityInContext:context]];
+        [DSBlockchainInvitationEntity deleteObjects:objects inContext:context];
+    }];
+}
+
 
 // MARK: - Registering special transactions
 
@@ -3325,48 +3346,20 @@ static dispatch_once_t devnetToken = 0;
         if (wallet) {
             DSBlockchainIdentity *blockchainIdentity = [wallet blockchainIdentityForUniqueId:creditFundingTransaction.creditBurnIdentityIdentifier];
             if (!blockchainIdentity) {
-                blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:[creditFundingTransaction usedDerivationPathIndex] withFundingTransaction:creditFundingTransaction withUsernameDictionary:nil inWallet:wallet];
+                blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index withFundingTransaction:creditFundingTransaction withUsernameDictionary:nil inWallet:wallet];
                 [blockchainIdentity registerInWalletForRegistrationFundingTransaction:creditFundingTransaction];
+            }
+        } else {
+            wallet = [self walletHavingBlockchainIdentityCreditFundingInvitationHash:creditFundingTransaction.creditBurnPublicKeyHash foundAtIndex:&index];
+            if (wallet) {
+                DSBlockchainInvitation *blockchainInvitation = [wallet blockchainInvitationForUniqueId:creditFundingTransaction.creditBurnIdentityIdentifier];
+                if (!blockchainInvitation) {
+                    blockchainInvitation = [[DSBlockchainInvitation alloc] initAtIndex:index withFundingTransaction:creditFundingTransaction inWallet:wallet];
+                    [blockchainInvitation registerInWalletForRegistrationFundingTransaction:creditFundingTransaction];
+                }
             }
         }
     }
-}
-
-- (void)triggerUpdatesForLocalReferencesFromTransition:(DSTransition *)transition {
-    //    if ([transition isKindOfClass:[DSBlockchainIdentityRegistrationTransition class]]) {
-    //        DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition = (DSBlockchainIdentityRegistrationTransition *)transition;
-    //        DSWallet * wallet = [self walletHavingBlockchainIdentityAuthenticationHash:blockchainIdentityRegistrationTransition.pubkeyHash foundAtIndex:nil];
-    //        if (wallet) {
-    //            DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForRegistrationHash:blockchainIdentityRegistrationTransition.txHash];
-    //            if (!blockchainIdentity) {
-    //                blockchainIdentity = [[DSBlockchainIdentity alloc] initWithBlockchainIdentityRegistrationTransition:blockchainIdentityRegistrationTransition inContext:self.managedObjectContext];
-    //                [wallet registerBlockchainIdentity:blockchainIdentity];
-    //            }
-    //        }
-    //    } else if ([transition isKindOfClass:[DSBlockchainIdentityTopupTransition class]]) {
-    //        DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransaction = (DSBlockchainIdentityTopupTransition *)transition;
-    //        DSWallet * wallet;
-    //        [self transactionForHash:blockchainIdentityTopupTransaction.registrationTransactionHash returnWallet:&wallet];
-    //        DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForRegistrationHash:blockchainIdentityTopupTransaction.registrationTransactionHash];
-    //        [blockchainIdentity updateWithTopupTransition:blockchainIdentityTopupTransaction save:TRUE];
-    //    } else if ([transition isKindOfClass:[DSBlockchainIdentityUpdateTransition class]]) {
-    //        DSBlockchainIdentityUpdateTransition * blockchainIdentityResetTransaction = (DSBlockchainIdentityUpdateTransition *)transition;
-    //        DSWallet * wallet;
-    //        [self transactionForHash:blockchainIdentityResetTransaction.registrationTransactionHash returnWallet:&wallet];
-    //        DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForRegistrationHash:blockchainIdentityResetTransaction.registrationTransactionHash];
-    //        [blockchainIdentity updateWithUpdateTransition:blockchainIdentityResetTransaction save:TRUE];
-    //    } else if ([transition isKindOfClass:[DSBlockchainIdentityCloseTransition class]]) {
-    //        DSBlockchainIdentityCloseTransition * blockchainIdentityCloseTransaction = (DSBlockchainIdentityCloseTransition *)transition;
-    //        DSWallet * wallet;
-    //        [self transactionForHash:blockchainIdentityCloseTransaction.registrationTransactionHash returnWallet:&wallet];
-    //        DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForRegistrationHash:blockchainIdentityCloseTransaction.registrationTransactionHash];
-    //        [blockchainIdentity updateWithCloseTransition:blockchainIdentityCloseTransaction save:TRUE];
-    //    } else if ([transition isKindOfClass:[DSTransition class]]) {
-    //        DSWallet * wallet;
-    //        [self transactionForHash:transition.registrationTransactionHash returnWallet:&wallet];
-    //        DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForRegistrationHash:transition.registrationTransactionHash];
-    //        [blockchainIdentity updateWithTransition:transition save:TRUE];
-    //    }
 }
 
 - (void)updateAddressUsageOfSimplifiedMasternodeEntries:(NSArray *)simplifiedMasternodeEntries {
@@ -3403,6 +3396,18 @@ static dispatch_once_t devnetToken = 0;
 - (DSWallet *)walletHavingBlockchainIdentityCreditFundingTopupHash:(UInt160)creditFundingTopupHash foundAtIndex:(uint32_t *)rIndex {
     for (DSWallet *wallet in self.wallets) {
         NSUInteger index = [wallet indexOfBlockchainIdentityCreditFundingTopupHash:creditFundingTopupHash];
+        if (index != NSNotFound) {
+            if (rIndex) *rIndex = (uint32_t)index;
+            return wallet;
+        }
+    }
+    if (rIndex) *rIndex = UINT32_MAX;
+    return nil;
+}
+
+- (DSWallet *)walletHavingBlockchainIdentityCreditFundingInvitationHash:(UInt160)creditFundingInvitationHash foundAtIndex:(uint32_t *)rIndex {
+    for (DSWallet *wallet in self.wallets) {
+        NSUInteger index = [wallet indexOfBlockchainIdentityCreditFundingInvitationHash:creditFundingInvitationHash];
         if (index != NSNotFound) {
             if (rIndex) *rIndex = (uint32_t)index;
             return wallet;

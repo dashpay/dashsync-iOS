@@ -31,6 +31,7 @@
 @dynamic transactionHashes;
 @dynamic votes;
 @dynamic identities;
+@dynamic invitations;
 @dynamic syncBlockHash;
 @dynamic syncBlockHeight;
 @dynamic syncLocators;

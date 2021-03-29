@@ -475,6 +475,9 @@
         case DSDerivationPathReference_BlockchainIdentityCreditTopupFunding:
             return @"BI Credit Topup Funding";
             break;
+        case DSDerivationPathReference_BlockchainIdentityCreditInvitationFunding:
+            return @"BI Credit Invitation Funding";
+            break;
         default:
             return @"Unknown";
             break;

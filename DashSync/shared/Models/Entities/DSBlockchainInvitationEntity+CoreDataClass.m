@@ -1,6 +1,6 @@
 //
-//  Created by Sam Westrich
-//  Copyright © 2020 Dash Core Group. All rights reserved.
+//  Created by Samuel Westrich
+//  Copyright © 2564 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -14,17 +14,10 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
+//
 
-#import "DSCreditFundingDerivationPath.h"
+#import "DSBlockchainInvitationEntity+CoreDataClass.h"
 
-NS_ASSUME_NONNULL_BEGIN
-
-@interface DSCreditFundingDerivationPath ()
-
-+ (instancetype)blockchainIdentityRegistrationFundingDerivationPathForChain:(DSChain *)chain;
-+ (instancetype)blockchainIdentityTopupFundingDerivationPathForChain:(DSChain *)chain;
-+ (instancetype)blockchainIdentityInvitationFundingDerivationPathForChain:(DSChain *)chain;
+@implementation DSBlockchainInvitationEntity
 
 @end
-
-NS_ASSUME_NONNULL_END

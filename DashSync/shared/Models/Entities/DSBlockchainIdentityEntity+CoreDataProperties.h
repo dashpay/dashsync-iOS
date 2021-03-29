@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) DSCreditFundingTransactionEntity *registrationFundingTransaction;
 @property (nullable, nonatomic, retain) NSSet<DSBlockchainIdentityKeyPathEntity *> *keyPaths;
 @property (nullable, nonatomic, retain) DSDashpayUserEntity *matchingDashpayUser;
+@property (nullable, nonatomic, retain) DSBlockchainInvitationEntity *associatedInvitation;
 @property (nullable, nonatomic, retain) NSSet<DSBlockchainIdentityUsernameEntity *> *usernames;
 @property (nullable, nonatomic, retain) DSChainEntity *chain;
 @property (nullable, nonatomic, retain) DSBlockchainIdentityUsernameEntity *dashpayUsername;

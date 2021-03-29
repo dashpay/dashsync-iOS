@@ -45,9 +45,9 @@ FOUNDATION_EXPORT NSString *const DSChainNewChainTipBlockNotification;
 
 typedef NS_ENUM(uint16_t, DSChainType)
 {
-    DSChainType_MainNet,
-    DSChainType_TestNet,
-    DSChainType_DevNet,
+    DSChainType_MainNet = 0,
+    DSChainType_TestNet = 1,
+    DSChainType_DevNet = 2,
 };
 
 typedef NS_ENUM(NSUInteger, DSTransactionDirection)
@@ -417,6 +417,9 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 
 /*! @brief Returns a count of local blockchain identities.  */
 @property (nonatomic, readonly) uint32_t localBlockchainIdentitiesCount;
+
+/*! @brief Returns a count of blockchain invitations that have been created locally.  */
+@property (nonatomic, readonly) uint32_t localBlockchainInvitationsCount;
 
 /*! @brief Returns an array of all local blockchain identities.  */
 @property (nonatomic, readonly) NSArray<DSBlockchainIdentity *> *localBlockchainIdentities;

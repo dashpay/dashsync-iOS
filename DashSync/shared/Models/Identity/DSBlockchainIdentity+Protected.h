@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) DSBlockchainIdentityEntity *blockchainIdentityEntity;
 @property (nullable, nonatomic, strong) DSTransientDashpayUser *transientDashpayUser;
+@property (nonatomic, weak) DSBlockchainInvitation *associatedInvitation;
 
 - (DSBlockchainIdentityEntity *)blockchainIdentityEntityInContext:(NSManagedObjectContext *)context;
 
@@ -58,9 +59,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)registrationTransitionWithCompletion:(void (^_Nullable)(DSBlockchainIdentityRegistrationTransition *_Nullable blockchainIdentityRegistrationTransition, NSError *_Nullable error))completion;
 
-- (void)createFundingPrivateKeyWithSeed:(NSData *)seed completion:(void (^_Nullable)(BOOL success))completion;
+- (void)createFundingPrivateKeyWithSeed:(NSData *)seed isForInvitation:(BOOL)isForInvitation completion:(void (^_Nullable)(BOOL success))completion;
 
 - (void)applyProfileChanges:(DSTransientDashpayUser *)transientDashpayUser inContext:(NSManagedObjectContext *)context saveContext:(BOOL)saveContext completion:(void (^_Nullable)(BOOL success, NSError *_Nullable error))completion onCompletionQueue:(dispatch_queue_t)completionQueue;
+
+- (void)setInvitationUniqueId:(UInt256)uniqueId;
+
+- (void)setInvitationRegistrationCreditFundingTransaction:(DSCreditFundingTransaction *)creditFundingTransaction;
 
 //-(void)topupTransitionForForFundingTransaction:(DSTransaction*)fundingTransaction completion:(void (^ _Nullable)(DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransition))completion;
 //

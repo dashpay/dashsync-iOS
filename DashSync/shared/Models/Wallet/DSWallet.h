@@ -37,7 +37,7 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 #define DUFFS 100000000LL
 #define MAX_MONEY (21000000LL * DUFFS)
 
-@class DSChain, DSAccount, DSTransaction, DSDerivationPath, DSLocalMasternode, DSKey, DSSpecialTransactionsWalletHolder, DSBLSKey, DSECDSAKey;
+@class DSChain, DSAccount, DSTransaction, DSDerivationPath, DSLocalMasternode, DSKey, DSSpecialTransactionsWalletHolder, DSBLSKey, DSECDSAKey, DSBlockchainInvitation;
 
 @interface DSWallet : NSObject
 
@@ -46,6 +46,8 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 @property (nonatomic, readonly) DSSpecialTransactionsWalletHolder *specialTransactionsHolder;
 
 @property (nonatomic, readonly) NSDictionary<NSData *, DSBlockchainIdentity *> *blockchainIdentities;
+
+@property (nonatomic, readonly) NSDictionary<NSData *, DSBlockchainInvitation *> *blockchainInvitations;
 
 @property (nonatomic, readonly, nullable) DSBlockchainIdentity *defaultBlockchainIdentity;
 
@@ -94,11 +96,17 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 // the total amount received by the wallet (excluding change)
 @property (nonatomic, readonly) uint64_t totalReceived;
 
-// the first unused index for blockchain users
+// the first unused index for blockchain identity registration funding
 @property (nonatomic, readonly) uint32_t unusedBlockchainIdentityIndex;
 
-// the amount of known blockchain users
+// the first unused index for invitations
+@property (nonatomic, readonly) uint32_t unusedBlockchainInvitationIndex;
+
+// the amount of known blockchain identities
 @property (nonatomic, readonly) uint32_t blockchainIdentitiesCount;
+
+// the amount of known blockchain invitations
+@property (nonatomic, readonly) uint32_t blockchainInvitationsCount;
 
 // The fingerprint for currentTransactions
 @property (nonatomic, readonly) NSData *chainSynchronizationFingerprint;
@@ -199,14 +207,24 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 - (void)registerBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 - (BOOL)containsBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 
+- (void)unregisterBlockchainInvitation:(DSBlockchainInvitation *)blockchainInvitation;
+- (void)addBlockchainInvitation:(DSBlockchainInvitation *)blockchainInvitation;
+- (void)registerBlockchainInvitation:(DSBlockchainInvitation *)blockchainInvitation;
+- (BOOL)containsBlockchainInvitation:(DSBlockchainInvitation *)blockchainInvitation;
+
 - (DSBlockchainIdentity *)createBlockchainIdentity;
 - (DSBlockchainIdentity *)createBlockchainIdentityUsingDerivationIndex:(uint32_t)index;
 - (DSBlockchainIdentity *)createBlockchainIdentityForUsername:(NSString *_Nullable)username;
 - (DSBlockchainIdentity *)createBlockchainIdentityForUsername:(NSString *_Nullable)username usingDerivationIndex:(uint32_t)index;
 
+- (DSBlockchainInvitation *)createBlockchainInvitation;
+- (DSBlockchainInvitation *)createBlockchainInvitationUsingDerivationIndex:(uint32_t)index;
+
 - (DSBlockchainIdentity *_Nullable)blockchainIdentityThatCreatedContract:(DPContract *)contract withContractId:(UInt256)contractId;
 
 - (DSBlockchainIdentity *_Nullable)blockchainIdentityForUniqueId:(UInt256)uniqueId;
+
+- (DSBlockchainInvitation *_Nullable)blockchainInvitationForUniqueId:(UInt256)uniqueId;
 
 - (void)seedWithPrompt:(NSString *_Nullable)authprompt forAmount:(uint64_t)amount completion:(_Nullable SeedCompletionBlock)completion;
 
@@ -234,6 +252,7 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 - (NSUInteger)indexOfBlockchainIdentityAuthenticationHash:(UInt160)blockchainIdentityAuthenticationHash;
 - (NSUInteger)indexOfBlockchainIdentityCreditFundingRegistrationHash:(UInt160)creditFundingRegistrationHash;
 - (NSUInteger)indexOfBlockchainIdentityCreditFundingTopupHash:(UInt160)creditFundingTopupHash;
+- (NSUInteger)indexOfBlockchainIdentityCreditFundingInvitationHash:(UInt160)creditFundingInvitationHash;
 
 @end
 

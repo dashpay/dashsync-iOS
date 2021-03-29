@@ -444,6 +444,7 @@
 // MARK: - Requesting Masternode List
 
 - (void)addToMasternodeRetrievalQueue:(NSData *)masternodeBlockHashData {
+    NSAssert(uint256_is_not_zero(masternodeBlockHashData.UInt256), @"the hash data must not be empty");
     [self.masternodeListRetrievalQueue addObject:masternodeBlockHashData];
     self.masternodeListRetrievalQueueMaxAmount = MAX(self.masternodeListRetrievalQueueMaxAmount, self.masternodeListRetrievalQueue.count);
     [self.masternodeListRetrievalQueue sortUsingComparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2) {
@@ -878,36 +879,38 @@
         while (addedQuorumsCount >= 1) {
             DSQuorumEntry *potentialQuorumEntry = [DSQuorumEntry potentialQuorumEntryWithData:message dataOffset:(uint32_t)offset onChain:chain];
 
-            DSMasternodeList *quorumMasternodeList = masternodeListLookup(potentialQuorumEntry.quorumHash);
+            if (potentialQuorumEntry.shouldProcessQuorum) {
+                DSMasternodeList *quorumMasternodeList = masternodeListLookup(potentialQuorumEntry.quorumHash);
 
-            if (quorumMasternodeList) {
-                validQuorums &= [potentialQuorumEntry validateWithMasternodeList:quorumMasternodeList blockHeightLookup:blockHeightLookup];
-                if (!validQuorums) {
-                    DSLog(@"Invalid Quorum Found For Quorum at height %d", quorumMasternodeList.height);
-                }
-            } else {
-                if (blockHeightLookup(potentialQuorumEntry.quorumHash) != UINT32_MAX) {
-                    [neededMasternodeLists addObject:uint256_data(potentialQuorumEntry.quorumHash)];
+                if (quorumMasternodeList) {
+                    validQuorums &= [potentialQuorumEntry validateWithMasternodeList:quorumMasternodeList blockHeightLookup:blockHeightLookup];
+                    if (!validQuorums) {
+                        DSLog(@"Invalid Quorum Found For Quorum at height %d", quorumMasternodeList.height);
+                    }
                 } else {
-                    if (chain.isTestnet) {
-                        //We can trust insight if on testnet
-                        dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-                        [[DSInsightManager sharedInstance] blockForBlockHash:uint256_reverse(potentialQuorumEntry.quorumHash)
-                                                                     onChain:chain
-                                                                  completion:^(DSBlock *_Nullable block, NSError *_Nullable error) {
-                                                                      if (!error && block) {
-                                                                          [chain addInsightVerifiedBlock:block forBlockHash:potentialQuorumEntry.quorumHash];
-                                                                      }
-                                                                      dispatch_semaphore_signal(sem);
-                                                                  }];
-                        dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
-                        if (blockHeightLookup(potentialQuorumEntry.quorumHash) != UINT32_MAX) {
-                            [neededMasternodeLists addObject:uint256_data(potentialQuorumEntry.quorumHash)];
+                    if (blockHeightLookup(potentialQuorumEntry.quorumHash) != UINT32_MAX) {
+                        [neededMasternodeLists addObject:uint256_data(potentialQuorumEntry.quorumHash)];
+                    } else {
+                        if (chain.isTestnet) {
+                            //We can trust insight if on testnet
+                            dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+                            [[DSInsightManager sharedInstance] blockForBlockHash:uint256_reverse(potentialQuorumEntry.quorumHash)
+                                                                         onChain:chain
+                                                                      completion:^(DSBlock *_Nullable block, NSError *_Nullable error) {
+                                                                          if (!error && block) {
+                                                                              [chain addInsightVerifiedBlock:block forBlockHash:potentialQuorumEntry.quorumHash];
+                                                                          }
+                                                                          dispatch_semaphore_signal(sem);
+                                                                      }];
+                            dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+                            if (blockHeightLookup(potentialQuorumEntry.quorumHash) != UINT32_MAX) {
+                                [neededMasternodeLists addObject:uint256_data(potentialQuorumEntry.quorumHash)];
+                            } else {
+                                DSLog(@"Quorum masternode list not found and block not available");
+                            }
                         } else {
                             DSLog(@"Quorum masternode list not found and block not available");
                         }
-                    } else {
-                        DSLog(@"Quorum masternode list not found and block not available");
                     }
                 }
             }

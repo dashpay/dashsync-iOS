@@ -422,6 +422,10 @@
 		FBBDF426226C843C0081D673 /* DSBlockchainIdentityTransitionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBBDF425226C843C0081D673 /* DSBlockchainIdentityTransitionsViewController.m */; };
 		FBBDF429226C8ECA0081D673 /* DSTransitionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBBDF428226C8ECA0081D673 /* DSTransitionTableViewCell.m */; };
 		FBBDF42C226EDF600081D673 /* DSContactTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBBDF42B226EDF600081D673 /* DSContactTableViewCell.m */; };
+		FBC2EAF8260F842B00B53BDB /* Invitations.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBC2EAF7260F842B00B53BDB /* Invitations.storyboard */; };
+		FBC2EB02260F886700B53BDB /* DSInvitationsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBC2EB01260F886700B53BDB /* DSInvitationsViewController.m */; };
+		FBC2EB08260F89A900B53BDB /* DSInvitationTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBC2EB07260F89A900B53BDB /* DSInvitationTableViewCell.m */; };
+		FBC2EB0E260F8B4600B53BDB /* DSCreateInvitationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBC2EB0D260F8B4600B53BDB /* DSCreateInvitationViewController.m */; };
 		FBC508C62426F33D00EB3DAB /* SearchIdentity.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBC508C52426F33D00EB3DAB /* SearchIdentity.storyboard */; };
 		FBC508CB2426F42500EB3DAB /* DSSearchBlockchainIdentitiesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBC508CA2426F42500EB3DAB /* DSSearchBlockchainIdentitiesViewController.m */; };
 		FBC508CE2427363C00EB3DAB /* DSBlockchainIdentitySearchTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBC508CD2427363C00EB3DAB /* DSBlockchainIdentitySearchTableViewCell.m */; };
@@ -1080,6 +1084,13 @@
 		FBBDF428226C8ECA0081D673 /* DSTransitionTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTransitionTableViewCell.m; sourceTree = "<group>"; };
 		FBBDF42A226EDF600081D673 /* DSContactTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactTableViewCell.h; sourceTree = "<group>"; };
 		FBBDF42B226EDF600081D673 /* DSContactTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactTableViewCell.m; sourceTree = "<group>"; };
+		FBC2EAF7260F842B00B53BDB /* Invitations.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Invitations.storyboard; sourceTree = "<group>"; };
+		FBC2EB00260F886700B53BDB /* DSInvitationsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSInvitationsViewController.h; sourceTree = "<group>"; };
+		FBC2EB01260F886700B53BDB /* DSInvitationsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSInvitationsViewController.m; sourceTree = "<group>"; };
+		FBC2EB06260F89A900B53BDB /* DSInvitationTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSInvitationTableViewCell.h; sourceTree = "<group>"; };
+		FBC2EB07260F89A900B53BDB /* DSInvitationTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSInvitationTableViewCell.m; sourceTree = "<group>"; };
+		FBC2EB0C260F8B4600B53BDB /* DSCreateInvitationViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSCreateInvitationViewController.h; sourceTree = "<group>"; };
+		FBC2EB0D260F8B4600B53BDB /* DSCreateInvitationViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSCreateInvitationViewController.m; sourceTree = "<group>"; };
 		FBC508C52426F33D00EB3DAB /* SearchIdentity.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = SearchIdentity.storyboard; sourceTree = "<group>"; };
 		FBC508C92426F42500EB3DAB /* DSSearchBlockchainIdentitiesViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSearchBlockchainIdentitiesViewController.h; sourceTree = "<group>"; };
 		FBC508CA2426F42500EB3DAB /* DSSearchBlockchainIdentitiesViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSearchBlockchainIdentitiesViewController.m; sourceTree = "<group>"; };
@@ -1373,6 +1384,7 @@
 				FBA676352235AD090069EC2F /* Governance.storyboard */,
 				FB44D620228C73FB00354A4D /* Quorums.storyboard */,
 				FBC508C52426F33D00EB3DAB /* SearchIdentity.storyboard */,
+				FBC2EAF7260F842B00B53BDB /* Invitations.storyboard */,
 			);
 			name = "Example for DashSync";
 			path = DashSync;
@@ -1898,6 +1910,8 @@
 				FB988323241D6C3300B39F02 /* DSBlockchainIdentityKeyTableViewCell.m */,
 				FBC508CC2427363C00EB3DAB /* DSBlockchainIdentitySearchTableViewCell.h */,
 				FBC508CD2427363C00EB3DAB /* DSBlockchainIdentitySearchTableViewCell.m */,
+				FBC2EB06260F89A900B53BDB /* DSInvitationTableViewCell.h */,
+				FBC2EB07260F89A900B53BDB /* DSInvitationTableViewCell.m */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -2118,6 +2132,7 @@
 		FBB25BED20C5CD290037F5BE /* View Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				FBC2EAFC260F845700B53BDB /* Invitations */,
 				FB44D622228C753300354A4D /* Quorums */,
 				2A1B55BC2226B15A008FED65 /* Contacts */,
 				FB83C2E121B7B72F0057A0EF /* Actions */,
@@ -2156,6 +2171,17 @@
 				FBB4E382214BC7C3008040B7 /* DSDAPIGetUserInfoViewController.m */,
 			);
 			name = "DAPI Calls";
+			sourceTree = "<group>";
+		};
+		FBC2EAFC260F845700B53BDB /* Invitations */ = {
+			isa = PBXGroup;
+			children = (
+				FBC2EB00260F886700B53BDB /* DSInvitationsViewController.h */,
+				FBC2EB01260F886700B53BDB /* DSInvitationsViewController.m */,
+				FBC2EB0C260F8B4600B53BDB /* DSCreateInvitationViewController.h */,
+				FBC2EB0D260F8B4600B53BDB /* DSCreateInvitationViewController.m */,
+			);
+			name = Invitations;
 			sourceTree = "<group>";
 		};
 		FBC508C82426F3DE00EB3DAB /* Searching */ = {
@@ -2380,6 +2406,7 @@
 				FBA676342235A9620069EC2F /* Helpers.storyboard in Resources */,
 				873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */,
 				FB44D621228C73FB00354A4D /* Quorums.storyboard in Resources */,
+				FBC2EAF8260F842B00B53BDB /* Invitations.storyboard in Resources */,
 				2A3B3EB920F893F4002962FB /* SwitcherFormTableViewCell.xib in Resources */,
 				2A3B3EBA20F893F4002962FB /* TextFieldFormTableViewCell.xib in Resources */,
 				71719F9F1E33DC2100824A3D /* LaunchScreen.storyboard in Resources */,
@@ -2849,6 +2876,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FB9A107220D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m in Sources */,
+				FBC2EB0E260F8B4600B53BDB /* DSCreateInvitationViewController.m in Sources */,
 				2AF8A93C2283539800F8C72D /* DSFetchedResultsTableViewController.m in Sources */,
 				FB763C652089B0A700CDBA57 /* DSAddressTableViewCell.m in Sources */,
 				FB702C6523EDC18D0099030C /* DSContractTableViewCell.m in Sources */,
@@ -2865,6 +2893,7 @@
 				FBD967AD21270DD6005CBE0B /* DSUsernameTableViewCell.m in Sources */,
 				2A3B3EB620F893F4002962FB /* SelectorFormTableViewCell.m in Sources */,
 				2A9FFF012233B90000956D5F /* DSContactsNavigationController.m in Sources */,
+				FBC2EB08260F89A900B53BDB /* DSInvitationTableViewCell.m in Sources */,
 				FB6DC62C20AB678500E35EED /* DSChainTableViewCell.m in Sources */,
 				FB3FF0AF222559090059A9A5 /* DSUpdateMasternodeRevocationViewController.m in Sources */,
 				FB9A106C20D8362F006883E2 /* DSKeyValueTableViewCell.m in Sources */,
@@ -2964,6 +2993,7 @@
 				FBA676392235CE0C0069EC2F /* DSAuthenticationKeysDerivationPathsAddressesViewController.m in Sources */,
 				FBAA7752222B2963001B3756 /* DSProviderUpdateServiceTransactionsViewController.m in Sources */,
 				FBF31B6F2231C53900393301 /* DSSignPayloadViewController.m in Sources */,
+				FBC2EB02260F886700B53BDB /* DSInvitationsViewController.m in Sources */,
 				FB83C2E421B7B7560057A0EF /* DSActionsViewController.m in Sources */,
 				FBC508CB2426F42500EB3DAB /* DSSearchBlockchainIdentitiesViewController.m in Sources */,
 				FBEB7E95220F0DFA0013F619 /* DSWalletChooserTableViewCell.m in Sources */,

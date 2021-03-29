@@ -42,6 +42,9 @@ typedef void (^TransactionValidityCompletionBlock)(BOOL signedTransaction, BOOL 
 #define FEATURE_PURPOSE 9
 #define FEATURE_PURPOSE_IDENTITIES 5
 #define FEATURE_PURPOSE_IDENTITIES_SUBFEATURE_AUTHENTICATION 0
+#define FEATURE_PURPOSE_IDENTITIES_SUBFEATURE_REGISTRATION 1
+#define FEATURE_PURPOSE_IDENTITIES_SUBFEATURE_TOPUP 2
+#define FEATURE_PURPOSE_IDENTITIES_SUBFEATURE_INVITATIONS 3
 #define FEATURE_PURPOSE_DASHPAY 15
 
 @class DSTransaction, DSKey, DSAccount, DSDerivationPath;
@@ -77,7 +80,8 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference)
     DSDerivationPathReference_ContactBasedFundsExternal = 10,
     DSDerivationPathReference_BlockchainIdentityCreditRegistrationFunding = 11,
     DSDerivationPathReference_BlockchainIdentityCreditTopupFunding = 12,
-    DSDerivationPathReference_Root = 13,
+    DSDerivationPathReference_BlockchainIdentityCreditInvitationFunding = 13,
+    DSDerivationPathReference_Root = 255,
 };
 
 @interface DSDerivationPath : DSUInt256IndexPath {

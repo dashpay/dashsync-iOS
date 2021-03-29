@@ -30,7 +30,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (uint32_t)usedDerivationPathIndexForWallet:(DSWallet *)wallet;
 - (void)markAddressAsUsedInWallet:(DSWallet *)wallet;
+- (void)markInvitationAddressAsUsedInWallet:(DSWallet *)wallet;
 - (BOOL)checkDerivationPathIndexForWallet:(DSWallet *)wallet isIndex:(uint32_t)index;
+- (BOOL)checkInvitationDerivationPathIndexForWallet:(DSWallet *)wallet isIndex:(uint32_t)index;
 
 @end
 

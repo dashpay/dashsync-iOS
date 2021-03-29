@@ -18,6 +18,7 @@
 @property (nonatomic, strong) NSMutableDictionary *providerFundsDerivationPathByWallet;
 @property (nonatomic, strong) NSMutableDictionary *blockchainIdentityRegistrationFundingDerivationPathByWallet;
 @property (nonatomic, strong) NSMutableDictionary *blockchainIdentityTopupFundingDerivationPathByWallet;
+@property (nonatomic, strong) NSMutableDictionary *blockchainIdentityInvitationFundingDerivationPathByWallet;
 @property (nonatomic, strong) NSMutableDictionary *blockchainIdentityBLSDerivationPathByWallet;
 @property (nonatomic, strong) NSMutableDictionary *blockchainIdentityECDSADerivationPathByWallet;
 
@@ -144,6 +145,24 @@
         }
     }
     return [self.blockchainIdentityTopupFundingDerivationPathByWallet objectForKey:wallet.uniqueIDString];
+}
+
+- (DSCreditFundingDerivationPath *)blockchainIdentityInvitationFundingDerivationPathForWallet:(DSWallet *)wallet {
+    static dispatch_once_t blockchainIdentityInvitationFundingDerivationPathByWalletToken = 0;
+    dispatch_once(&blockchainIdentityInvitationFundingDerivationPathByWalletToken, ^{
+        self.blockchainIdentityInvitationFundingDerivationPathByWallet = [NSMutableDictionary dictionary];
+    });
+    @synchronized(self) {
+        if (![self.blockchainIdentityInvitationFundingDerivationPathByWallet objectForKey:wallet.uniqueIDString]) {
+            DSCreditFundingDerivationPath *derivationPath = [DSCreditFundingDerivationPath blockchainIdentityInvitationFundingDerivationPathForChain:wallet.chain];
+            derivationPath.wallet = wallet;
+            if (derivationPath.hasExtendedPublicKey) {
+                [derivationPath loadAddresses];
+            }
+            [self.blockchainIdentityInvitationFundingDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueIDString];
+        }
+    }
+    return [self.blockchainIdentityInvitationFundingDerivationPathByWallet objectForKey:wallet.uniqueIDString];
 }
 
 // MARK: - Blockchain Identity Authentication
@@ -291,6 +310,11 @@
         blockchainIdentitiesTopupDerivationPath.wallet = wallet;
 
         [mArray addObject:blockchainIdentitiesTopupDerivationPath];
+
+        DSCreditFundingDerivationPath *blockchainIdentitiesInvitationsDerivationPath = [DSCreditFundingDerivationPath blockchainIdentityInvitationFundingDerivationPathForChain:wallet.chain];
+        blockchainIdentitiesInvitationsDerivationPath.wallet = wallet;
+
+        [mArray addObject:blockchainIdentitiesInvitationsDerivationPath];
     }
 
     return [mArray copy];
