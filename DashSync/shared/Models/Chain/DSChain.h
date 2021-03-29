@@ -45,9 +45,9 @@ FOUNDATION_EXPORT NSString *const DSChainNewChainTipBlockNotification;
 
 typedef NS_ENUM(uint16_t, DSChainType)
 {
-    DSChainType_MainNet,
-    DSChainType_TestNet,
-    DSChainType_DevNet,
+    DSChainType_MainNet = 0,
+    DSChainType_TestNet = 1,
+    DSChainType_DevNet = 2,
 };
 
 typedef NS_ENUM(NSUInteger, DSTransactionDirection)

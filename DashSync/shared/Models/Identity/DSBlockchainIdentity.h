@@ -48,6 +48,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityQueryStep)
     DSBlockchainIdentityQueryStep_ContactRequests = DSBlockchainIdentityQueryStep_IncomingContactRequests | DSBlockchainIdentityQueryStep_OutgoingContactRequests,
     DSBlockchainIdentityQueryStep_AllForForeignBlockchainIdentity = DSBlockchainIdentityQueryStep_Identity | DSBlockchainIdentityQueryStep_Username | DSBlockchainIdentityQueryStep_Profile,
     DSBlockchainIdentityQueryStep_AllForLocalBlockchainIdentity = DSBlockchainIdentityQueryStep_Identity | DSBlockchainIdentityQueryStep_Username | DSBlockchainIdentityQueryStep_Profile | DSBlockchainIdentityQueryStep_ContactRequests,
+    DSBlockchainIdentityQueryStep_NoIdentity = 1 << 28,
     DSBlockchainIdentityQueryStep_BadQuery = 1 << 29,
     DSBlockchainIdentityQueryStep_Cancelled = 1 << 30
 };
@@ -224,7 +225,7 @@ FOUNDATION_EXPORT NSString *const DSBlockchainIdentityUpdateEventDashpaySyncroni
 
 - (void)fundingTransactionForTopupAmount:(uint64_t)topupAmount toAddress:(NSString *)address fundedByAccount:(DSAccount *)fundingAccount completion:(void (^_Nullable)(DSCreditFundingTransaction *fundingTransaction))completion;
 
-- (void)fetchIdentityNetworkStateInformationWithCompletion:(void (^)(BOOL success, NSError *error))completion;
+- (void)fetchIdentityNetworkStateInformationWithCompletion:(void (^)(BOOL success, BOOL found, NSError *error))completion;
 
 - (void)fetchAllNetworkStateInformationWithCompletion:(void (^)(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion;
 

@@ -207,6 +207,30 @@
     }
 }
 
+- (BOOL)shouldProcessQuorum {
+    switch (self.llmqType) { //!OCLINT
+        case DSLLMQType_50_60:
+            return YES;
+        case DSLLMQType_400_60:
+            if (self.chain.isMainnet) {
+                return YES;
+            } else {
+                return NO;
+            }
+        case DSLLMQType_400_85:
+            return NO;
+        case DSLLMQType_100_67:
+            return YES;
+        case DSLLMQType_5_60:
+            return NO;
+        case DSLLMQType_10_60:
+            return NO;
+        default:
+            NSAssert(FALSE, @"Unknown llmq type");
+            return NO;
+    }
+}
+
 - (UInt256)llmqQuorumHash {
     NSMutableData *data = [NSMutableData data];
     [data appendVarInt:self.llmqType];

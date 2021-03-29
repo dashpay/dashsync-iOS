@@ -47,14 +47,14 @@
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet) ? 5 : 1;
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(FEATURE_PURPOSE_IDENTITIES), uint256_from_long(FEATURE_PURPOSE_IDENTITIES_SUBFEATURE_TOPUP)};
     BOOL hardenedIndexes[] = {YES, YES, YES, YES};
-    return [DSCreditFundingDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_CreditFunding signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_BlockchainIdentityCreditRegistrationFunding onChain:chain];
+    return [DSCreditFundingDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_CreditFunding signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_BlockchainIdentityCreditTopupFunding onChain:chain];
 }
 
 + (instancetype)blockchainIdentityInvitationFundingDerivationPathForChain:(DSChain *)chain {
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet) ? 5 : 1;
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(FEATURE_PURPOSE_IDENTITIES), uint256_from_long(FEATURE_PURPOSE_IDENTITIES_SUBFEATURE_INVITATIONS)};
     BOOL hardenedIndexes[] = {YES, YES, YES, YES};
-    return [DSCreditFundingDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_CreditFunding signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_BlockchainIdentityCreditRegistrationFunding onChain:chain];
+    return [DSCreditFundingDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_CreditFunding signingAlgorithm:DSKeyType_ECDSA reference:DSDerivationPathReference_BlockchainIdentityCreditInvitationFunding onChain:chain];
 }
 
 - (NSString *)receiveAddress {

@@ -134,8 +134,10 @@
     for (DSBlockchainIdentity *blockchainIdentity in blockchainIdentities) {
         dispatch_group_enter(dispatchGroup);
         [blockchainIdentity fetchAllNetworkStateInformationWithCompletion:^(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> *_Nullable errors) {
-            groupedSuccess &= !failureStep;
-            [groupedErrors addObjectsFromArray:errors];
+            if (failureStep != DSBlockchainIdentityQueryStep_NoIdentity) {
+                groupedSuccess &= !failureStep;
+                [groupedErrors addObjectsFromArray:errors];
+            }
             dispatch_group_leave(dispatchGroup);
         }];
     }
@@ -157,8 +159,8 @@
 - (void)retrieveAllBlockchainIdentitiesChainStatesForWallet:(DSWallet *)wallet {
     for (DSBlockchainIdentity *identity in [wallet.blockchainIdentities allValues]) {
         if (identity.registrationStatus == DSBlockchainIdentityRegistrationStatus_Unknown) {
-            [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, NSError *error) {
-                if (success) {
+            [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, BOOL found, NSError *error) {
+                if (success && found) {
                     //now lets get dpns info
                     if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_DPNS)) {
                         [identity fetchUsernamesWithCompletion:^(BOOL success, NSError *error){
@@ -439,7 +441,7 @@
                 NSString *domain = document[@"normalizedParentDomainName"];
                 DSBlockchainIdentity *identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userIdData.UInt256 isTransient:TRUE onChain:self.chain];
                 [identity addUsername:normalizedLabel inDomain:domain status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
-                [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, NSError *error){
+                [identity fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, BOOL found, NSError *error){
 
                 }];
                 [rBlockchainIdentities addObject:identity];
@@ -481,7 +483,8 @@
 
 - (void)fetchNeededNetworkStateInformationForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     [blockchainIdentity fetchNeededNetworkStateInformationWithCompletion:^(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> *_Nullable errors) {
-        if (!failureStep) {
+        if (!failureStep || failureStep == DSBlockchainIdentityQueryStep_NoIdentity) {
+            //if this was never registered no need to retry
             [self chain:self.chain didFinishFetchingBlockchainIdentityDAPInformation:blockchainIdentity];
         } else {
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{

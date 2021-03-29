@@ -1219,7 +1219,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     if (self.registrationCreditFundingTransaction) {
         return [uint160_data(self.registrationCreditFundingTransaction.creditBurnPublicKeyHash) addressFromHash160DataForChain:self.chain];
     } else {
-        DSCreditFundingDerivationPath *derivationPathRegistrationFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:self.wallet];
+        DSCreditFundingDerivationPath *derivationPathRegistrationFunding;
+        if (self.isInvitation) {
+            derivationPathRegistrationFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityInvitationFundingDerivationPathForWallet:self.wallet];
+        } else {
+            derivationPathRegistrationFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:self.wallet];
+        }
+
         return [derivationPathRegistrationFunding addressAtIndex:self.index];
     }
 }
@@ -1291,6 +1297,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
     NSAssert(self.registrationCreditFundingTransaction, @"The registration credit funding transaction must be known");
 
+    if (!self.registrationCreditFundingTransaction.instantSendLockAwaitingProcessing) {
+        if (completion) {
+            completion(nil, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"The registration credit funding transaction has no instant send lock", nil)}]);
+        }
+        return;
+    }
+
     [self registrationTransitionSignedByPrivateKey:self.registrationFundingPrivateKey
                              registeringPublicKeys:@{@(index): publicKey}
                      usingCreditFundingTransaction:self.registrationCreditFundingTransaction
@@ -1315,7 +1328,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                                       retryDelayType:DSBlockchainIdentityRetryDelayType_Linear
                                                              options:DSBlockchainIdentityMonitorOptions_None
                                                            inContext:self.platformContext
-                                                          completion:^(BOOL success, NSError *error) {
+                                                          completion:^(BOOL success, BOOL found, NSError *error) {
                                                               if (completion) {
                                                                   completion(successDictionary, error);
                                                               }
@@ -1329,9 +1342,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                                           retryDelayType:DSBlockchainIdentityRetryDelayType_Linear
                                                                  options:DSBlockchainIdentityMonitorOptions_None
                                                                inContext:self.platformContext
-                                                              completion:^(BOOL success, NSError *error) {
+                                                              completion:^(BOOL success, BOOL found, NSError *error) {
                                                                   if (completion) {
-                                                                      completion(nil, error);
+                                                                      completion(nil, found ? nil : error);
                                                                   }
                                                               }];
                     } else {
@@ -1357,13 +1370,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
 // MARK: Retrieval
 
-- (void)fetchIdentityNetworkStateInformationWithCompletion:(void (^)(BOOL success, NSError *error))completion {
+- (void)fetchIdentityNetworkStateInformationWithCompletion:(void (^)(BOOL success, BOOL found, NSError *error))completion {
     dispatch_async(self.identityQueue, ^{
         [self fetchIdentityNetworkStateInformationInContext:self.platformContext withCompletion:completion];
     });
 }
 
-- (void)fetchIdentityNetworkStateInformationInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(BOOL success, NSError *error))completion {
+- (void)fetchIdentityNetworkStateInformationInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(BOOL success, BOOL found, NSError *error))completion {
     //a local identity might not have been published yet
     [self monitorForBlockchainIdentityWithRetryCount:5 retryAbsentCount:0 delay:3 retryDelayType:DSBlockchainIdentityRetryDelayType_SlowingDown50Percent options:self.isLocal ? DSBlockchainIdentityMonitorOptions_AcceptNotFoundAsNotAnError : DSBlockchainIdentityMonitorOptions_None inContext:context completion:completion];
 }
@@ -1508,11 +1521,19 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
 - (void)fetchNetworkStateInformation:(DSBlockchainIdentityQueryStep)querySteps inContext:(NSManagedObjectContext *)context withCompletion:(void (^)(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
     if (querySteps & DSBlockchainIdentityQueryStep_Identity) {
-        [self fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, NSError *error) {
+        [self fetchIdentityNetworkStateInformationWithCompletion:^(BOOL success, BOOL found, NSError *error) {
             if (!success) {
                 if (completion) {
                     dispatch_async(completionQueue, ^{
-                        completion(DSBlockchainIdentityQueryStep_Identity, @[error]);
+                        completion(DSBlockchainIdentityQueryStep_Identity, error ? @[error] : @[]);
+                    });
+                }
+                return;
+            }
+            if (!found) {
+                if (completion) {
+                    dispatch_async(completionQueue, ^{
+                        completion(DSBlockchainIdentityQueryStep_NoIdentity, @[]);
                     });
                 }
                 return;
@@ -2343,7 +2364,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     });
 }
 
-- (void)monitorForBlockchainIdentityWithRetryCount:(uint32_t)retryCount retryAbsentCount:(uint32_t)retryAbsentCount delay:(NSTimeInterval)delay retryDelayType:(DSBlockchainIdentityRetryDelayType)retryDelayType options:(DSBlockchainIdentityMonitorOptions)options inContext:(NSManagedObjectContext *)context completion:(void (^)(BOOL success, NSError *error))completion {
+- (void)monitorForBlockchainIdentityWithRetryCount:(uint32_t)retryCount retryAbsentCount:(uint32_t)retryAbsentCount delay:(NSTimeInterval)delay retryDelayType:(DSBlockchainIdentityRetryDelayType)retryDelayType options:(DSBlockchainIdentityMonitorOptions)options inContext:(NSManagedObjectContext *)context completion:(void (^)(BOOL success, BOOL found, NSError *error))completion {
     __weak typeof(self) weakSelf = self;
     DSDAPIPlatformNetworkService *dapiNetworkService = self.DAPINetworkService;
     [dapiNetworkService getIdentityById:self.uniqueIDData
@@ -2360,7 +2381,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             }
 
             if (completion) {
-                completion(YES, nil);
+                completion(YES, YES, nil);
             }
         }
         failure:^(NSError *_Nonnull error) {
@@ -2372,9 +2393,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                 if (!retryAbsentCount) {
                     if (completion) {
                         if (options & DSBlockchainIdentityMonitorOptions_AcceptNotFoundAsNotAnError) {
-                            completion(YES, nil);
+                            completion(YES, NO, nil);
                         } else {
-                            completion(NO, error);
+                            completion(NO, NO, error);
                         }
                     }
                     return;
@@ -2398,7 +2419,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                     [self monitorForBlockchainIdentityWithRetryCount:retryCount - 1 retryAbsentCount:nextRetryAbsentCount delay:nextDelay retryDelayType:retryDelayType options:options inContext:context completion:completion];
                 });
             } else {
-                completion(FALSE, error);
+                completion(NO, NO, error);
             }
         }];
 }
