@@ -122,7 +122,7 @@
 + (DSChainEntity *)chainEntityForType:(DSChainType)type devnetIdentifier:(NSString *)devnetIdentifier checkpoints:(NSArray *)checkpoints inContext:(NSManagedObjectContext *)context {
     NSArray *objects = [DSChainEntity objectsForPredicate:[NSPredicate predicateWithFormat:@"type = %d && ((type != %d) || devnetIdentifier = %@)", type, DSChainType_DevNet, devnetIdentifier] inContext:context];
     if (objects.count) {
-        //NSAssert(objects.count == 1, @"There should only ever be 1 chain for either mainnet, testnet, or a devnet Identifier");
+        NSAssert(objects.count == 1, @"There should only ever be 1 chain for either mainnet, testnet, or a devnet Identifier");
         if (objects.count > 1) {
             //This is very bad, just remove all above 1
             for (int i = 1; i < objects.count; i++) {
