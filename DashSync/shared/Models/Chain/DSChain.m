@@ -1984,7 +1984,7 @@ static dispatch_once_t devnetToken = 0;
     BOOL onMainChain = FALSE;
 
     if ((phase == DSChainSyncPhase_ChainSync || phase == DSChainSyncPhase_Synced) && uint256_eq(block.prevBlock, self.lastSyncBlockHash)) { // new block extends sync chain
-        if ((block.height % 1000) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight || block.height > 471035) {
+        if ((block.height % 1000) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
             DSLog(@"adding sync block on %@ at height: %d from peer %@", self.name, block.height, peer.host);
         }
         @synchronized(self.mSyncBlocks) {
