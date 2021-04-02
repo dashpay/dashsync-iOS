@@ -95,7 +95,7 @@
     self.gotSporksAtChainSyncStart = FALSE;
     self.sessionConnectivityNonce = (long long)arc4random() << 32 | arc4random();
 
-    if (self.masternodeManager.currentMasternodeList) {
+    if (self.masternodeManager.currentMasternodeList && self.masternodeManager.currentMasternodeList.isInLast30Days) {
         [self.peerManager useMasternodeList:self.masternodeManager.currentMasternodeList withConnectivityNonce:self.sessionConnectivityNonce];
     }
 
@@ -342,7 +342,11 @@
     DSLog(@"combinedSyncProgress breakdown %f %f %f", self.terminalHeaderSyncProgress, self.masternodeManager.masternodeListAndQuorumsSyncProgress, self.chainSyncProgress);
 #endif
     if ((self.terminalHeaderSyncWeight + self.chainSyncWeight + self.masternodeListSyncWeight) == 0) {
-        return 1;
+        if (self.peerManager.connected) {
+            return 1;
+        } else {
+            return 0;
+        }
     } else {
         double progress = self.terminalHeaderSyncProgress * self.terminalHeaderSyncWeight + self.masternodeManager.masternodeListAndQuorumsSyncProgress * self.masternodeListSyncWeight + self.chainSyncProgress * self.chainSyncWeight;
         if (progress < 0.99995) {

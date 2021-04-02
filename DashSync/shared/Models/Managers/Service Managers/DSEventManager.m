@@ -72,7 +72,7 @@
 #if TARGET_OS_IOS
         self.eventToNotifications = @{@"foreground": UIApplicationDidBecomeActiveNotification,
             @"background": UIApplicationDidEnterBackgroundNotification,
-            @"sync_started": DSChainManagerSyncStartedNotification,
+            @"sync_started": DSChainManagerSyncDidStartNotification,
             @"sync_finished": DSChainManagerSyncFinishedNotification,
             @"sync_failed": DSChainManagerSyncFailedNotification};
 #else
