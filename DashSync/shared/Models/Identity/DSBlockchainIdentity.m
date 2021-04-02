@@ -3490,6 +3490,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     [self fetchContactRequestsInContext:self.platformContext withCompletion:completion onCompletionQueue:dispatch_get_main_queue()];
 }
 
+#define DEFAULT_CONTACT_REQUEST_FETCH_RETRIES 5
+
 - (void)fetchContactRequestsInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
     __weak typeof(self) weakSelf = self;
     [self fetchIncomingContactRequestsInContext:context
@@ -3523,6 +3525,20 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 }
 
 - (void)fetchIncomingContactRequestsInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
+    [self fetchIncomingContactRequestsInContext:context retriesLeft:DEFAULT_CONTACT_REQUEST_FETCH_RETRIES withCompletion:completion onCompletionQueue:completionQueue];
+}
+
+- (void)fetchIncomingContactRequestsInContext:(NSManagedObjectContext *)context retriesLeft:(int32_t)retriesLeft withCompletion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
+    [self internalFetchIncomingContactRequestsInContext:context withCompletion:^(BOOL success, NSArray<NSError *> *errors) {
+        if (!success && retriesLeft > 0) {
+            [self fetchIncomingContactRequestsInContext:context retriesLeft:retriesLeft - 1 withCompletion:completion onCompletionQueue:completionQueue];
+        } else if (completion) {
+            completion(success, errors);
+        }
+    } onCompletionQueue:completionQueue];
+}
+
+- (void)internalFetchIncomingContactRequestsInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
     DPContract *dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
     if (dashpayContract.contractState != DPContractState_Registered) {
         if (completion) {
@@ -3598,6 +3614,20 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 }
 
 - (void)fetchOutgoingContactRequestsInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
+    [self fetchOutgoingContactRequestsInContext:context retriesLeft:DEFAULT_CONTACT_REQUEST_FETCH_RETRIES withCompletion:completion onCompletionQueue:completionQueue];
+}
+
+- (void)fetchOutgoingContactRequestsInContext:(NSManagedObjectContext *)context retriesLeft:(int32_t)retriesLeft withCompletion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
+    [self internalFetchOutgoingContactRequestsInContext:context withCompletion:^(BOOL success, NSArray<NSError *> *errors) {
+        if (!success && retriesLeft > 0) {
+            [self fetchIncomingContactRequestsInContext:context retriesLeft:retriesLeft - 1 withCompletion:completion onCompletionQueue:completionQueue];
+        } else if (completion) {
+            completion(success, errors);
+        }
+    } onCompletionQueue:completionQueue];
+}
+
+- (void)internalFetchOutgoingContactRequestsInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
     DPContract *dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
     if (dashpayContract.contractState != DPContractState_Registered) {
         if (completion) {
