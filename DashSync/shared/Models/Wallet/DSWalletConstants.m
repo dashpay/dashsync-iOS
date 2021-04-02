@@ -8,8 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
-NSString *const DSChainManagerSyncConnectionInitiatedNotification = @"DSChainManagerSyncConnectionInitiatedNotification";
-NSString *const DSChainManagerSyncStartedNotification = @"DSChainManagerSyncStartedNotification";
+NSString *const DSChainManagerSyncWillStartNotification = @"DSChainManagerSyncWillStartNotification";
+NSString *const DSChainManagerSyncDidStartNotification = @"DSChainManagerSyncDidStartNotification";
 NSString *const DSChainManagerSyncParametersUpdatedNotification = @"DSChainManagerSyncParametersUpdatedNotification";
 NSString *const DSChainManagerSyncFinishedNotification = @"DSChainManagerSyncFinishedNotification";
 NSString *const DSChainManagerSyncFailedNotification = @"DSChainManagerSyncFailedNotification";

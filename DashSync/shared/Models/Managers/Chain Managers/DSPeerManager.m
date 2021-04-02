@@ -719,6 +719,11 @@
         if (peers.count > 100) [peers removeObjectsInRange:NSMakeRange(100, peers.count - 100)];
 
         if (peers.count > 0 && self.connectedPeers.count < self.maxConnectCount) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncWillStartNotification
+                                                                    object:nil
+                                                                  userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
+            });
             @synchronized(self.mutableConnectedPeers) {
                 NSTimeInterval earliestWalletCreationTime = self.chain.earliestWalletCreationTime;
                 ;
@@ -740,11 +745,6 @@
                     [peers removeObject:peer];
                 }
             }
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncConnectionInitiatedNotification
-                                                                    object:nil
-                                                                  userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
-            });
         }
 
         if (self.connectedPeers.count == 0) {
@@ -933,7 +933,7 @@
             [self performSelector:@selector(syncTimeout) withObject:nil afterDelay:PROTOCOL_TIMEOUT];
 
             [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncStartedNotification
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncDidStartNotification
                                                                 object:nil
                                                               userInfo:@{DSChainManagerNotificationChainKey: self, DSPeerManagerNotificationPeerKey: peer}];
 
@@ -956,7 +956,7 @@
 - (void)peer:(DSPeer *)peer disconnectedWithError:(NSError *)error {
     DSLog(@"%@:%d disconnected%@%@", peer.host, peer.port, (error ? @", " : @""), (error ? error : @""));
 
-    if ([error.domain isEqual:@"DashSync"] && error.code != DASH_PEER_TIMEOUT_CODE) {
+    if ([error.domain isEqual:@"DashSync"]) {//} && error.code != DASH_PEER_TIMEOUT_CODE) {
         [self peerMisbehaving:peer errorMessage:error.localizedDescription]; // if it's protocol error other than timeout, the peer isn't following the rules
     } else if (error) {                                                      // timeout or some non-protocol related network error
         [self.peers removeObject:peer];
