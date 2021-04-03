@@ -1456,7 +1456,7 @@
 			name = Pods;
 			sourceTree = "<group>";
 		};
-		FB0F15B421090405000272E6 /* Blockchain Users */ = {
+		FB0F15B421090405000272E6 /* Blockchain Identities */ = {
 			isa = PBXGroup;
 			children = (
 				FBC508C82426F3DE00EB3DAB /* Searching */,
@@ -1474,7 +1474,7 @@
 				FB98831F241D64FA00B39F02 /* DSBlockchainIdentityKeysViewController.h */,
 				FB988320241D64FA00B39F02 /* DSBlockchainIdentityKeysViewController.m */,
 			);
-			name = "Blockchain Users";
+			name = "Blockchain Identities";
 			sourceTree = "<group>";
 		};
 		FB0F15C5210AD9E6000272E6 /* Choosing */ = {
@@ -2140,7 +2140,7 @@
 				FBB4E3702145B54F008040B7 /* DAPs */,
 				FB995D9721101C1E00AC37D0 /* Peers */,
 				FB0F15C5210AD9E6000272E6 /* Choosing */,
-				FB0F15B421090405000272E6 /* Blockchain Users */,
+				FB0F15B421090405000272E6 /* Blockchain Identities */,
 				FB23895520D2EBE800921B89 /* Governance */,
 				FB12FEE420CD3E7100C1E0F0 /* Masternodes */,
 				FBB25BEC20C5CD040037F5BE /* Blocks */,

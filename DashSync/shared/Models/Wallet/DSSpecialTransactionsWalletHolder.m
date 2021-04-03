@@ -12,6 +12,7 @@
 #import "DSDerivationPath.h"
 #import "DSDerivationPathEntity+CoreDataClass.h"
 #import "DSDerivationPathFactory.h"
+#import "DSPeer.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "DSProviderRegistrationTransactionEntity+CoreDataClass.h"
 #import "DSProviderUpdateRegistrarTransaction.h"
@@ -25,7 +26,7 @@
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSTxInputEntity+CoreDataClass.h"
 #import "DSTxOutputEntity+CoreDataClass.h"
-#import "DSWallet.h"
+#import "DSWallet+Protected.h"
 #import "NSManagedObject+Sugar.h"
 
 @interface DSSpecialTransactionsWalletHolder ()
@@ -357,8 +358,10 @@
 // indicate a transaction and it's dependents should remain marked as unverified (not 0-conf safe)
 - (NSArray *)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)txHashes {
     NSMutableArray *updated = [NSMutableArray array];
+    NSTimeInterval walletCreationTime = [self.wallet walletCreationTime];
     for (NSValue *hash in txHashes) {
         DSTransaction *tx = [self transactionForHash:uint256_data_from_obj(hash).UInt256];
+        UInt256 h;
 
         if (!tx || (tx.blockHeight == height && tx.timestamp == timestamp)) continue;
 #if DEBUG
@@ -367,9 +370,17 @@
         DSLog(@"Setting special tx %@ height to %d", @"<REDACTED>", height);
 #endif
         tx.blockHeight = height;
-        tx.timestamp = timestamp;
+        if (tx.timestamp == UINT32_MAX || tx.timestamp == 0) {
+            //We should only update the timestamp one time
+            tx.timestamp = timestamp;
+        }
+
 
         [updated addObject:tx];
+        [hash getValue:&h];
+        if ((walletCreationTime == BIP39_WALLET_UNKNOWN_CREATION_TIME || walletCreationTime == BIP39_CREATION_TIME)) {
+            [self.wallet setGuessedWalletCreationTime:tx.timestamp - HOUR_TIME_INTERVAL - (DAY_TIME_INTERVAL / arc4random() % DAY_TIME_INTERVAL)];
+        }
     }
 
     return updated;

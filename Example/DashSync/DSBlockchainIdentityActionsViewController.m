@@ -22,6 +22,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *aboutMeLabel;
 @property (strong, nonatomic) IBOutlet UILabel *indexLabel;
 @property (strong, nonatomic) IBOutlet UILabel *keyCountLabel;
+@property (strong, nonatomic) IBOutlet UILabel *contactCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *usernameStatusLabel;
 @property (strong, nonatomic) IBOutlet UILabel *uniqueIdLabel;
 @property (strong, nonatomic) IBOutlet UILabel *mostActiveContactSentToLabel;
@@ -161,6 +162,7 @@
     DSDashpayUserEntity *activeReceivedFromFriend = [[dashpayUser mostActiveFriends:DSDashpayUserEntityFriendActivityType_IncomingTransactions count:1 ascending:NO] firstObject];
     self.mostActiveContactSentToLabel.text = activeSentToFriend ? [NSString stringWithFormat:@"%@", activeSentToFriend.username] : @"No Txs on Contacts";
     self.mostActiveContactReceivedFromLabel.text = activeReceivedFromFriend ? [NSString stringWithFormat:@"%@", activeReceivedFromFriend.username] : @"No Txs on Contacts";
+    self.contactCountLabel.text = [NSString stringWithFormat:@"%lu/%lu/%lu", (unsigned long)dashpayUser.friends.count, (unsigned long)dashpayUser.outgoingRequests.count - dashpayUser.friends.count, (unsigned long)dashpayUser.incomingRequests.count - dashpayUser.friends.count];
 }
 
 - (void)didReceiveMemoryWarning {

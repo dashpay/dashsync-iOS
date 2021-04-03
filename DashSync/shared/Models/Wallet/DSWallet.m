@@ -453,6 +453,7 @@
 
 - (void)setGuessedWalletCreationTime:(NSTimeInterval)guessedWalletCreationTime {
     if (_walletCreationTime) return;
+    if ([self guessedWalletCreationTime]) return; //don't guess again
     if (!setKeychainData([NSData dataWithBytes:&guessedWalletCreationTime length:sizeof(guessedWalletCreationTime)], [self creationGuessTimeUniqueID], NO)) {
         NSAssert(FALSE, @"error setting wallet guessed creation time");
     }

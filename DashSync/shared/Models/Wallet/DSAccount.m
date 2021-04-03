@@ -1143,7 +1143,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         DSLogPrivate(@"Setting account tx %@ height to %d", @"<REDACTED>", height);
 #endif
         tx.blockHeight = height;
-        if (tx.timestamp == 0) {
+        if (tx.timestamp == UINT32_MAX || tx.timestamp == 0) {
             //We should only update the timestamp one time
             tx.timestamp = timestamp;
         }

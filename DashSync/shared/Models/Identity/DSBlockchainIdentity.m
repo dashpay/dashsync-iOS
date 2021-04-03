@@ -63,6 +63,9 @@
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
 #define DEFAULT_SIGNING_ALGORITH DSKeyType_ECDSA
+#define DEFAULT_FETCH_IDENTITY_RETRY_COUNT 5
+#define DEFAULT_FETCH_USERNAMES_RETRY_COUNT 5
+#define DEFAULT_FETCH_PROFILE_RETRY_COUNT 5
 
 typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 {
@@ -1378,7 +1381,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
 - (void)fetchIdentityNetworkStateInformationInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(BOOL success, BOOL found, NSError *error))completion {
     //a local identity might not have been published yet
-    [self monitorForBlockchainIdentityWithRetryCount:5 retryAbsentCount:0 delay:3 retryDelayType:DSBlockchainIdentityRetryDelayType_SlowingDown50Percent options:self.isLocal ? DSBlockchainIdentityMonitorOptions_AcceptNotFoundAsNotAnError : DSBlockchainIdentityMonitorOptions_None inContext:context completion:completion];
+    [self monitorForBlockchainIdentityWithRetryCount:DEFAULT_FETCH_IDENTITY_RETRY_COUNT retryAbsentCount:0 delay:3 retryDelayType:DSBlockchainIdentityRetryDelayType_SlowingDown50Percent options:self.isLocal ? DSBlockchainIdentityMonitorOptions_AcceptNotFoundAsNotAnError : DSBlockchainIdentityMonitorOptions_None inContext:context completion:completion];
 }
 
 - (void)fetchAllNetworkStateInformationWithCompletion:(void (^)(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion {
@@ -2257,6 +2260,22 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 }
 
 - (void)fetchUsernamesInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(BOOL success, NSError *error))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
+    [self fetchUsernamesInContext:context retryCount:DEFAULT_FETCH_USERNAMES_RETRY_COUNT withCompletion:completion onCompletionQueue:completionQueue];
+}
+
+- (void)fetchUsernamesInContext:(NSManagedObjectContext *)context retryCount:(uint32_t)retryCount withCompletion:(void (^)(BOOL success, NSError *error))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
+    [self internalFetchUsernamesInContext:context
+                           withCompletion:^(BOOL success, NSError *error) {
+                               if (!success && retryCount > 0) {
+                                   [self fetchUsernamesInContext:context retryCount:retryCount - 1 withCompletion:completion onCompletionQueue:completionQueue];
+                               } else if (completion) {
+                                   completion(success, error);
+                               }
+                           }
+                        onCompletionQueue:completionQueue];
+}
+
+- (void)internalFetchUsernamesInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(BOOL success, NSError *error))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
     __weak typeof(self) weakSelf = self;
     DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
     if (contract.contractState != DPContractState_Registered) {
@@ -3450,6 +3469,22 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 }
 
 - (void)fetchProfileInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(BOOL success, NSError *error))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
+    [self fetchProfileInContext:context retryCount:DEFAULT_FETCH_PROFILE_RETRY_COUNT withCompletion:completion onCompletionQueue:completionQueue];
+}
+
+- (void)fetchProfileInContext:(NSManagedObjectContext *)context retryCount:(uint32_t)retryCount withCompletion:(void (^)(BOOL success, NSError *error))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
+    [self internalFetchProfileInContext:context
+                         withCompletion:^(BOOL success, NSError *error) {
+                             if (!success && retryCount > 0) {
+                                 [self fetchUsernamesInContext:context retryCount:retryCount - 1 withCompletion:completion onCompletionQueue:completionQueue];
+                             } else if (completion) {
+                                 completion(success, error);
+                             }
+                         }
+                      onCompletionQueue:completionQueue];
+}
+
+- (void)internalFetchProfileInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(BOOL success, NSError *error))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
     DPContract *dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
     if ([dashpayContract contractState] != DPContractState_Registered) {
         if (completion) {
@@ -3596,11 +3631,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                 [strongSelf handleContactRequestObjects:documents
                                                 context:context
                                              completion:^(BOOL success, NSArray<NSError *> *errors) {
-                                                 [self.platformContext performBlockAndWait:^{
-                                                     self.lastCheckedIncomingContactsTimestamp = [[NSDate date] timeIntervalSince1970];
-                                                     //[self saveInContext:self.platformContext];
-                                                 }];
                                                  BOOL hasMore = documents.count == DAPI_DOCUMENT_RESPONSE_COUNT_LIMIT;
+                                                 if (!hasMore) {
+                                                     [self.platformContext performBlockAndWait:^{
+                                                         self.lastCheckedIncomingContactsTimestamp = [[NSDate date] timeIntervalSince1970];
+                                                     }];
+                                                 }
                                                  if (completion) {
                                                      dispatch_async(completionQueue, ^{
                                                          completion(success, hasMore, errors);
@@ -3693,12 +3729,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                 [strongSelf handleContactRequestObjects:documents
                                                 context:context
                                              completion:^(BOOL success, NSArray<NSError *> *errors) {
-                                                 [self.platformContext performBlockAndWait:^{
-                                                     self.lastCheckedOutgoingContactsTimestamp = [[NSDate date] timeIntervalSince1970];
-                                                     //[self saveInContext:self.platformContext];
-                                                 }];
-
                                                  BOOL hasMore = documents.count == DAPI_DOCUMENT_RESPONSE_COUNT_LIMIT;
+
+                                                 if (!hasMore) {
+                                                     [self.platformContext performBlockAndWait:^{
+                                                         self.lastCheckedOutgoingContactsTimestamp = [[NSDate date] timeIntervalSince1970];
+                                                     }];
+                                                 }
 
                                                  dispatch_async(completionQueue, ^{
                                                      completion(success, hasMore, errors);

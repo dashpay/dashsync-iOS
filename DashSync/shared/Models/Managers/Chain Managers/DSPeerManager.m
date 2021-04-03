@@ -726,7 +726,7 @@
             });
             @synchronized(self.mutableConnectedPeers) {
                 NSTimeInterval earliestWalletCreationTime = self.chain.earliestWalletCreationTime;
-                ;
+
                 while (peers.count > 0 && self.connectedPeers.count < self.maxConnectCount) {
                     // pick a random peer biased towards peers with more recent timestamps
                     DSPeer *peer = peers[(NSUInteger)(pow(arc4random_uniform((uint32_t)peers.count), 2) / peers.count)];

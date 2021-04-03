@@ -65,16 +65,16 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSArray<NSValue *> *unspentOutputs;
 
 // latest 100 transactions sorted by date, most recent first
-@property (nonatomic, readonly) NSArray<DSTransaction *> *recentTransactions;
+@property (atomic, readonly) NSArray<DSTransaction *> *recentTransactions;
 
 // latest 100 transactions sorted by date, most recent first
-@property (nonatomic, readonly) NSArray<DSTransaction *> *recentTransactionsWithInternalOutput;
+@property (atomic, readonly) NSArray<DSTransaction *> *recentTransactionsWithInternalOutput;
 
 // all wallet transactions sorted by date, most recent first
-@property (nonatomic, readonly) NSArray<DSTransaction *> *allTransactions;
+@property (atomic, readonly) NSArray<DSTransaction *> *allTransactions;
 
 // all wallet transactions sorted by date, most recent first
-@property (nonatomic, readonly) NSArray<DSCoinbaseTransaction *> *coinbaseTransactions;
+@property (atomic, readonly) NSArray<DSCoinbaseTransaction *> *coinbaseTransactions;
 
 // Does this account have any coinbase rewards
 @property (nonatomic, readonly) BOOL hasCoinbaseTransaction;
