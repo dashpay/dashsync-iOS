@@ -47,7 +47,10 @@
         NSError *error = nil;
         NSMutableArray *mArray = [NSMutableArray array];
         for (NSData *cborData in [documentsResponse documentsArray]) {
-            [mArray addObject:[cborData ds_decodeCborError:&error]];
+            id document = [cborData ds_decodeCborError:&error];
+            if (document && !error) {
+                [mArray addObject:document];
+            }
             if (error) break;
         }
         self.responseObject = [mArray copy];

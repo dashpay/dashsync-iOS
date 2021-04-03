@@ -956,7 +956,7 @@
 - (void)peer:(DSPeer *)peer disconnectedWithError:(NSError *)error {
     DSLog(@"%@:%d disconnected%@%@", peer.host, peer.port, (error ? @", " : @""), (error ? error : @""));
 
-    if ([error.domain isEqual:@"DashSync"]) {//} && error.code != DASH_PEER_TIMEOUT_CODE) {
+    if ([error.domain isEqual:@"DashSync"]) {                                //} && error.code != DASH_PEER_TIMEOUT_CODE) {
         [self peerMisbehaving:peer errorMessage:error.localizedDescription]; // if it's protocol error other than timeout, the peer isn't following the rules
     } else if (error) {                                                      // timeout or some non-protocol related network error
         [self.peers removeObject:peer];

@@ -20,12 +20,6 @@
 "Are you sure you would like to register a masternode at %@:%d?" = "Sei sicuro di voler registrare un masternode a %1$@:%2$d?";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to reset this user?" = "Sei sicuro di voler resettare questo utente?";
-
-/* No comment provided by engineer. */
-"Are you sure you would like to topup %@ and spend %@ on credits?" = "Sei sicuro di voler ricaricare %1$@ su spese %2$@ e crediti?";
-
-/* No comment provided by engineer. */
 "Are you sure you would like to update this masternode to %@:%d?" = "Sei sicuro di voler aggiornare questo masternode a %1$@:%2$d?";
 
 /* No comment provided by engineer. */
@@ -354,3 +348,9 @@
 
 /* No comment provided by engineer. */
 "Error when updating profile information" = "Error when updating profile information";
+
+/* No comment provided by engineer. */
+"The registration credit funding transaction has no instant send lock" = "The registration credit funding transaction has no instant send lock";
+
+/* No comment provided by engineer. */
+"Timeout while waiting for funding transaction to aquire an instant send lock" = "Timeout while waiting for funding transaction to aquire an instant send lock";

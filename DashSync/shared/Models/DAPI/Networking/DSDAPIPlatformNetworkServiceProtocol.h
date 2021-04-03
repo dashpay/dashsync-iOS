@@ -20,6 +20,8 @@
 #import "DSDAPINetworkServiceRequest.h"
 #import <Foundation/Foundation.h>
 
+#define DAPI_DOCUMENT_RESPONSE_COUNT_LIMIT 100
+
 NS_ASSUME_NONNULL_BEGIN
 
 extern NSString *const DSDAPINetworkServiceErrorDomain;
@@ -450,12 +452,14 @@ Get a list of users after matching search criteria
 
 - (id<DSDAPINetworkServiceRequest>)getDashpayIncomingContactRequestsForUserId:(NSData *)userId
                                                                         since:(NSTimeInterval)timestamp
+                                                                       offset:(uint32_t)offset
                                                               completionQueue:(dispatch_queue_t)completionQueue
                                                                       success:(void (^)(NSArray<NSDictionary *> *documents))success
                                                                       failure:(void (^)(NSError *error))failure;
 
 - (id<DSDAPINetworkServiceRequest>)getDashpayOutgoingContactRequestsForUserId:(NSData *)userId
                                                                         since:(NSTimeInterval)timestamp
+                                                                       offset:(uint32_t)offset
                                                               completionQueue:(dispatch_queue_t)completionQueue
                                                                       success:(void (^)(NSArray<NSDictionary *> *documents))success
                                                                       failure:(void (^)(NSError *error))failure;

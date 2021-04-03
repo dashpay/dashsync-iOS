@@ -20,12 +20,6 @@
 "Are you sure you would like to register a masternode at %@:%d?" = "%1$@:%2$d에 마스터노드를 정말 등록하시겠습니까?";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to reset this user?" = "이 사용자를 리셋 하시겠습니까?";
-
-/* No comment provided by engineer. */
-"Are you sure you would like to topup %@ and spend %@ on credits?" = "충전에 %1$@을, 크레딧에 %2$@을 사용하시겠습니까?";
-
-/* No comment provided by engineer. */
 "Are you sure you would like to update this masternode to %@:%d?" = "%1$@:%2$d에 이 마스터노드를 정말 업데이트 하시겠습니까?";
 
 /* No comment provided by engineer. */
@@ -354,3 +348,9 @@
 
 /* No comment provided by engineer. */
 "Error when updating profile information" = "Error when updating profile information";
+
+/* No comment provided by engineer. */
+"The registration credit funding transaction has no instant send lock" = "The registration credit funding transaction has no instant send lock";
+
+/* No comment provided by engineer. */
+"Timeout while waiting for funding transaction to aquire an instant send lock" = "Timeout while waiting for funding transaction to aquire an instant send lock";

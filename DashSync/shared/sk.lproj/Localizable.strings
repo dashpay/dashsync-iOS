@@ -20,12 +20,6 @@
 "Are you sure you would like to register a masternode at %@:%d?" = "Naozaj chcete zaregistrovať masternód na adrese %1$@:%2$d?";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to reset this user?" = "Naozaj chcete resetovať tohto používateľa?";
-
-/* No comment provided by engineer. */
-"Are you sure you would like to topup %@ and spend %@ on credits?" = "Ste si istí, že chcete dobiť %1$@ a minúť z kreditu %2$@?";
-
-/* No comment provided by engineer. */
 "Are you sure you would like to update this masternode to %@:%d?" = "Naozaj chcete aktualizovať masternód na adrese %1$@:%2$d?";
 
 /* No comment provided by engineer. */
@@ -354,3 +348,9 @@
 
 /* No comment provided by engineer. */
 "Error when updating profile information" = "Error when updating profile information";
+
+/* No comment provided by engineer. */
+"The registration credit funding transaction has no instant send lock" = "The registration credit funding transaction has no instant send lock";
+
+/* No comment provided by engineer. */
+"Timeout while waiting for funding transaction to aquire an instant send lock" = "Timeout while waiting for funding transaction to aquire an instant send lock";
