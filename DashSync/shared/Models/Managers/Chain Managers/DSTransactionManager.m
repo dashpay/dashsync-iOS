@@ -706,7 +706,7 @@
                                             } else if (!sent) {
                                                 sent = YES;
                                                 tx.timestamp = [NSDate timeIntervalSince1970];
-                                                [account registerTransaction:tx saveImmediately:YES];
+                                                [tx saveInitial];
                                                 publishedCompletion(tx, nil, sent);
                                             }
 
@@ -949,6 +949,11 @@
 
     // TODO: XXXX if already synced, recursively add inputs of unconfirmed receives
     _bloomFilter = [self.chain bloomFilterWithFalsePositiveRate:self.transactionsBloomFilterFalsePositiveRate withTweak:(uint32_t)peer.hash];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerFilterDidChangeNotification
+                                                            object:nil
+                                                          userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
+    });
     return _bloomFilter;
 }
 

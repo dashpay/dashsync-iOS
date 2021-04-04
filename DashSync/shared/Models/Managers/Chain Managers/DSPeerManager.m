@@ -719,11 +719,6 @@
         if (peers.count > 100) [peers removeObjectsInRange:NSMakeRange(100, peers.count - 100)];
 
         if (peers.count > 0 && self.connectedPeers.count < self.maxConnectCount) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncWillStartNotification
-                                                                    object:nil
-                                                                  userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
-            });
             @synchronized(self.mutableConnectedPeers) {
                 NSTimeInterval earliestWalletCreationTime = self.chain.earliestWalletCreationTime;
 
@@ -933,9 +928,6 @@
             [self performSelector:@selector(syncTimeout) withObject:nil afterDelay:PROTOCOL_TIMEOUT];
 
             [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncDidStartNotification
-                                                                object:nil
-                                                              userInfo:@{DSChainManagerNotificationChainKey: self, DSPeerManagerNotificationPeerKey: peer}];
 
             [self.chainManager chainWillStartSyncingBlockchain:self.chain];
             [self.chainManager chainShouldStartSyncingBlockchain:self.chain onPeer:bestPeer];

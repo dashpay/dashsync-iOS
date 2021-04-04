@@ -9,7 +9,8 @@
 #import <Foundation/Foundation.h>
 
 NSString *const DSChainManagerSyncWillStartNotification = @"DSChainManagerSyncWillStartNotification";
-NSString *const DSChainManagerSyncDidStartNotification = @"DSChainManagerSyncDidStartNotification";
+
+NSString *const DSChainManagerChainSyncDidStartNotification = @"DSChainManagerSyncDidStartNotification";
 NSString *const DSChainManagerSyncParametersUpdatedNotification = @"DSChainManagerSyncParametersUpdatedNotification";
 NSString *const DSChainManagerSyncFinishedNotification = @"DSChainManagerSyncFinishedNotification";
 NSString *const DSChainManagerSyncFailedNotification = @"DSChainManagerSyncFailedNotification";
@@ -32,6 +33,8 @@ NSString *const DSChainInitialHeadersDidFinishSyncingNotification = @"DSChainIni
 NSString *const DSChainBlocksDidFinishSyncingNotification = @"DSChainBlocksDidFinishSyncingNotification";
 NSString *const DSChainBlockWasLockedNotification = @"DSChainBlockWasLockedNotification";
 NSString *const DSChainNotificationBlockKey = @"DSChainNotificationBlockKey";
+
+NSString *const DSTransactionManagerFilterDidChangeNotification = @"DSTransactionManagerFilterDidChangeNotification";
 
 NSString *const DSWalletBalanceDidChangeNotification = @"DSWalletBalanceChangedNotification";
 

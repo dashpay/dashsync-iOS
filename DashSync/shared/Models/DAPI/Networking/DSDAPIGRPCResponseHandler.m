@@ -51,7 +51,13 @@
             if (document && !error) {
                 [mArray addObject:document];
             }
-            if (error) break;
+            if (error) {
+                NSLog(@"Decoding error for cborData %@", cborData);
+                if (self.request) {
+                    DSLog(@"request was %@", self.request.predicate);
+                }
+                break;
+            }
         }
         self.responseObject = [mArray copy];
         if (error) {

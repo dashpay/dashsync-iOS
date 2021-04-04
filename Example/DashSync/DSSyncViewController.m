@@ -11,6 +11,7 @@
 #import "DSActionsViewController.h"
 #import "DSBlockchainExplorerViewController.h"
 #import "DSBlockchainIdentitiesViewController.h"
+#import "DSBloomFilter.h"
 #import "DSGovernanceObjectListViewController.h"
 #import "DSInvitationsViewController.h"
 #import "DSLayer2ViewController.h"
@@ -22,6 +23,7 @@
 #import "DSSporksViewController.h"
 #import "DSStandaloneDerivationPathViewController.h"
 #import "DSSyncViewController.h"
+#import "DSTransactionManager.h"
 #import "DSTransactionsViewController.h"
 #import "DSWalletViewController.h"
 
@@ -30,6 +32,8 @@
 @property (strong, nonatomic) IBOutlet UILabel *explanationLabel;
 @property (strong, nonatomic) IBOutlet UILabel *percentageLabel;
 @property (strong, nonatomic) IBOutlet UILabel *dbSizeLabel;
+@property (strong, nonatomic) IBOutlet UILabel *filterSizeLabel;
+@property (strong, nonatomic) IBOutlet UILabel *filterAddressesLabel;
 @property (strong, nonatomic) IBOutlet UILabel *lastBlockHeightLabel;
 @property (strong, nonatomic) IBOutlet UILabel *syncProgressLabel;
 @property (strong, nonatomic) IBOutlet UILabel *lastMasternodeBlockHeightLabel;
@@ -56,7 +60,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *masternodeListsCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *earliestMasternodeListLabel;
 @property (strong, nonatomic) IBOutlet UILabel *lastMasternodeListLabel;
-@property (strong, nonatomic) id syncFinishedObserver, syncFailedObserver, balanceObserver, blocksObserver, blocksResetObserver, headersResetObserver, sporkObserver, masternodeObserver, masternodeCountObserver, chainWalletObserver, chainStandaloneDerivationPathObserver, chainSingleAddressObserver, governanceObjectCountObserver, governanceObjectReceivedCountObserver, governanceVoteCountObserver, governanceVoteReceivedCountObserver, connectedPeerConnectionObserver, peerConnectionObserver, blockchainIdentitiesObserver, blockchainInvitationsObserver, quorumObserver;
+@property (strong, nonatomic) id filterChangedObserver, syncFinishedObserver, syncFailedObserver, balanceObserver, blocksObserver, blocksResetObserver, headersResetObserver, sporkObserver, masternodeObserver, masternodeCountObserver, chainWalletObserver, chainStandaloneDerivationPathObserver, chainSingleAddressObserver, governanceObjectCountObserver, governanceObjectReceivedCountObserver, governanceVoteCountObserver, governanceVoteReceivedCountObserver, connectedPeerConnectionObserver, peerConnectionObserver, blockchainIdentitiesObserver, blockchainInvitationsObserver, quorumObserver;
 
 - (IBAction)startSync:(id)sender;
 - (IBAction)stopSync:(id)sender;
@@ -86,6 +90,18 @@
     [self updateBlockchainInvitationsCount];
     [self updatePeerCount];
     [self updateConnectedPeerCount];
+    [self updateFilterInfo];
+
+    self.filterChangedObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerFilterDidChangeNotification
+                                                          object:nil
+                                                           queue:nil
+                                                      usingBlock:^(NSNotification *note) {
+                                                          if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                              [self updateFilterInfo];
+                                                          }
+                                                      }];
+
 
     self.syncFinishedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:DSChainManagerSyncFinishedNotification
@@ -405,6 +421,11 @@
         if (self.timeout < 1.0) [self stopActivityWithSuccess:YES];
     } else
         [self performSelector:@selector(updateProgressView) withObject:nil afterDelay:0.2];
+}
+
+- (void)updateFilterInfo {
+    self.filterSizeLabel.text = [NSString stringWithFormat:@"%lu B", (unsigned long)self.chainManager.transactionManager.bloomFilter.length];
+    self.filterAddressesLabel.text = [NSString stringWithFormat:@"%lu", (unsigned long)self.chainManager.transactionManager.bloomFilter.elementCount];
 }
 
 - (IBAction)startSync:(id)sender {
