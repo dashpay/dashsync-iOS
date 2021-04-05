@@ -38,6 +38,8 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSPeerManagerConnectedPeersDidChangeN
 FOUNDATION_EXPORT NSString *_Nonnull const DSPeerManagerDownloadPeerDidChangeNotification;
 FOUNDATION_EXPORT NSString *_Nonnull const DSPeerManagerPeersDidChangeNotification;
 
+FOUNDATION_EXPORT NSString *_Nonnull const DSPeerManagerFilterDidChangeNotification;
+
 #define PEER_MAX_CONNECTIONS 5
 #define SETTINGS_FIXED_PEER_KEY @"SETTINGS_FIXED_PEER"
 

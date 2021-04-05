@@ -52,9 +52,9 @@ typedef NS_ENUM(NSUInteger, DSPlatformDocumentType)
 
 + (instancetype)dashpayRequestForContactRequestForSendingUserId:(NSData *)userId toRecipientUserId:(NSData *)toUserId;
 
-+ (instancetype)dashpayRequestForContactRequestsForSendingUserId:(NSData *)userId since:(NSTimeInterval)timestamp;
++ (instancetype)dashpayRequestForContactRequestsForSendingUserId:(NSData *)userId since:(NSTimeInterval)timestamp offset:(uint32_t)offset;
 
-+ (instancetype)dashpayRequestForContactRequestsForRecipientUserId:(NSData *)userId since:(NSTimeInterval)timestamp;
++ (instancetype)dashpayRequestForContactRequestsForRecipientUserId:(NSData *)userId since:(NSTimeInterval)timestamp offset:(uint32_t)offset;
 
 + (instancetype)dashpayRequestForProfileWithUserId:(NSData *)userId;
 

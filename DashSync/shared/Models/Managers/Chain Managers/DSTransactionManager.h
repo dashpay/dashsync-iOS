@@ -39,6 +39,8 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSTransactionManagerNotificationInsta
 FOUNDATION_EXPORT NSString *_Nonnull const DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey;
 FOUNDATION_EXPORT NSString *_Nonnull const DSTransactionManagerNotificationTransactionAcceptedStatusKey;
 
+FOUNDATION_EXPORT NSString *_Nonnull const DSTransactionManagerFilterDidChangeNotification;
+
 
 typedef NS_ENUM(NSUInteger, DSRequestingAdditionalInfo)
 {
@@ -65,6 +67,7 @@ typedef void (^DSTransactionRequestRelayCompletionBlock)(DSTransaction *tx, DSPa
 @interface DSTransactionManager : NSObject <DSChainTransactionsDelegate, DSPeerTransactionDelegate>
 
 @property (nonatomic, readonly) DSChain *chain;
+@property (nonatomic, readonly) DSBloomFilter *bloomFilter;
 
 - (void)fetchTransactionHavingHash:(UInt256)transactionHash;
 

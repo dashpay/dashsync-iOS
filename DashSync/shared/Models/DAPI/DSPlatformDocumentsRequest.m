@@ -81,11 +81,11 @@
     return platformDocumentsRequest;
 }
 
-+ (instancetype)dashpayRequestForContactRequestsForSendingUserId:(NSData *)userId since:(NSTimeInterval)timestamp {
++ (instancetype)dashpayRequestForContactRequestsForSendingUserId:(NSData *)userId since:(NSTimeInterval)timestamp offset:(uint32_t)offset {
     DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     uint64_t millisecondTimestamp = timestamp * 1000;
     platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"%K == %@ && %K >= %@", @"$ownerId", userId, @"$createdAt", @(millisecondTimestamp)];
-    platformDocumentsRequest.startAt = 0;
+    platformDocumentsRequest.startAt = offset;
     platformDocumentsRequest.limit = 100;
     platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"$ownerId" ascending:YES], [NSSortDescriptor sortDescriptorWithKey:@"$createdAt" ascending:YES]];
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
@@ -93,7 +93,7 @@
     return platformDocumentsRequest;
 }
 
-+ (instancetype)dashpayRequestForContactRequestsForRecipientUserId:(NSData *)userId since:(NSTimeInterval)timestamp {
++ (instancetype)dashpayRequestForContactRequestsForRecipientUserId:(NSData *)userId since:(NSTimeInterval)timestamp offset:(uint32_t)offset {
     DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     uint64_t millisecondTimestamp = timestamp * 1000;
     platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"toUserId == %@ && %K >= %@", userId, @"$createdAt", @(millisecondTimestamp)];

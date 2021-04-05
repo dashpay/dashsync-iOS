@@ -74,7 +74,7 @@ NSString *dateFormat(NSString *_template) {
 
     if (!self.syncStartedObserver) {
         self.syncStartedObserver =
-            [[NSNotificationCenter defaultCenter] addObserverForName:DSChainManagerSyncStartedNotification
+            [[NSNotificationCenter defaultCenter] addObserverForName:DSChainManagerSyncWillStartNotification
                                                               object:nil
                                                                queue:nil
                                                           usingBlock:^(NSNotification *note) {

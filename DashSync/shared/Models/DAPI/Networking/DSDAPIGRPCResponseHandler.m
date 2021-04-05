@@ -47,8 +47,17 @@
         NSError *error = nil;
         NSMutableArray *mArray = [NSMutableArray array];
         for (NSData *cborData in [documentsResponse documentsArray]) {
-            [mArray addObject:[cborData ds_decodeCborError:&error]];
-            if (error) break;
+            id document = [cborData ds_decodeCborError:&error];
+            if (document && !error) {
+                [mArray addObject:document];
+            }
+            if (error) {
+                NSLog(@"Decoding error for cborData %@", cborData);
+                if (self.request) {
+                    DSLog(@"request was %@", self.request.predicate);
+                }
+                break;
+            }
         }
         self.responseObject = [mArray copy];
         if (error) {

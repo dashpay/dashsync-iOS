@@ -368,6 +368,9 @@
 		FB83C2E021B7B6D70057A0EF /* Actions.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB83C2DF21B7B6D70057A0EF /* Actions.storyboard */; };
 		FB83C2E421B7B7560057A0EF /* DSActionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB83C2E321B7B7560057A0EF /* DSActionsViewController.m */; };
 		FB83C2E721B91A8D0057A0EF /* DSTransactionFloodingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB83C2E621B91A8D0057A0EF /* DSTransactionFloodingViewController.m */; };
+		FB85000D261A75700002E5EA /* DSInvitationDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB85000C261A75700002E5EA /* DSInvitationDetailViewController.m */; };
+		FB850013261A7B9A0002E5EA /* DSIdentityChooserViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB850012261A7B9A0002E5EA /* DSIdentityChooserViewController.m */; };
+		FB850051261AA82F0002E5EA /* DSBlockchainIdentityChooserTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB850050261AA82F0002E5EA /* DSBlockchainIdentityChooserTableViewCell.m */; };
 		FB87A0CE24B7C28700C22DF7 /* DSMiningTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FB87A0CD24B7C28600C22DF7 /* DSMiningTests.m */; };
 		FB89F2D722CC875800CD0232 /* MNL_0_1094976.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB89F2D622CC875800CD0232 /* MNL_0_1094976.dat */; };
 		FB89F2D922CD82EB00CD0232 /* MNL_0_1095720.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB89F2D822CD82EB00CD0232 /* MNL_0_1095720.dat */; };
@@ -962,6 +965,12 @@
 		FB83C2E321B7B7560057A0EF /* DSActionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSActionsViewController.m; sourceTree = "<group>"; };
 		FB83C2E521B91A8D0057A0EF /* DSTransactionFloodingViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTransactionFloodingViewController.h; sourceTree = "<group>"; };
 		FB83C2E621B91A8D0057A0EF /* DSTransactionFloodingViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTransactionFloodingViewController.m; sourceTree = "<group>"; };
+		FB85000B261A75700002E5EA /* DSInvitationDetailViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSInvitationDetailViewController.h; sourceTree = "<group>"; };
+		FB85000C261A75700002E5EA /* DSInvitationDetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSInvitationDetailViewController.m; sourceTree = "<group>"; };
+		FB850011261A7B9A0002E5EA /* DSIdentityChooserViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSIdentityChooserViewController.h; sourceTree = "<group>"; };
+		FB850012261A7B9A0002E5EA /* DSIdentityChooserViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSIdentityChooserViewController.m; sourceTree = "<group>"; };
+		FB85004F261AA82F0002E5EA /* DSBlockchainIdentityChooserTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainIdentityChooserTableViewCell.h; sourceTree = "<group>"; };
+		FB850050261AA82F0002E5EA /* DSBlockchainIdentityChooserTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainIdentityChooserTableViewCell.m; sourceTree = "<group>"; };
 		FB87A0CD24B7C28600C22DF7 /* DSMiningTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMiningTests.m; sourceTree = "<group>"; };
 		FB89F2D622CC875800CD0232 /* MNL_0_1094976.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_0_1094976.dat; sourceTree = "<group>"; };
 		FB89F2D822CD82EB00CD0232 /* MNL_0_1095720.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_0_1095720.dat; sourceTree = "<group>"; };
@@ -1456,7 +1465,7 @@
 			name = Pods;
 			sourceTree = "<group>";
 		};
-		FB0F15B421090405000272E6 /* Blockchain Users */ = {
+		FB0F15B421090405000272E6 /* Blockchain Identities */ = {
 			isa = PBXGroup;
 			children = (
 				FBC508C82426F3DE00EB3DAB /* Searching */,
@@ -1474,7 +1483,7 @@
 				FB98831F241D64FA00B39F02 /* DSBlockchainIdentityKeysViewController.h */,
 				FB988320241D64FA00B39F02 /* DSBlockchainIdentityKeysViewController.m */,
 			);
-			name = "Blockchain Users";
+			name = "Blockchain Identities";
 			sourceTree = "<group>";
 		};
 		FB0F15C5210AD9E6000272E6 /* Choosing */ = {
@@ -1484,6 +1493,8 @@
 				FB5252F520EE159B009A2BF1 /* DSAccountChooserViewController.m */,
 				FB0F15C2210AD9A0000272E6 /* DSWalletChooserViewController.h */,
 				FB0F15C3210AD9A0000272E6 /* DSWalletChooserViewController.m */,
+				FB850011261A7B9A0002E5EA /* DSIdentityChooserViewController.h */,
+				FB850012261A7B9A0002E5EA /* DSIdentityChooserViewController.m */,
 			);
 			name = Choosing;
 			sourceTree = "<group>";
@@ -1912,6 +1923,8 @@
 				FBC508CD2427363C00EB3DAB /* DSBlockchainIdentitySearchTableViewCell.m */,
 				FBC2EB06260F89A900B53BDB /* DSInvitationTableViewCell.h */,
 				FBC2EB07260F89A900B53BDB /* DSInvitationTableViewCell.m */,
+				FB85004F261AA82F0002E5EA /* DSBlockchainIdentityChooserTableViewCell.h */,
+				FB850050261AA82F0002E5EA /* DSBlockchainIdentityChooserTableViewCell.m */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -2140,7 +2153,7 @@
 				FBB4E3702145B54F008040B7 /* DAPs */,
 				FB995D9721101C1E00AC37D0 /* Peers */,
 				FB0F15C5210AD9E6000272E6 /* Choosing */,
-				FB0F15B421090405000272E6 /* Blockchain Users */,
+				FB0F15B421090405000272E6 /* Blockchain Identities */,
 				FB23895520D2EBE800921B89 /* Governance */,
 				FB12FEE420CD3E7100C1E0F0 /* Masternodes */,
 				FBB25BEC20C5CD040037F5BE /* Blocks */,
@@ -2180,6 +2193,8 @@
 				FBC2EB01260F886700B53BDB /* DSInvitationsViewController.m */,
 				FBC2EB0C260F8B4600B53BDB /* DSCreateInvitationViewController.h */,
 				FBC2EB0D260F8B4600B53BDB /* DSCreateInvitationViewController.m */,
+				FB85000B261A75700002E5EA /* DSInvitationDetailViewController.h */,
+				FB85000C261A75700002E5EA /* DSInvitationDetailViewController.m */,
 			);
 			name = Invitations;
 			sourceTree = "<group>";
@@ -2877,6 +2892,7 @@
 			files = (
 				FB9A107220D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m in Sources */,
 				FBC2EB0E260F8B4600B53BDB /* DSCreateInvitationViewController.m in Sources */,
+				FB850051261AA82F0002E5EA /* DSBlockchainIdentityChooserTableViewCell.m in Sources */,
 				2AF8A93C2283539800F8C72D /* DSFetchedResultsTableViewController.m in Sources */,
 				FB763C652089B0A700CDBA57 /* DSAddressTableViewCell.m in Sources */,
 				FB702C6523EDC18D0099030C /* DSContractTableViewCell.m in Sources */,
@@ -2930,6 +2946,7 @@
 				FB9A106F20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m in Sources */,
 				FBB4E380214A9F01008040B7 /* DSDAPIGetAddressSummaryViewController.m in Sources */,
 				FBB4E3732145B5B3008040B7 /* DSDAPListViewController.m in Sources */,
+				FB85000D261A75700002E5EA /* DSInvitationDetailViewController.m in Sources */,
 				FBB4E37C214A937D008040B7 /* DSDAPICallsViewController.m in Sources */,
 				FB9A106920D833F4006883E2 /* DSAddDevnetViewController.m in Sources */,
 				FBD967AA212571DC005CBE0B /* DSTopupBlockchainIdentityViewController.m in Sources */,
@@ -2975,6 +2992,7 @@
 				FB83C2E721B91A8D0057A0EF /* DSTransactionFloodingViewController.m in Sources */,
 				FB12FEEA20CD50AC00C1E0F0 /* DSStandaloneDerivationPathViewController.m in Sources */,
 				FB9762F724BC4C3E00CF28EC /* DSMiningViewController.m in Sources */,
+				FB850013261A7B9A0002E5EA /* DSIdentityChooserViewController.m in Sources */,
 				FB90D2CC20C3F0D3002B7956 /* DSAccountTableViewCell.m in Sources */,
 				FB6DC62920AB64F400E35EED /* DSChainsViewController.m in Sources */,
 				FBC508CE2427363C00EB3DAB /* DSBlockchainIdentitySearchTableViewCell.m in Sources */,

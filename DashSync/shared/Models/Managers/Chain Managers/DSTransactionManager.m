@@ -50,7 +50,7 @@
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSTransition.h"
-#import "DSWallet.h"
+#import "DSWallet+Protected.h"
 #import "NSDate+Utils.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"
@@ -706,7 +706,7 @@
                                             } else if (!sent) {
                                                 sent = YES;
                                                 tx.timestamp = [NSDate timeIntervalSince1970];
-                                                [account registerTransaction:tx saveImmediately:YES];
+                                                [tx saveInitial];
                                                 publishedCompletion(tx, nil, sent);
                                             }
 
@@ -949,6 +949,11 @@
 
     // TODO: XXXX if already synced, recursively add inputs of unconfirmed receives
     _bloomFilter = [self.chain bloomFilterWithFalsePositiveRate:self.transactionsBloomFilterFalsePositiveRate withTweak:(uint32_t)peer.hash];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerFilterDidChangeNotification
+                                                            object:nil
+                                                          userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
+    });
     return _bloomFilter;
 }
 
@@ -1176,7 +1181,11 @@
 #endif
     }
 
-    transaction.timestamp = [NSDate timeIntervalSince1970];
+    if (block) {
+        transaction.timestamp = block.timestamp;
+    } else {
+        transaction.timestamp = [NSDate timeIntervalSince1970];
+    }
     DSAccount *account = [self.chain firstAccountThatCanContainTransaction:transaction];
     if (!account) {
         if (![self.chain transactionHasLocalReferences:transaction]) {
@@ -1334,7 +1343,11 @@
     }
 
 
-    if ([transaction isKindOfClass:[DSCreditFundingTransaction class]] && blockchainIdentity && isNewBlockchainIdentity) {
+    if (block && [transaction isKindOfClass:[DSCreditFundingTransaction class]] && blockchainIdentity && isNewBlockchainIdentity) {
+        NSTimeInterval walletCreationTime = [blockchainIdentity.wallet walletCreationTime];
+        if ((walletCreationTime == BIP39_WALLET_UNKNOWN_CREATION_TIME || walletCreationTime == BIP39_CREATION_TIME) && blockchainIdentity.wallet.defaultBlockchainIdentity == blockchainIdentity) {
+            [blockchainIdentity.wallet setGuessedWalletCreationTime:self.chain.lastSyncBlockTimestamp - HOUR_TIME_INTERVAL - (DAY_TIME_INTERVAL / arc4random() % DAY_TIME_INTERVAL)];
+        }
         [self.identitiesManager checkCreditFundingTransactionForPossibleNewIdentity:(DSCreditFundingTransaction *)transaction];
         [self destroyTransactionsBloomFilter]; //We want to destroy it temporarily, while we wait for L2, no matter what the block should not be saved and needs to be refetched
     } else {

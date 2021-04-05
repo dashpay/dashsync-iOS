@@ -63,8 +63,10 @@
 
 #import "DSAccountEntity+CoreDataClass.h"
 #import "DSAddressEntity+CoreDataProperties.h"
+#import "DSBlock.h"
 #import "DSChainLockEntity+CoreDataProperties.h"
 #import "DSDerivationPathEntity+CoreDataProperties.h"
+#import "DSFullBlock.h"
 #import "DSGovernanceObjectEntity+CoreDataProperties.h"
 #import "DSGovernanceObjectHashEntity+CoreDataProperties.h"
 #import "DSGovernanceVoteEntity+CoreDataProperties.h"
@@ -72,6 +74,7 @@
 #import "DSLocalMasternode.h"
 #import "DSLocalMasternodeEntity+CoreDataProperties.h"
 #import "DSMasternodeList.h"
+#import "DSMerkleBlock.h"
 #import "DSMerkleBlockEntity+CoreDataProperties.h"
 #import "DSPeerEntity+CoreDataProperties.h"
 #import "DSSimplifiedMasternodeEntry.h"

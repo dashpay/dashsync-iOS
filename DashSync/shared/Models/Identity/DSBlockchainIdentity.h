@@ -169,9 +169,6 @@ FOUNDATION_EXPORT NSString *const DSBlockchainIdentityUpdateEventDashpaySyncroni
 /*! @brief Related to registering the identity. This is the address used to fund the registration of the identity. Dash sent to this address in the special credit funding transaction will be converted to L2 credits */
 @property (nonatomic, readonly) NSString *registrationFundingAddress;
 
-/*! @brief Related to Dashpay. This is the users status message */
-@property (nonatomic, readonly) NSString *dashpayBioString;
-
 /*! @brief The known balance in credits of the identity */
 @property (nonatomic, readonly) uint64_t creditBalance;
 

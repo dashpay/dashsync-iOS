@@ -20,12 +20,6 @@
 "Are you sure you would like to register a masternode at %@:%d?" = "本当にマスターノードを %1$@:%2$dにて登録してもよろしいでしょうか？";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to reset this user?" = "本当にこのユーザーをリセットしてもよろしいですか？";
-
-/* No comment provided by engineer. */
-"Are you sure you would like to topup %@ and spend %@ on credits?" = "%1$@ を補充し、クレジットカードに %2$@ を課金してもよろしいですか？";
-
-/* No comment provided by engineer. */
 "Are you sure you would like to update this masternode to %@:%d?" = "本当にこのマスターノードを %1$@:%2$dにアップデートしてもよろしいですか？";
 
 /* No comment provided by engineer. */
@@ -354,3 +348,9 @@
 
 /* No comment provided by engineer. */
 "Error when updating profile information" = "Error when updating profile information";
+
+/* No comment provided by engineer. */
+"The registration credit funding transaction has no instant send lock" = "The registration credit funding transaction has no instant send lock";
+
+/* No comment provided by engineer. */
+"Timeout while waiting for funding transaction to aquire an instant send lock" = "Timeout while waiting for funding transaction to aquire an instant send lock";

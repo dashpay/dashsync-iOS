@@ -23,6 +23,7 @@
 #import "DSCreditFundingDerivationPath.h"
 #import "DSCreditFundingTransaction.h"
 #import "DSDerivationPathFactory.h"
+#import "DSInstantSendTransactionLock.h"
 #import "DSWallet.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSManagedObjectContext+DSSugar.h"
@@ -82,8 +83,7 @@
     if (!(self = [super init])) return nil;
     self.wallet = wallet;
     self.isTransient = FALSE;
-    self.identity = [[DSBlockchainIdentity alloc] initAtIndex:index withLockedOutpoint:lockedOutpoint inWallet:wallet withBlockchainIdentityEntity:blockchainInvitationEntity.blockchainIdentity];
-    [self.identity setAssociatedInvitation:self];
+    self.identity = [[DSBlockchainIdentity alloc] initAtIndex:index withLockedOutpoint:lockedOutpoint inWallet:wallet withBlockchainIdentityEntity:blockchainInvitationEntity.blockchainIdentity associatedToInvitation:self];
     self.link = blockchainInvitationEntity.link;
     self.chain = wallet.chain;
     return self;
@@ -148,6 +148,88 @@
     [self deletePersistentObjectAndSave:YES inContext:[NSManagedObjectContext platformContext]];
     return TRUE;
 }
+
+- (void)createInvitationFullLinkFromIdentity:(DSBlockchainIdentity *)identity completion:(void (^_Nullable)(BOOL cancelled, NSString *invitationFullLink))completion {
+    if (!self.identity.registrationCreditFundingTransaction.instantSendLockAwaitingProcessing) {
+        if (completion) {
+            completion(NO, nil);
+        }
+    }
+
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSString *senderUsername = identity.currentDashpayUsername;
+        NSString *senderDisplayName = identity.displayName;
+        NSString *senderAvatarPath = identity.avatarPath;
+        NSString *fundingTransactionHexString = uint256_hex(self.identity.registrationCreditFundingTransaction.txHash);
+        __block DSECDSAKey *registrationFundingPrivateKey = self.identity.registrationFundingPrivateKey;
+        __block BOOL rCancelled = FALSE;
+
+        if (!registrationFundingPrivateKey) {
+            dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[DSAuthenticationManager sharedInstance] seedWithPrompt:DSLocalizedString(@"Would you like to share this invitation?", nil)
+                                                               forWallet:self.wallet
+                                                               forAmount:0
+                                                     forceAuthentication:NO
+                                                              completion:^(NSData *_Nullable seed, BOOL cancelled) {
+                                                                  rCancelled = cancelled;
+                                                                  if (seed) {
+                                                                      dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                                                                          DSCreditFundingDerivationPath *derivationPathRegistrationFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityInvitationFundingDerivationPathForWallet:self.wallet];
+
+                                                                          registrationFundingPrivateKey = (DSECDSAKey *)[derivationPathRegistrationFunding privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.identity.index] fromSeed:seed];
+                                                                          dispatch_semaphore_signal(sem);
+                                                                      });
+                                                                  } else {
+                                                                      dispatch_semaphore_signal(sem);
+                                                                  }
+                                                              }];
+            });
+            dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+        }
+        if (!registrationFundingPrivateKey) {
+            if (completion) {
+                completion(rCancelled, nil);
+            }
+            return;
+        }
+        NSString *registrationFundingPrivateKeyString = [registrationFundingPrivateKey serializedPrivateKeyForChain:self.chain]; //in WIF format
+
+        NSString *serializedISLock = [self.identity.registrationCreditFundingTransaction.instantSendLockAwaitingProcessing.toData hexString];
+
+        NSURLComponents *components = [NSURLComponents componentsWithString:@"https://invitations.dashpay.io/applink"];
+        NSMutableArray *queryItems = [NSMutableArray array];
+        if (senderUsername) {
+            NSURLQueryItem *senderUsernameQueryItem = [NSURLQueryItem queryItemWithName:@"user" value:senderUsername];
+            [queryItems addObject:senderUsernameQueryItem];
+        }
+        if (senderDisplayName) {
+            NSURLQueryItem *senderDisplayNameQueryItem = [NSURLQueryItem queryItemWithName:@"display-name" value:senderDisplayName];
+            [queryItems addObject:senderDisplayNameQueryItem];
+        }
+        if (senderAvatarPath) {
+            NSURLQueryItem *senderAvatarPathQueryItem = [NSURLQueryItem queryItemWithName:@"avatar-url" value:senderAvatarPath];
+            [queryItems addObject:senderAvatarPathQueryItem];
+        }
+
+        NSURLQueryItem *fundingTransactionQueryItem = [NSURLQueryItem queryItemWithName:@"cftx" value:fundingTransactionHexString];
+        [queryItems addObject:fundingTransactionQueryItem];
+
+        NSURLQueryItem *registrationFundingPrivateKeyQueryItem = [NSURLQueryItem queryItemWithName:@"pk" value:registrationFundingPrivateKeyString];
+        [queryItems addObject:registrationFundingPrivateKeyQueryItem];
+
+        NSURLQueryItem *serializedISLockQueryItem = [NSURLQueryItem queryItemWithName:@"is-lock" value:serializedISLock];
+        [queryItems addObject:serializedISLockQueryItem];
+
+        components.queryItems = queryItems;
+
+        if (completion) {
+            completion(NO, components.URL.absoluteString);
+        }
+    });
+}
+
+// MARK: Saving
 
 - (void)saveInContext:(NSManagedObjectContext *)context {
     if (self.isTransient) return;

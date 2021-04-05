@@ -417,11 +417,11 @@ inline static int ceil_log2(int x) {
     return self.knownHeight;
 }
 
--(NSTimeInterval)approximateTimestamp {
+- (NSTimeInterval)approximateTimestamp {
     return [self.chain timestampForBlockHeight:self.height];
 }
 
--(BOOL)isInLast30Days {
+- (BOOL)isInLast30Days {
     NSTimeInterval interval = [[NSDate date] timeIntervalSince1970] - self.approximateTimestamp;
     return interval < DAY_TIME_INTERVAL * 30;
 }

@@ -2594,7 +2594,7 @@ static dispatch_once_t devnetToken = 0;
             return checkpoint.height;
         }
     }
-    DSLog(@"Requesting unknown quick blockhash %@", uint256_reverse_hex(blockhash));
+    //DSLog(@"Requesting unknown quick blockhash %@", uint256_reverse_hex(blockhash));
     return UINT32_MAX;
 }
 

@@ -20,12 +20,6 @@
 "Are you sure you would like to register a masternode at %@:%d?" = "คุณแน่ใจหรือว่าต้องการลงทะเบียน masternode ที่%1$@:%2$d?";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to reset this user?" = "คุณแน่ใจหรือไม่ว่าต้องการรีเซ็ตผู้ใช้นี้?";
-
-/* No comment provided by engineer. */
-"Are you sure you would like to topup %@ and spend %@ on credits?" = "คุณแน่ใจหรือไม่ว่าต้องการเติมเงิน%1$@และใช้จ่าย%2$@ ในเครดิต?";
-
-/* No comment provided by engineer. */
 "Are you sure you would like to update this masternode to %@:%d?" = "คุณแน่ใจหรือว่าต้องการอัปเดต masternode นี้ %1$@:%2$d?";
 
 /* No comment provided by engineer. */
@@ -354,3 +348,9 @@
 
 /* No comment provided by engineer. */
 "Error when updating profile information" = "Error when updating profile information";
+
+/* No comment provided by engineer. */
+"The registration credit funding transaction has no instant send lock" = "The registration credit funding transaction has no instant send lock";
+
+/* No comment provided by engineer. */
+"Timeout while waiting for funding transaction to aquire an instant send lock" = "Timeout while waiting for funding transaction to aquire an instant send lock";
