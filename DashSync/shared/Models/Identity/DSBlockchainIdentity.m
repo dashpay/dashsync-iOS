@@ -109,7 +109,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
 @property (nonatomic, strong) DSChain *chain;
 
-@property (nonatomic, strong) DSECDSAKey *registrationFundingPrivateKey;
+@property (nonatomic, strong) DSECDSAKey *internalRegistrationFundingPrivateKey;
 
 @property (nonatomic, assign) UInt256 dashpaySyncronizationBlockHash;
 
@@ -182,7 +182,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             [self registerKey:key withStatus:keyPath.keyStatus atIndex:keyPath.keyID ofType:keyPath.keyType];
         }
     }
-    if (self.isLocal) {
+    if (self.isLocal || self.isInvitation) {
         if (blockchainIdentityEntity.registrationFundingTransaction) {
             self.registrationCreditFundingTransaction = (DSCreditFundingTransaction *)[blockchainIdentityEntity.registrationFundingTransaction transactionForChain:self.chain];
         } else {
@@ -190,16 +190,15 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             DSTransactionEntity *creditRegitrationTransactionEntity = [DSTransactionEntity anyObjectInContext:blockchainIdentityEntity.managedObjectContext matching:@"transactionHash.txHash == %@", transactionHashData];
             if (creditRegitrationTransactionEntity) {
                 self.registrationCreditFundingTransaction = (DSCreditFundingTransaction *)[creditRegitrationTransactionEntity transactionForChain:self.chain];
-                BOOL correctIndex = [self.registrationCreditFundingTransaction checkDerivationPathIndexForWallet:self.wallet isIndex:self.index];
+                BOOL correctIndex;
+                if (self.isInvitation) {
+                    correctIndex = [self.registrationCreditFundingTransaction checkInvitationDerivationPathIndexForWallet:self.wallet isIndex:self.index];
+                } else {
+                    correctIndex = [self.registrationCreditFundingTransaction checkDerivationPathIndexForWallet:self.wallet isIndex:self.index];
+                }
                 if (!correctIndex) {
                     NSAssert(FALSE, @"We should implement this");
                 }
-                //The following should not be needed (and actually causes identities to be recreated on launch each launch, leaving as comment for now
-                //                else {
-                //                    if (![self isRegisteredInWallet]) {
-                //                        [self registerInWallet];
-                //                    }
-                //                }
             }
         }
     }
@@ -216,6 +215,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
 - (instancetype)initAtIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet *)wallet withBlockchainIdentityEntity:(DSBlockchainIdentityEntity *)blockchainIdentityEntity {
     if (!(self = [self initAtIndex:index withLockedOutpoint:lockedOutpoint inWallet:wallet])) return nil;
+    [self applyIdentityEntity:blockchainIdentityEntity];
+    return self;
+}
+
+- (instancetype)initAtIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet *)wallet withBlockchainIdentityEntity:(DSBlockchainIdentityEntity *)blockchainIdentityEntity associatedToInvitation:(DSBlockchainInvitation *)invitation {
+    if (!(self = [self initAtIndex:index withLockedOutpoint:lockedOutpoint inWallet:wallet])) return nil;
+    [self setAssociatedInvitation:invitation];
     [self applyIdentityEntity:blockchainIdentityEntity];
     return self;
 }
@@ -779,6 +785,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     return self.chain.chainManager.identitiesManager;
 }
 
+- (DSECDSAKey *)registrationFundingPrivateKey {
+    return self.internalRegistrationFundingPrivateKey;
+}
+
 // MARK: Dashpay helpers
 
 - (NSString *)avatarPath {
@@ -831,8 +841,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
         derivationPathRegistrationFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:self.wallet];
     }
 
-    self.registrationFundingPrivateKey = (DSECDSAKey *)[derivationPathRegistrationFunding privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.index] fromSeed:seed];
-    if (self.registrationFundingPrivateKey) {
+    self.internalRegistrationFundingPrivateKey = (DSECDSAKey *)[derivationPathRegistrationFunding privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.index] fromSeed:seed];
+    if (self.internalRegistrationFundingPrivateKey) {
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 completion(YES);
@@ -1285,7 +1295,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 }
 
 - (void)registrationTransitionWithCompletion:(void (^_Nullable)(DSBlockchainIdentityRegistrationTransition *_Nullable blockchainIdentityRegistrationTransaction, NSError *_Nullable error))completion {
-    if (!self.registrationFundingPrivateKey) {
+    if (!self.internalRegistrationFundingPrivateKey) {
         if (completion) {
             completion(nil, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion", nil)}]);
         }
@@ -1307,7 +1317,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
         return;
     }
 
-    [self registrationTransitionSignedByPrivateKey:self.registrationFundingPrivateKey
+    [self registrationTransitionSignedByPrivateKey:self.internalRegistrationFundingPrivateKey
                              registeringPublicKeys:@{@(index): publicKey}
                      usingCreditFundingTransaction:self.registrationCreditFundingTransaction
                                         completion:^(DSBlockchainIdentityRegistrationTransition *blockchainIdentityRegistrationTransaction) {

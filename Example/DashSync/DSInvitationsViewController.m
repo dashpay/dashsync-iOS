@@ -9,6 +9,7 @@
 #import "DSInvitationsViewController.h"
 #import "DSBlockchainIdentityActionsViewController.h"
 #import "DSCreateInvitationViewController.h"
+#import "DSInvitationDetailViewController.h"
 #import "DSInvitationTableViewCell.h"
 #import "DSMerkleBlock.h"
 #import <DashSync/DSCreditFundingTransaction.h>
@@ -45,7 +46,7 @@
     NSMutableArray *mOrderedBlockchainInvitations = [NSMutableArray array];
     for (DSWallet *wallet in self.chainManager.chain.wallets) {
         if ([wallet.blockchainInvitations count]) {
-            [mOrderedBlockchainInvitations addObject:[[wallet.blockchainInvitations allValues] sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"registrationCreditFundingTransaction.blockHeight" ascending:NO], [NSSortDescriptor sortDescriptorWithKey:@"registrationCreditFundingTransaction.timestamp" ascending:NO]]]];
+            [mOrderedBlockchainInvitations addObject:[[wallet.blockchainInvitations allValues] sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"identity.registrationCreditFundingTransaction.blockHeight" ascending:NO], [NSSortDescriptor sortDescriptorWithKey:@"identity.registrationCreditFundingTransaction.timestamp" ascending:NO]]]];
         }
     }
 
@@ -131,12 +132,12 @@
     if ([segue.identifier isEqualToString:@"CreateBlockchainInvitationSegue"]) {
         DSCreateInvitationViewController *createBlockchainInvitationViewController = (DSCreateInvitationViewController *)((UINavigationController *)segue.destinationViewController).topViewController;
         createBlockchainInvitationViewController.chainManager = self.chainManager;
-    } else if ([segue.identifier isEqualToString:@"BlockchainIdentityActionsSegue"]) {
-        DSBlockchainIdentityActionsViewController *blockchainIdentityActionsViewController = segue.destinationViewController;
-        blockchainIdentityActionsViewController.chainManager = self.chainManager;
+    } else if ([segue.identifier isEqualToString:@"InvitationDetailSegue"]) {
+        DSInvitationDetailViewController *invitationDetailViewController = segue.destinationViewController;
+        invitationDetailViewController.chainManager = self.chainManager;
         NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
-        DSBlockchainIdentity *blockchainIdentity = self.orderedBlockchainInvitations[indexPath.section][indexPath.row];
-        blockchainIdentityActionsViewController.blockchainIdentity = blockchainIdentity;
+        DSBlockchainInvitation *blockchainInvitation = self.orderedBlockchainInvitations[indexPath.section][indexPath.row];
+        invitationDetailViewController.invitation = blockchainInvitation;
     }
 }
 
