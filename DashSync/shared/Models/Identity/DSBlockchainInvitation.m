@@ -200,7 +200,7 @@
 
         NSString *serializedISLock = [self.identity.registrationCreditFundingTransaction.instantSendLockAwaitingProcessing.toData hexString];
 
-        __block NSURLComponents *components = [NSURLComponents componentsWithString:@"https://invitations.dashpay.io/applink"];
+        NSURLComponents *components = [NSURLComponents componentsWithString:@"https://invitations.dashpay.io/applink"];
         NSMutableArray *queryItems = [NSMutableArray array];
         if (senderUsername) {
             NSURLQueryItem *senderUsernameQueryItem = [NSURLQueryItem queryItemWithName:@"user" value:senderUsername];
