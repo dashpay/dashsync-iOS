@@ -154,6 +154,7 @@
         if (completion) {
             completion(NO, nil);
         }
+        return;
     }
 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -188,9 +189,11 @@
             dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
         }
         if (!registrationFundingPrivateKey) {
-            if (completion) {
-                completion(rCancelled, nil);
-            }
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (completion) {
+                    completion(rCancelled, nil);
+                }
+            });
             return;
         }
         NSString *registrationFundingPrivateKeyString = [registrationFundingPrivateKey serializedPrivateKeyForChain:self.chain]; //in WIF format
@@ -223,9 +226,11 @@
 
         components.queryItems = queryItems;
 
-        if (completion) {
-            completion(NO, components.URL.absoluteString);
-        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (completion) {
+                completion(NO, components.URL.absoluteString);
+            }
+        });
     });
 }
 
