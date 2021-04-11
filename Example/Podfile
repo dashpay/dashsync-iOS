@@ -3,7 +3,6 @@ target 'DashSync_Example' do
   
   pod 'DashSync', :path => '../'
   pod 'KVO-MVVM', '0.5.1'
-  pod 'DAPI-GRPC', :path => '../'
   pod 'SDWebImage', '5.9.2'
   pod 'CocoaImageHashing', :git => 'https://github.com/ameingast/cocoaimagehashing.git', :commit => 'ad01eee'
   
