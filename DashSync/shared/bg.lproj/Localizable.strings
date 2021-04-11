@@ -354,3 +354,6 @@
 
 /* No comment provided by engineer. */
 "Timeout while waiting for funding transaction to aquire an instant send lock" = "Timeout while waiting for funding transaction to aquire an instant send lock";
+
+/* No comment provided by engineer. */
+"Would you like to share this invitation?" = "Would you like to share this invitation?";
