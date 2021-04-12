@@ -76,7 +76,7 @@
             @"sync_finished": DSChainManagerSyncFinishedNotification,
             @"sync_failed": DSChainManagerSyncFailedNotification};
 #else
-        self.eventToNotifications = @{@"sync_started": DSChainManagerSyncStartedNotification,
+        self.eventToNotifications = @{@"sync_started": DSChainManagerChainSyncDidStartNotification,
             @"sync_finished": DSChainManagerSyncFinishedNotification,
             @"sync_failed": DSChainManagerSyncFailedNotification};
 #endif
