@@ -176,15 +176,18 @@
     if (self.chain.allowMinDifficultyBlocks) {
         // recent block is more than 2 hours old
         if (self.timestamp > (previousBlock.timestamp + 2 * 60 * 60)) {
+            DSLog(@"Our block is way ahead of previous block %d > %d", self.timestamp, previousBlock.timestamp);
             return self.chain.maxProofOfWorkTarget;
         }
         // recent block is more than 10 minutes old
         if (self.timestamp > (previousBlock.timestamp + 2.5 * 60 * 4)) {
+            DSLog(@"Our block is over 10 minutes old %d > %d", self.timestamp, previousBlock.timestamp);
             UInt256 previousTarget = setCompactLE(previousBlock.target);
 
             UInt256 newTarget = uInt256MultiplyUInt32LE(previousTarget, 10);
             uint32_t compact = getCompactLE(newTarget);
             if (compact > self.chain.maxProofOfWorkTarget) {
+                DSLog(@"Setting desired target to max proof of work");
                 compact = self.chain.maxProofOfWorkTarget;
             }
             return compact;
@@ -223,9 +226,10 @@
             assert(currentBlock);
             break;
         }
+        DSBlock * oldCurrentBlock = currentBlock;
         currentBlock = previousBlocks[uint256_obj(currentBlock.prevBlock)];
         if (!currentBlock) {
-            DSLog(@"Block missing for dark gravity wave calculation");
+            DSLog(@"Block %d missing for dark gravity wave calculation", oldCurrentBlock.height - 1);
         }
     }
     UInt256 blockCount256 = ((UInt256){.u64 = {blockCount, 0, 0, 0}});
@@ -258,6 +262,7 @@
 
     // If calculated difficulty is lower than the minimal diff, set the new difficulty to be the minimal diff.
     if (uint256_sup(darkTarget, self.chain.maxProofOfWork)) {
+        DSLog(@"Found a block with minimum difficulty");
         return self.chain.maxProofOfWorkTarget;
     }
 
