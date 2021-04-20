@@ -205,11 +205,13 @@ inline static int ceil_log2(int x) {
 - (NSArray *)transactionHashes {
     int hashIdx = 0, flagIdx = 0;
     NSArray *txHashes =
-        [self _walk:&
-            hashIdx:&
-            flagIdx:0:^id(id hash, BOOL flag) {
+        [self walkHashIdx:&hashIdx
+            flagIdx:&flagIdx
+            depth:0
+            leaf:^id(id hash, BOOL flag) {
                 return (flag && hash) ? @[hash] : @[];
-            }:^id(id left, id right) {
+            }
+            branch:^id(id left, id right) {
                 return [left arrayByAddingObjectsFromArray:right];
             }];
 
@@ -221,11 +223,13 @@ inline static int ceil_log2(int x) {
     NSMutableData *d = [NSMutableData data];
     UInt256 merkleRoot = UINT256_ZERO;
     int hashIdx = 0, flagIdx = 0;
-    NSValue *root = [self _walk:&
-        hashIdx:&
-        flagIdx:0:^id(id hash, BOOL flag) {
+    NSValue *root = [self walkHashIdx:&hashIdx
+        flagIdx:&flagIdx
+        depth:0
+        leaf:^id(id hash, BOOL flag) {
             return hash;
-        }:^id(id left, id right) {
+        }
+        branch:^id(id left, id right) {
             UInt256 l, r;
 
             if (!right) right = left; // if right branch is missing, duplicate left branch
@@ -245,10 +249,10 @@ inline static int ceil_log2(int x) {
 
 // recursively walks the merkle tree in depth first order, calling leaf(hash, flag) for each stored hash, and
 // branch(left, right) with the result from each branch
-- (id)_walk:(int *)hashIdx:(int *)flagIdx
-           :(int)depth
-           :(id (^)(id, BOOL))leaf
-           :(id (^)(id, id))branch {
+- (id)walkHashIdx:(int *)hashIdx flagIdx:(int *)flagIdx
+            depth:(int)depth
+             leaf:(id (^)(id, BOOL))leaf
+           branch:(id (^)(id, id))branch {
     if ((*flagIdx) / 8 >= _flags.length || (*hashIdx + 1) * sizeof(UInt256) > _hashes.length) return leaf(nil, NO);
 
     BOOL flag = (((const uint8_t *)_flags.bytes)[*flagIdx / 8] & (1 << (*flagIdx % 8)));
@@ -262,8 +266,8 @@ inline static int ceil_log2(int x) {
         return leaf(uint256_obj(hash), flag);
     }
 
-    id left = [self _walk:hashIdx:flagIdx:depth + 1:leaf:branch];
-    id right = [self _walk:hashIdx:flagIdx:depth + 1:leaf:branch];
+    id left = [self walkHashIdx:hashIdx flagIdx:flagIdx depth:depth + 1 leaf:leaf branch:branch];
+    id right = [self walkHashIdx:hashIdx flagIdx:flagIdx depth:depth + 1 leaf:leaf branch:branch];
 
     return branch(left, right);
 }

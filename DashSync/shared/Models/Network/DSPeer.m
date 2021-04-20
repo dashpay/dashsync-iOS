@@ -908,7 +908,7 @@
         DSLog(@"%@:%u accept message %@", self.host, self.port, type);
     }
 #endif
-    if (self.currentBlock && (!([MSG_TX isEqual:type] || [MSG_IX isEqual:type]))) { // if we receive a non-tx message, merkleblock is done
+    if (self.currentBlock && (!([MSG_TX isEqual:type] || [MSG_IX isEqual:type] || [MSG_ISLOCK isEqual:type]))) { // if we receive a non-tx message, merkleblock is done
         UInt256 hash = self.currentBlock.blockHash;
 
         self.currentBlock = nil;
@@ -1450,7 +1450,6 @@
 
     dispatch_async(self.delegateQueue, ^{
         [self.transactionDelegate peer:self relayedInstantSendTransactionLock:instantSendTransactionLock];
-        ;
     });
 }
 

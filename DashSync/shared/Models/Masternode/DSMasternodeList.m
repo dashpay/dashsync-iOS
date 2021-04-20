@@ -428,12 +428,12 @@ inline static int ceil_log2(int x) {
 
 // recursively walks the merkle tree in depth first order, calling leaf(hash, flag) for each stored hash, and
 // branch(left, right) with the result from each branch
-- (id)_walk:(int *)hashIdx:(int *)flagIdx
-           :(int)depth
-           :(id (^)(id, BOOL))leaf
-           :(id (^)(id, id))branch
-           :(NSData *)simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes
-           :(NSData *)flags {
+- (id)walkHashIdx:(int *)hashIdx flagIdx:(int *)flagIdx
+                                                                    depth:(int)depth
+                                                                     leaf:(id (^)(id, BOOL))leaf
+                                                                   branch:(id (^)(id, id))branch
+    simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes:(NSData *)simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes
+                                                                    flags:(NSData *)flags {
     if ((*flagIdx) / 8 >= flags.length || (*hashIdx + 1) * sizeof(UInt256) > simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes.length) return leaf(nil, NO);
 
     BOOL flag = (((const uint8_t *)flags.bytes)[*flagIdx / 8] & (1 << (*flagIdx % 8)));
@@ -447,8 +447,8 @@ inline static int ceil_log2(int x) {
         return leaf(uint256_obj(hash), flag);
     }
 
-    id left = [self _walk:hashIdx:flagIdx:depth + 1:leaf:branch:simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes:flags];
-    id right = [self _walk:hashIdx:flagIdx:depth + 1:leaf:branch:simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes:flags];
+    id left = [self walkHashIdx:hashIdx flagIdx:flagIdx depth:depth + 1 leaf:leaf branch:branch simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes:simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes flags:flags];
+    id right = [self walkHashIdx:hashIdx flagIdx:flagIdx depth:depth + 1 leaf:leaf branch:branch simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes:simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes flags:flags];
 
     return branch(left, right);
 }
