@@ -226,7 +226,7 @@
             assert(currentBlock);
             break;
         }
-        DSBlock * oldCurrentBlock = currentBlock;
+        DSBlock *oldCurrentBlock = currentBlock;
         currentBlock = previousBlocks[uint256_obj(currentBlock.prevBlock)];
         if (!currentBlock) {
             DSLog(@"Block %d missing for dark gravity wave calculation", oldCurrentBlock.height - 1);
