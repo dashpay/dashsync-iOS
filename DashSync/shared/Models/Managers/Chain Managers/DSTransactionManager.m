@@ -1490,6 +1490,13 @@
                                                                       DSTransactionManagerNotificationTransactionChangesKey: @{DSTransactionManagerNotificationInstantSendTransactionLockKey: instantSendTransactionLock, DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey: @(verified)}}];
             });
         } else {
+            DSTransaction *transaction = nil;
+            DSWallet *wallet = nil;
+            DSAccount *account = [self.chain firstAccountForTransactionHash:instantSendTransactionLock.transactionHash transaction:&transaction wallet:&wallet];
+
+            if (!account || !transaction) {
+                [self.instantSendLocksWaitingForQuorums removeObjectForKey:uint256_data(instantSendTransactionLock.transactionHash)];
+            }
 #if DEBUG
             DSMasternodeList *masternodeList = nil;
             DSQuorumEntry *quorum = [instantSendTransactionLock findSigningQuorumReturnMasternodeList:&masternodeList];
