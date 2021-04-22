@@ -1494,7 +1494,9 @@
             DSWallet *wallet = nil;
             DSAccount *account = [self.chain firstAccountForTransactionHash:instantSendTransactionLock.transactionHash transaction:&transaction wallet:&wallet];
 
-            if (!account || !transaction) {
+            // Either there is no account or no transaction that means the transaction was not meant for our wallet or the transaction is confirmed
+            // Which means the instant send lock no longer needs verification.
+            if (!account || !transaction || transaction.confirmed) {
                 [self.instantSendLocksWaitingForQuorums removeObjectForKey:uint256_data(instantSendTransactionLock.transactionHash)];
             }
 #if DEBUG
