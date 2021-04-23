@@ -38,7 +38,8 @@
 @property (strong, nonatomic) DSECDSAKey *sweepKey;
 @property (strong, nonatomic) DSTransactionManager *transactionManager;
 @property (strong, nonatomic) DSIdentitiesManager *identitiesManager;
-@property (strong, nonatomic) DSWallet *wallet;
+@property (strong, nonatomic) DSWallet *faucetWallet;
+@property (strong, nonatomic) DSWallet *testWallet;
 @property (strong, nonatomic) DSWallet *blockchainIdentityWallet;
 @property (strong, nonatomic) DSAccount *fundingAccount;
 @property (strong, nonatomic) id blocksObserver, txStatusObserver;
@@ -56,16 +57,18 @@
     self.sweepKey = [DSECDSAKey keyWithSeedData:seedData];
     self.transactionManager = self.chain.chainManager.transactionManager;
     self.identitiesManager = self.chain.chainManager.identitiesManager;
-    self.wallet = [DSWallet standardWalletWithSeedPhrase:@"toilet frost repair cluster million atom budget system barrel knock put scare" setCreationDate:1611367099 forChain:self.chain storeSeedPhrase:YES isTransient:NO];
-    if (![self.chain addWallet:self.wallet]) {
+    self.testWallet = [DSWallet standardWalletWithRandomSeedPhraseForChain:self.chain storeSeedPhrase:YES isTransient:NO];
+    self.faucetWallet = [DSWallet standardWalletWithSeedPhrase:@"toilet frost repair cluster million atom budget system barrel knock put scare" setCreationDate:1611367099 forChain:self.chain storeSeedPhrase:YES isTransient:NO];
+    if (![self.chain addWallet:self.faucetWallet]) {
         for (DSWallet *wallet in self.chain.wallets) {
-            if ([wallet.uniqueIDString isEqualToString:self.wallet.uniqueIDString]) {
-                self.wallet = wallet;
+            if ([wallet.uniqueIDString isEqualToString:self.faucetWallet.uniqueIDString]) {
+                self.faucetWallet = wallet;
                 break;
             }
         }
     }
-    self.fundingAccount = self.wallet.accounts[0];
+
+    // TODO: check if testWallet is in the dschain
 
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -77,6 +80,32 @@
                                                                      inContext:[NSManagedObjectContext chainContext]];
 #endif
     });
+
+    DSAccount *faucetAccount = self.faucetWallet.accounts[0];
+
+    self.fundingAccount = self.testWallet.accounts[0];
+
+    DSTransaction *transaction = [faucetAccount transactionFor:10000000 to:self.fundingAccount.receiveAddress withFee:YES];
+    XCTestExpectation *transactionFinishedExpectation = [[XCTestExpectation alloc] init];
+    [faucetAccount signTransaction:transaction
+                        withPrompt:nil
+                        completion:^(BOOL signedTransaction, BOOL cancelled) {
+                            XCTAssert(signedTransaction, @"Transaction should be signed");
+                            XCTAssert(transaction.isSigned, @"Transaction should be signed");
+
+                            __block BOOL sent = NO;
+
+                            [self.transactionManager publishTransaction:transaction
+                                                             completion:^(NSError *error) {
+                                                                 XCTAssertNil(error, @"There should not be an error");
+                                                                 if (!sent) {
+                                                                     sent = YES;
+                                                                     [faucetAccount registerTransaction:transaction saveImmediately:YES];
+                                                                     [transactionFinishedExpectation fulfill];
+                                                                 }
+                                                             }];
+                        }];
+    [self waitForExpectations:@[transactionFinishedExpectation] timeout:60];
 }
 
 - (void)tearDown {
@@ -161,7 +190,7 @@
 
 - (void)testERegisterIdentity {
     NSString *username = [NSString stringWithFormat:@"CIIOSTestUser%llu", (uint64_t)[NSDate timeIntervalSince1970]];
-    DSBlockchainIdentity *blockchainIdentity = [self.wallet createBlockchainIdentityForUsername:username];
+    DSBlockchainIdentity *blockchainIdentity = [self.testWallet createBlockchainIdentityForUsername:username];
     DSBlockchainIdentityRegistrationStep steps = DSBlockchainIdentityRegistrationStep_RegistrationStepsWithUsername;
     XCTestExpectation *identityRegistrationFinishedExpectation = [[XCTestExpectation alloc] init];
     [blockchainIdentity generateBlockchainIdentityExtendedPublicKeysWithPrompt:@""
@@ -189,7 +218,7 @@
 }
 
 - (void)testFSendAndAcceptContactRequest {
-    NSArray *blockchainIdentities = [self.wallet.blockchainIdentities allValues];
+    NSArray *blockchainIdentities = [self.faucetWallet.blockchainIdentities allValues];
     XCTAssert(blockchainIdentities.count > 1, @"There should be at least 2 identities");
     uint32_t randomOldIdentityIndex = arc4random_uniform((uint32_t)blockchainIdentities.count - 2);
     DSBlockchainIdentity *identityA = blockchainIdentities[randomOldIdentityIndex];
@@ -213,7 +242,7 @@
 }
 
 - (void)testGSendDashpayPayment {
-    NSArray *blockchainIdentities = [self.wallet.blockchainIdentities allValues];
+    NSArray *blockchainIdentities = [self.faucetWallet.blockchainIdentities allValues];
     XCTAssert(blockchainIdentities.count > 1, @"There should be at least 2 identities");
     DSBlockchainIdentity *identity = blockchainIdentities.lastObject;
     DSDashpayUserEntity *dashpayUser = [identity matchingDashpayUserInViewContext];
