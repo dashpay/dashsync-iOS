@@ -57,7 +57,7 @@
     self.sweepKey = [DSECDSAKey keyWithSeedData:seedData];
     self.transactionManager = self.chain.chainManager.transactionManager;
     self.identitiesManager = self.chain.chainManager.identitiesManager;
-    self.testWallet = [DSWallet standardWalletWithRandomSeedPhraseForChain:self.chain storeSeedPhrase:YES isTransient:NO];
+
     self.faucetWallet = [DSWallet standardWalletWithSeedPhrase:@"toilet frost repair cluster million atom budget system barrel knock put scare" setCreationDate:1611367099 forChain:self.chain storeSeedPhrase:YES isTransient:NO];
     if (![self.chain addWallet:self.faucetWallet]) {
         for (DSWallet *wallet in self.chain.wallets) {
@@ -68,11 +68,13 @@
         }
     }
 
-    // TODO: check if testWallet is in the dschain
+    static DSWallet *staticTestWallet;
 
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         //this is run only the first time
+        staticTestWallet = [DSWallet standardWalletWithRandomSeedPhraseForChain:self.chain storeSeedPhrase:YES isTransient:NO];
+
         [self.chain useCheckpointBeforeOrOnHeightForSyncingChainBlocks:414106];
         [self.chain useCheckpointBeforeOrOnHeightForTerminalBlocksSync:UINT32_MAX];
 #if TE2ERESETNETWORK
@@ -81,31 +83,17 @@
 #endif
     });
 
-    DSAccount *faucetAccount = self.faucetWallet.accounts[0];
-
+    self.testWallet = staticTestWallet;
     self.fundingAccount = self.testWallet.accounts[0];
 
-    DSTransaction *transaction = [faucetAccount transactionFor:10000000 to:self.fundingAccount.receiveAddress withFee:YES];
-    XCTestExpectation *transactionFinishedExpectation = [[XCTestExpectation alloc] init];
-    [faucetAccount signTransaction:transaction
-                        withPrompt:nil
-                        completion:^(BOOL signedTransaction, BOOL cancelled) {
-                            XCTAssert(signedTransaction, @"Transaction should be signed");
-                            XCTAssert(transaction.isSigned, @"Transaction should be signed");
-
-                            __block BOOL sent = NO;
-
-                            [self.transactionManager publishTransaction:transaction
-                                                             completion:^(NSError *error) {
-                                                                 XCTAssertNil(error, @"There should not be an error");
-                                                                 if (!sent) {
-                                                                     sent = YES;
-                                                                     [faucetAccount registerTransaction:transaction saveImmediately:YES];
-                                                                     [transactionFinishedExpectation fulfill];
-                                                                 }
-                                                             }];
-                        }];
-    [self waitForExpectations:@[transactionFinishedExpectation] timeout:60];
+    if (![self.chain addWallet:self.testWallet]) {
+        for (DSWallet *wallet in self.chain.wallets) {
+            if ([wallet.uniqueIDString isEqualToString:self.testWallet.uniqueIDString]) {
+                self.testWallet = wallet;
+                break;
+            }
+        }
+    }
 }
 
 - (void)tearDown {
@@ -129,8 +117,34 @@
     [self waitForExpectations:@[headerFinishedExpectation] timeout:1800];
 }
 
+- (void)testAZFundTestAccount {
+    DSAccount *faucetAccount = self.faucetWallet.accounts[0];
+
+    DSTransaction *transaction = [faucetAccount transactionFor:10000000 to:self.fundingAccount.receiveAddress withFee:YES];
+    XCTestExpectation *transactionFinishedExpectation = [[XCTestExpectation alloc] init];
+    [faucetAccount signTransaction:transaction
+                        withPrompt:nil
+                        completion:^(BOOL signedTransaction, BOOL cancelled) {
+                            XCTAssert(signedTransaction, @"Transaction should be signed");
+                            XCTAssert(transaction.isSigned, @"Transaction should be signed");
+
+                            __block BOOL sent = NO;
+
+                            [self.transactionManager publishTransaction:transaction
+                                                             completion:^(NSError *error) {
+                                                                 XCTAssertNil(error, @"There should not be an error");
+                                                                 if (!sent) {
+                                                                     sent = YES;
+                                                                     [faucetAccount registerTransaction:transaction saveImmediately:YES];
+                                                                     [transactionFinishedExpectation fulfill];
+                                                                 }
+                                                             }];
+                        }];
+    [self waitForExpectations:@[transactionFinishedExpectation] timeout:120];
+}
+
 - (void)testBWalletHasFunds {
-    XCTAssert(self.fundingAccount.balance > 10000000); //Wallet must have at least 1 Dash
+    XCTAssert(self.fundingAccount.balance >= 10000000); //Wallet must have at least 1 Dash
 }
 
 - (void)testCSendTransactionToKey {
