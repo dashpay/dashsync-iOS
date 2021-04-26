@@ -411,7 +411,7 @@
     [self waitForExpectations:@[paymentFinishedExpectation] timeout:600];
 }
 
-- (void)testISendDashpayPaymentDifferentWallet {
+- (void)testJSendDashpayPaymentDifferentWallet {
     DSBlockchainIdentity *identityA = self.testWallet1.blockchainIdentities.allValues.firstObject;
     DSBlockchainIdentity *identityB = self.testWallet2.blockchainIdentities.allValues.firstObject;
 
