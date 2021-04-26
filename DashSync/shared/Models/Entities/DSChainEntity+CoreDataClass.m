@@ -128,6 +128,7 @@
             for (int i = 1; i < objects.count; i++) {
                 DSChainEntity *chainEntityToRemove = objects[i];
                 [context deleteObject:chainEntityToRemove];
+                [context ds_save];
                 DSLog(@"Removing extra chain entity of type %d", type);
             }
         }

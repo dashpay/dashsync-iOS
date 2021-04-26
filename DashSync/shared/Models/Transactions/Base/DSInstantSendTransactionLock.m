@@ -148,7 +148,7 @@
     UInt384 publicKey = quorumEntry.quorumPublicKey;
     DSBLSKey *blsKey = [DSBLSKey keyWithPublicKey:publicKey];
     UInt256 signId = [self signIDForQuorumEntry:quorumEntry];
-    DSLogPrivate(@"verifying signature %@ with public key %@ for transaction hash %@ against quorum %@", [NSData dataWithUInt768:self.signature].hexString, [NSData dataWithUInt384:publicKey].hexString, [NSData dataWithUInt256:self.transactionHash].hexString, quorumEntry);
+    DSLogPrivate(@"verifying is lock signature %@ with public key %@ for transaction hash %@ against quorum %@", [NSData dataWithUInt768:self.signature].hexString, [NSData dataWithUInt384:publicKey].hexString, [NSData dataWithUInt256:self.transactionHash].hexString, quorumEntry);
     return [blsKey verify:signId signature:self.signature];
 }
 
