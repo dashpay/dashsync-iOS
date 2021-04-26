@@ -141,6 +141,9 @@ FOUNDATION_EXPORT NSString *const DSBlockchainIdentityUpdateEventDashpaySyncroni
 /*! @brief This is TRUE if the blockchain identity is an effemeral identity returned when searching. */
 @property (nonatomic, readonly) BOOL isTransient;
 
+/*! @brief This is TRUE only if the blockchain identity is contained within a wallet. It could be in a cleanup phase where it was removed from the wallet but still being help in memory by callbacks. */
+@property (nonatomic, readonly) BOOL isActive;
+
 /*! @brief This references transient Dashpay user info if on a transient blockchain identity. */
 @property (nonatomic, readonly) DSTransientDashpayUser *transientDashpayUser;
 

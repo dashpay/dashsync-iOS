@@ -718,6 +718,15 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
 // MARK: - Read Only Property Helpers
 
+- (BOOL)isActive {
+    if (self.isLocal) {
+        if (!self.wallet) return NO;
+        return self.wallet.blockchainIdentities[self.lockedOutpointData] != nil;
+    } else {
+        return [self.chain.chainManager.identitiesManager foreignBlockchainIdentityWithUniqueId:self.uniqueID] != nil;
+    }
+}
+
 - (DSDashpayUserEntity *)matchingDashpayUserInViewContext {
     if (!_matchingDashpayUserInViewContext) {
         _matchingDashpayUserInViewContext = [self matchingDashpayUserInContext:[NSManagedObjectContext viewContext]];
@@ -3766,6 +3775,17 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 // MARK: Response Processing
 
 - (void)applyProfileChanges:(DSTransientDashpayUser *)transientDashpayUser inContext:(NSManagedObjectContext *)context saveContext:(BOOL)saveContext completion:(void (^)(BOOL success, NSError *error))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
+    if (![self isActive]) {
+        if (completion) {
+            dispatch_async(completionQueue, ^{
+                completion(NO, [NSError errorWithDomain:@"DashSync"
+                                                   code:500
+                                               userInfo:@{NSLocalizedDescriptionKey:
+                                                            DSLocalizedString(@"Identity no longer active in wallet", nil)}]);
+            });
+        }
+        return;
+    }
     __weak typeof(self) weakSelf = self;
     dispatch_async(self.identityQueue, ^{
         [context performBlockAndWait:^{
@@ -3776,6 +3796,17 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                                        code:500
                                                    userInfo:@{NSLocalizedDescriptionKey:
                                                                 DSLocalizedString(@"Internal memory allocation error", nil)}]);
+                }
+                return;
+            }
+            if (![self isActive]) {
+                if (completion) {
+                    dispatch_async(completionQueue, ^{
+                        completion(NO, [NSError errorWithDomain:@"DashSync"
+                                                           code:500
+                                                       userInfo:@{NSLocalizedDescriptionKey:
+                                                                    DSLocalizedString(@"Identity no longer active in wallet", nil)}]);
+                    });
                 }
                 return;
             }
@@ -3887,6 +3918,17 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                        context:(NSManagedObjectContext *)context
                     completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion
              onCompletionQueue:(dispatch_queue_t)completionQueue {
+    if (!self.isActive) {
+        if (completion) {
+            dispatch_async(completionQueue, ^{
+                completion(NO, @[[NSError errorWithDomain:@"DashSync"
+                                                     code:410
+                                                 userInfo:@{NSLocalizedDescriptionKey:
+                                                              DSLocalizedString(@"Identity no longer active in wallet", nil)}]]);
+            });
+        }
+        return;
+    }
     [context performBlockAndWait:^{
         __block BOOL succeeded = YES;
         __block NSMutableArray *errors = [NSMutableArray array];
@@ -4093,6 +4135,17 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                        context:(NSManagedObjectContext *)context
                     completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion
              onCompletionQueue:(dispatch_queue_t)completionQueue {
+    if (!self.isActive) {
+        if (completion) {
+            dispatch_async(completionQueue, ^{
+                completion(NO, @[[NSError errorWithDomain:@"DashSync"
+                                                     code:410
+                                                 userInfo:@{NSLocalizedDescriptionKey:
+                                                              DSLocalizedString(@"Identity no longer active in wallet", nil)}]]);
+            });
+        }
+        return;
+    }
     [context performBlockAndWait:^{
         __block NSMutableArray *errors = [NSMutableArray array];
 
@@ -4249,6 +4302,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
 - (void)saveInitialInContext:(NSManagedObjectContext *)context {
     if (self.isTransient) return;
+    //no need for active check, in fact it will cause an infinite loop
     [context performBlockAndWait:^{
         DSBlockchainIdentityEntity *entity = [self initialEntityInContext:context];
         DSDashpayUserEntity *dashpayUserEntity = entity.matchingDashpayUser;
@@ -4268,6 +4322,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
 - (void)saveInContext:(NSManagedObjectContext *)context {
     if (self.isTransient) return;
+    if (!self.isActive) return;
     [context performBlockAndWait:^{
         BOOL changeOccured = NO;
         NSMutableArray *updateEvents = [NSMutableArray array];
@@ -4329,6 +4384,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     NSAssert(self.isLocal, @"This should only be called on local blockchain identities");
     if (!self.isLocal) return;
     if (self.isTransient) return;
+    if (!self.isActive) return;
     [context performBlockAndWait:^{
         DSBlockchainIdentityEntity *blockchainIdentityEntity = [self blockchainIdentityEntityInContext:context];
         NSAssert(blockchainIdentityEntity, @"Entity should be present");
@@ -4385,6 +4441,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     NSAssert(self.isLocal == FALSE, @"This should only be called on non local blockchain identities");
     if (self.isLocal) return;
     if (self.isTransient) return;
+    if (!self.isActive) return;
     [context performBlockAndWait:^{
         DSBlockchainIdentityEntity *blockchainIdentityEntity = [self blockchainIdentityEntityInContext:context];
         NSUInteger count = [DSBlockchainIdentityKeyPathEntity countObjectsInContext:context matching:@"blockchainIdentity == %@ && keyID == %@", blockchainIdentityEntity, @(keyID)];
@@ -4412,6 +4469,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     NSAssert(self.isLocal, @"This should only be called on local blockchain identities");
     if (!self.isLocal) return;
     if (self.isTransient) return;
+    if (!self.isActive) return;
     [context performBlockAndWait:^{
         DSBlockchainIdentityEntity *entity = [self blockchainIdentityEntityInContext:context];
         DSDerivationPathEntity *derivationPathEntity = [derivationPath derivationPathEntityInContext:context];
@@ -4434,6 +4492,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     NSAssert(self.isLocal == FALSE, @"This should only be called on non local blockchain identities");
     if (self.isLocal) return;
     if (self.isTransient) return;
+    if (!self.isActive) return;
     [context performBlockAndWait:^{
         DSBlockchainIdentityEntity *entity = [self blockchainIdentityEntityInContext:context];
         DSBlockchainIdentityKeyPathEntity *blockchainIdentityKeyPathEntity = [[DSBlockchainIdentityKeyPathEntity objectsInContext:context matching:@"blockchainIdentity == %@ && derivationPath == NULL && keyID == %@", entity, @(keyID)] firstObject];
@@ -4456,6 +4515,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     NSAssert([username containsString:@"."] == FALSE, @"This is most likely an error");
     NSAssert(domain, @"Domain must not be nil");
     if (self.isTransient) return;
+    if (!self.isActive) return;
     [context performBlockAndWait:^{
         DSBlockchainIdentityEntity *entity = [self blockchainIdentityEntityInContext:context];
         DSBlockchainIdentityUsernameEntity *usernameEntity = [DSBlockchainIdentityUsernameEntity managedObjectInBlockedContext:context];
@@ -4494,6 +4554,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
 - (void)saveUsernamesInDictionary:(NSDictionary<NSString *, NSDictionary *> *)fullPathUsernamesDictionary toStatus:(DSBlockchainIdentityUsernameStatus)status inContext:(NSManagedObjectContext *)context {
     if (self.isTransient) return;
+    if (!self.isActive) return;
     [context performBlockAndWait:^{
         for (NSString *fullPathUsername in fullPathUsernamesDictionary) {
             NSString *username = [fullPathUsernamesDictionary[fullPathUsername] objectForKey:BLOCKCHAIN_USERNAME_PROPER];
@@ -4518,6 +4579,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
 - (void)saveUsernameFullPath:(NSString *)usernameFullPath status:(DSBlockchainIdentityUsernameStatus)status salt:(NSData *)salt commitSave:(BOOL)commitSave inContext:(NSManagedObjectContext *)context {
     if (self.isTransient) return;
+    if (!self.isActive) return;
     [context performBlockAndWait:^{
         DSBlockchainIdentityEntity *entity = [self blockchainIdentityEntityInContext:context];
         NSSet *usernamesPassingTest = [entity.usernames objectsPassingTest:^BOOL(DSBlockchainIdentityUsernameEntity *_Nonnull obj, BOOL *_Nonnull stop) {
@@ -4548,6 +4610,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
 - (void)saveUsername:(NSString *)username inDomain:(NSString *)domain status:(DSBlockchainIdentityUsernameStatus)status salt:(NSData *)salt commitSave:(BOOL)commitSave inContext:(NSManagedObjectContext *)context {
     if (self.isTransient) return;
+    if (!self.isActive) return;
     [context performBlockAndWait:^{
         DSBlockchainIdentityEntity *entity = [self blockchainIdentityEntityInContext:context];
         NSSet *usernamesPassingTest = [entity.usernames objectsPassingTest:^BOOL(DSBlockchainIdentityUsernameEntity *_Nonnull obj, BOOL *_Nonnull stop) {
