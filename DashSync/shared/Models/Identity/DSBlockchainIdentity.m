@@ -203,8 +203,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             }
         }
     }
-    self.matchingDashpayUserInViewContext = [[NSManagedObjectContext viewContext] objectWithID:blockchainIdentityEntity.matchingDashpayUser.objectID];
-    self.matchingDashpayUserInPlatformContext = [[NSManagedObjectContext platformContext] objectWithID:blockchainIdentityEntity.matchingDashpayUser.objectID];
 }
 
 - (instancetype)initWithBlockchainIdentityEntity:(DSBlockchainIdentityEntity *)blockchainIdentityEntity {
@@ -747,9 +745,17 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
         if (context == [_matchingDashpayUserInPlatformContext managedObjectContext]) return _matchingDashpayUserInPlatformContext;
         if (context == [_matchingDashpayUserInViewContext managedObjectContext]) return _matchingDashpayUserInViewContext;
         if (_matchingDashpayUserInPlatformContext) {
-            return [context objectWithID:_matchingDashpayUserInPlatformContext.objectID];
+            __block NSManagedObjectID * managedId;
+            [[NSManagedObjectContext platformContext] performBlockAndWait:^{
+                managedId = _matchingDashpayUserInPlatformContext.objectID;
+            }];
+            return [context objectWithID:managedId];
         } else {
-            return [context objectWithID:_matchingDashpayUserInViewContext.objectID];
+            __block NSManagedObjectID * managedId;
+            [[NSManagedObjectContext viewContext] performBlockAndWait:^{
+                managedId = _matchingDashpayUserInViewContext.objectID;
+            }];
+            return [context objectWithID:managedId];
         }
     } else {
         __block DSDashpayUserEntity *dashpayUserEntity = nil;
@@ -788,6 +794,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 }
 
 - (NSManagedObjectContext *)platformContext {
+    NSAssert(![NSThread isMainThread], @"We should not be on main thread");
     return [NSManagedObjectContext platformContext];
 }
 
@@ -1598,7 +1605,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             if (![self.dashpayUsernameFullPaths count] && self.lastCheckedUsernamesTimestamp == 0 && [DSOptionsManager sharedInstance].syncType & DSSyncType_DPNS) {
                 stepsNeeded |= DSBlockchainIdentityQueryStep_Username;
             }
-            if (![[self matchingDashpayUserInContext:context] createdAt] && (self.lastCheckedProfileTimestamp < [[NSDate date] timeIntervalSince1970] - HOUR_TIME_INTERVAL) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay) {
+            __block uint64_t createdAt;
+            [context performBlockAndWait:^{
+                createdAt = [[self matchingDashpayUserInContext:context] createdAt];
+            }];
+            if (!createdAt && (self.lastCheckedProfileTimestamp < [[NSDate date] timeIntervalSince1970] - HOUR_TIME_INTERVAL) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay) {
                 stepsNeeded |= DSBlockchainIdentityQueryStep_Profile;
             }
             if (self.isLocal && (self.lastCheckedIncomingContactsTimestamp < [[NSDate date] timeIntervalSince1970] - HOUR_TIME_INTERVAL) && [DSOptionsManager sharedInstance].syncType & DSSyncType_Dashpay) {
@@ -3485,7 +3496,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 // MARK: Fetching
 
 - (void)fetchProfileWithCompletion:(void (^)(BOOL success, NSError *error))completion {
-    [self fetchProfileInContext:self.platformContext withCompletion:completion onCompletionQueue:dispatch_get_main_queue()];
+    dispatch_async(self.identityQueue, ^{
+        [self fetchProfileInContext:self.platformContext withCompletion:completion onCompletionQueue:dispatch_get_main_queue()];
+    });
 }
 
 - (void)fetchProfileInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(BOOL success, NSError *error))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
@@ -3544,7 +3557,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 }
 
 - (void)fetchContactRequests:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
-    [self fetchContactRequestsInContext:self.platformContext withCompletion:completion onCompletionQueue:dispatch_get_main_queue()];
+    dispatch_async(self.identityQueue, ^{
+        [self fetchContactRequestsInContext:self.platformContext withCompletion:completion onCompletionQueue:dispatch_get_main_queue()];
+    });
 }
 
 #define DEFAULT_CONTACT_REQUEST_FETCH_RETRIES 5
@@ -3854,29 +3869,33 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 /// @param completion Completion callback with success boolean.
 - (void)handleContactRequestObjects:(NSArray<NSDictionary *> *)rawContactRequests context:(NSManagedObjectContext *)context completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion onCompletionQueue:(dispatch_queue_t)completionQueue {
     NSAssert(completionQueue == self.identityQueue, @"we should be on identity queue");
-    NSMutableArray<DSContactRequest *> *incomingNewRequests = [NSMutableArray array];
-    NSMutableArray<DSContactRequest *> *outgoingNewRequests = [NSMutableArray array];
+    __block NSMutableArray<DSContactRequest *> *incomingNewRequests = [NSMutableArray array];
+    __block NSMutableArray<DSContactRequest *> *outgoingNewRequests = [NSMutableArray array];
     __block NSMutableArray *rErrors = [NSMutableArray array];
-    for (NSDictionary *rawContact in rawContactRequests) {
-        DSContactRequest *contactRequest = [DSContactRequest contactRequestFromDictionary:rawContact onBlockchainIdentity:self];
+    [context performBlockAndWait:^{
+        for (NSDictionary *rawContact in rawContactRequests) {
+            DSContactRequest *contactRequest = [DSContactRequest contactRequestFromDictionary:rawContact onBlockchainIdentity:self];
 
-        if (uint256_eq(contactRequest.recipientBlockchainIdentityUniqueId, self.uniqueID)) {
-            //we are the recipient, this is an incoming request
-            DSFriendRequestEntity *friendRequest = [DSFriendRequestEntity anyObjectInContext:context matching:@"destinationContact == %@ && sourceContact.associatedBlockchainIdentity.uniqueID == %@", [self matchingDashpayUserInContext:context], uint256_data(contactRequest.senderBlockchainIdentityUniqueId)];
-            if (!friendRequest) {
-                [incomingNewRequests addObject:contactRequest];
+            if (uint256_eq(contactRequest.recipientBlockchainIdentityUniqueId, self.uniqueID)) {
+                //we are the recipient, this is an incoming request
+                DSFriendRequestEntity *friendRequest = [DSFriendRequestEntity anyObjectInContext:context matching:@"destinationContact == %@ && sourceContact.associatedBlockchainIdentity.uniqueID == %@", [self matchingDashpayUserInContext:context], uint256_data(contactRequest.senderBlockchainIdentityUniqueId)];
+                if (!friendRequest) {
+                    [incomingNewRequests addObject:contactRequest];
+                }
+            } else if (uint256_eq(contactRequest.senderBlockchainIdentityUniqueId, self.uniqueID)) {
+                //we are the sender, this is an outgoing request
+                BOOL isNew = ![DSFriendRequestEntity countObjectsInContext:context matching:@"sourceContact == %@ && destinationContact.associatedBlockchainIdentity.uniqueID == %@", [self matchingDashpayUserInContext:context], [NSData dataWithUInt256:contactRequest.recipientBlockchainIdentityUniqueId]];
+                if (isNew) {
+                    [outgoingNewRequests addObject:contactRequest];
+                }
+            } else {
+                //we should not have received this
+                NSAssert(FALSE, @"the contact request needs to be either outgoing or incoming");
             }
-        } else if (uint256_eq(contactRequest.senderBlockchainIdentityUniqueId, self.uniqueID)) {
-            //we are the sender, this is an outgoing request
-            BOOL isNew = ![DSFriendRequestEntity countObjectsInContext:context matching:@"sourceContact == %@ && destinationContact.associatedBlockchainIdentity.uniqueID == %@", [self matchingDashpayUserInContext:context], [NSData dataWithUInt256:contactRequest.recipientBlockchainIdentityUniqueId]];
-            if (isNew) {
-                [outgoingNewRequests addObject:contactRequest];
-            }
-        } else {
-            //we should not have received this
-            NSAssert(FALSE, @"the contact request needs to be either outgoing or incoming");
         }
-    }
+    }];
+
+
 
     __block BOOL succeeded = YES;
     dispatch_group_t dispatchGroup = dispatch_group_create();
@@ -4034,19 +4053,21 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                         [sourceBlockchainIdentity fetchNeededNetworkStateInformationInContext:context
                                                                                withCompletion:^(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> *networkStateInformationErrors) {
                                                                                    if (!failureStep) {
-                                                                                       DSKey *key = [sourceBlockchainIdentity keyAtIndex:contactRequest.senderKeyIndex];
-                                                                                       NSData *decryptedExtendedPublicKeyData = [contactRequest decryptedPublicKeyDataWithKey:key];
-                                                                                       NSAssert(decryptedExtendedPublicKeyData, @"Data should be decrypted");
-                                                                                       DSECDSAKey *extendedPublicKey = [DSECDSAKey keyWithExtendedPublicKeyData:decryptedExtendedPublicKeyData];
-                                                                                       NSAssert(extendedPublicKey, @"A key should be recovered");
-                                                                                       [self addIncomingRequestFromContact:externalBlockchainIdentityEntity.matchingDashpayUser
-                                                                                                      forExtendedPublicKey:extendedPublicKey
-                                                                                                               atTimestamp:contactRequest.createdAt];
-                                                                                       DSDashpayUserEntity *matchingDashpayUserInContext = [self matchingDashpayUserInContext:context];
-                                                                                       if ([[externalBlockchainIdentityEntity.matchingDashpayUser.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@", matchingDashpayUserInContext]] count]) {
-                                                                                           [matchingDashpayUserInContext addFriendsObject:externalBlockchainIdentityEntity.matchingDashpayUser];
-                                                                                           [context ds_save];
-                                                                                       }
+                                                                                       [context performBlockAndWait:^{
+                                                                                           DSKey *key = [sourceBlockchainIdentity keyAtIndex:contactRequest.senderKeyIndex];
+                                                                                           NSData *decryptedExtendedPublicKeyData = [contactRequest decryptedPublicKeyDataWithKey:key];
+                                                                                           NSAssert(decryptedExtendedPublicKeyData, @"Data should be decrypted");
+                                                                                           DSECDSAKey *extendedPublicKey = [DSECDSAKey keyWithExtendedPublicKeyData:decryptedExtendedPublicKeyData];
+                                                                                           NSAssert(extendedPublicKey, @"A key should be recovered");
+                                                                                           [self addIncomingRequestFromContact:externalBlockchainIdentityEntity.matchingDashpayUser
+                                                                                                          forExtendedPublicKey:extendedPublicKey
+                                                                                                                   atTimestamp:contactRequest.createdAt];
+                                                                                           DSDashpayUserEntity *matchingDashpayUserInContext = [self matchingDashpayUserInContext:context];
+                                                                                           if ([[externalBlockchainIdentityEntity.matchingDashpayUser.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@", matchingDashpayUserInContext]] count]) {
+                                                                                               [matchingDashpayUserInContext addFriendsObject:externalBlockchainIdentityEntity.matchingDashpayUser];
+                                                                                               [context ds_save];
+                                                                                           }
+                                                                                       }];
                                                                                    } else {
                                                                                        succeeded = FALSE;
                                                                                        [errors addObjectsFromArray:networkStateInformationErrors];
@@ -4119,17 +4140,19 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 }
 
 - (void)addFriendshipFromSourceBlockchainIdentity:(DSBlockchainIdentity *)sourceBlockchainIdentity sourceKeyIndex:(uint32_t)sourceKeyIndex toRecipientBlockchainIdentity:(DSBlockchainIdentity *)recipientBlockchainIdentity recipientKeyIndex:(uint32_t)recipientKeyIndex atTimestamp:(NSTimeInterval)timestamp inContext:(NSManagedObjectContext *)context {
-    DSAccount *account = [self.wallet accountWithNumber:0];
+    [context performBlockAndWait:^{
+        DSAccount *account = [self.wallet accountWithNumber:0];
 
-    DSPotentialOneWayFriendship *realFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationBlockchainIdentity:recipientBlockchainIdentity destinationKeyIndex:recipientKeyIndex sourceBlockchainIdentity:self sourceKeyIndex:sourceKeyIndex account:account createdAt:timestamp];
+        DSPotentialOneWayFriendship *realFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationBlockchainIdentity:recipientBlockchainIdentity destinationKeyIndex:recipientKeyIndex sourceBlockchainIdentity:self sourceKeyIndex:sourceKeyIndex account:account createdAt:timestamp];
 
-    if (![DSFriendRequestEntity existingFriendRequestEntityWithSourceIdentifier:self.uniqueID destinationIdentifier:recipientBlockchainIdentity.uniqueID onAccountIndex:account.accountNumber inContext:context]) {
-        //it was probably added already
-        //this could happen when have 2 blockchain identities in same wallet
-        //Identity A gets outgoing contacts
-        //Which are the same as Identity B incoming contacts, no need to add the friendships twice
-        [self addFriendship:realFriendship inContext:context completion:nil];
-    }
+        if (![DSFriendRequestEntity existingFriendRequestEntityWithSourceIdentifier:self.uniqueID destinationIdentifier:recipientBlockchainIdentity.uniqueID onAccountIndex:account.accountNumber inContext:context]) {
+            //it was probably added already
+            //this could happen when have 2 blockchain identities in same wallet
+            //Identity A gets outgoing contacts
+            //Which are the same as Identity B incoming contacts, no need to add the friendships twice
+            [self addFriendship:realFriendship inContext:context completion:nil];
+        }
+    }];
 }
 
 - (void)handleOutgoingRequests:(NSArray<DSContactRequest *> *)outgoingRequests
@@ -4311,6 +4334,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
         [context ds_saveInBlockAndWait];
         [[NSManagedObjectContext viewContext] performBlockAndWait:^{
             self.matchingDashpayUserInViewContext = [[NSManagedObjectContext viewContext] objectWithID:dashpayUserEntity.objectID];
+        }];
+        [[NSManagedObjectContext platformContext] performBlockAndWait:^{
             self.matchingDashpayUserInPlatformContext = [[NSManagedObjectContext platformContext] objectWithID:dashpayUserEntity.objectID];
         }];
         if ([self isLocal]) {
