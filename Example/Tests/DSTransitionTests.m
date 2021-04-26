@@ -88,7 +88,8 @@
 
 - (void)testIdentityCreation {
     XCTestExpectation *expectation = [self expectationWithDescription:@"createFundingPrivateKeyWithSeed"];
-    [self.blockchainIdentity createFundingPrivateKeyWithSeed:self.seedData isForInvitation:NO
+    [self.blockchainIdentity createFundingPrivateKeyWithSeed:self.seedData
+                                             isForInvitation:NO
                                                   completion:^(BOOL success) {
                                                       XCTAssertTrue(success, @"No error should be produced");
                                                       [self.blockchainIdentity registrationTransitionWithCompletion:^(DSBlockchainIdentityRegistrationTransition *_Nonnull blockchainIdentityRegistrationTransition, NSError *_Nonnull error) {

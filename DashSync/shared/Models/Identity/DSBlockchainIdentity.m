@@ -58,7 +58,6 @@
 #import "NSIndexPath+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"
-#import "DSIdentitiesManager+Protected.h"
 #import <CocoaImageHashing/CocoaImageHashing.h>
 #import <TinyCborObjc/NSObject+DSCborEncoding.h>
 
@@ -3942,8 +3941,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
         if (completion) {
             dispatch_async(completionQueue, ^{
                 completion(NO, @[[NSError errorWithDomain:@"DashSync"
-                                                   code:410
-                                               userInfo:@{NSLocalizedDescriptionKey:
+                                                     code:410
+                                                 userInfo:@{NSLocalizedDescriptionKey:
                                                               DSLocalizedString(@"Identity no longer active in wallet", nil)}]]);
             });
         }
@@ -4163,8 +4162,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
         if (completion) {
             dispatch_async(completionQueue, ^{
                 completion(NO, @[[NSError errorWithDomain:@"DashSync"
-                                                   code:410
-                                               userInfo:@{NSLocalizedDescriptionKey:
+                                                     code:410
+                                                 userInfo:@{NSLocalizedDescriptionKey:
                                                               DSLocalizedString(@"Identity no longer active in wallet", nil)}]]);
             });
         }
