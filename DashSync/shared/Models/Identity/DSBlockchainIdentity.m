@@ -744,13 +744,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
         if (context == [_matchingDashpayUserInPlatformContext managedObjectContext]) return _matchingDashpayUserInPlatformContext;
         if (context == [_matchingDashpayUserInViewContext managedObjectContext]) return _matchingDashpayUserInViewContext;
         if (_matchingDashpayUserInPlatformContext) {
-            __block NSManagedObjectID * managedId;
+            __block NSManagedObjectID *managedId;
             [[NSManagedObjectContext platformContext] performBlockAndWait:^{
                 managedId = _matchingDashpayUserInPlatformContext.objectID;
             }];
             return [context objectWithID:managedId];
         } else {
-            __block NSManagedObjectID * managedId;
+            __block NSManagedObjectID *managedId;
             [[NSManagedObjectContext viewContext] performBlockAndWait:^{
                 managedId = _matchingDashpayUserInViewContext.objectID;
             }];
@@ -793,7 +793,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 }
 
 - (NSManagedObjectContext *)platformContext {
-    NSAssert(![NSThread isMainThread], @"We should not be on main thread");
+    //    NSAssert(![NSThread isMainThread], @"We should not be on main thread");
     return [NSManagedObjectContext platformContext];
 }
 
@@ -1326,9 +1326,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
     NSAssert(self.registrationCreditFundingTransaction, @"The registration credit funding transaction must be known");
 
-    if (!self.registrationCreditFundingTransaction.instantSendLockAwaitingProcessing) {
+    if (!self.registrationCreditFundingTransaction.instantSendLockAwaitingProcessing && self.registrationCreditFundingTransaction.blockHeight == BLOCK_UNKNOWN_HEIGHT) {
         if (completion) {
-            completion(nil, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"The registration credit funding transaction has no instant send lock", nil)}]);
+            completion(nil, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"The registration credit funding transaction has not been mined yet and has no instant send lock", nil)}]);
         }
         return;
     }
@@ -1899,12 +1899,14 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 - (void)addUsername:(NSString *)username inDomain:(NSString *)domain status:(DSBlockchainIdentityUsernameStatus)status save:(BOOL)save registerOnNetwork:(BOOL)registerOnNetwork {
     [self.usernameStatuses setObject:@{BLOCKCHAIN_USERNAME_STATUS: @(DSBlockchainIdentityUsernameStatus_Initial), BLOCKCHAIN_USERNAME_PROPER: username, BLOCKCHAIN_USERNAME_DOMAIN: domain} forKey:[self fullPathForUsername:username inDomain:domain]];
     if (save) {
-        [self saveNewUsername:username inDomain:domain status:DSBlockchainIdentityUsernameStatus_Initial inContext:self.platformContext];
-        if (registerOnNetwork && self.registered && status != DSBlockchainIdentityUsernameStatus_Confirmed) {
-            [self registerUsernamesWithCompletion:^(BOOL success, NSError *_Nonnull error){
+        dispatch_async(self.identityQueue, ^{
+            [self saveNewUsername:username inDomain:domain status:DSBlockchainIdentityUsernameStatus_Initial inContext:self.platformContext];
+            if (registerOnNetwork && self.registered && status != DSBlockchainIdentityUsernameStatus_Confirmed) {
+                [self registerUsernamesWithCompletion:^(BOOL success, NSError *_Nonnull error){
 
-            }];
-        }
+                }];
+            }
+        });
     }
 }
 
@@ -3893,7 +3895,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             }
         }
     }];
-
 
 
     __block BOOL succeeded = YES;

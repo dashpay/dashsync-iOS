@@ -350,10 +350,13 @@
 "Error when updating profile information" = "Error when updating profile information";
 
 /* No comment provided by engineer. */
-"The registration credit funding transaction has no instant send lock" = "The registration credit funding transaction has no instant send lock";
-
-/* No comment provided by engineer. */
 "Timeout while waiting for funding transaction to aquire an instant send lock" = "Timeout while waiting for funding transaction to aquire an instant send lock";
 
 /* No comment provided by engineer. */
 "Would you like to share this invitation?" = "Would you like to share this invitation?";
+
+/* No comment provided by engineer. */
+"Identity no longer active in wallet" = "Identity no longer active in wallet";
+
+/* No comment provided by engineer. */
+"The registration credit funding transaction has not been mined yet and has no instant send lock" = "The registration credit funding transaction has not been mined yet and has no instant send lock";
