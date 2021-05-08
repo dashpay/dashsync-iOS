@@ -58,25 +58,25 @@
     return platformKeys;
 }
 
-- (DSMutableStringValueDictionary *)proofDictionary {
-    NSAssert(self.creditFundingTransaction.instantSendLockAwaitingProcessing != nil, @"instantSendLockAwaitingProcessing must not be nil");
-    DSMutableStringValueDictionary *proofDictionary = [DSMutableStringValueDictionary dictionary];
-    proofDictionary[@"type"] = @(0);
-    proofDictionary[@"instantLock"] = self.creditFundingTransaction.instantSendLockAwaitingProcessing.toData;
-    return proofDictionary;
-}
-
-- (DSMutableStringValueDictionary *)assetLockDictionary {
+- (DSMutableStringValueDictionary *)assetLockProofDictionary {
     DSMutableStringValueDictionary *assetLockDictionary = [DSMutableStringValueDictionary dictionary];
-    assetLockDictionary[@"outputIndex"] = @(self.creditFundingTransaction.lockedOutpoint.n);
-    assetLockDictionary[@"transaction"] = [self.creditFundingTransaction toData];
-    assetLockDictionary[@"proof"] = [self proofDictionary];
+    if (self.creditFundingTransaction.instantSendLockAwaitingProcessing) {
+        assetLockDictionary[@"type"] = @(0);
+        assetLockDictionary[@"instantLock"] = self.creditFundingTransaction.instantSendLockAwaitingProcessing.toData;
+        assetLockDictionary[@"outputIndex"] = @(self.creditFundingTransaction.lockedOutpoint.n);
+        assetLockDictionary[@"transaction"] = [self.creditFundingTransaction toData];
+    } else {
+        assetLockDictionary[@"type"] = @(1);
+        assetLockDictionary[@"coreChainLockedHeight"] = @(self.creditFundingTransaction.blockHeight);
+        assetLockDictionary[@"outPoint"] = dsutxo_data(self.creditFundingTransaction.lockedOutpoint);
+    }
+
     return assetLockDictionary;
 }
 
 - (DSMutableStringValueDictionary *)baseKeyValueDictionary {
     DSMutableStringValueDictionary *json = [super baseKeyValueDictionary];
-    json[@"assetLock"] = [self assetLockDictionary];
+    json[@"assetLockProof"] = [self assetLockProofDictionary];
     json[@"publicKeys"] = [self platformKeyDictionaries];
     return json;
 }
