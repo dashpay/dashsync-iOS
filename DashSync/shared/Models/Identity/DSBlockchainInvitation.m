@@ -161,7 +161,7 @@
         NSString *senderUsername = identity.currentDashpayUsername;
         NSString *senderDisplayName = identity.displayName;
         NSString *senderAvatarPath = identity.avatarPath;
-        NSString *fundingTransactionHexString = uint256_hex(self.identity.registrationCreditFundingTransaction.txHash);
+        NSString *fundingTransactionHexString = uint256_reverse_hex(self.identity.registrationCreditFundingTransaction.txHash);
         __block DSECDSAKey *registrationFundingPrivateKey = self.identity.registrationFundingPrivateKey;
         __block BOOL rCancelled = FALSE;
 
