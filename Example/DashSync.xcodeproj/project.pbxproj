@@ -372,6 +372,8 @@
 		FB850013261A7B9A0002E5EA /* DSIdentityChooserViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB850012261A7B9A0002E5EA /* DSIdentityChooserViewController.m */; };
 		FB850051261AA82F0002E5EA /* DSBlockchainIdentityChooserTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB850050261AA82F0002E5EA /* DSBlockchainIdentityChooserTableViewCell.m */; };
 		FB87A0CE24B7C28700C22DF7 /* DSMiningTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FB87A0CD24B7C28600C22DF7 /* DSMiningTests.m */; };
+		FB88ECB02649647500CDD987 /* DSInvitationsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FB88ECAF2649647400CDD987 /* DSInvitationsTests.m */; };
+		FB88ECB6264B8BB800CDD987 /* DSDAPIGetTransactionInformationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB88ECB5264B8BB800CDD987 /* DSDAPIGetTransactionInformationViewController.m */; };
 		FB89F2D722CC875800CD0232 /* MNL_0_1094976.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB89F2D622CC875800CD0232 /* MNL_0_1094976.dat */; };
 		FB89F2D922CD82EB00CD0232 /* MNL_0_1095720.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB89F2D822CD82EB00CD0232 /* MNL_0_1095720.dat */; };
 		FB90D2B420BD2BDD002B7956 /* DSSporksViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2B320BD2BDD002B7956 /* DSSporksViewController.m */; };
@@ -972,6 +974,9 @@
 		FB85004F261AA82F0002E5EA /* DSBlockchainIdentityChooserTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainIdentityChooserTableViewCell.h; sourceTree = "<group>"; };
 		FB850050261AA82F0002E5EA /* DSBlockchainIdentityChooserTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainIdentityChooserTableViewCell.m; sourceTree = "<group>"; };
 		FB87A0CD24B7C28600C22DF7 /* DSMiningTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMiningTests.m; sourceTree = "<group>"; };
+		FB88ECAF2649647400CDD987 /* DSInvitationsTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSInvitationsTests.m; sourceTree = "<group>"; };
+		FB88ECB4264B8BB800CDD987 /* DSDAPIGetTransactionInformationViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSDAPIGetTransactionInformationViewController.h; sourceTree = "<group>"; };
+		FB88ECB5264B8BB800CDD987 /* DSDAPIGetTransactionInformationViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDAPIGetTransactionInformationViewController.m; sourceTree = "<group>"; };
 		FB89F2D622CC875800CD0232 /* MNL_0_1094976.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_0_1094976.dat; sourceTree = "<group>"; };
 		FB89F2D822CD82EB00CD0232 /* MNL_0_1095720.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_0_1095720.dat; sourceTree = "<group>"; };
 		FB90D2B220BD2BDD002B7956 /* DSSporksViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSporksViewController.h; sourceTree = "<group>"; };
@@ -2182,6 +2187,8 @@
 				FBB4E37F214A9F01008040B7 /* DSDAPIGetAddressSummaryViewController.m */,
 				FBB4E381214BC7C3008040B7 /* DSDAPIGetUserInfoViewController.h */,
 				FBB4E382214BC7C3008040B7 /* DSDAPIGetUserInfoViewController.m */,
+				FB88ECB4264B8BB800CDD987 /* DSDAPIGetTransactionInformationViewController.h */,
+				FB88ECB5264B8BB800CDD987 /* DSDAPIGetTransactionInformationViewController.m */,
 			);
 			name = "DAPI Calls";
 			sourceTree = "<group>";
@@ -2257,6 +2264,7 @@
 			isa = PBXGroup;
 			children = (
 				FB1B98D023D6A3BD00D50F69 /* DSTransitionTests.m */,
+				FB88ECAF2649647400CDD987 /* DSInvitationsTests.m */,
 			);
 			name = L2Tests;
 			sourceTree = "<group>";
@@ -3011,6 +3019,7 @@
 				FBA676392235CE0C0069EC2F /* DSAuthenticationKeysDerivationPathsAddressesViewController.m in Sources */,
 				FBAA7752222B2963001B3756 /* DSProviderUpdateServiceTransactionsViewController.m in Sources */,
 				FBF31B6F2231C53900393301 /* DSSignPayloadViewController.m in Sources */,
+				FB88ECB6264B8BB800CDD987 /* DSDAPIGetTransactionInformationViewController.m in Sources */,
 				FBC2EB02260F886700B53BDB /* DSInvitationsViewController.m in Sources */,
 				FB83C2E421B7B7560057A0EF /* DSActionsViewController.m in Sources */,
 				FBC508CB2426F42500EB3DAB /* DSSearchBlockchainIdentitiesViewController.m in Sources */,
@@ -3060,6 +3069,7 @@
 				FB97502725B3AFB000A1DCE7 /* DSTestnetSyncTests.m in Sources */,
 				FBC9248E2414EF4000005D0D /* DSAttackTests.m in Sources */,
 				FB91B2D525325EB100511A44 /* MDCLevenshteinDistanceTests.m in Sources */,
+				FB88ECB02649647500CDD987 /* DSInvitationsTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

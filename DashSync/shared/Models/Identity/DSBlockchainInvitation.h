@@ -28,6 +28,8 @@ FOUNDATION_EXPORT NSString *const DSBlockchainInvitationUpdateEventLink;
 
 @interface DSBlockchainInvitation : NSObject
 
+- (instancetype)initWithInvitationLink:(NSString *)invitationLink;
+
 /*! @brief This is the identity that was made from the invitation. There should always be an identity associated to a blockchain invitation. This identity might not yet be registered on Dash Platform. */
 @property (nonatomic, readonly) DSBlockchainIdentity *identity;
 

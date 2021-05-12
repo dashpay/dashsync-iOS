@@ -89,6 +89,15 @@
     return self;
 }
 
+- (instancetype)initWithInvitationLink:(NSString *)invitationLink atIndex:(uint32_t)index inWallet:(DSWallet *)wallet {
+    if (!(self = [super init])) return nil;
+    NSURLComponents *components = [NSURLComponents componentsWithString:invitationLink];
+    //self.identity = [[DSBlockchainIdentity alloc] initAtIndex:index withLockedOutpoint:<#(DSUTXO) #> inWallet:wallet];
+    self.wallet = wallet;
+    self.chain = wallet.chain;
+    return self;
+}
+
 
 - (void)generateBlockchainInvitationsExtendedPublicKeysWithPrompt:(NSString *)prompt completion:(void (^_Nullable)(BOOL registered))completion {
     __block DSCreditFundingDerivationPath *derivationPathInvitationFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityInvitationFundingDerivationPathForWallet:self.wallet];

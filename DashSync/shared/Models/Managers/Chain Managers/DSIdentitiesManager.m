@@ -187,7 +187,7 @@
 
 - (id<DSDAPINetworkServiceRequest>)searchIdentityByName:(NSString *)name inDomain:(NSString *)domain withCompletion:(IdentityCompletionBlock)completion {
     DSDAPIClient *client = self.chain.chainManager.DAPIClient;
-    id<DSDAPINetworkServiceRequest> call = [client.DAPINetworkService getDPNSDocumentsForUsernames:@[name]
+    id<DSDAPINetworkServiceRequest> call = [client.DAPIPlatformNetworkService getDPNSDocumentsForUsernames:@[name]
         inDomain:domain
         completionQueue:self.identityQueue
         success:^(NSArray<NSDictionary *> *_Nonnull documents) {
@@ -244,7 +244,7 @@
         return nil;
     }
     DSDAPIClient *client = self.chain.chainManager.DAPIClient;
-    id<DSDAPINetworkServiceRequest> call = [client.DAPINetworkService getDashpayProfileForUserId:blockchainIdentity.uniqueIDData
+    id<DSDAPINetworkServiceRequest> call = [client.DAPIPlatformNetworkService getDashpayProfileForUserId:blockchainIdentity.uniqueIDData
         completionQueue:self.identityQueue
         success:^(NSArray<NSDictionary *> *_Nonnull documents) {
             if (documents.count == 0) {
@@ -300,7 +300,7 @@
         [blockchainIdentityUserIds addObject:blockchainIdentity.uniqueIDData];
     }
     DSDAPIClient *client = self.chain.chainManager.DAPIClient;
-    id<DSDAPINetworkServiceRequest> call = [client.DAPINetworkService getDashpayProfilesForUserIds:blockchainIdentityUserIds
+    id<DSDAPINetworkServiceRequest> call = [client.DAPIPlatformNetworkService getDashpayProfilesForUserIds:blockchainIdentityUserIds
         completionQueue:self.identityQueue
         success:^(NSArray<NSDictionary *> *_Nonnull documents) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -384,7 +384,7 @@
 
 - (id<DSDAPINetworkServiceRequest>)searchIdentitiesByNamePrefix:(NSString *)namePrefix inDomain:(NSString *)domain offset:(uint32_t)offset limit:(uint32_t)limit withCompletion:(IdentitiesCompletionBlock)completion {
     DSDAPIClient *client = self.chain.chainManager.DAPIClient;
-    id<DSDAPINetworkServiceRequest> call = [client.DAPINetworkService searchDPNSDocumentsForUsernamePrefix:namePrefix
+    id<DSDAPINetworkServiceRequest> call = [client.DAPIPlatformNetworkService searchDPNSDocumentsForUsernamePrefix:namePrefix
         inDomain:domain
         offset:offset
         limit:limit
@@ -431,7 +431,7 @@
 
 - (void)searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID:(NSData *)userID withCompletion:(IdentitiesCompletionBlock)completion {
     DSDAPIClient *client = self.chain.chainManager.DAPIClient;
-    [client.DAPINetworkService getDPNSDocumentsForIdentityWithUserId:userID
+    [client.DAPIPlatformNetworkService getDPNSDocumentsForIdentityWithUserId:userID
         completionQueue:self.identityQueue
         success:^(NSArray<NSDictionary *> *_Nonnull documents) {
             __block NSMutableArray *rBlockchainIdentities = [NSMutableArray array];

@@ -84,7 +84,7 @@
         return;
     }
 
-    [self.chainManager.DAPIClient.DAPINetworkService getIdentityByName:username
+    [self.chainManager.DAPIClient.DAPIPlatformNetworkService getIdentityByName:username
         inDomain:@"dash"
         completionQueue:dispatch_get_main_queue()
         success:^(NSDictionary *_Nonnull blockchainIdentity) {

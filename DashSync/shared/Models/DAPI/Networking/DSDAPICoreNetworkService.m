@@ -22,6 +22,7 @@
 #import "DSDashPlatform.h"
 #import "DSHTTPJSONRPCClient.h"
 #import "DSPeer.h"
+#import "DSTransactionFactory.h"
 #import "NSData+Bitcoin.h"
 
 @interface DSDAPICoreNetworkService ()
@@ -71,6 +72,36 @@
     responseHandler.successHandler = success;
     responseHandler.errorHandler = failure;
     GRPCUnaryProtoCall *call = [self.gRPCClient getStatusWithMessage:statusRequest responseHandler:responseHandler callOptions:nil];
+    [call start];
+    return (id<DSDAPINetworkServiceRequest>)call;
+}
+
+- (id<DSDAPINetworkServiceRequest>)getTransactionWithHash:(UInt256)transactionHash completionQueue:(dispatch_queue_t)completionQueue success:(void (^)(DSTransaction *transaction))success
+                                                  failure:(void (^)(NSError *error))failure {
+    NSParameterAssert(completionQueue);
+    GetTransactionRequest *transactionRequest = [[GetTransactionRequest alloc] init];
+    transactionRequest.id_p = uint256_hex(transactionHash);
+    DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
+    responseHandler.host = [NSString stringWithFormat:@"%@:%d", self.ipAddress, self.chain.standardDapiGRPCPort];
+    responseHandler.dispatchQueue = self.grpcDispatchQueue;
+    responseHandler.completionQueue = completionQueue;
+    responseHandler.successHandler = ^(NSDictionary *successDictionary) {
+        NSLog(@"%@", successDictionary);
+
+        DSTransaction *transaction = [DSTransactionFactory transactionWithMessage:successDictionary[@"transactionData"] onChain:self.chain];
+        if (transaction) {
+            if (success) {
+                success(transaction);
+            }
+        } else if (failure) {
+            failure([NSError errorWithDomain:@"DashSync"
+                                        code:404
+                                    userInfo:@{NSLocalizedDescriptionKey:
+                                                 DSLocalizedString(@"Transaction does not exist", nil)}]);
+        }
+    };
+    responseHandler.errorHandler = failure;
+    GRPCUnaryProtoCall *call = [self.gRPCClient getTransactionWithMessage:transactionRequest responseHandler:responseHandler callOptions:nil];
     [call start];
     return (id<DSDAPINetworkServiceRequest>)call;
 }

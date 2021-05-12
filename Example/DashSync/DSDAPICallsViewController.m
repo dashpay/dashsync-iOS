@@ -9,6 +9,7 @@
 #import "DSDAPICallsViewController.h"
 #import "BRBubbleView.h"
 #import "DSDAPIGetAddressSummaryViewController.h"
+#import "DSDAPIGetTransactionInformationViewController.h"
 #import "DSDAPIGetUserInfoViewController.h"
 
 @interface DSDAPICallsViewController ()
@@ -33,7 +34,7 @@
 }
 
 - (void)getBestBlockHeight:(id)sender {
-    [self.chainManager.DAPIClient.DAPINetworkService
+    [self.chainManager.DAPIClient.DAPIPlatformNetworkService
         getBestBlockHeightSuccess:^(NSNumber *_Nonnull blockHeight) {
             [self.view addSubview:[[[BRBubbleView viewWithText:[NSString stringWithFormat:@"%@", blockHeight]
                                                         center:CGPointMake(self.view.bounds.size.width / 2, self.view.bounds.size.height / 2)] popIn]
@@ -71,6 +72,9 @@
     } else if ([segue.identifier isEqualToString:@"GetUserInfoSegue"]) {
         DSDAPIGetUserInfoViewController *DAPIGetUserInfoViewController = (DSDAPIGetUserInfoViewController *)segue.destinationViewController;
         DAPIGetUserInfoViewController.chainManager = self.chainManager;
+    } else if ([segue.identifier isEqualToString:@"TransactionInformationSegue"]) {
+        DSDAPIGetTransactionInformationViewController *DAPIGetTransactionInformationViewController = (DSDAPIGetTransactionInformationViewController *)segue.destinationViewController;
+        DAPIGetTransactionInformationViewController.chainManager = self.chainManager;
     }
 }
 

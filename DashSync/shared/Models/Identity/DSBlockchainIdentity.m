@@ -1706,7 +1706,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 }
 
 - (DSDAPIPlatformNetworkService *)DAPINetworkService {
-    return self.DAPIClient.DAPINetworkService;
+    return self.DAPIClient.DAPIPlatformNetworkService;
 }
 
 // MARK: - Signing and Encryption

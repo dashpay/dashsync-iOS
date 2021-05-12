@@ -67,7 +67,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
 }
 
 #pragma mark - DSDAPIProtocol
-#pragma mark Layer 1
+#pragma mark Layer 1 Deprecated
 
 - (void)estimateFeeWithNumberOfBlocksToWait:(NSUInteger)numberOfBlocksToWait
                                     success:(void (^)(NSNumber *duffsPerKilobyte))success

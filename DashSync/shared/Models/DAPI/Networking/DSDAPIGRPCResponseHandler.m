@@ -18,6 +18,8 @@
 #import "DSDAPIGRPCResponseHandler.h"
 #import "DPContract.h"
 #import "NSData+DSCborDecoding.h"
+#import <DAPI-GRPC/Core.pbobjc.h>
+#import <DAPI-GRPC/Core.pbrpc.h>
 #import <DAPI-GRPC/Platform.pbobjc.h>
 #import <DAPI-GRPC/Platform.pbrpc.h>
 
@@ -81,6 +83,15 @@
         if (([waitResponse responsesOneOfCase] & WaitForStateTransitionResultResponse_Responses_OneOfCase_Error) > 0) {
             [dictionary setObject:[waitResponse error] forKey:@"platformError"];
         }
+        self.responseObject = dictionary;
+        if (error) {
+            self.decodingError = error;
+        }
+    } else if ([message isMemberOfClass:[GetTransactionResponse class]]) {
+        GetTransactionResponse *transactionResponse = (GetTransactionResponse *)message;
+        NSError *error = nil;
+        NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
+        [dictionary setObject:[transactionResponse transaction] forKey:@"transactionData"];
         self.responseObject = dictionary;
         if (error) {
             self.decodingError = error;
