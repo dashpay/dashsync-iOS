@@ -374,6 +374,7 @@
 		FB87A0CE24B7C28700C22DF7 /* DSMiningTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FB87A0CD24B7C28600C22DF7 /* DSMiningTests.m */; };
 		FB88ECB02649647500CDD987 /* DSInvitationsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FB88ECAF2649647400CDD987 /* DSInvitationsTests.m */; };
 		FB88ECB6264B8BB800CDD987 /* DSDAPIGetTransactionInformationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB88ECB5264B8BB800CDD987 /* DSDAPIGetTransactionInformationViewController.m */; };
+		FB88ECBC264BFC7D00CDD987 /* DSCreateBlockchainIdentityFromInvitationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB88ECBB264BFC7D00CDD987 /* DSCreateBlockchainIdentityFromInvitationViewController.m */; };
 		FB89F2D722CC875800CD0232 /* MNL_0_1094976.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB89F2D622CC875800CD0232 /* MNL_0_1094976.dat */; };
 		FB89F2D922CD82EB00CD0232 /* MNL_0_1095720.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB89F2D822CD82EB00CD0232 /* MNL_0_1095720.dat */; };
 		FB90D2B420BD2BDD002B7956 /* DSSporksViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2B320BD2BDD002B7956 /* DSSporksViewController.m */; };
@@ -977,6 +978,8 @@
 		FB88ECAF2649647400CDD987 /* DSInvitationsTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSInvitationsTests.m; sourceTree = "<group>"; };
 		FB88ECB4264B8BB800CDD987 /* DSDAPIGetTransactionInformationViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSDAPIGetTransactionInformationViewController.h; sourceTree = "<group>"; };
 		FB88ECB5264B8BB800CDD987 /* DSDAPIGetTransactionInformationViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDAPIGetTransactionInformationViewController.m; sourceTree = "<group>"; };
+		FB88ECBA264BFC7D00CDD987 /* DSCreateBlockchainIdentityFromInvitationViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSCreateBlockchainIdentityFromInvitationViewController.h; sourceTree = "<group>"; };
+		FB88ECBB264BFC7D00CDD987 /* DSCreateBlockchainIdentityFromInvitationViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSCreateBlockchainIdentityFromInvitationViewController.m; sourceTree = "<group>"; };
 		FB89F2D622CC875800CD0232 /* MNL_0_1094976.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_0_1094976.dat; sourceTree = "<group>"; };
 		FB89F2D822CD82EB00CD0232 /* MNL_0_1095720.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_0_1095720.dat; sourceTree = "<group>"; };
 		FB90D2B220BD2BDD002B7956 /* DSSporksViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSporksViewController.h; sourceTree = "<group>"; };
@@ -1479,6 +1482,8 @@
 				FB0F15B621090445000272E6 /* DSBlockchainIdentitiesViewController.m */,
 				FB0F15BF210ACD52000272E6 /* DSCreateBlockchainIdentityViewController.h */,
 				FB0F15C0210ACD52000272E6 /* DSCreateBlockchainIdentityViewController.m */,
+				FB88ECBA264BFC7D00CDD987 /* DSCreateBlockchainIdentityFromInvitationViewController.h */,
+				FB88ECBB264BFC7D00CDD987 /* DSCreateBlockchainIdentityFromInvitationViewController.m */,
 				FBD967A52125719E005CBE0B /* DSBlockchainIdentityActionsViewController.h */,
 				FBD967A62125719E005CBE0B /* DSBlockchainIdentityActionsViewController.m */,
 				FBD967A8212571DC005CBE0B /* DSTopupBlockchainIdentityViewController.h */,
@@ -2932,6 +2937,7 @@
 				FB6B78492278D5210005C9DB /* DSContactSentTransactionsTableViewController.m in Sources */,
 				FBAA7749222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.m in Sources */,
 				FB0955CC244BBDC400A93675 /* DSContactRelationshipInfoViewController.m in Sources */,
+				FB88ECBC264BFC7D00CDD987 /* DSCreateBlockchainIdentityFromInvitationViewController.m in Sources */,
 				FBE2B7A524C9E481000F1108 /* DSRegisterTLDViewController.m in Sources */,
 				FB763C622089AF9500CDBA57 /* DSStandaloneAddressesViewController.m in Sources */,
 				6003F5A7195388D20070C39A /* DSSyncViewController.m in Sources */,

@@ -128,11 +128,15 @@
                     <navigationItem key="navigationItem" title="Blockchain Identities" id="std-37-k6T">
                         <barButtonItem key="rightBarButtonItem" systemItem="add" id="XNL-y9-h0R">
                             <connections>
-                                <segue destination="DC3-ZN-TRK" kind="presentation" identifier="CreateBlockchainIdentitySegue" id="OuL-iI-ZIy"/>
+                                <action selector="createBlockchainIdentity:" destination="IVS-Tn-Brn" id="Gxb-wB-NzK"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
+                    <connections>
+                        <segue destination="DC3-ZN-TRK" kind="presentation" identifier="CreateBlockchainIdentitySegue" id="rZk-Oq-upu"/>
+                        <segue destination="npx-it-Rl0" kind="presentation" identifier="CreateBlockchainIdentityFromInvitationSegue" id="eiS-Vd-abd"/>
+                    </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="zuY-yR-rdh" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
@@ -1222,12 +1226,179 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="jFw-Jk-YmQ" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-2212" y="-486"/>
+            <point key="canvasLocation" x="-2159" y="-374"/>
+        </scene>
+        <!--New Blockchain Identity-->
+        <scene sceneID="aMD-Ch-5JN">
+            <objects>
+                <tableViewController id="bs1-Dr-vUs" customClass="DSCreateBlockchainIdentityViewController" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="2hA-YV-mLe">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="842"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <sections>
+                            <tableViewSection id="MTf-QU-Ryl">
+                                <cells>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" id="bz0-7V-HDP" userLabel="UsernameCell" customClass="DSKeyValueTableViewCell">
+                                        <rect key="frame" x="0.0" y="28" width="414" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="bz0-7V-HDP" id="2ZH-aH-G4R">
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Username" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xCv-qT-bw4">
+                                                    <rect key="frame" x="16" y="12" width="79" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="GZo-lZ-kNN">
+                                                    <rect key="frame" x="228" y="7" width="170" height="34"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" priority="900" constant="170" id="tJv-gb-nF9"/>
+                                                    </constraints>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                    <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
+                                                </textField>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="xCv-qT-bw4" firstAttribute="leading" secondItem="2ZH-aH-G4R" secondAttribute="leading" constant="16" id="5ZG-UU-QKi"/>
+                                                <constraint firstItem="GZo-lZ-kNN" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="xCv-qT-bw4" secondAttribute="trailing" constant="10" id="A8s-wI-epU"/>
+                                                <constraint firstItem="xCv-qT-bw4" firstAttribute="top" secondItem="2ZH-aH-G4R" secondAttribute="top" constant="12.000000000000028" id="OAZ-ca-Lei"/>
+                                                <constraint firstItem="GZo-lZ-kNN" firstAttribute="top" secondItem="2ZH-aH-G4R" secondAttribute="top" constant="7" id="OBj-hK-iw5"/>
+                                                <constraint firstAttribute="trailing" secondItem="GZo-lZ-kNN" secondAttribute="trailing" constant="16" id="aqm-Z4-kpE"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                        <connections>
+                                            <outlet property="valueTextField" destination="GZo-lZ-kNN" id="c1G-BX-urQ"/>
+                                        </connections>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" id="cnE-jL-O5O" userLabel="WalletCell" customClass="DSWalletChooserTableViewCell">
+                                        <rect key="frame" x="0.0" y="72" width="414" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="cnE-jL-O5O" id="8rm-qm-O8w">
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Wallet" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pWw-1w-OEb">
+                                                    <rect key="frame" x="16" y="12" width="47" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="None" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sIf-xB-zzC">
+                                                    <rect key="frame" x="357" y="12" width="41" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstAttribute="trailing" secondItem="sIf-xB-zzC" secondAttribute="trailing" constant="16" id="BOm-bJ-4B2"/>
+                                                <constraint firstItem="pWw-1w-OEb" firstAttribute="top" secondItem="8rm-qm-O8w" secondAttribute="top" constant="12.000000000000028" id="Rba-ck-vR2"/>
+                                                <constraint firstItem="pWw-1w-OEb" firstAttribute="leading" secondItem="8rm-qm-O8w" secondAttribute="leading" constant="16" id="cxo-ep-ZZd"/>
+                                                <constraint firstItem="sIf-xB-zzC" firstAttribute="baseline" secondItem="pWw-1w-OEb" secondAttribute="baseline" id="xyW-6q-LTN"/>
+                                                <constraint firstItem="sIf-xB-zzC" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="pWw-1w-OEb" secondAttribute="trailing" constant="10" id="z6s-ys-1pd"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                        <connections>
+                                            <segue destination="6WX-M5-m47" kind="show" identifier="BlockchainIdentityFromInvitationChooseWalletSegue" id="4eB-U4-Fda"/>
+                                        </connections>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" id="6UB-Rg-aMd" userLabel="WalletCell">
+                                        <rect key="frame" x="0.0" y="116" width="414" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="6UB-Rg-aMd" id="RqL-Zl-w6f">
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Register on L2" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="HXQ-kb-1Pq">
+                                                    <rect key="frame" x="16" y="12" width="110" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="buf-C8-M57">
+                                                    <rect key="frame" x="351" y="6" width="49" height="31"/>
+                                                    <color key="onTintColor" systemColor="systemTealColor"/>
+                                                    <connections>
+                                                        <action selector="registerOnL2SwitchValueChanged:" destination="bs1-Dr-vUs" eventType="valueChanged" id="jgC-dD-uLL"/>
+                                                    </connections>
+                                                </switch>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="HXQ-kb-1Pq" firstAttribute="top" secondItem="RqL-Zl-w6f" secondAttribute="top" constant="12.000000000000028" id="AxT-bS-h1f"/>
+                                                <constraint firstItem="buf-C8-M57" firstAttribute="firstBaseline" secondItem="HXQ-kb-1Pq" secondAttribute="firstBaseline" constant="-22" id="LJp-HN-PRd"/>
+                                                <constraint firstAttribute="trailing" secondItem="buf-C8-M57" secondAttribute="trailing" constant="16" id="jvY-gz-7H9"/>
+                                                <constraint firstItem="HXQ-kb-1Pq" firstAttribute="leading" secondItem="RqL-Zl-w6f" secondAttribute="leading" constant="16" id="tAk-Yy-Lau"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" id="1be-GL-3i5" userLabel="WalletCell">
+                                        <rect key="frame" x="0.0" y="160" width="414" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="1be-GL-3i5" id="Il5-rB-Des">
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Register Username" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="M0k-dM-ffy">
+                                                    <rect key="frame" x="16" y="12" width="146" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="r66-Q5-DFi">
+                                                    <rect key="frame" x="351" y="6" width="49" height="31"/>
+                                                    <color key="onTintColor" systemColor="systemTealColor"/>
+                                                    <connections>
+                                                        <action selector="registerUsernameSwitchValueChanged:" destination="bs1-Dr-vUs" eventType="valueChanged" id="EDD-5x-PW4"/>
+                                                    </connections>
+                                                </switch>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="M0k-dM-ffy" firstAttribute="top" secondItem="Il5-rB-Des" secondAttribute="top" constant="12.000000000000028" id="5EA-ct-rkT"/>
+                                                <constraint firstAttribute="trailing" secondItem="r66-Q5-DFi" secondAttribute="trailing" constant="16" id="8Zn-q8-3zX"/>
+                                                <constraint firstItem="M0k-dM-ffy" firstAttribute="leading" secondItem="Il5-rB-Des" secondAttribute="leading" constant="16" id="Gsh-VK-DdD"/>
+                                                <constraint firstItem="r66-Q5-DFi" firstAttribute="firstBaseline" secondItem="M0k-dM-ffy" secondAttribute="firstBaseline" constant="-22" id="meQ-v9-A1w"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                </cells>
+                            </tableViewSection>
+                        </sections>
+                        <connections>
+                            <outlet property="dataSource" destination="bs1-Dr-vUs" id="cVp-5B-Ezq"/>
+                            <outlet property="delegate" destination="bs1-Dr-vUs" id="zXB-z4-261"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" title="New Blockchain Identity" id="hnn-DH-ask">
+                        <barButtonItem key="leftBarButtonItem" systemItem="cancel" id="Mj2-6d-Jkz">
+                            <connections>
+                                <action selector="cancel:" destination="bs1-Dr-vUs" id="nE6-uD-wwz"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" style="done" systemItem="done" id="iw4-Bb-86o">
+                            <connections>
+                                <action selector="done:" destination="bs1-Dr-vUs" id="m0M-de-amh"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="registerOnL2Switch" destination="buf-C8-M57" id="bN1-0j-Lzq"/>
+                        <outlet property="registerUsernameSwitch" destination="r66-Q5-DFi" id="INC-JZ-N8c"/>
+                        <outlet property="usernameLabel" destination="GZo-lZ-kNN" id="k0c-WL-oZE"/>
+                    </connections>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="mCo-5g-3NA" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-2328" y="-1005"/>
         </scene>
         <!--ChooseWalletIdentifier-->
         <scene sceneID="ceI-Kb-J3a">
             <objects>
-                <viewControllerPlaceholder storyboardName="Helpers" referencedIdentifier="ChooseWalletIdentifier" id="6WX-M5-m47" sceneMemberID="viewController"/>
+                <viewControllerPlaceholder storyboardName="Helpers" referencedIdentifier="ChooseWalletIdentifier" id="6WX-M5-m47" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="Sv5-a0-eVo"/>
+                </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Nfc-dH-VQP" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-1070" y="-219"/>
@@ -1235,7 +1406,9 @@
         <!--ChooseAccountIdentifier-->
         <scene sceneID="4X3-L3-qgn">
             <objects>
-                <viewControllerPlaceholder storyboardName="Helpers" referencedIdentifier="ChooseAccountIdentifier" id="QcN-dS-6Bw" sceneMemberID="viewController"/>
+                <viewControllerPlaceholder storyboardName="Helpers" referencedIdentifier="ChooseAccountIdentifier" id="QcN-dS-6Bw" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="57f-xj-2gA"/>
+                </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="5z8-Cp-eur" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-1081" y="-22"/>
@@ -1332,10 +1505,28 @@
             </objects>
             <point key="canvasLocation" x="1520" y="557"/>
         </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="rnc-08-4Au">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="npx-it-Rl0" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="Ta4-Sd-QUb">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="56"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="bs1-Dr-vUs" kind="relationship" relationship="rootViewController" id="sL6-ea-R8G"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="yqN-ZI-7zm" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-3184" y="-1005"/>
+        </scene>
     </scenes>
     <inferredMetricsTieBreakers>
         <segue reference="Y7Y-Lb-8Mf"/>
-        <segue reference="fvv-fK-u53"/>
+        <segue reference="4eB-U4-Fda"/>
     </inferredMetricsTieBreakers>
     <resources>
         <systemColor name="groupTableViewBackgroundColor">

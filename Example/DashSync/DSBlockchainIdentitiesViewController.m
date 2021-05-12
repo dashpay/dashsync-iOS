@@ -18,6 +18,8 @@
 @property (nonatomic, strong) NSArray<NSArray *> *orderedBlockchainIdentities;
 @property (strong, nonatomic) id blockchainIdentitiesObserver;
 
+- (IBAction)createBlockchainIdentity:(id)sender;
+
 @end
 
 @implementation DSBlockchainIdentitiesViewController
@@ -125,6 +127,24 @@
                                                                             //[self performSegueWithIdentifier:@"CreateBlockchainIdentitySegue" sender:[self.tableView cellForRowAtIndexPath:indexPath]];
                                                                         }];
     return @[deleteAction, editAction];
+}
+
+- (IBAction)createBlockchainIdentity:(id)sender {
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Create Blockchain Identity"
+                                                                             message:nil
+                                                                      preferredStyle:UIAlertControllerStyleActionSheet];
+
+    [alertController addAction:[UIAlertAction actionWithTitle:@"From Wallet"
+                                                        style:UIAlertActionStyleDefault
+                                                      handler:^(UIAlertAction *_Nonnull action) {
+                                                          [self performSegueWithIdentifier:@"CreateBlockchainIdentitySegue" sender:self];
+                                                      }]];
+    [alertController addAction:[UIAlertAction actionWithTitle:@"From Invitation"
+                                                        style:UIAlertActionStyleDefault
+                                                      handler:^(UIAlertAction *_Nonnull action) {
+                                                          [self performSegueWithIdentifier:@"CreateBlockchainIdentityFromInvitationSegue" sender:self];
+                                                      }]];
+    [self presentViewController:alertController animated:YES completion:nil];
 }
 
 
