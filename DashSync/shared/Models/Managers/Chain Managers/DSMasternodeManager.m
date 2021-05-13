@@ -329,7 +329,7 @@
         } else {
             NSDictionary *updates = [currentMasternodeList listOfChangedNodesComparedTo:_currentMasternodeList];
             NSArray *added = updates[MASTERNODE_LIST_ADDED_NODES];
-            NSArray *removed = updates[MASTERNODE_LIST_ADDED_NODES];
+            NSArray *removed = updates[MASTERNODE_LIST_REMOVED_NODES];
             NSArray *addedValidity = updates[MASTERNODE_LIST_ADDED_VALIDITY];
             NSArray *removedValidity = updates[MASTERNODE_LIST_REMOVED_VALIDITY];
             for (DSSimplifiedMasternodeEntry *masternodeEntry in added) {
