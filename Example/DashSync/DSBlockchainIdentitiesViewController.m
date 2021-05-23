@@ -9,6 +9,7 @@
 #import "DSBlockchainIdentitiesViewController.h"
 #import "DSBlockchainIdentityActionsViewController.h"
 #import "DSBlockchainIdentityTableViewCell.h"
+#import "DSCreateBlockchainIdentityFromInvitationViewController.h"
 #import "DSCreateBlockchainIdentityViewController.h"
 #import "DSMerkleBlock.h"
 #import <DashSync/DSCreditFundingTransaction.h>
@@ -152,6 +153,9 @@
     if ([segue.identifier isEqualToString:@"CreateBlockchainIdentitySegue"]) {
         DSCreateBlockchainIdentityViewController *createBlockchainIdentityViewController = (DSCreateBlockchainIdentityViewController *)((UINavigationController *)segue.destinationViewController).topViewController;
         createBlockchainIdentityViewController.chainManager = self.chainManager;
+    } else if ([segue.identifier isEqualToString:@"CreateBlockchainIdentityFromInvitationSegue"]) {
+        DSCreateBlockchainIdentityFromInvitationViewController *createBlockchainIdentityFromInvitationViewController = (DSCreateBlockchainIdentityFromInvitationViewController *)((UINavigationController *)segue.destinationViewController).topViewController;
+        createBlockchainIdentityFromInvitationViewController.chainManager = self.chainManager;
     } else if ([segue.identifier isEqualToString:@"BlockchainIdentityActionsSegue"]) {
         DSBlockchainIdentityActionsViewController *blockchainIdentityActionsViewController = segue.destinationViewController;
         blockchainIdentityActionsViewController.chainManager = self.chainManager;

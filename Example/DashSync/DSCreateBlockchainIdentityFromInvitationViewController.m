@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2021 Dash Core Group. All rights reserved.
 //
@@ -28,12 +28,8 @@
 @property (strong, nonatomic) IBOutlet UITextField *indexLabel;
 @property (strong, nonatomic) IBOutlet UITextField *invitationLinkLabel;
 @property (strong, nonatomic) IBOutlet UILabel *walletIdentifierLabel;
-@property (strong, nonatomic) IBOutlet UILabel *fundingAccountIdentifierLabel;
-@property (strong, nonatomic) IBOutlet UILabel *typeLabel;
-@property (strong, nonatomic) IBOutlet UISwitch *registerOnL2Switch;
 @property (strong, nonatomic) IBOutlet UISwitch *registerUsernameSwitch;
 @property (strong, nonatomic) DSWallet *wallet;
-@property (assign, nonatomic) BOOL shouldRegisterOnL2;
 @property (assign, nonatomic) BOOL shouldRegisterUsername;
 
 
@@ -45,7 +41,6 @@
     [super viewDidLoad];
     [self setToDefaultWallet];
 
-    self.shouldRegisterOnL2 = YES;
     self.shouldRegisterUsername = YES;
     if (uint256_is_zero(self.wallet.chain.dpnsContractID)) {
         self.shouldRegisterUsername = NO;
@@ -53,14 +48,6 @@
     }
 
     self.indexLabel.text = [NSString stringWithFormat:@"%d", [self.wallet unusedBlockchainIdentityIndex]];
-}
-
-- (IBAction)registerOnL2SwitchValueChanged:(UISwitch *)sender {
-    self.shouldRegisterOnL2 = sender.isOn;
-    if (!self.shouldRegisterOnL2) {
-        [self.registerUsernameSwitch setOn:FALSE animated:YES];
-        self.shouldRegisterUsername = NO;
-    }
 }
 
 - (IBAction)registerUsernameSwitchValueChanged:(UISwitch *)sender {
@@ -126,43 +113,32 @@
         }
     }
     NSString *invitationLink = self.invitationLinkLabel.text;
-    
-    DSBlockchainIdentityRegistrationStep steps = DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence;
-    if (self.shouldRegisterOnL2) {
-        steps |= DSBlockchainIdentityRegistrationStep_Identity;
-    }
+
+    DSBlockchainIdentityRegistrationStep steps = DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence | DSBlockchainIdentityRegistrationStep_Identity;
     if (self.shouldRegisterUsername) {
         steps |= DSBlockchainIdentityRegistrationStep_Username;
     }
-    
-    DSBlockchainInvitation * invitation = [[DSBlockchainInvitation alloc] initWithInvitationLink:invitationLink];
-    
-    [invitation retrieveIdentityWithCompletion:^(DSBlockchainIdentity * blockchainIdentity) {
-        [blockchainIdentity generateBlockchainIdentityExtendedPublicKeysWithPrompt:@"Update wallet to allow for Evolution features?"
-                                                                        completion:^(BOOL registered) {
-                                                                            [blockchainIdentity createFundingPrivateKeyWithPrompt:@"Register?"
-                                                                                                                       completion:^(BOOL success, BOOL cancelled) {
-                                                                                                                           if (success && !cancelled) {
-                                                                                                                               [blockchainIdentity continueRegisteringOnNetwork:steps
-                                                                                                                                   withFundingAccount:nil
-                                                                                                                                   forTopupAmount:0
-                                                                                                                                   stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {
 
-                                                                                                                                   }
-                                                                                                                                   completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
-                                                                                                                                       if (error) {
-                                                                                                                                           [self raiseIssue:@"Error" message:error.localizedDescription];
-                                                                                                                                           return;
-                                                                                                                                       } else {
-                                                                                                                                           [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
-                                                                                                                                       }
-                                                                                                                                   }];
-                                                                                                                           }
-                                                                                                                       }];
-                                                                        }];
-    }];
-    
+    uint32_t index = [self.indexLabel.text intValue];
 
+    DSBlockchainInvitation *invitation = [[DSBlockchainInvitation alloc] initWithInvitationLink:invitationLink inWallet:self.wallet];
+
+    [invitation acceptInvitationUsingWalletIndex:index
+        setDashpayUsername:desiredUsername
+        authenticationPrompt:@"Would you like to accept the invitation?"
+        identityRegistrationSteps:steps
+        stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {
+
+        }
+        completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
+            if (error) {
+                [self raiseIssue:@"Error" message:error.localizedDescription];
+                return;
+            } else {
+                [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
+            }
+        }
+        completionQueue:dispatch_get_main_queue()];
 }
 
 - (void)viewController:(UIViewController *)controller didChooseWallet:(DSWallet *)wallet {

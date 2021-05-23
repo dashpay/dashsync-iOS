@@ -11,7 +11,7 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-@class DSWallet, DSBlockchainIdentityRegistrationTransition, DSBlockchainIdentityTopupTransition, DSBlockchainIdentityUpdateTransition, DSBlockchainIdentityCloseTransition, DSAccount, DSChain, DSTransition, DSDashpayUserEntity, DSPotentialOneWayFriendship, DSTransaction, DSFriendRequestEntity, DSPotentialContact, DSCreditFundingTransaction, DSDocumentTransition, DSKey, DPDocumentFactory, DSTransientDashpayUser, DSBlockchainInvitation;
+@class DSWallet, DSBlockchainIdentityRegistrationTransition, DSBlockchainIdentityTopupTransition, DSBlockchainIdentityUpdateTransition, DSBlockchainIdentityCloseTransition, DSAccount, DSChain, DSTransition, DSDashpayUserEntity, DSPotentialOneWayFriendship, DSTransaction, DSFriendRequestEntity, DSPotentialContact, DSCreditFundingTransaction, DSDocumentTransition, DSKey, DPDocumentFactory, DSTransientDashpayUser, DSBlockchainInvitation, DSAuthenticationKeysDerivationPath;
 
 typedef NS_ENUM(NSUInteger, DSBlockchainIdentityRegistrationStep)
 {
@@ -136,7 +136,10 @@ FOUNDATION_EXPORT NSString *const DSBlockchainIdentityUpdateEventDashpaySyncroni
 @property (nonatomic, readonly) BOOL isLocal;
 
 /*! @brief This is if the blockchain identity is made for being an invitation. All invitations should be marked as non local as well. */
-@property (nonatomic, readonly) BOOL isInvitation;
+@property (nonatomic, readonly) BOOL isOutgoingInvitation;
+
+/*! @brief This is if the blockchain identity is made from an invitation we received. */
+@property (nonatomic, readonly) BOOL isFromIncomingInvitation;
 
 /*! @brief This is TRUE if the blockchain identity is an effemeral identity returned when searching. */
 @property (nonatomic, readonly) BOOL isTransient;
@@ -223,6 +226,8 @@ FOUNDATION_EXPORT NSString *const DSBlockchainIdentityUpdateEventDashpaySyncroni
 
 - (void)continueRegisteringOnNetwork:(DSBlockchainIdentityRegistrationStep)steps withFundingAccount:(DSAccount *)fundingAccount forTopupAmount:(uint64_t)topupDuffAmount stepCompletion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepCompleted))stepCompletion completion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *error))completion;
 
+- (void)continueRegisteringIdentityOnNetwork:(DSBlockchainIdentityRegistrationStep)steps stepsCompleted:(DSBlockchainIdentityRegistrationStep)stepsAlreadyCompleted stepCompletion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepCompleted))stepCompletion completion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *error))completion;
+
 - (void)fundingTransactionForTopupAmount:(uint64_t)topupAmount toAddress:(NSString *)address fundedByAccount:(DSAccount *)fundingAccount completion:(void (^_Nullable)(DSCreditFundingTransaction *fundingTransaction))completion;
 
 - (void)fetchIdentityNetworkStateInformationWithCompletion:(void (^)(BOOL success, BOOL found, NSError *error))completion;
@@ -266,7 +271,10 @@ FOUNDATION_EXPORT NSString *const DSBlockchainIdentityUpdateEventDashpaySyncroni
 
 /*! @brief Register the blockchain identity to its wallet from a credit funding registration transaction. This should only be done once on the creation of the blockchain identity.
 */
+
 - (void)generateBlockchainIdentityExtendedPublicKeysWithPrompt:(NSString *)prompt completion:(void (^_Nullable)(BOOL registered))completion;
+
+- (BOOL)setExternalFundingPrivateKey:(DSECDSAKey *)privateKey;
 
 - (BOOL)hasBlockchainIdentityExtendedPublicKeys;
 
@@ -285,6 +293,12 @@ FOUNDATION_EXPORT NSString *const DSBlockchainIdentityUpdateEventDashpaySyncroni
 - (DSKey *_Nullable)createNewKeyOfType:(DSKeyType)type saveKey:(BOOL)saveKey returnIndex:(uint32_t *)rIndex;
 
 - (DSKey *_Nullable)keyOfType:(DSKeyType)type atIndex:(uint32_t)rIndex;
+
++ (DSAuthenticationKeysDerivationPath *_Nullable)derivationPathForType:(DSKeyType)type forWallet:(DSWallet *)wallet;
+
++ (DSKey *_Nullable)keyFromKeyDictionary:(NSDictionary *)dictionary rType:(uint32_t *)rType rIndex:(uint32_t *)rIndex;
+
++ (DSKey *_Nullable)firstKeyInIdentityDictionary:(NSDictionary *)identityDictionary;
 
 // MARK: - Dashpay
 
@@ -356,6 +370,8 @@ FOUNDATION_EXPORT NSString *const DSBlockchainIdentityUpdateEventDashpaySyncroni
 - (void)signedProfileDocumentTransitionInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(DSTransition *transition, BOOL cancelled, NSError *error))completion;
 
 - (void)signAndPublishProfileWithCompletion:(void (^)(BOOL success, BOOL cancelled, NSError *error))completion;
+
+- (BOOL)verifyKeysForWallet:(DSWallet *)wallet;
 
 // MARK: - Dashpay Friendship Helpers
 

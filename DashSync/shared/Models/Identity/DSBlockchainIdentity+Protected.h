@@ -27,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, strong) DSTransientDashpayUser *transientDashpayUser;
 @property (nonatomic, weak) DSBlockchainInvitation *associatedInvitation;
 @property (nonatomic, readonly) DSECDSAKey *registrationFundingPrivateKey;
+@property (nonatomic, assign) BOOL isLocal;
 
 - (DSBlockchainIdentityEntity *)blockchainIdentityEntityInContext:(NSManagedObjectContext *)context;
 
@@ -41,6 +42,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initAtIndex:(uint32_t)index inWallet:(DSWallet *)wallet;
 
 - (instancetype)initAtIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet *)wallet;
+
+- (instancetype)initAtIndex:(uint32_t)index withUniqueId:(UInt256)uniqueId inWallet:(DSWallet *)wallet;
+
+- (instancetype)initAtIndex:(uint32_t)index withIdentityDictionary:(NSDictionary *)identityDictionary inWallet:(DSWallet *)wallet;
 
 - (instancetype)initAtIndex:(uint32_t)index withFundingTransaction:(DSCreditFundingTransaction *)transaction withUsernameDictionary:(NSDictionary<NSString *, NSDictionary *> *_Nullable)usernameDictionary inWallet:(DSWallet *)wallet;
 

@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+#import "DSBlockchainIdentity.h"
 #import <Foundation/Foundation.h>
 
 @class DSBlockchainIdentity, DSWallet, DSCreditFundingTransaction;
@@ -28,15 +29,24 @@ FOUNDATION_EXPORT NSString *const DSBlockchainInvitationUpdateEventLink;
 
 @interface DSBlockchainInvitation : NSObject
 
-- (instancetype)initWithInvitationLink:(NSString *)invitationLink;
+- (instancetype)initWithInvitationLink:(NSString *)invitationLink inWallet:(DSWallet *)wallet;
 
 /*! @brief This is the identity that was made from the invitation. There should always be an identity associated to a blockchain invitation. This identity might not yet be registered on Dash Platform. */
 @property (nonatomic, readonly) DSBlockchainIdentity *identity;
 
+/*! @brief This is an invitation that was created locally. */
+@property (nonatomic, readonly) BOOL createdLocally;
+
+/*! @brief This is an invitation that was created with an external link, and has not yet retrieved the identity. */
+@property (nonatomic, readonly) BOOL needsIdentityRetrieval;
+
 /*! @brief This is the wallet holding the blockchain invitation. There should always be a wallet associated to a blockchain invitation. */
 @property (nonatomic, weak, readonly) DSWallet *wallet;
 
+/*! @brief Registers the blockchain identity if the invitation was created with an invitation link. The blockchain identity is then associated with the invitation. */
+- (void)acceptInvitationUsingWalletIndex:(uint32_t)index setDashpayUsername:(NSString *)dashpayUsername authenticationPrompt:(NSString *)authenticationMessage identityRegistrationSteps:(DSBlockchainIdentityRegistrationStep)identityRegistrationSteps stepCompletion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepCompleted))stepCompletion completion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *error))completion completionQueue:(dispatch_queue_t)completionQueue;
 
+/*! @brief Generates blockchain invitations' extended public keys by asking the user to authentication with the prompt. */
 - (void)generateBlockchainInvitationsExtendedPublicKeysWithPrompt:(NSString *)prompt completion:(void (^_Nullable)(BOOL registered))completion;
 
 /*! @brief Register the blockchain identity to its wallet. This should only be done once on the creation of the blockchain identity.

@@ -18,6 +18,7 @@
 #import "DSDAPICoreNetworkService.h"
 #import "DPErrors.h"
 #import "DSChain.h"
+#import "DSChainLock.h"
 #import "DSDAPIGRPCResponseHandler.h"
 #import "DSDashPlatform.h"
 #import "DSHTTPJSONRPCClient.h"
@@ -86,9 +87,9 @@
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.completionQueue = completionQueue;
     responseHandler.successHandler = ^(NSDictionary *successDictionary) {
-        NSLog(@"%@", successDictionary);
-
         DSTransaction *transaction = [DSTransactionFactory transactionWithMessage:successDictionary[@"transactionData"] onChain:self.chain];
+        //ToDo: set block height properly
+        transaction.blockHeight = self.chain.lastChainLock ? self.chain.lastChainLock.height : self.chain.lastTerminalBlockHeight;
         if (transaction) {
             if (success) {
                 success(transaction);

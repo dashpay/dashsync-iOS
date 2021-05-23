@@ -448,6 +448,25 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
 
 #pragma mark Layer 2
 
+- (id<DSDAPINetworkServiceRequest>)fetchIdentitiesByKeyHashes:(NSArray<NSData *> *)keyHashesArray
+                                              completionQueue:(dispatch_queue_t)completionQueue
+                                                      success:(void (^)(NSArray<NSDictionary *> *identityDictionaries))success
+                                                      failure:(void (^)(NSError *error))failure {
+    NSParameterAssert(keyHashesArray);
+    NSParameterAssert(completionQueue);
+    GetIdentitiesByPublicKeyHashesRequest *getIdentitiesByPublicKeyHashesRequest = [[GetIdentitiesByPublicKeyHashesRequest alloc] init];
+    getIdentitiesByPublicKeyHashesRequest.publicKeyHashesArray = [keyHashesArray mutableCopy];
+    DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
+    responseHandler.chain = self.chain;
+    responseHandler.dispatchQueue = self.grpcDispatchQueue;
+    responseHandler.completionQueue = completionQueue;
+    responseHandler.successHandler = success;
+    responseHandler.errorHandler = failure;
+    GRPCUnaryProtoCall *call = [self.gRPCClient getIdentitiesByPublicKeyHashesWithMessage:getIdentitiesByPublicKeyHashesRequest responseHandler:responseHandler callOptions:nil];
+    [call start];
+    return (id<DSDAPINetworkServiceRequest>)call;
+}
+
 - (id<DSDAPINetworkServiceRequest>)fetchContractForId:(NSData *)contractId
                                       completionQueue:(dispatch_queue_t)completionQueue
                                               success:(void (^)(NSDictionary *contract))success

@@ -18,6 +18,7 @@
 #import "DSDAPIGRPCResponseHandler.h"
 #import "DPContract.h"
 #import "NSData+DSCborDecoding.h"
+#import "NSData+Dash.h"
 #import <DAPI-GRPC/Core.pbobjc.h>
 #import <DAPI-GRPC/Core.pbrpc.h>
 #import <DAPI-GRPC/Platform.pbobjc.h>
@@ -93,6 +94,33 @@
         NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
         [dictionary setObject:[transactionResponse transaction] forKey:@"transactionData"];
         self.responseObject = dictionary;
+        if (error) {
+            self.decodingError = error;
+        }
+    } else if ([message isMemberOfClass:[GetIdentitiesByPublicKeyHashesResponse class]]) {
+        NSAssert(self.chain, @"The chain must be set");
+        GetIdentitiesByPublicKeyHashesResponse *identitiesByPublicKeyHashesResponse = (GetIdentitiesByPublicKeyHashesResponse *)message;
+        NSError *error = nil;
+        NSMutableArray *identityDictionaries = [NSMutableArray array];
+        for (NSData *data in identitiesByPublicKeyHashesResponse.identitiesArray) {
+            if (!data.length) continue;
+            NSDictionary *identityDictionary = [data ds_decodeCborError:&error];
+            if (error) {
+                self.decodingError = error;
+                return;
+            }
+            NSData *identityIdData = [identityDictionary objectForKey:@"id"];
+            UInt256 identityId = identityIdData.UInt256;
+            if (uint256_is_zero(identityId)) {
+                self.decodingError = [NSError errorWithDomain:@"DashSync"
+                                                         code:500
+                                                     userInfo:@{NSLocalizedDescriptionKey:
+                                                                  DSLocalizedString(@"Platform returned an incorrect value as an identity ID", nil)}];
+                return;
+            }
+            [identityDictionaries addObject:identityDictionary];
+        }
+        self.responseObject = identityDictionaries;
         if (error) {
             self.decodingError = error;
         }

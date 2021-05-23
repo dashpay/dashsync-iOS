@@ -16,6 +16,7 @@
 //
 
 #import "DSIdentitiesManager.h"
+#import "DSAuthenticationKeysDerivationPath.h"
 #import "DSBlockchainIdentity+Protected.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSChain+Protected.h"
@@ -492,6 +493,86 @@
             });
         }
     }];
+}
+
+- (NSArray<DSBlockchainIdentity *> *)identitiesFromIdentityDictionaries:(NSArray<NSDictionary *> *)identityDictionaries keyIndexes:(NSDictionary *)keyIndexes forWallet:(DSWallet *)wallet {
+    NSMutableArray *identities = [NSMutableArray array];
+    for (NSDictionary *identityDictionary in identityDictionaries) {
+        DSKey *key = [DSBlockchainIdentity firstKeyInIdentityDictionary:identityDictionary];
+        NSNumber *index = [keyIndexes objectForKey:key.publicKeyData];
+        if (index) {
+            DSBlockchainIdentity *blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index.intValue withIdentityDictionary:identityDictionary inWallet:wallet];
+            [identities addObject:blockchainIdentity];
+        }
+    }
+    return identities;
+}
+
+- (void)retrieveIdentitiesByKeysWithCompletion:(IdentitiesCompletionBlock)completion completionQueue:(dispatch_queue_t)completionQueue {
+    if (!self.chain.isEvolutionEnabled) {
+        if (completion) {
+            dispatch_async(completionQueue, ^{
+                completion(YES, @[], @[]);
+            });
+        }
+        return;
+    }
+    dispatch_async(self.identityQueue, ^{
+        NSArray<DSWallet *> *wallets = self.chain.wallets;
+        DSDAPIClient *client = self.chain.chainManager.DAPIClient;
+        NSMutableArray<NSData *> *keyHashes = [NSMutableArray array];
+        __block dispatch_group_t dispatch_group = dispatch_group_create();
+        __block NSMutableArray *errors = [NSMutableArray array];
+        __block NSMutableArray *allIdentities = [NSMutableArray array];
+
+        for (DSWallet *wallet in wallets) {
+            uint32_t unusedIndex = [wallet unusedBlockchainIdentityIndex];
+            DSAuthenticationKeysDerivationPath *derivationPath = [DSBlockchainIdentity derivationPathForType:DSKeyType_ECDSA forWallet:wallet];
+            const int keysToCheck = 5;
+            NSMutableDictionary *keyIndexes = [NSMutableDictionary dictionary];
+            for (int i = 0; i < keysToCheck; i++) {
+                const NSUInteger indexes[] = {(unusedIndex + i) | BIP32_HARD, 0 | BIP32_HARD};
+                NSIndexPath *indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
+                DSKey *key = [derivationPath publicKeyAtIndexPath:indexPath];
+                [keyHashes addObject:uint160_data([key hash160])];
+                [keyIndexes setObject:@(unusedIndex + i) forKey:key.publicKeyData];
+            }
+            dispatch_group_enter(dispatch_group);
+            [client.DAPIPlatformNetworkService fetchIdentitiesByKeyHashes:keyHashes
+                completionQueue:self.identityQueue
+                success:^(NSArray<NSDictionary *> *_Nonnull identityDictionaries) {
+                    NSArray<DSBlockchainIdentity *> *identities = [self identitiesFromIdentityDictionaries:identityDictionaries keyIndexes:keyIndexes forWallet:wallet];
+                    BOOL success = [wallet registerBlockchainIdentities:identities verify:YES];
+                    if (success) {
+                        [allIdentities addObjectsFromArray:identities];
+                        NSManagedObjectContext * platformContext = [NSManagedObjectContext platformContext];
+                        [platformContext performBlockAndWait:^{
+                            for (DSBlockchainIdentity * identity in identities) {
+                                [identity saveInitialInContext:platformContext];
+                            }
+                            dispatch_group_leave(dispatch_group);
+                        }];
+                    } else {
+                        [errors addObject:[NSError errorWithDomain:@"DashPlatform"
+                                                              code:500
+                                                          userInfo:@{NSLocalizedDescriptionKey:
+                                                                       DSLocalizedString(@"Identity has unknown keys", nil)}]];
+                        dispatch_group_leave(dispatch_group);
+                    }
+                    
+                }
+                failure:^(NSError *_Nonnull error) {
+                    if (error) {
+                        [errors addObject:error];
+                    }
+                    dispatch_group_leave(dispatch_group);
+                }];
+        }
+
+        dispatch_group_notify(dispatch_group, completionQueue, ^{
+            completion(!errors.count, allIdentities, errors);
+        });
+    });
 }
 
 // MARK: - DSChainIdentitiesDelegate

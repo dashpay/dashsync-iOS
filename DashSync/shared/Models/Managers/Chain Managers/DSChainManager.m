@@ -667,19 +667,23 @@
 - (void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain *)chain {
     DSLog(@"Chain finished syncing masternode list and quorums, it should start syncing chain");
 
-    if (self.peerManager.connectedPeerCount == 0) {
-        if (self.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
-            self.syncPhase = DSChainSyncPhase_ChainSync;
+    [self.identitiesManager
+        retrieveIdentitiesByKeysWithCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *_Nonnull errors) {
+            if (self.peerManager.connectedPeerCount == 0) {
+                if (self.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
+                    self.syncPhase = DSChainSyncPhase_ChainSync;
+                }
+                [self.peerManager connect];
+            } else if (!self.peerManager.masternodeList && self.masternodeManager.currentMasternodeList) {
+                [self.peerManager useMasternodeList:self.masternodeManager.currentMasternodeList withConnectivityNonce:self.sessionConnectivityNonce];
+            } else {
+                if (self.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
+                    self.syncPhase = DSChainSyncPhase_ChainSync;
+                    [self chainShouldStartSyncingBlockchain:chain onPeer:self.peerManager.downloadPeer];
+                }
+            }
         }
-        [self.peerManager connect];
-    } else if (!self.peerManager.masternodeList && self.masternodeManager.currentMasternodeList) {
-        [self.peerManager useMasternodeList:self.masternodeManager.currentMasternodeList withConnectivityNonce:self.sessionConnectivityNonce];
-    } else {
-        if (self.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
-            self.syncPhase = DSChainSyncPhase_ChainSync;
-            [self chainShouldStartSyncingBlockchain:chain onPeer:self.peerManager.downloadPeer];
-        }
-    }
+                               completionQueue:self.chain.networkingQueue];
 }
 
 - (void)chain:(DSChain *)chain badBlockReceivedFromPeer:(DSPeer *)peer {

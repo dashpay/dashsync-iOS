@@ -1048,6 +1048,12 @@
     setKeychainDict(keyChainDictionary, self.walletBlockchainIdentitiesKey, NO);
 }
 
+- (void)addBlockchainIdentities:(NSArray<DSBlockchainIdentity *> *)blockchainIdentities {
+    for (DSBlockchainIdentity *identity in blockchainIdentities) {
+        [self addBlockchainIdentity:identity];
+    }
+}
+
 - (void)addBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     NSParameterAssert(blockchainIdentity);
     [self.mBlockchainIdentities setObject:blockchainIdentity forKey:blockchainIdentity.lockedOutpointData];
@@ -1061,8 +1067,29 @@
     }
 }
 
-- (void)registerBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+- (BOOL)registerBlockchainIdentities:(NSArray<DSBlockchainIdentity *> *)blockchainIdentities verify:(BOOL)verify {
+    for (DSBlockchainIdentity *identity in blockchainIdentities) {
+        BOOL success = [self registerBlockchainIdentity:identity verify:verify];
+        if (!success) {
+            return FALSE;
+        }
+    }
+    return TRUE;
+}
+
+- (BOOL)registerBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+    return [self registerBlockchainIdentity:blockchainIdentity verify:NO];
+}
+
+- (BOOL)registerBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity verify:(BOOL)verify {
     NSParameterAssert(blockchainIdentity);
+    if (verify) {
+        BOOL verified = [blockchainIdentity verifyKeysForWallet:self];
+        if (!verified) {
+            blockchainIdentity.isLocal = FALSE;
+            return FALSE;
+        }
+    }
 
     if ([self.mBlockchainIdentities objectForKey:blockchainIdentity.lockedOutpointData] == nil) {
         [self addBlockchainIdentity:blockchainIdentity];
@@ -1078,6 +1105,7 @@
     if (!_defaultBlockchainIdentity && (blockchainIdentity.index == 0)) {
         _defaultBlockchainIdentity = blockchainIdentity;
     }
+    return TRUE;
 }
 
 - (void)wipeBlockchainIdentitiesInContext:(NSManagedObjectContext *)context {
