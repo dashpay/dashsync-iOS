@@ -33,6 +33,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithBlockchainIdentityEntity:(DSBlockchainIdentityEntity *)blockchainIdentityEntity;
 
+//This one is called for a local identity that is being recreated from the network
+- (instancetype)initAtIndex:(uint32_t)index withUniqueId:(UInt256)uniqueId inWallet:(DSWallet *)wallet withBlockchainIdentityEntity:(DSBlockchainIdentityEntity *)blockchainIdentityEntity;
+
+//This one is called from an identity that was created locally by creating a credit funding transaction
 - (instancetype)initAtIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet *)wallet withBlockchainIdentityEntity:(DSBlockchainIdentityEntity *)blockchainIdentityEntity;
 
 - (instancetype)initAtIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet *)wallet withBlockchainIdentityEntity:(DSBlockchainIdentityEntity *)blockchainIdentityEntity associatedToInvitation:(DSBlockchainInvitation *)invitation;

@@ -224,6 +224,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     return self;
 }
 
+- (instancetype)initAtIndex:(uint32_t)index withUniqueId:(UInt256)uniqueId inWallet:(DSWallet *)wallet withBlockchainIdentityEntity:(DSBlockchainIdentityEntity *)blockchainIdentityEntity {
+    if (!(self = [self initAtIndex:index withUniqueId:uniqueId inWallet:wallet])) return nil;
+    [self applyIdentityEntity:blockchainIdentityEntity];
+    return self;
+}
+
 - (instancetype)initAtIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet *)wallet withBlockchainIdentityEntity:(DSBlockchainIdentityEntity *)blockchainIdentityEntity associatedToInvitation:(DSBlockchainInvitation *)invitation {
     if (!(self = [self initAtIndex:index withLockedOutpoint:lockedOutpoint inWallet:wallet])) return nil;
     [self setAssociatedInvitation:invitation];
@@ -335,7 +341,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     self.uniqueID = identityIdData.UInt256;
     self.usernameStatuses = [NSMutableDictionary dictionary];
     self.keyInfoDictionaries = [NSMutableDictionary dictionary];
-    self.registrationStatus = DSBlockchainIdentityRegistrationStatus_Unknown;
+    self.registrationStatus = DSBlockchainIdentityRegistrationStatus_Registered;
     self.usernameSalts = [NSMutableDictionary dictionary];
     self.chain = wallet.chain;
     self.index = index;
@@ -4401,6 +4407,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     DSBlockchainIdentityEntity *entity = [DSBlockchainIdentityEntity managedObjectInBlockedContext:context];
     entity.uniqueID = uint256_data(self.uniqueID);
     entity.isLocal = self.isLocal;
+    entity.registrationStatus = self.registrationStatus;
     if (self.isLocal) {
         NSData *transactionHash = uint256_data(self.registrationCreditFundingTransaction.txHash);
         DSCreditFundingTransactionEntity *transactionEntity = (DSCreditFundingTransactionEntity *)[DSTransactionEntity anyObjectInContext:context matching:@"transactionHash.txHash == %@", transactionHash];
@@ -4416,9 +4423,16 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
         [entity addUsernamesObject:usernameEntity];
         [entity setDashpayUsername:usernameEntity];
     }
-    
-    for (NSDictionary * keys in self.keyInfoDictionaries) {
-        
+
+    for (NSNumber *index in self.keyInfoDictionaries) {
+        NSDictionary *keyDictionary = self.keyInfoDictionaries[index];
+        DSBlockchainIdentityKeyStatus status = [keyDictionary[@(DSBlockchainIdentityKeyDictionary_KeyStatus)] unsignedIntValue];
+        DSKeyType keyType = [keyDictionary[@(DSBlockchainIdentityKeyDictionary_KeyType)] unsignedIntValue];
+        DSKey *key = keyDictionary[@(DSBlockchainIdentityKeyDictionary_Key)];
+        DSAuthenticationKeysDerivationPath *derivationPath = [self derivationPathForType:keyType];
+        const NSUInteger indexes[] = {_index, index.unsignedIntegerValue};
+        NSIndexPath *indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
+        [self createNewKey:key forIdentityEntity:entity atPath:indexPath withStatus:status fromDerivationPath:derivationPath inContext:context];
     }
 
     DSDashpayUserEntity *dashpayUserEntity = [DSDashpayUserEntity managedObjectInBlockedContext:context];
@@ -4517,7 +4531,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     return [NSString stringWithFormat:@"%@-%@-%@", self.uniqueIdString, derivationPath.standaloneExtendedPublicKeyUniqueID, [softenedPath indexPathString]];
 }
 
-- (BOOL)createNewKey:(DSKey *)key forIdentityEntity:(DSBlockchainIdentityEntity*)blockchainIdentityEntity atPath:(NSIndexPath *)path withStatus:(DSBlockchainIdentityKeyStatus)status fromDerivationPath:(DSDerivationPath *)derivationPath inContext:(NSManagedObjectContext *)context {
+- (BOOL)createNewKey:(DSKey *)key forIdentityEntity:(DSBlockchainIdentityEntity *)blockchainIdentityEntity atPath:(NSIndexPath *)path withStatus:(DSBlockchainIdentityKeyStatus)status fromDerivationPath:(DSDerivationPath *)derivationPath inContext:(NSManagedObjectContext *)context {
     NSAssert(blockchainIdentityEntity, @"Entity should be present");
     DSDerivationPathEntity *derivationPathEntity = [derivationPath derivationPathEntityInContext:context];
     NSUInteger count = [DSBlockchainIdentityKeyPathEntity countObjectsInContext:context matching:@"blockchainIdentity == %@ && derivationPath == %@ && path == %@", blockchainIdentityEntity, derivationPathEntity, path];
@@ -4531,7 +4545,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 #if DEBUG
             DSLogPrivate(@"Saving key at %@ for user %@", [self identifierForKeyAtPath:path fromDerivationPath:derivationPath], self.currentDashpayUsername);
 #else
-                DSLog(@"Saving key at %@ for user %@", @"<REDACTED>", @"<REDACTED>");
+            DSLog(@"Saving key at %@ for user %@", @"<REDACTED>", @"<REDACTED>");
 #endif
         } else {
             DSKey *privateKey = [self derivePrivateKeyAtIndexPath:path ofType:key.keyType];
@@ -4542,7 +4556,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 #if DEBUG
             DSLogPrivate(@"Saving key after rederivation %@ for user %@", [self identifierForKeyAtPath:path fromDerivationPath:derivationPath], self.currentDashpayUsername);
 #else
-                DSLog(@"Saving key after rederivation %@ for user %@", @"<REDACTED>", @"<REDACTED>");
+            DSLog(@"Saving key after rederivation %@ for user %@", @"<REDACTED>", @"<REDACTED>");
 #endif
         }
 
@@ -4555,7 +4569,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 #if DEBUG
         DSLogPrivate(@"Already had saved this key %@", path);
 #else
-            DSLog(@"Already had saved this key %@", @"<REDACTED>");
+        DSLog(@"Already had saved this key %@", @"<REDACTED>");
 #endif
         return NO; //no need to save the context
     }

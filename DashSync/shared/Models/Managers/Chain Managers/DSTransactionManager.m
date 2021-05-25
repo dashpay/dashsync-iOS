@@ -1275,6 +1275,8 @@
                         blockchainIdentity = [wallet blockchainIdentityForUniqueId:transaction.creditBurnIdentityIdentifier];
                         if (blockchainIdentity) isNewBlockchainIdentity = TRUE;
                     }
+                } else if (blockchainIdentity) {
+                    //blockchainIdentity.registrationCreditFundingTransaction = creditFundingTransaction;
                 }
             } else {
                 [self.chain triggerUpdatesForLocalReferences:transaction];

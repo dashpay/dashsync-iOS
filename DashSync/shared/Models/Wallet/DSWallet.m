@@ -76,6 +76,9 @@
 #define VERIFIED_WALLET_CREATION_TIME_KEY @"VERIFIED_WALLET_CREATION_TIME"
 #define REFERENCE_DATE_2001 978307200
 
+#define IDENTITY_INDEX_KEY @"IDENTITY_INDEX_KEY"
+#define IDENTITY_LOCKED_OUTPUT_KEY @"IDENTITY_LOCKED_OUTPUT_KEY"
+
 @interface DSWallet () {
     NSTimeInterval _lGuessedWalletCreationTime;
 }
@@ -1040,11 +1043,11 @@
     NSParameterAssert(blockchainIdentity);
     NSAssert(blockchainIdentity.wallet == self, @"the blockchainIdentity you are trying to remove is not in this wallet");
 
-    [self.mBlockchainIdentities removeObjectForKey:blockchainIdentity.lockedOutpointData];
+    [self.mBlockchainIdentities removeObjectForKey:blockchainIdentity.uniqueIDData];
     NSError *error = nil;
     NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletBlockchainIdentitiesKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
     if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
-    [keyChainDictionary removeObjectForKey:blockchainIdentity.lockedOutpointData];
+    [keyChainDictionary removeObjectForKey:blockchainIdentity.uniqueIDData];
     setKeychainDict(keyChainDictionary, self.walletBlockchainIdentitiesKey, NO);
 }
 
@@ -1096,10 +1099,17 @@
     }
     NSError *error = nil;
     NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletBlockchainIdentitiesKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
+
+    if (error) return FALSE;
+
     if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
 
     NSAssert(uint256_is_not_zero(blockchainIdentity.uniqueID), @"registrationTransactionHashData must not be null");
-    keyChainDictionary[blockchainIdentity.lockedOutpointData] = @(blockchainIdentity.index);
+    if (uint256_is_zero(blockchainIdentity.lockedOutpointData.transactionOutpoint.hash)) {
+        keyChainDictionary[blockchainIdentity.uniqueIDData] = @{IDENTITY_INDEX_KEY: @(blockchainIdentity.index)};
+    } else {
+        keyChainDictionary[blockchainIdentity.uniqueIDData] = @{IDENTITY_INDEX_KEY: @(blockchainIdentity.index), IDENTITY_LOCKED_OUTPUT_KEY: blockchainIdentity.lockedOutpointData};
+    }
     setKeychainDict(keyChainDictionary, self.walletBlockchainIdentitiesKey, NO);
 
     if (!_defaultBlockchainIdentity && (blockchainIdentity.index == 0)) {
@@ -1143,6 +1153,20 @@
     return (uint32_t)[self.mBlockchainIdentities count];
 }
 
+- (BOOL)upgradeIdentityKeyChain {
+    NSError *error = nil;
+    NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletBlockchainIdentitiesKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
+    NSAssert(error == nil, @"There should be no error during upgrade");
+    if (error) return FALSE;
+    NSMutableDictionary *updatedKeyChainDictionary = [NSMutableDictionary dictionary];
+    for (NSData *blockchainIdentityLockedOutpoint in keyChainDictionary) {
+        NSData *uniqueIdData = uint256_data([blockchainIdentityLockedOutpoint SHA256_2]);
+        [updatedKeyChainDictionary setObject:@{IDENTITY_INDEX_KEY: keyChainDictionary[blockchainIdentityLockedOutpoint], IDENTITY_LOCKED_OUTPUT_KEY: blockchainIdentityLockedOutpoint} forKey:uniqueIdData];
+    }
+    setKeychainDict(updatedKeyChainDictionary, self.walletBlockchainIdentitiesKey, NO);
+    return TRUE;
+}
+
 
 //This loads all the identities that the wallet knows about. If the app was deleted and reinstalled the identity information will remain from the keychain but must be reaquired from the network.
 - (NSMutableDictionary *)blockchainIdentities {
@@ -1159,10 +1183,17 @@
     }
     NSMutableDictionary *rDictionary = [NSMutableDictionary dictionary];
 
-    if (keyChainDictionary) {
-        for (NSData *blockchainIdentityLockedOutpointData in keyChainDictionary) {
-            uint32_t index = [keyChainDictionary[blockchainIdentityLockedOutpointData] unsignedIntValue];
-            DSUTXO blockchainIdentityLockedOutpoint = blockchainIdentityLockedOutpointData.transactionOutpoint;
+    if (keyChainDictionary && keyChainDictionary.count) {
+        if ([[[keyChainDictionary allValues] firstObject] isKindOfClass:[NSNumber class]]) {
+            BOOL upgraded = [self upgradeIdentityKeyChain];
+            if (!upgraded) {
+                return nil;
+            } else {
+                return [self blockchainIdentities];
+            }
+        }
+        for (NSData *uniqueIdData in keyChainDictionary) {
+            uint32_t index = [[keyChainDictionary[uniqueIdData] objectForKey:IDENTITY_INDEX_KEY] unsignedIntValue];
             //DSLogPrivate(@"Blockchain identity unique Id is %@",uint256_hex(blockchainIdentityUniqueId));
             //                UInt256 lastTransitionHash = [self.specialTransactionsHolder lastSubscriptionTransactionHashForRegistrationTransactionHash:registrationTransactionHash];
             //                DSLogPrivate(@"reg %@ last %@",uint256_hex(registrationTransactionHash),uint256_hex(lastTransitionHash));
@@ -1178,13 +1209,18 @@
                 if (blockchainIdentityEntitiesCount != keyChainDictionary.count) {
                     DSLog(@"Unmatching blockchain entities count");
                 }
-                DSBlockchainIdentityEntity *blockchainIdentityEntity = [DSBlockchainIdentityEntity anyObjectInContext:context matching:@"uniqueID == %@", uint256_data([dsutxo_data(blockchainIdentityLockedOutpoint) SHA256_2])];
+                DSBlockchainIdentityEntity *blockchainIdentityEntity = [DSBlockchainIdentityEntity anyObjectInContext:context matching:@"uniqueID == %@", uniqueIdData];
                 DSBlockchainIdentity *blockchainIdentity = nil;
+                NSData *lockedOutpointData = [keyChainDictionary[uniqueIdData] objectForKey:IDENTITY_LOCKED_OUTPUT_KEY];
                 if (blockchainIdentityEntity) {
-                    blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index withLockedOutpoint:blockchainIdentityLockedOutpoint inWallet:self withBlockchainIdentityEntity:blockchainIdentityEntity];
-                } else {
+                    if (lockedOutpointData) {
+                        blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index withLockedOutpoint:lockedOutpointData.transactionOutpoint inWallet:self withBlockchainIdentityEntity:blockchainIdentityEntity];
+                    } else {
+                        blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index withUniqueId:uniqueIdData.UInt256 inWallet:self withBlockchainIdentityEntity:blockchainIdentityEntity];
+                    }
+                } else if (lockedOutpointData) {
                     //No blockchain identity is known in core data
-                    NSData *transactionHashData = uint256_data(uint256_reverse(blockchainIdentityLockedOutpoint.hash));
+                    NSData *transactionHashData = uint256_data(uint256_reverse(lockedOutpointData.transactionOutpoint.hash));
                     DSTransactionEntity *creditRegitrationTransactionEntity = [DSTransactionEntity anyObjectInContext:context matching:@"transactionHash.txHash == %@", transactionHashData];
                     if (creditRegitrationTransactionEntity) {
                         //The registration funding transaction exists
@@ -1200,12 +1236,15 @@
                         }
                     } else {
                         //We also don't have the registration funding transaction
-                        blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index withLockedOutpoint:blockchainIdentityLockedOutpoint inWallet:self];
-                        [blockchainIdentity registerInWalletForBlockchainIdentityUniqueId:[dsutxo_data(blockchainIdentityLockedOutpoint) SHA256_2]];
+                        blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index withUniqueId:uniqueIdData.UInt256 inWallet:self];
+                        [blockchainIdentity registerInWalletForBlockchainIdentityUniqueId:uniqueIdData.UInt256];
                     }
+                } else {
+                    blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index withUniqueId:uniqueIdData.UInt256 inWallet:self];
+                    [blockchainIdentity registerInWalletForBlockchainIdentityUniqueId:uniqueIdData.UInt256];
                 }
                 if (blockchainIdentity) {
-                    rDictionary[blockchainIdentityLockedOutpointData] = blockchainIdentity;
+                    rDictionary[uniqueIdData] = blockchainIdentity;
                     if (index == defaultIndex) {
                         _defaultBlockchainIdentity = blockchainIdentity;
                     }

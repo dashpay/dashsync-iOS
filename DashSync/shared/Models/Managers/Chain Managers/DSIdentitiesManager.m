@@ -479,20 +479,52 @@
 
 
     //DSLogPrivate(@"Paused Sync at block %d to gather identity information on %@",block.height,blockchainIdentity.uniqueIdString);
-    [self fetchNeededNetworkStateInformationForBlockchainIdentity:blockchainIdentity];
+    [self fetchNeededNetworkStateInformationForBlockchainIdentity:blockchainIdentity
+                                                   withCompletion:^(BOOL success, DSBlockchainIdentity *_Nullable blockchainIdentity, NSError *_Nullable error) {
+                                                       if (success && blockchainIdentity != nil) {
+                                                           [self chain:self.chain didFinishInChainSyncPhaseFetchingBlockchainIdentityDAPInformation:blockchainIdentity];
+                                                       }
+                                                   }
+                                                  completionQueue:self.chain.networkingQueue];
 }
 
-- (void)fetchNeededNetworkStateInformationForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+- (void)fetchNeededNetworkStateInformationForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity withCompletion:(IdentityCompletionBlock)completion completionQueue:(dispatch_queue_t)completionQueue {
     [blockchainIdentity fetchNeededNetworkStateInformationWithCompletion:^(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> *_Nullable errors) {
         if (!failureStep || failureStep == DSBlockchainIdentityQueryStep_NoIdentity) {
             //if this was never registered no need to retry
-            [self chain:self.chain didFinishFetchingBlockchainIdentityDAPInformation:blockchainIdentity];
+            if (completion) {
+                dispatch_async(completionQueue, ^{
+                    completion(YES, blockchainIdentity, nil);
+                });
+            }
         } else {
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                [self fetchNeededNetworkStateInformationForBlockchainIdentity:blockchainIdentity];
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), completionQueue, ^{
+                [self fetchNeededNetworkStateInformationForBlockchainIdentity:blockchainIdentity withCompletion:completion completionQueue:completionQueue];
             });
         }
     }];
+}
+
+- (void)fetchNeededNetworkStateInformationForBlockchainIdentities:(NSArray<DSBlockchainIdentity *> *)blockchainIdentities withCompletion:(IdentitiesCompletionBlock)completion completionQueue:(dispatch_queue_t)completionQueue {
+    dispatch_group_t dispatchGroup = dispatch_group_create();
+    __block NSMutableArray *errors = [NSMutableArray array];
+    for (DSBlockchainIdentity *blockchainIdentity in blockchainIdentities) {
+        dispatch_group_enter(dispatchGroup);
+        [self fetchNeededNetworkStateInformationForBlockchainIdentity:blockchainIdentity
+                                                       withCompletion:^(BOOL success, DSBlockchainIdentity *_Nullable blockchainIdentity, NSError *_Nullable error) {
+                                                           if (success && blockchainIdentity != nil) {
+                                                               dispatch_group_leave(dispatchGroup);
+                                                           } else {
+                                                               [errors addObject:error];
+                                                           }
+                                                       }
+                                                      completionQueue:self.identityQueue];
+    }
+    dispatch_group_notify(dispatchGroup, completionQueue, ^{
+        if (completion) {
+            completion(!errors.count, blockchainIdentities, errors);
+        }
+    });
 }
 
 - (NSArray<DSBlockchainIdentity *> *)identitiesFromIdentityDictionaries:(NSArray<NSDictionary *> *)identityDictionaries keyIndexes:(NSDictionary *)keyIndexes forWallet:(DSWallet *)wallet {
@@ -545,9 +577,9 @@
                     BOOL success = [wallet registerBlockchainIdentities:identities verify:YES];
                     if (success) {
                         [allIdentities addObjectsFromArray:identities];
-                        NSManagedObjectContext * platformContext = [NSManagedObjectContext platformContext];
+                        NSManagedObjectContext *platformContext = [NSManagedObjectContext platformContext];
                         [platformContext performBlockAndWait:^{
-                            for (DSBlockchainIdentity * identity in identities) {
+                            for (DSBlockchainIdentity *identity in identities) {
                                 [identity saveInitialInContext:platformContext];
                             }
                             dispatch_group_leave(dispatch_group);
@@ -559,7 +591,6 @@
                                                                        DSLocalizedString(@"Identity has unknown keys", nil)}]];
                         dispatch_group_leave(dispatch_group);
                     }
-                    
                 }
                 failure:^(NSError *_Nonnull error) {
                     if (error) {
@@ -577,8 +608,8 @@
 
 // MARK: - DSChainIdentitiesDelegate
 
-- (void)chain:(DSChain *)chain didFinishFetchingBlockchainIdentityDAPInformation:(DSBlockchainIdentity *)blockchainIdentity {
-    [self.chain.chainManager chain:chain didFinishFetchingBlockchainIdentityDAPInformation:blockchainIdentity];
+- (void)chain:(DSChain *)chain didFinishInChainSyncPhaseFetchingBlockchainIdentityDAPInformation:(DSBlockchainIdentity *)blockchainIdentity {
+    [self.chain.chainManager chain:chain didFinishInChainSyncPhaseFetchingBlockchainIdentityDAPInformation:blockchainIdentity];
 }
 
 @end

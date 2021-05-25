@@ -479,7 +479,7 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 
 @protocol DSChainIdentitiesDelegate
 @required
-- (void)chain:(DSChain *)chain didFinishFetchingBlockchainIdentityDAPInformation:(DSBlockchainIdentity *)blockchainIdentity;
+- (void)chain:(DSChain *)chain didFinishInChainSyncPhaseFetchingBlockchainIdentityDAPInformation:(DSBlockchainIdentity *)blockchainIdentity;
 
 @end
 
@@ -492,6 +492,7 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 - (void)chainFinishedSyncingTransactionsAndBlocks:(DSChain *)chain fromPeer:(DSPeer *_Nullable)peer onMainChain:(BOOL)onMainChain;
 - (void)chainFinishedSyncingInitialHeaders:(DSChain *)chain fromPeer:(DSPeer *_Nullable)peer onMainChain:(BOOL)onMainChain;
 - (void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain *)chain;
+- (void)chainFinishedSyncingIdentities:(DSChain *)chain;
 - (void)chain:(DSChain *)chain receivedOrphanBlock:(DSBlock *)merkleBlock fromPeer:(DSPeer *)peer;
 - (void)chain:(DSChain *)chain wasExtendedWithBlock:(DSBlock *)merkleBlock fromPeer:(DSPeer *)peer;
 - (void)chain:(DSChain *)chain badBlockReceivedFromPeer:(DSPeer *)peer;

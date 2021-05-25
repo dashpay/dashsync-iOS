@@ -561,8 +561,10 @@
     [self.transactionManager chain:chain didSetBlockHeight:height andTimestamp:timestamp forTransactionHashes:txHashes updatedTransactions:updatedTransactions];
 }
 
-- (void)chain:(DSChain *)chain didFinishFetchingBlockchainIdentityDAPInformation:(DSBlockchainIdentity *)blockchainIdentity {
-    [self.peerManager resumeBlockchainSynchronizationOnPeers];
+- (void)chain:(DSChain *)chain didFinishInChainSyncPhaseFetchingBlockchainIdentityDAPInformation:(DSBlockchainIdentity *)blockchainIdentity {
+    dispatch_async(chain.networkingQueue, ^{
+        [self.peerManager resumeBlockchainSynchronizationOnPeers];
+    });
 }
 
 - (void)chainWasWiped:(DSChain *)chain {
@@ -664,26 +666,42 @@
     }
 }
 
+- (void)syncBlockchain:(DSChain *)chain {
+    if (self.peerManager.connectedPeerCount == 0) {
+        if (self.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
+            self.syncPhase = DSChainSyncPhase_ChainSync;
+        }
+        [self.peerManager connect];
+    } else if (!self.peerManager.masternodeList && self.masternodeManager.currentMasternodeList) {
+        [self.peerManager useMasternodeList:self.masternodeManager.currentMasternodeList withConnectivityNonce:self.sessionConnectivityNonce];
+    } else {
+        if (self.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
+            self.syncPhase = DSChainSyncPhase_ChainSync;
+            [self chainShouldStartSyncingBlockchain:chain onPeer:self.peerManager.downloadPeer];
+        }
+    }
+}
+
+- (void)chainFinishedSyncingIdentities:(DSChain *)chain {
+    [self syncBlockchain:chain];
+}
+
 - (void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain *)chain {
     DSLog(@"Chain finished syncing masternode list and quorums, it should start syncing chain");
 
-    [self.identitiesManager
-        retrieveIdentitiesByKeysWithCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *_Nonnull errors) {
-            if (self.peerManager.connectedPeerCount == 0) {
-                if (self.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
-                    self.syncPhase = DSChainSyncPhase_ChainSync;
-                }
-                [self.peerManager connect];
-            } else if (!self.peerManager.masternodeList && self.masternodeManager.currentMasternodeList) {
-                [self.peerManager useMasternodeList:self.masternodeManager.currentMasternodeList withConnectivityNonce:self.sessionConnectivityNonce];
-            } else {
-                if (self.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
-                    self.syncPhase = DSChainSyncPhase_ChainSync;
-                    [self chainShouldStartSyncingBlockchain:chain onPeer:self.peerManager.downloadPeer];
-                }
+    if (chain.isEvolutionEnabled) {
+        [self.identitiesManager
+            retrieveIdentitiesByKeysWithCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *_Nonnull errors) {
+                [self.identitiesManager fetchNeededNetworkStateInformationForBlockchainIdentities:blockchainIdentities
+                                                                                   withCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *_Nonnull errors) {
+                                                                                       [self syncBlockchain:chain];
+                                                                                   }
+                                                                                  completionQueue:self.chain.networkingQueue];
             }
-        }
-                               completionQueue:self.chain.networkingQueue];
+                                   completionQueue:self.chain.networkingQueue];
+    } else {
+        [self syncBlockchain:chain];
+    }
 }
 
 - (void)chain:(DSChain *)chain badBlockReceivedFromPeer:(DSPeer *)peer {

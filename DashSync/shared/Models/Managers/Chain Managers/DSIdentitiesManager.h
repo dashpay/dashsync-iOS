@@ -74,6 +74,8 @@ typedef void (^DashpayUserInfosCompletionBlock)(BOOL success, NSDictionary<NSDat
 
 - (void)retrieveIdentitiesByKeysWithCompletion:(IdentitiesCompletionBlock)completion completionQueue:(dispatch_queue_t)completionQueue;
 
+- (void)fetchNeededNetworkStateInformationForBlockchainIdentities:(NSArray<DSBlockchainIdentity *> *)blockchainIdentities withCompletion:(IdentitiesCompletionBlock)completion completionQueue:(dispatch_queue_t)completionQueue;
+
 @end
 
 NS_ASSUME_NONNULL_END
