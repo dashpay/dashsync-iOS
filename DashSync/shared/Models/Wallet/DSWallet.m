@@ -1059,12 +1059,13 @@
 
 - (void)addBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     NSParameterAssert(blockchainIdentity);
-    [self.mBlockchainIdentities setObject:blockchainIdentity forKey:blockchainIdentity.lockedOutpointData];
+    NSAssert(uint256_is_not_zero(blockchainIdentity.uniqueID), @"The blockchain identity unique ID must be set");
+    [self.mBlockchainIdentities setObject:blockchainIdentity forKey:blockchainIdentity.uniqueIDData];
 }
 
 - (BOOL)containsBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     if (blockchainIdentity.lockedOutpointData) {
-        return ([self.mBlockchainIdentities objectForKey:blockchainIdentity.lockedOutpointData] != nil);
+        return ([self.mBlockchainIdentities objectForKey:blockchainIdentity.uniqueIDData] != nil);
     } else {
         return FALSE;
     }
@@ -1094,7 +1095,7 @@
         }
     }
 
-    if ([self.mBlockchainIdentities objectForKey:blockchainIdentity.lockedOutpointData] == nil) {
+    if ([self.mBlockchainIdentities objectForKey:blockchainIdentity.uniqueIDData] == nil) {
         [self addBlockchainIdentity:blockchainIdentity];
     }
     NSError *error = nil;

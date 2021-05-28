@@ -92,8 +92,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 @property (nonatomic, assign) uint32_t currentMainKeyIndex;
 @property (nonatomic, assign) DSKeyType currentMainKeyType;
 
-@property (nonatomic, strong) DSCreditFundingTransaction *registrationCreditFundingTransaction;
-
 @property (nonatomic, strong) NSMutableDictionary<NSString *, NSData *> *usernameSalts;
 @property (nonatomic, strong) NSMutableDictionary<NSString *, NSData *> *usernameDomains;
 

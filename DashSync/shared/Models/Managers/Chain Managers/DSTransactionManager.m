@@ -27,6 +27,7 @@
 #import "DSAccount.h"
 #import "DSAuthenticationManager.h"
 #import "DSBlock.h"
+#import "DSBlockchainIdentity+Protected.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSBloomFilter.h"
 #import "DSChain+Protected.h"
@@ -1276,7 +1277,7 @@
                         if (blockchainIdentity) isNewBlockchainIdentity = TRUE;
                     }
                 } else if (blockchainIdentity) {
-                    //blockchainIdentity.registrationCreditFundingTransaction = creditFundingTransaction;
+                    blockchainIdentity.registrationCreditFundingTransaction = creditFundingTransaction;
                 }
             } else {
                 [self.chain triggerUpdatesForLocalReferences:transaction];

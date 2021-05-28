@@ -28,6 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) DSBlockchainInvitation *associatedInvitation;
 @property (nonatomic, readonly) DSECDSAKey *registrationFundingPrivateKey;
 @property (nonatomic, assign) BOOL isLocal;
+@property (nonatomic, strong) DSCreditFundingTransaction *registrationCreditFundingTransaction;
 
 - (DSBlockchainIdentityEntity *)blockchainIdentityEntityInContext:(NSManagedObjectContext *)context;
 
