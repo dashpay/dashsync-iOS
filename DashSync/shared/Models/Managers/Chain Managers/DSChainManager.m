@@ -467,15 +467,9 @@
                                                             object:nil
                                                           userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
     });
-    if ([self.identitiesManager unsyncedBlockchainIdentities].count) {
-        [self.identitiesManager syncBlockchainIdentitiesWithCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *_Nonnull errors) {
-            if (success) {
-                [self.peerManager connect];
-            } else {
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                    [self startSync];
-                });
-            }
+    if ([self.identitiesManager unsyncedBlockchainIdentities].count || (self.chain.isEvolutionEnabled && self.masternodeManager.lastMasternodeListBlockHeight != UINT32_MAX)) {
+        [self.identitiesManager syncBlockchainIdentitiesWithCompletion:^(NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities) {
+            [self.peerManager connect];
         }];
     } else {
         [self.peerManager connect];
@@ -666,7 +660,7 @@
     }
 }
 
-- (void)syncBlockchain:(DSChain *)chain {
+- (void)syncBlockchain {
     if (self.peerManager.connectedPeerCount == 0) {
         if (self.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
             self.syncPhase = DSChainSyncPhase_ChainSync;
@@ -677,30 +671,20 @@
     } else {
         if (self.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
             self.syncPhase = DSChainSyncPhase_ChainSync;
-            [self chainShouldStartSyncingBlockchain:chain onPeer:self.peerManager.downloadPeer];
+            [self chainShouldStartSyncingBlockchain:self.chain onPeer:self.peerManager.downloadPeer];
         }
     }
-}
-
-- (void)chainFinishedSyncingIdentities:(DSChain *)chain {
-    [self syncBlockchain:chain];
 }
 
 - (void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain *)chain {
     DSLog(@"Chain finished syncing masternode list and quorums, it should start syncing chain");
 
     if (chain.isEvolutionEnabled) {
-        [self.identitiesManager
-            retrieveIdentitiesByKeysWithCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *_Nonnull errors) {
-                [self.identitiesManager fetchNeededNetworkStateInformationForBlockchainIdentities:blockchainIdentities
-                                                                                   withCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *_Nonnull errors) {
-                                                                                       [self syncBlockchain:chain];
-                                                                                   }
-                                                                                  completionQueue:self.chain.networkingQueue];
-            }
-                                   completionQueue:self.chain.networkingQueue];
+        [self.identitiesManager syncBlockchainIdentitiesWithCompletion:^(NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities) {
+            [self syncBlockchain];
+        }];
     } else {
-        [self syncBlockchain:chain];
+        [self syncBlockchain];
     }
 }
 

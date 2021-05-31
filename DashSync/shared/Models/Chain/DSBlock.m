@@ -181,7 +181,7 @@
         }
         // recent block is more than 10 minutes old
         if (self.timestamp > (previousBlock.timestamp + 2.5 * 60 * 4)) {
-            DSLog(@"Our block is over 10 minutes old %d > %d", self.timestamp, previousBlock.timestamp);
+            //DSLog(@"Our block is over 10 minutes old %d > %d", self.timestamp, previousBlock.timestamp);
             UInt256 previousTarget = setCompactLE(previousBlock.target);
 
             UInt256 newTarget = uInt256MultiplyUInt32LE(previousTarget, 10);

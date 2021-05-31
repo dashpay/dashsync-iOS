@@ -773,7 +773,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 - (BOOL)isActive {
     if (self.isLocal) {
         if (!self.wallet) return NO;
-        return self.wallet.blockchainIdentities[self.lockedOutpointData] != nil;
+        return self.wallet.blockchainIdentities[self.uniqueIDData] != nil;
     } else {
         return [self.chain.chainManager.identitiesManager foreignBlockchainIdentityWithUniqueId:self.uniqueID] != nil;
     }
@@ -1518,7 +1518,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 
 - (void)fetchIdentityNetworkStateInformationInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(BOOL success, BOOL found, NSError *error))completion {
     //a local identity might not have been published yet
-    [self monitorForBlockchainIdentityWithRetryCount:DEFAULT_FETCH_IDENTITY_RETRY_COUNT retryAbsentCount:0 delay:3 retryDelayType:DSBlockchainIdentityRetryDelayType_SlowingDown50Percent options:self.isLocal ? DSBlockchainIdentityMonitorOptions_AcceptNotFoundAsNotAnError : DSBlockchainIdentityMonitorOptions_None inContext:context completion:completion];
+    //todo retryabsentcount should be 0 if it can be proved to be absent
+    [self monitorForBlockchainIdentityWithRetryCount:DEFAULT_FETCH_IDENTITY_RETRY_COUNT retryAbsentCount:DEFAULT_FETCH_IDENTITY_RETRY_COUNT delay:3 retryDelayType:DSBlockchainIdentityRetryDelayType_SlowingDown50Percent options:self.isLocal ? DSBlockchainIdentityMonitorOptions_AcceptNotFoundAsNotAnError : DSBlockchainIdentityMonitorOptions_None inContext:context completion:completion];
 }
 
 - (void)fetchAllNetworkStateInformationWithCompletion:(void (^)(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> *errors))completion {

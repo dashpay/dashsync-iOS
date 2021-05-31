@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DSDAPINetworkServiceRequest;
 
+typedef void (^IdentitiesSuccessCompletionBlock)(NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities);
 typedef void (^IdentitiesCompletionBlock)(BOOL success, NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *errors);
 typedef void (^IdentityCompletionBlock)(BOOL success, DSBlockchainIdentity *_Nullable blockchainIdentity, NSError *_Nullable error);
 typedef void (^DashpayUserInfoCompletionBlock)(BOOL success, DSTransientDashpayUser *_Nullable dashpayUserInfo, NSError *_Nullable error);
@@ -43,7 +44,7 @@ typedef void (^DashpayUserInfosCompletionBlock)(BOOL success, NSDictionary<NSDat
 
 - (NSArray *)unsyncedBlockchainIdentities;
 
-- (void)syncBlockchainIdentitiesWithCompletion:(IdentitiesCompletionBlock)completion;
+- (void)syncBlockchainIdentitiesWithCompletion:(IdentitiesSuccessCompletionBlock)completion;
 
 - (void)retrieveAllBlockchainIdentitiesChainStates;
 
@@ -71,6 +72,8 @@ typedef void (^DashpayUserInfosCompletionBlock)(BOOL success, NSDictionary<NSDat
 - (id<DSDAPINetworkServiceRequest>)fetchProfilesForBlockchainIdentities:(NSArray<DSBlockchainIdentity *> *)blockchainIdentities withCompletion:(DashpayUserInfosCompletionBlock)completion;
 
 - (void)searchIdentitiesByDPNSRegisteredBlockchainIdentityUniqueID:(NSData *)userID withCompletion:(IdentitiesCompletionBlock)completion;
+
+- (void)retrieveIdentitiesByKeysUntilSuccessWithCompletion:(IdentitiesSuccessCompletionBlock)completion completionQueue:(dispatch_queue_t)completionQueue;
 
 - (void)retrieveIdentitiesByKeysWithCompletion:(IdentitiesCompletionBlock)completion completionQueue:(dispatch_queue_t)completionQueue;
 

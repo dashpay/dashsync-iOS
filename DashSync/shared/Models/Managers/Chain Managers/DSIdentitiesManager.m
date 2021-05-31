@@ -127,28 +127,21 @@
     return unsyncedBlockchainIdentities;
 }
 
-- (void)syncBlockchainIdentitiesWithCompletion:(IdentitiesCompletionBlock)completion {
-    dispatch_group_t dispatchGroup = dispatch_group_create();
-    __block BOOL groupedSuccess = YES;
-    __block NSMutableArray *groupedErrors = [NSMutableArray array];
-    NSArray<DSBlockchainIdentity *> *blockchainIdentities = [self unsyncedBlockchainIdentities];
-    for (DSBlockchainIdentity *blockchainIdentity in blockchainIdentities) {
-        dispatch_group_enter(dispatchGroup);
-        [blockchainIdentity fetchAllNetworkStateInformationWithCompletion:^(DSBlockchainIdentityQueryStep failureStep, NSArray<NSError *> *_Nullable errors) {
-            if (failureStep != DSBlockchainIdentityQueryStep_NoIdentity) {
-                groupedSuccess &= !failureStep;
-                [groupedErrors addObjectsFromArray:errors];
-            }
-            dispatch_group_leave(dispatchGroup);
-        }];
-    }
-
-
-    if (completion) {
-        dispatch_group_notify(dispatchGroup, dispatch_get_main_queue(), ^{
-            completion(groupedSuccess, blockchainIdentities, [groupedErrors copy]);
-        });
-    }
+- (void)syncBlockchainIdentitiesWithCompletion:(IdentitiesSuccessCompletionBlock)completion {
+    [self
+        retrieveIdentitiesByKeysUntilSuccessWithCompletion:^(NSArray<DSBlockchainIdentity *> *_Nullable retrievedBlockchainIdentities) {
+            NSArray<DSBlockchainIdentity *> *blockchainIdentities = [self unsyncedBlockchainIdentities];
+            [self fetchNeededNetworkStateInformationForBlockchainIdentities:blockchainIdentities
+                                                             withCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *_Nonnull errors) {
+                                                                 if (success) {
+                                                                     if (completion) {
+                                                                         completion(blockchainIdentities);
+                                                                     }
+                                                                 }
+                                                             }
+                                                            completionQueue:self.chain.networkingQueue];
+        }
+                                           completionQueue:self.chain.networkingQueue];
 }
 
 - (void)retrieveAllBlockchainIdentitiesChainStates {
@@ -538,6 +531,26 @@
         }
     }
     return identities;
+}
+
+#define RETRIEVE_IDENTITIES_DELAY_INCREMENT 2
+
+- (void)retrieveIdentitiesByKeysUntilSuccessWithCompletion:(IdentitiesSuccessCompletionBlock)completion completionQueue:(dispatch_queue_t)completionQueue {
+    [self internalRetrieveIdentitiesByKeysUntilSuccessWithDelay:0 withCompletion:completion completionQueue:completionQueue];
+}
+
+- (void)internalRetrieveIdentitiesByKeysUntilSuccessWithDelay:(uint32_t)delay withCompletion:(IdentitiesSuccessCompletionBlock)completion completionQueue:(dispatch_queue_t)completionQueue {
+    [self
+        retrieveIdentitiesByKeysWithCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *_Nonnull errors) {
+            if (!success) {
+                dispatch_after(delay, self.identityQueue, ^{
+                    [self internalRetrieveIdentitiesByKeysUntilSuccessWithDelay:delay + RETRIEVE_IDENTITIES_DELAY_INCREMENT withCompletion:completion completionQueue:completionQueue];
+                });
+            } else if (completion) {
+                completion(blockchainIdentities);
+            }
+        }
+                               completionQueue:completionQueue];
 }
 
 - (void)retrieveIdentitiesByKeysWithCompletion:(IdentitiesCompletionBlock)completion completionQueue:(dispatch_queue_t)completionQueue {

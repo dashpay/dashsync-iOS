@@ -492,7 +492,6 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 - (void)chainFinishedSyncingTransactionsAndBlocks:(DSChain *)chain fromPeer:(DSPeer *_Nullable)peer onMainChain:(BOOL)onMainChain;
 - (void)chainFinishedSyncingInitialHeaders:(DSChain *)chain fromPeer:(DSPeer *_Nullable)peer onMainChain:(BOOL)onMainChain;
 - (void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain *)chain;
-- (void)chainFinishedSyncingIdentities:(DSChain *)chain;
 - (void)chain:(DSChain *)chain receivedOrphanBlock:(DSBlock *)merkleBlock fromPeer:(DSPeer *)peer;
 - (void)chain:(DSChain *)chain wasExtendedWithBlock:(DSBlock *)merkleBlock fromPeer:(DSPeer *)peer;
 - (void)chain:(DSChain *)chain badBlockReceivedFromPeer:(DSPeer *)peer;
