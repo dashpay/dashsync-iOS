@@ -243,7 +243,7 @@
         success:^(NSArray<NSDictionary *> *_Nonnull documents) {
             if (documents.count == 0) {
                 if (completion) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
+                    dispatch_async(completionQueue, ^{
                         completion(YES, nil, nil);
                     });
                 }
@@ -253,7 +253,7 @@
 
             DSTransientDashpayUser *transientDashpayUser = [[DSTransientDashpayUser alloc] initWithDashpayProfileDocument:contactDictionary];
             if (completion) {
-                dispatch_async(dispatch_get_main_queue(), ^{
+                dispatch_async(completionQueue, ^{
                     completion(YES, transientDashpayUser, nil);
                 });
             }
@@ -274,13 +274,13 @@
     return call;
 }
 
-- (id<DSDAPINetworkServiceRequest>)fetchProfilesForBlockchainIdentities:(NSArray<DSBlockchainIdentity *> *)blockchainIdentities withCompletion:(DashpayUserInfosCompletionBlock)completion {
+- (id<DSDAPINetworkServiceRequest>)fetchProfilesForBlockchainIdentities:(NSArray<DSBlockchainIdentity *> *)blockchainIdentities withCompletion:(DashpayUserInfosCompletionBlock)completion onCompletionQueue:(dispatch_queue_t)completionQueue {
     __weak typeof(self) weakSelf = self;
 
     DPContract *dashpayContract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
     if ([dashpayContract contractState] != DPContractState_Registered) {
         if (completion) {
-            dispatch_async(dispatch_get_main_queue(), ^{
+            dispatch_async(completionQueue, ^{
                 completion(NO, nil, [NSError errorWithDomain:@"DashSync"
                                                         code:500
                                                     userInfo:@{NSLocalizedDescriptionKey:
@@ -300,10 +300,12 @@
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 if (completion) {
-                    completion(NO, nil, [NSError errorWithDomain:@"DashSync"
-                                                            code:500
-                                                        userInfo:@{NSLocalizedDescriptionKey:
-                                                                     DSLocalizedString(@"Internal memory allocation error", nil)}]);
+                    dispatch_async(completionQueue, ^{
+                        completion(NO, nil, [NSError errorWithDomain:@"DashSync"
+                                                                code:500
+                                                            userInfo:@{NSLocalizedDescriptionKey:
+                                                                         DSLocalizedString(@"Internal memory allocation error", nil)}]);
+                    });
                 }
                 return;
             }
@@ -320,12 +322,14 @@
                 if (!strongSelf) {
                     return;
                 }
-                completion(YES, dashpayUserDictionary, nil);
+                dispatch_async(completionQueue, ^{
+                    completion(YES, dashpayUserDictionary, nil);
+                });
             }
         }
         failure:^(NSError *_Nonnull error) {
             if (completion) {
-                dispatch_async(dispatch_get_main_queue(), ^{
+                dispatch_async(completionQueue, ^{
                     completion(NO, nil, error);
                 });
             }
@@ -365,7 +369,8 @@
                                                                                completion(success, blockchainIdentities, errors);
                                                                            });
                                                                        }
-                                                                   }];
+                                                                   }
+                                                                onCompletionQueue:self.identityQueue];
                                    } else {
                                        if (completion) {
                                            dispatch_async(dispatch_get_main_queue(), ^{

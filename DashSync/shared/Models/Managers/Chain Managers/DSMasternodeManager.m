@@ -239,6 +239,15 @@
     return progress;
 }
 
+- (BOOL)currentMasternodeListIsInLast24Hours {
+    if (!self.currentMasternodeList) return FALSE;
+    DSBlock *block = [self.chain blockForBlockHash:self.currentMasternodeList.blockHash];
+    if (!block) return FALSE;
+    NSTimeInterval currentTimestamp = [[NSDate date] timeIntervalSince1970];
+    NSTimeInterval delta = currentTimestamp - block.timestamp;
+    return fabs(delta) < DAY_TIME_INTERVAL;
+}
+
 
 // MARK: - Set Up and Tear Down
 

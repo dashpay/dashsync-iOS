@@ -467,7 +467,7 @@
                                                             object:nil
                                                           userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
     });
-    if ([self.identitiesManager unsyncedBlockchainIdentities].count || (self.chain.isEvolutionEnabled && self.masternodeManager.lastMasternodeListBlockHeight != UINT32_MAX)) {
+    if (self.chain.isEvolutionEnabled && self.masternodeManager.currentMasternodeListIsInLast24Hours) {
         [self.identitiesManager syncBlockchainIdentitiesWithCompletion:^(NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities) {
             [self.peerManager connect];
         }];
