@@ -15,6 +15,8 @@
 //  limitations under the License.
 //
 
+#import "DSPermissionNotification.h"
+
 #import "DSBiometricsAuthenticator.h"
 
 static LAPolicy const POLICY = LAPolicyDeviceOwnerAuthenticationWithBiometrics;
@@ -69,12 +71,16 @@ static LAPolicy const POLICY = LAPolicyDeviceOwnerAuthenticationWithBiometrics;
 + (void)performBiometricsAuthenticationWithReason:(NSString *)reason
                                     fallbackTitle:(nullable NSString *)fallbackTitle
                                        completion:(void (^)(DSBiometricsAuthenticationResult result))completion {
+    [[NSNotificationCenter defaultCenter] postNotificationName:DSWillRequestOSPermissionNotification object:nil];
+    
     LAContext *context = [[LAContext alloc] init];
     context.localizedFallbackTitle = fallbackTitle;
     [context evaluatePolicy:POLICY
             localizedReason:reason
                       reply:^(BOOL success, NSError *_Nullable error) {
                           dispatch_async(dispatch_get_main_queue(), ^{
+                              [[NSNotificationCenter defaultCenter] postNotificationName:DSDidRequestOSPermissionNotification object:nil];
+
                               DSBiometricsAuthenticationResult result;
                               if (success) {
                                   result = DSBiometricsAuthenticationResultSucceeded;
