@@ -29,6 +29,8 @@ FOUNDATION_EXPORT NSString *const DSBlockchainInvitationUpdateEventLink;
 
 @interface DSBlockchainInvitation : NSObject
 
+/*! @brief Initialized with an invitation link. The wallet must be on a chain that supports platform features.
+ */
 - (instancetype)initWithInvitationLink:(NSString *)invitationLink inWallet:(DSWallet *)wallet;
 
 /*! @brief This is the identity that was made from the invitation. There should always be an identity associated to a blockchain invitation. This identity might not yet be registered on Dash Platform. */
@@ -42,6 +44,16 @@ FOUNDATION_EXPORT NSString *const DSBlockchainInvitationUpdateEventLink;
 
 /*! @brief This is the wallet holding the blockchain invitation. There should always be a wallet associated to a blockchain invitation. */
 @property (nonatomic, weak, readonly) DSWallet *wallet;
+
+/*! @brief Verifies the current invitation link in the invitation was created with a link. If the invitation is valid a transaction will be returned, as well as if the transaction has already been spent.
+    TODO:Spent currently does not work
+ */
+- (void)verifyInvitationLinkWithCompletion:(void (^_Nullable)(DSTransaction *transaction, bool spent, NSError *error))completion completionQueue:(dispatch_queue_t)completionQueue;
+
+/*! @brief Verifies an invitation link. The chain must support platform features. If the invitation is valid a transaction will be returned, as well as if the transaction has already been spent.
+    TODO:Spent currently does not work
+ */
++ (void)verifyInvitationLink:(NSString *)invitationLink onChain:(DSChain *)chain completion:(void (^_Nullable)(DSTransaction *transaction, bool spent, NSError *error))completion completionQueue:(dispatch_queue_t)completionQueue;
 
 /*! @brief Registers the blockchain identity if the invitation was created with an invitation link. The blockchain identity is then associated with the invitation. */
 - (void)acceptInvitationUsingWalletIndex:(uint32_t)index setDashpayUsername:(NSString *)dashpayUsername authenticationPrompt:(NSString *)authenticationMessage identityRegistrationSteps:(DSBlockchainIdentityRegistrationStep)identityRegistrationSteps stepCompletion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepCompleted))stepCompletion completion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *error))completion completionQueue:(dispatch_queue_t)completionQueue;

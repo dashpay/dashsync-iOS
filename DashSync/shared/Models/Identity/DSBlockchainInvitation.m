@@ -172,6 +172,71 @@
     return TRUE;
 }
 
+- (void)verifyInvitationLinkWithCompletion:(void (^_Nullable)(DSTransaction *transaction, bool spent, NSError *error))completion completionQueue:(dispatch_queue_t)completionQueue {
+    [DSBlockchainInvitation verifyInvitationLink:self.link onChain:self.wallet.chain completion:completion completionQueue:completionQueue];
+}
+
++ (void)verifyInvitationLink:(NSString *)invitationLink onChain:(DSChain *)chain completion:(void (^_Nullable)(DSTransaction *transaction, bool spent, NSError *error))completion completionQueue:(dispatch_queue_t)completionQueue {
+    DSDAPICoreNetworkService *coreNetworkService = chain.chainManager.DAPIClient.DAPICoreNetworkService;
+    NSURLComponents *components = [NSURLComponents componentsWithString:invitationLink];
+    NSArray *queryItems = components.queryItems;
+    UInt256 assetLockTransactionHash = UINT256_ZERO;
+    DSECDSAKey *fundingPrivateKey = nil;
+    for (NSURLQueryItem *queryItem in queryItems) {
+        if ([queryItem.name isEqualToString:@"assetlocktx"]) {
+            NSString *assetLockTransactionHashString = queryItem.value;
+            assetLockTransactionHash = assetLockTransactionHashString.hexToData.UInt256;
+        } else if ([queryItem.name isEqualToString:@"pk"]) {
+            NSString *fundingPrivateKeyString = queryItem.value;
+            fundingPrivateKey = [DSECDSAKey keyWithPrivateKey:fundingPrivateKeyString onChain:chain];
+        }
+    }
+    if (uint256_is_zero(assetLockTransactionHash)) {
+        if (completion) {
+            completion(nil, NO, [NSError errorWithDomain:@"DashSync"
+                                                    code:400
+                                                userInfo:@{NSLocalizedDescriptionKey:
+                                                             DSLocalizedString(@"Invitation format is not valid", nil)}]);
+        }
+        return;
+    }
+    if (!fundingPrivateKey || uint256_is_zero(*fundingPrivateKey.secretKey)) {
+        if (completion) {
+            completion(nil, NO, [NSError errorWithDomain:@"DashSync"
+                                                    code:400
+                                                userInfo:@{NSLocalizedDescriptionKey:
+                                                             DSLocalizedString(@"Funding private key is not valid", nil)}]);
+        }
+        return;
+    }
+
+    [coreNetworkService getTransactionWithHash:assetLockTransactionHash
+        completionQueue:completionQueue
+        success:^(DSTransaction *_Nonnull transaction) {
+            NSAssert(transaction, @"transaction must not be null");
+            if (!transaction || ![transaction isKindOfClass:[DSCreditFundingTransaction class]]) {
+                if (completion) {
+                    completion(nil, NO, [NSError errorWithDomain:@"DashSync"
+                                                            code:400
+                                                        userInfo:@{NSLocalizedDescriptionKey:
+                                                                     DSLocalizedString(@"Invitation transaction is not valid", nil)}]);
+                }
+                return;
+            }
+            if (completion) {
+                completion(transaction, NO, nil);
+            }
+        }
+        failure:^(NSError *_Nonnull error) {
+            if (completion) {
+                completion(nil, NO, [NSError errorWithDomain:@"DashSync"
+                                                        code:400
+                                                    userInfo:@{NSLocalizedDescriptionKey:
+                                                                 DSLocalizedString(@"Invitation format is not valid", nil)}]);
+            }
+        }];
+}
+
 - (void)acceptInvitationUsingWalletIndex:(uint32_t)index setDashpayUsername:(NSString *)dashpayUsername authenticationPrompt:(NSString *)authenticationMessage identityRegistrationSteps:(DSBlockchainIdentityRegistrationStep)identityRegistrationSteps stepCompletion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepCompleted))stepCompletion completion:(void (^_Nullable)(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *error))completion completionQueue:(dispatch_queue_t)completionQueue {
     DSDAPICoreNetworkService *coreNetworkService = self.chain.chainManager.DAPIClient.DAPICoreNetworkService;
     NSURLComponents *components = [NSURLComponents componentsWithString:self.link];
