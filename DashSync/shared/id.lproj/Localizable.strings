@@ -1,0 +1,377 @@
+/* No comment provided by engineer. */
+"\n         total %@ (%@)" = "\n         total %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\n(local requested amount: %@)" = "\n(jumlah lokal yang diminta %@)";
+
+/* No comment provided by engineer. */
+"\n\n     amount %@ (%@)" = "\n\n     jumlah %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nALAMAT SUDAH DIGUNAKAN\nAlamat Dash dimaksudkan hanya untuk sekali pakai\n\nmenggunakan kembali mengurangi privasi untuk Anda dan penerima dan dapat mengakibatkan kerugian jika penerima tidak secara langsung mengontrol alamat";
+
+/* No comment provided by engineer. */
+"\nnetwork fee +%@ (%@)" = "\nbiaya jaringan +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to reclaim this masternode?" = "Anda yakin ingin mengklaim kembali masternode ini?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to register a masternode at %@:%d?" = "Apakah Anda yakin ingin mendaftarkan masternode di %1$@:%2$d?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to update this masternode to %@:%d?" = "Apkah Anda yakin ingin memperbarui masternode ini ke %1$@:%2$d?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to update this masternode to pay to %@?" = "Apakah Anda yakin ingin memperbarui masternode ini untuk membayar ke %@?";
+
+/* No comment provided by engineer. */
+"Bad password, try again" = "Kata sandi yang buruk, coba lagi";
+
+/* No comment provided by engineer. */
+"Bad payment request" = "Permintaan pembayaran yang buruk";
+
+/* No comment provided by engineer. */
+"Bad payment request URL" = "URL permintaan pembayaran yang buruk";
+
+/* No comment provided by engineer. */
+"Bad payment URL" = "URL pembayaran yang buruk";
+
+/* No comment provided by engineer. */
+"Cancel" = "Batal";
+
+/* No comment provided by engineer. */
+"Confirm" = "Memastikan";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Pastikan PIN";
+
+/* No comment provided by engineer. */
+"Connect timeout" = "Waktu hubungan habis";
+
+/* No comment provided by engineer. */
+"Couldn't make payment" = "Tidak dapat melakukan pembayaran";
+
+/* No comment provided by engineer. */
+"Dash payments can't be less than %@" = "Pembayaran Dash tidak boleh kurang dari %@";
+
+/* No comment provided by engineer. */
+"Dash transaction not signed" = "Transaksi Dash tidak ditandatangani";
+
+/* No comment provided by engineer. */
+"Dash transaction outputs can't be less than %@" = "Transaksi jumlah total Dash tidak boleh kurang dari %@";
+
+/* No comment provided by engineer. */
+"Devnet" = "Devnet";
+
+/* No comment provided by engineer. */
+"Double spend" = "Pengiriman ganda";
+
+/* The server is not working */
+"Down" = "Bawah";
+
+/* No comment provided by engineer. */
+"Enter old PIN" = "Masukkan PIN lama";
+
+/* No comment provided by engineer. */
+"Error from payment request server %@" = "Kesalahan dari server permintaan pembayaran %@";
+
+/* No comment provided by engineer. */
+"Error signing transaction" = "Kesalahan menandatangani transaksi";
+
+/* No comment provided by engineer. */
+"Ignore" = "Abaikan";
+
+/* No comment provided by engineer. */
+"Insufficient funds" = "Dana tidak mencukupi";
+
+/* No comment provided by engineer. */
+"Insufficient funds for Dash network fee" = "Dana tidak mencukupi untuk biaya jaringan Dash";
+
+/* No comment provided by engineer. */
+"Internal Error" = "Kesalahan internal";
+
+/* No comment provided by engineer. */
+"Invalid DAPI Response" = "Respon DAPI tidak valid";
+
+/* No comment provided by engineer. */
+"Invalid Params" = "Params tidak valid";
+
+/* No comment provided by engineer. */
+"Invalid Request" = "Permintaan Tidak Valid";
+
+/* No comment provided by engineer. */
+"Mainnet" = "Mainnet";
+
+/* No comment provided by engineer. */
+"Method Not Found" = "Metode Tidak Ditemukan";
+
+/* No comment provided by engineer. */
+"Missing certificate" = "Sertifikat hilang";
+
+/* No comment provided by engineer. */
+"No attempts remaining" = "Tidak ada upaya yang tersisa";
+
+/* No comment provided by engineer. */
+"No peers found" = "Tidak ada peer ditemukan";
+
+/* No comment provided by engineer. */
+"Not a valid private key" = "Bukan kunci pribadi yang valid";
+
+/* No comment provided by engineer. */
+"Not connected to the Dash network" = "Tidak terhubung ke jaringan Dash";
+
+/* No comment provided by engineer. */
+"OK" = "OK";
+
+/* No comment provided by engineer. */
+"Parse Error" = "Kesalahan frasa";
+
+/* No comment provided by engineer. */
+"Passcode" = "Kode sandi";
+
+/* No comment provided by engineer. */
+"Password" = "Kata sandi";
+
+/* No comment provided by engineer. */
+"Password protected key" = "Katasandi dilindungi kunci";
+
+/* No comment provided by engineer. */
+"Payee identity isn't certified" = "Identitas penerima tidak disertifikasi";
+
+/* No comment provided by engineer. */
+"PIN for %@" = "PIN untuk %@";
+
+/* Please authenticate to create your Testnet wallet */
+"Please authenticate to create your %@ wallet" = "Harap autentikasi untuk membuat dompet %@";
+
+/* No comment provided by engineer. */
+"Recovery phrase" = "Frasa pemulihan";
+
+/* No comment provided by engineer. */
+"Reduce payment amount by\n%@ (%@)?" = "Kurangi jumlah pembayaran dengan\n%1$@ (%2$@)?";
+
+/* No comment provided by engineer. */
+"Request expired" = "Permintaan telah kedaluwarsa";
+
+/* No comment provided by engineer. */
+"Requested network \"%@\" not currently in use" = "Jaringan yang diminta \"%@\" tidak sedang digunakan";
+
+/* No comment provided by engineer. */
+"Rescan" = "Memindai ulang";
+
+/* No comment provided by engineer. */
+"Reset" = "Atur-ulang";
+
+/* No comment provided by engineer. */
+"Server Error" = "Kesalahan Server";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Tetapkan PIN";
+
+/* No comment provided by engineer. */
+"Testnet" = "Testnet";
+
+/* No comment provided by engineer. */
+"This payment address is already in your wallet" = "Alamat pembayaran ini sudah ada di dompet Anda";
+
+/* No comment provided by engineer. */
+"This private key is already in your wallet" = "Kunci pribadi ini sudah ada di dompet Anda";
+
+/* No comment provided by engineer. */
+"This private key is empty" = "Kunci pribadi ini kosong";
+
+/* No comment provided by engineer. */
+"Transaction canceled, network timeout" = "Transaksi dibatalkan, batas waktu jaringan";
+
+/* No comment provided by engineer. */
+"Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "Biaya transaksi akan lebih mahal daripada dana yang tersedia di kunci pribadi ini (karena \"debu\" deposit kecil)";
+
+/* No comment provided by engineer. */
+"Transaction rejected" = "Transaksi ditolak";
+
+/* No comment provided by engineer. */
+"Try again in %@" = "Coba lagi dalam %@";
+
+/* No comment provided by engineer. */
+"Unexpected response from %@" = "Respons tak terduga dari %@";
+
+/* No comment provided by engineer. */
+"Unknown address" = "Alamat diketahui";
+
+/* No comment provided by engineer. */
+"Unknown Error" = "Kesalahan yang tidak diketahui";
+
+/* No comment provided by engineer. */
+"Unknown JSON-RPC Response" = "Respon JSON-RPC Tidak Diketahui";
+
+/* No comment provided by engineer. */
+"Unrecognized address" = "Alamat tidak dikenal";
+
+/* No comment provided by engineer. */
+"Unsupported signature type" = "Tipe tanda tangan yang tidak didukung";
+
+/* No comment provided by engineer. */
+"Untrusted certificate" = "Sertifikat tak terpercaya";
+
+/* The server is up and running */
+"Up" = "Atas";
+
+/* Updating Price */
+"Updating Price" = "Memperbarui Harga";
+
+/* No comment provided by engineer. */
+"Wallet disabled" = "Dompet dinonaktifkan";
+
+/* No comment provided by engineer. */
+"WARNING" = "PERINGATAN";
+
+/* No comment provided by engineer. */
+"Wipe" = "Menghapus";
+
+/* No comment provided by engineer. */
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Dompet anda mungkin tidak sinkron.\nIni dapat diperbaiki dengan memindai ulang blockchain.";
+
+/* No comment provided by engineer. */
+"Unable to create registration transition" = "Tidak dapat membuat transisi pendaftaran";
+
+/* The Blockchain Identity is not registered */
+"Not Registered" = "Tidak terdaftar";
+
+/* The Blockchain Identity is registered */
+"Registered" = "Terdaftar";
+
+/* The Blockchain Identity is being registered */
+"Registering" = "Mendaftar";
+
+/* It is Unknown if the Blockchain Identity is registered */
+"Unknown" = "Tidak diketahui";
+
+/* Status of Key or Username is Revoked */
+"Revoked" = "Dicabut";
+
+/* No comment provided by engineer. */
+"BLS" = "BLS";
+
+/* No comment provided by engineer. */
+"ECDSA" = "ECDSA";
+
+/* No comment provided by engineer. */
+"Unknown Key Type" = "Jenis Kunci Tidak Diketahui";
+
+/* No comment provided by engineer. */
+"Dashpay Contract is not yet registered on network" = "Kontrak Dashpay belum terdaftar di jaringan";
+
+/* No comment provided by engineer. */
+"DPNS Contract is not yet registered on network" = "Kontrak DPNS belum terdaftar di jaringan";
+
+/* No comment provided by engineer. */
+"Funding transaction could not be created" = "Transaksi pendanaan tidak dapat dibuat";
+
+/* No comment provided by engineer. */
+"Internal key handling error" = "Kesalahan penanganan kunci internal";
+
+/* No comment provided by engineer. */
+"Internal memory allocation error" = "Kesalahan alokasi memori internal";
+
+/* No comment provided by engineer. */
+"Malformed platform response" = "Respons platform rusak";
+
+/* No comment provided by engineer. */
+"Timeout while waiting for funding transaction to be accepted by network" = "Waktu habis ketika menunggu transaksi pendanaan diterima oleh jaringan";
+
+/* No comment provided by engineer. */
+"Transaction could not be signed" = "Transaksi tidak dapat ditandatangani";
+
+/* No comment provided by engineer. */
+"Unable to register registration transition" = "Tidak dapat mendaftarkan transisi pendaftaran";
+
+/* No comment provided by engineer. */
+"User has actions to complete before being able to use Dashpay" = "Pengguna memiliki tindakan yang harus diselesaikan sebelum dapat menggunakan Dashpay";
+
+/* No comment provided by engineer. */
+"Unable to sign transition" = "Tidak dapat menandatangani transisi";
+
+/* No comment provided by engineer. */
+"Transition had nothing to update" = "Transisi tidak perlu diperbarui";
+
+/* No comment provided by engineer. */
+"Contract '%@' doesn't contain a table named '%@'" = "Kontrak '%1$@' tidak berisi tabel bernama '%2$@'";
+
+/* No comment provided by engineer. */
+"The blockchain identity hasn't yet been locally activated" = "Identitas blockchain belum diaktifkan secara lokal";
+
+/* No comment provided by engineer. */
+"The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion" = "Kunci pribadi pendanaan identitas blockchain harus dibuat terlebih dahulu dengan createFundingPrivateKeyWithCompletion";
+
+/* No comment provided by engineer. */
+"The blockchain identity extended public keys need to be registered before you can register a blockchain identity." = "Kunci publik diperpanjang identitas blockchain perlu didaftarkan sebelum Anda dapat mendaftarkan identitas blockchain.";
+
+/* No comment provided by engineer. */
+"Contact request extended public key is incorrectly encrypted." = "Kunci publik tambahan permintaan kontak tidak dienkripsi dengan benar.";
+
+/* No comment provided by engineer. */
+"Error generating public keys" = "Terjadi kesalahan saat membuat kunci publik";
+
+/* No comment provided by engineer. */
+"Accepting a friend request should only happen from a local blockchain identity" = "Menerima permintaan pertemanan seharusnya hanya terjadi dari identitas blockchain lokal";
+
+/* No comment provided by engineer. */
+"You can only accept a friend request from blockchain identity who has sent you one, and none were found" = "Anda hanya dapat menerima permintaan pertemanan dari identitas blockchain yang telah mengirimi Anda satu, dan tidak ada yang ditemukan";
+
+/* An error message for notifying that chain sync has timed out */
+"Synchronization Timeout" = "Waktu Sinkronisasi habis";
+
+/* No comment provided by engineer. */
+"Attempt to query DAPs for blockchain identity with no active keys" = "Mencoba meminta DAPs untuk identitas blockchain tanpa kunci aktif";
+
+/* No comment provided by engineer. */
+"Node at host %@ does not service network" = "Node di host %@ tidak melayani jaringan";
+
+/* No comment provided by engineer. */
+"Node at host %@ does not support bloom filtering" = "Node di host %@ tidak mendukung penyaringan mekar";
+
+/* No comment provided by engineer. */
+"The Dashpay contract is not properly set up" = "Kontrak Dashpay tidak disiapkan dengan benar";
+
+/* No comment provided by engineer. */
+"Contract '%@' needs to first be locally registered or known" = "Kontrak '%@' harus terlebih dahulu terdaftar atau dikenal secara lokal";
+
+/* No comment provided by engineer. */
+"A block could not be mined in the selected time interval." = "Blok tidak dapat ditambang dalam interval waktu yang dipilih.";
+
+/* No comment provided by engineer. */
+"Could not create friendship derivation path" = "Tidak dapat membuat jalur turunan persahabatan";
+
+/* No comment provided by engineer. */
+"Incorrect key format after contact request decryption" = "Format kunci salah setelah dekripsi permintaan kontak";
+
+/* No comment provided by engineer. */
+"Error when updating profile information" = "Error when updating profile information";
+
+/* No comment provided by engineer. */
+"Timeout while waiting for funding transaction to aquire an instant send lock" = "Timeout while waiting for funding transaction to aquire an instant send lock";
+
+/* No comment provided by engineer. */
+"Would you like to share this invitation?" = "Would you like to share this invitation?";
+
+/* No comment provided by engineer. */
+"Identity no longer active in wallet" = "Identity no longer active in wallet";
+
+/* No comment provided by engineer. */
+"The registration credit funding transaction has not been mined yet and has no instant send lock" = "The registration credit funding transaction has not been mined yet and has no instant send lock";
+
+/* No comment provided by engineer. */
+"Transaction does not exist" = "Transaction does not exist";
+
+/* No comment provided by engineer. */
+"Invitation format is not valid" = "Invitation format is not valid";
+
+/* No comment provided by engineer. */
+"Invitation transaction is not valid" = "Invitation transaction is not valid";
+
+/* No comment provided by engineer. */
+"Funding private key is not valid" = "Funding private key is not valid";
+
+/* No comment provided by engineer. */
+"Error setting the external funding private key" = "Error setting the external funding private key";

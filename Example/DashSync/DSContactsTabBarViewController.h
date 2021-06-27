@@ -10,13 +10,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSChainManager, DSBlockchainUser;
+@class DSChainManager, DSBlockchainIdentity;
 
 
 @interface DSContactsTabBarViewController : UITabBarController
 
-@property (nonatomic,strong) DSChainManager * chainManager;
-@property (nonatomic,strong) DSBlockchainUser * blockchainUser;
+@property (nonatomic, strong) DSChainManager *chainManager;
+@property (nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
 
 @end
 

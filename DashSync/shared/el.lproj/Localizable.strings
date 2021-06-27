@@ -1,0 +1,377 @@
+/* No comment provided by engineer. */
+"\n         total %@ (%@)" = "\n         σύνολο %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\n(local requested amount: %@)" = "\n(τοπικό ποσό που ζητήθηκε: %@)";
+
+/* No comment provided by engineer. */
+"\n\n     amount %@ (%@)" = "\n\n     ποσό %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nΗ ΔΙΕΥΘΥΝΣΗ ΕΧΕΙ ΗΔΗ ΧΡΗΣΙΜΟΠΟΙΗΘΕΙ\nΟι Dash διευθύνσεις προορίζονται μόνο για μία χρήση\n\nΗ επαναλαμβανόμενη χρήση της μειώνει το απόρρητο για εσάς όσο και για τον παραλήπτη και μπορεί να οδηγήσει σε απώλεια εάν ο παραλήπτης δεν ελέγχει άμεσα την διεύθυνση";
+
+/* No comment provided by engineer. */
+"\nnetwork fee +%@ (%@)" = "\nτέλος δικτύου +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to reclaim this masternode?" = "Είστε σίγουροι ότι θέλετε να ανακτήσετε αυτό το masternode;";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to register a masternode at %@:%d?" = "Είστε σίγουροι ότι θέλετε να καταχωρήσετε ένα masternode στο %1$@:%2$d;";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to update this masternode to %@:%d?" = "Είστε σίγουροι ότι θέλετε να ενημερώσετε αυτό το masternode στο %1$@:%2$d;";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to update this masternode to pay to %@?" = "Είστε σίγουροι ότι θέλετε να ενημερώσετε αυτό το masternode να πληρώσει στο %@;";
+
+/* No comment provided by engineer. */
+"Bad password, try again" = "Εσφαλμένος κωδικός πρόσβασης, προσπαθήστε ξανά";
+
+/* No comment provided by engineer. */
+"Bad payment request" = "Λάθος αίτηση πληρωμής";
+
+/* No comment provided by engineer. */
+"Bad payment request URL" = "Λάθος URL αίτησης πληρωμής";
+
+/* No comment provided by engineer. */
+"Bad payment URL" = "Λάθος URL πληρωμής";
+
+/* No comment provided by engineer. */
+"Cancel" = "Ακύρωση";
+
+/* No comment provided by engineer. */
+"Confirm" = "Επιβεβαίωση";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Επιβεβαίωση PIN";
+
+/* No comment provided by engineer. */
+"Connect timeout" = "Λήξη χρονικού ορίου";
+
+/* No comment provided by engineer. */
+"Couldn't make payment" = "Δεν μπορούσα να προβώ σε πληρωμή";
+
+/* No comment provided by engineer. */
+"Dash payments can't be less than %@" = "Οι Dash πληρωμές δεν μπορεί να είναι μικρότερες από %@";
+
+/* No comment provided by engineer. */
+"Dash transaction not signed" = "Η Dash συναλλαγή δεν έχει υπογραφεί";
+
+/* No comment provided by engineer. */
+"Dash transaction outputs can't be less than %@" = "Οι έξοδοι της Dash συναλλαγής δεν μπορεί να είναι μικρότερες από %@";
+
+/* No comment provided by engineer. */
+"Devnet" = "Devnet";
+
+/* No comment provided by engineer. */
+"Double spend" = "Διπλό ξόδεμα";
+
+/* The server is not working */
+"Down" = "Κάτω";
+
+/* No comment provided by engineer. */
+"Enter old PIN" = "Εισάγετε παλαιό PIN";
+
+/* No comment provided by engineer. */
+"Error from payment request server %@" = "Σφάλμα από διακομιστή του αιτήματος πληρωμής %@";
+
+/* No comment provided by engineer. */
+"Error signing transaction" = "Σφάλμα υπογραφής συναλλαγής";
+
+/* No comment provided by engineer. */
+"Ignore" = "Παράβλεψη";
+
+/* No comment provided by engineer. */
+"Insufficient funds" = "Ανεπαρκή χρήματα";
+
+/* No comment provided by engineer. */
+"Insufficient funds for Dash network fee" = "Ανεπαρκή χρήματα για την αμοιβή του δικτύου Dash";
+
+/* No comment provided by engineer. */
+"Internal Error" = "Εσωτερικό σφάλμα";
+
+/* No comment provided by engineer. */
+"Invalid DAPI Response" = "Μη έγκυρη απόκριση DAPI";
+
+/* No comment provided by engineer. */
+"Invalid Params" = "Μη έγκυρες Παράμετροι";
+
+/* No comment provided by engineer. */
+"Invalid Request" = "Μη έγκυρο Αίτημα";
+
+/* No comment provided by engineer. */
+"Mainnet" = "Mainnet";
+
+/* No comment provided by engineer. */
+"Method Not Found" = "Η Μέθοδος Δεν Βρέθηκε";
+
+/* No comment provided by engineer. */
+"Missing certificate" = "Λείπει το πιστοποιητικό";
+
+/* No comment provided by engineer. */
+"No attempts remaining" = "Δεν απομένουν προσπάθειες";
+
+/* No comment provided by engineer. */
+"No peers found" = "Δε βρέθηκαν κόμβοι";
+
+/* No comment provided by engineer. */
+"Not a valid private key" = "Δεν είναι ενα έγκυρο ιδιωτικό κλειδί";
+
+/* No comment provided by engineer. */
+"Not connected to the Dash network" = "Δεν είστε συνδεδεμένος με το δίκτυο Dash";
+
+/* No comment provided by engineer. */
+"OK" = "Εντάξει";
+
+/* No comment provided by engineer. */
+"Parse Error" = "Σφάλμα Ανάλυσης";
+
+/* No comment provided by engineer. */
+"Passcode" = "Κωδικός πρόσβασης";
+
+/* No comment provided by engineer. */
+"Password" = "Κωδικός";
+
+/* No comment provided by engineer. */
+"Password protected key" = "Προστατευμένο κλειδί με κωδικό πρόσβασης";
+
+/* No comment provided by engineer. */
+"Payee identity isn't certified" = "Η ταυτότητα του δικαιούχου δεν είναι πιστοποιημένη";
+
+/* No comment provided by engineer. */
+"PIN for %@" = "PIN για %@";
+
+/* Please authenticate to create your Testnet wallet */
+"Please authenticate to create your %@ wallet" = "Ταυτοποιηθείτε για να δημιουργήσετε το δικό σας %@ πορτοφόλι ";
+
+/* No comment provided by engineer. */
+"Recovery phrase" = "Φράση ανάκτησης";
+
+/* No comment provided by engineer. */
+"Reduce payment amount by\n%@ (%@)?" = "Μείωση του ποσού πληρωμής κατά\n%1$@ (%2$@);";
+
+/* No comment provided by engineer. */
+"Request expired" = "Το αίτημα έληξε";
+
+/* No comment provided by engineer. */
+"Requested network \"%@\" not currently in use" = "Το ζητούμενο δίκτυο \"%@\" δεν χρησιμοποιείται προς το παρόν";
+
+/* No comment provided by engineer. */
+"Rescan" = "Επανάληψη της σάρωσης";
+
+/* No comment provided by engineer. */
+"Reset" = "Επαναφορά";
+
+/* No comment provided by engineer. */
+"Server Error" = "Σφάλμα διακομιστή!";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Ορίστε PIN";
+
+/* No comment provided by engineer. */
+"Testnet" = "Testnet";
+
+/* No comment provided by engineer. */
+"This payment address is already in your wallet" = "Αυτή η διεύθυνση πληρωμής είναι ήδη στο πορτοφόλι σας";
+
+/* No comment provided by engineer. */
+"This private key is already in your wallet" = "Αυτό το ιδιωτικό κλειδί είναι ήδη στο πορτοφόλι σας";
+
+/* No comment provided by engineer. */
+"This private key is empty" = "Aυτό το ιδιωτικό κλειδί είναι άδειο";
+
+/* No comment provided by engineer. */
+"Transaction canceled, network timeout" = "Η συναλλαγή ακυρώθηκε, λήξη χρονικού ορίου δικτύου";
+
+/* No comment provided by engineer. */
+"Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "Το τέλος δικτύου θα κόστιζε περισσότερο από τα χρήματα που υπάρχουν σε αυτό το ιδιωτικό κλειδί (λόγω πολλών μικρών καταθέσεων \"σκόνη\")";
+
+/* No comment provided by engineer. */
+"Transaction rejected" = "Η συναλλαγή απορρίφθηκε";
+
+/* No comment provided by engineer. */
+"Try again in %@" = "Προσπαθήστε ξανά σε %@";
+
+/* No comment provided by engineer. */
+"Unexpected response from %@" = "Απρόσμενη απάντηση από %@";
+
+/* No comment provided by engineer. */
+"Unknown address" = "Άγνωστη διεύθυνση";
+
+/* No comment provided by engineer. */
+"Unknown Error" = "Άγνωστο Σφάλμα";
+
+/* No comment provided by engineer. */
+"Unknown JSON-RPC Response" = "Άγνωστη απόκριση JSON-RPC";
+
+/* No comment provided by engineer. */
+"Unrecognized address" = "Μη αναγνωρισμένη διεύθυνση";
+
+/* No comment provided by engineer. */
+"Unsupported signature type" = "Μη υποστηριζόμενος τύπος υπογραφής";
+
+/* No comment provided by engineer. */
+"Untrusted certificate" = "Μη αξιόπιστο πιστοποιητικό";
+
+/* The server is up and running */
+"Up" = "Πάνω";
+
+/* Updating Price */
+"Updating Price" = "Ανανέωση Τιμής";
+
+/* No comment provided by engineer. */
+"Wallet disabled" = "Το πορτοφόλι απενεργοποιήθηκε";
+
+/* No comment provided by engineer. */
+"WARNING" = "ΠΡΟΕΙΔΟΠΟΙΗΣΗ";
+
+/* No comment provided by engineer. */
+"Wipe" = "εκκαθάριση";
+
+/* No comment provided by engineer. */
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Το πορτοφόλι σας μπορεί να είναι εκτός συγχρονισμού.\n Αυτό μπορεί συχνά να διορθωθεί με την επανασάρωση των μπλόκ συναλλαγών.";
+
+/* No comment provided by engineer. */
+"Unable to create registration transition" = "Δεν είναι δυνατή η δημιουργία εγγραφής";
+
+/* The Blockchain Identity is not registered */
+"Not Registered" = "Δεν έχετε εγγραφεί";
+
+/* The Blockchain Identity is registered */
+"Registered" = "Εγγραφήκατε";
+
+/* The Blockchain Identity is being registered */
+"Registering" = "Εγγραφή";
+
+/* It is Unknown if the Blockchain Identity is registered */
+"Unknown" = "Άγνωστο";
+
+/* Status of Key or Username is Revoked */
+"Revoked" = "Ανακλήθηκε";
+
+/* No comment provided by engineer. */
+"BLS" = "BLS";
+
+/* No comment provided by engineer. */
+"ECDSA" = "ECDSA";
+
+/* No comment provided by engineer. */
+"Unknown Key Type" = "Άγνωστος Τύπος Κλειδιού";
+
+/* No comment provided by engineer. */
+"Dashpay Contract is not yet registered on network" = "Το συμβόλαιο Dashpay δεν έχει ακόμη εγγραφεί στο δίκτυο";
+
+/* No comment provided by engineer. */
+"DPNS Contract is not yet registered on network" = "Το συμβόλαιο DPNS δεν έχει ακόμη εγγραφεί στο δίκτυο";
+
+/* No comment provided by engineer. */
+"Funding transaction could not be created" = "Δεν ήταν δυνατή η δημιουργία συναλλαγής χρηματοδότησης";
+
+/* No comment provided by engineer. */
+"Internal key handling error" = "Σφάλμα χειρισμού εσωτερικού κλειδιού";
+
+/* No comment provided by engineer. */
+"Internal memory allocation error" = "Σφάλμα εσωτερικής κατανομής μνήμης";
+
+/* No comment provided by engineer. */
+"Malformed platform response" = "Λανθασμένη απόκριση πλατφόρμας";
+
+/* No comment provided by engineer. */
+"Timeout while waiting for funding transaction to be accepted by network" = "Τέλος χρονικού ορίου ενώ περιμένετε να γίνει αποδεκτή η συναλλαγή χρηματοδότησης από το δίκτυο";
+
+/* No comment provided by engineer. */
+"Transaction could not be signed" = "Δεν ήταν δυνατή η υπογραφή της συναλλαγής";
+
+/* No comment provided by engineer. */
+"Unable to register registration transition" = "Δεν είναι δυνατή η εγγραφή της μετάβασης εγγραφής";
+
+/* No comment provided by engineer. */
+"User has actions to complete before being able to use Dashpay" = "Ο χρήστης έχει ενέργειες που πρέπει να ολοκληρωθούν προτού μπορέσει να χρησιμοποιήσει το Dashpay";
+
+/* No comment provided by engineer. */
+"Unable to sign transition" = "Δεν είναι δυνατή η εγγραφή της μετάβασης";
+
+/* No comment provided by engineer. */
+"Transition had nothing to update" = "Η μετάβαση δεν είχε τίποτα να ενημερώσει";
+
+/* No comment provided by engineer. */
+"Contract '%@' doesn't contain a table named '%@'" = "Το συμβόλαιο '%1$@' δεν περιέχει πίνακα με το όνομα '%2$@'";
+
+/* No comment provided by engineer. */
+"The blockchain identity hasn't yet been locally activated" = "Η ταυτότητα blockchain δεν έχει ακόμη ενεργοποιηθεί τοπικά";
+
+/* No comment provided by engineer. */
+"The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion" = "Το ιδιωτικό κλειδί χρηματοδότησης ταυτότητας blockchain πρέπει πρώτα να δημιουργηθεί με το createFundingPrivateKeyWithCompletion";
+
+/* No comment provided by engineer. */
+"The blockchain identity extended public keys need to be registered before you can register a blockchain identity." = "Τα εκτεταμένα δημόσια κλειδιά της ταυτότητας blockchain πρέπει να εγγραφούν για να μπορέσετε να καταχωρίσετε μια ταυτότητα blockchain.";
+
+/* No comment provided by engineer. */
+"Contact request extended public key is incorrectly encrypted." = "Το αίτημα επαφής του επεκταμένου δημόσιου κλειδιού δεν είναι σωστά κρυπτογραφημένο.";
+
+/* No comment provided by engineer. */
+"Error generating public keys" = "Σφάλμα κατά τη δημιουργία δημόσιων κλειδιών";
+
+/* No comment provided by engineer. */
+"Accepting a friend request should only happen from a local blockchain identity" = "Η αποδοχή ενός αιτήματος φιλίας πρέπει να πραγματοποιείται μόνο από μια τοπική ταυτότητα blockchain";
+
+/* No comment provided by engineer. */
+"You can only accept a friend request from blockchain identity who has sent you one, and none were found" = "Μπορείτε να αποδεχτείτε μόνο ένα αίτημα φιλίας από την ταυτότητα blockchain που σας έχει στείλει και δεν βρέθηκε κανένα";
+
+/* An error message for notifying that chain sync has timed out */
+"Synchronization Timeout" = "Λήξη Χρονικού Ορίου Συγχρονισμού";
+
+/* No comment provided by engineer. */
+"Attempt to query DAPs for blockchain identity with no active keys" = "Προσπάθεια ερωτήματος DAP για ταυτότητα blockchain χωρίς ενεργά κλειδιά";
+
+/* No comment provided by engineer. */
+"Node at host %@ does not service network" = "Ο κόμβος στον κεντρικό υπολογιστή %@ δεν εξυπηρετεί το δίκτυο";
+
+/* No comment provided by engineer. */
+"Node at host %@ does not support bloom filtering" = "Ο κόμβος στον κεντρικό υπολογιστή %@ δεν υποστηρίζει bloom filtering";
+
+/* No comment provided by engineer. */
+"The Dashpay contract is not properly set up" = "Το συμβόλαιο Dashpay δεν έχει ρυθμιστεί σωστά";
+
+/* No comment provided by engineer. */
+"Contract '%@' needs to first be locally registered or known" = "Το συμβόλαιο '%@' πρέπει πρώτα να καταχωρηθεί τοπικά ή να είναι γνωστό";
+
+/* No comment provided by engineer. */
+"A block could not be mined in the selected time interval." = "Δεν ήταν δυνατό το mine ενός μπλοκ στο επιλεγμένο χρονικό διάστημα.";
+
+/* No comment provided by engineer. */
+"Could not create friendship derivation path" = "Δεν ήταν δυνατή η δημιουργία διαδρομής φιλίας";
+
+/* No comment provided by engineer. */
+"Incorrect key format after contact request decryption" = "Λανθασμένη μορφή κλειδιού μετά την αποκρυπτογράφηση του αιτήματος επαφής";
+
+/* No comment provided by engineer. */
+"Error when updating profile information" = "Error when updating profile information";
+
+/* No comment provided by engineer. */
+"Timeout while waiting for funding transaction to aquire an instant send lock" = "Timeout while waiting for funding transaction to aquire an instant send lock";
+
+/* No comment provided by engineer. */
+"Would you like to share this invitation?" = "Would you like to share this invitation?";
+
+/* No comment provided by engineer. */
+"Identity no longer active in wallet" = "Identity no longer active in wallet";
+
+/* No comment provided by engineer. */
+"The registration credit funding transaction has not been mined yet and has no instant send lock" = "The registration credit funding transaction has not been mined yet and has no instant send lock";
+
+/* No comment provided by engineer. */
+"Transaction does not exist" = "Transaction does not exist";
+
+/* No comment provided by engineer. */
+"Invitation format is not valid" = "Invitation format is not valid";
+
+/* No comment provided by engineer. */
+"Invitation transaction is not valid" = "Invitation transaction is not valid";
+
+/* No comment provided by engineer. */
+"Funding private key is not valid" = "Funding private key is not valid";
+
+/* No comment provided by engineer. */
+"Error setting the external funding private key" = "Error setting the external funding private key";

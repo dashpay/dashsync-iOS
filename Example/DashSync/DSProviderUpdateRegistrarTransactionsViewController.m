@@ -21,10 +21,10 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
-    
+
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
@@ -41,15 +41,15 @@
 
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    static NSString * reuseIdentifier = @"RegistrarTransactionCellIdentifier";
-    DSProviderUpdateRegistrarTableViewCell *cell = (DSProviderUpdateRegistrarTableViewCell*)[tableView dequeueReusableCellWithIdentifier:reuseIdentifier forIndexPath:indexPath];
-    
-    DSProviderUpdateRegistrarTransaction * transaction = [self.localMasternode.providerUpdateRegistrarTransactions objectAtIndex:indexPath.row];
-    
-    cell.blockHeightLabel.text = [NSString stringWithFormat:@"%d",transaction.blockHeight];
+    static NSString *reuseIdentifier = @"RegistrarTransactionCellIdentifier";
+    DSProviderUpdateRegistrarTableViewCell *cell = (DSProviderUpdateRegistrarTableViewCell *)[tableView dequeueReusableCellWithIdentifier:reuseIdentifier forIndexPath:indexPath];
+
+    DSProviderUpdateRegistrarTransaction *transaction = [self.localMasternode.providerUpdateRegistrarTransactions objectAtIndex:indexPath.row];
+
+    cell.blockHeightLabel.text = [NSString stringWithFormat:@"%d", transaction.blockHeight];
     cell.operatorKeyLabel.text = [NSData dataWithUInt384:transaction.operatorKey].hexString;
     cell.payToAddressLabel.text = [NSString addressWithScriptPubKey:transaction.scriptPayout onChain:transaction.chain];
-    
+
     return cell;
 }
 

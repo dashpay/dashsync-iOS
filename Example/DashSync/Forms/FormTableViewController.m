@@ -20,12 +20,14 @@
 #import "SelectorFormTableViewCell.h"
 #import "SwitcherFormTableViewCell.h"
 #import "TextFieldFormTableViewCell.h"
+#import "TextViewFormTableViewCell.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 static NSString *const SELECTOR_CELL_ID = @"SelectorFormTableViewCell";
 static NSString *const TEXTFIELD_CELL_ID = @"TextFieldFormTableViewCell";
 static NSString *const SWITCHER_CELL_ID = @"SwitcherFormTableViewCell";
+static NSString *const TEXTVIEW_CELL_ID = @"TextViewFormTableViewCell";
 
 @interface FormTableViewController () <TextFieldFormTableViewCellDelegate>
 @end
@@ -35,13 +37,13 @@ static NSString *const SWITCHER_CELL_ID = @"SwitcherFormTableViewCell";
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.tableView.rowHeight = 44.0;
     self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeOnDrag;
 
     NSArray<NSString *> *cellIds = @[
         SELECTOR_CELL_ID,
         TEXTFIELD_CELL_ID,
         SWITCHER_CELL_ID,
+        TEXTVIEW_CELL_ID,
     ];
     for (NSString *cellId in cellIds) {
         UINib *nib = [UINib nibWithNibName:cellId bundle:nil];
@@ -52,7 +54,7 @@ static NSString *const SWITCHER_CELL_ID = @"SwitcherFormTableViewCell";
 
 - (void)setSections:(nullable NSArray<FormSectionModel *> *)sections {
     _sections = [sections copy];
-    
+
     [self.tableView reloadData];
 }
 
@@ -76,19 +78,20 @@ static NSString *const SWITCHER_CELL_ID = @"SwitcherFormTableViewCell";
         SelectorFormTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:SELECTOR_CELL_ID forIndexPath:indexPath];
         cell.cellModel = (SelectorFormCellModel *)cellModel;
         return cell;
-    }
-    else if ([cellModel isKindOfClass:TextFieldFormCellModel.class]) {
+    } else if ([cellModel isKindOfClass:TextViewFormCellModel.class]) {
+        TextViewFormTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:TEXTVIEW_CELL_ID forIndexPath:indexPath];
+        cell.cellModel = (TextViewFormCellModel *)cellModel;
+        return cell;
+    } else if ([cellModel isKindOfClass:TextFieldFormCellModel.class]) {
         TextFieldFormTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:TEXTFIELD_CELL_ID forIndexPath:indexPath];
         cell.cellModel = (TextFieldFormCellModel *)cellModel;
         cell.delegate = self;
         return cell;
-    }
-    else if ([cellModel isKindOfClass:SwitcherFormCellModel.class]) {
+    } else if ([cellModel isKindOfClass:SwitcherFormCellModel.class]) {
         SwitcherFormTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:SWITCHER_CELL_ID forIndexPath:indexPath];
         cell.cellModel = (SwitcherFormCellModel *)cellModel;
         return cell;
-    }
-    else {
+    } else {
         NSAssert(NO, @"Unknown cell model %@", cellModel);
 
         return [UITableViewCell new];
@@ -117,11 +120,17 @@ static NSString *const SWITCHER_CELL_ID = @"SwitcherFormTableViewCell";
 
     if ([cellModel isKindOfClass:SelectorFormCellModel.class]) {
         [self showValueSelectorForDetail:(SelectorFormCellModel *)cellModel];
-    }
-    else if ([cellModel isKindOfClass:SwitcherFormCellModel.class]) {
+    } else if ([cellModel isKindOfClass:SwitcherFormCellModel.class]) {
         SwitcherFormCellModel *switcherModel = (SwitcherFormCellModel *)cellModel;
         switcherModel.on = !switcherModel.on;
     }
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    FormSectionModel *sectionModel = self.sections[indexPath.section];
+    NSArray<BaseFormCellModel *> *items = sectionModel.items;
+    BaseFormCellModel *cellModel = items[indexPath.row];
+    return cellModel.cellHeight;
 }
 
 #pragma mark TextFieldFormTableViewCellDelegate
@@ -133,22 +142,21 @@ static NSString *const SWITCHER_CELL_ID = @"SwitcherFormTableViewCell";
     if (!indexPath) {
         return;
     }
-    
+
     for (NSUInteger i = indexPath.section; i < self.sections.count; i++) {
         FormSectionModel *sectionModel = self.sections[i];
-        NSUInteger j = (indexPath.section == i) ? indexPath.row : 0;
+        NSUInteger j = (indexPath.section == i) ? indexPath.row + 1 : 0;
         for (; j < sectionModel.items.count; j++) {
             TextFieldFormCellModel *cellModel = (TextFieldFormCellModel *)sectionModel.items[j];
             if ([cellModel isKindOfClass:TextFieldFormCellModel.class]) {
                 NSIndexPath *nextIndexPath = [NSIndexPath indexPathForRow:j inSection:i];
-                TextFieldFormTableViewCell *cell = [self.tableView cellForRowAtIndexPath:nextIndexPath];
-                if ([cell isKindOfClass:TextFieldFormTableViewCell.class]) {
-                    [cell textFieldBecomeFirstResponder];
-                }
-                else {
+                id<TextInputFormTableViewCell> cell = [self.tableView cellForRowAtIndexPath:nextIndexPath];
+                if ([cell conformsToProtocol:@protocol(TextInputFormTableViewCell)]) {
+                    [cell textInputBecomeFirstResponder];
+                } else {
                     NSAssert(NO, @"Invalid cell class for TextFieldFormCellModel");
                 }
-                
+
                 return; // we're done
             }
         }

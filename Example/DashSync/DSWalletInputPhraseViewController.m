@@ -11,7 +11,7 @@
 
 @interface DSWalletInputPhraseViewController ()
 @property (strong, nonatomic) IBOutlet UITextView *inputSeedPhraseTextView;
-@property (strong, nonatomic) NSString * randomPassphrase;
+@property (strong, nonatomic) NSString *randomPassphrase;
 - (IBAction)generateRandomPassphrase:(id)sender;
 @property (strong, nonatomic) IBOutlet UIBarButtonItem *saveButton;
 - (IBAction)createWallet:(id)sender;
@@ -42,13 +42,13 @@
  */
 
 - (IBAction)generateRandomPassphrase:(id)sender {
-    self.randomPassphrase = [DSWallet generateRandomSeed];
+    self.randomPassphrase = [DSWallet generateRandomSeedPhrase];
     self.inputSeedPhraseTextView.text = self.randomPassphrase;
     self.saveButton.enabled = TRUE;
 }
 
 
--(void)textViewDidChange:(UITextView *)textView {
+- (void)textViewDidChange:(UITextView *)textView {
     if ([[DSBIP39Mnemonic sharedInstance] phraseIsValid:textView.text] || [textView.text isValidDashExtendedPublicKeyOnChain:self.chain]) {
         self.saveButton.enabled = TRUE;
     } else {
@@ -58,16 +58,15 @@
 
 - (IBAction)createWallet:(id)sender {
     if ([[DSBIP39Mnemonic sharedInstance] phraseIsValid:self.inputSeedPhraseTextView.text]) {
-        NSTimeInterval creationDate = [self.inputSeedPhraseTextView.text isEqualToString:self.randomPassphrase]?[NSDate timeIntervalSince1970]:0;
-        DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:self.inputSeedPhraseTextView.text setCreationDate:creationDate forChain:self.chain storeSeedPhrase:YES isTransient:NO];
+        NSTimeInterval creationDate = [self.inputSeedPhraseTextView.text isEqualToString:self.randomPassphrase] ? [NSDate timeIntervalSince1970] : 0;
+        DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:self.inputSeedPhraseTextView.text setCreationDate:creationDate forChain:self.chain storeSeedPhrase:YES isTransient:NO];
         [self.chain registerWallet:wallet];
         [self.navigationController popViewControllerAnimated:TRUE];
     } else if ([self.inputSeedPhraseTextView.text isValidDashExtendedPublicKeyOnChain:self.chain]) {
-        DSDerivationPath * derivationPath = [DSDerivationPath derivationPathWithSerializedExtendedPublicKey:self.inputSeedPhraseTextView.text onChain:self.chain];
+        DSDerivationPath *derivationPath = [DSDerivationPath derivationPathWithSerializedExtendedPublicKey:self.inputSeedPhraseTextView.text onChain:self.chain];
         [self.chain registerStandaloneDerivationPath:derivationPath];
         [self.navigationController popViewControllerAnimated:TRUE];
     }
 }
 
 @end
-

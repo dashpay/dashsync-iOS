@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSActionsViewController : UITableViewController
 
-@property (nonatomic,strong) DSChainManager * chainManager;
+@property (nonatomic, strong) DSChainManager *chainManager;
 
 @end
 

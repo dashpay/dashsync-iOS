@@ -20,7 +20,7 @@
 @property (strong, nonatomic) IBOutlet UITextField *startTextField;
 @property (strong, nonatomic) IBOutlet UITextField *cyclesTextField;
 @property (strong, nonatomic) IBOutlet UITextField *urlTextField;
-@property (strong, nonatomic) DSAccount * account;
+@property (strong, nonatomic) DSAccount *account;
 
 @end
 
@@ -32,7 +32,7 @@
     [self setToDefaultAccount];
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
-    
+
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
@@ -42,13 +42,13 @@
     // Dispose of any resources that can be recreated.
 }
 
--(BOOL)validAmountForString:(NSString*)string {
+- (BOOL)validAmountForString:(NSString *)string {
     uint64_t amount = [[DSPriceManager sharedInstance] amountForDashString:string];
     return (amount > 0);
 }
 
--(BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
-    NSString * novelString = [textField.text stringByReplacingCharactersInRange:range withString:string];
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
+    NSString *novelString = [textField.text stringByReplacingCharactersInRange:range withString:string];
     if (textField == self.identifierTextField) {
         if ([self validAmountForString:self.amountTextField.text] && ![novelString isEqualToString:@""]) {
             self.saveButton.enabled = TRUE;
@@ -62,16 +62,16 @@
             self.saveButton.enabled = FALSE;
         }
     }
-    
+
     return TRUE;
 }
 
 // MARK:- Account Choosing
 
--(void)setToDefaultAccount {
+- (void)setToDefaultAccount {
     self.account = nil;
-    for (DSWallet * wallet in self.chainManager.chain.wallets) {
-        for (DSAccount * account in wallet.accounts) {
+    for (DSWallet *wallet in self.chainManager.chain.wallets) {
+        for (DSAccount *account in wallet.accounts) {
             if (account.balance > PROPOSAL_COST) {
                 self.account = account;
                 break;
@@ -80,18 +80,18 @@
         if (self.account) break;
     }
     if (self.account) {
-        self.accountInfoLabel.text = [NSString stringWithFormat:@"%@-%u",self.account.wallet.uniqueID,self.account.accountNumber];
+        self.accountInfoLabel.text = [NSString stringWithFormat:@"%@-%u", self.account.wallet.uniqueIDString, self.account.accountNumber];
         self.addressTextField.placeholder = self.account.defaultDerivationPath.receiveAddress;
     }
 }
 
--(void)viewController:(UIViewController*)controller didChooseAccount:(DSAccount*)account {
+- (void)viewController:(UIViewController *)controller didChooseAccount:(DSAccount *)account {
     self.account = account;
-    self.accountInfoLabel.text = [NSString stringWithFormat:@"%@-%u",self.account.wallet.uniqueID,self.account.accountNumber];
+    self.accountInfoLabel.text = [NSString stringWithFormat:@"%@-%u", self.account.wallet.uniqueIDString, self.account.accountNumber];
     self.addressTextField.placeholder = self.account.defaultDerivationPath.receiveAddress;
 }
 
--(NSString*)currentAddress {
+- (NSString *)currentAddress {
     if ([self.addressTextField.text isValidDashAddressOnChain:self.chainManager.chain]) {
         return self.addressTextField.text;
     } else {
@@ -102,39 +102,43 @@
 #pragma mark - Table view data source
 
 
--(IBAction)save:(id)sender; {
-    NSString * identifier = self.identifierTextField.text;
+- (IBAction)save:(id)sender;
+{
+    NSString *identifier = self.identifierTextField.text;
     uint64_t amount = [[DSPriceManager sharedInstance] amountForDashString:self.amountTextField.text];
-    DSGovernanceSyncManager * governanceManager = self.chainManager.governanceSyncManager;
-    NSString * address = [self currentAddress];
-    
-    __block DSGovernanceObject * proposal = [governanceManager createProposalWithIdentifier:identifier toPaymentAddress:address forAmount:amount fromAccount:self.account startDate:[NSDate date] cycles:1 url:@"dash.org"];
-    __block DSTransaction * transaction = [proposal collateralTransactionForAccount:self.account];
-    [self.account signTransaction:transaction withPrompt:@"" completion:^(BOOL signedTransaction, BOOL cancelled) {
-        if (signedTransaction) {
-        [self.chainManager.transactionManager publishTransaction:transaction completion:^(NSError * _Nullable error) {
-            if (error) {
-                NSLog(@"%@",error);
-            } else {
-                [self.account registerTransaction:transaction saveImmediately:YES];
-                [proposal registerCollateralTransaction:transaction];
-                [proposal save];
-                [self.chainManager.governanceSyncManager publishProposal:proposal];
-                [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
-            }
-        }];
-        }
-    }];
+    DSGovernanceSyncManager *governanceManager = self.chainManager.governanceSyncManager;
+    NSString *address = [self currentAddress];
 
+    __block DSGovernanceObject *proposal = [governanceManager createProposalWithIdentifier:identifier toPaymentAddress:address forAmount:amount fromAccount:self.account startDate:[NSDate date] cycles:1 url:@"dash.org"];
+    __block DSTransaction *transaction = [proposal collateralTransactionForAccount:self.account];
+    [self.account signTransaction:transaction
+                       withPrompt:@""
+                       completion:^(BOOL signedTransaction, BOOL cancelled) {
+                           if (signedTransaction) {
+                               [self.chainManager.transactionManager publishTransaction:transaction
+                                                                             completion:^(NSError *_Nullable error) {
+                                                                                 if (error) {
+                                                                                     NSLog(@"%@", error);
+                                                                                 } else {
+                                                                                     [self.account registerTransaction:transaction saveImmediately:YES];
+                                                                                     [proposal registerCollateralTransaction:transaction];
+                                                                                     [proposal save];
+                                                                                     [self.chainManager.governanceSyncManager publishProposal:proposal];
+                                                                                     [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
+                                                                                 }
+                                                                             }];
+                           }
+                       }];
 }
 
--(IBAction)cancel:(id)sender; {
+- (IBAction)cancel:(id)sender;
+{
     [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
 }
 
--(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"ChooseAccountSegue"]) {
-        DSAccountChooserViewController * chooseAccountSegue = (DSAccountChooserViewController*)segue.destinationViewController;
+        DSAccountChooserViewController *chooseAccountSegue = (DSAccountChooserViewController *)segue.destinationViewController;
         chooseAccountSegue.chain = self.chainManager.chain;
         chooseAccountSegue.minAccountBalanceNeeded = PROPOSAL_COST;
         chooseAccountSegue.delegate = self;

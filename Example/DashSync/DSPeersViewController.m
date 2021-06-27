@@ -7,17 +7,17 @@
 //
 
 #import "DSPeersViewController.h"
+#import "DSClaimMasternodeViewController.h"
 #import "DSPeerTableViewCell.h"
 #import <DashSync/DashSync.h>
 #import <arpa/inet.h>
 #import <asl.h>
-#import <sys/socket.h>
 #import <netdb.h>
-#import "DSClaimMasternodeViewController.h"
+#import <sys/socket.h>
 
 @interface DSPeersViewController ()
-@property (nonatomic,strong) NSFetchedResultsController * fetchedResultsController;
-@property (nonatomic,strong) NSString * searchString;
+@property (nonatomic, strong) NSFetchedResultsController *fetchedResultsController;
+@property (nonatomic, strong) NSString *searchString;
 @property (strong, nonatomic) IBOutlet UIBarButtonItem *trustedNodeButton;
 - (IBAction)trustSelectedNode:(id)sender;
 
@@ -35,62 +35,60 @@
     // Dispose of any resources that can be recreated.
 }
 
--(DSPeerManager*)peerManager {
+- (DSPeerManager *)peerManager {
     return self.chainManager.peerManager;
 }
 
 #pragma mark - Automation KVO
 
--(NSManagedObjectContext*)managedObjectContext {
-    return [NSManagedObject context];
+- (NSManagedObjectContext *)managedObjectContext {
+    return [NSManagedObjectContext viewContext];
 }
 
--(NSPredicate*)searchPredicate {
+- (NSPredicate *)searchPredicate {
     // Get all shapeshifts that have been received by shapeshift.io or all shapeshifts that have no deposits but where we can verify a transaction has been pushed on the blockchain
+
     if (self.searchString && ![self.searchString isEqualToString:@""]) {
         if ([self.searchString isEqualToString:@"0"] || [self.searchString longLongValue]) {
-            NSArray * ipArray = [self.searchString componentsSeparatedByString:@"."];
+            NSArray *ipArray = [self.searchString componentsSeparatedByString:@"."];
             NSMutableArray *partPredicates = [NSMutableArray array];
-            NSPredicate * chainPredicate = [NSPredicate predicateWithFormat:@"chain == %@",self.chainManager.chain.chainEntity];
+            NSPredicate *chainPredicate = [NSPredicate predicateWithFormat:@"chain == %@", [self.chainManager.chain chainEntityInContext:self.managedObjectContext]];
             [partPredicates addObject:chainPredicate];
-            for (int i = 0; i< MIN(ipArray.count,4); i++) {
+            for (int i = 0; i < MIN(ipArray.count, 4); i++) {
                 if ([ipArray[i] isEqualToString:@""]) break;
-                NSPredicate *currentPartPredicate = [NSPredicate predicateWithFormat:@"(((address >> %@) & 255) == %@)", @(i*8),@([ipArray[i] integerValue])];
+                NSPredicate *currentPartPredicate = [NSPredicate predicateWithFormat:@"(((address >> %@) & 255) == %@)", @(i * 8), @([ipArray[i] integerValue])];
                 [partPredicates addObject:currentPartPredicate];
             }
-            
+
             return [NSCompoundPredicate andPredicateWithSubpredicates:partPredicates];
         } else {
-            return [NSPredicate predicateWithFormat:@"chain == %@",self.chainManager.chain.chainEntity];
+            return [NSPredicate predicateWithFormat:@"chain == %@", [self.chainManager.chain chainEntityInContext:self.managedObjectContext]];
         }
-        
     } else {
-        return [NSPredicate predicateWithFormat:@"chain == %@",self.chainManager.chain.chainEntity];
+        return [NSPredicate predicateWithFormat:@"chain == %@", [self.chainManager.chain chainEntityInContext:self.managedObjectContext]];
     }
-    
 }
 
-- (NSFetchedResultsController *)fetchedResultsController
-{
+- (NSFetchedResultsController *)fetchedResultsController {
     if (_fetchedResultsController) return _fetchedResultsController;
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     // Edit the entity name as appropriate.
     NSEntityDescription *entity = [NSEntityDescription entityForName:@"DSPeerEntity" inManagedObjectContext:self.managedObjectContext];
     [fetchRequest setEntity:entity];
-    
+
     // Set the batch size to a suitable number.
     [fetchRequest setFetchBatchSize:20];
-    
+
     // Edit the sort key as appropriate.
     NSSortDescriptor *claimSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"priority" ascending:NO];
     NSSortDescriptor *heightSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"address" ascending:YES];
-    NSArray *sortDescriptors = @[claimSortDescriptor,heightSortDescriptor];
-    
+    NSArray *sortDescriptors = @[claimSortDescriptor, heightSortDescriptor];
+
     [fetchRequest setSortDescriptors:sortDescriptors];
-    
+
     NSPredicate *filterPredicate = [self searchPredicate];
     [fetchRequest setPredicate:filterPredicate];
-    
+
     // Edit the section name key path and cache name if appropriate.
     // nil for section name key path means "no sections".
     NSFetchedResultsController *aFetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest managedObjectContext:self.managedObjectContext sectionNameKeyPath:nil cacheName:nil];
@@ -103,30 +101,27 @@
         NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
         abort();
     }
-    
+
     return aFetchedResultsController;
 }
 
 - (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
-    
 }
 
 
-- (void)controller:(NSFetchedResultsController *)controller didChangeSection:(id <NSFetchedResultsSectionInfo>)sectionInfo
-           atIndex:(NSUInteger)sectionIndex forChangeType:(NSFetchedResultsChangeType)type {
-    
+- (void)controller:(NSFetchedResultsController *)controller didChangeSection:(id<NSFetchedResultsSectionInfo>)sectionInfo
+             atIndex:(NSUInteger)sectionIndex
+       forChangeType:(NSFetchedResultsChangeType)type {
 }
 
 - (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject
-       atIndexPath:(NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)changeType
-      newIndexPath:(NSIndexPath *)newIndexPath {
-    
+        atIndexPath:(NSIndexPath *)indexPath
+      forChangeType:(NSFetchedResultsChangeType)changeType
+       newIndexPath:(NSIndexPath *)newIndexPath {
 }
 
 
 - (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
-    
-    
 }
 
 #pragma mark - Table view data source
@@ -140,37 +135,36 @@
     return [sectionInfo numberOfObjects];
 }
 
--(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     __unused id<NSFetchedResultsSectionInfo> sectionInfo = [[self.fetchedResultsController sections] objectAtIndex:indexPath.section];
     [self.trustedNodeButton setEnabled:TRUE];
 }
 
--(void)tableView:(UITableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath {
+- (void)tableView:(UITableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath {
     [self.trustedNodeButton setEnabled:FALSE];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     DSPeerTableViewCell *cell = (DSPeerTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"PeerCellIdentifier" forIndexPath:indexPath];
-    
+
     // Configure the cell...
     [self configureCell:cell atIndexPath:indexPath];
     return cell;
 }
 
 
--(void)configureCell:(DSPeerTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
-    
+- (void)configureCell:(DSPeerTableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath {
     DSPeerEntity *peerEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
     char s[INET6_ADDRSTRLEN];
     uint32_t ipAddress = CFSwapInt32HostToBig(peerEntity.address);
-    
-    cell.addressLabel.text = [NSString stringWithFormat:@"%s",inet_ntop(AF_INET, &ipAddress, s, sizeof(s))];
-    cell.priorityLabel.text = [NSString stringWithFormat:@"%u",peerEntity.priority];
 
-    UInt128 address = (UInt128){ .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), ipAddress } };
-    
+    cell.addressLabel.text = [NSString stringWithFormat:@"%s", inet_ntop(AF_INET, &ipAddress, s, sizeof(s))];
+    cell.priorityLabel.text = [NSString stringWithFormat:@"%u", peerEntity.priority];
+
+    UInt128 address = (UInt128){.u32 = {0, 0, CFSwapInt32HostToBig(0xffff), ipAddress}};
+
     DSPeerStatus status = [self.chainManager.peerManager statusForLocation:address port:peerEntity.port];
-    NSString * statusString;
+    NSString *statusString;
     switch (status) {
         case DSPeerStatus_Unknown:
             statusString = @"Unknown";
@@ -192,7 +186,7 @@
     }
     cell.statusLabel.text = statusString;
     DSPeerType type = [self.chainManager.peerManager typeForLocation:address port:peerEntity.port];
-    NSString * typeString;
+    NSString *typeString;
     switch (type) {
         case DSPeerType_Unknown:
             typeString = @"Unknown";
@@ -209,7 +203,7 @@
     cell.nodeTypeLabel.text = typeString;
 }
 
--(void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {
+- (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {
     self.searchString = @"0";
     _fetchedResultsController = nil;
     [self.tableView reloadData];
@@ -222,12 +216,12 @@
 }
 
 - (IBAction)trustSelectedNode:(id)sender {
-    NSIndexPath * indexPath = self.tableView.indexPathForSelectedRow;
+    NSIndexPath *indexPath = self.tableView.indexPathForSelectedRow;
     DSPeerEntity *peerEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    
+
     uint32_t ipAddress = CFSwapInt32HostToBig(peerEntity.address);
     char s[INET6_ADDRSTRLEN];
-    NSString * trustedPeerHost = @"158.69.180.236:9999";//@"176.31.145.11:9999";//[NSString stringWithFormat:@"%s:%d", inet_ntop(AF_INET, &ipAddress, s, sizeof(s)), peerEntity.port];
+    NSString *trustedPeerHost = [NSString stringWithFormat:@"%s:%d", inet_ntop(AF_INET, &ipAddress, s, sizeof(s)), peerEntity.port];
     if ([[self.peerManager trustedPeerHost] isEqualToString:trustedPeerHost]) {
         [self.peerManager removeTrustedPeerHost];
     } else {

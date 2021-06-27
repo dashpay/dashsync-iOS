@@ -22,7 +22,7 @@
     self.chooseButton.enabled = FALSE;
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
-    
+
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
@@ -44,19 +44,19 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     DSWalletTableViewCell *cell = (DSWalletTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"WalletCellIdentifier" forIndexPath:indexPath];
-    
+
     // Configure the cell...
     [self configureCell:cell atIndexPath:indexPath];
     return cell;
 }
 
--(void)configureCell:(DSWalletTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
-    DSWallet * wallet = [self.chain.wallets objectAtIndex:indexPath.section];
-    cell.xPublicKeyLabel.text = wallet.uniqueID;
+- (void)configureCell:(DSWalletTableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath {
+    DSWallet *wallet = [self.chain.wallets objectAtIndex:indexPath.section];
+    cell.xPublicKeyLabel.text = wallet.uniqueIDString;
 }
 
--(NSIndexPath*)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    DSWallet * wallet = [self.chain.wallets objectAtIndex:indexPath.row];
+- (NSIndexPath *)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    DSWallet *wallet = [self.chain.wallets objectAtIndex:indexPath.row];
     if (wallet.balance != 0) {
         self.chooseButton.enabled = TRUE;
         return indexPath;
@@ -67,7 +67,7 @@
 
 - (IBAction)choose:(id)sender {
     if (self.tableView.indexPathForSelectedRow) {
-        DSWallet * wallet = [self.chain.wallets objectAtIndex:self.tableView.indexPathForSelectedRow.row];
+        DSWallet *wallet = [self.chain.wallets objectAtIndex:self.tableView.indexPathForSelectedRow.row];
         [self.delegate viewController:self didChooseWallet:wallet];
         [self.navigationController popViewControllerAnimated:TRUE];
     }

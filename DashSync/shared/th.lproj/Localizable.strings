@@ -1,0 +1,377 @@
+/* No comment provided by engineer. */
+"\n         total %@ (%@)" = "\nยอดรวม %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\n(local requested amount: %@)" = "\n(จำนวนที่ขอในบริเวณท้องถิ่น : %@ )";
+
+/* No comment provided by engineer. */
+"\n\n     amount %@ (%@)" = "\n\nจำนวน %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nที่อยู่ถูกใช้ไปแล้ว\nที่อยู่ของ Dash ตั้งใจที่จะใช้เพียงครั้งเดียวเท่านั้น\n\nการใช้ซ้ำ จะลดค่าความเป็นส่วนตัวของคุณและผู้รับ และจะเกิดการสูญหายแก่ผุ้รับซึ่งไม่สามารถตรวจสอบที่อยู่ได้";
+
+/* No comment provided by engineer. */
+"\nnetwork fee +%@ (%@)" = "\nค่าธรรมเนียมเครือข่าย +%1$@(%2$@)";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to reclaim this masternode?" = "คุณแน่ใจหรือไม่ว่าต้องการเรียกคืนโหมดนี้อีกครั้ง?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to register a masternode at %@:%d?" = "คุณแน่ใจหรือว่าต้องการลงทะเบียน masternode ที่%1$@:%2$d?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to update this masternode to %@:%d?" = "คุณแน่ใจหรือว่าต้องการอัปเดต masternode นี้ %1$@:%2$d?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to update this masternode to pay to %@?" = "คุณแน่ใจหรือว่าต้องการอัปเดต masternode นี้เพื่อจ่าย %@?";
+
+/* No comment provided by engineer. */
+"Bad password, try again" = "รหัสไม่ถูกต้อง, ลองอีกครั้ง";
+
+/* No comment provided by engineer. */
+"Bad payment request" = "คำขอชำระเงินไม่ถูกต้อง";
+
+/* No comment provided by engineer. */
+"Bad payment request URL" = "URL คำขอชำระเงินไม่ถูกต้อง";
+
+/* No comment provided by engineer. */
+"Bad payment URL" = "URL ใบชำระเงินไม่ถูกต้อง";
+
+/* No comment provided by engineer. */
+"Cancel" = "ยกเลิก";
+
+/* No comment provided by engineer. */
+"Confirm" = "ยืนยัน";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "ยืนยัน PIN";
+
+/* No comment provided by engineer. */
+"Connect timeout" = "หมดเวลาเชื่อมต่อ";
+
+/* No comment provided by engineer. */
+"Couldn't make payment" = "ไม่สามารถชำระเงินได้";
+
+/* No comment provided by engineer. */
+"Dash payments can't be less than %@" = "ชำระเงิน dash ไม่สามารถไม่น้อยกว่า %@ ได้";
+
+/* No comment provided by engineer. */
+"Dash transaction not signed" = "ธุรกรรม dash นี้ ยังไม่ถูกลงนาม";
+
+/* No comment provided by engineer. */
+"Dash transaction outputs can't be less than %@" = "รายการธุรกรรม dash ไม่สามารถน้อยกว่า %@  ได้";
+
+/* No comment provided by engineer. */
+"Devnet" = "Devnet";
+
+/* No comment provided by engineer. */
+"Double spend" = "จ่ายเงินสองเท่า";
+
+/* The server is not working */
+"Down" = "เลื่อนลง";
+
+/* No comment provided by engineer. */
+"Enter old PIN" = "ใส่รหัสเก่า";
+
+/* No comment provided by engineer. */
+"Error from payment request server %@" = "ข้อผิดพลาดจากเซิร์ฟเวอร์คำขอชำระเงิน%@";
+
+/* No comment provided by engineer. */
+"Error signing transaction" = "ข้อผิดพลาดการลงชื่อเข้าถึงธุรกรรม ";
+
+/* No comment provided by engineer. */
+"Ignore" = "เพิกเฉย";
+
+/* No comment provided by engineer. */
+"Insufficient funds" = "กองทุนไม่เพียงพอ";
+
+/* No comment provided by engineer. */
+"Insufficient funds for Dash network fee" = "กองทุนเงินไม่เพียงพอสำหรับเครือข่ายของ Dash";
+
+/* No comment provided by engineer. */
+"Internal Error" = "ข้อผิดพลาดภายใน";
+
+/* No comment provided by engineer. */
+"Invalid DAPI Response" = "DAPI ไม่ตอบสนอง";
+
+/* No comment provided by engineer. */
+"Invalid Params" = "พารามิเตอร์ไม่ถูกต้อง";
+
+/* No comment provided by engineer. */
+"Invalid Request" = "คำขอไม่ถูกต้อง";
+
+/* No comment provided by engineer. */
+"Mainnet" = "Mainnet";
+
+/* No comment provided by engineer. */
+"Method Not Found" = "ไม่พบวิธี";
+
+/* No comment provided by engineer. */
+"Missing certificate" = "ไม่พบใบรับรอง";
+
+/* No comment provided by engineer. */
+"No attempts remaining" = "ไม่สามารถพยายามได้อีก";
+
+/* No comment provided by engineer. */
+"No peers found" = "ไม่มีผู้ปล่อย";
+
+/* No comment provided by engineer. */
+"Not a valid private key" = "ไม่ใช่ใช่คีย์ส่วนตัวที่ถูกต้อง";
+
+/* No comment provided by engineer. */
+"Not connected to the Dash network" = "ไม่ได้เชื่อมต่อกับเครือข่ายของ Dash";
+
+/* No comment provided by engineer. */
+"OK" = "โอเค";
+
+/* No comment provided by engineer. */
+"Parse Error" = "Parse Error";
+
+/* No comment provided by engineer. */
+"Passcode" = "รหัสการเข้าถึง";
+
+/* No comment provided by engineer. */
+"Password" = "รหัสผ่าน";
+
+/* No comment provided by engineer. */
+"Password protected key" = "คีย์ที่ป้องกันด้วยรหัสผ่าน";
+
+/* No comment provided by engineer. */
+"Payee identity isn't certified" = "เอกลักษณ์ของผู้รับเงินไม่ได้รับการรับรอง";
+
+/* No comment provided by engineer. */
+"PIN for %@" = "เลขรหัสลับส่วนตัวสำหรับ%@";
+
+/* Please authenticate to create your Testnet wallet */
+"Please authenticate to create your %@ wallet" = "กรุณารับรองความน่าเชื่อถือในการสร้างกระเป๋าสตางค์ของคุณ%@";
+
+/* No comment provided by engineer. */
+"Recovery phrase" = "วลีกู้คืน";
+
+/* No comment provided by engineer. */
+"Reduce payment amount by\n%@ (%@)?" = "ลดจำนวนที่ต้องชำระโดย\n%1$@(%2$@)?";
+
+/* No comment provided by engineer. */
+"Request expired" = "คำขอหมดอายุ";
+
+/* No comment provided by engineer. */
+"Requested network \"%@\" not currently in use" = "เครือข่ายที่ขอ \"%@\" ไม่ได้ใช้อยู่ในปัจจุบัน";
+
+/* No comment provided by engineer. */
+"Rescan" = "สแกนอีกครั้ง";
+
+/* No comment provided by engineer. */
+"Reset" = "ตั้งค่า";
+
+/* No comment provided by engineer. */
+"Server Error" = "Server Error";
+
+/* No comment provided by engineer. */
+"Set PIN" = "ตั้งค่า PIN";
+
+/* No comment provided by engineer. */
+"Testnet" = "Testnet";
+
+/* No comment provided by engineer. */
+"This payment address is already in your wallet" = "ที่อยู่การจ่ายเงินนี้อยู่ในกระเป๋าสตางค์ของคุณเรียบร้อยแล้ว";
+
+/* No comment provided by engineer. */
+"This private key is already in your wallet" = "ที่อยู่การจ่ายเงินนี้อยู่ในกระเป๋าสตางค์ของคุณเรียบร้อยแล้ว";
+
+/* No comment provided by engineer. */
+"This private key is empty" = "กุญแจส่วนตัวที่ใช้ในการถอดรหัสนี้ว่างเปล่า";
+
+/* No comment provided by engineer. */
+"Transaction canceled, network timeout" = "ธุรกรรมถูกยกเลิก หมดเวลาในการเชื่อมต่อ";
+
+/* No comment provided by engineer. */
+"Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "ค่าธรรมเนียมในการทำธุรกรรมมีมูลค่ามากกว่ากองทุนเงินในกุญแจส่วนตัวนี้ (เนื่องจาก “Dust” )";
+
+/* No comment provided by engineer. */
+"Transaction rejected" = "การทำธุรกรรมถูกปฎิเสธ";
+
+/* No comment provided by engineer. */
+"Try again in %@" = "ลองใหม่อีกครั้งใน%@";
+
+/* No comment provided by engineer. */
+"Unexpected response from %@" = "การตอบรับที่เกินความคาดหมายจาก %@";
+
+/* No comment provided by engineer. */
+"Unknown address" = "ที่อยู่ที่ไม่รู้จัก";
+
+/* No comment provided by engineer. */
+"Unknown Error" = "Unknown Error";
+
+/* No comment provided by engineer. */
+"Unknown JSON-RPC Response" = "JSON-RPC ไม่ตอบสนอง";
+
+/* No comment provided by engineer. */
+"Unrecognized address" = "ที่อยู่ที่ไม่รู้จัก";
+
+/* No comment provided by engineer. */
+"Unsupported signature type" = "ลายเซ็นไม่รองรับ";
+
+/* No comment provided by engineer. */
+"Untrusted certificate" = "ใบรับรองไม่น่าเชื่อถือ";
+
+/* The server is up and running */
+"Up" = "เลื่อนขึ้น";
+
+/* Updating Price */
+"Updating Price" = "อัพเดตราคา";
+
+/* No comment provided by engineer. */
+"Wallet disabled" = "wallet ถูกปิดการใช้งาน";
+
+/* No comment provided by engineer. */
+"WARNING" = "คำเตือน";
+
+/* No comment provided by engineer. */
+"Wipe" = "ลบล้าง";
+
+/* No comment provided by engineer. */
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "กระเป๋าสตางค์ของคุณ อาจไม่ได้รับการซิงค์\nซึ่งมักจะสามารถแก้ไขได้โดยการสแกนบล็อกเชนใหม่";
+
+/* No comment provided by engineer. */
+"Unable to create registration transition" = "ไม่สามารถสร้างการเปลี่ยนแปลงการลงทะเบียน";
+
+/* The Blockchain Identity is not registered */
+"Not Registered" = "ยังไม่ได้ลงทะเบียน";
+
+/* The Blockchain Identity is registered */
+"Registered" = "ลงทะเบียนแล้ว";
+
+/* The Blockchain Identity is being registered */
+"Registering" = "กำลังลงทะเบียน";
+
+/* It is Unknown if the Blockchain Identity is registered */
+"Unknown" = "ซึ่งเป็นไม่เป็นที่รู้จัก";
+
+/* Status of Key or Username is Revoked */
+"Revoked" = "ยกเลิก";
+
+/* No comment provided by engineer. */
+"BLS" = "BLS";
+
+/* No comment provided by engineer. */
+"ECDSA" = "ECDSA";
+
+/* No comment provided by engineer. */
+"Unknown Key Type" = "ไม่ระบุประเภทกุญแจ";
+
+/* No comment provided by engineer. */
+"Dashpay Contract is not yet registered on network" = "การทำข้อตกลง Dashpay ยังไม่ได้ลงทะเบียนในเครือข่าย";
+
+/* No comment provided by engineer. */
+"DPNS Contract is not yet registered on network" = "การทำข้อตกลง DPNs ยังไม่ได้ลงทะเบียนในเครือข่าย";
+
+/* No comment provided by engineer. */
+"Funding transaction could not be created" = "การทำธุรกรรมเงินทุนไม่สามารถสร้างได้";
+
+/* No comment provided by engineer. */
+"Internal key handling error" = "การจัดการกุญแจภายในผิดพลาด";
+
+/* No comment provided by engineer. */
+"Internal memory allocation error" = "การจัดสรรหน่วยความจำภายในผิดพลาด";
+
+/* No comment provided by engineer. */
+"Malformed platform response" = "การตอบสนองในรูปแบบแพลตฟอร์มผิดพลาด";
+
+/* No comment provided by engineer. */
+"Timeout while waiting for funding transaction to be accepted by network" = "หมดเวลาในการรอการทำเงินทุนธุรกรรมที่จะได้รับการยอมรับโดยเครือข่าย";
+
+/* No comment provided by engineer. */
+"Transaction could not be signed" = "ไม่สามารถลงนามการทำธุรกรรม";
+
+/* No comment provided by engineer. */
+"Unable to register registration transition" = "ไม่สามารถลงทะเบียนเพื่อเปลี่ยนแปลงการลงทะเบียน";
+
+/* No comment provided by engineer. */
+"User has actions to complete before being able to use Dashpay" = "ผู้ใช้ต้องมีการดำเนินการที่สมบูรณ์ก่อนที่จะสามารถใช้ Dashpay";
+
+/* No comment provided by engineer. */
+"Unable to sign transition" = "ไม่สามารถที่จะลงนามการเปลี่ยนแปลง";
+
+/* No comment provided by engineer. */
+"Transition had nothing to update" = "การเปลี่ยนแปลงไม่มีอะไรที่ต้องปรับปรุง";
+
+/* No comment provided by engineer. */
+"Contract '%@' doesn't contain a table named '%@'" = "ในข้อตกลง '%1$@' ไม่มีตารางชื่อ '%2$@'";
+
+/* No comment provided by engineer. */
+"The blockchain identity hasn't yet been locally activated" = "เอกลักษณ์บล็อกเชนยังไม่ได้เปิดใช้งานในพื้นที่";
+
+/* No comment provided by engineer. */
+"The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion" = "เอกลักษณ์บล็อกเชนการระดมทุนกุญแจสำคัญส่วนตัวควรจะสร้างขึ้นครั้งแรกกับ createFundingPrivateKeyWithCompletion";
+
+/* No comment provided by engineer. */
+"The blockchain identity extended public keys need to be registered before you can register a blockchain identity." = "เอกลักษณ์บล็อกเชนขยายกุญแจสาธารณะจะต้องลงทะเบียนก่อนคุณจึงจะสามารถลงทะเบียนเป็นเอกลักษณ์ blockchainได้";
+
+/* No comment provided by engineer. */
+"Contact request extended public key is incorrectly encrypted." = "คำร้องติดต่อขอขยายกุญแจสาธารณะถูกเข้ารหัสไม่ถูกต้อง";
+
+/* No comment provided by engineer. */
+"Error generating public keys" = "กุญแจสาธารณะเกิดข้อผิดพลาด";
+
+/* No comment provided by engineer. */
+"Accepting a friend request should only happen from a local blockchain identity" = "การรับคำขอเป็นเพื่อนควรเกิดขึ้นจากเอกลักษณ์บล็อกเชนในพื้นที่";
+
+/* No comment provided by engineer. */
+"You can only accept a friend request from blockchain identity who has sent you one, and none were found" = "คุณสามารถยอมรับคำขอเป็นเพื่อนได้เฉพาะจากเอกลักษณ์บล็อกเชน ซึ่งคุณได้ส่งให้คุณแล้วแต่ไม่พบใคร";
+
+/* An error message for notifying that chain sync has timed out */
+"Synchronization Timeout" = "หมดเวลาเชื่อมต่อ";
+
+/* No comment provided by engineer. */
+"Attempt to query DAPs for blockchain identity with no active keys" = "พยายามที่จะตั้งคำถาม DAPs สำหรับเอกลักษณ์บล็อกเชนด้วยกุญแจที่ไม่ใช้งาน";
+
+/* No comment provided by engineer. */
+"Node at host %@ does not service network" = "โหนดที่โฮสต์ %@ ไม่มีเครือข่ายบริการ";
+
+/* No comment provided by engineer. */
+"Node at host %@ does not support bloom filtering" = "โหนดที่โฮสต์ %@ ไม่สนับสนุนตัวกรองของบลูม";
+
+/* No comment provided by engineer. */
+"The Dashpay contract is not properly set up" = "การทำข้อตกลง Dashpay ไม่ได้ถูกตั้งขึ้นอย่างถูกต้อง";
+
+/* No comment provided by engineer. */
+"Contract '%@' needs to first be locally registered or known" = "การทำข้อตกลง '%@' ต้องได้รับการจดทะเบียนเป็นครั้งแรกในพื้นที่ที่ลงทะเบียนหรือเป็นที่รู้จัก";
+
+/* No comment provided by engineer. */
+"A block could not be mined in the selected time interval." = "บล็อกไม่สามารถขุดได้ในช่วงเวลาที่เลือก";
+
+/* No comment provided by engineer. */
+"Could not create friendship derivation path" = "ไม่สามารถสร้างความสัมพันธ์ของแหล่งที่มา";
+
+/* No comment provided by engineer. */
+"Incorrect key format after contact request decryption" = "รูปแบบกุญแจไม่ถูกต้องหลังจากที่ขอติดต่อถอดรหัส";
+
+/* No comment provided by engineer. */
+"Error when updating profile information" = "Error when updating profile information";
+
+/* No comment provided by engineer. */
+"Timeout while waiting for funding transaction to aquire an instant send lock" = "Timeout while waiting for funding transaction to aquire an instant send lock";
+
+/* No comment provided by engineer. */
+"Would you like to share this invitation?" = "Would you like to share this invitation?";
+
+/* No comment provided by engineer. */
+"Identity no longer active in wallet" = "Identity no longer active in wallet";
+
+/* No comment provided by engineer. */
+"The registration credit funding transaction has not been mined yet and has no instant send lock" = "The registration credit funding transaction has not been mined yet and has no instant send lock";
+
+/* No comment provided by engineer. */
+"Transaction does not exist" = "Transaction does not exist";
+
+/* No comment provided by engineer. */
+"Invitation format is not valid" = "Invitation format is not valid";
+
+/* No comment provided by engineer. */
+"Invitation transaction is not valid" = "Invitation transaction is not valid";
+
+/* No comment provided by engineer. */
+"Funding private key is not valid" = "Funding private key is not valid";
+
+/* No comment provided by engineer. */
+"Error setting the external funding private key" = "Error setting the external funding private key";

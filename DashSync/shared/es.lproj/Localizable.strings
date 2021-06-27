@@ -1,0 +1,377 @@
+/* No comment provided by engineer. */
+"\n         total %@ (%@)" = "\ntotal %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\n(local requested amount: %@)" = "\n(Cantidad local solicitada: %@)";
+
+/* No comment provided by engineer. */
+"\n\n     amount %@ (%@)" = "\n\n     cantidad %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nDIRECCIÓN YA UTILIZADA\nLas direcciones Dash están previstas para ser utilizadas solo una vez\n\nRe-utilizar reduce la privacidad para ambos usted y el receptor, puede resultar en una pérdida si el receptor no tiene directamente control de la dirección.";
+
+/* No comment provided by engineer. */
+"\nnetwork fee +%@ (%@)" = "\ncuota de red +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to reclaim this masternode?" = "¿Estás seguro de que quieres recuperar este masternode?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to register a masternode at %@:%d?" = "¿Estás seguro de que deseas registrar un masternode en%1$@:%2$d?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to update this masternode to %@:%d?" = "¿Estás seguro de que deseas actualizar este masternode a\n%1$@:%2$d?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to update this masternode to pay to %@?" = "¿Estás seguro de que deseas actualizar este masternode para pagar a %@?";
+
+/* No comment provided by engineer. */
+"Bad password, try again" = "Clave invalida, intente nuevamente";
+
+/* No comment provided by engineer. */
+"Bad payment request" = "Solicitud de pago invalida";
+
+/* No comment provided by engineer. */
+"Bad payment request URL" = "URL de petición de pago incorrecta";
+
+/* No comment provided by engineer. */
+"Bad payment URL" = "URL de pago incorrecta";
+
+/* No comment provided by engineer. */
+"Cancel" = "Cancelar";
+
+/* No comment provided by engineer. */
+"Confirm" = "Confirmar";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Confirmar PIN";
+
+/* No comment provided by engineer. */
+"Connect timeout" = "Tiempo de conexión excedido";
+
+/* No comment provided by engineer. */
+"Couldn't make payment" = "El pago no pudo realizarse";
+
+/* No comment provided by engineer. */
+"Dash payments can't be less than %@" = "Los pagos en Dash no pueden ser inferiores a %@";
+
+/* No comment provided by engineer. */
+"Dash transaction not signed" = "Transacción de Dash no firmada";
+
+/* No comment provided by engineer. */
+"Dash transaction outputs can't be less than %@" = "Las salidas de transacciones de Dash no pueden ser inferiores a %@";
+
+/* No comment provided by engineer. */
+"Devnet" = "Red derivada";
+
+/* No comment provided by engineer. */
+"Double spend" = "Doble gasto";
+
+/* The server is not working */
+"Down" = "Bajo";
+
+/* No comment provided by engineer. */
+"Enter old PIN" = "Ingresa el PIN antiguo";
+
+/* No comment provided by engineer. */
+"Error from payment request server %@" = "Error del servidor de solicitud de pagos %@";
+
+/* No comment provided by engineer. */
+"Error signing transaction" = "Error al firmar transacción";
+
+/* No comment provided by engineer. */
+"Ignore" = "Ignorar";
+
+/* No comment provided by engineer. */
+"Insufficient funds" = "Fondos insuficientes";
+
+/* No comment provided by engineer. */
+"Insufficient funds for Dash network fee" = "Fondos insuficientes para la tasa de red de Dash";
+
+/* No comment provided by engineer. */
+"Internal Error" = "Error interno";
+
+/* No comment provided by engineer. */
+"Invalid DAPI Response" = "Respuesta DAPI inválida";
+
+/* No comment provided by engineer. */
+"Invalid Params" = "Parámetros inválidos";
+
+/* No comment provided by engineer. */
+"Invalid Request" = "Solicitud inválida";
+
+/* No comment provided by engineer. */
+"Mainnet" = "Red principal";
+
+/* No comment provided by engineer. */
+"Method Not Found" = "Método no encontrado";
+
+/* No comment provided by engineer. */
+"Missing certificate" = "Certificado no encontrado";
+
+/* No comment provided by engineer. */
+"No attempts remaining" = "No hay más intentos disponibles";
+
+/* No comment provided by engineer. */
+"No peers found" = "No se encontraron pares";
+
+/* No comment provided by engineer. */
+"Not a valid private key" = "Clave privada inválida ";
+
+/* No comment provided by engineer. */
+"Not connected to the Dash network" = "Sin conección a la red de Dash";
+
+/* No comment provided by engineer. */
+"OK" = "OK";
+
+/* No comment provided by engineer. */
+"Parse Error" = "Error de análisis";
+
+/* No comment provided by engineer. */
+"Passcode" = "Código de acceso";
+
+/* No comment provided by engineer. */
+"Password" = "Contraseña";
+
+/* No comment provided by engineer. */
+"Password protected key" = "Llave protegida por contraseña";
+
+/* No comment provided by engineer. */
+"Payee identity isn't certified" = "Identidad del beneficiario no certificada";
+
+/* No comment provided by engineer. */
+"PIN for %@" = "PIN para %@";
+
+/* Please authenticate to create your Testnet wallet */
+"Please authenticate to create your %@ wallet" = "Autentícate para crear tu %@ billetera";
+
+/* No comment provided by engineer. */
+"Recovery phrase" = "Frase de recuperación";
+
+/* No comment provided by engineer. */
+"Reduce payment amount by\n%@ (%@)?" = "¿Reducir la suma a pagar por\n%1$@ (%2$@)?";
+
+/* No comment provided by engineer. */
+"Request expired" = "Solicitud expirada";
+
+/* No comment provided by engineer. */
+"Requested network \"%@\" not currently in use" = "La red solicitada \"%@\" actualmente no está en uso";
+
+/* No comment provided by engineer. */
+"Rescan" = "Escanear nuevamente";
+
+/* No comment provided by engineer. */
+"Reset" = "Reinicia";
+
+/* No comment provided by engineer. */
+"Server Error" = "Error de servidor";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Establecer PIN";
+
+/* No comment provided by engineer. */
+"Testnet" = "Red de prueba";
+
+/* No comment provided by engineer. */
+"This payment address is already in your wallet" = "Esta dirección de pago ya está en tu billetera";
+
+/* No comment provided by engineer. */
+"This private key is already in your wallet" = "Esta llave privada ya está en tu billetera";
+
+/* No comment provided by engineer. */
+"This private key is empty" = "Esta llave privada está vacía";
+
+/* No comment provided by engineer. */
+"Transaction canceled, network timeout" = "Transacción cancelada, tiempo de red excedido";
+
+/* No comment provided by engineer. */
+"Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "Las tasas de transacción serían superiores a los fondos disponibles en esta llave privada (a causa de diminutos depósitos \"dust\")";
+
+/* No comment provided by engineer. */
+"Transaction rejected" = "Transacción rechazada";
+
+/* No comment provided by engineer. */
+"Try again in %@" = "Intente nuevamente en %@";
+
+/* No comment provided by engineer. */
+"Unexpected response from %@" = "Respuesta inesperada de %@";
+
+/* No comment provided by engineer. */
+"Unknown address" = "Dirección desconocida";
+
+/* No comment provided by engineer. */
+"Unknown Error" = "Error desconocido";
+
+/* No comment provided by engineer. */
+"Unknown JSON-RPC Response" = "Respuesta JSON-RPC desconocida";
+
+/* No comment provided by engineer. */
+"Unrecognized address" = "Dirección no reconocida";
+
+/* No comment provided by engineer. */
+"Unsupported signature type" = "Tipo de firma no soportado";
+
+/* No comment provided by engineer. */
+"Untrusted certificate" = "Certificado no confiable";
+
+/* The server is up and running */
+"Up" = "Arriba";
+
+/* Updating Price */
+"Updating Price" = "Actualizando Precio";
+
+/* No comment provided by engineer. */
+"Wallet disabled" = "Billetera deshabilitada";
+
+/* No comment provided by engineer. */
+"WARNING" = "ADVERTENCIA";
+
+/* No comment provided by engineer. */
+"Wipe" = "Limpiar";
+
+/* No comment provided by engineer. */
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Tu cartera puede estar desincronizada.\nCon frecuencia se puede solucionar escaneando de nuevo la cadena de bloques.";
+
+/* No comment provided by engineer. */
+"Unable to create registration transition" = "No se pudo crear la transición de registro";
+
+/* The Blockchain Identity is not registered */
+"Not Registered" = "No registrado";
+
+/* The Blockchain Identity is registered */
+"Registered" = "Registrado";
+
+/* The Blockchain Identity is being registered */
+"Registering" = "Registrando";
+
+/* It is Unknown if the Blockchain Identity is registered */
+"Unknown" = "Desconocido";
+
+/* Status of Key or Username is Revoked */
+"Revoked" = "Revocado";
+
+/* No comment provided by engineer. */
+"BLS" = "BLS";
+
+/* No comment provided by engineer. */
+"ECDSA" = "ECDSA";
+
+/* No comment provided by engineer. */
+"Unknown Key Type" = "Tipo de clave desconocido";
+
+/* No comment provided by engineer. */
+"Dashpay Contract is not yet registered on network" = "El contrato de Dashpay aún no está registrado en la red";
+
+/* No comment provided by engineer. */
+"DPNS Contract is not yet registered on network" = "El contrato DPNS aún no está registrado en la red";
+
+/* No comment provided by engineer. */
+"Funding transaction could not be created" = "No se pudo crear la transacción de financiamiento";
+
+/* No comment provided by engineer. */
+"Internal key handling error" = "Error interno de manejo de clave";
+
+/* No comment provided by engineer. */
+"Internal memory allocation error" = "Error interno de asignación de memoria ";
+
+/* No comment provided by engineer. */
+"Malformed platform response" = "Respuesta de plataforma mal formada";
+
+/* No comment provided by engineer. */
+"Timeout while waiting for funding transaction to be accepted by network" = "Tiempo agotado mientras se espera que la red acepte la transacción de financiación";
+
+/* No comment provided by engineer. */
+"Transaction could not be signed" = "La transacción no se pudo firmar";
+
+/* No comment provided by engineer. */
+"Unable to register registration transition" = "No se puede registrar la transición de registro";
+
+/* No comment provided by engineer. */
+"User has actions to complete before being able to use Dashpay" = "El usuario tiene acciones que completar antes de poder usar Dashpay";
+
+/* No comment provided by engineer. */
+"Unable to sign transition" = "No se puede firmar la transición";
+
+/* No comment provided by engineer. */
+"Transition had nothing to update" = "La transición no tenía nada que actualizar";
+
+/* No comment provided by engineer. */
+"Contract '%@' doesn't contain a table named '%@'" = "Contrato '%1$@' no contiene una tabla llamada '%2$@'";
+
+/* No comment provided by engineer. */
+"The blockchain identity hasn't yet been locally activated" = "La identidad de la cadena de bloques aún no se ha activado localmente";
+
+/* No comment provided by engineer. */
+"The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion" = "La clave privada de financiación de identidad de cadena de bloques debe crearse primero con createFundingPrivateKeyWithCompletion";
+
+/* No comment provided by engineer. */
+"The blockchain identity extended public keys need to be registered before you can register a blockchain identity." = "Las claves públicas extendidas de identidad de cadena de bloques deben registrarse antes de poder registrar una identidad de cadena de bloques.";
+
+/* No comment provided by engineer. */
+"Contact request extended public key is incorrectly encrypted." = "La clave pública extendida de la solicitud de contacto está cifrada incorrectamente.";
+
+/* No comment provided by engineer. */
+"Error generating public keys" = "Error al generar claves públicas";
+
+/* No comment provided by engineer. */
+"Accepting a friend request should only happen from a local blockchain identity" = "Aceptar una solicitud de amistad solo debe suceder desde una identidad de cadena de bloques local";
+
+/* No comment provided by engineer. */
+"You can only accept a friend request from blockchain identity who has sent you one, and none were found" = "Solo puedes aceptar una solicitud de amistad de la identidad de cadena de bloques que te envió una, y no se encontró ninguna";
+
+/* An error message for notifying that chain sync has timed out */
+"Synchronization Timeout" = "Tiempo sincronización acabado";
+
+/* No comment provided by engineer. */
+"Attempt to query DAPs for blockchain identity with no active keys" = "Intenta consultar DAP para la identidad de la cadena de bloques sin claves activas";
+
+/* No comment provided by engineer. */
+"Node at host %@ does not service network" = "Nodo en el anfitrión %@ no da servicio a la red";
+
+/* No comment provided by engineer. */
+"Node at host %@ does not support bloom filtering" = "Nodo en el anfitrión%@ no admite filtrado de flores";
+
+/* No comment provided by engineer. */
+"The Dashpay contract is not properly set up" = "El contrato de Dashpay no está configurado correctamente";
+
+/* No comment provided by engineer. */
+"Contract '%@' needs to first be locally registered or known" = "Contrato '%@' primero debe estar registrado localmente o ser conocido";
+
+/* No comment provided by engineer. */
+"A block could not be mined in the selected time interval." = "No se pudo extraer un bloque en el intervalo de tiempo seleccionado.";
+
+/* No comment provided by engineer. */
+"Could not create friendship derivation path" = "No se pudo crear la ruta de derivación de amistad";
+
+/* No comment provided by engineer. */
+"Incorrect key format after contact request decryption" = "Formato de clave incorrecto después del descifrado de la solicitud de contacto";
+
+/* No comment provided by engineer. */
+"Error when updating profile information" = "Error when updating profile information";
+
+/* No comment provided by engineer. */
+"Timeout while waiting for funding transaction to aquire an instant send lock" = "Timeout while waiting for funding transaction to aquire an instant send lock";
+
+/* No comment provided by engineer. */
+"Would you like to share this invitation?" = "Would you like to share this invitation?";
+
+/* No comment provided by engineer. */
+"Identity no longer active in wallet" = "Identity no longer active in wallet";
+
+/* No comment provided by engineer. */
+"The registration credit funding transaction has not been mined yet and has no instant send lock" = "The registration credit funding transaction has not been mined yet and has no instant send lock";
+
+/* No comment provided by engineer. */
+"Transaction does not exist" = "Transaction does not exist";
+
+/* No comment provided by engineer. */
+"Invitation format is not valid" = "Invitation format is not valid";
+
+/* No comment provided by engineer. */
+"Invitation transaction is not valid" = "Invitation transaction is not valid";
+
+/* No comment provided by engineer. */
+"Funding private key is not valid" = "Funding private key is not valid";
+
+/* No comment provided by engineer. */
+"Error setting the external funding private key" = "Error setting the external funding private key";

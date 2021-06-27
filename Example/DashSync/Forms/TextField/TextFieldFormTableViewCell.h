@@ -18,6 +18,7 @@
 #import <KVO-MVVM/KVOUITableViewCell.h>
 
 #import "TextFieldFormCellModel.h"
+#import "TextInputFormTableViewCell.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -29,12 +30,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface TextFieldFormTableViewCell : KVOUITableViewCell
+@interface TextFieldFormTableViewCell : KVOUITableViewCell <TextInputFormTableViewCell>
 
 @property (nullable, strong, nonatomic) TextFieldFormCellModel *cellModel;
 @property (nullable, weak, nonatomic) id<TextFieldFormTableViewCellDelegate> delegate;
-
-- (void)textFieldBecomeFirstResponder;
 
 @end
 

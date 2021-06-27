@@ -6,12 +6,12 @@
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
 #import <DashSync/DashSync.h>
+#import <UIKit/UIKit.h>
 
 @interface DSClaimMasternodeViewController : UIViewController
 
-@property (nonatomic,strong) DSSimplifiedMasternodeEntry * masternode;
-@property (nonatomic,strong) DSChain * chain;
+@property (nonatomic, strong) DSSimplifiedMasternodeEntry *masternode;
+@property (nonatomic, strong) DSChain *chain;
 
 @end

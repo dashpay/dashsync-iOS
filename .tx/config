@@ -2,15 +2,15 @@
 host = https://www.transifex.com
 
 [dash-mobile-wallets.dashsync-localizable-strings]
-file_filter = DashSync/<lang>.lproj/Localizable.strings
+file_filter = DashSync/shared/<lang>.lproj/Localizable.strings
 minimum_perc = 0
-source_file = DashSync/en.lproj/Localizable.strings
+source_file = DashSync/shared/en.lproj/Localizable.strings
 source_lang = en
 type = STRINGS
 
 [dash-mobile-wallets.dashsync-localizable-strings-dict]
-file_filter = DashSync/<lang>.lproj/Localizable.stringsdict
+file_filter = DashSync/shared/<lang>.lproj/Localizable.stringsdict
 minimum_perc = 0
-source_file = DashSync/en.lproj/Localizable.stringsdict
+source_file = DashSync/shared/en.lproj/Localizable.stringsdict
 source_lang = en
 type = STRINGSDICT

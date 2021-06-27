@@ -33,12 +33,21 @@
         };
         [items addObject:cellModel];
     }
-    
+
     {
         SwitcherFormCellModel *cellModel = [[SwitcherFormCellModel alloc] initWithTitle:@"Use MNL Checkpoints"];
         cellModel.on = options.useCheckpointMasternodeLists;
         cellModel.didChangeValueBlock = ^(SwitcherFormCellModel *_Nonnull cellModel) {
             options.useCheckpointMasternodeLists = cellModel.on;
+        };
+        [items addObject:cellModel];
+    }
+
+    {
+        SwitcherFormCellModel *cellModel = [[SwitcherFormCellModel alloc] initWithTitle:@"Use Checkpoints Files"];
+        cellModel.on = options.shouldUseCheckpointFile;
+        cellModel.didChangeValueBlock = ^(SwitcherFormCellModel *_Nonnull cellModel) {
+            options.shouldUseCheckpointFile = cellModel.on;
         };
         [items addObject:cellModel];
     }
@@ -52,18 +61,18 @@
         [items addObject:cellModel];
     }
 
-    
+
     SwitcherFormCellModel *genesisOptionCellModel = [[SwitcherFormCellModel alloc] initWithTitle:@"Sync from Genesis"];
-    
+
     NumberTextFieldFormCellModel *syncHeightCellModel = [[NumberTextFieldFormCellModel alloc] initWithTitle:@"Sync from Height"
                                                                                                 placeholder:@"Sync Height"];
     __weak SwitcherFormCellModel *weakGenesisOptionCellModel = genesisOptionCellModel;
     __weak NumberTextFieldFormCellModel *weakSyncHeightCellModel = syncHeightCellModel;
-    
+
     genesisOptionCellModel.on = options.syncFromGenesis;
     genesisOptionCellModel.didChangeValueBlock = ^(SwitcherFormCellModel *_Nonnull cellModel) {
         options.syncFromGenesis = cellModel.on;
-        
+
         __strong NumberTextFieldFormCellModel *strongSyncHeightCellModel = weakSyncHeightCellModel;
         strongSyncHeightCellModel.text = [NSString stringWithFormat:@"%u", options.syncFromHeight];
     };
@@ -72,7 +81,7 @@
     syncHeightCellModel.text = [NSString stringWithFormat:@"%u", options.syncFromHeight];
     syncHeightCellModel.didChangeValueBlock = ^(TextFieldFormCellModel *_Nonnull cellModel) {
         options.syncFromHeight = (uint32_t)cellModel.text.longLongValue;
-        
+
         __strong SwitcherFormCellModel *strongGenesisOptionCellModel = weakGenesisOptionCellModel;
         strongGenesisOptionCellModel.on = options.syncFromGenesis;
     };
@@ -87,13 +96,16 @@
     DSOptionsManager *options = [DSOptionsManager sharedInstance];
 
     NSDictionary<NSNumber *, NSString *> *syncTypes = @{
-        @(DSSyncType_BaseSPV) : @"Base SPV",
-        @(DSSyncType_FullBlocks) : @"Full Blocks",
-        @(DSSyncType_Mempools) : @"Mempools",
-        @(DSSyncType_MasternodeList) : @"Masternode List",
-        @(DSSyncType_Governance) : @"Governance",
-        @(DSSyncType_GovernanceVotes) : @"Governance Votes",
-        @(DSSyncType_Sporks) : @"Sporks",
+        @(DSSyncType_BaseSPV): @"Base SPV",
+        @(DSSyncType_FullBlocks): @"Full Blocks",
+        @(DSSyncType_BlockchainIdentities): @"Blockchain Identities",
+        @(DSSyncType_DPNS): @"DPNS",
+        @(DSSyncType_Dashpay): @"Dashpay",
+        @(DSSyncType_Mempools): @"Mempools",
+        @(DSSyncType_MasternodeList): @"Masternode List",
+        @(DSSyncType_Governance): @"Governance",
+        @(DSSyncType_GovernanceVotes): @"Governance Votes",
+        @(DSSyncType_Sporks): @"Sporks",
     };
 
     NSArray<NSNumber *> *sortedKeys = [syncTypes.allKeys sortedArrayUsingSelector:@selector(compare:)];
@@ -105,8 +117,7 @@
         cellModel.didChangeValueBlock = ^(SwitcherFormCellModel *_Nonnull cellModel) {
             if (cellModel.on) {
                 [options addSyncType:syncType];
-            }
-            else {
+            } else {
                 [options clearSyncType:syncType];
             }
         };

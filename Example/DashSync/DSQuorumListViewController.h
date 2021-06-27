@@ -12,9 +12,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DSChain;
 
-@interface DSQuorumListViewController : UITableViewController<NSFetchedResultsControllerDelegate,UISearchBarDelegate>
+@interface DSQuorumListViewController : UITableViewController <NSFetchedResultsControllerDelegate, UISearchBarDelegate>
 
-@property (nonatomic,strong) DSChain * chain;
+@property (nonatomic, strong) DSChain *chain;
 
 @end
 

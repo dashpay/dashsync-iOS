@@ -1,0 +1,377 @@
+/* No comment provided by engineer. */
+"\n         total %@ (%@)" = "\n      总额%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\n(local requested amount: %@)" = "\n(本地请求金额: %@)";
+
+/* No comment provided by engineer. */
+"\n\n     amount %@ (%@)" = "\n\n      金额%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
+
+/* No comment provided by engineer. */
+"\nnetwork fee +%@ (%@)" = "\n网络手续费+%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to reclaim this masternode?" = "Are you sure you would like to reclaim this masternode?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to register a masternode at %@:%d?" = "Are you sure you would like to register a masternode at %1$@:%2$d?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to update this masternode to %@:%d?" = "Are you sure you would like to update this masternode to %1$@:%2$d?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to update this masternode to pay to %@?" = "Are you sure you would like to update this masternode to pay to %@?";
+
+/* No comment provided by engineer. */
+"Bad password, try again" = "Bad password, try again";
+
+/* No comment provided by engineer. */
+"Bad payment request" = "Bad payment request";
+
+/* No comment provided by engineer. */
+"Bad payment request URL" = "Bad payment request URL";
+
+/* No comment provided by engineer. */
+"Bad payment URL" = "Bad payment URL";
+
+/* No comment provided by engineer. */
+"Cancel" = "Cancel";
+
+/* No comment provided by engineer. */
+"Confirm" = "Confirm";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Confirm PIN";
+
+/* No comment provided by engineer. */
+"Connect timeout" = "Connect timeout";
+
+/* No comment provided by engineer. */
+"Couldn't make payment" = "Couldn't make payment";
+
+/* No comment provided by engineer. */
+"Dash payments can't be less than %@" = "Dash payments can't be less than %@";
+
+/* No comment provided by engineer. */
+"Dash transaction not signed" = "Dash transaction not signed";
+
+/* No comment provided by engineer. */
+"Dash transaction outputs can't be less than %@" = "Dash transaction outputs can't be less than %@";
+
+/* No comment provided by engineer. */
+"Devnet" = "Devnet";
+
+/* No comment provided by engineer. */
+"Double spend" = "Double spend";
+
+/* The server is not working */
+"Down" = "Down";
+
+/* No comment provided by engineer. */
+"Enter old PIN" = "Enter old PIN";
+
+/* No comment provided by engineer. */
+"Error from payment request server %@" = "Error from payment request server %@";
+
+/* No comment provided by engineer. */
+"Error signing transaction" = "Error signing transaction";
+
+/* No comment provided by engineer. */
+"Ignore" = "Ignore";
+
+/* No comment provided by engineer. */
+"Insufficient funds" = "Insufficient funds";
+
+/* No comment provided by engineer. */
+"Insufficient funds for Dash network fee" = "Insufficient funds for Dash network fee";
+
+/* No comment provided by engineer. */
+"Internal Error" = "Internal Error";
+
+/* No comment provided by engineer. */
+"Invalid DAPI Response" = "Invalid DAPI Response";
+
+/* No comment provided by engineer. */
+"Invalid Params" = "Invalid Params";
+
+/* No comment provided by engineer. */
+"Invalid Request" = "Invalid Request";
+
+/* No comment provided by engineer. */
+"Mainnet" = "Mainnet";
+
+/* No comment provided by engineer. */
+"Method Not Found" = "Method Not Found";
+
+/* No comment provided by engineer. */
+"Missing certificate" = "Missing certificate";
+
+/* No comment provided by engineer. */
+"No attempts remaining" = "No attempts remaining";
+
+/* No comment provided by engineer. */
+"No peers found" = "No peers found";
+
+/* No comment provided by engineer. */
+"Not a valid private key" = "Not a valid private key";
+
+/* No comment provided by engineer. */
+"Not connected to the Dash network" = "Not connected to the Dash network";
+
+/* No comment provided by engineer. */
+"OK" = "OK";
+
+/* No comment provided by engineer. */
+"Parse Error" = "Parse Error";
+
+/* No comment provided by engineer. */
+"Passcode" = "Passcode";
+
+/* No comment provided by engineer. */
+"Password" = "Password";
+
+/* No comment provided by engineer. */
+"Password protected key" = "Password protected key";
+
+/* No comment provided by engineer. */
+"Payee identity isn't certified" = "Payee identity isn't certified";
+
+/* No comment provided by engineer. */
+"PIN for %@" = "PIN for %@";
+
+/* Please authenticate to create your Testnet wallet */
+"Please authenticate to create your %@ wallet" = "Please authenticate to create your %@ wallet";
+
+/* No comment provided by engineer. */
+"Recovery phrase" = "Recovery phrase";
+
+/* No comment provided by engineer. */
+"Reduce payment amount by\n%@ (%@)?" = "Reduce payment amount by\n%1$@ (%2$@)?";
+
+/* No comment provided by engineer. */
+"Request expired" = "Request expired";
+
+/* No comment provided by engineer. */
+"Requested network \"%@\" not currently in use" = "Requested network \"%@\" not currently in use";
+
+/* No comment provided by engineer. */
+"Rescan" = "Rescan";
+
+/* No comment provided by engineer. */
+"Reset" = "Reset";
+
+/* No comment provided by engineer. */
+"Server Error" = "Server Error";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
+
+/* No comment provided by engineer. */
+"Testnet" = "Testnet";
+
+/* No comment provided by engineer. */
+"This payment address is already in your wallet" = "This payment address is already in your wallet";
+
+/* No comment provided by engineer. */
+"This private key is already in your wallet" = "This private key is already in your wallet";
+
+/* No comment provided by engineer. */
+"This private key is empty" = "This private key is empty";
+
+/* No comment provided by engineer. */
+"Transaction canceled, network timeout" = "Transaction canceled, network timeout";
+
+/* No comment provided by engineer. */
+"Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)";
+
+/* No comment provided by engineer. */
+"Transaction rejected" = "Transaction rejected";
+
+/* No comment provided by engineer. */
+"Try again in %@" = "Try again in %@";
+
+/* No comment provided by engineer. */
+"Unexpected response from %@" = "Unexpected response from %@";
+
+/* No comment provided by engineer. */
+"Unknown address" = "Unknown address";
+
+/* No comment provided by engineer. */
+"Unknown Error" = "Unknown Error";
+
+/* No comment provided by engineer. */
+"Unknown JSON-RPC Response" = "Unknown JSON-RPC Response";
+
+/* No comment provided by engineer. */
+"Unrecognized address" = "Unrecognized address";
+
+/* No comment provided by engineer. */
+"Unsupported signature type" = "Unsupported signature type";
+
+/* No comment provided by engineer. */
+"Untrusted certificate" = "Untrusted certificate";
+
+/* The server is up and running */
+"Up" = "Up";
+
+/* Updating Price */
+"Updating Price" = "更新价格";
+
+/* No comment provided by engineer. */
+"Wallet disabled" = "Wallet disabled";
+
+/* No comment provided by engineer. */
+"WARNING" = "WARNING";
+
+/* No comment provided by engineer. */
+"Wipe" = "Wipe";
+
+/* No comment provided by engineer. */
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "你的钱包可能未同步。\n这通常可以通过重新扫描区块链来修复。";
+
+/* No comment provided by engineer. */
+"Unable to create registration transition" = "Unable to create registration transition";
+
+/* The Blockchain Identity is not registered */
+"Not Registered" = "Not Registered";
+
+/* The Blockchain Identity is registered */
+"Registered" = "Registered";
+
+/* The Blockchain Identity is being registered */
+"Registering" = "Registering";
+
+/* It is Unknown if the Blockchain Identity is registered */
+"Unknown" = "Unknown";
+
+/* Status of Key or Username is Revoked */
+"Revoked" = "Revoked";
+
+/* No comment provided by engineer. */
+"BLS" = "BLS";
+
+/* No comment provided by engineer. */
+"ECDSA" = "ECDSA";
+
+/* No comment provided by engineer. */
+"Unknown Key Type" = "Unknown Key Type";
+
+/* No comment provided by engineer. */
+"Dashpay Contract is not yet registered on network" = "Dashpay Contract is not yet registered on network";
+
+/* No comment provided by engineer. */
+"DPNS Contract is not yet registered on network" = "DPNS Contract is not yet registered on network";
+
+/* No comment provided by engineer. */
+"Funding transaction could not be created" = "Funding transaction could not be created";
+
+/* No comment provided by engineer. */
+"Internal key handling error" = "Internal key handling error";
+
+/* No comment provided by engineer. */
+"Internal memory allocation error" = "Internal memory allocation error";
+
+/* No comment provided by engineer. */
+"Malformed platform response" = "Malformed platform response";
+
+/* No comment provided by engineer. */
+"Timeout while waiting for funding transaction to be accepted by network" = "Timeout while waiting for funding transaction to be accepted by network";
+
+/* No comment provided by engineer. */
+"Transaction could not be signed" = "Transaction could not be signed";
+
+/* No comment provided by engineer. */
+"Unable to register registration transition" = "Unable to register registration transition";
+
+/* No comment provided by engineer. */
+"User has actions to complete before being able to use Dashpay" = "User has actions to complete before being able to use Dashpay";
+
+/* No comment provided by engineer. */
+"Unable to sign transition" = "Unable to sign transition";
+
+/* No comment provided by engineer. */
+"Transition had nothing to update" = "Transition had nothing to update";
+
+/* No comment provided by engineer. */
+"Contract '%@' doesn't contain a table named '%@'" = "Contract '%1$@' doesn't contain a table named '%2$@'";
+
+/* No comment provided by engineer. */
+"The blockchain identity hasn't yet been locally activated" = "The blockchain identity hasn't yet been locally activated";
+
+/* No comment provided by engineer. */
+"The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion" = "The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion";
+
+/* No comment provided by engineer. */
+"The blockchain identity extended public keys need to be registered before you can register a blockchain identity." = "The blockchain identity extended public keys need to be registered before you can register a blockchain identity.";
+
+/* No comment provided by engineer. */
+"Contact request extended public key is incorrectly encrypted." = "Contact request extended public key is incorrectly encrypted.";
+
+/* No comment provided by engineer. */
+"Error generating public keys" = "Error generating public keys";
+
+/* No comment provided by engineer. */
+"Accepting a friend request should only happen from a local blockchain identity" = "Accepting a friend request should only happen from a local blockchain identity";
+
+/* No comment provided by engineer. */
+"You can only accept a friend request from blockchain identity who has sent you one, and none were found" = "You can only accept a friend request from blockchain identity who has sent you one, and none were found";
+
+/* An error message for notifying that chain sync has timed out */
+"Synchronization Timeout" = "Synchronization Timeout";
+
+/* No comment provided by engineer. */
+"Attempt to query DAPs for blockchain identity with no active keys" = "Attempt to query DAPs for blockchain identity with no active keys";
+
+/* No comment provided by engineer. */
+"Node at host %@ does not service network" = "Node at host %@ does not service network";
+
+/* No comment provided by engineer. */
+"Node at host %@ does not support bloom filtering" = "Node at host %@ does not support bloom filtering";
+
+/* No comment provided by engineer. */
+"The Dashpay contract is not properly set up" = "The Dashpay contract is not properly set up";
+
+/* No comment provided by engineer. */
+"Contract '%@' needs to first be locally registered or known" = "Contract '%@' needs to first be locally registered or known";
+
+/* No comment provided by engineer. */
+"A block could not be mined in the selected time interval." = "A block could not be mined in the selected time interval.";
+
+/* No comment provided by engineer. */
+"Could not create friendship derivation path" = "Could not create friendship derivation path";
+
+/* No comment provided by engineer. */
+"Incorrect key format after contact request decryption" = "Incorrect key format after contact request decryption";
+
+/* No comment provided by engineer. */
+"Error when updating profile information" = "Error when updating profile information";
+
+/* No comment provided by engineer. */
+"Timeout while waiting for funding transaction to aquire an instant send lock" = "Timeout while waiting for funding transaction to aquire an instant send lock";
+
+/* No comment provided by engineer. */
+"Would you like to share this invitation?" = "Would you like to share this invitation?";
+
+/* No comment provided by engineer. */
+"Identity no longer active in wallet" = "Identity no longer active in wallet";
+
+/* No comment provided by engineer. */
+"The registration credit funding transaction has not been mined yet and has no instant send lock" = "The registration credit funding transaction has not been mined yet and has no instant send lock";
+
+/* No comment provided by engineer. */
+"Transaction does not exist" = "Transaction does not exist";
+
+/* No comment provided by engineer. */
+"Invitation format is not valid" = "Invitation format is not valid";
+
+/* No comment provided by engineer. */
+"Invitation transaction is not valid" = "Invitation transaction is not valid";
+
+/* No comment provided by engineer. */
+"Funding private key is not valid" = "Funding private key is not valid";
+
+/* No comment provided by engineer. */
+"Error setting the external funding private key" = "Error setting the external funding private key";

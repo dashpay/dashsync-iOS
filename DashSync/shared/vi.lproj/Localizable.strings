@@ -1,0 +1,377 @@
+/* No comment provided by engineer. */
+"\n         total %@ (%@)" = "\n         tổng số %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\n(local requested amount: %@)" = "\n(số lượng yêu cầu ở địa phương: 1%@)";
+
+/* No comment provided by engineer. */
+"\n\n     amount %@ (%@)" = "\n\n     số lượng %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nĐỊA CHỈ ĐÃ ĐƯỢC SỬ DỤNG\nĐịa chỉ Dash được thiết kế để sử dụng chỉ một lần\n\ntái sử dụng sẽ làm giảm độ riêng tư cho cả bạn và người nhận và có thể dẫn đến mất tiền nếu người nhận không quản lý trực tiếp địa chỉ đó";
+
+/* No comment provided by engineer. */
+"\nnetwork fee +%@ (%@)" = "\nphí giao dịch +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to reclaim this masternode?" = "Bạn có chắc là bạn muốn đòi lại masternode này?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to register a masternode at %@:%d?" = "Bạn có chắc là bạn muốn đăng ký một masternode tại %1$@:%2$d?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to update this masternode to %@:%d?" = "Bạn có chắc là mình muốn cập nhật lại masternode này về %1$@:%2$d?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to update this masternode to pay to %@?" = "Bạn có chắc là mình muốn cập nhật masternode này để thanh toán cho %@?";
+
+/* No comment provided by engineer. */
+"Bad password, try again" = "Sai mật khẩu, hãy thử lại";
+
+/* No comment provided by engineer. */
+"Bad payment request" = "Yêu cầu thanh toán không đúng";
+
+/* No comment provided by engineer. */
+"Bad payment request URL" = "Địa chỉ URL của yêu cầu thanh toán không đúng";
+
+/* No comment provided by engineer. */
+"Bad payment URL" = "Địa chỉ thanh toán URL không đúng";
+
+/* No comment provided by engineer. */
+"Cancel" = "Hủy bỏ";
+
+/* No comment provided by engineer. */
+"Confirm" = "Xác thực";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Xác nhận mã PIN";
+
+/* No comment provided by engineer. */
+"Connect timeout" = "Hết thời hạn kết nối";
+
+/* No comment provided by engineer. */
+"Couldn't make payment" = "Không thể thực hiện thanh toán";
+
+/* No comment provided by engineer. */
+"Dash payments can't be less than %@" = "Số Dash thanh toán không thể nhỏ hơn %@";
+
+/* No comment provided by engineer. */
+"Dash transaction not signed" = "Giao dịch Dash không được ký";
+
+/* No comment provided by engineer. */
+"Dash transaction outputs can't be less than %@" = "Đầu ra của giao dịch Dash không thể ít hơn %@";
+
+/* No comment provided by engineer. */
+"Devnet" = "Mạng cho phát triển";
+
+/* No comment provided by engineer. */
+"Double spend" = "Tiêu lặp";
+
+/* The server is not working */
+"Down" = "Không hoạt động";
+
+/* No comment provided by engineer. */
+"Enter old PIN" = "Nhập mã PIN cũ";
+
+/* No comment provided by engineer. */
+"Error from payment request server %@" = "Lỗi từ máy chủ yêu cầu thanh toán %@";
+
+/* No comment provided by engineer. */
+"Error signing transaction" = "Lỗi khi ký giao dịch";
+
+/* No comment provided by engineer. */
+"Ignore" = "Bỏ qua";
+
+/* No comment provided by engineer. */
+"Insufficient funds" = "Không đủ tiền";
+
+/* No comment provided by engineer. */
+"Insufficient funds for Dash network fee" = "Không đủ tiền phí cho mạng lưới Dash";
+
+/* No comment provided by engineer. */
+"Internal Error" = "Lỗi bên trong";
+
+/* No comment provided by engineer. */
+"Invalid DAPI Response" = "Phản hồi DAPI không hợp lệ";
+
+/* No comment provided by engineer. */
+"Invalid Params" = "Tham số không hợp lệ";
+
+/* No comment provided by engineer. */
+"Invalid Request" = "Yêu cầu không hợp lệ";
+
+/* No comment provided by engineer. */
+"Mainnet" = "Mạng chính";
+
+/* No comment provided by engineer. */
+"Method Not Found" = "Không tìm thấy phương thức";
+
+/* No comment provided by engineer. */
+"Missing certificate" = "Thiếu chứng thực";
+
+/* No comment provided by engineer. */
+"No attempts remaining" = "Đã hết số lần có thể thử lại";
+
+/* No comment provided by engineer. */
+"No peers found" = "Không tìm thấy nút ngang hàng";
+
+/* No comment provided by engineer. */
+"Not a valid private key" = "Không phải một khoá riêng hợp lệ";
+
+/* No comment provided by engineer. */
+"Not connected to the Dash network" = "Chưa được kết nối với mạng lưới của Dash";
+
+/* No comment provided by engineer. */
+"OK" = "OK";
+
+/* No comment provided by engineer. */
+"Parse Error" = "Lỗi đọc tham số";
+
+/* No comment provided by engineer. */
+"Passcode" = "Mật khẩu";
+
+/* No comment provided by engineer. */
+"Password" = "Mật khẩu";
+
+/* No comment provided by engineer. */
+"Password protected key" = "Khoá được bảo vệ bởi mật khẩu";
+
+/* No comment provided by engineer. */
+"Payee identity isn't certified" = "Thông tin về người nhận chưa được xác nhận";
+
+/* No comment provided by engineer. */
+"PIN for %@" = "Mã PIN cho %@";
+
+/* Please authenticate to create your Testnet wallet */
+"Please authenticate to create your %@ wallet" = "Vui lòng xác thực để tạo %@ ví";
+
+/* No comment provided by engineer. */
+"Recovery phrase" = "Cụm từ phục hồi";
+
+/* No comment provided by engineer. */
+"Reduce payment amount by\n%@ (%@)?" = "Giảm số lượng thanh toán theo\n%1$@ (%2$@)?";
+
+/* No comment provided by engineer. */
+"Request expired" = "Yêu cầu đã hết hạn";
+
+/* No comment provided by engineer. */
+"Requested network \"%@\" not currently in use" = "Mạng yêu cầu \"%@\" hiện không đang được sử dụng";
+
+/* No comment provided by engineer. */
+"Rescan" = "Quét lại";
+
+/* No comment provided by engineer. */
+"Reset" = "Thiết lập lại";
+
+/* No comment provided by engineer. */
+"Server Error" = "Lỗi máy chủ";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Đặt mã PIN";
+
+/* No comment provided by engineer. */
+"Testnet" = "Mạng thử nghiệm";
+
+/* No comment provided by engineer. */
+"This payment address is already in your wallet" = "Địa chỉ thanh toán này đã có trong ví của bạn";
+
+/* No comment provided by engineer. */
+"This private key is already in your wallet" = "Khoá riêng này đã có trong ví của bạn";
+
+/* No comment provided by engineer. */
+"This private key is empty" = "Khoá riêng này không có gì";
+
+/* No comment provided by engineer. */
+"Transaction canceled, network timeout" = "Giao dịch bị huỷ, hết thời gian";
+
+/* No comment provided by engineer. */
+"Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "Phí giao dịch có thể nhiều hơn số tiền có trong địa chỉ này (do nhiều các khoản gửi tí xíu)";
+
+/* No comment provided by engineer. */
+"Transaction rejected" = "Giao dịch bị từ chối";
+
+/* No comment provided by engineer. */
+"Try again in %@" = "Thử lại trong %@";
+
+/* No comment provided by engineer. */
+"Unexpected response from %@" = "Phản hồi không mong đợi từ %@";
+
+/* No comment provided by engineer. */
+"Unknown address" = "Địa chỉ không xác định";
+
+/* No comment provided by engineer. */
+"Unknown Error" = "Lỗi không xác định";
+
+/* No comment provided by engineer. */
+"Unknown JSON-RPC Response" = "Phản hồi JSON-RPC không xác định";
+
+/* No comment provided by engineer. */
+"Unrecognized address" = "Không nhận ra địa chỉ";
+
+/* No comment provided by engineer. */
+"Unsupported signature type" = "Kiểu chữ ký không được hỗ trợ";
+
+/* No comment provided by engineer. */
+"Untrusted certificate" = "Chứng chỉ không đáng tin";
+
+/* The server is up and running */
+"Up" = "Hoạt động";
+
+/* Updating Price */
+"Updating Price" = "Đang cập nhật giá";
+
+/* No comment provided by engineer. */
+"Wallet disabled" = "Ví bị vô hiệu hoá";
+
+/* No comment provided by engineer. */
+"WARNING" = "CẢNH BÁO";
+
+/* No comment provided by engineer. */
+"Wipe" = "Xoá sạch";
+
+/* No comment provided by engineer. */
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Ví của bạn có thể bị mất đồng bộ.\nĐiều này có thể được xử lý bằng cách quét lại blockchain.";
+
+/* No comment provided by engineer. */
+"Unable to create registration transition" = "Không thể tạo được chuyển đổi đăng ký";
+
+/* The Blockchain Identity is not registered */
+"Not Registered" = "Không được đăng ký";
+
+/* The Blockchain Identity is registered */
+"Registered" = "Đã được đăng ký";
+
+/* The Blockchain Identity is being registered */
+"Registering" = "Đang đăng ký";
+
+/* It is Unknown if the Blockchain Identity is registered */
+"Unknown" = "Không biết";
+
+/* Status of Key or Username is Revoked */
+"Revoked" = "Đã thu hồi";
+
+/* No comment provided by engineer. */
+"BLS" = "BLS";
+
+/* No comment provided by engineer. */
+"ECDSA" = "ECDSA";
+
+/* No comment provided by engineer. */
+"Unknown Key Type" = "Loại khoá không xác định";
+
+/* No comment provided by engineer. */
+"Dashpay Contract is not yet registered on network" = "Liên lạc DashPay chưa được đăng ký trên mạng lưới";
+
+/* No comment provided by engineer. */
+"DPNS Contract is not yet registered on network" = "Liên lạc DPNS chưa được đăng ký trên mạng lưới";
+
+/* No comment provided by engineer. */
+"Funding transaction could not be created" = "Không thể tạo được giao dịch Cấp vốn";
+
+/* No comment provided by engineer. */
+"Internal key handling error" = "Lỗi xử lý khóa nội bộ";
+
+/* No comment provided by engineer. */
+"Internal memory allocation error" = "Lỗi cấp phát bộ nhớ trong";
+
+/* No comment provided by engineer. */
+"Malformed platform response" = "Phản hồi bất bình thường từ nền tảng";
+
+/* No comment provided by engineer. */
+"Timeout while waiting for funding transaction to be accepted by network" = "Hết thời gian chờ đợi giao dịch cấp vốn để được chấp nhận bởi mạng lưới";
+
+/* No comment provided by engineer. */
+"Transaction could not be signed" = "Giao dịch không thể được ký";
+
+/* No comment provided by engineer. */
+"Unable to register registration transition" = "Không thể đăng ký giao dịch đăng ký";
+
+/* No comment provided by engineer. */
+"User has actions to complete before being able to use Dashpay" = "Người dùng cần hành động để hoàn thành trước khi có thể sử dụng Dashpay";
+
+/* No comment provided by engineer. */
+"Unable to sign transition" = "Không thể ký cho thay đổi";
+
+/* No comment provided by engineer. */
+"Transition had nothing to update" = "Thay đổi không có gì để cập nhật";
+
+/* No comment provided by engineer. */
+"Contract '%@' doesn't contain a table named '%@'" = "Hợp đồng '%1$@' không có chứa một bảng có tên '%2$@'";
+
+/* No comment provided by engineer. */
+"The blockchain identity hasn't yet been locally activated" = "Danh tính blockchain chưa được kích hoạt tại cục bộ";
+
+/* No comment provided by engineer. */
+"The blockchain identity funding private key should be first created with createFundingPrivateKeyWithCompletion" = "Khoá riêng cấp vốn cho danh tính blockchain cần phải được tạo trước nhất với createFundingPrivateKeyWithCompletion";
+
+/* No comment provided by engineer. */
+"The blockchain identity extended public keys need to be registered before you can register a blockchain identity." = "Khoá công khai mở rộng danh tính blockchain cần được đăng ký trước khi bạn đăng ký một danh tính blockchain.";
+
+/* No comment provided by engineer. */
+"Contact request extended public key is incorrectly encrypted." = "Khoá công khai mở rộng yêu cầu bởi liên hệ đã được mã hoá không đúng.";
+
+/* No comment provided by engineer. */
+"Error generating public keys" = "Lỗi trong việc sinh khoá công khai";
+
+/* No comment provided by engineer. */
+"Accepting a friend request should only happen from a local blockchain identity" = "Chấp nhận yêu cầu kết bạn chỉ nên xảy ra từ một danh tính trên blockchain cục bộ";
+
+/* No comment provided by engineer. */
+"You can only accept a friend request from blockchain identity who has sent you one, and none were found" = "Bạn chỉ có thể chấp nhận một yêu cầu kết bạn từ một danh tính blockchain người mà đã gửi đến cho bạn, và chưa tìm thấy cái nào như vậy cả";
+
+/* An error message for notifying that chain sync has timed out */
+"Synchronization Timeout" = "Hết thời gian đồng bộ";
+
+/* No comment provided by engineer. */
+"Attempt to query DAPs for blockchain identity with no active keys" = "Cố gắng truy vấn DAPs để tìm danh tính blockchain mà không có khoá active";
+
+/* No comment provided by engineer. */
+"Node at host %@ does not service network" = "Nút tại máy %@ không phục vụ mạng lưới";
+
+/* No comment provided by engineer. */
+"Node at host %@ does not support bloom filtering" = "Nút ở máy %@ không hỗ trợ tính năng bloom filtering";
+
+/* No comment provided by engineer. */
+"The Dashpay contract is not properly set up" = "Hợp đồng Dashpay chưa được thiết lập đúng";
+
+/* No comment provided by engineer. */
+"Contract '%@' needs to first be locally registered or known" = "Hợp đồng '%@' cần phải được đăng ký trước tiên ở cục bộ hoặc phải được biết trước";
+
+/* No comment provided by engineer. */
+"A block could not be mined in the selected time interval." = "Một khối không thể được đào trong khoảng thời gian được chọn.";
+
+/* No comment provided by engineer. */
+"Could not create friendship derivation path" = "Không thể tạo được kết nối bạn bè";
+
+/* No comment provided by engineer. */
+"Incorrect key format after contact request decryption" = "Định dạng khoá không đúng sau khi yêu cầu liên hệ được giải mã";
+
+/* No comment provided by engineer. */
+"Error when updating profile information" = "Error when updating profile information";
+
+/* No comment provided by engineer. */
+"Timeout while waiting for funding transaction to aquire an instant send lock" = "Timeout while waiting for funding transaction to aquire an instant send lock";
+
+/* No comment provided by engineer. */
+"Would you like to share this invitation?" = "Would you like to share this invitation?";
+
+/* No comment provided by engineer. */
+"Identity no longer active in wallet" = "Identity no longer active in wallet";
+
+/* No comment provided by engineer. */
+"The registration credit funding transaction has not been mined yet and has no instant send lock" = "The registration credit funding transaction has not been mined yet and has no instant send lock";
+
+/* No comment provided by engineer. */
+"Transaction does not exist" = "Transaction does not exist";
+
+/* No comment provided by engineer. */
+"Invitation format is not valid" = "Invitation format is not valid";
+
+/* No comment provided by engineer. */
+"Invitation transaction is not valid" = "Invitation transaction is not valid";
+
+/* No comment provided by engineer. */
+"Funding private key is not valid" = "Funding private key is not valid";
+
+/* No comment provided by engineer. */
+"Error setting the external funding private key" = "Error setting the external funding private key";
