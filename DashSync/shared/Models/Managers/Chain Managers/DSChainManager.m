@@ -467,7 +467,7 @@
                                                             object:nil
                                                           userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
     });
-    if (self.chain.isEvolutionEnabled && self.masternodeManager.currentMasternodeListIsInLast24Hours) {
+    if (self.chain.isEvolutionEnabled && self.masternodeManager.currentMasternodeListIsInLast24Hours && !self.identitiesManager.hasRecentIdentitiesSync) {
         [self.identitiesManager syncBlockchainIdentitiesWithCompletion:^(NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities) {
             [self.peerManager connect];
         }];
@@ -494,6 +494,11 @@
     [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chain inContext:chainContext];
 
     [self removeNonMainnetTrustedPeer];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncWillStartNotification
+                                                            object:nil
+                                                          userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
+    });
     [self.peerManager connect];
 }
 
@@ -502,6 +507,11 @@
     [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chain inContext:chainContext];
 
     [self removeNonMainnetTrustedPeer];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncWillStartNotification
+                                                            object:nil
+                                                          userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
+    });
     [self.peerManager connect];
 }
 
@@ -510,6 +520,11 @@
     [[DashSync sharedSyncController] wipeBlockchainNonTerminalDataForChain:self.chain inContext:chainContext];
 
     [self removeNonMainnetTrustedPeer];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncWillStartNotification
+                                                            object:nil
+                                                          userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
+    });
     [self.peerManager connect];
 }
 
