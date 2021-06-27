@@ -250,6 +250,13 @@
     return nil;
 }
 
+- (NSString *)operatorPayoutAddress {
+    if ([self.providerUpdateServiceTransactions count]) {
+        return [NSString addressWithScriptPubKey:[self.providerUpdateServiceTransactions lastObject].scriptPayout onChain:self.providerRegistrationTransaction.chain];
+    }
+    return nil;
+}
+
 - (DSBLSKey *)operatorKeyFromSeed:(NSData *)seed {
     DSAuthenticationKeysDerivationPath *providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForWallet:self.operatorKeysWallet];
 
@@ -289,6 +296,33 @@
     DSAuthenticationKeysDerivationPath *providerVotingKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForWallet:self.votingKeysWallet];
 
     return (DSECDSAKey *)[providerVotingKeysDerivationPath privateKeyForHash160:self.providerRegistrationTransaction.votingKeyHash fromSeed:seed];
+}
+
+- (NSData *)ownerPublicKeyData {
+    if (self.ownerKeysWallet) {
+        DSAuthenticationKeysDerivationPath *providerOwnerKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForWallet:self.ownerKeysWallet];
+        return [providerOwnerKeysDerivationPath publicKeyDataForHash160:self.providerRegistrationTransaction.ownerKeyHash];
+    } else {
+        return [NSData data];
+    }
+}
+
+- (NSData *)operatorPublicKeyData {
+    if (self.operatorKeysWallet) {
+        DSAuthenticationKeysDerivationPath *providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForWallet:self.operatorKeysWallet];
+        return [providerOperatorKeysDerivationPath publicKeyDataForHash160:[[NSData dataWithUInt384:self.providerRegistrationTransaction.operatorKey] hash160]];
+    } else {
+        return [NSData data];
+    }
+}
+
+- (NSData *)votingPublicKeyData {
+    if (self.votingKeysWallet) {
+        DSAuthenticationKeysDerivationPath *providerVotingKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForWallet:self.votingKeysWallet];
+        return [providerVotingKeysDerivationPath publicKeyDataForHash160:self.providerRegistrationTransaction.votingKeyHash];
+    } else {
+        return [NSData data];
+    }
 }
 
 - (NSString *)votingKeyStringFromSeed:(NSData *)seed {
@@ -413,6 +447,10 @@
 
                                                       completion(providerRegistrationTransaction);
                                                   }];
+}
+
+- (void)updateTransactionForResetFundedByAccount:(DSAccount *)fundingAccount completion:(void (^_Nullable)(DSProviderUpdateServiceTransaction *providerRegistrationTransaction))completion {
+    [self updateTransactionFundedByAccount:fundingAccount toIPAddress:self.ipAddress port:self.port payoutAddress:self.operatorPayoutAddress completion:completion];
 }
 
 - (void)updateTransactionFundedByAccount:(DSAccount *)fundingAccount toIPAddress:(UInt128)ipAddress port:(uint32_t)port payoutAddress:(NSString *)payoutAddress completion:(void (^_Nullable)(DSProviderUpdateServiceTransaction *providerRegistrationTransaction))completion {

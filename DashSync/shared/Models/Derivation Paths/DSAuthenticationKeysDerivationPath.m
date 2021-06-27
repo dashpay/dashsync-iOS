@@ -233,9 +233,19 @@
     return [self privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:index] fromSeed:seed];
 }
 
+- (NSData *)publicKeyDataForAddress:(NSString *)address {
+    uint32_t index = (uint32_t)[self indexOfKnownAddress:address];
+    return [self publicKeyDataAtIndex:index];
+}
+
 - (DSKey *)privateKeyForHash160:(UInt160)hash160 fromSeed:(NSData *)seed {
     NSString *address = [[NSData dataWithUInt160:hash160] addressFromHash160DataForChain:self.chain];
     return [self privateKeyForAddress:address fromSeed:seed];
+}
+
+- (NSData *)publicKeyDataForHash160:(UInt160)hash160 {
+    NSString *address = [[NSData dataWithUInt160:hash160] addressFromHash160DataForChain:self.chain];
+    return [self publicKeyDataForAddress:address];
 }
 
 - (DSKey *)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString *)walletUniqueId {

@@ -43,6 +43,7 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus)
 @property (nonatomic, readonly) NSMutableIndexSet *previousVotingWalletIndexes;   //previously used voting indexes
 @property (nonatomic, readonly) DSChain *chain;
 @property (nonatomic, nullable, readonly) NSString *payoutAddress;
+@property (nonatomic, readonly) NSString *operatorPayoutAddress;
 @property (nonatomic, readonly) BOOL noLocalWallet;
 @property (nonatomic, readonly) DSProviderRegistrationTransaction *providerRegistrationTransaction;
 @property (nonatomic, readonly) NSArray<DSProviderUpdateRegistrarTransaction *> *providerUpdateRegistrarTransactions;
@@ -53,6 +54,8 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus)
 - (void)registrationTransactionFundedByAccount:(DSAccount *)fundingAccount toAddress:(NSString *)address completion:(void (^_Nullable)(DSProviderRegistrationTransaction *providerRegistrationTransaction))completion;
 
 - (void)registrationTransactionFundedByAccount:(DSAccount *)fundingAccount toAddress:(NSString *)address withCollateral:(DSUTXO)collateral completion:(void (^_Nullable)(DSProviderRegistrationTransaction *providerRegistrationTransaction))completion;
+
+- (void)updateTransactionForResetFundedByAccount:(DSAccount *)fundingAccount completion:(void (^_Nullable)(DSProviderUpdateServiceTransaction *providerRegistrationTransaction))completion;
 
 - (void)updateTransactionFundedByAccount:(DSAccount *)fundingAccount toIPAddress:(UInt128)ipAddress port:(uint32_t)port payoutAddress:(NSString *_Nullable)payoutAddress completion:(void (^_Nullable)(DSProviderUpdateServiceTransaction *providerUpdateServiceTransaction))completion;
 
