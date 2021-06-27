@@ -31,7 +31,7 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode)
     DSDAPINetworkServiceErrorCodeInvalidResponse = 100,
 };
 
-@class DSTransition, DSPlatformDocumentsRequest;
+@class DSTransition, DSPlatformDocumentsRequest, DSBlockchainIdentity;
 
 @protocol DSDAPIPlatformNetworkServiceProtocol <NSObject>
 
@@ -473,6 +473,19 @@ Get a list of users after matching search criteria
                                                 completionQueue:(dispatch_queue_t)completionQueue
                                                         success:(void (^)(NSArray<NSDictionary *> *documents))success
                                                         failure:(void (^)(NSError *error))failure;
+
+/**
+Get a list of identities knowing only keys they possess
+
+@param keyHashesArray An array of hashes of keys
+@param completionQueue The queue in which to return the result on
+@param success A block object to be executed when the request operation finishes successfully
+@param failure A block object to be executed when the request operation finishes unsuccessfully
+*/
+- (id<DSDAPINetworkServiceRequest>)fetchIdentitiesByKeyHashes:(NSArray<NSData *> *)keyHashesArray
+                                              completionQueue:(dispatch_queue_t)completionQueue
+                                                      success:(void (^)(NSArray<NSDictionary *> *identityDictionaries))success
+                                                      failure:(void (^)(NSError *error))failure;
 
 @end
 

@@ -27,12 +27,14 @@
 #import "DSAccount.h"
 #import "DSAuthenticationManager.h"
 #import "DSBlock.h"
+#import "DSBlockchainIdentity+Protected.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSBloomFilter.h"
 #import "DSChain+Protected.h"
 #import "DSChainLock.h"
 #import "DSChainManager+Protected.h"
 #import "DSCreditFundingTransaction.h"
+#import "DSDAPIPlatformNetworkService.h"
 #import "DSError.h"
 #import "DSEventManager.h"
 #import "DSIdentitiesManager.h"
@@ -930,6 +932,17 @@
 
 // MARK: - TransactionFetching
 
+- (void)fetchTransactionWithDAPIForTransactionHash:(UInt256)transactionHash success:(void (^)(DSTransaction *transaction))success
+                                           failure:(void (^)(NSError *error))failure {
+    DSDAPIPlatformNetworkService *networkService = self.chainManager.DAPIClient.DAPIPlatformNetworkService;
+    [networkService getTransactionById:uint256_hex(transactionHash)
+                               success:^(NSDictionary *_Nonnull transactionDictionary) {
+                                   //[DSTransaction transactionWithMessage:<#(nonnull NSData *)#>
+                                   //                              onChain:<#(nonnull DSChain *)#>]}
+                               }
+                               failure:failure];
+}
+
 - (void)fetchTransactionHavingHash:(UInt256)transactionHash {
     for (DSPeer *peer in self.peerManager.connectedPeers) {
         [peer sendGetdataMessageForTxHash:transactionHash];
@@ -1263,6 +1276,8 @@
                         blockchainIdentity = [wallet blockchainIdentityForUniqueId:transaction.creditBurnIdentityIdentifier];
                         if (blockchainIdentity) isNewBlockchainIdentity = TRUE;
                     }
+                } else if (blockchainIdentity) {
+                    blockchainIdentity.registrationCreditFundingTransaction = creditFundingTransaction;
                 }
             } else {
                 [self.chain triggerUpdatesForLocalReferences:transaction];

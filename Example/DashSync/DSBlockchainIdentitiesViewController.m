@@ -9,6 +9,7 @@
 #import "DSBlockchainIdentitiesViewController.h"
 #import "DSBlockchainIdentityActionsViewController.h"
 #import "DSBlockchainIdentityTableViewCell.h"
+#import "DSCreateBlockchainIdentityFromInvitationViewController.h"
 #import "DSCreateBlockchainIdentityViewController.h"
 #import "DSMerkleBlock.h"
 #import <DashSync/DSCreditFundingTransaction.h>
@@ -17,6 +18,8 @@
 
 @property (nonatomic, strong) NSArray<NSArray *> *orderedBlockchainIdentities;
 @property (strong, nonatomic) id blockchainIdentitiesObserver;
+
+- (IBAction)createBlockchainIdentity:(id)sender;
 
 @end
 
@@ -127,11 +130,32 @@
     return @[deleteAction, editAction];
 }
 
+- (IBAction)createBlockchainIdentity:(id)sender {
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Create Blockchain Identity"
+                                                                             message:nil
+                                                                      preferredStyle:UIAlertControllerStyleActionSheet];
+
+    [alertController addAction:[UIAlertAction actionWithTitle:@"From Wallet"
+                                                        style:UIAlertActionStyleDefault
+                                                      handler:^(UIAlertAction *_Nonnull action) {
+                                                          [self performSegueWithIdentifier:@"CreateBlockchainIdentitySegue" sender:self];
+                                                      }]];
+    [alertController addAction:[UIAlertAction actionWithTitle:@"From Invitation"
+                                                        style:UIAlertActionStyleDefault
+                                                      handler:^(UIAlertAction *_Nonnull action) {
+                                                          [self performSegueWithIdentifier:@"CreateBlockchainIdentityFromInvitationSegue" sender:self];
+                                                      }]];
+    [self presentViewController:alertController animated:YES completion:nil];
+}
+
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"CreateBlockchainIdentitySegue"]) {
         DSCreateBlockchainIdentityViewController *createBlockchainIdentityViewController = (DSCreateBlockchainIdentityViewController *)((UINavigationController *)segue.destinationViewController).topViewController;
         createBlockchainIdentityViewController.chainManager = self.chainManager;
+    } else if ([segue.identifier isEqualToString:@"CreateBlockchainIdentityFromInvitationSegue"]) {
+        DSCreateBlockchainIdentityFromInvitationViewController *createBlockchainIdentityFromInvitationViewController = (DSCreateBlockchainIdentityFromInvitationViewController *)((UINavigationController *)segue.destinationViewController).topViewController;
+        createBlockchainIdentityFromInvitationViewController.chainManager = self.chainManager;
     } else if ([segue.identifier isEqualToString:@"BlockchainIdentityActionsSegue"]) {
         DSBlockchainIdentityActionsViewController *blockchainIdentityActionsViewController = segue.destinationViewController;
         blockchainIdentityActionsViewController.chainManager = self.chainManager;

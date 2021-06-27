@@ -15,21 +15,14 @@
 //  limitations under the License.
 //
 
-#import "BigIntTypes.h"
-#import "DSDAPINetworkServiceRequest.h"
-#import <Foundation/Foundation.h>
+#import "DSWalletChooserViewController.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSTransaction;
+@interface DSCreateBlockchainIdentityFromInvitationViewController : UITableViewController <DSWalletChooserDelegate>
 
-@protocol DSDAPICoreNetworkServiceProtocol <NSObject>
-
-- (id<DSDAPINetworkServiceRequest>)getStatusWithCompletionQueue:(dispatch_queue_t)completionQueue success:(void (^)(NSDictionary *status))success
-                                                        failure:(void (^)(NSError *error))failure;
-
-- (id<DSDAPINetworkServiceRequest>)getTransactionWithHash:(UInt256)transactionHash completionQueue:(dispatch_queue_t)completionQueue success:(void (^)(DSTransaction *transaction))success failure:(void (^)(NSError *error))failure;
-
+@property (nonatomic, strong) DSChainManager *chainManager;
 
 @end
 

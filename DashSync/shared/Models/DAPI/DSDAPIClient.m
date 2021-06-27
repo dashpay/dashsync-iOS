@@ -34,7 +34,8 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 @property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, strong) NSMutableSet<NSString *> *availablePeers;
 @property (nonatomic, strong) NSMutableSet<NSString *> *usedPeers;
-@property (nonatomic, strong) NSMutableArray<DSDAPIPlatformNetworkService *> *activeServices;
+@property (nonatomic, strong) NSMutableArray<DSDAPIPlatformNetworkService *> *activePlatformServices;
+@property (nonatomic, strong) NSMutableArray<DSDAPICoreNetworkService *> *activeCoreServices;
 @property (atomic, strong) dispatch_queue_t coreNetworkingDispatchQueue;
 @property (atomic, strong) dispatch_queue_t platformMetadataDispatchQueue;
 
@@ -47,7 +48,8 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     if (self) {
         _chain = chain;
         self.availablePeers = [NSMutableSet set];
-        self.activeServices = [NSMutableArray array];
+        self.activePlatformServices = [NSMutableArray array];
+        self.activeCoreServices = [NSMutableArray array];
         self.coreNetworkingDispatchQueue = self.chain.networkingQueue;
         self.platformMetadataDispatchQueue = self.chain.dapiMetadataQueue;
     }
@@ -219,7 +221,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 - (void)addDAPINodeByAddress:(NSString *)host {
     [self.availablePeers addObject:host];
     DSDAPIPlatformNetworkService *foundNetworkService = nil;
-    for (DSDAPIPlatformNetworkService *networkService in self.activeServices) {
+    for (DSDAPIPlatformNetworkService *networkService in self.activePlatformServices) {
         if ([networkService.ipAddress isEqualToString:host]) {
             foundNetworkService = networkService;
             break;
@@ -228,31 +230,47 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     if (!foundNetworkService) {
         HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
         DSDAPIPlatformNetworkService *DAPINetworkService = [[DSDAPIPlatformNetworkService alloc] initWithDAPINodeIPAddress:host httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.coreNetworkingDispatchQueue onChain:self.chain];
-        [self.activeServices addObject:DAPINetworkService];
+        [self.activePlatformServices addObject:DAPINetworkService];
     }
 }
 
 - (void)removeDAPINodeByAddress:(NSString *)host {
     @synchronized(self) {
         [self.availablePeers removeObject:host];
-        for (DSDAPIPlatformNetworkService *networkService in [self.activeServices copy]) {
+        for (DSDAPIPlatformNetworkService *networkService in [self.activePlatformServices copy]) {
             if ([networkService.ipAddress isEqualToString:host]) {
-                [self.activeServices removeObject:networkService];
+                [self.activePlatformServices removeObject:networkService];
             }
         }
     }
 }
 
-- (DSDAPIPlatformNetworkService *)DAPINetworkService {
+- (DSDAPIPlatformNetworkService *)DAPIPlatformNetworkService {
     @synchronized(self) {
-        if ([self.activeServices count]) {
-            if ([self.activeServices count] == 1) return [self.activeServices objectAtIndex:0];                   //if only 1 service, just use first one
-            return [self.activeServices objectAtIndex:arc4random_uniform((uint32_t)[self.activeServices count])]; //use a random service
+        if ([self.activePlatformServices count]) {
+            if ([self.activePlatformServices count] == 1) return [self.activePlatformServices objectAtIndex:0];                   //if only 1 service, just use first one
+            return [self.activePlatformServices objectAtIndex:arc4random_uniform((uint32_t)[self.activePlatformServices count])]; //use a random service
         } else if ([self.availablePeers count]) {
             NSString *peerHost = self.availablePeers.anyObject;
             HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
             DSDAPIPlatformNetworkService *DAPINetworkService = [[DSDAPIPlatformNetworkService alloc] initWithDAPINodeIPAddress:peerHost httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.coreNetworkingDispatchQueue onChain:self.chain];
-            [self.activeServices addObject:DAPINetworkService];
+            [self.activePlatformServices addObject:DAPINetworkService];
+            return DAPINetworkService;
+        }
+        return nil;
+    }
+}
+
+- (DSDAPICoreNetworkService *)DAPICoreNetworkService {
+    @synchronized(self) {
+        if ([self.activeCoreServices count]) {
+            if ([self.activeCoreServices count] == 1) return [self.activeCoreServices objectAtIndex:0];                   //if only 1 service, just use first one
+            return [self.activeCoreServices objectAtIndex:arc4random_uniform((uint32_t)[self.activeCoreServices count])]; //use a random service
+        } else if ([self.availablePeers count]) {
+            NSString *peerHost = self.availablePeers.anyObject;
+            HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
+            DSDAPICoreNetworkService *DAPINetworkService = [[DSDAPICoreNetworkService alloc] initWithDAPINodeIPAddress:peerHost httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.coreNetworkingDispatchQueue onChain:self.chain];
+            [self.activeCoreServices addObject:DAPINetworkService];
             return DAPINetworkService;
         }
         return nil;
@@ -298,7 +316,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
           completionQueue:(dispatch_queue_t)completionQueue
                   success:(void (^)(NSDictionary *successDictionary, BOOL added))success
                   failure:(void (^)(NSDictionary<NSNumber *, NSError *> *errorPerAttempt))failure {
-    DSDAPIPlatformNetworkService *service = self.DAPINetworkService;
+    DSDAPIPlatformNetworkService *service = self.DAPIPlatformNetworkService;
     if (!service) {
         NSMutableDictionary *mErrorsPerAttempt = [errorPerAttempt mutableCopy];
         NSError *error = [NSError errorWithDomain:DSDAPIClientErrorDomain

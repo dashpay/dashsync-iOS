@@ -20,7 +20,6 @@
 @property (strong, nonatomic) IBOutlet UITextField *indexLabel;
 @property (strong, nonatomic) IBOutlet UILabel *walletIdentifierLabel;
 @property (strong, nonatomic) IBOutlet UILabel *fundingAccountIdentifierLabel;
-@property (strong, nonatomic) IBOutlet UILabel *typeLabel;
 @property (strong, nonatomic) IBOutlet UISwitch *registerOnL2Switch;
 @property (strong, nonatomic) IBOutlet UISwitch *registerUsernameSwitch;
 @property (strong, nonatomic) DSWallet *wallet;

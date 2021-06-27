@@ -27,12 +27,13 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode)
     DSDAPIClientErrorCodeNoKnownDAPINodes = 2,
 };
 
-@class DSChain, DSBlockchainIdentity, DPDocument, DSTransition, DPSTPacket, DPContract, DSDAPIPlatformNetworkService, DSPeer, DSSimplifiedMasternodeEntry;
+@class DSChain, DSBlockchainIdentity, DPDocument, DSTransition, DPSTPacket, DPContract, DSDAPIPlatformNetworkService, DSDAPICoreNetworkService, DSPeer, DSSimplifiedMasternodeEntry;
 
 @interface DSDAPIClient : NSObject
 
 @property (readonly, nonatomic) DSChain *chain;
-@property (nonatomic, nullable, readonly) DSDAPIPlatformNetworkService *DAPINetworkService;
+@property (nonatomic, nullable, readonly) DSDAPIPlatformNetworkService *DAPIPlatformNetworkService;
+@property (nonatomic, nullable, readonly) DSDAPICoreNetworkService *DAPICoreNetworkService;
 @property (atomic, readonly) dispatch_queue_t coreNetworkingDispatchQueue;
 @property (atomic, readonly) dispatch_queue_t platformMetadataDispatchQueue;
 

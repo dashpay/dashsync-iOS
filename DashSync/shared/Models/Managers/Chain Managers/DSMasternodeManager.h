@@ -56,6 +56,7 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 @property (nonatomic, readonly) NSUInteger masternodeListRetrievalQueueCount;
 @property (nonatomic, readonly) NSUInteger masternodeListRetrievalQueueMaxAmount;
 @property (nonatomic, readonly) BOOL hasMasternodeListCurrentlyBeingSaved;
+@property (nonatomic, readonly) BOOL currentMasternodeListIsInLast24Hours;
 
 - (instancetype)init NS_UNAVAILABLE;
 
