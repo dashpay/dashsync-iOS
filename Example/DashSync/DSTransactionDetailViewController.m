@@ -67,12 +67,17 @@
     DSPriceManager *manager = [DSPriceManager sharedInstance];
     NSMutableArray *mutableInputAddresses = [NSMutableArray array], *text = [NSMutableArray array], *detail = [NSMutableArray array], *amount = [NSMutableArray array], *currencyIsBitcoinInstead = [NSMutableArray array];
     NSArray<DSAccount *> *accounts = transaction.accounts;
-    uint64_t fee = [accounts[0] feeForTransaction:transaction];
+    _transaction = transaction;
+    uint64_t fee = 0;
+    BOOL isExternalTransaction = TRUE;
+    if (accounts.count) {
+        fee = [accounts[0] feeForTransaction:transaction];
+        self.sent = [transaction.chain amountSentByTransaction:transaction];
+        self.received = [transaction.chain amountReceivedFromTransaction:transaction];
+        isExternalTransaction = FALSE;
+    }
     NSUInteger outputAmountIndex = 0;
 
-    _transaction = transaction;
-    self.sent = [transaction.chain amountSentByTransaction:transaction];
-    self.received = [transaction.chain amountReceivedFromTransaction:transaction];
 
     //if (![transaction isKindOfClass:[DSCoinbaseTransaction class]]) {
     for (NSString *inputAddress in transaction.inputAddresses) {
@@ -153,10 +158,15 @@
             [detail addObject:NSLocalizedString(@"payment address", nil)];
             [amount addObject:@(-amt)];
             [currencyIsBitcoinInstead addObject:@FALSE];
+        } else if (isExternalTransaction) {
+            [text addObject:address];
+            [detail addObject:NSLocalizedString(@"address", nil)];
+            [amount addObject:@(amt)];
+            [currencyIsBitcoinInstead addObject:@FALSE];
         }
     }
 
-    if (self.sent > 0 && fee > 0 && fee != UINT64_MAX) {
+    if ((self.sent > 0 && fee > 0 && fee != UINT64_MAX) || isExternalTransaction) {
         [text addObject:@""];
         [detail addObject:NSLocalizedString(@"dash network fee", nil)];
         [amount addObject:@(-fee)];
@@ -323,7 +333,9 @@
                     cell.titleLabel.text = NSLocalizedString(@"status:", nil);
                     cell.moreInfoLabel.text = nil;
 
-                    if ([account transactionOutputsAreLocked:self.transaction]) {
+                    if (!account) {
+                        cell.statusLabel.text = NSLocalizedString(@"external transaction", nil);
+                    } else if ([account transactionOutputsAreLocked:self.transaction]) {
                         cell.statusLabel.text = NSLocalizedString(@"recently mined (locked)", nil);
                     } else if (self.transaction.blockHeight != TX_UNCONFIRMED) {
                         cell.statusLabel.text = [NSString stringWithFormat:NSLocalizedString(@"mined in block #%d (%@)", nil),

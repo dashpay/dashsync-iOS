@@ -22,10 +22,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DSChain;
+
 @interface DSDAPIGRPCResponseHandler : NSObject <GRPCProtoResponseHandler>
 
 @property (atomic, strong) dispatch_queue_t dispatchQueue;
 @property (atomic, strong) dispatch_queue_t completionQueue;
+@property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, strong) NSString *host;                      //for debuging purposes
 @property (nonatomic, strong) DSPlatformDocumentsRequest *request; //for debuging purposes
 

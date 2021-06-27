@@ -203,8 +203,13 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 - (void)reloadDerivationPaths;
 
 - (void)unregisterBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
+- (void)addBlockchainIdentities:(NSArray<DSBlockchainIdentity *> *)blockchainIdentities;
 - (void)addBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
-- (void)registerBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
+
+//Verify makes sure the keys for the blockchain identity are good
+- (BOOL)registerBlockchainIdentities:(NSArray<DSBlockchainIdentity *> *)blockchainIdentities verify:(BOOL)verify;
+- (BOOL)registerBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity verify:(BOOL)verify;
+- (BOOL)registerBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 - (BOOL)containsBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 
 - (void)unregisterBlockchainInvitation:(DSBlockchainInvitation *)blockchainInvitation;

@@ -15,10 +15,13 @@
 //  limitations under the License.
 //
 
+#import "BigIntTypes.h"
 #import "DSBlockchainInvitation.h"
 #import "DSBlockchainInvitationEntity+CoreDataClass.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+@class DSChain;
 
 @interface DSBlockchainInvitation (Protected)
 

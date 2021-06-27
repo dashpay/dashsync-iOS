@@ -479,7 +479,7 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 
 @protocol DSChainIdentitiesDelegate
 @required
-- (void)chain:(DSChain *)chain didFinishFetchingBlockchainIdentityDAPInformation:(DSBlockchainIdentity *)blockchainIdentity;
+- (void)chain:(DSChain *)chain didFinishInChainSyncPhaseFetchingBlockchainIdentityDAPInformation:(DSBlockchainIdentity *)blockchainIdentity;
 
 @end
 
