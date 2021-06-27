@@ -393,6 +393,9 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 /*! @brief All accounts that contain the specified transaction hash. The transaction is also returned if it is found.  */
 - (NSArray<DSAccount *> *)accountsForTransactionHash:(UInt256)txHash transaction:(DSTransaction *_Nullable *_Nullable)transaction;
 
+/*! @brief Returns the first account with a balance.   */
+- (DSAccount *_Nullable)firstAccountWithBalance;
+
 /*! @brief Returns an account to which the given transaction is or can be associated with (even if it hasn't been registered), no account if the transaction is not associated with the wallet.  */
 - (DSAccount *_Nullable)firstAccountThatCanContainTransaction:(DSTransaction *)transaction;
 

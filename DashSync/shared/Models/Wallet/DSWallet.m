@@ -864,6 +864,14 @@
     return FALSE;
 }
 
+// returns the first account with a balance
+- (DSAccount *_Nullable)firstAccountWithBalance {
+    for (DSAccount *account in self.accounts) {
+        if ([account balance]) return account;
+    }
+    return nil;
+}
+
 - (DSAccount *)accountForAddress:(NSString *)address {
     NSParameterAssert(address);
 

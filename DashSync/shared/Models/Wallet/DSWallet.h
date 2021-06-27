@@ -150,6 +150,9 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 // returns an account where all derivation paths have the following account number
 - (DSAccount *_Nullable)accountWithNumber:(NSUInteger)accountNumber;
 
+// returns the first account with a balance
+- (DSAccount *_Nullable)firstAccountWithBalance;
+
 // returns an account to which the given transaction is or can be associated with (even if it hasn't been registered), no account if the transaction is not associated with the wallet
 - (DSAccount *_Nullable)firstAccountThatCanContainTransaction:(DSTransaction *)transaction;
 

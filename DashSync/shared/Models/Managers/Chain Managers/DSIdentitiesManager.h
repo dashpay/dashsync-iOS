@@ -34,6 +34,12 @@ typedef void (^DashpayUserInfosCompletionBlock)(BOOL success, NSDictionary<NSDat
 
 @property (nonatomic, readonly) DSChain *chain;
 
+/*! @brief Returns the timestamp of the last time identities were synced.  */
+@property (nonatomic, readonly) NSTimeInterval lastSyncedIndentitiesTimestamp;
+
+/*! @brief Returns if we synced identities in the last 30 seconds.  */
+@property (nonatomic, readonly) BOOL hasRecentIdentitiesSync;
+
 - (instancetype)initWithChain:(DSChain *)chain;
 
 - (void)registerForeignBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
