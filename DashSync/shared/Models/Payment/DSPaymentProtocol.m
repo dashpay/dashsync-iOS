@@ -349,10 +349,19 @@ typedef enum : NSUInteger
 @implementation DSPaymentProtocolRequest
 
 + (instancetype)requestWithData:(NSData *)data onChain:(DSChain *)chain {
-    return [[self alloc] initWithData:data onChain:chain];
+    return [[self alloc] initWithData:data callbackScheme:nil onChain:chain];
+}
+
+
++ (instancetype)requestWithData:(NSData *)data callbackScheme:(NSString*)callbackScheme onChain:(DSChain *)chain {
+    return [[self alloc] initWithData:data callbackScheme:callbackScheme onChain:chain];
 }
 
 - (instancetype)initWithData:(NSData *)data onChain:(DSChain *)chain {
+    return [self initWithData:data callbackScheme:nil onChain:chain];
+}
+
+- (instancetype)initWithData:(NSData *)data callbackScheme:(NSString*)callbackScheme onChain:(DSChain *)chain {
     if (!(self = [self init])) return nil;
 
     NSUInteger off = 0;
@@ -382,6 +391,7 @@ typedef enum : NSUInteger
     }
 
     if (!_details) return nil; // required
+    _callbackScheme = callbackScheme;
     return self;
 }
 
