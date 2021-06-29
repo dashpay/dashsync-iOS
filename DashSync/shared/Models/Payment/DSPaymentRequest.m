@@ -418,8 +418,13 @@
     return request;
 }
 
+- (void)fetchBIP70WithTimeout:(NSTimeInterval)timeout
+               completion:(void (^)(DSPaymentProtocolRequest *req, NSError *error))completion {
+    [DSPaymentRequest fetch:self.r scheme:self.scheme callbackScheme:self.callbackScheme onChain:self.chain timeout:timeout completion:completion];
+}
+
 // fetches the request over HTTP and calls completion block
-+ (void)fetch:(NSString *)url scheme:(NSString *)scheme onChain:(DSChain *)chain timeout:(NSTimeInterval)timeout
++ (void)fetch:(NSString *)url scheme:(NSString *)scheme callbackScheme:(NSString*)callbackScheme onChain:(DSChain *)chain timeout:(NSTimeInterval)timeout
     completion:(void (^)(DSPaymentProtocolRequest *req, NSError *error))completion {
     if (!completion) return;
 
@@ -449,12 +454,14 @@
                                          DSPaymentProtocolRequest *request = nil;
 
                                          if ([response.MIMEType.lowercaseString isEqual:[NSString stringWithFormat:@"application/%@-paymentrequest", scheme]] && data.length <= 50000) {
-                                             request = [DSPaymentProtocolRequest requestWithData:data onChain:chain];
+                                             request = [DSPaymentProtocolRequest requestWithData:data callbackScheme:callbackScheme onChain:chain];
                                          } else if ([response.MIMEType.lowercaseString isEqual:@"text/uri-list"] && data.length <= 50000) {
                                              for (NSString *url in [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]
                                                       componentsSeparatedByString:@"\n"]) {
                                                  if (![url hasPrefix:@"#"]) {                                                          // skip comments
-                                                     request = [DSPaymentRequest requestWithString:url onChain:chain].protocolRequest; // use first url and ignore the rest
+                                                     DSPaymentRequest * paymentRequest = [DSPaymentRequest requestWithString:url onChain:chain];
+                                                     paymentRequest.callbackScheme = callbackScheme;
+                                                     request = paymentRequest.protocolRequest; // use first url and ignore the rest
                                                      break;                                                                            //we only are looking for one
                                                  }
                                              }
