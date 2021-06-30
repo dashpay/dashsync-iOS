@@ -347,7 +347,7 @@
 "Incorrect key format after contact request decryption" = "Nesprávny formát kľúča po dešifrovaní žiadosti o kontakt";
 
 /* No comment provided by engineer. */
-"Error when updating profile information" = "Error when updating profile information";
+"Error when updating profile information" = "Chyba pri aktualizácii profilových informácií";
 
 /* No comment provided by engineer. */
 "Timeout while waiting for funding transaction to aquire an instant send lock" = "Timeout while waiting for funding transaction to aquire an instant send lock";
