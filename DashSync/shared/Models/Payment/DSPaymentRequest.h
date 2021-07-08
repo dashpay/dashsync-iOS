@@ -72,8 +72,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 // fetches a BIP70 request over HTTP and calls completion block
 // https://github.com/bitcoin/bips/blob/master/bip-0070.mediawiki
-+ (void)fetch:(NSString *)url scheme:(NSString *)scheme callbackScheme:(NSString*)callbackScheme onChain:(DSChain *)chain timeout:(NSTimeInterval)timeout
-    completion:(void (^)(DSPaymentProtocolRequest *req, NSError *error))completion;
++ (void)fetch:(NSString *)url scheme:(NSString *)scheme callbackScheme:(NSString *)callbackScheme onChain:(DSChain *)chain timeout:(NSTimeInterval)timeout
+        completion:(void (^)(DSPaymentProtocolRequest *req, NSError *error))completion;
 
 // posts a BIP70 payment object to the specified URL
 + (void)postPayment:(DSPaymentProtocolPayment *)payment scheme:(NSString *)scheme to:(NSString *)paymentURL onChain:(DSChain *)chain

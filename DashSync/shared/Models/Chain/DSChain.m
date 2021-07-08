@@ -2641,7 +2641,7 @@ static dispatch_once_t devnetToken = 0;
         b = [self.insightVerifiedBlocksByHashDictionary objectForKey:uint256_data(blockhash)];
         return b.height;
     }
-    DSLog(@"Requesting unknown blockhash %@ (it's probably being added asyncronously)", uint256_reverse_hex(blockhash));
+    DSLog(@"Requesting unknown blockhash %@ on chain %@ (it's probably being added asyncronously)", uint256_reverse_hex(blockhash), self.name);
     return UINT32_MAX;
 }
 
