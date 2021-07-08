@@ -353,7 +353,7 @@ typedef enum : NSUInteger
 }
 
 
-+ (instancetype)requestWithData:(NSData *)data callbackScheme:(NSString*)callbackScheme onChain:(DSChain *)chain {
++ (instancetype)requestWithData:(NSData *)data callbackScheme:(NSString *)callbackScheme onChain:(DSChain *)chain {
     return [[self alloc] initWithData:data callbackScheme:callbackScheme onChain:chain];
 }
 
@@ -361,7 +361,7 @@ typedef enum : NSUInteger
     return [self initWithData:data callbackScheme:nil onChain:chain];
 }
 
-- (instancetype)initWithData:(NSData *)data callbackScheme:(NSString*)callbackScheme onChain:(DSChain *)chain {
+- (instancetype)initWithData:(NSData *)data callbackScheme:(NSString *)callbackScheme onChain:(DSChain *)chain {
     if (!(self = [self init])) return nil;
 
     NSUInteger off = 0;

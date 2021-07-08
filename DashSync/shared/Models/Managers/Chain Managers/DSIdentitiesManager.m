@@ -75,7 +75,7 @@
     }];
 }
 
--(BOOL)hasRecentIdentitiesSync {
+- (BOOL)hasRecentIdentitiesSync {
     return ([[NSDate date] timeIntervalSince1970] - self.lastSyncedIndentitiesTimestamp < 30);
 }
 
@@ -139,13 +139,12 @@
             NSArray<DSBlockchainIdentity *> *blockchainIdentities = [self unsyncedBlockchainIdentities];
             [self fetchNeededNetworkStateInformationForBlockchainIdentities:blockchainIdentities
                                                              withCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *_Nonnull errors) {
-                self.lastSyncedIndentitiesTimestamp = [[NSDate date] timeIntervalSince1970];
+                                                                 self.lastSyncedIndentitiesTimestamp = [[NSDate date] timeIntervalSince1970];
                                                                  if (success) {
                                                                      if (completion) {
                                                                          completion(blockchainIdentities);
                                                                      }
                                                                  }
-                
                                                              }
                                                             completionQueue:self.chain.networkingQueue];
         }

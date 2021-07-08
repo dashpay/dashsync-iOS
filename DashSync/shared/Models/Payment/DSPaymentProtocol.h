@@ -76,10 +76,10 @@
 @property (nonatomic, readonly) NSString *requestedFiatAmountCurrencyCode;
 
 + (instancetype)requestWithData:(NSData *)data onChain:(DSChain *)chain;
-+ (instancetype)requestWithData:(NSData *)data callbackScheme:(NSString*)callbackScheme onChain:(DSChain *)chain;
++ (instancetype)requestWithData:(NSData *)data callbackScheme:(NSString *)callbackScheme onChain:(DSChain *)chain;
 
 - (instancetype)initWithData:(NSData *)data onChain:(DSChain *)chain;
-- (instancetype)initWithData:(NSData *)data callbackScheme:(NSString*)callbackScheme onChain:(DSChain *)chain;
+- (instancetype)initWithData:(NSData *)data callbackScheme:(NSString *)callbackScheme onChain:(DSChain *)chain;
 - (instancetype)initWithVersion:(uint32_t)version pkiType:(NSString *)type certs:(NSArray *)certs
                         details:(DSPaymentProtocolDetails *)details
                       signature:(NSData *)sig
