@@ -109,7 +109,7 @@
 
 - (UInt256)signIDForQuorumEntry:(DSQuorumEntry *)quorumEntry {
     NSMutableData *data = [NSMutableData data];
-    [data appendVarInt:[DSQuorumEntry chainLockQuorumTypeForChain:self.chain]];
+    [data appendVarInt:self.chain.quorumTypeForChainLocks];
     [data appendUInt256:quorumEntry.quorumHash];
     [data appendUInt256:self.requestID];
     [data appendUInt256:self.blockHash];
@@ -140,7 +140,7 @@
 - (DSQuorumEntry *)findSigningQuorumReturnMasternodeList:(DSMasternodeList **)returnMasternodeList {
     DSQuorumEntry *foundQuorum = nil;
     for (DSMasternodeList *masternodeList in self.chain.chainManager.masternodeManager.recentMasternodeLists) {
-        for (DSQuorumEntry *quorumEntry in [[masternodeList quorumsOfType:[DSQuorumEntry chainLockQuorumTypeForChain:self.chain]] allValues]) {
+        for (DSQuorumEntry *quorumEntry in [[masternodeList quorumsOfType:self.chain.quorumTypeForChainLocks] allValues]) {
             BOOL signatureVerified = [self verifySignatureAgainstQuorum:quorumEntry];
             if (signatureVerified) {
                 foundQuorum = quorumEntry;

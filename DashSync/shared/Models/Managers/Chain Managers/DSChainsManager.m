@@ -155,7 +155,7 @@
     return [self.knownChains copy];
 }
 
-- (void)updateDevnetChain:(DSChain *)chain forServiceLocations:(NSMutableOrderedSet<NSString *> *)serviceLocations withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks standardPort:(uint32_t)standardPort dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString *)sporkAddress sporkPrivateKey:(NSString *)sporkPrivateKey {
+- (void)updateDevnetChain:(DSChain *)chain forServiceLocations:(NSMutableOrderedSet<NSString *> *)serviceLocations withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks standardPort:(uint32_t)standardPort dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString *)sporkAddress sporkPrivateKey:(NSString *)sporkPrivateKey instantSendLockQuorumType:(DSLLMQType)instantSendLockQuorumsType chainLockQuorumType:(DSLLMQType)chainLockQuorumsType platformQuorumType:(DSLLMQType)platformQuorumType {
     NSParameterAssert(chain);
     NSParameterAssert(serviceLocations);
 
@@ -185,6 +185,15 @@
     }
     if (dapiGRPCPort && dapiGRPCPort != chain.standardDapiGRPCPort) {
         chain.standardDapiGRPCPort = dapiGRPCPort;
+    }
+    if (instantSendLockQuorumsType && instantSendLockQuorumsType != chain.quorumTypeForISLocks) {
+        chain.quorumTypeForISLocks = instantSendLockQuorumsType;
+    }
+    if (chainLockQuorumsType && chainLockQuorumsType != chain.quorumTypeForChainLocks) {
+        chain.quorumTypeForChainLocks = chainLockQuorumsType;
+    }
+    if (platformQuorumType && platformQuorumType != chain.quorumTypeForPlatform) {
+        chain.quorumTypeForPlatform = platformQuorumType;
     }
     if (!uint256_eq(dpnsContractID, chain.dpnsContractID)) {
         chain.dpnsContractID = dpnsContractID;
@@ -232,13 +241,13 @@
     }
 }
 
-- (DSChain *)registerDevnetChainWithIdentifier:(NSString *)identifier forServiceLocations:(NSOrderedSet<NSString *> *)serviceLocations withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks standardPort:(uint32_t)standardPort dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString *)sporkAddress sporkPrivateKey:(NSString *)sporkPrivateKey {
+- (DSChain *)registerDevnetChainWithIdentifier:(NSString *)identifier forServiceLocations:(NSOrderedSet<NSString *> *)serviceLocations withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks standardPort:(uint32_t)standardPort dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString *)sporkAddress sporkPrivateKey:(NSString *)sporkPrivateKey instantSendLockQuorumType:(DSLLMQType)instantSendLockQuorumsType chainLockQuorumType:(DSLLMQType)chainLockQuorumsType platformQuorumType:(DSLLMQType)platformQuorumType {
     NSParameterAssert(identifier);
     NSParameterAssert(serviceLocations);
 
     NSError *error = nil;
 
-    DSChain *chain = [DSChain setUpDevnetWithIdentifier:identifier withCheckpoints:nil withMinimumDifficultyBlocks:minimumDifficultyBlocks withDefaultPort:standardPort withDefaultDapiJRPCPort:dapiJRPCPort withDefaultDapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID isTransient:NO];
+    DSChain *chain = [DSChain setUpDevnetWithIdentifier:identifier withCheckpoints:nil withMinimumDifficultyBlocks:minimumDifficultyBlocks withDefaultPort:standardPort withDefaultDapiJRPCPort:dapiJRPCPort withDefaultDapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID instantSendLockQuorumType:instantSendLockQuorumsType chainLockQuorumType:chainLockQuorumsType platformQuorumType:platformQuorumType isTransient:NO];
     if (protocolVersion) {
         chain.protocolVersion = protocolVersion;
     }

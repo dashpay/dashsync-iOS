@@ -6,17 +6,8 @@
 //
 
 #import "BigIntTypes.h"
+#import "DSChain.h"
 #import <Foundation/Foundation.h>
-
-typedef NS_ENUM(uint16_t, DSLLMQType)
-{
-    DSLLMQType_50_60 = 1,  //every 24 blocks
-    DSLLMQType_400_60 = 2, //288 blocks
-    DSLLMQType_400_85 = 3, //576 blocks
-    DSLLMQType_100_67 = 4, //every 24 blocks
-    DSLLMQType_5_60 = 100, //24 blocks
-    DSLLMQType_10_60 = 101 //24 blocks
-};
 
 @class DSChain, DSMasternodeList, DSQuorumEntryEntity;
 
@@ -57,8 +48,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (UInt256)orderingHashForRequestID:(UInt256)requestID forQuorumType:(DSLLMQType)quorumType;
 
 + (uint32_t)quorumSizeForType:(DSLLMQType)type;
-
-+ (DSLLMQType)chainLockQuorumTypeForChain:(DSChain *)chain;
 
 @end
 
