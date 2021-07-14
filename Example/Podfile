@@ -15,7 +15,6 @@ target 'NetworkInfo' do
   platform :osx, '10.15'
   
   pod 'DashSync', :path => '../'
-  pod 'DAPI-GRPC', :path => '../'
   pod 'SDWebImage', '5.9.2'
   pod 'CocoaImageHashing', :git => 'https://github.com/ameingast/cocoaimagehashing.git', :commit => 'ad01eee'
 end
