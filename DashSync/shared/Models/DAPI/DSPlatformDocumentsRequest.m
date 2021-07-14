@@ -171,6 +171,7 @@
     }
     getDocumentsRequest.startAt = self.startAt;
     getDocumentsRequest.limit = self.limit;
+    getDocumentsRequest.prove = TRUE;
     DSLog(@"Sending request to Contract %@", getDocumentsRequest.dataContractId.base58String);
     return getDocumentsRequest;
 }
