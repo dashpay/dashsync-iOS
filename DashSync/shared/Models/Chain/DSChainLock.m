@@ -224,5 +224,9 @@
     }];
 }
 
+- (NSString *)description {
+    return [NSString stringWithFormat:@"<DSChainLock:%@:%u:%@>", self.chain.name, self.height, self.signatureVerified ? @"Verified" : @"Not Verified"];
+}
+
 
 @end

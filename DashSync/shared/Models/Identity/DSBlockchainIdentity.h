@@ -188,6 +188,10 @@ FOUNDATION_EXPORT NSString *const DSBlockchainIdentityUpdateEventDashpaySyncroni
     @discussion There are situations where this is nil as it is not yet known ; if the blockchain identity is being retrieved from L2 or if we are resyncing the chain. */
 @property (nullable, nonatomic, readonly) DSCreditFundingTransaction *registrationCreditFundingTransaction;
 
+/*! @brief This is the hash of the transaction on L1 that has an output that is used to fund the creation of this blockchain identity.
+    @discussion There are situations where this is nil as it is not yet known ; if the blockchain identity is being retrieved from L2 or if we are resyncing the chain. */
+@property (nonatomic, readonly) UInt256 registrationCreditFundingTransactionHash;
+
 /*! @brief In our system a contact is a vue on a blockchain identity for Dashpay. A blockchain identity is therefore represented by a contact that will have relationships in the system. This is in the default backgroundContext. */
 @property (nonatomic, readonly) DSDashpayUserEntity *matchingDashpayUserInViewContext;
 

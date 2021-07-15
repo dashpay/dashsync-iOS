@@ -1276,8 +1276,8 @@
                         blockchainIdentity = [wallet blockchainIdentityForUniqueId:transaction.creditBurnIdentityIdentifier];
                         if (blockchainIdentity) isNewBlockchainIdentity = TRUE;
                     }
-                } else if (blockchainIdentity) {
-                    blockchainIdentity.registrationCreditFundingTransaction = creditFundingTransaction;
+                } else if (blockchainIdentity && !blockchainIdentity.registrationCreditFundingTransaction) {
+                    blockchainIdentity.registrationCreditFundingTransactionHash = creditFundingTransaction.txHash;
                 }
             } else {
                 [self.chain triggerUpdatesForLocalReferences:transaction];
@@ -1447,6 +1447,13 @@
 
 - (void)peer:(DSPeer *)peer relayedInstantSendTransactionLock:(DSInstantSendTransactionLock *)instantSendTransactionLock {
     //NSValue *transactionHashValue = uint256_obj(instantSendTransactionLock.transactionHash);
+    DSTransaction *transaction = nil;
+    DSWallet *wallet = nil;
+    DSAccount *account = [self.chain firstAccountForTransactionHash:instantSendTransactionLock.transactionHash transaction:&transaction wallet:&wallet];
+
+    if (account && transaction && transaction.instantSendReceived) {
+        return; //no point to retrieve the instant send lock if we already have it
+    }
 
     BOOL verified = [instantSendTransactionLock verifySignature];
 
@@ -1456,9 +1463,6 @@
     DSLog(@"%@:%d relayed instant send transaction lock %@ %@", peer.host, peer.port, verified ? @"Verified" : @"Not Verified", @"<REDACTED>");
 #endif
 
-    DSTransaction *transaction = nil;
-    DSWallet *wallet = nil;
-    DSAccount *account = [self.chain firstAccountForTransactionHash:instantSendTransactionLock.transactionHash transaction:&transaction wallet:&wallet];
 
     if (account && transaction) {
         [transaction setInstantSendReceivedWithInstantSendLock:instantSendTransactionLock];
