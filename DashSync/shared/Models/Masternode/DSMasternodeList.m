@@ -582,6 +582,17 @@ inline static int ceil_log2(int x) {
     return firstQuorum;
 }
 
+- (DSQuorumEntry *)quorumEntryForPlatformWithQuorumHash:(UInt256)quorumHash {
+    DSLLMQType quorumType = self.chain.quorumTypeForPlatform;
+    NSArray *quorumsForPlatform = [self.quorums[@(quorumType)] allValues];
+    for (DSQuorumEntry *quorumEntry in quorumsForPlatform) {
+        if (uint256_eq(quorumEntry.quorumHash, quorumHash)) {
+            return quorumEntry;
+        }
+    }
+    return nil;
+}
+
 - (NSArray<DSQuorumEntry *> *)quorumEntriesRankedForInstantSendRequestID:(UInt256)requestID {
     DSLLMQType quorumType = self.chain.quorumTypeForChainLocks;
     NSArray *quorumsForIS = [self.quorums[@(quorumType)] allValues];

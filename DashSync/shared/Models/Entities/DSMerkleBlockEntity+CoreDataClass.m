@@ -26,6 +26,7 @@
 #import "DSChainLockEntity+CoreDataClass.h"
 #import "DSMerkleBlock.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
+#import "DSMerkleTree.h"
 #import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 
@@ -66,8 +67,8 @@
         self.target = block.target;
         self.nonce = block.nonce;
         self.totalTransactions = block.totalTransactions;
-        self.hashes = [NSData dataWithData:block.hashes];
-        self.flags = [NSData dataWithData:block.flags];
+        self.hashes = [NSData dataWithData:block.merkleTree.hashes];
+        self.flags = [NSData dataWithData:block.merkleTree.flags];
         self.height = block.height;
         self.chain = chainEntity;
         self.chainWork = uint256_data(block.chainWork);

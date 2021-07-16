@@ -1492,6 +1492,25 @@
     return [self quorumEntryForChainLockRequestID:requestID forMerkleBlock:merkleBlock];
 }
 
+- (DSQuorumEntry *)quorumEntryForPlatformHavingQuorumHash:(UInt256)quorumHash forBlockHeight:(uint32_t)blockHeight {
+    DSMerkleBlock *merkleBlock = [self.chain blockAtHeight:blockHeight];
+    return [self quorumEntryForPlatformHavingQuorumHash:quorumHash forMerkleBlock:merkleBlock];
+}
+
+- (DSQuorumEntry *)quorumEntryForPlatformHavingQuorumHash:(UInt256)quorumHash forMerkleBlock:(DSMerkleBlock *)merkleBlock {
+    DSMasternodeList *masternodeList = [self masternodeListBeforeBlockHash:merkleBlock.blockHash];
+    if (!masternodeList) {
+        DSLog(@"No masternode list found yet");
+        return nil;
+    }
+    if (merkleBlock.height - masternodeList.height > 24) {
+        DSLog(@"Masternode list is too old");
+        return nil;
+    }
+    return [masternodeList quorumEntryForPlatformWithQuorumHash:quorumHash];
+}
+
+
 - (DSQuorumEntry *)quorumEntryForChainLockRequestID:(UInt256)requestID forMerkleBlock:(DSMerkleBlock *)merkleBlock {
     DSMasternodeList *masternodeList = [self masternodeListBeforeBlockHash:merkleBlock.blockHash];
     if (!masternodeList) {

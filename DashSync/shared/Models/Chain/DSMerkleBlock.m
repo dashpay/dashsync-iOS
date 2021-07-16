@@ -30,6 +30,7 @@
 #import "DSBlock+Protected.h"
 #import "DSChain.h"
 #import "DSChainLock.h"
+#import "DSMerkleTree.h"
 #import "NSData+Bitcoin.h"
 #import "NSData+Dash.h"
 #import "NSDate+Utils.h"
@@ -38,44 +39,9 @@
 #define LOG_MERKLE_BLOCKS 0
 #define LOG_MERKLE_BLOCKS_FULL (LOG_MERKLE_BLOCKS && 1)
 
-// from https://en.bitcoin.it/wiki/Protocol_specification#Merkle_Trees
-// Merkle trees are binary trees of hashes. Merkle trees in bitcoin use a double SHA-256, the SHA-256 hash of the
-// SHA-256 hash of something. If, when forming a row in the tree (other than the root of the tree), it would have an odd
-// number of elements, the final double-hash is duplicated to ensure that the row has an even number of hashes. First
-// form the bottom row of the tree with the ordered double-SHA-256 hashes of the byte streams of the transactions in the
-// block. Then the row above it consists of half that number of hashes. Each entry is the double-SHA-256 of the 64-byte
-// concatenation of the corresponding two hashes below it in the tree. This procedure repeats recursively until we reach
-// a row consisting of just a single double-hash. This is the merkle root of the tree.
-//
-// from https://github.com/bitcoin/bips/blob/master/bip-0037.mediawiki#Partial_Merkle_branch_format
-// The encoding works as follows: we traverse the tree in depth-first order, storing a bit for each traversed node,
-// signifying whether the node is the parent of at least one matched leaf txid (or a matched txid itself). In case we
-// are at the leaf level, or this bit is 0, its merkle node hash is stored, and its children are not explored further.
-// Otherwise, no hash is stored, but we recurse into both (or the only) child branch. During decoding, the same
-// depth-first traversal is performed, consuming bits and hashes as they written during encoding.
-//
-// example tree with three transactions, where only tx2 is matched by the bloom filter:
-//
-//     merkleRoot
-//      /     \
-//    m1       m2
-//   /  \     /  \
-// tx1  tx2 tx3  tx3
-//
-// flag bits (little endian): 00001011 [merkleRoot = 1, m1 = 1, tx1 = 0, tx2 = 1, m2 = 0, byte padding = 000]
-// hashes: [tx1, tx2, m2]
-
-inline static int ceil_log2(int x) {
-    int r = (x & (x - 1)) ? 1 : 0;
-
-    while ((x >>= 1) != 0) r++;
-    return r;
-}
-
 @interface DSMerkleBlock ()
 
-@property (nonatomic, strong) NSData *hashes;
-@property (nonatomic, strong) NSData *flags;
+@property (nonatomic, strong) DSMerkleTree *merkleTree;
 
 @end
 
@@ -111,9 +77,10 @@ inline static int ceil_log2(int x) {
     off += sizeof(uint32_t);
     len = (NSUInteger)[message varIntAtOffset:off length:&l] * sizeof(UInt256);
     off += l.unsignedIntegerValue;
-    _hashes = (off + len > message.length) ? nil : [message subdataWithRange:NSMakeRange(off, len)];
+    NSData *hashes = (off + len > message.length) ? nil : [message subdataWithRange:NSMakeRange(off, len)];
     off += len;
-    _flags = [message dataAtOffset:off length:&l];
+    NSData *flags = [message dataAtOffset:off length:&l];
+    self.merkleTree = [[DSMerkleTree alloc] initWithHashes:hashes flags:flags treeElementCount:self.totalTransactions];
     self.height = BLOCK_UNKNOWN_HEIGHT;
 
     [d appendUInt32:self.version];
@@ -142,8 +109,7 @@ inline static int ceil_log2(int x) {
     self.blockHash = blockHash;
     self.merkleRoot = merkleRoot;
     self.totalTransactions = totalTransactions;
-    _hashes = hashes;
-    _flags = flags;
+    self.merkleTree = [[DSMerkleTree alloc] initWithHashes:hashes flags:flags treeElementCount:self.totalTransactions];
     self.chainLocked = FALSE;
     return self;
 }
@@ -181,10 +147,10 @@ inline static int ceil_log2(int x) {
 
     if (self.totalTransactions > 0) {
         [d appendUInt32:self.totalTransactions];
-        [d appendVarInt:self.hashes.length / sizeof(UInt256)];
-        [d appendData:self.hashes];
-        [d appendVarInt:_flags.length];
-        [d appendData:_flags];
+        [d appendVarInt:self.merkleTree.hashes.length / sizeof(UInt256)];
+        [d appendData:self.merkleTree.hashes];
+        [d appendVarInt:self.merkleTree.flags.length];
+        [d appendData:self.merkleTree.flags];
     }
 
     return d;
@@ -192,84 +158,17 @@ inline static int ceil_log2(int x) {
 
 // true if the given tx hash is included in the block
 - (BOOL)containsTxHash:(UInt256)txHash {
-    for (NSUInteger i = 0; i < self.hashes.length / sizeof(UInt256); i += sizeof(UInt256)) {
-        DSLogPrivate(@"transaction Hash %@", [NSData dataWithUInt256:[self.hashes UInt256AtOffset:i]].hexString);
-        DSLogPrivate(@"looking for %@", [NSData dataWithUInt256:txHash].hexString);
-        if (uint256_eq(txHash, [self.hashes UInt256AtOffset:i])) return YES;
-    }
-
-    return NO;
+    return [self.merkleTree containsHash:txHash];
 }
 
 // returns an array of the matched tx hashes
 - (NSArray *)transactionHashes {
-    int hashIdx = 0, flagIdx = 0;
-    NSArray *txHashes =
-        [self walkHashIdx:&hashIdx
-            flagIdx:&flagIdx
-            depth:0
-            leaf:^id(id hash, BOOL flag) {
-                return (flag && hash) ? @[hash] : @[];
-            }
-            branch:^id(id left, id right) {
-                return [left arrayByAddingObjectsFromArray:right];
-            }];
-
-    return txHashes;
+    return [self.merkleTree elementHashes];
 }
 
 
 - (BOOL)isMerkleTreeValid {
-    NSMutableData *d = [NSMutableData data];
-    UInt256 merkleRoot = UINT256_ZERO;
-    int hashIdx = 0, flagIdx = 0;
-    NSValue *root = [self walkHashIdx:&hashIdx
-        flagIdx:&flagIdx
-        depth:0
-        leaf:^id(id hash, BOOL flag) {
-            return hash;
-        }
-        branch:^id(id left, id right) {
-            UInt256 l, r;
-
-            if (!right) right = left; // if right branch is missing, duplicate left branch
-            [left getValue:&l];
-            [right getValue:&r];
-            d.length = 0;
-            [d appendBytes:&l length:sizeof(l)];
-            [d appendBytes:&r length:sizeof(r)];
-            return uint256_obj(d.SHA256_2);
-        }];
-
-    [root getValue:&merkleRoot];
-    //DSLog(@"%@ - %@",uint256_hex(merkleRoot),uint256_hex(_merkleRoot));
-    if (self.totalTransactions > 0 && !uint256_eq(merkleRoot, self.merkleRoot)) return NO; // merkle root check failed
-    return YES;
-}
-
-// recursively walks the merkle tree in depth first order, calling leaf(hash, flag) for each stored hash, and
-// branch(left, right) with the result from each branch
-- (id)walkHashIdx:(int *)hashIdx flagIdx:(int *)flagIdx
-            depth:(int)depth
-             leaf:(id (^)(id, BOOL))leaf
-           branch:(id (^)(id, id))branch {
-    if ((*flagIdx) / 8 >= _flags.length || (*hashIdx + 1) * sizeof(UInt256) > _hashes.length) return leaf(nil, NO);
-
-    BOOL flag = (((const uint8_t *)_flags.bytes)[*flagIdx / 8] & (1 << (*flagIdx % 8)));
-
-    (*flagIdx)++;
-
-    if (!flag || depth == ceil_log2(self.totalTransactions)) {
-        UInt256 hash = [_hashes UInt256AtOffset:(*hashIdx) * sizeof(UInt256)];
-
-        (*hashIdx)++;
-        return leaf(uint256_obj(hash), flag);
-    }
-
-    id left = [self walkHashIdx:hashIdx flagIdx:flagIdx depth:depth + 1 leaf:leaf branch:branch];
-    id right = [self walkHashIdx:hashIdx flagIdx:flagIdx depth:depth + 1 leaf:leaf branch:branch];
-
-    return branch(left, right);
+    return [self.merkleTree merkleTreeHasRoot:self.merkleRoot];
 }
 
 - (id)copyWithZone:(NSZone *)zone {
@@ -283,9 +182,9 @@ inline static int ceil_log2(int x) {
     copy.target = self.target;
     copy.nonce = self.nonce;
     copy.totalTransactions = self.totalTransactions;
-    copy.hashes = [self.hashes copyWithZone:zone];
+    copy.merkleTree = [self.merkleTree copyWithZone:zone];
     copy.transactionHashes = [self.transactionHashes copyWithZone:zone];
-    copy.flags = [self.flags copyWithZone:zone];
+
     copy.valid = self.valid;
     copy.merkleTreeValid = self.isMerkleTreeValid;
     copy.data = [self.data copyWithZone:zone];

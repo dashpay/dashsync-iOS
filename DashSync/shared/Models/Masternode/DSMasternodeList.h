@@ -79,6 +79,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DSQuorumEntry *_Nullable)quorumEntryForChainLockRequestID:(UInt256)requestID;
 
+- (DSQuorumEntry *_Nullable)quorumEntryForPlatformWithQuorumHash:(UInt256)quorumHash;
+
 - (NSArray<DSQuorumEntry *> *)quorumEntriesRankedForInstantSendRequestID:(UInt256)requestID;
 
 - (NSArray<DSPeer *> *)peers:(uint32_t)peerCount withConnectivityNonce:(uint64_t)connectivityNonce;

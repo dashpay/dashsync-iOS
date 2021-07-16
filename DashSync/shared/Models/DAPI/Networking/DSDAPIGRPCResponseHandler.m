@@ -17,8 +17,15 @@
 
 #import "DSDAPIGRPCResponseHandler.h"
 #import "DPContract.h"
+#import "DSBLSKey.h"
+#import "DSChain.h"
+#import "DSChainManager.h"
+#import "DSMasternodeManager.h"
+#import "DSQuorumEntry.h"
+#import "NSData+Bitcoin.h"
 #import "NSData+DSCborDecoding.h"
 #import "NSData+Dash.h"
+#import "NSMutableData+Dash.h"
 #import <DAPI-GRPC/Core.pbobjc.h>
 #import <DAPI-GRPC/Core.pbrpc.h>
 #import <DAPI-GRPC/Platform.pbobjc.h>
@@ -41,9 +48,18 @@
     if ([message isMemberOfClass:[GetIdentityResponse class]]) {
         GetIdentityResponse *identityResponse = (GetIdentityResponse *)message;
         NSError *error = nil;
-        self.responseObject = [[identityResponse identity] ds_decodeCborError:&error];
-        if (error) {
-            self.decodingError = error;
+        NSData *identityData = [identityResponse identity];
+        if (identityData.length == 0) {
+            // This should eventually mean that there's no identity, but for now this is not expected
+            self.responseObject = [identityData ds_decodeCborError:&error];
+            if (error) {
+                self.decodingError = error;
+            }
+        } else {
+            self.responseObject = [identityData ds_decodeCborError:&error];
+            if (error) {
+                self.decodingError = error;
+            }
         }
     } else if ([message isMemberOfClass:[GetDocumentsResponse class]]) {
         GetDocumentsResponse *documentsResponse = (GetDocumentsResponse *)message;
@@ -100,8 +116,15 @@
     } else if ([message isMemberOfClass:[GetIdentitiesByPublicKeyHashesResponse class]]) {
         NSAssert(self.chain, @"The chain must be set");
         GetIdentitiesByPublicKeyHashesResponse *identitiesByPublicKeyHashesResponse = (GetIdentitiesByPublicKeyHashesResponse *)message;
-        NSError *error = nil;
         NSMutableArray *identityDictionaries = [NSMutableArray array];
+        Proof *proof = identitiesByPublicKeyHashesResponse.proof;
+        ResponseMetadata *metaData = identitiesByPublicKeyHashesResponse.metadata;
+        NSError *error = [self verifyProof:proof withMetadata:metaData];
+        if (error) {
+            self.decodingError = error;
+            return;
+        }
+
         for (NSData *data in identitiesByPublicKeyHashesResponse.identitiesArray) {
             if (!data.length) continue;
             NSDictionary *identityDictionary = [data ds_decodeCborError:&error];
@@ -157,6 +180,81 @@
 
 - (void)didWriteMessage {
     DSLog(@"didWriteMessage");
+}
+
+- (NSError *)verifyProof:(Proof *)proof withMetadata:(ResponseMetadata *)metaData {
+    NSData *quorumHashData = proof.signatureLlmqHash;
+    if (!quorumHashData) {
+        return [NSError errorWithDomain:@"DashSync"
+                                   code:500
+                               userInfo:@{NSLocalizedDescriptionKey:
+                                            DSLocalizedString(@"Platform returned no quorum hash data", nil)}];
+    }
+    UInt256 quorumHash = quorumHashData.UInt256;
+    if (uint256_is_zero(quorumHash)) {
+        return [NSError errorWithDomain:@"DashSync"
+                                   code:500
+                               userInfo:@{NSLocalizedDescriptionKey:
+                                            DSLocalizedString(@"Platform returned an empty quorum hash", nil)}];
+    }
+    NSData *signatureData = proof.signature;
+    if (!signatureData) {
+        return [NSError errorWithDomain:@"DashSync"
+                                   code:500
+                               userInfo:@{NSLocalizedDescriptionKey:
+                                            DSLocalizedString(@"Platform returned no signature data", nil)}];
+    }
+    UInt768 signature = signatureData.UInt768;
+    if (uint256_is_zero(signature)) {
+        return [NSError errorWithDomain:@"DashSync"
+                                   code:500
+                               userInfo:@{NSLocalizedDescriptionKey:
+                                            DSLocalizedString(@"Platform returned an empty or wrongly sized signature", nil)}];
+    }
+    DSQuorumEntry *quorumEntry = [self.chain.chainManager.masternodeManager quorumEntryForPlatformHavingQuorumHash:quorumHash forBlockHeight:metaData.coreChainLockedHeight];
+    if (quorumEntry && quorumEntry.verified) {
+        //Todo get the stateId
+        BOOL signatureVerified = [self verifySignature:signature withStateId:UINT256_ZERO height:metaData.height againstQuorum:quorumEntry];
+        if (!signatureVerified) {
+            DSLog(@"unable to verify platform signature");
+        } else {
+            DSLog(@"platform signature verified");
+        }
+    } else if (quorumEntry) {
+        return [NSError errorWithDomain:@"DashSync"
+                                   code:400
+                               userInfo:@{NSLocalizedDescriptionKey:
+                                            DSLocalizedString(@"Quorum entry %@ found but is not yet verified", nil)}];
+        DSLog(@"quorum entry %@ found but is not yet verified", uint256_hex(quorumEntry.quorumHash));
+    } else {
+        DSLog(@"no quorum entry found");
+    }
+    return nil;
+}
+
+- (UInt256)requestIdForHeight:(int64_t)height {
+    NSMutableData *data = [NSMutableData data];
+    [data appendString:@"dpsvote"];
+    [data appendUInt64:height];
+    return [data SHA256_2];
+}
+
+- (UInt256)signIDForQuorumEntry:(DSQuorumEntry *)quorumEntry withStateId:(UInt256)stateId height:(int64_t)height {
+    UInt256 requestId = [self requestIdForHeight:height];
+    NSMutableData *data = [NSMutableData data];
+    [data appendVarInt:self.chain.quorumTypeForPlatform];
+    [data appendUInt256:quorumEntry.quorumHash];
+    [data appendUInt256:requestId];
+    [data appendUInt256:stateId];
+    return [data SHA256_2];
+}
+
+- (BOOL)verifySignature:(UInt768)signature withStateId:(UInt256)stateId height:(int64_t)height againstQuorum:(DSQuorumEntry *)quorumEntry {
+    UInt384 publicKey = quorumEntry.quorumPublicKey;
+    DSBLSKey *blsKey = [DSBLSKey keyWithPublicKey:publicKey];
+    UInt256 signId = [self signIDForQuorumEntry:quorumEntry withStateId:stateId height:height];
+    DSLogPrivate(@"verifying DAPI returned signature %@ with public key %@ against quorum %@", [NSData dataWithUInt768:signature].hexString, [NSData dataWithUInt384:publicKey].hexString, quorumEntry);
+    return [blsKey verify:signId signature:signature];
 }
 
 
