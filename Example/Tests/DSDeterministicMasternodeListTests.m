@@ -459,6 +459,7 @@
             return nil;
         }
         lastBlock:lastBlock
+                                   useInsightAsBackup:NO
         onChain:chain
         blockHeightLookup:blockHeightLookup
         completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *_Nonnull masternodeList, NSDictionary *_Nonnull addedMasternodes, NSDictionary *_Nonnull modifiedMasternodes, NSDictionary *_Nonnull addedQuorums, NSOrderedSet *_Nonnull neededMissingMasternodeLists) {
@@ -544,6 +545,7 @@
                 }
             }
             lastBlock:nil
+                                       useInsightAsBackup:NO
             onChain:chain
             blockHeightLookup:blockHeightLookup
             completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *_Nonnull masternodeList, NSDictionary *_Nonnull addedMasternodes, NSDictionary *_Nonnull modifiedMasternodes, NSDictionary *_Nonnull addedQuorums, NSOrderedSet *_Nonnull neededMissingMasternodeLists) {
@@ -682,6 +684,7 @@
             return nil; //no known previous lists
         }
         lastBlock:nil
+                                   useInsightAsBackup:NO
         onChain:chain
         blockHeightLookup:^uint32_t(UInt256 blockHash) {
             return 1100000;
@@ -746,6 +749,7 @@
             return nil; //no known previous lists
         }
         lastBlock:nil
+                                   useInsightAsBackup:NO
         onChain:chain
         blockHeightLookup:^uint32_t(UInt256 blockHash) {
             return 122088;
@@ -829,6 +833,7 @@
             return nil; //no known previous lists
         }
         lastBlock:nil
+                                   useInsightAsBackup:NO
         onChain:chain
         blockHeightLookup:blockHeightLookup122064
         completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *_Nonnull masternodeList122064, NSDictionary *_Nonnull addedMasternodes, NSDictionary *_Nonnull modifiedMasternodes, NSDictionary *_Nonnull addedQuorums, NSOrderedSet *_Nonnull neededMissingMasternodeLists) {
@@ -880,6 +885,7 @@
                                                          return nil; //no known previous lists
                                                      }
                                                      lastBlock:nil
+                                                                                useInsightAsBackup:NO
                                                      onChain:chain
                                                      blockHeightLookup:blockHeightLookup122088
                                                      completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *_Nonnull masternodeList122088, NSDictionary *_Nonnull addedMasternodes, NSDictionary *_Nonnull modifiedMasternodes, NSDictionary *_Nonnull addedQuorums, NSOrderedSet *_Nonnull neededMissingMasternodeLists) {
@@ -2880,6 +2886,7 @@
                                        return nil; //no known previous lists
                                    }
                                    lastBlock:nil
+                                                              useInsightAsBackup:NO
                                    onChain:chain
                                    blockHeightLookup:^uint32_t(UInt256 blockHash) {
                                        NSString *blockHashString = uint256_reverse_hex(blockHash);
@@ -2938,6 +2945,7 @@
                                                                                 return nil;
                                                                             }
                                                                             lastBlock:nil
+                                                                                                       useInsightAsBackup:NO
                                                                             onChain:chain
                                                                             blockHeightLookup:^uint32_t(UInt256 blockHash) {
                                                                                 NSString *blockHashString = uint256_reverse_hex(blockHash);
@@ -3052,6 +3060,7 @@
             return nil; //no known previous lists
         }
         lastBlock:nil
+                                   useInsightAsBackup:NO
         onChain:chain
         blockHeightLookup:^uint32_t(UInt256 blockHash) {
             NSString *blockHashString = uint256_reverse_hex(blockHash);
@@ -3163,6 +3172,7 @@
                         return nil; //no known previous lists
                     }
                     lastBlock:nil
+                                               useInsightAsBackup:NO
                     onChain:chain
                     blockHeightLookup:blockHeightLookup2
                     completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *_Nonnull blockHash119200, NSDictionary *_Nonnull addedMasternodes, NSDictionary *_Nonnull modifiedMasternodes, NSDictionary *_Nonnull addedQuorums, NSOrderedSet *_Nonnull neededMissingMasternodeLists) {
@@ -3279,6 +3289,7 @@
             return nil; //no known previous lists
         }
         lastBlock:nil
+                                   useInsightAsBackup:NO
         onChain:chain
         blockHeightLookup:^uint32_t(UInt256 blockHash) {
             return 370368;
@@ -3329,6 +3340,7 @@
                         return nil; //no known previous lists
                     }
                     lastBlock:nil
+                                               useInsightAsBackup:NO
                     onChain:chain
                     blockHeightLookup:^uint32_t(UInt256 blockHash) {
                         return 370944;

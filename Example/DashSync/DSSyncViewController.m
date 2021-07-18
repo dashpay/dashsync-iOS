@@ -8,6 +8,7 @@
 
 #import <DashSync/DashSync.h>
 
+#import "BRBubbleView.h"
 #import "DSActionsViewController.h"
 #import "DSBlockchainExplorerViewController.h"
 #import "DSBlockchainIdentitiesViewController.h"
@@ -17,6 +18,7 @@
 #import "DSLayer2ViewController.h"
 #import "DSMasternodeListsViewController.h"
 #import "DSMasternodeViewController.h"
+#import "DSPasteboardAddressExtractor.h"
 #import "DSPeersViewController.h"
 #import "DSQuorumListViewController.h"
 #import "DSSearchBlockchainIdentitiesViewController.h"
@@ -57,14 +59,17 @@
 @property (strong, nonatomic) IBOutlet UILabel *blockchainIdentitiesCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *blockchainInvitationsCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *receivingAddressLabel;
+@property (strong, nonatomic) IBOutlet UILabel *pasteboardAddressLabel;
 @property (strong, nonatomic) IBOutlet UILabel *masternodeListsCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *earliestMasternodeListLabel;
 @property (strong, nonatomic) IBOutlet UILabel *lastMasternodeListLabel;
 @property (strong, nonatomic) id filterChangedObserver, syncFinishedObserver, syncFailedObserver, balanceObserver, blocksObserver, blocksResetObserver, headersResetObserver, sporkObserver, masternodeObserver, masternodeCountObserver, chainWalletObserver, chainStandaloneDerivationPathObserver, chainSingleAddressObserver, governanceObjectCountObserver, governanceObjectReceivedCountObserver, governanceVoteCountObserver, governanceVoteReceivedCountObserver, connectedPeerConnectionObserver, peerConnectionObserver, blockchainIdentitiesObserver, blockchainInvitationsObserver, quorumObserver;
+@property (strong, nonatomic) DSPasteboardAddressExtractor *pasteboardExtractor;
 
 - (IBAction)startSync:(id)sender;
 - (IBAction)stopSync:(id)sender;
 - (IBAction)wipeData:(id)sender;
+- (IBAction)sendToPasteboard:(id)sender;
 
 @end
 
@@ -72,6 +77,8 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+
+    _pasteboardExtractor = [[DSPasteboardAddressExtractor alloc] init];
 
     [self updateReceivingAddress];
     [self updateBalance];
@@ -503,6 +510,127 @@
 
                                                               }]];
     [self presentViewController:wipeDataAlertController animated:TRUE completion:nil];
+}
+
+- (IBAction)sendToPasteboard:(id)sender {
+    NSArray *addresses = [self.pasteboardExtractor extractAddresses];
+    NSString *firstAddress = nil;
+    for (NSString *string in addresses) {
+        if ([string isValidDashAddressOnChain:self.chainManager.chain]) {
+            firstAddress = string;
+        }
+    }
+    if ([self.pasteboardAddressLabel.text isEqual:firstAddress]) {
+        [self payToAddressFromPasteboardAvailable:^(BOOL success){
+
+        }];
+    } else {
+        self.pasteboardAddressLabel.text = firstAddress;
+    }
+}
+
+- (void)payToAddressFromPasteboardAvailable:(void (^)(BOOL success))completion {
+    DSAccount *account = self.chainManager.chain.firstAccountWithBalance;
+    if (!account || account.balance < 100000) {
+        UIAlertController *alert = [UIAlertController
+            alertControllerWithTitle:@"Not enough balance"
+                             message:@""
+                      preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction *okButton = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"ok", nil)
+                      style:UIAlertActionStyleCancel
+                    handler:^(UIAlertAction *action){
+
+                    }];
+        [alert addAction:okButton];
+        [self presentViewController:alert animated:YES completion:nil];
+        return;
+    }
+    DSPaymentRequest *paymentRequest = [DSPaymentRequest requestWithString:self.pasteboardAddressLabel.text onChain:account.wallet.chain];
+    paymentRequest.amount = 100000;
+
+    if ([paymentRequest isValidAsNonDashpayPaymentRequest]) {
+        __block BOOL displayedSentMessage = FALSE;
+
+        [account.wallet.chain.chainManager.transactionManager confirmPaymentRequest:paymentRequest
+            usingUserBlockchainIdentity:nil
+            fromAccount:account
+            acceptInternalAddress:YES
+            acceptReusingAddress:YES
+            addressIsFromPasteboard:YES
+            requiresSpendingAuthenticationPrompt:NO
+            keepAuthenticatedIfErrorAfterAuthentication:NO
+            requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {
+            }
+            presentChallenge:^(NSString *_Nonnull challengeTitle, NSString *_Nonnull challengeMessage, NSString *_Nonnull actionTitle, void (^_Nonnull actionBlock)(void), void (^_Nonnull cancelBlock)(void)) {
+                UIAlertController *alert = [UIAlertController
+                    alertControllerWithTitle:challengeTitle
+                                     message:challengeMessage
+                              preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction *ignoreButton = [UIAlertAction
+                    actionWithTitle:actionTitle
+                              style:UIAlertActionStyleDefault
+                            handler:^(UIAlertAction *action) {
+                                actionBlock();
+                            }];
+                UIAlertAction *cancelButton = [UIAlertAction
+                    actionWithTitle:NSLocalizedString(@"cancel", nil)
+                              style:UIAlertActionStyleCancel
+                            handler:^(UIAlertAction *action) {
+                                cancelBlock();
+                            }];
+
+                [alert addAction:cancelButton]; //cancel should always be on the left
+                [alert addAction:ignoreButton];
+                [self presentViewController:alert animated:YES completion:nil];
+            }
+            transactionCreationCompletion:^BOOL(DSTransaction *tx, NSString *prompt, uint64_t amount, uint64_t proposedFee, NSArray<NSString *> *addresses, BOOL isSecure) {
+                return TRUE; //just continue and let Dash Sync do it's thing
+            }
+            signedCompletion:^BOOL(DSTransaction *_Nonnull tx, NSError *_Nullable error, BOOL cancelled) {
+                if (cancelled) {
+                } else if (error) {
+                    UIAlertController *alert = [UIAlertController
+                        alertControllerWithTitle:NSLocalizedString(@"couldn't make payment", nil)
+                                         message:error.localizedDescription
+                                  preferredStyle:UIAlertControllerStyleAlert];
+                    UIAlertAction *okButton = [UIAlertAction
+                        actionWithTitle:NSLocalizedString(@"ok", nil)
+                                  style:UIAlertActionStyleCancel
+                                handler:^(UIAlertAction *action){
+
+                                }];
+                    [alert addAction:okButton];
+                    [self presentViewController:alert animated:YES completion:nil];
+                }
+                return TRUE;
+            }
+            publishedCompletion:^(DSTransaction *_Nonnull tx, NSError *_Nullable error, BOOL sent) {
+                if (sent) {
+                    [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
+                                                                center:CGPointMake(self.view.bounds.size.width / 2, self.view.bounds.size.height / 2)] popIn]
+                                              popOutAfterDelay:2.0]];
+
+
+                    displayedSentMessage = TRUE;
+                }
+            }
+            errorNotificationBlock:^(NSError *_Nonnull error, NSString *_Nullable errorTitle, NSString *_Nullable errorMessage, BOOL shouldCancel) {
+                if (errorTitle || errorMessage) {
+                    UIAlertController *alert = [UIAlertController
+                        alertControllerWithTitle:errorTitle
+                                         message:errorMessage
+                                  preferredStyle:UIAlertControllerStyleAlert];
+                    UIAlertAction *okButton = [UIAlertAction
+                        actionWithTitle:NSLocalizedString(@"ok", nil)
+                                  style:UIAlertActionStyleCancel
+                                handler:^(UIAlertAction *action){
+                                }];
+                    [alert addAction:okButton];
+                    [self presentViewController:alert animated:YES completion:nil];
+                }
+            }];
+    }
 }
 
 // MARK: - Blockchain events
