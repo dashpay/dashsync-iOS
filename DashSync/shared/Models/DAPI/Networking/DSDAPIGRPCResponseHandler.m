@@ -21,6 +21,7 @@
 #import "DSChain.h"
 #import "DSChainManager.h"
 #import "DSMasternodeManager.h"
+#import "DSMerkleTree.h"
 #import "DSQuorumEntry.h"
 #import "NSData+Bitcoin.h"
 #import "NSData+DSCborDecoding.h"
@@ -211,10 +212,18 @@
                                userInfo:@{NSLocalizedDescriptionKey:
                                             DSLocalizedString(@"Platform returned an empty or wrongly sized signature", nil)}];
     }
+    DSMerkleTree *merkleTree = [DSMerkleTree merkleTreeWithData:proof.rootTreeProof treeElementCount:3];
+    UInt256 stateHash = merkleTree.merkleRoot;
+    if (uint256_is_zero(stateHash)) {
+        return [NSError errorWithDomain:@"DashSync"
+                                   code:500
+                               userInfo:@{NSLocalizedDescriptionKey:
+                                            DSLocalizedString(@"Platform returned an incorrect rootTreeProof", nil)}];
+    }
     DSQuorumEntry *quorumEntry = [self.chain.chainManager.masternodeManager quorumEntryForPlatformHavingQuorumHash:quorumHash forBlockHeight:metaData.coreChainLockedHeight];
     if (quorumEntry && quorumEntry.verified) {
         //Todo get the stateId
-        BOOL signatureVerified = [self verifySignature:signature withStateId:UINT256_ZERO height:metaData.height againstQuorum:quorumEntry];
+        BOOL signatureVerified = [self verifySignature:signature withStateId:stateHash height:metaData.height againstQuorum:quorumEntry];
         if (!signatureVerified) {
             DSLog(@"unable to verify platform signature");
         } else {

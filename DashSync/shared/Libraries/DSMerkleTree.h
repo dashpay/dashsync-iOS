@@ -25,6 +25,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) uint32_t treeElementCount;
 @property (nonatomic, readonly) NSData *hashes;
 @property (nonatomic, readonly) NSData *flags;
+@property (nonatomic, readonly) UInt256 merkleRoot;
+
++ (instancetype)merkleTreeWithData:(NSData *)data treeElementCount:(uint32_t)elementCount;
 
 - (instancetype)initWithHashes:(NSData *)hashes flags:(NSData *)flags treeElementCount:(uint32_t)elementCount;
 

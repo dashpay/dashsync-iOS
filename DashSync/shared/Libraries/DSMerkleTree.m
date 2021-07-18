@@ -74,6 +74,20 @@ inline static int ceil_log2(int x) {
 
 @implementation DSMerkleTree
 
++ (instancetype)merkleTreeWithData:(NSData *)data treeElementCount:(uint32_t)elementCount {
+    NSUInteger off = 0, len = 0;
+    uint32_t leafCount = [data UInt32AtOffset:off];
+    off += sizeof(uint32_t);
+    NSNumber *l = nil;
+    len = (NSUInteger)[data varIntAtOffset:off length:&l] * sizeof(UInt256);
+    off += l.unsignedIntegerValue;
+    NSData *hashes = (off + len > data.length) ? nil : [data subdataWithRange:NSMakeRange(off, len)];
+    off += len;
+    NSData *flags = [data dataAtOffset:off length:&l];
+    if (hashes.length == 0) return nil;
+    return [[DSMerkleTree alloc] initWithHashes:hashes flags:flags treeElementCount:elementCount];
+}
+
 - (instancetype)initWithHashes:(NSData *)hashes flags:(NSData *)flags treeElementCount:(uint32_t)elementCount {
     if (!(self = [self init])) return nil;
     self.hashes = hashes;
@@ -110,7 +124,7 @@ inline static int ceil_log2(int x) {
     return hashes;
 }
 
-- (BOOL)merkleTreeHasRoot:(UInt256)desiredMerkleRoot {
+- (UInt256)merkleRoot {
     NSMutableData *d = [NSMutableData data];
     UInt256 merkleRoot = UINT256_ZERO;
     int hashIdx = 0, flagIdx = 0;
@@ -133,8 +147,12 @@ inline static int ceil_log2(int x) {
         }];
 
     [root getValue:&merkleRoot];
+    return merkleRoot;
+}
+
+- (BOOL)merkleTreeHasRoot:(UInt256)desiredMerkleRoot {
     //DSLog(@"%@ - %@",uint256_hex(merkleRoot),uint256_hex(_merkleRoot));
-    if (self.treeElementCount > 0 && !uint256_eq(merkleRoot, desiredMerkleRoot)) return NO; // merkle root check failed
+    if (self.treeElementCount > 0 && !uint256_eq(self.merkleRoot, desiredMerkleRoot)) return NO; // merkle root check failed
     return YES;
 }
 
