@@ -91,6 +91,7 @@
 @property (nonatomic, assign) uint16_t timeOutObserverTry;
 @property (atomic, assign) uint32_t masternodeListCurrentlyBeingSavedCount;
 @property (nonatomic, strong) NSDictionary<NSData *, NSString *> *fileDistributedMasternodeLists; //string is the path
+@property (nonatomic, strong) dispatch_queue_t masternodeSavingQueue;
 
 @end
 
@@ -100,6 +101,7 @@
     NSParameterAssert(chain);
 
     if (!(self = [super init])) return nil;
+    _masternodeSavingQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.masternodesaving.%@", chain.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
     _chain = chain;
     _masternodeListRetrievalQueue = [NSMutableOrderedSet orderedSet];
     _masternodeListsInRetrieval = [NSMutableSet set];
@@ -1255,17 +1257,21 @@
     //We will want to create unknown blocks if they came from insight
     BOOL createUnknownBlocks = masternodeList.chain.allowInsightBlocksForVerification;
     self.masternodeListCurrentlyBeingSavedCount++;
-    [DSMasternodeManager saveMasternodeList:masternodeList
-                                    toChain:self.chain
-                  havingModifiedMasternodes:modifiedMasternodes
-                               addedQuorums:addedQuorums
-                        createUnknownBlocks:createUnknownBlocks
-                                  inContext:self.managedObjectContext
-                                 completion:completion];
+    //This will create a queue for masternodes to be saved without blocking the networking queue
+    dispatch_async(self.masternodeSavingQueue, ^{
+        [DSMasternodeManager saveMasternodeList:masternodeList
+                                        toChain:self.chain
+                      havingModifiedMasternodes:modifiedMasternodes
+                                   addedQuorums:addedQuorums
+                            createUnknownBlocks:createUnknownBlocks
+                                      inContext:self.managedObjectContext
+                                     completion:completion];
+    });
 }
 
 + (void)saveMasternodeList:(DSMasternodeList *)masternodeList toChain:(DSChain *)chain havingModifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums createUnknownBlocks:(BOOL)createUnknownBlocks inContext:(NSManagedObjectContext *)context completion:(void (^)(NSError *error))completion {
-    [context performBlock:^{
+    DSLog(@"Queued saving MNL at height %u", masternodeList.height);
+    [context performBlockAndWait:^{
         //masternodes
         DSChainEntity *chainEntity = [chain chainEntityInContext:context];
         DSMerkleBlockEntity *merkleBlockEntity = [DSMerkleBlockEntity anyObjectInContext:context matching:@"blockHash == %@", uint256_data(masternodeList.blockHash)];

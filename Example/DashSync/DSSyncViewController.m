@@ -531,7 +531,7 @@
 
 - (void)payToAddressFromPasteboardAvailable:(void (^)(BOOL success))completion {
     DSAccount *account = self.chainManager.chain.firstAccountWithBalance;
-    if (!account || account.balance < 100000) {
+    if (!account || account.balance < 1000) {
         UIAlertController *alert = [UIAlertController
             alertControllerWithTitle:@"Not enough balance"
                              message:@""
@@ -547,7 +547,7 @@
         return;
     }
     DSPaymentRequest *paymentRequest = [DSPaymentRequest requestWithString:self.pasteboardAddressLabel.text onChain:account.wallet.chain];
-    paymentRequest.amount = 100000;
+    paymentRequest.amount = 1000;
 
     if ([paymentRequest isValidAsNonDashpayPaymentRequest]) {
         __block BOOL displayedSentMessage = FALSE;
