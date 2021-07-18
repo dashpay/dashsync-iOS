@@ -91,6 +91,7 @@
 @property (nonatomic, assign) uint16_t timeOutObserverTry;
 @property (atomic, assign) uint32_t masternodeListCurrentlyBeingSavedCount;
 @property (nonatomic, strong) NSDictionary<NSData *, NSString *> *fileDistributedMasternodeLists; //string is the path
+@property (nonatomic, strong) dispatch_queue_t masternodeSavingQueue;
 
 @end
 
@@ -100,6 +101,7 @@
     NSParameterAssert(chain);
 
     if (!(self = [super init])) return nil;
+    _masternodeSavingQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.masternodesaving.%@", chain.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
     _chain = chain;
     _masternodeListRetrievalQueue = [NSMutableOrderedSet orderedSet];
     _masternodeListsInRetrieval = [NSMutableSet set];
@@ -375,13 +377,12 @@
         if (checkpoint && self.chain.lastTerminalBlockHeight >= checkpoint.height) {
             if (![self masternodeListForBlockHash:checkpoint.blockHash]) {
                 [self processRequestFromFileForBlockHash:checkpoint.blockHash
-                                              completion:^(BOOL success, DSMasternodeList * masternodeList){
-                    if (success && masternodeList) {
-                        self.currentMasternodeList = masternodeList;
-                    }
+                                              completion:^(BOOL success, DSMasternodeList *masternodeList) {
+                                                  if (success && masternodeList) {
+                                                      self.currentMasternodeList = masternodeList;
+                                                  }
                                               }];
             }
-            
         }
     }
 }
@@ -572,7 +573,7 @@
         if (hasBlock) {
             //there is the rare possibility we have the masternode list as a checkpoint, so lets first try that
             [self processRequestFromFileForBlockHash:blockHash
-                                          completion:^(BOOL success, DSMasternodeList * masternodeList) {
+                                          completion:^(BOOL success, DSMasternodeList *masternodeList) {
                                               if (!success) {
                                                   //we need to go get it
                                                   UInt256 previousMasternodeAlreadyKnownBlockHash = [self closestKnownBlockHashForBlockHash:blockHash];
@@ -678,7 +679,7 @@
 
 // MARK: - Deterministic Masternode List Sync
 
-- (void)processRequestFromFileForBlockHash:(UInt256)blockHash completion:(void (^)(BOOL success, DSMasternodeList * masternodeList))completion {
+- (void)processRequestFromFileForBlockHash:(UInt256)blockHash completion:(void (^)(BOOL success, DSMasternodeList *masternodeList))completion {
     DSCheckpoint *checkpoint = [self.chain checkpointForBlockHash:blockHash];
     if (!checkpoint || !checkpoint.masternodeListName || [checkpoint.masternodeListName isEqualToString:@""]) {
         DSLog(@"No masternode list checkpoint found at height %u", [self heightForBlockHash:blockHash]);
@@ -711,28 +712,28 @@
                                     completion(NO, nil);
                                     return;
                                 }
-        
-        if (!self.masternodeListsByBlockHash[uint256_data(masternodeList.blockHash)] && ![self.masternodeListsBlockHashStubs containsObject:uint256_data(masternodeList.blockHash)]) {
-            //in rare race conditions this might already exist
 
-            NSArray *updatedSimplifiedMasternodeEntries = [addedMasternodes.allValues arrayByAddingObjectsFromArray:modifiedMasternodes.allValues];
-            [self.chain updateAddressUsageOfSimplifiedMasternodeEntries:updatedSimplifiedMasternodeEntries];
+                                if (!self.masternodeListsByBlockHash[uint256_data(masternodeList.blockHash)] && ![self.masternodeListsBlockHashStubs containsObject:uint256_data(masternodeList.blockHash)]) {
+                                    //in rare race conditions this might already exist
 
-            [self saveMasternodeList:masternodeList
-                havingModifiedMasternodes:modifiedMasternodes
-                        addedQuorums:addedQuorums completion:^(NSError *error) {
-                if (!KEEP_OLD_QUORUMS && uint256_eq(self.lastQueriedBlockHash, masternodeList.blockHash)) {
-                    [self removeOldMasternodeLists];
-                }
+                                    NSArray *updatedSimplifiedMasternodeEntries = [addedMasternodes.allValues arrayByAddingObjectsFromArray:modifiedMasternodes.allValues];
+                                    [self.chain updateAddressUsageOfSimplifiedMasternodeEntries:updatedSimplifiedMasternodeEntries];
 
-                                        if (![self.masternodeListRetrievalQueue count]) {
-                                            [self.chain.chainManager.transactionManager checkInstantSendLocksWaitingForQuorums];
-                                            [self.chain.chainManager.transactionManager checkChainLocksWaitingForQuorums];
-                                        }
-                                        completion(YES, masternodeList);
-            }];
-        }
-        
+                                    [self saveMasternodeList:masternodeList
+                                        havingModifiedMasternodes:modifiedMasternodes
+                                                     addedQuorums:addedQuorums
+                                                       completion:^(NSError *error) {
+                                                           if (!KEEP_OLD_QUORUMS && uint256_eq(self.lastQueriedBlockHash, masternodeList.blockHash)) {
+                                                               [self removeOldMasternodeLists];
+                                                           }
+
+                                                           if (![self.masternodeListRetrievalQueue count]) {
+                                                               [self.chain.chainManager.transactionManager checkInstantSendLocksWaitingForQuorums];
+                                                               [self.chain.chainManager.transactionManager checkChainLocksWaitingForQuorums];
+                                                           }
+                                                           completion(YES, masternodeList);
+                                                       }];
+                                }
                             }];
 }
 
@@ -746,7 +747,7 @@
             return [self masternodeListForBlockHash:blockHash];
         }
         lastBlock:lastBlock
-     useInsightAsBackup:useInsightAsBackup
+        useInsightAsBackup:useInsightAsBackup
         onChain:self.chain
         blockHeightLookup:^uint32_t(UInt256 blockHash) {
             return [self heightForBlockHash:blockHash];
@@ -1230,17 +1231,20 @@
 }
 
 - (void)saveMasternodeList:(DSMasternodeList *)masternodeList havingModifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums {
-    [self saveMasternodeList:masternodeList havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums completion:^(NSError *error) {
-        self.masternodeListCurrentlyBeingSavedCount--;
-        if (error) {
-            if ([self.masternodeListRetrievalQueue count]) { //if it is 0 then we most likely have wiped chain info
-                [self wipeMasternodeInfo];
-                dispatch_async(self.chain.networkingQueue, ^{
-                    [self getCurrentMasternodeListWithSafetyDelay:0];
-                });
-            }
-        }
-    }];
+    [self saveMasternodeList:masternodeList
+        havingModifiedMasternodes:modifiedMasternodes
+                     addedQuorums:addedQuorums
+                       completion:^(NSError *error) {
+                           self.masternodeListCurrentlyBeingSavedCount--;
+                           if (error) {
+                               if ([self.masternodeListRetrievalQueue count]) { //if it is 0 then we most likely have wiped chain info
+                                   [self wipeMasternodeInfo];
+                                   dispatch_async(self.chain.networkingQueue, ^{
+                                       [self getCurrentMasternodeListWithSafetyDelay:0];
+                                   });
+                               }
+                           }
+                       }];
 }
 
 - (void)saveMasternodeList:(DSMasternodeList *)masternodeList havingModifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums completion:(void (^)(NSError *error))completion {
@@ -1253,17 +1257,21 @@
     //We will want to create unknown blocks if they came from insight
     BOOL createUnknownBlocks = masternodeList.chain.allowInsightBlocksForVerification;
     self.masternodeListCurrentlyBeingSavedCount++;
-    [DSMasternodeManager saveMasternodeList:masternodeList
-                                    toChain:self.chain
-                  havingModifiedMasternodes:modifiedMasternodes
-                               addedQuorums:addedQuorums
-                        createUnknownBlocks:createUnknownBlocks
-                                  inContext:self.managedObjectContext
-                                 completion:completion];
+    //This will create a queue for masternodes to be saved without blocking the networking queue
+    dispatch_async(self.masternodeSavingQueue, ^{
+        [DSMasternodeManager saveMasternodeList:masternodeList
+                                        toChain:self.chain
+                      havingModifiedMasternodes:modifiedMasternodes
+                                   addedQuorums:addedQuorums
+                            createUnknownBlocks:createUnknownBlocks
+                                      inContext:self.managedObjectContext
+                                     completion:completion];
+    });
 }
 
 + (void)saveMasternodeList:(DSMasternodeList *)masternodeList toChain:(DSChain *)chain havingModifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums createUnknownBlocks:(BOOL)createUnknownBlocks inContext:(NSManagedObjectContext *)context completion:(void (^)(NSError *error))completion {
-    [context performBlock:^{
+    DSLog(@"Queued saving MNL at height %u", masternodeList.height);
+    [context performBlockAndWait:^{
         //masternodes
         DSChainEntity *chainEntity = [chain chainEntityInContext:context];
         DSMerkleBlockEntity *merkleBlockEntity = [DSMerkleBlockEntity anyObjectInContext:context matching:@"blockHash == %@", uint256_data(masternodeList.blockHash)];

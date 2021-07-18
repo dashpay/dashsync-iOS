@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2021 Dash Core Group. All rights reserved.
 //
@@ -15,8 +15,8 @@
 //  limitations under the License.
 //
 
-#import <XCTest/XCTest.h>
 #import "DSBlockchainInvitation+Protected.h"
+#import <XCTest/XCTest.h>
 
 @interface DSInvitationsTests : XCTestCase
 
