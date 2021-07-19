@@ -49,20 +49,20 @@
     return blake2Data;
 }
 
-//- (UInt256)blake3 {
-//    // Initialize the hasher.
-//    blake3_hasher hasher;
-//    blake3_hasher_init(&hasher);
-//
-//    blake3_hasher_update(&hasher, self.bytes, self.length);
-//
-//    // Finalize the hash. BLAKE3_OUT_LEN is the default output length, 32 bytes.
-//    uint8_t output[BLAKE3_OUT_LEN];
-//    blake3_hasher_finalize(&hasher, output, BLAKE3_OUT_LEN);
-//    NSData *data = [NSData dataWithBytes:output length:BLAKE3_OUT_LEN];
-//
-//    return data.UInt256;
-//}
+- (UInt256)blake3 {
+    // Initialize the hasher.
+    blake3_hasher hasher;
+    blake3_hasher_init(&hasher);
+
+    blake3_hasher_update(&hasher, self.bytes, self.length);
+
+    // Finalize the hash. BLAKE3_OUT_LEN is the default output length, 32 bytes.
+    uint8_t output[BLAKE3_OUT_LEN];
+    blake3_hasher_finalize(&hasher, output, BLAKE3_OUT_LEN);
+    NSData *data = [NSData dataWithBytes:output length:BLAKE3_OUT_LEN];
+
+    return data.UInt256;
+}
 
 
 - (UInt512)blake512 {
