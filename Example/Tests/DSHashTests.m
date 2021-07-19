@@ -33,8 +33,8 @@
 
 - (void)testBlake3 {
     UInt256 md = @"whats the Elvish word for friend".hexToData.blake3;
-    XCTAssertEqualObjects(@"69217a3079908094e11121d042354a7c1f55b6482ca1a51e1b250dfd1ed0eef9", uint256_hex(md),
-        @"[NSData blake2s]"); //verified by wikipedia
+    XCTAssertEqualObjects(@"af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262", uint256_hex(md),
+        @"[NSData blake3]"); //verified by wikipedia
 }
 
 
