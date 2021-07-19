@@ -215,7 +215,7 @@
     // TODO: XXX connect to a random peer with an empty or fake bloom filter just for publishing
     if (self.peerManager.connectedPeerCount > 1 && self.peerManager.downloadPeer) [peers removeObject:self.peerManager.downloadPeer];
 
-    dispatch_async(dispatch_get_main_queue(), ^{
+    dispatch_async(self.chainManager.chain.networkingQueue, ^{
         [self performSelector:@selector(txTimeout:) withObject:hash afterDelay:PROTOCOL_TIMEOUT];
 
         for (DSPeer *p in peers) {
@@ -413,19 +413,24 @@
 }
 
 - (void)txTimeout:(NSValue *)txHash {
-    void (^callback)(NSError *error) = self.publishedCallback[txHash];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        void (^callback)(NSError *error) = self.publishedCallback[txHash];
 
-    [self.publishedTx removeObjectForKey:txHash];
-    [self.publishedCallback removeObjectForKey:txHash];
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:txHash];
+        [self.publishedTx removeObjectForKey:txHash];
+        [self.publishedCallback removeObjectForKey:txHash];
 
-    if (callback) {
-        [[DSEventManager sharedEventManager] saveEvent:@"transaction_manager:tx_canceled_timeout"];
-        callback([NSError errorWithDomain:@"DashSync"
-                                     code:DASH_PEER_TIMEOUT_CODE
-                                 userInfo:@{NSLocalizedDescriptionKey:
-                                              DSLocalizedString(@"Transaction canceled, network timeout", nil)}]);
-    }
+        dispatch_async(self.chainManager.chain.networkingQueue, ^{
+            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:txHash];
+        });
+
+        if (callback) {
+            [[DSEventManager sharedEventManager] saveEvent:@"transaction_manager:tx_canceled_timeout"];
+            callback([NSError errorWithDomain:@"DashSync"
+                                         code:DASH_PEER_TIMEOUT_CODE
+                                     userInfo:@{NSLocalizedDescriptionKey:
+                                                  DSLocalizedString(@"Transaction canceled, network timeout", nil)}]);
+        }
+    });
 }
 
 - (void)clearTransactionRelaysForPeer:(DSPeer *)peer {
@@ -1098,9 +1103,11 @@
         }
     }
 
-    dispatch_async(dispatch_get_main_queue(), ^{
+    dispatch_async(self.chainManager.chain.networkingQueue, ^{
         [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:hash];
-        if (callback) callback(error);
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (callback) callback(error);
+        });
     });
 
     //    [peer sendPingMessageWithPongHandler:^(BOOL success) { // check if peer will relay the transaction back
@@ -1163,10 +1170,12 @@
                   forTransactionHashes:@[hash]]; // set timestamp when tx is verified
         }
 
-        dispatch_async(dispatch_get_main_queue(), ^{
+        dispatch_async(self.chainManager.chain.networkingQueue, ^{
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:hash];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
-            if (callback) callback(nil);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
+                if (callback) callback(nil);
+            });
         });
     }
 
@@ -1327,18 +1336,20 @@
         //todo: deal when the transaction received is not in an account
 
 
-        dispatch_async(dispatch_get_main_queue(), ^{
+        dispatch_async(self.chainManager.chain.networkingQueue, ^{
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:hash];
 
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification
-                                                                object:nil
-                                                              userInfo:@{DSChainManagerNotificationChainKey: self.chain,
-                                                                  DSTransactionManagerNotificationTransactionKey: transaction,
-                                                                  DSTransactionManagerNotificationTransactionChangesKey: @{DSTransactionManagerNotificationTransactionAcceptedStatusKey: @(YES)}}];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionReceivedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification
+                                                                    object:nil
+                                                                  userInfo:@{DSChainManagerNotificationChainKey: self.chain,
+                                                                      DSTransactionManagerNotificationTransactionKey: transaction,
+                                                                      DSTransactionManagerNotificationTransactionChangesKey: @{DSTransactionManagerNotificationTransactionAcceptedStatusKey: @(YES)}}];
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionReceivedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
 
-            if (callback) callback(nil);
+                if (callback) callback(nil);
+            });
         });
     } else {
         dispatch_async(dispatch_get_main_queue(), ^{
