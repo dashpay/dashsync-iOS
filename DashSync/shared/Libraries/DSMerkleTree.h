@@ -20,16 +20,23 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSInteger, DSMerkleTreeHashFunction)
+{
+    DSMerkleTreeHashFunction_SHA256_2 = 0,
+    DSMerkleTreeHashFunction_BLAKE2b_160,
+};
+
 @interface DSMerkleTree : NSObject <NSCopying>
 
 @property (nonatomic, readonly) uint32_t treeElementCount;
 @property (nonatomic, readonly) NSData *hashes;
 @property (nonatomic, readonly) NSData *flags;
 @property (nonatomic, readonly) UInt256 merkleRoot;
+@property (nonatomic, readonly) DSMerkleTreeHashFunction hashFunction;
 
-+ (instancetype)merkleTreeWithData:(NSData *)data treeElementCount:(uint32_t)elementCount;
++ (instancetype)merkleTreeWithData:(NSData *)data treeElementCount:(uint32_t)elementCount hashFunction:(DSMerkleTreeHashFunction)hashFunction;
 
-- (instancetype)initWithHashes:(NSData *)hashes flags:(NSData *)flags treeElementCount:(uint32_t)elementCount;
+- (instancetype)initWithHashes:(NSData *)hashes flags:(NSData *)flags treeElementCount:(uint32_t)elementCount hashFunction:(DSMerkleTreeHashFunction)hashFunction;
 
 - (NSArray *)elementHashes;
 

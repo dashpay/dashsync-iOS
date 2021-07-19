@@ -69,12 +69,13 @@ inline static int ceil_log2(int x) {
 @property (nonatomic, assign) uint32_t treeElementCount;
 @property (nonatomic, strong) NSData *hashes;
 @property (nonatomic, strong) NSData *flags;
+@property (nonatomic, assign) DSMerkleTreeHashFunction hashFunction;
 
 @end
 
 @implementation DSMerkleTree
 
-+ (instancetype)merkleTreeWithData:(NSData *)data treeElementCount:(uint32_t)elementCount {
++ (instancetype)merkleTreeWithData:(NSData *)data treeElementCount:(uint32_t)elementCount hashFunction:(DSMerkleTreeHashFunction)hashFunction {
     NSUInteger off = 0, len = 0;
     uint32_t leafCount = [data UInt32AtOffset:off];
     off += sizeof(uint32_t);
@@ -85,14 +86,15 @@ inline static int ceil_log2(int x) {
     off += len;
     NSData *flags = [data dataAtOffset:off length:&l];
     if (hashes.length == 0) return nil;
-    return [[DSMerkleTree alloc] initWithHashes:hashes flags:flags treeElementCount:elementCount];
+    return [[DSMerkleTree alloc] initWithHashes:hashes flags:flags treeElementCount:elementCount hashFunction:hashFunction];
 }
 
-- (instancetype)initWithHashes:(NSData *)hashes flags:(NSData *)flags treeElementCount:(uint32_t)elementCount {
+- (instancetype)initWithHashes:(NSData *)hashes flags:(NSData *)flags treeElementCount:(uint32_t)elementCount hashFunction:(DSMerkleTreeHashFunction)hashFunction {
     if (!(self = [self init])) return nil;
     self.hashes = hashes;
     self.flags = flags;
     self.treeElementCount = elementCount;
+    self.hashFunction = hashFunction;
     return self;
 }
 
@@ -124,6 +126,21 @@ inline static int ceil_log2(int x) {
     return hashes;
 }
 
+- (id)hashData:(NSMutableData *)data {
+    switch (self.hashFunction) {
+        case DSMerkleTreeHashFunction_SHA256_2:
+            return uint256_obj(data.SHA256_2);
+            break;
+        case DSMerkleTreeHashFunction_BLAKE2b_160:
+            return uint256_obj(data.blake2s);
+            break;
+
+        default:
+            return uint256_obj(data.SHA256_2);
+            break;
+    }
+}
+
 - (UInt256)merkleRoot {
     NSMutableData *d = [NSMutableData data];
     UInt256 merkleRoot = UINT256_ZERO;
@@ -143,7 +160,7 @@ inline static int ceil_log2(int x) {
             d.length = 0;
             [d appendBytes:&l length:sizeof(l)];
             [d appendBytes:&r length:sizeof(r)];
-            return uint256_obj(d.SHA256_2);
+            return [self hashData:d];
         }];
 
     [root getValue:&merkleRoot];

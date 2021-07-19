@@ -44,6 +44,7 @@
 - (UInt512)echo512;
 
 - (UInt256)blake2s;
+- (UInt256)blake3;
 
 + (NSData *)dataFromHexString:(NSString *)string;
 

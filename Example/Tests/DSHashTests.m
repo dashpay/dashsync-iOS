@@ -31,6 +31,13 @@
         @"[NSData blake2s]"); //verified by wikipedia
 }
 
+- (void)testBlake3 {
+    UInt256 md = @"whats the Elvish word for friend".hexToData.blake3;
+    XCTAssertEqualObjects(@"69217a3079908094e11121d042354a7c1f55b6482ca1a51e1b250dfd1ed0eef9", uint256_hex(md),
+        @"[NSData blake2s]"); //verified by wikipedia
+}
+
+
 - (void)testBlake {
     UInt512 md = [@"020000002cc0081be5039a54b686d24d5d8747ee9770d9973ec1ace02e5c0500000000008d7139724b11c52995db4370284c998b9114154b120ad3486f1a360a1d4253d310d40e55b8f70a1be8e32300"
         dataUsingEncoding:NSUTF8StringEncoding]

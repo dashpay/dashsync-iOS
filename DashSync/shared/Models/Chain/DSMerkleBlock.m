@@ -80,7 +80,7 @@
     NSData *hashes = (off + len > message.length) ? nil : [message subdataWithRange:NSMakeRange(off, len)];
     off += len;
     NSData *flags = [message dataAtOffset:off length:&l];
-    self.merkleTree = [[DSMerkleTree alloc] initWithHashes:hashes flags:flags treeElementCount:self.totalTransactions];
+    self.merkleTree = [[DSMerkleTree alloc] initWithHashes:hashes flags:flags treeElementCount:self.totalTransactions hashFunction:DSMerkleTreeHashFunction_SHA256_2];
     self.height = BLOCK_UNKNOWN_HEIGHT;
 
     [d appendUInt32:self.version];
@@ -109,7 +109,7 @@
     self.blockHash = blockHash;
     self.merkleRoot = merkleRoot;
     self.totalTransactions = totalTransactions;
-    self.merkleTree = [[DSMerkleTree alloc] initWithHashes:hashes flags:flags treeElementCount:self.totalTransactions];
+    self.merkleTree = [[DSMerkleTree alloc] initWithHashes:hashes flags:flags treeElementCount:self.totalTransactions hashFunction:DSMerkleTreeHashFunction_SHA256_2];
     self.chainLocked = FALSE;
     return self;
 }

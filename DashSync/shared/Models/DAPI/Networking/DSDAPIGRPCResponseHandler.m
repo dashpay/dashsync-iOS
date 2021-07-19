@@ -212,7 +212,7 @@
                                userInfo:@{NSLocalizedDescriptionKey:
                                             DSLocalizedString(@"Platform returned an empty or wrongly sized signature", nil)}];
     }
-    DSMerkleTree *merkleTree = [DSMerkleTree merkleTreeWithData:proof.rootTreeProof treeElementCount:3];
+    DSMerkleTree *merkleTree = [DSMerkleTree merkleTreeWithData:proof.rootTreeProof treeElementCount:3 hashFunction:DSMerkleTreeHashFunction_BLAKE2b_160];
     UInt256 stateHash = merkleTree.merkleRoot;
     if (uint256_is_zero(stateHash)) {
         return [NSError errorWithDomain:@"DashSync"
