@@ -680,7 +680,9 @@
                           if (cancelled) {
                               if (!previouslyWasAuthenticated && !keepAuthenticatedIfErrorAfterAuthentication) [authenticationManager deauthenticate];
                               if (signedCompletion) {
-                                  signedCompletion(tx, nil, YES);
+                                  dispatch_async(dispatch_get_main_queue(), ^{
+                                      signedCompletion(tx, nil, YES);
+                                  });
                               }
 
                               return;
@@ -688,96 +690,127 @@
 
                           if (!signedTransaction || !tx.isSigned) {
                               if (!previouslyWasAuthenticated && !keepAuthenticatedIfErrorAfterAuthentication) [authenticationManager deauthenticate];
-                              signedCompletion(tx, [NSError errorWithDomain:@"DashSync"
-                                                                       code:401
-                                                                   userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Error signing transaction", nil)}],
-                                  NO);
+                              dispatch_async(dispatch_get_main_queue(), ^{
+                                  signedCompletion(tx, [NSError errorWithDomain:@"DashSync"
+                                                                           code:401
+                                                                       userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Error signing transaction", nil)}],
+                                      NO);
+                              });
                               return;
                           }
 
                           if (!previouslyWasAuthenticated) [authenticationManager deauthenticate];
 
                           if (!signedCompletion(tx, nil, NO)) return; //give the option to stop the process to clients
+            
+            [self publishSignedTransaction:tx createdFromProtocolRequest:protocolRequest fromAccount:account publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];
+        }];
+    }
+}
 
-                          __block BOOL sent = NO;
-
-                          [account registerTransaction:tx saveImmediately:NO];
-
-                          [self publishTransaction:tx
-                                        completion:^(NSError *publishingError) {
-                                            if (publishingError) {
-                                                if (!sent) {
-                                                    [account removeTransaction:tx saveImmediately:YES]; //we save in case the transaction was registered and saved from another process
-                                                    publishedCompletion(tx, publishingError, sent);
-                                                }
-                                            } else if (!sent) {
-                                                sent = YES;
-                                                tx.timestamp = [NSDate timeIntervalSince1970];
-                                                [tx saveInitial];
-                                                publishedCompletion(tx, nil, sent);
-                                            }
-
-                                            if (protocolRequest.details.paymentURL.length > 0) {
-                                                uint64_t refundAmount = 0;
-                                                NSMutableData *refundScript = [NSMutableData data];
-                                                [refundScript appendScriptPubKeyForAddress:account.receiveAddress forChain:account.wallet.chain];
-
-                                                for (NSNumber *amt in protocolRequest.details.outputAmounts) {
-                                                    refundAmount += amt.unsignedLongLongValue;
-                                                }
-
-                                                // TODO: keep track of commonName/memo to associate them with outputScripts
-                                                DSPaymentProtocolPayment *payment =
-                                                    [[DSPaymentProtocolPayment alloc] initWithMerchantData:protocolRequest.details.merchantData
-                                                                                              transactions:@[tx]
-                                                                                           refundToAmounts:@[@(refundAmount)]
-                                                                                           refundToScripts:@[refundScript]
-                                                                                                      memo:nil
-                                                                                                   onChain:account.wallet.chain];
-
+- (void)publishSignedTransaction:(DSTransaction *)tx createdFromProtocolRequest:(DSPaymentProtocolRequest *)protocolRequest fromAccount:(DSAccount *)account  publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion requestRelayCompletion:(DSTransactionRequestRelayCompletionBlock)requestRelayCompletion errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock {
+    NSParameterAssert(tx);
+    if (!tx || !tx.isSigned) return;
+    
+    __block BOOL sent = NO;
+    
+    if (protocolRequest.details.paymentURL.length == 0) {
+        [account registerTransaction:tx saveImmediately:NO];
+        
+        [self publishTransaction:tx
+                      completion:^(NSError *publishingError) {
+            if (publishingError) {
+                if (!sent) {
+                    [account removeTransaction:tx saveImmediately:YES]; //we save in case the transaction was registered and saved from another process
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        publishedCompletion(tx, publishingError, sent);
+                    });
+                }
+            } else if (!sent) {
+                sent = YES;
+                tx.timestamp = [NSDate timeIntervalSince1970];
+                [tx saveInitial];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    publishedCompletion(tx, nil, sent);
+                });
+            }
+        }];
+    } else {
+        uint64_t refundAmount = 0;
+        NSMutableData *refundScript = [NSMutableData data];
+        [refundScript appendScriptPubKeyForAddress:account.receiveAddress forChain:account.wallet.chain];
+        
+        for (NSNumber *amt in protocolRequest.details.outputAmounts) {
+            refundAmount += amt.unsignedLongLongValue;
+        }
+        
+        // TODO: keep track of commonName/memo to associate them with outputScripts
+        DSPaymentProtocolPayment *payment =
+        [[DSPaymentProtocolPayment alloc] initWithMerchantData:protocolRequest.details.merchantData
+                                                  transactions:@[tx]
+                                               refundToAmounts:@[@(refundAmount)]
+                                               refundToScripts:@[refundScript]
+                                                          memo:nil
+                                                       onChain:account.wallet.chain];
+        
 #if DEBUG
-                                                DSLogPrivate(@"posting payment to: %@", protocolRequest.details.paymentURL);
+        DSLogPrivate(@"posting payment to: %@", protocolRequest.details.paymentURL);
 #else
-                            DSLog(@"posting payment to: <REDACTED>");
+        DSLog(@"posting payment to: <REDACTED>");
 #endif
-
-                                                [DSPaymentRequest postPayment:payment
-                                                                       scheme:@"dash"
-                                                                           to:protocolRequest.details.paymentURL
-                                                                      onChain:account.wallet.chain
-                                                                      timeout:20.0
-                                                                   completion:^(DSPaymentProtocolACK *ack, NSError *error) {
-                                                                       dispatch_async(dispatch_get_main_queue(), ^{
-                                                                           if (!publishingError && error) {
-                                                                               if (!sent) {
-                                                                                   NSString *errorTitle = [NSString
-                                                                                       stringWithFormat:
-                                                                                           DSLocalizedString(@"Error from payment request server %@", nil),
-                                                                                       protocolRequest.details.paymentURL];
-                                                                                   NSString *errorMessage = error.localizedDescription;
-                                                                                   NSString *localizedDescription = [NSString
-                                                                                       stringWithFormat:@"%@\n%@",
-                                                                                       errorTitle, errorMessage];
-                                                                                   NSError *resError = [NSError
-                                                                                       errorWithDomain:DSErrorDomain
-                                                                                                  code:DSErrorPaymentRequestServerError
-                                                                                              userInfo:@{
-                                                                                                  NSLocalizedDescriptionKey: localizedDescription,
-                                                                                                  NSUnderlyingErrorKey: error,
-                                                                                              }];
-                                                                                   errorNotificationBlock(resError, errorTitle, errorMessage, YES);
-                                                                               }
-                                                                           } else if (!sent) {
-                                                                               sent = TRUE;
-                                                                               tx.timestamp = [NSDate timeIntervalSince1970];
-                                                                               [account registerTransaction:tx saveImmediately:YES];
-                                                                           }
-                                                                           requestRelayCompletion(tx, ack, !error);
-                                                                       });
-                                                                   }];
-                                            }
-                                        }];
-                      }];
+        
+        [DSPaymentRequest postPayment:payment
+                                 scheme:@"dash"
+                                     to:protocolRequest.details.paymentURL
+                                onChain:account.wallet.chain
+                                timeout:20.0
+                             completion:^(DSPaymentProtocolACK *ack, NSError *error) {
+            
+            if (error) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    NSString *errorTitle = [NSString
+                                            stringWithFormat:
+                                            DSLocalizedString(@"Error from payment request server %@", nil),
+                                            protocolRequest.details.paymentURL];
+                    NSString *errorMessage = error.localizedDescription;
+                    NSString *localizedDescription = [NSString
+                                                      stringWithFormat:@"%@\n%@",
+                                                      errorTitle, errorMessage];
+                    NSError *resError = [NSError
+                                         errorWithDomain:DSErrorDomain
+                                         code:DSErrorPaymentRequestServerError
+                                         userInfo:@{
+                                             NSLocalizedDescriptionKey: localizedDescription,
+                                             NSUnderlyingErrorKey: error,
+                                         }];
+                    errorNotificationBlock(resError, errorTitle, errorMessage, YES);
+                });
+            } else {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    requestRelayCompletion(tx, ack, !error);
+                });
+                [account registerTransaction:tx saveImmediately:NO];
+                
+                [self publishTransaction:tx
+                              completion:^(NSError *publishingError) {
+                    if (publishingError) {
+                        if (!sent) {
+                            [account removeTransaction:tx saveImmediately:YES]; //we save in case the transaction was registered and saved from another process
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                publishedCompletion(tx, publishingError, sent);
+                            });
+                        }
+                    } else if (!sent) {
+                        sent = YES;
+                        tx.timestamp = [NSDate timeIntervalSince1970];
+                        [tx saveInitial];
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            publishedCompletion(tx, nil, sent);
+                        });
+                    }
+                }];
+            }
+        }];
     }
 }
 
