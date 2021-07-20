@@ -132,7 +132,7 @@ inline static int ceil_log2(int x) {
             return uint256_obj(data.SHA256_2);
             break;
         case DSMerkleTreeHashFunction_BLAKE2b_160:
-            return uint256_obj(data.blake2s);
+            return uint160_obj(data.blake2b_160);
             break;
 
         default:

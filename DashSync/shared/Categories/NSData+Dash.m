@@ -49,6 +49,22 @@
     return blake2Data;
 }
 
+- (UInt256)blake2b {
+    UInt256 blake2Data;
+
+    blake2b(&blake2Data, 32, self.bytes, self.length, 0, 0);
+
+    return blake2Data;
+}
+
+- (UInt160)blake2b_160 {
+    UInt160 blake2Data;
+
+    blake2b(&blake2Data, 20, self.bytes, self.length, 0, 0);
+
+    return blake2Data;
+}
+
 //- (UInt256)blake3 {
 //    // Initialize the hasher.
 //    blake3_hasher hasher;
