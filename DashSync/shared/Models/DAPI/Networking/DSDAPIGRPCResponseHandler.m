@@ -48,6 +48,8 @@
 - (void)didReceiveProtoMessage:(nullable GPBMessage *)message {
     if ([message isMemberOfClass:[GetIdentityResponse class]]) {
         GetIdentityResponse *identityResponse = (GetIdentityResponse *)message;
+        Proof *proof = identityResponse.proof;
+        ResponseMetadata *metaData = identityResponse.metadata;
         NSError *error = nil;
         NSData *identityData = [identityResponse identity];
         if (identityData.length == 0) {
