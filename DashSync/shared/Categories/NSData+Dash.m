@@ -36,34 +36,10 @@
 #import "../crypto/x11/Skein.h"
 #import "NSData+Dash.h"
 
-#import "../crypto/blake2/blake2.h"
 #import "../crypto/blake3/blake3.h"
 
 @implementation NSData (Dash)
 
-- (UInt256)blake2s {
-    UInt256 blake2Data;
-
-    blake2s(&blake2Data, 32, self.bytes, self.length, 0, 0);
-
-    return blake2Data;
-}
-
-- (UInt256)blake2b {
-    UInt256 blake2Data;
-
-    blake2b(&blake2Data, 32, self.bytes, self.length, 0, 0);
-
-    return blake2Data;
-}
-
-- (UInt160)blake2b_160 {
-    UInt160 blake2Data;
-
-    blake2b(&blake2Data, 20, self.bytes, self.length, 0, 0);
-
-    return blake2Data;
-}
 
 - (UInt256)blake3 {
     // Initialize the hasher.

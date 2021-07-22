@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 typedef NS_ENUM(NSInteger, DSMerkleTreeHashFunction)
 {
     DSMerkleTreeHashFunction_SHA256_2 = 0,
-    DSMerkleTreeHashFunction_BLAKE2b_160,
+    DSMerkleTreeHashFunction_BLAKE3,
 };
 
 @interface DSMerkleTree : NSObject <NSCopying>

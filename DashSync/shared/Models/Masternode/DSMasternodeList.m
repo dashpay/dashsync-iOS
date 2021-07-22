@@ -614,8 +614,8 @@ inline static int ceil_log2(int x) {
 - (NSArray<DSPeer *> *)peers:(uint32_t)peerCount withConnectivityNonce:(uint64_t)connectivityNonce {
     NSArray<NSData *> *registrationTransactionHashes = [self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allKeys];
     NSArray<NSData *> *sortedHashes = [registrationTransactionHashes sortedArrayUsingComparator:^NSComparisonResult(NSData *_Nonnull obj1, NSData *_Nonnull obj2) {
-        UInt256 hash1 = [[[obj1 mutableCopy] appendUInt64:connectivityNonce] blake2s];
-        UInt256 hash2 = [[[obj2 mutableCopy] appendUInt64:connectivityNonce] blake2s];
+        UInt256 hash1 = [[[obj1 mutableCopy] appendUInt64:connectivityNonce] blake3];
+        UInt256 hash2 = [[[obj2 mutableCopy] appendUInt64:connectivityNonce] blake3];
         return uint256_sup(hash1, hash2) ? NSOrderedDescending : NSOrderedAscending;
     }];
     NSMutableArray *mArray = [NSMutableArray array];
