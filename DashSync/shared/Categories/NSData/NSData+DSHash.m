@@ -23,20 +23,20 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "../crypto/x11/Blake.h"
-#import "../crypto/x11/Bmw.h"
-#import "../crypto/x11/CubeHash.h"
-#import "../crypto/x11/Echo.h"
-#import "../crypto/x11/Groestl.h"
-#import "../crypto/x11/Jh.h"
-#import "../crypto/x11/Keccak.h"
-#import "../crypto/x11/Luffa.h"
-#import "../crypto/x11/Shavite.h"
-#import "../crypto/x11/Simd.h"
-#import "../crypto/x11/Skein.h"
-#import "NSData+DSHash.h"
+#import "../../crypto/blake3/blake3.h"
+#import "../../crypto/x11/Blake.h"
+#import "../../crypto/x11/Bmw.h"
+#import "../../crypto/x11/CubeHash.h"
+#import "../../crypto/x11/Echo.h"
+#import "../../crypto/x11/Groestl.h"
+#import "../../crypto/x11/Jh.h"
+#import "../../crypto/x11/Keccak.h"
+#import "../../crypto/x11/Luffa.h"
+#import "../../crypto/x11/Shavite.h"
+#import "../../crypto/x11/Simd.h"
+#import "../../crypto/x11/Skein.h"
 
-#import "../crypto/blake3/blake3.h"
+#import "NSData+DSHash.h"
 
 @implementation NSData (DSHash)
 
