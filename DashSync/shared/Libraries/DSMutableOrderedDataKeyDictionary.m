@@ -23,7 +23,7 @@
 
 #import "DSMutableOrderedDataKeyDictionary.h"
 #import "BigIntTypes.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 
 @interface DSMutableOrderedDataKeyDictionary ()

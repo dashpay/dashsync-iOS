@@ -26,7 +26,7 @@
 #import "DSPeer.h"
 #import "DSPlatformDocumentsRequest.h"
 #import "DSTransition.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 
 NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.error";
 

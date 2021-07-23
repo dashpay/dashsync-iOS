@@ -26,8 +26,8 @@
 //  THE SOFTWARE.
 
 #import "DSMerkleTree.h"
-#import "NSData+Bitcoin.h"
 #import "NSData+DSHash.h"
+#import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 
 // from https://en.bitcoin.it/wiki/Protocol_specification#Merkle_Trees

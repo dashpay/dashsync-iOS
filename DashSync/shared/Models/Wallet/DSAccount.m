@@ -60,7 +60,7 @@
 #import "DSPeerManager.h"
 #import "DSPriceManager.h"
 #import "DSTransactionFactory.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSDate+Utils.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"

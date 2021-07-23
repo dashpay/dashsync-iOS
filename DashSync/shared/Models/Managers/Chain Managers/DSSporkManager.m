@@ -33,7 +33,7 @@
 #import "DSSpork.h"
 #import "DSSporkEntity+CoreDataProperties.h"
 #import "DSSporkHashEntity+CoreDataProperties.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSDate+Utils.h"
 #import "NSManagedObject+Sugar.h"
 

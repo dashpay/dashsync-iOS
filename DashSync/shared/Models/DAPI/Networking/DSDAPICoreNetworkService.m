@@ -24,7 +24,7 @@
 #import "DSHTTPJSONRPCClient.h"
 #import "DSPeer.h"
 #import "DSTransactionFactory.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 
 @interface DSDAPICoreNetworkService ()
 

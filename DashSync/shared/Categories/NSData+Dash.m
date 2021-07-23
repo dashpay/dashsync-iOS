@@ -1,5 +1,5 @@
 //
-//  NSData+Bitcoin.m
+//  NSData+Dash.m
 //  DashSync
 //
 //  Created by Aaron Voisine for BreadWallet on 10/09/13.
@@ -27,8 +27,8 @@
 //  THE SOFTWARE.
 
 #import "DSDerivationPath.h"
-#import "NSData+Bitcoin.h"
 #import "NSData+DSHash.h"
+#import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 #import "NSString+Dash.h"
@@ -1050,7 +1050,7 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
     return a;
 }
 
-@implementation NSData (Bitcoin)
+@implementation NSData (Dash)
 
 + (instancetype)dataWithLLMQ:(DSLLMQ)llmq {
     return [NSData dataWithBytes:&llmq length:sizeof(llmq)];

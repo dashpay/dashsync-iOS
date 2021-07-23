@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSObject+DSCborEncoding.h"
 #import "NSPredicate+CBORData.h"
 

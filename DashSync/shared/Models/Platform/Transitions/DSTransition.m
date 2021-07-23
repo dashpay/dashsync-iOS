@@ -13,7 +13,7 @@
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSECDSAKey.h"
 #import "DSTransition+Protected.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSDate+Utils.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"

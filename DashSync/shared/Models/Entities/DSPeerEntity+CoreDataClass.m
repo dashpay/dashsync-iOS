@@ -26,7 +26,7 @@
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSPeer.h"
 #import "DSPeerEntity+CoreDataClass.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import <arpa/inet.h>
 

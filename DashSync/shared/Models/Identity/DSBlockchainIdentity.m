@@ -54,7 +54,7 @@
 #import "DSTransition+Protected.h"
 #import "DSWallet.h"
 #import "NSCoder+Dash.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSData+Encryption.h"
 #import "NSIndexPath+Dash.h"
 #import "NSManagedObject+Sugar.h"

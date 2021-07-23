@@ -35,7 +35,7 @@
 #import "DSTransientDashpayUser.h"
 #import "DSTxOutputEntity+CoreDataClass.h"
 #import "DSWallet.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 
 @implementation DSDashpayUserEntity

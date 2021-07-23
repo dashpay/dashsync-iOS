@@ -23,9 +23,9 @@
 #import "DSMasternodeManager.h"
 #import "DSMerkleTree.h"
 #import "DSQuorumEntry.h"
-#import "NSData+Bitcoin.h"
 #import "NSData+DSCborDecoding.h"
 #import "NSData+DSHash.h"
+#import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import <DAPI-GRPC/Core.pbobjc.h>
 #import <DAPI-GRPC/Core.pbrpc.h>

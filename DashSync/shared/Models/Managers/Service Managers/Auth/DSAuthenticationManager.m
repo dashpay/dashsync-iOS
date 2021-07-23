@@ -39,7 +39,7 @@
 #import "DSVersionManager.h"
 #import "DSWallet.h"
 #import "DashSync.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSDate+Utils.h"
 #import "NSMutableData+Dash.h"
 

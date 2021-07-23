@@ -29,7 +29,7 @@
 #import "DSFundsDerivationPath.h"
 #import "DSInsightManager.h"
 #import "NSArray+Dash.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+MDCDamerauLevenshteinDistance.h"
 

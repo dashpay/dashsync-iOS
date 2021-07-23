@@ -17,7 +17,7 @@
 
 #import "DSPlatformDocumentsRequest.h"
 #import "DPContract.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSObject+DSCborEncoding.h"
 #import "NSPredicate+CBORData.h"

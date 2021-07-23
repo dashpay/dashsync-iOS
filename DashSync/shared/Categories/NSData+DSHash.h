@@ -25,7 +25,7 @@
 
 
 #import "BigIntTypes.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import <Foundation/Foundation.h>
 
 @interface NSData (DSHash)

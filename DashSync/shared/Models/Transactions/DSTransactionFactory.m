@@ -18,8 +18,8 @@
 #import "DSProviderUpdateServiceTransaction.h"
 #import "DSQuorumCommitmentTransaction.h"
 #import "DSTransition.h"
-#import "NSData+Bitcoin.h"
 #import "NSData+DSHash.h"
+#import "NSData+Dash.h"
 
 @implementation DSTransactionFactory
 

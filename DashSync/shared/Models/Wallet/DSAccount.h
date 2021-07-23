@@ -26,7 +26,7 @@
 #import "DSFundsDerivationPath.h"
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSTransaction.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
 

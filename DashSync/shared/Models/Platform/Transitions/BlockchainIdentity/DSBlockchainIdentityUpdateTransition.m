@@ -8,7 +8,7 @@
 #import "DSBlockchainIdentityUpdateTransition.h"
 #import "DSECDSAKey.h"
 #import "DSTransactionFactory.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 

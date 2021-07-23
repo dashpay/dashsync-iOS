@@ -29,7 +29,7 @@
 #import "DSQuorumCommitmentTransaction.h"
 #import "DSWallet+Protected.h"
 #import "DashSync.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSData+DSHash.h"
 #import "NSString+Dash.h"
 

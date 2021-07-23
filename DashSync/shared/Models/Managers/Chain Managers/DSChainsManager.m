@@ -32,7 +32,7 @@
 #import "DSReachabilityManager.h"
 #import "DSWallet.h"
 #import "DashSync.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Dash.h"

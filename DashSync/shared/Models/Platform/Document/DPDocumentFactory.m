@@ -21,7 +21,7 @@
 
 #import "BigIntTypes.h"
 #import "DSKey.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import <TinyCborObjc/NSData+DSCborDecoding.h>
 
 NS_ASSUME_NONNULL_BEGIN

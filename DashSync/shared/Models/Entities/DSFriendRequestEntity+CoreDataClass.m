@@ -17,7 +17,7 @@
 #import "DSFriendRequestEntity+CoreDataClass.h"
 #import "DSPaymentRequest.h"
 #import "DSWallet.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 
 @interface DSFriendRequestEntity ()

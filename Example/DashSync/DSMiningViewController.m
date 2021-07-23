@@ -20,8 +20,8 @@
 #import "DSChain+Protected.h"
 #import "DSChainManager.h"
 #import "DSFullBlock.h"
-#import "NSData+Bitcoin.h"
 #import "NSData+DSHash.h"
+#import "NSData+Dash.h"
 #import "NSString+Dash.h"
 
 @interface DSMiningViewController ()

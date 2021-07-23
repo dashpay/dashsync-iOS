@@ -13,7 +13,7 @@
 #import "DSECDSAKey.h"
 #import "DSKey+BIP38.h"
 #import "DSKey.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSString+Dash.h"
 
 @interface DSKeyTests : XCTestCase

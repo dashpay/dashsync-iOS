@@ -9,7 +9,7 @@
 #import <XCTest/XCTest.h>
 
 #import "DSSparseMerkleTree.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSString+Dash.h"
 
 @interface DSSparseMerkleTreeTests : XCTestCase

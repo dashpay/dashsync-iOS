@@ -7,7 +7,7 @@
 
 #import "BigIntTypes.h"
 #import "NSCoder+Dash.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 
 @implementation NSCoder (Dash)
 
