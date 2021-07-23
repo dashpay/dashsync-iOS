@@ -236,6 +236,8 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 
 - (UInt256)HMACSHA256WithKey:(UInt256)secretKey;
 
++ (NSData *)dataFromHexString:(NSString *)string;
+
 @end
 
 

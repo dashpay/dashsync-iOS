@@ -32,7 +32,7 @@
 #import "DSChainLock.h"
 #import "DSMerkleTree.h"
 #import "NSData+Bitcoin.h"
-#import "NSData+Dash.h"
+#import "NSData+DSHash.h"
 #import "NSDate+Utils.h"
 #import "NSMutableData+Dash.h"
 

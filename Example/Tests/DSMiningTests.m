@@ -24,7 +24,7 @@
 #import "DSFullBlock.h"
 #import "DSWallet.h"
 #import "NSData+Bitcoin.h"
-#import "NSData+Dash.h"
+#import "NSData+DSHash.h"
 #import "NSString+Dash.h"
 
 @interface DSMiningTests : XCTestCase

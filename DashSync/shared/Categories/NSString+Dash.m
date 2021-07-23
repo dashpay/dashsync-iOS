@@ -30,7 +30,7 @@
 #import "DSDerivationPath.h"
 #import "DSECDSAKey.h"
 #import "DSPriceManager.h"
-#import "NSData+Dash.h"
+#import "NSData+DSHash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Dash.h"
 #if TARGET_OS_IOS

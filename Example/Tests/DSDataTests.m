@@ -10,7 +10,7 @@
 
 #import "BigIntTypes.h"
 #import "NSData+Bitcoin.h"
-#import "NSData+Dash.h"
+#import "NSData+DSHash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Dash.h"
 

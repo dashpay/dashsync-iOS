@@ -10,7 +10,7 @@
 #import "DSChain.h"
 #import "DSECDSAKey.h"
 #import "NSData+Bitcoin.h"
-#import "NSData+Dash.h"
+#import "NSData+DSHash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 #import "NSString+Dash.h"

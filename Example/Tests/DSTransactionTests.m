@@ -34,7 +34,7 @@
 #import "DSTransactionManager.h"
 #import "DSTransition+Protected.h"
 #import "DSWallet.h"
-#import "NSData+Dash.h"
+#import "NSData+DSHash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 #include <arpa/inet.h>

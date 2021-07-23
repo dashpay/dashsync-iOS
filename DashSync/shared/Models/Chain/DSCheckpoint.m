@@ -18,7 +18,7 @@
 #import "DSCheckpoint.h"
 #import "DSBlock.h"
 #import "NSCoder+Dash.h"
-#import "NSData+Dash.h"
+#import "NSData+DSHash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Dash.h"
 

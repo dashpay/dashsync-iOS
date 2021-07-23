@@ -11,7 +11,7 @@
 #import "DSChain.h"
 #import "DSGovernanceObject.h"
 #import "NSData+Bitcoin.h"
-#import "NSData+Dash.h"
+#import "NSData+DSHash.h"
 #import "NSString+Bitcoin.h"
 
 @interface DSGovernanceTests : XCTestCase

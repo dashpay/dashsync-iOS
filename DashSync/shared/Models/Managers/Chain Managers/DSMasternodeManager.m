@@ -52,7 +52,7 @@
 #import "DSTransactionFactory.h"
 #import "DSTransactionManager+Protected.h"
 #import "NSArray+Dash.h"
-#import "NSData+Dash.h"
+#import "NSData+DSHash.h"
 #import "NSDictionary+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"

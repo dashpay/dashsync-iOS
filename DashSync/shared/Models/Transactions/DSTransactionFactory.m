@@ -19,7 +19,7 @@
 #import "DSQuorumCommitmentTransaction.h"
 #import "DSTransition.h"
 #import "NSData+Bitcoin.h"
-#import "NSData+Dash.h"
+#import "NSData+DSHash.h"
 
 @implementation DSTransactionFactory
 

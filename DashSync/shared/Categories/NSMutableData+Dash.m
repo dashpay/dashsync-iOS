@@ -27,7 +27,7 @@
 //  THE SOFTWARE.
 
 #import "DSChain.h"
-#import "NSData+Dash.h"
+#import "NSData+DSHash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Dash.h"
 

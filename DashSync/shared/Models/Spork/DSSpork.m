@@ -13,7 +13,7 @@
 #import "DSPeerManager.h"
 #import "DSSporkManager+Protected.h"
 #import "NSData+Bitcoin.h"
-#import "NSData+Dash.h"
+#import "NSData+DSHash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Dash.h"
 

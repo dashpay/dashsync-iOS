@@ -78,7 +78,7 @@
 #import "DSWallet+Protected.h"
 #import "NSCoder+Dash.h"
 #import "NSData+Bitcoin.h"
-#import "NSData+Dash.h"
+#import "NSData+DSHash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"

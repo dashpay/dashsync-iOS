@@ -21,7 +21,7 @@
 #import "DSChainManager.h"
 #import "DSFullBlock.h"
 #import "NSData+Bitcoin.h"
-#import "NSData+Dash.h"
+#import "NSData+DSHash.h"
 #import "NSString+Dash.h"
 
 @interface DSMiningViewController ()

@@ -10,7 +10,7 @@
 
 #import "BigIntTypes.h"
 #import "DSPriceManager.h"
-#import "NSData+Dash.h"
+#import "NSData+DSHash.h"
 #import "NSString+Bitcoin.h"
 
 @interface DSHashTests : XCTestCase
@@ -23,12 +23,6 @@
     UInt256 hash = [[@"aaaa" hexToData] SHA256_2];
     NSString *base64Data = uint256_base64(hash);
     XCTAssertEqual([base64Data length], 44, @"The size of the base64 should be 44");
-}
-
-- (void)testBlake2s {
-    UInt256 md = @"".hexToData.blake2s;
-    XCTAssertEqualObjects(@"69217a3079908094e11121d042354a7c1f55b6482ca1a51e1b250dfd1ed0eef9", uint256_hex(md),
-        @"[NSData blake2s]"); //verified by wikipedia
 }
 
 - (void)testBlake3 {
