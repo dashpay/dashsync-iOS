@@ -21,7 +21,7 @@
 #import "DSChain.h"
 #import "DSChainManager.h"
 #import "DSMasternodeManager.h"
-#import "DSMerkleTree.h"
+#import "DSPlatformRootMerkleTree.h"
 #import "DSQuorumEntry.h"
 #import "NSData+DSCborDecoding.h"
 #import "NSData+DSHash.h"
@@ -248,7 +248,7 @@
     NSDictionary *elementDictionary = nil;
     NSData *rootMerk = [proof.storeTreeProof executeProofReturnElementDictionary:&elementDictionary];
 
-    DSMerkleTree *merkleTree = [DSMerkleTree merkleTreeWithElementToProve:rootMerk.UInt256 proofData:proof.rootTreeProof treeElementCount:6 hashFunction:DSMerkleTreeHashFunction_BLAKE3_2];
+    DSPlatformRootMerkleTree *merkleTree = [DSPlatformRootMerkleTree merkleTreeWithElementToProve:rootMerk.UInt256 proofData:proof.rootTreeProof hashFunction:DSMerkleTreeHashFunction_BLAKE3_2];
 
     UInt256 stateHash = merkleTree.merkleRoot;
     if (uint256_is_zero(stateHash)) {

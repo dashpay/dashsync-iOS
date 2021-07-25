@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Samuel Westrich
 //  Copyright © 2564 Dash Core Group. All rights reserved.
 //
@@ -15,16 +15,13 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
 #import "DSMerkleTree.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSPlatformRootMerkleTree : NSObject <NSCopying>
 
-@property (nonatomic, readonly) uint32_t treeElementCount;
-@property (nonatomic, readonly) NSData *hashes;
-@property (nonatomic, readonly) NSData *flags;
 @property (nonatomic, readonly) UInt256 merkleRoot;
 @property (nonatomic, readonly) DSMerkleTreeHashFunction hashFunction;
 

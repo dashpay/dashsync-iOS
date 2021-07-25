@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Samuel Westrich
 //  Copyright © 2021 Dash Core Group. All rights reserved.
 //
@@ -20,10 +20,12 @@
 #import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 
+#define ROOT_MERKLE_TREE_DEPTH 3
+
 @interface DSPlatformRootMerkleTree ()
 
 @property (nonatomic, assign) UInt256 elementToProve;
-@property (nonatomic, strong) NSData *proofHashes;
+@property (nonatomic, strong) NSArray *proofHashes;
 @property (nonatomic, strong) NSData *flags;
 @property (nonatomic, assign) DSMerkleTreeHashFunction hashFunction;
 
@@ -37,16 +39,19 @@
     NSAssert(leafCount == 1, @"leaf count must be 1");
     off += sizeof(uint32_t);
     NSNumber *l = nil;
-    len = (NSUInteger)[proofData varIntAtOffset:off length:&l] * sizeof(UInt256);
+    len = (NSUInteger)[proofData varIntAtOffset:off length:&l];
     off += l.unsignedIntegerValue;
-    NSData *proofHashes = (off + len > proofData.length) ? nil : [proofData subdataWithRange:NSMakeRange(off, len)];
-    off += len;
+    NSMutableArray *proofHashes = [NSMutableArray array];
+    for (int i = 0; i < len; i++) {
+        [proofHashes addObject:[proofData subdataWithRange:NSMakeRange(off, sizeof(UInt256))]];
+        off += sizeof(UInt256);
+    }
     NSData *flags = [proofData dataAtOffset:off length:&l];
-    if (proofHashes.length == 0) return nil;
+    if (proofHashes.count == 0) return nil;
     return [[DSPlatformRootMerkleTree alloc] initWithElementToProve:element proofHashes:proofHashes flags:flags hashFunction:hashFunction];
 }
 
-- (instancetype)initWithElementToProve:(UInt256)element proofHashes:(NSData *)proofHashes flags:(NSData *)flags hashFunction:(DSMerkleTreeHashFunction)hashFunction {
+- (instancetype)initWithElementToProve:(UInt256)element proofHashes:(NSArray *)proofHashes flags:(NSData *)flags hashFunction:(DSMerkleTreeHashFunction)hashFunction {
     if (!(self = [self init])) return nil;
     self.elementToProve = element;
     self.proofHashes = proofHashes;
@@ -71,54 +76,34 @@
 }
 
 - (UInt256)merkleRoot {
-    int hashIdx = 0, flagIdx = 0;
-    UInt256 merkleRoot = [self walkHashIdx:&hashIdx
-        flagIdx:&flagIdx
-        depth:0
-        leaf:^UInt256(UInt256 hash, BOOL flag) {
-            return hash;
+    int i = 0;
+    UInt256 merkleRoot = self.elementToProve;
+    for (NSData *data in self.proofHashes) {
+        BOOL proofIsRight = (((const uint8_t *)_flags.bytes)[i / 8] & (1 << (i % 8)));
+        UInt256 left, right;
+        if (proofIsRight) {
+            right = data.UInt256;
+            left = merkleRoot;
+        } else {
+            right = merkleRoot;
+            left = data.UInt256;
         }
-        branch:^UInt256(UInt256 left, UInt256 right) {
-            UInt512 concat = uint512_concat(left, right);
-            return [self hashData:uint512_data(concat)];
-        }];
+        UInt512 concat = uint512_concat(uint256_reverse(left), uint256_reverse(right));
+        merkleRoot = uint256_reverse([self hashData:uint512_data(concat)]);
+        i++;
+    }
     return merkleRoot;
 }
 
 - (BOOL)merkleTreeHasRoot:(UInt256)desiredMerkleRoot {
     //DSLog(@"%@ - %@",uint256_hex(merkleRoot),uint256_hex(_merkleRoot));
-    if (self.treeElementCount > 0 && !uint256_eq(self.merkleRoot, desiredMerkleRoot)) return NO; // merkle root check failed
+    if (!uint256_eq(self.merkleRoot, desiredMerkleRoot)) return NO; // merkle root check failed
     return YES;
-}
-
-// recursively walks the merkle tree in depth first order, calling leaf(hash, flag) for each stored hash, and
-// branch(left, right) with the result from each branch
-- (UInt256)walkHashIdx:(int *)hashIdx flagIdx:(int *)flagIdx
-            depth:(int)depth
-             leaf:(UInt256 (^)(UInt256, BOOL))leaf
-           branch:(UInt256 (^)(UInt256, UInt256))branch {
-    if ((*flagIdx) / 8 >= _flags.length || (*hashIdx + 1) * sizeof(UInt256) > _hashes.length) return leaf(UINT256_ZERO, NO);
-
-    BOOL flag = (((const uint8_t *)_flags.bytes)[*flagIdx / 8] & (1 << (*flagIdx % 8)));
-
-    (*flagIdx)++;
-
-    if (!flag || depth == ceil_log2(self.treeElementCount)) {
-        UInt256 hash = [_hashes UInt256AtOffset:(*hashIdx) * sizeof(UInt256)];
-
-        (*hashIdx)++;
-        return leaf(hash, flag);
-    }
-
-    UInt256 left = [self walkHashIdx:hashIdx flagIdx:flagIdx depth:depth + 1 leaf:leaf branch:branch];
-    UInt256 right = [self walkHashIdx:hashIdx flagIdx:flagIdx depth:depth + 1 leaf:leaf branch:branch];
-
-    return branch(left, right);
 }
 
 - (id)copyWithZone:(NSZone *)zone {
     DSPlatformRootMerkleTree *copy = [[[self class] alloc] init];
-    copy.hashes = [self.hashes copyWithZone:zone];
+    copy.proofHashes = [self.proofHashes copyWithZone:zone];
     copy.flags = [self.flags copyWithZone:zone];
     copy.hashFunction = self.hashFunction;
     return copy;

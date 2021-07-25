@@ -9,13 +9,13 @@
 #import <XCTest/XCTest.h>
 
 #import "DSMerkleTree.h"
+#import "DSPlatformRootMerkleTree.h"
 #import "DSSparseMerkleTree.h"
 #import "NSData+DSCborDecoding.h"
 #import "NSData+DSHash.h"
 #import "NSData+DSMerkAVLTree.h"
 #import "NSData+Dash.h"
 #import "NSString+Dash.h"
-#import "DSPlatformRootMerkleTree.h"
 
 @interface DSSparseMerkleTreeTests : XCTestCase
 
@@ -468,7 +468,7 @@
     XCTAssertEqualObjects([secondRow copy], expected2ndRowHashes);
 
     NSData *merkleTreeProofData = @"010000000310e5cf3d3c8a4f9f3468c8cc58eea84892a22fdadbc1acb22410190044c1d553e69fe01075cd8c29edb4bd66d4e67d24109a86b9b60e0a568f3ec56638d9bed3d000dee0c3f75f8ba8755fa7b113f2c5c29afc26519bdef3f6bff249c308dd260107".hexToData;
-    DSPlatformRootMerkleTree *merkleTree = [DSPlatformRootMerkleTree merkleTreeWithElementToProve:firstLeaf.UInt256 proofData:merkleTreeProofData treeElementCount:6 hashFunction:DSMerkleTreeHashFunction_BLAKE3_2];
+    DSPlatformRootMerkleTree *merkleTree = [DSPlatformRootMerkleTree merkleTreeWithElementToProve:firstLeaf.UInt256 proofData:merkleTreeProofData hashFunction:DSMerkleTreeHashFunction_BLAKE3_2];
     UInt256 appHash = [merkleTree merkleRoot];
     XCTAssertEqualObjects(uint256_hex(appHash), @"2eb4325d8b759161f1998b400a0ac377d506118eb97f0f855c54e6e6a2bacf19");
 }
@@ -481,9 +481,9 @@
     XCTAssertEqualObjects(uint256_hex(rootHash), expectedRootHashString);
 
     NSData *merkleTreeProofData = @"0100000003bfef7d172b666943c33fae47b614259412f52435edd99bbf933144411c3aeab4ffc0c0b0c5053f25cf5be50aead3aabb6b75575e54db7401e2db85094a0cd1ace5bc49ba1d2e2c670b7ab5463de2736125c8582b76c6f3896461fd2ce7049d980103".hexToData;
-    DSMerkleTree *merkleTree = [DSMerkleTree merkleTreeWithElementToProve:rootHash proofData:merkleTreeProofData treeElementCount:6 hashFunction:DSMerkleTreeHashFunction_BLAKE3_2];
+    DSPlatformRootMerkleTree *merkleTree = [DSPlatformRootMerkleTree merkleTreeWithElementToProve:rootHash proofData:merkleTreeProofData hashFunction:DSMerkleTreeHashFunction_BLAKE3_2];
     UInt256 appHash = [merkleTree merkleRoot];
-    XCTAssertEqualObjects(uint256_hex(appHash), @"root merkle tree should contain merk avl tree root");
+    XCTAssertEqualObjects(uint256_hex(appHash), @"a33ffcc2bdf85f17baf8b8dfa0261b6f61b5b97ac74846fae60b0ec771f44a7c");
 }
 
 @end
