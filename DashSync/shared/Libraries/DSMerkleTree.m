@@ -75,16 +75,18 @@ inline static int ceil_log2(int x) {
 
 @implementation DSMerkleTree
 
-+ (instancetype)merkleTreeWithData:(NSData *)data treeElementCount:(uint32_t)elementCount hashFunction:(DSMerkleTreeHashFunction)hashFunction {
++ (instancetype)merkleTreeWithElementToProve:(UInt256)element proofData:(NSData *)proofData treeElementCount:(uint32_t)elementCount hashFunction:(DSMerkleTreeHashFunction)hashFunction {
     NSUInteger off = 0, len = 0;
-    uint32_t leafCount = [data UInt32AtOffset:off];
+    uint32_t leafCount = [proofData UInt32AtOffset:off];
     off += sizeof(uint32_t);
     NSNumber *l = nil;
-    len = (NSUInteger)[data varIntAtOffset:off length:&l] * sizeof(UInt256);
+    len = (NSUInteger)[proofData varIntAtOffset:off length:&l] * sizeof(UInt256);
     off += l.unsignedIntegerValue;
-    NSData *hashes = (off + len > data.length) ? nil : [data subdataWithRange:NSMakeRange(off, len)];
+    NSMutableData *hashes = [NSMutableData dataWithUInt256:element];
+    NSData *otherHashes = (off + len > proofData.length) ? nil : [proofData subdataWithRange:NSMakeRange(off, len)];
+    [hashes appendData:otherHashes];
     off += len;
-    NSData *flags = [data dataAtOffset:off length:&l];
+    NSData *flags = [proofData dataAtOffset:off length:&l];
     if (hashes.length == 0) return nil;
     return [[DSMerkleTree alloc] initWithHashes:hashes flags:flags treeElementCount:elementCount hashFunction:hashFunction];
 }
@@ -100,7 +102,7 @@ inline static int ceil_log2(int x) {
 
 // true if the given tx hash is included in the block
 - (BOOL)containsHash:(UInt256)hash {
-    for (NSUInteger i = 0; i < self.hashes.length / sizeof(UInt256); i += sizeof(UInt256)) {
+    for (NSUInteger i = 0; i < self.hashes.length; i += sizeof(UInt256)) {
         DSLogPrivate(@"hash %@", [NSData dataWithUInt256:[self.hashes UInt256AtOffset:i]].hexString);
         DSLogPrivate(@"looking for %@", [NSData dataWithUInt256:hash].hexString);
         if (uint256_eq(hash, [self.hashes UInt256AtOffset:i])) return YES;
@@ -131,8 +133,8 @@ inline static int ceil_log2(int x) {
         case DSMerkleTreeHashFunction_SHA256_2:
             return uint256_obj(data.SHA256_2);
             break;
-        case DSMerkleTreeHashFunction_BLAKE3:
-            return uint160_obj(data.blake3);
+        case DSMerkleTreeHashFunction_BLAKE3_2:
+            return uint256_obj(data.blake3_2);
             break;
 
         default:

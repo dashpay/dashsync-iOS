@@ -40,8 +40,7 @@
 
 @implementation NSData (DSHash)
 
-
-- (UInt256)blake3 {
+- (NSData *)blake3Data {
     // Initialize the hasher.
     blake3_hasher hasher;
     blake3_hasher_init(&hasher);
@@ -53,7 +52,16 @@
     blake3_hasher_finalize(&hasher, output, BLAKE3_OUT_LEN);
     NSData *data = [NSData dataWithBytes:output length:BLAKE3_OUT_LEN];
 
-    return data.UInt256;
+    return data;
+}
+
+
+- (UInt256)blake3 {
+    return self.blake3Data.UInt256;
+}
+
+- (UInt256)blake3_2 {
+    return self.blake3Data.blake3Data.UInt256;
 }
 
 

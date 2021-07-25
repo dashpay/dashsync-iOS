@@ -44,5 +44,6 @@
 - (UInt512)echo512;
 
 - (UInt256)blake3;
+- (UInt256)blake3_2;
 
 @end

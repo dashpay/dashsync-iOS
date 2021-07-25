@@ -1053,47 +1053,47 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
 @implementation NSData (Dash)
 
 + (instancetype)dataWithLLMQ:(DSLLMQ)llmq {
-    return [NSData dataWithBytes:&llmq length:sizeof(llmq)];
+    return [self dataWithBytes:&llmq length:sizeof(llmq)];
 }
 
 + (instancetype)dataWithUInt768:(UInt768)n {
-    return [NSData dataWithBytes:&n length:sizeof(n)];
+    return [self dataWithBytes:&n length:sizeof(n)];
 }
 
 + (instancetype)dataWithUInt512:(UInt512)n {
-    return [NSData dataWithBytes:&n length:sizeof(n)];
+    return [self dataWithBytes:&n length:sizeof(n)];
 }
 
 + (instancetype)dataWithUInt384:(UInt384)n {
-    return [NSData dataWithBytes:&n length:sizeof(n)];
+    return [self dataWithBytes:&n length:sizeof(n)];
 }
 
 + (instancetype)dataWithUInt256:(UInt256)n {
-    return [NSData dataWithBytes:&n length:sizeof(n)];
+    return [self dataWithBytes:&n length:sizeof(n)];
 }
 
 + (instancetype)dataWithUInt256Value:(NSValue *)value {
     UInt256 n;
     [value getValue:&n];
-    return [NSData dataWithBytes:&n length:sizeof(n)];
+    return [self dataWithBytes:&n length:sizeof(n)];
 }
 
 + (instancetype)dataWithUInt160:(UInt160)n {
-    return [NSData dataWithBytes:&n length:sizeof(n)];
+    return [self dataWithBytes:&n length:sizeof(n)];
 }
 
 + (instancetype)dataWithUInt160Value:(NSValue *)value {
     UInt160 n;
     [value getValue:&n];
-    return [NSData dataWithBytes:&n length:sizeof(n)];
+    return [self dataWithBytes:&n length:sizeof(n)];
 }
 
 + (instancetype)dataWithUInt128:(UInt128)n {
-    return [NSData dataWithBytes:&n length:sizeof(n)];
+    return [self dataWithBytes:&n length:sizeof(n)];
 }
 
 + (instancetype)dataWithUInt64:(uint64_t)n {
-    return [NSData dataWithBytes:&n length:sizeof(n)];
+    return [self dataWithBytes:&n length:sizeof(n)];
 }
 
 

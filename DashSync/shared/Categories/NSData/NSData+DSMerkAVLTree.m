@@ -20,19 +20,19 @@
 
 @implementation NSData (DSMerkAVLTree)
 
-- (void)executeProof:(NSData *)proof rRootHash:(NSData **)rRootHash rElementDictionary:(NSDictionary **)rElementDictionary {
-    //    const ExecuteProofResult *result = execute_proof_c(proof.bytes);
-    //    if (result == nil) {
-    //        return;
-    //    }
-    //    NSMutableDictionary *mElementDictionary = [[NSMutableDictionary alloc] initWithCapacity:result->element_count];
-    //    NSData *rootHash = [NSData dataWithBytes:result->hash length:32];
-    //    for (uint8_t i = 0; i < result->element_count; i++) {
-    //        Element *element = result->elements[i];
-    //        [mElementDictionary setObject:[NSData dataWithBytes:element->key length:32] forKey:[NSData dataWithBytes:element->value length:element->value_length]];
-    //    }
-    //    *rRootHash = rootHash;
-    //    *rElementDictionary = [mElementDictionary copy];
+- (NSData *)executeProofReturnElementDictionary:(NSDictionary **)rElementDictionary {
+    const ExecuteProofResult *result = execute_proof_c(self.bytes, self.length);
+    if (result == nil) {
+        return nil;
+    }
+    NSMutableDictionary *mElementDictionary = [[NSMutableDictionary alloc] initWithCapacity:result->element_count];
+    NSData *rootHash = [NSData dataWithBytes:result->hash length:32];
+    for (uint8_t i = 0; i < result->element_count; i++) {
+        Element *element = result->elements[i];
+        [mElementDictionary setObject:[NSData dataWithBytes:element->value length:element->value_length] forKey:[NSData dataWithBytes:element->key length:element->key_length]];
+    }
+    *rElementDictionary = [mElementDictionary copy];
+    return rootHash;
 }
 
 @end

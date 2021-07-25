@@ -29,8 +29,8 @@
 #import "DSQuorumCommitmentTransaction.h"
 #import "DSWallet+Protected.h"
 #import "DashSync.h"
-#import "NSData+Dash.h"
 #import "NSData+DSHash.h"
+#import "NSData+Dash.h"
 #import "NSString+Dash.h"
 
 @interface DSChainTests : XCTestCase

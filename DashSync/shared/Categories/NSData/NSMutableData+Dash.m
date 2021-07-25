@@ -147,6 +147,12 @@ CFAllocatorRef SecureAllocator() {
     return self;
 }
 
+- (NSMutableData *)appendInt64:(int64_t)i {
+    i = CFSwapInt64HostToLittle(i);
+    [self appendBytes:&i length:sizeof(i)];
+    return self;
+}
+
 - (NSMutableData *)appendUInt64:(uint64_t)i {
     i = CFSwapInt64HostToLittle(i);
     [self appendBytes:&i length:sizeof(i)];

@@ -456,7 +456,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     NSParameterAssert(completionQueue);
     GetIdentitiesByPublicKeyHashesRequest *getIdentitiesByPublicKeyHashesRequest = [[GetIdentitiesByPublicKeyHashesRequest alloc] init];
     getIdentitiesByPublicKeyHashesRequest.publicKeyHashesArray = [keyHashesArray mutableCopy];
-    getIdentitiesByPublicKeyHashesRequest.prove = TRUE;
+    getIdentitiesByPublicKeyHashesRequest.prove = FALSE;
     DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
     responseHandler.chain = self.chain;
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
