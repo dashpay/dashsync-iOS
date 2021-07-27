@@ -178,6 +178,41 @@
         if (error) {
             self.decodingError = error;
         }
+    } else if ([message isMemberOfClass:[GetIdentityIdsByPublicKeyHashesResponse class]]) {
+        NSAssert(self.chain, @"The chain must be set");
+        GetIdentityIdsByPublicKeyHashesResponse *identitiesByPublicKeyHashesResponse = (GetIdentityIdsByPublicKeyHashesResponse *)message;
+        NSMutableArray *identityDictionaries = [NSMutableArray array];
+        Proof *proof = identitiesByPublicKeyHashesResponse.proof;
+        ResponseMetadata *metaData = identitiesByPublicKeyHashesResponse.metadata;
+        NSError *error = nil;
+        //        NSDictionary *identitiesDictionary = [self verifyAndExtractFromProof:proof withMetadata:metaData error:&error];
+        //        if (error) {
+        //            self.decodingError = error;
+        //            return;
+        //        }
+
+        for (NSData *data in identitiesByPublicKeyHashesResponse.identityIdsArray) {
+            if (!data.length) continue;
+            NSDictionary *identityDictionary = [data ds_decodeCborError:&error];
+            if (error) {
+                self.decodingError = error;
+                return;
+            }
+            NSData *identityIdData = [identityDictionary objectForKey:@"id"];
+            UInt256 identityId = identityIdData.UInt256;
+            if (uint256_is_zero(identityId)) {
+                self.decodingError = [NSError errorWithDomain:@"DashSync"
+                                                         code:500
+                                                     userInfo:@{NSLocalizedDescriptionKey:
+                                                                  DSLocalizedString(@"Platform returned an incorrect value as an identity ID", nil)}];
+                return;
+            }
+            [identityDictionaries addObject:identityDictionary];
+        }
+        self.responseObject = identityDictionaries;
+        if (error) {
+            self.decodingError = error;
+        }
     }
     DSLog(@"didReceiveProtoMessage");
 }

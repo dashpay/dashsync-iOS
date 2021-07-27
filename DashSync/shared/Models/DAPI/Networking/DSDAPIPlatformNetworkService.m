@@ -448,6 +448,26 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
 
 #pragma mark Layer 2
 
+- (id<DSDAPINetworkServiceRequest>)fetchIdentityIdsByKeyHashes:(NSArray<NSData *> *)keyHashesArray
+                                               completionQueue:(dispatch_queue_t)completionQueue
+                                                       success:(void (^)(NSArray<NSData *> *identityIds))success
+                                                       failure:(void (^)(NSError *error))failure {
+    NSParameterAssert(keyHashesArray);
+    NSParameterAssert(completionQueue);
+    GetIdentityIdsByPublicKeyHashesRequest *getIdentityIdsByPublicKeyHashesRequest = [[GetIdentityIdsByPublicKeyHashesRequest alloc] init];
+    getIdentityIdsByPublicKeyHashesRequest.publicKeyHashesArray = [keyHashesArray mutableCopy];
+    getIdentityIdsByPublicKeyHashesRequest.prove = TRUE;
+    DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
+    responseHandler.chain = self.chain;
+    responseHandler.dispatchQueue = self.grpcDispatchQueue;
+    responseHandler.completionQueue = completionQueue;
+    responseHandler.successHandler = success;
+    responseHandler.errorHandler = failure;
+    GRPCUnaryProtoCall *call = [self.gRPCClient getIdentityIdsByPublicKeyHashesWithMessage:getIdentityIdsByPublicKeyHashesRequest responseHandler:responseHandler callOptions:nil];
+    [call start];
+    return (id<DSDAPINetworkServiceRequest>)call;
+}
+
 - (id<DSDAPINetworkServiceRequest>)fetchIdentitiesByKeyHashes:(NSArray<NSData *> *)keyHashesArray
                                               completionQueue:(dispatch_queue_t)completionQueue
                                                       success:(void (^)(NSArray<NSDictionary *> *identityDictionaries))success
@@ -456,7 +476,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     NSParameterAssert(completionQueue);
     GetIdentitiesByPublicKeyHashesRequest *getIdentitiesByPublicKeyHashesRequest = [[GetIdentitiesByPublicKeyHashesRequest alloc] init];
     getIdentitiesByPublicKeyHashesRequest.publicKeyHashesArray = [keyHashesArray mutableCopy];
-    getIdentitiesByPublicKeyHashesRequest.prove = FALSE;
+    getIdentitiesByPublicKeyHashesRequest.prove = TRUE;
     DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
     responseHandler.chain = self.chain;
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
