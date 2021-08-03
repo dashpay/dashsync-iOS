@@ -90,6 +90,7 @@
         }
         UInt512 concat = uint512_concat(uint256_reverse(left), uint256_reverse(right));
         merkleRoot = uint256_reverse([self hashData:uint512_data(concat)]);
+        NSLog(@"contac hash %@ gives %@", uint512_hex(concat), uint256_hex(merkleRoot));
         i++;
     }
     return merkleRoot;

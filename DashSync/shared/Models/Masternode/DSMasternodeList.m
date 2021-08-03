@@ -589,6 +589,7 @@ inline static int ceil_log2(int x) {
         if (uint256_eq(quorumEntry.quorumHash, quorumHash)) {
             return quorumEntry;
         }
+        NSAssert(!uint256_eq(quorumEntry.quorumHash, uint256_reverse(quorumHash)), @"these should not be inversed");
     }
     return nil;
 }

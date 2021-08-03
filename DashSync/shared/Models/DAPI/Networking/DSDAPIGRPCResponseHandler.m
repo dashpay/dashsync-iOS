@@ -37,25 +37,46 @@
 
 @property (nonatomic, strong) id responseObject;
 @property (nonatomic, strong) NSError *decodingError;
+@property (nonatomic, strong) DSChain *chain;
+@property (nonatomic, assign) BOOL requireProof;
 
 @end
 
 @implementation DSDAPIGRPCResponseHandler
 
+- (instancetype)initWithChain:(DSChain *)chain requireProof:(BOOL)requireProof {
+    self = [super init];
+    if (self) {
+        self.chain = chain;
+        self.requireProof = requireProof;
+    }
+    return self;
+}
+
 - (void)parseIdentityMessage:(GetIdentityResponse *)identityResponse {
-    Proof *proof = identityResponse.proof;
-    ResponseMetadata *metaData = identityResponse.metadata;
+    NSData *identityData = nil;
     NSError *error = nil;
-    NSDictionary *identitiesDictionary = [self verifyAndExtractFromProof:proof withMetadata:metaData error:&error];
-    if (error) {
-        self.decodingError = error;
-        return;
+    if (self.requireProof && !identityResponse.hasProof) {
+        self.decodingError = [NSError errorWithDomain:@"DashSync"
+                                                 code:500
+                                             userInfo:@{NSLocalizedDescriptionKey:
+                                                          DSLocalizedString(@"Platform returned no proof when we requested it", nil)}];
+    } else if (!self.requireProof && !identityResponse.hasProof) {
+        identityData = identityResponse.identity;
+    } else {
+        Proof *proof = identityResponse.proof;
+        ResponseMetadata *metaData = identityResponse.metadata;
+        NSDictionary *identitiesDictionary = [self verifyAndExtractFromProof:proof withMetadata:metaData error:&error];
+        if (error) {
+            self.decodingError = error;
+            return;
+        }
+        if (identitiesDictionary.count == 0) {
+            self.responseObject = nil;
+            return;
+        }
+        identityData = identitiesDictionary.allValues[0];
     }
-    if (identitiesDictionary.count == 0) {
-        self.responseObject = nil;
-        return;
-    }
-    NSData *identityData = identitiesDictionary.allValues[0];
     self.responseObject = [identityData ds_decodeCborError:&error];
     if (error) {
         DSLog(@"Decoding error for parseIdentityMessage cborData %@", identityData);
@@ -64,20 +85,33 @@
 }
 
 - (void)parseDocumentsMessage:(GetDocumentsResponse *)documentsResponse {
-    Proof *proof = documentsResponse.proof;
-    ResponseMetadata *metaData = documentsResponse.metadata;
+    NSArray *documentsArray = nil;
     NSError *error = nil;
-    NSDictionary *documentsDictionary = [self verifyAndExtractFromProof:proof withMetadata:metaData error:&error];
-    if (error) {
-        self.decodingError = error;
-        return;
-    }
-    if (documentsDictionary.count == 0) {
-        self.responseObject = @[];
-        return;
+    if (self.requireProof && !documentsResponse.hasProof) {
+        self.decodingError = [NSError errorWithDomain:@"DashSync"
+                                                 code:500
+                                             userInfo:@{NSLocalizedDescriptionKey:
+                                                          DSLocalizedString(@"Platform returned no proof when we requested it", nil)}];
+    } else if (!self.requireProof && !documentsResponse.hasProof) {
+        documentsArray = documentsResponse.documentsArray;
+    } else {
+        Proof *proof = documentsResponse.proof;
+        ResponseMetadata *metaData = documentsResponse.metadata;
+        NSError *error = nil;
+        NSDictionary *documentsDictionary = [self verifyAndExtractFromProof:proof withMetadata:metaData error:&error];
+        if (error) {
+            self.decodingError = error;
+            return;
+        }
+        if (documentsDictionary.count == 0) {
+            self.responseObject = @[];
+            return;
+        }
+        
+        documentsArray = [documentsDictionary allValues];
     }
     NSMutableArray *mArray = [NSMutableArray array];
-    for (NSData *cborData in [documentsDictionary allValues]) {
+    for (NSData *cborData in documentsArray) {
         id document = [cborData ds_decodeCborError:&error];
         if (document && !error) {
             [mArray addObject:document];
@@ -96,25 +130,68 @@
     }
 }
 
-- (void)didReceiveInitialMetadata:(nullable NSDictionary *)initialMetadata {
-    DSLog(@"didReceiveInitialMetadata");
-}
-
-- (void)didReceiveProtoMessage:(nullable GPBMessage *)message {
-    if ([message isMemberOfClass:[GetIdentityResponse class]]) {
-        [self parseIdentityMessage:(GetIdentityResponse *)message];
-    } else if ([message isMemberOfClass:[GetDocumentsResponse class]]) {
-        [self parseDocumentsMessage:(GetDocumentsResponse *)message];
-    } else if ([message isMemberOfClass:[GetDataContractResponse class]]) {
-        GetDataContractResponse *contractResponse = (GetDataContractResponse *)message;
-        NSError *error = nil;
-        self.responseObject = [[contractResponse dataContract] ds_decodeCborError:&error];
+- (void)parseDataContractMessage:(GetDataContractResponse *)dataContractResponse {
+    NSData *dataContractData = nil;
+    NSError *error = nil;
+    if (self.requireProof && !dataContractResponse.hasProof) {
+        self.decodingError = [NSError errorWithDomain:@"DashSync"
+                                                 code:500
+                                             userInfo:@{NSLocalizedDescriptionKey:
+                                                          DSLocalizedString(@"Platform returned no proof when we requested it", nil)}];
+    } else if (!self.requireProof && !dataContractResponse.hasProof) {
+        dataContractData = dataContractResponse.dataContract;
+    } else {
+        Proof *proof = dataContractResponse.proof;
+        ResponseMetadata *metaData = dataContractResponse.metadata;
+        NSDictionary *dataContractsDictionary = [self verifyAndExtractFromProof:proof withMetadata:metaData error:&error];
         if (error) {
             self.decodingError = error;
+            return;
         }
-    } else if ([message isMemberOfClass:[WaitForStateTransitionResultResponse class]]) {
-        WaitForStateTransitionResultResponse *waitResponse = (WaitForStateTransitionResultResponse *)message;
-        Proof *proof = waitResponse.proof;
+        if (dataContractsDictionary.count == 0) {
+            self.responseObject = nil;
+            return;
+        }
+        dataContractData = dataContractsDictionary.allValues[0];
+    }
+    self.responseObject = [dataContractData ds_decodeCborError:&error];
+    if (error) {
+        DSLog(@"Decoding error for parseDataContractMessage cborData %@", dataContractData);
+        self.decodingError = error;
+    }
+}
+
+- (void)parseWaitForStateTransitionResultMessage:(WaitForStateTransitionResultResponse *)waitResponse {
+    NSArray *documentsArray = nil;
+    NSError *error = nil;
+    if (([waitResponse responsesOneOfCase] & WaitForStateTransitionResultResponse_Responses_OneOfCase_Error) > 0) {
+        [dictionary setObject:[waitResponse error] forKey:@"platformError"];
+    }
+    
+    BOOL hasProof = (([waitResponse responsesOneOfCase] & WaitForStateTransitionResultResponse_Responses_OneOfCase_Proof) > 0);
+    
+    if (self.requireProof && !hasProof) {
+        self.decodingError = [NSError errorWithDomain:@"DashSync"
+                                                 code:500
+                                             userInfo:@{NSLocalizedDescriptionKey:
+                                                          DSLocalizedString(@"Platform returned no proof when we requested it", nil)}];
+    } else if (!self.requireProof && !hasProof) {
+        documentsArray = waitResponse.;
+    } else {
+        Proof *proof = waitForStateTransitionResultResponse.proof;
+        ResponseMetadata *metaData = waitForStateTransitionResultResponse.metadata;
+        NSError *error = nil;
+        NSDictionary *documentsDictionary = [self verifyAndExtractFromProof:proof withMetadata:metaData error:&error];
+        if (error) {
+            self.decodingError = error;
+            return;
+        }
+        if (documentsDictionary.count == 0) {
+            self.responseObject = @[];
+            return;
+        }
+        
+        documentsArray = [documentsDictionary allValues];
         ResponseMetadata *metaData = waitResponse.metadata;
         NSError *error = nil;
         NSDictionary *resultDictionary = [self verifyAndExtractFromProof:proof withMetadata:metaData error:&error];
@@ -134,82 +211,127 @@
         if (error) {
             self.decodingError = error;
         }
+    }
+    NSMutableArray *mArray = [NSMutableArray array];
+    for (NSData *cborData in documentsArray) {
+        id document = [cborData ds_decodeCborError:&error];
+        if (document && !error) {
+            [mArray addObject:document];
+        }
+        if (error) {
+            DSLog(@"Decoding error for parseDocumentsMessage cborData %@", cborData);
+            if (self.request) {
+                DSLog(@"request was %@", self.request.predicate);
+            }
+            break;
+        }
+    }
+    self.responseObject = [mArray copy];
+    if (error) {
+        self.decodingError = error;
+    }
+}
+
+- (void)parseGetIdentitiesByPublicKeyHashesMessage:(GetIdentitiesByPublicKeyHashesResponse *)getIdentitiesResponse {
+    NSAssert(self.chain, @"The chain must be set");
+    NSMutableArray *identityDictionaries = [NSMutableArray array];
+    
+    //Todo Proofs
+//    Proof *proof = getIdentitiesResponse.proof;
+//    ResponseMetadata *metaData = getIdentitiesResponse.metadata;
+//
+//    //        NSDictionary *identitiesDictionary = [self verifyAndExtractFromProof:proof withMetadata:metaData error:&error];
+//    //        if (error) {
+//    //            self.decodingError = error;
+//    //            return;
+//    //        }
+    
+    NSError *error = nil;
+
+    for (NSData *data in getIdentitiesResponse.identitiesArray) {
+        if (!data.length) continue;
+        NSDictionary *identityDictionary = [data ds_decodeCborError:&error];
+        if (error) {
+            self.decodingError = error;
+            return;
+        }
+        NSData *identityIdData = [identityDictionary objectForKey:@"id"];
+        UInt256 identityId = identityIdData.UInt256;
+        if (uint256_is_zero(identityId)) {
+            self.decodingError = [NSError errorWithDomain:@"DashSync"
+                                                     code:500
+                                                 userInfo:@{NSLocalizedDescriptionKey:
+                                                              DSLocalizedString(@"Platform returned an incorrect value as an identity ID", nil)}];
+            return;
+        }
+        [identityDictionaries addObject:identityDictionary];
+    }
+    self.responseObject = identityDictionaries;
+    if (error) {
+        self.decodingError = error;
+    }
+}
+
+- (void)parseGetIdentityIdsByPublicKeyHashesMessage:(GetIdentityIdsByPublicKeyHashesResponse *)getIdentitiesResponse {
+    NSAssert(self.chain, @"The chain must be set");
+//    GetIdentityIdsByPublicKeyHashesResponse *identitiesByPublicKeyHashesResponse = (GetIdentityIdsByPublicKeyHashesResponse *)message;
+    NSMutableArray *identityDictionaries = [NSMutableArray array];
+//    Proof *proof = identitiesByPublicKeyHashesResponse.proof;
+//    ResponseMetadata *metaData = identitiesByPublicKeyHashesResponse.metadata;
+    NSError *error = nil;
+    //        NSDictionary *identitiesDictionary = [self verifyAndExtractFromProof:proof withMetadata:metaData error:&error];
+    //        if (error) {
+    //            self.decodingError = error;
+    //            return;
+    //        }
+
+    for (NSData *data in getIdentitiesResponse.identityIdsArray) {
+        if (!data.length) continue;
+        NSDictionary *identityDictionary = [data ds_decodeCborError:&error];
+        if (error) {
+            self.decodingError = error;
+            return;
+        }
+        NSData *identityIdData = [identityDictionary objectForKey:@"id"];
+        UInt256 identityId = identityIdData.UInt256;
+        if (uint256_is_zero(identityId)) {
+            self.decodingError = [NSError errorWithDomain:@"DashSync"
+                                                     code:500
+                                                 userInfo:@{NSLocalizedDescriptionKey:
+                                                              DSLocalizedString(@"Platform returned an incorrect value as an identity ID", nil)}];
+            return;
+        }
+        [identityDictionaries addObject:identityDictionary];
+    }
+    self.responseObject = identityDictionaries;
+    if (error) {
+        self.decodingError = error;
+    }
+}
+
+- (void)didReceiveInitialMetadata:(nullable NSDictionary *)initialMetadata {
+    DSLog(@"didReceiveInitialMetadata");
+}
+
+- (void)didReceiveProtoMessage:(nullable GPBMessage *)message {
+    if ([message isMemberOfClass:[GetIdentityResponse class]]) {
+        [self parseIdentityMessage:(GetIdentityResponse *)message];
+    } else if ([message isMemberOfClass:[GetDocumentsResponse class]]) {
+        [self parseDocumentsMessage:(GetDocumentsResponse *)message];
+    } else if ([message isMemberOfClass:[GetDataContractResponse class]]) {
+        [self parseDataContractMessage:(GetDataContractResponse*)message];
+    } else if ([message isMemberOfClass:[WaitForStateTransitionResultResponse class]]) {
+        [self parseWaitForStateTransitionResultMessage:(WaitForStateTransitionResultResponse*)message];
+    } else if ([message isMemberOfClass:[GetIdentitiesByPublicKeyHashesResponse class]]) {
+        [self parseGetIdentitiesByPublicKeyHashesMessage:(GetIdentitiesByPublicKeyHashesResponse*)message];
+    } else if ([message isMemberOfClass:[GetIdentityIdsByPublicKeyHashesResponse class]]) {
+        [self parseGetIdentityIdsByPublicKeyHashesMessage:(GetIdentityIdsByPublicKeyHashesResponse*)message];
     } else if ([message isMemberOfClass:[GetTransactionResponse class]]) {
         GetTransactionResponse *transactionResponse = (GetTransactionResponse *)message;
         NSError *error = nil;
         NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
         [dictionary setObject:[transactionResponse transaction] forKey:@"transactionData"];
         self.responseObject = dictionary;
-        if (error) {
-            self.decodingError = error;
-        }
-    } else if ([message isMemberOfClass:[GetIdentitiesByPublicKeyHashesResponse class]]) {
-        NSAssert(self.chain, @"The chain must be set");
-        GetIdentitiesByPublicKeyHashesResponse *identitiesByPublicKeyHashesResponse = (GetIdentitiesByPublicKeyHashesResponse *)message;
-        NSMutableArray *identityDictionaries = [NSMutableArray array];
-        Proof *proof = identitiesByPublicKeyHashesResponse.proof;
-        ResponseMetadata *metaData = identitiesByPublicKeyHashesResponse.metadata;
-        NSError *error = nil;
-        //        NSDictionary *identitiesDictionary = [self verifyAndExtractFromProof:proof withMetadata:metaData error:&error];
-        //        if (error) {
-        //            self.decodingError = error;
-        //            return;
-        //        }
-
-        for (NSData *data in identitiesByPublicKeyHashesResponse.identitiesArray) {
-            if (!data.length) continue;
-            NSDictionary *identityDictionary = [data ds_decodeCborError:&error];
-            if (error) {
-                self.decodingError = error;
-                return;
-            }
-            NSData *identityIdData = [identityDictionary objectForKey:@"id"];
-            UInt256 identityId = identityIdData.UInt256;
-            if (uint256_is_zero(identityId)) {
-                self.decodingError = [NSError errorWithDomain:@"DashSync"
-                                                         code:500
-                                                     userInfo:@{NSLocalizedDescriptionKey:
-                                                                  DSLocalizedString(@"Platform returned an incorrect value as an identity ID", nil)}];
-                return;
-            }
-            [identityDictionaries addObject:identityDictionary];
-        }
-        self.responseObject = identityDictionaries;
-        if (error) {
-            self.decodingError = error;
-        }
-    } else if ([message isMemberOfClass:[GetIdentityIdsByPublicKeyHashesResponse class]]) {
-        NSAssert(self.chain, @"The chain must be set");
-        GetIdentityIdsByPublicKeyHashesResponse *identitiesByPublicKeyHashesResponse = (GetIdentityIdsByPublicKeyHashesResponse *)message;
-        NSMutableArray *identityDictionaries = [NSMutableArray array];
-        Proof *proof = identitiesByPublicKeyHashesResponse.proof;
-        ResponseMetadata *metaData = identitiesByPublicKeyHashesResponse.metadata;
-        NSError *error = nil;
-        //        NSDictionary *identitiesDictionary = [self verifyAndExtractFromProof:proof withMetadata:metaData error:&error];
-        //        if (error) {
-        //            self.decodingError = error;
-        //            return;
-        //        }
-
-        for (NSData *data in identitiesByPublicKeyHashesResponse.identityIdsArray) {
-            if (!data.length) continue;
-            NSDictionary *identityDictionary = [data ds_decodeCborError:&error];
-            if (error) {
-                self.decodingError = error;
-                return;
-            }
-            NSData *identityIdData = [identityDictionary objectForKey:@"id"];
-            UInt256 identityId = identityIdData.UInt256;
-            if (uint256_is_zero(identityId)) {
-                self.decodingError = [NSError errorWithDomain:@"DashSync"
-                                                         code:500
-                                                     userInfo:@{NSLocalizedDescriptionKey:
-                                                                  DSLocalizedString(@"Platform returned an incorrect value as an identity ID", nil)}];
-                return;
-            }
-            [identityDictionaries addObject:identityDictionary];
-        }
-        self.responseObject = identityDictionaries;
         if (error) {
             self.decodingError = error;
         }
@@ -256,7 +378,7 @@
                                  userInfo:@{NSLocalizedDescriptionKey:
                                               DSLocalizedString(@"Platform returned no quorum hash data", nil)}];
     }
-    UInt256 quorumHash = quorumHashData.UInt256;
+    UInt256 quorumHash = quorumHashData.reverse.UInt256;
     if (uint256_is_zero(quorumHash)) {
         *error = [NSError errorWithDomain:@"DashSync"
                                      code:500
@@ -283,7 +405,7 @@
     NSDictionary *elementDictionary = nil;
     NSData *rootMerk = [proof.storeTreeProof executeProofReturnElementDictionary:&elementDictionary];
 
-    DSPlatformRootMerkleTree *merkleTree = [DSPlatformRootMerkleTree merkleTreeWithElementToProve:rootMerk.UInt256 proofData:proof.rootTreeProof hashFunction:DSMerkleTreeHashFunction_BLAKE3_2];
+    DSPlatformRootMerkleTree *merkleTree = [DSPlatformRootMerkleTree merkleTreeWithElementToProve:rootMerk.reverse.UInt256 proofData:proof.rootTreeProof hashFunction:DSMerkleTreeHashFunction_BLAKE3_2];
 
     UInt256 stateHash = merkleTree.merkleRoot;
     if (uint256_is_zero(stateHash)) {

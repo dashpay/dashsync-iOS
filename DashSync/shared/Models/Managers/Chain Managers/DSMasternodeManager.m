@@ -1499,17 +1499,24 @@
 }
 
 - (DSQuorumEntry *)quorumEntryForPlatformHavingQuorumHash:(UInt256)quorumHash forBlockHeight:(uint32_t)blockHeight {
-    DSMerkleBlock *merkleBlock = [self.chain blockAtHeight:blockHeight];
-    return [self quorumEntryForPlatformHavingQuorumHash:quorumHash forMerkleBlock:merkleBlock];
+    DSBlock *block = [self.chain blockAtHeight:blockHeight];
+    if (block == nil) {
+        if (blockHeight > self.chain.lastTerminalBlockHeight) {
+            block = self.chain.lastTerminalBlock;
+        } else {
+            return nil;
+        }
+    }
+    return [self quorumEntryForPlatformHavingQuorumHash:quorumHash forBlock:block];
 }
 
-- (DSQuorumEntry *)quorumEntryForPlatformHavingQuorumHash:(UInt256)quorumHash forMerkleBlock:(DSMerkleBlock *)merkleBlock {
-    DSMasternodeList *masternodeList = [self masternodeListBeforeBlockHash:merkleBlock.blockHash];
+- (DSQuorumEntry *)quorumEntryForPlatformHavingQuorumHash:(UInt256)quorumHash forBlock:(DSBlock *)block {
+    DSMasternodeList *masternodeList = [self masternodeListBeforeBlockHash:block.blockHash];
     if (!masternodeList) {
         DSLog(@"No masternode list found yet");
         return nil;
     }
-    if (merkleBlock.height - masternodeList.height > 24) {
+    if (block.height - masternodeList.height > 24) {
         DSLog(@"Masternode list is too old");
         return nil;
     }

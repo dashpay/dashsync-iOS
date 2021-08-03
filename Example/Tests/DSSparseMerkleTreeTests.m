@@ -486,4 +486,34 @@
     XCTAssertEqualObjects(uint256_hex(appHash), @"a33ffcc2bdf85f17baf8b8dfa0261b6f61b5b97ac74846fae60b0ec771f44a7c");
 }
 
+- (void)testProofSystem2 {
+    NSData *proofData = @"032001010101010101010101010101010101010101010101010101010101010101010089a5626964582001010101010101010101010101010101010101010101010101010101010101016762616c616e636500687265766973696f6e006a7075626c69634b65797381a3626964006464617461582103c96f68a1b66e9cbff209ae9aa12ed0906254888aaeaba59c4fdb07f047174b766474797065006f70726f746f636f6c56657273696f6e00".hexToData;
+    NSDictionary *elementDictionary = nil;
+    UInt256 rootHash = [proofData executeProofReturnElementDictionary:&elementDictionary].UInt256;
+    NSString *expectedRootHashString = @"82691e23d293166361342239d3179c8464474cd787c0ca414cffff4148d7d4f0";
+    XCTAssertEqualObjects(uint256_hex(rootHash), expectedRootHashString);
+
+    NSData *merkleTreeProofData = @"01000000030000000000000000000000000000000000000000000000000000000000000000234f5a545b901b0f5e439d015a221694a4e6611e2e7c1cd211f5b7e999f7777c1043acd3542bff73d48696ea4ecd0ecbab41ccd169bcfe89bc8b9ba64c08b9bc0106".hexToData;
+    DSPlatformRootMerkleTree *merkleTree = [DSPlatformRootMerkleTree merkleTreeWithElementToProve:rootHash proofData:merkleTreeProofData hashFunction:DSMerkleTreeHashFunction_BLAKE3_2];
+    UInt256 appHash = [merkleTree merkleRoot];
+    XCTAssertEqualObjects(uint256_hex(appHash), @"5b55d82e12c5ebb3eca8ccea2f73120f92451574740ebc582bfa1c993fbaa4b9");
+}
+
+
+- (void)testNonInclusionProof {
+    NSData *proofData = @"01c34fe708edc9b5b3a0e459431fda06c9e0f3fe232943b567e14644bdb18077da0320be5ea52cdb9f09014e0ce111170c790cc75c20acb9eb3301f4b7e477a3cd9db1008ba56269645820be5ea52cdb9f09014e0ce111170c790cc75c20acb9eb3301f4b7e477a3cd9db16762616c616e63651901ab687265766973696f6e006a7075626c69634b65797381a362696400646461746158210366e10390ac98132dd75aadf0c8d026b4c8a9c22df39d8669a5e8d39baa67595a6474797065006f70726f746f636f6c56657273696f6e00100320e93f06e95cacfdd6f61de59d61ed596aec9eec1deedfa64200c1f9d441bc8d49008ba56269645820e93f06e95cacfdd6f61de59d61ed596aec9eec1deedfa64200c1f9d441bc8d496762616c616e636519089f687265766973696f6e006a7075626c69634b65797381a36269640064646174615821030721d4368d65e0bf9684f3166b89cb7d05ee5bfde55b48bcd9d745fab29b52006474797065006f70726f746f636f6c56657273696f6e0011".hexToData;
+    NSDictionary *elementDictionary = nil;
+    UInt256 rootHash = [proofData executeProofReturnElementDictionary:&elementDictionary].UInt256;
+    NSString *expectedRootHashString = @"8167e6c7b2f7f6b5b0c764b076b719e1219fe3a76690aff2a45622e09f28c42c";
+    XCTAssertEqualObjects(uint256_hex(rootHash), expectedRootHashString);
+}
+
+- (void)testOProof {
+    //    NSData *proofData = @"016182ec1165c5aede542626be9bf366834d794152f1bb2b5a7c14c4976c27bd7302550dc4e5bb1f43d622bdbd64dcc537f54c62b458acf72d4767763de230aa142010018f0e39a4da211f14b55d7062ddd03ecc12b4fb516bf4604dd9a5dcc1a78c97e711".hexToData;
+    //    NSDictionary *elementDictionary = nil;
+    //    UInt256 rootHash = [proofData executeProofReturnElementDictionary:&elementDictionary].UInt256;
+    //    NSString *expectedRootHashString = @"784f1ad1fc6065d00bf3d4d2e60af5298716a0b973ee9a5e107585e60b921612";
+    //    XCTAssertEqualObjects(uint256_hex(rootHash), expectedRootHashString);
+}
+
 @end
