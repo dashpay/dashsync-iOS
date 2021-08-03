@@ -107,7 +107,7 @@
             self.responseObject = @[];
             return;
         }
-        
+
         documentsArray = [documentsDictionary allValues];
     }
     NSMutableArray *mArray = [NSMutableArray array];
@@ -163,23 +163,30 @@
 
 - (void)parseWaitForStateTransitionResultMessage:(WaitForStateTransitionResultResponse *)waitResponse {
     NSArray *documentsArray = nil;
-    NSError *error = nil;
+    StateTransitionBroadcastError *broadcastError = nil;
     if (([waitResponse responsesOneOfCase] & WaitForStateTransitionResultResponse_Responses_OneOfCase_Error) > 0) {
-        [dictionary setObject:[waitResponse error] forKey:@"platformError"];
+        broadcastError = [waitResponse error];
     }
-    
+
     BOOL hasProof = (([waitResponse responsesOneOfCase] & WaitForStateTransitionResultResponse_Responses_OneOfCase_Proof) > 0);
-    
+
     if (self.requireProof && !hasProof) {
         self.decodingError = [NSError errorWithDomain:@"DashSync"
                                                  code:500
                                              userInfo:@{NSLocalizedDescriptionKey:
                                                           DSLocalizedString(@"Platform returned no proof when we requested it", nil)}];
     } else if (!self.requireProof && !hasProof) {
-        documentsArray = waitResponse.;
+        // In this case just assume things went well if there's no error
+        if (broadcastError) {
+            self.decodingError = [NSError errorWithDomain:@"DashPlatform"
+                                                     code:broadcastError.code
+                                                 userInfo:@{NSLocalizedDescriptionKey: broadcastError.message}];
+        } else {
+            self.responseObject = @[]; //Todo
+        }
     } else {
-        Proof *proof = waitForStateTransitionResultResponse.proof;
-        ResponseMetadata *metaData = waitForStateTransitionResultResponse.metadata;
+        Proof *proof = waitResponse.proof;
+        ResponseMetadata *metaData = waitResponse.metadata;
         NSError *error = nil;
         NSDictionary *documentsDictionary = [self verifyAndExtractFromProof:proof withMetadata:metaData error:&error];
         if (error) {
@@ -190,62 +197,44 @@
             self.responseObject = @[];
             return;
         }
-        
+
         documentsArray = [documentsDictionary allValues];
-        ResponseMetadata *metaData = waitResponse.metadata;
-        NSError *error = nil;
-        NSDictionary *resultDictionary = [self verifyAndExtractFromProof:proof withMetadata:metaData error:&error];
-        if (error) {
-            self.decodingError = error;
-            return;
-        }
-        NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-        if (([waitResponse responsesOneOfCase] & WaitForStateTransitionResultResponse_Responses_OneOfCase_Proof) > 0) {
-            [dictionary setObject:[[waitResponse proof] rootTreeProof] forKey:@"rootTreeProof"];
-            [dictionary setObject:[[waitResponse proof] storeTreeProof] forKey:@"storeTreeProof"];
-        }
-        if (([waitResponse responsesOneOfCase] & WaitForStateTransitionResultResponse_Responses_OneOfCase_Error) > 0) {
-            [dictionary setObject:[waitResponse error] forKey:@"platformError"];
-        }
-        self.responseObject = dictionary;
-        if (error) {
-            self.decodingError = error;
-        }
-    }
-    NSMutableArray *mArray = [NSMutableArray array];
-    for (NSData *cborData in documentsArray) {
-        id document = [cborData ds_decodeCborError:&error];
-        if (document && !error) {
-            [mArray addObject:document];
-        }
-        if (error) {
-            DSLog(@"Decoding error for parseDocumentsMessage cborData %@", cborData);
-            if (self.request) {
-                DSLog(@"request was %@", self.request.predicate);
+
+        NSMutableArray *mArray = [NSMutableArray array];
+        for (NSData *cborData in documentsArray) {
+            id document = [cborData ds_decodeCborError:&error];
+            if (document && !error) {
+                [mArray addObject:document];
             }
-            break;
+            if (error) {
+                DSLog(@"Decoding error for parseDocumentsMessage cborData %@", cborData);
+                if (self.request) {
+                    DSLog(@"request was %@", self.request.predicate);
+                }
+                break;
+            }
         }
-    }
-    self.responseObject = [mArray copy];
-    if (error) {
-        self.decodingError = error;
+        self.responseObject = [mArray copy];
+        if (error) {
+            self.decodingError = error;
+        }
     }
 }
 
 - (void)parseGetIdentitiesByPublicKeyHashesMessage:(GetIdentitiesByPublicKeyHashesResponse *)getIdentitiesResponse {
     NSAssert(self.chain, @"The chain must be set");
     NSMutableArray *identityDictionaries = [NSMutableArray array];
-    
+
     //Todo Proofs
-//    Proof *proof = getIdentitiesResponse.proof;
-//    ResponseMetadata *metaData = getIdentitiesResponse.metadata;
-//
-//    //        NSDictionary *identitiesDictionary = [self verifyAndExtractFromProof:proof withMetadata:metaData error:&error];
-//    //        if (error) {
-//    //            self.decodingError = error;
-//    //            return;
-//    //        }
-    
+    //    Proof *proof = getIdentitiesResponse.proof;
+    //    ResponseMetadata *metaData = getIdentitiesResponse.metadata;
+    //
+    //    //        NSDictionary *identitiesDictionary = [self verifyAndExtractFromProof:proof withMetadata:metaData error:&error];
+    //    //        if (error) {
+    //    //            self.decodingError = error;
+    //    //            return;
+    //    //        }
+
     NSError *error = nil;
 
     for (NSData *data in getIdentitiesResponse.identitiesArray) {
@@ -274,10 +263,10 @@
 
 - (void)parseGetIdentityIdsByPublicKeyHashesMessage:(GetIdentityIdsByPublicKeyHashesResponse *)getIdentitiesResponse {
     NSAssert(self.chain, @"The chain must be set");
-//    GetIdentityIdsByPublicKeyHashesResponse *identitiesByPublicKeyHashesResponse = (GetIdentityIdsByPublicKeyHashesResponse *)message;
+    //    GetIdentityIdsByPublicKeyHashesResponse *identitiesByPublicKeyHashesResponse = (GetIdentityIdsByPublicKeyHashesResponse *)message;
     NSMutableArray *identityDictionaries = [NSMutableArray array];
-//    Proof *proof = identitiesByPublicKeyHashesResponse.proof;
-//    ResponseMetadata *metaData = identitiesByPublicKeyHashesResponse.metadata;
+    //    Proof *proof = identitiesByPublicKeyHashesResponse.proof;
+    //    ResponseMetadata *metaData = identitiesByPublicKeyHashesResponse.metadata;
     NSError *error = nil;
     //        NSDictionary *identitiesDictionary = [self verifyAndExtractFromProof:proof withMetadata:metaData error:&error];
     //        if (error) {
@@ -319,13 +308,13 @@
     } else if ([message isMemberOfClass:[GetDocumentsResponse class]]) {
         [self parseDocumentsMessage:(GetDocumentsResponse *)message];
     } else if ([message isMemberOfClass:[GetDataContractResponse class]]) {
-        [self parseDataContractMessage:(GetDataContractResponse*)message];
+        [self parseDataContractMessage:(GetDataContractResponse *)message];
     } else if ([message isMemberOfClass:[WaitForStateTransitionResultResponse class]]) {
-        [self parseWaitForStateTransitionResultMessage:(WaitForStateTransitionResultResponse*)message];
+        [self parseWaitForStateTransitionResultMessage:(WaitForStateTransitionResultResponse *)message];
     } else if ([message isMemberOfClass:[GetIdentitiesByPublicKeyHashesResponse class]]) {
-        [self parseGetIdentitiesByPublicKeyHashesMessage:(GetIdentitiesByPublicKeyHashesResponse*)message];
+        [self parseGetIdentitiesByPublicKeyHashesMessage:(GetIdentitiesByPublicKeyHashesResponse *)message];
     } else if ([message isMemberOfClass:[GetIdentityIdsByPublicKeyHashesResponse class]]) {
-        [self parseGetIdentityIdsByPublicKeyHashesMessage:(GetIdentityIdsByPublicKeyHashesResponse*)message];
+        [self parseGetIdentityIdsByPublicKeyHashesMessage:(GetIdentityIdsByPublicKeyHashesResponse *)message];
     } else if ([message isMemberOfClass:[GetTransactionResponse class]]) {
         GetTransactionResponse *transactionResponse = (GetTransactionResponse *)message;
         NSError *error = nil;
