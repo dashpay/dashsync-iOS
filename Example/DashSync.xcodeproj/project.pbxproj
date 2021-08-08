@@ -34,6 +34,7 @@
 		2A7DCCB220DA10870097049F /* DSBloomFilterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7DCCB120DA10870097049F /* DSBloomFilterTests.m */; };
 		2A7DCCB420DA198F0097049F /* DSPaymentProtocolTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7DCCB320DA198F0097049F /* DSPaymentProtocolTests.m */; };
 		2A90EDAA2268C15D00D95B6B /* DSUInt256IndexPathTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A90EDA92268C15D00D95B6B /* DSUInt256IndexPathTests.m */; };
+		2A96327126C08E6400D055CC /* DSSecEnclaveCryptoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A96327026C08E6400D055CC /* DSSecEnclaveCryptoTests.m */; };
 		2A9FFEC622328D0E00956D5F /* DSContactsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFEC522328D0E00956D5F /* DSContactsViewController.m */; };
 		2A9FFEC92232920900956D5F /* DSContactsTabBarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFEC82232920900956D5F /* DSContactsTabBarViewController.m */; };
 		2A9FFF012233B90000956D5F /* DSContactsNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF002233B90000956D5F /* DSContactsNavigationController.m */; };
@@ -557,6 +558,7 @@
 		2A7DCCB120DA10870097049F /* DSBloomFilterTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBloomFilterTests.m; sourceTree = "<group>"; };
 		2A7DCCB320DA198F0097049F /* DSPaymentProtocolTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSPaymentProtocolTests.m; sourceTree = "<group>"; };
 		2A90EDA92268C15D00D95B6B /* DSUInt256IndexPathTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSUInt256IndexPathTests.m; sourceTree = "<group>"; };
+		2A96327026C08E6400D055CC /* DSSecEnclaveCryptoTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSecEnclaveCryptoTests.m; sourceTree = "<group>"; };
 		2A9FFEC422328D0E00956D5F /* DSContactsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactsViewController.h; sourceTree = "<group>"; };
 		2A9FFEC522328D0E00956D5F /* DSContactsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactsViewController.m; sourceTree = "<group>"; };
 		2A9FFEC72232920900956D5F /* DSContactsTabBarViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactsTabBarViewController.h; sourceTree = "<group>"; };
@@ -2249,6 +2251,7 @@
 				FBAF79782385CA0200F4944E /* DSSparseMerkleTreeTests.m */,
 				FBE07DD22467440200A1079C /* DSChainedSigningTests.m */,
 				2A90EDA92268C15D00D95B6B /* DSUInt256IndexPathTests.m */,
+				2A96327026C08E6400D055CC /* DSSecEnclaveCryptoTests.m */,
 			);
 			name = LibraryTests;
 			sourceTree = "<group>";
@@ -3050,6 +3053,7 @@
 				FB1B98D123D6A3BD00D50F69 /* DSTransitionTests.m in Sources */,
 				FB29C31425A3595D001F4F43 /* DSInstantSendLockTests.m in Sources */,
 				FB3ADDE6238E62CD00C31D23 /* DSChainLockTests.m in Sources */,
+				2A96327126C08E6400D055CC /* DSSecEnclaveCryptoTests.m in Sources */,
 				FBE4603C256B1AEF0052A6DE /* DSDIP14Tests.m in Sources */,
 				FB87A0CE24B7C28700C22DF7 /* DSMiningTests.m in Sources */,
 				FBDB9B7E20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m in Sources */,
