@@ -39,6 +39,8 @@
     NSData *encrypted = [crypto encrypt:plainData withPublicKeyName:name error:&error];
     XCTAssert(error == nil, @"Encryption failed");
     XCTAssertNotNil(encrypted);
+    BOOL hasKey = [crypto hasPrivateKeyName:name error:&error];
+    XCTAssert(hasKey == YES, @"A key should be created");
 
     NSData *decrypted = [crypto decrypt:encrypted withPrivateKeyName:name error:&error];
     XCTAssert(error == nil, @"Decryption failed");
@@ -48,7 +50,7 @@
     XCTAssert([str1 isEqualToString:str2], @"Decryption failed");
 
     [crypto deletePrivateKeyWithName:name];
-    BOOL hasKey = [crypto hasPrivateKeyName:name error:&error];
+    hasKey = [crypto hasPrivateKeyName:name error:&error];
     XCTAssert(hasKey == NO, @"Failed to delete");
     XCTAssert(error == nil, @"Key check error");
 }

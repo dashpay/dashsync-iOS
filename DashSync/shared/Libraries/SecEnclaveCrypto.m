@@ -52,7 +52,9 @@ NS_ASSUME_NONNULL_BEGIN
         *error = checkError;
         return NO;
     }
-    return privateKey != nil;
+    BOOL hasKey = privateKey != nil;
+    CFRelease(privateKey);
+    return hasKey;
 }
 
 - (nullable NSData *)encrypt:(NSData *)plainTextData
