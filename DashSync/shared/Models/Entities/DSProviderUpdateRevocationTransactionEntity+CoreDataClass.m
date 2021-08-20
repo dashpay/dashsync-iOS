@@ -9,7 +9,7 @@
 #import "DSProviderUpdateRevocationTransaction.h"
 #import "DSProviderUpdateRevocationTransactionEntity+CoreDataClass.h"
 #import "DSTransactionFactory.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 
 @implementation DSProviderUpdateRevocationTransactionEntity
 

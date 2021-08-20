@@ -8,7 +8,7 @@
 #import "DSCoinbaseTransaction.h"
 #import "DSCoinbaseTransactionEntity+CoreDataClass.h"
 #import "DSTransactionFactory.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 
 @implementation DSCoinbaseTransaction

@@ -55,7 +55,7 @@
 #import "DSSpecialTransactionsWalletHolder.h"
 #import "DSTransactionEntity+CoreDataProperties.h"
 #import "DSWallet+Protected.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSDate+Utils.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"

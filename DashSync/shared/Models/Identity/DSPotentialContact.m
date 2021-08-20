@@ -22,7 +22,7 @@
 #import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
 #import "DSDashpayUserEntity+CoreDataClass.h"
 #import "DSKey.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 
 @interface DSPotentialContact ()
 

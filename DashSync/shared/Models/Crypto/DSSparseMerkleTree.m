@@ -27,7 +27,7 @@
 #import "DSSparseMerkleTree.h"
 #import "BigIntTypes.h"
 #import "NSArray+Dash.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 
 @implementation DSSparseMerkleTree
 

@@ -40,7 +40,7 @@
 #import "DSTransactionFactory.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSWallet.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+DSHash.h"
 #import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"

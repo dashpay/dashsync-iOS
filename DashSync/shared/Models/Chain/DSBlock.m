@@ -19,7 +19,7 @@
 #import "DSChain.h"
 #import "DSChainLock.h"
 #import "DSCheckpoint.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+DSHash.h"
 #import "NSData+Dash.h"
 #import "NSDate+Utils.h"
 #import "NSMutableData+Dash.h"

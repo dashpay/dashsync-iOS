@@ -41,13 +41,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef union _UInt256 UInt256;
 
-@class DSChain, DSChainLock, DSCheckpoint;
+@class DSChain, DSChainLock, DSCheckpoint, DSMerkleTree;
 
 @interface DSMerkleBlock : DSBlock
 
-
-@property (nonatomic, readonly) NSData *hashes;
-@property (nonatomic, readonly) NSData *flags;
+@property (nonatomic, readonly) DSMerkleTree *merkleTree;
 
 // message can be either a merkleblock or header message
 + (instancetype)merkleBlockWithMessage:(NSData *)message onChain:(DSChain *)chain;

@@ -20,7 +20,7 @@
 #import "DSChain.h"
 #import "DSChainLock.h"
 #import "DSTransactionFactory.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+DSHash.h"
 #import "NSData+Dash.h"
 #import "NSDate+Utils.h"
 #import "NSMutableData+Dash.h"

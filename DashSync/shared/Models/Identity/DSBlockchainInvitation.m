@@ -27,7 +27,7 @@
 #import "DSIdentitiesManager+Protected.h"
 #import "DSInstantSendTransactionLock.h"
 #import "DSWallet.h"
-#import "NSData+Dash.h"
+#import "NSData+DSHash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSManagedObjectContext+DSSugar.h"
 #import "NSString+Dash.h"

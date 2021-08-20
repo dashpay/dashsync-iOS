@@ -9,7 +9,7 @@
 #import <XCTest/XCTest.h>
 
 #import "BigIntTypes.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+DSHash.h"
 #import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Dash.h"

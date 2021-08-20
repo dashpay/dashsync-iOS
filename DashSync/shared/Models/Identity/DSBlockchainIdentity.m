@@ -48,12 +48,13 @@
 #import "DSPriceManager.h"
 #import "DSSpecialTransactionsWalletHolder.h"
 #import "DSTransaction+Protected.h"
+#import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSTransactionManager+Protected.h"
 #import "DSTransientDashpayUser.h"
 #import "DSTransition+Protected.h"
 #import "DSWallet.h"
 #import "NSCoder+Dash.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSData+Encryption.h"
 #import "NSIndexPath+Dash.h"
 #import "NSManagedObject+Sugar.h"
@@ -114,6 +115,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 @property (nonatomic, readonly) DSIdentitiesManager *identitiesManager;
 
 @property (nonatomic, readonly) NSManagedObjectContext *platformContext;
+
+@property (nonatomic, strong) DSCreditFundingTransaction *registrationCreditFundingTransaction;
 
 @property (nonatomic, strong) dispatch_queue_t identityQueue;
 
@@ -189,17 +192,18 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     }
     if (self.isLocal || self.isOutgoingInvitation) {
         if (blockchainIdentityEntity.registrationFundingTransaction) {
-            self.registrationCreditFundingTransaction = (DSCreditFundingTransaction *)[blockchainIdentityEntity.registrationFundingTransaction transactionForChain:self.chain];
+            self.registrationCreditFundingTransactionHash = blockchainIdentityEntity.registrationFundingTransaction.transactionHash.txHash.UInt256;
         } else {
             NSData *transactionHashData = uint256_data(uint256_reverse(self.lockedOutpoint.hash));
             DSTransactionEntity *creditRegitrationTransactionEntity = [DSTransactionEntity anyObjectInContext:blockchainIdentityEntity.managedObjectContext matching:@"transactionHash.txHash == %@", transactionHashData];
             if (creditRegitrationTransactionEntity) {
-                self.registrationCreditFundingTransaction = (DSCreditFundingTransaction *)[creditRegitrationTransactionEntity transactionForChain:self.chain];
+                self.registrationCreditFundingTransactionHash = creditRegitrationTransactionEntity.transactionHash.txHash.UInt256;
+                DSCreditFundingTransaction *registrationCreditFundingTransaction = (DSCreditFundingTransaction *)[creditRegitrationTransactionEntity transactionForChain:self.chain];
                 BOOL correctIndex;
                 if (self.isOutgoingInvitation) {
-                    correctIndex = [self.registrationCreditFundingTransaction checkInvitationDerivationPathIndexForWallet:self.wallet isIndex:self.index];
+                    correctIndex = [registrationCreditFundingTransaction checkInvitationDerivationPathIndexForWallet:self.wallet isIndex:self.index];
                 } else {
-                    correctIndex = [self.registrationCreditFundingTransaction checkDerivationPathIndexForWallet:self.wallet isIndex:self.index];
+                    correctIndex = [registrationCreditFundingTransaction checkDerivationPathIndexForWallet:self.wallet isIndex:self.index];
                 }
                 if (!correctIndex) {
                     NSAssert(FALSE, @"We should implement this");
@@ -716,7 +720,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 - (void)registerInWalletForRegistrationFundingTransaction:(DSCreditFundingTransaction *)fundingTransaction {
     NSAssert(_isLocal, @"This should not be performed on a non local blockchain identity");
     if (!_isLocal) return;
-    self.registrationCreditFundingTransaction = fundingTransaction;
+    self.registrationCreditFundingTransactionHash = fundingTransaction.txHash;
     self.lockedOutpoint = fundingTransaction.lockedOutpoint;
     [self registerInWalletForBlockchainIdentityUniqueId:fundingTransaction.creditBurnIdentityIdentifier];
 
@@ -817,6 +821,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
         }];
         return dashpayUserEntity;
     }
+}
+
+- (DSCreditFundingTransaction *)registrationCreditFundingTransaction {
+    if (!_registrationCreditFundingTransaction) {
+        _registrationCreditFundingTransaction = (DSCreditFundingTransaction *)[self.chain transactionForHash:self.registrationCreditFundingTransactionHash];
+    }
+    return _registrationCreditFundingTransaction;
 }
 
 - (NSData *)uniqueIDData {

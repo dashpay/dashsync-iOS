@@ -20,7 +20,7 @@
 #import "DSOptionsManager.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSTransactionFactory.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSString+Bitcoin.h"
 #import <arpa/inet.h>
 

@@ -24,7 +24,7 @@
 #import "DSHTTPJSONRPCClient.h"
 #import "DSPeer.h"
 #import "DSTransactionFactory.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 
 @interface DSDAPICoreNetworkService ()
 
@@ -66,7 +66,7 @@
                                                         failure:(void (^)(NSError *error))failure {
     NSParameterAssert(completionQueue);
     GetStatusRequest *statusRequest = [[GetStatusRequest alloc] init];
-    DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
+    DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] initWithChain:self.chain requireProof:NO];
     responseHandler.host = [NSString stringWithFormat:@"%@:%d", self.ipAddress, self.chain.standardDapiGRPCPort];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.completionQueue = completionQueue;
@@ -82,7 +82,7 @@
     NSParameterAssert(completionQueue);
     GetTransactionRequest *transactionRequest = [[GetTransactionRequest alloc] init];
     transactionRequest.id_p = uint256_hex(transactionHash);
-    DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
+    DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] initWithChain:self.chain requireProof:NO];
     responseHandler.host = [NSString stringWithFormat:@"%@:%d", self.ipAddress, self.chain.standardDapiGRPCPort];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.completionQueue = completionQueue;

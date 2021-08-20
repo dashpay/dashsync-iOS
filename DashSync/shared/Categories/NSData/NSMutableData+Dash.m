@@ -27,7 +27,7 @@
 //  THE SOFTWARE.
 
 #import "DSChain.h"
-#import "NSData+Dash.h"
+#import "NSData+DSHash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Dash.h"
 
@@ -143,6 +143,12 @@ CFAllocatorRef SecureAllocator() {
 
 - (NSMutableData *)appendUInt32:(uint32_t)i {
     i = CFSwapInt32HostToLittle(i);
+    [self appendBytes:&i length:sizeof(i)];
+    return self;
+}
+
+- (NSMutableData *)appendInt64:(int64_t)i {
+    i = CFSwapInt64HostToLittle(i);
     [self appendBytes:&i length:sizeof(i)];
     return self;
 }

@@ -12,7 +12,7 @@
 #import "DSMutableOrderedDataKeyDictionary.h"
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
 #import "DSWallet.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"
 #import <arpa/inet.h>

@@ -12,7 +12,7 @@
 #import "DSChain.h"
 #import "DSFullBlock.h"
 #import "DSMerkleBlock.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSString+Bitcoin.h"
 
 @interface DSBloomFilterTests : XCTestCase

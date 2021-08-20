@@ -85,7 +85,7 @@
 #import "DSTxInputEntity+CoreDataProperties.h"
 #import "DSTxOutputEntity+CoreDataProperties.h"
 #import "NSArray+Dash.h"
-#import "NSData+Dash.h"
+#import "NSData+DSHash.h"
 #import "NSDate+Utils.h"
 
 #import "DSProviderRegistrationTransaction.h"

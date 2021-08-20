@@ -14,7 +14,7 @@
 #import "DSMerkleBlock.h"
 #import "DSQuorumEntryEntity+CoreDataClass.h"
 #import "DSSimplifiedMasternodeEntry.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"
 
@@ -208,27 +208,7 @@
 }
 
 - (BOOL)shouldProcessQuorum {
-    switch (self.llmqType) { //!OCLINT
-        case DSLLMQType_50_60:
-            return YES;
-        case DSLLMQType_400_60:
-            if (self.chain.isMainnet) {
-                return YES;
-            } else {
-                return NO;
-            }
-        case DSLLMQType_400_85:
-            return NO;
-        case DSLLMQType_100_67:
-            return YES;
-        case DSLLMQType_5_60:
-            return NO;
-        case DSLLMQType_10_60:
-            return NO;
-        default:
-            NSAssert(FALSE, @"Unknown llmq type");
-            return NO;
-    }
+    return self.chain.quorumTypeForChainLocks == self.llmqType || self.chain.quorumTypeForISLocks == self.llmqType || self.chain.quorumTypeForPlatform == self.llmqType;
 }
 
 - (UInt256)llmqQuorumHash {
@@ -446,14 +426,6 @@
         default:
             NSAssert(FALSE, @"Unknown quorum type");
             return 50;
-    }
-}
-
-+ (DSLLMQType)chainLockQuorumTypeForChain:(DSChain *)chain {
-    if ([chain isMainnet]) {
-        return DSLLMQType_400_60;
-    } else {
-        return DSLLMQType_50_60;
     }
 }
 

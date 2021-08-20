@@ -23,7 +23,7 @@
 #import "DSInstantSendTransactionLock.h"
 #import "DSTransaction+Protected.h"
 #import "DSWallet.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 
 @implementation DSCreditFundingTransaction
 

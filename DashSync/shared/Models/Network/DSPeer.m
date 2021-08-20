@@ -49,7 +49,7 @@
 #import "DSTransaction.h"
 #import "DSTransactionFactory.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+DSHash.h"
 #import "NSData+Dash.h"
 #import "NSDate+Utils.h"
 #import "NSManagedObject+Sugar.h"

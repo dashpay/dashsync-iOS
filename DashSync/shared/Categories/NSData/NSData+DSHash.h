@@ -1,5 +1,5 @@
 //
-//  NSData+Dash.m
+//  NSData+DSHash.m
 //  DashSync
 //
 //  Created by Quantum Explorer on 01/31/17.
@@ -25,10 +25,10 @@
 
 
 #import "BigIntTypes.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import <Foundation/Foundation.h>
 
-@interface NSData (Dash)
+@interface NSData (DSHash)
 
 - (UInt256)x11;
 - (UInt512)blake512;
@@ -43,8 +43,7 @@
 - (UInt512)simd512;
 - (UInt512)echo512;
 
-- (UInt256)blake2s;
-
-+ (NSData *)dataFromHexString:(NSString *)string;
+- (UInt256)blake3;
+- (UInt256)blake3_2;
 
 @end

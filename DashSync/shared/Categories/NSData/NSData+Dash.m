@@ -1,5 +1,5 @@
 //
-//  NSData+Bitcoin.m
+//  NSData+Dash.m
 //  DashSync
 //
 //  Created by Aaron Voisine for BreadWallet on 10/09/13.
@@ -27,7 +27,7 @@
 //  THE SOFTWARE.
 
 #import "DSDerivationPath.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+DSHash.h"
 #import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
@@ -1050,50 +1050,50 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
     return a;
 }
 
-@implementation NSData (Bitcoin)
+@implementation NSData (Dash)
 
 + (instancetype)dataWithLLMQ:(DSLLMQ)llmq {
-    return [NSData dataWithBytes:&llmq length:sizeof(llmq)];
+    return [self dataWithBytes:&llmq length:sizeof(llmq)];
 }
 
 + (instancetype)dataWithUInt768:(UInt768)n {
-    return [NSData dataWithBytes:&n length:sizeof(n)];
+    return [self dataWithBytes:&n length:sizeof(n)];
 }
 
 + (instancetype)dataWithUInt512:(UInt512)n {
-    return [NSData dataWithBytes:&n length:sizeof(n)];
+    return [self dataWithBytes:&n length:sizeof(n)];
 }
 
 + (instancetype)dataWithUInt384:(UInt384)n {
-    return [NSData dataWithBytes:&n length:sizeof(n)];
+    return [self dataWithBytes:&n length:sizeof(n)];
 }
 
 + (instancetype)dataWithUInt256:(UInt256)n {
-    return [NSData dataWithBytes:&n length:sizeof(n)];
+    return [self dataWithBytes:&n length:sizeof(n)];
 }
 
 + (instancetype)dataWithUInt256Value:(NSValue *)value {
     UInt256 n;
     [value getValue:&n];
-    return [NSData dataWithBytes:&n length:sizeof(n)];
+    return [self dataWithBytes:&n length:sizeof(n)];
 }
 
 + (instancetype)dataWithUInt160:(UInt160)n {
-    return [NSData dataWithBytes:&n length:sizeof(n)];
+    return [self dataWithBytes:&n length:sizeof(n)];
 }
 
 + (instancetype)dataWithUInt160Value:(NSValue *)value {
     UInt160 n;
     [value getValue:&n];
-    return [NSData dataWithBytes:&n length:sizeof(n)];
+    return [self dataWithBytes:&n length:sizeof(n)];
 }
 
 + (instancetype)dataWithUInt128:(UInt128)n {
-    return [NSData dataWithBytes:&n length:sizeof(n)];
+    return [self dataWithBytes:&n length:sizeof(n)];
 }
 
 + (instancetype)dataWithUInt64:(uint64_t)n {
-    return [NSData dataWithBytes:&n length:sizeof(n)];
+    return [self dataWithBytes:&n length:sizeof(n)];
 }
 
 
@@ -1587,6 +1587,26 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
     uint8_t bits = [self UInt8AtOffset:offset];
     return ((bits >> bitPosition) & 1);
 }
+
++ (NSData *)dataFromHexString:(NSString *)string {
+    string = [string lowercaseString];
+    NSMutableData *data = [NSMutableData new];
+    unsigned char whole_byte;
+    char byte_chars[3] = {'\0', '\0', '\0'};
+    int i = 0;
+    NSUInteger length = string.length;
+    while (i < length - 1) {
+        char c = [string characterAtIndex:i++];
+        if (c < '0' || (c > '9' && c < 'a') || c > 'f')
+            continue;
+        byte_chars[0] = c;
+        byte_chars[1] = [string characterAtIndex:i++];
+        whole_byte = strtol(byte_chars, NULL, 16);
+        [data appendBytes:&whole_byte length:1];
+    }
+    return data;
+}
+
 
 @end
 

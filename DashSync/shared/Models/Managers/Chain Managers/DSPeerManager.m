@@ -50,7 +50,7 @@
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransactionManager+Protected.h"
 #import "DSWallet.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSDate+Utils.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSString+Bitcoin.h"

@@ -1,5 +1,5 @@
 //
-//  NSData+Dash.m
+//  NSData+DSHash.m
 //  DashSync
 //
 //  Created by Quantum Explorer on 01/31/17.
@@ -23,29 +23,45 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "../crypto/x11/Blake.h"
-#import "../crypto/x11/Bmw.h"
-#import "../crypto/x11/CubeHash.h"
-#import "../crypto/x11/Echo.h"
-#import "../crypto/x11/Groestl.h"
-#import "../crypto/x11/Jh.h"
-#import "../crypto/x11/Keccak.h"
-#import "../crypto/x11/Luffa.h"
-#import "../crypto/x11/Shavite.h"
-#import "../crypto/x11/Simd.h"
-#import "../crypto/x11/Skein.h"
-#import "NSData+Dash.h"
+#import "../../crypto/blake3/blake3.h"
+#import "../../crypto/x11/Blake.h"
+#import "../../crypto/x11/Bmw.h"
+#import "../../crypto/x11/CubeHash.h"
+#import "../../crypto/x11/Echo.h"
+#import "../../crypto/x11/Groestl.h"
+#import "../../crypto/x11/Jh.h"
+#import "../../crypto/x11/Keccak.h"
+#import "../../crypto/x11/Luffa.h"
+#import "../../crypto/x11/Shavite.h"
+#import "../../crypto/x11/Simd.h"
+#import "../../crypto/x11/Skein.h"
 
-#import "../crypto/blake2/blake2.h"
+#import "NSData+DSHash.h"
 
-@implementation NSData (Dash)
+@implementation NSData (DSHash)
 
-- (UInt256)blake2s {
-    UInt256 blake2Data;
+- (NSData *)blake3Data {
+    // Initialize the hasher.
+    blake3_hasher hasher;
+    blake3_hasher_init(&hasher);
 
-    blake2s(&blake2Data, 32, self.bytes, self.length, 0, 0);
+    blake3_hasher_update(&hasher, self.bytes, self.length);
 
-    return blake2Data;
+    // Finalize the hash. BLAKE3_OUT_LEN is the default output length, 32 bytes.
+    uint8_t output[BLAKE3_OUT_LEN];
+    blake3_hasher_finalize(&hasher, output, BLAKE3_OUT_LEN);
+    NSData *data = [NSData dataWithBytes:output length:BLAKE3_OUT_LEN];
+
+    return data;
+}
+
+
+- (UInt256)blake3 {
+    return self.blake3Data.UInt256;
+}
+
+- (UInt256)blake3_2 {
+    return self.blake3Data.blake3Data.UInt256;
 }
 
 
@@ -217,25 +233,5 @@
 
     return *(UInt256 *)(uint8_t *)x11Data.u8;
 }
-
-+ (NSData *)dataFromHexString:(NSString *)string {
-    string = [string lowercaseString];
-    NSMutableData *data = [NSMutableData new];
-    unsigned char whole_byte;
-    char byte_chars[3] = {'\0', '\0', '\0'};
-    int i = 0;
-    NSUInteger length = string.length;
-    while (i < length - 1) {
-        char c = [string characterAtIndex:i++];
-        if (c < '0' || (c > '9' && c < 'a') || c > 'f')
-            continue;
-        byte_chars[0] = c;
-        byte_chars[1] = [string characterAtIndex:i++];
-        whole_byte = strtol(byte_chars, NULL, 16);
-        [data appendBytes:&whole_byte length:1];
-    }
-    return data;
-}
-
 
 @end

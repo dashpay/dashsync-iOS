@@ -9,7 +9,7 @@
 #import "DSChain.h"
 #import "DSDerivationPath.h"
 #import "DSKey+Protected.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSData+Encryption.h"
 #import "NSIndexPath+Dash.h"
 #import "NSMutableData+Dash.h"

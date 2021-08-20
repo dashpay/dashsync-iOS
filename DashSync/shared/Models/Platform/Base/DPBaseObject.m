@@ -19,7 +19,7 @@
 
 
 #import "BigIntTypes.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import <TinyCborObjc/NSObject+DSCborEncoding.h>
 
 

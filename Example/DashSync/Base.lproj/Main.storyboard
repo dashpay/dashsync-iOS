@@ -121,6 +121,7 @@
                             <tableViewSection headerTitle="Wallet" id="QIu-nb-1jQ" userLabel="Wallet">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" rowHeight="52" id="5eq-Z6-IHU">
+                                        <rect key="frame" x="0.0" y="101.33333396911621" width="375" height="52"/>
                                         <rect key="frame" x="0.0" y="144.33333396911621" width="375" height="52"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="5eq-Z6-IHU" id="8X7-aM-sLY">
@@ -276,7 +277,7 @@
                                             <segue destination="dcV-bW-JbZ" kind="show" identifier="HeaderBlockchainExplorerSegue" id="0hS-4K-1D2"/>
                                         </connections>
                                     </tableViewCell>
-                                </cells>
+                                                                    </cells>
                             </tableViewSection>
                             <tableViewSection headerTitle="Evolution" id="pPU-JW-K7x" userLabel="Evolution">
                                 <cells>
@@ -1199,6 +1200,108 @@
                                     <outlet property="valueTextField" destination="cdP-XO-sm8" id="Bf2-mm-GkY"/>
                                 </connections>
                             </tableViewCell>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="ISLocksQuorumTypeCellIdentifier" id="6nn-51-rsQ" userLabel="ISLocksQuorumTypeCell" customClass="DSKeyValueTableViewCell">
+                                <rect key="frame" x="0.0" y="311.00000762939453" width="375" height="43.666667938232422"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="6nn-51-rsQ" id="bTX-Jw-7PI">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43.666667938232422"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="IS L Quorum Type" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eAp-yz-xV4">
+                                            <rect key="frame" x="16" y="12" width="136" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="JAN-2g-jFW">
+                                            <rect key="frame" x="189" y="7" width="170" height="34"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" priority="900" constant="170" id="7WE-at-IQL"/>
+                                            </constraints>
+                                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                            <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
+                                        </textField>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="JAN-2g-jFW" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="eAp-yz-xV4" secondAttribute="trailing" constant="10" id="9Kf-yk-CSg"/>
+                                        <constraint firstItem="eAp-yz-xV4" firstAttribute="top" secondItem="bTX-Jw-7PI" secondAttribute="top" constant="12.000000000000028" id="Dns-k1-4g9"/>
+                                        <constraint firstItem="eAp-yz-xV4" firstAttribute="leading" secondItem="bTX-Jw-7PI" secondAttribute="leading" constant="16" id="JVq-de-fjo"/>
+                                        <constraint firstAttribute="trailing" secondItem="JAN-2g-jFW" secondAttribute="trailing" constant="16" id="sfa-jM-rbt"/>
+                                        <constraint firstItem="JAN-2g-jFW" firstAttribute="top" secondItem="bTX-Jw-7PI" secondAttribute="top" constant="7" id="yS9-TS-jbo"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <connections>
+                                    <outlet property="valueTextField" destination="JAN-2g-jFW" id="Vu1-uV-fGf"/>
+                                </connections>
+                            </tableViewCell>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="ChainLocksQuorumTypeCellIdentifier" id="jzG-lW-QnL" userLabel="ChainLocksQuorumTypeCell" customClass="DSKeyValueTableViewCell">
+                                <rect key="frame" x="0.0" y="354.66667556762695" width="375" height="43.666667938232422"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="jzG-lW-QnL" id="IBI-Y7-M0i">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43.666667938232422"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="CL Quorum Type" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JKm-VU-Uce">
+                                            <rect key="frame" x="16" y="12" width="128.66666666666666" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="7Sj-uu-pPD">
+                                            <rect key="frame" x="189" y="7" width="170" height="34"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" priority="900" constant="170" id="8fd-e0-iN0"/>
+                                            </constraints>
+                                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                            <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
+                                        </textField>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstAttribute="trailing" secondItem="7Sj-uu-pPD" secondAttribute="trailing" constant="16" id="0oG-0h-oha"/>
+                                        <constraint firstItem="JKm-VU-Uce" firstAttribute="leading" secondItem="IBI-Y7-M0i" secondAttribute="leading" constant="16" id="IiG-Jt-Jn1"/>
+                                        <constraint firstItem="7Sj-uu-pPD" firstAttribute="top" secondItem="IBI-Y7-M0i" secondAttribute="top" constant="7" id="fuh-Eb-Bvu"/>
+                                        <constraint firstItem="JKm-VU-Uce" firstAttribute="top" secondItem="IBI-Y7-M0i" secondAttribute="top" constant="12.000000000000028" id="nYn-15-pYP"/>
+                                        <constraint firstItem="7Sj-uu-pPD" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="JKm-VU-Uce" secondAttribute="trailing" constant="10" id="oZh-6T-l9d"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <connections>
+                                    <outlet property="valueTextField" destination="7Sj-uu-pPD" id="ZXE-Td-hZm"/>
+                                </connections>
+                            </tableViewCell>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="PlatformQuorumTypeCellIdentifier" id="0zW-dy-z3k" userLabel="PlatformQuorumTypeCell" customClass="DSKeyValueTableViewCell">
+                                <rect key="frame" x="0.0" y="398.33334350585938" width="375" height="43.666667938232422"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="0zW-dy-z3k" id="XwQ-sJ-dct">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43.666667938232422"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Platform Quorum Type" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PgC-N2-A9e">
+                                            <rect key="frame" x="16" y="12" width="163" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Pon-t4-SZV">
+                                            <rect key="frame" x="189" y="7" width="170" height="34"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" priority="900" constant="170" id="dtm-2Z-ber"/>
+                                            </constraints>
+                                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                            <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
+                                        </textField>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="PgC-N2-A9e" firstAttribute="leading" secondItem="XwQ-sJ-dct" secondAttribute="leading" constant="16" id="AUb-UO-Y57"/>
+                                        <constraint firstAttribute="trailing" secondItem="Pon-t4-SZV" secondAttribute="trailing" constant="16" id="F4n-2R-hX3"/>
+                                        <constraint firstItem="PgC-N2-A9e" firstAttribute="top" secondItem="XwQ-sJ-dct" secondAttribute="top" constant="12.000000000000028" id="NIH-IH-UL1"/>
+                                        <constraint firstItem="Pon-t4-SZV" firstAttribute="top" secondItem="XwQ-sJ-dct" secondAttribute="top" constant="7" id="Usg-Ne-51N"/>
+                                        <constraint firstItem="Pon-t4-SZV" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="PgC-N2-A9e" secondAttribute="trailing" constant="10" id="bDP-Qr-ecX"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <connections>
+                                    <outlet property="valueTextField" destination="Pon-t4-SZV" id="iDy-gQ-Cr6"/>
+                                </connections>
+                            </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="DashpayContractIDCellIdentifier" id="pb3-rs-K7r" userLabel="DashpayContractIDCell" customClass="DSKeyValueTableViewCell">
                                 <rect key="frame" x="0.0" y="311.00000762939453" width="375" height="43.666667938232422"/>
                                 <autoresizingMask key="autoresizingMask"/>
@@ -1407,7 +1510,7 @@
                                 <rect key="frame" x="0.0" y="573.00001525878906" width="375" height="43.666667938232422"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="XS4-6Q-4QG" id="8lR-Iu-3HH">
-                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43.666667938232422"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Dashd Port" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="S6a-Kf-nDW">
@@ -1441,11 +1544,11 @@
                                 <rect key="frame" x="0.0" y="616.66668319702148" width="375" height="43.666667938232422"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="CnD-XV-j6V" id="rh7-pe-hfh">
-                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43.666667938232422"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="+ Another IP Address" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ptN-cs-YGA">
-                                            <rect key="frame" x="107" y="11.333333333333336" width="161" height="21"/>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="+ Another IP Address" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ptN-cs-YGA">
+                                            <rect key="frame" x="107" y="11.666666666666664" width="161" height="21"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>

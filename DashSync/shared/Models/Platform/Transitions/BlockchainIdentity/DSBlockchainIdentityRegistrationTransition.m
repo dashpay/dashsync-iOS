@@ -13,7 +13,7 @@
 #import "DSTransaction+Protected.h"
 #import "DSTransactionFactory.h"
 #import "DSTransition+Protected.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 
