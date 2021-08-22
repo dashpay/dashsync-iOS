@@ -69,6 +69,8 @@
 #define WALLET_BLOCKCHAIN_USERS_KEY @"WALLET_BLOCKCHAIN_USERS_KEY"
 #define WALLET_BLOCKCHAIN_INVITATIONS_KEY @"WALLET_BLOCKCHAIN_INVITATIONS_KEY"
 
+#define WALLET_ACCOUNTS_KNOWN_KEY @"WALLET_ACCOUNTS_KNOWN_KEY"
+
 #define WALLET_MASTERNODE_VOTERS_KEY @"WALLET_MASTERNODE_VOTERS_KEY"
 #define WALLET_MASTERNODE_OWNERS_KEY @"WALLET_MASTERNODE_OWNERS_KEY"
 #define WALLET_MASTERNODE_OPERATORS_KEY @"WALLET_MASTERNODE_OPERATORS_KEY"
@@ -116,7 +118,7 @@
     NSString *uniqueId = [self setSeedPhrase:seedPhrase createdAt:creationDate withAccounts:@[account] storeOnKeychain:store forChain:chain]; //make sure we can create the wallet first
     if (!uniqueId) return nil;
     [self registerSpecializedDerivationPathsForSeedPhrase:seedPhrase underUniqueId:uniqueId onChain:chain];
-    DSWallet *wallet = [[DSWallet alloc] initWithUniqueID:uniqueId andAccount:account forChain:chain storeSeedPhrase:store isTransient:isTransient];
+    DSWallet *wallet = [[DSWallet alloc] initWithUniqueID:uniqueId andAccounts:@[account] forChain:chain storeSeedPhrase:store isTransient:isTransient];
 
     return wallet;
 }
@@ -144,7 +146,7 @@
     NSString *uniqueId = [self setTransientDerivedKeyData:derivedData withAccounts:@[account] forChain:chain]; //make sure we can create the wallet first
     if (!uniqueId) return nil;
     //[self registerSpecializedDerivationPathsForSeedPhrase:seedPhrase underUniqueId:uniqueId onChain:chain];
-    DSWallet *wallet = [[DSWallet alloc] initWithUniqueID:uniqueId andAccount:account forChain:chain storeSeedPhrase:NO isTransient:YES];
+    DSWallet *wallet = [[DSWallet alloc] initWithUniqueID:uniqueId andAccounts:@[account] forChain:chain storeSeedPhrase:NO isTransient:YES];
 
     wallet.transientDerivedKeyData = derivedData;
 
@@ -171,10 +173,11 @@
     return self;
 }
 
-- (instancetype)initWithUniqueID:(NSString *)uniqueID andAccount:(DSAccount *)account forChain:(DSChain *)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient {
+- (instancetype)initWithUniqueID:(NSString *)uniqueID andAccounts:(NSArray<DSAccount *> *)accounts forChain:(DSChain *)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient {
     NSParameterAssert(uniqueID);
-    NSParameterAssert(account);
+    NSParameterAssert(accounts);
     NSParameterAssert(chain);
+    NSAssert(accounts.count > 0, @"The wallet must have at least one account");
 
     if (!(self = [self initWithChain:chain])) return nil;
     self.uniqueIDString = uniqueID;
@@ -191,7 +194,7 @@
         self.transient = TRUE;
     }
 
-    if (account) [self addAccount:account]; //this must be last, as adding the account queries the wallet unique ID
+    if (accounts) [self addAccounts:accounts]; //this must be last, as adding the account queries the wallet unique ID
 
     [[DSDerivationPathFactory sharedInstance] loadedSpecializedDerivationPathsForWallet:self];
 
@@ -207,6 +210,19 @@
     //add blockchain user derivation paths to account
 
     return self;
+}
+
++ (uint32_t)accountsKnownForUniqueId:(NSString *)uniqueID {
+    NSError *error = nil;
+    int32_t accountsKnown = (int32_t)getKeychainInt([DSWallet accountsKnownKeyForWalletUniqueID:uniqueID], &error);
+    if (error) {
+        return 0;
+    }
+    return accountsKnown;
+}
+
+- (uint32_t)accountsKnown {
+    return [DSWallet accountsKnownForUniqueId:self.uniqueIDString];
 }
 
 - (void)loadBlockchainIdentities {
@@ -305,9 +321,15 @@
     }
 }
 
+
 - (instancetype)initWithUniqueID:(NSString *)uniqueID forChain:(DSChain *)chain {
-    if (!(self = [self initWithUniqueID:uniqueID andAccount:[DSAccount accountWithAccountNumber:0 withDerivationPaths:[chain standardDerivationPathsForAccountNumber:0] inContext:chain.chainManagedObjectContext] forChain:chain storeSeedPhrase:NO isTransient:NO])) return nil;
+    int32_t accountsKnown = [DSWallet accountsKnownForUniqueId:uniqueID];
+    if (!(self = [self initWithUniqueID:uniqueID andAccounts:[DSAccount standardAccountsToAccountNumber:accountsKnown onChain:chain inContext:chain.chainManagedObjectContext] forChain:chain storeSeedPhrase:NO isTransient:NO])) return nil;
     return self;
+}
+
++ (NSString *)accountsKnownKeyForWalletUniqueID:(NSString *)walletUniqueId {
+    return [NSString stringWithFormat:@"%@_%@", WALLET_ACCOUNTS_KNOWN_KEY, walletUniqueId];
 }
 
 - (NSString *)walletBlockchainIdentitiesKey {
@@ -338,11 +360,36 @@
     return [self.mAccounts allValues];
 }
 
+- (NSDictionary *)orderedAccounts {
+    return [self.mAccounts copy];
+}
+
+- (uint32_t)lastAccountNumber {
+    NSArray<NSNumber *> *accountNumbers = [self.mAccounts allKeys];
+    if (accountNumbers.count == 0) {
+        NSAssert(accountNumbers.count > 0, @"There should always be at least one account");
+        return UINT32_MAX;
+    }
+    NSNumber *maxAccountNumber = [accountNumbers valueForKeyPath:@"@max.intValue"];
+    return [maxAccountNumber unsignedIntValue];
+}
+
 - (void)addAccount:(DSAccount *)account {
     NSParameterAssert(account);
 
     [self.mAccounts setObject:account forKey:@(account.accountNumber)];
     account.wallet = self;
+    uint32_t lastAccountNumber = [self lastAccountNumber];
+    if (lastAccountNumber > [self accountsKnown]) {
+        setKeychainInt(lastAccountNumber, [DSWallet accountsKnownKeyForWalletUniqueID:[self uniqueIDString]], NO);
+    }
+}
+
+- (void)addAccounts:(NSArray<DSAccount *> *)accounts {
+    NSParameterAssert(accounts);
+    for (DSAccount *account in accounts) {
+        [self addAccount:account];
+    }
 }
 
 - (DSAccount *_Nullable)accountWithNumber:(NSUInteger)accountNumber {
@@ -772,10 +819,10 @@
     return rBalance;
 }
 
-- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit dashpayGapLimit:(NSUInteger)dashpayGapLimit internal:(BOOL)internal error:(NSError **)error {
+- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit unusedAccountGapLimit:(NSUInteger)unusedAccountGapLimit dashpayGapLimit:(NSUInteger)dashpayGapLimit internal:(BOOL)internal error:(NSError **)error {
     NSMutableArray *mArray = [NSMutableArray array];
     for (DSAccount *account in self.accounts) {
-        [mArray addObjectsFromArray:[account registerAddressesWithGapLimit:gapLimit dashpayGapLimit:dashpayGapLimit internal:internal error:error]];
+        [mArray addObjectsFromArray:[account registerAddressesWithGapLimit:gapLimit unusedAccountGapLimit:unusedAccountGapLimit dashpayGapLimit:dashpayGapLimit internal:internal error:error]];
     }
     return [mArray copy];
 }

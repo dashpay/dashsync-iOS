@@ -122,6 +122,14 @@
     return [[self alloc] initWithAccountNumber:accountNumber withDerivationPaths:derivationPaths inContext:context];
 }
 
++ (NSArray<DSAccount *> *)standardAccountsToAccountNumber:(uint32_t)accountNumber onChain:(DSChain *)chain inContext:(NSManagedObjectContext *_Nullable)context {
+    NSMutableArray *accounts = [NSMutableArray array];
+    for (uint32_t i = 0; i < accountNumber + 1; i++) {
+        [accounts addObject:[self accountWithAccountNumber:i withDerivationPaths:[chain standardDerivationPathsForAccountNumber:i] inContext:context]];
+    }
+    return accounts;
+}
+
 - (BOOL)verifyDerivationPathNotAlreadyPresent:(DSDerivationPath *)derivationPath {
     for (DSDerivationPath *derivationPath3 in self.mFundDerivationPaths) {
         if ([derivationPath isDerivationPathEqual:derivationPath3]) {
@@ -441,11 +449,13 @@
     return NO;
 }
 
-- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit dashpayGapLimit:(NSUInteger)dashpayGapLimit internal:(BOOL)internal error:(NSError **)error {
+- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit unusedAccountGapLimit:(NSUInteger)unusedAccountGapLimit dashpayGapLimit:(NSUInteger)dashpayGapLimit internal:(BOOL)internal error:(NSError **)error {
     NSMutableArray *mArray = [NSMutableArray array];
     for (DSDerivationPath *derivationPath in self.fundDerivationPaths) {
         if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
-            [mArray addObjectsFromArray:[(DSFundsDerivationPath *)derivationPath registerAddressesWithGapLimit:gapLimit internal:internal error:error]];
+            DSFundsDerivationPath *fundsDerivationPath = (DSFundsDerivationPath *)derivationPath;
+            NSUInteger registerGapLimit = [fundsDerivationPath shouldUseReducedGapLimit] ? unusedAccountGapLimit : gapLimit;
+            [mArray addObjectsFromArray:[fundsDerivationPath registerAddressesWithGapLimit:registerGapLimit internal:internal error:error]];
         } else if (!internal && [derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
             [mArray addObjectsFromArray:[(DSIncomingFundsDerivationPath *)derivationPath registerAddressesWithGapLimit:dashpayGapLimit error:error]];
         }
@@ -705,8 +715,11 @@
             //TODO: don't add coin generation outputs < 100 blocks deep
             //NOTE: balance/UTXOs will then need to be recalculated when last block changes
             for (NSString *address in tx.outputAddresses) { // add outputs to UTXO set
-                for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
+                for (DSDerivationPath *derivationPath in self.fundDerivationPaths) {
                     if ([derivationPath containsAddress:address]) {
+                        if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
+                            [((DSFundsDerivationPath *)derivationPath) setHasKnownBalance];
+                        }
                         derivationPath.balance += [tx.outputAmounts[n] unsignedLongLongValue];
                         [utxos addObject:dsutxo_obj(((DSUTXO){tx.txHash, n}))];
                         balance += [tx.outputAmounts[n] unsignedLongLongValue];

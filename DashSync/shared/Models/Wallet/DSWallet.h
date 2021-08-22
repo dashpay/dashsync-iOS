@@ -41,6 +41,10 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 
 @interface DSWallet : NSObject
 
+@property (nonatomic, readonly) NSDictionary<NSNumber *, DSAccount *> *orderedAccounts;
+
+@property (nonatomic, readonly) uint32_t lastAccountNumber;
+
 @property (nonatomic, readonly) NSArray<DSAccount *> *accounts;
 
 @property (nonatomic, readonly) DSSpecialTransactionsWalletHolder *specialTransactionsHolder;
@@ -165,7 +169,7 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 // returns the transaction with the given hash if it's been registered in the wallet (might also return non-registered)
 - (DSTransaction *_Nullable)transactionForHash:(UInt256)txHash;
 
-- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit dashpayGapLimit:(NSUInteger)dashpayGapLimit internal:(BOOL)internal error:(NSError *_Nullable *_Nullable)error;
+- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit unusedAccountGapLimit:(NSUInteger)unusedAccountGapLimit dashpayGapLimit:(NSUInteger)dashpayGapLimit internal:(BOOL)internal error:(NSError *_Nullable *_Nullable)error;
 
 // returns the amount received by the wallet from the transaction (total outputs to change and/or receive addresses)
 - (uint64_t)amountReceivedFromTransaction:(DSTransaction *)transaction;

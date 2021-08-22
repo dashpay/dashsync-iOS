@@ -702,115 +702,114 @@
                           if (!previouslyWasAuthenticated) [authenticationManager deauthenticate];
 
                           if (!signedCompletion(tx, nil, NO)) return; //give the option to stop the process to clients
-            
-            [self publishSignedTransaction:tx createdFromProtocolRequest:protocolRequest fromAccount:account publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];
-        }];
+
+                          [self publishSignedTransaction:tx createdFromProtocolRequest:protocolRequest fromAccount:account publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];
+                      }];
     }
 }
 
-- (void)publishSignedTransaction:(DSTransaction *)tx createdFromProtocolRequest:(DSPaymentProtocolRequest *)protocolRequest fromAccount:(DSAccount *)account  publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion requestRelayCompletion:(DSTransactionRequestRelayCompletionBlock)requestRelayCompletion errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock {
+- (void)publishSignedTransaction:(DSTransaction *)tx createdFromProtocolRequest:(DSPaymentProtocolRequest *)protocolRequest fromAccount:(DSAccount *)account publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion requestRelayCompletion:(DSTransactionRequestRelayCompletionBlock)requestRelayCompletion errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock {
     NSParameterAssert(tx);
     if (!tx || !tx.isSigned) return;
-    
+
     __block BOOL sent = NO;
-    
+
     if (protocolRequest.details.paymentURL.length == 0) {
         [account registerTransaction:tx saveImmediately:NO];
-        
+
         [self publishTransaction:tx
                       completion:^(NSError *publishingError) {
-            if (publishingError) {
-                if (!sent) {
-                    [account removeTransaction:tx saveImmediately:YES]; //we save in case the transaction was registered and saved from another process
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        publishedCompletion(tx, publishingError, sent);
-                    });
-                }
-            } else if (!sent) {
-                sent = YES;
-                tx.timestamp = [NSDate timeIntervalSince1970];
-                [tx saveInitial];
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    publishedCompletion(tx, nil, sent);
-                });
-            }
-        }];
+                          if (publishingError) {
+                              if (!sent) {
+                                  [account removeTransaction:tx saveImmediately:YES]; //we save in case the transaction was registered and saved from another process
+                                  dispatch_async(dispatch_get_main_queue(), ^{
+                                      publishedCompletion(tx, publishingError, sent);
+                                  });
+                              }
+                          } else if (!sent) {
+                              sent = YES;
+                              tx.timestamp = [NSDate timeIntervalSince1970];
+                              [tx saveInitial];
+                              dispatch_async(dispatch_get_main_queue(), ^{
+                                  publishedCompletion(tx, nil, sent);
+                              });
+                          }
+                      }];
     } else {
         uint64_t refundAmount = 0;
         NSMutableData *refundScript = [NSMutableData data];
         [refundScript appendScriptPubKeyForAddress:account.receiveAddress forChain:account.wallet.chain];
-        
+
         for (NSNumber *amt in protocolRequest.details.outputAmounts) {
             refundAmount += amt.unsignedLongLongValue;
         }
-        
+
         // TODO: keep track of commonName/memo to associate them with outputScripts
         DSPaymentProtocolPayment *payment =
-        [[DSPaymentProtocolPayment alloc] initWithMerchantData:protocolRequest.details.merchantData
-                                                  transactions:@[tx]
-                                               refundToAmounts:@[@(refundAmount)]
-                                               refundToScripts:@[refundScript]
-                                                          memo:nil
-                                                       onChain:account.wallet.chain];
-        
+            [[DSPaymentProtocolPayment alloc] initWithMerchantData:protocolRequest.details.merchantData
+                                                      transactions:@[tx]
+                                                   refundToAmounts:@[@(refundAmount)]
+                                                   refundToScripts:@[refundScript]
+                                                              memo:nil
+                                                           onChain:account.wallet.chain];
+
 #if DEBUG
         DSLogPrivate(@"posting payment to: %@", protocolRequest.details.paymentURL);
 #else
         DSLog(@"posting payment to: <REDACTED>");
 #endif
-        
+
         [DSPaymentRequest postPayment:payment
-                                 scheme:@"dash"
-                                     to:protocolRequest.details.paymentURL
-                                onChain:account.wallet.chain
-                                timeout:20.0
-                             completion:^(DSPaymentProtocolACK *ack, NSError *error) {
-            
-            if (error) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    NSString *errorTitle = [NSString
-                                            stringWithFormat:
-                                            DSLocalizedString(@"Error from payment request server %@", nil),
-                                            protocolRequest.details.paymentURL];
-                    NSString *errorMessage = error.localizedDescription;
-                    NSString *localizedDescription = [NSString
-                                                      stringWithFormat:@"%@\n%@",
-                                                      errorTitle, errorMessage];
-                    NSError *resError = [NSError
-                                         errorWithDomain:DSErrorDomain
-                                         code:DSErrorPaymentRequestServerError
-                                         userInfo:@{
-                                             NSLocalizedDescriptionKey: localizedDescription,
-                                             NSUnderlyingErrorKey: error,
-                                         }];
-                    errorNotificationBlock(resError, errorTitle, errorMessage, YES);
-                });
-            } else {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    requestRelayCompletion(tx, ack, !error);
-                });
-                [account registerTransaction:tx saveImmediately:NO];
-                
-                [self publishTransaction:tx
-                              completion:^(NSError *publishingError) {
-                    if (publishingError) {
-                        if (!sent) {
-                            [account removeTransaction:tx saveImmediately:YES]; //we save in case the transaction was registered and saved from another process
-                            dispatch_async(dispatch_get_main_queue(), ^{
-                                publishedCompletion(tx, publishingError, sent);
-                            });
-                        }
-                    } else if (!sent) {
-                        sent = YES;
-                        tx.timestamp = [NSDate timeIntervalSince1970];
-                        [tx saveInitial];
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            publishedCompletion(tx, nil, sent);
-                        });
-                    }
-                }];
-            }
-        }];
+                               scheme:@"dash"
+                                   to:protocolRequest.details.paymentURL
+                              onChain:account.wallet.chain
+                              timeout:20.0
+                           completion:^(DSPaymentProtocolACK *ack, NSError *error) {
+                               if (error) {
+                                   dispatch_async(dispatch_get_main_queue(), ^{
+                                       NSString *errorTitle = [NSString
+                                           stringWithFormat:
+                                               DSLocalizedString(@"Error from payment request server %@", nil),
+                                           protocolRequest.details.paymentURL];
+                                       NSString *errorMessage = error.localizedDescription;
+                                       NSString *localizedDescription = [NSString
+                                           stringWithFormat:@"%@\n%@",
+                                           errorTitle, errorMessage];
+                                       NSError *resError = [NSError
+                                           errorWithDomain:DSErrorDomain
+                                                      code:DSErrorPaymentRequestServerError
+                                                  userInfo:@{
+                                                      NSLocalizedDescriptionKey: localizedDescription,
+                                                      NSUnderlyingErrorKey: error,
+                                                  }];
+                                       errorNotificationBlock(resError, errorTitle, errorMessage, YES);
+                                   });
+                               } else {
+                                   dispatch_async(dispatch_get_main_queue(), ^{
+                                       requestRelayCompletion(tx, ack, !error);
+                                   });
+                                   [account registerTransaction:tx saveImmediately:NO];
+
+                                   [self publishTransaction:tx
+                                                 completion:^(NSError *publishingError) {
+                                                     if (publishingError) {
+                                                         if (!sent) {
+                                                             [account removeTransaction:tx saveImmediately:YES]; //we save in case the transaction was registered and saved from another process
+                                                             dispatch_async(dispatch_get_main_queue(), ^{
+                                                                 publishedCompletion(tx, publishingError, sent);
+                                                             });
+                                                         }
+                                                     } else if (!sent) {
+                                                         sent = YES;
+                                                         tx.timestamp = [NSDate timeIntervalSince1970];
+                                                         [tx saveInitial];
+                                                         dispatch_async(dispatch_get_main_queue(), ^{
+                                                             publishedCompletion(tx, nil, sent);
+                                                         });
+                                                     }
+                                                 }];
+                               }
+                           }];
     }
 }
 
@@ -1025,8 +1024,8 @@
         // every time a new wallet address is added, the bloom filter has to be rebuilt, and each address is only used for
         // one transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a wallet
         // transaction is encountered during the blockchain download
-        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL dashpayGapLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INCOMING internal:NO error:nil];
-        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL dashpayGapLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INCOMING internal:YES error:nil];
+        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL unusedAccountGapLimit:SEQUENCE_UNUSED_GAP_LIMIT_EXTERNAL dashpayGapLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INCOMING internal:NO error:nil];
+        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL unusedAccountGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL dashpayGapLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INCOMING internal:YES error:nil];
         NSSet *addresses = [wallet.allReceiveAddresses setByAddingObjectsFromSet:wallet.allChangeAddresses];
         [allAddressesArray addObjectsFromArray:[addresses allObjects]];
 
