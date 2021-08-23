@@ -206,6 +206,9 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 //This removes all blockchain information from the wallet, used for resync
 - (void)wipeBlockchainInfoInContext:(NSManagedObjectContext *)context;
 
+//This removes all extra accounts, past the first (or sometimes second one).
+- (void)wipeBlockchainExtraAccountsInContext:(NSManagedObjectContext *)context;
+
 //This removes all wallet based information from the wallet, used when deletion of wallet is wanted
 - (void)wipeWalletInfo;
 

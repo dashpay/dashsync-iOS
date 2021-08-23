@@ -1106,6 +1106,12 @@
     for (DSAccount *account in self.accounts) {
         [account wipeBlockchainInfo];
     }
+    [self.specialTransactionsHolder removeAllTransactions];
+    [self wipeBlockchainIdentitiesInContext:context];
+    [self wipeBlockchainInvitationsInContext:context];
+}
+
+- (void)wipeBlockchainExtraAccountsInContext:(NSManagedObjectContext *)context {
     NSMutableArray *allAccountKeys = [[self.mAccounts allKeys] mutableCopy];
     [allAccountKeys removeObject:@(0)];
     if ([allAccountKeys containsObject:@(1)] && [[DSOptionsManager sharedInstance] syncType] & DSSyncType_MultiAccountAutoDiscovery) {
@@ -1114,9 +1120,6 @@
     if ([allAccountKeys count]) {
         [self.mAccounts removeObjectsForKeys:allAccountKeys];
     }
-    [self.specialTransactionsHolder removeAllTransactions];
-    [self wipeBlockchainIdentitiesInContext:context];
-    [self wipeBlockchainInvitationsInContext:context];
 }
 
 // MARK: - Blockchain Identities
