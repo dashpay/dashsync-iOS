@@ -258,7 +258,7 @@
         <scene sceneID="GC5-Q3-ExU">
             <objects>
                 <tableViewController title="Accounts" id="4dv-sj-XBh" customClass="DSAccountsViewController" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="80" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="OZ3-zM-SLO">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="90" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="OZ3-zM-SLO">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -277,13 +277,13 @@
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Balance" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1ci-Iu-hFC">
-                                            <rect key="frame" x="25" y="61" width="61" height="21"/>
+                                            <rect key="frame" x="25" y="56" width="61" height="21"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Account Number" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tZK-e7-FNr">
-                                            <rect key="frame" x="25" y="25" width="129" height="21"/>
+                                            <rect key="frame" x="25" y="20" width="129" height="21"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
@@ -297,7 +297,7 @@
                                     </subviews>
                                     <constraints>
                                         <constraint firstItem="tZK-e7-FNr" firstAttribute="leading" secondItem="dkz-0K-LeS" secondAttribute="leading" constant="25" id="1wS-xs-tdh"/>
-                                        <constraint firstItem="tZK-e7-FNr" firstAttribute="top" secondItem="dkz-0K-LeS" secondAttribute="top" constant="25" id="73K-bs-knB"/>
+                                        <constraint firstItem="tZK-e7-FNr" firstAttribute="top" secondItem="dkz-0K-LeS" secondAttribute="top" constant="20" id="73K-bs-knB"/>
                                         <constraint firstAttribute="trailing" secondItem="VRS-cN-Pgd" secondAttribute="trailing" constant="45" id="8FX-lk-ha4"/>
                                         <constraint firstItem="1ci-Iu-hFC" firstAttribute="leading" secondItem="dkz-0K-LeS" secondAttribute="leading" constant="25" id="D2R-LE-P8a"/>
                                         <constraint firstItem="1ci-Iu-hFC" firstAttribute="top" secondItem="tZK-e7-FNr" secondAttribute="bottom" constant="15" id="adp-U3-VUQ"/>

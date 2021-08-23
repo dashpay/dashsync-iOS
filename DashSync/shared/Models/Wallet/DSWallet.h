@@ -151,6 +151,9 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 //add an account to the wallet
 - (void)addAccount:(DSAccount *)account;
 
+//add another account to the wallet if authenticated
+- (DSAccount *_Nullable)addAnotherAccountIfAuthenticated;
+
 // returns an account where all derivation paths have the following account number
 - (DSAccount *_Nullable)accountWithNumber:(NSUInteger)accountNumber;
 

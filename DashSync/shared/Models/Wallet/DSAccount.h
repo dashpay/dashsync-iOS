@@ -32,6 +32,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountFromTransactionNotification;
+FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromTransactionNotification;
+
 @class DSFundsDerivationPath, DSIncomingFundsDerivationPathDSWallet, DSBlockchainIdentityRegistrationTransition, DSBlockchainIdentityUpdateTransition, DSCreditFundingTransaction;
 @class DSCoinbaseTransaction, DSPotentialOneWayFriendship;
 

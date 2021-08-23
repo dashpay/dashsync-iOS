@@ -50,6 +50,7 @@
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSLocalMasternode.h"
 #import "DSMasternodeHoldingsDerivationPath+Protected.h"
+#import "DSOptionsManager.h"
 #import "DSPriceManager.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "DSSpecialTransactionsWalletHolder.h"
@@ -383,6 +384,30 @@
     if (lastAccountNumber > [self accountsKnown]) {
         setKeychainInt(lastAccountNumber, [DSWallet accountsKnownKeyForWalletUniqueID:[self uniqueIDString]], NO);
     }
+}
+
+- (DSAccount *)addAnotherAccountIfAuthenticated {
+    uint32_t addAccountNumber = self.lastAccountNumber + 1;
+    NSArray *derivationPaths = [self.chain standardDerivationPathsForAccountNumber:addAccountNumber];
+    DSAccount *addAccount = [DSAccount accountWithAccountNumber:addAccountNumber withDerivationPaths:derivationPaths inContext:self.chain.chainManagedObjectContext];
+    NSString *seedPhrase = [self seedPhraseIfAuthenticated];
+    if (seedPhrase == nil) {
+        return nil;
+    }
+    NSData *derivedKeyData = (seedPhrase) ? [[DSBIP39Mnemonic sharedInstance]
+                                                deriveKeyFromPhrase:seedPhrase
+                                                     withPassphrase:nil] :
+                                            nil;
+    for (DSDerivationPath *derivationPath in addAccount.fundDerivationPaths) {
+        [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:self.uniqueIDString];
+    }
+    if ([self.chain isEvolutionEnabled]) {
+        [addAccount.masterContactsDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:self.uniqueIDString];
+    }
+
+    [self addAccount:addAccount];
+    [addAccount loadDerivationPaths];
+    return addAccount;
 }
 
 - (void)addAccounts:(NSArray<DSAccount *> *)accounts {
@@ -1080,6 +1105,14 @@
 - (void)wipeBlockchainInfoInContext:(NSManagedObjectContext *)context {
     for (DSAccount *account in self.accounts) {
         [account wipeBlockchainInfo];
+    }
+    NSMutableArray *allAccountKeys = [[self.mAccounts allKeys] mutableCopy];
+    [allAccountKeys removeObject:@(0)];
+    if ([allAccountKeys containsObject:@(1)] && [[DSOptionsManager sharedInstance] syncType] & DSSyncType_MultiAccountAutoDiscovery) {
+        [allAccountKeys removeObject:@(1)]; // In this case we want to keep account 1
+    }
+    if ([allAccountKeys count]) {
+        [self.mAccounts removeObjectsForKeys:allAccountKeys];
     }
     [self.specialTransactionsHolder removeAllTransactions];
     [self wipeBlockchainIdentitiesInContext:context];

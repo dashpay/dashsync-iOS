@@ -98,6 +98,7 @@
     NSDictionary<NSNumber *, NSString *> *syncTypes = @{
         @(DSSyncType_BaseSPV): @"Base SPV",
         @(DSSyncType_FullBlocks): @"Full Blocks",
+        @(DSSyncType_MultiAccountAutoDiscovery): @"MultiAccount",
         @(DSSyncType_BlockchainIdentities): @"Blockchain Identities",
         @(DSSyncType_DPNS): @"DPNS",
         @(DSSyncType_Dashpay): @"Dashpay",

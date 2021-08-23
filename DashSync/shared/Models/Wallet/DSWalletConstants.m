@@ -38,6 +38,9 @@ NSString *const DSTransactionManagerFilterDidChangeNotification = @"DSTransactio
 
 NSString *const DSWalletBalanceDidChangeNotification = @"DSWalletBalanceChangedNotification";
 
+NSString *const DSAccountNewAccountFromTransactionNotification = @"DSAccountNewAccountFromTransactionNotification";
+NSString *const DSAccountNewAccountShouldBeAddedFromTransactionNotification = @"DSAccountNewAccountShouldBeAddedFromTransactionNotification";
+
 NSString *const DSSporkListDidUpdateNotification = @"DSSporkListDidUpdateNotification";
 
 NSString *const DSMasternodeListDidChangeNotification = @"DSMasternodeListDidChangeNotification";
@@ -58,6 +61,9 @@ NSString *const DSGovernanceVoteCountUpdateNotification = @"DSGovernanceVoteCoun
 NSString *const DSChainsDidChangeNotification = @"DSChainsDidChangeNotification";
 
 NSString *const DSChainManagerNotificationChainKey = @"DSChainManagerNotificationChainKey";
+NSString *const DSChainManagerNotificationWalletKey = @"DSChainManagerNotificationWalletKey";
+NSString *const DSChainManagerNotificationAccountKey = @"DSChainManagerNotificationAccountKey";
+
 NSString *const DSPeerManagerNotificationPeerKey = @"DSPeerManagerNotificationPeerKey";
 
 NSString *const DSTransactionManagerNotificationTransactionKey = @"DSTransactionManagerNotificationTransactionKey";
