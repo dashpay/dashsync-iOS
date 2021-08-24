@@ -972,7 +972,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     [script appendCreditBurnScriptPubKeyForAddress:address forChain:self.wallet.chain];
 
     DSCreditFundingTransaction *transaction = [[DSCreditFundingTransaction alloc] initOnChain:self.wallet.chain];
-    return (DSCreditFundingTransaction *)[self updateTransaction:transaction forAmounts:@[@(amount)] toOutputScripts:@[script] withFee:fee shuffleOutputOrder:YES];
+    return (DSCreditFundingTransaction *)[self updateTransaction:transaction forAmounts:@[@(amount)] toOutputScripts:@[script] withFee:fee shuffleOutputOrder:YES followBIP69sorting:YES];
 }
 
 
@@ -985,7 +985,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     NSParameterAssert(amounts);
     NSParameterAssert(scripts);
     DSTransaction *transaction = [[DSTransaction alloc] initOnChain:self.wallet.chain];
-    return [self updateTransaction:transaction forAmounts:amounts toOutputScripts:scripts withFee:fee toShapeshiftAddress:shapeshiftAddress shuffleOutputOrder:YES];
+    return [self updateTransaction:transaction forAmounts:amounts toOutputScripts:scripts withFee:fee toShapeshiftAddress:shapeshiftAddress shuffleOutputOrder:YES followBIP69sorting:YES];
 }
 
 // MARK: == Proposal Transaction Creation
@@ -1004,15 +1004,26 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
 - (DSTransaction *)updateTransaction:(DSTransaction *)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee {
-    return [self updateTransaction:transaction forAmounts:amounts toOutputScripts:scripts withFee:fee shuffleOutputOrder:YES];
+    return [self updateTransaction:transaction forAmounts:amounts toOutputScripts:scripts withFee:fee shuffleOutputOrder:YES followBIP69sorting:YES];
 }
 
-- (DSTransaction *)updateTransaction:(DSTransaction *)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee shuffleOutputOrder:(BOOL)shuffleOutputOrder {
-    return [self updateTransaction:transaction forAmounts:amounts toOutputScripts:scripts withFee:fee toShapeshiftAddress:nil shuffleOutputOrder:shuffleOutputOrder];
+- (DSTransaction *)updateTransaction:(DSTransaction *)transaction
+                          forAmounts:(NSArray *)amounts
+                     toOutputScripts:(NSArray *)scripts
+                             withFee:(BOOL)fee
+                  shuffleOutputOrder:(BOOL)shuffleOutputOrder
+                  followBIP69sorting:(BOOL)followBIP69sorting {
+    return [self updateTransaction:transaction forAmounts:amounts toOutputScripts:scripts withFee:fee toShapeshiftAddress:nil shuffleOutputOrder:shuffleOutputOrder followBIP69sorting:followBIP69sorting];
 }
 
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
-- (DSTransaction *)updateTransaction:(DSTransaction *)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee toShapeshiftAddress:(NSString *)shapeshiftAddress shuffleOutputOrder:(BOOL)shuffleOutputOrder {
+- (DSTransaction *)updateTransaction:(DSTransaction *)transaction
+                          forAmounts:(NSArray *)amounts
+                     toOutputScripts:(NSArray *)scripts
+                             withFee:(BOOL)fee
+                 toShapeshiftAddress:(NSString *)shapeshiftAddress
+                  shuffleOutputOrder:(BOOL)shuffleOutputOrder
+                  followBIP69sorting:(BOOL)followBIP69sorting {
     NSParameterAssert(transaction);
     NSParameterAssert(amounts);
     NSParameterAssert(scripts);
@@ -1108,9 +1119,15 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         [transaction addOutputShapeshiftAddress:shapeshiftAddress];
     }
 
+    if (followBIP69sorting) {
+        [transaction sortInputsAccordingToBIP69];
+    }
+
     if (balance - (amount + feeAmount) >= self.wallet.chain.minOutputAmount) {
         [transaction addOutputAddress:self.changeAddress amount:balance - (amount + feeAmount)];
-        if (shuffleOutputOrder) {
+        if (followBIP69sorting) {
+            [transaction sortOutputsAccordingToBIP69];
+        } else if (shuffleOutputOrder) {
             [transaction shuffleOutputOrder];
         }
     }

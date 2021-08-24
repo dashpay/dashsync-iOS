@@ -133,6 +133,8 @@ typedef union _UInt160 UInt160;
 - (void)addOutputScript:(NSData *)script amount:(uint64_t)amount;
 - (void)setInputAddress:(NSString *)address atIndex:(NSUInteger)index;
 - (void)shuffleOutputOrder;
+- (void)sortInputsAccordingToBIP69;
+- (void)sortOutputsAccordingToBIP69;
 - (void)hasSetInputsAndOutputs;
 - (BOOL)signWithSerializedPrivateKeys:(NSArray *)privateKeys;
 - (BOOL)signWithPrivateKeys:(NSArray *)keys;

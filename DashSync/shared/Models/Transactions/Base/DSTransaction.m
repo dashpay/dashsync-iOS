@@ -542,6 +542,74 @@
     }
 }
 
+/**
+ * Hashes (in reversed byte-order) are to be sorted in ASC order, lexicographically.
+ * If they're match -> the respective indices will be compared, in ASC.
+ */
+- (void)sortInputsAccordingToBIP69 {
+    void (^swapper)(NSUInteger, NSUInteger) = ^(NSUInteger i, NSUInteger j) {
+        [self.hashes exchangeObjectAtIndex:i withObjectAtIndex:j];
+        [self.indexes exchangeObjectAtIndex:i withObjectAtIndex:j];
+        [self.inScripts exchangeObjectAtIndex:i withObjectAtIndex:j];
+        [self.signatures exchangeObjectAtIndex:i withObjectAtIndex:j];
+        [self.sequences exchangeObjectAtIndex:i withObjectAtIndex:j];
+    };
+    NSUInteger n = [self.amounts count] - 1;
+    UInt256 hash1 = UINT256_ZERO;
+    UInt256 hash2 = UINT256_ZERO;
+    while (true) {
+        BOOL swapped = false;
+        for (NSUInteger i = 0; i < n; i++) {
+            NSUInteger next = i + 1;
+            [self.hashes[i] getValue:&hash1];
+            [self.hashes[next] getValue:&hash2];
+            NSString *s1 = uint256_hex(hash1);
+            NSString *s2 = uint256_hex(hash2);
+            if (s1 > s2 || (s1 == s2 && self.indexes[i] > self.indexes[next])) {
+                swapper(i, next);
+                swapped = true;
+            }
+        }
+        n--;
+        if (!swapped)
+            break;
+    }
+}
+
+/**
+ * Amounts are to be sorted in ASC.
+ * If they're equal -> respective outScripts will be compared lexicographically, in ASC.
+ */
+- (void)sortOutputsAccordingToBIP69 {
+    void (^swapper)(NSUInteger, NSUInteger) = ^(NSUInteger i, NSUInteger j) {
+        [self.amounts exchangeObjectAtIndex:i withObjectAtIndex:j];
+        [self.outScripts exchangeObjectAtIndex:i withObjectAtIndex:j];
+        [self.addresses exchangeObjectAtIndex:i withObjectAtIndex:j];
+    };
+    NSUInteger n = [self.amounts count] - 1;
+    while (true) {
+        BOOL swapped = false;
+        for (NSUInteger i = 0; i < n; i++) {
+            NSUInteger next = i + 1;
+            if (self.amounts[i] > self.amounts[next]) {
+                swapper(i, next);
+                swapped = true;
+            } else if (self.amounts[i] == self.amounts[next]) {
+                NSString *s1 = [[NSString alloc] initWithData:self.outScripts[i] encoding:NSUTF8StringEncoding];
+                NSString *s2 = [[NSString alloc] initWithData:self.outScripts[next] encoding:NSUTF8StringEncoding];
+                if ([s1 length] > [s2 length] ||
+                    [s1 compare:s2 options:NSLiteralSearch] == NSOrderedDescending) {
+                    swapper(i, next);
+                    swapped = true;
+                }
+            }
+        }
+        n--;
+        if (!swapped)
+            break;
+    }
+}
+
 // MARK: - Signing
 
 - (BOOL)signWithSerializedPrivateKeys:(NSArray *)privateKeys {
