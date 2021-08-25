@@ -32,6 +32,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountFromTransactionNotification;
+FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromTransactionNotification;
+
 @class DSFundsDerivationPath, DSIncomingFundsDerivationPathDSWallet, DSBlockchainIdentityRegistrationTransition, DSBlockchainIdentityUpdateTransition, DSCreditFundingTransaction;
 @class DSCoinbaseTransaction, DSPotentialOneWayFriendship;
 
@@ -97,9 +100,11 @@ NS_ASSUME_NONNULL_BEGIN
 // has an extended public key missing in one of the account derivation paths
 @property (nonatomic, readonly) BOOL hasAnExtendedPublicKeyMissing;
 
-- (NSArray *_Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit dashpayGapLimit:(NSUInteger)dashpayGapLimit internal:(BOOL)internal error:(NSError **)error;
+- (NSArray *_Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit unusedAccountGapLimit:(NSUInteger)unusedAccountGapLimit dashpayGapLimit:(NSUInteger)dashpayGapLimit internal:(BOOL)internal error:(NSError **)error;
 
 + (DSAccount *)accountWithAccountNumber:(uint32_t)accountNumber withDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext *_Nullable)context;
+
++ (NSArray<DSAccount *> *)standardAccountsToAccountNumber:(uint32_t)accountNumber onChain:(DSChain *)chain inContext:(NSManagedObjectContext *_Nullable)context;
 
 - (instancetype)initWithAccountNumber:(uint32_t)accountNumber withDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext *_Nullable)context;
 

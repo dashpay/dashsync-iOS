@@ -1024,8 +1024,8 @@
         // every time a new wallet address is added, the bloom filter has to be rebuilt, and each address is only used for
         // one transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a wallet
         // transaction is encountered during the blockchain download
-        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL dashpayGapLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INCOMING internal:NO error:nil];
-        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL dashpayGapLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INCOMING internal:YES error:nil];
+        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL unusedAccountGapLimit:SEQUENCE_UNUSED_GAP_LIMIT_EXTERNAL dashpayGapLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INCOMING internal:NO error:nil];
+        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL unusedAccountGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL dashpayGapLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INCOMING internal:YES error:nil];
         NSSet *addresses = [wallet.allReceiveAddresses setByAddingObjectsFromSet:wallet.allChangeAddresses];
         [allAddressesArray addObjectsFromArray:[addresses allObjects]];
 
@@ -1240,8 +1240,11 @@
     } else {
         transaction.timestamp = [NSDate timeIntervalSince1970];
     }
-    DSAccount *account = [self.chain firstAccountThatCanContainTransaction:transaction];
-    if (!account) {
+    NSArray<DSAccount *> *accounts = [self.chain accountsThatCanContainTransaction:transaction];
+    NSMutableArray<DSAccount *> *accountsAcceptingTransaction = [NSMutableArray array];
+    NSMutableArray<DSAccount *> *accountsWithValidTransaction = [NSMutableArray array];
+    NSMutableArray<DSAccount *> *accountsSendingValueInTransaction = [NSMutableArray array];
+    if (!accounts.count) {
         if (![self.chain transactionHasLocalReferences:transaction]) {
             if (peer) {
 #if DEBUG
@@ -1273,20 +1276,32 @@
             }
         }
     } else {
-        if (![account registerTransaction:transaction saveImmediately:block ? NO : YES]) {
-            if (peer) {
-#if DEBUG
-                DSLogPrivate(@"%@:%d could not register transaction %@", peer.host, peer.port, hash);
-#else
-                DSLog(@"%@:%d could not register transaction %@", peer.host, peer.port, @"<REDACTED>");
-#endif
+        for (DSAccount *account in accounts) {
+            if ([account registerTransaction:transaction saveImmediately:block ? NO : YES]) {
+                [accountsAcceptingTransaction addObject:account];
+                if ([account transactionIsValid:transaction]) {
+                    [accountsWithValidTransaction addObject:account];
+                }
+                if ([account amountSentByTransaction:transaction] > 0) {
+                    [accountsSendingValueInTransaction addObject:account];
+                }
             } else {
+                if (peer) {
 #if DEBUG
-                DSLogPrivate(@"could not register transaction %@", hash);
+                    DSLogPrivate(@"%@:%d could not register transaction %@", peer.host, peer.port, hash);
 #else
-                DSLog(@"could not register transaction %@", @"<REDACTED>");
+                    DSLog(@"%@:%d could not register transaction %@", peer.host, peer.port, @"<REDACTED>");
 #endif
+                } else {
+#if DEBUG
+                    DSLogPrivate(@"could not register transaction %@", hash);
+#else
+                    DSLog(@"could not register transaction %@", @"<REDACTED>");
+#endif
+                }
             }
+        }
+        if (accountsAcceptingTransaction.count == 0) {
             return;
         }
     }
@@ -1328,15 +1343,15 @@
         if (peer && peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
 
         //While we would only add to publish list is transaction sent amount was over 0 for a normal transaction, other transactions should be published immediately as they have other consequences
-        if (account && [account transactionIsValid:transaction]) {
+        if (accountsWithValidTransaction.count > 0) {
             [self addUnconfirmedTransactionToPublishList:transaction]; // add valid send tx to mempool
-        } else if (!account && registered) {
+        } else if (accountsAcceptingTransaction.count == 0 && registered) {
             [self addUnconfirmedTransactionToPublishList:transaction];
         }
 
     } else {
         if (peer && peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
-        if (account && [account amountSentByTransaction:transaction] > 0 && [account transactionIsValid:transaction]) {
+        if (accountsSendingValueInTransaction.count > 0 && accountsWithValidTransaction.count > 0) {
             [self addUnconfirmedTransactionToPublishList:transaction]; // add valid send tx to mempool
         }
     }
@@ -1349,6 +1364,28 @@
         [transactionLockReceivedEarlier saveInitial];
     }
 
+    BOOL addedNewAccount = FALSE;
+
+    for (DSAccount *account in accountsAcceptingTransaction) {
+        if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MultiAccountAutoDiscovery) && account.wallet.lastAccountNumber == account.accountNumber) {
+            // We got a transaction for the last account, add an account to the wallet
+            DSAccount *addedAccount = [account.wallet addAnotherAccountIfAuthenticated];
+            if (addedAccount) {
+                addedNewAccount = TRUE;
+                // New account was created
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:DSAccountNewAccountFromTransactionNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSChainManagerNotificationWalletKey: account.wallet, DSChainManagerNotificationAccountKey: account}];
+                });
+            } else {
+                // This means we were not authenticated, we should post a notification
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:DSAccountNewAccountShouldBeAddedFromTransactionNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSChainManagerNotificationWalletKey: account.wallet}];
+                });
+            }
+            break;
+        }
+    }
+
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
     if (callback || !peer || (!syncing && ![self.txRelays[hash] containsObject:peer])) {
         if (!self.txRelays[hash]) self.txRelays[hash] = [NSMutableSet set];
@@ -1357,12 +1394,14 @@
         }
         if (callback) [self.publishedCallback removeObjectForKey:hash];
 
-        if (account && [self.txRelays[hash] count] >= self.peerManager.maxConnectCount &&
-            [account transactionForHash:transaction.txHash].blockHeight == TX_UNCONFIRMED &&
-            [account transactionForHash:transaction.txHash].timestamp == 0) {
-            [account setBlockHeight:TX_UNCONFIRMED
-                        andTimestamp:[NSDate timeIntervalSince1970]
-                forTransactionHashes:@[hash]]; // set timestamp when tx is verified
+        for (DSAccount *account in accountsAcceptingTransaction) {
+            if (account && [self.txRelays[hash] count] >= self.peerManager.maxConnectCount &&
+                [account transactionForHash:transaction.txHash].blockHeight == TX_UNCONFIRMED &&
+                [account transactionForHash:transaction.txHash].timestamp == 0) {
+                [account setBlockHeight:TX_UNCONFIRMED
+                            andTimestamp:[NSDate timeIntervalSince1970]
+                    forTransactionHashes:@[hash]]; // set timestamp when tx is verified
+            }
         }
 
         //todo: deal when the transaction received is not in an account
@@ -1408,6 +1447,8 @@
         }
         [self.identitiesManager checkCreditFundingTransactionForPossibleNewIdentity:(DSCreditFundingTransaction *)transaction];
         [self destroyTransactionsBloomFilter]; //We want to destroy it temporarily, while we wait for L2, no matter what the block should not be saved and needs to be refetched
+    } else if (addedNewAccount) {
+        [self destroyTransactionsBloomFilter];
     } else {
         [self updateTransactionsBloomFilter];
     }
