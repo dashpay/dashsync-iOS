@@ -98,6 +98,12 @@ CFAllocatorRef SecureAllocator() {
     return CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), aNumItems));
 }
 
++ (NSMutableData *)withScriptPubKeyForAddress:(NSString *)address forChain:(DSChain *)chain {
+    NSMutableData *script = [NSMutableData data];
+    [script appendScriptPubKeyForAddress:address forChain:chain];
+    return script;
+}
+
 + (NSMutableString *)secureStringWithLength:(NSUInteger)length {
     return CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), length));
 }
