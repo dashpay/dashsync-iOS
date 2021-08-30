@@ -53,6 +53,16 @@ NS_ASSUME_NONNULL_BEGIN
 typedef union _UInt256 UInt256;
 typedef union _UInt160 UInt160;
 
+typedef NS_ENUM(NSInteger, DSTransactionSortType)
+{
+    /// No sorting
+    DSTransactionSortType_None,
+    /// Shuffle outputs
+    DSTransactionSortType_Shuffle,
+    /// Sorting inputs & outputs according to BIP-69
+    DSTransactionSortType_BIP69,
+};
+
 @interface DSTransaction : NSObject
 
 @property (nonatomic, readonly) NSArray *inputAddresses;

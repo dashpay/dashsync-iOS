@@ -164,7 +164,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (DSTransaction *)updateTransaction:(DSTransaction *)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee;
 
 
-- (DSTransaction *)updateTransaction:(DSTransaction *)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee shuffleOutputOrder:(BOOL)shuffleOutputOrder followBIP69sorting:(BOOL)followBIP69sorting;
+- (DSTransaction *)updateTransaction:(DSTransaction *)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee sortType:(DSTransactionSortType)sortType;
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
 - (void)signTransaction:(DSTransaction *)transaction withPrompt:(NSString *_Nullable)authprompt completion:(_Nonnull TransactionValidityCompletionBlock)completion;
 
