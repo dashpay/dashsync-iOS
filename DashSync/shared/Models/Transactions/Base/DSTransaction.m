@@ -555,6 +555,7 @@
         [self.sequences exchangeObjectAtIndex:i withObjectAtIndex:j];
     };
     NSUInteger n = [self.amounts count] - 1;
+    NSUInteger n = [self.hashes count] - 1;
     UInt256 hash1 = UINT256_ZERO;
     UInt256 hash2 = UINT256_ZERO;
     while (true) {
