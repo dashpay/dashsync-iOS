@@ -554,7 +554,6 @@
         [self.signatures exchangeObjectAtIndex:i withObjectAtIndex:j];
         [self.sequences exchangeObjectAtIndex:i withObjectAtIndex:j];
     };
-    NSUInteger n = [self.amounts count] - 1;
     NSUInteger n = [self.hashes count] - 1;
     UInt256 hash1 = UINT256_ZERO;
     UInt256 hash2 = UINT256_ZERO;
@@ -566,7 +565,13 @@
             [self.hashes[next] getValue:&hash2];
             NSString *s1 = uint256_hex(hash1);
             NSString *s2 = uint256_hex(hash2);
-            if (s1 > s2 || (s1 == s2 && self.indexes[i] > self.indexes[next])) {
+            id index1 = self.indexes[i];
+            id index2 = self.indexes[next];
+            NSComparisonResult hashComparison = [s1 compare:s2];
+            BOOL nextHashIsSmaller = hashComparison == NSOrderedDescending;
+            BOOL nextHashIsEqual = hashComparison == NSOrderedSame;
+            BOOL nextIndexIsSmaller = [index1 compare:index2] == NSOrderedDescending;
+            if (nextHashIsSmaller || (nextHashIsEqual && nextIndexIsSmaller)) {
                 swapper(i, next);
                 swapped = true;
             }
@@ -592,17 +597,11 @@
         BOOL swapped = false;
         for (NSUInteger i = 0; i < n; i++) {
             NSUInteger next = i + 1;
-            if (self.amounts[i] > self.amounts[next]) {
+            NSComparisonResult amountsComparison = [self.amounts[i] compare:self.amounts[next]];
+            if (amountsComparison == NSOrderedDescending ||
+                (amountsComparison == NSOrderedSame && [((NSMutableData *)self.outScripts[i]).hexString compare:((NSMutableData *)self.outScripts[next]).hexString options:NSLiteralSearch] == NSOrderedDescending)) {
                 swapper(i, next);
                 swapped = true;
-            } else if (self.amounts[i] == self.amounts[next]) {
-                NSString *s1 = [[NSString alloc] initWithData:self.outScripts[i] encoding:NSUTF8StringEncoding];
-                NSString *s2 = [[NSString alloc] initWithData:self.outScripts[next] encoding:NSUTF8StringEncoding];
-                if ([s1 length] > [s2 length] ||
-                    [s1 compare:s2 options:NSLiteralSearch] == NSOrderedDescending) {
-                    swapper(i, next);
-                    swapped = true;
-                }
             }
         }
         n--;
