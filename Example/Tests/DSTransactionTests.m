@@ -398,7 +398,7 @@
  * 2) outScripts lexicographically in ASC
  */
 - (void)testBIP69 {
-    DSChain *devnetDRA = [DSChain testnet];
+    DSChain *testnet = [DSChain testnet];
     NSString *inputPrivateKey = @"cNeRqjZpEEowdxMjiBa7S5uBgqweng19F1EZRFWcqE2XTpDy1Vzt";
 
     DSECDSAKey *k2 = [DSECDSAKey keyWithSecret:*(UInt256 *)@"0000000000000000000000000000000000000000000000000000000000000001".hexToData.bytes compressed:YES];
@@ -407,40 +407,39 @@
     DSECDSAKey *k5 = [DSECDSAKey keyWithSecret:*(UInt256 *)@"0000000000000000000000000000000000000000000000000000000000000004".hexToData.bytes compressed:YES];
 
     NSString *a1 = @"yaMmAV9Fmx4St7xPH9eHCLcYJZdGYd8vD8";
-    NSString *a2 = [k2 addressForChain:devnetDRA];
-    NSString *a3 = [k3 addressForChain:devnetDRA];
-    NSString *a4 = [k4 addressForChain:devnetDRA];
-    NSString *a5 = [k5 addressForChain:devnetDRA];
+    NSString *a2 = [k2 addressForChain:testnet];
+    NSString *a3 = [k3 addressForChain:testnet];
+    NSString *a4 = [k4 addressForChain:testnet];
+    NSString *a5 = [k5 addressForChain:testnet];
 
-    NSMutableData *script1 = [NSMutableData withScriptPubKeyForAddress:a1 forChain:devnetDRA];
-    NSMutableData *script2 = [NSMutableData withScriptPubKeyForAddress:a2 forChain:devnetDRA];
-    NSMutableData *script3 = [NSMutableData withScriptPubKeyForAddress:a3 forChain:devnetDRA];
-    NSMutableData *script4 = [NSMutableData withScriptPubKeyForAddress:a4 forChain:devnetDRA];
-    NSMutableData *script5 = [NSMutableData withScriptPubKeyForAddress:a5 forChain:devnetDRA];
+    NSMutableData *script1 = [NSMutableData withScriptPubKeyForAddress:a1 forChain:testnet];
+    NSMutableData *script2 = [NSMutableData withScriptPubKeyForAddress:a2 forChain:testnet];
+    NSMutableData *script3 = [NSMutableData withScriptPubKeyForAddress:a3 forChain:testnet];
+    NSMutableData *script4 = [NSMutableData withScriptPubKeyForAddress:a4 forChain:testnet];
+    NSMutableData *script5 = [NSMutableData withScriptPubKeyForAddress:a5 forChain:testnet];
 
-    NSValue *hash1 = uint256_obj(*(UInt256 *)@"ce5e6919b13d6e58da10f933b6442558ba470b24f488f1449d2adf1e0a892e7d".hexToData.reverse.bytes);
-    NSValue *hash2 = uint256_obj(*(UInt256 *)@"ce5e6919b13d6e58da10f933b6442558ba470b24f488f1449d2adf1e0a892e7a".hexToData.reverse.bytes);
-    NSValue *hash3 = uint256_obj(*(UInt256 *)@"ce5e6919b13d6e58da10f933b6442558ba470b24f488f1449d2adf1e0a892e7b".hexToData.reverse.bytes);
-    NSValue *hash4 = uint256_obj(*(UInt256 *)@"ce5e6919b13d6e58da10f933b6442558ba470b24f488f1449d2adf1e0a892e7c".hexToData.reverse.bytes);
-    NSValue *hash5 = uint256_obj(*(UInt256 *)@"ce5e6919b13d6e58da10f933b6442558ba470b24f488f1449d2adf1e0a892e7c".hexToData.reverse.bytes);
+    NSValue *hash1 = uint256_obj(@"ce5e6919b13d6e58da10f933b6442558ba470b24f488f1449d2adf1e0a892e7d".hexToData.reverse.UInt256);
+    NSValue *hash2 = uint256_obj(@"ce5e6919b13d6e58da10f933b6442558ba470b24f488f1449d2adf1e0a892e7a".hexToData.reverse.UInt256);
+    NSValue *hash3 = uint256_obj(@"ce5e6919b13d6e58da10f933b6442558ba470b24f488f1449d2adf1e0a892e7b".hexToData.reverse.UInt256);
+    NSValue *hash4 = uint256_obj(@"ce5e6919b13d6e58da10f933b6442558ba470b24f488f1449d2adf1e0a892e7c".hexToData.reverse.UInt256);
+    NSValue *hash5 = uint256_obj(@"ce5e6919b13d6e58da10f933b6442558ba470b24f488f1449d2adf1e0a892e7c".hexToData.reverse.UInt256);
 
     NSArray *hashes = @[hash1, hash2, hash3, hash4, hash5];
     NSArray *indices = @[@1, @1, @1, @1, @0];
     NSArray *inScripts = @[script1, script2, script3, script4, script5];
-    NSArray *sequences = @[@(TXIN_SEQUENCE - 1), @(TXIN_SEQUENCE - 2), @(TXIN_SEQUENCE - 3), @(TXIN_SEQUENCE - 4), @(TXIN_SEQUENCE - 5)];
 
     NSArray *outputAmounts = @[@2899999999774, @100000000000, @2899999999774];
     NSString *outputAddress1 = @"yiTyFtkZVCrEvmANHoj9rJQ2VA9HBnYTgp";
     NSString *outputAddress2 = @"ygTmsRfjDQ8c8UDny2uU8gafAeFAKP6G1g";
     NSString *outputAddress3 = @"yaMmAV9Fmx4St7xPH9eHCLcYJZdGYd8vD8";
 
-    NSMutableData *outputScript1 = [NSMutableData withScriptPubKeyForAddress:outputAddress1 forChain:devnetDRA];
+    NSMutableData *outputScript1 = [NSMutableData withScriptPubKeyForAddress:outputAddress1 forChain:testnet];
     //76a914f2ef7a87a09aadd215be821ddfcb922fa099f64f88ac
 
-    NSMutableData *outputScript2 = [NSMutableData withScriptPubKeyForAddress:outputAddress2 forChain:devnetDRA];
+    NSMutableData *outputScript2 = [NSMutableData withScriptPubKeyForAddress:outputAddress2 forChain:testnet];
     //76a914dcf5b8abf6e222dea0219f4e3b539fa9b6addcfa88ac
 
-    NSMutableData *outputScript3 = [NSMutableData withScriptPubKeyForAddress:outputAddress3 forChain:devnetDRA];
+    NSMutableData *outputScript3 = [NSMutableData withScriptPubKeyForAddress:outputAddress3 forChain:testnet];
     //76a9149a01e1b57808ed4f14553fc4624de20c13c9e97e88ac
 
     NSArray *outputAddresses = @[outputAddress1, outputAddress2, outputAddress3];
@@ -448,10 +447,9 @@
     DSTransaction *tx = [[DSTransaction alloc] initWithInputHashes:hashes
                                                       inputIndexes:indices
                                                       inputScripts:inScripts
-                                                    inputSequences:sequences
                                                    outputAddresses:outputAddresses
                                                      outputAmounts:outputAmounts
-                                                           onChain:devnetDRA];
+                                                           onChain:testnet];
     tx.version = 2;
     tx.lockTime = 1717;
     [tx signWithSerializedPrivateKeys:@[inputPrivateKey]];
