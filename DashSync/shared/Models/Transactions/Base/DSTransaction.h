@@ -31,7 +31,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSChain, DSAccount, DSWallet, DSTransactionLockVote, DSTransactionEntity, DSInstantSendTransactionLock, DSBlockchainIdentity, DSDerivationPath;
+@class DSChain, DSAccount, DSWallet, DSTransactionLockVote, DSTransactionEntity, DSInstantSendTransactionLock, DSBlockchainIdentity, DSDerivationPath, DSTransactionInput, DSTransactionOutput;
 
 #define TX_FEE_PER_B 1ULL                                                          // standard tx fee per b of tx size
 #define TX_FEE_PER_INPUT 10000ULL                                                  // standard ix fee per input
@@ -54,6 +54,9 @@ typedef union _UInt256 UInt256;
 typedef union _UInt160 UInt160;
 
 @interface DSTransaction : NSObject
+
+@property (nonatomic, readonly) NSArray<DSTransactionInput *> *inputs;
+@property (nonatomic, readonly) NSArray<DSTransactionOutput *> *outputs;
 
 @property (nonatomic, readonly) NSArray *inputAddresses;
 @property (nonatomic, readonly) NSArray *inputHashes;
@@ -106,9 +109,6 @@ typedef union _UInt160 UInt160;
 @property (nonatomic, readonly) Class entityClass;
 
 @property (nonatomic, readonly) BOOL transactionTypeRequiresInputs;
-
-@property (nonatomic, strong) NSMutableArray *hashes, *indexes, *inScripts, *signatures, *sequences;
-@property (nonatomic, strong) NSMutableArray *amounts, *addresses, *outScripts;
 
 + (instancetype)transactionWithMessage:(NSData *)message onChain:(DSChain *)chain;
 + (instancetype)devnetGenesisCoinbaseWithIdentifier:(NSString *)identifier forChain:(DSChain *)chain;
