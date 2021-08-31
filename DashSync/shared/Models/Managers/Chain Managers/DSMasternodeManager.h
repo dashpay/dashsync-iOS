@@ -88,6 +88,8 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 
 - (DSQuorumEntry *_Nullable)quorumEntryForChainLockRequestID:(UInt256)requestID forBlockHeight:(uint32_t)blockHeight;
 
+- (DSQuorumEntry *_Nullable)quorumEntryForPlatformHavingQuorumHash:(UInt256)quorumHash forBlockHeight:(uint32_t)blockHeight;
+
 - (DSMasternodeList *_Nullable)masternodeListForBlockHash:(UInt256)blockHash withBlockHeightLookup:(uint32_t (^_Nullable)(UInt256 blockHash))blockHeightLookup;
 
 - (DSMasternodeList *_Nullable)masternodeListForBlockHash:(UInt256)blockHash;

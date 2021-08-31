@@ -13,7 +13,7 @@
 #import "DSProviderUpdateRegistrarTransaction.h"
 #import "DSProviderUpdateRegistrarTransactionEntity+CoreDataClass.h"
 #import "DSTransactionFactory.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSString+Dash.h"
 

@@ -17,7 +17,7 @@
 
 #import "DSPlatformDocumentsRequest.h"
 #import "DPContract.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSObject+DSCborEncoding.h"
 #import "NSPredicate+CBORData.h"
@@ -39,6 +39,7 @@
     platformDocumentsRequest.limit = 1;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"domain";
+    platformDocumentsRequest.prove = DSPROVE_PLATFORM;
     return platformDocumentsRequest;
 }
 
@@ -49,6 +50,7 @@
     platformDocumentsRequest.limit = 100;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"domain";
+    platformDocumentsRequest.prove = DSPROVE_PLATFORM;
     return platformDocumentsRequest;
 }
 
@@ -64,6 +66,7 @@
     platformDocumentsRequest.limit = (uint32_t)usernames.count;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"domain";
+    platformDocumentsRequest.prove = DSPROVE_PLATFORM;
     return platformDocumentsRequest;
 }
 
@@ -78,6 +81,7 @@
     platformDocumentsRequest.limit = limit;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"domain";
+    platformDocumentsRequest.prove = DSPROVE_PLATFORM;
     return platformDocumentsRequest;
 }
 
@@ -90,6 +94,7 @@
     platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"$ownerId" ascending:YES], [NSSortDescriptor sortDescriptorWithKey:@"$createdAt" ascending:YES]];
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"contactRequest";
+    platformDocumentsRequest.prove = DSPROVE_PLATFORM;
     return platformDocumentsRequest;
 }
 
@@ -102,6 +107,7 @@
     platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"toUserId" ascending:YES], [NSSortDescriptor sortDescriptorWithKey:@"$createdAt" ascending:YES]];
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"contactRequest";
+    platformDocumentsRequest.prove = DSPROVE_PLATFORM;
     return platformDocumentsRequest;
 }
 
@@ -112,6 +118,7 @@
     platformDocumentsRequest.limit = 1;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"contactRequest";
+    platformDocumentsRequest.prove = DSPROVE_PLATFORM;
     return platformDocumentsRequest;
 }
 
@@ -122,6 +129,7 @@
     platformDocumentsRequest.limit = 1;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"profile";
+    platformDocumentsRequest.prove = DSPROVE_PLATFORM;
     return platformDocumentsRequest;
 }
 
@@ -132,6 +140,7 @@
     platformDocumentsRequest.limit = (uint32_t)userIds.count;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"profile";
+    platformDocumentsRequest.prove = DSPROVE_PLATFORM;
     return platformDocumentsRequest;
 }
 
@@ -146,6 +155,7 @@
     platformDocumentsRequest.limit = (uint32_t)preorderSaltedHashes.count;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"preorder";
+    platformDocumentsRequest.prove = DSPROVE_PLATFORM;
     return platformDocumentsRequest;
 }
 
@@ -171,6 +181,7 @@
     }
     getDocumentsRequest.startAt = self.startAt;
     getDocumentsRequest.limit = self.limit;
+    getDocumentsRequest.prove = self.prove;
     DSLog(@"Sending request to Contract %@", getDocumentsRequest.dataContractId.base58String);
     return getDocumentsRequest;
 }

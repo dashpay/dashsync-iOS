@@ -17,7 +17,7 @@
 
 #import "DSContactRequest.h"
 #import "DSBlockchainIdentity+Protected.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSData+Encryption.h"
 #import "NSString+Bitcoin.h"
 

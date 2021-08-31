@@ -11,7 +11,7 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-@class DSWallet, DSBlockchainIdentityRegistrationTransition, DSBlockchainIdentityTopupTransition, DSBlockchainIdentityUpdateTransition, DSBlockchainIdentityCloseTransition, DSAccount, DSChain, DSTransition, DSDashpayUserEntity, DSPotentialOneWayFriendship, DSTransaction, DSFriendRequestEntity, DSPotentialContact, DSCreditFundingTransaction, DSDocumentTransition, DSKey, DPDocumentFactory, DSTransientDashpayUser, DSBlockchainInvitation, DSAuthenticationKeysDerivationPath;
+@class DSWallet, DSBlockchainIdentityRegistrationTransition, DSBlockchainIdentityTopupTransition, DSBlockchainIdentityUpdateTransition, DSBlockchainIdentityCloseTransition, DSAccount, DSChain, DSTransition, DSDashpayUserEntity, DSPotentialOneWayFriendship, DSTransaction, DSFriendRequestEntity, DSPotentialContact, DSCreditFundingTransaction, DSDocumentTransition, DSKey, DPDocumentFactory, DSTransientDashpayUser, DSBlockchainInvitation, DSAuthenticationKeysDerivationPath, UIImage;
 
 typedef NS_ENUM(NSUInteger, DSBlockchainIdentityRegistrationStep)
 {
@@ -187,6 +187,10 @@ FOUNDATION_EXPORT NSString *const DSBlockchainIdentityUpdateEventDashpaySyncroni
 /*! @brief This is the transaction on L1 that has an output that is used to fund the creation of this blockchain identity.
     @discussion There are situations where this is nil as it is not yet known ; if the blockchain identity is being retrieved from L2 or if we are resyncing the chain. */
 @property (nullable, nonatomic, readonly) DSCreditFundingTransaction *registrationCreditFundingTransaction;
+
+/*! @brief This is the hash of the transaction on L1 that has an output that is used to fund the creation of this blockchain identity.
+    @discussion There are situations where this is nil as it is not yet known ; if the blockchain identity is being retrieved from L2 or if we are resyncing the chain. */
+@property (nonatomic, readonly) UInt256 registrationCreditFundingTransactionHash;
 
 /*! @brief In our system a contact is a vue on a blockchain identity for Dashpay. A blockchain identity is therefore represented by a contact that will have relationships in the system. This is in the default backgroundContext. */
 @property (nonatomic, readonly) DSDashpayUserEntity *matchingDashpayUserInViewContext;

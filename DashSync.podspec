@@ -28,11 +28,12 @@ Pod::Spec.new do |s|
   s.macos.source_files = "DashSync/macOS/**/*.{h,m,mm}"
   s.macos.public_header_files = 'DashSync/macOS/**/*.h'
   s.private_header_files = 'DashSync/crypto/x11/*.h'
-  s.libraries = 'bz2', 'sqlite3'
+  s.libraries = 'resolv', 'bz2', 'sqlite3'
   s.resource_bundles = {'DashSync' => ['DashSync/shared/*.xcdatamodeld', 'DashSync/shared/MappingModels/*.xcmappingmodel', 'DashSync/shared/*.plist', 'DashSync/shared/*.lproj', 'DashSync/shared/MasternodeLists/*.dat', 'DashSync/shared/*.json']}
   
   s.framework = 'Foundation', 'SystemConfiguration', 'CoreData', 'BackgroundTasks', 'Security'
-  s.vendored_libraries = 'DashSync/lib/libmerkiOS.a'
+  s.ios.vendored_libraries = 'DashSync/lib/libmerkiOS.a'
+  s.macos.vendored_libraries = 'DashSync/lib/libmerkMacOS.a'
   s.ios.framework = 'UIKit'
   s.macos.framework = 'Cocoa'
   s.compiler_flags = '-Wno-comma'

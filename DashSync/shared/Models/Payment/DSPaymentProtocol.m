@@ -28,7 +28,7 @@
 #import "DSPaymentProtocol.h"
 #import "DSChain.h"
 #import "DSTransaction.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSDate+Utils.h"
 
 #if TARGET_OS_OSX

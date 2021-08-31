@@ -11,7 +11,7 @@
 #import "DSSpork.h"
 #import "DSSporkEntity+CoreDataClass.h"
 #import "DSSporkHashEntity+CoreDataClass.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 
 @implementation DSSporkEntity

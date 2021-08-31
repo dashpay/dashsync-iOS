@@ -30,7 +30,7 @@
 #import "DSChain.h"
 #import "DSDerivationPath.h"
 #import "DSKey+Protected.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+DSHash.h"
 #import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"

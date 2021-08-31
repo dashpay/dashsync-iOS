@@ -9,7 +9,7 @@
 #import "DSKey.h"
 #import "DSQuorumCommitmentTransactionEntity+CoreDataClass.h"
 #import "DSTransactionFactory.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Dash.h"
 

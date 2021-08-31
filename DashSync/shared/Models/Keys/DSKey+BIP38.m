@@ -27,7 +27,7 @@
 
 #import "DSChain.h"
 #import "DSKey+BIP38.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 

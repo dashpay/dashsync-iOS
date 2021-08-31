@@ -11,7 +11,7 @@
 #import "DSMerkleBlockEntity+CoreDataClass.h"
 #import "DSQuorumEntry.h"
 #import "DSQuorumEntryEntity+CoreDataClass.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"
 

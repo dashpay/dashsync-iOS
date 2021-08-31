@@ -11,7 +11,7 @@
 #import "DSECDSAKey.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "DSWallet.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Dash.h"
 

@@ -28,12 +28,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (atomic, strong) dispatch_queue_t dispatchQueue;
 @property (atomic, strong) dispatch_queue_t completionQueue;
-@property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, strong) NSString *host;                      //for debuging purposes
 @property (nonatomic, strong) DSPlatformDocumentsRequest *request; //for debuging purposes
 
 @property (nonatomic, copy) void (^successHandler)(id successObject);
 @property (nonatomic, copy) void (^errorHandler)(NSError *error);
+
+- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithChain:(DSChain *)chain requireProof:(BOOL)requireProof;
 
 @end
 

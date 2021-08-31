@@ -9,7 +9,7 @@
 #import "DSBLSKey.h"
 #import "DSChain.h"
 #import "DSECDSAKey.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+DSHash.h"
 #import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"

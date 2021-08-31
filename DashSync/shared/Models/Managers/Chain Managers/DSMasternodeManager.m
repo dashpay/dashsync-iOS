@@ -52,7 +52,7 @@
 #import "DSTransactionFactory.h"
 #import "DSTransactionManager+Protected.h"
 #import "NSArray+Dash.h"
-#import "NSData+Dash.h"
+#import "NSData+DSHash.h"
 #import "NSDictionary+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"
@@ -1497,6 +1497,32 @@
     DSMerkleBlock *merkleBlock = [self.chain blockAtHeight:blockHeight];
     return [self quorumEntryForChainLockRequestID:requestID forMerkleBlock:merkleBlock];
 }
+
+- (DSQuorumEntry *)quorumEntryForPlatformHavingQuorumHash:(UInt256)quorumHash forBlockHeight:(uint32_t)blockHeight {
+    DSBlock *block = [self.chain blockAtHeight:blockHeight];
+    if (block == nil) {
+        if (blockHeight > self.chain.lastTerminalBlockHeight) {
+            block = self.chain.lastTerminalBlock;
+        } else {
+            return nil;
+        }
+    }
+    return [self quorumEntryForPlatformHavingQuorumHash:quorumHash forBlock:block];
+}
+
+- (DSQuorumEntry *)quorumEntryForPlatformHavingQuorumHash:(UInt256)quorumHash forBlock:(DSBlock *)block {
+    DSMasternodeList *masternodeList = [self masternodeListBeforeBlockHash:block.blockHash];
+    if (!masternodeList) {
+        DSLog(@"No masternode list found yet");
+        return nil;
+    }
+    if (block.height - masternodeList.height > 24) {
+        DSLog(@"Masternode list is too old");
+        return nil;
+    }
+    return [masternodeList quorumEntryForPlatformWithQuorumHash:quorumHash];
+}
+
 
 - (DSQuorumEntry *)quorumEntryForChainLockRequestID:(UInt256)requestID forMerkleBlock:(DSMerkleBlock *)merkleBlock {
     DSMasternodeList *masternodeList = [self masternodeListBeforeBlockHash:merkleBlock.blockHash];

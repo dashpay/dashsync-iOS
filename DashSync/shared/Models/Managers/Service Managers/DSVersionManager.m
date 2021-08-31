@@ -14,7 +14,7 @@
 #import "DSDerivationPathFactory.h"
 #import "DSPeerManager.h"
 #import "DSWallet+Protected.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 

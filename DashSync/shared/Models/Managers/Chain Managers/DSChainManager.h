@@ -40,6 +40,8 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo)
 #define PROTOCOL_TIMEOUT 20.0
 
 FOUNDATION_EXPORT NSString *const DSChainManagerNotificationChainKey;
+FOUNDATION_EXPORT NSString *const DSChainManagerNotificationWalletKey;
+FOUNDATION_EXPORT NSString *const DSChainManagerNotificationAccountKey;
 
 FOUNDATION_EXPORT NSString *_Nonnull const DSChainManagerSyncWillStartNotification;
 FOUNDATION_EXPORT NSString *_Nonnull const DSChainManagerChainSyncDidStartNotification;

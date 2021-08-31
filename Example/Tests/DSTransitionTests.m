@@ -45,7 +45,7 @@
 #import "DSTransactionManager.h"
 #import "DSTransition+Protected.h"
 #import "DSWallet.h"
-#import "NSData+Dash.h"
+#import "NSData+DSHash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 
@@ -62,7 +62,7 @@
 @implementation DSTransitionTests
 
 - (void)setUp {
-    self.chain = [DSChain setUpDevnetWithIdentifier:@"0" withCheckpoints:nil withMinimumDifficultyBlocks:0 withDefaultPort:20001 withDefaultDapiJRPCPort:3000 withDefaultDapiGRPCPort:3010 dpnsContractID:UINT256_ZERO dashpayContractID:UINT256_ZERO isTransient:YES];
+    self.chain = [DSChain setUpDevnetWithIdentifier:@"0" withCheckpoints:nil withMinimumDifficultyBlocks:0 withDefaultPort:20001 withDefaultDapiJRPCPort:3000 withDefaultDapiGRPCPort:3010 dpnsContractID:UINT256_ZERO dashpayContractID:UINT256_ZERO instantSendLockQuorumType:DSLLMQType_50_60 chainLockQuorumType:DSLLMQType_50_60 platformQuorumType:DSLLMQType_100_67 isTransient:YES];
     NSString *seedPhrase = @"pigeon social employ east owner purpose buddy proof soul suit pumpkin punch";
     self.testWallet = [DSWallet standardWalletWithSeedPhrase:@"pigeon social employ east owner purpose buddy proof soul suit pumpkin punch" setCreationDate:0 forChain:self.chain storeSeedPhrase:NO isTransient:YES];
 

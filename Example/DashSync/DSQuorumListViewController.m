@@ -116,7 +116,9 @@
         case DSLLMQType_400_85:
             return @"2 Day Quorums";
             break;
-
+        case DSLLMQType_10_60:
+            return @"10 Member Devnet Quorums";
+            break;
         default:
             return @"Unknown Quorum Type";
             break;

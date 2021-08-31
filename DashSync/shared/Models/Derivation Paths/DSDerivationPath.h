@@ -28,7 +28,7 @@
 #import "DSKey.h"
 #import "DSTransaction.h"
 #import "DSUInt256IndexPath.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
 

@@ -10,7 +10,7 @@
 #import "DSLocalMasternode.h"
 #import "DSProviderUpdateRegistrarTableViewCell.h"
 #import "DSProviderUpdateRegistrarTransaction.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSString+Dash.h"
 
 @interface DSProviderUpdateRegistrarTransactionsViewController ()

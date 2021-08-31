@@ -21,7 +21,7 @@
 #import "DPErrors.h"
 
 #import "BigIntTypes.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 

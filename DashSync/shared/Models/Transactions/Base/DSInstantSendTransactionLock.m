@@ -18,7 +18,7 @@
 #import "DSSporkManager.h"
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"
 
@@ -137,7 +137,7 @@
 
 - (UInt256)signIDForQuorumEntry:(DSQuorumEntry *)quorumEntry {
     NSMutableData *data = [NSMutableData data];
-    [data appendVarInt:1];
+    [data appendVarInt:self.chain.quorumTypeForISLocks];
     [data appendUInt256:quorumEntry.quorumHash];
     [data appendUInt256:self.requestID];
     [data appendUInt256:self.transactionHash];
@@ -154,8 +154,9 @@
 
 - (DSQuorumEntry *)findSigningQuorumReturnMasternodeList:(DSMasternodeList **)returnMasternodeList {
     DSQuorumEntry *foundQuorum = nil;
+    DSLLMQType ISLockQuorumType = [self.chain quorumTypeForISLocks];
     for (DSMasternodeList *masternodeList in [self.chain.chainManager.masternodeManager.recentMasternodeLists copy]) {
-        for (DSQuorumEntry *quorumEntry in [[masternodeList quorumsOfType:DSLLMQType_50_60] allValues]) {
+        for (DSQuorumEntry *quorumEntry in [[masternodeList quorumsOfType:ISLockQuorumType] allValues]) {
             BOOL signatureVerified = [self verifySignatureAgainstQuorum:quorumEntry];
             if (signatureVerified) {
                 foundQuorum = quorumEntry;
