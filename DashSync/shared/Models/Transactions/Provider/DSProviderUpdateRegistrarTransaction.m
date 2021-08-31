@@ -14,6 +14,7 @@
 #import "DSProviderRegistrationTransactionEntity+CoreDataClass.h"
 #import "DSProviderUpdateRegistrarTransactionEntity+CoreDataClass.h"
 #import "DSTransactionFactory.h"
+#import "DSTransactionInput.h"
 #import "DSTransactionManager.h"
 #import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
@@ -209,12 +210,9 @@
 
 - (void)updateInputsHash {
     NSMutableData *data = [NSMutableData data];
-    for (NSUInteger i = 0; i < self.inputHashes.count; i++) {
-        UInt256 hash = UINT256_ZERO;
-        NSValue *inputHash = self.inputHashes[i];
-        [inputHash getValue:&hash];
-        [data appendUInt256:hash];
-        [data appendUInt32:[self.inputIndexes[i] unsignedIntValue]];
+    for (DSTransactionInput *input in self.inputs) {
+        [data appendUInt256:input.inputHash];
+        [data appendUInt32:input.index];
     }
     self.inputsHash = [data SHA256_2];
 }

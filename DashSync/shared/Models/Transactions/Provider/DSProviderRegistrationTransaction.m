@@ -12,6 +12,8 @@
 #import "DSMasternodeManager.h"
 #import "DSProviderRegistrationTransactionEntity+CoreDataClass.h"
 #import "DSTransactionFactory.h"
+#import "DSTransactionInput.h"
+#import "DSTransactionOutput.h"
 #import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Dash.h"
@@ -231,9 +233,9 @@
 }
 
 - (NSString *)holdingAddress {
-    if (uint256_is_zero(self.collateralOutpoint.hash) && [self.outputAmounts containsObject:@(MASTERNODE_COST)]) {
-        NSUInteger index = [self.outputAmounts indexOfObject:@(MASTERNODE_COST)];
-        return [self outputAddresses][index];
+    NSInteger index = [self masterNodeOutputIndex];
+    if (uint256_is_zero(self.collateralOutpoint.hash) && index != NSNotFound) {
+        return [self outputs][index].address;
     } else {
         return nil;
     }
@@ -264,20 +266,19 @@
 
 - (void)updateInputsHash {
     NSMutableData *data = [NSMutableData data];
-    for (NSUInteger i = 0; i < self.inputHashes.count; i++) {
-        UInt256 hash = UINT256_ZERO;
-        NSValue *inputHash = self.inputHashes[i];
-        [inputHash getValue:&hash];
-        [data appendUInt256:hash];
-        [data appendUInt32:[self.inputIndexes[i] unsignedIntValue]];
+    for (DSTransactionInput *input in self.inputs) {
+        [data appendUInt256:input.inputHash];
+        [data appendUInt32:input.index];
     }
     self.inputsHash = [data SHA256_2];
 }
 
 - (void)hasSetInputsAndOutputs {
     [self updateInputsHash];
-    if (dsutxo_is_zero(self.collateralOutpoint) && [self.outputAmounts containsObject:@(MASTERNODE_COST)]) {
-        NSUInteger index = [self.outputAmounts indexOfObject:@(MASTERNODE_COST)];
+    if (dsutxo_is_zero(self.collateralOutpoint)) {
+        NSInteger index = [self masterNodeOutputIndex];
+        if (index == NSNotFound)
+            return;
         self.collateralOutpoint = (DSUTXO){.hash = UINT256_ZERO, .n = index};
         self.payloadSignature = [NSData data];
     }

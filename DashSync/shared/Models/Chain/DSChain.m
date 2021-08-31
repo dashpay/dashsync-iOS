@@ -74,6 +74,8 @@
 #import "DSTransaction.h"
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataProperties.h"
+#import "DSTransactionInput.h"
+#import "DSTransactionOutput.h"
 #import "DSTransition.h"
 #import "DSWallet+Protected.h"
 #import "NSCoder+Dash.h"
@@ -1419,13 +1421,10 @@ static dispatch_once_t devnetToken = 0;
 
             i = 0;
 
-            for (NSValue *hash in tx.inputHashes) {
-                [hash getValue:&o.hash];
-                o.n = [tx.inputIndexes[i++] unsignedIntValue];
-
+            for (DSTransactionInput *input in tx.inputs) {
+                o = (DSUTXO){input.inputHash, input.index};
                 DSTransaction *t = [wallet transactionForHash:o.hash];
-
-                if (o.n < t.outputAddresses.count && [wallet containsAddress:t.outputAddresses[o.n]]) {
+                if (o.n < t.outputs.count && [wallet containsAddress:t.outputs[o.n].address]) {
                     [inputs addObject:dsutxo_data(o)];
                     elemCount++;
                 }
@@ -3565,8 +3564,8 @@ static dispatch_once_t devnetToken = 0;
 
 - (DSWallet *_Nullable)walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:(DSProviderRegistrationTransaction *_Nonnull)transaction foundAtIndex:(uint32_t *)rIndex {
     for (DSWallet *wallet in self.wallets) {
-        for (NSString *outputAddresses in transaction.outputAddresses) {
-            NSUInteger index = [wallet indexOfHoldingAddress:outputAddresses];
+        for (DSTransactionOutput *output in transaction.outputs) {
+            NSUInteger index = [wallet indexOfHoldingAddress:output.address];
             if (index != NSNotFound) {
                 if (rIndex) *rIndex = (uint32_t)index;
                 return wallet;

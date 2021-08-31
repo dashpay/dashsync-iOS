@@ -59,14 +59,7 @@ typedef union _UInt160 UInt160;
 @property (nonatomic, readonly) NSArray<DSTransactionOutput *> *outputs;
 
 @property (nonatomic, readonly) NSArray *inputAddresses;
-@property (nonatomic, readonly) NSArray *inputHashes;
-@property (nonatomic, readonly) NSArray *inputIndexes;
-@property (nonatomic, readonly) NSArray *inputScripts;
-@property (nonatomic, readonly) NSArray *inputSignatures;
-@property (nonatomic, readonly) NSArray *inputSequences;
-@property (nonatomic, readonly) NSArray *outputAmounts;
 @property (nonatomic, readonly) NSArray *outputAddresses;
-@property (nonatomic, readonly) NSArray *outputScripts;
 
 @property (nonatomic, readonly) NSSet<DSBlockchainIdentity *> *sourceBlockchainIdentities;
 @property (nonatomic, readonly) NSSet<DSBlockchainIdentity *> *destinationBlockchainIdentities;
@@ -138,6 +131,7 @@ typedef union _UInt160 UInt160;
 - (BOOL)signWithPrivateKeys:(NSArray *)keys;
 - (BOOL)signWithPreorderedPrivateKeys:(NSArray *)keys;
 
+- (NSUInteger)masterNodeOutputIndex;
 
 - (NSString *_Nullable)shapeshiftOutboundAddress;
 - (NSString *_Nullable)shapeshiftOutboundAddressForceScript;

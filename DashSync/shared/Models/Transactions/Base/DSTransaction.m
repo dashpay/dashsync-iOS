@@ -48,6 +48,7 @@
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 #import "NSString+Dash.h"
+#import "DSMasternodeManager.h"
 
 @interface DSTransaction ()
 
@@ -111,7 +112,6 @@
     NSNumber *l = 0;
     uint32_t off = 0;
     uint64_t count = 0;
-    NSData *d = nil;
 
     @autoreleasepool {
         self.chain = chain;
@@ -175,14 +175,15 @@
         }
     }
 
-    if (self.associatedShapeshift || ![self.outputAddresses count]) return self;
+    if (self.associatedShapeshift || ![self.outputs count]) return self;
 
     NSString *mainOutputAddress = nil;
     NSMutableArray *allAddresses = [NSMutableArray array];
     for (DSAddressEntity *e in [DSAddressEntity allObjectsInContext:chain.chainManagedObjectContext]) {
         [allAddresses addObject:e.address];
     }
-    for (NSString *outputAddress in self.outputAddresses) {
+    for (DSTransactionOutput *output in self.outputs) {
+        NSString *outputAddress = output.address;
         if (outputAddress && [allAddresses containsObject:address]) continue;
         if ([outputAddress isEqual:[NSNull null]]) continue;
         mainOutputAddress = outputAddress;
@@ -273,34 +274,6 @@
     return [self.chain accountsThatCanContainTransaction:self];
 }
 
-- (NSArray *)inputHashes {
-    NSMutableArray *rHashes = [NSMutableArray array];
-    for (DSTransactionInput *input in self.mInputs) {
-        [rHashes addObject:uint256_obj(input.inputHash)];
-    }
-    return [rHashes copy];
-}
-
-- (NSArray *)inputIndexes {
-    NSMutableArray *rIndexes = [NSMutableArray array];
-    for (DSTransactionInput *input in self.mInputs) {
-        [rIndexes addObject:@(input.index)];
-    }
-    return [rIndexes copy];
-}
-
-- (NSArray *)inputScripts {
-    NSMutableArray *rScripts = [NSMutableArray array];
-    for (DSTransactionInput *input in self.mInputs) {
-        if (input.inScript) {
-            [rScripts addObject:input.inScript];
-        } else {
-            [rScripts addObject:[NSNull null]];
-        }
-    }
-    return [rScripts copy];
-}
-
 - (NSArray *)inputAddresses {
     NSMutableArray *rAddresses = [NSMutableArray arrayWithCapacity:self.mInputs.count];
     for (DSTransactionInput *input in self.mInputs) {
@@ -312,37 +285,7 @@
             [rAddresses addObject:(address) ? address : [NSNull null]];
         }
     }
-
     return rAddresses;
-}
-
-
-- (NSArray *)inputSignatures {
-    NSMutableArray *rSignatures = [NSMutableArray array];
-    for (DSTransactionInput *input in self.mInputs) {
-        if (input.signature) {
-            [rSignatures addObject:input.signature];
-        } else {
-            [rSignatures addObject:[NSNull null]];
-        }
-    }
-    return [rSignatures copy];
-}
-
-- (NSArray *)inputSequences {
-    NSMutableArray *rSequences = [NSMutableArray array];
-    for (DSTransactionInput *input in self.mInputs) {
-        [rSequences addObject:@(input.sequence)];
-    }
-    return [rSequences copy];
-}
-
-- (NSArray *)outputAmounts {
-    NSMutableArray *rAmounts = [NSMutableArray array];
-    for (DSTransactionOutput *output in self.mOutputs) {
-        [rAmounts addObject:@(output.amount)];
-    }
-    return [rAmounts copy];
 }
 
 - (NSArray *)outputAddresses {
@@ -357,14 +300,6 @@
     return [rAddresses copy];
 }
 
-- (NSArray *)outputScripts {
-    NSMutableArray *rScripts = [NSMutableArray array];
-    for (DSTransactionOutput *output in self.mOutputs) {
-        [rScripts addObject:output.outScript];
-    }
-    return [rScripts copy];
-}
-
 - (NSString *)description {
     NSString *txid = [NSString hexWithData:[NSData dataWithBytes:self.txHash.u8 length:sizeof(UInt256)].reverse];
     return [NSString stringWithFormat:@"%@(id=%@-block=%@) + (%@)", [self class], txid, (self.blockHeight == TX_UNCONFIRMED) ? @"Not mined" : @(self.blockHeight), [super description]];
@@ -372,31 +307,26 @@
 
 - (NSString *)longDescription {
     NSString *txid = [NSString hexWithData:[NSData dataWithBytes:self.txHash.u8 length:sizeof(UInt256)].reverse];
-    return [NSString stringWithFormat:
-                         @"%@(id=%@, inputHashes=%@, inputIndexes=%@, inputScripts=%@, inputSignatures=%@, inputSequences=%@, "
-                          "outputAmounts=%@, outputAddresses=%@, outputScripts=%@)",
+    return [NSString stringWithFormat:@"%@(id=%@, inputs=%@, outputs=%@)",
                      [[self class] description], txid,
-                     self.inputHashes, self.inputIndexes, self.inputScripts, self.inputSignatures, self.inputSequences,
-                     self.outputAmounts, self.outputAddresses, self.outputScripts];
+                     self.inputs,
+                     self.outputs];
 }
 
 // retuns the amount sent from the wallet by the trasaction (total wallet outputs consumed, change and fee included)
 - (uint64_t)amountSent {
     uint64_t amount = 0;
-    NSUInteger i = 0;
-
-    for (NSValue *hashValue in self.inputHashes) {
-        UInt256 hash;
-        [hashValue getValue:&hash];
+    for (DSTransactionInput *input in self.inputs) {
+        UInt256 hash = input.inputHash;
         DSTransaction *tx = [self.chain transactionForHash:hash];
         DSAccount *account = [self.chain firstAccountThatCanContainTransaction:tx];
-        uint32_t n = [self.inputIndexes[i++] unsignedIntValue];
-
-        if (n < tx.outputAddresses.count && [account containsAddress:tx.outputAddresses[n]]) {
-            amount += [tx.outputAmounts[n] unsignedLongLongValue];
+        uint32_t n = input.index;
+        if (n < tx.outputs.count) {
+            DSTransactionOutput *output = tx.outputs[n];
+            if ([account containsAddress:output.address])
+                amount += output.amount;
         }
     }
-
     return amount;
 }
 
@@ -414,7 +344,7 @@
 }
 
 - (uint64_t)standardInstantFee {
-    return TX_FEE_PER_INPUT * [self.inputHashes count];
+    return TX_FEE_PER_INPUT * [self.inputs count];
 }
 
 // checks if all signatures exist, but does not verify them
@@ -439,7 +369,8 @@
 }
 
 - (BOOL)isCreditFundingTransaction {
-    for (NSData *script in self.outputScripts) {
+    for (DSTransactionOutput *output in self.outputs) {
+        NSData *script = output.outScript;
         if ([script UInt8AtOffset:0] == OP_RETURN && script.length == 22) {
             return YES;
         }
@@ -677,10 +608,8 @@
 // MARK: - Info
 
 - (BOOL)hasNonDustOutputInWallet:(DSWallet *)wallet {
-    for (int i = 0; i < self.outputAddresses.count; i++) {
-        NSString *outputAddress = self.outputAddresses[i];
-        uint64_t outputAmount = [self.outputAmounts[i] longLongValue];
-        if (outputAmount > TX_MIN_OUTPUT_AMOUNT && [wallet containsAddress:outputAddress]) {
+    for (DSTransactionOutput *output in self.outputs) {
+        if (output.amount > TX_MIN_OUTPUT_AMOUNT && [wallet containsAddress:output.address]) {
             return TRUE;
         }
     }
@@ -728,9 +657,10 @@
 - (void)loadBlockchainIdentitiesFromDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths {
     NSMutableSet *destinationBlockchainIdentities = [NSMutableSet set];
     NSMutableSet *sourceBlockchainIdentities = [NSMutableSet set];
-    for (NSString *address in self.outputAddresses) {
+    for (DSTransactionOutput *output in self.outputs) {
         for (DSFundsDerivationPath *derivationPath in derivationPaths) {
-            if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]] && [derivationPath containsAddress:address]) {
+            if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]] &&
+                [derivationPath containsAddress:output.address]) {
                 DSIncomingFundsDerivationPath *incomingFundsDerivationPath = ((DSIncomingFundsDerivationPath *)derivationPath);
                 DSBlockchainIdentity *destinationBlockchainIdentity = [incomingFundsDerivationPath contactDestinationBlockchainIdentity];
                 DSBlockchainIdentity *sourceBlockchainIdentity = [incomingFundsDerivationPath contactSourceBlockchainIdentity];
@@ -764,16 +694,16 @@
 // MARK: - Extra shapeshift methods
 
 - (NSString *)shapeshiftOutboundAddress {
-    for (NSData *script in self.outputScripts) {
-        NSString *outboundAddress = [DSTransaction shapeshiftOutboundAddressForScript:script onChain:self.chain];
+    for (DSTransactionOutput *output in self.outputs) {
+        NSString *outboundAddress = [DSTransaction shapeshiftOutboundAddressForScript:output.outScript onChain:self.chain];
         if (outboundAddress) return outboundAddress;
     }
     return nil;
 }
 
 - (NSString *)shapeshiftOutboundAddressForceScript {
-    for (NSData *script in self.outputScripts) {
-        NSString *outboundAddress = [DSTransaction shapeshiftOutboundAddressForceScript:script];
+    for (DSTransactionOutput *output in self.outputs) {
+        NSString *outboundAddress = [DSTransaction shapeshiftOutboundAddressForceScript:output.outScript];
         if (outboundAddress) return outboundAddress;
     }
     return nil;
@@ -885,6 +815,13 @@
         }
     }];
     return YES;
+}
+
+- (NSUInteger)masterNodeOutputIndex {
+    // What if a masternode's cost is equal to smth another?
+    return [self.outputs indexOfObjectPassingTest:^BOOL(DSTransactionOutput *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
+        return obj.amount == MASTERNODE_COST;
+    }];
 }
 
 @end
