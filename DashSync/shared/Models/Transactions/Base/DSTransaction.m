@@ -220,6 +220,7 @@
         [self.mInputs addObject:[DSTransactionInput transactionInputWithHash:inputHash index:index inScript:inputScript signature:nil sequence:inputSequence]];
     }
 
+    self.mOutputs = [NSMutableArray array];
     for (int i = 0; i < amounts.count; i++) {
         uint64_t amount = [[amounts objectAtIndex:i] unsignedLongValue];
         id address = [addresses objectAtIndex:i];
