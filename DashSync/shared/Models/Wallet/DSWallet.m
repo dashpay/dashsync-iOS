@@ -898,6 +898,13 @@
     return [mSet allObjects];
 }
 
+- (NSArray *)allTransactionsForAccount:(DSAccount*)account {
+    NSMutableSet *mSet = [NSMutableSet set];
+    [mSet addObjectsFromArray:[account.allTransactions copy]];
+    [mSet addObjectsFromArray:[self.specialTransactionsHolder allTransactions]];
+    return [mSet allObjects];
+}
+
 - (DSTransaction *)transactionForHash:(UInt256)txHash {
     for (DSAccount *account in self.accounts) {
         DSTransaction *transaction = [account transactionForHash:txHash];
