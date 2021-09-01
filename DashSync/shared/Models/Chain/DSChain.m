@@ -3565,7 +3565,9 @@ static dispatch_once_t devnetToken = 0;
 - (DSWallet *_Nullable)walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:(DSProviderRegistrationTransaction *_Nonnull)transaction foundAtIndex:(uint32_t *)rIndex {
     for (DSWallet *wallet in self.wallets) {
         for (DSTransactionOutput *output in transaction.outputs) {
-            NSUInteger index = [wallet indexOfHoldingAddress:output.address];
+            NSString *address = output.address;
+            if (!address) continue;
+            NSUInteger index = [wallet indexOfHoldingAddress:address];
             if (index != NSNotFound) {
                 if (rIndex) *rIndex = (uint32_t)index;
                 return wallet;
