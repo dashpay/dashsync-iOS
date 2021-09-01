@@ -17,6 +17,8 @@
 
 #import "DSTransactionInput.h"
 #import "BigIntTypes.h"
+#import "NSData+Dash.h"
+#import "NSString+Bitcoin.h"
 
 @interface DSTransactionInput ()
 
@@ -40,5 +42,13 @@
     self.sequence = sequence;
     return self;
 }
+
+- (NSString *)description {
+    return [NSString stringWithFormat:@"%@(inputHash=%@, index=%u, inScript=%@, signature=%@, sequence=%u)",
+            [[self class] description],
+            [NSString hexWithData:[NSData dataWithBytes:self.inputHash.u8 length:sizeof(UInt256)]],
+            self.index, self.inScript, [self.signature hexString], self.sequence];
+}
+
 
 @end

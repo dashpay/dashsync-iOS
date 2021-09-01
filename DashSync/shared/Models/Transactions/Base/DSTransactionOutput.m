@@ -55,4 +55,9 @@
     return self;
 }
 
+- (NSString *)description {
+    return [NSString stringWithFormat:@"%@(amount=%llu, outScript=%@, address=%@)",
+            [[self class] description], self.amount, self.outScript, self.address];
+}
+
 @end
