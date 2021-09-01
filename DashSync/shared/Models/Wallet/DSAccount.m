@@ -839,7 +839,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             }] != NSNotFound) return YES;
         if ([tx2.inputs indexOfObjectPassingTest:^BOOL(DSTransactionInput *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
                 return uint256_eq(obj.inputHash, tx1.txHash);
-            }] != NSNotFound) return YES;
+            }] != NSNotFound) return NO;
         if ([self.invalidTransactionHashes containsObject:hash1] && ![self.invalidTransactionHashes containsObject:hash2]) return YES;
         if ([self.pendingTransactionHashes containsObject:hash1] && ![self.pendingTransactionHashes containsObject:hash2]) return YES;
         for (DSTransactionInput *input in tx1.inputs) {
