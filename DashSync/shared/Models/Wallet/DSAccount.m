@@ -1609,17 +1609,11 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 
 - (NSArray<NSString *> *)externalAddressesOfTransaction:(DSTransaction *)transaction {
     NSMutableArray<NSString *> *addresses = [NSMutableArray array];
-
-    NSUInteger outputAmountIndex = 0;
-
     for (DSTransactionOutput *output in transaction.outputs) {
         NSString *address = output.address;
-
         if (address == (id)[NSNull null]) {
             if ([self directionOfTransaction:transaction] == DSTransactionDirection_Sent) {
-                // is that correct outputAmountIndex always equal 0?
-                //NSData *script = output.outScript;
-                NSData *script = transaction.outputs[outputAmountIndex].outScript;
+                NSData *script = output.outScript;
                 if ([script UInt8AtOffset:0] == OP_RETURN) {
                     UInt8 length = [script UInt8AtOffset:1];
                     if ([script UInt8AtOffset:2] == OP_SHAPESHIFT) {
@@ -1627,7 +1621,6 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                         uint8_t v = BITCOIN_PUBKEY_ADDRESS;
                         [data appendBytes:&v length:1];
                         NSData *addressData = [script subdataWithRange:NSMakeRange(3, length - 1)];
-
                         [data appendData:addressData];
                         [addresses addObject:[NSString base58checkWithData:data]];
                     }
@@ -1666,7 +1659,6 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             }
         }
     }
-
     return addresses;
 }
 
