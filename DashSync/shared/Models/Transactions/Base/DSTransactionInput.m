@@ -49,8 +49,8 @@
     ([object isKindOfClass:[DSTransactionInput class]] &&
      uint256_eq(self.inputHash, input.inputHash) &&
      self.index == input.index &&
-     [self.inScript isEqualToData:input.inScript] &&
-     [self.signature isEqualToData:input.signature] &&
+     ([self.inScript isEqualToData:input.inScript] || (!self.inScript && !input.inScript)) &&
+     ([self.signature isEqualToData:input.signature] || (!self.signature && !input.signature)) &&
      self.sequence == input.sequence);
 }
 

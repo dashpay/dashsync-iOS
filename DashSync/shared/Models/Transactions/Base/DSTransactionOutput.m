@@ -60,7 +60,7 @@
     return self == object ||
     ([object isKindOfClass:[DSTransactionOutput class]] &&
      self.amount == output.amount &&
-     [self.outScript isEqualToData:output.outScript] &&
+     ([self.outScript isEqualToData:output.outScript] || (!self.outScript && !output.outScript)) &&
      [self.address isEqual:output.address]);
 }
 
