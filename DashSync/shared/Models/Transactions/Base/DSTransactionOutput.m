@@ -55,6 +55,15 @@
     return self;
 }
 
+- (BOOL)isEqual:(id)object {
+    DSTransactionOutput *output = (DSTransactionOutput *)object;
+    return self == object ||
+    ([object isKindOfClass:[DSTransactionOutput class]] &&
+     self.amount == output.amount &&
+     [self.outScript isEqualToData:output.outScript] &&
+     [self.address isEqual:output.address]);
+}
+
 - (NSString *)description {
     return [NSString stringWithFormat:@"%@(amount=%llu, outScript=%@, address=%@)",
             [[self class] description], self.amount, self.outScript, self.address];
