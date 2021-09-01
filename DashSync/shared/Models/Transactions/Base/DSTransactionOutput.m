@@ -61,7 +61,7 @@
     ([object isKindOfClass:[DSTransactionOutput class]] &&
      self.amount == output.amount &&
      ([self.outScript isEqualToData:output.outScript] || (!self.outScript && !output.outScript)) &&
-     [self.address isEqual:output.address]);
+     ([self.address isEqual:output.address] || (!self.address && !output.address)));
 }
 
 - (NSString *)description {
