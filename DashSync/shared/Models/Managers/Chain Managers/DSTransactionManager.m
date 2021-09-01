@@ -51,6 +51,7 @@
 #import "DSTransaction.h"
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
+#import "DSTransactionInput.h"
 #import "DSTransition.h"
 #import "DSWallet+Protected.h"
 #import "NSDate+Utils.h"
@@ -161,11 +162,8 @@
 #endif
         if (!self.publishedTx[uint256_obj(transaction.txHash)]) {
             self.publishedTx[uint256_obj(transaction.txHash)] = transaction;
-
-            for (NSValue *hash in transaction.inputHashes) {
-                UInt256 h = UINT256_ZERO;
-
-                [hash getValue:&h];
+            for (DSTransactionInput *input in transaction.inputs) {
+                UInt256 h = input.inputHash;
                 DSTransaction *inputTransaction = [self.chain transactionForHash:h];
                 if (inputTransaction) {
                     [self addUnconfirmedTransactionToPublishList:inputTransaction];
@@ -307,9 +305,8 @@
 #endif
                 rescan = notify = YES;
 
-                for (NSValue *hash in transaction.inputHashes) { // only recommend a rescan if all inputs are confirmed
-                    [hash getValue:&h];
-                    if ([account transactionForHash:h].blockHeight != TX_UNCONFIRMED) continue;
+                for (DSTransactionInput *input in transaction.inputs) { // only recommend a rescan if all inputs are confirmed
+                    if ([account transactionForHash:input.inputHash].blockHeight != TX_UNCONFIRMED) continue;
                     rescan = NO;
                     break;
                 }
@@ -1509,14 +1506,12 @@
             sentSomething |= ([account amountSentByTransaction:transaction] > 0);
         }
         if (sentSomething) {
-            for (hash in transaction.inputHashes) { // check that all inputs are confirmed before dropping peer
-                UInt256 h = UINT256_ZERO;
-
-                [hash getValue:&h];
-                if ([self.chain transactionForHash:h].blockHeight == TX_UNCONFIRMED) return;
+            for (DSTransactionInput *input in transaction.inputs) { // check that all inputs are confirmed before dropping peer
+                if ([self.chain transactionForHash:input.inputHash].blockHeight == TX_UNCONFIRMED)
+                    return;
             }
-
-            [self.peerManager peerMisbehaving:peer errorMessage:@"Peer rejected the transaction"];
+            [self.peerManager peerMisbehaving:peer
+                                 errorMessage:@"Peer rejected the transaction"];
         }
     }
 }

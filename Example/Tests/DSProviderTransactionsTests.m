@@ -179,15 +179,11 @@
 
     XCTAssertEqual(providerRegistrationTransaction.port, providerRegistrationTransactionFromMessage.port, @"Provider transaction port doesn't match up");
 
-    XCTAssertEqualObjects(providerRegistrationTransaction.inputHashes, providerRegistrationTransactionFromMessage.inputHashes, @"Provider transaction input hashes are having an issue");
+    XCTAssertEqualObjects(providerRegistrationTransaction.inputs, providerRegistrationTransactionFromMessage.inputs, @"Provider transaction inputs are having an issue");
 
-    XCTAssertEqualObjects(providerRegistrationTransaction.inputIndexes, providerRegistrationTransactionFromMessage.inputIndexes, @"Provider transaction input indexes are having an issue");
 
-    XCTAssertEqualObjects(providerRegistrationTransaction.inputSequences, providerRegistrationTransactionFromMessage.inputSequences, @"Provider transaction input sequences are having an issue");
 
-    XCTAssertEqualObjects(providerRegistrationTransaction.outputAddresses, providerRegistrationTransactionFromMessage.outputAddresses, @"Provider transaction output addresses are having an issue");
-
-    XCTAssertEqualObjects(providerRegistrationTransaction.outputAmounts, providerRegistrationTransactionFromMessage.outputAmounts, @"Provider transaction output amounts are having an issue");
+    XCTAssertEqualObjects(providerRegistrationTransaction.outputs, providerRegistrationTransactionFromMessage.outputs, @"Provider transaction outputs are having an issue");
 
     XCTAssertEqualObjects(uint384_hex(providerRegistrationTransaction.operatorKey), uint384_hex(providerRegistrationTransactionFromMessage.operatorKey), @"Provider transaction operator key is having an issue");
 

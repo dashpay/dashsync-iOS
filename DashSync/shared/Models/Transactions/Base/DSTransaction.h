@@ -31,7 +31,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSChain, DSAccount, DSWallet, DSTransactionLockVote, DSTransactionEntity, DSInstantSendTransactionLock, DSBlockchainIdentity, DSDerivationPath;
+@class DSChain, DSAccount, DSWallet, DSTransactionLockVote, DSTransactionEntity, DSInstantSendTransactionLock, DSBlockchainIdentity, DSDerivationPath, DSTransactionInput, DSTransactionOutput;
 
 #define TX_FEE_PER_B 1ULL                                                          // standard tx fee per b of tx size
 #define TX_FEE_PER_INPUT 10000ULL                                                  // standard ix fee per input
@@ -55,15 +55,11 @@ typedef union _UInt160 UInt160;
 
 @interface DSTransaction : NSObject
 
+@property (nonatomic, readonly) NSArray<DSTransactionInput *> *inputs;
+@property (nonatomic, readonly) NSArray<DSTransactionOutput *> *outputs;
+
 @property (nonatomic, readonly) NSArray *inputAddresses;
-@property (nonatomic, readonly) NSArray *inputHashes;
-@property (nonatomic, readonly) NSArray *inputIndexes;
-@property (nonatomic, readonly) NSArray *inputScripts;
-@property (nonatomic, readonly) NSArray *inputSignatures;
-@property (nonatomic, readonly) NSArray *inputSequences;
-@property (nonatomic, readonly) NSArray *outputAmounts;
 @property (nonatomic, readonly) NSArray *outputAddresses;
-@property (nonatomic, readonly) NSArray *outputScripts;
 
 @property (nonatomic, readonly) NSSet<DSBlockchainIdentity *> *sourceBlockchainIdentities;
 @property (nonatomic, readonly) NSSet<DSBlockchainIdentity *> *destinationBlockchainIdentities;
@@ -107,9 +103,6 @@ typedef union _UInt160 UInt160;
 
 @property (nonatomic, readonly) BOOL transactionTypeRequiresInputs;
 
-@property (nonatomic, strong) NSMutableArray *hashes, *indexes, *inScripts, *signatures, *sequences;
-@property (nonatomic, strong) NSMutableArray *amounts, *addresses, *outScripts;
-
 + (instancetype)transactionWithMessage:(NSData *)message onChain:(DSChain *)chain;
 + (instancetype)devnetGenesisCoinbaseWithIdentifier:(NSString *)identifier forChain:(DSChain *)chain;
 
@@ -137,7 +130,6 @@ typedef union _UInt160 UInt160;
 - (BOOL)signWithSerializedPrivateKeys:(NSArray *)privateKeys;
 - (BOOL)signWithPrivateKeys:(NSArray *)keys;
 - (BOOL)signWithPreorderedPrivateKeys:(NSArray *)keys;
-
 
 - (NSString *_Nullable)shapeshiftOutboundAddress;
 - (NSString *_Nullable)shapeshiftOutboundAddressForceScript;

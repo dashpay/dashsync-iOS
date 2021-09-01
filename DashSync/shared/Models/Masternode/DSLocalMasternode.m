@@ -25,6 +25,7 @@
 #import "DSProviderUpdateServiceTransactionEntity+CoreDataClass.h"
 #import "DSSporkManager.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
+#import "DSTransactionOutput.h"
 #import "DSWallet.h"
 #import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
@@ -547,19 +548,14 @@
                                                           completion(nil);
                                                           return;
                                                       }
-
-                                                      NSInteger index = [self.providerRegistrationTransaction.outputAmounts indexOfObject:@(MASTERNODE_COST)];
-
+                                                      NSInteger index = [self.providerRegistrationTransaction masternodeOutputIndex];
                                                       if (index == NSNotFound) {
                                                           completion(nil);
                                                           return;
                                                       }
-
-                                                      NSMutableData *script = [NSMutableData data];
-
-                                                      [script appendScriptPubKeyForAddress:self.providerRegistrationTransaction.outputAddresses[index] forChain:self.providerRegistrationTransaction.chain];
+                                                      NSData *script = [NSMutableData scriptPubKeyForAddress:self.providerRegistrationTransaction.outputs[index].address
+                                                                                                    forChain:self.providerRegistrationTransaction.chain];
                                                       uint64_t fee = [self.providerRegistrationTransaction.chain feeForTxSize:194]; // assume we will add a change output
-
                                                       DSTransaction *reclaimTransaction = [[DSTransaction alloc] initWithInputHashes:@[uint256_obj(self.providerRegistrationTransaction.txHash)] inputIndexes:@[@(index)] inputScripts:@[script] outputAddresses:@[fundingAccount.changeAddress] outputAmounts:@[@(MASTERNODE_COST - fee)] onChain:self.providerRegistrationTransaction.chain];
 
                                                       //there is no need to sign the payload here.
