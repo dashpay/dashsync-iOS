@@ -233,7 +233,7 @@
 }
 
 - (NSString *)holdingAddress {
-    NSInteger index = [self masterNodeOutputIndex];
+    NSInteger index = [self masternodeOutputIndex];
     if (uint256_is_zero(self.collateralOutpoint.hash) && index != NSNotFound) {
         return [self outputs][index].address;
     } else {
@@ -276,7 +276,7 @@
 - (void)hasSetInputsAndOutputs {
     [self updateInputsHash];
     if (dsutxo_is_zero(self.collateralOutpoint)) {
-        NSInteger index = [self masterNodeOutputIndex];
+        NSInteger index = [self masternodeOutputIndex];
         if (index == NSNotFound)
             return;
         self.collateralOutpoint = (DSUTXO){.hash = UINT256_ZERO, .n = index};
@@ -292,5 +292,11 @@
     return [self.chain walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:self foundAtIndex:nil];
 }
 
+- (NSUInteger)masternodeOutputIndex {
+    // What if a masternode's cost is equal to smth another?
+    return [self.outputs indexOfObjectPassingTest:^BOOL(DSTransactionOutput *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
+        return obj.amount == MASTERNODE_COST;
+    }];
+}
 
 @end

@@ -544,23 +544,23 @@
                                                    forAmount:0
                                          forceAuthentication:YES
                                                   completion:^(NSData *_Nullable seed, BOOL cancelled) {
-        if (!seed) {
-            completion(nil);
-            return;
-        }
-        NSInteger index = [self.providerRegistrationTransaction masterNodeOutputIndex];
-        if (index == NSNotFound) {
-            completion(nil);
-            return;
-        }
-        NSData *script = [NSMutableData scriptPubKeyForAddress:self.providerRegistrationTransaction.outputs[index].address
-                                                      forChain:self.providerRegistrationTransaction.chain];
-        uint64_t fee = [self.providerRegistrationTransaction.chain feeForTxSize:194]; // assume we will add a change output
-        DSTransaction *reclaimTransaction = [[DSTransaction alloc] initWithInputHashes:@[uint256_obj(self.providerRegistrationTransaction.txHash)] inputIndexes:@[@(index)] inputScripts:@[script] outputAddresses:@[fundingAccount.changeAddress] outputAmounts:@[@(MASTERNODE_COST - fee)] onChain:self.providerRegistrationTransaction.chain];
+                                                      if (!seed) {
+                                                          completion(nil);
+                                                          return;
+                                                      }
+                                                      NSInteger index = [self.providerRegistrationTransaction masternodeOutputIndex];
+                                                      if (index == NSNotFound) {
+                                                          completion(nil);
+                                                          return;
+                                                      }
+                                                      NSData *script = [NSMutableData scriptPubKeyForAddress:self.providerRegistrationTransaction.outputs[index].address
+                                                                                                    forChain:self.providerRegistrationTransaction.chain];
+                                                      uint64_t fee = [self.providerRegistrationTransaction.chain feeForTxSize:194]; // assume we will add a change output
+                                                      DSTransaction *reclaimTransaction = [[DSTransaction alloc] initWithInputHashes:@[uint256_obj(self.providerRegistrationTransaction.txHash)] inputIndexes:@[@(index)] inputScripts:@[script] outputAddresses:@[fundingAccount.changeAddress] outputAmounts:@[@(MASTERNODE_COST - fee)] onChain:self.providerRegistrationTransaction.chain];
 
-        //there is no need to sign the payload here.
-        completion(reclaimTransaction);
-    }];
+                                                      //there is no need to sign the payload here.
+                                                      completion(reclaimTransaction);
+                                                  }];
 }
 
 

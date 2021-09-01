@@ -77,8 +77,6 @@
         self.received = [transaction.chain amountReceivedFromTransaction:transaction];
         isExternalTransaction = FALSE;
     }
-    NSUInteger outputAmountIndex = 0;
-
 
     //if (![transaction isKindOfClass:[DSCoinbaseTransaction class]]) {
     for (NSString *inputAddress in transaction.inputAddresses) {

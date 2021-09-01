@@ -131,8 +131,6 @@ typedef union _UInt160 UInt160;
 - (BOOL)signWithPrivateKeys:(NSArray *)keys;
 - (BOOL)signWithPreorderedPrivateKeys:(NSArray *)keys;
 
-- (NSUInteger)masterNodeOutputIndex;
-
 - (NSString *_Nullable)shapeshiftOutboundAddress;
 - (NSString *_Nullable)shapeshiftOutboundAddressForceScript;
 + (NSString *_Nullable)shapeshiftOutboundAddressForScript:(NSData *)script onChain:(DSChain *)chain;

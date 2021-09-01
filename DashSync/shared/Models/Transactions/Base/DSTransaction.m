@@ -35,6 +35,7 @@
 #import "DSECDSAKey.h"
 #import "DSIdentitiesManager.h"
 #import "DSInstantSendTransactionLock.h"
+#import "DSMasternodeManager.h"
 #import "DSTransaction+Protected.h"
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransactionFactory.h"
@@ -48,7 +49,6 @@
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 #import "NSString+Dash.h"
-#import "DSMasternodeManager.h"
 
 @interface DSTransaction ()
 
@@ -815,13 +815,6 @@
         }
     }];
     return YES;
-}
-
-- (NSUInteger)masterNodeOutputIndex {
-    // What if a masternode's cost is equal to smth another?
-    return [self.outputs indexOfObjectPassingTest:^BOOL(DSTransactionOutput *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
-        return obj.amount == MASTERNODE_COST;
-    }];
 }
 
 @end
