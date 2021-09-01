@@ -3566,7 +3566,7 @@ static dispatch_once_t devnetToken = 0;
     for (DSWallet *wallet in self.wallets) {
         for (DSTransactionOutput *output in transaction.outputs) {
             NSString *address = output.address;
-            if (!address || address == (id)[NSNull null]) continue;
+            if (address == (id)[NSNull null]) continue;
             NSUInteger index = [wallet indexOfHoldingAddress:address];
             if (index != NSNotFound) {
                 if (rIndex) *rIndex = (uint32_t)index;
