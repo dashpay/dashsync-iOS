@@ -666,7 +666,7 @@
                 }
 
                 for (DSTransactionInput *input in tx.inputs) {
-                    if (input.sequence >= UINT32_MAX) continue;
+                    if (input.sequence == UINT32_MAX) continue;
 
                     if (tx.lockTime < TX_MAX_LOCK_HEIGHT &&
                         tx.lockTime > self.wallet.chain.bestBlockHeight + 1) {
@@ -1818,7 +1818,8 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                                                       return;
                                                   }
 
-                                                  [tx addOutputAddress:self.receiveAddress amount:balance - feeAmount];
+                                                  [tx addOutputAddress:self.receiveAddress
+                                                                amount:balance - feeAmount];
 
                                                   if (![tx signWithSerializedPrivateKeys:@[privKey]]) {
                                                       completion(nil, 0, [NSError errorWithDomain:@"DashSync"
