@@ -30,6 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)transactionOutputWithAmount:(uint64_t)amount outScript:(NSData *)outScript onChain:(DSChain *)chain;
 + (instancetype)transactionOutputWithAmount:(uint64_t)amount address:(NSString *_Nullable)address outScript:(NSData *)outScript onChain:(DSChain *)chain;
 
+- (NSComparisonResult)compare:(DSTransactionOutput *)output2;
+
 @end
 
 NS_ASSUME_NONNULL_END

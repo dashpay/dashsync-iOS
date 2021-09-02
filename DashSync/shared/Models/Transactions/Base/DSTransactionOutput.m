@@ -55,18 +55,38 @@
     return self;
 }
 
+- (NSComparisonResult)compare:(DSTransactionOutput *)output2 {
+    uint64_t a1 = self.amount;
+    uint64_t a2 = output2.amount;
+    if (a1 > a2) {
+        return NSOrderedDescending;
+    } else if (a1 < a2) {
+        return NSOrderedAscending;
+    } else {
+        NSData *script1 = self.outScript;
+        NSData *script2 = output2.outScript;
+        NSUInteger minLength = MIN(script1.length, script2.length);
+        int cmpResult = memcmp(script1.bytes, script2.bytes, minLength);
+        if (cmpResult == 0) {
+            return (script1.length == script2.length ? NSOrderedSame : (script1.length < script2.length ? NSOrderedAscending : NSOrderedDescending));
+        } else {
+            return (cmpResult < 0) ? NSOrderedAscending : NSOrderedDescending;
+        }
+    }
+}
+
 - (BOOL)isEqual:(id)object {
     DSTransactionOutput *output = (DSTransactionOutput *)object;
     return self == object ||
-    ([object isKindOfClass:[DSTransactionOutput class]] &&
-     self.amount == output.amount &&
-     ([self.outScript isEqualToData:output.outScript] || (!self.outScript && !output.outScript)) &&
-     ([self.address isEqual:output.address] || (!self.address && !output.address)));
+           ([object isKindOfClass:[DSTransactionOutput class]] &&
+               self.amount == output.amount &&
+               ([self.outScript isEqualToData:output.outScript] || (!self.outScript && !output.outScript)) &&
+               ([self.address isEqual:output.address] || (!self.address && !output.address)));
 }
 
 - (NSString *)description {
     return [NSString stringWithFormat:@"%@(amount=%llu, outScript=%@, address=%@)",
-            [[self class] description], self.amount, self.outScript, self.address];
+                     [[self class] description], self.amount, self.outScript, self.address];
 }
 
 @end

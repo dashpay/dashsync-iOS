@@ -274,6 +274,14 @@
     return [self.chain accountsThatCanContainTransaction:self];
 }
 
+- (NSArray<DSTransactionInput *> *)inputs {
+    return self.mInputs;
+}
+
+- (NSArray<DSTransactionOutput *> *)outputs {
+    return self.mOutputs;
+}
+
 - (NSArray *)inputAddresses {
     NSMutableArray *rAddresses = [NSMutableArray arrayWithCapacity:self.mInputs.count];
     for (DSTransactionInput *input in self.mInputs) {
@@ -496,6 +504,30 @@
         if (j == i) continue;
         [self.mOutputs exchangeObjectAtIndex:i withObjectAtIndex:j];
     }
+}
+
+/**
+ * Hashes (in reversed byte-order) are to be sorted in ASC order, lexicographically.
+ * If they're match -> the respective indices will be compared, in ASC.
+ */
+- (void)sortInputsAccordingToBIP69 {
+    self.mInputs = [[self.mInputs sortedArrayUsingComparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2) {
+        DSTransactionInput *input1 = (DSTransactionInput *)obj1;
+        DSTransactionInput *input2 = (DSTransactionInput *)obj2;
+        return [input1 compare:input2];
+    }] mutableCopy];
+}
+
+/**
+ * Amounts are to be sorted in ASC.
+ * If they're equal -> respective outScripts will be compared lexicographically, in ASC.
+ */
+- (void)sortOutputsAccordingToBIP69 {
+    self.mOutputs = [[self.mOutputs sortedArrayUsingComparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2) {
+        DSTransactionOutput *output1 = (DSTransactionOutput *)obj1;
+        DSTransactionOutput *output2 = (DSTransactionOutput *)obj2;
+        return [output1 compare:output2];
+    }] mutableCopy];
 }
 
 // MARK: - Signing

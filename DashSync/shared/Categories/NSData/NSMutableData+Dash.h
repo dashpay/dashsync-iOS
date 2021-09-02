@@ -46,6 +46,8 @@ CF_IMPLICIT_BRIDGING_DISABLED
 + (NSMutableData *)secureDataWithCapacity:(NSUInteger)capacity;
 + (NSMutableData *)secureDataWithData:(NSData *)data;
 
++ (NSMutableData *)withScriptPubKeyForAddress:(NSString *)address forChain:(DSChain *)chain;
+
 + (NSMutableString *)secureString;
 + (NSMutableString *)secureStringWithLength:(NSUInteger)length;
 

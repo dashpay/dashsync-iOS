@@ -43,22 +43,40 @@
     return self;
 }
 
+- (NSComparisonResult)compare:(DSTransactionInput *)input2 {
+    UInt256 hash1 = self.inputHash;
+    UInt256 hash2 = input2.inputHash;
+    NSComparisonResult hashComparison = uint256_compare(hash1, hash2);
+    if (hashComparison == NSOrderedSame) {
+        uint32_t i1 = self.index;
+        uint32_t i2 = input2.index;
+        if (i1 > i2) {
+            return NSOrderedDescending;
+        } else if (i1 < i2) {
+            return NSOrderedAscending;
+        } else {
+            return NSOrderedSame;
+        }
+    }
+    return hashComparison;
+}
+
 - (BOOL)isEqual:(id)object {
     DSTransactionInput *input = (DSTransactionInput *)object;
     return self == object ||
-    ([object isKindOfClass:[DSTransactionInput class]] &&
-     uint256_eq(self.inputHash, input.inputHash) &&
-     self.index == input.index &&
-     ([self.inScript isEqualToData:input.inScript] || (!self.inScript && !input.inScript)) &&
-     ([self.signature isEqualToData:input.signature] || (!self.signature && !input.signature)) &&
-     self.sequence == input.sequence);
+           ([object isKindOfClass:[DSTransactionInput class]] &&
+               uint256_eq(self.inputHash, input.inputHash) &&
+               self.index == input.index &&
+               ([self.inScript isEqualToData:input.inScript] || (!self.inScript && !input.inScript)) &&
+               ([self.signature isEqualToData:input.signature] || (!self.signature && !input.signature)) &&
+               self.sequence == input.sequence);
 }
 
 - (NSString *)description {
     return [NSString stringWithFormat:@"%@(inputHash=%@, index=%u, inScript=%@, signature=%@, sequence=%u)",
-            [[self class] description],
-            [NSString hexWithData:[NSData dataWithBytes:self.inputHash.u8 length:sizeof(UInt256)]],
-            self.index, self.inScript, [self.signature hexString], self.sequence];
+                     [[self class] description],
+                     [NSString hexWithData:[NSData dataWithBytes:self.inputHash.u8 length:sizeof(UInt256)]],
+                     self.index, self.inScript, [self.signature hexString], self.sequence];
 }
 
 

@@ -31,7 +31,9 @@
 #import "DSSporkManager.h"
 #import "DSTransaction+Protected.h"
 #import "DSTransactionFactory.h"
+#import "DSTransactionInput.h"
 #import "DSTransactionManager.h"
+#import "DSTransactionOutput.h"
 #import "DSTransition+Protected.h"
 #import "DSWallet.h"
 #import "NSData+DSHash.h"
@@ -389,5 +391,88 @@
 //
 //}
 
+/**
+ * Inputs:
+ * 1) hashes (in reversed byte-order) lexicographically in ASC.
+ * 2) indices  in ASC.
+ * Outputs:
+ * 1) amounts in ASC.
+ * 2) outScripts lexicographically in ASC
+ */
+- (void)testBIP69 {
+    DSChain *testnet = [DSChain testnet];
+    NSString *ipk1 = @"cNeRqjZpEEowdxMjiBa7S5uBgqweng19F1EZRFWcqE2XTpDy1Vzt";
+    NSString *ipk2 = @"35a56b070a8ec80f6c0cba21886aba9b308c4e40ed7b4f290749333522125f7c";
+    NSString *ipk3 = @"eee3e42d35d1c75ea4cf3dbc902de9619faf0cd6ba1ab178a873d80c3f7dc90c";
+    NSString *ipk4 = @"19d6aba7a9fcdb627ad39a2176689c2dcca13db68415411d88b1c37c2103794a";
+    NSString *ipk5 = @"b4788261554d2f74647e547ef34018c228b7869191c0dc0086d91901c515c370";
+    DSECDSAKey *pk1 = [DSECDSAKey keyWithPrivateKey:ipk1 onChain:testnet];
+    DSECDSAKey *pk2 = [DSECDSAKey keyWithPrivateKey:ipk2 onChain:testnet];
+    DSECDSAKey *pk3 = [DSECDSAKey keyWithPrivateKey:ipk3 onChain:testnet];
+    DSECDSAKey *pk4 = [DSECDSAKey keyWithPrivateKey:ipk4 onChain:testnet];
+    DSECDSAKey *pk5 = [DSECDSAKey keyWithPrivateKey:ipk5 onChain:testnet];
+    NSString *ia1 = [pk1 addressForChain:testnet];
+    NSString *ia2 = [pk2 addressForChain:testnet];
+    NSString *ia3 = [pk3 addressForChain:testnet];
+    NSString *ia4 = [pk4 addressForChain:testnet];
+    NSString *ia5 = [pk5 addressForChain:testnet];
+    NSMutableData *script1 = [NSMutableData withScriptPubKeyForAddress:ia1 forChain:testnet];
+    NSMutableData *script2 = [NSMutableData withScriptPubKeyForAddress:ia2 forChain:testnet];
+    NSMutableData *script3 = [NSMutableData withScriptPubKeyForAddress:ia3 forChain:testnet];
+    NSMutableData *script4 = [NSMutableData withScriptPubKeyForAddress:ia4 forChain:testnet];
+    NSMutableData *script5 = [NSMutableData withScriptPubKeyForAddress:ia5 forChain:testnet];
+    UInt256 hash1 = @"ce5e6919b13d6e58da10f933b6442558ba470b24f488f1449d2adf1e0a892e7d".hexToData.reverse.UInt256;
+    UInt256 hash2 = @"ce5e6919b13d6e58da10f933b6442558ba470b24f488f1449d2adf1e0a892e7a".hexToData.reverse.UInt256;
+    UInt256 hash3 = @"ce5e6919b13d6e58da10f933b6442558ba470b24f488f1449d2adf1e0a892e7b".hexToData.reverse.UInt256;
+    UInt256 hash4 = @"ce5e6919b13d6e58da10f933b6442558ba470b24f488f1449d2adf1e0a892e7c".hexToData.reverse.UInt256;
+    UInt256 hash5 = @"ce5e6919b13d6e58da10f933b6442558ba470b24f488f1449d2adf1e0a892e7c".hexToData.reverse.UInt256;
+    NSValue *hash1val = uint256_obj(hash1);
+    NSValue *hash2val = uint256_obj(hash2);
+    NSValue *hash3val = uint256_obj(hash3);
+    NSValue *hash4val = uint256_obj(hash4);
+    NSValue *hash5val = uint256_obj(hash5);
 
+    NSArray *hashes = @[hash1val, hash2val, hash3val, hash4val, hash5val];
+    NSArray *indices = @[@1, @1, @1, @1, @0];
+    NSArray *inScripts = @[script1, script2, script3, script4, script5];
+
+
+    NSArray *outputAmounts = @[@2899999999774, @100000000000, @2899999999774];
+    NSString *outputAddress1 = @"yiTyFtkZVCrEvmANHoj9rJQ2VA9HBnYTgp";
+    NSString *outputAddress2 = @"ygTmsRfjDQ8c8UDny2uU8gafAeFAKP6G1g";
+    NSString *outputAddress3 = @"yaMmAV9Fmx4St7xPH9eHCLcYJZdGYd8vD8";
+    //76a914f2ef7a87a09aadd215be821ddfcb922fa099f64f88ac
+    NSMutableData *outputScript1 = [NSMutableData withScriptPubKeyForAddress:outputAddress1 forChain:testnet];
+    //76a914dcf5b8abf6e222dea0219f4e3b539fa9b6addcfa88ac
+    NSMutableData *outputScript2 = [NSMutableData withScriptPubKeyForAddress:outputAddress2 forChain:testnet];
+    //76a9149a01e1b57808ed4f14553fc4624de20c13c9e97e88ac
+    NSMutableData *outputScript3 = [NSMutableData withScriptPubKeyForAddress:outputAddress3 forChain:testnet];
+    NSArray *outputAddresses = @[outputAddress1, outputAddress2, outputAddress3];
+    DSTransaction *tx = [[DSTransaction alloc] initWithInputHashes:hashes
+                                                      inputIndexes:indices
+                                                      inputScripts:inScripts
+                                                   outputAddresses:outputAddresses
+                                                     outputAmounts:outputAmounts
+                                                           onChain:testnet];
+
+    DSTransactionInput *input1 = [DSTransactionInput transactionInputWithHash:hash1 index:1 inScript:script1 signature:nil sequence:TXIN_SEQUENCE];
+    DSTransactionInput *input2 = [DSTransactionInput transactionInputWithHash:hash2 index:1 inScript:script2 signature:nil sequence:TXIN_SEQUENCE];
+    DSTransactionInput *input3 = [DSTransactionInput transactionInputWithHash:hash3 index:1 inScript:script3 signature:nil sequence:TXIN_SEQUENCE];
+    DSTransactionInput *input4 = [DSTransactionInput transactionInputWithHash:hash4 index:1 inScript:script4 signature:nil sequence:TXIN_SEQUENCE];
+    DSTransactionInput *input5 = [DSTransactionInput transactionInputWithHash:hash5 index:0 inScript:script5 signature:nil sequence:TXIN_SEQUENCE];
+    NSArray<DSTransactionInput *> *bipInputs = @[input2, input3, input5, input4, input1];
+
+    [tx sortInputsAccordingToBIP69];
+    XCTAssertEqualObjects(tx.inputs, bipInputs, @"The transaction inputs does not match it's expected values");
+    [tx sortOutputsAccordingToBIP69];
+
+    DSTransactionOutput *output1 = [DSTransactionOutput transactionOutputWithAmount:2899999999774 address:outputAddress1 outScript:outputScript1 onChain:testnet];
+    DSTransactionOutput *output2 = [DSTransactionOutput transactionOutputWithAmount:100000000000 address:outputAddress2 outScript:outputScript2 onChain:testnet];
+    DSTransactionOutput *output3 = [DSTransactionOutput transactionOutputWithAmount:2899999999774 address:outputAddress3 outScript:outputScript3 onChain:testnet];
+
+    NSArray<DSTransactionOutput *> *bipOutputs = @[output2, output3, output1];
+    XCTAssertEqualObjects(tx.outputs, bipOutputs, @"The transaction outputs does not match it's expected values");
+    [tx signWithPrivateKeys:@[pk1, pk2, pk3, pk4, pk5]];
+    XCTAssertTrue([tx isSigned], @"[DSTransaction signWithSerializedPrivateKeys:]");
+}
 @end
