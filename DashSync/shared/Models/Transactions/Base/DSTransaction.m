@@ -514,23 +514,7 @@
     self.mInputs = [[self.mInputs sortedArrayUsingComparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2) {
         DSTransactionInput *input1 = (DSTransactionInput *)obj1;
         DSTransactionInput *input2 = (DSTransactionInput *)obj2;
-        UInt256 hash1 = input1.inputHash;
-        UInt256 hash2 = input2.inputHash;
-        NSString *s1 = uint256_hex(hash1);
-        NSString *s2 = uint256_hex(hash2);
-        NSComparisonResult hashComparison = [s1 compare:s2];
-        if (hashComparison == NSOrderedSame) {
-            uint32_t i1 = input1.index;
-            uint32_t i2 = input2.index;
-            if (i1 > i2) {
-                return NSOrderedDescending;
-            } else if (i1 < i2) {
-                return NSOrderedAscending;
-            } else {
-                return NSOrderedSame;
-            }
-        }
-        return hashComparison;
+        return [input1 compare:input2];
     }] mutableCopy];
 }
 
@@ -542,17 +526,7 @@
     self.mOutputs = [[self.mOutputs sortedArrayUsingComparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2) {
         DSTransactionOutput *output1 = (DSTransactionOutput *)obj1;
         DSTransactionOutput *output2 = (DSTransactionOutput *)obj2;
-        uint64_t a1 = output1.amount;
-        uint64_t a2 = output2.amount;
-        if (a1 > a2) {
-            return NSOrderedDescending;
-        } else if (a1 < a2) {
-            return NSOrderedAscending;
-        } else {
-            NSData *script1 = output1.outScript;
-            NSData *script2 = output2.outScript;
-            return [[script1 hexString] compare:[script2 hexString] options:NSLiteralSearch];
-        }
+        return [output1 compare:output2];
     }] mutableCopy];
 }
 

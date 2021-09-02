@@ -182,7 +182,6 @@
     XCTAssertEqualObjects(providerRegistrationTransaction.inputs, providerRegistrationTransactionFromMessage.inputs, @"Provider transaction inputs are having an issue");
 
 
-
     XCTAssertEqualObjects(providerRegistrationTransaction.outputs, providerRegistrationTransactionFromMessage.outputs, @"Provider transaction outputs are having an issue");
 
     XCTAssertEqualObjects(uint384_hex(providerRegistrationTransaction.operatorKey), uint384_hex(providerRegistrationTransactionFromMessage.operatorKey), @"Provider transaction operator key is having an issue");

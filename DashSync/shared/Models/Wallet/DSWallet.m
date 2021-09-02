@@ -898,7 +898,7 @@
     return [mSet allObjects];
 }
 
-- (NSArray *)allTransactionsForAccount:(DSAccount*)account {
+- (NSArray *)allTransactionsForAccount:(DSAccount *)account {
     NSMutableSet *mSet = [NSMutableSet set];
     [mSet addObjectsFromArray:[account.allTransactions copy]];
     [mSet addObjectsFromArray:[self.specialTransactionsHolder allTransactions]];
