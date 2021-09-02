@@ -31,6 +31,8 @@ typedef union _UInt256 UInt256;
 
 + (instancetype)transactionInputWithHash:(UInt256)inputHash index:(uint32_t)index inScript:(NSData *)inScript signature:(NSData *)signature sequence:(uint32_t)sequence;
 
+- (NSComparisonResult)compare:(DSTransactionInput *)obj;
+
 @end
 
 NS_ASSUME_NONNULL_END
