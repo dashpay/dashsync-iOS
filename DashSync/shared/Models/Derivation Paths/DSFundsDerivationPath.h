@@ -11,6 +11,10 @@
 #define SEQUENCE_GAP_LIMIT_INTERNAL 5
 #define SEQUENCE_GAP_LIMIT_INITIAL 100
 
+#define SEQUENCE_UNUSED_GAP_LIMIT_EXTERNAL 10
+#define SEQUENCE_UNUSED_GAP_LIMIT_INTERNAL 5
+#define SEQUENCE_UNUSED_GAP_LIMIT_INITIAL 15
+
 #define SEQUENCE_DASHPAY_GAP_LIMIT_INCOMING 6
 #define SEQUENCE_DASHPAY_GAP_LIMIT_OUTGOING 3
 #define SEQUENCE_DASHPAY_GAP_LIMIT_INITIAL 10
@@ -42,6 +46,9 @@ NS_ASSUME_NONNULL_BEGIN
 // used internal addresses
 @property (nonatomic, readonly) NSArray *usedChangeAddresses;
 
+// we should use a reduced gap limit on derivation paths with no balance (except account 0 on bip44)
+@property (nonatomic, readonly) BOOL shouldUseReducedGapLimit;
+
 + (instancetype)bip32DerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain *)chain;
 
 + (instancetype)bip44DerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain *)chain;
@@ -69,6 +76,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)containsChangeAddress:(NSString *)address;
 - (BOOL)containsReceiveAddress:(NSString *)address;
+
+- (void)setHasKnownBalance;
 
 @end
 

@@ -41,6 +41,10 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 
 @interface DSWallet : NSObject
 
+@property (nonatomic, readonly) NSDictionary<NSNumber *, DSAccount *> *orderedAccounts;
+
+@property (nonatomic, readonly) uint32_t lastAccountNumber;
+
 @property (nonatomic, readonly) NSArray<DSAccount *> *accounts;
 
 @property (nonatomic, readonly) DSSpecialTransactionsWalletHolder *specialTransactionsHolder;
@@ -147,6 +151,9 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 //add an account to the wallet
 - (void)addAccount:(DSAccount *)account;
 
+//add another account to the wallet if authenticated
+- (DSAccount *_Nullable)addAnotherAccountIfAuthenticated;
+
 // returns an account where all derivation paths have the following account number
 - (DSAccount *_Nullable)accountWithNumber:(NSUInteger)accountNumber;
 
@@ -165,13 +172,16 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 // returns the transaction with the given hash if it's been registered in the wallet (might also return non-registered)
 - (DSTransaction *_Nullable)transactionForHash:(UInt256)txHash;
 
-- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit dashpayGapLimit:(NSUInteger)dashpayGapLimit internal:(BOOL)internal error:(NSError *_Nullable *_Nullable)error;
+- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit unusedAccountGapLimit:(NSUInteger)unusedAccountGapLimit dashpayGapLimit:(NSUInteger)dashpayGapLimit internal:(BOOL)internal error:(NSError *_Nullable *_Nullable)error;
 
 // returns the amount received by the wallet from the transaction (total outputs to change and/or receive addresses)
 - (uint64_t)amountReceivedFromTransaction:(DSTransaction *)transaction;
 
 // retuns the amount sent from the wallet by the trasaction (total wallet outputs consumed, change and fee included)
 - (uint64_t)amountSentByTransaction:(DSTransaction *)transaction;
+
+// retuns all account transactions plus special transactions not bound to any account
+- (NSArray *)allTransactionsForAccount:(DSAccount*)account;
 
 // true if no previous wallet transaction spends any of the given transaction's inputs, and no inputs are invalid
 - (BOOL)transactionIsValid:(DSTransaction *)transaction;
@@ -198,6 +208,9 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 
 //This removes all blockchain information from the wallet, used for resync
 - (void)wipeBlockchainInfoInContext:(NSManagedObjectContext *)context;
+
+//This removes all extra accounts, past the first (or sometimes second one).
+- (void)wipeBlockchainExtraAccountsInContext:(NSManagedObjectContext *)context;
 
 //This removes all wallet based information from the wallet, used when deletion of wallet is wanted
 - (void)wipeWalletInfo;

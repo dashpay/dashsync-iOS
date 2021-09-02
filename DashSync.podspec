@@ -32,7 +32,8 @@ Pod::Spec.new do |s|
   s.resource_bundles = {'DashSync' => ['DashSync/shared/*.xcdatamodeld', 'DashSync/shared/MappingModels/*.xcmappingmodel', 'DashSync/shared/*.plist', 'DashSync/shared/*.lproj', 'DashSync/shared/MasternodeLists/*.dat', 'DashSync/shared/*.json']}
   
   s.framework = 'Foundation', 'SystemConfiguration', 'CoreData', 'BackgroundTasks', 'Security'
-  s.vendored_libraries = 'DashSync/lib/libmerkiOS.a'
+  s.ios.vendored_libraries = 'DashSync/lib/libmerkiOS.a'
+  s.macos.vendored_libraries = 'DashSync/lib/libmerkMacOS.a'
   s.ios.framework = 'UIKit'
   s.macos.framework = 'Cocoa'
   s.compiler_flags = '-Wno-comma'
