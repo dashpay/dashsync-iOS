@@ -1,11 +1,11 @@
 Pod::Spec.new do |s|
   s.name     = "DAPI-GRPC"
-  s.version  = "0.20.0-alpha.1"
+  s.version  = "0.21.0-dev.8"
   s.license  = "MIT"
   s.authors  = { 'Dash Core Group, Inc.' => 'contact@dash.org' }
   s.homepage = "https://github.com/dashevo/dapi-grpc"
   s.summary = "Decentralized API GRPC"
-  s.source = { :git => 'https://github.com/dashevo/dashsync-iOS.git', :tag => 'dapi-0.20.0-alpha.1' }
+  s.source = { :git => 'https://github.com/dashevo/dashsync-iOS.git', :tag => 'dapi-0.21.0-dev.8' }
 
   s.ios.deployment_target = "12.0"
   s.osx.deployment_target = "10.9"
