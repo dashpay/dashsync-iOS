@@ -21,7 +21,7 @@
 @implementation NSData (DSMerkAVLTree)
 
 - (NSData *)executeProofReturnElementDictionary:(NSDictionary **)rElementDictionary {
-    const ExecuteProofResult *result = execute_proof_c(self.bytes, self.length);
+    ExecuteProofResult *result = execute_proof_c(self.bytes, self.length);
     if (result == nil) {
         return nil;
     }
@@ -32,6 +32,7 @@
         [mElementDictionary setObject:[NSData dataWithBytes:element->value length:element->value_length] forKey:[NSData dataWithBytes:element->key length:element->key_length]];
     }
     *rElementDictionary = [mElementDictionary copy];
+    destroy_proof_c(result);
     return rootHash;
 }
 
