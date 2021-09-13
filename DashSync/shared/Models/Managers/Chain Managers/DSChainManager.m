@@ -467,13 +467,7 @@
                                                             object:nil
                                                           userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
     });
-    if (self.chain.isEvolutionEnabled && self.masternodeManager.currentMasternodeListIsInLast24Hours && !self.identitiesManager.hasRecentIdentitiesSync) {
-        [self.identitiesManager syncBlockchainIdentitiesWithCompletion:^(NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities) {
-            [self.peerManager connect];
-        }];
-    } else {
-        [self.peerManager connect];
-    }
+    [self.peerManager connect];
 }
 
 - (void)stopSync {

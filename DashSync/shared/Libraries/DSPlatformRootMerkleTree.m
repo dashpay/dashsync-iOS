@@ -20,42 +20,30 @@
 #import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 
-#define ROOT_MERKLE_TREE_DEPTH 3
-
 @interface DSPlatformRootMerkleTree ()
 
-@property (nonatomic, assign) UInt256 elementToProve;
-@property (nonatomic, strong) NSArray *proofHashes;
-@property (nonatomic, strong) NSData *flags;
+@property (nonatomic, strong) NSDictionary<NSNumber *, NSData *> *elementsToProve;
+@property (nonatomic, strong) NSMutableArray<NSData *> *proofHashes;
 @property (nonatomic, assign) DSMerkleTreeHashFunction hashFunction;
+@property (nonatomic, assign) uint32_t fixedElementCount;
 
 @end
 
 @implementation DSPlatformRootMerkleTree
 
-+ (instancetype)merkleTreeWithElementToProve:(UInt256)element proofData:(NSData *)proofData hashFunction:(DSMerkleTreeHashFunction)hashFunction {
-    NSUInteger off = 0, len = 0;
-    uint32_t leafCount = [proofData UInt32AtOffset:off];
-    NSAssert(leafCount == 1, @"leaf count must be 1");
-    off += sizeof(uint32_t);
-    NSNumber *l = nil;
-    len = (NSUInteger)[proofData varIntAtOffset:off length:&l];
-    off += l.unsignedIntegerValue;
++ (instancetype)merkleTreeWithElementsToProve:(NSDictionary *)elements proofData:(NSData *)proofData hashFunction:(DSMerkleTreeHashFunction)hashFunction fixedElementCount:(uint32_t)fixedElementCount {
     NSMutableArray *proofHashes = [NSMutableArray array];
-    for (int i = 0; i < len; i++) {
+    for (int off = 0; off < proofData.length; off += sizeof(UInt256)) {
         [proofHashes addObject:[proofData subdataWithRange:NSMakeRange(off, sizeof(UInt256))]];
-        off += sizeof(UInt256);
     }
-    NSData *flags = [proofData dataAtOffset:off length:&l];
-    if (proofHashes.count == 0) return nil;
-    return [[DSPlatformRootMerkleTree alloc] initWithElementToProve:element proofHashes:proofHashes flags:flags hashFunction:hashFunction];
+    return [[DSPlatformRootMerkleTree alloc] initWithElementsToProve:elements proofHashes:proofHashes hashFunction:hashFunction fixedElementCount:fixedElementCount];
 }
 
-- (instancetype)initWithElementToProve:(UInt256)element proofHashes:(NSArray *)proofHashes flags:(NSData *)flags hashFunction:(DSMerkleTreeHashFunction)hashFunction {
+- (instancetype)initWithElementsToProve:(NSDictionary *)elements proofHashes:(NSArray *)proofHashes hashFunction:(DSMerkleTreeHashFunction)hashFunction fixedElementCount:(uint32_t)fixedElementCount {
     if (!(self = [self init])) return nil;
-    self.elementToProve = element;
-    self.proofHashes = proofHashes;
-    self.flags = flags;
+    self.fixedElementCount = fixedElementCount;
+    self.elementsToProve = elements;
+    self.proofHashes = [proofHashes mutableCopy];
     self.hashFunction = hashFunction;
     return self;
 }
@@ -65,8 +53,8 @@
         case DSMerkleTreeHashFunction_SHA256_2:
             return data.SHA256_2;
             break;
-        case DSMerkleTreeHashFunction_BLAKE3_2:
-            return data.blake3_2;
+        case DSMerkleTreeHashFunction_BLAKE3:
+            return data.blake3;
             break;
 
         default:
@@ -76,24 +64,47 @@
 }
 
 - (UInt256)merkleRoot {
-    int i = 0;
-    UInt256 merkleRoot = self.elementToProve;
-    for (NSData *data in self.proofHashes) {
-        BOOL proofIsRight = (((const uint8_t *)_flags.bytes)[i / 8] & (1 << (i % 8)));
-        UInt256 left, right;
-        if (proofIsRight) {
-            right = data.UInt256;
-            left = merkleRoot;
-        } else {
-            right = merkleRoot;
-            left = data.UInt256;
+    NSDictionary<NSNumber *, NSData *> *rowElements = self.elementsToProve;
+    uint32_t rowSize = self.fixedElementCount;
+    while (self.proofHashes.count > 0 || rowElements.count > 1) {
+        NSMutableDictionary *nextRowElements = [NSMutableDictionary dictionary];
+        NSMutableArray *positions = [rowElements.allKeys mutableCopy];
+        [positions sortUsingSelector:@selector(compare:)];
+        for (int i = 0; i < positions.count; i++) {
+            NSNumber *number = positions[i];
+            NSData *storeTreeRootHash = rowElements[number];
+            UInt256 left, right;
+            int pos = [number intValue];
+            if (pos == rowSize - 1) {
+                [nextRowElements setObject:storeTreeRootHash forKey:@(pos / 2)];
+                continue;
+            }
+            if ([number intValue] % 2) {
+                //Right side
+                right = storeTreeRootHash.UInt256;
+                left = self.proofHashes.firstObject.UInt256;
+                [self.proofHashes removeObjectAtIndex:0];
+            } else {
+                //Left Side
+                left = storeTreeRootHash.UInt256;
+                if (rowElements[@(pos + 1)]) {
+                    // Both elements are known, no proof needed
+                    right = rowElements[@(pos + 1)].UInt256;
+                    i++;
+                } else {
+                    right = self.proofHashes.firstObject.UInt256;
+                    [self.proofHashes removeObjectAtIndex:0];
+                }
+            }
+            UInt512 concat = uint512_concat(left, right);
+            UInt256 merkleRoot = [self hashData:uint512_data(concat)];
+            [nextRowElements setObject:uint256_data(merkleRoot) forKey:@(pos / 2)];
+            NSLog(@"contac hash %@ gives %@", uint512_hex(concat), uint256_hex(merkleRoot));
         }
-        UInt512 concat = uint512_concat(uint256_reverse(left), uint256_reverse(right));
-        merkleRoot = uint256_reverse([self hashData:uint512_data(concat)]);
-        NSLog(@"contac hash %@ gives %@", uint512_hex(concat), uint256_hex(merkleRoot));
-        i++;
+        rowElements = nextRowElements;
+        rowSize = ceilf(((float)rowSize) / 2);
     }
-    return merkleRoot;
+    return rowElements[@(0)].UInt256;
 }
 
 - (BOOL)merkleTreeHasRoot:(UInt256)desiredMerkleRoot {
@@ -104,8 +115,9 @@
 
 - (id)copyWithZone:(NSZone *)zone {
     DSPlatformRootMerkleTree *copy = [[[self class] alloc] init];
+    copy.fixedElementCount = self.fixedElementCount;
+    copy.elementsToProve = [self.elementsToProve copyWithZone:zone];
     copy.proofHashes = [self.proofHashes copyWithZone:zone];
-    copy.flags = [self.flags copyWithZone:zone];
     copy.hashFunction = self.hashFunction;
     return copy;
 }

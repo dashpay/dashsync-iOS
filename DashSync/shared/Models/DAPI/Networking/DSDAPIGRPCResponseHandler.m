@@ -391,10 +391,40 @@
 
     // We first need to get the merk Root
 
-    NSDictionary *elementDictionary = nil;
-    NSData *rootMerk = [proof.storeTreeProof executeProofReturnElementDictionary:&elementDictionary];
+    NSDictionary *identitiesDictionary = nil;
+    NSDictionary *documentsDictionary = nil;
+    NSDictionary *contractsDictionary = nil;
+    NSDictionary *publicKeyHashesToIdentityIdsProofDictionary = nil;
+    StoreTreeProofs *proofs = proof.storeTreeProofs;
 
-    DSPlatformRootMerkleTree *merkleTree = [DSPlatformRootMerkleTree merkleTreeWithElementToProve:rootMerk.reverse.UInt256 proofData:proof.rootTreeProof hashFunction:DSMerkleTreeHashFunction_BLAKE3_2];
+    NSData *identitiesRoot = nil;
+    NSData *documentsRoot = nil;
+    NSData *contractsRoot = nil;
+    NSData *publicKeyHashesToIdentityIdsRoot = nil;
+
+    NSMutableDictionary<NSNumber *, NSData *> *rootElementsToProve = [NSMutableDictionary dictionary];
+
+    if (proofs.identitiesProof.length > 0) {
+        identitiesRoot = [proofs.identitiesProof executeProofReturnElementDictionary:&identitiesDictionary];
+        [rootElementsToProve setObject:identitiesRoot forKey:@(DSPlatformDictionary_Identities)];
+    }
+
+    if (proofs.documentsProof.length > 0) {
+        documentsRoot = [proofs.documentsProof executeProofReturnElementDictionary:&documentsDictionary];
+        [rootElementsToProve setObject:documentsRoot forKey:@(DSPlatformDictionary_Documents)];
+    }
+
+    if (proofs.dataContractsProof.length > 0) {
+        contractsRoot = [proofs.dataContractsProof executeProofReturnElementDictionary:&contractsDictionary];
+        [rootElementsToProve setObject:contractsRoot forKey:@(DSPlatformDictionary_Contracts)];
+    }
+
+    if (proofs.publicKeyHashesToIdentityIdsProof.length > 0) {
+        publicKeyHashesToIdentityIdsRoot = [proofs.publicKeyHashesToIdentityIdsProof executeProofReturnElementDictionary:&publicKeyHashesToIdentityIdsProofDictionary];
+        [rootElementsToProve setObject:publicKeyHashesToIdentityIdsRoot forKey:@(DSPlatformDictionary_PublicKeyHashesToIdentityIds)];
+    }
+
+    DSPlatformRootMerkleTree *merkleTree = [DSPlatformRootMerkleTree merkleTreeWithElementsToProve:rootElementsToProve proofData:proof.rootTreeProof hashFunction:DSMerkleTreeHashFunction_BLAKE3 fixedElementCount:6];
 
     UInt256 stateHash = merkleTree.merkleRoot;
     if (uint256_is_zero(stateHash)) {
@@ -402,8 +432,8 @@
                                      code:500
                                  userInfo:@{NSLocalizedDescriptionKey:
                                               DSLocalizedString(@"Platform returned an incorrect rootTreeProof", nil)}];
+        return nil;
     }
-
 
     DSQuorumEntry *quorumEntry = [self.chain.chainManager.masternodeManager quorumEntryForPlatformHavingQuorumHash:quorumHash forBlockHeight:metaData.coreChainLockedHeight];
     if (quorumEntry && quorumEntry.verified) {
@@ -425,16 +455,31 @@
                                               DSLocalizedString(@"Quorum entry %@ found but is not yet verified", nil)}];
         DSLog(@"quorum entry %@ found but is not yet verified", uint256_hex(quorumEntry.quorumHash));
     } else {
-        DSLog(@"no quorum entry found");
+        DSLog(@"no quorum entry found for quorum hash %@", uint256_hex(quorumHash));
     }
-    return elementDictionary;
+
+    NSMutableDictionary *elementsDictionary = [NSMutableDictionary dictionary];
+    if (identitiesDictionary) {
+        [elementsDictionary setObject:identitiesDictionary forKey:@(DSPlatformDictionary_Identities)];
+    }
+    if (documentsDictionary) {
+        [elementsDictionary setObject:documentsDictionary forKey:@(DSPlatformDictionary_Documents)];
+    }
+    if (contractsDictionary) {
+        [elementsDictionary setObject:contractsDictionary forKey:@(DSPlatformDictionary_Contracts)];
+    }
+    if (publicKeyHashesToIdentityIdsProofDictionary) {
+        [elementsDictionary setObject:publicKeyHashesToIdentityIdsProofDictionary forKey:@(DSPlatformDictionary_PublicKeyHashesToIdentityIds)];
+    }
+
+    return elementsDictionary;
 }
 
 - (UInt256)requestIdForHeight:(int64_t)height {
     NSMutableData *data = [NSMutableData data];
     [data appendString:@"dpsvote"];
     [data appendUInt64:height];
-    return [data SHA256_2];
+    return [data SHA256];
 }
 
 - (UInt256)signIDForQuorumEntry:(DSQuorumEntry *)quorumEntry withStateId:(UInt256)stateId height:(int64_t)height {

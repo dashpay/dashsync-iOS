@@ -1576,7 +1576,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     uint64_t amount = 0;
     //TODO: don't include outputs below TX_MIN_OUTPUT_AMOUNT
     for (DSTransactionOutput *output in transaction.outputs) {
-        if ([self containsAddress:output.address])
+        if (output.address && [self containsAddress:output.address])
             amount += output.amount;
     }
     return amount;
@@ -1587,7 +1587,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     uint64_t amount = 0;
     //TODO: don't include outputs below TX_MIN_OUTPUT_AMOUNT
     for (DSTransactionOutput *output in transaction.outputs) {
-        if ([self containsExternalAddress:output.address])
+        if (output.address && [self containsExternalAddress:output.address])
             amount += output.amount;
     }
     return amount;
@@ -1598,7 +1598,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     uint64_t amount = 0;
     //TODO: don't include outputs below TX_MIN_OUTPUT_AMOUNT
     for (DSTransactionOutput *output in transaction.outputs) {
-        if ([self containsInternalAddress:output.address])
+        if (output.address && [self containsInternalAddress:output.address])
             amount += output.amount;
     }
     return amount;
