@@ -17,4 +17,6 @@ typedef struct ExecuteProofResult {
   struct Element **elements;
 } ExecuteProofResult;
 
-const struct ExecuteProofResult *execute_proof_c(const uint8_t *c_array, uintptr_t length);
+struct ExecuteProofResult *execute_proof_c(const uint8_t *c_array, uintptr_t length);
+
+void destroy_proof_c(struct ExecuteProofResult *proof_result);
