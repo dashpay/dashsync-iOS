@@ -29,6 +29,9 @@
 
 NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 
+#define DAPI_SINGLE_NODE @"54.191.199.25"
+#define DAPI_CONNECT_SINGLE_NODE FALSE
+
 @interface DSDAPIClient ()
 
 @property (nonatomic, strong) DSChain *chain;
@@ -219,6 +222,9 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 #pragma mark - Peers
 
 - (void)addDAPINodeByAddress:(NSString *)host {
+#if DAPI_CONNECT_SINGLE_NODE
+    return;
+#endif
     [self.availablePeers addObject:host];
     DSDAPIPlatformNetworkService *foundNetworkService = nil;
     for (DSDAPIPlatformNetworkService *networkService in self.activePlatformServices) {
@@ -235,6 +241,9 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 }
 
 - (void)removeDAPINodeByAddress:(NSString *)host {
+#if DAPI_CONNECT_SINGLE_NODE
+    return;
+#endif
     @synchronized(self) {
         [self.availablePeers removeObject:host];
         for (DSDAPIPlatformNetworkService *networkService in [self.activePlatformServices copy]) {
@@ -250,8 +259,12 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
         if ([self.activePlatformServices count]) {
             if ([self.activePlatformServices count] == 1) return [self.activePlatformServices objectAtIndex:0];                   //if only 1 service, just use first one
             return [self.activePlatformServices objectAtIndex:arc4random_uniform((uint32_t)[self.activePlatformServices count])]; //use a random service
-        } else if ([self.availablePeers count]) {
+        } else if ([self.availablePeers count] || DAPI_CONNECT_SINGLE_NODE) {
+#if DAPI_CONNECT_SINGLE_NODE
+            NSString *peerHost = DAPI_SINGLE_NODE;
+#else
             NSString *peerHost = self.availablePeers.anyObject;
+#endif
             HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
             DSDAPIPlatformNetworkService *DAPINetworkService = [[DSDAPIPlatformNetworkService alloc] initWithDAPINodeIPAddress:peerHost httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.coreNetworkingDispatchQueue onChain:self.chain];
             [self.activePlatformServices addObject:DAPINetworkService];
@@ -267,7 +280,11 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
             if ([self.activeCoreServices count] == 1) return [self.activeCoreServices objectAtIndex:0];                   //if only 1 service, just use first one
             return [self.activeCoreServices objectAtIndex:arc4random_uniform((uint32_t)[self.activeCoreServices count])]; //use a random service
         } else if ([self.availablePeers count]) {
+#if DAPI_CONNECT_SINGLE_NODE
+            NSString *peerHost = DAPI_SINGLE_NODE;
+#else
             NSString *peerHost = self.availablePeers.anyObject;
+#endif
             HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
             DSDAPICoreNetworkService *DAPINetworkService = [[DSDAPICoreNetworkService alloc] initWithDAPINodeIPAddress:peerHost httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.coreNetworkingDispatchQueue onChain:self.chain];
             [self.activeCoreServices addObject:DAPINetworkService];
