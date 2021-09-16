@@ -102,6 +102,8 @@
 
 #import "DSTransaction+Utils.h"
 #import "DSTransactionFactory.h"
+#import "DSTransactionInput.h"
+#import "DSTransactionOutput.h"
 
 #import "DSBlockchainIdentityCloseTransition.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"

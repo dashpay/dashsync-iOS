@@ -22,6 +22,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, DSPlatformDictionary)
+{
+    DSPlatformDictionary_Contracts = 4,
+    DSPlatformDictionary_Documents = 5,
+    DSPlatformDictionary_Identities = 1,
+    DSPlatformDictionary_PublicKeyHashesToIdentityIds = 2,
+};
+
 @class DSChain;
 
 @interface DSDAPIGRPCResponseHandler : NSObject <GRPCProtoResponseHandler>

@@ -452,7 +452,7 @@
             closestMasternodeList = self.masternodeListsByBlockHash[blockHashData];
         }
     }
-    if (closestMasternodeList.height < 1088640 && blockHeight >= 1088640) return nil;
+    if (self.chain.isMainnet && closestMasternodeList.height < 1088640 && blockHeight >= 1088640) return nil; //special mainnet case
     return closestMasternodeList;
 }
 
@@ -1481,7 +1481,7 @@
         DSLog(@"No masternode list found yet");
         return nil;
     }
-    if (merkleBlock.height - masternodeList.height > 24) {
+    if (merkleBlock.height - masternodeList.height > 32) {
         DSLog(@"Masternode list for IS is too old (age: %d masternodeList height %d merkle block height %d)", merkleBlock.height - masternodeList.height, masternodeList.height, merkleBlock.height);
         return nil;
     }
@@ -1511,12 +1511,15 @@
 }
 
 - (DSQuorumEntry *)quorumEntryForPlatformHavingQuorumHash:(UInt256)quorumHash forBlock:(DSBlock *)block {
-    DSMasternodeList *masternodeList = [self masternodeListBeforeBlockHash:block.blockHash];
+    DSMasternodeList *masternodeList = [self masternodeListForBlockHash:block.blockHash];
+    if (!masternodeList) {
+        [self masternodeListBeforeBlockHash:block.blockHash];
+    }
     if (!masternodeList) {
         DSLog(@"No masternode list found yet");
         return nil;
     }
-    if (block.height - masternodeList.height > 24) {
+    if (block.height - masternodeList.height > 32) {
         DSLog(@"Masternode list is too old");
         return nil;
     }

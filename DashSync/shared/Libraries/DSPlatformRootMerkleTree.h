@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) UInt256 merkleRoot;
 @property (nonatomic, readonly) DSMerkleTreeHashFunction hashFunction;
 
-+ (instancetype)merkleTreeWithElementToProve:(UInt256)element proofData:(NSData *)data hashFunction:(DSMerkleTreeHashFunction)hashFunction;
++ (instancetype)merkleTreeWithElementsToProve:(NSDictionary *)elements proofData:(NSData *)proofData hashFunction:(DSMerkleTreeHashFunction)hashFunction fixedElementCount:(uint32_t)fixedElementCount;
 
 - (BOOL)merkleTreeHasRoot:(UInt256)desiredMerkleRoot;
 
