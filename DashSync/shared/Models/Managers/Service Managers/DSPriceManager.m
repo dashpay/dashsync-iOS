@@ -416,19 +416,21 @@
 
 // NOTE: For now these local currency methods assume that a satoshi has a smaller value than the smallest unit of any
 // local currency. They will need to be revisited when that is no longer a safe assumption.
-- (int64_t)amountForLocalCurrencyString:(NSString *)string {
+- (int64_t)amountForLocalCurrencyString:(NSString *)string
+                         localFormatter:(NSNumberFormatter *)localFormatter
+                             localPrice:(NSNumber *)localPrice {
     NSParameterAssert(string);
 
     if ([string hasPrefix:@"<"]) string = [string substringFromIndex:1];
 
-    NSNumber *n = [self.localFormat numberFromString:string];
-    int64_t price = [[NSDecimalNumber decimalNumberWithDecimal:self.localCurrencyDashPrice.decimalValue]
-                decimalNumberByMultiplyingByPowerOf10:self.localFormat.maximumFractionDigits]
-                        .longLongValue,
-            local = [[NSDecimalNumber decimalNumberWithDecimal:n.decimalValue]
-                decimalNumberByMultiplyingByPowerOf10:self.localFormat.maximumFractionDigits]
-                        .longLongValue,
-            overflowbits = 0, p = 10, min, max, amount;
+    NSNumber *n = [localFormatter numberFromString:string];
+    int64_t price = [[NSDecimalNumber decimalNumberWithDecimal:localPrice.decimalValue]
+                     decimalNumberByMultiplyingByPowerOf10:localFormatter.maximumFractionDigits]
+        .longLongValue,
+    local = [[NSDecimalNumber decimalNumberWithDecimal:n.decimalValue]
+             decimalNumberByMultiplyingByPowerOf10:localFormatter.maximumFractionDigits]
+        .longLongValue,
+    overflowbits = 0, p = 10, min, max, amount;
 
     if (local == 0 || price < 1) return 0;
     while (llabs(local) + 1 > INT64_MAX / DUFFS) local /= 2, overflowbits++; // make sure we won't overflow an int64_t
@@ -441,6 +443,12 @@
     while ((amount / p) * p >= min && p <= INT64_MAX / 10) p *= 10; // lowest decimal precision matching local currency string
     p /= 10;
     return (local < 0) ? -(amount / p) * p : (amount / p) * p;
+}
+
+- (int64_t)amountForLocalCurrencyString:(NSString *)string {
+    return [self amountForLocalCurrencyString:string
+                               localFormatter:self.localFormat
+                                   localPrice:self.localCurrencyDashPrice];
 }
 
 - (int64_t)amountForBitcoinCurrencyString:(NSString *)string {
