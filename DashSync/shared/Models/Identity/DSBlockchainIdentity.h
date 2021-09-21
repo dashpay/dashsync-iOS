@@ -323,6 +323,12 @@ FOUNDATION_EXPORT NSString *const DSBlockchainIdentityUpdateEventDashpaySyncroni
 /*! @brief This is a helper to easily get the public message of the matching dashpay user. */
 @property (nonatomic, readonly, nullable) NSString *publicMessage;
 
+/*! @brief This is a helper to easily get the last time the profile was updated of the matching dashpay user. */
+@property (nonatomic, assign) uint64_t dashpayProfileUpdatedAt;
+
+/*! @brief This is a helper to easily get the creation time of the profile of the matching dashpay user. */
+@property (nonatomic, assign) uint64_t dashpayProfileCreatedAt;
+
 - (void)sendNewFriendRequestToBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity completion:(void (^)(BOOL success, NSArray<NSError *> *_Nullable errors))completion;
 
 - (void)sendNewFriendRequestToPotentialContact:(DSPotentialContact *)potentialContact completion:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion;

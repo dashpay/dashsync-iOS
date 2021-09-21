@@ -912,6 +912,24 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     }
 }
 
+- (uint64_t)dashpayProfileUpdatedAt {
+    if (self.transientDashpayUser) {
+        return self.transientDashpayUser.updatedAt;
+    }
+    else {
+        return self.matchingDashpayUserInViewContext.updatedAt;
+    }
+}
+
+- (uint64_t)dashpayProfileCreatedAt {
+    if (self.transientDashpayUser) {
+        return self.transientDashpayUser.createdAt;
+    }
+    else {
+        return self.matchingDashpayUserInViewContext.createdAt;
+    }
+}
+
 // MARK: - Keys
 
 - (void)createFundingPrivateKeyWithSeed:(NSData *)seed isForInvitation:(BOOL)isForInvitation completion:(void (^_Nullable)(BOOL success))completion {
