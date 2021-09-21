@@ -622,7 +622,7 @@
 
 + (NSArray<DSCurrencyPriceObject *> *)sortPrices:(NSArray<DSCurrencyPriceObject *> *)prices
                                  usingDictionary:(NSMutableDictionary<NSString *, DSCurrencyPriceObject *> *)pricesByCode {
-    NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"code" ascending:YES];
+    NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES];
     NSMutableArray<DSCurrencyPriceObject *> *mutablePrices = [[prices sortedArrayUsingDescriptors:@[sortDescriptor]] mutableCopy];
     // move USD and EUR to the top of the prices list
     DSCurrencyPriceObject *eurPriceObject = pricesByCode[@"EUR"];
