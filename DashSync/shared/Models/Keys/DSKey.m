@@ -186,4 +186,9 @@
     return UINT256_ZERO;
 }
 
+- (void)signMessageDigest:(UInt256)digest completion:(void (^_Nullable)(BOOL success, NSData *signature))completion {
+    NSAssert(NO, @"This should be overridden");
+}
+
+
 @end

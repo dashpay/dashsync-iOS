@@ -63,7 +63,7 @@
 #import <TinyCborObjc/NSObject+DSCborEncoding.h>
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
-#define DEFAULT_SIGNING_ALGORITH DSKeyType_ECDSA
+#define DEFAULT_SIGNING_ALGORITHM DSKeyType_ECDSA
 #define DEFAULT_FETCH_IDENTITY_RETRY_COUNT 5
 #define DEFAULT_FETCH_USERNAMES_RETRY_COUNT 5
 #define DEFAULT_FETCH_PROFILE_RETRY_COUNT 5
@@ -909,6 +909,24 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
         return self.transientDashpayUser.publicMessage;
     } else {
         return self.matchingDashpayUserInViewContext.publicMessage;
+    }
+}
+
+- (uint64_t)dashpayProfileUpdatedAt {
+    if (self.transientDashpayUser) {
+        return self.transientDashpayUser.updatedAt;
+    }
+    else {
+        return self.matchingDashpayUserInViewContext.updatedAt;
+    }
+}
+
+- (uint64_t)dashpayProfileCreatedAt {
+    if (self.transientDashpayUser) {
+        return self.transientDashpayUser.createdAt;
+    }
+    else {
+        return self.matchingDashpayUserInViewContext.createdAt;
     }
 }
 
@@ -1851,9 +1869,21 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 - (void)signStateTransition:(DSTransition *)transition completion:(void (^_Nullable)(BOOL success))completion {
     if (!self.keysCreated) {
         uint32_t index;
-        [self createNewKeyOfType:DEFAULT_SIGNING_ALGORITH saveKey:!self.wallet.isTransient returnIndex:&index];
+        [self createNewKeyOfType:DEFAULT_SIGNING_ALGORITHM saveKey:!self.wallet.isTransient returnIndex:&index];
     }
     return [self signStateTransition:transition forKeyIndex:self.currentMainKeyIndex ofType:self.currentMainKeyType completion:completion];
+}
+
+- (void)signMessageDigest:(UInt256)digest forKeyIndex:(uint32_t)keyIndex ofType:(DSKeyType)signingAlgorithm completion:(void (^_Nullable)(BOOL success, NSData *signature))completion {
+    NSParameterAssert(completion);
+    DSKey *privateKey = [self privateKeyAtIndex:keyIndex ofType:signingAlgorithm];
+    NSAssert(privateKey, @"The private key should exist");
+    NSAssert([privateKey.publicKeyData isEqualToData:[self publicKeyAtIndex:keyIndex ofType:signingAlgorithm].publicKeyData], @"These should be equal");
+    NSParameterAssert(privateKey);
+
+    DSLogPrivate(@"Private Key is %@", [privateKey serializedPrivateKeyForChain:self.chain]);
+    DSLogPrivate(@"Signing %@ with key %@", uint256_hex(digest), privateKey.publicKeyData.hexString);
+    [privateKey signMessageDigest:digest completion:completion];
 }
 
 - (BOOL)verifySignature:(NSData *)signature ofType:(DSKeyType)signingAlgorithm forMessageDigest:(UInt256)messageDigest {
