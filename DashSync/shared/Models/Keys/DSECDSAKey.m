@@ -660,6 +660,13 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i) {
     return sig;
 }
 
+- (void)signMessageDigest:(UInt256)digest completion:(void (^_Nullable)(BOOL success, NSData *signature))completion {
+    NSParameterAssert(completion);
+    NSData *signatureData = [((DSECDSAKey *)self) compactSign:digest];
+    BOOL success = (signatureData != nil);
+    completion(success, signatureData);
+}
+
 - (DSKeyType)keyType {
     return DSKeyType_ECDSA;
 }

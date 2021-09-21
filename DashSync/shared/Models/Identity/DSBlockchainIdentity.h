@@ -244,6 +244,8 @@ FOUNDATION_EXPORT NSString *const DSBlockchainIdentityUpdateEventDashpaySyncroni
 
 - (void)signStateTransition:(DSTransition *)transition forKeyIndex:(uint32_t)keyIndex ofType:(DSKeyType)signingAlgorithm completion:(void (^_Nullable)(BOOL success))completion;
 
+- (void)signMessageDigest:(UInt256)digest forKeyIndex:(uint32_t)keyIndex ofType:(DSKeyType)signingAlgorithm completion:(void (^_Nullable)(BOOL success, NSData *signature))completion;
+
 - (BOOL)verifySignature:(NSData *)signature forKeyIndex:(uint32_t)keyIndex ofType:(DSKeyType)signingAlgorithm forMessageDigest:(UInt256)messageDigest;
 
 - (BOOL)verifySignature:(NSData *)signature ofType:(DSKeyType)signingAlgorithm forMessageDigest:(UInt256)messageDigest;

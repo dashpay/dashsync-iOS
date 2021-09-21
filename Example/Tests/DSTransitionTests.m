@@ -108,6 +108,23 @@
                                  }];
 }
 
+- (void)testIdentitySigning {
+    UInt256 digest = uint256_random;
+    XCTestExpectation *expectation = [self expectationWithDescription:@"signedAndVerifiedMessage"];
+    DSKey *key = [self.blockchainIdentity privateKeyAtIndex:0 ofType:DSKeyType_ECDSA forSeed:self.seedData];
+    [key signMessageDigest:digest
+                completion:^(BOOL success, NSData *_Nonnull signature) {
+                    XCTAssertTrue(success, "The blockchain identity should be able to sign a message digest");
+                    BOOL verified = [self.blockchainIdentity verifySignature:signature forKeyIndex:0 ofType:DSKeyType_ECDSA forMessageDigest:digest];
+                    XCTAssertTrue(verified, "The blockchain identity should be able to verify the message it just signed");
+                    [expectation fulfill];
+                }];
+    [self waitForExpectationsWithTimeout:10
+                                 handler:^(NSError *_Nullable error) {
+                                     XCTAssertNil(error);
+                                 }];
+}
+
 - (void)testNameRegistration {
     //ToDo
 }
