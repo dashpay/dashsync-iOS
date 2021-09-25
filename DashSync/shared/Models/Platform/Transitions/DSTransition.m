@@ -24,17 +24,17 @@
 
 @property (nonatomic, strong) DSBlockchainIdentityRegistrationTransition *blockchainIdentityRegistrationTransaction;
 
-@property (nonatomic, strong) DSChain *chain;
-
 @end
 
 @implementation DSTransition
+
+@synthesize chain = _chain;
 
 - (instancetype)initOnChain:(DSChain *)chain {
     if (!(self = [super init])) return nil;
 
     _version = TS_VERSION;
-    self.chain = chain;
+    _chain = chain;
     self.saved = FALSE;
     self.createdTimestamp = [NSDate timeIntervalSince1970];
     return self;
@@ -119,7 +119,7 @@
 
 - (DSMutableStringValueDictionary *)baseKeyValueDictionary {
     DSMutableStringValueDictionary *json = [[DSMutableStringValueDictionary alloc] init];
-    json[@"protocolVersion"] = @(0);
+    //json[@"protocolVersion"] = @(self.chain.platformProtocolVersion);
     json[@"type"] = @(self.type);
     return json;
 }

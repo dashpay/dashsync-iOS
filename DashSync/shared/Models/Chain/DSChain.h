@@ -164,6 +164,9 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 
 // MARK: - L2 Network Chain Info
 
+/*! @brief platformProtocolVersion is the protocol version that we currently use for the platform chain. This should only be changed in the case of devnets.  */
+@property (nonatomic, assign) uint32_t platformProtocolVersion;
+
 /*! @brief The dpns contract id.  */
 @property (nonatomic, assign) UInt256 dpnsContractID;
 

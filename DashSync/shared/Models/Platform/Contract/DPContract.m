@@ -42,11 +42,12 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 @property (assign, nonatomic) UInt256 contractId;
 @property (assign, nonatomic) UInt256 registeredBlockchainIdentityUniqueID;
 @property (assign, nonatomic) UInt256 entropy;
-@property (strong, nonatomic) DSChain *chain;
 
 @end
 
 @implementation DPContract
+
+@synthesize chain = _chain;
 
 #pragma mark - Init
 

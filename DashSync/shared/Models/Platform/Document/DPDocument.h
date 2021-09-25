@@ -16,7 +16,7 @@
 //
 
 #import "BigIntTypes.h"
-#import "DPBaseObject.h"
+#import "DPSerializableObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

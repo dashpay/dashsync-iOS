@@ -438,11 +438,11 @@
     DSQuorumEntry *quorumEntry = [self.chain.chainManager.masternodeManager quorumEntryForPlatformHavingQuorumHash:quorumHash forBlockHeight:metaData.coreChainLockedHeight];
     if (quorumEntry && quorumEntry.verified) {
         NSMutableData *stateData = [NSMutableData data];
-        [stateData appendInt64:metaData.height];
+        [stateData appendInt64:metaData.height - 1];
         [stateData appendUInt256:stateHash];
-        UInt256 stateId = [stateData SHA256];
+        UInt256 stateMessageHash = [stateData SHA256];
         //Todo get the stateId
-        BOOL signatureVerified = [self verifySignature:signature withStateId:stateId height:metaData.height againstQuorum:quorumEntry];
+        BOOL signatureVerified = [self verifyStateSignature:signature forStateMessageHash:stateMessageHash height:metaData.height - 1 againstQuorum:quorumEntry];
         if (!signatureVerified) {
             DSLog(@"unable to verify platform signature");
         } else {
@@ -477,25 +477,25 @@
 
 - (UInt256)requestIdForHeight:(int64_t)height {
     NSMutableData *data = [NSMutableData data];
-    [data appendString:@"dpsvote"];
+    [data appendBytes:@"dpsvote".UTF8String length:7];
     [data appendUInt64:height];
     return [data SHA256];
 }
 
-- (UInt256)signIDForQuorumEntry:(DSQuorumEntry *)quorumEntry withStateId:(UInt256)stateId height:(int64_t)height {
+- (UInt256)signIDForQuorumEntry:(DSQuorumEntry *)quorumEntry forStateMessageHash:(UInt256)stateMessageHash height:(int64_t)height {
     UInt256 requestId = [self requestIdForHeight:height];
     NSMutableData *data = [NSMutableData data];
-    [data appendVarInt:self.chain.quorumTypeForPlatform];
+    [data appendUInt8:self.chain.quorumTypeForPlatform];
     [data appendUInt256:quorumEntry.quorumHash];
     [data appendUInt256:requestId];
-    [data appendUInt256:stateId];
-    return [data SHA256_2];
+    [data appendUInt256:stateMessageHash];
+    return [data SHA256];
 }
 
-- (BOOL)verifySignature:(UInt768)signature withStateId:(UInt256)stateId height:(int64_t)height againstQuorum:(DSQuorumEntry *)quorumEntry {
+- (BOOL)verifyStateSignature:(UInt768)signature forStateMessageHash:(UInt256)stateMessageHash height:(int64_t)height againstQuorum:(DSQuorumEntry *)quorumEntry {
     UInt384 publicKey = quorumEntry.quorumPublicKey;
     DSBLSKey *blsKey = [DSBLSKey keyWithPublicKey:publicKey];
-    UInt256 signId = [self signIDForQuorumEntry:quorumEntry withStateId:stateId height:height];
+    UInt256 signId = [self signIDForQuorumEntry:quorumEntry forStateMessageHash:stateMessageHash height:height];
     DSLogPrivate(@"verifying DAPI returned signature %@ with public key %@ against quorum %@", [NSData dataWithUInt768:signature].hexString, [NSData dataWithUInt384:publicKey].hexString, quorumEntry);
     return [blsKey verify:signId signature:signature];
 }

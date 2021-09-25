@@ -26,7 +26,7 @@ typedef NS_ENUM(NSUInteger, DSPlatformDocumentType)
     DSPlatformDocumentType_Document = 2,
 };
 
-#define DSPROVE_PLATFORM FALSE
+#define DSPROVE_PLATFORM TRUE
 
 @class GetDocumentsRequest, DPContract;
 

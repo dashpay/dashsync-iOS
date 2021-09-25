@@ -915,8 +915,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 - (uint64_t)dashpayProfileUpdatedAt {
     if (self.transientDashpayUser) {
         return self.transientDashpayUser.updatedAt;
-    }
-    else {
+    } else {
         return self.matchingDashpayUserInViewContext.updatedAt;
     }
 }
@@ -924,8 +923,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 - (uint64_t)dashpayProfileCreatedAt {
     if (self.transientDashpayUser) {
         return self.transientDashpayUser.createdAt;
-    }
-    else {
+    } else {
         return self.matchingDashpayUserInViewContext.createdAt;
     }
 }

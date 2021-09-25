@@ -1513,7 +1513,7 @@
 - (DSQuorumEntry *)quorumEntryForPlatformHavingQuorumHash:(UInt256)quorumHash forBlock:(DSBlock *)block {
     DSMasternodeList *masternodeList = [self masternodeListForBlockHash:block.blockHash];
     if (!masternodeList) {
-        [self masternodeListBeforeBlockHash:block.blockHash];
+        masternodeList = [self masternodeListBeforeBlockHash:block.blockHash];
     }
     if (!masternodeList) {
         DSLog(@"No masternode list found yet");
@@ -1523,7 +1523,11 @@
         DSLog(@"Masternode list is too old");
         return nil;
     }
-    return [masternodeList quorumEntryForPlatformWithQuorumHash:quorumHash];
+    DSQuorumEntry *quorumEntry = [masternodeList quorumEntryForPlatformWithQuorumHash:quorumHash];
+    if (quorumEntry == nil) {
+        quorumEntry = [self quorumEntryForPlatformHavingQuorumHash:quorumHash forBlockHeight:block.height - 1];
+    }
+    return quorumEntry;
 }
 
 
