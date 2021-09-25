@@ -173,6 +173,7 @@
 
     [providerRegistrationTransaction signWithPrivateKeys:@[inputPrivateKey]];
 
+    [providerRegistrationTransactionFromMessage setInputAddress:inputAddress0 atIndex:0];
 
     XCTAssertEqualObjects(providerRegistrationTransaction.payloadData, providerRegistrationTransactionFromMessage.payloadData, @"Provider payload data doesn't match up");
 
@@ -180,14 +181,7 @@
 
     XCTAssertEqual(providerRegistrationTransaction.port, providerRegistrationTransactionFromMessage.port, @"Provider transaction port doesn't match up");
 
-    for (NSUInteger i = 0; i < providerRegistrationTransaction.inputs.count; i++) {
-        DSTransactionInput *input = providerRegistrationTransaction.inputs[i];
-        DSTransactionInput *inputFromMessage = providerRegistrationTransactionFromMessage.inputs[i];
-        XCTAssertTrue(uint256_eq(input.inputHash, inputFromMessage.inputHash), @"Provider transaction input hashes are having an issue");
-        XCTAssertEqual(input.index, inputFromMessage.index, @"Provider transaction input indices are having an issue");
-        XCTAssertEqual(input.sequence, inputFromMessage.sequence, @"Provider transaction input sequences are having an issue");
-    }
-
+    XCTAssertEqualObjects(providerRegistrationTransaction.inputs, providerRegistrationTransactionFromMessage.inputs, @"Provider transaction inputs are having an issue");
     XCTAssertEqualObjects(providerRegistrationTransaction.outputs, providerRegistrationTransactionFromMessage.outputs, @"Provider transaction outputs are having an issue");
 
     XCTAssertEqualObjects(uint384_hex(providerRegistrationTransaction.operatorKey), uint384_hex(providerRegistrationTransactionFromMessage.operatorKey), @"Provider transaction operator key is having an issue");
