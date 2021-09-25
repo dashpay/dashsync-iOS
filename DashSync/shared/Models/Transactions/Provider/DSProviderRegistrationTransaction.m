@@ -53,11 +53,10 @@
     off += 36;
 
     if (length - off < 16) return nil;
-    self.ipAddress = [message UInt128AtOffset:off];
+    UInt128 ipAddress = [message UInt128AtOffset:off];
     off += 16;
-
     if (length - off < 2) return nil;
-    self.port = CFSwapInt16HostToBig([message UInt16AtOffset:off]);
+    self.masternodeAddress = (DSAddress){ipAddress, CFSwapInt16HostToBig([message UInt16AtOffset:off])};
     off += 2;
 
     if (length - off < 20) return nil;
@@ -102,7 +101,7 @@
 }
 
 
-- (instancetype)initWithProviderRegistrationTransactionVersion:(uint16_t)version type:(uint16_t)providerType mode:(uint16_t)providerMode collateralOutpoint:(DSUTXO)collateralOutpoint ipAddress:(UInt128)ipAddress port:(uint16_t)port ownerKeyHash:(UInt160)ownerKeyHash operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash operatorReward:(uint16_t)operatorReward scriptPayout:(NSData *)scriptPayout onChain:(DSChain *)chain {
+- (instancetype)initWithProviderRegistrationTransactionVersion:(uint16_t)version type:(uint16_t)providerType mode:(uint16_t)providerMode collateralOutpoint:(DSUTXO)collateralOutpoint masternodeAddress:(DSAddress)masternodeAddress ownerKeyHash:(UInt160)ownerKeyHash operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash operatorReward:(uint16_t)operatorReward scriptPayout:(NSData *)scriptPayout onChain:(DSChain *)chain {
     NSParameterAssert(scriptPayout);
     NSParameterAssert(chain);
 
@@ -112,9 +111,8 @@
     self.providerRegistrationTransactionVersion = version;
     self.providerType = providerType;
     self.providerMode = providerMode;
-    self.ipAddress = ipAddress;
+    self.masternodeAddress = masternodeAddress;
     self.collateralOutpoint = collateralOutpoint;
-    self.port = port;
     self.ownerKeyHash = ownerKeyHash;
     self.operatorKey = operatorKey;
     self.votingKeyHash = votingKeyHash;
@@ -124,7 +122,7 @@
     return self;
 }
 
-- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray *)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts providerRegistrationTransactionVersion:(uint16_t)version type:(uint16_t)providerType mode:(uint16_t)providerMode collateralOutpoint:(DSUTXO)collateralOutpoint ipAddress:(UInt128)ipAddress port:(uint16_t)port ownerKeyHash:(UInt160)ownerKeyHash operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash operatorReward:(uint16_t)operatorReward scriptPayout:(NSData *)scriptPayout onChain:(DSChain *_Nonnull)chain {
+- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray *)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts providerRegistrationTransactionVersion:(uint16_t)version type:(uint16_t)providerType mode:(uint16_t)providerMode collateralOutpoint:(DSUTXO)collateralOutpoint masternodeAddress:(DSAddress)masternodeAddress ownerKeyHash:(UInt160)ownerKeyHash operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash operatorReward:(uint16_t)operatorReward scriptPayout:(NSData *)scriptPayout onChain:(DSChain *_Nonnull)chain {
     NSParameterAssert(hashes);
     NSParameterAssert(indexes);
     NSParameterAssert(scripts);
@@ -141,8 +139,7 @@
     self.providerType = providerType;
     self.providerMode = providerMode;
     self.collateralOutpoint = collateralOutpoint;
-    self.ipAddress = ipAddress;
-    self.port = port;
+    self.masternodeAddress = masternodeAddress;
     self.ownerKeyHash = ownerKeyHash;
     self.operatorKey = operatorKey;
     self.votingKeyHash = votingKeyHash;
@@ -177,16 +174,16 @@
 - (NSData *)basePayloadData {
     //    DSUTXO reversedCollateral = (DSUTXO) { .hash = uint256_reverse(self.collateralOutpoint.hash), .n = self.collateralOutpoint.n};
     NSMutableData *data = [NSMutableData data];
-    [data appendUInt16:self.providerRegistrationTransactionVersion]; //16
-    [data appendUInt16:self.providerType];                           //32
-    [data appendUInt16:self.providerMode];                           //48
-    [data appendUTXO:self.collateralOutpoint];                       //84
-    [data appendUInt128:self.ipAddress];                             //212
-    [data appendUInt16:CFSwapInt16BigToHost(self.port)];             //228
-    [data appendUInt160:self.ownerKeyHash];                          //388
-    [data appendUInt384:self.operatorKey];                           //772
-    [data appendUInt160:self.votingKeyHash];                         //788
-    [data appendUInt16:self.operatorReward];                         //804
+    [data appendUInt16:self.providerRegistrationTransactionVersion];       //16
+    [data appendUInt16:self.providerType];                                 //32
+    [data appendUInt16:self.providerMode];                                 //48
+    [data appendUTXO:self.collateralOutpoint];                             //84
+    [data appendUInt128:self.masternodeAddress.ipAddress];                 //212
+    [data appendUInt16:CFSwapInt16BigToHost(self.masternodeAddress.port)]; //228
+    [data appendUInt160:self.ownerKeyHash];                                //388
+    [data appendUInt384:self.operatorKey];                                 //772
+    [data appendUInt160:self.votingKeyHash];                               //788
+    [data appendUInt16:self.operatorReward];                               //804
     [data appendVarInt:self.scriptPayout.length];
     [data appendData:self.scriptPayout];
     [data appendUInt256:self.inputsHash];
@@ -247,8 +244,8 @@
 
 - (NSString *)location {
     char s[INET6_ADDRSTRLEN];
-    NSString *ipAddressString = @(inet_ntop(AF_INET, &self.ipAddress.u32[3], s, sizeof(s)));
-    return [NSString stringWithFormat:@"%@:%hu", ipAddressString, self.port];
+    NSString *ipAddressString = @(inet_ntop(AF_INET, &self.masternodeAddress.ipAddress.u32[3], s, sizeof(s)));
+    return [NSString stringWithFormat:@"%@:%hu", ipAddressString, self.masternodeAddress.port];
 }
 
 - (NSString *)coreRegistrationCommand {

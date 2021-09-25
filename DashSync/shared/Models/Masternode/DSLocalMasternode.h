@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSChain, DSWallet, DSAccount, DSTransaction, DSProviderRegistrationTransaction, DSProviderUpdateServiceTransaction, DSProviderUpdateRegistrarTransaction, DSProviderUpdateRevocationTransaction, DSBLSKey, DSECDSAKey;
+@class DSChain, DSWallet, DSAccount, DSTransaction, DSProviderRegistrationTransaction, f, DSProviderUpdateRegistrarTransaction, DSProviderUpdateRevocationTransaction, DSProviderUpdateServiceTransaction, DSBLSKey, DSECDSAKey;
 
 typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus)
 {
@@ -21,12 +21,11 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus)
 
 @interface DSLocalMasternode : NSObject
 
+@property (nonatomic, readonly) DSAddress address;
 @property (nonatomic, readonly) NSString *name;
-@property (nonatomic, readonly) UInt128 ipAddress;
 @property (nonatomic, readonly) NSString *ipAddressString;
 @property (nonatomic, readonly) NSString *ipAddressAndPortString;
 @property (nonatomic, readonly) NSString *ipAddressAndIfNonstandardPortString;
-@property (nonatomic, readonly) uint16_t port;
 @property (nonatomic, readonly) NSString *portString;
 @property (nonatomic, readonly) DSWallet *operatorKeysWallet; //only if this is contained in the wallet.
 @property (nonatomic, readonly) uint32_t operatorWalletIndex; //the derivation path index of keys
@@ -57,7 +56,7 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus)
 
 - (void)updateTransactionForResetFundedByAccount:(DSAccount *)fundingAccount completion:(void (^_Nullable)(DSProviderUpdateServiceTransaction *providerRegistrationTransaction))completion;
 
-- (void)updateTransactionFundedByAccount:(DSAccount *)fundingAccount toIPAddress:(UInt128)ipAddress port:(uint32_t)port payoutAddress:(NSString *_Nullable)payoutAddress completion:(void (^_Nullable)(DSProviderUpdateServiceTransaction *providerUpdateServiceTransaction))completion;
+- (void)updateTransactionFundedByAccount:(DSAccount *)fundingAccount toAddress:(DSAddress)address payoutAddress:(NSString *_Nullable)payoutAddress completion:(void (^_Nullable)(DSProviderUpdateServiceTransaction *providerUpdateServiceTransaction))completion;
 
 - (void)updateTransactionFundedByAccount:(DSAccount *)fundingAccount changeOperator:(UInt384)operatorKey changeVotingKeyHash:(UInt160)votingKeyHash changePayoutAddress:(NSString *_Nullable)payoutAddress completion:(void (^_Nullable)(DSProviderUpdateRegistrarTransaction *providerUpdateRegistrarTransaction))completion;
 

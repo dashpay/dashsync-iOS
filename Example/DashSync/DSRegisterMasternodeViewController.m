@@ -114,13 +114,9 @@
 - (IBAction)registerMasternode:(id)sender {
     NSString *ipAddressString = [self.ipAddressTableViewCell.valueTextField.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     NSString *portString = [self.portTableViewCell.valueTextField.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    UInt128 ipAddress = {.u32 = {0, 0, CFSwapInt32HostToBig(0xffff), 0}};
-    struct in_addr addrV4;
-    if (inet_aton([ipAddressString UTF8String], &addrV4) != 0) {
-        uint32_t ip = ntohl(addrV4.s_addr);
-        ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
-        DSLogPrivate(@"%08x", ip);
-    }
+
+    UInt128 ipAddress = [ipAddressString ipV4Address];
+
     uint16_t port = [portString intValue];
 
     uint32_t ownerWalletIndex = UINT32_MAX;
@@ -139,7 +135,7 @@
         votingWalletIndex = (uint32_t)[self.votingIndexTableViewCell.valueTextField.text integerValue];
     }
 
-    DSLocalMasternode *masternode = [self.chain.chainManager.masternodeManager createNewMasternodeWithIPAddress:ipAddress onPort:port inFundsWallet:self.wallet fundsWalletIndex:UINT32_MAX inOperatorWallet:self.wallet operatorWalletIndex:operatorWalletIndex inOwnerWallet:self.wallet ownerWalletIndex:ownerWalletIndex inVotingWallet:self.wallet votingWalletIndex:votingWalletIndex];
+    DSLocalMasternode *masternode = [self.chain.chainManager.masternodeManager createNewMasternodeWithAddress:(DSAddress){ipAddress, port} inFundsWallet:self.wallet fundsWalletIndex:UINT32_MAX inOperatorWallet:self.wallet operatorWalletIndex:operatorWalletIndex inOwnerWallet:self.wallet ownerWalletIndex:ownerWalletIndex inVotingWallet:self.wallet votingWalletIndex:votingWalletIndex];
 
     NSString *payoutAddress = [self.payToAddressTableViewCell.valueTextField.text isValidDashAddressOnChain:self.chain] ? self.payToAddressTableViewCell.textLabel.text : self.account.receiveAddress;
 

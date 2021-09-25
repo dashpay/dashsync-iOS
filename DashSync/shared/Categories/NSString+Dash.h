@@ -50,6 +50,10 @@
 
 + (void)setDashCurrencySymbolAssetName:(NSString *)imageName;
 
++ (NSString *)stringWithAddress:(DSAddress)address;
++ (NSString *)ipStringWithAddress:(DSAddress)address;
+- (UInt128)ipV4Address;
+
 + (NSString *)addressWithScriptPubKey:(NSData *)script onChain:(DSChain *)chain;
 + (NSString *)addressWithScriptSig:(NSData *)script onChain:(DSChain *)chain;
 + (NSString *)addressWithHash160:(UInt160)hash160 onChain:(DSChain *)chain;

@@ -267,9 +267,8 @@ typedef NS_ENUM(NSUInteger, DSPeerType)
 @property (nonatomic, readonly) DSPeerStatus status;
 @property (nonatomic, readonly) DSPeerType type;
 @property (nonatomic, readonly) NSString *host;
-@property (nonatomic, readonly) UInt128 address;
+@property (nonatomic, readonly) DSAddress address;
 @property (nonatomic, readonly) NSString *location;
-@property (nonatomic, readonly) uint16_t port;
 @property (nonatomic, readonly) uint64_t services;
 @property (nonatomic, readonly) uint32_t version;
 @property (nonatomic, readonly) uint64_t nonce;
@@ -292,14 +291,13 @@ typedef NS_ENUM(NSUInteger, DSPeerType)
 
 @property (nonatomic, readonly) DSChain *chain;
 
-+ (instancetype)peerWithAddress:(UInt128)address andPort:(uint16_t)port onChain:(DSChain *)chain;
++ (instancetype)peerWithAddress:(DSAddress)address onChain:(DSChain *)chain;
 + (instancetype)peerWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry;
 + (instancetype)peerWithHost:(NSString *)host onChain:(DSChain *)chain;
 
-- (instancetype)initWithAddress:(UInt128)address andPort:(uint16_t)port onChain:(DSChain *)chain;
+- (instancetype)initWithAddress:(DSAddress)address onChain:(DSChain *)chain;
 - (instancetype)initWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry;
-- (instancetype)initWithAddress:(UInt128)address port:(uint16_t)port onChain:(DSChain *)chain timestamp:(NSTimeInterval)timestamp
-                       services:(uint64_t)services;
+- (instancetype)initWithAddress:(DSAddress)address onChain:(DSChain *)chain timestamp:(NSTimeInterval)timestamp services:(uint64_t)services;
 - (instancetype)initWithHost:(NSString *)host onChain:(DSChain *)chain;
 - (void)setChainDelegate:(id<DSPeerChainDelegate>)chainDelegate peerDelegate:(id<DSPeerDelegate>)peerDelegate transactionDelegate:(id<DSPeerTransactionDelegate>)transactionDelegate governanceDelegate:(id<DSPeerGovernanceDelegate>)governanceDelegate sporkDelegate:(id<DSPeerSporkDelegate>)sporkDelegate masternodeDelegate:(id<DSPeerMasternodeDelegate>)masternodeDelegate queue:(dispatch_queue_t)delegateQueue;
 - (void)connect;

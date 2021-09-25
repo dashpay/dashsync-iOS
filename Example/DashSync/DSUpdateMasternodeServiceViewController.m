@@ -7,6 +7,7 @@
 //
 
 #import "DSUpdateMasternodeServiceViewController.h"
+#import "BigIntTypes.h"
 #import "DSAccountChooserTableViewCell.h"
 #import "DSKeyValueTableViewCell.h"
 #import "DSLocalMasternode.h"
@@ -28,10 +29,10 @@
     [super viewDidLoad];
     self.ipAddressTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"MasternodeIPAddressCellIdentifier"];
     char s[INET6_ADDRSTRLEN];
-    uint32_t ipAddress = self.localMasternode.ipAddress.u32[3];
+    uint32_t ipAddress = self.localMasternode.address.ipAddress.u32[3];
     self.ipAddressTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%s", inet_ntop(AF_INET, &ipAddress, s, sizeof(s))];
     self.portTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"MasternodePortCellIdentifier"];
-    self.portTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%d", self.localMasternode.port];
+    self.portTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%d", self.localMasternode.address.port];
     self.accountChooserTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"MasternodeFundingAccountCellIdentifier"];
 }
 
@@ -64,17 +65,10 @@
 - (IBAction)updateMasternode:(id)sender {
     NSString *ipAddressString = self.ipAddressTableViewCell.valueTextField.text;
     NSString *portString = self.portTableViewCell.valueTextField.text;
-    UInt128 ipAddress = {.u32 = {0, 0, CFSwapInt32HostToBig(0xffff), 0}};
-    struct in_addr addrV4;
-    if (inet_aton([ipAddressString UTF8String], &addrV4) != 0) {
-        uint32_t ip = ntohl(addrV4.s_addr);
-        ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
-        DSLogPrivate(@"%08x", ip);
-    }
+    UInt128 ipAddress = [ipAddressString ipV4Address];
     uint16_t port = [portString intValue];
     [self.localMasternode updateTransactionFundedByAccount:self.account
-                                               toIPAddress:ipAddress
-                                                      port:port
+                                                 toAddress:(DSAddress){ipAddress, port}
                                              payoutAddress:nil
                                                 completion:^(DSProviderUpdateServiceTransaction *_Nonnull providerUpdateServiceTransaction) {
                                                     if (providerUpdateServiceTransaction) {

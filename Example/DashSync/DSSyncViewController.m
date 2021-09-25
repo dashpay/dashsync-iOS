@@ -678,7 +678,7 @@
 }
 
 - (void)updateKnownMasternodes {
-    self.masternodeCountLabel.text = [NSString stringWithFormat:@"%lu", (unsigned long)[self.chainManager.masternodeManager.currentMasternodeList masternodeCount]];
+    self.masternodeCountLabel.text = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)[self.chainManager.masternodeManager.currentMasternodeList whiteMasternodeCount], (unsigned long)[self.chainManager.masternodeManager.currentMasternodeList masternodeCount]];
     self.localMasternodesCountLabel.text = [NSString stringWithFormat:@"%lu", (unsigned long)[self.chainManager.masternodeManager localMasternodesCount]];
     self.masternodeListUpdatedLabel.text = [NSString stringWithFormat:@"%lu", (unsigned long)self.chainManager.masternodeManager.currentMasternodeList.height];
 }

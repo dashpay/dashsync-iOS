@@ -151,33 +151,21 @@
     UInt160 votingKeyHash = [providerVotingKeysDerivationPath publicKeyDataAtIndex:0].hash160;
     UInt384 operatorKey = [providerOperatorKeysDerivationPath publicKeyDataAtIndex:0].UInt384;
 
-    NSMutableData *scriptPayout = [NSMutableData data];
-    [scriptPayout appendScriptPubKeyForAddress:payoutAddress forChain:wallet.chain];
+    NSMutableData *scriptPayout = [NSMutableData withScriptPubKeyForAddress:payoutAddress forChain:wallet.chain];
+    NSMutableData *inputScript = [NSMutableData withScriptPubKeyForAddress:inputAddress0 forChain:chain];
+    DSAddress masternodeAddress = (DSAddress){[@"1.2.5.6" ipV4Address], 19999};
 
-    UInt128 ipAddress = {.u32 = {0, 0, CFSwapInt32HostToBig(0xffff), 0}};
-    struct in_addr addrV4;
-    if (inet_aton([@"1.2.5.6" UTF8String], &addrV4) != 0) {
-        uint32_t ip = ntohl(addrV4.s_addr);
-        ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
-    }
-
-    NSMutableData *inputScript = [NSMutableData data];
-
-    [inputScript appendScriptPubKeyForAddress:inputAddress0 forChain:chain];
-
-    DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:@[inputTransactionHashValue] inputIndexes:@[@1] inputScripts:@[inputScript] inputSequences:@[@(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0] outputAmounts:@[@40777037710] providerRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:reversedCollateral ipAddress:ipAddress port:19999 ownerKeyHash:ownerKey.publicKeyData.hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:chain];
-
+    DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:@[inputTransactionHashValue] inputIndexes:@[@1] inputScripts:@[inputScript] inputSequences:@[@(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0] outputAmounts:@[@40777037710] providerRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:reversedCollateral masternodeAddress:masternodeAddress ownerKeyHash:ownerKey.publicKeyData.hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:chain];
 
     providerRegistrationTransaction.payloadSignature = signatureData;
 
     [providerRegistrationTransaction signWithPrivateKeys:@[inputPrivateKey]];
 
-
     XCTAssertEqualObjects(providerRegistrationTransaction.payloadData, providerRegistrationTransactionFromMessage.payloadData, @"Provider payload data doesn't match up");
 
     XCTAssertEqualObjects(providerRegistrationTransaction.payloadCollateralString, providerRegistrationTransactionFromMessage.payloadCollateralString, @"Provider payload collateral strings don't match up");
 
-    XCTAssertEqual(providerRegistrationTransaction.port, providerRegistrationTransactionFromMessage.port, @"Provider transaction port doesn't match up");
+    XCTAssertEqual(providerRegistrationTransaction.masternodeAddress.port, providerRegistrationTransactionFromMessage.masternodeAddress.port, @"Provider transaction port doesn't match up");
 
     XCTAssertEqualObjects(providerRegistrationTransaction.inputs, providerRegistrationTransactionFromMessage.inputs, @"Provider transaction inputs are having an issue");
 
@@ -256,21 +244,14 @@
 
     XCTAssertEqualObjects(providerRegistrationTransactionFromMessage.toData, hexData, @"Provider transaction does not match it's data");
 
-    NSMutableData *scriptPayout = [NSMutableData data];
-    [scriptPayout appendScriptPubKeyForAddress:payoutAddress forChain:wallet.chain];
-
-    UInt128 ipAddress = {.u32 = {0, 0, CFSwapInt32HostToBig(0xffff), 0}};
-    struct in_addr addrV4;
-    if (inet_aton([@"1.1.1.1" UTF8String], &addrV4) != 0) {
-        uint32_t ip = ntohl(addrV4.s_addr);
-        ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
-    }
+    NSMutableData *scriptPayout = [NSMutableData withScriptPubKeyForAddress:payoutAddress forChain:wallet.chain];
+    DSAddress address = (DSAddress){[@"1.1.1.1" ipV4Address], 19999};
 
     NSArray *inputHashes = @[uint256_obj(input0.hash), uint256_obj(input1.hash), uint256_obj(input2.hash)];
     NSArray *inputIndexes = @[@(input0.n), @(input1.n), @(input2.n)];
     NSArray *inputScripts = @[[NSData scriptPubKeyForAddress:inputAddress0 forChain:chain], [NSData scriptPubKeyForAddress:inputAddress1 forChain:chain], [NSData scriptPubKeyForAddress:inputAddress2 forChain:chain]];
 
-    DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts inputSequences:@[@(TXIN_SEQUENCE), @(TXIN_SEQUENCE), @(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0, outputAddress1] outputAmounts:@[@100000000000, @10110995523] providerRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:DSUTXO_ZERO ipAddress:ipAddress port:19999 ownerKeyHash:ownerKey.publicKeyData.hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:wallet.chain];
+    DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts inputSequences:@[@(TXIN_SEQUENCE), @(TXIN_SEQUENCE), @(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0, outputAddress1] outputAmounts:@[@100000000000, @10110995523] providerRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:DSUTXO_ZERO masternodeAddress:address ownerKeyHash:ownerKey.publicKeyData.hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:wallet.chain];
 
 
     [providerRegistrationTransaction updateInputsHash];
@@ -341,19 +322,12 @@
 
     XCTAssertTrue([providerUpdateServiceTransactionFromMessage checkPayloadSignature:operatorBLSKey], @"The payload is not signed correctly");
 
-    UInt128 ipAddress = {.u32 = {0, 0, CFSwapInt32HostToBig(0xffff), 0}};
-    struct in_addr addrV4;
-    if (inet_aton([@"52.36.64.148" UTF8String], &addrV4) != 0) {
-        uint32_t ip = ntohl(addrV4.s_addr);
-        ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
-    }
-
+    DSAddress address = (DSAddress){[@"52.36.64.148" ipV4Address], 19999};
     NSArray *inputHashes = @[uint256_obj(input0.hash)];
     NSArray *inputIndexes = @[@(input0.n)];
     NSArray *inputScripts = @[[NSData scriptPubKeyForAddress:inputAddress0 forChain:chain]];
 
-    DSProviderUpdateServiceTransaction *providerUpdateServiceTransaction = [[DSProviderUpdateServiceTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts inputSequences:@[@(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0] outputAmounts:@[@(1124999808)] providerUpdateServiceTransactionVersion:1 providerTransactionHash:providerTransactionHash ipAddress:ipAddress port:19999 scriptPayout:[NSData data] onChain:chain];
-
+    DSProviderUpdateServiceTransaction *providerUpdateServiceTransaction = [[DSProviderUpdateServiceTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts inputSequences:@[@(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0] outputAmounts:@[@(1124999808)] providerUpdateServiceTransactionVersion:1 providerTransactionHash:providerTransactionHash masternodeAddress:address scriptPayout:[NSData data] onChain:chain];
 
     [providerUpdateServiceTransaction updateInputsHash];
 

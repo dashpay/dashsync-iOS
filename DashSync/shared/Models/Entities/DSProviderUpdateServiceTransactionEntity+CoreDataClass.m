@@ -6,6 +6,7 @@
 //
 //
 
+#import "BigIntTypes.h"
 #import "DSAddressEntity+CoreDataClass.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataClass.h"
@@ -24,8 +25,8 @@
         [super setAttributesFromTransaction:transaction];
         DSProviderUpdateServiceTransaction *providerUpdateServiceTransaction = (DSProviderUpdateServiceTransaction *)transaction;
         self.specialTransactionVersion = providerUpdateServiceTransaction.providerUpdateServiceTransactionVersion;
-        self.ipAddress = uint128_data(providerUpdateServiceTransaction.ipAddress);
-        self.port = providerUpdateServiceTransaction.port;
+        self.ipAddress = uint128_data(providerUpdateServiceTransaction.masternodeAddress.ipAddress);
+        self.port = providerUpdateServiceTransaction.masternodeAddress.port;
         self.scriptPayout = providerUpdateServiceTransaction.scriptPayout;
         self.payloadSignature = providerUpdateServiceTransaction.payloadSignature;
         self.providerRegistrationTransactionHash = [NSData dataWithUInt256:providerUpdateServiceTransaction.providerRegistrationTransactionHash];
@@ -47,8 +48,7 @@
     [self.managedObjectContext performBlockAndWait:^{
         transaction.providerUpdateServiceTransactionVersion = self.specialTransactionVersion;
         transaction.providerRegistrationTransactionHash = self.providerRegistrationTransactionHash.UInt256;
-        transaction.ipAddress = self.ipAddress.UInt128;
-        transaction.port = self.port;
+        transaction.masternodeAddress = (DSAddress){self.ipAddress.UInt128, self.port};
         transaction.scriptPayout = self.scriptPayout;
         transaction.payloadSignature = self.payloadSignature;
     }];

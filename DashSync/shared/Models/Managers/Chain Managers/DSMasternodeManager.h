@@ -41,9 +41,9 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 @interface DSMasternodeManager : NSObject <DSPeerMasternodeDelegate>
 
 @property (nonatomic, readonly, nonnull) DSChain *chain;
-@property (nonatomic, readonly) NSUInteger simplifiedMasternodeEntryCount;
 @property (nonatomic, readonly) NSUInteger localMasternodesCount;
 @property (nonatomic, readonly) NSArray<DSLocalMasternode *> *localMasternodes;
+@property (nonatomic, readwrite) NSArray *whiteList;
 @property (nonatomic, readonly) NSUInteger activeQuorumsCount;
 @property (nonatomic, assign) BOOL testingMasternodeListRetrieval;
 @property (nonatomic, readonly) NSArray *recentMasternodeLists;
@@ -66,13 +66,13 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 
 - (BOOL)hasMasternodeAtLocation:(UInt128)IPAddress port:(uint32_t)port;
 
-- (DSLocalMasternode *)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inWallet:(DSWallet *)wallet;
+- (DSLocalMasternode *)createNewMasternodeWithAddress:(DSAddress)address inWallet:(DSWallet *)wallet;
 
-- (DSLocalMasternode *)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet *_Nullable)fundsWallet inOperatorWallet:(DSWallet *_Nullable)operatorWallet inOwnerWallet:(DSWallet *_Nullable)ownerWallet inVotingWallet:(DSWallet *_Nullable)votingWallet;
+- (DSLocalMasternode *)createNewMasternodeWithAddress:(DSAddress)address inFundsWallet:(DSWallet *_Nullable)fundsWallet inOperatorWallet:(DSWallet *_Nullable)operatorWallet inOwnerWallet:(DSWallet *_Nullable)ownerWallet inVotingWallet:(DSWallet *_Nullable)votingWallet;
 
-- (DSLocalMasternode *)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet *_Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet *_Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex inOwnerWallet:(DSWallet *_Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex inVotingWallet:(DSWallet *_Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex;
+- (DSLocalMasternode *)createNewMasternodeWithAddress:(DSAddress)address inFundsWallet:(DSWallet *_Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet *_Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex inOwnerWallet:(DSWallet *_Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex inVotingWallet:(DSWallet *_Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex;
 
-- (DSLocalMasternode *)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet *_Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet *_Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex operatorPublicKey:(DSBLSKey *)operatorPublicKey inOwnerWallet:(DSWallet *_Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex ownerPrivateKey:(DSECDSAKey *)ownerPrivateKey inVotingWallet:(DSWallet *_Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex votingKey:(DSECDSAKey *)votingKey;
+- (DSLocalMasternode *)createNewMasternodeWithAddress:(DSAddress)address inFundsWallet:(DSWallet *_Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet *_Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex operatorPublicKey:(DSBLSKey *)operatorPublicKey inOwnerWallet:(DSWallet *_Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex ownerPrivateKey:(DSECDSAKey *)ownerPrivateKey inVotingWallet:(DSWallet *_Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex votingKey:(DSECDSAKey *)votingKey;
 
 - (DSLocalMasternode *_Nullable)localMasternodeFromProviderRegistrationTransaction:(DSProviderRegistrationTransaction *)providerRegistrationTransaction save:(BOOL)save;
 

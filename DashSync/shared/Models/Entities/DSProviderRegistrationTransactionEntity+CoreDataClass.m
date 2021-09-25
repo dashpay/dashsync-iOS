@@ -6,6 +6,7 @@
 //
 //
 
+#import "BigIntTypes.h"
 #import "DSAddressEntity+CoreDataClass.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataClass.h"
@@ -27,8 +28,8 @@
         self.providerType = providerRegistrationTransaction.providerType;
         self.providerMode = providerRegistrationTransaction.providerMode;
         self.collateralOutpoint = dsutxo_data(providerRegistrationTransaction.collateralOutpoint);
-        self.ipAddress = uint128_data(providerRegistrationTransaction.ipAddress);
-        self.port = providerRegistrationTransaction.port;
+        self.ipAddress = uint128_data(providerRegistrationTransaction.masternodeAddress.ipAddress);
+        self.port = providerRegistrationTransaction.masternodeAddress.port;
         self.ownerKeyHash = uint160_data(providerRegistrationTransaction.ownerKeyHash);
         self.operatorKey = uint384_data(providerRegistrationTransaction.operatorKey);
         self.votingKeyHash = uint160_data(providerRegistrationTransaction.votingKeyHash);
@@ -77,8 +78,7 @@
         transaction.providerType = self.providerType;
         transaction.providerMode = self.providerMode;
         transaction.collateralOutpoint = self.collateralOutpoint.transactionOutpoint;
-        transaction.ipAddress = self.ipAddress.UInt128;
-        transaction.port = self.port;
+        transaction.masternodeAddress = (DSAddress){self.ipAddress.UInt128, self.port};
         transaction.ownerKeyHash = self.ownerKeyHash.UInt160;
         transaction.operatorKey = self.operatorKey.UInt384;
         transaction.votingKeyHash = self.votingKeyHash.UInt160;

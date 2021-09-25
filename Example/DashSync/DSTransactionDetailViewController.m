@@ -666,8 +666,8 @@
                         cell.selectionStyle = UITableViewCellSelectionStyleNone;
                         cell.titleLabel.text = NSLocalizedString(@"IP Address/Port", nil);
                         char s[INET6_ADDRSTRLEN];
-                        NSString *ipAddressString = @(inet_ntop(AF_INET, &providerRegistrationTransaction.ipAddress.u32[3], s, sizeof(s)));
-                        cell.statusLabel.text = [NSString stringWithFormat:@"%@:%d", ipAddressString, providerRegistrationTransaction.port];
+                        NSString *ipAddressString = @(inet_ntop(AF_INET, &providerRegistrationTransaction.masternodeAddress.ipAddress.u32[3], s, sizeof(s)));
+                        cell.statusLabel.text = [NSString stringWithFormat:@"%@:%d", ipAddressString, providerRegistrationTransaction.masternodeAddress.port];
                         cell.moreInfoLabel.text = nil;
                         return cell;
                         break;
@@ -782,8 +782,8 @@
                         cell.selectionStyle = UITableViewCellSelectionStyleNone;
                         cell.titleLabel.text = NSLocalizedString(@"IP Address/Port", nil);
                         char s[INET6_ADDRSTRLEN];
-                        NSString *ipAddressString = @(inet_ntop(AF_INET, &providerUpdateServiceTransaction.ipAddress.u32[3], s, sizeof(s)));
-                        cell.statusLabel.text = [NSString stringWithFormat:@"%@:%d", ipAddressString, providerUpdateServiceTransaction.port];
+                        NSString *ipAddressString = @(inet_ntop(AF_INET, &providerUpdateServiceTransaction.masternodeAddress.ipAddress.u32[3], s, sizeof(s)));
+                        cell.statusLabel.text = [NSString stringWithFormat:@"%@:%d", ipAddressString, providerUpdateServiceTransaction.masternodeAddress.port];
                         cell.moreInfoLabel.text = nil;
                         return cell;
                         break;

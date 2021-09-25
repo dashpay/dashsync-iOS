@@ -189,8 +189,8 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
         dispatch_semaphore_t dispatchSemaphore = dispatch_semaphore_create(32);
 
         for (DSSimplifiedMasternodeEntry *masternode in masternodes) {
-            if (uint128_is_zero(masternode.address)) continue;
-            if (!masternode.isValid) continue;
+            if (uint128_is_zero(masternode.address.ipAddress) ||
+                !masternode.isValid) continue;
             dispatch_semaphore_wait(dispatchSemaphore, DISPATCH_TIME_FOREVER);
             dispatch_group_enter(dispatch_group);
             DSDAPICoreNetworkService *coreNetworkService = [[DSDAPICoreNetworkService alloc] initWithDAPINodeIPAddress:masternode.ipAddressString httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.coreNetworkingDispatchQueue onChain:self.chain];

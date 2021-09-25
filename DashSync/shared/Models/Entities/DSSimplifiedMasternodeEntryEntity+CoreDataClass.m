@@ -40,9 +40,9 @@
         self.updateHeight = blockHeight;
 
         //we should only update if the data received is the most recent
-        if (!uint128_eq(self.ipv6Address.UInt128, simplifiedMasternodeEntry.address)) {
-            self.ipv6Address = uint128_data(simplifiedMasternodeEntry.address);
-            uint32_t address32 = CFSwapInt32BigToHost(simplifiedMasternodeEntry.address.u32[3]);
+        if (!uint128_eq(self.ipv6Address.UInt128, simplifiedMasternodeEntry.address.ipAddress)) {
+            self.ipv6Address = uint128_data(simplifiedMasternodeEntry.address.ipAddress);
+            uint32_t address32 = CFSwapInt32BigToHost(simplifiedMasternodeEntry.address.ipAddress.u32[3]);
             if (self.address != address32) {
                 self.address = address32;
 #if LOG_SMNE_CHANGES
@@ -62,8 +62,8 @@
             DSDSMNELog(@"changing confirmedHashData to %@", confirmedHashData.hexString);
         }
 
-        if (self.port != simplifiedMasternodeEntry.port) {
-            self.port = simplifiedMasternodeEntry.port;
+        if (self.port != simplifiedMasternodeEntry.address.port) {
+            self.port = simplifiedMasternodeEntry.address.port;
             DSDSMNELog(@"changing port to %u", simplifiedMasternodeEntry.port);
         }
 
@@ -194,9 +194,9 @@
     if (uint256_is_not_zero(simplifiedMasternodeEntry.confirmedHash)) {
         self.knownConfirmedAtHeight = blockHeight;
     }
-    self.ipv6Address = uint128_data(simplifiedMasternodeEntry.address);
-    self.address = CFSwapInt32BigToHost(simplifiedMasternodeEntry.address.u32[3]);
-    self.port = simplifiedMasternodeEntry.port;
+    self.ipv6Address = uint128_data(simplifiedMasternodeEntry.address.ipAddress);
+    self.address = CFSwapInt32BigToHost(simplifiedMasternodeEntry.address.ipAddress.u32[3]);
+    self.port = simplifiedMasternodeEntry.address.port;
     self.keyIDVoting = [NSData dataWithUInt160:simplifiedMasternodeEntry.keyIDVoting];
     self.operatorBLSPublicKey = [NSData dataWithUInt384:simplifiedMasternodeEntry.operatorPublicKey];
     self.isValid = simplifiedMasternodeEntry.isValid;
@@ -306,7 +306,7 @@
 }
 
 - (DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntryWithBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
-    DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:[self.providerRegistrationTransactionHash UInt256] confirmedHash:[self.confirmedHash UInt256] address:self.ipv6Address.UInt128 port:self.port operatorBLSPublicKey:[self.operatorBLSPublicKey UInt384] previousOperatorBLSPublicKeys:[self blockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, NSData *> *)self.previousOperatorBLSPublicKeys blockHeightLookup:blockHeightLookup] keyIDVoting:[self.keyIDVoting UInt160] isValid:self.isValid previousValidity:[self blockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, NSData *> *)self.previousValidity blockHeightLookup:blockHeightLookup] knownConfirmedAtHeight:self.knownConfirmedAtHeight updateHeight:self.updateHeight simplifiedMasternodeEntryHash:[self.simplifiedMasternodeEntryHash UInt256] previousSimplifiedMasternodeEntryHashes:[self blockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, NSData *> *)self.previousSimplifiedMasternodeEntryHashes blockHeightLookup:blockHeightLookup] onChain:self.chain.chain];
+    DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:[self.providerRegistrationTransactionHash UInt256] confirmedHash:[self.confirmedHash UInt256] address:(DSAddress){self.ipv6Address.UInt128, self.port} operatorBLSPublicKey:[self.operatorBLSPublicKey UInt384] previousOperatorBLSPublicKeys:[self blockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, NSData *> *)self.previousOperatorBLSPublicKeys blockHeightLookup:blockHeightLookup] keyIDVoting:[self.keyIDVoting UInt160] isValid:self.isValid previousValidity:[self blockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, NSData *> *)self.previousValidity blockHeightLookup:blockHeightLookup] knownConfirmedAtHeight:self.knownConfirmedAtHeight updateHeight:self.updateHeight simplifiedMasternodeEntryHash:[self.simplifiedMasternodeEntryHash UInt256] previousSimplifiedMasternodeEntryHashes:[self blockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, NSData *> *)self.previousSimplifiedMasternodeEntryHashes blockHeightLookup:blockHeightLookup] onChain:self.chain.chain];
     return simplifiedMasternodeEntry;
 }
 

@@ -38,6 +38,7 @@
 #else
 #import "NSImage+DSUtils.h"
 #endif
+#import <arpa/inet.h>
 
 static NSString *DashCurrencySymbolAssetName = nil;
 
@@ -49,6 +50,28 @@ static NSString *DashCurrencySymbolAssetName = nil;
     NSAssert([UIImage imageNamed:imageName], @"Dash currency symbol asset doesn't exist");
 #endif
     DashCurrencySymbolAssetName = imageName;
+}
++ (NSString *)ipStringWithAddress:(DSAddress)address {
+    char s[INET6_ADDRSTRLEN];
+    if (address.ipAddress.u64[0] == 0 && address.ipAddress.u32[2] == CFSwapInt32HostToBig(0xffff)) {
+        return @(inet_ntop(AF_INET, &address.ipAddress.u32[3], s, sizeof(s)));
+    } else {
+        return @(inet_ntop(AF_INET6, &address.ipAddress, s, sizeof(s)));
+    }
+}
++ (NSString *)stringWithAddress:(DSAddress)address {
+    return [NSString stringWithFormat:@"%@:%d", [NSString ipStringWithAddress:address], address.port];
+}
+
+- (UInt128)ipV4Address {
+    UInt128 ipAddress = {.u32 = {0, 0, CFSwapInt32HostToBig(0xffff), 0}};
+    struct in_addr addrV4;
+    if (inet_aton([self UTF8String], &addrV4) != 0) {
+        uint32_t ip = ntohl(addrV4.s_addr);
+        ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
+        DSLogPrivate(@"%08x", ip);
+    }
+    return ipAddress;
 }
 
 // NOTE: It's important here to be permissive with scriptSig (spends) and strict with scriptPubKey (receives). If we
@@ -81,7 +104,8 @@ static NSString *DashCurrencySymbolAssetName = nil;
         } else {
             v = DASH_SCRIPT_ADDRESS_TEST;
         }
-        [d appendBytes:&v length:1];
+        [d appendBytes:&v
+                length:1];
         [d appendData:elem[1]];
     } else if (l == 2 && ([elem[0] intValue] == 65 || [elem[0] intValue] == 33) && [elem[1] intValue] == OP_CHECKSIG) {
         // pay-to-pubkey scriptPubKey
@@ -101,7 +125,8 @@ static NSString *DashCurrencySymbolAssetName = nil;
     } else {
         v = DASH_PUBKEY_ADDRESS_TEST;
     }
-    [d appendBytes:&v length:1];
+    [d appendBytes:&v
+            length:1];
     [d appendUInt160:hash160];
     return [self base58checkWithData:d];
 }
@@ -132,7 +157,8 @@ static NSString *DashCurrencySymbolAssetName = nil;
         } else {
             v = DASH_SCRIPT_ADDRESS_TEST;
         }
-        [d appendBytes:&v length:1];
+        [d appendBytes:&v
+                length:1];
         [d appendBytes:[elem[l - 1] hash160].u8 length:sizeof(UInt160)];
     } else if (l >= 1 && [elem[l - 1] intValue] <= OP_PUSHDATA4 && [elem[l - 1] intValue] > 0) { // pay-to-pubkey scriptSig
         [d appendBytes:&v length:1];

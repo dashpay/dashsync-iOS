@@ -15,10 +15,9 @@
 @property (nonatomic, readonly) UInt256 providerRegistrationTransactionHash;
 @property (nonatomic, readonly) UInt256 confirmedHash;
 @property (nonatomic, readonly) UInt256 confirmedHashHashedWithProviderRegistrationTransactionHash;
-@property (nonatomic, readonly) UInt128 address;
+@property (nonatomic, readonly) DSAddress address;
 @property (nonatomic, readonly) NSString *host;
 @property (nonatomic, readonly) NSString *ipAddressString;
-@property (nonatomic, readonly) uint16_t port;
 @property (nonatomic, readonly) NSString *portString;
 @property (nonatomic, readonly) NSString *validString;
 @property (nonatomic, readonly) UInt384 operatorPublicKey;
@@ -41,7 +40,7 @@
 
 + (instancetype)simplifiedMasternodeEntryWithData:(NSData *)data atBlockHeight:(uint32_t)blockHeight onChain:(DSChain *)chain;
 
-+ (instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash confirmedHash:(UInt256)confirmedHash address:(UInt128)address port:(uint16_t)port operatorBLSPublicKey:(UInt384)operatorBLSPublicKey previousOperatorBLSPublicKeys:(NSDictionary<DSBlock *, NSData *> *)previousOperatorBLSPublicKeys keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid previousValidity:(NSDictionary<DSBlock *, NSData *> *)previousValidity knownConfirmedAtHeight:(uint32_t)knownConfirmedAtHeight updateHeight:(uint32_t)updateHeight simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash previousSimplifiedMasternodeEntryHashes:(NSDictionary<DSBlock *, NSData *> *)previousSimplifiedMasternodeEntryHashes onChain:(DSChain *)chain;
++ (instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash confirmedHash:(UInt256)confirmedHash address:(DSAddress)address operatorBLSPublicKey:(UInt384)operatorBLSPublicKey previousOperatorBLSPublicKeys:(NSDictionary<DSBlock *, NSData *> *)previousOperatorBLSPublicKeys keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid previousValidity:(NSDictionary<DSBlock *, NSData *> *)previousValidity knownConfirmedAtHeight:(uint32_t)knownConfirmedAtHeight updateHeight:(uint32_t)updateHeight simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash previousSimplifiedMasternodeEntryHashes:(NSDictionary<DSBlock *, NSData *> *)previousSimplifiedMasternodeEntryHashes onChain:(DSChain *)chain;
 
 - (DSSimplifiedMasternodeEntryEntity *)simplifiedMasternodeEntryEntityInContext:(NSManagedObjectContext *)context;
 

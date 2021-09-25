@@ -50,8 +50,8 @@
     cell.blockHeightLabel.text = [NSString stringWithFormat:@"%d", transaction.blockHeight];
     cell.operatorRewardPayoutAddressLabel.text = (transaction.scriptPayout.length ? [NSString addressWithScriptPubKey:transaction.scriptPayout onChain:transaction.chain] : @"");
     char s[INET6_ADDRSTRLEN];
-    uint32_t ipAddress = transaction.ipAddress.u32[3];
-    cell.locationLabel.text = [NSString stringWithFormat:@"%s:%d", inet_ntop(AF_INET, &ipAddress, s, sizeof(s)), self.localMasternode.port];
+    uint32_t ipAddress = transaction.masternodeAddress.ipAddress.u32[3];
+    cell.locationLabel.text = [NSString stringWithFormat:@"%s:%d", inet_ntop(AF_INET, &ipAddress, s, sizeof(s)), self.localMasternode.address.port];
     return cell;
 }
 

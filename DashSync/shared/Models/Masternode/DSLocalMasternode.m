@@ -6,6 +6,7 @@
 //
 
 #import "DSLocalMasternode.h"
+#import "BigIntTypes.h"
 #import "DSAccount.h"
 #import "DSAuthenticationKeysDerivationPath.h"
 #import "DSAuthenticationManager.h"
@@ -36,9 +37,8 @@
 
 @interface DSLocalMasternode ()
 
+@property (nonatomic, assign) DSAddress address;
 @property (nonatomic, strong) NSString *name;
-@property (nonatomic, assign) UInt128 ipAddress;
-@property (nonatomic, assign) uint16_t port;
 @property (nonatomic, strong) DSWallet *operatorKeysWallet; //only if this is contained in the wallet.
 @property (nonatomic, strong) DSWallet *holdingKeysWallet;  //only if this is contained in the wallet.
 @property (nonatomic, strong) DSWallet *ownerKeysWallet;    //only if this is contained in the wallet.
@@ -61,17 +61,15 @@
 
 @implementation DSLocalMasternode
 
-- (instancetype)initWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inWallet:(DSWallet *)wallet {
+- (instancetype)initWithAddress:(DSAddress)address inWallet:(DSWallet *)wallet {
     if (!(self = [super init])) return nil;
-
-    return [self initWithIPAddress:ipAddress
-                            onPort:port
-                     inFundsWallet:wallet
-                  inOperatorWallet:wallet
-                     inOwnerWallet:wallet
-                    inVotingWallet:wallet];
+    return [self initWithAddress:address
+                   inFundsWallet:wallet
+                inOperatorWallet:wallet
+                   inOwnerWallet:wallet
+                  inVotingWallet:wallet];
 }
-- (instancetype)initWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet *)fundsWallet inOperatorWallet:(DSWallet *)operatorWallet inOwnerWallet:(DSWallet *)ownerWallet inVotingWallet:(DSWallet *)votingWallet {
+- (instancetype)initWithAddress:(DSAddress)address inFundsWallet:(DSWallet *)fundsWallet inOperatorWallet:(DSWallet *)operatorWallet inOwnerWallet:(DSWallet *)ownerWallet inVotingWallet:(DSWallet *)votingWallet {
     if (!(self = [super init])) return nil;
     self.operatorKeysWallet = operatorWallet;
     self.holdingKeysWallet = fundsWallet;
@@ -81,8 +79,7 @@
     self.operatorWalletIndex = UINT32_MAX;
     self.votingWalletIndex = UINT32_MAX;
     self.holdingWalletIndex = UINT32_MAX;
-    self.ipAddress = ipAddress;
-    self.port = port;
+    self.address = address;
     self.providerUpdateRegistrarTransactions = [NSMutableArray array];
     self.providerUpdateServiceTransactions = [NSMutableArray array];
     self.providerUpdateRevocationTransactions = [NSMutableArray array];
@@ -92,7 +89,7 @@
     return self;
 }
 
-- (instancetype)initWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet *_Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet *_Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex inOwnerWallet:(DSWallet *_Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex inVotingWallet:(DSWallet *_Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex {
+- (instancetype)initWithAddress:(DSAddress)address inFundsWallet:(DSWallet *_Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet *_Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex inOwnerWallet:(DSWallet *_Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex inVotingWallet:(DSWallet *_Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex {
     if (!(self = [super init])) return nil;
     self.operatorKeysWallet = operatorWallet;
     self.holdingKeysWallet = fundsWallet;
@@ -102,8 +99,7 @@
     self.operatorWalletIndex = operatorWalletIndex;
     self.votingWalletIndex = votingWalletIndex;
     self.holdingWalletIndex = fundsWalletIndex;
-    self.ipAddress = ipAddress;
-    self.port = port;
+    self.address = address;
     self.providerUpdateRegistrarTransactions = [NSMutableArray array];
     self.providerUpdateServiceTransactions = [NSMutableArray array];
     self.providerUpdateRevocationTransactions = [NSMutableArray array];
@@ -133,8 +129,7 @@
     self.operatorWalletIndex = operatorAddressIndex;
     self.votingWalletIndex = votingAddressIndex;
     self.holdingWalletIndex = holdingAddressIndex;
-    self.ipAddress = providerRegistrationTransaction.ipAddress;
-    self.port = providerRegistrationTransaction.port;
+    self.address = providerRegistrationTransaction.masternodeAddress;
     self.providerRegistrationTransaction = providerRegistrationTransaction;
     self.providerUpdateRegistrarTransactions = [NSMutableArray array];
     self.providerUpdateServiceTransactions = [NSMutableArray array];
@@ -176,14 +171,14 @@
     return !(self.operatorKeysWallet || self.holdingKeysWallet || self.ownerKeysWallet || self.votingKeysWallet);
 }
 
-- (UInt128)ipAddress {
+- (DSAddress)address {
     if ([self.providerUpdateServiceTransactions count]) {
-        return [self.providerUpdateServiceTransactions lastObject].ipAddress;
+        return [self.providerUpdateServiceTransactions lastObject].masternodeAddress;
     }
     if (self.providerRegistrationTransaction) {
-        return self.providerRegistrationTransaction.ipAddress;
+        return self.providerRegistrationTransaction.masternodeAddress;
     }
-    return _ipAddress;
+    return _address;
 }
 
 - (DSChain *)chain {
@@ -210,35 +205,25 @@
 
 - (NSString *)ipAddressString {
     char s[INET6_ADDRSTRLEN];
-    NSString *ipAddressString = @(inet_ntop(AF_INET, &self.ipAddress.u32[3], s, sizeof(s)));
+    NSString *ipAddressString = @(inet_ntop(AF_INET, &self.address.ipAddress.u32[3], s, sizeof(s)));
     return ipAddressString;
 }
 
 - (NSString *)ipAddressAndPortString {
-    return [NSString stringWithFormat:@"%@:%d", self.ipAddressString, self.port];
+    return [NSString stringWithFormat:@"%@:%d", self.ipAddressString, self.address.port];
 }
 
 - (NSString *)ipAddressAndIfNonstandardPortString {
     DSChain *chain = self.chain;
-    if (chain.isMainnet && self.port == self.providerRegistrationTransaction.chain.standardPort) {
+    if (chain.isMainnet && self.address.port == self.providerRegistrationTransaction.chain.standardPort) {
         return self.ipAddressString;
     } else {
         return self.ipAddressAndPortString;
     }
 }
 
-- (uint16_t)port {
-    if ([self.providerUpdateServiceTransactions count]) {
-        return [self.providerUpdateServiceTransactions lastObject].port;
-    }
-    if (self.providerRegistrationTransaction) {
-        return self.providerRegistrationTransaction.port;
-    }
-    return _port;
-}
-
 - (NSString *)portString {
-    return [NSString stringWithFormat:@"%d", self.port];
+    return [NSString stringWithFormat:@"%d", self.address.port];
 }
 
 - (NSString *)payoutAddress {
@@ -362,8 +347,8 @@
 - (void)registrationTransactionFundedByAccount:(DSAccount *)fundingAccount toAddress:(NSString *)payoutAddress withCollateral:(DSUTXO)collateral completion:(void (^_Nullable)(DSProviderRegistrationTransaction *providerRegistrationTransaction))completion {
     if (self.status != DSLocalMasternodeStatus_New) return;
     char s[INET6_ADDRSTRLEN];
-    NSString *ipAddressString = @(inet_ntop(AF_INET, &self.ipAddress.u32[3], s, sizeof(s)));
-    NSString *question = [NSString stringWithFormat:DSLocalizedString(@"Are you sure you would like to register a masternode at %@:%d?", nil), ipAddressString, self.port];
+    NSString *ipAddressString = @(inet_ntop(AF_INET, &self.address.ipAddress.u32[3], s, sizeof(s)));
+    NSString *question = [NSString stringWithFormat:DSLocalizedString(@"Are you sure you would like to register a masternode at %@:%d?", nil), ipAddressString, self.address.port];
     [[DSAuthenticationManager sharedInstance] seedWithPrompt:question
                                                    forWallet:fundingAccount.wallet
                                                    forAmount:MASTERNODE_COST
@@ -426,7 +411,7 @@
                                                           operatorKey = [providerOperatorKeysDerivationPath publicKeyDataAtIndex:self.operatorWalletIndex].UInt384;
                                                       }
 
-                                                      DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithProviderRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:collateral ipAddress:self.ipAddress port:self.port ownerKeyHash:ownerKeyHash operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:script onChain:fundingAccount.wallet.chain];
+                                                      DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithProviderRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:collateral masternodeAddress:self.address ownerKeyHash:ownerKeyHash operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:script onChain:fundingAccount.wallet.chain];
 
 
                                                       if (dsutxo_is_zero(collateral)) {
@@ -451,14 +436,14 @@
 }
 
 - (void)updateTransactionForResetFundedByAccount:(DSAccount *)fundingAccount completion:(void (^_Nullable)(DSProviderUpdateServiceTransaction *providerRegistrationTransaction))completion {
-    [self updateTransactionFundedByAccount:fundingAccount toIPAddress:self.ipAddress port:self.port payoutAddress:self.operatorPayoutAddress completion:completion];
+    [self updateTransactionFundedByAccount:fundingAccount toAddress:self.address payoutAddress:self.operatorPayoutAddress completion:completion];
 }
 
-- (void)updateTransactionFundedByAccount:(DSAccount *)fundingAccount toIPAddress:(UInt128)ipAddress port:(uint32_t)port payoutAddress:(NSString *)payoutAddress completion:(void (^_Nullable)(DSProviderUpdateServiceTransaction *providerRegistrationTransaction))completion {
+- (void)updateTransactionFundedByAccount:(DSAccount *)fundingAccount toAddress:(DSAddress)address payoutAddress:(NSString *)payoutAddress completion:(void (^_Nullable)(DSProviderUpdateServiceTransaction *providerRegistrationTransaction))completion {
     if (self.status != DSLocalMasternodeStatus_Registered) return;
     char s[INET6_ADDRSTRLEN];
-    NSString *ipAddressString = @(inet_ntop(AF_INET, &ipAddress.u32[3], s, sizeof(s)));
-    NSString *question = [NSString stringWithFormat:DSLocalizedString(@"Are you sure you would like to update this masternode to %@:%d?", nil), ipAddressString, self.port];
+    NSString *ipAddressString = @(inet_ntop(AF_INET, &address.ipAddress.u32[3], s, sizeof(s)));
+    NSString *question = [NSString stringWithFormat:DSLocalizedString(@"Are you sure you would like to update this masternode to %@:%d?", nil), ipAddressString, self.address.port];
     [[DSAuthenticationManager sharedInstance] seedWithPrompt:question
                                                    forWallet:fundingAccount.wallet
                                                    forAmount:0
@@ -482,8 +467,7 @@
                                                       NSAssert(self.providerRegistrationTransaction, @"There must be a providerRegistrationTransaction linked here");
                                                       DSBLSKey *operatorKey = (DSBLSKey *)[providerOperatorKeysDerivationPath privateKeyForHash160:[[NSData dataWithUInt384:self.providerRegistrationTransaction.operatorKey] hash160] fromSeed:seed];
 
-                                                      DSProviderUpdateServiceTransaction *providerUpdateServiceTransaction = [[DSProviderUpdateServiceTransaction alloc] initWithProviderUpdateServiceTransactionVersion:1 providerTransactionHash:self.providerRegistrationTransaction.txHash ipAddress:ipAddress port:port scriptPayout:scriptPayout onChain:fundingAccount.wallet.chain];
-
+                                                      DSProviderUpdateServiceTransaction *providerUpdateServiceTransaction = [[DSProviderUpdateServiceTransaction alloc] initWithProviderUpdateServiceTransactionVersion:1 providerTransactionHash:self.providerRegistrationTransaction.txHash masternodeAddress:address scriptPayout:scriptPayout onChain:fundingAccount.wallet.chain];
 
                                                       [fundingAccount updateTransaction:providerUpdateServiceTransaction forAmounts:@[] toOutputScripts:@[] withFee:YES];
 
@@ -628,8 +612,7 @@
 - (void)updateWithUpdateServiceTransaction:(DSProviderUpdateServiceTransaction *)providerUpdateServiceTransaction save:(BOOL)save {
     if (![_providerUpdateServiceTransactions containsObject:providerUpdateServiceTransaction]) {
         [_providerUpdateServiceTransactions addObject:providerUpdateServiceTransaction];
-        self.ipAddress = providerUpdateServiceTransaction.ipAddress;
-        self.port = providerUpdateServiceTransaction.port;
+        self.address = providerUpdateServiceTransaction.masternodeAddress;
         if (save) {
             [self save];
         }

@@ -34,6 +34,7 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode)
 @property (readonly, nonatomic) DSChain *chain;
 @property (nonatomic, nullable, readonly) DSDAPIPlatformNetworkService *DAPIPlatformNetworkService;
 @property (nonatomic, nullable, readonly) DSDAPICoreNetworkService *DAPICoreNetworkService;
+@property (nonatomic, readonly) NSMutableSet<NSString *> *availablePeers;
 @property (atomic, readonly) dispatch_queue_t coreNetworkingDispatchQueue;
 @property (atomic, readonly) dispatch_queue_t platformMetadataDispatchQueue;
 
