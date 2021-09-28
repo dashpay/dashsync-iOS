@@ -25,6 +25,7 @@
 #import "DSSporkManager.h"
 #import "DSTransaction.h"
 #import "DSTransactionFactory.h"
+#import "DSTransactionInput.h"
 #import "DSTransactionManager.h"
 #import "DSWallet.h"
 #import "NSData+DSHash.h"
@@ -172,6 +173,7 @@
 
     [providerRegistrationTransaction signWithPrivateKeys:@[inputPrivateKey]];
 
+    [providerRegistrationTransactionFromMessage setInputAddress:inputAddress0 atIndex:0];
 
     XCTAssertEqualObjects(providerRegistrationTransaction.payloadData, providerRegistrationTransactionFromMessage.payloadData, @"Provider payload data doesn't match up");
 
@@ -180,8 +182,6 @@
     XCTAssertEqual(providerRegistrationTransaction.port, providerRegistrationTransactionFromMessage.port, @"Provider transaction port doesn't match up");
 
     XCTAssertEqualObjects(providerRegistrationTransaction.inputs, providerRegistrationTransactionFromMessage.inputs, @"Provider transaction inputs are having an issue");
-
-
     XCTAssertEqualObjects(providerRegistrationTransaction.outputs, providerRegistrationTransactionFromMessage.outputs, @"Provider transaction outputs are having an issue");
 
     XCTAssertEqualObjects(uint384_hex(providerRegistrationTransaction.operatorKey), uint384_hex(providerRegistrationTransactionFromMessage.operatorKey), @"Provider transaction operator key is having an issue");
