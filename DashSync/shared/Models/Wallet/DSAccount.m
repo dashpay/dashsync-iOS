@@ -1626,7 +1626,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     NSMutableArray<NSString *> *addresses = [NSMutableArray array];
     for (DSTransactionOutput *output in transaction.outputs) {
         NSString *address = output.address;
-        if (address == (id)[NSNull null]) {
+        if (address == nil) {
             if ([self directionOfTransaction:transaction] == DSTransactionDirection_Sent) {
                 NSData *script = output.outScript;
                 if ([script UInt8AtOffset:0] == OP_RETURN) {
