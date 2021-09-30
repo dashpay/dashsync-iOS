@@ -48,7 +48,7 @@
     [self.managedObjectContext performBlockAndWait:^{
         transaction.providerUpdateServiceTransactionVersion = self.specialTransactionVersion;
         transaction.providerRegistrationTransactionHash = self.providerRegistrationTransactionHash.UInt256;
-        transaction.masternodeAddress = (DSAddress){self.ipAddress.UInt128, self.port};
+        transaction.masternodeAddress = (DSSocketAddress){self.ipAddress.UInt128, self.port};
         transaction.scriptPayout = self.scriptPayout;
         transaction.payloadSignature = self.payloadSignature;
     }];

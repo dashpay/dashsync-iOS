@@ -37,7 +37,7 @@
 
 @interface DSLocalMasternode ()
 
-@property (nonatomic, assign) DSAddress address;
+@property (nonatomic, assign) DSSocketAddress address;
 @property (nonatomic, strong) NSString *name;
 @property (nonatomic, strong) DSWallet *operatorKeysWallet; //only if this is contained in the wallet.
 @property (nonatomic, strong) DSWallet *holdingKeysWallet;  //only if this is contained in the wallet.
@@ -61,7 +61,7 @@
 
 @implementation DSLocalMasternode
 
-- (instancetype)initWithAddress:(DSAddress)address inWallet:(DSWallet *)wallet {
+- (instancetype)initWithAddress:(DSSocketAddress)address inWallet:(DSWallet *)wallet {
     if (!(self = [super init])) return nil;
     return [self initWithAddress:address
                    inFundsWallet:wallet
@@ -69,7 +69,7 @@
                    inOwnerWallet:wallet
                   inVotingWallet:wallet];
 }
-- (instancetype)initWithAddress:(DSAddress)address inFundsWallet:(DSWallet *)fundsWallet inOperatorWallet:(DSWallet *)operatorWallet inOwnerWallet:(DSWallet *)ownerWallet inVotingWallet:(DSWallet *)votingWallet {
+- (instancetype)initWithAddress:(DSSocketAddress)address inFundsWallet:(DSWallet *)fundsWallet inOperatorWallet:(DSWallet *)operatorWallet inOwnerWallet:(DSWallet *)ownerWallet inVotingWallet:(DSWallet *)votingWallet {
     if (!(self = [super init])) return nil;
     self.operatorKeysWallet = operatorWallet;
     self.holdingKeysWallet = fundsWallet;
@@ -89,7 +89,7 @@
     return self;
 }
 
-- (instancetype)initWithAddress:(DSAddress)address inFundsWallet:(DSWallet *_Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet *_Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex inOwnerWallet:(DSWallet *_Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex inVotingWallet:(DSWallet *_Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex {
+- (instancetype)initWithAddress:(DSSocketAddress)address inFundsWallet:(DSWallet *_Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet *_Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex inOwnerWallet:(DSWallet *_Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex inVotingWallet:(DSWallet *_Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex {
     if (!(self = [super init])) return nil;
     self.operatorKeysWallet = operatorWallet;
     self.holdingKeysWallet = fundsWallet;
@@ -171,7 +171,7 @@
     return !(self.operatorKeysWallet || self.holdingKeysWallet || self.ownerKeysWallet || self.votingKeysWallet);
 }
 
-- (DSAddress)address {
+- (DSSocketAddress)address {
     if ([self.providerUpdateServiceTransactions count]) {
         return [self.providerUpdateServiceTransactions lastObject].masternodeAddress;
     }
@@ -439,7 +439,7 @@
     [self updateTransactionFundedByAccount:fundingAccount toAddress:self.address payoutAddress:self.operatorPayoutAddress completion:completion];
 }
 
-- (void)updateTransactionFundedByAccount:(DSAccount *)fundingAccount toAddress:(DSAddress)address payoutAddress:(NSString *)payoutAddress completion:(void (^_Nullable)(DSProviderUpdateServiceTransaction *providerRegistrationTransaction))completion {
+- (void)updateTransactionFundedByAccount:(DSAccount *)fundingAccount toAddress:(DSSocketAddress)address payoutAddress:(NSString *)payoutAddress completion:(void (^_Nullable)(DSProviderUpdateServiceTransaction *providerRegistrationTransaction))completion {
     if (self.status != DSLocalMasternodeStatus_Registered) return;
     char s[INET6_ADDRSTRLEN];
     NSString *ipAddressString = @(inet_ntop(AF_INET, &address.ipAddress.u32[3], s, sizeof(s)));

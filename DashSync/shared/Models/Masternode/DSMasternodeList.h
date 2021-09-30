@@ -21,7 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSMasternodeList : NSObject
 
 @property (nonatomic, readonly) NSArray<DSSimplifiedMasternodeEntry *> *simplifiedMasternodeEntries;
-@property (nonatomic, readonly) NSArray<DSSimplifiedMasternodeEntry *> *simplifiedMasternodeWhiteEntries;
 @property (nonatomic, readonly) NSArray<NSData *> *providerTxOrderedHashes;
 @property (nonatomic, readonly) NSDictionary<NSNumber *, NSDictionary<NSData *, DSQuorumEntry *> *> *quorums;
 @property (nonatomic, readonly) UInt256 blockHash;
@@ -33,13 +32,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSUInteger quorumsCount;
 @property (nonatomic, readonly) NSUInteger validQuorumsCount;
 @property (nonatomic, readonly) uint64_t masternodeCount;
-@property (nonatomic, readonly) uint64_t whiteMasternodeCount;
 @property (nonatomic, readonly) uint64_t validMasternodeCount;
 @property (nonatomic, readonly) DSChain *chain;
 @property (nonatomic, readonly) NSArray *reversedRegistrationTransactionHashes;
-@property (nonatomic, readonly) NSArray *reversedRegistrationTransactionWhiteHashes;
 @property (nonatomic, readonly) NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash;
-@property (nonatomic, readonly) NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *simplifiedMasternodeWhiteListDictionaryByReversedRegistrationTransactionHash;
 
 + (instancetype)masternodeListWithSimplifiedMasternodeEntries:(NSArray<DSSimplifiedMasternodeEntry *> *)simplifiedMasternodeEntries
                                                 quorumEntries:(NSArray<DSQuorumEntry *> *)quorumEntries
@@ -84,7 +80,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSDictionary<NSData *, NSData *> *)hashDictionaryForMerkleRootWithBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup;
 - (NSDictionary *)toDictionaryUsingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup;
 - (DSSimplifiedMasternodeEntry *)masternodeForRegistrationHash:(UInt256)registrationHash;
-- (void)applyWhiteList:(NSArray *)whiteList;
+//- (void)applyWhiteList:(NSArray *)whiteList;
 @end
 
 NS_ASSUME_NONNULL_END

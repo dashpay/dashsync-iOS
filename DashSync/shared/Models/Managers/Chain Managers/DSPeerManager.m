@@ -315,7 +315,7 @@
                             uint16_t port = CFSwapInt16BigToHost(((struct sockaddr_in *)p->ai_addr)->sin_port);
                             NSTimeInterval age = 3 * DAY_TIME_INTERVAL + arc4random_uniform(4 * DAY_TIME_INTERVAL); // add between 3 and 7 days
 
-                            [peers[i] addObject:[[DSPeer alloc] initWithAddress:(DSAddress){addr, port}
+                            [peers[i] addObject:[[DSPeer alloc] initWithAddress:(DSSocketAddress){addr, port}
                                                                         onChain:self.chain
                                                                       timestamp:(i > 0 ? now - age : now)
                                                                        services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM]];
@@ -348,7 +348,7 @@
                     } else {
                         DSLog(@"invalid address");
                     }
-                    [_peers addObject:[[DSPeer alloc] initWithAddress:(DSAddress){ipAddress, port ? [port intValue] : self.chain.standardPort}
+                    [_peers addObject:[[DSPeer alloc] initWithAddress:(DSSocketAddress){ipAddress, port ? [port intValue] : self.chain.standardPort}
                                                               onChain:self.chain
                                                             timestamp:now - (WEEK_TIME_INTERVAL + arc4random_uniform(WEEK_TIME_INTERVAL))
                                                              services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM]];
@@ -361,7 +361,7 @@
                     for (NSNumber *address in [NSArray arrayWithContentsOfFile:path]) {
                         // give hard coded peers a timestamp between 7 and 14 days ago
                         addr.u32[3] = CFSwapInt32HostToBig(address.unsignedIntValue);
-                        [_peers addObject:[[DSPeer alloc] initWithAddress:(DSAddress){addr, self.chain.standardPort}
+                        [_peers addObject:[[DSPeer alloc] initWithAddress:(DSSocketAddress){addr, self.chain.standardPort}
                                                                   onChain:self.chain
                                                                 timestamp:now - (WEEK_TIME_INTERVAL + arc4random_uniform(WEEK_TIME_INTERVAL))
                                                                  services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM]];
@@ -614,7 +614,7 @@
         UInt128 ipAddress = *(UInt128 *)((NSData *)peerDictionary[@"address"]).bytes;
         uint16_t port = [peerDictionary[@"port"] unsignedShortValue];
         NSTimeInterval now = [NSDate timeIntervalSince1970];
-        [registeredPeers addObject:[[DSPeer alloc] initWithAddress:(DSAddress){ipAddress, port} onChain:self.chain timestamp:now - (7 * 24 * 60 * 60 + arc4random_uniform(7 * 24 * 60 * 60)) services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM]];
+        [registeredPeers addObject:[[DSPeer alloc] initWithAddress:(DSSocketAddress){ipAddress, port} onChain:self.chain timestamp:now - (7 * 24 * 60 * 60 + arc4random_uniform(7 * 24 * 60 * 60)) services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM]];
     }
     return [registeredPeers copy];
 }

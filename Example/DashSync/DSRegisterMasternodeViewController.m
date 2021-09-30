@@ -135,7 +135,7 @@
         votingWalletIndex = (uint32_t)[self.votingIndexTableViewCell.valueTextField.text integerValue];
     }
 
-    DSLocalMasternode *masternode = [self.chain.chainManager.masternodeManager createNewMasternodeWithAddress:(DSAddress){ipAddress, port} inFundsWallet:self.wallet fundsWalletIndex:UINT32_MAX inOperatorWallet:self.wallet operatorWalletIndex:operatorWalletIndex inOwnerWallet:self.wallet ownerWalletIndex:ownerWalletIndex inVotingWallet:self.wallet votingWalletIndex:votingWalletIndex];
+    DSLocalMasternode *masternode = [self.chain.chainManager.masternodeManager createNewMasternodeWithAddress:(DSSocketAddress){ipAddress, port} inFundsWallet:self.wallet fundsWalletIndex:UINT32_MAX inOperatorWallet:self.wallet operatorWalletIndex:operatorWalletIndex inOwnerWallet:self.wallet ownerWalletIndex:ownerWalletIndex inVotingWallet:self.wallet votingWalletIndex:votingWalletIndex];
 
     NSString *payoutAddress = [self.payToAddressTableViewCell.valueTextField.text isValidDashAddressOnChain:self.chain] ? self.payToAddressTableViewCell.textLabel.text : self.account.receiveAddress;
 

@@ -190,7 +190,7 @@
 //            NSString * keyString = [NSString stringWithFormat:@"%040x",i];
 //            NSData * keyData = keyString.hexToData.reverse;
 //            UInt160 keyDataInt = *(UInt160*)keyData.bytes;
-//            DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:transactionHashData address:(DSAddress){UINT128_ZERO, i} keyIDOperator:keyDataInt keyIDVoting:keyDataInt isValid:TRUE onChain:[DSChain mainnet]];
+//            DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:transactionHashData address:(DSSocketAddress){UINT128_ZERO, i} keyIDOperator:keyDataInt keyIDVoting:keyDataInt isValid:TRUE onChain:[DSChain mainnet]];
 //            [entries addObject:simplifiedMasternodeEntry];
 //        }
 //
@@ -236,7 +236,7 @@
 //                NSLog(@"invalid address");
 //            }
 //
-//            DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:transactionHashData address:(DSAddress){ipAddress, i} keyIDOperator:keyDataInt keyIDVoting:keyDataInt isValid:TRUE onChain:[DSChain mainnet]];
+//            DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:transactionHashData address:(DSSocketAddress){ipAddress, i} keyIDOperator:keyDataInt keyIDVoting:keyDataInt isValid:TRUE onChain:[DSChain mainnet]];
 //            [entries addObject:simplifiedMasternodeEntry];
 //        }
 //
@@ -1140,7 +1140,7 @@
             UInt256 confirmedHash = [NSData dataWithUInt256:hash].SHA256;
             UInt128 address = UINT128_ZERO;
             *address.u16 = i;
-            DSSimplifiedMasternodeEntry *entry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:hash confirmedHash:confirmedHash address:(DSAddress){address, 9999} operatorBLSPublicKey:UINT384_ZERO previousOperatorBLSPublicKeys:@{} keyIDVoting:UINT160_ZERO isValid:YES previousValidity:@{} knownConfirmedAtHeight:50 updateHeight:100 simplifiedMasternodeEntryHash:UINT256_ZERO previousSimplifiedMasternodeEntryHashes:@{} onChain:chain];
+            DSSimplifiedMasternodeEntry *entry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:hash confirmedHash:confirmedHash address:(DSSocketAddress){address, 9999} operatorBLSPublicKey:UINT384_ZERO previousOperatorBLSPublicKeys:@{} keyIDVoting:UINT160_ZERO isValid:YES previousValidity:@{} knownConfirmedAtHeight:50 updateHeight:100 simplifiedMasternodeEntryHash:UINT256_ZERO previousSimplifiedMasternodeEntryHashes:@{} onChain:chain];
             DSSimplifiedMasternodeEntryEntity *managedObject = [DSSimplifiedMasternodeEntryEntity managedObjectInBlockedContext:context];
             [managedObject setAttributesFromSimplifiedMasternodeEntry:entry atBlockHeight:100 onChainEntity:chainEntity];
         }
@@ -2919,10 +2919,10 @@
     DSChainManager *chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
 
     NSMutableOrderedSet<NSValue *> *whiteList = [NSMutableOrderedSet orderedSetWithObjects:
-                                                                         dsaddress_obj(((DSAddress){[@"45.32.86.231" ipV4Address], 19999})),
-                                                                     dsaddress_obj(((DSAddress){[@"34.207.45.58" ipV4Address], 19999})),
-                                                                     dsaddress_obj(((DSAddress){[@"217.61.221.9" ipV4Address], 19999})),
-                                                                     dsaddress_obj(((DSAddress){[@"54.171.33.62" ipV4Address], 26089})),
+                                                                         dsaddress_obj(((DSSocketAddress){[@"54.171.33.62" ipV4Address], 26047})),
+                                                                     dsaddress_obj(((DSSocketAddress){[@"54.171.33.62" ipV4Address], 26072})),
+                                                                     dsaddress_obj(((DSSocketAddress){[@"34.83.22.108" ipV4Address], 19999})),
+                                                                     dsaddress_obj(((DSSocketAddress){[@"54.171.33.62" ipV4Address], 26089})),
                                                                      nil];
 
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
@@ -2965,41 +2965,25 @@
                                          completion:^(NSError *_Nonnull error) {
                                              NSAssert(!error, @"There should not be an error");
                                              DSMasternodeManager *masternodeManager = [chainManager masternodeManager];
-                                             DSMasternodeList *currentMasternodeList = [masternodeManager currentMasternodeList];
-                                             NSArray<DSSimplifiedMasternodeEntry *> *entries = [[currentMasternodeList simplifiedMasternodeEntries] copy];
+                                             NSMutableOrderedSet *prevTrustedPeers = [NSMutableOrderedSet orderedSetWithSet:[[chainManager.DAPIClient trustedPeers] copy]];
                                              [masternodeManager setWhiteList:[whiteList array]];
-                                             NSArray<DSSimplifiedMasternodeEntry *> *whiteEntries = [[currentMasternodeList simplifiedMasternodeWhiteEntries] copy];
-                                             //Whether they must differ or not?
-                                             XCTAssertNotEqual(entries, whiteEntries);
-                                             NSMutableOrderedSet *whiteAddresses = [NSMutableOrderedSet orderedSetWithCapacity:[whiteEntries count]];
-                                             NSMutableOrderedSet *whiteIPAddresses = [NSMutableOrderedSet orderedSet];
-                                             for (DSSimplifiedMasternodeEntry *entry in whiteEntries) {
-                                                 DSAddress addr = entry.address;
-                                                 [whiteAddresses addObject:dsaddress_obj(addr)];
-                                                 if ([entry isValid])
-                                                     [whiteIPAddresses addObject:[NSString ipStringWithAddress:addr]];
-                                             }
+                                             NSMutableOrderedSet<NSString *> *currTrustedPeers = [NSMutableOrderedSet orderedSetWithSet:[[chainManager.DAPIClient trustedPeers] copy]];
                                              NSComparator cmptr = ^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2) {
-                                                 NSString *s1 = (NSString *)obj1;
-                                                 NSString *s2 = (NSString *)obj2;
-                                                 return [s1 compare:s2];
+                                                 return [(NSString *)obj1 compare:(NSString *)obj2];
                                              };
-
-                                             NSMutableOrderedSet<NSString *> *peers = [NSMutableOrderedSet orderedSetWithSet:[[chainManager DAPIClient] availablePeers]];
-                                             [whiteIPAddresses sortUsingComparator:cmptr];
-                                             [peers sortUsingComparator:cmptr];
-                                             XCTAssertEqualObjects(peers, whiteIPAddresses);
-                                             XCTAssertEqual(whiteList.count, whiteAddresses.count);
-                                             NSComparator valComparator = ^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2) {
-                                                 return dsaddress_compare([(NSValue *)obj1 addressValue], [(NSValue *)obj2 addressValue]);
-                                             };
-                                             [whiteAddresses sortUsingComparator:valComparator];
-                                             [whiteList sortUsingComparator:valComparator];
+                                             NSMutableOrderedSet<NSString *> *whitePeers = [NSMutableOrderedSet orderedSet];
                                              for (NSUInteger i = 0; i < whiteList.count; i++) {
-                                                 DSAddress expected = [[whiteList objectAtIndex:i] addressValue];
-                                                 DSAddress actual = [[whiteAddresses objectAtIndex:i] addressValue];
-                                                 XCTAssertTrue(dsaddress_eq(expected, actual));
+                                                 [whitePeers addObject:[NSString stringWithAddress:[[whiteList objectAtIndex:i] addressValue]]];
                                              }
+                                             [prevTrustedPeers sortUsingComparator:cmptr];
+                                             [currTrustedPeers sortUsingComparator:cmptr];
+                                             [whitePeers sortUsingComparator:cmptr];
+                                             // Ensure that something is changed after setting the white list
+                                             XCTAssertNotEqual(prevTrustedPeers, currTrustedPeers);
+                                             // Ensure that trustedPeers are those we set in the white list
+                                             //XCTAssertEqual(currTrustedPeers, whitePeers);
+                                             XCTAssertTrue([currTrustedPeers isSubsetOfOrderedSet:whitePeers]);
+                                             // Maybe we need to ensure we don't have platform services with black addresses?
                                          }];
         }];
 }

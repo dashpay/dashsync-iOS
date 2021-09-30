@@ -84,10 +84,10 @@ typedef struct {
     uint8_t p[33];
 } DSECPoint;
 
-typedef struct _DSAddress {
+typedef struct _DSSocketAddress {
     UInt128 ipAddress; //v6, but only v4 supported
     uint16_t port;
-} DSAddress;
+} DSSocketAddress;
 
 #define uint768_random ((UInt768){.u32 = {arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random()}})
 
@@ -225,7 +225,7 @@ typedef struct _DSAddress {
                                                  CFSwapInt32HostToLittle((uint32_t)o.n)}) \
                                       length:sizeof(UInt256) + sizeof(uint32_t)]
 
-#define dsaddress_obj(a) ([NSValue value:&a withObjCType:@encode(DSAddress)])
+#define dsaddress_obj(a) ([NSValue value:&a withObjCType:@encode(DSSocketAddress)])
 #define dsaddress_eq(a, b) (uint128_eq(a.ipAddress, b.ipAddress) && a.port == b.port)
 #define dsaddress_compare(a1, a2) (uint128_eq(a1.ipAddress, a2.ipAddress) ? (a1.port == a2.port ? NSOrderedSame : (a1.port > a2.port ? NSOrderedDescending : NSOrderedAscending)) : (uint128_sup(a1.ipAddress, a2.ipAddress) ? NSOrderedDescending : NSOrderedAscending))
 

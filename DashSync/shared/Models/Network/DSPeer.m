@@ -119,7 +119,7 @@
 
 @dynamic host;
 
-+ (instancetype)peerWithAddress:(DSAddress)address onChain:(DSChain *)chain {
++ (instancetype)peerWithAddress:(DSSocketAddress)address onChain:(DSChain *)chain {
     return [[self alloc] initWithAddress:address onChain:chain];
 }
 
@@ -131,7 +131,7 @@
     return [[self alloc] initWithSimplifiedMasternodeEntry:simplifiedMasternodeEntry];
 }
 
-- (instancetype)initWithAddress:(DSAddress)address onChain:(DSChain *)chain {
+- (instancetype)initWithAddress:(DSSocketAddress)address onChain:(DSChain *)chain {
     if (!(self = [super init])) return nil;
 
     _address = address;
@@ -160,13 +160,13 @@
 
     if (inet_pton(AF_INET, host.UTF8String, &addr) != 1) return nil;
     if (port == 0) port = chain.standardPort;
-    _address = (DSAddress){(UInt128){.u32 = {0, 0, CFSwapInt32HostToBig(0xffff), addr.s_addr}}, port};
+    _address = (DSSocketAddress){(UInt128){.u32 = {0, 0, CFSwapInt32HostToBig(0xffff), addr.s_addr}}, port};
     self.chain = chain;
     _outputBufferSemaphore = dispatch_semaphore_create(1);
     return self;
 }
 
-- (instancetype)initWithAddress:(DSAddress)address onChain:(DSChain *)chain timestamp:(NSTimeInterval)timestamp services:(uint64_t)services {
+- (instancetype)initWithAddress:(DSSocketAddress)address onChain:(DSChain *)chain timestamp:(NSTimeInterval)timestamp services:(uint64_t)services {
     if (!(self = [self initWithAddress:address onChain:chain])) return nil;
 
     _timestamp = timestamp;
@@ -1083,7 +1083,7 @@
         if (timestamp > now + 10 * 60 || timestamp < 0) timestamp = now - 5 * 24 * 60 * 60;
 
         // subtract two hours and add it to the list
-        [peers addObject:[[DSPeer alloc] initWithAddress:(DSAddress){address, port}
+        [peers addObject:[[DSPeer alloc] initWithAddress:(DSSocketAddress){address, port}
                                                  onChain:self.chain
                                                timestamp:timestamp - 2 * 60 * 60
                                                 services:services]];

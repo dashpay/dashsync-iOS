@@ -36,6 +36,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 
 @property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, strong) NSMutableSet<NSString *> *availablePeers;
+@property (nonatomic, strong) NSMutableSet<NSString *> *trustedPeers;
 @property (nonatomic, strong) NSMutableSet<NSString *> *usedPeers;
 @property (nonatomic, strong) NSMutableArray<DSDAPIPlatformNetworkService *> *activePlatformServices;
 @property (nonatomic, strong) NSMutableArray<DSDAPICoreNetworkService *> *activeCoreServices;
@@ -51,6 +52,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     if (self) {
         _chain = chain;
         self.availablePeers = [NSMutableSet set];
+        self.trustedPeers = [NSMutableSet set];
         self.activePlatformServices = [NSMutableArray array];
         self.activeCoreServices = [NSMutableArray array];
         self.coreNetworkingDispatchQueue = self.chain.networkingQueue;
@@ -219,13 +221,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     });
 }
 
-#pragma mark - Peers
-
-- (void)addDAPINodeByAddress:(NSString *)host {
-#if DAPI_CONNECT_SINGLE_NODE
-    return;
-#endif
-    [self.availablePeers addObject:host];
+- (nullable DSDAPIPlatformNetworkService *)getPlatformServiceFor:(NSString *)host {
     DSDAPIPlatformNetworkService *foundNetworkService = nil;
     for (DSDAPIPlatformNetworkService *networkService in self.activePlatformServices) {
         if ([networkService.ipAddress isEqualToString:host]) {
@@ -233,10 +229,51 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
             break;
         }
     }
-    if (!foundNetworkService) {
-        HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
-        DSDAPIPlatformNetworkService *DAPINetworkService = [[DSDAPIPlatformNetworkService alloc] initWithDAPINodeIPAddress:host httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.coreNetworkingDispatchQueue onChain:self.chain];
-        [self.activePlatformServices addObject:DAPINetworkService];
+    return foundNetworkService;
+}
+
+- (DSDAPIPlatformNetworkService *)createPlatformServiceFor:(NSString *)host {
+    HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
+    DSDAPIPlatformNetworkService *DAPINetworkService = [[DSDAPIPlatformNetworkService alloc] initWithDAPINodeIPAddress:host httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.coreNetworkingDispatchQueue onChain:self.chain];
+    [self.activePlatformServices addObject:DAPINetworkService];
+    return DAPINetworkService;
+}
+
+- (void)removePlatformServiceFor:(NSString *)host {
+    for (DSDAPIPlatformNetworkService *networkService in [self.activePlatformServices copy]) {
+        if ([networkService.ipAddress isEqualToString:host]) {
+            [self.activePlatformServices removeObject:networkService];
+        }
+    }
+}
+
+- (void)setWhiteList:(NSMutableSet<NSString *> *)whiteList {
+    // Find which peers now are white
+    NSMutableSet<NSString *> *peers = [self.availablePeers mutableCopy];
+    [peers intersectSet:whiteList];
+    // Find which services we need to remove
+    NSMutableSet<NSString *> *peersToRemove = [self.trustedPeers mutableCopy];
+    [peersToRemove minusSet:peers];
+    for (NSString *hostToRemove in peersToRemove) {
+        [self removePlatformServiceFor:hostToRemove];
+    }
+    self.trustedPeers = peers;
+    _whiteList = whiteList;
+}
+
+#pragma mark - Peers
+
+- (void)addDAPINodeByAddress:(NSString *)host {
+#if DAPI_CONNECT_SINGLE_NODE
+    return;
+#endif
+    [self.availablePeers addObject:host];
+    // If white list is not set we suppose that all peers are white
+    if (!self.whiteList || [self.whiteList containsObject:host]) {
+        [self.trustedPeers addObject:host];
+        if (![self getPlatformServiceFor:host]) {
+            [self createPlatformServiceFor:host];
+        }
     }
 }
 
@@ -246,29 +283,28 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 #endif
     @synchronized(self) {
         [self.availablePeers removeObject:host];
-        for (DSDAPIPlatformNetworkService *networkService in [self.activePlatformServices copy]) {
-            if ([networkService.ipAddress isEqualToString:host]) {
-                [self.activePlatformServices removeObject:networkService];
-            }
+        if (self.whiteList && [self.whiteList containsObject:host]) {
+            [self.trustedPeers removeObject:host];
         }
+        [self removePlatformServiceFor:host];
     }
 }
 
 - (DSDAPIPlatformNetworkService *)DAPIPlatformNetworkService {
     @synchronized(self) {
         if ([self.activePlatformServices count]) {
-            if ([self.activePlatformServices count] == 1) return [self.activePlatformServices objectAtIndex:0];                   //if only 1 service, just use first one
-            return [self.activePlatformServices objectAtIndex:arc4random_uniform((uint32_t)[self.activePlatformServices count])]; //use a random service
-        } else if ([self.availablePeers count] || DAPI_CONNECT_SINGLE_NODE) {
+            // if only 1 service, just use first one
+            // otherwise use a random service
+            if ([self.activePlatformServices count] == 1)
+                return [self.activePlatformServices objectAtIndex:0];
+            return [self.activePlatformServices objectAtIndex:arc4random_uniform((uint32_t)[self.activePlatformServices count])];
+        } else if ([self.trustedPeers count] || DAPI_CONNECT_SINGLE_NODE) {
 #if DAPI_CONNECT_SINGLE_NODE
             NSString *peerHost = DAPI_SINGLE_NODE;
 #else
-            NSString *peerHost = self.availablePeers.anyObject;
+            NSString *peerHost = self.trustedPeers.anyObject;
 #endif
-            HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
-            DSDAPIPlatformNetworkService *DAPINetworkService = [[DSDAPIPlatformNetworkService alloc] initWithDAPINodeIPAddress:peerHost httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.coreNetworkingDispatchQueue onChain:self.chain];
-            [self.activePlatformServices addObject:DAPINetworkService];
-            return DAPINetworkService;
+            return [self createPlatformServiceFor:peerHost];
         }
         return nil;
     }

@@ -153,7 +153,7 @@
 
     NSMutableData *scriptPayout = [NSMutableData withScriptPubKeyForAddress:payoutAddress forChain:wallet.chain];
     NSMutableData *inputScript = [NSMutableData withScriptPubKeyForAddress:inputAddress0 forChain:chain];
-    DSAddress masternodeAddress = (DSAddress){[@"1.2.5.6" ipV4Address], 19999};
+    DSSocketAddress masternodeAddress = (DSSocketAddress){[@"1.2.5.6" ipV4Address], 19999};
 
     DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:@[inputTransactionHashValue] inputIndexes:@[@1] inputScripts:@[inputScript] inputSequences:@[@(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0] outputAmounts:@[@40777037710] providerRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:reversedCollateral masternodeAddress:masternodeAddress ownerKeyHash:ownerKey.publicKeyData.hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:chain];
 
@@ -245,7 +245,7 @@
     XCTAssertEqualObjects(providerRegistrationTransactionFromMessage.toData, hexData, @"Provider transaction does not match it's data");
 
     NSMutableData *scriptPayout = [NSMutableData withScriptPubKeyForAddress:payoutAddress forChain:wallet.chain];
-    DSAddress address = (DSAddress){[@"1.1.1.1" ipV4Address], 19999};
+    DSSocketAddress address = (DSSocketAddress){[@"1.1.1.1" ipV4Address], 19999};
 
     NSArray *inputHashes = @[uint256_obj(input0.hash), uint256_obj(input1.hash), uint256_obj(input2.hash)];
     NSArray *inputIndexes = @[@(input0.n), @(input1.n), @(input2.n)];
@@ -322,7 +322,7 @@
 
     XCTAssertTrue([providerUpdateServiceTransactionFromMessage checkPayloadSignature:operatorBLSKey], @"The payload is not signed correctly");
 
-    DSAddress address = (DSAddress){[@"52.36.64.148" ipV4Address], 19999};
+    DSSocketAddress address = (DSSocketAddress){[@"52.36.64.148" ipV4Address], 19999};
     NSArray *inputHashes = @[uint256_obj(input0.hash)];
     NSArray *inputIndexes = @[@(input0.n)];
     NSArray *inputScripts = @[[NSData scriptPubKeyForAddress:inputAddress0 forChain:chain]];

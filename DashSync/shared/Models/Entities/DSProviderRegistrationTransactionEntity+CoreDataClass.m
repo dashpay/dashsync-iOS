@@ -78,7 +78,7 @@
         transaction.providerType = self.providerType;
         transaction.providerMode = self.providerMode;
         transaction.collateralOutpoint = self.collateralOutpoint.transactionOutpoint;
-        transaction.masternodeAddress = (DSAddress){self.ipAddress.UInt128, self.port};
+        transaction.masternodeAddress = (DSSocketAddress){self.ipAddress.UInt128, self.port};
         transaction.ownerKeyHash = self.ownerKeyHash.UInt160;
         transaction.operatorKey = self.operatorKey.UInt384;
         transaction.votingKeyHash = self.votingKeyHash.UInt160;

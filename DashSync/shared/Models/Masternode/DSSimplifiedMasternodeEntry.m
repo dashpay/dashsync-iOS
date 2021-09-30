@@ -32,7 +32,7 @@
 @property (nonatomic, assign) UInt256 confirmedHash;
 @property (nonatomic, assign) UInt256 confirmedHashHashedWithProviderRegistrationTransactionHash;
 @property (nonatomic, assign) UInt256 simplifiedMasternodeEntryHash;
-@property (nonatomic, assign) DSAddress address;
+@property (nonatomic, assign) DSSocketAddress address;
 @property (nonatomic, assign) UInt384 operatorPublicKey; //this is using BLS
 @property (nonatomic, assign) UInt160 keyIDVoting;
 @property (nonatomic, assign) BOOL isValid;
@@ -74,7 +74,7 @@
     return [[self alloc] initWithMessage:data atBlockHeight:blockHeight onChain:chain];
 }
 
-+ (instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash confirmedHash:(UInt256)confirmedHash address:(DSAddress)address operatorBLSPublicKey:(UInt384)operatorBLSPublicKey previousOperatorBLSPublicKeys:(NSDictionary<DSBlock *, NSData *> *)previousOperatorBLSPublicKeys keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid previousValidity:(NSDictionary<DSBlock *, NSData *> *)previousValidity knownConfirmedAtHeight:(uint32_t)knownConfirmedAtHeight updateHeight:(uint32_t)updateHeight simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash previousSimplifiedMasternodeEntryHashes:(NSDictionary<DSBlock *, NSData *> *)previousSimplifiedMasternodeEntryHashes onChain:(DSChain *)chain {
++ (instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash confirmedHash:(UInt256)confirmedHash address:(DSSocketAddress)address operatorBLSPublicKey:(UInt384)operatorBLSPublicKey previousOperatorBLSPublicKeys:(NSDictionary<DSBlock *, NSData *> *)previousOperatorBLSPublicKeys keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid previousValidity:(NSDictionary<DSBlock *, NSData *> *)previousValidity knownConfirmedAtHeight:(uint32_t)knownConfirmedAtHeight updateHeight:(uint32_t)updateHeight simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash previousSimplifiedMasternodeEntryHashes:(NSDictionary<DSBlock *, NSData *> *)previousSimplifiedMasternodeEntryHashes onChain:(DSChain *)chain {
     DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [[DSSimplifiedMasternodeEntry alloc] init];
     simplifiedMasternodeEntry.providerRegistrationTransactionHash = providerRegistrationTransactionHash;
     simplifiedMasternodeEntry.confirmedHash = confirmedHash;
@@ -114,7 +114,7 @@
     offset += 16;
 
     if (length - offset < 2) return nil;
-    self.address = (DSAddress){ipAddress, CFSwapInt16HostToBig([message UInt16AtOffset:offset])};
+    self.address = (DSSocketAddress){ipAddress, CFSwapInt16HostToBig([message UInt16AtOffset:offset])};
     offset += 2;
 
     if (length - offset < 48) return nil;
@@ -429,13 +429,7 @@
 
 - (NSString *)ipAddressString {
     if (_ipAddressString) return _ipAddressString;
-    char s[INET6_ADDRSTRLEN];
-
-    if (_address.ipAddress.u64[0] == 0 && _address.ipAddress.u32[2] == CFSwapInt32HostToBig(0xffff)) {
-        _ipAddressString = @(inet_ntop(AF_INET, &_address.ipAddress.u32[3], s, sizeof(s)));
-    } else {
-        _ipAddressString = @(inet_ntop(AF_INET6, &_address.ipAddress, s, sizeof(s)));
-    }
+    _ipAddressString = [NSString stringWithAddress:_address];
     return _ipAddressString;
 }
 

@@ -19,8 +19,8 @@
 
 @implementation NSValue (Sugar)
 
-- (DSAddress)addressValue {
-    DSAddress a;
+- (DSSocketAddress)addressValue {
+    DSSocketAddress a;
     [self getValue:&a];
     return a;
 }

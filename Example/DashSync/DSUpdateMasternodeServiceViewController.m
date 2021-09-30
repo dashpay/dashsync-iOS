@@ -68,7 +68,7 @@
     UInt128 ipAddress = [ipAddressString ipV4Address];
     uint16_t port = [portString intValue];
     [self.localMasternode updateTransactionFundedByAccount:self.account
-                                                 toAddress:(DSAddress){ipAddress, port}
+                                                 toAddress:(DSSocketAddress){ipAddress, port}
                                              payoutAddress:nil
                                                 completion:^(DSProviderUpdateServiceTransaction *_Nonnull providerUpdateServiceTransaction) {
                                                     if (providerUpdateServiceTransaction) {

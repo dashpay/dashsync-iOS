@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+#import "BigIntTypes.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -35,6 +36,8 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode)
 @property (nonatomic, nullable, readonly) DSDAPIPlatformNetworkService *DAPIPlatformNetworkService;
 @property (nonatomic, nullable, readonly) DSDAPICoreNetworkService *DAPICoreNetworkService;
 @property (nonatomic, readonly) NSMutableSet<NSString *> *availablePeers;
+@property (nonatomic, readonly) NSMutableSet<NSString *> *trustedPeers;
+@property (nonatomic, readwrite) NSMutableSet<NSString *> *whiteList;
 @property (atomic, readonly) dispatch_queue_t coreNetworkingDispatchQueue;
 @property (atomic, readonly) dispatch_queue_t platformMetadataDispatchQueue;
 

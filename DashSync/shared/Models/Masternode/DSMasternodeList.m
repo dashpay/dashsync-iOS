@@ -56,7 +56,6 @@ inline static int ceil_log2(int x) {
 @interface DSMasternodeList ()
 
 @property (nonatomic, strong) NSMutableDictionary<NSData *, DSSimplifiedMasternodeEntry *> *mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash;
-@property (nonatomic, strong) NSMutableDictionary<NSData *, DSSimplifiedMasternodeEntry *> *mSimplifiedMasternodeWhiteListDictionaryByReversedRegistrationTransactionHash;
 @property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, assign) UInt256 blockHash;
 @property (nonatomic, assign) UInt256 masternodeMerkleRoot;
@@ -108,7 +107,7 @@ inline static int ceil_log2(int x) {
     self.chain = chain;
     self.blockHash = blockHash;
     self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash = [simplifiedMasternodeEntries mutableCopy];
-    [self applyWhiteList:whiteList];
+    //[self applyWhiteList:whiteList];
     self.mQuorums = [quorumEntries mutableCopy];
     return self;
 }
@@ -375,18 +374,6 @@ inline static int ceil_log2(int x) {
     return [self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash count];
 }
 
-- (NSArray *)simplifiedMasternodeWhiteEntries {
-    return self.mSimplifiedMasternodeWhiteListDictionaryByReversedRegistrationTransactionHash.allValues;
-}
-
-- (NSArray *)reversedRegistrationTransactionWhiteHashes {
-    return self.mSimplifiedMasternodeWhiteListDictionaryByReversedRegistrationTransactionHash.allKeys;
-}
-
-- (uint64_t)whiteMasternodeCount {
-    return [self.mSimplifiedMasternodeWhiteListDictionaryByReversedRegistrationTransactionHash count];
-}
-
 - (uint64_t)validMasternodeCount {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isValid == TRUE"];
     return [[self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allValues] filteredArrayUsingPredicate:predicate].count;
@@ -439,10 +426,6 @@ inline static int ceil_log2(int x) {
 
 - (NSDictionary *)simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash {
     return [self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash copy];
-}
-
-- (NSDictionary *)simplifiedMasternodeWhiteListDictionaryByReversedRegistrationTransactionHash {
-    return [self.mSimplifiedMasternodeWhiteListDictionaryByReversedRegistrationTransactionHash copy];
 }
 
 - (uint32_t)height {
@@ -532,7 +515,6 @@ inline static int ceil_log2(int x) {
 
 - (NSDictionary *)compare:(DSMasternodeList *)other usingOurString:(NSString *)ours usingTheirString:(NSString *)theirs blockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-    // simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash vs. simplifiedMasternodeWhiteListDictionaryByReversedRegistrationTransactionHash ?
     for (NSData *data in self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash) {
         DSSimplifiedMasternodeEntry *ourEntry = self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[data];
         DSSimplifiedMasternodeEntry *theirEntry = other.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[data];
@@ -550,7 +532,6 @@ inline static int ceil_log2(int x) {
 
 - (NSDictionary *)toDictionaryUsingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-    // simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash vs. simplifiedMasternodeWhiteListDictionaryByReversedRegistrationTransactionHash ?
     for (NSData *data in self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash) {
         DSSimplifiedMasternodeEntry *ourEntry = self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[data];
         if (ourEntry) {
@@ -643,11 +624,11 @@ inline static int ceil_log2(int x) {
     return self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[uint256_data(registrationHash)];
 }
 
-- (void)applyWhiteList:(NSArray *)whiteList {
+/*- (void)applyWhiteList:(NSArray *)whiteList {
     NSMutableDictionary<NSData *, DSSimplifiedMasternodeEntry *> *whiteEntries;
     // If there's no white list entries we'll use whole list
     if (whiteList && [whiteList count] > 0) {
-        DSAddress a;
+        DSSocketAddress a;
         whiteEntries = [NSMutableDictionary dictionary];
         for (NSValue *address in whiteList) {
             [address getValue:&a];
@@ -663,6 +644,6 @@ inline static int ceil_log2(int x) {
         whiteEntries = self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash;
     }
     self.mSimplifiedMasternodeWhiteListDictionaryByReversedRegistrationTransactionHash = whiteEntries;
-}
+}*/
 
 @end

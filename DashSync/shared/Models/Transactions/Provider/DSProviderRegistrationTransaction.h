@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint16_t providerType;
 @property (nonatomic, assign) uint16_t providerMode;
 @property (nonatomic, assign) DSUTXO collateralOutpoint;
-@property (nonatomic, assign) DSAddress masternodeAddress;
+@property (nonatomic, assign) DSSocketAddress masternodeAddress;
 @property (nonatomic, assign) UInt160 ownerKeyHash;
 @property (nullable, nonatomic, readonly) NSString *ownerAddress;
 @property (nonatomic, assign) UInt384 operatorKey;
@@ -40,9 +40,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) DSLocalMasternode *localMasternode;
 @property (nullable, nonatomic, readonly) DSWallet *masternodeHoldingWallet; //only set if the transaction is sent to a masternode holding address
 
-- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray *)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts providerRegistrationTransactionVersion:(uint16_t)version type:(uint16_t)providerType mode:(uint16_t)providerMode collateralOutpoint:(DSUTXO)collateralOutpoint masternodeAddress:(DSAddress)masternodeAddress ownerKeyHash:(UInt160)ownerKeyHash operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash operatorReward:(uint16_t)operatorReward scriptPayout:(NSData *)scriptPayout onChain:(DSChain *)chain;
+- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray *)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts providerRegistrationTransactionVersion:(uint16_t)version type:(uint16_t)providerType mode:(uint16_t)providerMode collateralOutpoint:(DSUTXO)collateralOutpoint masternodeAddress:(DSSocketAddress)masternodeAddress ownerKeyHash:(UInt160)ownerKeyHash operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash operatorReward:(uint16_t)operatorReward scriptPayout:(NSData *)scriptPayout onChain:(DSChain *)chain;
 
-- (instancetype)initWithProviderRegistrationTransactionVersion:(uint16_t)version type:(uint16_t)providerType mode:(uint16_t)providerMode collateralOutpoint:(DSUTXO)collateralOutpoint masternodeAddress:(DSAddress)masternodeAddress ownerKeyHash:(UInt160)ownerKeyHash operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash operatorReward:(uint16_t)operatorReward scriptPayout:(NSData *)scriptPayout onChain:(DSChain *)chain;
+- (instancetype)initWithProviderRegistrationTransactionVersion:(uint16_t)version type:(uint16_t)providerType mode:(uint16_t)providerMode collateralOutpoint:(DSUTXO)collateralOutpoint masternodeAddress:(DSSocketAddress)masternodeAddress ownerKeyHash:(UInt160)ownerKeyHash operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash operatorReward:(uint16_t)operatorReward scriptPayout:(NSData *)scriptPayout onChain:(DSChain *)chain;
 
 - (void)updateInputsHash;
 

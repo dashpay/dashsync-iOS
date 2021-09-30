@@ -57,6 +57,8 @@
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
+#import "NSString+Dash.h"
+#import "NSValue+Sugar.h"
 
 #define FAULTY_DML_MASTERNODE_PEERS @"FAULTY_DML_MASTERNODE_PEERS"
 #define CHAIN_FAULTY_DML_MASTERNODE_PEERS [NSString stringWithFormat:@"%@_%@", peer.chain.uniqueID, FAULTY_DML_MASTERNODE_PEERS]
@@ -330,14 +332,6 @@
     }];
 }
 
-- (void)addDAPINode:(DSSimplifiedMasternodeEntry *)entry {
-    [self.chain.chainManager.DAPIClient addDAPINodeByAddress:entry.ipAddressString];
-}
-
-- (void)removeDAPINode:(DSSimplifiedMasternodeEntry *)entry {
-    [self.chain.chainManager.DAPIClient removeDAPINodeByAddress:entry.ipAddressString];
-}
-
 - (void)updateDAPIClientNodes:(NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *)previousEntries
              atPreviousHeight:(uint32_t)previousHeight
            withCurrentEntries:(NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *)currentEntries
@@ -375,27 +369,23 @@
 
 - (void)setWhiteList:(NSArray *)whiteList {
     _whiteList = whiteList;
-    if (_currentMasternodeList) {
-        NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *prevWhiteDict = _currentMasternodeList.simplifiedMasternodeWhiteListDictionaryByReversedRegistrationTransactionHash;
-        uint32_t prevHeight = _currentMasternodeList.height;
-        [_currentMasternodeList applyWhiteList:_whiteList];
-        [self updateDAPIClientNodes:prevWhiteDict atPreviousHeight:prevHeight withCurrentEntries:_currentMasternodeList.simplifiedMasternodeWhiteListDictionaryByReversedRegistrationTransactionHash atCurrentHeight:_currentMasternodeList.height];
+    NSMutableSet *stringSet = [NSMutableSet set];
+    for (NSValue *address in whiteList) {
+        [stringSet addObject:[NSString stringWithAddress:[address addressValue]]];
     }
+    [self.chain.chainManager.DAPIClient setWhiteList:stringSet];
 }
 
 - (void)setCurrentMasternodeList:(DSMasternodeList *)currentMasternodeList {
     if (self.chain.isEvolutionEnabled) {
-        if (_whiteList) {
-            [currentMasternodeList applyWhiteList:_whiteList];
-        }
         if (!_currentMasternodeList) {
-            for (DSSimplifiedMasternodeEntry *masternodeEntry in currentMasternodeList.simplifiedMasternodeWhiteEntries) {
+            for (DSSimplifiedMasternodeEntry *masternodeEntry in currentMasternodeList.simplifiedMasternodeEntries) {
                 if (masternodeEntry.isValid) {
-                    [self addDAPINode:masternodeEntry];
+                    [self.chain.chainManager.DAPIClient addDAPINodeByAddress:masternodeEntry.ipAddressString];
                 }
             }
         } else {
-            [self updateDAPIClientNodes:_currentMasternodeList.simplifiedMasternodeWhiteListDictionaryByReversedRegistrationTransactionHash atPreviousHeight:_currentMasternodeList.height withCurrentEntries:currentMasternodeList.simplifiedMasternodeWhiteListDictionaryByReversedRegistrationTransactionHash atCurrentHeight:currentMasternodeList.height];
+            [self updateDAPIClientNodes:_currentMasternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash atPreviousHeight:_currentMasternodeList.height withCurrentEntries:currentMasternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash atCurrentHeight:currentMasternodeList.height];
         }
     }
     bool changed = _currentMasternodeList != currentMasternodeList;
@@ -1368,7 +1358,7 @@
             NSMutableSet<NSString *> *votingAddressStrings = [NSMutableSet set];
             NSMutableSet<NSString *> *operatorAddressStrings = [NSMutableSet set];
             NSMutableSet<NSData *> *providerRegistrationTransactionHashes = [NSMutableSet set];
-            for (DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry in masternodeList.simplifiedMasternodeWhiteEntries) {
+            for (DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry in masternodeList.simplifiedMasternodeEntries) {
                 [votingAddressStrings addObject:simplifiedMasternodeEntry.votingAddress];
                 [operatorAddressStrings addObject:simplifiedMasternodeEntry.operatorAddress];
                 [providerRegistrationTransactionHashes addObject:uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
@@ -1522,7 +1512,8 @@
                 faultyPeers = [faultyPeers arrayByAddingObject:peer.location];
             }
         }
-        [[NSUserDefaults standardUserDefaults] setObject:faultyPeers forKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
+        [[NSUserDefaults standardUserDefaults] setObject:faultyPeers
+                                                  forKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
         [self dequeueMasternodeListRequest];
     }
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -1601,7 +1592,7 @@
 // MARK: - Meta information
 
 - (void)checkPingTimesForCurrentMasternodeListInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(NSMutableDictionary<NSData *, NSNumber *> *pingTimes, NSMutableDictionary<NSData *, NSError *> *errors))completion {
-    __block NSArray<DSSimplifiedMasternodeEntry *> *entries = self.currentMasternodeList.simplifiedMasternodeWhiteEntries;
+    __block NSArray<DSSimplifiedMasternodeEntry *> *entries = self.currentMasternodeList.simplifiedMasternodeEntries;
     [self.chain.chainManager.DAPIClient checkPingTimesForMasternodes:entries
                                                           completion:^(NSMutableDictionary<NSData *, NSNumber *> *_Nonnull pingTimes, NSMutableDictionary<NSData *, NSError *> *_Nonnull errors) {
                                                               [context performBlockAndWait:^{
@@ -1622,20 +1613,20 @@
 
 // MARK: - Local Masternodes
 
-- (DSLocalMasternode *)createNewMasternodeWithAddress:(DSAddress)address inWallet:(DSWallet *)wallet {
+- (DSLocalMasternode *)createNewMasternodeWithAddress:(DSSocketAddress)address inWallet:(DSWallet *)wallet {
     NSParameterAssert(wallet);
     return [self createNewMasternodeWithAddress:address inFundsWallet:wallet inOperatorWallet:wallet inOwnerWallet:wallet inVotingWallet:wallet];
 }
 
-- (DSLocalMasternode *)createNewMasternodeWithAddress:(DSAddress)address inFundsWallet:(DSWallet *)fundsWallet inOperatorWallet:(DSWallet *)operatorWallet inOwnerWallet:(DSWallet *)ownerWallet inVotingWallet:(DSWallet *)votingWallet {
+- (DSLocalMasternode *)createNewMasternodeWithAddress:(DSSocketAddress)address inFundsWallet:(DSWallet *)fundsWallet inOperatorWallet:(DSWallet *)operatorWallet inOwnerWallet:(DSWallet *)ownerWallet inVotingWallet:(DSWallet *)votingWallet {
     return [[DSLocalMasternode alloc] initWithAddress:address inFundsWallet:fundsWallet inOperatorWallet:operatorWallet inOwnerWallet:ownerWallet inVotingWallet:votingWallet];
 }
 
-- (DSLocalMasternode *)createNewMasternodeWithAddress:(DSAddress)address inFundsWallet:(DSWallet *_Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet *_Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex inOwnerWallet:(DSWallet *_Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex inVotingWallet:(DSWallet *_Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex {
+- (DSLocalMasternode *)createNewMasternodeWithAddress:(DSSocketAddress)address inFundsWallet:(DSWallet *_Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet *_Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex inOwnerWallet:(DSWallet *_Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex inVotingWallet:(DSWallet *_Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex {
     return [[DSLocalMasternode alloc] initWithAddress:address inFundsWallet:fundsWallet fundsWalletIndex:fundsWalletIndex inOperatorWallet:operatorWallet operatorWalletIndex:operatorWalletIndex inOwnerWallet:ownerWallet ownerWalletIndex:ownerWalletIndex inVotingWallet:votingWallet votingWalletIndex:votingWalletIndex];
 }
 
-- (DSLocalMasternode *)createNewMasternodeWithAddress:(DSAddress)address inFundsWallet:(DSWallet *_Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet *_Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex operatorPublicKey:(DSBLSKey *)operatorPublicKey inOwnerWallet:(DSWallet *_Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex ownerPrivateKey:(DSECDSAKey *)ownerPrivateKey inVotingWallet:(DSWallet *_Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex votingKey:(DSECDSAKey *)votingKey {
+- (DSLocalMasternode *)createNewMasternodeWithAddress:(DSSocketAddress)address inFundsWallet:(DSWallet *_Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet *_Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex operatorPublicKey:(DSBLSKey *)operatorPublicKey inOwnerWallet:(DSWallet *_Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex ownerPrivateKey:(DSECDSAKey *)ownerPrivateKey inVotingWallet:(DSWallet *_Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex votingKey:(DSECDSAKey *)votingKey {
     DSLocalMasternode *localMasternode = [[DSLocalMasternode alloc] initWithAddress:address inFundsWallet:fundsWallet fundsWalletIndex:fundsWalletIndex inOperatorWallet:operatorWallet operatorWalletIndex:operatorWalletIndex inOwnerWallet:ownerWallet ownerWalletIndex:ownerWalletIndex inVotingWallet:votingWallet votingWalletIndex:votingWalletIndex];
 
     if (operatorWalletIndex == UINT32_MAX && operatorPublicKey) {

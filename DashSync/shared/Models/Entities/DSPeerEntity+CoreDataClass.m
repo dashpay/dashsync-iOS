@@ -58,7 +58,7 @@
     [self.managedObjectContext performBlockAndWait:^{
         UInt128 address = {.u32 = {0, 0, CFSwapInt32HostToBig(0xffff), CFSwapInt32HostToBig(self.address)}};
         DSChain *chain = [self.chain chain];
-        peer = [[DSPeer alloc] initWithAddress:(DSAddress){address, self.port} onChain:chain timestamp:self.timestamp services:self.services];
+        peer = [[DSPeer alloc] initWithAddress:(DSSocketAddress){address, self.port} onChain:chain timestamp:self.timestamp services:self.services];
         peer.misbehaving = self.misbehavin;
         peer.priority = self.priority;
         peer.lowPreferenceTill = self.lowPreferenceTill;
