@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+#import "DSChain.h"
 #import "DSPlatformDocumentsRequest.h"
 #import <DAPI-GRPC/Platform.pbobjc.h>
 #import <DAPI-GRPC/Platform.pbrpc.h>
@@ -30,7 +31,7 @@ typedef NS_ENUM(NSUInteger, DSPlatformDictionary)
     DSPlatformDictionary_PublicKeyHashesToIdentityIds = 2,
 };
 
-@class DSChain;
+@class DSQuorumEntry;
 
 @interface DSDAPIGRPCResponseHandler : NSObject <GRPCProtoResponseHandler>
 
@@ -44,6 +45,8 @@ typedef NS_ENUM(NSUInteger, DSPlatformDictionary)
 
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithChain:(DSChain *)chain requireProof:(BOOL)requireProof;
+
++ (NSDictionary *)verifyAndExtractFromProof:(Proof *)proof withMetadata:(ResponseMetadata *)metaData forQuorumEntry:(DSQuorumEntry *)quorumEntry quorumType:(DSLLMQType)quorumType error:(NSError **)error;
 
 @end
 

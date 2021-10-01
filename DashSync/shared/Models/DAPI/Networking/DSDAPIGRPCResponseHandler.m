@@ -360,6 +360,10 @@
 }
 
 - (NSDictionary *)verifyAndExtractFromProof:(Proof *)proof withMetadata:(ResponseMetadata *)metaData error:(NSError **)error {
+    return [DSDAPIGRPCResponseHandler verifyAndExtractFromProof:proof withMetadata:metaData onChain:self.chain error:error];
+}
+
++ (NSDictionary *)verifyAndExtractFromProof:(Proof *)proof withMetadata:(ResponseMetadata *)metaData onChain:(DSChain *)chain error:(NSError **)error {
     NSData *quorumHashData = proof.signatureLlmqHash;
     if (!quorumHashData) {
         *error = [NSError errorWithDomain:@"DashSync"
@@ -374,6 +378,22 @@
                                  userInfo:@{NSLocalizedDescriptionKey:
                                               DSLocalizedString(@"Platform returned an empty quorum hash", nil)}];
     }
+    DSQuorumEntry *quorumEntry = [chain.chainManager.masternodeManager quorumEntryForPlatformHavingQuorumHash:quorumHash forBlockHeight:metaData.coreChainLockedHeight];
+    if (quorumEntry && quorumEntry.verified) {
+        return [self verifyAndExtractFromProof:proof withMetadata:metaData forQuorumEntry:quorumEntry quorumType:chain.quorumTypeForPlatform error:error];
+    } else if (quorumEntry) {
+        *error = [NSError errorWithDomain:@"DashSync"
+                                     code:400
+                                 userInfo:@{NSLocalizedDescriptionKey:
+                                              DSLocalizedString(@"Quorum entry %@ found but is not yet verified", nil)}];
+        DSLog(@"quorum entry %@ found but is not yet verified", uint256_hex(quorumEntry.quorumHash));
+    } else {
+        DSLog(@"no quorum entry found for quorum hash %@", uint256_hex(quorumHash));
+    }
+    return nil;
+}
+
++ (NSDictionary *)verifyAndExtractFromProof:(Proof *)proof withMetadata:(ResponseMetadata *)metaData forQuorumEntry:(DSQuorumEntry *)quorumEntry quorumType:(DSLLMQType)quorumType error:(NSError **)error {
     NSData *signatureData = proof.signature;
     if (!signatureData) {
         *error = [NSError errorWithDomain:@"DashSync"
@@ -435,27 +455,16 @@
         return nil;
     }
 
-    DSQuorumEntry *quorumEntry = [self.chain.chainManager.masternodeManager quorumEntryForPlatformHavingQuorumHash:quorumHash forBlockHeight:metaData.coreChainLockedHeight];
-    if (quorumEntry && quorumEntry.verified) {
-        NSMutableData *stateData = [NSMutableData data];
-        [stateData appendInt64:metaData.height - 1];
-        [stateData appendUInt256:stateHash];
-        UInt256 stateMessageHash = [stateData SHA256];
-        //Todo get the stateId
-        BOOL signatureVerified = [self verifyStateSignature:signature forStateMessageHash:stateMessageHash height:metaData.height - 1 againstQuorum:quorumEntry];
-        if (!signatureVerified) {
-            DSLog(@"unable to verify platform signature");
-        } else {
-            DSLog(@"platform signature verified");
-        }
-    } else if (quorumEntry) {
-        *error = [NSError errorWithDomain:@"DashSync"
-                                     code:400
-                                 userInfo:@{NSLocalizedDescriptionKey:
-                                              DSLocalizedString(@"Quorum entry %@ found but is not yet verified", nil)}];
-        DSLog(@"quorum entry %@ found but is not yet verified", uint256_hex(quorumEntry.quorumHash));
+    NSMutableData *stateData = [NSMutableData data];
+    [stateData appendInt64:metaData.height - 1];
+    [stateData appendUInt256:stateHash];
+    UInt256 stateMessageHash = [stateData SHA256];
+    //Todo get the stateId
+    BOOL signatureVerified = [self verifyStateSignature:signature forStateMessageHash:stateMessageHash height:metaData.height - 1 againstQuorum:quorumEntry quorumType:quorumType];
+    if (!signatureVerified) {
+        DSLog(@"unable to verify platform signature");
     } else {
-        DSLog(@"no quorum entry found for quorum hash %@", uint256_hex(quorumHash));
+        DSLog(@"platform signature verified");
     }
 
     NSMutableDictionary *elementsDictionary = [NSMutableDictionary dictionary];
@@ -475,27 +484,27 @@
     return elementsDictionary;
 }
 
-- (UInt256)requestIdForHeight:(int64_t)height {
++ (UInt256)requestIdForHeight:(int64_t)height {
     NSMutableData *data = [NSMutableData data];
     [data appendBytes:@"dpsvote".UTF8String length:7];
     [data appendUInt64:height];
     return [data SHA256];
 }
 
-- (UInt256)signIDForQuorumEntry:(DSQuorumEntry *)quorumEntry forStateMessageHash:(UInt256)stateMessageHash height:(int64_t)height {
++ (UInt256)signIDForQuorumEntry:(DSQuorumEntry *)quorumEntry quorumType:(DSLLMQType)quorumType forStateMessageHash:(UInt256)stateMessageHash height:(int64_t)height {
     UInt256 requestId = [self requestIdForHeight:height];
     NSMutableData *data = [NSMutableData data];
-    [data appendUInt8:self.chain.quorumTypeForPlatform];
+    [data appendUInt8:quorumType];
     [data appendUInt256:quorumEntry.quorumHash];
-    [data appendUInt256:requestId];
-    [data appendUInt256:stateMessageHash];
-    return [data SHA256];
+    [data appendUInt256:uint256_reverse(requestId)];
+    [data appendUInt256:uint256_reverse(stateMessageHash)];
+    return [data SHA256_2];
 }
 
-- (BOOL)verifyStateSignature:(UInt768)signature forStateMessageHash:(UInt256)stateMessageHash height:(int64_t)height againstQuorum:(DSQuorumEntry *)quorumEntry {
++ (BOOL)verifyStateSignature:(UInt768)signature forStateMessageHash:(UInt256)stateMessageHash height:(int64_t)height againstQuorum:(DSQuorumEntry *)quorumEntry quorumType:(DSLLMQType)quorumType {
     UInt384 publicKey = quorumEntry.quorumPublicKey;
     DSBLSKey *blsKey = [DSBLSKey keyWithPublicKey:publicKey];
-    UInt256 signId = [self signIDForQuorumEntry:quorumEntry forStateMessageHash:stateMessageHash height:height];
+    UInt256 signId = [self signIDForQuorumEntry:quorumEntry quorumType:quorumType forStateMessageHash:stateMessageHash height:height];
     DSLogPrivate(@"verifying DAPI returned signature %@ with public key %@ against quorum %@", [NSData dataWithUInt768:signature].hexString, [NSData dataWithUInt384:publicKey].hexString, quorumEntry);
     return [blsKey verify:signId signature:signature];
 }

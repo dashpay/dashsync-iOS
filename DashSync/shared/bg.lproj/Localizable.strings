@@ -402,3 +402,6 @@
 
 /* No comment provided by engineer. */
 "Quorum entry %@ found but is not yet verified" = "Quorum entry %@ found but is not yet verified";
+
+/* No comment provided by engineer. */
+"Platform returned no proof when we requested it" = "Platform returned no proof when we requested it";
