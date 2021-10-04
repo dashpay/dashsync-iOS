@@ -19,12 +19,11 @@
 @implementation DSMasternodeListEntity
 
 - (DSMasternodeList *)masternodeListWithSimplifiedMasternodeEntryPool:(NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *)simplifiedMasternodeEntries
-                                                            whiteList:(NSArray *)whiteList
                                                       quorumEntryPool:(NSDictionary<NSNumber *, NSDictionary *> *)quorumEntries {
-    return [self masternodeListWithSimplifiedMasternodeEntryPool:simplifiedMasternodeEntries whiteList:whiteList quorumEntryPool:quorumEntries withBlockHeightLookup:nil];
+    return [self masternodeListWithSimplifiedMasternodeEntryPool:simplifiedMasternodeEntries quorumEntryPool:quorumEntries withBlockHeightLookup:nil];
 }
 
-- (DSMasternodeList *)masternodeListWithSimplifiedMasternodeEntryPool:(NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *)simplifiedMasternodeEntries whiteList:(NSArray *)whiteList quorumEntryPool:(NSDictionary<NSNumber *, NSDictionary *> *)quorumEntries withBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (DSMasternodeList *)masternodeListWithSimplifiedMasternodeEntryPool:(NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *)simplifiedMasternodeEntries quorumEntryPool:(NSDictionary<NSNumber *, NSDictionary *> *)quorumEntries withBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
     NSMutableArray *masternodeEntriesArray = [NSMutableArray array];
     for (DSSimplifiedMasternodeEntryEntity *masternodeEntity in self.masternodes) {
         DSSimplifiedMasternodeEntry *masternodeEntry = [simplifiedMasternodeEntries objectForKey:masternodeEntity.providerRegistrationTransactionHash];
@@ -41,7 +40,7 @@
         }
         [quorumEntriesArray addObject:quorumEntry];
     }
-    return [DSMasternodeList masternodeListWithSimplifiedMasternodeEntries:masternodeEntriesArray quorumEntries:quorumEntriesArray atBlockHash:self.block.blockHash.UInt256 atBlockHeight:self.block.height withMasternodeMerkleRootHash:self.masternodeListMerkleRoot.UInt256 withQuorumMerkleRootHash:self.quorumListMerkleRoot.UInt256 withWhiteList:whiteList onChain:self.block.chain.chain];
+    return [DSMasternodeList masternodeListWithSimplifiedMasternodeEntries:masternodeEntriesArray quorumEntries:quorumEntriesArray atBlockHash:self.block.blockHash.UInt256 atBlockHeight:self.block.height withMasternodeMerkleRootHash:self.masternodeListMerkleRoot.UInt256 withQuorumMerkleRootHash:self.quorumListMerkleRoot.UInt256 onChain:self.block.chain.chain];
 }
 
 + (void)deleteAllOnChainEntity:(DSChainEntity *)chainEntity {

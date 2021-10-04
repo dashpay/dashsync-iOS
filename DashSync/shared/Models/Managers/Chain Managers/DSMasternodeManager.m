@@ -310,7 +310,6 @@
             if ((i == masternodeListEntities.count - 1) || ((self.masternodeListsByBlockHash.count < 3) && (neededMasternodeListHeight >= masternodeListEntity.block.height))) { //either last one or there are less than 3 (we aim for 3)
                 //we only need a few in memory as new quorums will mostly be verified against recent masternode lists
                 DSMasternodeList *masternodeList = [masternodeListEntity masternodeListWithSimplifiedMasternodeEntryPool:[simplifiedMasternodeEntryPool copy]
-                                                                                                               whiteList:self.whiteList
                                                                                                          quorumEntryPool:quorumEntryPool
                                                                                                    withBlockHeightLookup:blockHeightLookup];
                 NSData *blockHashData = uint256_data(masternodeList.blockHash);
@@ -424,7 +423,6 @@
         NSMutableDictionary *quorumEntryPool = [NSMutableDictionary dictionary];
 
         masternodeList = [masternodeListEntity masternodeListWithSimplifiedMasternodeEntryPool:[simplifiedMasternodeEntryPool copy]
-                                                                                     whiteList:self.whiteList
                                                                                quorumEntryPool:quorumEntryPool
                                                                          withBlockHeightLookup:blockHeightLookup];
         if (masternodeList) {
@@ -784,7 +782,6 @@
         masternodeListLookup:^DSMasternodeList *(UInt256 blockHash) {
             return [self masternodeListForBlockHash:blockHash];
         }
-        whiteList:self.whiteList
         lastBlock:lastBlock
         useInsightAsBackup:useInsightAsBackup
         onChain:self.chain
@@ -797,7 +794,6 @@
 + (void)processMasternodeDiffMessage:(NSData *)message
                   baseMasternodeList:(DSMasternodeList *)baseMasternodeList
                 masternodeListLookup:(DSMasternodeList * (^)(UInt256 blockHash))masternodeListLookup
-                           whiteList:(NSArray *)whiteList
                            lastBlock:(DSBlock *)lastBlock
                   useInsightAsBackup:(BOOL)useInsightAsBackup
                              onChain:(DSChain *)chain
@@ -1007,7 +1003,7 @@
         }
     }
 
-    DSMasternodeList *masternodeList = [DSMasternodeList masternodeListAtBlockHash:blockHash atBlockHeight:blockHeightLookup(blockHash) fromBaseMasternodeList:baseMasternodeList addedMasternodes:addedMasternodes removedMasternodeHashes:deletedMasternodeHashes modifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums removedQuorumHashesByType:deletedQuorums withWhiteList:whiteList onChain:chain];
+    DSMasternodeList *masternodeList = [DSMasternodeList masternodeListAtBlockHash:blockHash atBlockHeight:blockHeightLookup(blockHash) fromBaseMasternodeList:baseMasternodeList addedMasternodes:addedMasternodes removedMasternodeHashes:deletedMasternodeHashes modifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums removedQuorumHashesByType:deletedQuorums onChain:chain];
 
     BOOL rootMNListValid = uint256_eq(coinbaseTransaction.merkleRootMNList, [masternodeList masternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]);
 

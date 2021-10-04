@@ -17,12 +17,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSMasternodeListEntity : NSManagedObject
 
 - (DSMasternodeList *)masternodeListWithSimplifiedMasternodeEntryPool:(NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *)simplifiedMasternodeEntries
-                                                            whiteList:(NSArray *)whiteList
-
                                                       quorumEntryPool:(NSDictionary<NSNumber *, NSDictionary *> *)quorumEntries;
 
 - (DSMasternodeList *)masternodeListWithSimplifiedMasternodeEntryPool:(NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *)simplifiedMasternodeEntries
-                                                            whiteList:(NSArray *)whiteList
                                                       quorumEntryPool:(NSDictionary<NSNumber *, NSDictionary *> *)quorumEntries
                                                 withBlockHeightLookup:(uint32_t (^_Nullable)(UInt256 blockHash))blockHeightLookup;
 

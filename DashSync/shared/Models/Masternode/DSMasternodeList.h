@@ -43,7 +43,6 @@ NS_ASSUME_NONNULL_BEGIN
                                                 atBlockHeight:(uint32_t)blockHeight
                                  withMasternodeMerkleRootHash:(UInt256)masternodeMerkleRootHash
                                      withQuorumMerkleRootHash:(UInt256)quorumMerkleRootHash
-                                                withWhiteList:(NSArray *)whiteList
                                                       onChain:(DSChain *)chain;
 + (instancetype)masternodeListAtBlockHash:(UInt256)blockHash
                             atBlockHeight:(uint32_t)blockHeight
@@ -53,7 +52,6 @@ NS_ASSUME_NONNULL_BEGIN
                       modifiedMasternodes:(NSDictionary *)modifiedMasternodes
                              addedQuorums:(NSDictionary *)addedQuorums
                 removedQuorumHashesByType:(NSDictionary *)removedQuorumHashesByType
-                            withWhiteList:(NSArray *)whiteList
                                   onChain:(DSChain *)chain;
 - (NSDictionary<NSData *, id> *)scoreDictionaryForQuorumModifier:(UInt256)quorumModifier atBlockHeight:(uint32_t)blockHeight;
 - (NSArray *)scoresForQuorumModifier:(UInt256)quorumModifier atBlockHeight:(uint32_t)blockHeight;
@@ -80,7 +78,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSDictionary<NSData *, NSData *> *)hashDictionaryForMerkleRootWithBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup;
 - (NSDictionary *)toDictionaryUsingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup;
 - (DSSimplifiedMasternodeEntry *)masternodeForRegistrationHash:(UInt256)registrationHash;
-//- (void)applyWhiteList:(NSArray *)whiteList;
 @end
 
 NS_ASSUME_NONNULL_END
