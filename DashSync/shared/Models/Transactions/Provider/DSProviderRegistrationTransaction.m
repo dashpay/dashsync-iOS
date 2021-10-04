@@ -53,10 +53,10 @@
     off += 36;
 
     if (length - off < 16) return nil;
-    UInt128 ipAddress = [message UInt128AtOffset:off];
+    self.ipAddress = [message UInt128AtOffset:off];
     off += 16;
     if (length - off < 2) return nil;
-    self.masternodeAddress = (DSSocketAddress){ipAddress, CFSwapInt16HostToBig([message UInt16AtOffset:off])};
+    self.port = CFSwapInt16HostToBig([message UInt16AtOffset:off]);
     off += 2;
 
     if (length - off < 20) return nil;
@@ -111,7 +111,8 @@
     self.providerRegistrationTransactionVersion = version;
     self.providerType = providerType;
     self.providerMode = providerMode;
-    self.masternodeAddress = masternodeAddress;
+    self.ipAddress = masternodeAddress.ipAddress;
+    self.port = masternodeAddress.port;
     self.collateralOutpoint = collateralOutpoint;
     self.ownerKeyHash = ownerKeyHash;
     self.operatorKey = operatorKey;
@@ -139,7 +140,8 @@
     self.providerType = providerType;
     self.providerMode = providerMode;
     self.collateralOutpoint = collateralOutpoint;
-    self.masternodeAddress = masternodeAddress;
+    self.ipAddress = masternodeAddress.ipAddress;
+    self.port = masternodeAddress.port;
     self.ownerKeyHash = ownerKeyHash;
     self.operatorKey = operatorKey;
     self.votingKeyHash = votingKeyHash;
@@ -174,16 +176,16 @@
 - (NSData *)basePayloadData {
     //    DSUTXO reversedCollateral = (DSUTXO) { .hash = uint256_reverse(self.collateralOutpoint.hash), .n = self.collateralOutpoint.n};
     NSMutableData *data = [NSMutableData data];
-    [data appendUInt16:self.providerRegistrationTransactionVersion];       //16
-    [data appendUInt16:self.providerType];                                 //32
-    [data appendUInt16:self.providerMode];                                 //48
-    [data appendUTXO:self.collateralOutpoint];                             //84
-    [data appendUInt128:self.masternodeAddress.ipAddress];                 //212
-    [data appendUInt16:CFSwapInt16BigToHost(self.masternodeAddress.port)]; //228
-    [data appendUInt160:self.ownerKeyHash];                                //388
-    [data appendUInt384:self.operatorKey];                                 //772
-    [data appendUInt160:self.votingKeyHash];                               //788
-    [data appendUInt16:self.operatorReward];                               //804
+    [data appendUInt16:self.providerRegistrationTransactionVersion]; //16
+    [data appendUInt16:self.providerType];                           //32
+    [data appendUInt16:self.providerMode];                           //48
+    [data appendUTXO:self.collateralOutpoint];                       //84
+    [data appendUInt128:self.ipAddress];                             //212
+    [data appendUInt16:CFSwapInt16BigToHost(self.port)];             //228
+    [data appendUInt160:self.ownerKeyHash];                          //388
+    [data appendUInt384:self.operatorKey];                           //772
+    [data appendUInt160:self.votingKeyHash];                         //788
+    [data appendUInt16:self.operatorReward];                         //804
     [data appendVarInt:self.scriptPayout.length];
     [data appendData:self.scriptPayout];
     [data appendUInt256:self.inputsHash];
@@ -244,8 +246,8 @@
 
 - (NSString *)location {
     char s[INET6_ADDRSTRLEN];
-    NSString *ipAddressString = @(inet_ntop(AF_INET, &self.masternodeAddress.ipAddress.u32[3], s, sizeof(s)));
-    return [NSString stringWithFormat:@"%@:%hu", ipAddressString, self.masternodeAddress.port];
+    NSString *ipAddressString = @(inet_ntop(AF_INET, &self.ipAddress.u32[3], s, sizeof(s)));
+    return [NSString stringWithFormat:@"%@:%hu", ipAddressString, self.port];
 }
 
 - (NSString *)coreRegistrationCommand {

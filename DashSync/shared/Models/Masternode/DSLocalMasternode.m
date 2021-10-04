@@ -129,7 +129,7 @@
     self.operatorWalletIndex = operatorAddressIndex;
     self.votingWalletIndex = votingAddressIndex;
     self.holdingWalletIndex = holdingAddressIndex;
-    self.address = providerRegistrationTransaction.masternodeAddress;
+    self.address = (DSSocketAddress){providerRegistrationTransaction.ipAddress, providerRegistrationTransaction.port};
     self.providerRegistrationTransaction = providerRegistrationTransaction;
     self.providerUpdateRegistrarTransactions = [NSMutableArray array];
     self.providerUpdateServiceTransactions = [NSMutableArray array];
@@ -176,7 +176,7 @@
         return [self.providerUpdateServiceTransactions lastObject].masternodeAddress;
     }
     if (self.providerRegistrationTransaction) {
-        return self.providerRegistrationTransaction.masternodeAddress;
+        return (DSSocketAddress){self.providerRegistrationTransaction.ipAddress, self.providerRegistrationTransaction.port};
     }
     return _address;
 }

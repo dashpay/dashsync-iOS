@@ -19,7 +19,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint16_t providerType;
 @property (nonatomic, assign) uint16_t providerMode;
 @property (nonatomic, assign) DSUTXO collateralOutpoint;
-@property (nonatomic, assign) DSSocketAddress masternodeAddress;
+@property (nonatomic, assign) UInt128 ipAddress; //v6, but only v4 supported
+@property (nonatomic, assign) uint16_t port;
 @property (nonatomic, assign) UInt160 ownerKeyHash;
 @property (nullable, nonatomic, readonly) NSString *ownerAddress;
 @property (nonatomic, assign) UInt384 operatorKey;

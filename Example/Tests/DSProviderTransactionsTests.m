@@ -165,7 +165,7 @@
 
     XCTAssertEqualObjects(providerRegistrationTransaction.payloadCollateralString, providerRegistrationTransactionFromMessage.payloadCollateralString, @"Provider payload collateral strings don't match up");
 
-    XCTAssertEqual(providerRegistrationTransaction.masternodeAddress.port, providerRegistrationTransactionFromMessage.masternodeAddress.port, @"Provider transaction port doesn't match up");
+    XCTAssertEqual(providerRegistrationTransaction.port, providerRegistrationTransactionFromMessage.port, @"Provider transaction port doesn't match up");
 
     XCTAssertEqualObjects(providerRegistrationTransaction.inputs, providerRegistrationTransactionFromMessage.inputs, @"Provider transaction inputs are having an issue");
 
