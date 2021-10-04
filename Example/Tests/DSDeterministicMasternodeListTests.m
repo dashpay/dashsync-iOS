@@ -572,7 +572,6 @@
         masternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
             return nil;
         }
-        whiteList:@[]
         lastBlock:lastBlock
         useInsightAsBackup:NO
         onChain:chain
@@ -659,7 +658,6 @@
                     return [dictionary objectForKey:uint256_data(blockHash)]; //no known previous lists
                 }
             }
-            whiteList:@[]
             lastBlock:nil
             useInsightAsBackup:NO
             onChain:chain
@@ -800,7 +798,6 @@
         masternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
             return nil; //no known previous lists
         }
-        whiteList:@[]
         lastBlock:nil
         useInsightAsBackup:NO
         onChain:chain
@@ -866,7 +863,6 @@
         masternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
             return nil; //no known previous lists
         }
-        whiteList:@[]
         lastBlock:nil
         useInsightAsBackup:NO
         onChain:chain
@@ -951,7 +947,6 @@
         masternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
             return nil; //no known previous lists
         }
-        whiteList:@[]
         lastBlock:nil
         useInsightAsBackup:NO
         onChain:chain
@@ -1004,7 +999,6 @@
                                                      masternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
                                                          return nil; //no known previous lists
                                                      }
-                                                     whiteList:@[]
                                                      lastBlock:nil
                                                      useInsightAsBackup:NO
                                                      onChain:chain
@@ -2410,7 +2404,6 @@
                                        }
                                        return nil; //no known previous lists
                                    }
-                                   whiteList:@[]
                                    lastBlock:nil
                                    useInsightAsBackup:NO
                                    onChain:chain
@@ -2470,7 +2463,6 @@
                                                                                 }
                                                                                 return nil;
                                                                             }
-                                                                            whiteList:@[]
                                                                             lastBlock:nil
                                                                             useInsightAsBackup:NO
                                                                             onChain:chain
@@ -2586,7 +2578,6 @@
         masternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
             return nil; //no known previous lists
         }
-        whiteList:@[]
         lastBlock:nil
         useInsightAsBackup:NO
         onChain:chain
@@ -2699,7 +2690,6 @@
                     masternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
                         return nil; //no known previous lists
                     }
-                    whiteList:@[]
                     lastBlock:nil
                     useInsightAsBackup:NO
                     onChain:chain
@@ -2817,7 +2807,6 @@
         masternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
             return nil; //no known previous lists
         }
-        whiteList:@[]
         lastBlock:nil
         useInsightAsBackup:NO
         onChain:chain
@@ -2869,7 +2858,6 @@
                     masternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
                         return nil; //no known previous lists
                     }
-                    whiteList:@[]
                     lastBlock:nil
                     useInsightAsBackup:NO
                     onChain:chain
@@ -2934,7 +2922,6 @@
         masternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
             return nil; //no known previous lists
         }
-        whiteList:@[]
         lastBlock:nil
         useInsightAsBackup:NO
         onChain:chain
