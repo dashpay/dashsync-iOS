@@ -396,7 +396,9 @@ NSString *dateFormat(NSString *_template) {
         cell.directionLabel.highlightedTextColor = cell.directionLabel.textColor;
     }
 
-    [self setBackgroundForCell:cell tableView:self.tableView indexPath:indexPath];
+    [self setBackgroundForCell:cell
+                     tableView:self.tableView
+                     indexPath:indexPath];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {

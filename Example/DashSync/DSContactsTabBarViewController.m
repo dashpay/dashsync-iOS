@@ -71,7 +71,8 @@ NS_ASSUME_NONNULL_BEGIN
                                                                                                              return;
                                                                                                          }
 
-                                                                                                         [strongSelf showAlertTitle:errors.firstObject.localizedDescription result:success];
+                                                                                                         [strongSelf showAlertTitle:errors.firstObject.localizedDescription
+                                                                                                                             result:success];
                                                                                                      }];
                                             }]];
     [self presentViewController:alert animated:YES completion:nil];

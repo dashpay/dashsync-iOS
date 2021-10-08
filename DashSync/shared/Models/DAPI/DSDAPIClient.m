@@ -191,7 +191,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
         dispatch_semaphore_t dispatchSemaphore = dispatch_semaphore_create(32);
 
         for (DSSimplifiedMasternodeEntry *masternode in masternodes) {
-            if (uint128_is_zero(masternode.address.ipAddress) ||
+            if (uint128_is_zero(masternode.socketAddress.ipAddress) ||
                 !masternode.isValid) continue;
             dispatch_semaphore_wait(dispatchSemaphore, DISPATCH_TIME_FOREVER);
             dispatch_group_enter(dispatch_group);

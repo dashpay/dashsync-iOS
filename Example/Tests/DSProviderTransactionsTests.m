@@ -153,9 +153,9 @@
 
     NSMutableData *scriptPayout = [NSMutableData withScriptPubKeyForAddress:payoutAddress forChain:wallet.chain];
     NSMutableData *inputScript = [NSMutableData withScriptPubKeyForAddress:inputAddress0 forChain:chain];
-    DSSocketAddress masternodeAddress = (DSSocketAddress){[@"1.2.5.6" ipV4Address], 19999};
+    DSSocketAddress masternodeSocketAddress = (DSSocketAddress){[@"1.2.5.6" ipV4Address], 19999};
 
-    DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:@[inputTransactionHashValue] inputIndexes:@[@1] inputScripts:@[inputScript] inputSequences:@[@(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0] outputAmounts:@[@40777037710] providerRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:reversedCollateral masternodeAddress:masternodeAddress ownerKeyHash:ownerKey.publicKeyData.hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:chain];
+    DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:@[inputTransactionHashValue] inputIndexes:@[@1] inputScripts:@[inputScript] inputSequences:@[@(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0] outputAmounts:@[@40777037710] providerRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:reversedCollateral masternodeSocketAddress:masternodeSocketAddress ownerKeyHash:ownerKey.publicKeyData.hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:chain];
 
     providerRegistrationTransaction.payloadSignature = signatureData;
 
@@ -251,7 +251,7 @@
     NSArray *inputIndexes = @[@(input0.n), @(input1.n), @(input2.n)];
     NSArray *inputScripts = @[[NSData scriptPubKeyForAddress:inputAddress0 forChain:chain], [NSData scriptPubKeyForAddress:inputAddress1 forChain:chain], [NSData scriptPubKeyForAddress:inputAddress2 forChain:chain]];
 
-    DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts inputSequences:@[@(TXIN_SEQUENCE), @(TXIN_SEQUENCE), @(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0, outputAddress1] outputAmounts:@[@100000000000, @10110995523] providerRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:DSUTXO_ZERO masternodeAddress:address ownerKeyHash:ownerKey.publicKeyData.hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:wallet.chain];
+    DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts inputSequences:@[@(TXIN_SEQUENCE), @(TXIN_SEQUENCE), @(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0, outputAddress1] outputAmounts:@[@100000000000, @10110995523] providerRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:DSUTXO_ZERO masternodeSocketAddress:address ownerKeyHash:ownerKey.publicKeyData.hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:wallet.chain];
 
 
     [providerRegistrationTransaction updateInputsHash];
@@ -327,7 +327,7 @@
     NSArray *inputIndexes = @[@(input0.n)];
     NSArray *inputScripts = @[[NSData scriptPubKeyForAddress:inputAddress0 forChain:chain]];
 
-    DSProviderUpdateServiceTransaction *providerUpdateServiceTransaction = [[DSProviderUpdateServiceTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts inputSequences:@[@(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0] outputAmounts:@[@(1124999808)] providerUpdateServiceTransactionVersion:1 providerTransactionHash:providerTransactionHash masternodeAddress:address scriptPayout:[NSData data] onChain:chain];
+    DSProviderUpdateServiceTransaction *providerUpdateServiceTransaction = [[DSProviderUpdateServiceTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts inputSequences:@[@(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0] outputAmounts:@[@(1124999808)] providerUpdateServiceTransactionVersion:1 providerTransactionHash:providerTransactionHash masternodeSocketAddress:address scriptPayout:[NSData data] onChain:chain];
 
     [providerUpdateServiceTransaction updateInputsHash];
 

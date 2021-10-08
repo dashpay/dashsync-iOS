@@ -51,16 +51,16 @@ static NSString *DashCurrencySymbolAssetName = nil;
 #endif
     DashCurrencySymbolAssetName = imageName;
 }
-+ (NSString *)ipStringWithAddress:(DSSocketAddress)address {
++ (NSString *)ipStringWithSocketAddress:(DSSocketAddress)socketAddress {
     char s[INET6_ADDRSTRLEN];
-    if (address.ipAddress.u64[0] == 0 && address.ipAddress.u32[2] == CFSwapInt32HostToBig(0xffff)) {
-        return @(inet_ntop(AF_INET, &address.ipAddress.u32[3], s, sizeof(s)));
+    if (socketAddress.ipAddress.u64[0] == 0 && socketAddress.ipAddress.u32[2] == CFSwapInt32HostToBig(0xffff)) {
+        return @(inet_ntop(AF_INET, &socketAddress.ipAddress.u32[3], s, sizeof(s)));
     } else {
-        return @(inet_ntop(AF_INET6, &address.ipAddress, s, sizeof(s)));
+        return @(inet_ntop(AF_INET6, &socketAddress.ipAddress, s, sizeof(s)));
     }
 }
-+ (NSString *)stringWithAddress:(DSSocketAddress)address {
-    return [NSString stringWithFormat:@"%@:%d", [NSString ipStringWithAddress:address], address.port];
++ (NSString *)stringWithSocketAddress:(DSSocketAddress)socketAddress {
+    return [NSString stringWithFormat:@"%@:%d", [NSString ipStringWithSocketAddress:socketAddress], socketAddress.port];
 }
 
 - (UInt128)ipV4Address {

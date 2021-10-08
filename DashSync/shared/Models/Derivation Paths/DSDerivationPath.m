@@ -729,7 +729,8 @@
         CKDpriv(&secret, &chain, derivation);
     }
 
-    [mpk appendBytes:&chain length:sizeof(chain)];
+    [mpk appendBytes:&chain
+              length:sizeof(chain)];
     [mpk appendData:[DSECDSAKey keyWithSecret:secret compressed:YES].publicKeyData];
 
     return [DSKey keyWithExtendedPublicKeyData:mpk forKeyType:DSKeyType_ECDSA];

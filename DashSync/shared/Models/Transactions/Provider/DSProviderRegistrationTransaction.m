@@ -101,7 +101,7 @@
 }
 
 
-- (instancetype)initWithProviderRegistrationTransactionVersion:(uint16_t)version type:(uint16_t)providerType mode:(uint16_t)providerMode collateralOutpoint:(DSUTXO)collateralOutpoint masternodeAddress:(DSSocketAddress)masternodeAddress ownerKeyHash:(UInt160)ownerKeyHash operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash operatorReward:(uint16_t)operatorReward scriptPayout:(NSData *)scriptPayout onChain:(DSChain *)chain {
+- (instancetype)initWithProviderRegistrationTransactionVersion:(uint16_t)version type:(uint16_t)providerType mode:(uint16_t)providerMode collateralOutpoint:(DSUTXO)collateralOutpoint masternodeSocketAddress:(DSSocketAddress)masternodeSocketAddress ownerKeyHash:(UInt160)ownerKeyHash operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash operatorReward:(uint16_t)operatorReward scriptPayout:(NSData *)scriptPayout onChain:(DSChain *)chain {
     NSParameterAssert(scriptPayout);
     NSParameterAssert(chain);
 
@@ -111,8 +111,8 @@
     self.providerRegistrationTransactionVersion = version;
     self.providerType = providerType;
     self.providerMode = providerMode;
-    self.ipAddress = masternodeAddress.ipAddress;
-    self.port = masternodeAddress.port;
+    self.ipAddress = masternodeSocketAddress.ipAddress;
+    self.port = masternodeSocketAddress.port;
     self.collateralOutpoint = collateralOutpoint;
     self.ownerKeyHash = ownerKeyHash;
     self.operatorKey = operatorKey;
@@ -123,7 +123,7 @@
     return self;
 }
 
-- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray *)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts providerRegistrationTransactionVersion:(uint16_t)version type:(uint16_t)providerType mode:(uint16_t)providerMode collateralOutpoint:(DSUTXO)collateralOutpoint masternodeAddress:(DSSocketAddress)masternodeAddress ownerKeyHash:(UInt160)ownerKeyHash operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash operatorReward:(uint16_t)operatorReward scriptPayout:(NSData *)scriptPayout onChain:(DSChain *_Nonnull)chain {
+- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray *)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts providerRegistrationTransactionVersion:(uint16_t)version type:(uint16_t)providerType mode:(uint16_t)providerMode collateralOutpoint:(DSUTXO)collateralOutpoint masternodeSocketAddress:(DSSocketAddress)masternodeSocketAddress ownerKeyHash:(UInt160)ownerKeyHash operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash operatorReward:(uint16_t)operatorReward scriptPayout:(NSData *)scriptPayout onChain:(DSChain *_Nonnull)chain {
     NSParameterAssert(hashes);
     NSParameterAssert(indexes);
     NSParameterAssert(scripts);
@@ -140,8 +140,8 @@
     self.providerType = providerType;
     self.providerMode = providerMode;
     self.collateralOutpoint = collateralOutpoint;
-    self.ipAddress = masternodeAddress.ipAddress;
-    self.port = masternodeAddress.port;
+    self.ipAddress = masternodeSocketAddress.ipAddress;
+    self.port = masternodeSocketAddress.port;
     self.ownerKeyHash = ownerKeyHash;
     self.operatorKey = operatorKey;
     self.votingKeyHash = votingKeyHash;

@@ -179,7 +179,9 @@ static NSString *const TEXTVIEW_CELL_ID = @"TextViewFormTableViewCell";
                                                               }
                                                           }]];
     }
-    [self presentViewController:alertController animated:YES completion:nil];
+    [self presentViewController:alertController
+                       animated:YES
+                     completion:nil];
 }
 
 @end

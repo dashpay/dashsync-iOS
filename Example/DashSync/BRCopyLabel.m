@@ -104,7 +104,8 @@
         self.highlight.alpha = 0.0;
     }
 
-    [self.superview insertSubview:self.highlight belowSubview:self];
+    [self.superview insertSubview:self.highlight
+                     belowSubview:self];
     [UIView animateWithDuration:0.2
                      animations:^{
                          self.highlight.alpha = 1.0;

@@ -32,7 +32,7 @@
 @property (nonatomic, assign) UInt256 confirmedHash;
 @property (nonatomic, assign) UInt256 confirmedHashHashedWithProviderRegistrationTransactionHash;
 @property (nonatomic, assign) UInt256 simplifiedMasternodeEntryHash;
-@property (nonatomic, assign) DSSocketAddress address;
+@property (nonatomic, assign) DSSocketAddress socketAddress;
 @property (nonatomic, assign) UInt384 operatorPublicKey; //this is using BLS
 @property (nonatomic, assign) UInt160 keyIDVoting;
 @property (nonatomic, assign) BOOL isValid;
@@ -58,8 +58,8 @@
     NSMutableData *hashImportantData = [NSMutableData data];
     [hashImportantData appendUInt256:self.providerRegistrationTransactionHash];
     [hashImportantData appendUInt256:self.confirmedHash];
-    [hashImportantData appendUInt128:self.address.ipAddress];
-    [hashImportantData appendUInt16:CFSwapInt16HostToBig(self.address.port)];
+    [hashImportantData appendUInt128:self.socketAddress.ipAddress];
+    [hashImportantData appendUInt16:CFSwapInt16HostToBig(self.socketAddress.port)];
     [hashImportantData appendUInt384:self.operatorPublicKey];
     [hashImportantData appendUInt160:self.keyIDVoting];
     [hashImportantData appendUInt8:self.isValid];
@@ -74,11 +74,11 @@
     return [[self alloc] initWithMessage:data atBlockHeight:blockHeight onChain:chain];
 }
 
-+ (instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash confirmedHash:(UInt256)confirmedHash address:(DSSocketAddress)address operatorBLSPublicKey:(UInt384)operatorBLSPublicKey previousOperatorBLSPublicKeys:(NSDictionary<DSBlock *, NSData *> *)previousOperatorBLSPublicKeys keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid previousValidity:(NSDictionary<DSBlock *, NSData *> *)previousValidity knownConfirmedAtHeight:(uint32_t)knownConfirmedAtHeight updateHeight:(uint32_t)updateHeight simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash previousSimplifiedMasternodeEntryHashes:(NSDictionary<DSBlock *, NSData *> *)previousSimplifiedMasternodeEntryHashes onChain:(DSChain *)chain {
++ (instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash confirmedHash:(UInt256)confirmedHash socketAddress:(DSSocketAddress)socketAddress operatorBLSPublicKey:(UInt384)operatorBLSPublicKey previousOperatorBLSPublicKeys:(NSDictionary<DSBlock *, NSData *> *)previousOperatorBLSPublicKeys keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid previousValidity:(NSDictionary<DSBlock *, NSData *> *)previousValidity knownConfirmedAtHeight:(uint32_t)knownConfirmedAtHeight updateHeight:(uint32_t)updateHeight simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash previousSimplifiedMasternodeEntryHashes:(NSDictionary<DSBlock *, NSData *> *)previousSimplifiedMasternodeEntryHashes onChain:(DSChain *)chain {
     DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [[DSSimplifiedMasternodeEntry alloc] init];
     simplifiedMasternodeEntry.providerRegistrationTransactionHash = providerRegistrationTransactionHash;
     simplifiedMasternodeEntry.confirmedHash = confirmedHash;
-    simplifiedMasternodeEntry.address = address;
+    simplifiedMasternodeEntry.socketAddress = socketAddress;
     simplifiedMasternodeEntry.keyIDVoting = keyIDVoting;
     simplifiedMasternodeEntry.operatorPublicKey = operatorBLSPublicKey;
     simplifiedMasternodeEntry.isValid = isValid;
@@ -89,7 +89,7 @@
     simplifiedMasternodeEntry.mPreviousOperatorPublicKeys = previousOperatorBLSPublicKeys ? [previousOperatorBLSPublicKeys mutableCopy] : [NSMutableDictionary dictionary];
     simplifiedMasternodeEntry.mPreviousSimplifiedMasternodeEntryHashes = previousSimplifiedMasternodeEntryHashes ? [previousSimplifiedMasternodeEntryHashes mutableCopy] : [NSMutableDictionary dictionary];
     simplifiedMasternodeEntry.mPreviousValidity = previousValidity ? [previousValidity mutableCopy] : [NSMutableDictionary dictionary];
-    NSLog(@"simplifiedMasternodeEntryWithProviderRegistrationTransactionHash: %@", [NSString stringWithAddress:address]);
+    NSLog(@"simplifiedMasternodeEntryWithProviderRegistrationTransactionHash: %@", [NSString stringWithSocketAddress:socketAddress]);
     return simplifiedMasternodeEntry;
 }
 
@@ -114,7 +114,7 @@
     offset += 16;
 
     if (length - offset < 2) return nil;
-    self.address = (DSSocketAddress){ipAddress, CFSwapInt16HostToBig([message UInt16AtOffset:offset])};
+    self.socketAddress = (DSSocketAddress){ipAddress, CFSwapInt16HostToBig([message UInt16AtOffset:offset])};
     offset += 2;
 
     if (length - offset < 48) return nil;
@@ -423,19 +423,19 @@
 
 - (NSString *)host {
     if (_host) return _host;
-    _host = [NSString stringWithFormat:@"%@:%d", [self ipAddressString], self.address.port];
+    _host = [NSString stringWithFormat:@"%@:%d", [self ipAddressString], self.socketAddress.port];
     return _host;
 }
 
 - (NSString *)ipAddressString {
     if (_ipAddressString) return _ipAddressString;
-    _ipAddressString = [NSString stringWithAddress:_address];
+    _ipAddressString = [NSString stringWithSocketAddress:_socketAddress];
     return _ipAddressString;
 }
 
 - (NSString *)portString {
     if (_portString) return _portString;
-    _portString = [NSString stringWithFormat:@"%d", self.address.port];
+    _portString = [NSString stringWithFormat:@"%d", self.socketAddress.port];
     return _portString;
 }
 
@@ -497,8 +497,8 @@
 - (NSDictionary *)toDictionaryAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
 
-    dictionary[@"address"] = [uint128_data(_address.ipAddress) base64String];
-    dictionary[@"port"] = @(_address.port);
+    dictionary[@"address"] = [uint128_data(_socketAddress.ipAddress) base64String];
+    dictionary[@"port"] = @(_socketAddress.port);
 
     UInt384 ourOperatorPublicKeyAtBlockHash = [self operatorPublicKeyAtBlockHash:blockHash usingBlockHeightLookup:blockHeightLookup];
     dictionary[@"operatorPublicKey"] = [uint384_data(ourOperatorPublicKeyAtBlockHash) base64String];
@@ -540,12 +540,12 @@
     if (!ours) ours = @"ours";
     if (!theirs) theirs = @"theirs";
 
-    if (!uint128_eq(_address.ipAddress, other.address.ipAddress)) {
-        differences[@"address"] = @{ours: uint128_data(_address.ipAddress), theirs: uint128_data(other.address.ipAddress)};
+    if (!uint128_eq(_socketAddress.ipAddress, other.socketAddress.ipAddress)) {
+        differences[@"address"] = @{ours: uint128_data(_socketAddress.ipAddress), theirs: uint128_data(other.socketAddress.ipAddress)};
     }
 
-    if (_address.port != other.address.port) {
-        differences[@"port"] = @{ours: @(_address.port), theirs: @(other.address.port)};
+    if (_socketAddress.port != other.socketAddress.port) {
+        differences[@"port"] = @{ours: @(_socketAddress.port), theirs: @(other.socketAddress.port)};
     }
 
     UInt384 ourOperatorPublicKeyAtBlockHash = [self operatorPublicKeyAtBlockHash:ourBlockHash usingBlockHeightLookup:blockHeightLookup];

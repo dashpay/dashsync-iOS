@@ -210,7 +210,7 @@
 
 
 - (NSString *)downloadPeerName {
-    return [self.downloadPeer.host stringByAppendingFormat:@":%d", self.downloadPeer.address.port];
+    return [self.downloadPeer.host stringByAppendingFormat:@":%d", self.downloadPeer.socketAddress.port];
 }
 
 - (NSArray *)dnsSeeds {
@@ -315,10 +315,10 @@
                             uint16_t port = CFSwapInt16BigToHost(((struct sockaddr_in *)p->ai_addr)->sin_port);
                             NSTimeInterval age = 3 * DAY_TIME_INTERVAL + arc4random_uniform(4 * DAY_TIME_INTERVAL); // add between 3 and 7 days
 
-                            [peers[i] addObject:[[DSPeer alloc] initWithAddress:(DSSocketAddress){addr, port}
-                                                                        onChain:self.chain
-                                                                      timestamp:(i > 0 ? now - age : now)
-                                                                       services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM]];
+                            [peers[i] addObject:[[DSPeer alloc] initWithSocketAddress:(DSSocketAddress){addr, port}
+                                                                              onChain:self.chain
+                                                                            timestamp:(i > 0 ? now - age : now)
+                                                                             services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM]];
                         }
 
                         freeaddrinfo(servinfo);
@@ -348,10 +348,10 @@
                     } else {
                         DSLog(@"invalid address");
                     }
-                    [_peers addObject:[[DSPeer alloc] initWithAddress:(DSSocketAddress){ipAddress, port ? [port intValue] : self.chain.standardPort}
-                                                              onChain:self.chain
-                                                            timestamp:now - (WEEK_TIME_INTERVAL + arc4random_uniform(WEEK_TIME_INTERVAL))
-                                                             services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM]];
+                    [_peers addObject:[[DSPeer alloc] initWithSocketAddress:(DSSocketAddress){ipAddress, port ? [port intValue] : self.chain.standardPort}
+                                                                    onChain:self.chain
+                                                                  timestamp:now - (WEEK_TIME_INTERVAL + arc4random_uniform(WEEK_TIME_INTERVAL))
+                                                                   services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM]];
                 } else {
                     UInt128 addr = {.u32 = {0, 0, CFSwapInt32HostToBig(0xffff), 0}};
 
@@ -361,10 +361,10 @@
                     for (NSNumber *address in [NSArray arrayWithContentsOfFile:path]) {
                         // give hard coded peers a timestamp between 7 and 14 days ago
                         addr.u32[3] = CFSwapInt32HostToBig(address.unsignedIntValue);
-                        [_peers addObject:[[DSPeer alloc] initWithAddress:(DSSocketAddress){addr, self.chain.standardPort}
-                                                                  onChain:self.chain
-                                                                timestamp:now - (WEEK_TIME_INTERVAL + arc4random_uniform(WEEK_TIME_INTERVAL))
-                                                                 services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM]];
+                        [_peers addObject:[[DSPeer alloc] initWithSocketAddress:(DSSocketAddress){addr, self.chain.standardPort}
+                                                                        onChain:self.chain
+                                                                      timestamp:now - (WEEK_TIME_INTERVAL + arc4random_uniform(WEEK_TIME_INTERVAL))
+                                                                       services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM]];
                     }
                 }
             }
@@ -431,7 +431,7 @@
         }];
     }
     //    for (DSPeer * peer in _peers) {
-    //        DSLog(@"%@:%d lastRequestedMasternodeList(%f) lastRequestedGovernanceSync(%f)",peer.host,peer.address.port,peer.lastRequestedMasternodeList, peer.lastRequestedGovernanceSync);
+    //        DSLog(@"%@:%d lastRequestedMasternodeList(%f) lastRequestedGovernanceSync(%f)",peer.host,peer.socketAddress.port,peer.lastRequestedMasternodeList, peer.lastRequestedGovernanceSync);
     //    }
     DSLog(@"peers sorted");
 }
@@ -442,8 +442,8 @@
     NSMutableSet *addrs = [NSMutableSet set];
 
     for (DSPeer *p in peers) {
-        if (p.address.ipAddress.u64[0] != 0 || p.address.ipAddress.u32[2] != CFSwapInt32HostToBig(0xffff)) continue; // skip IPv6 for now
-        [addrs addObject:@(CFSwapInt32BigToHost(p.address.ipAddress.u32[3]))];
+        if (p.socketAddress.ipAddress.u64[0] != 0 || p.socketAddress.ipAddress.u32[2] != CFSwapInt32HostToBig(0xffff)) continue; // skip IPv6 for now
+        [addrs addObject:@(CFSwapInt32BigToHost(p.socketAddress.ipAddress.u32[3]))];
     }
 
     [self.managedObjectContext performBlock:^{
@@ -477,7 +477,7 @@
 
 - (DSPeer *)peerForLocation:(UInt128)IPAddress port:(uint16_t)port {
     for (DSPeer *peer in self.peers) {
-        if (uint128_eq(peer.address.ipAddress, IPAddress) && peer.address.port == port) {
+        if (uint128_eq(peer.socketAddress.ipAddress, IPAddress) && peer.socketAddress.port == port) {
             return peer;
         }
     }
@@ -614,7 +614,7 @@
         UInt128 ipAddress = *(UInt128 *)((NSData *)peerDictionary[@"address"]).bytes;
         uint16_t port = [peerDictionary[@"port"] unsignedShortValue];
         NSTimeInterval now = [NSDate timeIntervalSince1970];
-        [registeredPeers addObject:[[DSPeer alloc] initWithAddress:(DSSocketAddress){ipAddress, port} onChain:self.chain timestamp:now - (7 * 24 * 60 * 60 + arc4random_uniform(7 * 24 * 60 * 60)) services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM]];
+        [registeredPeers addObject:[[DSPeer alloc] initWithSocketAddress:(DSSocketAddress){ipAddress, port} onChain:self.chain timestamp:now - (7 * 24 * 60 * 60 + arc4random_uniform(7 * 24 * 60 * 60)) services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM]];
     }
     return [registeredPeers copy];
 }
@@ -623,8 +623,8 @@
     NSArray *registeredDevnetPeers = [self registeredDevnetPeers];
     NSMutableArray *registeredDevnetPeerServicesArray = [NSMutableArray array];
     for (DSPeer *peer in registeredDevnetPeers) {
-        if (!uint128_is_zero(peer.address.ipAddress)) {
-            [registeredDevnetPeerServicesArray addObject:[NSString stringWithFormat:@"%@:%hu", peer.host, peer.address.port]];
+        if (!uint128_is_zero(peer.socketAddress.ipAddress)) {
+            [registeredDevnetPeerServicesArray addObject:[NSString stringWithFormat:@"%@:%hu", peer.host, peer.socketAddress.port]];
         }
     }
     return [registeredDevnetPeerServicesArray copy];
@@ -813,7 +813,7 @@
 
     if (peer.timestamp > now + 2 * 60 * 60 || peer.timestamp < now - 2 * 60 * 60) peer.timestamp = now; //timestamp sanity check
     self.connectFailures = 0;
-    DSLog(@"%@:%d connected with lastblock %d (our last header %d - last block %d)", peer.host, peer.address.port, peer.lastBlockHeight, self.chain.lastTerminalBlockHeight, self.chain.lastSyncBlockHeight);
+    DSLog(@"%@:%d connected with lastblock %d (our last header %d - last block %d)", peer.host, peer.socketAddress.port, peer.lastBlockHeight, self.chain.lastTerminalBlockHeight, self.chain.lastSyncBlockHeight);
 
     // drop peers that don't carry full blocks, or aren't synced yet
     // TODO: XXXX does this work with 0.11 pruned nodes?
@@ -941,7 +941,7 @@
 }
 
 - (void)peer:(DSPeer *)peer disconnectedWithError:(NSError *)error {
-    DSLog(@"%@:%d disconnected%@%@", peer.host, peer.address.port, (error ? @", " : @""), (error ? error : @""));
+    DSLog(@"%@:%d disconnected%@%@", peer.host, peer.socketAddress.port, (error ? @", " : @""), (error ? error : @""));
 
     if ([error.domain isEqual:@"DashSync"]) {                                //} && error.code != DASH_PEER_TIMEOUT_CODE) {
         [self peerMisbehaving:peer errorMessage:error.localizedDescription]; // if it's protocol error other than timeout, the peer isn't following the rules
@@ -1003,7 +1003,7 @@
 
 - (void)peer:(DSPeer *)peer relayedPeers:(NSArray *)peers {
     if (self.masternodeList) return;
-    DSLog(@"%@:%d relayed %d peer(s)", peer.host, peer.address.port, (int)peers.count);
+    DSLog(@"%@:%d relayed %d peer(s)", peer.host, peer.socketAddress.port, (int)peers.count);
     [self.peers addObjectsFromArray:peers];
     [self.peers minusSet:self.misbehavingPeers];
     [self sortPeers];

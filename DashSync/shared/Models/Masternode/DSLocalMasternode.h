@@ -21,7 +21,7 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus)
 
 @interface DSLocalMasternode : NSObject
 
-@property (nonatomic, readonly) DSSocketAddress address;
+@property (nonatomic, readonly) DSSocketAddress socketAddress;
 @property (nonatomic, readonly) NSString *name;
 @property (nonatomic, readonly) NSString *ipAddressString;
 @property (nonatomic, readonly) NSString *ipAddressAndPortString;
@@ -56,7 +56,7 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus)
 
 - (void)updateTransactionForResetFundedByAccount:(DSAccount *)fundingAccount completion:(void (^_Nullable)(DSProviderUpdateServiceTransaction *providerRegistrationTransaction))completion;
 
-- (void)updateTransactionFundedByAccount:(DSAccount *)fundingAccount toAddress:(DSSocketAddress)address payoutAddress:(NSString *_Nullable)payoutAddress completion:(void (^_Nullable)(DSProviderUpdateServiceTransaction *providerUpdateServiceTransaction))completion;
+- (void)updateTransactionFundedByAccount:(DSAccount *)fundingAccount toSocketAddress:(DSSocketAddress)socketAddress payoutAddress:(NSString *_Nullable)payoutAddress completion:(void (^_Nullable)(DSProviderUpdateServiceTransaction *providerUpdateServiceTransaction))completion;
 
 - (void)updateTransactionFundedByAccount:(DSAccount *)fundingAccount changeOperator:(UInt384)operatorKey changeVotingKeyHash:(UInt160)votingKeyHash changePayoutAddress:(NSString *_Nullable)payoutAddress completion:(void (^_Nullable)(DSProviderUpdateRegistrarTransaction *providerUpdateRegistrarTransaction))completion;
 

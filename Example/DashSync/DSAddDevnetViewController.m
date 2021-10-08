@@ -274,7 +274,8 @@
         NSString *identifier = self.addDevnetNameTableViewCell.valueTextField.text;
         [[DSChainsManager sharedInstance] registerDevnetChainWithIdentifier:identifier forServiceLocations:self.insertedIPAddresses withMinimumDifficultyBlocks:minimumDifficultyBlocks standardPort:dashdPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion sporkAddress:sporkAddress sporkPrivateKey:sporkPrivateKey instantSendLockQuorumType:instantSendLockQuorumType chainLockQuorumType:chainLockQuorumType platformQuorumType:platformQuorumType];
     }
-    [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
+    [self.presentingViewController dismissViewControllerAnimated:TRUE
+                                                      completion:nil];
 }
 
 - (IBAction)cancel {

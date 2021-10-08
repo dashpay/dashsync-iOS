@@ -708,7 +708,7 @@
 
     // call getblocks, unless we already did with the previous block, or we're still downloading the chain
     if (self.chain.lastSyncBlockHeight >= peer.lastBlockHeight && !uint256_eq(self.chain.lastOrphan.blockHash, block.prevBlock)) {
-        DSLog(@"%@:%d calling getblocks", peer.host, peer.address.port);
+        DSLog(@"%@:%d calling getblocks", peer.host, peer.socketAddress.port);
         [peer sendGetblocksMessageWithLocators:[self.chain chainSyncBlockLocatorArray] andHashStop:UINT256_ZERO];
     }
 }

@@ -90,7 +90,8 @@ static NSString *const CellId = @"CellId";
                                               return;
                                           }
 
-                                          [strongSelf showAlertTitle:@"Confirming contact request:" result:success];
+                                          [strongSelf showAlertTitle:@"Confirming contact request:"
+                                                              result:success];
                                       }];
 }
 

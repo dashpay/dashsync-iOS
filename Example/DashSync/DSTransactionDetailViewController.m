@@ -782,8 +782,8 @@
                         cell.selectionStyle = UITableViewCellSelectionStyleNone;
                         cell.titleLabel.text = NSLocalizedString(@"IP Address/Port", nil);
                         char s[INET6_ADDRSTRLEN];
-                        NSString *ipAddressString = @(inet_ntop(AF_INET, &providerUpdateServiceTransaction.masternodeAddress.ipAddress.u32[3], s, sizeof(s)));
-                        cell.statusLabel.text = [NSString stringWithFormat:@"%@:%d", ipAddressString, providerUpdateServiceTransaction.masternodeAddress.port];
+                        NSString *ipAddressString = @(inet_ntop(AF_INET, &providerUpdateServiceTransaction.masternodeSocketAddress.ipAddress.u32[3], s, sizeof(s)));
+                        cell.statusLabel.text = [NSString stringWithFormat:@"%@:%d", ipAddressString, providerUpdateServiceTransaction.masternodeSocketAddress.port];
                         cell.moreInfoLabel.text = nil;
                         return cell;
                         break;

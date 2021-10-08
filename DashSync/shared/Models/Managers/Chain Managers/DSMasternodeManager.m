@@ -183,8 +183,8 @@
 
 - (DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntryForLocation:(UInt128)IPAddress port:(uint16_t)port {
     for (DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry in [self.currentMasternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allValues]) {
-        if (uint128_eq(simplifiedMasternodeEntry.address.ipAddress, IPAddress) &&
-            simplifiedMasternodeEntry.address.port == port) {
+        if (uint128_eq(simplifiedMasternodeEntry.socketAddress.ipAddress, IPAddress) &&
+            simplifiedMasternodeEntry.socketAddress.port == port) {
             return simplifiedMasternodeEntry;
         }
     }
@@ -370,7 +370,7 @@
     _whiteList = whiteList;
     NSMutableSet *stringSet = [NSMutableSet set];
     for (NSValue *address in whiteList) {
-        [stringSet addObject:[NSString stringWithAddress:[address addressValue]]];
+        [stringSet addObject:[NSString stringWithSocketAddress:[address addressValue]]];
     }
     [self.chain.chainManager.DAPIClient setWhiteList:stringSet];
 }
@@ -1609,21 +1609,21 @@
 
 // MARK: - Local Masternodes
 
-- (DSLocalMasternode *)createNewMasternodeWithAddress:(DSSocketAddress)address inWallet:(DSWallet *)wallet {
+- (DSLocalMasternode *)createNewMasternodeWithSocketAddress:(DSSocketAddress)socketAddress inWallet:(DSWallet *)wallet {
     NSParameterAssert(wallet);
-    return [self createNewMasternodeWithAddress:address inFundsWallet:wallet inOperatorWallet:wallet inOwnerWallet:wallet inVotingWallet:wallet];
+    return [self createNewMasternodeWithSocketAddress:socketAddress inFundsWallet:wallet inOperatorWallet:wallet inOwnerWallet:wallet inVotingWallet:wallet];
 }
 
-- (DSLocalMasternode *)createNewMasternodeWithAddress:(DSSocketAddress)address inFundsWallet:(DSWallet *)fundsWallet inOperatorWallet:(DSWallet *)operatorWallet inOwnerWallet:(DSWallet *)ownerWallet inVotingWallet:(DSWallet *)votingWallet {
-    return [[DSLocalMasternode alloc] initWithAddress:address inFundsWallet:fundsWallet inOperatorWallet:operatorWallet inOwnerWallet:ownerWallet inVotingWallet:votingWallet];
+- (DSLocalMasternode *)createNewMasternodeWithSocketAddress:(DSSocketAddress)socketAddress inFundsWallet:(DSWallet *)fundsWallet inOperatorWallet:(DSWallet *)operatorWallet inOwnerWallet:(DSWallet *)ownerWallet inVotingWallet:(DSWallet *)votingWallet {
+    return [[DSLocalMasternode alloc] initWithSocketAddress:socketAddress inFundsWallet:fundsWallet inOperatorWallet:operatorWallet inOwnerWallet:ownerWallet inVotingWallet:votingWallet];
 }
 
-- (DSLocalMasternode *)createNewMasternodeWithAddress:(DSSocketAddress)address inFundsWallet:(DSWallet *_Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet *_Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex inOwnerWallet:(DSWallet *_Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex inVotingWallet:(DSWallet *_Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex {
-    return [[DSLocalMasternode alloc] initWithAddress:address inFundsWallet:fundsWallet fundsWalletIndex:fundsWalletIndex inOperatorWallet:operatorWallet operatorWalletIndex:operatorWalletIndex inOwnerWallet:ownerWallet ownerWalletIndex:ownerWalletIndex inVotingWallet:votingWallet votingWalletIndex:votingWalletIndex];
+- (DSLocalMasternode *)createNewMasternodeWithSocketAddress:(DSSocketAddress)socketAddress inFundsWallet:(DSWallet *_Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet *_Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex inOwnerWallet:(DSWallet *_Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex inVotingWallet:(DSWallet *_Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex {
+    return [[DSLocalMasternode alloc] initWithSocketAddress:socketAddress inFundsWallet:fundsWallet fundsWalletIndex:fundsWalletIndex inOperatorWallet:operatorWallet operatorWalletIndex:operatorWalletIndex inOwnerWallet:ownerWallet ownerWalletIndex:ownerWalletIndex inVotingWallet:votingWallet votingWalletIndex:votingWalletIndex];
 }
 
-- (DSLocalMasternode *)createNewMasternodeWithAddress:(DSSocketAddress)address inFundsWallet:(DSWallet *_Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet *_Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex operatorPublicKey:(DSBLSKey *)operatorPublicKey inOwnerWallet:(DSWallet *_Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex ownerPrivateKey:(DSECDSAKey *)ownerPrivateKey inVotingWallet:(DSWallet *_Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex votingKey:(DSECDSAKey *)votingKey {
-    DSLocalMasternode *localMasternode = [[DSLocalMasternode alloc] initWithAddress:address inFundsWallet:fundsWallet fundsWalletIndex:fundsWalletIndex inOperatorWallet:operatorWallet operatorWalletIndex:operatorWalletIndex inOwnerWallet:ownerWallet ownerWalletIndex:ownerWalletIndex inVotingWallet:votingWallet votingWalletIndex:votingWalletIndex];
+- (DSLocalMasternode *)createNewMasternodeWithSocketAddress:(DSSocketAddress)socketAddress inFundsWallet:(DSWallet *_Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet *_Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex operatorPublicKey:(DSBLSKey *)operatorPublicKey inOwnerWallet:(DSWallet *_Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex ownerPrivateKey:(DSECDSAKey *)ownerPrivateKey inVotingWallet:(DSWallet *_Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex votingKey:(DSECDSAKey *)votingKey {
+    DSLocalMasternode *localMasternode = [[DSLocalMasternode alloc] initWithSocketAddress:socketAddress inFundsWallet:fundsWallet fundsWalletIndex:fundsWalletIndex inOperatorWallet:operatorWallet operatorWalletIndex:operatorWalletIndex inOwnerWallet:ownerWallet ownerWalletIndex:ownerWalletIndex inVotingWallet:votingWallet votingWalletIndex:votingWalletIndex];
 
     if (operatorWalletIndex == UINT32_MAX && operatorPublicKey) {
         [localMasternode forceOperatorPublicKey:operatorPublicKey];
@@ -1655,7 +1655,7 @@
     DSWallet *operatorWallet = [simplifiedMasternodeEntry.chain walletHavingProviderOperatorAuthenticationKey:simplifiedMasternodeEntry.operatorPublicKey foundAtIndex:&operatorIndex];
 
     if (votingWallet || operatorWallet) {
-        return [[DSLocalMasternode alloc] initWithAddress:simplifiedMasternodeEntry.address inFundsWallet:nil fundsWalletIndex:0 inOperatorWallet:operatorWallet operatorWalletIndex:operatorIndex inOwnerWallet:ownerWallet ownerWalletIndex:ownerKeyIndex inVotingWallet:votingWallet votingWalletIndex:votingIndex];
+        return [[DSLocalMasternode alloc] initWithSocketAddress:simplifiedMasternodeEntry.socketAddress inFundsWallet:nil fundsWalletIndex:0 inOperatorWallet:operatorWallet operatorWalletIndex:operatorIndex inOwnerWallet:ownerWallet ownerWalletIndex:ownerKeyIndex inVotingWallet:votingWallet votingWalletIndex:votingIndex];
     } else {
         return nil;
     }

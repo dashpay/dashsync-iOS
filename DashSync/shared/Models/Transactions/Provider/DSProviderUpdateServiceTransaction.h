@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) UInt256 payloadHash;
 @property (nonatomic, assign) uint16_t providerUpdateServiceTransactionVersion;
 @property (nonatomic, assign) UInt256 providerRegistrationTransactionHash;
-@property (nonatomic, assign) DSSocketAddress masternodeAddress;
+@property (nonatomic, assign) DSSocketAddress masternodeSocketAddress;
 @property (nonatomic, strong) NSData *scriptPayout;
 @property (nonatomic, nullable, readonly) NSString *payoutAddress;
 @property (nonatomic, assign) UInt256 inputsHash;
@@ -25,9 +25,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) DSProviderRegistrationTransaction *providerRegistrationTransaction;
 
 
-- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray *)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts providerUpdateServiceTransactionVersion:(uint16_t)version providerTransactionHash:(UInt256)providerTransactionHash masternodeAddress:(DSSocketAddress)masternodeAddress scriptPayout:(NSData *)scriptPayout onChain:(DSChain *_Nonnull)chain;
+- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray *)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts providerUpdateServiceTransactionVersion:(uint16_t)version providerTransactionHash:(UInt256)providerTransactionHash masternodeSocketAddress:(DSSocketAddress)masternodeSocketAddress scriptPayout:(NSData *)scriptPayout onChain:(DSChain *_Nonnull)chain;
 
-- (instancetype)initWithProviderUpdateServiceTransactionVersion:(uint16_t)version providerTransactionHash:(UInt256)providerTransactionHash masternodeAddress:(DSSocketAddress)masternodeAddress scriptPayout:(NSData *)scriptPayout onChain:(DSChain *_Nonnull)chain;
+- (instancetype)initWithProviderUpdateServiceTransactionVersion:(uint16_t)version providerTransactionHash:(UInt256)providerTransactionHash masternodeSocketAddress:(DSSocketAddress)masternodeSocketAddress scriptPayout:(NSData *)scriptPayout onChain:(DSChain *_Nonnull)chain;
 
 - (void)updateInputsHash;
 

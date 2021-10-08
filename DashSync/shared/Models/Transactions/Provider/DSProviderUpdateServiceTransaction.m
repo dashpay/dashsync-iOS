@@ -53,7 +53,7 @@
     off += 16;
 
     if (length - off < 2) return nil;
-    self.masternodeAddress = (DSSocketAddress){ipAddress, CFSwapInt16HostToBig([message UInt16AtOffset:off])};
+    self.masternodeSocketAddress = (DSSocketAddress){ipAddress, CFSwapInt16HostToBig([message UInt16AtOffset:off])};
     off += 2;
 
     NSNumber *scriptPayoutLength = nil;
@@ -78,24 +78,24 @@
 }
 
 
-- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray *)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts providerUpdateServiceTransactionVersion:(uint16_t)version providerTransactionHash:(UInt256)providerTransactionHash masternodeAddress:(DSSocketAddress)masternodeAddress scriptPayout:(NSData *)scriptPayout onChain:(DSChain *_Nonnull)chain {
+- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray *)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts providerUpdateServiceTransactionVersion:(uint16_t)version providerTransactionHash:(UInt256)providerTransactionHash masternodeSocketAddress:(DSSocketAddress)masternodeSocketAddress scriptPayout:(NSData *)scriptPayout onChain:(DSChain *_Nonnull)chain {
     if (!(self = [super initWithInputHashes:hashes inputIndexes:indexes inputScripts:scripts inputSequences:inputSequences outputAddresses:addresses outputAmounts:amounts onChain:chain])) return nil;
     self.type = DSTransactionType_ProviderUpdateService;
     self.version = SPECIAL_TX_VERSION;
     self.providerUpdateServiceTransactionVersion = version;
     self.providerRegistrationTransactionHash = providerTransactionHash;
-    self.masternodeAddress = masternodeAddress;
+    self.masternodeSocketAddress = masternodeSocketAddress;
     self.scriptPayout = scriptPayout;
     return self;
 }
 
-- (instancetype)initWithProviderUpdateServiceTransactionVersion:(uint16_t)version providerTransactionHash:(UInt256)providerTransactionHash masternodeAddress:(DSSocketAddress)masternodeAddress scriptPayout:(NSData *)scriptPayout onChain:(DSChain *_Nonnull)chain {
+- (instancetype)initWithProviderUpdateServiceTransactionVersion:(uint16_t)version providerTransactionHash:(UInt256)providerTransactionHash masternodeSocketAddress:(DSSocketAddress)masternodeSocketAddress scriptPayout:(NSData *)scriptPayout onChain:(DSChain *_Nonnull)chain {
     if (!(self = [super initOnChain:chain])) return nil;
     self.type = DSTransactionType_ProviderUpdateService;
     self.version = SPECIAL_TX_VERSION;
     self.providerUpdateServiceTransactionVersion = version;
     self.providerRegistrationTransactionHash = providerTransactionHash;
-    self.masternodeAddress = masternodeAddress;
+    self.masternodeSocketAddress = masternodeSocketAddress;
     self.scriptPayout = scriptPayout;
     return self;
 }
@@ -139,8 +139,8 @@
     NSMutableData *data = [NSMutableData data];
     [data appendUInt16:self.providerUpdateServiceTransactionVersion];
     [data appendUInt256:self.providerRegistrationTransactionHash];
-    [data appendUInt128:self.masternodeAddress.ipAddress];
-    [data appendUInt16:CFSwapInt16BigToHost(self.masternodeAddress.port)];
+    [data appendUInt128:self.masternodeSocketAddress.ipAddress];
+    [data appendUInt16:CFSwapInt16BigToHost(self.masternodeSocketAddress.port)];
     [data appendVarInt:self.scriptPayout.length];
     [data appendData:self.scriptPayout];
     [data appendUInt256:self.inputsHash];

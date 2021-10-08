@@ -29,10 +29,10 @@
     [super viewDidLoad];
     self.ipAddressTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"MasternodeIPAddressCellIdentifier"];
     char s[INET6_ADDRSTRLEN];
-    uint32_t ipAddress = self.localMasternode.address.ipAddress.u32[3];
+    uint32_t ipAddress = self.localMasternode.socketAddress.ipAddress.u32[3];
     self.ipAddressTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%s", inet_ntop(AF_INET, &ipAddress, s, sizeof(s))];
     self.portTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"MasternodePortCellIdentifier"];
-    self.portTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%d", self.localMasternode.address.port];
+    self.portTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%d", self.localMasternode.socketAddress.port];
     self.accountChooserTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"MasternodeFundingAccountCellIdentifier"];
 }
 
@@ -68,7 +68,7 @@
     UInt128 ipAddress = [ipAddressString ipV4Address];
     uint16_t port = [portString intValue];
     [self.localMasternode updateTransactionFundedByAccount:self.account
-                                                 toAddress:(DSSocketAddress){ipAddress, port}
+                                           toSocketAddress:(DSSocketAddress){ipAddress, port}
                                              payoutAddress:nil
                                                 completion:^(DSProviderUpdateServiceTransaction *_Nonnull providerUpdateServiceTransaction) {
                                                     if (providerUpdateServiceTransaction) {

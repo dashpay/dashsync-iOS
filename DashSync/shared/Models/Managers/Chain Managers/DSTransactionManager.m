@@ -898,7 +898,8 @@
         [peer sendFilterloadMessage:[self transactionsBloomFilterForPeer:peer].data];
     }
 
-    [peer sendInvMessageForHashes:self.publishedTx.allKeys ofType:DSInvType_Tx]; // publish pending tx
+    [peer sendInvMessageForHashes:self.publishedTx.allKeys
+                           ofType:DSInvType_Tx]; // publish pending tx
     [peer sendPingMessageWithPongHandler:^(BOOL success) {
         if (success) {
             DSLog(@"[DSTransactionManager] fetching mempool ping success peer %@", peer.host);
@@ -1168,9 +1169,9 @@
     void (^callback)(NSError *error) = self.publishedCallback[hash];
 
 #if DEBUG
-    DSLogPrivate(@"%@:%d has transaction %@", peer.host, peer.address.port, hash);
+    DSLogPrivate(@"%@:%d has transaction %@", peer.host, peer.socketAddress.port, hash);
 #else
-    DSLog(@"%@:%d has transaction %@", peer.host, peer.address.port, @"<REDACTED>");
+    DSLog(@"%@:%d has transaction %@", peer.host, peer.socketAddress.port, @"<REDACTED>");
 #endif
     if (!transaction) transaction = [self.chain transactionForHash:txHash];
     if (!transaction) {
@@ -1219,9 +1220,9 @@
 
     if (peer) {
 #if DEBUG
-        DSLogPrivate(@"%@:%d relayed transaction %@", peer.host, peer.address.port, hash);
+        DSLogPrivate(@"%@:%d relayed transaction %@", peer.host, peer.socketAddress.port, hash);
 #else
-        DSLog(@"%@:%d relayed transaction %@", peer.host, peer.address.port, @"<REDACTED>");
+        DSLog(@"%@:%d relayed transaction %@", peer.host, peer.socketAddress.port, @"<REDACTED>");
 #endif
     } else {
 #if DEBUG
@@ -1244,9 +1245,9 @@
         if (![self.chain transactionHasLocalReferences:transaction]) {
             if (peer) {
 #if DEBUG
-                DSLogPrivate(@"%@:%d no account or local references for transaction %@", peer.host, peer.address.port, hash);
+                DSLogPrivate(@"%@:%d no account or local references for transaction %@", peer.host, peer.socketAddress.port, hash);
 #else
-                DSLog(@"%@:%d no account or local references for transaction %@", peer.host, peer.address.port, @"<REDACTED>");
+                DSLog(@"%@:%d no account or local references for transaction %@", peer.host, peer.socketAddress.port, @"<REDACTED>");
 #endif
             } else {
 #if DEBUG
@@ -1259,9 +1260,9 @@
         } else {
             if (peer) {
 #if DEBUG
-                DSLogPrivate(@"%@:%d no account for transaction with local references %@", peer.host, peer.address.port, hash);
+                DSLogPrivate(@"%@:%d no account for transaction with local references %@", peer.host, peer.socketAddress.port, hash);
 #else
-                DSLog(@"%@:%d no account for transaction with local references %@", peer.host, peer.address.port, @"<REDACTED>");
+                DSLog(@"%@:%d no account for transaction with local references %@", peer.host, peer.socketAddress.port, @"<REDACTED>");
 #endif
             } else {
 #if DEBUG
@@ -1284,9 +1285,9 @@
             } else {
                 if (peer) {
 #if DEBUG
-                    DSLogPrivate(@"%@:%d could not register transaction %@", peer.host, peer.address.port, hash);
+                    DSLogPrivate(@"%@:%d could not register transaction %@", peer.host, peer.socketAddress.port, hash);
 #else
-                    DSLog(@"%@:%d could not register transaction %@", peer.host, peer.address.port, @"<REDACTED>");
+                    DSLog(@"%@:%d could not register transaction %@", peer.host, peer.socketAddress.port, @"<REDACTED>");
 #endif
                 } else {
 #if DEBUG
@@ -1482,7 +1483,7 @@
 #if DEBUG
             UIAlertController *alert = [UIAlertController
                 alertControllerWithTitle:@"Transaction rejected"
-                                 message:[NSString stringWithFormat:@"Rejected by %@:%d with code 0x%x", peer.host, peer.address.port, code]
+                                 message:[NSString stringWithFormat:@"Rejected by %@:%d with code 0x%x", peer.host, peer.socketAddress.port, code]
                           preferredStyle:UIAlertControllerStyleAlert];
             UIAlertAction *okButton = [UIAlertAction
                 actionWithTitle:@"OK"
@@ -1536,9 +1537,9 @@
     BOOL verified = [instantSendTransactionLock verifySignature];
 
 #if DEBUG
-    DSLogPrivate(@"%@:%d relayed instant send transaction lock %@ %@", peer.host, peer.address.port, verified ? @"Verified" : @"Not Verified", uint256_reverse_hex(instantSendTransactionLock.transactionHash));
+    DSLogPrivate(@"%@:%d relayed instant send transaction lock %@ %@", peer.host, peer.socketAddress.port, verified ? @"Verified" : @"Not Verified", uint256_reverse_hex(instantSendTransactionLock.transactionHash));
 #else
-    DSLog(@"%@:%d relayed instant send transaction lock %@ %@", peer.host, peer.address.port, verified ? @"Verified" : @"Not Verified", @"<REDACTED>");
+    DSLog(@"%@:%d relayed instant send transaction lock %@ %@", peer.host, peer.socketAddress.port, verified ? @"Verified" : @"Not Verified", @"<REDACTED>");
 #endif
 
 
@@ -1655,11 +1656,11 @@
         // false positive rate sanity check
         if (self.peerManager.downloadPeer.status == DSPeerStatus_Connected && self.transactionsBloomFilterFalsePositiveRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE * 10.0) {
             DSLog(@"%@:%d bloom filter false positive rate %f too high after %d blocks, disconnecting...", peer.host,
-                peer.address.port, self.transactionsBloomFilterFalsePositiveRate, self.chain.lastSyncBlockHeight + 1 - self.filterUpdateHeight);
+                peer.socketAddress.port, self.transactionsBloomFilterFalsePositiveRate, self.chain.lastSyncBlockHeight + 1 - self.filterUpdateHeight);
             [self.peerManager.downloadPeer disconnect];
         } else if (self.chain.lastSyncBlockHeight + 500 < peer.lastBlockHeight && self.transactionsBloomFilterFalsePositiveRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE * 10.0) {
             DSLog(@"%@:%d bloom filter false positive rate %f too high after %d blocks, rebuilding", peer.host,
-                peer.address.port, self.transactionsBloomFilterFalsePositiveRate, self.chain.lastSyncBlockHeight + 1 - self.filterUpdateHeight);
+                peer.socketAddress.port, self.transactionsBloomFilterFalsePositiveRate, self.chain.lastSyncBlockHeight + 1 - self.filterUpdateHeight);
             [self updateTransactionsBloomFilter]; // rebuild bloom filter when it starts to degrade
         }
     }
@@ -1727,7 +1728,7 @@
 - (void)peer:(DSPeer *)peer relayedChainLock:(DSChainLock *)chainLock {
     BOOL verified = [chainLock verifySignature];
 
-    DSLog(@"%@:%d relayed chain lock %@", peer.host, peer.address.port, uint256_reverse_hex(chainLock.blockHash));
+    DSLog(@"%@:%d relayed chain lock %@", peer.host, peer.socketAddress.port, uint256_reverse_hex(chainLock.blockHash));
 
     DSMerkleBlock *block = [self.chain blockForBlockHash:chainLock.blockHash];
 

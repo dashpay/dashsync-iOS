@@ -42,7 +42,8 @@
         version = DASH_PUBKEY_ADDRESS_TEST;
     }
 
-    [d appendBytes:&version length:1];
+    [d appendBytes:&version
+            length:1];
     [d appendBytes:&hash160 length:sizeof(hash160)];
     return [NSString base58checkWithData:d];
 }

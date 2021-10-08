@@ -1883,7 +1883,8 @@ static dispatch_once_t devnetToken = 0;
         if (!self.insightVerifiedBlocksByHashDictionary) {
             self.insightVerifiedBlocksByHashDictionary = [NSMutableDictionary dictionary];
         }
-        [self.insightVerifiedBlocksByHashDictionary setObject:block forKey:uint256_data(blockHash)];
+        [self.insightVerifiedBlocksByHashDictionary setObject:block
+                                                       forKey:uint256_data(blockHash)];
     }
 }
 
@@ -1981,7 +1982,7 @@ static dispatch_once_t devnetToken = 0;
             DSLog(@"printing previous block at height %d : %@", merkleBlock.height, merkleBlock.blockHashValue);
         }
 #endif
-        DSLog(@"%@:%d relayed orphan block %@, previous %@, height %d, last block is %@, lastBlockHeight %d, time %@", peer.host ? peer.host : @"TEST", peer.address.port,
+        DSLog(@"%@:%d relayed orphan block %@, previous %@, height %d, last block is %@, lastBlockHeight %d, time %@", peer.host ? peer.host : @"TEST", peer.socketAddress.port,
             uint256_reverse_hex(block.blockHash), uint256_reverse_hex(block.prevBlock), block.height, uint256_reverse_hex(self.lastTerminalBlock.blockHash), self.lastSyncBlockHeight, [NSDate dateWithTimeIntervalSince1970:block.timestamp]);
 
         if (peer) {
@@ -2049,7 +2050,7 @@ static dispatch_once_t devnetToken = 0;
         uint32_t foundDifficulty = 0;
         if ((block.height > self.minimumDifficultyBlocks) && (block.height > (lastCheckpoint.height + DGW_PAST_BLOCKS_MAX)) &&
             ![block verifyDifficultyWithPreviousBlocks:(blockPosition & DSBlockPosition_Terminal) ? self.mTerminalBlocks : self.mSyncBlocks rDifficulty:&foundDifficulty]) {
-            DSLog(@"%@:%d relayed block with invalid difficulty height %d target %x foundTarget %x, blockHash: %@", peer.host, peer.address.port,
+            DSLog(@"%@:%d relayed block with invalid difficulty height %d target %x foundTarget %x, blockHash: %@", peer.host, peer.socketAddress.port,
                 block.height, block.target, foundDifficulty, blockHash);
 
             if (peer) {
@@ -2060,7 +2061,7 @@ static dispatch_once_t devnetToken = 0;
 
         UInt256 difficulty = setCompactLE(block.target);
         if (uint256_sup(block.blockHash, difficulty)) {
-            DSLog(@"%@:%d relayed block with invalid block hash %d target %x, blockHash: %@ difficulty: %@", peer.host, peer.address.port,
+            DSLog(@"%@:%d relayed block with invalid block hash %d target %x, blockHash: %@ difficulty: %@", peer.host, peer.socketAddress.port,
                 block.height, block.target, uint256_bin(block.blockHash), uint256_bin(difficulty));
 
             if (peer) {
@@ -2075,7 +2076,7 @@ static dispatch_once_t devnetToken = 0;
     if ((!equivalentTerminalBlock) && (checkpoint && !uint256_eq(block.blockHash, checkpoint.blockHash))) {
         // verify block chain checkpoints
         DSLog(@"%@:%d relayed a block that differs from the checkpoint at height %d, blockHash: %@, expected: %@",
-            peer.host, peer.address.port, block.height, blockHash, uint256_hex(checkpoint.blockHash));
+            peer.host, peer.socketAddress.port, block.height, blockHash, uint256_hex(checkpoint.blockHash));
         if (peer) {
             [self.chainManager chain:self badBlockReceivedFromPeer:peer];
         }
@@ -2131,7 +2132,7 @@ static dispatch_once_t devnetToken = 0;
         onMainChain = TRUE;
     } else if ((phase == DSChainSyncPhase_ChainSync || phase == DSChainSyncPhase_Synced) && self.mSyncBlocks[blockHash] != nil) { // we already have the block (or at least the header)
         if ((block.height % 1) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
-            DSLog(@"%@:%d relayed existing sync block at height %d", peer.host, peer.address.port, block.height);
+            DSLog(@"%@:%d relayed existing sync block at height %d", peer.host, peer.socketAddress.port, block.height);
         }
 
         @synchronized(self.mSyncBlocks) {
@@ -2156,7 +2157,7 @@ static dispatch_once_t devnetToken = 0;
         }
     } else if (self.mTerminalBlocks[blockHash] != nil && (blockPosition & DSBlockPosition_Terminal)) { // we already have the block (or at least the header)
         if ((block.height % 1) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
-            DSLog(@"%@:%d relayed existing terminal block at height %d (last sync height %d)", peer.host, peer.address.port, block.height, self.lastSyncBlockHeight);
+            DSLog(@"%@:%d relayed existing terminal block at height %d (last sync height %d)", peer.host, peer.socketAddress.port, block.height, self.lastSyncBlockHeight);
         }
 
         @synchronized(self.mTerminalBlocks) {
@@ -2275,7 +2276,9 @@ static dispatch_once_t devnetToken = 0;
                 }
             }
 
-            [self setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTransactionHashes:txHashes];
+            [self setBlockHeight:TX_UNCONFIRMED
+                        andTimestamp:0
+                forTransactionHashes:txHashes];
             b = block;
 
             while (b.height > b2.height) { // set transaction heights for new main chain
@@ -2601,7 +2604,9 @@ static dispatch_once_t devnetToken = 0;
                 }
             }
 
-            [self setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTransactionHashes:txHashes];
+            [self setBlockHeight:TX_UNCONFIRMED
+                        andTimestamp:0
+                forTransactionHashes:txHashes];
             clb = syncBlock;
 
             while (clb.height > sbmc.height) { // set transaction heights for new main chain
@@ -2806,7 +2811,11 @@ static dispatch_once_t devnetToken = 0;
         }
     }
 
-    [self.chainManager chain:self didSetBlockHeight:height andTimestamp:timestamp forTransactionHashes:transactionHashes updatedTransactions:updatedTransactions];
+    [self.chainManager chain:self
+           didSetBlockHeight:height
+                andTimestamp:timestamp
+        forTransactionHashes:transactionHashes
+         updatedTransactions:updatedTransactions];
 }
 
 - (void)reloadDerivationPaths {

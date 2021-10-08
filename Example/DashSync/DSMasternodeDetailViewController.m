@@ -39,9 +39,9 @@
     [super viewDidLoad];
 
     char s[INET6_ADDRSTRLEN];
-    uint32_t ipAddress = self.simplifiedMasternodeEntry.address.ipAddress.u32[3];
+    uint32_t ipAddress = self.simplifiedMasternodeEntry.socketAddress.ipAddress.u32[3];
 
-    self.locationLabel.text = [NSString stringWithFormat:@"%s:%d", inet_ntop(AF_INET, &ipAddress, s, sizeof(s)), self.simplifiedMasternodeEntry.address.port];
+    self.locationLabel.text = [NSString stringWithFormat:@"%s:%d", inet_ntop(AF_INET, &ipAddress, s, sizeof(s)), self.simplifiedMasternodeEntry.socketAddress.port];
     self.ownerKeyLabel.text = self.localMasternode.ownerKeysWallet ? @"SHOW" : @"NO";
     self.operatorKeyLabel.text = self.localMasternode.operatorKeysWallet ? @"SHOW" : @"NO";
     self.operatorPublicKeyLabel.text = uint384_hex(self.simplifiedMasternodeEntry.operatorPublicKey);

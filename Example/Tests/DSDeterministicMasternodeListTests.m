@@ -1134,7 +1134,7 @@
             UInt256 confirmedHash = [NSData dataWithUInt256:hash].SHA256;
             UInt128 address = UINT128_ZERO;
             *address.u16 = i;
-            DSSimplifiedMasternodeEntry *entry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:hash confirmedHash:confirmedHash address:(DSSocketAddress){address, 9999} operatorBLSPublicKey:UINT384_ZERO previousOperatorBLSPublicKeys:@{} keyIDVoting:UINT160_ZERO isValid:YES previousValidity:@{} knownConfirmedAtHeight:50 updateHeight:100 simplifiedMasternodeEntryHash:UINT256_ZERO previousSimplifiedMasternodeEntryHashes:@{} onChain:chain];
+            DSSimplifiedMasternodeEntry *entry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:hash confirmedHash:confirmedHash socketAddress:(DSSocketAddress){address, 9999} operatorBLSPublicKey:UINT384_ZERO previousOperatorBLSPublicKeys:@{} keyIDVoting:UINT160_ZERO isValid:YES previousValidity:@{} knownConfirmedAtHeight:50 updateHeight:100 simplifiedMasternodeEntryHash:UINT256_ZERO previousSimplifiedMasternodeEntryHashes:@{} onChain:chain];
             DSSimplifiedMasternodeEntryEntity *managedObject = [DSSimplifiedMasternodeEntryEntity managedObjectInBlockedContext:context];
             [managedObject setAttributesFromSimplifiedMasternodeEntry:entry atBlockHeight:100 onChainEntity:chainEntity];
         }
@@ -2960,7 +2960,7 @@
                                              };
                                              NSMutableOrderedSet<NSString *> *whitePeers = [NSMutableOrderedSet orderedSet];
                                              for (NSUInteger i = 0; i < whiteList.count; i++) {
-                                                 [whitePeers addObject:[NSString stringWithAddress:[[whiteList objectAtIndex:i] addressValue]]];
+                                                 [whitePeers addObject:[NSString stringWithSocketAddress:[[whiteList objectAtIndex:i] addressValue]]];
                                              }
                                              [prevTrustedPeers sortUsingComparator:cmptr];
                                              [currTrustedPeers sortUsingComparator:cmptr];

@@ -103,7 +103,8 @@ NS_ASSUME_NONNULL_BEGIN
         [self.requests addObject:copiedRequest];
     }
 
-    [self.requestOperationHandlerDelegate requestOperationHandler:self performRequest:copiedRequest];
+    [self.requestOperationHandlerDelegate requestOperationHandler:self
+                                                   performRequest:copiedRequest];
 
     return cancellationToken;
 }

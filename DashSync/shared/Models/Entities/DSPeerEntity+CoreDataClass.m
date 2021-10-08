@@ -34,11 +34,11 @@
 
 - (instancetype)setAttributesFromPeer:(DSPeer *)peer {
     //TODO: store IPv6 addresses
-    if (peer.address.ipAddress.u64[0] != 0 || peer.address.ipAddress.u32[2] != CFSwapInt32HostToBig(0xffff)) return nil;
+    if (peer.socketAddress.ipAddress.u64[0] != 0 || peer.socketAddress.ipAddress.u32[2] != CFSwapInt32HostToBig(0xffff)) return nil;
 
     [self.managedObjectContext performBlockAndWait:^{
-        self.address = CFSwapInt32BigToHost(peer.address.ipAddress.u32[3]);
-        self.port = peer.address.port;
+        self.address = CFSwapInt32BigToHost(peer.socketAddress.ipAddress.u32[3]);
+        self.port = peer.socketAddress.port;
         self.timestamp = peer.timestamp;
         self.services = peer.services;
         self.misbehavin = peer.misbehaving;
@@ -58,7 +58,7 @@
     [self.managedObjectContext performBlockAndWait:^{
         UInt128 address = {.u32 = {0, 0, CFSwapInt32HostToBig(0xffff), CFSwapInt32HostToBig(self.address)}};
         DSChain *chain = [self.chain chain];
-        peer = [[DSPeer alloc] initWithAddress:(DSSocketAddress){address, self.port} onChain:chain timestamp:self.timestamp services:self.services];
+        peer = [[DSPeer alloc] initWithSocketAddress:(DSSocketAddress){address, self.port} onChain:chain timestamp:self.timestamp services:self.services];
         peer.misbehaving = self.misbehavin;
         peer.priority = self.priority;
         peer.lowPreferenceTill = self.lowPreferenceTill;
