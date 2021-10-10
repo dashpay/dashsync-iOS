@@ -637,7 +637,7 @@
     ResponseMetadata *responseMetaData = [[ResponseMetadata alloc] init];
     responseMetaData.height = 5851;
 
-    NSDictionary *results = [DSDAPIGRPCResponseHandler verifyAndExtractFromProof:proof withMetadata:responseMetaData forQuorumEntry:quorumEntry quorumType:DSLLMQType_10_60 error:&error];
+    NSDictionary *results = [DSDAPIGRPCResponseHandler verifyAndExtractFromProof:proof withMetadata:responseMetaData query:nil forQuorumEntry:quorumEntry quorumType:DSLLMQType_10_60 error:&error];
 
     XCTAssertNil(error);
 }
