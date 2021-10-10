@@ -99,7 +99,7 @@
             UInt512 concat = uint512_concat(left, right);
             UInt256 merkleRoot = [self hashData:uint512_data(concat)];
             [nextRowElements setObject:uint256_data(merkleRoot) forKey:@(pos / 2)];
-            NSLog(@"contac hash %@ gives %@", uint512_hex(concat), uint256_hex(merkleRoot));
+            //            NSLog(@"hash %@ gives %@", uint512_hex(concat), uint256_hex(merkleRoot));
         }
         rowElements = nextRowElements;
         rowSize = ceilf(((float)rowSize) / 2);

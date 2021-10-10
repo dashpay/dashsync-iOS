@@ -19,9 +19,24 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSInteger, DSPlatformStoredMessage)
+{
+    /// The version is prepended before all items
+    DSPlatformStoredMessage_Version,
+    /// An item can be returned if decode is set to true
+    DSPlatformStoredMessage_Item,
+    /// A data item that can be returned if decode is set to false
+    DSPlatformStoredMessage_Data,
+};
+
+@class DSPlatformTreeQuery;
+
 @interface NSData (DSMerkAVLTree)
 
-- (NSData *_Nullable)executeProofReturnElementDictionary:(NSDictionary *_Nonnull *_Nullable)rElementDictionary;
+/* executeProofReturnElementDictionary returns items from the proof that match the specific query, if no query is set all
+ items are returned.
+ */
+- (NSData *_Nullable)executeProofReturnElementDictionary:(NSDictionary *_Nonnull *_Nullable)rElementDictionary  query:(DSPlatformTreeQuery*_Nullable)query decode:(BOOL)decode usesVersion:(BOOL)usesVersion error:(NSError **)error;
 
 @end
 
