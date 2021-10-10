@@ -15,15 +15,15 @@
 //  limitations under the License.
 //
 
+#import "DSPlatformTreeQuery.h"
 #import "NSData+DSCborDecoding.h"
 #import "NSData+DSMerkAVLTree.h"
 #import "NSData+Dash.h"
-#import "DSPlatformTreeQuery.h"
 #import "merk.h"
 
 @implementation NSData (DSMerkAVLTree)
 
-- (NSData *)executeProofReturnElementDictionary:(NSDictionary **)rElementDictionary query:(DSPlatformTreeQuery*)query decode:(BOOL)decode usesVersion:(BOOL)usesVersion error:(NSError **)error {
+- (NSData *)executeProofReturnElementDictionary:(NSDictionary **)rElementDictionary query:(DSPlatformTreeQuery *)query decode:(BOOL)decode usesVersion:(BOOL)usesVersion error:(NSError **)error {
     ExecuteProofResult *result;
     if (query) {
         result = execute_proof_query_keys_c(self.bytes, self.length, query.keys);

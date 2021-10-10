@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2021 Dash Core Group. All rights reserved.
 //
@@ -17,29 +17,29 @@
 
 #import "DSPlatformTreeQuery.h"
 
-@interface DSPlatformTreeQuery()
+@interface DSPlatformTreeQuery ()
 
-@property(nonatomic, strong) NSArray<NSData*> * platformQueryKeys;
-@property(nonatomic, strong) NSArray<NSArray<NSData*>*> * platformQueryKeyRanges;
-@property(nonatomic, assign) Keys * keys;
+@property (nonatomic, strong) NSArray<NSData *> *platformQueryKeys;
+@property (nonatomic, strong) NSArray<NSArray<NSData *> *> *platformQueryKeyRanges;
+@property (nonatomic, assign) Keys *keys;
 
 @end
 
 @implementation DSPlatformTreeQuery
 
-+(DSPlatformTreeQuery*)platformTreeQueryForKeys:(NSArray<NSData*>*)keys{
++ (DSPlatformTreeQuery *)platformTreeQueryForKeys:(NSArray<NSData *> *)keys {
     return [[self alloc] initWithKeys:keys andRanges:nil];
 }
 
-+(DSPlatformTreeQuery*)platformTreeQueryForRanges:(NSArray<NSArray<NSData*>*>*)keyRanges {
++ (DSPlatformTreeQuery *)platformTreeQueryForRanges:(NSArray<NSArray<NSData *> *> *)keyRanges {
     return [[self alloc] initWithKeys:nil andRanges:keyRanges];
 }
 
-+(DSPlatformTreeQuery*)platformTreeQueryForKeys:(NSArray<NSData*>*)keys andRanges:(NSArray<NSArray<NSData*>*>*)keyRanges {
++ (DSPlatformTreeQuery *)platformTreeQueryForKeys:(NSArray<NSData *> *)keys andRanges:(NSArray<NSArray<NSData *> *> *)keyRanges {
     return [[self alloc] initWithKeys:keys andRanges:keyRanges];
 }
 
--(instancetype)initWithKeys:(NSArray<NSData*>*)keys andRanges:(NSArray<NSArray<NSData*>*>*)keyRanges {
+- (instancetype)initWithKeys:(NSArray<NSData *> *)keys andRanges:(NSArray<NSArray<NSData *> *> *)keyRanges {
     self = [super init];
     if (self) {
         self.platformQueryKeys = keys;
@@ -49,40 +49,40 @@
     return self;
 }
 
--(void)createMerkKeys {
-    Keys * k = malloc(sizeof(Keys));
+- (void)createMerkKeys {
+    Keys *k = malloc(sizeof(Keys));
     k->element_count = self.platformQueryKeys.count + self.platformQueryKeyRanges.count;
-    k->elements = malloc(k->element_count*sizeof(Query *));
+    k->elements = malloc(k->element_count * sizeof(Query *));
     int i = 0;
-    for (NSData * data in self.platformQueryKeys) {
-        Query * query = malloc(sizeof(Query));
+    for (NSData *data in self.platformQueryKeys) {
+        Query *query = malloc(sizeof(Query));
         query->key_length = data.length;
         query->key = malloc(data.length);
         query->key_end_length = 0;
         memcpy(query->key, data.bytes, data.length);
-        k->elements[i*sizeof(Query *)] = query;
+        k->elements[i * sizeof(Query *)] = query;
         i++;
     }
-    for (NSArray <NSData*>* range in self.platformQueryKeyRanges) {
-        NSData * startKey = range.firstObject;
-        NSData * endKey = range.lastObject;
-        Query * query = malloc(sizeof(Query));
+    for (NSArray<NSData *> *range in self.platformQueryKeyRanges) {
+        NSData *startKey = range.firstObject;
+        NSData *endKey = range.lastObject;
+        Query *query = malloc(sizeof(Query));
         query->key_length = startKey.length;
         query->key = malloc(startKey.length);
         memcpy(query->key, startKey.bytes, startKey.length);
         query->key_end_length = endKey.length;
         query->key_end = malloc(endKey.length);
         memcpy(query->key_end, endKey.bytes, endKey.length);
-        k->elements[i*sizeof(Query *)] = query;
+        k->elements[i * sizeof(Query *)] = query;
         i++;
     }
     self.keys = k;
 }
 
--(void)destroyMerkKeys {
+- (void)destroyMerkKeys {
     Keys *k = self.keys;
     for (int i = 0; i < k->element_count; i++) {
-        Query *q = k->elements[i*sizeof(Query *)];
+        Query *q = k->elements[i * sizeof(Query *)];
         free(q->key);
         if (q->key_end_length) {
             free(q->key_end);
@@ -93,7 +93,7 @@
     free(k);
 }
 
--(void)dealloc {
+- (void)dealloc {
     [self destroyMerkKeys];
 }
 

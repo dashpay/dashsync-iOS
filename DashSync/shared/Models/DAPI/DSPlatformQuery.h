@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2021 Dash Core Group. All rights reserved.
 //
@@ -15,8 +15,8 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
 #import "DSPlatformTreeQuery.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -30,11 +30,15 @@ typedef NS_ENUM(NSUInteger, DSPlatformDictionary)
 
 @interface DSPlatformQuery : NSObject
 
-@property(nonatomic, readonly) NSDictionary<NSNumber*, DSPlatformTreeQuery*> * treeQueries;
+@property (nonatomic, readonly) NSDictionary<NSNumber *, DSPlatformTreeQuery *> *treeQueries;
 
-+(DSPlatformQuery*)platformQueryForIdentityID:(NSData*)identityID;
++ (DSPlatformQuery *)platformQueryForIdentityID:(NSData *)identityID;
++ (DSPlatformQuery *)platformQueryForContractID:(NSData *)contractID;
++ (DSPlatformQuery *)platformQueryForDocumentKeys:(NSArray<NSData *> *)documentKeys inPath:(NSArray<NSData *> *)path;
++ (DSPlatformQuery *)platformQueryForGetIdentityIDsByPublicKeyHashes:(NSArray<NSData *> *)publicKeyHashes;
++ (DSPlatformQuery *)platformQueryForGetIdentitiesByPublicKeyHashes:(NSArray<NSData *> *)publicKeyHashes;
 
--(DSPlatformTreeQuery*)treeQueryForType:(DSPlatformDictionary)treeType;
+- (DSPlatformTreeQuery *)treeQueryForType:(DSPlatformDictionary)treeType;
 
 @end
 

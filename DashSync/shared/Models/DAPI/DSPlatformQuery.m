@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2021 Dash Core Group. All rights reserved.
 //
@@ -18,22 +18,51 @@
 #import "DSPlatformQuery.h"
 #import "DSPlatformTreeQuery.h"
 
-@interface DSPlatformQuery()
+@interface DSPlatformQuery ()
 
-@property(nonatomic, strong) NSDictionary<NSNumber*, DSPlatformTreeQuery*> * treeQueries;
+@property (nonatomic, strong) NSDictionary<NSNumber *, DSPlatformTreeQuery *> *treeQueries;
 
 @end
 
 @implementation DSPlatformQuery
 
-+(DSPlatformQuery*)platformQueryForIdentityID:(NSData*)identityID {
-    DSPlatformQuery * query = [[DSPlatformQuery alloc] init];
-    DSPlatformTreeQuery * identitiesQuery = [DSPlatformTreeQuery platformTreeQueryForKeys:@[identityID]];
++ (DSPlatformQuery *)platformQueryForIdentityID:(NSData *)identityID {
+    DSPlatformQuery *query = [[DSPlatformQuery alloc] init];
+    DSPlatformTreeQuery *identitiesQuery = [DSPlatformTreeQuery platformTreeQueryForKeys:@[identityID]];
     query.treeQueries = @{@(DSPlatformDictionary_Identities): identitiesQuery};
     return query;
 }
 
--(DSPlatformTreeQuery*)treeQueryForType:(DSPlatformDictionary)treeType {
++ (DSPlatformQuery *)platformQueryForContractID:(NSData *)contractID {
+    DSPlatformQuery *query = [[DSPlatformQuery alloc] init];
+    DSPlatformTreeQuery *contractsQuery = [DSPlatformTreeQuery platformTreeQueryForKeys:@[contractID]];
+    query.treeQueries = @{@(DSPlatformDictionary_Contracts): contractsQuery};
+    return query;
+}
+
++ (DSPlatformQuery *)platformQueryForDocumentKeys:(NSArray<NSData *> *)documentKeys inPath:(NSArray<NSData *> *)path {
+    //todo improve when we have secondary indexes
+    DSPlatformQuery *query = [[DSPlatformQuery alloc] init];
+    DSPlatformTreeQuery *documentKeysQuery = [DSPlatformTreeQuery platformTreeQueryForKeys:documentKeys];
+    query.treeQueries = @{@(DSPlatformDictionary_Documents): documentKeysQuery};
+    return query;
+}
+
++ (DSPlatformQuery *)platformQueryForGetIdentityIDsByPublicKeyHashes:(NSArray<NSData *> *)publicKeyHashes {
+    DSPlatformQuery *query = [[DSPlatformQuery alloc] init];
+    DSPlatformTreeQuery *identitiesPublicKeyHashesQuery = [DSPlatformTreeQuery platformTreeQueryForKeys:publicKeyHashes];
+    query.treeQueries = @{@(DSPlatformDictionary_PublicKeyHashesToIdentityIds): identitiesPublicKeyHashesQuery};
+    return query;
+}
+
++ (DSPlatformQuery *)platformQueryForGetIdentitiesByPublicKeyHashes:(NSArray<NSData *> *)publicKeyHashes {
+    DSPlatformQuery *query = [[DSPlatformQuery alloc] init];
+    DSPlatformTreeQuery *identitiesPublicKeyHashesQuery = [DSPlatformTreeQuery platformTreeQueryForKeys:publicKeyHashes];
+    query.treeQueries = @{@(DSPlatformDictionary_PublicKeyHashesToIdentityIds): identitiesPublicKeyHashesQuery};
+    return query;
+}
+
+- (DSPlatformTreeQuery *)treeQueryForType:(DSPlatformDictionary)treeType {
     return [self.treeQueries objectForKey:@(treeType)];
 }
 

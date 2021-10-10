@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2021 Dash Core Group. All rights reserved.
 //
@@ -15,22 +15,22 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
 #import "merk.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSPlatformTreeQuery : NSObject
 
-@property(nonatomic, readonly) NSArray<NSData*> * platformQueryKeys;
-@property(nonatomic, readonly) NSArray<NSArray<NSData*>*> * platformQueryKeyRanges;
-@property(nonatomic, readonly) Keys * keys;
+@property (nonatomic, readonly) NSArray<NSData *> *platformQueryKeys;
+@property (nonatomic, readonly) NSArray<NSArray<NSData *> *> *platformQueryKeyRanges;
+@property (nonatomic, readonly) Keys *keys;
 
-+(DSPlatformTreeQuery*)platformTreeQueryForKeys:(NSArray<NSData*>*)keys;
++ (DSPlatformTreeQuery *)platformTreeQueryForKeys:(NSArray<NSData *> *)keys;
 
-+(DSPlatformTreeQuery*)platformTreeQueryForRanges:(NSArray<NSArray<NSData*>*>*)keys;
++ (DSPlatformTreeQuery *)platformTreeQueryForRanges:(NSArray<NSArray<NSData *> *> *)keys;
 
-+(DSPlatformTreeQuery*)platformTreeQueryForKeys:(NSArray<NSData*>*)keys andRanges:(NSArray<NSArray<NSData*>*>*)keys;
++ (DSPlatformTreeQuery *)platformTreeQueryForKeys:(NSArray<NSData *> *)keys andRanges:(NSArray<NSArray<NSData *> *> *)keys;
 
 @end
 

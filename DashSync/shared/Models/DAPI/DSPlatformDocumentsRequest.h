@@ -27,6 +27,7 @@ typedef NS_ENUM(NSUInteger, DSPlatformDocumentType)
 };
 
 #define DSPROVE_PLATFORM TRUE
+#define DSPROVE_PLATFORM_SINDEXES FALSE
 
 @class GetDocumentsRequest, DPContract;
 

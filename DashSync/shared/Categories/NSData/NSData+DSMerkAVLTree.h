@@ -36,7 +36,7 @@ typedef NS_ENUM(NSInteger, DSPlatformStoredMessage)
 /* executeProofReturnElementDictionary returns items from the proof that match the specific query, if no query is set all
  items are returned.
  */
-- (NSData *_Nullable)executeProofReturnElementDictionary:(NSDictionary *_Nonnull *_Nullable)rElementDictionary  query:(DSPlatformTreeQuery*_Nullable)query decode:(BOOL)decode usesVersion:(BOOL)usesVersion error:(NSError **)error;
+- (NSData *_Nullable)executeProofReturnElementDictionary:(NSDictionary *_Nonnull *_Nullable)rElementDictionary query:(DSPlatformTreeQuery *_Nullable)query decode:(BOOL)decode usesVersion:(BOOL)usesVersion error:(NSError **)error;
 
 @end
 

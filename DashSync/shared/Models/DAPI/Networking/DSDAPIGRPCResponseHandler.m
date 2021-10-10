@@ -21,6 +21,7 @@
 #import "DSChain.h"
 #import "DSChainManager.h"
 #import "DSMasternodeManager.h"
+#import "DSPlatformQuery.h"
 #import "DSPlatformRootMerkleTree.h"
 #import "DSQuorumEntry.h"
 #import "NSData+DSCborDecoding.h"
@@ -29,7 +30,6 @@
 #import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Dash.h"
-#import "DSPlatformQuery.h"
 #import <DAPI-GRPC/Core.pbobjc.h>
 #import <DAPI-GRPC/Core.pbrpc.h>
 #import <DAPI-GRPC/Platform.pbobjc.h>
@@ -43,7 +43,7 @@
 @property (nonatomic, strong) NSError *decodingError;
 @property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, assign) BOOL requireProof;
-@property (nonatomic, strong) DSPlatformQuery * query;
+@property (nonatomic, strong) DSPlatformQuery *query;
 
 @end
 
@@ -62,6 +62,38 @@
     self = [self initWithChain:chain requireProof:requireProof];
     if (self) {
         self.query = [DSPlatformQuery platformQueryForIdentityID:identityId];
+    }
+    return self;
+}
+
+- (instancetype)initForContractRequest:(NSData *)contractId withChain:(DSChain *)chain requireProof:(BOOL)requireProof {
+    self = [self initWithChain:chain requireProof:requireProof];
+    if (self) {
+        self.query = [DSPlatformQuery platformQueryForContractID:contractId];
+    }
+    return self;
+}
+
+- (instancetype)initForDocumentsRequest:(NSArray<NSData *> *)documentKeys inPath:(NSArray<NSData *> *)path withChain:(DSChain *)chain requireProof:(BOOL)requireProof {
+    self = [self initWithChain:chain requireProof:requireProof];
+    if (self) {
+        self.query = [DSPlatformQuery platformQueryForDocumentKeys:documentKeys inPath:path];
+    }
+    return self;
+}
+
+- (instancetype)initForGetIdentityIDsByPublicKeyHashesRequest:(NSArray<NSData *> *)hashes withChain:(DSChain *)chain requireProof:(BOOL)requireProof {
+    self = [self initWithChain:chain requireProof:requireProof];
+    if (self) {
+        self.query = [DSPlatformQuery platformQueryForGetIdentityIDsByPublicKeyHashes:hashes];
+    }
+    return self;
+}
+
+- (instancetype)initForGetIdentitiesByPublicKeyHashesRequest:(NSArray<NSData *> *)hashes withChain:(DSChain *)chain requireProof:(BOOL)requireProof {
+    self = [self initWithChain:chain requireProof:requireProof];
+    if (self) {
+        self.query = [DSPlatformQuery platformQueryForGetIdentitiesByPublicKeyHashes:hashes];
     }
     return self;
 }
@@ -89,25 +121,25 @@
             self.responseObject = nil;
             return;
         }
-//        if (self.expectedKeys) {
-//            for (NSNumber *treeType in self.expectedKeys) {
-//                NSDictionary *typeObjectDictionary = identitiesDictionary[treeType];
-//                if (typeObjectDictionary == nil) {
-//                    self.decodingError = [NSError errorWithDomain:@"DashSync"
-//                                                             code:500
-//                                                         userInfo:@{NSLocalizedDescriptionKey:
-//                                                                      DSLocalizedString(@"Platform did not satisfy expected key", nil)}];
-//                    return;
-//                }
-//            }
-//        } else {
-//            NSDictionary *identityDictionary = identitiesDictionary.allValues[0];
-//            if (identityDictionary.count == 0) {
-//                self.responseObject = nil;
-//                return;
-//            }
-//            identityData = [identityDictionary allValues][0];
-//        }
+        //        if (self.expectedKeys) {
+        //            for (NSNumber *treeType in self.expectedKeys) {
+        //                NSDictionary *typeObjectDictionary = identitiesDictionary[treeType];
+        //                if (typeObjectDictionary == nil) {
+        //                    self.decodingError = [NSError errorWithDomain:@"DashSync"
+        //                                                             code:500
+        //                                                         userInfo:@{NSLocalizedDescriptionKey:
+        //                                                                      DSLocalizedString(@"Platform did not satisfy expected key", nil)}];
+        //                    return;
+        //                }
+        //            }
+        //        } else {
+        //            NSDictionary *identityDictionary = identitiesDictionary.allValues[0];
+        //            if (identityDictionary.count == 0) {
+        //                self.responseObject = nil;
+        //                return;
+        //            }
+        //            identityData = [identityDictionary allValues][0];
+        //        }
     }
     self.responseObject = [identityData ds_decodeCborError:&error];
     if (error) {
@@ -428,7 +460,7 @@
     return [DSDAPIGRPCResponseHandler verifyAndExtractFromProof:proof withMetadata:metaData query:self.query onChain:self.chain error:error];
 }
 
-+ (NSDictionary *)verifyAndExtractFromProof:(Proof *)proof withMetadata:(ResponseMetadata *)metaData query:(DSPlatformQuery*)query onChain:(DSChain *)chain error:(NSError **)error {
++ (NSDictionary *)verifyAndExtractFromProof:(Proof *)proof withMetadata:(ResponseMetadata *)metaData query:(DSPlatformQuery *)query onChain:(DSChain *)chain error:(NSError **)error {
     NSData *quorumHashData = proof.signatureLlmqHash;
     if (!quorumHashData) {
         *error = [NSError errorWithDomain:@"DashSync"
@@ -458,7 +490,7 @@
     return nil;
 }
 
-+ (NSDictionary *)verifyAndExtractFromProof:(Proof *)proof withMetadata:(ResponseMetadata *)metaData query:(DSPlatformQuery*)query forQuorumEntry:(DSQuorumEntry *)quorumEntry quorumType:(DSLLMQType)quorumType error:(NSError **)error {
++ (NSDictionary *)verifyAndExtractFromProof:(Proof *)proof withMetadata:(ResponseMetadata *)metaData query:(DSPlatformQuery *)query forQuorumEntry:(DSQuorumEntry *)quorumEntry quorumType:(DSLLMQType)quorumType error:(NSError **)error {
     NSData *signatureData = proof.signature;
     if (!signatureData) {
         *error = [NSError errorWithDomain:@"DashSync"
@@ -490,9 +522,9 @@
     NSData *publicKeyHashesToIdentityIdsRoot = nil;
 
     NSMutableDictionary<NSNumber *, NSData *> *rootElementsToProve = [NSMutableDictionary dictionary];
-    
+
     if (proofs.publicKeyHashesToIdentityIdsProof.length > 0) {
-        DSPlatformTreeQuery * treeQuery = [query treeQueryForType:DSPlatformDictionary_PublicKeyHashesToIdentityIds];
+        DSPlatformTreeQuery *treeQuery = [query treeQueryForType:DSPlatformDictionary_PublicKeyHashesToIdentityIds];
         publicKeyHashesToIdentityIdsRoot = [proofs.publicKeyHashesToIdentityIdsProof executeProofReturnElementDictionary:&publicKeyHashesToIdentityIdsProofDictionary query:treeQuery decode:FALSE usesVersion:FALSE error:error];
         if (*error) {
             return nil;
@@ -501,7 +533,7 @@
     }
 
     if (proofs.identitiesProof.length > 0) {
-        DSPlatformTreeQuery * treeQuery = [query treeQueryForType:DSPlatformDictionary_Identities];
+        DSPlatformTreeQuery *treeQuery = [query treeQueryForType:DSPlatformDictionary_Identities];
         identitiesRoot = [proofs.identitiesProof executeProofReturnElementDictionary:&identitiesDictionary query:treeQuery decode:TRUE usesVersion:TRUE error:error];
         if (*error) {
             return nil;
@@ -510,7 +542,7 @@
     }
 
     if (proofs.documentsProof.length > 0) {
-        DSPlatformTreeQuery * treeQuery = [query treeQueryForType:DSPlatformDictionary_Documents];
+        DSPlatformTreeQuery *treeQuery = [query treeQueryForType:DSPlatformDictionary_Documents];
         documentsRoot = [proofs.documentsProof executeProofReturnElementDictionary:&documentsDictionary query:treeQuery decode:TRUE usesVersion:TRUE error:error];
         if (*error) {
             return nil;
@@ -519,7 +551,7 @@
     }
 
     if (proofs.dataContractsProof.length > 0) {
-        DSPlatformTreeQuery * treeQuery = [query treeQueryForType:DSPlatformDictionary_Contracts];
+        DSPlatformTreeQuery *treeQuery = [query treeQueryForType:DSPlatformDictionary_Contracts];
         contractsRoot = [proofs.dataContractsProof executeProofReturnElementDictionary:&contractsDictionary query:treeQuery decode:TRUE usesVersion:TRUE error:error];
         if (*error) {
             return nil;
