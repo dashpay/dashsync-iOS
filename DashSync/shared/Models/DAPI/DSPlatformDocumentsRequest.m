@@ -22,8 +22,16 @@
 #import "NSObject+DSCborEncoding.h"
 #import "NSPredicate+CBORData.h"
 #import "NSString+Bitcoin.h"
+#import "DSPlatformQuery.h"
 #import <DAPI-GRPC/Platform.pbobjc.h>
 #import <DAPI-GRPC/Platform.pbrpc.h>
+
+@interface DSPlatformDocumentsRequest()
+
+@property(nonatomic, readonly) NSData * secondaryIndexPathData;
+@property(nonatomic, assign) DSPlatformQueryType queryType;
+
+@end
 
 @implementation DSPlatformDocumentsRequest
 
@@ -37,6 +45,7 @@
     platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel == %@ && normalizedParentDomainName == %@", [username lowercaseString], [domain lowercaseString]];
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = 1;
+    platformDocumentsRequest.queryType = DSPlatformQueryType_OneElement;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"domain";
     platformDocumentsRequest.prove = DSPROVE_PLATFORM;
@@ -48,6 +57,7 @@
     platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"records.dashUniqueIdentityId == %@", userId];
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = 100;
+    platformDocumentsRequest.queryType = DSPlatformQueryType_RangeOverIndex;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"domain";
     platformDocumentsRequest.prove = DSPROVE_PLATFORM;
@@ -64,6 +74,7 @@
     platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel IN %@ && normalizedParentDomainName == %@", lowercaseUsernames, [domain lowercaseString]];
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = (uint32_t)usernames.count;
+    platformDocumentsRequest.queryType = DSPlatformQueryType_IndividualElements; // Many non consecutive elements in the tree
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"domain";
     platformDocumentsRequest.prove = DSPROVE_PLATFORM;
@@ -79,6 +90,7 @@
     platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel BEGINSWITH %@ && normalizedParentDomainName == %@", usernamePrefix, [domain lowercaseString]];
     platformDocumentsRequest.startAt = offset;
     platformDocumentsRequest.limit = limit;
+    platformDocumentsRequest.queryType = DSPlatformQueryType_RangeOverValue;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"domain";
     platformDocumentsRequest.prove = DSPROVE_PLATFORM;
@@ -92,6 +104,7 @@
     platformDocumentsRequest.startAt = offset;
     platformDocumentsRequest.limit = 100;
     platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"$ownerId" ascending:YES], [NSSortDescriptor sortDescriptorWithKey:@"$createdAt" ascending:YES]];
+    platformDocumentsRequest.queryType = DSPlatformQueryType_RangeOverValue;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"contactRequest";
     platformDocumentsRequest.prove = DSPROVE_PLATFORM;
@@ -105,6 +118,7 @@
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = 100;
     platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"toUserId" ascending:YES], [NSSortDescriptor sortDescriptorWithKey:@"$createdAt" ascending:YES]];
+    platformDocumentsRequest.queryType = DSPlatformQueryType_RangeOverValue;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"contactRequest";
     platformDocumentsRequest.prove = DSPROVE_PLATFORM;
@@ -115,8 +129,9 @@
     DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"%K == %@ && toUserId == %@", @"$ownerId", userId, toUserId];
     platformDocumentsRequest.startAt = 0;
-    platformDocumentsRequest.limit = 1;
+    platformDocumentsRequest.limit = 100;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
+    platformDocumentsRequest.queryType = DSPlatformQueryType_RangeOverIndex;
     platformDocumentsRequest.tableName = @"contactRequest";
     platformDocumentsRequest.prove = DSPROVE_PLATFORM;
     return platformDocumentsRequest;
@@ -128,6 +143,7 @@
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = 1;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
+    platformDocumentsRequest.queryType = DSPlatformQueryType_OneElement;
     platformDocumentsRequest.tableName = @"profile";
     platformDocumentsRequest.prove = DSPROVE_PLATFORM;
     return platformDocumentsRequest;
@@ -139,6 +155,7 @@
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = (uint32_t)userIds.count;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
+    platformDocumentsRequest.queryType = DSPlatformQueryType_IndividualElements;
     platformDocumentsRequest.tableName = @"profile";
     platformDocumentsRequest.prove = DSPROVE_PLATFORM;
     return platformDocumentsRequest;
@@ -148,8 +165,10 @@
     DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     if (preorderSaltedHashes.count == 1) {
         platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"saltedDomainHash == %@", [preorderSaltedHashes firstObject]];
+        platformDocumentsRequest.queryType = DSPlatformQueryType_OneElement;
     } else {
         platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"saltedDomainHash IN %@", preorderSaltedHashes];
+        platformDocumentsRequest.queryType = DSPlatformQueryType_IndividualElements;
     }
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = (uint32_t)preorderSaltedHashes.count;
@@ -162,12 +181,21 @@
 - (NSData *)whereData {
     return [self.predicate dashPlatormWhereData];
 }
+
+- (NSData *)secondaryIndexPathData {
+    return [self.predicate secondaryIndexPathForQueryType:self.queryType];
+}
+
 - (NSData *)orderByData {
+    return [[self orderByRanges] ds_cborEncodedObject];
+}
+
+- (NSArray <NSArray*> *)orderByRanges {
     NSMutableArray *sortDescriptorsArray = [NSMutableArray array];
     for (NSSortDescriptor *sortDescriptor in self.sortDescriptors) {
         [sortDescriptorsArray addObject:@[sortDescriptor.key, sortDescriptor.ascending ? @"asc" : @"desc"]];
     }
-    return [sortDescriptorsArray ds_cborEncodedObject];
+    return [sortDescriptorsArray copy];
 }
 
 - (GetDocumentsRequest *)getDocumentsRequest {
@@ -184,6 +212,18 @@
     getDocumentsRequest.prove = self.prove;
     DSLog(@"Sending request to Contract %@", getDocumentsRequest.dataContractId.base58String);
     return getDocumentsRequest;
+}
+
+-(NSArray<NSData*>*)paths {
+    NSMutableArray * paths = [NSMutableArray array];
+    // First we need to add the documents tree
+    [paths addObject:[NSData dataWithUInt8:DSPlatformDictionary_Documents]];
+    // Then we need to add the contract id
+    [paths addObject:uint256_data(self.contract.contractId)];
+    // Then we need to add the secondary index
+    [paths addObject:self.secondaryIndexPathData];
+    
+    return [paths copy];
 }
 
 @end

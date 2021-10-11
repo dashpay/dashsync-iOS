@@ -26,6 +26,14 @@ typedef NS_ENUM(NSUInteger, DSPlatformDocumentType)
     DSPlatformDocumentType_Document = 2,
 };
 
+typedef NS_ENUM(NSUInteger, DSPlatformQueryType)
+{
+    DSPlatformQueryType_OneElement,
+    DSPlatformQueryType_IndividualElements,
+    DSPlatformQueryType_RangeOverValue,
+    DSPlatformQueryType_RangeOverIndex,
+};
+
 #define DSPROVE_PLATFORM TRUE
 #define DSPROVE_PLATFORM_SINDEXES FALSE
 
@@ -41,6 +49,9 @@ typedef NS_ENUM(NSUInteger, DSPlatformDocumentType)
 @property (nonatomic, strong) NSString *tableName;
 @property (nonatomic, strong) DPContract *contract;
 @property (nonatomic, assign) DSPlatformDocumentType type;
+@property (nonatomic, readonly) DSPlatformQueryType queryType;
+@property (nonatomic, readonly) NSArray<NSArray*>* orderByRanges;
+@property (nonatomic, readonly) NSArray<NSData*>* paths;
 
 + (instancetype)dpnsRequestForUserId:(NSData *)userId;
 

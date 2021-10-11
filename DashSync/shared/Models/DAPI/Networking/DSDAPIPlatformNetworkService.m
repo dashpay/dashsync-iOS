@@ -705,7 +705,8 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     NSParameterAssert(completionQueue);
     DSPlatformDocumentsRequest *platformDocumentsRequest = [DSPlatformDocumentsRequest dashpayRequestForContactRequestsForRecipientUserId:userId since:timestamp offset:offset];
     platformDocumentsRequest.contract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
-    DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] initWithChain:self.chain requireProof:DSPROVE_PLATFORM];
+    NSArray <NSData*>* rangeValues = @[[NSData dataWithUInt64:timestamp]];
+    DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] initForRangeDocumentsRequest:rangeValues inPath:platformDocumentsRequest.paths withChain:self.chain requireProof:DSPROVE_PLATFORM_SINDEXES];
     responseHandler.host = [NSString stringWithFormat:@"%@:%d", self.ipAddress, self.chain.standardDapiGRPCPort];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.completionQueue = completionQueue;

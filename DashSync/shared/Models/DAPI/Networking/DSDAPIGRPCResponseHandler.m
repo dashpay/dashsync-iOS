@@ -74,6 +74,11 @@
     return self;
 }
 
+- (instancetype)initForDocumentsQueryRequest:(DSPlatformDocumentsRequest*)platformDocumentsRequest withChain:(DSChain *)chain requireProof:(BOOL)requireProof {
+    self = [self initForDocumentsRequest:platformDocumentsRequest.ranges inPath:platformDocumentsRequest.paths withChain:chain requireProof:requireProof];
+    return self;
+}
+
 - (instancetype)initForDocumentsRequest:(NSArray<NSData *> *)documentKeys inPath:(NSArray<NSData *> *)path withChain:(DSChain *)chain requireProof:(BOOL)requireProof {
     self = [self initWithChain:chain requireProof:requireProof];
     if (self) {

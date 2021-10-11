@@ -1096,6 +1096,17 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
     return [self dataWithBytes:&n length:sizeof(n)];
 }
 
++ (instancetype)dataWithUInt32:(uint32_t)n {
+    return [self dataWithBytes:&n length:sizeof(n)];
+}
+
++ (instancetype)dataWithUInt16:(uint16_t)n {
+    return [self dataWithBytes:&n length:sizeof(n)];
+}
+
++ (instancetype)dataWithUInt8:(uint8_t)n {
+    return [self dataWithBytes:&n length:sizeof(n)];
+}
 
 + (instancetype)dataWithBase58String:(NSString *)b58str {
     return b58str.base58ToData;

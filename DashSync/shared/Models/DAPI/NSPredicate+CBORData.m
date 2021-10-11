@@ -141,4 +141,20 @@
     return [[self whereClauseArray] ds_cborEncodedObject];
 }
 
+- (NSData *)secondaryIndexPathForQueryType:(DSPlatformQueryType)queryType {
+    //ToDo: We probably need to not have the last element of the whereClause
+    NSArray *array = [self whereClauseArrayWithOptions:NSPredicateCBORDataOptions_DataToBase64];
+    //This will be replaced
+    switch (queryType) {
+        case DSPlatformQueryType_OneElement:
+            return [[array componentsJoinedByString:@"|"] dataUsingEncoding:NSUTF8StringEncoding];
+        case DSPlatformQueryType_IndividualElements:
+            return [[array componentsJoinedByString:@"|"] dataUsingEncoding:NSUTF8StringEncoding];
+        case DSPlatformQueryType_RangeOverValue:
+            return [[array componentsJoinedByString:@"|"] dataUsingEncoding:NSUTF8StringEncoding];
+        case DSPlatformQueryType_RangeOverIndex:
+            return [[array componentsJoinedByString:@"|"] dataUsingEncoding:NSUTF8StringEncoding];
+    }
+}
+
 @end

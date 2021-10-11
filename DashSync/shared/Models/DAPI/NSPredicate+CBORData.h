@@ -16,6 +16,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "DSPlatformDocumentsRequest.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -28,6 +29,7 @@ typedef NS_ENUM(NSUInteger, NSPredicateCBORDataOptions)
 @interface NSPredicate (CBORData)
 
 - (NSData *)dashPlatormWhereData;
+- (NSData *)secondaryIndexPathForQueryType:(DSPlatformQueryType)queryType;
 
 @end
 

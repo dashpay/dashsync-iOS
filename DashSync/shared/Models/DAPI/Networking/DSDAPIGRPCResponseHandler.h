@@ -40,6 +40,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initForIdentityRequest:(NSData *)identityId withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
 - (instancetype)initForContractRequest:(NSData *)contractId withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
 - (instancetype)initForDocumentsRequest:(NSArray<NSData *> *)documentKeys inPath:(NSArray<NSData *> *)path withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
+- (instancetype)initForRangeDocumentsRequest:(NSArray<NSData *> *)rangeKeys inPath:(NSArray<NSData *> *)path withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
+- (instancetype)initForDocumentsQueryRequest:(DSPlatformDocumentsRequest*)platformDocumentsRequest withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
 - (instancetype)initForGetContractsByHashesRequest:(NSArray<NSData *> *)hashes withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
 - (instancetype)initForGetIdentityIDsByPublicKeyHashesRequest:(NSArray<NSData *> *)hashes withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
 - (instancetype)initForGetIdentitiesByPublicKeyHashesRequest:(NSArray<NSData *> *)hashes withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
