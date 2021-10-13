@@ -37,15 +37,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) void (^errorHandler)(NSError *error);
 
 - (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithChain:(DSChain *)chain requireProof:(BOOL)requireProof;
 - (instancetype)initForIdentityRequest:(NSData *)identityId withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
 - (instancetype)initForContractRequest:(NSData *)contractId withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
-- (instancetype)initForDocumentsRequest:(NSArray<NSData *> *)documentKeys inPath:(NSArray<NSData *> *)path withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
-- (instancetype)initForRangeDocumentsRequest:(NSArray<NSData *> *)rangeKeys inPath:(NSArray<NSData *> *)path withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
 
-- (instancetype)initForStateTransiton:(DSTransition *)stateTransition withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
+- (instancetype)initForStateTransition:(DSTransition *)stateTransition withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
 - (instancetype)initForDocumentsQueryRequest:(DSPlatformDocumentsRequest *)platformDocumentsRequest withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
 
-- (instancetype)initForGetContractsByHashesRequest:(NSArray<NSData *> *)hashes withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
+- (instancetype)initForGetContractsByContractIDs:(NSArray<NSData *> *)contractIDs withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
 - (instancetype)initForGetIdentityIDsByPublicKeyHashesRequest:(NSArray<NSData *> *)hashes withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
 - (instancetype)initForGetIdentitiesByPublicKeyHashesRequest:(NSArray<NSData *> *)hashes withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
 

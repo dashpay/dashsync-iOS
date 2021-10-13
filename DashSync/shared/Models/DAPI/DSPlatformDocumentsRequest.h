@@ -37,7 +37,7 @@ typedef NS_ENUM(NSUInteger, DSPlatformQueryType)
 #define DSPROVE_PLATFORM TRUE
 #define DSPROVE_PLATFORM_SINDEXES FALSE
 
-@class GetDocumentsRequest, DPContract, DSDirectionalKey;
+@class GetDocumentsRequest, DPContract, DSDirectionalKey, DSPlatformQuery;
 
 @interface DSPlatformDocumentsRequest : NSObject
 
@@ -52,6 +52,7 @@ typedef NS_ENUM(NSUInteger, DSPlatformQueryType)
 @property (nonatomic, readonly) DSPlatformQueryType queryType;
 @property (nonatomic, readonly) NSArray<DSDirectionalKey *> *orderByRanges;
 @property (nonatomic, readonly) NSArray<NSData *> *paths;
+@property (nonatomic, readonly) DSPlatformQuery *expectedResponseQuery;
 
 + (instancetype)dpnsRequestForUserId:(NSData *)userId;
 

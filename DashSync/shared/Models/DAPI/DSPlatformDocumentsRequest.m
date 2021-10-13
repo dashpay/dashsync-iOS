@@ -228,4 +228,8 @@
     return [paths copy];
 }
 
+- (DSPlatformQuery *)expectedResponseQuery {
+    return [DSPlatformQuery platformQueryForDocuments:self.documents];
+}
+
 @end

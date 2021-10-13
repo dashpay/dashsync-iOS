@@ -36,6 +36,7 @@ typedef NS_ENUM(NSUInteger, DSPlatformDictionary)
 
 + (DSPlatformQuery *)platformQueryForIdentityID:(NSData *)identityID;
 + (DSPlatformQuery *)platformQueryForContractID:(NSData *)contractID;
++ (DSPlatformQuery *)platformQueryForGetContractsByContractIDs:(NSArray<NSData *> *)contractIDs;
 + (DSPlatformQuery *)platformQueryForIndividualDocumentKeys:(NSArray<NSData *> *)documentKeys inPath:(NSArray<NSData *> *)path;
 + (DSPlatformQuery *)platformQueryForDocuments:(NSArray<DPDocument *> *)documents;
 + (DSPlatformQuery *)platformQueryForGetIdentityIDsByPublicKeyHashes:(NSArray<NSData *> *)publicKeyHashes;

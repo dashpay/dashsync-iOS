@@ -76,7 +76,7 @@
     return self;
 }
 
-- (instancetype)initForStateTransiton:(DSTransition *)stateTransition withChain:(DSChain *)chain requireProof:(BOOL)requireProof {
+- (instancetype)initForStateTransition:(DSTransition *)stateTransition withChain:(DSChain *)chain requireProof:(BOOL)requireProof {
     self = [self initWithChain:chain requireProof:requireProof];
     if (stateTransition.type == DSPlatformDictionary_Documents) {
         DSDocumentTransition *documentTransition = (DSDocumentTransition *)stateTransition;
@@ -87,7 +87,10 @@
 }
 
 - (instancetype)initForDocumentsQueryRequest:(DSPlatformDocumentsRequest *)platformDocumentsRequest withChain:(DSChain *)chain requireProof:(BOOL)requireProof {
-    self = [self initForDocumentsRequest:platformDocumentsRequest.orderByRanges inPath:platformDocumentsRequest.paths withChain:chain requireProof:requireProof];
+    self = [self initWithChain:chain requireProof:requireProof];
+    if (self) {
+        self.query = platformDocumentsRequest.expectedResponseQuery;
+    }
     return self;
 }
 
@@ -111,6 +114,14 @@
     self = [self initWithChain:chain requireProof:requireProof];
     if (self) {
         self.query = [DSPlatformQuery platformQueryForGetIdentitiesByPublicKeyHashes:hashes];
+    }
+    return self;
+}
+
+- (instancetype)initForGetContractsByContractIDs:(NSArray<NSData *> *)contractIDs withChain:(DSChain *)chain requireProof:(BOOL)requireProof {
+    self = [self initWithChain:chain requireProof:requireProof];
+    if (self) {
+        self.query = [DSPlatformQuery platformQueryForGetContractsByContractIDs:contractIDs];
     }
     return self;
 }

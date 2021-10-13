@@ -65,6 +65,13 @@
     return query;
 }
 
++ (DSPlatformQuery *)platformQueryForGetContractsByContractIDs:(NSArray<NSData *> *)contractIDs {
+    DSPlatformQuery *query = [[DSPlatformQuery alloc] init];
+    DSPlatformTreeQuery *contractsQuery = [DSPlatformTreeQuery platformTreeQueryForKeys:contractIDs];
+    query.treeQueries = @{@(DSPlatformDictionary_Contracts): contractsQuery};
+    return query;
+}
+
 + (DSPlatformQuery *)platformQueryForDocuments:(NSArray<DPDocument *> *)documents {
     DSPlatformQuery *query = [[DSPlatformQuery alloc] init];
     // We should group all documents of the same type
