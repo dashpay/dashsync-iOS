@@ -28,13 +28,16 @@ typedef NS_ENUM(NSUInteger, DSPlatformDictionary)
     DSPlatformDictionary_PublicKeyHashesToIdentityIds = 2,
 };
 
+@class DPDocument;
+
 @interface DSPlatformQuery : NSObject
 
 @property (nonatomic, readonly) NSDictionary<NSNumber *, DSPlatformTreeQuery *> *treeQueries;
 
 + (DSPlatformQuery *)platformQueryForIdentityID:(NSData *)identityID;
 + (DSPlatformQuery *)platformQueryForContractID:(NSData *)contractID;
-+ (DSPlatformQuery *)platformQueryForDocumentKeys:(NSArray<NSData *> *)documentKeys inPath:(NSArray<NSData *> *)path;
++ (DSPlatformQuery *)platformQueryForIndividualDocumentKeys:(NSArray<NSData *> *)documentKeys inPath:(NSArray<NSData *> *)path;
++ (DSPlatformQuery *)platformQueryForDocuments:(NSArray<DPDocument *> *)documents;
 + (DSPlatformQuery *)platformQueryForGetIdentityIDsByPublicKeyHashes:(NSArray<NSData *> *)publicKeyHashes;
 + (DSPlatformQuery *)platformQueryForGetIdentitiesByPublicKeyHashes:(NSArray<NSData *> *)publicKeyHashes;
 

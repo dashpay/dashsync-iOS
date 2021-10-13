@@ -1,6 +1,6 @@
 //
 //  Created by Sam Westrich
-//  Copyright © 2020 Dash Core Group. All rights reserved.
+//  Copyright © 2021 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,21 +15,16 @@
 //  limitations under the License.
 //
 
-#import "DSPlatformDocumentsRequest.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, NSPredicateCBORDataOptions)
-{
-    NSPredicateCBORDataOptions_None = 0,
-    NSPredicateCBORDataOptions_DataToBase64 = 1
-};
+@interface DSDirectionalKey : NSObject
 
-@interface NSPredicate (CBORData)
+@property (nonatomic, readonly) NSData *key;
+@property (nonatomic, readonly) bool ascending;
 
-- (NSData *)dashPlatormWhereData;
-- (NSData *)secondaryIndexPathForQueryType:(DSPlatformQueryType)queryType;
+- (instancetype)initWithKey:(NSData *)key ascending:(bool)ascending;
 
 @end
 

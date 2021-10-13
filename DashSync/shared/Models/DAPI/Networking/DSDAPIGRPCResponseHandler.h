@@ -23,7 +23,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSQuorumEntry, DSPlatformQuery;
+@class DSQuorumEntry, DSPlatformQuery, DSTransition;
 
 @interface DSDAPIGRPCResponseHandler : NSObject <GRPCProtoResponseHandler>
 
@@ -41,7 +41,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initForContractRequest:(NSData *)contractId withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
 - (instancetype)initForDocumentsRequest:(NSArray<NSData *> *)documentKeys inPath:(NSArray<NSData *> *)path withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
 - (instancetype)initForRangeDocumentsRequest:(NSArray<NSData *> *)rangeKeys inPath:(NSArray<NSData *> *)path withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
-- (instancetype)initForDocumentsQueryRequest:(DSPlatformDocumentsRequest*)platformDocumentsRequest withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
+
+- (instancetype)initForStateTransiton:(DSTransition *)stateTransition withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
+- (instancetype)initForDocumentsQueryRequest:(DSPlatformDocumentsRequest *)platformDocumentsRequest withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
+
 - (instancetype)initForGetContractsByHashesRequest:(NSArray<NSData *> *)hashes withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
 - (instancetype)initForGetIdentityIDsByPublicKeyHashesRequest:(NSArray<NSData *> *)hashes withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
 - (instancetype)initForGetIdentitiesByPublicKeyHashesRequest:(NSArray<NSData *> *)hashes withChain:(DSChain *)chain requireProof:(BOOL)requireProof;

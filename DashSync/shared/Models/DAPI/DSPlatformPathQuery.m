@@ -15,50 +15,35 @@
 //  limitations under the License.
 //
 
-#import "DSPlatformTreeQuery.h"
+#import "DSPlatformPathQuery.h"
 
-@interface DSPlatformTreeQuery ()
+@interface DSPlatformPathQuery ()
 
-@property (nonatomic, strong) NSArray<DSPlatformPathQuery *> *platformQueryPaths;
+@property (nonatomic, strong) NSArray<NSData *> *path;
 @property (nonatomic, strong) NSArray<NSData *> *platformQueryKeys;
 @property (nonatomic, strong) NSArray<NSArray<NSData *> *> *platformQueryKeyRanges;
 @property (nonatomic, assign) Keys *keys;
 
 @end
 
-@implementation DSPlatformTreeQuery
+@implementation DSPlatformPathQuery
 
-+ (DSPlatformTreeQuery *)platformTreeQueryForKeys:(NSArray<NSData *> *)keys {
-    return [[self alloc] initWithKeys:keys andRanges:nil];
++ (DSPlatformPathQuery *)platformPath:(NSArray<NSData *> *)path queryForKeys:(NSArray<NSData *> *)keys {
+    return [[self alloc] initWithPath:(NSArray<NSData *> *)path forKeys:keys andRanges:nil];
 }
 
-+ (DSPlatformTreeQuery *)platformTreeQueryForRanges:(NSArray<NSArray<NSData *> *> *)keyRanges {
-    return [[self alloc] initWithKeys:nil andRanges:keyRanges];
++ (DSPlatformPathQuery *)platformPath:(NSArray<NSData *> *)path queryForRanges:(NSArray<NSArray<NSData *> *> *)keyRanges {
+    return [[self alloc] initWithPath:(NSArray<NSData *> *)path forKeys:nil andRanges:keyRanges];
 }
 
-+ (DSPlatformTreeQuery *)platformTreeQueryForKeys:(NSArray<NSData *> *)keys andRanges:(NSArray<NSArray<NSData *> *> *)keyRanges {
-    return [[self alloc] initWithKeys:keys andRanges:keyRanges];
++ (DSPlatformPathQuery *)platformPath:(NSArray<NSData *> *)path queryForKeys:(NSArray<NSData *> *)keys andRanges:(NSArray<NSArray<NSData *> *> *)keyRanges {
+    return [[self alloc] initWithPath:(NSArray<NSData *> *)path forKeys:keys andRanges:keyRanges];
 }
 
-// This is for secondary index trees
-+ (DSPlatformTreeQuery *)platformTreeQueryForPaths:(NSArray<DSPlatformPathQuery *> *)pathQueries {
-    return [[self alloc] initWithPathQueries:pathQueries];
-}
-
-- (instancetype)initWithPathQueries:(NSArray<DSPlatformPathQuery *> *)pathQueries {
+- (instancetype)initWithPath:(NSArray<NSData *> *)path forKeys:(NSArray<NSData *> *)keys andRanges:(NSArray<NSArray<NSData *> *> *)keyRanges {
     self = [super init];
     if (self) {
-        self.platformQueryPaths = pathQueries;
-        self.platformQueryKeyRanges = @[];
-        self.platformQueryKeys = @[];
-        [self createMerkKeys];
-    }
-    return self;
-}
-
-- (instancetype)initWithKeys:(NSArray<NSData *> *)keys andRanges:(NSArray<NSArray<NSData *> *> *)keyRanges {
-    self = [super init];
-    if (self) {
+        self.path = path;
         self.platformQueryKeys = keys;
         self.platformQueryKeyRanges = keyRanges;
         [self createMerkKeys];

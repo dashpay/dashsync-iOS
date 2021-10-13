@@ -20,10 +20,12 @@
 #import "DSBLSKey.h"
 #import "DSChain.h"
 #import "DSChainManager.h"
+#import "DSDocumentTransition.h"
 #import "DSMasternodeManager.h"
 #import "DSPlatformQuery.h"
 #import "DSPlatformRootMerkleTree.h"
 #import "DSQuorumEntry.h"
+#import "DSTransition.h"
 #import "NSData+DSCborDecoding.h"
 #import "NSData+DSHash.h"
 #import "NSData+DSMerkAVLTree.h"
@@ -74,15 +76,25 @@
     return self;
 }
 
-- (instancetype)initForDocumentsQueryRequest:(DSPlatformDocumentsRequest*)platformDocumentsRequest withChain:(DSChain *)chain requireProof:(BOOL)requireProof {
-    self = [self initForDocumentsRequest:platformDocumentsRequest.ranges inPath:platformDocumentsRequest.paths withChain:chain requireProof:requireProof];
+- (instancetype)initForStateTransiton:(DSTransition *)stateTransition withChain:(DSChain *)chain requireProof:(BOOL)requireProof {
+    self = [self initWithChain:chain requireProof:requireProof];
+    if (stateTransition.type == DSPlatformDictionary_Documents) {
+        DSDocumentTransition *documentTransition = (DSDocumentTransition *)stateTransition;
+        self.query = documentTransition.expectedResponseQuery;
+    } else {
+    }
+    return self;
+}
+
+- (instancetype)initForDocumentsQueryRequest:(DSPlatformDocumentsRequest *)platformDocumentsRequest withChain:(DSChain *)chain requireProof:(BOOL)requireProof {
+    self = [self initForDocumentsRequest:platformDocumentsRequest.orderByRanges inPath:platformDocumentsRequest.paths withChain:chain requireProof:requireProof];
     return self;
 }
 
 - (instancetype)initForDocumentsRequest:(NSArray<NSData *> *)documentKeys inPath:(NSArray<NSData *> *)path withChain:(DSChain *)chain requireProof:(BOOL)requireProof {
     self = [self initWithChain:chain requireProof:requireProof];
     if (self) {
-        self.query = [DSPlatformQuery platformQueryForDocumentKeys:documentKeys inPath:path];
+        self.query = [DSPlatformQuery platformQueryForIndividualDocumentKeys:documentKeys inPath:path];
     }
     return self;
 }

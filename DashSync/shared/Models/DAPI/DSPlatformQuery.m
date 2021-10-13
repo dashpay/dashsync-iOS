@@ -16,6 +16,9 @@
 //
 
 #import "DSPlatformQuery.h"
+#import "DPDocument.h"
+#import "DSDocumentType.h"
+#import "DSPlatformPathQuery.h"
 #import "DSPlatformTreeQuery.h"
 
 @interface DSPlatformQuery ()
@@ -40,7 +43,7 @@
     return query;
 }
 
-+ (DSPlatformQuery *)platformQueryForDocumentKeys:(NSArray<NSData *> *)documentKeys inPath:(NSArray<NSData *> *)path {
++ (DSPlatformQuery *)platformQueryForIndividualDocumentKeys:(NSArray<NSData *> *)documentKeys inPath:(NSArray<NSData *> *)path {
     //todo improve when we have secondary indexes
     DSPlatformQuery *query = [[DSPlatformQuery alloc] init];
     DSPlatformTreeQuery *documentKeysQuery = [DSPlatformTreeQuery platformTreeQueryForKeys:documentKeys];
@@ -62,8 +65,34 @@
     return query;
 }
 
++ (DSPlatformQuery *)platformQueryForDocuments:(NSArray<DPDocument *> *)documents {
+    DSPlatformQuery *query = [[DSPlatformQuery alloc] init];
+    // We should group all documents of the same type
+    NSMutableDictionary<NSData *, NSMutableArray<NSData *> *> *keysByTypePath = [NSMutableDictionary dictionary];
+    NSMutableDictionary<NSData *, NSArray<NSData *> *> *pathsByTypePath = [NSMutableDictionary dictionary];
+    for (DPDocument *document in documents) {
+        NSData *serializedPath = document.documentType.serializedPath;
+        if (![keysByTypePath objectForKey:serializedPath]) {
+            keysByTypePath[serializedPath] = [NSMutableArray array];
+            pathsByTypePath[serializedPath] = document.documentType.path;
+        }
+        [keysByTypePath[serializedPath] addObject:document.mainIndexKey];
+    }
+    NSMutableArray *queryPaths = [NSMutableArray array];
+    for (NSData *documentType in keysByTypePath) {
+        NSArray<NSData *> *path = pathsByTypePath[documentType];
+        NSArray<NSData *> *keys = keysByTypePath[documentType];
+        DSPlatformPathQuery *pathQuery = [DSPlatformPathQuery platformPath:path queryForKeys:keys];
+        [queryPaths addObject:pathQuery];
+    }
+    DSPlatformTreeQuery *documentKeysQuery = [DSPlatformTreeQuery platformTreeQueryForPaths:queryPaths];
+    query.treeQueries = @{@(DSPlatformDictionary_Documents): documentKeysQuery};
+    return query;
+}
+
 - (DSPlatformTreeQuery *)treeQueryForType:(DSPlatformDictionary)treeType {
     return [self.treeQueries objectForKey:@(treeType)];
 }
+
 
 @end

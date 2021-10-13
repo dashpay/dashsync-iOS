@@ -1,6 +1,6 @@
 //
 //  Created by Sam Westrich
-//  Copyright © 2020 Dash Core Group. All rights reserved.
+//  Copyright © 2021 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,21 +15,21 @@
 //  limitations under the License.
 //
 
-#import "DSPlatformDocumentsRequest.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, NSPredicateCBORDataOptions)
-{
-    NSPredicateCBORDataOptions_None = 0,
-    NSPredicateCBORDataOptions_DataToBase64 = 1
-};
+@class DPContract;
 
-@interface NSPredicate (CBORData)
+@interface DSDocumentType : NSObject
 
-- (NSData *)dashPlatormWhereData;
-- (NSData *)secondaryIndexPathForQueryType:(DSPlatformQueryType)queryType;
+@property (readonly, nonatomic) NSString *name;
+@property (readonly, nonatomic) uint8_t contractIndex;
+@property (readonly, nonatomic) NSArray<NSData *> *path;
+@property (readonly, nonatomic) NSData *serializedPath;
+@property (readonly, nonatomic, weak) DPContract *contract;
+@property (readonly, nonatomic) NSArray<NSData *> *mainIndexPath;
+@property (readonly, nonatomic) NSArray<NSArray<NSData *> *> *secondaryIndexPaths;
 
 @end
 

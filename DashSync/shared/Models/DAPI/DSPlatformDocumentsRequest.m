@@ -17,19 +17,20 @@
 
 #import "DSPlatformDocumentsRequest.h"
 #import "DPContract.h"
+#import "DSDirectionalKey.h"
+#import "DSPlatformQuery.h"
 #import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSObject+DSCborEncoding.h"
 #import "NSPredicate+CBORData.h"
 #import "NSString+Bitcoin.h"
-#import "DSPlatformQuery.h"
 #import <DAPI-GRPC/Platform.pbobjc.h>
 #import <DAPI-GRPC/Platform.pbrpc.h>
 
-@interface DSPlatformDocumentsRequest()
+@interface DSPlatformDocumentsRequest ()
 
-@property(nonatomic, readonly) NSData * secondaryIndexPathData;
-@property(nonatomic, assign) DSPlatformQueryType queryType;
+@property (nonatomic, readonly) NSData *secondaryIndexPathData;
+@property (nonatomic, assign) DSPlatformQueryType queryType;
 
 @end
 
@@ -190,10 +191,11 @@
     return [[self orderByRanges] ds_cborEncodedObject];
 }
 
-- (NSArray <NSArray*> *)orderByRanges {
+- (NSArray<DSDirectionalKey *> *)orderByRanges {
     NSMutableArray *sortDescriptorsArray = [NSMutableArray array];
     for (NSSortDescriptor *sortDescriptor in self.sortDescriptors) {
-        [sortDescriptorsArray addObject:@[sortDescriptor.key, sortDescriptor.ascending ? @"asc" : @"desc"]];
+        DSDirectionalKey *directionalKey = [[DSDirectionalKey alloc] initWithKey:[sortDescriptor.key dataUsingEncoding:NSUTF8StringEncoding] ascending:true];
+        [sortDescriptorsArray addObject:directionalKey];
     }
     return [sortDescriptorsArray copy];
 }
@@ -214,15 +216,15 @@
     return getDocumentsRequest;
 }
 
--(NSArray<NSData*>*)paths {
-    NSMutableArray * paths = [NSMutableArray array];
+- (NSArray<NSData *> *)paths {
+    NSMutableArray *paths = [NSMutableArray array];
     // First we need to add the documents tree
     [paths addObject:[NSData dataWithUInt8:DSPlatformDictionary_Documents]];
     // Then we need to add the contract id
     [paths addObject:uint256_data(self.contract.contractId)];
     // Then we need to add the secondary index
     [paths addObject:self.secondaryIndexPathData];
-    
+
     return [paths copy];
 }
 

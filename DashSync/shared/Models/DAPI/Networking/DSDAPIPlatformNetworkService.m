@@ -662,7 +662,10 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     waitForStateTransitionResultRequest.prove = DSPROVE_PLATFORM;
     waitForStateTransitionResultRequest.stateTransitionHash = uint256_data(stateTransition.transitionHash);
 
-    DSDAPIGRPCResponseHandler *waitResponseHandler = [[DSDAPIGRPCResponseHandler alloc] initWithChain:self.chain requireProof:DSPROVE_PLATFORM];
+    // In v21, we can not verify Document proofs.
+    bool requireProof = (stateTransition.type == DSTransitionType_Documents) ? DSPROVE_PLATFORM_SINDEXES : DSPROVE_PLATFORM;
+
+    DSDAPIGRPCResponseHandler *waitResponseHandler = [[DSDAPIGRPCResponseHandler alloc] initForStateTransition:stateTransition withChain:self.chain requireProof:requireProof];
     waitResponseHandler.host = [NSString stringWithFormat:@"%@:%d", self.ipAddress, self.chain.standardDapiGRPCPort];
     waitResponseHandler.dispatchQueue = self.grpcDispatchQueue;
     waitResponseHandler.completionQueue = completionQueue;
@@ -681,7 +684,8 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
 
     BroadcastStateTransitionRequest *broadcastStateRequest = [[BroadcastStateTransitionRequest alloc] init];
     broadcastStateRequest.stateTransition = stateTransition.data;
-    DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] initWithChain:self.chain requireProof:DSPROVE_PLATFORM];
+    // There is no way to prove that the message was added to the mempool, so we should not require proof
+    DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] initWithChain:self.chain requireProof:NO];
     responseHandler.host = [NSString stringWithFormat:@"%@:%d", self.ipAddress, self.chain.standardDapiGRPCPort];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.completionQueue = completionQueue;
@@ -705,8 +709,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     NSParameterAssert(completionQueue);
     DSPlatformDocumentsRequest *platformDocumentsRequest = [DSPlatformDocumentsRequest dashpayRequestForContactRequestsForRecipientUserId:userId since:timestamp offset:offset];
     platformDocumentsRequest.contract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
-    NSArray <NSData*>* rangeValues = @[[NSData dataWithUInt64:timestamp]];
-    DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] initForRangeDocumentsRequest:rangeValues inPath:platformDocumentsRequest.paths withChain:self.chain requireProof:DSPROVE_PLATFORM_SINDEXES];
+    DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] initForDocumentsQueryRequest:platformDocumentsRequest withChain:self.chain requireProof:DSPROVE_PLATFORM_SINDEXES];
     responseHandler.host = [NSString stringWithFormat:@"%@:%d", self.ipAddress, self.chain.standardDapiGRPCPort];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.completionQueue = completionQueue;
@@ -726,7 +729,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     NSParameterAssert(completionQueue);
     DSPlatformDocumentsRequest *platformDocumentsRequest = [DSPlatformDocumentsRequest dashpayRequestForContactRequestsForSendingUserId:userId since:timestamp offset:offset];
     platformDocumentsRequest.contract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
-    DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] initWithChain:self.chain requireProof:DSPROVE_PLATFORM];
+    DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] initForDocumentsQueryRequest:platformDocumentsRequest withChain:self.chain requireProof:DSPROVE_PLATFORM_SINDEXES];
     responseHandler.host = [NSString stringWithFormat:@"%@:%d", self.ipAddress, self.chain.standardDapiGRPCPort];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.completionQueue = completionQueue;
@@ -746,7 +749,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     NSParameterAssert(completionQueue);
     DSPlatformDocumentsRequest *platformDocumentsRequest = [DSPlatformDocumentsRequest dashpayRequestForProfileWithUserId:userId];
     platformDocumentsRequest.contract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
-    DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] initWithChain:self.chain requireProof:DSPROVE_PLATFORM];
+    DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] initForDocumentsQueryRequest:platformDocumentsRequest withChain:self.chain requireProof:DSPROVE_PLATFORM_SINDEXES];
     responseHandler.host = [NSString stringWithFormat:@"%@:%d", self.ipAddress, self.chain.standardDapiGRPCPort];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.completionQueue = completionQueue;
@@ -766,7 +769,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     NSAssert(userIds.count > 0, @"You must query at least 1 userId");
     DSPlatformDocumentsRequest *platformDocumentsRequest = [DSPlatformDocumentsRequest dashpayRequestForProfilesWithUserIds:userIds];
     platformDocumentsRequest.contract = [DSDashPlatform sharedInstanceForChain:self.chain].dashPayContract;
-    DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] initWithChain:self.chain requireProof:DSPROVE_PLATFORM];
+    DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] initForDocumentsQueryRequest:platformDocumentsRequest withChain:self.chain requireProof:DSPROVE_PLATFORM_SINDEXES];
     responseHandler.host = [NSString stringWithFormat:@"%@:%d", self.ipAddress, self.chain.standardDapiGRPCPort];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.completionQueue = completionQueue;
@@ -783,7 +786,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                                      failure:(void (^)(NSError *error))failure {
     NSParameterAssert(platformDocumentsRequest);
     NSParameterAssert(completionQueue);
-    DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] initWithChain:self.chain requireProof:DSPROVE_PLATFORM];
+    DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] initForDocumentsQueryRequest:platformDocumentsRequest withChain:self.chain requireProof:DSPROVE_PLATFORM_SINDEXES];
     responseHandler.host = [NSString stringWithFormat:@"%@:%d", self.ipAddress, self.chain.standardDapiGRPCPort];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.completionQueue = completionQueue;

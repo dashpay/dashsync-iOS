@@ -20,22 +20,18 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSPlatformPathQuery;
+@interface DSPlatformPathQuery : NSObject
 
-@interface DSPlatformTreeQuery : NSObject
-
-@property (nonatomic, readonly) NSArray<DSPlatformPathQuery *> *platformQueryPaths;
+@property (nonatomic, readonly) NSArray<NSData *> *path;
 @property (nonatomic, readonly) NSArray<NSData *> *platformQueryKeys;
 @property (nonatomic, readonly) NSArray<NSArray<NSData *> *> *platformQueryKeyRanges;
 @property (nonatomic, readonly) Keys *keys;
 
-+ (DSPlatformTreeQuery *)platformTreeQueryForPaths:(NSArray<DSPlatformPathQuery *> *)pathQueries;
++ (DSPlatformPathQuery *)platformPath:(NSArray<NSData *> *)path queryForKeys:(NSArray<NSData *> *)keys;
 
-+ (DSPlatformTreeQuery *)platformTreeQueryForKeys:(NSArray<NSData *> *)keys;
++ (DSPlatformPathQuery *)platformPath:(NSArray<NSData *> *)path queryForRanges:(NSArray<NSArray<NSData *> *> *)keys;
 
-+ (DSPlatformTreeQuery *)platformTreeQueryForRanges:(NSArray<NSArray<NSData *> *> *)keys;
-
-+ (DSPlatformTreeQuery *)platformTreeQueryForKeys:(NSArray<NSData *> *)keys andRanges:(NSArray<NSArray<NSData *> *> *)keys;
++ (DSPlatformPathQuery *)platformPath:(NSArray<NSData *> *)path queryForKeys:(NSArray<NSData *> *)keys andRanges:(NSArray<NSArray<NSData *> *> *)keys;
 
 @end
 
