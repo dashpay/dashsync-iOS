@@ -51,7 +51,7 @@ typedef NS_ENUM(NSUInteger, DSPlatformQueryType)
 @property (nonatomic, assign) DSPlatformDocumentType type;
 @property (nonatomic, readonly) DSPlatformQueryType queryType;
 @property (nonatomic, readonly) NSArray<DSDirectionalKey *> *orderByRanges;
-@property (nonatomic, readonly) NSArray<NSData *> *paths;
+@property (nonatomic, readonly) NSArray<NSData *> *path;
 @property (nonatomic, readonly) DSPlatformQuery *expectedResponseQuery;
 
 + (instancetype)dpnsRequestForUserId:(NSData *)userId;

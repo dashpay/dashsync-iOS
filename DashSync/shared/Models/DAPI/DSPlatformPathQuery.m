@@ -16,12 +16,13 @@
 //
 
 #import "DSPlatformPathQuery.h"
+#import "DSDirectionalRange.h"
 
 @interface DSPlatformPathQuery ()
 
 @property (nonatomic, strong) NSArray<NSData *> *path;
 @property (nonatomic, strong) NSArray<NSData *> *platformQueryKeys;
-@property (nonatomic, strong) NSArray<NSArray<NSData *> *> *platformQueryKeyRanges;
+@property (nonatomic, strong) NSArray<DSDirectionalRange *> *platformQueryKeyRanges;
 @property (nonatomic, assign) Keys *keys;
 
 @end
@@ -32,15 +33,15 @@
     return [[self alloc] initWithPath:(NSArray<NSData *> *)path forKeys:keys andRanges:nil];
 }
 
-+ (DSPlatformPathQuery *)platformPath:(NSArray<NSData *> *)path queryForRanges:(NSArray<NSArray<NSData *> *> *)keyRanges {
++ (DSPlatformPathQuery *)platformPath:(NSArray<NSData *> *)path queryForRanges:(NSArray<DSDirectionalRange *> *)keyRanges {
     return [[self alloc] initWithPath:(NSArray<NSData *> *)path forKeys:nil andRanges:keyRanges];
 }
 
-+ (DSPlatformPathQuery *)platformPath:(NSArray<NSData *> *)path queryForKeys:(NSArray<NSData *> *)keys andRanges:(NSArray<NSArray<NSData *> *> *)keyRanges {
++ (DSPlatformPathQuery *)platformPath:(NSArray<NSData *> *)path queryForKeys:(NSArray<NSData *> *)keys andRanges:(NSArray<DSDirectionalRange *> *)keyRanges {
     return [[self alloc] initWithPath:(NSArray<NSData *> *)path forKeys:keys andRanges:keyRanges];
 }
 
-- (instancetype)initWithPath:(NSArray<NSData *> *)path forKeys:(NSArray<NSData *> *)keys andRanges:(NSArray<NSArray<NSData *> *> *)keyRanges {
+- (instancetype)initWithPath:(NSArray<NSData *> *)path forKeys:(NSArray<NSData *> *)keys andRanges:(NSArray<DSDirectionalRange *> *)keyRanges {
     self = [super init];
     if (self) {
         self.path = path;
@@ -65,9 +66,9 @@
         k->elements[i * sizeof(Query *)] = query;
         i++;
     }
-    for (NSArray<NSData *> *range in self.platformQueryKeyRanges) {
-        NSData *startKey = range.firstObject;
-        NSData *endKey = range.lastObject;
+    for (DSDirectionalRange *range in self.platformQueryKeyRanges) {
+        NSData *startKey = range.lowerBoundsValue;
+        NSData *endKey = range.upperBoundsValue;
         Query *query = malloc(sizeof(Query));
         query->key_length = startKey.length;
         query->key = malloc(startKey.length);

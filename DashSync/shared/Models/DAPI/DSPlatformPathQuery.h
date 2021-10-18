@@ -20,18 +20,20 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DSDirectionalRange;
+
 @interface DSPlatformPathQuery : NSObject
 
 @property (nonatomic, readonly) NSArray<NSData *> *path;
 @property (nonatomic, readonly) NSArray<NSData *> *platformQueryKeys;
-@property (nonatomic, readonly) NSArray<NSArray<NSData *> *> *platformQueryKeyRanges;
+@property (nonatomic, readonly) NSArray<DSDirectionalRange *> *platformQueryKeyRanges;
 @property (nonatomic, readonly) Keys *keys;
 
 + (DSPlatformPathQuery *)platformPath:(NSArray<NSData *> *)path queryForKeys:(NSArray<NSData *> *)keys;
 
-+ (DSPlatformPathQuery *)platformPath:(NSArray<NSData *> *)path queryForRanges:(NSArray<NSArray<NSData *> *> *)keys;
++ (DSPlatformPathQuery *)platformPath:(NSArray<NSData *> *)path queryForRanges:(NSArray<DSDirectionalRange *> *)keys;
 
-+ (DSPlatformPathQuery *)platformPath:(NSArray<NSData *> *)path queryForKeys:(NSArray<NSData *> *)keys andRanges:(NSArray<NSArray<NSData *> *> *)keys;
++ (DSPlatformPathQuery *)platformPath:(NSArray<NSData *> *)path queryForKeys:(NSArray<NSData *> *)keys andRanges:(NSArray<DSDirectionalRange *> *)keys;
 
 @end
 

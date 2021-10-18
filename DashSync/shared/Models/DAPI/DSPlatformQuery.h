@@ -28,7 +28,7 @@ typedef NS_ENUM(NSUInteger, DSPlatformDictionary)
     DSPlatformDictionary_PublicKeyHashesToIdentityIds = 2,
 };
 
-@class DPDocument;
+@class DPDocument, DSDirectionalRange;
 
 @interface DSPlatformQuery : NSObject
 
@@ -39,6 +39,8 @@ typedef NS_ENUM(NSUInteger, DSPlatformDictionary)
 + (DSPlatformQuery *)platformQueryForGetContractsByContractIDs:(NSArray<NSData *> *)contractIDs;
 + (DSPlatformQuery *)platformQueryForIndividualDocumentKeys:(NSArray<NSData *> *)documentKeys inPath:(NSArray<NSData *> *)path;
 + (DSPlatformQuery *)platformQueryForDocuments:(NSArray<DPDocument *> *)documents;
++ (DSPlatformQuery *)platformQueryForKeys:(NSArray<NSData *> *)keys inPath:(NSArray<NSData *> *)path;
++ (DSPlatformQuery *)platformQueryForRanges:(NSArray<DSDirectionalRange *> *)ranges inPath:(NSArray<NSData *> *)path;
 + (DSPlatformQuery *)platformQueryForGetIdentityIDsByPublicKeyHashes:(NSArray<NSData *> *)publicKeyHashes;
 + (DSPlatformQuery *)platformQueryForGetIdentitiesByPublicKeyHashes:(NSArray<NSData *> *)publicKeyHashes;
 

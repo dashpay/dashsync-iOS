@@ -29,6 +29,8 @@ typedef NS_ENUM(NSUInteger, NSPredicateCBORDataOptions)
 @interface NSPredicate (CBORData)
 
 - (NSData *)dashPlatormWhereData;
+- (NSData *)singleElementQueryKey;
+- (NSArray<NSData *> *)multipleElementQueryKey;
 - (NSData *)secondaryIndexPathForQueryType:(DSPlatformQueryType)queryType;
 
 @end

@@ -183,21 +183,8 @@
     return [self.predicate dashPlatormWhereData];
 }
 
-- (NSData *)secondaryIndexPathData {
-    return [self.predicate secondaryIndexPathForQueryType:self.queryType];
-}
-
 - (NSData *)orderByData {
     return [[self orderByRanges] ds_cborEncodedObject];
-}
-
-- (NSArray<DSDirectionalKey *> *)orderByRanges {
-    NSMutableArray *sortDescriptorsArray = [NSMutableArray array];
-    for (NSSortDescriptor *sortDescriptor in self.sortDescriptors) {
-        DSDirectionalKey *directionalKey = [[DSDirectionalKey alloc] initWithKey:[sortDescriptor.key dataUsingEncoding:NSUTF8StringEncoding] ascending:true];
-        [sortDescriptorsArray addObject:directionalKey];
-    }
-    return [sortDescriptorsArray copy];
 }
 
 - (GetDocumentsRequest *)getDocumentsRequest {
@@ -216,7 +203,20 @@
     return getDocumentsRequest;
 }
 
-- (NSArray<NSData *> *)paths {
+- (NSArray<DSDirectionalKey *> *)orderByRanges {
+    NSMutableArray *sortDescriptorsArray = [NSMutableArray array];
+    for (NSSortDescriptor *sortDescriptor in self.sortDescriptors) {
+        DSDirectionalKey *directionalKey = [[DSDirectionalKey alloc] initWithKey:[sortDescriptor.key dataUsingEncoding:NSUTF8StringEncoding] ascending:true];
+        [sortDescriptorsArray addObject:directionalKey];
+    }
+    return [sortDescriptorsArray copy];
+}
+
+- (NSData *)secondaryIndexPathData {
+    return [self.predicate secondaryIndexPathForQueryType:self.queryType];
+}
+
+- (NSArray<NSData *> *)path {
     NSMutableArray *paths = [NSMutableArray array];
     // First we need to add the documents tree
     [paths addObject:[NSData dataWithUInt8:DSPlatformDictionary_Documents]];
@@ -229,7 +229,16 @@
 }
 
 - (DSPlatformQuery *)expectedResponseQuery {
-    return [DSPlatformQuery platformQueryForDocuments:self.documents];
+    switch (self.queryType) {
+        case DSPlatformQueryType_OneElement:
+            return [DSPlatformQuery platformQueryForKeys:@[[self.predicate singleElementQueryKey]] inPath:self.path];
+        case DSPlatformQueryType_IndividualElements:
+            return [DSPlatformQuery platformQueryForKeys:[self.predicate multipleElementQueryKey] inPath:self.path];
+        case DSPlatformQueryType_RangeOverValue:
+            return [DSPlatformQuery platformQueryForKeys:@[] inPath:self.path];
+        case DSPlatformQueryType_RangeOverIndex:
+            return [DSPlatformQuery platformQueryForKeys:@[] inPath:self.path];
+    }
 }
 
 @end

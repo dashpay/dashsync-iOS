@@ -18,6 +18,7 @@
 #import "DSPlatformQuery.h"
 #import "DPDocument.h"
 #import "DSDocumentType.h"
+#import "DSPlatformDocumentsRequest.h"
 #import "DSPlatformPathQuery.h"
 #import "DSPlatformTreeQuery.h"
 
@@ -96,6 +97,23 @@
     query.treeQueries = @{@(DSPlatformDictionary_Documents): documentKeysQuery};
     return query;
 }
+
++ (DSPlatformQuery *)platformQueryForKeys:(NSArray<NSData *> *)keys inPath:(NSArray<NSData *> *)path {
+    DSPlatformQuery *query = [[DSPlatformQuery alloc] init];
+    DSPlatformPathQuery *pathQuery = [DSPlatformPathQuery platformPath:path queryForKeys:keys];
+    DSPlatformTreeQuery *documentKeysQuery = [DSPlatformTreeQuery platformTreeQueryForPaths:@[pathQuery]];
+    query.treeQueries = @{@(DSPlatformDictionary_Documents): documentKeysQuery};
+    return query;
+}
+
++ (DSPlatformQuery *)platformQueryForRanges:(NSArray<DSDirectionalRange *> *)ranges inPath:(NSArray<NSData *> *)path {
+    DSPlatformQuery *query = [[DSPlatformQuery alloc] init];
+    DSPlatformPathQuery *pathQuery = [DSPlatformPathQuery platformPath:path queryForRanges:ranges];
+    DSPlatformTreeQuery *documentKeysQuery = [DSPlatformTreeQuery platformTreeQueryForPaths:@[pathQuery]];
+    query.treeQueries = @{@(DSPlatformDictionary_Documents): documentKeysQuery};
+    return query;
+}
+
 
 - (DSPlatformTreeQuery *)treeQueryForType:(DSPlatformDictionary)treeType {
     return [self.treeQueries objectForKey:@(treeType)];
