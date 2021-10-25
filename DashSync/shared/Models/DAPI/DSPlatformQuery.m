@@ -98,6 +98,12 @@
     return query;
 }
 
++ (DSPlatformQuery *)platformQueryDocumentTreeQuery:(DSPlatformTreeQuery *)documentTreeQuery {
+    DSPlatformQuery *query = [[DSPlatformQuery alloc] init];
+    query.treeQueries = @{@(DSPlatformDictionary_Documents): documentTreeQuery};
+    return query;
+}
+
 + (DSPlatformQuery *)platformQueryForKeys:(NSArray<NSData *> *)keys inPath:(NSArray<NSData *> *)path {
     DSPlatformQuery *query = [[DSPlatformQuery alloc] init];
     DSPlatformPathQuery *pathQuery = [DSPlatformPathQuery platformPath:path queryForKeys:keys];

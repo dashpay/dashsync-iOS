@@ -16,6 +16,7 @@
 //
 
 #import "DSDirectionalRange.h"
+#import "DSPlatformTreeQuery.h"
 #import "NSData+Dash.h"
 #import "NSObject+DSCborEncoding.h"
 #import "NSPredicate+CBORData.h"
@@ -229,104 +230,9 @@
     }
 }
 
-- (NSArray *)whereClauseNestedArrayWithOptions:(NSPredicateCBORDataOptions)options {
-    if ([self isMemberOfClass:[NSCompoundPredicate class]]) {
-        NSMutableArray *mArray = [NSMutableArray array];
-        NSCompoundPredicate *compoundPredicate = (NSCompoundPredicate *)self;
-        NSAssert(compoundPredicate.compoundPredicateType == NSAndPredicateType, @"We currently only support AND predicates");
-        for (NSPredicate *predicate in compoundPredicate.subpredicates) {
-            [mArray addObject:[predicate whereClauseNestedArrayWithOptions:options]];
-        }
-        return mArray;
-    } else {
-        NSMutableArray *mArray = [NSMutableArray array];
-        NSComparisonPredicate *comparisonPredicate = (NSComparisonPredicate *)self;
-        NSExpression *leftExpression = comparisonPredicate.leftExpression;
-        NSExpression *rightExpression = comparisonPredicate.rightExpression;
-        NSString *operator;
-        switch (comparisonPredicate.predicateOperatorType) {
-            case NSEqualToPredicateOperatorType:
-                operator= @"==";
-                break;
-            case NSLessThanPredicateOperatorType:
-                operator= @"<";
-                break;
-            case NSLessThanOrEqualToPredicateOperatorType:
-                operator= @"<=";
-                break;
-            case NSGreaterThanPredicateOperatorType:
-                operator= @">";
-                break;
-            case NSGreaterThanOrEqualToPredicateOperatorType:
-                operator= @">=";
-                break;
-            case NSNotEqualToPredicateOperatorType:
-                operator= @"!=";
-                NSAssert(FALSE, @"Not supported yet");
-                break;
-            case NSBeginsWithPredicateOperatorType:
-                operator= @"startsWith";
-                break;
-            case NSInPredicateOperatorType:
-                operator= @"in";
-                break;
-            default:
-                operator= @"!";
-                NSAssert(FALSE, @"Not supported yet");
-                break;
-        }
-        switch (leftExpression.expressionType) {
-            case NSConstantValueExpressionType:
-                if (options & NSPredicateCBORDataOptions_DataToBase64 && [rightExpression.constantValue isKindOfClass:[NSData class]]) {
-                    [mArray addObject:[((NSData *)leftExpression.constantValue) base64String]];
-                } else {
-                    [mArray addObject:leftExpression.constantValue];
-                }
-                break;
-            case NSKeyPathExpressionType:
-                [mArray addObject:leftExpression.keyPath];
-                break;
-            case NSVariableExpressionType:
-                [mArray addObject:leftExpression.variable];
-                break;
-
-            default:
-                NSAssert(FALSE, @"Not supported yet");
-                break;
-        }
-        [mArray addObject:operator];
-        switch (rightExpression.expressionType) {
-            case NSConstantValueExpressionType:
-                if (options & NSPredicateCBORDataOptions_DataToBase64 && [rightExpression.constantValue isKindOfClass:[NSData class]]) {
-                    [mArray addObject:[((NSData *)rightExpression.constantValue) base64String]];
-                } else if (options & NSPredicateCBORDataOptions_DataToBase64 && [rightExpression.constantValue isKindOfClass:[NSArray class]]) {
-                    //We might have an array of data
-                    NSMutableArray *base64Array = [NSMutableArray array];
-                    for (NSObject *member in rightExpression.constantValue) {
-                        if ([member isKindOfClass:[NSData class]]) {
-                            [base64Array addObject:[((NSData *)member) base64String]];
-                        } else {
-                            [base64Array addObject:member];
-                        }
-                    }
-                    [mArray addObject:base64Array];
-                } else {
-                    [mArray addObject:rightExpression.constantValue];
-                }
-                break;
-            case NSKeyPathExpressionType:
-                [mArray addObject:rightExpression.keyPath];
-                break;
-            case NSVariableExpressionType:
-                [mArray addObject:rightExpression.variable];
-                break;
-
-            default:
-                NSAssert(FALSE, @"Not supported yet");
-                break;
-        }
-        return mArray;
-    }
+- (DSPlatformTreeQuery *)platformTreeQuery {
+    //todo
+    return nil;
 }
 
 - (NSData *)dashPlatormWhereData {

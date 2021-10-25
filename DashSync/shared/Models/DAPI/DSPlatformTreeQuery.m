@@ -23,6 +23,7 @@
 @property (nonatomic, strong) NSArray<NSData *> *platformQueryKeys;
 @property (nonatomic, strong) NSArray<NSArray<NSData *> *> *platformQueryKeyRanges;
 @property (nonatomic, assign) Keys *keys;
+@property (nonatomic, assign) bool createdKeys;
 
 @end
 
@@ -77,7 +78,7 @@
         query->key = malloc(data.length);
         query->key_end_length = 0;
         memcpy(query->key, data.bytes, data.length);
-        k->elements[i * sizeof(Query *)] = query;
+        k->elements[i] = query;
         i++;
     }
     for (NSArray<NSData *> *range in self.platformQueryKeyRanges) {
@@ -90,24 +91,29 @@
         query->key_end_length = endKey.length;
         query->key_end = malloc(endKey.length);
         memcpy(query->key_end, endKey.bytes, endKey.length);
-        k->elements[i * sizeof(Query *)] = query;
+        k->elements[i] = query;
         i++;
     }
     self.keys = k;
+    self.createdKeys = true;
 }
 
 - (void)destroyMerkKeys {
-    Keys *k = self.keys;
-    for (int i = 0; i < k->element_count; i++) {
-        Query *q = k->elements[i * sizeof(Query *)];
-        free(q->key);
-        if (q->key_end_length) {
-            free(q->key_end);
+    if (self.createdKeys) {
+        Keys *k = self.keys;
+        for (int i = 0; i < k->element_count; i++) {
+            Query *q = k->elements[i];
+            free(q->key);
+            if (q->key_end_length) {
+                free(q->key_end);
+            }
+            free(q);
         }
-        free(q);
+        free(k->elements);
+        free(k);
+    } else {
+        self.createdKeys = false;
     }
-    free(k->elements);
-    free(k);
 }
 
 - (void)dealloc {

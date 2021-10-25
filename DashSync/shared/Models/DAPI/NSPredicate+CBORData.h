@@ -20,6 +20,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DSPlatformTreeQuery;
+
 typedef NS_ENUM(NSUInteger, NSPredicateCBORDataOptions)
 {
     NSPredicateCBORDataOptions_None = 0,
@@ -31,6 +33,7 @@ typedef NS_ENUM(NSUInteger, NSPredicateCBORDataOptions)
 - (NSData *)dashPlatormWhereData;
 - (NSData *)singleElementQueryKey;
 - (NSArray<NSData *> *)multipleElementQueryKey;
+- (DSPlatformTreeQuery *)platformTreeQuery;
 - (NSData *)secondaryIndexPathForQueryType:(DSPlatformQueryType)queryType;
 
 @end

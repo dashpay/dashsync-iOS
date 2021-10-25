@@ -235,9 +235,10 @@
         case DSPlatformQueryType_IndividualElements:
             return [DSPlatformQuery platformQueryForKeys:[self.predicate multipleElementQueryKey] inPath:self.path];
         case DSPlatformQueryType_RangeOverValue:
-            return [DSPlatformQuery platformQueryForKeys:@[] inPath:self.path];
+            return [DSPlatformQuery platformQueryDocumentTreeQuery:self.predicate.platformTreeQuery];
         case DSPlatformQueryType_RangeOverIndex:
-            return [DSPlatformQuery platformQueryForKeys:@[] inPath:self.path];
+            //Todo, this might be wrong, need to think about it more
+            return [DSPlatformQuery platformQueryDocumentTreeQuery:self.predicate.platformTreeQuery];
     }
 }
 
