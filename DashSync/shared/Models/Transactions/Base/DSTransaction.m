@@ -400,8 +400,9 @@
 // Returns the binary transaction data that needs to be hashed and signed with the private key for the tx input at
 // subscriptIndex. A subscriptIndex of NSNotFound will return the entire signed transaction.
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex {
-    NSMutableData *d = [NSMutableData dataWithCapacity:10 + TX_INPUT_SIZE * self.mInputs.count +
-                                                       TX_OUTPUT_SIZE * self.mOutputs.count];
+    BOOL forSigHash = ([self isMemberOfClass:[DSTransaction class]] || [self isMemberOfClass:[DSCreditFundingTransaction class]]) && subscriptIndex != NSNotFound;
+    NSUInteger dataSize = 8 + [NSMutableData sizeOfVarInt:self.mInputs.count] + [NSMutableData sizeOfVarInt:self.mOutputs.count] + TX_INPUT_SIZE * self.mInputs.count + TX_OUTPUT_SIZE * self.mOutputs.count + (forSigHash?4:0);
+    NSMutableData *d = [NSMutableData dataWithCapacity:dataSize];
 
     [d appendUInt16:self.version];
     [d appendUInt16:self.type];
@@ -436,7 +437,7 @@
     }
 
     [d appendUInt32:self.lockTime];
-    if (([self isMemberOfClass:[DSTransaction class]] || [self isMemberOfClass:[DSCreditFundingTransaction class]]) && subscriptIndex != NSNotFound) [d appendUInt32:SIGHASH_ALL];
+    if (forSigHash) [d appendUInt32:SIGHASH_ALL];
     return d;
 }
 
