@@ -34,7 +34,8 @@ typedef NS_ENUM(NSUInteger, DSPlatformQueryType)
     DSPlatformQueryType_RangeOverIndex,
 };
 
-#define DSPROVE_PLATFORM FALSE
+#define DSPROVE_PLATFORM TRUE
+#define DSPROVE_PUSH_PLATFORM FALSE
 #define DSPROVE_PLATFORM_SINDEXES FALSE
 
 @class GetDocumentsRequest, DPContract, DSDirectionalKey, DSPlatformQuery;

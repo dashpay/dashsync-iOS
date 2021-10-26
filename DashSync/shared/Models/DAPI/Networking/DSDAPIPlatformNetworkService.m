@@ -659,11 +659,11 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     DSLogPrivate(@"Broadcasting state transition to ip %@ with data %@ rawData %@", self.ipAddress, stateTransition.keyValueDictionary, stateTransition.data.hexString);
 
     WaitForStateTransitionResultRequest *waitForStateTransitionResultRequest = [[WaitForStateTransitionResultRequest alloc] init];
-    waitForStateTransitionResultRequest.prove = DSPROVE_PLATFORM;
+    waitForStateTransitionResultRequest.prove = DSPROVE_PUSH_PLATFORM;
     waitForStateTransitionResultRequest.stateTransitionHash = uint256_data(stateTransition.transitionHash);
 
     // In v21, we can not verify Document proofs.
-    bool requireProof = (stateTransition.type == DSTransitionType_Documents) ? DSPROVE_PLATFORM_SINDEXES : DSPROVE_PLATFORM;
+    bool requireProof = (stateTransition.type == DSTransitionType_Documents) ? (DSPROVE_PLATFORM_SINDEXES & DSPROVE_PUSH_PLATFORM) : DSPROVE_PUSH_PLATFORM;
 
     DSDAPIGRPCResponseHandler *waitResponseHandler = [[DSDAPIGRPCResponseHandler alloc] initForStateTransition:stateTransition withChain:self.chain requireProof:requireProof];
     waitResponseHandler.host = [NSString stringWithFormat:@"%@:%d", self.ipAddress, self.chain.standardDapiGRPCPort];

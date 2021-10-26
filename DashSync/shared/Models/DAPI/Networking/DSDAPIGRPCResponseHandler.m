@@ -137,42 +137,24 @@
         return;
     } else if (!self.requireProof && !identityResponse.hasProof) {
         identityData = identityResponse.identity;
+        self.responseObject = [identityData ds_decodeCborError:&error];
     } else {
         Proof *proof = identityResponse.proof;
         ResponseMetadata *metaData = identityResponse.metadata;
-        NSDictionary *identitiesDictionary = [self verifyAndExtractFromProof:proof withMetadata:metaData error:&error];
+        NSDictionary *dictionaries = [self verifyAndExtractFromProof:proof withMetadata:metaData error:&error];
         if (error) {
             self.decodingError = error;
             return;
         }
-        if (identitiesDictionary.count == 0) {
+        NSAssert(dictionaries.count == 1 && [dictionaries objectForKey:@(DSPlatformDictionary_Identities)], @"Dictionary must have 1 internal dictionary corresponding to identities");
+        NSDictionary *identitiesDictionary = dictionaries[@(DSPlatformDictionary_Identities)];
+        NSAssert(identitiesDictionary.count == 1, @"Identity dictionary must have at most 1 element corresponding to the searched identity");
+        id response = [[identitiesDictionary allValues] firstObject];
+        if ([response isEqual:@(DSPlatformStoredMessage_NotPresent)]) {
             self.responseObject = nil;
-            return;
+        } else {
+            self.responseObject = response;
         }
-        //        if (self.expectedKeys) {
-        //            for (NSNumber *treeType in self.expectedKeys) {
-        //                NSDictionary *typeObjectDictionary = identitiesDictionary[treeType];
-        //                if (typeObjectDictionary == nil) {
-        //                    self.decodingError = [NSError errorWithDomain:@"DashSync"
-        //                                                             code:500
-        //                                                         userInfo:@{NSLocalizedDescriptionKey:
-        //                                                                      DSLocalizedString(@"Platform did not satisfy expected key", nil)}];
-        //                    return;
-        //                }
-        //            }
-        //        } else {
-        //            NSDictionary *identityDictionary = identitiesDictionary.allValues[0];
-        //            if (identityDictionary.count == 0) {
-        //                self.responseObject = nil;
-        //                return;
-        //            }
-        //            identityData = [identityDictionary allValues][0];
-        //        }
-    }
-    self.responseObject = [identityData ds_decodeCborError:&error];
-    if (error) {
-        DSLog(@"Decoding error for parseIdentityMessage cborData %@", identityData);
-        self.decodingError = error;
     }
 }
 
@@ -353,33 +335,18 @@
         ResponseMetadata *metaData = getIdentitiesResponse.metadata;
 
         NSError *error = nil;
-        NSDictionary *identitiesDictionary = [self verifyAndExtractFromProof:proof withMetadata:metaData error:&error];
+        NSDictionary *identitiesDictionaries = [self verifyAndExtractFromProof:proof withMetadata:metaData error:&error];
         if (error) {
             self.decodingError = error;
             return;
         }
+        NSAssert(identitiesDictionaries.count == 2, @"Identities dictionary must have 2 internal dictionaries");
+        NSDictionary *identitiesDictionary = identitiesDictionaries[@(DSPlatformDictionary_Identities)];
         if (identitiesDictionary.count == 0) {
             self.responseObject = @[];
             return;
         }
-
-        //        identitiesArray = [identitiesDictionary allValues];
-
-        NSMutableArray *mArray = [NSMutableArray array];
-        //        for (NSData *cborData in documentsArray) {
-        //            id document = [cborData ds_decodeCborError:&error];
-        //            if (document && !error) {
-        //                [mArray addObject:document];
-        //            }
-        //            if (error) {
-        //                DSLog(@"Decoding error for parseDocumentsMessage cborData %@", cborData);
-        //                if (self.request) {
-        //                    DSLog(@"request was %@", self.request.predicate);
-        //                }
-        //                break;
-        //            }
-        //        }
-        self.responseObject = [mArray copy];
+        self.responseObject = [[identitiesDictionary allValues] copy];
         if (error) {
             self.decodingError = error;
         }

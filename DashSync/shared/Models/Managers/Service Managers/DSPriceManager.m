@@ -425,12 +425,12 @@
 
     NSNumber *n = [localFormatter numberFromString:string];
     int64_t price = [[NSDecimalNumber decimalNumberWithDecimal:localPrice.decimalValue]
-                     decimalNumberByMultiplyingByPowerOf10:localFormatter.maximumFractionDigits]
-        .longLongValue,
-    local = [[NSDecimalNumber decimalNumberWithDecimal:n.decimalValue]
-             decimalNumberByMultiplyingByPowerOf10:localFormatter.maximumFractionDigits]
-        .longLongValue,
-    overflowbits = 0, p = 10, min, max, amount;
+                decimalNumberByMultiplyingByPowerOf10:localFormatter.maximumFractionDigits]
+                        .longLongValue,
+            local = [[NSDecimalNumber decimalNumberWithDecimal:n.decimalValue]
+                decimalNumberByMultiplyingByPowerOf10:localFormatter.maximumFractionDigits]
+                        .longLongValue,
+            overflowbits = 0, p = 10, min, max, amount;
 
     if (local == 0 || price < 1) return 0;
     while (llabs(local) + 1 > INT64_MAX / DUFFS) local /= 2, overflowbits++; // make sure we won't overflow an int64_t

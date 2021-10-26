@@ -407,7 +407,7 @@
 "Platform returned no proof when we requested it" = "Platform returned no proof when we requested it";
 
 /* No comment provided by engineer. */
-"Platform did not satisfy expected key" = "Platform did not satisfy expected key";
+"Platform returned a proof that does not satisfy our query" = "Platform returned a proof that does not satisfy our query";
 
 /* No comment provided by engineer. */
-"Platform returned a proof that does not satisfy our query" = "Platform returned a proof that does not satisfy our query";
+"Platform returned no identity when one was expected" = "Platform returned no identity when one was expected";

@@ -389,7 +389,7 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode)
  */
 - (id<DSDAPINetworkServiceRequest>)getIdentityById:(NSData *)userId
                                    completionQueue:(dispatch_queue_t)completionQueue
-                                           success:(void (^)(NSDictionary *blockchainIdentity))success
+                                           success:(void (^)(NSDictionary *_Nullable blockchainIdentity))success
                                            failure:(void (^)(NSError *error))failure;
 
 /**
