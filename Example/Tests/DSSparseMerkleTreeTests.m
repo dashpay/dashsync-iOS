@@ -498,6 +498,16 @@
     UInt256 appHash = [merkleTree merkleRoot];
     XCTAssertEqualObjects(uint256_hex(appHash), @"f0bba0f0472fad1a198e52266b726fa6eac3da0dd28eb1a2f1bc08d09e7f0c30");
 }
+
+
+- (void)testMerklePos4Element {
+    NSDictionary *elementsToProve = @{@(4): @"d78960dd1c7c038073d797f38ba662062639d52259db3ad8ce1c9f92e589e00a".hexToData};
+    NSData *merkleTreeProofData = @"242cc2765a7e87669c33c2578b368b3087c0b53f3b7ba4a619602a11221b2ea978f9ce6e53dcfa18e32460be3a7f750e25bfffaab43c7c5d49aaffe53e2314af".hexToData;
+    DSPlatformRootMerkleTree *merkleTree = [DSPlatformRootMerkleTree merkleTreeWithElementsToProve:elementsToProve proofData:merkleTreeProofData hashFunction:DSMerkleTreeHashFunction_BLAKE3 fixedElementCount:6];
+    UInt256 appHash = [merkleTree merkleRoot];
+    XCTAssertEqualObjects(uint256_hex(appHash), @"b11dcc99b72c60f0bcd7e1ed33c85006656d46147bb716e827e43949be838bc1");
+}
+
 //
 //- (void)testMerkleTreeOddElements {
 //    NSArray *elements = @[@"a", @"b", @"c", @"d", @"e"];
@@ -609,7 +619,7 @@
 
     XCTAssertNil(error);
 
-    NSDictionary *results = [DSDAPIGRPCResponseHandler verifyAndExtractFromProof:proof withMetadata:responseMetaData  query:nil forQuorumEntry:quorumEntry quorumType:DSLLMQType_10_60 error:&error];
+    NSDictionary *results = [DSDAPIGRPCResponseHandler verifyAndExtractFromProof:proof withMetadata:responseMetaData query:nil forQuorumEntry:quorumEntry quorumType:DSLLMQType_10_60 error:&error];
 
     XCTAssertNil(error);
 }

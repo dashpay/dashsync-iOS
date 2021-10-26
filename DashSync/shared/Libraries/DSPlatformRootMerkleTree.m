@@ -75,7 +75,7 @@
             NSData *storeTreeRootHash = rowElements[number];
             UInt256 left, right;
             int pos = [number intValue];
-            if (pos == rowSize - 1) {
+            if (pos == rowSize - 1 && rowSize % 2) {
                 [nextRowElements setObject:storeTreeRootHash forKey:@(pos / 2)];
                 continue;
             }

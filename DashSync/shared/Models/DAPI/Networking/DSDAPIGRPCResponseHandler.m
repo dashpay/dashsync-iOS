@@ -186,7 +186,9 @@
     }
     NSMutableArray *mArray = [NSMutableArray array];
     for (NSData *cborData in documentsArray) {
-        id document = [cborData ds_decodeCborError:&error];
+        //uint32_t version = [cborData UInt32AtOffset:0];
+        NSData *documentData = [cborData subdataWithRange:NSMakeRange(4, cborData.length - 4)];
+        id document = [documentData ds_decodeCborError:&error];
         if (document && !error) {
             [mArray addObject:document];
         }

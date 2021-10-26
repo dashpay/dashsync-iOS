@@ -18,6 +18,7 @@
 #import "DSPlatformDocumentsRequest.h"
 #import "DPContract.h"
 #import "DSDirectionalKey.h"
+#import "DSDirectionalRange.h"
 #import "DSPlatformQuery.h"
 #import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
@@ -43,25 +44,26 @@
 
 + (instancetype)dpnsRequestForUsername:(NSString *)username inDomain:(NSString *)domain {
     DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
-    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel == %@ && normalizedParentDomainName == %@", [username lowercaseString], [domain lowercaseString]];
+    platformDocumentsRequest.pathPredicate = [NSPredicate predicateWithFormat:@"normalizedParentDomainName == %@", [domain lowercaseString]];
+    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel == %@", [username lowercaseString]];
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = 1;
     platformDocumentsRequest.queryType = DSPlatformQueryType_OneElement;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"domain";
-    platformDocumentsRequest.prove = DSPROVE_PLATFORM;
+    platformDocumentsRequest.prove = DSPROVE_PLATFORM_SINDEXES;
     return platformDocumentsRequest;
 }
 
 + (instancetype)dpnsRequestForUserId:(NSData *)userId {
     DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
-    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"records.dashUniqueIdentityId == %@", userId];
+    platformDocumentsRequest.pathPredicate = [NSPredicate predicateWithFormat:@"records.dashUniqueIdentityId == %@", userId];
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = 100;
     platformDocumentsRequest.queryType = DSPlatformQueryType_RangeOverIndex;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"domain";
-    platformDocumentsRequest.prove = DSPROVE_PLATFORM;
+    platformDocumentsRequest.prove = DSPROVE_PLATFORM_SINDEXES;
     return platformDocumentsRequest;
 }
 
@@ -71,14 +73,14 @@
         [lowercaseUsernames addObject:[username lowercaseString]];
     }
     DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
-    //UInt256 hashOfName = [[name dataUsingEncoding:NSUTF8StringEncoding] SHA256_2];
-    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel IN %@ && normalizedParentDomainName == %@", lowercaseUsernames, [domain lowercaseString]];
+    platformDocumentsRequest.pathPredicate = [NSPredicate predicateWithFormat:@"normalizedParentDomainName == %@", [domain lowercaseString]];
+    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel IN %@", lowercaseUsernames];
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = (uint32_t)usernames.count;
     platformDocumentsRequest.queryType = DSPlatformQueryType_IndividualElements; // Many non consecutive elements in the tree
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"domain";
-    platformDocumentsRequest.prove = DSPROVE_PLATFORM;
+    platformDocumentsRequest.prove = DSPROVE_PLATFORM_SINDEXES;
     return platformDocumentsRequest;
 }
 
@@ -88,53 +90,56 @@
 
 + (instancetype)dpnsRequestForUsernameStartsWithSearch:(NSString *)usernamePrefix inDomain:(NSString *)domain offset:(uint32_t)offset limit:(uint32_t)limit {
     DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
-    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel BEGINSWITH %@ && normalizedParentDomainName == %@", usernamePrefix, [domain lowercaseString]];
+    platformDocumentsRequest.pathPredicate = [NSPredicate predicateWithFormat:@"normalizedParentDomainName == %@", [domain lowercaseString]];
+    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel BEGINSWITH %@", usernamePrefix];
     platformDocumentsRequest.startAt = offset;
     platformDocumentsRequest.limit = limit;
     platformDocumentsRequest.queryType = DSPlatformQueryType_RangeOverValue;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"domain";
-    platformDocumentsRequest.prove = DSPROVE_PLATFORM;
+    platformDocumentsRequest.prove = DSPROVE_PLATFORM_SINDEXES;
     return platformDocumentsRequest;
 }
 
 + (instancetype)dashpayRequestForContactRequestsForSendingUserId:(NSData *)userId since:(NSTimeInterval)timestamp offset:(uint32_t)offset {
     DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     uint64_t millisecondTimestamp = timestamp * 1000;
-    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"%K == %@ && %K >= %@", @"$ownerId", userId, @"$createdAt", @(millisecondTimestamp)];
+    platformDocumentsRequest.pathPredicate = [NSPredicate predicateWithFormat:@"%K == %@", @"$ownerId", userId];
+    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"%K >= %@", @"$createdAt", @(millisecondTimestamp)];
     platformDocumentsRequest.startAt = offset;
     platformDocumentsRequest.limit = 100;
     platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"$ownerId" ascending:YES], [NSSortDescriptor sortDescriptorWithKey:@"$createdAt" ascending:YES]];
     platformDocumentsRequest.queryType = DSPlatformQueryType_RangeOverValue;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"contactRequest";
-    platformDocumentsRequest.prove = DSPROVE_PLATFORM;
+    platformDocumentsRequest.prove = DSPROVE_PLATFORM_SINDEXES;
     return platformDocumentsRequest;
 }
 
 + (instancetype)dashpayRequestForContactRequestsForRecipientUserId:(NSData *)userId since:(NSTimeInterval)timestamp offset:(uint32_t)offset {
     DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     uint64_t millisecondTimestamp = timestamp * 1000;
-    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"toUserId == %@ && %K >= %@", userId, @"$createdAt", @(millisecondTimestamp)];
+    platformDocumentsRequest.pathPredicate = [NSPredicate predicateWithFormat:@"toUserId == %@", userId];
+    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"%K >= %@", @"$createdAt", @(millisecondTimestamp)];
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = 100;
     platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"toUserId" ascending:YES], [NSSortDescriptor sortDescriptorWithKey:@"$createdAt" ascending:YES]];
     platformDocumentsRequest.queryType = DSPlatformQueryType_RangeOverValue;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"contactRequest";
-    platformDocumentsRequest.prove = DSPROVE_PLATFORM;
+    platformDocumentsRequest.prove = DSPROVE_PLATFORM_SINDEXES;
     return platformDocumentsRequest;
 }
 
 + (instancetype)dashpayRequestForContactRequestForSendingUserId:(NSData *)userId toRecipientUserId:(NSData *)toUserId {
     DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
-    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"%K == %@ && toUserId == %@", @"$ownerId", userId, toUserId];
+    platformDocumentsRequest.pathPredicate = [NSPredicate predicateWithFormat:@"%K == %@ && toUserId == %@", @"$ownerId", userId, toUserId];
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = 100;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.queryType = DSPlatformQueryType_RangeOverIndex;
     platformDocumentsRequest.tableName = @"contactRequest";
-    platformDocumentsRequest.prove = DSPROVE_PLATFORM;
+    platformDocumentsRequest.prove = DSPROVE_PLATFORM_SINDEXES;
     return platformDocumentsRequest;
 }
 
@@ -146,7 +151,7 @@
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.queryType = DSPlatformQueryType_OneElement;
     platformDocumentsRequest.tableName = @"profile";
-    platformDocumentsRequest.prove = DSPROVE_PLATFORM;
+    platformDocumentsRequest.prove = DSPROVE_PLATFORM_SINDEXES;
     return platformDocumentsRequest;
 }
 
@@ -158,7 +163,7 @@
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.queryType = DSPlatformQueryType_IndividualElements;
     platformDocumentsRequest.tableName = @"profile";
-    platformDocumentsRequest.prove = DSPROVE_PLATFORM;
+    platformDocumentsRequest.prove = DSPROVE_PLATFORM_SINDEXES;
     return platformDocumentsRequest;
 }
 
@@ -175,12 +180,23 @@
     platformDocumentsRequest.limit = (uint32_t)preorderSaltedHashes.count;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"preorder";
-    platformDocumentsRequest.prove = DSPROVE_PLATFORM;
+    platformDocumentsRequest.prove = DSPROVE_PLATFORM_SINDEXES;
     return platformDocumentsRequest;
 }
 
 - (NSData *)whereData {
-    return [self.predicate dashPlatormWhereData];
+    NSPredicate *predicate = nil;
+    if (self.pathPredicate && self.predicate) {
+        predicate = [NSCompoundPredicate andPredicateWithSubpredicates:@[self.pathPredicate, self.predicate]];
+    } else if (self.pathPredicate) {
+        predicate = self.pathPredicate;
+    } else if (self.predicate) {
+        predicate = self.predicate;
+    } else {
+        NSAssert(NO, @"We should always have a predicate or a path predicate");
+        return nil;
+    }
+    return [predicate dashPlatormWhereData];
 }
 
 - (NSData *)orderByData {
@@ -229,17 +245,22 @@
 }
 
 - (DSPlatformQuery *)expectedResponseQuery {
-    switch (self.queryType) {
-        case DSPlatformQueryType_OneElement:
-            return [DSPlatformQuery platformQueryForKeys:@[[self.predicate singleElementQueryKey]] inPath:self.path];
-        case DSPlatformQueryType_IndividualElements:
-            return [DSPlatformQuery platformQueryForKeys:[self.predicate multipleElementQueryKey] inPath:self.path];
-        case DSPlatformQueryType_RangeOverValue:
-            return [DSPlatformQuery platformQueryDocumentTreeQuery:self.predicate.platformTreeQuery];
-        case DSPlatformQueryType_RangeOverIndex:
-            //Todo, this might be wrong, need to think about it more
-            return [DSPlatformQuery platformQueryDocumentTreeQuery:self.predicate.platformTreeQuery];
-    }
+    return nil;
+    //    switch (self.queryType) {
+    //        case DSPlatformQueryType_OneElement:
+    //            return [DSPlatformQuery platformQueryForKeys:@[[self.predicate singleElementQueryKey]] inPath:self.path];
+    //        case DSPlatformQueryType_IndividualElements:
+    //            return [DSPlatformQuery platformQueryForKeys:[self.predicate multipleElementQueryKey] inPath:self.path];
+    //        case DSPlatformQueryType_RangeOverValue:
+    //            return [DSPlatformQuery platformQueryDocumentTreeQuery:self.predicate.platformTreeQuery];
+    //        case DSPlatformQueryType_RangeOverIndex:
+    //        {
+    //            //Todo, this might be wrong, need to think about it more
+    //            //DSDirectionalRange * indexRange = [[DSDirectionalRange alloc] initForKey:nil withLowerBounds:[NSData dataWithUInt32:self.startAt] ascending:YES includeLowerBounds:YES];
+    //            //return [DSPlatformQuery platformQueryForRanges:@[indexRange] inPath:self.pathPredicate];
+    //            return nil;
+    //        }
+    //    }
 }
 
 @end

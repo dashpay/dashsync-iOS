@@ -42,6 +42,7 @@ typedef NS_ENUM(NSUInteger, DSPlatformQueryType)
 
 @interface DSPlatformDocumentsRequest : NSObject
 
+@property (nonatomic, strong) NSPredicate *pathPredicate;
 @property (nonatomic, strong) NSPredicate *predicate;
 @property (nonatomic, strong) NSArray<NSSortDescriptor *> *sortDescriptors;
 @property (nonatomic, assign) uint32_t startAt;

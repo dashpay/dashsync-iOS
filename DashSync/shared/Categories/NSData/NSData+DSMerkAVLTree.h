@@ -15,21 +15,10 @@
 //  limitations under the License.
 //
 
+#import "DSDAPIPlatformNetworkServiceProtocol.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-
-typedef NS_ENUM(NSInteger, DSPlatformStoredMessage)
-{
-    /// The item does not exist for the specified key
-    DSPlatformStoredMessage_NotPresent = 0,
-    /// The version is prepended before all items
-    DSPlatformStoredMessage_Version,
-    /// An item can be returned if decode is set to true
-    DSPlatformStoredMessage_Item,
-    /// A data item that can be returned if decode is set to false
-    DSPlatformStoredMessage_Data,
-};
 
 @class DSPlatformTreeQuery;
 

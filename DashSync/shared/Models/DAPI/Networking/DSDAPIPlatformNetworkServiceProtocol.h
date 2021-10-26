@@ -20,6 +20,18 @@
 #import "DSDAPINetworkServiceRequest.h"
 #import <Foundation/Foundation.h>
 
+typedef NS_ENUM(NSInteger, DSPlatformStoredMessage)
+{
+    /// The item does not exist for the specified key
+    DSPlatformStoredMessage_NotPresent = 0,
+    /// The version is prepended before all items
+    DSPlatformStoredMessage_Version,
+    /// An item can be returned if decode is set to true
+    DSPlatformStoredMessage_Item,
+    /// A data item that can be returned if decode is set to false
+    DSPlatformStoredMessage_Data,
+};
+
 #define DAPI_DOCUMENT_RESPONSE_COUNT_LIMIT 100
 
 NS_ASSUME_NONNULL_BEGIN

@@ -3133,7 +3133,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     [dapiNetworkService getIdentityByName:potentialContact.username
         inDomain:[self dashpayDomainName]
         completionQueue:self.identityQueue
-        success:^(NSDictionary *_Nonnull blockchainIdentityDictionary) {
+        success:^(NSDictionary *_Nonnull blockchainIdentityVersionedDictionary) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 if (completion) {
@@ -3144,6 +3144,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                 }
                 return;
             }
+            NSDictionary *_Nonnull blockchainIdentityDictionary = blockchainIdentityVersionedDictionary[@(DSPlatformStoredMessage_Item)];
             NSData *identityIdData = nil;
             if (!blockchainIdentityDictionary || !(identityIdData = blockchainIdentityDictionary[@"id"])) {
                 if (completion) {
