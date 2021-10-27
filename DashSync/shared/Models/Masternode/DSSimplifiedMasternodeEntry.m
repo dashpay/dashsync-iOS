@@ -429,7 +429,7 @@
 
 - (NSString *)ipAddressString {
     if (_ipAddressString) return _ipAddressString;
-    _ipAddressString = [NSString stringWithSocketAddress:_socketAddress];
+    _ipAddressString = [NSString ipStringWithSocketAddress:_socketAddress];
     return _ipAddressString;
 }
 
