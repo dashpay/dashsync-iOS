@@ -38,6 +38,7 @@
 #import "DSMasternodeListEntity+CoreDataClass.h"
 #import "DSMerkleBlock.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
+#import "DSMerkleTree.h"
 #import "DSMutableOrderedDataKeyDictionary.h"
 #import "DSOptionsManager.h"
 #import "DSPeer.h"
@@ -589,16 +590,7 @@
         }
         if (!hasBlock && self.chain.isTestnet) {
             //We can trust insight if on testnet
-            dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-            [[DSInsightManager sharedInstance] blockForBlockHash:uint256_reverse(blockHash)
-                                                         onChain:self.chain
-                                                      completion:^(DSBlock *_Nullable block, NSError *_Nullable error) {
-                                                          if (!error && block) {
-                                                              [self.chain addInsightVerifiedBlock:block forBlockHash:blockHash];
-                                                          }
-                                                          dispatch_semaphore_signal(sem);
-                                                      }];
-            dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+            [DSMasternodeManager blockUntilAddInsight:blockHash forChain:self.chain];
             hasBlock = !![[self.chain insightVerifiedBlocksByHashDictionary] objectForKey:uint256_data(blockHash)];
         }
         if (hasBlock) {
@@ -889,7 +881,8 @@
         if (length - offset < [DSSimplifiedMasternodeEntry payloadLength]) return;
         NSData *data = [message subdataWithRange:NSMakeRange(offset, [DSSimplifiedMasternodeEntry payloadLength])];
         DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithData:data atBlockHeight:blockHeight onChain:chain];
-        [addedOrModifiedMasternodes setObject:simplifiedMasternodeEntry forKey:[NSData dataWithUInt256:simplifiedMasternodeEntry.providerRegistrationTransactionHash].reverse];
+        NSData *key = [NSData dataWithUInt256:simplifiedMasternodeEntry.providerRegistrationTransactionHash].reverse;
+        [addedOrModifiedMasternodes setObject:simplifiedMasternodeEntry forKey:key];
         offset += [DSSimplifiedMasternodeEntry payloadLength];
         addedMasternodeCount--;
     }
@@ -932,14 +925,14 @@
                 failureBlock();
                 return;
             }
-            DSLLMQ llmq;
-            llmq.type = [message UInt8AtOffset:offset];
-            llmq.hash = [message UInt256AtOffset:offset + 1];
-            if (![deletedQuorums objectForKey:@(llmq.type)]) {
-                [deletedQuorums setObject:[NSMutableArray arrayWithObject:[NSData dataWithUInt256:llmq.hash]] forKey:@(llmq.type)];
+            uint8_t llmqType = [message UInt8AtOffset:offset];
+            UInt256 llmqHash = [message UInt256AtOffset:offset + 1];
+            NSData *llmqHashData = [NSData dataWithUInt256:llmqHash];
+            NSMutableArray *mutableLLMQArray = [deletedQuorums objectForKey:@(llmqType)];
+            if (mutableLLMQArray) {
+                [mutableLLMQArray addObject:llmqHashData];
             } else {
-                NSMutableArray *mutableLLMQArray = [deletedQuorums objectForKey:@(llmq.type)];
-                [mutableLLMQArray addObject:[NSData dataWithUInt256:llmq.hash]];
+                [deletedQuorums setObject:[NSMutableArray arrayWithObject:llmqHashData] forKey:@(llmqType)];
             }
             offset += 33;
             deletedQuorumsCount--;
@@ -955,33 +948,24 @@
 
         while (addedQuorumsCount >= 1) {
             DSQuorumEntry *potentialQuorumEntry = [DSQuorumEntry potentialQuorumEntryWithData:message dataOffset:(uint32_t)offset onChain:chain];
-
+            UInt256 entryQuorumHash = potentialQuorumEntry.quorumHash;
+            DSLLMQType llmqType = potentialQuorumEntry.llmqType;
             if (potentialQuorumEntry.shouldProcessQuorum) {
-                DSMasternodeList *quorumMasternodeList = masternodeListLookup(potentialQuorumEntry.quorumHash);
-
+                DSMasternodeList *quorumMasternodeList = masternodeListLookup(entryQuorumHash);
                 if (quorumMasternodeList) {
                     validQuorums &= [potentialQuorumEntry validateWithMasternodeList:quorumMasternodeList blockHeightLookup:blockHeightLookup];
                     if (!validQuorums) {
                         DSLog(@"Invalid Quorum Found For Quorum at height %d", quorumMasternodeList.height);
                     }
                 } else {
-                    if (blockHeightLookup(potentialQuorumEntry.quorumHash) != UINT32_MAX) {
-                        [neededMasternodeLists addObject:uint256_data(potentialQuorumEntry.quorumHash)];
+                    if (blockHeightLookup(entryQuorumHash) != UINT32_MAX) {
+                        [neededMasternodeLists addObject:uint256_data(entryQuorumHash)];
                     } else {
                         if (useInsightAsBackup) {
                             //We can trust insight if on testnet
-                            dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-                            [[DSInsightManager sharedInstance] blockForBlockHash:uint256_reverse(potentialQuorumEntry.quorumHash)
-                                                                         onChain:chain
-                                                                      completion:^(DSBlock *_Nullable block, NSError *_Nullable error) {
-                                                                          if (!error && block) {
-                                                                              [chain addInsightVerifiedBlock:block forBlockHash:potentialQuorumEntry.quorumHash];
-                                                                          }
-                                                                          dispatch_semaphore_signal(sem);
-                                                                      }];
-                            dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
-                            if (blockHeightLookup(potentialQuorumEntry.quorumHash) != UINT32_MAX) {
-                                [neededMasternodeLists addObject:uint256_data(potentialQuorumEntry.quorumHash)];
+                            [DSMasternodeManager blockUntilAddInsight:entryQuorumHash forChain:chain];
+                            if (blockHeightLookup(entryQuorumHash) != UINT32_MAX) {
+                                [neededMasternodeLists addObject:uint256_data(entryQuorumHash)];
                             } else {
                                 DSLog(@"Quorum masternode list not found and block not available");
                             }
@@ -991,12 +975,12 @@
                     }
                 }
             }
-
-            if (![addedQuorums objectForKey:@(potentialQuorumEntry.llmqType)]) {
-                [addedQuorums setObject:[NSMutableDictionary dictionaryWithObject:potentialQuorumEntry forKey:[NSData dataWithUInt256:potentialQuorumEntry.quorumHash]] forKey:@(potentialQuorumEntry.llmqType)];
+            NSData *entryQuorumHashData = [NSData dataWithUInt256:entryQuorumHash];
+            NSMutableDictionary *mutableLLMQDictionary = [addedQuorums objectForKey:@(llmqType)];
+            if (!mutableLLMQDictionary) {
+                [addedQuorums setObject:[NSMutableDictionary dictionaryWithObject:potentialQuorumEntry forKey:entryQuorumHashData] forKey:@(llmqType)];
             } else {
-                NSMutableDictionary *mutableLLMQDictionary = [addedQuorums objectForKey:@(potentialQuorumEntry.llmqType)];
-                [mutableLLMQDictionary setObject:potentialQuorumEntry forKey:[NSData dataWithUInt256:potentialQuorumEntry.quorumHash]];
+                [mutableLLMQDictionary setObject:potentialQuorumEntry forKey:entryQuorumHashData];
             }
             offset += potentialQuorumEntry.length;
             addedQuorumsCount--;
@@ -1013,34 +997,14 @@
         for (NSString *string in [[masternodeList hashesForMerkleRootWithBlockHeightLookup:blockHeightLookup] transformToArrayOfHexStrings]) {
             DSLog(@"Hash %i is %@", i++, string);
         }
-#if SAVE_MASTERNODE_ERROR_TO_FILE
-        NSMutableData *message = [NSMutableData data];
-        NSDictionary<NSData *, NSData *> *hashDictionary = [masternodeList hashDictionaryForMerkleRootWithBlockHeightLookup:blockHeightLookup];
-        for (NSData *proTxHashData in [masternodeList providerTxOrderedHashes]) {
-            NSString *line = [NSString stringWithFormat:@"%@ -> %@\n", [proTxHashData hexString], [hashDictionary[proTxHashData] hexString]];
-            [message appendData:[line dataUsingEncoding:NSUTF8StringEncoding]];
-        }
-        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-        NSString *documentsDirectory = [paths objectAtIndex:0];
-        NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"MNL_SME_ERROR_%d.txt", masternodeList.height]];
 
-        // Save it into file system
-        [message writeToFile:dataPath atomically:YES];
+#if SAVE_MASTERNODE_ERROR_TO_FILE
+        [DSMasternodeManager writeToLog:blockHeightLookup
+                       inMasternodeList:masternodeList];
 #endif
 #if SAVE_MASTERNODE_NO_ERROR_TO_FILE
     } else {
-        NSMutableData *message = [NSMutableData data];
-        NSDictionary<NSData *, NSData *> *hashDictionary = [masternodeList hashDictionaryForMerkleRootWithBlockHeightLookup:blockHeightLookup];
-        for (NSData *proTxHashData in [masternodeList providerTxOrderedHashes]) {
-            NSString *line = [NSString stringWithFormat:@"%@ -> %@\n", [proTxHashData hexString], [hashDictionary[proTxHashData] hexString]];
-            [message appendData:[line dataUsingEncoding:NSUTF8StringEncoding]];
-        }
-        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-        NSString *documentsDirectory = [paths objectAtIndex:0];
-        NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"MNL_SME_NO_ERROR_%d.txt", masternodeList.height]];
-
-        // Save it into file system
-        [message writeToFile:dataPath atomically:YES];
+        [DSMasternodeManager writeToLog:blockHeightLookup inMasternodeList:masternodeList];
 #endif
     }
 
@@ -1066,9 +1030,8 @@
     }
 
     //we also need to check that the coinbase is in the merkle block
-    DSMerkleBlock *coinbaseVerificationMerkleBlock = [[DSMerkleBlock alloc] initWithBlockHash:blockHash merkleRoot:lastBlock.merkleRoot totalTransactions:totalTransactions hashes:merkleHashes flags:merkleFlags];
-
-    BOOL validCoinbase = [coinbaseVerificationMerkleBlock isMerkleTreeValid];
+    DSMerkleTree *merkleTree = [[DSMerkleTree alloc] initWithHashes:merkleHashes flags:merkleFlags treeElementCount:totalTransactions hashFunction:DSMerkleTreeHashFunction_SHA256_2];
+    BOOL validCoinbase = [merkleTree merkleTreeHasRoot:lastBlock.merkleRoot];
 
 #if TEST_RANDOM_ERROR_IN_MASTERNODE_DIFF
     //test random errors
@@ -1081,6 +1044,41 @@
     completion(foundCoinbase, validCoinbase, rootMNListValid, rootQuorumListValid, validQuorums, masternodeList, addedMasternodes, modifiedMasternodes, addedQuorums, neededMasternodeLists);
 
 #endif
+}
+
++ (void)blockUntilAddInsight:(UInt256)blockHash forChain:(DSChain *)chain {
+    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+    [[DSInsightManager sharedInstance] blockForBlockHash:uint256_reverse(blockHash)
+                                                 onChain:chain
+                                              completion:^(DSBlock *_Nullable block, NSError *_Nullable error) {
+                                                  if (!error && block) {
+                                                      [chain addInsightVerifiedBlock:block forBlockHash:blockHash];
+                                                  }
+                                                  dispatch_semaphore_signal(sem);
+                                              }];
+    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+}
+
++ (void)writeToLog:(uint32_t (^)(UInt256 blockHash))blockHeightLookup inMasternodeList:(DSMasternodeList *)masternodeList {
+    UInt256 blockHash = [masternodeList blockHash];
+    uint32_t height = blockHeightLookup(blockHash);
+    if (height == UINT32_MAX) {
+        DSLog(@"Block height lookup queried an unknown block %@", uint256_hex(blockHash));
+        return; //this should never happen
+    }
+    NSMutableData *message = [NSMutableData data];
+    NSArray *proTxHashes = [masternodeList providerTxOrderedHashes];
+    for (NSData *proTxHash in proTxHashes) {
+        DSSimplifiedMasternodeEntry *entry = [masternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash objectForKey:proTxHash];
+        NSData *hashData = uint256_data([entry simplifiedMasternodeEntryHashAtBlockHeight:height]);
+        NSString *line = [NSString stringWithFormat:@"%@ -> %@\n", [proTxHash hexString], [hashData hexString]];
+        [message appendData:[line dataUsingEncoding:NSUTF8StringEncoding]];
+    }
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"MNL_SME_ERROR_%d.txt", masternodeList.height]];
+    // Save it into file system
+    [message writeToFile:dataPath atomically:YES];
 }
 
 - (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData *)message {
@@ -1156,16 +1154,7 @@
             lastBlock = [[peer.chain insightVerifiedBlocksByHashDictionary] objectForKey:uint256_data(blockHash)];
             if (!lastBlock && peer.chain.isTestnet) {
                 //We can trust insight if on testnet
-                dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-                [[DSInsightManager sharedInstance] blockForBlockHash:uint256_reverse(blockHash)
-                                                             onChain:peer.chain
-                                                          completion:^(DSBlock *_Nullable block, NSError *_Nullable error) {
-                                                              if (!error && block) {
-                                                                  [peer.chain addInsightVerifiedBlock:block forBlockHash:blockHash];
-                                                              }
-                                                              dispatch_semaphore_signal(sem);
-                                                          }];
-                dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+                [DSMasternodeManager blockUntilAddInsight:blockHash forChain:peer.chain];
                 lastBlock = [[peer.chain insightVerifiedBlocksByHashDictionary] objectForKey:uint256_data(blockHash)];
             }
         }

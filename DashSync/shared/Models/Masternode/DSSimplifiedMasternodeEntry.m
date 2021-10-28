@@ -139,15 +139,11 @@
     return self;
 }
 
-- (void)keepInfoOfPreviousEntryVersion:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlockHash:(UInt256)blockHash atBlockHeight:(uint32_t)blockHeight {
-    DSBlock *block = [self.chain blockForBlockHash:blockHash];
-    if (!block) block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:self.chain];
-    if (masternodeEntry.updateHeight < self.updateHeight) {
-        [self updatePreviousValidity:masternodeEntry atBlock:block];
-        [self updatePreviousOperatorPublicKeysFromPreviousSimplifiedMasternodeEntry:masternodeEntry atBlock:block];
-        [self updatePreviousSimplifiedMasternodeEntryHashesFromPreviousSimplifiedMasternodeEntry:masternodeEntry atBlock:block];
-        [self updateKnownConfirmedHashAtHeight:masternodeEntry atBlock:block];
-    }
+- (void)keepInfoOfPreviousEntryVersion:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlock:(DSBlock *)block {
+    [self updatePreviousValidity:masternodeEntry atBlock:block];
+    [self updatePreviousOperatorPublicKeysFromPreviousSimplifiedMasternodeEntry:masternodeEntry atBlock:block];
+    [self updatePreviousSimplifiedMasternodeEntryHashesFromPreviousSimplifiedMasternodeEntry:masternodeEntry atBlock:block];
+    [self updateKnownConfirmedHashAtHeight:masternodeEntry atBlock:block];
 }
 
 - (void)updateKnownConfirmedHashAtHeight:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlock:(DSBlock *)block {

@@ -132,7 +132,11 @@ inline static int ceil_log2(int x) {
         DSSimplifiedMasternodeEntry *oldMasternodeEntry = tentativeMasternodeList[masternodeHashData];
         //the masternode has changed
         DSSimplifiedMasternodeEntry *modifiedMasternode = modifiedMasternodes[masternodeHashData];
-        [modifiedMasternode keepInfoOfPreviousEntryVersion:oldMasternodeEntry atBlockHash:blockHash atBlockHeight:blockHeight];
+        if (oldMasternodeEntry.updateHeight < modifiedMasternode.updateHeight) {
+            DSBlock *block = [chain blockForBlockHash:blockHash];
+            if (!block) block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:chain];
+            [modifiedMasternode keepInfoOfPreviousEntryVersion:oldMasternodeEntry atBlock:block];
+        }
         tentativeMasternodeList[masternodeHashData] = modifiedMasternode;
     }
 
@@ -201,23 +205,6 @@ inline static int ceil_log2(int x) {
         DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash objectForKey:proTxHash];
         UInt256 simplifiedMasternodeEntryHash = [simplifiedMasternodeEntry simplifiedMasternodeEntryHashAtBlockHeight:height];
         [simplifiedMasternodeListByRegistrationTransactionHashHashes addObject:uint256_data(simplifiedMasternodeEntryHash)];
-    }
-    return simplifiedMasternodeListByRegistrationTransactionHashHashes;
-}
-
-- (NSDictionary<NSData *, NSData *> *)hashDictionaryForMerkleRootWithBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
-    NSArray *proTxHashes = [self providerTxOrderedHashes];
-
-    NSMutableDictionary *simplifiedMasternodeListByRegistrationTransactionHashHashes = [NSMutableDictionary dictionary];
-    uint32_t height = blockHeightLookup(self.blockHash);
-    if (height == UINT32_MAX) {
-        DSLog(@"Block height lookup queried an unknown block %@", uint256_hex(self.blockHash));
-        return nil; //this should never happen
-    }
-    for (NSData *proTxHash in proTxHashes) {
-        DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash objectForKey:proTxHash];
-        UInt256 simplifiedMasternodeEntryHash = [simplifiedMasternodeEntry simplifiedMasternodeEntryHashAtBlockHeight:height];
-        simplifiedMasternodeListByRegistrationTransactionHashHashes[proTxHash] = uint256_data(simplifiedMasternodeEntryHash);
     }
     return simplifiedMasternodeListByRegistrationTransactionHashHashes;
 }
