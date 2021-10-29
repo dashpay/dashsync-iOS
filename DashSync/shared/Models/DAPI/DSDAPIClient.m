@@ -232,14 +232,14 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     return foundNetworkService;
 }
 
-- (DSDAPIPlatformNetworkService *)createPlatformServiceFor:(NSString *)host {
+- (DSDAPIPlatformNetworkService *)createPlatformServiceForHost:(NSString *)host {
     HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
     DSDAPIPlatformNetworkService *DAPINetworkService = [[DSDAPIPlatformNetworkService alloc] initWithDAPINodeIPAddress:host httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.coreNetworkingDispatchQueue onChain:self.chain];
     [self.activePlatformServices addObject:DAPINetworkService];
     return DAPINetworkService;
 }
 
-- (void)removePlatformServiceFor:(NSString *)host {
+- (void)removePlatformServiceForHost:(NSString *)host {
     for (DSDAPIPlatformNetworkService *networkService in [self.activePlatformServices copy]) {
         if ([networkService.ipAddress isEqualToString:host]) {
             [self.activePlatformServices removeObject:networkService];
@@ -255,7 +255,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     NSMutableSet<NSString *> *peersToRemove = [self.trustedPeers mutableCopy];
     [peersToRemove minusSet:peers];
     for (NSString *hostToRemove in peersToRemove) {
-        [self removePlatformServiceFor:hostToRemove];
+        [self removePlatformServiceForHost:hostToRemove];
     }
     self.trustedPeers = peers;
     _whiteList = whiteList;
@@ -272,7 +272,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     if (!self.whiteList || [self.whiteList containsObject:host]) {
         [self.trustedPeers addObject:host];
         if (![self platformServiceForHost:host]) {
-            [self createPlatformServiceFor:host];
+            [self createPlatformServiceForHost:host];
         }
     }
 }
@@ -286,7 +286,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
         if (self.whiteList && [self.whiteList containsObject:host]) {
             [self.trustedPeers removeObject:host];
         }
-        [self removePlatformServiceFor:host];
+        [self removePlatformServiceForHost:host];
     }
 }
 
@@ -304,7 +304,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 #else
             NSString *peerHost = self.trustedPeers.anyObject;
 #endif
-            return [self createPlatformServiceFor:peerHost];
+            return [self createPlatformServiceForHost:peerHost];
         }
         return nil;
     }
