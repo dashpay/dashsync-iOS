@@ -401,7 +401,7 @@
 // subscriptIndex. A subscriptIndex of NSNotFound will return the entire signed transaction.
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex {
     BOOL forSigHash = ([self isMemberOfClass:[DSTransaction class]] || [self isMemberOfClass:[DSCreditFundingTransaction class]]) && subscriptIndex != NSNotFound;
-    NSUInteger dataSize = 8 + [NSMutableData sizeOfVarInt:self.mInputs.count] + [NSMutableData sizeOfVarInt:self.mOutputs.count] + TX_INPUT_SIZE * self.mInputs.count + TX_OUTPUT_SIZE * self.mOutputs.count + (forSigHash?4:0);
+    NSUInteger dataSize = 8 + [NSMutableData sizeOfVarInt:self.mInputs.count] + [NSMutableData sizeOfVarInt:self.mOutputs.count] + TX_INPUT_SIZE * self.mInputs.count + TX_OUTPUT_SIZE * self.mOutputs.count + (forSigHash ? 4 : 0);
     NSMutableData *d = [NSMutableData dataWithCapacity:dataSize];
 
     [d appendUInt16:self.version];

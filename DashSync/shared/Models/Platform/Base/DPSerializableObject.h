@@ -21,8 +21,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DSChain;
+
 @protocol DPSerializableObject <NSObject>
 
+@property (readonly, strong, nonnull, nonatomic) DSChain *chain;
 @property (readonly, strong, nullable, nonatomic) DSMutableStringValueDictionary *keyValueDictionary;
 @property (readonly, strong, nullable, nonatomic) DSMutableStringValueDictionary *baseKeyValueDictionary;
 @property (readonly, strong, nullable, nonatomic) NSData *serialized;

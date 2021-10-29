@@ -15,9 +15,12 @@
 //  limitations under the License.
 //
 
+#import "DSPlatformDocumentsRequest.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
+
+@class DSPlatformTreeQuery;
 
 typedef NS_ENUM(NSUInteger, NSPredicateCBORDataOptions)
 {
@@ -28,6 +31,10 @@ typedef NS_ENUM(NSUInteger, NSPredicateCBORDataOptions)
 @interface NSPredicate (CBORData)
 
 - (NSData *)dashPlatormWhereData;
+- (NSData *)singleElementQueryKey;
+- (NSArray<NSData *> *)multipleElementQueryKey;
+- (DSPlatformTreeQuery *)platformTreeQuery;
+- (NSData *)secondaryIndexPathForQueryType:(DSPlatformQueryType)queryType;
 
 @end
 

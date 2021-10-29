@@ -39,7 +39,7 @@ Pod::Spec.new do |s|
   s.compiler_flags = '-Wno-comma'
   s.dependency 'secp256k1_dash', '0.1.4-alpha.2'
   s.dependency 'bls-signatures-pod', '0.2.11'
-  s.dependency 'CocoaLumberjack', '3.6.0'
+  s.dependency 'CocoaLumberjack', '3.7.2'
   s.ios.dependency 'DWAlertController', '0.2.1'
   s.dependency 'DSDynamicOptions', '0.1.2'
   s.dependency 'DAPI-GRPC', '0.21.0-dev.8'

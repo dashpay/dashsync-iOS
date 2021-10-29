@@ -915,8 +915,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 - (uint64_t)dashpayProfileUpdatedAt {
     if (self.transientDashpayUser) {
         return self.transientDashpayUser.updatedAt;
-    }
-    else {
+    } else {
         return self.matchingDashpayUserInViewContext.updatedAt;
     }
 }
@@ -924,8 +923,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 - (uint64_t)dashpayProfileCreatedAt {
     if (self.transientDashpayUser) {
         return self.transientDashpayUser.createdAt;
-    }
-    else {
+    } else {
         return self.matchingDashpayUserInViewContext.createdAt;
     }
 }
@@ -2573,19 +2571,32 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     DSDAPIPlatformNetworkService *dapiNetworkService = self.DAPINetworkService;
     [dapiNetworkService getIdentityById:self.uniqueIDData
         completionQueue:self.identityQueue
-        success:^(NSDictionary *_Nonnull identityDictionary) {
+        success:^(NSDictionary *_Nullable identityDictionary) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
             }
-            if (identityDictionary.count) {
-                [strongSelf applyIdentityDictionary:identityDictionary save:!self.isTransient inContext:context];
-                strongSelf.registrationStatus = DSBlockchainIdentityRegistrationStatus_Registered;
-                [self saveInContext:context];
-            }
+            if (!identityDictionary) {
+                if (completion) {
+                    if (options & DSBlockchainIdentityMonitorOptions_AcceptNotFoundAsNotAnError) {
+                        completion(YES, NO, nil);
+                    } else {
+                        completion(NO, NO, [NSError errorWithDomain:@"DashSync"
+                                                               code:500
+                                                           userInfo:@{NSLocalizedDescriptionKey:
+                                                                        DSLocalizedString(@"Platform returned no identity when one was expected", nil)}]);
+                    }
+                }
+            } else {
+                if (identityDictionary.count) {
+                    [strongSelf applyIdentityDictionary:identityDictionary save:!self.isTransient inContext:context];
+                    strongSelf.registrationStatus = DSBlockchainIdentityRegistrationStatus_Registered;
+                    [self saveInContext:context];
+                }
 
-            if (completion) {
-                completion(YES, YES, nil);
+                if (completion) {
+                    completion(YES, YES, nil);
+                }
             }
         }
         failure:^(NSError *_Nonnull error) {
@@ -3122,7 +3133,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     [dapiNetworkService getIdentityByName:potentialContact.username
         inDomain:[self dashpayDomainName]
         completionQueue:self.identityQueue
-        success:^(NSDictionary *_Nonnull blockchainIdentityDictionary) {
+        success:^(NSDictionary *_Nonnull blockchainIdentityVersionedDictionary) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 if (completion) {
@@ -3133,6 +3144,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                 }
                 return;
             }
+            NSDictionary *_Nonnull blockchainIdentityDictionary = blockchainIdentityVersionedDictionary[@(DSPlatformStoredMessage_Item)];
             NSData *identityIdData = nil;
             if (!blockchainIdentityDictionary || !(identityIdData = blockchainIdentityDictionary[@"id"])) {
                 if (completion) {

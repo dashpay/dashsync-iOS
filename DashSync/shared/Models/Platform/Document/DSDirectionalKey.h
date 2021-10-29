@@ -1,6 +1,6 @@
 //
-//  Created by Samuel Westrich
-//  Copyright © 2564 Dash Core Group. All rights reserved.
+//  Created by Sam Westrich
+//  Copyright © 2021 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,19 +15,16 @@
 //  limitations under the License.
 //
 
-#import "DSDAPIPlatformNetworkServiceProtocol.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSPlatformTreeQuery;
+@interface DSDirectionalKey : NSObject
 
-@interface NSData (DSMerkAVLTree)
+@property (nonatomic, readonly) NSData *key;
+@property (nonatomic, readonly) bool ascending;
 
-/* executeProofReturnElementDictionary returns items from the proof that match the specific query, if no query is set all
- items are returned.
- */
-- (NSData *_Nullable)executeProofReturnElementDictionary:(NSDictionary *_Nonnull *_Nullable)rElementDictionary query:(DSPlatformTreeQuery *_Nullable)query decode:(BOOL)decode usesVersion:(BOOL)usesVersion error:(NSError **)error;
+- (instancetype)initWithKey:(NSData *)key ascending:(bool)ascending;
 
 @end
 
