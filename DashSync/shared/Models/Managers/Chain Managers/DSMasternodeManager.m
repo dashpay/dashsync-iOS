@@ -371,7 +371,7 @@
     _whiteList = whiteList;
     NSMutableSet *stringSet = [NSMutableSet set];
     for (NSValue *address in whiteList) {
-        [stringSet addObject:[NSString stringWithSocketAddress:[address addressValue]]];
+        [stringSet addObject:[NSString stringWithSocketAddress:[address socketAddressValue]]];
     }
     [self.chain.chainManager.DAPIClient setWhiteList:stringSet];
 }

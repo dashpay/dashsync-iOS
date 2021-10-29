@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSValue (Sugar)
 
-- (DSSocketAddress)addressValue;
+- (DSSocketAddress)socketAddressValue;
 
 @end
 
