@@ -242,8 +242,7 @@
         version = DASH_PRIVKEY_TEST;
     }
 
-    [d appendBytes:&version
-            length:1];
+    [d appendBytes:&version length:1];
     [d appendUInt256:self.secretKey];
     [d appendBytes:"\x02" length:1];
     return [NSString base58checkWithData:d];

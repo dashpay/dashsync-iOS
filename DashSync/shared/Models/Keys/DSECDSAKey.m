@@ -535,8 +535,7 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i) {
         version = DASH_PRIVKEY_TEST;
     }
 
-    [d appendBytes:&version
-            length:1];
+    [d appendBytes:&version length:1];
     [d appendBytes:&_seckey length:sizeof(_seckey)];
     if (self.compressed) [d appendBytes:"\x01" length:1];
     return [NSString base58checkWithData:d];
