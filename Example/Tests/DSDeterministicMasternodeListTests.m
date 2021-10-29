@@ -2960,7 +2960,7 @@
                                              };
                                              NSMutableOrderedSet<NSString *> *whitePeers = [NSMutableOrderedSet orderedSet];
                                              for (NSUInteger i = 0; i < whiteList.count; i++) {
-                                                 [whitePeers addObject:[NSString stringWithSocketAddress:[[whiteList objectAtIndex:i] addressValue]]];
+                                                 [whitePeers addObject:[NSString stringWithSocketAddress:[[whiteList objectAtIndex:i] socketAddressValue]]];
                                              }
                                              [prevTrustedPeers sortUsingComparator:cmptr];
                                              [currTrustedPeers sortUsingComparator:cmptr];

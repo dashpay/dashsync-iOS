@@ -367,7 +367,7 @@
     }
 }
 
-- (void)setWhiteList:(NSArray *)whiteList {
+- (void)setWhiteList:(NSArray <NSValue*> *)whiteList {
     _whiteList = whiteList;
     NSMutableSet *stringSet = [NSMutableSet set];
     for (NSValue *address in whiteList) {
