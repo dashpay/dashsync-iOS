@@ -298,11 +298,11 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
             if ([self.activePlatformServices count] == 1)
                 return [self.activePlatformServices objectAtIndex:0];
             return [self.activePlatformServices objectAtIndex:arc4random_uniform((uint32_t)[self.activePlatformServices count])];
-        } else if ([self.trustedPeers count] || DAPI_CONNECT_SINGLE_NODE) {
+        } else {
 #if DAPI_CONNECT_SINGLE_NODE
             NSString *peerHost = DAPI_SINGLE_NODE;
 #else
-            NSString *peerHost = self.trustedPeers.anyObject;
+            NSString *peerHost = ([self.trustedPeers count]?self.trustedPeers.anyObject:self.availablePeers.anyObject);
 #endif
             return [self createPlatformServiceForHost:peerHost];
         }
