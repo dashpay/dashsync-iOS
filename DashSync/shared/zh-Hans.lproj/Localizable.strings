@@ -402,3 +402,12 @@
 
 /* No comment provided by engineer. */
 "Quorum entry %@ found but is not yet verified" = "Quorum entry %@ found but is not yet verified";
+
+/* No comment provided by engineer. */
+"Platform returned no proof when we requested it" = "Platform returned no proof when we requested it";
+
+/* No comment provided by engineer. */
+"Platform returned a proof that does not satisfy our query" = "Platform returned a proof that does not satisfy our query";
+
+/* No comment provided by engineer. */
+"Platform returned no identity when one was expected" = "Platform returned no identity when one was expected";

@@ -53,6 +53,9 @@ typedef NS_ENUM(NSUInteger, DSKeyType)
 
 - (UInt256)HMAC256Data:(NSData *)data;
 
+- (void)signMessageDigest:(UInt256)digest completion:(void (^_Nullable)(BOOL success, NSData *signature))completion;
+
+
 @end
 
 NS_ASSUME_NONNULL_END

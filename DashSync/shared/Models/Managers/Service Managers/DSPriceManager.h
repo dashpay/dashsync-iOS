@@ -85,8 +85,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *_Nullable)bitcoinCurrencyStringForAmount:(int64_t)amount DEPRECATED_ATTRIBUTE;
 - (NSString *_Nullable)localCurrencyStringForDashAmount:(int64_t)amount;
 - (NSString *_Nullable)fiatCurrencyString:(NSString *)currencyCode forDashAmount:(int64_t)amount;
+- (NSNumber *_Nullable)fiatCurrencyNumber:(NSString *)currencyCode forDashAmount:(int64_t)amount;
 - (NSString *_Nullable)localCurrencyStringForBitcoinAmount:(int64_t)amount DEPRECATED_ATTRIBUTE;
 - (NSNumber *_Nullable)localCurrencyNumberForDashAmount:(int64_t)amount;
+
+- (int64_t)amountForLocalCurrencyString:(NSString *)string
+                         localFormatter:(NSNumberFormatter *)localFormatter
+                             localPrice:(NSNumber *)localPrice;
 
 @end
 

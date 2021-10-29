@@ -16,14 +16,15 @@
 //
 
 #import "BigIntTypes.h"
-#import "DPBaseObject.h"
+#import "DPSerializableObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DPDocumentState;
+@class DPDocumentState, DSDocumentType;
 
 @interface DPDocument : NSObject
 
+@property (readonly, copy, nonatomic) DSDocumentType *documentType;
 @property (readonly, copy, nonatomic) NSString *tableName;
 @property (readonly, nonatomic) UInt256 ownerId;
 @property (readonly, copy, nonatomic) NSString *base58OwnerIdString;
@@ -37,6 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, copy, nonatomic) NSNumber *currentRegisteredRevision;
 @property (readonly, copy, nonatomic) NSNumber *currentLocalRevision;
 @property (readonly, copy, nonatomic) DSStringValueDictionary *objectDictionary;
+@property (readonly, nonatomic) NSData *mainIndexKey;
 
 - (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(UInt256)ownerId onContractWithId:(UInt256)contractId onTableWithName:(NSString *)tableName usingEntropy:(NSData *)entropy;
 

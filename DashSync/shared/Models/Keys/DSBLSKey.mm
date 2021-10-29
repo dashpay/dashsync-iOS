@@ -370,6 +370,17 @@
     return signature;
 }
 
+- (void)signMessageDigest:(UInt256)digest completion:(void (^_Nullable)(BOOL success, NSData *signature))completion {
+    NSParameterAssert(completion);
+    NSData *signatureData = nil;
+    UInt768 signature = [self signDigest:digest];
+    BOOL success = uint768_is_not_zero(signature);
+    if (success) {
+        signatureData = uint768_data(signature);
+    }
+    completion(success, signatureData);
+}
+
 // MARK: - HMAC
 
 - (UInt256)HMAC256Data:(NSData *)data {

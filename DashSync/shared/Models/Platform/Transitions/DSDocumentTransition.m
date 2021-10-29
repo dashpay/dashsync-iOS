@@ -18,6 +18,8 @@
 #import "DSDocumentTransition.h"
 #import "DPDocument.h"
 #import "DPDocumentState.h"
+#import "DSPlatformQuery.h"
+#import "DSPlatformTreeQuery.h"
 #import "DSTransition+Protected.h"
 
 @interface DSDocumentTransition ()
@@ -52,6 +54,10 @@
     self.blockchainIdentityUniqueId = blockchainIdentityUniqueId;
 
     return self;
+}
+
+- (DSPlatformQuery *)expectedResponseQuery {
+    return [DSPlatformQuery platformQueryForDocuments:self.documents];
 }
 
 @end

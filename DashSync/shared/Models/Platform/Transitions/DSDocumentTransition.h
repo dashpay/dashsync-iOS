@@ -26,9 +26,12 @@ typedef NS_ENUM(NSUInteger, DSDocumentTransitionType)
     DSDocumentTransitionType_Delete = 3,
 };
 
+@class DSPlatformQuery;
+
 @interface DSDocumentTransition : DSTransition
 
 @property (nonatomic, readonly) NSArray<DPDocument *> *documents;
+@property (nonatomic, readonly) DSPlatformQuery *expectedResponseQuery;
 
 - (instancetype)initForDocuments:(NSArray<DPDocument *> *)documents withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain;
 

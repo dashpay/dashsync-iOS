@@ -29,7 +29,7 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, strong, nullable) NSData *signature;
 @property (nonatomic, assign) uint32_t sequence;
 
-+ (instancetype)transactionInputWithHash:(UInt256)inputHash index:(uint32_t)index inScript:(NSData *)inScript signature:(NSData *)signature sequence:(uint32_t)sequence;
++ (instancetype)transactionInputWithHash:(UInt256)inputHash index:(uint32_t)index inScript:(NSData *)inScript signature:(NSData *_Nullable)signature sequence:(uint32_t)sequence;
 
 - (NSComparisonResult)compare:(DSTransactionInput *)obj;
 

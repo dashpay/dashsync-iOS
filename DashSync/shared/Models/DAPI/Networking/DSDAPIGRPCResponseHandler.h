@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+#import "DSChain.h"
 #import "DSPlatformDocumentsRequest.h"
 #import <DAPI-GRPC/Platform.pbobjc.h>
 #import <DAPI-GRPC/Platform.pbrpc.h>
@@ -22,15 +23,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, DSPlatformDictionary)
-{
-    DSPlatformDictionary_Contracts = 4,
-    DSPlatformDictionary_Documents = 5,
-    DSPlatformDictionary_Identities = 1,
-    DSPlatformDictionary_PublicKeyHashesToIdentityIds = 2,
-};
-
-@class DSChain;
+@class DSQuorumEntry, DSPlatformQuery, DSTransition;
 
 @interface DSDAPIGRPCResponseHandler : NSObject <GRPCProtoResponseHandler>
 
@@ -38,12 +31,24 @@ typedef NS_ENUM(NSUInteger, DSPlatformDictionary)
 @property (atomic, strong) dispatch_queue_t completionQueue;
 @property (nonatomic, strong) NSString *host;                      //for debuging purposes
 @property (nonatomic, strong) DSPlatformDocumentsRequest *request; //for debuging purposes
+@property (nonatomic, readonly) DSPlatformQuery *query;
 
 @property (nonatomic, copy) void (^successHandler)(id successObject);
 @property (nonatomic, copy) void (^errorHandler)(NSError *error);
 
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithChain:(DSChain *)chain requireProof:(BOOL)requireProof;
+- (instancetype)initForIdentityRequest:(NSData *)identityId withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
+- (instancetype)initForContractRequest:(NSData *)contractId withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
+
+- (instancetype)initForStateTransition:(DSTransition *)stateTransition withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
+- (instancetype)initForDocumentsQueryRequest:(DSPlatformDocumentsRequest *)platformDocumentsRequest withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
+
+- (instancetype)initForGetContractsByContractIDs:(NSArray<NSData *> *)contractIDs withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
+- (instancetype)initForGetIdentityIDsByPublicKeyHashesRequest:(NSArray<NSData *> *)hashes withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
+- (instancetype)initForGetIdentitiesByPublicKeyHashesRequest:(NSArray<NSData *> *)hashes withChain:(DSChain *)chain requireProof:(BOOL)requireProof;
+
++ (NSDictionary *)verifyAndExtractFromProof:(Proof *)proof withMetadata:(ResponseMetadata *)metaData query:(DSPlatformQuery *_Nullable)query forQuorumEntry:(DSQuorumEntry *)quorumEntry quorumType:(DSLLMQType)quorumType error:(NSError **)error;
 
 @end
 

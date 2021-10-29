@@ -94,6 +94,9 @@
 #define PROTOCOL_VERSION_LOCATION @"PROTOCOL_VERSION_LOCATION"
 #define DEFAULT_MIN_PROTOCOL_VERSION_LOCATION @"MIN_PROTOCOL_VERSION_LOCATION"
 
+#define PLATFORM_PROTOCOL_VERSION_LOCATION @"PLATFORM_PROTOCOL_VERSION_LOCATION"
+#define PLATFORM_DEFAULT_MIN_PROTOCOL_VERSION_LOCATION @"PLATFORM_MIN_PROTOCOL_VERSION_LOCATION"
+
 #define ISLOCK_QUORUM_TYPE @"ISLOCK_QUORUM_TYPE"
 #define CHAINLOCK_QUORUM_TYPE @"CHAINLOCK_QUORUM_TYPE"
 #define PLATFORM_QUORUM_TYPE @"PLATFORM_QUORUM_TYPE"
@@ -1144,6 +1147,36 @@ static dispatch_once_t devnetToken = 0;
 }
 
 // MARK: - L2 Chain Parameters
+
+- (uint32_t)platformProtocolVersion {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return PLATFORM_PROTOCOL_VERSION_MAINNET; //(70216 + (self.headersMaxAmount / 2000));
+        case DSChainType_TestNet:
+            return PLATFORM_PROTOCOL_VERSION_TESTNET;
+        case DSChainType_DevNet: {
+            NSError *error = nil;
+            uint32_t platformProtocolVersion = (uint32_t)getKeychainInt([NSString stringWithFormat:@"%@%@", self.devnetIdentifier, PLATFORM_PROTOCOL_VERSION_LOCATION], &error);
+            if (!error && platformProtocolVersion)
+                return platformProtocolVersion;
+            else
+                return PLATFORM_PROTOCOL_VERSION_DEVNET;
+        }
+    }
+}
+
+- (void)setPlatformProtocolVersion:(uint32_t)platformProtocolVersion {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return;
+        case DSChainType_TestNet:
+            return;
+        case DSChainType_DevNet: {
+            setKeychainInt(platformProtocolVersion, [NSString stringWithFormat:@"%@%@", self.devnetIdentifier, PLATFORM_PROTOCOL_VERSION_LOCATION], NO);
+            break;
+        }
+    }
+}
 
 - (UInt256)dpnsContractID {
     if (uint256_is_not_zero(_cachedDpnsContractID)) return _cachedDpnsContractID;

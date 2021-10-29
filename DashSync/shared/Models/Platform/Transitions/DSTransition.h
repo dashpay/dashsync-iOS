@@ -38,8 +38,6 @@ typedef NS_ENUM(NSUInteger, DSTransitionType)
 
 @property (nonatomic, readonly, getter=toData) NSData *data;
 
-@property (nonatomic, readonly) DSChain *chain;
-
 @property (nonatomic, readonly) NSTimeInterval createdTimestamp;
 @property (nonatomic, readonly) NSTimeInterval registeredTimestamp;
 

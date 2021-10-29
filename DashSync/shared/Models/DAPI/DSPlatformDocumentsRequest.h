@@ -26,12 +26,23 @@ typedef NS_ENUM(NSUInteger, DSPlatformDocumentType)
     DSPlatformDocumentType_Document = 2,
 };
 
-#define DSPROVE_PLATFORM FALSE
+typedef NS_ENUM(NSUInteger, DSPlatformQueryType)
+{
+    DSPlatformQueryType_OneElement,
+    DSPlatformQueryType_IndividualElements,
+    DSPlatformQueryType_RangeOverValue,
+    DSPlatformQueryType_RangeOverIndex,
+};
 
-@class GetDocumentsRequest, DPContract;
+#define DSPROVE_PLATFORM TRUE
+#define DSPROVE_PUSH_PLATFORM FALSE
+#define DSPROVE_PLATFORM_SINDEXES FALSE
+
+@class GetDocumentsRequest, DPContract, DSDirectionalKey, DSPlatformQuery;
 
 @interface DSPlatformDocumentsRequest : NSObject
 
+@property (nonatomic, strong) NSPredicate *pathPredicate;
 @property (nonatomic, strong) NSPredicate *predicate;
 @property (nonatomic, strong) NSArray<NSSortDescriptor *> *sortDescriptors;
 @property (nonatomic, assign) uint32_t startAt;
@@ -40,6 +51,10 @@ typedef NS_ENUM(NSUInteger, DSPlatformDocumentType)
 @property (nonatomic, strong) NSString *tableName;
 @property (nonatomic, strong) DPContract *contract;
 @property (nonatomic, assign) DSPlatformDocumentType type;
+@property (nonatomic, readonly) DSPlatformQueryType queryType;
+@property (nonatomic, readonly) NSArray<DSDirectionalKey *> *orderByRanges;
+@property (nonatomic, readonly) NSArray<NSData *> *path;
+@property (nonatomic, readonly) DSPlatformQuery *expectedResponseQuery;
 
 + (instancetype)dpnsRequestForUserId:(NSData *)userId;
 
