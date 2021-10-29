@@ -221,7 +221,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     });
 }
 
-- (nullable DSDAPIPlatformNetworkService *)getPlatformServiceFor:(NSString *)host {
+- (nullable DSDAPIPlatformNetworkService *)platformServiceForHost:(NSString *)host {
     DSDAPIPlatformNetworkService *foundNetworkService = nil;
     for (DSDAPIPlatformNetworkService *networkService in self.activePlatformServices) {
         if ([networkService.ipAddress isEqualToString:host]) {
@@ -271,7 +271,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     // If white list is not set we suppose that all peers are white
     if (!self.whiteList || [self.whiteList containsObject:host]) {
         [self.trustedPeers addObject:host];
-        if (![self getPlatformServiceFor:host]) {
+        if (![self platformServiceForHost:host]) {
             [self createPlatformServiceFor:host];
         }
     }
