@@ -166,8 +166,7 @@ static const UniChar base58chars[] = {
         } else {
             v = BITCOIN_SCRIPT_ADDRESS_TEST;
         }
-        [d appendBytes:&v
-                length:1];
+        [d appendBytes:&v length:1];
         [d appendData:elem[1]];
     } else if (l == 2 && ([elem[0] intValue] == 65 || [elem[0] intValue] == 33) && [elem[1] intValue] == OP_CHECKSIG) {
         // pay-to-pubkey scriptPubKey
@@ -204,8 +203,7 @@ static const UniChar base58chars[] = {
         } else {
             v = BITCOIN_SCRIPT_ADDRESS_TEST;
         }
-        [d appendBytes:&v
-                length:1];
+        [d appendBytes:&v length:1];
         [d appendBytes:[elem[l - 1] hash160].u8 length:sizeof(UInt160)];
     } else if (l >= 1 && [elem[l - 1] intValue] <= OP_PUSHDATA4 && [elem[l - 1] intValue] > 0) { // pay-to-pubkey scriptSig
         //TODO: implement Peter Wullie's pubKey recovery from signature

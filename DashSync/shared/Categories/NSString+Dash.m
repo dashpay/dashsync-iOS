@@ -104,8 +104,7 @@ static NSString *DashCurrencySymbolAssetName = nil;
         } else {
             v = DASH_SCRIPT_ADDRESS_TEST;
         }
-        [d appendBytes:&v
-                length:1];
+        [d appendBytes:&v length:1];
         [d appendData:elem[1]];
     } else if (l == 2 && ([elem[0] intValue] == 65 || [elem[0] intValue] == 33) && [elem[1] intValue] == OP_CHECKSIG) {
         // pay-to-pubkey scriptPubKey
@@ -125,8 +124,7 @@ static NSString *DashCurrencySymbolAssetName = nil;
     } else {
         v = DASH_PUBKEY_ADDRESS_TEST;
     }
-    [d appendBytes:&v
-            length:1];
+    [d appendBytes:&v length:1];
     [d appendUInt160:hash160];
     return [self base58checkWithData:d];
 }
@@ -157,8 +155,7 @@ static NSString *DashCurrencySymbolAssetName = nil;
         } else {
             v = DASH_SCRIPT_ADDRESS_TEST;
         }
-        [d appendBytes:&v
-                length:1];
+        [d appendBytes:&v length:1];
         [d appendBytes:[elem[l - 1] hash160].u8 length:sizeof(UInt160)];
     } else if (l >= 1 && [elem[l - 1] intValue] <= OP_PUSHDATA4 && [elem[l - 1] intValue] > 0) { // pay-to-pubkey scriptSig
         [d appendBytes:&v length:1];

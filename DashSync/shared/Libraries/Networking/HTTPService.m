@@ -264,12 +264,12 @@ NS_ASSUME_NONNULL_BEGIN
                withIntermediateDirectories:YES
                                 attributes:nil
                                      error:nil];
-        filePath = [cachePath stringByAppendingPathComponent:(NSString *_Nonnull)location.lastPathComponent];
+        filePath = [cachePath stringByAppendingPathComponent:(NSString * _Nonnull) location.lastPathComponent];
         operation.request.downloadLocationPath = filePath;
     }
 
     NSError *fileError;
-    if ([fileManager moveItemAtPath:(NSString *_Nonnull)location.path toPath:filePath error:&fileError]) {
+    if ([fileManager moveItemAtPath:(NSString * _Nonnull) location.path toPath:filePath error:&fileError]) {
         if (operation.request.downloadTaskPolicy == HTTPRequestDownloadTaskPolicyAlways) {
             [self URLSession:session task:downloadTask didCompleteWithError:nil];
         } else {
