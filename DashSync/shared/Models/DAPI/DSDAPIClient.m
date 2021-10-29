@@ -302,7 +302,15 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 #if DAPI_CONNECT_SINGLE_NODE
             NSString *peerHost = DAPI_SINGLE_NODE;
 #else
-            NSString *peerHost = ([self.trustedPeers count]?self.trustedPeers.anyObject:self.availablePeers.anyObject);
+            NSString *peerHost;
+            if ([self.trustedPeers count]) {
+                // we have a whitelist, take from  the whitelist
+                peerHost = self.trustedPeers.anyObject;
+            } else if (!self.whiteList || ![self.whiteList count]) {
+                peerHost = self.availablePeers.anyObject;
+            } else {
+                return nil;
+            }
 #endif
             return [self createPlatformServiceForHost:peerHost];
         }
