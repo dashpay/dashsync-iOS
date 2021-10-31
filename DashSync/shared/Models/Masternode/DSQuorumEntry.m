@@ -207,10 +207,6 @@
     }
 }
 
-- (BOOL)shouldProcessQuorum {
-    return self.chain.quorumTypeForChainLocks == self.llmqType || self.chain.quorumTypeForISLocks == self.llmqType || self.chain.quorumTypeForPlatform == self.llmqType;
-}
-
 - (UInt256)llmqQuorumHash {
     NSMutableData *data = [NSMutableData data];
     [data appendVarInt:self.llmqType];

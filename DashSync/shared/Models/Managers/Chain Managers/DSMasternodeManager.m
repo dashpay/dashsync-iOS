@@ -912,7 +912,7 @@
         while (addedQuorumsCount >= 1) {
             DSQuorumEntry *potentialQuorumEntry = [DSQuorumEntry potentialQuorumEntryWithData:message dataOffset:(uint32_t)offset onChain:chain];
 
-            if (potentialQuorumEntry.shouldProcessQuorum) {
+            if ([chain shouldProcessQuorumOfType:potentialQuorumEntry.llmqType]) {
                 DSMasternodeList *quorumMasternodeList = masternodeListLookup(potentialQuorumEntry.quorumHash);
 
                 if (quorumMasternodeList) {

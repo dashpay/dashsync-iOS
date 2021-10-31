@@ -202,6 +202,9 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 /*! @brief The type of quorum used for Platform.  */
 @property (nonatomic, assign) DSLLMQType quorumTypeForPlatform;
 
+/*! @brief Whether chain should process this type of quorum.  */
+- (BOOL)shouldProcessQuorumOfType:(DSLLMQType)llmqType;
+
 /*! @brief Returns all standard derivaton paths used for the chain based on the account number.  */
 - (NSArray<DSDerivationPath *> *)standardDerivationPathsForAccountNumber:(uint32_t)accountNumber;
 
