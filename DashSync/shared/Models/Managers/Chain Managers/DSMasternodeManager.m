@@ -178,6 +178,10 @@
         return self.chain.genesisHash;
 }
 
+- (NSUInteger)simplifiedMasternodeEntryCount {
+    return [self.currentMasternodeList masternodeCount];
+}
+
 - (NSUInteger)activeQuorumsCount {
     return self.currentMasternodeList.quorumsCount;
 }
@@ -367,7 +371,7 @@
     }
 }
 
-- (void)setWhiteList:(NSArray <NSValue*> *)whiteList {
+- (void)setWhiteList:(NSArray<NSValue *> *)whiteList {
     _whiteList = whiteList;
     NSMutableSet *stringSet = [NSMutableSet set];
     for (NSValue *address in whiteList) {
