@@ -846,6 +846,8 @@
     XCTAssertEqualObjects(extendedPublicKeyFromMasterContactDerivationPath.extendedPublicKeyData, extendedPublicKeyFromSeed.extendedPublicKeyData, @"The extended public keys should be the same");
 
     XCTAssertEqualObjects(extendedPublicKeyFromMasterContactDerivationPath.extendedPublicKeyData.hexString, @"351973adaa8073a0ac848c08ba1c6df9a14d3c52033febe9bf4c5b365546a163bac5c8180240b908657221ebdc8fde7cd3017531159a7c58b955db380964c929dc6a85ac86", @"Incorrect value for extended public key");
+
+    XCTAssertEqualObjects([incomingFundsDerivationPath addressAtIndex:0], @"Xs8zNYNY5hT38KFb8tq8EbnPn7GCNaqr45", @"First address should match expected value");
 }
 
 

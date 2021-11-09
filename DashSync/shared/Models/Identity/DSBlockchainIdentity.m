@@ -4220,6 +4220,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                                                                    if (!failureStep) {
                                                                                        [context performBlockAndWait:^{
                                                                                            DSKey *key = [sourceBlockchainIdentity keyAtIndex:contactRequest.senderKeyIndex];
+                                                                                           NSAssert(key, @"key should be known");
                                                                                            NSData *decryptedExtendedPublicKeyData = [contactRequest decryptedPublicKeyDataWithKey:key];
                                                                                            NSAssert(decryptedExtendedPublicKeyData, @"Data should be decrypted");
                                                                                            DSECDSAKey *extendedPublicKey = [DSECDSAKey keyWithExtendedPublicKeyData:decryptedExtendedPublicKeyData];
