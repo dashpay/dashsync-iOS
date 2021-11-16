@@ -47,6 +47,8 @@ typedef NS_ENUM(NSUInteger, DSPlatformDictionary)
 
 - (DSPlatformTreeQuery *)treeQueryForType:(DSPlatformDictionary)treeType;
 
+- (BOOL)verifyPublicKeyHashesForIdentityDictionaries:(NSArray<NSDictionary *> *)identities;
+
 @end
 
 NS_ASSUME_NONNULL_END

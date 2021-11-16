@@ -328,7 +328,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     return self;
 }
 
-- (instancetype)initAtIndex:(uint32_t)index withIdentityDictionary:(NSDictionary *)identityDictionary inWallet:(DSWallet *)wallet {
+- (instancetype)initAtIndex:(uint32_t)index withIdentityDictionary:(NSDictionary *)identityDictionary version:(uint32_t)version inWallet:(DSWallet *)wallet {
     NSParameterAssert(wallet);
 
     if (!(self = [super init])) return nil;
@@ -348,7 +348,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     self.chain = wallet.chain;
     self.index = index;
 
-    [self applyIdentityDictionary:identityDictionary save:NO inContext:nil];
+    [self applyIdentityDictionary:identityDictionary version:version save:NO inContext:nil];
 
     return self;
 }
@@ -1412,7 +1412,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     return @"";
 }
 
-- (void)applyIdentityDictionary:(NSDictionary *)identityDictionary save:(BOOL)save inContext:(NSManagedObjectContext *_Nullable)context {
+- (void)applyIdentityDictionary:(NSDictionary *)identityDictionary version:(uint32_t)version save:(BOOL)save inContext:(NSManagedObjectContext *_Nullable)context {
     if (identityDictionary[@"credits"]) {
         uint64_t creditBalance = (uint64_t)[identityDictionary[@"credits"] longLongValue];
         _creditBalance = creditBalance;
@@ -2571,11 +2571,25 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     DSDAPIPlatformNetworkService *dapiNetworkService = self.DAPINetworkService;
     [dapiNetworkService getIdentityById:self.uniqueIDData
         completionQueue:self.identityQueue
-        success:^(NSDictionary *_Nullable identityDictionary) {
+        success:^(NSDictionary *_Nullable versionedIdentityDictionary) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
             }
+            if (!versionedIdentityDictionary) {
+                if (completion) {
+                    if (options & DSBlockchainIdentityMonitorOptions_AcceptNotFoundAsNotAnError) {
+                        completion(YES, NO, nil);
+                    } else {
+                        completion(NO, NO, [NSError errorWithDomain:@"DashSync"
+                                                               code:500
+                                                           userInfo:@{NSLocalizedDescriptionKey:
+                                                                        DSLocalizedString(@"Platform returned no identity when one was expected", nil)}]);
+                    }
+                }
+            }
+            NSNumber *version = [versionedIdentityDictionary objectForKey:@(DSPlatformStoredMessage_Version)];
+            NSDictionary *identityDictionary = [versionedIdentityDictionary objectForKey:@(DSPlatformStoredMessage_Item)];
             if (!identityDictionary) {
                 if (completion) {
                     if (options & DSBlockchainIdentityMonitorOptions_AcceptNotFoundAsNotAnError) {
@@ -2589,7 +2603,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                 }
             } else {
                 if (identityDictionary.count) {
-                    [strongSelf applyIdentityDictionary:identityDictionary save:!self.isTransient inContext:context];
+                    [strongSelf applyIdentityDictionary:identityDictionary version:[version intValue] save:!self.isTransient inContext:context];
                     strongSelf.registrationStatus = DSBlockchainIdentityRegistrationStatus_Registered;
                     [self saveInContext:context];
                 }
@@ -3144,6 +3158,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                 }
                 return;
             }
+            NSNumber *_Nonnull version = blockchainIdentityVersionedDictionary[@(DSPlatformStoredMessage_Version)];
             NSDictionary *_Nonnull blockchainIdentityDictionary = blockchainIdentityVersionedDictionary[@(DSPlatformStoredMessage_Item)];
             NSData *identityIdData = nil;
             if (!blockchainIdentityDictionary || !(identityIdData = blockchainIdentityDictionary[@"id"])) {
@@ -3174,7 +3189,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             } else {
                 potentialContactBlockchainIdentity = [self.identitiesManager foreignBlockchainIdentityWithUniqueId:blockchainIdentityContactUniqueId createIfMissing:YES inContext:self.platformContext];
             }
-            [potentialContactBlockchainIdentity applyIdentityDictionary:blockchainIdentityDictionary save:YES inContext:self.platformContext];
+            [potentialContactBlockchainIdentity applyIdentityDictionary:blockchainIdentityDictionary version:[version intValue] save:YES inContext:self.platformContext];
             [potentialContactBlockchainIdentity saveInContext:self.platformContext];
 
             [self sendNewFriendRequestToBlockchainIdentity:potentialContactBlockchainIdentity completion:completion];

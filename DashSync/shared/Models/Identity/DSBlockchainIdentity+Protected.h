@@ -51,7 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initAtIndex:(uint32_t)index withUniqueId:(UInt256)uniqueId inWallet:(DSWallet *)wallet;
 
-- (instancetype)initAtIndex:(uint32_t)index withIdentityDictionary:(NSDictionary *)identityDictionary inWallet:(DSWallet *)wallet;
+- (instancetype)initAtIndex:(uint32_t)index withIdentityDictionary:(NSDictionary *)identityDictionary version:(uint32_t)version inWallet:(DSWallet *)wallet;
 
 - (instancetype)initAtIndex:(uint32_t)index withFundingTransaction:(DSCreditFundingTransaction *)transaction withUsernameDictionary:(NSDictionary<NSString *, NSDictionary *> *_Nullable)usernameDictionary inWallet:(DSWallet *)wallet;
 
