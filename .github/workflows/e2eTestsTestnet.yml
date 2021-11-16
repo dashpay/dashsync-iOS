@@ -39,13 +39,11 @@ jobs:
           scheme: ${{ 'default' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          device=`iPhone 13`
-          xcodebuild build-for-testing -scheme "DashSync-Example" -workspace "DashSync.xcworkspace" -destination "platform=$platform,name=$device"
+          xcodebuild build-for-testing -scheme "DashSync-Example" -workspace "DashSync.xcworkspace" -destination "platform=$platform,name=iPhone 13"
       - name: Test Syncing Chain
         working-directory: ./dashsync/Example
         env:
           scheme: ${{ 'default' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          device=`iPhone 13`
-          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=$device" -testPlan TestnetE2ETests
+          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=iPhone 13" -testPlan TestnetE2ETests

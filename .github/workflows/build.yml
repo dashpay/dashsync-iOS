@@ -39,5 +39,4 @@ jobs:
           scheme: ${{ 'default' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          device=`iPhone 13`
-          xcodebuild build -scheme "DashSync-Example" -workspace "DashSync.xcworkspace" -destination "platform=$platform,name=$device"
+          xcodebuild build -scheme "DashSync-Example" -workspace "DashSync.xcworkspace" -destination "platform=$platform,name=iPhone 13"

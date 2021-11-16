@@ -39,85 +39,74 @@ jobs:
           scheme: ${{ 'default' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          device=`iPhone 13`
-          xcodebuild build-for-testing -scheme "DashSync-Example" -workspace "DashSync.xcworkspace" -destination "platform=$platform,name=$device"
+          xcodebuild build-for-testing -scheme "DashSync-Example" -workspace "DashSync.xcworkspace" -destination "platform=$platform,name=iPhone 13"
       - name: Test Crypto
         working-directory: ./dashsync/Example
         env:
           scheme: ${{ 'default' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          device=`iPhone 13`
-          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=$device" -testPlan CryptoTests
+          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=iPhone 13" -testPlan CryptoTests
       - name: Test Derivations
         working-directory: ./dashsync/Example
         env:
           scheme: ${{ 'default' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          device=`iPhone 13`
-          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=$device" -testPlan DerivationTests
+          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=iPhone 13" -testPlan DerivationTests
       - name: Test Libraries
         working-directory: ./dashsync/Example
         env:
           scheme: ${{ 'default' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          device=`iPhone 13`
-          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=$device" -testPlan LibraryTests
+          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=iPhone 13" -testPlan LibraryTests
       - name: Test Governance
         working-directory: ./dashsync/Example
         env:
           scheme: ${{ 'default' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          device=`iPhone 13`
-          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=$device" -testPlan GovernanceTests
+          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=iPhone 13" -testPlan GovernanceTests
       - name: Test Payments
         working-directory: ./dashsync/Example
         env:
           scheme: ${{ 'default' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          device=`iPhone 13`
-          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=$device" -testPlan PaymentTests
+          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=iPhone 13" -testPlan PaymentTests
       - name: Test Masternode Lists
         working-directory: ./dashsync/Example
         env:
           scheme: ${{ 'default' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          device=`iPhone 13`
-          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=$device" -testPlan MasternodeListTests
+          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=iPhone 13" -testPlan MasternodeListTests
       - name: Test Wallet
         working-directory: ./dashsync/Example
         env:
           scheme: ${{ 'default' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          device=`iPhone 13`
-          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=$device" -testPlan WalletTests
+          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=iPhone 13" -testPlan WalletTests
       - name: Test Platform Transitions
         working-directory: ./dashsync/Example
         env:
           scheme: ${{ 'default' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          device=`iPhone 13`
-          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=$device" -testPlan PlatformTransitionTests
+          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=iPhone 13" -testPlan PlatformTransitionTests
       - name: Test Transactions
         working-directory: ./dashsync/Example
         env:
           scheme: ${{ 'default' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          device=`iPhone 13`
-          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=$device" -testPlan TransactionTests
+          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=iPhone 13" -testPlan TransactionTests
       - name: Test Locks
         working-directory: ./dashsync/Example
         env:
           scheme: ${{ 'default' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          device=`iPhone 13`
-          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=$device" -testPlan LockTests
+          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=iPhone 13" -testPlan LockTests

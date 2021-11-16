@@ -37,14 +37,12 @@ jobs:
           scheme: ${{ 'default' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          device=`iPhone 13`
-          xcodebuild build-for-testing -scheme "DashSync-Example" -workspace "DashSync.xcworkspace" -destination "platform=$platform,name=$device"
+          xcodebuild build-for-testing -scheme "DashSync-Example" -workspace "DashSync.xcworkspace" -destination "platform=$platform,name=iPhone 13"
       - name: Tests with Code Coverage
         working-directory: ./dashsync/Example
         env:
           scheme: ${{ 'default' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          device=`iPhone 13`
-          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=$device" -testPlan FullUnitTestPlan
+          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=iPhone 13" -testPlan FullUnitTestPlan
           bash <(curl -s https://codecov.io/bash)
