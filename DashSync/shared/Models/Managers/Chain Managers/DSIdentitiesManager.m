@@ -534,11 +534,13 @@
 
 - (NSArray<DSBlockchainIdentity *> *)identitiesFromIdentityDictionaries:(NSArray<NSDictionary *> *)identityDictionaries keyIndexes:(NSDictionary *)keyIndexes forWallet:(DSWallet *)wallet {
     NSMutableArray *identities = [NSMutableArray array];
-    for (NSDictionary *identityDictionary in identityDictionaries) {
+    for (NSDictionary *versionedIdentityDictionary in identityDictionaries) {
+        NSNumber *version = [versionedIdentityDictionary objectForKey:@(DSPlatformStoredMessage_Version)];
+        NSDictionary *identityDictionary = [versionedIdentityDictionary objectForKey:@(DSPlatformStoredMessage_Item)];
         DSKey *key = [DSBlockchainIdentity firstKeyInIdentityDictionary:identityDictionary];
         NSNumber *index = [keyIndexes objectForKey:key.publicKeyData];
         if (index) {
-            DSBlockchainIdentity *blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index.intValue withIdentityDictionary:identityDictionary inWallet:wallet];
+            DSBlockchainIdentity *blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index.intValue withIdentityDictionary:identityDictionary version:[version intValue] inWallet:wallet];
             [identities addObject:blockchainIdentity];
         }
     }

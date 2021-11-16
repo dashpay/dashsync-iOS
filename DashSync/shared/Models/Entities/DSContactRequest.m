@@ -92,6 +92,7 @@
 }
 
 - (NSData *)decryptedPublicKeyDataWithKey:(DSKey *)key {
+    NSParameterAssert(key);
     return [self.encryptedPublicKeyData decryptWithSecretKey:[self secretKeyForDecryptionOfType:key.keyType] fromPublicKey:key];
 }
 

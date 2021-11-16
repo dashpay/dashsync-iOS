@@ -39,12 +39,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityMonitorOptions)
 
 typedef NS_ENUM(NSUInteger, DSBlockchainIdentityQueryStep)
 {
-    DSBlockchainIdentityQueryStep_None = DSBlockchainIdentityRegistrationStep_None, //0
-    DSBlockchainIdentityQueryStep_Identity = DSBlockchainIdentityRegistrationStep_Identity,
-    DSBlockchainIdentityQueryStep_Username = DSBlockchainIdentityRegistrationStep_Username,
-    DSBlockchainIdentityQueryStep_Profile = DSBlockchainIdentityRegistrationStep_Profile,
-    DSBlockchainIdentityQueryStep_IncomingContactRequests = 64,
-    DSBlockchainIdentityQueryStep_OutgoingContactRequests = 128,
+    DSBlockchainIdentityQueryStep_None = DSBlockchainIdentityRegistrationStep_None,         //0
+    DSBlockchainIdentityQueryStep_Identity = DSBlockchainIdentityRegistrationStep_Identity, //16
+    DSBlockchainIdentityQueryStep_Username = DSBlockchainIdentityRegistrationStep_Username, //32
+    DSBlockchainIdentityQueryStep_Profile = DSBlockchainIdentityRegistrationStep_Profile,   //64
+    DSBlockchainIdentityQueryStep_IncomingContactRequests = 128,
+    DSBlockchainIdentityQueryStep_OutgoingContactRequests = 256,
     DSBlockchainIdentityQueryStep_ContactRequests = DSBlockchainIdentityQueryStep_IncomingContactRequests | DSBlockchainIdentityQueryStep_OutgoingContactRequests,
     DSBlockchainIdentityQueryStep_AllForForeignBlockchainIdentity = DSBlockchainIdentityQueryStep_Identity | DSBlockchainIdentityQueryStep_Username | DSBlockchainIdentityQueryStep_Profile,
     DSBlockchainIdentityQueryStep_AllForLocalBlockchainIdentity = DSBlockchainIdentityQueryStep_Identity | DSBlockchainIdentityQueryStep_Username | DSBlockchainIdentityQueryStep_Profile | DSBlockchainIdentityQueryStep_ContactRequests,

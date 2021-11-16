@@ -21,6 +21,7 @@
 #import "DSPlatformDocumentsRequest.h"
 #import "DSPlatformPathQuery.h"
 #import "DSPlatformTreeQuery.h"
+#import "NSData+Dash.h"
 
 @interface DSPlatformQuery ()
 
@@ -123,6 +124,29 @@
 
 - (DSPlatformTreeQuery *)treeQueryForType:(DSPlatformDictionary)treeType {
     return [self.treeQueries objectForKey:@(treeType)];
+}
+
+- (BOOL)verifyPublicKeyHashesForIdentityDictionaries:(NSArray<NSDictionary *> *)identities {
+    DSPlatformTreeQuery *identitiesPublicKeyHashesQuery = self.treeQueries[@(DSPlatformDictionary_PublicKeyHashesToIdentityIds)];
+    NSMutableArray *publicKeyHashes = [identitiesPublicKeyHashesQuery.platformQueryKeys mutableCopy];
+    for (NSDictionary *identityDictionary in identities) {
+        NSArray *publicKeys = identityDictionary[@"publicKeys"];
+        // We need to find the key with id 0
+        for (NSDictionary *publicKeyDictionary in publicKeys) {
+            if ([publicKeyDictionary[@"id"] isEqual:@(0)]) {
+                NSData *keyData = publicKeyDictionary[@"data"];
+                NSData *keyHash = uint160_data([keyData hash160]);
+                if ([publicKeyHashes containsObject:keyHash]) {
+                    [publicKeyHashes removeObject:keyHash];
+                } else {
+                    return NO;
+                }
+            }
+        }
+    }
+    DSPlatformTreeQuery *identitiesPublicKeyHashesQueryAfterChanges = [DSPlatformTreeQuery platformTreeQueryForKeys:publicKeyHashes];
+    self.treeQueries = @{@(DSPlatformDictionary_PublicKeyHashesToIdentityIds): identitiesPublicKeyHashesQueryAfterChanges};
+    return YES;
 }
 
 
