@@ -39,5 +39,5 @@ jobs:
           scheme: ${{ 'default' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          device=`xctrace list devices | grep -oE 'iPhone.*?[^\(]+' | head -1 | awk '{$1=$1;print}'`
+          device=`xcrun xctrace list devices | grep -oE 'iPhone.*?[^\(]+' | head -1 | awk '{$1=$1;print}'`
           xcodebuild build -scheme "DashSync-Example" -workspace "DashSync.xcworkspace" -destination "platform=$platform,name=$device"
