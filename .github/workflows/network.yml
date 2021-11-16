@@ -24,6 +24,7 @@ jobs:
           lfs: true
       - name: Checkout LFS objects
         run: git lfs checkout
+        working-directory: ./dashsync
       - uses: actions/cache@v2
         with:
           path: ./dashsync/Example/Pods
