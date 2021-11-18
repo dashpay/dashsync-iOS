@@ -216,7 +216,9 @@
         DSMasternodeListEntity *masternodeListEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
         DSMasternodeViewController *masternodeViewController = (DSMasternodeViewController *)segue.destinationViewController;
         masternodeViewController.chain = self.chain;
-        DSMasternodeList *masternodeList = [self.chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListEntity.block.blockHash.UInt256];
+        UInt256 hash = masternodeListEntity.block.blockHash.UInt256;
+        // could be moved into rust lib
+        DSMasternodeList *masternodeList = [self.chain.chainManager.masternodeManager masternodeListForBlockHash:hash];
         masternodeViewController.masternodeList = masternodeList;
     }
 }

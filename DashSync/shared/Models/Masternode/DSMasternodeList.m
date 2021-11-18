@@ -453,7 +453,8 @@ inline static int ceil_log2(int x) {
     return branch(left, right);
 }
 
-- (BOOL)validateQuorumsWithMasternodeLists:(NSDictionary *)masternodeLists {
+/*
+ - (BOOL)validateQuorumsWithMasternodeLists:(NSDictionary *)masternodeLists {
     for (DSQuorumEntry *quorum in self.quorums) {
         BOOL verified = quorum.verified;
         if (!verified) {
@@ -464,6 +465,7 @@ inline static int ceil_log2(int x) {
     }
     return TRUE;
 }
+*/
 
 - (NSString *)description {
     return [[super description] stringByAppendingString:[NSString stringWithFormat:@" {%u}", self.height]];

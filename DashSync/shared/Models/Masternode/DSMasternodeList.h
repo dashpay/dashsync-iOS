@@ -59,7 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray<DSSimplifiedMasternodeEntry *> *)validMasternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount blockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup;
 
-- (BOOL)validateQuorumsWithMasternodeLists:(NSDictionary *)masternodeLists;
+//- (BOOL)validateQuorumsWithMasternodeLists:(NSDictionary *)masternodeLists;
 
 - (UInt256)calculateMasternodeMerkleRootWithBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup;
 
