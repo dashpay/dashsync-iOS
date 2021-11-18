@@ -22,6 +22,10 @@ jobs:
         with:
           path: dashsync
           submodules: recursive
+          lfs: true
+      - name: Checkout LFS objects
+        run: git lfs checkout
+        working-directory: ./dashsync
       - uses: actions/cache@v2
         with:
           path: ./dashsync/Example/Pods
@@ -37,14 +41,12 @@ jobs:
           scheme: ${{ 'default' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          device=`instruments -s -devices | grep -oE 'iPhone.*?[^\(]+' | head -1 | awk '{$1=$1;print}'`
-          xcodebuild build-for-testing -scheme "DashSync-Example" -workspace "DashSync.xcworkspace" -destination "platform=$platform,name=$device"
+          xcodebuild build-for-testing -scheme "DashSync-Example" -workspace "DashSync.xcworkspace" -destination "platform=$platform,name=iPhone 13"
       - name: Tests with Code Coverage
         working-directory: ./dashsync/Example
         env:
           scheme: ${{ 'default' }}
           platform: ${{ 'iOS Simulator' }}
         run: |
-          device=`instruments -s -devices | grep -oE 'iPhone.*?[^\(]+' | head -1 | awk '{$1=$1;print}'`
-          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=$device" -testPlan FullUnitTestPlan
+          xcodebuild test-without-building -scheme "DashSync-Example" -workspace "DashSync.xcworkspace"  -destination "platform=$platform,name=iPhone 13" -testPlan FullUnitTestPlan
           bash <(curl -s https://codecov.io/bash)

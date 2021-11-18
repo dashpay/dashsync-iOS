@@ -21,12 +21,16 @@ jobs:
         with:
           path: dashsync
           submodules: recursive
+          lfs: true
+      - name: Checkout LFS objects
+        run: git lfs checkout
+        working-directory: ./dashsync
       - uses: actions/cache@v2
         with:
           path: ./dashsync/Example/Pods
-          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          key: ${{ runner.os }}-pods-macOS-${{ hashFiles('**/Podfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pods-
+            ${{ runner.os }}-pods-macOS-
       - name: Dependencies
         working-directory: ./dashsync/Example
         run: pod install

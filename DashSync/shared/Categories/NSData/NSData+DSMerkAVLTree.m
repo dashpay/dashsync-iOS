@@ -38,7 +38,7 @@
         *error = [NSError errorWithDomain:@"DashSync"
                                      code:500
                                  userInfo:@{NSLocalizedDescriptionKey:
-                                              DSLocalizedString(@"Platform returned a proof that does not satisfy our query", nil)}];
+                                              DSLocalizedString(@"Platform returned a non valid proof for our query", nil)}];
         return nil; // Even though we have the root hash, there is no reason to return it
     }
     NSData *rootHash = [NSData dataWithBytes:result->hash length:32];
