@@ -28,9 +28,9 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ./dashsync/Example/Pods
-          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          key: ${{ runner.os }}-pods-macOS-${{ hashFiles('**/Podfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pods-
+            ${{ runner.os }}-pods-macOS-
       - name: Dependencies
         working-directory: ./dashsync/Example
         run: pod install
