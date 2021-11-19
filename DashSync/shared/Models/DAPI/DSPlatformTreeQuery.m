@@ -16,6 +16,7 @@
 //
 
 #import "DSPlatformTreeQuery.h"
+#import "NSMutableData+Dash.h"
 
 @interface DSPlatformTreeQuery ()
 
