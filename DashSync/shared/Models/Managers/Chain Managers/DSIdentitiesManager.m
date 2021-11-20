@@ -579,12 +579,12 @@
     dispatch_async(self.identityQueue, ^{
         NSArray<DSWallet *> *wallets = self.chain.wallets;
         DSDAPIClient *client = self.chain.chainManager.DAPIClient;
-        NSMutableArray<NSData *> *keyHashes = [NSMutableArray array];
         __block dispatch_group_t dispatch_group = dispatch_group_create();
         __block NSMutableArray *errors = [NSMutableArray array];
         __block NSMutableArray *allIdentities = [NSMutableArray array];
 
         for (DSWallet *wallet in wallets) {
+            NSMutableArray<NSData *> *keyHashes = [NSMutableArray array];
             uint32_t unusedIndex = [wallet unusedBlockchainIdentityIndex];
             DSAuthenticationKeysDerivationPath *derivationPath = [DSBlockchainIdentity derivationPathForType:DSKeyType_ECDSA forWallet:wallet];
             const int keysToCheck = 5;
