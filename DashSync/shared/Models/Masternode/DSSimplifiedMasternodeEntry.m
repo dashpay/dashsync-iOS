@@ -140,6 +140,64 @@
     return self;
 }
 
+- (instancetype)initWithEntry:(MasternodeEntry *)entry onChain:(DSChain *)chain {
+    if (!(self = [super init])) return nil;
+    self.confirmedHash = [NSData dataWithBytes:entry->confirmed_hash length:32].UInt256;
+    if (entry->confirmed_hash_hashed_with_provider_registration_transaction_hash_exists) {
+        self.confirmedHashHashedWithProviderRegistrationTransactionHash = [NSData dataWithBytes:entry->confirmed_hash_hashed_with_provider_registration_transaction_hash length:32].UInt256;
+    }
+    self.isValid = entry->is_valid;
+    self.keyIDVoting = [NSData dataWithBytes:entry->key_id_voting length:20].UInt160;
+    if (entry->known_confirmed_at_height_exists) {
+        self.knownConfirmedAtHeight = entry->known_confirmed_at_height;
+    }
+    self.simplifiedMasternodeEntryHash = [NSData dataWithBytes:entry->masternode_entry_hash length:32].UInt256;
+    self.operatorPublicKey = [NSData dataWithBytes:entry->operator_public_key length:48].UInt384;
+
+    uintptr_t previous_operator_public_keys_count = entry->previous_operator_public_keys_count;
+    OperatorPublicKey **previous_operator_public_keys = entry->previous_operator_public_keys;
+    NSMutableDictionary<DSBlock *, NSData *> *operatorPublicKeys = [NSMutableDictionary dictionaryWithCapacity:previous_operator_public_keys_count];
+    for (NSUInteger i = 0; i < previous_operator_public_keys_count; i++) {
+        OperatorPublicKey *operator_public_key = previous_operator_public_keys[i];
+        UInt256 blockHash = [NSData dataWithBytes:operator_public_key->block_hash length:32].UInt256;
+        uint32_t blockHeight = operator_public_key->block_height;
+        DSBlock *block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:chain];
+        NSData *key = [NSData dataWithBytes:operator_public_key->key length:48];
+        [operatorPublicKeys setObject:key forKey:block];
+    }
+    self.mPreviousOperatorPublicKeys = operatorPublicKeys;
+    uintptr_t previous_masternode_entry_hashes_count = entry->previous_masternode_entry_hashes_count;
+    MasternodeEntryHash **previous_masternode_entry_hashes = entry->previous_masternode_entry_hashes;
+    NSMutableDictionary<DSBlock *, NSData *> *masternodeEntryHashes = [NSMutableDictionary dictionaryWithCapacity:previous_masternode_entry_hashes_count];
+    for (NSUInteger i = 0; i < previous_masternode_entry_hashes_count; i++) {
+        MasternodeEntryHash *masternode_entry_hash = previous_masternode_entry_hashes[i];
+        UInt256 blockHash = [NSData dataWithBytes:masternode_entry_hash->block_hash length:32].UInt256;
+        uint32_t blockHeight = masternode_entry_hash->block_height;
+        DSBlock *block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:chain];
+        NSData *hash = [NSData dataWithBytes:masternode_entry_hash->hash length:32];
+        [masternodeEntryHashes setObject:hash forKey:block];
+    }
+    self.mPreviousSimplifiedMasternodeEntryHashes = masternodeEntryHashes;
+    uintptr_t previous_validity_count = entry->previous_validity_count;
+    Validity **previous_validity = entry->previous_validity;
+    NSMutableDictionary<DSBlock *, NSNumber *> *validities = [NSMutableDictionary dictionaryWithCapacity:previous_validity_count];
+    for (NSUInteger i = 0; i < previous_validity_count; i++) {
+        Validity *validity = previous_validity[i];
+        UInt256 blockHash = [NSData dataWithBytes:validity->block_hash length:32].UInt256;
+        uint32_t blockHeight = validity->block_height;
+        DSBlock *block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:chain];
+        NSNumber *isValid = [NSNumber numberWithBool:validity->is_valid];
+        [validities setObject:isValid forKey:block];
+    }
+    self.mPreviousValidity = validities;
+    self.providerRegistrationTransactionHash = [NSData dataWithBytes:entry->provider_registration_transaction_hash length:32].UInt256;
+    self.address = [NSData dataWithBytes:entry->ip_address length:16].UInt128;
+    self.port = entry->port;
+    self.updateHeight = entry->update_height;
+    self.chain = chain;
+    return self;
+}
+
 - (void)keepInfoOfPreviousEntryVersion:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlockHash:(UInt256)blockHash atBlockHeight:(uint32_t)blockHeight {
     DSBlock *block = [self.chain blockForBlockHash:blockHash];
     if (!block) block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:self.chain];

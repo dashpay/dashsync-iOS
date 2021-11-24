@@ -67,6 +67,46 @@ inline static int ceil_log2(int x) {
 
 @implementation DSMasternodeList
 
+- (instancetype)initWithList:(MasternodeList *)list onChain:(DSChain *)chain {
+    if (!(self = [super init])) return nil;
+    uint8_t(**masternodes_keys)[32] = list->masternodes_keys;
+    MasternodeEntry **masternodes_values = list->masternodes_values;
+    uintptr_t masternodes_count = list->masternodes_count;
+    NSMutableDictionary<NSData *, DSSimplifiedMasternodeEntry *> *masternodes = [NSMutableDictionary dictionaryWithCapacity:masternodes_count];
+    for (NSUInteger i = 0; i < masternodes_count; i++) {
+        NSData *hash = [NSData dataWithBytes:masternodes_keys[i] length:32];
+        [masternodes setObject:[[DSSimplifiedMasternodeEntry alloc] initWithEntry:masternodes_values[i] onChain:chain] forKey:hash];
+    }
+    uint8_t **quorums_keys = list->quorums_keys;
+    LLMQMap **quorums_values = list->quorums_values;
+    uintptr_t quorums_count = list->quorums_count;
+    NSMutableDictionary<NSNumber *, NSMutableDictionary<NSData *, DSQuorumEntry *> *> *quorums = [NSMutableDictionary dictionaryWithCapacity:quorums_count];
+    for (NSUInteger i = 0; i < quorums_count; i++) {
+        DSLLMQType llmqType = (DSLLMQType)*quorums_keys[i];
+        LLMQMap *llmq_map = quorums_values[i];
+        NSMutableDictionary *quorumsOfType = [[NSMutableDictionary alloc] initWithCapacity:llmq_map->count];
+        for (NSUInteger j = 0; j < llmq_map->count; j++) {
+            uint8_t(*h)[32] = llmq_map->keys[j];
+            NSData *hash = [NSData dataWithBytes:h length:32];
+            QuorumEntry *quorum_entry = llmq_map->values[j];
+            DSQuorumEntry *entry = [[DSQuorumEntry alloc] initWithEntry:quorum_entry onChain:chain];
+            [quorumsOfType setObject:entry forKey:hash];
+        }
+        [quorums setObject:quorumsOfType
+                    forKey:@(llmqType)];
+    }
+
+    self.blockHash = [NSData dataWithBytes:list->block_hash length:32].UInt256;
+    self.knownHeight = list->known_height;
+    if (list->masternode_merkle_root_exists)
+        self.masternodeMerkleRoot = [NSData dataWithBytes:list->masternode_merkle_root length:32].UInt256;
+    if (list->quorum_merkle_root_exists)
+        self.quorumMerkleRoot = [NSData dataWithBytes:list->quorum_merkle_root length:32].UInt256;
+    self.mQuorums = quorums;
+    self.chain = chain;
+    return self;
+}
+
 + (instancetype)masternodeListWithSimplifiedMasternodeEntries:(NSArray<DSSimplifiedMasternodeEntry *> *)simplifiedMasternodeEntries quorumEntries:(NSArray<DSQuorumEntry *> *)quorumEntries atBlockHash:(UInt256)blockHash atBlockHeight:(uint32_t)blockHeight withMasternodeMerkleRootHash:(UInt256)masternodeMerkleRootHash withQuorumMerkleRootHash:(UInt256)quorumMerkleRootHash onChain:(DSChain *)chain {
     NSMutableDictionary *masternodeDictionary = [NSMutableDictionary dictionary];
     for (DSSimplifiedMasternodeEntry *entry in simplifiedMasternodeEntries) {
@@ -605,11 +645,7 @@ inline static int ceil_log2(int x) {
         orderedQuorumDictionary[quorumEntry] = uint256_data(orderingHash);
     }
     NSArray *orderedQuorums = [orderedQuorumDictionary keysSortedByValueUsingComparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2) {
-        if (uint256_sup([obj1 UInt256], [obj2 UInt256])) {
-            return NSOrderedDescending;
-        } else {
-            return NSOrderedAscending;
-        }
+        return uint256_sup([obj1 UInt256], [obj2 UInt256]) ? NSOrderedDescending : NSOrderedAscending;
     }];
     return orderedQuorums;
 }

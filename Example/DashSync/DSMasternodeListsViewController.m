@@ -201,7 +201,9 @@
 - (void)masternodeListTableViewCellRequestsValidation:(DSMasternodeListTableViewCell *)tableViewCell {
     NSIndexPath *indexPath = [self.tableView indexPathForCell:tableViewCell];
     DSMasternodeListEntity *masternodeListEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    DSMasternodeList *masternodeList = [self.chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListEntity.block.blockHash.UInt256];
+    UInt256 hash = masternodeListEntity.block.blockHash.UInt256;
+    // could be moved into rust lib [blockHash, masternodeMerkleRoot,]
+    DSMasternodeList *masternodeList = [self.chain.chainManager.masternodeManager masternodeListForBlockHash:hash];
     BOOL equal = uint256_eq(masternodeListEntity.masternodeListMerkleRoot.UInt256, [masternodeList masternodeMerkleRoot]);
     [self.validMerkleRootDictionary setObject:@(equal) forKey:uint256_data(masternodeList.blockHash)];
     [tableViewCell.validButton setTitle:(equal ? @"V" : @"X") forState:UIControlStateNormal];
@@ -217,7 +219,7 @@
         DSMasternodeViewController *masternodeViewController = (DSMasternodeViewController *)segue.destinationViewController;
         masternodeViewController.chain = self.chain;
         UInt256 hash = masternodeListEntity.block.blockHash.UInt256;
-        // could be moved into rust lib
+        // could be moved into rust lib [height]
         DSMasternodeList *masternodeList = [self.chain.chainManager.masternodeManager masternodeListForBlockHash:hash];
         masternodeViewController.masternodeList = masternodeList;
     }

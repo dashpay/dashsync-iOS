@@ -138,18 +138,41 @@
     return self;
 }
 
-- (instancetype)initWithVersion:(uint16_t)version type:(DSLLMQType)type quorumHash:(UInt256)quorumHash quorumPublicKey:(UInt384)quorumPublicKey commitmentHash:(UInt256)commitmentHash verified:(BOOL)verified onChain:(DSChain *)chain {
+- (instancetype)initWithVersion:(uint16_t)version type:(DSLLMQType)type quorumHash:(UInt256)quorumHash quorumPublicKey:(UInt384)quorumPublicKey quorumEntryHash:(UInt256)quorumEntryHash verified:(BOOL)verified onChain:(DSChain *)chain {
     if (!(self = [super init])) return nil;
 
     self.llmqType = type;
     self.version = version;
     self.quorumHash = quorumHash;
     self.quorumPublicKey = quorumPublicKey;
-    self.quorumEntryHash = commitmentHash;
+    self.quorumEntryHash = quorumEntryHash;
     self.verified = verified;
     self.chain = chain;
     self.saved = TRUE;
 
+    return self;
+}
+- (instancetype)initWithEntry:(QuorumEntry *)entry onChain:(DSChain *)chain {
+    if (!(self = [super init])) return nil;
+    self.allCommitmentAggregatedSignature = [NSData dataWithBytes:entry->quorum_hash length:96].UInt768;
+    if (entry->commitment_hash_exists) {
+        self.commitmentHash = [NSData dataWithBytes:entry->commitment_hash length:32].UInt256;
+    }
+    self.length = (uint32_t)entry->length;
+    self.llmqType = (DSLLMQType)entry->llmq_type;
+    self.quorumEntryHash = [NSData dataWithBytes:entry->quorum_entry_hash length:32].UInt256;
+    self.quorumHash = [NSData dataWithBytes:entry->quorum_hash length:32].UInt256;
+    self.quorumPublicKey = [NSData dataWithBytes:entry->quorum_public_key length:48].UInt384;
+    self.quorumThresholdSignature = [NSData dataWithBytes:entry->quorum_threshold_signature length:96].UInt768;
+    self.quorumVerificationVectorHash = [NSData dataWithBytes:entry->quorum_verification_vector_hash length:32].UInt256;
+    self.saved = entry->saved;
+    self.signersBitset = [NSData dataWithBytes:entry->signers_bitset length:entry->signers_bitset_length];
+    self.signersCount = (uint32_t)entry->signers_count;
+    self.validMembersBitset = [NSData dataWithBytes:entry->valid_members_bitset length:entry->valid_members_bitset_length];
+    self.validMembersCount = (uint32_t)entry->valid_members_count;
+    self.verified = entry->verified;
+    self.version = entry->version;
+    self.chain = chain;
     return self;
 }
 

@@ -7,6 +7,7 @@
 
 #import "BigIntTypes.h"
 #import "DSQuorumEntry.h"
+#import "mndiff.h"
 #import <Foundation/Foundation.h>
 
 #define MASTERNODE_LIST_ADDED_NODES @"MASTERNODE_LIST_ADDED_NODES"
@@ -36,6 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) DSChain *chain;
 @property (nonatomic, readonly) NSArray *reversedRegistrationTransactionHashes;
 @property (nonatomic, readonly) NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash;
+
+- (instancetype)initWithList:(MasternodeList *)list onChain:(DSChain *)chain;
 
 + (instancetype)masternodeListWithSimplifiedMasternodeEntries:(NSArray<DSSimplifiedMasternodeEntry *> *)simplifiedMasternodeEntries quorumEntries:(NSArray<DSQuorumEntry *> *)quorumEntries atBlockHash:(UInt256)blockHash atBlockHeight:(uint32_t)blockHeight withMasternodeMerkleRootHash:(UInt256)masternodeMerkleRootHash withQuorumMerkleRootHash:(UInt256)quorumMerkleRootHash onChain:(DSChain *)chain;
 

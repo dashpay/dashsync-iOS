@@ -6,6 +6,7 @@
 //
 
 #import "BigIntTypes.h"
+#import "mndiff.h"
 #import <Foundation/Foundation.h>
 
 @class DSChain, DSSimplifiedMasternodeEntryEntity, DSWallet, DSBlock;
@@ -38,6 +39,8 @@
 @property (nonatomic, readonly, class) uint32_t payloadLength;
 @property (nonatomic, readonly) uint64_t platformPing;
 @property (nonatomic, readonly) NSDate *platformPingDate;
+
+- (instancetype)initWithEntry:(MasternodeEntry *)entry onChain:(DSChain *)chain;
 
 + (instancetype)simplifiedMasternodeEntryWithData:(NSData *)data atBlockHeight:(uint32_t)blockHeight onChain:(DSChain *)chain;
 

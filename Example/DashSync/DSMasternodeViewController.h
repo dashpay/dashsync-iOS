@@ -12,6 +12,7 @@
 @interface DSMasternodeViewController : UITableViewController <NSFetchedResultsControllerDelegate, UISearchBarDelegate>
 
 @property (nonatomic, strong) DSChain *chain;
-@property (nonatomic, strong) DSMasternodeList *masternodeList; // could be moved into rust lib
+// could be moved into rust lib [blockHash, masternodeMerkleRoot,]
+@property (nonatomic, strong) DSMasternodeList *masternodeList;
 
 @end

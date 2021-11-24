@@ -25,6 +25,7 @@
 
 #import "DSMasternodeManager.h"
 #import "DSAddressEntity+CoreDataProperties.h"
+#import "DSBLSKey.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "DSChainManager+Protected.h"
@@ -34,6 +35,7 @@
 #import "DSInsightManager.h"
 #import "DSLocalMasternode+Protected.h"
 #import "DSLocalMasternodeEntity+CoreDataClass.h"
+#import "DSMasternodeDiffMessageContext.h"
 #import "DSMasternodeList.h"
 #import "DSMasternodeListEntity+CoreDataClass.h"
 #import "DSMerkleBlock.h"
@@ -57,8 +59,8 @@
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
-#import "DSBLSKey.h"
-#import "masternodesdiff.h"
+#import "mndiff.h"
+#import "rust_utils.h"
 
 #define FAULTY_DML_MASTERNODE_PEERS @"FAULTY_DML_MASTERNODE_PEERS"
 #define CHAIN_FAULTY_DML_MASTERNODE_PEERS [NSString stringWithFormat:@"%@_%@", peer.chain.uniqueID, FAULTY_DML_MASTERNODE_PEERS]
@@ -98,6 +100,259 @@
 @end
 
 @implementation DSMasternodeManager
+
+MasternodeListExt *masternodeListLookupCallback(uint8_t (*block_hash)[32], void *context) {
+    DSMasternodeDiffMessageContext *mndiffContext = (__bridge DSMasternodeDiffMessageContext *)context;
+    NSData *data = [NSData dataWithBytes:block_hash length:32];
+    DSMasternodeList *list = mndiffContext.masternodeListLookup(data.UInt256);
+    BOOL list_exists = list;
+    MasternodeListExt *list_ext = malloc(sizeof(MasternodeListExt));
+    list_ext->exists = list_exists;
+    if (list_exists) {
+        list_ext->list = [DSMasternodeManager wrapMasternodeList:list];
+    }
+    return list_ext;
+}
+
+
+uint32_t blockHeightListLookupCallback(uint8_t (*block_hash)[32], void *context) {
+    DSMasternodeDiffMessageContext *mndiffContext = (__bridge DSMasternodeDiffMessageContext *)context;
+    NSData *data = [NSData dataWithBytes:block_hash length:32];
+    uint32_t block_height = mndiffContext.blockHeightLookup(data.UInt256);
+    return block_height;
+}
+
+void addInsightLookup(uint8_t (*block_hash)[32], void *context) {
+    DSMasternodeDiffMessageContext *mndiffContext = (__bridge DSMasternodeDiffMessageContext *)context;
+    NSData *data = [NSData dataWithBytes:block_hash length:32];
+    UInt256 entryQuorumHash = data.UInt256;
+    DSChain *chain = mndiffContext.chain;
+    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+    [[DSInsightManager sharedInstance] blockForBlockHash:uint256_reverse(entryQuorumHash)
+                                                 onChain:chain
+                                              completion:^(DSBlock *_Nullable block, NSError *_Nullable error) {
+                                                  if (!error && block) {
+                                                      [chain addInsightVerifiedBlock:block forBlockHash:entryQuorumHash];
+                                                  }
+                                                  dispatch_semaphore_signal(sem);
+                                              }];
+    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+}
+
+bool shouldProcessQuorumType(uint8_t quorum_type, void *context) {
+    DSMasternodeDiffMessageContext *mndiffContext = (__bridge DSMasternodeDiffMessageContext *)context;
+    BOOL should = [mndiffContext.chain shouldProcessQuorumOfType:(DSLLMQType)quorum_type];
+    return should;
+};
+
+bool validateQuorumCallback(QuorumValidationData *data, void *context) {
+    NSMutableArray<DSBLSKey *> *publicKeyArray = [NSMutableArray array];
+    for (NSUInteger i = 0; i < data->count; i++) {
+        NSData *pkData = [NSData dataWithBytes:data->items[i] length:48];
+        [publicKeyArray addObject:[DSBLSKey keyWithPublicKey:pkData.UInt384]];
+    }
+    UInt256 commitmentHash = [NSData dataWithBytes:data->commitment_hash length:32].UInt256;
+    UInt768 allCommitmentAggregatedSignature = [NSData dataWithBytes:data->all_commitment_aggregated_signature length:96].UInt768;
+    bool allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:commitmentHash signature:allCommitmentAggregatedSignature withPublicKeys:publicKeyArray];
+    if (!allCommitmentAggregatedSignatureValidated)
+        return false;
+    //The sig must validate against the commitmentHash and all public keys determined by the signers bitvector. This is an aggregated BLS signature verification.
+    UInt768 quorumThresholdSignature = [NSData dataWithBytes:data->quorum_threshold_signature length:96].UInt768;
+    UInt384 quorumPublicKey = [NSData dataWithBytes:data->quorum_public_key length:48].UInt384;
+    bool quorumSignatureValidated = [DSBLSKey verify:commitmentHash signature:quorumThresholdSignature withPublicKey:quorumPublicKey];
+    if (!quorumSignatureValidated) {
+        DSLog(@"Issue with quorumSignatureValidated");
+        return false;
+    }
+    return true;
+};
+
+
++ (MasternodeList *)wrapMasternodeList:(DSMasternodeList *)list {
+    NSDictionary<NSNumber *, NSDictionary<NSData *, DSQuorumEntry *> *> *quorums = [list quorums];
+    NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *masternodes = [list simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash];
+    uintptr_t quorums_count = quorums.count;
+    uintptr_t masternodes_count = masternodes.count;
+    MasternodeList *masternode_list = malloc(sizeof(MasternodeList));
+    uint8_t **quorums_keys = malloc(quorums_count * sizeof(uint8_t));
+    LLMQMap **quorums_values = malloc(quorums_count * sizeof(LLMQMap));
+    int i = 0;
+    int j = 0;
+    for (NSNumber *type in quorums) {
+        NSDictionary<NSData *, DSQuorumEntry *> *dict = quorums[type];
+        uintptr_t dict_count = dict.count;
+        LLMQMap *quorum_value = malloc(sizeof(LLMQMap));
+        quorum_value->count = dict_count;
+        quorum_value->keys = malloc(dict_count * sizeof(UInt256));
+        quorum_value->values = malloc(dict_count * sizeof(QuorumEntry));
+        j = 0;
+        for (NSData *hash in dict) {
+            quorum_value->values[j * sizeof(QuorumEntry *)] = [DSMasternodeManager wrapQuorumEntry:dict[hash]];
+            quorum_value->keys[j * 32] = malloc(32);
+            memcpy(quorum_value->keys[j * 32], hash.bytes, hash.length);
+            j++;
+        }
+        quorums_keys[i * sizeof(uint8_t)] = (uint8_t *)[type unsignedIntegerValue];
+        quorums_values[i * sizeof(LLMQMap *)] = quorum_value;
+        i++;
+    }
+    uint8_t(**masternodes_keys)[32] = malloc(quorums_count * 32);
+    MasternodeEntry **masternodes_values = malloc(quorums_count * sizeof(MasternodeEntry));
+    i = 0;
+    for (NSData *hash in masternodes) {
+        DSSimplifiedMasternodeEntry *entry = masternodes[hash];
+        MasternodeEntry *masternode_entry = [DSMasternodeManager wrapMasternodeEntry:entry];
+        masternodes_keys[i * 32] = malloc(32);
+        memcpy(masternodes_keys[i * 32], hash.bytes, hash.length);
+        masternodes_values[i * sizeof(MasternodeEntry *)] = masternode_entry;
+        i++;
+    }
+    masternode_list->block_hash = malloc(32);
+    memcpy(masternode_list->block_hash, [list blockHash].u8, 32);
+    masternode_list->known_height = [list height];
+    masternode_list->masternode_merkle_root = malloc(32);
+    masternode_list->masternode_merkle_root_exists = true;
+    memcpy(masternode_list->masternode_merkle_root, [list masternodeMerkleRoot].u8, 32);
+    masternode_list->quorum_merkle_root = malloc(32);
+    memcpy(masternode_list->quorum_merkle_root, [list quorumMerkleRoot].u8, 32);
+    masternode_list->quorum_merkle_root_exists = true;
+    masternode_list->masternodes_keys = masternodes_keys;
+    masternode_list->masternodes_values = masternodes_values;
+    masternode_list->masternodes_count = masternodes_count;
+    masternode_list->quorums_keys = quorums_keys;
+    masternode_list->quorums_values = quorums_values;
+    masternode_list->quorums_count = quorums_count;
+    return masternode_list;
+}
+
++ (QuorumEntry *)wrapQuorumEntry:(DSQuorumEntry *)entry {
+    QuorumEntry *quorum_entry = malloc(sizeof(QuorumEntry));
+    quorum_entry->all_commitment_aggregated_signature = malloc(96);
+    memcpy(quorum_entry->all_commitment_aggregated_signature, [entry allCommitmentAggregatedSignature].u8, 96);
+    quorum_entry->commitment_hash = malloc(32);
+    memcpy(quorum_entry->commitment_hash, [entry commitmentHash].u8, 32);
+    quorum_entry->commitment_hash_exists = true;
+    quorum_entry->length = [entry length];
+    quorum_entry->llmq_type = [entry llmqType];
+    quorum_entry->quorum_entry_hash = malloc(32);
+    memcpy(quorum_entry->quorum_entry_hash, [entry quorumEntryHash].u8, 32);
+    quorum_entry->quorum_hash = malloc(32);
+    memcpy(quorum_entry->quorum_hash, [entry quorumHash].u8, 32);
+    quorum_entry->quorum_public_key = malloc(48);
+    memcpy(quorum_entry->quorum_public_key, [entry quorumPublicKey].u8, 48);
+    quorum_entry->quorum_threshold_signature = malloc(96);
+    memcpy(quorum_entry->quorum_threshold_signature, [entry allCommitmentAggregatedSignature].u8, 96);
+    quorum_entry->quorum_verification_vector_hash = malloc(32);
+    memcpy(quorum_entry->quorum_verification_vector_hash, [entry quorumVerificationVectorHash].u8, 32);
+    quorum_entry->saved = [entry saved];
+    NSData *signers_bitset = [entry signersBitset];
+    NSUInteger signers_bitset_length = signers_bitset.length;
+    uint8_t *signers = malloc(signers_bitset_length);
+    memcpy(signers, signers_bitset.bytes, signers_bitset_length);
+    quorum_entry->signers_bitset = signers;
+    quorum_entry->signers_bitset_length = signers_bitset_length;
+    quorum_entry->signers_count = [entry signersCount];
+    NSData *valid_members_bitset = [entry validMembersBitset];
+    NSUInteger valid_members_bitset_length = valid_members_bitset.length;
+    uint8_t *valid_members = malloc(valid_members_bitset_length);
+    memcpy(valid_members, valid_members_bitset.bytes, valid_members_bitset_length);
+    quorum_entry->valid_members_bitset = valid_members;
+    quorum_entry->valid_members_bitset_length = valid_members_bitset_length;
+    quorum_entry->valid_members_count = [entry validMembersCount];
+    quorum_entry->verified = [entry verified];
+    quorum_entry->version = [entry version];
+    return quorum_entry;
+}
+
++ (MasternodeEntry *)wrapMasternodeEntry:(DSSimplifiedMasternodeEntry *)entry {
+    uint32_t known_confirmed_at_height = [entry knownConfirmedAtHeight];
+    NSDictionary<DSBlock *, NSData *> *previousOperatorPublicKeys = [entry previousOperatorPublicKeys];
+    NSDictionary<DSBlock *, NSData *> *previousSimplifiedMasternodeEntryHashes = [entry previousSimplifiedMasternodeEntryHashes];
+    NSDictionary<DSBlock *, NSNumber *> *previousValidity = [entry previousValidity];
+    MasternodeEntry *masternode_entry = malloc(sizeof(MasternodeEntry));
+    masternode_entry->confirmed_hash = malloc(32);
+    memcpy(masternode_entry->confirmed_hash, [entry confirmedHash].u8, 32);
+    masternode_entry->confirmed_hash_hashed_with_provider_registration_transaction_hash = malloc(32);
+    memcpy(masternode_entry->confirmed_hash_hashed_with_provider_registration_transaction_hash, [entry confirmedHashHashedWithProviderRegistrationTransactionHash].u8, 32);
+    masternode_entry->confirmed_hash_hashed_with_provider_registration_transaction_hash_exists = true;
+    masternode_entry->is_valid = [entry isValid];
+    masternode_entry->key_id_voting = malloc(20);
+    memcpy(masternode_entry->key_id_voting, [entry keyIDVoting].u8, 20);
+    if (known_confirmed_at_height) {
+        masternode_entry->known_confirmed_at_height = known_confirmed_at_height;
+        masternode_entry->known_confirmed_at_height_exists = true;
+    } else {
+        masternode_entry->known_confirmed_at_height_exists = false;
+    }
+    masternode_entry->masternode_entry_hash = malloc(32);
+    memcpy(masternode_entry->masternode_entry_hash, [entry simplifiedMasternodeEntryHash].u8, 32);
+    masternode_entry->operator_public_key = malloc(48);
+    memcpy(masternode_entry->operator_public_key, [entry operatorPublicKey].u8, 48);
+    NSUInteger previousOperatorPublicKeysCount = [previousOperatorPublicKeys count];
+    masternode_entry->previous_operator_public_keys = malloc(previousOperatorPublicKeysCount * sizeof(OperatorPublicKey *));
+    masternode_entry->previous_operator_public_keys_count = previousOperatorPublicKeysCount;
+    int i = 0;
+    for (DSBlock *block in previousOperatorPublicKeys) {
+        NSData *key = previousOperatorPublicKeys[block];
+        OperatorPublicKey *operator_public_key = malloc(sizeof(OperatorPublicKey));
+        operator_public_key->block_hash = malloc(32);
+        memcpy(operator_public_key->block_hash, block.blockHash.u8, 32);
+        operator_public_key->block_height = block.height;
+        operator_public_key->key = malloc(48);
+        memcpy(operator_public_key->key, key.bytes, key.length);
+        masternode_entry->previous_operator_public_keys[i * sizeof(OperatorPublicKey *)] = operator_public_key;
+        i++;
+    }
+    NSUInteger previousSimplifiedMasternodeEntryHashesCount = [previousSimplifiedMasternodeEntryHashes count];
+    masternode_entry->previous_masternode_entry_hashes = malloc(previousSimplifiedMasternodeEntryHashesCount * sizeof(MasternodeEntryHash *));
+    masternode_entry->previous_masternode_entry_hashes_count = previousSimplifiedMasternodeEntryHashesCount;
+    i = 0;
+    for (DSBlock *block in previousSimplifiedMasternodeEntryHashes) {
+        NSData *hash = previousSimplifiedMasternodeEntryHashes[block];
+        MasternodeEntryHash *masternode_entry_hash = malloc(sizeof(MasternodeEntryHash));
+        masternode_entry_hash->block_hash = malloc(32);
+        memcpy(masternode_entry_hash->block_hash, block.blockHash.u8, 32);
+        masternode_entry_hash->block_height = block.height;
+        masternode_entry_hash->hash = malloc(32);
+        memcpy(masternode_entry_hash->hash, hash.bytes, hash.length);
+        masternode_entry->previous_masternode_entry_hashes[i * sizeof(MasternodeEntryHash *)] = masternode_entry_hash;
+        i++;
+    }
+    NSUInteger previousValidityCount = [previousValidity count];
+    masternode_entry->previous_validity = malloc(previousValidityCount * sizeof(Validity *));
+    masternode_entry->previous_validity_count = previousValidityCount;
+    i = 0;
+    for (DSBlock *block in previousValidity) {
+        NSNumber *flag = previousValidity[block];
+        Validity *validity = malloc(sizeof(Validity));
+        validity->block_hash = malloc(32);
+        memcpy(validity->block_hash, block.blockHash.u8, 32);
+        validity->block_height = block.height;
+        validity->is_valid = [flag boolValue];
+        masternode_entry->previous_validity[i * sizeof(Validity *)] = validity;
+        i++;
+    }
+    masternode_entry->provider_registration_transaction_hash = malloc(32);
+    memcpy(masternode_entry->provider_registration_transaction_hash, [entry providerRegistrationTransactionHash].u8, 32);
+    masternode_entry->ip_address = malloc(16);
+    memcpy(masternode_entry->ip_address, [entry address].u8, 16);
+    masternode_entry->port = [entry port];
+    masternode_entry->update_height = [entry updateHeight];
+    return masternode_entry;
+}
+
+- (void)blockUntilAddInsight:(UInt256)entryQuorumHash {
+    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+    [[DSInsightManager sharedInstance] blockForBlockHash:uint256_reverse(entryQuorumHash)
+                                                 onChain:self.chain
+                                              completion:^(DSBlock *_Nullable block, NSError *_Nullable error) {
+                                                  if (!error && block) {
+                                                      [self.chain addInsightVerifiedBlock:block forBlockHash:entryQuorumHash];
+                                                  }
+                                                  dispatch_semaphore_signal(sem);
+                                              }];
+    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+}
 
 - (instancetype)initWithChain:(DSChain *)chain {
     NSParameterAssert(chain);
@@ -743,121 +998,84 @@
 #define TEST_RANDOM_ERROR_IN_MASTERNODE_DIFF 0
 
 - (void)processMasternodeDiffMessage:(NSData *)message baseMasternodeList:(DSMasternodeList *)baseMasternodeList lastBlock:(DSBlock *)lastBlock useInsightAsBackup:(BOOL)useInsightAsBackup completion:(void (^)(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *masternodeList, NSDictionary *addedMasternodes, NSDictionary *modifiedMasternodes, NSDictionary *addedQuorums, NSOrderedSet *neededMissingMasternodeLists))completion {
-    [DSMasternodeManager processMasternodeDiffMessage:message
-        baseMasternodeList:baseMasternodeList
-        masternodeListLookup:^DSMasternodeList *(UInt256 blockHash) {
-            return [self masternodeListForBlockHash:blockHash];
-        }
-        lastBlock:lastBlock
-        useInsightAsBackup:useInsightAsBackup
-        onChain:self.chain
-        blockHeightLookup:^uint32_t(UInt256 blockHash) {
-            return [self heightForBlockHash:blockHash];
-        }
-        completion:completion];
+    DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
+    [mndiffContext setBaseMasternodeList:baseMasternodeList];
+    [mndiffContext setLastBlock:(DSMerkleBlock *)lastBlock];
+    [mndiffContext setUseInsightAsBackup:useInsightAsBackup];
+    [mndiffContext setChain:self.chain];
+    [mndiffContext setMasternodeListLookup:^DSMasternodeList *(UInt256 blockHash) {
+        return [self masternodeListForBlockHash:blockHash];
+    }];
+    [mndiffContext setBlockHeightLookup:^uint32_t(UInt256 blockHash) {
+        return [self heightForBlockHash:blockHash];
+    }];
+    [DSMasternodeManager processMasternodeDiffMessage:message withContext:mndiffContext completion:completion];
 }
 
-+ (void)processMasternodeDiffMessage:(NSData *)message baseMasternodeList:(DSMasternodeList *)baseMasternodeList masternodeListLookup:(DSMasternodeList * (^)(UInt256 blockHash))masternodeListLookup lastBlock:(DSBlock *)lastBlock useInsightAsBackup:(BOOL)useInsightAsBackup onChain:(DSChain *)chain blockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup completion:(void (^)(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *masternodeList, NSDictionary *addedMasternodes, NSDictionary *modifiedMasternodes, NSDictionary *addedQuorums, NSOrderedSet *neededMissingMasternodeLists))completion {
-    
-    UInt256 merkleRoot = lastBlock.merkleRoot;
-
-    //process_diff
-    //typedef uint32_t (*BlockHeightLookup)(const uint8_t *block_hash);
-    
-    //typedef void (^DSReachabilityStatusBlock)(DSReachabilityStatus status);
-//    ^(DSReachabilityStatus status) {};
-    
-    BlockHeightLookup bhl = ^(const uint8_t *block_hash) {
-        UInt256 hash = [NSData dataWithBytes:block_hash length:32].UInt256;
-        uint32_t height = blockHeightLookup(hash);
-        return height;x
-    };
-    
-
-    //typedef bool (*AddInsightBlockingLookup)(const uint8_t *block_hash);
-    AddInsightBlockingLookup ail = ^(const uint8_t *block_hash) {
-        if (useInsightAsBackup) {
-            UInt256 entryQuorumHash = [NSData dataWithBytes:block_hash length:32].UInt256;
-            //We can trust insight if on testnet
-            dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-            [[DSInsightManager sharedInstance] blockForBlockHash:uint256_reverse(entryQuorumHash)
-                                                         onChain:chain
-                                                      completion:^(DSBlock *_Nullable block, NSError *_Nullable error) {
-                                                          if (!error && block) {
-                                                              [chain addInsightVerifiedBlock:block forBlockHash:entryQuorumHash];
-                                                          }
-                                                          dispatch_semaphore_signal(sem);
-                                                      }];
-            dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
-            return true;
-        } else {
-            return false;
-        }
-    };
-    
-    MasternodeListLookup mll = ^(const uint8_t *block_hash) {
-        return masternodeListLookup([NSData dataWithBytes:block_hash length:32].UInt256);
-    };
-    
-    BaseMasternodeList *bml = NULL;
-    ShouldProcessQuorumTypeCallback cpqtc = ^(LLMQType llmqType) {
-        return [chain shouldProcessQuorumOfType:llmqType];
-    };
-//    typedef bool (*ValidateQuorumCallback)(uint8_t (**items)[48], uintptr_t count, const uint8_t *commitment_hash, const uint8_t *all_commitment_aggregated_signature, const uint8_t *quorum_threshold_signature, const uint8_t *quorum_public_key);
-
-    ValidateQuorumCallback vqc = ^(uint8_t (**items)[48], uintptr_t count, const uint8_t *commitment_hash, const uint8_t *all_commitment_aggregated_signature, const uint8_t *quorum_threshold_signature, const uint8_t *quorum_public_key) {
-        
-        NSMutableArray<DSBLSKey *> *publicKeyArray = [NSMutableArray array];
-        NSMutableDictionary *mElementDictionary = [[NSMutableDictionary alloc] initWithCapacity:count];
-        for (uint8_t i = 0; i < count; i++) {
-            uint8_t item = items[i];
-            NSData *pkData = [NSData dataWithBytes:item length:48];
-            UInt384 pk = pkData.UInt384;
-            [publicKeyArray addObject:[DSBLSKey keyWithPublicKey:pk]];
-        }
-        UInt256 commitmentHash = [NSData dataWithBytes:commitment_hash length:32].UInt256;
-        UInt768 allCommitmentAggregatedSignature = [NSData dataWithBytes:all_commitment_aggregated_signature length:96].UInt768;
-
-        BOOL allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:commitmentHash signature:allCommitmentAggregatedSignature withPublicKeys:publicKeyArray];
-
-        if (!allCommitmentAggregatedSignatureValidated)
-            return NO;
-
-        //The sig must validate against the commitmentHash and all public keys determined by the signers bitvector. This is an aggregated BLS signature verification.
-
-        UInt768 quorumThresholdSignature = [NSData dataWithBytes:quorum_threshold_signature length:96].UInt768;
-        UInt384 quorumPublicKey = [NSData dataWithBytes:quorum_public_key length:48].UInt384;
-            
-        BOOL quorumSignatureValidated = [DSBLSKey verify:commitmentHash signature:quorumThresholdSignature withPublicKey:quorumPublicKey];
-
-        if (!quorumSignatureValidated) {
-            DSLog(@"Issue with quorumSignatureValidated");
-            return NO;
-        }
-        // destroy ?
-        return YES;
-    };
-    
-    
-    
-    Result *result = process_diff(message.bytes, message.length, *bml, mll, uint256_data(merkleRoot).bytes, ail, cpqtc, vqc, bhl);
-    
++ (void)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *masternodeList, NSDictionary *addedMasternodes, NSDictionary *modifiedMasternodes, NSDictionary *addedQuorums, NSOrderedSet *neededMissingMasternodeLists))completion {
+    DSChain *chain = context.chain;
+    DSMasternodeList *baseMasternodeList = context.baseMasternodeList;
+    UInt256 merkleRoot = context.lastBlock.merkleRoot;
+    BOOL baseMasternodeListExists = baseMasternodeList;
+    MasternodeListExt *masternode_list_ext = malloc(sizeof(MasternodeListExt));
+    masternode_list_ext->exists = baseMasternodeListExists;
+    if (baseMasternodeListExists) {
+        masternode_list_ext->list = [DSMasternodeManager wrapMasternodeList:baseMasternodeList];
+    }
+    MndiffResult *result = process_diff(message.bytes, message.length, masternode_list_ext, masternodeListLookupCallback, uint256_data(merkleRoot).bytes, context.useInsightAsBackup, addInsightLookup, shouldProcessQuorumType, validateQuorumCallback, blockHeightListLookupCallback, (__bridge void *)(context));
     BOOL foundCoinbase = result->found_coinbase;
     BOOL validCoinbase = result->valid_coinbase;
     BOOL rootMNListValid = result->root_mn_list_valid;
     BOOL rootQuorumListValid = result->root_quorum_list_valid;
     BOOL validQuorums = result->valid_quorums;
-    BaseMasternodeList blm = result->masternode_list;
-    DSMasternodeList *mnl = blm._0;
-    NSDictionary *addedMasternodes = result->added_masternodes;
-    NSDictionary *modifiedMasternodes = result->modified_masternodes;
-    NSDictionary *addedQuorums = result->added_quorums;
-    NSArray *neededMasternodeLists = result->needed_masternode_lists;
-
-    //DSMasternodeList *masternodeList = [DSMasternodeList list]
-
-    completion(foundCoinbase, validCoinbase, rootMNListValid, rootQuorumListValid, validQuorums, mnl, addedMasternodes, modifiedMasternodes, addedQuorums, neededMasternodeLists);
-
+    MasternodeListExt blm = *result->masternode_list;
+    DSMasternodeList *masternodeList = [[DSMasternodeList alloc] initWithList:blm.list onChain:chain];
+    uint8_t(**added_masternodes_keys)[32] = result->added_masternodes_keys;
+    MasternodeEntry **added_masternodes_values = result->added_masternodes_values;
+    uintptr_t added_masternodes_count = result->added_masternodes_count;
+    NSMutableDictionary *addedMasternodes = [[NSMutableDictionary alloc] initWithCapacity:added_masternodes_count];
+    for (NSUInteger i = 0; i < added_masternodes_count; i++) {
+        NSData *hash = [NSData dataWithBytes:added_masternodes_keys[i] length:32];
+        MasternodeEntry *entry = added_masternodes_values[i];
+        DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [[DSSimplifiedMasternodeEntry alloc] initWithEntry:entry onChain:chain];
+        [addedMasternodes setObject:simplifiedMasternodeEntry forKey:hash];
+    }
+    uint8_t(**modified_masternodes_keys)[32] = result->modified_masternodes_keys;
+    MasternodeEntry **modified_masternodes_values = result->modified_masternodes_values;
+    uintptr_t modified_masternodes_count = result->modified_masternodes_count;
+    NSMutableDictionary *modifiedMasternodes = [[NSMutableDictionary alloc] initWithCapacity:modified_masternodes_count];
+    for (NSUInteger i = 0; i < modified_masternodes_count; i++) {
+        NSData *hash = [NSData dataWithBytes:modified_masternodes_keys[i] length:32];
+        MasternodeEntry *entry = modified_masternodes_values[i];
+        DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [[DSSimplifiedMasternodeEntry alloc] initWithEntry:entry onChain:chain];
+        [modifiedMasternodes setObject:simplifiedMasternodeEntry forKey:hash];
+    }
+    uint8_t(**added_quorums_keys) = result->added_quorums_keys;
+    LLMQMap **added_quorums_values = result->added_quorums_values;
+    uintptr_t added_quorums_count = result->added_quorums_count;
+    NSMutableDictionary *addedQuorums = [[NSMutableDictionary alloc] initWithCapacity:added_quorums_count];
+    for (NSUInteger i = 0; i < added_quorums_count; i++) {
+        uint8_t quorum_type = *added_quorums_keys[i];
+        LLMQMap *llmq_map = added_quorums_values[i];
+        NSMutableDictionary *quorumsOfType = [[NSMutableDictionary alloc] initWithCapacity:llmq_map->count];
+        for (NSUInteger j = 0; j < llmq_map->count; j++) {
+            uint8_t(*h)[32] = llmq_map->keys[j];
+            NSData *hash = [NSData dataWithBytes:h length:32];
+            QuorumEntry *quorum_entry = llmq_map->values[j];
+            DSQuorumEntry *entry = [[DSQuorumEntry alloc] initWithEntry:quorum_entry onChain:chain];
+            [quorumsOfType setObject:entry forKey:hash];
+        }
+        [addedQuorums setObject:quorumsOfType
+                         forKey:@((DSLLMQType)quorum_type)];
+    }
+    uint8_t(**needed_masternode_lists)[32] = result->needed_masternode_lists;
+    uintptr_t needed_masternode_lists_count = result->needed_masternode_lists_count;
+    NSMutableOrderedSet *neededMissingMasternodeLists = [NSMutableOrderedSet orderedSetWithCapacity:needed_masternode_lists_count];
+    for (NSUInteger i = 0; i < needed_masternode_lists_count; i++) {
+        NSData *hash = [NSData dataWithBytes:needed_masternode_lists[i] length:32];
+        [neededMissingMasternodeLists addObject:hash];
+    }
+    completion(foundCoinbase, validCoinbase, rootMNListValid, rootQuorumListValid, validQuorums, masternodeList, addedMasternodes, modifiedMasternodes, addedQuorums, neededMissingMasternodeLists);
 }
 
 /*
@@ -1172,8 +1390,9 @@
     completion(foundCoinbase, validCoinbase, rootMNListValid, rootQuorumListValid, validQuorums, masternodeList, addedMasternodes, modifiedMasternodes, addedQuorums, neededMasternodeLists);
 
 #endif
-}
-*/
+}*/
+
+
 - (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData *)message {
 #if LOG_MASTERNODE_DIFF
     DSFullLog(@"Logging masternode DIFF message %@", message.hexString);
