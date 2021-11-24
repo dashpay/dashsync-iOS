@@ -103,6 +103,7 @@ inline static int ceil_log2(int x) {
     if (list->quorum_merkle_root_exists)
         self.quorumMerkleRoot = [NSData dataWithBytes:list->quorum_merkle_root length:32].UInt256;
     self.mQuorums = quorums;
+    self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash = masternodes;
     self.chain = chain;
     return self;
 }

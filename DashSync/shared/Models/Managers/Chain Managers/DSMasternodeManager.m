@@ -1017,19 +1017,19 @@ bool validateQuorumCallback(QuorumValidationData *data, void *context) {
     DSMasternodeList *baseMasternodeList = context.baseMasternodeList;
     UInt256 merkleRoot = context.lastBlock.merkleRoot;
     BOOL baseMasternodeListExists = baseMasternodeList;
-    MasternodeListExt *masternode_list_ext = malloc(sizeof(MasternodeListExt));
-    masternode_list_ext->exists = baseMasternodeListExists;
+    MasternodeListExt *base_masternode_list_ext = malloc(sizeof(MasternodeListExt));
+    base_masternode_list_ext->exists = baseMasternodeListExists;
     if (baseMasternodeListExists) {
-        masternode_list_ext->list = [DSMasternodeManager wrapMasternodeList:baseMasternodeList];
+        base_masternode_list_ext->list = [DSMasternodeManager wrapMasternodeList:baseMasternodeList];
     }
-    MndiffResult *result = process_diff(message.bytes, message.length, masternode_list_ext, masternodeListLookupCallback, uint256_data(merkleRoot).bytes, context.useInsightAsBackup, addInsightLookup, shouldProcessQuorumType, validateQuorumCallback, blockHeightListLookupCallback, (__bridge void *)(context));
+    MndiffResult *result = process_diff(message.bytes, message.length, base_masternode_list_ext, masternodeListLookupCallback, uint256_data(merkleRoot).bytes, context.useInsightAsBackup, addInsightLookup, shouldProcessQuorumType, validateQuorumCallback, blockHeightListLookupCallback, (__bridge void *)(context));
     BOOL foundCoinbase = result->found_coinbase;
     BOOL validCoinbase = result->valid_coinbase;
     BOOL rootMNListValid = result->root_mn_list_valid;
     BOOL rootQuorumListValid = result->root_quorum_list_valid;
     BOOL validQuorums = result->valid_quorums;
-    MasternodeListExt blm = *result->masternode_list;
-    DSMasternodeList *masternodeList = [[DSMasternodeList alloc] initWithList:blm.list onChain:chain];
+    MasternodeListExt *masternode_list_ext = result->masternode_list;
+    DSMasternodeList *masternodeList = [[DSMasternodeList alloc] initWithList:masternode_list_ext->list onChain:chain];
     uint8_t(**added_masternodes_keys)[32] = result->added_masternodes_keys;
     MasternodeEntry **added_masternodes_values = result->added_masternodes_values;
     uintptr_t added_masternodes_count = result->added_masternodes_count;
