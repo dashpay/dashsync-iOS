@@ -196,8 +196,8 @@ bool validateQuorumCallback(QuorumValidationData *data, void *context) {
         quorums_values[i * sizeof(LLMQMap *)] = quorum_value;
         i++;
     }
-    uint8_t(**masternodes_keys)[32] = malloc(quorums_count * 32);
-    MasternodeEntry **masternodes_values = malloc(quorums_count * sizeof(MasternodeEntry));
+    uint8_t(**masternodes_keys)[32] = malloc(masternodes_count * 32);
+    MasternodeEntry **masternodes_values = malloc(masternodes_count * sizeof(MasternodeEntry));
     i = 0;
     for (NSData *hash in masternodes) {
         DSSimplifiedMasternodeEntry *entry = masternodes[hash];
