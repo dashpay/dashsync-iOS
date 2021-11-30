@@ -152,10 +152,11 @@
 
     return self;
 }
+
 - (instancetype)initWithEntry:(QuorumEntry *)entry onChain:(DSChain *)chain {
     if (!(self = [super init])) return nil;
-    self.allCommitmentAggregatedSignature = [NSData dataWithBytes:entry->quorum_hash length:96].UInt768;
-    if (entry->commitment_hash_exists) {
+    self.allCommitmentAggregatedSignature = [NSData dataWithBytes:entry->all_commitment_aggregated_signature length:96].UInt768;
+    if (entry->commitment_hash) {
         self.commitmentHash = [NSData dataWithBytes:entry->commitment_hash length:32].UInt256;
     }
     self.length = (uint32_t)entry->length;
@@ -194,7 +195,9 @@
 
 - (UInt256)commitmentHash {
     if (uint256_is_zero(_commitmentHash)) {
-        _commitmentHash = [[self commitmentData] SHA256_2];
+        NSData *data = [self commitmentData];
+        _commitmentHash = [data SHA256_2];
+        //        NSLog(@"calculate commitmentHash: %lu %@, %@", [data length], data.hexString, uint256_hex(_commitmentHash));
     }
     return _commitmentHash;
 }
@@ -202,11 +205,19 @@
 - (NSData *)commitmentData {
     NSMutableData *data = [NSMutableData data];
     [data appendVarInt:self.llmqType];
+    //    NSLog(@"commitment_data...: %@ %lu", data.hexString, [data length]);
     [data appendUInt256:self.quorumHash];
+    //    NSLog(@"commitment_data...: %@ %lu", data.hexString, [data length]);
     [data appendVarInt:self.validMembersCount];
+    //    NSLog(@"commitment_data...: %@ %lu", data.hexString, [data length]);
     [data appendData:self.validMembersBitset];
+    //    NSLog(@"commitment_data...: %@ %lu", data.hexString, [data length]);
     [data appendUInt384:self.quorumPublicKey];
+    //    NSLog(@"commitment_data...: %@ %lu", data.hexString, [data length]);
     [data appendUInt256:self.quorumVerificationVectorHash];
+    //    NSLog(@"commitment_data...: %@ %lu", data.hexString, [data length]);
+    //NSLog(@"generate commitmentData with: %hu %@ %d %@ %@ %@",
+    //        self.llmqType, uint256_hex(self.quorumHash), self.validMembersCount, self.validMembersBitset, uint384_hex(self.quorumPublicKey), uint256_hex(self.quorumVerificationVectorHash));
     return data;
 }
 
@@ -257,7 +268,6 @@
 
     //The quorumHash must match the current DKG session
     //todo
-
     //The byte size of the signers and validMembers bitvectors must match “(quorumSize + 7) / 8”
     if (self.signersBitset.length != (self.signersCount + 7) / 8) {
         DSLog(@"Error: The byte size of the signers bitvectors (%lu) must match “(quorumSize + 7) / 8 (%d)", (unsigned long)self.signersBitset.length, (self.signersCount + 7) / 8);
@@ -286,7 +296,6 @@
     }
 
     //The number of set bits in the signers and validMembers bitvectors must be at least >= quorumThreshold
-
     if ([self.signersBitset trueBitsCount] < [self quorumThreshold]) {
         DSLog(@"Error: The number of set bits in the signers bitvector %llu must be at least >= quorumThreshold %d", [self.signersBitset trueBitsCount], [self quorumThreshold]);
         return NO;
@@ -315,7 +324,9 @@
 #endif
     for (DSSimplifiedMasternodeEntry *masternodeEntry in masternodes) {
         if ([self.signersBitset bitIsTrueAtLEIndex:i]) {
-            DSBLSKey *masternodePublicKey = [DSBLSKey keyWithPublicKey:[masternodeEntry operatorPublicKeyAtBlockHeight:blockHeight]];
+            UInt384 pkData = [masternodeEntry operatorPublicKeyAtBlockHeight:blockHeight];
+            //                        NSLog(@"validateQuorumCallback addPublicKey: %@", uint384_hex(pkData));
+            DSBLSKey *masternodePublicKey = [DSBLSKey keyWithPublicKey:pkData];
             [publicKeyArray addObject:masternodePublicKey];
 #if SAVE_QUORUM_ERROR_PUBLIC_KEY_ARRAY_TO_FILE
             [proTxHashForPublicKeys setObject:uint256_data(masternodeEntry.providerRegistrationTransactionHash)
@@ -327,6 +338,7 @@
 
     BOOL allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:self.commitmentHash signature:self.allCommitmentAggregatedSignature withPublicKeys:publicKeyArray];
 
+    NSLog(@"validateQuorumCallback verifySecureAggregated = %i, with: commitmentHash: %@, allCommitmentAggregatedSignature: %@, publicKeys: %lu", allCommitmentAggregatedSignatureValidated, uint256_hex(self.commitmentHash), uint768_hex(self.allCommitmentAggregatedSignature), [publicKeyArray count]);
 
     if (!allCommitmentAggregatedSignatureValidated) {
         DSLog(@"Issue with allCommitmentAggregatedSignatureValidated for quorum of type %d quorumHash %@ llmqHash %@ commitmentHash %@ signersBitset %@ (%d signers) at height %u", self.llmqType, uint256_hex(self.commitmentHash), uint256_hex(self.quorumHash), uint256_hex(self.commitmentHash), self.signersBitset.hexString, self.signersCount, masternodeList.height);
@@ -405,11 +417,13 @@
     //The sig must validate against the commitmentHash and all public keys determined by the signers bitvector. This is an aggregated BLS signature verification.
 
     BOOL quorumSignatureValidated = [DSBLSKey verify:self.commitmentHash signature:self.quorumThresholdSignature withPublicKey:self.quorumPublicKey];
+    NSLog(@"validateQuorumCallback verify = %i, with: commitmentHash: %@, quorumThresholdSignature: %@, quorumPublicKey: %@", quorumSignatureValidated, uint256_hex(self.commitmentHash), uint768_hex(self.quorumThresholdSignature), uint384_hex(self.quorumPublicKey));
 
     if (!quorumSignatureValidated) {
         DSLog(@"Issue with quorumSignatureValidated");
         return NO;
     }
+    //    NSLog(@"validateQuorumCallback true");
 
     self.verified = YES;
 
@@ -449,8 +463,26 @@
 }
 
 - (NSString *)description {
-    uint32_t height = [self.chain heightForBlockHash:self.quorumHash];
-    return [[super description] stringByAppendingString:[NSString stringWithFormat:@" - %u", height]];
+    //    uint32_t height = [self.chain heightForBlockHash:self.quorumHash];
+    //    return [[super description] stringByAppendingString:[NSString stringWithFormat:@" - %u", height]];
+    return [NSString stringWithFormat:@"%p: %@", &self, uint256_hex(self.quorumEntryHash)];
+    /*return [NSString stringWithFormat:@"%p: %@, %@, %@, %@, %@, %@, %@, %@, %@, %@, %d, %@, %d %@ %hu",
+                     &self,
+                     uint768_hex(self.allCommitmentAggregatedSignature),
+                     uint256_hex(self.commitmentHash),
+                     @(self.llmqType),
+                     uint256_hex(self.quorumEntryHash),
+                     uint256_hex(self.quorumHash),
+                     uint384_hex(self.quorumPublicKey),
+                     uint768_hex(self.quorumThresholdSignature),
+                     uint256_hex(self.quorumVerificationVectorHash),
+                     @(self.saved),
+                     self.signersBitset.hexString,
+                     self.signersCount,
+                     self.validMembersBitset.hexString,
+                     self.validMembersCount,
+                     @(self.verified),
+                     self.version];*/
 }
 
 - (NSString *)debugDescription {

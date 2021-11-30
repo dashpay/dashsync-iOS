@@ -97,7 +97,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSDictionary *)toDictionaryUsingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup;
 
 - (DSSimplifiedMasternodeEntry *)masternodeForRegistrationHash:(UInt256)registrationHash;
-
 @end
 
 NS_ASSUME_NONNULL_END

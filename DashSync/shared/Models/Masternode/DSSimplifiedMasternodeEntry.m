@@ -75,7 +75,7 @@
     return [[self alloc] initWithMessage:data atBlockHeight:blockHeight onChain:chain];
 }
 
-+ (instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash confirmedHash:(UInt256)confirmedHash address:(UInt128)address port:(uint16_t)port operatorBLSPublicKey:(UInt384)operatorBLSPublicKey previousOperatorBLSPublicKeys:(NSDictionary<DSBlock *, NSData *> *)previousOperatorBLSPublicKeys keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid previousValidity:(NSDictionary<DSBlock *, NSData *> *)previousValidity knownConfirmedAtHeight:(uint32_t)knownConfirmedAtHeight updateHeight:(uint32_t)updateHeight simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash previousSimplifiedMasternodeEntryHashes:(NSDictionary<DSBlock *, NSData *> *)previousSimplifiedMasternodeEntryHashes onChain:(DSChain *)chain {
++ (instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash confirmedHash:(UInt256)confirmedHash address:(UInt128)address port:(uint16_t)port operatorBLSPublicKey:(UInt384)operatorBLSPublicKey previousOperatorBLSPublicKeys:(NSDictionary<DSBlock *, NSData *> *)previousOperatorBLSPublicKeys keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid previousValidity:(NSDictionary<DSBlock *, NSNumber *> *)previousValidity knownConfirmedAtHeight:(uint32_t)knownConfirmedAtHeight updateHeight:(uint32_t)updateHeight simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash previousSimplifiedMasternodeEntryHashes:(NSDictionary<DSBlock *, NSData *> *)previousSimplifiedMasternodeEntryHashes onChain:(DSChain *)chain {
     DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [[DSSimplifiedMasternodeEntry alloc] init];
     simplifiedMasternodeEntry.providerRegistrationTransactionHash = providerRegistrationTransactionHash;
     simplifiedMasternodeEntry.confirmedHash = confirmedHash;
@@ -143,14 +143,12 @@
 - (instancetype)initWithEntry:(MasternodeEntry *)entry onChain:(DSChain *)chain {
     if (!(self = [super init])) return nil;
     self.confirmedHash = [NSData dataWithBytes:entry->confirmed_hash length:32].UInt256;
-    if (entry->confirmed_hash_hashed_with_provider_registration_transaction_hash_exists) {
+    if (entry->confirmed_hash_hashed_with_provider_registration_transaction_hash) {
         self.confirmedHashHashedWithProviderRegistrationTransactionHash = [NSData dataWithBytes:entry->confirmed_hash_hashed_with_provider_registration_transaction_hash length:32].UInt256;
     }
     self.isValid = entry->is_valid;
     self.keyIDVoting = [NSData dataWithBytes:entry->key_id_voting length:20].UInt160;
-    if (entry->known_confirmed_at_height_exists) {
-        self.knownConfirmedAtHeight = entry->known_confirmed_at_height;
-    }
+    self.knownConfirmedAtHeight = entry->known_confirmed_at_height;
     self.simplifiedMasternodeEntryHash = [NSData dataWithBytes:entry->masternode_entry_hash length:32].UInt256;
     self.operatorPublicKey = [NSData dataWithBytes:entry->operator_public_key length:48].UInt384;
 
@@ -233,7 +231,7 @@
     }
     if ([masternodeEntry isValidAtBlockHeight:self.updateHeight] != self.isValid) {
         //we changed validity
-        DSDSMNELog(@"Changed validity from %u to %u on %@", masternodeEntry.isValid, self.isValid, uint256_hex(self.providerRegistrationTransactionHash));
+        NSLog(@"Changed validity from %u to %u on %@", masternodeEntry.isValid, self.isValid, uint256_hex(self.providerRegistrationTransactionHash));
         [self.mPreviousValidity setObject:@(masternodeEntry.isValid) forKey:block];
     }
 }
@@ -251,7 +249,7 @@
     }
     if (!uint384_eq([masternodeEntry operatorPublicKeyAtBlockHeight:self.updateHeight], self.operatorPublicKey)) {
         //the operator public key changed
-        DSDSMNELog(@"Changed sme operator keys from %@ to %@ on %@", uint384_hex(masternodeEntry.operatorPublicKey), uint384_hex(self.operatorPublicKey), uint256_hex(self.providerRegistrationTransactionHash));
+        NSLog(@"Changed sme operator keys from %@ to %@ on %@", uint384_hex(masternodeEntry.operatorPublicKey), uint384_hex(self.operatorPublicKey), uint256_hex(self.providerRegistrationTransactionHash));
         [self.mPreviousOperatorPublicKeys setObject:uint384_data(masternodeEntry.operatorPublicKey) forKey:block];
     }
 }
@@ -270,7 +268,8 @@
     }
     if (!uint256_eq([masternodeEntry simplifiedMasternodeEntryHashAtBlockHeight:self.updateHeight], self.simplifiedMasternodeEntryHash)) {
         //the hashes changed
-        DSDSMNELog(@"Changed sme hashes from %@ to %@ on %@", uint256_hex(masternodeEntry.simplifiedMasternodeEntryHash), uint256_hex(self.simplifiedMasternodeEntryHash), uint256_hex(self.providerRegistrationTransactionHash));
+        NSLog(@"Changed sme hashes from %@ to %@ on %@", uint256_hex(masternodeEntry.simplifiedMasternodeEntryHash), uint256_hex(self.simplifiedMasternodeEntryHash), uint256_hex(self.providerRegistrationTransactionHash));
+        //DSDSMNELog(@"Changed sme hashes from %@ to %@ on %@", uint256_hex(masternodeEntry.simplifiedMasternodeEntryHash), uint256_hex(self.simplifiedMasternodeEntryHash), uint256_hex(self.providerRegistrationTransactionHash));
         [self.mPreviousSimplifiedMasternodeEntryHashes setObject:uint256_data(masternodeEntry.simplifiedMasternodeEntryHash) forKey:block];
     }
 }
@@ -364,7 +363,7 @@
         uint32_t distance = previousBlock.height - blockHeight;
         if (distance < minDistance) {
             minDistance = distance;
-            DSDSMNELog(@"SME Hash for proTxHash %@ : Using %@ instead of %@ for list at block height %u", uint256_hex(self.providerRegistrationTransactionHash), uint256_hex(previousSimplifiedMasternodeEntryHashes[previousBlock].UInt256), uint256_hex(usedSimplifiedMasternodeEntryHash), blockHeight);
+            NSLog(@"SME Hash for proTxHash %@ : Using %@ instead of %@ for list at block height %u", uint256_hex(self.providerRegistrationTransactionHash), uint256_hex(previousSimplifiedMasternodeEntryHashes[previousBlock].UInt256), uint256_hex(usedSimplifiedMasternodeEntryHash), blockHeight);
             usedSimplifiedMasternodeEntryHash = previousSimplifiedMasternodeEntryHashes[previousBlock].UInt256;
         }
     }
@@ -539,9 +538,39 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"<DSSimplifiedMasternodeEntry: %@ {valid:%@}>", self.host, @(self.isValid)];
-}
+    //return [NSString stringWithFormat:@"<DSSimplifiedMasternodeEntry: %@ {valid:%@}>", self.host, @(self.isValid)];
 
+    NSMutableString *previous_masternode_entry_hashes = [NSMutableString string];
+    for (DSBlock *block in self.previousSimplifiedMasternodeEntryHashes) {
+        NSData *hash = self.previousSimplifiedMasternodeEntryHashes[block];
+        [previous_masternode_entry_hashes appendFormat:@"%@: %@\n", block.description, hash.hexString];
+    }
+    NSMutableString *previous_operator_public_keys = [NSMutableString string];
+    for (DSBlock *block in self.previousOperatorPublicKeys) {
+        NSData *hash = self.previousOperatorPublicKeys[block];
+        [previous_operator_public_keys appendFormat:@"%@: %@\n", block.description, hash.hexString];
+    }
+    NSMutableString *previous_validity = [NSMutableString string];
+    for (DSBlock *block in self.previousValidity) {
+        NSNumber *isValid = self.previousValidity[block];
+        [previous_validity appendFormat:@"%@: %@\n", block.description, isValid];
+    }
+    return [NSString stringWithFormat:@"%p: %@, %@, %@, %@, %@, %@, %@, %@, %@, %@, %@, %@, %@>",
+                     &self,
+                     uint256_hex(self.confirmedHash),
+                     uint256_hex(self.confirmedHashHashedWithProviderRegistrationTransactionHash),
+                     @(self.isValid),
+                     uint160_hex(self.keyIDVoting),
+                     @(self.knownConfirmedAtHeight),
+                     uint256_hex(self.simplifiedMasternodeEntryHash),
+                     uint384_hex(self.operatorPublicKey),
+                     uint256_hex(self.providerRegistrationTransactionHash),
+                     self.ipAddressString,
+                     @(self.updateHeight),
+                     previous_masternode_entry_hashes,
+                     previous_operator_public_keys,
+                     previous_validity];
+}
 
 - (BOOL)isEqual:(id)other {
     DSSimplifiedMasternodeEntry *entry = (DSSimplifiedMasternodeEntry *)other;

@@ -170,6 +170,14 @@
 //    }
 //}
 
++ (NSData *)messageFromFileWithPath:(NSString *)filePath {
+    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+    NSString *path = [bundle pathForResource:filePath ofType:@"dat"];
+    NSData *message = [NSData dataWithContentsOfFile:path];
+    XCTAssert(message.length, @"File must exist for file %@", filePath);
+    return message;
+}
+
 - (void)testMasternodeListDiff1 {
     // baseBlockHash 00000bafbc94add76cb75e2ec92894837288a481e5c005f6563d91623bf8bc2c (0) blockHash 0000001618273379c4d96403954480bdf5c522d734f457716db1295d7a3646e0 (8000)
 
@@ -524,11 +532,7 @@
     dispatch_group_enter(dispatch_group);
     __block BOOL stop = FALSE;
     for (NSString *file in files) {
-        NSBundle *bundle = [NSBundle bundleForClass:[self class]];
-        NSString *filePath = [bundle pathForResource:file ofType:@"dat"];
-        NSData *message = [NSData dataWithContentsOfFile:filePath];
-
-        XCTAssert(message.length, @"File must exist for file %@", file);
+        NSData *message = [DSDeterministicMasternodeListTests messageFromFileWithPath:file];
 
         NSUInteger length = message.length;
         NSUInteger offset = 0;
@@ -544,7 +548,6 @@
         dispatch_group_enter(dispatch_group);
         DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
         [mndiffContext setBaseMasternodeList:nextBaseMasternodeList];
-        [mndiffContext setLastBlock:nil];
         [mndiffContext setUseInsightAsBackup:NO];
         [mndiffContext setChain:chain];
         [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
@@ -670,6 +673,7 @@
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
     NSString *filePath = [bundle pathForResource:@"ML1100000" ofType:@"dat"];
     NSData *message = [NSData dataWithContentsOfFile:filePath];
+    //    NSData *message = [DSDeterministicMasternodeListTests messageFromFileWithPath:@"ML1100000"];
 
     DSChain *chain = [DSChain mainnet];
 
@@ -801,8 +805,7 @@
 
 - (void)testMNLSavingAndRetrievingFromDisk {
     DSChain *chain = [DSChain testnet];
-    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
-    NSString *filePath = [bundle pathForResource:@"MNL_0_122064" ofType:@"dat"];
+    NSData *message = [DSDeterministicMasternodeListTests messageFromFileWithPath:@"MNL_0_122064"];
 
     __block NSManagedObjectContext *context = [NSManagedObjectContext chainContext];
     [context performBlockAndWait:^{
@@ -811,9 +814,6 @@
         [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
         [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
     }];
-
-    NSData *message = [NSData dataWithContentsOfFile:filePath];
-
 
     NSUInteger length = message.length;
     NSUInteger offset = 0;
@@ -838,8 +838,6 @@
     };
 
     DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
-    [mndiffContext setBaseMasternodeList:nil];
-    [mndiffContext setLastBlock:nil];
     [mndiffContext setUseInsightAsBackup:NO];
     [mndiffContext setChain:chain];
     [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
@@ -869,9 +867,7 @@
                                                                        createUnknownBlocks:YES
                                                                                  inContext:context
                                                                                 completion:^(NSError *_Nonnull error) {
-                                                                                    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
-                                                                                    NSString *filePath = [bundle pathForResource:@"MNL_122064_122088" ofType:@"dat"];
-                                                                                    NSData *message = [NSData dataWithContentsOfFile:filePath];
+                                                                                    NSData *message = [DSDeterministicMasternodeListTests messageFromFileWithPath:@"MNL_122064_122088"];
 
                                                                                     NSUInteger length = message.length;
                                                                                     NSUInteger offset = 0;
@@ -893,7 +889,6 @@
                                                                                     };
                                                                                     DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
                                                                                     [mndiffContext setBaseMasternodeList:masternodeList122064];
-                                                                                    [mndiffContext setLastBlock:nil];
                                                                                     [mndiffContext setUseInsightAsBackup:NO];
                                                                                     [mndiffContext setChain:chain];
                                                                                     [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
@@ -1059,11 +1054,7 @@
 
     __block NSMutableSet *blockHashes = [NSMutableSet set];
     for (NSString *file in files) {
-        NSBundle *bundle = [NSBundle bundleForClass:[self class]];
-        NSString *filePath = [bundle pathForResource:file ofType:@"dat"];
-        NSData *message = [NSData dataWithContentsOfFile:filePath];
-
-        XCTAssert(message.length, @"File must exist for file %@", file);
+        NSData *message = [DSDeterministicMasternodeListTests messageFromFileWithPath:file];
 
         NSUInteger length = message.length;
         NSUInteger offset = 0;
@@ -2874,10 +2865,7 @@
                                XCTAssertEqualObjects(uint256_data([reloadedMasternodeList1092916 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]), uint256_data([masternodeList1092916 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]), @"");
                                XCTAssertEqualObjects(uint256_data([reloadedMasternodeList1092888 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]), uint256_data([masternodeList1092888 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]), @"");
 
-                               NSBundle *bundle = [NSBundle bundleForClass:[self class]];
-                               NSString *filePath = [bundle pathForResource:@"MNL_1092888_1092912" ofType:@"dat"];
-                               NSData *message = [NSData dataWithContentsOfFile:filePath];
-
+                               NSData *message = [DSDeterministicMasternodeListTests messageFromFileWithPath:@"MNL_1092888_1092912"];
                                NSUInteger length = message.length;
                                NSUInteger offset = 0;
 
@@ -2893,7 +2881,6 @@
 
                                DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
                                [mndiffContext setBaseMasternodeList:reloadedMasternodeList1092888];
-                               [mndiffContext setLastBlock:nil];
                                [mndiffContext setUseInsightAsBackup:NO];
                                [mndiffContext setChain:chain];
                                [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
@@ -2933,9 +2920,7 @@
                                                                                               createUnknownBlocks:YES
                                                                                                         inContext:context
                                                                                                        completion:^(NSError *_Nonnull error) {
-                                                                                                           NSBundle *bundle = [NSBundle bundleForClass:[self class]];
-                                                                                                           NSString *filePath = [bundle pathForResource:@"MNL_1092916_1092940" ofType:@"dat"];
-                                                                                                           NSData *message = [NSData dataWithContentsOfFile:filePath];
+                                                                                                           NSData *message = [DSDeterministicMasternodeListTests messageFromFileWithPath:@"MNL_1092916_1092940"];
 
                                                                                                            NSUInteger length = message.length;
                                                                                                            NSUInteger offset = 0;
@@ -2951,7 +2936,6 @@
                                                                                                            NSLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)", uint256_reverse_hex(baseBlockHash), [chain heightForBlockHash:baseBlockHash], uint256_reverse_hex(blockHash1092940), [chain heightForBlockHash:blockHash1092940]);
                                                                                                            DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
                                                                                                            [mndiffContext setBaseMasternodeList:reloadedMasternodeList1092916];
-                                                                                                           [mndiffContext setLastBlock:nil];
                                                                                                            [mndiffContext setUseInsightAsBackup:NO];
                                                                                                            [mndiffContext setChain:chain];
                                                                                                            [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
@@ -3051,11 +3035,8 @@
 }
 
 - (void)testTestnetQuorumVerification {
-    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
-    NSString *filePath = [bundle pathForResource:@"MNL_0_122928" ofType:@"dat"];
+    NSData *message = [DSDeterministicMasternodeListTests messageFromFileWithPath:@"MNL_0_122928"];
     dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-
-    NSData *message = [NSData dataWithContentsOfFile:filePath];
 
     DSChain *chain = [DSChain testnet];
 
@@ -3074,8 +3055,6 @@
     NSLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)", uint256_reverse_hex(baseBlockHash), [chain heightForBlockHash:baseBlockHash], uint256_reverse_hex(blockHash119064), [chain heightForBlockHash:blockHash119064]);
 
     DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
-    [mndiffContext setBaseMasternodeList:nil];
-    [mndiffContext setLastBlock:nil];
     [mndiffContext setUseInsightAsBackup:NO];
     [mndiffContext setChain:chain];
     [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
@@ -3152,9 +3131,7 @@
                                                    //yay this is the correct masternode list verified deterministically for the given block
 
 
-                                                   NSBundle *bundle = [NSBundle bundleForClass:[self class]];
-                                                   NSString *filePath = [bundle pathForResource:@"MNL_122928_123000" ofType:@"dat"];
-                                                   NSData *message = [NSData dataWithContentsOfFile:filePath];
+                                                   NSData *message = [DSDeterministicMasternodeListTests messageFromFileWithPath:@"MNL_122928_123000"];
 
                                                    NSUInteger length = message.length;
                                                    NSUInteger offset = 0;
@@ -3187,7 +3164,6 @@
                                                    };
                                                    DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
                                                    [mndiffContext setBaseMasternodeList:masternodeList119064];
-                                                   [mndiffContext setLastBlock:nil];
                                                    [mndiffContext setUseInsightAsBackup:NO];
                                                    [mndiffContext setChain:chain];
                                                    [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
@@ -3281,11 +3257,8 @@
 }
 
 - (void)testTestnetSizeQuorumVerification {
-    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
-    NSString *filePath = [bundle pathForResource:@"MNL_0_370368" ofType:@"dat"];
+    NSData *message = [DSDeterministicMasternodeListTests messageFromFileWithPath:@"MNL_0_370368"];
     dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-    NSData *message = [NSData dataWithContentsOfFile:filePath];
-
     DSChain *chain = [DSChain testnet];
 
     NSUInteger length = message.length;
@@ -3335,10 +3308,7 @@
                                                if (foundCoinbase && rootMNListValid && rootQuorumListValid && validQuorums) {
                                                    //yay this is the correct masternode list verified deterministically for the given block
 
-
-                                                   NSBundle *bundle = [NSBundle bundleForClass:[self class]];
-                                                   NSString *filePath = [bundle pathForResource:@"MNL_370368_370944" ofType:@"dat"];
-                                                   NSData *message = [NSData dataWithContentsOfFile:filePath];
+                                                   NSData *message = [DSDeterministicMasternodeListTests messageFromFileWithPath:@"MNL_370368_370944"];
 
                                                    NSUInteger length = message.length;
                                                    NSUInteger offset = 0;
@@ -3416,6 +3386,72 @@
     memset(rev.u8, 0, 32);
     memcpy(rev.u8, quorum_merkle_root, 32);
     XCTAssert(uint256_eq(uint, rev), @"fffff");
+}
+
+- (void)testMemLeaks {
+    NSLog(@"testCallbackMemoryFromRust.start");
+    DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
+    [mndiffContext setBlockHeightLookup:^uint32_t(UInt256 blockHash) {
+        return 1095072;
+    }];
+    NSLog(@"testCallbackMemoryFromRust.context: %@", mndiffContext);
+    [DSMasternodeManager testCallbackWithContext:mndiffContext
+                                      completion:^(DSMasternodeList *masternodeList) {
+                                          NSLog(@"testCallbackMemoryFromRust.finish: %@", masternodeList);
+                                          DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
+                                          [mndiffContext setBaseMasternodeList:masternodeList];
+                                          [mndiffContext setBlockHeightLookup:^uint32_t(UInt256 blockHash) {
+                                              return 109503;
+                                          }];
+                                          [DSMasternodeManager testCallbackWithContext:mndiffContext
+                                                                            completion:^(DSMasternodeList *masternodeList) {
+                                                                                NSLog(@"testCallbackMemoryFromRust2.finish: %@", masternodeList);
+                                                                            }];
+                                      }];
+}
+- (void)testStructMemoryTest {
+    NSLog(@"testStructMemoryTest.start.1");
+    DSTestStructContext *context = nil;
+    [DSMasternodeManager testStructWithContext:context
+                                    completion:^(DSTestStructContext *_Nonnull result) {
+                                        NSLog(@"testStructMemoryTest.finish.1: %p", result);
+                                        DSTestStructContext *newContext = [[DSTestStructContext alloc] init];
+                                        [newContext setHeight:result.height + 1];
+                                        [newContext setTestHash:result.testHash];
+                                        NSMutableArray<NSData *> *newKeys = [NSMutableArray array];
+                                        for (NSData *key in result.keys) {
+                                            [newKeys addObject:key.reverse];
+                                        }
+                                        [newContext setKeys:newKeys];
+                                        NSLog(@"testStructMemoryTest.start.2: %p", newContext);
+                                        [DSMasternodeManager testStructWithContext:newContext
+                                                                        completion:^(DSTestStructContext *_Nonnull result) {
+                                                                            NSLog(@"testStructMemoryTest.finish.2: %p", result);
+                                                                        }];
+                                    }];
+}
+
+- (void)testBB {
+    [self testHex:@"ffffffffffff03" withCount:50];
+    //[self testHex:@"ffffffffffffffffdfffffffffffffffffffffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffff" withCount:400];
+}
+
+- (void)testHex:(NSString *)hex withCount:(uint32_t)count {
+    //    NSData *bitset = [hex hexToData];
+    //    uint32_t offset = count / 8;
+    //    uint8_t lastByte = [bitset UInt8AtOffset:offset];
+    //    uint8_t mask = UINT8_MAX >> (8 - offset) << (8 - offset);
+    //    uint8_t lastByteAndMask = lastByte & mask;
+    //
+    //    NSLog(@"[offset: %d, last_byte: %hhu, mask: %hhu, byte_and_mask: %d]", offset, lastByte, mask, lastByteAndMask);
+    uint8_t lastByte = 0;
+
+    for (uint32_t offset = 0; offset < 50; offset++) {
+        uint8_t mask = UINT8_MAX >> (8 - offset) << (8 - offset);
+        uint8_t lastByteAndMask = lastByte & mask;
+        //println!("[offset: {}, last_byte: {}, mask: {}, byte_and_mask: {}]", offset, last_byte, mask, last_byte_and_mask);
+        NSLog(@"[offset: %d, last_byte: %hhu, mask: %hhu, byte_and_mask: %d]", offset, lastByte, mask, lastByteAndMask);
+    }
 }
 
 @end

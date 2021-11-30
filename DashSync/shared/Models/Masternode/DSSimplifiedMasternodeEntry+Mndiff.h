@@ -15,22 +15,17 @@
 //  limitations under the License.
 //
 
-#import "BigIntTypes.h"
+#import "DSChain.h"
+#import "DSSimplifiedMasternodeEntry.h"
 #import "mndiff.h"
 #import <Foundation/Foundation.h>
-#import "DSMasternodeList.h"
 
-#ifndef rust_utils_h
-#define rust_utils_h
-#include <stdio.h>
+NS_ASSUME_NONNULL_BEGIN
 
-// shorthand for UInt256 <-> c array pointer
-UInt256 UInt256fromCArray(uint8_t (*arr)[32]) {
-    //[NSData dataWithBytes:list->block_hash length:32].UInt256;
-    UInt256 u;
-    memset(u.u8, 0, 32);
-    memcpy(u.u8, arr, 32);
-    return u;
-}
+@interface DSSimplifiedMasternodeEntry (Mndiff)
 
-#endif /* rust_utils_h */
++ (instancetype)simplifiedEntryWith:(MasternodeEntry *)entry onChain:(DSChain *)chain;
+
+@end
+
+NS_ASSUME_NONNULL_END

@@ -59,7 +59,6 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 @property (nonatomic, readonly) BOOL currentMasternodeListIsInLast24Hours;
 
 - (instancetype)init NS_UNAVAILABLE;
-
 - (uint32_t)heightForBlockHash:(UInt256)blockhash;
 
 - (DSSimplifiedMasternodeEntry *)masternodeHavingProviderRegistrationTransactionHash:(NSData *)providerRegistrationTransactionHash;
