@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Vladimir Pirogov
 //  Copyright © 2021 Dash Core Group. All rights reserved.
 //
@@ -18,6 +18,7 @@
 #import "BigIntTypes.h"
 #import "DSMasternodeList.h"
 #import "DSMasternodeManager.h"
+#import "mndiff.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -31,6 +32,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) DSMasternodeList * (^masternodeListLookup)(UInt256 blockHash);
 @property (nonatomic, copy) uint32_t (^blockHeightLookup)(UInt256 blockHash);
 
+@end
+
+@interface DSTestStructContext : NSObject
+
+@property (nonatomic) UInt256 testHash;
+@property (nonatomic) uint32_t height;
+@property (nonatomic) NSArray<NSData *> *keys;
+
+- (instancetype)initWith:(TestStruct *)testStruct;
 @end
 
 NS_ASSUME_NONNULL_END

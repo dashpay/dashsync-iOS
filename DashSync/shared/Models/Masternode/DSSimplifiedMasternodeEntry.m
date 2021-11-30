@@ -159,7 +159,8 @@
         OperatorPublicKey *operator_public_key = previous_operator_public_keys[i];
         UInt256 blockHash = [NSData dataWithBytes:operator_public_key->block_hash length:32].UInt256;
         uint32_t blockHeight = operator_public_key->block_height;
-        DSBlock *block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:chain];
+        DSBlock *block = [self.chain blockForBlockHash:blockHash];
+        if (!block) block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:chain];
         NSData *key = [NSData dataWithBytes:operator_public_key->key length:48];
         [operatorPublicKeys setObject:key forKey:block];
     }
@@ -171,7 +172,8 @@
         MasternodeEntryHash *masternode_entry_hash = previous_masternode_entry_hashes[i];
         UInt256 blockHash = [NSData dataWithBytes:masternode_entry_hash->block_hash length:32].UInt256;
         uint32_t blockHeight = masternode_entry_hash->block_height;
-        DSBlock *block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:chain];
+        DSBlock *block = [self.chain blockForBlockHash:blockHash];
+        if (!block) block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:chain];
         NSData *hash = [NSData dataWithBytes:masternode_entry_hash->hash length:32];
         [masternodeEntryHashes setObject:hash forKey:block];
     }
@@ -183,7 +185,8 @@
         Validity *validity = previous_validity[i];
         UInt256 blockHash = [NSData dataWithBytes:validity->block_hash length:32].UInt256;
         uint32_t blockHeight = validity->block_height;
-        DSBlock *block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:chain];
+        DSBlock *block = [self.chain blockForBlockHash:blockHash];
+        if (!block) block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:chain];
         NSNumber *isValid = [NSNumber numberWithBool:validity->is_valid];
         [validities setObject:isValid forKey:block];
     }

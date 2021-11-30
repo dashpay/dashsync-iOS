@@ -33,19 +33,19 @@ typedef struct TestStruct {
 } TestStruct;
 
 typedef struct MasternodeEntryHash {
-  uint8_t (*block_hash)[32];
+  uint8_t block_hash[32];
   uint32_t block_height;
-  uint8_t (*hash)[32];
+  uint8_t hash[32];
 } MasternodeEntryHash;
 
 typedef struct OperatorPublicKey {
-  uint8_t (*block_hash)[32];
+  uint8_t block_hash[32];
   uint32_t block_height;
-  uint8_t (*key)[48];
+  uint8_t key[48];
 } OperatorPublicKey;
 
 typedef struct Validity {
-  uint8_t (*block_hash)[32];
+  uint8_t block_hash[32];
   uint32_t block_height;
   bool is_valid;
 } Validity;
@@ -81,10 +81,10 @@ typedef struct QuorumEntry {
   uint8_t (*quorum_threshold_signature)[96];
   uint8_t (*quorum_verification_vector_hash)[32];
   bool saved;
-  const uint8_t *signers_bitset;
+  uint8_t *signers_bitset;
   uintptr_t signers_bitset_length;
   uint64_t signers_count;
-  const uint8_t *valid_members_bitset;
+  uint8_t *valid_members_bitset;
   uintptr_t valid_members_bitset_length;
   uint64_t valid_members_count;
   bool verified;

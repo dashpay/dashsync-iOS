@@ -400,8 +400,10 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     free(entry->quorum_public_key);
     free(entry->quorum_threshold_signature);
     free(entry->quorum_verification_vector_hash);
-    free((void *)entry->signers_bitset);
-    free((void *)entry->valid_members_bitset);
+    free(entry->signers_bitset);
+    free(entry->valid_members_bitset);
+//    free((void *)entry->signers_bitset);
+//    free((void *)entry->valid_members_bitset);
     free(entry);
 }
 
@@ -424,44 +426,39 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     masternode_entry->operator_public_key = malloc(sizeof(UInt384));
     memcpy(masternode_entry->operator_public_key, [entry operatorPublicKey].u8, sizeof(UInt384));
     NSUInteger previousOperatorPublicKeysCount = [previousOperatorPublicKeys count];
-    OperatorPublicKey **previous_operator_public_keys = malloc(previousOperatorPublicKeysCount * sizeof(OperatorPublicKey *));
+    OperatorPublicKey **previous_operator_public_keys = malloc(previousOperatorPublicKeysCount * sizeof(OperatorPublicKey));
     int i = 0;
     for (DSBlock *block in previousOperatorPublicKeys) {
         NSData *keyData = previousOperatorPublicKeys[block];
         OperatorPublicKey *operator_public_key = malloc(sizeof(OperatorPublicKey));
-        operator_public_key->block_hash = malloc(sizeof(UInt256));
+        memcpy(operator_public_key->key, keyData.bytes, sizeof(UInt384));
         memcpy(operator_public_key->block_hash, block.blockHash.u8, sizeof(UInt256));
         operator_public_key->block_height = block.height;
-        operator_public_key->key = malloc(sizeof(UInt384));
-        memcpy(operator_public_key->key, keyData.bytes, sizeof(UInt384));
         previous_operator_public_keys[i] = operator_public_key;
         i++;
     }
     masternode_entry->previous_operator_public_keys = previous_operator_public_keys;
     masternode_entry->previous_operator_public_keys_count = previousOperatorPublicKeysCount;
     NSUInteger previousSimplifiedMasternodeEntryHashesCount = [previousSimplifiedMasternodeEntryHashes count];
-    MasternodeEntryHash **previous_masternode_entry_hashes = malloc(previousSimplifiedMasternodeEntryHashesCount * sizeof(MasternodeEntryHash *));
+    MasternodeEntryHash **previous_masternode_entry_hashes = malloc(previousSimplifiedMasternodeEntryHashesCount * sizeof(MasternodeEntryHash));
     i = 0;
     for (DSBlock *block in previousSimplifiedMasternodeEntryHashes) {
         NSData *hash = previousSimplifiedMasternodeEntryHashes[block];
         MasternodeEntryHash *masternode_entry_hash = malloc(sizeof(MasternodeEntryHash));
-        masternode_entry_hash->block_hash = malloc(sizeof(UInt256));
+        memcpy(masternode_entry_hash->hash, hash.bytes, sizeof(UInt256));
         memcpy(masternode_entry_hash->block_hash, block.blockHash.u8, sizeof(UInt256));
         masternode_entry_hash->block_height = block.height;
-        masternode_entry_hash->hash = malloc(sizeof(UInt256));
-        memcpy(masternode_entry_hash->hash, hash.bytes, sizeof(UInt256));
         previous_masternode_entry_hashes[i] = masternode_entry_hash;
         i++;
     }
     masternode_entry->previous_masternode_entry_hashes = previous_masternode_entry_hashes;
     masternode_entry->previous_masternode_entry_hashes_count = previousSimplifiedMasternodeEntryHashesCount;
     NSUInteger previousValidityCount = [previousValidity count];
-    Validity **previous_validity = malloc(previousValidityCount * sizeof(Validity *));
+    Validity **previous_validity = malloc(previousValidityCount * sizeof(Validity));
     i = 0;
     for (DSBlock *block in previousValidity) {
         NSNumber *flag = previousValidity[block];
         Validity *validity = malloc(sizeof(Validity));
-        validity->block_hash = malloc(sizeof(UInt256));
         memcpy(validity->block_hash, block.blockHash.u8, sizeof(UInt256));
         validity->block_height = block.height;
         validity->is_valid = [flag boolValue];
@@ -484,10 +481,7 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     uintptr_t previous_operator_public_keys_count = entry->previous_operator_public_keys_count;
     if (previous_operator_public_keys_count > 0) {
         for (i = 0; i < previous_operator_public_keys_count; i++) {
-            OperatorPublicKey *key = entry->previous_operator_public_keys[i];
-            free(key->key);
-            free(key->block_hash);
-            free(key);
+            free(entry->previous_operator_public_keys[i]);
         }
         i = 0;
     }
@@ -496,10 +490,7 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     uintptr_t previous_masternode_entry_hashes_count = entry->previous_masternode_entry_hashes_count;
     if (previous_masternode_entry_hashes_count > 0) {
         for (i = 0; i < previous_masternode_entry_hashes_count; i++) {
-            MasternodeEntryHash *hash = entry->previous_masternode_entry_hashes[i];
-            free(hash->hash);
-            free(hash->block_hash);
-            free(hash);
+            free(entry->previous_masternode_entry_hashes[i]);
         }
         i = 0;
     }
@@ -508,9 +499,7 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     uintptr_t previous_validity_count = entry->previous_validity_count;
     if (previous_validity_count > 0) {
         for (i = 0; i < previous_validity_count; i++) {
-            Validity *validity = entry->previous_validity[i];
-            free(validity->block_hash);
-            free(validity);
+            free(entry->previous_validity[i]);
         }
     }
     if (entry->previous_validity)
