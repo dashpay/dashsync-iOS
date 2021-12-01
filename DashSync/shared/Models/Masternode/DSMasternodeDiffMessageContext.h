@@ -34,13 +34,4 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface DSTestStructContext : NSObject
-
-@property (nonatomic) UInt256 testHash;
-@property (nonatomic) uint32_t height;
-@property (nonatomic) NSArray<NSData *> *keys;
-
-- (instancetype)initWith:(TestStruct *)testStruct;
-@end
-
 NS_ASSUME_NONNULL_END

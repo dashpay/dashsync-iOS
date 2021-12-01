@@ -21,29 +21,3 @@
 @implementation DSMasternodeDiffMessageContext
 
 @end
-
-@implementation DSTestStructContext
-
-- (instancetype)initWith:(TestStruct *)testStruct {
-    if (!(self = [super init])) return nil;
-    NSLog(@"DSTestStructContext.initWith %p", testStruct);
-    self.height = testStruct->height;
-    NSLog(@"DSTestStructContext height: %u", testStruct->height);
-    NSData *hashData = [NSData dataWithBytes:testStruct->hash length:32];
-    self.testHash = hashData.UInt256;
-    NSLog(@"DSTestStructContext hash: %p: %@", testStruct->hash, hashData.hexString);
-    uintptr_t keys_count = testStruct->keys_count;
-    NSLog(@"DSTestStructContext keys_count: %lu", keys_count);
-    NSMutableArray<NSData *> *hashes = [NSMutableArray array];
-    for (int i = 0; i < keys_count; i++) {
-        uint8_t(*key)[32] = testStruct->keys[i];
-        NSData *hashData = [NSData dataWithBytes:key length:32];
-        NSLog(@"DSTestStructContext key[%i]: %p: %@", i, key, hashData.hexString);
-        [hashes addObject:hashData];
-    }
-    self.keys = hashes;
-    NSLog(@"DSTestStructContext keys: %p", hashes);
-    return self;
-}
-
-@end

@@ -57,7 +57,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *masternodeList, NSDictionary *addedMasternodes, NSDictionary *modifiedMasternodes, NSDictionary *addedQuorums, NSOrderedSet *neededMissingMasternodeLists))completion;
 
 + (void)testCallbackWithContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSMasternodeList *))completion;
-+ (void)testStructWithContext:(DSTestStructContext *)context completion:(void (^)(DSTestStructContext *))completion;
 
 @end
 
