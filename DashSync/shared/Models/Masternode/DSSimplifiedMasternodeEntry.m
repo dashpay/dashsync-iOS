@@ -139,7 +139,7 @@
 
     return self;
 }
-
+/*
 - (instancetype)initWithEntry:(MasternodeEntry *)entry onChain:(DSChain *)chain {
     if (!(self = [super init])) return nil;
     self.confirmedHash = [NSData dataWithBytes:entry->confirmed_hash length:32].UInt256;
@@ -198,6 +198,7 @@
     self.chain = chain;
     return self;
 }
+ */
 
 - (void)keepInfoOfPreviousEntryVersion:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlockHash:(UInt256)blockHash atBlockHeight:(uint32_t)blockHeight {
     DSBlock *block = [self.chain blockForBlockHash:blockHash];

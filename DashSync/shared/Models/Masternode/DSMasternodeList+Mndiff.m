@@ -18,7 +18,7 @@
 #import "BigIntTypes.h"
 #import "DSMasternodeList+Mndiff.h"
 #import "DSQuorumEntry.h"
-#import "DSSimplifiedMasternodeEntry.h"
+#import "DSSimplifiedMasternodeEntry+Mndiff.h"
 #import "NSData+Dash.h"
 
 @implementation DSMasternodeList (Mndiff)
@@ -30,7 +30,7 @@
     NSMutableDictionary<NSData *, DSSimplifiedMasternodeEntry *> *masternodes = [NSMutableDictionary dictionaryWithCapacity:masternodes_count];
     for (NSUInteger i = 0; i < masternodes_count; i++) {
         NSData *hash = [NSData dataWithBytes:masternodes_keys[i] length:32];
-        [masternodes setObject:[[DSSimplifiedMasternodeEntry alloc] initWithEntry:masternodes_values[i] onChain:chain] forKey:hash];
+        [masternodes setObject:[DSSimplifiedMasternodeEntry simplifiedEntryWith:masternodes_values[i] onChain:chain] forKey:hash];
     }
     uint8_t *quorums_keys = list->quorums_keys;
     LLMQMap **quorums_values = list->quorums_values;

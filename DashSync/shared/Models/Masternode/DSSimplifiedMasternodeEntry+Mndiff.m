@@ -40,19 +40,23 @@
         OperatorPublicKey *operator_public_key = previous_operator_public_keys[i];
         UInt256 blockHash = [NSData dataWithBytes:operator_public_key->block_hash length:32].UInt256;
         uint32_t blockHeight = operator_public_key->block_height;
-        DSBlock *block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:chain];
+        DSBlock *block = [chain blockForBlockHash:blockHash];
+        if (!block) block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:chain];
         NSData *key = [NSData dataWithBytes:operator_public_key->key length:48];
         [operatorPublicKeys setObject:key forKey:block];
     }
     uintptr_t previous_masternode_entry_hashes_count = entry->previous_masternode_entry_hashes_count;
     MasternodeEntryHash **previous_masternode_entry_hashes = entry->previous_masternode_entry_hashes;
     NSMutableDictionary<DSBlock *, NSData *> *masternodeEntryHashes = [NSMutableDictionary dictionaryWithCapacity:previous_masternode_entry_hashes_count];
+    BOOL needLog = previous_masternode_entry_hashes_count > 1;
     for (NSUInteger i = 0; i < previous_masternode_entry_hashes_count; i++) {
         MasternodeEntryHash *masternode_entry_hash = previous_masternode_entry_hashes[i];
         UInt256 blockHash = [NSData dataWithBytes:masternode_entry_hash->block_hash length:32].UInt256;
         uint32_t blockHeight = masternode_entry_hash->block_height;
-        DSBlock *block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:chain];
+        DSBlock *block = [chain blockForBlockHash:blockHash];
+        if (!block) block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:chain];
         NSData *hash = [NSData dataWithBytes:masternode_entry_hash->hash length:32];
+        if (needLog) NSLog(@"initWithEntry.previous_masternode_entry_hashes[%lu]:%p\n%u:%@", i, masternode_entry_hash, blockHeight, hash.hexString);
         [masternodeEntryHashes setObject:hash forKey:block];
     }
     uintptr_t previous_validity_count = entry->previous_validity_count;
@@ -62,7 +66,8 @@
         Validity *validity = previous_validity[i];
         UInt256 blockHash = [NSData dataWithBytes:validity->block_hash length:32].UInt256;
         uint32_t blockHeight = validity->block_height;
-        DSBlock *block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:chain];
+        DSBlock *block = [chain blockForBlockHash:blockHash];
+        if (!block) block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:chain];
         NSNumber *isValid = [NSNumber numberWithBool:validity->is_valid];
         [validities setObject:isValid forKey:block];
     }

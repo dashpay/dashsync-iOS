@@ -40,7 +40,7 @@
 @property (nonatomic, readonly) uint64_t platformPing;
 @property (nonatomic, readonly) NSDate *platformPingDate;
 
-- (instancetype)initWithEntry:(MasternodeEntry *)entry onChain:(DSChain *)chain;
+//- (instancetype)initWithEntry:(MasternodeEntry *)entry onChain:(DSChain *)chain;
 
 + (instancetype)simplifiedMasternodeEntryWithData:(NSData *)data atBlockHeight:(uint32_t)blockHeight onChain:(DSChain *)chain;
 

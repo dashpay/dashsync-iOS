@@ -68,7 +68,7 @@ inline static int ceil_log2(int x) {
 
 @implementation DSMasternodeList
 
-- (instancetype)initWithList:(MasternodeList *)list onChain:(DSChain *)chain {
+/*- (instancetype)initWithList:(MasternodeList *)list onChain:(DSChain *)chain {
     if (!(self = [super init])) return nil;
     uint8_t(**masternodes_keys)[32] = list->masternodes_keys;
     MasternodeEntry **masternodes_values = list->masternodes_values;
@@ -107,7 +107,7 @@ inline static int ceil_log2(int x) {
     self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash = masternodes;
     self.chain = chain;
     return self;
-}
+}*/
 
 + (instancetype)masternodeListWithSimplifiedMasternodeEntries:(NSArray<DSSimplifiedMasternodeEntry *> *)simplifiedMasternodeEntries quorumEntries:(NSArray<DSQuorumEntry *> *)quorumEntries atBlockHash:(UInt256)blockHash atBlockHeight:(uint32_t)blockHeight withMasternodeMerkleRootHash:(UInt256)masternodeMerkleRootHash withQuorumMerkleRootHash:(UInt256)quorumMerkleRootHash onChain:(DSChain *)chain {
     NSMutableDictionary *masternodeDictionary = [NSMutableDictionary dictionary];

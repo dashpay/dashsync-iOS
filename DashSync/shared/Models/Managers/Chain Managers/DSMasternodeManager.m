@@ -37,6 +37,7 @@
 #import "DSLocalMasternodeEntity+CoreDataClass.h"
 #import "DSMasternodeDiffMessageContext.h"
 #import "DSMasternodeList.h"
+#import "DSMasternodeList+Mndiff.h"
 #import "DSMasternodeListEntity+CoreDataClass.h"
 #import "DSMerkleBlock.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
@@ -50,6 +51,7 @@
 #import "DSQuorumEntry.h"
 #import "DSQuorumEntryEntity+CoreDataClass.h"
 #import "DSSimplifiedMasternodeEntry.h"
+#import "DSSimplifiedMasternodeEntry+Mndiff.h"
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataClass.h"
 #import "DSTransactionFactory.h"
 #import "DSTransactionManager+Protected.h"
@@ -170,7 +172,7 @@
     MasternodeList *list = [DSMasternodeManager wrapMasternodeList:baseMasternodeList];
     MasternodeList *result = mndiff_test_memory_leaks(list);
     [DSMasternodeManager freeMasternodeList:list];
-    DSMasternodeList *masternodeList = [[DSMasternodeList alloc] initWithList:result onChain:context.chain];
+    DSMasternodeList *masternodeList = [DSMasternodeList masternodeListWith:result onChain:context.chain];
     mndiff_test_memory_leaks_destroy(result);
     completion(masternodeList);
 }
@@ -179,15 +181,35 @@ const MasternodeList *masternodeListLookupCallback(uint8_t (*block_hash)[32], co
     DSMasternodeDiffMessageContext *mndiffContext = (__bridge DSMasternodeDiffMessageContext *)context;
     NSData *data = [NSData dataWithBytes:block_hash length:32];
     DSMasternodeList *list = mndiffContext.masternodeListLookup(data.UInt256);
+    NSLog(@"masternodeListLookupCallback.1: %@", list.description);
     MasternodeList *c_list = [DSMasternodeManager wrapMasternodeList:list];
+    NSLog(@"masternodeListLookupCallback.2: -> %p", c_list);
+    LogEntryHashes(c_list);
     mndiff_block_hash_destroy(block_hash);
-    //NSLog(@"masternodeListLookupCallback: %p", c_list);
     return c_list;
+}
+void LogEntryHashes(MasternodeList *list) {
+    if (!list) return;
+    MasternodeEntry **masternodes_values = list->masternodes_values;
+    uintptr_t masternodes_count = list->masternodes_count;
+    for (NSUInteger i = 0; i < masternodes_count; i++) {
+        MasternodeEntry *entry = masternodes_values[i];
+        MasternodeEntryHash **previous_masternode_entry_hashes = entry->previous_masternode_entry_hashes;
+        uintptr_t previous_masternode_entry_hashes_count = entry->previous_masternode_entry_hashes_count;
+        BOOL needLog = previous_masternode_entry_hashes_count > 1;
+        for (NSUInteger i = 0; i < previous_masternode_entry_hashes_count; i++) {
+            MasternodeEntryHash *masternode_entry_hash = previous_masternode_entry_hashes[i];
+            uint32_t blockHeight = masternode_entry_hash->block_height;
+            NSData *hash = [NSData dataWithBytes:masternode_entry_hash->hash length:32];
+            if (needLog) NSLog(@"logEntryHashes.previous_masternode_entry_hashes[%lu]:%p\n%u:%@", i, masternode_entry_hash, blockHeight, hash.hexString);
+        }
+    }
 }
 
 void masternodeListDestroyCallback(const MasternodeList *masternode_list) {
-    //NSLog(@"masternodeListDestroyCallback: %p", masternode_list);
-    [DSMasternodeManager freeMasternodeList:masternode_list];
+    NSLog(@"masternodeListDestroyCallback: -> %p", masternode_list);
+    LogEntryHashes((MasternodeList *)masternode_list);
+    [DSMasternodeManager freeMasternodeList:(MasternodeList *)masternode_list];
 }
 
 uint32_t blockHeightListLookupCallback(uint8_t (*block_hash)[32], const void *context) {
@@ -235,7 +257,7 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     UInt256 commitmentHash = [NSData dataWithBytes:data->commitment_hash length:32].UInt256;
     UInt768 allCommitmentAggregatedSignature = [NSData dataWithBytes:data->all_commitment_aggregated_signature length:96].UInt768;
     bool allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:commitmentHash signature:allCommitmentAggregatedSignature withPublicKeys:publicKeyArray];
-    NSLog(@"validateQuorumCallback verifySecureAggregated = %i, with: commitmentHash: %@, allCommitmentAggregatedSignature: %@, publicKeys: %lu", allCommitmentAggregatedSignatureValidated, uint256_hex(commitmentHash), uint768_hex(allCommitmentAggregatedSignature), [publicKeyArray count]);
+    //NSLog(@"validateQuorumCallback verifySecureAggregated = %i, with: commitmentHash: %@, allCommitmentAggregatedSignature: %@, publicKeys: %lu", allCommitmentAggregatedSignatureValidated, uint256_hex(commitmentHash), uint768_hex(allCommitmentAggregatedSignature), [publicKeyArray count]);
     if (!allCommitmentAggregatedSignatureValidated) {
         mndiff_quorum_validation_data_destroy(data);
         return false;
@@ -244,7 +266,7 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     UInt768 quorumThresholdSignature = [NSData dataWithBytes:data->quorum_threshold_signature length:96].UInt768;
     UInt384 quorumPublicKey = [NSData dataWithBytes:data->quorum_public_key length:48].UInt384;
     bool quorumSignatureValidated = [DSBLSKey verify:commitmentHash signature:quorumThresholdSignature withPublicKey:quorumPublicKey];
-    NSLog(@"validateQuorumCallback verify = %i, with: commitmentHash: %@, quorumThresholdSignature: %@, quorumPublicKey: %@", quorumSignatureValidated, uint256_hex(commitmentHash), uint768_hex(quorumThresholdSignature), uint384_hex(quorumPublicKey));
+    //NSLog(@"validateQuorumCallback verify = %i, with: commitmentHash: %@, quorumThresholdSignature: %@, quorumPublicKey: %@", quorumSignatureValidated, uint256_hex(commitmentHash), uint768_hex(quorumThresholdSignature), uint384_hex(quorumPublicKey));
     mndiff_quorum_validation_data_destroy(data);
     if (!quorumSignatureValidated) {
         DSLog(@"Issue with quorumSignatureValidated");
@@ -402,8 +424,6 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     free(entry->quorum_verification_vector_hash);
     free(entry->signers_bitset);
     free(entry->valid_members_bitset);
-//    free((void *)entry->signers_bitset);
-//    free((void *)entry->valid_members_bitset);
     free(entry);
 }
 
@@ -442,6 +462,7 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     NSUInteger previousSimplifiedMasternodeEntryHashesCount = [previousSimplifiedMasternodeEntryHashes count];
     MasternodeEntryHash **previous_masternode_entry_hashes = malloc(previousSimplifiedMasternodeEntryHashesCount * sizeof(MasternodeEntryHash));
     i = 0;
+    BOOL shouldLog = previousSimplifiedMasternodeEntryHashes.count > 1;
     for (DSBlock *block in previousSimplifiedMasternodeEntryHashes) {
         NSData *hash = previousSimplifiedMasternodeEntryHashes[block];
         MasternodeEntryHash *masternode_entry_hash = malloc(sizeof(MasternodeEntryHash));
@@ -449,6 +470,7 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
         memcpy(masternode_entry_hash->block_hash, block.blockHash.u8, sizeof(UInt256));
         masternode_entry_hash->block_height = block.height;
         previous_masternode_entry_hashes[i] = masternode_entry_hash;
+        if (shouldLog) NSLog(@"wrap.previous_masternode_entry_hashes[%d]:%p\n%u:%@", i, masternode_entry_hash, masternode_entry_hash->block_height, hash.hexString);
         i++;
     }
     masternode_entry->previous_masternode_entry_hashes = previous_masternode_entry_hashes;
@@ -489,7 +511,13 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
         free(entry->previous_operator_public_keys);
     uintptr_t previous_masternode_entry_hashes_count = entry->previous_masternode_entry_hashes_count;
     if (previous_masternode_entry_hashes_count > 0) {
+        BOOL shouldLog = previous_masternode_entry_hashes_count > 1;
         for (i = 0; i < previous_masternode_entry_hashes_count; i++) {
+            if (shouldLog) {
+                NSLog(@"free.previous_masternode_entry_hashes[%d]:%p\n%u:%@", i, entry->previous_masternode_entry_hashes[i], entry->previous_masternode_entry_hashes[i]->block_height,
+                      [NSData dataWithBytes:entry->previous_masternode_entry_hashes[i]->hash length:32].hexString);
+                
+            }
             free(entry->previous_masternode_entry_hashes[i]);
         }
         i = 0;
@@ -996,24 +1024,24 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
             //there is the rare possibility we have the masternode list as a checkpoint, so lets first try that
             [self processRequestFromFileForBlockHash:blockHash
                                           completion:^(BOOL success, DSMasternodeList *masternodeList) {
-                                              if (!success) {
-                                                  //we need to go get it
-                                                  UInt256 previousMasternodeAlreadyKnownBlockHash = [self closestKnownBlockHashForBlockHash:blockHash];
-                                                  UInt256 previousMasternodeInQueueBlockHash = (pos ? [masternodeListsToRetrieve objectAtIndex:pos - 1].UInt256 : UINT256_ZERO);
-                                                  uint32_t previousMasternodeAlreadyKnownHeight = [self heightForBlockHash:previousMasternodeAlreadyKnownBlockHash];
-                                                  uint32_t previousMasternodeInQueueHeight = (pos ? [self heightForBlockHash:previousMasternodeInQueueBlockHash] : UINT32_MAX);
-                                                  UInt256 previousBlockHash = pos ? (previousMasternodeAlreadyKnownHeight > previousMasternodeInQueueHeight ? previousMasternodeAlreadyKnownBlockHash : previousMasternodeInQueueBlockHash) : previousMasternodeAlreadyKnownBlockHash;
+                if (!success) {
+                    //we need to go get it
+                    UInt256 previousMasternodeAlreadyKnownBlockHash = [self closestKnownBlockHashForBlockHash:blockHash];
+                    UInt256 previousMasternodeInQueueBlockHash = (pos ? [masternodeListsToRetrieve objectAtIndex:pos - 1].UInt256 : UINT256_ZERO);
+                    uint32_t previousMasternodeAlreadyKnownHeight = [self heightForBlockHash:previousMasternodeAlreadyKnownBlockHash];
+                    uint32_t previousMasternodeInQueueHeight = (pos ? [self heightForBlockHash:previousMasternodeInQueueBlockHash] : UINT32_MAX);
+                    UInt256 previousBlockHash = pos ? (previousMasternodeAlreadyKnownHeight > previousMasternodeInQueueHeight ? previousMasternodeAlreadyKnownBlockHash : previousMasternodeInQueueBlockHash) : previousMasternodeAlreadyKnownBlockHash;
 
-                                                  DSLog(@"Requesting masternode list and quorums from %u to %u (%@ to %@)", [self heightForBlockHash:previousBlockHash], [self heightForBlockHash:blockHash], uint256_reverse_hex(previousBlockHash), uint256_reverse_hex(blockHash));
-                                                  NSAssert(([self heightForBlockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
-                                                  [self.peerManager.downloadPeer sendGetMasternodeListFromPreviousBlockHash:previousBlockHash forBlockHash:blockHash];
-                                                  UInt512 concat = uint512_concat(previousBlockHash, blockHash);
-                                                  [self.masternodeListsInRetrieval addObject:uint512_data(concat)];
-                                              } else {
-                                                  //we already had it
-                                                  [self.masternodeListRetrievalQueue removeObject:uint256_data(blockHash)];
-                                              }
-                                          }];
+                    DSLog(@"Requesting masternode list and quorums from %u to %u (%@ to %@)", [self heightForBlockHash:previousBlockHash], [self heightForBlockHash:blockHash], uint256_reverse_hex(previousBlockHash), uint256_reverse_hex(blockHash));
+                    NSAssert(([self heightForBlockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
+                    [self.peerManager.downloadPeer sendGetMasternodeListFromPreviousBlockHash:previousBlockHash forBlockHash:blockHash];
+                    UInt512 concat = uint512_concat(previousBlockHash, blockHash);
+                    [self.masternodeListsInRetrieval addObject:uint512_data(concat)];
+                } else {
+                    //we already had it
+                    [self.masternodeListRetrievalQueue removeObject:uint256_data(blockHash)];
+                }
+            }];
         } else {
             DSLog(@"Missing block (%@)", uint256_reverse_hex(blockHash));
             [self.masternodeListRetrievalQueue removeObject:uint256_data(blockHash)];
@@ -1193,7 +1221,7 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     BOOL rootQuorumListValid = result->root_quorum_list_valid;
     BOOL validQuorums = result->valid_quorums;
     MasternodeList *result_masternode_list = result->masternode_list;
-    DSMasternodeList *masternodeList = [[DSMasternodeList alloc] initWithList:result_masternode_list onChain:chain];
+    DSMasternodeList *masternodeList = [DSMasternodeList masternodeListWith:result_masternode_list onChain:chain];
     uint8_t(**added_masternodes_keys)[32] = result->added_masternodes_keys;
     MasternodeEntry **added_masternodes_values = result->added_masternodes_values;
     uintptr_t added_masternodes_count = result->added_masternodes_count;
@@ -1201,7 +1229,7 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     for (NSUInteger i = 0; i < added_masternodes_count; i++) {
         NSData *hash = [NSData dataWithBytes:added_masternodes_keys[i] length:32];
         MasternodeEntry *entry = added_masternodes_values[i];
-        DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [[DSSimplifiedMasternodeEntry alloc] initWithEntry:entry onChain:chain];
+        DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedEntryWith:entry onChain:chain];
         [addedMasternodes setObject:simplifiedMasternodeEntry forKey:hash];
     }
     uint8_t(**modified_masternodes_keys)[32] = result->modified_masternodes_keys;
@@ -1211,7 +1239,7 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     for (NSUInteger i = 0; i < modified_masternodes_count; i++) {
         NSData *hash = [NSData dataWithBytes:modified_masternodes_keys[i] length:32];
         MasternodeEntry *entry = modified_masternodes_values[i];
-        DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [[DSSimplifiedMasternodeEntry alloc] initWithEntry:entry onChain:chain];
+        DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedEntryWith:entry onChain:chain];
         [modifiedMasternodes setObject:simplifiedMasternodeEntry forKey:hash];
     }
     uint8_t(*added_quorums_keys) = result->added_quorums_keys;
@@ -1394,7 +1422,7 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     }
     NSMutableDictionary *modifiedMasternodes = [NSMutableDictionary dictionary];
     for (NSData *data in modifiedMasternodeKeys) {
-        DSSimplifiedMasternodeEntry *entry = addedOrModifiedMasternodes[data];
+//        DSSimplifiedMasternodeEntry *entry = addedOrModifiedMasternodes[data];
         //        NSLog(@"modify mnode %@:%@", data.hexString, uint256_hex(entry.simplifiedMasternodeEntryHash));
         [modifiedMasternodes setObject:addedOrModifiedMasternodes[data] forKey:data];
     }
@@ -1467,7 +1495,7 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
 
                 if (quorumMasternodeList) {
                     validQuorums &= [potentialQuorumEntry validateWithMasternodeList:quorumMasternodeList blockHeightLookup:context.blockHeightLookup];
-                    NSLog(@"process_quorum: %@, sig: {}, payload: {}, valid: %i", potentialQuorumEntry.description, validQuorums);
+                    //NSLog(@"process_quorum: %@, sig: {}, payload: {}, valid: %i", potentialQuorumEntry.description, validQuorums);
 
                     if (!validQuorums) {
                         DSLog(@"Invalid Quorum Found For Quorum at height %d", quorumMasternodeList.height);
