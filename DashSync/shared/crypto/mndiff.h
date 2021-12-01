@@ -25,13 +25,6 @@ typedef uint8_t LLMQType;
  */
 typedef struct All All;
 
-typedef struct TestStruct {
-  uint8_t (*hash)[32];
-  uint32_t height;
-  uint8_t (**keys)[32];
-  uintptr_t keys_count;
-} TestStruct;
-
 typedef struct MasternodeEntryHash {
   uint8_t block_hash[32];
   uint32_t block_height;
@@ -660,14 +653,6 @@ typedef uint32_t (*BlockHeightLookup)(uint8_t (*block_hash)[32], const void *con
 
 
 
-
-struct TestStruct *mndiff_test_struct_create(const struct TestStruct *data);
-
-void mndiff_test_struct_destroy(struct TestStruct *data);
-
-struct MasternodeList *mndiff_test_memory_leaks(const struct MasternodeList *base_masternode_list);
-
-void mndiff_test_memory_leaks_destroy(struct MasternodeList *masternode_list);
 
 struct MndiffResult *mndiff_process(const uint8_t *message_arr,
                                     uintptr_t message_length,
