@@ -24,6 +24,7 @@
 #else
 #define DSDSMNELog(s, ...)
 #endif
+#define Log(__string, ...) fprintf(stderr, "\n%s", [([NSString stringWithFormat:__string, ##__VA_ARGS__]) UTF8String])
 
 @interface DSSimplifiedMasternodeEntry ()
 
@@ -168,6 +169,7 @@
     uintptr_t previous_masternode_entry_hashes_count = entry->previous_masternode_entry_hashes_count;
     MasternodeEntryHash **previous_masternode_entry_hashes = entry->previous_masternode_entry_hashes;
     NSMutableDictionary<DSBlock *, NSData *> *masternodeEntryHashes = [NSMutableDictionary dictionaryWithCapacity:previous_masternode_entry_hashes_count];
+    BOOL needLog = previous_masternode_entry_hashes_count > 1;
     for (NSUInteger i = 0; i < previous_masternode_entry_hashes_count; i++) {
         MasternodeEntryHash *masternode_entry_hash = previous_masternode_entry_hashes[i];
         UInt256 blockHash = [NSData dataWithBytes:masternode_entry_hash->block_hash length:32].UInt256;
@@ -175,6 +177,7 @@
         DSBlock *block = [self.chain blockForBlockHash:blockHash];
         if (!block) block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:chain];
         NSData *hash = [NSData dataWithBytes:masternode_entry_hash->hash length:32];
+        if (needLog) Log(@"initWithEntry.previous_masternode_entry_hashes[%lu]:%p\n%u:%@", i, masternode_entry_hash, blockHeight, hash.hexString);
         [masternodeEntryHashes setObject:hash forKey:block];
     }
     self.mPreviousSimplifiedMasternodeEntryHashes = masternodeEntryHashes;
@@ -362,6 +365,14 @@
     NSDictionary<DSBlock *, NSData *> *previousSimplifiedMasternodeEntryHashes = self.previousSimplifiedMasternodeEntryHashes;
     uint32_t minDistance = UINT32_MAX;
     UInt256 usedSimplifiedMasternodeEntryHash = self.simplifiedMasternodeEntryHash;
+    if (previousSimplifiedMasternodeEntryHashes.count > 1) {
+        Log(@"masternode_entry_hash_at (%lu) [", previousSimplifiedMasternodeEntryHashes.count);
+        for (DSBlock *block in previousSimplifiedMasternodeEntryHashes) {
+            NSData *hash = previousSimplifiedMasternodeEntryHashes[block];
+            Log(@"%u:%@", block.height, hash.hexString);
+        }
+        Log(@"]");
+    }
     for (DSBlock *previousBlock in previousSimplifiedMasternodeEntryHashes) {
         if (previousBlock.height <= blockHeight) continue;
         uint32_t distance = previousBlock.height - blockHeight;

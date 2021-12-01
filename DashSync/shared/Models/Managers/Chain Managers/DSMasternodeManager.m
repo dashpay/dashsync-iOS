@@ -190,10 +190,10 @@ const MasternodeList *masternodeListLookupCallback(uint8_t (*block_hash)[32], co
 }
 void LogEntryHashes(MasternodeList *list) {
     if (!list) return;
-    MasternodeEntry **masternodes_values = list->masternodes_values;
+    MasternodeEntry **masternodes = list->masternodes;
     uintptr_t masternodes_count = list->masternodes_count;
     for (NSUInteger i = 0; i < masternodes_count; i++) {
-        MasternodeEntry *entry = masternodes_values[i];
+        MasternodeEntry *entry = masternodes[i];
         MasternodeEntryHash **previous_masternode_entry_hashes = entry->previous_masternode_entry_hashes;
         uintptr_t previous_masternode_entry_hashes_count = entry->previous_masternode_entry_hashes_count;
         BOOL needLog = previous_masternode_entry_hashes_count > 1;
@@ -280,53 +280,34 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     if (!list) return NULL;
     NSDictionary<NSNumber *, NSDictionary<NSData *, DSQuorumEntry *> *> *quorums = [list quorums];
     NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *masternodes = [list simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash];
-    uintptr_t quorums_count = quorums.count;
+    uintptr_t quorum_type_maps_count = quorums.count;
     uintptr_t masternodes_count = masternodes.count;
     MasternodeList *masternode_list = malloc(sizeof(MasternodeList));
-    uint8_t *quorums_keys = malloc(quorums_count * sizeof(uint8_t));
-    LLMQMap **quorums_values = malloc(quorums_count * sizeof(LLMQMap *));
+    LLMQMap **quorum_type_maps = malloc(quorum_type_maps_count * sizeof(LLMQMap *));
     int i = 0;
     int j = 0;
     for (NSNumber *type in quorums) {
         NSDictionary<NSData *, DSQuorumEntry *> *quorumsMaps = quorums[type];
         uintptr_t quorum_maps_count = quorumsMaps.count;
         LLMQMap *quorums_map = malloc(sizeof(LLMQMap));
-        uint8_t(**quorum_of_type_keys)[32] = malloc(quorum_maps_count * sizeof(UInt256 *));
-        QuorumEntry **quorum_of_type_values = malloc(quorum_maps_count * sizeof(QuorumEntry *));
+        QuorumEntry **quorums_of_type = malloc(quorum_maps_count * sizeof(QuorumEntry *));
         j = 0;
         for (NSData *hash in quorumsMaps) {
-            QuorumEntry *quorum_entry = [DSMasternodeManager wrapQuorumEntry:quorumsMaps[hash]];
-            uint8_t(*key)[32] = malloc(sizeof(UInt256));
-            key = malloc(sizeof(UInt256));
-            memcpy(key, hash.bytes, hash.length);
-            quorum_of_type_keys[j] = key;
-            quorum_of_type_values[j] = quorum_entry;
-            j++;
+            quorums_of_type[j++] = [DSMasternodeManager wrapQuorumEntry:quorumsMaps[hash]];
         }
+        quorums_map->llmq_type = (uint8_t)[type unsignedIntegerValue];
         quorums_map->count = quorum_maps_count;
-        quorums_map->keys = quorum_of_type_keys;
-        quorums_map->values = quorum_of_type_values;
-        uint8_t quorum_type = (uint8_t)[type unsignedIntegerValue];
-        quorums_keys[i] = quorum_type;
-        quorums_values[i] = quorums_map;
-        i++;
+        quorums_map->values = quorums_of_type;
+        quorum_type_maps[i++] = quorums_map;
     }
-    masternode_list->quorums_keys = quorums_keys;
-    masternode_list->quorums_values = quorums_values;
-    masternode_list->quorums_count = quorums_count;
-    uint8_t(**masternodes_keys)[32] = malloc(masternodes_count * sizeof(UInt256 *));
+    masternode_list->quorum_type_maps = quorum_type_maps;
+    masternode_list->quorum_type_maps_count = quorum_type_maps_count;
     MasternodeEntry **masternodes_values = malloc(masternodes_count * sizeof(MasternodeEntry *));
     i = 0;
     for (NSData *hash in masternodes) {
-        MasternodeEntry *masternode_entry = [DSMasternodeManager wrapMasternodeEntry:masternodes[hash]];
-        uint8_t(*key)[32] = malloc(sizeof(UInt256));
-        memcpy(key, hash.bytes, hash.length);
-        masternodes_keys[i] = key;
-        masternodes_values[i] = masternode_entry;
-        i++;
+        masternodes_values[i++] = [DSMasternodeManager wrapMasternodeEntry:masternodes[hash]];
     }
-    masternode_list->masternodes_keys = masternodes_keys;
-    masternode_list->masternodes_values = masternodes_values;
+    masternode_list->masternodes = masternodes_values;
     masternode_list->masternodes_count = masternodes_count;
     masternode_list->block_hash = malloc(sizeof(UInt256));
     memcpy(masternode_list->block_hash, [list blockHash].u8, sizeof(UInt256));
@@ -343,32 +324,24 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     free(list->block_hash);
     if (list->masternodes_count > 0) {
         for (int i = 0; i < list->masternodes_count; i++) {
-            free(list->masternodes_keys[i]);
-            [DSMasternodeManager freeMasternodeEntry:list->masternodes_values[i]];
+            [DSMasternodeManager freeMasternodeEntry:list->masternodes[i]];
         }
     }
-    if (list->masternodes_keys)
-        free(list->masternodes_keys);
-    if (list->masternodes_values)
-        free(list->masternodes_values);
-    if (list->quorums_count > 0) {
-        for (int i = 0; i < list->quorums_count; i++) {
-            LLMQMap *map = list->quorums_values[i];
+    if (list->masternodes)
+        free(list->masternodes);
+    if (list->quorum_type_maps_count > 0) {
+        for (int i = 0; i < list->quorum_type_maps_count; i++) {
+            LLMQMap *map = list->quorum_type_maps[i];
             for (int j = 0; j < map->count; j++) {
-                free(map->keys[j]);
                 [DSMasternodeManager freeQuorumEntry:map->values[j]];
             }
-            if (map->keys)
-                free(map->keys);
             if (map->values)
                 free(map->values);
             free(map);
         }
     }
-    if (list->quorums_keys)
-        free(list->quorums_keys);
-    if (list->quorums_values)
-        free(list->quorums_values);
+    if (list->quorum_type_maps)
+        free(list->quorum_type_maps);
     if (list->masternode_merkle_root)
         free(list->masternode_merkle_root);
     if (list->quorum_merkle_root)
@@ -1222,38 +1195,19 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     BOOL validQuorums = result->valid_quorums;
     MasternodeList *result_masternode_list = result->masternode_list;
     DSMasternodeList *masternodeList = [DSMasternodeList masternodeListWith:result_masternode_list onChain:chain];
-    uint8_t(**added_masternodes_keys)[32] = result->added_masternodes_keys;
-    MasternodeEntry **added_masternodes_values = result->added_masternodes_values;
-    uintptr_t added_masternodes_count = result->added_masternodes_count;
-    NSMutableDictionary *addedMasternodes = [[NSMutableDictionary alloc] initWithCapacity:added_masternodes_count];
-    for (NSUInteger i = 0; i < added_masternodes_count; i++) {
-        NSData *hash = [NSData dataWithBytes:added_masternodes_keys[i] length:32];
-        MasternodeEntry *entry = added_masternodes_values[i];
-        DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedEntryWith:entry onChain:chain];
-        [addedMasternodes setObject:simplifiedMasternodeEntry forKey:hash];
-    }
-    uint8_t(**modified_masternodes_keys)[32] = result->modified_masternodes_keys;
-    MasternodeEntry **modified_masternodes_values = result->modified_masternodes_values;
-    uintptr_t modified_masternodes_count = result->modified_masternodes_count;
-    NSMutableDictionary *modifiedMasternodes = [[NSMutableDictionary alloc] initWithCapacity:modified_masternodes_count];
-    for (NSUInteger i = 0; i < modified_masternodes_count; i++) {
-        NSData *hash = [NSData dataWithBytes:modified_masternodes_keys[i] length:32];
-        MasternodeEntry *entry = modified_masternodes_values[i];
-        DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedEntryWith:entry onChain:chain];
-        [modifiedMasternodes setObject:simplifiedMasternodeEntry forKey:hash];
-    }
-    uint8_t(*added_quorums_keys) = result->added_quorums_keys;
-    LLMQMap **added_quorums_values = result->added_quorums_values;
-    uintptr_t added_quorums_count = result->added_quorums_count;
+    NSMutableDictionary *addedMasternodes = [DSSimplifiedMasternodeEntry simplifiedEntriesWith:result->added_masternodes count:result->added_masternodes_count onChain:chain];
+    NSMutableDictionary *modifiedMasternodes = [DSSimplifiedMasternodeEntry simplifiedEntriesWith:result->modified_masternodes count:result->modified_masternodes_count onChain:chain];
+
+    LLMQMap **added_quorums_values = result->added_quorum_type_maps;
+    uintptr_t added_quorums_count = result->added_quorum_type_maps_count;
     NSMutableDictionary *addedQuorums = [[NSMutableDictionary alloc] initWithCapacity:added_quorums_count];
     for (NSUInteger i = 0; i < added_quorums_count; i++) {
-        uint8_t quorum_type = added_quorums_keys[i];
         LLMQMap *llmq_map = added_quorums_values[i];
+        uint8_t quorum_type = llmq_map->llmq_type;
         NSMutableDictionary *quorumsOfType = [[NSMutableDictionary alloc] initWithCapacity:llmq_map->count];
         for (NSUInteger j = 0; j < llmq_map->count; j++) {
-            uint8_t(*h)[32] = llmq_map->keys[j];
-            NSData *hash = [NSData dataWithBytes:h length:32];
             QuorumEntry *quorum_entry = llmq_map->values[j];
+            NSData *hash = [NSData dataWithBytes:quorum_entry->quorum_hash length:32];
             DSQuorumEntry *entry = [[DSQuorumEntry alloc] initWithEntry:quorum_entry onChain:chain];
             [quorumsOfType setObject:entry forKey:hash];
         }

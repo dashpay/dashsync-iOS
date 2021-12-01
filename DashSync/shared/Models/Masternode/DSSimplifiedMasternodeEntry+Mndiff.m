@@ -90,6 +90,14 @@
                                           previousSimplifiedMasternodeEntryHashes:masternodeEntryHashes
                                                                           onChain:chain];
 }
-
-
++ (NSMutableDictionary<NSData *, DSSimplifiedMasternodeEntry *> *)simplifiedEntriesWith:(MasternodeEntry *_Nullable*_Nonnull)entries count:(uintptr_t)count onChain:(DSChain *)chain {
+    NSMutableDictionary<NSData *, DSSimplifiedMasternodeEntry *> *masternodes = [NSMutableDictionary dictionaryWithCapacity:count];
+    for (NSUInteger i = 0; i < count; i++) {
+        MasternodeEntry *c_entry = entries[i];
+        NSData *hash = [NSData dataWithBytes:c_entry->provider_registration_transaction_hash length:32].reverse;
+        DSSimplifiedMasternodeEntry *entry = [DSSimplifiedMasternodeEntry simplifiedEntryWith:c_entry onChain:chain];
+        [masternodes setObject:entry forKey:hash];
+    }
+    return masternodes;
+}
 @end

@@ -24,26 +24,19 @@
 @implementation DSMasternodeList (Mndiff)
 
 + (instancetype)masternodeListWith:(MasternodeList *)list onChain:(DSChain *)chain {
-    uint8_t(**masternodes_keys)[32] = list->masternodes_keys;
-    MasternodeEntry **masternodes_values = list->masternodes_values;
+    MasternodeEntry **c_masternodes = list->masternodes;
     uintptr_t masternodes_count = list->masternodes_count;
-    NSMutableDictionary<NSData *, DSSimplifiedMasternodeEntry *> *masternodes = [NSMutableDictionary dictionaryWithCapacity:masternodes_count];
-    for (NSUInteger i = 0; i < masternodes_count; i++) {
-        NSData *hash = [NSData dataWithBytes:masternodes_keys[i] length:32];
-        [masternodes setObject:[DSSimplifiedMasternodeEntry simplifiedEntryWith:masternodes_values[i] onChain:chain] forKey:hash];
-    }
-    uint8_t *quorums_keys = list->quorums_keys;
-    LLMQMap **quorums_values = list->quorums_values;
-    uintptr_t quorums_count = list->quorums_count;
-    NSMutableDictionary<NSNumber *, NSMutableDictionary<NSData *, DSQuorumEntry *> *> *quorums = [NSMutableDictionary dictionaryWithCapacity:quorums_count];
-    for (NSUInteger i = 0; i < quorums_count; i++) {
-        DSLLMQType llmqType = (DSLLMQType)quorums_keys[i];
-        LLMQMap *llmq_map = quorums_values[i];
+    NSMutableDictionary<NSData *, DSSimplifiedMasternodeEntry *> *masternodes = [DSSimplifiedMasternodeEntry simplifiedEntriesWith:c_masternodes count:masternodes_count onChain:chain];
+    LLMQMap **quorum_type_maps = list->quorum_type_maps;
+    uintptr_t quorum_type_maps_count = list->quorum_type_maps_count;
+    NSMutableDictionary<NSNumber *, NSMutableDictionary<NSData *, DSQuorumEntry *> *> *quorums = [NSMutableDictionary dictionaryWithCapacity:quorum_type_maps_count];
+    for (NSUInteger i = 0; i < quorum_type_maps_count; i++) {
+        LLMQMap *llmq_map = quorum_type_maps[i];
+        DSLLMQType llmqType = (DSLLMQType)llmq_map->llmq_type;
         NSMutableDictionary *quorumsOfType = [[NSMutableDictionary alloc] initWithCapacity:llmq_map->count];
         for (NSUInteger j = 0; j < llmq_map->count; j++) {
-            uint8_t(*h)[32] = llmq_map->keys[j];
-            NSData *hash = [NSData dataWithBytes:h length:32];
             QuorumEntry *quorum_entry = llmq_map->values[j];
+            NSData *hash = [NSData dataWithBytes:quorum_entry->quorum_hash length:32];
             DSQuorumEntry *entry = [[DSQuorumEntry alloc] initWithEntry:quorum_entry onChain:chain];
             [quorumsOfType setObject:entry forKey:hash];
         }

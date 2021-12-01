@@ -92,7 +92,7 @@ typedef struct QuorumEntry {
 } QuorumEntry;
 
 typedef struct LLMQMap {
-  uint8_t (**keys)[32];
+  uint8_t llmq_type;
   struct QuorumEntry **values;
   uintptr_t count;
 } LLMQMap;
@@ -105,12 +105,10 @@ typedef struct MasternodeList {
   uint32_t known_height;
   uint8_t (*masternode_merkle_root)[32];
   uint8_t (*quorum_merkle_root)[32];
-  uint8_t (**masternodes_keys)[32];
-  struct MasternodeEntry **masternodes_values;
+  struct MasternodeEntry **masternodes;
   uintptr_t masternodes_count;
-  uint8_t *quorums_keys;
-  struct LLMQMap **quorums_values;
-  uintptr_t quorums_count;
+  struct LLMQMap **quorum_type_maps;
+  uintptr_t quorum_type_maps_count;
 } MasternodeList;
 
 typedef struct MndiffResult {
@@ -120,15 +118,12 @@ typedef struct MndiffResult {
   bool root_quorum_list_valid;
   bool valid_quorums;
   struct MasternodeList *masternode_list;
-  uint8_t (**added_masternodes_keys)[32];
-  struct MasternodeEntry **added_masternodes_values;
+  struct MasternodeEntry **added_masternodes;
   uintptr_t added_masternodes_count;
-  uint8_t (**modified_masternodes_keys)[32];
-  struct MasternodeEntry **modified_masternodes_values;
+  struct MasternodeEntry **modified_masternodes;
   uintptr_t modified_masternodes_count;
-  uint8_t *added_quorums_keys;
-  struct LLMQMap **added_quorums_values;
-  uintptr_t added_quorums_count;
+  struct LLMQMap **added_quorum_type_maps;
+  uintptr_t added_quorum_type_maps_count;
   uint8_t (**needed_masternode_lists)[32];
   uintptr_t needed_masternode_lists_count;
 } MndiffResult;
