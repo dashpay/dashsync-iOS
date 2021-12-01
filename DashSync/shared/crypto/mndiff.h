@@ -58,11 +58,11 @@ typedef struct MasternodeEntry {
   uint32_t known_confirmed_at_height;
   uint8_t (*masternode_entry_hash)[32];
   uint8_t (*operator_public_key)[48];
-  struct MasternodeEntryHash **previous_masternode_entry_hashes;
+  struct MasternodeEntryHash *previous_masternode_entry_hashes;
   uintptr_t previous_masternode_entry_hashes_count;
-  struct OperatorPublicKey **previous_operator_public_keys;
+  struct OperatorPublicKey *previous_operator_public_keys;
   uintptr_t previous_operator_public_keys_count;
-  struct Validity **previous_validity;
+  struct Validity *previous_validity;
   uintptr_t previous_validity_count;
   uint8_t (*provider_registration_transaction_hash)[32];
   uint8_t (*ip_address)[16];
@@ -670,7 +670,7 @@ struct MasternodeList *mndiff_test_memory_leaks(const struct MasternodeList *bas
 void mndiff_test_memory_leaks_destroy(struct MasternodeList *masternode_list);
 
 struct MndiffResult *mndiff_process(const uint8_t *message_arr,
-                                    uintptr_t length,
+                                    uintptr_t message_length,
                                     const struct MasternodeList *base_masternode_list,
                                     MasternodeListLookup masternode_list_lookup,
                                     MasternodeListDestroy masternode_list_destroy,
