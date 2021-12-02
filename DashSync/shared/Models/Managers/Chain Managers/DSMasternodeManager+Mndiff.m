@@ -16,11 +16,97 @@
 //
 
 #import "DSBlock.h"
+#import "DSBLSKey.h"
+#import "DSChain+Protected.h"
+#import "DSInsightManager.h"
+#import "DSMasternodeDiffMessageContext.h"
 #import "DSMasternodeManager+Mndiff.h"
+#import "NSData+Dash.h"
 
 @implementation DSMasternodeManager (Mndiff)
 
+const MasternodeList *masternodeListLookupCallback(uint8_t (*block_hash)[32], const void *context) {
+    DSMasternodeDiffMessageContext *mndiffContext = (__bridge DSMasternodeDiffMessageContext *)context;
+    NSData *data = [NSData dataWithBytes:block_hash length:32];
+    DSMasternodeList *list = mndiffContext.masternodeListLookup(data.UInt256);
+    MasternodeList *c_list = [DSMasternodeManager wrapMasternodeList:list];
+    NSLog(@"masternodeListLookupCallback: %p %p %p %p %p %p", mndiffContext, context, list, c_list, data, block_hash);
+    mndiff_block_hash_destroy(block_hash);
+    return c_list;
+}
+
+void masternodeListDestroyCallback(const MasternodeList *masternode_list) {
+    NSLog(@"masternodeListDestroyCallback: %p", masternode_list);
+   [DSMasternodeManager freeMasternodeList:(MasternodeList *)masternode_list];
+}
+
+uint32_t blockHeightListLookupCallback(uint8_t (*block_hash)[32], const void *context) {
+    DSMasternodeDiffMessageContext *mndiffContext = (__bridge DSMasternodeDiffMessageContext *)context;
+    NSData *data = [NSData dataWithBytes:block_hash length:32];
+    NSLog(@"blockHeightListLookupCallback: %p %p %p", mndiffContext, context, data);
+    uint32_t block_height = mndiffContext.blockHeightLookup(data.UInt256);
+    mndiff_block_hash_destroy(block_hash);
+    return block_height;
+}
+
+void addInsightLookup(uint8_t (*block_hash)[32], const void *context) {
+    DSMasternodeDiffMessageContext *mndiffContext = (__bridge DSMasternodeDiffMessageContext *)context;
+    NSData *data = [NSData dataWithBytes:block_hash length:32];
+    NSLog(@"addInsightLookup: %p %p %p", mndiffContext, context, data);
+    UInt256 entryQuorumHash = data.UInt256;
+    DSChain *chain = mndiffContext.chain;
+    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+    [[DSInsightManager sharedInstance] blockForBlockHash:uint256_reverse(entryQuorumHash)
+                                                 onChain:chain
+                                              completion:^(DSBlock *_Nullable block, NSError *_Nullable error) {
+        if (!error && block) {
+            [chain addInsightVerifiedBlock:block forBlockHash:entryQuorumHash];
+        }
+        dispatch_semaphore_signal(sem);
+    }];
+    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+    mndiff_block_hash_destroy(block_hash);
+}
+
+bool shouldProcessQuorumType(uint8_t quorum_type, const void *context) {
+    DSMasternodeDiffMessageContext *mndiffContext = (__bridge DSMasternodeDiffMessageContext *)context;
+    BOOL should = [mndiffContext.chain shouldProcessQuorumOfType:(DSLLMQType)quorum_type];
+    return should;
+};
+
+bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
+    NSLog(@"validateQuorumCallback: %p %p", data, context);
+    uintptr_t count = data->count;
+    uint8_t (**items)[48] = data->items;
+    NSMutableArray<DSBLSKey *> *publicKeyArray = [NSMutableArray array];
+    for (NSUInteger i = 0; i < count; i++) {
+        NSData *pkData = [NSData dataWithBytes:items[i] length:48];
+        [publicKeyArray addObject:[DSBLSKey keyWithPublicKey:pkData.UInt384]];
+    }
+    uint8_t (*all_commitment_aggregated_signature)[96] = data->all_commitment_aggregated_signature;
+    uint8_t (*commitment_hash)[32] = data->commitment_hash;
+    UInt256 commitmentHash = [NSData dataWithBytes:commitment_hash length:32].UInt256;
+    UInt768 allCommitmentAggregatedSignature = [NSData dataWithBytes:all_commitment_aggregated_signature length:96].UInt768;
+    bool allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:commitmentHash signature:allCommitmentAggregatedSignature withPublicKeys:publicKeyArray];
+    if (!allCommitmentAggregatedSignatureValidated) {
+        return false;
+    }
+    //The sig must validate against the commitmentHash and all public keys determined by the signers bitvector. This is an aggregated BLS signature verification.
+    uint8_t (*quorum_threshold_signature)[96] = data->quorum_threshold_signature;
+    uint8_t (*quorum_public_key)[48] = data->quorum_public_key;
+    UInt768 quorumThresholdSignature = [NSData dataWithBytes:quorum_threshold_signature length:96].UInt768;
+    UInt384 quorumPublicKey = [NSData dataWithBytes:quorum_public_key length:48].UInt384;
+    bool quorumSignatureValidated = [DSBLSKey verify:commitmentHash signature:quorumThresholdSignature withPublicKey:quorumPublicKey];
+    mndiff_quorum_validation_data_destroy(data);
+    if (!quorumSignatureValidated) {
+        DSLog(@"Issue with quorumSignatureValidated");
+        return false;
+    }
+    return true;
+};
+
 + (MasternodeList *)wrapMasternodeList:(DSMasternodeList *)list {
+    NSLog(@"wrapMasternodeList: %p", list);
     if (!list) return NULL;
     NSDictionary<NSNumber *, NSDictionary<NSData *, DSQuorumEntry *> *> *quorums = [list quorums];
     NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *masternodes = [list simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash];

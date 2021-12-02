@@ -50,6 +50,7 @@
 #import "DSProviderRegistrationTransaction.h"
 #import "DSProviderRegistrationTransactionEntity+CoreDataClass.h"
 #import "DSQuorumEntry.h"
+#import "DSQuorumEntry+Mndiff.h"
 #import "DSQuorumEntryEntity+CoreDataClass.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSSimplifiedMasternodeEntry+Mndiff.h"
@@ -104,88 +105,16 @@
 
 @implementation DSMasternodeManager
 
-const MasternodeList *masternodeListLookupCallback(uint8_t (*block_hash)[32], const void *context) {
-    DSMasternodeDiffMessageContext *mndiffContext = (__bridge DSMasternodeDiffMessageContext *)context;
-    NSData *data = [NSData dataWithBytes:block_hash length:32];
-    DSMasternodeList *list = mndiffContext.masternodeListLookup(data.UInt256);
-    MasternodeList *c_list = [DSMasternodeManager wrapMasternodeList:list];
-    mndiff_block_hash_destroy(block_hash);
-    return c_list;
-}
-
-void masternodeListDestroyCallback(const MasternodeList *masternode_list) {
-    [DSMasternodeManager freeMasternodeList:(MasternodeList *)masternode_list];
-}
-
-uint32_t blockHeightListLookupCallback(uint8_t (*block_hash)[32], const void *context) {
-    DSMasternodeDiffMessageContext *mndiffContext = (__bridge DSMasternodeDiffMessageContext *)context;
-    NSData *data = [NSData dataWithBytes:block_hash length:32];
-    uint32_t block_height = mndiffContext.blockHeightLookup(data.UInt256);
-    mndiff_block_hash_destroy(block_hash);
-    return block_height;
-}
-
-void addInsightLookup(uint8_t (*block_hash)[32], const void *context) {
-    DSMasternodeDiffMessageContext *mndiffContext = (__bridge DSMasternodeDiffMessageContext *)context;
-    NSData *data = [NSData dataWithBytes:block_hash length:32];
-    UInt256 entryQuorumHash = data.UInt256;
-    DSChain *chain = mndiffContext.chain;
-    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-    [[DSInsightManager sharedInstance] blockForBlockHash:uint256_reverse(entryQuorumHash)
-                                                 onChain:chain
-                                              completion:^(DSBlock *_Nullable block, NSError *_Nullable error) {
-                                                  if (!error && block) {
-                                                      [chain addInsightVerifiedBlock:block forBlockHash:entryQuorumHash];
-                                                  }
-                                                  dispatch_semaphore_signal(sem);
-                                              }];
-    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
-    mndiff_block_hash_destroy(block_hash);
-}
-
-bool shouldProcessQuorumType(uint8_t quorum_type, const void *context) {
-    DSMasternodeDiffMessageContext *mndiffContext = (__bridge DSMasternodeDiffMessageContext *)context;
-    BOOL should = [mndiffContext.chain shouldProcessQuorumOfType:(DSLLMQType)quorum_type];
-    return should;
-};
-
-bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
-    NSMutableArray<DSBLSKey *> *publicKeyArray = [NSMutableArray array];
-    for (NSUInteger i = 0; i < data->count; i++) {
-        NSData *pkData = [NSData dataWithBytes:data->items[i] length:48];
-        [publicKeyArray addObject:[DSBLSKey keyWithPublicKey:pkData.UInt384]];
-    }
-    UInt256 commitmentHash = [NSData dataWithBytes:data->commitment_hash length:32].UInt256;
-    UInt768 allCommitmentAggregatedSignature = [NSData dataWithBytes:data->all_commitment_aggregated_signature length:96].UInt768;
-    bool allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:commitmentHash signature:allCommitmentAggregatedSignature withPublicKeys:publicKeyArray];
-    if (!allCommitmentAggregatedSignatureValidated) {
-        mndiff_quorum_validation_data_destroy(data);
-        return false;
-    }
-    //The sig must validate against the commitmentHash and all public keys determined by the signers bitvector. This is an aggregated BLS signature verification.
-    UInt768 quorumThresholdSignature = [NSData dataWithBytes:data->quorum_threshold_signature length:96].UInt768;
-    UInt384 quorumPublicKey = [NSData dataWithBytes:data->quorum_public_key length:48].UInt384;
-    bool quorumSignatureValidated = [DSBLSKey verify:commitmentHash signature:quorumThresholdSignature withPublicKey:quorumPublicKey];
-    mndiff_quorum_validation_data_destroy(data);
-    if (!quorumSignatureValidated) {
-        DSLog(@"Issue with quorumSignatureValidated");
-        return false;
-    }
-    return true;
-};
-
-
-
 - (void)blockUntilAddInsight:(UInt256)entryQuorumHash {
     dispatch_semaphore_t sem = dispatch_semaphore_create(0);
     [[DSInsightManager sharedInstance] blockForBlockHash:uint256_reverse(entryQuorumHash)
                                                  onChain:self.chain
                                               completion:^(DSBlock *_Nullable block, NSError *_Nullable error) {
-                                                  if (!error && block) {
-                                                      [self.chain addInsightVerifiedBlock:block forBlockHash:entryQuorumHash];
-                                                  }
-                                                  dispatch_semaphore_signal(sem);
-                                              }];
+        if (!error && block) {
+            [self.chain addInsightVerifiedBlock:block forBlockHash:entryQuorumHash];
+        }
+        dispatch_semaphore_signal(sem);
+    }];
     dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
 }
 
@@ -470,10 +399,10 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
             if (![self masternodeListForBlockHash:checkpoint.blockHash]) {
                 [self processRequestFromFileForBlockHash:checkpoint.blockHash
                                               completion:^(BOOL success, DSMasternodeList *masternodeList) {
-                                                  if (success && masternodeList) {
-                                                      self.currentMasternodeList = masternodeList;
-                                                  }
-                                              }];
+                    if (success && masternodeList) {
+                        self.currentMasternodeList = masternodeList;
+                    }
+                }];
             }
         }
     }
@@ -485,7 +414,6 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
         DSMasternodeListEntity *masternodeListEntity = [DSMasternodeListEntity anyObjectInContext:self.managedObjectContext matching:@"block.chain == %@ && block.blockHash == %@", [self.chain chainEntityInContext:self.managedObjectContext], blockHash];
         NSMutableDictionary *simplifiedMasternodeEntryPool = [NSMutableDictionary dictionary];
         NSMutableDictionary *quorumEntryPool = [NSMutableDictionary dictionary];
-
         masternodeList = [masternodeListEntity masternodeListWithSimplifiedMasternodeEntryPool:[simplifiedMasternodeEntryPool copy] quorumEntryPool:quorumEntryPool withBlockHeightLookup:blockHeightLookup];
         if (masternodeList) {
             [self.masternodeListsByBlockHash setObject:masternodeList forKey:blockHash];
@@ -783,45 +711,43 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
                              lastBlock:block
                     useInsightAsBackup:NO
                             completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *masternodeList, NSDictionary *addedMasternodes, NSDictionary *modifiedMasternodes, NSDictionary *addedQuorums, NSOrderedSet *neededMissingMasternodeLists) {
-                                if (!foundCoinbase || !rootMNListValid || !rootQuorumListValid || !validQuorums) {
-                                    completion(NO, nil);
-                                    DSLog(@"Invalid File for block at height %u with merkleRoot %@", block.height, uint256_hex(block.merkleRoot));
-                                    return;
-                                }
+        if (!foundCoinbase || !rootMNListValid || !rootQuorumListValid || !validQuorums) {
+            completion(NO, nil);
+            DSLog(@"Invalid File for block at height %u with merkleRoot %@", block.height, uint256_hex(block.merkleRoot));
+            return;
+        }
 
-                                //valid Coinbase might be false if no merkle block
-                                if (block && !validCoinbase) {
-                                    DSLog(@"Invalid Coinbase for block at height %u with merkleRoot %@", block.height, uint256_hex(block.merkleRoot));
-                                    completion(NO, nil);
-                                    return;
-                                }
+        //valid Coinbase might be false if no merkle block
+        if (block && !validCoinbase) {
+            DSLog(@"Invalid Coinbase for block at height %u with merkleRoot %@", block.height, uint256_hex(block.merkleRoot));
+            completion(NO, nil);
+            return;
+        }
 
-                                if (!self.masternodeListsByBlockHash[uint256_data(masternodeList.blockHash)] && ![self.masternodeListsBlockHashStubs containsObject:uint256_data(masternodeList.blockHash)]) {
-                                    //in rare race conditions this might already exist
+        if (!self.masternodeListsByBlockHash[uint256_data(masternodeList.blockHash)] && ![self.masternodeListsBlockHashStubs containsObject:uint256_data(masternodeList.blockHash)]) {
+            //in rare race conditions this might already exist
 
-                                    NSArray *updatedSimplifiedMasternodeEntries = [addedMasternodes.allValues arrayByAddingObjectsFromArray:modifiedMasternodes.allValues];
-                                    [self.chain updateAddressUsageOfSimplifiedMasternodeEntries:updatedSimplifiedMasternodeEntries];
+            NSArray *updatedSimplifiedMasternodeEntries = [addedMasternodes.allValues arrayByAddingObjectsFromArray:modifiedMasternodes.allValues];
+            [self.chain updateAddressUsageOfSimplifiedMasternodeEntries:updatedSimplifiedMasternodeEntries];
 
-                                    [self saveMasternodeList:masternodeList
-                                        havingModifiedMasternodes:modifiedMasternodes
-                                                     addedQuorums:addedQuorums
-                                                       completion:^(NSError *error) {
-                                                           if (!KEEP_OLD_QUORUMS && uint256_eq(self.lastQueriedBlockHash, masternodeList.blockHash)) {
-                                                               [self removeOldMasternodeLists];
-                                                           }
+            [self saveMasternodeList:masternodeList
+                havingModifiedMasternodes:modifiedMasternodes
+                             addedQuorums:addedQuorums
+                               completion:^(NSError *error) {
+                if (!KEEP_OLD_QUORUMS && uint256_eq(self.lastQueriedBlockHash, masternodeList.blockHash)) {
+                    [self removeOldMasternodeLists];
+                }
 
-                                                           if (![self.masternodeListRetrievalQueue count]) {
-                                                               [self.chain.chainManager.transactionManager checkInstantSendLocksWaitingForQuorums];
-                                                               [self.chain.chainManager.transactionManager checkChainLocksWaitingForQuorums];
-                                                           }
-                                                           completion(YES, masternodeList);
-                                                       }];
-                                }
-                            }];
+                if (![self.masternodeListRetrievalQueue count]) {
+                    [self.chain.chainManager.transactionManager checkInstantSendLocksWaitingForQuorums];
+                    [self.chain.chainManager.transactionManager checkChainLocksWaitingForQuorums];
+                }
+                completion(YES, masternodeList);
+
+            }];
+        }
+    }];
 }
-
-
-#define TEST_RANDOM_ERROR_IN_MASTERNODE_DIFF 0
 
 - (void)processMasternodeDiffMessage:(NSData *)message baseMasternodeList:(DSMasternodeList *)baseMasternodeList lastBlock:(DSBlock *)lastBlock useInsightAsBackup:(BOOL)useInsightAsBackup completion:(void (^)(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *masternodeList, NSDictionary *addedMasternodes, NSDictionary *modifiedMasternodes, NSDictionary *addedQuorums, NSOrderedSet *neededMissingMasternodeLists))completion {
     DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
@@ -848,32 +774,17 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     MndiffResult *result = mndiff_process(message.bytes, message.length, base_masternode_list, masternodeListLookupCallback, masternodeListDestroyCallback, uint256_data(merkleRoot).bytes, context.useInsightAsBackup, addInsightLookup, shouldProcessQuorumType, validateQuorumCallback, blockHeightListLookupCallback, (__bridge void *)(context));
     [DSMasternodeManager freeMasternodeList:base_masternode_list];
     ///
-    BOOL foundCoinbase = result->found_coinbase;
-    BOOL validCoinbase = result->valid_coinbase;
-    BOOL rootMNListValid = result->root_mn_list_valid;
-    BOOL rootQuorumListValid = result->root_quorum_list_valid;
-    BOOL validQuorums = result->valid_quorums;
+    BOOL foundCoinbase = result->has_found_coinbase;
+    BOOL validCoinbase = result->has_valid_coinbase;
+    BOOL rootMNListValid = result->has_valid_mn_list_root;
+    BOOL rootQuorumListValid = result->has_valid_quorum_list_root;
+    BOOL validQuorums = result->has_valid_quorums;
     MasternodeList *result_masternode_list = result->masternode_list;
     DSMasternodeList *masternodeList = [DSMasternodeList masternodeListWith:result_masternode_list onChain:chain];
     NSMutableDictionary *addedMasternodes = [DSSimplifiedMasternodeEntry simplifiedEntriesWith:result->added_masternodes count:result->added_masternodes_count onChain:chain];
     NSMutableDictionary *modifiedMasternodes = [DSSimplifiedMasternodeEntry simplifiedEntriesWith:result->modified_masternodes count:result->modified_masternodes_count onChain:chain];
-
-    LLMQMap **added_quorums_values = result->added_quorum_type_maps;
-    uintptr_t added_quorums_count = result->added_quorum_type_maps_count;
-    NSMutableDictionary *addedQuorums = [[NSMutableDictionary alloc] initWithCapacity:added_quorums_count];
-    for (NSUInteger i = 0; i < added_quorums_count; i++) {
-        LLMQMap *llmq_map = added_quorums_values[i];
-        uint8_t quorum_type = llmq_map->llmq_type;
-        NSMutableDictionary *quorumsOfType = [[NSMutableDictionary alloc] initWithCapacity:llmq_map->count];
-        for (NSUInteger j = 0; j < llmq_map->count; j++) {
-            QuorumEntry *quorum_entry = llmq_map->values[j];
-            NSData *hash = [NSData dataWithBytes:quorum_entry->quorum_hash length:32];
-            DSQuorumEntry *entry = [[DSQuorumEntry alloc] initWithEntry:quorum_entry onChain:chain];
-            [quorumsOfType setObject:entry forKey:hash];
-        }
-        [addedQuorums setObject:quorumsOfType
-                         forKey:@((DSLLMQType)quorum_type)];
-    }
+    NSMutableDictionary *addedQuorums = [DSQuorumEntry entriesWith:result->added_quorum_type_maps count:result->added_quorum_type_maps_count onChain:chain];
+    
     uint8_t(**needed_masternode_lists)[32] = result->needed_masternode_lists;
     uintptr_t needed_masternode_lists_count = result->needed_masternode_lists_count;
     NSMutableOrderedSet *neededMissingMasternodeLists = [NSMutableOrderedSet orderedSetWithCapacity:needed_masternode_lists_count];
@@ -983,62 +894,49 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
                              lastBlock:lastBlock
                     useInsightAsBackup:self.chain.isTestnet
                             completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *masternodeList, NSDictionary *addedMasternodes, NSDictionary *modifiedMasternodes, NSDictionary *addedQuorums, NSOrderedSet *neededMissingMasternodeLists) {
-                                if (![self.masternodeListRetrievalQueue containsObject:uint256_data(masternodeList.blockHash)]) {
-                                    //We most likely wiped data in the meantime
-                                    [self.masternodeListsInRetrieval removeAllObjects];
-                                    [self dequeueMasternodeListRequest];
-                                    return;
-                                }
-
-                                if (foundCoinbase && validCoinbase && rootMNListValid && rootQuorumListValid && validQuorums) {
-                                    DSLog(@"Valid masternode list found at height %u", [self heightForBlockHash:blockHash]);
-                                    //yay this is the correct masternode list verified deterministically for the given block
-
-                                    if ([neededMissingMasternodeLists count] && [self.masternodeListQueriesNeedingQuorumsValidated containsObject:uint256_data(blockHash)]) {
-                                        DSLog(@"Last masternode list is missing previous masternode lists for quorum validation");
-
-                                        self.processingMasternodeListDiffHashes = nil;
-
-                                        //This is the current one, get more previous masternode lists we need to verify quorums
-
-                                        self.masternodeListAwaitingQuorumValidation = masternodeList;
-                                        [self.masternodeListRetrievalQueue removeObject:uint256_data(blockHash)];
-                                        NSMutableOrderedSet *neededMasternodeLists = [neededMissingMasternodeLists mutableCopy];
-                                        [neededMasternodeLists addObject:uint256_data(blockHash)]; //also get the current one again
-                                        [self getMasternodeListsForBlockHashes:neededMasternodeLists];
-                                        [self dequeueMasternodeListRequest];
-                                    } else {
-                                        [self processValidMasternodeList:masternodeList havingAddedMasternodes:addedMasternodes modifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums];
-
-
-                                        NSAssert([self.masternodeListRetrievalQueue containsObject:uint256_data(masternodeList.blockHash)], @"This should still be here");
-
-                                        self.processingMasternodeListDiffHashes = nil;
-
-                                        [self.masternodeListRetrievalQueue removeObject:uint256_data(masternodeList.blockHash)];
-                                        [self dequeueMasternodeListRequest];
-
-                                        //check for instant send locks that were awaiting a quorum
-
-                                        if (![self.masternodeListRetrievalQueue count]) {
-                                            [self.chain.chainManager.transactionManager checkInstantSendLocksWaitingForQuorums];
-                                            [self.chain.chainManager.transactionManager checkChainLocksWaitingForQuorums];
-                                        }
-
-                                        [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
-                                    }
-                                } else {
-                                    if (!foundCoinbase) DSLog(@"Did not find coinbase at height %u", [self heightForBlockHash:blockHash]);
-                                    if (!validCoinbase) DSLog(@"Coinbase not valid at height %u", [self heightForBlockHash:blockHash]);
-                                    if (!rootMNListValid) DSLog(@"rootMNListValid not valid at height %u", [self heightForBlockHash:blockHash]);
-                                    if (!rootQuorumListValid) DSLog(@"rootQuorumListValid not valid at height %u", [self heightForBlockHash:blockHash]);
-                                    if (!validQuorums) DSLog(@"validQuorums not valid at height %u", [self heightForBlockHash:blockHash]);
-
-                                    self.processingMasternodeListDiffHashes = nil;
-
-                                    [self issueWithMasternodeListFromPeer:peer];
-                                }
-                            }];
+        if (![self.masternodeListRetrievalQueue containsObject:uint256_data(masternodeList.blockHash)]) {
+            //We most likely wiped data in the meantime
+            [self.masternodeListsInRetrieval removeAllObjects];
+            [self dequeueMasternodeListRequest];
+            return;
+        }
+        if (foundCoinbase && validCoinbase && rootMNListValid && rootQuorumListValid && validQuorums) {
+            DSLog(@"Valid masternode list found at height %u", [self heightForBlockHash:blockHash]);
+            //yay this is the correct masternode list verified deterministically for the given block
+            if ([neededMissingMasternodeLists count] &&
+                [self.masternodeListQueriesNeedingQuorumsValidated containsObject:uint256_data(blockHash)]) {
+                DSLog(@"Last masternode list is missing previous masternode lists for quorum validation");
+                self.processingMasternodeListDiffHashes = nil;
+                //This is the current one, get more previous masternode lists we need to verify quorums
+                self.masternodeListAwaitingQuorumValidation = masternodeList;
+                [self.masternodeListRetrievalQueue removeObject:uint256_data(blockHash)];
+                NSMutableOrderedSet *neededMasternodeLists = [neededMissingMasternodeLists mutableCopy];
+                [neededMasternodeLists addObject:uint256_data(blockHash)]; //also get the current one again
+                [self getMasternodeListsForBlockHashes:neededMasternodeLists];
+                [self dequeueMasternodeListRequest];
+            } else {
+                [self processValidMasternodeList:masternodeList havingAddedMasternodes:addedMasternodes modifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums];
+                NSAssert([self.masternodeListRetrievalQueue containsObject:uint256_data(masternodeList.blockHash)], @"This should still be here");
+                self.processingMasternodeListDiffHashes = nil;
+                [self.masternodeListRetrievalQueue removeObject:uint256_data(masternodeList.blockHash)];
+                [self dequeueMasternodeListRequest];
+                //check for instant send locks that were awaiting a quorum
+                if (![self.masternodeListRetrievalQueue count]) {
+                    [self.chain.chainManager.transactionManager checkInstantSendLocksWaitingForQuorums];
+                    [self.chain.chainManager.transactionManager checkChainLocksWaitingForQuorums];
+                }
+                [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
+            }
+        } else {
+            if (!foundCoinbase) DSLog(@"Did not find coinbase at height %u", [self heightForBlockHash:blockHash]);
+            if (!validCoinbase) DSLog(@"Coinbase not valid at height %u", [self heightForBlockHash:blockHash]);
+            if (!rootMNListValid) DSLog(@"rootMNListValid not valid at height %u", [self heightForBlockHash:blockHash]);
+            if (!rootQuorumListValid) DSLog(@"rootQuorumListValid not valid at height %u", [self heightForBlockHash:blockHash]);
+            if (!validQuorums) DSLog(@"validQuorums not valid at height %u", [self heightForBlockHash:blockHash]);
+            self.processingMasternodeListDiffHashes = nil;
+            [self issueWithMasternodeListFromPeer:peer];
+        }
+    }];
 }
 
 - (void)processValidMasternodeList:(DSMasternodeList *)masternodeList havingAddedMasternodes:(NSDictionary *)addedMasternodes modifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums {
@@ -1074,23 +972,22 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
         havingModifiedMasternodes:modifiedMasternodes
                      addedQuorums:addedQuorums
                        completion:^(NSError *error) {
-                           self.masternodeListCurrentlyBeingSavedCount--;
-                           if (error) {
-                               if ([self.masternodeListRetrievalQueue count]) { //if it is 0 then we most likely have wiped chain info
-                                   [self wipeMasternodeInfo];
-                                   dispatch_async(self.chain.networkingQueue, ^{
-                                       [self getCurrentMasternodeListWithSafetyDelay:0];
-                                   });
-                               }
-                           }
-                       }];
+        self.masternodeListCurrentlyBeingSavedCount--;
+        if (error) {
+            if ([self.masternodeListRetrievalQueue count]) { //if it is 0 then we most likely have wiped chain info
+                [self wipeMasternodeInfo];
+                dispatch_async(self.chain.networkingQueue, ^{
+                    [self getCurrentMasternodeListWithSafetyDelay:0];
+                });
+            }
+        }
+    }];
 }
 
 - (void)saveMasternodeList:(DSMasternodeList *)masternodeList havingModifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums completion:(void (^)(NSError *error))completion {
     [self.masternodeListsByBlockHash setObject:masternodeList forKey:uint256_data(masternodeList.blockHash)];
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
-
         [[NSNotificationCenter defaultCenter] postNotificationName:DSQuorumListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
     });
     //We will want to create unknown blocks if they came from insight
@@ -1390,27 +1287,25 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     __block NSArray<DSSimplifiedMasternodeEntry *> *entries = self.currentMasternodeList.simplifiedMasternodeEntries;
     [self.chain.chainManager.DAPIClient checkPingTimesForMasternodes:entries
                                                           completion:^(NSMutableDictionary<NSData *, NSNumber *> *_Nonnull pingTimes, NSMutableDictionary<NSData *, NSError *> *_Nonnull errors) {
-                                                              [context performBlockAndWait:^{
-                                                                  for (DSSimplifiedMasternodeEntry *entry in entries) {
-                                                                      [entry savePlatformPingInfoInContext:context];
-                                                                  }
-                                                                  NSError *savingError = nil;
-                                                                  [context save:&savingError];
-                                                              }];
-
-                                                              if (completion != nil) {
-                                                                  dispatch_async(dispatch_get_main_queue(), ^{
-                                                                      completion(pingTimes, errors);
-                                                                  });
-                                                              }
-                                                          }];
+        [context performBlockAndWait:^{
+            for (DSSimplifiedMasternodeEntry *entry in entries) {
+                [entry savePlatformPingInfoInContext:context];
+            }
+            NSError *savingError = nil;
+            [context save:&savingError];
+        }];
+        if (completion != nil) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(pingTimes, errors);
+            });
+        }
+    }];
 }
 
 // MARK: - Local Masternodes
 
 - (DSLocalMasternode *)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inWallet:(DSWallet *)wallet {
     NSParameterAssert(wallet);
-
     return [self createNewMasternodeWithIPAddress:ipAddress onPort:port inFundsWallet:wallet inOperatorWallet:wallet inOwnerWallet:wallet inVotingWallet:wallet];
 }
 

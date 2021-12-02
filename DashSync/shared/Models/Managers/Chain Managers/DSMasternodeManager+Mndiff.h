@@ -27,6 +27,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMasternodeManager (Mndiff)
 
+const MasternodeList *masternodeListLookupCallback(uint8_t (*block_hash)[32], const void *context);
+void masternodeListDestroyCallback(const MasternodeList *masternode_list);
+uint32_t blockHeightListLookupCallback(uint8_t (*block_hash)[32], const void *context);
+void addInsightLookup(uint8_t (*block_hash)[32], const void *context);
+bool shouldProcessQuorumType(uint8_t quorum_type, const void *context);
+bool validateQuorumCallback(QuorumValidationData *data, const void *context);
+
+
 + (MasternodeList *)wrapMasternodeList:(DSMasternodeList *)list;
 + (void)freeMasternodeList:(MasternodeList *)list;
 

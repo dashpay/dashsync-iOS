@@ -105,11 +105,11 @@ typedef struct MasternodeList {
 } MasternodeList;
 
 typedef struct MndiffResult {
-  bool found_coinbase;
-  bool valid_coinbase;
-  bool root_mn_list_valid;
-  bool root_quorum_list_valid;
-  bool valid_quorums;
+  bool has_found_coinbase;
+  bool has_valid_coinbase;
+  bool has_valid_mn_list_root;
+  bool has_valid_quorum_list_root;
+  bool has_valid_quorums;
   struct MasternodeList *masternode_list;
   struct MasternodeEntry **added_masternodes;
   uintptr_t added_masternodes_count;
