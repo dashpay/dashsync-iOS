@@ -131,7 +131,6 @@
     _masternodeListQueriesNeedingQuorumsValidated = [NSMutableSet set];
     _cachedBlockHashHeights = [NSMutableDictionary dictionary];
     _localMasternodesDictionaryByRegistrationTransactionHash = [NSMutableDictionary dictionary];
-    _testingMasternodeListRetrieval = NO;
     self.managedObjectContext = chain.chainManagedObjectContext;
     self.lastQueriedBlockHash = UINT256_ZERO;
     self.processingMasternodeListDiffHashes = nil;
@@ -196,10 +195,6 @@
         return self.chain.genesisHash;
 }
 
-- (NSUInteger)simplifiedMasternodeEntryCount {
-    return [self.currentMasternodeList masternodeCount];
-}
-
 - (NSUInteger)activeQuorumsCount {
     return self.currentMasternodeList.quorumsCount;
 }
@@ -213,11 +208,10 @@
     return nil;
 }
 
-- (DSSimplifiedMasternodeEntry *)masternodeHavingProviderRegistrationTransactionHash:(NSData *)providerRegistrationTransactionHash {
+/*- (DSSimplifiedMasternodeEntry *)masternodeHavingProviderRegistrationTransactionHash:(NSData *)providerRegistrationTransactionHash {
     NSParameterAssert(providerRegistrationTransactionHash);
-
     return [self.currentMasternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash objectForKey:providerRegistrationTransactionHash];
-}
+}*/
 
 - (BOOL)hasMasternodeAtLocation:(UInt128)IPAddress port:(uint32_t)port {
     DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [self simplifiedMasternodeEntryForLocation:IPAddress port:port];
@@ -262,18 +256,7 @@
     return progress;
 }
 
-- (BOOL)currentMasternodeListIsInLast24Hours {
-    if (!self.currentMasternodeList) return FALSE;
-    DSBlock *block = [self.chain blockForBlockHash:self.currentMasternodeList.blockHash];
-    if (!block) return FALSE;
-    NSTimeInterval currentTimestamp = [[NSDate date] timeIntervalSince1970];
-    NSTimeInterval delta = currentTimestamp - block.timestamp;
-    return fabs(delta) < DAY_TIME_INTERVAL;
-}
-
-
 // MARK: - Set Up and Tear Down
-
 - (void)setUp {
     [self deleteEmptyMasternodeLists]; //this is just for sanity purposes
     [self loadMasternodeLists];
@@ -1332,7 +1315,7 @@
     return localMasternode;
 }
 
-- (DSLocalMasternode *)localMasternodeFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry claimedWithOwnerWallet:(DSWallet *)ownerWallet ownerKeyIndex:(uint32_t)ownerKeyIndex {
+/*- (DSLocalMasternode *)localMasternodeFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry claimedWithOwnerWallet:(DSWallet *)ownerWallet ownerKeyIndex:(uint32_t)ownerKeyIndex {
     NSParameterAssert(simplifiedMasternodeEntry);
     NSParameterAssert(ownerWallet);
 
@@ -1351,7 +1334,7 @@
     } else {
         return nil;
     }
-}
+}*/
 
 - (DSLocalMasternode *)localMasternodeFromProviderRegistrationTransaction:(DSProviderRegistrationTransaction *)providerRegistrationTransaction save:(BOOL)save {
     NSParameterAssert(providerRegistrationTransaction);
