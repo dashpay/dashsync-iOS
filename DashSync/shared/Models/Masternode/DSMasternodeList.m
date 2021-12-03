@@ -45,14 +45,6 @@
 //
 // flag bits (little endian): 00001011 [merkleRoot = 1, m1 = 1, tx1 = 0, tx2 = 1, m2 = 0, byte padding = 000]
 // hashes: [tx1, tx2, m2]
-#define NSCLog(__string, ...) fprintf(stderr, "\n%s", [([NSString stringWithFormat:__string, ##__VA_ARGS__]) UTF8String])
-
-inline static int ceil_log2(int x) {
-    int r = (x & (x - 1)) ? 1 : 0;
-
-    while ((x >>= 1) != 0) r++;
-    return r;
-}
 
 @interface DSMasternodeList ()
 
@@ -277,7 +269,6 @@ inline static int ceil_log2(int x) {
 
 - (NSArray<DSSimplifiedMasternodeEntry *> *)validMasternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount blockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
     uint32_t blockHeight = blockHeightLookup(self.blockHash);
-    //    NSCLog(@"valid_masternodes_for %@, %lu, %u", uint256_hex(quorumModifier), quorumCount, blockHeight);
     NSDictionary<NSData *, id> *scoreDictionary = [self scoreDictionaryForQuorumModifier:quorumModifier atBlockHeight:blockHeight];
     NSArray *scores = [[scoreDictionary allKeys] sortedArrayUsingComparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2) {
         UInt256 hash1 = *(UInt256 *)((NSData *)obj1).bytes;
@@ -379,33 +370,6 @@ inline static int ceil_log2(int x) {
     return interval < DAY_TIME_INTERVAL * 30;
 }
 
-// recursively walks the merkle tree in depth first order, calling leaf(hash, flag) for each stored hash, and
-// branch(left, right) with the result from each branch
-- (id)walkHashIdx:(int *)hashIdx flagIdx:(int *)flagIdx
-                                                                    depth:(int)depth
-                                                                     leaf:(id (^)(id, BOOL))leaf
-                                                                   branch:(id (^)(id, id))branch
-    simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes:(NSData *)simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes
-                                                                    flags:(NSData *)flags {
-    if ((*flagIdx) / 8 >= flags.length || (*hashIdx + 1) * sizeof(UInt256) > simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes.length) return leaf(nil, NO);
-
-    BOOL flag = (((const uint8_t *)flags.bytes)[*flagIdx / 8] & (1 << (*flagIdx % 8)));
-
-    (*flagIdx)++;
-
-    if (!flag || depth == ceil_log2((int)_mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.count)) {
-        UInt256 hash = [simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes UInt256AtOffset:(*hashIdx) * sizeof(UInt256)];
-
-        (*hashIdx)++;
-        return leaf(uint256_obj(hash), flag);
-    }
-
-    id left = [self walkHashIdx:hashIdx flagIdx:flagIdx depth:depth + 1 leaf:leaf branch:branch simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes:simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes flags:flags];
-    id right = [self walkHashIdx:hashIdx flagIdx:flagIdx depth:depth + 1 leaf:leaf branch:branch simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes:simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes flags:flags];
-
-    return branch(left, right);
-}
-
 /*
  - (BOOL)validateQuorumsWithMasternodeLists:(NSDictionary *)masternodeLists {
     for (DSQuorumEntry *quorum in self.quorums) {
@@ -421,36 +385,7 @@ inline static int ceil_log2(int x) {
 */
 
 - (NSString *)description {
-    NSMutableString *string = [NSMutableString stringWithString:@"DSMasternodeList {\n"];
-    [string appendFormat:@"block_hash: %@,\n known_height: %u,\n masternode_merkle_root: %@,\n quorum_merkle_root: %@,\n",
-            uint256_hex(self.blockHash),
-            self.knownHeight,
-            uint256_hex(self.masternodeMerkleRoot),
-            uint256_hex(self.quorumMerkleRoot)];
-    [string appendFormat:@"masternodes: (%lu),\n", self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.count];
-    [string appendFormat:@"quorums: (%lu),\n", self.mQuorums.count];
-//    NSLog(@"---- masternodes_entry_hashes > 1 ---- %lu", self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.count);
-//        for (NSData *hash in self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash) {
-//            DSSimplifiedMasternodeEntry *entry = self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[hash];
-//            if (entry.previousSimplifiedMasternodeEntryHashes.count > 1) {
-//                [string appendFormat:@"quorums: (%lu),\n", self.mQuorums.count];
-//            }
-//            NSLog(@"%@: %@", hash.hexString, entry.debugDescription);
-//        }
-    //NSLog(@"---- quorums ---- %lu", (unsigned long)self.mQuorums.count);
-    //    for (NSNumber *type in self.mQuorums) {
-    //        NSDictionary<NSData *, DSQuorumEntry *> *quorumMap = self.mQuorums[type];
-    //        NSLog(@"quorums of type: %@ (%lu)", type, (unsigned long)[quorumMap count]);
-    //        for (NSData *hash in quorumMap) {
-    //            DSQuorumEntry *entry = quorumMap[hash];
-    //            NSLog(@"%@: %@", hash.hexString, entry.debugDescription);
-    //        }
-    //    }
-
-    [string appendString:@"}"];
-    
-    return [[super description] stringByAppendingString:string];
-    //return [[super description] stringByAppendingString:[NSString stringWithFormat:@" {%u}", self.height]];
+    return [[super description] stringByAppendingString:[NSString stringWithFormat:@" {%u}", self.height]];
 }
 
 - (NSString *)debugDescription {

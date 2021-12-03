@@ -21,11 +21,9 @@
 @implementation DSQuorumEntry (Mndiff)
 
 + (NSMutableDictionary<NSNumber *, NSMutableDictionary<NSData *, DSQuorumEntry *> *> *)entriesWith:(LLMQMap *_Nullable*_Nonnull)entries count:(uintptr_t)count onChain:(DSChain *)chain {
-    
     NSMutableDictionary<NSNumber *, NSMutableDictionary<NSData *, DSQuorumEntry *> *> *quorums = [NSMutableDictionary dictionaryWithCapacity:count];
     for (NSUInteger i = 0; i < count; i++) {
         LLMQMap *llmq_map = entries[i];
-        NSLog(@"DSQuorumEntry::entriesWith::LLMQMap: %p", llmq_map);
         DSLLMQType llmqType = (DSLLMQType)llmq_map->llmq_type;
         NSMutableDictionary *quorumsOfType = [[NSMutableDictionary alloc] initWithCapacity:llmq_map->count];
         for (NSUInteger j = 0; j < llmq_map->count; j++) {

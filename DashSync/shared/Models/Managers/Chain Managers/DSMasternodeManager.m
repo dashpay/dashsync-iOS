@@ -770,10 +770,8 @@
     DSMasternodeList *baseMasternodeList = context.baseMasternodeList;
     UInt256 merkleRoot = context.lastBlock.merkleRoot;
     MasternodeList *base_masternode_list = [DSMasternodeManager wrapMasternodeList:baseMasternodeList];
-    ///
     MndiffResult *result = mndiff_process(message.bytes, message.length, base_masternode_list, masternodeListLookupCallback, masternodeListDestroyCallback, uint256_data(merkleRoot).bytes, context.useInsightAsBackup, addInsightLookup, shouldProcessQuorumType, validateQuorumCallback, blockHeightListLookupCallback, (__bridge void *)(context));
     [DSMasternodeManager freeMasternodeList:base_masternode_list];
-    ///
     BOOL foundCoinbase = result->has_found_coinbase;
     BOOL validCoinbase = result->has_valid_coinbase;
     BOOL rootMNListValid = result->has_valid_mn_list_root;
@@ -784,7 +782,6 @@
     NSMutableDictionary *addedMasternodes = [DSSimplifiedMasternodeEntry simplifiedEntriesWith:result->added_masternodes count:result->added_masternodes_count onChain:chain];
     NSMutableDictionary *modifiedMasternodes = [DSSimplifiedMasternodeEntry simplifiedEntriesWith:result->modified_masternodes count:result->modified_masternodes_count onChain:chain];
     NSMutableDictionary *addedQuorums = [DSQuorumEntry entriesWith:result->added_quorum_type_maps count:result->added_quorum_type_maps_count onChain:chain];
-    
     uint8_t(**needed_masternode_lists)[32] = result->needed_masternode_lists;
     uintptr_t needed_masternode_lists_count = result->needed_masternode_lists_count;
     NSMutableOrderedSet *neededMissingMasternodeLists = [NSMutableOrderedSet orderedSetWithCapacity:needed_masternode_lists_count];
@@ -792,9 +789,7 @@
         NSData *hash = [NSData dataWithBytes:needed_masternode_lists[i] length:32];
         [neededMissingMasternodeLists addObject:hash];
     }
-    
     mndiff_destroy(result);
-
     completion(foundCoinbase, validCoinbase, rootMNListValid, rootQuorumListValid, validQuorums, masternodeList, addedMasternodes, modifiedMasternodes, addedQuorums, neededMissingMasternodeLists);
 }
 

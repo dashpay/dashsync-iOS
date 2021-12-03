@@ -50,8 +50,6 @@
 
 - (BOOL)verifySignature:(UInt768)signature forMessageDigest:(UInt256)messageDigest;
 
-- (void)keepInfoOfPreviousEntryVersion:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlockHash:(UInt256)blockHash atBlockHeight:(uint32_t)blockHeight;
-
 - (UInt256)simplifiedMasternodeEntryHashAtBlock:(DSBlock *)merkleBlock;
 
 - (UInt256)simplifiedMasternodeEntryHashAtBlockHash:(UInt256)blockHash;

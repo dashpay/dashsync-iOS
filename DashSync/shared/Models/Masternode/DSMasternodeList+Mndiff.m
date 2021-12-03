@@ -24,9 +24,8 @@
 @implementation DSMasternodeList (Mndiff)
 
 + (instancetype)masternodeListWith:(MasternodeList *)list onChain:(DSChain *)chain {
-    MasternodeEntry **c_masternodes = list->masternodes;
     uintptr_t masternodes_count = list->masternodes_count;
-    NSMutableDictionary<NSData *, DSSimplifiedMasternodeEntry *> *masternodes = [DSSimplifiedMasternodeEntry simplifiedEntriesWith:c_masternodes count:masternodes_count onChain:chain];
+    NSMutableDictionary<NSData *, DSSimplifiedMasternodeEntry *> *masternodes = [DSSimplifiedMasternodeEntry simplifiedEntriesWith:list->masternodes count:masternodes_count onChain:chain];
     NSMutableDictionary<NSNumber *, NSMutableDictionary<NSData *, DSQuorumEntry *> *> *quorums = [DSQuorumEntry entriesWith:list->quorum_type_maps count:list->quorum_type_maps_count onChain:chain];
     uint8_t(*masternode_merkle_root)[32] = list->masternode_merkle_root;
     uint8_t(*quorum_merkle_root)[32] = list->quorum_merkle_root;

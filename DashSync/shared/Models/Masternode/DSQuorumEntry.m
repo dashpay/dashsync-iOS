@@ -205,19 +205,11 @@
 - (NSData *)commitmentData {
     NSMutableData *data = [NSMutableData data];
     [data appendVarInt:self.llmqType];
-    //    NSLog(@"commitment_data...: %@ %lu", data.hexString, [data length]);
     [data appendUInt256:self.quorumHash];
-    //    NSLog(@"commitment_data...: %@ %lu", data.hexString, [data length]);
     [data appendVarInt:self.validMembersCount];
-    //    NSLog(@"commitment_data...: %@ %lu", data.hexString, [data length]);
     [data appendData:self.validMembersBitset];
-    //    NSLog(@"commitment_data...: %@ %lu", data.hexString, [data length]);
     [data appendUInt384:self.quorumPublicKey];
-    //    NSLog(@"commitment_data...: %@ %lu", data.hexString, [data length]);
     [data appendUInt256:self.quorumVerificationVectorHash];
-    //    NSLog(@"commitment_data...: %@ %lu", data.hexString, [data length]);
-    //NSLog(@"generate commitmentData with: %hu %@ %d %@ %@ %@",
-    //        self.llmqType, uint256_hex(self.quorumHash), self.validMembersCount, self.validMembersBitset, uint384_hex(self.quorumPublicKey), uint256_hex(self.quorumVerificationVectorHash));
     return data;
 }
 
@@ -463,26 +455,8 @@
 }
 
 - (NSString *)description {
-    //    uint32_t height = [self.chain heightForBlockHash:self.quorumHash];
-    //    return [[super description] stringByAppendingString:[NSString stringWithFormat:@" - %u", height]];
-    return [NSString stringWithFormat:@"%p: %@", &self, uint256_hex(self.quorumEntryHash)];
-    /*return [NSString stringWithFormat:@"%p: %@, %@, %@, %@, %@, %@, %@, %@, %@, %@, %d, %@, %d %@ %hu",
-                     &self,
-                     uint768_hex(self.allCommitmentAggregatedSignature),
-                     uint256_hex(self.commitmentHash),
-                     @(self.llmqType),
-                     uint256_hex(self.quorumEntryHash),
-                     uint256_hex(self.quorumHash),
-                     uint384_hex(self.quorumPublicKey),
-                     uint768_hex(self.quorumThresholdSignature),
-                     uint256_hex(self.quorumVerificationVectorHash),
-                     @(self.saved),
-                     self.signersBitset.hexString,
-                     self.signersCount,
-                     self.validMembersBitset.hexString,
-                     self.validMembersCount,
-                     @(self.verified),
-                     self.version];*/
+    uint32_t height = [self.chain heightForBlockHash:self.quorumHash];
+    return [[super description] stringByAppendingString:[NSString stringWithFormat:@" - %u", height]];
 }
 
 - (NSString *)debugDescription {

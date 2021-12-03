@@ -30,20 +30,17 @@ const MasternodeList *masternodeListLookupCallback(uint8_t (*block_hash)[32], co
     NSData *data = [NSData dataWithBytes:block_hash length:32];
     DSMasternodeList *list = mndiffContext.masternodeListLookup(data.UInt256);
     MasternodeList *c_list = [DSMasternodeManager wrapMasternodeList:list];
-    NSLog(@"masternodeListLookupCallback: %p %p %p %p %p %p", mndiffContext, context, list, c_list, data, block_hash);
     mndiff_block_hash_destroy(block_hash);
     return c_list;
 }
 
 void masternodeListDestroyCallback(const MasternodeList *masternode_list) {
-    NSLog(@"masternodeListDestroyCallback: %p", masternode_list);
-   [DSMasternodeManager freeMasternodeList:(MasternodeList *)masternode_list];
+    [DSMasternodeManager freeMasternodeList:(MasternodeList *)masternode_list];
 }
 
 uint32_t blockHeightListLookupCallback(uint8_t (*block_hash)[32], const void *context) {
     DSMasternodeDiffMessageContext *mndiffContext = (__bridge DSMasternodeDiffMessageContext *)context;
     NSData *data = [NSData dataWithBytes:block_hash length:32];
-    NSLog(@"blockHeightListLookupCallback: %p %p %p", mndiffContext, context, data);
     uint32_t block_height = mndiffContext.blockHeightLookup(data.UInt256);
     mndiff_block_hash_destroy(block_hash);
     return block_height;
@@ -52,7 +49,6 @@ uint32_t blockHeightListLookupCallback(uint8_t (*block_hash)[32], const void *co
 void addInsightLookup(uint8_t (*block_hash)[32], const void *context) {
     DSMasternodeDiffMessageContext *mndiffContext = (__bridge DSMasternodeDiffMessageContext *)context;
     NSData *data = [NSData dataWithBytes:block_hash length:32];
-    NSLog(@"addInsightLookup: %p %p %p", mndiffContext, context, data);
     UInt256 entryQuorumHash = data.UInt256;
     DSChain *chain = mndiffContext.chain;
     dispatch_semaphore_t sem = dispatch_semaphore_create(0);
@@ -75,7 +71,6 @@ bool shouldProcessQuorumType(uint8_t quorum_type, const void *context) {
 };
 
 bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
-    NSLog(@"validateQuorumCallback: %p %p", data, context);
     uintptr_t count = data->count;
     uint8_t (**items)[48] = data->items;
     NSMutableArray<DSBLSKey *> *publicKeyArray = [NSMutableArray array];
@@ -106,7 +101,6 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
 };
 
 + (MasternodeList *)wrapMasternodeList:(DSMasternodeList *)list {
-    NSLog(@"wrapMasternodeList: %p", list);
     if (!list) return NULL;
     NSDictionary<NSNumber *, NSDictionary<NSData *, DSQuorumEntry *> *> *quorums = [list quorums];
     NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *masternodes = [list simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash];
@@ -231,6 +225,7 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
 }
 
 + (MasternodeEntry *)wrapMasternodeEntry:(DSSimplifiedMasternodeEntry *)entry {
+    //NSLog(@"wrapMasternodeEntry: %p", entry);
     uint32_t known_confirmed_at_height = [entry knownConfirmedAtHeight];
     NSDictionary<DSBlock *, NSData *> *previousOperatorPublicKeys = [entry previousOperatorPublicKeys];
     NSDictionary<DSBlock *, NSData *> *previousSimplifiedMasternodeEntryHashes = [entry previousSimplifiedMasternodeEntryHashes];
@@ -304,6 +299,12 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     free(entry->ip_address);
     free(entry->key_id_voting);
     free(entry->provider_registration_transaction_hash);
+    if (entry->previous_masternode_entry_hashes)
+        free(entry->previous_masternode_entry_hashes);
+    if (entry->previous_operator_public_keys)
+        free(entry->previous_operator_public_keys);
+    if (entry->previous_validity)
+        free(entry->previous_validity);
     free(entry);
 }
 @end
