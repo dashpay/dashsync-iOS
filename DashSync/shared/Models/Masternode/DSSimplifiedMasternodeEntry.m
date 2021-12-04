@@ -89,51 +89,6 @@
     return simplifiedMasternodeEntry;
 }
 
-- (instancetype)initWithMessage:(NSData *)message atBlockHeight:(uint32_t)blockHeight onChain:(DSChain *)chain {
-    if (!(self = [super init])) return nil;
-    NSUInteger length = message.length;
-    NSUInteger offset = 0;
-    if (length - offset < 32) return nil;
-    self.providerRegistrationTransactionHash = [message UInt256AtOffset:offset];
-    offset += 32;
-
-    if (length - offset < 32) return nil;
-    self.confirmedHash = [message UInt256AtOffset:offset];
-    offset += 32;
-
-    if (uint256_is_not_zero(self.confirmedHash) && blockHeight != UINT32_MAX) {
-        self.knownConfirmedAtHeight = blockHeight;
-    }
-
-    if (length - offset < 16) return nil;
-    self.address = [message UInt128AtOffset:offset];
-    offset += 16;
-
-    if (length - offset < 2) return nil;
-    self.port = CFSwapInt16HostToBig([message UInt16AtOffset:offset]);
-    offset += 2;
-
-    if (length - offset < 48) return nil;
-    self.operatorPublicKey = [message UInt384AtOffset:offset];
-    offset += 48;
-
-    if (length - offset < 20) return nil;
-    self.keyIDVoting = [message UInt160AtOffset:offset];
-    offset += 20;
-
-    if (length - offset < 1) return nil;
-    self.isValid = [message UInt8AtOffset:offset];
-    offset += 1;
-
-    self.simplifiedMasternodeEntryHash = [self calculateSimplifiedMasternodeEntryHash];
-    self.mPreviousOperatorPublicKeys = [NSMutableDictionary dictionary];
-    self.mPreviousSimplifiedMasternodeEntryHashes = [NSMutableDictionary dictionary];
-    self.mPreviousValidity = [NSMutableDictionary dictionary];
-    self.chain = chain;
-    self.updateHeight = blockHeight;
-
-    return self;
-}
 
 - (NSDictionary *)previousValidity {
     return [self.mPreviousValidity copy];
