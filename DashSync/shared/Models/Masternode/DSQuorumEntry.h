@@ -36,8 +36,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) BOOL verified;
 @property (nonatomic, assign) BOOL saved;
 
-+ (instancetype)potentialQuorumEntryWithData:(NSData *)data dataOffset:(uint32_t)dataOffset onChain:(DSChain *)chain;
-
 - (instancetype)initWithVersion:(uint16_t)version type:(DSLLMQType)type quorumHash:(UInt256)quorumHash quorumPublicKey:(UInt384)quorumPublicKey quorumEntryHash:(UInt256)commitmentHash verified:(BOOL)verified onChain:(DSChain *)chain;
 - (instancetype)initWithEntry:(QuorumEntry *)entry onChain:(DSChain *)chain;
 

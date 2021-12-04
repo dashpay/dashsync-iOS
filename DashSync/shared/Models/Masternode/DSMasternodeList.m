@@ -137,23 +137,6 @@
     return simplifiedMasternodeListByRegistrationTransactionHashHashes;
 }
 
-- (NSDictionary<NSData *, NSData *> *)hashDictionaryForMerkleRootWithBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
-    NSArray *proTxHashes = [self providerTxOrderedHashes];
-
-    NSMutableDictionary *simplifiedMasternodeListByRegistrationTransactionHashHashes = [NSMutableDictionary dictionary];
-    uint32_t height = blockHeightLookup(self.blockHash);
-    if (height == UINT32_MAX) {
-        DSLog(@"Block height lookup queried an unknown block %@", uint256_hex(self.blockHash));
-        return nil; //this should never happen
-    }
-    for (NSData *proTxHash in proTxHashes) {
-        DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash objectForKey:proTxHash];
-        UInt256 simplifiedMasternodeEntryHash = [simplifiedMasternodeEntry simplifiedMasternodeEntryHashAtBlockHeight:height];
-        simplifiedMasternodeListByRegistrationTransactionHashHashes[proTxHash] = uint256_data(simplifiedMasternodeEntryHash);
-    }
-    return simplifiedMasternodeListByRegistrationTransactionHashHashes;
-}
-
 - (UInt256)calculateMasternodeMerkleRootWithBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
     NSArray *hashes = [self hashesForMerkleRootWithBlockHeightLookup:blockHeightLookup];
     if (hashes == nil || hashes.count == 0) {
