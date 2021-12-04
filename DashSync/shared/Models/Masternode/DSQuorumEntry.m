@@ -84,22 +84,22 @@
 
 - (instancetype)initWithEntry:(QuorumEntry *)entry onChain:(DSChain *)chain {
     if (!(self = [super init])) return nil;
-    self.allCommitmentAggregatedSignature = [NSData dataWithBytes:entry->all_commitment_aggregated_signature length:96].UInt768;
+    self.allCommitmentAggregatedSignature = *((UInt768 *) entry->all_commitment_aggregated_signature);
     if (entry->commitment_hash) {
-        self.commitmentHash = [NSData dataWithBytes:entry->commitment_hash length:32].UInt256;
+        self.commitmentHash = *((UInt256 *) entry->commitment_hash);
     }
-    self.length = (uint32_t)entry->length;
-    self.llmqType = (DSLLMQType)entry->llmq_type;
-    self.quorumEntryHash = [NSData dataWithBytes:entry->quorum_entry_hash length:32].UInt256;
-    self.quorumHash = [NSData dataWithBytes:entry->quorum_hash length:32].UInt256;
-    self.quorumPublicKey = [NSData dataWithBytes:entry->quorum_public_key length:48].UInt384;
-    self.quorumThresholdSignature = [NSData dataWithBytes:entry->quorum_threshold_signature length:96].UInt768;
-    self.quorumVerificationVectorHash = [NSData dataWithBytes:entry->quorum_verification_vector_hash length:32].UInt256;
+    self.length = (uint32_t) entry->length;
+    self.llmqType = (DSLLMQType) entry->llmq_type;
+    self.quorumEntryHash = *((UInt256 *) entry->quorum_entry_hash);
+    self.quorumHash = *((UInt256 *) entry->quorum_hash);
+    self.quorumPublicKey = *((UInt384 *) entry->quorum_public_key);
+    self.quorumThresholdSignature = *((UInt768 *) entry->quorum_threshold_signature);
+    self.quorumVerificationVectorHash = *((UInt256 *) entry->quorum_verification_vector_hash);
     self.saved = entry->saved;
     self.signersBitset = [NSData dataWithBytes:entry->signers_bitset length:entry->signers_bitset_length];
-    self.signersCount = (uint32_t)entry->signers_count;
+    self.signersCount = (uint32_t) entry->signers_count;
     self.validMembersBitset = [NSData dataWithBytes:entry->valid_members_bitset length:entry->valid_members_bitset_length];
-    self.validMembersCount = (uint32_t)entry->valid_members_count;
+    self.validMembersCount = (uint32_t) entry->valid_members_count;
     self.verified = entry->verified;
     self.version = entry->version;
     self.chain = chain;

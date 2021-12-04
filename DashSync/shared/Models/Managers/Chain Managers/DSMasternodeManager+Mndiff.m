@@ -317,7 +317,9 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     DSMasternodeList *baseMasternodeList = context.baseMasternodeList;
     UInt256 merkleRoot = context.lastBlock.merkleRoot;
     MasternodeList *base_masternode_list = [DSMasternodeManager wrapMasternodeList:baseMasternodeList];
+    
     MndiffResult *result = mndiff_process(message.bytes, message.length, base_masternode_list, masternodeListLookupCallback, masternodeListDestroyCallback, uint256_data(merkleRoot).bytes, context.useInsightAsBackup, addInsightLookup, shouldProcessQuorumType, validateQuorumCallback, blockHeightListLookupCallback, (__bridge void *)(context));
+    
     [DSMasternodeManager freeMasternodeList:base_masternode_list];
     BOOL foundCoinbase = result->has_found_coinbase;
     BOOL validCoinbase = result->has_valid_coinbase;
