@@ -449,7 +449,7 @@
 
 - (void)addInputHash:(UInt256)hash index:(NSUInteger)index script:(NSData *)script signature:(NSData *)signature
             sequence:(uint32_t)sequence {
-    DSTransactionInput *transactionInput = [DSTransactionInput transactionInputWithHash:hash index:index inScript:script signature:signature sequence:sequence];
+    DSTransactionInput *transactionInput = [DSTransactionInput transactionInputWithHash:hash index:(uint32_t)index inScript:script signature:signature sequence:sequence];
     [self.mInputs addObject:transactionInput];
 }
 

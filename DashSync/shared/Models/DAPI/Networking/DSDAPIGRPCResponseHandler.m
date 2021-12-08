@@ -520,6 +520,32 @@
 
     NSMutableDictionary<NSNumber *, NSData *> *rootElementsToProve = [NSMutableDictionary dictionary];
 
+    if (proofs.identitiesProof.length > 0) {
+        DSPlatformTreeQuery *treeQuery = [query treeQueryForType:DSPlatformDictionary_Identities];
+        identitiesRoot = [proofs.identitiesProof executeProofReturnElementDictionary:&identitiesDictionary query:treeQuery decode:TRUE usesVersion:TRUE error:error];
+        if (*error) {
+            return nil;
+        }
+        if (!treeQuery) {
+            DSPlatformTreeQuery *treeQueryForPublicKeyHashesToIdentityIds = [query treeQueryForType:DSPlatformDictionary_PublicKeyHashesToIdentityIds];
+            if (treeQueryForPublicKeyHashesToIdentityIds) {
+                NSMutableArray *identitiesWithoutVersions = [NSMutableArray array];
+                for (NSDictionary *identityDictionaryWithVersion in [identitiesDictionary allValues]) {
+                    [identitiesWithoutVersions addObject:[identityDictionaryWithVersion objectForKey:@(DSPlatformStoredMessage_Item)]];
+                }
+                BOOL verified = [query verifyPublicKeyHashesForIdentityDictionaries:identitiesWithoutVersions];
+                if (!verified) {
+                    *error = [NSError errorWithDomain:@"DashSync"
+                                                 code:500
+                                             userInfo:@{NSLocalizedDescriptionKey:
+                                                          DSLocalizedString(@"Platform returned a proof that does not satisfy our query", nil)}];
+                    return nil;
+                }
+            }
+        }
+        [rootElementsToProve setObject:identitiesRoot forKey:@(DSPlatformDictionary_Identities)];
+    }
+
     if (proofs.publicKeyHashesToIdentityIdsProof.length > 0) {
         DSPlatformTreeQuery *treeQuery = [query treeQueryForType:DSPlatformDictionary_PublicKeyHashesToIdentityIds];
         publicKeyHashesToIdentityIdsRoot = [proofs.publicKeyHashesToIdentityIdsProof executeProofReturnElementDictionary:&publicKeyHashesToIdentityIdsProofDictionary query:treeQuery decode:FALSE usesVersion:FALSE error:error];
@@ -527,15 +553,6 @@
             return nil;
         }
         [rootElementsToProve setObject:publicKeyHashesToIdentityIdsRoot forKey:@(DSPlatformDictionary_PublicKeyHashesToIdentityIds)];
-    }
-
-    if (proofs.identitiesProof.length > 0) {
-        DSPlatformTreeQuery *treeQuery = [query treeQueryForType:DSPlatformDictionary_Identities];
-        identitiesRoot = [proofs.identitiesProof executeProofReturnElementDictionary:&identitiesDictionary query:treeQuery decode:TRUE usesVersion:TRUE error:error];
-        if (*error) {
-            return nil;
-        }
-        [rootElementsToProve setObject:identitiesRoot forKey:@(DSPlatformDictionary_Identities)];
     }
 
     if (proofs.documentsProof.length > 0) {

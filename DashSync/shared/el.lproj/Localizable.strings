@@ -411,3 +411,6 @@
 
 /* No comment provided by engineer. */
 "Platform returned no identity when one was expected" = "Platform returned no identity when one was expected";
+
+/* No comment provided by engineer. */
+"Platform returned a non valid proof for our query" = "Platform returned a non valid proof for our query";
