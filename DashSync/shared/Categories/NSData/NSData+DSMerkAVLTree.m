@@ -19,7 +19,7 @@
 #import "NSData+DSCborDecoding.h"
 #import "NSData+DSMerkAVLTree.h"
 #import "NSData+Dash.h"
-#import "merk.h"
+#import "dash_shared_core.h"
 
 @implementation NSData (DSMerkAVLTree)
 

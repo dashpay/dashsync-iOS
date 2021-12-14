@@ -7,7 +7,7 @@
 
 #import "BigIntTypes.h"
 #import "DSChain.h"
-#import "mndiff.h"
+#import "dash_shared_core.h"
 #import <Foundation/Foundation.h>
 
 @class DSChain, DSMasternodeList, DSQuorumEntryEntity;

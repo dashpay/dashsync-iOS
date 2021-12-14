@@ -500,7 +500,7 @@ SPEC CHECKSUMS:
   CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
   CocoaLumberjack: b7e05132ff94f6ae4dfa9d5bce9141893a21d9da
   DAPI-GRPC: a33d808446476b6db8429ddcdbc4c1c7872f5501
-  DashSync: 5b9ec8c9edbeb1238b89a39d5b03541513ad0488
+  DashSync: 630a644371bc81836bc5f8b1f694ddf1421a2424
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   gRPC: f86f7af26edaf0ad17c7a086c1ef4ec57b4836ef

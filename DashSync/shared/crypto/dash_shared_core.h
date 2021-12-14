@@ -10,13 +10,18 @@
 
 #define MN_ENTRY_PAYLOAD_LENGTH 151
 
+#define QUORUM_DEFAULT_VERSION 1
+
+#define QUORUM_INDEXED_VERSION 2
+
 enum LLMQType {
-  Llmqtype5060 = 1,
-  Llmqtype40060 = 2,
-  Llmqtype40085 = 3,
-  Llmqtype10067 = 4,
-  Llmqtype560 = 100,
-  Llmqtype1060 = 101,
+  Llmqtype50_60 = 1,
+  Llmqtype400_60 = 2,
+  Llmqtype400_85 = 3,
+  Llmqtype100_67 = 4,
+  Llmqtype60_80 = 5,
+  Llmqtype5_60 = 100,
+  Llmqtype10_60 = 101,
 };
 typedef uint8_t LLMQType;
 
@@ -70,6 +75,7 @@ typedef struct QuorumEntry {
   LLMQType llmq_type;
   uint8_t (*quorum_entry_hash)[32];
   uint8_t (*quorum_hash)[32];
+  uint32_t quorum_index;
   uint8_t (*quorum_public_key)[48];
   uint8_t (*quorum_threshold_signature)[96];
   uint8_t (*quorum_verification_vector_hash)[32];
@@ -141,6 +147,33 @@ typedef struct QuorumValidationData {
 typedef bool (*ValidateQuorumCallback)(struct QuorumValidationData *data, const void *context);
 
 typedef uint32_t (*BlockHeightLookup)(uint8_t (*block_hash)[32], const void *context);
+
+typedef struct Element {
+  uintptr_t key_length;
+  uint8_t *key;
+  bool exists;
+  uintptr_t value_length;
+  uint8_t *value;
+} Element;
+
+typedef struct ExecuteProofResult {
+  bool valid;
+  uint8_t (*hash)[32];
+  uintptr_t element_count;
+  struct Element **elements;
+} ExecuteProofResult;
+
+typedef struct Query {
+  uintptr_t key_length;
+  uint8_t *key;
+  uintptr_t key_end_length;
+  uint8_t *key_end;
+} Query;
+
+typedef struct Keys {
+  uintptr_t element_count;
+  struct Query **elements;
+} Keys;
 
 
 
@@ -672,3 +705,11 @@ void mndiff_block_hash_destroy(uint8_t (*block_hash)[32]);
 void mndiff_quorum_validation_data_destroy(struct QuorumValidationData *data);
 
 void mndiff_destroy(struct MndiffResult *result);
+
+struct ExecuteProofResult *execute_proof_c(const uint8_t *c_array, uintptr_t length);
+
+struct ExecuteProofResult *execute_proof_query_keys_c(const uint8_t *c_array,
+                                                      uintptr_t length,
+                                                      const struct Keys *query_keys);
+
+void destroy_proof_c(struct ExecuteProofResult *proof_result);

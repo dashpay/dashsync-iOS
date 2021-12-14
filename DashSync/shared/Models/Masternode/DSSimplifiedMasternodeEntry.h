@@ -6,7 +6,7 @@
 //
 
 #import "BigIntTypes.h"
-#import "mndiff.h"
+#import "dash_shared_core.h"
 #import <Foundation/Foundation.h>
 
 @class DSChain, DSSimplifiedMasternodeEntryEntity, DSWallet, DSBlock;
