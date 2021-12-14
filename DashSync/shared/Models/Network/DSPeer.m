@@ -738,6 +738,18 @@
     [self sendMessage:msg type:MSG_GETMNLISTDIFF];
 }
 
+- (void)sendGetQuorumRotationInfoForBaseBlockHashes:(NSArray<NSData *>*)baseBlockHashes forBlockHash:(UInt256)blockHash {
+    NSMutableData *msg = [NSMutableData data];
+    [msg appendUInt32:(uint32_t) baseBlockHashes.count];
+    for (NSData *baseBlockHash in baseBlockHashes) {
+        [msg appendUInt256:baseBlockHash.UInt256];
+    }
+    [msg appendUInt256:blockHash];
+    [self sendMessage:msg type:MSG_GETQUORUMROTATIONINFO];
+}
+
+
+
 - (void)sendGetdataMessageWithGovernanceObjectHashes:(NSArray<NSData *> *)governanceObjectHashes {
     if (governanceObjectHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
         DSLog(@"%@:%u couldn't send governance getdata, %u is too many items, max is %u", self.host, self.port,

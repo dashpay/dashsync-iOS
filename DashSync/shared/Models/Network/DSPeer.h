@@ -123,6 +123,8 @@ typedef NS_ENUM(uint32_t, DSInvType)
 #define MSG_SSC @"ssc"
 #define MSG_GETMNLISTDIFF @"getmnlistd"
 #define MSG_MNLISTDIFF @"mnlistdiff"
+#define MSG_QUORUMROTATIONINFO @"qrinfo"
+#define MSG_GETQUORUMROTATIONINFO @"getqrinfo"
 
 //Governance
 
@@ -318,6 +320,7 @@ typedef NS_ENUM(NSUInteger, DSPeerType)
 - (void)sendGetdataMessageWithGovernanceObjectHashes:(NSArray<NSData *> *)governanceObjectHashes;
 - (void)sendGetdataMessageWithGovernanceVoteHashes:(NSArray<NSData *> *)governanceVoteHashes;
 - (void)sendGetMasternodeListFromPreviousBlockHash:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash;
+- (void)sendGetQuorumRotationInfoForBaseBlockHashes:(NSArray<NSData *>*)baseBlockHashes forBlockHash:(UInt256)blockHash;
 - (void)sendGetaddrMessage;
 - (void)sendGovSync;
 - (void)sendGovSync:(UInt256)h;
