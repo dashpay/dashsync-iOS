@@ -21,6 +21,7 @@
 @property (nonatomic, readonly) NSString *ipAddressString;
 @property (nonatomic, readonly) uint16_t port;
 @property (nonatomic, readonly) NSString *portString;
+@property (nonatomic, readonly) NSString *validString;
 @property (nonatomic, readonly) UInt384 operatorPublicKey;
 @property (nonatomic, readonly) NSDictionary *previousOperatorPublicKeys;
 @property (nonatomic, readonly) NSDictionary *previousSimplifiedMasternodeEntryHashes;
@@ -45,15 +46,35 @@
 
 - (BOOL)verifySignature:(UInt768)signature forMessageDigest:(UInt256)messageDigest;
 
+- (UInt256)simplifiedMasternodeEntryHashAtBlock:(DSBlock *)merkleBlock;
+
 - (UInt256)simplifiedMasternodeEntryHashAtBlockHash:(UInt256)blockHash;
+
 - (UInt256)simplifiedMasternodeEntryHashAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup;
+
 - (UInt256)simplifiedMasternodeEntryHashAtBlockHeight:(uint32_t)blockHeight;
 
+- (UInt384)operatorPublicKeyAtBlock:(DSBlock *)merkleBlock;
+
+- (UInt384)operatorPublicKeyAtBlockHash:(UInt256)blockHash;
+
 - (UInt384)operatorPublicKeyAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup;
+
 - (UInt384)operatorPublicKeyAtBlockHeight:(uint32_t)blockHeight;
 
+- (BOOL)isValidAtBlock:(DSBlock *)merkleBlock;
+
+- (BOOL)isValidAtBlockHash:(UInt256)blockHash;
+
 - (BOOL)isValidAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup;
+
 - (BOOL)isValidAtBlockHeight:(uint32_t)blockHeight;
+
+- (UInt256)confirmedHashAtBlock:(DSBlock *)merkleBlock;
+
+- (UInt256)confirmedHashAtBlockHash:(UInt256)blockHash;
+
+- (UInt256)confirmedHashAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup;
 
 - (UInt256)confirmedHashAtBlockHeight:(uint32_t)blockHeight;
 
