@@ -102,6 +102,21 @@
     return [self.mPreviousSimplifiedMasternodeEntryHashes copy];
 }
 
+- (BOOL)isValidAtBlock:(DSBlock *)block {
+    if (!block || block.height == UINT32_MAX) {
+        NSAssert(NO, @"Block should be set");
+        return self.isValid;
+    }
+    if (![self.previousValidity count]) return self.isValid;
+    return [self isValidAtBlockHeight:block.height];
+}
+
+- (BOOL)isValidAtBlockHash:(UInt256)blockHash {
+    if (![self.previousValidity count]) return self.isValid;
+    uint32_t blockHeight = [self.chain heightForBlockHash:blockHash];
+    return [self isValidAtBlockHeight:blockHeight];
+}
+
 - (BOOL)isValidAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
     if (![self.previousValidity count]) return self.isValid;
     uint32_t blockHeight = blockHeightLookup(blockHash);
@@ -127,6 +142,15 @@
         }
     }
     return isValid;
+}
+
+- (UInt256)simplifiedMasternodeEntryHashAtBlock:(DSBlock *)block {
+    if (!block || block.height == UINT32_MAX) {
+        NSAssert(NO, @"Block should be set");
+        return self.simplifiedMasternodeEntryHash;
+    }
+    if (![self.mPreviousSimplifiedMasternodeEntryHashes count]) return self.simplifiedMasternodeEntryHash;
+    return [self simplifiedMasternodeEntryHashAtBlockHeight:block.height];
 }
 
 - (UInt256)simplifiedMasternodeEntryHashAtBlockHash:(UInt256)blockHash {
@@ -162,6 +186,21 @@
     return usedSimplifiedMasternodeEntryHash;
 }
 
+- (UInt384)operatorPublicKeyAtBlock:(DSBlock *)block {
+    if (!block || block.height == UINT32_MAX) {
+        NSAssert(NO, @"Block should be set");
+        return self.operatorPublicKey;
+    }
+    if (![self.mPreviousOperatorPublicKeys count]) return self.operatorPublicKey;
+    return [self operatorPublicKeyAtBlockHeight:block.height];
+}
+
+- (UInt384)operatorPublicKeyAtBlockHash:(UInt256)blockHash {
+    if (![self.mPreviousOperatorPublicKeys count]) return self.operatorPublicKey;
+    uint32_t blockHeight = [self.chain heightForBlockHash:blockHash];
+    return [self operatorPublicKeyAtBlockHeight:blockHeight];
+}
+
 - (UInt384)operatorPublicKeyAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
     if (![self.mPreviousOperatorPublicKeys count]) return self.operatorPublicKey;
     uint32_t blockHeight = blockHeightLookup(blockHash);
@@ -183,6 +222,27 @@
         }
     }
     return usedPreviousOperatorPublicKeyAtBlockHash;
+}
+
+- (UInt256)confirmedHashAtBlock:(DSBlock *)block {
+    if (!block || block.height == UINT32_MAX) {
+        NSAssert(NO, @"Block should be set");
+        return self.confirmedHash;
+    }
+    if (!self.knownConfirmedAtHeight) return self.confirmedHash;
+    return [self confirmedHashAtBlockHeight:block.height];
+}
+
+- (UInt256)confirmedHashAtBlockHash:(UInt256)blockHash {
+    if (!self.knownConfirmedAtHeight) return self.confirmedHash;
+    uint32_t blockHeight = [self.chain heightForBlockHash:blockHash];
+    return [self confirmedHashAtBlockHeight:blockHeight];
+}
+
+- (UInt256)confirmedHashAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+    if (!self.knownConfirmedAtHeight) return self.confirmedHash;
+    uint32_t blockHeight = blockHeightLookup(blockHash);
+    return [self confirmedHashAtBlockHeight:blockHeight];
 }
 
 - (UInt256)confirmedHashAtBlockHeight:(uint32_t)blockHeight {
@@ -257,6 +317,10 @@
     if (_portString) return _portString;
     _portString = [NSString stringWithFormat:@"%d", self.port];
     return _portString;
+}
+
+- (NSString *)validString {
+    return self.isValid ? DSLocalizedString(@"Up", @"The server is up and running") : DSLocalizedString(@"Down", @"The server is not working");
 }
 
 - (NSString *)uniqueID {
