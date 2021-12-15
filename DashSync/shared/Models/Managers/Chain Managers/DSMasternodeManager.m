@@ -466,8 +466,9 @@
     NSMutableArray *nonEmptyBlockHashes = [NSMutableArray array];
     for (NSData *blockHashData in masternodeBlockHashDataArray) {
         NSAssert(uint256_is_not_zero(blockHashData.UInt256), @"We should not be adding an empty block hash");
-        if (uint256_is_not_zero(blockHashData.UInt256))
+        if (uint256_is_not_zero(blockHashData.UInt256)) {
             [nonEmptyBlockHashes addObject:blockHashData];
+        }
     }
     [self.masternodeListRetrievalQueue addObjectsFromArray:nonEmptyBlockHashes];
     self.masternodeListRetrievalQueueMaxAmount = MAX(self.masternodeListRetrievalQueueMaxAmount, self.masternodeListRetrievalQueue.count);
@@ -692,8 +693,10 @@
                 havingModifiedMasternodes:modifiedMasternodes
                              addedQuorums:addedQuorums
                                completion:^(NSError *error) {
-                if (!KEEP_OLD_QUORUMS && uint256_eq(self.lastQueriedBlockHash, masternodeList.blockHash))
+                if (!KEEP_OLD_QUORUMS && uint256_eq(self.lastQueriedBlockHash, masternodeList.blockHash)) {
                     [self removeOldMasternodeLists];
+                }
+
                 if (![self.masternodeListRetrievalQueue count]) {
                     [self.chain.chainManager.transactionManager checkInstantSendLocksWaitingForQuorums];
                     [self.chain.chainManager.transactionManager checkChainLocksWaitingForQuorums];
@@ -845,15 +848,19 @@
 }
 
 - (void)processValidMasternodeList:(DSMasternodeList *)masternodeList havingAddedMasternodes:(NSDictionary *)addedMasternodes modifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums {
-    if (uint256_eq(self.lastQueriedBlockHash, masternodeList.blockHash))
+    if (uint256_eq(self.lastQueriedBlockHash, masternodeList.blockHash)) {
+        //this is now the current masternode list
         self.currentMasternodeList = masternodeList;
-    if (uint256_eq(self.masternodeListAwaitingQuorumValidation.blockHash, masternodeList.blockHash))
+    }
+    if (uint256_eq(self.masternodeListAwaitingQuorumValidation.blockHash, masternodeList.blockHash)) {
         self.masternodeListAwaitingQuorumValidation = nil;
-    if (!self.masternodeListsByBlockHash[uint256_data(masternodeList.blockHash)] &&
-        ![self.masternodeListsBlockHashStubs containsObject:uint256_data(masternodeList.blockHash)]) {
+    }
+    if (!self.masternodeListsByBlockHash[uint256_data(masternodeList.blockHash)] && ![self.masternodeListsBlockHashStubs containsObject:uint256_data(masternodeList.blockHash)]) {
         //in rare race conditions this might already exist
+
         NSArray *updatedSimplifiedMasternodeEntries = [addedMasternodes.allValues arrayByAddingObjectsFromArray:modifiedMasternodes.allValues];
         [self.chain updateAddressUsageOfSimplifiedMasternodeEntries:updatedSimplifiedMasternodeEntries];
+
         [self saveMasternodeList:masternodeList
             havingModifiedMasternodes:modifiedMasternodes
                          addedQuorums:addedQuorums];
@@ -1200,12 +1207,19 @@
 
 - (DSLocalMasternode *)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet *_Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet *_Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex operatorPublicKey:(DSBLSKey *)operatorPublicKey inOwnerWallet:(DSWallet *_Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex ownerPrivateKey:(DSECDSAKey *)ownerPrivateKey inVotingWallet:(DSWallet *_Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex votingKey:(DSECDSAKey *)votingKey {
     DSLocalMasternode *localMasternode = [[DSLocalMasternode alloc] initWithIPAddress:ipAddress onPort:port inFundsWallet:fundsWallet fundsWalletIndex:fundsWalletIndex inOperatorWallet:operatorWallet operatorWalletIndex:operatorWalletIndex inOwnerWallet:ownerWallet ownerWalletIndex:ownerWalletIndex inVotingWallet:votingWallet votingWalletIndex:votingWalletIndex];
-    if (operatorWalletIndex == UINT32_MAX && operatorPublicKey)
+
+    if (operatorWalletIndex == UINT32_MAX && operatorPublicKey) {
         [localMasternode forceOperatorPublicKey:operatorPublicKey];
-    if (ownerWalletIndex == UINT32_MAX && ownerPrivateKey)
+    }
+
+    if (ownerWalletIndex == UINT32_MAX && ownerPrivateKey) {
         [localMasternode forceOwnerPrivateKey:ownerPrivateKey];
-    if (votingWalletIndex == UINT32_MAX && votingKey)
+    }
+
+    if (votingWalletIndex == UINT32_MAX && votingKey) {
         [localMasternode forceVotingKey:votingKey];
+    }
+
     return localMasternode;
 }
 
@@ -1268,21 +1282,23 @@
 
 - (NSArray<DSLocalMasternode *> *)localMasternodesPreviouslyUsingIndex:(uint32_t)index atDerivationPath:(DSDerivationPath *)derivationPath {
     NSParameterAssert(derivationPath);
-    if (derivationPath.reference == DSDerivationPathReference_ProviderFunds ||
-        derivationPath.reference == DSDerivationPathReference_ProviderOwnerKeys)
+    if (derivationPath.reference == DSDerivationPathReference_ProviderFunds || derivationPath.reference == DSDerivationPathReference_ProviderOwnerKeys) {
         return nil;
+    }
+
     NSMutableArray *localMasternodes = [NSMutableArray array];
+
     for (DSLocalMasternode *localMasternode in self.localMasternodesDictionaryByRegistrationTransactionHash.allValues) {
         switch (derivationPath.reference) {
             case DSDerivationPathReference_ProviderOperatorKeys:
-                if (localMasternode.operatorKeysWallet == derivationPath.wallet &&
-                    [localMasternode.previousOperatorWalletIndexes containsIndex:index])
+                if (localMasternode.operatorKeysWallet == derivationPath.wallet && [localMasternode.previousOperatorWalletIndexes containsIndex:index]) {
                     [localMasternodes addObject:localMasternode];
+                }
                 break;
             case DSDerivationPathReference_ProviderVotingKeys:
-                if (localMasternode.votingKeysWallet == derivationPath.wallet &&
-                    [localMasternode.previousVotingWalletIndexes containsIndex:index])
+                if (localMasternode.votingKeysWallet == derivationPath.wallet && [localMasternode.previousVotingWalletIndexes containsIndex:index]) {
                     [localMasternodes addObject:localMasternode];
+                }
                 break;
             default:
                 break;
