@@ -41,9 +41,11 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 @interface DSMasternodeManager : NSObject <DSPeerMasternodeDelegate>
 
 @property (nonatomic, readonly, nonnull) DSChain *chain;
+@property (nonatomic, readonly) NSUInteger simplifiedMasternodeEntryCount;
 @property (nonatomic, readonly) NSUInteger localMasternodesCount;
 @property (nonatomic, readonly) NSArray<DSLocalMasternode *> *localMasternodes;
 @property (nonatomic, readonly) NSUInteger activeQuorumsCount;
+@property (nonatomic, assign) BOOL testingMasternodeListRetrieval;
 @property (nonatomic, readonly) NSArray *recentMasternodeLists;
 @property (nonatomic, readonly) NSUInteger knownMasternodeListsCount;
 @property (nonatomic, readonly) uint32_t earliestMasternodeListBlockHeight;
@@ -54,11 +56,12 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 @property (nonatomic, readonly) NSUInteger masternodeListRetrievalQueueCount;
 @property (nonatomic, readonly) NSUInteger masternodeListRetrievalQueueMaxAmount;
 @property (nonatomic, readonly) BOOL hasMasternodeListCurrentlyBeingSaved;
+@property (nonatomic, readonly) BOOL currentMasternodeListIsInLast24Hours;
 
 - (instancetype)init NS_UNAVAILABLE;
 - (uint32_t)heightForBlockHash:(UInt256)blockhash;
 
-//- (DSSimplifiedMasternodeEntry *)masternodeHavingProviderRegistrationTransactionHash:(NSData *)providerRegistrationTransactionHash;
+- (DSSimplifiedMasternodeEntry *)masternodeHavingProviderRegistrationTransactionHash:(NSData *)providerRegistrationTransactionHash;
 
 - (BOOL)hasMasternodeAtLocation:(UInt128)IPAddress port:(uint32_t)port;
 
