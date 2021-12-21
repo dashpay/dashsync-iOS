@@ -46,13 +46,6 @@
 // flag bits (little endian): 00001011 [merkleRoot = 1, m1 = 1, tx1 = 0, tx2 = 1, m2 = 0, byte padding = 000]
 // hashes: [tx1, tx2, m2]
 
-inline static int ceil_log2(int x) {
-    int r = (x & (x - 1)) ? 1 : 0;
-
-    while ((x >>= 1) != 0) r++;
-    return r;
-}
-
 @interface DSMasternodeList ()
 
 @property (nonatomic, strong) NSMutableDictionary<NSData *, DSSimplifiedMasternodeEntry *> *mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash;
@@ -102,52 +95,6 @@ inline static int ceil_log2(int x) {
     return self;
 }
 
-#define LOG_DIFFS_BETWEEN_MASTERNODE_LISTS 1
-
-+ (instancetype)masternodeListAtBlockHash:(UInt256)blockHash atBlockHeight:(uint32_t)blockHeight fromBaseMasternodeList:(DSMasternodeList *)baseMasternodeList addedMasternodes:(NSDictionary *)addedMasternodes removedMasternodeHashes:(NSArray *)removedMasternodeHashes modifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums removedQuorumHashesByType:(NSDictionary *)removedQuorumHashesByType onChain:(DSChain *)chain {
-    NSMutableDictionary *tentativeMasternodeList = baseMasternodeList ? [baseMasternodeList.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash mutableCopy] : [NSMutableDictionary dictionary];
-
-    [tentativeMasternodeList removeObjectsForKeys:removedMasternodeHashes];
-    [tentativeMasternodeList addEntriesFromDictionary:addedMasternodes];
-
-#if LOG_DIFFS_BETWEEN_MASTERNODE_LISTS
-    DSLog(@"MNDiff: %lu added, %lu removed, %lu modified ", (unsigned long)addedMasternodes.count, (unsigned long)removedMasternodeHashes.count, (unsigned long)modifiedMasternodes.count);
-#endif
-
-    for (NSData *masternodeHashData in modifiedMasternodes) {
-        DSSimplifiedMasternodeEntry *oldMasternodeEntry = tentativeMasternodeList[masternodeHashData];
-        //the masternode has changed
-        DSSimplifiedMasternodeEntry *modifiedMasternode = modifiedMasternodes[masternodeHashData];
-        [modifiedMasternode keepInfoOfPreviousEntryVersion:oldMasternodeEntry atBlockHash:blockHash atBlockHeight:blockHeight];
-        tentativeMasternodeList[masternodeHashData] = modifiedMasternode;
-    }
-
-    NSMutableDictionary *tentativeQuorumList = baseMasternodeList ? [baseMasternodeList.mQuorums mutableCopy] : [NSMutableDictionary dictionary];
-
-    //we need to do a deep mutable copy
-    for (NSNumber *quorumType in [tentativeQuorumList copy]) {
-        tentativeQuorumList[quorumType] = [tentativeQuorumList[quorumType] mutableCopy];
-    }
-
-    for (NSNumber *quorumType in addedQuorums) {
-        if (![tentativeQuorumList objectForKey:quorumType]) {
-            tentativeQuorumList[quorumType] = [NSMutableDictionary dictionary];
-        }
-    }
-
-    for (NSNumber *quorumType in tentativeQuorumList) {
-        NSMutableDictionary *quorumsOfType = tentativeQuorumList[quorumType];
-        if (removedQuorumHashesByType[quorumType]) {
-            [quorumsOfType removeObjectsForKeys:removedQuorumHashesByType[quorumType]];
-        }
-        if (addedQuorums[quorumType]) {
-            [quorumsOfType addEntriesFromDictionary:addedQuorums[quorumType]];
-        }
-    }
-
-    return [[self alloc] initWithSimplifiedMasternodeEntriesDictionary:tentativeMasternodeList quorumEntriesDictionary:tentativeQuorumList atBlockHash:blockHash atBlockHeight:blockHeight withMasternodeMerkleRootHash:UINT256_ZERO withQuorumMerkleRootHash:UINT256_ZERO onChain:chain];
-}
-
 - (UInt256)masternodeMerkleRoot {
     if (uint256_is_zero(_masternodeMerkleRoot)) {
         return [self masternodeMerkleRootWithBlockHeightLookup:^uint32_t(UInt256 blockHash) {
@@ -176,7 +123,6 @@ inline static int ceil_log2(int x) {
 
 - (NSArray<NSData *> *)hashesForMerkleRootWithBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
     NSArray *proTxHashes = [self providerTxOrderedHashes];
-
     NSMutableArray *simplifiedMasternodeListByRegistrationTransactionHashHashes = [NSMutableArray array];
     uint32_t height = blockHeightLookup(self.blockHash);
     if (height == UINT32_MAX) {
@@ -233,7 +179,6 @@ inline static int ceil_log2(int x) {
             UInt256 hash2 = uint256_reverse([(NSData *)obj2 UInt256]);
             return uint256_sup(hash1, hash2) ? NSOrderedDescending : NSOrderedAscending;
         }];
-
         self.quorumMerkleRoot = [[NSData merkleRootFromHashes:sortedLlmqHashes] UInt256];
     }
     return _quorumMerkleRoot;
@@ -242,7 +187,6 @@ inline static int ceil_log2(int x) {
 
 - (DSMutableOrderedDataKeyDictionary *)calculateScores:(UInt256)modifier {
     NSMutableDictionary<NSData *, id> *scores = [NSMutableDictionary dictionary];
-
     for (NSData *registrationTransactionHash in self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash) {
         DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[registrationTransactionHash];
         if (uint256_is_zero(simplifiedMasternodeEntry.confirmedHash)) {
@@ -426,34 +370,8 @@ inline static int ceil_log2(int x) {
     return interval < DAY_TIME_INTERVAL * 30;
 }
 
-// recursively walks the merkle tree in depth first order, calling leaf(hash, flag) for each stored hash, and
-// branch(left, right) with the result from each branch
-- (id)walkHashIdx:(int *)hashIdx flagIdx:(int *)flagIdx
-                                                                    depth:(int)depth
-                                                                     leaf:(id (^)(id, BOOL))leaf
-                                                                   branch:(id (^)(id, id))branch
-    simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes:(NSData *)simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes
-                                                                    flags:(NSData *)flags {
-    if ((*flagIdx) / 8 >= flags.length || (*hashIdx + 1) * sizeof(UInt256) > simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes.length) return leaf(nil, NO);
-
-    BOOL flag = (((const uint8_t *)flags.bytes)[*flagIdx / 8] & (1 << (*flagIdx % 8)));
-
-    (*flagIdx)++;
-
-    if (!flag || depth == ceil_log2((int)_mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.count)) {
-        UInt256 hash = [simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes UInt256AtOffset:(*hashIdx) * sizeof(UInt256)];
-
-        (*hashIdx)++;
-        return leaf(uint256_obj(hash), flag);
-    }
-
-    id left = [self walkHashIdx:hashIdx flagIdx:flagIdx depth:depth + 1 leaf:leaf branch:branch simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes:simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes flags:flags];
-    id right = [self walkHashIdx:hashIdx flagIdx:flagIdx depth:depth + 1 leaf:leaf branch:branch simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes:simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes flags:flags];
-
-    return branch(left, right);
-}
-
-- (BOOL)validateQuorumsWithMasternodeLists:(NSDictionary *)masternodeLists {
+/*
+ - (BOOL)validateQuorumsWithMasternodeLists:(NSDictionary *)masternodeLists {
     for (DSQuorumEntry *quorum in self.quorums) {
         BOOL verified = quorum.verified;
         if (!verified) {
@@ -464,6 +382,7 @@ inline static int ceil_log2(int x) {
     }
     return TRUE;
 }
+*/
 
 - (NSString *)description {
     return [[super description] stringByAppendingString:[NSString stringWithFormat:@" {%u}", self.height]];
@@ -603,11 +522,7 @@ inline static int ceil_log2(int x) {
         orderedQuorumDictionary[quorumEntry] = uint256_data(orderingHash);
     }
     NSArray *orderedQuorums = [orderedQuorumDictionary keysSortedByValueUsingComparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2) {
-        if (uint256_sup([obj1 UInt256], [obj2 UInt256])) {
-            return NSOrderedDescending;
-        } else {
-            return NSOrderedAscending;
-        }
+        return uint256_sup([obj1 UInt256], [obj2 UInt256]) ? NSOrderedDescending : NSOrderedAscending;
     }];
     return orderedQuorums;
 }

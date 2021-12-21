@@ -43,6 +43,7 @@
     }
     NSData *rootHash = [NSData dataWithBytes:result->hash length:32];
     NSMutableDictionary *mElementDictionary = [[NSMutableDictionary alloc] initWithCapacity:result->element_count];
+    // if there would be more than 255 elements we will get infinite loop here
     for (uint8_t i = 0; i < result->element_count; i++) {
         Element *element = result->elements[i];
         if (element->exists) {

@@ -116,7 +116,6 @@
 #import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
 #import "DSDashpayUserEntity+CoreDataClass.h"
 #import "DSFriendRequestEntity+CoreDataClass.h"
-#import "DSMasternodeList.h"
 #import "DSMasternodeListEntity+CoreDataProperties.h"
 #import "DSPotentialContact.h"
 #import "DSPotentialOneWayFriendship.h"

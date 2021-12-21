@@ -75,16 +75,20 @@
                 double totalPingTime = 0;
                 
                 for (NSData *data in pingTimes) {
-                    DSSimplifiedMasternodeEntry *masternode = [masternodeList masternodeForRegistrationHash:data.reverse.UInt256];
+                    UInt256 hash = data.reverse.UInt256;
+                    DSSimplifiedMasternodeEntry *masternode = [masternodeList masternodeForRegistrationHash:hash];
+                    NSString *ipAddress = masternode.ipAddressString;
                     totalPingTime += [pingTimes[data] doubleValue];
-                    [pingDictionary setObject:@([pingTimes[data] unsignedLongValue]) forKey:masternode.ipAddressString];
+                    [pingDictionary setObject:@([pingTimes[data] unsignedLongValue]) forKey:ipAddress];
                 }
                 
                 NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
                 
                 for (NSData *data in errors) {
-                    DSSimplifiedMasternodeEntry *masternode = [masternodeList masternodeForRegistrationHash:data.reverse.UInt256];
-                    [errorDictionary setObject:[errors[data] localizedDescription] forKey:masternode.ipAddressString];
+                    UInt256 hash = data.reverse.UInt256;
+                    DSSimplifiedMasternodeEntry *masternode = [masternodeList masternodeForRegistrationHash:hash];
+                    NSString *ipAddress = masternode.ipAddressString;
+                    [errorDictionary setObject:[errors[data] localizedDescription] forKey:ipAddress];
                 }
                 
                 NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
