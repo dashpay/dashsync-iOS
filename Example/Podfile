@@ -45,9 +45,9 @@ post_install do |installer|
     end
 
     # Apple Silicon fix when targeting Simulator
-    installer.pods_project.build_configurations.each do |config|
-      config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
-    end
+#    installer.pods_project.build_configurations.each do |config|
+#      config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
+#    end
 
     # Workaround: Patch relic to compile on macOS
     %x(patch -N Pods/bls-signatures-pod/contrib/relic/include/relic_err.h < relic_err.patch)
