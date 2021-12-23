@@ -44,7 +44,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pods-macOS-
       - name: Rustup add targets
-        run: rustup target add aarch64-apple-ios x86_64-apple-ios aarch64-apple-ios-sim
+        run: rustup target add x86_64-apple-darwin
       - name: Dependencies
         working-directory: ./dashsync/Example
         run: pod install
