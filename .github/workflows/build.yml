@@ -6,7 +6,6 @@ on:
       - master
       - develop
       - nightly
-      - fix/CI
   pull_request:
     branches:
       - master
@@ -42,6 +41,8 @@ jobs:
         with:
           path: ./dashsync/Example/Pods
           key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
       - uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: '13.2.1'

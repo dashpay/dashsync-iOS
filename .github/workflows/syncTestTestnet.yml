@@ -6,7 +6,6 @@ on:
       - master
       - develop
       - nightly
-      - fix/CI
   pull_request:
     branches:
       - master
