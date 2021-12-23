@@ -1,6 +1,9 @@
 name: Network
 
 on:
+  push:
+    branches:
+      - fix/CI
   pull_request:
     branches:
       - master
@@ -40,6 +43,8 @@ jobs:
           key: ${{ runner.os }}-pods-macOS-${{ hashFiles('**/Podfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pods-macOS-
+      - name: Rustup add targets
+        run: rustup target add aarch64-apple-ios x86_64-apple-ios aarch64-apple-ios-sim
       - name: Dependencies
         working-directory: ./dashsync/Example
         run: pod install

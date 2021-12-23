@@ -38,23 +38,13 @@ jobs:
       - name: Git LFS Pull
         run: git lfs pull
         working-directory: ./dashsync
-      - name: Check cocoapods
-        run: pod --version
-      - name: Install cocoapods
-        working-directory: ./dashsync/Example
-        run: ./check_cocoapods.sh
-        shell: bash
       - uses: actions/cache@v2
         with:
           path: ./dashsync/Example/Pods
           key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
-#          restore-keys: |
-#            ${{ runner.os }}-pods-
       - uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: '13.2.1'
-      - name: Check cargo
-        run: cargo --version
       - name: Rustup add targets
         run: rustup target add aarch64-apple-ios x86_64-apple-ios aarch64-apple-ios-sim
       - name: Dependencies
