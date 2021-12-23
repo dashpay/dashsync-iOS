@@ -29,12 +29,12 @@ jobs:
         run: |
           git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
         working-directory: ./dashsync
-#      - name: Restore LFS cache
-#        uses: actions/cache@v2
-#        id: lfs-cache
-#        with:
-#          path: dashsync/.git/lfs
-#          key: lfs-${{ hashFiles('.lfs-assets-id') }}-v1
+      - name: Restore LFS cache
+        uses: actions/cache@v2
+        id: lfs-cache
+        with:
+          path: dashsync/.git/lfs
+          key: lfs-${{ hashFiles('.lfs-assets-id') }}-v1
       - name: Git LFS Pull
         run: git lfs pull
         working-directory: ./dashsync
@@ -44,12 +44,15 @@ jobs:
         working-directory: ./dashsync/Example
         run: ./check_cocoapods.sh
         shell: bash
-#      - uses: actions/cache@v2
-#        with:
-#          path: ./dashsync/Example/Pods
-#          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+      - uses: actions/cache@v2
+        with:
+          path: ./dashsync/Example/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
 #          restore-keys: |
 #            ${{ runner.os }}-pods-
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '13.2.1'
       - name: Dependencies
         working-directory: ./dashsync/Example
         run: pod install
