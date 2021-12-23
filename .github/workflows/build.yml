@@ -45,8 +45,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pods-
       - name: Check cocoapods
-		run: ./dashsync/Example/check_cocoapods.sh
-		shell: bash
+        run: ./dashsync/Example/check_cocoapods.sh
+        shell: bash
       - name: Dependencies
         working-directory: ./dashsync/Example
         run: pod install
