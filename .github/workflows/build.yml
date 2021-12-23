@@ -38,16 +38,18 @@ jobs:
       - name: Git LFS Pull
         run: git lfs pull
         working-directory: ./dashsync
+      - name: Check cocoapods
+        run: pod --version
+      - name: Install cocoapods
+        working-directory: ./dashsync/Example
+        run: ./check_cocoapods.sh
+        shell: bash
       - uses: actions/cache@v2
         with:
           path: ./dashsync/Example/Pods
           key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pods-
-      - name: Check cocoapods
-        working-directory: ./dashsync/Example
-        run: ./check_cocoapods.sh
-        shell: bash
       - name: Dependencies
         working-directory: ./dashsync/Example
         run: pod install
