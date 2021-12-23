@@ -43,10 +43,8 @@ jobs:
           key: ${{ runner.os }}-pods-macOS-${{ hashFiles('**/Podfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pods-macOS-
-      - name: Check lipo
-        run: lipo
-      - name: Install command line tools
-        run: xcode-select --install
+      - name: Install Cargo Lipo
+        run: cargo install cargo-lipo
       - name: Rustup add targets
         run: rustup target add aarch64-apple-ios x86_64-apple-ios aarch64-apple-ios-sim x86_64-apple-darwin
       - name: Dependencies
