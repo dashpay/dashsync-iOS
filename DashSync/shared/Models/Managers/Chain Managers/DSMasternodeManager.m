@@ -59,6 +59,7 @@
 #import "NSDictionary+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"
+#import "NSSet+Dash.h"
 #import "NSString+Bitcoin.h"
 #import "dash_shared_core.h"
 
@@ -571,23 +572,24 @@
             //there is the rare possibility we have the masternode list as a checkpoint, so lets first try that
             [self processRequestFromFileForBlockHash:blockHash
                                           completion:^(BOOL success, DSMasternodeList *masternodeList) {
-                                              if (!success) {
-                                                  //we need to go get it
-                                                  UInt256 previousMasternodeAlreadyKnownBlockHash = [self closestKnownBlockHashForBlockHash:blockHash];
-                                                  UInt256 previousMasternodeInQueueBlockHash = (pos ? [masternodeListsToRetrieve objectAtIndex:pos - 1].UInt256 : UINT256_ZERO);
-                                                  uint32_t previousMasternodeAlreadyKnownHeight = [self heightForBlockHash:previousMasternodeAlreadyKnownBlockHash];
-                                                  uint32_t previousMasternodeInQueueHeight = (pos ? [self heightForBlockHash:previousMasternodeInQueueBlockHash] : UINT32_MAX);
-                                                  UInt256 previousBlockHash = pos ? (previousMasternodeAlreadyKnownHeight > previousMasternodeInQueueHeight ? previousMasternodeAlreadyKnownBlockHash : previousMasternodeInQueueBlockHash) : previousMasternodeAlreadyKnownBlockHash;
-                                                  DSLog(@"Requesting masternode list and quorums from %u to %u (%@ to %@)", [self heightForBlockHash:previousBlockHash], [self heightForBlockHash:blockHash], uint256_reverse_hex(previousBlockHash), uint256_reverse_hex(blockHash));
-                                                  NSAssert(([self heightForBlockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
-                                                  [self.peerManager.downloadPeer sendGetMasternodeListFromPreviousBlockHash:previousBlockHash forBlockHash:blockHash];
-                                                  UInt512 concat = uint512_concat(previousBlockHash, blockHash);
-                                                  [self.masternodeListsInRetrieval addObject:uint512_data(concat)];
-                                              } else {
-                                                  //we already had it
-                                                  [self.masternodeListRetrievalQueue removeObject:uint256_data(blockHash)];
-                                              }
-                                          }];
+                if (success) {
+                    //we already had it
+                    [self.masternodeListRetrievalQueue removeObject:uint256_data(blockHash)];
+                    return;
+                }
+                //we need to go get it
+                UInt256 previousMasternodeAlreadyKnownBlockHash = [self closestKnownBlockHashForBlockHash:blockHash];
+                UInt256 previousMasternodeInQueueBlockHash = (pos ? [masternodeListsToRetrieve objectAtIndex:pos - 1].UInt256 : UINT256_ZERO);
+                uint32_t previousMasternodeAlreadyKnownHeight = [self heightForBlockHash:previousMasternodeAlreadyKnownBlockHash];
+                uint32_t previousMasternodeInQueueHeight = (pos ? [self heightForBlockHash:previousMasternodeInQueueBlockHash] : UINT32_MAX);
+                UInt256 previousBlockHash = pos ? (previousMasternodeAlreadyKnownHeight > previousMasternodeInQueueHeight ? previousMasternodeAlreadyKnownBlockHash : previousMasternodeInQueueBlockHash) : previousMasternodeAlreadyKnownBlockHash;
+                DSLog(@"Requesting masternode list and quorums from %u to %u (%@ to %@)", [self heightForBlockHash:previousBlockHash], [self heightForBlockHash:blockHash], uint256_reverse_hex(previousBlockHash), uint256_reverse_hex(blockHash));
+                NSAssert(([self heightForBlockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
+                [self.peerManager.downloadPeer sendGetMasternodeListFromPreviousBlockHash:previousBlockHash forBlockHash:blockHash];
+                UInt512 concat = uint512_concat(previousBlockHash, blockHash);
+                [self.masternodeListsInRetrieval addObject:uint512_data(concat)];
+            
+            }];
         } else {
             DSLog(@"Missing block (%@)", uint256_reverse_hex(blockHash));
             [self.masternodeListRetrievalQueue removeObject:uint256_data(blockHash)];
@@ -867,6 +869,59 @@
                                     [self issueWithMasternodeListFromPeer:peer];
                                 }
                             }];
+}
+
+- (void)peer:(DSPeer *)peer relayedQuorumRotationInfoMessage:(NSData *)message {
+    self.timedOutAttempt = 0;
+    NSUInteger length = message.length;
+    NSUInteger offset = 0;
+    if (length - offset < 32) return;
+    UInt256 baseBlockHash = [message UInt256AtOffset:offset];
+    offset += 32;
+    if (length - offset < 32) return;
+    UInt256 blockHash = [message UInt256AtOffset:offset];
+    offset += 32;
+    NSData *blockHashData = uint256_data(blockHash);
+    UInt512 concat = uint512_concat(baseBlockHash, blockHash);
+    NSData *blockHashDiffsData = uint512_data(concat);
+    if (![self.masternodeListsInRetrieval containsObject:blockHashDiffsData]) {
+        return;
+    }
+    [self.masternodeListsInRetrieval removeObject:blockHashDiffsData];
+    if ([self.masternodeListsByBlockHash objectForKey:blockHashData]) {
+        //we already have this
+        return; //no need to do anything more
+    }
+    if ([self.masternodeListsBlockHashStubs containsObject:blockHashData]) {
+        return; //no need to do anything more
+    }
+    DSMasternodeList *baseMasternodeList = [self masternodeListForBlockHash:baseBlockHash];
+    if (!baseMasternodeList && !uint256_eq(self.chain.genesisHash, baseBlockHash) && uint256_is_not_zero(baseBlockHash)) {
+        //this could have been deleted in the meantime, if so rerequest
+        [self issueWithMasternodeListFromPeer:peer];
+        return;
+    }
+    DSBlock *lastBlock = nil;
+    if ([self.chain heightForBlockHash:blockHash]) {
+        lastBlock = [[peer.chain terminalBlocks] objectForKey:uint256_obj(blockHash)];
+        if (!lastBlock && [peer.chain allowInsightBlocksForVerification]) {
+            lastBlock = [[peer.chain insightVerifiedBlocksByHashDictionary] objectForKey:uint256_data(blockHash)];
+            if (!lastBlock && peer.chain.isTestnet) {
+                //We can trust insight if on testnet
+                [self blockUntilAddInsight:blockHash];
+                lastBlock = [[peer.chain insightVerifiedBlocksByHashDictionary] objectForKey:uint256_data(blockHash)];
+            }
+        }
+    } else {
+        lastBlock = [peer.chain recentTerminalBlockForBlockHash:blockHash];
+    }
+    if (!lastBlock) {
+        [self issueWithMasternodeListFromPeer:peer];
+        DSLog(@"Last Block missing");
+        return;
+    }
+    self.processingMasternodeListDiffHashes = blockHashDiffsData;
+    // We can use insight as backup if we are on testnet, we shouldn't otherwise.
 }
 
 - (void)processValidMasternodeList:(DSMasternodeList *)masternodeList havingAddedMasternodes:(NSDictionary *)addedMasternodes modifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums {

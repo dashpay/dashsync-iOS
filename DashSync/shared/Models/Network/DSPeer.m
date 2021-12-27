@@ -738,16 +738,15 @@
     [self sendMessage:msg type:MSG_GETMNLISTDIFF];
 }
 
-- (void)sendGetQuorumRotationInfoForBaseBlockHashes:(NSArray<NSData *>*)baseBlockHashes forBlockHash:(UInt256)blockHash {
+- (void)sendGetQuorumRotationInfoForBaseBlockHashes:(NSArray<NSData *> *)baseBlockHashes forBlockHash:(UInt256)blockHash {
     NSMutableData *msg = [NSMutableData data];
-    [msg appendUInt32:(uint32_t) baseBlockHashes.count];
+    [msg appendUInt32:(uint32_t)baseBlockHashes.count];
     for (NSData *baseBlockHash in baseBlockHashes) {
         [msg appendUInt256:baseBlockHash.UInt256];
     }
     [msg appendUInt256:blockHash];
     [self sendMessage:msg type:MSG_GETQUORUMROTATIONINFO];
 }
-
 
 
 - (void)sendGetdataMessageWithGovernanceObjectHashes:(NSArray<NSData *> *)governanceObjectHashes {
@@ -971,6 +970,8 @@
         [self acceptMNBMessage:message];
     else if ([MSG_MNLISTDIFF isEqual:type])
         [self acceptMNLISTDIFFMessage:message];
+    else if ([MSG_QUORUMROTATIONINFO isEqual:type])
+        [self acceptQRInfoMessage:message];
     //governance
     else if ([MSG_GOVOBJVOTE isEqual:type])
         [self acceptGovObjectVoteMessage:message];
@@ -1895,6 +1896,10 @@
 
 - (void)acceptMNLISTDIFFMessage:(NSData *)message {
     [self.masternodeDelegate peer:self relayedMasternodeDiffMessage:message];
+}
+
+- (void)acceptQRInfoMessage:(NSData *)message {
+    [self.masternodeDelegate peer:self relayedQuorumRotationInfoMessage:message];
 }
 
 

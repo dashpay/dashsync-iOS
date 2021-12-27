@@ -1,5 +1,5 @@
-//
-//  Created by Sam Westrich
+//  
+//  Created by Vladimir Pirogov
 //  Copyright © 2021 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -19,10 +19,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface NSMutableArray (Dash)
+@interface NSMutableSet (Dash)
 
-+ (NSMutableArray *)secureArrayWithArray:(NSArray *)array;
-- (NSArray *)map:(id (^)(id obj))block;
+- (NSSet *)map:(id (^)(id obj))block;
 
 @end
 

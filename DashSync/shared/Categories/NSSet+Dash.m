@@ -1,5 +1,5 @@
-//
-//  Created by Sam Westrich
+//  
+//  Created by Vladimir Pirogov
 //  Copyright © 2021 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -15,19 +15,14 @@
 //  limitations under the License.
 //
 
-#import "NSMutableArray+Dash.h"
-#import "NSMutableData+Dash.h"
+#import "NSSet+Dash.h"
 
-@implementation NSMutableArray (Dash)
+@implementation NSSet (Dash)
 
-+ (NSMutableArray *)secureArrayWithArray:(NSArray *)array {
-    return CFBridgingRelease(CFArrayCreateMutableCopy(SecureAllocator(), 0, (CFArrayRef)array));
-}
-
-- (NSMutableArray *)map:(id (^)(id obj))block {
+- (NSSet *)map:(id (^)(id obj))block {
     NSParameterAssert(block != nil);
-    NSMutableArray *result = [NSMutableArray arrayWithCapacity:self.count];
-    [self enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+    NSMutableSet *result = [NSMutableSet setWithCapacity:self.count];
+    [self enumerateObjectsUsingBlock:^(id  _Nonnull obj, BOOL * _Nonnull stop) {
         [result addObject:block(obj) ?: [NSNull null]];
     }];
     return result;
