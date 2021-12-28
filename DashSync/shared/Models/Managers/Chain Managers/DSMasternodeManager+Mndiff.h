@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Vladimir Pirogov
 //  Copyright © 2021 Dash Core Group. All rights reserved.
 //
@@ -19,9 +19,9 @@
 #import "DSMasternodeDiffMessageContext.h"
 #import "DSMasternodeList.h"
 #import "DSMasternodeManager.h"
-#import "DSSimplifiedMasternodeEntry.h"
 #import "DSQuorumEntry.h"
-#import "mndiff.h"
+#import "DSSimplifiedMasternodeEntry.h"
+#import "dash_shared_core.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN

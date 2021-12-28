@@ -22,10 +22,9 @@
 #import "DSOptionsManager.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSTransactionFactory.h"
-#import "mndiff.h"
 #import "NSData+Dash.h"
 #import "NSString+Bitcoin.h"
-#import <arpa/inet.h>
+#import "dash_shared_core.h"
 #import <DashSync/DSMasternodeList.h>
 #import <DashSync/DSMasternodeListEntity+CoreDataClass.h>
 #import <DashSync/DSMasternodeManager+Mndiff.h>
@@ -35,6 +34,7 @@
 #import <DashSync/DSSimplifiedMasternodeEntry.h>
 #import <DashSync/DSSimplifiedMasternodeEntryEntity+CoreDataClass.h>
 #import <DashSync/NSManagedObject+Sugar.h>
+#import <arpa/inet.h>
 
 @interface DSDeterministicMasternodeListTests : XCTestCase
 

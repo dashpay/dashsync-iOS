@@ -7,7 +7,7 @@
 
 #import "BigIntTypes.h"
 #import "DSQuorumEntry.h"
-#import "mndiff.h"
+#import "dash_shared_core.h"
 #import <Foundation/Foundation.h>
 
 #define MASTERNODE_LIST_ADDED_NODES @"MASTERNODE_LIST_ADDED_NODES"

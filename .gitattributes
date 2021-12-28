@@ -2,3 +2,4 @@ libmerkiOS.a filter=lfs diff=lfs merge=lfs -text
 libmerkMacOS.a filter=lfs diff=lfs merge=lfs -text
 libmndiff_ios.a filter=lfs diff=lfs merge=lfs -text
 libmndiff_macos.a filter=lfs diff=lfs merge=lfs -text
+*.a filter=lfs diff=lfs merge=lfs -text

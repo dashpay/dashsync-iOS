@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   s.author           = { 'quantumexplorer' => 'quantum@dash.org' }
   s.source           = { :git => 'https://github.com/dashevo/dashsync-iOS.git', :tag => s.version.to_s }
 
-  s.ios.deployment_target = '12.0'
+  s.ios.deployment_target = '13.0'
   s.osx.deployment_target = '10.15'
   
   s.requires_arc = true
@@ -32,11 +32,10 @@ Pod::Spec.new do |s|
   s.resource_bundles = {'DashSync' => ['DashSync/shared/*.xcdatamodeld', 'DashSync/shared/MappingModels/*.xcmappingmodel', 'DashSync/shared/*.plist', 'DashSync/shared/*.lproj', 'DashSync/shared/MasternodeLists/*.dat', 'DashSync/shared/*.json']}
   
   s.framework = 'Foundation', 'SystemConfiguration', 'CoreData', 'BackgroundTasks', 'Security'
-  s.ios.vendored_libraries = 'DashSync/lib/libmerkiOS.a', 'DashSync/lib/libmndiff_ios.a'
-  s.macos.vendored_libraries = 'DashSync/lib/libmerkMacOS.a', 'DashSync/lib/libmndiff_macos.a'
   s.ios.framework = 'UIKit'
   s.macos.framework = 'Cocoa'
   s.compiler_flags = '-Wno-comma'
+  s.dependency 'DashSharedCore', '0.1.2'
   s.dependency 'secp256k1_dash', '0.1.4-alpha.2'
   s.dependency 'bls-signatures-pod', '0.2.11'
   s.dependency 'CocoaLumberjack', '3.7.2'

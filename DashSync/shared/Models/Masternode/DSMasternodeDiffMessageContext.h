@@ -18,7 +18,6 @@
 #import "BigIntTypes.h"
 #import "DSMasternodeList.h"
 #import "DSMasternodeManager.h"
-#import "mndiff.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN

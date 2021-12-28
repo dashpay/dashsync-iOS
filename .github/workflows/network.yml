@@ -40,9 +40,13 @@ jobs:
           key: ${{ runner.os }}-pods-macOS-${{ hashFiles('**/Podfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pods-macOS-
+      - name: Install Cargo Lipo
+        run: cargo install cargo-lipo
+      - name: Rustup add targets
+        run: rustup target add aarch64-apple-ios x86_64-apple-ios aarch64-apple-ios-sim x86_64-apple-darwin
       - name: Dependencies
         working-directory: ./dashsync/Example
-        run: pod install
+        run: pod install --verbose
       - name: Cache network info build
         id: cache-network-info-build
         uses: actions/cache@v2
