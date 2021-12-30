@@ -1795,4 +1795,9 @@
     }
 }
 
+- (void)checkWaitingForQuorums {
+    [self checkInstantSendLocksWaitingForQuorums];
+    [self checkChainLocksWaitingForQuorums];
+}
+
 @end
