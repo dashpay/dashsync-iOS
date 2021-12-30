@@ -1,11 +1,13 @@
-target 'DashSync_Example' do
-  platform :ios, '13.0'
-  
+def common_pods
   pod 'DashSync', :path => '../'
-  pod 'KVO-MVVM', '0.5.1'
   pod 'SDWebImage', '5.9.2'
   pod 'CocoaImageHashing', :git => 'https://github.com/ameingast/cocoaimagehashing.git', :commit => 'ad01eee'
-  
+end
+
+target 'DashSync_Example' do
+  platform :ios, '13.0'
+  common_pods
+  pod 'KVO-MVVM', '0.5.1'
   target 'DashSync_Tests' do
     inherit! :search_paths
   end
@@ -13,10 +15,7 @@ end
 
 target 'NetworkInfo' do
   platform :osx, '10.15'
-  
-  pod 'DashSync', :path => '../'
-  pod 'SDWebImage', '5.9.2'
-  pod 'CocoaImageHashing', :git => 'https://github.com/ameingast/cocoaimagehashing.git', :commit => 'ad01eee'
+  common_pods
 end
 
 post_install do |installer|
