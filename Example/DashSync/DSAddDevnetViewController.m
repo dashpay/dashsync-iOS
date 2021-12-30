@@ -12,6 +12,8 @@
 #import "DSKeyValueTableViewCell.h"
 #import <DashSync/DashSync.h>
 
+#define IP_ADDRESSES_SECTION 4
+
 @interface DSAddDevnetViewController ()
 
 @property (nonatomic, strong) NSMutableOrderedSet<NSString *> *insertedIPAddresses;
@@ -39,6 +41,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.tableView.allowsSelection = YES;
     self.addDevnetNameTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"DevnetNameCellIdentifier"];
     self.addDevnetAddIPAddressTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"DevnetAddIPCellIdentifier"];
     self.sporkAddressTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"DevnetSporkAddressCellIdentifier"];
@@ -177,7 +180,7 @@
                     NSAssert(NO, @"Unknown cell");
                     return [[UITableViewCell alloc] init];
             }
-        case 4: {
+        case IP_ADDRESSES_SECTION: {
             if (indexPath.row == _insertedIPAddresses.count + 1) return self.addDevnetAddIPAddressTableViewCell;
             return [self IPAddressCellAtIndex:indexPath.row];
         }
@@ -189,7 +192,8 @@
 // MARK:- Table View Data Delegate
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.section == 3 && indexPath.row == _insertedIPAddresses.count + 1) {
+    
+    if (indexPath.section == IP_ADDRESSES_SECTION && indexPath.row == _insertedIPAddresses.count + 1) {
         if (self.activeAddDevnetIPAddressTableViewCell) {
             NSIndexPath *activeIndexPath = [self.tableView indexPathForCell:self.activeAddDevnetIPAddressTableViewCell];
             if (activeIndexPath.row == indexPath.row - 1) {
@@ -197,7 +201,7 @@
                     [self.tableView beginUpdates];
                     [self.activeAddDevnetIPAddressTableViewCell.IPAddressTextField resignFirstResponder];
                     //                [self.insertedIPAddresses addObject:self.activeAddDevnetIPAddressTableViewCell.IPAddressTextField.text];
-                    [self.tableView insertRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:_insertedIPAddresses.count inSection:3]] withRowAnimation:UITableViewRowAnimationTop];
+                    [self.tableView insertRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:_insertedIPAddresses.count inSection:IP_ADDRESSES_SECTION]] withRowAnimation:UITableViewRowAnimationTop];
                     [self.tableView endUpdates];
                 }
             }
