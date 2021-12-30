@@ -16,7 +16,36 @@
 //
 
 #import "DSMnDiffProcessingResult.h"
+#import "DSMasternodeList+Mndiff.h"
+#import "DSSimplifiedMasternodeEntry+Mndiff.h"
+#import "DSQuorumEntry+Mndiff.h"
 
 @implementation DSMnDiffProcessingResult
+
++ (instancetype)processingResultWith:(MndiffResult *)result onChain:(DSChain *)chain {
+    DSMnDiffProcessingResult *processingResult = [[DSMnDiffProcessingResult alloc] init];
+    [processingResult setFoundCoinbase:result->has_found_coinbase];
+    [processingResult setValidCoinbase:result->has_valid_coinbase];
+    [processingResult setRootMNListValid:result->has_valid_mn_list_root];
+    [processingResult setRootQuorumListValid:result->has_valid_quorum_list_root];
+    [processingResult setValidQuorums:result->has_valid_quorums];
+    MasternodeList *result_masternode_list = result->masternode_list;
+    [processingResult setMasternodeList:[DSMasternodeList masternodeListWith:result_masternode_list onChain:chain]];
+    NSMutableDictionary *addedMasternodes = [DSSimplifiedMasternodeEntry simplifiedEntriesWith:result->added_masternodes count:result->added_masternodes_count onChain:chain];
+    [processingResult setAddedMasternodes:addedMasternodes];
+    NSMutableDictionary *modifiedMasternodes = [DSSimplifiedMasternodeEntry simplifiedEntriesWith:result->modified_masternodes count:result->modified_masternodes_count onChain:chain];
+    [processingResult setModifiedMasternodes:modifiedMasternodes];
+    NSMutableDictionary *addedQuorums = [DSQuorumEntry entriesWith:result->added_quorum_type_maps count:result->added_quorum_type_maps_count onChain:chain];
+    [processingResult setAddedQuorums:addedQuorums];
+    uint8_t(**needed_masternode_lists)[32] = result->needed_masternode_lists;
+    uintptr_t needed_masternode_lists_count = result->needed_masternode_lists_count;
+    NSMutableOrderedSet *neededMissingMasternodeLists = [NSMutableOrderedSet orderedSetWithCapacity:needed_masternode_lists_count];
+    for (NSUInteger i = 0; i < needed_masternode_lists_count; i++) {
+        NSData *hash = [NSData dataWithBytes:needed_masternode_lists[i] length:32];
+        [neededMissingMasternodeLists addObject:hash];
+    }
+    [processingResult setNeededMissingMasternodeLists:neededMissingMasternodeLists];
+    return processingResult;
+}
 
 @end

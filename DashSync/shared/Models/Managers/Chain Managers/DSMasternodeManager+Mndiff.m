@@ -23,8 +23,8 @@
 #import "DSMasternodeList+Mndiff.h"
 #import "DSMasternodeManager+Mndiff.h"
 #import "DSMerkleBlock.h"
-#import "DSSimplifiedMasternodeEntry+Mndiff.h"
 #import "DSQuorumEntry+Mndiff.h"
+#import "DSSimplifiedMasternodeEntry+Mndiff.h"
 #import "NSData+Dash.h"
 
 @implementation DSMasternodeManager (Mndiff)
@@ -312,34 +312,18 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     free(entry);
 }
 
-+ (void)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *masternodeList, NSDictionary *addedMasternodes, NSDictionary *modifiedMasternodes, NSDictionary *addedQuorums, NSOrderedSet *neededMissingMasternodeLists))completion {
++ (void)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion {
     DSChain *chain = context.chain;
     DSMasternodeList *baseMasternodeList = context.baseMasternodeList;
     UInt256 merkleRoot = context.lastBlock.merkleRoot;
     MasternodeList *base_masternode_list = [DSMasternodeManager wrapMasternodeList:baseMasternodeList];
-    
+
     MndiffResult *result = mndiff_process(message.bytes, message.length, base_masternode_list, masternodeListLookupCallback, masternodeListDestroyCallback, uint256_data(merkleRoot).bytes, context.useInsightAsBackup, addInsightLookup, shouldProcessQuorumType, validateQuorumCallback, blockHeightListLookupCallback, (__bridge void *)(context));
-    
+
     [DSMasternodeManager freeMasternodeList:base_masternode_list];
-    BOOL foundCoinbase = result->has_found_coinbase;
-    BOOL validCoinbase = result->has_valid_coinbase;
-    BOOL rootMNListValid = result->has_valid_mn_list_root;
-    BOOL rootQuorumListValid = result->has_valid_quorum_list_root;
-    BOOL validQuorums = result->has_valid_quorums;
-    MasternodeList *result_masternode_list = result->masternode_list;
-    DSMasternodeList *masternodeList = [DSMasternodeList masternodeListWith:result_masternode_list onChain:chain];
-    NSMutableDictionary *addedMasternodes = [DSSimplifiedMasternodeEntry simplifiedEntriesWith:result->added_masternodes count:result->added_masternodes_count onChain:chain];
-    NSMutableDictionary *modifiedMasternodes = [DSSimplifiedMasternodeEntry simplifiedEntriesWith:result->modified_masternodes count:result->modified_masternodes_count onChain:chain];
-    NSMutableDictionary *addedQuorums = [DSQuorumEntry entriesWith:result->added_quorum_type_maps count:result->added_quorum_type_maps_count onChain:chain];
-    uint8_t(**needed_masternode_lists)[32] = result->needed_masternode_lists;
-    uintptr_t needed_masternode_lists_count = result->needed_masternode_lists_count;
-    NSMutableOrderedSet *neededMissingMasternodeLists = [NSMutableOrderedSet orderedSetWithCapacity:needed_masternode_lists_count];
-    for (NSUInteger i = 0; i < needed_masternode_lists_count; i++) {
-        NSData *hash = [NSData dataWithBytes:needed_masternode_lists[i] length:32];
-        [neededMissingMasternodeLists addObject:hash];
-    }
+    DSMnDiffProcessingResult *processingResult = [DSMnDiffProcessingResult processingResultWith:result onChain:chain];
     mndiff_destroy(result);
-    completion(foundCoinbase, validCoinbase, rootMNListValid, rootQuorumListValid, validQuorums, masternodeList, addedMasternodes, modifiedMasternodes, addedQuorums, neededMissingMasternodeLists);
+    completion(processingResult);
 }
 
 @end

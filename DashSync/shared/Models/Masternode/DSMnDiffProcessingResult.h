@@ -16,6 +16,7 @@
 //
 
 #import "DSMasternodeList.h"
+#import "dash_shared_core.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -32,6 +33,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) NSDictionary *modifiedMasternodes;
 @property (nonatomic) NSDictionary *addedQuorums;
 @property (nonatomic) NSOrderedSet *neededMissingMasternodeLists;
+
++ (instancetype)processingResultWith:(MndiffResult *)mnDiffResult onChain:(DSChain *)chain;
 
 @end
 
