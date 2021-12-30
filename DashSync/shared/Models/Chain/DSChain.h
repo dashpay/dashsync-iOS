@@ -495,7 +495,7 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 - (BOOL)isDevnetAny;
 - (BOOL)isEvolutionEnabled;
 - (BOOL)isDevnetWithGenesisHash:(UInt256)genesisHash;
-
+- (BOOL)hasDIP0024Enabled;
 @end
 
 @protocol DSChainTransactionsDelegate
