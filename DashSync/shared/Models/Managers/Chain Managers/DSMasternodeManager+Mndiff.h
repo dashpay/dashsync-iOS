@@ -47,6 +47,7 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context);
 + (void)freeQuorumEntry:(QuorumEntry *)entry;
 
 + (void)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion;
++ (void)processQRInfoMessage:(NSData *)message baseBlockHashesCount:(uint32_t)baseBlockHashesCount withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion;
 
 @end
 
