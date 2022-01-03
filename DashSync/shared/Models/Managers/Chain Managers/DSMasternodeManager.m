@@ -152,10 +152,10 @@
 
 - (uint32_t)earliestMasternodeListBlockHeight {
     uint32_t earliest = UINT32_MAX;
-    for (NSData *blockHash in self.masternodeListsBlockHashStubs) {
+    for (NSData *blockHash in [self.masternodeListsBlockHashStubs copy]) {
         earliest = MIN(earliest, [self heightForBlockHash:blockHash.UInt256]);
     }
-    for (NSData *blockHash in self.masternodeListsByBlockHash) {
+    for (NSData *blockHash in [self.masternodeListsByBlockHash copy]) {
         earliest = MIN(earliest, [self heightForBlockHash:blockHash.UInt256]);
     }
     return earliest;
