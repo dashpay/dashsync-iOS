@@ -3296,5 +3296,8 @@
     dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
 }
 
+-(void)testDIP0024 {
+    DSChain *chain = [DSChain devnetWithIdentifier:@"malort"];
+}
 
 @end
