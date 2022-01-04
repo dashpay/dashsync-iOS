@@ -454,7 +454,7 @@
     uint32_t minDistance = UINT32_MAX;
     uint32_t blockHeight = [self heightForBlockHash:blockHash];
     DSMasternodeList *closestMasternodeList = nil;
-    for (NSData *blockHashData in self.masternodeListsByBlockHash) {
+    for (NSData *blockHashData in [self.masternodeListsByBlockHash copy]) {
         uint32_t masternodeListBlockHeight = [self heightForBlockHash:blockHashData.UInt256];
         if (blockHeight <= masternodeListBlockHeight) continue;
         uint32_t distance = blockHeight - masternodeListBlockHeight;
