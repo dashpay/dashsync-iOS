@@ -434,13 +434,15 @@
     [msg appendNetAddress:LOCAL_HOST port:self.chain.standardPort services:ENABLED_SERVICES]; // net address of local peer
     self.localNonce = ((uint64_t)arc4random() << 32) | (uint64_t)arc4random();                // random nonce
     [msg appendUInt64:self.localNonce];
+    NSString *agent;
     if (self.chain.isMainnet) {
-        [msg appendString:USER_AGENT]; // user agent
+        agent = USER_AGENT;
     } else if (self.chain.isTestnet) {
-        [msg appendString:[USER_AGENT stringByAppendingString:@"(testnet)"]];
+        agent = [USER_AGENT stringByAppendingString:@"(testnet)"];
     } else {
-        [msg appendString:[USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet=%@)", self.chain.devnetIdentifier]]];
+        agent = [USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet=%@)", self.chain.devnetIdentifier]];
     }
+    [msg appendString:agent]; // user agent
     [msg appendUInt32:0]; // last block received
     [msg appendUInt8:0];  // relay transactions (no for SPV bloom filter mode)
     self.pingStartTime = [NSDate timeIntervalSince1970];
@@ -449,8 +451,7 @@
     DSLog(@"%@:%u %@sending version with protocol version %d", self.host, self.port, self.peerDelegate.downloadPeer == self ? @"(download peer) " : @"", self.chain.protocolVersion);
 #endif
 
-    [self sendMessage:msg
-                 type:MSG_VERSION];
+    [self sendMessage:msg type:MSG_VERSION];
 }
 
 - (void)sendVerackMessage {
