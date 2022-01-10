@@ -28,11 +28,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-FOUNDATION_EXPORT NSString *const DSMasternodeListDidChangeNotification;
-FOUNDATION_EXPORT NSString *const DSCurrentMasternodeListDidChangeNotification;
-FOUNDATION_EXPORT NSString *const DSMasternodeManagerNotificationMasternodeListKey;
 FOUNDATION_EXPORT NSString *const DSMasternodeListDiffValidationErrorNotification;
-FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 
 #define MASTERNODE_COST 100000000000
 

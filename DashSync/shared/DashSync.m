@@ -14,6 +14,7 @@
 #import "DSLocalMasternodeEntity+CoreDataClass.h"
 #import "DSMasternodeListEntity+CoreDataClass.h"
 #import "DSMasternodeManager+Protected.h"
+#import "DSMasternodeStore.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
 #import "DSPeerEntity+CoreDataClass.h"
 #import "DSPeerManager+Protected.h"

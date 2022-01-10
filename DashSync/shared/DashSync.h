@@ -49,6 +49,7 @@
 #import "DSIdentitiesManager.h"
 #import "DSInsightManager.h"
 #import "DSMasternodeManager.h"
+#import "DSMasternodeStore.h"
 #import "DSPriceManager.h"
 #import "DSShapeshiftManager.h"
 #import "DSSporkManager.h"
