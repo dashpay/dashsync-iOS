@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithEntry:(QuorumEntry *)entry onChain:(DSChain *)chain;
 
 - (BOOL)validateWithMasternodeList:(DSMasternodeList *)masternodeList;
-- (BOOL)validateWithMasternodeList:(DSMasternodeList *)masternodeList blockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup;
+- (BOOL)validateWithMasternodeList:(DSMasternodeList *)masternodeList blockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 
 - (DSQuorumEntryEntity *)matchingQuorumEntryEntityInContext:(NSManagedObjectContext *)context;
 

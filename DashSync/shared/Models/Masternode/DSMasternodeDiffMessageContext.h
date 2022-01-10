@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, nullable) DSMasternodeList *baseMasternodeList;
 @property (nonatomic) BOOL useInsightAsBackup;
 @property (nonatomic, copy) DSMasternodeList * (^masternodeListLookup)(UInt256 blockHash);
-@property (nonatomic, copy) uint32_t (^blockHeightLookup)(UInt256 blockHash);
+@property (nonatomic, copy) BlockHeightFinder blockHeightLookup;
 
 @end
 

@@ -104,7 +104,7 @@
     return _masternodeMerkleRoot;
 }
 
-- (UInt256)masternodeMerkleRootWithBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (UInt256)masternodeMerkleRootWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     if (uint256_is_zero(_masternodeMerkleRoot)) {
         self.masternodeMerkleRoot = [self calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup];
     }
@@ -121,7 +121,7 @@
     return proTxHashes;
 }
 
-- (NSArray<NSData *> *)hashesForMerkleRootWithBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (NSArray<NSData *> *)hashesForMerkleRootWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     NSArray *proTxHashes = [self providerTxOrderedHashes];
     NSMutableArray *simplifiedMasternodeListByRegistrationTransactionHashHashes = [NSMutableArray array];
     uint32_t height = blockHeightLookup(self.blockHash);
@@ -137,7 +137,7 @@
     return simplifiedMasternodeListByRegistrationTransactionHashHashes;
 }
 
-- (NSDictionary<NSData *, NSData *> *)hashDictionaryForMerkleRootWithBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (NSDictionary<NSData *, NSData *> *)hashDictionaryForMerkleRootWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     NSArray *proTxHashes = [self providerTxOrderedHashes];
 
     NSMutableDictionary *simplifiedMasternodeListByRegistrationTransactionHashHashes = [NSMutableDictionary dictionary];
@@ -154,7 +154,7 @@
     return simplifiedMasternodeListByRegistrationTransactionHashHashes;
 }
 
-- (UInt256)calculateMasternodeMerkleRootWithBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (UInt256)calculateMasternodeMerkleRootWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     NSArray *hashes = [self hashesForMerkleRootWithBlockHeightLookup:blockHeightLookup];
     if (hashes == nil || hashes.count == 0) {
         return UINT256_ZERO;
@@ -249,7 +249,7 @@
                                  }];
 }
 
-- (NSArray<DSSimplifiedMasternodeEntry *> *)allMasternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount blockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (NSArray<DSSimplifiedMasternodeEntry *> *)allMasternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount blockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     uint32_t blockHeight = blockHeightLookup(self.blockHash);
     NSDictionary<NSData *, id> *scoreDictionary = [self scoreDictionaryForQuorumModifier:quorumModifier atBlockHeight:blockHeight];
     NSArray *scores = [[scoreDictionary allKeys] sortedArrayUsingComparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2) {
@@ -267,7 +267,7 @@
     return masternodes;
 }
 
-- (NSArray<DSSimplifiedMasternodeEntry *> *)validMasternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount blockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (NSArray<DSSimplifiedMasternodeEntry *> *)validMasternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount blockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     uint32_t blockHeight = blockHeightLookup(self.blockHash);
     NSDictionary<NSData *, id> *scoreDictionary = [self scoreDictionaryForQuorumModifier:quorumModifier atBlockHeight:blockHeight];
     NSArray *scores = [[scoreDictionary allKeys] sortedArrayUsingComparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2) {
@@ -399,7 +399,7 @@
                    }];
 }
 
-- (NSDictionary *)compareWithPrevious:(DSMasternodeList *)other blockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (NSDictionary *)compareWithPrevious:(DSMasternodeList *)other blockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     return [self compare:other usingOurString:@"current" usingTheirString:@"previous" blockHeightLookup:blockHeightLookup];
 }
 
@@ -410,7 +410,7 @@
         }];
 }
 
-- (NSDictionary *)compare:(DSMasternodeList *)other blockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (NSDictionary *)compare:(DSMasternodeList *)other blockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     return [self compare:other usingOurString:@"ours" usingTheirString:@"theirs" blockHeightLookup:blockHeightLookup];
 }
 
@@ -442,7 +442,7 @@
     return @{MASTERNODE_LIST_ADDED_NODES: added, MASTERNODE_LIST_REMOVED_NODES: removed, MASTERNODE_LIST_ADDED_VALIDITY: addedValidity, MASTERNODE_LIST_REMOVED_VALIDITY: removedValidity};
 }
 
-- (NSDictionary *)compare:(DSMasternodeList *)other usingOurString:(NSString *)ours usingTheirString:(NSString *)theirs blockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (NSDictionary *)compare:(DSMasternodeList *)other usingOurString:(NSString *)ours usingTheirString:(NSString *)theirs blockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
     for (NSData *data in self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash) {
         DSSimplifiedMasternodeEntry *ourEntry = self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[data];
@@ -459,7 +459,7 @@
     return dictionary;
 }
 
-- (NSDictionary *)toDictionaryUsingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (NSDictionary *)toDictionaryUsingBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
     for (NSData *data in self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash) {
         DSSimplifiedMasternodeEntry *ourEntry = self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[data];

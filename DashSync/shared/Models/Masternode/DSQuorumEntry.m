@@ -190,7 +190,7 @@
                           }];
 }
 
-- (BOOL)validateWithMasternodeList:(DSMasternodeList *)masternodeList blockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (BOOL)validateWithMasternodeList:(DSMasternodeList *)masternodeList blockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     if (!masternodeList) {
         DSLog(@"Trying to validate a quorum without a masternode list");
         return NO;

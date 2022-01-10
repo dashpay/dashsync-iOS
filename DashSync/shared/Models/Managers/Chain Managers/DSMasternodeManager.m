@@ -233,13 +233,13 @@
     [self reloadMasternodeListsWithBlockHeightLookup:nil];
 }
 
-- (void)reloadMasternodeListsWithBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (void)reloadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     [self.store removeAllMasternodeLists];
     self.currentMasternodeList = nil;
     [self loadMasternodeListsWithBlockHeightLookup:blockHeightLookup];
 }
 
-- (void)loadMasternodeListsWithBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (void)loadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     [self.store loadMasternodeListsWithBlockHeightLookup:blockHeightLookup];
 }
 
@@ -267,7 +267,7 @@
         }];
 }
 
-- (DSMasternodeList *)loadMasternodeListAtBlockHash:(NSData *)blockHash withBlockHeightLookup:(uint32_t (^_Nullable)(UInt256 blockHash))blockHeightLookup {
+- (DSMasternodeList *)loadMasternodeListAtBlockHash:(NSData *)blockHash withBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     return [self.store loadMasternodeListAtBlockHash:blockHash withBlockHeightLookup:blockHeightLookup];
 }
 
@@ -290,7 +290,7 @@
     return [self masternodeListForBlockHash:blockHash withBlockHeightLookup:nil];
 }
 
-- (DSMasternodeList *)masternodeListForBlockHash:(UInt256)blockHash withBlockHeightLookup:(uint32_t (^_Nullable)(UInt256 blockHash))blockHeightLookup {
+- (DSMasternodeList *)masternodeListForBlockHash:(UInt256)blockHash withBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     return [self.store masternodeListForBlockHash:blockHash withBlockHeightLookup:blockHeightLookup];
 }
 

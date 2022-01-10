@@ -440,7 +440,7 @@
               shouldBeTotalTransactions:(uint32_t)shouldBeTotalTransactions
                      verifyStringHashes:(NSArray *)verifyStringHashes
                  verifyStringSMLEHashes:(NSArray *)verifyStringSMLEHashes
-                      blockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup
+                      blockHeightLookup:(BlockHeightFinder)
                                 onChain:(DSChain *)chain {
     NSData *message = [hexString hexToData];
 
@@ -506,7 +506,7 @@
     [self waitForExpectations:@[expectation] timeout:10];
 }
 
-- (void)loadMasternodeListsForFiles:(NSArray *)files baseMasternodeList:(DSMasternodeList *_Nullable)baseMasternodeList withSave:(BOOL)save withReload:(BOOL)reloading onChain:(DSChain *)chain inContext:(NSManagedObjectContext *)context blockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup completion:(void (^)(BOOL success, NSDictionary *masternodeLists))completion {
+- (void)loadMasternodeListsForFiles:(NSArray *)files baseMasternodeList:(DSMasternodeList *_Nullable)baseMasternodeList withSave:(BOOL)save withReload:(BOOL)reloading onChain:(DSChain *)chain inContext:(NSManagedObjectContext *)context blockHeightLookup:(BlockHeightFinder)blockHeightLookup completion:(void (^)(BOOL success, NSDictionary *masternodeLists))completion {
     //doing this none recursively for profiler
     __block DSMasternodeList *nextBaseMasternodeList = baseMasternodeList;
     __block NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
@@ -1485,7 +1485,7 @@
             return UINT32_MAX;
         }
         completion:^(BOOL success1, NSDictionary *masternodeLists1) {
-            uint32_t (^blockHeightLookup)(UInt256 blockHash) = ^uint32_t(UInt256 blockHash) {
+            BlockHeightFinder blockHeightLookup = ^uint32_t(UInt256 blockHash) {
                 NSString *blockHashString = uint256_reverse_hex(blockHash);
                 if ([blockHashString isEqualToString:@"000000000000001c12e0007f8ec718282fff6cd63519a4fdc8cca698216def72"]) {
                     return 1094928;
@@ -1817,7 +1817,7 @@
             return UINT32_MAX;
         }
         completion:^(BOOL success1, NSDictionary *masternodeLists1) {
-            uint32_t (^blockHeightLookup)(UInt256 blockHash) = ^uint32_t(UInt256 blockHash) {
+                BlockHeightFinder blockHeightLookup = ^uint32_t(UInt256 blockHash) {
                 NSString *blockHashString = uint256_reverse_hex(blockHash);
                 if ([blockHashString isEqualToString:@"0000000000000024030fa272c48f386c079bfcf655d4b09f0f2d092bb67303bb"]) {
                     return 1095408;
@@ -2208,7 +2208,7 @@
     [chain.chainManager.masternodeManager reloadMasternodeLists];
     NSArray *files = @[@"MNL_0_1096704", @"MNL_1096704_1097280", @"MNL_1097280_1097856", @"MNL_1097856_1098144", @"MNL_1098144_1098432", @"MNL_1098432_1098456", @"MNL_1098456_1098480", @"MNL_1098480_1098504", @"MNL_1098504_1098528", @"MNL_1098528_1098552", @"MNL_1098552_1098576", @"MNL_1098576_1098600", @"MNL_1098600_1098624", @"MNL_1098624_1098648", @"MNL_1098648_1098672", @"MNL_1098672_1098696", @"MNL_1098696_1098720", @"MNL_1098720_1098744", @"MNL_1098744_1098768", @"MNL_1098768_1098792", @"MNL_1098792_1098816", @"MNL_1098816_1098840", @"MNL_1098840_1098864", @"MNL_1098864_1098888", @"MNL_1098888_1098912", @"MNL_1098912_1098936", @"MNL_1098936_1098960", @"MNL_1098960_1098984", @"MNL_1098984_1099008"];
 
-    uint32_t (^blockHeightLookup)(UInt256 blockHash) = ^uint32_t(UInt256 blockHash) {
+        BlockHeightFinder blockHeightLookup = ^uint32_t(UInt256 blockHash) {
         NSString *blockHashString = uint256_reverse_hex(blockHash);
         if ([blockHashString isEqualToString:@"0000000000000005f05fa51e0552ca6e46780be550da7230cd2d02f8ed4506ef"]) {
             return 1097808;
@@ -2516,7 +2516,7 @@
     [chain.chainManager.masternodeManager reloadMasternodeLists];
     NSArray *files = @[@"MNL_0_1090944", @"MNL_1090944_1091520", @"MNL_1091520_1091808", @"MNL_1091808_1092096", @"MNL_1092096_1092336", @"MNL_1092336_1092360", @"MNL_1092360_1092384", @"MNL_1092384_1092408", @"MNL_1092408_1092432", @"MNL_1092432_1092456", @"MNL_1092456_1092480", @"MNL_1092480_1092504", @"MNL_1092504_1092528", @"MNL_1092528_1092552", @"MNL_1092552_1092576", @"MNL_1092576_1092600", @"MNL_1092600_1092624", @"MNL_1092624_1092648", @"MNL_1092648_1092672", @"MNL_1092672_1092696", @"MNL_1092696_1092720", @"MNL_1092720_1092744", @"MNL_1092744_1092768", @"MNL_1092768_1092792", @"MNL_1092792_1092816", @"MNL_1092816_1092840", @"MNL_1092840_1092864", @"MNL_1092864_1092888", @"MNL_1092888_1092916"];
 
-    uint32_t (^blockHeightLookup)(UInt256 blockHash) = ^uint32_t(UInt256 blockHash) {
+        BlockHeightFinder blockHeightLookup = ^uint32_t(UInt256 blockHash) {
         NSString *blockHashString = uint256_reverse_hex(blockHash);
         if ([blockHashString isEqualToString:@"000000000000000bf16cfee1f69cd472ac1d0285d74d025caa27cebb0fb6842f"]) {
             return 1090392;

@@ -199,7 +199,7 @@
     }
 }
 
-- (DSMasternodeList *)loadMasternodeListAtBlockHash:(NSData *)blockHash withBlockHeightLookup:(uint32_t (^_Nullable)(UInt256 blockHash))blockHeightLookup {
+- (DSMasternodeList *)loadMasternodeListAtBlockHash:(NSData *)blockHash withBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     __block DSMasternodeList *masternodeList = nil;
     [self.managedObjectContext performBlockAndWait:^{
         DSMasternodeListEntity *masternodeListEntity = [DSMasternodeListEntity anyObjectInContext:self.managedObjectContext matching:@"block.chain == %@ && block.blockHash == %@", [self.chain chainEntityInContext:self.managedObjectContext], blockHash];
@@ -214,7 +214,7 @@
     }];
     return masternodeList;
 }
-- (void)loadMasternodeListsWithBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (void)loadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     [self.managedObjectContext performBlockAndWait:^{
         NSFetchRequest *fetchRequest = [[DSMasternodeListEntity fetchRequest] copy];
         [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"block.chain == %@", [self.chain chainEntityInContext:self.managedObjectContext]]];
@@ -263,7 +263,7 @@
     return closestMasternodeList;
 }
 
-- (DSMasternodeList *)masternodeListForBlockHash:(UInt256)blockHash withBlockHeightLookup:(uint32_t (^_Nullable)(UInt256 blockHash))blockHeightLookup {
+- (DSMasternodeList *)masternodeListForBlockHash:(UInt256)blockHash withBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     DSMasternodeList *masternodeList = [self.masternodeListsByBlockHash objectForKey:uint256_data(blockHash)];
     if (!masternodeList && [self.masternodeListsBlockHashStubs containsObject:uint256_data(blockHash)]) {
         masternodeList = [self loadMasternodeListAtBlockHash:uint256_data(blockHash) withBlockHeightLookup:blockHeightLookup];
