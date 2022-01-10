@@ -280,12 +280,9 @@
                 NSString *line = [NSString stringWithFormat:@"%@ -> %@\n", [proTxHashForPublicKeys[publicKeyData] hexString], [publicKeyData hexString]];
                 [message appendData:[line dataUsingEncoding:NSUTF8StringEncoding]];
             }
-            NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-            NSString *documentsDirectory = [paths objectAtIndex:0];
-            NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"MNL_QUORUM_ERROR_KEYS_%d.txt", masternodeList.height]];
+            NSString *fileName = [NSString stringWithFormat:@"MNL_QUORUM_ERROR_KEYS_%d.txt", masternodeList.height];
+            [message saveToFile:fileName inDirectory:NSCachesDirectory];
 
-            // Save it into file system
-            [message writeToFile:dataPath atomically:YES];
         }
 #endif
 #if SAVE_MNL_ERROR_TO_FILE
@@ -295,12 +292,8 @@
                 NSString *line = [NSString stringWithFormat:@"%@ -> %@\n", uint256_hex(simplifiedMasternodeEntry.providerRegistrationTransactionHash), [simplifiedMasternodeEntry isValidAtBlockHeight:masternodeList.height] ? @"VALID" : @"NOT VALID"];
                 [message appendData:[line dataUsingEncoding:NSUTF8StringEncoding]];
             }
-            NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-            NSString *documentsDirectory = [paths objectAtIndex:0];
-            NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"MNL_QUORUM_ERROR_MNS_%d.txt", masternodeList.height]];
-
-            // Save it into file system
-            [message writeToFile:dataPath atomically:YES];
+            NSString *fileName = [NSString stringWithFormat:@"MNL_QUORUM_ERROR_MNS_%d.txt", masternodeList.height];
+            [message saveToFile:fileName inDirectory:NSCachesDirectory];
         }
 #endif
         return NO;
@@ -318,12 +311,8 @@
                 NSString *line = [NSString stringWithFormat:@"%@ -> %@\n", [proTxHashForPublicKeys[publicKeyData] hexString], [publicKeyData hexString]];
                 [message appendData:[line dataUsingEncoding:NSUTF8StringEncoding]];
             }
-            NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-            NSString *documentsDirectory = [paths objectAtIndex:0];
-            NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"MNL_QUORUM_NO_ERROR_KEYS_%d.txt", masternodeList.height]];
-
-            // Save it into file system
-            [message writeToFile:dataPath atomically:YES];
+            NSString *fileName = [NSString stringWithFormat:@"MNL_QUORUM_NO_ERROR_KEYS_%d.txt", masternodeList.height];
+            [message saveToFile:fileName inDirectory:NSCachesDirectory];
         }
 #endif
 #if SAVE_MNL_ERROR_TO_FILE
@@ -333,12 +322,8 @@
                 NSString *line = [NSString stringWithFormat:@"%@ -> %@\n", uint256_hex(simplifiedMasternodeEntry.providerRegistrationTransactionHash), [simplifiedMasternodeEntry isValidAtBlockHeight:masternodeList.height] ? @"VALID" : @"NOT VALID"];
                 [message appendData:[line dataUsingEncoding:NSUTF8StringEncoding]];
             }
-            NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-            NSString *documentsDirectory = [paths objectAtIndex:0];
-            NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"MNL_QUORUM_NO_ERROR_MNS_%d.txt", masternodeList.height]];
-
-            // Save it into file system
-            [message writeToFile:dataPath atomically:YES];
+            NSString *fileName = [NSString stringWithFormat:@"MNL_QUORUM_NO_ERROR_MNS_%d.txt", masternodeList.height];
+            [message saveToFile:fileName inDirectory:NSCachesDirectory];
         }
 #endif
     }

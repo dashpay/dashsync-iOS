@@ -1772,13 +1772,8 @@
             [self.transactionDelegate peer:self relayedBlock:block];
 
 #if SAVE_INCOMING_BLOCKS
-            NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-            NSString *documentsDirectory = [paths objectAtIndex:0];
-            NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"%@-%d-%@.block", self.chain.devnetIdentifier, block.height, uint256_hex(block.blockHash)]];
-
-            // Save it into file system
-            [message writeToFile:dataPath atomically:YES];
-
+            NSString *fileName = [NSString stringWithFormat:@"%@-%d-%@.block", self.chain.devnetIdentifier, block.height, uint256_hex(block.blockHash)];
+            [message saveToFile:fileName inDirectory:NSCachesDirectory];
 #endif
         });
     }

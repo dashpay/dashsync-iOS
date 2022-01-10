@@ -241,6 +241,8 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 
 + (NSData *)dataFromHexString:(NSString *)string;
 
+- (void)saveToFile:(NSString *)file inDirectory:(NSSearchPathDirectory)directory;
+
 @end
 
 

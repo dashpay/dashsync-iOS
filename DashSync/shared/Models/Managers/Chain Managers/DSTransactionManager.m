@@ -54,6 +54,7 @@
 #import "DSTransactionInput.h"
 #import "DSTransition.h"
 #import "DSWallet+Protected.h"
+#import "NSData+Dash.h"
 #import "NSDate+Utils.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"
@@ -1711,10 +1712,9 @@
                 DSLog(@"%d;%lu;%u", block.height - 499, self.totalTransactionsSum / self.totalTransactionsQueue.count, self.totalTransactionsMax);
             }
             if (block.height == self.chain.lastTerminalBlockHeight) {
-                NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-                NSString *documentsDirectory = [paths objectAtIndex:0];
-                NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"MaxTransactionInfo_%@.dat", self.chain.name]];
-                [self.totalTransactionData writeToFile:dataPath atomically:YES];
+                NSString *fileName = [NSString stringWithFormat:@"MaxTransactionInfo_%@.dat", self.chain.name];
+                [self.totalTransactionData saveToFile:fileName inDirectory:NSCachesDirectory];
+                
             }
         }
     }

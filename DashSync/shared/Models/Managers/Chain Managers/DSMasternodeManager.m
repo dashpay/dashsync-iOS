@@ -55,6 +55,7 @@
 #import "DSTransactionFactory.h"
 #import "DSTransactionManager+Protected.h"
 #import "NSArray+Dash.h"
+#import "NSData+Dash.h"
 #import "NSData+DSHash.h"
 #import "NSDictionary+Dash.h"
 #import "NSManagedObject+Sugar.h"
@@ -783,11 +784,8 @@
     offset += 32;
 
 #if SAVE_MASTERNODE_DIFF_TO_FILE
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-    NSString *documentsDirectory = [paths objectAtIndex:0];
-    NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"MNL_%@_%@.dat", @([self heightForBlockHash:baseBlockHash]), @([self heightForBlockHash:blockHash])]];
-    // Save it into file system
-    [message writeToFile:dataPath atomically:YES];
+    NSString *fileName = [NSString stringWithFormat:@"MNL_%@_%@.dat", @([self heightForBlockHash:baseBlockHash]), @([self heightForBlockHash:blockHash])];
+    [message saveToFile:fileName inDirectory:NSCachesDirectory];
 #endif
 
     NSData *blockHashData = uint256_data(blockHash);

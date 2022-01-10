@@ -1618,6 +1618,12 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
     return data;
 }
 
+- (void)saveToFile:(NSString *)file inDirectory:(NSSearchPathDirectory)directory {
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(directory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:file];
+    [self writeToFile:dataPath atomically:YES];
+}
 
 @end
 
