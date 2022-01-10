@@ -222,15 +222,11 @@
 // MARK: - Set Up and Tear Down
 
 - (void)setUp {
-    [self deleteEmptyMasternodeLists]; //this is just for sanity purposes
-    [self loadMasternodeLists];
-    [self removeOldSimplifiedMasternodeEntries];
-    [self loadLocalMasternodes];
-    [self loadFileDistributedMasternodeLists];
-}
-
-- (void)loadLocalMasternodes {
+    [self.store deleteEmptyMasternodeLists]; //this is just for sanity purposes
+    [self loadMasternodeListsWithBlockHeightLookup:nil];
+    [self.store removeOldSimplifiedMasternodeEntries];
     [self.store loadLocalMasternodes];
+    [self loadFileDistributedMasternodeLists];
 }
 
 - (void)reloadMasternodeLists {
@@ -243,14 +239,6 @@
     [self loadMasternodeListsWithBlockHeightLookup:blockHeightLookup];
 }
 
-- (void)deleteEmptyMasternodeLists {
-    [self.store deleteEmptyMasternodeLists];
-}
-
-- (void)loadMasternodeLists {
-    [self loadMasternodeListsWithBlockHeightLookup:nil];
-}
-
 - (void)loadMasternodeListsWithBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
     [self.store loadMasternodeListsWithBlockHeightLookup:blockHeightLookup];
 }
@@ -260,20 +248,23 @@
 }
 
 - (void)loadFileDistributedMasternodeLists {
-    BOOL syncMasternodeLists = ([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList);
+    BOOL syncMasternodeLists = [[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList;
     BOOL useCheckpointMasternodeLists = [[DSOptionsManager sharedInstance] useCheckpointMasternodeLists];
-    if (!syncMasternodeLists || !useCheckpointMasternodeLists) return;
-    if (!self.currentMasternodeList) {
-        DSCheckpoint *checkpoint = [self.chain lastCheckpointHavingMasternodeList];
-        if (checkpoint &&
-            self.chain.lastTerminalBlockHeight >= checkpoint.height &&
-            ![self masternodeListForBlockHash:checkpoint.blockHash])
-            [self processRequestFromFileForBlockHash:checkpoint.blockHash
-                                          completion:^(BOOL success, DSMasternodeList *masternodeList) {
-                                              if (success && masternodeList)
-                                                  self.currentMasternodeList = masternodeList;
-                                          }];
+    if (!syncMasternodeLists ||
+        !useCheckpointMasternodeLists ||
+        self.currentMasternodeList) {
+        return;
     }
+    DSCheckpoint *checkpoint = [self.chain lastCheckpointHavingMasternodeList];
+    if (checkpoint &&
+        self.chain.lastTerminalBlockHeight >= checkpoint.height &&
+        ![self masternodeListForBlockHash:checkpoint.blockHash])
+        [self processRequestFromFileForBlockHash:checkpoint.blockHash
+                                      completion:^(BOOL success, DSMasternodeList *masternodeList) {
+            if (success && masternodeList) {
+                self.currentMasternodeList = masternodeList;
+            }
+        }];
 }
 
 - (DSMasternodeList *)loadMasternodeListAtBlockHash:(NSData *)blockHash withBlockHeightLookup:(uint32_t (^_Nullable)(UInt256 blockHash))blockHeightLookup {
@@ -877,10 +868,6 @@
     [self.store removeOldMasternodeLists];
 }
 
-- (void)removeOldSimplifiedMasternodeEntries {
-    [self.store removeOldSimplifiedMasternodeEntries];
-}
-
 - (void)issueWithMasternodeListFromPeer:(DSPeer *)peer {
     [self.peerManager peerMisbehaving:peer errorMessage:@"Issue with Deterministic Masternode list"];
     NSArray *faultyPeers = [[NSUserDefaults standardUserDefaults] arrayForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
@@ -985,19 +972,19 @@
     __block NSArray<DSSimplifiedMasternodeEntry *> *entries = self.currentMasternodeList.simplifiedMasternodeEntries;
     [self.chain.chainManager.DAPIClient checkPingTimesForMasternodes:entries
                                                           completion:^(NSMutableDictionary<NSData *, NSNumber *> *_Nonnull pingTimes, NSMutableDictionary<NSData *, NSError *> *_Nonnull errors) {
-                                                              [context performBlockAndWait:^{
-                                                                  for (DSSimplifiedMasternodeEntry *entry in entries) {
-                                                                      [entry savePlatformPingInfoInContext:context];
-                                                                  }
-                                                                  NSError *savingError = nil;
-                                                                  [context save:&savingError];
-                                                              }];
-                                                              if (completion != nil) {
-                                                                  dispatch_async(dispatch_get_main_queue(), ^{
-                                                                      completion(pingTimes, errors);
-                                                                  });
-                                                              }
-                                                          }];
+        [context performBlockAndWait:^{
+            for (DSSimplifiedMasternodeEntry *entry in entries) {
+                [entry savePlatformPingInfoInContext:context];
+            }
+            NSError *savingError = nil;
+            [context save:&savingError];
+        }];
+        if (completion != nil) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(pingTimes, errors);
+            });
+        }
+    }];
 }
 
 // MARK: - Local Masternodes
