@@ -25,7 +25,10 @@
 #import "DSLocalMasternodeEntity+CoreDataClass.h"
 #import "DSMasternodeStore.h"
 #import "DSMasternodeListEntity+CoreDataClass.h"
+#import "DSMerkleBlock.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
+#import "DSMnDiffProcessingResult.h"
+#import "DSOptionsManager.h"
 #import "DSQuorumEntryEntity+CoreDataClass.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataClass.h"
@@ -57,6 +60,49 @@
     _masternodeSavingQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.masternodesaving.%@", chain.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
     self.managedObjectContext = chain.chainManagedObjectContext;
     return self;
+}
+
+- (void)setUp {
+    [self deleteEmptyMasternodeLists]; //this is just for sanity purposes
+    [self loadMasternodeListsWithBlockHeightLookup:nil];
+    [self removeOldSimplifiedMasternodeEntries];
+    [self loadLocalMasternodes];
+}
+
+- (NSData * _Nullable)messageFromFileForBlockHash:(UInt256)blockHash {
+    DSCheckpoint *checkpoint = [self.chain checkpointForBlockHash:blockHash];
+    if (!checkpoint || !checkpoint.masternodeListName || [checkpoint.masternodeListName isEqualToString:@""]) {
+        DSLog(@"No masternode list checkpoint found at height %u", [self heightForBlockHash:blockHash]);
+        return nil;
+    }
+    NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
+    NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+    NSString *filePath = [bundle pathForResource:checkpoint.masternodeListName ofType:@"dat"];
+    if (!filePath) {
+        return nil;
+    }
+    NSData *message = [NSData dataWithContentsOfFile:filePath];
+    return message;
+}
+
+- (void)checkPingTimesForMasternodesInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(NSMutableDictionary<NSData *, NSNumber *> *pingTimes, NSMutableDictionary<NSData *, NSError *> *errors))completion {
+    __block NSArray<DSSimplifiedMasternodeEntry *> *entries = self.currentMasternodeList.simplifiedMasternodeEntries;
+    [self.chain.chainManager.DAPIClient checkPingTimesForMasternodes:entries
+                                                          completion:^(NSMutableDictionary<NSData *, NSNumber *> *_Nonnull pingTimes, NSMutableDictionary<NSData *, NSError *> *_Nonnull errors) {
+        [context performBlockAndWait:^{
+            for (DSSimplifiedMasternodeEntry *entry in entries) {
+                [entry savePlatformPingInfoInContext:context];
+            }
+            NSError *savingError = nil;
+            [context save:&savingError];
+        }];
+        if (completion != nil) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(pingTimes, errors);
+            });
+        }
+    }];
+
 }
 
 - (NSArray *)recentMasternodeLists {
@@ -100,7 +146,7 @@
     return chainHeight;
 }
 
-- (void)setCurrentMasternodeList:(DSMasternodeList *)currentMasternodeList {
+- (void)setCurrentMasternodeList:(DSMasternodeList *_Nullable)currentMasternodeList {
     if (self.chain.isEvolutionEnabled) {
         if (!_currentMasternodeList) {
             for (DSSimplifiedMasternodeEntry *masternodeEntry in currentMasternodeList.simplifiedMasternodeEntries) {
@@ -186,8 +232,32 @@
     return hasBlock;
 }
 
+- (BOOL)hasMasternodeListAt:(NSData *)blockHashData {
+//    DSLog(@"We already have this masternodeList %@ (%u)", blockHashData.reverse.hexString, [self heightForBlockHash:blockHash]);
+    return [self.masternodeListsByBlockHash objectForKey:blockHashData] || [self.masternodeListsBlockHashStubs containsObject:blockHashData];
+}
+
 - (BOOL)hasMasternodeListCurrentlyBeingSaved {
     return !!self.masternodeListCurrentlyBeingSavedCount;
+}
+
+- (uint32_t)masternodeListsToSync {
+    if (self.lastMasternodeListBlockHeight == UINT32_MAX) {
+        return 32;
+    } else {
+        float diff = self.chain.estimatedBlockHeight - self.lastMasternodeListBlockHeight;
+        if (diff < 0) return 32;
+        return MIN(32, (uint32_t)ceil(diff / 24.0f));
+    }
+}
+
+- (BOOL)masternodeListsAndQuorumsIsSynced {
+    if (self.lastMasternodeListBlockHeight == UINT32_MAX ||
+        self.lastMasternodeListBlockHeight < self.chain.estimatedBlockHeight - 16) {
+        return NO;
+    } else {
+        return YES;
+    }
 }
 
 - (void)loadLocalMasternodes {
@@ -281,6 +351,7 @@
 - (void)removeAllMasternodeLists {
     [self.masternodeListsByBlockHash removeAllObjects];
     [self.masternodeListsBlockHashStubs removeAllObjects];
+    self.currentMasternodeList = nil;
 }
 
 - (void)removeOldMasternodeLists {
@@ -475,6 +546,65 @@
         }
     }
     return nil;
+}
+
+- (DSQuorumEntry *_Nullable)quorumEntryForPlatformHavingQuorumHash:(UInt256)quorumHash forBlockHeight:(uint32_t)blockHeight {
+    DSBlock *block = [self.chain blockAtHeight:blockHeight];
+    if (block == nil) {
+        if (blockHeight > self.chain.lastTerminalBlockHeight) {
+            block = self.chain.lastTerminalBlock;
+        } else {
+            return nil;
+        }
+    }
+    return [self quorumEntryForPlatformHavingQuorumHash:quorumHash forBlock:block];
+}
+
+- (DSQuorumEntry *)quorumEntryForPlatformHavingQuorumHash:(UInt256)quorumHash forBlock:(DSBlock *)block {
+    DSMasternodeList *masternodeList = [self masternodeListForBlockHash:block.blockHash withBlockHeightLookup:nil];
+    if (!masternodeList) {
+        masternodeList = [self masternodeListBeforeBlockHash:block.blockHash];
+    }
+    if (!masternodeList) {
+        DSLog(@"No masternode list found yet");
+        return nil;
+    }
+    if (block.height - masternodeList.height > 32) {
+        DSLog(@"Masternode list is too old");
+        return nil;
+    }
+    DSQuorumEntry *quorumEntry = [masternodeList quorumEntryForPlatformWithQuorumHash:quorumHash];
+    if (quorumEntry == nil) {
+        quorumEntry = [self quorumEntryForPlatformHavingQuorumHash:quorumHash forBlockHeight:block.height - 1];
+    }
+    return quorumEntry;
+}
+
+- (DSQuorumEntry *)quorumEntryForChainLockRequestID:(UInt256)requestID forMerkleBlock:(DSMerkleBlock *)merkleBlock {
+    DSMasternodeList *masternodeList = [self masternodeListBeforeBlockHash:merkleBlock.blockHash];
+    if (!masternodeList) {
+        DSLog(@"No masternode list found yet");
+        return nil;
+    }
+    if (merkleBlock.height - masternodeList.height > 24) {
+        DSLog(@"Masternode list is too old");
+        return nil;
+    }
+    return [masternodeList quorumEntryForChainLockRequestID:requestID];
+}
+
+- (DSQuorumEntry *)quorumEntryForInstantSendRequestID:(UInt256)requestID withBlockHeightOffset:(uint32_t)blockHeightOffset {
+    DSMerkleBlock *merkleBlock = [self.chain blockFromChainTip:blockHeightOffset];
+    DSMasternodeList *masternodeList = [self masternodeListBeforeBlockHash:merkleBlock.blockHash];
+    if (!masternodeList) {
+        DSLog(@"No masternode list found yet");
+        return nil;
+    }
+    if (merkleBlock.height - masternodeList.height > 32) {
+        DSLog(@"Masternode list for IS is too old (age: %d masternodeList height %d merkle block height %d)", merkleBlock.height - masternodeList.height, masternodeList.height, merkleBlock.height);
+        return nil;
+    }
+    return [masternodeList quorumEntryForInstantSendRequestID:requestID];
 }
 
 @end

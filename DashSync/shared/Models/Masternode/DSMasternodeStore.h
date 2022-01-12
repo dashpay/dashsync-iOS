@@ -29,7 +29,7 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 
 @interface DSMasternodeStore : NSObject
 
-@property (nonatomic) DSMasternodeList *currentMasternodeList;
+@property (nonatomic, nullable) DSMasternodeList *currentMasternodeList;
 @property (nonatomic, readonly) NSUInteger knownMasternodeListsCount;
 @property (nonatomic, readonly) NSArray *recentMasternodeLists;
 @property (nonatomic, readonly) uint32_t earliestMasternodeListBlockHeight;
@@ -37,11 +37,16 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 @property (nonatomic, readonly) NSMutableDictionary<NSData *, DSMasternodeList *> *masternodeListsByBlockHash;
 @property (nonatomic, readonly) NSMutableSet<NSData *> *masternodeListsBlockHashStubs;
 @property (nonatomic, readonly) BOOL currentMasternodeListIsInLast24Hours;
+@property (nonatomic, readonly) double masternodeListAndQuorumsSyncProgress;
+@property (nonatomic, readonly) uint32_t masternodeListsToSync;
+@property (nonatomic, readonly) BOOL masternodeListsAndQuorumsIsSynced;
 
 - (instancetype)initWithChain:(DSChain *)chain;
+- (void)setUp;
 - (void)deleteAllOnChain;
 - (void)deleteEmptyMasternodeLists;
 - (BOOL)hasBlocksWithHash:(UInt256)blockHash;
+- (BOOL)hasMasternodeListAt:(NSData *)blockHashData;
 - (BOOL)hasMasternodeListCurrentlyBeingSaved;
 - (uint32_t)heightForBlockHash:(UInt256)blockhash;
 - (void)loadLocalMasternodes;
@@ -54,6 +59,8 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 - (void)removeOldSimplifiedMasternodeEntries;
 - (void)saveMasternodeList:(DSMasternodeList *)masternodeList havingModifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums completion:(void (^)(NSError *error))completion;
 + (void)saveMasternodeList:(DSMasternodeList *)masternodeList toChain:(DSChain *)chain havingModifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums createUnknownBlocks:(BOOL)createUnknownBlocks inContext:(NSManagedObjectContext *)context completion:(void (^)(NSError *error))completion;
+
+- (DSQuorumEntry *_Nullable)quorumEntryForPlatformHavingQuorumHash:(UInt256)quorumHash forBlockHeight:(uint32_t)blockHeight;
 
 @end
 

@@ -55,6 +55,7 @@
 #import "DSLocalMasternodeEntity+CoreDataProperties.h"
 #import "DSMasternodeHoldingsDerivationPath.h"
 #import "DSMasternodeListEntity+CoreDataProperties.h"
+#import "DSMasternodeManager+LocalMasternode.h"
 #import "DSMasternodeManager+Protected.h"
 #import "DSMerkleBlock.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"

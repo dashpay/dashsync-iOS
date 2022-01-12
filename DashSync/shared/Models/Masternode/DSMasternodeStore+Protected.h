@@ -17,14 +17,20 @@
 
 #import "BigIntTypes.h"
 #import "DSMasternodeStore.h"
+#import "DSMerkleBlock.h"
+#import "DSQuorumEntry.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMasternodeStore ()
 
+- (void)checkPingTimesForMasternodesInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(NSMutableDictionary<NSData *, NSNumber *> *pingTimes, NSMutableDictionary<NSData *, NSError *> *errors))completion;
 - (UInt256)closestKnownBlockHashForBlockHash:(UInt256)blockHash;
 - (DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntryForLocation:(UInt128)IPAddress port:(uint16_t)port;
 - (void)updateMasternodeList:(DSMasternodeList *)masternodeList addedMasternodes:(NSDictionary *)addedMasternodes modifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums completion:(void (^)(NSError *error))completion;
+- (NSData * _Nullable)messageFromFileForBlockHash:(UInt256)blockHash;
+- (DSQuorumEntry *)quorumEntryForChainLockRequestID:(UInt256)requestID forMerkleBlock:(DSMerkleBlock *)merkleBlock;
+- (DSQuorumEntry *)quorumEntryForInstantSendRequestID:(UInt256)requestID withBlockHeightOffset:(uint32_t)blockHeightOffset;
 
 @end
 

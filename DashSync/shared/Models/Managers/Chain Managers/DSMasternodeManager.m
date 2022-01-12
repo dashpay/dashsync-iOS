@@ -24,47 +24,22 @@
 //  THE SOFTWARE.
 
 #import "DSMasternodeManager.h"
-#import "DSAddressEntity+CoreDataProperties.h"
-#import "DSBLSKey.h"
 #import "DSChain+Protected.h"
-#import "DSChainEntity+CoreDataProperties.h"
 #import "DSChainManager+Protected.h"
 #import "DSCheckpoint.h"
-#import "DSDAPIClient.h"
-#import "DSDerivationPath.h"
-#import "DSInsightManager.h"
-#import "DSLocalMasternode+Protected.h"
-#import "DSLocalMasternodeEntity+CoreDataClass.h"
 #import "DSMasternodeDiffMessageContext.h"
-#import "DSMasternodeList.h"
-#import "DSMasternodeListEntity+CoreDataClass.h"
+#import "DSMasternodeManager+LocalMasternode.h"
 #import "DSMasternodeManager+Mndiff.h"
+#import "DSMasternodeService.h"
 #import "DSMasternodeStore.h"
 #import "DSMasternodeStore+Protected.h"
 #import "DSMerkleBlock.h"
-#import "DSMerkleBlockEntity+CoreDataClass.h"
-#import "DSMutableOrderedDataKeyDictionary.h"
+#import "DSMnDiffProcessingResult.h"
 #import "DSOptionsManager.h"
 #import "DSPeer.h"
 #import "DSPeerManager+Protected.h"
-#import "DSPeerManager.h"
-#import "DSProviderRegistrationTransaction.h"
-#import "DSProviderRegistrationTransactionEntity+CoreDataClass.h"
-#import "DSQuorumEntry.h"
-#import "DSQuorumEntryEntity+CoreDataClass.h"
 #import "DSSimplifiedMasternodeEntry.h"
-#import "DSSimplifiedMasternodeEntryEntity+CoreDataClass.h"
-#import "DSTransactionFactory.h"
 #import "DSTransactionManager+Protected.h"
-#import "NSArray+Dash.h"
-#import "NSData+Dash.h"
-#import "NSData+DSHash.h"
-#import "NSDictionary+Dash.h"
-#import "NSManagedObject+Sugar.h"
-#import "NSMutableData+Dash.h"
-#import "NSSet+Dash.h"
-#import "NSString+Bitcoin.h"
-#import "dash_shared_core.h"
 
 #define FAULTY_DML_MASTERNODE_PEERS @"FAULTY_DML_MASTERNODE_PEERS"
 #define CHAIN_FAULTY_DML_MASTERNODE_PEERS [NSString stringWithFormat:@"%@_%@", peer.chain.uniqueID, FAULTY_DML_MASTERNODE_PEERS]
@@ -80,14 +55,11 @@
 
 @property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, strong) DSMasternodeStore *store;
+@property (nonatomic, strong) DSMasternodeService *service;
 @property (nonatomic, strong) DSMasternodeList *masternodeListAwaitingQuorumValidation;
 @property (nonatomic, strong) NSMutableSet *masternodeListQueriesNeedingQuorumsValidated;
 @property (nonatomic, assign) UInt256 lastQueriedBlockHash; //last by height, not by time queried
 @property (nonatomic, strong) NSData *processingMasternodeListDiffHashes;
-@property (nonatomic, strong) NSMutableDictionary<NSData *, DSLocalMasternode *> *localMasternodesDictionaryByRegistrationTransactionHash;
-@property (nonatomic, strong) NSMutableOrderedSet<NSData *> *masternodeListRetrievalQueue;
-@property (nonatomic, assign) NSUInteger masternodeListRetrievalQueueMaxAmount;
-@property (nonatomic, strong) NSMutableSet<NSData *> *masternodeListsInRetrieval;
 @property (nonatomic, assign) NSTimeInterval timeIntervalForMasternodeRetrievalSafetyDelay;
 @property (nonatomic, assign) uint16_t timedOutAttempt;
 @property (nonatomic, assign) uint16_t timeOutObserverTry;
@@ -95,19 +67,6 @@
 @end
 
 @implementation DSMasternodeManager
-
-- (void)blockUntilAddInsight:(UInt256)entryQuorumHash {
-    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-    [[DSInsightManager sharedInstance] blockForBlockHash:uint256_reverse(entryQuorumHash)
-                                                 onChain:self.chain
-                                              completion:^(DSBlock *_Nullable block, NSError *_Nullable error) {
-                                                  if (!error && block) {
-                                                      [self.chain addInsightVerifiedBlock:block forBlockHash:entryQuorumHash];
-                                                  }
-                                                  dispatch_semaphore_signal(sem);
-                                              }];
-    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
-}
 
 - (DSMasternodeList *)currentMasternodeList {
     return [self.store currentMasternodeList];
@@ -118,12 +77,11 @@
 
     if (!(self = [super init])) return nil;
     _chain = chain;
-    _masternodeListRetrievalQueue = [NSMutableOrderedSet orderedSet];
-    _masternodeListsInRetrieval = [NSMutableSet set];
     _masternodeListQueriesNeedingQuorumsValidated = [NSMutableSet set];
-    _localMasternodesDictionaryByRegistrationTransactionHash = [NSMutableDictionary dictionary];
-    _testingMasternodeListRetrieval = NO;
     self.store = [[DSMasternodeStore alloc] initWithChain:chain];
+    self.service = [[DSMasternodeService alloc] initWithChain:chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
+        return [self heightForBlockHash:blockHash];
+    }];
     self.lastQueriedBlockHash = UINT256_ZERO;
     self.processingMasternodeListDiffHashes = nil;
     _timedOutAttempt = 0;
@@ -167,7 +125,6 @@
 
 - (DSSimplifiedMasternodeEntry *)masternodeHavingProviderRegistrationTransactionHash:(NSData *)providerRegistrationTransactionHash {
     NSParameterAssert(providerRegistrationTransactionHash);
-
     return [self.currentMasternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash objectForKey:providerRegistrationTransactionHash];
 }
 
@@ -177,7 +134,7 @@
 }
 
 - (NSUInteger)masternodeListRetrievalQueueCount {
-    return self.masternodeListRetrievalQueue.count;
+    return [self.service masternodeListRetrievalQueueCount];
 }
 
 - (uint32_t)estimatedMasternodeListsToSync {
@@ -185,30 +142,19 @@
     if (!syncMasternodeLists) {
         return 0;
     }
-    double amountLeft = self.masternodeListRetrievalQueue.count;
+    double amountLeft = self.masternodeListRetrievalQueueCount;
     double maxAmount = self.masternodeListRetrievalQueueMaxAmount;
-    double masternodeListsCount = self.store.masternodeListsByBlockHash.count;
-    if (!maxAmount || masternodeListsCount <= 1) { //1 because there might be a default
-        if (self.lastMasternodeListBlockHeight == UINT32_MAX) {
-            return 32;
-        } else {
-            float diff = self.chain.estimatedBlockHeight - self.lastMasternodeListBlockHeight;
-            if (diff < 0) return 32;
-            return MIN(32, (uint32_t)ceil(diff / 24.0f));
-        }
+    if (!maxAmount || self.store.masternodeListsByBlockHash.count <= 1) { //1 because there might be a default
+        return self.store.masternodeListsToSync;
     }
     return amountLeft;
 }
 
 - (double)masternodeListAndQuorumsSyncProgress {
-    double amountLeft = self.masternodeListRetrievalQueue.count;
+    double amountLeft = self.masternodeListRetrievalQueueCount;
     double maxAmount = self.masternodeListRetrievalQueueMaxAmount;
     if (!amountLeft) {
-        if (self.lastMasternodeListBlockHeight == UINT32_MAX || self.lastMasternodeListBlockHeight < self.chain.estimatedBlockHeight - 16) {
-            return 0;
-        } else {
-            return 1;
-        }
+        return self.store.masternodeListsAndQuorumsIsSynced;
     }
     double progress = MAX(MIN((maxAmount - amountLeft) / maxAmount, 1), 0);
     return progress;
@@ -222,10 +168,7 @@
 // MARK: - Set Up and Tear Down
 
 - (void)setUp {
-    [self.store deleteEmptyMasternodeLists]; //this is just for sanity purposes
-    [self loadMasternodeListsWithBlockHeightLookup:nil];
-    [self.store removeOldSimplifiedMasternodeEntries];
-    [self.store loadLocalMasternodes];
+    [self.store setUp];
     [self loadFileDistributedMasternodeLists];
 }
 
@@ -258,13 +201,13 @@
     DSCheckpoint *checkpoint = [self.chain lastCheckpointHavingMasternodeList];
     if (checkpoint &&
         self.chain.lastTerminalBlockHeight >= checkpoint.height &&
-        ![self masternodeListForBlockHash:checkpoint.blockHash])
-        [self processRequestFromFileForBlockHash:checkpoint.blockHash
-                                      completion:^(BOOL success, DSMasternodeList *masternodeList) {
+        ![self masternodeListForBlockHash:checkpoint.blockHash withBlockHeightLookup:nil])
+        [self processRequestFromFileForBlockHash:checkpoint.blockHash completion:^(BOOL success, DSMasternodeList *masternodeList) {
             if (success && masternodeList) {
                 self.currentMasternodeList = masternodeList;
             }
         }];
+
 }
 
 - (DSMasternodeList *)loadMasternodeListAtBlockHash:(NSData *)blockHash withBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
@@ -273,11 +216,9 @@
 
 - (void)wipeMasternodeInfo {
     [self.store removeAllMasternodeLists];
-    [self.localMasternodesDictionaryByRegistrationTransactionHash removeAllObjects];
-    self.currentMasternodeList = nil;
+    [self wipeLocalMasternodeInfo];
     self.masternodeListAwaitingQuorumValidation = nil;
-    [self.masternodeListRetrievalQueue removeAllObjects];
-    [self.masternodeListsInRetrieval removeAllObjects];
+    [self.service cleanAllLists];
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
         [[NSNotificationCenter defaultCenter] postNotificationName:DSQuorumListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
@@ -301,61 +242,33 @@
 // MARK: - Requesting Masternode List
 
 - (void)addToMasternodeRetrievalQueue:(NSData *)masternodeBlockHashData {
-    NSAssert(uint256_is_not_zero(masternodeBlockHashData.UInt256), @"the hash data must not be empty");
-    [self.masternodeListRetrievalQueue addObject:masternodeBlockHashData];
-    self.masternodeListRetrievalQueueMaxAmount = MAX(self.masternodeListRetrievalQueueMaxAmount, self.masternodeListRetrievalQueue.count);
-    [self.masternodeListRetrievalQueue sortUsingComparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2) {
-        NSData *obj1BlockHash = (NSData *)obj1;
-        NSData *obj2BlockHash = (NSData *)obj2;
-        if ([self heightForBlockHash:obj1BlockHash.UInt256] < [self heightForBlockHash:obj2BlockHash.UInt256]) {
-            return NSOrderedAscending;
-        } else {
-            return NSOrderedDescending;
-        }
-    }];
+    [self.service addToMasternodeRetrievalQueue:masternodeBlockHashData];
 }
 
 - (void)addToMasternodeRetrievalQueueArray:(NSArray *)masternodeBlockHashDataArray {
-    NSMutableArray *nonEmptyBlockHashes = [NSMutableArray array];
-    for (NSData *blockHashData in masternodeBlockHashDataArray) {
-        NSAssert(uint256_is_not_zero(blockHashData.UInt256), @"We should not be adding an empty block hash");
-        if (uint256_is_not_zero(blockHashData.UInt256)) {
-            [nonEmptyBlockHashes addObject:blockHashData];
-        }
-    }
-    [self.masternodeListRetrievalQueue addObjectsFromArray:nonEmptyBlockHashes];
-    self.masternodeListRetrievalQueueMaxAmount = MAX(self.masternodeListRetrievalQueueMaxAmount, self.masternodeListRetrievalQueue.count);
-    [self.masternodeListRetrievalQueue sortUsingComparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2) {
-        NSData *obj1BlockHash = (NSData *)obj1;
-        NSData *obj2BlockHash = (NSData *)obj2;
-        if ([self heightForBlockHash:obj1BlockHash.UInt256] < [self heightForBlockHash:obj2BlockHash.UInt256]) {
-            return NSOrderedAscending;
-        } else {
-            return NSOrderedDescending;
-        }
-    }];
+    [self.service addToMasternodeRetrievalQueueArray:masternodeBlockHashDataArray];
 }
 
 - (void)startTimeOutObserver {
-    __block NSSet *masternodeListsInRetrieval = [self.masternodeListsInRetrieval copy];
+    __block NSSet *masternodeListsInRetrieval = [self.service.masternodeListsInRetrieval copy];
     __block NSUInteger masternodeListCount = [self knownMasternodeListsCount];
     self.timeOutObserverTry++;
     __block uint16_t timeOutObserverTry = self.timeOutObserverTry;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(20 * (self.timedOutAttempt + 1) * NSEC_PER_SEC)), self.chain.networkingQueue, ^{
-        if (![self.masternodeListRetrievalQueue count]) return;
+        if (!self.masternodeListRetrievalQueueCount) return;
         if (self.timeOutObserverTry != timeOutObserverTry) return;
+        
         NSMutableSet *leftToGet = [masternodeListsInRetrieval mutableCopy];
-        [leftToGet intersectSet:self.masternodeListsInRetrieval];
+        [leftToGet intersectSet:self.service.masternodeListsInRetrieval];
         if (self.processingMasternodeListDiffHashes) {
             [leftToGet removeObject:self.processingMasternodeListDiffHashes];
         }
+        
         if ((masternodeListCount == [self knownMasternodeListsCount]) && [masternodeListsInRetrieval isEqualToSet:leftToGet]) {
-            //Nothing has changed
             DSLog(@"TimedOut");
-            //timeout
             self.timedOutAttempt++;
             [self.peerManager.downloadPeer disconnect];
-            [self.masternodeListsInRetrieval removeAllObjects];
+            [self.service cleanListsInRetrieval];
             [self dequeueMasternodeListRequest];
         } else {
             [self startTimeOutObserver];
@@ -365,76 +278,59 @@
 
 - (void)dequeueMasternodeListRequest {
     DSLog(@"Dequeued Masternode List Request");
-    if (![self.masternodeListRetrievalQueue count]) {
-        DSLog(@"No masternode lists in retrieval");
-        [self.chain.chainManager chainFinishedSyncingMasternodeListsAndQuorums:self.chain];
-        return;
-    }
-    if ([self.masternodeListsInRetrieval count]) {
-        DSLog(@"A masternode list is already in retrieval");
-        return;
-    }
-    if (!self.peerManager.downloadPeer || (self.peerManager.downloadPeer.status != DSPeerStatus_Connected)) {
-        if (self.chain.chainManager.syncPhase != DSChainSyncPhase_Offline) {
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), self.chain.networkingQueue, ^{
-                [self dequeueMasternodeListRequest];
-            });
+    [self.service fetchMasternodeListsToRetrieve:^(NSOrderedSet<NSData *> *listsToRetrieve) {
+        for (NSData *blockHashData in listsToRetrieve) {
+            NSUInteger pos = [listsToRetrieve indexOfObject:blockHashData];
+            //we should check the associated block still exists
+            if ([self hasBlockForBlockHash:blockHashData]) {
+                //there is the rare possibility we have the masternode list as a checkpoint, so lets first try that
+                UInt256 blockHash = blockHashData.UInt256;
+                [self processRequestFromFileForBlockHash:blockHash completion:^(BOOL success, DSMasternodeList * _Nonnull masternodeList) {
+                    
+                    if (success) {
+                        if (!KEEP_OLD_QUORUMS && uint256_eq(self.lastQueriedBlockHash, masternodeList.blockHash)) {
+                            [self.store removeOldMasternodeLists];
+                        }
+                        if (![self.service masternodeListRetrievalQueueCount]) {
+                            [self.chain.chainManager.transactionManager checkWaitingForQuorums];
+                        }
+                        //we already had it
+                        [self.service.masternodeListRetrievalQueue removeObject:blockHashData];
+                    } else {
+                        //we need to go get it
+                        UInt256 previousMasternodeAlreadyKnownBlockHash = [self.store closestKnownBlockHashForBlockHash:blockHash];
+                        UInt256 previousMasternodeInQueueBlockHash = (pos ? [listsToRetrieve objectAtIndex:pos - 1].UInt256 : UINT256_ZERO);
+                        uint32_t previousMasternodeAlreadyKnownHeight = [self heightForBlockHash:previousMasternodeAlreadyKnownBlockHash];
+                        uint32_t previousMasternodeInQueueHeight = (pos ? [self heightForBlockHash:previousMasternodeInQueueBlockHash] : UINT32_MAX);
+                        UInt256 previousBlockHash = pos ? (previousMasternodeAlreadyKnownHeight > previousMasternodeInQueueHeight ? previousMasternodeAlreadyKnownBlockHash : previousMasternodeInQueueBlockHash) : previousMasternodeAlreadyKnownBlockHash;
+                        DSLog(@"Requesting masternode list and quorums from %u to %u (%@ to %@)", [self heightForBlockHash:previousBlockHash], [self heightForBlockHash:blockHash], uint256_reverse_hex(previousBlockHash), uint256_reverse_hex(blockHash));
+                        NSAssert(([self heightForBlockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
+                        
+                        if ([self.chain hasDIP0024Enabled]) {
+                            // TODO: optimize qrinfo request queue (up to 4 blocks simultaneously, so we'd make masternodeListsToRetrieve.count%4)
+                            NSArray<NSData *> *baseBlockHashes = @[[NSData dataWithUInt256:previousBlockHash]];
+                            [self.peerManager.downloadPeer sendGetQuorumRotationInfoForBaseBlockHashes:baseBlockHashes forBlockHash:blockHash];
+                        } else {
+                            [self.peerManager.downloadPeer sendGetMasternodeListFromPreviousBlockHash:previousBlockHash forBlockHash:blockHash];
+                        }
+                        UInt512 concat = uint512_concat(previousBlockHash, blockHash);
+                        [self.service.masternodeListsInRetrieval addObject:uint512_data(concat)];
+                    }
+                }];
+            } else {
+                DSLog(@"Missing block (%@)", blockHashData.hexString);
+                [self.service.masternodeListRetrievalQueue removeObject:blockHashData];
+            }
         }
-        return;
-    }
-    NSMutableOrderedSet<NSData *> *masternodeListsToRetrieve = [self.masternodeListRetrievalQueue mutableCopy];
-    for (NSData *blockHashData in masternodeListsToRetrieve) {
-        NSUInteger pos = [masternodeListsToRetrieve indexOfObject:blockHashData];
-        UInt256 blockHash = blockHashData.UInt256;
-        //we should check the associated block still exists
-        __block BOOL hasBlock = ([self.chain blockForBlockHash:blockHash] != nil);
-        if (!hasBlock) {
-            hasBlock = [self.store hasBlocksWithHash:blockHash];
-        }
-        if (!hasBlock && self.chain.isTestnet) {
-            //We can trust insight if on testnet
-            [self blockUntilAddInsight:blockHash];
-            hasBlock = !![[self.chain insightVerifiedBlocksByHashDictionary] objectForKey:uint256_data(blockHash)];
-        }
-        if (hasBlock) {
-            //there is the rare possibility we have the masternode list as a checkpoint, so lets first try that
-            [self processRequestFromFileForBlockHash:blockHash
-                                          completion:^(BOOL success, DSMasternodeList *masternodeList) {
-                if (success) {
-                    //we already had it
-                    [self.masternodeListRetrievalQueue removeObject:uint256_data(blockHash)];
-                    return;
-                }
-                //we need to go get it
-                UInt256 previousMasternodeAlreadyKnownBlockHash = [self.store closestKnownBlockHashForBlockHash:blockHash];
-                UInt256 previousMasternodeInQueueBlockHash = (pos ? [masternodeListsToRetrieve objectAtIndex:pos - 1].UInt256 : UINT256_ZERO);
-                uint32_t previousMasternodeAlreadyKnownHeight = [self heightForBlockHash:previousMasternodeAlreadyKnownBlockHash];
-                uint32_t previousMasternodeInQueueHeight = (pos ? [self heightForBlockHash:previousMasternodeInQueueBlockHash] : UINT32_MAX);
-                UInt256 previousBlockHash = pos ? (previousMasternodeAlreadyKnownHeight > previousMasternodeInQueueHeight ? previousMasternodeAlreadyKnownBlockHash : previousMasternodeInQueueBlockHash) : previousMasternodeAlreadyKnownBlockHash;
-                DSLog(@"Requesting masternode list and quorums from %u to %u (%@ to %@)", [self heightForBlockHash:previousBlockHash], [self heightForBlockHash:blockHash], uint256_reverse_hex(previousBlockHash), uint256_reverse_hex(blockHash));
-                NSAssert(([self heightForBlockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
-                if ([self.chain hasDIP0024Enabled]) {
-                    // TODO: optimize qrinfo request queue (up to 4 blocks simultaneously, so we'd make masternodeListsToRetrieve.count%4)
-                    NSArray<NSData *> *baseBlockHashes = @[[NSData dataWithUInt256:previousBlockHash]];
-                    [self.peerManager.downloadPeer sendGetQuorumRotationInfoForBaseBlockHashes:baseBlockHashes forBlockHash:blockHash];
-                } else {
-                    [self.peerManager.downloadPeer sendGetMasternodeListFromPreviousBlockHash:previousBlockHash forBlockHash:blockHash];
-                }
-                UInt512 concat = uint512_concat(previousBlockHash, blockHash);
-                [self.masternodeListsInRetrieval addObject:uint512_data(concat)];
-            }];
-        } else {
-            DSLog(@"Missing block (%@)", uint256_reverse_hex(blockHash));
-            [self.masternodeListRetrievalQueue removeObject:uint256_data(blockHash)];
-        }
-    }
-    [self startTimeOutObserver];
+        [self startTimeOutObserver];
+    }];
 }
 
 - (void)getRecentMasternodeList:(NSUInteger)blocksAgo withSafetyDelay:(uint32_t)safetyDelay {
-    @synchronized(self.masternodeListRetrievalQueue) {
+    @synchronized(self.service.masternodeListRetrievalQueue) {
         DSMerkleBlock *merkleBlock = [self.chain blockFromChainTip:blocksAgo];
-        if ([self.masternodeListRetrievalQueue lastObject] && uint256_eq(merkleBlock.blockHash, [self.masternodeListRetrievalQueue lastObject].UInt256)) {
+        if ([self.service.masternodeListRetrievalQueue lastObject] &&
+            uint256_eq(merkleBlock.blockHash, [self.service.masternodeListRetrievalQueue lastObject].UInt256)) {
             //we are asking for the same as the last one
             return;
         }
@@ -448,10 +344,10 @@
             return;
         }
         self.lastQueriedBlockHash = merkleBlock.blockHash;
-        [self.masternodeListQueriesNeedingQuorumsValidated addObject:uint256_data(merkleBlock.blockHash)];
+        [self.masternodeListQueriesNeedingQuorumsValidated addObject:blockHash];
         DSLog(@"Getting masternode list %u", merkleBlock.height);
-        BOOL emptyRequestQueue = ![self.masternodeListRetrievalQueue count];
-        [self addToMasternodeRetrievalQueue:uint256_data(merkleBlock.blockHash)];
+        BOOL emptyRequestQueue = !self.masternodeListRetrievalQueueCount;
+        [self addToMasternodeRetrievalQueue:blockHash];
         if (emptyRequestQueue) {
             [self dequeueMasternodeListRequest];
         }
@@ -474,7 +370,7 @@
 }
 
 - (void)getMasternodeListsForBlockHashes:(NSOrderedSet *)blockHashes {
-    @synchronized(self.masternodeListRetrievalQueue) {
+    @synchronized(self.service.masternodeListRetrievalQueue) {
         NSArray *orderedBlockHashes = [blockHashes sortedArrayUsingComparator:^NSComparisonResult(NSData *_Nonnull obj1, NSData *_Nonnull obj2) {
             uint32_t height1 = [self heightForBlockHash:obj1.UInt256];
             uint32_t height2 = [self heightForBlockHash:obj2.UInt256];
@@ -485,6 +381,7 @@
         }
         [self addToMasternodeRetrievalQueueArray:orderedBlockHashes];
     }
+    [self dequeueMasternodeListRequest];
 }
 
 - (BOOL)requestMasternodeListForBlockHeight:(uint32_t)blockHeight error:(NSError **)error {
@@ -501,33 +398,23 @@
 
 - (BOOL)requestMasternodeListForBlockHash:(UInt256)blockHash {
     self.lastQueriedBlockHash = blockHash;
-    [self.masternodeListQueriesNeedingQuorumsValidated addObject:uint256_data(blockHash)];
+    NSData *blockHashData = uint256_data(blockHash);
+    [self.masternodeListQueriesNeedingQuorumsValidated addObject:blockHashData];
     //this is safe
-    [self getMasternodeListsForBlockHashes:[NSOrderedSet orderedSetWithObject:uint256_data(blockHash)]];
-    [self dequeueMasternodeListRequest];
+    [self getMasternodeListsForBlockHashes:[NSOrderedSet orderedSetWithObject:blockHashData]];
     return TRUE;
 }
 
-// MARK: - Deterministic Masternode List Sync
-
 - (void)processRequestFromFileForBlockHash:(UInt256)blockHash completion:(void (^)(BOOL success, DSMasternodeList *masternodeList))completion {
-    DSCheckpoint *checkpoint = [self.chain checkpointForBlockHash:blockHash];
-    if (!checkpoint || !checkpoint.masternodeListName || [checkpoint.masternodeListName isEqualToString:@""]) {
-        DSLog(@"No masternode list checkpoint found at height %u", [self heightForBlockHash:blockHash]);
-        completion(NO, nil);
-        return;
-    }
-    NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
-    NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
-    NSString *filePath = [bundle pathForResource:checkpoint.masternodeListName ofType:@"dat"];
-    if (!filePath) {
+    NSData *message = [self.store messageFromFileForBlockHash:blockHash];
+    if (!message) {
         completion(NO, nil);
         return;
     }
     __block DSMerkleBlock *block = [self.chain blockForBlockHash:blockHash];
-    NSData *message = [NSData dataWithContentsOfFile:filePath];
+    DSMasternodeList *baseMasternodeList = nil;
     [self processMasternodeDiffMessage:message
-                    baseMasternodeList:nil
+                    baseMasternodeList:baseMasternodeList
                              lastBlock:block
                     useInsightAsBackup:NO
                             completion:^(DSMnDiffProcessingResult *result) {
@@ -542,49 +429,47 @@
             completion(NO, nil);
             return;
         }
-        DSMasternodeList *masternodeList = result.masternodeList;
+        __block DSMasternodeList *masternodeList = result.masternodeList;
         [self.store updateMasternodeList:masternodeList addedMasternodes:result.addedMasternodes modifiedMasternodes:result.modifiedMasternodes addedQuorums:result.addedQuorums completion:^(NSError * _Nonnull error) {
-            if (!KEEP_OLD_QUORUMS && uint256_eq(self.lastQueriedBlockHash, masternodeList.blockHash)) {
-                [self removeOldMasternodeLists];
-            }
-            if (![self.masternodeListRetrievalQueue count]) {
-                [self.chain.chainManager.transactionManager checkWaitingForQuorums];
-            }
             completion(YES, masternodeList);
         }];
     }];
 }
 
-- (void)processMasternodeDiffMessage:(NSData *)message baseMasternodeList:(DSMasternodeList *)baseMasternodeList lastBlock:(DSBlock *)lastBlock useInsightAsBackup:(BOOL)useInsightAsBackup completion:(void (^)(DSMnDiffProcessingResult *result))completion {
-    DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
-    [mndiffContext setBaseMasternodeList:baseMasternodeList];
-    [mndiffContext setLastBlock:(DSMerkleBlock *)lastBlock];
-    [mndiffContext setUseInsightAsBackup:useInsightAsBackup];
-    [mndiffContext setChain:self.chain];
-    [mndiffContext setMasternodeListLookup:^DSMasternodeList *(UInt256 blockHash) {
-        return [self masternodeListForBlockHash:blockHash];
-    }];
-    [mndiffContext setBlockHeightLookup:^uint32_t(UInt256 blockHash) {
-        return [self heightForBlockHash:blockHash];
-    }];
-    [DSMasternodeManager processMasternodeDiffMessage:message withContext:mndiffContext completion:completion];
+
+// MARK: - Deterministic Masternode List Sync
+
+-(DSBlock *)lastBlockForBlockHash:(UInt256)blockHash fromPeer:(DSPeer *)peer {
+    DSBlock *lastBlock = nil;
+    if ([self.chain heightForBlockHash:blockHash]) {
+        lastBlock = [[peer.chain terminalBlocks] objectForKey:uint256_obj(blockHash)];
+        if (!lastBlock && [peer.chain allowInsightBlocksForVerification]) {
+            lastBlock = [[peer.chain insightVerifiedBlocksByHashDictionary] objectForKey:uint256_data(blockHash)];
+            if (!lastBlock && peer.chain.isTestnet) {
+                //We can trust insight if on testnet
+                [self.service blockUntilAddInsight:blockHash];
+                lastBlock = [[peer.chain insightVerifiedBlocksByHashDictionary] objectForKey:uint256_data(blockHash)];
+            }
+        }
+    } else {
+        lastBlock = [peer.chain recentTerminalBlockForBlockHash:blockHash];
+    }
+    return lastBlock;
 }
 
-- (void)processQRInfoMessage:(NSData *)message baseBlockHashesCount:(uint32_t)baseBlockHashesCount baseMasternodeList:(DSMasternodeList *)baseMasternodeList lastBlock:(DSBlock *)lastBlock useInsightAsBackup:(BOOL)useInsightAsBackup completion:(void (^)(DSMnDiffProcessingResult *result))completion {
-    DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
-    [mndiffContext setBaseMasternodeList:baseMasternodeList];
-    [mndiffContext setLastBlock:(DSMerkleBlock *)lastBlock];
-    [mndiffContext setUseInsightAsBackup:useInsightAsBackup];
-    [mndiffContext setChain:self.chain];
-    [mndiffContext setMasternodeListLookup:^DSMasternodeList *(UInt256 blockHash) {
-        return [self masternodeListForBlockHash:blockHash];
-    }];
-    [mndiffContext setBlockHeightLookup:^uint32_t(UInt256 blockHash) {
-        return [self heightForBlockHash:blockHash];
-    }];
-    [DSMasternodeManager processQRInfoMessage:message baseBlockHashesCount:baseBlockHashesCount withContext:mndiffContext completion:completion];
+-(BOOL)hasBlockForBlockHash:(NSData *)blockHashData {
+    UInt256 blockHash = blockHashData.UInt256;
+    BOOL hasBlock = ([self.chain blockForBlockHash:blockHash] != nil);
+    if (!hasBlock) {
+        hasBlock = [self.store hasBlocksWithHash:blockHash];
+    }
+    if (!hasBlock && self.chain.isTestnet) {
+        //We can trust insight if on testnet
+        [self.service blockUntilAddInsight:blockHash];
+        hasBlock = !![[self.chain insightVerifiedBlocksByHashDictionary] objectForKey:blockHashData];
+    }
+    return hasBlock;
 }
-
 
 - (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData *)message {
 #if LOG_MASTERNODE_DIFF
@@ -596,11 +481,9 @@
     NSUInteger length = message.length;
     NSUInteger offset = 0;
     if (length - offset < 32) return;
-    UInt256 baseBlockHash = [message UInt256AtOffset:offset];
-    offset += 32;
+    UInt256 baseBlockHash = [message readUInt256AtOffset:&offset];
     if (length - offset < 32) return;
-    UInt256 blockHash = [message UInt256AtOffset:offset];
-    offset += 32;
+    UInt256 blockHash = [message readUInt256AtOffset:&offset];
 
 #if SAVE_MASTERNODE_DIFF_TO_FILE
     NSString *fileName = [NSString stringWithFormat:@"MNL_%@_%@.dat", @([self heightForBlockHash:baseBlockHash]), @([self heightForBlockHash:blockHash])];
@@ -610,47 +493,31 @@
     NSData *blockHashData = uint256_data(blockHash);
     UInt512 concat = uint512_concat(baseBlockHash, blockHash);
     NSData *blockHashDiffsData = uint512_data(concat);
-    if (![self.masternodeListsInRetrieval containsObject:blockHashDiffsData]) {
+    
+    if (![self.service.masternodeListsInRetrieval containsObject:blockHashDiffsData]) {
         NSMutableArray *masternodeListsInRetrievalStrings = [NSMutableArray array];
-        for (NSData *masternodeListInRetrieval in self.masternodeListsInRetrieval) {
+        for (NSData *masternodeListInRetrieval in self.service.masternodeListsInRetrieval) {
             [masternodeListsInRetrievalStrings addObject:masternodeListInRetrieval.hexString];
         }
         DSLog(@"A masternode list (%@) was received that is not set to be retrieved (%@)", blockHashDiffsData.hexString, [masternodeListsInRetrievalStrings componentsJoinedByString:@", "]);
         return;
     }
-    [self.masternodeListsInRetrieval removeObject:blockHashDiffsData];
-    if ([self.store.masternodeListsByBlockHash objectForKey:blockHashData]) {
-        //we already have this
-        DSLog(@"We already have this masternodeList %@ (%u)", blockHashData.reverse.hexString, [self heightForBlockHash:blockHash]);
-        return; //no need to do anything more
-    }
-    if ([self.store.masternodeListsBlockHashStubs containsObject:blockHashData]) {
-        //we already have this
-        DSLog(@"We already have a stub for %@ (%u)", blockHashData.reverse.hexString, [self heightForBlockHash:blockHash]);
-        return; //no need to do anything more
+    [self.service.masternodeListsInRetrieval removeObject:blockHashDiffsData];
+    
+    if ([self.store hasMasternodeListAt:blockHashData]) {
+        return;
     }
     DSLog(@"relayed masternode diff with baseBlockHash %@ (%u) blockHash %@ (%u)", uint256_reverse_hex(baseBlockHash), [self heightForBlockHash:baseBlockHash], blockHashData.reverse.hexString, [self heightForBlockHash:blockHash]);
     DSMasternodeList *baseMasternodeList = [self masternodeListForBlockHash:baseBlockHash];
-    if (!baseMasternodeList && !uint256_eq(self.chain.genesisHash, baseBlockHash) && uint256_is_not_zero(baseBlockHash)) {
+    if (!baseMasternodeList &&
+        !uint256_eq(self.chain.genesisHash, baseBlockHash) &&
+        uint256_is_not_zero(baseBlockHash)) {
         //this could have been deleted in the meantime, if so rerequest
         [self issueWithMasternodeListFromPeer:peer];
         DSLog(@"No base masternode list");
         return;
     }
-    DSBlock *lastBlock = nil;
-    if ([self.chain heightForBlockHash:blockHash]) {
-        lastBlock = [[peer.chain terminalBlocks] objectForKey:uint256_obj(blockHash)];
-        if (!lastBlock && [peer.chain allowInsightBlocksForVerification]) {
-            lastBlock = [[peer.chain insightVerifiedBlocksByHashDictionary] objectForKey:uint256_data(blockHash)];
-            if (!lastBlock && peer.chain.isTestnet) {
-                //We can trust insight if on testnet
-                [self blockUntilAddInsight:blockHash];
-                lastBlock = [[peer.chain insightVerifiedBlocksByHashDictionary] objectForKey:uint256_data(blockHash)];
-            }
-        }
-    } else {
-        lastBlock = [peer.chain recentTerminalBlockForBlockHash:blockHash];
-    }
+    DSBlock *lastBlock = [self lastBlockForBlockHash:blockHash fromPeer:peer];
     if (!lastBlock) {
         [self issueWithMasternodeListFromPeer:peer];
         DSLog(@"Last Block missing");
@@ -664,9 +531,10 @@
                     useInsightAsBackup:self.chain.isTestnet
                             completion:^(DSMnDiffProcessingResult *result) {
         DSMasternodeList *masternodeList = result.masternodeList;
-        if (![self.masternodeListRetrievalQueue containsObject:uint256_data(masternodeList.blockHash)]) {
+        NSData *masternodeListBlockHashData = uint256_data(masternodeList.blockHash);
+        if (![self.service.masternodeListRetrievalQueue containsObject:masternodeListBlockHashData]) {
             //We most likely wiped data in the meantime
-            [self.masternodeListsInRetrieval removeAllObjects];
+            [self.service cleanListsInRetrieval];
             [self dequeueMasternodeListRequest];
             return;
         }
@@ -674,25 +542,24 @@
             NSOrderedSet *neededMissingMasternodeLists = result.neededMissingMasternodeLists;
             DSLog(@"Valid masternode list found at height %u", [self heightForBlockHash:blockHash]);
             //yay this is the correct masternode list verified deterministically for the given block
-            if ([neededMissingMasternodeLists count] &&
-                [self.masternodeListQueriesNeedingQuorumsValidated containsObject:uint256_data(blockHash)]) {
+            NSData *blockHashData = uint256_data(blockHash);
+            if ([neededMissingMasternodeLists count] && [self.masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashData]) {
                 DSLog(@"Last masternode list is missing previous masternode lists for quorum validation");
                 self.processingMasternodeListDiffHashes = nil;
                 //This is the current one, get more previous masternode lists we need to verify quorums
                 self.masternodeListAwaitingQuorumValidation = masternodeList;
-                [self.masternodeListRetrievalQueue removeObject:uint256_data(blockHash)];
+                [self.service.masternodeListRetrievalQueue removeObject:blockHashData];
                 NSMutableOrderedSet *neededMasternodeLists = [neededMissingMasternodeLists mutableCopy];
-                [neededMasternodeLists addObject:uint256_data(blockHash)]; //also get the current one again
+                [neededMasternodeLists addObject:blockHashData]; //also get the current one again
                 [self getMasternodeListsForBlockHashes:neededMasternodeLists];
-                [self dequeueMasternodeListRequest];
             } else {
                 [self processValidMasternodeList:masternodeList havingAddedMasternodes:result.addedMasternodes modifiedMasternodes:result.modifiedMasternodes addedQuorums:result.addedQuorums];
-                NSAssert([self.masternodeListRetrievalQueue containsObject:uint256_data(masternodeList.blockHash)], @"This should still be here");
+                NSAssert([self.service.masternodeListRetrievalQueue containsObject:masternodeListBlockHashData], @"This should still be here");
                 self.processingMasternodeListDiffHashes = nil;
-                [self.masternodeListRetrievalQueue removeObject:uint256_data(masternodeList.blockHash)];
+                [self.service.masternodeListRetrievalQueue removeObject:masternodeListBlockHashData];
                 [self dequeueMasternodeListRequest];
-                //check for instant send locks that were awaiting a quorum
-                if (![self.masternodeListRetrievalQueue count]) {
+                // check for instant send locks that were awaiting a quorum
+                if (![self.service.masternodeListRetrievalQueue count]) {
                     [self.chain.chainManager.transactionManager checkWaitingForQuorums];
                 }
                 [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
@@ -714,45 +581,30 @@
     NSUInteger length = message.length;
     NSUInteger offset = 0;
     if (length - offset < 32) return;
-    UInt256 baseBlockHash = [message UInt256AtOffset:offset];
-    offset += 32;
+    UInt256 baseBlockHash = [message readUInt256AtOffset:&offset];
     if (length - offset < 32) return;
-    UInt256 blockHash = [message UInt256AtOffset:offset];
-    offset += 32;
+    UInt256 blockHash = [message readUInt256AtOffset:&offset];
     NSData *blockHashData = uint256_data(blockHash);
     UInt512 concat = uint512_concat(baseBlockHash, blockHash);
     NSData *blockHashDiffsData = uint512_data(concat);
-    if (![self.masternodeListsInRetrieval containsObject:blockHashDiffsData]) {
+    
+    if (![self.service.masternodeListsInRetrieval containsObject:blockHashDiffsData]) {
         return;
     }
-    [self.masternodeListsInRetrieval removeObject:blockHashDiffsData];
-    if ([self.store.masternodeListsByBlockHash objectForKey:blockHashData]) {
-        //we already have this
-        return; //no need to do anything more
-    }
-    if ([self.store.masternodeListsBlockHashStubs containsObject:blockHashData]) {
-        return; //no need to do anything more
+    [self.service.masternodeListsInRetrieval removeObject:blockHashDiffsData];
+    
+    if ([self.store hasMasternodeListAt:blockHashData]) {
+        return;
     }
     DSMasternodeList *baseMasternodeList = [self masternodeListForBlockHash:baseBlockHash];
-    if (!baseMasternodeList && !uint256_eq(self.chain.genesisHash, baseBlockHash) && uint256_is_not_zero(baseBlockHash)) {
+    if (!baseMasternodeList &&
+        !uint256_eq(self.chain.genesisHash, baseBlockHash) &&
+        uint256_is_not_zero(baseBlockHash)) {
         //this could have been deleted in the meantime, if so rerequest
         [self issueWithMasternodeListFromPeer:peer];
         return;
     }
-    DSBlock *lastBlock = nil;
-    if ([self.chain heightForBlockHash:blockHash]) {
-        lastBlock = [[peer.chain terminalBlocks] objectForKey:uint256_obj(blockHash)];
-        if (!lastBlock && [peer.chain allowInsightBlocksForVerification]) {
-            lastBlock = [[peer.chain insightVerifiedBlocksByHashDictionary] objectForKey:uint256_data(blockHash)];
-            if (!lastBlock && peer.chain.isTestnet) {
-                //We can trust insight if on testnet
-                [self blockUntilAddInsight:blockHash];
-                lastBlock = [[peer.chain insightVerifiedBlocksByHashDictionary] objectForKey:uint256_data(blockHash)];
-            }
-        }
-    } else {
-        lastBlock = [peer.chain recentTerminalBlockForBlockHash:blockHash];
-    }
+    DSBlock *lastBlock = [self lastBlockForBlockHash:blockHash fromPeer:peer];
     if (!lastBlock) {
         [self issueWithMasternodeListFromPeer:peer];
         DSLog(@"Last Block missing");
@@ -767,49 +619,67 @@
             useInsightAsBackup:self.chain.isTestnet
                     completion:^(DSMnDiffProcessingResult *result) {
         DSMasternodeList *masternodeList = result.masternodeList;
-        if (![self.masternodeListRetrievalQueue containsObject:uint256_data(masternodeList.blockHash)]) {
-            //We most likely wiped data in the meantime
-            [self.masternodeListsInRetrieval removeAllObjects];
+        NSData *masternodeListBlockHashData = uint256_data(masternodeList.blockHash);
+        if (![self.service.masternodeListRetrievalQueue containsObject:masternodeListBlockHashData]) {
+            [self.service cleanListsInRetrieval];
             [self dequeueMasternodeListRequest];
             return;
         }
         if (result.foundCoinbase && result.validCoinbase && result.rootMNListValid && result.rootQuorumListValid && result.validQuorums) {
             NSOrderedSet *neededMissingMasternodeLists = result.neededMissingMasternodeLists;
-            DSLog(@"Valid masternode list found at height %u", [self heightForBlockHash:blockHash]);
-            //yay this is the correct masternode list verified deterministically for the given block
-            if ([neededMissingMasternodeLists count] &&
-                [self.masternodeListQueriesNeedingQuorumsValidated containsObject:uint256_data(blockHash)]) {
-                DSLog(@"Last masternode list is missing previous masternode lists for quorum validation");
+            NSData *blockHashData = uint256_data(blockHash);
+            if ([neededMissingMasternodeLists count] && [self.masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashData]) {
                 self.processingMasternodeListDiffHashes = nil;
-                //This is the current one, get more previous masternode lists we need to verify quorums
                 self.masternodeListAwaitingQuorumValidation = masternodeList;
-                [self.masternodeListRetrievalQueue removeObject:uint256_data(blockHash)];
+                [self.service.masternodeListRetrievalQueue removeObject:blockHashData];
                 NSMutableOrderedSet *neededMasternodeLists = [neededMissingMasternodeLists mutableCopy];
-                [neededMasternodeLists addObject:uint256_data(blockHash)]; //also get the current one again
+                [neededMasternodeLists addObject:blockHashData]; //also get the current one again
                 [self getMasternodeListsForBlockHashes:neededMasternodeLists];
-                [self dequeueMasternodeListRequest];
             } else {
                 [self processValidMasternodeList:masternodeList havingAddedMasternodes:result.addedMasternodes modifiedMasternodes:result.modifiedMasternodes addedQuorums:result.addedQuorums];
-                NSAssert([self.masternodeListRetrievalQueue containsObject:uint256_data(masternodeList.blockHash)], @"This should still be here");
                 self.processingMasternodeListDiffHashes = nil;
-                [self.masternodeListRetrievalQueue removeObject:uint256_data(masternodeList.blockHash)];
+                [self.service.masternodeListRetrievalQueue removeObject:masternodeListBlockHashData];
                 [self dequeueMasternodeListRequest];
-                //check for instant send locks that were awaiting a quorum
-                if (![self.masternodeListRetrievalQueue count]) {
+                if (![self.service.masternodeListRetrievalQueue count]) {
                     [self.chain.chainManager.transactionManager checkWaitingForQuorums];
                 }
                 [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
             }
         } else {
-            if (!result.foundCoinbase) DSLog(@"Did not find coinbase at height %u", [self heightForBlockHash:blockHash]);
-            if (!result.validCoinbase) DSLog(@"Coinbase not valid at height %u", [self heightForBlockHash:blockHash]);
-            if (!result.rootMNListValid) DSLog(@"rootMNListValid not valid at height %u", [self heightForBlockHash:blockHash]);
-            if (!result.rootQuorumListValid) DSLog(@"rootQuorumListValid not valid at height %u", [self heightForBlockHash:blockHash]);
-            if (!result.validQuorums) DSLog(@"validQuorums not valid at height %u", [self heightForBlockHash:blockHash]);
             self.processingMasternodeListDiffHashes = nil;
             [self issueWithMasternodeListFromPeer:peer];
         }
     }];
+}
+
+- (void)processMasternodeDiffMessage:(NSData *)message baseMasternodeList:(DSMasternodeList  *)baseMasternodeList lastBlock:(DSBlock *)lastBlock useInsightAsBackup:(BOOL)useInsightAsBackup completion:(void (^)(DSMnDiffProcessingResult *result))completion {
+    DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
+    [mndiffContext setBaseMasternodeList:baseMasternodeList];
+    [mndiffContext setLastBlock:(DSMerkleBlock *)lastBlock];
+    [mndiffContext setUseInsightAsBackup:useInsightAsBackup];
+    [mndiffContext setChain:self.chain];
+    [mndiffContext setMasternodeListLookup:^DSMasternodeList *(UInt256 blockHash) {
+        return [self masternodeListForBlockHash:blockHash withBlockHeightLookup:nil];
+    }];
+    [mndiffContext setBlockHeightLookup:^uint32_t(UInt256 blockHash) {
+        return [self heightForBlockHash:blockHash];
+    }];
+    [DSMasternodeManager processMasternodeDiffMessage:message withContext:mndiffContext completion:completion];
+}
+
+- (void)processQRInfoMessage:(NSData *)message baseBlockHashesCount:(uint32_t)baseBlockHashesCount baseMasternodeList:(DSMasternodeList *)baseMasternodeList lastBlock:(DSBlock *)lastBlock useInsightAsBackup:(BOOL)useInsightAsBackup completion:(void (^)(DSMnDiffProcessingResult *result))completion {
+    DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
+    [mndiffContext setBaseMasternodeList:baseMasternodeList];
+    [mndiffContext setLastBlock:(DSMerkleBlock *)lastBlock];
+    [mndiffContext setUseInsightAsBackup:useInsightAsBackup];
+    [mndiffContext setChain:self.chain];
+    [mndiffContext setMasternodeListLookup:^DSMasternodeList *(UInt256 blockHash) {
+        return [self masternodeListForBlockHash:blockHash withBlockHeightLookup:nil];
+    }];
+    [mndiffContext setBlockHeightLookup:^uint32_t(UInt256 blockHash) {
+        return [self heightForBlockHash:blockHash];
+    }];
+    [DSMasternodeManager processQRInfoMessage:message baseBlockHashesCount:baseBlockHashesCount withContext:mndiffContext completion:completion];
 }
 
 - (void)processValidMasternodeList:(DSMasternodeList *)masternodeList havingAddedMasternodes:(NSDictionary *)addedMasternodes modifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums {
@@ -826,13 +696,10 @@
 
         NSArray *updatedSimplifiedMasternodeEntries = [addedMasternodes.allValues arrayByAddingObjectsFromArray:modifiedMasternodes.allValues];
         [self.chain updateAddressUsageOfSimplifiedMasternodeEntries:updatedSimplifiedMasternodeEntries];
-
-        [self saveMasternodeList:masternodeList
-            havingModifiedMasternodes:modifiedMasternodes
-                         addedQuorums:addedQuorums];
+        [self saveMasternodeList:masternodeList havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums];
     }
     if (!KEEP_OLD_QUORUMS && uint256_eq(self.lastQueriedBlockHash, masternodeList.blockHash)) {
-        [self removeOldMasternodeLists];
+        [self.store removeOldMasternodeLists];
     }
 }
 
@@ -845,8 +712,7 @@
         havingModifiedMasternodes:modifiedMasternodes
                      addedQuorums:addedQuorums
                        completion:^(NSError *error) {
-        if (!error ||
-            ![self.masternodeListRetrievalQueue count]) { //if it is 0 then we most likely have wiped chain info
+        if (!error || !self.masternodeListRetrievalQueueCount) { //if it is 0 then we most likely have wiped chain info
             return;
         }
         [self wipeMasternodeInfo];
@@ -864,17 +730,13 @@
     [DSMasternodeStore saveMasternodeList:masternodeList toChain:chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums createUnknownBlocks:createUnknownBlocks inContext:context completion:completion];
 }
 
-- (void)removeOldMasternodeLists {
-    [self.store removeOldMasternodeLists];
-}
-
 - (void)issueWithMasternodeListFromPeer:(DSPeer *)peer {
     [self.peerManager peerMisbehaving:peer errorMessage:@"Issue with Deterministic Masternode list"];
     NSArray *faultyPeers = [[NSUserDefaults standardUserDefaults] arrayForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
     if (faultyPeers.count >= MAX_FAULTY_DML_PEERS) {
         DSLog(@"Exceeded max failures for masternode list, starting from scratch");
         //no need to remove local masternodes
-        [self.masternodeListRetrievalQueue removeAllObjects];
+        [self.service.masternodeListRetrievalQueue removeAllObjects];
         [self.store deleteAllOnChain];
         [self.store removeOldMasternodeLists];
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
@@ -897,17 +759,7 @@
 // MARK: - Quorums
 
 - (DSQuorumEntry *)quorumEntryForInstantSendRequestID:(UInt256)requestID withBlockHeightOffset:(uint32_t)blockHeightOffset {
-    DSMerkleBlock *merkleBlock = [self.chain blockFromChainTip:blockHeightOffset];
-    DSMasternodeList *masternodeList = [self masternodeListBeforeBlockHash:merkleBlock.blockHash];
-    if (!masternodeList) {
-        DSLog(@"No masternode list found yet");
-        return nil;
-    }
-    if (merkleBlock.height - masternodeList.height > 32) {
-        DSLog(@"Masternode list for IS is too old (age: %d masternodeList height %d merkle block height %d)", merkleBlock.height - masternodeList.height, masternodeList.height, merkleBlock.height);
-        return nil;
-    }
-    return [masternodeList quorumEntryForInstantSendRequestID:requestID];
+    return [self.store quorumEntryForInstantSendRequestID:requestID withBlockHeightOffset:blockHeightOffset];
 }
 
 - (DSQuorumEntry *)quorumEntryForChainLockRequestID:(UInt256)requestID withBlockHeightOffset:(uint32_t)blockHeightOffset {
@@ -921,222 +773,17 @@
 }
 
 - (DSQuorumEntry *)quorumEntryForPlatformHavingQuorumHash:(UInt256)quorumHash forBlockHeight:(uint32_t)blockHeight {
-    DSBlock *block = [self.chain blockAtHeight:blockHeight];
-    if (block == nil) {
-        if (blockHeight > self.chain.lastTerminalBlockHeight) {
-            block = self.chain.lastTerminalBlock;
-        } else {
-            return nil;
-        }
-    }
-    return [self quorumEntryForPlatformHavingQuorumHash:quorumHash forBlock:block];
+    return [self.store quorumEntryForPlatformHavingQuorumHash:quorumHash forBlockHeight:blockHeight];
 }
-
-- (DSQuorumEntry *)quorumEntryForPlatformHavingQuorumHash:(UInt256)quorumHash forBlock:(DSBlock *)block {
-    DSMasternodeList *masternodeList = [self masternodeListForBlockHash:block.blockHash];
-    if (!masternodeList) {
-        masternodeList = [self masternodeListBeforeBlockHash:block.blockHash];
-    }
-    if (!masternodeList) {
-        DSLog(@"No masternode list found yet");
-        return nil;
-    }
-    if (block.height - masternodeList.height > 32) {
-        DSLog(@"Masternode list is too old");
-        return nil;
-    }
-    DSQuorumEntry *quorumEntry = [masternodeList quorumEntryForPlatformWithQuorumHash:quorumHash];
-    if (quorumEntry == nil) {
-        quorumEntry = [self quorumEntryForPlatformHavingQuorumHash:quorumHash forBlockHeight:block.height - 1];
-    }
-    return quorumEntry;
-}
-
 
 - (DSQuorumEntry *)quorumEntryForChainLockRequestID:(UInt256)requestID forMerkleBlock:(DSMerkleBlock *)merkleBlock {
-    DSMasternodeList *masternodeList = [self masternodeListBeforeBlockHash:merkleBlock.blockHash];
-    if (!masternodeList) {
-        DSLog(@"No masternode list found yet");
-        return nil;
-    }
-    if (merkleBlock.height - masternodeList.height > 24) {
-        DSLog(@"Masternode list is too old");
-        return nil;
-    }
-    return [masternodeList quorumEntryForChainLockRequestID:requestID];
+    return [self.store quorumEntryForChainLockRequestID:requestID forMerkleBlock:merkleBlock];
 }
 
 // MARK: - Meta information
 
 - (void)checkPingTimesForCurrentMasternodeListInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(NSMutableDictionary<NSData *, NSNumber *> *pingTimes, NSMutableDictionary<NSData *, NSError *> *errors))completion {
-    __block NSArray<DSSimplifiedMasternodeEntry *> *entries = self.currentMasternodeList.simplifiedMasternodeEntries;
-    [self.chain.chainManager.DAPIClient checkPingTimesForMasternodes:entries
-                                                          completion:^(NSMutableDictionary<NSData *, NSNumber *> *_Nonnull pingTimes, NSMutableDictionary<NSData *, NSError *> *_Nonnull errors) {
-        [context performBlockAndWait:^{
-            for (DSSimplifiedMasternodeEntry *entry in entries) {
-                [entry savePlatformPingInfoInContext:context];
-            }
-            NSError *savingError = nil;
-            [context save:&savingError];
-        }];
-        if (completion != nil) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completion(pingTimes, errors);
-            });
-        }
-    }];
+    [self.store checkPingTimesForMasternodesInContext:context withCompletion:completion];
 }
-
-// MARK: - Local Masternodes
-
-- (DSLocalMasternode *)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inWallet:(DSWallet *)wallet {
-    NSParameterAssert(wallet);
-    return [self createNewMasternodeWithIPAddress:ipAddress onPort:port inFundsWallet:wallet inOperatorWallet:wallet inOwnerWallet:wallet inVotingWallet:wallet];
-}
-
-- (DSLocalMasternode *)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet *)fundsWallet inOperatorWallet:(DSWallet *)operatorWallet inOwnerWallet:(DSWallet *)ownerWallet inVotingWallet:(DSWallet *)votingWallet {
-    DSLocalMasternode *localMasternode = [[DSLocalMasternode alloc] initWithIPAddress:ipAddress onPort:port inFundsWallet:fundsWallet inOperatorWallet:operatorWallet inOwnerWallet:ownerWallet inVotingWallet:votingWallet];
-    return localMasternode;
-}
-
-- (DSLocalMasternode *)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet *_Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet *_Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex inOwnerWallet:(DSWallet *_Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex inVotingWallet:(DSWallet *_Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex {
-    DSLocalMasternode *localMasternode = [[DSLocalMasternode alloc] initWithIPAddress:ipAddress onPort:port inFundsWallet:fundsWallet fundsWalletIndex:fundsWalletIndex inOperatorWallet:operatorWallet operatorWalletIndex:operatorWalletIndex inOwnerWallet:ownerWallet ownerWalletIndex:ownerWalletIndex inVotingWallet:votingWallet votingWalletIndex:votingWalletIndex];
-    return localMasternode;
-}
-
-- (DSLocalMasternode *)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet *_Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet *_Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex operatorPublicKey:(DSBLSKey *)operatorPublicKey inOwnerWallet:(DSWallet *_Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex ownerPrivateKey:(DSECDSAKey *)ownerPrivateKey inVotingWallet:(DSWallet *_Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex votingKey:(DSECDSAKey *)votingKey {
-    DSLocalMasternode *localMasternode = [[DSLocalMasternode alloc] initWithIPAddress:ipAddress onPort:port inFundsWallet:fundsWallet fundsWalletIndex:fundsWalletIndex inOperatorWallet:operatorWallet operatorWalletIndex:operatorWalletIndex inOwnerWallet:ownerWallet ownerWalletIndex:ownerWalletIndex inVotingWallet:votingWallet votingWalletIndex:votingWalletIndex];
-
-    if (operatorWalletIndex == UINT32_MAX && operatorPublicKey) {
-        [localMasternode forceOperatorPublicKey:operatorPublicKey];
-    }
-
-    if (ownerWalletIndex == UINT32_MAX && ownerPrivateKey) {
-        [localMasternode forceOwnerPrivateKey:ownerPrivateKey];
-    }
-
-    if (votingWalletIndex == UINT32_MAX && votingKey) {
-        [localMasternode forceVotingKey:votingKey];
-    }
-
-    return localMasternode;
-}
-
-- (DSLocalMasternode *)localMasternodeFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry claimedWithOwnerWallet:(DSWallet *)ownerWallet ownerKeyIndex:(uint32_t)ownerKeyIndex {
-    NSParameterAssert(simplifiedMasternodeEntry);
-    NSParameterAssert(ownerWallet);
-
-    DSLocalMasternode *localMasternode = [self localMasternodeHavingProviderRegistrationTransactionHash:simplifiedMasternodeEntry.providerRegistrationTransactionHash];
-
-    if (localMasternode) return localMasternode;
-
-    uint32_t votingIndex;
-    DSWallet *votingWallet = [simplifiedMasternodeEntry.chain walletHavingProviderVotingAuthenticationHash:simplifiedMasternodeEntry.keyIDVoting foundAtIndex:&votingIndex];
-
-    uint32_t operatorIndex;
-    DSWallet *operatorWallet = [simplifiedMasternodeEntry.chain walletHavingProviderOperatorAuthenticationKey:simplifiedMasternodeEntry.operatorPublicKey foundAtIndex:&operatorIndex];
-
-    if (votingWallet || operatorWallet) {
-        return [[DSLocalMasternode alloc] initWithIPAddress:simplifiedMasternodeEntry.address onPort:simplifiedMasternodeEntry.port inFundsWallet:nil fundsWalletIndex:0 inOperatorWallet:operatorWallet operatorWalletIndex:operatorIndex inOwnerWallet:ownerWallet ownerWalletIndex:ownerKeyIndex inVotingWallet:votingWallet votingWalletIndex:votingIndex];
-    } else {
-        return nil;
-    }
-}
-
-- (DSLocalMasternode *)localMasternodeFromProviderRegistrationTransaction:(DSProviderRegistrationTransaction *)providerRegistrationTransaction save:(BOOL)save {
-    NSParameterAssert(providerRegistrationTransaction);
-
-    //First check to see if we have a local masternode for this provider registration hash
-
-    @synchronized(self) {
-        DSLocalMasternode *localMasternode = self.localMasternodesDictionaryByRegistrationTransactionHash[uint256_data(providerRegistrationTransaction.txHash)];
-
-        if (localMasternode) {
-            //We do
-            //todo Update keys
-            return localMasternode;
-        }
-        //We don't
-        localMasternode = [[DSLocalMasternode alloc] initWithProviderTransactionRegistration:providerRegistrationTransaction];
-        if (localMasternode.noLocalWallet) return nil;
-        [self.localMasternodesDictionaryByRegistrationTransactionHash setObject:localMasternode forKey:uint256_data(providerRegistrationTransaction.txHash)];
-        if (save) {
-            [localMasternode save];
-        }
-        return localMasternode;
-    }
-}
-
-- (DSLocalMasternode *)localMasternodeHavingProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash {
-    DSLocalMasternode *localMasternode = self.localMasternodesDictionaryByRegistrationTransactionHash[uint256_data(providerRegistrationTransactionHash)];
-    return localMasternode;
-}
-
-- (DSLocalMasternode *)localMasternodeUsingIndex:(uint32_t)index atDerivationPath:(DSDerivationPath *)derivationPath {
-    NSParameterAssert(derivationPath);
-    for (DSLocalMasternode *localMasternode in self.localMasternodesDictionaryByRegistrationTransactionHash.allValues) {
-        switch (derivationPath.reference) {
-            case DSDerivationPathReference_ProviderFunds:
-                if (localMasternode.holdingKeysWallet == derivationPath.wallet && localMasternode.holdingWalletIndex == index) {
-                    return localMasternode;
-                }
-                break;
-            case DSDerivationPathReference_ProviderOwnerKeys:
-                if (localMasternode.ownerKeysWallet == derivationPath.wallet && localMasternode.ownerWalletIndex == index) {
-                    return localMasternode;
-                }
-                break;
-            case DSDerivationPathReference_ProviderOperatorKeys:
-                if (localMasternode.operatorKeysWallet == derivationPath.wallet && localMasternode.operatorWalletIndex == index) {
-                    return localMasternode;
-                }
-                break;
-            case DSDerivationPathReference_ProviderVotingKeys:
-                if (localMasternode.votingKeysWallet == derivationPath.wallet && localMasternode.votingWalletIndex == index) {
-                    return localMasternode;
-                }
-                break;
-            default:
-                break;
-        }
-    }
-    return nil;
-}
-
-- (NSArray<DSLocalMasternode *> *)localMasternodesPreviouslyUsingIndex:(uint32_t)index atDerivationPath:(DSDerivationPath *)derivationPath {
-    NSParameterAssert(derivationPath);
-    if (derivationPath.reference == DSDerivationPathReference_ProviderFunds || derivationPath.reference == DSDerivationPathReference_ProviderOwnerKeys) {
-        return nil;
-    }
-
-    NSMutableArray *localMasternodes = [NSMutableArray array];
-
-    for (DSLocalMasternode *localMasternode in self.localMasternodesDictionaryByRegistrationTransactionHash.allValues) {
-        switch (derivationPath.reference) {
-            case DSDerivationPathReference_ProviderOperatorKeys:
-                if (localMasternode.operatorKeysWallet == derivationPath.wallet && [localMasternode.previousOperatorWalletIndexes containsIndex:index]) {
-                    [localMasternodes addObject:localMasternode];
-                }
-                break;
-            case DSDerivationPathReference_ProviderVotingKeys:
-                if (localMasternode.votingKeysWallet == derivationPath.wallet && [localMasternode.previousVotingWalletIndexes containsIndex:index]) {
-                    [localMasternodes addObject:localMasternode];
-                }
-                break;
-            default:
-                break;
-        }
-    }
-    return [localMasternodes copy];
-}
-
-- (NSUInteger)localMasternodesCount {
-    return [self.localMasternodesDictionaryByRegistrationTransactionHash count];
-}
-
-- (NSArray<DSLocalMasternode *> *)localMasternodes {
-    return [self.localMasternodesDictionaryByRegistrationTransactionHash allValues];
-}
-
 
 @end

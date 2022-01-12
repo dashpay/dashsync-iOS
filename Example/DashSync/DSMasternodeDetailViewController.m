@@ -9,6 +9,7 @@
 #import "DSMasternodeDetailViewController.h"
 #import "BRCopyLabel.h"
 #import "DSLocalMasternode.h"
+#import "DSMasternodeManager+LocalMasternode.h"
 #import "DSProviderUpdateRegistrarTransactionsViewController.h"
 #import "DSProviderUpdateServiceTransactionsViewController.h"
 #import "DSReclaimMasternodeViewController.h"
