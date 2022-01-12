@@ -359,7 +359,9 @@
         [self.chain.chainManager.transactionManager peer:peer relayedTransaction:transaction inBlock:blockFork110];
     }
 
-    [self.chain addBlock:blockFork110 receivedAsHeader:NO fromPeer:nil];
+    [self.chain addBlock:blockFork110
+        receivedAsHeader:NO
+                fromPeer:nil];
 
     for (DSTransaction *transaction in blockFork110.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]] && ![transaction isMemberOfClass:[DSCoinbaseTransaction class]]) {
@@ -373,7 +375,9 @@
         [self.chain.chainManager.transactionManager peer:peer relayedTransaction:transaction inBlock:blockFork106Extra];
     }
 
-    [self.chain addBlock:blockFork106Extra receivedAsHeader:NO fromPeer:nil];
+    [self.chain addBlock:blockFork106Extra
+        receivedAsHeader:NO
+                fromPeer:nil];
 
     XCTAssertEqual(self.wallet.balance, 10100000000); //The previous transaction should have been reverted but should still appear in balance
 
@@ -552,7 +556,9 @@
         [self.chain.chainManager.transactionManager peer:peer relayedTransaction:transaction inBlock:blockFork110];
     }
 
-    [self.chain addBlock:blockFork110 receivedAsHeader:NO fromPeer:nil];
+    [self.chain addBlock:blockFork110
+        receivedAsHeader:NO
+                fromPeer:nil];
 
     for (DSTransaction *transaction in blockFork110.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]] && ![transaction isMemberOfClass:[DSCoinbaseTransaction class]]) {
@@ -566,7 +572,9 @@
         [self.chain.chainManager.transactionManager peer:peer relayedTransaction:transaction inBlock:blockFork106Extra];
     }
 
-    [self.chain addBlock:blockFork106Extra receivedAsHeader:NO fromPeer:nil];
+    [self.chain addBlock:blockFork106Extra
+        receivedAsHeader:NO
+                fromPeer:nil];
 
     XCTAssertEqual(self.wallet.balance, 10100000000); //The previous transaction should have been reverted but should still appear in balance
 
@@ -741,7 +749,9 @@
         [self.chain.chainManager.transactionManager peer:peer relayedTransaction:transaction inBlock:blockFork110];
     }
 
-    [self.chain addBlock:blockFork110 receivedAsHeader:NO fromPeer:nil];
+    [self.chain addBlock:blockFork110
+        receivedAsHeader:NO
+                fromPeer:nil];
 
     for (DSTransaction *transaction in blockFork110.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]] && ![transaction isMemberOfClass:[DSCoinbaseTransaction class]]) {
@@ -755,7 +765,9 @@
         [self.chain.chainManager.transactionManager peer:peer relayedTransaction:transaction inBlock:blockFork106Extra];
     }
 
-    [self.chain addBlock:blockFork106Extra receivedAsHeader:NO fromPeer:nil];
+    [self.chain addBlock:blockFork106Extra
+        receivedAsHeader:NO
+                fromPeer:nil];
 
     XCTAssertEqual(self.wallet.balance, 10100000000); //The previous transaction should have been reverted but should still appear in balance
 
@@ -1091,7 +1103,9 @@
         [self.chain.chainManager.transactionManager peer:peer relayedTransaction:transaction inBlock:blockFork110];
     }
 
-    [self.chain addBlock:blockFork110 receivedAsHeader:NO fromPeer:nil];
+    [self.chain addBlock:blockFork110
+        receivedAsHeader:NO
+                fromPeer:nil];
 
     XCTAssertEqual(self.wallet.balance, 10100000000); //The previous transaction should have been reverted but should still appear in balance
 
@@ -1253,7 +1267,9 @@
         [self.chain.chainManager.transactionManager peer:peer relayedTransaction:transaction inBlock:blockFork110];
     }
 
-    [self.chain addBlock:blockFork110 receivedAsHeader:NO fromPeer:nil];
+    [self.chain addBlock:blockFork110
+        receivedAsHeader:NO
+                fromPeer:nil];
 
     XCTAssertEqual(self.wallet.balance, 10100000000); //The previous transaction should have been reverted but should still appear in balance
 
