@@ -448,17 +448,12 @@
     NSUInteger offset = 0;
 
     if (length - offset < 32) return;
-    UInt256 baseBlockHash = [message UInt256AtOffset:offset];
-    offset += 32;
-
+    UInt256 baseBlockHash = [message readUInt256AtOffset:&offset];
     XCTAssertTrue(!uint256_eq(baseBlockHash, UINT256_ZERO), @"Base block hash should NOT be empty here");
-
     if (length - offset < 32) return;
-    offset += 32;
-
+    __unused UInt256 blockHash = [message readUInt256AtOffset:&offset];
     if (length - offset < 4) return;
-    uint32_t totalTransactions = [message UInt32AtOffset:offset];
-    offset += 4;
+    uint32_t totalTransactions = [message readUInt32AtOffset:&offset];
 
     XCTAssertTrue(totalTransactions == shouldBeTotalTransactions, @"Invalid transaction count");
 
@@ -520,12 +515,10 @@
         NSUInteger offset = 0;
 
         if (length - offset < 32) return;
-        __unused UInt256 baseBlockHash = [message UInt256AtOffset:offset];
-        offset += 32;
-
+        __unused UInt256 baseBlockHash = [message readUInt256AtOffset:&offset];
         if (length - offset < 32) return;
-        UInt256 blockHash = [message UInt256AtOffset:offset];
-        offset += 32;
+        UInt256 blockHash = [message readUInt256AtOffset:&offset];
+
         __block dispatch_semaphore_t sem = dispatch_semaphore_create(0);
         dispatch_group_enter(dispatch_group);
         DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
@@ -638,12 +631,9 @@
     NSUInteger offset = 0;
 
     if (length - offset < 32) return;
-    UInt256 baseBlockHash = [message UInt256AtOffset:offset];
-    offset += 32;
-
+    UInt256 baseBlockHash = [message readUInt256AtOffset:&offset];
     if (length - offset < 32) return;
-    UInt256 blockHash = [message UInt256AtOffset:offset];
-    offset += 32;
+    UInt256 blockHash = [message readUInt256AtOffset:&offset];
 
     NSLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)", uint256_reverse_hex(baseBlockHash), [chain heightForBlockHash:baseBlockHash], uint256_reverse_hex(blockHash), [chain heightForBlockHash:blockHash]);
 
@@ -704,13 +694,9 @@
     NSUInteger offset = 0;
 
     if (length - offset < 32) return;
-    UInt256 baseBlockHash = [message UInt256AtOffset:offset];
-    offset += 32;
-
+    UInt256 baseBlockHash = [message readUInt256AtOffset:&offset];
     if (length - offset < 32) return;
-
-    UInt256 blockHash = [message UInt256AtOffset:offset];
-    offset += 32;
+    UInt256 blockHash = [message readUInt256AtOffset:&offset];
 
     NSLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)", uint256_reverse_hex(baseBlockHash), [chain heightForBlockHash:baseBlockHash], uint256_reverse_hex(blockHash), [chain heightForBlockHash:blockHash]);
 
@@ -778,13 +764,9 @@
     NSUInteger offset = 0;
 
     if (length - offset < 32) return;
-    UInt256 baseBlockHash = [message UInt256AtOffset:offset];
-    offset += 32;
-
+    UInt256 baseBlockHash = [message readUInt256AtOffset:&offset];
     if (length - offset < 32) return;
-
-    __block UInt256 blockHash122064 = [message UInt256AtOffset:offset];
-    offset += 32;
+    __block UInt256 blockHash122064 = [message readUInt256AtOffset:&offset];
 
     NSLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)", uint256_reverse_hex(baseBlockHash), [chain heightForBlockHash:baseBlockHash], uint256_reverse_hex(blockHash122064), [chain heightForBlockHash:blockHash122064]);
 
@@ -1011,12 +993,9 @@
         NSUInteger offset = 0;
 
         if (length - offset < 32) return;
-        __unused UInt256 baseBlockHash = [message UInt256AtOffset:offset];
-        offset += 32;
-
+        __unused UInt256 baseBlockHash = [message readUInt256AtOffset:&offset];
         if (length - offset < 32) return;
-        UInt256 blockHash = [message UInt256AtOffset:offset];
-        offset += 32;
+        UInt256 blockHash = [message readUInt256AtOffset:&offset];
         [blockHashes addObject:uint256_data(blockHash).reverse];
     }
     dispatch_semaphore_t sem = dispatch_semaphore_create(0);
@@ -2969,13 +2948,9 @@
     NSUInteger offset = 0;
 
     if (length - offset < 32) return;
-    UInt256 baseBlockHash = [message UInt256AtOffset:offset];
-    offset += 32;
-
+    UInt256 baseBlockHash = [message readUInt256AtOffset:&offset];
     if (length - offset < 32) return;
-
-    __block UInt256 blockHash119064 = [message UInt256AtOffset:offset];
-    offset += 32;
+    __block UInt256 blockHash119064 = [message readUInt256AtOffset:&offset];
 
     NSLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)", uint256_reverse_hex(baseBlockHash), [chain heightForBlockHash:baseBlockHash], uint256_reverse_hex(blockHash119064), [chain heightForBlockHash:blockHash119064]);
 
@@ -3186,13 +3161,9 @@
     NSUInteger offset = 0;
 
     if (length - offset < 32) return;
-    UInt256 baseBlockHash = [message UInt256AtOffset:offset];
-    offset += 32;
-
+    UInt256 baseBlockHash = [message readUInt256AtOffset:&offset];
     if (length - offset < 32) return;
-
-    __block UInt256 blockHash370368 = [message UInt256AtOffset:offset];
-    offset += 32;
+    __block UInt256 blockHash370368 = [message readUInt256AtOffset:&offset];
 
     NSLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)", uint256_reverse_hex(baseBlockHash), [chain heightForBlockHash:baseBlockHash], uint256_reverse_hex(blockHash370368), [chain heightForBlockHash:blockHash370368]);
 
