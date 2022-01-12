@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)cleanListsInRetrieval;
 - (void)cleanListsRetrievalQueue;
 - (void)fetchMasternodeListsToRetrieve:(void (^)(NSOrderedSet<NSData *> *listsToRetrieve))completion;
-
+- (BOOL)removeListInRetrievalForKey:(NSData *)blockHashDiffsData;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -123,5 +123,17 @@
     completion([self.masternodeListRetrievalQueue copy]);
 }
 
+- (BOOL)removeListInRetrievalForKey:(NSData *)blockHashDiffsData {
+    if (![self.masternodeListsInRetrieval containsObject:blockHashDiffsData]) {
+        NSMutableArray *masternodeListsInRetrievalStrings = [NSMutableArray array];
+        for (NSData *masternodeListInRetrieval in self.masternodeListsInRetrieval) {
+            [masternodeListsInRetrievalStrings addObject:masternodeListInRetrieval.hexString];
+        }
+        DSLog(@"A masternode list (%@) was received that is not set to be retrieved (%@)", blockHashDiffsData.hexString, [masternodeListsInRetrievalStrings componentsJoinedByString:@", "]);
+        return NO;
+    }
+    [self.masternodeListsInRetrieval removeObject:blockHashDiffsData];
+    return YES;
+}
 
 @end

@@ -494,17 +494,8 @@
     UInt512 concat = uint512_concat(baseBlockHash, blockHash);
     NSData *blockHashDiffsData = uint512_data(concat);
     
-    if (![self.service.masternodeListsInRetrieval containsObject:blockHashDiffsData]) {
-        NSMutableArray *masternodeListsInRetrievalStrings = [NSMutableArray array];
-        for (NSData *masternodeListInRetrieval in self.service.masternodeListsInRetrieval) {
-            [masternodeListsInRetrievalStrings addObject:masternodeListInRetrieval.hexString];
-        }
-        DSLog(@"A masternode list (%@) was received that is not set to be retrieved (%@)", blockHashDiffsData.hexString, [masternodeListsInRetrievalStrings componentsJoinedByString:@", "]);
-        return;
-    }
-    [self.service.masternodeListsInRetrieval removeObject:blockHashDiffsData];
-    
-    if ([self.store hasMasternodeListAt:blockHashData]) {
+    if (![self.service removeListInRetrievalForKey:blockHashDiffsData] ||
+        [self.store hasMasternodeListAt:blockHashData]) {
         return;
     }
     DSLog(@"relayed masternode diff with baseBlockHash %@ (%u) blockHash %@ (%u)", uint256_reverse_hex(baseBlockHash), [self heightForBlockHash:baseBlockHash], blockHashData.reverse.hexString, [self heightForBlockHash:blockHash]);
@@ -588,12 +579,8 @@
     UInt512 concat = uint512_concat(baseBlockHash, blockHash);
     NSData *blockHashDiffsData = uint512_data(concat);
     
-    if (![self.service.masternodeListsInRetrieval containsObject:blockHashDiffsData]) {
-        return;
-    }
-    [self.service.masternodeListsInRetrieval removeObject:blockHashDiffsData];
-    
-    if ([self.store hasMasternodeListAt:blockHashData]) {
+    if (![self.service removeListInRetrievalForKey:blockHashDiffsData] ||
+        [self.store hasMasternodeListAt:blockHashData]) {
         return;
     }
     DSMasternodeList *baseMasternodeList = [self masternodeListForBlockHash:baseBlockHash];
