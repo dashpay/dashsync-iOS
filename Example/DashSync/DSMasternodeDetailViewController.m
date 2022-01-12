@@ -141,11 +141,11 @@
     [[DSInsightManager sharedInstance] queryInsightForTransactionWithHash:[NSData dataWithUInt256:self.simplifiedMasternodeEntry.providerRegistrationTransactionHash].reverse.UInt256
                                                                   onChain:self.simplifiedMasternodeEntry.chain
                                                                completion:^(DSTransaction *transaction, NSError *error) {
-                                                                   if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
-                                                                       DSProviderRegistrationTransaction *providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
-                                                                       [self.simplifiedMasternodeEntry.chain.chainManager.masternodeManager localMasternodeFromProviderRegistrationTransaction:providerRegistrationTransaction save:TRUE];
-                                                                   }
-                                                               }];
+        if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
+            DSProviderRegistrationTransaction *providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
+            [self.simplifiedMasternodeEntry.chain.chainManager.masternodeManager localMasternodeFromProviderRegistrationTransaction:providerRegistrationTransaction save:TRUE];
+        }
+    }];
 
 
     //    [self.moc performBlockAndWait:^{ // add the transaction to core data
