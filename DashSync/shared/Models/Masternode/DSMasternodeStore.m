@@ -334,15 +334,16 @@
 }
 
 - (DSMasternodeList *)masternodeListForBlockHash:(UInt256)blockHash withBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
-    DSMasternodeList *masternodeList = [self.masternodeListsByBlockHash objectForKey:uint256_data(blockHash)];
-    if (!masternodeList && [self.masternodeListsBlockHashStubs containsObject:uint256_data(blockHash)]) {
-        masternodeList = [self loadMasternodeListAtBlockHash:uint256_data(blockHash) withBlockHeightLookup:blockHeightLookup];
+    NSData *blockHashData = uint256_data(blockHash);
+    DSMasternodeList *masternodeList = [self.masternodeListsByBlockHash objectForKey:blockHashData];
+    if (!masternodeList && [self.masternodeListsBlockHashStubs containsObject:blockHashData]) {
+        masternodeList = [self loadMasternodeListAtBlockHash:blockHashData withBlockHeightLookup:blockHeightLookup];
     }
     if (!masternodeList) {
         if (blockHeightLookup) {
-            DSLog(@"No masternode list at %@ (%d)", uint256_reverse_hex(blockHash), blockHeightLookup(blockHash));
+            DSLog(@"No masternode list at %@ (%d)", blockHashData.reverse.hexString, blockHeightLookup(blockHash));
         } else {
-            DSLog(@"No masternode list at %@", uint256_reverse_hex(blockHash));
+            DSLog(@"No masternode list at %@", blockHashData.reverse.hexString);
         }
     }
     return masternodeList;
