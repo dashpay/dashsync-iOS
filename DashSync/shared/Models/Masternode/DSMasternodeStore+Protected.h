@@ -16,6 +16,7 @@
 //
 
 #import "BigIntTypes.h"
+#import "DSMasternodeList.h"
 #import "DSMasternodeStore.h"
 #import "DSMerkleBlock.h"
 #import "DSQuorumEntry.h"
@@ -23,6 +24,10 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMasternodeStore ()
+
+@property (nonatomic, readwrite, nullable) DSMasternodeList *masternodeListAwaitingQuorumValidation;
+@property (nonatomic, readonly) NSMutableSet<NSData *> *masternodeListQueriesNeedingQuorumsValidated;
+@property (nonatomic, readwrite, assign) UInt256 lastQueriedBlockHash; //last by height, not by time queried
 
 - (void)checkPingTimesForMasternodesInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(NSMutableDictionary<NSData *, NSNumber *> *pingTimes, NSMutableDictionary<NSData *, NSError *> *errors))completion;
 - (UInt256)closestKnownBlockHashForBlockHash:(UInt256)blockHash;

@@ -39,10 +39,13 @@
 
 @property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, strong) NSManagedObjectContext *managedObjectContext;
+@property (nonatomic, strong) DSMasternodeList *masternodeListAwaitingQuorumValidation;
 @property (nonatomic, strong) NSMutableDictionary<NSData *, DSMasternodeList *> *masternodeListsByBlockHash;
 @property (nonatomic, strong) NSMutableSet<NSData *> *masternodeListsBlockHashStubs;
+@property (nonatomic, strong) NSMutableSet<NSData *> *masternodeListQueriesNeedingQuorumsValidated;
 @property (nonatomic, strong) NSMutableDictionary<NSData *, NSNumber *> *cachedBlockHashHeights;
 @property (nonatomic, strong) dispatch_queue_t masternodeSavingQueue;
+@property (nonatomic, assign) UInt256 lastQueriedBlockHash; //last by height, not by time queried
 @property (atomic, assign) uint32_t masternodeListCurrentlyBeingSavedCount;
 
 @end
@@ -55,9 +58,11 @@
     _chain = chain;
     _masternodeListsByBlockHash = [NSMutableDictionary dictionary];
     _masternodeListsBlockHashStubs = [NSMutableSet set];
+    _masternodeListQueriesNeedingQuorumsValidated = [NSMutableSet set];
     _cachedBlockHashHeights = [NSMutableDictionary dictionary];
     _masternodeListCurrentlyBeingSavedCount = 0;
     _masternodeSavingQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.masternodesaving.%@", chain.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
+    self.lastQueriedBlockHash = UINT256_ZERO;
     self.managedObjectContext = chain.chainManagedObjectContext;
     return self;
 }
@@ -353,6 +358,7 @@
     [self.masternodeListsByBlockHash removeAllObjects];
     [self.masternodeListsBlockHashStubs removeAllObjects];
     self.currentMasternodeList = nil;
+    self.masternodeListAwaitingQuorumValidation = nil;
 }
 
 - (void)removeOldMasternodeLists {
