@@ -739,13 +739,18 @@
     [self sendMessage:msg type:MSG_GETMNLISTDIFF];
 }
 
-- (void)sendGetQuorumRotationInfoForBaseBlockHashes:(NSArray<NSData *> *)baseBlockHashes forBlockHash:(UInt256)blockHash {
+- (void)sendGetQuorumRotationInfoForBaseBlockHashes:(NSArray<NSData *> *)baseBlockHashes forBlockHash:(UInt256)blockHash extraShare:(BOOL)extraShare {
     NSMutableData *msg = [NSMutableData data];
+    // Number of masternode lists the light client knows
     [msg appendUInt32:(uint32_t)baseBlockHashes.count];
+    // The base block hashes of the masternode lists the light client knows
     for (NSData *baseBlockHash in baseBlockHashes) {
         [msg appendUInt256:baseBlockHash.UInt256];
     }
+    // Hash of the height the client requests
     [msg appendUInt256:blockHash];
+    // Flag to indicate if an extra share is requested
+    [msg appendUInt8:extraShare];
     [self sendMessage:msg type:MSG_GETQUORUMROTATIONINFO];
 }
 

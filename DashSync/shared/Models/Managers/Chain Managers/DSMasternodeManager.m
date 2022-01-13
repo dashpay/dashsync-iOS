@@ -282,13 +282,10 @@
                         UInt256 previousBlockHash = pos ? (previousMasternodeAlreadyKnownHeight > previousMasternodeInQueueHeight ? previousMasternodeAlreadyKnownBlockHash : previousMasternodeInQueueBlockHash) : previousMasternodeAlreadyKnownBlockHash;
                         DSLog(@"Requesting masternode list and quorums from %u to %u (%@ to %@)", [self heightForBlockHash:previousBlockHash], [self heightForBlockHash:blockHash], uint256_reverse_hex(previousBlockHash), uint256_reverse_hex(blockHash));
                         NSAssert(([self heightForBlockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
-                        
                         if ([self.chain hasDIP0024Enabled]) {
-                            // TODO: optimize qrinfo request queue (up to 4 blocks simultaneously, so we'd make masternodeListsToRetrieve.count%4)
-                            NSArray<NSData *> *baseBlockHashes = @[[NSData dataWithUInt256:previousBlockHash]];
-                            [self.peerManager.downloadPeer sendGetQuorumRotationInfoForBaseBlockHashes:baseBlockHashes forBlockHash:blockHash];
+                            [self.service requestQuorumRotationInfo:previousBlockHash forBlockHash:blockHash extraShare:YES];
                         } else {
-                            [self.peerManager.downloadPeer sendGetMasternodeListFromPreviousBlockHash:previousBlockHash forBlockHash:blockHash];
+                            [self.service requestMasternodeListDiff:previousBlockHash forBlockHash:blockHash];
                         }
                         UInt512 concat = uint512_concat(previousBlockHash, blockHash);
                         [self.service.masternodeListsInRetrieval addObject:uint512_data(concat)];

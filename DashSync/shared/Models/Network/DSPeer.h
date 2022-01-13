@@ -321,7 +321,7 @@ typedef NS_ENUM(NSUInteger, DSPeerType)
 - (void)sendGetdataMessageWithGovernanceObjectHashes:(NSArray<NSData *> *)governanceObjectHashes;
 - (void)sendGetdataMessageWithGovernanceVoteHashes:(NSArray<NSData *> *)governanceVoteHashes;
 - (void)sendGetMasternodeListFromPreviousBlockHash:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash;
-- (void)sendGetQuorumRotationInfoForBaseBlockHashes:(NSArray<NSData *> *)baseBlockHashes forBlockHash:(UInt256)blockHash;
+- (void)sendGetQuorumRotationInfoForBaseBlockHashes:(NSArray<NSData *> *)baseBlockHashes forBlockHash:(UInt256)blockHash extraShare:(BOOL)extraShare;
 - (void)sendGetaddrMessage;
 - (void)sendGovSync;
 - (void)sendGovSync:(UInt256)h;
