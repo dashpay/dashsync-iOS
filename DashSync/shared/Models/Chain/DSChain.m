@@ -3159,7 +3159,7 @@ static dispatch_once_t devnetToken = 0;
     [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
     [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
     [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
-    [self.chainManager.masternodeManager wipeMasternodeInfo];
+    [self.chainManager wipeMasternodeInfo];
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@_%@", self.uniqueID, LAST_SYNCED_MASTERNODE_LIST]];
 }
 

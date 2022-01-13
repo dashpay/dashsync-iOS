@@ -33,6 +33,7 @@
 #import "DSFullBlock.h"
 #import "DSGovernanceSyncManager+Protected.h"
 #import "DSIdentitiesManager.h"
+#import "DSMasternodeManager+LocalMasternode.h"
 #import "DSMasternodeManager+Protected.h"
 #import "DSMerkleBlock.h"
 #import "DSOptionsManager.h"
@@ -782,6 +783,11 @@
         default:
             break;
     }
+}
+
+- (void)wipeMasternodeInfo {
+    [self.masternodeManager wipeLocalMasternodeInfo];
+    [self.masternodeManager wipeMasternodeInfo];
 }
 
 @end

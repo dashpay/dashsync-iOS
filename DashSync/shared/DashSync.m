@@ -222,7 +222,7 @@ static NSString *const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.back
         [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
         [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
         DSChainManager *chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
-        [chainManager.masternodeManager wipeMasternodeInfo];
+        [chainManager wipeMasternodeInfo];
         [context ds_save];
         [chain.chainManager assignSyncWeights];
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@_%@", chain.uniqueID, LAST_SYNCED_MASTERNODE_LIST]];

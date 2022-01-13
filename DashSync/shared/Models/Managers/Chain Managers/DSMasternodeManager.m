@@ -209,7 +209,6 @@
 
 - (void)wipeMasternodeInfo {
     [self.store removeAllMasternodeLists];
-    [self wipeLocalMasternodeInfo];
     [self.service cleanAllLists];
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
