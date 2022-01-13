@@ -56,7 +56,6 @@
 @property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, strong) DSMasternodeStore *store;
 @property (nonatomic, strong) DSMasternodeService *service;
-@property (nonatomic, strong) NSData *processingMasternodeListDiffHashes;
 @property (nonatomic, assign) NSTimeInterval timeIntervalForMasternodeRetrievalSafetyDelay;
 @property (nonatomic, assign) uint16_t timedOutAttempt;
 @property (nonatomic, assign) uint16_t timeOutObserverTry;
@@ -78,7 +77,6 @@
     self.service = [[DSMasternodeService alloc] initWithChain:chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
         return [self heightForBlockHash:blockHash];
     }];
-    self.processingMasternodeListDiffHashes = nil;
     _timedOutAttempt = 0;
     _timeOutObserverTry = 0;
     return self;
@@ -255,8 +253,8 @@
         
         NSMutableSet *leftToGet = [masternodeListsInRetrieval mutableCopy];
         [leftToGet intersectSet:self.service.masternodeListsInRetrieval];
-        if (self.processingMasternodeListDiffHashes) {
-            [leftToGet removeObject:self.processingMasternodeListDiffHashes];
+        if (self.store.processingMasternodeListDiffHashes) {
+            [leftToGet removeObject:self.store.processingMasternodeListDiffHashes];
         }
         
         if ((masternodeListCount == [self knownMasternodeListsCount]) && [masternodeListsInRetrieval isEqualToSet:leftToGet]) {
@@ -510,7 +508,7 @@
         DSLog(@"Last Block missing");
         return;
     }
-    self.processingMasternodeListDiffHashes = blockHashDiffsData;
+    self.store.processingMasternodeListDiffHashes = blockHashDiffsData;
     // We can use insight as backup if we are on testnet, we shouldn't otherwise.
     [self processMasternodeDiffMessage:message
                     baseMasternodeList:baseMasternodeList
@@ -529,7 +527,7 @@
             NSOrderedSet *neededMissingMasternodeLists = result.neededMissingMasternodeLists;
             NSData *blockHashData = uint256_data(blockHash);
             if ([neededMissingMasternodeLists count] && [self.store.masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashData]) {
-                self.processingMasternodeListDiffHashes = nil;
+                self.store.processingMasternodeListDiffHashes = nil;
                 self.store.masternodeListAwaitingQuorumValidation = masternodeList;
                 [self.service.masternodeListRetrievalQueue removeObject:blockHashData];
                 NSMutableOrderedSet *neededMasternodeLists = [neededMissingMasternodeLists mutableCopy];
@@ -537,7 +535,7 @@
                 [self getMasternodeListsForBlockHashes:neededMasternodeLists];
             } else {
                 [self processValidMasternodeList:masternodeList havingAddedMasternodes:result.addedMasternodes modifiedMasternodes:result.modifiedMasternodes addedQuorums:result.addedQuorums];
-                self.processingMasternodeListDiffHashes = nil;
+                self.store.processingMasternodeListDiffHashes = nil;
                 [self.service.masternodeListRetrievalQueue removeObject:masternodeListBlockHashData];
                 [self dequeueMasternodeListRequest];
                 if (![self.service masternodeListRetrievalQueueCount]) {
@@ -546,7 +544,7 @@
                 [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
             }
         } else {
-            self.processingMasternodeListDiffHashes = nil;
+            self.store.processingMasternodeListDiffHashes = nil;
             [self issueWithMasternodeListFromPeer:peer];
         }
     }];
@@ -582,7 +580,7 @@
         DSLog(@"Last Block missing");
         return;
     }
-    self.processingMasternodeListDiffHashes = blockHashDiffsData;
+    self.store.processingMasternodeListDiffHashes = blockHashDiffsData;
     // We can use insight as backup if we are on testnet, we shouldn't otherwise.
     [self processQRInfoMessage:message
           baseBlockHashesCount:1
@@ -601,7 +599,7 @@
             NSOrderedSet *neededMissingMasternodeLists = result.neededMissingMasternodeLists;
             NSData *blockHashData = uint256_data(blockHash);
             if ([neededMissingMasternodeLists count] && [self.store.masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashData]) {
-                self.processingMasternodeListDiffHashes = nil;
+                self.store.processingMasternodeListDiffHashes = nil;
                 self.store.masternodeListAwaitingQuorumValidation = masternodeList;
                 [self.service.masternodeListRetrievalQueue removeObject:blockHashData];
                 NSMutableOrderedSet *neededMasternodeLists = [neededMissingMasternodeLists mutableCopy];
@@ -609,7 +607,7 @@
                 [self getMasternodeListsForBlockHashes:neededMasternodeLists];
             } else {
                 [self processValidMasternodeList:masternodeList havingAddedMasternodes:result.addedMasternodes modifiedMasternodes:result.modifiedMasternodes addedQuorums:result.addedQuorums];
-                self.processingMasternodeListDiffHashes = nil;
+                self.store.processingMasternodeListDiffHashes = nil;
                 [self.service.masternodeListRetrievalQueue removeObject:masternodeListBlockHashData];
                 [self dequeueMasternodeListRequest];
                 if (![self.service masternodeListRetrievalQueueCount]) {
@@ -618,7 +616,7 @@
                 [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
             }
         } else {
-            self.processingMasternodeListDiffHashes = nil;
+            self.store.processingMasternodeListDiffHashes = nil;
             [self issueWithMasternodeListFromPeer:peer];
         }
     }];

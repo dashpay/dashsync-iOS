@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSMasternodeStore ()
 
 @property (nonatomic, readwrite, nullable) DSMasternodeList *masternodeListAwaitingQuorumValidation;
+@property (nonatomic, readwrite, nullable) NSData *processingMasternodeListDiffHashes;
 @property (nonatomic, readonly) NSMutableSet<NSData *> *masternodeListQueriesNeedingQuorumsValidated;
 @property (nonatomic, readwrite, assign) UInt256 lastQueriedBlockHash; //last by height, not by time queried
 
