@@ -548,7 +548,7 @@
             XCTAssert(result.rootQuorumListValid, @"rootQuorumListValid not valid at height %u", blockHeightLookup(blockHash));
             XCTAssert(result.validQuorums, @"validQuorums not valid at height %u", blockHeightLookup(blockHash));
             DSMasternodeList *masternodeList = result.masternodeList;
-            if (result.foundCoinbase && result.rootMNListValid && result.rootQuorumListValid && result.validQuorums) {
+            if ([result isValid]) {
                 if (reloading || save) {
                     dispatch_group_enter(dispatch_group);
                     dispatch_semaphore_t sem = dispatch_semaphore_create(0);
@@ -664,7 +664,7 @@
         XCTAssert(result.rootQuorumListValid, @"rootQuorumListValid not valid at height %u", [chain heightForBlockHash:blockHash]);
         XCTAssert(result.validQuorums, @"validQuorums not valid at height %u", [chain heightForBlockHash:blockHash]);
 
-        if (result.foundCoinbase && result.rootMNListValid && result.rootQuorumListValid && result.validQuorums) {
+        if ([result isValid]) {
             NSLog(@"Valid masternode list found at height %u", [chain heightForBlockHash:blockHash]);
             //yay this is the correct masternode list verified deterministically for the given block
             NSManagedObjectContext *context = [NSManagedObjectContext chainContext];
@@ -730,7 +730,7 @@
         XCTAssert(result.rootQuorumListValid, @"rootQuorumListValid not valid at height %u", [chain heightForBlockHash:blockHash]);
         XCTAssert(result.validQuorums, @"validQuorums not valid at height %u", [chain heightForBlockHash:blockHash]);
 
-        if (result.foundCoinbase && result.rootMNListValid && result.rootQuorumListValid && result.validQuorums) {
+        if ([result isValid]) {
             NSLog(@"Valid masternode list found at height %u", [chain heightForBlockHash:blockHash]);
             //yay this is the correct masternode list verified deterministically for the given block
             NSManagedObjectContext *context = [NSManagedObjectContext chainContext];
@@ -802,7 +802,7 @@
         XCTAssert(result.rootQuorumListValid, @"rootQuorumListValid not valid at height %u", [chain heightForBlockHash:blockHash122064]);
         XCTAssert(result.validQuorums, @"validQuorums not valid at height %u", [chain heightForBlockHash:blockHash122064]);
         XCTAssertEqualObjects(uint256_data([masternodeList122064 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup122064]).hexString, @"86cfe9b759dfd012f8d00e980c560c5c1d9c487bfa8b59305e14c7fc60ef1150", @"");
-        if (result.foundCoinbase && result.rootMNListValid && result.rootQuorumListValid && result.validQuorums) {
+        if ([result isValid]) {
             //yay this is the correct masternode list verified deterministically for the given block
             [DSMasternodeManager saveMasternodeList:masternodeList122064
                                             toChain:chain
@@ -3018,7 +3018,7 @@
         XCTAssert(result119064.rootQuorumListValid, @"rootQuorumListValid not valid at height %u", [chain heightForBlockHash:blockHash119064]);
         XCTAssert(result119064.validQuorums, @"validQuorums not valid at height %u", [chain heightForBlockHash:blockHash119064]);
 
-        if (result119064.foundCoinbase && result119064.rootMNListValid && result119064.rootQuorumListValid && result119064.validQuorums) {
+        if ([result119064 isValid]) {
             //yay this is the correct masternode list verified deterministically for the given block
             NSData *message = [DSDeterministicMasternodeListTests messageFromFileWithPath:@"MNL_122928_123000"];
             NSUInteger length = message.length;
@@ -3181,7 +3181,7 @@
                                                                                                     }];
 
         XCTAssertEqual(masternodes.count, 302, @"All masternodes should be used");
-        if (result370368.foundCoinbase && result370368.rootMNListValid && result370368.rootQuorumListValid && result370368.validQuorums) {
+        if ([result370368 isValid]) {
             //yay this is the correct masternode list verified deterministically for the given block
             NSData *message = [DSDeterministicMasternodeListTests messageFromFileWithPath:@"MNL_370368_370944"];
 

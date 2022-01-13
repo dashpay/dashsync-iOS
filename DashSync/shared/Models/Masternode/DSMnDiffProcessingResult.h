@@ -36,6 +36,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype)processingResultWith:(MndiffResult *)mnDiffResult onChain:(DSChain *)chain;
 
+- (BOOL)isValid;
+
 @end
 
 NS_ASSUME_NONNULL_END

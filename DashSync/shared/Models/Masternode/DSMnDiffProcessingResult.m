@@ -48,4 +48,8 @@
     return processingResult;
 }
 
+- (BOOL)isValid {
+    return self.foundCoinbase && self.validQuorums && self.rootMNListValid && self.rootQuorumListValid;
+}
+
 @end
