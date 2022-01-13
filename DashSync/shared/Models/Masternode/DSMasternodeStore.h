@@ -27,6 +27,8 @@ FOUNDATION_EXPORT NSString *const DSMasternodeListDidChangeNotification;
 FOUNDATION_EXPORT NSString *const DSMasternodeManagerNotificationMasternodeListKey;
 FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 
+#define CHAINLOCK_ACTIVATION_HEIGHT 1088640
+
 @interface DSMasternodeStore : NSObject
 
 @property (nonatomic, nullable) DSMasternodeList *currentMasternodeList;
@@ -51,7 +53,7 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 - (uint32_t)heightForBlockHash:(UInt256)blockhash;
 - (void)loadLocalMasternodes;
 - (DSMasternodeList *)loadMasternodeListAtBlockHash:(NSData *)blockHash withBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
-- (void)loadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
+- (void)reloadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 - (DSMasternodeList *)masternodeListBeforeBlockHash:(UInt256)blockHash;
 - (DSMasternodeList *_Nullable)masternodeListForBlockHash:(UInt256)blockHash withBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 - (void)removeAllMasternodeLists;

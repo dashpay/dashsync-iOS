@@ -323,6 +323,12 @@
     }];
 }
 
+- (void)reloadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
+    [self removeAllMasternodeLists];
+    self.currentMasternodeList = nil;
+    [self loadMasternodeListsWithBlockHeightLookup:blockHeightLookup];
+}
+
 - (DSMasternodeList *)masternodeListBeforeBlockHash:(UInt256)blockHash {
     uint32_t minDistance = UINT32_MAX;
     uint32_t blockHeight = [self heightForBlockHash:blockHash];
@@ -336,7 +342,10 @@
             closestMasternodeList = self.masternodeListsByBlockHash[blockHashData];
         }
     }
-    if (self.chain.isMainnet && closestMasternodeList.height < 1088640 && blockHeight >= 1088640) return nil; //special mainnet case
+    if (self.chain.isMainnet &&
+        closestMasternodeList.height < CHAINLOCK_ACTIVATION_HEIGHT &&
+        blockHeight >= CHAINLOCK_ACTIVATION_HEIGHT)
+        return nil; //special mainnet case
     return closestMasternodeList;
 }
 

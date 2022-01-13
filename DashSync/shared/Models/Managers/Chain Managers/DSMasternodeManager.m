@@ -169,13 +169,7 @@
 }
 
 - (void)reloadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
-    [self.store removeAllMasternodeLists];
-    self.currentMasternodeList = nil;
-    [self loadMasternodeListsWithBlockHeightLookup:blockHeightLookup];
-}
-
-- (void)loadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
-    [self.store loadMasternodeListsWithBlockHeightLookup:blockHeightLookup];
+    [self.store reloadMasternodeListsWithBlockHeightLookup:blockHeightLookup];
 }
 
 - (void)setCurrentMasternodeList:(DSMasternodeList *)currentMasternodeList {
