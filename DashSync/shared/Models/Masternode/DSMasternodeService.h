@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)disconnectFromDownloadPeer;
 - (void)issueWithMasternodeListFromPeer:(DSPeer *)peer;
-- (void)requestMasternodesAndQuorums:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash {
+- (void)requestMasternodesAndQuorums:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash;
 
 @end
 
