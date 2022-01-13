@@ -18,6 +18,7 @@
 #import <Foundation/Foundation.h>
 #import "DSChain.h"
 #import "DSInsightManager.h"
+#import "DSPeer.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -38,6 +39,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)cleanListsRetrievalQueue;
 - (void)fetchMasternodeListsToRetrieve:(void (^)(NSOrderedSet<NSData *> *listsToRetrieve))completion;
 - (BOOL)removeListInRetrievalForKey:(NSData *)blockHashDiffsData;
+
+- (void)disconnectFromDownloadPeer;
+- (void)issueWithMasternodeListFromPeer:(DSPeer *)peer;
+- (void)requestMasternodeListDiff:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash;
+- (void)requestQuorumRotationInfo:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash extraShare:(BOOL)extraShare;
+
 @end
 
 NS_ASSUME_NONNULL_END

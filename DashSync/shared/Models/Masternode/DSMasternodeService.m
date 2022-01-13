@@ -18,7 +18,7 @@
 #import "DSMasternodeService.h"
 #import "DSChain+Protected.h"
 #import "DSChainManager.h"
-#import "DSPeerManager.h"
+#import "DSPeerManager+Protected.h"
 #import "NSData+Dash.h"
 
 @interface DSMasternodeService ()
@@ -134,6 +134,24 @@
     }
     [self.masternodeListsInRetrieval removeObject:blockHashDiffsData];
     return YES;
+}
+
+- (void)disconnectFromDownloadPeer {
+    [self.peerManager.downloadPeer disconnect];
+}
+
+- (void)issueWithMasternodeListFromPeer:(DSPeer *)peer {
+    [self.peerManager peerMisbehaving:peer errorMessage:@"Issue with Deterministic Masternode list"];
+}
+
+- (void)requestMasternodeListDiff:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash {
+    [self.peerManager.downloadPeer sendGetMasternodeListFromPreviousBlockHash:previousBlockHash forBlockHash:blockHash];
+}
+
+- (void)requestQuorumRotationInfo:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash extraShare:(BOOL)extraShare {
+    // TODO: optimize qrinfo request queue (up to 4 blocks simultaneously, so we'd make masternodeListsToRetrieve.count%4)
+    NSArray<NSData *> *baseBlockHashes = @[[NSData dataWithUInt256:previousBlockHash]];
+    [self.peerManager.downloadPeer sendGetQuorumRotationInfoForBaseBlockHashes:baseBlockHashes forBlockHash:blockHash extraShare:extraShare];
 }
 
 @end
