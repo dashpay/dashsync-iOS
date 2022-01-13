@@ -551,7 +551,7 @@
                 [self.service.masternodeListRetrievalQueue removeObject:masternodeListBlockHashData];
                 [self dequeueMasternodeListRequest];
                 // check for instant send locks that were awaiting a quorum
-                if (![self.service.masternodeListRetrievalQueue count]) {
+                if (![self.service masternodeListRetrievalQueueCount]) {
                     [self.chain.chainManager.transactionManager checkWaitingForQuorums];
                 }
                 [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
