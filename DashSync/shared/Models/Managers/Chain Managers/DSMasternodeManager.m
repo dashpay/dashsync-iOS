@@ -108,21 +108,20 @@
     return [self.store heightForBlockHash:blockhash];
 }
 
+- (DSSimplifiedMasternodeEntry *)masternodeHavingProviderRegistrationTransactionHash:(NSData *)providerRegistrationTransactionHash {
+    return [self.store masternodeEntryWithProRegTxHash:providerRegistrationTransactionHash];
+}
+
 - (NSUInteger)simplifiedMasternodeEntryCount {
     return [self.currentMasternodeList masternodeCount];
 }
 
 - (NSUInteger)activeQuorumsCount {
-    return self.currentMasternodeList.quorumsCount;
-}
-
-- (DSSimplifiedMasternodeEntry *)masternodeHavingProviderRegistrationTransactionHash:(NSData *)providerRegistrationTransactionHash {
-    NSParameterAssert(providerRegistrationTransactionHash);
-    return [self.currentMasternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash objectForKey:providerRegistrationTransactionHash];
+    return [self.currentMasternodeList quorumsCount];
 }
 
 - (BOOL)hasMasternodeAtLocation:(UInt128)IPAddress port:(uint32_t)port {
-    DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [self.store simplifiedMasternodeEntryForLocation:IPAddress port:port];
+    DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [self.store masternodeEntryForLocation:IPAddress port:port];
     return (!!simplifiedMasternodeEntry);
 }
 

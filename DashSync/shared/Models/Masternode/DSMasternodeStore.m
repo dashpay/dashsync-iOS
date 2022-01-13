@@ -548,7 +548,13 @@
     }];
 }
 
-- (DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntryForLocation:(UInt128)IPAddress port:(uint16_t)port {
+- (DSSimplifiedMasternodeEntry * _Nullable)masternodeEntryWithProRegTxHash:(NSData *)proRegTxHash {
+    NSParameterAssert(proRegTxHash);
+    return [self.currentMasternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash objectForKey:proRegTxHash];
+}
+
+
+- (DSSimplifiedMasternodeEntry * _Nullable)masternodeEntryForLocation:(UInt128)IPAddress port:(uint16_t)port {
     for (DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry in [self.currentMasternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allValues]) {
         if (uint128_eq(simplifiedMasternodeEntry.address, IPAddress) && simplifiedMasternodeEntry.port == port) {
             return simplifiedMasternodeEntry;

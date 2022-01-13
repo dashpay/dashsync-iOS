@@ -32,7 +32,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)checkPingTimesForMasternodesInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(NSMutableDictionary<NSData *, NSNumber *> *pingTimes, NSMutableDictionary<NSData *, NSError *> *errors))completion;
 - (UInt256)closestKnownBlockHashForBlockHash:(UInt256)blockHash;
-- (DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntryForLocation:(UInt128)IPAddress port:(uint16_t)port;
+- (DSSimplifiedMasternodeEntry * _Nullable)masternodeEntryWithProRegTxHash:(NSData *)proRegTxHash;
+- (DSSimplifiedMasternodeEntry * _Nullable)masternodeEntryForLocation:(UInt128)IPAddress port:(uint16_t)port;
 - (void)updateMasternodeList:(DSMasternodeList *)masternodeList addedMasternodes:(NSDictionary *)addedMasternodes modifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums completion:(void (^)(NSError *error))completion;
 - (NSData * _Nullable)messageFromFileForBlockHash:(UInt256)blockHash;
 - (DSQuorumEntry *)quorumEntryForChainLockRequestID:(UInt256)requestID forMerkleBlock:(DSMerkleBlock *)merkleBlock;
