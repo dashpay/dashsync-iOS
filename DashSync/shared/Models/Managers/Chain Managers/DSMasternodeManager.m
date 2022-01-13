@@ -255,8 +255,9 @@
     self.timeOutObserverTry++;
     __block uint16_t timeOutObserverTry = self.timeOutObserverTry;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(20 * (self.timedOutAttempt + 1) * NSEC_PER_SEC)), self.chain.networkingQueue, ^{
-        if (!self.masternodeListRetrievalQueueCount) return;
-        if (self.timeOutObserverTry != timeOutObserverTry) return;
+        if (!self.masternodeListRetrievalQueueCount || self.timeOutObserverTry != timeOutObserverTry) {
+            return;
+        }
         
         NSMutableSet *leftToGet = [masternodeListsInRetrieval mutableCopy];
         [leftToGet intersectSet:self.service.masternodeListsInRetrieval];
