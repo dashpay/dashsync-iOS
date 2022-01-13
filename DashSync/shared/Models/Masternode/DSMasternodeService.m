@@ -143,7 +143,13 @@
 - (void)issueWithMasternodeListFromPeer:(DSPeer *)peer {
     [self.peerManager peerMisbehaving:peer errorMessage:@"Issue with Deterministic Masternode list"];
 }
-
+- (void)requestMasternodesAndQuorums:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash {
+    if ([self.chain hasDIP0024Enabled]) {
+        [self requestQuorumRotationInfo:previousBlockHash forBlockHash:blockHash extraShare:YES];
+    } else {
+        [self requestMasternodeListDiff:previousBlockHash forBlockHash:blockHash];
+    }
+}
 - (void)requestMasternodeListDiff:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash {
     [self.peerManager.downloadPeer sendGetMasternodeListFromPreviousBlockHash:previousBlockHash forBlockHash:blockHash];
 }
