@@ -1413,8 +1413,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 }
 
 - (void)applyIdentityDictionary:(NSDictionary *)identityDictionary version:(uint32_t)version save:(BOOL)save inContext:(NSManagedObjectContext *_Nullable)context {
-    if (identityDictionary[@"credits"]) {
-        uint64_t creditBalance = (uint64_t)[identityDictionary[@"credits"] longLongValue];
+    if (identityDictionary[@"balance"]) {
+        uint64_t creditBalance = (uint64_t)[identityDictionary[@"balance"] longLongValue];
         _creditBalance = creditBalance;
     }
     if (identityDictionary[@"publicKeys"]) {
@@ -2554,7 +2554,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                     return;
                 }
                 dispatch_async(self.identityQueue, ^{
-                    uint64_t creditBalance = (uint64_t)[profileDictionary[@"credits"] longLongValue];
+                    uint64_t creditBalance = (uint64_t)[profileDictionary[@"balance"] longLongValue];
                     strongSelf.creditBalance = creditBalance;
                 });
             }
@@ -2580,14 +2580,23 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                 if (completion) {
                     if (options & DSBlockchainIdentityMonitorOptions_AcceptNotFoundAsNotAnError) {
                         completion(YES, NO, nil);
+						return;
                     } else {
                         completion(NO, NO, [NSError errorWithDomain:@"DashSync"
                                                                code:500
                                                            userInfo:@{NSLocalizedDescriptionKey:
                                                                         DSLocalizedString(@"Platform returned no identity when one was expected", nil)}]);
+						return;
                     }
                 }
             }
+			
+			if(![versionedIdentityDictionary respondsToSelector:@selector(objectForKey:)])
+			{
+				completion(YES, NO, nil);
+				return;
+			}
+		
             NSNumber *version = [versionedIdentityDictionary objectForKey:@(DSPlatformStoredMessage_Version)];
             NSDictionary *identityDictionary = [versionedIdentityDictionary objectForKey:@(DSPlatformStoredMessage_Item)];
             if (!identityDictionary) {
