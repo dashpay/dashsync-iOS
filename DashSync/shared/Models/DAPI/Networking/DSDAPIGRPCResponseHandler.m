@@ -127,7 +127,6 @@
 }
 
 - (void)parseIdentityMessage:(GetIdentityResponse *)identityResponse {
-    NSData *identityData = nil;
     NSError *error = nil;
     if (self.requireProof && !identityResponse.hasProof) {
         self.decodingError = [NSError errorWithDomain:@"DashSync"
@@ -136,7 +135,8 @@
                                                           DSLocalizedString(@"Platform returned no proof when we requested it", nil)}];
         return;
     } else if (!self.requireProof && !identityResponse.hasProof) {
-        identityData = identityResponse.identity;
+		NSData *cborData = identityResponse.identity;
+		NSData *identityData = [cborData subdataWithRange:NSMakeRange(4, cborData.length - 4)];
         self.responseObject = [identityData ds_decodeCborError:&error];
     } else {
         Proof *proof = identityResponse.proof;
@@ -310,9 +310,10 @@
     } else if (!self.requireProof && !getIdentitiesResponse.hasProof) {
         NSError *error = nil;
 
-        for (NSData *data in getIdentitiesResponse.identitiesArray) {
-            if (!data.length) continue;
-            NSDictionary *identityDictionary = [data ds_decodeCborError:&error];
+        for (NSData *cborData in getIdentitiesResponse.identitiesArray) {
+            if (!cborData.length) continue;
+			NSData *identityData = [cborData subdataWithRange:NSMakeRange(4, cborData.length - 4)];
+            NSDictionary *identityDictionary = [identityData ds_decodeCborError:&error];
             if (error) {
                 self.decodingError = error;
                 return;
