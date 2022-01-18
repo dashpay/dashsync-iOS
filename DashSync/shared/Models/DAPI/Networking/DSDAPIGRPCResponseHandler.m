@@ -532,7 +532,9 @@
             if (treeQueryForPublicKeyHashesToIdentityIds) {
                 NSMutableArray *identitiesWithoutVersions = [NSMutableArray array];
                 for (NSDictionary *identityDictionaryWithVersion in [identitiesDictionary allValues]) {
-                    [identitiesWithoutVersions addObject:[identityDictionaryWithVersion objectForKey:@(DSPlatformStoredMessage_Item)]];
+					if([identityDictionaryWithVersion respondsToSelector:@selector(objectForKey:)]) {
+						[identitiesWithoutVersions addObject:[identityDictionaryWithVersion objectForKey:@(DSPlatformStoredMessage_Item)]];
+					}
                 }
                 BOOL verified = [query verifyPublicKeyHashesForIdentityDictionaries:identitiesWithoutVersions];
                 if (!verified) {
