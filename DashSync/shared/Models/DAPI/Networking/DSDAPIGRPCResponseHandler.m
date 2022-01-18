@@ -135,8 +135,8 @@
                                                           DSLocalizedString(@"Platform returned no proof when we requested it", nil)}];
         return;
     } else if (!self.requireProof && !identityResponse.hasProof) {
-		NSData *cborData = identityResponse.identity;
-		NSData *identityData = [cborData subdataWithRange:NSMakeRange(4, cborData.length - 4)];
+        NSData *cborData = identityResponse.identity;
+        NSData *identityData = [cborData subdataWithRange:NSMakeRange(4, cborData.length - 4)];
         self.responseObject = [identityData ds_decodeCborError:&error];
     } else {
         Proof *proof = identityResponse.proof;
@@ -312,7 +312,7 @@
 
         for (NSData *cborData in getIdentitiesResponse.identitiesArray) {
             if (!cborData.length) continue;
-			NSData *identityData = [cborData subdataWithRange:NSMakeRange(4, cborData.length - 4)];
+            NSData *identityData = [cborData subdataWithRange:NSMakeRange(4, cborData.length - 4)];
             NSDictionary *identityDictionary = [identityData ds_decodeCborError:&error];
             if (error) {
                 self.decodingError = error;
@@ -532,9 +532,9 @@
             if (treeQueryForPublicKeyHashesToIdentityIds) {
                 NSMutableArray *identitiesWithoutVersions = [NSMutableArray array];
                 for (NSDictionary *identityDictionaryWithVersion in [identitiesDictionary allValues]) {
-					if([identityDictionaryWithVersion respondsToSelector:@selector(objectForKey:)]) {
-						[identitiesWithoutVersions addObject:[identityDictionaryWithVersion objectForKey:@(DSPlatformStoredMessage_Item)]];
-					}
+                    if([identityDictionaryWithVersion respondsToSelector:@selector(objectForKey:)]) {
+                        [identitiesWithoutVersions addObject:[identityDictionaryWithVersion objectForKey:@(DSPlatformStoredMessage_Item)]];
+                    }
                 }
                 BOOL verified = [query verifyPublicKeyHashesForIdentityDictionaries:identitiesWithoutVersions];
                 if (!verified) {
