@@ -1413,8 +1413,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 }
 
 - (void)applyIdentityDictionary:(NSDictionary *)identityDictionary version:(uint32_t)version save:(BOOL)save inContext:(NSManagedObjectContext *_Nullable)context {
-    if (identityDictionary[@"credits"]) {
-        uint64_t creditBalance = (uint64_t)[identityDictionary[@"credits"] longLongValue];
+    if (identityDictionary[@"balance"]) {
+        uint64_t creditBalance = (uint64_t)[identityDictionary[@"balance"] longLongValue];
         _creditBalance = creditBalance;
     }
     if (identityDictionary[@"publicKeys"]) {
@@ -2554,7 +2554,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                     return;
                 }
                 dispatch_async(self.identityQueue, ^{
-                    uint64_t creditBalance = (uint64_t)[profileDictionary[@"credits"] longLongValue];
+                    uint64_t creditBalance = (uint64_t)[profileDictionary[@"balance"] longLongValue];
                     strongSelf.creditBalance = creditBalance;
                 });
             }
