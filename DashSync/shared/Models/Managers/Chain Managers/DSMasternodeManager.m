@@ -398,7 +398,7 @@
 
 // MARK: - Deterministic Masternode List Sync
 
--(DSBlock *)lastBlockForBlockHash:(UInt256)blockHash fromPeer:(DSPeer *)peer {
+- (DSBlock *)lastBlockForBlockHash:(UInt256)blockHash fromPeer:(DSPeer *)peer {
     DSBlock *lastBlock = nil;
     if ([self.chain heightForBlockHash:blockHash]) {
         lastBlock = [[peer.chain terminalBlocks] objectForKey:uint256_obj(blockHash)];
