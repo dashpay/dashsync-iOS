@@ -29,7 +29,7 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 
 #define CHAINLOCK_ACTIVATION_HEIGHT 1088640
 
-@interface DSMasternodeStore : NSObject
+@interface DSMasternodeListStore : NSObject
 
 @property (nonatomic, nullable) DSMasternodeList *currentMasternodeList;
 @property (nonatomic, readonly) NSUInteger knownMasternodeListsCount;

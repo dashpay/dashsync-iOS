@@ -17,13 +17,13 @@
 
 #import "BigIntTypes.h"
 #import "DSMasternodeList.h"
-#import "DSMasternodeStore.h"
+#import "DSMasternodeListStore.h"
 #import "DSMerkleBlock.h"
 #import "DSQuorumEntry.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSMasternodeStore ()
+@interface DSMasternodeListStore ()
 
 @property (nonatomic, readwrite, nullable) DSMasternodeList *masternodeListAwaitingQuorumValidation;
 @property (nonatomic, readwrite, nullable) NSData *processingMasternodeListDiffHashes;

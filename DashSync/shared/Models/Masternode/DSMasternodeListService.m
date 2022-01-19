@@ -15,39 +15,39 @@
 //  limitations under the License.
 //
 
-#import "DSMasternodeService.h"
+#import "DSMasternodeListService.h"
 #import "DSChain+Protected.h"
 #import "DSChainManager.h"
 #import "DSPeerManager+Protected.h"
 #import "NSData+Dash.h"
 
-@interface DSMasternodeService ()
-@property (nonatomic, strong) NSMutableOrderedSet<NSData *> *masternodeListRetrievalQueue;
-@property (nonatomic, assign) NSUInteger masternodeListRetrievalQueueMaxAmount;
-@property (nonatomic, strong) NSMutableSet<NSData *> *masternodeListsInRetrieval;
+@interface DSMasternodeListService ()
+@property (nonatomic, strong) NSMutableOrderedSet<NSData *> *retrievalQueue;
+@property (nonatomic, assign) NSUInteger retrievalQueueMaxAmount;
+@property (nonatomic, strong) NSMutableSet<NSData *> *listsInRetrieval;
 @property (nonatomic, copy) BlockHeightFinder blockHeightLookup;
 
 @end
 
-@implementation DSMasternodeService
+@implementation DSMasternodeListService
 
 - (instancetype)initWithChain:(DSChain *)chain blockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     NSParameterAssert(chain);
     if (!(self = [super init])) return nil;
     _chain = chain;
     _blockHeightLookup = blockHeightLookup;
-    _masternodeListRetrievalQueue = [NSMutableOrderedSet orderedSet];
-    _masternodeListsInRetrieval = [NSMutableSet set];
+    _retrievalQueue = [NSMutableOrderedSet orderedSet];
+    _listsInRetrieval = [NSMutableSet set];
     return self;
 }
 
-- (void)addToMasternodeRetrievalQueue:(NSData *)masternodeBlockHashData {
+- (void)addToRetrievalQueue:(NSData *)masternodeBlockHashData {
     NSAssert(uint256_is_not_zero(masternodeBlockHashData.UInt256), @"the hash data must not be empty");
-    [self.masternodeListRetrievalQueue addObject:masternodeBlockHashData];
+    [self.retrievalQueue addObject:masternodeBlockHashData];
     [self updateMasternodeRetrievalQueue];
 }
 
-- (void)addToMasternodeRetrievalQueueArray:(NSArray *)masternodeBlockHashDataArray {
+- (void)addToRetrievalQueueArray:(NSArray<NSData *> *)masternodeBlockHashDataArray {
     NSMutableArray *nonEmptyBlockHashes = [NSMutableArray array];
     for (NSData *blockHashData in masternodeBlockHashDataArray) {
         NSAssert(uint256_is_not_zero(blockHashData.UInt256), @"We should not be adding an empty block hash");
@@ -55,16 +55,16 @@
             [nonEmptyBlockHashes addObject:blockHashData];
         }
     }
-    [self.masternodeListRetrievalQueue addObjectsFromArray:nonEmptyBlockHashes];
+    [self.retrievalQueue addObjectsFromArray:nonEmptyBlockHashes];
     [self updateMasternodeRetrievalQueue];
 }
 
 - (void)cleanListsInRetrieval {
-    [self.masternodeListsInRetrieval removeAllObjects];
+    [self.listsInRetrieval removeAllObjects];
 }
 
 - (void)cleanListsRetrievalQueue {
-    [self.masternodeListRetrievalQueue removeAllObjects];
+    [self.retrievalQueue removeAllObjects];
 }
 
 - (void)cleanAllLists {
@@ -76,8 +76,8 @@
     return self.chain.chainManager.peerManager;
 }
 
-- (NSUInteger)masternodeListRetrievalQueueCount {
-    return self.masternodeListRetrievalQueue.count;
+- (NSUInteger)retrievalQueueCount {
+    return self.retrievalQueue.count;
 }
 
 - (void)blockUntilAddInsight:(UInt256)entryQuorumHash {
@@ -94,8 +94,8 @@
 }
 
 - (void)updateMasternodeRetrievalQueue {
-    self.masternodeListRetrievalQueueMaxAmount = MAX(self.masternodeListRetrievalQueueMaxAmount, self.masternodeListRetrievalQueue.count);
-    [self.masternodeListRetrievalQueue sortUsingComparator:^NSComparisonResult(NSData *_Nonnull obj1, NSData *_Nonnull obj2) {
+    self.retrievalQueueMaxAmount = MAX(self.retrievalQueueMaxAmount, self.retrievalQueue.count);
+    [self.retrievalQueue sortUsingComparator:^NSComparisonResult(NSData *_Nonnull obj1, NSData *_Nonnull obj2) {
         return self.blockHeightLookup(obj1.UInt256) < self.blockHeightLookup(obj2.UInt256)
         ? NSOrderedAscending
         : NSOrderedDescending;
@@ -103,12 +103,12 @@
 }
 
 - (void)fetchMasternodeListsToRetrieve:(void (^)(NSOrderedSet<NSData *> *listsToRetrieve))completion {
-    if (![self.masternodeListRetrievalQueue count]) {
+    if (![self.retrievalQueue count]) {
         DSLog(@"No masternode lists in retrieval");
         [self.chain.chainManager chainFinishedSyncingMasternodeListsAndQuorums:self.chain];
         return;
     }
-    if ([self.masternodeListsInRetrieval count]) {
+    if ([self.listsInRetrieval count]) {
         DSLog(@"A masternode list is already in retrieval");
         return;
     }
@@ -120,24 +120,24 @@
         }
         return;
     }
-    completion([self.masternodeListRetrievalQueue copy]);
+    completion([self.retrievalQueue copy]);
 }
 
 - (BOOL)removeListInRetrievalForKey:(NSData *)blockHashDiffsData {
-    if (![self.masternodeListsInRetrieval containsObject:blockHashDiffsData]) {
+    if (![self.listsInRetrieval containsObject:blockHashDiffsData]) {
         NSMutableArray *masternodeListsInRetrievalStrings = [NSMutableArray array];
-        for (NSData *masternodeListInRetrieval in self.masternodeListsInRetrieval) {
+        for (NSData *masternodeListInRetrieval in self.listsInRetrieval) {
             [masternodeListsInRetrievalStrings addObject:masternodeListInRetrieval.hexString];
         }
         DSLog(@"A masternode list (%@) was received that is not set to be retrieved (%@)", blockHashDiffsData.hexString, [masternodeListsInRetrievalStrings componentsJoinedByString:@", "]);
         return NO;
     }
-    [self.masternodeListsInRetrieval removeObject:blockHashDiffsData];
+    [self.listsInRetrieval removeObject:blockHashDiffsData];
     return YES;
 }
 
 - (BOOL)hasLatestBlockInRetrievalQueueWithHash:(UInt256)blockHash {
-    return [self.masternodeListRetrievalQueue lastObject] && uint256_eq(blockHash, [self.masternodeListRetrievalQueue lastObject].UInt256);
+    return [self.retrievalQueue lastObject] && uint256_eq(blockHash, [self.retrievalQueue lastObject].UInt256);
 }
 
 - (void)disconnectFromDownloadPeer {
@@ -167,7 +167,7 @@
 - (void)retrieveMasternodeList:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash {
     [self requestMasternodesAndQuorums:previousBlockHash forBlockHash:blockHash];
     UInt512 concat = uint512_concat(previousBlockHash, blockHash);
-    [self.masternodeListsInRetrieval addObject:uint512_data(concat)];
+    [self.listsInRetrieval addObject:uint512_data(concat)];
 }
 
 @end
