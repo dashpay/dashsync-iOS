@@ -385,13 +385,13 @@
             return;
         }
         __block DSMasternodeList *masternodeList = result.masternodeList;
-        if (![self.store hasMasternodeListAt:uint256_data(masternodeList.blockHash)]) {
-            //in rare race conditions this might already exist
-            [self.store saveMasternodeList:masternodeList addedMasternodes:result.addedMasternodes modifiedMasternodes:result.modifiedMasternodes addedQuorums:result.addedQuorums completion:^(NSError * _Nonnull error) {
-                completion(masternodeList);
-            }];
-        }
-
+        [self.store saveMasternodeList:masternodeList
+                      addedMasternodes:result.addedMasternodes
+                   modifiedMasternodes:result.modifiedMasternodes
+                          addedQuorums:result.addedQuorums
+                            completion:^(NSError *_Nonnull error) {
+            completion(masternodeList);
+        }];
     }];
 }
 
@@ -628,18 +628,19 @@
     if (uint256_eq(self.store.masternodeListAwaitingQuorumValidation.blockHash, blockHash)) {
         self.store.masternodeListAwaitingQuorumValidation = nil;
     }
-    if (![self.store hasMasternodeListAt:uint256_data(blockHash)]) {
-        //in rare race conditions this might already exist
-        [self.store saveMasternodeList:masternodeList addedMasternodes:addedMasternodes modifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums completion:^(NSError *error) {
-            if (!error || !self.masternodeListRetrievalQueueCount) { //if it is 0 then we most likely have wiped chain info
-                return;
-            }
-            [self wipeMasternodeInfo];
-            dispatch_async(self.chain.networkingQueue, ^{
-                [self getCurrentMasternodeListWithSafetyDelay:0];
-            });
-        }];
-    }
+    [self.store saveMasternodeList:masternodeList
+                  addedMasternodes:addedMasternodes
+               modifiedMasternodes:modifiedMasternodes
+                      addedQuorums:addedQuorums
+                        completion:^(NSError *error) {
+        if (!error || !self.masternodeListRetrievalQueueCount) { //if it is 0 then we most likely have wiped chain info
+            return;
+        }
+        [self wipeMasternodeInfo];
+        dispatch_async(self.chain.networkingQueue, ^{
+            [self getCurrentMasternodeListWithSafetyDelay:0];
+        });
+    }];
     if (!KEEP_OLD_QUORUMS && uint256_eq(self.store.lastQueriedBlockHash, blockHash)) {
         [self.store removeOldMasternodeLists];
     }
