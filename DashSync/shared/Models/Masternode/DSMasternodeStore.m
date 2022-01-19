@@ -426,20 +426,9 @@
     }];
 }
 
-- (void)updateMasternodeList:(DSMasternodeList *)masternodeList addedMasternodes:(NSDictionary *)addedMasternodes modifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums completion:(void (^)(NSError *error))completion {
-    if (!self.masternodeListsByBlockHash[uint256_data(masternodeList.blockHash)] &&
-        ![self.masternodeListsBlockHashStubs containsObject:uint256_data(masternodeList.blockHash)]) {
-        //in rare race conditions this might already exist
-        NSArray *updatedSimplifiedMasternodeEntries = [addedMasternodes.allValues arrayByAddingObjectsFromArray:modifiedMasternodes.allValues];
-        [self.chain updateAddressUsageOfSimplifiedMasternodeEntries:updatedSimplifiedMasternodeEntries];
-        [self saveMasternodeList:masternodeList
-            havingModifiedMasternodes:modifiedMasternodes
-                         addedQuorums:addedQuorums
-                           completion:completion];
-    }
-}
-
-- (void)saveMasternodeList:(DSMasternodeList *)masternodeList havingModifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums completion:(void (^)(NSError *error))completion {
+- (void)saveMasternodeList:(DSMasternodeList *)masternodeList addedMasternodes:(NSDictionary *)addedMasternodes modifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums completion:(void (^)(NSError *error))completion {
+    NSArray *updatedSimplifiedMasternodeEntries = [addedMasternodes.allValues arrayByAddingObjectsFromArray:modifiedMasternodes.allValues];
+    [self.chain updateAddressUsageOfSimplifiedMasternodeEntries:updatedSimplifiedMasternodeEntries];
     [self.masternodeListsByBlockHash setObject:masternodeList forKey:uint256_data(masternodeList.blockHash)];
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
@@ -629,6 +618,18 @@
         return nil;
     }
     return [masternodeList quorumEntryForInstantSendRequestID:requestID];
+}
+
+- (BOOL)addBlockToValidationQueue:(DSMerkleBlock *)merkleBlock {
+    UInt256 merkleBlockHash = merkleBlock.blockHash;
+    NSData *merkleBlockHashData = uint256_data(merkleBlockHash);
+    if ([self hasMasternodeListAt:merkleBlockHashData]) {
+        DSLog(@"Already have that masternode list (or in stub) %u", merkleBlock.height);
+        return NO;
+    }
+    self.lastQueriedBlockHash = merkleBlockHash;
+    [self.masternodeListQueriesNeedingQuorumsValidated addObject:merkleBlockHashData];
+    return YES;
 }
 
 @end

@@ -136,6 +136,10 @@
     return YES;
 }
 
+- (BOOL)hasLatestBlockInRetrievalQueueWithHash:(UInt256)blockHash {
+    return [self.masternodeListRetrievalQueue lastObject] && uint256_eq(blockHash, [self.masternodeListRetrievalQueue lastObject].UInt256);
+}
+
 - (void)disconnectFromDownloadPeer {
     [self.peerManager.downloadPeer disconnect];
 }
@@ -158,6 +162,12 @@
     // TODO: optimize qrinfo request queue (up to 4 blocks simultaneously, so we'd make masternodeListsToRetrieve.count%4)
     NSArray<NSData *> *baseBlockHashes = @[[NSData dataWithUInt256:previousBlockHash]];
     [self.peerManager.downloadPeer sendGetQuorumRotationInfoForBaseBlockHashes:baseBlockHashes forBlockHash:blockHash extraShare:extraShare];
+}
+
+- (void)retrieveMasternodeList:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash {
+    [self requestMasternodesAndQuorums:previousBlockHash forBlockHash:blockHash];
+    UInt512 concat = uint512_concat(previousBlockHash, blockHash);
+    [self.masternodeListsInRetrieval addObject:uint512_data(concat)];
 }
 
 @end

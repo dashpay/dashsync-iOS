@@ -34,11 +34,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (UInt256)closestKnownBlockHashForBlockHash:(UInt256)blockHash;
 - (DSSimplifiedMasternodeEntry * _Nullable)masternodeEntryWithProRegTxHash:(NSData *)proRegTxHash;
 - (DSSimplifiedMasternodeEntry * _Nullable)masternodeEntryForLocation:(UInt128)IPAddress port:(uint16_t)port;
-- (void)updateMasternodeList:(DSMasternodeList *)masternodeList addedMasternodes:(NSDictionary *)addedMasternodes modifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums completion:(void (^)(NSError *error))completion;
 - (NSData * _Nullable)messageFromFileForBlockHash:(UInt256)blockHash;
 - (DSQuorumEntry *)quorumEntryForChainLockRequestID:(UInt256)requestID forMerkleBlock:(DSMerkleBlock *)merkleBlock;
 - (DSQuorumEntry *)quorumEntryForInstantSendRequestID:(UInt256)requestID withBlockHeightOffset:(uint32_t)blockHeightOffset;
-
+- (BOOL)addBlockToValidationQueue:(DSMerkleBlock *)merkleBlock;
 @end
 
 NS_ASSUME_NONNULL_END

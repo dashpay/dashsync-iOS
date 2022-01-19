@@ -39,10 +39,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)cleanListsRetrievalQueue;
 - (void)fetchMasternodeListsToRetrieve:(void (^)(NSOrderedSet<NSData *> *listsToRetrieve))completion;
 - (BOOL)removeListInRetrievalForKey:(NSData *)blockHashDiffsData;
+- (BOOL)hasLatestBlockInRetrievalQueueWithHash:(UInt256)blockHash;
 
 - (void)disconnectFromDownloadPeer;
 - (void)issueWithMasternodeListFromPeer:(DSPeer *)peer;
 - (void)requestMasternodesAndQuorums:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash;
+- (void)retrieveMasternodeList:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash;
 
 @end
 
