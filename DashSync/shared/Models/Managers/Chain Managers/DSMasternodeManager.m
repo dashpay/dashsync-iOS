@@ -456,7 +456,7 @@
     NSData *blockHashData = uint256_data(blockHash);
     UInt512 concat = uint512_concat(baseBlockHash, blockHash);
     NSData *blockHashDiffsData = uint512_data(concat);
-    
+
     if (![self.service removeListInRetrievalForKey:blockHashDiffsData] ||
         [self.store hasMasternodeListAt:blockHashData]) {
         return;
@@ -520,78 +520,7 @@
 }
 
 - (void)peer:(DSPeer *)peer relayedQuorumRotationInfoMessage:(NSData *)message {
-    self.timedOutAttempt = 0;
-    NSUInteger length = message.length;
-    
-    
-    NSUInteger offset = 0;
-    
-    if (length - offset < 32) return;
-    UInt256 baseBlockHash = [message readUInt256AtOffset:&offset];
-    if (length - offset < 32) return;
-    UInt256 blockHash = [message readUInt256AtOffset:&offset];
-    NSData *blockHashData = uint256_data(blockHash);
-    UInt512 concat = uint512_concat(baseBlockHash, blockHash);
-    NSData *blockHashDiffsData = uint512_data(concat);
-    
-    if (![self.service removeListInRetrievalForKey:blockHashDiffsData] ||
-        [self.store hasMasternodeListAt:blockHashData]) {
-        return;
-    }
-    DSMasternodeList *baseMasternodeList = [self masternodeListForBlockHash:baseBlockHash];
-    if (!baseMasternodeList &&
-        !uint256_eq(self.chain.genesisHash, baseBlockHash) &&
-        uint256_is_not_zero(baseBlockHash)) {
-        //this could have been deleted in the meantime, if so rerequest
-        [self issueWithMasternodeListFromPeer:peer];
-        return;
-    }
-    DSBlock *lastBlock = [self lastBlockForBlockHash:blockHash fromPeer:peer];
-    if (!lastBlock) {
-        [self issueWithMasternodeListFromPeer:peer];
-        DSLog(@"Last Block missing");
-        return;
-    }
-    self.store.processingMasternodeListDiffHashes = blockHashDiffsData;
-    // We can use insight as backup if we are on testnet, we shouldn't otherwise.
-    [self processQRInfoMessage:message
-          baseBlockHashesCount:1
-            baseMasternodeList:baseMasternodeList
-                     lastBlock:lastBlock
-            useInsightAsBackup:self.chain.isTestnet
-                    completion:^(DSMnDiffProcessingResult *result) {
-        DSMasternodeList *masternodeList = result.masternodeList;
-        NSData *masternodeListBlockHashData = uint256_data(masternodeList.blockHash);
-        if (![self.service.retrievalQueue containsObject:masternodeListBlockHashData]) {
-            [self.service cleanListsInRetrieval];
-            [self dequeueMasternodeListRequest];
-            return;
-        }
-        if ([result isValid] && result.validCoinbase) {
-            NSOrderedSet *neededMissingMasternodeLists = result.neededMissingMasternodeLists;
-            NSData *blockHashData = uint256_data(blockHash);
-            if ([neededMissingMasternodeLists count] && [self.store.masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashData]) {
-                self.store.processingMasternodeListDiffHashes = nil;
-                self.store.masternodeListAwaitingQuorumValidation = masternodeList;
-                [self.service.retrievalQueue removeObject:blockHashData];
-                NSMutableOrderedSet *neededMasternodeLists = [neededMissingMasternodeLists mutableCopy];
-                [neededMasternodeLists addObject:blockHashData]; //also get the current one again
-                [self getMasternodeListsForBlockHashes:neededMasternodeLists];
-            } else {
-                [self processValidMasternodeList:masternodeList havingAddedMasternodes:result.addedMasternodes modifiedMasternodes:result.modifiedMasternodes addedQuorums:result.addedQuorums];
-                self.store.processingMasternodeListDiffHashes = nil;
-                [self.service.retrievalQueue removeObject:masternodeListBlockHashData];
-                [self dequeueMasternodeListRequest];
-                if (![self.service retrievalQueueCount]) {
-                    [self.chain.chainManager.transactionManager checkWaitingForQuorums];
-                }
-                [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
-            }
-        } else {
-            self.store.processingMasternodeListDiffHashes = nil;
-            [self issueWithMasternodeListFromPeer:peer];
-        }
-    }];
+    // TODO: implement strategy
 }
 
 - (void)processMasternodeDiffMessage:(NSData *)message baseMasternodeList:(DSMasternodeList *)baseMasternodeList lastBlock:(DSBlock *)lastBlock useInsightAsBackup:(BOOL)useInsightAsBackup completion:(void (^)(DSMnDiffProcessingResult *result))completion {
