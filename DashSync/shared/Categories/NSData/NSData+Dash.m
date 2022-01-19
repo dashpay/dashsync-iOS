@@ -1624,7 +1624,8 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
     } else {
         v = DASH_PUBKEY_ADDRESS_TEST;
     }
-    [d appendBytes:&v length:1];
+    [d appendBytes:&v
+            length:1];
     [d appendData:self];
     [d appendBytes:d.SHA256_2.u32 length:4];
     return [d base58String];

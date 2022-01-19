@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Vladimir Pirogov
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -15,10 +15,10 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
 #import "DSChain.h"
 #import "DSMasternodeList.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -27,9 +27,9 @@
     uintptr_t masternodes_count = list->masternodes_count;
     NSMutableDictionary<NSData *, DSSimplifiedMasternodeEntry *> *masternodes = [DSSimplifiedMasternodeEntry simplifiedEntriesWith:list->masternodes count:masternodes_count onChain:chain];
     NSMutableDictionary<NSNumber *, NSMutableDictionary<NSData *, DSQuorumEntry *> *> *quorums = [DSQuorumEntry entriesWith:list->quorum_type_maps count:list->quorum_type_maps_count onChain:chain];
-    UInt256 masternodeMerkleRoot = list->masternode_merkle_root ? *((UInt256 *) list->masternode_merkle_root) :  UINT256_ZERO;
-    UInt256 quorumMerkleRoot = list->quorum_merkle_root ? *((UInt256 *) list->quorum_merkle_root) : UINT256_ZERO;
-    UInt256 blockHash = *((UInt256 *) list->block_hash);
+    UInt256 masternodeMerkleRoot = list->masternode_merkle_root ? *((UInt256 *)list->masternode_merkle_root) : UINT256_ZERO;
+    UInt256 quorumMerkleRoot = list->quorum_merkle_root ? *((UInt256 *)list->quorum_merkle_root) : UINT256_ZERO;
+    UInt256 blockHash = *((UInt256 *)list->block_hash);
     return [self masternodeListWithSimplifiedMasternodeEntriesDictionary:masternodes
                                                  quorumEntriesDictionary:quorums
                                                              atBlockHash:blockHash

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Vladimir Pirogov
 //  Copyright © 2021 Dash Core Group. All rights reserved.
 //
@@ -22,7 +22,7 @@
 - (NSSet *)map:(id (^)(id obj))block {
     NSParameterAssert(block != nil);
     NSMutableSet *result = [NSMutableSet setWithCapacity:self.count];
-    [self enumerateObjectsUsingBlock:^(id  _Nonnull obj, BOOL * _Nonnull stop) {
+    [self enumerateObjectsUsingBlock:^(id _Nonnull obj, BOOL *_Nonnull stop) {
         [result addObject:block(obj) ?: [NSNull null]];
     }];
     return result;

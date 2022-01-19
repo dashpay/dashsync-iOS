@@ -900,7 +900,8 @@
         [peer sendFilterloadMessage:[self transactionsBloomFilterForPeer:peer].data];
     }
 
-    [peer sendInvMessageForHashes:self.publishedTx.allKeys ofType:DSInvType_Tx]; // publish pending tx
+    [peer sendInvMessageForHashes:self.publishedTx.allKeys
+                           ofType:DSInvType_Tx]; // publish pending tx
     [peer sendPingMessageWithPongHandler:^(BOOL success) {
         if (success) {
             DSLog(@"[DSTransactionManager] fetching mempool ping success peer %@", peer.host);
@@ -1714,7 +1715,6 @@
             if (block.height == self.chain.lastTerminalBlockHeight) {
                 NSString *fileName = [NSString stringWithFormat:@"MaxTransactionInfo_%@.dat", self.chain.name];
                 [self.totalTransactionData saveToFile:fileName inDirectory:NSCachesDirectory];
-                
             }
         }
     }

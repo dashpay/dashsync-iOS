@@ -59,7 +59,8 @@
                 if (*error) {
                     return nil;
                 }
-                [storedItemDictionary setObject:documentValue forKey:@(DSPlatformStoredMessage_Item)];
+                [storedItemDictionary setObject:documentValue
+                                         forKey:@(DSPlatformStoredMessage_Item)];
                 [mElementDictionary setObject:[storedItemDictionary copy] forKey:[NSData dataWithBytes:element->key length:element->key_length]];
             } else {
                 [storedItemDictionary setObject:value forKey:@(DSPlatformStoredMessage_Data)];

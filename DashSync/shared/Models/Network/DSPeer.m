@@ -443,15 +443,16 @@
         agent = [USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet=%@)", self.chain.devnetIdentifier]];
     }
     [msg appendString:agent]; // user agent
-    [msg appendUInt32:0]; // last block received
-    [msg appendUInt8:0];  // relay transactions (no for SPV bloom filter mode)
+    [msg appendUInt32:0];     // last block received
+    [msg appendUInt8:0];      // relay transactions (no for SPV bloom filter mode)
     self.pingStartTime = [NSDate timeIntervalSince1970];
 
 #if MESSAGE_LOGGING
     DSLog(@"%@:%u %@sending version with protocol version %d", self.host, self.port, self.peerDelegate.downloadPeer == self ? @"(download peer) " : @"", self.chain.protocolVersion);
 #endif
 
-    [self sendMessage:msg type:MSG_VERSION];
+    [self sendMessage:msg
+                 type:MSG_VERSION];
 }
 
 - (void)sendVerackMessage {
@@ -556,7 +557,8 @@
         [msg appendUInt256:hashData.UInt256];
     }
 
-    [msg appendBytes:&hashStop length:sizeof(hashStop)];
+    [msg appendBytes:&hashStop
+              length:sizeof(hashStop)];
     if (self.relayStartTime == 0) self.relayStartTime = [NSDate timeIntervalSince1970];
     [self sendMessage:msg type:MSG_GETHEADERS];
 }
@@ -571,7 +573,8 @@
         [msg appendUInt256:hashData.UInt256];
     }
 
-    [msg appendBytes:&hashStop length:sizeof(hashStop)];
+    [msg appendBytes:&hashStop
+              length:sizeof(hashStop)];
     self.sentGetblocks = YES;
 
 #if MESSAGE_LOGGING
@@ -618,7 +621,8 @@
         [msg appendBytes:&h length:sizeof(h)];
     }
 
-    [self sendMessage:msg type:MSG_INV];
+    [self sendMessage:msg
+                 type:MSG_INV];
     switch (invType) {
         case DSInvType_Tx:
             [self.knownTxHashes unionOrderedSet:hashes];
@@ -664,7 +668,8 @@
         [msg appendBytes:&h length:sizeof(h)];
     }
 
-    [self sendMessage:msg type:MSG_INV];
+    [self sendMessage:msg
+                 type:MSG_INV];
     txHashes ? [self.knownTxHashes unionOrderedSet:txHashes] : nil;
     txLockRequestHashes ? [self.knownTxHashes unionOrderedSet:txLockRequestHashes] : nil;
 }

@@ -28,11 +28,11 @@
 #import "DSChainManager+Protected.h"
 #import "DSCheckpoint.h"
 #import "DSMasternodeDiffMessageContext.h"
+#import "DSMasternodeListService.h"
+#import "DSMasternodeListStore+Protected.h"
+#import "DSMasternodeListStore.h"
 #import "DSMasternodeManager+LocalMasternode.h"
 #import "DSMasternodeManager+Mndiff.h"
-#import "DSMasternodeListService.h"
-#import "DSMasternodeListStore.h"
-#import "DSMasternodeListStore+Protected.h"
 #import "DSMerkleBlock.h"
 #import "DSMnDiffProcessingResult.h"
 #import "DSOptionsManager.h"
@@ -416,7 +416,7 @@
     return lastBlock;
 }
 
--(BOOL)hasBlockForBlockHash:(NSData *)blockHashData {
+- (BOOL)hasBlockForBlockHash:(NSData *)blockHashData {
     UInt256 blockHash = blockHashData.UInt256;
     BOOL hasBlock = ([self.chain blockForBlockHash:blockHash] != nil);
     if (!hasBlock) {
@@ -590,7 +590,7 @@
     }];
 }
 
-- (void)processMasternodeDiffMessage:(NSData *)message baseMasternodeList:(DSMasternodeList  *)baseMasternodeList lastBlock:(DSBlock *)lastBlock useInsightAsBackup:(BOOL)useInsightAsBackup completion:(void (^)(DSMnDiffProcessingResult *result))completion {
+- (void)processMasternodeDiffMessage:(NSData *)message baseMasternodeList:(DSMasternodeList *)baseMasternodeList lastBlock:(DSBlock *)lastBlock useInsightAsBackup:(BOOL)useInsightAsBackup completion:(void (^)(DSMnDiffProcessingResult *result))completion {
     DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
     [mndiffContext setBaseMasternodeList:baseMasternodeList];
     [mndiffContext setLastBlock:(DSMerkleBlock *)lastBlock];

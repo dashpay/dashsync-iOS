@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Vladimir Pirogov
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -96,9 +96,7 @@
 - (void)updateMasternodeRetrievalQueue {
     self.retrievalQueueMaxAmount = MAX(self.retrievalQueueMaxAmount, self.retrievalQueue.count);
     [self.retrievalQueue sortUsingComparator:^NSComparisonResult(NSData *_Nonnull obj1, NSData *_Nonnull obj2) {
-        return self.blockHeightLookup(obj1.UInt256) < self.blockHeightLookup(obj2.UInt256)
-        ? NSOrderedAscending
-        : NSOrderedDescending;
+        return self.blockHeightLookup(obj1.UInt256) < self.blockHeightLookup(obj2.UInt256) ? NSOrderedAscending : NSOrderedDescending;
     }];
 }
 

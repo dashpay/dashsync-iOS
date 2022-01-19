@@ -1929,7 +1929,8 @@ static dispatch_once_t devnetToken = 0;
         if (!self.insightVerifiedBlocksByHashDictionary) {
             self.insightVerifiedBlocksByHashDictionary = [NSMutableDictionary dictionary];
         }
-        [self.insightVerifiedBlocksByHashDictionary setObject:block forKey:uint256_data(blockHash)];
+        [self.insightVerifiedBlocksByHashDictionary setObject:block
+                                                       forKey:uint256_data(blockHash)];
     }
 }
 
@@ -2322,7 +2323,9 @@ static dispatch_once_t devnetToken = 0;
                 }
             }
 
-            [self setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTransactionHashes:txHashes];
+            [self setBlockHeight:TX_UNCONFIRMED
+                        andTimestamp:0
+                forTransactionHashes:txHashes];
             b = block;
 
             while (b.height > b2.height) { // set transaction heights for new main chain
@@ -2648,7 +2651,9 @@ static dispatch_once_t devnetToken = 0;
                 }
             }
 
-            [self setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTransactionHashes:txHashes];
+            [self setBlockHeight:TX_UNCONFIRMED
+                        andTimestamp:0
+                forTransactionHashes:txHashes];
             clb = syncBlock;
 
             while (clb.height > sbmc.height) { // set transaction heights for new main chain
@@ -2853,7 +2858,11 @@ static dispatch_once_t devnetToken = 0;
         }
     }
 
-    [self.chainManager chain:self didSetBlockHeight:height andTimestamp:timestamp forTransactionHashes:transactionHashes updatedTransactions:updatedTransactions];
+    [self.chainManager chain:self
+           didSetBlockHeight:height
+                andTimestamp:timestamp
+        forTransactionHashes:transactionHashes
+         updatedTransactions:updatedTransactions];
 }
 
 - (void)reloadDerivationPaths {

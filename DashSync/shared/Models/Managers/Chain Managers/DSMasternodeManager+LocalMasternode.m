@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Vladimir Pirogov
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -15,13 +15,13 @@
 //  limitations under the License.
 //
 
-#import <objc/runtime.h>
-#import "DSChain.h"
 #import "DSChain+Protected.h"
+#import "DSChain.h"
 #import "DSChainManager+Protected.h"
 #import "DSLocalMasternode+Protected.h"
 #import "DSMasternodeManager+LocalMasternode.h"
 #import "DSSimplifiedMasternodeEntry.h"
+#import <objc/runtime.h>
 
 NSString const *localMasternodesDictionaryKey = @"localMasternodesDictionaryKey";
 

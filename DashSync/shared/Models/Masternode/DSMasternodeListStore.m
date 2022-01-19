@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Vladimir Pirogov
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -15,15 +15,15 @@
 //  limitations under the License.
 //
 
+#import "DSMasternodeListStore.h"
 #import "DSAddressEntity+CoreDataClass.h"
 #import "DSBlock.h"
-#import "DSDAPIClient.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "DSChainManager.h"
 #import "DSCheckpoint.h"
+#import "DSDAPIClient.h"
 #import "DSLocalMasternodeEntity+CoreDataClass.h"
-#import "DSMasternodeListStore.h"
 #import "DSMasternodeListEntity+CoreDataClass.h"
 #import "DSMerkleBlock.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
@@ -76,7 +76,7 @@
     [self loadLocalMasternodes];
 }
 
-- (NSData * _Nullable)messageFromFileForBlockHash:(UInt256)blockHash {
+- (NSData *_Nullable)messageFromFileForBlockHash:(UInt256)blockHash {
     DSCheckpoint *checkpoint = [self.chain checkpointForBlockHash:blockHash];
     if (!checkpoint || !checkpoint.masternodeListName || [checkpoint.masternodeListName isEqualToString:@""]) {
         DSLog(@"No masternode list checkpoint found at height %u", [self heightForBlockHash:blockHash]);
@@ -240,7 +240,7 @@
 }
 
 - (BOOL)hasMasternodeListAt:(NSData *)blockHashData {
-//    DSLog(@"We already have this masternodeList %@ (%u)", blockHashData.reverse.hexString, [self heightForBlockHash:blockHash]);
+    //    DSLog(@"We already have this masternodeList %@ (%u)", blockHashData.reverse.hexString, [self heightForBlockHash:blockHash]);
     return [self.masternodeListsByBlockHash objectForKey:blockHashData] || [self.masternodeListsBlockHashStubs containsObject:blockHashData];
 }
 
@@ -546,13 +546,13 @@
     }];
 }
 
-- (DSSimplifiedMasternodeEntry * _Nullable)masternodeEntryWithProRegTxHash:(NSData *)proRegTxHash {
+- (DSSimplifiedMasternodeEntry *_Nullable)masternodeEntryWithProRegTxHash:(NSData *)proRegTxHash {
     NSParameterAssert(proRegTxHash);
     return [self.currentMasternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash objectForKey:proRegTxHash];
 }
 
 
-- (DSSimplifiedMasternodeEntry * _Nullable)masternodeEntryForLocation:(UInt128)IPAddress port:(uint16_t)port {
+- (DSSimplifiedMasternodeEntry *_Nullable)masternodeEntryForLocation:(UInt128)IPAddress port:(uint16_t)port {
     for (DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry in [self.currentMasternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allValues]) {
         if (uint128_eq(simplifiedMasternodeEntry.address, IPAddress) && simplifiedMasternodeEntry.port == port) {
             return simplifiedMasternodeEntry;

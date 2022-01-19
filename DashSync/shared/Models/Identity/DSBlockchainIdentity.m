@@ -1570,7 +1570,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                 query |= DSBlockchainIdentityQueryStep_ContactRequests;
             }
         }
-        [self fetchNetworkStateInformation:query inContext:context withCompletion:completion onCompletionQueue:completionQueue];
+        [self fetchNetworkStateInformation:query
+                                 inContext:context
+                            withCompletion:completion
+                         onCompletionQueue:completionQueue];
     });
 }
 
@@ -1706,7 +1709,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                 }
                 return;
             }
-            [self fetchL3NetworkStateInformation:querySteps inContext:context withCompletion:completion onCompletionQueue:completionQueue];
+            [self fetchL3NetworkStateInformation:querySteps
+                                       inContext:context
+                                  withCompletion:completion
+                               onCompletionQueue:completionQueue];
         }];
     } else {
         NSAssert([self blockchainIdentityEntityInContext:context], @"Blockchain identity entity should be known");
@@ -1947,7 +1953,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                            if (!strongSelf) {
                                                return;
                                            }
-                                           [strongContract setContractState:DPContractState_Registering inContext:context];
+                                           [strongContract setContractState:DPContractState_Registering
+                                                                  inContext:context];
                                            [strongSelf monitorForContract:strongContract
                                                            withRetryCount:2
                                                                 inContext:context
@@ -1961,7 +1968,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                            if (!strongContract) {
                                                return;
                                            }
-                                           [strongContract setContractState:DPContractState_Unknown inContext:context];
+                                           [strongContract setContractState:DPContractState_Unknown
+                                                                  inContext:context];
                                            __strong typeof(weakSelf) strongSelf = weakSelf;
                                            if (!strongSelf) {
                                                return;
@@ -2015,7 +2023,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                         if (!strongSelf) {
                             return;
                         }
-                        [strongContract setContractState:DPContractState_NotRegistered inContext:context];
+                        [strongContract setContractState:DPContractState_NotRegistered
+                                               inContext:context];
                     }
                 }];
         }
@@ -2645,7 +2654,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                         default:
                             break;
                     }
-                    [self monitorForBlockchainIdentityWithRetryCount:retryCount - 1 retryAbsentCount:nextRetryAbsentCount delay:nextDelay retryDelayType:retryDelayType options:options inContext:context completion:completion];
+                    [self monitorForBlockchainIdentityWithRetryCount:retryCount - 1
+                                                    retryAbsentCount:nextRetryAbsentCount
+                                                               delay:nextDelay
+                                                      retryDelayType:retryDelayType
+                                                             options:options
+                                                           inContext:context
+                                                          completion:completion];
                 });
             } else {
                 completion(NO, NO, error);
@@ -2771,7 +2786,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                     if (!strongSelf) {
                         return;
                     }
-                    [strongSelf monitorForDPNSUsernames:usernames inDomain:domain withRetryCount:retryCount - 1 inContext:context completion:completion onCompletionQueue:completionQueue];
+                    [strongSelf monitorForDPNSUsernames:usernames
+                                               inDomain:domain
+                                         withRetryCount:retryCount - 1
+                                              inContext:context
+                                             completion:completion
+                                      onCompletionQueue:completionQueue];
                 });
             } else {
                 dispatch_async(completionQueue, ^{
@@ -2863,7 +2883,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                         }
                         return;
                     }
-                    [strongSelf monitorForDPNSPreorderSaltedDomainHashes:saltedDomainHashes withRetryCount:retryCount - 1 inContext:context completion:completion onCompletionQueue:completionQueue];
+                    [strongSelf monitorForDPNSPreorderSaltedDomainHashes:saltedDomainHashes
+                                                          withRetryCount:retryCount - 1
+                                                               inContext:context
+                                                              completion:completion
+                                                       onCompletionQueue:completionQueue];
                 });
             } else {
                 if (completion) {
@@ -2926,7 +2950,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                         }
                         return;
                     }
-                    [strongSelf monitorForContract:contract withRetryCount:retryCount - 1 inContext:context completion:completion];
+                    [strongSelf monitorForContract:contract
+                                    withRetryCount:retryCount - 1
+                                         inContext:context
+                                        completion:completion];
                 });
             } else {
                 if (completion) {
@@ -3132,7 +3159,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                                                      }
                                                                      return;
                                                                  }
-                                                                 [self sendNewFriendRequestMatchingPotentialFriendship:potentialFriendship inContext:context completion:completion onCompletionQueue:completionQueue];
+                                                                 [self sendNewFriendRequestMatchingPotentialFriendship:potentialFriendship
+                                                                                                             inContext:context
+                                                                                                            completion:completion
+                                                                                                     onCompletionQueue:completionQueue];
                                                              }];
                                                          }];
                                                      }
@@ -3189,7 +3219,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             } else {
                 potentialContactBlockchainIdentity = [self.identitiesManager foreignBlockchainIdentityWithUniqueId:blockchainIdentityContactUniqueId createIfMissing:YES inContext:self.platformContext];
             }
-            [potentialContactBlockchainIdentity applyIdentityDictionary:blockchainIdentityDictionary version:[version intValue] save:YES inContext:self.platformContext];
+            [potentialContactBlockchainIdentity applyIdentityDictionary:blockchainIdentityDictionary
+                                                                version:[version intValue]
+                                                                   save:YES
+                                                              inContext:self.platformContext];
             [potentialContactBlockchainIdentity saveInContext:self.platformContext];
 
             [self sendNewFriendRequestToBlockchainIdentity:potentialContactBlockchainIdentity completion:completion];
@@ -3366,7 +3399,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                     }
                     return;
                 }
-                [self sendNewFriendRequestMatchingPotentialFriendship:potentialFriendship inContext:friendRequest.managedObjectContext completion:completion onCompletionQueue:completionQueue];
+                [self sendNewFriendRequestMatchingPotentialFriendship:potentialFriendship
+                                                            inContext:friendRequest.managedObjectContext
+                                                           completion:completion
+                                                    onCompletionQueue:completionQueue];
             }];
         } else {
             if (completion) {
@@ -3768,7 +3804,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                          return;
                                      }
 
-                                     [strongSelf fetchOutgoingContactRequestsInContext:context withCompletion:completion onCompletionQueue:completionQueue];
+                                     [strongSelf fetchOutgoingContactRequestsInContext:context
+                                                                        withCompletion:completion
+                                                                     onCompletionQueue:completionQueue];
                                  }
                               onCompletionQueue:self.identityQueue];
 }
@@ -4189,7 +4227,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                     [matchingDashpayUserInContext addFriendsObject:friendRequest.sourceContact];
                                 }
 
-                                [account addIncomingDerivationPath:incomingFundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier inContext:context];
+                                [account addIncomingDerivationPath:incomingFundsDerivationPath
+                                           forFriendshipIdentifier:friendRequest.friendshipIdentifier
+                                                         inContext:context];
                                 [context ds_save];
                                 [self.chain.chainManager.transactionManager updateTransactionsBloomFilter];
                             } else {

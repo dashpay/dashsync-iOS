@@ -17,8 +17,8 @@
 
 #import "DSMnDiffProcessingResult.h"
 #import "DSMasternodeList+Mndiff.h"
-#import "DSSimplifiedMasternodeEntry+Mndiff.h"
 #import "DSQuorumEntry+Mndiff.h"
+#import "DSSimplifiedMasternodeEntry+Mndiff.h"
 
 @implementation DSMnDiffProcessingResult
 

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Vladimir Pirogov
 //  Copyright © 2021 Dash Core Group. All rights reserved.
 //
@@ -15,8 +15,8 @@
 //  limitations under the License.
 //
 
-#import "DSBlock.h"
 #import "DSBLSKey.h"
+#import "DSBlock.h"
 #import "DSChain+Protected.h"
 #import "DSInsightManager.h"
 #import "DSMasternodeDiffMessageContext.h"
@@ -76,14 +76,14 @@ bool shouldProcessQuorumType(uint8_t quorum_type, const void *context) {
 
 bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     uintptr_t count = data->count;
-    uint8_t (**items)[48] = data->items;
+    uint8_t(**items)[48] = data->items;
     NSMutableArray<DSBLSKey *> *publicKeyArray = [NSMutableArray array];
     for (NSUInteger i = 0; i < count; i++) {
         NSData *pkData = [NSData dataWithBytes:items[i] length:48];
         [publicKeyArray addObject:[DSBLSKey keyWithPublicKey:pkData.UInt384]];
     }
-    uint8_t (*all_commitment_aggregated_signature)[96] = data->all_commitment_aggregated_signature;
-    uint8_t (*commitment_hash)[32] = data->commitment_hash;
+    uint8_t(*all_commitment_aggregated_signature)[96] = data->all_commitment_aggregated_signature;
+    uint8_t(*commitment_hash)[32] = data->commitment_hash;
     UInt256 commitmentHash = [NSData dataWithBytes:commitment_hash length:32].UInt256;
     UInt768 allCommitmentAggregatedSignature = [NSData dataWithBytes:all_commitment_aggregated_signature length:96].UInt768;
     bool allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:commitmentHash signature:allCommitmentAggregatedSignature withPublicKeys:publicKeyArray];
@@ -91,8 +91,8 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
         return false;
     }
     //The sig must validate against the commitmentHash and all public keys determined by the signers bitvector. This is an aggregated BLS signature verification.
-    uint8_t (*quorum_threshold_signature)[96] = data->quorum_threshold_signature;
-    uint8_t (*quorum_public_key)[48] = data->quorum_public_key;
+    uint8_t(*quorum_threshold_signature)[96] = data->quorum_threshold_signature;
+    uint8_t(*quorum_public_key)[48] = data->quorum_public_key;
     UInt768 quorumThresholdSignature = [NSData dataWithBytes:quorum_threshold_signature length:96].UInt768;
     UInt384 quorumPublicKey = [NSData dataWithBytes:quorum_public_key length:48].UInt384;
     bool quorumSignatureValidated = [DSBLSKey verify:commitmentHash signature:quorumThresholdSignature withPublicKey:quorumPublicKey];
@@ -338,7 +338,6 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     DSMnDiffProcessingResult *processingResult = [DSMnDiffProcessingResult processingResultWith:result onChain:chain];
     mndiff_destroy(result);
     completion(processingResult);
-
 }
 
 

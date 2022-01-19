@@ -543,7 +543,8 @@
                 }
             }
         }
-        [rootElementsToProve setObject:identitiesRoot forKey:@(DSPlatformDictionary_Identities)];
+        [rootElementsToProve setObject:identitiesRoot
+                                forKey:@(DSPlatformDictionary_Identities)];
     }
 
     if (proofs.publicKeyHashesToIdentityIdsProof.length > 0) {
@@ -552,7 +553,8 @@
         if (*error) {
             return nil;
         }
-        [rootElementsToProve setObject:publicKeyHashesToIdentityIdsRoot forKey:@(DSPlatformDictionary_PublicKeyHashesToIdentityIds)];
+        [rootElementsToProve setObject:publicKeyHashesToIdentityIdsRoot
+                                forKey:@(DSPlatformDictionary_PublicKeyHashesToIdentityIds)];
     }
 
     if (proofs.documentsProof.length > 0) {
@@ -561,7 +563,8 @@
         if (*error) {
             return nil;
         }
-        [rootElementsToProve setObject:documentsRoot forKey:@(DSPlatformDictionary_Documents)];
+        [rootElementsToProve setObject:documentsRoot
+                                forKey:@(DSPlatformDictionary_Documents)];
     }
 
     if (proofs.dataContractsProof.length > 0) {
@@ -570,7 +573,8 @@
         if (*error) {
             return nil;
         }
-        [rootElementsToProve setObject:contractsRoot forKey:@(DSPlatformDictionary_Contracts)];
+        [rootElementsToProve setObject:contractsRoot
+                                forKey:@(DSPlatformDictionary_Contracts)];
     }
 
     DSPlatformRootMerkleTree *merkleTree = [DSPlatformRootMerkleTree merkleTreeWithElementsToProve:rootElementsToProve proofData:proof.rootTreeProof hashFunction:DSMerkleTreeHashFunction_BLAKE3 fixedElementCount:6];
