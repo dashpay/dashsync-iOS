@@ -74,7 +74,8 @@
     if (!(self = [super init])) return nil;
     _chain = chain;
     self.store = [[DSMasternodeListStore alloc] initWithChain:chain];
-    self.service = [[DSMasternodeListService alloc] initWithChain:chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
+    self.service = [[DSMasternodeListService alloc] initWithChain:chain
+                                                blockHeightLookup:^uint32_t(UInt256 blockHash) {
         return [self heightForBlockHash:blockHash];
     }];
     _timedOutAttempt = 0;
@@ -183,10 +184,12 @@
     DSCheckpoint *checkpoint = [self.chain lastCheckpointHavingMasternodeList];
     if (!checkpoint ||
         self.chain.lastTerminalBlockHeight < checkpoint.height ||
-        [self masternodeListForBlockHash:checkpoint.blockHash withBlockHeightLookup:nil]) {
+        [self masternodeListForBlockHash:checkpoint.blockHash
+                   withBlockHeightLookup:nil]) {
         return;
     }
-    [self processRequestFromFileForBlockHash:checkpoint.blockHash completion:^(DSMasternodeList *masternodeList) {
+    [self processRequestFromFileForBlockHash:checkpoint.blockHash
+                                  completion:^(DSMasternodeList *masternodeList) {
         if (masternodeList) {
             self.currentMasternodeList = masternodeList;
         }
@@ -261,7 +264,8 @@
                 //there is the rare possibility we have the masternode list as a checkpoint, so lets first try that
                 NSUInteger pos = [list indexOfObject:blockHashData];
                 UInt256 blockHash = blockHashData.UInt256;
-                [self processRequestFromFileForBlockHash:blockHash completion:^(DSMasternodeList * masternodeList) {
+                [self processRequestFromFileForBlockHash:blockHash
+                                              completion:^(DSMasternodeList *masternodeList) {
                     if (masternodeList) {
                         if (!KEEP_OLD_QUORUMS && uint256_eq(self.store.lastQueriedBlockHash, masternodeList.blockHash)) {
                             [self.store removeOldMasternodeLists];
