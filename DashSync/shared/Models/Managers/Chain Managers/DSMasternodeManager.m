@@ -32,7 +32,7 @@
 #import "DSMasternodeManager+Mndiff.h"
 #import "DSMasternodeListService.h"
 #import "DSMasternodeListStore.h"
-#import "DSMasternodeStore+Protected.h"
+#import "DSMasternodeListStore+Protected.h"
 #import "DSMerkleBlock.h"
 #import "DSMnDiffProcessingResult.h"
 #import "DSOptionsManager.h"
