@@ -374,8 +374,8 @@
                     useInsightAsBackup:NO
                             completion:^(DSMnDiffProcessingResult *result) {
         if (![result isValid]) {
-            completion(nil);
             DSLog(@"Invalid File for block at height %u with merkleRoot %@", block.height, uint256_hex(block.merkleRoot));
+            completion(nil);
             return;
         }
         //valid Coinbase might be false if no merkle block
