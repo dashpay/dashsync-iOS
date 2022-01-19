@@ -2580,23 +2580,22 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                 if (completion) {
                     if (options & DSBlockchainIdentityMonitorOptions_AcceptNotFoundAsNotAnError) {
                         completion(YES, NO, nil);
-						return;
+                        return;
                     } else {
                         completion(NO, NO, [NSError errorWithDomain:@"DashSync"
                                                                code:500
                                                            userInfo:@{NSLocalizedDescriptionKey:
                                                                         DSLocalizedString(@"Platform returned no identity when one was expected", nil)}]);
-						return;
+                        return;
                     }
                 }
             }
-			
-			if(![versionedIdentityDictionary respondsToSelector:@selector(objectForKey:)])
-			{
-				completion(YES, NO, nil);
-				return;
-			}
-		
+        
+            if(![versionedIdentityDictionary respondsToSelector:@selector(objectForKey:)]) {
+                completion(YES, NO, nil);
+                return;
+            }
+        
             NSNumber *version = [versionedIdentityDictionary objectForKey:@(DSPlatformStoredMessage_Version)];
             NSDictionary *identityDictionary = [versionedIdentityDictionary objectForKey:@(DSPlatformStoredMessage_Item)];
             if (!identityDictionary) {

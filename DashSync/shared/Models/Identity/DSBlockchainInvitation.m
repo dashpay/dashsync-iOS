@@ -53,7 +53,7 @@
     if (!(self = [super init])) return nil;
     self.wallet = wallet;
     self.isTransient = FALSE;
-	self.createdLocally = YES;
+    self.createdLocally = YES;
     self.identity = [[DSBlockchainIdentity alloc] initAtIndex:index inWallet:wallet];
     [self.identity setAssociatedInvitation:self];
     self.chain = wallet.chain;
