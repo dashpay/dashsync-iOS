@@ -543,6 +543,10 @@
 
 - (void)peer:(DSPeer *)peer relayedQuorumRotationInfoMessage:(NSData *)message {
     // TODO: implement strategy
+#if LOG_MASTERNODE_DIFF
+    DSFullLog(@"Logging qrinfo message %@", message.hexString);
+    DSLog(@"Logging qrinfo message hash %@", [NSData dataWithUInt256:message.SHA256].hexString);
+#endif
 }
 
 - (void)processMasternodeDiffMessage:(NSData *)message baseMasternodeList:(DSMasternodeList *)baseMasternodeList lastBlock:(DSBlock *)lastBlock useInsightAsBackup:(BOOL)useInsightAsBackup completion:(void (^)(DSMnDiffProcessingResult *result))completion {
