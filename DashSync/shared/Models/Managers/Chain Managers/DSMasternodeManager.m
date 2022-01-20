@@ -503,7 +503,29 @@
                 [neededMasternodeLists addObject:blockHashData]; //also get the current one again
                 [self getMasternodeListsForBlockHashes:neededMasternodeLists];
             } else {
-                [self processValidMasternodeList:masternodeList havingAddedMasternodes:result.addedMasternodes modifiedMasternodes:result.modifiedMasternodes addedQuorums:result.addedQuorums];
+                UInt256 blockHash = masternodeList.blockHash;
+                if (uint256_eq(self.store.lastQueriedBlockHash, blockHash)) {
+                    self.currentMasternodeList = masternodeList;
+                }
+                if (uint256_eq(self.store.masternodeListAwaitingQuorumValidation.blockHash, blockHash)) {
+                    self.store.masternodeListAwaitingQuorumValidation = nil;
+                }
+                [self.store saveMasternodeList:masternodeList
+                              addedMasternodes:result.addedMasternodes
+                           modifiedMasternodes:result.modifiedMasternodes
+                                  addedQuorums:result.addedQuorums
+                                    completion:^(NSError *error) {
+                    if (!error || !self.masternodeListRetrievalQueueCount) { //if it is 0 then we most likely have wiped chain info
+                        return;
+                    }
+                    [self wipeMasternodeInfo];
+                    dispatch_async(self.chain.networkingQueue, ^{
+                        [self getCurrentMasternodeListWithSafetyDelay:0];
+                    });
+                }];
+                if (!KEEP_OLD_QUORUMS && uint256_eq(self.store.lastQueriedBlockHash, blockHash)) {
+                    [self.store removeOldMasternodeLists];
+                }
                 self.store.processingMasternodeListDiffHashes = nil;
                 [self.service.retrievalQueue removeObject:masternodeListBlockHashData];
                 [self dequeueMasternodeListRequest];
@@ -551,32 +573,6 @@
         return [self heightForBlockHash:blockHash];
     }];
     [DSMasternodeManager processQRInfoMessage:message baseBlockHashesCount:baseBlockHashesCount withContext:mndiffContext completion:completion];
-}
-
-- (void)processValidMasternodeList:(DSMasternodeList *)masternodeList havingAddedMasternodes:(NSDictionary *)addedMasternodes modifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums {
-    UInt256 blockHash = masternodeList.blockHash;
-    if (uint256_eq(self.store.lastQueriedBlockHash, blockHash)) {
-        self.currentMasternodeList = masternodeList;
-    }
-    if (uint256_eq(self.store.masternodeListAwaitingQuorumValidation.blockHash, blockHash)) {
-        self.store.masternodeListAwaitingQuorumValidation = nil;
-    }
-    [self.store saveMasternodeList:masternodeList
-                  addedMasternodes:addedMasternodes
-               modifiedMasternodes:modifiedMasternodes
-                      addedQuorums:addedQuorums
-                        completion:^(NSError *error) {
-        if (!error || !self.masternodeListRetrievalQueueCount) { //if it is 0 then we most likely have wiped chain info
-            return;
-        }
-        [self wipeMasternodeInfo];
-        dispatch_async(self.chain.networkingQueue, ^{
-            [self getCurrentMasternodeListWithSafetyDelay:0];
-        });
-    }];
-    if (!KEEP_OLD_QUORUMS && uint256_eq(self.store.lastQueriedBlockHash, blockHash)) {
-        [self.store removeOldMasternodeLists];
-    }
 }
 
 - (BOOL)hasMasternodeListCurrentlyBeingSaved {
