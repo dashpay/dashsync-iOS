@@ -564,21 +564,6 @@
     [DSMasternodeManager processMasternodeDiffMessage:message withContext:mndiffContext completion:completion];
 }
 
-- (void)processQRInfoMessage:(NSData *)message baseBlockHashesCount:(uint32_t)baseBlockHashesCount baseMasternodeList:(DSMasternodeList *)baseMasternodeList lastBlock:(DSBlock *)lastBlock useInsightAsBackup:(BOOL)useInsightAsBackup completion:(void (^)(DSMnDiffProcessingResult *result))completion {
-    DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
-    [mndiffContext setBaseMasternodeList:baseMasternodeList];
-    [mndiffContext setLastBlock:(DSMerkleBlock *)lastBlock];
-    [mndiffContext setUseInsightAsBackup:useInsightAsBackup];
-    [mndiffContext setChain:self.chain];
-    [mndiffContext setMasternodeListLookup:^DSMasternodeList *(UInt256 blockHash) {
-        return [self masternodeListForBlockHash:blockHash withBlockHeightLookup:nil];
-    }];
-    [mndiffContext setBlockHeightLookup:^uint32_t(UInt256 blockHash) {
-        return [self heightForBlockHash:blockHash];
-    }];
-    [DSMasternodeManager processQRInfoMessage:message baseBlockHashesCount:baseBlockHashesCount withContext:mndiffContext completion:completion];
-}
-
 - (BOOL)hasMasternodeListCurrentlyBeingSaved {
     return [self.store hasMasternodeListCurrentlyBeingSaved];
 }

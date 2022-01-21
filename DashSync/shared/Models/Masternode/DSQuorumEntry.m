@@ -22,7 +22,6 @@
 
 @property (nonatomic, assign) uint16_t version;
 @property (nonatomic, assign) UInt256 quorumHash;
-@property (nonatomic, assign) uint32_t quorumIndex;
 @property (nonatomic, assign) UInt384 quorumPublicKey;
 @property (nonatomic, assign) UInt768 quorumThresholdSignature;
 @property (nonatomic, assign) UInt256 quorumVerificationVectorHash;
@@ -52,7 +51,6 @@
     // Set primitives
     [copy setVersion:self.version];
     [copy setQuorumHash:self.quorumHash];
-    [copy setQuorumIndex:self.quorumIndex];
     [copy setQuorumPublicKey:self.quorumPublicKey];
     [copy setQuorumThresholdSignature:self.quorumThresholdSignature];
     [copy setQuorumVerificationVectorHash:self.quorumVerificationVectorHash];
@@ -69,13 +67,12 @@
     return copy;
 }
 
-- (instancetype)initWithVersion:(uint16_t)version type:(DSLLMQType)type quorumHash:(UInt256)quorumHash quorumIndex:(uint32_t)quorumIndex quorumPublicKey:(UInt384)quorumPublicKey quorumEntryHash:(UInt256)quorumEntryHash verified:(BOOL)verified onChain:(DSChain *)chain {
+- (instancetype)initWithVersion:(uint16_t)version type:(DSLLMQType)type quorumHash:(UInt256)quorumHash quorumPublicKey:(UInt384)quorumPublicKey quorumEntryHash:(UInt256)quorumEntryHash verified:(BOOL)verified onChain:(DSChain *)chain {
     if (!(self = [super init])) return nil;
 
     self.llmqType = type;
     self.version = version;
     self.quorumHash = quorumHash;
-    self.quorumIndex = quorumIndex;
     self.quorumPublicKey = quorumPublicKey;
     self.quorumEntryHash = quorumEntryHash;
     self.verified = verified;
@@ -98,7 +95,6 @@
     self.quorumPublicKey = *((UInt384 *)entry->quorum_public_key);
     self.quorumThresholdSignature = *((UInt768 *)entry->quorum_threshold_signature);
     self.quorumVerificationVectorHash = *((UInt256 *)entry->quorum_verification_vector_hash);
-    self.quorumIndex = entry->quorum_index;
     self.saved = entry->saved;
     self.signersBitset = [NSData dataWithBytes:entry->signers_bitset length:entry->signers_bitset_length];
     self.signersCount = (uint32_t)entry->signers_count;
@@ -115,8 +111,6 @@
     [data appendUInt16:self.version];
     [data appendUInt8:self.llmqType];
     [data appendUInt256:self.quorumHash];
-    if (self.version == QUORUM_INDEXED_VERSION)
-        [data appendUInt32:self.quorumIndex];
     [data appendVarInt:self.signersCount];
     [data appendData:self.signersBitset];
     [data appendVarInt:self.validMembersCount];
@@ -140,8 +134,6 @@
     NSMutableData *data = [NSMutableData data];
     [data appendVarInt:self.llmqType];
     [data appendUInt256:self.quorumHash];
-    if (self.version == QUORUM_INDEXED_VERSION)
-        [data appendUInt32:self.quorumIndex];
     [data appendVarInt:self.validMembersCount];
     [data appendData:self.validMembersBitset];
     [data appendUInt384:self.quorumPublicKey];

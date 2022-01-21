@@ -326,19 +326,4 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     completion(processingResult);
 }
 
-+ (void)processQRInfoMessage:(NSData *)message baseBlockHashesCount:(uint32_t)baseBlockHashesCount withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion {
-    DSChain *chain = context.chain;
-    DSMasternodeList *baseMasternodeList = context.baseMasternodeList;
-    UInt256 merkleRoot = context.lastBlock.merkleRoot;
-    MasternodeList *base_masternode_list = [DSMasternodeManager wrapMasternodeList:baseMasternodeList];
-
-    MndiffResult *result = qrinfo_process(message.bytes, message.length, uint256_data(merkleRoot).bytes, baseBlockHashesCount, base_masternode_list, masternodeListLookupCallback, masternodeListDestroyCallback, context.useInsightAsBackup, addInsightLookup, shouldProcessQuorumType, validateQuorumCallback, blockHeightListLookupCallback, (__bridge void *)(context));
-
-    [DSMasternodeManager freeMasternodeList:base_masternode_list];
-    DSMnDiffProcessingResult *processingResult = [DSMnDiffProcessingResult processingResultWith:result onChain:chain];
-    mndiff_destroy(result);
-    completion(processingResult);
-}
-
-
 @end

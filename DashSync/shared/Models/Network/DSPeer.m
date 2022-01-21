@@ -744,22 +744,6 @@
     [self sendMessage:msg type:MSG_GETMNLISTDIFF];
 }
 
-- (void)sendGetQuorumRotationInfoForBaseBlockHashes:(NSArray<NSData *> *)baseBlockHashes forBlockHash:(UInt256)blockHash extraShare:(BOOL)extraShare {
-    NSMutableData *msg = [NSMutableData data];
-    // Number of masternode lists the light client knows
-    [msg appendUInt32:(uint32_t)baseBlockHashes.count];
-    // The base block hashes of the masternode lists the light client knows
-    for (NSData *baseBlockHash in baseBlockHashes) {
-        [msg appendUInt256:baseBlockHash.UInt256];
-    }
-    // Hash of the height the client requests
-    [msg appendUInt256:blockHash];
-    // Flag to indicate if an extra share is requested
-    [msg appendUInt8:extraShare];
-    [self sendMessage:msg type:MSG_GETQUORUMROTATIONINFO];
-}
-
-
 - (void)sendGetdataMessageWithGovernanceObjectHashes:(NSArray<NSData *> *)governanceObjectHashes {
     if (governanceObjectHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
         DSLog(@"%@:%u couldn't send governance getdata, %u is too many items, max is %u", self.host, self.port,
@@ -981,8 +965,6 @@
         [self acceptMNBMessage:message];
     else if ([MSG_MNLISTDIFF isEqual:type])
         [self acceptMNLISTDIFFMessage:message];
-    else if ([MSG_QUORUMROTATIONINFO isEqual:type])
-        [self acceptQRInfoMessage:message];
     //governance
     else if ([MSG_GOVOBJVOTE isEqual:type])
         [self acceptGovObjectVoteMessage:message];
@@ -1902,10 +1884,6 @@
 
 - (void)acceptMNLISTDIFFMessage:(NSData *)message {
     [self.masternodeDelegate peer:self relayedMasternodeDiffMessage:message];
-}
-
-- (void)acceptQRInfoMessage:(NSData *)message {
-    [self.masternodeDelegate peer:self relayedQuorumRotationInfoMessage:message];
 }
 
 

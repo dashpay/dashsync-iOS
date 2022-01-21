@@ -588,11 +588,12 @@ static dispatch_once_t devnetToken = 0;
 }
 
 - (BOOL)hasDIP0024Enabled {
+    return false;
     // TODO: make this blockHeight dependent
-    switch ([self chainType]) {
-        case DSChainType_DevNet: return true;
-        default: return false;
-    }
+    //    switch ([self chainType]) {
+    //        case DSChainType_DevNet: return true;
+    //        default: return false;
+    //    }
 }
 
 

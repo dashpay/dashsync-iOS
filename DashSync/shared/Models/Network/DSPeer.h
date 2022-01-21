@@ -123,8 +123,6 @@ typedef NS_ENUM(uint32_t, DSInvType)
 #define MSG_SSC @"ssc"
 #define MSG_GETMNLISTDIFF @"getmnlistd"
 #define MSG_MNLISTDIFF @"mnlistdiff"
-#define MSG_QUORUMROTATIONINFO @"qrinfo"
-#define MSG_GETQUORUMROTATIONINFO @"getqrinfo"
 
 //Governance
 
@@ -233,7 +231,6 @@ typedef void (^MempoolCompletionBlock)(BOOL success, BOOL needed, BOOL interrupt
 @protocol DSPeerMasternodeDelegate <NSObject>
 @required
 
-- (void)peer:(DSPeer *)peer relayedQuorumRotationInfoMessage:(NSData *)quorumRotationInfoMessage;
 - (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData *)masternodeDiffMessage;
 
 @end
@@ -321,7 +318,6 @@ typedef NS_ENUM(NSUInteger, DSPeerType)
 - (void)sendGetdataMessageWithGovernanceObjectHashes:(NSArray<NSData *> *)governanceObjectHashes;
 - (void)sendGetdataMessageWithGovernanceVoteHashes:(NSArray<NSData *> *)governanceVoteHashes;
 - (void)sendGetMasternodeListFromPreviousBlockHash:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash;
-- (void)sendGetQuorumRotationInfoForBaseBlockHashes:(NSArray<NSData *> *)baseBlockHashes forBlockHash:(UInt256)blockHash extraShare:(BOOL)extraShare;
 - (void)sendGetaddrMessage;
 - (void)sendGovSync;
 - (void)sendGovSync:(UInt256)h;
