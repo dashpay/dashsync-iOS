@@ -2599,12 +2599,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                     }
                 }
             }
-        
-            if(![versionedIdentityDictionary respondsToSelector:@selector(objectForKey:)]) {
+
+            if (![versionedIdentityDictionary respondsToSelector:@selector(objectForKey:)]) {
                 completion(YES, NO, nil);
                 return;
             }
-        
+
             NSNumber *version = [versionedIdentityDictionary objectForKey:@(DSPlatformStoredMessage_Version)];
             NSDictionary *identityDictionary = [versionedIdentityDictionary objectForKey:@(DSPlatformStoredMessage_Item)];
             if (!identityDictionary) {
