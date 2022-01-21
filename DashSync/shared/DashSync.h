@@ -48,6 +48,7 @@
 #import "DSGovernanceVote.h"
 #import "DSIdentitiesManager.h"
 #import "DSInsightManager.h"
+#import "DSMasternodeListStore.h"
 #import "DSMasternodeManager.h"
 #import "DSPriceManager.h"
 #import "DSShapeshiftManager.h"

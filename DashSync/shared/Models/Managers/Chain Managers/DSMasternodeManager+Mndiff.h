@@ -19,6 +19,7 @@
 #import "DSMasternodeDiffMessageContext.h"
 #import "DSMasternodeList.h"
 #import "DSMasternodeManager.h"
+#import "DSMnDiffProcessingResult.h"
 #import "DSQuorumEntry.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "dash_shared_core.h"
@@ -45,7 +46,8 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context);
 + (QuorumEntry *)wrapQuorumEntry:(DSQuorumEntry *)entry;
 + (void)freeQuorumEntry:(QuorumEntry *)entry;
 
-+ (void)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *masternodeList, NSDictionary *addedMasternodes, NSDictionary *modifiedMasternodes, NSDictionary *addedQuorums, NSOrderedSet *neededMissingMasternodeLists))completion;
++ (void)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion;
++ (void)processQRInfoMessage:(NSData *)message baseBlockHashesCount:(uint32_t)baseBlockHashesCount withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion;
 
 @end
 

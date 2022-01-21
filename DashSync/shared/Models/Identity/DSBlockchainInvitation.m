@@ -128,7 +128,8 @@
                                                           completion(NO);
                                                           return;
                                                       }
-                                                      [derivationPathInvitationFunding generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.wallet.uniqueIDString];
+                                                      [derivationPathInvitationFunding generateExtendedPublicKeyFromSeed:seed
+                                                                                                storeUnderWalletUniqueId:self.wallet.uniqueIDString];
                                                       completion(YES);
                                                   }];
 }

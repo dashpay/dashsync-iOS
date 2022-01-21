@@ -627,7 +627,10 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                 }
                 return;
             }
-            [self getIdentityById:ownerIdData completionQueue:completionQueue success:success failure:failure];
+            [self getIdentityById:ownerIdData
+                  completionQueue:completionQueue
+                          success:success
+                          failure:failure];
         } else {
             //no identity
             success(nil);

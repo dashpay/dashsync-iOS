@@ -248,7 +248,8 @@ CFAllocatorRef SecureAllocator() {
         [self appendBytes:&header length:sizeof(header)];
         [self appendBytes:&payload length:sizeof(payload)];
     }
-    [self appendBytes:message.UTF8String length:l];
+    [self appendBytes:message.UTF8String
+               length:l];
     return self;
 }
 

@@ -507,7 +507,8 @@
         return;
     }
 
-    [req setValue:[NSString stringWithFormat:@"application/%@-payment", scheme] forHTTPHeaderField:@"Content-Type"];
+    [req setValue:[NSString stringWithFormat:@"application/%@-payment", scheme]
+        forHTTPHeaderField:@"Content-Type"];
     [req addValue:[NSString stringWithFormat:@"application/%@-paymentack", scheme] forHTTPHeaderField:@"Accept"];
     req.HTTPMethod = @"POST";
     req.HTTPBody = payment.data;

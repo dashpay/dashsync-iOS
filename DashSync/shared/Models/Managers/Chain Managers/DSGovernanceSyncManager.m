@@ -175,7 +175,8 @@
         if (![vote isValid]) continue;
         [voteHashes addObject:uint256_obj(vote.governanceVoteHash)];
     }
-    [self.peerManager.downloadPeer sendInvMessageForHashes:voteHashes ofType:DSInvType_GovernanceObjectVote];
+    [self.peerManager.downloadPeer sendInvMessageForHashes:voteHashes
+                                                    ofType:DSInvType_GovernanceObjectVote];
 }
 
 // MARK:- Control

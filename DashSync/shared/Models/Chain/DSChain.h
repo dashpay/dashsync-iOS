@@ -64,6 +64,7 @@ typedef NS_ENUM(uint16_t, DSLLMQType)
     DSLLMQType_400_60 = 2, //288 blocks
     DSLLMQType_400_85 = 3, //576 blocks
     DSLLMQType_100_67 = 4, //every 24 blocks
+    DSLLMQType_60_80 = 5,
     DSLLMQType_5_60 = 100, //24 blocks
     DSLLMQType_10_60 = 101 //24 blocks
 };
@@ -494,7 +495,7 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 - (BOOL)isDevnetAny;
 - (BOOL)isEvolutionEnabled;
 - (BOOL)isDevnetWithGenesisHash:(UInt256)genesisHash;
-
+- (BOOL)hasDIP0024Enabled;
 @end
 
 @protocol DSChainTransactionsDelegate

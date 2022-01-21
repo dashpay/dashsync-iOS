@@ -47,4 +47,14 @@
     return [NSMutableArray secureArrayWithArray:self];
 }
 
+
+- (NSArray *)map:(id (^)(id obj))block {
+    NSParameterAssert(block != nil);
+    NSMutableArray *result = [NSMutableArray arrayWithCapacity:self.count];
+    [self enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        [result addObject:block(obj) ?: [NSNull null]];
+    }];
+    return result;
+}
+
 @end

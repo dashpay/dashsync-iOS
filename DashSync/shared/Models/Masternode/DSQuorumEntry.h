@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) uint16_t version;
 @property (nonatomic, readonly) UInt256 quorumHash;
+@property (nonatomic, readonly) uint32_t quorumIndex;
 @property (nonatomic, readonly) UInt256 llmqQuorumHash;
 @property (nonatomic, readonly) UInt384 quorumPublicKey;
 @property (nonatomic, readonly) UInt768 quorumThresholdSignature;
@@ -36,11 +37,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) BOOL verified;
 @property (nonatomic, assign) BOOL saved;
 
-- (instancetype)initWithVersion:(uint16_t)version type:(DSLLMQType)type quorumHash:(UInt256)quorumHash quorumPublicKey:(UInt384)quorumPublicKey quorumEntryHash:(UInt256)commitmentHash verified:(BOOL)verified onChain:(DSChain *)chain;
+- (instancetype)initWithVersion:(uint16_t)version type:(DSLLMQType)type quorumHash:(UInt256)quorumHash quorumIndex:(uint32_t)quorumIndex quorumPublicKey:(UInt384)quorumPublicKey quorumEntryHash:(UInt256)commitmentHash verified:(BOOL)verified onChain:(DSChain *)chain;
 - (instancetype)initWithEntry:(QuorumEntry *)entry onChain:(DSChain *)chain;
 
 - (BOOL)validateWithMasternodeList:(DSMasternodeList *)masternodeList;
-- (BOOL)validateWithMasternodeList:(DSMasternodeList *)masternodeList blockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup;
+- (BOOL)validateWithMasternodeList:(DSMasternodeList *)masternodeList blockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 
 - (DSQuorumEntryEntity *)matchingQuorumEntryEntityInContext:(NSManagedObjectContext *)context;
 

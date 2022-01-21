@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Vladimir Pirogov
 //  Copyright © 2021 Dash Core Group. All rights reserved.
 //
@@ -15,16 +15,16 @@
 //  limitations under the License.
 //
 
-#import "DSBlock.h"
 #import "DSBLSKey.h"
+#import "DSBlock.h"
 #import "DSChain+Protected.h"
 #import "DSInsightManager.h"
 #import "DSMasternodeDiffMessageContext.h"
 #import "DSMasternodeList+Mndiff.h"
 #import "DSMasternodeManager+Mndiff.h"
 #import "DSMerkleBlock.h"
-#import "DSSimplifiedMasternodeEntry+Mndiff.h"
 #import "DSQuorumEntry+Mndiff.h"
+#import "DSSimplifiedMasternodeEntry+Mndiff.h"
 #import "NSData+Dash.h"
 
 @implementation DSMasternodeManager (Mndiff)
@@ -76,14 +76,14 @@ bool shouldProcessQuorumType(uint8_t quorum_type, const void *context) {
 
 bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     uintptr_t count = data->count;
-    uint8_t (**items)[48] = data->items;
+    uint8_t(**items)[48] = data->items;
     NSMutableArray<DSBLSKey *> *publicKeyArray = [NSMutableArray array];
     for (NSUInteger i = 0; i < count; i++) {
         NSData *pkData = [NSData dataWithBytes:items[i] length:48];
         [publicKeyArray addObject:[DSBLSKey keyWithPublicKey:pkData.UInt384]];
     }
-    uint8_t (*all_commitment_aggregated_signature)[96] = data->all_commitment_aggregated_signature;
-    uint8_t (*commitment_hash)[32] = data->commitment_hash;
+    uint8_t(*all_commitment_aggregated_signature)[96] = data->all_commitment_aggregated_signature;
+    uint8_t(*commitment_hash)[32] = data->commitment_hash;
     UInt256 commitmentHash = [NSData dataWithBytes:commitment_hash length:32].UInt256;
     UInt768 allCommitmentAggregatedSignature = [NSData dataWithBytes:all_commitment_aggregated_signature length:96].UInt768;
     bool allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:commitmentHash signature:allCommitmentAggregatedSignature withPublicKeys:publicKeyArray];
@@ -91,8 +91,8 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
         return false;
     }
     //The sig must validate against the commitmentHash and all public keys determined by the signers bitvector. This is an aggregated BLS signature verification.
-    uint8_t (*quorum_threshold_signature)[96] = data->quorum_threshold_signature;
-    uint8_t (*quorum_public_key)[48] = data->quorum_public_key;
+    uint8_t(*quorum_threshold_signature)[96] = data->quorum_threshold_signature;
+    uint8_t(*quorum_public_key)[48] = data->quorum_public_key;
     UInt768 quorumThresholdSignature = [NSData dataWithBytes:quorum_threshold_signature length:96].UInt768;
     UInt384 quorumPublicKey = [NSData dataWithBytes:quorum_public_key length:48].UInt384;
     bool quorumSignatureValidated = [DSBLSKey verify:commitmentHash signature:quorumThresholdSignature withPublicKey:quorumPublicKey];
@@ -312,34 +312,33 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     free(entry);
 }
 
-+ (void)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *masternodeList, NSDictionary *addedMasternodes, NSDictionary *modifiedMasternodes, NSDictionary *addedQuorums, NSOrderedSet *neededMissingMasternodeLists))completion {
++ (void)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion {
     DSChain *chain = context.chain;
     DSMasternodeList *baseMasternodeList = context.baseMasternodeList;
     UInt256 merkleRoot = context.lastBlock.merkleRoot;
     MasternodeList *base_masternode_list = [DSMasternodeManager wrapMasternodeList:baseMasternodeList];
-    
+
     MndiffResult *result = mndiff_process(message.bytes, message.length, base_masternode_list, masternodeListLookupCallback, masternodeListDestroyCallback, uint256_data(merkleRoot).bytes, context.useInsightAsBackup, addInsightLookup, shouldProcessQuorumType, validateQuorumCallback, blockHeightListLookupCallback, (__bridge void *)(context));
-    
+
     [DSMasternodeManager freeMasternodeList:base_masternode_list];
-    BOOL foundCoinbase = result->has_found_coinbase;
-    BOOL validCoinbase = result->has_valid_coinbase;
-    BOOL rootMNListValid = result->has_valid_mn_list_root;
-    BOOL rootQuorumListValid = result->has_valid_quorum_list_root;
-    BOOL validQuorums = result->has_valid_quorums;
-    MasternodeList *result_masternode_list = result->masternode_list;
-    DSMasternodeList *masternodeList = [DSMasternodeList masternodeListWith:result_masternode_list onChain:chain];
-    NSMutableDictionary *addedMasternodes = [DSSimplifiedMasternodeEntry simplifiedEntriesWith:result->added_masternodes count:result->added_masternodes_count onChain:chain];
-    NSMutableDictionary *modifiedMasternodes = [DSSimplifiedMasternodeEntry simplifiedEntriesWith:result->modified_masternodes count:result->modified_masternodes_count onChain:chain];
-    NSMutableDictionary *addedQuorums = [DSQuorumEntry entriesWith:result->added_quorum_type_maps count:result->added_quorum_type_maps_count onChain:chain];
-    uint8_t(**needed_masternode_lists)[32] = result->needed_masternode_lists;
-    uintptr_t needed_masternode_lists_count = result->needed_masternode_lists_count;
-    NSMutableOrderedSet *neededMissingMasternodeLists = [NSMutableOrderedSet orderedSetWithCapacity:needed_masternode_lists_count];
-    for (NSUInteger i = 0; i < needed_masternode_lists_count; i++) {
-        NSData *hash = [NSData dataWithBytes:needed_masternode_lists[i] length:32];
-        [neededMissingMasternodeLists addObject:hash];
-    }
+    DSMnDiffProcessingResult *processingResult = [DSMnDiffProcessingResult processingResultWith:result onChain:chain];
     mndiff_destroy(result);
-    completion(foundCoinbase, validCoinbase, rootMNListValid, rootQuorumListValid, validQuorums, masternodeList, addedMasternodes, modifiedMasternodes, addedQuorums, neededMissingMasternodeLists);
+    completion(processingResult);
 }
+
++ (void)processQRInfoMessage:(NSData *)message baseBlockHashesCount:(uint32_t)baseBlockHashesCount withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion {
+    DSChain *chain = context.chain;
+    DSMasternodeList *baseMasternodeList = context.baseMasternodeList;
+    UInt256 merkleRoot = context.lastBlock.merkleRoot;
+    MasternodeList *base_masternode_list = [DSMasternodeManager wrapMasternodeList:baseMasternodeList];
+
+    MndiffResult *result = qrinfo_process(message.bytes, message.length, uint256_data(merkleRoot).bytes, baseBlockHashesCount, base_masternode_list, masternodeListLookupCallback, masternodeListDestroyCallback, context.useInsightAsBackup, addInsightLookup, shouldProcessQuorumType, validateQuorumCallback, blockHeightListLookupCallback, (__bridge void *)(context));
+
+    [DSMasternodeManager freeMasternodeList:base_masternode_list];
+    DSMnDiffProcessingResult *processingResult = [DSMnDiffProcessingResult processingResultWith:result onChain:chain];
+    mndiff_destroy(result);
+    completion(processingResult);
+}
+
 
 @end

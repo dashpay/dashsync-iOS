@@ -24,4 +24,13 @@
     return CFBridgingRelease(CFArrayCreateMutableCopy(SecureAllocator(), 0, (CFArrayRef)array));
 }
 
+- (NSMutableArray *)map:(id (^)(id obj))block {
+    NSParameterAssert(block != nil);
+    NSMutableArray *result = [NSMutableArray arrayWithCapacity:self.count];
+    [self enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        [result addObject:block(obj) ?: [NSNull null]];
+    }];
+    return result;
+}
+
 @end
