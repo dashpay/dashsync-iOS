@@ -275,8 +275,8 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
 - (void)setInputDelegate:(nullable id<UITextInputDelegate>)inputDelegate {
 }
 
-- (UITextWritingDirection)baseWritingDirectionForPosition:(UITextPosition *)position inDirection:(UITextStorageDirection)direction {
-    return UITextWritingDirectionNatural;
+- (NSWritingDirection)baseWritingDirectionForPosition:(UITextPosition *)position inDirection:(UITextStorageDirection)direction {
+    return NSWritingDirectionNatural;
 }
 
 - (CGRect)caretRectForPosition:(UITextPosition *)position {
