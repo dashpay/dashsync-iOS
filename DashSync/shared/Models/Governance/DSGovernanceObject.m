@@ -112,7 +112,7 @@
     if (length - offset < 4) return nil;
     uint32_t revision = [message readUInt32AtOffset:&offset];
     if (length - offset < 8) return nil;
-    NSData *timestampData = [message readDataAtOffset:&offset ofLength:8];
+    NSData *timestampData = [message subdataWithRange:NSMakeRange(offset, 8)];
     uint64_t timestamp = [message readUInt64AtOffset:&offset];
     if (length - offset < 32) return nil;
     UInt256 collateralHash = [message readUInt256AtOffset:&offset];
@@ -141,14 +141,18 @@
         if (length - offset < 1) return nil;
         uint8_t sigscriptSize = [message readUInt8AtOffset:&offset];
         if (length - offset < sigscriptSize) return nil;
+        //NSData * sigscript = [message subdataWithRange:NSMakeRange(offset, sigscriptSize)];
+        offset += sigscriptSize;
         if (length - offset < 4) return nil;
-        __unused uint32_t sequenceNumber = [message readUInt32AtOffset:&offset];
+        //__unused uint32_t sequenceNumber = [message readUInt32AtOffset:&offset];
+        offset += 4;
     }
 
     if (length - offset < 1) return nil;
     uint8_t messageSignatureSize = [message readUInt8AtOffset:&offset];
     if (length - offset < messageSignatureSize) return nil;
-    NSData *messageSignature = [message readDataAtOffset:&offset ofLength:messageSignatureSize];
+    NSData *messageSignature = [message subdataWithRange:NSMakeRange(offset, messageSignatureSize)];
+    offset += messageSignatureSize;
 
     NSString *identifier = nil;
     uint64_t amount = 0;
@@ -198,9 +202,7 @@
 - (UInt256)governanceObjectHash {
     if (uint256_eq(_governanceObjectHash, UINT256_ZERO)) {
         NSTimeInterval timestamp = self.timestamp;
-        DSUTXO o;
-        o.hash = UINT256_ZERO;
-        o.n = 0;
+        DSUTXO o = (DSUTXO) {UINT256_ZERO, 0};
         _governanceObjectHash = [DSGovernanceObject hashWithParentHash:[NSData dataWithUInt256:self.parentHash] revision:self.revision timeStampData:[NSData dataWithBytes:&timestamp length:sizeof(timestamp)] governanceMessageHexData:self.proposalInfo masternodeUTXO:o signature:[NSData data] onChain:self.chain];
     }
     return _governanceObjectHash;
