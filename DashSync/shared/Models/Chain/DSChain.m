@@ -575,7 +575,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 - (BOOL)isEvolutionEnabled {
-    return [self isDevnetAny] || [self isTestnet];
+    return false;
 }
 
 - (BOOL)isDevnetWithGenesisHash:(UInt256)genesisHash {
