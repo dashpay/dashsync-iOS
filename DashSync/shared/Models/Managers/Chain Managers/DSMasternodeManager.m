@@ -152,10 +152,10 @@
 
 - (uint32_t)earliestMasternodeListBlockHeight {
     uint32_t earliest = UINT32_MAX;
-    for (NSData *blockHash in self.masternodeListsBlockHashStubs) {
+    for (NSData *blockHash in [self.masternodeListsBlockHashStubs copy]) {
         earliest = MIN(earliest, [self heightForBlockHash:blockHash.UInt256]);
     }
-    for (NSData *blockHash in self.masternodeListsByBlockHash) {
+    for (NSData *blockHash in [self.masternodeListsByBlockHash copy]) {
         earliest = MIN(earliest, [self heightForBlockHash:blockHash.UInt256]);
     }
     return earliest;
@@ -454,7 +454,7 @@
     uint32_t minDistance = UINT32_MAX;
     uint32_t blockHeight = [self heightForBlockHash:blockHash];
     DSMasternodeList *closestMasternodeList = nil;
-    for (NSData *blockHashData in self.masternodeListsByBlockHash) {
+    for (NSData *blockHashData in [self.masternodeListsByBlockHash copy]) {
         uint32_t masternodeListBlockHeight = [self heightForBlockHash:blockHashData.UInt256];
         if (blockHeight <= masternodeListBlockHeight) continue;
         uint32_t distance = blockHeight - masternodeListBlockHeight;
