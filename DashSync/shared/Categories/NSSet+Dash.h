@@ -21,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSSet (Dash)
 
+- (NSSet *)compactMap:(id (^)(id obj))block;
 - (NSSet *)map:(id (^)(id obj))block;
 
 @end

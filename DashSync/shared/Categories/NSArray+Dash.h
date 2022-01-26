@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (UInt256)hashDataComponentsWithSelector:(SEL)hashFunction;
 - (NSMutableArray *)secureMutableCopy;
 
+- (NSArray *)compactMap:(id (^)(id obj))block;
 - (NSArray *)map:(id (^)(id obj))block;
 
 @end
