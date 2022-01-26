@@ -20,6 +20,7 @@
 #import "DSMasternodeList.h"
 #import "DSMasternodeManager.h"
 #import "DSMnDiffProcessingResult.h"
+#import "DSQRInfoProcessingResult.h"
 #import "DSQuorumEntry.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "dash_shared_core.h"
@@ -47,7 +48,11 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context);
 + (void)freeQuorumEntry:(QuorumEntry *)entry;
 
 + (void)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion;
-+ (void)processQRInfoMessage:(NSData *)message baseBlockHashesCount:(uint32_t)baseBlockHashesCount withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion;
+
++ (QuorumRotationInfo *)readQRInfoMessage:(NSData *)message;
++ (void)destroyQRInfoMessage:(QuorumRotationInfo *)info;
+
++ (void)processQRInfo:(QuorumRotationInfo *)info withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSQRInfoProcessingResult *result))completion;
 
 @end
 

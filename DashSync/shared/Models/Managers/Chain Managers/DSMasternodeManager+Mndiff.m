@@ -326,17 +326,24 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     completion(processingResult);
 }
 
-+ (void)processQRInfoMessage:(NSData *)message baseBlockHashesCount:(uint32_t)baseBlockHashesCount withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion {
++ (void)destroyQRInfoMessage:(QuorumRotationInfo *)info {
+    qrinfo_destroy(info);
+}
+
++ (QuorumRotationInfo *)readQRInfoMessage:(NSData *)message {
+    QuorumRotationInfo *result = qrinfo_read(message.bytes, message.length);
+    return result;
+}
+
++ (void)processQRInfo:(QuorumRotationInfo *)info withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSQRInfoProcessingResult *result))completion {
     DSChain *chain = context.chain;
     DSMasternodeList *baseMasternodeList = context.baseMasternodeList;
     UInt256 merkleRoot = context.lastBlock.merkleRoot;
     MasternodeList *base_masternode_list = [DSMasternodeManager wrapMasternodeList:baseMasternodeList];
-
-    MndiffResult *result = qrinfo_process(message.bytes, message.length, uint256_data(merkleRoot).bytes, baseBlockHashesCount, base_masternode_list, masternodeListLookupCallback, masternodeListDestroyCallback, context.useInsightAsBackup, addInsightLookup, shouldProcessQuorumType, validateQuorumCallback, blockHeightListLookupCallback, (__bridge void *)(context));
-
+    QuorumRotationInfo *qrInfo = qrinfo_process(info, uint256_data(merkleRoot).bytes, base_masternode_list, masternodeListLookupCallback, masternodeListDestroyCallback, context.useInsightAsBackup, addInsightLookup, shouldProcessQuorumType, validateQuorumCallback, blockHeightListLookupCallback, (__bridge void *)(context));
     [DSMasternodeManager freeMasternodeList:base_masternode_list];
-    DSMnDiffProcessingResult *processingResult = [DSMnDiffProcessingResult processingResultWith:result onChain:chain];
-    mndiff_destroy(result);
+    DSQRInfoProcessingResult *processingResult = [DSQRInfoProcessingResult processingResultWith:qrInfo onChain:chain];
+    [DSMasternodeManager destroyQRInfoMessage:qrInfo];
     completion(processingResult);
 }
 

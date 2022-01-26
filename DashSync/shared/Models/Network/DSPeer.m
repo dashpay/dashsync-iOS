@@ -737,6 +737,10 @@
                  type:MSG_GETDATA];
 }
 
+/**
+ * previousBlockHash: Hash of a block the requestor already has a valid masternode list of. Can be all-zero to indicate that a full masternode list is requested.
+ * blockHash: Hash of the block for which the masternode list diff is requested
+ */
 - (void)sendGetMasternodeListFromPreviousBlockHash:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash {
     NSMutableData *msg = [NSMutableData data];
     [msg appendUInt256:previousBlockHash];
