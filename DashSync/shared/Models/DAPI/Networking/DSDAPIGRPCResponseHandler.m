@@ -312,8 +312,14 @@
 
         for (NSData *cborData in getIdentitiesResponse.identitiesArray) {
             if (!cborData.length) continue;
-            NSData *identityData = [cborData subdataWithRange:NSMakeRange(4, cborData.length - 4)];
+            NSArray<NSData *> *arrayOfIdentities = [cborData ds_decodeCborError:&error];
+            if (arrayOfIdentities.count == 0) continue;
+            NSData *identityData = arrayOfIdentities.firstObject;
+            uint32_t version = [identityData UInt32AtOffset:0];
+            identityData = [arrayOfIdentities.firstObject subdataWithRange:NSMakeRange(4, identityData.length - 4)];
             NSDictionary *identityDictionary = [identityData ds_decodeCborError:&error];
+            
+            
             if (error) {
                 self.decodingError = error;
                 return;
@@ -327,7 +333,12 @@
                                                                   DSLocalizedString(@"Platform returned an incorrect value as an identity ID", nil)}];
                 return;
             }
-            [identityDictionaries addObject:identityDictionary];
+            
+            NSDictionary *result = @{@(DSPlatformStoredMessage_Version): @(version),
+                                     @(DSPlatformStoredMessage_Item): identityDictionary
+            };
+            
+            [identityDictionaries addObject:result];
         }
         self.responseObject = identityDictionaries;
         if (error) {
@@ -474,7 +485,7 @@
                                               DSLocalizedString(@"Platform returned an empty quorum hash", nil)}];
     }
     DSQuorumEntry *quorumEntry = [chain.chainManager.masternodeManager quorumEntryForPlatformHavingQuorumHash:quorumHash forBlockHeight:metaData.coreChainLockedHeight];
-    if (quorumEntry && quorumEntry.verified) {
+    if (quorumEntry) { // && quorumEntry.verified) {
         return [self verifyAndExtractFromProof:proof withMetadata:metaData query:query forQuorumEntry:quorumEntry quorumType:chain.quorumTypeForPlatform error:error];
     } else if (quorumEntry) {
         *error = [NSError errorWithDomain:@"DashSync"
