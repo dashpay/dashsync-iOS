@@ -308,9 +308,9 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
           completionQueue:(dispatch_queue_t)completionQueue
                   success:(void (^)(NSDictionary *successDictionary, BOOL added))success
                   failure:(void (^)(NSError *error))failure {
-    //default to 5 attempts
+    //default to 10 attempts
     [self publishTransition:stateTransition
-                 retryCount:5
+                 retryCount:10
                       delay:2
               delayIncrease:1
              currentAttempt:0
