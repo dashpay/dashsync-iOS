@@ -26,6 +26,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSMutableDictionary<NSNumber *, NSMutableDictionary<NSData *, DSQuorumEntry *> *> *)entriesWith:(LLMQMap *_Nullable *_Nonnull)entries count:(uintptr_t)count onChain:(DSChain *)chain;
 
+- (QuorumEntry *)ffi_malloc;
++ (void)ffi_free:(QuorumEntry *)entry;
+
 @end
 
 

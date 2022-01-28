@@ -38,4 +38,56 @@
     return quorums;
 }
 
+- (QuorumEntry *)ffi_malloc {
+    QuorumEntry *quorum_entry = malloc(sizeof(QuorumEntry));
+    quorum_entry->all_commitment_aggregated_signature = malloc(sizeof(UInt768));
+    memcpy(quorum_entry->all_commitment_aggregated_signature, [self allCommitmentAggregatedSignature].u8, sizeof(UInt768));
+    quorum_entry->commitment_hash = malloc(sizeof(UInt256));
+    memcpy(quorum_entry->commitment_hash, [self commitmentHash].u8, sizeof(UInt256));
+    quorum_entry->length = [self length];
+    quorum_entry->llmq_type = [self llmqType];
+    quorum_entry->quorum_entry_hash = malloc(sizeof(UInt256));
+    memcpy(quorum_entry->quorum_entry_hash, [self quorumEntryHash].u8, sizeof(UInt256));
+    quorum_entry->quorum_hash = malloc(sizeof(UInt256));
+    memcpy(quorum_entry->quorum_hash, [self quorumHash].u8, sizeof(UInt256));
+    quorum_entry->quorum_public_key = malloc(sizeof(UInt384));
+    memcpy(quorum_entry->quorum_public_key, [self quorumPublicKey].u8, sizeof(UInt384));
+    quorum_entry->quorum_threshold_signature = malloc(sizeof(UInt768));
+    memcpy(quorum_entry->quorum_threshold_signature, [self quorumThresholdSignature].u8, sizeof(UInt768));
+    quorum_entry->quorum_verification_vector_hash = malloc(sizeof(UInt256));
+    memcpy(quorum_entry->quorum_verification_vector_hash, [self quorumVerificationVectorHash].u8, sizeof(UInt256));
+    quorum_entry->saved = [self saved];
+    NSData *signers_bitset = [self signersBitset];
+    NSUInteger signers_bitset_length = signers_bitset.length;
+    uint8_t *signers = malloc(signers_bitset_length);
+    memcpy(signers, signers_bitset.bytes, signers_bitset_length);
+    quorum_entry->signers_bitset = signers;
+    quorum_entry->signers_bitset_length = signers_bitset_length;
+    quorum_entry->signers_count = [self signersCount];
+    NSData *valid_members_bitset = [self validMembersBitset];
+    NSUInteger valid_members_bitset_length = valid_members_bitset.length;
+    uint8_t *valid_members = malloc(valid_members_bitset_length);
+    memcpy(valid_members, valid_members_bitset.bytes, valid_members_bitset_length);
+    quorum_entry->valid_members_bitset = valid_members;
+    quorum_entry->valid_members_bitset_length = valid_members_bitset_length;
+    quorum_entry->valid_members_count = [self validMembersCount];
+    quorum_entry->verified = [self verified];
+    quorum_entry->version = [self version];
+    return quorum_entry;
+}
+
++ (void)ffi_free:(QuorumEntry *)entry {
+    free(entry->all_commitment_aggregated_signature);
+    if (entry->commitment_hash)
+        free(entry->commitment_hash);
+    free(entry->quorum_entry_hash);
+    free(entry->quorum_hash);
+    free(entry->quorum_public_key);
+    free(entry->quorum_threshold_signature);
+    free(entry->quorum_verification_vector_hash);
+    free(entry->signers_bitset);
+    free(entry->valid_members_bitset);
+    free(entry);
+}
+
 @end

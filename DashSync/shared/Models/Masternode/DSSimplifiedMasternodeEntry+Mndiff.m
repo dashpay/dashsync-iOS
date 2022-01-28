@@ -99,4 +99,89 @@
     }
     return masternodes;
 }
+
+- (MasternodeEntry *)ffi_malloc {
+    uint32_t known_confirmed_at_height = [self knownConfirmedAtHeight];
+    NSDictionary<DSBlock *, NSData *> *previousOperatorPublicKeys = [self previousOperatorPublicKeys];
+    NSDictionary<DSBlock *, NSData *> *previousSimplifiedMasternodeEntryHashes = [self previousSimplifiedMasternodeEntryHashes];
+    NSDictionary<DSBlock *, NSNumber *> *previousValidity = [self previousValidity];
+    MasternodeEntry *masternode_entry = malloc(sizeof(MasternodeEntry));
+    masternode_entry->confirmed_hash = malloc(sizeof(UInt256));
+    memcpy(masternode_entry->confirmed_hash, [self confirmedHash].u8, sizeof(UInt256));
+    masternode_entry->confirmed_hash_hashed_with_provider_registration_transaction_hash = malloc(sizeof(UInt256));
+    memcpy(masternode_entry->confirmed_hash_hashed_with_provider_registration_transaction_hash, [self confirmedHashHashedWithProviderRegistrationTransactionHash].u8, sizeof(UInt256));
+    masternode_entry->is_valid = [self isValid];
+    masternode_entry->key_id_voting = malloc(sizeof(UInt160));
+    memcpy(masternode_entry->key_id_voting, [self keyIDVoting].u8, sizeof(UInt160));
+    masternode_entry->known_confirmed_at_height = known_confirmed_at_height;
+    masternode_entry->masternode_entry_hash = malloc(sizeof(UInt256));
+    memcpy(masternode_entry->masternode_entry_hash, [self simplifiedMasternodeEntryHash].u8, sizeof(UInt256));
+    masternode_entry->operator_public_key = malloc(sizeof(UInt384));
+    memcpy(masternode_entry->operator_public_key, [self operatorPublicKey].u8, sizeof(UInt384));
+    NSUInteger previousOperatorPublicKeysCount = [previousOperatorPublicKeys count];
+    OperatorPublicKey *previous_operator_public_keys = malloc(previousOperatorPublicKeysCount * sizeof(OperatorPublicKey));
+    int i = 0;
+    for (DSBlock *block in previousOperatorPublicKeys) {
+        NSData *keyData = previousOperatorPublicKeys[block];
+        OperatorPublicKey obj = {.block_height = block.height};
+        memcpy(obj.key, keyData.bytes, sizeof(UInt384));
+        memcpy(obj.block_hash, block.blockHash.u8, sizeof(UInt256));
+        previous_operator_public_keys[i] = obj;
+        i++;
+    }
+    masternode_entry->previous_operator_public_keys = previous_operator_public_keys;
+    masternode_entry->previous_operator_public_keys_count = previousOperatorPublicKeysCount;
+    NSUInteger previousSimplifiedMasternodeEntryHashesCount = [previousSimplifiedMasternodeEntryHashes count];
+    MasternodeEntryHash *previous_masternode_entry_hashes = malloc(previousSimplifiedMasternodeEntryHashesCount * sizeof(MasternodeEntryHash));
+    i = 0;
+    for (DSBlock *block in previousSimplifiedMasternodeEntryHashes) {
+        NSData *hashData = previousSimplifiedMasternodeEntryHashes[block];
+        MasternodeEntryHash obj = {.block_height = block.height};
+        memcpy(obj.hash, hashData.bytes, sizeof(UInt256));
+        memcpy(obj.block_hash, block.blockHash.u8, sizeof(UInt256));
+        previous_masternode_entry_hashes[i] = obj;
+        i++;
+    }
+    masternode_entry->previous_masternode_entry_hashes = previous_masternode_entry_hashes;
+    masternode_entry->previous_masternode_entry_hashes_count = previousSimplifiedMasternodeEntryHashesCount;
+    NSUInteger previousValidityCount = [previousValidity count];
+    Validity *previous_validity = malloc(previousValidityCount * sizeof(Validity));
+    i = 0;
+    for (DSBlock *block in previousValidity) {
+        NSNumber *flag = previousValidity[block];
+        Validity obj = {.block_height = block.height, .is_valid = [flag boolValue]};
+        memcpy(obj.block_hash, block.blockHash.u8, sizeof(UInt256));
+        previous_validity[i] = obj;
+        i++;
+    }
+    masternode_entry->previous_validity = previous_validity;
+    masternode_entry->previous_validity_count = previousValidityCount;
+    masternode_entry->provider_registration_transaction_hash = malloc(sizeof(UInt256));
+    memcpy(masternode_entry->provider_registration_transaction_hash, [self providerRegistrationTransactionHash].u8, sizeof(UInt256));
+    masternode_entry->ip_address = malloc(sizeof(UInt128));
+    memcpy(masternode_entry->ip_address, [self address].u8, sizeof(UInt128));
+    masternode_entry->port = [self port];
+    masternode_entry->update_height = [self updateHeight];
+    return masternode_entry;
+
+}
+
++ (void)ffi_free:(MasternodeEntry *)entry {
+    free(entry->confirmed_hash);
+    if (entry->confirmed_hash_hashed_with_provider_registration_transaction_hash)
+        free(entry->confirmed_hash_hashed_with_provider_registration_transaction_hash);
+    free(entry->operator_public_key);
+    free(entry->masternode_entry_hash);
+    free(entry->ip_address);
+    free(entry->key_id_voting);
+    free(entry->provider_registration_transaction_hash);
+    if (entry->previous_masternode_entry_hashes)
+        free(entry->previous_masternode_entry_hashes);
+    if (entry->previous_operator_public_keys)
+        free(entry->previous_operator_public_keys);
+    if (entry->previous_validity)
+        free(entry->previous_validity);
+    free(entry);
+}
+
 @end

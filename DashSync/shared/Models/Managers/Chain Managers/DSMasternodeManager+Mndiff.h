@@ -37,16 +37,6 @@ void addInsightLookup(uint8_t (*block_hash)[32], const void *context);
 bool shouldProcessQuorumType(uint8_t quorum_type, const void *context);
 bool validateQuorumCallback(QuorumValidationData *data, const void *context);
 
-
-+ (MasternodeList *)wrapMasternodeList:(DSMasternodeList *)list;
-+ (void)freeMasternodeList:(MasternodeList *)list;
-
-+ (MasternodeEntry *)wrapMasternodeEntry:(DSSimplifiedMasternodeEntry *)entry;
-+ (void)freeMasternodeEntry:(MasternodeEntry *)entry;
-
-+ (QuorumEntry *)wrapQuorumEntry:(DSQuorumEntry *)entry;
-+ (void)freeQuorumEntry:(QuorumEntry *)entry;
-
 + (void)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion;
 
 + (QuorumRotationInfo *)readQRInfoMessage:(NSData *)message;
