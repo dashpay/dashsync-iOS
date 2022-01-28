@@ -50,6 +50,7 @@
 #import "DSFullBlock.h"
 #import "DSFundsDerivationPath.h"
 #import "DSIdentitiesManager+Protected.h"
+#import "DSInsightManager.h"
 #import "DSKey.h"
 #import "DSLocalMasternode+Protected.h"
 #import "DSLocalMasternodeEntity+CoreDataProperties.h"
@@ -1923,6 +1924,18 @@ static dispatch_once_t devnetToken = 0;
 }
 
 // MARK: From Insight on Testnet
+- (void)blockUntilGetInsightForBlockHash:(UInt256)blockHash {
+    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+    [[DSInsightManager sharedInstance] blockForBlockHash:blockHash
+                                                 onChain:self
+                                              completion:^(DSBlock *_Nullable block, NSError *_Nullable error) {
+        if (!error && block) {
+            [self addInsightVerifiedBlock:block forBlockHash:blockHash];
+        }
+        dispatch_semaphore_signal(sem);
+    }];
+    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+}
 
 - (void)addInsightVerifiedBlock:(DSBlock *)block forBlockHash:(UInt256)blockHash {
     if ([self allowInsightBlocksForVerification]) {

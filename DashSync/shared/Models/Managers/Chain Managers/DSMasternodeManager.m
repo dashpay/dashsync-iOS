@@ -412,7 +412,7 @@
             lastBlock = [[peer.chain insightVerifiedBlocksByHashDictionary] objectForKey:blockHashData];
             if (!lastBlock && peer.chain.isTestnet) {
                 //We can trust insight if on testnet
-                [self.service blockUntilAddInsight:blockHash];
+                [self.chain blockUntilGetInsightForBlockHash:blockHash];
                 lastBlock = [[peer.chain insightVerifiedBlocksByHashDictionary] objectForKey:blockHashData];
             }
         }
@@ -430,7 +430,7 @@
     }
     if (!hasBlock && self.chain.isTestnet) {
         //We can trust insight if on testnet
-        [self.service blockUntilAddInsight:blockHash];
+        [self.chain blockUntilGetInsightForBlockHash:blockHash];
         hasBlock = !![[self.chain insightVerifiedBlocksByHashDictionary] objectForKey:blockHashData];
     }
     return hasBlock;

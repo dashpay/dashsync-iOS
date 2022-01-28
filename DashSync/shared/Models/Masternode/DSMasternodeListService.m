@@ -80,19 +80,6 @@
     return self.retrievalQueue.count;
 }
 
-- (void)blockUntilAddInsight:(UInt256)entryQuorumHash {
-    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-    [[DSInsightManager sharedInstance] blockForBlockHash:uint256_reverse(entryQuorumHash)
-                                                 onChain:self.chain
-                                              completion:^(DSBlock *_Nullable block, NSError *_Nullable error) {
-        if (!error && block) {
-            [self.chain addInsightVerifiedBlock:block forBlockHash:entryQuorumHash];
-        }
-        dispatch_semaphore_signal(sem);
-    }];
-    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
-}
-
 - (void)updateMasternodeRetrievalQueue {
     self.retrievalQueueMaxAmount = MAX(self.retrievalQueueMaxAmount, self.retrievalQueue.count);
     [self.retrievalQueue sortUsingComparator:^NSComparisonResult(NSData *_Nonnull obj1, NSData *_Nonnull obj2) {
