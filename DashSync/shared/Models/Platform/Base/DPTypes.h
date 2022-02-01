@@ -21,4 +21,17 @@
 typedef NSDictionary<NSString *, id> DSStringValueDictionary;
 typedef NSMutableDictionary<NSString *, id> DSMutableStringValueDictionary;
 
+typedef NS_ENUM(NSUInteger, DWIdentityPublicKeyPurpose) {
+    DWIdentityPublicKeyPurposeAuthentication,
+    DWIdentityPublicKeyPurposeEncryption,
+    DWIdentityPublicKeyPurposeDecryption,
+};
+
+typedef NS_ENUM(NSUInteger, DWIdentityPublicKeySecurityLevel) {
+    DWIdentityPublicKeySecurityLevelMaster,
+    DWIdentityPublicKeySecurityLevelCritical,
+    DWIdentityPublicKeySecurityLevelHigh,
+    DWIdentityPublicKeySecurityLevelMedium,
+};
+
 #endif /* DPTypes_h */

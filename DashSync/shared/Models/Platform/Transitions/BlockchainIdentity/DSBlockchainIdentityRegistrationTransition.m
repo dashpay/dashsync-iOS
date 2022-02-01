@@ -51,8 +51,8 @@
         DSKey *key = self.publicKeys[indexIdentifier];
         DSMutableStringValueDictionary *platformKeyDictionary = [[DSMutableStringValueDictionary alloc] init];
         platformKeyDictionary[@"id"] = @([indexIdentifier unsignedIntValue]);
-        platformKeyDictionary[@"purpose"] = @(0); //Purpose.AUTHENTICATION
-        platformKeyDictionary[@"securityLevel"] = @(0); //SecurityLevel.MASTER
+        platformKeyDictionary[@"purpose"] = @(DWIdentityPublicKeyPurposeAuthentication);
+        platformKeyDictionary[@"securityLevel"] = @(DWIdentityPublicKeySecurityLevelMaster); 
         platformKeyDictionary[@"readOnly"] = @NO;
         platformKeyDictionary[@"type"] = @(key.keyType);
         platformKeyDictionary[@"data"] = key.publicKeyData;
