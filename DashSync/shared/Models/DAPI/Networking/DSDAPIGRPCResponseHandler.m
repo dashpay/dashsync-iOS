@@ -485,7 +485,7 @@
                                               DSLocalizedString(@"Platform returned an empty quorum hash", nil)}];
     }
     DSQuorumEntry *quorumEntry = [chain.chainManager.masternodeManager quorumEntryForPlatformHavingQuorumHash:quorumHash forBlockHeight:metaData.coreChainLockedHeight];
-    if (quorumEntry) { // && quorumEntry.verified) {
+    if (quorumEntry && quorumEntry.verified) {
         return [self verifyAndExtractFromProof:proof withMetadata:metaData query:query forQuorumEntry:quorumEntry quorumType:chain.quorumTypeForPlatform error:error];
     } else if (quorumEntry) {
         *error = [NSError errorWithDomain:@"DashSync"
