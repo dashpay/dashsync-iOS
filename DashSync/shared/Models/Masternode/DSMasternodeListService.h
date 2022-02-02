@@ -33,11 +33,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithChain:(DSChain *)chain blockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 - (void)addToRetrievalQueue:(NSData *)masternodeBlockHashData;
 - (void)addToRetrievalQueueArray:(NSArray<NSData *> *)masternodeBlockHashDataArray;
-- (void)blockUntilAddInsight:(UInt256)entryQuorumHash;
 - (void)cleanAllLists;
 - (void)cleanListsInRetrieval;
 - (void)cleanListsRetrievalQueue;
 - (void)fetchMasternodeListsToRetrieve:(void (^)(NSOrderedSet<NSData *> *listsToRetrieve))completion;
+- (void)removeFromRetrievalQueue:(NSData *)masternodeBlockHashData;
 - (BOOL)removeListInRetrievalForKey:(NSData *)blockHashDiffsData;
 - (BOOL)hasLatestBlockInRetrievalQueueWithHash:(UInt256)blockHash;
 

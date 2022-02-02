@@ -59,6 +59,10 @@
     [self updateMasternodeRetrievalQueue];
 }
 
+- (void)removeFromRetrievalQueue:(NSData *)masternodeBlockHashData {
+    [self.retrievalQueue removeObject:masternodeBlockHashData];
+}
+
 - (void)cleanListsInRetrieval {
     [self.listsInRetrieval removeAllObjects];
 }

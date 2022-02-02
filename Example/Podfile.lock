@@ -505,7 +505,7 @@ PODS:
   - Libuv-gRPC/Implementation (0.0.10):
     - Libuv-gRPC/Interface (= 0.0.10)
   - Libuv-gRPC/Interface (0.0.10)
-  - Protobuf (3.19.1)
+  - Protobuf (3.19.4)
   - SDWebImage (5.9.2):
     - SDWebImage/Core (= 5.9.2)
   - SDWebImage/Core (5.9.2)
@@ -581,7 +581,7 @@ SPEC CHECKSUMS:
   gRPC-RxLibrary: 927906df32da1dcc007a78ed9254caa5f83466d8
   KVO-MVVM: 4df3afd1f7ebcb69735458b85db59c4271ada7c6
   Libuv-gRPC: 55e51798e14ef436ad9bc45d12d43b77b49df378
-  Protobuf: 3724efa50cb2846d7ccebc8691c574e85fd74471
+  Protobuf: 235750e4696ff59fb07d949a9dbbc92b3c0700fe
   SDWebImage: 0b42b8719ab0c5257177d5894306e8a336b21cbb
   secp256k1_dash: bd60e467aa853e145cf680dd0f8b196df20f0a62
   tinycbor: d4d71dddda1f8392fbb4249f63faf8552f327590

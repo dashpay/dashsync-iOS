@@ -32,7 +32,7 @@
     BOOL isValid = entry->is_valid;
     UInt160 keyIDVoting = *((UInt160 *)entry->key_id_voting);
     uint32_t knownConfirmedAtHeight = entry->known_confirmed_at_height;
-    UInt256 simplifiedMasternodeEntryHash = *((UInt256 *)entry->masternode_entry_hash);
+    UInt256 simplifiedMasternodeEntryHash = *((UInt256 *)entry->entry_hash);
     UInt384 operatorPublicKey = *((UInt384 *)entry->operator_public_key);
     uintptr_t previous_operator_public_keys_count = entry->previous_operator_public_keys_count;
     OperatorPublicKey *previous_operator_public_keys = entry->previous_operator_public_keys;
@@ -46,16 +46,16 @@
         NSData *key = [NSData dataWithBytes:operator_public_key.key length:48];
         [operatorPublicKeys setObject:key forKey:block];
     }
-    uintptr_t previous_masternode_entry_hashes_count = entry->previous_masternode_entry_hashes_count;
-    MasternodeEntryHash *previous_masternode_entry_hashes = entry->previous_masternode_entry_hashes;
-    NSMutableDictionary<DSBlock *, NSData *> *masternodeEntryHashes = [NSMutableDictionary dictionaryWithCapacity:previous_masternode_entry_hashes_count];
-    for (NSUInteger i = 0; i < previous_masternode_entry_hashes_count; i++) {
-        MasternodeEntryHash masternode_entry_hash = previous_masternode_entry_hashes[i];
-        UInt256 blockHash = *((UInt256 *)masternode_entry_hash.block_hash);
-        uint32_t blockHeight = masternode_entry_hash.block_height;
+    uintptr_t previous_entry_hashes_count = entry->previous_entry_hashes_count;
+    MasternodeEntryHash *previous_entry_hashes = entry->previous_entry_hashes;
+    NSMutableDictionary<DSBlock *, NSData *> *masternodeEntryHashes = [NSMutableDictionary dictionaryWithCapacity:previous_entry_hashes_count];
+    for (NSUInteger i = 0; i < previous_entry_hashes_count; i++) {
+        MasternodeEntryHash entry_hash = previous_entry_hashes[i];
+        UInt256 blockHash = *((UInt256 *)entry_hash.block_hash);
+        uint32_t blockHeight = entry_hash.block_height;
         DSBlock *block = (DSBlock *)[chain blockForBlockHash:blockHash];
         if (!block) block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:chain];
-        NSData *hash = [NSData dataWithBytes:masternode_entry_hash.hash length:32];
+        NSData *hash = [NSData dataWithBytes:entry_hash.hash length:32];
         [masternodeEntryHashes setObject:hash forKey:block];
     }
     uintptr_t previous_validity_count = entry->previous_validity_count;
@@ -114,8 +114,8 @@
     masternode_entry->key_id_voting = malloc(sizeof(UInt160));
     memcpy(masternode_entry->key_id_voting, [self keyIDVoting].u8, sizeof(UInt160));
     masternode_entry->known_confirmed_at_height = known_confirmed_at_height;
-    masternode_entry->masternode_entry_hash = malloc(sizeof(UInt256));
-    memcpy(masternode_entry->masternode_entry_hash, [self simplifiedMasternodeEntryHash].u8, sizeof(UInt256));
+    masternode_entry->entry_hash = malloc(sizeof(UInt256));
+    memcpy(masternode_entry->entry_hash, [self simplifiedMasternodeEntryHash].u8, sizeof(UInt256));
     masternode_entry->operator_public_key = malloc(sizeof(UInt384));
     memcpy(masternode_entry->operator_public_key, [self operatorPublicKey].u8, sizeof(UInt384));
     NSUInteger previousOperatorPublicKeysCount = [previousOperatorPublicKeys count];
@@ -142,8 +142,8 @@
         previous_masternode_entry_hashes[i] = obj;
         i++;
     }
-    masternode_entry->previous_masternode_entry_hashes = previous_masternode_entry_hashes;
-    masternode_entry->previous_masternode_entry_hashes_count = previousSimplifiedMasternodeEntryHashesCount;
+    masternode_entry->previous_entry_hashes = previous_masternode_entry_hashes;
+    masternode_entry->previous_entry_hashes_count = previousSimplifiedMasternodeEntryHashesCount;
     NSUInteger previousValidityCount = [previousValidity count];
     Validity *previous_validity = malloc(previousValidityCount * sizeof(Validity));
     i = 0;
@@ -171,12 +171,12 @@
     if (entry->confirmed_hash_hashed_with_provider_registration_transaction_hash)
         free(entry->confirmed_hash_hashed_with_provider_registration_transaction_hash);
     free(entry->operator_public_key);
-    free(entry->masternode_entry_hash);
+    free(entry->entry_hash);
     free(entry->ip_address);
     free(entry->key_id_voting);
     free(entry->provider_registration_transaction_hash);
-    if (entry->previous_masternode_entry_hashes)
-        free(entry->previous_masternode_entry_hashes);
+    if (entry->previous_entry_hashes)
+        free(entry->previous_entry_hashes);
     if (entry->previous_operator_public_keys)
         free(entry->previous_operator_public_keys);
     if (entry->previous_validity)

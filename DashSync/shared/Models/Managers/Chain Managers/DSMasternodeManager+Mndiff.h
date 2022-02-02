@@ -35,14 +35,14 @@ void masternodeListDestroyCallback(const MasternodeList *masternode_list);
 uint32_t blockHeightListLookupCallback(uint8_t (*block_hash)[32], const void *context);
 void addInsightLookup(uint8_t (*block_hash)[32], const void *context);
 bool shouldProcessQuorumType(uint8_t quorum_type, const void *context);
-bool validateQuorumCallback(QuorumValidationData *data, const void *context);
+bool validateQuorumCallback(LLMQValidationData *data, const void *context);
 
 + (void)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion;
 
-+ (QuorumRotationInfo *)readQRInfoMessage:(NSData *)message;
-+ (void)destroyQRInfoMessage:(QuorumRotationInfo *)info;
++ (LLMQRotationInfo *)readQRInfoMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context;
++ (void)destroyQRInfoMessage:(LLMQRotationInfo *)info;
 
-+ (void)processQRInfo:(QuorumRotationInfo *)info withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSQRInfoProcessingResult *result))completion;
++ (void)processQRInfo:(LLMQRotationInfo *)info withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSQRInfoProcessingResult *result))completion;
 
 @end
 

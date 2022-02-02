@@ -65,7 +65,7 @@ bool shouldProcessQuorumType(uint8_t quorum_type, const void *context) {
     return should;
 };
 
-bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
+bool validateQuorumCallback(LLMQValidationData *data, const void *context) {
     uintptr_t count = data->count;
     uint8_t(**items)[48] = data->items;
     NSMutableArray<DSBLSKey *> *publicKeyArray = [NSMutableArray array];
@@ -82,10 +82,10 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
         return false;
     }
     //The sig must validate against the commitmentHash and all public keys determined by the signers bitvector. This is an aggregated BLS signature verification.
-    uint8_t(*quorum_threshold_signature)[96] = data->quorum_threshold_signature;
-    uint8_t(*quorum_public_key)[48] = data->quorum_public_key;
-    UInt768 quorumThresholdSignature = [NSData dataWithBytes:quorum_threshold_signature length:96].UInt768;
-    UInt384 quorumPublicKey = [NSData dataWithBytes:quorum_public_key length:48].UInt384;
+    uint8_t(*threshold_signature)[96] = data->threshold_signature;
+    uint8_t(*public_key)[48] = data->public_key;
+    UInt768 quorumThresholdSignature = [NSData dataWithBytes:threshold_signature length:96].UInt768;
+    UInt384 quorumPublicKey = [NSData dataWithBytes:public_key length:48].UInt384;
     bool quorumSignatureValidated = [DSBLSKey verify:commitmentHash signature:quorumThresholdSignature withPublicKey:quorumPublicKey];
     mndiff_quorum_validation_data_destroy(data);
     if (!quorumSignatureValidated) {
@@ -97,36 +97,28 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
 
 + (void)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion {
     DSChain *chain = context.chain;
-    DSMasternodeList *baseMasternodeList = context.baseMasternodeList;
     UInt256 merkleRoot = context.lastBlock.merkleRoot;
-    MasternodeList *base_masternode_list = baseMasternodeList ? [baseMasternodeList ffi_malloc] : NULL;
-
-    MndiffResult *result = mndiff_process(message.bytes, message.length, base_masternode_list, masternodeListLookupCallback, masternodeListDestroyCallback, uint256_data(merkleRoot).bytes, context.useInsightAsBackup, addInsightLookup, shouldProcessQuorumType, validateQuorumCallback, blockHeightListLookupCallback, (__bridge void *)(context));
-
-    [DSMasternodeList ffi_free:base_masternode_list];
+    MNListDiffResult *result = mndiff_process(message.bytes, message.length, masternodeListLookupCallback, masternodeListDestroyCallback, uint256_data(merkleRoot).bytes, context.useInsightAsBackup, addInsightLookup, shouldProcessQuorumType, validateQuorumCallback, blockHeightListLookupCallback, (__bridge void *)(context));
     DSMnDiffProcessingResult *processingResult = [DSMnDiffProcessingResult processingResultWith:result onChain:chain];
     mndiff_destroy(result);
     completion(processingResult);
 }
 
-+ (void)destroyQRInfoMessage:(QuorumRotationInfo *)info {
-    qrinfo_destroy(info);
++ (void)destroyQRInfoMessage:(LLMQRotationInfo *)info {
+    llmq_rotation_info_destroy(info);
 }
 
-+ (QuorumRotationInfo *)readQRInfoMessage:(NSData *)message {
-    QuorumRotationInfo *result = qrinfo_read(message.bytes, message.length);
++ (LLMQRotationInfo *)readQRInfoMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context {
+    LLMQRotationInfo *result = llmq_rotation_info_read(message.bytes, message.length, blockHeightListLookupCallback, (__bridge void *)(context));
     return result;
 }
 
-+ (void)processQRInfo:(QuorumRotationInfo *)info withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSQRInfoProcessingResult *result))completion {
++ (void)processQRInfo:(LLMQRotationInfo *)info withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSQRInfoProcessingResult *result))completion {
     DSChain *chain = context.chain;
-    DSMasternodeList *baseMasternodeList = context.baseMasternodeList;
     UInt256 merkleRoot = context.lastBlock.merkleRoot;
-    MasternodeList *base_masternode_list = baseMasternodeList ? [baseMasternodeList ffi_malloc] : NULL;
-    QuorumRotationInfo *qrInfo = qrinfo_process(info, uint256_data(merkleRoot).bytes, base_masternode_list, masternodeListLookupCallback, masternodeListDestroyCallback, context.useInsightAsBackup, addInsightLookup, shouldProcessQuorumType, validateQuorumCallback, blockHeightListLookupCallback, (__bridge void *)(context));
-    [DSMasternodeList ffi_free:base_masternode_list];
-    DSQRInfoProcessingResult *processingResult = [DSQRInfoProcessingResult processingResultWith:qrInfo onChain:chain];
-    [DSMasternodeManager destroyQRInfoMessage:qrInfo];
+    LLMQRotationInfoResult *result = llmq_rotation_info_process(info, uint256_data(merkleRoot).bytes, masternodeListLookupCallback, masternodeListDestroyCallback, context.useInsightAsBackup, addInsightLookup, shouldProcessQuorumType, validateQuorumCallback, blockHeightListLookupCallback, (__bridge void *)(context));
+    DSQRInfoProcessingResult *processingResult = [DSQRInfoProcessingResult processingResultWith:result onChain:chain];
+    llmq_rotation_info_result_destroy(result);
     completion(processingResult);
 }
 

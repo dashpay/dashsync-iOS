@@ -459,11 +459,9 @@
 
     XCTestExpectation *expectation = [[XCTestExpectation alloc] init];
 
-    DSMasternodeList *baseMasternodeList = nil;
     DSMerkleBlock *lastBlock = nil;
 
     DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
-    [mndiffContext setBaseMasternodeList:baseMasternodeList];
     [mndiffContext setLastBlock:lastBlock];
     [mndiffContext setUseInsightAsBackup:NO];
     [mndiffContext setChain:chain];
@@ -505,9 +503,9 @@
     [self waitForExpectations:@[expectation] timeout:10];
 }
 
-- (void)loadMasternodeListsForFiles:(NSArray *)files baseMasternodeList:(DSMasternodeList *_Nullable)baseMasternodeList withSave:(BOOL)save withReload:(BOOL)reloading onChain:(DSChain *)chain inContext:(NSManagedObjectContext *)context blockHeightLookup:(BlockHeightFinder)blockHeightLookup completion:(void (^)(BOOL success, NSDictionary *masternodeLists))completion {
+- (void)loadMasternodeListsForFiles:(NSArray *)files withSave:(BOOL)save withReload:(BOOL)reloading onChain:(DSChain *)chain inContext:(NSManagedObjectContext *)context blockHeightLookup:(BlockHeightFinder)blockHeightLookup completion:(void (^)(BOOL success, NSDictionary *masternodeLists))completion {
     //doing this none recursively for profiler
-    __block DSMasternodeList *nextBaseMasternodeList = baseMasternodeList;
+    __block DSMasternodeList *nextBaseMasternodeList = nil;
     __block NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
     __block dispatch_group_t dispatch_group = dispatch_group_create();
     dispatch_group_enter(dispatch_group);
@@ -526,7 +524,6 @@
         __block dispatch_semaphore_t sem = dispatch_semaphore_create(0);
         dispatch_group_enter(dispatch_group);
         DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
-        [mndiffContext setBaseMasternodeList:nextBaseMasternodeList];
         [mndiffContext setUseInsightAsBackup:NO];
         [mndiffContext setChain:chain];
         [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
@@ -829,11 +826,14 @@
                     return 122088;
                 };
                 DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
-                [mndiffContext setBaseMasternodeList:masternodeList122064];
                 [mndiffContext setUseInsightAsBackup:NO];
                 [mndiffContext setChain:chain];
                 [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
-                    return nil;
+                    if (uint256_eq(blockHash, masternodeList122064.blockHash)) {
+                        return masternodeList122064;
+                    } else {
+                        return nil;
+                    }
                 }];
                 [mndiffContext setBlockHeightLookup:blockHeightLookup122088];
 
@@ -1000,7 +1000,6 @@
     dispatch_semaphore_t sem = dispatch_semaphore_create(0);
 
     [self loadMasternodeListsForFiles:files
-        baseMasternodeList:nil
         withSave:NO
         withReload:NO
         onChain:chain
@@ -1045,7 +1044,6 @@
 
 
     [self loadMasternodeListsForFiles:files
-        baseMasternodeList:nil
         withSave:YES
         withReload:NO
         onChain:chain
@@ -1299,7 +1297,6 @@
 
 
     [self loadMasternodeListsForFiles:files
-        baseMasternodeList:nil
         withSave:NO
         withReload:NO
         onChain:chain
@@ -1528,7 +1525,6 @@
                 return UINT32_MAX;
             };
             [self loadMasternodeListsForFiles:@[@"MNL_0_1094976"]
-                           baseMasternodeList:nil
                                      withSave:NO
                                    withReload:NO
                                       onChain:chain
@@ -1569,7 +1565,6 @@
 
 
     [self loadMasternodeListsForFiles:files
-        baseMasternodeList:nil
         withSave:NO
         withReload:NO
         onChain:chain
@@ -1860,7 +1855,6 @@
                 return UINT32_MAX;
             };
             [self loadMasternodeListsForFiles:@[@"MNL_0_1095720"]
-                           baseMasternodeList:nil
                                      withSave:NO
                                    withReload:NO
                                       onChain:chain
@@ -2145,7 +2139,6 @@
     };
 
     [self loadMasternodeListsForFiles:files
-                   baseMasternodeList:nil
                              withSave:YES
                            withReload:YES
                               onChain:chain
@@ -2442,7 +2435,6 @@
     };
 
     [self loadMasternodeListsForFiles:files
-                   baseMasternodeList:nil
                              withSave:YES
                            withReload:YES
                               onChain:chain
@@ -2719,7 +2711,6 @@
     };
 
     [self loadMasternodeListsForFiles:files
-                   baseMasternodeList:nil
                              withSave:YES
                            withReload:NO
                               onChain:chain
@@ -2785,14 +2776,16 @@
         NSLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)", uint256_reverse_hex(baseBlockHash), blockHeightLookup(baseBlockHash), uint256_reverse_hex(blockHash1092912), blockHeightLookup(blockHash1092912));
 
         DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
-        [mndiffContext setBaseMasternodeList:reloadedMasternodeList1092888];
         [mndiffContext setUseInsightAsBackup:NO];
         [mndiffContext setChain:chain];
         [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
-            if ([masternodeLists objectForKey:uint256_data(blockHash)]) {
+            if (uint256_eq(blockHash, @"000000000000001dbcd3a23c131fedde3acd6da89275e7f9fcae03f3107da861".hexToData.reverse.UInt256)) {
+                return reloadedMasternodeList1092888;
+            } else if ([masternodeLists objectForKey:uint256_data(blockHash)]) {
                 return [masternodeLists objectForKey:uint256_data(blockHash)];
+            } else {
+                return nil; //no known previous lists
             }
-            return nil; //no known previous lists
         }];
         [mndiffContext setBlockHeightLookup:^uint32_t(UInt256 blockHash) {
             NSString *blockHashString = uint256_reverse_hex(blockHash);
@@ -2835,10 +2828,12 @@
 
                 NSLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)", uint256_reverse_hex(baseBlockHash), [chain heightForBlockHash:baseBlockHash], uint256_reverse_hex(blockHash1092940), [chain heightForBlockHash:blockHash1092940]);
                 DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
-                [mndiffContext setBaseMasternodeList:reloadedMasternodeList1092916];
                 [mndiffContext setUseInsightAsBackup:NO];
                 [mndiffContext setChain:chain];
                 [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
+                    if (uint256_eq(reloadedMasternodeList1092916.blockHash, blockHash)) {
+                        return reloadedMasternodeList1092916;
+                    }
                     if ([masternodeLists objectForKey:uint256_data(blockHash)]) {
                         return [masternodeLists objectForKey:uint256_data(blockHash)];
                     }
@@ -3049,10 +3044,12 @@
             };
             DSMasternodeList *masternodeList119064 = result119064.masternodeList;
             DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
-            [mndiffContext setBaseMasternodeList:masternodeList119064];
             [mndiffContext setUseInsightAsBackup:NO];
             [mndiffContext setChain:chain];
             [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
+                if (uint256_eq(blockHash, masternodeList119064.blockHash)) {
+                    return masternodeList119064;
+                }
                 return nil;
             }];
             [mndiffContext setBlockHeightLookup:blockHeightLookup2];
@@ -3198,10 +3195,12 @@
             XCTAssert(uint256_eq(blockHash370368, baseBlockHash), @"Base block hash should be from block 119064");
 
             DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
-            [mndiffContext setBaseMasternodeList:masternodeList370368];
             [mndiffContext setUseInsightAsBackup:NO];
             [mndiffContext setChain:chain];
             [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
+                if (uint256_eq(blockHash, masternodeList370368.blockHash)) {
+                    return masternodeList370368;
+                }
                 return nil;
             }];
             [mndiffContext setBlockHeightLookup:^uint32_t(UInt256 blockHash) {

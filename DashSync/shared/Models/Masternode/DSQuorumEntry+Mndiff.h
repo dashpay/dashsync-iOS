@@ -24,10 +24,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSQuorumEntry (Mndiff)
 
-+ (NSMutableDictionary<NSNumber *, NSMutableDictionary<NSData *, DSQuorumEntry *> *> *)entriesWith:(LLMQMap *_Nullable *_Nonnull)entries count:(uintptr_t)count onChain:(DSChain *)chain;
++ (NSMutableDictionary<NSNumber *, NSMutableDictionary<NSData *, DSQuorumEntry *> *> *)entriesWith:(LLMQEntry *_Nullable *_Nonnull)entries count:(uintptr_t)count onChain:(DSChain *)chain;
 
-- (QuorumEntry *)ffi_malloc;
-+ (void)ffi_free:(QuorumEntry *)entry;
+- (LLMQEntry *)ffi_malloc;
++ (void)ffi_free:(LLMQEntry *)entry;
 
 @end
 

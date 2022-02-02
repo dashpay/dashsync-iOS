@@ -19,24 +19,25 @@
 
 @implementation DSQRInfoProcessingResult
 
-+ (instancetype)processingResultWith:(QuorumRotationInfo *)quorumRotationInfo onChain:(DSChain *)chain {
++ (instancetype)processingResultWith:(LLMQRotationInfoResult *)result onChain:(DSChain *)chain {
     DSQRInfoProcessingResult *processingResult = [[DSQRInfoProcessingResult alloc] init];
-    processingResult.snapshotAtHC = [DSQuorumSnapshot quorumSnapshotWith:quorumRotationInfo->snapshot_at_h_c];
-    processingResult.snapshotAtH2C = [DSQuorumSnapshot quorumSnapshotWith:quorumRotationInfo->snapshot_at_h_2c];
-    processingResult.snapshotAtH3C = [DSQuorumSnapshot quorumSnapshotWith:quorumRotationInfo->snapshot_at_h_3c];
-    BOOL extraShare = quorumRotationInfo->extra_share;
+    processingResult.snapshotAtHC = [DSQuorumSnapshot quorumSnapshotWith:result->snapshot_at_h_c];
+    processingResult.snapshotAtH2C = [DSQuorumSnapshot quorumSnapshotWith:result->snapshot_at_h_2c];
+    processingResult.snapshotAtH3C = [DSQuorumSnapshot quorumSnapshotWith:result->snapshot_at_h_3c];
+    BOOL extraShare = result->extra_share;
     processingResult.extraShare = extraShare;
-    processingResult.mnListDiffAtTip = [DSMnListDiff mnListDiffWith:quorumRotationInfo->list_diff_tip onChain:chain];
-    processingResult.mnListDiffAtH = [DSMnListDiff mnListDiffWith:quorumRotationInfo->list_diff_at_h onChain:chain];
-    processingResult.mnListDiffAtHC = [DSMnListDiff mnListDiffWith:quorumRotationInfo->list_diff_at_h_c onChain:chain];
-    processingResult.mnListDiffAtH2C = [DSMnListDiff mnListDiffWith:quorumRotationInfo->list_diff_at_h_2c onChain:chain];
-    processingResult.mnListDiffAtH3C = [DSMnListDiff mnListDiffWith:quorumRotationInfo->list_diff_at_h_3c onChain:chain];
+    
+    processingResult.mnListDiffResultAtTip = [DSMnDiffProcessingResult processingResultWith:result->result_at_tip onChain:chain];
+    processingResult.mnListDiffResultAtH = [DSMnDiffProcessingResult processingResultWith:result->result_at_h onChain:chain];
+    processingResult.mnListDiffResultAtHC = [DSMnDiffProcessingResult processingResultWith:result->result_at_h_c onChain:chain];
+    processingResult.mnListDiffResultAtH2C = [DSMnDiffProcessingResult processingResultWith:result->result_at_h_2c onChain:chain];
+    processingResult.mnListDiffResultAtH3C = [DSMnDiffProcessingResult processingResultWith:result->result_at_h_3c onChain:chain];
     if (extraShare) {
-        processingResult.snapshotAtH4C = [DSQuorumSnapshot quorumSnapshotWith:quorumRotationInfo->snapshot_at_h_4c];
-        processingResult.mnListDiffAtH4C = [DSMnListDiff mnListDiffWith:quorumRotationInfo->list_diff_at_h_4c onChain:chain];
+        processingResult.snapshotAtH4C = [DSQuorumSnapshot quorumSnapshotWith:result->snapshot_at_h_4c];
+        processingResult.mnListDiffResultAtH4C = [DSMnDiffProcessingResult processingResultWith:result->result_at_h_4c onChain:chain];
     }
-    NSMutableOrderedSet<NSData *> *blockHashList = [NSMutableOrderedSet orderedSet];
-    for (NSUInteger i = 0; i < quorumRotationInfo->block_hash_list_num; i++) {
+    /*NSMutableOrderedSet<NSData *> *blockHashList = [NSMutableOrderedSet orderedSet];
+    for (NSUInteger i = 0; i < llmqRotationInfo->block_hash_list_num; i++) {
         NSData *hash = [NSData dataWithBytes:quorumRotationInfo->block_hash_list[i] length:32];
         [blockHashList addObject:hash];
     }
@@ -52,7 +53,7 @@
         DSMnListDiff *mnListDiff = [DSMnListDiff mnListDiffWith:quorumRotationInfo->mn_list_diff_list[i] onChain:chain];
         [mnListDiffList addObject:mnListDiff];
     }
-    processingResult.mnListDiffList = mnListDiffList;
+    processingResult.mnListDiffList = mnListDiffList;*/
     return processingResult;
 }
 

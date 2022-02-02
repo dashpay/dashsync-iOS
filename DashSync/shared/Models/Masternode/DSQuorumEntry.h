@@ -38,7 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL saved;
 
 - (instancetype)initWithVersion:(uint16_t)version type:(DSLLMQType)type quorumHash:(UInt256)quorumHash quorumIndex:(uint32_t)quorumIndex quorumPublicKey:(UInt384)quorumPublicKey quorumEntryHash:(UInt256)commitmentHash verified:(BOOL)verified onChain:(DSChain *)chain;
-- (instancetype)initWithEntry:(QuorumEntry *)entry onChain:(DSChain *)chain;
+- (instancetype)initWithEntry:(LLMQEntry *)entry onChain:(DSChain *)chain;
 
 - (BOOL)validateWithMasternodeList:(DSMasternodeList *)masternodeList;
 - (BOOL)validateWithMasternodeList:(DSMasternodeList *)masternodeList blockHeightLookup:(BlockHeightFinder)blockHeightLookup;

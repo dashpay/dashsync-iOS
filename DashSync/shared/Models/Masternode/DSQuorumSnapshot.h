@@ -24,9 +24,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic) NSOrderedSet<NSNumber *> *memberList;
 @property (nonatomic) NSOrderedSet<NSNumber *> *skipList;
-@property (nonatomic) QuorumSnapshotSkipMode skipListMode;
+@property (nonatomic) LLMQSnapshotSkipMode skipListMode;
 
-+ (instancetype)quorumSnapshotWith:(QuorumSnapshot *)quorumSnapshot;
++ (instancetype)quorumSnapshotWith:(LLMQSnapshot *)quorumSnapshot;
 
 @end
 

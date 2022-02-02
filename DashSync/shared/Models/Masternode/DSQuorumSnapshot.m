@@ -19,7 +19,7 @@
 
 @implementation DSQuorumSnapshot
 
-+ (instancetype)quorumSnapshotWith:(QuorumSnapshot *)quorumSnapshot {
++ (instancetype)quorumSnapshotWith:(LLMQSnapshot *)quorumSnapshot {
     DSQuorumSnapshot *snapshot = [[DSQuorumSnapshot alloc] init];
     NSMutableOrderedSet<NSNumber *> *memberList = [NSMutableOrderedSet orderedSet];
     for (NSUInteger i = 0; i < quorumSnapshot->member_list_length; i++) {

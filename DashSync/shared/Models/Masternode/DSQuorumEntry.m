@@ -85,7 +85,7 @@
     return self;
 }
 
-- (instancetype)initWithEntry:(QuorumEntry *)entry onChain:(DSChain *)chain {
+- (instancetype)initWithEntry:(LLMQEntry *)entry onChain:(DSChain *)chain {
     if (!(self = [super init])) return nil;
     self.allCommitmentAggregatedSignature = *((UInt768 *)entry->all_commitment_aggregated_signature);
     if (entry->commitment_hash) {
@@ -93,12 +93,12 @@
     }
     self.length = (uint32_t)entry->length;
     self.llmqType = (DSLLMQType)entry->llmq_type;
-    self.quorumEntryHash = *((UInt256 *)entry->quorum_entry_hash);
-    self.quorumHash = *((UInt256 *)entry->quorum_hash);
-    self.quorumPublicKey = *((UInt384 *)entry->quorum_public_key);
-    self.quorumThresholdSignature = *((UInt768 *)entry->quorum_threshold_signature);
-    self.quorumVerificationVectorHash = *((UInt256 *)entry->quorum_verification_vector_hash);
-    self.quorumIndex = entry->quorum_index;
+    self.quorumEntryHash = *((UInt256 *)entry->entry_hash);
+    self.quorumHash = *((UInt256 *)entry->llmq_hash);
+    self.quorumPublicKey = *((UInt384 *)entry->public_key);
+    self.quorumThresholdSignature = *((UInt768 *)entry->threshold_signature);
+    self.quorumVerificationVectorHash = *((UInt256 *)entry->verification_vector_hash);
+    self.quorumIndex = entry->index;
     self.saved = entry->saved;
     self.signersBitset = [NSData dataWithBytes:entry->signers_bitset length:entry->signers_bitset_length];
     self.signersCount = (uint32_t)entry->signers_count;
@@ -115,7 +115,7 @@
     [data appendUInt16:self.version];
     [data appendUInt8:self.llmqType];
     [data appendUInt256:self.quorumHash];
-    if (self.version == QUORUM_INDEXED_VERSION)
+    if (self.version == LLMQ_INDEXED_VERSION)
         [data appendUInt32:self.quorumIndex];
     [data appendVarInt:self.signersCount];
     [data appendData:self.signersBitset];
@@ -140,7 +140,7 @@
     NSMutableData *data = [NSMutableData data];
     [data appendVarInt:self.llmqType];
     [data appendUInt256:self.quorumHash];
-    if (self.version == QUORUM_INDEXED_VERSION)
+    if (self.version == LLMQ_INDEXED_VERSION)
         [data appendUInt32:self.quorumIndex];
     [data appendVarInt:self.validMembersCount];
     [data appendData:self.validMembersBitset];

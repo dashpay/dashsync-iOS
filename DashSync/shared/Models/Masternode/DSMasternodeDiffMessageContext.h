@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic) DSChain *chain;
 @property (nonatomic, nullable) DSMerkleBlock *lastBlock;
-@property (nonatomic, nullable) DSMasternodeList *baseMasternodeList;
+//@property (nonatomic, nullable) NSData *lastBlockMerkleRoot;
 @property (nonatomic) BOOL useInsightAsBackup;
 @property (nonatomic, copy) DSMasternodeList * (^masternodeListLookup)(UInt256 blockHash);
 @property (nonatomic, copy) BlockHeightFinder blockHeightLookup;

@@ -16,7 +16,7 @@
 //
 
 #import "DSChain.h"
-#import "DSMnListDiff.h"
+#import "DSMnDiffProcessingResult.h"
 #import "DSQuorumSnapshot.h"
 #import "dash_shared_core.h"
 #import <Foundation/Foundation.h>
@@ -30,19 +30,19 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) DSQuorumSnapshot *snapshotAtH3C;
 @property (nonatomic) DSQuorumSnapshot *_Nullable snapshotAtH4C;
 
-@property (nonatomic) DSMnListDiff *mnListDiffAtTip;
-@property (nonatomic) DSMnListDiff *mnListDiffAtH;
-@property (nonatomic) DSMnListDiff *mnListDiffAtHC;
-@property (nonatomic) DSMnListDiff *mnListDiffAtH2C;
-@property (nonatomic) DSMnListDiff *mnListDiffAtH3C;
-@property (nonatomic) DSMnListDiff *_Nullable mnListDiffAtH4C;
+@property (nonatomic) DSMnDiffProcessingResult *mnListDiffResultAtTip;
+@property (nonatomic) DSMnDiffProcessingResult *mnListDiffResultAtH;
+@property (nonatomic) DSMnDiffProcessingResult *mnListDiffResultAtHC;
+@property (nonatomic) DSMnDiffProcessingResult *mnListDiffResultAtH2C;
+@property (nonatomic) DSMnDiffProcessingResult *mnListDiffResultAtH3C;
+@property (nonatomic) DSMnDiffProcessingResult *_Nullable mnListDiffResultAtH4C;
 
 @property (nonatomic) BOOL extraShare;
-@property (nonatomic) NSOrderedSet<NSData *> *blockHashList;
-@property (nonatomic) NSOrderedSet<DSQuorumSnapshot *> *snapshotList;
-@property (nonatomic) NSOrderedSet<DSMnListDiff *> *mnListDiffList;
+//@property (nonatomic) NSOrderedSet<NSData *> *blockHashList;
+//@property (nonatomic) NSOrderedSet<DSQuorumSnapshot *> *snapshotList;
+//@property (nonatomic) NSOrderedSet<DSMnListDiff *> *mnListDiffList;
 
-+ (instancetype)processingResultWith:(QuorumRotationInfo *)quorumRotationInfo onChain:(DSChain *)chain;
++ (instancetype)processingResultWith:(LLMQRotationInfoResult *)result onChain:(DSChain *)chain;
 
 @end
 
