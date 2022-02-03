@@ -312,13 +312,15 @@
 
         for (NSData *cborData in getIdentitiesResponse.identitiesArray) {
             if (!cborData.length) continue;
+            
             NSArray<NSData *> *arrayOfIdentities = [cborData ds_decodeCborError:&error];
             if (arrayOfIdentities.count == 0) continue;
+            
             NSData *identityData = arrayOfIdentities.firstObject;
             uint32_t version = [identityData UInt32AtOffset:0];
-            identityData = [arrayOfIdentities.firstObject subdataWithRange:NSMakeRange(4, identityData.length - 4)];
-            NSDictionary *identityDictionary = [identityData ds_decodeCborError:&error];
             
+            identityData = [identityData subdataWithRange:NSMakeRange(4, identityData.length - 4)];
+            NSDictionary *identityDictionary = [identityData ds_decodeCborError:&error];
             
             if (error) {
                 self.decodingError = error;
