@@ -480,8 +480,8 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     DSPlatformRequestLog(@"fetchIdentitiesByKeyHashes %@", keyHashesArray);
     GetIdentitiesByPublicKeyHashesRequest *getIdentitiesByPublicKeyHashesRequest = [[GetIdentitiesByPublicKeyHashesRequest alloc] init];
     getIdentitiesByPublicKeyHashesRequest.publicKeyHashesArray = [keyHashesArray mutableCopy];
-    getIdentitiesByPublicKeyHashesRequest.prove = NO; 
-    DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] initForGetIdentitiesByPublicKeyHashesRequest:keyHashesArray withChain:self.chain requireProof:NO];
+    getIdentitiesByPublicKeyHashesRequest.prove = DSPROVE_PLATFORM;
+    DSDAPIGRPCResponseHandler *responseHandler = [[DSDAPIGRPCResponseHandler alloc] initForGetIdentitiesByPublicKeyHashesRequest:keyHashesArray withChain:self.chain requireProof:DSPROVE_PLATFORM];
     responseHandler.host = [NSString stringWithFormat:@"%@:%d", self.ipAddress, self.chain.standardDapiGRPCPort];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.completionQueue = completionQueue;
