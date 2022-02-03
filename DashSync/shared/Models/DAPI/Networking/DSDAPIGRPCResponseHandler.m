@@ -136,8 +136,15 @@
         return;
     } else if (!self.requireProof && !identityResponse.hasProof) {
         NSData *cborData = identityResponse.identity;
+        uint32_t version = [cborData UInt32AtOffset:0];
         NSData *identityData = [cborData subdataWithRange:NSMakeRange(4, cborData.length - 4)];
-        self.responseObject = [identityData ds_decodeCborError:&error];
+        NSDictionary *identityDictionary = [identityData ds_decodeCborError:&error];
+        
+        NSDictionary *response = @{@(DSPlatformStoredMessage_Version): @(version),
+                                 @(DSPlatformStoredMessage_Item): identityDictionary
+        };
+        
+        self.responseObject = response;
     } else {
         Proof *proof = identityResponse.proof;
         ResponseMetadata *metaData = identityResponse.metadata;
