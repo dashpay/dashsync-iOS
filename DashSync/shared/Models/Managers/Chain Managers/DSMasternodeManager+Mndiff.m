@@ -98,7 +98,7 @@ bool validateQuorumCallback(LLMQValidationData *data, const void *context) {
 + (void)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion {
     DSChain *chain = context.chain;
     UInt256 merkleRoot = context.lastBlock.merkleRoot;
-    MNListDiffResult *result = mndiff_process(message.bytes, message.length, masternodeListLookupCallback, masternodeListDestroyCallback, uint256_data(merkleRoot).bytes, context.useInsightAsBackup, addInsightLookup, shouldProcessQuorumType, validateQuorumCallback, blockHeightListLookupCallback, (__bridge void *)(context));
+    MNListDiffResult *result = mndiff_process(message.bytes, message.length, context.baseMasternodeListHash.bytes, uint256_data(merkleRoot).bytes, context.useInsightAsBackup, blockHeightListLookupCallback, masternodeListLookupCallback, masternodeListDestroyCallback, addInsightLookup, shouldProcessQuorumType, validateQuorumCallback, (__bridge void *)(context));
     DSMnDiffProcessingResult *processingResult = [DSMnDiffProcessingResult processingResultWith:result onChain:chain];
     mndiff_destroy(result);
     completion(processingResult);
@@ -116,7 +116,7 @@ bool validateQuorumCallback(LLMQValidationData *data, const void *context) {
 + (void)processQRInfo:(LLMQRotationInfo *)info withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSQRInfoProcessingResult *result))completion {
     DSChain *chain = context.chain;
     UInt256 merkleRoot = context.lastBlock.merkleRoot;
-    LLMQRotationInfoResult *result = llmq_rotation_info_process(info, uint256_data(merkleRoot).bytes, masternodeListLookupCallback, masternodeListDestroyCallback, context.useInsightAsBackup, addInsightLookup, shouldProcessQuorumType, validateQuorumCallback, blockHeightListLookupCallback, (__bridge void *)(context));
+    LLMQRotationInfoResult *result = llmq_rotation_info_process(info, context.baseMasternodeListHash.bytes, uint256_data(merkleRoot).bytes, context.useInsightAsBackup, blockHeightListLookupCallback, masternodeListLookupCallback, masternodeListDestroyCallback, addInsightLookup, shouldProcessQuorumType, validateQuorumCallback, (__bridge void *)(context));
     DSQRInfoProcessingResult *processingResult = [DSQRInfoProcessingResult processingResultWith:result onChain:chain];
     llmq_rotation_info_result_destroy(result);
     completion(processingResult);

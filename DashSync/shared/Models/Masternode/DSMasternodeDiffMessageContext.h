@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSMasternodeDiffMessageContext : NSObject
 
 @property (nonatomic) DSChain *chain;
+@property (nonatomic, nullable) NSData *baseMasternodeListHash;
 @property (nonatomic, nullable) DSMerkleBlock *lastBlock;
 //@property (nonatomic, nullable) NSData *lastBlockMerkleRoot;
 @property (nonatomic) BOOL useInsightAsBackup;

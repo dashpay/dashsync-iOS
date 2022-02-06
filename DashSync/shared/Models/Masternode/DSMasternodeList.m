@@ -344,8 +344,9 @@
 
 - (NSDictionary *)quorums {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-    for (NSNumber *number in self.mQuorums) {
-        dictionary[number] = [[self.mQuorums objectForKey:number] copy];
+    NSMutableDictionary<NSNumber *, NSMutableDictionary<NSData *, DSQuorumEntry *> *> *q = [self.mQuorums copy];
+    for (NSNumber *number in q) {
+        dictionary[number] = [q objectForKey:number];
     }
     return [dictionary copy];
 }

@@ -42,17 +42,22 @@
 
 - (MasternodeList *)ffi_malloc {
     NSDictionary<NSNumber *, NSDictionary<NSData *, DSQuorumEntry *> *> *quorums = [self quorums];
+    NSMutableDictionary<NSData *, DSQuorumEntry *> *quorumsDict = [NSMutableDictionary dictionary];
+    for (NSNumber *type in quorums) {
+        NSDictionary<NSData *, DSQuorumEntry *> *quorumsMaps = quorums[type];
+        for (NSData *hash in quorumsMaps) {
+            quorumsDict[hash] = quorumsMaps[hash];
+        }
+    }
+
     NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *masternodes = [self simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash];
-    uintptr_t quorums_count = quorums.count;
+    uintptr_t quorums_count = quorumsDict.count;
     uintptr_t masternodes_count = masternodes.count;
     MasternodeList *masternode_list = malloc(sizeof(MasternodeList));
     LLMQEntry **quorums_values = malloc(quorums_count * sizeof(LLMQEntry *));
     int i = 0;
-    for (NSNumber *type in quorums) {
-        NSDictionary<NSData *, DSQuorumEntry *> *quorumsMaps = quorums[type];
-        for (NSData *hash in quorumsMaps) {
-            quorums_values[i++] = [quorumsMaps[hash] ffi_malloc];
-        }
+    for (NSData *hash in quorumsDict) {
+        quorums_values[i++] = [quorumsDict[hash] ffi_malloc];
     }
     masternode_list->quorums = quorums_values;
     masternode_list->quorums_count = quorums_count;
