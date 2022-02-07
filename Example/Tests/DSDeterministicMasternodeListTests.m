@@ -515,12 +515,10 @@
         NSLog(@"---> loadMasternodeListsForFiles: %@", file);
         NSUInteger length = message.length;
         NSUInteger offset = 0;
-
         if (length - offset < 32) return;
         __unused UInt256 baseBlockHash = [message readUInt256AtOffset:&offset];
         if (length - offset < 32) return;
         UInt256 blockHash = [message readUInt256AtOffset:&offset];
-
         __block dispatch_semaphore_t sem = dispatch_semaphore_create(0);
         dispatch_group_enter(dispatch_group);
         DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
@@ -593,7 +591,7 @@
                 dictionary[uint256_data(masternodeList.blockHash)] = masternodeList;
                 nextBaseMasternodeList = masternodeList;
             } else {
-                [dictionary setObject:masternodeList forKey:uint256_data(masternodeList.blockHash)];
+                dictionary[uint256_data(masternodeList.blockHash)] = masternodeList;
                 stop = TRUE;
             }
             dispatch_semaphore_signal(sem);
