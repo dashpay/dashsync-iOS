@@ -524,6 +524,7 @@
         __block dispatch_semaphore_t sem = dispatch_semaphore_create(0);
         dispatch_group_enter(dispatch_group);
         DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
+        [mndiffContext setBaseMasternodeListHash:uint256_data(nextBaseMasternodeList.blockHash)];
         [mndiffContext setUseInsightAsBackup:NO];
         [mndiffContext setChain:chain];
         [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
