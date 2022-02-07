@@ -564,20 +564,12 @@
                 }
 
                 if (reloading) {
-                    if (!nextBaseMasternodeList) {
-                        DSMasternodeList *masternodeListNew = masternodeList;
-                        [chain.chainManager.masternodeManager reloadMasternodeListsWithBlockHeightLookup:blockHeightLookup];
-                        DSMasternodeList *reloadedMasternodeListNew = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListNew.blockHash];
-                        //NSDictionary *comparisonNew = [masternodeListNew compare:reloadedMasternodeListNew blockHeightLookup:blockHeightLookup];
-                        XCTAssertEqualObjects(uint256_data([reloadedMasternodeListNew calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]), uint256_data([masternodeListNew calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]), @"");
-                    } else {
-                        DSMasternodeList *masternodeListNew = masternodeList;
-                        DSMasternodeList *masternodeListOld = nextBaseMasternodeList;
-                        [chain.chainManager.masternodeManager reloadMasternodeListsWithBlockHeightLookup:blockHeightLookup]; //simulate that we turned off the phone
-                        DSMasternodeList *reloadedMasternodeListNew = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListNew.blockHash];
+                    DSMasternodeList *masternodeListNew = masternodeList;
+                    DSMasternodeList *masternodeListOld = nextBaseMasternodeList;
+                    [chain.chainManager.masternodeManager reloadMasternodeListsWithBlockHeightLookup:blockHeightLookup]; //simulate that we turned off the phone
+                    DSMasternodeList *reloadedMasternodeListNew = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListNew.blockHash];
+                    if (masternodeListOld) {
                         DSMasternodeList *reloadedMasternodeListOld = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListOld.blockHash];
-                        //NSDictionary *comparisonOld = [masternodeListOld compare:reloadedMasternodeListOld blockHeightLookup:blockHeightLookup];
-                        //NSDictionary *comparisonNew = [masternodeListNew compare:reloadedMasternodeListNew blockHeightLookup:blockHeightLookup];
                         NSArray *reloadedHashes = [reloadedMasternodeListOld hashesForMerkleRootWithBlockHeightLookup:blockHeightLookup];
                         NSArray *hashes = [masternodeListOld hashesForMerkleRootWithBlockHeightLookup:blockHeightLookup];
                         if (![reloadedHashes isEqualToArray:hashes]) {
@@ -593,12 +585,11 @@
                         XCTAssertEqualObjects(reloadedMasternodeListNew.providerTxOrderedHashes, masternodeListNew.providerTxOrderedHashes);
                         XCTAssertEqualObjects(reloadedMasternodeListOld.providerTxOrderedHashes, masternodeListOld.providerTxOrderedHashes);
                         XCTAssertEqualObjects(reloadedHashes, hashes);
-                        XCTAssertEqualObjects(uint256_data([reloadedMasternodeListNew calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]), uint256_data([masternodeListNew calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]), @"");
                         XCTAssertEqualObjects(uint256_data([reloadedMasternodeListOld calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]), uint256_data([masternodeListOld calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]), @"");
                     }
+                    XCTAssertEqualObjects(uint256_data([reloadedMasternodeListNew calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]), uint256_data([masternodeListNew calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup]), @"");
                 }
-                [dictionary setObject:masternodeList
-                               forKey:uint256_data(masternodeList.blockHash)];
+                dictionary[uint256_data(masternodeList.blockHash)] = masternodeList;
                 nextBaseMasternodeList = masternodeList;
             } else {
                 [dictionary setObject:masternodeList forKey:uint256_data(masternodeList.blockHash)];
@@ -1042,7 +1033,118 @@
     }];
     [chain.chainManager.masternodeManager reloadMasternodeLists];
     NSArray *files = @[@"MNL_0_1090944", @"MNL_1090944_1091520", @"MNL_1091520_1091808", @"MNL_1091808_1092096", @"MNL_1092096_1092336", @"MNL_1092336_1092360", @"MNL_1092360_1092384", @"MNL_1092384_1092408", @"MNL_1092408_1092432", @"MNL_1092432_1092456", @"MNL_1092456_1092480", @"MNL_1092480_1092504", @"MNL_1092504_1092528", @"MNL_1092528_1092552", @"MNL_1092552_1092576", @"MNL_1092576_1092600", @"MNL_1092600_1092624", @"MNL_1092624_1092648", @"MNL_1092648_1092672", @"MNL_1092672_1092696", @"MNL_1092696_1092720", @"MNL_1092720_1092744", @"MNL_1092744_1092768", @"MNL_1092768_1092792", @"MNL_1092792_1092816", @"MNL_1092816_1092840", @"MNL_1092840_1092864", @"MNL_1092864_1092888", @"MNL_1092888_1092916"];
-
+    
+    NSDictionary *blockHeightsDict = @{
+        @"000000000000000bf16cfee1f69cd472ac1d0285d74d025caa27cebb0fb6842f": @1090392,
+        @"000000000000000d6f921ffd1b48815407c1d54edc93079b7ec37a14a9c528f7": @1090776,
+        @"000000000000000c559941d24c167053c5c00aea59b8521f5cef764271dbd3c5": @1091280,
+        @"0000000000000003269a36d2ce1eee7753a2d2db392fff364f64f5a409805ca3": @1092840,
+        @"000000000000001a505b133ea44b594b194f12fa08650eb66efb579b1600ed1e": @1090368,
+        @"0000000000000006998d05eff0f4e9b6a7bab1447534eccb330972a7ef89ef65": @1091424,
+        @"000000000000001d9b6925a0bc2b744dfe38ff7da2ca0256aa555bb688e21824": @1090920,
+        @"000000000000000c22e2f5ca2113269ec62193e93158558c8932ba1720cea64f": @1092648,
+        @"0000000000000020019489504beba1d6197857e63c44da3eb9e3b20a24f40d1e": @1092168,
+        @"00000000000000112e41e4b3afda8b233b8cc07c532d2eac5de097b68358c43e": @1088640,
+        @"00000000000000143df6e8e78a3e79f4deed38a27a05766ad38e3152f8237852": @1090944,
+        @"0000000000000028d39e78ee49a950b66215545163b53331115e6e64d4d80328": @1091184,
+        @"00000000000000093b22f6342de731811a5b3fa51f070b7aac6d58390d8bfe8c": @1091664,
+        @"00000000000000037187889dd360aafc49d62a7e76f4ab6cd2813fdf610a7292": @1092504,
+        @"000000000000000aee08f8aaf8a5232cc692ef5fcc016786af72bd9b001ae43b": @1090992,
+        @"000000000000002395b6c4e4cb829556d42c659b585ee4c131a683b9f7e37706": @1092192,
+        @"00000000000000048a9b52e6f46f74d92eb9740e27c1d66e9f2eb63293e18677": @1091976,
+        @"000000000000001b4d519e0a9215e84c3007597cef6823c8f1c637d7a46778f0": @1091448,
+        @"000000000000001730249b150b8fcdb1078cd0dbbfa04fb9a18d26bf7a3e80f2": @1092528,
+        @"000000000000001c3073ff2ee0af660c66762af38e2c5782597e32ed690f0f72": @1092072,
+        @"000000000000000c49954d58132fb8a1c90e4e690995396be91d8f27a07de349": @1092624,
+        @"00000000000000016200a3f98e44f4b9e65da04b86bad799e6bbfa8972f0cead": @1090080,
+        @"000000000000000a80933f2b9b8041fdfc6e94b77ba8786e159669f959431ff2": @1092600,
+        @"00000000000000153afcdccc3186ad2ca4ed10a79bfb01a2c0056c23fe039d86": @1092456,
+        @"00000000000000103bad71d3178a6c9a2f618d9d09419b38e9caee0fddbf664a": @1092864,
+        @"000000000000001b732bc6d52faa8fae97d76753c8e071767a37ba509fe5c24a": @1092360,
+        @"000000000000001a17f82d76a0d5aa2b4f90a6e487df366d437c34e8453f519c": @1091112,
+        @"000000000000000caa00c2c24a385513a1687367157379a57b549007e18869d8": @1090680,
+        @"0000000000000022e463fe13bc19a1fe654c817cb3b8e207cdb4ff73fe0bcd2c": @1091736,
+        @"000000000000001b33b86b6a167d37e3fcc6ba53e02df3cb06e3f272bb89dd7d": @1092744,
+        @"0000000000000006051479afbbb159d722bb8feb10f76b8900370ceef552fc49": @1092432,
+        @"0000000000000008cc37827fd700ec82ee8b54bdd37d4db4319496977f475cf8": @1091328,
+        @"0000000000000006242af03ba5e407c4e8412ef9976da4e7f0fa2cbe9889bcd2": @1089216,
+        @"000000000000001dc4a842ede88a3cc975e2ade4338513d546c52452ab429ba0": @1091496,
+        @"0000000000000010d30c51e8ce1730aae836b00cd43f3e70a1a37d40b47580fd": @1092816,
+        @"00000000000000212441a8ef2495d21b0b7c09e13339dbc34d98c478cc51f8e2": @1092096,
+        @"00000000000000039d7eb80e1bbf6f7f0c43f7f251f30629d858bbcf6a18ab58": @1090728,
+        @"0000000000000004532e9c4a1def38cd71f3297c684bfdb2043c2aec173399e0": @1091904,
+        @"000000000000000b73060901c41d098b91f69fc4f27aef9d7ed7f2296953e407": @1090560,
+        @"0000000000000016659fb35017e1f6560ba7036a3433bfb924d85e3fdfdd3b3d": @1091256,
+        @"000000000000000a3c6796d85c8c49b961363ee88f14bff10c374cd8dd89a9f6": @1092696,
+        @"000000000000000f33533ba1c5d72f678ecd87abe7e974debda238c53b391737": @1092720,
+        @"000000000000000150907537f4408ff4a8610ba8ce2395faa7e44541ce2b6c37": @1090608,
+        @"000000000000001977d3a578e0ac3e4969675a74afe7715b8ffd9f29fbbe7c36": @1091400,
+        @"0000000000000004493e40518e7d3aff585e84564bcd80927f96a07ec80259cb": @1092480,
+        @"000000000000000df5e2e0eb7eaa36fcef28967f7f12e539f74661e03b13bdba": @1090704,
+        @"00000000000000172f1765f4ed1e89ba4b717a475e9e37124626b02d566d31a2": @1090632,
+        @"0000000000000018e62a4938de3428ddaa26e381139489ce1a618ed06d432a38": @1092024,
+        @"000000000000000790bd24e65daaddbaeafdb4383c95d64c0d055e98625746bc": @1091832,
+        @"0000000000000005f28a2cb959b316cd4b43bd29819ea07c27ec96a7d5e18ab7": @1092408,
+        @"00000000000000165a4ace8de9e7a4ba0cddced3434c7badc863ff9e237f0c8a": @1091088,
+        @"00000000000000230ec901e4d372a93c712d972727786a229e98d12694be9d34": @1090416,
+        @"000000000000000bf51de942eb8610caaa55a7f5a0e5ca806c3b631948c5cdcc": @1092336,
+        @"000000000000002323d7ba466a9b671d335c3b2bf630d08f078e4adee735e13a": @1090464,
+        @"0000000000000019db2ad91ab0f67d90df222ce4057f343e176f8786865bcda9": @1091568,
+        @"0000000000000004a38d87062bf37ef978d1fc8718f03d9222c8aa7aa8a4470f": @1090896,
+        @"0000000000000022c909de83351791e0b69d4b4be34b25c8d54c8be3e8708c87": @1091592,
+        @"0000000000000008f3dffcf342279c8b50e49c47e191d3df453fdcd816aced46": @1092792,
+        @"000000000000001d1d7f1b88d6518e6248616c50e4c0abaee6116a72bc998679": @1092048,
+        @"0000000000000020de87be47c5c10a50c9edfd669a586f47f44fa22ae0b2610a": @1090344,
+        @"0000000000000014d1d8d12dd5ff570b06e76e0bbf55d762a94d13b1fe66a922": @1091760,
+        @"000000000000000962d0d319a96d972215f303c588bf50449904f9a1a8cbc7c2": @1089792,
+        @"00000000000000171c58d1d0dbae71973530aa533e4cd9cb2d2597ec30d9b129": @1091352,
+        @"0000000000000004acf649896a7b22783810d5913b31922e3ea224dd4530b717": @1092144,
+        @"0000000000000013479b902955f8ba2d4ce2eb47a7f9f8f1fe477ec4b405bddd": @1090512,
+        @"000000000000001be0bbdb6b326c98ac8a3e181a2a641379c7d4308242bee90b": @1092216,
+        @"000000000000001c09a68353536ccb24b51b74c642d5b6e7e385cff2debc4e64": @1092120,
+        @"0000000000000013974ed8e13d0a50f298be0f2b685bfcfd8896172db6d4a145": @1090824,
+        @"000000000000001dbcd3a23c131fedde3acd6da89275e7f9fcae03f3107da861": @1092888,
+        @"000000000000000a8812d75979aac7c08ac69179037409fd7a368372edd05d23": @1090872,
+        @"000000000000001fafca43cabdb0c6385daffa8a039f3b44b9b17271d7106704": @1090800,
+        @"0000000000000006e9693e34fc55452c82328f31e069df740655b55dd07cb58b": @1091016,
+        @"0000000000000010e7c080046121900cee1c7de7fe063c7d81405293a9764733": @1092384,
+        @"0000000000000022ef41cb09a617d87c12c6841eea47310ae6a4d1e2702bb3d3": @1090752,
+        @"0000000000000017705efcdaefd6a1856becc0b915de6fdccdc9e149c1ff0e8f": @1091856,
+        @"0000000000000000265a9516f35dd85d32d103d4c3b95e81969a03295f46cf0c": @1091952,
+        @"0000000000000002dfd994409f5b6185573ce22eae90b4a1c37003428071f0a8": @1090968,
+        @"000000000000001b8d6aaa56571d987ee50fa2e2e9a28a8482de7a4b52308f25": @1091136,
+        @"0000000000000020635160b49a18336031af2d25d9a37ea211d514f196220e9d": @1090440,
+        @"000000000000001bfb2ac93ebe89d9831995462f965597efcc9008b2d90fd29f": @1091784,
+        @"000000000000000028515b4c442c74e2af945f08ed3b66f05847022cb25bb2ec": @1091688,
+        @"000000000000000ed6b9517da9a1df88d03a5904a780aba1200b474dab0e2e4a": @1090488,
+        @"000000000000000b44a550a61f9751601065ff329c54d20eb306b97d163b8f8c": @1091712,
+        @"000000000000001d831888fbd1899967493856c1abf7219e632b8e73f25e0c81": @1091064,
+        @"00000000000000073b62bf732ab8654d27b1296801ab32b7ac630237665162a5": @1091304,
+        @"0000000000000004c0b03207179143f028c07ede20354fab68c731cb02f95fc8": @1090656,
+        @"000000000000000df9d9376b9c32ea640ecfac406b41445bb3a4b0ee6625e572": @1091040,
+        @"00000000000000145c3e1b3bb6f53d5e2dd441ac41c3cfe48a5746c7b168a415": @1092240,
+        @"000000000000000d8bf4cade14e398d69884e991591cb11ee7fec49167e4ff85": @1092000,
+        @"000000000000001d098ef14fa032b33bcfc8e559351be8cd689e03c9678256a9": @1091472,
+        @"0000000000000000c25139a9227273eb7547a1f558e62c545e62aeb236e66259": @1090584,
+        @"0000000000000010785f105cc7c256b5365c597a9212e99beda94c6eff0647c3": @1091376,
+        @"0000000000000000fafe0f7314104d81ab34ebd066601a38e5e914f2b3cefce9": @1092552,
+        @"000000000000000ddbfad338961f2d900d62f1c3b725fbd72052da062704901c": @1090848,
+        @"000000000000000e5d9359857518aaf3685bf8af55c675cf0d17a45383ca297f": @1091520,
+        @"0000000000000012b444de0be31d695b411dcc6645a3723932cabc6b9164531f": @1092916,
+        @"000000000000001c414007419fc22a2401b07ab430bf433c8cdfb8877fb6b5b7": @1092672,
+        @"000000000000000355efb9a350cc76c7624bf42abea845770a5c3adc2c5b93f4": @1092576,
+        @"000000000000000f327555478a9d580318cb6e15db059642eff84797bf133196": @1091808,
+        @"0000000000000003b3ea97e688f1bec5f95930950b54c1bb01bf67b029739696": @1091640,
+        @"000000000000001a0d96dbc0cac26e445454dd2506702eeee7df6ff35bdcf60e": @1091544,
+        @"000000000000001aac60fafe05124672b19a1c3727dc17f106f11295db1053a3": @1092288,
+        @"000000000000000e37bca1e08dff47ef051199f24e9104dad85014c323464069": @1091208,
+        @"0000000000000013dd0059e5f701a39c0903e7f16d393f55fc896422139a4291": @1092768,
+        @"000000000000000f4c8d5bdf6b89435d3a9789fce401286eb8f3f6eeb84f2a1d": @1091160,
+        @"000000000000001414ff2dd44ee4c01c02e6867228b4e1ff490f635f7de949a5": @1091232,
+        @"0000000000000013b130038d0599cb5a65165fc03b1b38fe2dd1a3bad6e253df": @1092312,
+        @"00000000000000082cb9d6d169dc625f64a6a24756ba796eaab131a998b42910": @1091928,
+        @"0000000000000001e358bce8df79c24def4787bf0bf7af25c040342fae4a18ce": @1091880
+    };
 
     [self loadMasternodeListsForFiles:files
         withSave:YES
@@ -1051,225 +1153,8 @@
         inContext:context
         blockHeightLookup:^uint32_t(UInt256 blockHash) {
             NSString *blockHashString = uint256_reverse_hex(blockHash);
-            if ([blockHashString isEqualToString:@"000000000000000bf16cfee1f69cd472ac1d0285d74d025caa27cebb0fb6842f"]) {
-                return 1090392;
-            } else if ([blockHashString isEqualToString:@"000000000000000d6f921ffd1b48815407c1d54edc93079b7ec37a14a9c528f7"]) {
-                return 1090776;
-            } else if ([blockHashString isEqualToString:@"000000000000000c559941d24c167053c5c00aea59b8521f5cef764271dbd3c5"]) {
-                return 1091280;
-            } else if ([blockHashString isEqualToString:@"0000000000000003269a36d2ce1eee7753a2d2db392fff364f64f5a409805ca3"]) {
-                return 1092840;
-            } else if ([blockHashString isEqualToString:@"000000000000001a505b133ea44b594b194f12fa08650eb66efb579b1600ed1e"]) {
-                return 1090368;
-            } else if ([blockHashString isEqualToString:@"0000000000000006998d05eff0f4e9b6a7bab1447534eccb330972a7ef89ef65"]) {
-                return 1091424;
-            } else if ([blockHashString isEqualToString:@"000000000000001d9b6925a0bc2b744dfe38ff7da2ca0256aa555bb688e21824"]) {
-                return 1090920;
-            } else if ([blockHashString isEqualToString:@"000000000000000c22e2f5ca2113269ec62193e93158558c8932ba1720cea64f"]) {
-                return 1092648;
-            } else if ([blockHashString isEqualToString:@"0000000000000020019489504beba1d6197857e63c44da3eb9e3b20a24f40d1e"]) {
-                return 1092168;
-            } else if ([blockHashString isEqualToString:@"00000000000000112e41e4b3afda8b233b8cc07c532d2eac5de097b68358c43e"]) {
-                return 1088640;
-            } else if ([blockHashString isEqualToString:@"00000000000000143df6e8e78a3e79f4deed38a27a05766ad38e3152f8237852"]) {
-                return 1090944;
-            } else if ([blockHashString isEqualToString:@"0000000000000028d39e78ee49a950b66215545163b53331115e6e64d4d80328"]) {
-                return 1091184;
-            } else if ([blockHashString isEqualToString:@"00000000000000093b22f6342de731811a5b3fa51f070b7aac6d58390d8bfe8c"]) {
-                return 1091664;
-            } else if ([blockHashString isEqualToString:@"00000000000000037187889dd360aafc49d62a7e76f4ab6cd2813fdf610a7292"]) {
-                return 1092504;
-            } else if ([blockHashString isEqualToString:@"000000000000000aee08f8aaf8a5232cc692ef5fcc016786af72bd9b001ae43b"]) {
-                return 1090992;
-            } else if ([blockHashString isEqualToString:@"000000000000002395b6c4e4cb829556d42c659b585ee4c131a683b9f7e37706"]) {
-                return 1092192;
-            } else if ([blockHashString isEqualToString:@"00000000000000048a9b52e6f46f74d92eb9740e27c1d66e9f2eb63293e18677"]) {
-                return 1091976;
-            } else if ([blockHashString isEqualToString:@"000000000000001b4d519e0a9215e84c3007597cef6823c8f1c637d7a46778f0"]) {
-                return 1091448;
-            } else if ([blockHashString isEqualToString:@"000000000000001730249b150b8fcdb1078cd0dbbfa04fb9a18d26bf7a3e80f2"]) {
-                return 1092528;
-            } else if ([blockHashString isEqualToString:@"000000000000001c3073ff2ee0af660c66762af38e2c5782597e32ed690f0f72"]) {
-                return 1092072;
-            } else if ([blockHashString isEqualToString:@"000000000000000c49954d58132fb8a1c90e4e690995396be91d8f27a07de349"]) {
-                return 1092624;
-            } else if ([blockHashString isEqualToString:@"00000000000000016200a3f98e44f4b9e65da04b86bad799e6bbfa8972f0cead"]) {
-                return 1090080;
-            } else if ([blockHashString isEqualToString:@"000000000000000a80933f2b9b8041fdfc6e94b77ba8786e159669f959431ff2"]) {
-                return 1092600;
-            } else if ([blockHashString isEqualToString:@"00000000000000153afcdccc3186ad2ca4ed10a79bfb01a2c0056c23fe039d86"]) {
-                return 1092456;
-            } else if ([blockHashString isEqualToString:@"00000000000000103bad71d3178a6c9a2f618d9d09419b38e9caee0fddbf664a"]) {
-                return 1092864;
-            } else if ([blockHashString isEqualToString:@"000000000000001b732bc6d52faa8fae97d76753c8e071767a37ba509fe5c24a"]) {
-                return 1092360;
-            } else if ([blockHashString isEqualToString:@"000000000000001a17f82d76a0d5aa2b4f90a6e487df366d437c34e8453f519c"]) {
-                return 1091112;
-            } else if ([blockHashString isEqualToString:@"000000000000000caa00c2c24a385513a1687367157379a57b549007e18869d8"]) {
-                return 1090680;
-            } else if ([blockHashString isEqualToString:@"0000000000000022e463fe13bc19a1fe654c817cb3b8e207cdb4ff73fe0bcd2c"]) {
-                return 1091736;
-            } else if ([blockHashString isEqualToString:@"000000000000001b33b86b6a167d37e3fcc6ba53e02df3cb06e3f272bb89dd7d"]) {
-                return 1092744;
-            } else if ([blockHashString isEqualToString:@"0000000000000006051479afbbb159d722bb8feb10f76b8900370ceef552fc49"]) {
-                return 1092432;
-            } else if ([blockHashString isEqualToString:@"0000000000000008cc37827fd700ec82ee8b54bdd37d4db4319496977f475cf8"]) {
-                return 1091328;
-            } else if ([blockHashString isEqualToString:@"0000000000000006242af03ba5e407c4e8412ef9976da4e7f0fa2cbe9889bcd2"]) {
-                return 1089216;
-            } else if ([blockHashString isEqualToString:@"000000000000001dc4a842ede88a3cc975e2ade4338513d546c52452ab429ba0"]) {
-                return 1091496;
-            } else if ([blockHashString isEqualToString:@"0000000000000010d30c51e8ce1730aae836b00cd43f3e70a1a37d40b47580fd"]) {
-                return 1092816;
-            } else if ([blockHashString isEqualToString:@"00000000000000212441a8ef2495d21b0b7c09e13339dbc34d98c478cc51f8e2"]) {
-                return 1092096;
-            } else if ([blockHashString isEqualToString:@"00000000000000039d7eb80e1bbf6f7f0c43f7f251f30629d858bbcf6a18ab58"]) {
-                return 1090728;
-            } else if ([blockHashString isEqualToString:@"0000000000000004532e9c4a1def38cd71f3297c684bfdb2043c2aec173399e0"]) {
-                return 1091904;
-            } else if ([blockHashString isEqualToString:@"000000000000000b73060901c41d098b91f69fc4f27aef9d7ed7f2296953e407"]) {
-                return 1090560;
-            } else if ([blockHashString isEqualToString:@"0000000000000016659fb35017e1f6560ba7036a3433bfb924d85e3fdfdd3b3d"]) {
-                return 1091256;
-            } else if ([blockHashString isEqualToString:@"000000000000000a3c6796d85c8c49b961363ee88f14bff10c374cd8dd89a9f6"]) {
-                return 1092696;
-            } else if ([blockHashString isEqualToString:@"000000000000000f33533ba1c5d72f678ecd87abe7e974debda238c53b391737"]) {
-                return 1092720;
-            } else if ([blockHashString isEqualToString:@"000000000000000150907537f4408ff4a8610ba8ce2395faa7e44541ce2b6c37"]) {
-                return 1090608;
-            } else if ([blockHashString isEqualToString:@"000000000000001977d3a578e0ac3e4969675a74afe7715b8ffd9f29fbbe7c36"]) {
-                return 1091400;
-            } else if ([blockHashString isEqualToString:@"0000000000000004493e40518e7d3aff585e84564bcd80927f96a07ec80259cb"]) {
-                return 1092480;
-            } else if ([blockHashString isEqualToString:@"000000000000000df5e2e0eb7eaa36fcef28967f7f12e539f74661e03b13bdba"]) {
-                return 1090704;
-            } else if ([blockHashString isEqualToString:@"00000000000000172f1765f4ed1e89ba4b717a475e9e37124626b02d566d31a2"]) {
-                return 1090632;
-            } else if ([blockHashString isEqualToString:@"0000000000000018e62a4938de3428ddaa26e381139489ce1a618ed06d432a38"]) {
-                return 1092024;
-            } else if ([blockHashString isEqualToString:@"000000000000000790bd24e65daaddbaeafdb4383c95d64c0d055e98625746bc"]) {
-                return 1091832;
-            } else if ([blockHashString isEqualToString:@"0000000000000005f28a2cb959b316cd4b43bd29819ea07c27ec96a7d5e18ab7"]) {
-                return 1092408;
-            } else if ([blockHashString isEqualToString:@"00000000000000165a4ace8de9e7a4ba0cddced3434c7badc863ff9e237f0c8a"]) {
-                return 1091088;
-            } else if ([blockHashString isEqualToString:@"00000000000000230ec901e4d372a93c712d972727786a229e98d12694be9d34"]) {
-                return 1090416;
-            } else if ([blockHashString isEqualToString:@"000000000000000bf51de942eb8610caaa55a7f5a0e5ca806c3b631948c5cdcc"]) {
-                return 1092336;
-            } else if ([blockHashString isEqualToString:@"000000000000002323d7ba466a9b671d335c3b2bf630d08f078e4adee735e13a"]) {
-                return 1090464;
-            } else if ([blockHashString isEqualToString:@"0000000000000019db2ad91ab0f67d90df222ce4057f343e176f8786865bcda9"]) {
-                return 1091568;
-            } else if ([blockHashString isEqualToString:@"0000000000000004a38d87062bf37ef978d1fc8718f03d9222c8aa7aa8a4470f"]) {
-                return 1090896;
-            } else if ([blockHashString isEqualToString:@"0000000000000022c909de83351791e0b69d4b4be34b25c8d54c8be3e8708c87"]) {
-                return 1091592;
-            } else if ([blockHashString isEqualToString:@"0000000000000008f3dffcf342279c8b50e49c47e191d3df453fdcd816aced46"]) {
-                return 1092792;
-            } else if ([blockHashString isEqualToString:@"000000000000001d1d7f1b88d6518e6248616c50e4c0abaee6116a72bc998679"]) {
-                return 1092048;
-            } else if ([blockHashString isEqualToString:@"0000000000000020de87be47c5c10a50c9edfd669a586f47f44fa22ae0b2610a"]) {
-                return 1090344;
-            } else if ([blockHashString isEqualToString:@"0000000000000014d1d8d12dd5ff570b06e76e0bbf55d762a94d13b1fe66a922"]) {
-                return 1091760;
-            } else if ([blockHashString isEqualToString:@"000000000000000962d0d319a96d972215f303c588bf50449904f9a1a8cbc7c2"]) {
-                return 1089792;
-            } else if ([blockHashString isEqualToString:@"00000000000000171c58d1d0dbae71973530aa533e4cd9cb2d2597ec30d9b129"]) {
-                return 1091352;
-            } else if ([blockHashString isEqualToString:@"0000000000000004acf649896a7b22783810d5913b31922e3ea224dd4530b717"]) {
-                return 1092144;
-            } else if ([blockHashString isEqualToString:@"0000000000000013479b902955f8ba2d4ce2eb47a7f9f8f1fe477ec4b405bddd"]) {
-                return 1090512;
-            } else if ([blockHashString isEqualToString:@"000000000000001be0bbdb6b326c98ac8a3e181a2a641379c7d4308242bee90b"]) {
-                return 1092216;
-            } else if ([blockHashString isEqualToString:@"000000000000001c09a68353536ccb24b51b74c642d5b6e7e385cff2debc4e64"]) {
-                return 1092120;
-            } else if ([blockHashString isEqualToString:@"0000000000000013974ed8e13d0a50f298be0f2b685bfcfd8896172db6d4a145"]) {
-                return 1090824;
-            } else if ([blockHashString isEqualToString:@"000000000000001dbcd3a23c131fedde3acd6da89275e7f9fcae03f3107da861"]) {
-                return 1092888;
-            } else if ([blockHashString isEqualToString:@"000000000000000a8812d75979aac7c08ac69179037409fd7a368372edd05d23"]) {
-                return 1090872;
-            } else if ([blockHashString isEqualToString:@"000000000000001fafca43cabdb0c6385daffa8a039f3b44b9b17271d7106704"]) {
-                return 1090800;
-            } else if ([blockHashString isEqualToString:@"0000000000000006e9693e34fc55452c82328f31e069df740655b55dd07cb58b"]) {
-                return 1091016;
-            } else if ([blockHashString isEqualToString:@"0000000000000010e7c080046121900cee1c7de7fe063c7d81405293a9764733"]) {
-                return 1092384;
-            } else if ([blockHashString isEqualToString:@"0000000000000022ef41cb09a617d87c12c6841eea47310ae6a4d1e2702bb3d3"]) {
-                return 1090752;
-            } else if ([blockHashString isEqualToString:@"0000000000000017705efcdaefd6a1856becc0b915de6fdccdc9e149c1ff0e8f"]) {
-                return 1091856;
-            } else if ([blockHashString isEqualToString:@"0000000000000000265a9516f35dd85d32d103d4c3b95e81969a03295f46cf0c"]) {
-                return 1091952;
-            } else if ([blockHashString isEqualToString:@"0000000000000002dfd994409f5b6185573ce22eae90b4a1c37003428071f0a8"]) {
-                return 1090968;
-            } else if ([blockHashString isEqualToString:@"000000000000001b8d6aaa56571d987ee50fa2e2e9a28a8482de7a4b52308f25"]) {
-                return 1091136;
-            } else if ([blockHashString isEqualToString:@"0000000000000020635160b49a18336031af2d25d9a37ea211d514f196220e9d"]) {
-                return 1090440;
-            } else if ([blockHashString isEqualToString:@"000000000000001bfb2ac93ebe89d9831995462f965597efcc9008b2d90fd29f"]) {
-                return 1091784;
-            } else if ([blockHashString isEqualToString:@"000000000000000028515b4c442c74e2af945f08ed3b66f05847022cb25bb2ec"]) {
-                return 1091688;
-            } else if ([blockHashString isEqualToString:@"000000000000000ed6b9517da9a1df88d03a5904a780aba1200b474dab0e2e4a"]) {
-                return 1090488;
-            } else if ([blockHashString isEqualToString:@"000000000000000b44a550a61f9751601065ff329c54d20eb306b97d163b8f8c"]) {
-                return 1091712;
-            } else if ([blockHashString isEqualToString:@"000000000000001d831888fbd1899967493856c1abf7219e632b8e73f25e0c81"]) {
-                return 1091064;
-            } else if ([blockHashString isEqualToString:@"00000000000000073b62bf732ab8654d27b1296801ab32b7ac630237665162a5"]) {
-                return 1091304;
-            } else if ([blockHashString isEqualToString:@"0000000000000004c0b03207179143f028c07ede20354fab68c731cb02f95fc8"]) {
-                return 1090656;
-            } else if ([blockHashString isEqualToString:@"000000000000000df9d9376b9c32ea640ecfac406b41445bb3a4b0ee6625e572"]) {
-                return 1091040;
-            } else if ([blockHashString isEqualToString:@"00000000000000145c3e1b3bb6f53d5e2dd441ac41c3cfe48a5746c7b168a415"]) {
-                return 1092240;
-            } else if ([blockHashString isEqualToString:@"000000000000000d8bf4cade14e398d69884e991591cb11ee7fec49167e4ff85"]) {
-                return 1092000;
-            } else if ([blockHashString isEqualToString:@"000000000000001d098ef14fa032b33bcfc8e559351be8cd689e03c9678256a9"]) {
-                return 1091472;
-            } else if ([blockHashString isEqualToString:@"0000000000000000c25139a9227273eb7547a1f558e62c545e62aeb236e66259"]) {
-                return 1090584;
-            } else if ([blockHashString isEqualToString:@"0000000000000010785f105cc7c256b5365c597a9212e99beda94c6eff0647c3"]) {
-                return 1091376;
-            } else if ([blockHashString isEqualToString:@"0000000000000000fafe0f7314104d81ab34ebd066601a38e5e914f2b3cefce9"]) {
-                return 1092552;
-            } else if ([blockHashString isEqualToString:@"000000000000000ddbfad338961f2d900d62f1c3b725fbd72052da062704901c"]) {
-                return 1090848;
-            } else if ([blockHashString isEqualToString:@"000000000000000e5d9359857518aaf3685bf8af55c675cf0d17a45383ca297f"]) {
-                return 1091520;
-            } else if ([blockHashString isEqualToString:@"0000000000000012b444de0be31d695b411dcc6645a3723932cabc6b9164531f"]) {
-                return 1092916;
-            } else if ([blockHashString isEqualToString:@"000000000000001c414007419fc22a2401b07ab430bf433c8cdfb8877fb6b5b7"]) {
-                return 1092672;
-            } else if ([blockHashString isEqualToString:@"000000000000000355efb9a350cc76c7624bf42abea845770a5c3adc2c5b93f4"]) {
-                return 1092576;
-            } else if ([blockHashString isEqualToString:@"000000000000000f327555478a9d580318cb6e15db059642eff84797bf133196"]) {
-                return 1091808;
-            } else if ([blockHashString isEqualToString:@"0000000000000003b3ea97e688f1bec5f95930950b54c1bb01bf67b029739696"]) {
-                return 1091640;
-            } else if ([blockHashString isEqualToString:@"000000000000001a0d96dbc0cac26e445454dd2506702eeee7df6ff35bdcf60e"]) {
-                return 1091544;
-            } else if ([blockHashString isEqualToString:@"000000000000001aac60fafe05124672b19a1c3727dc17f106f11295db1053a3"]) {
-                return 1092288;
-            } else if ([blockHashString isEqualToString:@"000000000000000e37bca1e08dff47ef051199f24e9104dad85014c323464069"]) {
-                return 1091208;
-            } else if ([blockHashString isEqualToString:@"0000000000000013dd0059e5f701a39c0903e7f16d393f55fc896422139a4291"]) {
-                return 1092768;
-            } else if ([blockHashString isEqualToString:@"000000000000000f4c8d5bdf6b89435d3a9789fce401286eb8f3f6eeb84f2a1d"]) {
-                return 1091160;
-            } else if ([blockHashString isEqualToString:@"000000000000001414ff2dd44ee4c01c02e6867228b4e1ff490f635f7de949a5"]) {
-                return 1091232;
-            } else if ([blockHashString isEqualToString:@"0000000000000013b130038d0599cb5a65165fc03b1b38fe2dd1a3bad6e253df"]) {
-                return 1092312;
-            } else if ([blockHashString isEqualToString:@"00000000000000082cb9d6d169dc625f64a6a24756ba796eaab131a998b42910"]) {
-                return 1091928;
-            } else if ([blockHashString isEqualToString:@"0000000000000001e358bce8df79c24def4787bf0bf7af25c040342fae4a18ce"]) {
-                return 1091880;
-            }
+            NSNumber *blockHashNumber = blockHeightsDict[blockHashString];
+            if (blockHashNumber) return blockHashNumber.unsignedIntValue;
             NSAssert(NO, @"All values must be here");
             return UINT32_MAX;
         }
