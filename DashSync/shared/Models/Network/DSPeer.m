@@ -1985,10 +1985,10 @@
 
 // two peer objects are equal if they share an ip address and port number
 - (BOOL)isEqual:(id)object {
-    return (self == object || ([object isKindOfClass:[DSPeer class]] && _port == ((DSPeer *)object).port &&
-                                  uint128_eq(_address, [(DSPeer *)object address]))) ?
-               YES :
-               NO;
+    return self == object ||
+            ([object isKindOfClass:[DSPeer class]] &&
+             _port == ((DSPeer *)object).port &&
+             uint128_eq(_address, [(DSPeer *)object address]));
 }
 
 // MARK: - Info
@@ -2068,7 +2068,7 @@
 
         case NSStreamEventHasBytesAvailable:
             if (aStream != self.inputStream) return;
-
+            // TODO: if it's a big message (a lot of messages) it could drop the app because of memory/cpu issues (a lot of heavy tasks: processing/x11calculation/reading_from_userDefaults/writing )
             while (self.inputStream.hasBytesAvailable) {
                 @autoreleasepool {
                     NSData *message = nil;

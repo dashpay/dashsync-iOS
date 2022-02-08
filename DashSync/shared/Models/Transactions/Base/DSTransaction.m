@@ -275,11 +275,11 @@
 }
 
 - (NSArray<DSTransactionInput *> *)inputs {
-    return self.mInputs;
+    return [self.mInputs copy];
 }
 
 - (NSArray<DSTransactionOutput *> *)outputs {
-    return self.mOutputs;
+    return [self.mOutputs copy];
 }
 
 - (NSArray *)inputAddresses {

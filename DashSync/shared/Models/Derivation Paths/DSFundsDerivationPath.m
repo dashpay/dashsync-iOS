@@ -271,7 +271,7 @@
 
 // true if the address is controlled by the wallet
 - (BOOL)containsReceiveAddress:(NSString *)address {
-    return (address && [self.externalAddresses containsObject:address]) ? YES : NO;
+    return address && [self.externalAddresses containsObject:address];
 }
 
 - (NSArray *)usedReceiveAddresses {

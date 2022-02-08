@@ -510,9 +510,7 @@ static dispatch_once_t devnetToken = 0;
 
 - (UInt256)blockHashForDevNetGenesisBlockWithVersion:(uint32_t)version prevHash:(UInt256)prevHash merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce {
     NSMutableData *d = [NSMutableData data];
-
     [d appendUInt32:version];
-
     [d appendBytes:&prevHash length:sizeof(prevHash)];
     [d appendBytes:&merkleRoot length:sizeof(merkleRoot)];
     [d appendUInt32:timestamp];
