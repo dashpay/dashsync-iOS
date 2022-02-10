@@ -172,7 +172,7 @@
 }
 
 
-- (UInt256)x11 {//TODO: call this only when necessary (heavy op)
+- (UInt256)x11 { //TODO: call this only when necessary (heavy op)
     NSData *copy = [self copy];
     UInt512 x11Data = UINT512_ZERO;
 
