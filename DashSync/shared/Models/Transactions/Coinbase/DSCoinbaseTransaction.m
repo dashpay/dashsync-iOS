@@ -89,12 +89,9 @@
 // subscriptIndex. A subscriptIndex of NSNotFound will return the entire signed transaction.
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex {
     NSMutableData *data = [[super toDataWithSubscriptIndex:subscriptIndex] mutableCopy];
-
     NSData *payloadData = [self payloadData];
     [data appendVarInt:payloadData.length];
-    [data appendData:[self payloadData]];
-
-
+    [data appendData:payloadData];
     return data;
 }
 

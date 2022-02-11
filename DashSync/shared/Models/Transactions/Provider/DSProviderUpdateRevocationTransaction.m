@@ -141,8 +141,9 @@
 
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex {
     NSMutableData *data = [[super toDataWithSubscriptIndex:subscriptIndex] mutableCopy];
-    [data appendVarInt:self.payloadData.length];
-    [data appendData:[self payloadData]];
+    NSData *payloadData = [self payloadData];
+    [data appendVarInt:payloadData.length];
+    [data appendData:payloadData];
     if (subscriptIndex != NSNotFound) [data appendUInt32:SIGHASH_ALL];
     return data;
 }
