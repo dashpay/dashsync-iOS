@@ -544,7 +544,7 @@
                     }
                 }
             }
-            chainEntity.baseBlockHash = mnlBlockHashData;;
+            chainEntity.baseBlockHash = mnlBlockHashData;
             error = [context ds_save];
             DSLog(@"Finished saving MNL at height %u", mnlHeight);
         }

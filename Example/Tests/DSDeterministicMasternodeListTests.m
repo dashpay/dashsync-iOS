@@ -1151,8 +1151,7 @@
         onChain:chain
         inContext:context
         blockHeightLookup:^uint32_t(UInt256 blockHash) {
-            NSString *blockHashString = uint256_reverse_hex(blockHash);
-            NSNumber *blockHashNumber = blockHeightsDict[blockHashString];
+            NSNumber *blockHashNumber = blockHeightsDict[uint256_reverse_hex(blockHash)];
             if (blockHashNumber) return blockHashNumber.unsignedIntValue;
             NSAssert(NO, @"All values must be here");
             return UINT32_MAX;
