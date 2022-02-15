@@ -70,22 +70,21 @@ bool validateQuorumCallback(LLMQValidationData *data, const void *context) {
     uint8_t(**items)[48] = data->items;
     NSMutableArray<DSBLSKey *> *publicKeyArray = [NSMutableArray array];
     for (NSUInteger i = 0; i < count; i++) {
-        NSData *pkData = [NSData dataWithBytes:items[i] length:48];
-        [publicKeyArray addObject:[DSBLSKey keyWithPublicKey:pkData.UInt384]];
+        UInt384 publicKey = *((UInt384 *)items[i]);
+        [publicKeyArray addObject:[DSBLSKey keyWithPublicKey:publicKey]];
     }
-    uint8_t(*all_commitment_aggregated_signature)[96] = data->all_commitment_aggregated_signature;
-    uint8_t(*commitment_hash)[32] = data->commitment_hash;
-    UInt256 commitmentHash = [NSData dataWithBytes:commitment_hash length:32].UInt256;
-    UInt768 allCommitmentAggregatedSignature = [NSData dataWithBytes:all_commitment_aggregated_signature length:96].UInt768;
+    UInt768 allCommitmentAggregatedSignature = *((UInt768 *)data->all_commitment_aggregated_signature);
+    UInt256 commitmentHash = *((UInt256 *)data->commitment_hash);
     bool allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:commitmentHash signature:allCommitmentAggregatedSignature withPublicKeys:publicKeyArray];
     if (!allCommitmentAggregatedSignatureValidated) {
+        DSLog(@"Issue with allCommitmentAggregatedSignatureValidated");
+        mndiff_quorum_validation_data_destroy(data);
         return false;
     }
     //The sig must validate against the commitmentHash and all public keys determined by the signers bitvector. This is an aggregated BLS signature verification.
-    uint8_t(*threshold_signature)[96] = data->threshold_signature;
-    uint8_t(*public_key)[48] = data->public_key;
-    UInt768 quorumThresholdSignature = [NSData dataWithBytes:threshold_signature length:96].UInt768;
-    UInt384 quorumPublicKey = [NSData dataWithBytes:public_key length:48].UInt384;
+    UInt768 quorumThresholdSignature = *((UInt768 *)data->threshold_signature);
+    UInt384 quorumPublicKey = *((UInt384 *)data->public_key);
+    
     bool quorumSignatureValidated = [DSBLSKey verify:commitmentHash signature:quorumThresholdSignature withPublicKey:quorumPublicKey];
     mndiff_quorum_validation_data_destroy(data);
     if (!quorumSignatureValidated) {

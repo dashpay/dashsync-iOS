@@ -26,8 +26,7 @@
 + (instancetype)masternodeListWith:(MasternodeList *)list onChain:(DSChain *)chain {
     uintptr_t masternodes_count = list->masternodes_count;
     NSMutableDictionary<NSData *, DSSimplifiedMasternodeEntry *> *masternodes = [DSSimplifiedMasternodeEntry simplifiedEntriesWith:list->masternodes count:masternodes_count onChain:chain];
-//    NSMutableDictionary<NSNumber *, NSMutableDictionary<NSData *, DSQuorumEntry *> *> *quorums = [DSQuorumEntry entriesWith:list->llmq_type_maps count:list->llmq_type_maps_count onChain:chain];
-    NSMutableDictionary<NSNumber *, NSMutableDictionary<NSData *, DSQuorumEntry *> *> *quorums = [DSQuorumEntry entriesWith:list->quorums count:list->quorums_count onChain:chain];
+    NSMutableDictionary<NSNumber *, NSMutableDictionary<NSData *, DSQuorumEntry *> *> *quorums = [DSQuorumEntry entriesWith:list->llmq_type_maps count:list->llmq_type_maps_count onChain:chain];
     UInt256 masternodeMerkleRoot = list->masternode_merkle_root ? *((UInt256 *)list->masternode_merkle_root) : UINT256_ZERO;
     UInt256 quorumMerkleRoot = list->llmq_merkle_root ? *((UInt256 *)list->llmq_merkle_root) : UINT256_ZERO;
     UInt256 blockHash = *((UInt256 *)list->block_hash);
@@ -42,25 +41,29 @@
 
 - (MasternodeList *)ffi_malloc {
     NSDictionary<NSNumber *, NSDictionary<NSData *, DSQuorumEntry *> *> *quorums = [self quorums];
-    NSMutableDictionary<NSData *, DSQuorumEntry *> *quorumsDict = [NSMutableDictionary dictionary];
-    for (NSNumber *type in quorums) {
-        NSDictionary<NSData *, DSQuorumEntry *> *quorumsMaps = quorums[type];
-        for (NSData *hash in quorumsMaps) {
-            quorumsDict[hash] = quorumsMaps[hash];
-        }
-    }
-
     NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *masternodes = [self simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash];
-    uintptr_t quorums_count = quorumsDict.count;
+    uintptr_t quorum_type_maps_count = quorums.count;
     uintptr_t masternodes_count = masternodes.count;
     MasternodeList *masternode_list = malloc(sizeof(MasternodeList));
-    LLMQEntry **quorums_values = malloc(quorums_count * sizeof(LLMQEntry *));
+    LLMQMap **quorum_type_maps = malloc(quorum_type_maps_count * sizeof(LLMQMap *));
     int i = 0;
-    for (NSData *hash in quorumsDict) {
-        quorums_values[i++] = [quorumsDict[hash] ffi_malloc];
+    int j = 0;
+    for (NSNumber *type in quorums) {
+        NSDictionary<NSData *, DSQuorumEntry *> *quorumsMaps = quorums[type];
+        uintptr_t quorum_maps_count = quorumsMaps.count;
+        LLMQMap *quorums_map = malloc(sizeof(LLMQMap));
+        LLMQEntry **quorums_of_type = malloc(quorum_maps_count * sizeof(LLMQEntry *));
+        j = 0;
+        for (NSData *hash in quorumsMaps) {
+            quorums_of_type[j++] = [quorumsMaps[hash] ffi_malloc];
+        }
+        quorums_map->llmq_type = (uint8_t)[type unsignedIntegerValue];
+        quorums_map->count = quorum_maps_count;
+        quorums_map->values = quorums_of_type;
+        quorum_type_maps[i++] = quorums_map;
     }
-    masternode_list->quorums = quorums_values;
-    masternode_list->quorums_count = quorums_count;
+    masternode_list->llmq_type_maps = quorum_type_maps;
+    masternode_list->llmq_type_maps_count = quorum_type_maps_count;
     MasternodeEntry **masternodes_values = malloc(masternodes_count * sizeof(MasternodeEntry *));
     i = 0;
     for (NSData *hash in masternodes) {
@@ -88,13 +91,19 @@
     }
     if (list->masternodes)
         free(list->masternodes);
-    if (list->quorums > 0) {
-        for (int i = 0; i < list->quorums_count; i++) {
-            [DSQuorumEntry ffi_free:list->quorums[i]];
+    if (list->llmq_type_maps_count > 0) {
+        for (int i = 0; i < list->llmq_type_maps_count; i++) {
+            LLMQMap *map = list->llmq_type_maps[i];
+            for (int j = 0; j < map->count; j++) {
+                [DSQuorumEntry ffi_free:map->values[i]];
+            }
+            if (map->values)
+                free(map->values);
+            free(map);
         }
     }
-    if (list->quorums)
-        free(list->quorums);
+    if (list->llmq_type_maps)
+        free(list->llmq_type_maps);
     if (list->masternode_merkle_root)
         free(list->masternode_merkle_root);
     if (list->llmq_merkle_root)

@@ -20,18 +20,20 @@
 
 @implementation DSQuorumEntry (Mndiff)
 
-+ (NSMutableDictionary<NSNumber *, NSMutableDictionary<NSData *, DSQuorumEntry *> *> *)entriesWith:(LLMQEntry *_Nullable *_Nonnull)entries count:(uintptr_t)count onChain:(DSChain *)chain {
++ (NSMutableDictionary<NSNumber *, NSMutableDictionary<NSData *, DSQuorumEntry *> *> *)entriesWith:(LLMQMap *_Nullable *_Nonnull)entries count:(uintptr_t)count onChain:(DSChain *)chain {
     NSMutableDictionary<NSNumber *, NSMutableDictionary<NSData *, DSQuorumEntry *> *> *quorums = [NSMutableDictionary dictionaryWithCapacity:count];
     for (NSUInteger i = 0; i < count; i++) {
-        LLMQEntry *quorum_entry = entries[i];
-        DSLLMQType llmqType = (DSLLMQType)quorum_entry->llmq_type;
-        NSData *hash = [NSData dataWithBytes:quorum_entry->llmq_hash length:32];
-        DSQuorumEntry *entry = [[DSQuorumEntry alloc] initWithEntry:quorum_entry onChain:chain];
-        if (quorums[@(llmqType)]) {
-            quorums[@(llmqType)][hash] = entry;
-        } else {
-            [quorums setObject:[NSMutableDictionary dictionaryWithDictionary:@{hash:entry}] forKey:@(llmqType)];
+        LLMQMap *llmq_map = entries[i];
+        DSLLMQType llmqType = (DSLLMQType)llmq_map->llmq_type;
+        NSMutableDictionary *quorumsOfType = [[NSMutableDictionary alloc] initWithCapacity:llmq_map->count];
+        for (NSUInteger j = 0; j < llmq_map->count; j++) {
+            LLMQEntry *quorum_entry = llmq_map->values[j];
+            NSData *hash = [NSData dataWithBytes:quorum_entry->llmq_hash length:32];
+            DSQuorumEntry *entry = [[DSQuorumEntry alloc] initWithEntry:quorum_entry onChain:chain];
+            [quorumsOfType setObject:entry forKey:hash];
         }
+        [quorums setObject:quorumsOfType
+                    forKey:@(llmqType)];
     }
     return quorums;
 }

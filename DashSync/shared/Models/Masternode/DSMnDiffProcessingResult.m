@@ -35,7 +35,7 @@
     [processingResult setAddedMasternodes:addedMasternodes];
     NSMutableDictionary *modifiedMasternodes = [DSSimplifiedMasternodeEntry simplifiedEntriesWith:result->modified_masternodes count:result->modified_masternodes_count onChain:chain];
     [processingResult setModifiedMasternodes:modifiedMasternodes];
-    NSMutableDictionary *addedQuorums = [DSQuorumEntry entriesWith:result->added_quorums count:result->added_quorums_count onChain:chain];
+    NSMutableDictionary *addedQuorums = [DSQuorumEntry entriesWith:result->added_llmq_type_maps count:result->added_llmq_type_maps_count onChain:chain];
     [processingResult setAddedQuorums:addedQuorums];
     uint8_t(**needed_masternode_lists)[32] = result->needed_masternode_lists;
     uintptr_t needed_masternode_lists_count = result->needed_masternode_lists_count;

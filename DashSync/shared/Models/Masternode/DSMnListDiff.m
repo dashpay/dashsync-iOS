@@ -51,10 +51,17 @@
         [addedOrModifiedMasternodes addObject:entry];
     }
     diff.addedOrModifiedMasternodes = addedOrModifiedMasternodes;
-    NSMutableOrderedSet<NSData *> *deletedQuorums = [NSMutableOrderedSet orderedSet];
+    NSMutableDictionary<NSNumber *, NSMutableArray<NSData *> *> *deletedQuorums = [NSMutableDictionary dictionary];
     for (NSUInteger i = 0; i < mnListDiff->deleted_quorums_count; i++) {
-        NSData *quorumHash = [NSData dataWithBytes:mnListDiff->deleted_quorums[i] length:32];
-        [deletedQuorums addObject:quorumHash];
+        
+        LLMQTypedHash *hash = mnListDiff->deleted_quorums[i];
+        NSNumber *key = [NSNumber numberWithInteger:hash->llmq_type];
+        NSData *quorumHash = [NSData dataWithBytes:hash->llmq_hash length:32];
+        if (deletedQuorums[key]) {
+            [deletedQuorums[key] addObject:quorumHash];
+        } else {
+            deletedQuorums[key] = [NSMutableArray arrayWithObject:quorumHash];
+        }
     }
     diff.deletedQuorums = deletedQuorums;
     NSUInteger addedQuorumsCount = mnListDiff->added_quorums_count;

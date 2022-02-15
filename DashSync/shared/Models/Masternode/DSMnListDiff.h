@@ -34,8 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) DSCoinbaseTransaction *coinbaseTransaction;
 @property (nonatomic) NSOrderedSet<NSData *> *deletedMasternodeHashes;
 @property (nonatomic) NSOrderedSet<DSSimplifiedMasternodeEntry *> *addedOrModifiedMasternodes;
-//@property (nonatomic) NSDictionary<NSNumber *, NSArray<NSData *> *> *deletedQuorums;
-@property (nonatomic) NSOrderedSet<NSData *> *deletedQuorums;
+@property (nonatomic) NSDictionary<NSNumber *, NSArray<NSData *> *> *deletedQuorums;
+//@property (nonatomic) NSOrderedSet<NSData *> *deletedQuorums;
 @property (nonatomic) NSOrderedSet<DSQuorumEntry *> *addedQuorums;
 
 //@property (nonatomic) DSMasternodeList *masternodeList;
