@@ -95,7 +95,7 @@
         for (int i = 0; i < list->llmq_type_maps_count; i++) {
             LLMQMap *map = list->llmq_type_maps[i];
             for (int j = 0; j < map->count; j++) {
-                [DSQuorumEntry ffi_free:map->values[i]];
+                [DSQuorumEntry ffi_free:map->values[j]];
             }
             if (map->values)
                 free(map->values);
