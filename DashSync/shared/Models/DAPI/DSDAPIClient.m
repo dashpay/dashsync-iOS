@@ -31,6 +31,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 
 #define DAPI_SINGLE_NODE @"54.191.199.25"
 #define DAPI_CONNECT_SINGLE_NODE FALSE
+#define DAPI_DEFAULT_PUBLISH_TRANSITION_RETRY_COUNT 10
 
 @interface DSDAPIClient ()
 
@@ -297,7 +298,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 - (void)publishTransition:(DSTransition *)stateTransition
                   success:(void (^)(NSDictionary *successDictionary, BOOL added))success
                   failure:(void (^)(NSError *error))failure {
-    //default to 5 attempts
+    //default to 10 attempts
     [self publishTransition:stateTransition
             completionQueue:self.chain.chainManager.identitiesManager.identityQueue
                     success:success
@@ -308,9 +309,9 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
           completionQueue:(dispatch_queue_t)completionQueue
                   success:(void (^)(NSDictionary *successDictionary, BOOL added))success
                   failure:(void (^)(NSError *error))failure {
-    //default to 5 attempts
+    //default to 10 attempts
     [self publishTransition:stateTransition
-                 retryCount:5
+                 retryCount:DAPI_DEFAULT_PUBLISH_TRANSITION_RETRY_COUNT
                       delay:2
               delayIncrease:1
              currentAttempt:0

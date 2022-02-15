@@ -509,150 +509,150 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                  toAddress:creditFundingRegistrationAddress
                            fundedByAccount:fundingAccount
                                 completion:^(DSCreditFundingTransaction *_Nonnull fundingTransaction) {
-                                    if (!fundingTransaction) {
-                                        if (completion) {
-                                            dispatch_async(dispatch_get_main_queue(), ^{
-                                                completion(stepsCompleted, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Funding transaction could not be created", nil)}]);
-                                            });
-                                        }
-                                        return;
-                                    }
-                                    [fundingAccount signTransaction:fundingTransaction
-                                                         withPrompt:@"Would you like to create this user?"
-                                                         completion:^(BOOL signedTransaction, BOOL cancelled) {
-                                                             if (!signedTransaction) {
-                                                                 if (completion) {
-                                                                     dispatch_async(dispatch_get_main_queue(), ^{
-                                                                         if (cancelled) {
-                                                                             stepsCompleted |= DSBlockchainIdentityRegistrationStep_Cancelled;
-                                                                         }
-                                                                         completion(stepsCompleted, cancelled ? nil : [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Transaction could not be signed", nil)}]);
-                                                                     });
-                                                                 }
-                                                                 return;
-                                                             }
-                                                             if (stepCompletion) {
-                                                                 dispatch_async(dispatch_get_main_queue(), ^{
-                                                                     stepCompletion(DSBlockchainIdentityRegistrationStep_FundingTransactionCreation);
-                                                                 });
-                                                             }
-                                                             stepsCompleted |= DSBlockchainIdentityRegistrationStep_FundingTransactionCreation;
-
-                                                             //In wallet registration occurs now
-
-                                                             if (!(steps & DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence)) {
-                                                                 if (completion) {
-                                                                     dispatch_async(dispatch_get_main_queue(), ^{
-                                                                         completion(stepsCompleted, nil);
-                                                                     });
-                                                                 }
-                                                                 return;
-                                                             }
-                                                             if (self.isOutgoingInvitation) {
-                                                                 [self.associatedInvitation registerInWalletForRegistrationFundingTransaction:fundingTransaction];
-                                                             } else {
-                                                                 [self registerInWalletForRegistrationFundingTransaction:fundingTransaction];
-                                                             }
-
-                                                             if (stepCompletion) {
-                                                                 dispatch_async(dispatch_get_main_queue(), ^{
-                                                                     stepCompletion(DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence);
-                                                                 });
-                                                             }
-                                                             stepsCompleted |= DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence;
-
-                                                             if (!(steps & DSBlockchainIdentityRegistrationStep_FundingTransactionAccepted)) {
-                                                                 if (completion) {
-                                                                     dispatch_async(dispatch_get_main_queue(), ^{
-                                                                         completion(stepsCompleted, nil);
-                                                                     });
-                                                                 }
-                                                                 return;
-                                                             }
-
-                                                             dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-                                                             __block BOOL transactionSuccessfullyPublished = FALSE;
-                                                             __block DSInstantSendTransactionLock *instantSendLock = nil;
-
-                                                             __block id observer = [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerTransactionStatusDidChangeNotification
-                                                                                                                                     object:nil
-                                                                                                                                      queue:nil
-                                                                                                                                 usingBlock:^(NSNotification *note) {
-                                                                                                                                     DSTransaction *tx = [note.userInfo objectForKey:DSTransactionManagerNotificationTransactionKey];
-                                                                                                                                     if ([tx isEqual:fundingTransaction]) {
-                                                                                                                                         NSDictionary *changes = [note.userInfo objectForKey:DSTransactionManagerNotificationTransactionChangesKey];
-                                                                                                                                         if (changes) {
-                                                                                                                                             NSNumber *accepted = changes[DSTransactionManagerNotificationTransactionAcceptedStatusKey];
-                                                                                                                                             NSNumber *lockVerified = changes[DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey];
-                                                                                                                                             DSInstantSendTransactionLock *lock = changes[DSTransactionManagerNotificationInstantSendTransactionLockKey];
-                                                                                                                                             if ([lockVerified boolValue] && lock != nil) {
-                                                                                                                                                 instantSendLock = lock;
-                                                                                                                                                 transactionSuccessfullyPublished = TRUE;
-                                                                                                                                                 dispatch_semaphore_signal(sem);
-                                                                                                                                             } else if ([accepted boolValue]) {
-                                                                                                                                                 transactionSuccessfullyPublished = TRUE;
-                                                                                                                                             }
-                                                                                                                                         }
-                                                                                                                                     }
-                                                                                                                                 }];
-
-
-                                                             [self.chain.chainManager.transactionManager publishTransaction:fundingTransaction
-                                                                                                                 completion:^(NSError *_Nullable error) {
-                                                                                                                     if (error) {
-                                                                                                                         [[NSNotificationCenter defaultCenter] removeObserver:observer];
-                                                                                                                         if (completion) {
-                                                                                                                             dispatch_async(dispatch_get_main_queue(), ^{
-                                                                                                                                 completion(stepsCompleted, error);
-                                                                                                                             });
-                                                                                                                         }
-                                                                                                                         return;
-                                                                                                                     }
-
-                                                                                                                     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-                                                                                                                         dispatch_semaphore_wait(sem, dispatch_time(DISPATCH_TIME_NOW, 25 * NSEC_PER_SEC));
-
-                                                                                                                         [[NSNotificationCenter defaultCenter] removeObserver:observer];
-
-                                                                                                                         if (!transactionSuccessfullyPublished) {
-                                                                                                                             if (completion) {
-                                                                                                                                 dispatch_async(dispatch_get_main_queue(), ^{
-                                                                                                                                     completion(stepsCompleted, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Timeout while waiting for funding transaction to be accepted by network", nil)}]);
-                                                                                                                                 });
-                                                                                                                             }
-                                                                                                                             return;
-                                                                                                                         }
-
-                                                                                                                         if (stepCompletion) {
-                                                                                                                             dispatch_async(dispatch_get_main_queue(), ^{
-                                                                                                                                 stepCompletion(DSBlockchainIdentityRegistrationStep_FundingTransactionAccepted);
-                                                                                                                             });
-                                                                                                                         }
-                                                                                                                         stepsCompleted |= DSBlockchainIdentityRegistrationStep_FundingTransactionAccepted;
-
-                                                                                                                         if (!instantSendLock) {
-                                                                                                                             if (completion) {
-                                                                                                                                 dispatch_async(dispatch_get_main_queue(), ^{
-                                                                                                                                     completion(stepsCompleted, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Timeout while waiting for funding transaction to aquire an instant send lock", nil)}]);
-                                                                                                                                 });
-                                                                                                                             }
-                                                                                                                             return;
-                                                                                                                         }
-
-
-                                                                                                                         if (stepCompletion) {
-                                                                                                                             dispatch_async(dispatch_get_main_queue(), ^{
-                                                                                                                                 stepCompletion(DSBlockchainIdentityRegistrationStep_ProofAvailable);
-                                                                                                                             });
-                                                                                                                         }
-                                                                                                                         stepsCompleted |= DSBlockchainIdentityRegistrationStep_ProofAvailable;
-
-
-                                                                                                                         [self continueRegisteringIdentityOnNetwork:steps stepsCompleted:stepsCompleted stepCompletion:stepCompletion completion:completion];
-                                                                                                                     });
-                                                                                                                 }];
-                                                         }];
-                                }];
+        if (!fundingTransaction) {
+            if (completion) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completion(stepsCompleted, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Funding transaction could not be created", nil)}]);
+                });
+            }
+            return;
+        }
+        [fundingAccount signTransaction:fundingTransaction
+                             withPrompt:@"Would you like to create this user?"
+                             completion:^(BOOL signedTransaction, BOOL cancelled) {
+            if (!signedTransaction) {
+                if (completion) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        if (cancelled) {
+                            stepsCompleted |= DSBlockchainIdentityRegistrationStep_Cancelled;
+                        }
+                        completion(stepsCompleted, cancelled ? nil : [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Transaction could not be signed", nil)}]);
+                    });
+                }
+                return;
+            }
+            if (stepCompletion) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    stepCompletion(DSBlockchainIdentityRegistrationStep_FundingTransactionCreation);
+                });
+            }
+            stepsCompleted |= DSBlockchainIdentityRegistrationStep_FundingTransactionCreation;
+            
+            //In wallet registration occurs now
+            
+            if (!(steps & DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence)) {
+                if (completion) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        completion(stepsCompleted, nil);
+                    });
+                }
+                return;
+            }
+            if (self.isOutgoingInvitation) {
+                [self.associatedInvitation registerInWalletForRegistrationFundingTransaction:fundingTransaction];
+            } else {
+                [self registerInWalletForRegistrationFundingTransaction:fundingTransaction];
+            }
+            
+            if (stepCompletion) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    stepCompletion(DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence);
+                });
+            }
+            stepsCompleted |= DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence;
+            
+            if (!(steps & DSBlockchainIdentityRegistrationStep_FundingTransactionAccepted)) {
+                if (completion) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        completion(stepsCompleted, nil);
+                    });
+                }
+                return;
+            }
+            
+            dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+            __block BOOL transactionSuccessfullyPublished = FALSE;
+            __block DSInstantSendTransactionLock *instantSendLock = nil;
+            
+            __block id observer = [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerTransactionStatusDidChangeNotification
+                                                                                    object:nil
+                                                                                     queue:nil
+                                                                                usingBlock:^(NSNotification *note) {
+                DSTransaction *tx = [note.userInfo objectForKey:DSTransactionManagerNotificationTransactionKey];
+                if ([tx isEqual:fundingTransaction]) {
+                    NSDictionary *changes = [note.userInfo objectForKey:DSTransactionManagerNotificationTransactionChangesKey];
+                    if (changes) {
+                        NSNumber *accepted = changes[DSTransactionManagerNotificationTransactionAcceptedStatusKey];
+                        NSNumber *lockVerified = changes[DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey];
+                        DSInstantSendTransactionLock *lock = changes[DSTransactionManagerNotificationInstantSendTransactionLockKey];
+                        if (![lockVerified boolValue] && lock != nil) {
+                            instantSendLock = lock;
+                            transactionSuccessfullyPublished = TRUE;
+                            dispatch_semaphore_signal(sem);
+                        } else if ([accepted boolValue]) {
+                            transactionSuccessfullyPublished = TRUE;
+                        }
+                    }
+                }
+            }];
+            
+            
+            [self.chain.chainManager.transactionManager publishTransaction:fundingTransaction
+                                                                completion:^(NSError *_Nullable error) {
+                if (error) {
+                    [[NSNotificationCenter defaultCenter] removeObserver:observer];
+                    if (completion) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            completion(stepsCompleted, error);
+                        });
+                    }
+                    return;
+                }
+                
+                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+                    dispatch_semaphore_wait(sem, dispatch_time(DISPATCH_TIME_NOW, 25 * NSEC_PER_SEC));
+                    
+                    [[NSNotificationCenter defaultCenter] removeObserver:observer];
+                    
+                    if (!transactionSuccessfullyPublished) {
+                        if (completion) {
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                completion(stepsCompleted, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Timeout while waiting for funding transaction to be accepted by network", nil)}]);
+                            });
+                        }
+                        return;
+                    }
+                    
+                    if (stepCompletion) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            stepCompletion(DSBlockchainIdentityRegistrationStep_FundingTransactionAccepted);
+                        });
+                    }
+                    stepsCompleted |= DSBlockchainIdentityRegistrationStep_FundingTransactionAccepted;
+                    
+                    if (!instantSendLock) {
+                        if (completion) {
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                completion(stepsCompleted, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Timeout while waiting for funding transaction to aquire an instant send lock", nil)}]);
+                            });
+                        }
+                        return;
+                    }
+                    
+                    
+                    if (stepCompletion) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            stepCompletion(DSBlockchainIdentityRegistrationStep_ProofAvailable);
+                        });
+                    }
+                    stepsCompleted |= DSBlockchainIdentityRegistrationStep_ProofAvailable;
+                    
+                    
+                    [self continueRegisteringIdentityOnNetwork:steps stepsCompleted:stepsCompleted stepCompletion:stepCompletion completion:completion];
+                });
+            }];
+        }];
+    }];
 }
 
 // MARK: - Local Registration and Generation
