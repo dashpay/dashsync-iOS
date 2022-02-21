@@ -31,6 +31,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+#define NSDataFromCPointer(p, l) [NSData dataWithBytes:p length:l]
+#define NSStringFromCPointer(p, l) NSDataFromCPointer(p, l).hexString
+
 #define SEC_ATTR_SERVICE @"org.dashfoundation.dash"
 
 #define useDarkCoinSeed 0 //the darkcoin seed was retired quite a while ago

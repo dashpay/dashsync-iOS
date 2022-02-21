@@ -28,6 +28,12 @@
 #ifndef BigIntTypes_h
 #define BigIntTypes_h
 
+#if __has_feature(objc_arc)
+#define NoTimeLog(format, ...) CFShow((__bridge CFStringRef)[NSString stringWithFormat:format, ##__VA_ARGS__]);
+#else
+#define NoTimeLog(format, ...) CFShow([NSString stringWithFormat:format, ##__VA_ARGS__]);
+#endif
+
 
 typedef union _UInt768 {
     uint8_t u8[768 / 8];
