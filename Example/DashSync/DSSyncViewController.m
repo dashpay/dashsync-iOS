@@ -17,6 +17,7 @@
 #import "DSInvitationsViewController.h"
 #import "DSLayer2ViewController.h"
 #import "DSMasternodeListsViewController.h"
+#import "DSMasternodeListStore.h"
 #import "DSMasternodeViewController.h"
 #import "DSPasteboardAddressExtractor.h"
 #import "DSPeersViewController.h"

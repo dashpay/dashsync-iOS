@@ -108,18 +108,14 @@
     NSUInteger offset = 0;
     if (length - offset < 32) return nil;
     NSData *parentHashData = [message subdataWithRange:NSMakeRange(offset, 32)];
-    UInt256 parentHash = [message UInt256AtOffset:offset];
-    offset += 32;
+    UInt256 parentHash = [message readUInt256AtOffset:&offset];
     if (length - offset < 4) return nil;
-    uint32_t revision = [message UInt32AtOffset:offset];
-    offset += 4;
+    uint32_t revision = [message readUInt32AtOffset:&offset];
     if (length - offset < 8) return nil;
     NSData *timestampData = [message subdataWithRange:NSMakeRange(offset, 8)];
-    uint64_t timestamp = [message UInt64AtOffset:offset];
-    offset += 8;
+    uint64_t timestamp = [message readUInt64AtOffset:&offset];
     if (length - offset < 32) return nil;
-    UInt256 collateralHash = [message UInt256AtOffset:offset];
-    offset += 32;
+    UInt256 collateralHash = [message readUInt256AtOffset:&offset];
     NSNumber *varIntLength = nil;
     NSData *governanceMessageData;
     NSData *hexData;
@@ -134,31 +130,26 @@
     }
 
     offset += [varIntLength integerValue];
-    DSGovernanceObjectType governanceObjectType = [message UInt32AtOffset:offset];
-    offset += 4;
+    DSGovernanceObjectType governanceObjectType = [message readUInt32AtOffset:&offset];
 
     DSUTXO masternodeUTXO;
     if (length - offset < 32) return nil;
-    masternodeUTXO.hash = [message UInt256AtOffset:offset];
-    offset += 32;
+    masternodeUTXO.hash = [message readUInt256AtOffset:&offset];
     if (length - offset < 4) return nil;
-    masternodeUTXO.n = [message UInt32AtOffset:offset];
-    offset += 4;
+    masternodeUTXO.n = [message readUInt32AtOffset:&offset];
     if (chain.protocolVersion < 70209) { //switch to outpoint in 70209
         if (length - offset < 1) return nil;
-        uint8_t sigscriptSize = [message UInt8AtOffset:offset];
-        offset += 1;
+        uint8_t sigscriptSize = [message readUInt8AtOffset:&offset];
         if (length - offset < sigscriptSize) return nil;
         //NSData * sigscript = [message subdataWithRange:NSMakeRange(offset, sigscriptSize)];
         offset += sigscriptSize;
         if (length - offset < 4) return nil;
-        //uint32_t sequenceNumber = [message UInt32AtOffset:offset];
+        //__unused uint32_t sequenceNumber = [message readUInt32AtOffset:&offset];
         offset += 4;
     }
 
     if (length - offset < 1) return nil;
-    uint8_t messageSignatureSize = [message UInt8AtOffset:offset];
-    offset += 1;
+    uint8_t messageSignatureSize = [message readUInt8AtOffset:&offset];
     if (length - offset < messageSignatureSize) return nil;
     NSData *messageSignature = [message subdataWithRange:NSMakeRange(offset, messageSignatureSize)];
     offset += messageSignatureSize;
@@ -211,9 +202,7 @@
 - (UInt256)governanceObjectHash {
     if (uint256_eq(_governanceObjectHash, UINT256_ZERO)) {
         NSTimeInterval timestamp = self.timestamp;
-        DSUTXO o;
-        o.hash = UINT256_ZERO;
-        o.n = 0;
+        DSUTXO o = (DSUTXO) {UINT256_ZERO, 0};
         _governanceObjectHash = [DSGovernanceObject hashWithParentHash:[NSData dataWithUInt256:self.parentHash] revision:self.revision timeStampData:[NSData dataWithBytes:&timestamp length:sizeof(timestamp)] governanceMessageHexData:self.proposalInfo masternodeUTXO:o signature:[NSData data] onChain:self.chain];
     }
     return _governanceObjectHash;

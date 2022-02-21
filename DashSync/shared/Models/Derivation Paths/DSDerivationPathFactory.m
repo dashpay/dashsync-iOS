@@ -49,7 +49,8 @@
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
             }
-            [self.votingKeysDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueIDString];
+            [self.votingKeysDerivationPathByWallet setObject:derivationPath
+                                                      forKey:wallet.uniqueIDString];
         }
     }
     return [self.votingKeysDerivationPathByWallet objectForKey:wallet.uniqueIDString];
@@ -67,7 +68,8 @@
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
             }
-            [self.ownerKeysDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueIDString];
+            [self.ownerKeysDerivationPathByWallet setObject:derivationPath
+                                                     forKey:wallet.uniqueIDString];
         }
     }
     return [self.ownerKeysDerivationPathByWallet objectForKey:wallet.uniqueIDString];
@@ -85,7 +87,8 @@
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
             }
-            [self.operatorKeysDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueIDString];
+            [self.operatorKeysDerivationPathByWallet setObject:derivationPath
+                                                        forKey:wallet.uniqueIDString];
         }
     }
     return [self.operatorKeysDerivationPathByWallet objectForKey:wallet.uniqueIDString];
@@ -103,7 +106,8 @@
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
             }
-            [self.providerFundsDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueIDString];
+            [self.providerFundsDerivationPathByWallet setObject:derivationPath
+                                                         forKey:wallet.uniqueIDString];
         }
     }
     return [self.providerFundsDerivationPathByWallet objectForKey:wallet.uniqueIDString];
@@ -123,7 +127,8 @@
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
             }
-            [self.blockchainIdentityRegistrationFundingDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueIDString];
+            [self.blockchainIdentityRegistrationFundingDerivationPathByWallet setObject:derivationPath
+                                                                                 forKey:wallet.uniqueIDString];
         }
     }
     return [self.blockchainIdentityRegistrationFundingDerivationPathByWallet objectForKey:wallet.uniqueIDString];
@@ -141,7 +146,8 @@
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
             }
-            [self.blockchainIdentityTopupFundingDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueIDString];
+            [self.blockchainIdentityTopupFundingDerivationPathByWallet setObject:derivationPath
+                                                                          forKey:wallet.uniqueIDString];
         }
     }
     return [self.blockchainIdentityTopupFundingDerivationPathByWallet objectForKey:wallet.uniqueIDString];
@@ -159,7 +165,8 @@
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
             }
-            [self.blockchainIdentityInvitationFundingDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueIDString];
+            [self.blockchainIdentityInvitationFundingDerivationPathByWallet setObject:derivationPath
+                                                                               forKey:wallet.uniqueIDString];
         }
     }
     return [self.blockchainIdentityInvitationFundingDerivationPathByWallet objectForKey:wallet.uniqueIDString];
@@ -179,7 +186,8 @@
             if (derivationPath.hasExtendedPrivateKey || (derivationPath.hasExtendedPublicKey && !derivationPath.usesHardenedKeys)) {
                 [derivationPath loadAddresses];
             }
-            [self.blockchainIdentityBLSDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueIDString];
+            [self.blockchainIdentityBLSDerivationPathByWallet setObject:derivationPath
+                                                                 forKey:wallet.uniqueIDString];
         }
     }
     return [self.blockchainIdentityBLSDerivationPathByWallet objectForKey:wallet.uniqueIDString];
@@ -198,7 +206,8 @@
             if (derivationPath.hasExtendedPrivateKey || (derivationPath.hasExtendedPublicKey && !derivationPath.usesHardenedKeys)) {
                 [derivationPath loadAddresses];
             }
-            [self.blockchainIdentityECDSADerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueIDString];
+            [self.blockchainIdentityECDSADerivationPathByWallet setObject:derivationPath
+                                                                   forKey:wallet.uniqueIDString];
         }
     }
     return [self.blockchainIdentityECDSADerivationPathByWallet objectForKey:wallet.uniqueIDString];

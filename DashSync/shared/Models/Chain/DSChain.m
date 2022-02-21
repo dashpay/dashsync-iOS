@@ -55,6 +55,7 @@
 #import "DSLocalMasternodeEntity+CoreDataProperties.h"
 #import "DSMasternodeHoldingsDerivationPath.h"
 #import "DSMasternodeListEntity+CoreDataProperties.h"
+#import "DSMasternodeManager+LocalMasternode.h"
 #import "DSMasternodeManager+Protected.h"
 #import "DSMerkleBlock.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
@@ -585,6 +586,16 @@ static dispatch_once_t devnetToken = 0;
         return uint256_eq([self genesisHash], genesisHash);
     }
 }
+
+- (BOOL)hasDIP0024Enabled {
+    return false;
+    // TODO: make this blockHeight dependent
+    //    switch ([self chainType]) {
+    //        case DSChainType_DevNet: return true;
+    //        default: return false;
+    //    }
+}
+
 
 // MARK: - Keychain Strings
 
@@ -1919,7 +1930,8 @@ static dispatch_once_t devnetToken = 0;
         if (!self.insightVerifiedBlocksByHashDictionary) {
             self.insightVerifiedBlocksByHashDictionary = [NSMutableDictionary dictionary];
         }
-        [self.insightVerifiedBlocksByHashDictionary setObject:block forKey:uint256_data(blockHash)];
+        [self.insightVerifiedBlocksByHashDictionary setObject:block
+                                                       forKey:uint256_data(blockHash)];
     }
 }
 
@@ -2148,7 +2160,8 @@ static dispatch_once_t devnetToken = 0;
         [self setBlockHeight:block.height andTimestamp:txTime forTransactionHashes:txHashes];
         onMainChain = TRUE;
 
-        if ([self blockHeightHasCheckpoint:block.height] || ((block.height % 1000 == 0) && (block.height + BLOCK_NO_FORK_DEPTH < self.lastTerminalBlockHeight) && !self.chainManager.masternodeManager.hasMasternodeListCurrentlyBeingSaved)) {
+        if ([self blockHeightHasCheckpoint:block.height] ||
+            ((block.height % 1000 == 0) && (block.height + BLOCK_NO_FORK_DEPTH < self.lastTerminalBlockHeight) && !self.chainManager.masternodeManager.hasMasternodeListCurrentlyBeingSaved)) {
             [self saveBlockLocators];
         }
 
@@ -2311,7 +2324,9 @@ static dispatch_once_t devnetToken = 0;
                 }
             }
 
-            [self setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTransactionHashes:txHashes];
+            [self setBlockHeight:TX_UNCONFIRMED
+                        andTimestamp:0
+                forTransactionHashes:txHashes];
             b = block;
 
             while (b.height > b2.height) { // set transaction heights for new main chain
@@ -2637,7 +2652,9 @@ static dispatch_once_t devnetToken = 0;
                 }
             }
 
-            [self setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTransactionHashes:txHashes];
+            [self setBlockHeight:TX_UNCONFIRMED
+                        andTimestamp:0
+                forTransactionHashes:txHashes];
             clb = syncBlock;
 
             while (clb.height > sbmc.height) { // set transaction heights for new main chain
@@ -2842,7 +2859,11 @@ static dispatch_once_t devnetToken = 0;
         }
     }
 
-    [self.chainManager chain:self didSetBlockHeight:height andTimestamp:timestamp forTransactionHashes:transactionHashes updatedTransactions:updatedTransactions];
+    [self.chainManager chain:self
+           didSetBlockHeight:height
+                andTimestamp:timestamp
+        forTransactionHashes:transactionHashes
+         updatedTransactions:updatedTransactions];
 }
 
 - (void)reloadDerivationPaths {
@@ -3149,7 +3170,7 @@ static dispatch_once_t devnetToken = 0;
     [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
     [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
     [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
-    [self.chainManager.masternodeManager wipeMasternodeInfo];
+    [self.chainManager wipeMasternodeInfo];
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@_%@", self.uniqueID, LAST_SYNCED_MASTERNODE_LIST]];
 }
 

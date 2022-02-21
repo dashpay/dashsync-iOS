@@ -117,7 +117,7 @@
     return [self isValidAtBlockHeight:blockHeight];
 }
 
-- (BOOL)isValidAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (BOOL)isValidAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     if (![self.previousValidity count]) return self.isValid;
     uint32_t blockHeight = blockHeightLookup(blockHash);
     return [self isValidAtBlockHeight:blockHeight];
@@ -159,7 +159,7 @@
     return [self simplifiedMasternodeEntryHashAtBlockHeight:blockHeight];
 }
 
-- (UInt256)simplifiedMasternodeEntryHashAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (UInt256)simplifiedMasternodeEntryHashAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     if (![self.mPreviousSimplifiedMasternodeEntryHashes count]) return self.simplifiedMasternodeEntryHash;
     uint32_t blockHeight = blockHeightLookup(blockHash);
     return [self simplifiedMasternodeEntryHashAtBlockHeight:blockHeight];
@@ -201,7 +201,7 @@
     return [self operatorPublicKeyAtBlockHeight:blockHeight];
 }
 
-- (UInt384)operatorPublicKeyAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (UInt384)operatorPublicKeyAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     if (![self.mPreviousOperatorPublicKeys count]) return self.operatorPublicKey;
     uint32_t blockHeight = blockHeightLookup(blockHash);
     return [self operatorPublicKeyAtBlockHeight:blockHeight];
@@ -239,7 +239,7 @@
     return [self confirmedHashAtBlockHeight:blockHeight];
 }
 
-- (UInt256)confirmedHashAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (UInt256)confirmedHashAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     if (!self.knownConfirmedAtHeight) return self.confirmedHash;
     uint32_t blockHeight = blockHeightLookup(blockHash);
     return [self confirmedHashAtBlockHeight:blockHeight];
@@ -373,7 +373,7 @@
     return self.providerRegistrationTransactionHash.u64[0];
 }
 
-- (NSDictionary *)toDictionaryAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (NSDictionary *)toDictionaryAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
 
     dictionary[@"address"] = [uint128_data(_address) base64String];
@@ -413,7 +413,7 @@
         }];
 }
 
-- (NSDictionary *)compare:(DSSimplifiedMasternodeEntry *)other ourBlockHash:(UInt256)ourBlockHash theirBlockHash:(UInt256)theirBlockHash usingOurString:(NSString *)ours usingTheirString:(NSString *)theirs blockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (NSDictionary *)compare:(DSSimplifiedMasternodeEntry *)other ourBlockHash:(UInt256)ourBlockHash theirBlockHash:(UInt256)theirBlockHash usingOurString:(NSString *)ours usingTheirString:(NSString *)theirs blockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     NSMutableDictionary *differences = [NSMutableDictionary dictionary];
 
     if (!ours) ours = @"ours";

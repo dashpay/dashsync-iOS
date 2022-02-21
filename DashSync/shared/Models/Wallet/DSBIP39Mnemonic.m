@@ -166,11 +166,8 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
 
         NSBundle *bundle = [[DSEnvironment sharedInstance] resourceBundle];
         for (NSString *lang in bundle.localizations) {
-            [allWords addObjectsFromArray:[NSArray arrayWithContentsOfFile:[bundle
-                                                                               pathForResource:WORDS
-                                                                                        ofType:@"plist"
-                                                                                   inDirectory:nil
-                                                                               forLocalization:lang]]];
+            NSString *path = [bundle pathForResource:WORDS ofType:@"plist" inDirectory:nil forLocalization:lang];
+            [allWords addObjectsFromArray:[NSArray arrayWithContentsOfFile:path]];
         }
         _allWords = allWords;
     }
@@ -351,7 +348,10 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
         [s deleteCharactersInRange:[s rangeOfCharacterFromSet:invalid]]; // remove invalid chars
     }
 
-    [s replaceOccurrencesOfString:@"\n" withString:@" " options:0 range:NSMakeRange(0, s.length)];
+    [s replaceOccurrencesOfString:@"\n"
+                       withString:@" "
+                          options:0
+                            range:NSMakeRange(0, s.length)];
     while ([s replaceOccurrencesOfString:@"  " withString:@" " options:0 range:NSMakeRange(0, s.length)] > 0)
         ;                                                                                               //!OCLINT
     while ([s rangeOfCharacterFromSet:ws].location == 0) [s deleteCharactersInRange:NSMakeRange(0, 1)]; // trim lead ws
@@ -455,7 +455,13 @@ DSBIP39RecoveryWordConfidence const DSBIP39RecoveryWordConfidence_Max = 0;
     } else {
         passphraseWithXs = [partialPassphrase stringByAppendingString:@" x"];
     }
-    [self findPotentialWordsOfMnemonicForPassphrase:passphraseWithXs replacementString:@"x" inLanguage:language useDistanceAsBackup:NO progressUpdate:progressUpdate completion:completion completeInQueue:dispatchQueue];
+    [self findPotentialWordsOfMnemonicForPassphrase:passphraseWithXs
+                                  replacementString:@"x"
+                                         inLanguage:language
+                                useDistanceAsBackup:NO
+                                     progressUpdate:progressUpdate
+                                         completion:completion
+                                    completeInQueue:dispatchQueue];
 }
 
 - (void)findPotentialWordsOfMnemonicForPassphrase:(NSString *)partialPassphrase replacementString:(NSString *)replacementString inLanguage:(DSBIP39Language)language useDistanceAsBackup:(BOOL)useDistanceAsBackup progressUpdate:(void (^)(float, bool *))progressUpdate completion:(void (^)(NSDictionary<NSString *, NSNumber *> *missingWords))completion completeInQueue:(dispatch_queue_t)dispatchQueue {

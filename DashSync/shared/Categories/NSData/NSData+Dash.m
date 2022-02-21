@@ -1302,6 +1302,63 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
     return *(UInt768 *)(self.bytes);
 }
 
+- (uint8_t)readUInt8AtOffset:(NSUInteger *)offset {
+    uint8_t data = [self UInt8AtOffset:*offset];
+    *offset += 1;
+    return data;
+}
+- (uint16_t)readUInt16AtOffset:(NSUInteger *)offset {
+    uint16_t data = [self UInt16AtOffset:*offset];
+    *offset += 2;
+    return data;
+}
+- (uint32_t)readUInt32AtOffset:(NSUInteger *)offset {
+    uint32_t data = [self UInt32AtOffset:*offset];
+    *offset += 4;
+    return data;
+}
+- (uint64_t)readUInt64AtOffset:(NSUInteger *)offset {
+    uint64_t data = [self UInt64AtOffset:*offset];
+    *offset += 8;
+    return data;
+}
+- (UInt128)readUInt128AtOffset:(NSUInteger *)offset {
+    UInt128 data = [self UInt128AtOffset:*offset];
+    *offset += 16;
+    return data;
+}
+- (UInt160)readUInt160AtOffset:(NSUInteger *)offset {
+    UInt160 data = [self UInt160AtOffset:*offset];
+    *offset += 20;
+    return data;
+}
+- (UInt256)readUInt256AtOffset:(NSUInteger *)offset {
+    UInt256 data = [self UInt256AtOffset:*offset];
+    *offset += 32;
+    return data;
+}
+- (UInt384)readUInt384AtOffset:(NSUInteger *)offset {
+    UInt384 data = [self UInt384AtOffset:*offset];
+    *offset += 48;
+    return data;
+}
+- (UInt512)readUInt512AtOffset:(NSUInteger *)offset {
+    UInt512 data = [self UInt512AtOffset:*offset];
+    *offset += 64;
+    return data;
+}
+- (UInt768)readUInt768AtOffset:(NSUInteger *)offset {
+    UInt768 data = [self UInt768AtOffset:*offset];
+    *offset += 96;
+    return data;
+}
+
+- (NSData *)readDataAtOffset:(NSUInteger *)offset ofLength:(NSUInteger)length {
+    NSData *data = [self subdataWithRange:NSMakeRange(*offset, length)];
+    *offset += length;
+    return data;
+}
+
 - (DSECPoint)ECPointAtOffset:(NSUInteger)offset {
     if (self.length < offset + sizeof(DSECPoint)) return DSECPOINT_ZERO;
     return *(DSECPoint *)(self.bytes + offset);
@@ -1567,7 +1624,8 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
     } else {
         v = DASH_PUBKEY_ADDRESS_TEST;
     }
-    [d appendBytes:&v length:1];
+    [d appendBytes:&v
+            length:1];
     [d appendData:self];
     [d appendBytes:d.SHA256_2.u32 length:4];
     return [d base58String];
@@ -1618,6 +1676,12 @@ UInt256 uInt256MultiplyUInt32LE(UInt256 a, uint32_t b) {
     return data;
 }
 
+- (void)saveToFile:(NSString *)file inDirectory:(NSSearchPathDirectory)directory {
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(directory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:file];
+    [self writeToFile:dataPath atomically:YES];
+}
 
 @end
 

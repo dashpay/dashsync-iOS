@@ -22,7 +22,7 @@
     return [self masternodeListWithSimplifiedMasternodeEntryPool:simplifiedMasternodeEntries quorumEntryPool:quorumEntries withBlockHeightLookup:nil];
 }
 
-- (DSMasternodeList *)masternodeListWithSimplifiedMasternodeEntryPool:(NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *)simplifiedMasternodeEntries quorumEntryPool:(NSDictionary<NSNumber *, NSDictionary *> *)quorumEntries withBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (DSMasternodeList *)masternodeListWithSimplifiedMasternodeEntryPool:(NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *)simplifiedMasternodeEntries quorumEntryPool:(NSDictionary<NSNumber *, NSDictionary *> *)quorumEntries withBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     NSMutableArray *masternodeEntriesArray = [NSMutableArray array];
     for (DSSimplifiedMasternodeEntryEntity *masternodeEntity in self.masternodes) {
         DSSimplifiedMasternodeEntry *masternodeEntry = [simplifiedMasternodeEntries objectForKey:masternodeEntity.providerRegistrationTransactionHash];

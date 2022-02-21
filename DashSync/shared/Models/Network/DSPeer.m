@@ -434,15 +434,17 @@
     [msg appendNetAddress:LOCAL_HOST port:self.chain.standardPort services:ENABLED_SERVICES]; // net address of local peer
     self.localNonce = ((uint64_t)arc4random() << 32) | (uint64_t)arc4random();                // random nonce
     [msg appendUInt64:self.localNonce];
+    NSString *agent;
     if (self.chain.isMainnet) {
-        [msg appendString:USER_AGENT]; // user agent
+        agent = USER_AGENT;
     } else if (self.chain.isTestnet) {
-        [msg appendString:[USER_AGENT stringByAppendingString:@"(testnet)"]];
+        agent = [USER_AGENT stringByAppendingString:@"(testnet)"];
     } else {
-        [msg appendString:[USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet=%@)", self.chain.devnetIdentifier]]];
+        agent = [USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet=%@)", self.chain.devnetIdentifier]];
     }
-    [msg appendUInt32:0]; // last block received
-    [msg appendUInt8:0];  // relay transactions (no for SPV bloom filter mode)
+    [msg appendString:agent]; // user agent
+    [msg appendUInt32:0];     // last block received
+    [msg appendUInt8:0];      // relay transactions (no for SPV bloom filter mode)
     self.pingStartTime = [NSDate timeIntervalSince1970];
 
 #if MESSAGE_LOGGING
@@ -555,7 +557,8 @@
         [msg appendUInt256:hashData.UInt256];
     }
 
-    [msg appendBytes:&hashStop length:sizeof(hashStop)];
+    [msg appendBytes:&hashStop
+              length:sizeof(hashStop)];
     if (self.relayStartTime == 0) self.relayStartTime = [NSDate timeIntervalSince1970];
     [self sendMessage:msg type:MSG_GETHEADERS];
 }
@@ -570,7 +573,8 @@
         [msg appendUInt256:hashData.UInt256];
     }
 
-    [msg appendBytes:&hashStop length:sizeof(hashStop)];
+    [msg appendBytes:&hashStop
+              length:sizeof(hashStop)];
     self.sentGetblocks = YES;
 
 #if MESSAGE_LOGGING
@@ -617,7 +621,8 @@
         [msg appendBytes:&h length:sizeof(h)];
     }
 
-    [self sendMessage:msg type:MSG_INV];
+    [self sendMessage:msg
+                 type:MSG_INV];
     switch (invType) {
         case DSInvType_Tx:
             [self.knownTxHashes unionOrderedSet:hashes];
@@ -663,7 +668,8 @@
         [msg appendBytes:&h length:sizeof(h)];
     }
 
-    [self sendMessage:msg type:MSG_INV];
+    [self sendMessage:msg
+                 type:MSG_INV];
     txHashes ? [self.knownTxHashes unionOrderedSet:txHashes] : nil;
     txLockRequestHashes ? [self.knownTxHashes unionOrderedSet:txLockRequestHashes] : nil;
 }
@@ -1758,13 +1764,8 @@
             [self.transactionDelegate peer:self relayedBlock:block];
 
 #if SAVE_INCOMING_BLOCKS
-            NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-            NSString *documentsDirectory = [paths objectAtIndex:0];
-            NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"%@-%d-%@.block", self.chain.devnetIdentifier, block.height, uint256_hex(block.blockHash)]];
-
-            // Save it into file system
-            [message writeToFile:dataPath atomically:YES];
-
+            NSString *fileName = [NSString stringWithFormat:@"%@-%d-%@.block", self.chain.devnetIdentifier, block.height, uint256_hex(block.blockHash)];
+            [message saveToFile:fileName inDirectory:NSCachesDirectory];
 #endif
         });
     }

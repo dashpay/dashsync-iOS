@@ -54,6 +54,7 @@
 #import "DSTransactionInput.h"
 #import "DSTransition.h"
 #import "DSWallet+Protected.h"
+#import "NSData+Dash.h"
 #import "NSDate+Utils.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"
@@ -899,7 +900,8 @@
         [peer sendFilterloadMessage:[self transactionsBloomFilterForPeer:peer].data];
     }
 
-    [peer sendInvMessageForHashes:self.publishedTx.allKeys ofType:DSInvType_Tx]; // publish pending tx
+    [peer sendInvMessageForHashes:self.publishedTx.allKeys
+                           ofType:DSInvType_Tx]; // publish pending tx
     [peer sendPingMessageWithPongHandler:^(BOOL success) {
         if (success) {
             DSLog(@"[DSTransactionManager] fetching mempool ping success peer %@", peer.host);
@@ -1711,10 +1713,8 @@
                 DSLog(@"%d;%lu;%u", block.height - 499, self.totalTransactionsSum / self.totalTransactionsQueue.count, self.totalTransactionsMax);
             }
             if (block.height == self.chain.lastTerminalBlockHeight) {
-                NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-                NSString *documentsDirectory = [paths objectAtIndex:0];
-                NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"MaxTransactionInfo_%@.dat", self.chain.name]];
-                [self.totalTransactionData writeToFile:dataPath atomically:YES];
+                NSString *fileName = [NSString stringWithFormat:@"MaxTransactionInfo_%@.dat", self.chain.name];
+                [self.totalTransactionData saveToFile:fileName inDirectory:NSCachesDirectory];
             }
         }
     }
@@ -1793,6 +1793,11 @@
         DSLog(@"increasing feePerKb to %llu based on feefilter messages from peers", secondFeePerByte * 2);
         self.chain.feePerByte = secondFeePerByte * 2;
     }
+}
+
+- (void)checkWaitingForQuorums {
+    [self checkInstantSendLocksWaitingForQuorums];
+    [self checkChainLocksWaitingForQuorums];
 }
 
 @end

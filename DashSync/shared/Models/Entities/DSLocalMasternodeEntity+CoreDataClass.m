@@ -11,6 +11,7 @@
 #import "DSChainManager.h"
 #import "DSLocalMasternode+Protected.h"
 #import "DSLocalMasternodeEntity+CoreDataClass.h"
+#import "DSMasternodeManager+LocalMasternode.h"
 #import "DSMasternodeManager.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "DSProviderRegistrationTransactionEntity+CoreDataProperties.h"

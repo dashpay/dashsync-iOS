@@ -130,7 +130,8 @@ NS_ASSUME_NONNULL_BEGIN
     @synchronized(self.requestToRequestOperationHandler) {
         requestOperationHandler = [self.requestToRequestOperationHandler objectForKey:response.request];
     }
-    [requestOperationHandler receivedDataChunk:data forResponse:response];
+    [requestOperationHandler receivedDataChunk:data
+                                   forResponse:response];
 }
 
 - (void)receivedInitialResponse:(HTTPResponse *)response {
@@ -165,7 +166,8 @@ NS_ASSUME_NONNULL_BEGIN
     @synchronized(self.requestToRequestOperationHandler) {
         requestOperationHandler = [self.requestToRequestOperationHandler objectForKey:request];
     }
-    [requestOperationHandler needsNewBodyStream:completionHandler forRequest:request];
+    [requestOperationHandler needsNewBodyStream:completionHandler
+                                     forRequest:request];
 }
 
 #pragma mark HTTPRequestOperationHandlerDelegate
@@ -195,7 +197,8 @@ NS_ASSUME_NONNULL_BEGIN
         });
     }
 
-    [self.requestOperationHandlerDelegate requestOperationHandler:self performRequest:request];
+    [self.requestOperationHandlerDelegate requestOperationHandler:self
+                                                   performRequest:request];
 }
 
 - (void)requestOperationHandler:(id<HTTPRequestOperationHandler>)requestOperationHandler cancelRequest:(HTTPRequest *)request {

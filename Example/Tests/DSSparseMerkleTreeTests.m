@@ -613,7 +613,13 @@
     XCTAssertEqualObjects(proof.rootTreeProof, rootTreeProofData, @"Root tree proof must match");
     XCTAssertEqualObjects(proof.storeTreeProofs.identitiesProof, identitiesProofData, @"Identity tree proof must match");
 
-    DSQuorumEntry *quorumEntry = [[DSQuorumEntry alloc] initWithVersion:1 type:DSLLMQType_10_60 quorumHash:@"7f315ea78de78c3ac9b2c089f40138114088963314a3c0101fb7eaaad5000000".hexToData.UInt256 quorumPublicKey:@"0a396fd00ac8f678a242c4b14004fe3402bdb9ada641e48e11ca6be3c87c5858b4cbc6014622d98df95b1a68b1bbd46c".hexToData.UInt384 quorumEntryHash:UINT256_ZERO verified:TRUE onChain:[DSChain testnet]];
+    DSQuorumEntry *quorumEntry = [[DSQuorumEntry alloc] initWithVersion:1
+                                                                   type:DSLLMQType_10_60
+                                                             quorumHash:@"7f315ea78de78c3ac9b2c089f40138114088963314a3c0101fb7eaaad5000000".hexToData.UInt256
+                                                        quorumPublicKey:@"0a396fd00ac8f678a242c4b14004fe3402bdb9ada641e48e11ca6be3c87c5858b4cbc6014622d98df95b1a68b1bbd46c".hexToData.UInt384
+                                                        quorumEntryHash:UINT256_ZERO
+                                                               verified:TRUE
+                                                                onChain:[DSChain testnet]];
 
     ResponseMetadata *responseMetaData = [[ResponseMetadata alloc] initWithData:metaData error:&error];
 
@@ -642,7 +648,13 @@
     XCTAssertEqualObjects(proof.rootTreeProof, rootTreeProofData, @"Root tree proof must match");
     XCTAssertEqualObjects(proof.storeTreeProofs.identitiesProof, identitiesProofData, @"Identity tree proof must match");
 
-    DSQuorumEntry *quorumEntry = [[DSQuorumEntry alloc] initWithVersion:1 type:DSLLMQType_10_60 quorumHash:@"48801a3465532e165e7359b45631d7e40beec3a88ae18c144b62f61b94010000".hexToData.UInt256 quorumPublicKey:@"103425b2fd21494e7116766182efecb7479da2572bb1f226936152d615625b100477538261beaa87ff4442822b85d75e".hexToData.UInt384 quorumEntryHash:UINT256_ZERO verified:TRUE onChain:[DSChain testnet]];
+    DSQuorumEntry *quorumEntry = [[DSQuorumEntry alloc] initWithVersion:1
+                                                                   type:DSLLMQType_10_60
+                                                             quorumHash:@"48801a3465532e165e7359b45631d7e40beec3a88ae18c144b62f61b94010000".hexToData.UInt256
+                                                        quorumPublicKey:@"103425b2fd21494e7116766182efecb7479da2572bb1f226936152d615625b100477538261beaa87ff4442822b85d75e".hexToData.UInt384
+                                                        quorumEntryHash:UINT256_ZERO
+                                                               verified:TRUE
+                                                                onChain:[DSChain testnet]];
 
     ResponseMetadata *responseMetaData = [[ResponseMetadata alloc] init];
     responseMetaData.height = 5851;

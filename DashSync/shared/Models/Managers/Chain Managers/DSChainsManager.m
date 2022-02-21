@@ -237,7 +237,10 @@
             DSLog(@"invalid address");
         }
 
-        [peerManager registerPeerAtLocation:ipAddress port:port ? [port intValue] : standardPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort];
+        [peerManager registerPeerAtLocation:ipAddress
+                                       port:port ? [port intValue] : standardPort
+                               dapiJRPCPort:dapiJRPCPort
+                               dapiGRPCPort:dapiGRPCPort];
     }
 }
 
@@ -280,7 +283,10 @@
             DSLog(@"invalid address");
         }
 
-        [peerManager registerPeerAtLocation:ipAddress port:port ? [port intValue] : standardPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort];
+        [peerManager registerPeerAtLocation:ipAddress
+                                       port:port ? [port intValue] : standardPort
+                               dapiJRPCPort:dapiJRPCPort
+                               dapiGRPCPort:dapiGRPCPort];
     }
 
     NSMutableDictionary *registeredDevnetsDictionary = [getKeychainDict(DEVNET_CHAINS_KEY, @[[NSString class], [NSArray class], [DSCheckpoint class]], &error) mutableCopy];
