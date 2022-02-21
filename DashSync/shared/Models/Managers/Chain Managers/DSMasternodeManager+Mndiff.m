@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Vladimir Pirogov
 //  Copyright © 2021 Dash Core Group. All rights reserved.
 //
@@ -15,16 +15,16 @@
 //  limitations under the License.
 //
 
-#import "DSBlock.h"
 #import "DSBLSKey.h"
+#import "DSBlock.h"
 #import "DSChain+Protected.h"
 #import "DSInsightManager.h"
 #import "DSMasternodeDiffMessageContext.h"
 #import "DSMasternodeList+Mndiff.h"
 #import "DSMasternodeManager+Mndiff.h"
 #import "DSMerkleBlock.h"
-#import "DSSimplifiedMasternodeEntry+Mndiff.h"
 #import "DSQuorumEntry+Mndiff.h"
+#import "DSSimplifiedMasternodeEntry+Mndiff.h"
 #import "NSData+Dash.h"
 
 @implementation DSMasternodeManager (Mndiff)
@@ -88,6 +88,8 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     UInt768 allCommitmentAggregatedSignature = [NSData dataWithBytes:all_commitment_aggregated_signature length:96].UInt768;
     bool allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:commitmentHash signature:allCommitmentAggregatedSignature withPublicKeys:publicKeyArray];
     if (!allCommitmentAggregatedSignatureValidated) {
+        NoTimeLog(@"Issue with allCommitmentAggregatedSignatureValidated: %@", uint768_hex(allCommitmentAggregatedSignature));
+        mndiff_quorum_validation_data_destroy(data);
         return false;
     }
     //The sig must validate against the commitmentHash and all public keys determined by the signers bitvector. This is an aggregated BLS signature verification.
