@@ -88,7 +88,7 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     UInt768 allCommitmentAggregatedSignature = [NSData dataWithBytes:all_commitment_aggregated_signature length:96].UInt768;
     bool allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:commitmentHash signature:allCommitmentAggregatedSignature withPublicKeys:publicKeyArray];
     if (!allCommitmentAggregatedSignatureValidated) {
-        NoTimeLog(@"Issue with allCommitmentAggregatedSignatureValidated: %@", uint768_hex(allCommitmentAggregatedSignature));
+        DSLog(@"Issue with allCommitmentAggregatedSignatureValidated: %@", uint768_hex(allCommitmentAggregatedSignature));
         mndiff_quorum_validation_data_destroy(data);
         return false;
     }
