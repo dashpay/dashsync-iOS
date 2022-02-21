@@ -344,12 +344,12 @@
 
 // size in bytes if signed, or estimated size assuming compact pubkey sigs
 - (size_t)size {
-    @synchronized (self) {
-        if (uint256_is_not_zero(_txHash)) return self.data.length;
+    if (uint256_is_not_zero(_txHash)) return self.data.length;
+    @synchronized(self) {
         uint32_t inputCount = (uint32_t)self.mInputs.count;
         uint32_t outputCount = (uint32_t)self.mOutputs.count;
         return 8 + [NSMutableData sizeOfVarInt:inputCount] + [NSMutableData sizeOfVarInt:outputCount] +
-            TX_INPUT_SIZE * inputCount + TX_OUTPUT_SIZE * outputCount;
+               TX_INPUT_SIZE * inputCount + TX_OUTPUT_SIZE * outputCount;
     }
 }
 
