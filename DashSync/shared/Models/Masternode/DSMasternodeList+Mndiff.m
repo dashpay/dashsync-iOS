@@ -49,13 +49,13 @@
     int i = 0;
     int j = 0;
     for (NSNumber *type in quorums) {
-        NSDictionary<NSData *, DSQuorumEntry *> *quorumsMaps = quorums[type];
-        uintptr_t quorum_maps_count = quorumsMaps.count;
+        NSDictionary<NSData *, DSQuorumEntry *> *quorumEntries = quorums[type];
+        uintptr_t quorum_maps_count = quorumEntries.count;
         LLMQMap *quorums_map = malloc(sizeof(LLMQMap));
         LLMQEntry **quorums_of_type = malloc(quorum_maps_count * sizeof(LLMQEntry *));
         j = 0;
-        for (NSData *hash in quorumsMaps) {
-            quorums_of_type[j++] = [quorumsMaps[hash] ffi_malloc];
+        for (NSData *hash in quorumEntries) {
+            quorums_of_type[j++] = [quorumEntries[hash] ffi_malloc];
         }
         quorums_map->llmq_type = (uint8_t)[type unsignedIntegerValue];
         quorums_map->count = quorum_maps_count;
