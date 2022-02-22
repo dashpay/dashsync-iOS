@@ -267,11 +267,17 @@ CFAllocatorRef SecureAllocator() {
 
 - (NSMutableData *)appendString:(NSString *)s {
     NSUInteger l = [s lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
-
     [self appendVarInt:l];
     [self appendBytes:s.UTF8String length:l];
     return self;
 }
+
+- (NSMutableData *)appendCountedData:(NSData *)data {
+    [self appendVarInt:data.length];
+    [self appendData:data];
+    return self;
+}
+
 
 // MARK: - Dash script
 

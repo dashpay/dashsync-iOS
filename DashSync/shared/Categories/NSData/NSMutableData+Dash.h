@@ -68,6 +68,7 @@ CF_IMPLICIT_BRIDGING_DISABLED
 - (NSMutableData *)appendUTXO:(DSUTXO)utxo;
 - (NSMutableData *)appendVarInt:(uint64_t)i;
 - (NSMutableData *)appendString:(NSString *)s;
+- (NSMutableData *)appendCountedData:(NSData *)data;
 
 - (NSMutableData *)appendDevnetGenesisCoinbaseMessage:(NSString *)message;
 - (NSMutableData *)appendCoinbaseMessage:(NSString *)message atHeight:(uint32_t)height;
