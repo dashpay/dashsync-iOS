@@ -149,8 +149,7 @@
         [d appendUInt32:self.totalTransactions];
         [d appendVarInt:self.merkleTree.hashes.length / sizeof(UInt256)];
         [d appendData:self.merkleTree.hashes];
-        [d appendVarInt:self.merkleTree.flags.length];
-        [d appendData:self.merkleTree.flags];
+        [d appendCountedData:self.merkleTree.flags];
     }
 
     return d;

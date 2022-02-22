@@ -413,12 +413,11 @@
     @synchronized (self) {
         BOOL forSigHash = ([self isMemberOfClass:[DSTransaction class]] || [self isMemberOfClass:[DSCreditFundingTransaction class]]) && subscriptIndex != NSNotFound;
         NSUInteger dataSize = 8 + [NSMutableData sizeOfVarInt:self.mInputs.count] + [NSMutableData sizeOfVarInt:self.mOutputs.count] + TX_INPUT_SIZE * self.mInputs.count + TX_OUTPUT_SIZE * self.mOutputs.count + (forSigHash ? 4 : 0);
+        
         NSMutableData *d = [NSMutableData dataWithCapacity:dataSize];
-
         [d appendUInt16:self.version];
         [d appendUInt16:self.type];
         [d appendVarInt:self.mInputs.count];
-
 
         for (NSUInteger i = 0; i < self.mInputs.count; i++) {
             DSTransactionInput *input = self.mInputs[i];
@@ -426,15 +425,13 @@
             [d appendUInt32:input.index];
 
             if (subscriptIndex == NSNotFound && input.signature != nil) {
-                [d appendVarInt:[input.signature length]];
-                [d appendData:input.signature];
+                [d appendCountedData:input.signature];
             } else if (subscriptIndex == i && input.inScript != nil) {
                 //TODO: to fully match the reference implementation, OP_CODESEPARATOR related checksig logic should go here
-                [d appendVarInt:[input.inScript length]];
-                [d appendData:input.inScript];
-            } else
+                [d appendCountedData:input.inScript];
+            } else {
                 [d appendVarInt:0];
-
+            }
             [d appendUInt32:input.sequence];
         }
 
@@ -443,13 +440,12 @@
         for (NSUInteger i = 0; i < self.mOutputs.count; i++) {
             DSTransactionOutput *output = self.mOutputs[i];
             [d appendUInt64:output.amount];
-            [d appendVarInt:[output.outScript length]];
-            [d appendData:output.outScript];
+            [d appendCountedData:output.outScript];
         }
 
         [d appendUInt32:self.lockTime];
         if (forSigHash) [d appendUInt32:SIGHASH_ALL];
-        return d;
+        return [d copy];
     }
 }
 

@@ -1471,17 +1471,17 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         // check for future lockTime or replace-by-fee: https://github.com/bitcoin/bips/blob/master/bip-0125.mediawiki
         for (DSTransactionInput *input in transaction.inputs) {
             if (input.sequence >= UINT32_MAX) continue;
-            if (transaction.lockTime < TX_MAX_LOCK_HEIGHT &&
-                transaction.lockTime > self.wallet.chain.bestBlockHeight + 1) return YES;
-            if (transaction.lockTime >= TX_MAX_LOCK_HEIGHT &&
-                transaction.lockTime > [NSDate timeIntervalSince1970]) return YES;
+            uint32_t lockTime = transaction.lockTime;
+            if (lockTime < TX_MAX_LOCK_HEIGHT &&
+                lockTime > self.wallet.chain.bestBlockHeight + 1) return YES;
+            if (lockTime >= TX_MAX_LOCK_HEIGHT &&
+                lockTime > [NSDate timeIntervalSince1970]) return YES;
         }
         for (DSTransactionOutput *output in transaction.outputs) { // check that no outputs are dust
             if (output.amount < TX_MIN_OUTPUT_AMOUNT) return YES;
         }
         for (DSTransactionInput *input in transaction.inputs) { // check if any inputs are known to be pending
             NSValue *txHash = uint256_obj(input.inputHash);
-            
             DSTransaction *tx = self.allTx[txHash];
             if (tx && [self transactionIsPending:tx]) {
                 return YES;
