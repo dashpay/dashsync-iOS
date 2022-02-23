@@ -410,24 +410,28 @@
 // Returns the binary transaction data that needs to be hashed and signed with the private key for the tx input at
 // subscriptIndex. A subscriptIndex of NSNotFound will return the entire signed transaction.
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex {
-    @synchronized (self) {
+    @synchronized(self) {
+        NSArray<DSTransactionInput *> *inputs = self.inputs;
+        NSArray<DSTransactionOutput *> *outputs = self.outputs;
+        NSUInteger inputsCount = inputs.count;
+        NSUInteger outputsCount = outputs.count;
         BOOL forSigHash = ([self isMemberOfClass:[DSTransaction class]] || [self isMemberOfClass:[DSCreditFundingTransaction class]]) && subscriptIndex != NSNotFound;
-        NSUInteger dataSize = 8 + [NSMutableData sizeOfVarInt:self.mInputs.count] + [NSMutableData sizeOfVarInt:self.mOutputs.count] + TX_INPUT_SIZE * self.mInputs.count + TX_OUTPUT_SIZE * self.mOutputs.count + (forSigHash ? 4 : 0);
-        
+        NSUInteger dataSize = 8 + [NSMutableData sizeOfVarInt:inputsCount] + [NSMutableData sizeOfVarInt:outputsCount] + TX_INPUT_SIZE * inputsCount + TX_OUTPUT_SIZE * outputsCount + (forSigHash ? 4 : 0);
+
         NSMutableData *d = [NSMutableData dataWithCapacity:dataSize];
         [d appendUInt16:self.version];
         [d appendUInt16:self.type];
-        [d appendVarInt:self.mInputs.count];
+        [d appendVarInt:inputsCount];
 
-        for (NSUInteger i = 0; i < self.mInputs.count; i++) {
-            DSTransactionInput *input = self.mInputs[i];
+        for (NSUInteger i = 0; i < inputsCount; i++) {
+            DSTransactionInput *input = inputs[i];
             [d appendUInt256:input.inputHash];
             [d appendUInt32:input.index];
 
             if (subscriptIndex == NSNotFound && input.signature != nil) {
                 [d appendCountedData:input.signature];
             } else if (subscriptIndex == i && input.inScript != nil) {
-                //TODO: to fully match the reference implementation, OP_CODESEPARATOR related checksig logic should go here
+                // TODO: to fully match the reference implementation, OP_CODESEPARATOR related checksig logic should go here
                 [d appendCountedData:input.inScript];
             } else {
                 [d appendVarInt:0];
