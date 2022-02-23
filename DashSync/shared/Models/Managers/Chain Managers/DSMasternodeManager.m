@@ -599,6 +599,10 @@
 - (void)getRecentMasternodeList:(NSUInteger)blocksAgo withSafetyDelay:(uint32_t)safetyDelay {
     @synchronized(self.masternodeListRetrievalQueue) {
         DSMerkleBlock *merkleBlock = [self.chain blockFromChainTip:blocksAgo];
+        if (!merkleBlock) {
+            // sometimes it happens while rescan
+            return;
+        }
         if ([self.masternodeListRetrievalQueue lastObject] && uint256_eq(merkleBlock.blockHash, [self.masternodeListRetrievalQueue lastObject].UInt256)) {
             //we are asking for the same as the last one
             return;
