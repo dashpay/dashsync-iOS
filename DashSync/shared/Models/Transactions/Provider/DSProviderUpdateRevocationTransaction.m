@@ -140,17 +140,19 @@
 }
 
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex {
-    NSMutableData *data = [[super toDataWithSubscriptIndex:subscriptIndex] mutableCopy];
-    NSData *payloadData = [self payloadData];
-    [data appendVarInt:payloadData.length];
-    [data appendData:payloadData];
-    if (subscriptIndex != NSNotFound) [data appendUInt32:SIGHASH_ALL];
-    return data;
+    @synchronized(self) {
+        NSMutableData *data = [[super toDataWithSubscriptIndex:subscriptIndex] mutableCopy];
+        [data appendCountedData:[self payloadData]];
+        if (subscriptIndex != NSNotFound) [data appendUInt32:SIGHASH_ALL];
+        return data;
+    }
 }
 
 - (size_t)size {
-    if (uint256_is_not_zero(self.txHash)) return self.data.length;
-    return [super size] + [NSMutableData sizeOfVarInt:self.payloadData.length] + ([self basePayloadData].length + 96);
+    @synchronized(self) {
+        if (uint256_is_not_zero(self.txHash)) return self.data.length;
+        return [super size] + [NSMutableData sizeOfVarInt:self.payloadData.length] + ([self basePayloadData].length + 96);
+    }
 }
 
 - (Class)entityClass {
