@@ -622,7 +622,7 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerChainSyncDidStartNotification
                                                             object:nil
-                                                          userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSPeerManagerNotificationPeerKey: peer}];
+                                                          userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSPeerManagerNotificationPeerKey: peer ? peer : [NSNull null]}];
     });
     dispatch_async(self.chain.networkingQueue, ^{
         if ((self.syncPhase != DSChainSyncPhase_ChainSync && self.syncPhase != DSChainSyncPhase_Synced) && self.chain.needsInitialTerminalHeadersSync) {
