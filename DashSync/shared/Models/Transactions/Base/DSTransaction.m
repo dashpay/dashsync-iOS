@@ -439,10 +439,10 @@
             [d appendUInt32:input.sequence];
         }
 
-        [d appendVarInt:self.mOutputs.count];
+        [d appendVarInt:outputsCount];
 
-        for (NSUInteger i = 0; i < self.mOutputs.count; i++) {
-            DSTransactionOutput *output = self.mOutputs[i];
+        for (NSUInteger i = 0; i < outputsCount; i++) {
+            DSTransactionOutput *output = outputs[i];
             [d appendUInt64:output.amount];
             [d appendCountedData:output.outScript];
         }
