@@ -2660,6 +2660,7 @@
         NSLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)", uint256_reverse_hex(baseBlockHash), blockHeightLookup(baseBlockHash), uint256_reverse_hex(blockHash1092912), blockHeightLookup(blockHash1092912));
 
         DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
+        [mndiffContext setBaseMasternodeListHash:uint256_data(reloadedMasternodeList1092888.blockHash)];
         [mndiffContext setUseInsightAsBackup:NO];
         [mndiffContext setChain:chain];
         [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
