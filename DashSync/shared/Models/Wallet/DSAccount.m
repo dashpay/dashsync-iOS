@@ -1465,7 +1465,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 // true if transaction cannot be immediately spent (i.e. if it or an input tx can be replaced-by-fee)
 - (BOOL)transactionIsPending:(DSTransaction *)transaction {
     NSParameterAssert(transaction);
-    @synchronized(self) {
+//    @synchronized(self) {
         if (transaction.blockHeight != TX_UNCONFIRMED) return NO; // confirmed transactions are not pending
         if (transaction.size > TX_MAX_SIZE) return YES;           // check transaction size is under TX_MAX_SIZE
         // check for future lockTime or replace-by-fee: https://github.com/bitcoin/bips/blob/master/bip-0125.mediawiki
@@ -1488,7 +1488,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             }
         }
         return NO;
-    }
+//    }
 }
 
 - (BOOL)transactionOutputsAreLocked:(DSTransaction *)transaction {
@@ -1509,7 +1509,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 // true if tx is considered 0-conf safe (valid and not pending, timestamp is greater than 0, and no unverified inputs)
 - (BOOL)transactionIsVerified:(DSTransaction *)transaction {
     NSParameterAssert(transaction);
-    @synchronized(self) {
+//    @synchronized(self) {
         if (transaction.blockHeight != TX_UNCONFIRMED) return YES; // confirmed transactions are always verified
         if (transaction.timestamp == 0) return NO;                 // a timestamp of 0 indicates transaction is to remain unverified
         if (![self transactionIsValid:transaction] || [self transactionIsPending:transaction]) return NO;
@@ -1519,7 +1519,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             if (![self transactionIsVerified:tx]) return NO;
         }
         return YES;
-    }
+//    }
 }
 
 // MARK: = Direction
