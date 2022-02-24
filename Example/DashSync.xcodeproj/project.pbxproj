@@ -2393,7 +2393,6 @@
 						DevelopmentTeam = NMHX8CEMG9;
 					};
 					6003F5AD195388D20070C39A = {
-						DevelopmentTeam = 44RJ69WHFF;
 						TestTargetID = 6003F589195388D20070C39A;
 					};
 					FB9C9EF925B80DB40039880E = {
@@ -3280,7 +3279,6 @@
 			baseConfigurationReference = C90A9AD2C32828341F0E6915 /* Pods-DashSync_Tests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Tests/Tests-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
