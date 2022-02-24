@@ -18,6 +18,7 @@
 #import <Foundation/Foundation.h>
 
 #import "DSBLSKey.h"
+#import "bls.hpp"
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wconversion"
@@ -25,7 +26,6 @@
 #pragma clang diagnostic ignored "-Wconditional-uninitialized"
 #pragma clang diagnostic ignored "-Wdocumentation"
 #pragma clang diagnostic ignored "-Wmacro-redefined"
-#import <bls-signatures-pod/bls.hpp>
 #pragma clang diagnostic pop
 
 NS_ASSUME_NONNULL_BEGIN
