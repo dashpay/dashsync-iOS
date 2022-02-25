@@ -51,7 +51,7 @@
     GRPCMutableCallOptions *options = [[GRPCMutableCallOptions alloc] init];
     // this example does not use TLS (secure channel); use insecure channel instead
     options.transportType = GRPCTransportTypeInsecure;
-    options.userAgentPrefix = USER_AGENT;
+    options.userAgentPrefix = [NSString stringWithFormat:@"%@/", USER_AGENT];
     options.timeout = 30;
     self.grpcDispatchQueue = grpcDispatchQueue;
 

@@ -436,11 +436,13 @@
     [msg appendUInt64:self.localNonce];
     NSString *agent;
     if (self.chain.isMainnet) {
-        agent = USER_AGENT;
+        agent = [USER_AGENT stringByAppendingString:@"/"];
     } else if (self.chain.isTestnet) {
-        agent = [USER_AGENT stringByAppendingString:@"(testnet)"];
+        agent = [USER_AGENT stringByAppendingString:@"/(testnet)"];
+    } else if ([self.chain.devnetIdentifier isEqualToString:@"devnet-malort"]) {
+        agent = [USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet.1.%@)/", self.chain.devnetIdentifier]];
     } else {
-        agent = [USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet=%@)", self.chain.devnetIdentifier]];
+        agent = [USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet=%@)/", self.chain.devnetIdentifier]];
     }
     [msg appendString:agent]; // user agent
     [msg appendUInt32:0];     // last block received
