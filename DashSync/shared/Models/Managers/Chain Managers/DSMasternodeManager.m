@@ -564,12 +564,14 @@
         uint256_is_not_zero(baseBlockHash)) {
         //this could have been deleted in the meantime, if so rerequest
         [self issueWithMasternodeListFromPeer:peer];
+        [DSMasternodeManager destroyQRInfoMessage:qrInfo];
         DSLog(@"No base masternode list");
         return;
     }
     DSBlock *lastBlock = [self lastBlockForBlockHash:blockHash fromPeer:peer];
     if (!lastBlock) {
         [self issueWithMasternodeListFromPeer:peer];
+        [DSMasternodeManager destroyQRInfoMessage:qrInfo];
         DSLog(@"Last Block missing");
         return;
     }
