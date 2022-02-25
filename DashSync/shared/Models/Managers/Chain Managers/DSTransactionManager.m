@@ -1582,13 +1582,15 @@
                 [transaction setInstantSendReceivedWithInstantSendLock:instantSendTransactionLock];
             }
             [self.instantSendLocksWaitingForQuorums removeObjectForKey:uint256_data(instantSendTransactionLock.transactionHash)];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification
-                                                                    object:nil
-                                                                  userInfo:@{DSChainManagerNotificationChainKey: self.chain,
-                                                                      DSTransactionManagerNotificationTransactionKey: transaction,
-                                                                      DSTransactionManagerNotificationTransactionChangesKey: @{DSTransactionManagerNotificationInstantSendTransactionLockKey: instantSendTransactionLock, DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey: @(verified)}}];
-            });
+            if (account && transaction) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification
+                                                                        object:nil
+                                                                      userInfo:@{DSChainManagerNotificationChainKey: self.chain,
+                                                                          DSTransactionManagerNotificationTransactionKey: transaction,
+                                                                          DSTransactionManagerNotificationTransactionChangesKey: @{DSTransactionManagerNotificationInstantSendTransactionLockKey: instantSendTransactionLock, DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey: @(verified)}}];
+                });
+            }
         } else {
             DSTransaction *transaction = nil;
             DSWallet *wallet = nil;

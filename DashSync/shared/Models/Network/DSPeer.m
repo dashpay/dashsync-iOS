@@ -436,11 +436,13 @@
     [msg appendUInt64:self.localNonce];
     NSString *agent;
     if (self.chain.isMainnet) {
-        agent = USER_AGENT;
+        agent = [USER_AGENT stringByAppendingString:@"/"];
     } else if (self.chain.isTestnet) {
-        agent = [USER_AGENT stringByAppendingString:@"(testnet)"];
+        agent = [USER_AGENT stringByAppendingString:@"/(testnet)"];
+    } else if (self.chain.protocolVersion >= 70220) {
+        agent = [USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet.%u.%@)/", self.chain.devnetVersion, self.chain.devnetIdentifier]];
     } else {
-        agent = [USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet=%@)", self.chain.devnetIdentifier]];
+        agent = [USER_AGENT_DEPRECATED_70219 stringByAppendingString:[NSString stringWithFormat:@"(devnet=%@)", self.chain.devnetIdentifier]];
     }
     [msg appendString:agent]; // user agent
     [msg appendUInt32:0];     // last block received
