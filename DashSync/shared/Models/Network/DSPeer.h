@@ -59,7 +59,8 @@ typedef NS_ENUM(uint32_t, DSInvType)
     DSInvType_QuorumDebugStatus = 27,
     DSInvType_QuorumRecoveredSignature = 28,
     DSInvType_ChainLockSignature = 29,
-    DSInvType_InstantSendLock = 30
+    DSInvType_InstantSendLock = 30,
+    DSInvType_InstantSendDeterministicLock = 31
 };
 
 #define DASH_PEER_TIMEOUT_CODE 1001
@@ -67,8 +68,6 @@ typedef NS_ENUM(uint32_t, DSInvType)
 #define SERVICES_NODE_NETWORK 0x01 // services value indicating a node carries full blocks, not just headers
 #define SERVICES_NODE_BLOOM 0x04   // BIP111: https://github.com/bitcoin/bips/blob/master/bip-0111.mediawiki
 #define USER_AGENT [NSString stringWithFormat:@"/dashwallet:%@", \
-                             NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"]]
-#define USER_AGENT_DEPRECATED_70219 [NSString stringWithFormat:@"/dashwallet:%@/", \
                              NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"]]
 
 #define WEEK_TIME_INTERVAL 604800 //7*24*60*60
@@ -88,6 +87,7 @@ typedef NS_ENUM(uint32_t, DSInvType)
 #define MSG_IX @"ix"           // deprecated in version 14
 #define MSG_TXLVOTE @"txlvote" // deprecated in version 14
 #define MSG_ISLOCK @"islock"   //version 14
+#define MSG_ISDLOCK @"isdlock"   //version 18
 #define MSG_BLOCK @"block"
 #define MSG_CHAINLOCK @"clsig"
 #define MSG_HEADERS @"headers"
@@ -203,6 +203,7 @@ typedef void (^MempoolCompletionBlock)(BOOL success, BOOL needed, BOOL interrupt
 - (void)peer:(DSPeer *)peer hasTransactionWithHash:(UInt256)txHash;
 - (void)peer:(DSPeer *)peer rejectedTransaction:(UInt256)txHash withCode:(uint8_t)code;
 - (void)peer:(DSPeer *)peer hasInstantSendLockHashes:(NSOrderedSet *)instantSendLockHashes;
+- (void)peer:(DSPeer *)peer hasInstantSendLockDHashes:(NSOrderedSet *)instantSendLockDHashes;
 - (void)peer:(DSPeer *)peer hasChainLockHashes:(NSOrderedSet *)chainLockHashes;
 - (void)peer:(DSPeer *)peer relayedInstantSendTransactionLock:(DSInstantSendTransactionLock *)instantSendTransactionLock;
 - (void)peer:(DSPeer *)peer setFeePerByte:(uint64_t)feePerKb;
@@ -316,7 +317,7 @@ typedef NS_ENUM(NSUInteger, DSPeerType)
 - (void)sendTransactionInvMessagesforTransactionHashes:(NSArray *_Nullable)txInvHashes txLockRequestHashes:(NSArray *_Nullable)txLockRequestInvHashes;
 - (void)sendInvMessageForHashes:(NSArray *)invHashes ofType:(DSInvType)invType;
 - (void)sendGetdataMessageForTxHash:(UInt256)txHash;
-- (void)sendGetdataMessageWithTxHashes:(NSArray *_Nullable)txHashes instantSendLockHashes:(NSArray *_Nullable)instantSendLockHashes blockHashes:(NSArray *_Nullable)blockHashes chainLockHashes:(NSArray *_Nullable)chainLockHashes;
+- (void)sendGetdataMessageWithTxHashes:(NSArray *_Nullable)txHashes instantSendLockHashes:(NSArray *_Nullable)instantSendLockHashes instantSendLockDHashes:(NSArray *_Nullable)instantSendLockDHashes blockHashes:(NSArray *_Nullable)blockHashes chainLockHashes:(NSArray *_Nullable)chainLockHashes;
 - (void)sendGetdataMessageWithGovernanceObjectHashes:(NSArray<NSData *> *)governanceObjectHashes;
 - (void)sendGetdataMessageWithGovernanceVoteHashes:(NSArray<NSData *> *)governanceVoteHashes;
 - (void)sendGetMasternodeListFromPreviousBlockHash:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash;

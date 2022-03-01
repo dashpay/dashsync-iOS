@@ -25,8 +25,10 @@
 @interface DSInstantSendTransactionLock ()
 
 @property (nonatomic, strong) DSChain *chain;
+@property (nonatomic, assign) uint8_t version;
 @property (nonatomic, assign) UInt256 transactionHash;
 @property (nonatomic, assign) UInt256 requestID;
+@property (nonatomic, assign) UInt256 cycleHash;
 @property (nonatomic, strong) NSArray *inputOutpoints;
 @property (nonatomic, assign) BOOL signatureVerified;
 @property (nonatomic, assign) BOOL quorumVerified;
@@ -38,8 +40,12 @@
 
 @implementation DSInstantSendTransactionLock
 
-+ (instancetype)instantSendTransactionLockWithMessage:(NSData *)message onChain:(DSChain *)chain {
-    return [[self alloc] initWithMessage:message onChain:chain];
++ (instancetype)instantSendTransactionLockWithNonDeterministicMessage:(NSData *)message onChain:(DSChain *)chain {
+    return [[self alloc] initWithNonDeterministicMessage:message onChain:chain];
+}
+
++ (instancetype)instantSendTransactionLockWithDeterministicMessage:(NSData *)message onChain:(DSChain *)chain {
+    return [[self alloc] initWithDeterministicMessage:message onChain:chain];
 }
 
 - (instancetype)init {
@@ -65,7 +71,7 @@
 //masternode signature
 //   size - varint
 //   signature 65 or 96 depending on spork 15
-- (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain {
+- (instancetype)initWithNonDeterministicMessage:(NSData *)message onChain:(DSChain *)chain {
     if (!(self = [self initOnChain:chain])) return nil;
     if (![chain.chainManager.sporkManager deterministicMasternodeListEnabled] || ![chain.chainManager.sporkManager llmqInstantSendEnabled]) return nil;
     uint32_t off = 0;
@@ -92,6 +98,42 @@
         //DSLogPrivate(@"transactionHash is %@",uint256_reverse_hex(self.transactionHash));
         off += sizeof(UInt256);
 
+        self.signature = [message UInt768AtOffset:off];
+        NSAssert(uint768_is_not_zero(self.signature), @"signature must be set");
+    }
+
+    return self;
+}
+
+- (instancetype)initWithDeterministicMessage:(NSData *)message onChain:(DSChain *)chain {
+    if (!(self = [self initOnChain:chain])) return nil;
+    if (![chain.chainManager.sporkManager deterministicMasternodeListEnabled] || ![chain.chainManager.sporkManager llmqInstantSendEnabled]) return nil;
+    NSUInteger off = 0;
+    NSNumber *l = 0;
+    uint64_t count = 0;
+    self.version = [message readUInt8AtOffset:&off];
+    self.signatureVerified = NO;
+    self.quorumVerified = NO;
+    @autoreleasepool {
+        self.chain = chain;
+
+
+        count = [message varIntAtOffset:off length:&l]; // input count
+
+        off += l.unsignedIntegerValue;
+        NSMutableArray *mutableInputOutpoints = [NSMutableArray array];
+        for (NSUInteger i = 0; i < count; i++) { // inputs
+            DSUTXO outpoint = [message transactionOutpointAtOffset:off];
+            off += 36;
+            [mutableInputOutpoints addObject:dsutxo_data(outpoint)];
+        }
+        self.inputOutpoints = [mutableInputOutpoints copy];
+
+        self.transactionHash = [message readUInt256AtOffset:&off]; // tx
+        //DSLogPrivate(@"transactionHash is %@",uint256_reverse_hex(self.transactionHash));
+
+        self.cycleHash = [message readUInt256AtOffset:&off]; // tx
+        
         self.signature = [message UInt768AtOffset:off];
         NSAssert(uint768_is_not_zero(self.signature), @"signature must be set");
     }

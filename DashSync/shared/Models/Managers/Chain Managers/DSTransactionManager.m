@@ -228,7 +228,7 @@
                     if (!self.txRequests[h]) self.txRequests[h] = [NSMutableSet set];
                     [self.txRequests[h] addObject:p];
                     //todo: to get lock requests instead if sent that way
-                    [p sendGetdataMessageWithTxHashes:@[h] instantSendLockHashes:nil blockHashes:nil chainLockHashes:nil];
+                    [p sendGetdataMessageWithTxHashes:@[h] instantSendLockHashes:nil instantSendLockDHashes:nil blockHashes:nil chainLockHashes:nil];
                 }
             }];
         }
@@ -1520,7 +1520,10 @@
 
 // MARK: Instant Send
 
-- (void)peer:(DSPeer *)peer hasInstantSendLockHashes:(NSOrderedSet *)instantSendLockVoteHashes {
+- (void)peer:(DSPeer *)peer hasInstantSendLockHashes:(NSOrderedSet *)instantSendLockHashes {
+}
+
+- (void)peer:(DSPeer *)peer hasInstantSendLockDHashes:(NSOrderedSet *)instantSendLockDHashes {
 }
 
 - (void)peer:(DSPeer *)peer hasChainLockHashes:(NSOrderedSet *)chainLockHashes {

@@ -147,6 +147,12 @@ CFAllocatorRef SecureAllocator() {
     return self;
 }
 
+- (NSMutableData *)appendInt32:(int32_t)i {
+    i = CFSwapInt32HostToLittle(i);
+    [self appendBytes:&i length:sizeof(i)];
+    return self;
+}
+
 - (NSMutableData *)appendUInt32:(uint32_t)i {
     i = CFSwapInt32HostToLittle(i);
     [self appendBytes:&i length:sizeof(i)];
@@ -259,12 +265,12 @@ CFAllocatorRef SecureAllocator() {
     uint8_t a = 0x51;
     //uint8_t fullLength = l + 2;
     //[self appendBytes:&fullLength length:sizeof(fullLength)];
-    [self appendBytes:&a length:sizeof(a)];
-    [self appendBytes:&l length:sizeof(l)];
+    [self appendUInt8:a];
+    [self appendUInt8:l];
     [self appendBytes:message.UTF8String length:l];
     
-    if (protocolVersion >= 70220) {
-        [self appendUInt32:version];
+    if (protocolVersion >= 70222) {
+        [self appendUInt8:version + 0x50];
     }
     return self;
 }
