@@ -439,6 +439,8 @@
         agent = [USER_AGENT stringByAppendingString:@"/"];
     } else if (self.chain.isTestnet) {
         agent = [USER_AGENT stringByAppendingString:@"/(testnet)"];
+    } else if ([self.chain.devnetIdentifier isEqualToString:@"devnet-krupnik"]) {
+        agent = [USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet.%@)/", self.chain.devnetIdentifier]];
     } else if ([self.chain.devnetIdentifier isEqualToString:@"devnet-malort"]) {
         agent = [USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet.1.%@)/", self.chain.devnetIdentifier]];
     } else {
