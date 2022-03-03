@@ -1,6 +1,6 @@
 [submodule "dashsync/crypto/secp256k1"]
 	path = dashsync/crypto/secp256k1
 	url = https://github.com/bitcoin-core/secp256k1.git
-[submodule "dapi-grpc"]
-	path = dapi-grpc
-	url = https://github.com/dashevo/dapi-grpc.git
+[submodule "platform"]
+	path = platform
+	url = https://github.com/dashevo/platform.git
