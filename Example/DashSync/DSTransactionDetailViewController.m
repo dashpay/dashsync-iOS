@@ -154,7 +154,7 @@
             [amount addObject:@(-amt)];
             [currencyIsBitcoinInstead addObject:@FALSE];
         } else if (self.sent > 0) {
-            [text addObject:address];
+            [text addObject:address?address:@"unknown address"];
             [detail addObject:NSLocalizedString(@"payment address", nil)];
             [amount addObject:@(-amt)];
             [currencyIsBitcoinInstead addObject:@FALSE];
