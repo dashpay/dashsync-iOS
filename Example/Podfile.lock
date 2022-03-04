@@ -549,14 +549,14 @@ PODS:
   - CocoaLumberjack (3.7.2):
     - CocoaLumberjack/Core (= 3.7.2)
   - CocoaLumberjack/Core (3.7.2)
-  - DAPI-GRPC (0.21.0-dev.8):
+  - DAPI-GRPC (0.22.0-dev.8):
     - "!ProtoCompiler-gRPCPlugin (~> 1.0)"
-    - DAPI-GRPC/Messages (= 0.21.0-dev.8)
-    - DAPI-GRPC/Services (= 0.21.0-dev.8)
-  - DAPI-GRPC/Messages (0.21.0-dev.8):
+    - DAPI-GRPC/Messages (= 0.22.0-dev.8)
+    - DAPI-GRPC/Services (= 0.22.0-dev.8)
+  - DAPI-GRPC/Messages (0.22.0-dev.8):
     - "!ProtoCompiler-gRPCPlugin (~> 1.0)"
     - Protobuf
-  - DAPI-GRPC/Services (0.21.0-dev.8):
+  - DAPI-GRPC/Services (0.22.0-dev.8):
     - "!ProtoCompiler-gRPCPlugin (~> 1.0)"
     - DAPI-GRPC/Messages
     - gRPC-ProtoRPC
@@ -564,7 +564,7 @@ PODS:
   - DashSync (0.1.0):
     - bls-signatures-pod (= 0.2.12)
     - CocoaLumberjack (= 3.7.2)
-    - DAPI-GRPC (= 0.21.0-dev.8)
+    - DAPI-GRPC (= 0.22.0-dev.8)
     - DashSharedCore (= 0.1.2)
     - DSDynamicOptions (= 0.1.2)
     - DWAlertController (= 0.2.1)
@@ -694,9 +694,9 @@ SPEC CHECKSUMS:
   BoringSSL-GRPC: 3175b25143e648463a56daeaaa499c6cb86dad33
   CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
   CocoaLumberjack: b7e05132ff94f6ae4dfa9d5bce9141893a21d9da
-  DAPI-GRPC: a33d808446476b6db8429ddcdbc4c1c7872f5501
+  DAPI-GRPC: 138d62523bbfe7e88a39896f1053c0bc12390d9f
   DashSharedCore: 41621b6322b66c07a9f78d6ef8b428defb21fd8b
-  DashSync: 4c0928fbd1e58665a1ff1e1b3375be1eed334fad
+  DashSync: e8492cc15475d7a0ede9caaecea08ea5e178174f
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   gRPC: f28b04db68d04d7c7be78bc5c721b7729a253521

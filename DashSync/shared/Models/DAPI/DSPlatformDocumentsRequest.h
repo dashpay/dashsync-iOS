@@ -45,7 +45,8 @@ typedef NS_ENUM(NSUInteger, DSPlatformQueryType)
 @property (nonatomic, strong) NSPredicate *pathPredicate;
 @property (nonatomic, strong) NSPredicate *predicate;
 @property (nonatomic, strong) NSArray<NSSortDescriptor *> *sortDescriptors;
-@property (nonatomic, assign) uint32_t startAt;
+@property (nonatomic, strong, nullable) NSData * startAt;
+@property (nonatomic, assign) bool startAtIncluded;
 @property (nonatomic, assign) uint32_t limit;
 @property (nonatomic, assign) BOOL prove;
 @property (nonatomic, strong) NSString *tableName;
@@ -64,15 +65,15 @@ typedef NS_ENUM(NSUInteger, DSPlatformQueryType)
 
 + (instancetype)dpnsRequestForUsernameStartsWithSearch:(NSString *)usernamePrefix inDomain:(NSString *)domain;
 
-+ (instancetype)dpnsRequestForUsernameStartsWithSearch:(NSString *)usernamePrefix inDomain:(NSString *)domain offset:(uint32_t)offset limit:(uint32_t)limit;
++ (instancetype)dpnsRequestForUsernameStartsWithSearch:(NSString *)usernamePrefix inDomain:(NSString *)domain startAfter:(NSData* _Nullable)startAfter limit:(uint32_t)limit;
 
 + (instancetype)dpnsRequestForPreorderSaltedHashes:(NSArray *)preorderSaltedHashes;
 
 + (instancetype)dashpayRequestForContactRequestForSendingUserId:(NSData *)userId toRecipientUserId:(NSData *)toUserId;
 
-+ (instancetype)dashpayRequestForContactRequestsForSendingUserId:(NSData *)userId since:(NSTimeInterval)timestamp offset:(uint32_t)offset;
++ (instancetype)dashpayRequestForContactRequestsForSendingUserId:(NSData *)userId since:(NSTimeInterval)timestamp startAfter:(NSData* _Nullable)startAfter;
 
-+ (instancetype)dashpayRequestForContactRequestsForRecipientUserId:(NSData *)userId since:(NSTimeInterval)timestamp offset:(uint32_t)offset;
++ (instancetype)dashpayRequestForContactRequestsForRecipientUserId:(NSData *)userId since:(NSTimeInterval)timestamp startAfter:(NSData* _Nullable)startAfter;
 
 + (instancetype)dashpayRequestForProfileWithUserId:(NSData *)userId;
 
