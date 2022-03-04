@@ -172,7 +172,6 @@
 
     _timestamp = timestamp;
     _services = services;
-    _outputBufferSemaphore = dispatch_semaphore_create(1);
     return self;
 }
 
