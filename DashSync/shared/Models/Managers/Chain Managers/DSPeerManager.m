@@ -119,8 +119,10 @@
                                                           object:nil
                                                            queue:nil
                                                       usingBlock:^(NSNotification *note) {
-                                                          [self savePeers];
-            dispatch_async(self.networkingQueue, ^{ [self.chain saveTerminalBlocks]; });
+                                                          dispatch_async(self.networkingQueue, ^{
+                                                              [self savePeers];
+                                                              [self.chain saveTerminalBlocks];
+                                                          });
                                                           if (self.terminalHeadersSaveTaskId == UIBackgroundTaskInvalid) {
                                                               self.misbehavingCount = 0;
                                                               dispatch_async(self.networkingQueue, ^{
