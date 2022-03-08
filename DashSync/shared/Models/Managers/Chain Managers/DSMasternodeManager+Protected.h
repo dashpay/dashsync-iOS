@@ -41,7 +41,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)getMasternodeListsForBlockHashes:(NSOrderedSet *)blockHashes;
 
 - (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData *)masternodeDiffMessage;
-- (void)peer:(DSPeer *)peer relayedQuorumRotationInfoMessage:(NSData *)quorumRotationInfoMessage;
 
 - (DSLocalMasternode *)localMasternodeFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry claimedWithOwnerWallet:(DSWallet *)wallet ownerKeyIndex:(uint32_t)ownerKeyIndex;
 - (DSMasternodeDiffMessageContext *)createDiffMessageContextWithLastBlock:(DSMerkleBlock * _Nullable)lastBlock useInsightAsBackup:(BOOL)useInsightAsBackup;

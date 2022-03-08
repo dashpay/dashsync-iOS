@@ -306,8 +306,9 @@
         if ([self.store addBlockToValidationQueue:merkleBlock]) {
             DSLog(@"Getting masternode list %u", merkleBlock.height);
             NSData *merkleBlockHashData = uint256_data(merkleBlockHash);
+            BOOL emptyRequestQueue = ![self masternodeListRetrievalQueueCount];
             [self.service addToRetrievalQueue:merkleBlockHashData];
-            if (!self.masternodeListRetrievalQueueCount) {
+            if (emptyRequestQueue) {
                 [self dequeueMasternodeListRequest];
             }
         }

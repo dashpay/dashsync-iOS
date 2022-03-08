@@ -18,6 +18,7 @@
 
 @property (nonatomic, strong) NSMutableOrderedSet<NSString *> *insertedIPAddresses;
 @property (nonatomic, strong) DSKeyValueTableViewCell *addDevnetNameTableViewCell;
+@property (nonatomic, strong) DSKeyValueTableViewCell *addDevnetVersionTableViewCell;
 @property (nonatomic, strong) DSKeyValueTableViewCell *sporkAddressTableViewCell;
 @property (nonatomic, strong) DSKeyValueTableViewCell *sporkPrivateKeyTableViewCell;
 @property (nonatomic, strong) DSKeyValueTableViewCell *protocolVersionTableViewCell;
@@ -43,6 +44,7 @@
     [super viewDidLoad];
     self.tableView.allowsSelection = YES;
     self.addDevnetNameTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"DevnetNameCellIdentifier"];
+    self.addDevnetVersionTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"DevnetVersionCellIdentifier"];
     self.addDevnetAddIPAddressTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"DevnetAddIPCellIdentifier"];
     self.sporkAddressTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"DevnetSporkAddressCellIdentifier"];
     self.dpnsContractIDTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"DPNSContractIDCellIdentifier"];
@@ -63,11 +65,13 @@
         DSPeerManager *peerManager = [[DSChainsManager sharedInstance] chainManagerForChain:self.chain].peerManager;
         self.insertedIPAddresses = [NSMutableOrderedSet orderedSetWithArray:peerManager.registeredDevnetPeerServices];
         self.addDevnetNameTableViewCell.valueTextField.text = self.chain.devnetIdentifier;
+        self.addDevnetVersionTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u", self.chain.devnetVersion];
         self.protocolVersionTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u", self.chain.protocolVersion];
         self.minProtocolVersionTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u", self.chain.minProtocolVersion];
         self.sporkPrivateKeyTableViewCell.valueTextField.text = self.chain.sporkPrivateKeyBase58String;
         self.sporkAddressTableViewCell.valueTextField.text = self.chain.sporkAddress;
         self.addDevnetNameTableViewCell.userInteractionEnabled = FALSE;
+        self.addDevnetVersionTableViewCell.userInteractionEnabled = FALSE;
         self.instantSendLockQuorumTypeTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u", self.chain.quorumTypeForISLocks];
         self.chainLockQuorumTypeTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u", self.chain.quorumTypeForChainLocks];
         self.platformQuorumTypeTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u", self.chain.quorumTypeForPlatform];
@@ -96,7 +100,7 @@
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     switch (section) {
         case 0:
-            return 7;
+            return 8;
             break;
         case 1:
             return 3;
@@ -132,16 +136,18 @@
                 case 0:
                     return self.addDevnetNameTableViewCell;
                 case 1:
-                    return self.protocolVersionTableViewCell;
+                    return self.addDevnetVersionTableViewCell;
                 case 2:
-                    return self.minProtocolVersionTableViewCell;
+                    return self.protocolVersionTableViewCell;
                 case 3:
-                    return self.minimumDifficultyBlocksTableViewCell;
+                    return self.minProtocolVersionTableViewCell;
                 case 4:
-                    return self.dashdPortTableViewCell;
+                    return self.minimumDifficultyBlocksTableViewCell;
                 case 5:
-                    return self.dapiJRPCPortTableViewCell;
+                    return self.dashdPortTableViewCell;
                 case 6:
+                    return self.dapiJRPCPortTableViewCell;
+                case 7:
                     return self.dapiGRPCPortTableViewCell;
                 default:
                     NSAssert(NO, @"Unknown cell");
@@ -276,7 +282,8 @@
         [[DSChainsManager sharedInstance] updateDevnetChain:self.chain forServiceLocations:self.insertedIPAddresses withMinimumDifficultyBlocks:minimumDifficultyBlocks standardPort:dashdPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion sporkAddress:sporkAddress sporkPrivateKey:sporkPrivateKey instantSendLockQuorumType:instantSendLockQuorumType chainLockQuorumType:chainLockQuorumType platformQuorumType:platformQuorumType];
     } else {
         NSString *identifier = self.addDevnetNameTableViewCell.valueTextField.text;
-        [[DSChainsManager sharedInstance] registerDevnetChainWithIdentifier:identifier forServiceLocations:self.insertedIPAddresses withMinimumDifficultyBlocks:minimumDifficultyBlocks standardPort:dashdPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion sporkAddress:sporkAddress sporkPrivateKey:sporkPrivateKey instantSendLockQuorumType:instantSendLockQuorumType chainLockQuorumType:chainLockQuorumType platformQuorumType:platformQuorumType];
+        uint16_t version = [self.addDevnetVersionTableViewCell.valueTextField.text intValue];
+        [[DSChainsManager sharedInstance] registerDevnetChainWithIdentifier:identifier version:version forServiceLocations:self.insertedIPAddresses withMinimumDifficultyBlocks:minimumDifficultyBlocks standardPort:dashdPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion sporkAddress:sporkAddress sporkPrivateKey:sporkPrivateKey instantSendLockQuorumType:instantSendLockQuorumType chainLockQuorumType:chainLockQuorumType platformQuorumType:platformQuorumType];
     }
     [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
 }

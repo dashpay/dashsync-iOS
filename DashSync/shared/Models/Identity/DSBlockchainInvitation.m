@@ -288,6 +288,7 @@
             self.identity = [[DSBlockchainIdentity alloc] initAtIndex:index withFundingTransaction:(DSCreditFundingTransaction *)transaction withUsernameDictionary:nil inWallet:self.wallet];
             [self.identity setAssociatedInvitation:self];
             [self.identity addDashpayUsername:dashpayUsername save:NO];
+            [self.identity registerInWalletForRegistrationFundingTransaction: (DSCreditFundingTransaction *)transaction];
             BOOL success = [self.identity setExternalFundingPrivateKey:fundingPrivateKey];
             NSAssert(success, @"We must be able to set the external funding private key");
             if (success) {

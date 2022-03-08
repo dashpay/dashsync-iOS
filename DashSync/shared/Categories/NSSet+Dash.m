@@ -19,6 +19,18 @@
 
 @implementation NSSet (Dash)
 
+- (NSSet *)compactMap:(id (^)(id obj))block {
+    NSParameterAssert(block != nil);
+    NSMutableSet *result = [NSMutableSet set];
+    [self enumerateObjectsUsingBlock:^(id _Nonnull obj, BOOL *_Nonnull stop) {
+        id mObj = block(obj);
+        if (mObj && mObj != [NSNull null]) {
+            [result addObject:mObj];
+        }
+    }];
+    return result;
+}
+
 - (NSSet *)map:(id (^)(id obj))block {
     NSParameterAssert(block != nil);
     NSMutableSet *result = [NSMutableSet setWithCapacity:self.count];

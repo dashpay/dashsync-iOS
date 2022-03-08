@@ -147,6 +147,12 @@ CFAllocatorRef SecureAllocator() {
     return self;
 }
 
+- (NSMutableData *)appendInt32:(int32_t)i {
+    i = CFSwapInt32HostToLittle(i);
+    [self appendBytes:&i length:sizeof(i)];
+    return self;
+}
+
 - (NSMutableData *)appendUInt32:(uint32_t)i {
     i = CFSwapInt32HostToLittle(i);
     [self appendBytes:&i length:sizeof(i)];
@@ -253,21 +259,22 @@ CFAllocatorRef SecureAllocator() {
     return self;
 }
 
-//- (NSMutableData *)appendDevnetGenesisCoinbaseMessage:(NSString *)message version:(uint16_t)version onProtocolVersion:(uint32_t)protocolVersion {
-- (NSMutableData *)appendDevnetGenesisCoinbaseMessage:(NSString *)message {
-    // A little weirder
+- (NSMutableData *)appendDevnetGenesisCoinbaseMessage:(NSString *)message version:(uint16_t)version onProtocolVersion:(uint32_t)protocolVersion {
+    //A little weirder
     uint8_t l = (uint8_t)[message lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
     uint8_t a = 0x51;
-    // uint8_t fullLength = l + 2;
+    //uint8_t fullLength = l + 2;
     //[self appendBytes:&fullLength length:sizeof(fullLength)];
     [self appendUInt8:a];
     [self appendUInt8:l];
     [self appendBytes:message.UTF8String length:l];
-    //    if (protocolVersion >= 70222) {
-    [self appendUInt8:1 + 0x50];
-    //    }
+    
+    if (protocolVersion >= 70222) {
+        [self appendUInt8:version + 0x50];
+    }
     return self;
 }
+
 
 - (NSMutableData *)appendString:(NSString *)s {
     NSUInteger l = [s lengthOfBytesUsingEncoding:NSUTF8StringEncoding];

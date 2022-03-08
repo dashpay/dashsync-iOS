@@ -25,7 +25,7 @@
 #pragma clang diagnostic ignored "-Wconditional-uninitialized"
 #pragma clang diagnostic ignored "-Wdocumentation"
 #pragma clang diagnostic ignored "-Wmacro-redefined"
-#import <bls-signatures-pod/bls.hpp>
+#import "bls.hpp"
 #pragma clang diagnostic pop
 
 NS_ASSUME_NONNULL_BEGIN

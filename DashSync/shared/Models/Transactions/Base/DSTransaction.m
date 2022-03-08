@@ -69,10 +69,10 @@
     return [[self alloc] initWithMessage:message onChain:chain];
 }
 
-+ (instancetype)devnetGenesisCoinbaseWithIdentifier:(NSString *)identifier forChain:(DSChain *)chain {
++ (instancetype)devnetGenesisCoinbaseWithIdentifier:(NSString *)identifier version:(uint16_t)version onProtocolVersion:(uint32_t)protocolVersion forChain:(DSChain *)chain {
     DSTransaction *transaction = [[self alloc] initOnChain:chain];
     NSMutableData *coinbaseData = [NSMutableData data];
-    [coinbaseData appendDevnetGenesisCoinbaseMessage:identifier];
+    [coinbaseData appendDevnetGenesisCoinbaseMessage:identifier version:version onProtocolVersion:protocolVersion];
     [transaction addInputHash:UINT256_ZERO index:UINT32_MAX script:nil signature:coinbaseData sequence:UINT32_MAX];
     NSMutableData *outputScript = [NSMutableData data];
     [outputScript appendUInt8:OP_RETURN];

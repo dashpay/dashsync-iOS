@@ -137,20 +137,10 @@
     [self.peerManager peerMisbehaving:peer errorMessage:@"Issue with Deterministic Masternode list"];
 }
 - (void)requestMasternodesAndQuorums:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash {
-    if ([self.chain hasDIP0024Enabled]) {
-        [self requestQuorumRotationInfo:previousBlockHash forBlockHash:blockHash extraShare:YES];
-    } else {
-        [self requestMasternodeListDiff:previousBlockHash forBlockHash:blockHash];
-    }
+    [self requestMasternodeListDiff:previousBlockHash forBlockHash:blockHash];
 }
 - (void)requestMasternodeListDiff:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash {
     [self.peerManager.downloadPeer sendGetMasternodeListFromPreviousBlockHash:previousBlockHash forBlockHash:blockHash];
-}
-
-- (void)requestQuorumRotationInfo:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash extraShare:(BOOL)extraShare {
-    // TODO: optimize qrinfo request queue (up to 4 blocks simultaneously, so we'd make masternodeListsToRetrieve.count%4)
-    NSArray<NSData *> *baseBlockHashes = @[[NSData dataWithUInt256:previousBlockHash]];
-    [self.peerManager.downloadPeer sendGetQuorumRotationInfoForBaseBlockHashes:baseBlockHashes forBlockHash:blockHash extraShare:extraShare];
 }
 
 - (void)retrieveMasternodeList:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash {

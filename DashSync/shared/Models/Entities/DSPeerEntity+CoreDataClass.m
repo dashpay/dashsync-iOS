@@ -46,7 +46,7 @@
         self.lowPreferenceTill = peer.lowPreferenceTill;
         self.lastRequestedMasternodeList = peer.lastRequestedMasternodeList;
         self.lastRequestedGovernanceSync = peer.lastRequestedGovernanceSync;
-        self.chain = [DSChainEntity chainEntityForType:peer.chain.chainType devnetIdentifier:peer.chain.devnetIdentifier checkpoints:nil inContext:self.managedObjectContext];
+        self.chain = [DSChainEntity chainEntityForType:peer.chain.chainType devnetIdentifier:peer.chain.devnetIdentifier devnetVersion:peer.chain.devnetVersion checkpoints:nil inContext:self.managedObjectContext];
     }];
 
     return self;

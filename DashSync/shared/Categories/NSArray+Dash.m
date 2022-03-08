@@ -47,6 +47,16 @@
     return [NSMutableArray secureArrayWithArray:self];
 }
 
+- (NSArray *)compactMap:(id (^)(id obj))block {
+    NSMutableArray *result = [NSMutableArray array];
+    [self enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        id mObj = block(obj);
+        if (mObj && mObj != [NSNull null]) {
+            [result addObject:mObj];
+        }
+    }];
+    return result;
+}
 
 - (NSArray *)map:(id (^)(id obj))block {
     NSParameterAssert(block != nil);

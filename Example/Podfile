@@ -1,5 +1,4 @@
 def common_pods
-  pod 'DashSharedCore', :git => 'https://github.com/dashevo/dash-shared-core.git', :branch => 'develop'
   pod 'DashSync', :path => '../'
   pod 'SDWebImage', '5.9.2'
   pod 'CocoaImageHashing', :git => 'https://github.com/ameingast/cocoaimagehashing.git', :commit => 'ad01eee'
@@ -44,11 +43,6 @@ post_install do |installer|
         end
     end
 
-    # Apple Silicon fix when targeting Simulator
-    installer.pods_project.build_configurations.each do |config|
-      config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
-    end
-
     # Workaround: Patch relic to compile on macOS
-    %x(patch -N Pods/bls-signatures-pod/contrib/relic/include/relic_err.h < relic_err.patch)
+    %x(patch -N Pods/bls-signatures-pod/artefacts/libbls.xcframework/macos-arm64_x86_64/Headers/relic_err.h < relic_err.patch)
 end
