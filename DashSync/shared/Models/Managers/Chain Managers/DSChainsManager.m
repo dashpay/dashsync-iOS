@@ -77,7 +77,7 @@
             NSArray<DSCheckpoint *> *checkpointArray = registeredDevnetIdentifiers[string];
             DSChain *chain = [DSChain recoverKnownDevnetWithIdentifier:string withCheckpoints:checkpointArray performSetup:NO];
             chain.chainManager = [self devnetManagerForChain:chain];
-            [self.knownDevnetChains addObject:chain]; //adding this before setup prevents a loop
+            //            [self.knownDevnetChains addObject:chain]; // adding this before setup prevents a loop
             [chain setUp];
         }
 
@@ -126,6 +126,7 @@
             devnetChainManager = [[DSChainManager alloc] initWithChain:chain];
             chain.chainManager = devnetChainManager;
             [self.knownChains addObject:chain];
+            [self.knownDevnetChains addObject:chain];
             [self.devnetGenesisDictionary setObject:devnetChainManager forKey:genesisValue];
         } else {
             devnetChainManager = [self.devnetGenesisDictionary objectForKey:genesisValue];
