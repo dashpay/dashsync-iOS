@@ -1465,41 +1465,39 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 // true if transaction cannot be immediately spent (i.e. if it or an input tx can be replaced-by-fee)
 - (BOOL)transactionIsPending:(DSTransaction *)transaction {
     NSParameterAssert(transaction);
-//    @synchronized(self) {
-        if (transaction.blockHeight != TX_UNCONFIRMED) return NO; // confirmed transactions are not pending
-        if (transaction.size > TX_MAX_SIZE) return YES;           // check transaction size is under TX_MAX_SIZE
-        // check for future lockTime or replace-by-fee: https://github.com/bitcoin/bips/blob/master/bip-0125.mediawiki
-        for (DSTransactionInput *input in transaction.inputs) {
-            if (input.sequence >= UINT32_MAX) continue;
-            uint32_t lockTime = transaction.lockTime;
-            if (lockTime < TX_MAX_LOCK_HEIGHT &&
-                lockTime > self.wallet.chain.bestBlockHeight + 1) return YES;
-            if (lockTime >= TX_MAX_LOCK_HEIGHT &&
-                lockTime > [NSDate timeIntervalSince1970]) return YES;
+    if (transaction.blockHeight != TX_UNCONFIRMED) return NO; // confirmed transactions are not pending
+    if (transaction.size > TX_MAX_SIZE) return YES;           // check transaction size is under TX_MAX_SIZE
+    // check for future lockTime or replace-by-fee: https://github.com/bitcoin/bips/blob/master/bip-0125.mediawiki
+    for (DSTransactionInput *input in transaction.inputs) {
+        if (input.sequence >= UINT32_MAX) continue;
+        uint32_t lockTime = transaction.lockTime;
+        if (lockTime < TX_MAX_LOCK_HEIGHT &&
+            lockTime > self.wallet.chain.bestBlockHeight + 1) return YES;
+        if (lockTime >= TX_MAX_LOCK_HEIGHT &&
+            lockTime > [NSDate timeIntervalSince1970]) return YES;
+    }
+    for (DSTransactionOutput *output in transaction.outputs) { // check that no outputs are dust
+        if (output.amount < TX_MIN_OUTPUT_AMOUNT) return YES;
+    }
+    for (DSTransactionInput *input in transaction.inputs) { // check if any inputs are known to be pending
+        NSValue *txHash = uint256_obj(input.inputHash);
+        DSTransaction *tx = self.allTx[txHash];
+        if (tx && [self transactionIsPending:tx]) {
+            return YES;
         }
-        for (DSTransactionOutput *output in transaction.outputs) { // check that no outputs are dust
-            if (output.amount < TX_MIN_OUTPUT_AMOUNT) return YES;
-        }
-        for (DSTransactionInput *input in transaction.inputs) { // check if any inputs are known to be pending
-            NSValue *txHash = uint256_obj(input.inputHash);
-            DSTransaction *tx = self.allTx[txHash];
-            if (tx && [self transactionIsPending:tx]) {
-                return YES;
-            }
-        }
-        return NO;
-//    }
+    }
+    return NO;
 }
 
 - (BOOL)transactionOutputsAreLocked:(DSTransaction *)transaction {
     return ([self transactionOutputsAreLockedTill:transaction] != 0);
 }
 
-//true if this transaction outputs can not be used in inputs
+// true if this transaction outputs can not be used in inputs
 - (uint32_t)transactionOutputsAreLockedTill:(DSTransaction *)transaction {
     NSParameterAssert(transaction);
 
-    if ([transaction isKindOfClass:[DSCoinbaseTransaction class]]) { //only allow these to be spent after 100 inputs
+    if ([transaction isKindOfClass:[DSCoinbaseTransaction class]]) { // only allow these to be spent after 100 inputs
         DSCoinbaseTransaction *coinbaseTransaction = (DSCoinbaseTransaction *)transaction;
         if (coinbaseTransaction.height + 100 > self.wallet.chain.lastSyncBlockHeight) return coinbaseTransaction.height + 100;
     }
@@ -1509,17 +1507,15 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 // true if tx is considered 0-conf safe (valid and not pending, timestamp is greater than 0, and no unverified inputs)
 - (BOOL)transactionIsVerified:(DSTransaction *)transaction {
     NSParameterAssert(transaction);
-//    @synchronized(self) {
-        if (transaction.blockHeight != TX_UNCONFIRMED) return YES; // confirmed transactions are always verified
-        if (transaction.timestamp == 0) return NO;                 // a timestamp of 0 indicates transaction is to remain unverified
-        if (![self transactionIsValid:transaction] || [self transactionIsPending:transaction]) return NO;
-        for (DSTransactionInput *input in transaction.inputs) { // check if any inputs are known to be unverfied
-            DSTransaction *tx = self.allTx[uint256_obj(input.inputHash)];
-            if (!tx) continue;
-            if (![self transactionIsVerified:tx]) return NO;
-        }
-        return YES;
-//    }
+    if (transaction.blockHeight != TX_UNCONFIRMED) return YES; // confirmed transactions are always verified
+    if (transaction.timestamp == 0) return NO;                 // a timestamp of 0 indicates transaction is to remain unverified
+    if (![self transactionIsValid:transaction] || [self transactionIsPending:transaction]) return NO;
+    for (DSTransactionInput *input in transaction.inputs) { // check if any inputs are known to be unverfied
+        DSTransaction *tx = self.allTx[uint256_obj(input.inputHash)];
+        if (!tx) continue;
+        if (![self transactionIsVerified:tx]) return NO;
+    }
+    return YES;
 }
 
 // MARK: = Direction
