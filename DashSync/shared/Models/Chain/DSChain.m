@@ -347,21 +347,11 @@ static dispatch_once_t devnetToken = 0;
         }
     }
     if (inSetUp) {
-        [[NSManagedObjectContext chainContext] performBlockAndWait:^{
-            DSChainEntity *chainEntity = [devnetChain chainEntityInContext:[NSManagedObjectContext chainContext]];
-            devnetChain.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
-            devnetChain.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
-            devnetChain.lastPersistedChainSyncLocators = chainEntity.syncLocators;
-            devnetChain.lastPersistedChainSyncBlockHeight = chainEntity.syncBlockHeight;
-            devnetChain.lastPersistedChainSyncBlockHash = chainEntity.syncBlockHash.UInt256;
-            devnetChain.lastPersistedChainSyncBlockTimestamp = chainEntity.syncBlockTimestamp;
-            devnetChain.lastPersistedChainSyncBlockChainWork = chainEntity.syncBlockChainWork.UInt256;
-        }];
+        [devnetChain updateDevnetChainFromContext];
         if (performSetup) {
             [devnetChain setUp];
         }
     }
-
     return devnetChain;
 }
 
@@ -381,21 +371,24 @@ static dispatch_once_t devnetToken = 0;
         }
     }
     if (inSetUp && !isTransient) {
-        //note: there is no point to load anything if the chain is transient
-        [[NSManagedObjectContext chainContext] performBlockAndWait:^{
-            DSChainEntity *chainEntity = [devnetChain chainEntityInContext:[NSManagedObjectContext chainContext]];
-            devnetChain.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
-            devnetChain.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
-            devnetChain.lastPersistedChainSyncLocators = chainEntity.syncLocators;
-            devnetChain.lastPersistedChainSyncBlockHeight = chainEntity.syncBlockHeight;
-            devnetChain.lastPersistedChainSyncBlockHash = chainEntity.syncBlockHash.UInt256;
-            devnetChain.lastPersistedChainSyncBlockTimestamp = chainEntity.syncBlockTimestamp;
-            devnetChain.lastPersistedChainSyncBlockChainWork = chainEntity.syncBlockChainWork.UInt256;
-        }];
+        // note: there is no point to load anything if the chain is transient
+        [devnetChain updateDevnetChainFromContext];
         [devnetChain setUp];
     }
-
     return devnetChain;
+}
+
+- (void)updateDevnetChainFromContext {
+    [[NSManagedObjectContext chainContext] performBlockAndWait:^{
+        DSChainEntity *chainEntity = [self chainEntityInContext:[NSManagedObjectContext chainContext]];
+        self.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
+        self.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
+        self.lastPersistedChainSyncLocators = chainEntity.syncLocators;
+        self.lastPersistedChainSyncBlockHeight = chainEntity.syncBlockHeight;
+        self.lastPersistedChainSyncBlockHash = chainEntity.syncBlockHash.UInt256;
+        self.lastPersistedChainSyncBlockTimestamp = chainEntity.syncBlockTimestamp;
+        self.lastPersistedChainSyncBlockChainWork = chainEntity.syncBlockChainWork.UInt256;
+    }];
 }
 
 + (DSChain *)chainForNetworkName:(NSString *)networkName {
