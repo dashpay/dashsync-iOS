@@ -439,8 +439,8 @@
         agent = [USER_AGENT stringByAppendingString:@"/"];
     } else if (self.chain.isTestnet) {
         agent = [USER_AGENT stringByAppendingString:@"(testnet)/"];
-    } else if (self.chain.protocolVersion >= 70222) {
-        agent = [USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet.%u.%@)/", self.chain.devnetVersion, self.chain.devnetIdentifier]];
+//    } else if (self.chain.protocolVersion >= 70220) {
+//        agent = [USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet.%u.%@)/", self.chain.devnetVersion, self.chain.devnetIdentifier]];
     } else {
         agent = [USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet.%@)/", self.chain.devnetIdentifier]];
     }

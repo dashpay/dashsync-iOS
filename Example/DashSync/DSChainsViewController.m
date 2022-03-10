@@ -48,10 +48,10 @@
                    //               sporkAddress:@"yjPtiKh2uwk3bDutTEA2q9mCtXyiZRWn55"
                    sporkAddress:@"yZeZhBYxmxVkoKHsgGxbzj8snbU17DYeZJ"
                 sporkPrivateKey:@"cSXWyRC3TtPyLhKuegihZ7wDoFjN71nLU4PbgjdvwSRbvPbyMVz6"
-             minProtocolVersion:70219
-                protocolVersion:70220
+             minProtocolVersion:70221
+                protocolVersion:70221
         minimumDifficultyBlocks:1000000
-                      addresses:@[@"52.42.154.157", @"52.11.185.242"]];
+                      addresses:@[@"34.218.208.88", @"18.237.105.18"]];
 }
 
 - (void)setupKrupnik {

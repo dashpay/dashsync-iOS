@@ -269,9 +269,9 @@ CFAllocatorRef SecureAllocator() {
     [self appendUInt8:l];
     [self appendBytes:devnetIdentifier.UTF8String length:l];
     
-    if (protocolVersion >= 70222) {
-        [self appendUInt8:version + 0x50];
-    }
+//    if (protocolVersion >= 70221) {
+//        [self appendUInt8:version + 0x50];
+//    }
     return self;
 }
 
