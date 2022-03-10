@@ -218,7 +218,7 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 @property (nonatomic, readonly, nullable) NSString *devnetIdentifier;
 
 /*! @brief The devnet version is the version of the devnet, the genesis hash of a devnet uses this devnet identifier in its construction.  */
-@property (nonatomic, readonly) uint16_t devnetVersion;
+@property (nonatomic, readwrite) uint16_t devnetVersion;
 
 /*! @brief The name of the chain (Mainnet-Testnet-Devnet).  */
 @property (nonatomic, readonly) NSString *name;

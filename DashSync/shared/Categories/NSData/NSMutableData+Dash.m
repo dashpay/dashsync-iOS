@@ -259,15 +259,15 @@ CFAllocatorRef SecureAllocator() {
     return self;
 }
 
-- (NSMutableData *)appendDevnetGenesisCoinbaseMessage:(NSString *)message version:(uint16_t)version onProtocolVersion:(uint32_t)protocolVersion {
+- (NSMutableData *)appendDevnetGenesisCoinbaseMessage:(NSString *)devnetIdentifier version:(uint16_t)version onProtocolVersion:(uint32_t)protocolVersion {
     //A little weirder
-    uint8_t l = (uint8_t)[message lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+    uint8_t l = (uint8_t)[devnetIdentifier lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
     uint8_t a = 0x51;
     //uint8_t fullLength = l + 2;
     //[self appendBytes:&fullLength length:sizeof(fullLength)];
     [self appendUInt8:a];
     [self appendUInt8:l];
-    [self appendBytes:message.UTF8String length:l];
+    [self appendBytes:devnetIdentifier.UTF8String length:l];
     
     if (protocolVersion >= 70222) {
         [self appendUInt8:version + 0x50];

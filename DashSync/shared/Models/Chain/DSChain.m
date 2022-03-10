@@ -141,7 +141,6 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
 @property (nonatomic, copy) NSString *networkName;
 @property (nonatomic, strong) NSMutableArray<DSWallet *> *mWallets;
 @property (nonatomic, strong) NSString *devnetIdentifier;
-@property (nonatomic, assign) uint16_t devnetVersion;
 @property (nonatomic, strong) DSAccount *viewingAccount;
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, NSMutableArray<DSPeer *> *> *estimatedBlockHeights;
 @property (nonatomic, assign) uint32_t cachedMinimumDifficultyBlocks;

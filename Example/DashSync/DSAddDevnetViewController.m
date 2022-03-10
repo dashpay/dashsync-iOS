@@ -259,6 +259,7 @@
 
 - (IBAction)save {
     [self.activeAddDevnetIPAddressTableViewCell.IPAddressTextField resignFirstResponder];
+    uint32_t version = [self.addDevnetVersionTableViewCell.valueTextField.text intValue];
     uint32_t protocolVersion = [self.protocolVersionTableViewCell.valueTextField.text intValue];
     uint32_t minProtocolVersion = [self.minProtocolVersionTableViewCell.valueTextField.text intValue];
     NSString *sporkAddress = [self.sporkAddressTableViewCell.valueTextField.text isEqualToString:@""] ? nil : self.sporkAddressTableViewCell.valueTextField.text;
@@ -279,7 +280,7 @@
         sporkPrivateKey = nil;
     }
     if (self.chain) {
-        [[DSChainsManager sharedInstance] updateDevnetChain:self.chain forServiceLocations:self.insertedIPAddresses withMinimumDifficultyBlocks:minimumDifficultyBlocks standardPort:dashdPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion sporkAddress:sporkAddress sporkPrivateKey:sporkPrivateKey instantSendLockQuorumType:instantSendLockQuorumType chainLockQuorumType:chainLockQuorumType platformQuorumType:platformQuorumType];
+        [[DSChainsManager sharedInstance] updateDevnetChain:self.chain version:version forServiceLocations:self.insertedIPAddresses withMinimumDifficultyBlocks:minimumDifficultyBlocks standardPort:dashdPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion sporkAddress:sporkAddress sporkPrivateKey:sporkPrivateKey instantSendLockQuorumType:instantSendLockQuorumType chainLockQuorumType:chainLockQuorumType platformQuorumType:platformQuorumType];
     } else {
         NSString *identifier = self.addDevnetNameTableViewCell.valueTextField.text;
         uint16_t version = [self.addDevnetVersionTableViewCell.valueTextField.text intValue];

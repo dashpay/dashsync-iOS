@@ -157,13 +157,16 @@
     return [self.knownChains copy];
 }
 
-- (void)updateDevnetChain:(DSChain *)chain forServiceLocations:(NSMutableOrderedSet<NSString *> *)serviceLocations withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks standardPort:(uint32_t)standardPort dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString *)sporkAddress sporkPrivateKey:(NSString *)sporkPrivateKey instantSendLockQuorumType:(DSLLMQType)instantSendLockQuorumsType chainLockQuorumType:(DSLLMQType)chainLockQuorumsType platformQuorumType:(DSLLMQType)platformQuorumType {
+- (void)updateDevnetChain:(DSChain *)chain version:(uint32_t)version forServiceLocations:(NSMutableOrderedSet<NSString *> *)serviceLocations withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks standardPort:(uint32_t)standardPort dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString *)sporkAddress sporkPrivateKey:(NSString *)sporkPrivateKey instantSendLockQuorumType:(DSLLMQType)instantSendLockQuorumsType chainLockQuorumType:(DSLLMQType)chainLockQuorumsType platformQuorumType:(DSLLMQType)platformQuorumType {
     NSParameterAssert(chain);
     NSParameterAssert(serviceLocations);
 
     DSChainManager *chainManager = [self chainManagerForChain:chain];
     DSPeerManager *peerManager = chainManager.peerManager;
     [peerManager clearRegisteredPeers];
+    if (version) {
+        chain.devnetVersion = version;
+    }
     if (protocolVersion) {
         chain.protocolVersion = protocolVersion;
     }
