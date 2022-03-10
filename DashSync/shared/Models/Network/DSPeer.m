@@ -1232,7 +1232,8 @@
             case DSInvType_CompactBlock: break;
             case DSInvType_ChainLockSignature: [chainLockHashes addObject:uint256_obj(hash)]; break;
             default: {
-                NSAssert(FALSE, @"inventory type not dealt with");
+                NSString *desc = [NSString stringWithFormat:@"inventory type not dealt with: %u", type];
+                NSAssert(FALSE, desc);
                 break;
             }
         }
