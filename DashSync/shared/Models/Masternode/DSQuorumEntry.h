@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSQuorumEntry : NSObject <NSCopying>
 
 @property (nonatomic, readonly) uint16_t version;
+@property (nonatomic, readonly) uint32_t quorumIndex;
 @property (nonatomic, readonly) UInt256 quorumHash;
 @property (nonatomic, readonly) UInt256 llmqQuorumHash;
 @property (nonatomic, readonly) UInt384 quorumPublicKey;

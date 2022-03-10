@@ -350,6 +350,7 @@
         <attribute name="commitmentHashData" attributeType="Binary" syncable="YES"/>
         <attribute name="llmqType" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="quorumHashData" attributeType="Binary" syncable="YES"/>
+        <attribute name="quorumIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="quorumPublicKeyData" attributeType="Binary" syncable="YES"/>
         <attribute name="quorumThresholdSignatureData" attributeType="Binary" syncable="YES"/>
         <attribute name="quorumVerificationVectorHashData" attributeType="Binary" syncable="YES"/>
@@ -519,7 +520,7 @@
         <element name="DSProviderUpdateRevocationTransactionEntity" positionX="-2317.35546875" positionY="-292.2109375" width="128" height="105"/>
         <element name="DSProviderUpdateServiceTransactionEntity" positionX="-2120.90625" positionY="-299.93359375" width="128" height="135"/>
         <element name="DSQuorumCommitmentTransactionEntity" positionX="-1939.23046875" positionY="1112.27734375" width="128" height="75"/>
-        <element name="DSQuorumEntryEntity" positionX="-1880.47265625" positionY="-335.81640625" width="128" height="328"/>
+        <element name="DSQuorumEntryEntity" positionX="-1880.47265625" positionY="-335.81640625" width="128" height="329"/>
         <element name="DSShapeshiftEntity" positionX="-946.375" positionY="817.2578125" width="128" height="225"/>
         <element name="DSSimplifiedMasternodeEntryEntity" positionX="-1511.95703125" positionY="276.51953125" width="128" height="418"/>
         <element name="DSSpecialTransactionEntity" positionX="-1145.90625" positionY="1134.63671875" width="128" height="75"/>

@@ -55,6 +55,7 @@
     self.version = potentialQuorumEntry.version;
     self.allCommitmentAggregatedSignature = potentialQuorumEntry.allCommitmentAggregatedSignature;
     self.commitmentHash = potentialQuorumEntry.quorumEntryHash;
+    self.quorumIndex = potentialQuorumEntry.quorumIndex;
     self.chain = [potentialQuorumEntry.chain chainEntityInContext:self.managedObjectContext];
     potentialQuorumEntry.saved = TRUE;
 }
@@ -144,7 +145,8 @@
 }
 
 - (DSQuorumEntry *)quorumEntry {
-    DSQuorumEntry *quorumEntry = [[DSQuorumEntry alloc] initWithVersion:self.version type:self.llmqType quorumHash:self.quorumHash quorumPublicKey:self.quorumPublicKey quorumEntryHash:self.commitmentHash verified:self.verified onChain:self.chain.chain];
+//    DSQuorumEntry *quorumEntry = [[DSQuorumEntry alloc] initWithVersion:self.version type:self.llmqType quorumHash:self.quorumHash quorumPublicKey:self.quorumPublicKey commitmentHash:self.commitmentHash verified:self.verified onChain:self.chain.chain];
+    DSQuorumEntry *quorumEntry = [[DSQuorumEntry alloc] initWithVersion:self.version type:self.llmqType quorumHash:self.quorumHash quorumIndex:self.quorumIndex quorumPublicKey:self.quorumPublicKey quorumEntryHash:self.commitmentHash verified:self.version onChain:self.chain.chain];
     return quorumEntry;
 }
 

@@ -21,6 +21,7 @@
 @interface DSQuorumEntry ()
 
 @property (nonatomic, assign) uint16_t version;
+@property (nonatomic, assign) uint32_t quorumIndex;
 @property (nonatomic, assign) UInt256 quorumHash;
 @property (nonatomic, assign) UInt384 quorumPublicKey;
 @property (nonatomic, assign) UInt768 quorumThresholdSignature;
@@ -61,7 +62,7 @@
     [copy setQuorumEntryHash:self.quorumEntryHash];
     [copy setCommitmentHash:self.commitmentHash];
     [copy setLength:self.length];
-
+    [copy setQuorumIndex:self.quorumIndex];
     [copy setChain:self.chain];
 
     return copy;
