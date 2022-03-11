@@ -26,11 +26,14 @@
 #import "DSFundsDerivationPath.h"
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSTransaction.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
+
+FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountFromTransactionNotification;
+FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromTransactionNotification;
 
 @class DSFundsDerivationPath, DSIncomingFundsDerivationPathDSWallet, DSBlockchainIdentityRegistrationTransition, DSBlockchainIdentityUpdateTransition, DSCreditFundingTransaction;
 @class DSCoinbaseTransaction, DSPotentialOneWayFriendship;
@@ -97,9 +100,11 @@ NS_ASSUME_NONNULL_BEGIN
 // has an extended public key missing in one of the account derivation paths
 @property (nonatomic, readonly) BOOL hasAnExtendedPublicKeyMissing;
 
-- (NSArray *_Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit dashpayGapLimit:(NSUInteger)dashpayGapLimit internal:(BOOL)internal error:(NSError **)error;
+- (NSArray *_Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit unusedAccountGapLimit:(NSUInteger)unusedAccountGapLimit dashpayGapLimit:(NSUInteger)dashpayGapLimit internal:(BOOL)internal error:(NSError **)error;
 
 + (DSAccount *)accountWithAccountNumber:(uint32_t)accountNumber withDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext *_Nullable)context;
+
++ (NSArray<DSAccount *> *)standardAccountsToAccountNumber:(uint32_t)accountNumber onChain:(DSChain *)chain inContext:(NSManagedObjectContext *_Nullable)context;
 
 - (instancetype)initWithAccountNumber:(uint32_t)accountNumber withDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext *_Nullable)context;
 
@@ -163,8 +168,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DSTransaction *)updateTransaction:(DSTransaction *)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee;
 
-- (DSTransaction *)updateTransaction:(DSTransaction *)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee shuffleOutputOrder:(BOOL)shuffleOutputOrder;
 
+- (DSTransaction *)updateTransaction:(DSTransaction *)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee sortType:(DSTransactionSortType)sortType;
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
 - (void)signTransaction:(DSTransaction *)transaction withPrompt:(NSString *_Nullable)authprompt completion:(_Nonnull TransactionValidityCompletionBlock)completion;
 

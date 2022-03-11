@@ -31,10 +31,12 @@
 #import "DSSporkManager.h"
 #import "DSTransaction+Protected.h"
 #import "DSTransactionFactory.h"
+#import "DSTransactionInput.h"
 #import "DSTransactionManager.h"
+#import "DSTransactionOutput.h"
 #import "DSTransition+Protected.h"
 #import "DSWallet.h"
-#import "NSData+Dash.h"
+#import "NSData+DSHash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 #include <arpa/inet.h>
@@ -130,7 +132,7 @@
 
     NSData *transitionData = [blockchainIdentityRegistrationTransition toData];
 
-    XCTAssertEqualObjects(transitionData.hexString, @"a56474797065026961737365744c6f636ba36570726f6f66a26474797065006b696e7374616e744c6f636b58810025847e1e9c2ef692d21bc23a6c0faf8834d64704e5e0186427d3444bc75c1ba50100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006b6f7574707574496e646578006b7472616e73616374696f6e5901950300000002b74030bbda6edd804d4bfb2bdbbb7c207a122f3af2f6283de17074a42c6a5417020000006b483045022100815b175ab1a8fde7d651d78541ba73d2e9b297e6190f5244e1957004aa89d3c902207e1b164499569c1f282fe5533154495186484f7db22dc3dc1ccbdc9b47d997250121027f69794d6c4c942392b1416566aef9eaade43fbf07b63323c721b4518127baadffffffffb74030bbda6edd804d4bfb2bdbbb7c207a122f3af2f6283de17074a42c6a5417010000006b483045022100a7c94fe1bb6ffb66d2bb90fd8786f5bd7a0177b0f3af20342523e64291f51b3e02201f0308f1034c0f6024e368ca18949be42a896dda434520fa95b5651dc5ad3072012102009e3f2eb633ee12c0143f009bf773155a6c1d0f14271d30809b1dc06766aff0ffffffff031027000000000000166a1414ec6c36e6c39a9181f3a261a08a5171425ac5e210270000000000001976a91414ec6c36e6c39a9181f3a261a08a5171425ac5e288acc443953b000000001976a9140d1775b9ed85abeb19fd4a7d8cc88b08a29fe6de88ac00000000697369676e6174757265584120ab038dd774011c69b712807cfedcb2562cac32b7042d8c8d6c2085e74b7c9f90060994319d4aadaef64ffac01ca94316c2279bf13f8c53fa4f99d8a1c712c2416a7075626c69634b65797381a3626964016464617461582102c3efcb287aa64c6cb3f15eb296bb1c224863c200e849407fa54abaa55c9cfcde6474797065006f70726f746f636f6c56657273696f6e00", @"Transition Data is incorrect");
+    XCTAssertEqualObjects(transitionData.hexString, @"01000000a4647479706502697369676e617475726558411f4908f63fd009424de8f0a640229af525c5378ced59e8a9fe49a6515571a008ce72bcd22c4bd7bb6f38ff0028c1f41e84c8e24e4dd43f55a9465ae6f4ce907fd86a7075626c69634b65797381a3626964016464617461582102c3efcb287aa64c6cb3f15eb296bb1c224863c200e849407fa54abaa55c9cfcde6474797065006e61737365744c6f636b50726f6f66a46474797065006b696e7374616e744c6f636b58810025847e1e9c2ef692d21bc23a6c0faf8834d64704e5e0186427d3444bc75c1ba50100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006b6f7574707574496e646578006b7472616e73616374696f6e5901950300000002b74030bbda6edd804d4bfb2bdbbb7c207a122f3af2f6283de17074a42c6a5417020000006b483045022100815b175ab1a8fde7d651d78541ba73d2e9b297e6190f5244e1957004aa89d3c902207e1b164499569c1f282fe5533154495186484f7db22dc3dc1ccbdc9b47d997250121027f69794d6c4c942392b1416566aef9eaade43fbf07b63323c721b4518127baadffffffffb74030bbda6edd804d4bfb2bdbbb7c207a122f3af2f6283de17074a42c6a5417010000006b483045022100a7c94fe1bb6ffb66d2bb90fd8786f5bd7a0177b0f3af20342523e64291f51b3e02201f0308f1034c0f6024e368ca18949be42a896dda434520fa95b5651dc5ad3072012102009e3f2eb633ee12c0143f009bf773155a6c1d0f14271d30809b1dc06766aff0ffffffff031027000000000000166a1414ec6c36e6c39a9181f3a261a08a5171425ac5e210270000000000001976a91414ec6c36e6c39a9181f3a261a08a5171425ac5e288acc443953b000000001976a9140d1775b9ed85abeb19fd4a7d8cc88b08a29fe6de88ac00000000", @"Transition Data is incorrect");
 }
 
 - (void)testClassicalTransactionInputs {
@@ -389,5 +391,88 @@
 //
 //}
 
+/**
+ * Inputs:
+ * 1) hashes (in reversed byte-order) lexicographically in ASC.
+ * 2) indices  in ASC.
+ * Outputs:
+ * 1) amounts in ASC.
+ * 2) outScripts lexicographically in ASC
+ */
+- (void)testBIP69 {
+    DSChain *testnet = [DSChain testnet];
+    NSString *ipk1 = @"cNeRqjZpEEowdxMjiBa7S5uBgqweng19F1EZRFWcqE2XTpDy1Vzt";
+    NSString *ipk2 = @"35a56b070a8ec80f6c0cba21886aba9b308c4e40ed7b4f290749333522125f7c";
+    NSString *ipk3 = @"eee3e42d35d1c75ea4cf3dbc902de9619faf0cd6ba1ab178a873d80c3f7dc90c";
+    NSString *ipk4 = @"19d6aba7a9fcdb627ad39a2176689c2dcca13db68415411d88b1c37c2103794a";
+    NSString *ipk5 = @"b4788261554d2f74647e547ef34018c228b7869191c0dc0086d91901c515c370";
+    DSECDSAKey *pk1 = [DSECDSAKey keyWithPrivateKey:ipk1 onChain:testnet];
+    DSECDSAKey *pk2 = [DSECDSAKey keyWithPrivateKey:ipk2 onChain:testnet];
+    DSECDSAKey *pk3 = [DSECDSAKey keyWithPrivateKey:ipk3 onChain:testnet];
+    DSECDSAKey *pk4 = [DSECDSAKey keyWithPrivateKey:ipk4 onChain:testnet];
+    DSECDSAKey *pk5 = [DSECDSAKey keyWithPrivateKey:ipk5 onChain:testnet];
+    NSString *ia1 = [pk1 addressForChain:testnet];
+    NSString *ia2 = [pk2 addressForChain:testnet];
+    NSString *ia3 = [pk3 addressForChain:testnet];
+    NSString *ia4 = [pk4 addressForChain:testnet];
+    NSString *ia5 = [pk5 addressForChain:testnet];
+    NSMutableData *script1 = [NSMutableData withScriptPubKeyForAddress:ia1 forChain:testnet];
+    NSMutableData *script2 = [NSMutableData withScriptPubKeyForAddress:ia2 forChain:testnet];
+    NSMutableData *script3 = [NSMutableData withScriptPubKeyForAddress:ia3 forChain:testnet];
+    NSMutableData *script4 = [NSMutableData withScriptPubKeyForAddress:ia4 forChain:testnet];
+    NSMutableData *script5 = [NSMutableData withScriptPubKeyForAddress:ia5 forChain:testnet];
+    UInt256 hash1 = @"ce5e6919b13d6e58da10f933b6442558ba470b24f488f1449d2adf1e0a892e7d".hexToData.reverse.UInt256;
+    UInt256 hash2 = @"ce5e6919b13d6e58da10f933b6442558ba470b24f488f1449d2adf1e0a892e7a".hexToData.reverse.UInt256;
+    UInt256 hash3 = @"ce5e6919b13d6e58da10f933b6442558ba470b24f488f1449d2adf1e0a892e7b".hexToData.reverse.UInt256;
+    UInt256 hash4 = @"ce5e6919b13d6e58da10f933b6442558ba470b24f488f1449d2adf1e0a892e7c".hexToData.reverse.UInt256;
+    UInt256 hash5 = @"ce5e6919b13d6e58da10f933b6442558ba470b24f488f1449d2adf1e0a892e7c".hexToData.reverse.UInt256;
+    NSValue *hash1val = uint256_obj(hash1);
+    NSValue *hash2val = uint256_obj(hash2);
+    NSValue *hash3val = uint256_obj(hash3);
+    NSValue *hash4val = uint256_obj(hash4);
+    NSValue *hash5val = uint256_obj(hash5);
 
+    NSArray *hashes = @[hash1val, hash2val, hash3val, hash4val, hash5val];
+    NSArray *indices = @[@1, @1, @1, @1, @0];
+    NSArray *inScripts = @[script1, script2, script3, script4, script5];
+
+
+    NSArray *outputAmounts = @[@2899999999774, @100000000000, @2899999999774];
+    NSString *outputAddress1 = @"yiTyFtkZVCrEvmANHoj9rJQ2VA9HBnYTgp";
+    NSString *outputAddress2 = @"ygTmsRfjDQ8c8UDny2uU8gafAeFAKP6G1g";
+    NSString *outputAddress3 = @"yaMmAV9Fmx4St7xPH9eHCLcYJZdGYd8vD8";
+    //76a914f2ef7a87a09aadd215be821ddfcb922fa099f64f88ac
+    NSMutableData *outputScript1 = [NSMutableData withScriptPubKeyForAddress:outputAddress1 forChain:testnet];
+    //76a914dcf5b8abf6e222dea0219f4e3b539fa9b6addcfa88ac
+    NSMutableData *outputScript2 = [NSMutableData withScriptPubKeyForAddress:outputAddress2 forChain:testnet];
+    //76a9149a01e1b57808ed4f14553fc4624de20c13c9e97e88ac
+    NSMutableData *outputScript3 = [NSMutableData withScriptPubKeyForAddress:outputAddress3 forChain:testnet];
+    NSArray *outputAddresses = @[outputAddress1, outputAddress2, outputAddress3];
+    DSTransaction *tx = [[DSTransaction alloc] initWithInputHashes:hashes
+                                                      inputIndexes:indices
+                                                      inputScripts:inScripts
+                                                   outputAddresses:outputAddresses
+                                                     outputAmounts:outputAmounts
+                                                           onChain:testnet];
+
+    DSTransactionInput *input1 = [DSTransactionInput transactionInputWithHash:hash1 index:1 inScript:script1 signature:nil sequence:TXIN_SEQUENCE];
+    DSTransactionInput *input2 = [DSTransactionInput transactionInputWithHash:hash2 index:1 inScript:script2 signature:nil sequence:TXIN_SEQUENCE];
+    DSTransactionInput *input3 = [DSTransactionInput transactionInputWithHash:hash3 index:1 inScript:script3 signature:nil sequence:TXIN_SEQUENCE];
+    DSTransactionInput *input4 = [DSTransactionInput transactionInputWithHash:hash4 index:1 inScript:script4 signature:nil sequence:TXIN_SEQUENCE];
+    DSTransactionInput *input5 = [DSTransactionInput transactionInputWithHash:hash5 index:0 inScript:script5 signature:nil sequence:TXIN_SEQUENCE];
+    NSArray<DSTransactionInput *> *bipInputs = @[input2, input3, input5, input4, input1];
+
+    [tx sortInputsAccordingToBIP69];
+    XCTAssertEqualObjects(tx.inputs, bipInputs, @"The transaction inputs does not match it's expected values");
+    [tx sortOutputsAccordingToBIP69];
+
+    DSTransactionOutput *output1 = [DSTransactionOutput transactionOutputWithAmount:2899999999774 address:outputAddress1 outScript:outputScript1 onChain:testnet];
+    DSTransactionOutput *output2 = [DSTransactionOutput transactionOutputWithAmount:100000000000 address:outputAddress2 outScript:outputScript2 onChain:testnet];
+    DSTransactionOutput *output3 = [DSTransactionOutput transactionOutputWithAmount:2899999999774 address:outputAddress3 outScript:outputScript3 onChain:testnet];
+
+    NSArray<DSTransactionOutput *> *bipOutputs = @[output2, output3, output1];
+    XCTAssertEqualObjects(tx.outputs, bipOutputs, @"The transaction outputs does not match it's expected values");
+    [tx signWithPrivateKeys:@[pk1, pk2, pk3, pk4, pk5]];
+    XCTAssertTrue([tx isSigned], @"[DSTransaction signWithSerializedPrivateKeys:]");
+}
 @end

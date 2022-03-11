@@ -85,7 +85,7 @@
 #import "DSTxInputEntity+CoreDataProperties.h"
 #import "DSTxOutputEntity+CoreDataProperties.h"
 #import "NSArray+Dash.h"
-#import "NSData+Dash.h"
+#import "NSData+DSHash.h"
 #import "NSDate+Utils.h"
 
 #import "DSProviderRegistrationTransaction.h"
@@ -102,6 +102,8 @@
 
 #import "DSTransaction+Utils.h"
 #import "DSTransactionFactory.h"
+#import "DSTransactionInput.h"
+#import "DSTransactionOutput.h"
 
 #import "DSBlockchainIdentityCloseTransition.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
@@ -114,7 +116,6 @@
 #import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
 #import "DSDashpayUserEntity+CoreDataClass.h"
 #import "DSFriendRequestEntity+CoreDataClass.h"
-#import "DSMasternodeList.h"
 #import "DSMasternodeListEntity+CoreDataProperties.h"
 #import "DSPotentialContact.h"
 #import "DSPotentialOneWayFriendship.h"

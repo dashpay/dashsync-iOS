@@ -28,7 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) DSBlockchainInvitation *associatedInvitation;
 @property (nonatomic, readonly) DSECDSAKey *registrationFundingPrivateKey;
 @property (nonatomic, assign) BOOL isLocal;
-@property (nonatomic, strong) DSCreditFundingTransaction *registrationCreditFundingTransaction;
+@property (nonatomic, assign) UInt256 registrationCreditFundingTransactionHash;
+
 
 - (DSBlockchainIdentityEntity *)blockchainIdentityEntityInContext:(NSManagedObjectContext *)context;
 
@@ -50,7 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initAtIndex:(uint32_t)index withUniqueId:(UInt256)uniqueId inWallet:(DSWallet *)wallet;
 
-- (instancetype)initAtIndex:(uint32_t)index withIdentityDictionary:(NSDictionary *)identityDictionary inWallet:(DSWallet *)wallet;
+- (instancetype)initAtIndex:(uint32_t)index withIdentityDictionary:(NSDictionary *)identityDictionary version:(uint32_t)version inWallet:(DSWallet *)wallet;
 
 - (instancetype)initAtIndex:(uint32_t)index withFundingTransaction:(DSCreditFundingTransaction *)transaction withUsernameDictionary:(NSDictionary<NSString *, NSDictionary *> *_Nullable)usernameDictionary inWallet:(DSWallet *)wallet;
 
@@ -62,6 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addKey:(DSKey *)key atIndexPath:(NSIndexPath *)indexPath ofType:(DSKeyType)type withStatus:(DSBlockchainIdentityKeyStatus)status save:(BOOL)save;
 - (BOOL)registerKeyWithStatus:(DSBlockchainIdentityKeyStatus)status atIndexPath:(NSIndexPath *)indexPath ofType:(DSKeyType)type;
 - (DSKey *_Nullable)privateKeyAtIndex:(uint32_t)index ofType:(DSKeyType)type;
+- (DSKey *_Nullable)privateKeyAtIndex:(uint32_t)index ofType:(DSKeyType)type forSeed:(NSData *)seed;
 - (void)deletePersistentObjectAndSave:(BOOL)save inContext:(NSManagedObjectContext *)context;
 
 - (void)saveInitial;

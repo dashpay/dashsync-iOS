@@ -23,6 +23,8 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+#import <Foundation/Foundation.h>
+
 #ifndef BigIntTypes_h
 #define BigIntTypes_h
 
@@ -112,6 +114,8 @@ typedef struct {
 #define uint256_supeq(a, b) ((a.u64[3] > b.u64[3]) || ((a.u64[3] == b.u64[3]) && ((a.u64[2] > b.u64[2]) || ((a.u64[2] == b.u64[2]) && ((a.u64[1] > b.u64[1]) || ((a.u64[1] == b.u64[1]) && (a.u64[0] >= b.u64[0])))))))
 
 #define uint256_sup(a, b) ((a.u64[3] > b.u64[3]) || ((a.u64[3] == b.u64[3]) && ((a.u64[2] > b.u64[2]) || ((a.u64[2] == b.u64[2]) && ((a.u64[1] > b.u64[1]) || ((a.u64[1] == b.u64[1]) && (a.u64[0] > b.u64[0])))))))
+
+#define uint256_compare(a, b) (uint256_eq(a, b) ? NSOrderedSame : (uint256_sup(a, b) ? NSOrderedDescending : NSOrderedAscending))
 
 #define uint256_xor(a, b) ((UInt256){.u64 = {a.u64[0] ^ b.u64[0], a.u64[1] ^ b.u64[1], a.u64[2] ^ b.u64[2], a.u64[3] ^ b.u64[3]}}) //this needs to be tested
 

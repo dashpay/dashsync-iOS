@@ -23,8 +23,8 @@
 #import "DSContractTransition.h"
 #import "DSDashPlatform.h"
 #import "DSWallet.h"
-#import "NSData+Bitcoin.h"
 #import "NSData+DSCborDecoding.h"
+#import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
@@ -42,11 +42,12 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 @property (assign, nonatomic) UInt256 contractId;
 @property (assign, nonatomic) UInt256 registeredBlockchainIdentityUniqueID;
 @property (assign, nonatomic) UInt256 entropy;
-@property (strong, nonatomic) DSChain *chain;
 
 @end
 
 @implementation DPContract
+
+@synthesize chain = _chain;
 
 #pragma mark - Init
 

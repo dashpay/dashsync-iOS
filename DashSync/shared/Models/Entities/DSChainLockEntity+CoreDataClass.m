@@ -16,7 +16,7 @@
 #import "DSQuorumEntry.h"
 #import "DSQuorumEntryEntity+CoreDataClass.h"
 #import "DSSimplifiedMasternodeEntry.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 
 @implementation DSChainLockEntity

@@ -14,7 +14,7 @@
 #import "DSMerkleBlock.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataClass.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #include <arpa/inet.h>
 

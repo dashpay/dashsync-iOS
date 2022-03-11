@@ -39,7 +39,7 @@
 #import "DSPeer.h"
 #import "DSPeerManager+Protected.h"
 #import "DSSimplifiedMasternodeEntry.h"
-#import "NSData+Dash.h"
+#import "NSData+DSHash.h"
 #import "NSManagedObject+Sugar.h"
 
 #define REQUEST_GOVERNANCE_OBJECT_COUNT 500

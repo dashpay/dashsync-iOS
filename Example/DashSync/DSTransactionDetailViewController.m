@@ -11,6 +11,7 @@
 #import "DSTransactionAmountTableViewCell.h"
 #import "DSTransactionDetailTableViewCell.h"
 #import "DSTransactionIdentifierTableViewCell.h"
+#import "DSTransactionOutput.h"
 #import "DSTransactionStatusTableViewCell.h"
 #import <DashSync/DashSync.h>
 #include <arpa/inet.h>
@@ -76,8 +77,6 @@
         self.received = [transaction.chain amountReceivedFromTransaction:transaction];
         isExternalTransaction = FALSE;
     }
-    NSUInteger outputAmountIndex = 0;
-
 
     //if (![transaction isKindOfClass:[DSCoinbaseTransaction class]]) {
     for (NSString *inputAddress in transaction.inputAddresses) {
@@ -88,9 +87,10 @@
     //}
     NSManagedObjectContext *context = [NSManagedObjectContext viewContext];
 
-    for (NSString *address in transaction.outputAddresses) {
-        NSData *script = transaction.outputScripts[outputAmountIndex];
-        uint64_t amt = [transaction.outputAmounts[outputAmountIndex++] unsignedLongLongValue];
+    for (DSTransactionOutput *output in transaction.outputs) {
+        NSData *script = output.outScript;
+        uint64_t amt = output.amount;
+        NSString *address = output.address;
         DSAccount *account = nil;
         if (address == (id)[NSNull null]) {
             if (self.sent > 0) {

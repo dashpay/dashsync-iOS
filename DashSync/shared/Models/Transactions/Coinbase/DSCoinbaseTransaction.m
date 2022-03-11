@@ -8,7 +8,7 @@
 #import "DSCoinbaseTransaction.h"
 #import "DSCoinbaseTransactionEntity+CoreDataClass.h"
 #import "DSTransactionFactory.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 
 @implementation DSCoinbaseTransaction
@@ -88,19 +88,17 @@
 // Returns the binary transaction data that needs to be hashed and signed with the private key for the tx input at
 // subscriptIndex. A subscriptIndex of NSNotFound will return the entire signed transaction.
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex {
-    NSMutableData *data = [[super toDataWithSubscriptIndex:subscriptIndex] mutableCopy];
-
-    NSData *payloadData = [self payloadData];
-    [data appendVarInt:payloadData.length];
-    [data appendData:[self payloadData]];
-
-
-    return data;
+    @synchronized(self) {
+        NSMutableData *data = [[super toDataWithSubscriptIndex:subscriptIndex] mutableCopy];
+        return [data appendCountedData:[self payloadData]];
+    }
 }
 
 - (size_t)size {
-    if (uint256_is_not_zero(self.txHash)) return self.data.length;
-    return [super size] + [NSMutableData sizeOfVarInt:self.payloadData.length];
+    @synchronized(self) {
+        if (uint256_is_not_zero(self.txHash)) return self.data.length;
+        return [super size] + [NSMutableData sizeOfVarInt:self.payloadData.length];
+    }
 }
 
 - (Class)entityClass {

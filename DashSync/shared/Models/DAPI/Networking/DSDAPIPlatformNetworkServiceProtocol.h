@@ -20,6 +20,18 @@
 #import "DSDAPINetworkServiceRequest.h"
 #import <Foundation/Foundation.h>
 
+typedef NS_ENUM(NSInteger, DSPlatformStoredMessage)
+{
+    /// The item does not exist for the specified key
+    DSPlatformStoredMessage_NotPresent = 0,
+    /// The version is prepended before all items
+    DSPlatformStoredMessage_Version,
+    /// An item can be returned if decode is set to true
+    DSPlatformStoredMessage_Item,
+    /// A data item that can be returned if decode is set to false
+    DSPlatformStoredMessage_Data,
+};
+
 #define DAPI_DOCUMENT_RESPONSE_COUNT_LIMIT 100
 
 NS_ASSUME_NONNULL_BEGIN
@@ -389,7 +401,7 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode)
  */
 - (id<DSDAPINetworkServiceRequest>)getIdentityById:(NSData *)userId
                                    completionQueue:(dispatch_queue_t)completionQueue
-                                           success:(void (^)(NSDictionary *blockchainIdentity))success
+                                           success:(void (^)(NSDictionary *_Nullable blockchainIdentity))success
                                            failure:(void (^)(NSError *error))failure;
 
 /**
@@ -486,6 +498,19 @@ Get a list of identities knowing only keys they possess
                                               completionQueue:(dispatch_queue_t)completionQueue
                                                       success:(void (^)(NSArray<NSDictionary *> *identityDictionaries))success
                                                       failure:(void (^)(NSError *error))failure;
+
+/**
+Get a list of identity Ids knowing only keys they possess
+
+@param keyHashesArray An array of hashes of keys
+@param completionQueue The queue in which to return the result on
+@param success A block object to be executed when the request operation finishes successfully
+@param failure A block object to be executed when the request operation finishes unsuccessfully
+*/
+- (id<DSDAPINetworkServiceRequest>)fetchIdentityIdsByKeyHashes:(NSArray<NSData *> *)keyHashesArray
+                                               completionQueue:(dispatch_queue_t)completionQueue
+                                                       success:(void (^)(NSArray<NSData *> *identityIds))success
+                                                       failure:(void (^)(NSError *error))failure;
 
 @end
 

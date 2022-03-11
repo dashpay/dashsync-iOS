@@ -33,7 +33,7 @@
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSTxInputEntity+CoreDataClass.h"
 #import "DSTxOutputEntity+CoreDataClass.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"
 
@@ -56,11 +56,11 @@
         self.transactionHash.timestamp = tx.timestamp;
         self.associatedShapeshift = tx.associatedShapeshift;
 
-        while (inputs.count < tx.inputHashes.count) {
+        while (inputs.count < tx.inputs.count) {
             [inputs addObject:[DSTxInputEntity managedObjectInBlockedContext:self.managedObjectContext]];
         }
 
-        while (inputs.count > tx.inputHashes.count) {
+        while (inputs.count > tx.inputs.count) {
             [inputs removeObjectAtIndex:inputs.count - 1];
         }
 
@@ -68,11 +68,11 @@
             [e setAttributesFromTransaction:tx inputIndex:idx++ forTransactionEntity:self];
         }
 
-        while (outputs.count < tx.outputAddresses.count) {
+        while (outputs.count < tx.outputs.count) {
             [outputs addObject:[DSTxOutputEntity managedObjectInBlockedContext:self.managedObjectContext]];
         }
 
-        while (outputs.count > tx.outputAddresses.count) {
+        while (outputs.count > tx.outputs.count) {
             [self removeObjectFromOutputsAtIndex:outputs.count - 1];
         }
 

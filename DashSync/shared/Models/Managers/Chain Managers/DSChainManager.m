@@ -467,13 +467,7 @@
                                                             object:nil
                                                           userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
     });
-    if (self.chain.isEvolutionEnabled && self.masternodeManager.currentMasternodeListIsInLast24Hours && !self.identitiesManager.hasRecentIdentitiesSync) {
-        [self.identitiesManager syncBlockchainIdentitiesWithCompletion:^(NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities) {
-            [self.peerManager connect];
-        }];
-    } else {
-        [self.peerManager connect];
-    }
+    [self.peerManager connect];
 }
 
 - (void)stopSync {
@@ -625,9 +619,11 @@
 }
 
 - (void)chainShouldStartSyncingBlockchain:(DSChain *)chain onPeer:(DSPeer *)peer {
-    [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerChainSyncDidStartNotification
-                                                        object:nil
-                                                      userInfo:@{DSChainManagerNotificationChainKey: self, DSPeerManagerNotificationPeerKey: peer}];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerChainSyncDidStartNotification
+                                                            object:nil
+                                                          userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSPeerManagerNotificationPeerKey: peer ? peer : [NSNull null]}];
+    });
     dispatch_async(self.chain.networkingQueue, ^{
         if ((self.syncPhase != DSChainSyncPhase_ChainSync && self.syncPhase != DSChainSyncPhase_Synced) && self.chain.needsInitialTerminalHeadersSync) {
             //masternode list should be synced first and the masternode list is old

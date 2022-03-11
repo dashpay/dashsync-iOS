@@ -19,7 +19,7 @@
 #import "DSChain.h"
 #import "DSChainLock.h"
 #import "DSCheckpoint.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+DSHash.h"
 #import "NSData+Dash.h"
 #import "NSDate+Utils.h"
 #import "NSMutableData+Dash.h"
@@ -32,9 +32,7 @@
     if (!(self = [self init])) return nil;
     _height = height;
     _blockHash = blockHash;
-
     self.chain = chain;
-
     return self;
 }
 
@@ -43,9 +41,7 @@
     _height = height;
     _version = version;
     _timestamp = timestamp;
-
     self.chain = chain;
-
     return self;
 }
 
@@ -100,14 +96,12 @@
 
 - (NSData *)toData {
     NSMutableData *d = [NSMutableData data];
-
     [d appendUInt32:_version];
     [d appendUInt256:_prevBlock];
     [d appendUInt256:_merkleRoot];
     [d appendUInt32:_timestamp];
     [d appendUInt32:_target];
     [d appendUInt32:_nonce];
-
     return d;
 }
 
@@ -121,11 +115,11 @@
     }
     if (self.chain.allowMinDifficultyBlocks) {
         // recent block is more than 2 hours old
-        if (self.timestamp > (previousBlock.timestamp + 2 * 60 * 60)) {
-            return TRUE;
-        }
+        // if (self.timestamp > (previousBlock.timestamp + 2 * 60 * 60)) {
+        //    return TRUE;
+        // }
         // recent block is more than 10 minutes old
-        if (self.timestamp > (previousBlock.timestamp + 2.5 * 60 * 4)) {
+        if (self.timestamp > (previousBlock.timestamp + 600)) { // 2.5 * 60 * 4
             return TRUE;
         }
     }
@@ -200,15 +194,7 @@
         // Calculate average difficulty based on the blocks we iterate over in this for loop
         if (blockCount <= DGW_PAST_BLOCKS_MIN) {
             UInt256 currentTarget = setCompactLE(currentBlock.target);
-            //DSLog(@"currentTarget for block %d is %@", currentBlock.height, uint256_hex(currentTarget));
-            //if (self.height == 1070917)
-            //DSLog(@"%d",currentTarget);
-            if (blockCount == 1) {
-                sumTargets = uInt256AddLE(currentTarget, currentTarget);
-            } else {
-                sumTargets = uInt256AddLE(sumTargets, currentTarget);
-            }
-            //DSLog(@"sumTarget for block %d is %@", currentBlock.height, uint256_hex(sumTargets));
+            sumTargets = uInt256AddLE(blockCount == 1 ? currentTarget : sumTargets, currentTarget);
         }
 
         // If this is the second iteration (LastBlockTime was set)

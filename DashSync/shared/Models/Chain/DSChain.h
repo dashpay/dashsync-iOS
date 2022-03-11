@@ -58,6 +58,16 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection)
     DSTransactionDirection_NotAccountFunds,
 };
 
+typedef NS_ENUM(uint16_t, DSLLMQType)
+{
+    DSLLMQType_50_60 = 1,  //every 24 blocks
+    DSLLMQType_400_60 = 2, //288 blocks
+    DSLLMQType_400_85 = 3, //576 blocks
+    DSLLMQType_100_67 = 4, //every 24 blocks
+    DSLLMQType_5_60 = 100, //24 blocks
+    DSLLMQType_10_60 = 101 //24 blocks
+};
+
 typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 {
     DSChainSyncPhase_Offline = 0,
@@ -154,6 +164,9 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 
 // MARK: - L2 Network Chain Info
 
+/*! @brief platformProtocolVersion is the protocol version that we currently use for the platform chain. This should only be changed in the case of devnets.  */
+@property (nonatomic, assign) uint32_t platformProtocolVersion;
+
 /*! @brief The dpns contract id.  */
 @property (nonatomic, assign) UInt256 dpnsContractID;
 
@@ -179,6 +192,18 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 
 /*! @brief The number of minimumDifficultyBlocks.  */
 @property (nonatomic, assign) uint32_t minimumDifficultyBlocks;
+
+/*! @brief The type of quorum used for Instant Send Locks.  */
+@property (nonatomic, assign) DSLLMQType quorumTypeForISLocks;
+
+/*! @brief The type of quorum used for Chain Locks.  */
+@property (nonatomic, assign) DSLLMQType quorumTypeForChainLocks;
+
+/*! @brief The type of quorum used for Platform.  */
+@property (nonatomic, assign) DSLLMQType quorumTypeForPlatform;
+
+/*! @brief Whether chain should process this type of quorum.  */
+- (BOOL)shouldProcessQuorumOfType:(DSLLMQType)llmqType;
 
 /*! @brief Returns all standard derivaton paths used for the chain based on the account number.  */
 - (NSArray<DSDerivationPath *> *)standardDerivationPathsForAccountNumber:(uint32_t)accountNumber;
@@ -454,7 +479,7 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 + (DSChain *_Nullable)devnetWithIdentifier:(NSString *)identifier;
 
 /*! @brief Set up a given devnet with an identifier, checkpoints, default L1, JRPC and GRPC ports, a dpns contractId and a dashpay contract id. minimumDifficultyBlocks are used to speed up the initial chain creation. This devnet will be registered on the keychain. The additional isTransient property allows for test usage where you do not wish to persist the devnet.  */
-+ (DSChain *)setUpDevnetWithIdentifier:(NSString *)identifier withCheckpoints:(NSArray<DSCheckpoint *> *_Nullable)checkpointArray withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID isTransient:(BOOL)isTransient;
++ (DSChain *)setUpDevnetWithIdentifier:(NSString *)identifier withCheckpoints:(NSArray<DSCheckpoint *> *_Nullable)checkpointArray withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID instantSendLockQuorumType:(DSLLMQType)instantSendLockQuorumsType chainLockQuorumType:(DSLLMQType)chainLockQuorumsType platformQuorumType:(DSLLMQType)platformQuorumType isTransient:(BOOL)isTransient;
 
 /*! @brief Retrieve from the keychain a devnet with an identifier and add given checkpoints.  */
 + (DSChain *)recoverKnownDevnetWithIdentifier:(NSString *)identifier withCheckpoints:(NSArray<DSCheckpoint *> *)checkpointArray performSetup:(BOOL)performSetup;

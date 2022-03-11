@@ -13,7 +13,7 @@
 #import "DSTransaction+Protected.h"
 #import "DSTransactionFactory.h"
 #import "DSTransition+Protected.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 
@@ -38,7 +38,7 @@
     NSAssert(publicKeys.count, @"There must be at least one key when registering a user");
 
     if (!(self = [self initOnChain:chain])) return nil;
-    self.version = 1;
+    self.version = version;
     self.creditFundingTransaction = creditFundingTransaction;
     self.blockchainIdentityUniqueId = [dsutxo_data(creditFundingTransaction.lockedOutpoint) SHA256_2];
     self.publicKeys = publicKeys;

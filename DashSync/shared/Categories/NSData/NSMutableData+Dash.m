@@ -27,7 +27,7 @@
 //  THE SOFTWARE.
 
 #import "DSChain.h"
-#import "NSData+Dash.h"
+#import "NSData+DSHash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Dash.h"
 
@@ -98,6 +98,12 @@ CFAllocatorRef SecureAllocator() {
     return CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), aNumItems));
 }
 
++ (NSMutableData *)withScriptPubKeyForAddress:(NSString *)address forChain:(DSChain *)chain {
+    NSMutableData *script = [NSMutableData data];
+    [script appendScriptPubKeyForAddress:address forChain:chain];
+    return script;
+}
+
 + (NSMutableString *)secureStringWithLength:(NSUInteger)length {
     return CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), length));
 }
@@ -143,6 +149,12 @@ CFAllocatorRef SecureAllocator() {
 
 - (NSMutableData *)appendUInt32:(uint32_t)i {
     i = CFSwapInt32HostToLittle(i);
+    [self appendBytes:&i length:sizeof(i)];
+    return self;
+}
+
+- (NSMutableData *)appendInt64:(int64_t)i {
+    i = CFSwapInt64HostToLittle(i);
     [self appendBytes:&i length:sizeof(i)];
     return self;
 }
@@ -255,11 +267,17 @@ CFAllocatorRef SecureAllocator() {
 
 - (NSMutableData *)appendString:(NSString *)s {
     NSUInteger l = [s lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
-
     [self appendVarInt:l];
     [self appendBytes:s.UTF8String length:l];
     return self;
 }
+
+- (NSMutableData *)appendCountedData:(NSData *)data {
+    [self appendVarInt:data.length];
+    [self appendData:data];
+    return self;
+}
+
 
 // MARK: - Dash script
 

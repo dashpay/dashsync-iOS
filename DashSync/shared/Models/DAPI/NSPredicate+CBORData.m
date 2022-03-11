@@ -15,7 +15,9 @@
 //  limitations under the License.
 //
 
-#import "NSData+Bitcoin.h"
+#import "DSDirectionalRange.h"
+#import "DSPlatformTreeQuery.h"
+#import "NSData+Dash.h"
 #import "NSObject+DSCborEncoding.h"
 #import "NSPredicate+CBORData.h"
 
@@ -34,10 +36,105 @@
     }
 }
 
+- (NSData *)singleElementQueryKey {
+    NSAssert(![self isMemberOfClass:[NSCompoundPredicate class]], @"This should only be queried on non compound queries");
+    NSAssert([self isKindOfClass:[NSComparisonPredicate class]], @"This should only be queried on a comparison predicate");
+    NSComparisonPredicate *comparisonPredicate = (NSComparisonPredicate *)self;
+    NSAssert(comparisonPredicate.predicateOperatorType == NSEqualToPredicateOperatorType, @"This should only be queried on a comparison predicate");
+    NSExpression *leftExpression = comparisonPredicate.leftExpression;
+    NSExpression *rightExpression = comparisonPredicate.rightExpression;
+    id key;
+    switch (leftExpression.expressionType) {
+        case NSConstantValueExpressionType:
+            key = leftExpression.constantValue;
+            break;
+        case NSKeyPathExpressionType: {
+            switch (rightExpression.expressionType) {
+                case NSConstantValueExpressionType:
+                    key = rightExpression.constantValue;
+                    break;
+                case NSKeyPathExpressionType:
+                    NSAssert(NO, @"We must be querying a value");
+                    break;
+                case NSVariableExpressionType:
+                    key = rightExpression.variable;
+                    break;
+
+                default:
+                    NSAssert(FALSE, @"Not supported yet");
+                    break;
+            }
+        } break;
+        case NSVariableExpressionType:
+            key = leftExpression.variable;
+            break;
+
+        default:
+            NSAssert(FALSE, @"Not supported yet");
+            break;
+    }
+    if ([key isKindOfClass:[NSData class]]) {
+        return key;
+    } else if ([key isKindOfClass:[NSString class]]) {
+        return [(NSString *)key dataUsingEncoding:NSUTF8StringEncoding];
+    } else if ([key isKindOfClass:[NSNumber class]]) {
+        return [NSData dataWithUInt64:[key unsignedLongLongValue]];
+    } else {
+        NSAssert(FALSE, @"Not supported key type");
+        return nil;
+    }
+}
+
+- (NSArray<NSData *> *)multipleElementQueryKey {
+    NSAssert(![self isMemberOfClass:[NSCompoundPredicate class]], @"This should only be queried on non compound queries");
+    NSAssert([self isKindOfClass:[NSComparisonPredicate class]], @"This should only be queried on a comparison predicate");
+    NSComparisonPredicate *comparisonPredicate = (NSComparisonPredicate *)self;
+    NSAssert(comparisonPredicate.predicateOperatorType == NSInPredicateOperatorType, @"This should only be queried on a comparison predicate");
+    NSExpression *leftExpression = comparisonPredicate.leftExpression;
+    NSExpression *rightExpression = comparisonPredicate.rightExpression;
+    id key;
+    switch (leftExpression.expressionType) {
+        case NSConstantValueExpressionType:
+            key = leftExpression.constantValue;
+            break;
+        case NSKeyPathExpressionType: {
+            switch (rightExpression.expressionType) {
+                case NSConstantValueExpressionType:
+                    key = rightExpression.constantValue;
+                    break;
+                case NSKeyPathExpressionType:
+                    NSAssert(NO, @"We must be querying a value");
+                    break;
+                case NSVariableExpressionType:
+                    key = rightExpression.variable;
+                    break;
+
+                default:
+                    NSAssert(FALSE, @"Not supported yet");
+                    break;
+            }
+        } break;
+        case NSVariableExpressionType:
+            key = leftExpression.variable;
+            break;
+
+        default:
+            NSAssert(FALSE, @"Not supported yet");
+            break;
+    }
+    if ([key isKindOfClass:[NSArray class]]) {
+        return key;
+    } else {
+        NSAssert(FALSE, @"Not supported key type");
+        return nil;
+    }
+}
+
 - (NSArray *)whereClauseNestedArrayWithOptions:(NSPredicateCBORDataOptions)options {
     if ([self isMemberOfClass:[NSCompoundPredicate class]]) {
         NSMutableArray *mArray = [NSMutableArray array];
         NSCompoundPredicate *compoundPredicate = (NSCompoundPredicate *)self;
+        NSAssert(compoundPredicate.compoundPredicateType == NSAndPredicateType, @"We currently only support AND predicates");
         for (NSPredicate *predicate in compoundPredicate.subpredicates) {
             [mArray addObject:[predicate whereClauseNestedArrayWithOptions:options]];
         }
@@ -59,7 +156,7 @@
                 operator= @"<=";
                 break;
             case NSGreaterThanPredicateOperatorType:
-                operator= @"==";
+                operator= @">";
                 break;
             case NSGreaterThanOrEqualToPredicateOperatorType:
                 operator= @">=";
@@ -133,12 +230,33 @@
     }
 }
 
+- (DSPlatformTreeQuery *)platformTreeQuery {
+    //todo
+    return nil;
+}
+
 - (NSData *)dashPlatormWhereData {
     NSArray *array = [self whereClauseArrayWithOptions:NSPredicateCBORDataOptions_DataToBase64];
     NSData *json = [NSJSONSerialization dataWithJSONObject:array options:0 error:nil];
     DSLogPrivate(@"json where %@", [[NSString alloc] initWithData:json encoding:NSUTF8StringEncoding]);
     DSLogPrivate(@"cbor hex %@", [[self whereClauseArray] ds_cborEncodedObject].hexString);
     return [[self whereClauseArray] ds_cborEncodedObject];
+}
+
+- (NSData *)secondaryIndexPathForQueryType:(DSPlatformQueryType)queryType {
+    //ToDo: We probably need to not have the last element of the whereClause
+    NSArray *array = [self whereClauseArrayWithOptions:NSPredicateCBORDataOptions_DataToBase64];
+    //This will be replaced
+    switch (queryType) {
+        case DSPlatformQueryType_OneElement:
+            return [[array componentsJoinedByString:@"|"] dataUsingEncoding:NSUTF8StringEncoding];
+        case DSPlatformQueryType_IndividualElements:
+            return [[array componentsJoinedByString:@"|"] dataUsingEncoding:NSUTF8StringEncoding];
+        case DSPlatformQueryType_RangeOverValue:
+            return [[array componentsJoinedByString:@"|"] dataUsingEncoding:NSUTF8StringEncoding];
+        case DSPlatformQueryType_RangeOverIndex:
+            return [[array componentsJoinedByString:@"|"] dataUsingEncoding:NSUTF8StringEncoding];
+    }
 }
 
 @end

@@ -24,21 +24,21 @@
 
 #import "DSTransaction.h"
 #import "DSTransactionEntity+CoreDataClass.h"
+#import "DSTransactionInput.h"
 #import "DSTxInputEntity+CoreDataClass.h"
 #import "DSTxOutputEntity+CoreDataClass.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 
 @implementation DSTxInputEntity
 
 - (instancetype)setAttributesFromTransaction:(DSTransaction *)tx inputIndex:(NSUInteger)index forTransactionEntity:(DSTransactionEntity *)transactionEntity {
-    UInt256 hash = UINT256_ZERO;
-
-    [tx.inputHashes[index] getValue:&hash];
+    DSTransactionInput *input = tx.inputs[index];
+    UInt256 hash = input.inputHash;
     self.txHash = [NSData dataWithBytes:&hash length:sizeof(hash)];
-    self.n = [tx.inputIndexes[index] intValue];
-    self.signature = (tx.inputSignatures[index] != [NSNull null]) ? tx.inputSignatures[index] : nil;
-    self.sequence = [tx.inputSequences[index] intValue];
+    self.n = input.index;
+    self.signature = input.signature;
+    self.sequence = input.sequence;
     self.transaction = transactionEntity;
     DSTxOutputEntity *outputEntity = [DSTxOutputEntity objectsInContext:transactionEntity.managedObjectContext matching:@"txHash == %@ && n == %d", self.txHash, self.n].lastObject;
     self.localAddress = outputEntity.localAddress;

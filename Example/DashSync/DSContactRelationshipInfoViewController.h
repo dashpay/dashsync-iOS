@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) DSFriendRequestEntity *incomingFriendRequest;
 @property (strong, nonatomic) DSFriendRequestEntity *outgoingFriendRequest;
 
+@property (strong, nonatomic) IBOutlet UILabel *userIdentifier;
+
 @property (strong, nonatomic) IBOutlet UILabel *outgoingExtendedPublicKeyLabel;
 @property (strong, nonatomic) IBOutlet UILabel *incomingExtendedPublicKeyLabel;
 

@@ -28,7 +28,8 @@
 
 #import "DSBloomFilter.h"
 #import "DSTransaction.h"
-#import "NSData+Bitcoin.h"
+#import "DSTransactionOutput.h"
+#import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 
 #define BLOOM_MAX_HASH_FUNCS 50
@@ -157,8 +158,8 @@ static uint32_t murmur3_32(const void *data, size_t len, uint32_t seed) {
 - (void)updateWithTransaction:(DSTransaction *)tx {
     NSMutableData *d = [NSMutableData data];
     int n = 0;
-
-    for (NSData *script in tx.outputScripts) {
+    for (DSTransactionOutput *output in tx.outputs) {
+        NSData *script = output.outScript;
         for (NSData *elem in [script scriptElements]) {
             if ([elem intValue] > OP_PUSHDATA4 || [elem intValue] == 0 || ![self containsData:elem]) continue;
             d.length = 0;

@@ -29,8 +29,9 @@
 #import "DSTransaction.h"
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
+#import "DSTransactionOutput.h"
 #import "DSTxOutputEntity+CoreDataClass.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 
 @implementation DSTxOutputEntity
@@ -40,9 +41,10 @@
 
     self.txHash = [NSData dataWithBytes:&txHash length:sizeof(txHash)];
     self.n = (int32_t)index;
-    self.address = (transaction.outputAddresses[index] == [NSNull null]) ? nil : transaction.outputAddresses[index];
-    self.script = transaction.outputScripts[index];
-    self.value = [transaction.outputAmounts[index] longLongValue];
+    DSTransactionOutput *output = transaction.outputs[index];
+    self.address = output.address;
+    self.script = output.outScript;
+    self.value = output.amount;
     self.shapeshiftOutboundAddress = [DSTransaction shapeshiftOutboundAddressForScript:self.script onChain:transaction.chain];
     self.transaction = transactionEntity;
     if (self.address) {

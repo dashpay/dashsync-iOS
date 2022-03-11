@@ -11,7 +11,7 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-@class DSWallet, DSBlockchainIdentityRegistrationTransition, DSBlockchainIdentityTopupTransition, DSBlockchainIdentityUpdateTransition, DSBlockchainIdentityCloseTransition, DSAccount, DSChain, DSTransition, DSDashpayUserEntity, DSPotentialOneWayFriendship, DSTransaction, DSFriendRequestEntity, DSPotentialContact, DSCreditFundingTransaction, DSDocumentTransition, DSKey, DPDocumentFactory, DSTransientDashpayUser, DSBlockchainInvitation, DSAuthenticationKeysDerivationPath;
+@class DSWallet, DSBlockchainIdentityRegistrationTransition, DSBlockchainIdentityTopupTransition, DSBlockchainIdentityUpdateTransition, DSBlockchainIdentityCloseTransition, DSAccount, DSChain, DSTransition, DSDashpayUserEntity, DSPotentialOneWayFriendship, DSTransaction, DSFriendRequestEntity, DSPotentialContact, DSCreditFundingTransaction, DSDocumentTransition, DSKey, DPDocumentFactory, DSTransientDashpayUser, DSBlockchainInvitation, DSAuthenticationKeysDerivationPath, UIImage;
 
 typedef NS_ENUM(NSUInteger, DSBlockchainIdentityRegistrationStep)
 {
@@ -39,12 +39,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityMonitorOptions)
 
 typedef NS_ENUM(NSUInteger, DSBlockchainIdentityQueryStep)
 {
-    DSBlockchainIdentityQueryStep_None = DSBlockchainIdentityRegistrationStep_None, //0
-    DSBlockchainIdentityQueryStep_Identity = DSBlockchainIdentityRegistrationStep_Identity,
-    DSBlockchainIdentityQueryStep_Username = DSBlockchainIdentityRegistrationStep_Username,
-    DSBlockchainIdentityQueryStep_Profile = DSBlockchainIdentityRegistrationStep_Profile,
-    DSBlockchainIdentityQueryStep_IncomingContactRequests = 64,
-    DSBlockchainIdentityQueryStep_OutgoingContactRequests = 128,
+    DSBlockchainIdentityQueryStep_None = DSBlockchainIdentityRegistrationStep_None,         //0
+    DSBlockchainIdentityQueryStep_Identity = DSBlockchainIdentityRegistrationStep_Identity, //16
+    DSBlockchainIdentityQueryStep_Username = DSBlockchainIdentityRegistrationStep_Username, //32
+    DSBlockchainIdentityQueryStep_Profile = DSBlockchainIdentityRegistrationStep_Profile,   //64
+    DSBlockchainIdentityQueryStep_IncomingContactRequests = 128,
+    DSBlockchainIdentityQueryStep_OutgoingContactRequests = 256,
     DSBlockchainIdentityQueryStep_ContactRequests = DSBlockchainIdentityQueryStep_IncomingContactRequests | DSBlockchainIdentityQueryStep_OutgoingContactRequests,
     DSBlockchainIdentityQueryStep_AllForForeignBlockchainIdentity = DSBlockchainIdentityQueryStep_Identity | DSBlockchainIdentityQueryStep_Username | DSBlockchainIdentityQueryStep_Profile,
     DSBlockchainIdentityQueryStep_AllForLocalBlockchainIdentity = DSBlockchainIdentityQueryStep_Identity | DSBlockchainIdentityQueryStep_Username | DSBlockchainIdentityQueryStep_Profile | DSBlockchainIdentityQueryStep_ContactRequests,
@@ -188,6 +188,10 @@ FOUNDATION_EXPORT NSString *const DSBlockchainIdentityUpdateEventDashpaySyncroni
     @discussion There are situations where this is nil as it is not yet known ; if the blockchain identity is being retrieved from L2 or if we are resyncing the chain. */
 @property (nullable, nonatomic, readonly) DSCreditFundingTransaction *registrationCreditFundingTransaction;
 
+/*! @brief This is the hash of the transaction on L1 that has an output that is used to fund the creation of this blockchain identity.
+    @discussion There are situations where this is nil as it is not yet known ; if the blockchain identity is being retrieved from L2 or if we are resyncing the chain. */
+@property (nonatomic, readonly) UInt256 registrationCreditFundingTransactionHash;
+
 /*! @brief In our system a contact is a vue on a blockchain identity for Dashpay. A blockchain identity is therefore represented by a contact that will have relationships in the system. This is in the default backgroundContext. */
 @property (nonatomic, readonly) DSDashpayUserEntity *matchingDashpayUserInViewContext;
 
@@ -239,6 +243,8 @@ FOUNDATION_EXPORT NSString *const DSBlockchainIdentityUpdateEventDashpaySyncroni
 - (void)signStateTransition:(DSTransition *)transition completion:(void (^_Nullable)(BOOL success))completion;
 
 - (void)signStateTransition:(DSTransition *)transition forKeyIndex:(uint32_t)keyIndex ofType:(DSKeyType)signingAlgorithm completion:(void (^_Nullable)(BOOL success))completion;
+
+- (void)signMessageDigest:(UInt256)digest forKeyIndex:(uint32_t)keyIndex ofType:(DSKeyType)signingAlgorithm completion:(void (^_Nullable)(BOOL success, NSData *signature))completion;
 
 - (BOOL)verifySignature:(NSData *)signature forKeyIndex:(uint32_t)keyIndex ofType:(DSKeyType)signingAlgorithm forMessageDigest:(UInt256)messageDigest;
 
@@ -316,6 +322,12 @@ FOUNDATION_EXPORT NSString *const DSBlockchainIdentityUpdateEventDashpaySyncroni
 
 /*! @brief This is a helper to easily get the public message of the matching dashpay user. */
 @property (nonatomic, readonly, nullable) NSString *publicMessage;
+
+/*! @brief This is a helper to easily get the last time the profile was updated of the matching dashpay user. */
+@property (nonatomic, assign) uint64_t dashpayProfileUpdatedAt;
+
+/*! @brief This is a helper to easily get the creation time of the profile of the matching dashpay user. */
+@property (nonatomic, assign) uint64_t dashpayProfileCreatedAt;
 
 - (void)sendNewFriendRequestToBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity completion:(void (^)(BOOL success, NSArray<NSError *> *_Nullable errors))completion;
 

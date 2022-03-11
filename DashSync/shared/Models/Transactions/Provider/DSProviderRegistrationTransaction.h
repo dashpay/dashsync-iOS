@@ -48,6 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)updateInputsHash;
 
 - (BOOL)checkPayloadSignature;
+- (NSUInteger)masternodeOutputIndex;
 
 @end
 

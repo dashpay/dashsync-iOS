@@ -534,11 +534,13 @@
 
 - (NSArray<DSBlockchainIdentity *> *)identitiesFromIdentityDictionaries:(NSArray<NSDictionary *> *)identityDictionaries keyIndexes:(NSDictionary *)keyIndexes forWallet:(DSWallet *)wallet {
     NSMutableArray *identities = [NSMutableArray array];
-    for (NSDictionary *identityDictionary in identityDictionaries) {
+    for (NSDictionary *versionedIdentityDictionary in identityDictionaries) {
+        NSNumber *version = [versionedIdentityDictionary objectForKey:@(DSPlatformStoredMessage_Version)];
+        NSDictionary *identityDictionary = [versionedIdentityDictionary objectForKey:@(DSPlatformStoredMessage_Item)];
         DSKey *key = [DSBlockchainIdentity firstKeyInIdentityDictionary:identityDictionary];
         NSNumber *index = [keyIndexes objectForKey:key.publicKeyData];
         if (index) {
-            DSBlockchainIdentity *blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index.intValue withIdentityDictionary:identityDictionary inWallet:wallet];
+            DSBlockchainIdentity *blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index.intValue withIdentityDictionary:identityDictionary version:[version intValue] inWallet:wallet];
             [identities addObject:blockchainIdentity];
         }
     }
@@ -577,12 +579,12 @@
     dispatch_async(self.identityQueue, ^{
         NSArray<DSWallet *> *wallets = self.chain.wallets;
         DSDAPIClient *client = self.chain.chainManager.DAPIClient;
-        NSMutableArray<NSData *> *keyHashes = [NSMutableArray array];
         __block dispatch_group_t dispatch_group = dispatch_group_create();
         __block NSMutableArray *errors = [NSMutableArray array];
         __block NSMutableArray *allIdentities = [NSMutableArray array];
 
         for (DSWallet *wallet in wallets) {
+            NSMutableArray<NSData *> *keyHashes = [NSMutableArray array];
             uint32_t unusedIndex = [wallet unusedBlockchainIdentityIndex];
             DSAuthenticationKeysDerivationPath *derivationPath = [DSBlockchainIdentity derivationPathForType:DSKeyType_ECDSA forWallet:wallet];
             const int keysToCheck = 5;

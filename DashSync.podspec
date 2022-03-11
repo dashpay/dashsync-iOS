@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   s.author           = { 'quantumexplorer' => 'quantum@dash.org' }
   s.source           = { :git => 'https://github.com/dashevo/dashsync-iOS.git', :tag => s.version.to_s }
 
-  s.ios.deployment_target = '12.0'
+  s.ios.deployment_target = '13.0'
   s.osx.deployment_target = '10.15'
   
   s.requires_arc = true
@@ -28,20 +28,20 @@ Pod::Spec.new do |s|
   s.macos.source_files = "DashSync/macOS/**/*.{h,m,mm}"
   s.macos.public_header_files = 'DashSync/macOS/**/*.h'
   s.private_header_files = 'DashSync/crypto/x11/*.h'
-  s.libraries = 'bz2', 'sqlite3'
+  s.libraries = 'resolv', 'bz2', 'sqlite3'
   s.resource_bundles = {'DashSync' => ['DashSync/shared/*.xcdatamodeld', 'DashSync/shared/MappingModels/*.xcmappingmodel', 'DashSync/shared/*.plist', 'DashSync/shared/*.lproj', 'DashSync/shared/MasternodeLists/*.dat', 'DashSync/shared/*.json']}
   
   s.framework = 'Foundation', 'SystemConfiguration', 'CoreData', 'BackgroundTasks', 'Security'
-  s.vendored_libraries = 'DashSync/lib/libmerkiOS.a'
   s.ios.framework = 'UIKit'
   s.macos.framework = 'Cocoa'
   s.compiler_flags = '-Wno-comma'
+  s.dependency 'DashSharedCore', '0.1.2'
   s.dependency 'secp256k1_dash', '0.1.4-alpha.2'
   s.dependency 'bls-signatures-pod', '0.2.11'
-  s.dependency 'CocoaLumberjack', '3.6.0'
+  s.dependency 'CocoaLumberjack', '3.7.2'
   s.ios.dependency 'DWAlertController', '0.2.1'
   s.dependency 'DSDynamicOptions', '0.1.2'
-  s.dependency 'DAPI-GRPC', '0.20.0-alpha.1'
+  s.dependency 'DAPI-GRPC', '0.21.0-dev.8'
   s.dependency 'TinyCborObjc', '0.4.6'
   s.prefix_header_contents = '#import "DSEnvironment.h"'
   

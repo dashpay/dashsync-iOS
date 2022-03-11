@@ -19,11 +19,14 @@
 
 
 #import "BigIntTypes.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
+#import "NSMutableData+Dash.h"
 #import <TinyCborObjc/NSObject+DSCborEncoding.h>
 
 
 @implementation DPBaseObject
+
+@synthesize chain = _chain;
 
 - (void)resetSerializedValues {
     _serialized = nil;
@@ -46,14 +49,20 @@
 
 - (NSData *)serialized {
     if (_serialized == nil) {
-        _serialized = [self.keyValueDictionary ds_cborEncodedObject];
+        NSMutableData *data = [NSMutableData data];
+        [data appendUInt32:self.chain.platformProtocolVersion];
+        [data appendData:[self.keyValueDictionary ds_cborEncodedObject]];
+        _serialized = [data copy];
     }
     return _serialized;
 }
 
 - (NSData *)serializedBaseData {
     if (_serializedBaseData == nil) {
-        _serializedBaseData = [self.baseKeyValueDictionary ds_cborEncodedObject];
+        NSMutableData *data = [NSMutableData data];
+        [data appendUInt32:self.chain.platformProtocolVersion];
+        [data appendData:[self.baseKeyValueDictionary ds_cborEncodedObject]];
+        _serializedBaseData = [data copy];
     }
     return _serializedBaseData;
 }

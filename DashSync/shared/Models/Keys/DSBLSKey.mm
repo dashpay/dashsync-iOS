@@ -9,7 +9,7 @@
 #import "DSChain.h"
 #import "DSDerivationPath.h"
 #import "DSKey+Protected.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSData+Encryption.h"
 #import "NSIndexPath+Dash.h"
 #import "NSMutableData+Dash.h"
@@ -367,6 +367,17 @@
     UInt768 signature = UINT768_ZERO;
     blsSignature.Serialize(signature.u8);
     return signature;
+}
+
+- (void)signMessageDigest:(UInt256)digest completion:(void (^_Nullable)(BOOL success, NSData *signature))completion {
+    NSParameterAssert(completion);
+    NSData *signatureData = nil;
+    UInt768 signature = [self signDigest:digest];
+    BOOL success = uint768_is_not_zero(signature);
+    if (success) {
+        signatureData = uint768_data(signature);
+    }
+    completion(success, signatureData);
 }
 
 // MARK: - HMAC

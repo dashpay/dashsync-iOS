@@ -14,8 +14,9 @@
 #import "DSProviderRegistrationTransactionEntity+CoreDataClass.h"
 #import "DSProviderUpdateServiceTransactionEntity+CoreDataClass.h"
 #import "DSTransactionFactory.h"
+#import "DSTransactionInput.h"
 #import "DSTransactionManager.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 #import "NSString+Dash.h"
@@ -163,17 +164,20 @@
 }
 
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex {
-    NSMutableData *data = [[super toDataWithSubscriptIndex:subscriptIndex] mutableCopy];
-    [data appendVarInt:self.payloadData.length];
-    [data appendData:[self payloadData]];
-    if (subscriptIndex != NSNotFound) [data appendUInt32:SIGHASH_ALL];
-    return data;
+    @synchronized(self) {
+        NSMutableData *data = [[super toDataWithSubscriptIndex:subscriptIndex] mutableCopy];
+        [data appendCountedData:[self payloadData]];
+        if (subscriptIndex != NSNotFound) [data appendUInt32:SIGHASH_ALL];
+        return data;
+    }
 }
 
 
 - (size_t)size {
-    if (uint256_is_not_zero(self.txHash)) return self.data.length;
-    return [super size] + [NSMutableData sizeOfVarInt:self.payloadData.length] + ([self basePayloadData].length + 96);
+    @synchronized(self) {
+        if (uint256_is_not_zero(self.txHash)) return self.data.length;
+        return [super size] + [NSMutableData sizeOfVarInt:self.payloadData.length] + ([self basePayloadData].length + 96);
+    }
 }
 
 - (Class)entityClass {
@@ -182,12 +186,9 @@
 
 - (void)updateInputsHash {
     NSMutableData *data = [NSMutableData data];
-    for (NSUInteger i = 0; i < self.inputHashes.count; i++) {
-        UInt256 hash = UINT256_ZERO;
-        NSValue *inputHash = self.inputHashes[i];
-        [inputHash getValue:&hash];
-        [data appendUInt256:hash];
-        [data appendUInt32:[self.inputIndexes[i] unsignedIntValue]];
+    for (DSTransactionInput *input in self.inputs) {
+        [data appendUInt256:input.inputHash];
+        [data appendUInt32:input.index];
     }
     self.inputsHash = [data SHA256_2];
 }

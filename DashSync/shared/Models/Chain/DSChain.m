@@ -74,10 +74,12 @@
 #import "DSTransaction.h"
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataProperties.h"
+#import "DSTransactionInput.h"
+#import "DSTransactionOutput.h"
 #import "DSTransition.h"
 #import "DSWallet+Protected.h"
 #import "NSCoder+Dash.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+DSHash.h"
 #import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"
@@ -91,6 +93,13 @@
 
 #define PROTOCOL_VERSION_LOCATION @"PROTOCOL_VERSION_LOCATION"
 #define DEFAULT_MIN_PROTOCOL_VERSION_LOCATION @"MIN_PROTOCOL_VERSION_LOCATION"
+
+#define PLATFORM_PROTOCOL_VERSION_LOCATION @"PLATFORM_PROTOCOL_VERSION_LOCATION"
+#define PLATFORM_DEFAULT_MIN_PROTOCOL_VERSION_LOCATION @"PLATFORM_MIN_PROTOCOL_VERSION_LOCATION"
+
+#define ISLOCK_QUORUM_TYPE @"ISLOCK_QUORUM_TYPE"
+#define CHAINLOCK_QUORUM_TYPE @"CHAINLOCK_QUORUM_TYPE"
+#define PLATFORM_QUORUM_TYPE @"PLATFORM_QUORUM_TYPE"
 
 #define STANDARD_PORT_LOCATION @"STANDARD_PORT_LOCATION"
 #define JRPC_PORT_LOCATION @"JRPC_PORT_LOCATION"
@@ -241,7 +250,7 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
     return self;
 }
 
-- (instancetype)initAsDevnetWithIdentifier:(NSString *)identifier checkpoints:(NSArray<DSCheckpoint *> *)checkpoints minimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks port:(uint32_t)port dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID isTransient:(BOOL)isTransient {
+- (instancetype)initAsDevnetWithIdentifier:(NSString *)identifier checkpoints:(NSArray<DSCheckpoint *> *)checkpoints minimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks port:(uint32_t)port dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID instantSendLockQuorumType:(DSLLMQType)instantSendLockQuorumsType chainLockQuorumType:(DSLLMQType)chainLockQuorumsType platformQuorumType:(DSLLMQType)platformQuorumType isTransient:(BOOL)isTransient {
     //for devnet the genesis checkpoint is really the second block
     if (!(self = [self initAsDevnetWithIdentifier:identifier checkpoints:checkpoints])) return nil;
     self.standardPort = port;
@@ -251,6 +260,9 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
     self.dashpayContractID = dashpayContractID;
     self.minimumDifficultyBlocks = minimumDifficultyBlocks;
     self.transient = isTransient;
+    self.quorumTypeForISLocks = instantSendLockQuorumsType;
+    self.quorumTypeForChainLocks = chainLockQuorumsType;
+    self.quorumTypeForPlatform = platformQuorumType;
     return self;
 }
 
@@ -351,7 +363,7 @@ static dispatch_once_t devnetToken = 0;
     return devnetChain;
 }
 
-+ (DSChain *)setUpDevnetWithIdentifier:(NSString *)identifier withCheckpoints:(NSArray<DSCheckpoint *> *)checkpointArray withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID isTransient:(BOOL)isTransient {
++ (DSChain *)setUpDevnetWithIdentifier:(NSString *)identifier withCheckpoints:(NSArray<DSCheckpoint *> *)checkpointArray withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID instantSendLockQuorumType:(DSLLMQType)instantSendLockQuorumsType chainLockQuorumType:(DSLLMQType)chainLockQuorumsType platformQuorumType:(DSLLMQType)platformQuorumType isTransient:(BOOL)isTransient {
     dispatch_once(&devnetToken, ^{
         _devnetDictionary = [NSMutableDictionary dictionary];
     });
@@ -359,7 +371,7 @@ static dispatch_once_t devnetToken = 0;
     __block BOOL inSetUp = FALSE;
     @synchronized(self) {
         if (![_devnetDictionary objectForKey:identifier]) {
-            devnetChain = [[DSChain alloc] initAsDevnetWithIdentifier:identifier checkpoints:checkpointArray minimumDifficultyBlocks:minimumDifficultyBlocks port:port dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID isTransient:isTransient];
+            devnetChain = [[DSChain alloc] initAsDevnetWithIdentifier:identifier checkpoints:checkpointArray minimumDifficultyBlocks:minimumDifficultyBlocks port:port dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID instantSendLockQuorumType:instantSendLockQuorumsType chainLockQuorumType:chainLockQuorumsType platformQuorumType:platformQuorumType isTransient:isTransient];
             _devnetDictionary[identifier] = devnetChain;
             inSetUp = TRUE;
         } else {
@@ -498,9 +510,7 @@ static dispatch_once_t devnetToken = 0;
 
 - (UInt256)blockHashForDevNetGenesisBlockWithVersion:(uint32_t)version prevHash:(UInt256)prevHash merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce {
     NSMutableData *d = [NSMutableData data];
-
     [d appendUInt32:version];
-
     [d appendBytes:&prevHash length:sizeof(prevHash)];
     [d appendBytes:&merkleRoot length:sizeof(merkleRoot)];
     [d appendUInt32:timestamp];
@@ -563,7 +573,9 @@ static dispatch_once_t devnetToken = 0;
 }
 
 - (BOOL)isEvolutionEnabled {
-    return [self isDevnetAny] || [self isTestnet];
+    //return [self isDevnetAny] || [self isTestnet];
+    // Switch it off for release purposes
+    return false;
 }
 
 - (BOOL)isDevnetWithGenesisHash:(UInt256)genesisHash {
@@ -651,7 +663,12 @@ static dispatch_once_t devnetToken = 0;
 // MARK: Local Parameters
 
 - (NSArray<DSDerivationPath *> *)standardDerivationPathsForAccountNumber:(uint32_t)accountNumber {
-    return @[[DSFundsDerivationPath bip32DerivationPathForAccountNumber:accountNumber onChain:self], [DSFundsDerivationPath bip44DerivationPathForAccountNumber:accountNumber onChain:self], [DSDerivationPath masterBlockchainIdentityContactsDerivationPathForAccountNumber:accountNumber onChain:self]];
+    if (accountNumber == 0) {
+        return @[[DSFundsDerivationPath bip32DerivationPathForAccountNumber:accountNumber onChain:self], [DSFundsDerivationPath bip44DerivationPathForAccountNumber:accountNumber onChain:self], [DSDerivationPath masterBlockchainIdentityContactsDerivationPathForAccountNumber:accountNumber onChain:self]];
+    } else {
+        //don't include BIP32 derivation path on higher accounts
+        return @[[DSFundsDerivationPath bip44DerivationPathForAccountNumber:accountNumber onChain:self], [DSDerivationPath masterBlockchainIdentityContactsDerivationPathForAccountNumber:accountNumber onChain:self]];
+    }
 }
 
 - (uint16_t)transactionVersion {
@@ -752,6 +769,99 @@ static dispatch_once_t devnetToken = 0;
     }
 }
 
+- (DSLLMQType)quorumTypeForISLocks {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return DSLLMQType_50_60;
+        case DSChainType_TestNet:
+            return DSLLMQType_50_60;
+        case DSChainType_DevNet: {
+            NSError *error = nil;
+            DSLLMQType quorumType = (DSLLMQType)getKeychainInt([NSString stringWithFormat:@"%@%@", self.devnetIdentifier, ISLOCK_QUORUM_TYPE], &error);
+            if (!error && quorumType)
+                return quorumType;
+            else
+                return DSLLMQType_10_60;
+        }
+    }
+}
+
+- (void)setQuorumTypeForISLocks:(DSLLMQType)quorumTypeForISLocks {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return;
+        case DSChainType_TestNet:
+            return;
+        case DSChainType_DevNet: {
+            setKeychainInt(quorumTypeForISLocks, [NSString stringWithFormat:@"%@%@", self.devnetIdentifier, ISLOCK_QUORUM_TYPE], NO);
+            break;
+        }
+    }
+}
+
+- (DSLLMQType)quorumTypeForChainLocks {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return DSLLMQType_400_60;
+        case DSChainType_TestNet:
+            return DSLLMQType_50_60;
+        case DSChainType_DevNet: {
+            NSError *error = nil;
+            DSLLMQType quorumType = (DSLLMQType)getKeychainInt([NSString stringWithFormat:@"%@%@", self.devnetIdentifier, CHAINLOCK_QUORUM_TYPE], &error);
+            if (!error && quorumType)
+                return quorumType;
+            else
+                return DSLLMQType_10_60;
+        }
+    }
+}
+
+- (void)setQuorumTypeForChainLocks:(DSLLMQType)quorumTypeForChainLocks {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return;
+        case DSChainType_TestNet:
+            return;
+        case DSChainType_DevNet: {
+            setKeychainInt(quorumTypeForChainLocks, [NSString stringWithFormat:@"%@%@", self.devnetIdentifier, CHAINLOCK_QUORUM_TYPE], NO);
+            break;
+        }
+    }
+}
+
+- (DSLLMQType)quorumTypeForPlatform {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return DSLLMQType_100_67;
+        case DSChainType_TestNet:
+            return DSLLMQType_100_67;
+        case DSChainType_DevNet: {
+            NSError *error = nil;
+            DSLLMQType quorumType = (DSLLMQType)getKeychainInt([NSString stringWithFormat:@"%@%@", self.devnetIdentifier, PLATFORM_QUORUM_TYPE], &error);
+            if (!error && quorumType)
+                return quorumType;
+            else
+                return DSLLMQType_10_60;
+        }
+    }
+}
+
+- (void)setQuorumTypeForPlatform:(DSLLMQType)quorumTypeForPlatform {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return;
+        case DSChainType_TestNet:
+            return;
+        case DSChainType_DevNet: {
+            setKeychainInt(quorumTypeForPlatform, [NSString stringWithFormat:@"%@%@", self.devnetIdentifier, PLATFORM_QUORUM_TYPE], NO);
+            break;
+        }
+    }
+}
+
+- (BOOL)shouldProcessQuorumOfType:(DSLLMQType)llmqType {
+    return self.quorumTypeForChainLocks == llmqType || self.quorumTypeForISLocks == llmqType || self.quorumTypeForPlatform == llmqType;
+}
 
 - (uint32_t)minProtocolVersion {
     if (_cachedMinProtocolVersion) return _cachedMinProtocolVersion;
@@ -1041,6 +1151,36 @@ static dispatch_once_t devnetToken = 0;
 
 // MARK: - L2 Chain Parameters
 
+- (uint32_t)platformProtocolVersion {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return PLATFORM_PROTOCOL_VERSION_MAINNET; //(70216 + (self.headersMaxAmount / 2000));
+        case DSChainType_TestNet:
+            return PLATFORM_PROTOCOL_VERSION_TESTNET;
+        case DSChainType_DevNet: {
+            NSError *error = nil;
+            uint32_t platformProtocolVersion = (uint32_t)getKeychainInt([NSString stringWithFormat:@"%@%@", self.devnetIdentifier, PLATFORM_PROTOCOL_VERSION_LOCATION], &error);
+            if (!error && platformProtocolVersion)
+                return platformProtocolVersion;
+            else
+                return PLATFORM_PROTOCOL_VERSION_DEVNET;
+        }
+    }
+}
+
+- (void)setPlatformProtocolVersion:(uint32_t)platformProtocolVersion {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return;
+        case DSChainType_TestNet:
+            return;
+        case DSChainType_DevNet: {
+            setKeychainInt(platformProtocolVersion, [NSString stringWithFormat:@"%@%@", self.devnetIdentifier, PLATFORM_PROTOCOL_VERSION_LOCATION], NO);
+            break;
+        }
+    }
+}
+
 - (UInt256)dpnsContractID {
     if (uint256_is_not_zero(_cachedDpnsContractID)) return _cachedDpnsContractID;
     switch ([self chainType]) {
@@ -1278,8 +1418,8 @@ static dispatch_once_t devnetToken = 0;
         // every time a new wallet address is added, the bloom filter has to be rebuilt, and each address is only used for
         // one transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a wallet
         // transaction is encountered during the blockchain download
-        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL dashpayGapLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INITIAL internal:NO error:nil];
-        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL dashpayGapLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INITIAL internal:YES error:nil];
+        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL unusedAccountGapLimit:SEQUENCE_UNUSED_GAP_LIMIT_INITIAL dashpayGapLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INITIAL internal:NO error:nil];
+        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL unusedAccountGapLimit:SEQUENCE_UNUSED_GAP_LIMIT_INITIAL dashpayGapLimit:SEQUENCE_DASHPAY_GAP_LIMIT_INITIAL internal:YES error:nil];
         NSSet *addresses = [wallet.allReceiveAddresses setByAddingObjectsFromSet:wallet.allChangeAddresses];
         [allAddresses addObjectsFromArray:[addresses allObjects]];
         [allUTXOs addObjectsFromArray:wallet.unspentOutputs];
@@ -1317,13 +1457,10 @@ static dispatch_once_t devnetToken = 0;
 
             i = 0;
 
-            for (NSValue *hash in tx.inputHashes) {
-                [hash getValue:&o.hash];
-                o.n = [tx.inputIndexes[i++] unsignedIntValue];
-
+            for (DSTransactionInput *input in tx.inputs) {
+                o = (DSUTXO){input.inputHash, input.index};
                 DSTransaction *t = [wallet transactionForHash:o.hash];
-
-                if (o.n < t.outputAddresses.count && [wallet containsAddress:t.outputAddresses[o.n]]) {
+                if (o.n < t.outputs.count && [wallet containsAddress:t.outputs[o.n].address]) {
                     [inputs addObject:dsutxo_data(o)];
                     elemCount++;
                 }
@@ -3463,8 +3600,10 @@ static dispatch_once_t devnetToken = 0;
 
 - (DSWallet *_Nullable)walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:(DSProviderRegistrationTransaction *_Nonnull)transaction foundAtIndex:(uint32_t *)rIndex {
     for (DSWallet *wallet in self.wallets) {
-        for (NSString *outputAddresses in transaction.outputAddresses) {
-            NSUInteger index = [wallet indexOfHoldingAddress:outputAddresses];
+        for (DSTransactionOutput *output in transaction.outputs) {
+            NSString *address = output.address;
+            if (!address || address == (id)[NSNull null]) continue;
+            NSUInteger index = [wallet indexOfHoldingAddress:address];
             if (index != NSNotFound) {
                 if (rIndex) *rIndex = (uint32_t)index;
                 return wallet;

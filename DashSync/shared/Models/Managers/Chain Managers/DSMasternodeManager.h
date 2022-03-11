@@ -59,8 +59,7 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 @property (nonatomic, readonly) BOOL currentMasternodeListIsInLast24Hours;
 
 - (instancetype)init NS_UNAVAILABLE;
-
-//-(void)addMasternodePrivateKey:(NSString*)privateKey atAddress:(NSString*)address;
+- (uint32_t)heightForBlockHash:(UInt256)blockhash;
 
 - (DSSimplifiedMasternodeEntry *)masternodeHavingProviderRegistrationTransactionHash:(NSData *)providerRegistrationTransactionHash;
 
@@ -88,6 +87,8 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 
 - (DSQuorumEntry *_Nullable)quorumEntryForChainLockRequestID:(UInt256)requestID forBlockHeight:(uint32_t)blockHeight;
 
+- (DSQuorumEntry *_Nullable)quorumEntryForPlatformHavingQuorumHash:(UInt256)quorumHash forBlockHeight:(uint32_t)blockHeight;
+
 - (DSMasternodeList *_Nullable)masternodeListForBlockHash:(UInt256)blockHash withBlockHeightLookup:(uint32_t (^_Nullable)(UInt256 blockHash))blockHeightLookup;
 
 - (DSMasternodeList *_Nullable)masternodeListForBlockHash:(UInt256)blockHash;
@@ -101,14 +102,6 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 - (void)reloadMasternodeListsWithBlockHeightLookup:(uint32_t (^_Nullable)(UInt256 blockHash))blockHeightLookup;
 
 - (void)checkPingTimesForCurrentMasternodeListInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(NSMutableDictionary<NSData *, NSNumber *> *pingTimes, NSMutableDictionary<NSData *, NSError *> *errors))completion;
-
-@end
-
-@protocol DSMasternodeManagerDelegate
-
-@required
-
-- (void)chain:(DSChain *)chain changedCurrentMasternodeList:(DSMasternodeList *)masternodeList fromPeer:(DSPeer *)peer;
 
 @end
 

@@ -11,6 +11,7 @@
 #import "DSKeyValueTableViewCell.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "DSSignPayloadViewController.h"
+#import "DSTransactionOutput.h"
 #import "DSWalletChooserTableViewCell.h"
 #include <arpa/inet.h>
 
@@ -167,9 +168,8 @@
                                                         [[DSInsightManager sharedInstance] queryInsightForTransactionWithHash:nonReversedCollateralHash
                                                                                                                       onChain:self.chain
                                                                                                                    completion:^(DSTransaction *transaction, NSError *error) {
-                                                                                                                       NSIndexSet *indexSet = [[transaction outputAmounts] indexesOfObjectsPassingTest:^BOOL(id _Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
-                                                                                                                           if ([obj isEqual:@(MASTERNODE_COST)]) return TRUE;
-                                                                                                                           return FALSE;
+                                                                                                                       NSIndexSet *indexSet = [[transaction outputs] indexesOfObjectsPassingTest:^BOOL(DSTransactionOutput *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
+                                                                                                                           return obj.amount == MASTERNODE_COST;
                                                                                                                        }];
                                                                                                                        if ([indexSet containsIndex:collateral.n]) {
                                                                                                                            self.collateralTransaction = transaction;
@@ -231,7 +231,7 @@
         chooseWalletSegue.delegate = self;
     } else if ([segue.identifier isEqualToString:@"PayloadSigningSegue"]) {
         DSSignPayloadViewController *signPayloadSegue = (DSSignPayloadViewController *)segue.destinationViewController;
-        signPayloadSegue.collateralAddress = self.collateralTransaction.outputAddresses[self.providerRegistrationTransaction.collateralOutpoint.n];
+        signPayloadSegue.collateralAddress = self.collateralTransaction.outputs[self.providerRegistrationTransaction.collateralOutpoint.n].address;
         signPayloadSegue.providerRegistrationTransaction = self.providerRegistrationTransaction;
         signPayloadSegue.delegate = self;
     }

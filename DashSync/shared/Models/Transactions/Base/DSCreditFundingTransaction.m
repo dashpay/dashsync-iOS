@@ -22,8 +22,9 @@
 #import "DSDerivationPathFactory.h"
 #import "DSInstantSendTransactionLock.h"
 #import "DSTransaction+Protected.h"
+#import "DSTransactionOutput.h"
 #import "DSWallet.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 
 @implementation DSCreditFundingTransaction
 
@@ -34,8 +35,9 @@
 }
 
 - (DSUTXO)lockedOutpoint {
-    for (int i = 0; i < self.outputScripts.count; i++) {
-        NSData *script = self.outputScripts[i];
+    for (int i = 0; i < self.outputs.count; i++) {
+        DSTransactionOutput *output = self.outputs[i];
+        NSData *script = output.outScript;
         if ([script UInt8AtOffset:0] == OP_RETURN && script.length == 22) {
             DSUTXO outpoint = {.hash = uint256_reverse(self.txHash), .n = i}; //!OCLINT
             return outpoint;
@@ -45,7 +47,8 @@
 }
 
 - (UInt160)creditBurnPublicKeyHash {
-    for (NSData *script in self.outputScripts) {
+    for (DSTransactionOutput *output in self.outputs) {
+        NSData *script = output.outScript;
         if ([script UInt8AtOffset:0] == OP_RETURN && script.length == 22) {
             return [script subdataWithRange:NSMakeRange(2, 20)].UInt160;
         }

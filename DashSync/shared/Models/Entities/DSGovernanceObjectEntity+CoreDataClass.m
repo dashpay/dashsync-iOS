@@ -10,7 +10,7 @@
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSGovernanceObjectEntity+CoreDataClass.h"
 #import "DSGovernanceObjectHashEntity+CoreDataClass.h"
-#import "NSData+Dash.h"
+#import "NSData+DSHash.h"
 #import "NSManagedObject+Sugar.h"
 
 @implementation DSGovernanceObjectEntity

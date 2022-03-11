@@ -375,3 +375,42 @@
 
 /* No comment provided by engineer. */
 "Error setting the external funding private key" = "Error setting the external funding private key";
+
+/* No comment provided by engineer. */
+"Error generating Identity keys" = "Error generating Identity keys";
+
+/* No comment provided by engineer. */
+"Identity has unknown keys" = "Identity has unknown keys";
+
+/* No comment provided by engineer. */
+"Platform returned an empty or wrongly sized signature" = "Platform returned an empty or wrongly sized signature";
+
+/* No comment provided by engineer. */
+"Platform returned an empty quorum hash" = "Platform returned an empty quorum hash";
+
+/* No comment provided by engineer. */
+"Platform returned an incorrect rootTreeProof" = "Platform returned an incorrect rootTreeProof";
+
+/* No comment provided by engineer. */
+"Platform returned an incorrect value as an identity ID" = "Platform returned an incorrect value as an identity ID";
+
+/* No comment provided by engineer. */
+"Platform returned no quorum hash data" = "Platform returned no quorum hash data";
+
+/* No comment provided by engineer. */
+"Platform returned no signature data" = "Platform returned no signature data";
+
+/* No comment provided by engineer. */
+"Quorum entry %@ found but is not yet verified" = "Quorum entry %@ found but is not yet verified";
+
+/* No comment provided by engineer. */
+"Platform returned no proof when we requested it" = "Platform returned no proof when we requested it";
+
+/* No comment provided by engineer. */
+"Platform returned a proof that does not satisfy our query" = "Platform returned a proof that does not satisfy our query";
+
+/* No comment provided by engineer. */
+"Platform returned no identity when one was expected" = "Platform returned no identity when one was expected";
+
+/* No comment provided by engineer. */
+"Platform returned a non valid proof for our query" = "Platform returned a non valid proof for our query";

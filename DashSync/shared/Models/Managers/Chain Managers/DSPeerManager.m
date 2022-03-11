@@ -50,7 +50,7 @@
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransactionManager+Protected.h"
 #import "DSWallet.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSDate+Utils.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSString+Bitcoin.h"
@@ -119,9 +119,10 @@
                                                           object:nil
                                                            queue:nil
                                                       usingBlock:^(NSNotification *note) {
-                                                          [self savePeers];
-                                                          [self.chain saveTerminalBlocks];
-
+                                                          dispatch_async(self.networkingQueue, ^{
+                                                              [self savePeers];
+                                                              [self.chain saveTerminalBlocks];
+                                                          });
                                                           if (self.terminalHeadersSaveTaskId == UIBackgroundTaskInvalid) {
                                                               self.misbehavingCount = 0;
                                                               dispatch_async(self.networkingQueue, ^{

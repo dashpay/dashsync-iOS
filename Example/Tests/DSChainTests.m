@@ -29,7 +29,7 @@
 #import "DSQuorumCommitmentTransaction.h"
 #import "DSWallet+Protected.h"
 #import "DashSync.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+DSHash.h"
 #import "NSData+Dash.h"
 #import "NSString+Dash.h"
 
@@ -43,7 +43,7 @@
 @implementation DSChainTests
 
 - (void)setUp {
-    self.chain = [DSChain setUpDevnetWithIdentifier:@"devnet-mobile-2" withCheckpoints:nil withMinimumDifficultyBlocks:UINT32_MAX withDefaultPort:3000 withDefaultDapiJRPCPort:3000 withDefaultDapiGRPCPort:3010 dpnsContractID:UINT256_ZERO dashpayContractID:UINT256_ZERO isTransient:YES];
+    self.chain = [DSChain setUpDevnetWithIdentifier:@"devnet-mobile-2" withCheckpoints:nil withMinimumDifficultyBlocks:UINT32_MAX withDefaultPort:3000 withDefaultDapiJRPCPort:3000 withDefaultDapiGRPCPort:3010 dpnsContractID:UINT256_ZERO dashpayContractID:UINT256_ZERO instantSendLockQuorumType:DSLLMQType_50_60 chainLockQuorumType:DSLLMQType_50_60 platformQuorumType:DSLLMQType_100_67 isTransient:YES];
     for (DSWallet *wallet in [self.chain.wallets copy]) {
         if ([wallet.transientDerivedKeyData isEqualToData:@"000102030405060708090a0b0c0d0e0f".hexToData]) {
             [self.chain unregisterWallet:wallet];

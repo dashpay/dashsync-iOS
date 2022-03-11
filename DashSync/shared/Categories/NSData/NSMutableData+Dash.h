@@ -46,6 +46,8 @@ CF_IMPLICIT_BRIDGING_DISABLED
 + (NSMutableData *)secureDataWithCapacity:(NSUInteger)capacity;
 + (NSMutableData *)secureDataWithData:(NSData *)data;
 
++ (NSMutableData *)withScriptPubKeyForAddress:(NSString *)address forChain:(DSChain *)chain;
+
 + (NSMutableString *)secureString;
 + (NSMutableString *)secureStringWithLength:(NSUInteger)length;
 
@@ -55,6 +57,7 @@ CF_IMPLICIT_BRIDGING_DISABLED
 - (NSMutableData *)appendUInt16:(uint16_t)i;
 - (NSMutableData *)appendUInt16BigEndian:(uint16_t)i;
 - (NSMutableData *)appendUInt32:(uint32_t)i;
+- (NSMutableData *)appendInt64:(int64_t)i;
 - (NSMutableData *)appendUInt64:(uint64_t)i;
 - (NSMutableData *)appendUInt128:(UInt128)i;
 - (NSMutableData *)appendUInt160:(UInt160)i;
@@ -65,6 +68,7 @@ CF_IMPLICIT_BRIDGING_DISABLED
 - (NSMutableData *)appendUTXO:(DSUTXO)utxo;
 - (NSMutableData *)appendVarInt:(uint64_t)i;
 - (NSMutableData *)appendString:(NSString *)s;
+- (NSMutableData *)appendCountedData:(NSData *)data;
 
 - (NSMutableData *)appendDevnetGenesisCoinbaseMessage:(NSString *)message;
 - (NSMutableData *)appendCoinbaseMessage:(NSString *)message atHeight:(uint32_t)height;

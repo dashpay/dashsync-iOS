@@ -19,7 +19,7 @@
 #import "DSPeer.h"
 #import "DSPeerManager.h"
 #import "DSSimplifiedMasternodeEntry.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+DSHash.h"
 #import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"

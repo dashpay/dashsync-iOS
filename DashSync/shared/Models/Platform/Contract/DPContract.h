@@ -47,8 +47,6 @@ typedef NS_ENUM(NSUInteger, DPContractState)
 @property (readonly, copy, nonatomic) NSString *jsonSchemaId;
 @property (readonly, copy, nonatomic) DSStringValueDictionary *objectDictionary;
 
-@property (readonly, nonatomic) DSChain *chain;
-
 @property (assign, nonatomic) NSInteger version;
 @property (copy, nonatomic) NSString *jsonMetaSchema;
 @property (copy, nonatomic) NSDictionary<NSString *, DSStringValueDictionary *> *documents;

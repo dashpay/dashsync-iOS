@@ -30,7 +30,7 @@
 #import "DSChain.h"
 #import "DSDerivationPath.h"
 #import "DSKey+Protected.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+DSHash.h"
 #import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
@@ -658,6 +658,13 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i) {
         sig = nil;
 
     return sig;
+}
+
+- (void)signMessageDigest:(UInt256)digest completion:(void (^_Nullable)(BOOL success, NSData *signature))completion {
+    NSParameterAssert(completion);
+    NSData *signatureData = [((DSECDSAKey *)self) compactSign:digest];
+    BOOL success = (signatureData != nil);
+    completion(success, signatureData);
 }
 
 - (DSKeyType)keyType {

@@ -13,7 +13,7 @@
 #import "DSPeerManager.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataClass.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+DSHash.h"
 #import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"
@@ -77,8 +77,7 @@
     [data appendUInt32:self.outcome];
     [data appendUInt32:self.signal];
     [data appendUInt64:self.createdAt];
-    [data appendVarInt:self.signature.length];
-    [data appendData:self.signature];
+    [data appendCountedData:self.signature];
     return [data copy];
 }
 

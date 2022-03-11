@@ -1,5 +1,5 @@
 //
-//  NSData+Bitcoin.h
+//  NSData+Dash.h
 //  DashSync
 //
 //  Created by Aaron Voisine for BreadWallet on 10/09/13.
@@ -155,7 +155,7 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 
 @class DSChain;
 
-@interface NSData (Bitcoin)
+@interface NSData (Dash)
 
 + (instancetype)dataWithLLMQ:(DSLLMQ)llmq;
 + (instancetype)dataWithUInt768:(UInt768)n;
@@ -167,6 +167,9 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 + (instancetype)dataWithUInt160Value:(NSValue *)value;
 + (instancetype)dataWithUInt128:(UInt128)n;
 + (instancetype)dataWithUInt64:(uint64_t)n;
++ (instancetype)dataWithUInt32:(uint32_t)n;
++ (instancetype)dataWithUInt16:(uint16_t)n;
++ (instancetype)dataWithUInt8:(uint8_t)n;
 + (instancetype)dataWithBase58String:(NSString *)b58str;
 + (NSData *)opReturnScript;
 
@@ -235,6 +238,8 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 - (BOOL)bitIsTrueAtLEIndex:(uint32_t)index;
 
 - (UInt256)HMACSHA256WithKey:(UInt256)secretKey;
+
++ (NSData *)dataFromHexString:(NSString *)string;
 
 @end
 

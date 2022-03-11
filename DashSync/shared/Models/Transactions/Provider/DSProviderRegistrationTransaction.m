@@ -12,7 +12,9 @@
 #import "DSMasternodeManager.h"
 #import "DSProviderRegistrationTransactionEntity+CoreDataClass.h"
 #import "DSTransactionFactory.h"
-#import "NSData+Bitcoin.h"
+#import "DSTransactionInput.h"
+#import "DSTransactionOutput.h"
+#import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Dash.h"
 #include <arpa/inet.h>
@@ -206,11 +208,12 @@
 }
 
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex {
-    NSMutableData *data = [[super toDataWithSubscriptIndex:subscriptIndex] mutableCopy];
-    [data appendVarInt:self.payloadData.length];
-    [data appendData:[self payloadData]];
-    if (subscriptIndex != NSNotFound) [data appendUInt32:SIGHASH_ALL];
-    return data;
+    @synchronized(self) {
+        NSMutableData *data = [[super toDataWithSubscriptIndex:subscriptIndex] mutableCopy];
+        [data appendCountedData:[self payloadData]];
+        if (subscriptIndex != NSNotFound) [data appendUInt32:SIGHASH_ALL];
+        return data;
+    }
 }
 
 
@@ -231,9 +234,9 @@
 }
 
 - (NSString *)holdingAddress {
-    if (uint256_is_zero(self.collateralOutpoint.hash) && [self.outputAmounts containsObject:@(MASTERNODE_COST)]) {
-        NSUInteger index = [self.outputAmounts indexOfObject:@(MASTERNODE_COST)];
-        return [self outputAddresses][index];
+    NSInteger index = [self masternodeOutputIndex];
+    if (uint256_is_zero(self.collateralOutpoint.hash) && index != NSNotFound) {
+        return [self outputs][index].address;
     } else {
         return nil;
     }
@@ -254,8 +257,10 @@
 }
 
 - (size_t)size {
-    if (uint256_is_not_zero(self.txHash)) return self.data.length;
-    return [super size] + [NSMutableData sizeOfVarInt:self.payloadData.length] + ([self basePayloadData].length + MAX_ECDSA_SIGNATURE_SIZE);
+    @synchronized(self) {
+        if (uint256_is_not_zero(self.txHash)) return self.data.length;
+        return [super size] + [NSMutableData sizeOfVarInt:self.payloadData.length] + ([self basePayloadData].length + MAX_ECDSA_SIGNATURE_SIZE);
+    }
 }
 
 - (Class)entityClass {
@@ -264,20 +269,19 @@
 
 - (void)updateInputsHash {
     NSMutableData *data = [NSMutableData data];
-    for (NSUInteger i = 0; i < self.inputHashes.count; i++) {
-        UInt256 hash = UINT256_ZERO;
-        NSValue *inputHash = self.inputHashes[i];
-        [inputHash getValue:&hash];
-        [data appendUInt256:hash];
-        [data appendUInt32:[self.inputIndexes[i] unsignedIntValue]];
+    for (DSTransactionInput *input in self.inputs) {
+        [data appendUInt256:input.inputHash];
+        [data appendUInt32:input.index];
     }
     self.inputsHash = [data SHA256_2];
 }
 
 - (void)hasSetInputsAndOutputs {
     [self updateInputsHash];
-    if (dsutxo_is_zero(self.collateralOutpoint) && [self.outputAmounts containsObject:@(MASTERNODE_COST)]) {
-        NSUInteger index = [self.outputAmounts indexOfObject:@(MASTERNODE_COST)];
+    if (dsutxo_is_zero(self.collateralOutpoint)) {
+        NSInteger index = [self masternodeOutputIndex];
+        if (index == NSNotFound)
+            return;
         self.collateralOutpoint = (DSUTXO){.hash = UINT256_ZERO, .n = index};
         self.payloadSignature = [NSData data];
     }
@@ -291,5 +295,11 @@
     return [self.chain walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:self foundAtIndex:nil];
 }
 
+- (NSUInteger)masternodeOutputIndex {
+    // What if a masternode's cost is equal to smth another?
+    return [self.outputs indexOfObjectPassingTest:^BOOL(DSTransactionOutput *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
+        return obj.amount == MASTERNODE_COST;
+    }];
+}
 
 @end

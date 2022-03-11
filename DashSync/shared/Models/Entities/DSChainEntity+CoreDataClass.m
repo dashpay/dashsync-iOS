@@ -28,7 +28,7 @@
 #import "DSCheckpoint.h"
 #import "DSCompatibilityArrayValueTransformer.h"
 #import "DSPeerManager.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSString+Dash.h"
 

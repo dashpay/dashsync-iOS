@@ -17,7 +17,7 @@
 
 #import "DSContactRequest.h"
 #import "DSBlockchainIdentity+Protected.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSData+Encryption.h"
 #import "NSString+Bitcoin.h"
 
@@ -92,6 +92,7 @@
 }
 
 - (NSData *)decryptedPublicKeyDataWithKey:(DSKey *)key {
+    NSParameterAssert(key);
     return [self.encryptedPublicKeyData decryptWithSecretKey:[self secretKeyForDecryptionOfType:key.keyType] fromPublicKey:key];
 }
 

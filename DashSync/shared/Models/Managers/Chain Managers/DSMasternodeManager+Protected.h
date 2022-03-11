@@ -23,6 +23,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+#import "DSMasternodeDiffMessageContext.h"
 #import "DSMasternodeManager.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -48,13 +49,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData *)masternodeDiffMessage;
 
 - (DSLocalMasternode *)localMasternodeFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry claimedWithOwnerWallet:(DSWallet *)wallet ownerKeyIndex:(uint32_t)ownerKeyIndex;
-
 - (void)processMasternodeDiffMessage:(NSData *)message baseMasternodeList:(DSMasternodeList *)baseMasternodeList lastBlock:(DSMerkleBlock *)lastBlock useInsightAsBackup:(BOOL)useInsightAsBackup completion:(void (^)(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *masternodeList, NSDictionary *addedMasternodes, NSDictionary *modifiedMasternodes, NSDictionary *addedQuorums, NSOrderedSet *neededMissingMasternodeLists))completion;
 
 + (void)saveMasternodeList:(DSMasternodeList *)masternodeList toChain:(DSChain *)chain havingModifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums createUnknownBlocks:(BOOL)createUnknownBlocks inContext:(NSManagedObjectContext *)context completion:(void (^)(NSError *error))completion;
 
-+ (void)processMasternodeDiffMessage:(NSData *)message baseMasternodeList:(DSMasternodeList *_Nullable)baseMasternodeList masternodeListLookup:(DSMasternodeList * (^)(UInt256 blockHash))masternodeListLookup lastBlock:(DSMerkleBlock *_Nullable)lastBlock useInsightAsBackup:(bool)useInsightAsBackup onChain:(DSChain *)chain blockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup completion:(void (^)(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *masternodeList, NSDictionary *addedMasternodes, NSDictionary *modifiedMasternodes, NSDictionary *addedQuorums, NSOrderedSet *neededMissingMasternodeLists))completion;
-
 @end
+
 
 NS_ASSUME_NONNULL_END

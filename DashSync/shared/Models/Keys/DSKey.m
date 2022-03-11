@@ -9,7 +9,7 @@
 #import "DSBLSKey.h"
 #import "DSChain.h"
 #import "DSECDSAKey.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+DSHash.h"
 #import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
@@ -185,5 +185,10 @@
     NSAssert(NO, @"This should be overridden");
     return UINT256_ZERO;
 }
+
+- (void)signMessageDigest:(UInt256)digest completion:(void (^_Nullable)(BOOL success, NSData *signature))completion {
+    NSAssert(NO, @"This should be overridden");
+}
+
 
 @end

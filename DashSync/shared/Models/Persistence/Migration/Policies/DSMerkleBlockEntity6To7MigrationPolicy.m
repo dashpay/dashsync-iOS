@@ -23,7 +23,7 @@
 #import "DSCheckpoint.h"
 #import "DSMerkleBlock.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
-#import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 
 @interface DSChain (DSMigrationHelper)

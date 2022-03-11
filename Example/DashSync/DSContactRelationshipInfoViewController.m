@@ -36,6 +36,8 @@
     DSIncomingFundsDerivationPath *outgoingDerivationPath = [account derivationPathForFriendshipWithIdentifier:self.outgoingFriendRequest.friendshipIdentifier];
     NSAssert(outgoingDerivationPath.extendedPublicKey, @"Extended public key must exist already");
 
+    self.userIdentifier.text = friend.uniqueIdString;
+
     self.incomingExtendedPublicKeyLabel.text = incomingDerivationPath.extendedPublicKeyData.hexString;
     self.outgoingExtendedPublicKeyLabel.text = outgoingDerivationPath.extendedPublicKeyData.hexString;
 
