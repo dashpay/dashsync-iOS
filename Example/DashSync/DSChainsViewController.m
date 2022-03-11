@@ -51,7 +51,7 @@
              minProtocolVersion:70221
                 protocolVersion:70221
         minimumDifficultyBlocks:1000000
-                      addresses:@[@"34.218.208.88", @"18.237.105.18"]];
+                      addresses:@[@"18.237.105.18"]];
 }
 
 - (void)setupKrupnik {
