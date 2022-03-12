@@ -88,6 +88,8 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
     UInt768 allCommitmentAggregatedSignature = [NSData dataWithBytes:all_commitment_aggregated_signature length:96].UInt768;
     bool allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:commitmentHash signature:allCommitmentAggregatedSignature withPublicKeys:publicKeyArray];
     if (!allCommitmentAggregatedSignatureValidated) {
+        DSLog(@"Issue with allCommitmentAggregatedSignatureValidated: %@", uint768_hex(allCommitmentAggregatedSignature));
+        mndiff_quorum_validation_data_destroy(data);
         return false;
     }
     //The sig must validate against the commitmentHash and all public keys determined by the signers bitvector. This is an aggregated BLS signature verification.
@@ -314,16 +316,18 @@ bool validateQuorumCallback(QuorumValidationData *data, const void *context) {
 
 + (void)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion {
     DSChain *chain = context.chain;
-    DSMasternodeList *baseMasternodeList = context.baseMasternodeList;
-    UInt256 merkleRoot = context.lastBlock.merkleRoot;
-    MasternodeList *base_masternode_list = [DSMasternodeManager wrapMasternodeList:baseMasternodeList];
+    @synchronized (chain) {
+        DSMasternodeList *baseMasternodeList = context.baseMasternodeList;
+        UInt256 merkleRoot = context.lastBlock.merkleRoot;
+        MasternodeList *base_masternode_list = [DSMasternodeManager wrapMasternodeList:baseMasternodeList];
 
-    MndiffResult *result = mndiff_process(message.bytes, message.length, base_masternode_list, masternodeListLookupCallback, masternodeListDestroyCallback, uint256_data(merkleRoot).bytes, context.useInsightAsBackup, addInsightLookup, shouldProcessQuorumType, validateQuorumCallback, blockHeightListLookupCallback, (__bridge void *)(context));
+        MndiffResult *result = mndiff_process(message.bytes, message.length, base_masternode_list, masternodeListLookupCallback, masternodeListDestroyCallback, uint256_data(merkleRoot).bytes, context.useInsightAsBackup, addInsightLookup, shouldProcessQuorumType, validateQuorumCallback, blockHeightListLookupCallback, (__bridge void *)(context));
 
-    [DSMasternodeManager freeMasternodeList:base_masternode_list];
-    DSMnDiffProcessingResult *processingResult = [DSMnDiffProcessingResult processingResultWith:result onChain:chain];
-    mndiff_destroy(result);
-    completion(processingResult);
+        [DSMasternodeManager freeMasternodeList:base_masternode_list];
+        DSMnDiffProcessingResult *processingResult = [DSMnDiffProcessingResult processingResultWith:result onChain:chain];
+        mndiff_destroy(result);
+        completion(processingResult);
+    }
 }
 
 @end

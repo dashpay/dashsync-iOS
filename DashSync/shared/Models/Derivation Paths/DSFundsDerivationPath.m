@@ -15,8 +15,8 @@
 
 @interface DSFundsDerivationPath ()
 
-@property (nonatomic, strong) NSMutableArray *internalAddresses, *externalAddresses;
-@property (nonatomic, assign) BOOL isForFirstAccount;
+@property (atomic, strong) NSMutableArray *internalAddresses, *externalAddresses;
+@property (atomic, assign) BOOL isForFirstAccount;
 @property (nonatomic, assign) BOOL hasKnownBalanceInternal;
 @property (nonatomic, assign) BOOL checkedInitialHasKnownBalance;
 
@@ -116,7 +116,7 @@
     if ([self containsAddress:address]) {
         if (![self.mUsedAddresses containsObject:address]) {
             [self.mUsedAddresses addObject:address];
-            if ([self.internalAddresses containsObject:address]) {
+            if ([self.allChangeAddresses containsObject:address]) {
                 [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES error:nil];
             } else {
                 [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO error:nil];
@@ -239,13 +239,13 @@
 - (NSString *)receiveAddress {
     //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
     NSString *addr = [self registerAddressesWithGapLimit:1 internal:NO error:nil].lastObject;
-    return (addr) ? addr : self.externalAddresses.lastObject;
+    return (addr) ? addr : self.allReceiveAddresses.lastObject;
 }
 
 - (NSString *)receiveAddressAtOffset:(NSUInteger)offset {
     //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
     NSString *addr = [self registerAddressesWithGapLimit:offset + 1 internal:NO error:nil].lastObject;
-    return (addr) ? addr : self.externalAddresses.lastObject;
+    return (addr) ? addr : self.allReceiveAddresses.lastObject;
 }
 
 // returns the first unused internal address
@@ -266,22 +266,22 @@
 
 // true if the address is controlled by the wallet
 - (BOOL)containsChangeAddress:(NSString *)address {
-    return (address && [self.internalAddresses containsObject:address]) ? YES : NO;
+    return address && [self.allChangeAddresses containsObject:address];
 }
 
 // true if the address is controlled by the wallet
 - (BOOL)containsReceiveAddress:(NSString *)address {
-    return (address && [self.externalAddresses containsObject:address]) ? YES : NO;
+    return address && [self.allReceiveAddresses containsObject:address];
 }
 
 - (NSArray *)usedReceiveAddresses {
-    NSMutableSet *intersection = [NSMutableSet setWithArray:self.externalAddresses];
+    NSMutableSet *intersection = [NSMutableSet setWithArray:self.allReceiveAddresses];
     [intersection intersectSet:self.mUsedAddresses];
     return [intersection allObjects];
 }
 
 - (NSArray *)usedChangeAddresses {
-    NSMutableSet *intersection = [NSMutableSet setWithArray:self.internalAddresses];
+    NSMutableSet *intersection = [NSMutableSet setWithArray:self.allChangeAddresses];
     [intersection intersectSet:self.mUsedAddresses];
     return [intersection allObjects];
 }

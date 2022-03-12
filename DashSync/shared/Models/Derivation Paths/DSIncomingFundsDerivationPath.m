@@ -23,7 +23,7 @@
 
 @interface DSIncomingFundsDerivationPath ()
 
-@property (nonatomic, strong) NSMutableArray *externalAddresses;
+@property (atomic, strong) NSMutableArray *externalAddresses;
 
 @property (nonatomic, assign) UInt256 contactSourceBlockchainIdentityUniqueId;
 @property (nonatomic, assign) UInt256 contactDestinationBlockchainIdentityUniqueId;
@@ -274,7 +274,7 @@
 - (NSString *)receiveAddressAtOffset:(NSUInteger)offset inContext:(NSManagedObjectContext *)context {
     //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
     NSString *addr = [self registerAddressesWithGapLimit:offset + 1 inContext:context error:nil].lastObject;
-    return (addr) ? addr : self.externalAddresses.lastObject;
+    return (addr) ? addr : self.allReceiveAddresses.lastObject;
 }
 
 // all previously generated external addresses
@@ -283,7 +283,7 @@
 }
 
 - (NSArray *)usedReceiveAddresses {
-    NSMutableSet *intersection = [NSMutableSet setWithArray:self.externalAddresses];
+    NSMutableSet *intersection = [NSMutableSet setWithArray:self.allReceiveAddresses];
     [intersection intersectSet:self.mUsedAddresses];
     return [intersection allObjects];
 }
