@@ -10,7 +10,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'bls-signatures-pod'
-  s.version          = '0.2.12'
+  s.version          = '1.0.0'
   s.summary          = 'BLS signatures in C++, using the relic toolkit'
 
   s.description      = <<-DESC
@@ -23,8 +23,8 @@ Implements BLS signatures with aggregation as in Boneh, Drijvers, Neven 2018, us
   s.social_media_url = 'https://twitter.com/ChiaNetworkInc'
 
   s.source           = { 
-    :git => 'https://github.com/Chia-Network/bls-signatures.git',
-    :commit => 'f114ffeff4653e5522d1b3e28687fa9f384a557f',
+    :git => 'https://github.com/dashpay/bls-signatures.git',
+    :commit => '979f423234d9d4ace4bf2805ea1a99ba4d021f48',
     :submodules => false
   }
 
@@ -99,21 +99,35 @@ prepare()
 
     download_cmake_toolchain()
     {
-        pushd contrib/relic
 
         if [ ! -s ios.toolchain.cmake ]; then
-                SHA256_HASH="4fe55ef74f4e28ade4b2591b8cc61a73c8e1a6508a9108052fe40098e63d8e79"
-                curl -o ios.toolchain.cmake https://raw.githubusercontent.com/leetal/ios-cmake/master/ios.toolchain.cmake
-                DOWNLOADED_HASH=`shasum -a 256 ios.toolchain.cmake | cut -f 1 -d " "`
-                if [ $SHA256_HASH != $DOWNLOADED_HASH ]; then
-                  echo "Error: sha256 checksum of ios.toolchain.cmake mismatch" >&2
-                  exit 1
-                fi
+            SHA256_HASH="4fe55ef74f4e28ade4b2591b8cc61a73c8e1a6508a9108052fe40098e63d8e79"
+            curl -o ios.toolchain.cmake https://raw.githubusercontent.com/leetal/ios-cmake/master/ios.toolchain.cmake
+            DOWNLOADED_HASH=`shasum -a 256 ios.toolchain.cmake | cut -f 1 -d " "`
+            if [ $SHA256_HASH != $DOWNLOADED_HASH ]; then
+              echo "Error: sha256 checksum of ios.toolchain.cmake mismatch" >&2
+              exit 1
             fi
+        fi
+    }
+    
+    download_relic()
+    {
+        CURRENT_DIR=`pwd`
+        RELIC_REPO="https://github.com/Chia-Network/relic.git"
+        RELIC_COMMIT="1d98e5abf3ca5b14fd729bd5bcced88ea70ecfd7"
 
-        popd # contrib/relic
+        if [ ! -s ${CURRENT_DIR}/contrib/relic ]; then
+            pushd contrib
+            git clone ${RELIC_REPO}
+            pushd relic
+            git reset --hard ${RELIC_COMMIT}
+            popd #relic
+            popd #contrib
+        fi
     }
 
+    download_relic
     download_gmp
     download_cmake_toolchain
 
@@ -260,7 +274,7 @@ build_relic_arch()
         COMPILER_ARGS=$(version_min_flag $PLATFORM)
     fi
     
-    EXTRA_ARGS="-DOPSYS=NONE -DIOS_PLATFORM=$IOS_PLATFORM -DPLATFORM=$IOS_PLATFORM -DDEPLOYMENT_TARGET=$DEPLOYMENT_TARGET -DCMAKE_TOOLCHAIN_FILE=../ios.toolchain.cmake"
+    EXTRA_ARGS="-DOPSYS=NONE -DIOS_PLATFORM=$IOS_PLATFORM -DPLATFORM=$IOS_PLATFORM -DDEPLOYMENT_TARGET=$DEPLOYMENT_TARGET -DCMAKE_TOOLCHAIN_FILE=../../../ios.toolchain.cmake"
     
     if [[ $ARCH = "i386" ]]; then
         EXTRA_ARGS+=" -DARCH=X86"
@@ -292,7 +306,7 @@ build_relic_arch()
 
 build_bls_arch()
 {
-    BLS_FILES=( "aggregationinfo" "bls" "chaincode" "extendedprivatekey" "extendedpublickey" "privatekey" "publickey" "signature" )
+    BLS_FILES=( "bls" "chaincode" "elements" "extendedprivatekey" "extendedpublickey" "legacy" "privatekey" "schemes" "threshold" )
     ALL_BLS_OBJ_FILES=$(printf "%s.o " "${BLS_FILES[@]}")
 
     PLATFORM=$1
