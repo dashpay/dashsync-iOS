@@ -10,7 +10,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'bls-signatures-pod'
-  s.version          = '1.0.0'
+  s.version          = '1.0.2'
   s.summary          = 'BLS signatures in C++, using the relic toolkit'
 
   s.description      = <<-DESC
@@ -24,7 +24,7 @@ Implements BLS signatures with aggregation as in Boneh, Drijvers, Neven 2018, us
 
   s.source           = { 
     :git => 'https://github.com/dashpay/bls-signatures.git',
-    :commit => '979f423234d9d4ace4bf2805ea1a99ba4d021f48',
+    :commit => '7c0dfe37ad8d7561cea5bd9319b349d3fb102ebd',
     :submodules => false
   }
 
