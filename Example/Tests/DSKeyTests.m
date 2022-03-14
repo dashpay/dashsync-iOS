@@ -325,8 +325,14 @@
     uint8_t message1[3] = {7, 8, 9};
     NSData *messageData1 = [NSData dataWithBytes:message1 length:3];
     DSBLSKey *keyPair1 = [DSBLSKey keyWithSeedData:seedData1];
+    
+    XCTAssertEqualObjects(keyPair1.publicKeyData.hexString, @"02a8d2aaa6a5e2e08d4b8d406aaf0121a2fc2088ed12431e6b0663028da9ac5922c9ea91cde7dd74b7d795580acc7a61");
+    
+    XCTAssertEqualObjects(keyPair1.privateKeyData.hexString, @"022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e");
 
     UInt768 signature1 = [keyPair1 signData:messageData1];
+    
+    XCTAssertEqualObjects(uint768_data(signature1).hexString, @"023f5c750f402c69dab304e5042a7419722536a38d58ce46ba045be23e99d4f9ceeffbbc6796ebbdab6e9813c411c78f07167a3b76bef2262775a1e9f95ff1a80c5fa9fe8daa220d4d9da049a96e8932d5071aaf48fbff27a920bc4aa7511fd4");
 
     XCTAssertTrue([keyPair1 verify:[messageData1 SHA256_2] signature:signature1], @"Testing BLS signature verification");
 }
