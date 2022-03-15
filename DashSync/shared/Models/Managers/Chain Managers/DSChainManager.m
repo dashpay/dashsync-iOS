@@ -620,9 +620,11 @@
 }
 
 - (void)chainShouldStartSyncingBlockchain:(DSChain *)chain onPeer:(DSPeer *)peer {
-    [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerChainSyncDidStartNotification
-                                                        object:nil
-                                                      userInfo:@{DSChainManagerNotificationChainKey: self, DSPeerManagerNotificationPeerKey: peer}];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerChainSyncDidStartNotification
+                                                            object:nil
+                                                          userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSPeerManagerNotificationPeerKey: peer ? peer : [NSNull null]}];
+    });
     dispatch_async(self.chain.networkingQueue, ^{
         if ((self.syncPhase != DSChainSyncPhase_ChainSync && self.syncPhase != DSChainSyncPhase_Synced) && self.chain.needsInitialTerminalHeadersSync) {
             //masternode list should be synced first and the masternode list is old
@@ -630,8 +632,7 @@
             [peer sendGetheadersMessageWithLocators:[self.chain terminalBlocksLocatorArray] andHashStop:UINT256_ZERO];
         } else if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList) && ((self.masternodeManager.lastMasternodeListBlockHeight < self.chain.lastTerminalBlockHeight - 8) || (self.masternodeManager.lastMasternodeListBlockHeight == UINT32_MAX))) {
             self.syncPhase = DSChainSyncPhase_InitialTerminalBlocks;
-            [self.masternodeManager getRecentMasternodeList:32 withSafetyDelay:0];
-            [self.masternodeManager getCurrentMasternodeListWithSafetyDelay:0];
+            [self getRecentMasternodeLists];
         } else {
             self.syncPhase = DSChainSyncPhase_ChainSync;
             BOOL startingDevnetSync = [self.chain isDevnetAny] && self.chain.lastSyncBlockHeight < 5;
@@ -650,8 +651,7 @@
     [self.peerManager chainSyncStopped];
     if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList)) {
         // make sure we care about masternode lists
-        [self.masternodeManager getRecentMasternodeList:32 withSafetyDelay:0];
-        [self.masternodeManager getCurrentMasternodeListWithSafetyDelay:0];
+        [self getRecentMasternodeLists];
     }
 }
 
@@ -665,9 +665,13 @@
     [self.governanceSyncManager startGovernanceSync];
     if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList)) {
         // make sure we care about masternode lists
-        [self.masternodeManager getRecentMasternodeList:32 withSafetyDelay:0];
-        [self.masternodeManager getCurrentMasternodeListWithSafetyDelay:0];
+        [self getRecentMasternodeLists];
     }
+}
+
+- (void)getRecentMasternodeLists {
+    [self.masternodeManager getRecentMasternodeList:32 withSafetyDelay:0];
+    [self.masternodeManager getCurrentMasternodeListWithSafetyDelay:0];
 }
 
 - (void)syncBlockchain {

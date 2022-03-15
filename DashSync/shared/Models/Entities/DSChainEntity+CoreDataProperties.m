@@ -17,6 +17,7 @@
 @dynamic baseBlockHash;
 @dynamic checkpoints;
 @dynamic devnetIdentifier;
+@dynamic devnetVersion;
 @dynamic totalGovernanceObjectsCount;
 @dynamic type;
 @dynamic accounts;
