@@ -10,7 +10,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'bls-signatures-pod'
-  s.version          = '1.0.2'
+  s.version          = '1.0.3'
   s.summary          = 'BLS signatures in C++, using the relic toolkit'
 
   s.description      = <<-DESC
@@ -295,7 +295,7 @@ build_relic_arch()
 
     cmake -DCMAKE_PREFIX_PATH:PATH="${GMP_DIR}" -DTESTS=0 -DBENCH=0 -DCHECK=off -DARITH=gmp -DFP_PRIME=381 -DMULTI=PTHREAD \
     -DFP_QNRES=off -DFP_METHD="INTEG;INTEG;INTEG;MONTY;LOWER;SLIDE" -DFPX_METHD="INTEG;INTEG;LAZYR" -DPP_METHD="LAZYR;OATEP" \
-    -DCOMP="-O3 -funroll-loops $OPTIMIZATIONFLAGS -isysroot $SDK -arch $ARCH -fembed-bitcode ${COMPILER_ARGS}" -DWSIZE=$WSIZE \
+    -DCOMP_FLAGS="-O3 -funroll-loops $OPTIMIZATIONFLAGS -isysroot $SDK -arch $ARCH -fembed-bitcode ${COMPILER_ARGS}" -DWSIZE=$WSIZE \
     -DVERBS=off -DSHLIB=off -DALLOC="AUTO" -DEP_PLAIN=off -DEP_SUPER=off -DPP_EXT="LAZYR" -DTIMER="HREAL" ${EXTRA_ARGS} ../
 
     make -j $LOGICALCPU_MAX
