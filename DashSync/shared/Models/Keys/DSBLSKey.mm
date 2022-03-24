@@ -202,7 +202,7 @@
 
 - (uint32_t)publicKeyFingerprint {
     bls::G1Element blsPublicKey = bls::G1Element::FromBytes(bls::Bytes(self.publicKey.u8, sizeof(UInt384)), BLS_USE_LEGACY);
-    return blsPublicKey.GetFingerprint();
+    return blsPublicKey.GetFingerprint(BLS_USE_LEGACY);
 }
 
 - (NSData *)publicKeyData {
