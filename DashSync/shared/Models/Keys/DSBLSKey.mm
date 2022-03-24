@@ -201,7 +201,7 @@
 }
 
 - (uint32_t)publicKeyFingerprint {
-    bls::G1Element blsPublicKey = bls::G1Element::FromBytes(bls::Bytes(self.publicKey.u8, sizeof(UInt384)));
+    bls::G1Element blsPublicKey = bls::G1Element::FromBytes(bls::Bytes(self.publicKey.u8, sizeof(UInt384)), BLS_USE_LEGACY);
     return blsPublicKey.GetFingerprint();
 }
 
@@ -318,7 +318,6 @@
 - (bls::G1Element)blsPublicKey {
     if (!uint384_is_zero(self.publicKey)) {
         bls::G1Element blsPublicKey = bls::G1Element::FromBytes(bls::Bytes(self.publicKey.u8, sizeof(UInt384)), BLS_USE_LEGACY);
-
         return blsPublicKey;
     } else {
         bls::PrivateKey blsPrivateKey = [self blsPrivateKey];
@@ -386,15 +385,14 @@
 
 - (BOOL)verify:(UInt256)messageDigest signature:(UInt768)signature {
     bls::G1Element blsPublicKey = [self blsPublicKey];
-    BOOL isLegacy = !uint384_is_zero(self.publicKey);
-    bls::G2Element blsSignature = bls::G2Element::FromBytes(bls::Bytes(signature.u8, sizeof(UInt768)), isLegacy);
+    bls::G2Element blsSignature = bls::G2Element::FromBytes(bls::Bytes(signature.u8, sizeof(UInt768)), BLS_USE_LEGACY);
     return bls::LegacySchemeMPL().Verify(blsPublicKey, bls::Bytes(messageDigest.u8, sizeof(UInt256)), blsSignature);
 }
 
 
 + (BOOL)verify:(UInt256)messageDigest signature:(UInt768)signature withPublicKey:(UInt384)publicKey {
     bls::G1Element blsPublicKey = [[[DSBLSKey alloc] initWithPublicKey:publicKey] blsPublicKey];
-    bls::G2Element blsSignature = bls::G2Element::FromBytes(bls::Bytes(signature.u8, sizeof(UInt768)));
+    bls::G2Element blsSignature = bls::G2Element::FromBytes(bls::Bytes(signature.u8, sizeof(UInt768)), BLS_USE_LEGACY);
     return bls::LegacySchemeMPL().Verify(blsPublicKey, bls::Bytes(messageDigest.u8, sizeof(UInt256)), blsSignature);
 }
 
