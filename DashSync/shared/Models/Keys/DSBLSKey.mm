@@ -386,7 +386,8 @@
 
 - (BOOL)verify:(UInt256)messageDigest signature:(UInt768)signature {
     bls::G1Element blsPublicKey = [self blsPublicKey];
-    bls::G2Element blsSignature = bls::G2Element::FromBytes(bls::Bytes(signature.u8, sizeof(UInt768)));
+    BOOL isLegacy = !uint384_is_zero(self.publicKey);
+    bls::G2Element blsSignature = bls::G2Element::FromBytes(bls::Bytes(signature.u8, sizeof(UInt768)), isLegacy);
     return bls::LegacySchemeMPL().Verify(blsPublicKey, bls::Bytes(messageDigest.u8, sizeof(UInt256)), blsSignature);
 }
 
