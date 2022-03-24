@@ -291,10 +291,10 @@
     DSBLSKey *keyPair2 = [DSBLSKey keyWithSeedData:seedData2];
 
     uint32_t fingerprint1 = keyPair1.publicKeyFingerprint;
-    XCTAssertEqual(fingerprint1, 0x73951d97, @"Testing BLS private child public key fingerprint");
+    XCTAssertEqual(fingerprint1, 0x26d53247, @"Testing BLS private child public key fingerprint");
 
     uint32_t fingerprint2 = keyPair2.publicKeyFingerprint;
-    XCTAssertEqual(fingerprint2, 0x3637b3eb, @"Testing BLS private child public key fingerprint");
+    XCTAssertEqual(fingerprint2, 0x289bb56e, @"Testing BLS private child public key fingerprint");
 
     UInt768 signature1 = [keyPair1 signDataSingleSHA256:messageData1];
 
