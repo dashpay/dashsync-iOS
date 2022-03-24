@@ -58,7 +58,7 @@
 
 - (nullable instancetype)initWithSeedData:(NSData *)seedData {
     if (!(self = [super init])) return nil;
-    bls::PrivateKey blsPrivateKey = bls::PrivateKey::RandomPrivateKey();
+    bls::PrivateKey blsPrivateKey = bls::PrivateKey::FromSeedBIP32(bls::Bytes((uint8_t *)seedData.bytes, seedData.length));
     bls::G1Element blsPublicKey = blsPrivateKey.GetG1Element();
     UInt256 secret = UINT256_ZERO;
     blsPrivateKey.Serialize(secret.u8);
