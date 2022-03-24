@@ -10,7 +10,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'bls-signatures-pod'
-  s.version          = '1.0.3'
+  s.version          = '1.0.4'
   s.summary          = 'BLS signatures in C++, using the relic toolkit'
 
   s.description      = <<-DESC
@@ -99,7 +99,6 @@ prepare()
 
     download_cmake_toolchain()
     {
-
         if [ ! -s ios.toolchain.cmake ]; then
             SHA256_HASH="4fe55ef74f4e28ade4b2591b8cc61a73c8e1a6508a9108052fe40098e63d8e79"
             curl -o ios.toolchain.cmake https://raw.githubusercontent.com/leetal/ios-cmake/master/ios.toolchain.cmake
@@ -114,15 +113,11 @@ prepare()
     download_relic()
     {
         CURRENT_DIR=`pwd`
-        RELIC_REPO="https://github.com/Chia-Network/relic.git"
-        RELIC_COMMIT="1d98e5abf3ca5b14fd729bd5bcced88ea70ecfd7"
-
+        RELIC_REPO="https://github.com/tikhop/relic"
+        
         if [ ! -s ${CURRENT_DIR}/contrib/relic ]; then
             pushd contrib
             git clone ${RELIC_REPO}
-            pushd relic
-            git reset --hard ${RELIC_COMMIT}
-            popd #relic
             popd #contrib
         fi
     }
@@ -138,6 +133,9 @@ prepare()
 build_gmp_arch()
 {
     pushd gmp
+
+    rm compat.c && cp ../contrib/gmp-patch-6.2.1/compat.c compat.c
+    rm longlong.h && cp ../contrib/gmp-patch-6.2.1/longlong.h longlong.h
 
     PLATFORM=$1
     ARCH=$2
@@ -293,10 +291,11 @@ build_relic_arch()
 
     CURRENT_DIR=`pwd`
 
-    cmake -DCMAKE_PREFIX_PATH:PATH="${GMP_DIR}" -DTESTS=0 -DBENCH=0 -DCHECK=off -DARITH=gmp -DFP_PRIME=381 -DMULTI=PTHREAD \
-    -DFP_QNRES=off -DFP_METHD="INTEG;INTEG;INTEG;MONTY;LOWER;SLIDE" -DFPX_METHD="INTEG;INTEG;LAZYR" -DPP_METHD="LAZYR;OATEP" \
-    -DCOMP_FLAGS="-O3 -funroll-loops $OPTIMIZATIONFLAGS -isysroot $SDK -arch $ARCH -fembed-bitcode ${COMPILER_ARGS}" -DWSIZE=$WSIZE \
-    -DVERBS=off -DSHLIB=off -DALLOC="AUTO" -DEP_PLAIN=off -DEP_SUPER=off -DPP_EXT="LAZYR" -DTIMER="HREAL" ${EXTRA_ARGS} ../
+    cmake -DCMAKE_PREFIX_PATH:PATH="${GMP_DIR}" -DTESTS=0 -DBENCH=0 -DCHECK=off -DARITH=gmp -DTIMER=HPROC -DFP_PRIME=381 -DMULTI=PTHREAD \
+    -DFP_QNRES=on -DFP_METHD="INTEG;INTEG;INTEG;MONTY;EXGCD;SLIDE" -DFPX_METHD="INTEG;INTEG;LAZYR" -DPP_METHD="LAZYR;OATEP" \
+    -DCOMP_FLAGS="-pipe -std=c99 -O3 -funroll-loops $OPTIMIZATIONFLAGS -isysroot $SDK -arch $ARCH -fembed-bitcode ${COMPILER_ARGS}" -DWSIZE=$WSIZE \
+    -DVERBS=off -DSHLIB=off -DALLOC="AUTO" -DEP_PLAIN=off -DEP_SUPER=off -DPP_EXT="LAZYR" ${EXTRA_ARGS} \
+    -DWITH="DV;BN;MD;FP;EP;FPX;EPX;PP;PC;CP" -DBN_METHD="COMBA;COMBA;MONTY;SLIDE;STEIN;BASIC" ../ 
 
     make -j $LOGICALCPU_MAX
 
