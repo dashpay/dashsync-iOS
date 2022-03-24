@@ -50,6 +50,7 @@
 #import "DSInsightManager.h"
 #import "DSMasternodeListStore.h"
 #import "DSMasternodeManager.h"
+#import "DSMasternodeManager+LocalMasternode.h"
 #import "DSPriceManager.h"
 #import "DSShapeshiftManager.h"
 #import "DSSporkManager.h"
