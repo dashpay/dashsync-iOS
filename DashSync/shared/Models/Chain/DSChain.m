@@ -1970,11 +1970,7 @@ static dispatch_once_t devnetToken = 0;
         [self saveTerminalBlocks];
 
         // notify that transaction confirmations may have changed
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainNewChainTipBlockNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-        });
+        [self notifyBlocksChanged];
     }
 
     return TRUE;
@@ -2392,22 +2388,14 @@ static dispatch_once_t devnetToken = 0;
                 [self.lastNotifiedBlockDidChangeTimer invalidate];
                 self.lastNotifiedBlockDidChangeTimer = nil;
             }
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainNewChainTipBlockNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-            });
+            [self notifyBlocksChanged];
         } else {
             if (!self.lastNotifiedBlockDidChangeTimer) {
                 self.lastNotifiedBlockDidChangeTimer = [NSTimer timerWithTimeInterval:1
                                                                               repeats:NO
                                                                                 block:^(NSTimer *_Nonnull timer) {
-                                                                                    dispatch_async(dispatch_get_main_queue(), ^{
-                                                                                        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainNewChainTipBlockNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-                                                                                        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-                                                                                        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-                                                                                    });
-                                                                                }];
+                    [self notifyBlocksChanged];
+                }];
                 [[NSRunLoop mainRunLoop] addTimer:self.lastNotifiedBlockDidChangeTimer forMode:NSRunLoopCommonModes];
             }
         }
@@ -2455,6 +2443,14 @@ static dispatch_once_t devnetToken = 0;
         [self addBlock:b receivedAsHeader:YES fromPeer:peer]; //revisit this
     }
     return TRUE;
+}
+
+- (void)notifyBlocksChanged {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainNewChainTipBlockNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
+    });
 }
 
 // MARK: Terminal Blocks
