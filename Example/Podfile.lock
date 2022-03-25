@@ -560,12 +560,12 @@ PODS:
     - "!ProtoCompiler-gRPCPlugin (~> 1.0)"
     - DAPI-GRPC/Messages
     - gRPC-ProtoRPC
-  - DashSharedCore (0.1.2)
+  - DashSharedCore (0.1.5)
   - DashSync (0.1.0):
     - bls-signatures-pod (= 0.2.12)
     - CocoaLumberjack (= 3.7.2)
     - DAPI-GRPC (= 0.22.0-dev.8)
-    - DashSharedCore (= 0.1.2)
+    - DashSharedCore (= 0.1.5)
     - DSDynamicOptions (= 0.1.2)
     - DWAlertController (= 0.2.1)
     - secp256k1_dash (= 0.1.4-alpha.2)
@@ -689,7 +689,7 @@ CHECKOUT OPTIONS:
     :commit: ad01eee
     :git: https://github.com/ameingast/cocoaimagehashing.git
   DashSharedCore:
-    :commit: d7bf2b010d8aef1f84613f1de3850b0a36e66818
+    :commit: 7a583f7698e8342e6b33db186e14d09cda38b356
     :git: https://github.com/dashevo/dash-shared-core.git
 
 SPEC CHECKSUMS:
@@ -701,8 +701,8 @@ SPEC CHECKSUMS:
   CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
   CocoaLumberjack: b7e05132ff94f6ae4dfa9d5bce9141893a21d9da
   DAPI-GRPC: 138d62523bbfe7e88a39896f1053c0bc12390d9f
-  DashSharedCore: 2bd33af7156f8987e00ad6e69920ab134cb74513
-  DashSync: e8492cc15475d7a0ede9caaecea08ea5e178174f
+  DashSharedCore: ea297bbec328a7046d1766dd13e39d776fe0973c
+  DashSync: 27d51270026b54f3dfa6fe79e1fc7e36f29749f8
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   gRPC: f28b04db68d04d7c7be78bc5c721b7729a253521
@@ -719,4 +719,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 6b5f81f31ab836281bb7336c34b513cde8b7fae1
 
-COCOAPODS: 1.11.2
+COCOAPODS: 1.11.3
