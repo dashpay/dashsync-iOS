@@ -45,13 +45,18 @@
 
 - (void)setupMalort {
     [self setupDevnetWithId:@"malort"
-                   //               sporkAddress:@"yjPtiKh2uwk3bDutTEA2q9mCtXyiZRWn55"
-                   sporkAddress:@"yZeZhBYxmxVkoKHsgGxbzj8snbU17DYeZJ"
-                sporkPrivateKey:@"cSXWyRC3TtPyLhKuegihZ7wDoFjN71nLU4PbgjdvwSRbvPbyMVz6"
-             minProtocolVersion:70221
-                protocolVersion:70221
-        minimumDifficultyBlocks:1000000
-                      addresses:@[@"18.237.105.18"]];
+               sporkAddress:@"yZeZhBYxmxVkoKHsgGxbzj8snbU17DYeZJ"
+            sporkPrivateKey:@"cSXWyRC3TtPyLhKuegihZ7wDoFjN71nLU4PbgjdvwSRbvPbyMVz6"
+         minProtocolVersion:70221
+            protocolVersion:70221
+    minimumDifficultyBlocks:1000000
+                  addresses:@[
+        @"52.32.143.199",
+        @"35.163.10.221",
+        @"34.214.64.88",
+        @"54.69.64.188",
+        @"54.214.176.77",
+        @"54.203.139.239"]];
 }
 
 - (void)setupKrupnik {
