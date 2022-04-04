@@ -759,7 +759,7 @@
 - (void)sendGetQuorumRotationInfoForBaseBlockHashes:(NSArray<NSData *> *)baseBlockHashes forBlockHash:(UInt256)blockHash extraShare:(BOOL)extraShare {
     NSMutableData *msg = [NSMutableData data];
     // Number of masternode lists the light client knows
-    [msg appendUInt32:(uint32_t)baseBlockHashes.count];
+    [msg appendVarInt:baseBlockHashes.count];
     // The base block hashes of the masternode lists the light client knows
     for (NSData *baseBlockHash in baseBlockHashes) {
         [msg appendUInt256:baseBlockHash.UInt256];
