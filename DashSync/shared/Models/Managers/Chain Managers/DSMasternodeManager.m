@@ -48,7 +48,7 @@
 
 #define LOG_MASTERNODE_DIFF (0 && DEBUG)
 #define KEEP_OLD_QUORUMS 0
-#define SAVE_MASTERNODE_DIFF_TO_FILE (0 && DEBUG)
+#define SAVE_MASTERNODE_DIFF_TO_FILE (1 && DEBUG)
 #define DSFullLog(FORMAT, ...) printf("%s\n", [[NSString stringWithFormat:FORMAT, ##__VA_ARGS__] UTF8String])
 
 
@@ -547,12 +547,21 @@
     
     DSMasternodeDiffMessageContext *ctx = [self createDiffMessageContextWithLastBlock:nil baseMasternodeListHash:nil useInsightAsBackup:self.chain.isTestnet];
     LLMQRotationInfo *qrInfo = [DSMasternodeManager readQRInfoMessage:message withContext:ctx];
-    MNListDiff *listDiffAtH = qrInfo->mn_list_diff_at_h;
+    MNListDiff *listDiffAtH = qrInfo->mn_list_diff_at_h; //8a65d52a6cdc2a3ec1504c02a657d34ac3b3a507971134d6872c0628d0c5dd6c //6cddc5d028062c87d634119707a5b3c34ad357a6024c50c13e2adc6c2ad5658a
+    if (!qrInfo->mn_list_diff_at_h) {
+        return;
+    }
     UInt256 baseBlockHash = *(UInt256 *)listDiffAtH->base_block_hash;
     UInt256 blockHash = *(UInt256 *)listDiffAtH->block_hash;
+#if SAVE_MASTERNODE_DIFF_TO_FILE
+    NSString *fileName = [NSString stringWithFormat:@"QRINFO_%@_%@.dat", @([self heightForBlockHash:baseBlockHash]), @([self heightForBlockHash:blockHash])];
+    NSLog(@"File %@ saved", fileName);
+    [message saveToFile:fileName inDirectory:NSCachesDirectory];
+#endif
     UInt512 concat = uint512_concat(baseBlockHash, blockHash);
     NSData *blockHashDiffsData = uint512_data(concat);
     NSData *blockHashData = uint256_data(blockHash);
+    DSLog(@"relayed qrinfo with baseBlockHash %@ (%u) blockHash %@ (%u)", uint256_reverse_hex(baseBlockHash), [self heightForBlockHash:baseBlockHash], blockHashData.reverse.hexString, [self heightForBlockHash:blockHash]);
     if (![self.service removeListInRetrievalForKey:blockHashDiffsData] ||
         [self.store hasMasternodeListAt:blockHashData]) {
         [DSMasternodeManager destroyQRInfoMessage:qrInfo];
