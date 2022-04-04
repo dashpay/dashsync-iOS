@@ -767,7 +767,8 @@
     // Hash of the height the client requests
     [msg appendUInt256:blockHash];
     // Flag to indicate if an extra share is requested
-    [msg appendUInt8:extraShare];
+    [msg appendUInt8:extraShare ? 1 : 0];
+    DSLog(@"sendGetQuorumRotationInfoForBaseBlockHashes: %@", msg.hexString);
     [self sendMessage:msg type:MSG_GETQUORUMROTATIONINFO];
 }
 
