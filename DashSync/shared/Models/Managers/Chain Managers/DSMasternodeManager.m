@@ -185,8 +185,7 @@
     DSCheckpoint *checkpoint = [self.chain lastCheckpointHavingMasternodeList];
     if (!checkpoint ||
         self.chain.lastTerminalBlockHeight < checkpoint.height ||
-        [self masternodeListForBlockHash:checkpoint.blockHash
-                   withBlockHeightLookup:nil]) {
+        [self masternodeListForBlockHash:checkpoint.blockHash withBlockHeightLookup:nil]) {
         return;
     }
     [self processRequestFromFileForBlockHash:checkpoint.blockHash
@@ -265,8 +264,7 @@
                 //there is the rare possibility we have the masternode list as a checkpoint, so lets first try that
                 NSUInteger pos = [list indexOfObject:blockHashData];
                 UInt256 blockHash = blockHashData.UInt256;
-                [self processRequestFromFileForBlockHash:blockHash
-                                              completion:^(DSMasternodeList *masternodeList) {
+                [self processRequestFromFileForBlockHash:blockHash completion:^(DSMasternodeList *masternodeList) {
                     if (masternodeList) {
                         if (!KEEP_OLD_QUORUMS && uint256_eq(self.store.lastQueriedBlockHash, masternodeList.blockHash)) {
                             [self.store removeOldMasternodeLists];
@@ -274,7 +272,7 @@
                         if (![self.service retrievalQueueCount]) {
                             [self.chain.chainManager.transactionManager checkWaitingForQuorums];
                         }
-                        [self.service.retrievalQueue removeObject:blockHashData];
+                        [self.service removeFromRetrievalQueue:blockHashData];
                     } else {
                         //we need to go get it
                         UInt256 previousMasternodeAlreadyKnownBlockHash = [self.store closestKnownBlockHashForBlockHash:blockHash];
