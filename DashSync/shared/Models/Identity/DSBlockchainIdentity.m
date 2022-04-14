@@ -585,7 +585,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                         NSNumber *accepted = changes[DSTransactionManagerNotificationTransactionAcceptedStatusKey];
                         NSNumber *lockVerified = changes[DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey];
                         DSInstantSendTransactionLock *lock = changes[DSTransactionManagerNotificationInstantSendTransactionLockKey];
-                        if (![lockVerified boolValue] && lock != nil) {
+                        if ([lockVerified boolValue] && lock != nil) {
                             instantSendLock = lock;
                             transactionSuccessfullyPublished = TRUE;
                             dispatch_semaphore_signal(sem);
