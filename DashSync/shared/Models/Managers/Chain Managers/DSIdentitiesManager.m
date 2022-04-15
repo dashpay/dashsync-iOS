@@ -188,35 +188,26 @@
 
 - (id<DSDAPINetworkServiceRequest>)searchIdentityByName:(NSString *)name inDomain:(NSString *)domain withCompletion:(IdentityCompletionBlock)completion {
     DSDAPIClient *client = self.chain.chainManager.DAPIClient;
-    id<DSDAPINetworkServiceRequest> call = [client.DAPIPlatformNetworkService getIdentityByName:name
+    id<DSDAPINetworkServiceRequest> call = [client.DAPIPlatformNetworkService getDPNSDocumentsForUsernames:@[name]
                                                                                                   inDomain:domain
                                                                                            completionQueue:self.identityQueue
-                                                                                        success:^(NSDictionary *_Nullable blockchainIdentity) {
-        if(blockchainIdentity == nil) {
-            if (completion) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    completion(YES, nil, nil);
-                });
-            }
-        }else{
-            NSData *userIdData = blockchainIdentity[@"$ownerId"];
-            NSString *normalizedLabel = blockchainIdentity[@"normalizedLabel"];
-            NSString *domain = blockchainIdentity[@"normalizedParentDomainName"];
+                                                                                                   success:^(NSArray<NSDictionary *> *_Nonnull documents) {
+        __block NSMutableArray *rBlockchainIdentities = [NSMutableArray array];
+        for (NSDictionary *document in documents) {
+            NSData *userIdData = document[@"$ownerId"];
+            NSString *normalizedLabel = document[@"normalizedLabel"];
+            NSString *domain = document[@"normalizedParentDomainName"];
             DSBlockchainIdentity *identity = [[DSBlockchainIdentity alloc] initWithUniqueId:userIdData.UInt256 isTransient:TRUE onChain:self.chain];
             [identity addUsername:normalizedLabel inDomain:domain status:DSBlockchainIdentityUsernameStatus_Confirmed save:NO registerOnNetwork:NO];
-            
-            if (completion) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    completion(YES, identity, nil);
-                });
-            }
+            [rBlockchainIdentities addObject:identity];
         }
-        
-        
-        
-        
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(YES, [rBlockchainIdentities firstObject], nil);
+            });
+        }
     }
-                                                                                        failure:^(NSError *_Nonnull error) {
+                                                                                                   failure:^(NSError *_Nonnull error) {
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 completion(NO, nil, error);
