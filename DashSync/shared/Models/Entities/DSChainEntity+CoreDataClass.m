@@ -68,7 +68,7 @@
     [self.managedObjectContext performBlockAndWait:^{
         type = self.type;
         devnetIdentifier = self.devnetIdentifier;
-        devnetVersion = self.devnetVersion;
+        //devnetVersion = self.devnetVersion;
         data = self.checkpoints;
         totalGovernanceObjectsCount = self.totalGovernanceObjectsCount;
         baseBlockHash = self.baseBlockHash.UInt256;
@@ -154,7 +154,7 @@
     DSChainEntity *chainEntity = [self managedObjectInBlockedContext:context];
     chainEntity.type = type;
     chainEntity.devnetIdentifier = devnetIdentifier;
-    chainEntity.devnetVersion = devnetVersion;
+    //chainEntity.devnetVersion = devnetVersion;
     if (checkpoints && devnetIdentifier) {
         NSError *error = nil;
         NSData *archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints requiringSecureCoding:NO error:&error];
