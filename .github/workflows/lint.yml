@@ -45,7 +45,7 @@ jobs:
         run: rustup target add aarch64-apple-ios x86_64-apple-ios aarch64-apple-ios-sim
       - name: Dependencies
         working-directory: ./dashsync/Example
-        run: pod install
+        run: pod install --repo-update --verbose
       - name: Install OCLint
         run: |
           brew tap oclint/formulae
