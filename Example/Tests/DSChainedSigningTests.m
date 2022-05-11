@@ -90,17 +90,15 @@
     UInt256 hash3 = [[NSData dataWithUInt512:concat3] SHA256_2];
 
     UInt768 signature0 = [key0 signDigest:hash0];
-    UInt768 signature1 = [key1 signDigest:hash1];
-    UInt768 signature2 = [key2 signDigest:hash2];
-    UInt768 signature3 = [key3 signDigest:hash3];
+//    UInt768 signature1 = [key1 signDigest:hash1];
+//    UInt768 signature2 = [key2 signDigest:hash2];
+//    UInt768 signature3 = [key3 signDigest:hash3];
 
-    DSBLSKey *aggregateKey = [DSBLSKey keyByAggregatingPublicKeys:@[key0, key1, key2, key3]];
-
-    UInt768 aggregateSignature = [DSBLSKey aggregateSignatures:@[uint768_data(signature0), uint768_data(signature1), uint768_data(signature2), uint768_data(signature3)] withPublicKeys:@[key0, key1, key2, key3] withMessages:@[uint256_data(hash0), uint256_data(hash1), uint256_data(hash2), uint256_data(hash3)]];
-
-    BOOL verified = [DSBLSKey verifyAggregatedSignature:aggregateSignature withPublicKeys:@[key0, key1, key2, key3] withMessages:@[uint256_data(hash0), uint256_data(hash1), uint256_data(hash2), uint256_data(hash3)]];
-
-    XCTAssert(verified, @"DSBLSKey verifyAggregatedSignature is working");
+//    UInt768 aggregateSignature = [DSBLSKey aggregateSignatures:@[uint768_data(signature0), uint768_data(signature1), uint768_data(signature2), uint768_data(signature3)] withPublicKeys:@[key0, key1, key2, key3] withMessages:@[uint256_data(hash0), uint256_data(hash1), uint256_data(hash2), uint256_data(hash3)]];
+//
+//    BOOL verified = [DSBLSKey verifyAggregatedSignature:aggregateSignature withPublicKeys:@[key0, key1, key2, key3] withMessages:@[uint256_data(hash0), uint256_data(hash1), uint256_data(hash2), uint256_data(hash3)]];
+//
+//    XCTAssert(verified, @"DSBLSKey verifyAggregatedSignature is working");
 
     NSArray<DSBLSKey *> *quorums = [derivationPath privateKeysForRange:NSMakeRange(1000, 8) fromSeed:seed]; //simulate 10 quorums
 

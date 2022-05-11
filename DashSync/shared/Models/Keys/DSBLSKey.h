@@ -32,7 +32,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable instancetype)initWithPublicKey:(UInt384)publicKey;
 + (nullable instancetype)keyWithPrivateKey:(UInt256)secretKey;
 - (nullable instancetype)initWithPrivateKey:(UInt256)secretKey;
-+ (nullable instancetype)keyByAggregatingPublicKeys:(NSArray<DSBLSKey *> *)publicKeys;
 
 - (BOOL)verify:(UInt256)messageDigest signature:(UInt768)signature;
 + (BOOL)verify:(UInt256)messageDigest signature:(UInt768)signature withPublicKey:(UInt384)publicKey;
@@ -45,8 +44,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (UInt768)signDataSingleSHA256:(NSData *)data;
 
 - (NSData *)encryptData:(NSData *)data;
-
-+ (UInt768)aggregateSignatures:(NSArray *)signatures withPublicKeys:(NSArray<DSBLSKey *> *)publicKeys withMessages:(NSArray *)messages;
 
 @end
 

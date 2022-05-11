@@ -573,8 +573,6 @@ static dispatch_once_t devnetToken = 0;
 
 - (BOOL)isEvolutionEnabled {
     return [self isDevnetAny] || [self isTestnet];
-    // Switch it off for release purposes
-    //return false;
 }
 
 - (BOOL)isDevnetWithGenesisHash:(UInt256)genesisHash {

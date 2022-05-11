@@ -75,6 +75,7 @@
     DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     platformDocumentsRequest.pathPredicate = [NSPredicate predicateWithFormat:@"normalizedParentDomainName == %@", [domain lowercaseString]];
     platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel IN %@", lowercaseUsernames];
+    platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"normalizedLabel" ascending:YES]];
     platformDocumentsRequest.startAt = nil;
     platformDocumentsRequest.limit = (uint32_t)usernames.count;
     platformDocumentsRequest.queryType = DSPlatformQueryType_IndividualElements; // Many non consecutive elements in the tree

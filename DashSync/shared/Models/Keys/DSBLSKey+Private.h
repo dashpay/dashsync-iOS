@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (bls::ExtendedPublicKey)blsExtendedPublicKey;
 
 - (bls::PrivateKey)blsPrivateKey;
-- (bls::PublicKey)blsPublicKey;
+- (bls::G1Element)blsPublicKey;
 
 @end
 
