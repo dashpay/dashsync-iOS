@@ -25,6 +25,7 @@
 }
 
 @dynamic link;
+@dynamic tag;
 @dynamic chain;
 @dynamic blockchainIdentity;
 
