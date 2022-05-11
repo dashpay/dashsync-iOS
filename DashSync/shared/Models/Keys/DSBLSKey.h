@@ -45,8 +45,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSData *)encryptData:(NSData *)data;
 
-//+ (UInt768)aggregateSignatures:(NSArray *)signatures withPublicKeys:(NSArray<DSBLSKey *> *)publicKeys withMessages:(NSArray *)messages;
-
 @end
 
 NS_ASSUME_NONNULL_END
