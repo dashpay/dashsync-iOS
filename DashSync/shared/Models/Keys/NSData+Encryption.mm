@@ -73,7 +73,7 @@ static NSData *_Nullable AES256EncryptDecrypt(CCOperation operation,
 }
 
 - (nullable NSData *)encryptWithBLSSecretKey:(DSBLSKey *)secretKey forPublicKey:(DSBLSKey *)peerPubKey usingInitializationVector:(NSData *)ivData {
-    bls::PublicKey pk = bls::BLS::DHKeyExchange(secretKey.blsPrivateKey, peerPubKey.blsPublicKey);
+    bls::G1Element pk = secretKey.blsPrivateKey * peerPubKey.blsPublicKey;
 
     std::vector<uint8_t> symKey = pk.Serialize();
     symKey.resize(32);
@@ -109,7 +109,7 @@ static NSData *_Nullable AES256EncryptDecrypt(CCOperation operation,
         return nil;
     }
 
-    bls::PublicKey pk = bls::BLS::DHKeyExchange(secretKey.blsPrivateKey, peerPubKey.blsPublicKey);
+    bls::G1Element pk = secretKey.blsPrivateKey * peerPubKey.blsPublicKey;
     std::vector<uint8_t> symKey = pk.Serialize();
     symKey.resize(32);
 
@@ -133,7 +133,7 @@ static NSData *_Nullable AES256EncryptDecrypt(CCOperation operation,
         return nil;
     }
 
-    bls::PublicKey pk = key.blsPublicKey;
+    bls::G1Element pk = key.blsPublicKey;
     std::vector<uint8_t> symKey = pk.Serialize();
     symKey.resize(32);
 

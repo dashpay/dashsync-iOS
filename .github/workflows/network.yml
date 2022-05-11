@@ -34,19 +34,17 @@ jobs:
       - name: Git LFS Pull
         run: git lfs pull
         working-directory: ./dashsync
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ./dashsync/Example/Pods
-          key: ${{ runner.os }}-pods-macOS-${{ hashFiles('**/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pods-macOS-
+          key: ${{ runner.os }}-pods--macos-${{ hashFiles('**/Podfile') }}
       - name: Install Cargo Lipo
         run: cargo install cargo-lipo
       - name: Rustup add targets
         run: rustup target add aarch64-apple-ios x86_64-apple-ios aarch64-apple-ios-sim x86_64-apple-darwin
       - name: Dependencies
         working-directory: ./dashsync/Example
-        run: pod install --verbose
+        run: pod install --repo-update --verbose
       - name: Cache network info build
         id: cache-network-info-build
         uses: actions/cache@v2
