@@ -121,6 +121,12 @@
     self.dashFormat.minimumFractionDigits = 0; // iOS 8 bug, minimumFractionDigits now has to be set after currencySymbol
     self.dashFormat.maximum = @(MAX_MONEY / (int64_t)pow(10.0, self.dashFormat.maximumFractionDigits));
 
+    _csvDashFormat = [self.dashFormat copy];
+    self.csvDashFormat.currencyCode = @"";
+    self.csvDashFormat.currencySymbol = @"";
+    self.csvDashFormat.decimalSeparator = @".";
+    self.csvDashFormat.currencyDecimalSeparator = @".";
+    
     _dashSignificantFormat = [NSNumberFormatter new];
     self.dashSignificantFormat.lenient = YES;
     self.dashSignificantFormat.numberStyle = NSNumberFormatterCurrencyStyle;
