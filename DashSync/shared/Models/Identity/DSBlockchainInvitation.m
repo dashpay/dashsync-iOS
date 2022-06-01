@@ -87,7 +87,6 @@
     [self.identity setAssociatedInvitation:self];
     self.chain = wallet.chain;
     self.needsIdentityRetrieval = NO;
-
     return self;
 }
 
@@ -98,6 +97,7 @@
     self.createdLocally = YES;
     self.identity = [[DSBlockchainIdentity alloc] initAtIndex:index withLockedOutpoint:lockedOutpoint inWallet:wallet withBlockchainIdentityEntity:blockchainInvitationEntity.blockchainIdentity associatedToInvitation:self];
     self.link = blockchainInvitationEntity.link;
+    self.tag = blockchainInvitationEntity.tag;
     self.chain = wallet.chain;
     self.needsIdentityRetrieval = NO;
     return self;
@@ -162,6 +162,10 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainInvitationDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSBlockchainInvitationKey: self}];
     });
+}
+
+- (void)updateInWallet {
+    [self saveInContext:[NSManagedObjectContext platformContext]];
 }
 
 - (BOOL)unregisterLocally {
@@ -415,6 +419,11 @@
         BOOL changeOccured = NO;
         NSMutableArray *updateEvents = [NSMutableArray array];
         DSBlockchainInvitationEntity *entity = [self blockchainInvitationEntityInContext:context];
+        if (entity.tag != self.tag) {
+            entity.tag = self.tag;
+            changeOccured = YES;
+            [updateEvents addObject:DSBlockchainInvitationUpdateEvents];
+        }
         if (entity.link != self.link) {
             entity.link = self.link;
             changeOccured = YES;
