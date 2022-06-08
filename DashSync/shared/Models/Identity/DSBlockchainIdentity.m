@@ -4335,7 +4335,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
         if (!success) {
             return;
         }
-        friendRequestEntity.derivationPath = [friendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequestEntity];
+        friendRequestEntity.derivationPath = [friendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequestEntity inContext:context];
         
         DSAccount *account = [self.wallet accountWithNumber:0];
         if (friendship.destinationBlockchainIdentity.isLocal) { //the destination is also local
