@@ -167,14 +167,19 @@
     return contact;
 }
 
-- (DSDerivationPathEntity *)storeExtendedPublicKeyAssociatedWithFriendRequest:(DSFriendRequestEntity *)friendRequestEntity {
+- (DSDerivationPathEntity *)storeExtendedPublicKeyAssociatedWithFriendRequest:(DSFriendRequestEntity *)friendRequestEntity inContext:(NSManagedObjectContext *)context {
     [self.fundsDerivationPathForContact storeExtendedPublicKeyUnderWalletUniqueId:self.account.wallet.uniqueIDString];
     __block DSDerivationPathEntity *fundsDerivationPathEntity = nil;
-
-    [friendRequestEntity.managedObjectContext performBlockAndWait:^{
-        fundsDerivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self.fundsDerivationPathForContact associateWithFriendRequest:friendRequestEntity];
+    
+    [context performBlockAndWait:^{
+        fundsDerivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self.fundsDerivationPathForContact associateWithFriendRequest:friendRequestEntity
+            inContext:context];
     }];
     return fundsDerivationPathEntity;
+}
+
+- (DSDerivationPathEntity *)storeExtendedPublicKeyAssociatedWithFriendRequest:(DSFriendRequestEntity *)friendRequestEntity {
+    return [self storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequestEntity inContext:friendRequestEntity.managedObjectContext];
 }
 
 
