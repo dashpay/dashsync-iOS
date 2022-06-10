@@ -393,13 +393,13 @@
             [queryItems addObject:senderAvatarPathQueryItem];
         }
 
-        NSURLQueryItem *fundingTransactionQueryItem = [NSURLQueryItem queryItemWithName:@"assetlocktx" value:fundingTransactionHexString];
+        NSURLQueryItem *fundingTransactionQueryItem = [NSURLQueryItem queryItemWithName:@"assetlocktx" value:fundingTransactionHexString.lowercaseString];
         [queryItems addObject:fundingTransactionQueryItem];
 
         NSURLQueryItem *registrationFundingPrivateKeyQueryItem = [NSURLQueryItem queryItemWithName:@"pk" value:registrationFundingPrivateKeyString];
         [queryItems addObject:registrationFundingPrivateKeyQueryItem];
 
-        NSURLQueryItem *serializedISLockQueryItem = [NSURLQueryItem queryItemWithName:@"islock" value:serializedISLock];
+        NSURLQueryItem *serializedISLockQueryItem = [NSURLQueryItem queryItemWithName:@"islock" value:serializedISLock.lowercaseString];
         [queryItems addObject:serializedISLockQueryItem];
 
         components.queryItems = queryItems;
