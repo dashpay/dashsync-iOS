@@ -97,6 +97,7 @@
     self.createdLocally = YES;
     self.identity = [[DSBlockchainIdentity alloc] initAtIndex:index withLockedOutpoint:lockedOutpoint inWallet:wallet withBlockchainIdentityEntity:blockchainInvitationEntity.blockchainIdentity associatedToInvitation:self];
     self.link = blockchainInvitationEntity.link;
+    self.name = blockchainInvitationEntity.name;
     self.tag = blockchainInvitationEntity.tag;
     self.chain = wallet.chain;
     self.needsIdentityRetrieval = NO;
@@ -421,6 +422,11 @@
         DSBlockchainInvitationEntity *entity = [self blockchainInvitationEntityInContext:context];
         if (entity.tag != self.tag) {
             entity.tag = self.tag;
+            changeOccured = YES;
+            [updateEvents addObject:DSBlockchainInvitationUpdateEvents];
+        }
+        if (entity.name != self.name) {
+            entity.name = self.name;
             changeOccured = YES;
             [updateEvents addObject:DSBlockchainInvitationUpdateEvents];
         }
