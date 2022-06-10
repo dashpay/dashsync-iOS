@@ -45,6 +45,9 @@ FOUNDATION_EXPORT NSString *const DSBlockchainInvitationUpdateEventLink;
 /*! @brief This is the wallet holding the blockchain invitation. There should always be a wallet associated to a blockchain invitation. */
 @property (nonatomic, weak, readonly) DSWallet *wallet;
 
+/*! @brief A name for locally created invitation. */
+@property (nonatomic, copy) NSString *name;
+
 /*! @brief A tag for locally created invitation. */
 @property (nonatomic, copy) NSString *tag;
 
