@@ -297,9 +297,19 @@
                         //we need to go get it
                         UInt256 previousMasternodeAlreadyKnownBlockHash = [self.store closestKnownBlockHashForBlockHash:blockHash];
                         UInt256 previousMasternodeInQueueBlockHash = (pos ? [list objectAtIndex:pos - 1].UInt256 : UINT256_ZERO);
+                        
                         uint32_t previousMasternodeAlreadyKnownHeight = [self heightForBlockHash:previousMasternodeAlreadyKnownBlockHash];
                         uint32_t previousMasternodeInQueueHeight = (pos ? [self heightForBlockHash:previousMasternodeInQueueBlockHash] : UINT32_MAX);
+                        
                         UInt256 previousBlockHash = pos ? (previousMasternodeAlreadyKnownHeight > previousMasternodeInQueueHeight ? previousMasternodeAlreadyKnownBlockHash : previousMasternodeInQueueBlockHash) : previousMasternodeAlreadyKnownBlockHash;
+                        
+                        NSLog(@"retrieveMasternodeList:: \npreviousMasternodeAlreadyKnownBlockHash: %d: \"%@\", \npreviousMasternodeInQueueBlockHash: %d: \"%@\", \npreviousBlockHash: %d: \"%@\", \nblockHash %d: \"%@\"",
+                              previousMasternodeAlreadyKnownHeight, uint256_hex(previousMasternodeAlreadyKnownBlockHash),
+                              previousMasternodeInQueueHeight, uint256_hex(previousMasternodeInQueueBlockHash),
+                              [self heightForBlockHash:previousBlockHash], uint256_hex(previousBlockHash),
+                              [self heightForBlockHash:blockHash], uint256_hex(blockHash)
+                              );
+
                         NSAssert(([self heightForBlockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
                         [self.service retrieveMasternodeList:previousBlockHash forBlockHash:blockHash];
                     }
@@ -473,6 +483,8 @@
     if (length - offset < 32) return;
     UInt256 blockHash = [message readUInt256AtOffset:&offset];
 
+    NSLog(@"MNListDiff: : { base_block_hash: \"%@\", block_hash: \"%@\", height: %d }",  uint256_hex(baseBlockHash), uint256_hex(blockHash), [self heightForBlockHash:blockHash]);
+
 #if SAVE_MASTERNODE_DIFF_TO_FILE
     NSString *fileName = [NSString stringWithFormat:@"MNL_%@_%@.dat", @([self heightForBlockHash:baseBlockHash]), @([self heightForBlockHash:blockHash])];
     [message saveToFile:fileName inDirectory:NSCachesDirectory];
@@ -567,34 +579,64 @@
 
 - (void)peer:(DSPeer *)peer relayedQuorumRotationInfoMessage:(NSData *)message {
     self.timedOutAttempt = 0;
-    
     DSMasternodeDiffMessageContext *ctx = [self createDiffMessageContextWithLastBlock:nil baseMasternodeListHash:nil useInsightAsBackup:self.chain.isTestnet];
     LLMQRotationInfo *qrInfo = [DSMasternodeManager readQRInfoMessage:message withContext:ctx];
-    MNListDiff *listDiffAtH = qrInfo->mn_list_diff_at_h; //8a65d52a6cdc2a3ec1504c02a657d34ac3b3a507971134d6872c0628d0c5dd6c //6cddc5d028062c87d634119707a5b3c34ad357a6024c50c13e2adc6c2ad5658a
-    if (!qrInfo->mn_list_diff_at_h) {
+    MNListDiff *listDiffAtTip = qrInfo->mn_list_diff_tip;
+    MNListDiff *listDiffAtH = qrInfo->mn_list_diff_at_h;
+    MNListDiff *listDiffAtHC = qrInfo->mn_list_diff_at_h_c;
+    MNListDiff *listDiffAtH2C = qrInfo->mn_list_diff_at_h_2c;
+    MNListDiff *listDiffAtH3C = qrInfo->mn_list_diff_at_h_3c;
+    MNListDiff *listDiffAtH4C = qrInfo->mn_list_diff_at_h_4c;
+    if (!listDiffAtH || !listDiffAtTip) {
         return;
     }
     UInt256 baseBlockHash = *(UInt256 *)listDiffAtH->base_block_hash;
     UInt256 blockHash = *(UInt256 *)listDiffAtH->block_hash;
+    UInt256 baseBlockHashTip = *(UInt256 *)listDiffAtTip->base_block_hash;
+    UInt256 blockHashTip = *(UInt256 *)listDiffAtTip->block_hash;
+    UInt256 bbh_h_c = *(UInt256 *)listDiffAtHC->base_block_hash;
+    UInt256 bh_h_c = *(UInt256 *)listDiffAtHC->block_hash;
+    UInt256 bbh_h_2c = *(UInt256 *)listDiffAtH2C->base_block_hash;
+    UInt256 bh_h_2c = *(UInt256 *)listDiffAtH2C->block_hash;
+    UInt256 bbh_h_3c = *(UInt256 *)listDiffAtH3C->base_block_hash;
+    UInt256 bh_h_3c = *(UInt256 *)listDiffAtH3C->block_hash;
+    UInt256 bbh_h_4c = *(UInt256 *)listDiffAtH4C->base_block_hash;
+    UInt256 bh_h_4c = *(UInt256 *)listDiffAtH4C->block_hash;
+    NSLog(@"MNListDiffs: tip : { base_block_hash: \"%@\", block_hash: \"%@\", height: %d }",  uint256_hex(baseBlockHashTip), uint256_hex(blockHashTip), [self heightForBlockHash:blockHashTip]);
+    NSLog(@"MNListDiffs: h   : { base_block_hash: \"%@\", block_hash: \"%@\", height: %d }",  uint256_hex(baseBlockHash), uint256_hex(blockHash), [self heightForBlockHash:blockHash]);
+    NSLog(@"MNListDiffs: h_c : { base_block_hash: \"%@\", block_hash: \"%@\", height: %d }",  uint256_hex(bbh_h_c), uint256_hex(bh_h_c), [self heightForBlockHash:bh_h_c]);
+    NSLog(@"MNListDiffs: h_2c: { base_block_hash: \"%@\", block_hash: \"%@\", height: %d }",  uint256_hex(bbh_h_2c), uint256_hex(bh_h_2c), [self heightForBlockHash:bh_h_2c]);
+    NSLog(@"MNListDiffs: h_3c: { base_block_hash: \"%@\", block_hash: \"%@\", height: %d }",  uint256_hex(bbh_h_3c), uint256_hex(bh_h_3c), [self heightForBlockHash:bh_h_3c]);
+    NSLog(@"MNListDiffs: h_4c: { base_block_hash: \"%@\", block_hash: \"%@\", height: %d }",  uint256_hex(bbh_h_4c), uint256_hex(bh_h_4c), [self heightForBlockHash:bh_h_4c]);
 #if SAVE_MASTERNODE_DIFF_TO_FILE
     NSString *fileName = [NSString stringWithFormat:@"QRINFO_%@_%@.dat", @([self heightForBlockHash:baseBlockHash]), @([self heightForBlockHash:blockHash])];
     NSLog(@"File %@ saved", fileName);
     [message saveToFile:fileName inDirectory:NSCachesDirectory];
 #endif
     UInt512 concat = uint512_concat(baseBlockHash, blockHash);
-    NSData *blockHashDiffsData = uint512_data(concat);
-    NSData *blockHashData = uint256_data(blockHash);
-    DSLog(@"relayed qrinfo with baseBlockHash %@ (%u) blockHash %@ (%u)", uint256_reverse_hex(baseBlockHash), [self heightForBlockHash:baseBlockHash], blockHashData.reverse.hexString, [self heightForBlockHash:blockHash]);
-    if (![self.service removeListInRetrievalForKey:blockHashDiffsData] ||
-        [self.store hasMasternodeListAt:blockHashData]) {
+    UInt512 concatTip = uint512_concat(baseBlockHashTip, blockHashTip);
+    NSData *blockHashDiffsData= uint512_data(concat);
+    NSData *blockHashDiffsDataTip = uint512_data(concatTip);
+//    NSData *blockHashData = uint256_data(blockHash);
+    NSData *blockHashDataTip = uint256_data(blockHashTip);
+//    DSLog(@"relayed qrinfo with baseBlockHash %@ (%u) blockHash %@ (%u)", uint256_reverse_hex(baseBlockHash), [self heightForBlockHash:baseBlockHash], blockHashData.reverse.hexString, [self heightForBlockHash:blockHash]);
+    DSLog(@"relayed qrinfo with baseBlockHashTip %@ (%u) blockHashTip %@ (%u)", uint256_reverse_hex(baseBlockHashTip), [self heightForBlockHash:baseBlockHashTip], blockHashDataTip.reverse.hexString, [self heightForBlockHash:blockHashTip]);
+//    BOOL hasRemovedFromRetrieval = [self.service removeListInRetrievalForKey:blockHashDiffsData];
+//    BOOL wasntPresentInRetrieval = !hasRemovedFromRetrieval;
+//    BOOL hasLocallyStored = [self.store hasMasternodeListAt:blockHashData];
+    BOOL hasRemovedFromRetrievalTip = [self.service removeListInRetrievalForKey:blockHashDiffsDataTip];
+    BOOL hasLocallyStoredTip = [self.store hasMasternodeListAt:blockHashDataTip];
+//    DSLog(@"relayed qrinfo.2. hasRemovedFromRetrieval: %i hasLocallyStored: %i", hasRemovedFromRetrieval, hasLocallyStored);
+    DSLog(@"relayed qrinfo.2. hasRemovedFromRetrievalTip: %i hasLocallyStoredTip: %i", hasRemovedFromRetrievalTip, hasLocallyStoredTip);
+    if (!hasRemovedFromRetrievalTip || hasLocallyStoredTip) {
         [DSMasternodeManager destroyQRInfoMessage:qrInfo];
         return;
     }
     DSMasternodeList *baseMasternodeList = [self masternodeListForBlockHash:baseBlockHash];
     // We must have masternodeList if our baseBlockHash is not genesis
-    if (!baseMasternodeList &&
-        !uint256_eq(self.chain.genesisHash, baseBlockHash) &&
-        uint256_is_not_zero(baseBlockHash)) {
+    BOOL isTheBaseBlockAGenesis = uint256_eq(self.chain.genesisHash, baseBlockHash);
+    DSLog(@"relayed qrinfo.3. with baseMasternodeList: %@, isTheBaseBlockAGenesis: %u, baseBlockHashIsZero: %u", baseMasternodeList, isTheBaseBlockAGenesis, uint256_is_not_zero(baseBlockHash));
+    if (!baseMasternodeList && !isTheBaseBlockAGenesis && uint256_is_not_zero(baseBlockHash)) {
         //this could have been deleted in the meantime, if so rerequest
         [self issueWithMasternodeListFromPeer:peer];
         [DSMasternodeManager destroyQRInfoMessage:qrInfo];

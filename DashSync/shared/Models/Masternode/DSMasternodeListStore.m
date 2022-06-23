@@ -61,6 +61,7 @@
     _masternodeListsBlockHashStubs = [NSMutableSet set];
     _masternodeListQueriesNeedingQuorumsValidated = [NSMutableSet set];
     _cachedBlockHashHeights = [NSMutableDictionary dictionary];
+    _cachedQuorumSnapshots = [NSMutableDictionary dictionary];
     _masternodeListCurrentlyBeingSavedCount = 0;
     _masternodeSavingQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.masternodesaving.%@", chain.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
     self.lastQueriedBlockHash = UINT256_ZERO;

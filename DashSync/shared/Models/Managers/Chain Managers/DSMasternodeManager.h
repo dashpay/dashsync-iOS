@@ -24,6 +24,7 @@
 //  THE SOFTWARE.
 
 #import "DSChain.h"
+#import "DSQuorumSnapshot.h"
 #import "DSPeer.h"
 #import <Foundation/Foundation.h>
 
@@ -69,6 +70,8 @@ FOUNDATION_EXPORT NSString *const DSMasternodeListDiffValidationErrorNotificatio
 
 - (DSMasternodeList *_Nullable)masternodeListForBlockHash:(UInt256)blockHash withBlockHeightLookup:(uint32_t (^_Nullable)(UInt256 blockHash))blockHeightLookup;
 - (DSMasternodeList *_Nullable)masternodeListForBlockHash:(UInt256)blockHash;
+
+- (DSQuorumSnapshot *_Nullable)quorumSnapshotForBlockHeight:(uint32_t)blockHeight;
 
 - (void)startSync;
 - (BOOL)requestMasternodeListForBlockHeight:(uint32_t)blockHeight error:(NSError *_Nullable *_Nullable)error;

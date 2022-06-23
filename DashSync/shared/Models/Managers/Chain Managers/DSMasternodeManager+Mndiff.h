@@ -30,19 +30,24 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMasternodeManager (Mndiff)
 
-const MasternodeList *masternodeListLookupCallback(uint8_t (*block_hash)[32], const void *context);
-void masternodeListDestroyCallback(const MasternodeList *masternode_list);
-uint32_t blockHeightListLookupCallback(uint8_t (*block_hash)[32], const void *context);
-void addInsightLookup(uint8_t (*block_hash)[32], const void *context);
-bool shouldProcessQuorumType(uint8_t quorum_type, const void *context);
-bool validateQuorumCallback(LLMQValidationData *data, const void *context);
+const MasternodeList *getMasternodeListByBlockHash(uint8_t (*block_hash)[32], const void *context);
+void destroyMasternodeList(const struct MasternodeList *masternode_list);
+uint32_t getBlockHeightByHash(uint8_t (*block_hash)[32], const void *context);
+const uint8_t *getBlockHashByHeight(uint32_t block_height, const void *context);
+const LLMQSnapshot *getLLMQSnapshotByBlockHeight(uint32_t block_height, const void *context);
+void addInsightForBlockHash(uint8_t (*block_hash)[32], const void *context);
+bool shouldProcessLLMQType(uint8_t quorum_type, const void *context);
+bool validateLLMQ(struct LLMQValidationData *data, const void *context);
+
+- (void)registerProcessor:(DSMasternodeDiffMessageContext *)context;
+- (void)unregisterProcessor;
 
 + (void)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion;
 
-+ (LLMQRotationInfo *)readQRInfoMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context;
-+ (void)destroyQRInfoMessage:(LLMQRotationInfo *)info;
++ (struct LLMQRotationInfo *)readQRInfoMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context;
++ (void)destroyQRInfoMessage:(struct LLMQRotationInfo *)info;
 
-+ (void)processQRInfo:(LLMQRotationInfo *)info withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSQRInfoProcessingResult *result))completion;
++ (void)processQRInfo:(struct LLMQRotationInfo *)info withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSQRInfoProcessingResult *result))completion;
 
 @end
 

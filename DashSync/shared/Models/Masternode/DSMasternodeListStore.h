@@ -18,6 +18,7 @@
 #import "BigIntTypes.h"
 #import "DSChain.h"
 #import "DSMasternodeList.h"
+#import "DSQuorumSnapshot.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -40,6 +41,8 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 @property (nonatomic, readonly) NSMutableSet<NSData *> *masternodeListsBlockHashStubs;
 @property (nonatomic, readonly) uint32_t masternodeListsToSync;
 @property (nonatomic, readonly) BOOL masternodeListsAndQuorumsIsSynced;
+
+@property (nonatomic, readonly) NSMutableDictionary<NSData *, DSQuorumSnapshot *> *cachedQuorumSnapshots;
 
 - (instancetype)initWithChain:(DSChain *)chain;
 - (void)setUp;
