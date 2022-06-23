@@ -68,7 +68,7 @@
     return copy;
 }
 
-- (instancetype)initWithVersion:(uint16_t)version type:(DSLLMQType)type quorumHash:(UInt256)quorumHash quorumPublicKey:(UInt384)quorumPublicKey quorumEntryHash:(UInt256)quorumEntryHash verified:(BOOL)verified onChain:(DSChain *)chain {
+- (instancetype)initWithVersion:(uint16_t)version type:(DSLLMQType)type quorumHash:(UInt256)quorumHash quorumIndex:(uint32_t)quorumIndex quorumPublicKey:(UInt384)quorumPublicKey quorumEntryHash:(UInt256)quorumEntryHash verified:(BOOL)verified onChain:(DSChain *)chain {
     if (!(self = [super init])) return nil;
 
     self.llmqType = type;
@@ -76,6 +76,7 @@
     self.quorumHash = quorumHash;
     self.quorumPublicKey = quorumPublicKey;
     self.quorumEntryHash = quorumEntryHash;
+    self.quorumIndex = quorumIndex;
     self.verified = verified;
     self.chain = chain;
     self.saved = TRUE;
