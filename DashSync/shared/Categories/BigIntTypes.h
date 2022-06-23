@@ -225,5 +225,40 @@ typedef uint32_t (^_Nullable BlockHeightFinder)(UInt256 blockHash);
                                                  CFSwapInt32HostToLittle((uint32_t)o.n)}) \
                                       length:sizeof(UInt256) + sizeof(uint32_t)]
 
-
+#define data_malloc(u) (^{ \
+    NSUInteger l = u.length; \
+    uint8_t *h = malloc(l); \
+    memcpy(h, u.bytes, l); \
+    return h; \
+}())
+#define uint128_malloc(u) (^{ \
+    uint8_t (*h)[16] = malloc(sizeof(UInt128)); \
+    memcpy(h, u.u8, sizeof(UInt128)); \
+    return h; \
+}())
+#define uint160_malloc(u) (^{ \
+    uint8_t (*h)[20] = malloc(sizeof(UInt160)); \
+    memcpy(h, u.u8, sizeof(UInt160)); \
+    return h; \
+}())
+#define uint256_malloc(u) (^{ \
+    uint8_t (*h)[32] = malloc(sizeof(UInt256)); \
+    memcpy(h, u.u8, sizeof(UInt256)); \
+    return h; \
+}())
+#define uint384_malloc(u) (^{ \
+    uint8_t (*h)[48] = malloc(sizeof(UInt384)); \
+    memcpy(h, u.u8, sizeof(UInt384)); \
+    return h; \
+}())
+#define uint512_malloc(u) (^{ \
+    uint8_t (*h)[64] = malloc(sizeof(UInt512)); \
+    memcpy(h, u.u8, sizeof(UInt512)); \
+    return h; \
+}())
+#define uint768_malloc(u) (^{ \
+    uint8_t (*h)[96] = malloc(sizeof(UInt768)); \
+    memcpy(h, u.u8, sizeof(UInt768)); \
+    return h; \
+}())
 #endif /* BigIntTypes_h */
