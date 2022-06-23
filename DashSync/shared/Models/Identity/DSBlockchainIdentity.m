@@ -4009,7 +4009,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                                                                 failure:^(NSError *_Nonnull error) {
         if (completion) {
             dispatch_async(completionQueue, ^{
-                completion(NO, NO, @[error]);
+                completion(NO, nil, @[error]);
             });
         }
     }];
