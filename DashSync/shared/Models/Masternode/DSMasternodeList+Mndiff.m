@@ -71,13 +71,10 @@
     }
     masternode_list->masternodes = masternodes_values;
     masternode_list->masternodes_count = masternodes_count;
-    masternode_list->block_hash = malloc(sizeof(UInt256));
-    memcpy(masternode_list->block_hash, [self blockHash].u8, sizeof(UInt256));
+    masternode_list->block_hash = uint256_malloc([self blockHash]);
     masternode_list->known_height = [self height];
-    masternode_list->masternode_merkle_root = malloc(sizeof(UInt256));
-    memcpy(masternode_list->masternode_merkle_root, [self masternodeMerkleRoot].u8, sizeof(UInt256));
-    masternode_list->llmq_merkle_root = malloc(sizeof(UInt256));
-    memcpy(masternode_list->llmq_merkle_root, [self quorumMerkleRoot].u8, sizeof(UInt256));
+    masternode_list->masternode_merkle_root = uint256_malloc([self masternodeMerkleRoot]);
+    masternode_list->llmq_merkle_root = uint256_malloc([self quorumMerkleRoot]);
     return masternode_list;
 }
 
