@@ -643,26 +643,9 @@
 
 - (NSData *)publicKeyDataAtIndexPath:(NSIndexPath *)indexPath {
     if (self.signingAlgorithm == DSKeyType_ECDSA) {
-        if (self.extendedPublicKeyData.length < 4 + sizeof(UInt256) + sizeof(DSECPoint)) {
-            NSAssert(NO, @"Extended public key is wrong size");
-            return nil;
-        }
-
-        UInt256 chain = *(const UInt256 *)((const uint8_t *)self.extendedPublicKeyData.bytes + 4);
-        DSECPoint pubKey = *(const DSECPoint *)((const uint8_t *)self.extendedPublicKeyData.bytes + 36);
-        for (NSInteger i = 0; i < [indexPath length]; i++) {
-            uint32_t derivation = (uint32_t)[indexPath indexAtPosition:i];
-            CKDpub(&pubKey, &chain, derivation);
-        }
-        NSData *data = [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
-        NSAssert(data, @"Public key should be created");
-        return data;
+        return [DSECDSAKey publicKeyFromExtendedPublicKeyData:self.extendedPublicKeyData atIndexPath:indexPath];
     } else if (self.signingAlgorithm == DSKeyType_BLS) {
-        DSBLSKey *extendedPublicKey = [DSBLSKey keyWithExtendedPublicKeyData:self.extendedPublicKeyData];
-        DSBLSKey *extendedPublicKeyAtIndexPath = [extendedPublicKey publicDeriveToPath:indexPath];
-        NSData *data = [NSData dataWithUInt384:extendedPublicKeyAtIndexPath.publicKey];
-        NSAssert(data, @"Public key should be created");
-        return data;
+        return [DSBLSKey publicKeyFromExtendedPublicKeyData:self.extendedPublicKeyData atIndexPath:indexPath];
     }
     return nil;
 }
