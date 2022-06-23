@@ -43,6 +43,7 @@
 
 - (void)addToRetrievalQueue:(NSData *)masternodeBlockHashData {
     NSAssert(uint256_is_not_zero(masternodeBlockHashData.UInt256), @"the hash data must not be empty");
+    DSLog(@"addToRetrievalQueue: %d:%@", self.blockHeightLookup(masternodeBlockHashData.UInt256), masternodeBlockHashData.hexString);
     [self.retrievalQueue addObject:masternodeBlockHashData];
     [self updateMasternodeRetrievalQueue];
 }
@@ -52,6 +53,7 @@
     for (NSData *blockHashData in masternodeBlockHashDataArray) {
         NSAssert(uint256_is_not_zero(blockHashData.UInt256), @"We should not be adding an empty block hash");
         if (uint256_is_not_zero(blockHashData.UInt256)) {
+            DSLog(@"addToRetrievalQueueArray...: %d:%@", self.blockHeightLookup(blockHashData.UInt256), blockHashData.hexString);
             [nonEmptyBlockHashes addObject:blockHashData];
         }
     }
@@ -137,6 +139,7 @@
     [self.peerManager peerMisbehaving:peer errorMessage:@"Issue with Deterministic Masternode list"];
 }
 - (void)requestMasternodesAndQuorums:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash {
+    DSLog(@"requestMasternodesAndQuorums: base_block_hash: %d: %@, block_hash: %d: %@", self.blockHeightLookup(previousBlockHash), uint256_hex(previousBlockHash), self.blockHeightLookup(blockHash), uint256_hex(blockHash));
     if ([self.chain hasDIP0024Enabled]) {
         [self requestQuorumRotationInfo:previousBlockHash forBlockHash:blockHash extraShare:YES];
     } else {
@@ -154,6 +157,7 @@
 }
 
 - (void)retrieveMasternodeList:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash {
+    DSLog(@"Retrieve masternode list %d:(%@) %d:(%@)", self.blockHeightLookup(previousBlockHash), uint256_hex(previousBlockHash), self.blockHeightLookup(blockHash), uint256_hex(blockHash));
     [self requestMasternodesAndQuorums:previousBlockHash forBlockHash:blockHash];
     UInt512 concat = uint512_concat(previousBlockHash, blockHash);
     [self.listsInRetrieval addObject:uint512_data(concat)];

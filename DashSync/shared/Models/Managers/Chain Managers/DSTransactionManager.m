@@ -279,7 +279,6 @@
 
     BOOL rescan = NO, notify = NO;
     NSValue *hash;
-    UInt256 h;
 
     for (DSTransaction *transaction in transactionsSet) {
         if (transaction.blockHeight != TX_UNCONFIRMED) continue;

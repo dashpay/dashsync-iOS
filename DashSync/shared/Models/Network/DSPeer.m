@@ -768,7 +768,7 @@
     [msg appendUInt256:blockHash];
     // Flag to indicate if an extra share is requested
     [msg appendUInt8:extraShare ? 1 : 0];
-    DSLog(@"sendGetQuorumRotationInfoForBaseBlockHashes: %@", msg.hexString);
+//    DSLog(@"sendGetQuorumRotationInfoForBaseBlockHashes: %@", msg.hexString);
     [self sendMessage:msg type:MSG_GETQUORUMROTATIONINFO];
 }
 
