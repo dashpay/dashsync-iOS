@@ -23,7 +23,10 @@
 }
 
 - (DSMasternodeList *)masternodeListWithSimplifiedMasternodeEntryPool:(NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *)simplifiedMasternodeEntries quorumEntryPool:(NSDictionary<NSNumber *, NSDictionary *> *)quorumEntries withBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
+    
+    /// TODO: it's a BS to collect this stuff into arrays and then to recollect it into dictionaries in the next step...
     NSMutableArray *masternodeEntriesArray = [NSMutableArray array];
+    
     for (DSSimplifiedMasternodeEntryEntity *masternodeEntity in self.masternodes) {
         DSSimplifiedMasternodeEntry *masternodeEntry = [simplifiedMasternodeEntries objectForKey:masternodeEntity.providerRegistrationTransactionHash];
         if (!masternodeEntry) {

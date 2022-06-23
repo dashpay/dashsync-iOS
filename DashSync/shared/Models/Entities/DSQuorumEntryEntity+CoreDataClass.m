@@ -132,6 +132,7 @@
 }
 
 + (DSQuorumEntryEntity *)quorumEntryForHash:(NSData *)quorumEntryHash onChainEntity:(DSChainEntity *)chainEntity {
+    /// Seems to be unused or quorumEntryHash must be changed into commitmentHash ?
     NSArray *objects = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@) && (quorumEntryHash == %@)", chainEntity, quorumEntryHash];
     return [objects firstObject];
 }
