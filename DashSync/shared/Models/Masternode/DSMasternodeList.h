@@ -26,8 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSDictionary<NSNumber *, NSDictionary<NSData *, DSQuorumEntry *> *> *quorums;
 @property (nonatomic, readonly) UInt256 blockHash;
 @property (nonatomic, readonly) uint32_t height;
-@property (nonatomic, readonly) NSTimeInterval approximateTimestamp;
-@property (nonatomic, readonly) BOOL isInLast30Days;
 @property (nonatomic, readonly) UInt256 masternodeMerkleRoot;
 @property (nonatomic, readonly) UInt256 quorumMerkleRoot;
 @property (nonatomic, readonly) NSUInteger quorumsCount;
@@ -63,9 +61,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSDictionary *)listOfChangedNodesComparedTo:(DSMasternodeList *)previous;
 - (NSDictionary *)compare:(DSMasternodeList *)other usingOurString:(NSString *)ours usingTheirString:(NSString *)theirs blockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 
-- (DSQuorumEntry *_Nullable)quorumEntryForInstantSendRequestID:(UInt256)requestID;
-- (DSQuorumEntry *_Nullable)quorumEntryForChainLockRequestID:(UInt256)requestID;
+- (DSQuorumEntry *_Nullable)quorumEntryForLockRequestID:(UInt256)requestID ofQuorumType:(DSLLMQType)quorumType;
 - (DSQuorumEntry *_Nullable)quorumEntryForPlatformWithQuorumHash:(UInt256)quorumHash;
+
 - (NSArray<DSQuorumEntry *> *)quorumEntriesRankedForInstantSendRequestID:(UInt256)requestID;
 
 - (NSArray<DSPeer *> *)peers:(uint32_t)peerCount withConnectivityNonce:(uint64_t)connectivityNonce;

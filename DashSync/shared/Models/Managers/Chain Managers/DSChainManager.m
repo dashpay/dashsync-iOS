@@ -96,7 +96,7 @@
     self.gotSporksAtChainSyncStart = FALSE;
     self.sessionConnectivityNonce = (long long)arc4random() << 32 | arc4random();
 
-    if (self.masternodeManager.currentMasternodeList && self.masternodeManager.currentMasternodeList.isInLast30Days) {
+    if ([self.masternodeManager hasCurrentMasternodeListInLast30Days]) {
         [self.peerManager useMasternodeList:self.masternodeManager.currentMasternodeList withConnectivityNonce:self.sessionConnectivityNonce];
     }
 
@@ -630,8 +630,7 @@
             [peer sendGetheadersMessageWithLocators:[self.chain terminalBlocksLocatorArray] andHashStop:UINT256_ZERO];
         } else if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList) && ((self.masternodeManager.lastMasternodeListBlockHeight < self.chain.lastTerminalBlockHeight - 8) || (self.masternodeManager.lastMasternodeListBlockHeight == UINT32_MAX))) {
             self.syncPhase = DSChainSyncPhase_InitialTerminalBlocks;
-            [self.masternodeManager getRecentMasternodeList:32 withSafetyDelay:0];
-            [self.masternodeManager getCurrentMasternodeListWithSafetyDelay:0];
+            [self.masternodeManager startSync];
         } else {
             self.syncPhase = DSChainSyncPhase_ChainSync;
             BOOL startingDevnetSync = [self.chain isDevnetAny] && self.chain.lastSyncBlockHeight < 5;
@@ -650,8 +649,7 @@
     [self.peerManager chainSyncStopped];
     if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList)) {
         // make sure we care about masternode lists
-        [self.masternodeManager getRecentMasternodeList:32 withSafetyDelay:0];
-        [self.masternodeManager getCurrentMasternodeListWithSafetyDelay:0];
+        [self.masternodeManager startSync];
     }
 }
 
@@ -665,8 +663,7 @@
     [self.governanceSyncManager startGovernanceSync];
     if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList)) {
         // make sure we care about masternode lists
-        [self.masternodeManager getRecentMasternodeList:32 withSafetyDelay:0];
-        [self.masternodeManager getCurrentMasternodeListWithSafetyDelay:0];
+        [self.masternodeManager startSync];
     }
 }
 

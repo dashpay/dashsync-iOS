@@ -92,24 +92,15 @@
     return message;
 }
 
-- (void)checkPingTimesForMasternodesInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(NSMutableDictionary<NSData *, NSNumber *> *pingTimes, NSMutableDictionary<NSData *, NSError *> *errors))completion {
-    __block NSArray<DSSimplifiedMasternodeEntry *> *entries = self.currentMasternodeList.simplifiedMasternodeEntries;
-    [self.chain.chainManager.DAPIClient checkPingTimesForMasternodes:entries
-                                                          completion:^(NSMutableDictionary<NSData *, NSNumber *> *_Nonnull pingTimes, NSMutableDictionary<NSData *, NSError *> *_Nonnull errors) {
-        [context performBlockAndWait:^{
-            for (DSSimplifiedMasternodeEntry *entry in entries) {
-                [entry savePlatformPingInfoInContext:context];
-            }
-            NSError *savingError = nil;
-            [context save:&savingError];
-        }];
-        if (completion != nil) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completion(pingTimes, errors);
-            });
+- (void)savePlatformPingInfoForEntries:(NSArray<DSSimplifiedMasternodeEntry *> *)entries
+                             inContext:(NSManagedObjectContext *)context {
+    [context performBlockAndWait:^{
+        for (DSSimplifiedMasternodeEntry *entry in entries) {
+            [entry savePlatformPingInfoInContext:context];
         }
+        NSError *savingError = nil;
+        [context save:&savingError];
     }];
-
 }
 
 - (NSArray *)recentMasternodeLists {
@@ -198,15 +189,6 @@
         return masternodeList.blockHash;
     else
         return self.chain.genesisHash;
-}
-
-- (BOOL)currentMasternodeListIsInLast24Hours {
-    if (!self.currentMasternodeList) return FALSE;
-    DSBlock *block = [self.chain blockForBlockHash:self.currentMasternodeList.blockHash];
-    if (!block) return FALSE;
-    NSTimeInterval currentTimestamp = [[NSDate date] timeIntervalSince1970];
-    NSTimeInterval delta = currentTimestamp - block.timestamp;
-    return fabs(delta) < DAY_TIME_INTERVAL;
 }
 
 - (void)deleteAllOnChain {
@@ -465,11 +447,14 @@
         UInt256 mnlBlockHash = masternodeList.blockHash;
         uint32_t mnlHeight = masternodeList.height;
         NSData *mnlBlockHashData = uint256_data(mnlBlockHash);
+        
         DSMerkleBlockEntity *merkleBlockEntity = [DSMerkleBlockEntity anyObjectInContext:context matching:@"blockHash == %@", mnlBlockHashData];
-        if (!merkleBlockEntity && ([chain checkpointForBlockHash:mnlBlockHash])) {
+        if (!merkleBlockEntity) {
             DSCheckpoint *checkpoint = [chain checkpointForBlockHash:mnlBlockHash];
-            DSBlock *block = [checkpoint blockForChain:chain];
-            merkleBlockEntity = [[DSMerkleBlockEntity managedObjectInBlockedContext:context] setAttributesFromBlock:block forChainEntity:chainEntity];
+            if (checkpoint) {
+                DSBlock *block = [checkpoint blockForChain:chain];
+                merkleBlockEntity = [[DSMerkleBlockEntity managedObjectInBlockedContext:context] setAttributesFromBlock:block forChainEntity:chainEntity];
+            }
         }
         NSAssert(!merkleBlockEntity || !merkleBlockEntity.masternodeList, @"Merkle block should not have a masternode list already");
         NSError *error = nil;
@@ -577,15 +562,8 @@
 }
 
 - (DSQuorumEntry *_Nullable)quorumEntryForPlatformHavingQuorumHash:(UInt256)quorumHash forBlockHeight:(uint32_t)blockHeight {
-    DSBlock *block = [self.chain blockAtHeight:blockHeight];
-    if (block == nil) {
-        if (blockHeight > self.chain.lastTerminalBlockHeight) {
-            block = self.chain.lastTerminalBlock;
-        } else {
-            return nil;
-        }
-    }
-    return [self quorumEntryForPlatformHavingQuorumHash:quorumHash forBlock:block];
+    DSBlock *block = [self.chain blockAtHeightOrLastTerminal:blockHeight];
+    return block ? [self quorumEntryForPlatformHavingQuorumHash:quorumHash forBlock:block] : nil;
 }
 
 - (DSQuorumEntry *)quorumEntryForPlatformHavingQuorumHash:(UInt256)quorumHash forBlock:(DSBlock *)block {
@@ -608,35 +586,40 @@
     return quorumEntry;
 }
 
-- (DSQuorumEntry *)quorumEntryForChainLockRequestID:(UInt256)requestID forMerkleBlock:(DSMerkleBlock *)merkleBlock {
+- (DSQuorumEntry *)quorumEntryForLockRequestID:(UInt256)requestID
+                                  ofQuorumType:(DSLLMQType)quorumType
+                                forMerkleBlock:(DSMerkleBlock *)merkleBlock
+                          withExpirationOffset:(uint32_t)offset {
     DSMasternodeList *masternodeList = [self masternodeListBeforeBlockHash:merkleBlock.blockHash];
     if (!masternodeList) {
         DSLog(@"No masternode list found yet");
         return nil;
     }
-    if (merkleBlock.height - masternodeList.height > 24) {
-        DSLog(@"Masternode list is too old");
+    if (merkleBlock.height - masternodeList.height > offset) {
+        DSLog(@"Masternode list for is too old (age: %d masternodeList height %d merkle block height %d)",
+              merkleBlock.height - masternodeList.height, masternodeList.height, merkleBlock.height);
         return nil;
     }
-    return [masternodeList quorumEntryForChainLockRequestID:requestID];
+    return [masternodeList quorumEntryForLockRequestID:requestID ofQuorumType:quorumType];
 }
 
-- (DSQuorumEntry *)quorumEntryForInstantSendRequestID:(UInt256)requestID withBlockHeightOffset:(uint32_t)blockHeightOffset {
-    DSMerkleBlock *merkleBlock = [self.chain blockFromChainTip:blockHeightOffset];
-    DSMasternodeList *masternodeList = [self masternodeListBeforeBlockHash:merkleBlock.blockHash];
-    if (!masternodeList) {
-        DSLog(@"No masternode list found yet");
-        return nil;
-    }
-    if (merkleBlock.height - masternodeList.height > 32) {
-        DSLog(@"Masternode list for IS is too old (age: %d masternodeList height %d merkle block height %d)", merkleBlock.height - masternodeList.height, masternodeList.height, merkleBlock.height);
-        return nil;
-    }
-    return [masternodeList quorumEntryForInstantSendRequestID:requestID];
+- (DSQuorumEntry *)quorumEntryForChainLockRequestID:(UInt256)requestID forMerkleBlock:(DSMerkleBlock *)merkleBlock {
+    return [self quorumEntryForLockRequestID:requestID
+                                ofQuorumType:self.chain.quorumTypeForChainLocks
+                              forMerkleBlock:merkleBlock
+                        withExpirationOffset:24];
+}
+
+- (DSQuorumEntry *)quorumEntryForInstantSendRequestID:(UInt256)requestID forMerkleBlock:(DSMerkleBlock *)merkleBlock {
+    return [self quorumEntryForLockRequestID:requestID
+                                ofQuorumType:self.chain.quorumTypeForISLocks
+                              forMerkleBlock:merkleBlock
+                        withExpirationOffset:32];
 }
 
 - (BOOL)addBlockToValidationQueue:(DSMerkleBlock *)merkleBlock {
     UInt256 merkleBlockHash = merkleBlock.blockHash;
+    DSLog(@"addBlockToValidationQueue: %u:%@", merkleBlock.height, uint256_hex(merkleBlockHash));
     NSData *merkleBlockHashData = uint256_data(merkleBlockHash);
     if ([self hasMasternodeListAt:merkleBlockHashData]) {
         DSLog(@"Already have that masternode list (or in stub) %u", merkleBlock.height);

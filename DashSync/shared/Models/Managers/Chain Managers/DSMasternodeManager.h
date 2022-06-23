@@ -56,6 +56,7 @@ FOUNDATION_EXPORT NSString *const DSMasternodeListDiffValidationErrorNotificatio
 
 - (instancetype)init NS_UNAVAILABLE;
 - (uint32_t)heightForBlockHash:(UInt256)blockhash;
+- (BOOL)hasCurrentMasternodeListInLast30Days;
 
 - (DSSimplifiedMasternodeEntry *)masternodeHavingProviderRegistrationTransactionHash:(NSData *)providerRegistrationTransactionHash;
 
@@ -69,6 +70,7 @@ FOUNDATION_EXPORT NSString *const DSMasternodeListDiffValidationErrorNotificatio
 - (DSMasternodeList *_Nullable)masternodeListForBlockHash:(UInt256)blockHash withBlockHeightLookup:(uint32_t (^_Nullable)(UInt256 blockHash))blockHeightLookup;
 - (DSMasternodeList *_Nullable)masternodeListForBlockHash:(UInt256)blockHash;
 
+- (void)startSync;
 - (BOOL)requestMasternodeListForBlockHeight:(uint32_t)blockHeight error:(NSError *_Nullable *_Nullable)error;
 - (BOOL)requestMasternodeListForBlockHash:(UInt256)blockHash;
 

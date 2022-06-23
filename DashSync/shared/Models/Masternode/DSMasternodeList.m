@@ -8,7 +8,6 @@
 #import "DSMasternodeList.h"
 #import "BigIntTypes.h"
 #import "DSChain.h"
-#import "DSMasternodeListEntity+CoreDataClass.h"
 #import "DSMerkleBlock.h"
 #import "DSMutableOrderedDataKeyDictionary.h"
 #import "DSPeer.h"
@@ -362,15 +361,6 @@
     return self.knownHeight;
 }
 
-- (NSTimeInterval)approximateTimestamp {
-    return [self.chain timestampForBlockHeight:self.height];
-}
-
-- (BOOL)isInLast30Days {
-    NSTimeInterval interval = [[NSDate date] timeIntervalSince1970] - self.approximateTimestamp;
-    return interval < DAY_TIME_INTERVAL * 30;
-}
-
 /*
  - (BOOL)validateQuorumsWithMasternodeLists:(NSDictionary *)masternodeLists {
     for (DSQuorumEntry *quorum in self.quorums) {
@@ -472,27 +462,11 @@
     return dictionary;
 }
 
-- (DSQuorumEntry *)quorumEntryForInstantSendRequestID:(UInt256)requestID {
-    DSLLMQType ISLockQuorumType = self.chain.quorumTypeForISLocks;
-    NSArray *quorumsForIS = [self.quorums[@(ISLockQuorumType)] allValues];
+- (DSQuorumEntry *)quorumEntryForLockRequestID:(UInt256)requestID ofQuorumType:(DSLLMQType)quorumType {
+    NSArray *quorumsForLock = [self.quorums[@(quorumType)] allValues];
     UInt256 lowestValue = UINT256_MAX;
     DSQuorumEntry *firstQuorum = nil;
-    for (DSQuorumEntry *quorumEntry in quorumsForIS) {
-        UInt256 orderingHash = uint256_reverse([quorumEntry orderingHashForRequestID:requestID forQuorumType:ISLockQuorumType]);
-        if (uint256_sup(lowestValue, orderingHash)) {
-            lowestValue = orderingHash;
-            firstQuorum = quorumEntry;
-        }
-    }
-    return firstQuorum;
-}
-
-- (DSQuorumEntry *)quorumEntryForChainLockRequestID:(UInt256)requestID {
-    DSLLMQType quorumType = self.chain.quorumTypeForChainLocks;
-    NSArray *quorumsForChainLock = [self.quorums[@(quorumType)] allValues];
-    UInt256 lowestValue = UINT256_MAX;
-    DSQuorumEntry *firstQuorum = nil;
-    for (DSQuorumEntry *quorumEntry in quorumsForChainLock) {
+    for (DSQuorumEntry *quorumEntry in quorumsForLock) {
         UInt256 orderingHash = uint256_reverse([quorumEntry orderingHashForRequestID:requestID forQuorumType:quorumType]);
         if (uint256_sup(lowestValue, orderingHash)) {
             lowestValue = orderingHash;
@@ -502,8 +476,8 @@
     return firstQuorum;
 }
 
-- (DSQuorumEntry *)quorumEntryForPlatformWithQuorumHash:(UInt256)quorumHash {
-    DSLLMQType quorumType = self.chain.quorumTypeForPlatform;
+
+- (DSQuorumEntry *_Nullable)quorumEntryForPlatformWithQuorumHash:(UInt256)quorumHash ofQuorumType:(DSLLMQType)quorumType {
     NSArray *quorumsForPlatform = [self.quorums[@(quorumType)] allValues];
     for (DSQuorumEntry *quorumEntry in quorumsForPlatform) {
         if (uint256_eq(quorumEntry.quorumHash, quorumHash)) {
@@ -512,6 +486,11 @@
         NSAssert(!uint256_eq(quorumEntry.quorumHash, uint256_reverse(quorumHash)), @"these should not be inversed");
     }
     return nil;
+}
+
+- (DSQuorumEntry *)quorumEntryForPlatformWithQuorumHash:(UInt256)quorumHash {
+    DSLLMQType quorumType = self.chain.quorumTypeForPlatform;
+    return [self quorumEntryForPlatformWithQuorumHash:quorumHash ofQuorumType:quorumType];
 }
 
 - (NSArray<DSQuorumEntry *> *)quorumEntriesRankedForInstantSendRequestID:(UInt256)requestID {
