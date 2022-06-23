@@ -326,6 +326,9 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 /*! @brief The block on the main chain at a certain height. By main chain it is understood to mean not forked chain - this could be on mainnet, testnet or a devnet.  */
 - (DSMerkleBlock *_Nullable)blockAtHeight:(uint32_t)height;
 
+/*! @brief The block on the main chain at a certain height. If none exist return most recent.  */
+- (DSMerkleBlock *_Nullable)blockAtHeightOrLastTerminal:(uint32_t)height;
+
 /*! @brief Returns a known block with the given block hash. This does not have to be in the main chain. A null result could mean that the block was old and has since been discarded.  */
 - (DSMerkleBlock *_Nullable)blockForBlockHash:(UInt256)blockHash;
 

@@ -1893,6 +1893,17 @@ static dispatch_once_t devnetToken = 0;
     }
     return b;
 }
+- (DSBlock *)blockAtHeightOrLastTerminal:(uint32_t)height {
+    DSBlock *block = [self blockAtHeight:height];
+    if (block == nil) {
+        if (height > self.lastTerminalBlockHeight) {
+            block = self.lastTerminalBlock;
+        } else {
+            return nil;
+        }
+    }
+    return block;
+}
 
 - (DSBlock *)blockFromChainTip:(NSUInteger)blocksAgo {
     DSBlock *b = self.lastTerminalBlock;
