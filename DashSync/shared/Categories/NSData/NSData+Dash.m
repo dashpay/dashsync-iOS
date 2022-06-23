@@ -804,7 +804,8 @@ BOOL deserialize32(NSString *string, uint8_t *depth, uint32_t *fingerprint, uint
     NSData *checkData = [allData subdataWithRange:NSMakeRange(allData.length - 4, 4)];
     if ((*(uint32_t *)data.SHA256_2.u32) != *(uint32_t *)checkData.bytes) return FALSE;
     uint8_t *bytes = (uint8_t *)[data bytes];
-    if (memcmp(bytes, mainnet ? BIP32_XPRV_MAINNET : BIP32_XPRV_TESTNET, 4) != 0 && memcmp(bytes, mainnet ? BIP32_XPUB_MAINNET : BIP32_XPUB_TESTNET, 4) != 0) {
+    if (memcmp(bytes, mainnet ? BIP32_XPRV_MAINNET : BIP32_XPRV_TESTNET, 4) != 0 &&
+        memcmp(bytes, mainnet ? BIP32_XPUB_MAINNET : BIP32_XPUB_TESTNET, 4) != 0) {
         return FALSE;
     }
     NSUInteger offset = 4;
