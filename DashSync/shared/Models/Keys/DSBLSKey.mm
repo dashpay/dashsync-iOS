@@ -474,4 +474,11 @@
     return signature;
 }
 
++ (NSData *_Nullable)publicKeyFromExtendedPublicKeyData:(NSData *)publicKeyData atIndexPath:(NSIndexPath *)indexPath {
+    DSBLSKey *extendedPublicKey = [DSBLSKey keyWithExtendedPublicKeyData:publicKeyData];
+    DSBLSKey *extendedPublicKeyAtIndexPath = [extendedPublicKey publicDeriveToPath:indexPath];
+    NSData *data = [NSData dataWithUInt384:extendedPublicKeyAtIndexPath.publicKey];
+    NSAssert(data, @"Public key should be created");
+    return data;
+}
 @end

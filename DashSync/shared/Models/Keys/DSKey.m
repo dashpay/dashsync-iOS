@@ -191,5 +191,9 @@
     NSAssert(NO, @"This should be overridden");
 }
 
++ (NSData *_Nullable)publicKeyFromExtendedPublicKeyData:(NSData *)publicKeyData atIndexPath:(NSIndexPath *)indexPath {
+    NSAssert(NO, @"This should be overridden");
+    return [NSData data];
+}
 
 @end

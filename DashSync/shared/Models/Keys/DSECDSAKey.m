@@ -779,5 +779,19 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i) {
     return childKey;
 }
 
-
++ (NSData *_Nullable)publicKeyFromExtendedPublicKeyData:(NSData *)publicKeyData atIndexPath:(NSIndexPath *)indexPath {
+    if (publicKeyData.length < 4 + sizeof(UInt256) + sizeof(DSECPoint)) {
+        NSAssert(NO, @"Extended public key is wrong size");
+        return nil;
+    }
+    UInt256 chain = *(const UInt256 *)((const uint8_t *)publicKeyData.bytes + 4);
+    DSECPoint pubKey = *(const DSECPoint *)((const uint8_t *)publicKeyData.bytes + 36);
+    for (NSInteger i = 0; i < [indexPath length]; i++) {
+        uint32_t derivation = (uint32_t)[indexPath indexAtPosition:i];
+        CKDpub(&pubKey, &chain, derivation);
+    }
+    NSData *data = [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
+    NSAssert(data, @"Public key should be created");
+    return data;
+}
 @end
