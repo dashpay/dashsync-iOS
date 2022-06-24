@@ -689,7 +689,7 @@ CHECKOUT OPTIONS:
     :commit: ad01eee
     :git: https://github.com/ameingast/cocoaimagehashing.git
   DashSharedCore:
-    :commit: c2c99645d2835bf2a2513b2f8c2f177aed16386b
+    :commit: ea289d9baa23f2a8bf2293a367577f7c1d0f29ab
     :git: https://github.com/dashevo/dash-shared-core.git
 
 SPEC CHECKSUMS:

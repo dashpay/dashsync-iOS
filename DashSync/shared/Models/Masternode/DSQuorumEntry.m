@@ -61,7 +61,7 @@
     [copy setValidMembersCount:self.validMembersCount];
     [copy setQuorumEntryHash:self.quorumEntryHash];
     [copy setCommitmentHash:self.commitmentHash];
-    [copy setLength:self.length];
+//    [copy setLength:self.length];
     [copy setQuorumIndex:self.quorumIndex];
     [copy setChain:self.chain];
 
@@ -90,7 +90,7 @@
     if (entry->commitment_hash) {
         self.commitmentHash = *((UInt256 *)entry->commitment_hash);
     }
-    self.length = (uint32_t)entry->length;
+//    self.length = (uint32_t)entry->length;
     self.llmqType = (DSLLMQType)entry->llmq_type;
     self.quorumEntryHash = *((UInt256 *)entry->entry_hash);
     self.quorumHash = *((UInt256 *)entry->llmq_hash);

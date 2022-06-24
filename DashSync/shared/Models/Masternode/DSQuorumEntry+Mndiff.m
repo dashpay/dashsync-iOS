@@ -42,7 +42,7 @@
     LLMQEntry *quorum_entry = malloc(sizeof(LLMQEntry));
     quorum_entry->all_commitment_aggregated_signature = uint768_malloc([self allCommitmentAggregatedSignature]);
     quorum_entry->commitment_hash = uint256_malloc([self commitmentHash]);
-    quorum_entry->length = [self length];
+//    quorum_entry->length = [self length];
     quorum_entry->llmq_type = [self llmqType];
     quorum_entry->entry_hash = uint256_malloc([self quorumEntryHash]);
     quorum_entry->llmq_hash = uint256_malloc([self quorumHash]);

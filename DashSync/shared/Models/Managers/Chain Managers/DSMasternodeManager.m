@@ -329,6 +329,7 @@
 }
 
 - (void)getRecentMasternodeList:(NSUInteger)blocksAgo withSafetyDelay:(uint32_t)safetyDelay {
+    DSLog(@"getRecentMasternodeList at tip - %lu", blocksAgo);
     @synchronized(self.service.retrievalQueue) {
         DSMerkleBlock *merkleBlock = [self.chain blockFromChainTip:blocksAgo];
         UInt256 merkleBlockHash = merkleBlock.blockHash;
