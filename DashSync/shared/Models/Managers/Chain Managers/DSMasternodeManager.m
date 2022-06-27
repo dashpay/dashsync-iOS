@@ -614,21 +614,19 @@
     NSLog(@"File %@ saved", fileName);
     [message saveToFile:fileName inDirectory:NSCachesDirectory];
 #endif
-    UInt512 concat = uint512_concat(baseBlockHash, blockHash);
     UInt512 concatTip = uint512_concat(baseBlockHashTip, blockHashTip);
-    NSData *blockHashDiffsData= uint512_data(concat);
     NSData *blockHashDiffsDataTip = uint512_data(concatTip);
-//    NSData *blockHashData = uint256_data(blockHash);
     NSData *blockHashDataTip = uint256_data(blockHashTip);
-//    DSLog(@"relayed qrinfo with baseBlockHash %@ (%u) blockHash %@ (%u)", uint256_reverse_hex(baseBlockHash), [self heightForBlockHash:baseBlockHash], blockHashData.reverse.hexString, [self heightForBlockHash:blockHash]);
-    DSLog(@"relayed qrinfo with baseBlockHashTip %@ (%u) blockHashTip %@ (%u)", uint256_reverse_hex(baseBlockHashTip), [self heightForBlockHash:baseBlockHashTip], blockHashDataTip.reverse.hexString, [self heightForBlockHash:blockHashTip]);
+    NSLog(@"relayed qrinfo with baseBlockHashTip %@ (%u) blockHashTip %@ (%u)", uint256_reverse_hex(baseBlockHashTip), [self heightForBlockHash:baseBlockHashTip], blockHashDataTip.reverse.hexString, [self heightForBlockHash:blockHashTip]);
+    NSLog(@"relayed qrinfo with... %@: %@", blockHashDataTip.hexString, blockHashDiffsDataTip.hexString);
+    NSLog(@"relayed qrinfo with... %@", self.service.listsInRetrieval);
 //    BOOL hasRemovedFromRetrieval = [self.service removeListInRetrievalForKey:blockHashDiffsData];
 //    BOOL wasntPresentInRetrieval = !hasRemovedFromRetrieval;
 //    BOOL hasLocallyStored = [self.store hasMasternodeListAt:blockHashData];
     BOOL hasRemovedFromRetrievalTip = [self.service removeListInRetrievalForKey:blockHashDiffsDataTip];
     BOOL hasLocallyStoredTip = [self.store hasMasternodeListAt:blockHashDataTip];
 //    DSLog(@"relayed qrinfo.2. hasRemovedFromRetrieval: %i hasLocallyStored: %i", hasRemovedFromRetrieval, hasLocallyStored);
-    DSLog(@"relayed qrinfo.2. hasRemovedFromRetrievalTip: %i hasLocallyStoredTip: %i", hasRemovedFromRetrievalTip, hasLocallyStoredTip);
+    NSLog(@"relayed qrinfo.2. hasRemovedFromRetrievalTip: %i hasLocallyStoredTip: %i", hasRemovedFromRetrievalTip, hasLocallyStoredTip);
     if (!hasRemovedFromRetrievalTip || hasLocallyStoredTip) {
         [DSMasternodeManager destroyQRInfoMessage:qrInfo];
         return;
@@ -651,7 +649,7 @@
         DSLog(@"Last Block missing");
         return;
     }
-    self.store.processingMasternodeListDiffHashes = blockHashDiffsData;
+    self.store.processingMasternodeListDiffHashes = blockHashDiffsDataTip;
     // We can use insight as backup if we are on testnet, we shouldn't otherwise.
 
     [self processQRInfoMessage:qrInfo

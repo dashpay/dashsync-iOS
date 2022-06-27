@@ -127,6 +127,15 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
     }
 }
 
++ (void)processMasternodeDiffMessage:(NSData *)message withProcessor:(Processor4 *)processor withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion {
+    DSChain *chain = context.chain;
+    UInt256 merkleRoot = context.lastBlock.merkleRoot;
+    process_mnl_diff(message.bytes, message.length, context.baseMasternodeListHash.bytes, uint256_data(merkleRoot).bytes, context.useInsightAsBackup, processor);
+    struct MNListDiffResult *result = mndiff_process(message.bytes, message.length, context.baseMasternodeListHash.bytes, uint256_data(merkleRoot).bytes, context.useInsightAsBackup, getBlockHeightByHash, getBlockHashByHeight, getLLMQSnapshotByBlockHeight, getMasternodeListByBlockHash, destroyMasternodeList, addInsightForBlockHash, shouldProcessLLMQType, validateLLMQ, (__bridge void *)(context));
+    DSMnDiffProcessingResult *processingResult = [DSMnDiffProcessingResult processingResultWith:result onChain:chain];
+    mndiff_destroy(result);
+    completion(processingResult);
+}
 
 + (void)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion {
     DSChain *chain = context.chain;
