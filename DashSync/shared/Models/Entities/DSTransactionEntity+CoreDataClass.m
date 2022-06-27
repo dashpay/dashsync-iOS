@@ -83,6 +83,7 @@
         }
 
         self.lockTime = tx.lockTime;
+        self.taxCategory = tx.taxCategory;
     }];
 
     return self;
@@ -118,7 +119,7 @@
         tx.blockHeight = self.transactionHash.blockHeight;
         tx.timestamp = self.transactionHash.timestamp;
         tx.associatedShapeshift = self.associatedShapeshift;
-
+        
         for (DSTxInputEntity *e in self.inputs) {
             txHash = e.txHash;
             if (txHash.length != sizeof(UInt256)) continue;
@@ -135,6 +136,8 @@
 
         DSInstantSendTransactionLock *instantSendLock = [self.instantSendLock instantSendTransactionLockForChain:chain];
         [tx setInstantSendReceivedWithInstantSendLock:instantSendLock];
+        
+        tx.taxCategory = self.taxCategory;
     }];
 
     return tx;

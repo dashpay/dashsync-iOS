@@ -4555,7 +4555,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     dashpayUserEntity.chain = chainEntity;
     entity.matchingDashpayUser = dashpayUserEntity;
     
-    
     if (self.isOutgoingInvitation) {
         DSBlockchainInvitationEntity *blockchainInvitationEntity = [DSBlockchainInvitationEntity managedObjectInBlockedContext:context];
         blockchainInvitationEntity.chain = chainEntity;
