@@ -292,7 +292,7 @@
         
         switch (direction) {
             case DSTransactionDirection_Moved: {
-                return DSTransactionTaxCategory_Unknown;
+                return DSTransactionTaxCategory_Expense;
             }
             case DSTransactionDirection_Sent: {
                 return DSTransactionTaxCategory_TransferOut;
