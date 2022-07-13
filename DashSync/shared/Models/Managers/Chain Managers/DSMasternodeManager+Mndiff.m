@@ -130,7 +130,7 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
     UInt256 commitmentHash = *((UInt256 *)data->commitment_hash);
     bool allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:commitmentHash signature:allCommitmentAggregatedSignature withPublicKeys:publicKeyArray];
     if (!allCommitmentAggregatedSignatureValidated) {
-        DSLog(@"Issue with allCommitmentAggregatedSignatureValidated");
+        DSLog(@"Issue with allCommitmentAggregatedSignatureValidated: %@", uint768_hex(allCommitmentAggregatedSignature));
         mndiff_quorum_validation_data_destroy(data);
         return false;
     }
