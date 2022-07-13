@@ -440,7 +440,13 @@
     });
 }
 
-+ (void)saveMasternodeList:(DSMasternodeList *)masternodeList toChain:(DSChain *)chain havingModifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums createUnknownBlocks:(BOOL)createUnknownBlocks inContext:(NSManagedObjectContext *)context completion:(void (^)(NSError *error))completion {
++ (void)saveMasternodeList:(DSMasternodeList *)masternodeList
+                   toChain:(DSChain *)chain
+ havingModifiedMasternodes:(NSDictionary *)modifiedMasternodes
+              addedQuorums:(NSDictionary *)addedQuorums
+       createUnknownBlocks:(BOOL)createUnknownBlocks
+                 inContext:(NSManagedObjectContext *)context
+                completion:(void (^)(NSError *error))completion {
     DSLog(@"Queued saving MNL at height %u", masternodeList.height);
     [context performBlockAndWait:^{
         //masternodes

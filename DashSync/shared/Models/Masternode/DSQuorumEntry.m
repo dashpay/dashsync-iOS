@@ -150,20 +150,17 @@
 
 - (uint32_t)quorumThreshold {
     switch (self.llmqType) { //!OCLINT
-        case DSLLMQType_50_60:
-            return 30;
-        case DSLLMQType_400_60:
-            return 240;
-        case DSLLMQType_400_85:
-            return 340;
-        case DSLLMQType_100_67:
-            return 67;
-        case DSLLMQType_5_60:
-            return 3;
-        case DSLLMQType_10_60:
-            return 6;
-        case DSLLMQType_60_80:
-            return 48;
+        case DSLLMQType_Unknown: return 2;
+        case DSLLMQType_50_60: return 30;
+        case DSLLMQType_400_60: return 240;
+        case DSLLMQType_400_85: return 340;
+        case DSLLMQType_100_67: return 67;
+        case DSLLMQType_5_60: return 3;
+        case DSLLMQType_10_60: return 6;
+        case DSLLMQType_60_75: return 48;
+        case DSLLMQType_TestV17: return 2;
+        case LlmqtypeDevnetDIP0024: return 4;
+        case LlmqtypeDevnet333DIP0024: return 4;
         default:
             NSAssert(FALSE, @"Unknown llmq type");
             return UINT32_MAX;
@@ -357,25 +354,24 @@
 
 + (uint32_t)quorumSizeForType:(DSLLMQType)type {
     switch (type) { //!OCLINT
-        case DSLLMQType_5_60:
-            return 5;
-        case DSLLMQType_10_60:
-            return 10;
-        case DSLLMQType_50_60:
-            return 50;
-        case DSLLMQType_400_60:
-            return 400;
-        case DSLLMQType_400_85:
-            return 400;
-        case DSLLMQType_100_67:
-            return 100;
-        case DSLLMQType_60_80:
-            return 60;
+        case DSLLMQType_Unknown: return 50;
+        case DSLLMQType_50_60: return 50;
+        case DSLLMQType_400_60: return 400;
+        case DSLLMQType_400_85: return 400;
+        case DSLLMQType_100_67: return 100;
+        case DSLLMQType_60_75: return 60;
+        case DSLLMQType_5_60: return 4;
+        case DSLLMQType_10_60: return 12;
+        case DSLLMQType_TestV17: return 3;
+        case DSLLMQType_TestDIP0024: return 4;
+        case DSLLMQType_DevnetDIP0024: return 8;
+        case DSLLMQType_Devnet333DIP0024: return 8;
         default:
             NSAssert(FALSE, @"Unknown quorum type");
             return 50;
     }
 }
+
 
 - (NSString *)description {
     uint32_t height = [self.chain heightForBlockHash:self.quorumHash];

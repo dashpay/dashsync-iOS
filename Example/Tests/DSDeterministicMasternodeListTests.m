@@ -462,7 +462,9 @@
     DSMerkleBlock *lastBlock = nil;
 
     DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
-    [mndiffContext setLastBlock:lastBlock];
+    [mndiffContext setMerkleRootLookup:^UInt256(UInt256 blockHash) {
+        return UINT256_ZERO;
+    }];
     [mndiffContext setUseInsightAsBackup:NO];
     [mndiffContext setChain:chain];
     [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
@@ -525,6 +527,10 @@
         [mndiffContext setBaseMasternodeListHash:uint256_data(nextBaseMasternodeList.blockHash)];
         [mndiffContext setUseInsightAsBackup:NO];
         [mndiffContext setChain:chain];
+        [mndiffContext setMerkleRootLookup:^UInt256(UInt256 blockHash) {
+            return UINT256_ZERO;
+        }];
+
         [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
             if (save && reloading) {
                 return [chain.chainManager.masternodeManager masternodeListForBlockHash:blockHash];
@@ -637,6 +643,9 @@
     [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
         return nil;
     }];
+    [mndiffContext setMerkleRootLookup:^UInt256(UInt256 blockHash) {
+        return UINT256_ZERO;
+    }];
     [mndiffContext setBlockHeightLookup:^uint32_t(UInt256 blockHash) {
         return 1100000;
     }];
@@ -698,6 +707,9 @@
     [mndiffContext setChain:chain];
     [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
         return nil;
+    }];
+    [mndiffContext setMerkleRootLookup:^UInt256(UInt256 blockHash) {
+        return UINT256_ZERO;
     }];
     [mndiffContext setBlockHeightLookup:^uint32_t(UInt256 blockHash) {
         return 122088;
@@ -776,6 +788,9 @@
     [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
         return nil;
     }];
+    [mndiffContext setMerkleRootLookup:^UInt256(UInt256 blockHash) {
+        return UINT256_ZERO;
+    }];
     [mndiffContext setBlockHeightLookup:blockHeightLookup122064];
 
     [DSMasternodeManager processMasternodeDiffMessage:message
@@ -819,6 +834,9 @@
                 [mndiffContext setBaseMasternodeListHash:uint256_data(masternodeList122064.blockHash)];
                 [mndiffContext setUseInsightAsBackup:NO];
                 [mndiffContext setChain:chain];
+                [mndiffContext setMerkleRootLookup:^UInt256(UInt256 blockHash) {
+                    return UINT256_ZERO;
+                }];
                 [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
                     if (uint256_eq(blockHash, masternodeList122064.blockHash)) {
                         return masternodeList122064;
@@ -2672,6 +2690,10 @@
                 return nil; //no known previous lists
             }
         }];
+        [mndiffContext setMerkleRootLookup:^UInt256(UInt256 blockHash) {
+            return UINT256_ZERO;
+        }];
+
         [mndiffContext setBlockHeightLookup:^uint32_t(UInt256 blockHash) {
             NSString *blockHashString = uint256_reverse_hex(blockHash);
             if ([blockHashString isEqualToString:@"000000000000001dbcd3a23c131fedde3acd6da89275e7f9fcae03f3107da861"]) {
@@ -2727,6 +2749,9 @@
                         return masternodeList1092912;
                     }
                     return nil;
+                }];
+                [mndiffContext setMerkleRootLookup:^UInt256(UInt256 blockHash) {
+                    return UINT256_ZERO;
                 }];
                 [mndiffContext setBlockHeightLookup:^uint32_t(UInt256 blockHash) {
                     NSString *blockHashString = uint256_reverse_hex(blockHash);
@@ -2831,6 +2856,10 @@
     [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
         return nil;
     }];
+    [mndiffContext setMerkleRootLookup:^UInt256(UInt256 blockHash) {
+        return UINT256_ZERO;
+    }];
+
     NSDictionary *blockHashDict = @{
         @"0000000009b4a670292967a9cd8da4ecad05586179a60e987a9b71b2c3ea1a58": @122904,
         @"00000000054437d43f5d12eaa4898d8b85e8521b1897674ee847f070045669ad": @122664,
@@ -2916,6 +2945,9 @@
                     return masternodeList119064;
                 }
                 return nil;
+            }];
+            [mndiffContext setMerkleRootLookup:^UInt256(UInt256 blockHash) {
+                return UINT256_ZERO;
             }];
             [mndiffContext setBlockHeightLookup:blockHeightLookup2];
 
@@ -3022,6 +3054,9 @@
     [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
         return nil;
     }];
+    [mndiffContext setMerkleRootLookup:^UInt256(UInt256 blockHash) {
+        return UINT256_ZERO;
+    }];
     [mndiffContext setBlockHeightLookup:^uint32_t(UInt256 blockHash) {
         return 370368;
     }];
@@ -3069,6 +3104,10 @@
                 }
                 return nil;
             }];
+            [mndiffContext setMerkleRootLookup:^UInt256(UInt256 blockHash) {
+                return UINT256_ZERO;
+            }];
+
             [mndiffContext setBlockHeightLookup:^uint32_t(UInt256 blockHash) {
                 return 370944;
             }];

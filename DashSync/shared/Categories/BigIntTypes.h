@@ -91,7 +91,6 @@ typedef struct {
 } DSECPoint;
 
 typedef uint32_t (^_Nullable BlockHeightFinder)(UInt256 blockHash);
-
 #define uint768_random ((UInt768){.u32 = {arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random()}})
 
 #define uint256_random ((UInt256){.u32 = {arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random()}})

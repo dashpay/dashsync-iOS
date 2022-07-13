@@ -55,6 +55,9 @@ FOUNDATION_EXPORT NSString *const DSMasternodeListDiffValidationErrorNotificatio
 @property (nonatomic, readonly) BOOL hasMasternodeListCurrentlyBeingSaved;
 @property (nonatomic, readonly) BOOL currentMasternodeListIsInLast24Hours;
 
+@property (nonatomic, readonly, nullable) MasternodeProcessor *processor;
+@property (nonatomic, readonly, nullable) MasternodeProcessorCache *processorCache;
+
 - (instancetype)init NS_UNAVAILABLE;
 - (uint32_t)heightForBlockHash:(UInt256)blockhash;
 - (BOOL)hasCurrentMasternodeListInLast30Days;
@@ -71,7 +74,10 @@ FOUNDATION_EXPORT NSString *const DSMasternodeListDiffValidationErrorNotificatio
 - (DSMasternodeList *_Nullable)masternodeListForBlockHash:(UInt256)blockHash withBlockHeightLookup:(uint32_t (^_Nullable)(UInt256 blockHash))blockHeightLookup;
 - (DSMasternodeList *_Nullable)masternodeListForBlockHash:(UInt256)blockHash;
 
+/// Rust helpers
 - (DSQuorumSnapshot *_Nullable)quorumSnapshotForBlockHeight:(uint32_t)blockHeight;
+- (BOOL)saveQuorumSnapshot:(DSQuorumSnapshot *)snapshot forBlockHash:(UInt256)blockHash;
+- (BOOL)saveMasternodeList:(DSMasternodeList *)masternodeList forBlockHash:(UInt256)blockHash;
 
 - (void)startSync;
 - (BOOL)requestMasternodeListForBlockHeight:(uint32_t)blockHeight error:(NSError *_Nullable *_Nullable)error;

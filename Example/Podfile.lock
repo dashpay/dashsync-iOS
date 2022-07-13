@@ -1,9 +1,9 @@
 PODS:
   - "!ProtoCompiler (3.19.4)":
     - Protobuf (~> 3.0)
-  - "!ProtoCompiler-gRPCPlugin (1.46.3)":
+  - "!ProtoCompiler-gRPCPlugin (1.47.0)":
     - "!ProtoCompiler (= 3.19.4)"
-    - gRPC-ProtoRPC (= 1.46.3)
+    - gRPC-ProtoRPC (= 1.47.0)
   - abseil/algorithm/algorithm (1.20211102.0):
     - abseil/base/config
   - abseil/algorithm/container (1.20211102.0):
@@ -62,6 +62,14 @@ PODS:
   - abseil/base/throw_delegate (1.20211102.0):
     - abseil/base/config
     - abseil/base/raw_logging_internal
+  - abseil/cleanup/cleanup (1.20211102.0):
+    - abseil/base/config
+    - abseil/base/core_headers
+    - abseil/cleanup/cleanup_internal
+  - abseil/cleanup/cleanup_internal (1.20211102.0):
+    - abseil/base/base_internal
+    - abseil/base/core_headers
+    - abseil/utility/utility
   - abseil/container/common (1.20211102.0):
     - abseil/meta/type_traits
     - abseil/types/optional
@@ -85,6 +93,13 @@ PODS:
     - abseil/container/container_memory
     - abseil/container/hash_function_defaults
     - abseil/container/raw_hash_map
+    - abseil/memory/memory
+  - abseil/container/flat_hash_set (1.20211102.0):
+    - abseil/algorithm/container
+    - abseil/base/core_headers
+    - abseil/container/container_memory
+    - abseil/container/hash_function_defaults
+    - abseil/container/raw_hash_set
     - abseil/memory/memory
   - abseil/container/hash_function_defaults (1.20211102.0):
     - abseil/base/config
@@ -572,17 +587,20 @@ PODS:
     - TinyCborObjc (= 0.4.6)
   - DSDynamicOptions (0.1.2)
   - DWAlertController (0.2.1)
-  - gRPC-Core (1.46.3):
-    - gRPC-Core/Implementation (= 1.46.3)
-    - gRPC-Core/Interface (= 1.46.3)
-  - gRPC-Core/Implementation (1.46.3):
+  - gRPC-Core (1.47.0):
+    - gRPC-Core/Implementation (= 1.47.0)
+    - gRPC-Core/Interface (= 1.47.0)
+  - gRPC-Core/Implementation (1.47.0):
     - abseil/base/base (= 1.20211102.0)
     - abseil/base/core_headers (= 1.20211102.0)
+    - abseil/cleanup/cleanup (= 1.20211102.0)
     - abseil/container/flat_hash_map (= 1.20211102.0)
+    - abseil/container/flat_hash_set (= 1.20211102.0)
     - abseil/container/inlined_vector (= 1.20211102.0)
     - abseil/functional/bind_front (= 1.20211102.0)
     - abseil/hash/hash (= 1.20211102.0)
     - abseil/memory/memory (= 1.20211102.0)
+    - abseil/meta/type_traits (= 1.20211102.0)
     - abseil/random/random (= 1.20211102.0)
     - abseil/status/status (= 1.20211102.0)
     - abseil/status/statusor (= 1.20211102.0)
@@ -592,42 +610,43 @@ PODS:
     - abseil/synchronization/synchronization (= 1.20211102.0)
     - abseil/time/time (= 1.20211102.0)
     - abseil/types/optional (= 1.20211102.0)
+    - abseil/types/span (= 1.20211102.0)
     - abseil/types/variant (= 1.20211102.0)
     - abseil/utility/utility (= 1.20211102.0)
     - BoringSSL-GRPC (= 0.0.24)
-    - gRPC-Core/Interface (= 1.46.3)
+    - gRPC-Core/Interface (= 1.47.0)
     - Libuv-gRPC (= 0.0.10)
-  - gRPC-Core/Interface (1.46.3)
-  - gRPC-ProtoRPC (1.46.3):
-    - gRPC-ProtoRPC/Legacy (= 1.46.3)
-    - gRPC-ProtoRPC/Legacy-Header (= 1.46.3)
-    - gRPC-ProtoRPC/Main (= 1.46.3)
-  - gRPC-ProtoRPC/Legacy (1.46.3):
-    - gRPC-ProtoRPC/Legacy-Header (= 1.46.3)
-    - gRPC-ProtoRPC/Main (= 1.46.3)
-    - gRPC-RxLibrary (= 1.46.3)
-    - gRPC/GRPCCore (= 1.46.3)
+  - gRPC-Core/Interface (1.47.0)
+  - gRPC-ProtoRPC (1.47.0):
+    - gRPC-ProtoRPC/Legacy (= 1.47.0)
+    - gRPC-ProtoRPC/Legacy-Header (= 1.47.0)
+    - gRPC-ProtoRPC/Main (= 1.47.0)
+  - gRPC-ProtoRPC/Legacy (1.47.0):
+    - gRPC-ProtoRPC/Legacy-Header (= 1.47.0)
+    - gRPC-ProtoRPC/Main (= 1.47.0)
+    - gRPC-RxLibrary (= 1.47.0)
+    - gRPC/GRPCCore (= 1.47.0)
     - Protobuf (~> 3.0)
-  - gRPC-ProtoRPC/Legacy-Header (1.46.3)
-  - gRPC-ProtoRPC/Main (1.46.3):
-    - gRPC-ProtoRPC/Legacy-Header (= 1.46.3)
-    - gRPC/Interface (= 1.46.3)
+  - gRPC-ProtoRPC/Legacy-Header (1.47.0)
+  - gRPC-ProtoRPC/Main (1.47.0):
+    - gRPC-ProtoRPC/Legacy-Header (= 1.47.0)
+    - gRPC/Interface (= 1.47.0)
     - Protobuf (~> 3.0)
-  - gRPC-RxLibrary (1.46.3):
-    - gRPC-RxLibrary/Implementation (= 1.46.3)
-    - gRPC-RxLibrary/Interface (= 1.46.3)
-  - gRPC-RxLibrary/Implementation (1.46.3):
+  - gRPC-RxLibrary (1.47.0):
+    - gRPC-RxLibrary/Implementation (= 1.47.0)
+    - gRPC-RxLibrary/Interface (= 1.47.0)
+  - gRPC-RxLibrary/Implementation (1.47.0):
     - gRPC-RxLibrary/Interface
-  - gRPC-RxLibrary/Interface (1.46.3)
-  - gRPC/GRPCCore (1.46.3):
-    - gRPC-Core (= 1.46.3)
-    - gRPC-RxLibrary (= 1.46.3)
-    - gRPC/Interface (= 1.46.3)
-    - gRPC/Interface-Legacy (= 1.46.3)
-  - gRPC/Interface (1.46.3):
-    - gRPC/Interface-Legacy (= 1.46.3)
-  - gRPC/Interface-Legacy (1.46.3):
-    - gRPC-RxLibrary/Interface (= 1.46.3)
+  - gRPC-RxLibrary/Interface (1.47.0)
+  - gRPC/GRPCCore (1.47.0):
+    - gRPC-Core (= 1.47.0)
+    - gRPC-RxLibrary (= 1.47.0)
+    - gRPC/Interface (= 1.47.0)
+    - gRPC/Interface-Legacy (= 1.47.0)
+  - gRPC/Interface (1.47.0):
+    - gRPC/Interface-Legacy (= 1.47.0)
+  - gRPC/Interface-Legacy (1.47.0):
+    - gRPC-RxLibrary/Interface (= 1.47.0)
   - KVO-MVVM (0.5.1)
   - Libuv-gRPC (0.0.10):
     - Libuv-gRPC/Implementation (= 0.0.10)
@@ -689,12 +708,12 @@ CHECKOUT OPTIONS:
     :commit: ad01eee
     :git: https://github.com/ameingast/cocoaimagehashing.git
   DashSharedCore:
-    :commit: 6ccc7753f28f6e8d38c9300eb88072f688945c19
+    :commit: dd26cab48426f9acebcfaf828c164838b801b16f
     :git: https://github.com/dashevo/dash-shared-core.git
 
 SPEC CHECKSUMS:
   "!ProtoCompiler": 938ac0701c79342e77008ff71758933ffad8bae1
-  "!ProtoCompiler-gRPCPlugin": b697633f7d38c2584a4b3bf68c902522ea99663e
+  "!ProtoCompiler-gRPCPlugin": 77963e7afcbf2a0c6fa11a6ae18c6e8abdeafb17
   abseil: ebe5b5529fb05d93a8bdb7951607be08b7fa71bc
   bls-signatures-pod: cb5b50790689d21a516f50af07a7642fc5a845b3
   BoringSSL-GRPC: 3175b25143e648463a56daeaaa499c6cb86dad33
@@ -705,10 +724,10 @@ SPEC CHECKSUMS:
   DashSync: 27d51270026b54f3dfa6fe79e1fc7e36f29749f8
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
-  gRPC: 0f41467c2efc8a9c087d297ff3fd3e16578533b9
-  gRPC-Core: fc69c736b69e9987514e126b5cd4b97cec0a360f
-  gRPC-ProtoRPC: fd8f326dc20f6fdc28951830e20f3f00731f028b
-  gRPC-RxLibrary: 66fe936f2400f115e768c3d19bfaf7bf5804780b
+  gRPC: 70e682c5298b6dbf5b8825d26a60b4b37d98799d
+  gRPC-Core: 17d2145f58f197174065e3368ca704165edcd961
+  gRPC-ProtoRPC: fb709b660248f8431cc3c3907cfba4ed9417f184
+  gRPC-RxLibrary: 0380111b7cb8d8b4fe0c53633c696b8ae1b2e158
   KVO-MVVM: 4df3afd1f7ebcb69735458b85db59c4271ada7c6
   Libuv-gRPC: 55e51798e14ef436ad9bc45d12d43b77b49df378
   Protobuf: 818c6a87e44193a77f56b87c6a1c106efda7e062

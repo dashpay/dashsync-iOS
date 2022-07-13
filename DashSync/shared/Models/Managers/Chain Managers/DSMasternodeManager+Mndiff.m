@@ -20,28 +20,38 @@
 #import "DSChain+Protected.h"
 #import "DSChainManager.h"
 #import "DSInsightManager.h"
-#import "DSMasternodeDiffMessageContext.h"
 #import "DSMasternodeList+Mndiff.h"
 #import "DSMasternodeManager+Mndiff.h"
+#import "DSMasternodeManager+Protected.h"
 #import "DSMerkleBlock.h"
 #import "DSQuorumEntry+Mndiff.h"
 #import "DSQuorumSnapshot+Mndiff.h"
 #import "DSSimplifiedMasternodeEntry+Mndiff.h"
 #import "NSData+Dash.h"
 
-@interface DSMasternodeManager (Mndiff)
-@property (nonatomic, assign) Processor4 *processor;
-@end
-
 @implementation DSMasternodeManager (Mndiff)
 
+///
+/// MARK: Rust FFI callbacks
+///
 const MasternodeList *getMasternodeListByBlockHash(uint8_t (*block_hash)[32], const void *context) {
-    DSMasternodeDiffMessageContext *mndiffContext = (__bridge DSMasternodeDiffMessageContext *)context;
+    DSMasternodeDiffMessageContext *processorContext = (__bridge DSMasternodeDiffMessageContext *)context;
     NSData *data = [NSData dataWithBytes:block_hash length:32];
-    DSMasternodeList *list = mndiffContext.masternodeListLookup(data.UInt256);
+    DSMasternodeList *list = processorContext.masternodeListLookup(data.UInt256);
     MasternodeList *c_list = list ? [list ffi_malloc] : NULL;
+    NoTimeLog(@"getMasternodeListByBlockHash: %@: %@: %@", data.hexString, c_list, context);
     mndiff_block_hash_destroy(block_hash);
     return c_list;
+}
+
+bool saveMasternodeList(uint8_t (*block_hash)[32], const MasternodeList *masternode_list, const void *context) {
+    DSMasternodeDiffMessageContext *processorContext = (__bridge DSMasternodeDiffMessageContext *)context;
+    DSChain *chain = processorContext.chain;
+    NSData *data = [NSData dataWithBytes:block_hash length:32];
+    DSMasternodeList *masternodeList = [DSMasternodeList masternodeListWith:(MasternodeList *)masternode_list onChain:chain];
+    BOOL saved = [chain.chainManager.masternodeManager saveMasternodeList:masternodeList forBlockHash:data.UInt256];
+    NoTimeLog(@"saveMasternodeList: %ul: %@: %d", processorContext.blockHeightLookup(data.UInt256), data.hexString, saved);
+    return saved;
 }
 
 void destroyMasternodeList(const MasternodeList *masternode_list) {
@@ -49,41 +59,62 @@ void destroyMasternodeList(const MasternodeList *masternode_list) {
 }
 
 uint32_t getBlockHeightByHash(uint8_t (*block_hash)[32], const void *context) {
-    DSMasternodeDiffMessageContext *mndiffContext = (__bridge DSMasternodeDiffMessageContext *)context;
+    DSMasternodeDiffMessageContext *processorContext = (__bridge DSMasternodeDiffMessageContext *)context;
     NSData *data = [NSData dataWithBytes:block_hash length:32];
-    uint32_t block_height = mndiffContext.blockHeightLookup(data.UInt256);
+    uint32_t block_height = processorContext.blockHeightLookup(data.UInt256);
+    NoTimeLog(@"%@ => %u,", data.hexString, block_height);
+    NoTimeLog(@"getBlockHeightByHash: %@: %u: %@", data.hexString, block_height, context);
     mndiff_block_hash_destroy(block_hash);
     return block_height;
 }
 
 const uint8_t *getBlockHashByHeight(uint32_t block_height, const void *context) {
-    DSMasternodeDiffMessageContext *mndiffContext = (__bridge DSMasternodeDiffMessageContext *)context;
-    DSChain *chain = mndiffContext.chain;
+    DSMasternodeDiffMessageContext *processorContext = (__bridge DSMasternodeDiffMessageContext *)context;
+    DSChain *chain = processorContext.chain;
     DSBlock *block = [chain blockAtHeight: block_height];
     uint8_t (*block_hash)[32] = block ? uint256_malloc(block.blockHash) : NULL;
     return (const uint8_t *)block_hash;
 }
 
+const uint8_t *getMerkleRootByHash(uint8_t (*block_hash)[32], const void *context) {
+    DSMasternodeDiffMessageContext *processorContext = (__bridge DSMasternodeDiffMessageContext *)context;
+    NSData *data = [NSData dataWithBytes:block_hash length:32];
+    UInt256 merkleRoot = processorContext.merkleRootLookup(data.UInt256);
+    uint8_t (*merkle_root)[32] = uint256_malloc(merkleRoot);
+    return (const uint8_t *)merkle_root;
+}
+
 const LLMQSnapshot *getLLMQSnapshotByBlockHeight(uint32_t block_height, const void *context) {
-    DSMasternodeDiffMessageContext *mndiffContext = (__bridge DSMasternodeDiffMessageContext *)context;
-    DSChain *chain = mndiffContext.chain;
+    DSMasternodeDiffMessageContext *processorContext = (__bridge DSMasternodeDiffMessageContext *)context;
+    DSChain *chain = processorContext.chain;
     DSQuorumSnapshot *snapshot = [chain.chainManager.masternodeManager quorumSnapshotForBlockHeight:block_height];
     LLMQSnapshot *c_snapshot = snapshot ? [snapshot ffi_malloc] : NULL;
     return c_snapshot;
 }
 
+
+bool saveLLMQSnapshot(uint8_t (*block_hash)[32], const LLMQSnapshot *snapshot, const void *context) {
+    DSMasternodeDiffMessageContext *processorContext = (__bridge DSMasternodeDiffMessageContext *)context;
+    DSChain *chain = processorContext.chain;
+    NSData *data = [NSData dataWithBytes:block_hash length:32];
+    BOOL saved = [chain.chainManager.masternodeManager saveQuorumSnapshot:[DSQuorumSnapshot quorumSnapshotWith:(LLMQSnapshot *)snapshot] forBlockHash:data.UInt256];
+    NoTimeLog(@"saveLLMQSnapshot: %ul: %@: %d", processorContext.blockHeightLookup(data.UInt256), data.hexString, saved);
+    return saved;
+}
+                      
+
 void addInsightForBlockHash(uint8_t (*block_hash)[32], const void *context) {
-    DSMasternodeDiffMessageContext *mndiffContext = (__bridge DSMasternodeDiffMessageContext *)context;
+    DSMasternodeDiffMessageContext *processorContext = (__bridge DSMasternodeDiffMessageContext *)context;
     NSData *data = [NSData dataWithBytes:block_hash length:32];
     UInt256 entryQuorumHash = data.UInt256;
-    DSChain *chain = mndiffContext.chain;
+    DSChain *chain = processorContext.chain;
     [chain blockUntilGetInsightForBlockHash:entryQuorumHash];
     mndiff_block_hash_destroy(block_hash);
 }
 
 bool shouldProcessLLMQType(uint8_t quorum_type, const void *context) {
-    DSMasternodeDiffMessageContext *mndiffContext = (__bridge DSMasternodeDiffMessageContext *)context;
-    BOOL should = [mndiffContext.chain shouldProcessQuorumOfType:(DSLLMQType)quorum_type];
+    DSMasternodeDiffMessageContext *processorContext = (__bridge DSMasternodeDiffMessageContext *)context;
+    BOOL should = [processorContext.chain shouldProcessQuorumOfType:(DSLLMQType)quorum_type];
     return should;
 };
 
@@ -116,58 +147,87 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
     return true;
 };
 
-- (void)registerProcessor:(DSMasternodeDiffMessageContext *)context {
-    Processor4 *processor = register_processor(getBlockHeightByHash, getBlockHashByHeight, getLLMQSnapshotByBlockHeight, getMasternodeListByBlockHash, destroyMasternodeList, addInsightForBlockHash, shouldProcessLLMQType, validateLLMQ, (__bridge void *)(context));
-    self.processor = processor;
+
+///
+/// MARK: Registering/unregistering processor (which is responsible for callback processing)
+///
+
++ (MasternodeProcessor *)registerProcessor:(DSMasternodeProcessorContext *)context {
+    return register_processor(getMerkleRootByHash, getBlockHeightByHash, getBlockHashByHeight, getLLMQSnapshotByBlockHeight, saveLLMQSnapshot, getMasternodeListByBlockHash, saveMasternodeList, destroyMasternodeList, addInsightForBlockHash, shouldProcessLLMQType, validateLLMQ/*, (__bridge void *)(context)*/);
 }
 
-- (void)unregisterProcessor {
-    if (self.processor) {
-        unregister_processor(self.processor);
-    }
++ (void)unregisterProcessor:(MasternodeProcessor *)processor {
+    unregister_processor(processor);
 }
 
-+ (void)processMasternodeDiffMessage:(NSData *)message withProcessor:(Processor4 *)processor withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion {
-    DSChain *chain = context.chain;
-    UInt256 merkleRoot = context.lastBlock.merkleRoot;
-    process_mnl_diff(message.bytes, message.length, context.baseMasternodeListHash.bytes, uint256_data(merkleRoot).bytes, context.useInsightAsBackup, processor);
-    struct MNListDiffResult *result = mndiff_process(message.bytes, message.length, context.baseMasternodeListHash.bytes, uint256_data(merkleRoot).bytes, context.useInsightAsBackup, getBlockHeightByHash, getBlockHashByHeight, getLLMQSnapshotByBlockHeight, getMasternodeListByBlockHash, destroyMasternodeList, addInsightForBlockHash, shouldProcessLLMQType, validateLLMQ, (__bridge void *)(context));
-    DSMnDiffProcessingResult *processingResult = [DSMnDiffProcessingResult processingResultWith:result onChain:chain];
++ (MasternodeProcessorCache *)createProcessorCache {
+    return processor_create_cache();
+}
+
++ (void)destroyProcessorCache:(MasternodeProcessorCache *)processorCache {
+    processor_destroy_cache(processorCache);
+}
+
+
+///
+/// MARK: Call processing methods
+///
+- (void)processMasternodeDiffMessage:(NSData *)message
+                         withContext:(DSMasternodeDiffMessageContext *)context
+                          completion:(void (^)(DSMnDiffProcessingResult *result))completion {
+    NSAssert(self.processor, @"processMasternodeDiffMessage: No processor created");
+    [DSMasternodeManager processMasternodeDiffMessage:message withProcessor:self.processor usingCache:self.processorCache withContext:context completion:completion];
+}
+
++ (void)processMasternodeDiffMessage:(NSData *)message
+                       withProcessor:(MasternodeProcessor *)processor
+                          usingCache:(MasternodeProcessorCache *)cache
+                         withContext:(DSMasternodeDiffMessageContext *)context
+                          completion:(void (^)(DSMnDiffProcessingResult *result))completion {
+    MNListDiffResult *result = process_mnlistdiff_from_message(
+                                                               message.bytes,
+                                                               message.length,
+                                                               context.baseMasternodeListHash.bytes,
+                                                               context.useInsightAsBackup,
+                                                               processor,
+                                                               cache,
+                                                               (__bridge void *)(context));
+    NSLog(@"processMasternodeDiffMessage...");
+    DSMnDiffProcessingResult *processingResult = [DSMnDiffProcessingResult processingResultWith:result onChain:context.chain];
     mndiff_destroy(result);
     completion(processingResult);
 }
 
-+ (void)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion {
-    DSChain *chain = context.chain;
-    UInt256 merkleRoot = context.lastBlock.merkleRoot;
-    struct MNListDiffResult *result = mndiff_process(message.bytes, message.length, context.baseMasternodeListHash.bytes, uint256_data(merkleRoot).bytes, context.useInsightAsBackup, getBlockHeightByHash, getBlockHashByHeight, getLLMQSnapshotByBlockHeight, getMasternodeListByBlockHash, destroyMasternodeList, addInsightForBlockHash, shouldProcessLLMQType, validateLLMQ, (__bridge void *)(context));
-    DSMnDiffProcessingResult *processingResult = [DSMnDiffProcessingResult processingResultWith:result onChain:chain];
-    mndiff_destroy(result);
-    completion(processingResult);
-}
-
-+ (void)destroyQRInfoMessage:(struct LLMQRotationInfo *)info {
++ (void)destroyQRInfoMessage:(LLMQRotationInfo *)info {
     llmq_rotation_info_destroy(info);
 }
 
-+ (struct LLMQRotationInfo *)readQRInfoMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context {
-    NSLog(@"readQRInfoMessage: \n %@", message.hexString);
-    struct LLMQRotationInfo *result = llmq_rotation_info_read(message.bytes, message.length, getBlockHeightByHash, (__bridge void *)(context));
++ (LLMQRotationInfo *)readQRInfoMessage:(NSData *)message
+                            withContext:(DSMasternodeDiffMessageContext *)context
+                          withProcessor:(MasternodeProcessor *)processor {
+    NoTimeLog(@"readQRInfoMessage...");
+    LLMQRotationInfo *result = read_qrinfo(message.bytes, message.length, processor, (__bridge void *)(context));
     return result;
 }
 
-+ (void)processQRInfo:(struct LLMQRotationInfo *)info withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(DSQRInfoProcessingResult *result))completion {
-    DSChain *chain = context.chain;
-    UInt256 merkleRoot = context.lastBlock.merkleRoot;
-    LLMQRotationInfoResult *result = llmq_rotation_info_process(info, context.baseMasternodeListHash.bytes, uint256_data(merkleRoot).bytes, context.useInsightAsBackup, getBlockHeightByHash, getBlockHashByHeight, getLLMQSnapshotByBlockHeight, getMasternodeListByBlockHash, destroyMasternodeList, addInsightForBlockHash, shouldProcessLLMQType, validateLLMQ, (__bridge void *)(context));
-    DSQRInfoProcessingResult *processingResult = [DSQRInfoProcessingResult processingResultWith:result onChain:chain];
-    llmq_rotation_info_result_destroy(result);
-    completion(processingResult);
+- (void)processQRInfo:(LLMQRotationInfo *)info
+          withContext:(DSMasternodeDiffMessageContext *)context
+           completion:(void (^)(DSQRInfoProcessingResult *result))completion {
+    NSAssert(self.processor, @"processQRInfo: No processor created");
+    NSAssert(self.processorCache, @"processQRInfo: No processorCache created");
+    [DSMasternodeManager processQRInfo:info withProcessor:self.processor usingCache:self.processorCache withContext:context completion:completion];
 }
 
-- (void)dealloc {
-    [self unregisterProcessor];
-    self.processor = nil;
++ (void)processQRInfo:(LLMQRotationInfo *)info
+        withProcessor:(MasternodeProcessor *)processor
+           usingCache:(MasternodeProcessorCache *)processorCache
+          withContext:(DSMasternodeDiffMessageContext *)context
+           completion:(void (^)(DSQRInfoProcessingResult *result))completion {
+    NoTimeLog(@"processQRInfo...");
+    LLMQRotationInfoResult *result = process_qrinfo(info, context.baseMasternodeListHash.bytes, context.useInsightAsBackup, processor, processorCache, (__bridge void *)(context));
+    DSQRInfoProcessingResult *processingResult = [DSQRInfoProcessingResult processingResultWith:result onChain:context.chain];
+    llmq_rotation_info_result_destroy(result);
+    completion(processingResult);
 }
 
 @end

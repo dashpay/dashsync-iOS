@@ -1,6 +1,6 @@
-//
+//  
 //  Created by Vladimir Pirogov
-//  Copyright © 2021 Dash Core Group. All rights reserved.
+//  Copyright © 2022 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -16,25 +16,25 @@
 //
 
 #import "BigIntTypes.h"
+#import "DSChain.h"
 #import "DSMasternodeList.h"
 #import "DSMasternodeManager.h"
-#import "DSMasternodeProcessorContext.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSMasternodeDiffMessageContext : NSObject
+typedef DSMasternodeList*_Nullable(^_Nullable MasternodeListFinder)(UInt256 blockHash);
+typedef UInt256(^_Nullable MerkleRootFinder)(UInt256 blockHash);
+
+@interface DSMasternodeProcessorContext : NSObject
 
 @property (nonatomic) DSChain *chain;
-//@property (nonatomic) DSMasternodeProcessorContext *processorContext;
-@property (nonatomic, nullable) NSData *baseMasternodeListHash;
-@property (nonatomic, nullable) DSPeer *peer;
-//@property (nonatomic, nullable) DSMerkleBlock *lastBlock;
-@property (nonatomic) BOOL useInsightAsBackup;
 @property (nonatomic, copy) MasternodeListFinder masternodeListLookup;
 @property (nonatomic, copy) BlockHeightFinder blockHeightLookup;
-@property (nonatomic, copy) MerkleRootFinder merkleRootLookup;
 
++ (instancetype)processorContextForChain:(DSChain *)chain
+                    masternodeListLookup:(MasternodeListFinder)masternodeListLookup
+                       blockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 @end
 
 NS_ASSUME_NONNULL_END

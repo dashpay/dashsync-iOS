@@ -19,6 +19,27 @@
 
 @implementation DSQuorumSnapshot (Mndiff)
 
+
++ (instancetype)quorumSnapshotWith:(LLMQSnapshot *)quorumSnapshot onChain:(DSChain *)chain {
+    DSQuorumSnapshot *snapshot = [[DSQuorumSnapshot alloc] init];
+    [snapshot setSkipListMode:quorumSnapshot->skip_list_mode];
+    NSUInteger skipListLength = quorumSnapshot->skip_list_length;
+    NSMutableOrderedSet *skipList = [NSMutableOrderedSet orderedSetWithCapacity:skipListLength];
+    NSUInteger i = 0;
+    for (i = 0; i < skipListLength; i++) {
+        [skipList addObject:[NSNumber numberWithInt:quorumSnapshot->skip_list[i]]];
+    }
+    [snapshot setSkipList:skipList];
+    NSUInteger memberListLength = quorumSnapshot->member_list_length;
+    NSMutableOrderedSet *memberList = [NSMutableOrderedSet orderedSetWithCapacity:memberListLength];
+    for (i = 0; i < memberListLength; i++) {
+        [memberList addObject:[NSNumber numberWithInt:quorumSnapshot->member_list[i]]];
+    }
+    [snapshot setMemberList:memberList];
+    return snapshot;
+}
+
+
 - (LLMQSnapshot *)ffi_malloc {
     LLMQSnapshot *entry = malloc(sizeof(LLMQSnapshot));
     NSUInteger i = 0;

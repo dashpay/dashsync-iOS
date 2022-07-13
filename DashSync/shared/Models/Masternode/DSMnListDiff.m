@@ -28,9 +28,11 @@
     diff.baseBlockHash = *((UInt256 *)mnListDiff->base_block_hash);
     diff.blockHash = *((UInt256 *)mnListDiff->block_hash);
     diff.totalTransactions = mnListDiff->total_transactions;
-    NSMutableOrderedSet<NSNumber *> *merkleHashes = [NSMutableOrderedSet orderedSet];
+    NSMutableOrderedSet<NSData *> *merkleHashes = [NSMutableOrderedSet orderedSet];
     for (NSUInteger i = 0; i < mnListDiff->merkle_hashes_count; i++) {
-        [merkleHashes addObject:[NSNumber numberWithInteger:mnListDiff->merkle_hashes[i]]];
+//        [NSNumber numberWithInt:mnListDiff->merkle_hashes[i]];
+        NSData *merkleHash = [NSData dataWithBytes:mnListDiff->merkle_hashes[i] length:32];
+        [merkleHashes addObject:merkleHash];
     }
     diff.merkleHashes = merkleHashes;
     NSMutableOrderedSet<NSNumber *> *merkleFlags = [NSMutableOrderedSet orderedSet];

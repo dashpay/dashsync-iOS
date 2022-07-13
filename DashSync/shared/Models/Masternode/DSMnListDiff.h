@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) UInt256 baseBlockHash;
 @property (nonatomic, assign) UInt256 blockHash;
 @property (nonatomic) NSUInteger totalTransactions;
-@property (nonatomic) NSOrderedSet<NSNumber *> *merkleHashes;
+@property (nonatomic) NSOrderedSet<NSData *> *merkleHashes;
 @property (nonatomic) NSOrderedSet<NSNumber *> *merkleFlags;
 @property (nonatomic) DSCoinbaseTransaction *coinbaseTransaction;
 @property (nonatomic) NSOrderedSet<NSData *> *deletedMasternodeHashes;
