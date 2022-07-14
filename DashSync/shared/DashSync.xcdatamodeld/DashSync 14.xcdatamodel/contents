@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="19574" systemVersion="20G417" minimumToolsVersion="Xcode 7.3" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="20086" systemVersion="21E258" minimumToolsVersion="Xcode 7.3" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
     <entity name="DSAccountEntity" representedClassName="DSAccountEntity" syncable="YES">
         <attribute name="index" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="walletUniqueID" optional="YES" attributeType="String" syncable="YES"/>
@@ -69,6 +69,8 @@
     </entity>
     <entity name="DSBlockchainInvitationEntity" representedClassName="DSBlockchainInvitationEntity" syncable="YES">
         <attribute name="link" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="tag" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="blockchainIdentity" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityEntity" inverseName="associatedInvitation" inverseEntity="DSBlockchainIdentityEntity" syncable="YES"/>
         <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="invitations" inverseEntity="DSChainEntity" syncable="YES"/>
     </entity>
@@ -350,7 +352,6 @@
         <attribute name="commitmentHashData" attributeType="Binary" syncable="YES"/>
         <attribute name="llmqType" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="quorumHashData" attributeType="Binary" syncable="YES"/>
-        <attribute name="quorumIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="quorumPublicKeyData" attributeType="Binary" syncable="YES"/>
         <attribute name="quorumThresholdSignatureData" attributeType="Binary" syncable="YES"/>
         <attribute name="quorumVerificationVectorHashData" attributeType="Binary" syncable="YES"/>
@@ -497,7 +498,7 @@
         <element name="DSBlockchainIdentityEntity" positionX="-2403" positionY="-171" width="128" height="313"/>
         <element name="DSBlockchainIdentityKeyPathEntity" positionX="-2394" positionY="-162" width="128" height="148"/>
         <element name="DSBlockchainIdentityUsernameEntity" positionX="-2421" positionY="-189" width="128" height="133"/>
-        <element name="DSBlockchainInvitationEntity" positionX="-2421" positionY="-189" width="128" height="74"/>
+        <element name="DSBlockchainInvitationEntity" positionX="-2421" positionY="-189" width="128" height="104"/>
         <element name="DSChainEntity" positionX="-1151.6328125" positionY="-163.1796875" width="128" height="419"/>
         <element name="DSChainLockEntity" positionX="-2403" positionY="-171" width="128" height="118"/>
         <element name="DSCoinbaseTransactionEntity" positionX="-2322" positionY="-81" width="128" height="75"/>
@@ -520,7 +521,7 @@
         <element name="DSProviderUpdateRevocationTransactionEntity" positionX="-2317.35546875" positionY="-292.2109375" width="128" height="105"/>
         <element name="DSProviderUpdateServiceTransactionEntity" positionX="-2120.90625" positionY="-299.93359375" width="128" height="135"/>
         <element name="DSQuorumCommitmentTransactionEntity" positionX="-1939.23046875" positionY="1112.27734375" width="128" height="75"/>
-        <element name="DSQuorumEntryEntity" positionX="-1880.47265625" positionY="-335.81640625" width="128" height="329"/>
+        <element name="DSQuorumEntryEntity" positionX="-1880.47265625" positionY="-335.81640625" width="128" height="328"/>
         <element name="DSShapeshiftEntity" positionX="-946.375" positionY="817.2578125" width="128" height="225"/>
         <element name="DSSimplifiedMasternodeEntryEntity" positionX="-1511.95703125" positionY="276.51953125" width="128" height="418"/>
         <element name="DSSpecialTransactionEntity" positionX="-1145.90625" positionY="1134.63671875" width="128" height="75"/>

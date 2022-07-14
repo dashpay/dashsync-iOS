@@ -37,17 +37,15 @@ jobs:
       - name: Git LFS Pull
         run: git lfs pull
         working-directory: ./dashsync
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ./dashsync/Example/Pods
-          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pods-
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile') }}
       - name: Rustup add targets
         run: rustup target add aarch64-apple-ios x86_64-apple-ios aarch64-apple-ios-sim
       - name: Dependencies
         working-directory: ./dashsync/Example
-        run: pod install
+        run: pod install --repo-update --verbose
       - name: Install OCLint
         run: |
           brew tap oclint/formulae

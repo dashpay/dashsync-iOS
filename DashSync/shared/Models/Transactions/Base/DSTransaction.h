@@ -28,6 +28,7 @@
 
 #import "DSShapeshiftEntity+CoreDataClass.h"
 #import <Foundation/Foundation.h>
+#import "DSChain.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -53,6 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 typedef union _UInt256 UInt256;
 typedef union _UInt160 UInt160;
 
+
 typedef NS_ENUM(NSInteger, DSTransactionSortType)
 {
     /// No sorting
@@ -61,6 +63,24 @@ typedef NS_ENUM(NSInteger, DSTransactionSortType)
     DSTransactionSortType_Shuffle,
     /// Sorting inputs & outputs according to BIP-69
     DSTransactionSortType_BIP69,
+};
+
+typedef NS_ENUM(NSInteger, DSTransactionTaxCategory)
+{
+    /// Income
+    DSTransactionTaxCategory_Unknown,
+    
+    /// Income
+    DSTransactionTaxCategory_Incone,
+    
+    /// Transfer In
+    DSTransactionTaxCategory_TransferIn,
+    
+    /// Expense
+    DSTransactionTaxCategory_Expense,
+    
+    /// Transfer Out
+    DSTransactionTaxCategory_TransferOut,
 };
 
 @interface DSTransaction : NSObject
@@ -110,6 +130,8 @@ typedef NS_ENUM(NSInteger, DSTransactionSortType)
 @property (nonatomic, readonly) DSAccount *firstAccount;
 @property (nonatomic, readonly) NSArray *accounts;
 @property (nonatomic, readonly) Class entityClass;
+
+@property (nonatomic, assign) DSTransactionTaxCategory taxCategory;
 
 @property (nonatomic, readonly) BOOL transactionTypeRequiresInputs;
 
@@ -168,6 +190,10 @@ typedef NS_ENUM(NSInteger, DSTransactionSortType)
 
 - (void)loadBlockchainIdentitiesFromDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths;
 
+@end
+
+@interface DSTransaction (Extensions)
+- (DSTransactionDirection)direction;
 @end
 
 NS_ASSUME_NONNULL_END

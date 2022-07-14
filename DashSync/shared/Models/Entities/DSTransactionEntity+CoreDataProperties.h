@@ -38,6 +38,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, retain) DSTransactionHashEntity *transactionHash;
 @property (nonatomic, retain) DSInstantSendLockEntity *instantSendLock;
 
+@property (nonatomic) NSInteger taxCategory;
+
 @end
 
 @interface DSTransactionEntity (CoreDataGeneratedAccessors)

@@ -45,5 +45,5 @@ post_install do |installer|
     end
 
     # Workaround: Patch relic to compile on macOS
-    %x(patch -N Pods/bls-signatures-pod/artefacts/libbls.xcframework/macos-arm64_x86_64/Headers/relic_err.h < relic_err.patch)
+    # %x(patch -N Pods/bls-signatures-pod/artefacts/libbls.xcframework/macos-arm64_x86_64/Headers/relic_err.h < relic_err.patch)
 end

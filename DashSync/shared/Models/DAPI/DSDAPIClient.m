@@ -284,7 +284,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 #if DAPI_CONNECT_SINGLE_NODE
             NSString *peerHost = DAPI_SINGLE_NODE;
 #else
-            NSString *peerHost = self.availablePeers.anyObject;
+            NSString *peerHost = [[self.availablePeers allObjects] objectAtIndex:arc4random_uniform((uint32_t)[self.availablePeers count])];
 #endif
             HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
             DSDAPICoreNetworkService *DAPINetworkService = [[DSDAPICoreNetworkService alloc] initWithDAPINodeIPAddress:peerHost httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.coreNetworkingDispatchQueue onChain:self.chain];

@@ -87,7 +87,6 @@
     [self.identity setAssociatedInvitation:self];
     self.chain = wallet.chain;
     self.needsIdentityRetrieval = NO;
-
     return self;
 }
 
@@ -98,6 +97,8 @@
     self.createdLocally = YES;
     self.identity = [[DSBlockchainIdentity alloc] initAtIndex:index withLockedOutpoint:lockedOutpoint inWallet:wallet withBlockchainIdentityEntity:blockchainInvitationEntity.blockchainIdentity associatedToInvitation:self];
     self.link = blockchainInvitationEntity.link;
+    self.name = blockchainInvitationEntity.name;
+    self.tag = blockchainInvitationEntity.tag;
     self.chain = wallet.chain;
     self.needsIdentityRetrieval = NO;
     return self;
@@ -162,6 +163,10 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainInvitationDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSBlockchainInvitationKey: self}];
     });
+}
+
+- (void)updateInWallet {
+    [self saveInContext:[NSManagedObjectContext platformContext]];
 }
 
 - (BOOL)unregisterLocally {
@@ -388,13 +393,13 @@
             [queryItems addObject:senderAvatarPathQueryItem];
         }
 
-        NSURLQueryItem *fundingTransactionQueryItem = [NSURLQueryItem queryItemWithName:@"assetlocktx" value:fundingTransactionHexString];
+        NSURLQueryItem *fundingTransactionQueryItem = [NSURLQueryItem queryItemWithName:@"assetlocktx" value:fundingTransactionHexString.lowercaseString];
         [queryItems addObject:fundingTransactionQueryItem];
 
         NSURLQueryItem *registrationFundingPrivateKeyQueryItem = [NSURLQueryItem queryItemWithName:@"pk" value:registrationFundingPrivateKeyString];
         [queryItems addObject:registrationFundingPrivateKeyQueryItem];
 
-        NSURLQueryItem *serializedISLockQueryItem = [NSURLQueryItem queryItemWithName:@"islock" value:serializedISLock];
+        NSURLQueryItem *serializedISLockQueryItem = [NSURLQueryItem queryItemWithName:@"islock" value:serializedISLock.lowercaseString];
         [queryItems addObject:serializedISLockQueryItem];
 
         components.queryItems = queryItems;
@@ -415,6 +420,16 @@
         BOOL changeOccured = NO;
         NSMutableArray *updateEvents = [NSMutableArray array];
         DSBlockchainInvitationEntity *entity = [self blockchainInvitationEntityInContext:context];
+        if (entity.tag != self.tag) {
+            entity.tag = self.tag;
+            changeOccured = YES;
+            [updateEvents addObject:DSBlockchainInvitationUpdateEvents];
+        }
+        if (entity.name != self.name) {
+            entity.name = self.name;
+            changeOccured = YES;
+            [updateEvents addObject:DSBlockchainInvitationUpdateEvents];
+        }
         if (entity.link != self.link) {
             entity.link = self.link;
             changeOccured = YES;

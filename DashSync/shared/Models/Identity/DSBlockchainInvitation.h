@@ -45,6 +45,12 @@ FOUNDATION_EXPORT NSString *const DSBlockchainInvitationUpdateEventLink;
 /*! @brief This is the wallet holding the blockchain invitation. There should always be a wallet associated to a blockchain invitation. */
 @property (nonatomic, weak, readonly) DSWallet *wallet;
 
+/*! @brief A name for locally created invitation. */
+@property (nonatomic, copy) NSString *name;
+
+/*! @brief A tag for locally created invitation. */
+@property (nonatomic, copy) NSString *tag;
+
 /*! @brief Verifies the current invitation link in the invitation was created with a link. If the invitation is valid a transaction will be returned, as well as if the transaction has already been spent.
     TODO:Spent currently does not work
  */
@@ -64,6 +70,10 @@ FOUNDATION_EXPORT NSString *const DSBlockchainInvitationUpdateEventLink;
 /*! @brief Register the blockchain identity to its wallet. This should only be done once on the creation of the blockchain identity.
 */
 - (void)registerInWallet;
+
+/*! @brief Update the blockchain identity to its wallet.
+ */
+- (void)updateInWallet;
 
 /*! @brief Unregister the blockchain identity from the wallet. This should only be used if the blockchain identity is not yet registered or if a progressive wallet wipe is happening.
     @discussion When a blockchain identity is registered on the network it is automatically retrieved from the L1 chain on resync. If a client wallet wishes to change their default blockchain identity in a wallet it should be done by marking the default blockchain identity index in the wallet. Clients should not try to delete a registered blockchain identity from a wallet.

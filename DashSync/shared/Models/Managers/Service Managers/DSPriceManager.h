@@ -47,6 +47,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) NSNumberFormatter *dashFormat;                                      // dash currency formatter
 @property (nonatomic, readonly) NSNumberFormatter *dashSignificantFormat;                           // dash currency formatter that shows significant digits
+@property (nonatomic, readonly) NSNumberFormatter *csvDashFormat; // dash currency formatter that is been used for csv exporting
+
 @property (nonatomic, readonly) NSNumberFormatter *bitcoinFormat;                                   // bitcoin currency formatter
 @property (nonatomic, readonly) NSNumberFormatter *unknownFormat;                                   // unknown currency formatter
 @property (nonatomic, readonly) NSNumberFormatter *localFormat;                                     // local currency formatter

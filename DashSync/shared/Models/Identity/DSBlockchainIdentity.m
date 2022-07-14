@@ -585,7 +585,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                         NSNumber *accepted = changes[DSTransactionManagerNotificationTransactionAcceptedStatusKey];
                         NSNumber *lockVerified = changes[DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey];
                         DSInstantSendTransactionLock *lock = changes[DSTransactionManagerNotificationInstantSendTransactionLockKey];
-                        if (![lockVerified boolValue] && lock != nil) {
+                        if ([lockVerified boolValue] && lock != nil) {
                             instantSendLock = lock;
                             transactionSuccessfullyPublished = TRUE;
                             dispatch_semaphore_signal(sem);
@@ -4335,7 +4335,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
         if (!success) {
             return;
         }
-        friendRequestEntity.derivationPath = [friendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequestEntity];
+        friendRequestEntity.derivationPath = [friendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequestEntity inContext:context];
         
         DSAccount *account = [self.wallet accountWithNumber:0];
         if (friendship.destinationBlockchainIdentity.isLocal) { //the destination is also local
@@ -4554,7 +4554,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     DSDashpayUserEntity *dashpayUserEntity = [DSDashpayUserEntity managedObjectInBlockedContext:context];
     dashpayUserEntity.chain = chainEntity;
     entity.matchingDashpayUser = dashpayUserEntity;
-    
     
     if (self.isOutgoingInvitation) {
         DSBlockchainInvitationEntity *blockchainInvitationEntity = [DSBlockchainInvitationEntity managedObjectInBlockedContext:context];
