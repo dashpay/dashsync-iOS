@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic) DSChain *chain;
 //@property (nonatomic) DSMasternodeProcessorContext *processorContext;
-@property (nonatomic, nullable) NSData *baseMasternodeListHash;
+//@property (nonatomic, nullable) NSData *baseMasternodeListHash;
 @property (nonatomic, nullable) DSPeer *peer;
 //@property (nonatomic, nullable) DSMerkleBlock *lastBlock;
 @property (nonatomic) BOOL useInsightAsBackup;

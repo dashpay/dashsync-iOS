@@ -9,14 +9,14 @@
 #import <Foundation/Foundation.h>
 
 #import <XCTest/XCTest.h>
-
+#import "dash_shared_core.h"
 #import "DSChain.h"
 #import "DSChainManager.h"
 #import "DSChainsManager.h"
 #import "DSCoinbaseTransaction.h"
 #import "DSInsightManager.h"
 #import "DSMasternodeDiffMessageContext.h"
-#import "DSMasternodeManager.h"
+#import "DSMasternodeManager+Mndiff.h"
 #import "DSMerkleBlock.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
 #import "DSOptionsManager.h"
@@ -459,8 +459,6 @@
 
     XCTestExpectation *expectation = [[XCTestExpectation alloc] init];
 
-    DSMerkleBlock *lastBlock = nil;
-
     DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
     [mndiffContext setMerkleRootLookup:^UInt256(UInt256 blockHash) {
         return UINT256_ZERO;
@@ -471,8 +469,8 @@
         return nil;
     }];
     [mndiffContext setBlockHeightLookup:blockHeightLookup];
-
-    [DSMasternodeManager processMasternodeDiffMessage:message
+    
+    [chain.chainManager.masternodeManager processMasternodeDiffMessage:message
                                           withContext:mndiffContext
                                            completion:^(DSMnDiffProcessingResult *result) {
                                                DSMasternodeList *masternodeList = result.masternodeList;
@@ -505,7 +503,13 @@
     [self waitForExpectations:@[expectation] timeout:10];
 }
 
-- (void)loadMasternodeListsForFiles:(NSArray *)files withSave:(BOOL)save withReload:(BOOL)reloading onChain:(DSChain *)chain inContext:(NSManagedObjectContext *)context blockHeightLookup:(BlockHeightFinder)blockHeightLookup completion:(void (^)(BOOL success, NSDictionary *masternodeLists))completion {
+- (void)loadMasternodeListsForFiles:(NSArray *)files
+                           withSave:(BOOL)save
+                         withReload:(BOOL)reloading
+                            onChain:(DSChain *)chain
+                          inContext:(NSManagedObjectContext *)context
+                  blockHeightLookup:(BlockHeightFinder)blockHeightLookup
+                         completion:(void (^)(BOOL success, NSDictionary *masternodeLists))completion {
     //doing this none recursively for profiler
     __block DSMasternodeList *nextBaseMasternodeList = nil;
     __block NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
@@ -524,7 +528,7 @@
         __block dispatch_semaphore_t sem = dispatch_semaphore_create(0);
         dispatch_group_enter(dispatch_group);
         DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
-        [mndiffContext setBaseMasternodeListHash:uint256_data(nextBaseMasternodeList.blockHash)];
+//        [mndiffContext setBaseMasternodeListHash:uint256_data(nextBaseMasternodeList.blockHash)];
         [mndiffContext setUseInsightAsBackup:NO];
         [mndiffContext setChain:chain];
         [mndiffContext setMerkleRootLookup:^UInt256(UInt256 blockHash) {
@@ -539,8 +543,10 @@
             }
         }];
         [mndiffContext setBlockHeightLookup:blockHeightLookup];
+        
+        DSMasternodeManager *masternodeManager = chain.chainManager.masternodeManager;
 
-        [DSMasternodeManager processMasternodeDiffMessage:message
+        [masternodeManager processMasternodeDiffMessage:message
                                               withContext:mndiffContext
                                                completion:^(DSMnDiffProcessingResult *result) {
             XCTAssert(result.foundCoinbase, @"Did not find coinbase at height %u", blockHeightLookup(blockHash));
@@ -571,7 +577,7 @@
                 if (reloading) {
                     DSMasternodeList *masternodeListNew = masternodeList;
                     DSMasternodeList *masternodeListOld = nextBaseMasternodeList;
-                    [chain.chainManager.masternodeManager reloadMasternodeListsWithBlockHeightLookup:blockHeightLookup]; //simulate that we turned off the phone
+                    [masternodeManager reloadMasternodeListsWithBlockHeightLookup:blockHeightLookup]; //simulate that we turned off the phone
                     DSMasternodeList *reloadedMasternodeListNew = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListNew.blockHash];
                     if (masternodeListOld) {
                         DSMasternodeList *reloadedMasternodeListOld = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListOld.blockHash];
@@ -649,8 +655,10 @@
     [mndiffContext setBlockHeightLookup:^uint32_t(UInt256 blockHash) {
         return 1100000;
     }];
+    
+    DSMasternodeManager *manager = chain.chainManager.masternodeManager;
 
-    [DSMasternodeManager processMasternodeDiffMessage:message
+    [manager processMasternodeDiffMessage:message
                                           withContext:mndiffContext
                                            completion:^(DSMnDiffProcessingResult *result) {
         XCTAssert(result.foundCoinbase, @"Did not find coinbase at height %u", [chain heightForBlockHash:blockHash]);
@@ -714,8 +722,8 @@
     [mndiffContext setBlockHeightLookup:^uint32_t(UInt256 blockHash) {
         return 122088;
     }];
-
-    [DSMasternodeManager processMasternodeDiffMessage:message
+    
+    [chain.chainManager.masternodeManager processMasternodeDiffMessage:message
                                           withContext:mndiffContext
                                            completion:^(DSMnDiffProcessingResult *result) {
         NSData *masternodeListMerkleRoot = @"94d0af97187af3b9311c98b1cf40c9c9849df0af55dc63b097b80d4cf6c816c5".hexToData;
@@ -793,7 +801,7 @@
     }];
     [mndiffContext setBlockHeightLookup:blockHeightLookup122064];
 
-    [DSMasternodeManager processMasternodeDiffMessage:message
+    [chain.chainManager.masternodeManager processMasternodeDiffMessage:message
                                           withContext:mndiffContext
                                            completion:^(DSMnDiffProcessingResult *result) {
         DSMasternodeList *masternodeList122064 = result.masternodeList;
@@ -831,7 +839,7 @@
                     return 122088;
                 };
                 DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
-                [mndiffContext setBaseMasternodeListHash:uint256_data(masternodeList122064.blockHash)];
+//                [mndiffContext setBaseMasternodeListHash:uint256_data(masternodeList122064.blockHash)];
                 [mndiffContext setUseInsightAsBackup:NO];
                 [mndiffContext setChain:chain];
                 [mndiffContext setMerkleRootLookup:^UInt256(UInt256 blockHash) {
@@ -846,7 +854,7 @@
                 }];
                 [mndiffContext setBlockHeightLookup:blockHeightLookup122088];
 
-                [DSMasternodeManager processMasternodeDiffMessage:message
+                [chain.chainManager.masternodeManager processMasternodeDiffMessage:message
                                                       withContext:mndiffContext
                                                        completion:^(DSMnDiffProcessingResult *result122088) {
                     XCTAssert(result122088.foundCoinbase, @"Did not find coinbase at height %u", [chain heightForBlockHash:blockHash]);
@@ -2678,7 +2686,7 @@
         NSLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)", uint256_reverse_hex(baseBlockHash), blockHeightLookup(baseBlockHash), uint256_reverse_hex(blockHash1092912), blockHeightLookup(blockHash1092912));
 
         DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
-        [mndiffContext setBaseMasternodeListHash:uint256_data(reloadedMasternodeList1092888.blockHash)];
+//        [mndiffContext setBaseMasternodeListHash:uint256_data(reloadedMasternodeList1092888.blockHash)];
         [mndiffContext setUseInsightAsBackup:NO];
         [mndiffContext setChain:chain];
         [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
@@ -2705,7 +2713,7 @@
             return UINT32_MAX;
         }];
 
-        [DSMasternodeManager processMasternodeDiffMessage:message
+        [chain.chainManager.masternodeManager processMasternodeDiffMessage:message
                                               withContext:mndiffContext
                                                completion:^(DSMnDiffProcessingResult *result) {
             XCTAssert(result.foundCoinbase, @"Did not find coinbase at height %u", [chain heightForBlockHash:blockHash1092912]);
@@ -2735,7 +2743,7 @@
 
                 NSLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)", uint256_reverse_hex(baseBlockHash), [chain heightForBlockHash:baseBlockHash], uint256_reverse_hex(blockHash1092940), [chain heightForBlockHash:blockHash1092940]);
                 DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
-                [mndiffContext setBaseMasternodeListHash:uint256_data(masternodeList1092912.blockHash)];
+//                [mndiffContext setBaseMasternodeListHash:uint256_data(masternodeList1092912.blockHash)];
                 [mndiffContext setUseInsightAsBackup:NO];
                 [mndiffContext setChain:chain];
                 [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
@@ -2764,7 +2772,7 @@
                     return UINT32_MAX;
                 }];
 
-                [DSMasternodeManager processMasternodeDiffMessage:message
+                [chain.chainManager.masternodeManager processMasternodeDiffMessage:message
                                                       withContext:mndiffContext
                                                        completion:^(DSMnDiffProcessingResult *result1092940) {
                     DSMasternodeList *masternodeList1092940 = result1092940.masternodeList;
@@ -2897,7 +2905,7 @@
         NSAssert(NO, @"All values must be here");
         return UINT32_MAX;
     }];
-    [DSMasternodeManager processMasternodeDiffMessage:message
+    [chain.chainManager.masternodeManager processMasternodeDiffMessage:message
                                           withContext:mndiffContext
                                            completion:^(DSMnDiffProcessingResult *result119064) {
         XCTAssert(result119064.foundCoinbase, @"Did not find coinbase at height %u", [chain heightForBlockHash:blockHash119064]);
@@ -2937,7 +2945,7 @@
             };
             DSMasternodeList *masternodeList119064 = result119064.masternodeList;
             DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
-            [mndiffContext setBaseMasternodeListHash:uint256_data(masternodeList119064.blockHash)];
+//            [mndiffContext setBaseMasternodeListHash:uint256_data(masternodeList119064.blockHash)];
             [mndiffContext setUseInsightAsBackup:NO];
             [mndiffContext setChain:chain];
             [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
@@ -2951,7 +2959,7 @@
             }];
             [mndiffContext setBlockHeightLookup:blockHeightLookup2];
 
-            [DSMasternodeManager processMasternodeDiffMessage:message
+            [chain.chainManager.masternodeManager processMasternodeDiffMessage:message
                                                   withContext:mndiffContext
                                                    completion:^(DSMnDiffProcessingResult *result119200) {
                 XCTAssert(result119200.foundCoinbase, @"Did not find coinbase at height %u", [chain heightForBlockHash:blockHash]);
@@ -3061,7 +3069,7 @@
         return 370368;
     }];
 
-    [DSMasternodeManager processMasternodeDiffMessage:message
+    [chain.chainManager.masternodeManager processMasternodeDiffMessage:message
                                           withContext:mndiffContext
                                            completion:^(DSMnDiffProcessingResult *result370368) {
         XCTAssert(result370368.foundCoinbase, @"Did not find coinbase at height %u", [chain heightForBlockHash:blockHash370368]);
@@ -3095,7 +3103,7 @@
             XCTAssert(uint256_eq(blockHash370368, baseBlockHash), @"Base block hash should be from block 119064");
 
             DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
-            [mndiffContext setBaseMasternodeListHash:uint256_data(masternodeList370368.blockHash)];
+//            [mndiffContext setBaseMasternodeListHash:uint256_data(masternodeList370368.blockHash)];
             [mndiffContext setUseInsightAsBackup:NO];
             [mndiffContext setChain:chain];
             [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
@@ -3112,7 +3120,7 @@
                 return 370944;
             }];
 
-            [DSMasternodeManager processMasternodeDiffMessage:message
+            [chain.chainManager.masternodeManager processMasternodeDiffMessage:message
                                                   withContext:mndiffContext
                                                    completion:^(DSMnDiffProcessingResult *result370944) {
                 XCTAssert(result370944.foundCoinbase, @"Did not find coinbase at height %u", [chain heightForBlockHash:blockHash]);

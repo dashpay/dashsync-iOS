@@ -1174,6 +1174,8 @@
             return @"ChainLockSignature";
         case DSInvType_InstantSendLock:
             return @"InstantSendLock";
+        case DSInvType_InstantSendDeterministicLock:
+            return @"InstantSendDeterministicLock";
         default:
             return @"";
     }

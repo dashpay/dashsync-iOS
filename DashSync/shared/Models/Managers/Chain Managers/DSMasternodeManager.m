@@ -244,7 +244,11 @@
         NSLog(@"No block for snapshot at height: %ul: ", blockHeight);
         return nil;
     }
-    return self.store.cachedQuorumSnapshots[uint256_data(block.blockHash)];
+    return [self.store.cachedQuorumSnapshots objectForKey:uint256_data(block.blockHash)];
+}
+
+- (DSQuorumSnapshot *_Nullable)quorumSnapshotForBlockHash:(UInt256)blockHash {
+    return [self.store.cachedQuorumSnapshots objectForKey:uint256_data(blockHash)];
 }
 
 - (BOOL)saveQuorumSnapshot:(DSQuorumSnapshot *)snapshot forBlockHash:(UInt256)blockHash {
@@ -441,7 +445,7 @@
     MerkleRootFinder merkleRootLookup = ^UInt256(UInt256 blockHash) {
         return [self.chain blockForBlockHash:blockHash].merkleRoot;
     };
-    DSMasternodeDiffMessageContext *ctx = [self createDiffMessageContextWithMerkleRootLookup:merkleRootLookup baseMasternodeListHash:nil useInsightAsBackup:NO];
+    DSMasternodeDiffMessageContext *ctx = [self createDiffMessageContextWithMerkleRootLookup:merkleRootLookup useInsightAsBackup:NO];
 
     [self processMasternodeDiffMessage:message withContext:ctx completion:^(DSMnDiffProcessingResult *result) {
         if (![result isValid]) {
@@ -610,7 +614,6 @@
     };
 
     DSMasternodeDiffMessageContext *ctx = [self createDiffMessageContextWithMerkleRootLookup:merkleRootLookup
-                                                                      baseMasternodeListHash:uint256_data(baseMasternodeList.blockHash).bytes
                                                                                                           useInsightAsBackup:self.chain.isTestnet];
 
     self.store.processingMasternodeListDiffHashes = blockHashDiffsData;
@@ -633,7 +636,7 @@
         return lastBlock.merkleRoot;
     };
 
-    DSMasternodeDiffMessageContext *ctx = [self createDiffMessageContextWithMerkleRootLookup:merkleRootLookup baseMasternodeListHash:nil useInsightAsBackup:self.chain.isTestnet];
+    DSMasternodeDiffMessageContext *ctx = [self createDiffMessageContextWithMerkleRootLookup:merkleRootLookup useInsightAsBackup:self.chain.isTestnet];
     
     LLMQRotationInfo *qrInfo = [DSMasternodeManager readQRInfoMessage:message withContext:ctx withProcessor:self.processor];
     MNListDiff *listDiffAtTip = qrInfo->mn_list_diff_tip;
@@ -720,11 +723,8 @@
 }
 
 - (DSMasternodeDiffMessageContext *)createDiffMessageContextWithMerkleRootLookup:(MerkleRootFinder)merkleRootLookup
-                                                   baseMasternodeListHash:(NSData * _Nullable)baseMasternodeListHash
                                                        useInsightAsBackup:(BOOL)useInsightAsBackup {
     DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
-    [mndiffContext setBaseMasternodeListHash:baseMasternodeListHash];
-//    [mndiffContext setLastBlockMerkleRoot:merkleRoot];
     [mndiffContext setUseInsightAsBackup:useInsightAsBackup];
     [mndiffContext setChain:self.chain];
     [mndiffContext setMasternodeListLookup:^DSMasternodeList *(UInt256 blockHash) {
@@ -736,28 +736,6 @@
     [mndiffContext setMerkleRootLookup:merkleRootLookup];
     return mndiffContext;
 }
-
-//- (void)processMasternodeDiffMessage:(NSData *)message
-//              baseMasternodeListHash:(NSData * _Nullable)baseMasternodeListHash
-//                                peer:(DSPeer *)peer
-//                  useInsightAsBackup:(BOOL)useInsightAsBackup
-//                          completion:(void (^)(DSMnDiffProcessingResult *result))completion {
-//
-//
-//    DSMasternodeDiffMessageContext *mndiffContext = [self createDiffMessageContextWithPeer:peer baseMasternodeListHash:baseMasternodeListHash useInsightAsBackup:useInsightAsBackup];
-//    [self processMasternodeDiffMessage:message withContext:mndiffContext completion:completion];
-//}
-//
-//- (void)processQRInfoMessage:(LLMQRotationInfo *)quorumRotationInfo
-//      baseMasternodeListHash:(NSData * _Nullable)baseMasternodeListHash
-//                        peer:(DSPeer *)peer
-//          useInsightAsBackup:(BOOL)useInsightAsBackup
-//                  completion:(void (^)(DSQRInfoProcessingResult *result))completion {
-//    DSMasternodeDiffMessageContext *mndiffContext = [self createDiffMessageContextWithPeer:peer
-//                                                                         baseMasternodeListHash:baseMasternodeListHash
-//                                                                             useInsightAsBackup:useInsightAsBackup];
-//    [self processQRInfo:quorumRotationInfo withContext:mndiffContext completion:completion];
-//}
 
 - (BOOL)hasMasternodeListCurrentlyBeingSaved {
     return [self.store hasMasternodeListCurrentlyBeingSaved];
