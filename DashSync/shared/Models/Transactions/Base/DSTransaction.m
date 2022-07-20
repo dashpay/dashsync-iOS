@@ -159,9 +159,6 @@
         }
     }
 
-    self.taxCategory = DSTransactionTaxCategory_Unknown;
-    
-    
     if ([self type] != DSTransactionType_Classic) return self; //only classic transactions are shapeshifted
 
     NSString *outboundShapeshiftAddress = [self shapeshiftOutboundAddress];
@@ -283,30 +280,6 @@
 
 - (NSArray<DSTransactionOutput *> *)outputs {
     return [self.mOutputs copy];
-}
-
-- (DSTransactionTaxCategory)taxCategory {
-    if(_taxCategory == DSTransactionTaxCategory_Unknown) {
-        
-        DSTransactionDirection direction = [self direction];
-        
-        switch (direction) {
-            case DSTransactionDirection_Moved: {
-                return DSTransactionTaxCategory_Expense;
-            }
-            case DSTransactionDirection_Sent: {
-                return DSTransactionTaxCategory_TransferOut;
-            }
-            case DSTransactionDirection_Received: {
-                return DSTransactionTaxCategory_TransferIn;
-            }
-            case DSTransactionDirection_NotAccountFunds: {
-                return DSTransactionTaxCategory_Unknown;
-            }
-        }
-    }
-    
-    return _taxCategory;
 }
 
 - (NSArray *)inputAddresses {

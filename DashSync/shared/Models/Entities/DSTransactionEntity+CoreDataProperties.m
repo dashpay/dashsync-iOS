@@ -36,6 +36,5 @@
 @dynamic transactionHash;
 @dynamic lockTime;
 @dynamic instantSendLock;
-@dynamic taxCategory;
 
 @end
