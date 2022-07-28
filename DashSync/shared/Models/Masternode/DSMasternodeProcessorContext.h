@@ -23,8 +23,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef DSMasternodeList*_Nullable(^_Nullable MasternodeListFinder)(UInt256 blockHash);
+typedef DSMasternodeList *_Nullable(^_Nullable MasternodeListFinder)(UInt256 blockHash);
 typedef UInt256(^_Nullable MerkleRootFinder)(UInt256 blockHash);
+typedef DSMerkleBlock *_Nullable(^_Nullable MerkleBlockFinder)(UInt256 blockHash);
 
 @interface DSMasternodeProcessorContext : NSObject
 

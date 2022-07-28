@@ -37,6 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)processingResultWith:(MNListDiffResult *)result onChain:(DSChain *)chain;
 
 - (BOOL)isValid;
+- (BOOL)hasRotatedQuorums;
 
 @end
 

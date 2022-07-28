@@ -40,4 +40,14 @@
     return result;
 }
 
+- (NSSet *)filter:(BOOL (^)(id obj))block {
+    NSMutableSet *result = [NSMutableSet set];
+    [self enumerateObjectsUsingBlock:^(id  _Nonnull obj, BOOL * _Nonnull stop) {
+        if (block(obj) == YES) {
+            [result addObject:obj];
+        }
+    }];
+    return result;
+}
+
 @end

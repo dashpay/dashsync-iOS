@@ -18,13 +18,17 @@
 #import "DSMasternodeListService.h"
 #import "DSChain+Protected.h"
 #import "DSChainManager.h"
+#import "DSGetMNListDiffRequest.h"
+#import "DSGetQRInfoRequest.h"
 #import "DSPeerManager+Protected.h"
 #import "NSData+Dash.h"
 
 @interface DSMasternodeListService ()
+// List<UInt256> Hashes of blocks for which masternode lists are need to be requested
 @property (nonatomic, strong) NSMutableOrderedSet<NSData *> *retrievalQueue;
 @property (nonatomic, assign) NSUInteger retrievalQueueMaxAmount;
-@property (nonatomic, strong) NSMutableSet<NSData *> *listsInRetrieval;
+// List<UInt512>: list of block ranges baseBlockHash + blockHash
+@property (nonatomic, strong) NSMutableSet<DSMasternodeListRequest *> *requestsInRetrieval;
 @property (nonatomic, copy) BlockHeightFinder blockHeightLookup;
 
 @end
@@ -37,13 +41,13 @@
     _chain = chain;
     _blockHeightLookup = blockHeightLookup;
     _retrievalQueue = [NSMutableOrderedSet orderedSet];
-    _listsInRetrieval = [NSMutableSet set];
+    _requestsInRetrieval = [NSMutableSet set];
     return self;
 }
 
 - (void)addToRetrievalQueue:(NSData *)masternodeBlockHashData {
     NSAssert(uint256_is_not_zero(masternodeBlockHashData.UInt256), @"the hash data must not be empty");
-    DSLog(@"addToRetrievalQueue: %d:%@", self.blockHeightLookup(masternodeBlockHashData.UInt256), masternodeBlockHashData.hexString);
+    DSLog(@"••• addToRetrievalQueue: %d:%@", self.blockHeightLookup(masternodeBlockHashData.UInt256), masternodeBlockHashData.hexString);
     [self.retrievalQueue addObject:masternodeBlockHashData];
     [self updateMasternodeRetrievalQueue];
 }
@@ -53,7 +57,7 @@
     for (NSData *blockHashData in masternodeBlockHashDataArray) {
         NSAssert(uint256_is_not_zero(blockHashData.UInt256), @"We should not be adding an empty block hash");
         if (uint256_is_not_zero(blockHashData.UInt256)) {
-            DSLog(@"addToRetrievalQueueArray...: %d:%@", self.blockHeightLookup(blockHashData.UInt256), blockHashData.hexString);
+            DSLog(@"••• addToRetrievalQueueArray...: %d:%@", self.blockHeightLookup(blockHashData.UInt256), blockHashData.hexString);
             [nonEmptyBlockHashes addObject:blockHashData];
         }
     }
@@ -62,11 +66,13 @@
 }
 
 - (void)removeFromRetrievalQueue:(NSData *)masternodeBlockHashData {
+    DSLog(@"••• removeFromRetrievalQueue %d: %@", self.blockHeightLookup(masternodeBlockHashData.UInt256), masternodeBlockHashData.hexString);
     [self.retrievalQueue removeObject:masternodeBlockHashData];
 }
 
-- (void)cleanListsInRetrieval {
-    [self.listsInRetrieval removeAllObjects];
+- (void)cleanRequestsInRetrieval {
+    DSLog(@"••• cleanRequestsInRetrieval");
+    [self.requestsInRetrieval removeAllObjects];
 }
 
 - (void)cleanListsRetrievalQueue {
@@ -75,7 +81,7 @@
 
 - (void)cleanAllLists {
     [self cleanListsRetrievalQueue];
-    [self cleanListsInRetrieval];
+    [self cleanRequestsInRetrieval];
 }
 
 - (DSPeerManager *)peerManager {
@@ -99,7 +105,7 @@
         [self.chain.chainManager chainFinishedSyncingMasternodeListsAndQuorums:self.chain];
         return;
     }
-    if ([self.listsInRetrieval count]) {
+    if ([self.requestsInRetrieval count]) {
         DSLog(@"A masternode list is already in retrieval");
         return;
     }
@@ -114,18 +120,46 @@
     completion([self.retrievalQueue copy]);
 }
 
-- (BOOL)removeListInRetrievalForKey:(NSData *)blockHashDiffsData {
-    if (![self.listsInRetrieval containsObject:blockHashDiffsData]) {
-        NSMutableArray *masternodeListsInRetrievalStrings = [NSMutableArray array];
-        for (NSData *masternodeListInRetrieval in self.listsInRetrieval) {
-            [masternodeListsInRetrievalStrings addObject:masternodeListInRetrieval.hexString];
+- (BOOL)removeRequestInRetrievalForKey:(DSMasternodeListRequest *)request {
+    DSLog(@"••• removeRequestInRetrievalForKey %@", [request toData].hexString);
+   if (![self.requestsInRetrieval containsObject:request]) {
+        NSMutableArray *requestsInRetrievalStrings = [NSMutableArray array];
+        for (DSMasternodeListRequest *requestInRetrieval in self.requestsInRetrieval) {
+            [requestsInRetrievalStrings addObject:[requestInRetrieval toData].hexString];
         }
-        DSLog(@"A masternode list (%@) was received that is not set to be retrieved (%@)", blockHashDiffsData.hexString, [masternodeListsInRetrievalStrings componentsJoinedByString:@", "]);
+        DSLog(@"A masternode list (%@) was received that is not set to be retrieved (%@)", [request toData].hexString, [requestsInRetrievalStrings componentsJoinedByString:@", "]);
         return NO;
     }
-    [self.listsInRetrieval removeObject:blockHashDiffsData];
+    [self.requestsInRetrieval removeObject:request];
     return YES;
 }
+
+- (BOOL)removeRequestInRetrievalForBaseBlockHashes:(NSArray<NSData *> *)baseBlockHashes {
+    DSGetQRInfoRequest *qrInfoRequest = nil;
+    DSLog(@"••• removeRequestInRetrievalForBaseBlockHashes: %@", baseBlockHashes);
+    for (DSMasternodeListRequest *requestInRetrieval in self.requestsInRetrieval) {
+        qrInfoRequest = (DSGetQRInfoRequest *) requestInRetrieval;
+        if (qrInfoRequest && qrInfoRequest.baseBlockHashes == baseBlockHashes) {
+            break;
+        }
+    }
+
+    if (!qrInfoRequest) {
+        NSMutableArray *requestsInRetrievalStrings = [NSMutableArray array];
+        for (DSMasternodeListRequest *requestInRetrieval in self.requestsInRetrieval) {
+            DSGetQRInfoRequest *qrInfoRequest = (DSGetQRInfoRequest *) requestInRetrieval;
+            if (qrInfoRequest) {
+                
+            }
+            [requestsInRetrievalStrings addObject:[requestInRetrieval toData].hexString];
+        }
+        DSLog(@"A masternode list (%@) was received that is not set to be retrieved (%@)", baseBlockHashes, [requestsInRetrievalStrings componentsJoinedByString:@", "]);
+        return NO;
+    }
+    [self.requestsInRetrieval removeObject:qrInfoRequest];
+    return YES;
+}
+
 
 - (BOOL)hasLatestBlockInRetrievalQueueWithHash:(UInt256)blockHash {
     return [self.retrievalQueue lastObject] && uint256_eq(blockHash, [self.retrievalQueue lastObject].UInt256);
@@ -138,29 +172,25 @@
 - (void)issueWithMasternodeListFromPeer:(DSPeer *)peer {
     [self.peerManager peerMisbehaving:peer errorMessage:@"Issue with Deterministic Masternode list"];
 }
-- (void)requestMasternodesAndQuorums:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash {
-    DSLog(@"requestMasternodesAndQuorums: base_block_hash: %d: %@, block_hash: %d: %@", self.blockHeightLookup(previousBlockHash), uint256_hex(previousBlockHash), self.blockHeightLookup(blockHash), uint256_hex(blockHash));
-    if ([self.chain hasDIP0024Enabled]) {
-        [self requestQuorumRotationInfo:previousBlockHash forBlockHash:blockHash extraShare:YES];
-    } else {
-        [self requestMasternodeListDiff:previousBlockHash forBlockHash:blockHash];
-    }
-}
+
 - (void)requestMasternodeListDiff:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash {
-    [self.peerManager.downloadPeer sendGetMasternodeListFromPreviousBlockHash:previousBlockHash forBlockHash:blockHash];
+    DSGetMNListDiffRequest *request = [DSGetMNListDiffRequest requestWithBaseBlockHash:previousBlockHash blockHash:blockHash];
+    [self sendMasternodeListRequest:request];
 }
 
-- (void)requestQuorumRotationInfo:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash extraShare:(BOOL)extraShare {
+- (void)requestQuorumRotationInfo:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash {
     // TODO: optimize qrinfo request queue (up to 4 blocks simultaneously, so we'd make masternodeListsToRetrieve.count%4)
+    // blockHeight % dkgInterval == activeSigningQuorumsCount + 11 + 8
+    
     NSArray<NSData *> *baseBlockHashes = @[[NSData dataWithUInt256:previousBlockHash]];
-    [self.peerManager.downloadPeer sendGetQuorumRotationInfoForBaseBlockHashes:baseBlockHashes forBlockHash:blockHash extraShare:extraShare];
+    DSGetQRInfoRequest *request = [DSGetQRInfoRequest requestWithBaseBlockHashes:baseBlockHashes blockHash:blockHash extraShare:YES];
+    [self sendMasternodeListRequest:request];
 }
 
-- (void)retrieveMasternodeList:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash {
-    DSLog(@"Retrieve masternode list %d:(%@) %d:(%@)", self.blockHeightLookup(previousBlockHash), uint256_hex(previousBlockHash), self.blockHeightLookup(blockHash), uint256_hex(blockHash));
-    [self requestMasternodesAndQuorums:previousBlockHash forBlockHash:blockHash];
-    UInt512 concat = uint512_concat(previousBlockHash, blockHash);
-    [self.listsInRetrieval addObject:uint512_data(concat)];
+- (void)sendMasternodeListRequest:(DSMasternodeListRequest *)request {
+    DSLog(@"••• sendMasternodeListRequest: %@", [request toData].hexString);
+    [self.peerManager sendRequest:request];
+    [self.requestsInRetrieval addObject:request];
 }
 
 @end

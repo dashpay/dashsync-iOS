@@ -52,4 +52,13 @@
     return self.foundCoinbase && self.validQuorums && self.rootMNListValid && self.rootQuorumListValid;
 }
 
+- (BOOL)hasRotatedQuorums {
+    return [[self.addedQuorums keysOfEntriesPassingTest:^BOOL(NSNumber *_Nonnull llmqType, id _Nonnull obj, BOOL *_Nonnull stop) {
+        // TODO: make it more reliable as quorum type values may change
+        return [llmqType unsignedIntValue] >= DSLLMQType_TestDIP0024;
+    }] count] > 0;
+    
+    
+}
+
 @end

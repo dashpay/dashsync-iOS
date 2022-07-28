@@ -28,6 +28,9 @@
 
 #import "BigIntTypes.h"
 #import "DSChain.h"
+//#import "DSGovernanceHashesRequest.h"
+//#import "DSGovernanceSyncRequest.h"
+#import "DSMessageRequest.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -150,6 +153,10 @@ typedef NS_ENUM(uint32_t, DSInvType)
 #define REJECT_DUST 0x41        // one or more output amounts are below the 'dust' threshold
 #define REJECT_LOWFEE 0x42      // transaction does not have enough fee/priority to be relayed or mined
 
+#define MAX_GETDATA_HASHES 50000
+#define ENABLED_SERVICES 0 // we don't provide full blocks to remote nodes
+#define LOCAL_HOST 0x7f000001
+
 typedef union _UInt256 UInt256;
 typedef union _UInt128 UInt128;
 
@@ -256,6 +263,8 @@ typedef NS_ENUM(NSUInteger, DSPeerType)
     DSPeerType_MasterNode
 };
 
+@class DSGovernanceSyncRequest, DSGovernanceHashesRequest;
+
 @interface DSPeer : NSObject <NSStreamDelegate>
 
 @property (nonatomic, readonly, weak) id<DSPeerDelegate> peerDelegate;
@@ -312,6 +321,7 @@ typedef NS_ENUM(NSUInteger, DSPeerType)
 - (void)disconnectWithError:(NSError *_Nullable)error;
 - (void)receivedOrphanBlock;
 - (void)sendMessage:(NSData *)message type:(NSString *)type;
+- (void)sendRequest:(DSMessageRequest *)request;
 - (void)sendFilterloadMessage:(NSData *)filter;
 - (void)sendMempoolMessage:(NSArray *)publishedTxHashes completion:(MempoolCompletionBlock _Nullable)completion;
 - (void)sendGetheadersMessageWithLocators:(NSArray *)locators andHashStop:(UInt256)hashStop;
@@ -320,18 +330,21 @@ typedef NS_ENUM(NSUInteger, DSPeerType)
 - (void)sendInvMessageForHashes:(NSArray *)invHashes ofType:(DSInvType)invType;
 - (void)sendGetdataMessageForTxHash:(UInt256)txHash;
 - (void)sendGetdataMessageWithTxHashes:(NSArray *_Nullable)txHashes instantSendLockHashes:(NSArray *_Nullable)instantSendLockHashes instantSendLockDHashes:(NSArray *_Nullable)instantSendLockDHashes blockHashes:(NSArray *_Nullable)blockHashes chainLockHashes:(NSArray *_Nullable)chainLockHashes;
-- (void)sendGetdataMessageWithGovernanceObjectHashes:(NSArray<NSData *> *)governanceObjectHashes;
-- (void)sendGetdataMessageWithGovernanceVoteHashes:(NSArray<NSData *> *)governanceVoteHashes;
-- (void)sendGetMasternodeListFromPreviousBlockHash:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash;
-- (void)sendGetQuorumRotationInfoForBaseBlockHashes:(NSArray<NSData *> *)baseBlockHashes forBlockHash:(UInt256)blockHash extraShare:(BOOL)extraShare;
+
+- (void)sendGovernanceRequest:(DSGovernanceHashesRequest *)request;
+- (void)sendGovernanceSyncRequest:(DSGovernanceSyncRequest *)request;
+//- (void)sendGetdataMessageWithGovernanceObjectHashes:(NSArray<NSData *> *)governanceObjectHashes;
+//- (void)sendGetdataMessageWithGovernanceVoteHashes:(NSArray<NSData *> *)governanceVoteHashes;
+
 - (void)sendGetaddrMessage;
-- (void)sendGovSync;
-- (void)sendGovSync:(UInt256)h;
+//- (void)sendGovSync;
+//- (void)sendGovSync:(UInt256)h;
 - (void)sendGovObject:(DSGovernanceObject *)governanceObject;
 - (void)sendGovObjectVote:(DSGovernanceVote *)governanceVote;
 - (void)sendPingMessageWithPongHandler:(void (^)(BOOL success))pongHandler;
 - (void)sendGetSporks;
-- (void)sendDSegMessage:(DSUTXO)utxo;
+//- (void)sendDSegMessage:(DSUTXO)utxo; -> [DSDSegRequest requestWithUTXO:utxo];
+
 - (void)rerequestBlocksFrom:(UInt256)blockHash; // useful to get additional transactions after a bloom filter update
 
 - (NSString *)chainTip;

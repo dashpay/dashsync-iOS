@@ -17,35 +17,45 @@
 
 #import "DSChain.h"
 #import "DSInsightManager.h"
+#import "DSMasternodeListRequest.h"
 #import "DSPeer.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, DSMasternodeListRequestMode) {
+    DSMasternodeListRequestMode_MNLISTDIFF = 1,
+    DSMasternodeListRequestMode_QRINFO = 2,
+    DSMasternodeListRequestMode_MIXED = DSMasternodeListRequestMode_MNLISTDIFF | DSMasternodeListRequestMode_QRINFO
+};
+
 @interface DSMasternodeListService : NSObject
 
 @property (nonatomic, readonly, nonnull) DSChain *chain;
-@property (nonatomic, readonly) NSMutableSet<NSData *> *listsInRetrieval;
+@property (nonatomic, readonly) NSMutableSet<DSMasternodeListRequest *> *requestsInRetrieval;
 @property (nonatomic, readonly) NSMutableOrderedSet<NSData *> *retrievalQueue;
 @property (nonatomic, readonly) NSUInteger retrievalQueueCount;
 @property (nonatomic, readonly) NSUInteger retrievalQueueMaxAmount;
 
 - (instancetype)initWithChain:(DSChain *)chain blockHeightLookup:(BlockHeightFinder)blockHeightLookup;
+
 - (void)addToRetrievalQueue:(NSData *)masternodeBlockHashData;
 - (void)addToRetrievalQueueArray:(NSArray<NSData *> *)masternodeBlockHashDataArray;
 - (void)cleanAllLists;
-- (void)cleanListsInRetrieval;
 - (void)cleanListsRetrievalQueue;
+- (void)cleanRequestsInRetrieval;
+
 - (void)fetchMasternodeListsToRetrieve:(void (^)(NSOrderedSet<NSData *> *listsToRetrieve))completion;
 - (void)removeFromRetrievalQueue:(NSData *)masternodeBlockHashData;
-- (BOOL)removeListInRetrievalForKey:(NSData *)blockHashDiffsData;
+- (BOOL)removeRequestInRetrievalForKey:(DSMasternodeListRequest *)request;
+- (BOOL)removeRequestInRetrievalForBaseBlockHashes:(NSArray<NSData *> *)baseBlockHashes;
+
 - (BOOL)hasLatestBlockInRetrievalQueueWithHash:(UInt256)blockHash;
 
 - (void)disconnectFromDownloadPeer;
 - (void)issueWithMasternodeListFromPeer:(DSPeer *)peer;
-- (void)requestMasternodesAndQuorums:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash;
-- (void)retrieveMasternodeList:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash;
-
+- (void)requestMasternodeListDiff:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash;
+- (void)requestQuorumRotationInfo:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash;
 @end
 
 NS_ASSUME_NONNULL_END

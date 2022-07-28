@@ -10,6 +10,7 @@
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "DSChainManager.h"
+#import "DSGetGovernanceVotesRequest.h"
 #import "DSGovernanceObjectEntity+CoreDataProperties.h"
 #import "DSGovernanceSyncManager.h"
 #import "DSGovernanceVote.h"
@@ -376,7 +377,8 @@
         [requestHashes addObject:governanceVoteHashEntity.governanceVoteHash];
     }
     peer.governanceRequestState = DSGovernanceRequestState_GovernanceObjectVotes;
-    [peer sendGetdataMessageWithGovernanceVoteHashes:requestHashes];
+    DSGetGovernanceVotesRequest *request = [DSGetGovernanceVotesRequest requestWithGovernanceVoteHashes:requestHashes];
+    [peer sendGovernanceRequest:request];
 }
 
 - (void)peer:(DSPeer *)peer hasGovernanceVoteHashes:(NSSet *)governanceVoteHashes {

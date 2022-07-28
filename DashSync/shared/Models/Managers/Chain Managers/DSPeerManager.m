@@ -1032,4 +1032,8 @@
     });
 }
 
+- (void)sendRequest:(DSMessageRequest *)request {
+    [self.downloadPeer sendRequest:request];
+}
+
 @end

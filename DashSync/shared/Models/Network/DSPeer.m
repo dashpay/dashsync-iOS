@@ -27,6 +27,7 @@
 //  THE SOFTWARE.
 
 #import "DSPeer.h"
+#import "DSAddrRequest.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSBloomFilter.h"
 #import "DSChain+Protected.h"
@@ -34,14 +35,24 @@
 #import "DSChainLock.h"
 #import "DSChainManager+Protected.h"
 #import "DSChainManager.h"
+#import "DSFilterLoadRequest.h"
+#import "DSGetBlocksRequest.h"
+#import "DSGetDataForTransactionHashRequest.h"
+#import "DSGetDataForTransactionHashesRequest.h"
+#import "DSGetHeadersRequest.h"
 #import "DSGovernanceObject.h"
 #import "DSGovernanceVote.h"
+#import "DSGovernanceHashesRequest.h"
+#import "DSGovernanceSyncRequest.h"
 #import "DSInstantSendTransactionLock.h"
+#import "DSInvRequest.h"
 #import "DSMasternodeManager.h"
 #import "DSMerkleBlock.h"
+#import "DSNotFoundRequest.h"
 #import "DSOptionsManager.h"
 #import "DSPeerEntity+CoreDataClass.h"
 #import "DSPeerManager.h"
+#import "DSPingRequest.h"
 #import "DSReachabilityManager.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSSpork.h"
@@ -49,6 +60,8 @@
 #import "DSTransaction.h"
 #import "DSTransactionFactory.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
+#import "DSTransactionInvRequest.h"
+#import "DSVersionRequest.h"
 #import "NSData+DSHash.h"
 #import "NSData+Dash.h"
 #import "NSDate+Utils.h"
@@ -71,9 +84,6 @@
 
 #define HEADER_LENGTH 24
 #define MAX_MSG_LENGTH 0x02000000
-#define MAX_GETDATA_HASHES 50000
-#define ENABLED_SERVICES 0 // we don't provide full blocks to remote nodes
-#define LOCAL_HOST 0x7f000001
 #define CONNECT_TIMEOUT 3.0
 #define MEMPOOL_TIMEOUT 2.0
 
@@ -94,7 +104,7 @@
 @property (nonatomic, strong) NSOutputStream *outputStream;
 @property (nonatomic, strong) NSMutableData *msgHeader, *msgPayload, *outputBuffer;
 @property (nonatomic, assign) BOOL sentVerack, gotVerack;
-@property (nonatomic, assign) BOOL sentGetaddr, sentFilter, sentGetdataTxBlocks, sentGetdataMasternode, sentGetdataGovernance, sentMempool, sentGetblocks, sentGetdataGovernanceVotes, sentGovSync;
+@property (nonatomic, assign) BOOL sentGetaddr, sentFilter, sentGetdataTxBlocks, sentGetdataMasternode, sentMempool, sentGetblocks;
 @property (nonatomic, assign) BOOL receivedGovSync;
 @property (nonatomic, strong) DSReachabilityManager *reachability;
 @property (nonatomic, strong) id reachabilityObserver;
@@ -244,7 +254,7 @@
     self.msgPayload = [NSMutableData data];
     self.outputBuffer = [NSMutableData data];
     self.gotVerack = self.sentVerack = NO;
-    self.sentFilter = self.sentGetaddr = self.sentGetdataTxBlocks = self.sentGetdataMasternode = self.sentMempool = self.sentGetblocks = self.sentGetdataGovernance = self.sentGetdataGovernanceVotes = NO;
+    self.sentFilter = self.sentGetaddr = self.sentGetdataTxBlocks = self.sentGetdataMasternode = self.sentMempool = self.sentGetblocks = NO;
     self.needsFilterUpdate = NO;
     self.knownTxHashes = [NSMutableOrderedSet orderedSet];
     self.knownInstantSendLockHashes = [NSMutableOrderedSet orderedSet];
@@ -369,6 +379,17 @@
 
 // MARK: - send
 
+- (void)sendRequest:(DSMessageRequest *)request {
+    NSString *type = [request type];
+    NSData *payload = [request toData];
+    DSLog(@"%@:%u sendRequest: [%@]: %@", self.host, self.port, type, [payload hexString]);
+    if (!type) {
+        DSLog(@"nullllll");
+
+    }
+    [self sendMessage:payload type:type];
+}
+
 - (void)sendMessage:(NSData *)message type:(NSString *)type {
     if (message.length > MAX_MSG_LENGTH) {
         DSLog(@"%@:%u failed to send %@, length %u is too long", self.host, self.port, type, (int)message.length);
@@ -377,9 +398,7 @@
 #endif
         return;
     }
-
     if (!self.runLoop) return;
-
     CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
 #if MESSAGE_LOGGING
         if (![type isEqualToString:MSG_GETDATA] && ![type isEqualToString:MSG_VERSION] && ![type isEqualToString:MSG_GETBLOCKS]) { //we log this somewhere else for better accuracy of what data is being got
@@ -403,14 +422,10 @@
 #endif
         }
 #endif
-
         LOCK(self.outputBufferSemaphore);
-
         [self.outputBuffer appendMessage:message type:type forChain:self.chain];
-
         while (self.outputBuffer.length > 0 && self.outputStream.hasSpaceAvailable) {
             NSInteger l = [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
-
             if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
             //if (self.outputBuffer.length == 0) DSLog(@"%@:%u output buffer cleared", self.host, self.port);
         }
@@ -421,18 +436,7 @@
 }
 
 - (void)sendVersionMessage {
-    NSMutableData *msg = [NSMutableData data];
-    uint16_t port = CFSwapInt16HostToBig(self.port);
-
-    [msg appendUInt32:self.chain.protocolVersion];                                            // version
-    [msg appendUInt64:ENABLED_SERVICES];                                                      // services
-    [msg appendUInt64:[NSDate timeIntervalSince1970]];                                        // timestamp
-    [msg appendUInt64:self.services];                                                         // services of remote peer
-    [msg appendBytes:&_address length:sizeof(_address)];                                      // IPv6 address of remote peer
-    [msg appendBytes:&port length:sizeof(port)];                                              // port of remote peer
-    [msg appendNetAddress:LOCAL_HOST port:self.chain.standardPort services:ENABLED_SERVICES]; // net address of local peer
     self.localNonce = ((uint64_t)arc4random() << 32) | (uint64_t)arc4random();                // random nonce
-    [msg appendUInt64:self.localNonce];
     NSString *agent;
     if (self.chain.isMainnet) {
         agent = [USER_AGENT stringByAppendingString:@"/"];
@@ -443,21 +447,23 @@
     } else {
         agent = [USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet.%@)/", self.chain.devnetIdentifier]];
     }
-    [msg appendString:agent]; // user agent
-    [msg appendUInt32:0];     // last block received
-    [msg appendUInt8:0];      // relay transactions (no for SPV bloom filter mode)
+    DSVersionRequest *request = [DSVersionRequest requestWithAddress:_address
+                                                                port:self.port
+                                                     protocolVersion:self.chain.protocolVersion
+                                                            services:self.services
+                                                        standardPort:self.chain.standardPort
+                                                          localNonce:self.localNonce
+                                                           userAgent:agent];
     self.pingStartTime = [NSDate timeIntervalSince1970];
 
 #if MESSAGE_LOGGING
     DSLog(@"%@:%u %@sending version with protocol version %d user agent %@", self.host, self.port, self.peerDelegate.downloadPeer == self ? @"(download peer) " : @"", self.chain.protocolVersion, agent);
 #endif
-
-    [self sendMessage:msg
-                 type:MSG_VERSION];
+    [self sendRequest:request];
 }
 
 - (void)sendVerackMessage {
-    [self sendMessage:[NSData data] type:MSG_VERACK];
+    [self sendRequest:[DSMessageRequest requestWithType:MSG_VERACK]];
     self.sentVerack = YES;
     [self didConnect];
 }
@@ -469,13 +475,11 @@
 #else
     DSLog(@"Sending filter with fingerprint %@ to node %@ %@", @"<REDACTED>", self.host, self.peerDelegate.downloadPeer == self ? @"(download peer) " : @"");
 #endif
-    [self sendMessage:filter
-                 type:MSG_FILTERLOAD];
+    [self sendRequest:[DSFilterLoadRequest requestWithBloomFilterData:filter]];
 }
 
 - (void)mempoolTimeout {
     DSLog(@"[DSPeer] mempool time out %@", self.host);
-
     __block MempoolCompletionBlock completion = self.mempoolTransactionCompletion;
     [self sendPingMessageWithPongHandler:^(BOOL success) {
         if (completion) {
@@ -509,15 +513,7 @@
         }
     }
     self.mempoolRequestTime = [NSDate timeIntervalSince1970];
-    [self sendMessage:[NSData data] type:MSG_MEMPOOL];
-}
-
-- (void)sendAddrMessage {
-    NSMutableData *msg = [NSMutableData data];
-
-    //TODO: send peer addresses we know about
-    [msg appendVarInt:0];
-    [self sendMessage:msg type:MSG_ADDR];
+    [self sendRequest:[DSMessageRequest requestWithType:MSG_MEMPOOL]];
 }
 
 // the standard blockchain download protocol works as follows (for SPV mode):
@@ -549,33 +545,14 @@
 // - after filterload is sent, getdata is sent to re-request recent blocks that may contain new tx matching the filter
 
 - (void)sendGetheadersMessageWithLocators:(NSArray *)locators andHashStop:(UInt256)hashStop {
-    NSMutableData *msg = [NSMutableData data];
-
-    [msg appendUInt32:self.chain.protocolVersion];
-    [msg appendVarInt:locators.count];
-
-    for (NSData *hashData in locators) {
-        [msg appendUInt256:hashData.UInt256];
-    }
-
-    [msg appendBytes:&hashStop
-              length:sizeof(hashStop)];
-    if (self.relayStartTime == 0) self.relayStartTime = [NSDate timeIntervalSince1970];
-    [self sendMessage:msg type:MSG_GETHEADERS];
+    DSGetHeadersRequest *request = [DSGetHeadersRequest requestWithLocators:locators andHashStop:hashStop protocolVersion:self.chain.protocolVersion];
+    if (self.relayStartTime == 0)
+        self.relayStartTime = [NSDate timeIntervalSince1970];
+    [self sendRequest:request];
 }
 
 - (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(UInt256)hashStop {
-    NSMutableData *msg = [NSMutableData data];
-
-    [msg appendUInt32:self.chain.protocolVersion];
-    [msg appendVarInt:locators.count];
-
-    for (NSData *hashData in locators) {
-        [msg appendUInt256:hashData.UInt256];
-    }
-
-    [msg appendBytes:&hashStop
-              length:sizeof(hashStop)];
+    DSGetBlocksRequest *request = [DSGetBlocksRequest requestWithLocators:locators andHashStop:hashStop protocolVersion:self.chain.protocolVersion];
     self.sentGetblocks = YES;
 
 #if MESSAGE_LOGGING
@@ -593,37 +570,26 @@
 #else
     DSLog(@"%@:%u %@sending getblocks with locators %@", self.host, self.port, self.peerDelegate.downloadPeer == self ? @"(download peer) " : @"", @"<REDACTED>");
 #endif
-#if MESSAGE_CONTENT_LOGGING
-#if DEBUG
-    DSLogPrivate(@"%@:%u sending data %@", self.host, self.port, msg.hexString);
-#else
-    DSLog(@"%@:%u sending data %@", self.host, self.port, @"<REDACTED>");
-#endif
-#endif
+//#if MESSAGE_CONTENT_LOGGING
+//#if DEBUG
+//    DSLogPrivate(@"%@:%u sending data %@", self.host, self.port, msg.hexString);
+//#else
+//    DSLog(@"%@:%u sending data %@", self.host, self.port, @"<REDACTED>");
+//#endif
+//#endif
 #endif
 
-    [self sendMessage:msg
-                 type:MSG_GETBLOCKS];
+    [self sendRequest:request];
 }
 
 - (void)sendInvMessageForHashes:(NSArray *)invHashes ofType:(DSInvType)invType {
     DSLogPrivate(@"%@:%u sending inv message of type %@ hashes count %lu", self.host, self.port, [self nameOfInvMessage:invType], (unsigned long)invHashes.count);
     NSMutableOrderedSet *hashes = [NSMutableOrderedSet orderedSetWithArray:invHashes];
-    NSMutableData *msg = [NSMutableData data];
-    UInt256 h;
-
     [hashes minusOrderedSet:self.knownTxHashes];
     if (hashes.count == 0) return;
-    [msg appendVarInt:hashes.count];
-
-    for (NSValue *hash in hashes) {
-        [msg appendUInt32:invType];
-        [hash getValue:&h];
-        [msg appendBytes:&h length:sizeof(h)];
-    }
-
-    [self sendMessage:msg
-                 type:MSG_INV];
+    DSInvRequest *request = [DSInvRequest requestWithHashes:hashes ofInvType:invType];
+    [self sendRequest:request];
+    
     switch (invType) {
         case DSInvType_Tx:
             [self.knownTxHashes unionOrderedSet:hashes];
@@ -648,39 +614,18 @@
 - (void)sendTransactionInvMessagesforTransactionHashes:(NSArray *)txInvHashes txLockRequestHashes:(NSArray *)txLockRequestInvHashes {
     NSMutableOrderedSet *txHashes = txInvHashes ? [NSMutableOrderedSet orderedSetWithArray:txInvHashes] : nil;
     NSMutableOrderedSet *txLockRequestHashes = txLockRequestInvHashes ? [NSMutableOrderedSet orderedSetWithArray:txLockRequestInvHashes] : nil;
-    NSMutableData *msg = [NSMutableData data];
-    UInt256 h;
-
     [txHashes minusOrderedSet:self.knownTxHashes];
     [txLockRequestHashes minusOrderedSet:self.knownTxHashes];
-
     if (txHashes.count + txLockRequestHashes.count == 0) return;
-    [msg appendVarInt:txHashes.count + txLockRequestHashes.count];
-
-    for (NSValue *hash in txHashes) {
-        [msg appendUInt32:DSInvType_Tx];
-        [hash getValue:&h];
-        [msg appendBytes:&h length:sizeof(h)];
-    }
-
-    for (NSValue *hash in txLockRequestHashes) {
-        [msg appendUInt32:DSInvType_TxLockRequest];
-        [hash getValue:&h];
-        [msg appendBytes:&h length:sizeof(h)];
-    }
-
-    [self sendMessage:msg
-                 type:MSG_INV];
+    DSTransactionInvRequest *request = [DSTransactionInvRequest requestWithTransactionHashes:txHashes txLockRequestHashes:txLockRequestHashes];
+    [self sendRequest:request];
     txHashes ? [self.knownTxHashes unionOrderedSet:txHashes] : nil;
     txLockRequestHashes ? [self.knownTxHashes unionOrderedSet:txLockRequestHashes] : nil;
 }
 
 - (void)sendGetdataMessageForTxHash:(UInt256)txHash {
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GetsNewBlocks)) return;
-    NSMutableData *msg = [NSMutableData data];
-    [msg appendVarInt:1];
-    [msg appendUInt32:DSInvType_Tx];
-    [msg appendUInt256:txHash];
+    DSGetDataForTransactionHashRequest *request = [DSGetDataForTransactionHashRequest requestForTransactionHash:txHash];
 #if MESSAGE_LOGGING
 #if DEBUG
     DSLogPrivate(@"%@:%u sending getdata for transaction %@", self.host, self.port, uint256_hex(txHash));
@@ -688,8 +633,7 @@
     DSLog(@"%@:%u sending getdata for transaction %@", self.host, self.port, @"<REDACTED>");
 #endif
 #endif
-    [self sendMessage:msg
-                 type:MSG_GETDATA];
+    [self sendRequest:request];
 }
 
 - (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes instantSendLockHashes:(NSArray *)instantSendLockHashes instantSendLockDHashes:(NSArray *)instantSendLockDHashes blockHashes:(NSArray *)blockHashes chainLockHashes:(NSArray *)chainLockHashes {
@@ -701,132 +645,39 @@
     } else if (txHashes.count + instantSendLockHashes.count + instantSendLockDHashes.count + blockHashes.count + chainLockHashes.count == 0)
         return;
 
-    NSMutableData *msg = [NSMutableData data];
-    UInt256 h;
-
-    [msg appendVarInt:txHashes.count + blockHashes.count + instantSendLockHashes.count + instantSendLockDHashes.count + chainLockHashes.count];
-
-    for (NSValue *hash in txHashes) {
-        [msg appendUInt32:DSInvType_Tx];
-        [hash getValue:&h];
-        [msg appendBytes:&h length:sizeof(h)];
-    }
-
-    for (NSValue *hash in instantSendLockHashes) {
-        [msg appendUInt32:DSInvType_InstantSendLock];
-        [hash getValue:&h];
-        [msg appendBytes:&h length:sizeof(h)];
-    }
-    
-    for (NSValue *hash in instantSendLockDHashes) {
-        [msg appendUInt32:DSInvType_InstantSendDeterministicLock];
-        [hash getValue:&h];
-        [msg appendBytes:&h length:sizeof(h)];
-    }
-
-    for (NSValue *hash in blockHashes) {
-        [msg appendUInt32:DSInvType_Merkleblock];
-        [hash getValue:&h];
-        [msg appendBytes:&h length:sizeof(h)];
-    }
-
-    for (NSValue *hash in chainLockHashes) {
-        [msg appendUInt32:DSInvType_ChainLockSignature];
-        [hash getValue:&h];
-        [msg appendBytes:&h length:sizeof(h)];
-    }
-
+    DSGetDataForTransactionHashesRequest *request = [DSGetDataForTransactionHashesRequest requestForTransactionHashes:txHashes
+                                                                                                instantSendLockHashes:instantSendLockHashes
+                                                                                               instantSendLockDHashes:instantSendLockDHashes
+                                                                                                          blockHashes:blockHashes
+                                                                                                      chainLockHashes:chainLockHashes];
     self.sentGetdataTxBlocks = YES;
 #if MESSAGE_LOGGING
     DSLog(@"%@:%u sending getdata (transactions and blocks)", self.host, self.port);
 #endif
-    [self sendMessage:msg
-                 type:MSG_GETDATA];
+    [self sendRequest:request];
 }
 
-/**
- * previousBlockHash: Hash of a block the requestor already has a valid masternode list of. Can be all-zero to indicate that a full masternode list is requested.
- * blockHash: Hash of the block for which the masternode list diff is requested
- */
-- (void)sendGetMasternodeListFromPreviousBlockHash:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash {
-    NSMutableData *msg = [NSMutableData data];
-    [msg appendUInt256:previousBlockHash];
-    [msg appendUInt256:blockHash];
-    [self sendMessage:msg type:MSG_GETMNLISTDIFF];
-}
-
-- (void)sendGetQuorumRotationInfoForBaseBlockHashes:(NSArray<NSData *> *)baseBlockHashes forBlockHash:(UInt256)blockHash extraShare:(BOOL)extraShare {
-    NSMutableData *msg = [NSMutableData data];
-    // Number of masternode lists the light client knows
-    [msg appendVarInt:baseBlockHashes.count];
-    // The base block hashes of the masternode lists the light client knows
-    for (NSData *baseBlockHash in baseBlockHashes) {
-        [msg appendUInt256:baseBlockHash.UInt256];
-    }
-    // Hash of the height the client requests
-    [msg appendUInt256:blockHash];
-    // Flag to indicate if an extra share is requested
-    [msg appendUInt8:extraShare ? 1 : 0];
-//    DSLog(@"sendGetQuorumRotationInfoForBaseBlockHashes: %@", msg.hexString);
-    [self sendMessage:msg type:MSG_GETQUORUMROTATIONINFO];
-}
-
-- (void)sendGetdataMessageWithGovernanceObjectHashes:(NSArray<NSData *> *)governanceObjectHashes {
-    if (governanceObjectHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
-        DSLog(@"%@:%u couldn't send governance getdata, %u is too many items, max is %u", self.host, self.port,
-            (int)governanceObjectHashes.count, MAX_GETDATA_HASHES);
-        return;
-    } else if (governanceObjectHashes.count == 0)
-        return;
-
-    NSMutableData *msg = [NSMutableData data];
-
-    [msg appendVarInt:governanceObjectHashes.count];
-
-    for (NSData *dataHash in governanceObjectHashes) {
-        [msg appendUInt32:DSInvType_GovernanceObject];
-
-        [msg appendBytes:dataHash.bytes length:sizeof(UInt256)];
-    }
-
-    self.sentGetdataGovernance = YES;
-#if MESSAGE_LOGGING
-    DSLog(@"%@:%u sending getdata (governance objects)", self.host, self.port);
-#endif
-    [self sendMessage:msg
-                 type:MSG_GETDATA];
-}
-
-- (void)sendGetdataMessageWithGovernanceVoteHashes:(NSArray<NSData *> *)governanceVoteHashes {
-    if (governanceVoteHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
+- (void)sendGovernanceRequest:(DSGovernanceHashesRequest *)request {
+    if (request.hashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
         DSLog(@"%@:%u couldn't send governance votes getdata, %u is too many items, max is %u", self.host, self.port,
-            (int)governanceVoteHashes.count, MAX_GETDATA_HASHES);
+            (int)request.hashes.count, MAX_GETDATA_HASHES);
         return;
-    } else if (governanceVoteHashes.count == 0)
+    } else if (request.hashes.count == 0) {
+        DSLog(@"%@:%u couldn't send governance getdata, there is no items", self.host, self.port);
         return;
-
-    NSMutableData *msg = [NSMutableData data];
-
-    [msg appendVarInt:governanceVoteHashes.count];
-
-    for (NSData *dataHash in governanceVoteHashes) {
-        [msg appendUInt32:DSInvType_GovernanceObjectVote];
-
-        [msg appendBytes:dataHash.bytes length:sizeof(UInt256)];
     }
-
-    self.sentGetdataGovernanceVotes = YES;
-#if MESSAGE_LOGGING
-    DSLog(@"%@:%u sending getdata (governance votes)", self.host, self.port);
-#endif
-    [self sendMessage:msg
-                 type:MSG_GETDATA];
+    
+    #if MESSAGE_LOGGING
+        DSLog(@"%@:%u sending getdata (%@)", self.host, self.port, request.description);
+    #endif
+    
+    // Not used
+    [self sendRequest:request];
 }
-
 
 - (void)sendGetaddrMessage {
     self.sentGetaddr = YES;
-    [self sendMessage:[NSData data] type:MSG_GETADDR];
+    [self sendRequest:[DSMessageRequest requestWithType:MSG_GETADDR]];
 }
 
 - (void)sendPingMessageWithPongHandler:(void (^)(BOOL success))pongHandler;
@@ -837,6 +688,7 @@
         if (!self.pongHandlers) self.pongHandlers = [NSMutableArray array];
         [self.pongHandlers addObject:(pongHandler) ? [pongHandler copy] : [^(BOOL success) {
         } copy]];
+        
         [msg appendUInt64:self.localNonce];
         self.pingStartTime = [NSDate timeIntervalSince1970];
 
@@ -844,8 +696,7 @@
         DSLog(@"%@:%u sending ping", self.host, self.port);
 #endif
 
-        [self sendMessage:msg
-                     type:MSG_PING];
+        [self sendRequest:[DSPingRequest requestWithLocalNonce:self.localNonce]];
     });
 }
 
@@ -863,65 +714,34 @@
 // MARK: - send Dash Sporks
 
 - (void)sendGetSporks {
-    [self sendMessage:[NSData data] type:MSG_GETSPORKS];
-}
-
-// MARK: - send Dash Masternode list
-
-- (void)sendDSegMessage:(DSUTXO)utxo {
-    NSMutableData *msg = [NSMutableData data];
-    [msg appendUInt256:utxo.hash];
-    if (uint256_is_zero(utxo.hash)) {
-        DSLog(@"%@:%u Requesting Masternode List", self.host, self.port);
-        [msg appendUInt32:UINT32_MAX];
-    } else {
-        DSLog(@"%@:%u Requesting Masternode Entry", self.host, self.port);
-        [msg appendUInt32:(uint32_t)utxo.n];
-    }
-
-    [msg appendUInt8:0];
-    [msg appendUInt32:UINT32_MAX];
-    [self sendMessage:msg type:MSG_DSEG];
+    [self sendRequest:[DSMessageRequest requestWithType:MSG_GETSPORKS]];
 }
 
 // MARK: - send Dash Governance
 
-- (void)sendGovSync:(UInt256)parentHash {                               //for votes
-    if (self.governanceRequestState != DSGovernanceRequestState_None) { //Make sure we aren't in a governance sync process
-        DSLog(@"%@:%u Requesting Governance Vote Hashes out of resting state", self.host, self.port);
-        return;
-    }
-    self.sentGovSync = TRUE;
+// Governance Synchronization for Votes and Objects
+- (void)sendGovernanceSyncRequest:(DSGovernanceSyncRequest *)request {
+    // Make sure we aren't in a governance sync process
     DSLog(@"%@:%u Requesting Governance Object Vote Hashes", self.host, self.port);
-    NSMutableData *msg = [NSMutableData data];
-    //UInt256 reversed = *(UInt256*)[NSData dataWithUInt256:parentHash].reverse.bytes;
-    [msg appendBytes:&parentHash length:sizeof(parentHash)];
-    [msg appendData:[[[DSBloomFilter alloc] initWithFalsePositiveRate:0.01 forElementCount:20000 tweak:arc4random_uniform(10000) flags:1] toData]];
-    self.governanceRequestState = DSGovernanceRequestState_GovernanceObjectVoteHashes;
-    [self sendMessage:msg type:MSG_GOVOBJSYNC];
-}
-
-- (void)sendGovSync {                                                   //for governance objects
-    if (self.governanceRequestState != DSGovernanceRequestState_None) { //Make sure we aren't in a governance sync process
+    if (self.governanceRequestState != DSGovernanceRequestState_None) {
         DSLog(@"%@:%u Requesting Governance Object Hashes out of resting state", self.host, self.port);
         return;
     }
-    DSLog(@"%@:%u Requesting Governance Object Hashes", self.host, self.port);
-    UInt256 h = UINT256_ZERO;
-    NSMutableData *msg = [NSMutableData data];
 
-    [msg appendBytes:&h length:sizeof(h)];
-    [msg appendData:[DSBloomFilter emptyBloomFilterData]];
-    self.governanceRequestState = DSGovernanceRequestState_GovernanceObjectHashes;
-    [self sendMessage:msg type:MSG_GOVOBJSYNC];
-
-    //we aren't afraid of coming back here within 5 seconds because a peer can only sendGovSync once every 3 hours
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        if (self.governanceRequestState == DSGovernanceRequestState_GovernanceObjectHashes) {
-            DSLog(@"%@:%u Peer ignored request for governance object hashes", self.host, self.port);
-            [self.governanceDelegate peer:self ignoredGovernanceSync:DSGovernanceRequestState_GovernanceObjectHashes];
-        }
-    });
+    DSLog(@"%@:%u Requesting %@", self.host, self.port, request.description);
+    self.governanceRequestState = request.state;
+    
+    [self sendRequest:request];
+    
+    if (request.state == DSGovernanceRequestState_GovernanceObjectHashes) {
+        //we aren't afraid of coming back here within 5 seconds because a peer can only sendGovSync once every 3 hours
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            if (self.governanceRequestState == DSGovernanceRequestState_GovernanceObjectHashes) {
+                DSLog(@"%@:%u Peer ignored request for governance object hashes", self.host, self.port);
+                [self.governanceDelegate peer:self ignoredGovernanceSync:DSGovernanceRequestState_GovernanceObjectHashes];
+            }
+        });
+    }
 }
 
 - (void)sendGovObjectVote:(DSGovernanceVote *)governanceVote {
@@ -1623,22 +1443,21 @@
         UInt256 lastBlockHash = [message subdataWithRange:NSMakeRange(l + 81 * (count - 1), 80)].x11;
         NSData *firstHashData = uint256_data(firstBlockHash);
         NSData *lastHashData = uint256_data(lastBlockHash);
-
-
-        if (((lastTimestamp + DAY_TIME_INTERVAL * 2) >= self.earliestKeyTime) && (!self.chain.needsInitialTerminalHeadersSync) && [self.chain.chainManager shouldRequestMerkleBlocksForZoneAfterHeight:self.chain.lastSyncBlockHeight + 1]) { // request blocks for the remainder of the chain
+        if (((lastTimestamp + DAY_TIME_INTERVAL * 2) >= self.earliestKeyTime) &&
+            (!self.chain.needsInitialTerminalHeadersSync) &&
+            [self.chain.chainManager shouldRequestMerkleBlocksForZoneAfterHeight:self.chain.lastSyncBlockHeight + 1]) { // request blocks for the remainder of the chain
             NSTimeInterval timestamp = [message UInt32AtOffset:l + 81 + 68];
-
             for (off = l; timestamp > 0 && ((timestamp + DAY_TIME_INTERVAL * 2) < self.earliestKeyTime);) {
                 off += 81;
                 timestamp = [message UInt32AtOffset:off + 81 + 68];
             }
             lastBlockHash = [message subdataWithRange:NSMakeRange(off, 80)].x11;
             lastHashData = uint256_data(lastBlockHash);
-            DSLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, @[lastHashData.reverse.hexString, firstHashData.reverse.hexString]);
+            DSLog(@"%@:%u calling getblocks with locators: [%d: %@, %d: %@]", self.host, self.port, [self.chain heightForBlockHash:lastBlockHash], lastHashData.reverse.hexString, [self.chain heightForBlockHash:firstBlockHash], firstHashData.reverse.hexString);
             [self sendGetblocksMessageWithLocators:@[lastHashData, firstHashData] andHashStop:UINT256_ZERO];
         } else {
-            DSLog(@"%@:%u calling getheaders with locators: %@", self.host, self.port,
-                @[lastHashData.reverse.hexString, firstHashData.reverse.hexString]);
+            
+            DSLog(@"%@:%u calling getheaders with locators: [%d: %@, %d: %@]", self.host, self.port, [self.chain heightForBlockHash:lastBlockHash], lastHashData.reverse.hexString, [self.chain heightForBlockHash:firstBlockHash], firstHashData.reverse.hexString);
             [self sendGetheadersMessageWithLocators:@[lastHashData, firstHashData] andHashStop:UINT256_ZERO];
         }
     }
@@ -1648,7 +1467,6 @@
             [self error:@"invalid block header %@", uint256_obj(block.blockHash)];
             return;
         }
-
         dispatch_async(self.delegateQueue, ^{
             [self.transactionDelegate peer:self relayedHeader:block];
         });
@@ -1657,7 +1475,7 @@
 
 - (void)acceptGetaddrMessage:(NSData *)message {
     DSLog(@"%@:%u got getaddr", self.host, self.port);
-    [self sendAddrMessage];
+    [self sendRequest:[DSAddrRequest request]];
 }
 
 - (void)acceptGetdataMessage:(NSData *)message {
@@ -1736,11 +1554,8 @@
         }
 
         if (notfound.length > 0) {
-            NSMutableData *msg = [NSMutableData data];
-
-            [msg appendVarInt:notfound.length / 36];
-            [msg appendData:notfound];
-            [self sendMessage:msg type:MSG_NOTFOUND];
+            DSNotFoundRequest *request = [DSNotFoundRequest requestWithData:notfound];
+            [self sendRequest:request];
         }
     });
 }
@@ -1782,8 +1597,7 @@
 #if MESSAGE_LOGGING
     DSLog(@"%@:%u got ping", self.host, self.port);
 #endif
-    [self sendMessage:message
-                 type:MSG_PONG];
+    [self sendMessage:message type:MSG_PONG];
 }
 
 - (void)acceptPongMessage:(NSData *)message {
@@ -1791,8 +1605,7 @@
         [self error:@"malformed pong message, length is %u, should be 4", (int)message.length];
         return;
     } else if ([message UInt64AtOffset:0] != self.localNonce) {
-        [self error:@"pong message contained wrong nonce: %llu, expected: %llu", [message UInt64AtOffset:0],
-              self.localNonce];
+        [self error:@"pong message contained wrong nonce: %llu, expected: %llu", [message UInt64AtOffset:0], self.localNonce];
         return;
     } else if (!self.pongHandlers.count) {
         DSLog(@"%@:%u got unexpected pong", self.host, self.port);

@@ -39,7 +39,7 @@ const MasternodeList *getMasternodeListByBlockHash(uint8_t (*block_hash)[32], co
     NSData *data = [NSData dataWithBytes:block_hash length:32];
     DSMasternodeList *list = processorContext.masternodeListLookup(data.UInt256);
     MasternodeList *c_list = list ? [list ffi_malloc] : NULL;
-    NoTimeLog(@"getMasternodeListByBlockHash: %@: %@: %@", data.hexString, c_list, context);
+    //NoTimeLog(@"getMasternodeListByBlockHash: %@: %@: %@", data.hexString, c_list, context);
     mndiff_block_hash_destroy(block_hash);
     return c_list;
 }
@@ -50,7 +50,7 @@ bool saveMasternodeList(uint8_t (*block_hash)[32], const MasternodeList *mastern
     NSData *data = [NSData dataWithBytes:block_hash length:32];
     DSMasternodeList *masternodeList = [DSMasternodeList masternodeListWith:(MasternodeList *)masternode_list onChain:chain];
     BOOL saved = [chain.chainManager.masternodeManager saveMasternodeList:masternodeList forBlockHash:data.UInt256];
-    NoTimeLog(@"saveMasternodeList: %ul: %@: %d", processorContext.blockHeightLookup(data.UInt256), data.hexString, saved);
+    //NoTimeLog(@"saveMasternodeList: %ul: %@: %d", processorContext.blockHeightLookup(data.UInt256), data.hexString, saved);
     mndiff_block_hash_destroy(block_hash);
     return saved;
 }
@@ -63,8 +63,8 @@ uint32_t getBlockHeightByHash(uint8_t (*block_hash)[32], const void *context) {
     DSMasternodeDiffMessageContext *processorContext = (__bridge DSMasternodeDiffMessageContext *)context;
     NSData *data = [NSData dataWithBytes:block_hash length:32];
     uint32_t block_height = processorContext.blockHeightLookup(data.UInt256);
-    NoTimeLog(@"%@ => %u,", data.hexString, block_height);
-    NoTimeLog(@"getBlockHeightByHash: %@: %u: %@", data.hexString, block_height, context);
+    //NoTimeLog(@"%@ => %u,", data.hexString, block_height);
+    //NoTimeLog(@"getBlockHeightByHash: %@: %u: %@", data.hexString, block_height, context);
     mndiff_block_hash_destroy(block_hash);
     return block_height;
 }
@@ -81,6 +81,7 @@ const uint8_t *getMerkleRootByHash(uint8_t (*block_hash)[32], const void *contex
     DSMasternodeDiffMessageContext *processorContext = (__bridge DSMasternodeDiffMessageContext *)context;
     NSData *data = [NSData dataWithBytes:block_hash length:32];
     UInt256 merkleRoot = processorContext.merkleRootLookup(data.UInt256);
+    DSLog(@"••• getMerkleRootByHash: %d: %@ -> %@", [processorContext.chain blockForBlockHash:data.UInt256].height, data.hexString, uint256_hex(merkleRoot));
     uint8_t (*merkle_root)[32] = uint256_malloc(merkleRoot);
     mndiff_block_hash_destroy(block_hash);
     return (const uint8_t *)merkle_root;
@@ -110,7 +111,7 @@ bool saveLLMQSnapshot(uint8_t (*block_hash)[32], const LLMQSnapshot *snapshot, c
     DSChain *chain = processorContext.chain;
     NSData *data = [NSData dataWithBytes:block_hash length:32];
     BOOL saved = [chain.chainManager.masternodeManager saveQuorumSnapshot:[DSQuorumSnapshot quorumSnapshotWith:(LLMQSnapshot *)snapshot] forBlockHash:data.UInt256];
-    NoTimeLog(@"saveLLMQSnapshot: %ul: %@: %d", processorContext.blockHeightLookup(data.UInt256), data.hexString, saved);
+    //NoTimeLog(@"saveLLMQSnapshot: %ul: %@: %d", processorContext.blockHeightLookup(data.UInt256), data.hexString, saved);
     mndiff_block_hash_destroy(block_hash);
     return saved;
 }
@@ -197,29 +198,18 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
 ///
 /// MARK: Call processing methods
 ///
-- (void)processMasternodeDiffMessage:(NSData *)message
-                         withContext:(DSMasternodeDiffMessageContext *)context
-                          completion:(void (^)(DSMnDiffProcessingResult *result))completion {
+- (DSMnDiffProcessingResult *)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context {
     NSAssert(self.processor, @"processMasternodeDiffMessage: No processor created");
-    [DSMasternodeManager processMasternodeDiffMessage:message withProcessor:self.processor usingCache:self.processorCache withContext:context completion:completion];
-}
-
-+ (void)processMasternodeDiffMessage:(NSData *)message
-                       withProcessor:(MasternodeProcessor *)processor
-                          usingCache:(MasternodeProcessorCache *)cache
-                         withContext:(DSMasternodeDiffMessageContext *)context
-                          completion:(void (^)(DSMnDiffProcessingResult *result))completion {
     MNListDiffResult *result = process_mnlistdiff_from_message(
                                                                message.bytes,
                                                                message.length,
                                                                context.useInsightAsBackup,
-                                                               processor,
-                                                               cache,
+                                                               self.processor,
+                                                               self.processorCache,
                                                                (__bridge void *)(context));
-    NSLog(@"processMasternodeDiffMessage...");
     DSMnDiffProcessingResult *processingResult = [DSMnDiffProcessingResult processingResultWith:result onChain:context.chain];
     mndiff_destroy(result);
-    completion(processingResult);
+    return processingResult;
 }
 
 + (void)destroyQRInfoMessage:(LLMQRotationInfo *)info {
@@ -229,29 +219,17 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
 + (LLMQRotationInfo *)readQRInfoMessage:(NSData *)message
                             withContext:(DSMasternodeDiffMessageContext *)context
                           withProcessor:(MasternodeProcessor *)processor {
-    NoTimeLog(@"readQRInfoMessage...");
     LLMQRotationInfo *result = read_qrinfo(message.bytes, message.length, processor, (__bridge void *)(context));
     return result;
 }
 
-- (void)processQRInfo:(LLMQRotationInfo *)info
-          withContext:(DSMasternodeDiffMessageContext *)context
-           completion:(void (^)(DSQRInfoProcessingResult *result))completion {
+- (DSQRInfoProcessingResult *)processQRInfo:(LLMQRotationInfo *)info withContext:(DSMasternodeDiffMessageContext *)context {
     NSAssert(self.processor, @"processQRInfo: No processor created");
     NSAssert(self.processorCache, @"processQRInfo: No processorCache created");
-    [DSMasternodeManager processQRInfo:info withProcessor:self.processor usingCache:self.processorCache withContext:context completion:completion];
-}
-
-+ (void)processQRInfo:(LLMQRotationInfo *)info
-        withProcessor:(MasternodeProcessor *)processor
-           usingCache:(MasternodeProcessorCache *)processorCache
-          withContext:(DSMasternodeDiffMessageContext *)context
-           completion:(void (^)(DSQRInfoProcessingResult *result))completion {
-    NoTimeLog(@"processQRInfo...");
-    LLMQRotationInfoResult *result = process_qrinfo(info, context.useInsightAsBackup, processor, processorCache, (__bridge void *)(context));
+    LLMQRotationInfoResult *result = process_qrinfo(info, context.useInsightAsBackup, self.processor, self.processorCache, (__bridge void *)(context));
     DSQRInfoProcessingResult *processingResult = [DSQRInfoProcessingResult processingResultWith:result onChain:context.chain];
     llmq_rotation_info_result_destroy(result);
-    completion(processingResult);
+    return processingResult;
 }
 
 @end

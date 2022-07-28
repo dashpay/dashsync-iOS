@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSSet *)compactMap:(id (^)(id obj))block;
 - (NSSet *)map:(id (^)(id obj))block;
+- (NSSet *)filter:(BOOL (^)(id obj))block;
 
 @end
 

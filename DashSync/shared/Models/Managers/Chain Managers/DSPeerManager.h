@@ -27,6 +27,7 @@
 //  THE SOFTWARE.
 
 #import "DSChain.h"
+#import "DSMessageRequest.h"
 #import "DSPeer.h"
 #import <Foundation/Foundation.h>
 
@@ -79,6 +80,8 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSPeerManagerFilterDidChangeNotificat
 
 - (void)clearRegisteredPeers;
 - (void)registerPeerAtLocation:(UInt128)IPAddress port:(uint32_t)port dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort;
+
+- (void)sendRequest:(DSMessageRequest *)request;
 
 @end
 

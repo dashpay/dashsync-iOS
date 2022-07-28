@@ -45,12 +45,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DSLocalMasternode *)localMasternodeFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry claimedWithOwnerWallet:(DSWallet *)wallet ownerKeyIndex:(uint32_t)ownerKeyIndex;
 - (DSMasternodeDiffMessageContext *)createDiffMessageContextWithPeer:(DSPeer *)peer useInsightAsBackup:(BOOL)useInsightAsBackup;
-- (void)processMasternodeDiffMessage:(NSData *)message
-                           lastBlock:(DSMerkleBlock * _Nullable)lastBlock
-                  useInsightAsBackup:(BOOL)useInsightAsBackup
-                          completion:(void (^)(DSMnDiffProcessingResult *result))completion;
+- (DSMnDiffProcessingResult *)processMasternodeDiffMessage:(NSData *)message
+                                                 lastBlock:(DSMerkleBlock * _Nullable)lastBlock
+                                        useInsightAsBackup:(BOOL)useInsightAsBackup;
 
-- (void)processQRInfoMessage:(LLMQRotationInfo *)quorumRotationInfo lastBlock:(DSMerkleBlock * _Nullable)lastBlock useInsightAsBackup:(BOOL)useInsightAsBackup completion:(void (^)(DSQRInfoProcessingResult *result))completion;
+- (DSQRInfoProcessingResult *)processQRInfoMessage:(LLMQRotationInfo *)quorumRotationInfo
+                                         lastBlock:(DSMerkleBlock * _Nullable)lastBlock
+                                useInsightAsBackup:(BOOL)useInsightAsBackup;
 
 + (void)saveMasternodeList:(DSMasternodeList *)masternodeList toChain:(DSChain *)chain havingModifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums createUnknownBlocks:(BOOL)createUnknownBlocks inContext:(NSManagedObjectContext *)context completion:(void (^)(NSError *error))completion;
 

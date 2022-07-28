@@ -90,7 +90,7 @@
         @"34.214.135.215",
         @"52.88.32.62",
         @"34.210.26.177",
-    ]];
+    ] walletPhrase:nil];
 }
 
 - (void)setupMekhong {
@@ -133,7 +133,7 @@
         @"18.236.213.113",
         @"34.211.42.195",
         @"52.13.59.213"
-    ]];
+    ] walletPhrase:nil];
 }
 
 - (void)setup333 {
@@ -156,8 +156,7 @@
         @"18.236.89.14",
         @"35.163.60.183",
         @"18.237.244.153",
-    ]];
-
+    ] walletPhrase:nil];
 }
 
 - (void)setupMalort {
@@ -180,7 +179,7 @@
         @"35.87.115.28",
         @"34.219.215.20",
         @"35.88.109.177",
-    ]];
+    ] walletPhrase:nil];
 }
 
 - (void)setupVanaheim {
@@ -222,7 +221,7 @@
         @"54.71.116.57",
         @"54.201.37.222",
         @"35.89.78.105",
-    ]];
+    ] walletPhrase:nil];
 
 }
 
@@ -245,16 +244,18 @@
                           @"18.237.212.176",
                           @"54.188.17.188",
                           @"34.210.1.159",
-                      ]];
+                      ]
+                     walletPhrase:nil];
 }
 
 - (void)setupDevnetWithId:(NSString *)identifier
-               sporkAddress:(NSString *)sporkAddress
-            sporkPrivateKey:(NSString *)sporkPrivateKey
-         minProtocolVersion:(uint32_t)minProtocolVersion
-            protocolVersion:(uint32_t)protocolVersion
-    minimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks
-                  addresses:(NSArray<NSString *> *)addresses {
+             sporkAddress:(NSString *)sporkAddress
+          sporkPrivateKey:(NSString *)sporkPrivateKey
+       minProtocolVersion:(uint32_t)minProtocolVersion
+          protocolVersion:(uint32_t)protocolVersion
+  minimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks
+                addresses:(NSArray<NSString *> *)addresses
+             walletPhrase:(NSString *_Nullable)walletPhrase {
     NSString *chainID = [NSString stringWithFormat:@"devnet-%@", identifier];
     NSMutableOrderedSet<NSString *> *insertedIPAddresses = [NSMutableOrderedSet orderedSetWithArray:addresses];
     NSArray<DSChain *> *devnetChains = [[DSChainsManager sharedInstance] devnetChains];
@@ -278,7 +279,11 @@
     if (chain) {
         [[DSChainsManager sharedInstance] updateDevnetChain:chain version:version forServiceLocations:insertedIPAddresses withMinimumDifficultyBlocks:minimumDifficultyBlocks standardPort:dashdPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion sporkAddress:sporkAddress sporkPrivateKey:sporkPrivateKey instantSendLockQuorumType:instantSendLockQuorumType chainLockQuorumType:chainLockQuorumType platformQuorumType:platformQuorumType];
     } else {
-        [[DSChainsManager sharedInstance] registerDevnetChainWithIdentifier:chainID version:0 forServiceLocations:insertedIPAddresses withMinimumDifficultyBlocks:minimumDifficultyBlocks standardPort:dashdPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion sporkAddress:sporkAddress sporkPrivateKey:sporkPrivateKey instantSendLockQuorumType:instantSendLockQuorumType chainLockQuorumType:chainLockQuorumType platformQuorumType:platformQuorumType];
+        chain = [[DSChainsManager sharedInstance] registerDevnetChainWithIdentifier:chainID version:0 forServiceLocations:insertedIPAddresses withMinimumDifficultyBlocks:minimumDifficultyBlocks standardPort:dashdPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion sporkAddress:sporkAddress sporkPrivateKey:sporkPrivateKey instantSendLockQuorumType:instantSendLockQuorumType chainLockQuorumType:chainLockQuorumType platformQuorumType:platformQuorumType];
+    }
+    if (walletPhrase) {
+        DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:walletPhrase setCreationDate:0 forChain:chain storeSeedPhrase:YES isTransient:NO];
+        [chain registerWallet:wallet];
     }
 }
 
