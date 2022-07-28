@@ -66,6 +66,15 @@
     return [self initWithBaseBlockHash:baseBlockHash blockHash:blockHash];
 }
 
+- (BOOL)isEqual:(id)object {
+    NSData *selfData = [self toData];
+    NSData *reqData = [((DSGetMNListDiffRequest *)object) toData];
+    return [selfData isEqualToData:reqData];
+}
+
+-(BOOL)matchesInRangeWithBaseBlockHash:(UInt256)baseBlockHash blockHash:(UInt256)blockHash {
+    return uint256_eq(baseBlockHash, self.baseBlockHash) && uint256_eq(blockHash, self.blockHash);
+}
 
 
 @end

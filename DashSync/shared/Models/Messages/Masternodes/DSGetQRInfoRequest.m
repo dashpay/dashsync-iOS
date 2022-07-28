@@ -15,9 +15,11 @@
 //  limitations under the License.
 //
 
+#import "BigIntTypes.h"
 #import "DSGetQRInfoRequest.h"
 #import "DSPeer.h"
 #import "NSCoder+Dash.h"
+#import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 
 #define kBaseBlockHashesKey @"BaseBlockHashes"
@@ -77,5 +79,12 @@
     return [self initWithBaseBlockHashes:baseBlockHashes blockHash:blockHash extraShare:extraShare];
 }
 
+-(BOOL)matchesInRangeWithBaseBlockHash:(UInt256)baseBlockHash blockHash:(UInt256)blockHash {
+    if ([self.baseBlockHashes count] != 1) {
+        return NO;
+    }
+    NSData *h = self.baseBlockHashes[0];
+    return uint256_eq(baseBlockHash, h.UInt256) && uint256_eq(blockHash, self.blockHash);
+}
 
 @end

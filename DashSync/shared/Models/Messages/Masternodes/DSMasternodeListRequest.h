@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic) UInt256 blockHash;
 
+-(BOOL)matchesInRangeWithBaseBlockHash:(UInt256)baseBlockHash blockHash:(UInt256)blockHash;
+
 @end
 
 NS_ASSUME_NONNULL_END

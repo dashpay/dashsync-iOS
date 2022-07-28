@@ -36,7 +36,14 @@
 }
 
 - (BOOL)isEqual:(id)object {
-    return [[self toData] isEqual:[object toData]];
+    NSData *selfData = [self toData];
+    NSData *reqData = [object toData];
+    return [selfData isEqualToData:reqData];
+
+}
+
+- (NSUInteger)hash {
+    return [self toData].hash;
 }
 
 // MARK: NSCoding

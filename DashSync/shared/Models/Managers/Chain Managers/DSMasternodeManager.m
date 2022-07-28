@@ -551,7 +551,9 @@
             [neededMasternodeLists addObject:masternodeListBlockHashData]; //also get the current one again
             [self getMasternodeListsForBlockHashes:neededMasternodeLists];
         } else {
-            self.isRotatedQuorumsPresented = [result hasRotatedQuorums];
+            if ([result hasRotatedQuorums]) {
+                self.isRotatedQuorumsPresented = YES;
+            }
             if (uint256_eq(self.store.lastQueriedBlockHash, masternodeListBlockHash)) {
                 self.currentMasternodeList = masternodeList;
             }
@@ -608,17 +610,12 @@
     [message saveToFile:fileName inDirectory:NSCachesDirectory];
 #endif
 
-    
-    DSGetMNListDiffRequest *request = [DSGetMNListDiffRequest requestWithBaseBlockHash:baseBlockHash blockHash:blockHash];
     NSData *blockHashData = uint256_data(blockHash);
-//    UInt512 concat = uint512_concat(baseBlockHash, blockHash);
     
-    
-    if (![self.service removeRequestInRetrievalForKey:request] ||
+    if (![self.service removeRequestInRetrievalForBaseBlockHash:baseBlockHash blockHash:blockHash] ||
         [self.store hasMasternodeListAt:blockHashData]) {
         return;
     }
-//    DSLog(@"relayed masternode diff with baseBlockHash %@ (%u) blockHash %@ (%u)", uint256_reverse_hex(baseBlockHash), [self heightForBlockHash:baseBlockHash], blockHashData.reverse.hexString, [self heightForBlockHash:blockHash]);
     DSLog(@"••• relayedMasternodeDiffMessage: [%d: %@ .. %d: %@]", [self heightForBlockHash:baseBlockHash], uint256_hex(baseBlockHash), [self heightForBlockHash:blockHash], uint256_hex(blockHash));
     DSMasternodeList *baseMasternodeList = [self masternodeListForBlockHash:baseBlockHash];
     
@@ -641,7 +638,6 @@
     }];
     
     DSMnDiffProcessingResult *result = [self processMasternodeDiffMessage:message withContext:ctx];
-    //self.isRotatedQuorumsPresented = [result hasRotatedQuorums];
     [self processDiffResult:result forPeer:peer];
 }
 
@@ -697,7 +693,7 @@
     [message saveToFile:fileName inDirectory:NSCachesDirectory];
 #endif
 
-    BOOL hasRemovedFromRetrievalTip = [self.service removeRequestInRetrievalForBaseBlockHashes:@[[NSData dataWithUInt256:baseBlockHashTip]]];
+    BOOL hasRemovedFromRetrievalTip = [self.service removeRequestInRetrievalForBaseBlockHash:baseBlockHashTip blockHash:blockHashTip];
     BOOL hasLocallyStoredTip = [self.store hasMasternodeListAt:uint256_data(blockHashTip)];
     
     if (!hasRemovedFromRetrievalTip || hasLocallyStoredTip) {

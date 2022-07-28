@@ -19,4 +19,8 @@
 
 @implementation DSMasternodeListRequest
 
+-(BOOL)matchesInRangeWithBaseBlockHash:(UInt256)baseBlockHash blockHash:(UInt256)blockHash {
+    return uint256_eq(blockHash, self.blockHash);
+}
+
 @end

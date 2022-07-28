@@ -26,6 +26,7 @@
 @interface DSMasternodeListService ()
 // List<UInt256> Hashes of blocks for which masternode lists are need to be requested
 @property (nonatomic, strong) NSMutableOrderedSet<NSData *> *retrievalQueue;
+@property (nonatomic, strong) NSMutableOrderedSet<NSData *> *neededQueue;
 @property (nonatomic, assign) NSUInteger retrievalQueueMaxAmount;
 // List<UInt512>: list of block ranges baseBlockHash + blockHash
 @property (nonatomic, strong) NSMutableSet<DSMasternodeListRequest *> *requestsInRetrieval;
@@ -120,46 +121,26 @@
     completion([self.retrievalQueue copy]);
 }
 
-- (BOOL)removeRequestInRetrievalForKey:(DSMasternodeListRequest *)request {
-    DSLog(@"••• removeRequestInRetrievalForKey %@", [request toData].hexString);
-   if (![self.requestsInRetrieval containsObject:request]) {
-        NSMutableArray *requestsInRetrievalStrings = [NSMutableArray array];
-        for (DSMasternodeListRequest *requestInRetrieval in self.requestsInRetrieval) {
-            [requestsInRetrievalStrings addObject:[requestInRetrieval toData].hexString];
-        }
-        DSLog(@"A masternode list (%@) was received that is not set to be retrieved (%@)", [request toData].hexString, [requestsInRetrievalStrings componentsJoinedByString:@", "]);
-        return NO;
-    }
-    [self.requestsInRetrieval removeObject:request];
-    return YES;
-}
-
-- (BOOL)removeRequestInRetrievalForBaseBlockHashes:(NSArray<NSData *> *)baseBlockHashes {
-    DSGetQRInfoRequest *qrInfoRequest = nil;
-    DSLog(@"••• removeRequestInRetrievalForBaseBlockHashes: %@", baseBlockHashes);
-    for (DSMasternodeListRequest *requestInRetrieval in self.requestsInRetrieval) {
-        qrInfoRequest = (DSGetQRInfoRequest *) requestInRetrieval;
-        if (qrInfoRequest && qrInfoRequest.baseBlockHashes == baseBlockHashes) {
+- (BOOL)removeRequestInRetrievalForBaseBlockHash:(UInt256)baseBlockHash blockHash:(UInt256)blockHash {
+    DSLog(@"••• removeRequestInRetrievalFor: [%@; %@]", uint256_hex(blockHash), uint256_hex(blockHash));
+    DSMasternodeListRequest *matchedRequest = nil;
+    for (DSMasternodeListRequest *request in self.requestsInRetrieval) {
+        if ([request matchesInRangeWithBaseBlockHash:baseBlockHash blockHash:blockHash]) {
+            matchedRequest = request;
             break;
         }
     }
-
-    if (!qrInfoRequest) {
-        NSMutableArray *requestsInRetrievalStrings = [NSMutableArray array];
-        for (DSMasternodeListRequest *requestInRetrieval in self.requestsInRetrieval) {
-            DSGetQRInfoRequest *qrInfoRequest = (DSGetQRInfoRequest *) requestInRetrieval;
-            if (qrInfoRequest) {
-                
-            }
-            [requestsInRetrievalStrings addObject:[requestInRetrieval toData].hexString];
-        }
-        DSLog(@"A masternode list (%@) was received that is not set to be retrieved (%@)", baseBlockHashes, [requestsInRetrievalStrings componentsJoinedByString:@", "]);
-        return NO;
-    }
-    [self.requestsInRetrieval removeObject:qrInfoRequest];
+    if (!matchedRequest) {
+         NSMutableArray *requestsInRetrievalStrings = [NSMutableArray array];
+         for (DSMasternodeListRequest *requestInRetrieval in self.requestsInRetrieval) {
+             [requestsInRetrievalStrings addObject:[requestInRetrieval toData].hexString];
+         }
+         DSLog(@"A masternode list ([%@; %@]) was received that is not set to be retrieved (%@)", uint256_hex(baseBlockHash), uint256_hex(blockHash), [requestsInRetrievalStrings componentsJoinedByString:@", "]);
+         return NO;
+     }
+    [self.requestsInRetrieval removeObject:matchedRequest];
     return YES;
 }
-
 
 - (BOOL)hasLatestBlockInRetrievalQueueWithHash:(UInt256)blockHash {
     return [self.retrievalQueue lastObject] && uint256_eq(blockHash, [self.retrievalQueue lastObject].UInt256);
