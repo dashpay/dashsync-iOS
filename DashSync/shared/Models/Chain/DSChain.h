@@ -203,7 +203,7 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 /*! @brief The type of quorum used for Instant Send Locks.  */
 @property (nonatomic, assign) DSLLMQType quorumTypeForISLocks;
 
-/*! @brief The type of quorum used for Instant Send Locks.  */
+/*! @brief The type of quorum used for Deterministic Instant Send Locks.  */
 @property (nonatomic, assign) DSLLMQType quorumTypeForISDLocks;
 
 /*! @brief The type of quorum used for Chain Locks.  */
