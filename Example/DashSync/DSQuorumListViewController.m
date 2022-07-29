@@ -106,22 +106,18 @@
     switch ([[sectionInfo name] integerValue]) {
         case DSLLMQType_50_60:
             return @"1 Hour Quorums";
-            break;
         case DSLLMQType_100_67:
             return @"1 Hour Platform Quorums";
-            break;
         case DSLLMQType_400_60:
             return @"Day Quorums";
-            break;
         case DSLLMQType_400_85:
             return @"2 Day Quorums";
-            break;
         case DSLLMQType_10_60:
             return @"10 Member Devnet Quorums";
-            break;
+        case DSLLMQType_60_75:
+            return @"1 Hour Rotated Quorums";
         default:
             return @"Unknown Quorum Type";
-            break;
     }
 }
 

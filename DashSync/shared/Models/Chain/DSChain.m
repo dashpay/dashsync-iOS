@@ -100,6 +100,7 @@
 #define PLATFORM_DEFAULT_MIN_PROTOCOL_VERSION_LOCATION @"PLATFORM_MIN_PROTOCOL_VERSION_LOCATION"
 
 #define ISLOCK_QUORUM_TYPE @"ISLOCK_QUORUM_TYPE"
+#define ISDLOCK_QUORUM_TYPE @"ISDLOCK_QUORUM_TYPE"
 #define CHAINLOCK_QUORUM_TYPE @"CHAINLOCK_QUORUM_TYPE"
 #define PLATFORM_QUORUM_TYPE @"PLATFORM_QUORUM_TYPE"
 
@@ -785,6 +786,23 @@ static dispatch_once_t devnetToken = 0;
     }
 }
 
+- (DSLLMQType)quorumTypeForISDLocks {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return DSLLMQType_60_75;
+        case DSChainType_TestNet:
+            return DSLLMQType_60_75;
+        case DSChainType_DevNet: {
+            NSError *error = nil;
+            DSLLMQType quorumType = (DSLLMQType)getKeychainInt([NSString stringWithFormat:@"%@%@", self.devnetIdentifier, ISDLOCK_QUORUM_TYPE], &error);
+            if (!error && quorumType)
+                return quorumType;
+            else
+                return DSLLMQType_TestDIP0024;
+        }
+    }
+}
+
 - (void)setQuorumTypeForISLocks:(DSLLMQType)quorumTypeForISLocks {
     switch ([self chainType]) {
         case DSChainType_MainNet:
@@ -793,6 +811,19 @@ static dispatch_once_t devnetToken = 0;
             return;
         case DSChainType_DevNet: {
             setKeychainInt(quorumTypeForISLocks, [NSString stringWithFormat:@"%@%@", self.devnetIdentifier, ISLOCK_QUORUM_TYPE], NO);
+            break;
+        }
+    }
+}
+
+- (void)setQuorumTypeForISDLocks:(DSLLMQType)quorumTypeForISDLocks {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return;
+        case DSChainType_TestNet:
+            return;
+        case DSChainType_DevNet: {
+            setKeychainInt(quorumTypeForISDLocks, [NSString stringWithFormat:@"%@%@", self.devnetIdentifier, ISDLOCK_QUORUM_TYPE], NO);
             break;
         }
     }

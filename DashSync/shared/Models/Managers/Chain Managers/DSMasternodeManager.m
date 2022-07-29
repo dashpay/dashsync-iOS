@@ -551,7 +551,7 @@
             [neededMasternodeLists addObject:masternodeListBlockHashData]; //also get the current one again
             [self getMasternodeListsForBlockHashes:neededMasternodeLists];
         } else {
-            if ([result hasRotatedQuorums]) {
+            if ([result hasRotatedQuorumsForChain:self.chain]) {
                 self.isRotatedQuorumsPresented = YES;
             }
             if (uint256_eq(self.store.lastQueriedBlockHash, masternodeListBlockHash)) {
