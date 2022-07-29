@@ -32,13 +32,13 @@ FOUNDATION_EXPORT NSString *const DSChainsDidChangeNotification;
 
 @interface DSChainsManager : NSObject
 
-@property (nonatomic, strong) DSChainManager *mainnetManager;
-@property (nonatomic, strong) DSChainManager *testnetManager;
-@property (nonatomic, strong) NSArray *devnetManagers;
-@property (nonatomic, readonly) BOOL hasAWallet;
-@property (nonatomic, readonly) NSArray *allWallets;
-@property (nonatomic, readonly) NSArray *chains;
-@property (nonatomic, readonly) NSArray *devnetChains;
+@property(nonatomic, strong) DSChainManager *mainnetManager;
+@property(nonatomic, strong) DSChainManager *testnetManager;
+@property(nonatomic, strong) NSArray *devnetManagers;
+@property(nonatomic, readonly) BOOL hasAWallet;
+@property(nonatomic, readonly) NSArray *allWallets;
+@property(nonatomic, readonly) NSArray *chains;
+@property(nonatomic, readonly) NSArray *devnetChains;
 
 - (DSChainManager *_Nullable)chainManagerForChain:(DSChain *)chain;
 
