@@ -31,7 +31,7 @@
 //    [self setupKrupnik];
     [self setupOuzo];
     [self setupMekhong];
-    
+    [self setupJackDaniels];
     [self.tableView reloadData];
 
     self.addChainsObserver =
@@ -246,6 +246,53 @@
                           @"34.210.1.159",
                       ]
                      walletPhrase:nil];
+}
+
+- (void)setupJackDaniels {
+    [self setupDevnetWithId:@"jack-daniels"
+                   sporkAddress:@"yYBanbwp2Pp2kYWqDkjvckY3MosuZzkKp7"
+                sporkPrivateKey:@"cTeGz53m7kHgA9L75s4vqFGR89FjYz4D9o44eHfoKjJr2ArbEtwg"
+             minProtocolVersion:70219
+                protocolVersion:70220
+        minimumDifficultyBlocks:2200
+                      addresses:@[
+        @"34.220.200.8",
+        @"35.90.255.217",
+        @"54.218.109.249",
+        @"35.91.227.162",
+        @"34.222.40.218",
+        @"35.88.38.193",
+        @"35.91.226.251",
+        @"35.160.157.3",
+        @"18.237.219.248",
+        @"35.91.210.71",
+        @"35.89.227.73",
+        @"35.90.188.155",
+        @"35.91.132.97",
+        @"52.26.218.0",
+        @"18.236.242.154",
+        @"35.87.198.41",
+        @"34.220.65.60",
+        @"35.90.106.60",
+        @"54.200.34.46",
+        @"52.40.10.67",
+        @"54.245.163.29",
+        @"34.222.54.201",
+        @"34.211.49.161",
+        @"34.222.47.179",
+        @"35.91.139.106",
+        @"35.89.107.148",
+        @"54.202.58.56",
+        @"54.212.110.64",
+        @"35.89.25.223",
+        @"35.91.168.239",
+        @"34.219.242.157",
+        @"54.245.137.49",
+        @"34.222.42.179",
+        @"34.220.158.197",
+        @"54.70.92.75",
+    ] walletPhrase:nil];
+
 }
 
 - (void)setupDevnetWithId:(NSString *)identifier
