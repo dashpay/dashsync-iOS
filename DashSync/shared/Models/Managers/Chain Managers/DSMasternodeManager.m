@@ -350,13 +350,13 @@
                             : prevKnownBlockHash;
                         if ([self hasDIP0024Enabled]) {
                             // request at: blockHeight % dkgInterval == activeSigningQuorumsCount + 11 + 8
-                            DSLog(@"••• -> requestQuorumRotationInfo %d:(%@) %d:(%@)", [self heightForBlockHash:previousBlockHash], uint256_hex(previousBlockHash), [self heightForBlockHash:blockHash], uint256_hex(blockHash));
+                            DSLog(@"••• -> requestQuorumRotationInfo %d..%d [%@..%@]", [self heightForBlockHash:previousBlockHash], [self heightForBlockHash:blockHash], uint256_hex(previousBlockHash), uint256_hex(blockHash));
                             [self.service requestQuorumRotationInfo:previousBlockHash forBlockHash:blockHash];
                             
                         } else {
                             // request at: every new block
                             NSAssert(([self heightForBlockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
-                            DSLog(@"••• -> requestMasternodeListDiff %d:(%@) %d:(%@)", [self heightForBlockHash:previousBlockHash], uint256_hex(previousBlockHash), [self heightForBlockHash:blockHash], uint256_hex(blockHash));
+                            DSLog(@"••• -> requestMasternodeListDiff %d..%d [%@..%@]", [self heightForBlockHash:previousBlockHash], [self heightForBlockHash:blockHash], uint256_hex(previousBlockHash), uint256_hex(blockHash));
                             [self.service requestMasternodeListDiff:previousBlockHash forBlockHash:blockHash];
                         }
                     }
