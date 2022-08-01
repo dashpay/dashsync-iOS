@@ -254,7 +254,7 @@
                 sporkPrivateKey:@"cTeGz53m7kHgA9L75s4vqFGR89FjYz4D9o44eHfoKjJr2ArbEtwg"
              minProtocolVersion:70219
                 protocolVersion:70220
-        minimumDifficultyBlocks:2200
+        minimumDifficultyBlocks:4032
                       addresses:@[
         @"34.220.200.8",
         @"35.90.255.217",
