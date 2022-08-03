@@ -495,7 +495,22 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 + (DSChain *_Nullable)devnetWithIdentifier:(NSString *)identifier;
 
 /*! @brief Set up a given devnet with an identifier, checkpoints, default L1, JRPC and GRPC ports, a dpns contractId and a dashpay contract id. minimumDifficultyBlocks are used to speed up the initial chain creation. This devnet will be registered on the keychain. The additional isTransient property allows for test usage where you do not wish to persist the devnet.  */
-+ (DSChain *)setUpDevnetWithIdentifier:(NSString *)identifier version:(uint16_t)version protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion withCheckpoints:(NSArray<DSCheckpoint *> *_Nullable)checkpointArray withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID instantSendLockQuorumType:(DSLLMQType)instantSendLockQuorumsType chainLockQuorumType:(DSLLMQType)chainLockQuorumsType platformQuorumType:(DSLLMQType)platformQuorumType isTransient:(BOOL)isTransient;
++ (DSChain *)setUpDevnetWithIdentifier:(NSString *)identifier
+                               version:(uint16_t)version
+                       protocolVersion:(uint32_t)protocolVersion
+                    minProtocolVersion:(uint32_t)minProtocolVersion
+                       withCheckpoints:(NSArray<DSCheckpoint *> *_Nullable)checkpointArray
+           withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks
+                       withDefaultPort:(uint32_t)port
+               withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort
+               withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort
+                        dpnsContractID:(UInt256)dpnsContractID
+                     dashpayContractID:(UInt256)dashpayContractID
+                      ISLockQuorumType:(DSLLMQType)ISLockQuorumType
+                     ISDLockQuorumType:(DSLLMQType)ISDLockQuorumType
+                   chainLockQuorumType:(DSLLMQType)chainLockQuorumType
+                    platformQuorumType:(DSLLMQType)platformQuorumType
+                           isTransient:(BOOL)isTransient;
 
 /*! @brief Retrieve from the keychain a devnet with an identifier and add given checkpoints.  */
 + (DSChain *)recoverKnownDevnetWithIdentifier:(NSString *)identifier version:(uint16_t)version withCheckpoints:(NSArray<DSCheckpoint *> *)checkpointArray performSetup:(BOOL)performSetup;

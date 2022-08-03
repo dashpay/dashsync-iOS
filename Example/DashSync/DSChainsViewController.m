@@ -318,6 +318,7 @@
     uint32_t dapiJRPCPort = DEVNET_DAPI_JRPC_STANDARD_PORT;
     uint32_t dapiGRPCPort = DEVNET_DAPI_GRPC_STANDARD_PORT;
     uint32_t instantSendLockQuorumType = DEVNET_ISLOCK_DEFAULT_QUORUM_TYPE;
+    uint32_t instantSendDeterministicLockQuorumType = DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE;
     uint32_t chainLockQuorumType = DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE;
     uint32_t platformQuorumType = DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE;
     UInt256 dpnsContractID = UINT256_ZERO;
@@ -325,9 +326,41 @@
     uint32_t version = 1;
 
     if (chain) {
-        [[DSChainsManager sharedInstance] updateDevnetChain:chain version:version forServiceLocations:insertedIPAddresses withMinimumDifficultyBlocks:minimumDifficultyBlocks standardPort:dashdPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion sporkAddress:sporkAddress sporkPrivateKey:sporkPrivateKey instantSendLockQuorumType:instantSendLockQuorumType chainLockQuorumType:chainLockQuorumType platformQuorumType:platformQuorumType];
+        [[DSChainsManager sharedInstance] updateDevnetChain:chain
+                                                    version:version
+                                        forServiceLocations:insertedIPAddresses
+                                    minimumDifficultyBlocks:minimumDifficultyBlocks
+                                               standardPort:dashdPort
+                                               dapiJRPCPort:dapiJRPCPort
+                                               dapiGRPCPort:dapiGRPCPort
+                                             dpnsContractID:dpnsContractID
+                                          dashpayContractID:dashpayContractID
+                                            protocolVersion:protocolVersion
+                                         minProtocolVersion:minProtocolVersion
+                                               sporkAddress:sporkAddress
+                                            sporkPrivateKey:sporkPrivateKey
+                                           ISLockQuorumType:instantSendLockQuorumType
+                                          ISDLockQuorumType:instantSendDeterministicLockQuorumType
+                                        chainLockQuorumType:chainLockQuorumType
+                                         platformQuorumType:platformQuorumType];
     } else {
-        chain = [[DSChainsManager sharedInstance] registerDevnetChainWithIdentifier:chainID version:0 forServiceLocations:insertedIPAddresses withMinimumDifficultyBlocks:minimumDifficultyBlocks standardPort:dashdPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion sporkAddress:sporkAddress sporkPrivateKey:sporkPrivateKey instantSendLockQuorumType:instantSendLockQuorumType chainLockQuorumType:chainLockQuorumType platformQuorumType:platformQuorumType];
+        chain = [[DSChainsManager sharedInstance] registerDevnetChainWithIdentifier:chainID
+                                                                            version:0
+                                                                forServiceLocations:insertedIPAddresses
+                                                        withMinimumDifficultyBlocks:minimumDifficultyBlocks
+                                                                       standardPort:dashdPort
+                                                                       dapiJRPCPort:dapiJRPCPort
+                                                                       dapiGRPCPort:dapiGRPCPort
+                                                                     dpnsContractID:dpnsContractID
+                                                                  dashpayContractID:dashpayContractID
+                                                                    protocolVersion:protocolVersion
+                                                                 minProtocolVersion:minProtocolVersion
+                                                                       sporkAddress:sporkAddress
+                                                                    sporkPrivateKey:sporkPrivateKey
+                                                                   ISLockQuorumType:instantSendLockQuorumType
+                                                                  ISDLockQuorumType:instantSendDeterministicLockQuorumType
+                                                                chainLockQuorumType:chainLockQuorumType
+                                                                 platformQuorumType:platformQuorumType];
     }
     if (walletPhrase) {
         DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:walletPhrase setCreationDate:0 forChain:chain storeSeedPhrase:YES isTransient:NO];
