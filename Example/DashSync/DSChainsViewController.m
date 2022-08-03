@@ -26,11 +26,11 @@
 //    This extracts ip addresses of masternodes from dash-network-configs and wraps into objc string format
     
 //    grep "masternode-" malort.txt | grep -oE 'public_ip=((1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])\.){3}(1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])' | grep -oE '((1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])\.){3}(1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])' | sed "s/ /\" \"/g;s/^/@\"/;s/$/\",/"
-    [self setup333];
-    [self setupMalort];
+//    [self setup333];
+//    [self setupMalort];
 //    [self setupKrupnik];
-    [self setupOuzo];
-    [self setupMekhong];
+//    [self setupOuzo];
+//    [self setupMekhong];
     [self setupJackDaniels];
     [self.tableView reloadData];
 
@@ -249,6 +249,7 @@
 }
 
 - (void)setupJackDaniels {
+    // yRisqbEVej7gJHUQ2i566YsbWZg61732PW
     [self setupDevnetWithId:@"jack-daniels"
                    sporkAddress:@"yYBanbwp2Pp2kYWqDkjvckY3MosuZzkKp7"
                 sporkPrivateKey:@"cTeGz53m7kHgA9L75s4vqFGR89FjYz4D9o44eHfoKjJr2ArbEtwg"

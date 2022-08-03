@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 //@property (nonatomic) NSOrderedSet<DSQuorumSnapshot *> *snapshotList;
 //@property (nonatomic) NSOrderedSet<DSMnListDiff *> *mnListDiffList;
 
-+ (instancetype)processingResultWith:(LLMQRotationInfoResult *)result onChain:(DSChain *)chain;
++ (instancetype)processingResultWith:(QRInfoResult *)result onChain:(DSChain *)chain;
 
 @end
 

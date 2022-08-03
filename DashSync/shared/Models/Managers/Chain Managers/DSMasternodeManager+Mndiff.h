@@ -48,13 +48,13 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context);
 
 - (DSMnDiffProcessingResult *)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context;
 
-+ (LLMQRotationInfo *)readQRInfoMessage:(NSData *)message
++ (QRInfo *)readQRInfoMessage:(NSData *)message
                             withContext:(DSMasternodeDiffMessageContext *)context
                           withProcessor:(MasternodeProcessor *)processor;
 
-+ (void)destroyQRInfoMessage:(LLMQRotationInfo *)info;
++ (void)destroyQRInfoMessage:(QRInfo *)info;
 
-- (DSQRInfoProcessingResult *)processQRInfo:(LLMQRotationInfo *)info withContext:(DSMasternodeDiffMessageContext *)context;
+- (DSQRInfoProcessingResult *)processQRInfo:(QRInfo *)info withContext:(DSMasternodeDiffMessageContext *)context;
 
 @end
 

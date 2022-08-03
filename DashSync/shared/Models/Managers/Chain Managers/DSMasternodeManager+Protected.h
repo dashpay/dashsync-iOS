@@ -49,7 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                  lastBlock:(DSMerkleBlock * _Nullable)lastBlock
                                         useInsightAsBackup:(BOOL)useInsightAsBackup;
 
-- (DSQRInfoProcessingResult *)processQRInfoMessage:(LLMQRotationInfo *)quorumRotationInfo
+- (DSQRInfoProcessingResult *)processQRInfoMessage:(QRInfo *)quorumRotationInfo
                                          lastBlock:(DSMerkleBlock * _Nullable)lastBlock
                                 useInsightAsBackup:(BOOL)useInsightAsBackup;
 

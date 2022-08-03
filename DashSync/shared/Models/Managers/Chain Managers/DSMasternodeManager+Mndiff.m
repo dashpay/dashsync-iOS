@@ -40,7 +40,7 @@ const MasternodeList *getMasternodeListByBlockHash(uint8_t (*block_hash)[32], co
     DSMasternodeList *list = processorContext.masternodeListLookup(data.UInt256);
     MasternodeList *c_list = list ? [list ffi_malloc] : NULL;
     //NoTimeLog(@"getMasternodeListByBlockHash: %@: %@: %@", data.hexString, c_list, context);
-    mndiff_block_hash_destroy(block_hash);
+    processor_destroy_block_hash(block_hash);
     return c_list;
 }
 
@@ -51,7 +51,7 @@ bool saveMasternodeList(uint8_t (*block_hash)[32], const MasternodeList *mastern
     DSMasternodeList *masternodeList = [DSMasternodeList masternodeListWith:(MasternodeList *)masternode_list onChain:chain];
     BOOL saved = [chain.chainManager.masternodeManager saveMasternodeList:masternodeList forBlockHash:data.UInt256];
     //NoTimeLog(@"saveMasternodeList: %ul: %@: %d", processorContext.blockHeightLookup(data.UInt256), data.hexString, saved);
-    mndiff_block_hash_destroy(block_hash);
+    processor_destroy_block_hash(block_hash);
     return saved;
 }
 
@@ -65,7 +65,7 @@ uint32_t getBlockHeightByHash(uint8_t (*block_hash)[32], const void *context) {
     uint32_t block_height = processorContext.blockHeightLookup(data.UInt256);
     //NoTimeLog(@"%@ => %u,", data.hexString, block_height);
     //NoTimeLog(@"getBlockHeightByHash: %@: %u: %@", data.hexString, block_height, context);
-    mndiff_block_hash_destroy(block_hash);
+    processor_destroy_block_hash(block_hash);
     return block_height;
 }
 
@@ -83,7 +83,7 @@ const uint8_t *getMerkleRootByHash(uint8_t (*block_hash)[32], const void *contex
     UInt256 merkleRoot = processorContext.merkleRootLookup(data.UInt256);
     DSLog(@"••• getMerkleRootByHash: %d: %@ -> %@", [processorContext.chain blockForBlockHash:data.UInt256].height, data.hexString, uint256_hex(merkleRoot));
     uint8_t (*merkle_root)[32] = uint256_malloc(merkleRoot);
-    mndiff_block_hash_destroy(block_hash);
+    processor_destroy_block_hash(block_hash);
     return (const uint8_t *)merkle_root;
 }
 
@@ -101,7 +101,7 @@ const LLMQSnapshot *getLLMQSnapshotByBlockHash(uint8_t (*block_hash)[32], const 
     NSData *data = [NSData dataWithBytes:block_hash length:32];
     DSQuorumSnapshot *snapshot = [chain.chainManager.masternodeManager quorumSnapshotForBlockHash:data.UInt256];
     LLMQSnapshot *c_snapshot = snapshot ? [snapshot ffi_malloc] : NULL;
-    mndiff_block_hash_destroy(block_hash);
+    processor_destroy_block_hash(block_hash);
     return c_snapshot;
 }
 
@@ -112,7 +112,7 @@ bool saveLLMQSnapshot(uint8_t (*block_hash)[32], const LLMQSnapshot *snapshot, c
     NSData *data = [NSData dataWithBytes:block_hash length:32];
     BOOL saved = [chain.chainManager.masternodeManager saveQuorumSnapshot:[DSQuorumSnapshot quorumSnapshotWith:(LLMQSnapshot *)snapshot] forBlockHash:data.UInt256];
     //NoTimeLog(@"saveLLMQSnapshot: %ul: %@: %d", processorContext.blockHeightLookup(data.UInt256), data.hexString, saved);
-    mndiff_block_hash_destroy(block_hash);
+    processor_destroy_block_hash(block_hash);
     return saved;
 }
                       
@@ -123,7 +123,7 @@ void addInsightForBlockHash(uint8_t (*block_hash)[32], const void *context) {
     UInt256 entryQuorumHash = data.UInt256;
     DSChain *chain = processorContext.chain;
     [chain blockUntilGetInsightForBlockHash:entryQuorumHash];
-    mndiff_block_hash_destroy(block_hash);
+    processor_destroy_block_hash(block_hash);
 }
 
 bool shouldProcessLLMQType(uint8_t quorum_type, const void *context) {
@@ -145,7 +145,7 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
     bool allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:commitmentHash signature:allCommitmentAggregatedSignature withPublicKeys:publicKeyArray];
     if (!allCommitmentAggregatedSignatureValidated) {
         DSLog(@"Issue with allCommitmentAggregatedSignatureValidated: %@", uint768_hex(allCommitmentAggregatedSignature));
-        mndiff_quorum_validation_data_destroy(data);
+        processor_destroy_llmq_validation_data(data);
         return false;
     }
     //The sig must validate against the commitmentHash and all public keys determined by the signers bitvector. This is an aggregated BLS signature verification.
@@ -153,7 +153,7 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
     UInt384 quorumPublicKey = *((UInt384 *)data->public_key);
     
     bool quorumSignatureValidated = [DSBLSKey verify:commitmentHash signature:quorumThresholdSignature withPublicKey:quorumPublicKey];
-    mndiff_quorum_validation_data_destroy(data);
+    processor_destroy_llmq_validation_data(data);
     if (!quorumSignatureValidated) {
         DSLog(@"Issue with quorumSignatureValidated");
         return false;
@@ -186,6 +186,10 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
     unregister_processor(processor);
 }
 
+///
+/// MARK: Creating/destroying opaque cache (which is important for storing some of the results between processing sessions)
+///
+
 + (MasternodeProcessorCache *)createProcessorCache {
     return processor_create_cache();
 }
@@ -208,27 +212,27 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
                                                                self.processorCache,
                                                                (__bridge void *)(context));
     DSMnDiffProcessingResult *processingResult = [DSMnDiffProcessingResult processingResultWith:result onChain:context.chain];
-    mndiff_destroy(result);
+    processor_destroy_mnlistdiff_result(result);
     return processingResult;
 }
 
-+ (void)destroyQRInfoMessage:(LLMQRotationInfo *)info {
-    llmq_rotation_info_destroy(info);
++ (void)destroyQRInfoMessage:(QRInfo *)info {
+    processor_destroy_qr_info(info);
 }
 
-+ (LLMQRotationInfo *)readQRInfoMessage:(NSData *)message
++ (QRInfo *)readQRInfoMessage:(NSData *)message
                             withContext:(DSMasternodeDiffMessageContext *)context
                           withProcessor:(MasternodeProcessor *)processor {
-    LLMQRotationInfo *result = read_qrinfo(message.bytes, message.length, processor, (__bridge void *)(context));
+    QRInfo *result = read_qrinfo(message.bytes, message.length, processor, (__bridge void *)(context));
     return result;
 }
 
-- (DSQRInfoProcessingResult *)processQRInfo:(LLMQRotationInfo *)info withContext:(DSMasternodeDiffMessageContext *)context {
+- (DSQRInfoProcessingResult *)processQRInfo:(QRInfo *)info withContext:(DSMasternodeDiffMessageContext *)context {
     NSAssert(self.processor, @"processQRInfo: No processor created");
     NSAssert(self.processorCache, @"processQRInfo: No processorCache created");
-    LLMQRotationInfoResult *result = process_qrinfo(info, context.useInsightAsBackup, self.processor, self.processorCache, (__bridge void *)(context));
+    QRInfoResult *result = process_qrinfo(info, context.useInsightAsBackup, self.processor, self.processorCache, (__bridge void *)(context));
     DSQRInfoProcessingResult *processingResult = [DSQRInfoProcessingResult processingResultWith:result onChain:context.chain];
-    llmq_rotation_info_result_destroy(result);
+    processor_destroy_qr_info_result(result);
     return processingResult;
 }
 

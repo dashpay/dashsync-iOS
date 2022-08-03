@@ -656,7 +656,7 @@
 
     DSMasternodeDiffMessageContext *ctx = [self createDiffMessageContext:self.chain.isTestnet merkleRootLookup:merkleRootLookup];
     
-    LLMQRotationInfo *qrInfo = [DSMasternodeManager readQRInfoMessage:message withContext:ctx withProcessor:self.processor];
+    QRInfo *qrInfo = [DSMasternodeManager readQRInfoMessage:message withContext:ctx withProcessor:self.processor];
     MNListDiff *listDiffAtTip = qrInfo->mn_list_diff_tip;
     MNListDiff *listDiffAtH = qrInfo->mn_list_diff_at_h;
     MNListDiff *listDiffAtHC = qrInfo->mn_list_diff_at_h_c;

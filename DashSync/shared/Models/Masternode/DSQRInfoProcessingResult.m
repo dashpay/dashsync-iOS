@@ -19,7 +19,7 @@
 
 @implementation DSQRInfoProcessingResult
 
-+ (instancetype)processingResultWith:(LLMQRotationInfoResult *)result onChain:(DSChain *)chain {
++ (instancetype)processingResultWith:(QRInfoResult *)result onChain:(DSChain *)chain {
     DSQRInfoProcessingResult *processingResult = [[DSQRInfoProcessingResult alloc] init];
     processingResult.snapshotAtHC = [DSQuorumSnapshot quorumSnapshotWith:result->snapshot_at_h_c];
     processingResult.snapshotAtH2C = [DSQuorumSnapshot quorumSnapshotWith:result->snapshot_at_h_2c];
