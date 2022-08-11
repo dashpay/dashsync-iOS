@@ -30,6 +30,7 @@
 #import "DSPeerManager.h"
 #import "DSTransientDashpayUser+Protected.h"
 #import "DSWallet.h"
+#import "NSError+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSManagedObjectContext+DSSugar.h"
 #import "NSString+Dash.h"
@@ -236,10 +237,7 @@
     if ([dashpayContract contractState] != DPContractState_Registered) {
         if (completion) {
             dispatch_async(completionQueue, ^{
-                completion(NO, nil, [NSError errorWithDomain:@"DashSync"
-                                                        code:500
-                                                    userInfo:@{NSLocalizedDescriptionKey:
-                                                                   DSLocalizedString(@"The Dashpay contract is not properly set up", nil)}]);
+                completion(NO, nil, [NSError errorWithCode:500 localizedDescriptionKey:@"The Dashpay contract is not properly set up"]);
             });
         }
         return nil;
@@ -288,10 +286,7 @@
     if ([dashpayContract contractState] != DPContractState_Registered) {
         if (completion) {
             dispatch_async(completionQueue, ^{
-                completion(NO, nil, [NSError errorWithDomain:@"DashSync"
-                                                        code:500
-                                                    userInfo:@{NSLocalizedDescriptionKey:
-                                                                   DSLocalizedString(@"The Dashpay contract is not properly set up", nil)}]);
+                completion(NO, nil, [NSError errorWithCode:500 localizedDescriptionKey:@"The Dashpay contract is not properly set up"]);
             });
         }
         return nil;
@@ -308,10 +303,7 @@
         if (!strongSelf) {
             if (completion) {
                 dispatch_async(completionQueue, ^{
-                    completion(NO, nil, [NSError errorWithDomain:@"DashSync"
-                                                            code:500
-                                                        userInfo:@{NSLocalizedDescriptionKey:
-                                                                       DSLocalizedString(@"Internal memory allocation error", nil)}]);
+                    completion(NO, nil, [NSError errorWithCode:500 localizedDescriptionKey:@"Internal memory allocation error"]);
                 });
             }
             return;

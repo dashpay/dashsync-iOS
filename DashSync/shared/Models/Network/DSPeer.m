@@ -65,6 +65,7 @@
 #import "NSData+DSHash.h"
 #import "NSData+Dash.h"
 #import "NSDate+Utils.h"
+#import "NSError+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"
 #import <arpa/inet.h>
@@ -293,9 +294,7 @@
 
         // after the reachablity check, the radios should be warmed up and we can set a short socket connect timeout
         [self performSelector:@selector(disconnectWithError:)
-                   withObject:[NSError errorWithDomain:@"DashSync"
-                                                  code:DASH_PEER_TIMEOUT_CODE
-                                              userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Connect timeout", nil)}]
+                   withObject:[NSError errorWithCode:DASH_PEER_TIMEOUT_CODE localizedDescriptionKey:@"Connect timeout"]
                    afterDelay:CONNECT_TIMEOUT];
 
         [self.inputStream open];
@@ -352,9 +351,7 @@
     va_list args;
 
     va_start(args, message);
-    [self disconnectWithError:[NSError errorWithDomain:@"DashSync"
-                                                  code:500
-                                              userInfo:@{NSLocalizedDescriptionKey: [[NSString alloc] initWithFormat:message arguments:args]}]];
+    [self disconnectWithError:[NSError errorWithCode:500 descriptionKey:[[NSString alloc] initWithFormat:message arguments:args]]];
     va_end(args);
 }
 
@@ -1929,9 +1926,7 @@
     static NSError *error;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        error = [NSError errorWithDomain:@"DashSync"
-                                    code:DASH_PEER_TIMEOUT_CODE
-                                userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Connect timeout", nil)}];
+        error = [NSError errorWithCode:DASH_PEER_TIMEOUT_CODE localizedDescriptionKey:@"Connect timeout"];
     });
     return error;
 }

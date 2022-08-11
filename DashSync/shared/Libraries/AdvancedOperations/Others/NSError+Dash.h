@@ -19,7 +19,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface NSError_Dash : NSObject
+@interface NSError (Dash)
+
++ (instancetype)errorWithCode:(NSInteger)code userInfo:(nullable NSDictionary<NSErrorUserInfoKey, id> *)dict;
++ (instancetype)errorWithCode:(NSInteger)code descriptionKey:(NSString *)descriptionKey;
++ (instancetype)errorWithCode:(NSInteger)code localizedDescriptionKey:(NSString *)localizedDescriptionKey;
+
++ (instancetype)osStatusErrorWithCode:(NSInteger)code;
 
 @end
 

@@ -30,6 +30,7 @@
 #import "NSData+DSHash.h"
 #import "NSData+DSMerkAVLTree.h"
 #import "NSData+Dash.h"
+#import "NSError+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Dash.h"
 #import <DAPI-GRPC/Core.pbobjc.h>
@@ -129,22 +130,14 @@
 - (void)parseIdentityMessage:(GetIdentityResponse *)identityResponse {
     NSError *error = nil;
     if (self.requireProof && !identityResponse.hasProof) {
-        self.decodingError = [NSError errorWithDomain:@"DashSync"
-                                                 code:500
-                                             userInfo:@{NSLocalizedDescriptionKey:
-                                                          DSLocalizedString(@"Platform returned no proof when we requested it", nil)}];
+        self.decodingError = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned no proof when we requested it"];
         return;
     } else if (!self.requireProof && !identityResponse.hasProof) {
         NSData *cborData = identityResponse.identity;
         uint32_t version = [cborData UInt32AtOffset:0];
         NSData *identityData = [cborData subdataWithRange:NSMakeRange(4, cborData.length - 4)];
         NSDictionary *identityDictionary = [identityData ds_decodeCborError:&error];
-        
-        NSDictionary *response = @{@(DSPlatformStoredMessage_Version): @(version),
-                                 @(DSPlatformStoredMessage_Item): identityDictionary
-        };
-        
-        self.responseObject = response;
+        self.responseObject = @{@(DSPlatformStoredMessage_Version): @(version), @(DSPlatformStoredMessage_Item): identityDictionary};
     } else {
         Proof *proof = identityResponse.proof;
         ResponseMetadata *metaData = identityResponse.metadata;
@@ -169,10 +162,7 @@
     NSArray *documentsArray = nil;
     NSError *error = nil;
     if (self.requireProof && !documentsResponse.hasProof) {
-        self.decodingError = [NSError errorWithDomain:@"DashSync"
-                                                 code:500
-                                             userInfo:@{NSLocalizedDescriptionKey:
-                                                          DSLocalizedString(@"Platform returned no proof when we requested it", nil)}];
+        self.decodingError = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned no proof when we requested it"];
     } else if (!self.requireProof && !documentsResponse.hasProof) {
         documentsArray = documentsResponse.documentsArray;
     } else {
@@ -217,10 +207,7 @@
     NSData *dataContractData = nil;
     NSError *error = nil;
     if (self.requireProof && !dataContractResponse.hasProof) {
-        self.decodingError = [NSError errorWithDomain:@"DashSync"
-                                                 code:500
-                                             userInfo:@{NSLocalizedDescriptionKey:
-                                                          DSLocalizedString(@"Platform returned no proof when we requested it", nil)}];
+        self.decodingError = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned no proof when we requested it"];
     } else if (!self.requireProof && !dataContractResponse.hasProof) {
         dataContractData = dataContractResponse.dataContract;
     } else {
@@ -254,10 +241,7 @@
     BOOL hasProof = (([waitResponse responsesOneOfCase] & WaitForStateTransitionResultResponse_Responses_OneOfCase_Proof) > 0);
 
     if (self.requireProof && !hasProof) {
-        self.decodingError = [NSError errorWithDomain:@"DashSync"
-                                                 code:500
-                                             userInfo:@{NSLocalizedDescriptionKey:
-                                                          DSLocalizedString(@"Platform returned no proof when we requested it", nil)}];
+        self.decodingError = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned no proof when we requested it"];
     } else if (!self.requireProof && !hasProof) {
         // In this case just assume things went well if there's no error
         if (broadcastError) {
@@ -310,10 +294,7 @@
 
 
     if (self.requireProof && !getIdentitiesResponse.hasProof) {
-        self.decodingError = [NSError errorWithDomain:@"DashSync"
-                                                 code:500
-                                             userInfo:@{NSLocalizedDescriptionKey:
-                                                          DSLocalizedString(@"Platform returned no proof when we requested it", nil)}];
+        self.decodingError = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned no proof when we requested it"];
     } else if (!self.requireProof && !getIdentitiesResponse.hasProof) {
         NSError *error = nil;
 
@@ -336,10 +317,7 @@
             NSData *identityIdData = [identityDictionary objectForKey:@"id"];
             UInt256 identityId = identityIdData.UInt256;
             if (uint256_is_zero(identityId)) {
-                self.decodingError = [NSError errorWithDomain:@"DashSync"
-                                                         code:500
-                                                     userInfo:@{NSLocalizedDescriptionKey:
-                                                                  DSLocalizedString(@"Platform returned an incorrect value as an identity ID", nil)}];
+                self.decodingError = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned an incorrect value as an identity ID"];
                 return;
             }
             
@@ -399,10 +377,7 @@
         NSData *identityIdData = [identityDictionary objectForKey:@"id"];
         UInt256 identityId = identityIdData.UInt256;
         if (uint256_is_zero(identityId)) {
-            self.decodingError = [NSError errorWithDomain:@"DashSync"
-                                                     code:500
-                                                 userInfo:@{NSLocalizedDescriptionKey:
-                                                              DSLocalizedString(@"Platform returned an incorrect value as an identity ID", nil)}];
+            self.decodingError = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned an incorrect value as an identity ID"];
             return;
         }
         [identityDictionaries addObject:identityDictionary];
@@ -481,26 +456,17 @@
 + (NSDictionary *)verifyAndExtractFromProof:(Proof *)proof withMetadata:(ResponseMetadata *)metaData query:(DSPlatformQuery *)query onChain:(DSChain *)chain error:(NSError **)error {
     NSData *quorumHashData = proof.signatureLlmqHash;
     if (!quorumHashData) {
-        *error = [NSError errorWithDomain:@"DashSync"
-                                     code:500
-                                 userInfo:@{NSLocalizedDescriptionKey:
-                                              DSLocalizedString(@"Platform returned no quorum hash data", nil)}];
+        *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned no quorum hash data"];
     }
     UInt256 quorumHash = quorumHashData.reverse.UInt256;
     if (uint256_is_zero(quorumHash)) {
-        *error = [NSError errorWithDomain:@"DashSync"
-                                     code:500
-                                 userInfo:@{NSLocalizedDescriptionKey:
-                                              DSLocalizedString(@"Platform returned an empty quorum hash", nil)}];
+        *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned an empty quorum hash"];
     }
     DSQuorumEntry *quorumEntry = [chain.chainManager.masternodeManager quorumEntryForPlatformHavingQuorumHash:quorumHash forBlockHeight:metaData.coreChainLockedHeight];
     if (quorumEntry && quorumEntry.verified) {
         return [self verifyAndExtractFromProof:proof withMetadata:metaData query:query forQuorumEntry:quorumEntry quorumType:chain.quorumTypeForPlatform error:error];
     } else if (quorumEntry) {
-        *error = [NSError errorWithDomain:@"DashSync"
-                                     code:400
-                                 userInfo:@{NSLocalizedDescriptionKey:
-                                              DSLocalizedString(@"Quorum entry %@ found but is not yet verified", nil)}];
+        *error = [NSError errorWithCode:400 descriptionKey:DSLocalizedString(@"Quorum entry %@ found but is not yet verified", uint256_hex(quorumEntry.quorumHash))];
         DSLog(@"quorum entry %@ found but is not yet verified", uint256_hex(quorumEntry.quorumHash));
     } else {
         DSLog(@"no quorum entry found for quorum hash %@", uint256_hex(quorumHash));
@@ -511,18 +477,12 @@
 + (NSDictionary *)verifyAndExtractFromProof:(Proof *)proof withMetadata:(ResponseMetadata *)metaData query:(DSPlatformQuery *)query forQuorumEntry:(DSQuorumEntry *)quorumEntry quorumType:(DSLLMQType)quorumType error:(NSError **)error {
     NSData *signatureData = proof.signature;
     if (!signatureData) {
-        *error = [NSError errorWithDomain:@"DashSync"
-                                     code:500
-                                 userInfo:@{NSLocalizedDescriptionKey:
-                                              DSLocalizedString(@"Platform returned no signature data", nil)}];
+        *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned no signature data"];
         return nil;
     }
     UInt768 signature = signatureData.UInt768;
     if (uint256_is_zero(signature)) {
-        *error = [NSError errorWithDomain:@"DashSync"
-                                     code:500
-                                 userInfo:@{NSLocalizedDescriptionKey:
-                                              DSLocalizedString(@"Platform returned an empty or wrongly sized signature", nil)}];
+        *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned an empty or wrongly sized signature"];
         return nil;
     }
     
@@ -560,10 +520,7 @@
 //                }
 //                BOOL verified = [query verifyPublicKeyHashesForIdentityDictionaries:identitiesWithoutVersions];
 //                if (!verified) {
-//                    *error = [NSError errorWithDomain:@"DashSync"
-//                                                 code:500
-//                                             userInfo:@{NSLocalizedDescriptionKey:
-//                                                          DSLocalizedString(@"Platform returned a proof that does not satisfy our query", nil)}];
+//                    *error = [NSError errorWithCode:500 localizedDescriptionKey:"Platform returned a proof that does not satisfy our query"];
 //                    return nil;
 //                }
 //            }
@@ -606,10 +563,7 @@
 //
 //    UInt256 stateHash = merkleTree.merkleRoot;
 //    if (uint256_is_zero(stateHash)) {
-//        *error = [NSError errorWithDomain:@"DashSync"
-//                                     code:500
-//                                 userInfo:@{NSLocalizedDescriptionKey:
-//                                              DSLocalizedString(@"Platform returned an incorrect rootTreeProof", nil)}];
+//        *error = [NSError errorWithCode:500 localizedDescriptionKey:"Platform returned an incorrect rootTreeProof"];
 //        return nil;
 //    }
 //
@@ -621,10 +575,7 @@
 //    UInt256 stateMessageHash = [stateData SHA256];
 //    BOOL signatureVerified = [self verifyStateSignature:signature forStateMessageHash:stateMessageHash height:metaData.height - 1 againstQuorum:quorumEntry quorumType:quorumType];
 //    if (!signatureVerified) {
-//        *error = [NSError errorWithDomain:@"DashSync"
-//                                     code:500
-//                                 userInfo:@{NSLocalizedDescriptionKey:
-//                                              DSLocalizedString(@"Platform returned an empty or wrongly sized signature", nil)}];
+//        *error = [NSError errorWithCode:500 localizedDescriptionKey:"Platform returned an empty or wrongly sized signature"];
 //        DSLog(@"unable to verify platform signature");
 //        return nil;
 //    }

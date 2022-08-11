@@ -29,6 +29,7 @@
 #import "DSDerivationPath.h"
 #import "NSData+DSHash.h"
 #import "NSData+Dash.h"
+#import "NSError+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 #import "NSString+Dash.h"
@@ -53,11 +54,7 @@ BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated) {
         OSStatus status = SecItemAdd((__bridge CFDictionaryRef)item, NULL);
 
         if (status == noErr) return YES;
-        DSLogPrivate(@"SecItemAdd error: %@",
-            [NSError errorWithDomain:NSOSStatusErrorDomain
-                                code:status
-                            userInfo:nil]
-                .localizedDescription);
+        DSLogPrivate(@"SecItemAdd error: %@", [NSError osStatusErrorWithCode:status].localizedDescription);
         return NO;
     }
 
@@ -65,11 +62,7 @@ BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated) {
         OSStatus status = SecItemDelete((__bridge CFDictionaryRef)query);
 
         if (status == noErr) return YES;
-        DSLogPrivate(@"SecItemDelete error: %@",
-            [NSError errorWithDomain:NSOSStatusErrorDomain
-                                code:status
-                            userInfo:nil]
-                .localizedDescription);
+        DSLogPrivate(@"SecItemDelete error: %@", [NSError osStatusErrorWithCode:status].localizedDescription);
         return NO;
     }
 
@@ -78,11 +71,7 @@ BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated) {
     OSStatus status = SecItemUpdate((__bridge CFDictionaryRef)query, (__bridge CFDictionaryRef)update);
 
     if (status == noErr) return YES;
-    DSLogPrivate(@"SecItemUpdate error: %@",
-        [NSError errorWithDomain:NSOSStatusErrorDomain
-                            code:status
-                        userInfo:nil]
-            .localizedDescription);
+    DSLogPrivate(@"SecItemUpdate error: %@", [NSError osStatusErrorWithCode:status].localizedDescription);
     return NO;
 }
 
@@ -99,12 +88,8 @@ BOOL hasKeychainData(NSString *key, NSError **error) {
 
     if (status == errSecItemNotFound) return NO;
     if (status == noErr) return YES;
-    DSLogPrivate(@"SecItemCopyMatching error: %@",
-        [NSError errorWithDomain:NSOSStatusErrorDomain
-                            code:status
-                        userInfo:nil]
-            .localizedDescription);
-    if (error) *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil];
+    DSLogPrivate(@"SecItemCopyMatching error: %@", [NSError osStatusErrorWithCode:status].localizedDescription);
+    if (error) *error = [NSError osStatusErrorWithCode:status];
     return NO;
 }
 
@@ -118,12 +103,8 @@ NSData *getKeychainData(NSString *key, NSError **error) {
 
     if (status == errSecItemNotFound) return nil;
     if (status == noErr) return CFBridgingRelease(result);
-    DSLogPrivate(@"SecItemCopyMatching error: %@",
-        [NSError errorWithDomain:NSOSStatusErrorDomain
-                            code:status
-                        userInfo:nil]
-            .localizedDescription);
-    if (error) *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil];
+    DSLogPrivate(@"SecItemCopyMatching error: %@", [NSError osStatusErrorWithCode:status].localizedDescription);
+    if (error) *error = [NSError osStatusErrorWithCode:status];
     return nil;
 }
 

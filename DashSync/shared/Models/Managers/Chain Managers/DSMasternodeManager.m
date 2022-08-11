@@ -43,6 +43,7 @@
 #import "DSQRInfoProcessingResult.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSTransactionManager+Protected.h"
+#import "NSError+Dash.h"
 
 #define FAULTY_DML_MASTERNODE_PEERS @"FAULTY_DML_MASTERNODE_PEERS"
 #define CHAIN_FAULTY_DML_MASTERNODE_PEERS [NSString stringWithFormat:@"%@_%@", peer.chain.uniqueID, FAULTY_DML_MASTERNODE_PEERS]
@@ -434,7 +435,7 @@
     DSMerkleBlock *merkleBlock = [self.chain blockAtHeight:blockHeight];
     if (!merkleBlock) {
         if (error) {
-            *error = [NSError errorWithDomain:@"DashSync" code:600 userInfo:@{NSLocalizedDescriptionKey: @"Unknown block"}];
+            *error = [NSError errorWithCode:600 localizedDescriptionKey:@"Unknown block"];
         }
         return FALSE;
     }

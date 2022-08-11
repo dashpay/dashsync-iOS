@@ -44,6 +44,7 @@
 #import "DSWallet.h"
 #import "DashSync.h"
 #import "NSDate+Utils.h"
+#import "NSError+Dash.h"
 #import "NSString+Bitcoin.h"
 #import "RHIntervalTree.h"
 
@@ -454,7 +455,7 @@
         }
     } else {
         if (completion) {
-            NSError *error = [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"A block could not be mined in the selected time interval.", nil)}];
+            NSError *error = [NSError errorWithCode:500 localizedDescriptionKey:@"A block could not be mined in the selected time interval."];
             completion(nil, attempts, -[startTime timeIntervalSinceNow], error);
         }
     }

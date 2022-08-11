@@ -25,6 +25,7 @@
 #import "DSPeer.h"
 #import "DSTransactionFactory.h"
 #import "NSData+Dash.h"
+#import "NSError+Dash.h"
 
 @interface DSDAPICoreNetworkService ()
 
@@ -95,10 +96,7 @@
                 success(transaction);
             }
         } else if (failure) {
-            failure([NSError errorWithDomain:@"DashSync"
-                                        code:404
-                                    userInfo:@{NSLocalizedDescriptionKey:
-                                                 DSLocalizedString(@"Transaction does not exist", nil)}]);
+            failure([NSError errorWithCode:404 localizedDescriptionKey:@"Transaction does not exist"]);
         }
     };
     responseHandler.errorHandler = failure;

@@ -28,6 +28,7 @@
 #import "DSInstantSendTransactionLock.h"
 #import "DSWallet.h"
 #import "NSData+DSHash.h"
+#import "NSError+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSManagedObjectContext+DSSugar.h"
 #import "NSString+Dash.h"
@@ -199,19 +200,13 @@
     }
     if (uint256_is_zero(assetLockTransactionHash)) {
         if (completion) {
-            completion(nil, NO, [NSError errorWithDomain:@"DashSync"
-                                                    code:400
-                                                userInfo:@{NSLocalizedDescriptionKey:
-                                                             DSLocalizedString(@"Invitation format is not valid", nil)}]);
+            completion(nil, NO, [NSError errorWithCode:400 localizedDescriptionKey:@"Invitation format is not valid"]);
         }
         return;
     }
     if (!fundingPrivateKey || uint256_is_zero(*fundingPrivateKey.secretKey)) {
         if (completion) {
-            completion(nil, NO, [NSError errorWithDomain:@"DashSync"
-                                                    code:400
-                                                userInfo:@{NSLocalizedDescriptionKey:
-                                                             DSLocalizedString(@"Funding private key is not valid", nil)}]);
+            completion(nil, NO, [NSError errorWithCode:400 localizedDescriptionKey:@"Funding private key is not valid"]);
         }
         return;
     }
@@ -222,10 +217,7 @@
             NSAssert(transaction, @"transaction must not be null");
             if (!transaction || ![transaction isKindOfClass:[DSCreditFundingTransaction class]]) {
                 if (completion) {
-                    completion(nil, NO, [NSError errorWithDomain:@"DashSync"
-                                                            code:400
-                                                        userInfo:@{NSLocalizedDescriptionKey:
-                                                                     DSLocalizedString(@"Invitation transaction is not valid", nil)}]);
+                    completion(nil, NO, [NSError errorWithCode:400 localizedDescriptionKey:@"Invitation transaction is not valid"]);
                 }
                 return;
             }
@@ -235,10 +227,7 @@
         }
         failure:^(NSError *_Nonnull error) {
             if (completion) {
-                completion(nil, NO, [NSError errorWithDomain:@"DashSync"
-                                                        code:400
-                                                    userInfo:@{NSLocalizedDescriptionKey:
-                                                                 DSLocalizedString(@"Invitation format is not valid", nil)}]);
+                completion(nil, NO, [NSError errorWithCode:400 localizedDescriptionKey:@"Invitation format is not valid"]);
             }
         }];
 }
@@ -260,19 +249,13 @@
     }
     if (uint256_is_zero(assetLockTransactionHash)) {
         if (completion) {
-            completion(DSBlockchainIdentityRegistrationStep_None, [NSError errorWithDomain:@"DashSync"
-                                                                                      code:400
-                                                                                  userInfo:@{NSLocalizedDescriptionKey:
-                                                                                               DSLocalizedString(@"Invitation format is not valid", nil)}]);
+            completion(DSBlockchainIdentityRegistrationStep_None, [NSError errorWithCode:400 localizedDescriptionKey:@"Invitation format is not valid"]);
         }
         return;
     }
     if (!fundingPrivateKey || uint256_is_zero(*fundingPrivateKey.secretKey)) {
         if (completion) {
-            completion(DSBlockchainIdentityRegistrationStep_None, [NSError errorWithDomain:@"DashSync"
-                                                                                      code:400
-                                                                                  userInfo:@{NSLocalizedDescriptionKey:
-                                                                                               DSLocalizedString(@"Funding private key is not valid", nil)}]);
+            completion(DSBlockchainIdentityRegistrationStep_None, [NSError errorWithCode:400 localizedDescriptionKey:@"Funding private key is not valid"]);
         }
         return;
     }
@@ -283,10 +266,7 @@
             NSAssert(transaction, @"transaction must not be null");
             if (!transaction || ![transaction isKindOfClass:[DSCreditFundingTransaction class]]) {
                 if (completion) {
-                    completion(DSBlockchainIdentityRegistrationStep_None, [NSError errorWithDomain:@"DashSync"
-                                                                                              code:400
-                                                                                          userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                       DSLocalizedString(@"Invitation transaction is not valid", nil)}]);
+                    completion(DSBlockchainIdentityRegistrationStep_None, [NSError errorWithCode:400 localizedDescriptionKey:@"Invitation transaction is not valid"]);
                 }
                 return;
             }
@@ -302,27 +282,18 @@
                                                                                if (registered) {
                                                                                    [self.identity continueRegisteringIdentityOnNetwork:identityRegistrationSteps stepsCompleted:DSBlockchainIdentityRegistrationStep_L1Steps stepCompletion:stepCompletion completion:completion];
                                                                                } else if (completion) {
-                                                                                   completion(DSBlockchainIdentityRegistrationStep_None, [NSError errorWithDomain:@"DashSync"
-                                                                                                                                                             code:500
-                                                                                                                                                         userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                                                                                      DSLocalizedString(@"Error generating Identity keys", nil)}]);
+                                                                                   completion(DSBlockchainIdentityRegistrationStep_None, [NSError errorWithCode:500 localizedDescriptionKey:@"Error generating Identity keys"]);
                                                                                }
                                                                            }];
             } else {
                 if (completion) {
-                    completion(DSBlockchainIdentityRegistrationStep_None, [NSError errorWithDomain:@"DashSync"
-                                                                                              code:500
-                                                                                          userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                       DSLocalizedString(@"Error setting the external funding private key", nil)}]);
+                    completion(DSBlockchainIdentityRegistrationStep_None, [NSError errorWithCode:500 localizedDescriptionKey:@"Error setting the external funding private key"]);
                 }
             }
         }
         failure:^(NSError *_Nonnull error) {
             if (completion) {
-                completion(DSBlockchainIdentityRegistrationStep_None, [NSError errorWithDomain:@"DashSync"
-                                                                                          code:400
-                                                                                      userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                   DSLocalizedString(@"Invitation format is not valid", nil)}]);
+                completion(DSBlockchainIdentityRegistrationStep_None, [NSError errorWithCode:400 localizedDescriptionKey:@"Invitation format is not valid"]);
             }
         }];
 }

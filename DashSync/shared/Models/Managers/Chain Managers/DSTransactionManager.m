@@ -56,6 +56,7 @@
 #import "DSWallet+Protected.h"
 #import "NSData+Dash.h"
 #import "NSDate+Utils.h"
+#import "NSError+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
@@ -183,20 +184,14 @@
     if ([transaction transactionTypeRequiresInputs] && !transaction.isSigned) {
         if (completion) {
             [[DSEventManager sharedEventManager] saveEvent:@"transaction_manager:not_signed"];
-            completion([NSError errorWithDomain:@"DashSync"
-                                           code:401
-                                       userInfo:@{NSLocalizedDescriptionKey:
-                                                    DSLocalizedString(@"Dash transaction not signed", nil)}]);
+            completion([NSError errorWithCode:401 localizedDescriptionKey:@"Dash transaction not signed"]);
         }
 
         return;
     } else if (!self.peerManager.connected && self.peerManager.connectFailures >= MAX_CONNECT_FAILURES) {
         if (completion) {
             [[DSEventManager sharedEventManager] saveEvent:@"transaction_manager:not_connected"];
-            completion([NSError errorWithDomain:@"DashSync"
-                                           code:-1009
-                                       userInfo:@{NSLocalizedDescriptionKey:
-                                                    DSLocalizedString(@"Not connected to the Dash network", nil)}]);
+            completion([NSError errorWithCode:-1009 localizedDescriptionKey:@"Not connected to the Dash network"]);
         }
 
         return;
@@ -422,10 +417,7 @@
 
         if (callback) {
             [[DSEventManager sharedEventManager] saveEvent:@"transaction_manager:tx_canceled_timeout"];
-            callback([NSError errorWithDomain:@"DashSync"
-                                         code:DASH_PEER_TIMEOUT_CODE
-                                     userInfo:@{NSLocalizedDescriptionKey:
-                                                  DSLocalizedString(@"Transaction canceled, network timeout", nil)}]);
+            callback([NSError errorWithCode:DASH_PEER_TIMEOUT_CODE localizedDescriptionKey:@"Transaction canceled, network timeout"]);
         }
     });
 }
@@ -688,10 +680,7 @@
                           if (!signedTransaction || !tx.isSigned) {
                               if (!previouslyWasAuthenticated && !keepAuthenticatedIfErrorAfterAuthentication) [authenticationManager deauthenticate];
                               dispatch_async(dispatch_get_main_queue(), ^{
-                                  signedCompletion(tx, [NSError errorWithDomain:@"DashSync"
-                                                                           code:401
-                                                                       userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Error signing transaction", nil)}],
-                                      NO);
+                                  signedCompletion(tx, [NSError errorWithCode:401 localizedDescriptionKey:@"Error signing transaction"], NO);
                               });
                               return;
                           }
@@ -1120,9 +1109,7 @@
 
     if (callback && !isTransactionValid) {
         [self.publishedTx removeObjectForKey:hash];
-        error = [NSError errorWithDomain:@"DashSync"
-                                    code:401
-                                userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Double spend", nil)}];
+        error = [NSError errorWithCode:401 localizedDescriptionKey:@"Double spend"];
     } else if (transaction) {
         for (DSAccount *account in accounts) {
             if (![account transactionForHash:txHash]) {

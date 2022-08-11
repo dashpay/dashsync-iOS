@@ -7,7 +7,7 @@
 
 #import "DSDerivationPath+Protected.h"
 #import "DSSimpleIndexedDerivationPath+Protected.h"
-
+#import "NSError+Dash.h"
 
 @implementation DSSimpleIndexedDerivationPath
 
@@ -123,10 +123,7 @@
             if (!addr) {
                 DSLog(@"error generating keys");
                 if (error) {
-                    *error = [NSError errorWithDomain:@"DashSync"
-                                                 code:500
-                                             userInfo:@{NSLocalizedDescriptionKey:
-                                                          DSLocalizedString(@"Error generating public keys", nil)}];
+                    *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Error generating public keys"];
                 }
                 return nil;
             }

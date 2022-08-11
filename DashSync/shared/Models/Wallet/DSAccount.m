@@ -64,6 +64,7 @@
 #import "DSTransactionOutput.h"
 #import "NSData+Dash.h"
 #import "NSDate+Utils.h"
+#import "NSError+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Dash.h"
@@ -1751,17 +1752,11 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     DSECDSAKey *key = [DSECDSAKey keyWithPrivateKey:privKey onChain:self.wallet.chain];
     NSString *address = [key addressForChain:self.wallet.chain];
     if (!address) {
-        completion(nil, 0, [NSError errorWithDomain:@"DashSync"
-                                               code:187
-                                           userInfo:@{NSLocalizedDescriptionKey:
-                                                        DSLocalizedString(@"Not a valid private key", nil)}]);
+        completion(nil, 0, [NSError errorWithCode:187 localizedDescriptionKey:@"Not a valid private key"]);
         return;
     }
     if ([self.wallet containsAddress:address]) {
-        completion(nil, 0, [NSError errorWithDomain:@"DashSync"
-                                               code:187
-                                           userInfo:@{NSLocalizedDescriptionKey:
-                                                        DSLocalizedString(@"This private key is already in your wallet", nil)}]);
+        completion(nil, 0, [NSError errorWithCode:187 localizedDescriptionKey:@"This private key is already in your wallet"]);
         return;
     }
 
@@ -1787,10 +1782,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                                                   }
 
                                                   if (balance == 0) {
-                                                      completion(nil, 0, [NSError errorWithDomain:@"DashSync"
-                                                                                             code:417
-                                                                                         userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                      DSLocalizedString(@"This private key is empty", nil)}]);
+                                                      completion(nil, 0, [NSError errorWithCode:417 localizedDescriptionKey:@"This private key is empty"]);
                                                       return;
                                                   }
 
@@ -1798,12 +1790,9 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                                                   if (fee) feeAmount = [self.wallet.chain feeForTxSize:tx.size + 34 + (key.publicKeyData.length - 33) * tx.inputs.count]; //input count doesn't matter for non instant transactions
 
                                                   if (feeAmount + self.wallet.chain.minOutputAmount > balance) {
-                                                      completion(nil, 0, [NSError errorWithDomain:@"DashSync"
-                                                                                             code:417
-                                                                                         userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                      DSLocalizedString(@"Transaction fees would cost more than the funds available on this "
-                                                                                                                         "private key (due to tiny \"dust\" deposits)",
-                                                                                                          nil)}]);
+                                                      completion(nil, 0, [NSError errorWithCode:417 localizedDescriptionKey:
+                                                                          @"Transaction fees would cost more than the funds available on this "
+                                                                                             "private key (due to tiny \"dust\" deposits)"]);
                                                       return;
                                                   }
 
@@ -1811,10 +1800,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                                                                 amount:balance - feeAmount];
 
                                                   if (![tx signWithSerializedPrivateKeys:@[privKey]]) {
-                                                      completion(nil, 0, [NSError errorWithDomain:@"DashSync"
-                                                                                             code:401
-                                                                                         userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                      DSLocalizedString(@"Error signing transaction", nil)}]);
+                                                      completion(nil, 0, [NSError errorWithCode:401 localizedDescriptionKey:@"Error signing transaction"]);
                                                       return;
                                                   }
 

@@ -10,6 +10,7 @@
 #import "DSShapeshiftEntity+CoreDataClass.h"
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTxOutputEntity+CoreDataClass.h"
+#import "NSError+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import <CoreData/CoreData.h>
 
@@ -338,7 +339,7 @@
                     }
                     dispatch_async(dispatch_get_main_queue(), ^{
                         if ([dictionary objectForKey:@"error"]) {
-                            completionBlock(nil, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: [dictionary objectForKey:@"error"]}]);
+                            completionBlock(nil, [NSError errorWithCode:500 descriptionKey:[dictionary objectForKey:@"error"]]);
                         } else {
                             completionBlock(dictionary, nil);
                         }
@@ -542,7 +543,7 @@
                     }
                     dispatch_async(dispatch_get_main_queue(), ^{
                         if ([dictionary objectForKey:@"error"]) {
-                            completionBlock(nil, [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: [dictionary objectForKey:@"error"]}]);
+                            completionBlock(nil, [NSError errorWithCode:500 descriptionKey:[dictionary objectForKey:@"error"]]);
                         } else {
                             completionBlock(dictionary, nil);
                         }

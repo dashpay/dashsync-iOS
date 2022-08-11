@@ -33,6 +33,7 @@
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataClass.h"
 #import "NSData+Dash.h"
+#import "NSError+Dash.h"
 #import "NSManagedObject+Sugar.h"
 
 @interface DSMasternodeListStore ()
@@ -471,10 +472,10 @@
                 merkleBlockEntity.chain = chainEntity;
             } else {
                 DSLog(@"Merkle block should exist for block hash %@", mnlBlockHashData);
-                error = [NSError errorWithDomain:@"DashSync" code:600 userInfo:@{NSLocalizedDescriptionKey: @"Merkle block should exist"}];
+                error = [NSError errorWithCode:600 localizedDescriptionKey:@"Merkle block should exist"];
             }
         } else if (merkleBlockEntity.masternodeList) {
-            error = [NSError errorWithDomain:@"DashSync" code:600 userInfo:@{NSLocalizedDescriptionKey: @"Merkle block should not have a masternode list already"}];
+            error = [NSError errorWithCode:600 localizedDescriptionKey:@"Merkle block should not have a masternode list already"];
         }
         if (!error) {
             DSMasternodeListEntity *masternodeListEntity = [DSMasternodeListEntity managedObjectInBlockedContext:context];

@@ -19,6 +19,7 @@
 #import "NSData+DSCborDecoding.h"
 #import "NSData+DSMerkAVLTree.h"
 #import "NSData+Dash.h"
+#import "NSError+Dash.h"
 #import "dash_shared_core.h"
 
 @implementation NSData (DSMerkAVLTree)
@@ -35,10 +36,7 @@
     }
     if (result->valid == false) {
         destroy_proof_c(result);
-        *error = [NSError errorWithDomain:@"DashSync"
-                                     code:500
-                                 userInfo:@{NSLocalizedDescriptionKey:
-                                              DSLocalizedString(@"Platform returned a non valid proof for our query", nil)}];
+        *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned a non valid proof for our query"];
         return nil; // Even though we have the root hash, there is no reason to return it
     }
     NSData *rootHash = [NSData dataWithBytes:result->hash length:32];

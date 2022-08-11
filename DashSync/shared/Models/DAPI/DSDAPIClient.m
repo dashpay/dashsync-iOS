@@ -23,6 +23,7 @@
 #import "DSDashPlatform.h"
 #import "DSDocumentTransition.h"
 #import "DSIdentitiesManager+Protected.h"
+#import "NSError+Dash.h"
 #import <DashSync/DSTransition.h>
 #import <DashSync/DashSync.h>
 #import <arpa/inet.h>
@@ -92,10 +93,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
                                      __strong typeof(weakSelf) strongSelf = weakSelf;
                                      if (!strongSelf) {
                                          if (completion) {
-                                             completion([NSError errorWithDomain:@"DashSync"
-                                                                            code:500
-                                                                        userInfo:@{NSLocalizedDescriptionKey:
-                                                                                     DSLocalizedString(@"Internal memory allocation error", nil)}]);
+                                             completion([NSError errorWithCode:500 localizedDescriptionKey:@"Internal memory allocation error"]);
                                          }
                                          return;
                                      }

@@ -17,6 +17,22 @@
 
 #import "NSError+Dash.h"
 
-@implementation NSError_Dash
+@implementation NSError (Dash)
+
++ (instancetype)errorWithCode:(NSInteger)code userInfo:(nullable NSDictionary<NSErrorUserInfoKey, id> *)dict {
+    return [NSError errorWithDomain:@"DashSync" code:code userInfo:dict];
+}
+
++ (instancetype)errorWithCode:(NSInteger)code descriptionKey:(NSString *)descriptionKey {
+    return [NSError errorWithCode:code userInfo:@{NSLocalizedDescriptionKey: descriptionKey}];
+}
+
++ (instancetype)errorWithCode:(NSInteger)code localizedDescriptionKey:(NSString *)localizedDescriptionKey {
+    return [NSError errorWithCode:code descriptionKey:DSLocalizedString(localizedDescriptionKey, nil)];
+}
+
++ (instancetype)osStatusErrorWithCode:(NSInteger)code {
+    return [NSError errorWithDomain:NSOSStatusErrorDomain code:code userInfo:nil];
+}
 
 @end

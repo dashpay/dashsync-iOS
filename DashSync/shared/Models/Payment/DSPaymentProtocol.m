@@ -30,6 +30,7 @@
 #import "DSTransaction.h"
 #import "NSData+Dash.h"
 #import "NSDate+Utils.h"
+#import "NSError+Dash.h"
 
 #if TARGET_OS_OSX
 // SecKeyRawVerify is not exposed in the public header. Declare it manually.
@@ -517,10 +518,7 @@ typedef enum : NSUInteger
                 _errorMessage = DSLocalizedString(@"Unsupported signature type", nil);
                 DSLog(@"%@", _errorMessage);
             } else {
-                _errorMessage = [NSError errorWithDomain:NSOSStatusErrorDomain
-                                                    code:status
-                                                userInfo:nil]
-                                    .localizedDescription;
+                _errorMessage = [NSError osStatusErrorWithCode:status].localizedDescription;                
                 DSLog(@"SecKeyRawVerify error: %@", _errorMessage);
             }
 

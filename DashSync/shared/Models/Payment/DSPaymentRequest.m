@@ -38,6 +38,7 @@
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSPaymentProtocol.h"
 #import "DSPriceManager.h"
+#import "NSError+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
 #import "NSString+Dash.h"
@@ -438,9 +439,7 @@
     //  [req addValue:@"text/uri-list" forHTTPHeaderField:@"Accept"]; // breaks some BIP72 implementations, notably bitpay's
 
     if (!req) {
-        completion(nil, [NSError errorWithDomain:@"DashSync"
-                                            code:417
-                                        userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Bad payment request URL", nil)}]);
+        completion(nil, [NSError errorWithCode:417 localizedDescriptionKey:@"Bad payment request URL"]);
         return;
     }
 
@@ -471,18 +470,10 @@
                                              DSLog(@"unexpected response from %@:\n%@", req.URL.host,
                                                  [[NSString alloc] initWithData:data
                                                                        encoding:NSUTF8StringEncoding]);
-                                             completion(nil, [NSError errorWithDomain:@"DashSync"
-                                                                                 code:417
-                                                                             userInfo:@{NSLocalizedDescriptionKey:
-                                                                                          [NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
-                                                                                                    req.URL.host]}]);
+                                             completion(nil, [NSError errorWithCode:417 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
+                                                                                                        req.URL.host]]);
                                          } else if (![request.details.chain isEqual:chain]) {
-                                             completion(nil, [NSError errorWithDomain:@"DashSync"
-                                                                                 code:417
-                                                                             userInfo:@{NSLocalizedDescriptionKey:
-                                                                                          [NSString stringWithFormat:DSLocalizedString(@"Requested network \"%@\" not currently in use",
-                                                                                                                         nil),
-                                                                                                    request.details.chain.networkName]}]);
+                                             completion(nil, [NSError errorWithCode:417 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Requested network \"%@\" not currently in use", nil), request.details.chain.networkName]]);
                                          } else
                                              completion(request, nil);
                                      }] resume];
@@ -499,9 +490,7 @@
 
     if (!req) {
         if (completion) {
-            completion(nil, [NSError errorWithDomain:@"DashSync"
-                                                code:417
-                                            userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Bad payment URL", nil)}]);
+            completion(nil, [NSError errorWithCode:417 localizedDescriptionKey:@"Bad payment URL"]);
         }
 
         return;
@@ -531,11 +520,7 @@
                                                  [[NSString alloc] initWithData:data
                                                                        encoding:NSUTF8StringEncoding]);
                                              if (completion) {
-                                                 completion(nil, [NSError errorWithDomain:@"DashSync"
-                                                                                     code:417
-                                                                                 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                              [NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
-                                                                                                        req.URL.host]}]);
+                                                 completion(nil, [NSError errorWithCode:417 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil), req.URL.host]]);
                                              }
                                          } else if (completion)
                                              completion(ack, nil);
