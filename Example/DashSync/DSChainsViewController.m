@@ -345,7 +345,7 @@
                                          platformQuorumType:platformQuorumType];
     } else {
         chain = [[DSChainsManager sharedInstance] registerDevnetChainWithIdentifier:chainID
-                                                                            version:0
+                                                                            version:version
                                                                 forServiceLocations:insertedIPAddresses
                                                         withMinimumDifficultyBlocks:minimumDifficultyBlocks
                                                                        standardPort:dashdPort
