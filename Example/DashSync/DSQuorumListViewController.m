@@ -103,21 +103,32 @@
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
     id<NSFetchedResultsSectionInfo> sectionInfo = [[self.fetchedResultsController sections] objectAtIndex:section];
-    switch ([[sectionInfo name] integerValue]) {
-        case DSLLMQType_50_60:
-            return @"1 Hour Quorums";
-        case DSLLMQType_100_67:
-            return @"1 Hour Platform Quorums";
-        case DSLLMQType_400_60:
-            return @"Day Quorums";
-        case DSLLMQType_400_85:
-            return @"2 Day Quorums";
-        case DSLLMQType_10_60:
-            return @"10 Member Devnet Quorums";
-        case DSLLMQType_60_75:
-            return @"1 Hour Rotated Quorums";
+    NSInteger quorumType = [[sectionInfo name] integerValue];
+    switch (quorumType) {
+        case LlmqtypeUnknown:
+            return @"Unknown Quorums (0)";
+        case Llmqtype50_60:
+            return @"1 Hour Quorums (1)";
+        case Llmqtype400_60:
+            return @"Day Quorums (2)";
+        case Llmqtype400_85:
+            return @"2 Day Quorums (3)";
+        case Llmqtype100_67:
+            return @"1 Hour Platform Quorums (4)";
+        case Llmqtype60_75:
+            return @"1 Hour Rotated Quorums (5)";
+        case LlmqtypeTest:
+            return @"Test Quorums (100)";
+        case LlmqtypeDevnet:
+            return @"10 Member Devnet Quorums (101)";
+        case LlmqtypeTestV17:
+            return @"Test V17 Quorums (102)";
+        case LlmqtypeTestDIP0024:
+        case LlmqtypeDevnetDIP0024:
+        case LlmqtypeDevnet333DIP0024:
+            return [NSString stringWithFormat:@"Test DIP-0024 Quorums (%ld)", quorumType] ;
         default:
-            return @"Unknown Quorum Type";
+            return [NSString stringWithFormat:@"Unknown Quorum Type (%ld)", quorumType];
     }
 }
 
