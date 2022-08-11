@@ -126,6 +126,10 @@
     return [self.service retrievalQueueCount];
 }
 
+- (NSUInteger)masternodeListRetrievalQueueMaxAmount {
+    return [self.service retrievalQueueMaxAmount];
+}
+
 - (uint32_t)estimatedMasternodeListsToSync {
     BOOL syncMasternodeLists = ([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList);
     if (!syncMasternodeLists) {
