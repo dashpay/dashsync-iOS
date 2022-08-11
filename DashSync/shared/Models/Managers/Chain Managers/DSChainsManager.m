@@ -78,7 +78,7 @@
             //todo deal with version > 1
             DSChain *chain = [DSChain recoverKnownDevnetWithIdentifier:string version:1 withCheckpoints:checkpointArray performSetup:NO];
             chain.chainManager = [self devnetManagerForChain:chain];
-            //            [self.knownDevnetChains addObject:chain]; // adding this before setup prevents a loop
+            // [self.knownDevnetChains addObject:chain]; // adding this before setup prevents a loop
             [chain setUp];
         }
 

@@ -49,8 +49,8 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context);
 - (DSMnDiffProcessingResult *)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context;
 
 + (QRInfo *)readQRInfoMessage:(NSData *)message
-                            withContext:(DSMasternodeDiffMessageContext *)context
-                          withProcessor:(MasternodeProcessor *)processor;
+                  withContext:(DSMasternodeDiffMessageContext *)context
+                withProcessor:(MasternodeProcessor *)processor;
 
 + (void)destroyQRInfoMessage:(QRInfo *)info;
 
