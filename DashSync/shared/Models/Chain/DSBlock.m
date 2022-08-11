@@ -141,6 +141,9 @@
 }
 
 - (BOOL)verifyDifficultyWithPreviousBlocks:(NSDictionary *)previousBlocks rDifficulty:(uint32_t *)difficulty {
+    if ([self.chain isDevnetAny]) {
+        return true;
+    }
     uint32_t darkGravityWaveTarget = [self darkGravityWaveTargetWithPreviousBlocks:previousBlocks];
     if (difficulty) {
         *difficulty = darkGravityWaveTarget;
