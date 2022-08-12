@@ -154,6 +154,10 @@
     return [self.service retrievalQueueCount];
 }
 
+- (NSUInteger)masternodeListRetrievalQueueMaxAmount {
+    return [self.service retrievalQueueMaxAmount];
+}
+
 - (uint32_t)estimatedMasternodeListsToSync {
     BOOL syncMasternodeLists = ([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList);
     if (!syncMasternodeLists) {
@@ -608,6 +612,7 @@
 
 #if SAVE_MASTERNODE_DIFF_TO_FILE
     NSString *fileName = [NSString stringWithFormat:@"MNL_%@_%@.dat", @([self heightForBlockHash:baseBlockHash]), @([self heightForBlockHash:blockHash])];
+    NSLog(@"File %@ saved", fileName);
     [message saveToFile:fileName inDirectory:NSCachesDirectory];
 #endif
 
