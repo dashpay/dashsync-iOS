@@ -816,7 +816,7 @@ static dispatch_once_t devnetToken = 0;
             if (!error && quorumType)
                 return quorumType;
             else
-                return DSLLMQType_10_60;
+                return DSLLMQType_DevnetDIP0024;
         }
     }
 }
@@ -833,7 +833,7 @@ static dispatch_once_t devnetToken = 0;
             if (!error && quorumType)
                 return quorumType;
             else
-                return DSLLMQType_TestDIP0024;
+                return DSLLMQType_DevnetDIP0024;
         }
     }
 }
