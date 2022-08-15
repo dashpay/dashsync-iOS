@@ -58,6 +58,10 @@
          minProtocolVersion:70221
             protocolVersion:70221
     minimumDifficultyBlocks:1000000
+           ISLockQuorumType:DEVNET_ISLOCK_DEFAULT_QUORUM_TYPE
+          ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE
+        chainLockQuorumType:DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE
+         platformQuorumType:DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE
                   addresses:@[
         @"52.89.24.208",
         @"34.220.82.112",
@@ -100,6 +104,10 @@
          minProtocolVersion:70221
             protocolVersion:70221
     minimumDifficultyBlocks:1000000
+           ISLockQuorumType:DEVNET_ISLOCK_DEFAULT_QUORUM_TYPE
+          ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE
+        chainLockQuorumType:DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE
+         platformQuorumType:DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE
                   addresses:@[
         @"54.188.102.153",
         @"35.87.178.188",
@@ -143,6 +151,10 @@
          minProtocolVersion:70221
             protocolVersion:70221
     minimumDifficultyBlocks:1000000
+           ISLockQuorumType:DEVNET_ISLOCK_DEFAULT_QUORUM_TYPE
+          ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE
+        chainLockQuorumType:DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE
+         platformQuorumType:DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE
                   addresses:@[
         @"34.220.100.153",
         @"52.12.210.34",
@@ -166,6 +178,10 @@
          minProtocolVersion:70221
             protocolVersion:70221
     minimumDifficultyBlocks:1000000
+           ISLockQuorumType:DEVNET_ISLOCK_DEFAULT_QUORUM_TYPE
+          ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE
+        chainLockQuorumType:DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE
+         platformQuorumType:DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE
                   addresses:@[
         @"34.211.117.176",
         @"35.89.146.98",
@@ -189,6 +205,10 @@
          minProtocolVersion:70221
             protocolVersion:70221
     minimumDifficultyBlocks:1000000
+           ISLockQuorumType:DEVNET_ISLOCK_DEFAULT_QUORUM_TYPE
+          ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE
+        chainLockQuorumType:DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE
+         platformQuorumType:DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE
                       addresses:@[
         @"35.161.144.85",
         @"35.166.87.8",
@@ -232,6 +252,10 @@
              minProtocolVersion:70219
                 protocolVersion:70220
         minimumDifficultyBlocks:2200
+           ISLockQuorumType:DEVNET_ISLOCK_DEFAULT_QUORUM_TYPE
+          ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE
+        chainLockQuorumType:DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE
+         platformQuorumType:DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE
                       addresses:@[
                           @"4.210.237.116",
                           @"54.69.65.231",
@@ -249,14 +273,17 @@
 }
 
 - (void)setupJackDaniels {
-    // yRisqbEVej7gJHUQ2i566YsbWZg61732PW
     [self setupDevnetWithId:@"jack-daniels"
-                   sporkAddress:@"yYBanbwp2Pp2kYWqDkjvckY3MosuZzkKp7"
-                sporkPrivateKey:@"cTeGz53m7kHgA9L75s4vqFGR89FjYz4D9o44eHfoKjJr2ArbEtwg"
-             minProtocolVersion:70219
-                protocolVersion:70220
-        minimumDifficultyBlocks:4032
-                      addresses:@[
+               sporkAddress:@"yYBanbwp2Pp2kYWqDkjvckY3MosuZzkKp7"
+            sporkPrivateKey:@"cTeGz53m7kHgA9L75s4vqFGR89FjYz4D9o44eHfoKjJr2ArbEtwg"
+         minProtocolVersion:70219
+            protocolVersion:70220
+    minimumDifficultyBlocks:4032
+           ISLockQuorumType:DSLLMQType_10_60
+          ISDLockQuorumType:DSLLMQType_DevnetDIP0024
+        chainLockQuorumType:DSLLMQType_10_60
+         platformQuorumType:DSLLMQType_10_60
+                  addresses:@[
         @"34.220.200.8",
         @"35.90.255.217",
         @"54.218.109.249",
@@ -302,6 +329,10 @@
        minProtocolVersion:(uint32_t)minProtocolVersion
           protocolVersion:(uint32_t)protocolVersion
   minimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks
+         ISLockQuorumType:(uint32_t)ISLockQuorumType
+        ISDLockQuorumType:(uint32_t)ISDLockQuorumType
+      chainLockQuorumType:(uint32_t)chainLockQuorumType
+       platformQuorumType:(uint32_t)platformQuorumType
                 addresses:(NSArray<NSString *> *)addresses
              walletPhrase:(NSString *_Nullable)walletPhrase {
     NSString *chainID = [NSString stringWithFormat:@"devnet-%@", identifier];
@@ -317,10 +348,7 @@
     uint32_t dashdPort = 20001;
     uint32_t dapiJRPCPort = DEVNET_DAPI_JRPC_STANDARD_PORT;
     uint32_t dapiGRPCPort = DEVNET_DAPI_GRPC_STANDARD_PORT;
-    uint32_t instantSendLockQuorumType = DEVNET_ISLOCK_DEFAULT_QUORUM_TYPE;
-    uint32_t instantSendDeterministicLockQuorumType = DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE;
-    uint32_t chainLockQuorumType = DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE;
-    uint32_t platformQuorumType = DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE;
+        
     UInt256 dpnsContractID = UINT256_ZERO;
     UInt256 dashpayContractID = UINT256_ZERO;
     uint32_t version = 1;
@@ -339,8 +367,8 @@
                                          minProtocolVersion:minProtocolVersion
                                                sporkAddress:sporkAddress
                                             sporkPrivateKey:sporkPrivateKey
-                                           ISLockQuorumType:instantSendLockQuorumType
-                                          ISDLockQuorumType:instantSendDeterministicLockQuorumType
+                                           ISLockQuorumType:ISLockQuorumType
+                                          ISDLockQuorumType:ISDLockQuorumType
                                         chainLockQuorumType:chainLockQuorumType
                                          platformQuorumType:platformQuorumType];
     } else {
@@ -357,8 +385,8 @@
                                                                  minProtocolVersion:minProtocolVersion
                                                                        sporkAddress:sporkAddress
                                                                     sporkPrivateKey:sporkPrivateKey
-                                                                   ISLockQuorumType:instantSendLockQuorumType
-                                                                  ISDLockQuorumType:instantSendDeterministicLockQuorumType
+                                                                   ISLockQuorumType:ISLockQuorumType
+                                                                  ISDLockQuorumType:ISDLockQuorumType
                                                                 chainLockQuorumType:chainLockQuorumType
                                                                  platformQuorumType:platformQuorumType];
     }
