@@ -615,6 +615,7 @@ static dispatch_once_t devnetToken = 0;
 - (BOOL)hasDIP0024Enabled {
     // TODO: make this blockHeight dependent
     switch ([self chainType]) {
+        case DSChainType_TestNet: return self.protocolVersion >= 70220;
         case DSChainType_DevNet: return self.protocolVersion >= 70220;
         default: return false;
     }
