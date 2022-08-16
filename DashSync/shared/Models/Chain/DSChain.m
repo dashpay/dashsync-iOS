@@ -926,7 +926,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 - (BOOL)shouldProcessQuorumOfType:(DSLLMQType)llmqType {
-    return self.quorumTypeForChainLocks == llmqType || self.quorumTypeForISLocks == llmqType || self.quorumTypeForPlatform == llmqType;
+    return self.quorumTypeForChainLocks == llmqType || self.quorumTypeForISLocks == llmqType || self.quorumTypeForPlatform == llmqType || self.quorumTypeForISDLocks == llmqType;
 }
 
 - (uint32_t)minProtocolVersion {
