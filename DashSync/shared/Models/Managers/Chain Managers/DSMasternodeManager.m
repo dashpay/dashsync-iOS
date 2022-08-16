@@ -556,7 +556,8 @@
             [neededMasternodeLists addObject:masternodeListBlockHashData]; //also get the current one again
             [self getMasternodeListsForBlockHashes:neededMasternodeLists];
         } else {
-            if ([result hasRotatedQuorumsForChain:self.chain]) {
+            if ([result hasRotatedQuorumsForChain:self.chain] && !self.isRotatedQuorumsPresented) {
+                DSLog(@"••• processDiffResult: rotated quorums are presented, so we'll switch into consuming qrinfo");
                 self.isRotatedQuorumsPresented = YES;
             }
             if (uint256_eq(self.store.lastQueriedBlockHash, masternodeListBlockHash)) {
@@ -608,11 +609,11 @@
     if (length - offset < 32) return;
     UInt256 blockHash = [message readUInt256AtOffset:&offset];
 
-//    NoTimeLog(@"MNListDiff: : { base_block_hash: \"%@\", block_hash: \"%@\", height: %d }",  uint256_hex(baseBlockHash), uint256_hex(blockHash), [self heightForBlockHash:blockHash]);
+    DSLog(@"MNListDiff: : { base_block_hash: \"%@\", block_hash: \"%@\", height: %d }",  uint256_hex(baseBlockHash), uint256_hex(blockHash), [self heightForBlockHash:blockHash]);
 
 #if SAVE_MASTERNODE_DIFF_TO_FILE
     NSString *fileName = [NSString stringWithFormat:@"MNL_%@_%@.dat", @([self heightForBlockHash:baseBlockHash]), @([self heightForBlockHash:blockHash])];
-    NSLog(@"File %@ saved", fileName);
+    DSLog(@"File %@ saved", fileName);
     [message saveToFile:fileName inDirectory:NSCachesDirectory];
 #endif
 
@@ -694,8 +695,7 @@
     NSLog(@"MNListDiffs: h_4c: { base_block_hash: \"%@\", block_hash: \"%@\", height: %d }",  uint256_hex(bbh_h_4c), uint256_hex(bh_h_4c), [self heightForBlockHash:bh_h_4c]);
 
 #if SAVE_MASTERNODE_DIFF_TO_FILE
-    NSString *fileName = [NSString stringWithFormat:@"QRINFO_%@_%@.dat", @([self heightForBlockHash:baseBlockHash]), @([self heightForBlockHash:blockHash])];
-    NSLog(@"File %@ saved", fileName);
+    NSString *fileName = [NSString stringWithFormat:@"QRINFO_%@_%@.dat", @([self heightForBlockHash:baseBlockHashTip]), @([self heightForBlockHash:blockHashTip])];
     [message saveToFile:fileName inDirectory:NSCachesDirectory];
 #endif
 
