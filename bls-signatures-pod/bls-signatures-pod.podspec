@@ -10,7 +10,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'bls-signatures-pod'
-  s.version          = '1.0.6'
+  s.version          = '1.0.7'
   s.summary          = 'BLS signatures in C++, using the relic toolkit'
 
   s.description      = <<-DESC
@@ -101,8 +101,8 @@ prepare()
     {
 
         if [ ! -s ios.toolchain.cmake ]; then
-            SHA256_HASH="47bfe02112e38564ed050957719a52dbeff4fb6acf6cbcf2a608840f41d8db11"
-            curl -o ios.toolchain.cmake https://raw.githubusercontent.com/leetal/ios-cmake/master/ios.toolchain.cmake
+            SHA256_HASH="d02857ff6bd64f1d7109ca59c3e4f3b2f89d0663c412146e6977c679801b3243"
+            curl -o ios.toolchain.cmake https://raw.githubusercontent.com/leetal/ios-cmake/c55677a4445b138c9ef2650d3c21f22cc78c2357/ios.toolchain.cmake
             DOWNLOADED_HASH=`shasum -a 256 ios.toolchain.cmake | cut -f 1 -d " "`
             if [ $SHA256_HASH != $DOWNLOADED_HASH ]; then
               echo "Error: sha256 checksum of ios.toolchain.cmake mismatch" >&2
