@@ -1,9 +1,8 @@
-name: Sync Tests
+name: Sync Tests - Mainnet
 
 on:
   push:
     branches:
-      - fix/github-actions
       - master
       - develop
       - nightly

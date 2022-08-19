@@ -3,7 +3,6 @@ name: Network
 on:
   pull_request:
     branches:
-      - fix/github-actions
       - master
       - develop
   schedule:

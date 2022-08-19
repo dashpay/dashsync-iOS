@@ -3,7 +3,6 @@ name: Code coverage
 on:
   push:
     branches:
-      - fix/github-actions
       - master
       - develop
   pull_request:
