@@ -539,11 +539,6 @@
         [self dequeueMasternodeListRequest];
         return;
     }
-    // missing
-//    ••• -> 82200: 819d73f7d18760c3e75f9de60c483e4ec888d73db235a2b69773dc51b4010000,
-//    ••• -> 82224: 47029fd0af7fe542ab00557c36a55b6227637399f74a9b00012512f8fe070000,
-//    ••• -> 82248: a9b75d485b2f83786d5bb92b02d6235b1e505bdc5738fb7a5dfca9b23b040000,
-//    ••• -> 82272: da8df8690bb1071caff720a367d28a556fd4c8bb9ab605f6ffc61b9942000000,
 
     DSLog(@"••• processDiffResult: isValid: %d validCoinbase: %d", [result isValid], result.validCoinbase);
     if ([result isValid] && result.validCoinbase) {
