@@ -35,4 +35,10 @@
     return snapshot;
 }
 
+- (NSString *)debugDescription {
+    return [NSString stringWithFormat:@"%@: {\nmode: %d, \nmembers: %@, \nskipped: %@\n}",
+            [super debugDescription], self.skipListMode, self.memberList, self.skipList
+    ];
+}
+
 @end

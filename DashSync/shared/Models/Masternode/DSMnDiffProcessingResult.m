@@ -59,4 +59,12 @@
     }] count] > 0;
 }
 
+- (NSString *)debugDescription {
+    return [NSString stringWithFormat:@"%@: {\nvalidity: %d%d%d%d%d, \nmasternodeList: %@, \nmasternodes: [added:%lu, modified:%lu], \nquorums: [added: %lu],\nneeded: [%@]}",
+            [super debugDescription], self.foundCoinbase, self.validCoinbase, self.rootMNListValid, self.rootQuorumListValid, self.validQuorums,
+            self.masternodeList, self.addedMasternodes.count, self.modifiedMasternodes.count, self.addedQuorums.count, self.neededMissingMasternodeLists
+            
+    ];
+}
+
 @end

@@ -57,4 +57,24 @@
     return processingResult;
 }
 
+
+- (NSString *)debugDescription {
+    return [NSString stringWithFormat:@"%@: {\n diffs: [\ntip: %@,\nh: %@,\nh-c: %@,\nh-2c: %@,\nh-3c: %@,\nh-4c: %@\n],\n snapshots: [\nh-c: %@,\nh-2c: %@,\nh-3c: %@,\nh-4c: %@], \n lastQuorums: %@, \n diffs: %@, \n, snapshots: %@ \n]}",
+            [super debugDescription],
+            self.mnListDiffResultAtTip,
+            self.mnListDiffResultAtH,
+            self.mnListDiffResultAtHC,
+            self.mnListDiffResultAtH2C,
+            self.mnListDiffResultAtH3C,
+            self.mnListDiffResultAtH4C,
+            self.snapshotAtHC,
+            self.snapshotAtH2C,
+            self.snapshotAtH3C,
+            self.snapshotAtH4C,
+            self.lastQuorumPerIndex,
+            self.snapshotList,
+            self.mnListDiffList
+    ];
+}
+
 @end
