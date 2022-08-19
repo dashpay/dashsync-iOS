@@ -44,7 +44,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData *)masternodeDiffMessage;
 
 - (DSLocalMasternode *)localMasternodeFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry claimedWithOwnerWallet:(DSWallet *)wallet ownerKeyIndex:(uint32_t)ownerKeyIndex;
-- (DSMasternodeDiffMessageContext *)createDiffMessageContextWithPeer:(DSPeer *)peer useInsightAsBackup:(BOOL)useInsightAsBackup;
 - (DSMnDiffProcessingResult *)processMasternodeDiffMessage:(NSData *)message
                                                  lastBlock:(DSMerkleBlock * _Nullable)lastBlock
                                         useInsightAsBackup:(BOOL)useInsightAsBackup;
