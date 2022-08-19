@@ -3,6 +3,7 @@ name: E2E Tests
 on:
   push:
     branches:
+      - fix/github-actions
       - master
       - develop
       - nightly
@@ -29,7 +30,7 @@ jobs:
           git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
         working-directory: ./dashsync
       - name: Restore LFS cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: lfs-cache
         with:
           path: dashsync/.git/lfs
@@ -40,12 +41,14 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: ./dashsync/Example/Pods
-          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile') }}
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
       - name: Rustup add targets
         run: rustup target add aarch64-apple-ios x86_64-apple-ios aarch64-apple-ios-sim
       - name: Dependencies
         working-directory: ./dashsync/Example
-        run: pod install --repo-update --verbose
+        run: pod install --repo-update
       - name: Build
         working-directory: ./dashsync/Example
         env:
