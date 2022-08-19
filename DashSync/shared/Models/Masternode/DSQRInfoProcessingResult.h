@@ -38,9 +38,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) DSMnDiffProcessingResult *_Nullable mnListDiffResultAtH4C;
 
 @property (nonatomic) BOOL extraShare;
-//@property (nonatomic) NSOrderedSet<NSData *> *blockHashList;
-//@property (nonatomic) NSOrderedSet<DSQuorumSnapshot *> *snapshotList;
-//@property (nonatomic) NSOrderedSet<DSMnListDiff *> *mnListDiffList;
+
+@property (nonatomic) NSOrderedSet<DSQuorumEntry *> *lastQuorumPerIndex;
+@property (nonatomic) NSOrderedSet<DSQuorumSnapshot *> *snapshotList;
+@property (nonatomic) NSOrderedSet<DSMnDiffProcessingResult *> *mnListDiffList;
 
 + (instancetype)processingResultWith:(QRInfoResult *)result onChain:(DSChain *)chain;
 

@@ -36,24 +36,24 @@
         processingResult.snapshotAtH4C = [DSQuorumSnapshot quorumSnapshotWith:result->snapshot_at_h_4c];
         processingResult.mnListDiffResultAtH4C = [DSMnDiffProcessingResult processingResultWith:result->result_at_h_4c onChain:chain];
     }
-    /*NSMutableOrderedSet<NSData *> *blockHashList = [NSMutableOrderedSet orderedSet];
-    for (NSUInteger i = 0; i < llmqRotationInfo->block_hash_list_num; i++) {
-        NSData *hash = [NSData dataWithBytes:quorumRotationInfo->block_hash_list[i] length:32];
-        [blockHashList addObject:hash];
+    NSMutableOrderedSet<DSQuorumEntry *> *lastQuorumPerIndex = [NSMutableOrderedSet orderedSet];
+    for (NSUInteger i = 0; i < result->last_quorum_per_index_count; i++) {
+        DSQuorumEntry *entry = [[DSQuorumEntry alloc] initWithEntry:result->last_quorum_per_index[i] onChain:chain];
+        [lastQuorumPerIndex addObject:entry];
     }
-    processingResult.blockHashList = blockHashList;
+    processingResult.lastQuorumPerIndex = lastQuorumPerIndex;
     NSMutableOrderedSet<DSQuorumSnapshot *> *snapshotList = [NSMutableOrderedSet orderedSet];
-    for (NSUInteger i = 0; i < quorumRotationInfo->snapshot_list_num; i++) {
-        DSQuorumSnapshot *snapshot = [DSQuorumSnapshot quorumSnapshotWith:quorumRotationInfo->snapshot_list[i]];
+    for (NSUInteger i = 0; i < result->quorum_snapshot_list_count; i++) {
+        DSQuorumSnapshot *snapshot = [DSQuorumSnapshot quorumSnapshotWith:result->quorum_snapshot_list[i]];
         [snapshotList addObject:snapshot];
     }
     processingResult.snapshotList = snapshotList;
-    NSMutableOrderedSet<DSMnListDiff *> *mnListDiffList = [NSMutableOrderedSet orderedSet];
-    for (NSUInteger i = 0; i < quorumRotationInfo->mn_list_diff_list_num; i++) {
-        DSMnListDiff *mnListDiff = [DSMnListDiff mnListDiffWith:quorumRotationInfo->mn_list_diff_list[i] onChain:chain];
+    NSMutableOrderedSet<DSMnDiffProcessingResult *> *mnListDiffList = [NSMutableOrderedSet orderedSet];
+    for (NSUInteger i = 0; i < result->mn_list_diff_list_count; i++) {
+        DSMnDiffProcessingResult *mnListDiff = [DSMnDiffProcessingResult processingResultWith:result->mn_list_diff_list[i] onChain:chain];
         [mnListDiffList addObject:mnListDiff];
     }
-    processingResult.mnListDiffList = mnListDiffList;*/
+    processingResult.mnListDiffList = mnListDiffList;
     return processingResult;
 }
 
