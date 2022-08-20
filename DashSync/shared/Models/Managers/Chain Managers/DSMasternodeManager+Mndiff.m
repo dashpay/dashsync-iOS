@@ -39,7 +39,7 @@ const MasternodeList *getMasternodeListByBlockHash(uint8_t (*block_hash)[32], co
     NSData *data = [NSData dataWithBytes:block_hash length:32];
     DSMasternodeList *list = processorContext.masternodeListLookup(data.UInt256);
     MasternodeList *c_list = list ? [list ffi_malloc] : NULL;
-    //NoTimeLog(@"getMasternodeListByBlockHash: %@: %@: %@", data.hexString, c_list, context);
+//    NoTimeLog(@"getMasternodeListByBlockHash: %@: %@: %@", data.hexString, c_list, context);
     processor_destroy_block_hash(block_hash);
     return c_list;
 }
@@ -50,7 +50,7 @@ bool saveMasternodeList(uint8_t (*block_hash)[32], const MasternodeList *mastern
     NSData *data = [NSData dataWithBytes:block_hash length:32];
     DSMasternodeList *masternodeList = [DSMasternodeList masternodeListWith:(MasternodeList *)masternode_list onChain:chain];
     BOOL saved = [chain.chainManager.masternodeManager saveMasternodeList:masternodeList forBlockHash:data.UInt256];
-    //NoTimeLog(@"saveMasternodeList: %ul: %@: %d", processorContext.blockHeightLookup(data.UInt256), data.hexString, saved);
+    NoTimeLog(@"saveMasternodeList: %ul: %@: %d", processorContext.blockHeightLookup(data.UInt256), data.hexString, saved);
     processor_destroy_block_hash(block_hash);
     return saved;
 }
@@ -63,8 +63,7 @@ uint32_t getBlockHeightByHash(uint8_t (*block_hash)[32], const void *context) {
     DSMasternodeDiffMessageContext *processorContext = (__bridge DSMasternodeDiffMessageContext *)context;
     NSData *data = [NSData dataWithBytes:block_hash length:32];
     uint32_t block_height = processorContext.blockHeightLookup(data.UInt256);
-    //NoTimeLog(@"%@ => %u,", data.hexString, block_height);
-    //NoTimeLog(@"getBlockHeightByHash: %@: %u: %@", data.hexString, block_height, context);
+    NoTimeLog(@"\"%@\" => %u, // getBlockHeightByHash", data.hexString, block_height);
     processor_destroy_block_hash(block_hash);
     return block_height;
 }
@@ -73,6 +72,7 @@ const uint8_t *getBlockHashByHeight(uint32_t block_height, const void *context) 
     DSMasternodeDiffMessageContext *processorContext = (__bridge DSMasternodeDiffMessageContext *)context;
     DSChain *chain = processorContext.chain;
     DSBlock *block = [chain blockAtHeight: block_height];
+    NoTimeLog(@"%u => UInt256::from_hex(\"%@\"), // getBlockHashByHeight", block_height, uint256_hex(block.blockHash));
     uint8_t (*block_hash)[32] = block ? uint256_malloc(block.blockHash) : NULL;
     return (const uint8_t *)block_hash;
 }
@@ -92,6 +92,7 @@ const LLMQSnapshot *getLLMQSnapshotByBlockHeight(uint32_t block_height, const vo
     DSChain *chain = processorContext.chain;
     DSQuorumSnapshot *snapshot = [chain.chainManager.masternodeManager quorumSnapshotForBlockHeight:block_height];
     LLMQSnapshot *c_snapshot = snapshot ? [snapshot ffi_malloc] : NULL;
+    NoTimeLog(@"••• getLLMQSnapshotByBlockHash: %d: %@: %@", block_height, c_snapshot, context);
     return c_snapshot;
 }
 
@@ -101,6 +102,7 @@ const LLMQSnapshot *getLLMQSnapshotByBlockHash(uint8_t (*block_hash)[32], const 
     NSData *data = [NSData dataWithBytes:block_hash length:32];
     DSQuorumSnapshot *snapshot = [chain.chainManager.masternodeManager quorumSnapshotForBlockHash:data.UInt256];
     LLMQSnapshot *c_snapshot = snapshot ? [snapshot ffi_malloc] : NULL;
+    NoTimeLog(@"••• getLLMQSnapshotByBlockHash: %@: %@: %@", data.hexString, c_snapshot, context);
     processor_destroy_block_hash(block_hash);
     return c_snapshot;
 }
@@ -111,7 +113,7 @@ bool saveLLMQSnapshot(uint8_t (*block_hash)[32], const LLMQSnapshot *snapshot, c
     DSChain *chain = processorContext.chain;
     NSData *data = [NSData dataWithBytes:block_hash length:32];
     BOOL saved = [chain.chainManager.masternodeManager saveQuorumSnapshot:[DSQuorumSnapshot quorumSnapshotWith:(LLMQSnapshot *)snapshot] forBlockHash:data.UInt256];
-    //NoTimeLog(@"saveLLMQSnapshot: %ul: %@: %d", processorContext.blockHeightLookup(data.UInt256), data.hexString, saved);
+    NoTimeLog(@"••• saveLLMQSnapshot: %ul: %@: %d", processorContext.blockHeightLookup(data.UInt256), data.hexString, saved);
     processor_destroy_block_hash(block_hash);
     return saved;
 }
@@ -129,6 +131,7 @@ void addInsightForBlockHash(uint8_t (*block_hash)[32], const void *context) {
 bool shouldProcessLLMQType(uint8_t quorum_type, const void *context) {
     DSMasternodeDiffMessageContext *processorContext = (__bridge DSMasternodeDiffMessageContext *)context;
     BOOL should = [processorContext.chain shouldProcessQuorumOfType:(DSLLMQType)quorum_type];
+    DSLog(@"••• shouldProcessLLMQType: %d: %d", quorum_type, should);
     return should;
 };
 
