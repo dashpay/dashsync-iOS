@@ -134,6 +134,7 @@
     return unsyncedBlockchainIdentities;
 }
 
+//TODO: if we get an error or identity not found, better stop the process and start syncing chain
 - (void)syncBlockchainIdentitiesWithCompletion:(IdentitiesSuccessCompletionBlock)completion {
     [self
      retrieveIdentitiesByKeysUntilSuccessWithCompletion:^(NSArray<DSBlockchainIdentity *> *_Nullable retrievedBlockchainIdentities) {

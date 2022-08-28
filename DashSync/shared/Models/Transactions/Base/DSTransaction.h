@@ -65,24 +65,6 @@ typedef NS_ENUM(NSInteger, DSTransactionSortType)
     DSTransactionSortType_BIP69,
 };
 
-typedef NS_ENUM(NSInteger, DSTransactionTaxCategory)
-{
-    /// Income
-    DSTransactionTaxCategory_Unknown,
-    
-    /// Income
-    DSTransactionTaxCategory_Incone,
-    
-    /// Transfer In
-    DSTransactionTaxCategory_TransferIn,
-    
-    /// Expense
-    DSTransactionTaxCategory_Expense,
-    
-    /// Transfer Out
-    DSTransactionTaxCategory_TransferOut,
-};
-
 @interface DSTransaction : NSObject
 
 @property (nonatomic, readonly) NSArray<DSTransactionInput *> *inputs;
@@ -130,8 +112,6 @@ typedef NS_ENUM(NSInteger, DSTransactionTaxCategory)
 @property (nonatomic, readonly) DSAccount *firstAccount;
 @property (nonatomic, readonly) NSArray *accounts;
 @property (nonatomic, readonly) Class entityClass;
-
-@property (nonatomic, assign) DSTransactionTaxCategory taxCategory;
 
 @property (nonatomic, readonly) BOOL transactionTypeRequiresInputs;
 

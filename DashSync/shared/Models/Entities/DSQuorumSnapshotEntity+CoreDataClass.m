@@ -1,6 +1,6 @@
-//
+//  
 //  Created by Vladimir Pirogov
-//  Copyright © 2021 Dash Core Group. All rights reserved.
+//  Copyright © 2022 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,9 +15,8 @@
 //  limitations under the License.
 //
 
-#import "DSMasternodeDiffMessageContext.h"
-#import "NSData+Dash.h"
+#import "DSQuorumSnapshotEntity+CoreDataClass.h"
 
-@implementation DSMasternodeDiffMessageContext
+@implementation DSQuorumSnapshotEntity_CoreDataClass
 
 @end

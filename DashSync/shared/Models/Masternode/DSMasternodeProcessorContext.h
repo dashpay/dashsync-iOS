@@ -1,6 +1,6 @@
-//  
+//
 //  Created by Vladimir Pirogov
-//  Copyright © 2022 Dash Core Group. All rights reserved.
+//  Copyright © 2021 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -30,12 +30,12 @@ typedef DSMerkleBlock *_Nullable(^_Nullable MerkleBlockFinder)(UInt256 blockHash
 @interface DSMasternodeProcessorContext : NSObject
 
 @property (nonatomic) DSChain *chain;
+@property (nonatomic, nullable) DSPeer *peer;
+@property (nonatomic) BOOL useInsightAsBackup;
 @property (nonatomic, copy) MasternodeListFinder masternodeListLookup;
 @property (nonatomic, copy) BlockHeightFinder blockHeightLookup;
+@property (nonatomic, copy) MerkleRootFinder merkleRootLookup;
 
-+ (instancetype)processorContextForChain:(DSChain *)chain
-                    masternodeListLookup:(MasternodeListFinder)masternodeListLookup
-                       blockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 @end
 
 NS_ASSUME_NONNULL_END

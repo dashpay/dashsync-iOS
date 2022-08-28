@@ -13,9 +13,15 @@
 
 ## Example
 
-To run the example project, clone the repo, and run `pod install` from the Example directory first.
+### Requirements
 
-## Requirements
+- Install last version of rust:
+`curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
+- Install protobuf and grpc:
+`brew install protobuf grpc`
+- Install cmake and make sure it is located in one of the following folders: `${PLATFORM_PATH}/Developer/usr/bin, ${DEVELOPER}/usr/bin:/usr/local/bin, /usr/bin, /bin, /usr/sbin, /sbin, /opt/homebrew/bin`
+
+To run the example project, clone the repo, and run `pod install` from the Example directory first.
 
 ## Installation
 

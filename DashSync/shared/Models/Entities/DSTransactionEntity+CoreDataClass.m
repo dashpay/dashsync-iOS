@@ -83,7 +83,6 @@
         }
 
         self.lockTime = tx.lockTime;
-        self.taxCategory = tx.taxCategory;
     }];
 
     return self;
@@ -136,8 +135,6 @@
 
         DSInstantSendTransactionLock *instantSendLock = [self.instantSendLock instantSendTransactionLockForChain:chain];
         [tx setInstantSendReceivedWithInstantSendLock:instantSendLock];
-        
-        tx.taxCategory = self.taxCategory;
     }];
 
     return tx;
