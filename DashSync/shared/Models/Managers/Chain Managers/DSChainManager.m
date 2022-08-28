@@ -105,7 +105,7 @@
     //[self loadHeightTransactionZones];
 
     _miningQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.mining.%@", self.chain.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
-
+    DSLog(@"DSChainManager.initWithChain %@", chain);
     return self;
 }
 

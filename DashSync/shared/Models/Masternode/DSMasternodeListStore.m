@@ -30,6 +30,7 @@
 #import "DSMnDiffProcessingResult.h"
 #import "DSOptionsManager.h"
 #import "DSQuorumEntryEntity+CoreDataClass.h"
+#import "DSQuorumSnapshotEntity+CoreDataClass.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataClass.h"
 #import "NSData+Dash.h"
@@ -115,10 +116,10 @@
 
 - (uint32_t)earliestMasternodeListBlockHeight {
     uint32_t earliest = UINT32_MAX;
-    for (NSData *blockHash in self.masternodeListsBlockHashStubs) {
+    for (NSData *blockHash in [self.masternodeListsBlockHashStubs copy]) {
         earliest = MIN(earliest, [self heightForBlockHash:blockHash.UInt256]);
     }
-    for (NSData *blockHash in self.masternodeListsByBlockHash) {
+    for (NSData *blockHash in [self.masternodeListsByBlockHash copy]) {
         earliest = MIN(earliest, [self heightForBlockHash:blockHash.UInt256]);
     }
     return earliest;
@@ -197,6 +198,7 @@
         [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
         [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
         [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
+        [DSQuorumSnapshotEntity deleteAllOnChainEntity:chainEntity];
         [self.managedObjectContext ds_save];
     }];
 }
@@ -344,6 +346,7 @@
             DSLog(@"No masternode list at %@", blockHashData.reverse.hexString);
         }
     }
+    DSLog(@"masternodeListForBlockHash %@: %@", blockHashData, masternodeList);
     return masternodeList;
 }
 
@@ -437,6 +440,63 @@
             completion(error);
         }];
     });
+}
+
+- (void)saveQuorumSnapshot:(DSQuorumSnapshot *)quorumSnapshot
+                   toChain:(DSChain *)chain
+                completion:(void (^)(NSError *error))completion {
+    if (!quorumSnapshot) {
+        return;
+    }
+    UInt256 blockHash = quorumSnapshot.blockHash;
+    uint32_t blockHeight = [self heightForBlockHash:blockHash];
+    NSData *blockHashData = uint256_data(blockHash);
+    DSLog(@"Queued saving Quorum Snapshot for: %u: %@", blockHeight, uint256_hex(blockHash));
+    NSManagedObjectContext *context = self.managedObjectContext;
+    [self.cachedQuorumSnapshots setObject:quorumSnapshot forKey:blockHashData];
+    [context performBlockAndWait:^{
+        BOOL createUnknownBlocks = chain.allowInsightBlocksForVerification;
+        DSChainEntity *chainEntity = [chain chainEntityInContext:context];
+        DSMerkleBlockEntity *merkleBlockEntity = [DSMerkleBlockEntity anyObjectInContext:context matching:@"blockHash == %@", blockHashData];
+        if (!merkleBlockEntity) {
+            DSCheckpoint *checkpoint = [chain checkpointForBlockHash:blockHash];
+            if (checkpoint) {
+                DSBlock *block = [checkpoint blockForChain:chain];
+                merkleBlockEntity = [[DSMerkleBlockEntity managedObjectInBlockedContext:context] setAttributesFromBlock:block forChainEntity:chainEntity];
+            }
+        }
+        //NSAssert(!merkleBlockEntity || !merkleBlockEntity.quorumSnapshot, @"Merkle block should not have a quorum snapshot already");
+        NSError *error = nil;
+        if (!merkleBlockEntity) {
+            if (createUnknownBlocks) {
+                merkleBlockEntity = [DSMerkleBlockEntity managedObjectInBlockedContext:context];
+                merkleBlockEntity.blockHash = blockHashData;
+                merkleBlockEntity.height = blockHeight;
+                merkleBlockEntity.chain = chainEntity;
+            } else {
+                DSLog(@"Merkle block should exist for block hash %@", blockHashData);
+                error = [NSError errorWithCode:600 localizedDescriptionKey:@"Merkle block should exist"];
+            }
+        } else if (merkleBlockEntity.quorumSnapshot) {
+            error = [NSError errorWithCode:600 localizedDescriptionKey:@"Merkle block should not have a quorum snapshot already"]; // DGaF
+            // skip we're just processing saved snapshot
+            //[merkleBlockEntity.quorumSnapshot updateAttributesFromPotentialQuorumSnapshot:quorumSnapshot onBlock:merkleBlockEntity]
+        }
+        if (!error) {
+            DSQuorumSnapshotEntity *quorumSnapshotEntity = [DSQuorumSnapshotEntity managedObjectInBlockedContext:context];
+            [quorumSnapshotEntity updateAttributesFromPotentialQuorumSnapshot:quorumSnapshot onBlock:merkleBlockEntity];
+            error = [context ds_save];
+            DSLog(@"Finished saving Quorum Snapshot at height %u: %@", blockHeight, uint256_hex(blockHash));
+        }
+        if (error) {
+            [DSQuorumSnapshotEntity deleteAllOnChainEntity:chainEntity];
+            [context ds_save];
+        }
+        if (completion) {
+            completion(error);
+        }
+
+    }];
 }
 
 + (void)saveMasternodeList:(DSMasternodeList *)masternodeList

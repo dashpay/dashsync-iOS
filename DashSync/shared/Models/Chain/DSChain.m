@@ -69,6 +69,7 @@
 #import "DSProviderUpdateRevocationTransaction.h"
 #import "DSProviderUpdateServiceTransaction.h"
 #import "DSQuorumEntryEntity+CoreDataProperties.h"
+#import "DSQuorumSnapshotEntity+CoreDataClass.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
 #import "DSSpecialTransactionsWalletHolder.h"
@@ -2220,8 +2221,8 @@ static dispatch_once_t devnetToken = 0;
 
         if (!equivalentTerminalBlock && uint256_eq(block.prevBlock, self.lastTerminalBlock.blockHash)) {
             if ((block.height % 1000) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
-                DSLog(@"adding terminal block on %@ (caught up) at height: %d with hash: %@ from peer %@", self.name, block.height, uint256_hex(block.blockHash), peer.host ? peer.host : @"TEST");
-            }
+                DSLog(@"[%@: %@]  + terminal block (caught up) at: %d: %@", self.name, peer.host ? peer.host : @"TEST", block.height, uint256_hex(block.blockHash));
+           }
             @synchronized(self.mTerminalBlocks) {
                 self.mTerminalBlocks[blockHash] = block;
             }
@@ -2241,7 +2242,7 @@ static dispatch_once_t devnetToken = 0;
 
     } else if (uint256_eq(block.prevBlock, self.lastTerminalBlock.blockHash)) { // new block extends terminal chain
         if ((block.height % 100) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
-            DSLog(@"adding terminal block on %@ at height: %d with hash: %@ from peer %@", self.name, block.height, uint256_hex(block.blockHash), peer.host ? peer.host : @"TEST");
+            DSLog(@"[%@: %@]  + terminal block at: %d: %@", self.name, peer.host ? peer.host : @"TEST", block.height, uint256_hex(block.blockHash));
         }
         @synchronized(self.mTerminalBlocks) {
             self.mTerminalBlocks[blockHash] = block;
@@ -3244,6 +3245,7 @@ static dispatch_once_t devnetToken = 0;
     [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
     [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
     [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
+    [DSQuorumSnapshotEntity deleteAllOnChainEntity:chainEntity];
     [self.chainManager wipeMasternodeInfo];
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@_%@", self.uniqueID, LAST_SYNCED_MASTERNODE_LIST]];
 }

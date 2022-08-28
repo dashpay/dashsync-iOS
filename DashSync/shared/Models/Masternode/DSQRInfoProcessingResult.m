@@ -21,20 +21,25 @@
 
 + (instancetype)processingResultWith:(QRInfoResult *)result onChain:(DSChain *)chain {
     DSQRInfoProcessingResult *processingResult = [[DSQRInfoProcessingResult alloc] init];
-    processingResult.snapshotAtHC = [DSQuorumSnapshot quorumSnapshotWith:result->snapshot_at_h_c];
-    processingResult.snapshotAtH2C = [DSQuorumSnapshot quorumSnapshotWith:result->snapshot_at_h_2c];
-    processingResult.snapshotAtH3C = [DSQuorumSnapshot quorumSnapshotWith:result->snapshot_at_h_3c];
+    MNListDiffResult *diffResultAtHC = result->result_at_h_c;
+    MNListDiffResult *diffResultAtH2C = result->result_at_h_2c;
+    MNListDiffResult *diffResultAtH3C = result->result_at_h_3c;
+    MNListDiffResult *diffResultAtH4C = result->result_at_h_4c;
+
+    processingResult.snapshotAtHC = [DSQuorumSnapshot quorumSnapshotWith:result->snapshot_at_h_c forBlockHash:*((UInt256 *)diffResultAtHC->block_hash)];
+    processingResult.snapshotAtH2C = [DSQuorumSnapshot quorumSnapshotWith:result->snapshot_at_h_2c forBlockHash:*((UInt256 *)diffResultAtH2C->block_hash)];
+    processingResult.snapshotAtH3C = [DSQuorumSnapshot quorumSnapshotWith:result->snapshot_at_h_3c forBlockHash:*((UInt256 *)diffResultAtH3C->block_hash)];
     BOOL extraShare = result->extra_share;
     processingResult.extraShare = extraShare;
     
     processingResult.mnListDiffResultAtTip = [DSMnDiffProcessingResult processingResultWith:result->result_at_tip onChain:chain];
     processingResult.mnListDiffResultAtH = [DSMnDiffProcessingResult processingResultWith:result->result_at_h onChain:chain];
-    processingResult.mnListDiffResultAtHC = [DSMnDiffProcessingResult processingResultWith:result->result_at_h_c onChain:chain];
-    processingResult.mnListDiffResultAtH2C = [DSMnDiffProcessingResult processingResultWith:result->result_at_h_2c onChain:chain];
-    processingResult.mnListDiffResultAtH3C = [DSMnDiffProcessingResult processingResultWith:result->result_at_h_3c onChain:chain];
+    processingResult.mnListDiffResultAtHC = [DSMnDiffProcessingResult processingResultWith:diffResultAtHC onChain:chain];
+    processingResult.mnListDiffResultAtH2C = [DSMnDiffProcessingResult processingResultWith:diffResultAtH2C onChain:chain];
+    processingResult.mnListDiffResultAtH3C = [DSMnDiffProcessingResult processingResultWith:diffResultAtH3C onChain:chain];
     if (extraShare) {
-        processingResult.snapshotAtH4C = [DSQuorumSnapshot quorumSnapshotWith:result->snapshot_at_h_4c];
-        processingResult.mnListDiffResultAtH4C = [DSMnDiffProcessingResult processingResultWith:result->result_at_h_4c onChain:chain];
+        processingResult.snapshotAtH4C = [DSQuorumSnapshot quorumSnapshotWith:result->snapshot_at_h_4c forBlockHash:*((UInt256 *)diffResultAtH4C->block_hash)];
+        processingResult.mnListDiffResultAtH4C = [DSMnDiffProcessingResult processingResultWith:diffResultAtH4C onChain:chain];
     }
     NSMutableOrderedSet<DSQuorumEntry *> *lastQuorumPerIndex = [NSMutableOrderedSet orderedSet];
     for (NSUInteger i = 0; i < result->last_quorum_per_index_count; i++) {
@@ -42,17 +47,17 @@
         [lastQuorumPerIndex addObject:entry];
     }
     processingResult.lastQuorumPerIndex = lastQuorumPerIndex;
+    NSAssert(result->quorum_snapshot_list_count == result->mn_list_diff_list_count, @"Num of snapshots & diffs should be equal");
     NSMutableOrderedSet<DSQuorumSnapshot *> *snapshotList = [NSMutableOrderedSet orderedSet];
-    for (NSUInteger i = 0; i < result->quorum_snapshot_list_count; i++) {
-        DSQuorumSnapshot *snapshot = [DSQuorumSnapshot quorumSnapshotWith:result->quorum_snapshot_list[i]];
-        [snapshotList addObject:snapshot];
-    }
-    processingResult.snapshotList = snapshotList;
     NSMutableOrderedSet<DSMnDiffProcessingResult *> *mnListDiffList = [NSMutableOrderedSet orderedSet];
-    for (NSUInteger i = 0; i < result->mn_list_diff_list_count; i++) {
-        DSMnDiffProcessingResult *mnListDiff = [DSMnDiffProcessingResult processingResultWith:result->mn_list_diff_list[i] onChain:chain];
+    for (NSUInteger i = 0; i < result->quorum_snapshot_list_count; i++) {
+        MNListDiffResult *diff = result->mn_list_diff_list[i] ;
+        DSQuorumSnapshot *snapshot = [DSQuorumSnapshot quorumSnapshotWith:result->quorum_snapshot_list[i] forBlockHash:*((UInt256 *)diff->block_hash)];
+        DSMnDiffProcessingResult *mnListDiff = [DSMnDiffProcessingResult processingResultWith:diff onChain:chain];
+        [snapshotList addObject:snapshot];
         [mnListDiffList addObject:mnListDiff];
     }
+    processingResult.snapshotList = snapshotList;
     processingResult.mnListDiffList = mnListDiffList;
     return processingResult;
 }

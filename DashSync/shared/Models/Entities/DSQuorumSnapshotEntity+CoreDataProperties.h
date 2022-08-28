@@ -15,11 +15,18 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DSQuorumSnapshotEntity+CoreDataClass.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSQuorumSnapshotEntity_CoreDataProperties : NSObject
+@interface DSQuorumSnapshotEntity (CoreDataProperties)
+
++ (NSFetchRequest<DSQuorumSnapshotEntity *> *)fetchRequest;
+
+@property (nullable, nonatomic, retain) DSMerkleBlockEntity *block;
+@property (nullable, nonatomic, retain) NSData *memberList;
+@property (nullable, retain) NSData *skipList;
+@property (nonatomic) int32_t skipListMode;
 
 @end
 

@@ -191,7 +191,7 @@
 - (void)testNonInclusion {
     /*
      non-inclusion proof for example for key c76a71d3e9833e4dcba11162f3f567c8c7cf8b206a55c65b8c0bc408084e9747:
-      
+
      hashes: [cff42290786a4cda6ac477a433ac17e0a8bdfcb51de80a6034e054aaaf691634, b282d08971cd786752ce7a9047da6ed9016124f2a071e095c0e55cf5b02a3136, 3216e3f35f32a28cef785491ad3989f463431ed0f25d6910e0d3fd9ee9c531b4]
      included: false
      proof value: []
@@ -214,7 +214,7 @@
 }
 
 - (void)testCompressedInclusion {
-    //Tree root is eb2c9b7c6005720a01f77f417e8193508eb86b57543cf004870825075ed99659
+    // Tree root is eb2c9b7c6005720a01f77f417e8193508eb86b57543cf004870825075ed99659
 
     /*  1. compressed inclusion proof for key 1dfc5a0a3f2fab0370e1c2f76a502ff3066bc7731a02e309cf5f4b5a70a5441f:
 
@@ -395,7 +395,7 @@
      for a tree with root
      eb2c9b7c6005720a01f77f417e8193508eb86b57543cf004870825075ed99659
      the proof key here is the key of the leaf node which is on the path to the requested non-included key
-     
+
      bitmap: [e0]
      hashes: [bd4f2752a330b5509d3616d58f883d032246d95bcb00d4c63ac945f92c0a58aa, 464f80175948e41b03cb6143fcd06ee4712f865b1899dc82959f992ea986357b, ac7379a00a7058a3973ac5b770da5b14227e56931208ecd9ea5fac4797d097a3]
      length: 3

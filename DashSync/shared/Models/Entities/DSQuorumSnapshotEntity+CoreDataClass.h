@@ -15,12 +15,27 @@
 //  limitations under the License.
 //
 
+#import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
+#import "DSChainEntity+CoreDataProperties.h"
+#import "DSMerkleBlockEntity+CoreDataProperties.h"
+#import "DSQuorumSnapshot.h"
+#import "dash_shared_core.h"
+
+@class DSChainEntity, DSMerkleBlockEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSQuorumSnapshotEntity_CoreDataClass : NSObject
+@interface DSQuorumSnapshotEntity : NSManagedObject
+
++ (instancetype)quorumSnapshotEntityFromPotentialQuorumSnapshot:(DSQuorumSnapshot *)potentialQuorumSnapshot inContext:(NSManagedObjectContext *)context;
++ (instancetype)quorumSnapshotEntityForMerkleBlockEntity:(DSMerkleBlockEntity *)blockEntity quorumSnapshot:(DSQuorumSnapshot *)quorumSnapshot inContext:(NSManagedObjectContext *)context;
++ (void)deleteAllOnChainEntity:(DSChainEntity *)chainEntity;
+
+- (void)updateAttributesFromPotentialQuorumSnapshot:(DSQuorumSnapshot *)quorumSnapshot onBlock:(DSMerkleBlockEntity *) block;
 
 @end
 
 NS_ASSUME_NONNULL_END
+
+#import "DSQuorumSnapshotEntity+CoreDataProperties.h"

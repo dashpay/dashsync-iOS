@@ -29,9 +29,9 @@
 
 // MARK: - testPaymentRequest
 
-//TODO: test valid request with unknown arguments
-//TODO: test invalid dash address
-//TODO: test invalid request with unknown required arguments
+// TODO: test valid request with unknown arguments
+// TODO: test invalid dash address
+// TODO: test invalid request with unknown required arguments
 
 - (void)testPaymentRequest {
     DSPaymentRequest *r = [DSPaymentRequest requestWithString:@"Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy" onChain:self.chain];

@@ -122,7 +122,7 @@
     });
     NSValue *genesisValue = uint256_obj(chain.genesisHash);
     DSChainManager *devnetChainManager = nil;
-    @synchronized(self) {
+    @synchronized(self) { // TODO avoid initialization of multiple instances for same chain
         if (![self.devnetGenesisDictionary objectForKey:genesisValue]) {
             devnetChainManager = [[DSChainManager alloc] initWithChain:chain];
             chain.chainManager = devnetChainManager;
@@ -367,6 +367,7 @@
                                                                   [self.knownChains removeObject:chain];
                                                                   NSValue *genesisValue = uint256_obj(chain.genesisHash);
                                                                   [self.devnetGenesisDictionary removeObjectForKey:genesisValue];
+                                                                
                                                                   dispatch_async(dispatch_get_main_queue(), ^{
                                                                       [[NSNotificationCenter defaultCenter] postNotificationName:DSChainsDidChangeNotification object:nil];
                                                                   });

@@ -40,8 +40,6 @@ FOUNDATION_EXPORT NSString *const DSMasternodeListDiffValidationErrorNotificatio
 
 @property (nonatomic, readonly, nonnull) DSChain *chain;
 @property (nonatomic, readonly) NSUInteger simplifiedMasternodeEntryCount;
-@property (nonatomic, readonly) NSUInteger localMasternodesCount;
-@property (nonatomic, readonly) NSArray<DSLocalMasternode *> *localMasternodes;
 @property (nonatomic, readonly) NSUInteger activeQuorumsCount;
 @property (nonatomic, readonly) NSArray *recentMasternodeLists;
 @property (nonatomic, readonly) NSUInteger knownMasternodeListsCount;
@@ -77,7 +75,7 @@ FOUNDATION_EXPORT NSString *const DSMasternodeListDiffValidationErrorNotificatio
 /// Rust helpers
 - (DSQuorumSnapshot *_Nullable)quorumSnapshotForBlockHeight:(uint32_t)blockHeight;
 - (DSQuorumSnapshot *_Nullable)quorumSnapshotForBlockHash:(UInt256)blockHash;
-- (BOOL)saveQuorumSnapshot:(DSQuorumSnapshot *)snapshot forBlockHash:(UInt256)blockHash;
+- (BOOL)saveQuorumSnapshot:(DSQuorumSnapshot *)snapshot;
 - (BOOL)saveMasternodeList:(DSMasternodeList *)masternodeList forBlockHash:(UInt256)blockHash;
 
 - (void)startSync;
@@ -86,6 +84,7 @@ FOUNDATION_EXPORT NSString *const DSMasternodeListDiffValidationErrorNotificatio
 
 - (void)reloadMasternodeLists;
 - (void)reloadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
+- (void)destroyProcessors;
 
 - (void)checkPingTimesForCurrentMasternodeListInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(NSMutableDictionary<NSData *, NSNumber *> *pingTimes, NSMutableDictionary<NSData *, NSError *> *errors))completion;
 

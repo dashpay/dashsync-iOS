@@ -17,6 +17,15 @@
 
 #import "DSQuorumSnapshotEntity+CoreDataProperties.h"
 
-@implementation DSQuorumSnapshotEntity_CoreDataProperties
+@implementation DSQuorumSnapshotEntity (CoreDataProperties)
+
++ (NSFetchRequest<DSQuorumSnapshotEntity *> *)fetchRequest {
+    return [NSFetchRequest fetchRequestWithEntityName:@"DSQuorumSnapshotEntity"];
+}
+
+@dynamic block;
+@dynamic memberList;
+@dynamic skipList;
+@dynamic skipListMode;
 
 @end

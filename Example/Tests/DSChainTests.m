@@ -43,7 +43,7 @@
 @implementation DSChainTests
 
 - (void)setUp {
-    self.chain = [DSChain setUpDevnetWithIdentifier:@"devnet-mobile-2" version:1 protocolVersion:PROTOCOL_VERSION_DEVNET minProtocolVersion:DEFAULT_MIN_PROTOCOL_VERSION_DEVNET withCheckpoints:nil withMinimumDifficultyBlocks:UINT32_MAX withDefaultPort:3000 withDefaultDapiJRPCPort:3000 withDefaultDapiGRPCPort:3010 dpnsContractID:UINT256_ZERO dashpayContractID:UINT256_ZERO instantSendLockQuorumType:DSLLMQType_50_60 chainLockQuorumType:DSLLMQType_50_60 platformQuorumType:DSLLMQType_100_67 isTransient:YES];
+    self.chain = [DSChain setUpDevnetWithIdentifier:@"devnet-mobile-2" version:1 protocolVersion:PROTOCOL_VERSION_DEVNET minProtocolVersion:DEFAULT_MIN_PROTOCOL_VERSION_DEVNET withCheckpoints:nil withMinimumDifficultyBlocks:UINT32_MAX withDefaultPort:3000 withDefaultDapiJRPCPort:3000 withDefaultDapiGRPCPort:3010 dpnsContractID:UINT256_ZERO dashpayContractID:UINT256_ZERO ISLockQuorumType:DSLLMQType_50_60 ISDLockQuorumType:DSLLMQType_60_75 chainLockQuorumType:DSLLMQType_50_60 platformQuorumType:DSLLMQType_100_67 isTransient:YES];
     for (DSWallet *wallet in [self.chain.wallets copy]) {
         if ([wallet.transientDerivedKeyData isEqualToData:@"000102030405060708090a0b0c0d0e0f".hexToData]) {
             [self.chain unregisterWallet:wallet];
@@ -170,7 +170,7 @@
     for (NSURL *url in sortedBlocks105) {
         NSData *blockData = [NSData dataWithContentsOfURL:url];
         DSMerkleBlock *merkleBlock = [DSMerkleBlock merkleBlockWithMessage:blockData onChain:self.chain];
-        [self.chain addBlock:merkleBlock receivedAsHeader:YES fromPeer:nil]; //test starting sync blocks with headers
+        [self.chain addBlock:merkleBlock receivedAsHeader:YES fromPeer:nil]; // test starting sync blocks with headers
     }
 
     XCTAssertEqual(self.chain.lastTerminalBlockHeight, 150);
@@ -184,7 +184,7 @@
     for (DSTransaction *transaction in blockFork.transactions) {
         [self.chain.chainManager.transactionManager peer:peer relayedTransaction:transaction inBlock:blockFork];
     }
-    XCTAssertEqual(self.wallet.balance, 10000000000); //Only 1 transaction, coinbase is still locked
+    XCTAssertEqual(self.wallet.balance, 10000000000); // Only 1 transaction, coinbase is still locked
     [self.chain addBlock:blockFork receivedAsHeader:NO fromPeer:nil];
     for (DSTransaction *transaction in blockFork.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]]) {
@@ -192,7 +192,7 @@
         }
     }
 
-    XCTAssertEqual(self.wallet.balance, 10000000000); //Only 1 transaction, coinbase is still locked
+    XCTAssertEqual(self.wallet.balance, 10000000000); // Only 1 transaction, coinbase is still locked
 
     XCTAssertEqual(self.chain.lastTerminalBlockHeight, 150);
     XCTAssertEqual(self.chain.lastSyncBlockHeight, 106);
@@ -203,11 +203,11 @@
         [self.chain addBlock:merkleBlock receivedAsHeader:NO fromPeer:nil];
     }
 
-    XCTAssertEqual(self.wallet.balance, 10000000000); //The previous transaction should have been reverted but should still appear in balance
+    XCTAssertEqual(self.wallet.balance, 10000000000); // The previous transaction should have been reverted but should still appear in balance
 
     for (DSTransaction *transaction in blockFork.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]]) {
-            XCTAssertEqual(transaction.blockHeight, TX_UNCONFIRMED); //The previous transactions should not have a block height
+            XCTAssertEqual(transaction.blockHeight, TX_UNCONFIRMED); // The previous transactions should not have a block height
         }
     }
 
@@ -308,7 +308,7 @@
     for (NSURL *url in sortedBlocks105) {
         NSData *blockData = [NSData dataWithContentsOfURL:url];
         DSMerkleBlock *merkleBlock = [DSMerkleBlock merkleBlockWithMessage:blockData onChain:self.chain];
-        [self.chain addBlock:merkleBlock receivedAsHeader:YES fromPeer:nil]; //test starting sync blocks with headers
+        [self.chain addBlock:merkleBlock receivedAsHeader:YES fromPeer:nil]; // test starting sync blocks with headers
     }
 
     XCTAssertEqual(self.chain.lastTerminalBlockHeight, 150);
@@ -337,7 +337,7 @@
     for (DSTransaction *transaction in blockFork106.transactions) {
         [self.chain.chainManager.transactionManager peer:peer relayedTransaction:transaction inBlock:blockFork106];
     }
-    XCTAssertEqual(self.wallet.balance, 10000000000); //Only 1 transaction, coinbase is still locked
+    XCTAssertEqual(self.wallet.balance, 10000000000); // Only 1 transaction, coinbase is still locked
     [self.chain addBlock:blockFork106 receivedAsHeader:NO fromPeer:nil];
     for (DSTransaction *transaction in blockFork106.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]]) {
@@ -346,7 +346,7 @@
     }
 
 
-    XCTAssertEqual(self.wallet.balance, 10000000000); //Only 1 transaction, coinbase is still locked
+    XCTAssertEqual(self.wallet.balance, 10000000000); // Only 1 transaction, coinbase is still locked
 
     XCTAssertEqual(self.chain.lastTerminalBlockHeight, 150);
     XCTAssertEqual(self.chain.lastSyncBlockHeight, 106);
@@ -365,11 +365,11 @@
 
     for (DSTransaction *transaction in blockFork110.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]] && ![transaction isMemberOfClass:[DSCoinbaseTransaction class]]) {
-            XCTAssertEqual(transaction.blockHeight, 110); //The previous transactions should not have a block height
+            XCTAssertEqual(transaction.blockHeight, 110); // The previous transactions should not have a block height
         }
     }
 
-    XCTAssertEqual(self.wallet.balance, 10100000000); //The previous transaction should have been reverted but should still appear in balance
+    XCTAssertEqual(self.wallet.balance, 10100000000); // The previous transaction should have been reverted but should still appear in balance
 
     for (DSTransaction *transaction in blockFork106Extra.transactions) {
         [self.chain.chainManager.transactionManager peer:peer relayedTransaction:transaction inBlock:blockFork106Extra];
@@ -379,7 +379,7 @@
         receivedAsHeader:NO
                 fromPeer:nil];
 
-    XCTAssertEqual(self.wallet.balance, 10100000000); //The previous transaction should have been reverted but should still appear in balance
+    XCTAssertEqual(self.wallet.balance, 10100000000); // The previous transaction should have been reverted but should still appear in balance
 
     XCTAssertEqual(self.chain.lastTerminalBlockHeight, 150);
     XCTAssertEqual(self.chain.lastSyncBlockHeight, 110);
@@ -390,17 +390,17 @@
         [self.chain addBlock:merkleBlock receivedAsHeader:NO fromPeer:nil];
     }
 
-    XCTAssertEqual(self.wallet.balance, 10100000000); //The previous transaction should have been reverted but should still appear in balance
+    XCTAssertEqual(self.wallet.balance, 10100000000); // The previous transaction should have been reverted but should still appear in balance
 
     for (DSTransaction *transaction in blockFork106.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]]) {
-            XCTAssertEqual(transaction.blockHeight, TX_UNCONFIRMED); //The previous transactions should not have a block height
+            XCTAssertEqual(transaction.blockHeight, TX_UNCONFIRMED); // The previous transactions should not have a block height
         }
     }
 
     for (DSTransaction *transaction in blockFork110.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]]) {
-            XCTAssertEqual(transaction.blockHeight, TX_UNCONFIRMED); //The previous transactions should not have a block height
+            XCTAssertEqual(transaction.blockHeight, TX_UNCONFIRMED); // The previous transactions should not have a block height
         }
     }
 
@@ -505,7 +505,7 @@
     for (NSURL *url in sortedBlocks105) {
         NSData *blockData = [NSData dataWithContentsOfURL:url];
         DSMerkleBlock *merkleBlock = [DSMerkleBlock merkleBlockWithMessage:blockData onChain:self.chain];
-        [self.chain addBlock:merkleBlock receivedAsHeader:YES fromPeer:nil]; //test starting sync blocks with headers
+        [self.chain addBlock:merkleBlock receivedAsHeader:YES fromPeer:nil]; // test starting sync blocks with headers
     }
 
     XCTAssertEqual(self.chain.lastTerminalBlockHeight, 110);
@@ -534,7 +534,7 @@
     for (DSTransaction *transaction in blockFork106.transactions) {
         [self.chain.chainManager.transactionManager peer:peer relayedTransaction:transaction inBlock:blockFork106];
     }
-    XCTAssertEqual(self.wallet.balance, 10000000000); //Only 1 transaction, coinbase is still locked
+    XCTAssertEqual(self.wallet.balance, 10000000000); // Only 1 transaction, coinbase is still locked
     [self.chain addBlock:blockFork106 receivedAsHeader:NO fromPeer:nil];
     for (DSTransaction *transaction in blockFork106.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]]) {
@@ -543,7 +543,7 @@
     }
 
 
-    XCTAssertEqual(self.wallet.balance, 10000000000); //Only 1 transaction, coinbase is still locked
+    XCTAssertEqual(self.wallet.balance, 10000000000); // Only 1 transaction, coinbase is still locked
 
     XCTAssertEqual(self.chain.lastTerminalBlockHeight, 110);
     XCTAssertEqual(self.chain.lastSyncBlockHeight, 106);
@@ -562,11 +562,11 @@
 
     for (DSTransaction *transaction in blockFork110.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]] && ![transaction isMemberOfClass:[DSCoinbaseTransaction class]]) {
-            XCTAssertEqual(transaction.blockHeight, 110); //The previous transactions should not have a block height
+            XCTAssertEqual(transaction.blockHeight, 110); // The previous transactions should not have a block height
         }
     }
 
-    XCTAssertEqual(self.wallet.balance, 10100000000); //The previous transaction should have been reverted but should still appear in balance
+    XCTAssertEqual(self.wallet.balance, 10100000000); // The previous transaction should have been reverted but should still appear in balance
 
     for (DSTransaction *transaction in blockFork106Extra.transactions) {
         [self.chain.chainManager.transactionManager peer:peer relayedTransaction:transaction inBlock:blockFork106Extra];
@@ -576,7 +576,7 @@
         receivedAsHeader:NO
                 fromPeer:nil];
 
-    XCTAssertEqual(self.wallet.balance, 10100000000); //The previous transaction should have been reverted but should still appear in balance
+    XCTAssertEqual(self.wallet.balance, 10100000000); // The previous transaction should have been reverted but should still appear in balance
 
     XCTAssertEqual(self.chain.lastTerminalBlockHeight, 110);
     XCTAssertEqual(self.chain.lastSyncBlockHeight, 110);
@@ -587,17 +587,17 @@
         [self.chain addBlock:merkleBlock receivedAsHeader:NO fromPeer:nil];
     }
 
-    XCTAssertEqual(self.wallet.balance, 10100000000); //The previous transaction should have been reverted but should still appear in balance
+    XCTAssertEqual(self.wallet.balance, 10100000000); // The previous transaction should have been reverted but should still appear in balance
 
     for (DSTransaction *transaction in blockFork106.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]]) {
-            XCTAssertEqual(transaction.blockHeight, 106); //The previous transactions should not have a block height
+            XCTAssertEqual(transaction.blockHeight, 106); // The previous transactions should not have a block height
         }
     }
 
     for (DSTransaction *transaction in blockFork110.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]] && ![transaction isMemberOfClass:[DSCoinbaseTransaction class]]) {
-            XCTAssertEqual(transaction.blockHeight, 110); //The previous transactions should not have a block height
+            XCTAssertEqual(transaction.blockHeight, 110); // The previous transactions should not have a block height
         }
     }
 
@@ -698,7 +698,7 @@
     for (NSURL *url in sortedBlocks105) {
         NSData *blockData = [NSData dataWithContentsOfURL:url];
         DSMerkleBlock *merkleBlock = [DSMerkleBlock merkleBlockWithMessage:blockData onChain:self.chain];
-        [self.chain addBlock:merkleBlock receivedAsHeader:YES fromPeer:nil]; //test starting sync blocks with headers
+        [self.chain addBlock:merkleBlock receivedAsHeader:YES fromPeer:nil]; // test starting sync blocks with headers
     }
 
     XCTAssertEqual(self.chain.lastTerminalBlockHeight, 150);
@@ -727,7 +727,7 @@
     for (DSTransaction *transaction in blockFork106.transactions) {
         [self.chain.chainManager.transactionManager peer:peer relayedTransaction:transaction inBlock:blockFork106];
     }
-    XCTAssertEqual(self.wallet.balance, 10000000000); //Only 1 transaction, coinbase is still locked
+    XCTAssertEqual(self.wallet.balance, 10000000000); // Only 1 transaction, coinbase is still locked
     [self.chain addBlock:blockFork106 receivedAsHeader:NO fromPeer:nil];
     for (DSTransaction *transaction in blockFork106.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]]) {
@@ -736,7 +736,7 @@
     }
 
 
-    XCTAssertEqual(self.wallet.balance, 10000000000); //Only 1 transaction, coinbase is still locked
+    XCTAssertEqual(self.wallet.balance, 10000000000); // Only 1 transaction, coinbase is still locked
 
     XCTAssertEqual(self.chain.lastTerminalBlockHeight, 150);
     XCTAssertEqual(self.chain.lastSyncBlockHeight, 106);
@@ -755,11 +755,11 @@
 
     for (DSTransaction *transaction in blockFork110.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]] && ![transaction isMemberOfClass:[DSCoinbaseTransaction class]]) {
-            XCTAssertEqual(transaction.blockHeight, 110); //The previous transactions should not have a block height
+            XCTAssertEqual(transaction.blockHeight, 110); // The previous transactions should not have a block height
         }
     }
 
-    XCTAssertEqual(self.wallet.balance, 10100000000); //The previous transaction should have been reverted but should still appear in balance
+    XCTAssertEqual(self.wallet.balance, 10100000000); // The previous transaction should have been reverted but should still appear in balance
 
     for (DSTransaction *transaction in blockFork106Extra.transactions) {
         [self.chain.chainManager.transactionManager peer:peer relayedTransaction:transaction inBlock:blockFork106Extra];
@@ -769,7 +769,7 @@
         receivedAsHeader:NO
                 fromPeer:nil];
 
-    XCTAssertEqual(self.wallet.balance, 10100000000); //The previous transaction should have been reverted but should still appear in balance
+    XCTAssertEqual(self.wallet.balance, 10100000000); // The previous transaction should have been reverted but should still appear in balance
 
     XCTAssertEqual(self.chain.lastTerminalBlockHeight, 150);
     XCTAssertEqual(self.chain.lastSyncBlockHeight, 110);
@@ -780,17 +780,17 @@
         [self.chain addBlock:merkleBlock receivedAsHeader:NO fromPeer:nil];
     }
 
-    XCTAssertEqual(self.wallet.balance, 10100000000); //The previous transaction should have been reverted but should still appear in balance
+    XCTAssertEqual(self.wallet.balance, 10100000000); // The previous transaction should have been reverted but should still appear in balance
 
     for (DSTransaction *transaction in blockFork106.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]]) {
-            XCTAssertEqual(transaction.blockHeight, TX_UNCONFIRMED); //The previous transactions should not have a block height
+            XCTAssertEqual(transaction.blockHeight, TX_UNCONFIRMED); // The previous transactions should not have a block height
         }
     }
 
     for (DSTransaction *transaction in blockFork110.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]]) {
-            XCTAssertEqual(transaction.blockHeight, TX_UNCONFIRMED); //The previous transactions should not have a block height
+            XCTAssertEqual(transaction.blockHeight, TX_UNCONFIRMED); // The previous transactions should not have a block height
         }
     }
 
@@ -801,17 +801,17 @@
 
     [self.chain addChainLock:chainLock];
 
-    XCTAssertEqual(self.wallet.balance, 10100000000); //The previous transaction should have been reverted but should still appear in balance
+    XCTAssertEqual(self.wallet.balance, 10100000000); // The previous transaction should have been reverted but should still appear in balance
 
     for (DSTransaction *transaction in blockFork106.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]]) {
-            XCTAssertEqual(transaction.blockHeight, 106); //The previous transactions should not have a block height
+            XCTAssertEqual(transaction.blockHeight, 106); // The previous transactions should not have a block height
         }
     }
 
     for (DSTransaction *transaction in blockFork110.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]] && ![transaction isMemberOfClass:[DSCoinbaseTransaction class]]) {
-            XCTAssertEqual(transaction.blockHeight, 110); //The previous transactions should not have a block height
+            XCTAssertEqual(transaction.blockHeight, 110); // The previous transactions should not have a block height
         }
     }
 
@@ -874,7 +874,7 @@
     for (NSURL *url in sortedBlocks105) {
         NSData *blockData = [NSData dataWithContentsOfURL:url];
         DSMerkleBlock *merkleBlock = [DSMerkleBlock merkleBlockWithMessage:blockData onChain:self.chain];
-        [self.chain addBlock:merkleBlock receivedAsHeader:YES fromPeer:nil]; //test starting sync blocks with headers
+        [self.chain addBlock:merkleBlock receivedAsHeader:YES fromPeer:nil]; // test starting sync blocks with headers
     }
 
     XCTAssertEqual(self.chain.lastTerminalBlockHeight, 105);
@@ -945,7 +945,7 @@
     for (NSURL *url in sortedBlocks105) {
         NSData *blockData = [NSData dataWithContentsOfURL:url];
         DSMerkleBlock *merkleBlock = [DSMerkleBlock merkleBlockWithMessage:blockData onChain:self.chain];
-        [self.chain addBlock:merkleBlock receivedAsHeader:YES fromPeer:nil]; //test starting sync blocks with headers
+        [self.chain addBlock:merkleBlock receivedAsHeader:YES fromPeer:nil]; // test starting sync blocks with headers
     }
 
     XCTAssertEqual(self.chain.lastTerminalBlockHeight, 105);
@@ -953,7 +953,7 @@
 
     UInt256 blockHash = UINT256_MAX;
     UInt256 merkleRoot = uint256_random;
-    UInt256 chainWork = uInt256AddOneLE(uInt256AddOneLE(self.chain.lastTerminalBlock.chainWork)); //add 2 which is minimum work
+    UInt256 chainWork = uInt256AddOneLE(uInt256AddOneLE(self.chain.lastTerminalBlock.chainWork)); // add 2 which is minimum work
 
     DSMerkleBlock *fakeBlock106 = [[DSMerkleBlock alloc] initWithVersion:1 blockHash:blockHash prevBlock:self.chain.lastTerminalBlock.blockHash timestamp:self.chain.lastTerminalBlock.timestamp + 75 merkleRoot:merkleRoot target:self.chain.lastTerminalBlock.target chainWork:chainWork height:BLOCK_UNKNOWN_HEIGHT onChain:self.chain];
 
@@ -1055,7 +1055,7 @@
     for (NSURL *url in sortedBlocks105) {
         NSData *blockData = [NSData dataWithContentsOfURL:url];
         DSMerkleBlock *merkleBlock = [DSMerkleBlock merkleBlockWithMessage:blockData onChain:self.chain];
-        [self.chain addBlock:merkleBlock receivedAsHeader:YES fromPeer:nil]; //test starting sync blocks with headers
+        [self.chain addBlock:merkleBlock receivedAsHeader:YES fromPeer:nil]; // test starting sync blocks with headers
     }
 
     XCTAssertEqual(self.chain.lastTerminalBlockHeight, 110);
@@ -1081,7 +1081,7 @@
     for (DSTransaction *transaction in blockFork106.transactions) {
         [self.chain.chainManager.transactionManager peer:peer relayedTransaction:transaction inBlock:blockFork106];
     }
-    XCTAssertEqual(self.wallet.balance, 10000000000); //Only 1 transaction, coinbase is still locked
+    XCTAssertEqual(self.wallet.balance, 10000000000); // Only 1 transaction, coinbase is still locked
     [self.chain addBlock:blockFork106 receivedAsHeader:NO fromPeer:nil];
     for (DSTransaction *transaction in blockFork106.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]]) {
@@ -1090,7 +1090,7 @@
     }
 
 
-    XCTAssertEqual(self.wallet.balance, 10000000000); //Only 1 transaction, coinbase is still locked
+    XCTAssertEqual(self.wallet.balance, 10000000000); // Only 1 transaction, coinbase is still locked
 
     XCTAssertEqual(self.chain.lastTerminalBlockHeight, 110);
     XCTAssertEqual(self.chain.lastSyncBlockHeight, 106);
@@ -1107,7 +1107,7 @@
         receivedAsHeader:NO
                 fromPeer:nil];
 
-    XCTAssertEqual(self.wallet.balance, 10100000000); //The previous transaction should have been reverted but should still appear in balance
+    XCTAssertEqual(self.wallet.balance, 10100000000); // The previous transaction should have been reverted but should still appear in balance
 
     XCTAssertEqual(self.chain.lastTerminalBlockHeight, 110);
     XCTAssertEqual(self.chain.lastSyncBlockHeight, 110);
@@ -1118,17 +1118,17 @@
         [self.chain addBlock:merkleBlock receivedAsHeader:NO fromPeer:nil];
     }
 
-    XCTAssertEqual(self.wallet.balance, 10100000000); //The previous transaction should have been reverted but should still appear in balance
+    XCTAssertEqual(self.wallet.balance, 10100000000); // The previous transaction should have been reverted but should still appear in balance
 
     for (DSTransaction *transaction in blockFork106.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]]) {
-            XCTAssertEqual(transaction.blockHeight, TX_UNCONFIRMED); //The previous transactions should not have a block height
+            XCTAssertEqual(transaction.blockHeight, TX_UNCONFIRMED); // The previous transactions should not have a block height
         }
     }
 
     for (DSTransaction *transaction in blockFork110.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]]) {
-            XCTAssertEqual(transaction.blockHeight, TX_UNCONFIRMED); //The previous transactions should not have a block height
+            XCTAssertEqual(transaction.blockHeight, TX_UNCONFIRMED); // The previous transactions should not have a block height
         }
     }
 
@@ -1219,7 +1219,7 @@
     for (NSURL *url in sortedBlocks105) {
         NSData *blockData = [NSData dataWithContentsOfURL:url];
         DSMerkleBlock *merkleBlock = [DSMerkleBlock merkleBlockWithMessage:blockData onChain:self.chain];
-        [self.chain addBlock:merkleBlock receivedAsHeader:YES fromPeer:nil]; //test starting sync blocks with headers
+        [self.chain addBlock:merkleBlock receivedAsHeader:YES fromPeer:nil]; // test starting sync blocks with headers
     }
 
     XCTAssertEqual(self.chain.lastTerminalBlockHeight, 110);
@@ -1245,7 +1245,7 @@
     for (DSTransaction *transaction in blockFork106.transactions) {
         [self.chain.chainManager.transactionManager peer:peer relayedTransaction:transaction inBlock:blockFork106];
     }
-    XCTAssertEqual(self.wallet.balance, 10000000000); //Only 1 transaction, coinbase is still locked
+    XCTAssertEqual(self.wallet.balance, 10000000000); // Only 1 transaction, coinbase is still locked
     [self.chain addBlock:blockFork106 receivedAsHeader:NO fromPeer:nil];
     for (DSTransaction *transaction in blockFork106.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]]) {
@@ -1254,7 +1254,7 @@
     }
 
 
-    XCTAssertEqual(self.wallet.balance, 10000000000); //Only 1 transaction, coinbase is still locked
+    XCTAssertEqual(self.wallet.balance, 10000000000); // Only 1 transaction, coinbase is still locked
 
     XCTAssertEqual(self.chain.lastTerminalBlockHeight, 110);
     XCTAssertEqual(self.chain.lastSyncBlockHeight, 106);
@@ -1271,7 +1271,7 @@
         receivedAsHeader:NO
                 fromPeer:nil];
 
-    XCTAssertEqual(self.wallet.balance, 10100000000); //The previous transaction should have been reverted but should still appear in balance
+    XCTAssertEqual(self.wallet.balance, 10100000000); // The previous transaction should have been reverted but should still appear in balance
 
     XCTAssertEqual(self.chain.lastTerminalBlockHeight, 110);
     XCTAssertEqual(self.chain.lastSyncBlockHeight, 110);
@@ -1282,17 +1282,17 @@
         [self.chain addBlock:merkleBlock receivedAsHeader:NO fromPeer:nil];
     }
 
-    XCTAssertEqual(self.wallet.balance, 10100000000); //The previous transaction should have been reverted but should still appear in balance
+    XCTAssertEqual(self.wallet.balance, 10100000000); // The previous transaction should have been reverted but should still appear in balance
 
     for (DSTransaction *transaction in blockFork106.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]]) {
-            XCTAssertEqual(transaction.blockHeight, TX_UNCONFIRMED); //The previous transactions should not have a block height
+            XCTAssertEqual(transaction.blockHeight, TX_UNCONFIRMED); // The previous transactions should not have a block height
         }
     }
 
     for (DSTransaction *transaction in blockFork110.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]]) {
-            XCTAssertEqual(transaction.blockHeight, TX_UNCONFIRMED); //The previous transactions should not have a block height
+            XCTAssertEqual(transaction.blockHeight, TX_UNCONFIRMED); // The previous transactions should not have a block height
         }
     }
 
@@ -1311,17 +1311,17 @@
 
     [self.chain addChainLock:chainLock109];
 
-    XCTAssertEqual(self.wallet.balance, 10100000000); //The previous transaction should have been reverted but should still appear in balance
+    XCTAssertEqual(self.wallet.balance, 10100000000); // The previous transaction should have been reverted but should still appear in balance
 
     for (DSTransaction *transaction in blockFork106.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]]) {
-            XCTAssertEqual(transaction.blockHeight, 106); //The previous transactions should not have a block height
+            XCTAssertEqual(transaction.blockHeight, 106); // The previous transactions should not have a block height
         }
     }
 
     for (DSTransaction *transaction in blockFork110.transactions) {
         if (![transaction isMemberOfClass:[DSQuorumCommitmentTransaction class]] && ![transaction isMemberOfClass:[DSCoinbaseTransaction class]]) {
-            XCTAssertEqual(transaction.blockHeight, 110); //The previous transactions should not have a block height
+            XCTAssertEqual(transaction.blockHeight, 110); // The previous transactions should not have a block height
         }
     }
 

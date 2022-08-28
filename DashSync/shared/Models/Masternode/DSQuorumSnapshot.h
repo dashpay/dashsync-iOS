@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+#import "BigIntTypes.h"
 #import "dash_shared_core.h"
 #import <Foundation/Foundation.h>
 
@@ -26,7 +27,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) NSOrderedSet<NSNumber *> *skipList;
 @property (nonatomic) LLMQSnapshotSkipMode skipListMode;
 
-+ (instancetype)quorumSnapshotWith:(LLMQSnapshot *)quorumSnapshot;
+@property (nonatomic) UInt256 blockHash;
+
++ (instancetype)quorumSnapshotWith:(LLMQSnapshot *)quorumSnapshot forBlockHash:(UInt256)blockHash;
 
 @end
 

@@ -16,10 +16,9 @@
 //
 
 #import "DSChain.h"
-#import "DSMasternodeDiffMessageContext.h"
+#import "DSMasternodeProcessorContext.h"
 #import "DSMasternodeList.h"
 #import "DSMasternodeManager.h"
-#import "DSMasternodeProcessorContext.h"
 #import "DSMnDiffProcessingResult.h"
 #import "DSQRInfoProcessingResult.h"
 #import "DSQuorumEntry.h"
@@ -34,27 +33,28 @@ NS_ASSUME_NONNULL_BEGIN
 const MasternodeList *getMasternodeListByBlockHash(uint8_t (*block_hash)[32], const void *context);
 void destroyMasternodeList(const MasternodeList *masternode_list);
 uint32_t getBlockHeightByHash(uint8_t (*block_hash)[32], const void *context);
-const uint8_t *getBlockHashByHeight(uint32_t block_height, const void *context);
-const LLMQSnapshot *getLLMQSnapshotByBlockHeight(uint32_t block_height, const void *context);
+uint8_t *getBlockHashByHeight(uint32_t block_height, const void *context);
+const LLMQSnapshot *getLLMQSnapshotByBlockHash(uint8_t (*block_hash)[32], const void *context);
 void addInsightForBlockHash(uint8_t (*block_hash)[32], const void *context);
 bool shouldProcessLLMQType(uint8_t quorum_type, const void *context);
 bool validateLLMQ(struct LLMQValidationData *data, const void *context);
+void destroyHash(uint8_t (*block_hash)[32]);
 
-+ (MasternodeProcessor *)registerProcessor:(DSMasternodeProcessorContext *)context;
++ (MasternodeProcessor *)registerProcessor;
 + (void)unregisterProcessor:(MasternodeProcessor *)processor;
 
 + (MasternodeProcessorCache *)createProcessorCache;
 + (void)destroyProcessorCache:(MasternodeProcessorCache *)processorCache;
 
-- (DSMnDiffProcessingResult *)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context;
+- (DSMnDiffProcessingResult *)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeProcessorContext *)context;
 
 + (QRInfo *)readQRInfoMessage:(NSData *)message
-                  withContext:(DSMasternodeDiffMessageContext *)context
+                  withContext:(DSMasternodeProcessorContext *)context
                 withProcessor:(MasternodeProcessor *)processor;
 
 + (void)destroyQRInfoMessage:(QRInfo *)info;
 
-- (DSQRInfoProcessingResult *)processQRInfo:(QRInfo *)info withContext:(DSMasternodeDiffMessageContext *)context;
+- (DSQRInfoProcessingResult *)processQRInfo:(QRInfo *)info withContext:(DSMasternodeProcessorContext *)context;
 
 @end
 

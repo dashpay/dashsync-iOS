@@ -29,7 +29,7 @@
 #import "DSCheckpoint.h"
 #import "DSGetMNListDiffRequest.h"
 #import "DSGetQRInfoRequest.h"
-#import "DSMasternodeDiffMessageContext.h"
+#import "DSMasternodeProcessorContext.h"
 #import "DSMasternodeListService.h"
 #import "DSMasternodeListStore+Protected.h"
 #import "DSMasternodeListStore.h"
@@ -67,6 +67,9 @@
 @property (nonatomic, assign, nullable) MasternodeProcessorCache *processorCache;
 
 @property (nonatomic, assign) BOOL isRotatedQuorumsPresented;
+@property (nonatomic, assign) uint32_t rotatedQuorumsActivationHeight;
+@property (nonatomic, assign) uint32_t nextRequestingHeight;
+@property (nonatomic, assign) BlockHeightFinder blockHeightLookup;
 
 @end
 
@@ -74,6 +77,11 @@
 @implementation DSMasternodeManager
 
 - (void)dealloc {
+    NSLog(@"DSMasternodeManager.dealloc: %@: %@: %@", self.chain, self.store, self.service);
+    [self destroyProcessors];
+}
+
+- (void)destroyProcessors {
     [DSMasternodeManager unregisterProcessor:self.processor];
     [DSMasternodeManager destroyProcessorCache:self.processorCache];
     _processor = nil;
@@ -90,24 +98,20 @@
 
 - (instancetype)initWithChain:(DSChain *)chain {
     NSParameterAssert(chain);
-
     if (!(self = [super init])) return nil;
     _chain = chain;
-    
     BlockHeightFinder blockHeightLookup = ^uint32_t(UInt256 blockHash) {
         return [self heightForBlockHash:blockHash];
     };
+    self.blockHeightLookup = blockHeightLookup;
     self.store = [[DSMasternodeListStore alloc] initWithChain:chain];
-    self.service = [[DSMasternodeListService alloc] initWithChain:chain
-                                                blockHeightLookup:blockHeightLookup];
+    self.service = [[DSMasternodeListService alloc] initWithChain:chain blockHeightLookup:blockHeightLookup];
     _timedOutAttempt = 0;
     _timeOutObserverTry = 0;
-    
-    MasternodeListFinder masternodeListLookup = ^DSMasternodeList *(UInt256 blockHash) {
-        return [self masternodeListForBlockHash:blockHash withBlockHeightLookup:nil];
-    };
-    _processor = [DSMasternodeManager registerProcessor:[DSMasternodeProcessorContext processorContextForChain:chain masternodeListLookup:masternodeListLookup blockHeightLookup:blockHeightLookup]];
+    _rotatedQuorumsActivationHeight = UINT32_MAX;
+    _processor = [DSMasternodeManager registerProcessor];
     _processorCache = [DSMasternodeManager createProcessorCache];
+    NSLog(@"DSMasternodeManager.initWithChain: %@: %@: %@", chain, self.store, self.service);
     return self;
 }
 
@@ -260,8 +264,8 @@
     return [self.store.cachedQuorumSnapshots objectForKey:uint256_data(blockHash)];
 }
 
-- (BOOL)saveQuorumSnapshot:(DSQuorumSnapshot *)snapshot forBlockHash:(UInt256)blockHash {
-    self.store.cachedQuorumSnapshots[uint256_data(blockHash)] = snapshot;
+- (BOOL)saveQuorumSnapshot:(DSQuorumSnapshot *)snapshot {
+    [self.store.cachedQuorumSnapshots setObject:snapshot forKey:uint256_data(snapshot.blockHash)];
     return YES;
 }
 
@@ -353,15 +357,16 @@
                                ? prevKnownBlockHash
                                : prevInQueueBlockHash)
                             : prevKnownBlockHash;
-                        if ([self hasDIP0024Enabled]) {
+                        uint32_t blockHeight = [self heightForBlockHash:blockHash];
+                        if ([self hasDIP0024Enabled] && self.rotatedQuorumsActivationHeight != UINT32_MAX && blockHeight > self.rotatedQuorumsActivationHeight) {
                             // request at: blockHeight % dkgInterval == activeSigningQuorumsCount + 11 + 8
-                            DSLog(@"••• -> requestQuorumRotationInfo %d..%d [%@..%@]", [self heightForBlockHash:previousBlockHash], [self heightForBlockHash:blockHash], uint256_hex(previousBlockHash), uint256_hex(blockHash));
+                            DSLog(@"••• -> requestQuorumRotationInfo %d..%d [%@..%@]", [self heightForBlockHash:previousBlockHash], blockHeight, uint256_hex(previousBlockHash), uint256_hex(blockHash));
                             [self.service requestQuorumRotationInfo:previousBlockHash forBlockHash:blockHash];
                             
                         } else {
                             // request at: every new block
                             NSAssert(([self heightForBlockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
-                            DSLog(@"••• -> requestMasternodeListDiff %d..%d [%@..%@]", [self heightForBlockHash:previousBlockHash], [self heightForBlockHash:blockHash], uint256_hex(previousBlockHash), uint256_hex(blockHash));
+                            DSLog(@"••• -> requestMasternodeListDiff %d..%d [%@..%@]", [self heightForBlockHash:previousBlockHash], blockHeight, uint256_hex(previousBlockHash), uint256_hex(blockHash));
                             [self.service requestMasternodeListDiff:previousBlockHash forBlockHash:blockHash];
                         }
                     }
@@ -532,7 +537,8 @@
     UInt256 masternodeListBlockHash = masternodeList.blockHash;
     NSData *masternodeListBlockHashData = uint256_data(masternodeListBlockHash);
     BOOL hasInRetrieval = [self.service.retrievalQueue containsObject:masternodeListBlockHashData];
-    DSLog(@"••• processDiffResult: %d: %@ inRetrieval: %d", [self heightForBlockHash:masternodeListBlockHash], uint256_hex(masternodeListBlockHash), hasInRetrieval);
+    uint32_t masternodeListBlockHeight = [self heightForBlockHash:masternodeListBlockHash];
+    DSLog(@"••• processDiffResult: %d: %@ inRetrieval: %d", masternodeListBlockHeight, uint256_hex(masternodeListBlockHash), hasInRetrieval);
     if (!hasInRetrieval) {
         //We most likely wiped data in the meantime
         [self.service cleanRequestsInRetrieval];
@@ -552,8 +558,14 @@
             [self getMasternodeListsForBlockHashes:neededMasternodeLists];
         } else {
             if ([result hasRotatedQuorumsForChain:self.chain] && !self.isRotatedQuorumsPresented) {
-                DSLog(@"••• processDiffResult: rotated quorums are presented, so we'll switch into consuming qrinfo");
+                DSLog(@"••• processDiffResult: rotated quorums are presented at height %u: %@, so we'll switch into consuming qrinfo", masternodeListBlockHeight, uint256_hex(masternodeListBlockHash));
                 self.isRotatedQuorumsPresented = YES;
+                self.rotatedQuorumsActivationHeight = masternodeListBlockHeight;
+                // For TestNet rotated quorums appears on the block 786189 or 785760 ?
+                // TODO: implement strategy like this
+                // If we have missing masternode lists BEFORE height where rotated quorums appear
+                // We need to request in getmnlistd message for reconstruct them
+                // So it make sense to store height instead of flag
             }
             if (uint256_eq(self.store.lastQueriedBlockHash, masternodeListBlockHash)) {
                 self.currentMasternodeList = masternodeList;
@@ -629,8 +641,9 @@
         DSLog(@"No base masternode list");
         return;
     }
-    DSMasternodeDiffMessageContext *ctx = [self createDiffMessageContext:self.chain.isTestnet merkleRootLookup:^UInt256(UInt256 blockHash) {
+    DSMasternodeProcessorContext *ctx = [self createDiffMessageContext:self.chain.isTestnet merkleRootLookup:^UInt256(UInt256 blockHash) {
         DSBlock *lastBlock = [self lastBlockForBlockHash:blockHash fromPeer:peer];
+        DSLog(@"merkleRootLookup: %@: %@", lastBlock, peer);
         if (!lastBlock) {
             [self issueWithMasternodeListFromPeer:peer];
             DSLog(@"Last Block missing");
@@ -656,7 +669,7 @@
         return lastBlock.merkleRoot;
     };
 
-    DSMasternodeDiffMessageContext *ctx = [self createDiffMessageContext:self.chain.isTestnet merkleRootLookup:merkleRootLookup];
+    DSMasternodeProcessorContext *ctx = [self createDiffMessageContext:self.chain.isTestnet merkleRootLookup:merkleRootLookup];
     
     QRInfo *qrInfo = [DSMasternodeManager readQRInfoMessage:message withContext:ctx withProcessor:self.processor];
     MNListDiff *listDiffAtTip = qrInfo->mn_list_diff_tip;
@@ -722,19 +735,22 @@
     [self processDiffResult:result.mnListDiffResultAtH forPeer:peer];
     [self processDiffResult:result.mnListDiffResultAtTip forPeer:peer];
     ///TODO: work with another cache
+    ///
+    [self.store saveQuorumSnapshot:result.snapshotAtHC toChain:self.chain completion:^(NSError * _Nonnull error) {}];
+    [self.store saveQuorumSnapshot:result.snapshotAtH2C toChain:self.chain completion:^(NSError * _Nonnull error) {}];
+    [self.store saveQuorumSnapshot:result.snapshotAtH3C toChain:self.chain completion:^(NSError * _Nonnull error) {}];
+    [self.store saveQuorumSnapshot:result.snapshotAtH4C toChain:self.chain completion:^(NSError * _Nonnull error) {}];
 }
 
-- (DSMasternodeDiffMessageContext *)createDiffMessageContext:(BOOL)useInsightAsBackup
+- (DSMasternodeProcessorContext *)createDiffMessageContext:(BOOL)useInsightAsBackup
                                             merkleRootLookup:(MerkleRootFinder)merkleRootLookup {
-    DSMasternodeDiffMessageContext *mndiffContext = [[DSMasternodeDiffMessageContext alloc] init];
+    DSMasternodeProcessorContext *mndiffContext = [[DSMasternodeProcessorContext alloc] init];
     [mndiffContext setUseInsightAsBackup:useInsightAsBackup];
     [mndiffContext setChain:self.chain];
     [mndiffContext setMasternodeListLookup:^DSMasternodeList *(UInt256 blockHash) {
         return [self masternodeListForBlockHash:blockHash withBlockHeightLookup:nil];
     }];
-    [mndiffContext setBlockHeightLookup:^uint32_t(UInt256 blockHash) {
-        return [self heightForBlockHash:blockHash];
-    }];
+    [mndiffContext setBlockHeightLookup:self.blockHeightLookup];
     [mndiffContext setMerkleRootLookup:merkleRootLookup];
     return mndiffContext;
 }

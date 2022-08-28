@@ -30,13 +30,13 @@
 
 // MARK: - testWallet
 
-//TODO: test standard free transaction no change
-//TODO: test free transaction who's inputs are too new to hit min free priority
-//TODO: test transaction with change below min allowable output
-//TODO: test gap limit with gaps in address chain less than the limit
-//TODO: test removing a transaction that other transansactions depend on
-//TODO: test tx ordering for multiple tx with same block height
-//TODO: port all applicable tests from dashj and dashcore
+// TODO: test standard free transaction no change
+// TODO: test free transaction who's inputs are too new to hit min free priority
+// TODO: test transaction with change below min allowable output
+// TODO: test gap limit with gaps in address chain less than the limit
+// TODO: test removing a transaction that other transansactions depend on
+// TODO: test tx ordering for multiple tx with same block height
+// TODO: port all applicable tests from dashj and dashcore
 
 //- (void)testWallet
 //{
@@ -178,7 +178,7 @@
 
 - (void)testChainSynchronizationFingerprint {
     NSMutableArray *randomBlockZones = [NSMutableArray array];
-    //create 2 zones, zone 1 (<50000) is twice as less populated
+    // create 2 zones, zone 1 (<50000) is twice as less populated
     for (uint16_t i = 0; i < 50; i++) {
         [randomBlockZones addObject:@(arc4random_uniform(1000))];
         [randomBlockZones addObject:@(500 + arc4random_uniform(500))];
