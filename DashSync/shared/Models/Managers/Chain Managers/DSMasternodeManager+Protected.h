@@ -41,7 +41,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)getCurrentMasternodeListWithSafetyDelay:(uint32_t)safetyDelay;
 - (void)getMasternodeListsForBlockHashes:(NSOrderedSet *)blockHashes;
 
-- (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData *)masternodeDiffMessage;
+- (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData *)message;
+- (void)peer:(DSPeer *)peer relayedQuorumRotationInfoMessage:(NSData *)message;
 
 - (DSLocalMasternode *)localMasternodeFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry claimedWithOwnerWallet:(DSWallet *)wallet ownerKeyIndex:(uint32_t)ownerKeyIndex;
 - (DSMnDiffProcessingResult *)processMasternodeDiffMessage:(NSData *)message
@@ -53,6 +54,8 @@ NS_ASSUME_NONNULL_BEGIN
                                 useInsightAsBackup:(BOOL)useInsightAsBackup;
 
 + (void)saveMasternodeList:(DSMasternodeList *)masternodeList toChain:(DSChain *)chain havingModifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums createUnknownBlocks:(BOOL)createUnknownBlocks inContext:(NSManagedObjectContext *)context completion:(void (^)(NSError *error))completion;
+
+- (void)issueWithMasternodeListFromPeer:(DSPeer *)peer;
 
 @end
 

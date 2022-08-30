@@ -346,7 +346,7 @@
             DSLog(@"No masternode list at %@", blockHashData.reverse.hexString);
         }
     }
-    DSLog(@"masternodeListForBlockHash %@: %@", blockHashData, masternodeList);
+    //DSLog(@"masternodeListForBlockHash %@: %@", blockHashData, masternodeList);
     return masternodeList;
 }
 

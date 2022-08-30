@@ -169,7 +169,7 @@
 }
 
 - (void)sendMasternodeListRequest:(DSMasternodeListRequest *)request {
-    DSLog(@"••• sendMasternodeListRequest: %@", [request toData].hexString);
+    //DSLog(@"••• sendMasternodeListRequest: %@", [request toData].hexString);
     [self.peerManager sendRequest:request];
     [self.requestsInRetrieval addObject:request];
 }

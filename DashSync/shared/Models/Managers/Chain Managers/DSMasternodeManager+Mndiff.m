@@ -34,7 +34,7 @@
 ///
 /// MARK: Rust FFI callbacks
 ///
-const MasternodeList *getMasternodeListByBlockHash(uint8_t (*block_hash)[32], const void *context) {
+MasternodeList *getMasternodeListByBlockHash(uint8_t (*block_hash)[32], const void *context) {
     DSMasternodeProcessorContext *processorContext = (__bridge DSMasternodeProcessorContext *)context;
     UInt256 blockHash = *((UInt256 *)block_hash);
     DSMasternodeList *list = processorContext.masternodeListLookup(blockHash);
@@ -44,7 +44,7 @@ const MasternodeList *getMasternodeListByBlockHash(uint8_t (*block_hash)[32], co
     return c_list;
 }
 
-bool saveMasternodeList(uint8_t (*block_hash)[32], const MasternodeList *masternode_list, const void *context) {
+bool saveMasternodeList(uint8_t (*block_hash)[32], MasternodeList *masternode_list, const void *context) {
     DSMasternodeProcessorContext *processorContext = (__bridge DSMasternodeProcessorContext *)context;
     DSChain *chain = processorContext.chain;
     UInt256 blockHash = *((UInt256 *)block_hash);
@@ -55,14 +55,16 @@ bool saveMasternodeList(uint8_t (*block_hash)[32], const MasternodeList *mastern
     return saved;
 }
 
-void destroyMasternodeList(const MasternodeList *masternode_list) {
+void destroyMasternodeList(MasternodeList *masternode_list) {
     NSLog(@"destroyMasternodeList: %p", masternode_list);
     [DSMasternodeList ffi_free:((MasternodeList *)masternode_list)];
 }
 
-void destroyHash(uint8_t (*block_hash)[32]) {
+void destroyHash(uint8_t *block_hash) { // UInt256
     NSLog(@"destroyHash: %p", block_hash);
-    free(block_hash);
+    if (block_hash) {
+        free(block_hash);
+    }
 }
 
 uint32_t getBlockHeightByHash(uint8_t (*block_hash)[32], const void *context) {
@@ -94,7 +96,7 @@ uint8_t *getMerkleRootByHash(uint8_t (*block_hash)[32], const void *context) {
     return (uint8_t *)merkle_root;
 }
 
-const LLMQSnapshot *getLLMQSnapshotByBlockHash(uint8_t (*block_hash)[32], const void *context) {
+LLMQSnapshot *getLLMQSnapshotByBlockHash(uint8_t (*block_hash)[32], const void *context) {
     DSMasternodeProcessorContext *processorContext = (__bridge DSMasternodeProcessorContext *)context;
     DSChain *chain = processorContext.chain;
     UInt256 blockHash = *((UInt256 *)block_hash);
@@ -106,20 +108,19 @@ const LLMQSnapshot *getLLMQSnapshotByBlockHash(uint8_t (*block_hash)[32], const 
 }
 
 
-bool saveLLMQSnapshot(uint8_t (*block_hash)[32], const LLMQSnapshot *snapshot, const void *context) {
+bool saveLLMQSnapshot(uint8_t (*block_hash)[32], LLMQSnapshot *snapshot, const void *context) {
     DSMasternodeProcessorContext *processorContext = (__bridge DSMasternodeProcessorContext *)context;
     DSChain *chain = processorContext.chain;
     UInt256 blockHash = *((UInt256 *)block_hash);
-    DSQuorumSnapshot *quorumSnapshot = [DSQuorumSnapshot quorumSnapshotWith:(LLMQSnapshot *)snapshot forBlockHash:blockHash];
+    DSQuorumSnapshot *quorumSnapshot = [DSQuorumSnapshot quorumSnapshotWith:snapshot forBlockHash:blockHash];
     BOOL saved = [chain.chainManager.masternodeManager saveQuorumSnapshot:quorumSnapshot];
     NSLog(@"••• saveLLMQSnapshot: %ul: %@: %d", processorContext.blockHeightLookup(blockHash), uint256_hex(blockHash), saved);
     processor_destroy_block_hash(block_hash);
     return saved;
 }
-void destroyLLMQSnapshot(const LLMQSnapshot *snapshot) {
+void destroyLLMQSnapshot(LLMQSnapshot *snapshot) {
     NSLog(@"destroyLLMQSnapshot: %p", snapshot);
     [DSQuorumSnapshot ffi_free:((LLMQSnapshot *)snapshot)];
-
 }
 
 void addInsightForBlockHash(uint8_t (*block_hash)[32], const void *context) {
@@ -130,8 +131,36 @@ void addInsightForBlockHash(uint8_t (*block_hash)[32], const void *context) {
     processor_destroy_block_hash(block_hash);
 }
 
+void sendError(uint8_t error_type, const void *context) {
+    NSLog(@"••• sendError: %ul", error_type);
+}
+
 void logRustMessage(const char *message, const void *context) {
     //DSLog(@"••• %@", [NSString stringWithUTF8String:message]);
+}
+bool shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*block_hash)[32], const void *context) {
+    DSMasternodeProcessorContext *processorContext = (__bridge DSMasternodeProcessorContext *)context;
+    UInt256 baseBlockHash = *((UInt256 *)base_block_hash);
+    UInt256 blockHash = *((UInt256 *)block_hash);
+    DSChain *chain = processorContext.chain;
+    DSMasternodeManager *manager = chain.chainManager.masternodeManager;
+    BOOL hasRemovedFromRetrieval = [manager.service removeRequestInRetrievalForBaseBlockHash:baseBlockHash blockHash:blockHash];
+    BOOL hasLocallyStored = [manager.store hasMasternodeListAt:uint256_data(blockHash)];
+    processor_destroy_block_hash(base_block_hash);
+    processor_destroy_block_hash(block_hash);
+    if (!hasRemovedFromRetrieval ||
+        hasLocallyStored) {
+        return false;
+    }
+    DSMasternodeList *baseMasternodeList = processorContext.masternodeListLookup(baseBlockHash);
+    //DSMasternodeList *baseMasternodeList = [manager masternodeListForBlockHash:baseBlockHash];
+    if (!baseMasternodeList && !uint256_eq(chain.genesisHash, baseBlockHash) && uint256_is_not_zero(baseBlockHash)) {
+        //this could have been deleted in the meantime, if so rerequest
+        [manager issueWithMasternodeListFromPeer:processorContext.peer];
+        DSLog(@"No base masternode list");
+        return false;
+    }
+    return true;
 }
 
 bool shouldProcessLLMQType(uint8_t quorum_type, const void *context) {
@@ -139,7 +168,7 @@ bool shouldProcessLLMQType(uint8_t quorum_type, const void *context) {
     BOOL should = [processorContext.chain shouldProcessQuorumOfType:(DSLLMQType)quorum_type];
     NSLog(@"••• shouldProcessLLMQType: %d: %d", quorum_type, should);
     return should;
-};
+}
 
 bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
     uintptr_t count = data->count;
@@ -190,6 +219,8 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
                               validateLLMQ,
                               destroyHash,
                               destroyLLMQSnapshot,
+                              shouldProcessDiffWithRange,
+                              sendError,
                               logRustMessage);
 }
 
@@ -228,22 +259,31 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
     return processingResult;
 }
 
-+ (void)destroyQRInfoMessage:(QRInfo *)info {
-    processor_destroy_qr_info(info);
-}
-
-+ (QRInfo *)readQRInfoMessage:(NSData *)message withContext:(DSMasternodeProcessorContext *)context withProcessor:(MasternodeProcessor *)processor {
-    QRInfo *result = read_qrinfo(message.bytes, message.length, processor, (__bridge void *)(context));
-    return result;
-}
-
-- (DSQRInfoProcessingResult *)processQRInfo:(QRInfo *)info withContext:(DSMasternodeProcessorContext *)context {
-    NSAssert(self.processor, @"processQRInfo: No processor created");
-    NSAssert(self.processorCache, @"processQRInfo: No processorCache created");
-    QRInfoResult *result = process_qrinfo(info, context.useInsightAsBackup, (const uint8_t *) context.chain.genesisHash.u8, self.processor, self.processorCache, (__bridge void *)(context));
+- (DSQRInfoProcessingResult *)processQRInfoMessage:(NSData *)message withContext:(DSMasternodeProcessorContext *)context {
+    NSAssert(self.processor, @"processQRInfoMessage: No processor created");
+    NSAssert(self.processorCache, @"processQRInfoMessage: No processorCache created");
+    QRInfoResult *result = process_qrinfo_from_message(message.bytes, message.length, context.useInsightAsBackup, (const uint8_t *) context.chain.genesisHash.u8, self.processor, self.processorCache, (__bridge void *)(context));
     DSQRInfoProcessingResult *processingResult = [DSQRInfoProcessingResult processingResultWith:result onChain:context.chain];
     processor_destroy_qr_info_result(result);
-    return processingResult;
 }
+
+
+//+ (void)destroyQRInfoMessage:(QRInfo *)info {
+//    processor_destroy_qr_info(info);
+//}
+//
+//+ (QRInfo *)readQRInfoMessage:(NSData *)message withContext:(DSMasternodeProcessorContext *)context withProcessor:(MasternodeProcessor *)processor {
+//    QRInfo *result = read_qrinfo(message.bytes, message.length, processor, (__bridge void *)(context));
+//    return result;
+//}
+//
+//- (DSQRInfoProcessingResult *)processQRInfo:(QRInfo *)info withContext:(DSMasternodeProcessorContext *)context {
+//    NSAssert(self.processor, @"processQRInfo: No processor created");
+//    NSAssert(self.processorCache, @"processQRInfo: No processorCache created");
+//    QRInfoResult *result = process_qrinfo(info, context.useInsightAsBackup, (const uint8_t *) context.chain.genesisHash.u8, self.processor, self.processorCache, (__bridge void *)(context));
+//    DSQRInfoProcessingResult *processingResult = [DSQRInfoProcessingResult processingResultWith:result onChain:context.chain];
+//    processor_destroy_qr_info_result(result);
+//    return processingResult;
+//}
 
 @end

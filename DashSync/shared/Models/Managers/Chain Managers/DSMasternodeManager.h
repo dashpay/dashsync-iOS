@@ -24,6 +24,8 @@
 //  THE SOFTWARE.
 
 #import "DSChain.h"
+#import "DSMasternodeListService.h"
+#import "DSMasternodeListStore.h"
 #import "DSQuorumSnapshot.h"
 #import "DSPeer.h"
 #import <Foundation/Foundation.h>
@@ -52,6 +54,9 @@ FOUNDATION_EXPORT NSString *const DSMasternodeListDiffValidationErrorNotificatio
 @property (nonatomic, readonly) NSUInteger masternodeListRetrievalQueueMaxAmount;
 @property (nonatomic, readonly) BOOL hasMasternodeListCurrentlyBeingSaved;
 @property (nonatomic, readonly) BOOL currentMasternodeListIsInLast24Hours;
+
+@property (nonatomic, readonly) DSMasternodeListStore *store;
+@property (nonatomic, readonly) DSMasternodeListService *service;
 
 @property (nonatomic, readonly, nullable) MasternodeProcessor *processor;
 @property (nonatomic, readonly, nullable) MasternodeProcessorCache *processorCache;

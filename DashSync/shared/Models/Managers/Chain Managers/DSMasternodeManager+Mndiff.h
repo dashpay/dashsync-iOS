@@ -30,15 +30,24 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMasternodeManager (Mndiff)
 
-const MasternodeList *getMasternodeListByBlockHash(uint8_t (*block_hash)[32], const void *context);
-void destroyMasternodeList(const MasternodeList *masternode_list);
+/// Rust FFI callbacks
+MasternodeList *getMasternodeListByBlockHash(uint8_t (*block_hash)[32], const void *context);
+bool saveMasternodeList(uint8_t (*block_hash)[32], MasternodeList *masternode_list, const void *context);
+void destroyMasternodeList(MasternodeList *masternode_list);
+void destroyHash(uint8_t *block_hash);
 uint32_t getBlockHeightByHash(uint8_t (*block_hash)[32], const void *context);
 uint8_t *getBlockHashByHeight(uint32_t block_height, const void *context);
-const LLMQSnapshot *getLLMQSnapshotByBlockHash(uint8_t (*block_hash)[32], const void *context);
+uint8_t *getMerkleRootByHash(uint8_t (*block_hash)[32], const void *context);
+LLMQSnapshot *getLLMQSnapshotByBlockHash(uint8_t (*block_hash)[32], const void *context);
+bool saveLLMQSnapshot(uint8_t (*block_hash)[32], LLMQSnapshot *snapshot, const void *context);
+void destroyLLMQSnapshot(LLMQSnapshot *snapshot);
 void addInsightForBlockHash(uint8_t (*block_hash)[32], const void *context);
+void sendError(uint8_t error_type, const void *context);
+void logRustMessage(const char *message, const void *context);
+bool shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*block_hash)[32], const void *context);
 bool shouldProcessLLMQType(uint8_t quorum_type, const void *context);
 bool validateLLMQ(struct LLMQValidationData *data, const void *context);
-void destroyHash(uint8_t (*block_hash)[32]);
+
 
 + (MasternodeProcessor *)registerProcessor;
 + (void)unregisterProcessor:(MasternodeProcessor *)processor;
@@ -47,14 +56,15 @@ void destroyHash(uint8_t (*block_hash)[32]);
 + (void)destroyProcessorCache:(MasternodeProcessorCache *)processorCache;
 
 - (DSMnDiffProcessingResult *)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeProcessorContext *)context;
+- (DSQRInfoProcessingResult *)processQRInfoMessage:(NSData *)message withContext:(DSMasternodeProcessorContext *)context;
 
-+ (QRInfo *)readQRInfoMessage:(NSData *)message
-                  withContext:(DSMasternodeProcessorContext *)context
-                withProcessor:(MasternodeProcessor *)processor;
+//+ (QRInfo *)readQRInfoMessage:(NSData *)message
+//                  withContext:(DSMasternodeProcessorContext *)context
+//                withProcessor:(MasternodeProcessor *)processor;
+//
+//+ (void)destroyQRInfoMessage:(QRInfo *)info;
 
-+ (void)destroyQRInfoMessage:(QRInfo *)info;
-
-- (DSQRInfoProcessingResult *)processQRInfo:(QRInfo *)info withContext:(DSMasternodeProcessorContext *)context;
+//- (DSQRInfoProcessingResult *)processQRInfo:(QRInfo *)info withContext:(DSMasternodeProcessorContext *)context;
 
 @end
 
