@@ -23,6 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMnDiffProcessingResult : NSObject
 
+@property (nonatomic) UInt256 baseBlockHash;
+@property (nonatomic) UInt256 blockHash;
 @property (nonatomic) BOOL foundCoinbase;
 @property (nonatomic) BOOL validCoinbase;
 @property (nonatomic) BOOL rootMNListValid;

@@ -24,6 +24,8 @@
 
 + (instancetype)processingResultWith:(MNListDiffResult *)result onChain:(DSChain *)chain {
     DSMnDiffProcessingResult *processingResult = [[DSMnDiffProcessingResult alloc] init];
+    [processingResult setBaseBlockHash:*(UInt256 *)result->base_block_hash];
+    [processingResult setBlockHash:*(UInt256 *)result->block_hash];
     [processingResult setFoundCoinbase:result->has_found_coinbase];
     [processingResult setValidCoinbase:result->has_valid_coinbase];
     [processingResult setRootMNListValid:result->has_valid_mn_list_root];
