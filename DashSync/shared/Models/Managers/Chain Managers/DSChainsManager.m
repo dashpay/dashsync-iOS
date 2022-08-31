@@ -73,14 +73,14 @@
             registeredDevnetIdentifiers = [dictionaryFromKeyChain mutableCopy];
         }
         self.knownDevnetChains = [NSMutableArray array];
-        for (NSString *string in registeredDevnetIdentifiers) {
+        /*for (NSString *string in registeredDevnetIdentifiers) {
             NSArray<DSCheckpoint *> *checkpointArray = registeredDevnetIdentifiers[string];
             //todo deal with version > 1
             DSChain *chain = [DSChain recoverKnownDevnetWithIdentifier:string version:1 withCheckpoints:checkpointArray performSetup:NO];
             chain.chainManager = [self devnetManagerForChain:chain];
             // [self.knownDevnetChains addObject:chain]; // adding this before setup prevents a loop
             [chain setUp];
-        }
+        }*/
 
         self.reachability = [DSReachabilityManager sharedManager];
     }
@@ -347,6 +347,8 @@
                                                                   NSError *error = nil;
                                                                   DSChainManager *chainManager = [self chainManagerForChain:chain];
                                                                   DSPeerManager *peerManager = chainManager.peerManager;
+                                                                  DSMasternodeManager *masternodeManager = chainManager.masternodeManager;
+                                                                  [masternodeManager destroyProcessors];
                                                                   [peerManager clearRegisteredPeers];
                                                                   NSMutableDictionary *registeredDevnetsDictionary = [getKeychainDict(DEVNET_CHAINS_KEY, @[[NSString class], [NSArray class], [DSCheckpoint class]], &error) mutableCopy];
 
