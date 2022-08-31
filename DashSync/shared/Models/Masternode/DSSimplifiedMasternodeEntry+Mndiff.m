@@ -151,8 +151,7 @@
     }
     masternode_entry->previous_validity = previous_validity;
     masternode_entry->previous_validity_count = previousValidityCount;
-    masternode_entry->provider_registration_transaction_hash = malloc(sizeof(UInt256));
-    memcpy(masternode_entry->provider_registration_transaction_hash, [self providerRegistrationTransactionHash].u8, sizeof(UInt256));
+    masternode_entry->provider_registration_transaction_hash = uint256_malloc([self providerRegistrationTransactionHash]);
     masternode_entry->ip_address = uint128_malloc([self address]);
     masternode_entry->port = [self port];
     masternode_entry->update_height = [self updateHeight];

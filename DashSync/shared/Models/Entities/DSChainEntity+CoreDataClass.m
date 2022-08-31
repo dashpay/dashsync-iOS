@@ -134,7 +134,7 @@
                 DSLog(@"Removing extra chain entity of type %d", type);
             }
         }
-        DSChainEntity *chainEntity = objects[0];
+        DSChainEntity *chainEntity = [objects objectAtIndex:0];
         if (devnetIdentifier) {
             NSError *error = nil;
             NSArray *knownCheckpoints = [NSKeyedUnarchiver unarchivedObjectOfClasses:[NSSet setWithArray:@[[NSArray class], [DSCheckpoint class]]] fromData:[chainEntity checkpoints] error:&error];
