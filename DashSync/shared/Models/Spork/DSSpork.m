@@ -143,6 +143,8 @@
             return @"Chain locks enabled";
         case DSSporkIdentifier_Spork20InstantSendLLMQBased:
             return @"LLMQ based Instant Send";
+        case DSSporkIdentifier_Spork23QuorumPoseConnected:
+            return @"Quorum PoSe connected";
         default:
             return @"Unknown spork";
     }
