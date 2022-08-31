@@ -44,7 +44,7 @@ void destroyLLMQSnapshot(LLMQSnapshot *snapshot);
 void addInsightForBlockHash(uint8_t (*block_hash)[32], const void *context);
 void sendError(uint8_t error_type, const void *context);
 void logRustMessage(const char *message, const void *context);
-bool shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*block_hash)[32], const void *context);
+uint8_t shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*block_hash)[32], const void *context);
 bool shouldProcessLLMQType(uint8_t quorum_type, const void *context);
 bool validateLLMQ(struct LLMQValidationData *data, const void *context);
 
@@ -57,14 +57,6 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context);
 
 - (DSMnDiffProcessingResult *)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeProcessorContext *)context;
 - (DSQRInfoProcessingResult *)processQRInfoMessage:(NSData *)message withContext:(DSMasternodeProcessorContext *)context;
-
-//+ (QRInfo *)readQRInfoMessage:(NSData *)message
-//                  withContext:(DSMasternodeProcessorContext *)context
-//                withProcessor:(MasternodeProcessor *)processor;
-//
-//+ (void)destroyQRInfoMessage:(QRInfo *)info;
-
-//- (DSQRInfoProcessingResult *)processQRInfo:(QRInfo *)info withContext:(DSMasternodeProcessorContext *)context;
 
 @end
 
