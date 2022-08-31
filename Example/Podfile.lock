@@ -559,7 +559,7 @@ PODS:
     - abseil/base/base_internal
     - abseil/base/config
     - abseil/meta/type_traits
-  - bls-signatures-pod (1.0.6)
+  - bls-signatures-pod (1.0.7)
   - BoringSSL-GRPC (0.0.24):
     - BoringSSL-GRPC/Implementation (= 0.0.24)
     - BoringSSL-GRPC/Interface (= 0.0.24)
@@ -583,7 +583,7 @@ PODS:
     - gRPC-ProtoRPC
   - DashSharedCore (0.1.5)
   - DashSync (0.1.0):
-    - bls-signatures-pod (= 1.0.6)
+    - bls-signatures-pod (= 1.0.7)
     - CocoaLumberjack (= 3.7.2)
     - DAPI-GRPC (= 0.22.0-dev.8)
     - DashSharedCore (= 0.1.5)
@@ -713,13 +713,13 @@ SPEC CHECKSUMS:
   "!ProtoCompiler": 938ac0701c79342e77008ff71758933ffad8bae1
   "!ProtoCompiler-gRPCPlugin": 5b75d985d1a03be04585316db3ca41a2aa525918
   abseil: 926fb7a82dc6d2b8e1f2ed7f3a718bce691d1e46
-  bls-signatures-pod: d14a3b680e7029ce6734d9cdfd8fd2299f69a5e5
+  bls-signatures-pod: 2fb002bda90163678c294bc2aa8a1049cba9ead7
   BoringSSL-GRPC: 3175b25143e648463a56daeaaa499c6cb86dad33
   CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
   CocoaLumberjack: b7e05132ff94f6ae4dfa9d5bce9141893a21d9da
   DAPI-GRPC: 138d62523bbfe7e88a39896f1053c0bc12390d9f
   DashSharedCore: ea297bbec328a7046d1766dd13e39d776fe0973c
-  DashSync: 0a19ba1d53cc721881e5c2b1f8d40bc24707b19e
+  DashSync: c18c0912e7c28ef596f8a8398e3d1cc59f468762
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   gRPC: dd62176ac7f492b0bab9b4c2600a6a3a99309544

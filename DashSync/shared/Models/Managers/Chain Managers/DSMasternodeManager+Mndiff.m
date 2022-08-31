@@ -39,7 +39,7 @@ MasternodeList *getMasternodeListByBlockHash(uint8_t (*block_hash)[32], const vo
     UInt256 blockHash = *((UInt256 *)block_hash);
     DSMasternodeList *list = processorContext.masternodeListLookup(blockHash);
     MasternodeList *c_list = list ? [list ffi_malloc] : NULL;
-    NSLog(@"getMasternodeListByBlockHash: %@: %p: %@", uint256_hex(blockHash), c_list, context);
+    NSLog(@"••• getMasternodeListByBlockHash: %@: %p: %@", uint256_hex(blockHash), c_list, context);
     processor_destroy_block_hash(block_hash);
     return c_list;
 }
@@ -48,20 +48,21 @@ bool saveMasternodeList(uint8_t (*block_hash)[32], MasternodeList *masternode_li
     DSMasternodeProcessorContext *processorContext = (__bridge DSMasternodeProcessorContext *)context;
     DSChain *chain = processorContext.chain;
     UInt256 blockHash = *((UInt256 *)block_hash);
-    DSMasternodeList *masternodeList = [DSMasternodeList masternodeListWith:(MasternodeList *)masternode_list onChain:chain];
+    DSMasternodeList *masternodeList = [DSMasternodeList masternodeListWith:masternode_list onChain:chain];
     BOOL saved = [chain.chainManager.masternodeManager saveMasternodeList:masternodeList forBlockHash:blockHash];
-    NSLog(@"saveMasternodeList: %ul: %@: %d", processorContext.blockHeightLookup(blockHash), uint256_hex(blockHash), saved);
+    NSLog(@"••• saveMasternodeList: %ul: %@: %d", processorContext.blockHeightLookup(blockHash), uint256_hex(blockHash), saved);
     processor_destroy_block_hash(block_hash);
+    processor_destroy_masternode_list(masternode_list);
     return saved;
 }
 
 void destroyMasternodeList(MasternodeList *masternode_list) {
-    NSLog(@"destroyMasternodeList: %p", masternode_list);
+    NSLog(@"••• destroyMasternodeList: %p", masternode_list);
     [DSMasternodeList ffi_free:masternode_list];
 }
 
 void destroyHash(uint8_t *block_hash) { // UInt256
-    NSLog(@"destroyHash: %p", block_hash);
+    NSLog(@"••• destroyHash: %p", block_hash);
     if (block_hash) {
         free(block_hash);
     }
@@ -119,7 +120,7 @@ bool saveLLMQSnapshot(uint8_t (*block_hash)[32], LLMQSnapshot *snapshot, const v
     return saved;
 }
 void destroyLLMQSnapshot(LLMQSnapshot *snapshot) {
-    NSLog(@"destroyLLMQSnapshot: %p", snapshot);
+    NSLog(@"••• destroyLLMQSnapshot: %p", snapshot);
     [DSQuorumSnapshot ffi_free:snapshot];
 }
 
@@ -153,18 +154,18 @@ uint8_t shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*blo
     processor_destroy_block_hash(base_block_hash);
     processor_destroy_block_hash(block_hash);
     if (!hasRemovedFromRetrieval) {
-        NSLog(@"The diff still persist in retrieval: [%@ %@]", uint256_hex(baseBlockHash), uint256_hex(blockHash));
+        NSLog(@"••• The diff still persist in retrieval: [%@ %@]", uint256_hex(baseBlockHash), uint256_hex(blockHash));
         return 1;//ProcessingError::Skip;
     }
     if (hasLocallyStored) {
-        NSLog(@"The masternode list at: %@ already persist: ", uint256_hex(blockHash));
+        NSLog(@"••• The masternode list at: %@ already persist: ", uint256_hex(blockHash));
         return 1;
     }
     DSMasternodeList *baseMasternodeList = processorContext.masternodeListLookup(baseBlockHash);
     if (!baseMasternodeList && !uint256_eq(chain.genesisHash, baseBlockHash) && uint256_is_not_zero(baseBlockHash)) {
         //this could have been deleted in the meantime, if so rerequest
         [manager issueWithMasternodeListFromPeer:processorContext.peer];
-        NSLog(@"No base masternode list at: %@", uint256_hex(blockHash));
+        NSLog(@"••• No base masternode list at: %@", uint256_hex(blockHash));
         return 3;
     }
     return 0;
@@ -193,13 +194,13 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
     processor_destroy_llmq_validation_data(data);
     bool allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:commitmentHash signature:allCommitmentAggregatedSignature withPublicKeys:publicKeyArray];
     if (!allCommitmentAggregatedSignatureValidated) {
-        NSLog(@"Issue with allCommitmentAggregatedSignatureValidated: %@", uint768_hex(allCommitmentAggregatedSignature));
+        NSLog(@"••• Issue with allCommitmentAggregatedSignatureValidated: %@", uint768_hex(allCommitmentAggregatedSignature));
         return false;
     }
     //The sig must validate against the commitmentHash and all public keys determined by the signers bitvector. This is an aggregated BLS signature verification.
     bool quorumSignatureValidated = [DSBLSKey verify:commitmentHash signature:quorumThresholdSignature withPublicKey:quorumPublicKey];
     if (!quorumSignatureValidated) {
-        NSLog(@"Issue with quorumSignatureValidated");
+        NSLog(@"••• Issue with quorumSignatureValidated");
         return false;
     }
     return true;
