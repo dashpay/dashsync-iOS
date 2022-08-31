@@ -24,6 +24,7 @@
     uint8_t errorStatus = result->error_status;
     processingResult.errorStatus = errorStatus;
     if (errorStatus > 0) {
+        NSLog(@"DSQRInfoProcessingResult.error %ul", errorStatus);
         return processingResult;
     }
     MNListDiffResult *diffResultAtHC = result->result_at_h_c;
@@ -63,6 +64,7 @@
     }
     processingResult.snapshotList = snapshotList;
     processingResult.mnListDiffList = mnListDiffList;
+    NSLog(@"DSQRInfoProcessingResult.result %@", processingResult);
     return processingResult;
 }
 
