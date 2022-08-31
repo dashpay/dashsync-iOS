@@ -117,6 +117,7 @@ bool saveLLMQSnapshot(uint8_t (*block_hash)[32], LLMQSnapshot *snapshot, const v
     BOOL saved = [chain.chainManager.masternodeManager saveQuorumSnapshot:quorumSnapshot];
     NSLog(@"••• saveLLMQSnapshot: %ul: %@: %d", processorContext.blockHeightLookup(blockHash), uint256_hex(blockHash), saved);
     processor_destroy_block_hash(block_hash);
+    processor_destroy_llmq_snapshot(snapshot);
     return saved;
 }
 void destroyLLMQSnapshot(LLMQSnapshot *snapshot) {
