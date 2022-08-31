@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSQRInfoProcessingResult : NSObject
 
+@property (nonatomic) uint8_t errorStatus;
 @property (nonatomic) DSQuorumSnapshot *snapshotAtHC;
 @property (nonatomic) DSQuorumSnapshot *snapshotAtH2C;
 @property (nonatomic) DSQuorumSnapshot *snapshotAtH3C;

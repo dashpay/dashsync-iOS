@@ -24,6 +24,12 @@
 
 + (instancetype)processingResultWith:(MNListDiffResult *)result onChain:(DSChain *)chain {
     DSMnDiffProcessingResult *processingResult = [[DSMnDiffProcessingResult alloc] init];
+    uint8_t errorStatus = result->error_status;
+    processingResult.errorStatus = errorStatus;
+    if (errorStatus > 0) {
+        return processingResult;
+    }
+    [processingResult setErrorStatus:errorStatus];
     [processingResult setBaseBlockHash:*(UInt256 *)result->base_block_hash];
     [processingResult setBlockHash:*(UInt256 *)result->block_hash];
     [processingResult setFoundCoinbase:result->has_found_coinbase];

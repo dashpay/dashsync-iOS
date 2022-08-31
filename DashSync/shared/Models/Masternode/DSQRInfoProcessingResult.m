@@ -21,11 +21,15 @@
 
 + (instancetype)processingResultWith:(QRInfoResult *)result onChain:(DSChain *)chain {
     DSQRInfoProcessingResult *processingResult = [[DSQRInfoProcessingResult alloc] init];
+    uint8_t errorStatus = result->error_status;
+    processingResult.errorStatus = errorStatus;
+    if (errorStatus > 0) {
+        return processingResult;
+    }
     MNListDiffResult *diffResultAtHC = result->result_at_h_c;
     MNListDiffResult *diffResultAtH2C = result->result_at_h_2c;
     MNListDiffResult *diffResultAtH3C = result->result_at_h_3c;
     MNListDiffResult *diffResultAtH4C = result->result_at_h_4c;
-
     processingResult.snapshotAtHC = [DSQuorumSnapshot quorumSnapshotWith:result->snapshot_at_h_c forBlockHash:*((UInt256 *)diffResultAtHC->block_hash)];
     processingResult.snapshotAtH2C = [DSQuorumSnapshot quorumSnapshotWith:result->snapshot_at_h_2c forBlockHash:*((UInt256 *)diffResultAtH2C->block_hash)];
     processingResult.snapshotAtH3C = [DSQuorumSnapshot quorumSnapshotWith:result->snapshot_at_h_3c forBlockHash:*((UInt256 *)diffResultAtH3C->block_hash)];
