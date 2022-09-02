@@ -20,7 +20,7 @@
 
 @implementation DSCoinbaseTransaction (Mndiff)
 
-+ (instancetype)coinbaseTransactionWith:(CoinbaseTransaction *)coinbaseTransaction onChain:(DSChain *)chain {
+/*+ (instancetype)coinbaseTransactionWith:(CoinbaseTransaction *)coinbaseTransaction onChain:(DSChain *)chain {
     DSCoinbaseTransaction *ctx = [[DSCoinbaseTransaction alloc] init];
     Transaction *tx = coinbaseTransaction->base;
     uintptr_t inputs_count = tx->inputs_count;
@@ -64,6 +64,6 @@
     ctx.payloadOffset = (uint32_t)tx->payload_offset;
     ctx.blockHeight = tx->block_height;
     return ctx;
-}
+}*/
 
 @end

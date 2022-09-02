@@ -152,24 +152,28 @@ uint8_t shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*blo
     DSMasternodeManager *manager = chain.chainManager.masternodeManager;
     BOOL hasRemovedFromRetrieval = [manager.service removeRequestInRetrievalForBaseBlockHash:baseBlockHash blockHash:blockHash];
     BOOL hasLocallyStored = [manager.store hasMasternodeListAt:uint256_data(blockHash)];
+    uint32_t baseBlockHeight = [manager heightForBlockHash:baseBlockHash];
+    uint32_t blockHeight = [manager heightForBlockHash:blockHash];
+    NSLog(@"•••• shouldProcessDiffWithRange: %u: %@ .. %u: %@", baseBlockHeight, uint256_hex(baseBlockHash), blockHeight, uint256_hex(blockHash));
     processor_destroy_block_hash(base_block_hash);
     processor_destroy_block_hash(block_hash);
     if (!hasRemovedFromRetrieval) {
-        NSLog(@"••• The diff still persist in retrieval: [%@ %@]", uint256_hex(baseBlockHash), uint256_hex(blockHash));
-        return 1;//ProcessingError::Skip;
+        NSLog(@"•••• The diff still persist in retrieval: %u: %@ .. %u: %@", baseBlockHeight, uint256_hex(baseBlockHash), blockHeight, uint256_hex(blockHash));
+        return 1; // ProcessingError::PersistInRetrieval
     }
     if (hasLocallyStored) {
-        NSLog(@"••• The masternode list at: %@ already persist: ", uint256_hex(blockHash));
-        return 1;
+        NSLog(@"•••• The masternode list at: %u: %@ already persist: ", blockHeight, uint256_hex(blockHash));
+        return 2; // ProcessingError::LocallyStored
     }
     DSMasternodeList *baseMasternodeList = processorContext.masternodeListLookup(baseBlockHash);
     if (!baseMasternodeList && !uint256_eq(chain.genesisHash, baseBlockHash) && uint256_is_not_zero(baseBlockHash)) {
         //this could have been deleted in the meantime, if so rerequest
         [manager issueWithMasternodeListFromPeer:processorContext.peer];
-        NSLog(@"••• No base masternode list at: %@", uint256_hex(blockHash));
-        return 3;
+        NSLog(@"•••• No base masternode list at: %d: %@", blockHeight, uint256_hex(blockHash));
+        return 4; // ProcessingError::HasNoBaseBlockHash
     }
-    return 0;
+    NSLog(@"•••• shouldProcessDiffWithRange: OK! %u: %@ .. %u: %@", baseBlockHeight, uint256_hex(baseBlockHash), blockHeight, uint256_hex(blockHash));
+    return 0; // ProcessingError::None
 }
 
 bool shouldProcessLLMQType(uint8_t quorum_type, const void *context) {
@@ -261,17 +265,24 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
                                                                self.processor,
                                                                self.processorCache,
                                                                (__bridge void *)(context));
-    DSMnDiffProcessingResult *processingResult = [DSMnDiffProcessingResult processingResultWith:result onChain:context.chain];
-    processor_destroy_mnlistdiff_result(result);
+    DSMnDiffProcessingResult *processingResult = NULL;
+    @synchronized (context) {
+        processingResult = [DSMnDiffProcessingResult processingResultWith:result onChain:context.chain];
+        processor_destroy_mnlistdiff_result(result);
+    }
     return processingResult;
 }
 
 - (DSQRInfoProcessingResult *)processQRInfoMessage:(NSData *)message withContext:(DSMasternodeProcessorContext *)context {
     NSAssert(self.processor, @"processQRInfoMessage: No processor created");
     NSAssert(self.processorCache, @"processQRInfoMessage: No processorCache created");
-    QRInfoResult *result = process_qrinfo_from_message(message.bytes, message.length, context.useInsightAsBackup, (const uint8_t *) context.chain.genesisHash.u8, self.processor, self.processorCache, (__bridge void *)(context));
-    DSQRInfoProcessingResult *processingResult = [DSQRInfoProcessingResult processingResultWith:result onChain:context.chain];
-    processor_destroy_qr_info_result(result);
+    DSQRInfoProcessingResult *processingResult = NULL;
+    @synchronized (context) {
+        QRInfoResult *result = process_qrinfo_from_message(message.bytes, message.length, context.useInsightAsBackup, (const uint8_t *) context.chain.genesisHash.u8, self.processor, self.processorCache, (__bridge void *)(context));
+        processingResult = [DSQRInfoProcessingResult processingResultWith:result onChain:context.chain];
+        processor_destroy_qr_info_result(result);
+
+    }
     return processingResult;
 }
 

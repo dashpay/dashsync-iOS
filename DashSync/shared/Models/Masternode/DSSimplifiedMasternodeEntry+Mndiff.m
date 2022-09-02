@@ -93,9 +93,9 @@
     NSMutableDictionary<NSData *, DSSimplifiedMasternodeEntry *> *masternodes = [NSMutableDictionary dictionaryWithCapacity:count];
     for (NSUInteger i = 0; i < count; i++) {
         MasternodeEntry *c_entry = entries[i];
-        NSData *hash = [NSData dataWithBytes:c_entry->provider_registration_transaction_hash length:32].reverse;
         DSSimplifiedMasternodeEntry *entry = [DSSimplifiedMasternodeEntry simplifiedEntryWith:c_entry onChain:chain];
-        [masternodes setObject:entry forKey:hash];
+        UInt256 hash = uint256_reverse(entry.providerRegistrationTransactionHash);
+        [masternodes setObject:entry forKey:uint256_data(hash)];
     }
     return masternodes;
 }

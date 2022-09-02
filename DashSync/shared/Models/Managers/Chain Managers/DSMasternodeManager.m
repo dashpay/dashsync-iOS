@@ -358,13 +358,13 @@
                         uint32_t blockHeight = [self heightForBlockHash:blockHash];
                         if ([self hasDIP0024Enabled] && self.rotatedQuorumsActivationHeight != UINT32_MAX && blockHeight > self.rotatedQuorumsActivationHeight) {
                             // request at: blockHeight % dkgInterval == activeSigningQuorumsCount + 11 + 8
-                            DSLog(@"••• -> requestQuorumRotationInfo %d..%d [%@..%@]", [self heightForBlockHash:previousBlockHash], blockHeight, uint256_hex(previousBlockHash), uint256_hex(blockHash));
+                            NSLog(@"•••• -> requestQuorumRotationInfo %d..%d [%@..%@]", [self heightForBlockHash:previousBlockHash], blockHeight, uint256_hex(previousBlockHash), uint256_hex(blockHash));
                             [self.service requestQuorumRotationInfo:previousBlockHash forBlockHash:blockHash];
                             
                         } else {
                             // request at: every new block
                             NSAssert(([self heightForBlockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
-                            DSLog(@"••• -> requestMasternodeListDiff %d..%d [%@..%@]", [self heightForBlockHash:previousBlockHash], blockHeight, uint256_hex(previousBlockHash), uint256_hex(blockHash));
+                            NSLog(@"•••• -> requestMasternodeListDiff %d..%d [%@..%@]", [self heightForBlockHash:previousBlockHash], blockHeight, uint256_hex(previousBlockHash), uint256_hex(blockHash));
                             [self.service requestMasternodeListDiff:previousBlockHash forBlockHash:blockHash];
                         }
                     }
@@ -557,16 +557,6 @@
             [neededMasternodeLists addObject:masternodeListBlockHashData]; //also get the current one again
             [self getMasternodeListsForBlockHashes:neededMasternodeLists];
         } else {
-            if ([result hasRotatedQuorumsForChain:self.chain] && !self.isRotatedQuorumsPresented) {
-                DSLog(@"••• processDiffResult: rotated quorums are presented at height %u: %@, so we'll switch into consuming qrinfo", masternodeListBlockHeight, uint256_hex(masternodeListBlockHash));
-                self.isRotatedQuorumsPresented = YES;
-                self.rotatedQuorumsActivationHeight = masternodeListBlockHeight;
-                // For TestNet rotated quorums appears on the block 786189 or 785760 ?
-                // TODO: implement strategy like this
-                // If we have missing masternode lists BEFORE height where rotated quorums appear
-                // We need to request in getmnlistd message for reconstruct them
-                // So it make sense to store height instead of flag
-            }
             if (uint256_eq(self.store.lastQueriedBlockHash, masternodeListBlockHash)) {
                 self.currentMasternodeList = masternodeList;
             }
@@ -589,7 +579,19 @@
             if (uint256_eq(self.store.lastQueriedBlockHash, masternodeListBlockHash)) {
                 [self.store removeOldMasternodeLists];
             }
-            [self.service removeFromRetrievalQueue:masternodeListBlockHashData];
+            if ([result hasRotatedQuorumsForChain:self.chain] && !self.isRotatedQuorumsPresented) {
+                DSLog(@"••• processDiffResult: rotated quorums are presented at height %u: %@, so we'll switch into consuming qrinfo", masternodeListBlockHeight, uint256_hex(masternodeListBlockHash));
+                self.isRotatedQuorumsPresented = YES;
+                self.rotatedQuorumsActivationHeight = masternodeListBlockHeight;
+                [self.service cleanAllLists];
+                // TODO: implement strategy like this
+                // If we have missing masternode lists BEFORE height where rotated quorums appear
+                // We need to request in getmnlistd message for reconstruct them
+                // So it make sense to store height instead of flag
+            } else {
+                [self.service removeFromRetrievalQueue:masternodeListBlockHashData];
+            }
+
             [self dequeueMasternodeListRequest];
             if (![self.service retrievalQueueCount]) {
                 [self.chain.chainManager.transactionManager checkWaitingForQuorums];
@@ -623,6 +625,7 @@
     DSMnDiffProcessingResult *result = [self processMasternodeDiffMessage:message withContext:ctx];
     UInt256 baseBlockHash = result.baseBlockHash;
     UInt256 blockHash = result.blockHash;
+    NSLog(@"••• -> receive mnlistdiff %d..%d [%@..%@]", [self heightForBlockHash:baseBlockHash], [self heightForBlockHash:blockHash], uint256_hex(baseBlockHash), uint256_hex(blockHash));
 #if SAVE_MASTERNODE_DIFF_TO_FILE
     NSString *fileName = [NSString stringWithFormat:@"MNL_%@_%@.dat", @([self heightForBlockHash:baseBlockHash]), @([self heightForBlockHash:blockHash])];
     DSLog(@"File %@ saved", fileName);
@@ -662,6 +665,7 @@
     }
     UInt256 baseBlockHashTip = result.mnListDiffResultAtTip.baseBlockHash;
     UInt256 blockHashTip = result.mnListDiffResultAtTip.blockHash;
+    NSLog(@"••• -> receive qrinfo %d..%d [%@..%@]", [self heightForBlockHash:baseBlockHashTip], [self heightForBlockHash:blockHashTip], uint256_hex(baseBlockHashTip), uint256_hex(blockHashTip));
 
 #if SAVE_MASTERNODE_DIFF_TO_FILE
     NSString *fileName = [NSString stringWithFormat:@"QRINFO_%@_%@.dat", @([self heightForBlockHash:baseBlockHashTip]), @([self heightForBlockHash:blockHashTip])];
@@ -687,6 +691,10 @@
     }
     for (DSQuorumSnapshot *snapshot in result.snapshotList) {
         [self.store saveQuorumSnapshot:snapshot toChain:self.chain completion:^(NSError * _Nonnull error) {}];
+    }
+    
+    for (DSQuorumEntry *entry in result.lastQuorumPerIndex) {
+        [self.store.activeQuorums setObject:entry forKey:uint256_data(entry.llmqQuorumHash)];
     }
 }
 

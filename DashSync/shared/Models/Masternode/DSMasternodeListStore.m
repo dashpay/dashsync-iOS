@@ -49,7 +49,7 @@
 @property (nonatomic, strong) dispatch_queue_t masternodeSavingQueue;
 @property (nonatomic, assign) UInt256 lastQueriedBlockHash; //last by height, not by time queried
 @property (atomic, assign) uint32_t masternodeListCurrentlyBeingSavedCount;
-
+@property (nonatomic, strong) NSMutableDictionary<NSData *, DSQuorumEntry *> *activeQuorums;
 @end
 
 @implementation DSMasternodeListStore
@@ -632,10 +632,22 @@
     return nil;
 }
 
+
+
 - (DSQuorumEntry *_Nullable)quorumEntryForPlatformHavingQuorumHash:(UInt256)quorumHash forBlockHeight:(uint32_t)blockHeight {
     DSBlock *block = [self.chain blockAtHeightOrLastTerminal:blockHeight];
     return block ? [self quorumEntryForPlatformHavingQuorumHash:quorumHash forBlock:block] : nil;
 }
+
+- (DSQuorumEntry *_Nullable)activeQuorumForTypeQuorumHash:(UInt256)quorumHash ofQuorumType:(DSLLMQType)quorumType {
+    for (DSQuorumEntry *quorumEntry in self.activeQuorums) {
+        if (uint256_eq(quorumEntry.quorumHash, quorumHash) && quorumEntry.llmqType == quorumType) {
+            return quorumEntry;
+        }
+    }
+    return nil;
+}
+
 
 - (DSQuorumEntry *)quorumEntryForPlatformHavingQuorumHash:(UInt256)quorumHash forBlock:(DSBlock *)block {
     DSMasternodeList *masternodeList = [self masternodeListForBlockHash:block.blockHash withBlockHeightLookup:nil];
@@ -652,6 +664,9 @@
     }
     DSQuorumEntry *quorumEntry = [masternodeList quorumEntryForPlatformWithQuorumHash:quorumHash];
     if (quorumEntry == nil) {
+        quorumEntry = [self activeQuorumForTypeQuorumHash:quorumHash ofQuorumType:self.chain.quorumTypeForPlatform];
+    }
+    if (quorumEntry == nil) {
         quorumEntry = [self quorumEntryForPlatformHavingQuorumHash:quorumHash forBlockHeight:block.height - 1];
     }
     return quorumEntry;
@@ -661,7 +676,12 @@
                                   ofQuorumType:(DSLLMQType)quorumType
                                 forMerkleBlock:(DSMerkleBlock *)merkleBlock
                           withExpirationOffset:(uint32_t)offset {
-    DSMasternodeList *masternodeList = [self masternodeListBeforeBlockHash:merkleBlock.blockHash];
+    UInt256 blockHash = merkleBlock.blockHash;
+    DSQuorumEntry *activeQuorum = [self activeQuorumForTypeQuorumHash:blockHash ofQuorumType:quorumType];
+    if (activeQuorum) {
+        return activeQuorum;
+    }
+    DSMasternodeList *masternodeList = [self masternodeListBeforeBlockHash:blockHash];
     if (!masternodeList) {
         DSLog(@"No masternode list found yet");
         return nil;
@@ -671,6 +691,7 @@
               merkleBlock.height - masternodeList.height, masternodeList.height, merkleBlock.height);
         return nil;
     }
+    
     return [masternodeList quorumEntryForLockRequestID:requestID ofQuorumType:quorumType];
 }
 

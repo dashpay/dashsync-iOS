@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSCoinbaseTransaction (Mndiff)
 
-+ (instancetype)coinbaseTransactionWith:(CoinbaseTransaction *)coinbaseTransaction onChain:(DSChain *)chain;
+//+ (instancetype)coinbaseTransactionWith:(CoinbaseTransaction *)coinbaseTransaction onChain:(DSChain *)chain;
 
 @end
 

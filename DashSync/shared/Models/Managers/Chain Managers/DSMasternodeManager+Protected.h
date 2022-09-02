@@ -45,13 +45,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)peer:(DSPeer *)peer relayedQuorumRotationInfoMessage:(NSData *)message;
 
 - (DSLocalMasternode *)localMasternodeFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry claimedWithOwnerWallet:(DSWallet *)wallet ownerKeyIndex:(uint32_t)ownerKeyIndex;
-- (DSMnDiffProcessingResult *)processMasternodeDiffMessage:(NSData *)message
-                                                 lastBlock:(DSMerkleBlock * _Nullable)lastBlock
-                                        useInsightAsBackup:(BOOL)useInsightAsBackup;
-
-- (DSQRInfoProcessingResult *)processQRInfoMessage:(QRInfo *)quorumRotationInfo
-                                         lastBlock:(DSMerkleBlock * _Nullable)lastBlock
-                                useInsightAsBackup:(BOOL)useInsightAsBackup;
 
 + (void)saveMasternodeList:(DSMasternodeList *)masternodeList toChain:(DSChain *)chain havingModifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums createUnknownBlocks:(BOOL)createUnknownBlocks inContext:(NSManagedObjectContext *)context completion:(void (^)(NSError *error))completion;
 

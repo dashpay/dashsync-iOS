@@ -42,7 +42,6 @@
     LLMQEntry *quorum_entry = malloc(sizeof(LLMQEntry));
     quorum_entry->all_commitment_aggregated_signature = uint768_malloc([self allCommitmentAggregatedSignature]);
     quorum_entry->commitment_hash = uint256_malloc([self commitmentHash]);
-//    quorum_entry->length = [self length];
     quorum_entry->llmq_type = [self llmqType];
     quorum_entry->entry_hash = uint256_malloc([self quorumEntryHash]);
     quorum_entry->llmq_hash = uint256_malloc([self quorumHash]);
@@ -64,15 +63,25 @@
 }
 
 + (void)ffi_free:(LLMQEntry *)entry {
+    NSLog(@"LLMQEntry.free: %p", entry);
+    NSLog(@"LLMQEntry.free.all_commitment_aggregated_signature: %p", entry->all_commitment_aggregated_signature);
     free(entry->all_commitment_aggregated_signature);
+    NSLog(@"LLMQEntry.free.commitment_hash: %p", entry->commitment_hash);
     if (entry->commitment_hash)
         free(entry->commitment_hash);
+    NSLog(@"LLMQEntry.free.entry_hash: %p", entry->entry_hash);
     free(entry->entry_hash);
+    NSLog(@"LLMQEntry.free.llmq_hash: %p", entry->llmq_hash);
     free(entry->llmq_hash);
+    NSLog(@"LLMQEntry.free.public_key: %p", entry->public_key);
     free(entry->public_key);
+    NSLog(@"LLMQEntry.free.threshold_signature: %p", entry->threshold_signature);
     free(entry->threshold_signature);
+    NSLog(@"LLMQEntry.free.verification_vector_hash: %p", entry->verification_vector_hash);
     free(entry->verification_vector_hash);
+    NSLog(@"LLMQEntry.free.signers_bitset: %p", entry->signers_bitset);
     free(entry->signers_bitset);
+    NSLog(@"LLMQEntry.free.valid_members_bitset: %p", entry->valid_members_bitset);
     free(entry->valid_members_bitset);
     free(entry);
 }
