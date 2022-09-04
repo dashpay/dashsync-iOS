@@ -363,7 +363,7 @@
         uint32_t lastBlockHeight = self.currentMasternodeList.height;
         NSMutableArray *masternodeListBlockHashes = [[self.masternodeListsByBlockHash allKeys] mutableCopy];
         [masternodeListBlockHashes addObjectsFromArray:[self.masternodeListsBlockHashStubs allObjects]];
-        NSArray<DSMasternodeListEntity *> *masternodeListEntities = [DSMasternodeListEntity objectsInContext:self.managedObjectContext matching:@"block.height < %@ && block.blockHash IN %@ && (block.usedByQuorums.@count == 0)", @(lastBlockHeight - 50), masternodeListBlockHashes];
+        NSArray<DSMasternodeListEntity *> *masternodeListEntities = [DSMasternodeListEntity objectsInContext:self.managedObjectContext matching:@"block.height < %@ && block.blockHash IN %@ && (block.usedByQuorums.@count == 0) && (block.quorumSnapshot == NULL)", @(lastBlockHeight - 50), masternodeListBlockHashes];
         BOOL removedItems = !!masternodeListEntities.count;
         for (DSMasternodeListEntity *masternodeListEntity in [masternodeListEntities copy]) {
             DSLog(@"Removing masternodeList at height %u", masternodeListEntity.block.height);
@@ -417,6 +417,7 @@
         //in rare race conditions this might already exist
         return;
     }
+    NSLog(@"•••• store masternode list at: %u: %@", [self heightForBlockHash:masternodeList.blockHash], uint256_hex(masternodeList.blockHash));
     NSArray *updatedSimplifiedMasternodeEntries = [addedMasternodes.allValues arrayByAddingObjectsFromArray:modifiedMasternodes.allValues];
     [self.chain updateAddressUsageOfSimplifiedMasternodeEntries:updatedSimplifiedMasternodeEntries];
     [self.masternodeListsByBlockHash setObject:masternodeList forKey:blockHashData];

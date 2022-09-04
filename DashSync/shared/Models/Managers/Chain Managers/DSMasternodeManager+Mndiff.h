@@ -42,7 +42,6 @@ LLMQSnapshot *getLLMQSnapshotByBlockHash(uint8_t (*block_hash)[32], const void *
 bool saveLLMQSnapshot(uint8_t (*block_hash)[32], LLMQSnapshot *snapshot, const void *context);
 void destroyLLMQSnapshot(LLMQSnapshot *snapshot);
 void addInsightForBlockHash(uint8_t (*block_hash)[32], const void *context);
-void sendError(uint8_t error_type, const void *context);
 void logRustMessage(const char *message, const void *context);
 uint8_t shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*block_hash)[32], const void *context);
 bool shouldProcessLLMQType(uint8_t quorum_type, const void *context);

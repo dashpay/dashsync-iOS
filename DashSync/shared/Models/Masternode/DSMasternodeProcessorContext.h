@@ -32,6 +32,7 @@ typedef DSMerkleBlock *_Nullable(^_Nullable MerkleBlockFinder)(UInt256 blockHash
 @property (nonatomic) DSChain *chain;
 @property (nonatomic, nullable) DSPeer *peer;
 @property (nonatomic) BOOL useInsightAsBackup;
+@property (nonatomic) BOOL isFromSnapshot;
 @property (nonatomic, copy) MasternodeListFinder masternodeListLookup;
 @property (nonatomic, copy) BlockHeightFinder blockHeightLookup;
 @property (nonatomic, copy) MerkleRootFinder merkleRootLookup;

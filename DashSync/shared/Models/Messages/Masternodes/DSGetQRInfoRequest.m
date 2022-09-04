@@ -84,7 +84,12 @@
         return NO;
     }
     NSData *h = self.baseBlockHashes[0];
-    return uint256_eq(baseBlockHash, h.UInt256) && uint256_eq(blockHash, self.blockHash);
+    return uint256_eq(baseBlockHash, h.UInt256); // && uint256_eq(blockHash, self.blockHash); -- always returns tip
+}
+
+
+- (NSString *)logWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
+    return [NSString stringWithFormat:@"%u: %@ .. %u: %@", blockHeightLookup(self.baseBlockHashes[0].UInt256), self.baseBlockHashes[0].hexString, blockHeightLookup(self.blockHash), uint256_hex(self.blockHash)];
 }
 
 @end

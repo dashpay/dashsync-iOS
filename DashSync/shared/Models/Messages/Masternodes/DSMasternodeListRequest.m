@@ -22,5 +22,8 @@
 -(BOOL)matchesInRangeWithBaseBlockHash:(UInt256)baseBlockHash blockHash:(UInt256)blockHash {
     return uint256_eq(blockHash, self.blockHash);
 }
+- (NSString *)logWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
+    return nil;
+}
 
 @end

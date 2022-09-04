@@ -60,6 +60,8 @@ FOUNDATION_EXPORT NSString *const DSMasternodeListDiffValidationErrorNotificatio
 
 @property (nonatomic, readonly, nullable) MasternodeProcessor *processor;
 @property (nonatomic, readonly, nullable) MasternodeProcessorCache *processorCache;
+@property (nonatomic, assign, readonly) BOOL isRotatedQuorumsPresented;
+@property (nonatomic, assign, readonly) uint32_t rotatedQuorumsActivationHeight;
 
 - (instancetype)init NS_UNAVAILABLE;
 - (uint32_t)heightForBlockHash:(UInt256)blockhash;

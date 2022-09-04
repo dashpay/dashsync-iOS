@@ -76,5 +76,8 @@
     return uint256_eq(baseBlockHash, self.baseBlockHash) && uint256_eq(blockHash, self.blockHash);
 }
 
+- (NSString *)logWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
+    return [NSString stringWithFormat:@"%u: %@ .. %u: %@", blockHeightLookup(self.baseBlockHash), uint256_hex(self.baseBlockHash), blockHeightLookup(self.blockHash), uint256_hex(self.blockHash)];
+}
 
 @end

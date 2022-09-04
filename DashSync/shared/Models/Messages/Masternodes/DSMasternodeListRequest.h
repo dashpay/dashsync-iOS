@@ -18,6 +18,8 @@
 #import "BigIntTypes.h"
 #import "DSMessageRequest.h"
 #import <Foundation/Foundation.h>
+#import "NSData+Dash.h"
+#import "NSString+Dash.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -25,7 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic) UInt256 blockHash;
 
--(BOOL)matchesInRangeWithBaseBlockHash:(UInt256)baseBlockHash blockHash:(UInt256)blockHash;
+- (BOOL)matchesInRangeWithBaseBlockHash:(UInt256)baseBlockHash blockHash:(UInt256)blockHash;
+- (NSString *)logWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 
 @end
 

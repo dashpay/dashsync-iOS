@@ -42,7 +42,10 @@
         UInt256 blockHash = *((UInt256 *)operator_public_key.block_hash);
         uint32_t blockHeight = operator_public_key.block_height;
         DSBlock *block = (DSBlock *)[chain blockForBlockHash:blockHash];
-        if (!block) block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:chain];
+        if (!block) {
+            block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:chain];
+            NSLog(@"•••• block created from nothing");
+        }
         NSData *key = [NSData dataWithBytes:operator_public_key.key length:48];
         [operatorPublicKeys setObject:key forKey:block];
     }
