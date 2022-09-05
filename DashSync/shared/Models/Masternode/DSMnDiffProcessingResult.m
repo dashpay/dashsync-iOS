@@ -59,6 +59,9 @@
 - (BOOL)isValid {
     return self.foundCoinbase && self.validQuorums && self.rootMNListValid && self.rootQuorumListValid;
 }
+- (BOOL)isTotallyValid {
+    return [self isValid] && self.validCoinbase;
+}
 
 - (BOOL)hasRotatedQuorumsForChain:(DSChain*)chain {
     return [[self.addedQuorums keysOfEntriesPassingTest:^BOOL(NSNumber *_Nonnull llmqType, id _Nonnull obj, BOOL *_Nonnull stop) {

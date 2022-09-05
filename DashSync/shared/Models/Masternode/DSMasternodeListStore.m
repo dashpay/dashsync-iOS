@@ -223,6 +223,22 @@
     return hasBlock;
 }
 
+- (BOOL)hasBlockForBlockHash:(NSData *)blockHashData {
+    UInt256 blockHash = blockHashData.UInt256;
+    BOOL hasBlock = ([self.chain blockForBlockHash:blockHash] != nil);
+    if (!hasBlock) {
+        hasBlock = [self hasBlocksWithHash:blockHash];
+        
+    }
+    if (!hasBlock && self.chain.isTestnet) {
+        //We can trust insight if on testnet
+        [self.chain blockUntilGetInsightForBlockHash:blockHash];
+        hasBlock = !![[self.chain insightVerifiedBlocksByHashDictionary] objectForKey:blockHashData];
+    }
+    return hasBlock;
+}
+
+
 - (BOOL)hasMasternodeListAt:(NSData *)blockHashData {
     //    DSLog(@"We already have this masternodeList %@ (%u)", blockHashData.reverse.hexString, [self heightForBlockHash:blockHash]);
     return [self.masternodeListsByBlockHash objectForKey:blockHashData] || [self.masternodeListsBlockHashStubs containsObject:blockHashData];
@@ -438,6 +454,7 @@
                                       inContext:self.managedObjectContext
                                    completion:^(NSError *error) {
             self.masternodeListCurrentlyBeingSavedCount--;
+            DSLog(@"Finished saving MNL at height %u with error: %@", [self heightForBlockHash:masternodeList.blockHash], error.description);
             completion(error);
         }];
     });

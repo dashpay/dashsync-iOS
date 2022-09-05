@@ -48,8 +48,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)saveMasternodeList:(DSMasternodeList *)masternodeList toChain:(DSChain *)chain havingModifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums createUnknownBlocks:(BOOL)createUnknownBlocks inContext:(NSManagedObjectContext *)context completion:(void (^)(NSError *error))completion;
 
-- (void)issueWithMasternodeListFromPeer:(DSPeer *)peer;
-
 @end
 
 

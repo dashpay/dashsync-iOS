@@ -149,7 +149,9 @@ uint8_t shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*blo
     uint32_t baseBlockHeight = [manager heightForBlockHash:baseBlockHash];
     uint32_t blockHeight = [manager heightForBlockHash:blockHash];
     NSLog(@"•••• shouldProcessDiffWithRange.... %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_hex(baseBlockHash), uint256_hex(blockHash));
-    BOOL hasRemovedFromRetrieval = [manager.service removeRequestInRetrievalForBaseBlockHash:baseBlockHash blockHash:blockHash];
+    DSMasternodeListService *service = processorContext.isDIP0024 ? manager.quorumRotationService : manager.masternodeListDiffService;
+    
+    BOOL hasRemovedFromRetrieval = [service removeRequestInRetrievalForBaseBlockHash:baseBlockHash blockHash:blockHash];
     BOOL hasLocallyStored = [manager.store hasMasternodeListAt:uint256_data(blockHash)];
     processor_destroy_block_hash(base_block_hash);
     processor_destroy_block_hash(block_hash);
@@ -164,7 +166,7 @@ uint8_t shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*blo
     DSMasternodeList *baseMasternodeList = processorContext.masternodeListLookup(baseBlockHash);
     if (!baseMasternodeList && !uint256_eq(chain.genesisHash, baseBlockHash) && uint256_is_not_zero(baseBlockHash)) {
         // this could have been deleted in the meantime, if so rerequest
-        [manager issueWithMasternodeListFromPeer:processorContext.peer];
+        [service issueWithMasternodeListFromPeer:processorContext.peer];
         NSLog(@"•••• No base masternode list at: %d: %@", baseBlockHeight, uint256_hex(baseBlockHash));
         return 4; // ProcessingError::HasNoBaseBlockHash
     }

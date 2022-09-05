@@ -18,16 +18,31 @@
 #import "DSChain.h"
 #import "DSInsightManager.h"
 #import "DSMasternodeListRequest.h"
+#import "DSMasternodeListStore.h"
 #import "DSPeer.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
+
+FOUNDATION_EXPORT NSString *const DSMasternodeListDiffValidationErrorNotification;
+
+#define FAULTY_DML_MASTERNODE_PEERS @"FAULTY_DML_MASTERNODE_PEERS"
+#define CHAIN_FAULTY_DML_MASTERNODE_PEERS [NSString stringWithFormat:@"%@_%@", peer.chain.uniqueID, FAULTY_DML_MASTERNODE_PEERS]
+#define MAX_FAULTY_DML_PEERS 1
 
 typedef NS_ENUM(NSUInteger, DSMasternodeListRequestMode) {
     DSMasternodeListRequestMode_MNLISTDIFF = 1,
     DSMasternodeListRequestMode_QRINFO = 2,
     DSMasternodeListRequestMode_MIXED = DSMasternodeListRequestMode_MNLISTDIFF | DSMasternodeListRequestMode_QRINFO
 };
+@class DSMasternodeListService;
+
+@protocol DSMasternodeListServiceDelegate <NSObject>
+
+- (uint32_t)masternodeListSerivceDidRequestHeightForBlockHash:(DSMasternodeListService *)service blockHash:(UInt256)blockHash;
+- (DSMasternodeList *__nullable)masternodeListSerivceDidRequestFileFromBlockHash:(DSMasternodeListService *)service blockHash:(UInt256)blockHash;
+
+@end
 
 @interface DSMasternodeListService : NSObject
 
@@ -37,14 +52,23 @@ typedef NS_ENUM(NSUInteger, DSMasternodeListRequestMode) {
 @property (nonatomic, readonly) NSMutableOrderedSet<NSData *> *neededQueue; // TODO: Make storing hashes for tip list separately, to avoid
 @property (nonatomic, readonly) NSUInteger retrievalQueueCount;
 @property (nonatomic, readonly) NSUInteger retrievalQueueMaxAmount;
+@property (nullable, nonatomic, weak) id<DSMasternodeListServiceDelegate> delegate;
 
-- (instancetype)initWithChain:(DSChain *)chain blockHeightLookup:(BlockHeightFinder)blockHeightLookup;
+@property (nonatomic, assign) uint16_t timedOutAttempt;
+@property (nonatomic, assign) uint16_t timeOutObserverTry;
+
+- (instancetype)initWithChain:(DSChain *)chain store:(DSMasternodeListStore *)store delegate:(id<DSMasternodeListServiceDelegate>)delegate;
+
+- (void)populateRetrievalQueueWithBlockHashes:(NSOrderedSet *)blockHashes;
+- (void)getRecentMasternodeList:(NSUInteger)blocksAgo;
+- (void)dequeueMasternodeListRequest;
 
 - (void)addToRetrievalQueue:(NSData *)masternodeBlockHashData;
 - (void)addToRetrievalQueueArray:(NSArray<NSData *> *)masternodeBlockHashDataArray;
 - (void)cleanAllLists;
 - (void)cleanListsRetrievalQueue;
 - (void)cleanRequestsInRetrieval;
+- (void)composeMasternodeListRequest:(NSOrderedSet<NSData *> *)list;
 
 - (void)fetchMasternodeListsToRetrieve:(void (^)(NSOrderedSet<NSData *> *listsToRetrieve))completion;
 - (void)removeFromRetrievalQueue:(NSData *)masternodeBlockHashData;
@@ -54,8 +78,9 @@ typedef NS_ENUM(NSUInteger, DSMasternodeListRequestMode) {
 
 - (void)disconnectFromDownloadPeer;
 - (void)issueWithMasternodeListFromPeer:(DSPeer *)peer;
-- (void)requestMasternodeListDiff:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash;
-- (void)requestQuorumRotationInfo:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash;
+
+- (void)sendMasternodeListRequest:(DSMasternodeListRequest *)request;
+
 @end
 
 NS_ASSUME_NONNULL_END

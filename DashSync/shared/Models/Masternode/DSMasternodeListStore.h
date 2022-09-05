@@ -49,7 +49,7 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 - (void)setUp;
 - (void)deleteAllOnChain;
 - (void)deleteEmptyMasternodeLists;
-- (BOOL)hasBlocksWithHash:(UInt256)blockHash;
+- (BOOL)hasBlockForBlockHash:(NSData *)blockHashData;
 - (BOOL)hasMasternodeListAt:(NSData *)blockHashData;
 - (BOOL)hasMasternodeListCurrentlyBeingSaved;
 - (uint32_t)heightForBlockHash:(UInt256)blockhash;
@@ -61,6 +61,7 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 - (void)removeAllMasternodeLists;
 - (void)removeOldMasternodeLists;
 - (void)removeOldSimplifiedMasternodeEntries;
+
 - (void)saveMasternodeList:(DSMasternodeList *)masternodeList
           addedMasternodes:(NSDictionary *)addedMasternodes
        modifiedMasternodes:(NSDictionary *)modifiedMasternodes

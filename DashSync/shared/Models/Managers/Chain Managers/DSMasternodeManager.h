@@ -26,19 +26,20 @@
 #import "DSChain.h"
 #import "DSMasternodeListService.h"
 #import "DSMasternodeListStore.h"
+#import "DSMasternodeListDiffService.h"
+#import "DSQuorumRotationService.h"
 #import "DSQuorumSnapshot.h"
 #import "DSPeer.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-FOUNDATION_EXPORT NSString *const DSMasternodeListDiffValidationErrorNotification;
 
 #define MASTERNODE_COST 100000000000
 
-@class DSPeer, DSChain, DSSimplifiedMasternodeEntry, DSWallet, DSLocalMasternode, DSProviderRegistrationTransaction, DSQuorumEntry, DSMasternodeList, DSInstantSendTransactionLock, DSBLSKey, DSECDSAKey;
+@class DSPeer, DSChain, DSSimplifiedMasternodeEntry, DSWallet, DSLocalMasternode, DSProviderRegistrationTransaction, DSQuorumEntry, DSMasternodeList, DSInstantSendTransactionLock, DSBLSKey, DSECDSAKey, DSMasternodeListService, DSQuorumRotationService, DSMasternodeListDiffService;
 
-@interface DSMasternodeManager : NSObject <DSPeerMasternodeDelegate>
+@interface DSMasternodeManager : NSObject <DSPeerMasternodeDelegate, DSMasternodeListServiceDelegate>
 
 @property (nonatomic, readonly, nonnull) DSChain *chain;
 @property (nonatomic, readonly) NSUInteger simplifiedMasternodeEntryCount;
@@ -56,7 +57,8 @@ FOUNDATION_EXPORT NSString *const DSMasternodeListDiffValidationErrorNotificatio
 @property (nonatomic, readonly) BOOL currentMasternodeListIsInLast24Hours;
 
 @property (nonatomic, readonly) DSMasternodeListStore *store;
-@property (nonatomic, readonly) DSMasternodeListService *service;
+@property (nonatomic, readonly) DSMasternodeListDiffService *masternodeListDiffService;
+@property (nonatomic, readonly) DSQuorumRotationService *quorumRotationService;
 
 @property (nonatomic, readonly, nullable) MasternodeProcessor *processor;
 @property (nonatomic, readonly, nullable) MasternodeProcessorCache *processorCache;
