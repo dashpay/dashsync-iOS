@@ -260,15 +260,18 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
 ///
 - (DSMnDiffProcessingResult *)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeProcessorContext *)context {
     NSAssert(self.processor, @"processMasternodeDiffMessage: No processor created");
-    MNListDiffResult *result = process_mnlistdiff_from_message(
-                                                               message.bytes,
-                                                               message.length,
-                                                               context.useInsightAsBackup,
-                                                               context.isFromSnapshot,
-                                                               (const uint8_t *) context.chain.genesisHash.u8,
-                                                               self.processor,
-                                                               self.processorCache,
-                                                               (__bridge void *)(context));
+    MNListDiffResult *result = NULL;
+    @synchronized (context) {
+        result = process_mnlistdiff_from_message(
+                                                                   message.bytes,
+                                                                   message.length,
+                                                                   context.useInsightAsBackup,
+                                                                   context.isFromSnapshot,
+                                                                   (const uint8_t *) context.chain.genesisHash.u8,
+                                                                   self.processor,
+                                                                   self.processorCache,
+                                                                   (__bridge void *)(context));
+    }
     DSMnDiffProcessingResult *processingResult = [DSMnDiffProcessingResult processingResultWith:result onChain:context.chain];
     processor_destroy_mnlistdiff_result(result);
     return processingResult;
@@ -277,15 +280,18 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
 - (DSQRInfoProcessingResult *)processQRInfoMessage:(NSData *)message withContext:(DSMasternodeProcessorContext *)context {
     NSAssert(self.processor, @"processQRInfoMessage: No processor created");
     NSAssert(self.processorCache, @"processQRInfoMessage: No processorCache created");
-    QRInfoResult *result = process_qrinfo_from_message(
-                                                       message.bytes,
-                                                       message.length,
-                                                       context.useInsightAsBackup,
-                                                       context.isFromSnapshot,
-                                                       (const uint8_t *) context.chain.genesisHash.u8,
-                                                       self.processor,
-                                                       self.processorCache,
-                                                       (__bridge void *)(context));
+    QRInfoResult *result = NULL;
+    @synchronized (context) {
+        result = process_qrinfo_from_message(
+                                                           message.bytes,
+                                                           message.length,
+                                                           context.useInsightAsBackup,
+                                                           context.isFromSnapshot,
+                                                           (const uint8_t *) context.chain.genesisHash.u8,
+                                                           self.processor,
+                                                           self.processorCache,
+                                                           (__bridge void *)(context));
+    }
     DSQRInfoProcessingResult *processingResult = [DSQRInfoProcessingResult processingResultWith:result onChain:context.chain];
     processor_destroy_qr_info_result(result);
     return processingResult;
