@@ -203,7 +203,7 @@
     self.simplifiedMasternodeEntryHash = [NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash];
     self.updateHeight = blockHeight;
     
-    NSAssert(simplifiedMasternodeEntry.updateHeight == blockHeight, ([NSString stringWithFormat:@"the block height (%i) should be the same as the entry update height (%i)", blockHeight, simplifiedMasternodeEntry.updateHeight]));
+//    NSAssert(simplifiedMasternodeEntry.updateHeight == blockHeight, ([NSString stringWithFormat:@"the block height (%i) should be the same as the entry update height (%i)", blockHeight, simplifiedMasternodeEntry.updateHeight]));
     if (!chainEntity) {
         self.chain = [simplifiedMasternodeEntry.chain chainEntityInContext:self.managedObjectContext];
     } else {
