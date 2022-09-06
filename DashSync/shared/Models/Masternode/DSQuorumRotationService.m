@@ -22,6 +22,10 @@
 
 @implementation DSQuorumRotationService
 
+- (DSMasternodeList *)currentMasternodeList {
+    return self.masternodeListAtTip;
+}
+
 - (void)composeMasternodeListRequest:(NSOrderedSet<NSData *> *)list {
     NSMutableDictionary<NSData *, NSData *> *hashes = [NSMutableDictionary dictionary];
     for (NSData *blockHashData in list) {
@@ -34,7 +38,9 @@
             NSLog(@"•••• -> masternode list at [%u: %@] in files found: (%@)",[self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:blockHash], uint256_hex(blockHash), masternodeList);
             if (masternodeList) {
                 if (uint256_eq(self.store.lastQueriedBlockHash, masternodeList.blockHash)) {
-                    [self.store removeOldMasternodeLists];
+                    if (self.currentMasternodeList) {
+                        [self.store removeOldMasternodeLists:self.currentMasternodeList.height];
+                    }
                 }
                 [self removeFromRetrievalQueue:blockHashData];
                 [self checkWaitingForQuorums];
@@ -60,6 +66,48 @@
 //    [self requestQuorumRotationInfo2:<#(NSArray<NSData *> *)#> forBlockHash:<#(UInt256)#>]
     
     //[self requestQuorumRotationInfo:previousBlockHash forBlockHash:blockHash];
+}
+
+
+
+- (void)getRecentMasternodeList {
+    @synchronized(self.retrievalQueue) {
+        DSMerkleBlock *merkleBlock = [self.chain blockFromChainTip:0];
+        if (!merkleBlock) {
+            // sometimes it happens while rescan
+            DSLog(@"getRecentMasternodeList: (no block exist) for tip");
+            return;
+        }
+        UInt256 merkleBlockHash = merkleBlock.blockHash;
+        if ([self hasLatestBlockInRetrievalQueueWithHash:merkleBlockHash]) {
+            //we are asking for the same as the last one
+            return;
+        }
+        uint32_t lastHeight = merkleBlock.height;
+        //DSLLMQType llmqType = self.chain.quorumTypeForISDLocks;
+        DKGParams dkgParams = self.chain.isDevnetAny ? DKG_DEVNET_DIP_0024 : DKG_60_75;
+        
+        
+        
+        uint32_t rotationOffset = dkgParams.mining_window_end;
+        uint32_t updateInterval = dkgParams.interval;
+
+
+        BOOL needUpdate = !self.masternodeListAtH ||
+        (lastHeight % updateInterval == rotationOffset &&
+        lastHeight >= [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:self.masternodeListAtH.blockHash]  + rotationOffset);
+
+        
+        if (needUpdate && [self.store addBlockToValidationQueue:merkleBlock]) {
+            DSLog(@"Getting masternode list %u", merkleBlock.height);
+            NSData *merkleBlockHashData = uint256_data(merkleBlockHash);
+            BOOL emptyRequestQueue = ![self retrievalQueueCount];
+            [self addToRetrievalQueue:merkleBlockHashData];
+            if (emptyRequestQueue) {
+                [self dequeueMasternodeListRequest];
+            }
+        }
+    }
 }
 
 - (void)requestQuorumRotationInfo:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash {

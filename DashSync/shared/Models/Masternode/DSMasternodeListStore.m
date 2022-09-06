@@ -70,9 +70,9 @@
     return self;
 }
 
-- (void)setUp {
+- (void)setUp:(void (^)(DSMasternodeList *masternodeList))completion {
     [self deleteEmptyMasternodeLists]; //this is just for sanity purposes
-    [self loadMasternodeListsWithBlockHeightLookup:nil];
+    [self loadMasternodeListsWithBlockHeightLookup:nil completion:completion];
     [self removeOldSimplifiedMasternodeEntries];
     [self loadLocalMasternodes];
 }
@@ -143,45 +143,6 @@
     uint32_t chainHeight = [self.chain heightForBlockHash:blockhash];
     if (chainHeight != UINT32_MAX) [self.cachedBlockHashHeights setObject:@(chainHeight) forKey:uint256_data(blockhash)];
     return chainHeight;
-}
-
-- (void)setCurrentMasternodeList:(DSMasternodeList *_Nullable)currentMasternodeList {
-    if (self.chain.isEvolutionEnabled) {
-        if (!_currentMasternodeList) {
-            for (DSSimplifiedMasternodeEntry *masternodeEntry in currentMasternodeList.simplifiedMasternodeEntries) {
-                if (masternodeEntry.isValid) {
-                    [self.chain.chainManager.DAPIClient addDAPINodeByAddress:masternodeEntry.ipAddressString];
-                }
-            }
-        } else {
-            NSDictionary *updates = [currentMasternodeList listOfChangedNodesComparedTo:_currentMasternodeList];
-            NSArray *added = updates[MASTERNODE_LIST_ADDED_NODES];
-            NSArray *removed = updates[MASTERNODE_LIST_REMOVED_NODES];
-            NSArray *addedValidity = updates[MASTERNODE_LIST_ADDED_VALIDITY];
-            NSArray *removedValidity = updates[MASTERNODE_LIST_REMOVED_VALIDITY];
-            for (DSSimplifiedMasternodeEntry *masternodeEntry in added) {
-                if (masternodeEntry.isValid) {
-                    [self.chain.chainManager.DAPIClient addDAPINodeByAddress:masternodeEntry.ipAddressString];
-                }
-            }
-            for (DSSimplifiedMasternodeEntry *masternodeEntry in addedValidity) {
-                [self.chain.chainManager.DAPIClient addDAPINodeByAddress:masternodeEntry.ipAddressString];
-            }
-            for (DSSimplifiedMasternodeEntry *masternodeEntry in removed) {
-                [self.chain.chainManager.DAPIClient removeDAPINodeByAddress:masternodeEntry.ipAddressString];
-            }
-            for (DSSimplifiedMasternodeEntry *masternodeEntry in removedValidity) {
-                [self.chain.chainManager.DAPIClient removeDAPINodeByAddress:masternodeEntry.ipAddressString];
-            }
-        }
-    }
-    bool changed = _currentMasternodeList != currentMasternodeList;
-    _currentMasternodeList = currentMasternodeList;
-    if (changed) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSCurrentMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSMasternodeManagerNotificationMasternodeListKey: self.currentMasternodeList ? self.currentMasternodeList : [NSNull null]}];
-        });
-    }
 }
 
 - (UInt256)closestKnownBlockHashForBlockHash:(UInt256)blockHash {
@@ -291,7 +252,7 @@
     }];
     return masternodeList;
 }
-- (void)loadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
+- (void)loadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup completion:(void (^)(DSMasternodeList *masternodeList))completion {
     [self.managedObjectContext performBlockAndWait:^{
         NSFetchRequest *fetchRequest = [[DSMasternodeListEntity fetchRequest] copy];
         [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"block.chain == %@", [self.chain chainEntityInContext:self.managedObjectContext]]];
@@ -311,7 +272,7 @@
                 [quorumEntryPool addEntriesFromDictionary:masternodeList.quorums];
                 DSLog(@"Loading Masternode List at height %u for blockHash %@ with %lu entries", masternodeList.height, uint256_hex(masternodeList.blockHash), (unsigned long)masternodeList.simplifiedMasternodeEntries.count);
                 if (i == masternodeListEntities.count - 1) {
-                    self.currentMasternodeList = masternodeList;
+                    completion(masternodeList);
                 }
                 neededMasternodeListHeight = masternodeListEntity.block.height - 8;
             } else {
@@ -323,10 +284,10 @@
     }];
 }
 
-- (void)reloadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
+- (void)reloadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup completion:(void (^)(DSMasternodeList *masternodeList))completion {
     [self removeAllMasternodeLists];
-    self.currentMasternodeList = nil;
-    [self loadMasternodeListsWithBlockHeightLookup:blockHeightLookup];
+    completion(nil);
+    [self loadMasternodeListsWithBlockHeightLookup:blockHeightLookup completion:completion];
 }
 
 - (DSMasternodeList *)masternodeListBeforeBlockHash:(UInt256)blockHash {
@@ -369,14 +330,13 @@
 - (void)removeAllMasternodeLists {
     [self.masternodeListsByBlockHash removeAllObjects];
     [self.masternodeListsBlockHashStubs removeAllObjects];
-    self.currentMasternodeList = nil;
     self.masternodeListAwaitingQuorumValidation = nil;
 }
 
-- (void)removeOldMasternodeLists {
-    if (!self.currentMasternodeList) return;
+- (void)removeOldMasternodeLists:(uint32_t)lastBlockHeight {
+//    if (!self.currentMasternodeList) return;
     [self.managedObjectContext performBlock:^{
-        uint32_t lastBlockHeight = self.currentMasternodeList.height;
+//        uint32_t lastBlockHeight = self.currentMasternodeList.height;
         NSMutableArray *masternodeListBlockHashes = [[self.masternodeListsByBlockHash allKeys] mutableCopy];
         [masternodeListBlockHashes addObjectsFromArray:[self.masternodeListsBlockHashStubs allObjects]];
         NSArray<DSMasternodeListEntity *> *masternodeListEntities = [DSMasternodeListEntity objectsInContext:self.managedObjectContext matching:@"block.height < %@ && block.blockHash IN %@ && (block.usedByQuorums.@count == 0) && (block.quorumSnapshot == NULL)", @(lastBlockHeight - 50), masternodeListBlockHashes];
@@ -634,23 +594,6 @@
         }
     }];
 }
-
-- (DSSimplifiedMasternodeEntry *_Nullable)masternodeEntryWithProRegTxHash:(NSData *)proRegTxHash {
-    NSParameterAssert(proRegTxHash);
-    return [self.currentMasternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash objectForKey:proRegTxHash];
-}
-
-
-- (DSSimplifiedMasternodeEntry *_Nullable)masternodeEntryForLocation:(UInt128)IPAddress port:(uint16_t)port {
-    for (DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry in [self.currentMasternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allValues]) {
-        if (uint128_eq(simplifiedMasternodeEntry.address, IPAddress) && simplifiedMasternodeEntry.port == port) {
-            return simplifiedMasternodeEntry;
-        }
-    }
-    return nil;
-}
-
-
 
 - (DSQuorumEntry *_Nullable)quorumEntryForPlatformHavingQuorumHash:(UInt256)quorumHash forBlockHeight:(uint32_t)blockHeight {
     DSBlock *block = [self.chain blockAtHeightOrLastTerminal:blockHeight];

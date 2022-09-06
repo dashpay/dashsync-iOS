@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+#import "DSDAPIClient.h"
 #import "DSMasternodeListService.h"
 #import "DSMasternodeListService+Protected.h"
 #import "DSMasternodeListStore+Protected.h"
@@ -24,6 +25,7 @@
 #import "DSGetQRInfoRequest.h"
 #import "DSMerkleBlock.h"
 #import "DSPeerManager+Protected.h"
+#import "DSSimplifiedMasternodeEntry.h"
 #import "DSTransactionManager+Protected.h"
 #import "NSData+Dash.h"
 
@@ -105,12 +107,12 @@
     }];
 }
 
-- (void)getRecentMasternodeList:(NSUInteger)blocksAgo {
+- (void)getRecentMasternodeList {
     @synchronized(self.retrievalQueue) {
-        DSMerkleBlock *merkleBlock = [self.chain blockFromChainTip:blocksAgo];
+        DSMerkleBlock *merkleBlock = [self.chain blockFromChainTip:0];
         if (!merkleBlock) {
             // sometimes it happens while rescan
-            DSLog(@"getRecentMasternodeList: (no block exist) for tip - %lu", blocksAgo);
+            DSLog(@"getRecentMasternodeList: (no block exist) for tip: ");
             return;
         }
         UInt256 merkleBlockHash = merkleBlock.blockHash;
@@ -127,6 +129,45 @@
                 [self dequeueMasternodeListRequest];
             }
         }
+    }
+}
+
+- (void)setCurrentMasternodeList:(DSMasternodeList *_Nullable)currentMasternodeList {
+    if (self.chain.isEvolutionEnabled) {
+        if (!_currentMasternodeList) {
+            for (DSSimplifiedMasternodeEntry *masternodeEntry in currentMasternodeList.simplifiedMasternodeEntries) {
+                if (masternodeEntry.isValid) {
+                    [self.chain.chainManager.DAPIClient addDAPINodeByAddress:masternodeEntry.ipAddressString];
+                }
+            }
+        } else {
+            NSDictionary *updates = [currentMasternodeList listOfChangedNodesComparedTo:_currentMasternodeList];
+            NSArray *added = updates[MASTERNODE_LIST_ADDED_NODES];
+            NSArray *removed = updates[MASTERNODE_LIST_REMOVED_NODES];
+            NSArray *addedValidity = updates[MASTERNODE_LIST_ADDED_VALIDITY];
+            NSArray *removedValidity = updates[MASTERNODE_LIST_REMOVED_VALIDITY];
+            for (DSSimplifiedMasternodeEntry *masternodeEntry in added) {
+                if (masternodeEntry.isValid) {
+                    [self.chain.chainManager.DAPIClient addDAPINodeByAddress:masternodeEntry.ipAddressString];
+                }
+            }
+            for (DSSimplifiedMasternodeEntry *masternodeEntry in addedValidity) {
+                [self.chain.chainManager.DAPIClient addDAPINodeByAddress:masternodeEntry.ipAddressString];
+            }
+            for (DSSimplifiedMasternodeEntry *masternodeEntry in removed) {
+                [self.chain.chainManager.DAPIClient removeDAPINodeByAddress:masternodeEntry.ipAddressString];
+            }
+            for (DSSimplifiedMasternodeEntry *masternodeEntry in removedValidity) {
+                [self.chain.chainManager.DAPIClient removeDAPINodeByAddress:masternodeEntry.ipAddressString];
+            }
+        }
+    }
+    bool changed = _currentMasternodeList != currentMasternodeList;
+    _currentMasternodeList = currentMasternodeList;
+    if (changed) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSCurrentMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSMasternodeManagerNotificationMasternodeListKey: self.currentMasternodeList ? self.currentMasternodeList : [NSNull null]}];
+        });
     }
 }
 
@@ -206,6 +247,7 @@
 }
 
 - (void)cleanAllLists {
+    self.currentMasternodeList = nil;
     [self cleanListsRetrievalQueue];
     [self cleanRequestsInRetrieval];
 }
@@ -290,9 +332,11 @@
         //no need to remove local masternodes
         [self cleanListsRetrievalQueue];
         [self.store deleteAllOnChain];
-        [self.store removeOldMasternodeLists];
+        if (self.currentMasternodeList) {
+            [self.store removeOldMasternodeLists:self.currentMasternodeList.height];
+        }
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
-        [self getRecentMasternodeList:0];
+        [self getRecentMasternodeList];
     } else {
         if (!faultyPeers) {
             faultyPeers = @[peer.location];

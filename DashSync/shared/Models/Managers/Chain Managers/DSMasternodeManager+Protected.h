@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setUp;
 - (void)loadFileDistributedMasternodeLists;
 - (void)wipeMasternodeInfo;
-- (void)getRecentMasternodeList:(NSUInteger)blocksAgo;
+- (void)getRecentMasternodeList;
 - (void)getCurrentMasternodeListWithSafetyDelay:(uint32_t)safetyDelay;
 - (void)getMasternodeListsForBlockHashes:(NSOrderedSet *)blockHashes;
 

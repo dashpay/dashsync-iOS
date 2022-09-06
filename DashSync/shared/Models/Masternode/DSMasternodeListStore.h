@@ -32,7 +32,7 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 
 @interface DSMasternodeListStore : NSObject
 
-@property (nonatomic, nullable) DSMasternodeList *currentMasternodeList;
+//@property (nonatomic, nullable) DSMasternodeList *currentMasternodeList;
 @property (nonatomic, readonly) NSUInteger knownMasternodeListsCount;
 @property (nonatomic, readonly) NSArray *recentMasternodeLists;
 @property (nonatomic, readonly) uint32_t earliestMasternodeListBlockHeight;
@@ -46,7 +46,7 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 @property (nonatomic, readonly) NSMutableDictionary<NSData *, DSQuorumSnapshot *> *cachedQuorumSnapshots;
 
 - (instancetype)initWithChain:(DSChain *)chain;
-- (void)setUp;
+- (void)setUp:(void (^)(DSMasternodeList *masternodeList))completion;
 - (void)deleteAllOnChain;
 - (void)deleteEmptyMasternodeLists;
 - (BOOL)hasBlockForBlockHash:(NSData *)blockHashData;
@@ -59,7 +59,7 @@ FOUNDATION_EXPORT NSString *const DSQuorumListDidChangeNotification;
 - (DSMasternodeList *)masternodeListBeforeBlockHash:(UInt256)blockHash;
 - (DSMasternodeList *_Nullable)masternodeListForBlockHash:(UInt256)blockHash withBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 - (void)removeAllMasternodeLists;
-- (void)removeOldMasternodeLists;
+- (void)removeOldMasternodeLists:(uint32_t)lastBlockHeight;
 - (void)removeOldSimplifiedMasternodeEntries;
 
 - (void)saveMasternodeList:(DSMasternodeList *)masternodeList

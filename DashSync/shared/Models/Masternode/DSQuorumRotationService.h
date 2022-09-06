@@ -22,12 +22,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSQuorumRotationService : DSMasternodeListService
 
-@property (nonatomic, readonly) DSMasternodeList *masternodeListAtTip;
-@property (nonatomic, readonly) DSMasternodeList *masternodeListAtH;
-@property (nonatomic, readonly) DSMasternodeList *masternodeListAtHC;
-@property (nonatomic, readonly) DSMasternodeList *masternodeListAtH2C;
-@property (nonatomic, readonly) DSMasternodeList *masternodeListAtH3C;
-@property (nonatomic, readonly) DSMasternodeList *masternodeListAtH4C;
+@property (nonatomic) DSMasternodeList *masternodeListAtTip;
+@property (nonatomic) DSMasternodeList *masternodeListAtH;
+@property (nonatomic) DSMasternodeList *masternodeListAtHC;
+@property (nonatomic) DSMasternodeList *masternodeListAtH2C;
+@property (nonatomic) DSMasternodeList *masternodeListAtH3C;
+@property (nonatomic) DSMasternodeList *masternodeListAtH4C;
 
 @end
 

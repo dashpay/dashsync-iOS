@@ -33,7 +33,9 @@
             NSLog(@"•••• -> masternode list at [%u: %@] in files found: (%@)", [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:blockHash], uint256_hex(blockHash), masternodeList);
             if (masternodeList) {
                 if (uint256_eq(self.store.lastQueriedBlockHash, masternodeList.blockHash)) {
-                    [self.store removeOldMasternodeLists];
+                    if (self.currentMasternodeList) {
+                        [self.store removeOldMasternodeLists:self.currentMasternodeList.height];
+                    }
                 }
                 [self checkWaitingForQuorums];
                 [self removeFromRetrievalQueue:blockHashData];

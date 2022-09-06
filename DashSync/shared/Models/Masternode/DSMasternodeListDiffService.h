@@ -22,8 +22,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMasternodeListDiffService : DSMasternodeListService
 
-@property (nonatomic, readonly) DSMasternodeList *currentMasternodeList;
-
 @end
 
 NS_ASSUME_NONNULL_END

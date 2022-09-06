@@ -33,8 +33,6 @@ NS_ASSUME_NONNULL_BEGIN
                              inContext:(NSManagedObjectContext *)context;
 //- (void)checkPingTimesForMasternodesInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(NSMutableDictionary<NSData *, NSNumber *> *pingTimes, NSMutableDictionary<NSData *, NSError *> *errors))completion;
 - (UInt256)closestKnownBlockHashForBlockHash:(UInt256)blockHash;
-- (DSSimplifiedMasternodeEntry *_Nullable)masternodeEntryWithProRegTxHash:(NSData *)proRegTxHash;
-- (DSSimplifiedMasternodeEntry *_Nullable)masternodeEntryForLocation:(UInt128)IPAddress port:(uint16_t)port;
 - (NSData *_Nullable)messageFromFileForBlockHash:(UInt256)blockHash;
 - (DSQuorumEntry *)quorumEntryForChainLockRequestID:(UInt256)requestID forMerkleBlock:(DSMerkleBlock *)merkleBlock;
 - (DSQuorumEntry *)quorumEntryForInstantSendRequestID:(UInt256)requestID forMerkleBlock:(DSMerkleBlock *)merkleBlock;

@@ -47,6 +47,7 @@ typedef NS_ENUM(NSUInteger, DSMasternodeListRequestMode) {
 @interface DSMasternodeListService : NSObject
 
 @property (nonatomic, readonly, nonnull) DSChain *chain;
+@property (nonatomic, nullable) DSMasternodeList *currentMasternodeList;
 @property (nonatomic, readonly) NSMutableSet<DSMasternodeListRequest *> *requestsInRetrieval;
 @property (nonatomic, readonly) NSMutableOrderedSet<NSData *> *retrievalQueue;
 @property (nonatomic, readonly) NSMutableOrderedSet<NSData *> *neededQueue; // TODO: Make storing hashes for tip list separately, to avoid
@@ -60,7 +61,7 @@ typedef NS_ENUM(NSUInteger, DSMasternodeListRequestMode) {
 - (instancetype)initWithChain:(DSChain *)chain store:(DSMasternodeListStore *)store delegate:(id<DSMasternodeListServiceDelegate>)delegate;
 
 - (void)populateRetrievalQueueWithBlockHashes:(NSOrderedSet *)blockHashes;
-- (void)getRecentMasternodeList:(NSUInteger)blocksAgo;
+- (void)getRecentMasternodeList;
 - (void)dequeueMasternodeListRequest;
 
 - (void)addToRetrievalQueue:(NSData *)masternodeBlockHashData;
