@@ -62,7 +62,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly, nullable) MasternodeProcessor *processor;
 @property (nonatomic, readonly, nullable) MasternodeProcessorCache *processorCache;
-@property (nonatomic, assign, readonly) BOOL isRotatedQuorumsPresented;
 @property (nonatomic, assign, readonly) uint32_t rotatedQuorumsActivationHeight;
 
 - (instancetype)init NS_UNAVAILABLE;

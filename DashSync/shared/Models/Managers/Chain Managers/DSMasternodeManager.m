@@ -60,10 +60,8 @@
 @property (nonatomic, assign, nullable) MasternodeProcessor *processor;
 @property (nonatomic, assign, nullable) MasternodeProcessorCache *processorCache;
 
-@property (nonatomic, assign) BOOL isRotatedQuorumsPresented;
 @property (nonatomic, assign) uint32_t rotatedQuorumsActivationHeight;
 @property (nonatomic, assign) uint32_t nextRequestingHeight;
-//@property (nonatomic, assign) BlockHeightFinder blockHeightLookup;
 
 @end
 
@@ -222,7 +220,7 @@
 }
 
 - (DSMasternodeList *)currentMasternodeList {
-    if (!self.isRotatedQuorumsPresented) {
+    if (!self.chain.isRotatedQuorumsPresented) {
         return self.masternodeListDiffService.currentMasternodeList;
     } else {
         UInt256 lastMnlistDiffBlockHash = self.masternodeListDiffService.currentMasternodeList.blockHash;
@@ -313,7 +311,7 @@
 
 
 - (BOOL)hasDIP0024Enabled {
-    return [self.chain hasDIP0024Enabled] && self.isRotatedQuorumsPresented;
+    return [self.chain hasDIP0024Enabled] && self.chain.isRotatedQuorumsPresented;
 }
 
 - (void)startSync {
@@ -323,7 +321,7 @@
 - (void)getRecentMasternodeList {
     NSLog(@"getRecentMasternodeList at tip");
    [self.masternodeListDiffService getRecentMasternodeList];
-    if (self.isRotatedQuorumsPresented) {
+    if (self.chain.isRotatedQuorumsPresented) {
         [self.quorumRotationService getRecentMasternodeList];
     }
 
@@ -342,7 +340,7 @@
 
 - (void)getMasternodeListsForBlockHashes:(NSOrderedSet *)blockHashes {
     [self.masternodeListDiffService populateRetrievalQueueWithBlockHashes:blockHashes];
-    if (self.isRotatedQuorumsPresented) {
+    if (self.chain.isRotatedQuorumsPresented) {
         [self.quorumRotationService populateRetrievalQueueWithBlockHashes:blockHashes];
     }
 }
@@ -452,10 +450,10 @@
                 [self.store removeOldMasternodeLists:self.masternodeListDiffService.currentMasternodeList.height];
             }
 
-            if ([result hasRotatedQuorumsForChain:self.chain] && !self.isRotatedQuorumsPresented) {
+            if ([result hasRotatedQuorumsForChain:self.chain] && !self.chain.isRotatedQuorumsPresented) {
                 uint32_t masternodeListBlockHeight = [self heightForBlockHash:masternodeListBlockHash];
                 DSLog(@"•••• processMasternodeListDiffResult: rotated quorums are presented at height %u: %@, so we'll switch into consuming qrinfo", masternodeListBlockHeight, uint256_hex(masternodeListBlockHash));
-                self.isRotatedQuorumsPresented = YES;
+                self.chain.isRotatedQuorumsPresented = YES;
                 self.rotatedQuorumsActivationHeight = masternodeListBlockHeight;
 //                [self.service cleanAllLists];
                 // TODO: implement strategy like this

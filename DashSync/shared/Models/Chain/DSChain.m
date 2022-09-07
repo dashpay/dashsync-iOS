@@ -119,6 +119,7 @@
 #define SPORK_PRIVATE_KEY_LOCATION @"SPORK_PRIVATE_KEY_LOCATION"
 
 #define CHAIN_VOTING_KEYS_KEY @"CHAIN_VOTING_KEYS_KEY"
+#define QUORUM_ROTATION_PRESENCE_KEY @"QUORUM_ROTATION_PRESENCE_KEY"
 
 #define LOG_PREV_BLOCKS_ON_ORPHAN 0
 
@@ -166,7 +167,7 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
 @property (nonatomic, assign) NSTimeInterval lastNotifiedBlockDidChange;
 @property (nonatomic, strong) NSTimer *lastNotifiedBlockDidChangeTimer;
 @property (nonatomic, assign, getter=isTransient) BOOL transient;
-
+@property (nonatomic, assign) BOOL cachedIsQuorumRotationPresented;
 @property (nonatomic, readonly) NSString *chainWalletsKey;
 
 @end
@@ -928,6 +929,48 @@ static dispatch_once_t devnetToken = 0;
 
 - (BOOL)shouldProcessQuorumOfType:(DSLLMQType)llmqType {
     return self.quorumTypeForChainLocks == llmqType || self.quorumTypeForISLocks == llmqType || self.quorumTypeForPlatform == llmqType || self.quorumTypeForISDLocks == llmqType;
+}
+
+- (BOOL)isRotatedQuorumsPresented {
+    if (_cachedIsQuorumRotationPresented) return _cachedIsQuorumRotationPresented;
+    switch ([self chainType]) {
+        case DSChainType_MainNet: {
+            NSError *error = nil;
+            BOOL isPresented = (BOOL)getKeychainInt([NSString stringWithFormat:@"MAINNET_%@", QUORUM_ROTATION_PRESENCE_KEY], &error);
+            _cachedIsQuorumRotationPresented = !error && isPresented;
+            break;
+        }
+        case DSChainType_TestNet: {
+            NSError *error = nil;
+            BOOL isPresented = (BOOL)getKeychainInt([NSString stringWithFormat:@"TESTNET_%@", QUORUM_ROTATION_PRESENCE_KEY], &error);
+            _cachedIsQuorumRotationPresented = !error && isPresented;
+            break;
+        }
+        case DSChainType_DevNet: {
+            NSError *error = nil;
+            BOOL isPresented = (BOOL)getKeychainInt([NSString stringWithFormat:@"%@%@", self.devnetIdentifier, QUORUM_ROTATION_PRESENCE_KEY], &error);
+            _cachedIsQuorumRotationPresented = !error && isPresented;
+            break;
+        }
+    }
+    return _cachedMinProtocolVersion;
+}
+
+
+- (void)setIsRotatedQuorumsPresented:(BOOL)isRotatedQuorumsPresented {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            setKeychainInt(isRotatedQuorumsPresented, [NSString stringWithFormat:@"MAINNET_%@", QUORUM_ROTATION_PRESENCE_KEY], NO);
+            break;
+        case DSChainType_TestNet:
+            setKeychainInt(isRotatedQuorumsPresented, [NSString stringWithFormat:@"TESTNET_%@", QUORUM_ROTATION_PRESENCE_KEY], NO);
+            break;
+        case DSChainType_DevNet: {
+            setKeychainInt(isRotatedQuorumsPresented, [NSString stringWithFormat:@"%@%@", self.devnetIdentifier, QUORUM_ROTATION_PRESENCE_KEY], NO);
+            break;
+        }
+    }
+    _cachedIsQuorumRotationPresented = isRotatedQuorumsPresented;
 }
 
 - (uint32_t)minProtocolVersion {

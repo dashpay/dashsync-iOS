@@ -212,6 +212,9 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 /*! @brief The type of quorum used for Platform.  */
 @property (nonatomic, assign) DSLLMQType quorumTypeForPlatform;
 
+/*! @brief The flag represents whether the quorum rotation is enabled in this chain.  */
+@property (nonatomic, assign) BOOL isRotatedQuorumsPresented;
+
 /*! @brief Whether chain should process this type of quorum.  */
 - (BOOL)shouldProcessQuorumOfType:(DSLLMQType)llmqType;
 
