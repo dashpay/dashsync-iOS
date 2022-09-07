@@ -211,12 +211,12 @@
     [self loadFileDistributedMasternodeLists];
 }
 
-- (void)reloadMasternodeLists {
-    [self reloadMasternodeListsWithBlockHeightLookup:nil];
+- (DSMasternodeList *_Nullable)reloadMasternodeLists {
+    return [self reloadMasternodeListsWithBlockHeightLookup:nil];
 }
 
-- (void)reloadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
-    [self.store reloadMasternodeListsWithBlockHeightLookup:blockHeightLookup];
+- (DSMasternodeList *_Nullable)reloadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
+    return [self.store reloadMasternodeListsWithBlockHeightLookup:blockHeightLookup];
 }
 
 - (DSMasternodeList *)currentMasternodeList {

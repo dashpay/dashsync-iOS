@@ -90,8 +90,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)requestMasternodeListForBlockHeight:(uint32_t)blockHeight error:(NSError *_Nullable *_Nullable)error;
 - (BOOL)requestMasternodeListForBlockHash:(UInt256)blockHash;
 
-- (void)reloadMasternodeLists;
-- (void)reloadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
+/// Returns current masternode list
+- (DSMasternodeList *_Nullable)reloadMasternodeLists;
+- (DSMasternodeList *_Nullable)reloadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 - (void)destroyProcessors;
 
 - (void)checkPingTimesForCurrentMasternodeListInContext:(NSManagedObjectContext *)context withCompletion:(void (^)(NSMutableDictionary<NSData *, NSNumber *> *pingTimes, NSMutableDictionary<NSData *, NSError *> *errors))completion;

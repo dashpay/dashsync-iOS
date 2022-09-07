@@ -19,7 +19,6 @@
 #import "DSMessageRequest.h"
 #import <Foundation/Foundation.h>
 #import "NSData+Dash.h"
-#import "NSString+Dash.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

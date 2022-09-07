@@ -72,7 +72,7 @@
 
 - (void)setUp:(void (^)(DSMasternodeList *masternodeList))completion {
     [self deleteEmptyMasternodeLists]; //this is just for sanity purposes
-    [self loadMasternodeListsWithBlockHeightLookup:nil completion:completion];
+    [self loadMasternodeListsWithBlockHeightLookup:nil];
     [self removeOldSimplifiedMasternodeEntries];
     [self loadLocalMasternodes];
 }
@@ -252,8 +252,9 @@
     }];
     return masternodeList;
 }
-- (void)loadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup completion:(void (^)(DSMasternodeList *masternodeList))completion {
-    [self.managedObjectContext performBlockAndWait:^{
+- (DSMasternodeList *)loadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
+    __block DSMasternodeList *currentList = nil;
+   [self.managedObjectContext performBlockAndWait:^{
         NSFetchRequest *fetchRequest = [[DSMasternodeListEntity fetchRequest] copy];
         [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"block.chain == %@", [self.chain chainEntityInContext:self.managedObjectContext]]];
         [fetchRequest setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"block.height" ascending:YES]]];
@@ -272,7 +273,7 @@
                 [quorumEntryPool addEntriesFromDictionary:masternodeList.quorums];
                 DSLog(@"Loading Masternode List at height %u for blockHash %@ with %lu entries", masternodeList.height, uint256_hex(masternodeList.blockHash), (unsigned long)masternodeList.simplifiedMasternodeEntries.count);
                 if (i == masternodeListEntities.count - 1) {
-                    completion(masternodeList);
+                    currentList = masternodeList;
                 }
                 neededMasternodeListHeight = masternodeListEntity.block.height - 8;
             } else {
@@ -282,25 +283,28 @@
             }
         }
     }];
+    return currentList;
 }
 
-- (void)reloadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup completion:(void (^)(DSMasternodeList *masternodeList))completion {
+- (DSMasternodeList *_Nullable)reloadMasternodeListsWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     [self removeAllMasternodeLists];
-    completion(nil);
-    [self loadMasternodeListsWithBlockHeightLookup:blockHeightLookup completion:completion];
+    return [self loadMasternodeListsWithBlockHeightLookup:blockHeightLookup];
 }
 
-- (DSMasternodeList *)masternodeListBeforeBlockHash:(UInt256)blockHash {
+- (DSMasternodeList *_Nullable)masternodeListBeforeBlockHash:(UInt256)blockHash {
     uint32_t minDistance = UINT32_MAX;
     uint32_t blockHeight = [self heightForBlockHash:blockHash];
     DSMasternodeList *closestMasternodeList = nil;
-    for (NSData *blockHashData in self.masternodeListsByBlockHash) {
+    
+    NSDictionary *lists = [self.masternodeListsByBlockHash copy];
+    
+    for (NSData *blockHashData in lists) {
         uint32_t masternodeListBlockHeight = [self heightForBlockHash:blockHashData.UInt256];
         if (blockHeight <= masternodeListBlockHeight) continue;
         uint32_t distance = blockHeight - masternodeListBlockHeight;
         if (distance < minDistance) {
             minDistance = distance;
-            closestMasternodeList = self.masternodeListsByBlockHash[blockHashData];
+            closestMasternodeList = lists[blockHashData];
         }
     }
     if (self.chain.isMainnet &&

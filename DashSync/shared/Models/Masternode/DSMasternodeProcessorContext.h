@@ -18,7 +18,6 @@
 #import "BigIntTypes.h"
 #import "DSChain.h"
 #import "DSMasternodeList.h"
-#import "DSMasternodeManager.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
