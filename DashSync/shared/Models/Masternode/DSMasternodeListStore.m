@@ -418,7 +418,9 @@
                                       inContext:self.managedObjectContext
                                    completion:^(NSError *error) {
             self.masternodeListCurrentlyBeingSavedCount--;
-            DSLog(@"Finished saving MNL at height %u with error: %@", [self heightForBlockHash:masternodeList.blockHash], error.description);
+            if (error) {
+                DSLog(@"Finished saving MNL at height %u with error: %@", [self heightForBlockHash:masternodeList.blockHash], error.description);
+            }
             completion(error);
         }];
     });
