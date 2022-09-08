@@ -397,7 +397,7 @@
         //in rare race conditions this might already exist
         return;
     }
-    NSLog(@"•••• store masternode list at: %u: %@", [self heightForBlockHash:masternodeList.blockHash], uint256_hex(masternodeList.blockHash));
+    //NSLog(@"•••• store masternode list at: %u: %@", [self heightForBlockHash:masternodeList.blockHash], uint256_hex(masternodeList.blockHash));
     NSArray *updatedSimplifiedMasternodeEntries = [addedMasternodes.allValues arrayByAddingObjectsFromArray:modifiedMasternodes.allValues];
     [self.chain updateAddressUsageOfSimplifiedMasternodeEntries:updatedSimplifiedMasternodeEntries];
     [self.masternodeListsByBlockHash setObject:masternodeList forKey:blockHashData];
@@ -531,7 +531,6 @@
             masternodeListEntity.block = merkleBlockEntity;
             masternodeListEntity.masternodeListMerkleRoot = uint256_data(masternodeList.masternodeMerkleRoot);
             masternodeListEntity.quorumListMerkleRoot = uint256_data(masternodeList.quorumMerkleRoot);
-            uint32_t i = 0;
             NSArray<DSSimplifiedMasternodeEntryEntity *> *knownSimplifiedMasternodeEntryEntities = [DSSimplifiedMasternodeEntryEntity objectsInContext:context matching:@"chain == %@", chainEntity];
             NSMutableDictionary *indexedKnownSimplifiedMasternodeEntryEntities = [NSMutableDictionary dictionary];
             for (DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity in knownSimplifiedMasternodeEntryEntities) {
@@ -559,11 +558,10 @@
                     simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity managedObjectInBlockedContext:context];
                     [simplifiedMasternodeEntryEntity setAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry atBlockHeight:mnlHeight knownOperatorAddresses:operatorAddresses knownVotingAddresses:votingAddresses localMasternodes:localMasternodes onChainEntity:chainEntity];
                 } else if (simplifiedMasternodeEntry.updateHeight >= mnlHeight) {
-                    //it was updated in this masternode list
+                    // it was updated in this masternode list
                     [simplifiedMasternodeEntryEntity updateAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry atBlockHeight:mnlHeight knownOperatorAddresses:operatorAddresses knownVotingAddresses:votingAddresses localMasternodes:localMasternodes];
                 }
                 [masternodeListEntity addMasternodesObject:simplifiedMasternodeEntryEntity];
-                i++;
             }
             for (NSData *simplifiedMasternodeEntryHash in modifiedMasternodes) {
                 DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = modifiedMasternodes[simplifiedMasternodeEntryHash];
@@ -585,16 +583,14 @@
                 }
             }
             chainEntity.baseBlockHash = mnlBlockHashData;
-            error = [context ds_save];
             DSLog(@"Finished saving MNL at height %u", mnlHeight);
-        }
-        if (error) {
+        } else {
             chainEntity.baseBlockHash = uint256_data(chain.genesisHash);
             [DSLocalMasternodeEntity deleteAllOnChainEntity:chainEntity];
             [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
             [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
-            [context ds_save];
         }
+        [context ds_save];
         if (completion) {
             completion(error);
         }
@@ -678,7 +674,7 @@
 
 - (BOOL)addBlockToValidationQueue:(DSMerkleBlock *)merkleBlock {
     UInt256 merkleBlockHash = merkleBlock.blockHash;
-    DSLog(@"addBlockToValidationQueue: %u:%@", merkleBlock.height, uint256_hex(merkleBlockHash));
+    //DSLog(@"addBlockToValidationQueue: %u:%@", merkleBlock.height, uint256_hex(merkleBlockHash));
     NSData *merkleBlockHashData = uint256_data(merkleBlockHash);
     if ([self hasMasternodeListAt:merkleBlockHashData]) {
         DSLog(@"Already have that masternode list (or in stub) %u", merkleBlock.height);
