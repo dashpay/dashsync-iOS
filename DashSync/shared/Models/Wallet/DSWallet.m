@@ -1291,7 +1291,7 @@
             if (!upgraded) {
                 return nil;
             } else {
-                return [self blockchainIdentities];
+                return (NSMutableDictionary *) [self blockchainIdentities];
             }
         }
         for (NSData *uniqueIdData in keyChainDictionary) {
