@@ -1450,11 +1450,11 @@
             }
             lastBlockHash = [message subdataWithRange:NSMakeRange(off, 80)].x11;
             lastHashData = uint256_data(lastBlockHash);
-            DSLog(@"%@:%u calling getblocks with locators: [%d: %@, %d: %@]", self.host, self.port, [self.chain heightForBlockHash:lastBlockHash], lastHashData.reverse.hexString, [self.chain heightForBlockHash:firstBlockHash], firstHashData.reverse.hexString);
+            DSLog(@"%@:%u calling getblocks with locators: [%@, %@]", self.host, self.port, lastHashData.reverse.hexString, firstHashData.reverse.hexString);
             [self sendGetblocksMessageWithLocators:@[lastHashData, firstHashData] andHashStop:UINT256_ZERO];
         } else {
             
-            DSLog(@"%@:%u calling getheaders with locators: [%d: %@, %d: %@]", self.host, self.port, [self.chain heightForBlockHash:lastBlockHash], lastHashData.reverse.hexString, [self.chain heightForBlockHash:firstBlockHash], firstHashData.reverse.hexString);
+            DSLog(@"%@:%u calling getheaders with locators: [%@, %@]", self.host, self.port, lastHashData.reverse.hexString, firstHashData.reverse.hexString);
             [self sendGetheadersMessageWithLocators:@[lastHashData, firstHashData] andHashStop:UINT256_ZERO];
         }
     }
