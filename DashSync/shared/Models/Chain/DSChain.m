@@ -3824,10 +3824,11 @@ static dispatch_once_t devnetToken = 0;
     DSBlock *b = self.lastTerminalBlock;
     uint32_t endHeight = b.height;
     uint32_t startHeight = b.height;
+    NSDictionary *terminalBlocks = [self.mTerminalBlocks copy];
     while (b && (startHeight > self.lastCheckpoint.height) && (endHeight - startHeight < KEEP_RECENT_TERMINAL_BLOCKS)) {
         blocks[[NSData dataWithUInt256:b.blockHash]] = b;
         startHeight = b.height;
-        b = self.mTerminalBlocks[b.prevBlockValue];
+        b = terminalBlocks[b.prevBlockValue];
     }
     if (startHeight == b.height) { //only save last one then
         blocks[[NSData dataWithUInt256:b.blockHash]] = b;
