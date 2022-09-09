@@ -325,7 +325,7 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"Block H:%u - <%@>", self.height, uint256_hex(self.blockHash)];
+    return [NSString stringWithFormat:@"Block H:%u - <%@> (%p)", self.height, uint256_hex(self.blockHash), self];
 }
 
 - (id)copyWithZone:(NSZone *)zone {
