@@ -37,8 +37,8 @@
                         [self.store removeOldMasternodeLists:self.currentMasternodeList.height];
                     }
                 }
-                [self checkWaitingForQuorums];
                 [self removeFromRetrievalQueue:blockHashData];
+                [self checkWaitingForQuorums];
             } else {
                 // we need to go get it
                 UInt256 prevKnownBlockHash = [self.store closestKnownBlockHashForBlockHash:blockHash];
