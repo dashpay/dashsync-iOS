@@ -106,6 +106,7 @@
     self.verified = entry->verified;
     self.version = entry->version;
     self.chain = chain;
+    //NSLog(@"DSQuorumEntry.initWithEntry. validateBitsets %d", [self validateBitsets]);
     return self;
 }
 
@@ -186,14 +187,7 @@
                           }];
 }
 
-- (BOOL)validateWithMasternodeList:(DSMasternodeList *)masternodeList blockHeightLookup:(BlockHeightFinder)blockHeightLookup {
-    if (!masternodeList) {
-        DSLog(@"Trying to validate a quorum without a masternode list");
-        return NO;
-    }
-
-    //The quorumHash must match the current DKG session
-    //todo
+- (BOOL)validateBitsets {
     //The byte size of the signers and validMembers bitvectors must match “(quorumSize + 7) / 8”
     if (self.signersBitset.length != (self.signersCount + 7) / 8) {
         DSLog(@"Error: The byte size of the signers bitvectors (%lu) must match “(quorumSize + 7) / 8 (%d)", (unsigned long)self.signersBitset.length, (self.signersCount + 7) / 8);
@@ -218,6 +212,21 @@
     uint8_t validMembersMask = UINT8_MAX >> (8 - validMembersOffset) << (8 - validMembersOffset);
     if (validMembersLastByte & validMembersMask) {
         DSLog(@"Error: No out-of-range bits should be set in byte representation of the validMembers bitvector");
+        return NO;
+    }
+    return YES;
+}
+
+- (BOOL)validateWithMasternodeList:(DSMasternodeList *)masternodeList blockHeightLookup:(BlockHeightFinder)blockHeightLookup {
+    if (!masternodeList) {
+        DSLog(@"Trying to validate a quorum without a masternode list");
+        return NO;
+    }
+
+    //The quorumHash must match the current DKG session
+    //todo
+    BOOL hasValidBitsets = [self validateBitsets];
+    if (!hasValidBitsets) {
         return NO;
     }
 
