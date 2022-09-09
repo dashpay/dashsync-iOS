@@ -1666,9 +1666,7 @@
     }
 
 #if !SAVE_MAX_TRANSACTIONS_INFO
-    [self.chain addBlock:block
-        receivedAsHeader:NO
-                fromPeer:peer];
+    [self.chain addBlock:block receivedAsHeader:NO fromPeer:peer];
 #else
     if ([self.chain addBlock:block isHeaderOnly:NO fromPeer:peer]) {
         if (block.height == self.chain.lastSyncBlockHeight) {

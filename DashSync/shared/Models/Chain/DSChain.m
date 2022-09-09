@@ -953,7 +953,7 @@ static dispatch_once_t devnetToken = 0;
             break;
         }
     }
-    return _cachedMinProtocolVersion;
+    return _cachedIsQuorumRotationPresented;
 }
 
 
@@ -3845,10 +3845,12 @@ static dispatch_once_t devnetToken = 0;
             [DSMerkleBlockEntity deleteObjects:oldBlockHeaders inContext:self.chainManagedObjectContext];
         }
         DSChainEntity *chainEntity = [self chainEntityInContext:self.chainManagedObjectContext];
-        for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity objectsInContext:self.chainManagedObjectContext matching:@"blockHash in %@", blocks.allKeys]) {
+        NSArray<DSMerkleBlockEntity *> *blockEntities = [DSMerkleBlockEntity objectsInContext:self.chainManagedObjectContext matching:@"blockHash in %@", blocks.allKeys];
+        for (DSMerkleBlockEntity *e in blockEntities) {
             @autoreleasepool {
-                [e setAttributesFromBlock:blocks[e.blockHash] forChainEntity:chainEntity];
-                [blocks removeObjectForKey:e.blockHash];
+                NSData *blockHash = e.blockHash;
+                [e setAttributesFromBlock:blocks[blockHash] forChainEntity:chainEntity];
+                [blocks removeObjectForKey:blockHash];
             }
         }
 
