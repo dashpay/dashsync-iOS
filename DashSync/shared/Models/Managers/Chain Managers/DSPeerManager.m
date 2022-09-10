@@ -66,7 +66,7 @@
 
 #define TESTNET_DNS_SEEDS @[@"testnet-seed.dashdot.io"]
 
-#define MAINNET_DNS_SEEDS @[@"dnsseed.dash.org", @"dnsseed.dashdot.io"]
+#define MAINNET_DNS_SEEDS @[@"dnsseed.dash.org"]
 
 #define TESTNET_MAIN_PEER @"" //@"52.36.64.148:19999"
 

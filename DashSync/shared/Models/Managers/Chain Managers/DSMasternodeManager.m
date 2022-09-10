@@ -381,7 +381,7 @@
     
     __block DSMerkleBlock *block = blockFinder(blockHash);
     if (![result isValid]) {
-        DSLog(@"Invalid File for block at height %u with merkleRoot %@", block.height, uint256_hex(block.merkleRoot));
+        DSLog(@"Invalid File for block at height %u with merkleRoot %@ (foundCoinbase %@ | validQuorums %@ | rootMNListValid %@ | rootQuorumListValid %@)", block.height, uint256_hex(block.merkleRoot), result.foundCoinbase?@"Yes":@"No", result.validQuorums?@"Yes":@"No", result.rootMNListValid?@"Yes":@"No", result.rootQuorumListValid?@"Yes":@"No");
         return NULL;
     }
     // valid Coinbase might be false if no merkle block

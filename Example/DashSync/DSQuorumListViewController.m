@@ -55,9 +55,10 @@
 
     // Edit the sort key as appropriate.
     NSSortDescriptor *quorumTypeSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"llmqType" ascending:NO];
+    NSSortDescriptor *quorumIndexSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"quorumIndex" ascending:YES];
     NSSortDescriptor *quorumHeightSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"block.height" ascending:NO];
     NSSortDescriptor *quorumHashDataSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"quorumHashData" ascending:NO];
-    NSArray *sortDescriptors = @[quorumTypeSortDescriptor, quorumHeightSortDescriptor, quorumHashDataSortDescriptor];
+    NSArray *sortDescriptors = @[quorumTypeSortDescriptor, quorumIndexSortDescriptor, quorumHeightSortDescriptor, quorumHashDataSortDescriptor];
 
     [fetchRequest setSortDescriptors:sortDescriptors];
 
@@ -157,6 +158,7 @@
     DSQuorumEntryEntity *quorumEntryEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
 
     cell.quorumHashLabel.text = uint256_hex(quorumEntryEntity.quorumHash);
+    cell.indexLabel.text = [NSString stringWithFormat:@"%d", quorumEntryEntity.quorumIndex];
     cell.verifiedLabel.text = quorumEntryEntity.verified ? @"Yes" : @"No";
     if (quorumEntryEntity.block) {
         cell.heightLabel.text = [NSString stringWithFormat:@"%d", quorumEntryEntity.block.height];

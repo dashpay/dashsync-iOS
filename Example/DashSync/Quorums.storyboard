@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
-    <device id="retina6_1" orientation="portrait">
-        <adaptation id="fullscreen"/>
-    </device>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -13,7 +11,7 @@
         <scene sceneID="uR3-4F-MKR">
             <objects>
                 <tableViewController storyboardIdentifier="QuorumsListIdentifier" title="Masternodes" id="rRU-gX-lyO" customClass="DSQuorumListViewController" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="93" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="6WS-tz-3dM">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="140" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="6WS-tz-3dM">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -26,11 +24,11 @@
                             </connections>
                         </searchBar>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="QuorumTableViewCellIdentifier" rowHeight="113" id="Ydi-a6-zFc" userLabel="MasternodeTableViewCell" customClass="DSQuorumTableViewCell">
-                                <rect key="frame" x="0.0" y="72" width="414" height="113"/>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="QuorumTableViewCellIdentifier" rowHeight="140" id="Ydi-a6-zFc" userLabel="MasternodeTableViewCell" customClass="DSQuorumTableViewCell">
+                                <rect key="frame" x="0.0" y="88.5" width="414" height="140"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Ydi-a6-zFc" id="LAK-1Q-b1o">
-                                    <rect key="frame" x="0.0" y="0.0" width="414" height="112.5"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="140"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Height" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="In8-D0-HPI">
@@ -40,7 +38,7 @@
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Verified" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Mhg-WP-Xt1">
-                                            <rect key="frame" x="16" y="47" width="58.5" height="21"/>
+                                            <rect key="frame" x="16" y="78" width="58.5" height="21"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
@@ -52,13 +50,25 @@
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Output Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="6" translatesAutoresizingMaskIntoConstraints="NO" id="FrU-eP-GGi">
-                                            <rect key="frame" x="16" y="78" width="382" height="21"/>
+                                            <rect key="frame" x="16" y="109" width="382" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Index" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Xv9-9s-zke">
+                                            <rect key="frame" x="16" y="47" width="41.5" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="k2P-DM-b0w">
+                                            <rect key="frame" x="356" y="47" width="42" height="21"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uC7-Dl-i1m">
-                                            <rect key="frame" x="356" y="47" width="42" height="21"/>
+                                            <rect key="frame" x="356" y="78" width="42" height="21"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
@@ -68,12 +78,16 @@
                                         <constraint firstItem="hmN-q5-pNp" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="In8-D0-HPI" secondAttribute="trailing" constant="10" id="62A-gI-9LB"/>
                                         <constraint firstItem="In8-D0-HPI" firstAttribute="leading" secondItem="LAK-1Q-b1o" secondAttribute="leading" constant="16" id="Dr0-64-zbJ"/>
                                         <constraint firstItem="In8-D0-HPI" firstAttribute="top" secondItem="LAK-1Q-b1o" secondAttribute="top" constant="16" id="Gwm-JY-0Km"/>
+                                        <constraint firstItem="k2P-DM-b0w" firstAttribute="trailing" secondItem="hmN-q5-pNp" secondAttribute="trailing" id="S35-t9-brN"/>
                                         <constraint firstAttribute="trailing" secondItem="FrU-eP-GGi" secondAttribute="trailing" constant="16" id="T48-3n-cIQ"/>
                                         <constraint firstAttribute="trailing" secondItem="hmN-q5-pNp" secondAttribute="trailing" constant="16" id="Uiv-f7-gOb"/>
                                         <constraint firstItem="FrU-eP-GGi" firstAttribute="leading" secondItem="LAK-1Q-b1o" secondAttribute="leading" constant="16" id="VCN-Bu-CsM"/>
+                                        <constraint firstItem="Mhg-WP-Xt1" firstAttribute="top" secondItem="Xv9-9s-zke" secondAttribute="bottom" constant="10" id="VQE-Ef-prO"/>
+                                        <constraint firstItem="k2P-DM-b0w" firstAttribute="firstBaseline" secondItem="Xv9-9s-zke" secondAttribute="firstBaseline" id="abP-S9-5a8"/>
                                         <constraint firstItem="Mhg-WP-Xt1" firstAttribute="leading" secondItem="In8-D0-HPI" secondAttribute="leading" id="bHN-xH-enb"/>
-                                        <constraint firstItem="Mhg-WP-Xt1" firstAttribute="top" secondItem="In8-D0-HPI" secondAttribute="bottom" constant="10" id="eVV-a3-cZW"/>
+                                        <constraint firstItem="Xv9-9s-zke" firstAttribute="top" secondItem="In8-D0-HPI" secondAttribute="bottom" constant="10" id="eDt-MN-5oM"/>
                                         <constraint firstItem="uC7-Dl-i1m" firstAttribute="trailing" secondItem="hmN-q5-pNp" secondAttribute="trailing" id="o0m-RO-2Yz"/>
+                                        <constraint firstItem="Xv9-9s-zke" firstAttribute="leading" secondItem="In8-D0-HPI" secondAttribute="leading" id="t3B-lD-3BY"/>
                                         <constraint firstItem="hmN-q5-pNp" firstAttribute="top" secondItem="LAK-1Q-b1o" secondAttribute="top" constant="16" id="tzH-C9-KPn"/>
                                         <constraint firstItem="FrU-eP-GGi" firstAttribute="top" secondItem="Mhg-WP-Xt1" secondAttribute="bottom" constant="10" id="vMB-Bt-8T2"/>
                                         <constraint firstItem="uC7-Dl-i1m" firstAttribute="firstBaseline" secondItem="Mhg-WP-Xt1" secondAttribute="firstBaseline" id="w8u-EG-Pfa"/>
@@ -81,6 +95,7 @@
                                 </tableViewCellContentView>
                                 <connections>
                                     <outlet property="heightLabel" destination="hmN-q5-pNp" id="XbF-SZ-XTA"/>
+                                    <outlet property="indexLabel" destination="k2P-DM-b0w" id="KLC-vW-DOu"/>
                                     <outlet property="quorumHashLabel" destination="FrU-eP-GGi" id="WSE-Ac-Jn5"/>
                                     <outlet property="verifiedLabel" destination="uC7-Dl-i1m" id="PHS-yd-TO0"/>
                                 </connections>
