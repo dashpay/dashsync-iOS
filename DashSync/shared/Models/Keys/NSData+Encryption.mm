@@ -75,7 +75,7 @@ static NSData *_Nullable AES256EncryptDecrypt(CCOperation operation,
 - (nullable NSData *)encryptWithBLSSecretKey:(DSBLSKey *)secretKey forPublicKey:(DSBLSKey *)peerPubKey usingInitializationVector:(NSData *)ivData {
     bls::G1Element pk = secretKey.blsPrivateKey * peerPubKey.blsPublicKey;
 
-    std::vector<uint8_t> symKey = pk.Serialize();
+    std::vector<uint8_t> symKey = pk.Serialize(true);
     symKey.resize(32);
 
     NSData *resultData = AES256EncryptDecrypt(kCCEncrypt, self, (uint8_t *)symKey.data(), ivData.bytes);
@@ -94,7 +94,7 @@ static NSData *_Nullable AES256EncryptDecrypt(CCOperation operation,
 - (nullable NSData *)encryptWithDHBLSKey:(DSBLSKey *)dhKey usingInitializationVector:(NSData *)initializationVector {
     unsigned char *iv = (unsigned char *)initializationVector.bytes;
 
-    std::vector<uint8_t> symKey = dhKey.blsPublicKey.Serialize();
+    std::vector<uint8_t> symKey = dhKey.blsPublicKey.Serialize(true);
     symKey.resize(32);
 
     NSData *resultData = AES256EncryptDecrypt(kCCEncrypt, self, (uint8_t *)symKey.data(), initializationVector.length ? iv : 0);
@@ -110,7 +110,7 @@ static NSData *_Nullable AES256EncryptDecrypt(CCOperation operation,
     }
 
     bls::G1Element pk = secretKey.blsPrivateKey * peerPubKey.blsPublicKey;
-    std::vector<uint8_t> symKey = pk.Serialize();
+    std::vector<uint8_t> symKey = pk.Serialize(true);
     symKey.resize(32);
 
     unsigned char iv[ivSize];
@@ -134,7 +134,7 @@ static NSData *_Nullable AES256EncryptDecrypt(CCOperation operation,
     }
 
     bls::G1Element pk = key.blsPublicKey;
-    std::vector<uint8_t> symKey = pk.Serialize();
+    std::vector<uint8_t> symKey = pk.Serialize(true);
     symKey.resize(32);
 
     unsigned char iv[ivSize];
