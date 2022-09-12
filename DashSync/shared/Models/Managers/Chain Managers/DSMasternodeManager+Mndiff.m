@@ -39,7 +39,7 @@ MasternodeList *getMasternodeListByBlockHash(uint8_t (*block_hash)[32], const vo
     UInt256 blockHash = *((UInt256 *)block_hash);
     DSMasternodeList *list = processorContext.masternodeListLookup(blockHash);
     MasternodeList *c_list = list ? [list ffi_malloc] : NULL;
-    NSLog(@"••• getMasternodeListByBlockHash: %@: %p: %@", uint256_hex(blockHash), c_list, context);
+    //NSLog(@"••• getMasternodeListByBlockHash: %@: %p: %@", uint256_hex(blockHash), c_list, context);
     processor_destroy_block_hash(block_hash);
     return c_list;
 }
@@ -50,7 +50,7 @@ bool saveMasternodeList(uint8_t (*block_hash)[32], MasternodeList *masternode_li
     UInt256 blockHash = *((UInt256 *)block_hash);
     DSMasternodeList *masternodeList = [DSMasternodeList masternodeListWith:masternode_list onChain:chain];
     BOOL saved = [chain.chainManager.masternodeManager saveMasternodeList:masternodeList forBlockHash:blockHash];
-    NSLog(@"••• saveMasternodeList: %ul: %@: %d", processorContext.blockHeightLookup(blockHash), uint256_hex(blockHash), saved);
+    //NSLog(@"••• saveMasternodeList: %ul: %@: %d", processorContext.blockHeightLookup(blockHash), uint256_hex(blockHash), saved);
     processor_destroy_block_hash(block_hash);
     processor_destroy_masternode_list(masternode_list);
     return saved;
@@ -72,7 +72,7 @@ uint32_t getBlockHeightByHash(uint8_t (*block_hash)[32], const void *context) {
     DSMasternodeProcessorContext *processorContext = (__bridge DSMasternodeProcessorContext *)context;
     UInt256 blockHash = *((UInt256 *)block_hash);
     uint32_t block_height = processorContext.blockHeightLookup(blockHash);
-    NSLog(@"\"%@\" => %u, // getBlockHeightByHash", uint256_hex(blockHash), block_height);
+    //NSLog(@"\"%@\" => %u, // getBlockHeightByHash", uint256_hex(blockHash), block_height);
     processor_destroy_block_hash(block_hash);
     return block_height;
 }
@@ -81,7 +81,7 @@ uint8_t *getBlockHashByHeight(uint32_t block_height, const void *context) {
     DSMasternodeProcessorContext *processorContext = (__bridge DSMasternodeProcessorContext *)context;
     DSChain *chain = processorContext.chain;
     DSBlock *block = [chain blockAtHeight:block_height];
-    NSLog(@"%u => UInt256::from_hex(\"%@\"), // getBlockHashByHeight", block_height, uint256_hex(block.blockHash));
+    //NSLog(@"%u => UInt256::from_hex(\"%@\"), // getBlockHashByHeight", block_height, uint256_hex(block.blockHash));
     uint8_t (*block_hash)[32] = block ? uint256_malloc(block.blockHash) : NULL;
     return (uint8_t *)block_hash;
 }
@@ -92,7 +92,7 @@ uint8_t *getMerkleRootByHash(uint8_t (*block_hash)[32], const void *context) {
     UInt256 blockHash = *((UInt256 *)block_hash);
     UInt256 merkleRoot = processorContext.merkleRootLookup(blockHash);
     uint8_t (*merkle_root)[32] = uint256_malloc(merkleRoot);
-    NSLog(@"••• getMerkleRootByHash: %@ -> %@: %p",uint256_hex(blockHash), uint256_hex(merkleRoot), merkle_root);
+    //NSLog(@"••• getMerkleRootByHash: %@ -> %@: %p",uint256_hex(blockHash), uint256_hex(merkleRoot), merkle_root);
     processor_destroy_block_hash(block_hash);
     return (uint8_t *)merkle_root;
 }
@@ -103,7 +103,7 @@ LLMQSnapshot *getLLMQSnapshotByBlockHash(uint8_t (*block_hash)[32], const void *
     UInt256 blockHash = *((UInt256 *)block_hash);
     DSQuorumSnapshot *snapshot = [chain.chainManager.masternodeManager quorumSnapshotForBlockHash:blockHash];
     LLMQSnapshot *c_snapshot = snapshot ? [snapshot ffi_malloc] : NULL;
-    NSLog(@"••• getLLMQSnapshotByBlockHash: %@: %p: %@", uint256_hex(blockHash), c_snapshot, context);
+    //NSLog(@"••• getLLMQSnapshotByBlockHash: %@: %p: %@", uint256_hex(blockHash), c_snapshot, context);
     processor_destroy_block_hash(block_hash);
     return c_snapshot;
 }
