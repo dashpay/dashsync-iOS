@@ -3122,4 +3122,41 @@
     DSChain *chain = [DSChain devnetWithIdentifier:@"malort"];
 }
 
+- (void)validateBitsets:(NSData *)bitset count:(int32_t)count {
+    // The byte size of the signers and validMembers bitvectors must match “(quorumSize + 7) / 8”
+    NSLog(@"validateBitsets: %@:%lu:%d:%d", bitset.hexString, [bitset length], count, count / 8);
+    if (bitset.length != (count + 7) / 8) {
+        NSAssert(NO, @"Error: The byte size of the signers bitvectors (%lu) must match “(quorumSize + 7) / 8 (%d)", bitset.length, (count + 7) / 8);
+    }
+    // No out-of-range bits should be set in byte representation of the signers and validMembers bitvectors
+    uint32_t signersOffset = count / 8;
+    uint8_t signersLastByte = [bitset UInt8AtOffset:signersOffset];
+    uint8_t signersMask = UINT8_MAX >> (8 - signersOffset) << (8 - signersOffset);
+    NSLog(@"lastByte: %d mask: %d", signersLastByte, signersMask);
+    if (signersLastByte & signersMask) {
+        NSAssert(NO, @"Error: No out-of-range bits should be set in byte representation of the signers bitvector");
+    }
+}
+
+- (void)testBitsets {
+    NSData *bitset1 = [NSData dataFromHexString:@"ffffffffffff03"];
+    int32_t count1 = 50;
+    NSData *bitset2 = [NSData dataFromHexString:@"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f000000000000000000000000"];
+    int32_t count2 = 400;
+    //    NSData *bitset3 = [NSData dataFromHexString:@"fffffffffbffff0f"]; // Not valid
+    //    int32_t count3 = 60;
+    //    added_quorum. validate_bitsets: true
+    //    validate_bitsets: "ffffffffffff03":7:[val: 50, len: 1]:6 "ffffffffffff03":7:[val: 50, len: 1]:6
+    //    added_quorum. validate_bitsets: true
+    //    validate_bitsets: "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f000000000000000000000000":50:[val: 400, len: 3]:50 "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f000000000000000000000000":50:[val: 400, len: 3]:50
+    //    2022-09-09 16:21:34.346550+0300 DashSync_Example[17347:206775] validateBitsets: ffffffffffff03:7:50:6
+    //    2022-09-09 16:21:34.346746+0300 DashSync_Example[17347:206775] lastByte: 3 mask: 252
+    //    2022-09-09 16:21:34.346907+0300 DashSync_Example[17347:206775] validateBitsets: ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f000000000000000000000000:50:400:50
+    //    2022-09-09 16:21:34.347043+0300 DashSync_Example[17347:206775] lastByte: 0 mask: 0
+
+    [self validateBitsets:bitset1 count:count1];
+    [self validateBitsets:bitset2 count:count2];
+    //    [self validateBitsets:bitset3 count:count3];
+}
+
 @end
