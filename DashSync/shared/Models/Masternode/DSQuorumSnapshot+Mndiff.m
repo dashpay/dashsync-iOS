@@ -52,7 +52,7 @@
     entry->member_list = members;
     entry->member_list_length = memberCount;
     NSUInteger skipListCount = [self.skipList count];
-    uint32_t *skipList = malloc(skipListCount * sizeof(uint32_t));
+    int32_t *skipList = malloc(skipListCount * sizeof(int32_t));
     for (NSNumber *skipMember in self.memberList) {
         skipList[i] = skipMember.intValue;
         i++;
