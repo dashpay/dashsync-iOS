@@ -34,40 +34,23 @@
             //there is the rare possibility we have the masternode list as a checkpoint, so lets first try that
             NSUInteger pos = [list indexOfObject:blockHashData];
             UInt256 blockHash = blockHashData.UInt256;
-            DSMasternodeList *masternodeList = [self.delegate masternodeListSerivceDidRequestFileFromBlockHash:self blockHash:blockHash];
-            NSLog(@"•••• -> masternode list at [%u: %@] in files found: (%@)",[self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:blockHash], uint256_hex(blockHash), masternodeList);
-            if (masternodeList) {
-                if (uint256_eq(self.store.lastQueriedBlockHash, masternodeList.blockHash)) {
-                    if (self.currentMasternodeList) {
-                        [self.store removeOldMasternodeLists:self.currentMasternodeList.height];
-                    }
-                }
-                [self removeFromRetrievalQueue:blockHashData];
-                [self checkWaitingForQuorums];
-            } else {
-                // we need to go get it
-                UInt256 prevKnownBlockHash = [self.store closestKnownBlockHashForBlockHash:blockHash];
-                UInt256 prevInQueueBlockHash = (pos ? [list objectAtIndex:pos - 1].UInt256 : UINT256_ZERO);
-                UInt256 previousBlockHash = pos
-                    ? ([self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:prevKnownBlockHash] > [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:prevInQueueBlockHash]
-                       ? prevKnownBlockHash
-                       : prevInQueueBlockHash)
-                    : prevKnownBlockHash;
-                [hashes setObject:uint256_data(blockHash) forKey:uint256_data(previousBlockHash)];
-                NSAssert(([self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
-                [self requestQuorumRotationInfo:previousBlockHash forBlockHash:blockHash];
-            }
+            // No checkpoints for qrinfo at this moment
+            UInt256 prevKnownBlockHash = [self.store closestKnownBlockHashForBlockHash:blockHash];
+            UInt256 prevInQueueBlockHash = (pos ? [list objectAtIndex:pos - 1].UInt256 : UINT256_ZERO);
+            UInt256 previousBlockHash = pos
+                ? ([self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:prevKnownBlockHash] > [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:prevInQueueBlockHash]
+                   ? prevKnownBlockHash
+                   : prevInQueueBlockHash)
+                : prevKnownBlockHash;
+            [hashes setObject:uint256_data(blockHash) forKey:uint256_data(previousBlockHash)];
+            NSAssert(([self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
+            [self requestQuorumRotationInfo:previousBlockHash forBlockHash:blockHash];
         } else {
             DSLog(@"Missing block (%@)", blockHashData.hexString);
             [self removeFromRetrievalQueue:blockHashData];
         }
     }
-    
-//    [self requestQuorumRotationInfo2:<#(NSArray<NSData *> *)#> forBlockHash:<#(UInt256)#>]
-    
-    //[self requestQuorumRotationInfo:previousBlockHash forBlockHash:blockHash];
 }
-
 
 
 - (void)getRecentMasternodeList {
