@@ -148,19 +148,21 @@ uint8_t shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*blo
     DSMasternodeManager *manager = chain.chainManager.masternodeManager;
     uint32_t baseBlockHeight = [manager heightForBlockHash:baseBlockHash];
     uint32_t blockHeight = [manager heightForBlockHash:blockHash];
-    NSLog(@"•••• shouldProcessDiffWithRange.... %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_hex(baseBlockHash), uint256_hex(blockHash));
+//    NSLog(@"•••• shouldProcessDiffWithRange.... %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_hex(baseBlockHash), uint256_hex(blockHash));
     DSMasternodeListService *service = processorContext.isDIP0024 ? manager.quorumRotationService : manager.masternodeListDiffService;
     
     BOOL hasRemovedFromRetrieval = [service removeRequestInRetrievalForBaseBlockHash:baseBlockHash blockHash:blockHash];
     BOOL hasLocallyStored = [manager.store hasMasternodeListAt:uint256_data(blockHash)];
+    DSMasternodeList *list = [manager.store masternodeListForBlockHash:blockHash withBlockHeightLookup:processorContext.blockHeightLookup];
+    BOOL hasUnverifiedRotatedQuorums = [list hasUnverifiedRotatedQuorums];
     processor_destroy_block_hash(base_block_hash);
     processor_destroy_block_hash(block_hash);
     if (!hasRemovedFromRetrieval) {
         NSLog(@"•••• shouldProcessDiffWithRange: persist in retrieval: %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_hex(baseBlockHash), uint256_hex(blockHash));
         return 1; // ProcessingError::PersistInRetrieval
     }
-    if (hasLocallyStored) {
-        NSLog(@"•••• shouldProcessDiffWithRange: already persist: %u: %@", blockHeight, uint256_hex(blockHash));
+    if (hasLocallyStored && !hasUnverifiedRotatedQuorums) {
+        NSLog(@"•••• shouldProcessDiffWithRange: already persist: %u: %@ hasUnverifiedRotated: %d", blockHeight, uint256_hex(blockHash), hasUnverifiedRotatedQuorums);
         return 2; // ProcessingError::LocallyStored
     }
     DSMasternodeList *baseMasternodeList = processorContext.masternodeListLookup(baseBlockHash);
