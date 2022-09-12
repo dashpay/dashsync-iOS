@@ -57,12 +57,12 @@ bool saveMasternodeList(uint8_t (*block_hash)[32], MasternodeList *masternode_li
 }
 
 void destroyMasternodeList(MasternodeList *masternode_list) {
-    NSLog(@"••• destroyMasternodeList: %p", masternode_list);
+//    NSLog(@"••• destroyMasternodeList: %p", masternode_list);
     [DSMasternodeList ffi_free:masternode_list];
 }
 
 void destroyHash(uint8_t *block_hash) { // UInt256
-    NSLog(@"••• destroyHash: %p", block_hash);
+//    NSLog(@"••• destroyHash: %p", block_hash);
     if (block_hash) {
         free(block_hash);
     }
@@ -80,7 +80,7 @@ uint32_t getBlockHeightByHash(uint8_t (*block_hash)[32], const void *context) {
 uint8_t *getBlockHashByHeight(uint32_t block_height, const void *context) {
     DSMasternodeProcessorContext *processorContext = (__bridge DSMasternodeProcessorContext *)context;
     DSChain *chain = processorContext.chain;
-    DSBlock *block = [chain blockAtHeight: block_height];
+    DSBlock *block = [chain blockAtHeight:block_height];
     NSLog(@"%u => UInt256::from_hex(\"%@\"), // getBlockHashByHeight", block_height, uint256_hex(block.blockHash));
     uint8_t (*block_hash)[32] = block ? uint256_malloc(block.blockHash) : NULL;
     return (uint8_t *)block_hash;
@@ -115,13 +115,13 @@ bool saveLLMQSnapshot(uint8_t (*block_hash)[32], LLMQSnapshot *snapshot, const v
     UInt256 blockHash = *((UInt256 *)block_hash);
     DSQuorumSnapshot *quorumSnapshot = [DSQuorumSnapshot quorumSnapshotWith:snapshot forBlockHash:blockHash];
     BOOL saved = [chain.chainManager.masternodeManager saveQuorumSnapshot:quorumSnapshot];
-    NSLog(@"••• saveLLMQSnapshot: %u: %@: %d", processorContext.blockHeightLookup(blockHash), uint256_hex(blockHash), saved);
+//    NSLog(@"••• saveLLMQSnapshot: %u: %@: %d", processorContext.blockHeightLookup(blockHash), uint256_hex(blockHash), saved);
     processor_destroy_block_hash(block_hash);
     processor_destroy_llmq_snapshot(snapshot);
     return saved;
 }
 void destroyLLMQSnapshot(LLMQSnapshot *snapshot) {
-    NSLog(@"••• destroyLLMQSnapshot: %p", snapshot);
+//    NSLog(@"••• destroyLLMQSnapshot: %p", snapshot);
     [DSQuorumSnapshot ffi_free:snapshot];
 }
 
@@ -170,7 +170,7 @@ uint8_t shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*blo
         NSLog(@"•••• No base masternode list at: %d: %@", baseBlockHeight, uint256_hex(baseBlockHash));
         return 4; // ProcessingError::HasNoBaseBlockHash
     }
-    NSLog(@"•••• shouldProcessDiffWithRange: OK! %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_hex(baseBlockHash), uint256_hex(blockHash));
+//    NSLog(@"•••• shouldProcessDiffWithRange: OK! %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_hex(baseBlockHash), uint256_hex(blockHash));
     return 0; // ProcessingError::None
 }
 
@@ -191,15 +191,16 @@ bool shouldProcessLLMQType(uint8_t quorum_type, const void *context) {
 bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
     uintptr_t count = data->count;
     uint8_t(**items)[48] = data->items;
+    UInt768 allCommitmentAggregatedSignature = *((UInt768 *)data->all_commitment_aggregated_signature);
+    UInt256 commitmentHash = *((UInt256 *)data->commitment_hash);
+    UInt768 quorumThresholdSignature = *((UInt768 *)data->threshold_signature);
+    UInt384 quorumPublicKey = *((UInt384 *)data->public_key);
+    NSLog(@"••• validateLLMQ: items: %lu: %@", count, uint384_hex(quorumPublicKey));
     NSMutableArray<DSBLSKey *> *publicKeyArray = [NSMutableArray array];
     for (NSUInteger i = 0; i < count; i++) {
         UInt384 publicKey = *((UInt384 *)items[i]);
         [publicKeyArray addObject:[DSBLSKey keyWithPublicKey:publicKey]];
     }
-    UInt768 allCommitmentAggregatedSignature = *((UInt768 *)data->all_commitment_aggregated_signature);
-    UInt256 commitmentHash = *((UInt256 *)data->commitment_hash);
-    UInt768 quorumThresholdSignature = *((UInt768 *)data->threshold_signature);
-    UInt384 quorumPublicKey = *((UInt384 *)data->public_key);
     processor_destroy_llmq_validation_data(data);
     bool allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:commitmentHash signature:allCommitmentAggregatedSignature withPublicKeys:publicKeyArray];
     if (!allCommitmentAggregatedSignatureValidated) {
