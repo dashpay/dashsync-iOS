@@ -2207,7 +2207,9 @@ static dispatch_once_t devnetToken = 0;
     DSBlock *equivalentTerminalBlock = nil;
 
     if ((blockPosition & DSBlockPosition_Sync) && (self.lastSyncBlockHeight + 1 >= lastCheckpoint.height)) {
-        equivalentTerminalBlock = self.mTerminalBlocks[blockHash];
+        @synchronized(self.mTerminalBlocks) {
+            equivalentTerminalBlock = self.mTerminalBlocks[blockHash];
+        }
     }
 
 
