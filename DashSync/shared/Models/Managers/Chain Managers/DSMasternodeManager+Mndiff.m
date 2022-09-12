@@ -179,11 +179,15 @@ bool shouldProcessLLMQType(uint8_t quorum_type, const void *context) {
     DSChain *chain = processorContext.chain;
     DSLLMQType llmqType = (DSLLMQType)quorum_type;
     BOOL should = [chain shouldProcessQuorumOfType:llmqType];
+    BOOL isQRContext = processorContext.isDIP0024;
     if (chain.quorumTypeForISDLocks == llmqType) {
-        return should && chain.isRotatedQuorumsPresented;
-    } else if (processorContext.isDIP0024) /*skip old quorums here*/ {
-        return false;
+        should = isQRContext && chain.isRotatedQuorumsPresented;
+    } else if (isQRContext) /*skip old quorums here for now*/ {
+        should = false;
+    } else {
+        should = [chain shouldProcessQuorumOfType:llmqType];
     }
+        
     NSLog(@"••• shouldProcessLLMQType: %d: %d", quorum_type, should);
     return should;
 }
