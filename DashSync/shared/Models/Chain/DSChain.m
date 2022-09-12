@@ -2642,13 +2642,14 @@ static dispatch_once_t devnetToken = 0;
     int32_t step = 1, start = 0;
     DSBlock *b = self.lastTerminalBlock;
     uint32_t lastHeight = b.height;
+    NSDictionary *terminalBlocks = [self.mTerminalBlocks copy];
     while (b && b.height > 0) {
         [locators addObject:uint256_data(b.blockHash)];
         lastHeight = b.height;
         if (++start >= 10) step *= 2;
 
         for (int32_t i = 0; b && i < step; i++) {
-            b = self.mTerminalBlocks[b.prevBlockValue];
+            b = terminalBlocks[b.prevBlockValue];
         }
     }
     DSCheckpoint *lastCheckpoint = nil;
