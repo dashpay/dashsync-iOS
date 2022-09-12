@@ -77,6 +77,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSDictionary *)toDictionaryUsingBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 
 - (DSSimplifiedMasternodeEntry *)masternodeForRegistrationHash:(UInt256)registrationHash;
+
+- (BOOL)hasUnverifiedRotatedQuorums;
+
 @end
 
 NS_ASSUME_NONNULL_END

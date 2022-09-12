@@ -529,4 +529,15 @@
     return self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[uint256_data(registrationHash)];
 }
 
+- (BOOL)hasUnverifiedRotatedQuorums {
+    NSArray<DSQuorumEntry *> *quorumsForISDLock = [self.quorums[@(self.chain.quorumTypeForISDLocks)] allValues];
+    for (DSQuorumEntry *entry in quorumsForISDLock) {
+        if (!entry.verified) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
+
 @end
