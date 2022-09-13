@@ -154,14 +154,14 @@ uint8_t shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*blo
     BOOL hasRemovedFromRetrieval = [service removeRequestInRetrievalForBaseBlockHash:baseBlockHash blockHash:blockHash];
     BOOL hasLocallyStored = [manager.store hasMasternodeListAt:uint256_data(blockHash)];
     DSMasternodeList *list = [manager.store masternodeListForBlockHash:blockHash withBlockHeightLookup:processorContext.blockHeightLookup];
-    //BOOL hasUnverifiedRotatedQuorums = [list hasUnverifiedRotatedQuorums];
+    BOOL hasUnverifiedRotatedQuorums = [list hasUnverifiedRotatedQuorums];
     processor_destroy_block_hash(base_block_hash);
     processor_destroy_block_hash(block_hash);
     if (!hasRemovedFromRetrieval) {
         NSLog(@"•••• shouldProcessDiffWithRange: persist in retrieval: %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_hex(baseBlockHash), uint256_hex(blockHash));
         return 1; // ProcessingError::PersistInRetrieval
     }
-    if (hasLocallyStored /*&& !hasUnverifiedRotatedQuorums*/) {
+    if (hasLocallyStored && !hasUnverifiedRotatedQuorums) {
         NSLog(@"•••• shouldProcessDiffWithRange: already persist: %u: %@ hasUnverifiedRotated: %d", blockHeight, uint256_hex(blockHash), [list hasUnverifiedRotatedQuorums]);
         return 2; // ProcessingError::LocallyStored
     }
