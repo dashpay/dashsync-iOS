@@ -653,7 +653,7 @@ PODS:
   - gRPC/Interface-Legacy (1.48.0):
     - gRPC-RxLibrary/Interface (= 1.48.0)
   - KVO-MVVM (0.5.1)
-  - Protobuf (3.21.5)
+  - Protobuf (3.21.6)
   - SDWebImage (5.9.2):
     - SDWebImage/Core (= 5.9.2)
   - SDWebImage/Core (5.9.2)
@@ -664,6 +664,7 @@ PODS:
 
 DEPENDENCIES:
   - CocoaImageHashing (from `https://github.com/ameingast/cocoaimagehashing.git`, commit `ad01eee`)
+  - DashSharedCore (from `https://github.com/dashevo/dash-shared-core.git`, branch `fix/llmq-rotation-issue`)
   - DashSync (from `../`)
   - KVO-MVVM (= 0.5.1)
   - SDWebImage (= 5.9.2)
@@ -677,7 +678,6 @@ SPEC REPOS:
     - BoringSSL-GRPC
     - CocoaLumberjack
     - DAPI-GRPC
-    - DashSharedCore
     - DSDynamicOptions
     - DWAlertController
     - gRPC
@@ -695,6 +695,9 @@ EXTERNAL SOURCES:
   CocoaImageHashing:
     :commit: ad01eee
     :git: https://github.com/ameingast/cocoaimagehashing.git
+  DashSharedCore:
+    :branch: fix/llmq-rotation-issue
+    :git: https://github.com/dashevo/dash-shared-core.git
   DashSync:
     :path: "../"
 
@@ -702,6 +705,9 @@ CHECKOUT OPTIONS:
   CocoaImageHashing:
     :commit: ad01eee
     :git: https://github.com/ameingast/cocoaimagehashing.git
+  DashSharedCore:
+    :commit: 6e5b629928c514653ee15400d053d3854df73f35
+    :git: https://github.com/dashevo/dash-shared-core.git
 
 SPEC CHECKSUMS:
   "!ProtoCompiler": 938ac0701c79342e77008ff71758933ffad8bae1
@@ -721,12 +727,12 @@ SPEC CHECKSUMS:
   gRPC-ProtoRPC: eec0a09efab2b534ec5ec1cb0fa505abc7cff31e
   gRPC-RxLibrary: 908af521c74d7a5f7b439b4160c63df852fd1ee6
   KVO-MVVM: 4df3afd1f7ebcb69735458b85db59c4271ada7c6
-  Protobuf: 7504b04fffcf6662ad629694db8231f5e744327f
+  Protobuf: e7846f61e8542750cf311385fc633c1d00928f9f
   SDWebImage: 0b42b8719ab0c5257177d5894306e8a336b21cbb
   secp256k1_dash: bd60e467aa853e145cf680dd0f8b196df20f0a62
   tinycbor: d4d71dddda1f8392fbb4249f63faf8552f327590
   TinyCborObjc: 5204540fb90ff0c40fb22d408fa51bab79d78a80
 
-PODFILE CHECKSUM: 2caf6350e64ddcce9063f5953d19b3995cc84acd
+PODFILE CHECKSUM: f2f2a1f90e2b12f2e16f31aa6b27da0668586dfc
 
 COCOAPODS: 1.11.3

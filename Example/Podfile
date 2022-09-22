@@ -1,5 +1,5 @@
 def common_pods
-#  pod 'DashSharedCore', :git => 'https://github.com/dashevo/dash-shared-core.git', :branch => 'develop'
+  pod 'DashSharedCore', :git => 'https://github.com/dashevo/dash-shared-core.git', :branch => 'fix/llmq-rotation-issue'
   pod 'DashSync', :path => '../'
   pod 'SDWebImage', '5.9.2'
   pod 'CocoaImageHashing', :git => 'https://github.com/ameingast/cocoaimagehashing.git', :commit => 'ad01eee'
