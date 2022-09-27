@@ -340,9 +340,6 @@
 
 - (void)getMasternodeListsForBlockHashes:(NSOrderedSet *)blockHashes {
     [self.masternodeListDiffService populateRetrievalQueueWithBlockHashes:blockHashes];
-    if (self.chain.isRotatedQuorumsPresented) {
-        [self.quorumRotationService populateRetrievalQueueWithBlockHashes:blockHashes];
-    }
 }
 
 - (BOOL)requestMasternodeListForBlockHeight:(uint32_t)blockHeight error:(NSError **)error {
