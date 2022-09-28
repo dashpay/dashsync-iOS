@@ -477,7 +477,7 @@
     DSMnDiffProcessingResult *mnListDiffResultAtH2C = result.mnListDiffResultAtH2C;
     DSMnDiffProcessingResult *mnListDiffResultAtH3C = result.mnListDiffResultAtH3C;
     DSMnDiffProcessingResult *mnListDiffResultAtH4C = result.mnListDiffResultAtH4C;
-    NSLog(@"•••• processQRInfoResult tip: isValid: %d validCoinbase: %d", [mnListDiffResultAtTip isValid], mnListDiffResultAtTip.validCoinbase);
+    NSLog(@"•••• processQRInfoResult tip: %@", mnListDiffResultAtTip.debugDescription);
 
     NSOrderedSet *missingMasternodeListsAtTip = mnListDiffResultAtTip.neededMissingMasternodeLists;
     NSOrderedSet *missingMasternodeListsAtH = mnListDiffResultAtH.neededMissingMasternodeLists;
