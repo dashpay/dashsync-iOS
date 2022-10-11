@@ -17,8 +17,9 @@
 
 @implementation DSQuorumEntryEntity
 
+
 + (instancetype)quorumEntryEntityFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry inContext:(NSManagedObjectContext *)context {
-    DSMerkleBlockEntity *block = [DSMerkleBlockEntity anyObjectInContext:context matching:@"blockHash == %@", uint256_data(potentialQuorumEntry.quorumHash)];
+    DSMerkleBlockEntity *block = [DSMerkleBlockEntity merkleBlockEntityForBlockHash:potentialQuorumEntry.quorumHash inContext:context];
     DSQuorumEntryEntity *quorumEntryEntity = nil;
     if (block) {
         quorumEntryEntity = [[block.usedByQuorums filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"quorumHashData == %@ && llmqType == %@ ", uint256_data(potentialQuorumEntry.quorumHash), @(potentialQuorumEntry.llmqType)]] anyObject];

@@ -175,11 +175,12 @@
     uint32_t minDistance = UINT32_MAX;
     UInt256 usedSimplifiedMasternodeEntryHash = self.simplifiedMasternodeEntryHash;
     for (DSBlock *previousBlock in previousSimplifiedMasternodeEntryHashes) {
+        NSLog(@"simplifiedMasternodeEntryHashAtBlockHeight: %u %@: prev: %u: %@", blockHeight, uint256_hex(usedSimplifiedMasternodeEntryHash), previousBlock.height, uint256_hex(previousSimplifiedMasternodeEntryHashes[previousBlock].UInt256));
         if (previousBlock.height <= blockHeight) continue;
         uint32_t distance = previousBlock.height - blockHeight;
         if (distance < minDistance) {
             minDistance = distance;
-            //NSLog(@"SME Hash for proTxHash %@ : Using %@ instead of %@ for list at block height %u", uint256_hex(self.providerRegistrationTransactionHash), uint256_hex(previousSimplifiedMasternodeEntryHashes[previousBlock].UInt256), uint256_hex(usedSimplifiedMasternodeEntryHash), blockHeight);
+            NSLog(@"SME Hash for proTxHash %@ : Using %@ instead of %@ for list at block height %u", uint256_hex(self.providerRegistrationTransactionHash), uint256_hex(previousSimplifiedMasternodeEntryHashes[previousBlock].UInt256), uint256_hex(usedSimplifiedMasternodeEntryHash), blockHeight);
             usedSimplifiedMasternodeEntryHash = previousSimplifiedMasternodeEntryHashes[previousBlock].UInt256;
         }
     }

@@ -339,36 +339,41 @@
 
 - (void)removeOldMasternodeLists:(uint32_t)lastBlockHeight {
 //    if (!self.currentMasternodeList) return;
-    [self.managedObjectContext performBlock:^{
-//        uint32_t lastBlockHeight = self.currentMasternodeList.height;
-        NSMutableArray *masternodeListBlockHashes = [[self.masternodeListsByBlockHash allKeys] mutableCopy];
-        [masternodeListBlockHashes addObjectsFromArray:[self.masternodeListsBlockHashStubs allObjects]];
-        NSArray<DSMasternodeListEntity *> *masternodeListEntities = [DSMasternodeListEntity objectsInContext:self.managedObjectContext matching:@"block.height < %@ && block.blockHash IN %@ && (block.usedByQuorums.@count == 0) && (block.quorumSnapshot == NULL)", @(lastBlockHeight - 50), masternodeListBlockHashes];
-        BOOL removedItems = !!masternodeListEntities.count;
-        for (DSMasternodeListEntity *masternodeListEntity in [masternodeListEntities copy]) {
-            DSLog(@"Removing masternodeList at height %u", masternodeListEntity.block.height);
-            DSLog(@"quorums are %@", masternodeListEntity.block.usedByQuorums);
-            //A quorum is on a block that can only have one masternode list.
-            //A block can have one quorum of each type.
-            //A quorum references the masternode list by it's block
-            //we need to check if this masternode list is being referenced by a quorum using the inverse of quorum.block.masternodeList
-            [self.managedObjectContext deleteObject:masternodeListEntity];
-            [self.masternodeListsByBlockHash removeObjectForKey:masternodeListEntity.block.blockHash];
-        }
-        if (removedItems) {
-            //Now we should delete old quorums
-            //To do this, first get the last 24 active masternode lists
-            //Then check for quorums not referenced by them, and delete those
-            NSArray<DSMasternodeListEntity *> *recentMasternodeLists = [DSMasternodeListEntity objectsSortedBy:@"block.height" ascending:NO offset:0 limit:10 inContext:self.managedObjectContext];
-            uint32_t oldTime = lastBlockHeight - 24;
-            uint32_t oldestBlockHeight = recentMasternodeLists.count ? MIN([recentMasternodeLists lastObject].block.height, oldTime) : oldTime;
-            NSArray *oldQuorums = [DSQuorumEntryEntity objectsInContext:self.managedObjectContext matching:@"chain == %@ && SUBQUERY(referencedByMasternodeLists, $masternodeList, $masternodeList.block.height > %@).@count == 0", [self.chain chainEntityInContext:self.managedObjectContext], @(oldestBlockHeight)];
-            for (DSQuorumEntryEntity *unusedQuorumEntryEntity in [oldQuorums copy]) {
-                [self.managedObjectContext deleteObject:unusedQuorumEntryEntity];
+    dispatch_async(self.masternodeSavingQueue, ^{
+        [self.managedObjectContext performBlock:^{
+    //        uint32_t lastBlockHeight = self.currentMasternodeList.height;
+            @autoreleasepool {
+                NSMutableArray *masternodeListBlockHashes = [[self.masternodeListsByBlockHash allKeys] mutableCopy];
+                [masternodeListBlockHashes addObjectsFromArray:[self.masternodeListsBlockHashStubs allObjects]];
+                NSArray<DSMasternodeListEntity *> *masternodeListEntities = [DSMasternodeListEntity objectsInContext:self.managedObjectContext matching:@"block.height < %@ && block.blockHash IN %@ && (block.usedByQuorums.@count == 0)", @(lastBlockHeight - 50), masternodeListBlockHashes];
+                BOOL removedItems = !!masternodeListEntities.count;
+                for (DSMasternodeListEntity *masternodeListEntity in [masternodeListEntities copy]) {
+                    DSLog(@"Removing masternodeList at height %u", masternodeListEntity.block.height);
+                    DSLog(@"quorums are %@", masternodeListEntity.block.usedByQuorums);
+                    //A quorum is on a block that can only have one masternode list.
+                    //A block can have one quorum of each type.
+                    //A quorum references the masternode list by it's block
+                    //we need to check if this masternode list is being referenced by a quorum using the inverse of quorum.block.masternodeList
+                    [self.managedObjectContext deleteObject:masternodeListEntity];
+                    [self.masternodeListsByBlockHash removeObjectForKey:masternodeListEntity.block.blockHash];
+                }
+                if (removedItems) {
+                    //Now we should delete old quorums
+                    //To do this, first get the last 24 active masternode lists
+                    //Then check for quorums not referenced by them, and delete those
+                    NSArray<DSMasternodeListEntity *> *recentMasternodeLists = [DSMasternodeListEntity objectsSortedBy:@"block.height" ascending:NO offset:0 limit:10 inContext:self.managedObjectContext];
+//                    uint32_t oldTime = lastBlockHeight - 24;
+                    uint32_t oldTime = lastBlockHeight - 288;
+                    uint32_t oldestBlockHeight = recentMasternodeLists.count ? MIN([recentMasternodeLists lastObject].block.height, oldTime) : oldTime;
+                    NSArray *oldQuorums = [DSQuorumEntryEntity objectsInContext:self.managedObjectContext matching:@"chain == %@ && SUBQUERY(referencedByMasternodeLists, $masternodeList, $masternodeList.block.height > %@).@count == 0", [self.chain chainEntityInContext:self.managedObjectContext], @(oldestBlockHeight)];
+                    for (DSQuorumEntryEntity *unusedQuorumEntryEntity in [oldQuorums copy]) {
+                        [self.managedObjectContext deleteObject:unusedQuorumEntryEntity];
+                    }
+                    [self.managedObjectContext ds_save];
+                }
             }
-            [self.managedObjectContext ds_save];
-        }
-    }];
+        }];
+    });
 }
 
 - (void)removeOldSimplifiedMasternodeEntries {
@@ -439,50 +444,52 @@
         return;
     }
     DSLog(@"Queued saving Quorum Snapshot for: %u: %@", blockHeight, uint256_hex(blockHash));
-    NSManagedObjectContext *context = self.managedObjectContext;
     [self.cachedQuorumSnapshots setObject:quorumSnapshot forKey:blockHashData];
     dispatch_async(self.masternodeSavingQueue, ^{
+        NSManagedObjectContext *context = self.managedObjectContext;
         [context performBlockAndWait:^{
-            BOOL createUnknownBlocks = chain.allowInsightBlocksForVerification;
-            DSChainEntity *chainEntity = [chain chainEntityInContext:context];
-            DSMerkleBlockEntity *merkleBlockEntity = [DSMerkleBlockEntity anyObjectInContext:context matching:@"blockHash == %@", blockHashData];
-            if (!merkleBlockEntity) {
-                DSCheckpoint *checkpoint = [chain checkpointForBlockHash:blockHash];
-                if (checkpoint) {
-                    DSBlock *block = [checkpoint blockForChain:chain];
-                    merkleBlockEntity = [[DSMerkleBlockEntity managedObjectInBlockedContext:context] setAttributesFromBlock:block forChainEntity:chainEntity];
+            @autoreleasepool {
+                BOOL createUnknownBlocks = chain.allowInsightBlocksForVerification;
+                DSChainEntity *chainEntity = [chain chainEntityInContext:context];
+                DSMerkleBlockEntity *merkleBlockEntity = [DSMerkleBlockEntity merkleBlockEntityForBlockHash:blockHash inContext:context];
+                if (!merkleBlockEntity) {
+                    DSCheckpoint *checkpoint = [chain checkpointForBlockHash:blockHash];
+                    if (checkpoint) {
+                        DSBlock *block = [checkpoint blockForChain:chain];
+                        merkleBlockEntity = [[DSMerkleBlockEntity managedObjectInBlockedContext:context] setAttributesFromBlock:block forChainEntity:chainEntity];
+                    }
                 }
-            }
-            //NSAssert(!merkleBlockEntity || !merkleBlockEntity.quorumSnapshot, @"Merkle block should not have a quorum snapshot already");
-            NSError *error = nil;
-            if (!merkleBlockEntity) {
-                if (createUnknownBlocks) {
-                    merkleBlockEntity = [DSMerkleBlockEntity managedObjectInBlockedContext:context];
-                    merkleBlockEntity.blockHash = blockHashData;
-                    merkleBlockEntity.height = blockHeight;
-                    merkleBlockEntity.chain = chainEntity;
-                } else {
-                    DSLog(@"Merkle block should exist for block hash %@", blockHashData.hexString);
-                    error = [NSError errorWithCode:600 localizedDescriptionKey:@"Merkle block should exist"];
+                //NSAssert(!merkleBlockEntity || !merkleBlockEntity.quorumSnapshot, @"Merkle block should not have a quorum snapshot already");
+                NSError *error = nil;
+                if (!merkleBlockEntity) {
+                    if (createUnknownBlocks) {
+                        merkleBlockEntity = [DSMerkleBlockEntity managedObjectInBlockedContext:context];
+                        merkleBlockEntity.blockHash = blockHashData;
+                        merkleBlockEntity.height = blockHeight;
+                        merkleBlockEntity.chain = chainEntity;
+                    } else {
+                        DSLog(@"Merkle block should exist for block hash %@", blockHashData.hexString);
+                        error = [NSError errorWithCode:600 localizedDescriptionKey:@"Merkle block should exist"];
+                    }
+                } else if (merkleBlockEntity.quorumSnapshot) {
+                    DSLog(@"Merkle block already have quorum snapshot for %@", blockHashData.hexString);
+                    error = [NSError errorWithCode:600 localizedDescriptionKey:@"Merkle block should not have a quorum snapshot already"]; // DGaF
+                    // skip we're just processing saved snapshot
+                    //[merkleBlockEntity.quorumSnapshot updateAttributesFromPotentialQuorumSnapshot:quorumSnapshot onBlock:merkleBlockEntity]
                 }
-            } else if (merkleBlockEntity.quorumSnapshot) {
-                DSLog(@"Merkle block already have quorum snapshot for %@", blockHashData.hexString);
-                error = [NSError errorWithCode:600 localizedDescriptionKey:@"Merkle block should not have a quorum snapshot already"]; // DGaF
-                // skip we're just processing saved snapshot
-                //[merkleBlockEntity.quorumSnapshot updateAttributesFromPotentialQuorumSnapshot:quorumSnapshot onBlock:merkleBlockEntity]
-            }
-            if (!error) {
-                DSQuorumSnapshotEntity *quorumSnapshotEntity = [DSQuorumSnapshotEntity managedObjectInBlockedContext:context];
-                [quorumSnapshotEntity updateAttributesFromPotentialQuorumSnapshot:quorumSnapshot onBlock:merkleBlockEntity];
-                error = [context ds_save];
-                DSLog(@"Finished saving Quorum Snapshot at height %u: %@", blockHeight, uint256_hex(blockHash));
-            }
-            if (error) {
-                [DSQuorumSnapshotEntity deleteAllOnChainEntity:chainEntity];
-                [context ds_save];
-            }
-            if (completion) {
-                completion(error);
+                if (!error) {
+                    DSQuorumSnapshotEntity *quorumSnapshotEntity = [DSQuorumSnapshotEntity managedObjectInBlockedContext:context];
+                    [quorumSnapshotEntity updateAttributesFromPotentialQuorumSnapshot:quorumSnapshot onBlock:merkleBlockEntity];
+                    error = [context ds_save];
+                    DSLog(@"Finished saving Quorum Snapshot at height %u: %@", blockHeight, uint256_hex(blockHash));
+                }
+                if (error) {
+                    [DSQuorumSnapshotEntity deleteAllOnChainEntity:chainEntity];
+                    [context ds_save];
+                }
+                if (completion) {
+                    completion(error);
+                }
             }
         }];
     });
@@ -498,101 +505,109 @@
     DSLog(@"Queued saving MNL at height %u", masternodeList.height);
     [context performBlockAndWait:^{
         //masternodes
-        DSChainEntity *chainEntity = [chain chainEntityInContext:context];
-        UInt256 mnlBlockHash = masternodeList.blockHash;
-        uint32_t mnlHeight = masternodeList.height;
-        NSData *mnlBlockHashData = uint256_data(mnlBlockHash);
-        
-        DSMerkleBlockEntity *merkleBlockEntity = [DSMerkleBlockEntity anyObjectInContext:context matching:@"blockHash == %@", mnlBlockHashData];
-        if (!merkleBlockEntity) {
-            DSCheckpoint *checkpoint = [chain checkpointForBlockHash:mnlBlockHash];
-            if (checkpoint) {
-                DSBlock *block = [checkpoint blockForChain:chain];
-                merkleBlockEntity = [[DSMerkleBlockEntity managedObjectInBlockedContext:context] setAttributesFromBlock:block forChainEntity:chainEntity];
+        @autoreleasepool {
+            DSChainEntity *chainEntity = [chain chainEntityInContext:context];
+            UInt256 mnlBlockHash = masternodeList.blockHash;
+            uint32_t mnlHeight = masternodeList.height;
+            NSData *mnlBlockHashData = uint256_data(mnlBlockHash);
+            
+            DSMerkleBlockEntity *merkleBlockEntity = [DSMerkleBlockEntity merkleBlockEntityForBlockHash:mnlBlockHash inContext:context];
+            if (!merkleBlockEntity) {
+                DSCheckpoint *checkpoint = [chain checkpointForBlockHash:mnlBlockHash];
+                if (checkpoint) {
+                    DSBlock *block = [checkpoint blockForChain:chain];
+                    merkleBlockEntity = [[DSMerkleBlockEntity managedObjectInBlockedContext:context] setAttributesFromBlock:block forChainEntity:chainEntity];
+                }
             }
-        }
-        NSAssert(!merkleBlockEntity || !merkleBlockEntity.masternodeList, @"Merkle block should not have a masternode list already");
-        NSError *error = nil;
-        if (!merkleBlockEntity) {
-            if (createUnknownBlocks) {
-                merkleBlockEntity = [DSMerkleBlockEntity managedObjectInBlockedContext:context];
-                merkleBlockEntity.blockHash = mnlBlockHashData;
-                merkleBlockEntity.height = mnlHeight;
-                merkleBlockEntity.chain = chainEntity;
-            } else {
-                DSLog(@"Merkle block should exist for block hash %@", mnlBlockHashData);
-                error = [NSError errorWithCode:600 localizedDescriptionKey:@"Merkle block should exist"];
+            NSAssert(!merkleBlockEntity || !merkleBlockEntity.masternodeList, @"Merkle block should not have a masternode list already");
+            NSError *error = nil;
+            if (!merkleBlockEntity) {
+                if (createUnknownBlocks) {
+                    merkleBlockEntity = [DSMerkleBlockEntity managedObjectInBlockedContext:context];
+                    merkleBlockEntity.blockHash = mnlBlockHashData;
+                    merkleBlockEntity.height = mnlHeight;
+                    merkleBlockEntity.chain = chainEntity;
+                } else {
+                    DSLog(@"Merkle block should exist for block hash %@", mnlBlockHashData);
+                    error = [NSError errorWithCode:600 localizedDescriptionKey:@"Merkle block should exist"];
+                }
+            } else if (merkleBlockEntity.masternodeList) {
+                error = [NSError errorWithCode:600 localizedDescriptionKey:@"Merkle block should not have a masternode list already"];
             }
-        } else if (merkleBlockEntity.masternodeList) {
-            error = [NSError errorWithCode:600 localizedDescriptionKey:@"Merkle block should not have a masternode list already"];
-        }
-        if (!error) {
-            DSMasternodeListEntity *masternodeListEntity = [DSMasternodeListEntity managedObjectInBlockedContext:context];
-            masternodeListEntity.block = merkleBlockEntity;
-            masternodeListEntity.masternodeListMerkleRoot = uint256_data(masternodeList.masternodeMerkleRoot);
-            masternodeListEntity.quorumListMerkleRoot = uint256_data(masternodeList.quorumMerkleRoot);
-            NSArray<DSSimplifiedMasternodeEntryEntity *> *knownSimplifiedMasternodeEntryEntities = [DSSimplifiedMasternodeEntryEntity objectsInContext:context matching:@"chain == %@", chainEntity];
-            NSMutableDictionary *indexedKnownSimplifiedMasternodeEntryEntities = [NSMutableDictionary dictionary];
-            for (DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity in knownSimplifiedMasternodeEntryEntities) {
-                NSData *proRegTxHash = simplifiedMasternodeEntryEntity.providerRegistrationTransactionHash;
-                [indexedKnownSimplifiedMasternodeEntryEntities setObject:simplifiedMasternodeEntryEntity forKey:proRegTxHash];
-            }
-            NSMutableSet<NSString *> *votingAddressStrings = [NSMutableSet set];
-            NSMutableSet<NSString *> *operatorAddressStrings = [NSMutableSet set];
-            NSMutableSet<NSData *> *providerRegistrationTransactionHashes = [NSMutableSet set];
-            NSArray<DSSimplifiedMasternodeEntry *> *masternodes = masternodeList.simplifiedMasternodeEntries;
-            for (DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry in masternodes) {
-                [votingAddressStrings addObject:simplifiedMasternodeEntry.votingAddress];
-                [operatorAddressStrings addObject:simplifiedMasternodeEntry.operatorAddress];
-                [providerRegistrationTransactionHashes addObject:uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
-            }
-            //this is the initial list sync so lets speed things up a little bit with some optimizations
-            NSDictionary<NSString *, DSAddressEntity *> *votingAddresses = [DSAddressEntity findAddressesAndIndexIn:votingAddressStrings onChain:(DSChain *)chain inContext:context];
-            NSDictionary<NSString *, DSAddressEntity *> *operatorAddresses = [DSAddressEntity findAddressesAndIndexIn:votingAddressStrings onChain:(DSChain *)chain inContext:context];
-            NSDictionary<NSData *, DSLocalMasternodeEntity *> *localMasternodes = [DSLocalMasternodeEntity findLocalMasternodesAndIndexForProviderRegistrationHashes:providerRegistrationTransactionHashes inContext:context];
-            NSAssert(masternodes, @"A masternode must have entries to be saved");
-            for (DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry in masternodes) {
-                NSData *proRegTxHash = uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash);
-                DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity = [indexedKnownSimplifiedMasternodeEntryEntities objectForKey:proRegTxHash];
-                if (!simplifiedMasternodeEntryEntity) {
-                    simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity managedObjectInBlockedContext:context];
-                    [simplifiedMasternodeEntryEntity setAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry atBlockHeight:mnlHeight knownOperatorAddresses:operatorAddresses knownVotingAddresses:votingAddresses localMasternodes:localMasternodes onChainEntity:chainEntity];
-                } else if (simplifiedMasternodeEntry.updateHeight >= mnlHeight) {
-                    // it was updated in this masternode list
+            if (!error) {
+                DSMasternodeListEntity *masternodeListEntity = [DSMasternodeListEntity managedObjectInBlockedContext:context];
+                masternodeListEntity.block = merkleBlockEntity;
+                masternodeListEntity.masternodeListMerkleRoot = uint256_data(masternodeList.masternodeMerkleRoot);
+                masternodeListEntity.quorumListMerkleRoot = uint256_data(masternodeList.quorumMerkleRoot);
+                NSArray<DSSimplifiedMasternodeEntryEntity *> *knownSimplifiedMasternodeEntryEntities = [DSSimplifiedMasternodeEntryEntity objectsInContext:context matching:@"chain == %@", chainEntity];
+                //NSLog(@"saveMasternodeList: knownSimplifiedMasternodeEntryEntities: %@", knownSimplifiedMasternodeEntryEntities);
+                NSMutableDictionary *indexedKnownSimplifiedMasternodeEntryEntities = [NSMutableDictionary dictionary];
+                for (DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity in knownSimplifiedMasternodeEntryEntities) {
+                    NSData *proRegTxHash = simplifiedMasternodeEntryEntity.providerRegistrationTransactionHash;
+                    NSLog(@"knownSimplifiedMasternodeEntryEntity: %@: (%u, %u)", proRegTxHash.hexString, simplifiedMasternodeEntryEntity.updateHeight, simplifiedMasternodeEntryEntity.knownConfirmedAtHeight);
+                    [indexedKnownSimplifiedMasternodeEntryEntities setObject:simplifiedMasternodeEntryEntity forKey:proRegTxHash];
+                }
+                
+                NSMutableSet<NSString *> *votingAddressStrings = [NSMutableSet set];
+                NSMutableSet<NSString *> *operatorAddressStrings = [NSMutableSet set];
+                NSMutableSet<NSData *> *providerRegistrationTransactionHashes = [NSMutableSet set];
+                NSArray<DSSimplifiedMasternodeEntry *> *masternodes = masternodeList.simplifiedMasternodeEntries;
+                for (DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry in masternodes) {
+                    [votingAddressStrings addObject:simplifiedMasternodeEntry.votingAddress];
+                    [operatorAddressStrings addObject:simplifiedMasternodeEntry.operatorAddress];
+                    [providerRegistrationTransactionHashes addObject:uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
+                }
+                //this is the initial list sync so lets speed things up a little bit with some optimizations
+                NSDictionary<NSString *, DSAddressEntity *> *votingAddresses = [DSAddressEntity findAddressesAndIndexIn:votingAddressStrings onChain:(DSChain *)chain inContext:context];
+                NSDictionary<NSString *, DSAddressEntity *> *operatorAddresses = [DSAddressEntity findAddressesAndIndexIn:votingAddressStrings onChain:(DSChain *)chain inContext:context];
+                NSDictionary<NSData *, DSLocalMasternodeEntity *> *localMasternodes = [DSLocalMasternodeEntity findLocalMasternodesAndIndexForProviderRegistrationHashes:providerRegistrationTransactionHashes inContext:context];
+                NSAssert(masternodes, @"A masternode must have entries to be saved");
+                for (DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry in masternodes) {
+                    NSData *proRegTxHash = uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash);
+                    DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity = [indexedKnownSimplifiedMasternodeEntryEntities objectForKey:proRegTxHash];
+                    if (!simplifiedMasternodeEntryEntity) {
+                        NSLog(@"knownSimplifiedMasternodeEntryEntity.new: %@: (%u, %u)", proRegTxHash.hexString, simplifiedMasternodeEntry.updateHeight, simplifiedMasternodeEntry.knownConfirmedAtHeight);
+                        simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity managedObjectInBlockedContext:context];
+                        [simplifiedMasternodeEntryEntity setAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry atBlockHeight:mnlHeight knownOperatorAddresses:operatorAddresses knownVotingAddresses:votingAddresses localMasternodes:localMasternodes onChainEntity:chainEntity];
+                    } else if (simplifiedMasternodeEntry.updateHeight >= mnlHeight) {
+                        // it was updated in this masternode list
+                        NSLog(@"knownSimplifiedMasternodeEntryEntity.update: %@: (%u, %u)", proRegTxHash.hexString, simplifiedMasternodeEntry.updateHeight, simplifiedMasternodeEntry.knownConfirmedAtHeight);
+                        [simplifiedMasternodeEntryEntity updateAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry atBlockHeight:mnlHeight knownOperatorAddresses:operatorAddresses knownVotingAddresses:votingAddresses localMasternodes:localMasternodes];
+                    }
+                    [masternodeListEntity addMasternodesObject:simplifiedMasternodeEntryEntity];
+                }
+                for (NSData *simplifiedMasternodeEntryHash in modifiedMasternodes) {
+                    DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = modifiedMasternodes[simplifiedMasternodeEntryHash];
+                    NSData *proRegTxHash = uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash);
+                    DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity = [indexedKnownSimplifiedMasternodeEntryEntities objectForKey:proRegTxHash];
+                    NSAssert(simplifiedMasternodeEntryEntity, @"this masternode must be present (%@)", proRegTxHash.hexString);
                     [simplifiedMasternodeEntryEntity updateAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry atBlockHeight:mnlHeight knownOperatorAddresses:operatorAddresses knownVotingAddresses:votingAddresses localMasternodes:localMasternodes];
                 }
-                [masternodeListEntity addMasternodesObject:simplifiedMasternodeEntryEntity];
-            }
-            for (NSData *simplifiedMasternodeEntryHash in modifiedMasternodes) {
-                DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = modifiedMasternodes[simplifiedMasternodeEntryHash];
-                NSData *proRegTxHash = uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash);
-                DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity = [indexedKnownSimplifiedMasternodeEntryEntities objectForKey:proRegTxHash];
-                NSAssert(simplifiedMasternodeEntryEntity, @"this masternode must be present (%@)", proRegTxHash.hexString);
-                [simplifiedMasternodeEntryEntity updateAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry atBlockHeight:mnlHeight knownOperatorAddresses:operatorAddresses knownVotingAddresses:votingAddresses localMasternodes:localMasternodes];
-            }
-            NSDictionary<NSNumber *, NSDictionary<NSData *, DSQuorumEntry *> *> *quorums = masternodeList.quorums;
+                NSDictionary<NSNumber *, NSDictionary<NSData *, DSQuorumEntry *> *> *quorums = masternodeList.quorums;
 
-            for (NSNumber *llmqType in quorums) {
-                NSDictionary *quorumsForMasternodeType = quorums[llmqType];
-                for (NSData *quorumHash in quorumsForMasternodeType) {
-                    DSQuorumEntry *potentialQuorumEntry = quorumsForMasternodeType[quorumHash];
-                    DSQuorumEntryEntity *entity = [DSQuorumEntryEntity quorumEntryEntityFromPotentialQuorumEntry:potentialQuorumEntry inContext:context];
-                    if (entity) {
-                        [masternodeListEntity addQuorumsObject:entity];
+                for (NSNumber *llmqType in quorums) {
+                    NSDictionary *quorumsForMasternodeType = quorums[llmqType];
+                    for (NSData *quorumHash in quorumsForMasternodeType) {
+                        DSQuorumEntry *potentialQuorumEntry = quorumsForMasternodeType[quorumHash];
+                        DSQuorumEntryEntity *entity = [DSQuorumEntryEntity quorumEntryEntityFromPotentialQuorumEntry:potentialQuorumEntry inContext:context];
+                        if (entity) {
+                            [masternodeListEntity addQuorumsObject:entity];
+                        }
                     }
                 }
+                chainEntity.baseBlockHash = mnlBlockHashData;
+                DSLog(@"Finished saving MNL at height %u", mnlHeight);
+            } else {
+                chainEntity.baseBlockHash = uint256_data(chain.genesisHash);
+                [DSLocalMasternodeEntity deleteAllOnChainEntity:chainEntity];
+                [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
+                [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
             }
-            chainEntity.baseBlockHash = mnlBlockHashData;
-            DSLog(@"Finished saving MNL at height %u", mnlHeight);
-        } else {
-            chainEntity.baseBlockHash = uint256_data(chain.genesisHash);
-            [DSLocalMasternodeEntity deleteAllOnChainEntity:chainEntity];
-            [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
-            [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
-        }
-        [context ds_save];
-        if (completion) {
-            completion(error);
+            [context ds_save];
+            if (completion) {
+                completion(error);
+            }
+
         }
     }];
 }

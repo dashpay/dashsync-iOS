@@ -375,6 +375,49 @@
 }
 */
 
+- (void)saveToJsonFile {
+    NSMutableArray<NSString *> *json_nodes = [NSMutableArray arrayWithCapacity:self.masternodeCount];
+    for (DSSimplifiedMasternodeEntry *entry in self.simplifiedMasternodeEntries) {
+        NSString *json_node = [NSString stringWithFormat:@"{\"proRegTxHash\": \"%@\", \"confirmedHash\": \"%@\", \"service\": \"%@\", \"pubKeyOperator\": \"%@\", \"votingAddress\": \"%@\", \"isValid\": %s}",
+                               uint256_hex(entry.providerRegistrationTransactionHash),
+                               uint256_hex(entry.confirmedHash),
+                               uint128_hex(entry.address),
+                               uint384_hex(entry.operatorPublicKey),
+                               uint160_data(entry.keyIDVoting).base58String,
+                               entry.isValid ? "true" : "false"];
+        [json_nodes addObject:json_node];
+    }
+    NSMutableArray<NSString *> *json_quorums = [NSMutableArray arrayWithCapacity:self.masternodeCount];
+    for (NSNumber *llmqType in self.quorums) {
+        NSDictionary *quorumsForMasternodeType = self.quorums[llmqType];
+        for (NSData *quorumHash in quorumsForMasternodeType) {
+            DSQuorumEntry *entry = quorumsForMasternodeType[quorumHash];
+            NSString *json_quorum = [NSString stringWithFormat:@"{\"version\": %@, \"llmqType\": %@, \"quorumHash\": \"%@\", \"quorumIndex\": %@, \"signersCount\": %@, \"signers\": \"%@\", \"validMembersCount\": %@, \"validMembers\": \"%@\", \"quorumPublicKey\": \"%@\", \"quorumVvecHash\": \"%@\", \"quorumSig\": \"%@\", \"membersSig\": \"%@\"}",
+                                     @(entry.version),
+                                     @(entry.llmqType),
+                                     uint256_hex(entry.quorumHash),
+                                     @(entry.quorumIndex),
+                                     @(entry.signersCount),
+                                     [entry signersBitset].hexString,
+                                     @(entry.validMembersCount),
+                                     [entry validMembersBitset].hexString,
+                                     uint384_hex(entry.quorumPublicKey),
+                                     uint256_hex(entry.quorumVerificationVectorHash),
+                                     uint768_hex(entry.quorumThresholdSignature),
+                                     uint768_hex(entry.allCommitmentAggregatedSignature)];
+            
+            [json_quorums addObject:json_quorum];
+        }
+    }
+    NSString *fileName = [NSString stringWithFormat:@"MNLIST_%@.dat", @(self.height)];
+    NSString *nodes = [NSString stringWithFormat:@"\"mnList\": [%@]", [json_nodes componentsJoinedByString:@","]];
+    NSString *quorums = [NSString stringWithFormat:@"\"newQuorums\": [%@]", [json_quorums componentsJoinedByString:@","]];
+    NSString *list = [NSString stringWithFormat:@"{\"blockHash\":\"%@\", \"knownHeight\":%@, \"masternodeMerkleRoot\":\"%@\", \"quorumMerkleRoot\":\"%@\", %@, %@}", uint256_hex(self.blockHash), @(self.knownHeight), uint256_hex(self.masternodeMerkleRoot), uint256_hex(self.quorumMerkleRoot), nodes, quorums];
+    NSData* data = [list dataUsingEncoding:NSUTF8StringEncoding allowLossyConversion:NO];
+    [data saveToFile:fileName inDirectory:NSCachesDirectory];
+    DSLog(@"•-• File %@ saved", fileName);
+}
+
 - (NSString *)description {
     return [[super description] stringByAppendingString:[NSString stringWithFormat:@" {%u}", self.height]];
 }

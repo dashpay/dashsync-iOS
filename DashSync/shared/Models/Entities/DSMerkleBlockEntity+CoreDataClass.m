@@ -146,4 +146,9 @@
     }];
 }
 
++ (instancetype)merkleBlockEntityForBlockHash:(UInt256)blockHash inContext:(NSManagedObjectContext *)context {
+    DSMerkleBlockEntity *merkleBlockEntity = [DSMerkleBlockEntity anyObjectInContext:context matching:@"blockHash == %@", uint256_data(blockHash)];
+    return merkleBlockEntity;
+}
+
 @end

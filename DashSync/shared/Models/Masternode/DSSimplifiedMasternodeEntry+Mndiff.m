@@ -77,7 +77,9 @@
     UInt128 address = *((UInt128 *)entry->ip_address);
     uint16_t port = entry->port;
     uint32_t updateHeight = entry->update_height;
-    return [self simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:providerRegistrationTransactionHash
+//    NSLog(@"simplifiedEntryWith: %@ (%@, %@, SocketAddress { %@: %u }, %@, %@, %u) (%u %u)", uint256_hex(simplifiedMasternodeEntryHash), uint256_hex(providerRegistrationTransactionHash), uint256_hex(confirmedHash), uint128_hex(address), port, uint384_hex(operatorPublicKey), uint160_hex(keyIDVoting), isValid, updateHeight, knownConfirmedAtHeight);
+    //NSLog(@"simplifiedEntryWith: %@ (%u %u)", uint256_hex(providerRegistrationTransactionHash), updateHeight, knownConfirmedAtHeight);
+   return [self simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:providerRegistrationTransactionHash
                                                                     confirmedHash:confirmedHash
                                                                           address:address
                                                                              port:port

@@ -1,5 +1,5 @@
 def common_pods
-#  pod 'DashSharedCore', :git => 'https://github.com/dashevo/dash-shared-core.git', :branch => 'fix/llmq-rotation-issue'
+  pod 'DashSharedCore', :git => 'https://github.com/dashevo/dash-shared-core.git', :branch => 'fix/masternodes-merkle-root-investigation'
   pod 'DashSync', :path => '../'
   pod 'SDWebImage', '5.9.2'
   pod 'CocoaImageHashing', :git => 'https://github.com/ameingast/cocoaimagehashing.git', :commit => 'ad01eee'
@@ -22,9 +22,9 @@ end
 post_install do |installer|
     installer.pods_project.targets.each do |target|
         # fixes warnings about unsupported Deployment Target in Xcode 10
-        if ["BoringSSL-GRPC", "abseil", "gRPC", "gRPC-Core", "gRPC-RxLibrary", "gRPC-ProtoRPC", "Protobuf", "DSJSONSchemaValidation", "!ProtoCompiler", "!ProtoCompiler-gRPCPlugin", "gRPC-gRPCCertificates", "UIViewController-KeyboardAdditions", "MMSegmentSlider", "MBProgressHUD", "KVO-MVVM", "CocoaLumberjack", "SDWebImage-iOS"].include? target.name
+        if ["BoringSSL-GRPC", "abseil", "gRPC", "gRPC-Core", "gRPC-RxLibrary", "gRPC-ProtoRPC", "Protobuf", "DSJSONSchemaValidation", "!ProtoCompiler", "!ProtoCompiler-gRPCPlugin", "gRPC-gRPCCertificates", "UIViewController-KeyboardAdditions", "MMSegmentSlider", "MBProgressHUD", "KVO-MVVM", "CocoaLumberjack", "SDWebImage-iOS", "!ProtoCompiler-gRPCPlugin-iOS", "!ProtoCompiler-iOS", "BoringSSL-GRPC-iOS", "CocoaImageHashing-iOS", "CocoaLumberjack-iOS", "DSDynamic-Options-iOS", "DWAlertController"].include? target.name
             target.build_configurations.each do |config|
-                config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '9.0'
+                config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
             end
         end
         

@@ -22,8 +22,8 @@
 
 
 + (instancetype)quorumSnapshotEntityFromPotentialQuorumSnapshot:(DSQuorumSnapshot *)potentialQuorumSnapshot inContext:(NSManagedObjectContext *)context {
-    NSData *quorumSnapshotBlockHashData = uint256_data(potentialQuorumSnapshot.blockHash);
-    DSMerkleBlockEntity *block = [DSMerkleBlockEntity anyObjectInContext:context matching:@"blockHash == %@", quorumSnapshotBlockHashData];
+    UInt256 quorumSnapshotBlockHash = potentialQuorumSnapshot.blockHash;
+    DSMerkleBlockEntity *block = [DSMerkleBlockEntity merkleBlockEntityForBlockHash:quorumSnapshotBlockHash inContext:context];
     DSQuorumSnapshotEntity *quorumSnapshotEntity = nil;
     if (block) {
         quorumSnapshotEntity = block.quorumSnapshot;

@@ -38,8 +38,11 @@ MasternodeList *getMasternodeListByBlockHash(uint8_t (*block_hash)[32], const vo
     DSMasternodeProcessorContext *processorContext = (__bridge DSMasternodeProcessorContext *)context;
     UInt256 blockHash = *((UInt256 *)block_hash);
     DSMasternodeList *list = processorContext.masternodeListLookup(blockHash);
+    //NSLog(@"••• getMasternodeListByBlockHash: %@: %@", uint256_hex(blockHash), list.debugDescription);
+//    if (list) {
+//        [list saveToJsonFile];
+//    }
     MasternodeList *c_list = list ? [list ffi_malloc] : NULL;
-    //NSLog(@"••• getMasternodeListByBlockHash: %@: %p: %@", uint256_hex(blockHash), c_list, context);
     processor_destroy_block_hash(block_hash);
     return c_list;
 }
@@ -72,7 +75,7 @@ uint32_t getBlockHeightByHash(uint8_t (*block_hash)[32], const void *context) {
     DSMasternodeProcessorContext *processorContext = (__bridge DSMasternodeProcessorContext *)context;
     UInt256 blockHash = *((UInt256 *)block_hash);
     uint32_t block_height = processorContext.blockHeightLookup(blockHash);
-    //NSLog(@"\"%@\" => %u, // getBlockHeightByHash", uint256_hex(blockHash), block_height);
+//    NSLog(@"\"%@\" => %u, // getBlockHeightByHash", uint256_hex(blockHash), block_height);
     processor_destroy_block_hash(block_hash);
     return block_height;
 }
@@ -92,7 +95,7 @@ uint8_t *getMerkleRootByHash(uint8_t (*block_hash)[32], const void *context) {
     UInt256 blockHash = *((UInt256 *)block_hash);
     UInt256 merkleRoot = processorContext.merkleRootLookup(blockHash);
     uint8_t (*merkle_root)[32] = uint256_malloc(merkleRoot);
-    //NSLog(@"••• getMerkleRootByHash: %@ -> %@: %p",uint256_hex(blockHash), uint256_hex(merkleRoot), merkle_root);
+//    NSLog(@"••• getMerkleRootByHash: %@ -> %@: %p",uint256_hex(blockHash), uint256_hex(merkleRoot), merkle_root);
     processor_destroy_block_hash(block_hash);
     return (uint8_t *)merkle_root;
 }
@@ -148,13 +151,15 @@ uint8_t shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*blo
     DSMasternodeManager *manager = chain.chainManager.masternodeManager;
     uint32_t baseBlockHeight = [manager heightForBlockHash:baseBlockHash];
     uint32_t blockHeight = [manager heightForBlockHash:blockHash];
-//    NSLog(@"•••• shouldProcessDiffWithRange.... %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_hex(baseBlockHash), uint256_hex(blockHash));
+    NSLog(@"•••• shouldProcessDiffWithRange.... %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_hex(baseBlockHash), uint256_hex(blockHash));
     DSMasternodeListService *service = processorContext.isDIP0024 ? manager.quorumRotationService : manager.masternodeListDiffService;
     
     BOOL hasRemovedFromRetrieval = [service removeRequestInRetrievalForBaseBlockHash:baseBlockHash blockHash:blockHash];
     BOOL hasLocallyStored = [manager.store hasMasternodeListAt:uint256_data(blockHash)];
-    DSMasternodeList *list = [manager.store masternodeListForBlockHash:blockHash withBlockHeightLookup:processorContext.blockHeightLookup];
-    BOOL hasUnverifiedRotatedQuorums = [list hasUnverifiedRotatedQuorums];
+    
+    //DSMasternodeList *list = [manager.store masternodeListForBlockHash:blockHash withBlockHeightLookup:processorContext.blockHeightLookup];
+    DSMasternodeList *list = processorContext.masternodeListLookup(blockHash);
+    BOOL hasUnverifiedRotatedQuorums = processorContext.isDIP0024 && [list hasUnverifiedRotatedQuorums];
     processor_destroy_block_hash(base_block_hash);
     processor_destroy_block_hash(block_hash);
     if (!hasRemovedFromRetrieval) {
@@ -190,7 +195,7 @@ bool shouldProcessLLMQType(uint8_t quorum_type, const void *context) {
         should = [chain shouldProcessQuorumOfType:llmqType];
     }
         
-    NSLog(@"••• shouldProcessLLMQType: %d: %d", quorum_type, should);
+    //NSLog(@"••• shouldProcessLLMQType: %d: %d", quorum_type, should);
     return should;
 }
 
