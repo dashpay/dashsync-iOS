@@ -66,7 +66,8 @@
     _masternodeListCurrentlyBeingSavedCount = 0;
     _masternodeSavingQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.masternodesaving.%@", chain.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
     self.lastQueriedBlockHash = UINT256_ZERO;
-    self.managedObjectContext = chain.chainManagedObjectContext;
+//    self.managedObjectContext = chain.chainManagedObjectContext;
+    self.managedObjectContext = [NSManagedObjectContext masternodesContext];
     return self;
 }
 
@@ -544,7 +545,7 @@
                 NSMutableDictionary *indexedKnownSimplifiedMasternodeEntryEntities = [NSMutableDictionary dictionary];
                 for (DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity in knownSimplifiedMasternodeEntryEntities) {
                     NSData *proRegTxHash = simplifiedMasternodeEntryEntity.providerRegistrationTransactionHash;
-                    NSLog(@"knownSimplifiedMasternodeEntryEntity: %@: (%u, %u)", proRegTxHash.hexString, simplifiedMasternodeEntryEntity.updateHeight, simplifiedMasternodeEntryEntity.knownConfirmedAtHeight);
+//                    NSLog(@"knownSimplifiedMasternodeEntryEntity: %@: (%u, %u)", proRegTxHash.hexString, simplifiedMasternodeEntryEntity.updateHeight, simplifiedMasternodeEntryEntity.knownConfirmedAtHeight);
                     [indexedKnownSimplifiedMasternodeEntryEntities setObject:simplifiedMasternodeEntryEntity forKey:proRegTxHash];
                 }
                 
@@ -566,12 +567,12 @@
                     NSData *proRegTxHash = uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash);
                     DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity = [indexedKnownSimplifiedMasternodeEntryEntities objectForKey:proRegTxHash];
                     if (!simplifiedMasternodeEntryEntity) {
-                        NSLog(@"knownSimplifiedMasternodeEntryEntity.new: %@: (%u, %u)", proRegTxHash.hexString, simplifiedMasternodeEntry.updateHeight, simplifiedMasternodeEntry.knownConfirmedAtHeight);
+//                        NSLog(@"knownSimplifiedMasternodeEntryEntity.new: %@: (%u, %u)", proRegTxHash.hexString, simplifiedMasternodeEntry.updateHeight, simplifiedMasternodeEntry.knownConfirmedAtHeight);
                         simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity managedObjectInBlockedContext:context];
                         [simplifiedMasternodeEntryEntity setAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry atBlockHeight:mnlHeight knownOperatorAddresses:operatorAddresses knownVotingAddresses:votingAddresses localMasternodes:localMasternodes onChainEntity:chainEntity];
                     } else if (simplifiedMasternodeEntry.updateHeight >= mnlHeight) {
                         // it was updated in this masternode list
-                        NSLog(@"knownSimplifiedMasternodeEntryEntity.update: %@: (%u, %u)", proRegTxHash.hexString, simplifiedMasternodeEntry.updateHeight, simplifiedMasternodeEntry.knownConfirmedAtHeight);
+//                        NSLog(@"knownSimplifiedMasternodeEntryEntity.update: %@: (%u, %u)", proRegTxHash.hexString, simplifiedMasternodeEntry.updateHeight, simplifiedMasternodeEntry.knownConfirmedAtHeight);
                         [simplifiedMasternodeEntryEntity updateAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry atBlockHeight:mnlHeight knownOperatorAddresses:operatorAddresses knownVotingAddresses:votingAddresses localMasternodes:localMasternodes];
                     }
                     [masternodeListEntity addMasternodesObject:simplifiedMasternodeEntryEntity];

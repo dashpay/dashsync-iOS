@@ -149,9 +149,13 @@ uint8_t shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*blo
     UInt256 blockHash = *((UInt256 *)block_hash);
     DSChain *chain = processorContext.chain;
     DSMasternodeManager *manager = chain.chainManager.masternodeManager;
-    uint32_t baseBlockHeight = [manager heightForBlockHash:baseBlockHash];
-    uint32_t blockHeight = [manager heightForBlockHash:blockHash];
+    uint32_t baseBlockHeight = processorContext.blockHeightLookup(baseBlockHash);
+    uint32_t blockHeight = processorContext.blockHeightLookup(blockHash);
     NSLog(@"•••• shouldProcessDiffWithRange.... %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_hex(baseBlockHash), uint256_hex(blockHash));
+    if (blockHeight == UINT32_MAX) {
+        NSLog(@"•••• shouldProcessDiffWithRange: unknown blockHash: %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_hex(baseBlockHash), uint256_hex(blockHash));
+        return 5; // ProcessingError::UnknownBlockHash
+    }
     DSMasternodeListService *service = processorContext.isDIP0024 ? manager.quorumRotationService : manager.masternodeListDiffService;
     
     BOOL hasRemovedFromRetrieval = [service removeRequestInRetrievalForBaseBlockHash:baseBlockHash blockHash:blockHash];

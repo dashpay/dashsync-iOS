@@ -39,6 +39,11 @@
     return [[DSDataController sharedInstance] platformContext];
 }
 
++ (NSManagedObjectContext *)masternodesContext {
+    return [[DSDataController sharedInstance] masternodesContext];
+}
+
+
 - (instancetype)createChildContext {
     NSManagedObjectContext *childContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
     [childContext setParentContext:self];

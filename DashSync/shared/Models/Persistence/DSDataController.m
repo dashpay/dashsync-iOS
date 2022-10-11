@@ -24,6 +24,7 @@
 @property (nonatomic, strong) NSPersistentContainer *persistentContainer;
 @property (nonatomic, strong) NSManagedObjectContext *peerContext;
 @property (nonatomic, strong) NSManagedObjectContext *chainContext;
+@property (nonatomic, strong) NSManagedObjectContext *masternodesContext;
 @property (nonatomic, strong) NSManagedObjectContext *platformContext;
 
 @end
@@ -142,6 +143,16 @@
         [_chainContext setAutomaticallyMergesChangesFromParent:YES];
     });
     return _chainContext;
+}
+
+- (NSManagedObjectContext *)masternodesContext {
+    static dispatch_once_t onceMasternodesToken;
+    dispatch_once(&onceMasternodesToken, ^{
+        _masternodesContext = [self.persistentContainer newBackgroundContext];
+        [_masternodesContext setMergePolicy:NSMergeByPropertyObjectTrumpMergePolicy];
+        [_masternodesContext setAutomaticallyMergesChangesFromParent:YES];
+    });
+    return _masternodesContext;
 }
 
 - (NSManagedObjectContext *)platformContext {
