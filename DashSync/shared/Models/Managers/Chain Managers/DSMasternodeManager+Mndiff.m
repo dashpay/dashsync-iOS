@@ -17,6 +17,7 @@
 
 #import "DSBLSKey.h"
 #import "DSBlock.h"
+#import "DSBlockOperation.h"
 #import "DSChain+Protected.h"
 #import "DSChainManager.h"
 #import "DSInsightManager.h"
@@ -315,6 +316,43 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
 ///
 /// MARK: Call processing methods
 ///
+- (void)processMasternodeDiffWith:(NSData *)message context:(DSMasternodeProcessorContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion {
+    NSAssert(self.processor, @"processMasternodeDiffMessage: No processor created");
+    DSBlockOperation *operation = [DSBlockOperation operationWithBlock:^(DSBlockOperation * _Nonnull operation, DSBlockOperationCompletionBlock  _Nonnull completionBlock) {
+        MNListDiffResult *result = process_mnlistdiff_from_message(message.bytes,
+                                                                   message.length,
+                                                                   context.useInsightAsBackup,
+                                                                   context.isFromSnapshot,
+                                                                   (const uint8_t *) context.chain.genesisHash.u8,
+                                                                   self.processor,
+                                                                   self.processorCache,
+                                                                   (__bridge void *)(context));
+        DSMnDiffProcessingResult *processingResult = [DSMnDiffProcessingResult processingResultWith:result onChain:context.chain];
+        processor_destroy_mnlistdiff_result(result);
+        completion(processingResult);
+    }];
+    [self.processingQueue addOperation:operation];
+}
+
+- (void)processQRInfoWith:(NSData *)message context:(DSMasternodeProcessorContext *)context completion:(void (^)(DSQRInfoProcessingResult *result))completion {
+    NSAssert(self.processor, @"processQRInfoMessage: No processor created");
+    NSAssert(self.processorCache, @"processQRInfoMessage: No processorCache created");
+    DSBlockOperation *operation = [DSBlockOperation operationWithBlock:^(DSBlockOperation * _Nonnull operation, DSBlockOperationCompletionBlock  _Nonnull completionBlock) {
+        QRInfoResult *result = process_qrinfo_from_message(message.bytes,
+                                                           message.length,
+                                                           context.useInsightAsBackup,
+                                                           context.isFromSnapshot,
+                                                           (const uint8_t *) context.chain.genesisHash.u8,
+                                                           self.processor,
+                                                           self.processorCache,
+                                                           (__bridge void *)(context));
+        DSQRInfoProcessingResult *processingResult = [DSQRInfoProcessingResult processingResultWith:result onChain:context.chain];
+        processor_destroy_qr_info_result(result);
+        completion(processingResult);
+    }];
+    [self.processingQueue addOperation:operation];
+}
+
 - (DSMnDiffProcessingResult *)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeProcessorContext *)context {
     NSAssert(self.processor, @"processMasternodeDiffMessage: No processor created");
     MNListDiffResult *result = NULL;

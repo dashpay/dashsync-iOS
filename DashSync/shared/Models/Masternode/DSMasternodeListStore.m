@@ -66,8 +66,8 @@
     _masternodeListCurrentlyBeingSavedCount = 0;
     _masternodeSavingQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.masternodesaving.%@", chain.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
     self.lastQueriedBlockHash = UINT256_ZERO;
-//    self.managedObjectContext = chain.chainManagedObjectContext;
-    self.managedObjectContext = [NSManagedObjectContext masternodesContext];
+    self.managedObjectContext = chain.chainManagedObjectContext;
+//    self.managedObjectContext = [NSManagedObjectContext masternodesContext];
     return self;
 }
 
@@ -398,12 +398,13 @@
 }
 
 - (void)saveMasternodeList:(DSMasternodeList *)masternodeList addedMasternodes:(NSDictionary *)addedMasternodes modifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums completion:(void (^)(NSError *error))completion {
-    NSData *blockHashData = uint256_data(masternodeList.blockHash);
+    UInt256 blockHash = masternodeList.blockHash;
+    NSData *blockHashData = uint256_data(blockHash);
     if ([self hasMasternodeListAt:blockHashData]) {
         //in rare race conditions this might already exist
         return;
     }
-    NSLog(@"•••• store masternode list at: %u: %@", [self heightForBlockHash:masternodeList.blockHash], uint256_hex(masternodeList.blockHash));
+    NSLog(@"•••• store masternode list at: %u: %@", [self heightForBlockHash:blockHash], uint256_hex(blockHash));
     NSArray *updatedSimplifiedMasternodeEntries = [addedMasternodes.allValues arrayByAddingObjectsFromArray:modifiedMasternodes.allValues];
     [self.chain updateAddressUsageOfSimplifiedMasternodeEntries:updatedSimplifiedMasternodeEntries];
     [self.masternodeListsByBlockHash setObject:masternodeList forKey:blockHashData];
