@@ -175,7 +175,7 @@
     }
 }
 
-- (void)publishTransaction:(DSTransaction *)transaction completion:(void (^)(NSError *error))completion {
+- (void)publishTransaction:(DSTransaction *)transaction completion:(void (^)(NSError * _Nullable error))completion {
 #if DEBUG
     DSLogPrivate(@"[DSTransactionManager] publish transaction %@ %@", transaction, transaction.toData);
 #else
