@@ -648,13 +648,8 @@
 }
 
 - (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData *)message {
-#if LOG_MASTERNODE_DIFF
-    DSFullLog(@"Logging masternode DIFF message %@", message.hexString);
-    DSLog(@"Logging masternode DIFF message hash %@", [NSData dataWithUInt256:message.SHA256].hexString);
-#endif
-    NSLog(@"•••• -> received mnlistdiff");
-    
-    self.quorumRotationService.timedOutAttempt = 0;
+    DSLog(@"•••• -> received mnlistdiff: %@", uint256_hex(message.SHA256));
+    self.masternodeListDiffService.timedOutAttempt = 0;
     DSMasternodeProcessorContext *ctx = [self createDiffMessageContext:self.chain.isTestnet isFromSnapshot:NO isDIP0024:NO peer:peer merkleRootLookup:^UInt256(UInt256 blockHash) {
         DSBlock *lastBlock = [self lastBlockForBlockHash:blockHash fromPeer:peer];
         //DSLog(@"merkleRootLookup: %@: %@", lastBlock, peer);
@@ -665,18 +660,17 @@
         }
         return lastBlock.merkleRoot;
     }];
-    
     [self processMasternodeDiffWith:message context:ctx completion:^(DSMnDiffProcessingResult * _Nonnull result) {
         UInt256 baseBlockHash = result.baseBlockHash;
         UInt256 blockHash = result.blockHash;
-        NSLog(@"•••• -> processed mnlistdiff %u..%u %@ .. %@", [self heightForBlockHash:baseBlockHash], [self heightForBlockHash:blockHash], uint256_hex(baseBlockHash), uint256_hex(blockHash));
+        DSLog(@"•••• -> processed mnlistdiff %u..%u %@ .. %@", [self heightForBlockHash:baseBlockHash], [self heightForBlockHash:blockHash], uint256_hex(baseBlockHash), uint256_hex(blockHash));
     #if SAVE_MASTERNODE_DIFF_TO_FILE
         NSString *fileName = [NSString stringWithFormat:@"MNL_%@_%@.dat", @([self heightForBlockHash:baseBlockHash]), @([self heightForBlockHash:blockHash])];
         DSLog(@"•-• File %@ saved", fileName);
         [message saveToFile:fileName inDirectory:NSCachesDirectory];
     #endif
         if (result.errorStatus) {
-            NSLog(@"Processing status: %ul", result.errorStatus);
+            DSLog(@"Processing status: %ul", result.errorStatus);
             return;
         }
         [self processMasternodeListDiffResult:result forPeer:peer skipPresenceInRetrieval:NO];
@@ -684,13 +678,8 @@
 }
 
 - (void)peer:(DSPeer *)peer relayedQuorumRotationInfoMessage:(NSData *)message {
-#if LOG_MASTERNODE_DIFF
-    DSFullLog(@"Logging masternode DIFF message %@", message.hexString);
-    DSLog(@"Logging masternode DIFF message hash %@", [NSData dataWithUInt256:message.SHA256].hexString);
-#endif
-    NSLog(@"•••• -> received qrinfo");
-    self.masternodeListDiffService.timedOutAttempt = 0;
-
+    DSLog(@"•••• -> received qrinfo: %@", uint256_hex(message.SHA256));
+    self.quorumRotationService.timedOutAttempt = 0;
     MerkleRootFinder merkleRootLookup = ^UInt256(UInt256 blockHash) {
         DSBlock *lastBlock = [self lastBlockForBlockHash:blockHash fromPeer:peer];
         if (!lastBlock) {
@@ -700,22 +689,19 @@
         }
         return lastBlock.merkleRoot;
     };
-
     DSMasternodeProcessorContext *ctx = [self createDiffMessageContext:self.chain.isTestnet isFromSnapshot:NO isDIP0024:YES peer:peer merkleRootLookup:merkleRootLookup];
-    
     [self processQRInfoWith:message context:ctx completion:^(DSQRInfoProcessingResult * _Nonnull result) {
         if (result.errorStatus) {
-            NSLog(@"•••• Processing status: %u", result.errorStatus);
+            DSLog(@"•••• Processing status: %u", result.errorStatus);
             return;
         }
-        
         UInt256 baseBlockHash = result.mnListDiffResultAtTip.baseBlockHash;
         UInt256 blockHash = result.mnListDiffResultAtTip.blockHash;
-        NSLog(@"•••• -> processed qrinfo tip %u..%u %@ .. %@", [self heightForBlockHash:baseBlockHash], [self heightForBlockHash:blockHash], uint256_hex(baseBlockHash), uint256_hex(blockHash));
-        NSLog(@"•••• -> processed qrinfo h %u..%u %@ .. %@", [self heightForBlockHash:result.mnListDiffResultAtH.baseBlockHash], [self heightForBlockHash:result.mnListDiffResultAtH.blockHash], uint256_hex(result.mnListDiffResultAtH.baseBlockHash), uint256_hex(result.mnListDiffResultAtH.blockHash));
-        NSLog(@"•••• -> processed qrinfo h-c %u..%u %@ .. %@", [self heightForBlockHash:result.mnListDiffResultAtHC.baseBlockHash], [self heightForBlockHash:result.mnListDiffResultAtHC.blockHash], uint256_hex(result.mnListDiffResultAtHC.baseBlockHash), uint256_hex(result.mnListDiffResultAtHC.blockHash));
-        NSLog(@"•••• -> processed qrinfo h-2c %u..%u %@ .. %@", [self heightForBlockHash:result.mnListDiffResultAtH2C.baseBlockHash], [self heightForBlockHash:result.mnListDiffResultAtH2C.blockHash], uint256_hex(result.mnListDiffResultAtH2C.baseBlockHash), uint256_hex(result.mnListDiffResultAtH2C.blockHash));
-        NSLog(@"•••• -> processed qrinfo h-3c %u..%u %@ .. %@", [self heightForBlockHash:result.mnListDiffResultAtH3C.baseBlockHash], [self heightForBlockHash:result.mnListDiffResultAtH3C.blockHash], uint256_hex(result.mnListDiffResultAtH3C.baseBlockHash), uint256_hex(result.mnListDiffResultAtH3C.blockHash));
+        DSLog(@"•••• -> processed qrinfo tip %u..%u %@ .. %@", [self heightForBlockHash:baseBlockHash], [self heightForBlockHash:blockHash], uint256_hex(baseBlockHash), uint256_hex(blockHash));
+        DSLog(@"•••• -> processed qrinfo h %u..%u %@ .. %@", [self heightForBlockHash:result.mnListDiffResultAtH.baseBlockHash], [self heightForBlockHash:result.mnListDiffResultAtH.blockHash], uint256_hex(result.mnListDiffResultAtH.baseBlockHash), uint256_hex(result.mnListDiffResultAtH.blockHash));
+        DSLog(@"•••• -> processed qrinfo h-c %u..%u %@ .. %@", [self heightForBlockHash:result.mnListDiffResultAtHC.baseBlockHash], [self heightForBlockHash:result.mnListDiffResultAtHC.blockHash], uint256_hex(result.mnListDiffResultAtHC.baseBlockHash), uint256_hex(result.mnListDiffResultAtHC.blockHash));
+        DSLog(@"•••• -> processed qrinfo h-2c %u..%u %@ .. %@", [self heightForBlockHash:result.mnListDiffResultAtH2C.baseBlockHash], [self heightForBlockHash:result.mnListDiffResultAtH2C.blockHash], uint256_hex(result.mnListDiffResultAtH2C.baseBlockHash), uint256_hex(result.mnListDiffResultAtH2C.blockHash));
+        DSLog(@"•••• -> processed qrinfo h-3c %u..%u %@ .. %@", [self heightForBlockHash:result.mnListDiffResultAtH3C.baseBlockHash], [self heightForBlockHash:result.mnListDiffResultAtH3C.blockHash], uint256_hex(result.mnListDiffResultAtH3C.baseBlockHash), uint256_hex(result.mnListDiffResultAtH3C.blockHash));
         if (result.extraShare) {
             NSLog(@"•••• -> processed qrinfo h-4c %u..%u %@ .. %@", [self heightForBlockHash:result.mnListDiffResultAtH4C.baseBlockHash], [self heightForBlockHash:result.mnListDiffResultAtH4C.blockHash], uint256_hex(result.mnListDiffResultAtH4C.baseBlockHash), uint256_hex(result.mnListDiffResultAtH4C.blockHash));
         }
@@ -725,7 +711,6 @@
         [message saveToFile:fileName inDirectory:NSCachesDirectory];
     #endif
         [self processQRInfoResult:result forPeer:peer];
-
     }];
 }
 

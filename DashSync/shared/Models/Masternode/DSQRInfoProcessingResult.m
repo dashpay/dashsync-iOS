@@ -64,7 +64,6 @@
     }
     processingResult.snapshotList = snapshotList;
     processingResult.mnListDiffList = mnListDiffList;
-    NSLog(@"DSQRInfoProcessingResult.result %@", processingResult);
     return processingResult;
 }
 
