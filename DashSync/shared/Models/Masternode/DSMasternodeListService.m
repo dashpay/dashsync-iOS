@@ -178,9 +178,9 @@
             uint32_t height2 = [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:obj2.UInt256];
             return (height1 > height2) ? NSOrderedDescending : NSOrderedAscending;
         }];
-        for (NSData *blockHash in orderedBlockHashes) {
-            NSLog(@"add retrieval of masternode list to queue [%u: %@]", [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:blockHash.UInt256], blockHash.hexString);
-        }
+//        for (NSData *blockHash in orderedBlockHashes) {
+//            NSLog(@"add retrieval of masternode list to queue [%u: %@]", [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:blockHash.UInt256], blockHash.hexString);
+//        }
         [self addToRetrievalQueueArray:orderedBlockHashes];
     }
     [self dequeueMasternodeListRequest];

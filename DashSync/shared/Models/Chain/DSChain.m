@@ -590,6 +590,13 @@ static dispatch_once_t devnetToken = 0;
     return _dapiMetadataQueue;
 }
 
+- (dispatch_queue_t)processingQueue {
+    if (!_processingQueue) {
+        NSAssert(uint256_is_not_zero(self.genesisHash), @"genesisHash must be set");
+        _processingQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.processing.%@", self.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
+    }
+    return _processingQueue;
+}
 
 // MARK: - Check Type
 

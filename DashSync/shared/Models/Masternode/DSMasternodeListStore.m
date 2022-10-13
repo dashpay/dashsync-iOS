@@ -81,7 +81,7 @@
 - (NSData *_Nullable)messageFromFileForBlockHash:(UInt256)blockHash {
     DSCheckpoint *checkpoint = [self.chain checkpointForBlockHash:blockHash];
     if (!checkpoint || !checkpoint.masternodeListName || [checkpoint.masternodeListName isEqualToString:@""]) {
-        DSLog(@"No masternode list checkpoint found at height %u", [self heightForBlockHash:blockHash]);
+        //DSLog(@"No masternode list checkpoint found at height %u", [self heightForBlockHash:blockHash]);
         return nil;
     }
     NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
@@ -321,13 +321,13 @@
     if (!masternodeList && [self.masternodeListsBlockHashStubs containsObject:blockHashData]) {
         masternodeList = [self loadMasternodeListAtBlockHash:blockHashData withBlockHeightLookup:blockHeightLookup];
     }
-    if (!masternodeList) {
-        if (blockHeightLookup) {
-            DSLog(@"No masternode list at %@ (%d)", blockHashData.reverse.hexString, blockHeightLookup(blockHash));
-        } else {
-            DSLog(@"No masternode list at %@", blockHashData.reverse.hexString);
-        }
-    }
+//    if (!masternodeList) {
+//        if (blockHeightLookup) {
+//            DSLog(@"No masternode list at %@ (%d)", blockHashData.reverse.hexString, blockHeightLookup(blockHash));
+//        } else {
+//            DSLog(@"No masternode list at %@", blockHashData.reverse.hexString);
+//        }
+//    }
     //DSLog(@"masternodeListForBlockHash %@: %@", blockHashData, masternodeList);
     return masternodeList;
 }
