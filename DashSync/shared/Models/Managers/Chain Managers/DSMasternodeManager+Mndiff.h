@@ -60,6 +60,10 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context);
 - (void)processMasternodeDiffWith:(NSData *)message context:(DSMasternodeProcessorContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion;
 - (void)processQRInfoWith:(NSData *)message context:(DSMasternodeProcessorContext *)context completion:(void (^)(DSQRInfoProcessingResult *result))completion;
 
+- (void)clearProcessorCache;
+- (void)removeMasternodeListFromCacheAtBlockHash:(UInt256)blockHash;
+- (void)removeSnapshotFromCacheAtBlockHash:(UInt256)blockHash;
+
 @end
 
 

@@ -19,23 +19,6 @@
 
 @implementation DSQuorumSnapshot
 
-+ (instancetype)quorumSnapshotWith:(LLMQSnapshot *)quorumSnapshot forBlockHash:(UInt256)blockHash {
-    DSQuorumSnapshot *snapshot = [[DSQuorumSnapshot alloc] init];
-    NSMutableOrderedSet<NSNumber *> *memberList = [NSMutableOrderedSet orderedSet];
-    for (NSUInteger i = 0; i < quorumSnapshot->member_list_length; i++) {
-        [memberList addObject:[NSNumber numberWithInteger:quorumSnapshot->member_list[i]]];
-    }
-    NSMutableOrderedSet<NSNumber *> *skipList = [NSMutableOrderedSet orderedSet];
-    for (NSUInteger i = 0; i < quorumSnapshot->skip_list_length; i++) {
-        [skipList addObject:[NSNumber numberWithInteger:quorumSnapshot->skip_list[i]]];
-    }
-    snapshot.memberList = memberList;
-    snapshot.skipList = skipList;
-    snapshot.skipListMode = quorumSnapshot->skip_list_mode;
-    snapshot.blockHash = blockHash;
-    return snapshot;
-}
-
 - (NSString *)debugDescription {
     return [NSString stringWithFormat:@"%@: {\nmode: %d, \nmembers: %@, \nskipped: %@\n}",
             [super debugDescription], self.skipListMode, self.memberList, self.skipList

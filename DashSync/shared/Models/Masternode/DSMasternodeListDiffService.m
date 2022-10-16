@@ -34,7 +34,7 @@
             if (masternodeList) {
                 if (self.currentMasternodeList && uint256_eq(self.store.lastQueriedBlockHash, masternodeList.blockHash)) {
                     NSLog(@"--> removeOldMasternodeLists (composeMasternodeListRequest): %u", self.currentMasternodeList.height);
-                    [self.store removeOldMasternodeLists:self.currentMasternodeList.height];
+                    [self.delegate masternodeListSerivceDidRequestRemoveOutdatedMasternodeLists:self blockHash:self.currentMasternodeList.blockHash];
                 }
                 [self removeFromRetrievalQueue:blockHashData];
                 [self checkWaitingForQuorums];

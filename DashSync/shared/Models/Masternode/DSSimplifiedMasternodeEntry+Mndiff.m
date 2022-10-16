@@ -44,7 +44,7 @@
         DSBlock *block = (DSBlock *)[chain blockForBlockHash:blockHash];
         if (!block) {
             block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:chain];
-            NSLog(@"•••• block created from nothing");
+            DSLog(@"•••• block for previous operator public key at (%d: %@) created from nothing", blockHeight, uint256_hex(blockHash));
         }
         NSData *key = [NSData dataWithBytes:operator_public_key.key length:48];
         [operatorPublicKeys setObject:key forKey:block];
@@ -57,7 +57,10 @@
         UInt256 blockHash = *((UInt256 *)entry_hash.block_hash);
         uint32_t blockHeight = entry_hash.block_height;
         DSBlock *block = (DSBlock *)[chain blockForBlockHash:blockHash];
-        if (!block) block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:chain];
+        if (!block) {
+            block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:chain];
+            DSLog(@"•••• block for previous entry hash at (%d: %@) created from nothing", blockHeight, uint256_hex(blockHash));
+        }
         NSData *hash = [NSData dataWithBytes:entry_hash.hash length:32];
         [masternodeEntryHashes setObject:hash forKey:block];
     }
@@ -69,7 +72,10 @@
         UInt256 blockHash = *((UInt256 *)validity.block_hash);
         uint32_t blockHeight = validity.block_height;
         DSBlock *block = (DSBlock *)[chain blockForBlockHash:blockHash];
-        if (!block) block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:chain];
+        if (!block) {
+            block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:chain];
+            DSLog(@"•••• block for previous validity at (%d: %@) created from nothing", blockHeight, uint256_hex(blockHash));
+        }
         NSNumber *isValid = [NSNumber numberWithBool:validity.is_valid];
         [validities setObject:isValid forKey:block];
     }
@@ -84,17 +90,17 @@
                                                                           address:address
                                                                              port:port
                                                              operatorBLSPublicKey:operatorPublicKey
-                                                    previousOperatorBLSPublicKeys:operatorPublicKeys
+                                                    previousOperatorBLSPublicKeys:[operatorPublicKeys copy]
                                                                       keyIDVoting:keyIDVoting
                                                                           isValid:isValid
-                                                                 previousValidity:validities
+                                                                 previousValidity:[validities copy]
                                                            knownConfirmedAtHeight:knownConfirmedAtHeight
                                                                      updateHeight:updateHeight
                                                     simplifiedMasternodeEntryHash:simplifiedMasternodeEntryHash
-                                          previousSimplifiedMasternodeEntryHashes:masternodeEntryHashes
+                                          previousSimplifiedMasternodeEntryHashes:[masternodeEntryHashes copy]
                                                                           onChain:chain];
 }
-+ (NSMutableDictionary<NSData *, DSSimplifiedMasternodeEntry *> *)simplifiedEntriesWith:(MasternodeEntry *_Nullable *_Nonnull)entries count:(uintptr_t)count onChain:(DSChain *)chain {
++ (NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *)simplifiedEntriesWith:(MasternodeEntry *_Nullable *_Nonnull)entries count:(uintptr_t)count onChain:(DSChain *)chain {
     NSMutableDictionary<NSData *, DSSimplifiedMasternodeEntry *> *masternodes = [NSMutableDictionary dictionaryWithCapacity:count];
     for (NSUInteger i = 0; i < count; i++) {
         MasternodeEntry *c_entry = entries[i];
@@ -102,7 +108,7 @@
         UInt256 hash = uint256_reverse(entry.providerRegistrationTransactionHash);
         [masternodes setObject:entry forKey:uint256_data(hash)];
     }
-    return masternodes;
+    return [masternodes copy];
 }
 
 - (MasternodeEntry *)ffi_malloc {

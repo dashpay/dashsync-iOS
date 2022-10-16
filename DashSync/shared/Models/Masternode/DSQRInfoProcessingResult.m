@@ -51,7 +51,7 @@
         DSQuorumEntry *entry = [[DSQuorumEntry alloc] initWithEntry:result->last_quorum_per_index[i] onChain:chain];
         [lastQuorumPerIndex addObject:entry];
     }
-    processingResult.lastQuorumPerIndex = lastQuorumPerIndex;
+    processingResult.lastQuorumPerIndex = [lastQuorumPerIndex copy];
     NSAssert(result->quorum_snapshot_list_count == result->mn_list_diff_list_count, @"Num of snapshots & diffs should be equal");
     NSMutableOrderedSet<DSQuorumSnapshot *> *snapshotList = [NSMutableOrderedSet orderedSet];
     NSMutableOrderedSet<DSMnDiffProcessingResult *> *mnListDiffList = [NSMutableOrderedSet orderedSet];
@@ -62,8 +62,8 @@
         [snapshotList addObject:snapshot];
         [mnListDiffList addObject:mnListDiff];
     }
-    processingResult.snapshotList = snapshotList;
-    processingResult.mnListDiffList = mnListDiffList;
+    processingResult.snapshotList = [snapshotList copy];
+    processingResult.mnListDiffList = [mnListDiffList copy];
     return processingResult;
 }
 

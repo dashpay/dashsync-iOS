@@ -29,8 +29,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic) UInt256 blockHash;
 
-+ (instancetype)quorumSnapshotWith:(LLMQSnapshot *)quorumSnapshot forBlockHash:(UInt256)blockHash;
-
 @end
 
 NS_ASSUME_NONNULL_END

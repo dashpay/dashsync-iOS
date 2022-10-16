@@ -39,11 +39,11 @@
     [processingResult setValidQuorums:result->has_valid_quorums];
     MasternodeList *result_masternode_list = result->masternode_list;
     [processingResult setMasternodeList:[DSMasternodeList masternodeListWith:result_masternode_list onChain:chain]];
-    NSMutableDictionary *addedMasternodes = [DSSimplifiedMasternodeEntry simplifiedEntriesWith:result->added_masternodes count:result->added_masternodes_count onChain:chain];
+    NSDictionary *addedMasternodes = [DSSimplifiedMasternodeEntry simplifiedEntriesWith:result->added_masternodes count:result->added_masternodes_count onChain:chain];
     [processingResult setAddedMasternodes:addedMasternodes];
-    NSMutableDictionary *modifiedMasternodes = [DSSimplifiedMasternodeEntry simplifiedEntriesWith:result->modified_masternodes count:result->modified_masternodes_count onChain:chain];
+    NSDictionary *modifiedMasternodes = [DSSimplifiedMasternodeEntry simplifiedEntriesWith:result->modified_masternodes count:result->modified_masternodes_count onChain:chain];
     [processingResult setModifiedMasternodes:modifiedMasternodes];
-    NSMutableDictionary *addedQuorums = [DSQuorumEntry entriesWith:result->added_llmq_type_maps count:result->added_llmq_type_maps_count onChain:chain];
+    NSDictionary *addedQuorums = [DSQuorumEntry entriesWith:result->added_llmq_type_maps count:result->added_llmq_type_maps_count onChain:chain];
     [processingResult setAddedQuorums:addedQuorums];
     uint8_t(**needed_masternode_lists)[32] = result->needed_masternode_lists;
     uintptr_t needed_masternode_lists_count = result->needed_masternode_lists_count;
@@ -52,7 +52,7 @@
         NSData *hash = [NSData dataWithBytes:needed_masternode_lists[i] length:32];
         [neededMissingMasternodeLists addObject:hash];
     }
-    [processingResult setNeededMissingMasternodeLists:neededMissingMasternodeLists];
+    [processingResult setNeededMissingMasternodeLists:[neededMissingMasternodeLists copy]];
     return processingResult;
 }
 
