@@ -752,7 +752,7 @@
         DSLog(@"•••• -> processed qrinfo h-2c %u..%u %@ .. %@", [self heightForBlockHash:result.mnListDiffResultAtH2C.baseBlockHash], [self heightForBlockHash:result.mnListDiffResultAtH2C.blockHash], uint256_hex(result.mnListDiffResultAtH2C.baseBlockHash), uint256_hex(result.mnListDiffResultAtH2C.blockHash));
         DSLog(@"•••• -> processed qrinfo h-3c %u..%u %@ .. %@", [self heightForBlockHash:result.mnListDiffResultAtH3C.baseBlockHash], [self heightForBlockHash:result.mnListDiffResultAtH3C.blockHash], uint256_hex(result.mnListDiffResultAtH3C.baseBlockHash), uint256_hex(result.mnListDiffResultAtH3C.blockHash));
         if (result.extraShare) {
-            NSLog(@"•••• -> processed qrinfo h-4c %u..%u %@ .. %@", [self heightForBlockHash:result.mnListDiffResultAtH4C.baseBlockHash], [self heightForBlockHash:result.mnListDiffResultAtH4C.blockHash], uint256_hex(result.mnListDiffResultAtH4C.baseBlockHash), uint256_hex(result.mnListDiffResultAtH4C.blockHash));
+            DSLog(@"•••• -> processed qrinfo h-4c %u..%u %@ .. %@", [self heightForBlockHash:result.mnListDiffResultAtH4C.baseBlockHash], [self heightForBlockHash:result.mnListDiffResultAtH4C.blockHash], uint256_hex(result.mnListDiffResultAtH4C.baseBlockHash), uint256_hex(result.mnListDiffResultAtH4C.blockHash));
         }
 #if SAVE_MASTERNODE_DIFF_TO_FILE
         NSString *fileName = [NSString stringWithFormat:@"QRINFO_%@_%@.dat", @([self heightForBlockHash:baseBlockHash]), @([self heightForBlockHash:blockHash])];
