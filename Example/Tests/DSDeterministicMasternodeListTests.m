@@ -3378,4 +3378,50 @@
     XCTAssertEqualObjects(uint256_data([masternodeList122064 calculateMasternodeMerkleRootWithBlockHeightLookup:blockHeightLookup122064]).hexString, @"86cfe9b759dfd012f8d00e980c560c5c1d9c487bfa8b59305e14c7fc60ef1150", @"");
 
 }
+
+/*
+ // Uncomment when testing ffi for llmq snapshots
+ LLMQSnapshot *getLLMQSnapshot(uint8_t (*block_hash)[32], const void *context) {
+    NSLog(@"getLLMQSnapshot.1");
+    DSMasternodeProcessorContext *processorContext = NULL;
+    UInt256 blockHash = *((UInt256 *)block_hash);
+    LLMQSnapshot *c_snapshot = NULL;
+//    @synchronized (context) {
+        processorContext = (__bridge DSMasternodeProcessorContext *)context;
+        DSQuorumSnapshot *snapshot = [[DSQuorumSnapshot alloc] init];
+        NSUInteger memberListLength = (int)5 + arc4random() % (30 - 5 + 1);
+        NSMutableOrderedSet<NSNumber *> *memberList = [NSMutableOrderedSet orderedSetWithCapacity:memberListLength];
+        NSUInteger i = 0;
+        for (i = 0; i < memberListLength; i++) {
+            [memberList addObject:[NSNumber numberWithUnsignedChar:(uint8_t)rand()%255]];
+        }
+        NSUInteger skipListLength = (int)5 + arc4random() % (30 - 5 + 1);
+        NSMutableOrderedSet<NSNumber *> *skipList = [NSMutableOrderedSet orderedSetWithCapacity:skipListLength];
+        for (i = 0; i < skipListLength; i++) {
+            [skipList addObject:[NSNumber numberWithInteger:(int32_t)0 + arc4random() % (500 - 0 + 1)]];
+        }
+        [snapshot setMemberList:[memberList copy]];
+        [snapshot setSkipList:[skipList copy]];
+        [snapshot setSkipListMode:0];
+        [snapshot setBlockHash:blockHash];
+        c_snapshot = [snapshot ffi_malloc];
+        NSLog(@"getLLMQSnapshot.2 %@", snapshot);
+//    }
+    processor_destroy_block_hash(block_hash);
+    NSLog(@"getLLMQSnapshot.3 %p", c_snapshot);
+    return c_snapshot;
+}
+
+- (void)testSnapshotsFFI {
+    DSChainManager *chainManager = [[DSChainsManager sharedInstance] testnetManager];
+    DSChain *chain = chainManager.chain;
+    DSMasternodeProcessorContext *context = [[DSMasternodeProcessorContext alloc] init];
+    [context setChain:chain];
+    
+    for (NSInteger i = 0; i < 30; i++) {
+        NSLog(@"testSnapshotsFFI.1: %lu", i);
+        test_snapshot_func(getLLMQSnapshot, saveLLMQSnapshot, destroyLLMQSnapshot, (__bridge void *)(context));
+        NSLog(@"testSnapshotsFFI.2: %lu", i);
+    }
+}*/
 @end
