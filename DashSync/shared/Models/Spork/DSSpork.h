@@ -27,7 +27,9 @@ typedef NS_ENUM(uint32_t, DSSporkIdentifier)
     DSSporkIdentifier_Spork18QuorumDebugEnabled = 10017,
     DSSporkIdentifier_Spork19ChainLocksEnabled = 10018,
     DSSporkIdentifier_Spork20InstantSendLLMQBased = 10019,
-    DSSporkIdentifier_Spork23QuorumPoseConnected = 10020,
+    DSSporkIdentifier_Spork21QuorumAllConnected = 10020,
+    DSSporkIdentifier_Spork22PSMoreParticipants = 10021,
+    DSSporkIdentifier_Spork23QuorumPoseConnected = 10022,
 };
 
 @class DSChain;
