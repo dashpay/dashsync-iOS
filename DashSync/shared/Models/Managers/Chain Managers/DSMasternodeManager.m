@@ -62,7 +62,6 @@
 @property (nonatomic, assign, nullable) MasternodeProcessorCache *processorCache;
 
 @property (nonatomic, assign) uint32_t rotatedQuorumsActivationHeight;
-@property (nonatomic, assign) uint32_t nextRequestingHeight;
 @property (nonatomic, strong) dispatch_group_t processingGroup;
 @property (nonatomic, strong) dispatch_group_t savingGroup;
 

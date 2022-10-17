@@ -198,7 +198,6 @@ uint8_t shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*blo
         DSMasternodeListService *service = processorContext.isDIP0024 ? manager.quorumRotationService : manager.masternodeListDiffService;
         BOOL hasRemovedFromRetrieval = [service removeRequestInRetrievalForBaseBlockHash:baseBlockHash blockHash:blockHash];
         BOOL hasLocallyStored = [manager.store hasMasternodeListAt:uint256_data(blockHash)];
-        //DSMasternodeList *list = [manager.store masternodeListForBlockHash:blockHash withBlockHeightLookup:processorContext.blockHeightLookup];
         DSMasternodeList *list = processorContext.masternodeListLookup(blockHash);
         BOOL hasUnverifiedRotatedQuorums = processorContext.isDIP0024 && [list hasUnverifiedRotatedQuorums];
         if (!hasRemovedFromRetrieval) {
@@ -361,35 +360,18 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
     return processingResult;
 }
 
-- (DSQRInfoProcessingResult *)processQRInfoMessage:(NSData *)message withContext:(DSMasternodeProcessorContext *)context {
-    NSAssert(self.processor, @"processQRInfoMessage: No processor created");
-    NSAssert(self.processorCache, @"processQRInfoMessage: No processorCache created");
-    QRInfoResult *result = NULL;
-    @synchronized (context) {
-        result = process_qrinfo_from_message(
-                                                           message.bytes,
-                                                           message.length,
-                                                           context.useInsightAsBackup,
-                                                           context.isFromSnapshot,
-                                                           (const uint8_t *) context.chain.genesisHash.u8,
-                                                           self.processor,
-                                                           self.processorCache,
-                                                           (__bridge void *)(context));
-    }
-    DSQRInfoProcessingResult *processingResult = [DSQRInfoProcessingResult processingResultWith:result onChain:context.chain];
-    processor_destroy_qr_info_result(result);
-    return processingResult;
-}
-
 - (void)clearProcessorCache {
+    NSAssert(self.processorCache, @"clearProcessorCache: No processorCache created");
     processor_clear_cache(self.processorCache);
 }
 
 - (void)removeMasternodeListFromCacheAtBlockHash:(UInt256)blockHash {
+    NSAssert(self.processorCache, @"removeMasternodeListFromCacheAtBlockHash: No processorCache created");
     processor_remove_masternode_list_from_cache_for_block_hash((const uint8_t *) blockHash.u8, self.processorCache);
 }
 
 - (void)removeSnapshotFromCacheAtBlockHash:(UInt256)blockHash {
+    NSAssert(self.processorCache, @"removeSnapshotFromCacheAtBlockHash: No processorCache created");
     processor_remove_llmq_snapshot_from_cache_for_block_hash((const uint8_t *) blockHash.u8, self.processorCache);
 }
 
