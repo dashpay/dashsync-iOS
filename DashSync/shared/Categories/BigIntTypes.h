@@ -177,6 +177,7 @@ typedef uint32_t (^_Nullable BlockHeightFinder)(UInt256 blockHash);
 #define uint160_data_from_obj(u) [NSData dataWithUInt160Value:u]
 #define uint256_data_from_obj(u) [NSData dataWithUInt256Value:u]
 
+#define uint128_hex(u) [NSData dataWithUInt128:u].hexString
 #define uint160_hex(u) [NSData dataWithUInt160:u].hexString
 #define uint160_reverse_hex(u) [NSData dataWithUInt160:u].reverse.hexString
 #define uint160_base58(u) [NSData dataWithUInt160:u].base58String

@@ -101,7 +101,7 @@
 
 - (void)dequeueMasternodeListRequest {
     [self fetchMasternodeListsToRetrieve:^(NSOrderedSet<NSData *> *list) {
-        NSLog(@"•••• dequeueMasternodeListRequest with list: (%@)", [self logListSet:list]);
+//        NSLog(@"•••• dequeueMasternodeListRequest with list: (%@)", [self logListSet:list]);
         [self composeMasternodeListRequest:list];
         [self startTimeOutObserver];
     }];
@@ -121,7 +121,7 @@
             return;
         }
         if ([self.store addBlockToValidationQueue:merkleBlock]) {
-            DSLog(@"Getting masternode list %u", merkleBlock.height);
+            DSLog(@"MasternodeListService.Getting masternode list %u", merkleBlock.height);
             NSData *merkleBlockHashData = uint256_data(merkleBlockHash);
             BOOL emptyRequestQueue = ![self retrievalQueueCount];
             [self addToRetrievalQueue:merkleBlockHashData];
@@ -178,9 +178,9 @@
             uint32_t height2 = [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:obj2.UInt256];
             return (height1 > height2) ? NSOrderedDescending : NSOrderedAscending;
         }];
-        for (NSData *blockHash in orderedBlockHashes) {
-            NSLog(@"add retrieval of masternode list to queue [%u: %@]", [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:blockHash.UInt256], blockHash.hexString);
-        }
+//        for (NSData *blockHash in orderedBlockHashes) {
+//            NSLog(@"add retrieval of masternode list to queue [%u: %@]", [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:blockHash.UInt256], blockHash.hexString);
+//        }
         [self addToRetrievalQueueArray:orderedBlockHashes];
     }
     [self dequeueMasternodeListRequest];
@@ -192,7 +192,7 @@
     NSData *masternodeListBlockHashData = uint256_data(masternodeListBlockHash);
     BOOL hasInRetrieval = [self.retrievalQueue containsObject:masternodeListBlockHashData];
     uint32_t masternodeListBlockHeight = [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:masternodeListBlockHash];
-    NSLog(@"•••• shouldProcessMasternodeList: %d: %@ inRetrieval: %d skipPresenceInRetrieval: %d", masternodeListBlockHeight, uint256_hex(masternodeListBlockHash), hasInRetrieval, skipPresenceInRetrieval);
+    NSLog(@"•••• shouldProcessDiffResult: %d: %@ inRetrieval: %d skipPresenceInRetrieval: %d", masternodeListBlockHeight, uint256_hex(masternodeListBlockHash), hasInRetrieval, skipPresenceInRetrieval);
     if (!hasInRetrieval && !skipPresenceInRetrieval) {
         //We most likely wiped data in the meantime
         [self cleanRequestsInRetrieval];
@@ -213,7 +213,7 @@
 
 - (void)addToRetrievalQueue:(NSData *)masternodeBlockHashData {
     NSAssert(uint256_is_not_zero(masternodeBlockHashData.UInt256), @"the hash data must not be empty");
-    NSLog(@"•••• addToRetrievalQueue: %d: %@", [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:masternodeBlockHashData.UInt256], masternodeBlockHashData.hexString);
+//    NSLog(@"•••• addToRetrievalQueue: %@: %d: %@", self, [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:masternodeBlockHashData.UInt256], masternodeBlockHashData.hexString);
     [self.retrievalQueue addObject:masternodeBlockHashData];
     [self updateMasternodeRetrievalQueue];
 }
@@ -223,7 +223,7 @@
     for (NSData *blockHashData in masternodeBlockHashDataArray) {
         NSAssert(uint256_is_not_zero(blockHashData.UInt256), @"We should not be adding an empty block hash");
         if (uint256_is_not_zero(blockHashData.UInt256)) {
-            NSLog(@"•••• addToRetrievalQueueArray...: %d: %@", [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:blockHashData.UInt256], blockHashData.hexString);
+//            NSLog(@"•••• addToRetrievalQueueArray...: %@: %d: %@", self, [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:blockHashData.UInt256], blockHashData.hexString);
             [nonEmptyBlockHashes addObject:blockHashData];
         }
     }
@@ -232,17 +232,17 @@
 }
 
 - (void)removeFromRetrievalQueue:(NSData *)masternodeBlockHashData {
-    NSLog(@"•••• removeFromRetrievalQueue %d: %@", [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:masternodeBlockHashData.UInt256], masternodeBlockHashData.hexString);
+//    NSLog(@"•••• removeFromRetrievalQueue %@: %d: %@", self, [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:masternodeBlockHashData.UInt256], masternodeBlockHashData.hexString);
     [self.retrievalQueue removeObject:masternodeBlockHashData];
 }
 
 - (void)cleanRequestsInRetrieval {
-    NSLog(@"•••• cleanRequestsInRetrieval");
+//    NSLog(@"•••• cleanRequestsInRetrieval: %@", self);
     [self.requestsInRetrieval removeAllObjects];
 }
 
 - (void)cleanListsRetrievalQueue {
-    NSLog(@"•••• cleanListsRetrievalQueue");
+//    NSLog(@"•••• cleanListsRetrievalQueue: %@", self);
     [self.retrievalQueue removeAllObjects];
 }
 
@@ -300,7 +300,7 @@
 }
 
 - (BOOL)removeRequestInRetrievalForBaseBlockHash:(UInt256)baseBlockHash blockHash:(UInt256)blockHash {
-    NSLog(@"•••• removeRequestInRetrievalFor: %u..%u %@ .. %@", [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:baseBlockHash], [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:blockHash], uint256_hex(baseBlockHash), uint256_hex(blockHash));
+//    NSLog(@"•••• removeRequestInRetrievalFor: %u..%u %@ .. %@", [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:baseBlockHash], [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:blockHash], uint256_hex(baseBlockHash), uint256_hex(blockHash));
     DSMasternodeListRequest *matchedRequest = [self requestInRetrievalFor:baseBlockHash blockHash:blockHash];
     if (!matchedRequest) {
          NSMutableArray *requestsInRetrievalStrings = [NSMutableArray array];
@@ -332,9 +332,7 @@
         //no need to remove local masternodes
         [self cleanListsRetrievalQueue];
         [self.store deleteAllOnChain];
-        if (self.currentMasternodeList) {
-            [self.store removeOldMasternodeLists:self.currentMasternodeList.height];
-        }
+        [self.delegate masternodeListSerivceDidRequestRemoveOutdatedMasternodeLists:self blockHash:self.currentMasternodeList.blockHash];
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
         [self getRecentMasternodeList];
     } else {

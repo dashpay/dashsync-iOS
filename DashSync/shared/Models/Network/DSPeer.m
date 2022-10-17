@@ -1736,7 +1736,7 @@
 
 - (void)acceptSporkMessage:(NSData *)message {
     DSSpork *spork = [DSSpork sporkWithMessage:message onChain:self.chain];
-    DSLog(@"received spork %@ with message %@", spork.identifierString, message.hexString);
+    DSLog(@"received spork %u (%@) with message %@", spork.identifier, spork.identifierString, message.hexString);
     [self.sporkDelegate peer:self relayedSpork:spork];
 }
 

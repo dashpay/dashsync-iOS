@@ -400,7 +400,12 @@
             if (++self.misbehavingCount >= self.chain.peerMisbehavingThreshold) { // clear out stored peers so we get a fresh list from DNS for next connect
                 self.misbehavingCount = 0;
                 [self.mutableMisbehavingPeers removeAllObjects];
-                [DSPeerEntity deleteAllObjectsInContext:self.managedObjectContext];
+                [self.managedObjectContext performBlockAndWait:^{
+                    NSArray *objects = [DSPeerEntity allObjectsInContext:self.managedObjectContext];
+                    for (NSManagedObject *obj in objects) {
+                        [self.managedObjectContext deleteObject:obj];
+                    }
+                }];
                 _peers = nil;
             }
 
@@ -962,7 +967,13 @@
         @synchronized(self.mutableMisbehavingPeers) {
             [self.mutableMisbehavingPeers removeAllObjects];
         }
-        [DSPeerEntity deleteAllObjectsInContext:self.managedObjectContext];
+        [self.managedObjectContext performBlockAndWait:^{
+            NSArray *objects = [DSPeerEntity allObjectsInContext:self.managedObjectContext];
+            for (NSManagedObject *obj in objects) {
+                [self.managedObjectContext deleteObject:obj];
+            }
+        }];
+
         @synchronized(self) {
             _peers = nil;
         }

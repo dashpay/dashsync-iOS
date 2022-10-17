@@ -26,12 +26,14 @@
 #import "DSMasternodeProcessorContext.h"
 #import "DSMasternodeManager.h"
 #import "DSMnDiffProcessingResult.h"
+#import "DSOperationQueue.h"
 #import "DSQRInfoProcessingResult.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMasternodeManager (Protected)
 
+@property (nonatomic, strong, readonly) DSOperationQueue *processingQueue;
 
 - (instancetype)initWithChain:(DSChain *_Nonnull)chain;
 - (void)setUp;

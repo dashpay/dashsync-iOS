@@ -67,22 +67,13 @@
             return;
         }
         uint32_t lastHeight = merkleBlock.height;
-        //DSLLMQType llmqType = self.chain.quorumTypeForISDLocks;
         DKGParams dkgParams = self.chain.isDevnetAny ? DKG_DEVNET_DIP_0024 : DKG_60_75;
-        
-        
-        
         uint32_t rotationOffset = dkgParams.mining_window_end;
         uint32_t updateInterval = dkgParams.interval;
-
-
-        BOOL needUpdate = !self.masternodeListAtH ||
-        (lastHeight % updateInterval == rotationOffset &&
-        lastHeight >= [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:self.masternodeListAtH.blockHash]  + rotationOffset);
-
-        
+        BOOL needUpdate = !self.masternodeListAtH || [self.masternodeListAtH hasUnverifiedRotatedQuorums] ||
+        (lastHeight % updateInterval == rotationOffset && lastHeight >= [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:self.masternodeListAtH.blockHash]  + rotationOffset);
         if (needUpdate && [self.store addBlockToValidationQueue:merkleBlock]) {
-            DSLog(@"Getting masternode list %u", merkleBlock.height);
+            DSLog(@"QuorumRotationService.Getting masternode list %u", merkleBlock.height);
             NSData *merkleBlockHashData = uint256_data(merkleBlockHash);
             BOOL emptyRequestQueue = ![self retrievalQueueCount];
             [self addToRetrievalQueue:merkleBlockHashData];

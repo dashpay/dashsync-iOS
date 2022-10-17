@@ -202,8 +202,12 @@
     self.isValid = simplifiedMasternodeEntry.isValid;
     self.simplifiedMasternodeEntryHash = [NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash];
     self.updateHeight = blockHeight;
-    
-//    NSAssert(simplifiedMasternodeEntry.updateHeight == blockHeight, ([NSString stringWithFormat:@"the block height (%i) should be the same as the entry update height (%i)", blockHeight, simplifiedMasternodeEntry.updateHeight]));
+    // TODO: the reason behind is subsequent processing/saving diffs:
+    //    Thread 10: "the block height (1745568) should be the same as the entry update height (1745560)"
+    //    2022-09-29 15:46:12.485309+0400 DashSync_Example[4976:2061074] File MNL_1745560_1746344.dat saved
+    //    2022-09-29 15:46:12.804351+0400 DashSync_Example[4976:2061322] File MNL_1745560_1745568.dat saved
+
+    NSAssert(simplifiedMasternodeEntry.updateHeight == blockHeight, ([NSString stringWithFormat:@"the block height (%i) for %@ should be the same as the entry update height (%i)", blockHeight, uint256_hex(simplifiedMasternodeEntry.providerRegistrationTransactionHash), simplifiedMasternodeEntry.updateHeight]));
     if (!chainEntity) {
         self.chain = [simplifiedMasternodeEntry.chain chainEntityInContext:self.managedObjectContext];
     } else {

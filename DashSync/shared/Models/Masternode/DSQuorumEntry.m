@@ -68,6 +68,39 @@
     return copy;
 }
 
+- (instancetype)initWithVersion:(uint16_t)version
+                           type:(DSLLMQType)type
+                     quorumHash:(UInt256)quorumHash
+                    quorumIndex:(uint32_t)quorumIndex
+                   signersCount:(int32_t)signersCount
+                  signersBitset:(NSData *)signersBitset
+              validMembersCount:(int32_t)validMembersCount
+             validMembersBitset:(NSData *)validMembersBitset
+                quorumPublicKey:(UInt384)quorumPublicKey
+   quorumVerificationVectorHash:(UInt256)quorumVerificationVectorHash
+       quorumThresholdSignature:(UInt768)quorumThresholdSignature
+allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
+                        onChain:(DSChain *)chain {
+    if (!(self = [super init])) return nil;
+
+    self.llmqType = type;
+    self.version = version;
+    self.quorumHash = quorumHash;
+    self.quorumIndex = quorumIndex;
+    self.signersCount = signersCount;
+    self.signersBitset = signersBitset;
+    self.validMembersCount = validMembersCount;
+    self.validMembersBitset = validMembersBitset;
+    self.quorumPublicKey = quorumPublicKey;
+    self.quorumVerificationVectorHash = quorumVerificationVectorHash;
+    self.quorumVerificationVectorHash = quorumVerificationVectorHash;
+    self.quorumThresholdSignature = quorumThresholdSignature;
+    self.allCommitmentAggregatedSignature = allCommitmentAggregatedSignature;
+    self.chain = chain;
+
+    return self;
+}
+
 - (instancetype)initWithVersion:(uint16_t)version type:(DSLLMQType)type quorumHash:(UInt256)quorumHash quorumIndex:(uint32_t)quorumIndex quorumPublicKey:(UInt384)quorumPublicKey quorumEntryHash:(UInt256)quorumEntryHash verified:(BOOL)verified onChain:(DSChain *)chain {
     if (!(self = [super init])) return nil;
 

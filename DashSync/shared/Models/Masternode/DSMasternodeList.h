@@ -79,6 +79,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (DSSimplifiedMasternodeEntry *)masternodeForRegistrationHash:(UInt256)registrationHash;
 
 - (BOOL)hasUnverifiedRotatedQuorums;
+- (void)saveToJsonFile;
 
 @end
 

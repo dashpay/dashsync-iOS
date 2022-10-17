@@ -24,6 +24,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSQuorumSnapshot (Mndiff)
 
++ (instancetype)quorumSnapshotWith:(LLMQSnapshot *)quorumSnapshot forBlockHash:(UInt256)blockHash;
+
 - (LLMQSnapshot *)ffi_malloc;
 + (void)ffi_free:(LLMQSnapshot *)entry;
 

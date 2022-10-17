@@ -19,26 +19,25 @@
 
 @implementation DSQuorumSnapshot (Mndiff)
 
-
-+ (instancetype)quorumSnapshotWith:(LLMQSnapshot *)quorumSnapshot onChain:(DSChain *)chain {
++ (instancetype)quorumSnapshotWith:(LLMQSnapshot *)quorumSnapshot forBlockHash:(UInt256)blockHash {
     DSQuorumSnapshot *snapshot = [[DSQuorumSnapshot alloc] init];
-    [snapshot setSkipListMode:quorumSnapshot->skip_list_mode];
-    NSUInteger skipListLength = quorumSnapshot->skip_list_length;
-    NSMutableOrderedSet *skipList = [NSMutableOrderedSet orderedSetWithCapacity:skipListLength];
-    NSUInteger i = 0;
-    for (i = 0; i < skipListLength; i++) {
-        [skipList addObject:[NSNumber numberWithInt:quorumSnapshot->skip_list[i]]];
-    }
-    [snapshot setSkipList:skipList];
     NSUInteger memberListLength = quorumSnapshot->member_list_length;
-    NSMutableOrderedSet *memberList = [NSMutableOrderedSet orderedSetWithCapacity:memberListLength];
+    NSMutableOrderedSet<NSNumber *> *memberList = [NSMutableOrderedSet orderedSetWithCapacity:memberListLength];
+    NSUInteger i = 0;
     for (i = 0; i < memberListLength; i++) {
-        [memberList addObject:[NSNumber numberWithInt:quorumSnapshot->member_list[i]]];
+        [memberList addObject:[NSNumber numberWithUnsignedChar:quorumSnapshot->member_list[i]]];
     }
-    [snapshot setMemberList:memberList];
+    NSUInteger skipListLength = quorumSnapshot->skip_list_length;
+    NSMutableOrderedSet<NSNumber *> *skipList = [NSMutableOrderedSet orderedSetWithCapacity:skipListLength];
+    for (i = 0; i < skipListLength; i++) {
+        [skipList addObject:[NSNumber numberWithInteger:quorumSnapshot->skip_list[i]]];
+    }
+    [snapshot setMemberList:[memberList copy]];
+    [snapshot setSkipList:[skipList copy]];
+    [snapshot setSkipListMode:quorumSnapshot->skip_list_mode];
+    [snapshot setBlockHash:blockHash];
     return snapshot;
 }
-
 
 - (LLMQSnapshot *)ffi_malloc {
     LLMQSnapshot *entry = malloc(sizeof(LLMQSnapshot));
@@ -46,15 +45,16 @@
     NSUInteger memberCount = [self.memberList count];
     uint8_t *members = malloc(memberCount * sizeof(uint8_t));
     for (NSNumber *member in self.memberList) {
-        members[i] = member.intValue;
+        members[i] = (uint8_t) member.unsignedCharValue;
         i++;
     }
     entry->member_list = members;
     entry->member_list_length = memberCount;
     NSUInteger skipListCount = [self.skipList count];
     int32_t *skipList = malloc(skipListCount * sizeof(int32_t));
-    for (NSNumber *skipMember in self.memberList) {
-        skipList[i] = skipMember.intValue;
+    i = 0;
+    for (NSNumber *skipMember in self.skipList) {
+        skipList[i] = (int32_t) skipMember.integerValue;
         i++;
     }
     entry->skip_list = skipList;

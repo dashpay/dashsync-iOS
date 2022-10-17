@@ -498,10 +498,14 @@ static dispatch_once_t devnetToken = 0;
 + (NSMutableArray *)createCheckpointsArrayFromCheckpoints:(checkpoint *)checkpoints count:(NSUInteger)checkpointCount {
     NSMutableArray *checkpointMutableArray = [NSMutableArray array];
     for (int i = 0; i < checkpointCount; i++) {
-        NSString *merkleRootString = [NSString stringWithCString:checkpoints[i].merkleRoot encoding:NSUTF8StringEncoding];
-        NSString *chainWorkString = [NSString stringWithCString:checkpoints[i].chainWork encoding:NSUTF8StringEncoding];
+        checkpoint cpt = checkpoints[i];
+        NSString *merkleRootString = [NSString stringWithCString:cpt.merkleRoot encoding:NSUTF8StringEncoding];
+        NSString *chainWorkString = [NSString stringWithCString:cpt.chainWork encoding:NSUTF8StringEncoding];
+        uint32_t blockHeight = cpt.height;
+        UInt256 blockHash = [NSString stringWithCString:cpt.checkpointHash encoding:NSUTF8StringEncoding].hexToData.reverse.UInt256;
         UInt256 chainWork = chainWorkString.hexToData.reverse.UInt256;
-        DSCheckpoint *checkpoint = [DSCheckpoint checkpointForHeight:checkpoints[i].height blockHash:[NSString stringWithCString:checkpoints[i].checkpointHash encoding:NSUTF8StringEncoding].hexToData.reverse.UInt256 timestamp:checkpoints[i].timestamp target:checkpoints[i].target merkleRoot:[merkleRootString isEqualToString:@""] ? UINT256_ZERO : merkleRootString.hexToData.reverse.UInt256 chainWork:chainWork masternodeListName:[NSString stringWithCString:checkpoints[i].masternodeListPath encoding:NSUTF8StringEncoding]];
+        UInt256 merkleRoot = [merkleRootString isEqualToString:@""] ? UINT256_ZERO : merkleRootString.hexToData.reverse.UInt256;
+        DSCheckpoint *checkpoint = [DSCheckpoint checkpointForHeight:blockHeight blockHash:blockHash timestamp:cpt.timestamp target:cpt.target merkleRoot:merkleRoot chainWork:chainWork masternodeListName:[NSString stringWithCString:cpt.masternodeListPath encoding:NSUTF8StringEncoding]];
         [checkpointMutableArray addObject:checkpoint];
     }
     return [checkpointMutableArray copy];
@@ -586,6 +590,13 @@ static dispatch_once_t devnetToken = 0;
     return _dapiMetadataQueue;
 }
 
+- (dispatch_queue_t)processingQueue {
+    if (!_processingQueue) {
+        NSAssert(uint256_is_not_zero(self.genesisHash), @"genesisHash must be set");
+        _processingQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.processing.%@", self.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
+    }
+    return _processingQueue;
+}
 
 // MARK: - Check Type
 
@@ -3844,7 +3855,7 @@ static dispatch_once_t devnetToken = 0;
             [DSMerkleBlockEntity deleteObjects:recentOrphans inContext:self.chainManagedObjectContext];
         } else {
             //remember to not delete blocks needed for quorums
-            NSArray<DSMerkleBlockEntity *> *oldBlockHeaders = [DSMerkleBlockEntity objectsInContext:self.chainManagedObjectContext matching:@"(chain == %@) && masternodeList == NIL && (usedByQuorums.@count == 0) && !(blockHash in %@) && (quorumSnapshot == NULL)", [self chainEntityInContext:self.chainManagedObjectContext], blocks.allKeys];
+            NSArray<DSMerkleBlockEntity *> *oldBlockHeaders = [DSMerkleBlockEntity objectsInContext:self.chainManagedObjectContext matching:@"(chain == %@) && masternodeList == NIL && (usedByQuorums.@count == 0) && !(blockHash in %@)", [self chainEntityInContext:self.chainManagedObjectContext], blocks.allKeys];
             [DSMerkleBlockEntity deleteObjects:oldBlockHeaders inContext:self.chainManagedObjectContext];
         }
         DSChainEntity *chainEntity = [self chainEntityInContext:self.chainManagedObjectContext];

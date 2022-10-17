@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSSimplifiedMasternodeEntry (Mndiff)
 
 + (instancetype)simplifiedEntryWith:(MasternodeEntry *)entry onChain:(DSChain *)chain;
-+ (NSMutableDictionary<NSData *, DSSimplifiedMasternodeEntry *> *)simplifiedEntriesWith:(MasternodeEntry *_Nullable *_Nonnull)entries count:(uintptr_t)count onChain:(DSChain *)chain;
++ (NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *)simplifiedEntriesWith:(MasternodeEntry *_Nullable *_Nonnull)entries count:(uintptr_t)count onChain:(DSChain *)chain;
 
 - (MasternodeEntry *)ffi_malloc;
 + (void)ffi_free:(MasternodeEntry *)entry;

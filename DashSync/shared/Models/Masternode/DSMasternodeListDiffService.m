@@ -30,12 +30,11 @@
             NSUInteger pos = [list indexOfObject:blockHashData];
             UInt256 blockHash = blockHashData.UInt256;
             DSMasternodeList *masternodeList = [self.delegate masternodeListSerivceDidRequestFileFromBlockHash:self blockHash:blockHash];
-            NSLog(@"•••• -> masternode list at [%u: %@] in files found: (%@)", [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:blockHash], uint256_hex(blockHash), masternodeList);
+            //NSLog(@"•••• -> masternode list at [%u: %@] in files found: (%@)", [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:blockHash], uint256_hex(blockHash), masternodeList);
             if (masternodeList) {
-                if (uint256_eq(self.store.lastQueriedBlockHash, masternodeList.blockHash)) {
-                    if (self.currentMasternodeList) {
-                        [self.store removeOldMasternodeLists:self.currentMasternodeList.height];
-                    }
+                if (self.currentMasternodeList && uint256_eq(self.store.lastQueriedBlockHash, masternodeList.blockHash)) {
+                    NSLog(@"--> removeOldMasternodeLists (composeMasternodeListRequest): %u", self.currentMasternodeList.height);
+                    [self.delegate masternodeListSerivceDidRequestRemoveOutdatedMasternodeLists:self blockHash:self.currentMasternodeList.blockHash];
                 }
                 [self removeFromRetrievalQueue:blockHashData];
                 [self checkWaitingForQuorums];

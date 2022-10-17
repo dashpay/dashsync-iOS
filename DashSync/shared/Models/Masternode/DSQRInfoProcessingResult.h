@@ -17,7 +17,7 @@
 
 #import "DSChain.h"
 #import "DSMnDiffProcessingResult.h"
-#import "DSQuorumSnapshot.h"
+#import "DSQuorumSnapshot+Mndiff.h"
 #import "dash_shared_core.h"
 #import <Foundation/Foundation.h>
 
