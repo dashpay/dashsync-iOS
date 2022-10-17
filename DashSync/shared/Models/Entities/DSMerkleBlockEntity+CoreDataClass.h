@@ -26,7 +26,7 @@
 #import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
 
-@class DSChainEntity, DSBlock, DSMerkleBlock, DSMasternodeListEntity, DSQuorumEntryEntity, DSChainLockEntity;
+@class DSChainEntity, DSBlock, DSMerkleBlock, DSMasternodeListEntity, DSQuorumEntryEntity, DSQuorumSnapshotEntity, DSChainLockEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -40,6 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (DSMerkleBlockEntity *)blockWithHash:(UInt256)hash onChainEntity:(DSChainEntity *)chainEntity;
 + (void)deleteBlocksOnChainEntity:(DSChainEntity *)chainEntity;
 
++ (instancetype)merkleBlockEntityForBlockHash:(UInt256)blockHash inContext:(NSManagedObjectContext *)context;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -29,12 +29,15 @@
 #import "DSChainEntity+CoreDataProperties.h"
 #import "DSChainsManager.h"
 #import "DSECDSAKey.h"
+#import "DSGetGovernanceObjectsRequest.h"
 #import "DSGovernanceObject.h"
 #import "DSGovernanceObjectEntity+CoreDataProperties.h"
 #import "DSGovernanceObjectHashEntity+CoreDataProperties.h"
+#import "DSGovernanceObjectsSyncRequest.h"
 #import "DSGovernanceVote.h"
 #import "DSGovernanceVoteEntity+CoreDataProperties.h"
 #import "DSGovernanceVoteHashEntity+CoreDataProperties.h"
+#import "DSGovernanceVotesSyncRequest.h"
 #import "DSOptionsManager.h"
 #import "DSPeer.h"
 #import "DSPeerManager+Protected.h"
@@ -152,7 +155,7 @@
             continue; //don't request less than every 3 hours from a peer
         }
         peer.lastRequestedGovernanceSync = [[NSDate date] timeIntervalSince1970]; //we are requesting the list from this peer
-        [peer sendGovSync];
+        [peer sendGovernanceSyncRequest:[DSGovernanceObjectsSyncRequest request]];
         [peer save];
         startedGovernanceSync = TRUE;
         break;
@@ -175,7 +178,8 @@
         if (![vote isValid]) continue;
         [voteHashes addObject:uint256_obj(vote.governanceVoteHash)];
     }
-    [self.peerManager.downloadPeer sendInvMessageForHashes:voteHashes ofType:DSInvType_GovernanceObjectVote];
+    [self.peerManager.downloadPeer sendInvMessageForHashes:voteHashes
+                                                    ofType:DSInvType_GovernanceObjectVote];
 }
 
 // MARK:- Control
@@ -184,7 +188,7 @@
     self.currentGovernanceSyncObject = [self.needVoteSyncGovernanceObjects firstObject];
     self.currentGovernanceSyncObject.delegate = self;
     DSLog(@"Getting votes for %@", self.currentGovernanceSyncObject.identifier);
-    [peer sendGovSync:self.currentGovernanceSyncObject.governanceObjectHash];
+    [peer sendGovernanceSyncRequest:[DSGovernanceVotesSyncRequest requestWithParentHash:self.currentGovernanceSyncObject.governanceObjectHash]];
 }
 
 - (void)finishedGovernanceObjectSyncWithPeer:(DSPeer *)peer {
@@ -339,7 +343,8 @@
     for (DSGovernanceObjectHashEntity *governanceObjectHashEntity in self.requestGovernanceObjectHashEntities) {
         [requestHashes addObject:governanceObjectHashEntity.governanceObjectHash];
     }
-    [peer sendGetdataMessageWithGovernanceObjectHashes:requestHashes];
+    DSGetGovernanceObjectsRequest *request = [DSGetGovernanceObjectsRequest requestWithGovernanceObjectHashes:requestHashes];
+    [peer sendGovernanceRequest:request];
 }
 
 - (void)peer:(DSPeer *)peer hasGovernanceObjectHashes:(NSSet *)governanceObjectHashes {

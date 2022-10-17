@@ -52,6 +52,7 @@
 #import "DSWallet.h"
 #import "NSData+Dash.h"
 #import "NSDate+Utils.h"
+#import "NSError+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSString+Bitcoin.h"
 #import <arpa/inet.h>
@@ -65,7 +66,7 @@
 
 #define TESTNET_DNS_SEEDS @[@"testnet-seed.dashdot.io"]
 
-#define MAINNET_DNS_SEEDS @[@"dnsseed.dash.org", @"dnsseed.dashdot.io"]
+#define MAINNET_DNS_SEEDS @[@"dnsseed.dash.org"]
 
 #define TESTNET_MAIN_PEER @"" //@"52.36.64.148:19999"
 
@@ -399,13 +400,16 @@
             if (++self.misbehavingCount >= self.chain.peerMisbehavingThreshold) { // clear out stored peers so we get a fresh list from DNS for next connect
                 self.misbehavingCount = 0;
                 [self.mutableMisbehavingPeers removeAllObjects];
-                [DSPeerEntity deleteAllObjectsInContext:self.managedObjectContext];
+                [self.managedObjectContext performBlockAndWait:^{
+                    NSArray *objects = [DSPeerEntity allObjectsInContext:self.managedObjectContext];
+                    for (NSManagedObject *obj in objects) {
+                        [self.managedObjectContext deleteObject:obj];
+                    }
+                }];
                 _peers = nil;
             }
 
-            [peer disconnectWithError:[NSError errorWithDomain:@"DashSync"
-                                                          code:500
-                                                      userInfo:@{NSLocalizedDescriptionKey: errorMessage}]];
+            [peer disconnectWithError:[NSError errorWithCode:500 localizedDescriptionKey:errorMessage]];
             [self connect];
         }
     }
@@ -747,9 +751,7 @@
             [self chainSyncStopped];
 
             dispatch_async(dispatch_get_main_queue(), ^{
-                NSError *error = [NSError errorWithDomain:@"DashSync"
-                                                     code:1
-                                                 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"No peers found", nil)}];
+                NSError *error = [NSError errorWithCode:1 localizedDescriptionKey:@"No peers found"];
 
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSChainManagerSyncFailedNotification
                                                                     object:nil
@@ -789,10 +791,7 @@
                    afterDelay:PROTOCOL_TIMEOUT - (now - self.chainManager.lastChainRelayTime)];
         return;
     }
-    [self disconnectDownloadPeerForError:[NSError errorWithDomain:@"DashSync"
-                                                             code:500
-                                                         userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Synchronization Timeout", @"An error message for notifying that chain sync has timed out")}]
-                          withCompletion:nil];
+    [self disconnectDownloadPeerForError:[NSError errorWithCode:500 descriptionKey:DSLocalizedString(@"Synchronization Timeout", @"An error message for notifying that chain sync has timed out")] withCompletion:nil];
 }
 
 - (void)chainSyncStopped {
@@ -824,17 +823,13 @@
     // drop peers that don't carry full blocks, or aren't synced yet
     // TODO: XXXX does this work with 0.11 pruned nodes?
     if (!(peer.services & SERVICES_NODE_NETWORK) || peer.lastBlockHeight + 10 < self.chain.lastSyncBlockHeight) {
-        [peer disconnectWithError:[NSError errorWithDomain:@"DashSync"
-                                                      code:500
-                                                  userInfo:@{NSLocalizedDescriptionKey: [NSString stringWithFormat:DSLocalizedString(@"Node at host %@ does not service network", nil), peer.host]}]];
+        [peer disconnectWithError:[NSError errorWithCode:500 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Node at host %@ does not service network", nil), peer.host]]];
         return;
     }
 
     // drop peers that don't support SPV filtering
     if (peer.version >= 70206 && !(peer.services & SERVICES_NODE_BLOOM)) {
-        [peer disconnectWithError:[NSError errorWithDomain:@"DashSync"
-                                                      code:500
-                                                  userInfo:@{NSLocalizedDescriptionKey: [NSString stringWithFormat:DSLocalizedString(@"Node at host %@ does not support bloom filtering", nil), peer.host]}]];
+        [peer disconnectWithError:[NSError errorWithCode:500 descriptionKey:[NSString stringWithFormat:DSLocalizedString(@"Node at host %@ does not support bloom filtering", nil), peer.host]]];
         return;
     }
 
@@ -972,7 +967,13 @@
         @synchronized(self.mutableMisbehavingPeers) {
             [self.mutableMisbehavingPeers removeAllObjects];
         }
-        [DSPeerEntity deleteAllObjectsInContext:self.managedObjectContext];
+        [self.managedObjectContext performBlockAndWait:^{
+            NSArray *objects = [DSPeerEntity allObjectsInContext:self.managedObjectContext];
+            for (NSManagedObject *obj in objects) {
+                [self.managedObjectContext deleteObject:obj];
+            }
+        }];
+
         @synchronized(self) {
             _peers = nil;
         }
@@ -1030,6 +1031,10 @@
                                                             object:nil
                                                           userInfo:@{DSChainManagerNotificationChainKey: self.chain}];
     });
+}
+
+- (void)sendRequest:(DSMessageRequest *)request {
+    [self.downloadPeer sendRequest:request];
 }
 
 @end

@@ -50,11 +50,13 @@
 #import "DSFullBlock.h"
 #import "DSFundsDerivationPath.h"
 #import "DSIdentitiesManager+Protected.h"
+#import "DSInsightManager.h"
 #import "DSKey.h"
 #import "DSLocalMasternode+Protected.h"
 #import "DSLocalMasternodeEntity+CoreDataProperties.h"
 #import "DSMasternodeHoldingsDerivationPath.h"
 #import "DSMasternodeListEntity+CoreDataProperties.h"
+#import "DSMasternodeManager+LocalMasternode.h"
 #import "DSMasternodeManager+Protected.h"
 #import "DSMerkleBlock.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
@@ -67,6 +69,7 @@
 #import "DSProviderUpdateRevocationTransaction.h"
 #import "DSProviderUpdateServiceTransaction.h"
 #import "DSQuorumEntryEntity+CoreDataProperties.h"
+#import "DSQuorumSnapshotEntity+CoreDataClass.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
 #import "DSSpecialTransactionsWalletHolder.h"
@@ -98,6 +101,7 @@
 #define PLATFORM_DEFAULT_MIN_PROTOCOL_VERSION_LOCATION @"PLATFORM_MIN_PROTOCOL_VERSION_LOCATION"
 
 #define ISLOCK_QUORUM_TYPE @"ISLOCK_QUORUM_TYPE"
+#define ISDLOCK_QUORUM_TYPE @"ISDLOCK_QUORUM_TYPE"
 #define CHAINLOCK_QUORUM_TYPE @"CHAINLOCK_QUORUM_TYPE"
 #define PLATFORM_QUORUM_TYPE @"PLATFORM_QUORUM_TYPE"
 
@@ -115,6 +119,7 @@
 #define SPORK_PRIVATE_KEY_LOCATION @"SPORK_PRIVATE_KEY_LOCATION"
 
 #define CHAIN_VOTING_KEYS_KEY @"CHAIN_VOTING_KEYS_KEY"
+#define QUORUM_ROTATION_PRESENCE_KEY @"QUORUM_ROTATION_PRESENCE_KEY"
 
 #define LOG_PREV_BLOCKS_ON_ORPHAN 0
 
@@ -162,7 +167,7 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
 @property (nonatomic, assign) NSTimeInterval lastNotifiedBlockDidChange;
 @property (nonatomic, strong) NSTimer *lastNotifiedBlockDidChangeTimer;
 @property (nonatomic, assign, getter=isTransient) BOOL transient;
-
+@property (nonatomic, assign) BOOL cachedIsQuorumRotationPresented;
 @property (nonatomic, readonly) NSString *chainWalletsKey;
 
 @end
@@ -214,7 +219,7 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
             break;
         }
         case DSChainType_DevNet: {
-            NSAssert(NO, @"DevNet should be configured with initAsDevnetWithIdentifier:checkpoints:port:dapiPort:dapiGRPCPort:dpnsContractID:dashpayContractID:");
+            NSAssert(NO, @"DevNet should be configured with initAsDevnetWithIdentifier:version:checkpoints:port:dapiPort:dapiGRPCPort:dpnsContractID:dashpayContractID:");
             break;
         }
     }
@@ -227,13 +232,16 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
     return self;
 }
 
-- (instancetype)initAsDevnetWithIdentifier:(NSString *)identifier checkpoints:(NSArray<DSCheckpoint *> *)checkpoints {
+- (instancetype)initAsDevnetWithIdentifier:(NSString *)identifier
+                                   version:(uint16_t)version
+                         onProtocolVersion:(uint32_t)protocolVersion
+                               checkpoints:(NSArray<DSCheckpoint *> *)checkpoints {
     //for devnet the genesis checkpoint is really the second block
     if (!(self = [self init])) return nil;
     _chainType = DSChainType_DevNet;
     if (!checkpoints || ![checkpoints count]) {
         DSCheckpoint *genesisCheckpoint = [DSCheckpoint genesisDevnetCheckpoint];
-        DSCheckpoint *secondCheckpoint = [self createDevNetGenesisBlockCheckpointForParentCheckpoint:genesisCheckpoint withIdentifier:identifier];
+        DSCheckpoint *secondCheckpoint = [self createDevNetGenesisBlockCheckpointForParentCheckpoint:genesisCheckpoint withIdentifier:identifier version:version onProtocolVersion:protocolVersion];
         self.checkpoints = @[genesisCheckpoint, secondCheckpoint];
         self.genesisHash = secondCheckpoint.blockHash;
     } else {
@@ -250,9 +258,25 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
     return self;
 }
 
-- (instancetype)initAsDevnetWithIdentifier:(NSString *)identifier checkpoints:(NSArray<DSCheckpoint *> *)checkpoints minimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks port:(uint32_t)port dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID instantSendLockQuorumType:(DSLLMQType)instantSendLockQuorumsType chainLockQuorumType:(DSLLMQType)chainLockQuorumsType platformQuorumType:(DSLLMQType)platformQuorumType isTransient:(BOOL)isTransient {
+- (instancetype)initAsDevnetWithIdentifier:(NSString *)identifier
+                                   version:(uint16_t)version
+                           protocolVersion:(uint32_t)protocolVersion
+                        minProtocolVersion:(uint32_t)minProtocolVersion
+                               checkpoints:(NSArray<DSCheckpoint *> *)checkpoints
+                   minimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks
+                                      port:(uint32_t)port
+                              dapiJRPCPort:(uint32_t)dapiJRPCPort
+                              dapiGRPCPort:(uint32_t)dapiGRPCPort
+                            dpnsContractID:(UInt256)dpnsContractID
+                         dashpayContractID:(UInt256)dashpayContractID
+                          ISLockQuorumType:(DSLLMQType)ISLockQuorumType
+                         ISDLockQuorumType:(DSLLMQType)ISDLockQuorumType
+                       chainLockQuorumType:(DSLLMQType)chainLockQuorumType
+                        platformQuorumType:(DSLLMQType)platformQuorumType
+                               isTransient:(BOOL)isTransient {
     //for devnet the genesis checkpoint is really the second block
-    if (!(self = [self initAsDevnetWithIdentifier:identifier checkpoints:checkpoints])) return nil;
+    if (!(self = [self initAsDevnetWithIdentifier:identifier version:version onProtocolVersion:protocolVersion checkpoints:checkpoints])) return nil;
+    self.devnetVersion = version;
     self.standardPort = port;
     self.standardDapiJRPCPort = dapiJRPCPort;
     self.standardDapiGRPCPort = dapiGRPCPort;
@@ -260,8 +284,9 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
     self.dashpayContractID = dashpayContractID;
     self.minimumDifficultyBlocks = minimumDifficultyBlocks;
     self.transient = isTransient;
-    self.quorumTypeForISLocks = instantSendLockQuorumsType;
-    self.quorumTypeForChainLocks = chainLockQuorumsType;
+    self.quorumTypeForISLocks = ISLockQuorumType;
+    self.quorumTypeForISDLocks = ISDLockQuorumType;
+    self.quorumTypeForChainLocks = chainLockQuorumType;
     self.quorumTypeForPlatform = platformQuorumType;
     return self;
 }
@@ -329,7 +354,7 @@ static dispatch_once_t devnetToken = 0;
     return devnetChain;
 }
 
-+ (DSChain *)recoverKnownDevnetWithIdentifier:(NSString *)identifier withCheckpoints:(NSArray<DSCheckpoint *> *)checkpointArray performSetup:(BOOL)performSetup {
++ (DSChain *)recoverKnownDevnetWithIdentifier:(NSString *)identifier version:(uint16_t)version withCheckpoints:(NSArray<DSCheckpoint *> *)checkpointArray performSetup:(BOOL)performSetup {
     dispatch_once(&devnetToken, ^{
         _devnetDictionary = [NSMutableDictionary dictionary];
     });
@@ -337,7 +362,7 @@ static dispatch_once_t devnetToken = 0;
     __block BOOL inSetUp = FALSE;
     @synchronized(self) {
         if (![_devnetDictionary objectForKey:identifier]) {
-            devnetChain = [[DSChain alloc] initAsDevnetWithIdentifier:identifier checkpoints:checkpointArray];
+            devnetChain = [[DSChain alloc] initAsDevnetWithIdentifier:identifier version:version onProtocolVersion:PROTOCOL_VERSION_DEVNET checkpoints:checkpointArray];
             _devnetDictionary[identifier] = devnetChain;
             inSetUp = TRUE;
         } else {
@@ -345,25 +370,30 @@ static dispatch_once_t devnetToken = 0;
         }
     }
     if (inSetUp) {
-        [[NSManagedObjectContext chainContext] performBlockAndWait:^{
-            DSChainEntity *chainEntity = [devnetChain chainEntityInContext:[NSManagedObjectContext chainContext]];
-            devnetChain.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
-            devnetChain.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
-            devnetChain.lastPersistedChainSyncLocators = chainEntity.syncLocators;
-            devnetChain.lastPersistedChainSyncBlockHeight = chainEntity.syncBlockHeight;
-            devnetChain.lastPersistedChainSyncBlockHash = chainEntity.syncBlockHash.UInt256;
-            devnetChain.lastPersistedChainSyncBlockTimestamp = chainEntity.syncBlockTimestamp;
-            devnetChain.lastPersistedChainSyncBlockChainWork = chainEntity.syncBlockChainWork.UInt256;
-        }];
+        [devnetChain updateDevnetChainFromContext];
         if (performSetup) {
             [devnetChain setUp];
         }
     }
-
     return devnetChain;
 }
 
-+ (DSChain *)setUpDevnetWithIdentifier:(NSString *)identifier withCheckpoints:(NSArray<DSCheckpoint *> *)checkpointArray withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID instantSendLockQuorumType:(DSLLMQType)instantSendLockQuorumsType chainLockQuorumType:(DSLLMQType)chainLockQuorumsType platformQuorumType:(DSLLMQType)platformQuorumType isTransient:(BOOL)isTransient {
++ (DSChain *)setUpDevnetWithIdentifier:(NSString *)identifier
+                               version:(uint16_t)version
+                       protocolVersion:(uint32_t)protocolVersion
+                    minProtocolVersion:(uint32_t)minProtocolVersion
+                       withCheckpoints:(NSArray<DSCheckpoint *> *_Nullable)checkpointArray
+           withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks
+                       withDefaultPort:(uint32_t)port
+               withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort
+               withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort
+                        dpnsContractID:(UInt256)dpnsContractID
+                     dashpayContractID:(UInt256)dashpayContractID
+                      ISLockQuorumType:(DSLLMQType)ISLockQuorumType
+                     ISDLockQuorumType:(DSLLMQType)ISDLockQuorumType
+                   chainLockQuorumType:(DSLLMQType)chainLockQuorumType
+                    platformQuorumType:(DSLLMQType)platformQuorumType
+                           isTransient:(BOOL)isTransient {
     dispatch_once(&devnetToken, ^{
         _devnetDictionary = [NSMutableDictionary dictionary];
     });
@@ -371,7 +401,7 @@ static dispatch_once_t devnetToken = 0;
     __block BOOL inSetUp = FALSE;
     @synchronized(self) {
         if (![_devnetDictionary objectForKey:identifier]) {
-            devnetChain = [[DSChain alloc] initAsDevnetWithIdentifier:identifier checkpoints:checkpointArray minimumDifficultyBlocks:minimumDifficultyBlocks port:port dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID instantSendLockQuorumType:instantSendLockQuorumsType chainLockQuorumType:chainLockQuorumsType platformQuorumType:platformQuorumType isTransient:isTransient];
+            devnetChain = [[DSChain alloc] initAsDevnetWithIdentifier:identifier version:version protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion checkpoints:checkpointArray minimumDifficultyBlocks:minimumDifficultyBlocks port:port dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID ISLockQuorumType:ISLockQuorumType ISDLockQuorumType:ISDLockQuorumType chainLockQuorumType:chainLockQuorumType platformQuorumType:platformQuorumType isTransient:isTransient];
             _devnetDictionary[identifier] = devnetChain;
             inSetUp = TRUE;
         } else {
@@ -379,21 +409,24 @@ static dispatch_once_t devnetToken = 0;
         }
     }
     if (inSetUp && !isTransient) {
-        //note: there is no point to load anything if the chain is transient
-        [[NSManagedObjectContext chainContext] performBlockAndWait:^{
-            DSChainEntity *chainEntity = [devnetChain chainEntityInContext:[NSManagedObjectContext chainContext]];
-            devnetChain.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
-            devnetChain.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
-            devnetChain.lastPersistedChainSyncLocators = chainEntity.syncLocators;
-            devnetChain.lastPersistedChainSyncBlockHeight = chainEntity.syncBlockHeight;
-            devnetChain.lastPersistedChainSyncBlockHash = chainEntity.syncBlockHash.UInt256;
-            devnetChain.lastPersistedChainSyncBlockTimestamp = chainEntity.syncBlockTimestamp;
-            devnetChain.lastPersistedChainSyncBlockChainWork = chainEntity.syncBlockChainWork.UInt256;
-        }];
+        // note: there is no point to load anything if the chain is transient
+        [devnetChain updateDevnetChainFromContext];
         [devnetChain setUp];
     }
-
     return devnetChain;
+}
+
+- (void)updateDevnetChainFromContext {
+    [[NSManagedObjectContext chainContext] performBlockAndWait:^{
+        DSChainEntity *chainEntity = [self chainEntityInContext:[NSManagedObjectContext chainContext]];
+        self.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
+        self.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
+        self.lastPersistedChainSyncLocators = chainEntity.syncLocators;
+        self.lastPersistedChainSyncBlockHeight = chainEntity.syncBlockHeight;
+        self.lastPersistedChainSyncBlockHash = chainEntity.syncBlockHash.UInt256;
+        self.lastPersistedChainSyncBlockTimestamp = chainEntity.syncBlockTimestamp;
+        self.lastPersistedChainSyncBlockChainWork = chainEntity.syncBlockChainWork.UInt256;
+    }];
 }
 
 + (DSChain *)chainForNetworkName:(NSString *)networkName {
@@ -465,10 +498,14 @@ static dispatch_once_t devnetToken = 0;
 + (NSMutableArray *)createCheckpointsArrayFromCheckpoints:(checkpoint *)checkpoints count:(NSUInteger)checkpointCount {
     NSMutableArray *checkpointMutableArray = [NSMutableArray array];
     for (int i = 0; i < checkpointCount; i++) {
-        NSString *merkleRootString = [NSString stringWithCString:checkpoints[i].merkleRoot encoding:NSUTF8StringEncoding];
-        NSString *chainWorkString = [NSString stringWithCString:checkpoints[i].chainWork encoding:NSUTF8StringEncoding];
+        checkpoint cpt = checkpoints[i];
+        NSString *merkleRootString = [NSString stringWithCString:cpt.merkleRoot encoding:NSUTF8StringEncoding];
+        NSString *chainWorkString = [NSString stringWithCString:cpt.chainWork encoding:NSUTF8StringEncoding];
+        uint32_t blockHeight = cpt.height;
+        UInt256 blockHash = [NSString stringWithCString:cpt.checkpointHash encoding:NSUTF8StringEncoding].hexToData.reverse.UInt256;
         UInt256 chainWork = chainWorkString.hexToData.reverse.UInt256;
-        DSCheckpoint *checkpoint = [DSCheckpoint checkpointForHeight:checkpoints[i].height blockHash:[NSString stringWithCString:checkpoints[i].checkpointHash encoding:NSUTF8StringEncoding].hexToData.reverse.UInt256 timestamp:checkpoints[i].timestamp target:checkpoints[i].target merkleRoot:[merkleRootString isEqualToString:@""] ? UINT256_ZERO : merkleRootString.hexToData.reverse.UInt256 chainWork:chainWork masternodeListName:[NSString stringWithCString:checkpoints[i].masternodeListPath encoding:NSUTF8StringEncoding]];
+        UInt256 merkleRoot = [merkleRootString isEqualToString:@""] ? UINT256_ZERO : merkleRootString.hexToData.reverse.UInt256;
+        DSCheckpoint *checkpoint = [DSCheckpoint checkpointForHeight:blockHeight blockHash:blockHash timestamp:cpt.timestamp target:cpt.target merkleRoot:merkleRoot chainWork:chainWork masternodeListName:[NSString stringWithCString:cpt.masternodeListPath encoding:NSUTF8StringEncoding]];
         [checkpointMutableArray addObject:checkpoint];
     }
     return [checkpointMutableArray copy];
@@ -519,13 +556,13 @@ static dispatch_once_t devnetToken = 0;
     return d.x11;
 }
 
-- (DSCheckpoint *)createDevNetGenesisBlockCheckpointForParentCheckpoint:(DSCheckpoint *)checkpoint withIdentifier:(NSString *)identifier {
+- (DSCheckpoint *)createDevNetGenesisBlockCheckpointForParentCheckpoint:(DSCheckpoint *)checkpoint withIdentifier:(NSString *)identifier version:(uint16_t)version onProtocolVersion:(uint32_t)protocolVersion {
     uint32_t nTime = checkpoint.timestamp + 1;
     uint32_t nBits = checkpoint.target;
     UInt256 fullTarget = setCompactLE(nBits);
     uint32_t nVersion = 4;
     UInt256 prevHash = checkpoint.blockHash;
-    UInt256 merkleRoot = [DSTransaction devnetGenesisCoinbaseWithIdentifier:identifier forChain:self].txHash;
+    UInt256 merkleRoot = [DSTransaction devnetGenesisCoinbaseWithIdentifier:identifier version:version onProtocolVersion:protocolVersion forChain:self].txHash;
     UInt256 chainWork = @"0400000000000000000000000000000000000000000000000000000000000000".hexToData.UInt256;
     uint32_t nonce = UINT32_MAX; //+1 => 0;
     UInt256 blockhash;
@@ -553,6 +590,13 @@ static dispatch_once_t devnetToken = 0;
     return _dapiMetadataQueue;
 }
 
+- (dispatch_queue_t)processingQueue {
+    if (!_processingQueue) {
+        NSAssert(uint256_is_not_zero(self.genesisHash), @"genesisHash must be set");
+        _processingQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.processing.%@", self.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
+    }
+    return _processingQueue;
+}
 
 // MARK: - Check Type
 
@@ -564,18 +608,13 @@ static dispatch_once_t devnetToken = 0;
     return [self chainType] == DSChainType_TestNet;
 }
 
-- (BOOL)isEvonet {
-    return ([self chainType] == DSChainType_DevNet) && [[self devnetIdentifier] isEqualToString:@"devnet-evonet"];
-}
-
 - (BOOL)isDevnetAny {
     return [self chainType] == DSChainType_DevNet;
 }
 
 - (BOOL)isEvolutionEnabled {
-    //return [self isDevnetAny] || [self isTestnet];
-    // Switch it off for release purposes
-    return false;
+    return NO;
+//    return [self isDevnetAny] || [self isTestnet];
 }
 
 - (BOOL)isDevnetWithGenesisHash:(UInt256)genesisHash {
@@ -585,6 +624,16 @@ static dispatch_once_t devnetToken = 0;
         return uint256_eq([self genesisHash], genesisHash);
     }
 }
+
+- (BOOL)hasDIP0024Enabled {
+    // TODO: make this blockHeight dependent
+    switch ([self chainType]) {
+        case DSChainType_TestNet: return self.protocolVersion >= 70220;
+        case DSChainType_DevNet: return self.protocolVersion >= 70220;
+        default: return false;
+    }
+}
+
 
 // MARK: - Keychain Strings
 
@@ -636,7 +685,7 @@ static dispatch_once_t devnetToken = 0;
             return @"Testnet";
         case DSChainType_DevNet:
             if (_networkName) return _networkName;
-            return [@"Devnet - " stringByAppendingString:self.devnetIdentifier];
+            return [NSString stringWithFormat:@"Devnet - %@.%u", self.devnetIdentifier, self.devnetVersion];
     }
     if (_networkName) return _networkName;
 }
@@ -649,7 +698,7 @@ static dispatch_once_t devnetToken = 0;
             return DSLocalizedString(@"Testnet", nil);
         case DSChainType_DevNet:
             if (_networkName) return _networkName;
-            return [NSString stringWithFormat:@"%@ - %@", DSLocalizedString(@"Devnet", nil), self.devnetIdentifier];
+            return [NSString stringWithFormat:@"%@ - %@.%u", DSLocalizedString(@"Devnet", nil), self.devnetIdentifier, self.devnetVersion];
     }
     if (_networkName) return _networkName;
 }
@@ -781,7 +830,24 @@ static dispatch_once_t devnetToken = 0;
             if (!error && quorumType)
                 return quorumType;
             else
-                return DSLLMQType_10_60;
+                return DSLLMQType_DevnetDIP0024;
+        }
+    }
+}
+
+- (DSLLMQType)quorumTypeForISDLocks {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return DSLLMQType_60_75;
+        case DSChainType_TestNet:
+            return DSLLMQType_60_75;
+        case DSChainType_DevNet: {
+            NSError *error = nil;
+            DSLLMQType quorumType = (DSLLMQType)getKeychainInt([NSString stringWithFormat:@"%@%@", self.devnetIdentifier, ISDLOCK_QUORUM_TYPE], &error);
+            if (!error && quorumType)
+                return quorumType;
+            else
+                return DSLLMQType_DevnetDIP0024;
         }
     }
 }
@@ -794,6 +860,19 @@ static dispatch_once_t devnetToken = 0;
             return;
         case DSChainType_DevNet: {
             setKeychainInt(quorumTypeForISLocks, [NSString stringWithFormat:@"%@%@", self.devnetIdentifier, ISLOCK_QUORUM_TYPE], NO);
+            break;
+        }
+    }
+}
+
+- (void)setQuorumTypeForISDLocks:(DSLLMQType)quorumTypeForISDLocks {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return;
+        case DSChainType_TestNet:
+            return;
+        case DSChainType_DevNet: {
+            setKeychainInt(quorumTypeForISDLocks, [NSString stringWithFormat:@"%@%@", self.devnetIdentifier, ISDLOCK_QUORUM_TYPE], NO);
             break;
         }
     }
@@ -860,7 +939,49 @@ static dispatch_once_t devnetToken = 0;
 }
 
 - (BOOL)shouldProcessQuorumOfType:(DSLLMQType)llmqType {
-    return self.quorumTypeForChainLocks == llmqType || self.quorumTypeForISLocks == llmqType || self.quorumTypeForPlatform == llmqType;
+    return self.quorumTypeForChainLocks == llmqType || self.quorumTypeForISLocks == llmqType || self.quorumTypeForPlatform == llmqType || self.quorumTypeForISDLocks == llmqType;
+}
+
+- (BOOL)isRotatedQuorumsPresented {
+    if (_cachedIsQuorumRotationPresented) return _cachedIsQuorumRotationPresented;
+    switch ([self chainType]) {
+        case DSChainType_MainNet: {
+            NSError *error = nil;
+            BOOL isPresented = (BOOL)getKeychainInt([NSString stringWithFormat:@"MAINNET_%@", QUORUM_ROTATION_PRESENCE_KEY], &error);
+            _cachedIsQuorumRotationPresented = !error && isPresented;
+            break;
+        }
+        case DSChainType_TestNet: {
+            NSError *error = nil;
+            BOOL isPresented = (BOOL)getKeychainInt([NSString stringWithFormat:@"TESTNET_%@", QUORUM_ROTATION_PRESENCE_KEY], &error);
+            _cachedIsQuorumRotationPresented = !error && isPresented;
+            break;
+        }
+        case DSChainType_DevNet: {
+            NSError *error = nil;
+            BOOL isPresented = (BOOL)getKeychainInt([NSString stringWithFormat:@"%@%@", self.devnetIdentifier, QUORUM_ROTATION_PRESENCE_KEY], &error);
+            _cachedIsQuorumRotationPresented = !error && isPresented;
+            break;
+        }
+    }
+    return _cachedIsQuorumRotationPresented;
+}
+
+
+- (void)setIsRotatedQuorumsPresented:(BOOL)isRotatedQuorumsPresented {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            setKeychainInt(isRotatedQuorumsPresented, [NSString stringWithFormat:@"MAINNET_%@", QUORUM_ROTATION_PRESENCE_KEY], NO);
+            break;
+        case DSChainType_TestNet:
+            setKeychainInt(isRotatedQuorumsPresented, [NSString stringWithFormat:@"TESTNET_%@", QUORUM_ROTATION_PRESENCE_KEY], NO);
+            break;
+        case DSChainType_DevNet: {
+            setKeychainInt(isRotatedQuorumsPresented, [NSString stringWithFormat:@"%@%@", self.devnetIdentifier, QUORUM_ROTATION_PRESENCE_KEY], NO);
+            break;
+        }
+    }
+    _cachedIsQuorumRotationPresented = isRotatedQuorumsPresented;
 }
 
 - (uint32_t)minProtocolVersion {
@@ -1892,6 +2013,17 @@ static dispatch_once_t devnetToken = 0;
     }
     return b;
 }
+- (DSBlock *)blockAtHeightOrLastTerminal:(uint32_t)height {
+    DSBlock *block = [self blockAtHeight:height];
+    if (block == nil) {
+        if (height > self.lastTerminalBlockHeight) {
+            block = self.lastTerminalBlock;
+        } else {
+            return nil;
+        }
+    }
+    return block;
+}
 
 - (DSBlock *)blockFromChainTip:(NSUInteger)blocksAgo {
     DSBlock *b = self.lastTerminalBlock;
@@ -1913,13 +2045,26 @@ static dispatch_once_t devnetToken = 0;
 }
 
 // MARK: From Insight on Testnet
+- (void)blockUntilGetInsightForBlockHash:(UInt256)blockHash {
+    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+    [[DSInsightManager sharedInstance] blockForBlockHash:blockHash
+                                                 onChain:self
+                                              completion:^(DSBlock *_Nullable block, NSError *_Nullable error) {
+        if (!error && block) {
+            [self addInsightVerifiedBlock:block forBlockHash:blockHash];
+        }
+        dispatch_semaphore_signal(sem);
+    }];
+    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+}
 
 - (void)addInsightVerifiedBlock:(DSBlock *)block forBlockHash:(UInt256)blockHash {
     if ([self allowInsightBlocksForVerification]) {
         if (!self.insightVerifiedBlocksByHashDictionary) {
             self.insightVerifiedBlocksByHashDictionary = [NSMutableDictionary dictionary];
         }
-        [self.insightVerifiedBlocksByHashDictionary setObject:block forKey:uint256_data(blockHash)];
+        [self.insightVerifiedBlocksByHashDictionary setObject:block
+                                                       forKey:uint256_data(blockHash)];
     }
 }
 
@@ -1956,11 +2101,7 @@ static dispatch_once_t devnetToken = 0;
         [self saveTerminalBlocks];
 
         // notify that transaction confirmations may have changed
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainNewChainTipBlockNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-        });
+        [self notifyBlocksChanged];
     }
 
     return TRUE;
@@ -2077,7 +2218,9 @@ static dispatch_once_t devnetToken = 0;
     DSBlock *equivalentTerminalBlock = nil;
 
     if ((blockPosition & DSBlockPosition_Sync) && (self.lastSyncBlockHeight + 1 >= lastCheckpoint.height)) {
-        equivalentTerminalBlock = self.mTerminalBlocks[blockHash];
+        @synchronized(self.mTerminalBlocks) {
+            equivalentTerminalBlock = self.mTerminalBlocks[blockHash];
+        }
     }
 
 
@@ -2134,8 +2277,8 @@ static dispatch_once_t devnetToken = 0;
 
         if (!equivalentTerminalBlock && uint256_eq(block.prevBlock, self.lastTerminalBlock.blockHash)) {
             if ((block.height % 1000) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
-                DSLog(@"adding terminal block on %@ (caught up) at height: %d with hash: %@ from peer %@", self.name, block.height, uint256_hex(block.blockHash), peer.host ? peer.host : @"TEST");
-            }
+                DSLog(@"[%@: %@]  + terminal block (caught up) at: %d: %@", self.name, peer.host ? peer.host : @"TEST", block.height, uint256_hex(block.blockHash));
+           }
             @synchronized(self.mTerminalBlocks) {
                 self.mTerminalBlocks[blockHash] = block;
             }
@@ -2148,13 +2291,14 @@ static dispatch_once_t devnetToken = 0;
         [self setBlockHeight:block.height andTimestamp:txTime forTransactionHashes:txHashes];
         onMainChain = TRUE;
 
-        if ([self blockHeightHasCheckpoint:block.height] || ((block.height % 1000 == 0) && (block.height + BLOCK_NO_FORK_DEPTH < self.lastTerminalBlockHeight) && !self.chainManager.masternodeManager.hasMasternodeListCurrentlyBeingSaved)) {
+        if ([self blockHeightHasCheckpoint:block.height] ||
+            ((block.height % 1000 == 0) && (block.height + BLOCK_NO_FORK_DEPTH < self.lastTerminalBlockHeight) && !self.chainManager.masternodeManager.hasMasternodeListCurrentlyBeingSaved)) {
             [self saveBlockLocators];
         }
 
     } else if (uint256_eq(block.prevBlock, self.lastTerminalBlock.blockHash)) { // new block extends terminal chain
         if ((block.height % 100) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
-            DSLog(@"adding terminal block on %@ at height: %d with hash: %@ from peer %@", self.name, block.height, uint256_hex(block.blockHash), peer.host ? peer.host : @"TEST");
+            DSLog(@"[%@: %@]  + terminal block at: %d: %@", self.name, peer.host ? peer.host : @"TEST", block.height, uint256_hex(block.blockHash));
         }
         @synchronized(self.mTerminalBlocks) {
             self.mTerminalBlocks[blockHash] = block;
@@ -2311,7 +2455,9 @@ static dispatch_once_t devnetToken = 0;
                 }
             }
 
-            [self setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTransactionHashes:txHashes];
+            [self setBlockHeight:TX_UNCONFIRMED
+                        andTimestamp:0
+                forTransactionHashes:txHashes];
             b = block;
 
             while (b.height > b2.height) { // set transaction heights for new main chain
@@ -2375,22 +2521,14 @@ static dispatch_once_t devnetToken = 0;
                 [self.lastNotifiedBlockDidChangeTimer invalidate];
                 self.lastNotifiedBlockDidChangeTimer = nil;
             }
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainNewChainTipBlockNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-            });
+            [self notifyBlocksChanged];
         } else {
             if (!self.lastNotifiedBlockDidChangeTimer) {
                 self.lastNotifiedBlockDidChangeTimer = [NSTimer timerWithTimeInterval:1
                                                                               repeats:NO
                                                                                 block:^(NSTimer *_Nonnull timer) {
-                                                                                    dispatch_async(dispatch_get_main_queue(), ^{
-                                                                                        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainNewChainTipBlockNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-                                                                                        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-                                                                                        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-                                                                                    });
-                                                                                }];
+                    [self notifyBlocksChanged];
+                }];
                 [[NSRunLoop mainRunLoop] addTimer:self.lastNotifiedBlockDidChangeTimer forMode:NSRunLoopCommonModes];
             }
         }
@@ -2438,6 +2576,14 @@ static dispatch_once_t devnetToken = 0;
         [self addBlock:b receivedAsHeader:YES fromPeer:peer]; //revisit this
     }
     return TRUE;
+}
+
+- (void)notifyBlocksChanged {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainNewChainTipBlockNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
+    });
 }
 
 // MARK: Terminal Blocks
@@ -2507,13 +2653,14 @@ static dispatch_once_t devnetToken = 0;
     int32_t step = 1, start = 0;
     DSBlock *b = self.lastTerminalBlock;
     uint32_t lastHeight = b.height;
+    NSDictionary *terminalBlocks = [self.mTerminalBlocks copy];
     while (b && b.height > 0) {
         [locators addObject:uint256_data(b.blockHash)];
         lastHeight = b.height;
         if (++start >= 10) step *= 2;
 
         for (int32_t i = 0; b && i < step; i++) {
-            b = self.mTerminalBlocks[b.prevBlockValue];
+            b = terminalBlocks[b.prevBlockValue];
         }
     }
     DSCheckpoint *lastCheckpoint = nil;
@@ -2637,7 +2784,9 @@ static dispatch_once_t devnetToken = 0;
                 }
             }
 
-            [self setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTransactionHashes:txHashes];
+            [self setBlockHeight:TX_UNCONFIRMED
+                        andTimestamp:0
+                forTransactionHashes:txHashes];
             clb = syncBlock;
 
             while (clb.height > sbmc.height) { // set transaction heights for new main chain
@@ -2842,7 +2991,11 @@ static dispatch_once_t devnetToken = 0;
         }
     }
 
-    [self.chainManager chain:self didSetBlockHeight:height andTimestamp:timestamp forTransactionHashes:transactionHashes updatedTransactions:updatedTransactions];
+    [self.chainManager chain:self
+           didSetBlockHeight:height
+                andTimestamp:timestamp
+        forTransactionHashes:transactionHashes
+         updatedTransactions:updatedTransactions];
 }
 
 - (void)reloadDerivationPaths {
@@ -3149,7 +3302,8 @@ static dispatch_once_t devnetToken = 0;
     [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
     [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
     [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
-    [self.chainManager.masternodeManager wipeMasternodeInfo];
+    [DSQuorumSnapshotEntity deleteAllOnChainEntity:chainEntity];
+    [self.chainManager wipeMasternodeInfo];
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@_%@", self.uniqueID, LAST_SYNCED_MASTERNODE_LIST]];
 }
 
@@ -3620,7 +3774,7 @@ static dispatch_once_t devnetToken = 0;
     NSParameterAssert(context);
     __block DSChainEntity *chainEntity = nil;
     [context performBlockAndWait:^{
-        chainEntity = [DSChainEntity chainEntityForType:self.chainType devnetIdentifier:self.devnetIdentifier checkpoints:self.checkpoints inContext:context];
+        chainEntity = [DSChainEntity chainEntityForType:self.chainType devnetIdentifier:self.devnetIdentifier devnetVersion:self.devnetVersion checkpoints:self.checkpoints inContext:context];
     }];
     return chainEntity;
 }
@@ -3684,10 +3838,11 @@ static dispatch_once_t devnetToken = 0;
     DSBlock *b = self.lastTerminalBlock;
     uint32_t endHeight = b.height;
     uint32_t startHeight = b.height;
+    NSDictionary *terminalBlocks = [self.mTerminalBlocks copy];
     while (b && (startHeight > self.lastCheckpoint.height) && (endHeight - startHeight < KEEP_RECENT_TERMINAL_BLOCKS)) {
         blocks[[NSData dataWithUInt256:b.blockHash]] = b;
         startHeight = b.height;
-        b = self.mTerminalBlocks[b.prevBlockValue];
+        b = terminalBlocks[b.prevBlockValue];
     }
     if (startHeight == b.height) { //only save last one then
         blocks[[NSData dataWithUInt256:b.blockHash]] = b;
@@ -3704,10 +3859,12 @@ static dispatch_once_t devnetToken = 0;
             [DSMerkleBlockEntity deleteObjects:oldBlockHeaders inContext:self.chainManagedObjectContext];
         }
         DSChainEntity *chainEntity = [self chainEntityInContext:self.chainManagedObjectContext];
-        for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity objectsInContext:self.chainManagedObjectContext matching:@"blockHash in %@", blocks.allKeys]) {
+        NSArray<DSMerkleBlockEntity *> *blockEntities = [DSMerkleBlockEntity objectsInContext:self.chainManagedObjectContext matching:@"blockHash in %@", blocks.allKeys];
+        for (DSMerkleBlockEntity *e in blockEntities) {
             @autoreleasepool {
-                [e setAttributesFromBlock:blocks[e.blockHash] forChainEntity:chainEntity];
-                [blocks removeObjectForKey:e.blockHash];
+                NSData *blockHash = e.blockHash;
+                [e setAttributesFromBlock:blocks[blockHash] forChainEntity:chainEntity];
+                [blocks removeObjectForKey:blockHash];
             }
         }
 

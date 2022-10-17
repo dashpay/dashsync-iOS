@@ -43,9 +43,9 @@
 @property (null_resettable, nonatomic, copy) NSString *ipAddressString;
 @property (null_resettable, nonatomic, copy) NSString *portString;
 @property (nonatomic, strong) DSBLSKey *operatorPublicBLSKey;
-@property (nonatomic, strong) NSMutableDictionary<DSBlock *, NSData *> *mPreviousOperatorPublicKeys;
-@property (nonatomic, strong) NSMutableDictionary<DSBlock *, NSNumber *> *mPreviousValidity;
-@property (nonatomic, strong) NSMutableDictionary<DSBlock *, NSData *> *mPreviousSimplifiedMasternodeEntryHashes;
+@property (nonatomic, strong) NSDictionary<DSBlock *, NSData *> *previousOperatorPublicKeys;
+@property (nonatomic, strong) NSDictionary<DSBlock *, NSNumber *> *previousValidity;
+@property (nonatomic, strong) NSDictionary<DSBlock *, NSData *> *previousSimplifiedMasternodeEntryHashes;
 @property (nonatomic, assign) uint64_t platformPing;
 @property (nonatomic, strong) NSDate *platformPingDate;
 
@@ -83,23 +83,10 @@
     simplifiedMasternodeEntry.updateHeight = updateHeight;
     simplifiedMasternodeEntry.simplifiedMasternodeEntryHash = uint256_is_not_zero(simplifiedMasternodeEntryHash) ? simplifiedMasternodeEntryHash : [simplifiedMasternodeEntry calculateSimplifiedMasternodeEntryHash];
     simplifiedMasternodeEntry.chain = chain;
-    simplifiedMasternodeEntry.mPreviousOperatorPublicKeys = previousOperatorBLSPublicKeys ? [previousOperatorBLSPublicKeys mutableCopy] : [NSMutableDictionary dictionary];
-    simplifiedMasternodeEntry.mPreviousSimplifiedMasternodeEntryHashes = previousSimplifiedMasternodeEntryHashes ? [previousSimplifiedMasternodeEntryHashes mutableCopy] : [NSMutableDictionary dictionary];
-    simplifiedMasternodeEntry.mPreviousValidity = previousValidity ? [previousValidity mutableCopy] : [NSMutableDictionary dictionary];
+    simplifiedMasternodeEntry.previousOperatorPublicKeys = previousOperatorBLSPublicKeys ? [previousOperatorBLSPublicKeys copy] : [NSDictionary dictionary];
+    simplifiedMasternodeEntry.previousSimplifiedMasternodeEntryHashes = previousSimplifiedMasternodeEntryHashes ? [previousSimplifiedMasternodeEntryHashes copy] : [NSDictionary dictionary];
+    simplifiedMasternodeEntry.previousValidity = previousValidity ? [previousValidity copy] : [NSDictionary dictionary];
     return simplifiedMasternodeEntry;
-}
-
-
-- (NSDictionary *)previousValidity {
-    return [self.mPreviousValidity copy];
-}
-
-- (NSDictionary *)previousOperatorPublicKeys {
-    return [self.mPreviousOperatorPublicKeys copy];
-}
-
-- (NSDictionary *)previousSimplifiedMasternodeEntryHashes {
-    return [self.mPreviousSimplifiedMasternodeEntryHashes copy];
 }
 
 - (BOOL)isValidAtBlock:(DSBlock *)block {
@@ -117,14 +104,14 @@
     return [self isValidAtBlockHeight:blockHeight];
 }
 
-- (BOOL)isValidAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (BOOL)isValidAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     if (![self.previousValidity count]) return self.isValid;
     uint32_t blockHeight = blockHeightLookup(blockHash);
     return [self isValidAtBlockHeight:blockHeight];
 }
 
 - (BOOL)isValidAtBlockHeight:(uint32_t)blockHeight {
-    if (![self.mPreviousValidity count]) return self.isValid;
+    if (![self.previousValidity count]) return self.isValid;
     NSAssert(blockHeight != UINT32_MAX, @"block height should be set");
     if (blockHeight == UINT32_MAX) {
         return self.isValid;
@@ -149,24 +136,24 @@
         NSAssert(NO, @"Block should be set");
         return self.simplifiedMasternodeEntryHash;
     }
-    if (![self.mPreviousSimplifiedMasternodeEntryHashes count]) return self.simplifiedMasternodeEntryHash;
+    if (![self.previousSimplifiedMasternodeEntryHashes count]) return self.simplifiedMasternodeEntryHash;
     return [self simplifiedMasternodeEntryHashAtBlockHeight:block.height];
 }
 
 - (UInt256)simplifiedMasternodeEntryHashAtBlockHash:(UInt256)blockHash {
-    if (![self.mPreviousSimplifiedMasternodeEntryHashes count]) return self.simplifiedMasternodeEntryHash;
+    if (![self.previousSimplifiedMasternodeEntryHashes count]) return self.simplifiedMasternodeEntryHash;
     uint32_t blockHeight = [self.chain heightForBlockHash:blockHash];
     return [self simplifiedMasternodeEntryHashAtBlockHeight:blockHeight];
 }
 
-- (UInt256)simplifiedMasternodeEntryHashAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
-    if (![self.mPreviousSimplifiedMasternodeEntryHashes count]) return self.simplifiedMasternodeEntryHash;
+- (UInt256)simplifiedMasternodeEntryHashAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
+    if (![self.previousSimplifiedMasternodeEntryHashes count]) return self.simplifiedMasternodeEntryHash;
     uint32_t blockHeight = blockHeightLookup(blockHash);
     return [self simplifiedMasternodeEntryHashAtBlockHeight:blockHeight];
 }
 
 - (UInt256)simplifiedMasternodeEntryHashAtBlockHeight:(uint32_t)blockHeight {
-    if (![self.mPreviousSimplifiedMasternodeEntryHashes count]) return self.simplifiedMasternodeEntryHash;
+    if (![self.previousSimplifiedMasternodeEntryHashes count]) return self.simplifiedMasternodeEntryHash;
     NSAssert(blockHeight != UINT32_MAX, @"block height should be set");
     if (blockHeight == UINT32_MAX) {
         return self.simplifiedMasternodeEntryHash;
@@ -175,11 +162,12 @@
     uint32_t minDistance = UINT32_MAX;
     UInt256 usedSimplifiedMasternodeEntryHash = self.simplifiedMasternodeEntryHash;
     for (DSBlock *previousBlock in previousSimplifiedMasternodeEntryHashes) {
+        NSLog(@"simplifiedMasternodeEntryHashAtBlockHeight: %u %@: prev: %u: %@", blockHeight, uint256_hex(usedSimplifiedMasternodeEntryHash), previousBlock.height, uint256_hex(previousSimplifiedMasternodeEntryHashes[previousBlock].UInt256));
         if (previousBlock.height <= blockHeight) continue;
         uint32_t distance = previousBlock.height - blockHeight;
         if (distance < minDistance) {
             minDistance = distance;
-            //NSLog(@"SME Hash for proTxHash %@ : Using %@ instead of %@ for list at block height %u", uint256_hex(self.providerRegistrationTransactionHash), uint256_hex(previousSimplifiedMasternodeEntryHashes[previousBlock].UInt256), uint256_hex(usedSimplifiedMasternodeEntryHash), blockHeight);
+            NSLog(@"SME Hash for proTxHash %@ : Using %@ instead of %@ for list at block height %u", uint256_hex(self.providerRegistrationTransactionHash), uint256_hex(previousSimplifiedMasternodeEntryHashes[previousBlock].UInt256), uint256_hex(usedSimplifiedMasternodeEntryHash), blockHeight);
             usedSimplifiedMasternodeEntryHash = previousSimplifiedMasternodeEntryHashes[previousBlock].UInt256;
         }
     }
@@ -191,24 +179,24 @@
         NSAssert(NO, @"Block should be set");
         return self.operatorPublicKey;
     }
-    if (![self.mPreviousOperatorPublicKeys count]) return self.operatorPublicKey;
+    if (![self.previousOperatorPublicKeys count]) return self.operatorPublicKey;
     return [self operatorPublicKeyAtBlockHeight:block.height];
 }
 
 - (UInt384)operatorPublicKeyAtBlockHash:(UInt256)blockHash {
-    if (![self.mPreviousOperatorPublicKeys count]) return self.operatorPublicKey;
+    if (![self.previousOperatorPublicKeys count]) return self.operatorPublicKey;
     uint32_t blockHeight = [self.chain heightForBlockHash:blockHash];
     return [self operatorPublicKeyAtBlockHeight:blockHeight];
 }
 
-- (UInt384)operatorPublicKeyAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
-    if (![self.mPreviousOperatorPublicKeys count]) return self.operatorPublicKey;
+- (UInt384)operatorPublicKeyAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
+    if (![self.previousOperatorPublicKeys count]) return self.operatorPublicKey;
     uint32_t blockHeight = blockHeightLookup(blockHash);
     return [self operatorPublicKeyAtBlockHeight:blockHeight];
 }
 
 - (UInt384)operatorPublicKeyAtBlockHeight:(uint32_t)blockHeight {
-    if (![self.mPreviousOperatorPublicKeys count]) return self.operatorPublicKey;
+    if (![self.previousOperatorPublicKeys count]) return self.operatorPublicKey;
     NSDictionary<DSBlock *, NSData *> *previousOperatorPublicKeyAtBlockHashes = self.previousOperatorPublicKeys;
     uint32_t minDistance = UINT32_MAX;
     UInt384 usedPreviousOperatorPublicKeyAtBlockHash = self.operatorPublicKey;
@@ -239,7 +227,7 @@
     return [self confirmedHashAtBlockHeight:blockHeight];
 }
 
-- (UInt256)confirmedHashAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (UInt256)confirmedHashAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     if (!self.knownConfirmedAtHeight) return self.confirmedHash;
     uint32_t blockHeight = blockHeightLookup(blockHash);
     return [self confirmedHashAtBlockHeight:blockHeight];
@@ -373,7 +361,7 @@
     return self.providerRegistrationTransactionHash.u64[0];
 }
 
-- (NSDictionary *)toDictionaryAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (NSDictionary *)toDictionaryAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
 
     dictionary[@"address"] = [uint128_data(_address) base64String];
@@ -413,7 +401,7 @@
         }];
 }
 
-- (NSDictionary *)compare:(DSSimplifiedMasternodeEntry *)other ourBlockHash:(UInt256)ourBlockHash theirBlockHash:(UInt256)theirBlockHash usingOurString:(NSString *)ours usingTheirString:(NSString *)theirs blockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (NSDictionary *)compare:(DSSimplifiedMasternodeEntry *)other ourBlockHash:(UInt256)ourBlockHash theirBlockHash:(UInt256)theirBlockHash usingOurString:(NSString *)ours usingTheirString:(NSString *)theirs blockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     NSMutableDictionary *differences = [NSMutableDictionary dictionary];
 
     if (!ours) ours = @"ours";

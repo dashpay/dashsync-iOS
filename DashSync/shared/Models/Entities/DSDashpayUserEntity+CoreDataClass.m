@@ -36,6 +36,7 @@
 #import "DSTxOutputEntity+CoreDataClass.h"
 #import "DSWallet.h"
 #import "NSData+Dash.h"
+#import "NSError+Dash.h"
 #import "NSManagedObject+Sugar.h"
 
 @implementation DSDashpayUserEntity
@@ -104,10 +105,7 @@
     if (!self.documentIdentifier) {
         self.documentIdentifier = transientDashpayUser.documentIdentifier;
     } else if (self.documentIdentifier) {
-        return [NSError errorWithDomain:@"DashSync"
-                                   code:500
-                               userInfo:@{NSLocalizedDescriptionKey:
-                                            DSLocalizedString(@"Error when updating profile information", nil)}];
+        return [NSError errorWithCode:500 localizedDescriptionKey:@"Error when updating profile information"];
     }
     self.localProfileDocumentRevision = transientDashpayUser.revision;
     self.remoteProfileDocumentRevision = transientDashpayUser.revision;

@@ -16,9 +16,11 @@
 //
 
 #import "DSChain.h"
-#import "DSMasternodeDiffMessageContext.h"
+#import "DSMasternodeProcessorContext.h"
 #import "DSMasternodeList.h"
 #import "DSMasternodeManager.h"
+#import "DSMnDiffProcessingResult.h"
+#import "DSQRInfoProcessingResult.h"
 #import "DSQuorumEntry.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "dash_shared_core.h"
@@ -28,24 +30,38 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMasternodeManager (Mndiff)
 
-const MasternodeList *masternodeListLookupCallback(uint8_t (*block_hash)[32], const void *context);
-void masternodeListDestroyCallback(const MasternodeList *masternode_list);
-uint32_t blockHeightListLookupCallback(uint8_t (*block_hash)[32], const void *context);
-void addInsightLookup(uint8_t (*block_hash)[32], const void *context);
-bool shouldProcessQuorumType(uint8_t quorum_type, const void *context);
-bool validateQuorumCallback(QuorumValidationData *data, const void *context);
+/// Rust FFI callbacks
+MasternodeList *getMasternodeListByBlockHash(uint8_t (*block_hash)[32], const void *context);
+bool saveMasternodeList(uint8_t (*block_hash)[32], MasternodeList *masternode_list, const void *context);
+void destroyMasternodeList(MasternodeList *masternode_list);
+void destroyHash(uint8_t *block_hash);
+uint32_t getBlockHeightByHash(uint8_t (*block_hash)[32], const void *context);
+uint8_t *getBlockHashByHeight(uint32_t block_height, const void *context);
+uint8_t *getMerkleRootByHash(uint8_t (*block_hash)[32], const void *context);
+LLMQSnapshot *getLLMQSnapshotByBlockHash(uint8_t (*block_hash)[32], const void *context);
+bool saveLLMQSnapshot(uint8_t (*block_hash)[32], LLMQSnapshot *snapshot, const void *context);
+void destroyLLMQSnapshot(LLMQSnapshot *snapshot);
+void addInsightForBlockHash(uint8_t (*block_hash)[32], const void *context);
+void logRustMessage(const char *message, const void *context);
+uint8_t shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*block_hash)[32], const void *context);
+bool shouldProcessLLMQType(uint8_t quorum_type, const void *context);
+bool validateLLMQ(struct LLMQValidationData *data, const void *context);
 
 
-+ (MasternodeList *)wrapMasternodeList:(DSMasternodeList *)list;
-+ (void)freeMasternodeList:(MasternodeList *)list;
++ (MasternodeProcessor *)registerProcessor;
++ (void)unregisterProcessor:(MasternodeProcessor *)processor;
 
-+ (MasternodeEntry *)wrapMasternodeEntry:(DSSimplifiedMasternodeEntry *)entry;
-+ (void)freeMasternodeEntry:(MasternodeEntry *)entry;
++ (MasternodeProcessorCache *)createProcessorCache;
++ (void)destroyProcessorCache:(MasternodeProcessorCache *)processorCache;
 
-+ (QuorumEntry *)wrapQuorumEntry:(DSQuorumEntry *)entry;
-+ (void)freeQuorumEntry:(QuorumEntry *)entry;
+- (DSMnDiffProcessingResult *)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeProcessorContext *)context;
 
-+ (void)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeDiffMessageContext *)context completion:(void (^)(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *masternodeList, NSDictionary *addedMasternodes, NSDictionary *modifiedMasternodes, NSDictionary *addedQuorums, NSOrderedSet *neededMissingMasternodeLists))completion;
+- (void)processMasternodeDiffWith:(NSData *)message context:(DSMasternodeProcessorContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion;
+- (void)processQRInfoWith:(NSData *)message context:(DSMasternodeProcessorContext *)context completion:(void (^)(DSQRInfoProcessingResult *result))completion;
+
+- (void)clearProcessorCache;
+- (void)removeMasternodeListFromCacheAtBlockHash:(UInt256)blockHash;
+- (void)removeSnapshotFromCacheAtBlockHash:(UInt256)blockHash;
 
 @end
 

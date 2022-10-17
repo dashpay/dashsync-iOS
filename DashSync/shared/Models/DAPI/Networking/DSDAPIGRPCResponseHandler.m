@@ -30,6 +30,7 @@
 #import "NSData+DSHash.h"
 #import "NSData+DSMerkAVLTree.h"
 #import "NSData+Dash.h"
+#import "NSError+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Dash.h"
 #import <DAPI-GRPC/Core.pbobjc.h>
@@ -129,15 +130,14 @@
 - (void)parseIdentityMessage:(GetIdentityResponse *)identityResponse {
     NSError *error = nil;
     if (self.requireProof && !identityResponse.hasProof) {
-        self.decodingError = [NSError errorWithDomain:@"DashSync"
-                                                 code:500
-                                             userInfo:@{NSLocalizedDescriptionKey:
-                                                          DSLocalizedString(@"Platform returned no proof when we requested it", nil)}];
+        self.decodingError = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned no proof when we requested it"];
         return;
     } else if (!self.requireProof && !identityResponse.hasProof) {
         NSData *cborData = identityResponse.identity;
+        uint32_t version = [cborData UInt32AtOffset:0];
         NSData *identityData = [cborData subdataWithRange:NSMakeRange(4, cborData.length - 4)];
-        self.responseObject = [identityData ds_decodeCborError:&error];
+        NSDictionary *identityDictionary = [identityData ds_decodeCborError:&error];
+        self.responseObject = @{@(DSPlatformStoredMessage_Version): @(version), @(DSPlatformStoredMessage_Item): identityDictionary};
     } else {
         Proof *proof = identityResponse.proof;
         ResponseMetadata *metaData = identityResponse.metadata;
@@ -162,10 +162,7 @@
     NSArray *documentsArray = nil;
     NSError *error = nil;
     if (self.requireProof && !documentsResponse.hasProof) {
-        self.decodingError = [NSError errorWithDomain:@"DashSync"
-                                                 code:500
-                                             userInfo:@{NSLocalizedDescriptionKey:
-                                                          DSLocalizedString(@"Platform returned no proof when we requested it", nil)}];
+        self.decodingError = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned no proof when we requested it"];
     } else if (!self.requireProof && !documentsResponse.hasProof) {
         documentsArray = documentsResponse.documentsArray;
     } else {
@@ -210,10 +207,7 @@
     NSData *dataContractData = nil;
     NSError *error = nil;
     if (self.requireProof && !dataContractResponse.hasProof) {
-        self.decodingError = [NSError errorWithDomain:@"DashSync"
-                                                 code:500
-                                             userInfo:@{NSLocalizedDescriptionKey:
-                                                          DSLocalizedString(@"Platform returned no proof when we requested it", nil)}];
+        self.decodingError = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned no proof when we requested it"];
     } else if (!self.requireProof && !dataContractResponse.hasProof) {
         dataContractData = dataContractResponse.dataContract;
     } else {
@@ -247,10 +241,7 @@
     BOOL hasProof = (([waitResponse responsesOneOfCase] & WaitForStateTransitionResultResponse_Responses_OneOfCase_Proof) > 0);
 
     if (self.requireProof && !hasProof) {
-        self.decodingError = [NSError errorWithDomain:@"DashSync"
-                                                 code:500
-                                             userInfo:@{NSLocalizedDescriptionKey:
-                                                          DSLocalizedString(@"Platform returned no proof when we requested it", nil)}];
+        self.decodingError = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned no proof when we requested it"];
     } else if (!self.requireProof && !hasProof) {
         // In this case just assume things went well if there's no error
         if (broadcastError) {
@@ -303,17 +294,22 @@
 
 
     if (self.requireProof && !getIdentitiesResponse.hasProof) {
-        self.decodingError = [NSError errorWithDomain:@"DashSync"
-                                                 code:500
-                                             userInfo:@{NSLocalizedDescriptionKey:
-                                                          DSLocalizedString(@"Platform returned no proof when we requested it", nil)}];
+        self.decodingError = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned no proof when we requested it"];
     } else if (!self.requireProof && !getIdentitiesResponse.hasProof) {
         NSError *error = nil;
 
         for (NSData *cborData in getIdentitiesResponse.identitiesArray) {
             if (!cborData.length) continue;
-            NSData *identityData = [cborData subdataWithRange:NSMakeRange(4, cborData.length - 4)];
+            
+            NSArray<NSData *> *arrayOfIdentities = [cborData ds_decodeCborError:&error];
+            if (arrayOfIdentities.count == 0) continue;
+            
+            NSData *identityData = arrayOfIdentities.firstObject;
+            uint32_t version = [identityData UInt32AtOffset:0];
+            
+            identityData = [identityData subdataWithRange:NSMakeRange(4, identityData.length - 4)];
             NSDictionary *identityDictionary = [identityData ds_decodeCborError:&error];
+            
             if (error) {
                 self.decodingError = error;
                 return;
@@ -321,13 +317,15 @@
             NSData *identityIdData = [identityDictionary objectForKey:@"id"];
             UInt256 identityId = identityIdData.UInt256;
             if (uint256_is_zero(identityId)) {
-                self.decodingError = [NSError errorWithDomain:@"DashSync"
-                                                         code:500
-                                                     userInfo:@{NSLocalizedDescriptionKey:
-                                                                  DSLocalizedString(@"Platform returned an incorrect value as an identity ID", nil)}];
+                self.decodingError = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned an incorrect value as an identity ID"];
                 return;
             }
-            [identityDictionaries addObject:identityDictionary];
+            
+            NSDictionary *result = @{@(DSPlatformStoredMessage_Version): @(version),
+                                     @(DSPlatformStoredMessage_Item): identityDictionary
+            };
+            
+            [identityDictionaries addObject:result];
         }
         self.responseObject = identityDictionaries;
         if (error) {
@@ -379,10 +377,7 @@
         NSData *identityIdData = [identityDictionary objectForKey:@"id"];
         UInt256 identityId = identityIdData.UInt256;
         if (uint256_is_zero(identityId)) {
-            self.decodingError = [NSError errorWithDomain:@"DashSync"
-                                                     code:500
-                                                 userInfo:@{NSLocalizedDescriptionKey:
-                                                              DSLocalizedString(@"Platform returned an incorrect value as an identity ID", nil)}];
+            self.decodingError = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned an incorrect value as an identity ID"];
             return;
         }
         [identityDictionaries addObject:identityDictionary];
@@ -461,26 +456,17 @@
 + (NSDictionary *)verifyAndExtractFromProof:(Proof *)proof withMetadata:(ResponseMetadata *)metaData query:(DSPlatformQuery *)query onChain:(DSChain *)chain error:(NSError **)error {
     NSData *quorumHashData = proof.signatureLlmqHash;
     if (!quorumHashData) {
-        *error = [NSError errorWithDomain:@"DashSync"
-                                     code:500
-                                 userInfo:@{NSLocalizedDescriptionKey:
-                                              DSLocalizedString(@"Platform returned no quorum hash data", nil)}];
+        *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned no quorum hash data"];
     }
     UInt256 quorumHash = quorumHashData.reverse.UInt256;
     if (uint256_is_zero(quorumHash)) {
-        *error = [NSError errorWithDomain:@"DashSync"
-                                     code:500
-                                 userInfo:@{NSLocalizedDescriptionKey:
-                                              DSLocalizedString(@"Platform returned an empty quorum hash", nil)}];
+        *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned an empty quorum hash"];
     }
     DSQuorumEntry *quorumEntry = [chain.chainManager.masternodeManager quorumEntryForPlatformHavingQuorumHash:quorumHash forBlockHeight:metaData.coreChainLockedHeight];
     if (quorumEntry && quorumEntry.verified) {
         return [self verifyAndExtractFromProof:proof withMetadata:metaData query:query forQuorumEntry:quorumEntry quorumType:chain.quorumTypeForPlatform error:error];
     } else if (quorumEntry) {
-        *error = [NSError errorWithDomain:@"DashSync"
-                                     code:400
-                                 userInfo:@{NSLocalizedDescriptionKey:
-                                              DSLocalizedString(@"Quorum entry %@ found but is not yet verified", nil)}];
+        *error = [NSError errorWithCode:400 descriptionKey:DSLocalizedString(@"Quorum entry %@ found but is not yet verified", uint256_hex(quorumEntry.quorumHash))];
         DSLog(@"quorum entry %@ found but is not yet verified", uint256_hex(quorumEntry.quorumHash));
     } else {
         DSLog(@"no quorum entry found for quorum hash %@", uint256_hex(quorumHash));
@@ -491,134 +477,125 @@
 + (NSDictionary *)verifyAndExtractFromProof:(Proof *)proof withMetadata:(ResponseMetadata *)metaData query:(DSPlatformQuery *)query forQuorumEntry:(DSQuorumEntry *)quorumEntry quorumType:(DSLLMQType)quorumType error:(NSError **)error {
     NSData *signatureData = proof.signature;
     if (!signatureData) {
-        *error = [NSError errorWithDomain:@"DashSync"
-                                     code:500
-                                 userInfo:@{NSLocalizedDescriptionKey:
-                                              DSLocalizedString(@"Platform returned no signature data", nil)}];
+        *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned no signature data"];
         return nil;
     }
     UInt768 signature = signatureData.UInt768;
     if (uint256_is_zero(signature)) {
-        *error = [NSError errorWithDomain:@"DashSync"
-                                     code:500
-                                 userInfo:@{NSLocalizedDescriptionKey:
-                                              DSLocalizedString(@"Platform returned an empty or wrongly sized signature", nil)}];
+        *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Platform returned an empty or wrongly sized signature"];
         return nil;
     }
+    
+    return @{};
 
-    // We first need to get the merk Root
-
-    NSDictionary *identitiesDictionary = nil;
-    NSDictionary *documentsDictionary = nil;
-    NSDictionary *contractsDictionary = nil;
-    NSDictionary *publicKeyHashesToIdentityIdsProofDictionary = nil;
-    StoreTreeProofs *proofs = proof.storeTreeProofs;
-
-    NSData *identitiesRoot = nil;
-    NSData *documentsRoot = nil;
-    NSData *contractsRoot = nil;
-    NSData *publicKeyHashesToIdentityIdsRoot = nil;
-
-    NSMutableDictionary<NSNumber *, NSData *> *rootElementsToProve = [NSMutableDictionary dictionary];
-
-    if (proofs.identitiesProof.length > 0) {
-        DSPlatformTreeQuery *treeQuery = [query treeQueryForType:DSPlatformDictionary_Identities];
-        identitiesRoot = [proofs.identitiesProof executeProofReturnElementDictionary:&identitiesDictionary query:treeQuery decode:TRUE usesVersion:TRUE error:error];
-        if (*error) {
-            return nil;
-        }
-        if (!treeQuery) {
-            DSPlatformTreeQuery *treeQueryForPublicKeyHashesToIdentityIds = [query treeQueryForType:DSPlatformDictionary_PublicKeyHashesToIdentityIds];
-            if (treeQueryForPublicKeyHashesToIdentityIds) {
-                NSMutableArray *identitiesWithoutVersions = [NSMutableArray array];
-                for (NSDictionary *identityDictionaryWithVersion in [identitiesDictionary allValues]) {
-                    if([identityDictionaryWithVersion respondsToSelector:@selector(objectForKey:)]) {
-                        [identitiesWithoutVersions addObject:[identityDictionaryWithVersion objectForKey:@(DSPlatformStoredMessage_Item)]];
-                    }
-                }
-                BOOL verified = [query verifyPublicKeyHashesForIdentityDictionaries:identitiesWithoutVersions];
-                if (!verified) {
-                    *error = [NSError errorWithDomain:@"DashSync"
-                                                 code:500
-                                             userInfo:@{NSLocalizedDescriptionKey:
-                                                          DSLocalizedString(@"Platform returned a proof that does not satisfy our query", nil)}];
-                    return nil;
-                }
-            }
-        }
-        [rootElementsToProve setObject:identitiesRoot forKey:@(DSPlatformDictionary_Identities)];
-    }
-
-    if (proofs.publicKeyHashesToIdentityIdsProof.length > 0) {
-        DSPlatformTreeQuery *treeQuery = [query treeQueryForType:DSPlatformDictionary_PublicKeyHashesToIdentityIds];
-        publicKeyHashesToIdentityIdsRoot = [proofs.publicKeyHashesToIdentityIdsProof executeProofReturnElementDictionary:&publicKeyHashesToIdentityIdsProofDictionary query:treeQuery decode:FALSE usesVersion:FALSE error:error];
-        if (*error) {
-            return nil;
-        }
-        [rootElementsToProve setObject:publicKeyHashesToIdentityIdsRoot forKey:@(DSPlatformDictionary_PublicKeyHashesToIdentityIds)];
-    }
-
-    if (proofs.documentsProof.length > 0) {
-        DSPlatformTreeQuery *treeQuery = [query treeQueryForType:DSPlatformDictionary_Documents];
-        documentsRoot = [proofs.documentsProof executeProofReturnElementDictionary:&documentsDictionary query:treeQuery decode:TRUE usesVersion:TRUE error:error];
-        if (*error) {
-            return nil;
-        }
-        [rootElementsToProve setObject:documentsRoot forKey:@(DSPlatformDictionary_Documents)];
-    }
-
-    if (proofs.dataContractsProof.length > 0) {
-        DSPlatformTreeQuery *treeQuery = [query treeQueryForType:DSPlatformDictionary_Contracts];
-        contractsRoot = [proofs.dataContractsProof executeProofReturnElementDictionary:&contractsDictionary query:treeQuery decode:TRUE usesVersion:TRUE error:error];
-        if (*error) {
-            return nil;
-        }
-        [rootElementsToProve setObject:contractsRoot forKey:@(DSPlatformDictionary_Contracts)];
-    }
-
-    DSPlatformRootMerkleTree *merkleTree = [DSPlatformRootMerkleTree merkleTreeWithElementsToProve:rootElementsToProve proofData:proof.rootTreeProof hashFunction:DSMerkleTreeHashFunction_BLAKE3 fixedElementCount:6];
-
-    UInt256 stateHash = merkleTree.merkleRoot;
-    if (uint256_is_zero(stateHash)) {
-        *error = [NSError errorWithDomain:@"DashSync"
-                                     code:500
-                                 userInfo:@{NSLocalizedDescriptionKey:
-                                              DSLocalizedString(@"Platform returned an incorrect rootTreeProof", nil)}];
-        return nil;
-    }
-
-
-#if PLATFORM_VERIFY_SIGNATURE
-    NSMutableData *stateData = [NSMutableData data];
-    [stateData appendInt64:metaData.height - 1];
-    [stateData appendUInt256:stateHash];
-    UInt256 stateMessageHash = [stateData SHA256];
-    BOOL signatureVerified = [self verifyStateSignature:signature forStateMessageHash:stateMessageHash height:metaData.height - 1 againstQuorum:quorumEntry quorumType:quorumType];
-    if (!signatureVerified) {
-        *error = [NSError errorWithDomain:@"DashSync"
-                                     code:500
-                                 userInfo:@{NSLocalizedDescriptionKey:
-                                              DSLocalizedString(@"Platform returned an empty or wrongly sized signature", nil)}];
-        DSLog(@"unable to verify platform signature");
-        return nil;
-    }
-#endif
-
-    NSMutableDictionary *elementsDictionary = [NSMutableDictionary dictionary];
-    if (identitiesDictionary) {
-        [elementsDictionary setObject:identitiesDictionary forKey:@(DSPlatformDictionary_Identities)];
-    }
-    if (documentsDictionary) {
-        [elementsDictionary setObject:documentsDictionary forKey:@(DSPlatformDictionary_Documents)];
-    }
-    if (contractsDictionary) {
-        [elementsDictionary setObject:contractsDictionary forKey:@(DSPlatformDictionary_Contracts)];
-    }
-    if (publicKeyHashesToIdentityIdsProofDictionary) {
-        [elementsDictionary setObject:publicKeyHashesToIdentityIdsProofDictionary forKey:@(DSPlatformDictionary_PublicKeyHashesToIdentityIds)];
-    }
-
-    return elementsDictionary;
+//    // We first need to get the merk Root
+//
+//    NSDictionary *identitiesDictionary = nil;
+//    NSDictionary *documentsDictionary = nil;
+//    NSDictionary *contractsDictionary = nil;
+//    NSDictionary *publicKeyHashesToIdentityIdsProofDictionary = nil;
+//    StoreTreeProofs *proofs = proof.storeTreeProofs;
+//
+//    NSData *identitiesRoot = nil;
+//    NSData *documentsRoot = nil;
+//    NSData *contractsRoot = nil;
+//    NSData *publicKeyHashesToIdentityIdsRoot = nil;
+//
+//    NSMutableDictionary<NSNumber *, NSData *> *rootElementsToProve = [NSMutableDictionary dictionary];
+//
+//    if (proofs.identitiesProof.length > 0) {
+//        DSPlatformTreeQuery *treeQuery = [query treeQueryForType:DSPlatformDictionary_Identities];
+//        identitiesRoot = [proofs.identitiesProof executeProofReturnElementDictionary:&identitiesDictionary query:treeQuery decode:TRUE usesVersion:TRUE error:error];
+//        if (*error) {
+//            return nil;
+//        }
+//        if (!treeQuery) {
+//            DSPlatformTreeQuery *treeQueryForPublicKeyHashesToIdentityIds = [query treeQueryForType:DSPlatformDictionary_PublicKeyHashesToIdentityIds];
+//            if (treeQueryForPublicKeyHashesToIdentityIds) {
+//                NSMutableArray *identitiesWithoutVersions = [NSMutableArray array];
+//                for (NSDictionary *identityDictionaryWithVersion in [identitiesDictionary allValues]) {
+//                    if([identityDictionaryWithVersion respondsToSelector:@selector(objectForKey:)]) {
+//                        [identitiesWithoutVersions addObject:[identityDictionaryWithVersion objectForKey:@(DSPlatformStoredMessage_Item)]];
+//                    }
+//                }
+//                BOOL verified = [query verifyPublicKeyHashesForIdentityDictionaries:identitiesWithoutVersions];
+//                if (!verified) {
+//                    *error = [NSError errorWithCode:500 localizedDescriptionKey:"Platform returned a proof that does not satisfy our query"];
+//                    return nil;
+//                }
+//            }
+//        }
+//        [rootElementsToProve setObject:identitiesRoot
+//                                forKey:@(DSPlatformDictionary_Identities)];
+//    }
+//
+//    if (proofs.publicKeyHashesToIdentityIdsProof.length > 0) {
+//        DSPlatformTreeQuery *treeQuery = [query treeQueryForType:DSPlatformDictionary_PublicKeyHashesToIdentityIds];
+//        publicKeyHashesToIdentityIdsRoot = [proofs.publicKeyHashesToIdentityIdsProof executeProofReturnElementDictionary:&publicKeyHashesToIdentityIdsProofDictionary query:treeQuery decode:FALSE usesVersion:FALSE error:error];
+//        if (*error) {
+//            return nil;
+//        }
+//        [rootElementsToProve setObject:publicKeyHashesToIdentityIdsRoot
+//                                forKey:@(DSPlatformDictionary_PublicKeyHashesToIdentityIds)];
+//    }
+//
+//    if (proofs.documentsProof.length > 0) {
+//        DSPlatformTreeQuery *treeQuery = [query treeQueryForType:DSPlatformDictionary_Documents];
+//        documentsRoot = [proofs.documentsProof executeProofReturnElementDictionary:&documentsDictionary query:treeQuery decode:TRUE usesVersion:TRUE error:error];
+//        if (*error) {
+//            return nil;
+//        }
+//        [rootElementsToProve setObject:documentsRoot
+//                                forKey:@(DSPlatformDictionary_Documents)];
+//    }
+//
+//    if (proofs.dataContractsProof.length > 0) {
+//        DSPlatformTreeQuery *treeQuery = [query treeQueryForType:DSPlatformDictionary_Contracts];
+//        contractsRoot = [proofs.dataContractsProof executeProofReturnElementDictionary:&contractsDictionary query:treeQuery decode:TRUE usesVersion:TRUE error:error];
+//        if (*error) {
+//            return nil;
+//        }
+//        [rootElementsToProve setObject:contractsRoot
+//                                forKey:@(DSPlatformDictionary_Contracts)];
+//    }
+//
+//    DSPlatformRootMerkleTree *merkleTree = [DSPlatformRootMerkleTree merkleTreeWithElementsToProve:rootElementsToProve proofData:proof.rootTreeProof hashFunction:DSMerkleTreeHashFunction_BLAKE3 fixedElementCount:6];
+//
+//    UInt256 stateHash = merkleTree.merkleRoot;
+//    if (uint256_is_zero(stateHash)) {
+//        *error = [NSError errorWithCode:500 localizedDescriptionKey:"Platform returned an incorrect rootTreeProof"];
+//        return nil;
+//    }
+//
+//
+//#if PLATFORM_VERIFY_SIGNATURE
+//    NSMutableData *stateData = [NSMutableData data];
+//    [stateData appendInt64:metaData.height - 1];
+//    [stateData appendUInt256:stateHash];
+//    UInt256 stateMessageHash = [stateData SHA256];
+//    BOOL signatureVerified = [self verifyStateSignature:signature forStateMessageHash:stateMessageHash height:metaData.height - 1 againstQuorum:quorumEntry quorumType:quorumType];
+//    if (!signatureVerified) {
+//        *error = [NSError errorWithCode:500 localizedDescriptionKey:"Platform returned an empty or wrongly sized signature"];
+//        DSLog(@"unable to verify platform signature");
+//        return nil;
+//    }
+//#endif
+//
+//    NSMutableDictionary *elementsDictionary = [NSMutableDictionary dictionary];
+//    if (identitiesDictionary) {
+//        [elementsDictionary setObject:identitiesDictionary forKey:@(DSPlatformDictionary_Identities)];
+//    }
+//    if (documentsDictionary) {
+//        [elementsDictionary setObject:documentsDictionary forKey:@(DSPlatformDictionary_Documents)];
+//    }
+//    if (contractsDictionary) {
+//        [elementsDictionary setObject:contractsDictionary forKey:@(DSPlatformDictionary_Contracts)];
+//    }
+//    if (publicKeyHashesToIdentityIdsProofDictionary) {
+//        [elementsDictionary setObject:publicKeyHashesToIdentityIdsProofDictionary forKey:@(DSPlatformDictionary_PublicKeyHashesToIdentityIds)];
+//    }
+//
+//    return elementsDictionary;
 }
 
 + (UInt256)requestIdForHeight:(int64_t)height {

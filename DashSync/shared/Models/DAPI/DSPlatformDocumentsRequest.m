@@ -46,7 +46,7 @@
     DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     platformDocumentsRequest.pathPredicate = [NSPredicate predicateWithFormat:@"normalizedParentDomainName == %@", [domain lowercaseString]];
     platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel == %@", [username lowercaseString]];
-    platformDocumentsRequest.startAt = 0;
+    platformDocumentsRequest.startAt = nil;
     platformDocumentsRequest.limit = 1;
     platformDocumentsRequest.queryType = DSPlatformQueryType_OneElement;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
@@ -58,7 +58,7 @@
 + (instancetype)dpnsRequestForUserId:(NSData *)userId {
     DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     platformDocumentsRequest.pathPredicate = [NSPredicate predicateWithFormat:@"records.dashUniqueIdentityId == %@", userId];
-    platformDocumentsRequest.startAt = 0;
+    platformDocumentsRequest.startAt = nil;
     platformDocumentsRequest.limit = 100;
     platformDocumentsRequest.queryType = DSPlatformQueryType_RangeOverIndex;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
@@ -75,7 +75,8 @@
     DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     platformDocumentsRequest.pathPredicate = [NSPredicate predicateWithFormat:@"normalizedParentDomainName == %@", [domain lowercaseString]];
     platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel IN %@", lowercaseUsernames];
-    platformDocumentsRequest.startAt = 0;
+    platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"normalizedLabel" ascending:YES]];
+    platformDocumentsRequest.startAt = nil;
     platformDocumentsRequest.limit = (uint32_t)usernames.count;
     platformDocumentsRequest.queryType = DSPlatformQueryType_IndividualElements; // Many non consecutive elements in the tree
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
@@ -85,14 +86,18 @@
 }
 
 + (instancetype)dpnsRequestForUsernameStartsWithSearch:(NSString *)usernamePrefix inDomain:(NSString *)domain {
-    return [self dpnsRequestForUsernameStartsWithSearch:usernamePrefix inDomain:domain offset:0 limit:100];
+    return [self dpnsRequestForUsernameStartsWithSearch:usernamePrefix inDomain:domain startAfter:nil limit:100];
 }
 
-+ (instancetype)dpnsRequestForUsernameStartsWithSearch:(NSString *)usernamePrefix inDomain:(NSString *)domain offset:(uint32_t)offset limit:(uint32_t)limit {
++ (instancetype)dpnsRequestForUsernameStartsWithSearch:(NSString *)usernamePrefix inDomain:(NSString *)domain startAfter:(NSData* _Nullable)startAfter limit:(uint32_t)limit {
     DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     platformDocumentsRequest.pathPredicate = [NSPredicate predicateWithFormat:@"normalizedParentDomainName == %@", [domain lowercaseString]];
-    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel BEGINSWITH %@", usernamePrefix];
-    platformDocumentsRequest.startAt = offset;
+    if (usernamePrefix.length) {
+        platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel BEGINSWITH %@", usernamePrefix];
+        platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"normalizedLabel" ascending:YES]];
+    }
+    platformDocumentsRequest.startAt = startAfter;
+    platformDocumentsRequest.startAtIncluded = false;
     platformDocumentsRequest.limit = limit;
     platformDocumentsRequest.queryType = DSPlatformQueryType_RangeOverValue;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
@@ -101,14 +106,15 @@
     return platformDocumentsRequest;
 }
 
-+ (instancetype)dashpayRequestForContactRequestsForSendingUserId:(NSData *)userId since:(NSTimeInterval)timestamp offset:(uint32_t)offset {
++ (instancetype)dashpayRequestForContactRequestsForSendingUserId:(NSData *)userId since:(NSTimeInterval)timestamp startAfter:(NSData* _Nullable)startAfter {
     DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     uint64_t millisecondTimestamp = timestamp * 1000;
     platformDocumentsRequest.pathPredicate = [NSPredicate predicateWithFormat:@"%K == %@", @"$ownerId", userId];
     platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"%K >= %@", @"$createdAt", @(millisecondTimestamp)];
-    platformDocumentsRequest.startAt = offset;
+    platformDocumentsRequest.startAt = startAfter;
+    platformDocumentsRequest.startAtIncluded = false;
     platformDocumentsRequest.limit = 100;
-    platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"$ownerId" ascending:YES], [NSSortDescriptor sortDescriptorWithKey:@"$createdAt" ascending:YES]];
+    platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"$createdAt" ascending:YES]];
     platformDocumentsRequest.queryType = DSPlatformQueryType_RangeOverValue;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"contactRequest";
@@ -116,14 +122,15 @@
     return platformDocumentsRequest;
 }
 
-+ (instancetype)dashpayRequestForContactRequestsForRecipientUserId:(NSData *)userId since:(NSTimeInterval)timestamp offset:(uint32_t)offset {
++ (instancetype)dashpayRequestForContactRequestsForRecipientUserId:(NSData *)userId since:(NSTimeInterval)timestamp startAfter:(NSData* _Nullable)startAfter {
     DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     uint64_t millisecondTimestamp = timestamp * 1000;
     platformDocumentsRequest.pathPredicate = [NSPredicate predicateWithFormat:@"toUserId == %@", userId];
     platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"%K >= %@", @"$createdAt", @(millisecondTimestamp)];
-    platformDocumentsRequest.startAt = 0;
+    platformDocumentsRequest.startAt = startAfter;
+    platformDocumentsRequest.startAtIncluded = false;
     platformDocumentsRequest.limit = 100;
-    platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"toUserId" ascending:YES], [NSSortDescriptor sortDescriptorWithKey:@"$createdAt" ascending:YES]];
+    platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"$createdAt" ascending:YES]];
     platformDocumentsRequest.queryType = DSPlatformQueryType_RangeOverValue;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"contactRequest";
@@ -134,7 +141,7 @@
 + (instancetype)dashpayRequestForContactRequestForSendingUserId:(NSData *)userId toRecipientUserId:(NSData *)toUserId {
     DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     platformDocumentsRequest.pathPredicate = [NSPredicate predicateWithFormat:@"%K == %@ && toUserId == %@", @"$ownerId", userId, toUserId];
-    platformDocumentsRequest.startAt = 0;
+    platformDocumentsRequest.startAt = nil;
     platformDocumentsRequest.limit = 100;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.queryType = DSPlatformQueryType_RangeOverIndex;
@@ -146,7 +153,7 @@
 + (instancetype)dashpayRequestForProfileWithUserId:(NSData *)userId {
     DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"%K == %@", @"$ownerId", userId];
-    platformDocumentsRequest.startAt = 0;
+    platformDocumentsRequest.startAt = nil;
     platformDocumentsRequest.limit = 1;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.queryType = DSPlatformQueryType_OneElement;
@@ -158,11 +165,12 @@
 + (instancetype)dashpayRequestForProfilesWithUserIds:(NSArray<NSData *> *)userIds {
     DSPlatformDocumentsRequest *platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"%K IN %@", @"$ownerId", userIds];
-    platformDocumentsRequest.startAt = 0;
+    platformDocumentsRequest.startAt = nil;
     platformDocumentsRequest.limit = (uint32_t)userIds.count;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.queryType = DSPlatformQueryType_IndividualElements;
     platformDocumentsRequest.tableName = @"profile";
+    platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"$ownerId" ascending:YES]];
     platformDocumentsRequest.prove = DSPROVE_PLATFORM_SINDEXES;
     return platformDocumentsRequest;
 }
@@ -175,8 +183,9 @@
     } else {
         platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"saltedDomainHash IN %@", preorderSaltedHashes];
         platformDocumentsRequest.queryType = DSPlatformQueryType_IndividualElements;
+        platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"saltedDomainHash" ascending:YES]];
     }
-    platformDocumentsRequest.startAt = 0;
+    platformDocumentsRequest.startAt = nil;
     platformDocumentsRequest.limit = (uint32_t)preorderSaltedHashes.count;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"preorder";
@@ -212,7 +221,13 @@
     if ([self.sortDescriptors count]) {
         getDocumentsRequest.orderBy = [self orderByData];
     }
-    getDocumentsRequest.startAt = self.startAt;
+    if (self.startAt) {
+        if (self.startAtIncluded) {
+            getDocumentsRequest.startAt = self.startAt;
+        } else {
+            getDocumentsRequest.startAfter = self.startAt;
+        }
+    }
     getDocumentsRequest.limit = self.limit;
     getDocumentsRequest.prove = self.prove;
     DSLog(@"Sending request to Contract %@", getDocumentsRequest.dataContractId.base58String);
@@ -222,8 +237,7 @@
 - (NSArray<DSDirectionalKey *> *)orderByRanges {
     NSMutableArray *sortDescriptorsArray = [NSMutableArray array];
     for (NSSortDescriptor *sortDescriptor in self.sortDescriptors) {
-        DSDirectionalKey *directionalKey = [[DSDirectionalKey alloc] initWithKey:[sortDescriptor.key dataUsingEncoding:NSUTF8StringEncoding] ascending:true];
-        [sortDescriptorsArray addObject:directionalKey];
+        [sortDescriptorsArray addObject:@[sortDescriptor.key, sortDescriptor.ascending?@"asc":@"desc"]];
     }
     return [sortDescriptorsArray copy];
 }

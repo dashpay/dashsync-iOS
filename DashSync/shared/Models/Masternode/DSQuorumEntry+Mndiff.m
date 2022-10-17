@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Vladimir Pirogov
 //  Copyright © 2021 Dash Core Group. All rights reserved.
 //
@@ -20,21 +20,59 @@
 
 @implementation DSQuorumEntry (Mndiff)
 
-+ (NSMutableDictionary<NSNumber *, NSMutableDictionary<NSData *, DSQuorumEntry *> *> *)entriesWith:(LLMQMap *_Nullable*_Nonnull)entries count:(uintptr_t)count onChain:(DSChain *)chain {
++ (NSDictionary<NSNumber *, NSDictionary<NSData *, DSQuorumEntry *> *> *)entriesWith:(LLMQMap *_Nullable *_Nonnull)entries count:(uintptr_t)count onChain:(DSChain *)chain {
     NSMutableDictionary<NSNumber *, NSMutableDictionary<NSData *, DSQuorumEntry *> *> *quorums = [NSMutableDictionary dictionaryWithCapacity:count];
     for (NSUInteger i = 0; i < count; i++) {
         LLMQMap *llmq_map = entries[i];
         DSLLMQType llmqType = (DSLLMQType)llmq_map->llmq_type;
         NSMutableDictionary *quorumsOfType = [[NSMutableDictionary alloc] initWithCapacity:llmq_map->count];
         for (NSUInteger j = 0; j < llmq_map->count; j++) {
-            QuorumEntry *quorum_entry = llmq_map->values[j];
-            NSData *hash = [NSData dataWithBytes:quorum_entry->quorum_hash length:32];
+            LLMQEntry *quorum_entry = llmq_map->values[j];
+            NSData *hash = [NSData dataWithBytes:quorum_entry->llmq_hash length:32];
             DSQuorumEntry *entry = [[DSQuorumEntry alloc] initWithEntry:quorum_entry onChain:chain];
             [quorumsOfType setObject:entry forKey:hash];
         }
-        [quorums setObject:quorumsOfType forKey:@(llmqType)];
+        [quorums setObject:[quorumsOfType copy] forKey:@(llmqType)];
     }
-    return quorums;
+    return [quorums copy];
+}
+
+- (LLMQEntry *)ffi_malloc {
+    LLMQEntry *quorum_entry = malloc(sizeof(LLMQEntry));
+    quorum_entry->all_commitment_aggregated_signature = uint768_malloc([self allCommitmentAggregatedSignature]);
+    quorum_entry->commitment_hash = uint256_malloc([self commitmentHash]);
+    quorum_entry->llmq_type = [self llmqType];
+    quorum_entry->entry_hash = uint256_malloc([self quorumEntryHash]);
+    quorum_entry->llmq_hash = uint256_malloc([self quorumHash]);
+    quorum_entry->public_key = uint384_malloc([self quorumPublicKey]);
+    quorum_entry->threshold_signature = uint768_malloc([self quorumThresholdSignature]);
+    quorum_entry->verification_vector_hash = uint256_malloc([self quorumVerificationVectorHash]);
+    quorum_entry->saved = [self saved];
+    NSData *signersBitset = [self signersBitset];
+    quorum_entry->signers_bitset = data_malloc(signersBitset);
+    quorum_entry->signers_bitset_length = signersBitset.length;
+    quorum_entry->signers_count = [self signersCount];
+    NSData *validMembersBitset = [self validMembersBitset];
+    quorum_entry->valid_members_bitset = data_malloc(validMembersBitset);
+    quorum_entry->valid_members_bitset_length = validMembersBitset.length;
+    quorum_entry->valid_members_count = [self validMembersCount];
+    quorum_entry->verified = [self verified];
+    quorum_entry->version = [self version];
+    return quorum_entry;
+}
+
++ (void)ffi_free:(LLMQEntry *)entry {
+    free(entry->all_commitment_aggregated_signature);
+    if (entry->commitment_hash)
+        free(entry->commitment_hash);
+    free(entry->entry_hash);
+    free(entry->llmq_hash);
+    free(entry->public_key);
+    free(entry->threshold_signature);
+    free(entry->verification_vector_hash);
+    free(entry->signers_bitset);
+    free(entry->valid_members_bitset);
+    free(entry);
 }
 
 @end

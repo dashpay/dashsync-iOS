@@ -60,12 +60,19 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection)
 
 typedef NS_ENUM(uint16_t, DSLLMQType)
 {
+    DSLLMQType_Unknown = 0,
     DSLLMQType_50_60 = 1,  //every 24 blocks
     DSLLMQType_400_60 = 2, //288 blocks
     DSLLMQType_400_85 = 3, //576 blocks
     DSLLMQType_100_67 = 4, //every 24 blocks
-    DSLLMQType_5_60 = 100, //24 blocks
-    DSLLMQType_10_60 = 101 //24 blocks
+    DSLLMQType_60_75 = 5,
+    DSLLMQType_5_60 = 100, //24 blocks // LLmqtypeTest
+    DSLLMQType_10_60 = 101, //24 blocks // LLmqtypeDevnet
+    DSLLMQType_TestV17 = 102, // 3 members, 2 (66%) threshold, one per hour. Params might differ when -llmqtestparams is used
+    DSLLMQType_TestDIP0024 = 103, // 4 members, 2 (66%) threshold, one per hour. Params might differ when -llmqtestparams is used
+    DSLLMQType_DevnetDIP0024 = 105, // 8 members, 4 (50%) threshold, one per hour. Params might differ when -llmqdevnetparams is used
+    DSLLMQType_Devnet333DIP0024 = 106, // 8 members, 4 (50%) threshold, one per hour. Params might differ when -llmqdevnetparams is used
+
 };
 
 typedef NS_ENUM(uint16_t, DSChainSyncPhase)
@@ -196,11 +203,17 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 /*! @brief The type of quorum used for Instant Send Locks.  */
 @property (nonatomic, assign) DSLLMQType quorumTypeForISLocks;
 
+/*! @brief The type of quorum used for Deterministic Instant Send Locks.  */
+@property (nonatomic, assign) DSLLMQType quorumTypeForISDLocks;
+
 /*! @brief The type of quorum used for Chain Locks.  */
 @property (nonatomic, assign) DSLLMQType quorumTypeForChainLocks;
 
 /*! @brief The type of quorum used for Platform.  */
 @property (nonatomic, assign) DSLLMQType quorumTypeForPlatform;
+
+/*! @brief The flag represents whether the quorum rotation is enabled in this chain.  */
+@property (nonatomic, assign) BOOL isRotatedQuorumsPresented;
 
 /*! @brief Whether chain should process this type of quorum.  */
 - (BOOL)shouldProcessQuorumOfType:(DSLLMQType)llmqType;
@@ -215,6 +228,9 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 
 /*! @brief The devnet identifier is the name of the devnet, the genesis hash of a devnet uses this devnet identifier in its construction.  */
 @property (nonatomic, readonly, nullable) NSString *devnetIdentifier;
+
+/*! @brief The devnet version is the version of the devnet, the genesis hash of a devnet uses this devnet identifier in its construction.  */
+@property (nonatomic, readwrite) uint16_t devnetVersion;
 
 /*! @brief The name of the chain (Mainnet-Testnet-Devnet).  */
 @property (nonatomic, readonly) NSString *name;
@@ -321,6 +337,9 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 
 /*! @brief The block on the main chain at a certain height. By main chain it is understood to mean not forked chain - this could be on mainnet, testnet or a devnet.  */
 - (DSMerkleBlock *_Nullable)blockAtHeight:(uint32_t)height;
+
+/*! @brief The block on the main chain at a certain height. If none exist return most recent.  */
+- (DSMerkleBlock *_Nullable)blockAtHeightOrLastTerminal:(uint32_t)height;
 
 /*! @brief Returns a known block with the given block hash. This does not have to be in the main chain. A null result could mean that the block was old and has since been discarded.  */
 - (DSMerkleBlock *_Nullable)blockForBlockHash:(UInt256)blockHash;
@@ -479,10 +498,25 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 + (DSChain *_Nullable)devnetWithIdentifier:(NSString *)identifier;
 
 /*! @brief Set up a given devnet with an identifier, checkpoints, default L1, JRPC and GRPC ports, a dpns contractId and a dashpay contract id. minimumDifficultyBlocks are used to speed up the initial chain creation. This devnet will be registered on the keychain. The additional isTransient property allows for test usage where you do not wish to persist the devnet.  */
-+ (DSChain *)setUpDevnetWithIdentifier:(NSString *)identifier withCheckpoints:(NSArray<DSCheckpoint *> *_Nullable)checkpointArray withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID instantSendLockQuorumType:(DSLLMQType)instantSendLockQuorumsType chainLockQuorumType:(DSLLMQType)chainLockQuorumsType platformQuorumType:(DSLLMQType)platformQuorumType isTransient:(BOOL)isTransient;
++ (DSChain *)setUpDevnetWithIdentifier:(NSString *)identifier
+                               version:(uint16_t)version
+                       protocolVersion:(uint32_t)protocolVersion
+                    minProtocolVersion:(uint32_t)minProtocolVersion
+                       withCheckpoints:(NSArray<DSCheckpoint *> *_Nullable)checkpointArray
+           withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks
+                       withDefaultPort:(uint32_t)port
+               withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort
+               withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort
+                        dpnsContractID:(UInt256)dpnsContractID
+                     dashpayContractID:(UInt256)dashpayContractID
+                      ISLockQuorumType:(DSLLMQType)ISLockQuorumType
+                     ISDLockQuorumType:(DSLLMQType)ISDLockQuorumType
+                   chainLockQuorumType:(DSLLMQType)chainLockQuorumType
+                    platformQuorumType:(DSLLMQType)platformQuorumType
+                           isTransient:(BOOL)isTransient;
 
 /*! @brief Retrieve from the keychain a devnet with an identifier and add given checkpoints.  */
-+ (DSChain *)recoverKnownDevnetWithIdentifier:(NSString *)identifier withCheckpoints:(NSArray<DSCheckpoint *> *)checkpointArray performSetup:(BOOL)performSetup;
++ (DSChain *)recoverKnownDevnetWithIdentifier:(NSString *)identifier version:(uint16_t)version withCheckpoints:(NSArray<DSCheckpoint *> *)checkpointArray performSetup:(BOOL)performSetup;
 
 /*! @brief Retrieve a chain having the specified network name.  */
 + (DSChain *_Nullable)chainForNetworkName:(NSString *_Nullable)networkName;
@@ -494,7 +528,7 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 - (BOOL)isDevnetAny;
 - (BOOL)isEvolutionEnabled;
 - (BOOL)isDevnetWithGenesisHash:(UInt256)genesisHash;
-
+- (BOOL)hasDIP0024Enabled;
 @end
 
 @protocol DSChainTransactionsDelegate

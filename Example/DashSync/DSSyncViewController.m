@@ -16,6 +16,7 @@
 #import "DSGovernanceObjectListViewController.h"
 #import "DSInvitationsViewController.h"
 #import "DSLayer2ViewController.h"
+#import "DSMasternodeListStore.h"
 #import "DSMasternodeListsViewController.h"
 #import "DSMasternodeViewController.h"
 #import "DSPasteboardAddressExtractor.h"

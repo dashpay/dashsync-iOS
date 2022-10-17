@@ -73,13 +73,14 @@
             registeredDevnetIdentifiers = [dictionaryFromKeyChain mutableCopy];
         }
         self.knownDevnetChains = [NSMutableArray array];
-        for (NSString *string in registeredDevnetIdentifiers) {
+        /*for (NSString *string in registeredDevnetIdentifiers) {
             NSArray<DSCheckpoint *> *checkpointArray = registeredDevnetIdentifiers[string];
-            DSChain *chain = [DSChain recoverKnownDevnetWithIdentifier:string withCheckpoints:checkpointArray performSetup:NO];
+            //todo deal with version > 1
+            DSChain *chain = [DSChain recoverKnownDevnetWithIdentifier:string version:1 withCheckpoints:checkpointArray performSetup:NO];
             chain.chainManager = [self devnetManagerForChain:chain];
-            [self.knownDevnetChains addObject:chain]; //adding this before setup prevents a loop
+            // [self.knownDevnetChains addObject:chain]; // adding this before setup prevents a loop
             [chain setUp];
-        }
+        }*/
 
         self.reachability = [DSReachabilityManager sharedManager];
     }
@@ -121,11 +122,12 @@
     });
     NSValue *genesisValue = uint256_obj(chain.genesisHash);
     DSChainManager *devnetChainManager = nil;
-    @synchronized(self) {
+    @synchronized(self) { // TODO avoid initialization of multiple instances for same chain
         if (![self.devnetGenesisDictionary objectForKey:genesisValue]) {
             devnetChainManager = [[DSChainManager alloc] initWithChain:chain];
             chain.chainManager = devnetChainManager;
             [self.knownChains addObject:chain];
+            [self.knownDevnetChains addObject:chain];
             [self.devnetGenesisDictionary setObject:devnetChainManager forKey:genesisValue];
         } else {
             devnetChainManager = [self.devnetGenesisDictionary objectForKey:genesisValue];
@@ -155,13 +157,31 @@
     return [self.knownChains copy];
 }
 
-- (void)updateDevnetChain:(DSChain *)chain forServiceLocations:(NSMutableOrderedSet<NSString *> *)serviceLocations withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks standardPort:(uint32_t)standardPort dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString *)sporkAddress sporkPrivateKey:(NSString *)sporkPrivateKey instantSendLockQuorumType:(DSLLMQType)instantSendLockQuorumsType chainLockQuorumType:(DSLLMQType)chainLockQuorumsType platformQuorumType:(DSLLMQType)platformQuorumType {
+- (void)updateDevnetChain:(DSChain *)chain
+                  version:(uint32_t)version
+      forServiceLocations:(NSMutableOrderedSet<NSString *> *)serviceLocations
+  minimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks
+             standardPort:(uint32_t)standardPort
+             dapiJRPCPort:(uint32_t)dapiJRPCPort
+             dapiGRPCPort:(uint32_t)dapiGRPCPort
+           dpnsContractID:(UInt256)dpnsContractID
+        dashpayContractID:(UInt256)dashpayContractID
+          protocolVersion:(uint32_t)protocolVersion
+       minProtocolVersion:(uint32_t)minProtocolVersion
+             sporkAddress:(NSString *)sporkAddress
+          sporkPrivateKey:(NSString *)sporkPrivateKey
+         ISLockQuorumType:(DSLLMQType)ISLockQuorumsType
+        ISDLockQuorumType:(DSLLMQType)ISDLockQuorumType
+      chainLockQuorumType:(DSLLMQType)chainLockQuorumType
+       platformQuorumType:(DSLLMQType)platformQuorumType {
     NSParameterAssert(chain);
     NSParameterAssert(serviceLocations);
-
     DSChainManager *chainManager = [self chainManagerForChain:chain];
     DSPeerManager *peerManager = chainManager.peerManager;
     [peerManager clearRegisteredPeers];
+    if (version) {
+        chain.devnetVersion = version;
+    }
     if (protocolVersion) {
         chain.protocolVersion = protocolVersion;
     }
@@ -186,11 +206,14 @@
     if (dapiGRPCPort && dapiGRPCPort != chain.standardDapiGRPCPort) {
         chain.standardDapiGRPCPort = dapiGRPCPort;
     }
-    if (instantSendLockQuorumsType && instantSendLockQuorumsType != chain.quorumTypeForISLocks) {
-        chain.quorumTypeForISLocks = instantSendLockQuorumsType;
+    if (ISLockQuorumsType && ISLockQuorumsType != chain.quorumTypeForISLocks) {
+        chain.quorumTypeForISLocks = ISLockQuorumsType;
     }
-    if (chainLockQuorumsType && chainLockQuorumsType != chain.quorumTypeForChainLocks) {
-        chain.quorumTypeForChainLocks = chainLockQuorumsType;
+    if (ISDLockQuorumType && ISDLockQuorumType != chain.quorumTypeForISDLocks) {
+        chain.quorumTypeForISDLocks = ISDLockQuorumType;
+    }
+    if (chainLockQuorumType && chainLockQuorumType != chain.quorumTypeForChainLocks) {
+        chain.quorumTypeForChainLocks = chainLockQuorumType;
     }
     if (platformQuorumType && platformQuorumType != chain.quorumTypeForPlatform) {
         chain.quorumTypeForPlatform = platformQuorumType;
@@ -237,23 +260,37 @@
             DSLog(@"invalid address");
         }
 
-        [peerManager registerPeerAtLocation:ipAddress port:port ? [port intValue] : standardPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort];
+        [peerManager registerPeerAtLocation:ipAddress
+                                       port:port ? [port intValue] : standardPort
+                               dapiJRPCPort:dapiJRPCPort
+                               dapiGRPCPort:dapiGRPCPort];
     }
 }
 
-- (DSChain *)registerDevnetChainWithIdentifier:(NSString *)identifier forServiceLocations:(NSOrderedSet<NSString *> *)serviceLocations withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks standardPort:(uint32_t)standardPort dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString *)sporkAddress sporkPrivateKey:(NSString *)sporkPrivateKey instantSendLockQuorumType:(DSLLMQType)instantSendLockQuorumsType chainLockQuorumType:(DSLLMQType)chainLockQuorumsType platformQuorumType:(DSLLMQType)platformQuorumType {
+- (DSChain *_Nullable)registerDevnetChainWithIdentifier:(NSString *)identifier
+                                                version:(uint16_t)version
+                                    forServiceLocations:(NSOrderedSet<NSString *> *)serviceLocations
+                            withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks
+                                           standardPort:(uint32_t)standardPort
+                                           dapiJRPCPort:(uint32_t)dapiJRPCPort
+                                           dapiGRPCPort:(uint32_t)dapiGRPCPort
+                                         dpnsContractID:(UInt256)dpnsContractID
+                                      dashpayContractID:(UInt256)dashpayContractID
+                                        protocolVersion:(uint32_t)protocolVersion
+                                     minProtocolVersion:(uint32_t)minProtocolVersion
+                                           sporkAddress:(NSString *_Nullable)sporkAddress
+                                        sporkPrivateKey:(NSString *_Nullable)sporkPrivateKey
+                                       ISLockQuorumType:(DSLLMQType)ISQuorumLockType
+                                      ISDLockQuorumType:(DSLLMQType)ISDQuorumLockType
+                                    chainLockQuorumType:(DSLLMQType)chainLockQuorumType
+                                     platformQuorumType:(DSLLMQType)platformQuorumType {
     NSParameterAssert(identifier);
     NSParameterAssert(serviceLocations);
 
     NSError *error = nil;
 
-    DSChain *chain = [DSChain setUpDevnetWithIdentifier:identifier withCheckpoints:nil withMinimumDifficultyBlocks:minimumDifficultyBlocks withDefaultPort:standardPort withDefaultDapiJRPCPort:dapiJRPCPort withDefaultDapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID instantSendLockQuorumType:instantSendLockQuorumsType chainLockQuorumType:chainLockQuorumsType platformQuorumType:platformQuorumType isTransient:NO];
-    if (protocolVersion) {
-        chain.protocolVersion = protocolVersion;
-    }
-    if (minProtocolVersion) {
-        chain.minProtocolVersion = minProtocolVersion;
-    }
+    DSChain *chain = [DSChain setUpDevnetWithIdentifier:identifier version:version protocolVersion:protocolVersion?protocolVersion:PROTOCOL_VERSION_DEVNET minProtocolVersion:minProtocolVersion?minProtocolVersion:DEFAULT_MIN_PROTOCOL_VERSION_DEVNET withCheckpoints:nil withMinimumDifficultyBlocks:minimumDifficultyBlocks withDefaultPort:standardPort withDefaultDapiJRPCPort:dapiJRPCPort withDefaultDapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID ISLockQuorumType:ISQuorumLockType ISDLockQuorumType:ISDQuorumLockType chainLockQuorumType:chainLockQuorumType platformQuorumType:platformQuorumType isTransient:NO];
+    
     if (sporkAddress && [sporkAddress isValidDashDevnetAddress]) {
         chain.sporkAddress = sporkAddress;
     }
@@ -280,7 +317,10 @@
             DSLog(@"invalid address");
         }
 
-        [peerManager registerPeerAtLocation:ipAddress port:port ? [port intValue] : standardPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort];
+        [peerManager registerPeerAtLocation:ipAddress
+                                       port:port ? [port intValue] : standardPort
+                               dapiJRPCPort:dapiJRPCPort
+                               dapiGRPCPort:dapiGRPCPort];
     }
 
     NSMutableDictionary *registeredDevnetsDictionary = [getKeychainDict(DEVNET_CHAINS_KEY, @[[NSString class], [NSArray class], [DSCheckpoint class]], &error) mutableCopy];
@@ -307,6 +347,8 @@
                                                                   NSError *error = nil;
                                                                   DSChainManager *chainManager = [self chainManagerForChain:chain];
                                                                   DSPeerManager *peerManager = chainManager.peerManager;
+                                                                  DSMasternodeManager *masternodeManager = chainManager.masternodeManager;
+                                                                  [masternodeManager destroyProcessors];
                                                                   [peerManager clearRegisteredPeers];
                                                                   NSMutableDictionary *registeredDevnetsDictionary = [getKeychainDict(DEVNET_CHAINS_KEY, @[[NSString class], [NSArray class], [DSCheckpoint class]], &error) mutableCopy];
 
@@ -327,6 +369,7 @@
                                                                   [self.knownChains removeObject:chain];
                                                                   NSValue *genesisValue = uint256_obj(chain.genesisHash);
                                                                   [self.devnetGenesisDictionary removeObjectForKey:genesisValue];
+                                                                
                                                                   dispatch_async(dispatch_get_main_queue(), ^{
                                                                       [[NSNotificationCenter defaultCenter] postNotificationName:DSChainsDidChangeNotification object:nil];
                                                                   });

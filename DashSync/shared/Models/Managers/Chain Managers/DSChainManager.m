@@ -33,6 +33,7 @@
 #import "DSFullBlock.h"
 #import "DSGovernanceSyncManager+Protected.h"
 #import "DSIdentitiesManager.h"
+#import "DSMasternodeManager+LocalMasternode.h"
 #import "DSMasternodeManager+Protected.h"
 #import "DSMerkleBlock.h"
 #import "DSOptionsManager.h"
@@ -43,6 +44,7 @@
 #import "DSWallet.h"
 #import "DashSync.h"
 #import "NSDate+Utils.h"
+#import "NSError+Dash.h"
 #import "NSString+Bitcoin.h"
 #import "RHIntervalTree.h"
 
@@ -95,7 +97,7 @@
     self.gotSporksAtChainSyncStart = FALSE;
     self.sessionConnectivityNonce = (long long)arc4random() << 32 | arc4random();
 
-    if (self.masternodeManager.currentMasternodeList && self.masternodeManager.currentMasternodeList.isInLast30Days) {
+    if ([self.masternodeManager hasCurrentMasternodeListInLast30Days]) {
         [self.peerManager useMasternodeList:self.masternodeManager.currentMasternodeList withConnectivityNonce:self.sessionConnectivityNonce];
     }
 
@@ -103,7 +105,7 @@
     //[self loadHeightTransactionZones];
 
     _miningQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.mining.%@", self.chain.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
-
+    DSLog(@"DSChainManager.initWithChain %@", chain);
     return self;
 }
 
@@ -453,7 +455,7 @@
         }
     } else {
         if (completion) {
-            NSError *error = [NSError errorWithDomain:@"DashSync" code:500 userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"A block could not be mined in the selected time interval.", nil)}];
+            NSError *error = [NSError errorWithCode:500 localizedDescriptionKey:@"A block could not be mined in the selected time interval."];
             completion(nil, attempts, -[startTime timeIntervalSinceNow], error);
         }
     }
@@ -631,7 +633,7 @@
             [peer sendGetheadersMessageWithLocators:[self.chain terminalBlocksLocatorArray] andHashStop:UINT256_ZERO];
         } else if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList) && ((self.masternodeManager.lastMasternodeListBlockHeight < self.chain.lastTerminalBlockHeight - 8) || (self.masternodeManager.lastMasternodeListBlockHeight == UINT32_MAX))) {
             self.syncPhase = DSChainSyncPhase_InitialTerminalBlocks;
-            [self getRecentMasternodeLists];
+            [self.masternodeManager startSync];
         } else {
             self.syncPhase = DSChainSyncPhase_ChainSync;
             BOOL startingDevnetSync = [self.chain isDevnetAny] && self.chain.lastSyncBlockHeight < 5;
@@ -650,7 +652,7 @@
     [self.peerManager chainSyncStopped];
     if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList)) {
         // make sure we care about masternode lists
-        [self getRecentMasternodeLists];
+        [self.masternodeManager startSync];
     }
 }
 
@@ -664,13 +666,8 @@
     [self.governanceSyncManager startGovernanceSync];
     if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList)) {
         // make sure we care about masternode lists
-        [self getRecentMasternodeLists];
+        [self.masternodeManager startSync];
     }
-}
-
-- (void)getRecentMasternodeLists {
-    [self.masternodeManager getRecentMasternodeList:32 withSafetyDelay:0];
-    [self.masternodeManager getCurrentMasternodeListWithSafetyDelay:0];
 }
 
 - (void)syncBlockchain {
@@ -786,6 +783,11 @@
         default:
             break;
     }
+}
+
+- (void)wipeMasternodeInfo {
+    [self.masternodeManager wipeLocalMasternodeInfo];
+    [self.masternodeManager wipeMasternodeInfo];
 }
 
 @end

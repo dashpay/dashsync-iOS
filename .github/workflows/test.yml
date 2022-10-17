@@ -29,7 +29,7 @@ jobs:
           git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
         working-directory: ./dashsync
       - name: Restore LFS cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: lfs-cache
         with:
           path: dashsync/.git/lfs
@@ -37,7 +37,7 @@ jobs:
       - name: Git LFS Pull
         run: git lfs pull
         working-directory: ./dashsync
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ./dashsync/Example/Pods
           key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
@@ -47,7 +47,7 @@ jobs:
         run: rustup target add aarch64-apple-ios x86_64-apple-ios aarch64-apple-ios-sim
       - name: Dependencies
         working-directory: ./dashsync/Example
-        run: pod install
+        run: pod install --repo-update
       - name: Build
         working-directory: ./dashsync/Example
         env:

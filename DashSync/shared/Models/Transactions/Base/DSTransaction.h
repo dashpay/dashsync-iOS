@@ -28,6 +28,7 @@
 
 #import "DSShapeshiftEntity+CoreDataClass.h"
 #import <Foundation/Foundation.h>
+#import "DSChain.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -52,6 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef union _UInt256 UInt256;
 typedef union _UInt160 UInt160;
+
 
 typedef NS_ENUM(NSInteger, DSTransactionSortType)
 {
@@ -114,7 +116,7 @@ typedef NS_ENUM(NSInteger, DSTransactionSortType)
 @property (nonatomic, readonly) BOOL transactionTypeRequiresInputs;
 
 + (instancetype)transactionWithMessage:(NSData *)message onChain:(DSChain *)chain;
-+ (instancetype)devnetGenesisCoinbaseWithIdentifier:(NSString *)identifier forChain:(DSChain *)chain;
++ (instancetype)devnetGenesisCoinbaseWithIdentifier:(NSString *)identifier version:(uint16_t)version onProtocolVersion:(uint32_t)protocolVersion forChain:(DSChain *)chain;
 
 - (instancetype)initOnChain:(DSChain *)chain;
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain;
@@ -168,6 +170,10 @@ typedef NS_ENUM(NSInteger, DSTransactionSortType)
 
 - (void)loadBlockchainIdentitiesFromDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths;
 
+@end
+
+@interface DSTransaction (Extensions)
+- (DSTransactionDirection)direction;
 @end
 
 NS_ASSUME_NONNULL_END

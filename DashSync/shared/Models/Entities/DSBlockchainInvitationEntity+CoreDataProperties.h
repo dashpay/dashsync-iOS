@@ -26,6 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSFetchRequest<DSBlockchainInvitationEntity *> *)fetchRequest;
 
 @property (nullable, nonatomic, copy) NSString *link;
+@property (nullable, nonatomic, copy) NSString *name;
+@property (nullable, nonatomic, copy) NSString *tag;
 @property (nullable, nonatomic, retain) DSChainEntity *chain;
 @property (nullable, nonatomic, retain) DSBlockchainIdentityEntity *blockchainIdentity;
 

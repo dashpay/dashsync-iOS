@@ -23,33 +23,30 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSMasternodeDiffMessageContext.h"
+#import "DSMasternodeProcessorContext.h"
 #import "DSMasternodeManager.h"
+#import "DSMnDiffProcessingResult.h"
+#import "DSOperationQueue.h"
+#import "DSQRInfoProcessingResult.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMasternodeManager (Protected)
 
+@property (nonatomic, strong, readonly) DSOperationQueue *processingQueue;
+
 - (instancetype)initWithChain:(DSChain *_Nonnull)chain;
-
 - (void)setUp;
-
 - (void)loadFileDistributedMasternodeLists;
-
 - (void)wipeMasternodeInfo;
-
-- (void)loadMasternodeLists;
-
-- (void)getRecentMasternodeList:(NSUInteger)blocksAgo withSafetyDelay:(uint32_t)safetyDelay;
-
+- (void)getRecentMasternodeList;
 - (void)getCurrentMasternodeListWithSafetyDelay:(uint32_t)safetyDelay;
-
 - (void)getMasternodeListsForBlockHashes:(NSOrderedSet *)blockHashes;
 
-- (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData *)masternodeDiffMessage;
+- (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData *)message;
+- (void)peer:(DSPeer *)peer relayedQuorumRotationInfoMessage:(NSData *)message;
 
 - (DSLocalMasternode *)localMasternodeFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry claimedWithOwnerWallet:(DSWallet *)wallet ownerKeyIndex:(uint32_t)ownerKeyIndex;
-- (void)processMasternodeDiffMessage:(NSData *)message baseMasternodeList:(DSMasternodeList *)baseMasternodeList lastBlock:(DSMerkleBlock *)lastBlock useInsightAsBackup:(BOOL)useInsightAsBackup completion:(void (^)(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *masternodeList, NSDictionary *addedMasternodes, NSDictionary *modifiedMasternodes, NSDictionary *addedQuorums, NSOrderedSet *neededMissingMasternodeLists))completion;
 
 + (void)saveMasternodeList:(DSMasternodeList *)masternodeList toChain:(DSChain *)chain havingModifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums createUnknownBlocks:(BOOL)createUnknownBlocks inContext:(NSManagedObjectContext *)context completion:(void (^)(NSError *error))completion;
 

@@ -20,6 +20,7 @@
 #import "DSBlockchainIdentity.h"
 #import "DSDashpayUserEntity+CoreDataClass.h"
 #import "DSDerivationPath+Protected.h"
+#import "NSError+Dash.h"
 
 @interface DSIncomingFundsDerivationPath ()
 
@@ -212,10 +213,7 @@
             if (!address) {
                 DSLog(@"error generating keys");
                 if (error) {
-                    *error = [NSError errorWithDomain:@"DashSync"
-                                                 code:500
-                                             userInfo:@{NSLocalizedDescriptionKey:
-                                                          DSLocalizedString(@"Error generating public keys", nil)}];
+                    *error = [NSError errorWithCode:500 localizedDescriptionKey:@"Error generating public keys"];
                 }
                 return nil;
             }

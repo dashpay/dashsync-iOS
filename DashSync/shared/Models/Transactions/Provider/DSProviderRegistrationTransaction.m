@@ -9,7 +9,7 @@
 #import "DSChain+Protected.h"
 #import "DSChainManager+Protected.h"
 #import "DSECDSAKey.h"
-#import "DSMasternodeManager.h"
+#import "DSMasternodeManager+LocalMasternode.h"
 #import "DSProviderRegistrationTransactionEntity+CoreDataClass.h"
 #import "DSTransactionFactory.h"
 #import "DSTransactionInput.h"

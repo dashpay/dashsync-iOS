@@ -32,19 +32,51 @@ FOUNDATION_EXPORT NSString *const DSChainsDidChangeNotification;
 
 @interface DSChainsManager : NSObject
 
-@property (nonatomic, strong) DSChainManager *mainnetManager;
-@property (nonatomic, strong) DSChainManager *testnetManager;
-@property (nonatomic, strong) NSArray *devnetManagers;
-@property (nonatomic, readonly) BOOL hasAWallet;
-@property (nonatomic, readonly) NSArray *allWallets;
-@property (nonatomic, readonly) NSArray *chains;
-@property (nonatomic, readonly) NSArray *devnetChains;
+@property(nonatomic, strong) DSChainManager *mainnetManager;
+@property(nonatomic, strong) DSChainManager *testnetManager;
+@property(nonatomic, strong) NSArray *devnetManagers;
+@property(nonatomic, readonly) BOOL hasAWallet;
+@property(nonatomic, readonly) NSArray *allWallets;
+@property(nonatomic, readonly) NSArray *chains;
+@property(nonatomic, readonly) NSArray *devnetChains;
 
 - (DSChainManager *_Nullable)chainManagerForChain:(DSChain *)chain;
 
-- (void)updateDevnetChain:(DSChain *)chain forServiceLocations:(NSMutableOrderedSet<NSString *> *)serviceLocations withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks standardPort:(uint32_t)standardPort dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString *_Nullable)sporkAddress sporkPrivateKey:(NSString *_Nullable)sporkPrivateKey instantSendLockQuorumType:(DSLLMQType)instantSendLockQuorumType chainLockQuorumType:(DSLLMQType)chainLockQuorumType platformQuorumType:(DSLLMQType)platformQuorumType;
+- (void)updateDevnetChain:(DSChain *)chain
+                  version:(uint32_t)version
+      forServiceLocations:(NSMutableOrderedSet<NSString *> *)serviceLocations
+  minimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks
+             standardPort:(uint32_t)standardPort
+             dapiJRPCPort:(uint32_t)dapiJRPCPort
+             dapiGRPCPort:(uint32_t)dapiGRPCPort
+           dpnsContractID:(UInt256)dpnsContractID
+        dashpayContractID:(UInt256)dashpayContractID
+          protocolVersion:(uint32_t)protocolVersion
+       minProtocolVersion:(uint32_t)minProtocolVersion
+             sporkAddress:(NSString *)sporkAddress
+          sporkPrivateKey:(NSString *)sporkPrivateKey
+         ISLockQuorumType:(DSLLMQType)ISLockQuorumsType
+        ISDLockQuorumType:(DSLLMQType)ISDLockQuorumType
+      chainLockQuorumType:(DSLLMQType)chainLockQuorumType
+       platformQuorumType:(DSLLMQType)platformQuorumType;
 
-- (DSChain *_Nullable)registerDevnetChainWithIdentifier:(NSString *)identifier forServiceLocations:(NSOrderedSet<NSString *> *)serviceLocations withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks standardPort:(uint32_t)standardPort dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString *_Nullable)sporkAddress sporkPrivateKey:(NSString *_Nullable)sporkPrivateKey instantSendLockQuorumType:(DSLLMQType)instantSendLockQuorumType chainLockQuorumType:(DSLLMQType)chainLockQuorumType platformQuorumType:(DSLLMQType)platformQuorumType;
+- (DSChain *_Nullable)registerDevnetChainWithIdentifier:(NSString *)identifier
+                                                version:(uint16_t)version
+                                    forServiceLocations:(NSOrderedSet<NSString *> *)serviceLocations
+                            withMinimumDifficultyBlocks:(uint32_t)minimumDifficultyBlocks
+                                           standardPort:(uint32_t)standardPort
+                                           dapiJRPCPort:(uint32_t)dapiJRPCPort
+                                           dapiGRPCPort:(uint32_t)dapiGRPCPort
+                                         dpnsContractID:(UInt256)dpnsContractID
+                                      dashpayContractID:(UInt256)dashpayContractID
+                                        protocolVersion:(uint32_t)protocolVersion
+                                     minProtocolVersion:(uint32_t)minProtocolVersion
+                                           sporkAddress:(NSString *_Nullable)sporkAddress
+                                        sporkPrivateKey:(NSString *_Nullable)sporkPrivateKey
+                                       ISLockQuorumType:(DSLLMQType)ISQuorumLockType
+                                      ISDLockQuorumType:(DSLLMQType)ISDQuorumLockType
+                                    chainLockQuorumType:(DSLLMQType)chainLockQuorumType
+                                     platformQuorumType:(DSLLMQType)platformQuorumType;
 
 - (void)removeDevnetChain:(DSChain *)chain;
 

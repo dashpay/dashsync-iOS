@@ -23,6 +23,7 @@
 #import "DSDashPlatform.h"
 #import "DSDocumentTransition.h"
 #import "DSIdentitiesManager+Protected.h"
+#import "NSError+Dash.h"
 #import <DashSync/DSTransition.h>
 #import <DashSync/DashSync.h>
 #import <arpa/inet.h>
@@ -31,6 +32,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 
 #define DAPI_SINGLE_NODE @"54.191.199.25"
 #define DAPI_CONNECT_SINGLE_NODE FALSE
+#define DAPI_DEFAULT_PUBLISH_TRANSITION_RETRY_COUNT 10
 
 @interface DSDAPIClient ()
 
@@ -91,10 +93,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
                                      __strong typeof(weakSelf) strongSelf = weakSelf;
                                      if (!strongSelf) {
                                          if (completion) {
-                                             completion([NSError errorWithDomain:@"DashSync"
-                                                                            code:500
-                                                                        userInfo:@{NSLocalizedDescriptionKey:
-                                                                                     DSLocalizedString(@"Internal memory allocation error", nil)}]);
+                                             completion([NSError errorWithCode:500 localizedDescriptionKey:@"Internal memory allocation error"]);
                                          }
                                          return;
                                      }
@@ -283,7 +282,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 #if DAPI_CONNECT_SINGLE_NODE
             NSString *peerHost = DAPI_SINGLE_NODE;
 #else
-            NSString *peerHost = self.availablePeers.anyObject;
+            NSString *peerHost = [[self.availablePeers allObjects] objectAtIndex:arc4random_uniform((uint32_t)[self.availablePeers count])];
 #endif
             HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
             DSDAPICoreNetworkService *DAPINetworkService = [[DSDAPICoreNetworkService alloc] initWithDAPINodeIPAddress:peerHost httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.coreNetworkingDispatchQueue onChain:self.chain];
@@ -297,7 +296,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 - (void)publishTransition:(DSTransition *)stateTransition
                   success:(void (^)(NSDictionary *successDictionary, BOOL added))success
                   failure:(void (^)(NSError *error))failure {
-    //default to 5 attempts
+    //default to 10 attempts
     [self publishTransition:stateTransition
             completionQueue:self.chain.chainManager.identitiesManager.identityQueue
                     success:success
@@ -308,9 +307,9 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
           completionQueue:(dispatch_queue_t)completionQueue
                   success:(void (^)(NSDictionary *successDictionary, BOOL added))success
                   failure:(void (^)(NSError *error))failure {
-    //default to 5 attempts
+    //default to 10 attempts
     [self publishTransition:stateTransition
-                 retryCount:5
+                 retryCount:DAPI_DEFAULT_PUBLISH_TRANSITION_RETRY_COUNT
                       delay:2
               delayIncrease:1
              currentAttempt:0

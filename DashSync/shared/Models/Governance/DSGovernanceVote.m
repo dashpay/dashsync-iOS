@@ -90,15 +90,12 @@
 
     DSUTXO masternodeUTXO;
     if (length - offset < 32) return nil;
-    masternodeUTXO.hash = [message UInt256AtOffset:offset];
-    offset += 32;
+    masternodeUTXO.hash = [message readUInt256AtOffset:&offset];
     if (length - offset < 4) return nil;
-    masternodeUTXO.n = [message UInt32AtOffset:offset];
-    offset += 4;
+    masternodeUTXO.n = [message readUInt32AtOffset:&offset];
     if (chain.protocolVersion < 70209) { //switch to outpoint in 70209
         if (length - offset < 1) return nil;
-        uint8_t sigscriptSize = [message UInt8AtOffset:offset];
-        offset += 1;
+        uint8_t sigscriptSize = [message readUInt8AtOffset:&offset];
         if (length - offset < sigscriptSize) return nil;
         //NSData * sigscript = [message subdataWithRange:NSMakeRange(offset, sigscriptSize)];
         offset += sigscriptSize;
@@ -108,23 +105,17 @@
     }
 
     if (length - offset < 32) return nil;
-    UInt256 parentHash = [message UInt256AtOffset:offset];
-    offset += 32;
+    UInt256 parentHash = [message readUInt256AtOffset:&offset];
     if (length - offset < 4) return nil;
-    uint32_t voteOutcome = [message UInt32AtOffset:offset];
-    offset += 4;
+    uint32_t voteOutcome = [message readUInt32AtOffset:&offset];
     if (length - offset < 4) return nil;
-    uint32_t voteSignal = [message UInt32AtOffset:offset];
-    offset += 4;
+    uint32_t voteSignal = [message readUInt32AtOffset:&offset];
     if (length - offset < 4) return nil;
-    uint64_t voteCreationTimestamp = [message UInt64AtOffset:offset];
-    offset += 8;
-
+    uint64_t voteCreationTimestamp = [message readUInt64AtOffset:&offset];
     if (length - offset < 1) return nil;
-    uint8_t messageSignatureSize = [message UInt8AtOffset:offset];
-    offset += 1;
+    uint8_t messageSignatureSize = [message readUInt8AtOffset:&offset];
     if (length - offset < messageSignatureSize) return nil;
-    NSData *messageSignature = [message subdataWithRange:NSMakeRange(offset, messageSignatureSize)];
+    NSData *messageSignature = [message readDataAtOffset:&offset ofLength:messageSignatureSize];
     offset += messageSignatureSize;
 
     DSGovernanceVote *governanceVote = [[DSGovernanceVote alloc] initWithParentHash:parentHash forMasternodeUTXO:masternodeUTXO voteOutcome:voteOutcome voteSignal:voteSignal createdAt:voteCreationTimestamp signature:messageSignature onChain:chain];
@@ -149,7 +140,8 @@
 
 - (DSSimplifiedMasternodeEntry *)masternode {
     if (!_masternode) {
-        self.masternode = [DSSimplifiedMasternodeEntryEntity anyObjectInContext:[NSManagedObjectContext chainContext] matching:@"utxoHash = %@ && utxoIndex = %@", [NSData dataWithUInt256:(UInt256)self.masternodeUTXO.hash], @(self.masternodeUTXO.n)].simplifiedMasternodeEntry;
+        /// WTF? old fields ?
+       self.masternode = [DSSimplifiedMasternodeEntryEntity anyObjectInContext:[NSManagedObjectContext chainContext] matching:@"utxoHash = %@ && utxoIndex = %@", [NSData dataWithUInt256:(UInt256)self.masternodeUTXO.hash], @(self.masternodeUTXO.n)].simplifiedMasternodeEntry;
     }
     return _masternode;
 }

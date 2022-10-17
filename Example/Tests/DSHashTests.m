@@ -28,7 +28,7 @@
 - (void)testBlake3 {
     UInt256 md = @"whats the Elvish word for friend".hexToData.blake3;
     XCTAssertEqualObjects(@"af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262", uint256_hex(md),
-        @"[NSData blake3]"); //verified by wikipedia
+        @"[NSData blake3]"); // verified by wikipedia
 }
 
 
@@ -37,7 +37,7 @@
         dataUsingEncoding:NSUTF8StringEncoding]
                      .blake512;
     XCTAssertTrue(uint512_eq(*(UInt512 *)@"728309A76516B83D4E326DB3C6782722129C2835A25DE336DFFC16A0C10E4EBA654D65A86C7CC606B80BEFCC665CDD9B2D966D6BDCD2179F226F36925CC1AB8F".hexToData.bytes, md),
-        @"[NSData blake512]"); //verified by wikipedia
+        @"[NSData blake512]"); // verified by wikipedia
 }
 
 - (void)testBmw {
@@ -45,7 +45,7 @@
         dataUsingEncoding:NSUTF8StringEncoding]
                      .bmw512;
     XCTAssertTrue(uint512_eq(*(UInt512 *)@"4146f08952d34cb498486dc0a063939d7f7be69ede232f379f93c08091ea6d13d6ebdb4e06fe24030f7ca9ac07b8f59e5cfadbb05bded3b9bb3a9abecea031cb".hexToData.bytes, md),
-        @"[NSData bmw512]"); //verified by wikipedia
+        @"[NSData bmw512]"); // verified by wikipedia
 }
 
 - (void)testGroestl {
@@ -77,7 +77,7 @@
         dataUsingEncoding:NSUTF8StringEncoding]
                      .keccak512;
     XCTAssertTrue(uint512_eq(*(UInt512 *)@"0eab42de4c3ceb9235fc91acffe746b29c29a8c366b7c60e4e67c466f36a4304c00fa9caf9d87976ba469bcbe06713b435f091ef2769fb160cdab33d3670680e".hexToData.bytes, md),
-        @"[NSData keccak512]"); //verified by wikipedia
+        @"[NSData keccak512]"); // verified by wikipedia
 }
 
 - (void)testLuffa {
@@ -172,6 +172,19 @@
     s = [NSString base58checkWithData:@"05FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF".hexToData];
     XCTAssertEqualObjects(@"05FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF".hexToData, [s base58checkToData],
         @"[NSString base58checkWithData:]");
+    
+    NSData *keyIdVotingData = @"yhedxEwiZ162jKCd3WpvWgWWocDiciJuKk".base58ToData;
+    
+    UInt160 keyIdVoting = keyIdVotingData.UInt160;
+    s = uint160_base58(keyIdVoting);
+    NSData *d = uint160_data(keyIdVoting);
+//    s = [NSString base58WithData:[NSData dataWithUInt160:keyIdVoting]];
+    NSLog(@"keyIdVotingData: %@", keyIdVotingData.base58String);
+    NSLog(@"keyIdVotingData: %@", d.base58String);
+    NSLog(@"keyIdVoting: %@", s);
+    XCTAssertEqualObjects(keyIdVotingData.base58String, @"yhedxEwiZ162jKCd3WpvWgWWocDiciJuKk");
+    XCTAssertEqualObjects(s, @"yhedxEwiZ162jKCd3WpvWgWWocDiciJuKk");
+    
 }
 
 // MARK: - textSHA1
@@ -272,7 +285,7 @@
 
     md = [@"12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567"
            "890123456789012345678" dataUsingEncoding:NSUTF8StringEncoding]
-             .SHA512; //exactly 128bytes (internal buf size)
+             .SHA512; // exactly 128bytes (internal buf size)
     XCTAssertTrue(uint512_eq(*(UInt512 *)@"222b2f64c285e66996769b5a03ef863cfd3b63ddb0727788291695e8fb84572e4bfe5a80674a"
                                           "41fd72eeb48592c9c79f44ae992c76ed1b0d55a670a83fc99ec6".hexToData.bytes,
                       md),

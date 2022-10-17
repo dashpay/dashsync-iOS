@@ -13,11 +13,13 @@
 #import "DSDataController.h"
 #import "DSLocalMasternodeEntity+CoreDataClass.h"
 #import "DSMasternodeListEntity+CoreDataClass.h"
+#import "DSMasternodeListStore.h"
 #import "DSMasternodeManager+Protected.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
 #import "DSPeerEntity+CoreDataClass.h"
 #import "DSPeerManager+Protected.h"
 #import "DSQuorumEntryEntity+CoreDataClass.h"
+#import "DSQuorumSnapshotEntity+CoreDataClass.h"
 #import "DSSporkManager+Protected.h"
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
@@ -220,8 +222,9 @@ static NSString *const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.back
         [DSSimplifiedMasternodeEntryEntity deleteAllOnChainEntity:chainEntity];
         [DSQuorumEntryEntity deleteAllOnChainEntity:chainEntity];
         [DSMasternodeListEntity deleteAllOnChainEntity:chainEntity];
+        [DSQuorumSnapshotEntity deleteAllOnChainEntity:chainEntity];
         DSChainManager *chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
-        [chainManager.masternodeManager wipeMasternodeInfo];
+        [chainManager wipeMasternodeInfo];
         [context ds_save];
         [chain.chainManager assignSyncWeights];
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@_%@", chain.uniqueID, LAST_SYNCED_MASTERNODE_LIST]];

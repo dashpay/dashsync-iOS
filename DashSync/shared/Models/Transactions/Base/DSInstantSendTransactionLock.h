@@ -15,14 +15,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSInstantSendTransactionLock : NSObject
 
+@property (nonatomic, readonly) uint8_t version;
 @property (nonatomic, readonly) DSChain *chain;
 @property (nonatomic, readonly) UInt256 transactionHash;
 @property (nonatomic, readonly) UInt768 signature;
 @property (nonatomic, readonly) NSArray *inputOutpoints;
+@property (nonatomic, readonly) UInt256 cycleHash;
 @property (nonatomic, readonly) BOOL signatureVerified; //verifies the signature and quorum together
 @property (nonatomic, readonly) DSQuorumEntry *intendedQuorum;
 @property (nonatomic, readonly) BOOL saved;
 @property (nonatomic, readonly) UInt256 requestID;
+
+@property (nonatomic, readonly, getter=isDeterministic) BOOL deterministic;
 
 - (NSData *)toData;
 
@@ -31,7 +35,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)saveInitial;
 - (void)saveSignatureValid;
 
-+ (instancetype)instantSendTransactionLockWithMessage:(NSData *)message onChain:(DSChain *)chain;
++ (instancetype)instantSendTransactionLockWithNonDeterministicMessage:(NSData *)message onChain:(DSChain *)chain;
+
++ (instancetype)instantSendTransactionLockWithDeterministicMessage:(NSData *)message onChain:(DSChain *)chain;
 
 - (instancetype)initWithTransactionHash:(UInt256)transactionHash withInputOutpoints:(NSArray *)inputOutpoints signature:(UInt768)signature signatureVerified:(BOOL)signatureVerified quorumVerified:(BOOL)quorumVerified onChain:(DSChain *)chain;
 

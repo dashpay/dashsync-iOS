@@ -202,7 +202,12 @@
     self.isValid = simplifiedMasternodeEntry.isValid;
     self.simplifiedMasternodeEntryHash = [NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash];
     self.updateHeight = blockHeight;
-    NSAssert(simplifiedMasternodeEntry.updateHeight == blockHeight, @"the block height should be the same as the entry update height");
+    // TODO: the reason behind is subsequent processing/saving diffs:
+    //    Thread 10: "the block height (1745568) should be the same as the entry update height (1745560)"
+    //    2022-09-29 15:46:12.485309+0400 DashSync_Example[4976:2061074] File MNL_1745560_1746344.dat saved
+    //    2022-09-29 15:46:12.804351+0400 DashSync_Example[4976:2061322] File MNL_1745560_1745568.dat saved
+
+    NSAssert(simplifiedMasternodeEntry.updateHeight == blockHeight, ([NSString stringWithFormat:@"the block height (%i) for %@ should be the same as the entry update height (%i)", blockHeight, uint256_hex(simplifiedMasternodeEntry.providerRegistrationTransactionHash), simplifiedMasternodeEntry.updateHeight]));
     if (!chainEntity) {
         self.chain = [simplifiedMasternodeEntry.chain chainEntityInContext:self.managedObjectContext];
     } else {
@@ -272,7 +277,7 @@
     return [self blockDictionaryFromBlockHashDictionary:blockHashDictionary blockHeightLookup:nil];
 }
 
-- (NSDictionary<DSBlock *, id> *)blockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, id> *)blockHashDictionary blockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (NSDictionary<DSBlock *, id> *)blockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, id> *)blockHashDictionary blockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     NSMutableDictionary *rDictionary = [NSMutableDictionary dictionary];
     DSChain *chain = self.chain.chain;
     for (NSData *blockHash in blockHashDictionary) {
@@ -305,7 +310,7 @@
     return [self simplifiedMasternodeEntryWithBlockHeightLookup:nil];
 }
 
-- (DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntryWithBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntryWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
     DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:[self.providerRegistrationTransactionHash UInt256] confirmedHash:[self.confirmedHash UInt256] address:self.ipv6Address.UInt128 port:self.port operatorBLSPublicKey:[self.operatorBLSPublicKey UInt384] previousOperatorBLSPublicKeys:[self blockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, NSData *> *)self.previousOperatorBLSPublicKeys blockHeightLookup:blockHeightLookup] keyIDVoting:[self.keyIDVoting UInt160] isValid:self.isValid previousValidity:[self blockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, NSData *> *)self.previousValidity blockHeightLookup:blockHeightLookup] knownConfirmedAtHeight:self.knownConfirmedAtHeight updateHeight:self.updateHeight simplifiedMasternodeEntryHash:[self.simplifiedMasternodeEntryHash UInt256] previousSimplifiedMasternodeEntryHashes:[self blockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, NSData *> *)self.previousSimplifiedMasternodeEntryHashes blockHeightLookup:blockHeightLookup] onChain:self.chain.chain];
     return simplifiedMasternodeEntry;
 }

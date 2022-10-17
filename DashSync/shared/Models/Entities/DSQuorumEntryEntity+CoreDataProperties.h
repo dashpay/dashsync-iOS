@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) int16_t version;
 @property (nonatomic, assign) int32_t validMembersCount;
 @property (nonatomic, assign) int32_t signersCount;
+@property (nonatomic, assign) int32_t quorumIndex;
 @property (nonatomic, assign) BOOL verified;
 @property (nullable, nonatomic, retain) NSData *allCommitmentAggregatedSignatureData;
 @property (nullable, nonatomic, retain) NSData *commitmentHashData;

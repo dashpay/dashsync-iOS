@@ -25,6 +25,7 @@
 #import "DSPeer.h"
 #import "DSTransactionFactory.h"
 #import "NSData+Dash.h"
+#import "NSError+Dash.h"
 
 @interface DSDAPICoreNetworkService ()
 
@@ -51,7 +52,7 @@
     GRPCMutableCallOptions *options = [[GRPCMutableCallOptions alloc] init];
     // this example does not use TLS (secure channel); use insecure channel instead
     options.transportType = GRPCTransportTypeInsecure;
-    options.userAgentPrefix = USER_AGENT;
+    options.userAgentPrefix = [NSString stringWithFormat:@"%@/", USER_AGENT];
     options.timeout = 30;
     self.grpcDispatchQueue = grpcDispatchQueue;
 
@@ -95,10 +96,7 @@
                 success(transaction);
             }
         } else if (failure) {
-            failure([NSError errorWithDomain:@"DashSync"
-                                        code:404
-                                    userInfo:@{NSLocalizedDescriptionKey:
-                                                 DSLocalizedString(@"Transaction does not exist", nil)}]);
+            failure([NSError errorWithCode:404 localizedDescriptionKey:@"Transaction does not exist"]);
         }
     };
     responseHandler.errorHandler = failure;

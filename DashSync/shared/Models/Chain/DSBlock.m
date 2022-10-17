@@ -141,6 +141,9 @@
 }
 
 - (BOOL)verifyDifficultyWithPreviousBlocks:(NSDictionary *)previousBlocks rDifficulty:(uint32_t *)difficulty {
+    if ([self.chain isDevnetAny]) {
+        return true;
+    }
     uint32_t darkGravityWaveTarget = [self darkGravityWaveTargetWithPreviousBlocks:previousBlocks];
     if (difficulty) {
         *difficulty = darkGravityWaveTarget;
@@ -322,7 +325,7 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"Block H:%u - <%@>", self.height, uint256_hex(self.blockHash)];
+    return [NSString stringWithFormat:@"Block H:%u - <%@> (%p)", self.height, uint256_hex(self.blockHash), self];
 }
 
 - (id)copyWithZone:(NSZone *)zone {

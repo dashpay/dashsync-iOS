@@ -55,9 +55,10 @@
 
     // Edit the sort key as appropriate.
     NSSortDescriptor *quorumTypeSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"llmqType" ascending:NO];
+    NSSortDescriptor *quorumIndexSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"quorumIndex" ascending:YES];
     NSSortDescriptor *quorumHeightSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"block.height" ascending:NO];
     NSSortDescriptor *quorumHashDataSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"quorumHashData" ascending:NO];
-    NSArray *sortDescriptors = @[quorumTypeSortDescriptor, quorumHeightSortDescriptor, quorumHashDataSortDescriptor];
+    NSArray *sortDescriptors = @[quorumTypeSortDescriptor, quorumIndexSortDescriptor, quorumHeightSortDescriptor, quorumHashDataSortDescriptor];
 
     [fetchRequest setSortDescriptors:sortDescriptors];
 
@@ -103,25 +104,32 @@
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
     id<NSFetchedResultsSectionInfo> sectionInfo = [[self.fetchedResultsController sections] objectAtIndex:section];
-    switch ([[sectionInfo name] integerValue]) {
-        case DSLLMQType_50_60:
-            return @"1 Hour Quorums";
-            break;
-        case DSLLMQType_100_67:
-            return @"1 Hour Platform Quorums";
-            break;
-        case DSLLMQType_400_60:
-            return @"Day Quorums";
-            break;
-        case DSLLMQType_400_85:
-            return @"2 Day Quorums";
-            break;
-        case DSLLMQType_10_60:
-            return @"10 Member Devnet Quorums";
-            break;
+    NSInteger quorumType = [[sectionInfo name] integerValue];
+    switch (quorumType) {
+        case LlmqtypeUnknown:
+            return @"Unknown Quorums (0)";
+        case Llmqtype50_60:
+            return @"1 Hour Quorums (1)";
+        case Llmqtype400_60:
+            return @"Day Quorums (2)";
+        case Llmqtype400_85:
+            return @"2 Day Quorums (3)";
+        case Llmqtype100_67:
+            return @"1 Hour Platform Quorums (4)";
+        case Llmqtype60_75:
+            return @"1 Hour Rotated Quorums (5)";
+        case LlmqtypeTest:
+            return @"Test Quorums (100)";
+        case LlmqtypeDevnet:
+            return @"10 Member Devnet Quorums (101)";
+        case LlmqtypeTestV17:
+            return @"Test V17 Quorums (102)";
+        case LlmqtypeTestDIP0024:
+        case LlmqtypeDevnetDIP0024:
+        case LlmqtypeDevnet333DIP0024:
+            return [NSString stringWithFormat:@"Test DIP-0024 Quorums (%ld)", quorumType] ;
         default:
-            return @"Unknown Quorum Type";
-            break;
+            return [NSString stringWithFormat:@"Unknown Quorum Type (%ld)", quorumType];
     }
 }
 
@@ -150,6 +158,7 @@
     DSQuorumEntryEntity *quorumEntryEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
 
     cell.quorumHashLabel.text = uint256_hex(quorumEntryEntity.quorumHash);
+    cell.indexLabel.text = [NSString stringWithFormat:@"%d", quorumEntryEntity.quorumIndex];
     cell.verifiedLabel.text = quorumEntryEntity.verified ? @"Yes" : @"No";
     if (quorumEntryEntity.block) {
         cell.heightLabel.text = [NSString stringWithFormat:@"%d", quorumEntryEntity.block.height];

@@ -35,6 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) dispatch_queue_t networkingQueue;
 @property (nonatomic, strong) dispatch_queue_t dapiMetadataQueue;
+@property (nonatomic, strong) dispatch_queue_t processingQueue;
 
 
 // MARK: - Blocks
@@ -45,6 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)addMinedFullBlock:(DSFullBlock *)block;
 - (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTransactionHashes:(NSArray *)txHashes;
 - (void)clearOrphans;
+- (void)blockUntilGetInsightForBlockHash:(UInt256)blockHash;
 - (void)addInsightVerifiedBlock:(DSBlock *)block forBlockHash:(UInt256)blockHash;
 
 @property (nonatomic, readonly) BOOL allowInsightBlocksForVerification;

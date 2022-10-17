@@ -8,6 +8,7 @@
 
 #import "DSAddressesExporterViewController.h"
 #import "BRBubbleView.h"
+#import "NSData+Dash.h"
 
 @interface DSAddressesExporterViewController ()
 - (IBAction)export:(id)sender;
@@ -42,11 +43,7 @@
             NSArray *addressesArray = [self.derivationPath addressesForExportWithInternalRange:NSMakeRange(i * 50000, 50000) externalCount:NSMakeRange(i * 50000, 50000)];
             NSError *error = nil;
             NSData *data = [NSJSONSerialization dataWithJSONObject:addressesArray options:0 error:&error];
-
-            NSString *filePath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-            NSString *fileAtPath = [filePath stringByAppendingPathComponent:[NSString stringWithFormat:@"addresses%d.txt", i]];
-
-            [data writeToFile:fileAtPath atomically:FALSE];
+            [data saveToFile:[NSString stringWithFormat:@"addresses%d.txt", i] inDirectory:NSDocumentDirectory];
         }
     }
 

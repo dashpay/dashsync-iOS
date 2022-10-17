@@ -94,7 +94,8 @@ NS_ASSUME_NONNULL_BEGIN
         }
     }
 
-    [self performRequest:request requestOperationHandler:requestOperationHandler];
+    [self performRequest:request
+        requestOperationHandler:requestOperationHandler];
 }
 
 - (void)requestOperationHandler:(id<HTTPRequestOperationHandler>)requestOperationHandler cancelRequest:(HTTPRequest *)request {
@@ -263,12 +264,12 @@ NS_ASSUME_NONNULL_BEGIN
                withIntermediateDirectories:YES
                                 attributes:nil
                                      error:nil];
-        filePath = [cachePath stringByAppendingPathComponent:(NSString * _Nonnull) location.lastPathComponent];
+        filePath = [cachePath stringByAppendingPathComponent:(NSString *_Nonnull)location.lastPathComponent];
         operation.request.downloadLocationPath = filePath;
     }
 
     NSError *fileError;
-    if ([fileManager moveItemAtPath:(NSString * _Nonnull) location.path toPath:filePath error:&fileError]) {
+    if ([fileManager moveItemAtPath:(NSString *_Nonnull)location.path toPath:filePath error:&fileError]) {
         if (operation.request.downloadTaskPolicy == HTTPRequestDownloadTaskPolicyAlways) {
             [self URLSession:session task:downloadTask didCompleteWithError:nil];
         } else {
@@ -282,7 +283,9 @@ NS_ASSUME_NONNULL_BEGIN
                     [operation receiveData:data];
                 }
 
-                [self URLSession:session task:downloadTask didCompleteWithError:readError];
+                [self URLSession:session
+                                    task:downloadTask
+                    didCompleteWithError:readError];
             }];
         }
     } else {

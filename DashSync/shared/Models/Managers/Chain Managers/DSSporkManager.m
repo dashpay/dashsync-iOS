@@ -194,7 +194,8 @@
     } else {
         [self setSporkValue:spork forKeyIdentifier:spork.identifier];
     }
-    [dictionary setObject:spork forKey:@"new"];
+    [dictionary setObject:spork
+                   forKey:@"new"];
     [dictionary setObject:self.chain forKey:DSChainManagerNotificationChainKey];
     if (!currentSpork || updatedSpork) {
         [self.managedObjectContext performBlockAndWait:^{
@@ -205,7 +206,8 @@
                     if (!sporkEntity) {
                         sporkEntity = [DSSporkEntity managedObjectInBlockedContext:self.managedObjectContext];
                     }
-                    [sporkEntity setAttributesFromSpork:spork withSporkHash:hashEntity]; // add new peers
+                    [sporkEntity setAttributesFromSpork:spork
+                                          withSporkHash:hashEntity]; // add new peers
                     [self.managedObjectContext ds_save];
                 } else {
                     DSLog(@"Spork was received that wasn't requested");

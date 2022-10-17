@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) DSChainLockEntity *chainLock;
 @property (nullable, nonatomic, retain) DSMasternodeListEntity *masternodeList;
 @property (nullable, nonatomic, retain) NSSet<DSQuorumEntryEntity *> *usedByQuorums;
+@property (nullable, nonatomic, retain) DSQuorumSnapshotEntity *quorumSnapshot;
 
 @end
 

@@ -26,6 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)shouldRequestMerkleBlocksForZoneBetweenHeight:(uint32_t)blockHeight andEndHeight:(uint32_t)endBlockHeight;
 - (BOOL)shouldRequestMerkleBlocksForZoneAfterHeight:(uint32_t)blockHeight;
 
+- (void)wipeMasternodeInfo;
+
 @property (nonatomic, assign) DSChainSyncPhase syncPhase;
 
 - (void)assignSyncWeights;

@@ -28,6 +28,7 @@
         NSData *masternodeHashData = [NSData dataWithUInt256:governanceVote.masternodeUTXO.hash];
         self.masternodeHash = masternodeHashData;
         self.masternodeIndex = (uint32_t)governanceVote.masternodeUTXO.n;
+        /// WTF? old fields ?
         NSArray *matchingMasternodeEntities = [DSSimplifiedMasternodeEntryEntity objectsInContext:self.managedObjectContext matching:@"utxoHash == %@ && utxoIndex == %@", masternodeHashData, @(governanceVote.masternodeUTXO.n)];
         if ([matchingMasternodeEntities count]) {
             self.masternode = [matchingMasternodeEntities firstObject];

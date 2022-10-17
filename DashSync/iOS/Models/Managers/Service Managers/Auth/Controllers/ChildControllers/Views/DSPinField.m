@@ -275,8 +275,8 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
 - (void)setInputDelegate:(nullable id<UITextInputDelegate>)inputDelegate {
 }
 
-- (UITextWritingDirection)baseWritingDirectionForPosition:(UITextPosition *)position inDirection:(UITextStorageDirection)direction {
-    return UITextWritingDirectionNatural;
+- (NSWritingDirection)baseWritingDirectionForPosition:(UITextPosition *)position inDirection:(UITextStorageDirection)direction {
+    return NSWritingDirectionNatural;
 }
 
 - (CGRect)caretRectForPosition:(UITextPosition *)position {
@@ -332,7 +332,7 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
     return [NSArray array];
 }
 
-- (void)setBaseWritingDirection:(UITextWritingDirection)writingDirection forRange:(UITextRange *)range {
+- (void)setBaseWritingDirection:(NSWritingDirection)writingDirection forRange:(UITextRange *)range {
 }
 
 - (void)setMarkedText:(nullable NSString *)markedText selectedRange:(NSRange)selectedRange {

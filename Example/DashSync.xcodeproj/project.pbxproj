@@ -68,6 +68,8 @@
 		71719F9F1E33DC2100824A3D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 71719F9D1E33DC2100824A3D /* LaunchScreen.storyboard */; };
 		83CFCA70892A5DF9F64BA1AA /* libPods-DashSync_Tests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 955D615511918752AF099181 /* libPods-DashSync_Tests.a */; };
 		873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 873B8AEA1B1F5CCA007FD442 /* Main.storyboard */; };
+		93099D7228E7275400160709 /* MNLIST_1746460.dat in Resources */ = {isa = PBXBuildFile; fileRef = 93099D7028E7275300160709 /* MNLIST_1746460.dat */; };
+		93099D7328E7275400160709 /* MNL_1746460_1746516.dat in Resources */ = {isa = PBXBuildFile; fileRef = 93099D7128E7275400160709 /* MNL_1746460_1746516.dat */; };
 		937619A526E22E360023BE64 /* BackgroundTasks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 937619A326E22DCD0023BE64 /* BackgroundTasks.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		FB0955CC244BBDC400A93675 /* DSContactRelationshipInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0955CB244BBDC400A93675 /* DSContactRelationshipInfoViewController.m */; };
 		FB0F15A2210490C3000272E6 /* DSTransactionDetailTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0F15A1210490C3000272E6 /* DSTransactionDetailTableViewCell.m */; };
@@ -613,6 +615,8 @@
 		71719F9E1E33DC2100824A3D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		825B33F19FEBBA03353877A6 /* libPods-DashSync_Example.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashSync_Example.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		873B8AEA1B1F5CCA007FD442 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = Main.storyboard; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		93099D7028E7275300160709 /* MNLIST_1746460.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = MNLIST_1746460.dat; sourceTree = "<group>"; };
+		93099D7128E7275400160709 /* MNL_1746460_1746516.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1746460_1746516.dat; sourceTree = "<group>"; };
 		937619A326E22DCD0023BE64 /* BackgroundTasks.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BackgroundTasks.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.3.sdk/System/Library/Frameworks/BackgroundTasks.framework; sourceTree = DEVELOPER_DIR; };
 		955D615511918752AF099181 /* libPods-DashSync_Tests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashSync_Tests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		98472781BAD8800EFF391FA4 /* Pods-DashSync_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync_Example.debug.xcconfig"; path = "Pods/Target Support Files/Pods-DashSync_Example/Pods-DashSync_Example.debug.xcconfig"; sourceTree = "<group>"; };
@@ -1752,6 +1756,8 @@
 		FB25866C250DA3A50035833D /* MasternodeMerkleRootIssue */ = {
 			isa = PBXGroup;
 			children = (
+				93099D7128E7275400160709 /* MNL_1746460_1746516.dat */,
+				93099D7028E7275300160709 /* MNLIST_1746460.dat */,
 				FB25867D250DA41D0035833D /* MNL_1316160_1334592.dat */,
 				FB258672250DA41C0035833D /* MNL_1316160_1336879.dat */,
 				FB25868D250DA41F0035833D /* MNL_1334592_1335168.dat */,
@@ -2324,7 +2330,6 @@
 			buildConfigurationList = 6003F5BF195388D20070C39A /* Build configuration list for PBXNativeTarget "DashSync_Example" */;
 			buildPhases = (
 				BA464DCB59BC59A2B2C9AAD7 /* [CP] Check Pods Manifest.lock */,
-				FB29C38F25AA37A2001F4F43 /* Run Script clang-format */,
 				FB5A0FA7219506140079CF42 /* ShellScript */,
 				6003F586195388D20070C39A /* Sources */,
 				6003F587195388D20070C39A /* Frameworks */,
@@ -2345,7 +2350,6 @@
 			buildConfigurationList = 6003F5C2195388D20070C39A /* Build configuration list for PBXNativeTarget "DashSync_Tests" */;
 			buildPhases = (
 				1A450F2773F81BAA9F430A99 /* [CP] Check Pods Manifest.lock */,
-				FB974FFF25B28FD000A1DCE7 /* ShellScript */,
 				6003F5AA195388D20070C39A /* Sources */,
 				6003F5AB195388D20070C39A /* Frameworks */,
 				6003F5AC195388D20070C39A /* Resources */,
@@ -2573,6 +2577,7 @@
 				FB2586AC250DA4200035833D /* MNL_1336879_1336896.dat in Resources */,
 				FBEA6F1022C2AE0A00CBCA77 /* MNL_1092504_1092528.dat in Resources */,
 				FB2586B0250DA4200035833D /* MNL_1334592_1335168.dat in Resources */,
+				93099D7228E7275400160709 /* MNLIST_1746460.dat in Resources */,
 				FB1BF8EB22C96DF1003413C6 /* MNL_1095960_1095984.dat in Resources */,
 				FBEA6F0322C2AE0A00CBCA77 /* MNL_1092576_1092600.dat in Resources */,
 				FB1BF8EF22C96DF1003413C6 /* MNL_1095552_1095576.dat in Resources */,
@@ -2592,6 +2597,7 @@
 				FB1DCE2124D724C70094F776 /* devnet-mobile-2-70-530b2a329c3524877a553e3f74ef92f6bcf905fa9edee65531287a81bb520869.block in Resources */,
 				FB27C62722DC3180002808C4 /* MNL_1098480_1098504.dat in Resources */,
 				FB1DCEB424D7322D0094F776 /* devnet-mobile-2-118-95791b55e832c18cc6b77c83186d9d67834f21790cf4060bffa624c420cae477.block in Resources */,
+				93099D7328E7275400160709 /* MNL_1746460_1746516.dat in Resources */,
 				FBEA6EDF22C291CB00CBCA77 /* MNL_1092888_1092916.dat in Resources */,
 				FB1DCE2924D724C70094F776 /* devnet-mobile-2-30-455e40ac39d702c3d4be14ba17d9dbcf5b384daf60624d0464b9843fe2b58d6f.block in Resources */,
 				FBEA6F1422C2AE0A00CBCA77 /* MNL_1092096_1092336.dat in Resources */,
@@ -2848,24 +2854,6 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DashSync_Example/Pods-DashSync_Example-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		FB29C38F25AA37A2001F4F43 /* Run Script clang-format */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Run Script clang-format";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "#!/bin/bash\n\necho \"Reformatting code with clang-format\"\n\nfunction formatObjCFiles() {\n    find \"$1\" -name '*.h' -print0 | xargs -0 clang-format -i -style=file\n    find \"$1\" -name '*.m' -print0 | xargs -0 clang-format -i -style=file\n    find \"$1\" -name '*.mm' -print0 | xargs -0 clang-format -i -style=file\n}\n\nif which clang-format >/dev/null; then    \n    formatObjCFiles ../DashSync\n    formatObjCFiles DashSync\nelse\n    echo \"warning: clang-format not installed, install it by running `brew install clang-format`\"\nfi\n";
-		};
 		FB5A0FA7219506140079CF42 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -2882,23 +2870,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "if which bartycrouch > /dev/null; then\n    BTCRCH=`which bartycrouch`\n    env -i $BTCRCH update -x > /dev/null\nelse\n    echo \"warning: BartyCrouch not installed, download it from https://github.com/Flinesoft/BartyCrouch\"\nfi\n";
-		};
-		FB974FFF25B28FD000A1DCE7 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "#!/bin/bash\n\necho \"Reformatting code with clang-format\"\n\nfunction formatObjCFiles() {\n    find \"$1\" -name '*.m' -print0 | xargs -0 clang-format -i -style=file\n}\n\nif which clang-format >/dev/null; then    \n    formatObjCFiles Tests\nelse\n    echo \"warning: clang-format not installed, install it by running `brew install clang-format`\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -3244,6 +3215,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = NMHX8CEMG9;
+				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashSync/DashSync-Prefix.pch";
 				INFOPLIST_FILE = "DashSync/DashSync-Info.plist";
@@ -3261,6 +3233,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = NMHX8CEMG9;
+				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashSync/DashSync-Prefix.pch";
 				INFOPLIST_FILE = "DashSync/DashSync-Info.plist";
@@ -3277,6 +3250,7 @@
 			baseConfigurationReference = C90A9AD2C32828341F0E6915 /* Pods-DashSync_Tests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Tests/Tests-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -3284,7 +3258,7 @@
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = "Tests/Tests-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DashSync_Example.app/DashSync_Example";
@@ -3297,10 +3271,11 @@
 			baseConfigurationReference = DFA886AB709D97089A70E82A /* Pods-DashSync_Tests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Tests/Tests-Prefix.pch";
 				INFOPLIST_FILE = "Tests/Tests-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DashSync_Example.app/DashSync_Example";
@@ -3322,6 +3297,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_HARDENED_RUNTIME = YES;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -3346,6 +3322,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_HARDENED_RUNTIME = YES;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = NO;

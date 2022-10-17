@@ -42,7 +42,8 @@
         version = DASH_PUBKEY_ADDRESS_TEST;
     }
 
-    [d appendBytes:&version length:1];
+    [d appendBytes:&version
+            length:1];
     [d appendBytes:&hash160 length:sizeof(hash160)];
     return [NSString base58checkWithData:d];
 }
@@ -190,5 +191,9 @@
     NSAssert(NO, @"This should be overridden");
 }
 
++ (NSData *_Nullable)publicKeyFromExtendedPublicKeyData:(NSData *)publicKeyData atIndexPath:(NSIndexPath *)indexPath {
+    NSAssert(NO, @"This should be overridden");
+    return [NSData data];
+}
 
 @end

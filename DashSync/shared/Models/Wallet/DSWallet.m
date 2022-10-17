@@ -1026,7 +1026,9 @@
             [self chainUpdatedBlockHeight:height];
         }
     }
-    [self.specialTransactionsHolder setBlockHeight:height andTimestamp:timestamp forTransactionHashes:txHashes];
+    [self.specialTransactionsHolder setBlockHeight:height
+                                      andTimestamp:timestamp
+                              forTransactionHashes:txHashes];
     return [updated copy];
 }
 
@@ -1043,7 +1045,8 @@
     for (DSAccount *account in self.accounts) {
         [account persistIncomingTransactionsAttributesForBlockSaveWithNumber:blockNumber inContext:context];
     }
-    [self.specialTransactionsHolder persistIncomingTransactionsAttributesForBlockSaveWithNumber:blockNumber inContext:context];
+    [self.specialTransactionsHolder persistIncomingTransactionsAttributesForBlockSaveWithNumber:blockNumber
+                                                                                      inContext:context];
 }
 
 - (void)chainUpdatedBlockHeight:(int32_t)height {
@@ -1288,7 +1291,7 @@
             if (!upgraded) {
                 return nil;
             } else {
-                return [self blockchainIdentities];
+                return (NSMutableDictionary *) [self blockchainIdentities];
             }
         }
         for (NSData *uniqueIdData in keyChainDictionary) {

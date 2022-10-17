@@ -55,6 +55,7 @@ typedef NS_ENUM(NSUInteger, DSKeyType)
 
 - (void)signMessageDigest:(UInt256)digest completion:(void (^_Nullable)(BOOL success, NSData *signature))completion;
 
++ (NSData *_Nullable)publicKeyFromExtendedPublicKeyData:(NSData *)publicKeyData atIndexPath:(NSIndexPath *)indexPath;
 
 @end
 

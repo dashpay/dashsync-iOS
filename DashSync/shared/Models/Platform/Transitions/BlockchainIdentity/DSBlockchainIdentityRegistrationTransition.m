@@ -51,6 +51,9 @@
         DSKey *key = self.publicKeys[indexIdentifier];
         DSMutableStringValueDictionary *platformKeyDictionary = [[DSMutableStringValueDictionary alloc] init];
         platformKeyDictionary[@"id"] = @([indexIdentifier unsignedIntValue]);
+        platformKeyDictionary[@"purpose"] = @(DWIdentityPublicKeyPurposeAuthentication);
+        platformKeyDictionary[@"securityLevel"] = @(DWIdentityPublicKeySecurityLevelMaster); 
+        platformKeyDictionary[@"readOnly"] = @NO;
         platformKeyDictionary[@"type"] = @(key.keyType);
         platformKeyDictionary[@"data"] = key.publicKeyData;
         [platformKeys addObject:platformKeyDictionary];
@@ -90,7 +93,8 @@
     if ([proofType integerValue] == 0) {
         //this is an instant send proof
         NSData *instantSendLockData = proofDictionary[@"instantLock"];
-        self.creditFundingTransaction.instantSendLockAwaitingProcessing = [DSInstantSendTransactionLock instantSendTransactionLockWithMessage:instantSendLockData onChain:self.chain];
+        //todo: v18 make this deterministic
+        self.creditFundingTransaction.instantSendLockAwaitingProcessing = [DSInstantSendTransactionLock instantSendTransactionLockWithNonDeterministicMessage:instantSendLockData onChain:self.chain];
     }
 
     self.blockchainIdentityUniqueId = [dsutxo_data(self.lockedOutpoint) SHA256_2];

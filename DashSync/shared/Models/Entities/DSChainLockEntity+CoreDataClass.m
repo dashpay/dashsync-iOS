@@ -22,7 +22,7 @@
 @implementation DSChainLockEntity
 
 + (instancetype)chainLockEntityForChainLock:(DSChainLock *)chainLock inContext:(NSManagedObjectContext *)context {
-    DSMerkleBlockEntity *merkleBlockEntity = [DSMerkleBlockEntity anyObjectInContext:context matching:@"blockHash == %@", uint256_data(chainLock.blockHash)];
+    DSMerkleBlockEntity *merkleBlockEntity = [DSMerkleBlockEntity merkleBlockEntityForBlockHash:chainLock.blockHash inContext:context];
     if (!merkleBlockEntity) {
         return nil;
     }
