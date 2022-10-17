@@ -53,7 +53,7 @@
     NSUInteger skipListCount = [self.skipList count];
     int32_t *skipList = malloc(skipListCount * sizeof(int32_t));
     i = 0;
-    for (NSNumber *skipMember in self.memberList) {
+    for (NSNumber *skipMember in self.skipList) {
         skipList[i] = (int32_t) skipMember.integerValue;
         i++;
     }
