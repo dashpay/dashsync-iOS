@@ -263,8 +263,8 @@
 }
 
 - (void)wipeMasternodeInfo {
+    [self clearProcessorCache];
     [self.store removeAllMasternodeLists];
-
     [self.masternodeListDiffService cleanAllLists];
     [self.quorumRotationService cleanAllLists];
     dispatch_async(dispatch_get_main_queue(), ^{
