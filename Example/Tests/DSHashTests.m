@@ -172,19 +172,6 @@
     s = [NSString base58checkWithData:@"05FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF".hexToData];
     XCTAssertEqualObjects(@"05FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF".hexToData, [s base58checkToData],
         @"[NSString base58checkWithData:]");
-    
-    NSData *keyIdVotingData = @"yhedxEwiZ162jKCd3WpvWgWWocDiciJuKk".base58ToData;
-    
-    UInt160 keyIdVoting = keyIdVotingData.UInt160;
-    s = uint160_base58(keyIdVoting);
-    NSData *d = uint160_data(keyIdVoting);
-//    s = [NSString base58WithData:[NSData dataWithUInt160:keyIdVoting]];
-    NSLog(@"keyIdVotingData: %@", keyIdVotingData.base58String);
-    NSLog(@"keyIdVotingData: %@", d.base58String);
-    NSLog(@"keyIdVoting: %@", s);
-    XCTAssertEqualObjects(keyIdVotingData.base58String, @"yhedxEwiZ162jKCd3WpvWgWWocDiciJuKk");
-    XCTAssertEqualObjects(s, @"yhedxEwiZ162jKCd3WpvWgWWocDiciJuKk");
-    
 }
 
 // MARK: - textSHA1
