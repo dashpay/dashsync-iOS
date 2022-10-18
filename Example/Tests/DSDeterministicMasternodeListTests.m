@@ -2449,6 +2449,9 @@
             return 1097952;
         } else if ([blockHashString isEqualToString:@"000000000000000e78706ecf6d744a2edc5143d3325ade22940dc14ccfd3f938"]) {
             return 1094400;
+        } else if ([blockHashString isEqualToString:@"0000000000000000000000000000000000000000000000000000000000000000"]) {
+            // Now we're storing base_block_height in diff so here can be zero hash
+            return UINT32_MAX;
         }
         NSLog(@"--- %@", blockHashString);
         NSAssert(NO, @"All values must be here");
@@ -3272,55 +3275,6 @@
     [self validateBitsets:bitset1 count:count1];
     [self validateBitsets:bitset2 count:count2];
     //    [self validateBitsets:bitset3 count:count3];
-}
-
-- (void)testInvalidMasternodeMerkleRoot {
-    DSChain *chain = [DSChain mainnet];
-    DSMasternodeList *masternodeList = [DSDeterministicMasternodeListTests masternodeListFromJsonFile:@"MNLIST_1746460" forChain:chain];
-    NSData *message = [DSDeterministicMasternodeListTests messageFromFileWithPath:@"MNL_1746460_1746516"];
-
-    NSUInteger length = message.length;
-    NSUInteger offset = 0;
-
-    if (length - offset < 32) return;
-    UInt256 baseBlockHash = [message readUInt256AtOffset:&offset];
-    if (length - offset < 32) return;
-    __block UInt256 blockHash = [message readUInt256AtOffset:&offset];
-
-    NSLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)", uint256_reverse_hex(baseBlockHash), [chain heightForBlockHash:baseBlockHash], uint256_reverse_hex(blockHash), [chain heightForBlockHash:blockHash]);
-
-    XCTAssert(uint256_eq(chain.genesisHash, baseBlockHash) || uint256_is_zero(baseBlockHash), @"Base block hash should be from chain origin");
-
-    DSMasternodeProcessorContext *mndiffContext = [[DSMasternodeProcessorContext alloc] init];
-    [mndiffContext setIsFromSnapshot:YES];
-    [mndiffContext setUseInsightAsBackup:NO];
-    [mndiffContext setChain:chain];
-    [mndiffContext setIsFromSnapshot:YES];
-    [mndiffContext setMasternodeListLookup:^DSMasternodeList *_Nonnull(UInt256 blockHash) {
-        NSLog(@"masternodeListLookup: %u: %@ (%@)", [chain heightForBlockHash:blockHash], uint256_hex(blockHash), uint256_reverse_hex(blockHash));
-        if ([chain heightForBlockHash:blockHash] == 1746460) {
-            return masternodeList;
-        } else {
-            return NULL;
-        }
-    }];
-    [mndiffContext setMerkleRootLookup:^UInt256(UInt256 blockHash) {
-        NSLog(@"merkleRootLookup: %u: %@ (%@)", [chain heightForBlockHash:blockHash], uint256_hex(blockHash), uint256_reverse_hex(blockHash));
-        if ([chain heightForBlockHash:blockHash] == 1746516) {
-            return @"84886e7c58b2ce5c4c3b17ad8655e66d7158a39606fe79db8b4e80f7a84b03dc".hexToData.reverse.UInt256;
-        }
-        return UINT256_ZERO;
-    }];
-    [mndiffContext setBlockHeightLookup:^uint32_t(UInt256 blockHash) {
-        NSLog(@"blockHeightLookup: %u: %@ (%@)", [chain heightForBlockHash:blockHash], uint256_hex(blockHash), uint256_reverse_hex(blockHash));
-        return [chain heightForBlockHash:blockHash];
-    }];
-    DSMnDiffProcessingResult *result = [chain.chainManager.masternodeManager processMasternodeDiffMessage:message withContext:mndiffContext];
-    XCTAssert(result.foundCoinbase, @"Did not find coinbase at height %u", [chain heightForBlockHash:blockHash]);
-    // XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]);
-    XCTAssert(result.rootMNListValid, @"rootMNListValid not valid at height %u", [chain heightForBlockHash:blockHash]);
-    XCTAssert(result.rootQuorumListValid, @"rootQuorumListValid not valid at height %u", [chain heightForBlockHash:blockHash]);
-    XCTAssert(result.validQuorums, @"validQuorums not valid at height %u", [chain heightForBlockHash:blockHash]);
 }
 
 - (void)testCheckpoints {
