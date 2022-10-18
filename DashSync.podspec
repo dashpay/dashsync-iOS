@@ -35,7 +35,7 @@ Pod::Spec.new do |s|
   s.ios.framework = 'UIKit'
   s.macos.framework = 'Cocoa'
   s.compiler_flags = '-Wno-comma'
-  s.dependency 'DashSharedCore', '0.2.1'
+  s.dependency 'DashSharedCore', '0.2.2'
   s.dependency 'secp256k1_dash', '0.1.4-alpha.2'
   s.dependency 'bls-signatures-pod', '1.0.7'
   s.dependency 'CocoaLumberjack', '3.7.2'

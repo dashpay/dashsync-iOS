@@ -184,7 +184,7 @@
 }
 
 - (void)setAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry atBlockHeight:(uint32_t)blockHeight onChainEntity:(DSChainEntity *)chainEntity {
-    [self setAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry atBlockHeight:(uint32_t)blockHeight knownOperatorAddresses:nil knownVotingAddresses:nil localMasternodes:nil onChainEntity:chainEntity];
+    [self setAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry atBlockHeight:blockHeight knownOperatorAddresses:nil knownVotingAddresses:nil localMasternodes:nil onChainEntity:chainEntity];
 }
 
 - (void)setAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry atBlockHeight:(uint32_t)blockHeight knownOperatorAddresses:(NSDictionary<NSString *, DSAddressEntity *> *)knownOperatorAddresses knownVotingAddresses:(NSDictionary<NSString *, DSAddressEntity *> *)knownVotingAddresses localMasternodes:(NSDictionary<NSData *, DSLocalMasternodeEntity *> *)localMasternodes onChainEntity:(DSChainEntity *)chainEntity {
