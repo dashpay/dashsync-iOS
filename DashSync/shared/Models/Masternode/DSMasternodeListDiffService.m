@@ -43,12 +43,12 @@
                 UInt256 prevKnownBlockHash = [self.store closestKnownBlockHashForBlockHash:blockHash];
                 UInt256 prevInQueueBlockHash = (pos ? [list objectAtIndex:pos - 1].UInt256 : UINT256_ZERO);
                 UInt256 previousBlockHash = pos
-                    ? ([self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:prevKnownBlockHash] > [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:prevInQueueBlockHash]
+                    ? ([self.store heightForBlockHash:prevKnownBlockHash] > [self.store heightForBlockHash:prevInQueueBlockHash]
                        ? prevKnownBlockHash
                        : prevInQueueBlockHash)
                     : prevKnownBlockHash;
                 // request at: every new block
-                NSAssert(([self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
+                NSAssert(([self.store heightForBlockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
                 [self requestMasternodeListDiff:previousBlockHash forBlockHash:blockHash];
             }
         } else {
@@ -62,10 +62,10 @@
     DSGetMNListDiffRequest *request = [DSGetMNListDiffRequest requestWithBaseBlockHash:previousBlockHash blockHash:blockHash];
     DSMasternodeListRequest *matchedRequest = [self requestInRetrievalFor:previousBlockHash blockHash:blockHash];
     if (matchedRequest) {
-        NSLog(@"•••• mnlistdiff request with such a range already in retrieval: %u..%u %@ .. %@", [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:previousBlockHash], [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:blockHash], uint256_hex(previousBlockHash), uint256_hex(blockHash));
+        NSLog(@"•••• mnlistdiff request with such a range already in retrieval: %u..%u %@ .. %@", [self.store heightForBlockHash:previousBlockHash], [self.store heightForBlockHash:blockHash], uint256_hex(previousBlockHash), uint256_hex(blockHash));
         return;
     }
-    NSLog(@"•••• requestMasternodeListDiff: %u..%u %@ .. %@", [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:previousBlockHash], [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:blockHash], uint256_hex(previousBlockHash), uint256_hex(blockHash));
+    NSLog(@"•••• requestMasternodeListDiff: %u..%u %@ .. %@", [self.store heightForBlockHash:previousBlockHash], [self.store heightForBlockHash:blockHash], uint256_hex(previousBlockHash), uint256_hex(blockHash));
     [self sendMasternodeListRequest:request];
 }
 

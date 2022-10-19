@@ -33,8 +33,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMasternodeManager (Protected)
 
-@property (nonatomic, strong, readonly) DSOperationQueue *processingQueue;
-
 - (instancetype)initWithChain:(DSChain *_Nonnull)chain;
 - (void)setUp;
 - (void)loadFileDistributedMasternodeLists;

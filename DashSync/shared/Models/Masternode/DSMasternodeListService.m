@@ -192,8 +192,9 @@
     NSData *masternodeListBlockHashData = uint256_data(masternodeListBlockHash);
     BOOL hasInRetrieval = [self.retrievalQueue containsObject:masternodeListBlockHashData];
     uint32_t masternodeListBlockHeight = [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:masternodeListBlockHash];
-    NSLog(@"•••• shouldProcessDiffResult: %d: %@ inRetrieval: %d skipPresenceInRetrieval: %d", masternodeListBlockHeight, uint256_hex(masternodeListBlockHash), hasInRetrieval, skipPresenceInRetrieval);
-    if (!hasInRetrieval && !skipPresenceInRetrieval) {
+    BOOL shouldNot = !hasInRetrieval && !skipPresenceInRetrieval;
+    DSLog(@"•••• shouldProcessDiffResult: %d: %@ %d", masternodeListBlockHeight, uint256_reverse_hex(masternodeListBlockHash), !shouldNot);
+    if (shouldNot) {
         //We most likely wiped data in the meantime
         [self cleanRequestsInRetrieval];
         [self dequeueMasternodeListRequest];
@@ -232,17 +233,15 @@
 }
 
 - (void)removeFromRetrievalQueue:(NSData *)masternodeBlockHashData {
-//    NSLog(@"•••• removeFromRetrievalQueue %@: %d: %@", self, [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:masternodeBlockHashData.UInt256], masternodeBlockHashData.hexString);
     [self.retrievalQueue removeObject:masternodeBlockHashData];
 }
 
 - (void)cleanRequestsInRetrieval {
-//    NSLog(@"•••• cleanRequestsInRetrieval: %@", self);
+    NSLog(@"•••• cleanRequestsInRetrieval: %@", self);
     [self.requestsInRetrieval removeAllObjects];
 }
 
 - (void)cleanListsRetrievalQueue {
-//    NSLog(@"•••• cleanListsRetrievalQueue: %@", self);
     [self.retrievalQueue removeAllObjects];
 }
 
@@ -269,12 +268,12 @@
 
 - (void)fetchMasternodeListsToRetrieve:(void (^)(NSOrderedSet<NSData *> *listsToRetrieve))completion {
     if (![self.retrievalQueue count]) {
-        DSLog(@"No masternode lists in retrieval");
+        DSLog(@"No masternode lists in retrieval: %@", self);
         [self.chain.chainManager chainFinishedSyncingMasternodeListsAndQuorums:self.chain];
         return;
     }
     if ([self.requestsInRetrieval count]) {
-        NSLog(@"A masternode list is already in retrieval");
+        DSLog(@"A masternode list is already in retrieval: %@", self);
         return;
     }
     if (!self.peerManager.downloadPeer || (self.peerManager.downloadPeer.status != DSPeerStatus_Connected)) {
@@ -309,7 +308,7 @@
                  return [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:blockHash];
              }]];
          }
-         NSLog(@"•••• A masternode list (%u..%u %@ .. %@) was received that is not set to be retrieved (%@)", [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:baseBlockHash], [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:blockHash], uint256_hex(baseBlockHash), uint256_hex(blockHash), [requestsInRetrievalStrings componentsJoinedByString:@", "]);
+         DSLog(@"•••• A masternode list (%u..%u %@ .. %@) was received that is not set to be retrieved (%@)", [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:baseBlockHash], [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:blockHash], uint256_hex(baseBlockHash), uint256_hex(blockHash), [requestsInRetrievalStrings componentsJoinedByString:@", "]);
          return NO;
      }
     [self.requestsInRetrieval removeObject:matchedRequest];

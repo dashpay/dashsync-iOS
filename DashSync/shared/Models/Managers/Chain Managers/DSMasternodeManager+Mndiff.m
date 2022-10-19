@@ -192,27 +192,29 @@ uint8_t shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*blo
         uint32_t baseBlockHeight = processorContext.blockHeightLookup(baseBlockHash);
         uint32_t blockHeight = processorContext.blockHeightLookup(blockHash);
         if (blockHeight == UINT32_MAX) {
-            NSLog(@"•••• shouldProcessDiffWithRange: unknown blockHash: %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_hex(baseBlockHash), uint256_hex(blockHash));
+            DSLog(@"•••• shouldProcessDiffWithRange: unknown blockHash: %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_reverse_hex(baseBlockHash), uint256_reverse_hex(blockHash));
             return 5; // ProcessingError::UnknownBlockHash
         }
         DSMasternodeListService *service = processorContext.isDIP0024 ? manager.quorumRotationService : manager.masternodeListDiffService;
         BOOL hasRemovedFromRetrieval = [service removeRequestInRetrievalForBaseBlockHash:baseBlockHash blockHash:blockHash];
         BOOL hasLocallyStored = [manager.store hasMasternodeListAt:uint256_data(blockHash)];
         DSMasternodeList *list = processorContext.masternodeListLookup(blockHash);
-        BOOL hasUnverifiedRotatedQuorums = processorContext.isDIP0024 && [list hasUnverifiedRotatedQuorums];
         if (!hasRemovedFromRetrieval) {
-            NSLog(@"•••• shouldProcessDiffWithRange: persist in retrieval: %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_hex(baseBlockHash), uint256_hex(blockHash));
+            DSLog(@"•••• shouldProcessDiffWithRange: persist in retrieval: %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_reverse_hex(baseBlockHash), uint256_reverse_hex(blockHash));
             return 1; // ProcessingError::PersistInRetrieval
         }
-        if (hasLocallyStored && !hasUnverifiedRotatedQuorums) {
-            NSLog(@"•••• shouldProcessDiffWithRange: already persist: %u: %@ hasUnverifiedRotated: %d", blockHeight, uint256_hex(blockHash), [list hasUnverifiedRotatedQuorums]);
+        BOOL needToVerifyRotatedQuorums = processorContext.isDIP0024 && [list hasUnverifiedRotatedQuorums];
+        BOOL needToVerifyNonRotatedQuorums = !processorContext.isDIP0024 && [list hasUnverifiedNonRotatedQuorums];
+        BOOL noNeedToVerifyQuorums = !(needToVerifyRotatedQuorums || needToVerifyNonRotatedQuorums);
+        if (hasLocallyStored && noNeedToVerifyQuorums) {
+            DSLog(@"•••• shouldProcessDiffWithRange: already persist: %u: %@ needToVerifyRotatedQuorums: %d needToVerifyNonRotatedQuorums: %d", blockHeight, uint256_reverse_hex(blockHash), needToVerifyRotatedQuorums, needToVerifyNonRotatedQuorums);
             return 2; // ProcessingError::LocallyStored
         }
         DSMasternodeList *baseMasternodeList = processorContext.masternodeListLookup(baseBlockHash);
         if (!baseMasternodeList && !uint256_eq(chain.genesisHash, baseBlockHash) && uint256_is_not_zero(baseBlockHash)) {
             // this could have been deleted in the meantime, if so rerequest
             [service issueWithMasternodeListFromPeer:processorContext.peer];
-            NSLog(@"•••• No base masternode list at: %d: %@", baseBlockHeight, uint256_hex(baseBlockHash));
+            DSLog(@"•••• No base masternode list at: %d: %@", baseBlockHeight, uint256_reverse_hex(baseBlockHash));
             return 4; // ProcessingError::HasNoBaseBlockHash
         }
     }

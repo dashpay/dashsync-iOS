@@ -35,7 +35,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) dispatch_queue_t networkingQueue;
 @property (nonatomic, strong) dispatch_queue_t dapiMetadataQueue;
-@property (nonatomic, strong) dispatch_queue_t processingQueue;
 
 
 // MARK: - Blocks

@@ -590,14 +590,6 @@ static dispatch_once_t devnetToken = 0;
     return _dapiMetadataQueue;
 }
 
-- (dispatch_queue_t)processingQueue {
-    if (!_processingQueue) {
-        NSAssert(uint256_is_not_zero(self.genesisHash), @"genesisHash must be set");
-        _processingQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.processing.%@", self.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
-    }
-    return _processingQueue;
-}
-
 // MARK: - Check Type
 
 - (BOOL)isMainnet {
@@ -2265,8 +2257,8 @@ static dispatch_once_t devnetToken = 0;
 
     if ((phase == DSChainSyncPhase_ChainSync || phase == DSChainSyncPhase_Synced) && uint256_eq(block.prevBlock, self.lastSyncBlockHash)) { // new block extends sync chain
         if ((block.height % 1000) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
-            DSLog(@"adding sync block on %@ at height: %d from peer %@", self.name, block.height, peer.host);
-        }
+            DSLog(@"[%@: %@] + sync block at: %d: %@", self.name, peer.host ? peer.host : @"TEST", block.height, uint256_hex(block.blockHash));
+       }
         @synchronized(self.mSyncBlocks) {
             self.mSyncBlocks[blockHash] = block;
         }
@@ -2277,7 +2269,7 @@ static dispatch_once_t devnetToken = 0;
 
         if (!equivalentTerminalBlock && uint256_eq(block.prevBlock, self.lastTerminalBlock.blockHash)) {
             if ((block.height % 1000) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
-                DSLog(@"[%@: %@]  + terminal block (caught up) at: %d: %@", self.name, peer.host ? peer.host : @"TEST", block.height, uint256_hex(block.blockHash));
+                DSLog(@"[%@: %@] + terminal block (caught up) at: %d: %@", self.name, peer.host ? peer.host : @"TEST", block.height, uint256_hex(block.blockHash));
            }
             @synchronized(self.mTerminalBlocks) {
                 self.mTerminalBlocks[blockHash] = block;
@@ -2297,8 +2289,8 @@ static dispatch_once_t devnetToken = 0;
         }
 
     } else if (uint256_eq(block.prevBlock, self.lastTerminalBlock.blockHash)) { // new block extends terminal chain
-        if ((block.height % 100) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
-            DSLog(@"[%@: %@]  + terminal block at: %d: %@", self.name, peer.host ? peer.host : @"TEST", block.height, uint256_hex(block.blockHash));
+        if ((block.height % 500) == 0 || txHashes.count > 0 || block.height > peer.lastBlockHeight) {
+            DSLog(@"[%@: %@] + terminal block at: %d: %@", self.name, peer.host ? peer.host : @"TEST", block.height, uint256_hex(block.blockHash));
         }
         @synchronized(self.mTerminalBlocks) {
             self.mTerminalBlocks[blockHash] = block;

@@ -63,7 +63,6 @@
 
 @property (nonatomic, assign) uint32_t rotatedQuorumsActivationHeight;
 @property (nonatomic, strong) dispatch_group_t processingGroup;
-@property (nonatomic, strong) dispatch_group_t savingGroup;
 
 @end
 
@@ -96,7 +95,6 @@
     _processor = [DSMasternodeManager registerProcessor];
     _processorCache = [DSMasternodeManager createProcessorCache];
     _processingGroup = dispatch_group_create();
-    _savingGroup = dispatch_group_create();
     NSLog(@"DSMasternodeManager.initWithChain: %@: ", chain);
     return self;
 }
@@ -263,6 +261,7 @@
 }
 
 - (void)wipeMasternodeInfo {
+    DSLog(@"wipeMasternodeInfo");
     [self clearProcessorCache];
     [self.store removeAllMasternodeLists];
     [self.masternodeListDiffService cleanAllLists];
@@ -293,7 +292,8 @@
 }
 
 - (BOOL)saveMasternodeList:(DSMasternodeList *)masternodeList forBlockHash:(UInt256)blockHash {
-    /// TODO: need to properly store in CoreData or wait for rust SQLite impl
+    /// TODO: need to properly store in CoreData or wait for rust SQLite
+    DSLog(@"••• addMasternodeList (saveMasternodeList) -> %@: %@", uint256_hex(blockHash), masternodeList);
     [self.store.masternodeListsByBlockHash setObject:masternodeList forKey:uint256_data(blockHash)];
     return YES;
 }
@@ -528,7 +528,7 @@
     DSMnDiffProcessingResult *mnListDiffResultAtH2C = result.mnListDiffResultAtH2C;
     DSMnDiffProcessingResult *mnListDiffResultAtH3C = result.mnListDiffResultAtH3C;
     DSMnDiffProcessingResult *mnListDiffResultAtH4C = result.mnListDiffResultAtH4C;
-    DSLog(@"•••• processQRInfoResult tip: %@", mnListDiffResultAtTip.debugDescription);
+    DSLog(@"•••• processQRInfoResult tip: %d", [mnListDiffResultAtTip isValid]);
 
     NSOrderedSet *missingMasternodeListsAtTip = mnListDiffResultAtTip.neededMissingMasternodeLists;
     NSOrderedSet *missingMasternodeListsAtH = mnListDiffResultAtH.neededMissingMasternodeLists;
@@ -635,7 +635,6 @@
         } else if (![diffResult.neededMissingMasternodeLists count] || ![self.store.masternodeListQueriesNeedingQuorumsValidated containsObject:diffBlockHashData]) {
             [self updateStoreWithMasternodeList:diffMasternodeList addedMasternodes:diffResult.addedMasternodes modifiedMasternodes:diffResult.modifiedMasternodes addedQuorums:diffResult.addedQuorums completion:^(NSError *error) {}];
         }
-
     }
     for (DSQuorumSnapshot *snapshot in result.snapshotList) {
         [self.store saveQuorumSnapshot:snapshot toChain:self.chain completion:^(NSError * _Nonnull error) {}];
@@ -644,11 +643,6 @@
     for (DSQuorumEntry *entry in result.lastQuorumPerIndex) {
         [self.store.activeQuorums setObject:entry forKey:uint256_data(entry.llmqQuorumHash)];
     }
-//    dispatch_group_notify(saveGroup, dispatch_get_main_queue(), ^{
-//        DSLog(@"•••• -> leave process qrinfo (ok)");
-//        completion();
-//    });
-
 }
 
 - (void)processMissingMasternodeLists:(NSOrderedSet *)neededMissingMasternodeLists forMasternodeList:(DSMasternodeList *)masternodeList {
@@ -661,7 +655,6 @@
 }
 
 - (void)updateStoreWithMasternodeList:(DSMasternodeList *)masternodeList addedMasternodes:(NSDictionary *)addedMasternodes modifiedMasternodes:(NSDictionary *)modifiedMasternodes addedQuorums:(NSDictionary *)addedQuorums completion:(void (^)(NSError *error))completion {
-    dispatch_group_enter(self.savingGroup);
     UInt256 masternodeListBlockHash = masternodeList.blockHash;
     if (uint256_eq(self.store.masternodeListAwaitingQuorumValidation.blockHash, masternodeListBlockHash)) {
         self.store.masternodeListAwaitingQuorumValidation = nil;
@@ -671,7 +664,6 @@
                modifiedMasternodes:modifiedMasternodes
                       addedQuorums:addedQuorums
                         completion:^(NSError *error) {
-        dispatch_group_leave(self.savingGroup);
         completion(error);
         if (!error || !self.masternodeListRetrievalQueueCount) { //if it is 0 then we most likely have wiped chain info
             return;
@@ -688,10 +680,8 @@
     DSLog(@"•••• -> received mnlistdiff: %@", uint256_hex(message.SHA256));
     self.masternodeListDiffService.timedOutAttempt = 0;
     dispatch_group_enter(self.processingGroup);
-    DSLog(@"•••• -> enter mnlistdiff: %@", uint256_hex(message.SHA256));
     DSMasternodeProcessorContext *ctx = [self createDiffMessageContext:self.chain.isTestnet isFromSnapshot:NO isDIP0024:NO peer:peer merkleRootLookup:^UInt256(UInt256 blockHash) {
         DSBlock *lastBlock = [self lastBlockForBlockHash:blockHash fromPeer:peer];
-        //DSLog(@"merkleRootLookup: %@: %@", lastBlock, peer);
         if (!lastBlock) {
             [self.masternodeListDiffService issueWithMasternodeListFromPeer:peer];
             DSLog(@"Last Block missing");
@@ -710,12 +700,10 @@
     #endif
         if (result.errorStatus) {
             DSLog(@"Processing status: %ul", result.errorStatus);
-            DSLog(@"•••• -> leave mnlistdiff (error): %@", uint256_hex(message.SHA256));
             dispatch_group_leave(self.processingGroup);
             return;
         }
         [self processMasternodeListDiffResult:result forPeer:peer skipPresenceInRetrieval:NO completion:^{
-            DSLog(@"•••• -> leave mnlistdiff (ok): %@", uint256_hex(message.SHA256));
             dispatch_group_leave(self.processingGroup);
         }];
     }];
@@ -725,7 +713,6 @@
     DSLog(@"•••• -> received qrinfo: %@", uint256_hex(message.SHA256));
     self.quorumRotationService.timedOutAttempt = 0;
     dispatch_group_enter(self.processingGroup);
-    DSLog(@"•••• -> enter qrinfo: %@", uint256_hex(message.SHA256));
     MerkleRootFinder merkleRootLookup = ^UInt256(UInt256 blockHash) {
         DSBlock *lastBlock = [self lastBlockForBlockHash:blockHash fromPeer:peer];
         if (!lastBlock) {
@@ -739,8 +726,7 @@
     [self processQRInfoWith:message context:ctx completion:^(DSQRInfoProcessingResult * _Nonnull result) {
         if (result.errorStatus) {
             DSLog(@"•••• Processing status: %u", result.errorStatus);
-            DSLog(@"•••• -> leave qrinfo (error): %@", uint256_hex(message.SHA256));
-           dispatch_group_leave(self.processingGroup);
+            dispatch_group_leave(self.processingGroup);
             return;
         }
         UInt256 baseBlockHash = result.mnListDiffResultAtTip.baseBlockHash;
@@ -759,7 +745,6 @@
         [message saveToFile:fileName inDirectory:NSCachesDirectory];
 #endif
         [self processQRInfoResult:result forPeer:peer completion:^{
-            DSLog(@"•••• -> leave qrinfo (ok): %@", uint256_hex(message.SHA256));
             dispatch_group_leave(self.processingGroup);
         }];
     }];

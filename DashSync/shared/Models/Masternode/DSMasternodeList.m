@@ -572,6 +572,23 @@
     return self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[uint256_data(registrationHash)];
 }
 
+- (BOOL)hasUnverifiedNonRotatedQuorums {
+    for (NSNumber *quorumType in self.quorums) {
+        DSLLMQType llmqType = (DSLLMQType) quorumType.unsignedIntValue;
+        if (llmqType == self.chain.quorumTypeForISDLocks || ![self.chain shouldProcessQuorumOfType:llmqType]) {
+            continue;
+        }
+        NSDictionary<NSData *, DSQuorumEntry *> *quorumsOfType = self.quorums[quorumType];
+        for (NSData *quorumHash in quorumsOfType) {
+            DSQuorumEntry *entry = quorumsOfType[quorumHash];
+            if (!entry.verified) {
+                return YES;
+            }
+        }
+    }
+    return NO;
+}
+
 - (BOOL)hasUnverifiedRotatedQuorums {
     NSArray<DSQuorumEntry *> *quorumsForISDLock = [self.quorums[@(self.chain.quorumTypeForISDLocks)] allValues];
     for (DSQuorumEntry *entry in quorumsForISDLock) {

@@ -27,6 +27,20 @@
 }
 
 - (void)composeMasternodeListRequest:(NSOrderedSet<NSData *> *)list {
+    NSData *blockHashData = [list lastObject];
+    if (!blockHashData) {
+        return;
+    }
+    if ([self.store hasBlockForBlockHash:blockHashData]) {
+        UInt256 blockHash = blockHashData.UInt256;
+        UInt256 previousBlockHash = [self.store closestKnownBlockHashForBlockHash:blockHash];
+        NSAssert(([self.store heightForBlockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
+        [self requestQuorumRotationInfo:previousBlockHash forBlockHash:blockHash];
+    } else {
+        DSLog(@"Missing block (%@)", blockHashData.hexString);
+        [self removeFromRetrievalQueue:blockHashData];
+    }
+    /*
     NSMutableDictionary<NSData *, NSData *> *hashes = [NSMutableDictionary dictionary];
     for (NSData *blockHashData in list) {
         // we should check the associated block still exists
@@ -38,18 +52,18 @@
             UInt256 prevKnownBlockHash = [self.store closestKnownBlockHashForBlockHash:blockHash];
             UInt256 prevInQueueBlockHash = (pos ? [list objectAtIndex:pos - 1].UInt256 : UINT256_ZERO);
             UInt256 previousBlockHash = pos
-                ? ([self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:prevKnownBlockHash] > [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:prevInQueueBlockHash]
+                ? ([self.store heightForBlockHash:prevKnownBlockHash] > [self.store heightForBlockHash:prevInQueueBlockHash]
                    ? prevKnownBlockHash
                    : prevInQueueBlockHash)
                 : prevKnownBlockHash;
             [hashes setObject:uint256_data(blockHash) forKey:uint256_data(previousBlockHash)];
-            NSAssert(([self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
+            NSAssert(([self.store heightForBlockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash), @"This block height should be known");
             [self requestQuorumRotationInfo:previousBlockHash forBlockHash:blockHash];
         } else {
             DSLog(@"Missing block (%@)", blockHashData.hexString);
             [self removeFromRetrievalQueue:blockHashData];
         }
-    }
+    }*/
 }
 
 
@@ -71,7 +85,7 @@
         uint32_t rotationOffset = dkgParams.mining_window_end;
         uint32_t updateInterval = dkgParams.interval;
         BOOL needUpdate = !self.masternodeListAtH || [self.masternodeListAtH hasUnverifiedRotatedQuorums] ||
-        (lastHeight % updateInterval == rotationOffset && lastHeight >= [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:self.masternodeListAtH.blockHash]  + rotationOffset);
+        (lastHeight % updateInterval == rotationOffset && lastHeight >= [self.store heightForBlockHash:self.masternodeListAtH.blockHash] + rotationOffset);
         if (needUpdate && [self.store addBlockToValidationQueue:merkleBlock]) {
             DSLog(@"QuorumRotationService.Getting masternode list %u", merkleBlock.height);
             NSData *merkleBlockHashData = uint256_data(merkleBlockHash);
