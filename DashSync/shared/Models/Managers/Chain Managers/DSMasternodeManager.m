@@ -597,7 +597,7 @@
     if (![self.quorumRotationService shouldProcessDiffResult:mnListDiffResultAtH skipPresenceInRetrieval:YES]) {
         [self.quorumRotationService issueWithMasternodeListFromPeer:peer];
     } else if (![missingMasternodeListsAtH count] || ![self.store.masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashDataAtH]) {
-        DSLog(@"••• updateStoreWithMasternodeList (h): %u: %@ (%@)", masternodeListAtHC.height, uint256_hex(blockHashAtH), uint256_reverse_hex(blockHashAtH));
+        DSLog(@"••• updateStoreWithMasternodeList (h): %u: %@ (%@)", masternodeListAtH.height, uint256_hex(blockHashAtH), uint256_reverse_hex(blockHashAtH));
         [self updateStoreWithMasternodeList:masternodeListAtH addedMasternodes:mnListDiffResultAtH.addedMasternodes modifiedMasternodes:mnListDiffResultAtH.modifiedMasternodes addedQuorums:mnListDiffResultAtH.addedQuorums completion:^(NSError *error) {}];
     }
 
