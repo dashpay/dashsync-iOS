@@ -587,12 +587,12 @@ PODS:
     - "!ProtoCompiler-gRPCPlugin (~> 1.0)"
     - DAPI-GRPC/Messages
     - gRPC-ProtoRPC
-  - DashSharedCore (0.2.2)
+  - DashSharedCore (0.2.3)
   - DashSync (0.1.0):
     - bls-signatures-pod (= 1.0.7)
     - CocoaLumberjack (= 3.7.2)
     - DAPI-GRPC (= 0.22.0-dev.8)
-    - DashSharedCore (= 0.2.2)
+    - DashSharedCore (= 0.2.3)
     - DSDynamicOptions (= 0.1.2)
     - DWAlertController (= 0.2.1)
     - secp256k1_dash (= 0.1.4-alpha.2)
@@ -660,7 +660,7 @@ PODS:
   - gRPC/Interface-Legacy (1.49.0):
     - gRPC-RxLibrary/Interface (= 1.49.0)
   - KVO-MVVM (0.5.1)
-  - Protobuf (3.21.7)
+  - Protobuf (3.21.8)
   - SDWebImage (5.9.2):
     - SDWebImage/Core (= 5.9.2)
   - SDWebImage/Core (5.9.2)
@@ -719,8 +719,8 @@ SPEC CHECKSUMS:
   CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
   CocoaLumberjack: b7e05132ff94f6ae4dfa9d5bce9141893a21d9da
   DAPI-GRPC: 138d62523bbfe7e88a39896f1053c0bc12390d9f
-  DashSharedCore: ef59bd9be1262928bdacf421eb87c85c9ffa6aad
-  DashSync: e283c76bcb64fb6898390995a6e128d43b7416c6
+  DashSharedCore: bb5d6f24200f908cfbbd351d203db3e7eb4ca722
+  DashSync: 389f51c22914b9eb0c5b702035bc7b7c1e6dbae5
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   gRPC: 64f36d689b2ecd99c4351f74e6f91347cdc65d9f
@@ -728,7 +728,7 @@ SPEC CHECKSUMS:
   gRPC-ProtoRPC: 1c223e0f1732bb8d0b9e9e0ea60cc0fe995b8e2d
   gRPC-RxLibrary: 92327f150e11cf3b1c0f52e083944fd9f5cb5d1e
   KVO-MVVM: 4df3afd1f7ebcb69735458b85db59c4271ada7c6
-  Protobuf: f4128517d7a42302e106cc3afe614ee3a7513e94
+  Protobuf: 0a11f3000cd10ffa17611bf96e66a66b25c956e4
   SDWebImage: 0b42b8719ab0c5257177d5894306e8a336b21cbb
   secp256k1_dash: bd60e467aa853e145cf680dd0f8b196df20f0a62
   tinycbor: d4d71dddda1f8392fbb4249f63faf8552f327590
