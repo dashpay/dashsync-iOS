@@ -494,27 +494,15 @@
             }
             DSLog(@"••• updateStoreWithMasternodeList: %u: %@ (%@)", masternodeList.height, uint256_hex(masternodeListBlockHash), uint256_reverse_hex(masternodeListBlockHash));
             [self updateStoreWithMasternodeList:masternodeList addedMasternodes:result.addedMasternodes modifiedMasternodes:result.modifiedMasternodes addedQuorums:result.addedQuorums completion:^(NSError *error) {
-                /*if (uint256_eq(self.store.lastQueriedBlockHash, masternodeListBlockHash)) {
-                    [self removeOutdatedMasternodeListsBeforeBlockHash:masternodeListBlockHash];
-                }*/
-
                 if ([result hasRotatedQuorumsForChain:self.chain] && !self.chain.isRotatedQuorumsPresented) {
                     uint32_t masternodeListBlockHeight = [self heightForBlockHash:masternodeListBlockHash];
                     DSLog(@"•••• processMasternodeListDiffResult: rotated quorums are presented at height %u: %@, so we'll switch into consuming qrinfo", masternodeListBlockHeight, uint256_hex(masternodeListBlockHash));
                     self.chain.isRotatedQuorumsPresented = YES;
                     self.rotatedQuorumsActivationHeight = masternodeListBlockHeight;
-    //                [self.service cleanAllLists];
-                    // TODO: implement strategy like this
-                    // If we have missing masternode lists BEFORE height where rotated quorums appear
-                    // We need to request in getmnlistd message for reconstruct them
-                    // So it make sense to store height instead of flag
-    //                [self.masternodeListDiffService cleanListsRetrievalQueue];
-                    // TODO: retrieve qrinfo immediately
                     [self.quorumRotationService addToRetrievalQueue:masternodeListBlockHashData];
                     [self.quorumRotationService dequeueMasternodeListRequest];
                     completion();
                }
-                
                 [self.masternodeListDiffService updateAfterProcessingMasternodeListWithBlockHash:masternodeListBlockHashData fromPeer:peer];
             }];
         }
@@ -616,9 +604,6 @@
             }
             DSLog(@"••• updateStoreWithMasternodeList (tip): %u: %@ (%@)", masternodeListAtTip.height, uint256_hex(blockHashAtTip), uint256_reverse_hex(blockHashAtTip));
             [self updateStoreWithMasternodeList:masternodeListAtTip addedMasternodes:mnListDiffResultAtTip.addedMasternodes modifiedMasternodes:mnListDiffResultAtTip.modifiedMasternodes addedQuorums:mnListDiffResultAtTip.addedQuorums completion:^(NSError *error) {}];
-            /*if (uint256_eq(self.store.lastQueriedBlockHash, blockHashAtTip)) {
-                [self removeOutdatedMasternodeListsBeforeBlockHash:blockHashAtTip];
-            }*/
             [self.quorumRotationService updateAfterProcessingMasternodeListWithBlockHash:blockHashDataAtTip fromPeer:peer];
         }
     }

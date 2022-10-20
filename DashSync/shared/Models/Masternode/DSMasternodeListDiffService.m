@@ -31,10 +31,6 @@
             UInt256 blockHash = blockHashData.UInt256;
             DSMasternodeList *masternodeList = [self.delegate masternodeListSerivceDidRequestFileFromBlockHash:self blockHash:blockHash];
             if (masternodeList) {
-                /*if (self.currentMasternodeList && uint256_eq(self.store.lastQueriedBlockHash, masternodeList.blockHash)) {
-                    NSLog(@"--> removeOldMasternodeLists (composeMasternodeListRequest): %u", self.currentMasternodeList.height);
-                    [self.delegate masternodeListSerivceDidRequestRemoveOutdatedMasternodeLists:self blockHash:self.currentMasternodeList.blockHash];
-                }*/
                 [self removeFromRetrievalQueue:blockHashData];
                 [self checkWaitingForQuorums];
             } else {
