@@ -197,7 +197,8 @@ uint8_t shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*blo
         }
         DSMasternodeListService *service = processorContext.isDIP0024 ? manager.quorumRotationService : manager.masternodeListDiffService;
         BOOL hasRemovedFromRetrieval = [service removeRequestInRetrievalForBaseBlockHash:baseBlockHash blockHash:blockHash];
-        BOOL hasLocallyStored = [manager.store hasMasternodeListAt:uint256_data(blockHash)];
+        NSData *blockHashData = uint256_data(blockHash);
+        BOOL hasLocallyStored = [manager.store hasMasternodeListAt:blockHashData];
         DSMasternodeList *list = processorContext.masternodeListLookup(blockHash);
         if (!hasRemovedFromRetrieval) {
             DSLog(@"•••• shouldProcessDiffWithRange: persist in retrieval: %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_reverse_hex(baseBlockHash), uint256_reverse_hex(blockHash));
@@ -208,6 +209,7 @@ uint8_t shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*blo
         BOOL noNeedToVerifyQuorums = !(needToVerifyRotatedQuorums || needToVerifyNonRotatedQuorums);
         if (hasLocallyStored && noNeedToVerifyQuorums) {
             DSLog(@"•••• shouldProcessDiffWithRange: already persist: %u: %@ needToVerifyRotatedQuorums: %d needToVerifyNonRotatedQuorums: %d", blockHeight, uint256_reverse_hex(blockHash), needToVerifyRotatedQuorums, needToVerifyNonRotatedQuorums);
+            [service removeFromRetrievalQueue:blockHashData];
             return 2; // ProcessingError::LocallyStored
         }
         DSMasternodeList *baseMasternodeList = processorContext.masternodeListLookup(baseBlockHash);
