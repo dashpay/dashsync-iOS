@@ -105,12 +105,15 @@
     return [self processRequestFromFileForBlockHash:blockHash];
 }
 
-- (uint32_t)masternodeListSerivceDidRequestHeightForBlockHash:(DSMasternodeListService *)service blockHash:(UInt256)blockHash {
-    return [self heightForBlockHash:blockHash];
+- (void)masternodeListSerivceExceededMaxFailuresForMasternodeList:(DSMasternodeListService *)service blockHash:(UInt256)blockHash {
+    [self removeOutdatedMasternodeListsBeforeBlockHash:blockHash];
 }
 
-- (void)masternodeListSerivceDidRequestRemoveOutdatedMasternodeLists:(DSMasternodeListService *)service blockHash:(UInt256)blockHash {
-    [self removeOutdatedMasternodeListsBeforeBlockHash:blockHash];
+- (void)masternodeListSerivceEmptiedRetrievalQueue:(DSMasternodeListService *)service {
+    if (![self.masternodeListDiffService retrievalQueueCount] && ![self.quorumRotationService retrievalQueueCount]) {
+        [self removeOutdatedMasternodeListsBeforeBlockHash:self.store.lastQueriedBlockHash];
+        [self.chain.chainManager chainFinishedSyncingMasternodeListsAndQuorums:self.chain];
+    }
 }
 
 
@@ -491,9 +494,9 @@
             }
             DSLog(@"••• updateStoreWithMasternodeList: %u: %@ (%@)", masternodeList.height, uint256_hex(masternodeListBlockHash), uint256_reverse_hex(masternodeListBlockHash));
             [self updateStoreWithMasternodeList:masternodeList addedMasternodes:result.addedMasternodes modifiedMasternodes:result.modifiedMasternodes addedQuorums:result.addedQuorums completion:^(NSError *error) {
-                if (uint256_eq(self.store.lastQueriedBlockHash, masternodeListBlockHash)) {
+                /*if (uint256_eq(self.store.lastQueriedBlockHash, masternodeListBlockHash)) {
                     [self removeOutdatedMasternodeListsBeforeBlockHash:masternodeListBlockHash];
-                }
+                }*/
 
                 if ([result hasRotatedQuorumsForChain:self.chain] && !self.chain.isRotatedQuorumsPresented) {
                     uint32_t masternodeListBlockHeight = [self heightForBlockHash:masternodeListBlockHash];
@@ -613,9 +616,9 @@
             }
             DSLog(@"••• updateStoreWithMasternodeList (tip): %u: %@ (%@)", masternodeListAtTip.height, uint256_hex(blockHashAtTip), uint256_reverse_hex(blockHashAtTip));
             [self updateStoreWithMasternodeList:masternodeListAtTip addedMasternodes:mnListDiffResultAtTip.addedMasternodes modifiedMasternodes:mnListDiffResultAtTip.modifiedMasternodes addedQuorums:mnListDiffResultAtTip.addedQuorums completion:^(NSError *error) {}];
-            if (uint256_eq(self.store.lastQueriedBlockHash, blockHashAtTip)) {
+            /*if (uint256_eq(self.store.lastQueriedBlockHash, blockHashAtTip)) {
                 [self removeOutdatedMasternodeListsBeforeBlockHash:blockHashAtTip];
-            }
+            }*/
             [self.quorumRotationService updateAfterProcessingMasternodeListWithBlockHash:blockHashDataAtTip fromPeer:peer];
         }
     }

@@ -103,12 +103,12 @@
     // blockHeight % dkgInterval == activeSigningQuorumsCount + 11 + 8
     DSMasternodeListRequest *matchedRequest = [self requestInRetrievalFor:previousBlockHash blockHash:blockHash];
     if (matchedRequest) {
-        NSLog(@"•••• qrinfo request with such a range already in retrieval: %u..%u %@ .. %@", [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:previousBlockHash], [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:blockHash], uint256_hex(previousBlockHash), uint256_hex(blockHash));
+        NSLog(@"•••• qrinfo request with such a range already in retrieval: %u..%u %@ .. %@", [self.store heightForBlockHash:previousBlockHash], [self.store heightForBlockHash:blockHash], uint256_hex(previousBlockHash), uint256_hex(blockHash));
         return;
     }
     NSArray<NSData *> *baseBlockHashes = @[[NSData dataWithUInt256:previousBlockHash]];
     DSGetQRInfoRequest *request = [DSGetQRInfoRequest requestWithBaseBlockHashes:baseBlockHashes blockHash:blockHash extraShare:YES];
-    NSLog(@"•••• requestQuorumRotationInfo: %u..%u %@ .. %@", [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:previousBlockHash], [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:blockHash], uint256_hex(previousBlockHash), uint256_hex(blockHash));
+    NSLog(@"•••• requestQuorumRotationInfo: %u..%u %@ .. %@", [self.store heightForBlockHash:previousBlockHash], [self.store heightForBlockHash:blockHash], uint256_hex(previousBlockHash), uint256_hex(blockHash));
     [self sendMasternodeListRequest:request];
 }
 
@@ -124,10 +124,10 @@
 //    NSMutableSet<NSString *> *log = [NSMutableSet set];
     NSMutableString *log = [NSMutableString stringWithFormat:@""];
     for (NSData *baseBlockHashData in previousBlockHashes) {
-        [log appendString:[NSString stringWithFormat:@"%u, ", [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:baseBlockHashData.UInt256]]];
+        [log appendString:[NSString stringWithFormat:@"%u, ", [self.store heightForBlockHash:baseBlockHashData.UInt256]]];
     }
     DSGetQRInfoRequest *request = [DSGetQRInfoRequest requestWithBaseBlockHashes:previousBlockHashes blockHash:blockHash extraShare:YES];
-    NSLog(@"•••• requestQuorumRotationInfo: %@: .. %d", log, [self.delegate masternodeListSerivceDidRequestHeightForBlockHash:self blockHash:blockHash]);
+    NSLog(@"•••• requestQuorumRotationInfo: %@: .. %d", log, [self.store heightForBlockHash:blockHash]);
     [self sendMasternodeListRequest:request];
 }
 @end
