@@ -26,7 +26,6 @@
     } else {
         quorumEntryEntity = [DSQuorumEntryEntity anyObjectInContext:context matching:@"quorumHashData == %@ && llmqType == %@ ", uint256_data(potentialQuorumEntry.quorumHash), @(potentialQuorumEntry.llmqType)];
     }
-
     if (!quorumEntryEntity) {
         if (potentialQuorumEntry.saved) { //it was deleted in the meantime, and should be ignored
             return nil;
@@ -37,7 +36,27 @@
     } else {
         [quorumEntryEntity updateAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
     }
+    return quorumEntryEntity;
+}
 
++ (instancetype)quorumEntryEntityFromPotentialQuorumEntryForMerging:(DSQuorumEntry *)potentialQuorumEntry inContext:(NSManagedObjectContext *)context {
+    DSMerkleBlockEntity *block = [DSMerkleBlockEntity merkleBlockEntityForBlockHash:potentialQuorumEntry.quorumHash inContext:context];
+    DSQuorumEntryEntity *quorumEntryEntity = nil;
+    if (block) {
+        quorumEntryEntity = [[block.usedByQuorums filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"quorumHashData == %@ && llmqType == %@ ", uint256_data(potentialQuorumEntry.quorumHash), @(potentialQuorumEntry.llmqType)]] anyObject];
+    } else {
+        quorumEntryEntity = [DSQuorumEntryEntity anyObjectInContext:context matching:@"quorumHashData == %@ && llmqType == %@ ", uint256_data(potentialQuorumEntry.quorumHash), @(potentialQuorumEntry.llmqType)];
+    }
+    if (!quorumEntryEntity) {
+        if (potentialQuorumEntry.saved && potentialQuorumEntry.verified) {
+            return nil;
+        } else {
+            quorumEntryEntity = [DSQuorumEntryEntity managedObjectInBlockedContext:context];
+            [quorumEntryEntity setAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
+        }
+    } else {
+        [quorumEntryEntity updateAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
+    }
     return quorumEntryEntity;
 }
 

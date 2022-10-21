@@ -599,5 +599,36 @@
     return NO;
 }
 
+- (DSQuorumEntry *_Nullable)quorumEntryWithQuorumHash:(UInt256)quorumHash {
+    for (NSNumber *quorumType in self.quorums) {
+        DSLLMQType llmqType = (DSLLMQType) quorumType.unsignedIntValue;
+        NSDictionary<NSData *, DSQuorumEntry *> *quorumsOfType = self.quorums[quorumType];
+        for (NSData *hash in quorumsOfType) {
+            DSQuorumEntry *entry = quorumsOfType[hash];
+            if (uint256_eq(entry.quorumHash, quorumHash)) {
+                return entry;
+            }
+        }
+    }
+    return NULL;
+}
+
+- (DSMasternodeList *)mergedWithMasternodeList:(DSMasternodeList *)masternodeList {
+    for (NSNumber *quorumType in self.quorums) {
+        DSLLMQType llmqType = (DSLLMQType) quorumType.unsignedIntValue;
+        NSDictionary<NSData *, DSQuorumEntry *> *quorumsOfType = self.quorums[quorumType];
+        for (NSData *quorumHash in quorumsOfType) {
+            DSQuorumEntry *entry = quorumsOfType[quorumHash];
+            if (!entry.verified) {
+                DSQuorumEntry *quorumEntry = [masternodeList quorumEntryWithQuorumHash:entry.quorumHash];
+                if (quorumEntry.verified) {
+                    [entry mergedWithQuorumEntry:quorumEntry];
+                }
+            }
+        }
+    }
+    return self;
+
+}
 
 @end

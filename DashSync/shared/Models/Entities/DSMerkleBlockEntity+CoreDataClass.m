@@ -151,4 +151,15 @@
     return merkleBlockEntity;
 }
 
++ (instancetype)createMerkleBlockEntityForBlockHash:(UInt256)blockHash
+                                        blockHeight:(uint32_t)blockHeight
+                                        chainEntity:(DSChainEntity *)chainEntity
+                                          inContext:(NSManagedObjectContext *)context {
+    DSMerkleBlockEntity *merkleBlockEntity = [DSMerkleBlockEntity managedObjectInBlockedContext:context];
+    merkleBlockEntity.blockHash = uint256_data(blockHash);
+    merkleBlockEntity.height = blockHeight;
+    merkleBlockEntity.chain = chainEntity;
+    return merkleBlockEntity;
+}
+
 @end

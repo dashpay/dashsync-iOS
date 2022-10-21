@@ -435,4 +435,24 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
     return [uint256_data(self.quorumEntryHash) hash];
 }
 
+- (void)mergedWithQuorumEntry:(DSQuorumEntry *)quorumEntry {
+    self.allCommitmentAggregatedSignature = quorumEntry.allCommitmentAggregatedSignature;
+    self.commitmentHash = quorumEntry.commitmentHash;
+    self.llmqType = quorumEntry.llmqType;
+    self.quorumEntryHash = quorumEntry.quorumEntryHash;
+    self.quorumHash = quorumEntry.quorumHash;
+    self.quorumPublicKey = quorumEntry.quorumPublicKey;
+    self.quorumThresholdSignature = quorumEntry.quorumThresholdSignature;
+    self.quorumVerificationVectorHash = quorumEntry.quorumVerificationVectorHash;
+    self.quorumIndex = quorumEntry.quorumIndex;
+    self.saved = quorumEntry.saved;
+    self.signersBitset = quorumEntry.signersBitset;
+    self.signersCount = quorumEntry.signersCount;
+    self.validMembersBitset = quorumEntry.validMembersBitset;
+    self.validMembersCount = quorumEntry.validMembersCount;
+    self.verified = quorumEntry.verified;
+    self.version = quorumEntry.version;
+    self.chain = quorumEntry.chain;
+}
+
 @end

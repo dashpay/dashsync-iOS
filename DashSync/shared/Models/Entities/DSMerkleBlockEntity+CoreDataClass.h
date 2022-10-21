@@ -41,6 +41,11 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)deleteBlocksOnChainEntity:(DSChainEntity *)chainEntity;
 
 + (instancetype)merkleBlockEntityForBlockHash:(UInt256)blockHash inContext:(NSManagedObjectContext *)context;
++ (instancetype)createMerkleBlockEntityForBlockHash:(UInt256)blockHash
+                                        blockHeight:(uint32_t)blockHeight
+                                        chainEntity:(DSChainEntity *)chainEntity
+                                          inContext:(NSManagedObjectContext *)context;
+
 @end
 
 NS_ASSUME_NONNULL_END
