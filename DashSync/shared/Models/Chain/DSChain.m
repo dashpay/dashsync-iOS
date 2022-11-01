@@ -2919,7 +2919,7 @@ static dispatch_once_t devnetToken = 0;
         b = [self.insightVerifiedBlocksByHashDictionary objectForKey:uint256_data(blockhash)];
         return b.height;
     }
-    DSLog(@"Requesting unknown blockhash %@ on chain %@ (it's probably being added asyncronously)", uint256_reverse_hex(blockhash), self.name);
+    //DSLog(@"Requesting unknown blockhash %@ on chain %@ (it's probably being added asyncronously)", uint256_reverse_hex(blockhash), self.name);
     return UINT32_MAX;
 }
 
@@ -3848,6 +3848,9 @@ static dispatch_once_t devnetToken = 0;
         } else {
             //remember to not delete blocks needed for quorums
             NSArray<DSMerkleBlockEntity *> *oldBlockHeaders = [DSMerkleBlockEntity objectsInContext:self.chainManagedObjectContext matching:@"(chain == %@) && masternodeList == NIL && (usedByQuorums.@count == 0) && !(blockHash in %@)", [self chainEntityInContext:self.chainManagedObjectContext], blocks.allKeys];
+            /*for (DSMerkleBlockEntity *e in oldBlockHeaders) {
+                DSLog(@"• remove Merkle block: %u: %@", e.height, e.blockHash.hexString);
+            }*/
             [DSMerkleBlockEntity deleteObjects:oldBlockHeaders inContext:self.chainManagedObjectContext];
         }
         DSChainEntity *chainEntity = [self chainEntityInContext:self.chainManagedObjectContext];
@@ -3856,6 +3859,7 @@ static dispatch_once_t devnetToken = 0;
             @autoreleasepool {
                 NSData *blockHash = e.blockHash;
                 [e setAttributesFromBlock:blocks[blockHash] forChainEntity:chainEntity];
+                //DSLog(@"+ add Merkle block.1: %u: %@", e.height, e.blockHash.hexString);
                 [blocks removeObjectForKey:blockHash];
             }
         }
@@ -3864,6 +3868,7 @@ static dispatch_once_t devnetToken = 0;
             @autoreleasepool {
                 DSMerkleBlockEntity *e = [DSMerkleBlockEntity managedObjectInBlockedContext:self.chainManagedObjectContext];
                 [e setAttributesFromBlock:block forChainEntity:chainEntity];
+                //DSLog(@"+ add Merkle block.2: %u: %@", e.height, e.blockHash.hexString);
             }
         }
 

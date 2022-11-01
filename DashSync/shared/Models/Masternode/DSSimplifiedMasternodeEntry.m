@@ -13,6 +13,7 @@
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
 #import "DSWallet.h"
 #import "NSData+Dash.h"
+#import "NSDictionary+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"
 #import <arpa/inet.h>
@@ -473,6 +474,73 @@
     DSSimplifiedMasternodeEntryEntity *masternodeEntity = [self simplifiedMasternodeEntryEntityInContext:context];
     masternodeEntity.platformPing = self.platformPing;
     masternodeEntity.platformPingDate = self.platformPingDate;
+}
+
+- (void)mergedWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlockHeight:(uint32_t)blockHeight {
+    if (self.updateHeight < blockHeight) {
+        self.updateHeight = blockHeight;
+        if (!uint128_eq(self.address, masternodeEntry.address)) {
+            self.address = masternodeEntry.address;
+        }
+        if (!uint256_eq(self.confirmedHash, masternodeEntry.confirmedHash)) {
+            self.confirmedHash = masternodeEntry.confirmedHash;
+            self.knownConfirmedAtHeight = masternodeEntry.knownConfirmedAtHeight;
+        }
+        if (self.port != masternodeEntry.port) {
+            self.port = masternodeEntry.port;
+        }
+        if (!uint160_eq(self.keyIDVoting, masternodeEntry.keyIDVoting)) {
+            self.keyIDVoting = masternodeEntry.keyIDVoting;
+        }
+        if (!uint384_eq(self.operatorPublicKey, masternodeEntry.operatorPublicKey)) {
+            self.operatorPublicKey = masternodeEntry.operatorPublicKey;
+        }
+        if (self.isValid != masternodeEntry.isValid) {
+            self.isValid = masternodeEntry.isValid;
+        }
+        self.simplifiedMasternodeEntryHash = masternodeEntry.simplifiedMasternodeEntryHash;
+        [self mergePreviousFieldsUsingSimplifiedMasternodeEntrysPreviousFields:masternodeEntry atBlockHeight:blockHeight];
+    }
+    else if (blockHeight < self.updateHeight) {
+        [self mergePreviousFieldsUsingSimplifiedMasternodeEntrysPreviousFields:masternodeEntry atBlockHeight:blockHeight];
+    }
+}
+
+- (NSDictionary<NSData *, id> *)blockHashDictionaryFromBlockDictionary:(NSDictionary<DSBlock *, id> *)blockHashDictionary {
+    NSMutableDictionary *rDictionary = [NSMutableDictionary dictionary];
+    for (DSBlock *block in blockHashDictionary) {
+        NSData *blockHash = uint256_data(block.blockHash);
+        if (blockHash) {
+            rDictionary[blockHash] = blockHashDictionary[block];
+        }
+    }
+    return rDictionary;
+}
+
+- (void)mergePreviousFieldsUsingSimplifiedMasternodeEntrysPreviousFields:(DSSimplifiedMasternodeEntry *)entry atBlockHeight:(uint32_t)blockHeight {
+    //SimplifiedMasternodeEntryHashes
+    NSDictionary *oldPreviousSimplifiedMasternodeEntryHashesDictionary = entry.previousSimplifiedMasternodeEntryHashes;
+    if (oldPreviousSimplifiedMasternodeEntryHashesDictionary && oldPreviousSimplifiedMasternodeEntryHashesDictionary.count) {
+        self.previousSimplifiedMasternodeEntryHashes = [NSDictionary mergeDictionary:self.previousSimplifiedMasternodeEntryHashes withDictionary:oldPreviousSimplifiedMasternodeEntryHashesDictionary];
+    }
+
+    //OperatorBLSPublicKeys
+    NSDictionary *oldPreviousOperatorBLSPublicKeysDictionary = entry.previousOperatorPublicKeys;
+    if (oldPreviousOperatorBLSPublicKeysDictionary && oldPreviousOperatorBLSPublicKeysDictionary.count) {
+        self.previousOperatorPublicKeys = [NSDictionary mergeDictionary:self.previousOperatorPublicKeys withDictionary:oldPreviousOperatorBLSPublicKeysDictionary];
+    }
+
+    //MasternodeValidity
+    NSDictionary *oldPreviousValidityDictionary = entry.previousValidity;
+    if (oldPreviousValidityDictionary && oldPreviousValidityDictionary.count) {
+        self.previousValidity = [NSDictionary mergeDictionary:self.previousValidity withDictionary:oldPreviousValidityDictionary];
+    }
+
+    if (uint256_is_not_zero(self.confirmedHash) && uint256_is_not_zero(entry.confirmedHash) && (self.knownConfirmedAtHeight > blockHeight)) {
+        //we now know it was confirmed earlier so update to earlier
+        self.knownConfirmedAtHeight = blockHeight;
+    }
+
 }
 
 @end

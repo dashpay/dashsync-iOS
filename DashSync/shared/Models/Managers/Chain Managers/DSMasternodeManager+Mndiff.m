@@ -42,10 +42,10 @@ MasternodeList *getMasternodeListByBlockHash(uint8_t (*block_hash)[32], const vo
     @synchronized (context) {
         processorContext = (__bridge DSMasternodeProcessorContext *)context;
         DSMasternodeList *list = processorContext.masternodeListLookup(blockHash);
-        //NSLog(@"••• getMasternodeListByBlockHash: %@: %@", uint256_hex(blockHash), list.debugDescription);
-    //    if (list) {
-    //        [list saveToJsonFile];
-    //    }
+//        DSLog(@"••• getMasternodeListByBlockHash: %@: %@", uint256_hex(blockHash), list.debugDescription);
+//        if (list) {
+//            [list saveToJsonFileExtended:[NSString stringWithFormat:@"MNLIST_%@_%@_%@.json", @(list.height), @([[NSDate date] timeIntervalSince1970]), @"getMasternodeListByBlockHash"]];
+//        }
         if (list) {
             c_list = [list ffi_malloc];
         }
@@ -230,7 +230,7 @@ bool shouldProcessLLMQType(uint8_t quorum_type, const void *context) {
     @synchronized (context) {
         processorContext = (__bridge DSMasternodeProcessorContext *)context;
         DSChain *chain = processorContext.chain;
-        should = [chain shouldProcessQuorumOfType:llmqType];
+//        should = [chain shouldProcessQuorumOfType:llmqType];
         BOOL isQRContext = processorContext.isDIP0024;
         if (chain.quorumTypeForISDLocks == llmqType) {
             should = isQRContext && chain.isRotatedQuorumsPresented;
@@ -250,7 +250,7 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
     UInt256 commitmentHash = *((UInt256 *)data->commitment_hash);
     UInt768 quorumThresholdSignature = *((UInt768 *)data->threshold_signature);
     UInt384 quorumPublicKey = *((UInt384 *)data->public_key);
-    NSLog(@"••• validateLLMQ: items: %lu: %@", count, uint384_hex(quorumPublicKey));
+    //NSLog(@"••• validateLLMQ: items: %lu: %@", count, uint384_hex(quorumPublicKey));
     NSMutableArray<DSBLSKey *> *publicKeyArray = [NSMutableArray array];
     for (NSUInteger i = 0; i < count; i++) {
         UInt384 publicKey = *((UInt384 *)items[i]);

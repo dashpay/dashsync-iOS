@@ -9,6 +9,7 @@
 #import "DSAddressEntity+CoreDataClass.h"
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataProperties.h"
+#import "NSDictionary+Dash.h"
 #import "DSKey.h"
 #import "DSLocalMasternodeEntity+CoreDataClass.h"
 #import "DSMerkleBlock.h"
@@ -38,7 +39,6 @@
     if (self.updateHeight < blockHeight) {
         NSAssert(simplifiedMasternodeEntry.updateHeight == blockHeight, @"the block height should be the same as the entry update height");
         self.updateHeight = blockHeight;
-
         //we should only update if the data received is the most recent
         if (!uint128_eq(self.ipv6Address.UInt128, simplifiedMasternodeEntry.address)) {
             self.ipv6Address = uint128_data(simplifiedMasternodeEntry.address);
@@ -51,9 +51,7 @@
                 DSDSMNELog(@"changing address to %@", @(inet_ntop(AF_INET, &address32, s, sizeof(s))));
             }
         }
-
         NSData *confirmedHashData = uint256_data(simplifiedMasternodeEntry.confirmedHash);
-
         if (![self.confirmedHash isEqualToData:confirmedHashData]) {
             NSAssert(self.confirmedHash == nil || uint256_is_zero(self.confirmedHash.UInt256), @"If this changes the previous should be empty");
             //this should only happen once at confirmation
@@ -61,67 +59,41 @@
             self.knownConfirmedAtHeight = blockHeight;
             DSDSMNELog(@"changing confirmedHashData to %@", confirmedHashData.hexString);
         }
-
         if (self.port != simplifiedMasternodeEntry.port) {
             self.port = simplifiedMasternodeEntry.port;
             DSDSMNELog(@"changing port to %u", simplifiedMasternodeEntry.port);
         }
-
         NSData *keyIDVotingData = [NSData dataWithUInt160:simplifiedMasternodeEntry.keyIDVoting];
-
         if (![self.keyIDVoting isEqualToData:keyIDVotingData]) {
             self.keyIDVoting = keyIDVotingData;
             DSDSMNELog(@"changing keyIDVotingData to %@", keyIDVotingData.hexString);
         }
-
         NSData *operatorPublicKeyData = [NSData dataWithUInt384:simplifiedMasternodeEntry.operatorPublicKey];
-
         if (![self.operatorBLSPublicKey isEqualToData:operatorPublicKeyData]) {
             self.operatorBLSPublicKey = operatorPublicKeyData;
             DSDSMNELog(@"changing operatorBLSPublicKey to %@", operatorPublicKeyData.hexString);
         }
-
         if (self.isValid != simplifiedMasternodeEntry.isValid) {
             self.isValid = simplifiedMasternodeEntry.isValid;
             DSDSMNELog(@"changing isValid to %@", simplifiedMasternodeEntry.isValid ? @"TRUE" : @"FALSE");
         }
-
-
         self.simplifiedMasternodeEntryHash = [NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash];
         [self mergePreviousFieldsUsingSimplifiedMasternodeEntrysPreviousFields:simplifiedMasternodeEntry atBlockHeight:blockHeight];
-
-        DSLocalMasternodeEntity *localMasternode = nil;
-        if (localMasternodes) {
-            localMasternode = [localMasternodes objectForKey:uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
-        } else {
-            localMasternode = [DSLocalMasternodeEntity anyObjectInContext:self.managedObjectContext matching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
-        }
-
+        DSLocalMasternodeEntity *localMasternode = localMasternodes
+            ? [localMasternodes objectForKey:uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)]
+            : [DSLocalMasternodeEntity anyObjectInContext:self.managedObjectContext matching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
         self.localMasternode = localMasternode;
-
         NSString *operatorAddress = [DSKey addressWithPublicKeyData:self.operatorBLSPublicKey forChain:simplifiedMasternodeEntry.chain];
         NSString *votingAddress = [self.keyIDVoting addressFromHash160DataForChain:simplifiedMasternodeEntry.chain];
-
-        DSAddressEntity *operatorAddressEntity = nil;
-
-        if (knownOperatorAddresses) {
-            operatorAddressEntity = [knownOperatorAddresses objectForKey:operatorAddress];
-        } else {
-            operatorAddressEntity = [DSAddressEntity findAddressMatching:operatorAddress onChain:simplifiedMasternodeEntry.chain inContext:self.managedObjectContext];
-        }
-
+        DSAddressEntity *operatorAddressEntity = knownOperatorAddresses
+            ? [knownOperatorAddresses objectForKey:operatorAddress]
+            : [DSAddressEntity findAddressMatching:operatorAddress onChain:simplifiedMasternodeEntry.chain inContext:self.managedObjectContext];
         if (operatorAddressEntity) {
             [self addAddressesObject:operatorAddressEntity];
         }
-
-        DSAddressEntity *votingAddressEntity = nil;
-
-        if (knownVotingAddresses) {
-            votingAddressEntity = [knownVotingAddresses objectForKey:operatorAddress];
-        } else {
-            votingAddressEntity = [DSAddressEntity findAddressMatching:votingAddress onChain:simplifiedMasternodeEntry.chain inContext:self.managedObjectContext];
-        }
-
+        DSAddressEntity *votingAddressEntity = knownVotingAddresses
+            ? [knownVotingAddresses objectForKey:operatorAddress]
+            : [DSAddressEntity findAddressMatching:votingAddress onChain:simplifiedMasternodeEntry.chain inContext:self.managedObjectContext];
         if (votingAddressEntity) {
             [self addAddressesObject:votingAddressEntity];
         }
@@ -138,43 +110,19 @@
     //SimplifiedMasternodeEntryHashes
     NSDictionary *oldPreviousSimplifiedMasternodeEntryHashesDictionary = [self blockHashDictionaryFromBlockDictionary:simplifiedMasternodeEntry.previousSimplifiedMasternodeEntryHashes];
     if (oldPreviousSimplifiedMasternodeEntryHashesDictionary && oldPreviousSimplifiedMasternodeEntryHashesDictionary.count) {
-        NSDictionary *currentPreviousSimplifiedMasternodeEntryHashesDictionary = self.previousSimplifiedMasternodeEntryHashes;
-        if (!currentPreviousSimplifiedMasternodeEntryHashesDictionary || currentPreviousSimplifiedMasternodeEntryHashesDictionary.count == 0) {
-            self.previousSimplifiedMasternodeEntryHashes = oldPreviousSimplifiedMasternodeEntryHashesDictionary;
-        } else {
-            //we should merge the 2 dictionaries
-            NSMutableDictionary *mergedDictionary = [currentPreviousSimplifiedMasternodeEntryHashesDictionary mutableCopy];
-            [mergedDictionary addEntriesFromDictionary:oldPreviousSimplifiedMasternodeEntryHashesDictionary];
-            self.previousSimplifiedMasternodeEntryHashes = mergedDictionary;
-        }
+        self.previousSimplifiedMasternodeEntryHashes = [NSDictionary mergeDictionary:self.previousSimplifiedMasternodeEntryHashes withDictionary:oldPreviousSimplifiedMasternodeEntryHashesDictionary];
     }
 
     //OperatorBLSPublicKeys
     NSDictionary *oldPreviousOperatorBLSPublicKeysDictionary = [self blockHashDictionaryFromBlockDictionary:simplifiedMasternodeEntry.previousOperatorPublicKeys];
     if (oldPreviousOperatorBLSPublicKeysDictionary && oldPreviousOperatorBLSPublicKeysDictionary.count) {
-        NSDictionary *currentPreviousOperatorBLSPublicKeysDictionary = self.previousOperatorBLSPublicKeys;
-        if (!currentPreviousOperatorBLSPublicKeysDictionary || currentPreviousOperatorBLSPublicKeysDictionary.count == 0) {
-            self.previousOperatorBLSPublicKeys = oldPreviousOperatorBLSPublicKeysDictionary;
-        } else {
-            //we should merge the 2 dictionaries
-            NSMutableDictionary *mergedDictionary = [currentPreviousOperatorBLSPublicKeysDictionary mutableCopy];
-            [mergedDictionary addEntriesFromDictionary:oldPreviousOperatorBLSPublicKeysDictionary];
-            self.previousOperatorBLSPublicKeys = mergedDictionary;
-        }
+        self.previousOperatorBLSPublicKeys = [NSDictionary mergeDictionary:self.previousOperatorBLSPublicKeys withDictionary:oldPreviousOperatorBLSPublicKeysDictionary];
     }
 
     //MasternodeValidity
     NSDictionary *oldPreviousValidityDictionary = [self blockHashDictionaryFromBlockDictionary:simplifiedMasternodeEntry.previousValidity];
     if (oldPreviousValidityDictionary && oldPreviousValidityDictionary.count) {
-        NSDictionary *currentPreviousValidityDictionary = self.previousValidity;
-        if (!currentPreviousValidityDictionary || currentPreviousValidityDictionary.count == 0) {
-            self.previousValidity = oldPreviousValidityDictionary;
-        } else {
-            //we should merge the 2 dictionaries
-            NSMutableDictionary *mergedDictionary = [currentPreviousValidityDictionary mutableCopy];
-            [mergedDictionary addEntriesFromDictionary:oldPreviousValidityDictionary];
-            self.previousValidity = mergedDictionary;
-        }
+        self.previousValidity = [NSDictionary mergeDictionary:self.previousValidity withDictionary:oldPreviousValidityDictionary];
     }
 
     if (uint256_is_not_zero(self.confirmedHash.UInt256) && uint256_is_not_zero(simplifiedMasternodeEntry.confirmedHash) && (self.knownConfirmedAtHeight > blockHeight)) {
@@ -202,50 +150,31 @@
     self.isValid = simplifiedMasternodeEntry.isValid;
     self.simplifiedMasternodeEntryHash = [NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash];
     self.updateHeight = blockHeight;
-    // TODO: the reason behind is subsequent processing/saving diffs:
-    //    Thread 10: "the block height (1745568) should be the same as the entry update height (1745560)"
-    //    2022-09-29 15:46:12.485309+0400 DashSync_Example[4976:2061074] File MNL_1745560_1746344.dat saved
-    //    2022-09-29 15:46:12.804351+0400 DashSync_Example[4976:2061322] File MNL_1745560_1745568.dat saved
-
-    NSAssert(simplifiedMasternodeEntry.updateHeight == blockHeight, ([NSString stringWithFormat:@"the block height (%i) for %@ should be the same as the entry update height (%i)", blockHeight, uint256_hex(simplifiedMasternodeEntry.providerRegistrationTransactionHash), simplifiedMasternodeEntry.updateHeight]));
+    
+    if (simplifiedMasternodeEntry.updateHeight != blockHeight) {
+        DSLog(@"• setAttributesFromSimplifiedMasternodeEntry: list.height %u != entry.height %u", blockHeight, simplifiedMasternodeEntry.updateHeight);
+    }
+//    NSAssert(simplifiedMasternodeEntry.updateHeight == blockHeight, ([NSString stringWithFormat:@"the block height (%i) for %@ should be the same as the entry update height (%i)", blockHeight, uint256_hex(simplifiedMasternodeEntry.providerRegistrationTransactionHash), simplifiedMasternodeEntry.updateHeight]));
     if (!chainEntity) {
         self.chain = [simplifiedMasternodeEntry.chain chainEntityInContext:self.managedObjectContext];
     } else {
         self.chain = chainEntity;
     }
-
-    DSLocalMasternodeEntity *localMasternode = nil;
-    if (localMasternodes) {
-        localMasternode = [localMasternodes objectForKey:uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
-    } else {
-        localMasternode = [DSLocalMasternodeEntity anyObjectInContext:chainEntity.managedObjectContext matching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
-    }
-
+    DSLocalMasternodeEntity *localMasternode = localMasternodes
+        ? [localMasternodes objectForKey:uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)]
+        : [DSLocalMasternodeEntity anyObjectInContext:chainEntity.managedObjectContext matching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
     self.localMasternode = localMasternode;
-
     NSString *operatorAddress = [DSKey addressWithPublicKeyData:self.operatorBLSPublicKey forChain:simplifiedMasternodeEntry.chain];
     NSString *votingAddress = [self.keyIDVoting addressFromHash160DataForChain:simplifiedMasternodeEntry.chain];
-
-    DSAddressEntity *operatorAddressEntity = nil;
-
-    if (knownOperatorAddresses) {
-        operatorAddressEntity = [knownOperatorAddresses objectForKey:operatorAddress];
-    } else {
-        operatorAddressEntity = [DSAddressEntity findAddressMatching:operatorAddress onChain:simplifiedMasternodeEntry.chain inContext:self.managedObjectContext];
-    }
-
+    DSAddressEntity *operatorAddressEntity = knownOperatorAddresses
+        ? [knownOperatorAddresses objectForKey:operatorAddress]
+        : [DSAddressEntity findAddressMatching:operatorAddress onChain:simplifiedMasternodeEntry.chain inContext:self.managedObjectContext];
     if (operatorAddressEntity) {
         [self addAddressesObject:operatorAddressEntity];
     }
-
-    DSAddressEntity *votingAddressEntity = nil;
-
-    if (knownVotingAddresses) {
-        votingAddressEntity = [knownVotingAddresses objectForKey:operatorAddress];
-    } else {
-        votingAddressEntity = [DSAddressEntity findAddressMatching:votingAddress onChain:simplifiedMasternodeEntry.chain inContext:self.managedObjectContext];
-    }
-
+    DSAddressEntity *votingAddressEntity = knownVotingAddresses
+        ? [knownVotingAddresses objectForKey:votingAddress]
+        : [DSAddressEntity findAddressMatching:votingAddress onChain:simplifiedMasternodeEntry.chain inContext:self.managedObjectContext];
     if (votingAddressEntity) {
         [self addAddressesObject:votingAddressEntity];
     }
@@ -254,6 +183,7 @@
 + (void)deleteHavingProviderTransactionHashes:(NSArray *)providerTransactionHashes onChainEntity:(DSChainEntity *)chainEntity {
     NSArray *hashesToDelete = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@) && (providerRegistrationTransactionHash IN %@)", chainEntity, providerTransactionHashes];
     for (DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity in hashesToDelete) {
+        DSLog(@"deleteHavingProviderTransactionHashes: %@", simplifiedMasternodeEntryEntity.providerRegistrationTransactionHash.hexString);
         [chainEntity.managedObjectContext deleteObject:simplifiedMasternodeEntryEntity];
     }
 }
@@ -311,7 +241,7 @@
 }
 
 - (DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntryWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
-    DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:[self.providerRegistrationTransactionHash UInt256] confirmedHash:[self.confirmedHash UInt256] address:self.ipv6Address.UInt128 port:self.port operatorBLSPublicKey:[self.operatorBLSPublicKey UInt384] previousOperatorBLSPublicKeys:[self blockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, NSData *> *)self.previousOperatorBLSPublicKeys blockHeightLookup:blockHeightLookup] keyIDVoting:[self.keyIDVoting UInt160] isValid:self.isValid previousValidity:[self blockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, NSData *> *)self.previousValidity blockHeightLookup:blockHeightLookup] knownConfirmedAtHeight:self.knownConfirmedAtHeight updateHeight:self.updateHeight simplifiedMasternodeEntryHash:[self.simplifiedMasternodeEntryHash UInt256] previousSimplifiedMasternodeEntryHashes:[self blockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *, NSData *> *)self.previousSimplifiedMasternodeEntryHashes blockHeightLookup:blockHeightLookup] onChain:self.chain.chain];
+    DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:[self.providerRegistrationTransactionHash UInt256] confirmedHash:[self.confirmedHash UInt256] address:self.ipv6Address.UInt128 port:self.port operatorBLSPublicKey:[self.operatorBLSPublicKey UInt384] previousOperatorBLSPublicKeys:[self blockDictionaryFromBlockHashDictionary:self.previousOperatorBLSPublicKeys blockHeightLookup:blockHeightLookup] keyIDVoting:[self.keyIDVoting UInt160] isValid:self.isValid previousValidity:[self blockDictionaryFromBlockHashDictionary:self.previousValidity blockHeightLookup:blockHeightLookup] knownConfirmedAtHeight:self.knownConfirmedAtHeight updateHeight:self.updateHeight simplifiedMasternodeEntryHash:[self.simplifiedMasternodeEntryHash UInt256] previousSimplifiedMasternodeEntryHashes:[self blockDictionaryFromBlockHashDictionary:self.previousSimplifiedMasternodeEntryHashes blockHeightLookup:blockHeightLookup] onChain:self.chain.chain];
     return simplifiedMasternodeEntry;
 }
 

@@ -197,7 +197,11 @@
         [self dequeueMasternodeListRequest];
         return NO;
     }
-    return [diffResult isTotallyValid];
+    BOOL isValid = [diffResult isTotallyValid];
+    if (!isValid) {
+        DSLog(@"••• Invalid result: %@", diffResult.debugDescription);
+    }
+    return isValid;
 
 }
 
@@ -206,7 +210,6 @@
     [self dequeueMasternodeListRequest];
     [self checkWaitingForQuorums];
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
-
 }
 
 - (void)addToRetrievalQueue:(NSData *)masternodeBlockHashData {

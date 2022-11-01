@@ -214,7 +214,7 @@ static NSString *const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.back
 
 - (void)wipeMasternodeDataForChain:(DSChain *)chain inContext:(NSManagedObjectContext *)context {
     NSParameterAssert(chain);
-
+    DSLog(@"wipeMasternodeDataForChain: %@", chain);
     [self stopSyncForChain:chain];
     [context performBlockAndWait:^{
         DSChainEntity *chainEntity = [chain chainEntityInContext:context];

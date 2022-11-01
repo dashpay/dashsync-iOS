@@ -81,7 +81,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (DSMasternodeList *)mergedWithMasternodeList:(DSMasternodeList *)masternodeList;
 - (BOOL)hasUnverifiedNonRotatedQuorums;
 - (BOOL)hasUnverifiedRotatedQuorums;
-- (void)saveToJsonFile;
+- (void)saveToJsonFile:(NSString *)fileName;
+- (void)saveToJsonFileExtended:(NSString *)fileName;
 
 @end
 

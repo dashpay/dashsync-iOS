@@ -157,7 +157,7 @@
                                                            queue:nil
                                                       usingBlock:^(NSNotification *note) {
                                                           if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
-                                                              DSLogPrivate(@"update blockheight");
+                                                              //DSLogPrivate(@"update blockheight");
                                                               [self updateBlockHeight];
                                                               [self updateHeaderHeight];
                                                           }
@@ -196,7 +196,7 @@
                                                            queue:nil
                                                       usingBlock:^(NSNotification *note) {
                                                           if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
-                                                              DSLogPrivate(@"update spork count");
+                                                              //DSLogPrivate(@"update spork count");
                                                               [self updateSporks];
                                                           }
                                                       }];
@@ -205,7 +205,7 @@
                                                                                  queue:nil
                                                                             usingBlock:^(NSNotification *note) {
                                                                                 if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
-                                                                                    DSLogPrivate(@"update masternode list");
+                                                                                    //DSLogPrivate(@"update masternode list");
                                                                                     [self updateKnownMasternodes];
                                                                                     [self updateMasternodeLists];
                                                                                 }
@@ -217,7 +217,7 @@
                                                                              queue:nil
                                                                         usingBlock:^(NSNotification *note) {
                                                                             if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
-                                                                                DSLogPrivate(@"update quorums");
+                                                                                //DSLogPrivate(@"update quorums");
                                                                                 [self updateQuorumsList];
                                                                             }
                                                                         }];
@@ -226,7 +226,7 @@
                                                                                             queue:nil
                                                                                        usingBlock:^(NSNotification *note) {
                                                                                            if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
-                                                                                               NSLog(@"update governance object count");
+                                                                                               //NSLog(@"update governance object count");
                                                                                                [self updateReceivedGovernanceProposalCount];
                                                                                            }
                                                                                        }];
@@ -235,7 +235,7 @@
                                                                                                     queue:nil
                                                                                                usingBlock:^(NSNotification *note) {
                                                                                                    if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
-                                                                                                       DSLogPrivate(@"update governance received object count");
+                                                                                                       //DSLogPrivate(@"update governance received object count");
                                                                                                        [self updateReceivedGovernanceProposalCount];
                                                                                                    }
                                                                                                }];
@@ -245,7 +245,7 @@
                                                                                           queue:nil
                                                                                      usingBlock:^(NSNotification *note) {
                                                                                          if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
-                                                                                             DSLogPrivate(@"update governance vote count");
+                                                                                             //DSLogPrivate(@"update governance vote count");
                                                                                              [self updateReceivedGovernanceVoteCount];
                                                                                          }
                                                                                      }];
@@ -254,7 +254,7 @@
                                                                                                   queue:nil
                                                                                              usingBlock:^(NSNotification *note) {
                                                                                                  if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
-                                                                                                     DSLogPrivate(@"update governance received vote count");
+                                                                                                     //DSLogPrivate(@"update governance received vote count");
                                                                                                      [self updateReceivedGovernanceVoteCount];
                                                                                                  }
                                                                                              }];

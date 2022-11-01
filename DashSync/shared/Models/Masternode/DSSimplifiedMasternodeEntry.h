@@ -89,5 +89,6 @@
 - (void)setPlatformPing:(uint64_t)platformPing at:(NSDate *)time;
 
 - (void)savePlatformPingInfoInContext:(NSManagedObjectContext *)context;
+- (void)mergedWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlockHeight:(uint32_t)blockHeight;
 
 @end
