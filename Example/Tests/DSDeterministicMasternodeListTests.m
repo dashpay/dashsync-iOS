@@ -232,6 +232,7 @@
                                          quorumVerificationVectorHash:((NSString *)llmq[@"quorumVvecHash"]).hexToData.UInt256
                                              quorumThresholdSignature:((NSString *)llmq[@"quorumSig"]).hexToData.UInt768
                                      allCommitmentAggregatedSignature:((NSString *)llmq[@"membersSig"]).hexToData.UInt768
+                                                      quorumEntryHash:UINT256_ZERO
                                                               onChain:chain];
 
         [quorums addObject:entry];

@@ -50,6 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
    quorumVerificationVectorHash:(UInt256)quorumVerificationVectorHash
        quorumThresholdSignature:(UInt768)quorumThresholdSignature
 allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
+                quorumEntryHash:(UInt256)quorumEntryHash
                         onChain:(DSChain *)chain;
 
 - (instancetype)initWithEntry:(LLMQEntry *)entry onChain:(DSChain *)chain;

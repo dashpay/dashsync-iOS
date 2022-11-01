@@ -80,6 +80,7 @@
    quorumVerificationVectorHash:(UInt256)quorumVerificationVectorHash
        quorumThresholdSignature:(UInt768)quorumThresholdSignature
 allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
+                quorumEntryHash:(UInt256)quorumEntryHash
                         onChain:(DSChain *)chain {
     if (!(self = [super init])) return nil;
 
@@ -96,6 +97,7 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
     self.quorumVerificationVectorHash = quorumVerificationVectorHash;
     self.quorumThresholdSignature = quorumThresholdSignature;
     self.allCommitmentAggregatedSignature = allCommitmentAggregatedSignature;
+    self.quorumEntryHash = quorumEntryHash;
     self.chain = chain;
 
     return self;

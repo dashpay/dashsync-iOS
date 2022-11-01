@@ -153,7 +153,7 @@
 
 + (DSQuorumEntryEntity *)quorumEntryForHash:(NSData *)quorumEntryHash onChainEntity:(DSChainEntity *)chainEntity {
     /// Seems to be unused or quorumEntryHash must be changed into commitmentHash ?
-    NSArray *objects = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@) && (quorumEntryHash == %@)", chainEntity, quorumEntryHash];
+    NSArray *objects = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@) && (commitmentHash == %@)", chainEntity, quorumEntryHash];
     return [objects firstObject];
 }
 
@@ -166,9 +166,7 @@
 }
 
 - (DSQuorumEntry *)quorumEntry {
-//    DSQuorumEntry *quorumEntry = [[DSQuorumEntry alloc] initWithVersion:self.version type:self.llmqType quorumHash:self.quorumHash quorumPublicKey:self.quorumPublicKey commitmentHash:self.commitmentHash verified:self.verified onChain:self.chain.chain];
-    DSQuorumEntry *quorumEntry = [[DSQuorumEntry alloc] initWithVersion:self.version type:self.llmqType quorumHash:self.quorumHash quorumIndex:self.quorumIndex quorumPublicKey:self.quorumPublicKey quorumEntryHash:self.commitmentHash verified:self.version onChain:self.chain.chain];
-    return quorumEntry;
+    return [[DSQuorumEntry alloc] initWithVersion:self.version type:self.llmqType quorumHash:self.quorumHash quorumIndex:self.quorumIndex signersCount:self.signersCount signersBitset:self.signersBitset validMembersCount:self.validMembersCount validMembersBitset:self.validMembersBitset quorumPublicKey:self.quorumPublicKey quorumVerificationVectorHash:self.quorumVerificationVectorHash quorumThresholdSignature:self.quorumThresholdSignature allCommitmentAggregatedSignature:self.allCommitmentAggregatedSignature quorumEntryHash:self.commitmentHash onChain:self.chain.chain];
 }
 
 @end
