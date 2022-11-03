@@ -204,7 +204,7 @@ uint8_t shouldProcessDiffWithRange(uint8_t (*base_block_hash)[32], uint8_t (*blo
             DSLog(@"•••• shouldProcessDiffWithRange: persist in retrieval: %u..%u %@ .. %@", baseBlockHeight, blockHeight, uint256_reverse_hex(baseBlockHash), uint256_reverse_hex(blockHash));
             return 1; // ProcessingError::PersistInRetrieval
         }
-        BOOL needToVerifyRotatedQuorums = processorContext.isDIP0024 && [list hasUnverifiedRotatedQuorums];
+        BOOL needToVerifyRotatedQuorums = processorContext.isDIP0024 && (!manager.quorumRotationService.masternodeListAtH || [manager.quorumRotationService.masternodeListAtH hasUnverifiedRotatedQuorums]);
         BOOL needToVerifyNonRotatedQuorums = !processorContext.isDIP0024 && [list hasUnverifiedNonRotatedQuorums];
         BOOL noNeedToVerifyQuorums = !(needToVerifyRotatedQuorums || needToVerifyNonRotatedQuorums);
         if (hasLocallyStored && noNeedToVerifyQuorums) {
@@ -230,7 +230,6 @@ bool shouldProcessLLMQType(uint8_t quorum_type, const void *context) {
     @synchronized (context) {
         processorContext = (__bridge DSMasternodeProcessorContext *)context;
         DSChain *chain = processorContext.chain;
-//        should = [chain shouldProcessQuorumOfType:llmqType];
         BOOL isQRContext = processorContext.isDIP0024;
         if (chain.quorumTypeForISDLocks == llmqType) {
             should = isQRContext && chain.isRotatedQuorumsPresented;

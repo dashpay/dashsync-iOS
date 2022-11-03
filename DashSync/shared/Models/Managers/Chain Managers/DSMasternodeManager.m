@@ -603,7 +603,7 @@
         [self updateStoreWithMasternodeList:masternodeListAtH addedMasternodes:mnListDiffResultAtH.addedMasternodes modifiedMasternodes:mnListDiffResultAtH.modifiedMasternodes addedQuorums:mnListDiffResultAtH.addedQuorums completion:^(NSError *error) {}];
     }
 
-    if (![self.quorumRotationService shouldProcessDiffResult:mnListDiffResultAtTip skipPresenceInRetrieval:NO]) {
+    if (![self.quorumRotationService shouldProcessDiffResult:mnListDiffResultAtTip skipPresenceInRetrieval:YES]) {
         [self.quorumRotationService issueWithMasternodeListFromPeer:peer];
     } else {
         if ([missingMasternodeListsAtTip count] && [self.store.masternodeListQueriesNeedingQuorumsValidated containsObject:blockHashDataAtTip]) {

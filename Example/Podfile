@@ -1,5 +1,5 @@
 def common_pods
-#  pod 'DashSharedCore', :git => 'https://github.com/dashevo/dash-shared-core.git', :branch => 'improvement/merge-libs'
+#  pod 'DashSharedCore', :git => 'https://github.com/dashevo/dash-shared-core.git', :branch => 'improvement/llmq-validation-optimized'
   pod 'DashSync', :path => '../'
   pod 'SDWebImage', '5.9.2'
   pod 'CocoaImageHashing', :git => 'https://github.com/ameingast/cocoaimagehashing.git', :commit => 'ad01eee'
