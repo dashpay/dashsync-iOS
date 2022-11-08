@@ -1346,10 +1346,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
     NSNumber *type = dictionary[@"type"];
     if (keyData && keyId && type) {
         DSKey *rKey = nil;
-        if ([type intValue] == DSKeyType_BLS) {
-            rKey = [DSBLSKey keyWithPublicKey:keyData.UInt384];
-        } else if ([type intValue] == DSKeyType_ECDSA) {
+        if ([type intValue] == DSKeyType_ECDSA) {
             rKey = [DSECDSAKey keyWithPublicKeyData:keyData];
+        } else if ([type intValue] == DSKeyType_BLS) {
+            rKey = [DSBLSKey keyWithPublicKey:keyData.UInt384 useLegacy:true];
+        } else if ([type intValue] == DSKeyType_BLS_BASIC) {
+            rKey = [DSBLSKey keyWithPublicKey:keyData.UInt384 useLegacy:false];
         }
         *rIndex = [keyId unsignedIntValue];
         *rType = [type unsignedIntValue];

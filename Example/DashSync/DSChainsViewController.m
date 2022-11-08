@@ -31,7 +31,8 @@
 //    [self setupKrupnik];
 //    [self setupOuzo];
 //    [self setupMekhong];
-    [self setupJackDaniels];
+//    [self setupJackDaniels];
+    [self setupChacha];
     [self.tableView reloadData];
 
     self.addChainsObserver =
@@ -49,6 +50,40 @@
     for (DSChain *chain in devnetChains) {
         [[DSChainsManager sharedInstance] removeDevnetChain:chain];
     }
+}
+
+- (void)setupChacha {
+    [self setupDevnetWithId:@"chacha"
+               sporkAddress:@"ybiRzdGWFeijAgR7a8TJafeNi6Yk6h68ps"
+            sporkPrivateKey:@"cPTms6Sd7QuhPWXWQSzMbvg2VbEPsWCsLBbR4PBgvfYRzAPazbt3"
+         minProtocolVersion:70221
+            protocolVersion:70221
+    minimumDifficultyBlocks:1000000
+           ISLockQuorumType:DEVNET_ISLOCK_DEFAULT_QUORUM_TYPE
+          ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE
+        chainLockQuorumType:DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE
+         platformQuorumType:DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE
+                  addresses:@[
+        @"34.213.73.187",
+        @"35.166.223.113",
+        @"34.222.70.155",
+        @"54.188.28.123",
+        @"52.33.126.127",
+        @"34.212.132.210",
+        @"54.191.175.225",
+        @"54.213.218.58",
+        @"34.210.252.158",
+        @"34.221.203.109",
+        @"52.38.9.28",
+        @"34.221.123.183",
+        @"35.91.217.175",
+        @"34.211.90.216",
+        @"35.89.101.137",
+        @"52.40.174.175",
+        @"34.221.153.236",
+        @"54.189.17.85",
+    ] walletPhrase:nil];
+
 }
 
 - (void)setupOuzo {

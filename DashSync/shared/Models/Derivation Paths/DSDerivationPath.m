@@ -534,7 +534,7 @@
     for (NSInteger i = 0; i < self.length; i++) {
         [mutableString appendFormat:@"_%lu", (unsigned long)([self isHardenedAtPosition:i] ? [self indexAtPosition:i].u64[0] | BIP32_HARD : [self indexAtPosition:i].u64[0])];
     }
-    return [NSString stringWithFormat:@"%@%@%@", [DSDerivationPath walletBasedExtendedPublicKeyLocationStringForUniqueID:uniqueID], self.signingAlgorithm == DSKeyType_BLS ? @"_BLS_" : @"", mutableString];
+    return [NSString stringWithFormat:@"%@%@%@", [DSDerivationPath walletBasedExtendedPublicKeyLocationStringForUniqueID:uniqueID], self.signingAlgorithm == DSKeyType_ECDSA ? @"" : @"_BLS_", mutableString];
 }
 
 - (NSString *)walletBasedExtendedPublicKeyLocationString {
@@ -552,7 +552,7 @@
     for (NSInteger i = 0; i < self.length; i++) {
         [mutableString appendFormat:@"_%lu", (unsigned long)([self isHardenedAtPosition:i] ? [self indexAtPosition:i].u64[0] | BIP32_HARD : [self indexAtPosition:i].u64[0])];
     }
-    return [NSString stringWithFormat:@"%@%@%@", [DSDerivationPath walletBasedExtendedPrivateKeyLocationStringForUniqueID:uniqueID], self.signingAlgorithm == DSKeyType_BLS ? @"_BLS_" : @"", mutableString];
+    return [NSString stringWithFormat:@"%@%@%@", [DSDerivationPath walletBasedExtendedPrivateKeyLocationStringForUniqueID:uniqueID], self.signingAlgorithm == DSKeyType_ECDSA ? @"" : @"_BLS_", mutableString];
 }
 
 - (NSString *)walletBasedExtendedPrivateKeyLocationString {
@@ -636,7 +636,9 @@
     if (self.signingAlgorithm == DSKeyType_ECDSA) {
         return [DSECDSAKey keyWithPublicKeyData:[self publicKeyDataAtIndexPath:indexPath]];
     } else if (self.signingAlgorithm == DSKeyType_BLS) {
-        return [DSBLSKey keyWithPublicKey:[self publicKeyDataAtIndexPath:indexPath].UInt384];
+        return [DSBLSKey keyWithPublicKey:[self publicKeyDataAtIndexPath:indexPath].UInt384 useLegacy:true];
+    } else if (self.signingAlgorithm == DSKeyType_BLS_BASIC) {
+        return [DSBLSKey keyWithPublicKey:[self publicKeyDataAtIndexPath:indexPath].UInt384 useLegacy:false];
     }
     return nil;
 }
@@ -645,7 +647,9 @@
     if (self.signingAlgorithm == DSKeyType_ECDSA) {
         return [DSECDSAKey publicKeyFromExtendedPublicKeyData:self.extendedPublicKeyData atIndexPath:indexPath];
     } else if (self.signingAlgorithm == DSKeyType_BLS) {
-        return [DSBLSKey publicKeyFromExtendedPublicKeyData:self.extendedPublicKeyData atIndexPath:indexPath];
+        return [DSBLSKey publicKeyFromExtendedPublicKeyData:self.extendedPublicKeyData atIndexPath:indexPath useLegacy:true];
+    } else if (self.signingAlgorithm == DSKeyType_BLS_BASIC) {
+        return [DSBLSKey publicKeyFromExtendedPublicKeyData:self.extendedPublicKeyData atIndexPath:indexPath useLegacy:false];
     }
     return nil;
 }

@@ -38,7 +38,7 @@
 - (void)testBLSEncryptionAndDecryption {
     uint8_t aliceSeed[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     NSData *aliceSeedData = [NSData dataWithBytes:aliceSeed length:10];
-    DSBLSKey *aliceKeyPair = [DSBLSKey keyWithSeedData:aliceSeedData];
+    DSBLSKey *aliceKeyPair = [DSBLSKey keyWithSeedData:aliceSeedData useLegacy:true];
     XCTAssertEqualObjects(aliceKeyPair.publicKeyData.hexString, @"1790635de8740e9a6a6b15fb6b72f3a16afa0973d971979b6ba54761d6e2502c50db76f4d26143f05459a42cfd520d44", @"BLS publicKeyData is incorrect");
     XCTAssertEqualObjects(aliceKeyPair.publicKeyData.base64String, @"F5BjXeh0DppqaxX7a3LzoWr6CXPZcZeba6VHYdbiUCxQ23b00mFD8FRZpCz9Ug1E", @"BLS publicKeyData is incorrect");
     
@@ -49,7 +49,7 @@
     
     uint8_t bobSeed[10] = {10, 9, 8, 7, 6, 6, 7, 8, 9, 10};
     NSData *bobSeedData = [NSData dataWithBytes:bobSeed length:10];
-    DSBLSKey *bobKeyPair = [DSBLSKey keyWithSeedData:bobSeedData];
+    DSBLSKey *bobKeyPair = [DSBLSKey keyWithSeedData:bobSeedData useLegacy:true];
     
     XCTAssertEqualObjects(bobKeyPair.publicKeyData.hexString, @"0e2f9055c17eb13221d8b41833468ab49f7d4e874ddf4b217f5126392a608fd48ccab3510548f1da4f397c1ad4f8e01a", @"BLS publicKeyData is incorrect");
     XCTAssertEqualObjects(bobKeyPair.publicKeyData.base64String, @"Di+QVcF+sTIh2LQYM0aKtJ99TodN30shf1EmOSpgj9SMyrNRBUjx2k85fBrU+OAa", @"BLS publicKeyData is incorrect");

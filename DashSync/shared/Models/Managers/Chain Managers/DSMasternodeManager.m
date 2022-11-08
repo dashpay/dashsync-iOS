@@ -45,8 +45,7 @@
 #import "DSTransactionManager+Protected.h"
 #import "NSError+Dash.h"
 
-#define LOG_MASTERNODE_DIFF (0 && DEBUG)
-#define SAVE_MASTERNODE_DIFF_TO_FILE (0 && DEBUG)
+#define SAVE_MASTERNODE_DIFF_TO_FILE (1 && DEBUG)
 #define DSFullLog(FORMAT, ...) printf("%s\n", [[NSString stringWithFormat:FORMAT, ##__VA_ARGS__] UTF8String])
 
 

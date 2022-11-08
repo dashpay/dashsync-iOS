@@ -321,18 +321,18 @@
     return simplifiedMasternodeEntryEntity;
 }
 
-- (DSBLSKey *)operatorPublicBLSKey {
-    if (!_operatorPublicBLSKey && !uint384_is_zero(self.operatorPublicKey)) {
-        _operatorPublicBLSKey = [DSBLSKey keyWithPublicKey:self.operatorPublicKey];
-    }
-    return _operatorPublicBLSKey;
-}
+//- (DSBLSKey *)operatorPublicBLSKey {
+//    if (!_operatorPublicBLSKey && !uint384_is_zero(self.operatorPublicKey)) {
+//        _operatorPublicBLSKey = [DSBLSKey keyWithPublicKey:self.operatorPublicKey];
+//    }
+//    return _operatorPublicBLSKey;
+//}
 
-- (BOOL)verifySignature:(UInt768)signature forMessageDigest:(UInt256)messageDigest {
-    DSBLSKey *operatorPublicBLSKey = [self operatorPublicBLSKey];
-    if (!operatorPublicBLSKey) return NO;
-    return [operatorPublicBLSKey verify:messageDigest signature:signature];
-}
+//- (BOOL)verifySignature:(UInt768)signature forMessageDigest:(UInt256)messageDigest {
+//    DSBLSKey *operatorPublicBLSKey = [self operatorPublicBLSKey];
+//    if (!operatorPublicBLSKey) return NO;
+//    return [operatorPublicBLSKey verify:messageDigest signature:signature];
+//}
 
 - (NSString *)votingAddress {
     return [[NSData dataWithUInt160:self.keyIDVoting] addressFromHash160DataForChain:self.chain];

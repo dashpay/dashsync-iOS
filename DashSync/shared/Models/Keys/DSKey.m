@@ -101,7 +101,9 @@
 + (nullable instancetype)keyWithSeedData:(NSData *)data forKeyType:(DSKeyType)keyType {
     switch (keyType) {
         case DSKeyType_BLS:
-            return [DSBLSKey extendedPrivateKeyWithSeedData:data];
+            return [DSBLSKey extendedPrivateKeyWithSeedData:data useLegacy:true];
+        case DSKeyType_BLS_BASIC:
+            return [DSBLSKey extendedPrivateKeyWithSeedData:data useLegacy:false];
         case DSKeyType_ECDSA:
             return [DSECDSAKey keyWithSeedData:data];
         default:
@@ -112,7 +114,9 @@
 + (DSKey *)keyWithPublicKeyData:(NSData *)data forKeyType:(DSKeyType)keyType {
     switch (keyType) {
         case DSKeyType_BLS:
-            return [DSBLSKey keyWithPublicKey:data.UInt384];
+            return [DSBLSKey keyWithPublicKey:data.UInt384 useLegacy:true];
+        case DSKeyType_BLS_BASIC:
+            return [DSBLSKey keyWithPublicKey:data.UInt384 useLegacy:false];
         case DSKeyType_ECDSA:
             return [DSECDSAKey keyWithPublicKeyData:data];
         default:
@@ -123,7 +127,9 @@
 + (DSKey *)keyWithPrivateKeyData:(NSData *)data forKeyType:(DSKeyType)keyType {
     switch (keyType) {
         case DSKeyType_BLS:
-            return [DSBLSKey keyWithPrivateKey:data.UInt256];
+            return [DSBLSKey keyWithPrivateKey:data.UInt256 useLegacy:true];
+        case DSKeyType_BLS_BASIC:
+            return [DSBLSKey keyWithPrivateKey:data.UInt256 useLegacy:false];
         case DSKeyType_ECDSA:
             return [DSECDSAKey keyWithSecret:data.UInt256 compressed:YES];
         default:
@@ -135,7 +141,9 @@
     if (!data) return nil;
     switch (keyType) {
         case DSKeyType_BLS:
-            return [DSBLSKey keyWithExtendedPublicKeyData:data];
+            return [DSBLSKey keyWithExtendedPublicKeyData:data useLegacy:true];
+        case DSKeyType_BLS_BASIC:
+            return [DSBLSKey keyWithExtendedPublicKeyData:data useLegacy:false];
         case DSKeyType_ECDSA:
             return [DSECDSAKey keyWithExtendedPublicKeyData:data];
         default:
@@ -147,7 +155,9 @@
     if (!data) return nil;
     switch (keyType) {
         case DSKeyType_BLS:
-            return [DSBLSKey keyWithExtendedPrivateKeyData:data];
+            return [DSBLSKey keyWithExtendedPrivateKeyData:data useLegacy:true];
+        case DSKeyType_BLS_BASIC:
+            return [DSBLSKey keyWithExtendedPrivateKeyData:data useLegacy:false];
         case DSKeyType_ECDSA:
             return [DSECDSAKey keyWithExtendedPrivateKeyData:data];
         default:

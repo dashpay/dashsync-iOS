@@ -44,7 +44,7 @@
 
 - (DSSimplifiedMasternodeEntryEntity *)simplifiedMasternodeEntryEntityInContext:(NSManagedObjectContext *)context;
 
-- (BOOL)verifySignature:(UInt768)signature forMessageDigest:(UInt256)messageDigest;
+//- (BOOL)verifySignature:(UInt768)signature forMessageDigest:(UInt256)messageDigest;
 
 - (UInt256)simplifiedMasternodeEntryHashAtBlock:(DSBlock *)merkleBlock;
 

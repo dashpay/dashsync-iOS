@@ -118,7 +118,7 @@
 
 - (BOOL)verifySignatureAgainstQuorum:(DSQuorumEntry *)quorumEntry {
     UInt384 publicKey = quorumEntry.quorumPublicKey;
-    DSBLSKey *blsKey = [DSBLSKey keyWithPublicKey:publicKey];
+    DSBLSKey *blsKey = [DSBLSKey keyWithPublicKey:publicKey useLegacy:quorumEntry.useLegacyBLSScheme];
     UInt256 signId = [self signIDForQuorumEntry:quorumEntry];
 #if DEBUG
     DSLogPrivate(@"verifying signature %@ with public key %@ for transaction hash %@ against quorum %@",

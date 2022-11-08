@@ -323,7 +323,7 @@
 
     XCTAssertEqualObjects([NSData dataWithUInt384:operatorKey].hexString, [NSData dataWithUInt384:operatorKeyNeeded].hexString, @"operator keys don't match");
 
-    DSBLSKey *operatorBLSKey = [DSBLSKey keyWithPublicKey:operatorKey];
+    DSBLSKey *operatorBLSKey = [DSBLSKey keyWithPublicKey:operatorKey useLegacy:true];
 
     UInt256 payloadHash = providerUpdateServiceTransactionFromMessage.payloadDataForHash.SHA256_2;
 
@@ -384,7 +384,7 @@
     NSString *privateOwnerKeyString = @"cQpV2b9hNQd5Xs7REcrkPXmuCNDVvx6mSndr2ZgXKhfAhWDUUznB";
     NSString *privateOperatorKey = @"0fc63f4e6d7572a6c33465525b5c3323f57036873dd37c98c393267c58b50533";
 
-    DSBLSKey *operatorKey = [DSBLSKey keyWithPrivateKey:privateOperatorKey.hexToData.UInt256];
+    DSBLSKey *operatorKey = [DSBLSKey keyWithPrivateKey:privateOperatorKey.hexToData.UInt256 useLegacy:true];
 
     UInt256 providerTransactionHash = @"3dbb7de94e219e8f7eaea4f3c01cf97d77372e10152734c1959f17302369aa49".hexToData.reverse.UInt256;
 

@@ -42,7 +42,7 @@ MasternodeList *getMasternodeListByBlockHash(uint8_t (*block_hash)[32], const vo
     @synchronized (context) {
         processorContext = (__bridge DSMasternodeProcessorContext *)context;
         DSMasternodeList *list = processorContext.masternodeListLookup(blockHash);
-//        DSLog(@"••• getMasternodeListByBlockHash: %@: %@", uint256_hex(blockHash), list.debugDescription);
+        DSLog(@"••• getMasternodeListByBlockHash: %@: %@", uint256_hex(blockHash), list.debugDescription);
 //        if (list) {
 //            [list saveToJsonFileExtended:[NSString stringWithFormat:@"MNLIST_%@_%@_%@.json", @(list.height), @([[NSDate date] timeIntervalSince1970]), @"getMasternodeListByBlockHash"]];
 //        }
@@ -89,7 +89,7 @@ uint32_t getBlockHeightByHash(uint8_t (*block_hash)[32], const void *context) {
     @synchronized (context) {
         processorContext = (__bridge DSMasternodeProcessorContext *)context;
         block_height = processorContext.blockHeightLookup(blockHash);
-        //DSLog(@"getBlockHeightByHash: %u: %@", block_height, uint256_hex(blockHash));
+        DSLog(@"getBlockHeightByHash: %u: %@", block_height, uint256_hex(blockHash));
     }
     processor_destroy_block_hash(block_hash);
     return block_height;
@@ -119,6 +119,7 @@ uint8_t *getMerkleRootByHash(uint8_t (*block_hash)[32], const void *context) {
         processorContext = (__bridge DSMasternodeProcessorContext *)context;
         UInt256 merkleRoot = processorContext.merkleRootLookup(blockHash);
         merkle_root = uint256_malloc(merkleRoot);
+        DSLog(@"getMerkleRootByHash: %@: %@", uint256_hex(blockHash), uint256_hex(merkleRoot));
     }
     processor_destroy_block_hash(block_hash);
     return (uint8_t *)merkle_root;
@@ -249,22 +250,24 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
     UInt256 commitmentHash = *((UInt256 *)data->commitment_hash);
     UInt768 quorumThresholdSignature = *((UInt768 *)data->threshold_signature);
     UInt384 quorumPublicKey = *((UInt384 *)data->public_key);
+    uint16_t version = data->version;
+    BOOL useLegacy = version <= 2;
     //NSLog(@"••• validateLLMQ: items: %lu: %@", count, uint384_hex(quorumPublicKey));
     NSMutableArray<DSBLSKey *> *publicKeyArray = [NSMutableArray array];
     for (NSUInteger i = 0; i < count; i++) {
         UInt384 publicKey = *((UInt384 *)items[i]);
-        [publicKeyArray addObject:[DSBLSKey keyWithPublicKey:publicKey]];
+        [publicKeyArray addObject:[DSBLSKey keyWithPublicKey:publicKey useLegacy:useLegacy]];
     }
     processor_destroy_llmq_validation_data(data);
-    bool allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:commitmentHash signature:allCommitmentAggregatedSignature withPublicKeys:publicKeyArray];
+    bool allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:commitmentHash signature:allCommitmentAggregatedSignature withPublicKeys:publicKeyArray useLegacy:useLegacy];
     if (!allCommitmentAggregatedSignatureValidated) {
-        NSLog(@"••• Issue with allCommitmentAggregatedSignatureValidated: %@", uint768_hex(allCommitmentAggregatedSignature));
+        DSLog(@"••• Issue with allCommitmentAggregatedSignatureValidated: %@", uint768_hex(allCommitmentAggregatedSignature));
         return false;
     }
     //The sig must validate against the commitmentHash and all public keys determined by the signers bitvector. This is an aggregated BLS signature verification.
-    bool quorumSignatureValidated = [DSBLSKey verify:commitmentHash signature:quorumThresholdSignature withPublicKey:quorumPublicKey];
+    bool quorumSignatureValidated = [DSBLSKey verify:commitmentHash signature:quorumThresholdSignature withPublicKey:quorumPublicKey useLegacy:useLegacy];
     if (!quorumSignatureValidated) {
-        NSLog(@"••• Issue with quorumSignatureValidated");
+        DSLog(@"••• Issue with quorumSignatureValidated");
         return false;
     }
     return true;

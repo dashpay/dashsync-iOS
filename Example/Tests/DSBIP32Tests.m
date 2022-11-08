@@ -74,13 +74,13 @@
 - (void)testBLSFingerprintFromSeed {
     uint8_t seed[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     NSData *seedData = [NSData dataWithBytes:seed length:10];
-    DSBLSKey *keyPair = [DSBLSKey keyWithSeedData:seedData];
+    DSBLSKey *keyPair = [DSBLSKey keyWithSeedData:seedData useLegacy:true];
     uint32_t fingerprint = keyPair.publicKeyFingerprint;
     XCTAssertEqual(fingerprint, 0xddad59bb, @"Testing BLS private child public key fingerprint");
 
     uint8_t seed2[] = {1, 50, 6, 244, 24, 199, 1, 25};
     NSData *seedData2 = [NSData dataWithBytes:seed2 length:8];
-    DSBLSKey *keyPair2 = [DSBLSKey extendedPrivateKeyWithSeedData:seedData2];
+    DSBLSKey *keyPair2 = [DSBLSKey extendedPrivateKeyWithSeedData:seedData2 useLegacy:true];
     uint32_t fingerprint2 = keyPair2.publicKeyFingerprint;
     XCTAssertEqual(fingerprint2, 0xa4700b27, @"Testing BLS extended private child public key fingerprint");
 }
@@ -112,7 +112,7 @@
 - (void)testBLSDerivation {
     uint8_t seed[] = {1, 50, 6, 244, 24, 199, 1, 25};
     NSData *seedData = [NSData dataWithBytes:seed length:8];
-    DSBLSKey *keyPair = [DSBLSKey extendedPrivateKeyWithSeedData:seedData];
+    DSBLSKey *keyPair = [DSBLSKey extendedPrivateKeyWithSeedData:seedData useLegacy:true];
 
     UInt256 chainCode = keyPair.chainCode;
     XCTAssertEqualObjects([NSData dataWithUInt256:chainCode].hexString, @"d8b12555b4cc5578951e4a7c80031e22019cc0dce168b3ed88115311b8feb1e3", @"Testing BLS derivation chain code");
@@ -120,7 +120,7 @@
     UInt256 derivationPathIndexes1[] = {uint256_from_long(77)};
     BOOL hardened1[] = {YES};
     DSDerivationPath *derivationPath1 = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes1 hardened:hardened1 length:1 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSKeyType_BLS reference:DSDerivationPathReference_Unknown onChain:[DSChain mainnet]];
-    DSBLSKey *keyPair1 = [keyPair privateDeriveToPath:derivationPath1.baseIndexPath];
+    DSBLSKey *keyPair1 = [keyPair privateDeriveToPath:derivationPath1.baseIndexPath useLegacy:true];
     UInt256 chainCode1 = keyPair1.chainCode;
     XCTAssertEqualObjects([NSData dataWithUInt256:chainCode1].hexString, @"f2c8e4269bb3e54f8179a5c6976d92ca14c3260dd729981e9d15f53049fd698b", @"Testing BLS private child derivation returning chain code");
     XCTAssertEqual(keyPair1.publicKeyFingerprint, 0xa8063dcf, @"Testing BLS extended private child public key fingerprint");
@@ -128,7 +128,7 @@
     UInt256 derivationPathIndexes2[] = {uint256_from_long(3), uint256_from_long(17)};
     BOOL hardened2[] = {NO, NO};
     DSDerivationPath *derivationPath2 = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes2 hardened:hardened2 length:2 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSKeyType_BLS reference:DSDerivationPathReference_Unknown onChain:[DSChain mainnet]];
-    DSBLSKey *keyPair2 = [keyPair privateDeriveToPath:derivationPath2.baseIndexPath];
+    DSBLSKey *keyPair2 = [keyPair privateDeriveToPath:derivationPath2.baseIndexPath useLegacy:true];
     XCTAssertEqual(keyPair2.publicKeyFingerprint, 0xff26a31f, @"Testing BLS extended private child public key fingerprint");
 
     DSBLSKey *keyPair3 = [keyPair publicDeriveToPath:derivationPath2.baseIndexPath];
@@ -872,7 +872,7 @@
 
     uint8_t bobSeed[10] = {10, 9, 8, 7, 6, 6, 7, 8, 9, 10};
     NSData *bobSeedData = [NSData dataWithBytes:bobSeed length:10];
-    DSBLSKey *bobKeyPairBLS = [DSBLSKey keyWithSeedData:bobSeedData];
+    DSBLSKey *bobKeyPairBLS = [DSBLSKey keyWithSeedData:bobSeedData useLegacy:true];
 
     DSAuthenticationKeysDerivationPath *derivationPathBLS = [DSAuthenticationKeysDerivationPath blockchainIdentitiesBLSKeysDerivationPathForWallet:self.wallet];
     DSKey *privateKeyBLS = [derivationPathBLS privateKeyAtIndex:0 fromSeed:self.seed];

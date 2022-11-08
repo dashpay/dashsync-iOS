@@ -150,7 +150,7 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
     [data appendUInt16:self.version];
     [data appendUInt8:self.llmqType];
     [data appendUInt256:self.quorumHash];
-    if (self.version == LLMQ_INDEXED_VERSION)
+    if (self.version == 2 || self.version == 4)
         [data appendUInt32:self.quorumIndex];
     [data appendVarInt:self.signersCount];
     [data appendData:self.signersBitset];
@@ -175,7 +175,8 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
     NSMutableData *data = [NSMutableData data];
     [data appendVarInt:self.llmqType];
     [data appendUInt256:self.quorumHash];
-    if (self.version == LLMQ_INDEXED_VERSION)
+    // LLMQVersion::Indexed || LLMQVersion::BLSBasicIndexed
+    if (self.version == 2 || self.version == 4)
         [data appendUInt32:self.quorumIndex];
     [data appendVarInt:self.validMembersCount];
     [data appendData:self.validMembersBitset];
@@ -296,7 +297,7 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
         if ([self.signersBitset bitIsTrueAtLEIndex:i]) {
             UInt384 pkData = [masternodeEntry operatorPublicKeyAtBlockHeight:blockHeight];
             //                        NSLog(@"validateQuorumCallback addPublicKey: %@", uint384_hex(pkData));
-            DSBLSKey *masternodePublicKey = [DSBLSKey keyWithPublicKey:pkData];
+            DSBLSKey *masternodePublicKey = [DSBLSKey keyWithPublicKey:pkData useLegacy:self.useLegacyBLSScheme];
             [publicKeyArray addObject:masternodePublicKey];
 #if SAVE_QUORUM_ERROR_PUBLIC_KEY_ARRAY_TO_FILE
             [proTxHashForPublicKeys setObject:uint256_data(masternodeEntry.providerRegistrationTransactionHash)
@@ -306,7 +307,7 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
         i++;
     }
 
-    BOOL allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:self.commitmentHash signature:self.allCommitmentAggregatedSignature withPublicKeys:publicKeyArray];
+    BOOL allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:self.commitmentHash signature:self.allCommitmentAggregatedSignature withPublicKeys:publicKeyArray useLegacy:self.useLegacyBLSScheme];
 
     //    NSLog(@"validateQuorumCallback verifySecureAggregated = %i, with: commitmentHash: %@, allCommitmentAggregatedSignature: %@, publicKeys: %lu", allCommitmentAggregatedSignatureValidated, uint256_hex(self.commitmentHash), uint768_hex(self.allCommitmentAggregatedSignature), [publicKeyArray count]);
 
@@ -370,7 +371,7 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
 
     //The sig must validate against the commitmentHash and all public keys determined by the signers bitvector. This is an aggregated BLS signature verification.
 
-    BOOL quorumSignatureValidated = [DSBLSKey verify:self.commitmentHash signature:self.quorumThresholdSignature withPublicKey:self.quorumPublicKey];
+    BOOL quorumSignatureValidated = [DSBLSKey verify:self.commitmentHash signature:self.quorumThresholdSignature withPublicKey:self.quorumPublicKey useLegacy:self.useLegacyBLSScheme];
     //    NSLog(@"validateQuorumCallback verify = %i, with: commitmentHash: %@, quorumThresholdSignature: %@, quorumPublicKey: %@", quorumSignatureValidated, uint256_hex(self.commitmentHash), uint768_hex(self.quorumThresholdSignature), uint384_hex(self.quorumPublicKey));
 
     if (!quorumSignatureValidated) {
@@ -455,6 +456,10 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
     self.verified = quorumEntry.verified;
     self.version = quorumEntry.version;
     self.chain = quorumEntry.chain;
+}
+
+- (BOOL)useLegacyBLSScheme {
+    return self.version >= 4;
 }
 
 @end

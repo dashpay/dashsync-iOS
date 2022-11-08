@@ -839,7 +839,7 @@ static dispatch_once_t devnetToken = 0;
             if (!error && quorumType)
                 return quorumType;
             else
-                return DSLLMQType_DevnetDIP0024;
+                return DSLLMQType_Chacha_v19;
         }
     }
 }
@@ -3897,6 +3897,10 @@ static dispatch_once_t devnetToken = 0;
 
 - (NSString *)debugDescription {
     return [[super debugDescription] stringByAppendingString:[NSString stringWithFormat:@" {%@}", self.name]];
+}
+
+- (BOOL)isUseLegacyBLS {
+    return ![self isDevnetAny];
 }
 
 @end

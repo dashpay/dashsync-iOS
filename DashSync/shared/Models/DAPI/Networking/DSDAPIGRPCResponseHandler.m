@@ -617,7 +617,7 @@
 
 + (BOOL)verifyStateSignature:(UInt768)signature forStateMessageHash:(UInt256)stateMessageHash height:(int64_t)height againstQuorum:(DSQuorumEntry *)quorumEntry quorumType:(DSLLMQType)quorumType {
     UInt384 publicKey = quorumEntry.quorumPublicKey;
-    DSBLSKey *blsKey = [DSBLSKey keyWithPublicKey:publicKey];
+    DSBLSKey *blsKey = [DSBLSKey keyWithPublicKey:publicKey useLegacy:quorumEntry.useLegacyBLSScheme];
     UInt256 signId = [self signIDForQuorumEntry:quorumEntry quorumType:quorumType forStateMessageHash:stateMessageHash height:height];
     DSLogPrivate(@"verifying DAPI returned signature %@ with public key %@ against quorum %@", [NSData dataWithUInt768:signature].hexString, [NSData dataWithUInt384:publicKey].hexString, quorumEntry);
     return [blsKey verify:signId signature:signature];

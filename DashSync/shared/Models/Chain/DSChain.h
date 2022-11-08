@@ -72,7 +72,7 @@ typedef NS_ENUM(uint16_t, DSLLMQType)
     DSLLMQType_TestDIP0024 = 103, // 4 members, 2 (66%) threshold, one per hour. Params might differ when -llmqtestparams is used
     DSLLMQType_DevnetDIP0024 = 105, // 8 members, 4 (50%) threshold, one per hour. Params might differ when -llmqdevnetparams is used
     DSLLMQType_Devnet333DIP0024 = 106, // 8 members, 4 (50%) threshold, one per hour. Params might differ when -llmqdevnetparams is used
-
+    DSLLMQType_Chacha_v19 = 205, // 8 members, 4 (50%) threshold, one per hour. Params might differ when -llmqdevnetparams is used
 };
 
 typedef NS_ENUM(uint16_t, DSChainSyncPhase)
@@ -101,6 +101,8 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 @property (nonatomic, readonly) NSManagedObjectContext *chainManagedObjectContext;
 
 // MARK: - L1 Network Chain Info
+
+@property (nonatomic, readonly) BOOL useLegacyBLS;
 
 /*! @brief The network name. Currently main, test, dev or reg.  */
 @property (nonatomic, readonly) NSString *networkName;

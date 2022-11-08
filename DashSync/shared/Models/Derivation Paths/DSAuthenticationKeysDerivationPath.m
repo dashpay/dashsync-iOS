@@ -6,6 +6,7 @@
 //
 
 #import "DSAuthenticationKeysDerivationPath.h"
+#import "DSBLSKey.h"
 #import "DSCreditFundingDerivationPath.h"
 #import "DSDerivationPathFactory.h"
 #import "DSSimpleIndexedDerivationPath+Protected.h"
@@ -262,7 +263,23 @@
 }
 
 - (DSKey *_Nullable)privateKeyAtIndexPath:(NSIndexPath *)indexPath {
-    DSKey *extendedPrivateKey = [DSKey keyWithExtendedPrivateKeyData:self.extendedPrivateKeyData forKeyType:self.signingAlgorithm];
+    if (!self.extendedPrivateKeyData) return nil;
+    DSKey *extendedPrivateKey;
+    switch (self.signingAlgorithm) {
+        case DSKeyType_BLS:
+            extendedPrivateKey = [DSBLSKey keyWithExtendedPrivateKeyData:self.extendedPrivateKeyData useLegacy:true];
+            break;
+        case DSKeyType_BLS_BASIC: {
+            extendedPrivateKey = [DSBLSKey keyWithExtendedPrivateKeyData:self.extendedPrivateKeyData useLegacy:false];
+            break;
+        }
+        case DSKeyType_ECDSA: {
+            extendedPrivateKey = [DSECDSAKey keyWithExtendedPrivateKeyData:self.extendedPrivateKeyData];
+            break;
+        }
+        default:
+            return nil;
+    }
     return [extendedPrivateKey privateDeriveToPath:indexPath];
 }
 

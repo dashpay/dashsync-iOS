@@ -287,8 +287,8 @@
     NSData *messageData2 = [NSData dataWithBytes:message2 length:3];
     NSData *messageData3 = [NSData dataWithBytes:message3 length:4];
     NSData *messageData4 = [NSData dataWithBytes:message4 length:2];
-    DSBLSKey *keyPair1 = [DSBLSKey keyWithSeedData:seedData1];
-    DSBLSKey *keyPair2 = [DSBLSKey keyWithSeedData:seedData2];
+    DSBLSKey *keyPair1 = [DSBLSKey keyWithSeedData:seedData1 useLegacy:true];
+    DSBLSKey *keyPair2 = [DSBLSKey keyWithSeedData:seedData2 useLegacy:true];
 
     uint32_t fingerprint1 = keyPair1.publicKeyFingerprint;
     XCTAssertEqual(fingerprint1, 0x26d53247, @"Testing BLS private child public key fingerprint");
@@ -324,7 +324,7 @@
     NSData *seedData1 = [NSData dataWithBytes:seed1 length:5];
     uint8_t message1[3] = {7, 8, 9};
     NSData *messageData1 = [NSData dataWithBytes:message1 length:3];
-    DSBLSKey *keyPair1 = [DSBLSKey keyWithSeedData:seedData1];
+    DSBLSKey *keyPair1 = [DSBLSKey keyWithSeedData:seedData1 useLegacy:true];
 
     XCTAssertEqualObjects(keyPair1.publicKeyData.hexString, @"02a8d2aaa6a5e2e08d4b8d406aaf0121a2fc2088ed12431e6b0663028da9ac5922c9ea91cde7dd74b7d795580acc7a61");
 

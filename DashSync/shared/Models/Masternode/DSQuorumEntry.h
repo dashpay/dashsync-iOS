@@ -65,6 +65,9 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
 + (uint32_t)quorumSizeForType:(DSLLMQType)type;
 
 - (void)mergedWithQuorumEntry:(DSQuorumEntry *)quorumEntry;
+
+- (BOOL)useLegacyBLSScheme;
+
 @end
 
 NS_ASSUME_NONNULL_END

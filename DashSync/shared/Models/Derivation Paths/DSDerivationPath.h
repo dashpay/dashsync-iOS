@@ -24,6 +24,7 @@
 
 #import "DSChain.h"
 #import "DSDerivationPath.h"
+#import "DSBLSKey.h"
 #import "DSECDSAKey.h"
 #import "DSKey.h"
 #import "DSTransaction.h"
