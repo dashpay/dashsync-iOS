@@ -29,4 +29,14 @@
     return [mDictionary copy];
 }
 
++ (NSDictionary *)mergeDictionary:(NSDictionary *_Nullable)dictionary1 withDictionary:(NSDictionary *)dictionary2 {
+    if (!dictionary1 || [dictionary1 count] == 0) {
+        return dictionary2;
+    } else {
+        NSMutableDictionary *mergedDictionary = [dictionary1 mutableCopy];
+        [mergedDictionary addEntriesFromDictionary:dictionary2];
+        return mergedDictionary;
+    }
+}
+
 @end

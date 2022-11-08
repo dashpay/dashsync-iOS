@@ -594,7 +594,9 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
         [alertController addAction:resetButton];
     }
 
-    [self presentController:alertController animated:YES completion:nil];
+    [self presentController:alertController
+                   animated:YES
+                 completion:nil];
 #endif
 }
 

@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) DSQuorumEntry *quorumEntry;
 
 + (instancetype _Nullable)quorumEntryEntityFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry inContext:(NSManagedObjectContext *)context;
++ (instancetype _Nullable)quorumEntryEntityFromPotentialQuorumEntryForMerging:(DSQuorumEntry *)potentialQuorumEntry inContext:(NSManagedObjectContext *)context;
 
 - (void)setAttributesFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry onBlock:(DSMerkleBlockEntity *_Nullable)block;
 

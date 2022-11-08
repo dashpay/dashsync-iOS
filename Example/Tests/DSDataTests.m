@@ -30,11 +30,11 @@
 
 - (void)testBitsAreTrueOperations {
     UInt256 number1 = uInt256AddOneLE(UINT256_ZERO);
-    UInt256 number50 = uInt256MultiplyUInt32LE(number1, 50);    //3 bits set 0011 0010 (50)
-    UInt256 number50Shifted = uInt256ShiftLeftLE(number50, 64); //3 bits set
+    UInt256 number50 = uInt256MultiplyUInt32LE(number1, 50);    // 3 bits set 0011 0010 (50)
+    UInt256 number50Shifted = uInt256ShiftLeftLE(number50, 64); // 3 bits set
     UInt256 testNumber50Shifted = ((UInt256){.u64 = {0, 50, 0, 0}});
     XCTAssert(uint256_eq(number50Shifted, testNumber50Shifted), @"These numbers must be the same");
-    UInt256 testNumber = uInt256AddOneLE(number50Shifted); //4 bits set
+    UInt256 testNumber = uInt256AddOneLE(number50Shifted); // 4 bits set
     NSData *data = [NSData dataWithUInt256:testNumber];
     XCTAssert([data trueBitsCount] == 4, @"Must be 6 bits here");
     XCTAssert([data bitIsTrueAtLEIndex:0], @"This must be true");

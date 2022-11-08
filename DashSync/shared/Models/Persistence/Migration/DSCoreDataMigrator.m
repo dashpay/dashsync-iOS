@@ -125,7 +125,9 @@
                 [[NSFileManager defaultManager] copyItemAtURL:[self documentsSHMURL] toURL:[DSDataController storeSHMURL] error:&error];
                 NSAssert(error == nil, @"Copy should have succeeded");
             }
-            [[NSFileManager defaultManager] copyItemAtURL:[self documentsStoreURL] toURL:[DSDataController storeURL] error:&error];
+            [[NSFileManager defaultManager] copyItemAtURL:[self documentsStoreURL]
+                                                    toURL:[DSDataController storeURL]
+                                                    error:&error];
             NSAssert(error == nil, @"Copy should have succeeded");
             shouldRemoveDocumentsCopy = TRUE;
         }
@@ -195,7 +197,8 @@
         currentURL = destinationURL;
     }
 
-    [NSPersistentStoreCoordinator ds_replaceStoreAt:finalStoreURL with:currentURL];
+    [NSPersistentStoreCoordinator ds_replaceStoreAt:finalStoreURL
+                                               with:currentURL];
 
     if (![currentURL isEqual:storeURL]) {
         [NSPersistentStoreCoordinator ds_destroyStoreAtURL:currentURL];

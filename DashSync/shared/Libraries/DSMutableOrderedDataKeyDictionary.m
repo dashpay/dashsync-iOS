@@ -113,16 +113,19 @@
                 index++;
             }
         }
-        [_array insertObject:aKey atIndex:index];
+        [_array insertObject:aKey
+                     atIndex:index];
     }
-    [_dictionary setObject:anObject forKey:aKey];
+    [_dictionary setObject:anObject
+                    forKey:aKey];
 }
 
 - (void)addObject:(id)anObject forKey:(id)aKey {
     if (![_dictionary objectForKey:aKey]) {
         [_array addObject:aKey];
     }
-    [_dictionary setObject:anObject forKey:aKey];
+    [_dictionary setObject:anObject
+                    forKey:aKey];
 }
 
 - (void)removeObjectForKey:(id)aKey {
@@ -160,7 +163,8 @@
     if ([_dictionary objectForKey:aKey]) {
         [self removeObjectForKey:aKey];
     }
-    [_array insertObject:aKey atIndex:anIndex];
+    [_array insertObject:aKey
+                 atIndex:anIndex];
     [_dictionary setObject:anObject forKey:aKey];
 }
 

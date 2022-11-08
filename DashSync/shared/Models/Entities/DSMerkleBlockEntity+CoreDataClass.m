@@ -24,6 +24,7 @@
 #import "DSChain+Protected.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainLockEntity+CoreDataClass.h"
+#import "DSCheckpoint.h"
 #import "DSMerkleBlock.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
 #import "DSMerkleTree.h"
@@ -144,6 +145,32 @@
             [chainEntity.managedObjectContext deleteObject:merkleBlock];
         }
     }];
+}
+
++ (instancetype)merkleBlockEntityForBlockHash:(UInt256)blockHash inContext:(NSManagedObjectContext *)context {
+    DSMerkleBlockEntity *merkleBlockEntity = [DSMerkleBlockEntity anyObjectInContext:context matching:@"blockHash == %@", uint256_data(blockHash)];
+    return merkleBlockEntity;
+}
+
++ (instancetype)merkleBlockEntityForBlockHashFromCheckpoint:(UInt256)blockHash chain:(DSChain *)chain inContext:(NSManagedObjectContext *)context {
+    DSCheckpoint *checkpoint = [chain checkpointForBlockHash:blockHash];
+    if (checkpoint) {
+        DSBlock *block = [checkpoint blockForChain:chain];
+        DSChainEntity *chainEntity = [chain chainEntityInContext:context];
+        return [[DSMerkleBlockEntity managedObjectInBlockedContext:context] setAttributesFromBlock:block forChainEntity:chainEntity];
+    }
+    return nil;
+}
+
++ (instancetype)createMerkleBlockEntityForBlockHash:(UInt256)blockHash
+                                        blockHeight:(uint32_t)blockHeight
+                                        chainEntity:(DSChainEntity *)chainEntity
+                                          inContext:(NSManagedObjectContext *)context {
+    DSMerkleBlockEntity *merkleBlockEntity = [DSMerkleBlockEntity managedObjectInBlockedContext:context];
+    merkleBlockEntity.blockHash = uint256_data(blockHash);
+    merkleBlockEntity.height = blockHeight;
+    merkleBlockEntity.chain = chainEntity;
+    return merkleBlockEntity;
 }
 
 @end

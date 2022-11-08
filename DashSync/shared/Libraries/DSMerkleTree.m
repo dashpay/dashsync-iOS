@@ -77,7 +77,7 @@ inline static int ceil_log2(int x) {
 
 + (instancetype)merkleTreeWithElementToProve:(UInt256)element proofData:(NSData *)proofData treeElementCount:(uint32_t)elementCount hashFunction:(DSMerkleTreeHashFunction)hashFunction {
     NSUInteger off = 0, len = 0;
-    uint32_t leafCount = [proofData UInt32AtOffset:off];
+    __unused uint32_t leafCount = [proofData UInt32AtOffset:off];
     off += sizeof(uint32_t);
     NSNumber *l = nil;
     len = (NSUInteger)[proofData varIntAtOffset:off length:&l] * sizeof(UInt256);

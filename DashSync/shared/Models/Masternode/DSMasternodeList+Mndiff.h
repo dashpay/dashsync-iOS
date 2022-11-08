@@ -26,6 +26,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype)masternodeListWith:(MasternodeList *)list onChain:(DSChain *)chain;
 
+- (MasternodeList *)ffi_malloc;
++ (void)ffi_free:(MasternodeList *)list;
+
 @end
 
 NS_ASSUME_NONNULL_END

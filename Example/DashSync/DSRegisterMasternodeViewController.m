@@ -9,6 +9,7 @@
 #import "DSRegisterMasternodeViewController.h"
 #import "DSAccountChooserTableViewCell.h"
 #import "DSKeyValueTableViewCell.h"
+#import "DSMasternodeManager+LocalMasternode.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "DSSignPayloadViewController.h"
 #import "DSTransactionOutput.h"

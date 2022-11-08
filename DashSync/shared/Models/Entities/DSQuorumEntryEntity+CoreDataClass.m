@@ -17,15 +17,15 @@
 
 @implementation DSQuorumEntryEntity
 
+
 + (instancetype)quorumEntryEntityFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry inContext:(NSManagedObjectContext *)context {
-    DSMerkleBlockEntity *block = [DSMerkleBlockEntity anyObjectInContext:context matching:@"blockHash == %@", uint256_data(potentialQuorumEntry.quorumHash)];
+    DSMerkleBlockEntity *block = [DSMerkleBlockEntity merkleBlockEntityForBlockHash:potentialQuorumEntry.quorumHash inContext:context];
     DSQuorumEntryEntity *quorumEntryEntity = nil;
     if (block) {
         quorumEntryEntity = [[block.usedByQuorums filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"quorumHashData == %@ && llmqType == %@ ", uint256_data(potentialQuorumEntry.quorumHash), @(potentialQuorumEntry.llmqType)]] anyObject];
     } else {
         quorumEntryEntity = [DSQuorumEntryEntity anyObjectInContext:context matching:@"quorumHashData == %@ && llmqType == %@ ", uint256_data(potentialQuorumEntry.quorumHash), @(potentialQuorumEntry.llmqType)];
     }
-
     if (!quorumEntryEntity) {
         if (potentialQuorumEntry.saved) { //it was deleted in the meantime, and should be ignored
             return nil;
@@ -36,7 +36,27 @@
     } else {
         [quorumEntryEntity updateAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
     }
+    return quorumEntryEntity;
+}
 
++ (instancetype)quorumEntryEntityFromPotentialQuorumEntryForMerging:(DSQuorumEntry *)potentialQuorumEntry inContext:(NSManagedObjectContext *)context {
+    DSMerkleBlockEntity *block = [DSMerkleBlockEntity merkleBlockEntityForBlockHash:potentialQuorumEntry.quorumHash inContext:context];
+    DSQuorumEntryEntity *quorumEntryEntity = nil;
+    if (block) {
+        quorumEntryEntity = [[block.usedByQuorums filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"quorumHashData == %@ && llmqType == %@ ", uint256_data(potentialQuorumEntry.quorumHash), @(potentialQuorumEntry.llmqType)]] anyObject];
+    } else {
+        quorumEntryEntity = [DSQuorumEntryEntity anyObjectInContext:context matching:@"quorumHashData == %@ && llmqType == %@ ", uint256_data(potentialQuorumEntry.quorumHash), @(potentialQuorumEntry.llmqType)];
+    }
+    if (!quorumEntryEntity) {
+        if (potentialQuorumEntry.saved && potentialQuorumEntry.verified) {
+            return nil;
+        } else {
+            quorumEntryEntity = [DSQuorumEntryEntity managedObjectInBlockedContext:context];
+            [quorumEntryEntity setAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
+        }
+    } else {
+        [quorumEntryEntity updateAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
+    }
     return quorumEntryEntity;
 }
 
@@ -55,6 +75,7 @@
     self.version = potentialQuorumEntry.version;
     self.allCommitmentAggregatedSignature = potentialQuorumEntry.allCommitmentAggregatedSignature;
     self.commitmentHash = potentialQuorumEntry.quorumEntryHash;
+    self.quorumIndex = potentialQuorumEntry.quorumIndex;
     self.chain = [potentialQuorumEntry.chain chainEntityInContext:self.managedObjectContext];
     potentialQuorumEntry.saved = TRUE;
 }
@@ -131,7 +152,8 @@
 }
 
 + (DSQuorumEntryEntity *)quorumEntryForHash:(NSData *)quorumEntryHash onChainEntity:(DSChainEntity *)chainEntity {
-    NSArray *objects = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@) && (quorumEntryHash == %@)", chainEntity, quorumEntryHash];
+    /// Seems to be unused or quorumEntryHash must be changed into commitmentHash ?
+    NSArray *objects = [self objectsInContext:chainEntity.managedObjectContext matching:@"(chain == %@) && (commitmentHash == %@)", chainEntity, quorumEntryHash];
     return [objects firstObject];
 }
 
@@ -144,8 +166,7 @@
 }
 
 - (DSQuorumEntry *)quorumEntry {
-    DSQuorumEntry *quorumEntry = [[DSQuorumEntry alloc] initWithVersion:self.version type:self.llmqType quorumHash:self.quorumHash quorumPublicKey:self.quorumPublicKey quorumEntryHash:self.commitmentHash verified:self.verified onChain:self.chain.chain];
-    return quorumEntry;
+    return [[DSQuorumEntry alloc] initWithVersion:self.version type:self.llmqType quorumHash:self.quorumHash quorumIndex:self.quorumIndex signersCount:self.signersCount signersBitset:self.signersBitset validMembersCount:self.validMembersCount validMembersBitset:self.validMembersBitset quorumPublicKey:self.quorumPublicKey quorumVerificationVectorHash:self.quorumVerificationVectorHash quorumThresholdSignature:self.quorumThresholdSignature allCommitmentAggregatedSignature:self.allCommitmentAggregatedSignature quorumEntryHash:self.commitmentHash onChain:self.chain.chain];
 }
 
 @end

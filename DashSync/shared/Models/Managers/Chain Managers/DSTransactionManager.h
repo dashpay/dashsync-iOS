@@ -75,7 +75,7 @@ typedef void (^DSTransactionRequestRelayCompletionBlock)(DSTransaction *tx, DSPa
 
 - (DSBloomFilter *)transactionsBloomFilterForPeer:(DSPeer *)peer;
 
-- (void)publishTransaction:(DSTransaction *)transaction completion:(void (^)(NSError *error))completion;
+- (void)publishTransaction:(DSTransaction *)transaction completion:(void (^)(NSError * _Nullable error))completion;
 
 - (void)confirmPaymentRequest:(DSPaymentRequest *)paymentRequest usingUserBlockchainIdentity:(DSBlockchainIdentity *_Nullable)blockchainIdentity fromAccount:(DSAccount *)account acceptInternalAddress:(BOOL)acceptInternalAddress acceptReusingAddress:(BOOL)acceptReusingAddress addressIsFromPasteboard:(BOOL)addressIsFromPasteboard requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingConfirmationPrompt
     keepAuthenticatedIfErrorAfterAuthentication:(BOOL)keepAuthenticatedIfErrorAfterAuthentication

@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSManagedObjectContext *viewContext;
 @property (nonatomic, readonly) NSManagedObjectContext *peerContext;
 @property (nonatomic, readonly) NSManagedObjectContext *chainContext;
+@property (nonatomic, readonly) NSManagedObjectContext *masternodesContext;
 @property (nonatomic, readonly) NSManagedObjectContext *platformContext;
 
 + (instancetype)sharedInstance;

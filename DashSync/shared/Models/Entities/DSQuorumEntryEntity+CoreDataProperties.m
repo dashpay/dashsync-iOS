@@ -33,5 +33,6 @@
 @dynamic instantSendLocks;
 @dynamic chainLocks;
 @dynamic referencedByMasternodeLists;
+@dynamic quorumIndex;
 
 @end

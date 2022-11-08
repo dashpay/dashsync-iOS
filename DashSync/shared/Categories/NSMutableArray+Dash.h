@@ -22,6 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface NSMutableArray (Dash)
 
 + (NSMutableArray *)secureArrayWithArray:(NSArray *)array;
+- (NSMutableArray *)compactMap:(id (^)(id obj))block;
+- (NSMutableArray *)map:(id (^)(id obj))block;
 
 @end
 

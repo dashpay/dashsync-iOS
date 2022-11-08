@@ -26,8 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSDictionary<NSNumber *, NSDictionary<NSData *, DSQuorumEntry *> *> *quorums;
 @property (nonatomic, readonly) UInt256 blockHash;
 @property (nonatomic, readonly) uint32_t height;
-@property (nonatomic, readonly) NSTimeInterval approximateTimestamp;
-@property (nonatomic, readonly) BOOL isInLast30Days;
 @property (nonatomic, readonly) UInt256 masternodeMerkleRoot;
 @property (nonatomic, readonly) UInt256 quorumMerkleRoot;
 @property (nonatomic, readonly) NSUInteger quorumsCount;
@@ -50,35 +48,42 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray<DSSimplifiedMasternodeEntry *> *)validMasternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount;
 
-- (NSArray<DSSimplifiedMasternodeEntry *> *)allMasternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount blockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup;
+- (NSArray<DSSimplifiedMasternodeEntry *> *)allMasternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount blockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 
-- (NSArray<DSSimplifiedMasternodeEntry *> *)validMasternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount blockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup;
+- (NSArray<DSSimplifiedMasternodeEntry *> *)validMasternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount blockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 
-- (UInt256)calculateMasternodeMerkleRootWithBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup;
+- (UInt256)calculateMasternodeMerkleRootWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 
 - (NSDictionary *)compare:(DSMasternodeList *)other;
-- (NSDictionary *)compare:(DSMasternodeList *)other blockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup;
+- (NSDictionary *)compare:(DSMasternodeList *)other blockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 - (NSDictionary *)compareWithPrevious:(DSMasternodeList *)other;
-- (NSDictionary *)compareWithPrevious:(DSMasternodeList *)other blockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup;
+- (NSDictionary *)compareWithPrevious:(DSMasternodeList *)other blockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 - (NSDictionary *)listOfChangedNodesComparedTo:(DSMasternodeList *)previous;
-- (NSDictionary *)compare:(DSMasternodeList *)other usingOurString:(NSString *)ours usingTheirString:(NSString *)theirs blockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup;
+- (NSDictionary *)compare:(DSMasternodeList *)other usingOurString:(NSString *)ours usingTheirString:(NSString *)theirs blockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 
-- (DSQuorumEntry *_Nullable)quorumEntryForInstantSendRequestID:(UInt256)requestID;
-- (DSQuorumEntry *_Nullable)quorumEntryForChainLockRequestID:(UInt256)requestID;
+- (DSQuorumEntry *_Nullable)quorumEntryForLockRequestID:(UInt256)requestID ofQuorumType:(DSLLMQType)quorumType;
 - (DSQuorumEntry *_Nullable)quorumEntryForPlatformWithQuorumHash:(UInt256)quorumHash;
+
 - (NSArray<DSQuorumEntry *> *)quorumEntriesRankedForInstantSendRequestID:(UInt256)requestID;
 
 - (NSArray<DSPeer *> *)peers:(uint32_t)peerCount withConnectivityNonce:(uint64_t)connectivityNonce;
 
-- (UInt256)masternodeMerkleRootWithBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup;
+- (UInt256)masternodeMerkleRootWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 
-- (NSArray<NSData *> *)hashesForMerkleRootWithBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup;
+- (NSArray<NSData *> *)hashesForMerkleRootWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 
-- (NSDictionary<NSData *, NSData *> *)hashDictionaryForMerkleRootWithBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup;
+- (NSDictionary<NSData *, NSData *> *)hashDictionaryForMerkleRootWithBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 
-- (NSDictionary *)toDictionaryUsingBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup;
+- (NSDictionary *)toDictionaryUsingBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 
 - (DSSimplifiedMasternodeEntry *)masternodeForRegistrationHash:(UInt256)registrationHash;
+
+- (DSMasternodeList *)mergedWithMasternodeList:(DSMasternodeList *)masternodeList;
+- (BOOL)hasUnverifiedNonRotatedQuorums;
+- (BOOL)hasUnverifiedRotatedQuorums;
+- (void)saveToJsonFile:(NSString *)fileName;
+- (void)saveToJsonFileExtended:(NSString *)fileName;
+
 @end
 
 NS_ASSUME_NONNULL_END

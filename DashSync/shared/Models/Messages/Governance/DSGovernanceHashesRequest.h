@@ -1,6 +1,6 @@
-//
+//  
 //  Created by Vladimir Pirogov
-//  Copyright © 2021 Dash Core Group. All rights reserved.
+//  Copyright © 2022 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,21 +15,16 @@
 //  limitations under the License.
 //
 
-#import "BigIntTypes.h"
-#import "DSMasternodeList.h"
-#import "DSMasternodeManager.h"
+#import "DSGetDataRequest.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSMasternodeDiffMessageContext : NSObject
+@interface DSGovernanceHashesRequest : DSGetDataRequest
 
-@property (nonatomic) DSChain *chain;
-@property (nonatomic, nullable) DSMerkleBlock *lastBlock;
-@property (nonatomic, nullable) DSMasternodeList *baseMasternodeList;
-@property (nonatomic) BOOL useInsightAsBackup;
-@property (nonatomic, copy) DSMasternodeList * (^masternodeListLookup)(UInt256 blockHash);
-@property (nonatomic, copy) uint32_t (^blockHeightLookup)(UInt256 blockHash);
+@property (nonatomic, readwrite) NSArray<NSData *> *hashes;
+
+- (instancetype)initWithHashes:(NSArray<NSData *> *)hashes;
 
 @end
 

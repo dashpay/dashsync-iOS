@@ -54,7 +54,9 @@
 #import "DSTransactionInput.h"
 #import "DSTransition.h"
 #import "DSWallet+Protected.h"
+#import "NSData+Dash.h"
 #import "NSDate+Utils.h"
+#import "NSError+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Bitcoin.h"
@@ -173,7 +175,7 @@
     }
 }
 
-- (void)publishTransaction:(DSTransaction *)transaction completion:(void (^)(NSError *error))completion {
+- (void)publishTransaction:(DSTransaction *)transaction completion:(void (^)(NSError * _Nullable error))completion {
 #if DEBUG
     DSLogPrivate(@"[DSTransactionManager] publish transaction %@ %@", transaction, transaction.toData);
 #else
@@ -182,20 +184,14 @@
     if ([transaction transactionTypeRequiresInputs] && !transaction.isSigned) {
         if (completion) {
             [[DSEventManager sharedEventManager] saveEvent:@"transaction_manager:not_signed"];
-            completion([NSError errorWithDomain:@"DashSync"
-                                           code:401
-                                       userInfo:@{NSLocalizedDescriptionKey:
-                                                    DSLocalizedString(@"Dash transaction not signed", nil)}]);
+            completion([NSError errorWithCode:401 localizedDescriptionKey:@"Dash transaction not signed"]);
         }
 
         return;
     } else if (!self.peerManager.connected && self.peerManager.connectFailures >= MAX_CONNECT_FAILURES) {
         if (completion) {
             [[DSEventManager sharedEventManager] saveEvent:@"transaction_manager:not_connected"];
-            completion([NSError errorWithDomain:@"DashSync"
-                                           code:-1009
-                                       userInfo:@{NSLocalizedDescriptionKey:
-                                                    DSLocalizedString(@"Not connected to the Dash network", nil)}]);
+            completion([NSError errorWithCode:-1009 localizedDescriptionKey:@"Not connected to the Dash network"]);
         }
 
         return;
@@ -227,7 +223,7 @@
                     if (!self.txRequests[h]) self.txRequests[h] = [NSMutableSet set];
                     [self.txRequests[h] addObject:p];
                     //todo: to get lock requests instead if sent that way
-                    [p sendGetdataMessageWithTxHashes:@[h] instantSendLockHashes:nil blockHashes:nil chainLockHashes:nil];
+                    [p sendGetdataMessageWithTxHashes:@[h] instantSendLockHashes:nil instantSendLockDHashes:nil blockHashes:nil chainLockHashes:nil];
                 }
             }];
         }
@@ -278,7 +274,6 @@
 
     BOOL rescan = NO, notify = NO;
     NSValue *hash;
-    UInt256 h;
 
     for (DSTransaction *transaction in transactionsSet) {
         if (transaction.blockHeight != TX_UNCONFIRMED) continue;
@@ -422,10 +417,7 @@
 
         if (callback) {
             [[DSEventManager sharedEventManager] saveEvent:@"transaction_manager:tx_canceled_timeout"];
-            callback([NSError errorWithDomain:@"DashSync"
-                                         code:DASH_PEER_TIMEOUT_CODE
-                                     userInfo:@{NSLocalizedDescriptionKey:
-                                                  DSLocalizedString(@"Transaction canceled, network timeout", nil)}]);
+            callback([NSError errorWithCode:DASH_PEER_TIMEOUT_CODE localizedDescriptionKey:@"Transaction canceled, network timeout"]);
         }
     });
 }
@@ -688,10 +680,7 @@
                           if (!signedTransaction || !tx.isSigned) {
                               if (!previouslyWasAuthenticated && !keepAuthenticatedIfErrorAfterAuthentication) [authenticationManager deauthenticate];
                               dispatch_async(dispatch_get_main_queue(), ^{
-                                  signedCompletion(tx, [NSError errorWithDomain:@"DashSync"
-                                                                           code:401
-                                                                       userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Error signing transaction", nil)}],
-                                      NO);
+                                  signedCompletion(tx, [NSError errorWithCode:401 localizedDescriptionKey:@"Error signing transaction"], NO);
                               });
                               return;
                           }
@@ -899,7 +888,8 @@
         [peer sendFilterloadMessage:[self transactionsBloomFilterForPeer:peer].data];
     }
 
-    [peer sendInvMessageForHashes:self.publishedTx.allKeys ofType:DSInvType_Tx]; // publish pending tx
+    [peer sendInvMessageForHashes:self.publishedTx.allKeys
+                           ofType:DSInvType_Tx]; // publish pending tx
     [peer sendPingMessageWithPongHandler:^(BOOL success) {
         if (success) {
             DSLog(@"[DSTransactionManager] fetching mempool ping success peer %@", peer.host);
@@ -1119,9 +1109,7 @@
 
     if (callback && !isTransactionValid) {
         [self.publishedTx removeObjectForKey:hash];
-        error = [NSError errorWithDomain:@"DashSync"
-                                    code:401
-                                userInfo:@{NSLocalizedDescriptionKey: DSLocalizedString(@"Double spend", nil)}];
+        error = [NSError errorWithCode:401 localizedDescriptionKey:@"Double spend"];
     } else if (transaction) {
         for (DSAccount *account in accounts) {
             if (![account transactionForHash:txHash]) {
@@ -1518,7 +1506,10 @@
 
 // MARK: Instant Send
 
-- (void)peer:(DSPeer *)peer hasInstantSendLockHashes:(NSOrderedSet *)instantSendLockVoteHashes {
+- (void)peer:(DSPeer *)peer hasInstantSendLockHashes:(NSOrderedSet *)instantSendLockHashes {
+}
+
+- (void)peer:(DSPeer *)peer hasInstantSendLockDHashes:(NSOrderedSet *)instantSendLockDHashes {
 }
 
 - (void)peer:(DSPeer *)peer hasChainLockHashes:(NSOrderedSet *)chainLockHashes {
@@ -1580,13 +1571,15 @@
                 [transaction setInstantSendReceivedWithInstantSendLock:instantSendTransactionLock];
             }
             [self.instantSendLocksWaitingForQuorums removeObjectForKey:uint256_data(instantSendTransactionLock.transactionHash)];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification
-                                                                    object:nil
-                                                                  userInfo:@{DSChainManagerNotificationChainKey: self.chain,
-                                                                      DSTransactionManagerNotificationTransactionKey: transaction,
-                                                                      DSTransactionManagerNotificationTransactionChangesKey: @{DSTransactionManagerNotificationInstantSendTransactionLockKey: instantSendTransactionLock, DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey: @(verified)}}];
-            });
+            if (account && transaction) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification
+                                                                        object:nil
+                                                                      userInfo:@{DSChainManagerNotificationChainKey: self.chain,
+                                                                          DSTransactionManagerNotificationTransactionKey: transaction,
+                                                                          DSTransactionManagerNotificationTransactionChangesKey: @{DSTransactionManagerNotificationInstantSendTransactionLockKey: instantSendTransactionLock, DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey: @(verified)}}];
+                });
+            }
         } else {
             DSTransaction *transaction = nil;
             DSWallet *wallet = nil;
@@ -1673,9 +1666,7 @@
     }
 
 #if !SAVE_MAX_TRANSACTIONS_INFO
-    [self.chain addBlock:block
-        receivedAsHeader:NO
-                fromPeer:peer];
+    [self.chain addBlock:block receivedAsHeader:NO fromPeer:peer];
 #else
     if ([self.chain addBlock:block isHeaderOnly:NO fromPeer:peer]) {
         if (block.height == self.chain.lastSyncBlockHeight) {
@@ -1711,10 +1702,8 @@
                 DSLog(@"%d;%lu;%u", block.height - 499, self.totalTransactionsSum / self.totalTransactionsQueue.count, self.totalTransactionsMax);
             }
             if (block.height == self.chain.lastTerminalBlockHeight) {
-                NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-                NSString *documentsDirectory = [paths objectAtIndex:0];
-                NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"MaxTransactionInfo_%@.dat", self.chain.name]];
-                [self.totalTransactionData writeToFile:dataPath atomically:YES];
+                NSString *fileName = [NSString stringWithFormat:@"MaxTransactionInfo_%@.dat", self.chain.name];
+                [self.totalTransactionData saveToFile:fileName inDirectory:NSCachesDirectory];
             }
         }
     }
@@ -1793,6 +1782,11 @@
         DSLog(@"increasing feePerKb to %llu based on feefilter messages from peers", secondFeePerByte * 2);
         self.chain.feePerByte = secondFeePerByte * 2;
     }
+}
+
+- (void)checkWaitingForQuorums {
+    [self checkInstantSendLocksWaitingForQuorums];
+    [self checkChainLocksWaitingForQuorums];
 }
 
 @end

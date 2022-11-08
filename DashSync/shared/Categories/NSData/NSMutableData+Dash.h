@@ -70,7 +70,7 @@ CF_IMPLICIT_BRIDGING_DISABLED
 - (NSMutableData *)appendString:(NSString *)s;
 - (NSMutableData *)appendCountedData:(NSData *)data;
 
-- (NSMutableData *)appendDevnetGenesisCoinbaseMessage:(NSString *)message;
+- (NSMutableData *)appendDevnetGenesisCoinbaseMessage:(NSString *)devnetIdentifier version:(uint16_t)version onProtocolVersion:(uint32_t)protocolVersion;
 - (NSMutableData *)appendCoinbaseMessage:(NSString *)message atHeight:(uint32_t)height;
 
 - (NSMutableData *)appendBitcoinScriptPubKeyForAddress:(NSString *)address forChain:(DSChain *)chain;

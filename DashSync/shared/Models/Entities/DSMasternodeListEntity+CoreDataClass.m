@@ -22,8 +22,11 @@
     return [self masternodeListWithSimplifiedMasternodeEntryPool:simplifiedMasternodeEntries quorumEntryPool:quorumEntries withBlockHeightLookup:nil];
 }
 
-- (DSMasternodeList *)masternodeListWithSimplifiedMasternodeEntryPool:(NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *)simplifiedMasternodeEntries quorumEntryPool:(NSDictionary<NSNumber *, NSDictionary *> *)quorumEntries withBlockHeightLookup:(uint32_t (^)(UInt256 blockHash))blockHeightLookup {
+- (DSMasternodeList *)masternodeListWithSimplifiedMasternodeEntryPool:(NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *)simplifiedMasternodeEntries quorumEntryPool:(NSDictionary<NSNumber *, NSDictionary *> *)quorumEntries withBlockHeightLookup:(BlockHeightFinder)blockHeightLookup {
+    
+    /// TODO: it's a BS to collect this stuff into arrays and then to recollect it into dictionaries in the next step...
     NSMutableArray *masternodeEntriesArray = [NSMutableArray array];
+    
     for (DSSimplifiedMasternodeEntryEntity *masternodeEntity in self.masternodes) {
         DSSimplifiedMasternodeEntry *masternodeEntry = [simplifiedMasternodeEntries objectForKey:masternodeEntity.providerRegistrationTransactionHash];
         if (!masternodeEntry) {
@@ -45,6 +48,7 @@
 + (void)deleteAllOnChainEntity:(DSChainEntity *)chainEntity {
     NSArray *masternodeLists = [self objectsInContext:chainEntity.managedObjectContext matching:@"(block.chain == %@)", chainEntity];
     for (DSMasternodeListEntity *masternodeList in masternodeLists) {
+        DSLog(@"MasternodeListEntity.deleteAllOnChainEntity: %@", masternodeList);
         [chainEntity.managedObjectContext deleteObject:masternodeList];
     }
 }

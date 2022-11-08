@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface NSDictionary (Dash)
 
 - (NSDictionary *)transformToDictionaryOfHexStringsToHexStrings;
++ (NSDictionary *)mergeDictionary:(NSDictionary *_Nullable)dictionary1 withDictionary:(NSDictionary *)dictionary2;
 
 @end
 

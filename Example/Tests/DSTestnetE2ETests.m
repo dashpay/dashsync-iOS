@@ -53,7 +53,7 @@
 
 - (void)setUp {
     self.chain = [DSChain testnet];
-    //this will only be run once before all tests
+    // this will only be run once before all tests
     uint8_t seed[12] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     NSData *seedData = [NSData dataWithBytes:seed length:12];
     self.sweepKey = [DSECDSAKey keyWithSeedData:seedData];
@@ -70,7 +70,7 @@
 
         staticFaucetWallet = [DSWallet standardWalletWithSeedPhrase:@"gather jeans tourist era ride enable cover disease between need nature blood" setCreationDate:1619235036 forChain:self.chain storeSeedPhrase:YES isTransient:NO];
 
-        //this is run only the first time
+        // this is run only the first time
         staticTestWallet1 = [DSWallet standardWalletWithRandomSeedPhraseForChain:self.chain storeSeedPhrase:YES isTransient:NO];
         staticTestWallet2 = [DSWallet standardWalletWithRandomSeedPhraseForChain:self.chain storeSeedPhrase:YES isTransient:NO];
 
@@ -129,7 +129,7 @@
                                                            queue:nil
                                                       usingBlock:^(NSNotification *note) {
                                                           DSLogPrivate(@"Finished sync");
-                                                          //give things time to save
+                                                          // give things time to save
                                                           dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                                                               [headerFinishedExpectation fulfill];
                                                           });
@@ -185,8 +185,8 @@
 }
 
 - (void)testCWalletHasFunds {
-    XCTAssert(self.fundingAccount1.balance >= 1200000); //Wallet must have at least 0.12 Dash
-    XCTAssert(self.fundingAccount2.balance >= 1100000); //Wallet must have at least 0.11 Dash
+    XCTAssert(self.fundingAccount1.balance >= 1200000); // Wallet must have at least 0.12 Dash
+    XCTAssert(self.fundingAccount2.balance >= 1100000); // Wallet must have at least 0.11 Dash
 }
 
 - (void)testDSendTransactionToKey {
@@ -210,7 +210,7 @@
                                                                         XCTAssertNil(error, @"There should not be an error");
                                                                         if (!sent) {
                                                                             sent = YES;
-                                                                            [self.fundingAccount1 registerTransaction:transaction saveImmediately:YES]; //not sure this is needed
+                                                                            [self.fundingAccount1 registerTransaction:transaction saveImmediately:YES]; // not sure this is needed
                                                                             [transactionFinishedExpectation fulfill];
                                                                         }
                                                                     }];
@@ -221,7 +221,7 @@
 - (void)testESweepKey {
     uint64_t originalBalance = self.fundingAccount1.balance;
     XCTestExpectation *transactionFinishedExpectation = [[XCTestExpectation alloc] init];
-    //we need to wait a few seconds for the transaction to propagate on the network
+    // we need to wait a few seconds for the transaction to propagate on the network
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self.fundingAccount1 sweepPrivateKey:[self.sweepKey serializedPrivateKeyForChain:self.chain]
                                       withFee:YES
@@ -234,7 +234,7 @@
                                                                             XCTAssert(error == nil, @"There should not be an error");
                                                                             if (!sent) {
                                                                                 sent = YES;
-                                                                                [self.fundingAccount1 registerTransaction:sweepTransaction saveImmediately:YES]; //not sure this is needed
+                                                                                [self.fundingAccount1 registerTransaction:sweepTransaction saveImmediately:YES]; // not sure this is needed
                                                                                 XCTAssert(self.fundingAccount1.balance > originalBalance, @"Balance should be increased");
                                                                                 [transactionFinishedExpectation fulfill];
                                                                             }

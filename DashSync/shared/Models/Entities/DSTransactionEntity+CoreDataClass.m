@@ -118,7 +118,7 @@
         tx.blockHeight = self.transactionHash.blockHeight;
         tx.timestamp = self.transactionHash.timestamp;
         tx.associatedShapeshift = self.associatedShapeshift;
-
+        
         for (DSTxInputEntity *e in self.inputs) {
             txHash = e.txHash;
             if (txHash.length != sizeof(UInt256)) continue;

@@ -31,6 +31,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+#define NSDataFromCPointer(p, l) [NSData dataWithBytes:p length:l]
+#define NSStringFromCPointer(p, l) NSDataFromCPointer(p, l).hexString
+
 #define SEC_ATTR_SERVICE @"org.dashfoundation.dash"
 
 #define useDarkCoinSeed 0 //the darkcoin seed was retired quite a while ago
@@ -202,6 +205,18 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 - (UInt512)UInt512;
 - (UInt768)UInt768;
 
+- (uint8_t)readUInt8AtOffset:(NSUInteger *)offset;
+- (uint16_t)readUInt16AtOffset:(NSUInteger *)offset;
+- (uint32_t)readUInt32AtOffset:(NSUInteger *)offset;
+- (uint64_t)readUInt64AtOffset:(NSUInteger *)offset;
+- (UInt128)readUInt128AtOffset:(NSUInteger *)offset;
+- (UInt160)readUInt160AtOffset:(NSUInteger *)offset;
+- (UInt256)readUInt256AtOffset:(NSUInteger *)offset;
+- (UInt384)readUInt384AtOffset:(NSUInteger *)offset;
+- (UInt512)readUInt512AtOffset:(NSUInteger *)offset;
+- (UInt768)readUInt768AtOffset:(NSUInteger *)offset;
+- (NSData *)readDataAtOffset:(NSUInteger *)offset ofLength:(NSUInteger)length;
+
 - (DSECPoint)ECPointAtOffset:(NSUInteger)offset;
 - (DSECPoint)ECPoint;
 
@@ -240,6 +255,8 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 - (UInt256)HMACSHA256WithKey:(UInt256)secretKey;
 
 + (NSData *)dataFromHexString:(NSString *)string;
+
+- (void)saveToFile:(NSString *)file inDirectory:(NSSearchPathDirectory)directory;
 
 @end
 

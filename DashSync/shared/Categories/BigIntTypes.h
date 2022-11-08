@@ -28,6 +28,12 @@
 #ifndef BigIntTypes_h
 #define BigIntTypes_h
 
+#if __has_feature(objc_arc)
+#define NoTimeLog(format, ...) CFShow((__bridge CFStringRef)[NSString stringWithFormat:format, ##__VA_ARGS__]);
+#else
+#define NoTimeLog(format, ...) CFShow([NSString stringWithFormat:format, ##__VA_ARGS__]);
+#endif
+
 
 typedef union _UInt768 {
     uint8_t u8[768 / 8];
@@ -84,6 +90,7 @@ typedef struct {
     uint8_t p[33];
 } DSECPoint;
 
+typedef uint32_t (^_Nullable BlockHeightFinder)(UInt256 blockHash);
 #define uint768_random ((UInt768){.u32 = {arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random()}})
 
 #define uint256_random ((UInt256){.u32 = {arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random()}})
@@ -170,6 +177,7 @@ typedef struct {
 #define uint160_data_from_obj(u) [NSData dataWithUInt160Value:u]
 #define uint256_data_from_obj(u) [NSData dataWithUInt256Value:u]
 
+#define uint128_hex(u) [NSData dataWithUInt128:u].hexString
 #define uint160_hex(u) [NSData dataWithUInt160:u].hexString
 #define uint160_reverse_hex(u) [NSData dataWithUInt160:u].reverse.hexString
 #define uint160_base58(u) [NSData dataWithUInt160:u].base58String
@@ -217,5 +225,40 @@ typedef struct {
                                                  CFSwapInt32HostToLittle((uint32_t)o.n)}) \
                                       length:sizeof(UInt256) + sizeof(uint32_t)]
 
-
+#define data_malloc(u) (^{ \
+    NSUInteger l = u.length; \
+    uint8_t *h = malloc(l); \
+    memcpy(h, u.bytes, l); \
+    return h; \
+}())
+#define uint128_malloc(u) (^{ \
+    uint8_t (*h)[16] = malloc(sizeof(UInt128)); \
+    memcpy(h, u.u8, sizeof(UInt128)); \
+    return h; \
+}())
+#define uint160_malloc(u) (^{ \
+    uint8_t (*h)[20] = malloc(sizeof(UInt160)); \
+    memcpy(h, u.u8, sizeof(UInt160)); \
+    return h; \
+}())
+#define uint256_malloc(u) (^{ \
+    uint8_t (*h)[32] = malloc(sizeof(UInt256)); \
+    memcpy(h, u.u8, sizeof(UInt256)); \
+    return h; \
+}())
+#define uint384_malloc(u) (^{ \
+    uint8_t (*h)[48] = malloc(sizeof(UInt384)); \
+    memcpy(h, u.u8, sizeof(UInt384)); \
+    return h; \
+}())
+#define uint512_malloc(u) (^{ \
+    uint8_t (*h)[64] = malloc(sizeof(UInt512)); \
+    memcpy(h, u.u8, sizeof(UInt512)); \
+    return h; \
+}())
+#define uint768_malloc(u) (^{ \
+    uint8_t (*h)[96] = malloc(sizeof(UInt768)); \
+    memcpy(h, u.u8, sizeof(UInt768)); \
+    return h; \
+}())
 #endif /* BigIntTypes_h */
