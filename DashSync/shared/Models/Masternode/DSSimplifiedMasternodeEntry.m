@@ -35,6 +35,7 @@
 @property (nonatomic, assign) UInt128 address;
 @property (nonatomic, assign) uint16_t port;
 @property (nonatomic, assign) UInt384 operatorPublicKey; //this is using BLS
+@property (nonatomic, assign) uint16_t operatorPublicKeyVersion; // 1: legacy | 2: basic
 @property (nonatomic, assign) UInt160 keyIDVoting;
 @property (nonatomic, assign) BOOL isValid;
 @property (nonatomic, assign) uint32_t knownConfirmedAtHeight;
@@ -71,7 +72,7 @@
     return [self payloadData].SHA256_2;
 }
 
-+ (instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash confirmedHash:(UInt256)confirmedHash address:(UInt128)address port:(uint16_t)port operatorBLSPublicKey:(UInt384)operatorBLSPublicKey previousOperatorBLSPublicKeys:(NSDictionary<DSBlock *, NSData *> *)previousOperatorBLSPublicKeys keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid previousValidity:(NSDictionary<DSBlock *, NSNumber *> *)previousValidity knownConfirmedAtHeight:(uint32_t)knownConfirmedAtHeight updateHeight:(uint32_t)updateHeight simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash previousSimplifiedMasternodeEntryHashes:(NSDictionary<DSBlock *, NSData *> *)previousSimplifiedMasternodeEntryHashes onChain:(DSChain *)chain {
++ (instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash confirmedHash:(UInt256)confirmedHash address:(UInt128)address port:(uint16_t)port operatorBLSPublicKey:(UInt384)operatorBLSPublicKey operatorPublicKeyVersion:(uint16_t)operatorPublicKeyVersion previousOperatorBLSPublicKeys:(NSDictionary<DSBlock *, NSData *> *)previousOperatorBLSPublicKeys keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid previousValidity:(NSDictionary<DSBlock *, NSNumber *> *)previousValidity knownConfirmedAtHeight:(uint32_t)knownConfirmedAtHeight updateHeight:(uint32_t)updateHeight simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash previousSimplifiedMasternodeEntryHashes:(NSDictionary<DSBlock *, NSData *> *)previousSimplifiedMasternodeEntryHashes onChain:(DSChain *)chain {
     DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry = [[DSSimplifiedMasternodeEntry alloc] init];
     simplifiedMasternodeEntry.providerRegistrationTransactionHash = providerRegistrationTransactionHash;
     simplifiedMasternodeEntry.confirmedHash = confirmedHash;
@@ -79,6 +80,7 @@
     simplifiedMasternodeEntry.port = port;
     simplifiedMasternodeEntry.keyIDVoting = keyIDVoting;
     simplifiedMasternodeEntry.operatorPublicKey = operatorBLSPublicKey;
+    simplifiedMasternodeEntry.operatorPublicKeyVersion = operatorPublicKeyVersion;
     simplifiedMasternodeEntry.isValid = isValid;
     simplifiedMasternodeEntry.knownConfirmedAtHeight = knownConfirmedAtHeight;
     simplifiedMasternodeEntry.updateHeight = updateHeight;
@@ -494,6 +496,7 @@
         }
         if (!uint384_eq(self.operatorPublicKey, masternodeEntry.operatorPublicKey)) {
             self.operatorPublicKey = masternodeEntry.operatorPublicKey;
+            self.operatorPublicKeyVersion = masternodeEntry.operatorPublicKeyVersion;
         }
         if (self.isValid != masternodeEntry.isValid) {
             self.isValid = masternodeEntry.isValid;

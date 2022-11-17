@@ -23,6 +23,7 @@
 @property (nonatomic, readonly) NSString *portString;
 @property (nonatomic, readonly) NSString *validString;
 @property (nonatomic, readonly) UInt384 operatorPublicKey;
+@property (nonatomic, readonly) uint16_t operatorPublicKeyVersion;
 @property (nonatomic, readonly) NSDictionary *previousOperatorPublicKeys;
 @property (nonatomic, readonly) NSDictionary *previousSimplifiedMasternodeEntryHashes;
 @property (nonatomic, readonly) NSDictionary *previousValidity;
@@ -40,54 +41,30 @@
 @property (nonatomic, readonly) uint64_t platformPing;
 @property (nonatomic, readonly) NSDate *platformPingDate;
 
-+ (instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash confirmedHash:(UInt256)confirmedHash address:(UInt128)address port:(uint16_t)port operatorBLSPublicKey:(UInt384)operatorBLSPublicKey previousOperatorBLSPublicKeys:(NSDictionary<DSBlock *, NSData *> *)previousOperatorBLSPublicKeys keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid previousValidity:(NSDictionary<DSBlock *, NSNumber *> *)previousValidity knownConfirmedAtHeight:(uint32_t)knownConfirmedAtHeight updateHeight:(uint32_t)updateHeight simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash previousSimplifiedMasternodeEntryHashes:(NSDictionary<DSBlock *, NSData *> *)previousSimplifiedMasternodeEntryHashes onChain:(DSChain *)chain;
-
++ (instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash confirmedHash:(UInt256)confirmedHash address:(UInt128)address port:(uint16_t)port operatorBLSPublicKey:(UInt384)operatorBLSPublicKey operatorPublicKeyVersion:(uint16_t)operatorPublicKeyVersion previousOperatorBLSPublicKeys:(NSDictionary<DSBlock *, NSData *> *)previousOperatorBLSPublicKeys keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid previousValidity:(NSDictionary<DSBlock *, NSNumber *> *)previousValidity knownConfirmedAtHeight:(uint32_t)knownConfirmedAtHeight updateHeight:(uint32_t)updateHeight simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash previousSimplifiedMasternodeEntryHashes:(NSDictionary<DSBlock *, NSData *> *)previousSimplifiedMasternodeEntryHashes onChain:(DSChain *)chain;
 - (DSSimplifiedMasternodeEntryEntity *)simplifiedMasternodeEntryEntityInContext:(NSManagedObjectContext *)context;
-
-//- (BOOL)verifySignature:(UInt768)signature forMessageDigest:(UInt256)messageDigest;
-
 - (UInt256)simplifiedMasternodeEntryHashAtBlock:(DSBlock *)merkleBlock;
-
 - (UInt256)simplifiedMasternodeEntryHashAtBlockHash:(UInt256)blockHash;
-
 - (UInt256)simplifiedMasternodeEntryHashAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
-
 - (UInt256)simplifiedMasternodeEntryHashAtBlockHeight:(uint32_t)blockHeight;
-
 - (UInt384)operatorPublicKeyAtBlock:(DSBlock *)merkleBlock;
-
 - (UInt384)operatorPublicKeyAtBlockHash:(UInt256)blockHash;
-
 - (UInt384)operatorPublicKeyAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
-
 - (UInt384)operatorPublicKeyAtBlockHeight:(uint32_t)blockHeight;
-
 - (BOOL)isValidAtBlock:(DSBlock *)merkleBlock;
-
 - (BOOL)isValidAtBlockHash:(UInt256)blockHash;
-
 - (BOOL)isValidAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
-
 - (BOOL)isValidAtBlockHeight:(uint32_t)blockHeight;
-
 - (UInt256)confirmedHashAtBlock:(DSBlock *)merkleBlock;
-
 - (UInt256)confirmedHashAtBlockHash:(UInt256)blockHash;
-
 - (UInt256)confirmedHashAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
-
 - (UInt256)confirmedHashAtBlockHeight:(uint32_t)blockHeight;
-
 - (UInt256)confirmedHashHashedWithProviderRegistrationTransactionHashAtBlockHeight:(uint32_t)blockHeight;
-
 - (NSDictionary *)compare:(DSSimplifiedMasternodeEntry *)other ourBlockHash:(UInt256)ourBlockHash theirBlockHash:(UInt256)theirBlockHash usingOurString:(NSString *)ours usingTheirString:(NSString *)theirs;
 - (NSDictionary *)compare:(DSSimplifiedMasternodeEntry *)other ourBlockHash:(UInt256)ourBlockHash theirBlockHash:(UInt256)theirBlockHash usingOurString:(NSString *)ours usingTheirString:(NSString *)theirs blockHeightLookup:(BlockHeightFinder)blockHeightLookup;
 - (NSDictionary *)compare:(DSSimplifiedMasternodeEntry *)other atBlockHash:(UInt256)blockHash;
-
 - (NSDictionary *)toDictionaryAtBlockHash:(UInt256)blockHash usingBlockHeightLookup:(BlockHeightFinder)blockHeightLookup;
-
 - (void)setPlatformPing:(uint64_t)platformPing at:(NSDate *)time;
-
 - (void)savePlatformPingInfoInContext:(NSManagedObjectContext *)context;
 - (void)mergedWithSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlockHeight:(uint32_t)blockHeight;
 

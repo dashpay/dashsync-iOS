@@ -19,6 +19,7 @@
 @dynamic isValid;
 @dynamic keyIDVoting;
 @dynamic operatorBLSPublicKey;
+@dynamic operatorPublicKeyVersion;
 @dynamic port;
 @dynamic previousOperatorBLSPublicKeys;
 @dynamic previousValidity;

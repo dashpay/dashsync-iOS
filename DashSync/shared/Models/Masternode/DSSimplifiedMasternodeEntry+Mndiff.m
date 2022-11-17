@@ -33,21 +33,25 @@
     UInt160 keyIDVoting = *((UInt160 *)entry->key_id_voting);
     uint32_t knownConfirmedAtHeight = entry->known_confirmed_at_height;
     UInt256 simplifiedMasternodeEntryHash = *((UInt256 *)entry->entry_hash);
-    UInt384 operatorPublicKey = *((UInt384 *)entry->operator_public_key);
+    
+    OperatorPublicKey *operator_public_key = entry->operator_public_key;
+    UInt384 operatorPublicKey = *((UInt384 *)operator_public_key->data);
+    uint16_t operatorPublicKeyVersion = operator_public_key->version;
     uintptr_t previous_operator_public_keys_count = entry->previous_operator_public_keys_count;
-    OperatorPublicKey *previous_operator_public_keys = entry->previous_operator_public_keys;
+    BlockOperatorPublicKey *previous_operator_public_keys = entry->previous_operator_public_keys;
     NSMutableDictionary<DSBlock *, NSData *> *operatorPublicKeys = [NSMutableDictionary dictionaryWithCapacity:previous_operator_public_keys_count];
     for (NSUInteger i = 0; i < previous_operator_public_keys_count; i++) {
-        OperatorPublicKey operator_public_key = previous_operator_public_keys[i];
-        UInt256 blockHash = *((UInt256 *)operator_public_key.block_hash);
-        uint32_t blockHeight = operator_public_key.block_height;
+        BlockOperatorPublicKey prev_operator_public_key = previous_operator_public_keys[i];
+        UInt256 blockHash = *((UInt256 *)prev_operator_public_key.block_hash);
+        uint32_t blockHeight = prev_operator_public_key.block_height;
         DSBlock *block = (DSBlock *)[chain blockForBlockHash:blockHash];
         if (!block) {
             block = [[DSBlock alloc] initWithBlockHash:blockHash height:blockHeight onChain:chain];
             DSLog(@"•••• block for previous operator public key at (%d: %@) created from nothing", blockHeight, uint256_hex(blockHash));
         }
-        NSData *key = [NSData dataWithBytes:operator_public_key.key length:48];
-        [operatorPublicKeys setObject:key forKey:block];
+        NSMutableData *data = [NSMutableData dataWithUInt384:*((UInt384 *)prev_operator_public_key.key)];
+        [data appendData:[NSData dataWithUInt16:prev_operator_public_key.version]];
+        [operatorPublicKeys setObject:[data copy] forKey:block];
     }
     uintptr_t previous_entry_hashes_count = entry->previous_entry_hashes_count;
     MasternodeEntryHash *previous_entry_hashes = entry->previous_entry_hashes;
@@ -90,6 +94,7 @@
                                                                           address:address
                                                                              port:port
                                                              operatorBLSPublicKey:operatorPublicKey
+                                                             operatorPublicKeyVersion:operatorPublicKeyVersion
                                                     previousOperatorBLSPublicKeys:[operatorPublicKeys copy]
                                                                       keyIDVoting:keyIDVoting
                                                                           isValid:isValid
@@ -123,14 +128,24 @@
     masternode_entry->key_id_voting = uint160_malloc([self keyIDVoting]);
     masternode_entry->known_confirmed_at_height = known_confirmed_at_height;
     masternode_entry->entry_hash = uint256_malloc([self simplifiedMasternodeEntryHash]);
-    masternode_entry->operator_public_key = uint384_malloc([self operatorPublicKey]);
+    OperatorPublicKey *operator_public_key = malloc(sizeof(OperatorPublicKey));
+    memcpy(operator_public_key->data, [self operatorPublicKey].u8, sizeof(UInt384));
+    operator_public_key->version = self.operatorPublicKeyVersion;
+    masternode_entry->operator_public_key = operator_public_key;
     NSUInteger previousOperatorPublicKeysCount = [previousOperatorPublicKeys count];
-    OperatorPublicKey *previous_operator_public_keys = malloc(previousOperatorPublicKeysCount * sizeof(OperatorPublicKey));
+    BlockOperatorPublicKey *previous_operator_public_keys = malloc(previousOperatorPublicKeysCount * sizeof(BlockOperatorPublicKey));
     int i = 0;
     for (DSBlock *block in previousOperatorPublicKeys) {
-        NSData *keyData = previousOperatorPublicKeys[block];
-        OperatorPublicKey obj = {.block_height = block.height};
-        memcpy(obj.key, keyData.bytes, sizeof(UInt384));
+        NSData *keyVersionData = previousOperatorPublicKeys[block];
+        BlockOperatorPublicKey obj = {.block_height = block.height};
+        if (keyVersionData.length == 48) {
+            obj.version = 0;
+            memcpy(obj.key, keyVersionData.bytes, sizeof(UInt384));
+        } else {
+            UInt384 keyData = [keyVersionData UInt384AtOffset:0];
+            obj.version = [keyVersionData UInt16AtOffset:48];
+            memcpy(obj.key, keyData.u8, sizeof(UInt384));
+        }
         memcpy(obj.block_hash, block.blockHash.u8, sizeof(UInt256));
         previous_operator_public_keys[i] = obj;
         i++;

@@ -245,7 +245,7 @@ bool shouldProcessLLMQType(uint8_t quorum_type, const void *context) {
 
 bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
     uintptr_t count = data->count;
-    uint8_t(**items)[48] = data->items;
+    OperatorPublicKey **items = data->items;
     UInt768 allCommitmentAggregatedSignature = *((UInt768 *)data->all_commitment_aggregated_signature);
     UInt256 commitmentHash = *((UInt256 *)data->commitment_hash);
     UInt768 quorumThresholdSignature = *((UInt768 *)data->threshold_signature);
@@ -255,7 +255,9 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
     //NSLog(@"••• validateLLMQ: items: %lu: %@", count, uint384_hex(quorumPublicKey));
     NSMutableArray<DSBLSKey *> *publicKeyArray = [NSMutableArray array];
     for (NSUInteger i = 0; i < count; i++) {
-        UInt384 publicKey = *((UInt384 *)items[i]);
+        OperatorPublicKey *key = items[i];
+        UInt384 publicKey = *((UInt384 *)key->data);
+        BOOL useLegacy = key->version < 2;
         [publicKeyArray addObject:[DSBLSKey keyWithPublicKey:publicKey useLegacy:useLegacy]];
     }
     processor_destroy_llmq_validation_data(data);
@@ -322,6 +324,7 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
                                                                message.length,
                                                                context.useInsightAsBackup,
                                                                context.isFromSnapshot,
+                                                               context.chain.protocolVersion,
                                                                (const uint8_t *) context.chain.genesisHash.u8,
                                                                self.processor,
                                                                self.processorCache,
@@ -338,6 +341,7 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
                                                        message.length,
                                                        context.useInsightAsBackup,
                                                        context.isFromSnapshot,
+                                                       context.chain.protocolVersion,
                                                        (const uint8_t *) context.chain.genesisHash.u8,
                                                        self.processor,
                                                        self.processorCache,
@@ -352,14 +356,15 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
     MNListDiffResult *result = NULL;
     @synchronized (context) {
         result = process_mnlistdiff_from_message(
-                                                                   message.bytes,
-                                                                   message.length,
-                                                                   context.useInsightAsBackup,
-                                                                   context.isFromSnapshot,
-                                                                   (const uint8_t *) context.chain.genesisHash.u8,
-                                                                   self.processor,
-                                                                   self.processorCache,
-                                                                   (__bridge void *)(context));
+                                                 message.bytes,
+                                                 message.length,
+                                                 context.useInsightAsBackup,
+                                                 context.isFromSnapshot,
+                                                 context.chain.protocolVersion,
+                                                 (const uint8_t *) context.chain.genesisHash.u8,
+                                                 self.processor,
+                                                 self.processorCache,
+                                                 (__bridge void *)(context));
     }
     DSMnDiffProcessingResult *processingResult = [DSMnDiffProcessingResult processingResultWith:result onChain:context.chain];
     processor_destroy_mnlistdiff_result(result);
