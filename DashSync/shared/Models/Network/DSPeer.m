@@ -767,6 +767,8 @@
         [self acceptVerackMessage:message];
     else if ([MSG_ADDR isEqual:type])
         [self acceptAddrMessage:message];
+    else if ([MSQ_SENDADDRV2 isEqual:type])
+        [self acceptAddrV2Message:message];
     else if ([MSG_INV isEqual:type])
         [self acceptInvMessage:message];
     else if ([MSG_TX isEqual:type])
@@ -941,6 +943,10 @@
     dispatch_async(self.delegateQueue, ^{
         if (self->_status == DSPeerStatus_Connected) [self.peerDelegate peer:self relayedPeers:peers];
     });
+}
+
+- (void)acceptAddrV2Message:(NSData *)message {
+    DSLog(@"%@:%u sendaddrv2, len:%u, (not implemented)", self.host, self.port, (int)message.length);
 }
 
 - (NSString *)nameOfInvMessage:(DSInvType)type {
