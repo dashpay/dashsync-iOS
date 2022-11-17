@@ -56,7 +56,7 @@
     [self setupDevnetWithId:@"chacha"
                sporkAddress:@"ybiRzdGWFeijAgR7a8TJafeNi6Yk6h68ps"
             sporkPrivateKey:@"cPTms6Sd7QuhPWXWQSzMbvg2VbEPsWCsLBbR4PBgvfYRzAPazbt3"
-         minProtocolVersion:70221
+         minProtocolVersion:70225
             protocolVersion:70225
     minimumDifficultyBlocks:1000000
            ISLockQuorumType:DEVNET_ISLOCK_DEFAULT_QUORUM_TYPE
