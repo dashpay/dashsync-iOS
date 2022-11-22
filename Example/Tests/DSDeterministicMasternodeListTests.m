@@ -207,6 +207,7 @@
                                                                      address:ipAddress
                                                                         port:0
                                                         operatorBLSPublicKey:operatorPublicKey
+                                                    operatorPublicKeyVersion:0
                                                previousOperatorBLSPublicKeys:@{}
                                                                  keyIDVoting:keyIdVoting
                                                                      isValid:isValid
@@ -1068,7 +1069,7 @@
             UInt256 confirmedHash = [NSData dataWithUInt256:hash].SHA256;
             UInt128 address = UINT128_ZERO;
             *address.u16 = i;
-            DSSimplifiedMasternodeEntry *entry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:hash confirmedHash:confirmedHash address:address port:9999 operatorBLSPublicKey:UINT384_ZERO previousOperatorBLSPublicKeys:@{} keyIDVoting:UINT160_ZERO isValid:YES previousValidity:@{} knownConfirmedAtHeight:50 updateHeight:100 simplifiedMasternodeEntryHash:UINT256_ZERO previousSimplifiedMasternodeEntryHashes:@{} onChain:chain];
+            DSSimplifiedMasternodeEntry *entry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:hash confirmedHash:confirmedHash address:address port:9999 operatorBLSPublicKey:UINT384_ZERO operatorPublicKeyVersion:0 previousOperatorBLSPublicKeys:@{} keyIDVoting:UINT160_ZERO isValid:YES previousValidity:@{} knownConfirmedAtHeight:50 updateHeight:100 simplifiedMasternodeEntryHash:UINT256_ZERO previousSimplifiedMasternodeEntryHashes:@{} onChain:chain];
             DSSimplifiedMasternodeEntryEntity *managedObject = [DSSimplifiedMasternodeEntryEntity managedObjectInBlockedContext:context];
             [managedObject setAttributesFromSimplifiedMasternodeEntry:entry atBlockHeight:100 onChainEntity:chainEntity];
         }

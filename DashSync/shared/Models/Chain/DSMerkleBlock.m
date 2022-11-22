@@ -57,7 +57,6 @@
     if (message.length < 80) return nil;
     NSNumber *l = nil;
     NSUInteger off = 0, len = 0;
-    NSMutableData *d = [NSMutableData data];
 
     self.version = [message UInt32AtOffset:off];
     off += sizeof(uint32_t);
@@ -83,6 +82,7 @@
     self.merkleTree = [[DSMerkleTree alloc] initWithHashes:hashes flags:flags treeElementCount:self.totalTransactions hashFunction:DSMerkleTreeHashFunction_SHA256_2];
     self.height = BLOCK_UNKNOWN_HEIGHT;
 
+    NSMutableData *d = [NSMutableData data];
     [d appendUInt32:self.version];
     [d appendUInt256:prevBlock];
     [d appendUInt256:merkleRoot];
