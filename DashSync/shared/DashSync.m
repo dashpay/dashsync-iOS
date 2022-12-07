@@ -337,15 +337,6 @@ static NSString *const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.back
 
     self.backgroundFetchCompletion = completionHandler;
 
-    if (@available(iOS 13.0, *)) { //!OCLINT
-
-    } else {
-        // timeout after 25 seconds
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 25 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-            [self backgroundFetchTimedOut];
-        });
-    }
-
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
 
     self.protectedDataNotificationObserver =
