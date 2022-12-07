@@ -66,29 +66,25 @@ static NSString *const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.back
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         // use background fetch to stay synced with the blockchain
-        if (@available(iOS 13.0, *)) {
-            BGTaskScheduler *taskScheduler = [BGTaskScheduler sharedScheduler];
-            const BOOL registerSuccess =
-                [taskScheduler registerForTaskWithIdentifier:BG_TASK_REFRESH_IDENTIFIER
-                                                  usingQueue:nil
-                                               launchHandler:^(BGTask *task) {
-                                                   [self scheduleBackgroundFetch];
+        BGTaskScheduler *taskScheduler = [BGTaskScheduler sharedScheduler];
+        const BOOL registerSuccess =
+        [taskScheduler registerForTaskWithIdentifier:BG_TASK_REFRESH_IDENTIFIER
+                                          usingQueue:nil
+                                       launchHandler:^(BGTask *task) {
+            [self scheduleBackgroundFetch];
 
-                                                   [task setExpirationHandler:^{
-                                                       [self backgroundFetchTimedOut];
-                                                   }];
+            [task setExpirationHandler:^{
+                [self backgroundFetchTimedOut];
+            }];
 
-                                                   [self performFetchWithCompletionHandler:^(UIBackgroundFetchResult backgroundFetchResult) {
-                                                       const BOOL success = backgroundFetchResult == UIBackgroundFetchResultNewData;
-                                                       [task setTaskCompletedWithSuccess:success];
-                                                   }];
-                                               }];
+            [self performFetchWithCompletionHandler:^(UIBackgroundFetchResult backgroundFetchResult) {
+                const BOOL success = backgroundFetchResult == UIBackgroundFetchResultNewData;
+                [task setTaskCompletedWithSuccess:success];
+            }];
+        }];
 
-            NSAssert(registerSuccess, @"Add background task identifier '%@' to the App's Info.plist",
-                BG_TASK_REFRESH_IDENTIFIER);
-        } else {
-            [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
-        }
+        NSAssert(registerSuccess, @"Add background task identifier '%@' to the App's Info.plist",
+                 BG_TASK_REFRESH_IDENTIFIER);
     });
 }
 #endif
@@ -315,17 +311,15 @@ static NSString *const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.back
 
 #if TARGET_OS_IOS
 - (void)scheduleBackgroundFetch {
-    if (@available(iOS 13.0, *)) {
-        BGAppRefreshTaskRequest *request = [[BGAppRefreshTaskRequest alloc] initWithIdentifier:BG_TASK_REFRESH_IDENTIFIER];
-        // Fetch no earlier than 15 minutes from now
-        // Disabled as we'd like to be run asap
-        // request.earliestBeginDate = [NSDate dateWithTimeIntervalSinceNow:15.0 * 60.0];
+    BGAppRefreshTaskRequest *request = [[BGAppRefreshTaskRequest alloc] initWithIdentifier:BG_TASK_REFRESH_IDENTIFIER];
+    // Fetch no earlier than 15 minutes from now
+    // Disabled as we'd like to be run asap
+    // request.earliestBeginDate = [NSDate dateWithTimeIntervalSinceNow:15.0 * 60.0];
 
-        NSError *error = nil;
-        [[BGTaskScheduler sharedScheduler] submitTaskRequest:request error:&error];
-        if (error) {
-            DSLog(@"Error scheduling background refresh");
-        }
+    NSError *error = nil;
+    [[BGTaskScheduler sharedScheduler] submitTaskRequest:request error:&error];
+    if (error) {
+        DSLog(@"Error scheduling background refresh");
     }
 }
 
