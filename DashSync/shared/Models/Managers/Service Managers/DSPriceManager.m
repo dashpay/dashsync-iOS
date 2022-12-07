@@ -112,11 +112,7 @@
                                     withString:@"-#"];
     }
     self.dashFormat.currencyCode = @"DASH";
-    if (@available(iOS 13.0, *)) {
-        self.dashFormat.currencySymbol = DASH;
-    } else {
-        self.dashFormat.currencySymbol = DASH NARROW_NBSP;
-    }
+    self.dashFormat.currencySymbol = DASH;
     self.dashFormat.maximumFractionDigits = 8;
     self.dashFormat.minimumFractionDigits = 0; // iOS 8 bug, minimumFractionDigits now has to be set after currencySymbol
     self.dashFormat.maximum = @(MAX_MONEY / (int64_t)pow(10.0, self.dashFormat.maximumFractionDigits));
@@ -137,11 +133,7 @@
                                     withString:@"-#"];
     }
     self.dashSignificantFormat.currencyCode = @"DASH";
-    if (@available(iOS 13.0, *)) {
-        self.dashSignificantFormat.currencySymbol = DASH;
-    } else {
-        self.dashSignificantFormat.currencySymbol = DASH NARROW_NBSP;
-    }
+    self.dashSignificantFormat.currencySymbol = DASH;
     self.dashSignificantFormat.usesSignificantDigits = TRUE;
     self.dashSignificantFormat.minimumSignificantDigits = 1;
     self.dashSignificantFormat.maximumSignificantDigits = 6;
@@ -160,11 +152,7 @@
                                     withString:@"-#"];
     }
     self.bitcoinFormat.currencyCode = @"BTC";
-    if (@available(iOS 13.0, *)) {
-        self.bitcoinFormat.currencySymbol = BTC;
-    } else {
-        self.bitcoinFormat.currencySymbol = BTC NARROW_NBSP;
-    }
+    self.bitcoinFormat.currencySymbol = BTC;
     self.bitcoinFormat.maximumFractionDigits = 8;
     self.bitcoinFormat.minimumFractionDigits = 0; // iOS 8 bug, minimumFractionDigits now has to be set after currencySymbol
     self.bitcoinFormat.maximum = @(MAX_MONEY / (int64_t)pow(10.0, self.bitcoinFormat.maximumFractionDigits));
