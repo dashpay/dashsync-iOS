@@ -41,6 +41,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray<NSURL *> *)logFiles;
 
+/** @fn log:
+ *  @brief This method is identical to `DSLog` macro
+ *  @param message Final message to log
+ */
++ (void)log:(NSString *)message;
+
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
 
