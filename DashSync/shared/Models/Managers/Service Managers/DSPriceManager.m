@@ -501,7 +501,13 @@
     if (n == nil) {
         return DSLocalizedString(@"Updating Price", @"Updating Price");
     }
-    return [self.localFormat stringFromNumber:n];
+    
+    NSString *saved = self.localFormat.currencyCode;
+    self.localFormat.currencyCode = currencyCode;
+    NSString *formatted = [self.localFormat stringFromNumber:n];
+    self.localFormat.currencyCode = saved;
+    
+    return formatted;
 }
 
 - (NSString *)localCurrencyStringForBitcoinAmount:(int64_t)amount {
