@@ -32,7 +32,8 @@
 //    [self setupOuzo];
 //    [self setupMekhong];
 //    [self setupJackDaniels];
-    [self setupChacha];
+//    [self setupChacha];
+    [self setupMojito];
     [self.tableView reloadData];
 
     self.addChainsObserver =
@@ -356,6 +357,41 @@
         @"34.220.158.197",
         @"54.70.92.75",
     ] walletPhrase:nil];
+}
+
+- (void)setupMojito {
+    [self setupDevnetWithId:@"mojito"
+                   sporkAddress:@"yXePLfsnJHGbM2LAWcxXaJaixX4qKs38g1"
+                sporkPrivateKey:@"cS4ikCxcqorwKuGNxMfpX8paBqSjnQsqMuM8YjLvSZZd6gcp7WQg"
+             minProtocolVersion:70225
+                protocolVersion:70225
+//    minimumDifficultyBlocks:1000000
+        minimumDifficultyBlocks:4032
+           ISLockQuorumType:DEVNET_ISLOCK_DEFAULT_QUORUM_TYPE
+          ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE
+        chainLockQuorumType:DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE
+         platformQuorumType:DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE
+                      addresses:@[
+        @"35.91.72.103",
+        @"35.87.140.64",
+        @"35.88.93.189",
+        @"54.212.13.99",
+        @"52.32.240.193",
+        @"54.71.209.203",
+        @"34.220.229.64",
+        @"54.185.157.224",
+        @"34.219.83.228",
+        @"52.42.97.123",
+        @"35.89.120.122",
+        @"18.237.57.30",
+        @"54.149.185.48",
+        @"35.163.184.206",
+        @"35.89.100.95",
+        @"35.88.254.18",
+        @"34.220.68.151",
+        @"35.162.144.29",
+    ]
+               walletPhrase:nil];
 
 }
 
