@@ -841,13 +841,11 @@
         Class transactionEntityClass = [self entityClass];
         if ([DSTransactionEntity countObjectsInContext:context matching:@"transactionHash.txHash == %@", uint256_data(self.txHash)] == 0) {
             transactionEntity = [transactionEntityClass managedObjectInBlockedContext:context];
-            [transactionEntity setAttributesFromTransaction:self];
-            [context ds_save];
         } else {
             transactionEntity = [DSTransactionEntity anyObjectInContext:context matching:@"transactionHash.txHash == %@", uint256_data(self.txHash)];
-            [transactionEntity setAttributesFromTransaction:self];
-            [context ds_save];
         }
+        [transactionEntity setAttributesFromTransaction:self];
+        [context ds_save];
     }];
     return transactionEntity;
 }
