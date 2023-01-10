@@ -1349,10 +1349,10 @@
     DSInstantSendTransactionLock *instantSendTransactionLock = [DSInstantSendTransactionLock instantSendTransactionLockWithDeterministicMessage:message onChain:self.chain];
 
     if (!instantSendTransactionLock) {
-        [self error:@"malformed islock message: %@", message];
+        [self error:@"malformed isdlock message: %@", message];
         return;
     } else if (!self.sentFilter && !self.sentGetdataTxBlocks) {
-        [self error:@"got islock message before loading a filter"];
+        [self error:@"got isdlock message before loading a filter"];
         return;
     }
 
