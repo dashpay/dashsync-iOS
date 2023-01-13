@@ -1116,7 +1116,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 + (DSAuthenticationKeysDerivationPath *)derivationPathForType:(DSKeyType)type forWallet:(DSWallet *)wallet {
     if (type == DSKeyType_ECDSA) {
         return [[DSDerivationPathFactory sharedInstance] blockchainIdentityECDSAKeysDerivationPathForWallet:wallet];
-    } else if (type == DSKeyType_BLS) {
+    } else if (type == DSKeyType_BLS || type == DSKeyType_BLS_BASIC) {
         return [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:wallet];
     }
     return nil;
@@ -3085,7 +3085,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
         uint32_t sourceKeyIndex = [self firstIndexOfKeyOfType:self.currentMainKeyType createIfNotPresent:NO saveKey:NO];
         
         
-        DSAccount *account = [self.wallet accountWithNumber:0];
         if (sourceKeyIndex == UINT32_MAX) { //not found
             //to do register a new key
             NSAssert(FALSE, @"we shouldn't be getting here");
@@ -3096,6 +3095,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
             }
             return;
         }
+        DSAccount *account = [self.wallet accountWithNumber:0];
         DSPotentialOneWayFriendship *potentialFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationBlockchainIdentity:blockchainIdentity destinationKeyIndex:destinationKeyIndex sourceBlockchainIdentity:self sourceKeyIndex:sourceKeyIndex account:account];
         
         [potentialFriendship createDerivationPathAndSaveExtendedPublicKeyWithCompletion:^(BOOL success, DSIncomingFundsDerivationPath *_Nonnull incomingFundsDerivationPath) {
@@ -3539,7 +3539,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
 - (void)updateDashpayProfileWithAvatarURLString:(NSString *)avatarURLString avatarHash:(NSData *)avatarHash avatarFingerprint:(NSData *)avatarFingerprint inContext:(NSManagedObjectContext *)context {
     [context performBlockAndWait:^{
         DSDashpayUserEntity *matchingDashpayUser = [self matchingDashpayUserInContext:context];
-        matchingDashpayUser.avatarPath = avatarURLString;
         matchingDashpayUser.avatarPath = avatarURLString;
         matchingDashpayUser.avatarFingerprint = avatarFingerprint;
         matchingDashpayUser.avatarHash = avatarHash;
@@ -4746,7 +4745,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityKeyDictionary)
                 [context ds_save];
             }
             dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentityDidUpdateUsernameStatusNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self.chain, DSBlockchainIdentityKey: self, DSBlockchainIdentityUsernameKey: usernameEntity.stringValue, DSBlockchainIdentityUsernameDomainKey: usernameEntity.stringValue}];
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentityDidUpdateUsernameStatusNotification object:nil userInfo:@{
+                    DSChainManagerNotificationChainKey: self.chain,
+                    DSBlockchainIdentityKey: self,
+                    DSBlockchainIdentityUsernameKey: usernameEntity.stringValue,
+                    DSBlockchainIdentityUsernameDomainKey: usernameEntity.stringValue}];
             });
         }
     }];

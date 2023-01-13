@@ -660,10 +660,10 @@ PODS:
   - gRPC/Interface-Legacy (1.49.0):
     - gRPC-RxLibrary/Interface (= 1.49.0)
   - KVO-MVVM (0.5.1)
-  - Protobuf (3.21.9)
-  - SDWebImage (5.9.2):
-    - SDWebImage/Core (= 5.9.2)
-  - SDWebImage/Core (5.9.2)
+  - Protobuf (3.21.12)
+  - SDWebImage (5.14.3):
+    - SDWebImage/Core (= 5.14.3)
+  - SDWebImage/Core (5.14.3)
   - secp256k1_dash (0.1.4-alpha.2)
   - tinycbor (0.5.4-alpha1)
   - TinyCborObjc (0.4.6):
@@ -671,9 +671,10 @@ PODS:
 
 DEPENDENCIES:
   - CocoaImageHashing (from `https://github.com/ameingast/cocoaimagehashing.git`, commit `ad01eee`)
+  - DashSharedCore (from `https://github.com/dashpay/dash-shared-core.git`, branch `feature/bls-core-v0.19`)
   - DashSync (from `../`)
   - KVO-MVVM (= 0.5.1)
-  - SDWebImage (= 5.9.2)
+  - SDWebImage (= 5.14.3)
 
 SPEC REPOS:
   trunk:
@@ -684,7 +685,6 @@ SPEC REPOS:
     - BoringSSL-GRPC
     - CocoaLumberjack
     - DAPI-GRPC
-    - DashSharedCore
     - DSDynamicOptions
     - DWAlertController
     - gRPC
@@ -702,6 +702,9 @@ EXTERNAL SOURCES:
   CocoaImageHashing:
     :commit: ad01eee
     :git: https://github.com/ameingast/cocoaimagehashing.git
+  DashSharedCore:
+    :branch: feature/bls-core-v0.19
+    :git: https://github.com/dashpay/dash-shared-core.git
   DashSync:
     :path: "../"
 
@@ -709,6 +712,9 @@ CHECKOUT OPTIONS:
   CocoaImageHashing:
     :commit: ad01eee
     :git: https://github.com/ameingast/cocoaimagehashing.git
+  DashSharedCore:
+    :commit: 199365eee70f9dda382574fcfc07990d111a5cd9
+    :git: https://github.com/dashpay/dash-shared-core.git
 
 SPEC CHECKSUMS:
   "!ProtoCompiler": e9c09244955a8565817aa59a4787b6bb849a63c6
@@ -728,12 +734,12 @@ SPEC CHECKSUMS:
   gRPC-ProtoRPC: 1c223e0f1732bb8d0b9e9e0ea60cc0fe995b8e2d
   gRPC-RxLibrary: 92327f150e11cf3b1c0f52e083944fd9f5cb5d1e
   KVO-MVVM: 4df3afd1f7ebcb69735458b85db59c4271ada7c6
-  Protobuf: 02524ec14183fe08fb259741659e79683788158b
-  SDWebImage: 0b42b8719ab0c5257177d5894306e8a336b21cbb
+  Protobuf: 120350fc38646e2dedc26f49ecba778184ea1de2
+  SDWebImage: 9c36e66c8ce4620b41a7407698dda44211a96764
   secp256k1_dash: bd60e467aa853e145cf680dd0f8b196df20f0a62
   tinycbor: d4d71dddda1f8392fbb4249f63faf8552f327590
   TinyCborObjc: 5204540fb90ff0c40fb22d408fa51bab79d78a80
 
-PODFILE CHECKSUM: b5b749b38f3b3e2fe69591ae4aa7c2ca3533fa7b
+PODFILE CHECKSUM: fa94a0bb4744133a46913c806f92eb6e41add1bd
 
 COCOAPODS: 1.11.3
