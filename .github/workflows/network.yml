@@ -1,6 +1,9 @@
 name: Network
 
 on:
+  push:
+    branches:
+      - ci/fix-network-info
   pull_request:
     branches:
       - master
