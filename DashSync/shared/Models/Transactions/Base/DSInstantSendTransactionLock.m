@@ -81,10 +81,7 @@
     self.quorumVerified = NO;
     @autoreleasepool {
         self.chain = chain;
-
-
         count = [message varIntAtOffset:off length:&l]; // input count
-
         off += l.unsignedIntegerValue;
         NSMutableArray *mutableInputOutpoints = [NSMutableArray array];
         for (NSUInteger i = 0; i < count; i++) { // inputs
@@ -116,10 +113,7 @@
     self.quorumVerified = NO;
     @autoreleasepool {
         self.chain = chain;
-
-
         count = [message varIntAtOffset:off length:&l]; // input count
-
         off += l.unsignedIntegerValue;
         NSMutableArray *mutableInputOutpoints = [NSMutableArray array];
         for (NSUInteger i = 0; i < count; i++) { // inputs
@@ -242,6 +236,7 @@
 }
 
 - (BOOL)verifySignature {
+    // TODO: Need to implement
     return TRUE;
     //
     return [self verifySignatureWithQuorumOffset:8];

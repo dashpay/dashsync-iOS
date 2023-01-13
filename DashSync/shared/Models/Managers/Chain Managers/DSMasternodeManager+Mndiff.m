@@ -42,7 +42,7 @@ MasternodeList *getMasternodeListByBlockHash(uint8_t (*block_hash)[32], const vo
     @synchronized (context) {
         processorContext = (__bridge DSMasternodeProcessorContext *)context;
         DSMasternodeList *list = processorContext.masternodeListLookup(blockHash);
-        DSLog(@"••• getMasternodeListByBlockHash: %@: %@", uint256_hex(blockHash), list.debugDescription);
+//        DSLog(@"••• getMasternodeListByBlockHash: %@: %@", uint256_hex(blockHash), list.debugDescription);
 //        if (list) {
 //            [list saveToJsonFileExtended:[NSString stringWithFormat:@"MNLIST_%@_%@_%@.json", @(list.height), @([[NSDate date] timeIntervalSince1970]), @"getMasternodeListByBlockHash"]];
 //        }
@@ -89,7 +89,7 @@ uint32_t getBlockHeightByHash(uint8_t (*block_hash)[32], const void *context) {
     @synchronized (context) {
         processorContext = (__bridge DSMasternodeProcessorContext *)context;
         block_height = processorContext.blockHeightLookup(blockHash);
-        DSLog(@"getBlockHeightByHash: %u: %@", block_height, uint256_hex(blockHash));
+//        NSLog(@"getBlockHeightByHash: %u: %@", block_height, uint256_hex(blockHash));
     }
     processor_destroy_block_hash(block_hash);
     return block_height;
@@ -102,7 +102,7 @@ uint8_t *getBlockHashByHeight(uint32_t block_height, const void *context) {
         processorContext = (__bridge DSMasternodeProcessorContext *)context;
         DSChain *chain = processorContext.chain;
         DSBlock *block = [chain blockAtHeight:block_height];
-        //NSLog(@"%u => UInt256::from_hex(\"%@\"), // getBlockHashByHeight", block_height, uint256_hex(block.blockHash));
+//        NSLog(@"%u => UInt256::from_hex(\"%@\"), // getBlockHashByHeight", block_height, uint256_hex(block.blockHash));
         if (block) {
             block_hash = uint256_malloc(block.blockHash);
         }
@@ -119,7 +119,7 @@ uint8_t *getMerkleRootByHash(uint8_t (*block_hash)[32], const void *context) {
         processorContext = (__bridge DSMasternodeProcessorContext *)context;
         UInt256 merkleRoot = processorContext.merkleRootLookup(blockHash);
         merkle_root = uint256_malloc(merkleRoot);
-        DSLog(@"getMerkleRootByHash: %@: %@", uint256_hex(blockHash), uint256_hex(merkleRoot));
+//        NSLog(@"getMerkleRootByHash: %@: %@", uint256_hex(blockHash), uint256_hex(merkleRoot));
     }
     processor_destroy_block_hash(block_hash);
     return (uint8_t *)merkle_root;
@@ -320,6 +320,7 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
 ///
 - (void)processMasternodeDiffWith:(NSData *)message context:(DSMasternodeProcessorContext *)context completion:(void (^)(DSMnDiffProcessingResult *result))completion {
     NSAssert(self.processor, @"processMasternodeDiffMessage: No processor created");
+    DSLog(@"processMasternodeDiffWith: %@", context);
     MNListDiffResult *result = process_mnlistdiff_from_message(message.bytes,
                                                                message.length,
                                                                context.useInsightAsBackup,
@@ -337,6 +338,7 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
 - (void)processQRInfoWith:(NSData *)message context:(DSMasternodeProcessorContext *)context completion:(void (^)(DSQRInfoProcessingResult *result))completion {
     NSAssert(self.processor, @"processQRInfoMessage: No processor created");
     NSAssert(self.processorCache, @"processQRInfoMessage: No processorCache created");
+    DSLog(@"processQRInfoWith: %@", context);
     QRInfoResult *result = process_qrinfo_from_message(message.bytes,
                                                        message.length,
                                                        context.useInsightAsBackup,
@@ -353,6 +355,7 @@ bool validateLLMQ(struct LLMQValidationData *data, const void *context) {
 
 - (DSMnDiffProcessingResult *)processMasternodeDiffMessage:(NSData *)message withContext:(DSMasternodeProcessorContext *)context {
     NSAssert(self.processor, @"processMasternodeDiffMessage: No processor created");
+    DSLog(@"processMasternodeDiffMessage: %@", context);
     MNListDiffResult *result = NULL;
     @synchronized (context) {
         result = process_mnlistdiff_from_message(

@@ -673,8 +673,7 @@
     [self sendRequest:[DSMessageRequest requestWithType:MSG_GETADDR]];
 }
 
-- (void)sendPingMessageWithPongHandler:(void (^)(BOOL success))pongHandler;
-{
+- (void)sendPingMessageWithPongHandler:(void (^)(BOOL success))pongHandler {
     NSMutableData *msg = [NSMutableData data];
 
     dispatch_async(self.delegateQueue, ^{
@@ -1114,18 +1113,14 @@
     if ([txHashes intersectsOrderedSet:self.knownTxHashes]) { // remove transactions we already have
         for (NSValue *hash in txHashes) {
             UInt256 h;
-
             if (![self.knownTxHashes containsObject:hash]) continue;
             [hash getValue:&h];
-
             dispatch_async(self.delegateQueue, ^{
                 if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasTransactionWithHash:h];
             });
         }
-
         [txHashes minusOrderedSet:self.knownTxHashes];
     }
-
     [self.knownTxHashes unionOrderedSet:txHashes];
 
     if (instantSendLockHashes.count > 0) {

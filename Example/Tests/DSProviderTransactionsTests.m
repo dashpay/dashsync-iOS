@@ -429,4 +429,35 @@
     XCTAssertEqualObjects(uint256_reverse_hex(providerUpdateRegistrarTransaction.txHash), txIdString, @"Provider transaction hashes aren't correct");
 }
 
+- (void)testCollectionOperations {
+    UInt256 h0 = @"02108f5f6f2743ce35ae58a94ab552381a17711ac54e9fd09358a0cb95beef79".hexToData.UInt256;
+    UInt256 h1 = @"02108f5f6f2743ce35ae58a94ab552381a17711ac54e9fd09358a0cb95beef80".hexToData.UInt256;
+    UInt256 h2 = @"74c41b22deefa3b3f1687f8cdaef64c69b84c2d172e872f408a4e3d86c5d929d".hexToData.UInt256;
+    UInt256 h3 = @"74c41b22deefa3b3f1687f8cdaef64c69b84c2d172e872f408a4e3d86c5d929e".hexToData.UInt256;
+    UInt256 h4 = @"74c41b22deefa3b3f1687f8cdaef64c69b84c2d172e872f408a4e3d86c5d929f".hexToData.UInt256;
+    UInt256 h5 = @"84c41b22deefa3b3f1687f8cdaef64c69b84c2d172e872f408a4e3d86c5d929f".hexToData.UInt256;
+    NSMutableOrderedSet *txHashes = [NSMutableOrderedSet orderedSetWithArray:@[
+        uint256_obj(h0),
+        uint256_obj(h1),
+        uint256_obj(h5),
+    ]];
+    NSMutableOrderedSet *knownTxHashes = [NSMutableOrderedSet orderedSetWithArray:@[
+        uint256_obj(h0),
+        uint256_obj(h1),
+        uint256_obj(h2),
+        uint256_obj(h3),
+        uint256_obj(h4),
+    ]];
+    NSLog(@"start: tx_hashes: %@", txHashes);
+    NSLog(@"start: known_tx_hashes: %@", knownTxHashes);
+    if ([txHashes intersectsOrderedSet:knownTxHashes]) {
+        [txHashes minusOrderedSet:knownTxHashes];
+    }
+    [knownTxHashes unionOrderedSet:txHashes];
+    NSLog(@"finish: tx_hashes: %@", txHashes);
+    NSLog(@"finish: known_tx_hashes: %@", knownTxHashes);
+
+}
+
+
 @end

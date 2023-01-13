@@ -2506,58 +2506,14 @@ static dispatch_once_t devnetToken = 0;
         }
 
         // notify that transaction confirmations may have changed
-        NSTimeInterval timestamp = [[NSDate date] timeIntervalSince1970];
-        if (!self.lastNotifiedBlockDidChange || (timestamp - self.lastNotifiedBlockDidChange > 0.1)) {
-            self.lastNotifiedBlockDidChange = timestamp;
-            if (self.lastNotifiedBlockDidChangeTimer) {
-                [self.lastNotifiedBlockDidChangeTimer invalidate];
-                self.lastNotifiedBlockDidChangeTimer = nil;
-            }
+        [self setupBlockChangeTimer:^{
             [self notifyBlocksChanged];
-        } else {
-            if (!self.lastNotifiedBlockDidChangeTimer) {
-                self.lastNotifiedBlockDidChangeTimer = [NSTimer timerWithTimeInterval:1
-                                                                              repeats:NO
-                                                                                block:^(NSTimer *_Nonnull timer) {
-                    [self notifyBlocksChanged];
-                }];
-                [[NSRunLoop mainRunLoop] addTimer:self.lastNotifiedBlockDidChangeTimer forMode:NSRunLoopCommonModes];
-            }
-        }
+        }];
     } else {
         //we should avoid dispatching this message too frequently
-        NSTimeInterval timestamp = [[NSDate date] timeIntervalSince1970];
-        if (!self.lastNotifiedBlockDidChange || (timestamp - self.lastNotifiedBlockDidChange > 0.1)) {
-            self.lastNotifiedBlockDidChange = timestamp;
-            if (self.lastNotifiedBlockDidChangeTimer) {
-                [self.lastNotifiedBlockDidChangeTimer invalidate];
-                self.lastNotifiedBlockDidChangeTimer = nil;
-            }
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (blockPosition & DSBlockPosition_Terminal) {
-                    [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-                }
-                if (blockPosition & DSBlockPosition_Sync) {
-                    [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-                }
-            });
-        } else {
-            if (!self.lastNotifiedBlockDidChangeTimer) {
-                self.lastNotifiedBlockDidChangeTimer = [NSTimer timerWithTimeInterval:1
-                                                                              repeats:NO
-                                                                                block:^(NSTimer *_Nonnull timer) {
-                                                                                    dispatch_async(dispatch_get_main_queue(), ^{
-                                                                                        if (blockPosition & DSBlockPosition_Terminal) {
-                                                                                            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-                                                                                        }
-                                                                                        if (blockPosition & DSBlockPosition_Sync) {
-                                                                                            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
-                                                                                        }
-                                                                                    });
-                                                                                }];
-                [[NSRunLoop mainRunLoop] addTimer:self.lastNotifiedBlockDidChangeTimer forMode:NSRunLoopCommonModes];
-            }
-        }
+        [self setupBlockChangeTimer:^{
+            [self notifyBlocksChanged:blockPosition];
+        }];
     }
 
     // check if the next block was received as an orphan
@@ -2570,11 +2526,41 @@ static dispatch_once_t devnetToken = 0;
     return TRUE;
 }
 
+- (void)setupBlockChangeTimer:(void (^ __nullable)(void))completion {
+    //we should avoid dispatching this message too frequently
+    NSTimeInterval timestamp = [[NSDate date] timeIntervalSince1970];
+    if (!self.lastNotifiedBlockDidChange || (timestamp - self.lastNotifiedBlockDidChange > 0.1)) {
+        self.lastNotifiedBlockDidChange = timestamp;
+        if (self.lastNotifiedBlockDidChangeTimer) {
+            [self.lastNotifiedBlockDidChangeTimer invalidate];
+            self.lastNotifiedBlockDidChangeTimer = nil;
+        }
+        completion();
+    } else if (!self.lastNotifiedBlockDidChangeTimer) {
+        self.lastNotifiedBlockDidChangeTimer = [NSTimer timerWithTimeInterval:1 repeats:NO block:^(NSTimer *_Nonnull timer) {
+            completion();
+        }];
+        [[NSRunLoop mainRunLoop] addTimer:self.lastNotifiedBlockDidChangeTimer forMode:NSRunLoopCommonModes];
+    }
+}
+
 - (void)notifyBlocksChanged {
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainNewChainTipBlockNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
+    });
+}
+
+- (void)notifyBlocksChanged:(DSBlockPosition)blockPosition {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (blockPosition & DSBlockPosition_Terminal) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainTerminalBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
+        }
+        if (blockPosition & DSBlockPosition_Sync) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainChainSyncBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey: self}];
+        }
+
     });
 }
 
