@@ -54,7 +54,6 @@ NS_ASSUME_NONNULL_BEGIN
             [self addOperation:operation];
         }
 
-
         _fetchCompletion = [completion copy];
     }
     return self;
@@ -115,7 +114,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 + (NSString *)priceSourceInfo {
-    return @"cryptocompare.com, bitcoinaverage.com, dash.casa";
+    return @"cryptocompare.com";
 }
 
 @end
