@@ -33,10 +33,16 @@
     UInt256 merkleRootMNList = [message UInt256AtOffset:off];
     off += 32;
 
-    if (version == 2) {
+    if (version >= 2) {
         if (length - off < 32) return nil;
         self.merkleRootLLMQList = [message UInt256AtOffset:off];
         off += 32;
+    }
+    
+    if (version >= 3) {
+        if (length - off < 8) return nil;
+        self.lockedAmount = [message UInt64AtOffset:off];
+        off += 8;
     }
 
     self.coinbaseTransactionVersion = version;
@@ -61,6 +67,7 @@
     return self;
 }
 
+// TODO: add lockedAmount for cbtx version 3
 - (instancetype)initWithCoinbaseMessage:(NSString *)coinbaseMessage paymentAddresses:(NSArray<NSString *> *)paymentAddresses atHeight:(uint32_t)height onChain:(DSChain *)chain {
     if (!(self = [super initOnChain:chain])) return nil;
     NSMutableData *coinbaseData = [NSMutableData data];
@@ -81,6 +88,9 @@
     [data appendUInt256:self.merkleRootMNList];
     if (self.coinbaseTransactionVersion >= 2) {
         [data appendUInt256:self.merkleRootLLMQList];
+    }
+    if (self.coinbaseTransactionVersion >= 3) {
+        [data appendUInt64:self.lockedAmount];
     }
     return data;
 }
