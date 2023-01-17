@@ -27,8 +27,6 @@
 NS_ASSUME_NONNULL_BEGIN
 
 #define DASHBTCCC_TICKER_URL @"https://min-api.cryptocompare.com/data/generateAvg?fsym=DASH&tsym=BTC&e=Binance,Kraken,Poloniex,Bitfinex"
-#define BITCOINAVG_TICKER_URL @"https://apiv2.bitcoinaverage.com/indices/global/ticker/short?crypto=BTC"
-#define DASHVESCASA_TICKER_URL @"http://dash.casa/api/?cur=VES"
 
 @interface DSFetchFirstFallbackPricesOperation ()
 
@@ -53,27 +51,6 @@ NS_ASSUME_NONNULL_BEGIN
             request.cachePolicy = NSURLRequestReloadIgnoringCacheData;
             DSHTTPDashBtcCCOperation *operation = [[DSHTTPDashBtcCCOperation alloc] initWithRequest:request];
             _dashBtcCCOperation = operation;
-            [self addOperation:operation];
-        }
-        {
-            HTTPRequest *request = [HTTPRequest requestWithURL:[NSURL URLWithString:BITCOINAVG_TICKER_URL]
-                                                        method:HTTPRequestMethod_GET
-                                                    parameters:nil];
-            request.timeout = 30.0;
-            request.cachePolicy = NSURLRequestReloadIgnoringCacheData;
-            DSHTTPBitcoinAvgOperation *operation = [[DSHTTPBitcoinAvgOperation alloc] initWithRequest:request];
-            _bitcoinAvgOperation = operation;
-            [self addOperation:operation];
-        }
-        {
-            HTTPRequest *request = [HTTPRequest requestWithURL:[NSURL URLWithString:DASHVESCASA_TICKER_URL]
-                                                        method:HTTPRequestMethod_GET
-                                                    parameters:nil];
-            request.timeout = 30.0;
-            request.cachePolicy = NSURLRequestReloadIgnoringCacheData;
-
-            DSHTTPDashCasaOperation *operation = [[DSHTTPDashCasaOperation alloc] initWithRequest:request];
-            _dashCasaOperation = operation;
             [self addOperation:operation];
         }
 
@@ -137,7 +114,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 + (NSString *)priceSourceInfo {
-    return @"cryptocompare.com, bitcoinaverage.com, dash.casa";
+    return @"cryptocompare.com";
 }
 
 @end
