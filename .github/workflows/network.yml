@@ -49,10 +49,10 @@ jobs:
         run: pod install --repo-update
       - name: Cache network info build
         id: cache-network-info-build
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ./dashsync/Example/build/NetworkInfo/Build/Products/Debug
-          key: ${{ runner.os }}-NetworkInfo-${{ hashFiles('NetworkInfo') }}
+          key: ${{ runner.os }}-NetworkInfo-${{ hashFiles('NetworkInfo/**') }}
           restore-keys: |
             ${{ runner.os }}-NetworkInfo-
       - name: Build

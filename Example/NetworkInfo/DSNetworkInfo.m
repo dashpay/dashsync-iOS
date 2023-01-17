@@ -128,8 +128,8 @@
                                                                                           queue:nil
                                                                                      usingBlock:currentMasternodeListDidChangeBlock];
     
-    NSTimer * timeoutTimer = [NSTimer timerWithTimeInterval:300 repeats:NO block:^(NSTimer * _Nonnull timer) {
-        exit(1); //fail after 5 mins
+    NSTimer * timeoutTimer = [NSTimer timerWithTimeInterval:1200 repeats:NO block:^(NSTimer * _Nonnull timer) {
+        exit(1); //fail after 20 mins
     }];
     
     NSRunLoop * runLoop = [NSRunLoop currentRunLoop];

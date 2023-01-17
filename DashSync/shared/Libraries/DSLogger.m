@@ -63,6 +63,10 @@ NS_ASSUME_NONNULL_BEGIN
     return [logFiles copy];
 }
 
++ (void)log:(NSString *)message {
+    DSLog(@"%@", message);
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

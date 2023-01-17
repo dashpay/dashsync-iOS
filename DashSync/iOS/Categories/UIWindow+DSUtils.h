@@ -11,6 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface UIWindow (DSUtils)
 
++ (nullable UIWindow *)keyWindow;
 - (UIViewController *)ds_presentingViewController;
 
 @end

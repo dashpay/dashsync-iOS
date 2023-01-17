@@ -11,6 +11,40 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation UIWindow (DSUtils)
 
++ (nullable UIWindow *)keyWindow {
+    if (@available(iOS 15.0, *)) {
+        UIApplication *app = [UIApplication sharedApplication];
+        NSSet<UIScene *> *connectedScenes = app.connectedScenes;
+
+        for (UIScene *scene in connectedScenes) {
+            if ([scene isKindOfClass:UIWindowScene.class]) {
+                UIWindowScene *windowScene = (UIWindowScene *)scene;
+                UIWindow *window = windowScene.keyWindow;
+                if (window) return window;
+            }
+        }
+    } else if (@available(iOS 13.0, *)) {
+        UIApplication *app = [UIApplication sharedApplication];
+        NSSet<UIScene *> *connectedScenes = app.connectedScenes;
+        
+        for (UIScene *scene in connectedScenes) {
+            if ([scene isKindOfClass:UIWindowScene.class]) {
+                UIWindowScene *windowScene = (UIWindowScene *)scene;
+                for (UIWindow *window in windowScene.windows) {
+                    if (window.keyWindow) return window;
+                }
+            }
+        }
+    } else {
+        #pragma clang diagnostic push
+        #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        return [[UIApplication sharedApplication] keyWindow];
+        #pragma clang diagnostic pop
+    }
+
+    return nil;
+}
+
 - (UIViewController *)ds_presentingViewController {
     UIViewController *controller = [self rootViewController];
     return [self ds_topViewControllerWithRootViewController:controller];

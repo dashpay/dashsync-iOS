@@ -17,7 +17,6 @@
 
 #import "HTTPLoaderOperation.h"
 
-#import "DSNetworkActivityIndicatorManager.h"
 #import "HTTPCancellationToken.h"
 #import "HTTPLoader.h"
 #import "HTTPLoaderDelegate.h"
@@ -69,8 +68,6 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.cancellationToken = [self.httpLoader performRequest:self.httpRequest];
     NSAssert(self.cancellationToken, @"Performing request failed");
-
-    [DSNetworkActivityIndicatorManager increaseActivityCounter];
 }
 
 #pragma mark HTTPLoaderOperationProtocol
@@ -102,8 +99,6 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark HTTPLoaderDelegate
 
 - (void)httpLoader:(HTTPLoader *)httpLoader didReceiveSuccessfulResponse:(HTTPResponse *)response {
-    [DSNetworkActivityIndicatorManager decreaseActivityCounter];
-
     if (self.completion) {
         self.completion(YES, NO, response);
     }
@@ -111,8 +106,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)httpLoader:(HTTPLoader *)httpLoader didReceiveErrorResponse:(HTTPResponse *)response {
-    [DSNetworkActivityIndicatorManager decreaseActivityCounter];
-
     if (self.completion) {
         self.completion(NO, NO, response);
     }
@@ -120,8 +113,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)httpLoader:(HTTPLoader *)httpLoader didCancelRequest:(HTTPRequest *)request {
-    [DSNetworkActivityIndicatorManager decreaseActivityCounter];
-
     if (self.completion) {
         self.completion(NO, YES, nil);
     }
