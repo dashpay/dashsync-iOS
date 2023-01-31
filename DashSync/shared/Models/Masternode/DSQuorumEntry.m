@@ -425,7 +425,7 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
 
 - (NSString *)debugDescription {
     uint32_t height = [self.chain heightForBlockHash:self.quorumHash];
-    return [[super debugDescription] stringByAppendingString:[NSString stringWithFormat:@" - %u", height]];
+    return [[super debugDescription] stringByAppendingString:[NSString stringWithFormat:@" - %u -%u", height, self.version]];
 }
 
 - (BOOL)isEqual:(id)object {
@@ -459,7 +459,7 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
 }
 
 - (BOOL)useLegacyBLSScheme {
-    return self.version >= 4;
+    return self.version <= 2;
 }
 
 @end
