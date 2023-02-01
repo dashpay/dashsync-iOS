@@ -73,6 +73,10 @@ static NSData *_Nullable AES256EncryptDecrypt(CCOperation operation,
 }
 
 - (nullable NSData *)encryptWithBLSSecretKey:(DSBLSKey *)secretKey forPublicKey:(DSBLSKey *)peerPubKey usingInitializationVector:(NSData *)ivData {
+    if (secretKey.useLegacy != peerPubKey.useLegacy) {
+        NSLog(@"encryptWithBLSSecretKey: BLS keys are from different mode %u != %u", secretKey.useLegacy, peerPubKey.useLegacy);
+        return NULL;
+    }
     bls::G1Element pk = secretKey.blsPrivateKey * peerPubKey.blsPublicKey;
 
     std::vector<uint8_t> symKey = pk.Serialize(secretKey.useLegacy);
@@ -110,7 +114,7 @@ static NSData *_Nullable AES256EncryptDecrypt(CCOperation operation,
     }
 
     bls::G1Element pk = secretKey.blsPrivateKey * peerPubKey.blsPublicKey;
-    std::vector<uint8_t> symKey = pk.Serialize(true);
+    std::vector<uint8_t> symKey = pk.Serialize(peerPubKey.useLegacy);
     symKey.resize(32);
 
     unsigned char iv[ivSize];
