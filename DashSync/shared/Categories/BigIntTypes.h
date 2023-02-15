@@ -195,7 +195,7 @@ typedef uint32_t (^_Nullable BlockHeightFinder)(UInt256 blockHash);
 #define uint512_reverse_hex(u) [NSData dataWithUInt512:u].reverse.hexString
 #define uint768_hex(u) [NSData dataWithUInt768:u].hexString
 #define uint768_reverse_hex(u) [NSData dataWithUInt768:u].reverse.hexString
-
+#define ecpoint_hex(u) [NSData dataWithBytes:u.p length:sizeof(DSECPoint)].hexString
 #define uint256_reverse(u) [NSData dataWithUInt256:u].reverse.UInt256
 
 #define uint256_from_int(u) ((UInt256){.u32 = {u, 0, 0, 0, 0, 0, 0, 0}})
