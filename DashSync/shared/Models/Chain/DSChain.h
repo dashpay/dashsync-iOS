@@ -83,6 +83,14 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
     DSChainSyncPhase_Synced,
 };
 
+typedef NS_ENUM(uint16_t, DSMasternodeSyncMode)
+{
+    DSMasternodeSyncMode_None = 0,
+    DSMasternodeSyncMode_Regular = 1,
+    DSMasternodeSyncMode_Rotation = 2,
+    DSMasternodeSyncMode_Mixed = DSMasternodeSyncMode_Regular | DSMasternodeSyncMode_Rotation
+};
+
 @class DSChain, DSChainEntity, DSChainManager, DSWallet, DSMerkleBlock, DSBlock, DSFullBlock, DSPeer, DSDerivationPath, DSTransaction, DSAccount, DSSimplifiedMasternodeEntry, DSBlockchainIdentity, DSBloomFilter, DSProviderRegistrationTransaction, DSMasternodeList, DPContract, DSCheckpoint, DSChainLock;
 
 @protocol DSChainDelegate;
@@ -103,6 +111,10 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
 // MARK: - L1 Network Chain Info
 
 @property (nonatomic, readonly) BOOL useLegacyBLS;
+
+/*! @brief The masternode sync mode (None, Regular, Rotation, or Mixed).  */
+@property (nonatomic, readonly) DSMasternodeSyncMode masternodeSyncMode;
+
 
 /*! @brief The network name. Currently main, test, dev or reg.  */
 @property (nonatomic, readonly) NSString *networkName;
@@ -515,7 +527,8 @@ typedef NS_ENUM(uint16_t, DSChainSyncPhase)
                      ISDLockQuorumType:(DSLLMQType)ISDLockQuorumType
                    chainLockQuorumType:(DSLLMQType)chainLockQuorumType
                     platformQuorumType:(DSLLMQType)platformQuorumType
-                           isTransient:(BOOL)isTransient;
+                    masternodeSyncMode:(DSMasternodeSyncMode)masternodeSyncMode
+                          isTransient:(BOOL)isTransient;
 
 /*! @brief Retrieve from the keychain a devnet with an identifier and add given checkpoints.  */
 + (DSChain *)recoverKnownDevnetWithIdentifier:(NSString *)identifier version:(uint16_t)version withCheckpoints:(NSArray<DSCheckpoint *> *)checkpointArray performSetup:(BOOL)performSetup;

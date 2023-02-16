@@ -173,7 +173,8 @@
          ISLockQuorumType:(DSLLMQType)ISLockQuorumsType
         ISDLockQuorumType:(DSLLMQType)ISDLockQuorumType
       chainLockQuorumType:(DSLLMQType)chainLockQuorumType
-       platformQuorumType:(DSLLMQType)platformQuorumType {
+       platformQuorumType:(DSLLMQType)platformQuorumType
+       masternodeSyncMode:(DSMasternodeSyncMode)masternodeSyncMode {
     NSParameterAssert(chain);
     NSParameterAssert(serviceLocations);
     DSChainManager *chainManager = [self chainManagerForChain:chain];
@@ -283,13 +284,14 @@
                                        ISLockQuorumType:(DSLLMQType)ISQuorumLockType
                                       ISDLockQuorumType:(DSLLMQType)ISDQuorumLockType
                                     chainLockQuorumType:(DSLLMQType)chainLockQuorumType
-                                     platformQuorumType:(DSLLMQType)platformQuorumType {
+                                     platformQuorumType:(DSLLMQType)platformQuorumType
+                                     masternodeSyncMode:(DSMasternodeSyncMode)masternodeSyncMode {
     NSParameterAssert(identifier);
     NSParameterAssert(serviceLocations);
 
     NSError *error = nil;
 
-    DSChain *chain = [DSChain setUpDevnetWithIdentifier:identifier version:version protocolVersion:protocolVersion?protocolVersion:PROTOCOL_VERSION_DEVNET minProtocolVersion:minProtocolVersion?minProtocolVersion:DEFAULT_MIN_PROTOCOL_VERSION_DEVNET withCheckpoints:nil withMinimumDifficultyBlocks:minimumDifficultyBlocks withDefaultPort:standardPort withDefaultDapiJRPCPort:dapiJRPCPort withDefaultDapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID ISLockQuorumType:ISQuorumLockType ISDLockQuorumType:ISDQuorumLockType chainLockQuorumType:chainLockQuorumType platformQuorumType:platformQuorumType isTransient:NO];
+    DSChain *chain = [DSChain setUpDevnetWithIdentifier:identifier version:version protocolVersion:protocolVersion?protocolVersion:PROTOCOL_VERSION_DEVNET minProtocolVersion:minProtocolVersion?minProtocolVersion:DEFAULT_MIN_PROTOCOL_VERSION_DEVNET withCheckpoints:nil withMinimumDifficultyBlocks:minimumDifficultyBlocks withDefaultPort:standardPort withDefaultDapiJRPCPort:dapiJRPCPort withDefaultDapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID ISLockQuorumType:ISQuorumLockType ISDLockQuorumType:ISDQuorumLockType chainLockQuorumType:chainLockQuorumType platformQuorumType:platformQuorumType masternodeSyncMode:    DSMasternodeSyncMode_Mixed isTransient:NO];
     
     if (sporkAddress && [sporkAddress isValidDashDevnetAddress]) {
         chain.sporkAddress = sporkAddress;

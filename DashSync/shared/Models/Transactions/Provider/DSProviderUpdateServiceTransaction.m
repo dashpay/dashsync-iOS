@@ -43,6 +43,12 @@
     if (length - off < 2) return nil;
     self.providerUpdateServiceTransactionVersion = [message UInt16AtOffset:off];
     off += 2;
+    
+    if (self.version == 2 /*BLS Basic*/) {
+        if (length - off < 2) return nil;
+        self.providerType = [message UInt16AtOffset:off];
+        off += 2;
+    }
 
     if (length - off < 32) return nil;
     self.providerRegistrationTransactionHash = [message UInt256AtOffset:off];
@@ -60,16 +66,27 @@
     self.scriptPayout = [message dataAtOffset:off length:&scriptPayoutLength];
     off += scriptPayoutLength.unsignedIntegerValue;
 
-    if (length - off < 32) return nil;
+    //todo verify inputs hash
+   if (length - off < 32) return nil;
     self.inputsHash = [message UInt256AtOffset:off];
     off += 32;
+    
+    if (self.version == 2 /*BLS Basic*/ && self.providerType == 1 /*High Performance*/) {
+        if (length - off < 32) return nil;
+        self.platformNodeID = [message UInt160AtOffset:off];
+        off += 32;
+        if (length - off < 2) return nil;
+        self.platformP2PPort = CFSwapInt16HostToBig([message UInt16AtOffset:off]);
+        off += 2;
+        if (length - off < 2) return nil;
+        self.platformHTTPPort = CFSwapInt16HostToBig([message UInt16AtOffset:off]);
+        off += 2;
+    }
 
     if (length - off < 96) return nil;
     self.payloadSignature = [message subdataWithRange:NSMakeRange(off, 96)];
     off += 96;
     self.payloadOffset = off;
-
-    //todo verify inputs hash
 
     if ([self payloadData].length != payloadLength) return nil;
     self.txHash = self.data.SHA256_2;
@@ -140,12 +157,20 @@
 - (NSData *)basePayloadData {
     NSMutableData *data = [NSMutableData data];
     [data appendUInt16:self.providerUpdateServiceTransactionVersion];
+    if (self.version == 2 /*BLS Basic*/) {
+        [data appendUInt16:self.providerType];
+    }
     [data appendUInt256:self.providerRegistrationTransactionHash];
     [data appendUInt128:self.ipAddress];
     [data appendUInt16:CFSwapInt16BigToHost(self.port)];
     [data appendVarInt:self.scriptPayout.length];
     [data appendData:self.scriptPayout];
     [data appendUInt256:self.inputsHash];
+    if (self.version == 2 /*BLS Basic*/ && self.providerType == 1 /*High Performance*/) {
+        [data appendUInt160:self.platformNodeID];
+        [data appendUInt16:CFSwapInt16BigToHost(self.platformP2PPort)];
+        [data appendUInt16:CFSwapInt16BigToHost(self.platformHTTPPort)];
+    }
     return data;
 }
 

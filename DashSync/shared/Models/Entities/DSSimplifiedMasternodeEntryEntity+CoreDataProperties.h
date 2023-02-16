@@ -21,6 +21,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint32_t updateHeight;
 @property (nonatomic, assign) uint32_t knownConfirmedAtHeight;
 @property (nonatomic, assign) BOOL isValid;
+@property (nonatomic, assign) uint16_t type;
+@property (nonatomic, assign) uint16_t platformHTTPPort;
+@property (nullable, nonatomic, retain) NSData *platformNodeID;
 @property (nullable, nonatomic, retain) NSString *coreVersion;
 @property (nonatomic, assign) uint64_t coreProtocol;
 @property (nullable, nonatomic, retain) NSDate *coreLastConnectionDate;

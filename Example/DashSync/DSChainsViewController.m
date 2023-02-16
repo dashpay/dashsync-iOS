@@ -33,7 +33,7 @@
 //    [self setupMekhong];
 //    [self setupJackDaniels];
 //    [self setupChacha];
-    [self setupMojito];
+    [self setupWhiteRussian];
     [self.tableView reloadData];
 
     self.addChainsObserver =
@@ -64,6 +64,7 @@
           ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE
         chainLockQuorumType:DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE
          platformQuorumType:DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE
+         masternodeSyncMode:DSMasternodeSyncMode_Mixed
                   addresses:@[
         @"34.213.73.187",
         @"35.166.223.113",
@@ -98,6 +99,7 @@
           ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE
         chainLockQuorumType:DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE
          platformQuorumType:DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE
+         masternodeSyncMode:DSMasternodeSyncMode_Mixed
                   addresses:@[
         @"52.89.24.208",
         @"34.220.82.112",
@@ -144,6 +146,7 @@
           ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE
         chainLockQuorumType:DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE
          platformQuorumType:DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE
+         masternodeSyncMode:DSMasternodeSyncMode_Mixed
                   addresses:@[
         @"54.188.102.153",
         @"35.87.178.188",
@@ -191,6 +194,7 @@
           ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE
         chainLockQuorumType:DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE
          platformQuorumType:DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE
+         masternodeSyncMode:DSMasternodeSyncMode_Mixed
                   addresses:@[
         @"34.220.100.153",
         @"52.12.210.34",
@@ -218,6 +222,7 @@
           ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE
         chainLockQuorumType:DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE
          platformQuorumType:DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE
+         masternodeSyncMode:DSMasternodeSyncMode_Mixed
                   addresses:@[
         @"34.211.117.176",
         @"35.89.146.98",
@@ -245,6 +250,7 @@
           ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE
         chainLockQuorumType:DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE
          platformQuorumType:DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE
+         masternodeSyncMode:DSMasternodeSyncMode_Mixed
                       addresses:@[
         @"35.161.144.85",
         @"35.166.87.8",
@@ -292,6 +298,7 @@
           ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE
         chainLockQuorumType:DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE
          platformQuorumType:DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE
+         masternodeSyncMode:DSMasternodeSyncMode_Mixed
                       addresses:@[
                           @"4.210.237.116",
                           @"54.69.65.231",
@@ -319,6 +326,7 @@
           ISDLockQuorumType:DSLLMQType_DevnetDIP0024
         chainLockQuorumType:DSLLMQType_10_60
          platformQuorumType:DSLLMQType_10_60
+         masternodeSyncMode:DSMasternodeSyncMode_Mixed
                   addresses:@[
         @"34.220.200.8",
         @"35.90.255.217",
@@ -371,6 +379,7 @@
           ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE
         chainLockQuorumType:DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE
          platformQuorumType:DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE
+         masternodeSyncMode:DSMasternodeSyncMode_Mixed
                       addresses:@[
         @"35.91.72.103",
         @"35.87.140.64",
@@ -392,6 +401,42 @@
         @"35.162.144.29",
     ]
                walletPhrase:nil];
+}
+
+- (void)setupWhiteRussian {
+    [self setupDevnetWithId:@"white-russian"
+                   sporkAddress:@"yZaEFuVfaycMzvQbHH7dgbDPJ6F2AGLqzR"
+                sporkPrivateKey:@"cTvYmnZxCK7A8HekGQYMD7yuXSxVKnwgVVo7fHQrcbzckxYm2g7M"
+             minProtocolVersion:70227
+                protocolVersion:70227
+//    minimumDifficultyBlocks:1000000
+        minimumDifficultyBlocks:4032
+           ISLockQuorumType:DEVNET_ISLOCK_DEFAULT_QUORUM_TYPE
+          ISDLockQuorumType:DEVNET_ISDLOCK_DEFAULT_QUORUM_TYPE
+        chainLockQuorumType:DEVNET_CHAINLOCK_DEFAULT_QUORUM_TYPE
+         platformQuorumType:DEVNET_PLATFORM_DEFAULT_QUORUM_TYPE
+     masternodeSyncMode:DSMasternodeSyncMode_Rotation
+                      addresses:@[
+        @"35.85.152.110",
+        @"34.209.13.56",
+        @"52.42.93.34",
+        @"35.87.154.139",
+        @"35.92.216.172",
+        @"34.222.169.49",
+        @"52.27.159.100",
+        @"35.90.131.248",
+        @"34.211.144.169",
+        @"35.163.17.85",
+        @"52.26.67.115",
+        @"35.92.6.130",
+        @"54.191.109.168",
+        @"52.39.100.224",
+        @"54.200.39.51",
+        @"54.185.210.60",
+        @"35.89.197.145",
+        @"18.246.65.63",
+    ]
+               walletPhrase:nil];
 
 }
 
@@ -405,6 +450,7 @@
         ISDLockQuorumType:(uint32_t)ISDLockQuorumType
       chainLockQuorumType:(uint32_t)chainLockQuorumType
        platformQuorumType:(uint32_t)platformQuorumType
+       masternodeSyncMode:(DSMasternodeSyncMode)masternodeSyncMode
                 addresses:(NSArray<NSString *> *)addresses
              walletPhrase:(NSString *_Nullable)walletPhrase {
     NSString *chainID = [NSString stringWithFormat:@"devnet-%@", identifier];
@@ -442,7 +488,8 @@
                                            ISLockQuorumType:ISLockQuorumType
                                           ISDLockQuorumType:ISDLockQuorumType
                                         chainLockQuorumType:chainLockQuorumType
-                                         platformQuorumType:platformQuorumType];
+                                         platformQuorumType:platformQuorumType
+                                         masternodeSyncMode:masternodeSyncMode];
     } else {
         chain = [[DSChainsManager sharedInstance] registerDevnetChainWithIdentifier:chainID
                                                                             version:version
@@ -460,7 +507,8 @@
                                                                    ISLockQuorumType:ISLockQuorumType
                                                                   ISDLockQuorumType:ISDLockQuorumType
                                                                 chainLockQuorumType:chainLockQuorumType
-                                                                 platformQuorumType:platformQuorumType];
+                                                                 platformQuorumType:platformQuorumType
+                                                                 masternodeSyncMode:masternodeSyncMode];
     }
     if (walletPhrase) {
         DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:walletPhrase setCreationDate:0 forChain:chain storeSeedPhrase:YES isTransient:NO];

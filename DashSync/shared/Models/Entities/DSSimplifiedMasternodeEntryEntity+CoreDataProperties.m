@@ -40,5 +40,8 @@
 @dynamic coreProtocol;
 @dynamic coreLastConnectionDate;
 @dynamic platformVersion;
+@dynamic type;
+@dynamic platformHTTPPort;
+@dynamic platformNodeID;
 
 @end

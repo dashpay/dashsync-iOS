@@ -20,5 +20,9 @@
 @dynamic scriptPayout;
 @dynamic providerRegistrationTransactionHash;
 @dynamic localMasternode;
+@dynamic providerType;
+@dynamic platformHTTPPort;
+@dynamic platformP2PPort;
+@dynamic platformNodeID;
 
 @end

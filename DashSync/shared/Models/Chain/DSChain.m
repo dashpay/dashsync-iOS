@@ -169,6 +169,7 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
 @property (nonatomic, assign, getter=isTransient) BOOL transient;
 @property (nonatomic, assign) BOOL cachedIsQuorumRotationPresented;
 @property (nonatomic, readonly) NSString *chainWalletsKey;
+@property (nonatomic, assign) DSMasternodeSyncMode masternodeSyncMode;
 
 @end
 
@@ -255,6 +256,7 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
     //    DSLog(@"%@",[NSData dataWithUInt256:self.genesisHash]);
     self.devnetIdentifier = identifier;
     self.headersMaxAmount = DEVNET_DEFAULT_HEADERS_MAX_AMOUNT;
+    self.masternodeSyncMode = DSMasternodeSyncMode_Mixed;
     return self;
 }
 
@@ -273,6 +275,7 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
                          ISDLockQuorumType:(DSLLMQType)ISDLockQuorumType
                        chainLockQuorumType:(DSLLMQType)chainLockQuorumType
                         platformQuorumType:(DSLLMQType)platformQuorumType
+                        masternodeSyncMode:(DSMasternodeSyncMode)masternodeSyncMode
                                isTransient:(BOOL)isTransient {
     //for devnet the genesis checkpoint is really the second block
     if (!(self = [self initAsDevnetWithIdentifier:identifier version:version onProtocolVersion:protocolVersion checkpoints:checkpoints])) return nil;
@@ -288,6 +291,7 @@ typedef NS_ENUM(uint16_t, DSBlockPosition)
     self.quorumTypeForISDLocks = ISDLockQuorumType;
     self.quorumTypeForChainLocks = chainLockQuorumType;
     self.quorumTypeForPlatform = platformQuorumType;
+    self.masternodeSyncMode = masternodeSyncMode;
     return self;
 }
 
@@ -393,6 +397,7 @@ static dispatch_once_t devnetToken = 0;
                      ISDLockQuorumType:(DSLLMQType)ISDLockQuorumType
                    chainLockQuorumType:(DSLLMQType)chainLockQuorumType
                     platformQuorumType:(DSLLMQType)platformQuorumType
+                    masternodeSyncMode:(DSMasternodeSyncMode)masternodeSyncMode
                            isTransient:(BOOL)isTransient {
     dispatch_once(&devnetToken, ^{
         _devnetDictionary = [NSMutableDictionary dictionary];
@@ -401,7 +406,7 @@ static dispatch_once_t devnetToken = 0;
     __block BOOL inSetUp = FALSE;
     @synchronized(self) {
         if (![_devnetDictionary objectForKey:identifier]) {
-            devnetChain = [[DSChain alloc] initAsDevnetWithIdentifier:identifier version:version protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion checkpoints:checkpointArray minimumDifficultyBlocks:minimumDifficultyBlocks port:port dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID ISLockQuorumType:ISLockQuorumType ISDLockQuorumType:ISDLockQuorumType chainLockQuorumType:chainLockQuorumType platformQuorumType:platformQuorumType isTransient:isTransient];
+            devnetChain = [[DSChain alloc] initAsDevnetWithIdentifier:identifier version:version protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion checkpoints:checkpointArray minimumDifficultyBlocks:minimumDifficultyBlocks port:port dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID ISLockQuorumType:ISLockQuorumType ISDLockQuorumType:ISDLockQuorumType chainLockQuorumType:chainLockQuorumType platformQuorumType:platformQuorumType masternodeSyncMode:masternodeSyncMode isTransient:isTransient];
             _devnetDictionary[identifier] = devnetChain;
             inSetUp = TRUE;
         } else {

@@ -67,6 +67,12 @@
     if (length - off < 48) return nil;
     self.operatorKey = [message UInt384AtOffset:off];
     off += 48;
+    
+    if (self.version == 2 /*BLS Basic*/) {
+        if (length - off < 2) return nil;
+        self.operatorKeyVersion = [message UInt16AtOffset:off];
+        off += 2;
+    }
 
     if (length - off < 20) return nil;
     self.votingKeyHash = [message UInt160AtOffset:off];
@@ -83,7 +89,19 @@
     if (length - off < 32) return nil;
     self.inputsHash = [message UInt256AtOffset:off];
     off += 32;
-
+    
+    if (self.version == 2 /*BLS Basic*/ && self.providerType == 1 /*High Performance*/) {
+        if (length - off < 32) return nil;
+        self.platformNodeID = [message UInt160AtOffset:off];
+        off += 32;
+        if (length - off < 2) return nil;
+        self.platformP2PPort = CFSwapInt16HostToBig([message UInt16AtOffset:off]);
+       off += 2;
+        if (length - off < 2) return nil;
+        self.platformHTTPPort = CFSwapInt16HostToBig([message UInt16AtOffset:off]);
+        off += 2;
+    }
+    
     if (length - off < 1) return nil;
     NSNumber *messageSignatureSizeLength = nil;
     NSUInteger messageSignatureSize = (NSUInteger)[message varIntAtOffset:off length:&messageSignatureSizeLength];
@@ -190,6 +208,11 @@
     [data appendVarInt:self.scriptPayout.length];
     [data appendData:self.scriptPayout];
     [data appendUInt256:self.inputsHash];
+    if (self.version == 2 /*BLS Basic*/ && self.providerType == 1 /*High Performance*/) {
+        [data appendUInt160:self.platformNodeID];
+        [data appendUInt16:CFSwapInt16BigToHost(self.platformP2PPort)];
+        [data appendUInt16:CFSwapInt16BigToHost(self.platformHTTPPort)];
+    }
     return data;
 }
 

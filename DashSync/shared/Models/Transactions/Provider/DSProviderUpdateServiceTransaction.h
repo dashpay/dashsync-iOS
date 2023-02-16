@@ -23,6 +23,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, nullable, readonly) NSString *payoutAddress;
 @property (nonatomic, assign) UInt256 inputsHash;
 @property (nonatomic, strong) NSData *payloadSignature;
+@property (nonatomic, assign) uint16_t providerType; // Masternode Type: 0: Regular, 1: HighPerformance
+@property (nonatomic, assign) uint16_t platformHTTPPort;
+@property (nonatomic, assign) uint16_t platformP2PPort;
+@property (nonatomic, assign) UInt160 platformNodeID;
 @property (nonatomic, readonly) DSProviderRegistrationTransaction *providerRegistrationTransaction;
 
 

@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) UInt160 ownerKeyHash;
 @property (nullable, nonatomic, readonly) NSString *ownerAddress;
 @property (nonatomic, assign) UInt384 operatorKey;
+@property (nonatomic, assign) uint16_t operatorKeyVersion;
 @property (nonatomic, readonly) NSString *operatorKeyString;
 @property (nonatomic, readonly) NSString *operatorAddress;
 @property (nonatomic, assign) UInt160 votingKeyHash;
@@ -40,6 +41,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSString *location;
 @property (nonatomic, readonly) DSLocalMasternode *localMasternode;
 @property (nullable, nonatomic, readonly) DSWallet *masternodeHoldingWallet; //only set if the transaction is sent to a masternode holding address
+@property (nonatomic, assign) uint16_t platformHTTPPort;
+@property (nonatomic, assign) uint16_t platformP2PPort;
+@property (nonatomic, assign) UInt160 platformNodeID;
 
 - (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray *)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts providerRegistrationTransactionVersion:(uint16_t)version type:(uint16_t)providerType mode:(uint16_t)providerMode collateralOutpoint:(DSUTXO)collateralOutpoint ipAddress:(UInt128)ipAddress port:(uint16_t)port ownerKeyHash:(UInt160)ownerKeyHash operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash operatorReward:(uint16_t)operatorReward scriptPayout:(NSData *)scriptPayout onChain:(DSChain *)chain;
 

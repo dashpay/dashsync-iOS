@@ -58,7 +58,8 @@ FOUNDATION_EXPORT NSString *const DSChainsDidChangeNotification;
          ISLockQuorumType:(DSLLMQType)ISLockQuorumsType
         ISDLockQuorumType:(DSLLMQType)ISDLockQuorumType
       chainLockQuorumType:(DSLLMQType)chainLockQuorumType
-       platformQuorumType:(DSLLMQType)platformQuorumType;
+       platformQuorumType:(DSLLMQType)platformQuorumType
+       masternodeSyncMode:(DSMasternodeSyncMode)masternodeSyncMode;
 
 - (DSChain *_Nullable)registerDevnetChainWithIdentifier:(NSString *)identifier
                                                 version:(uint16_t)version
@@ -76,7 +77,8 @@ FOUNDATION_EXPORT NSString *const DSChainsDidChangeNotification;
                                        ISLockQuorumType:(DSLLMQType)ISQuorumLockType
                                       ISDLockQuorumType:(DSLLMQType)ISDQuorumLockType
                                     chainLockQuorumType:(DSLLMQType)chainLockQuorumType
-                                     platformQuorumType:(DSLLMQType)platformQuorumType;
+                                     platformQuorumType:(DSLLMQType)platformQuorumType
+                                     masternodeSyncMode:(DSMasternodeSyncMode)masternodeSyncMode;
 
 - (void)removeDevnetChain:(DSChain *)chain;
 

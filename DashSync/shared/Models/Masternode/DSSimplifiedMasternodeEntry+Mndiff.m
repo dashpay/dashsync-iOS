@@ -87,9 +87,10 @@
     UInt128 address = *((UInt128 *)entry->ip_address);
     uint16_t port = entry->port;
     uint32_t updateHeight = entry->update_height;
-//    NSLog(@"simplifiedEntryWith: %@ (%@, %@, SocketAddress { %@: %u }, %@, %@, %u) (%u %u)", uint256_hex(simplifiedMasternodeEntryHash), uint256_hex(providerRegistrationTransactionHash), uint256_hex(confirmedHash), uint128_hex(address), port, uint384_hex(operatorPublicKey), uint160_hex(keyIDVoting), isValid, updateHeight, knownConfirmedAtHeight);
-    //NSLog(@"simplifiedEntryWith: %@ (%u %u)", uint256_hex(providerRegistrationTransactionHash), updateHeight, knownConfirmedAtHeight);
-   return [self simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:providerRegistrationTransactionHash
+    uint16_t type = entry->mn_type;
+    uint16_t platformHTTPPort = entry->platform_http_port;
+    UInt160 platformNodeID = *((UInt160 *)entry->platform_node_id);
+    return [self simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:providerRegistrationTransactionHash
                                                                     confirmedHash:confirmedHash
                                                                           address:address
                                                                              port:port
@@ -98,6 +99,9 @@
                                                     previousOperatorBLSPublicKeys:[operatorPublicKeys copy]
                                                                       keyIDVoting:keyIDVoting
                                                                           isValid:isValid
+                                                                            type:type
+                                                                platformHTTPPort:platformHTTPPort
+                                                                platformNodeID:platformNodeID
                                                                  previousValidity:[validities copy]
                                                            knownConfirmedAtHeight:knownConfirmedAtHeight
                                                                      updateHeight:updateHeight
@@ -181,6 +185,9 @@
     masternode_entry->ip_address = uint128_malloc([self address]);
     masternode_entry->port = [self port];
     masternode_entry->update_height = [self updateHeight];
+    masternode_entry->mn_type = [self type];
+    masternode_entry->platform_http_port = [self platformHTTPPort];
+    masternode_entry->platform_node_id = uint160_malloc([self platformNodeID]);
     return masternode_entry;
 
 }
@@ -193,6 +200,7 @@
     free(entry->entry_hash);
     free(entry->ip_address);
     free(entry->key_id_voting);
+    free(entry->platform_node_id);
     free(entry->provider_registration_transaction_hash);
     if (entry->previous_entry_hashes)
         free(entry->previous_entry_hashes);
