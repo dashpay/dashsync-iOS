@@ -802,7 +802,7 @@
 
 - (NSString *)seedPhraseIfAuthenticated {
     if (![DSAuthenticationManager sharedInstance].usesAuthentication || [DSAuthenticationManager sharedInstance].didAuthenticate) {
-        [self seedPhrase];
+        return [self seedPhrase];
     }
 
     return nil;
