@@ -492,7 +492,7 @@
     for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
         [mSet addObjectsFromArray:[[derivationPath allAddresses] allObjects]];
     }
-    return [mSet copy];
+    return mSet;
 }
 
 - (NSSet *)usedAddresses {
@@ -500,7 +500,7 @@
     for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
         [mSet addObjectsFromArray:[[derivationPath usedAddresses] allObjects]];
     }
-    return [mSet copy];
+    return mSet;
 }
 
 // true if the address is controlled by the wallet
