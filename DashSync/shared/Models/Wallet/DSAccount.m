@@ -458,7 +458,7 @@
             [mArray addObjectsFromArray:[(DSIncomingFundsDerivationPath *)derivationPath registerAddressesWithGapLimit:dashpayGapLimit error:error]];
         }
     }
-    return [mArray copy];
+    return mArray;
 }
 
 // all previously generated external addresses
@@ -490,17 +490,17 @@
 - (NSSet *)allAddresses {
     NSMutableSet *mSet = [NSMutableSet set];
     for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
-        [mSet addObjectsFromArray:[[derivationPath allAddresses] allObjects]];
+        [mSet unionSet:[derivationPath allAddresses]];
     }
-    return [mSet copy];
+    return mSet;
 }
 
 - (NSSet *)usedAddresses {
     NSMutableSet *mSet = [NSMutableSet set];
     for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
-        [mSet addObjectsFromArray:[[derivationPath usedAddresses] allObjects]];
+        [mSet unionSet:[derivationPath usedAddresses]];
     }
-    return [mSet copy];
+    return mSet;
 }
 
 // true if the address is controlled by the wallet
