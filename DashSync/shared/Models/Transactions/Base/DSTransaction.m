@@ -308,7 +308,7 @@
                 [rAddresses addObject:[NSNull null]];
             }
         }
-        return [rAddresses copy];
+        return rAddresses;
     }
 }
 
