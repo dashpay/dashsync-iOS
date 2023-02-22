@@ -458,7 +458,7 @@
             [mArray addObjectsFromArray:[(DSIncomingFundsDerivationPath *)derivationPath registerAddressesWithGapLimit:dashpayGapLimit error:error]];
         }
     }
-    return [mArray copy];
+    return mArray;
 }
 
 // all previously generated external addresses
