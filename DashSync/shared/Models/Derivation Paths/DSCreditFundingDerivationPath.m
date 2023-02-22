@@ -77,7 +77,7 @@
     NSUInteger index = [self indexOfKnownAddress:[[transaction inputAddresses] firstObject]];
 
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
-        self.wallet.seedRequestBlock(authprompt, MASTERNODE_COST, ^void(NSData *_Nullable seed, BOOL cancelled) {
+        self.wallet.secureSeedRequestBlock(authprompt, MASTERNODE_COST, ^void(NSData *_Nullable seed, BOOL cancelled) {
             if (!seed) {
                 if (completion) completion(NO, cancelled);
             } else {
