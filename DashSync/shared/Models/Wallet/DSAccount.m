@@ -490,7 +490,7 @@
 - (NSSet *)allAddresses {
     NSMutableSet *mSet = [NSMutableSet set];
     for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
-        [mSet addObjectsFromArray:[[derivationPath allAddresses] allObjects]];
+        [mSet unionSet:[derivationPath allAddresses]];
     }
     return mSet;
 }
@@ -498,7 +498,7 @@
 - (NSSet *)usedAddresses {
     NSMutableSet *mSet = [NSMutableSet set];
     for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
-        [mSet addObjectsFromArray:[[derivationPath usedAddresses] allObjects]];
+        [mSet unionSet:[derivationPath usedAddresses]];
     }
     return mSet;
 }
