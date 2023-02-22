@@ -1250,6 +1250,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 
 - (NSArray *)usedDerivationPathsForTransaction:(DSTransaction *)transaction {
     NSMutableArray *usedDerivationPaths = [NSMutableArray array];
+
     for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
         NSMutableOrderedSet *externalIndexes = [NSMutableOrderedSet orderedSet],
         *internalIndexes = [NSMutableOrderedSet orderedSet];
@@ -1272,6 +1273,8 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             [usedDerivationPaths addObject:@{@"derivationPath": derivationPath, @"externalIndexes": externalIndexes, @"internalIndexes": internalIndexes}];
         }
     }
+
+    return usedDerivationPaths;
 }
 
 - (void)signTransaction:(DSTransaction *)transaction completion:(_Nonnull TransactionValidityCompletionBlock)completion {
