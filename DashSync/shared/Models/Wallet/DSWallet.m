@@ -803,17 +803,13 @@
 - (NSString *)seedPhraseIfAuthenticated {
     if (![DSAuthenticationManager sharedInstance].usesAuthentication || [DSAuthenticationManager sharedInstance].didAuthenticate) {
         [self seedPhrase];
-    } else {
-        return nil;
     }
+
+    return nil;
 }
 
 - (NSString *)seedPhrase {
-    if (![DSAuthenticationManager sharedInstance].usesAuthentication || [DSAuthenticationManager sharedInstance].didAuthenticate) {
-        return getKeychainString(self.mnemonicUniqueID, nil);
-    } else {
-        return nil;
-    }
+    return getKeychainString(self.mnemonicUniqueID, nil);
 }
 
 // authenticates user and returns seedPhrase
