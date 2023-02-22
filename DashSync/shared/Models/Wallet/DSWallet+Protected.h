@@ -27,6 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) SeedRequestBlock seedRequestBlock;
 
+@property (nonatomic, strong) SecureSeedRequestBlock secureSeedRequestBlock;
+
 @property (nonatomic, readonly) BOOL hasAnExtendedPublicKeyMissing;
 
 @property (nonatomic, strong) NSData *transientDerivedKeyData;

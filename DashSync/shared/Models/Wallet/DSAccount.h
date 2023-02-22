@@ -170,7 +170,25 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSAccountNewAccountShouldBeAddedFromT
 
 
 - (DSTransaction *)updateTransaction:(DSTransaction *)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee sortType:(DSTransactionSortType)sortType;
-// sign any inputs in the given transaction that can be signed using private keys from the wallet
+
+/// Sign any inputs in the given transaction that can be signed using private keys from the wallet
+///
+/// - Parameters:
+///   - transaction: Instanct of `DSTransaction` you want to sign
+///   - completion: Completion block that has type `TransactionValidityCompletionBlock`
+///
+/// - Note: Using this method to sign a tx doesn't present pin controller, use this method carefully from UI
+///
+- (void)signTransaction:(DSTransaction *)transaction completion:(_Nonnull TransactionValidityCompletionBlock)completion;
+
+/// Sign any inputs in the given transaction that can be signed using private keys from the wallet
+///
+/// - Parameters:
+///   - transaction: Instanct of `DSTransaction` you want to sign
+///   - completion: Completion block that has type `TransactionValidityCompletionBlock`
+///
+/// - Note: Using this method to sign a tx presents pin controller for auth purpose
+///
 - (void)signTransaction:(DSTransaction *)transaction withPrompt:(NSString *_Nullable)authprompt completion:(_Nonnull TransactionValidityCompletionBlock)completion;
 
 // true if the given transaction is associated with the account (even if it hasn't been registered), false otherwise

@@ -1248,18 +1248,11 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 
 // MARK: = Signing
 
-// sign any inputs in the given transaction that can be signed using private keys from the wallet
-- (void)signTransaction:(DSTransaction *)transaction withPrompt:(NSString *_Nullable)authprompt completion:(TransactionValidityCompletionBlock)completion;
-{
-    NSParameterAssert(transaction);
-
-    if (_isViewOnlyAccount) return;
-    int64_t amount = [self amountSentByTransaction:transaction] - [self amountReceivedFromTransaction:transaction];
-
+- (NSArray *)usedDerivationPathsForTransaction:(DSTransaction *)transaction {
     NSMutableArray *usedDerivationPaths = [NSMutableArray array];
     for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
         NSMutableOrderedSet *externalIndexes = [NSMutableOrderedSet orderedSet],
-                            *internalIndexes = [NSMutableOrderedSet orderedSet];
+        *internalIndexes = [NSMutableOrderedSet orderedSet];
         for (NSString *addr in transaction.inputAddresses) {
             if (!(derivationPath.type == DSDerivationPathType_ClearFunds || derivationPath.type == DSDerivationPathType_AnonymousFunds)) continue;
             if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
@@ -1279,9 +1272,56 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             [usedDerivationPaths addObject:@{@"derivationPath": derivationPath, @"externalIndexes": externalIndexes, @"internalIndexes": internalIndexes}];
         }
     }
+}
+
+- (void)signTransaction:(DSTransaction *)transaction completion:(_Nonnull TransactionValidityCompletionBlock)completion {
+    NSParameterAssert(transaction);
+
+    if (_isViewOnlyAccount) return;
+
+    int64_t amount = [self amountSentByTransaction:transaction] - [self amountReceivedFromTransaction:transaction];
+    NSArray *usedDerivationPaths = [self usedDerivationPathsForTransaction:transaction];
 
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
-        self.wallet.seedRequestBlock(authprompt, (amount > 0) ? amount : 0, ^void(NSData *_Nullable seed, BOOL cancelled) {
+        self.wallet.seedRequestBlock(^void(NSData *_Nullable seed, BOOL cancelled) {
+            if (!seed) {
+                if (completion) completion(NO, YES);
+            } else {
+                NSMutableArray *privkeys = [NSMutableArray array];
+                for (NSDictionary *dictionary in usedDerivationPaths) {
+                    DSDerivationPath *derivationPath = dictionary[@"derivationPath"];
+                    NSMutableOrderedSet *externalIndexes = dictionary[@"externalIndexes"],
+                    *internalIndexes = dictionary[@"internalIndexes"];
+                    if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
+                        DSFundsDerivationPath *fundsDerivationPath = (DSFundsDerivationPath *)derivationPath;
+                        [privkeys addObjectsFromArray:[fundsDerivationPath privateKeys:externalIndexes.array internal:NO fromSeed:seed]];
+                        [privkeys addObjectsFromArray:[fundsDerivationPath privateKeys:internalIndexes.array internal:YES fromSeed:seed]];
+                    } else if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
+                        DSIncomingFundsDerivationPath *incomingFundsDerivationPath = (DSIncomingFundsDerivationPath *)derivationPath;
+                        [privkeys addObjectsFromArray:[incomingFundsDerivationPath privateKeys:externalIndexes.array fromSeed:seed]];
+                    } else {
+                        NSAssert(FALSE, @"The derivation path must be a normal or incoming funds derivation path");
+                    }
+                }
+
+                BOOL signedSuccessfully = [transaction signWithPrivateKeys:privkeys];
+                if (completion) completion(signedSuccessfully, NO);
+            }
+        });
+    }
+}
+
+// sign any inputs in the given transaction that can be signed using private keys from the wallet
+- (void)signTransaction:(DSTransaction *)transaction withPrompt:(NSString *_Nullable)authprompt completion:(TransactionValidityCompletionBlock)completion {
+    NSParameterAssert(transaction);
+
+    if (_isViewOnlyAccount) return;
+
+    int64_t amount = [self amountSentByTransaction:transaction] - [self amountReceivedFromTransaction:transaction];
+    NSArray *usedDerivationPaths = [self usedDerivationPathsForTransaction:transaction];
+
+    @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
+        self.wallet.secureSeedRequestBlock(authprompt, (amount > 0) ? amount : 0, ^void(NSData *_Nullable seed, BOOL cancelled) {
             if (!seed) {
                 if (completion) completion(NO, YES);
             } else {
@@ -1317,7 +1357,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     for (DSTransaction *transaction in transactions) {
         amount += [self amountSentByTransaction:transaction] - [self amountReceivedFromTransaction:transaction];
     }
-    self.wallet.seedRequestBlock(authprompt, (amount > 0) ? amount : 0, ^void(NSData *_Nullable seed, BOOL cancelled) {
+    self.wallet.secureSeedRequestBlock(authprompt, (amount > 0) ? amount : 0, ^void(NSData *_Nullable seed, BOOL cancelled) {
         for (DSTransaction *transaction in transactions) {
             NSMutableArray *usedDerivationPaths = [NSMutableArray array];
             for (DSFundsDerivationPath *derivationPath in self.fundDerivationPaths) {
