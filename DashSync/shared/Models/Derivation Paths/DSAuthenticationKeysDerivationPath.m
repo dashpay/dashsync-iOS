@@ -31,6 +31,9 @@
 + (instancetype)providerOperatorKeysDerivationPathForWallet:(DSWallet *)wallet {
     return [[DSDerivationPathFactory sharedInstance] providerOperatorKeysDerivationPathForWallet:wallet];
 }
++ (instancetype)platformNodeKeysDerivationPathForWallet:(DSWallet *)wallet {
+    return [[DSDerivationPathFactory sharedInstance] platformNodeKeysDerivationPathForWallet:wallet];
+}
 + (instancetype)blockchainIdentitiesBLSKeysDerivationPathForWallet:(DSWallet *)wallet {
     return [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:wallet];
 }
@@ -82,6 +85,13 @@
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(3), uint256_from_long(3)};
     BOOL hardenedIndexes[] = {YES, YES, YES, YES};
     return [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_SingleUserAuthentication signingAlgorithm:DSKeyType_BLS reference:DSDerivationPathReference_ProviderOperatorKeys onChain:chain];
+}
+
++ (instancetype)platformNodeKeysDerivationPathForChain:(DSChain *)chain {
+    NSUInteger coinType = (chain.chainType == DSChainType_MainNet) ? 5 : 1;
+    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(3), uint256_from_long(4)};
+    BOOL hardenedIndexes[] = {YES, YES, YES, YES};
+    return [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_SingleUserAuthentication signingAlgorithm:DSKeyType_ED25519 reference:DSDerivationPathReference_ProviderPlatformNodeKeys onChain:chain];
 }
 
 + (instancetype)blockchainIdentityECDSAKeysDerivationPathForChain:(DSChain *)chain {

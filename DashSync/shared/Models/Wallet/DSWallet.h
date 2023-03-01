@@ -65,6 +65,8 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 
 @property (nonatomic, readonly) NSArray<NSString *> *providerOperatorAddresses;
 
+@property (nonatomic, readonly) NSArray<NSString *> *platformNodeAddresses;
+
 //This is unique among all wallets and all chains
 @property (nonatomic, readonly) NSString *uniqueIDString;
 
@@ -260,6 +262,9 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 - (void)registerMasternodeVoter:(DSLocalMasternode *)masternode;
 - (void)registerMasternodeVoter:(DSLocalMasternode *)masternode withVotingKey:(DSECDSAKey *)votingKey; //will use defined key
 
+- (void)registerPlatformNode:(DSLocalMasternode *)masternode;
+- (void)registerPlatformNode:(DSLocalMasternode *)masternode withKey:(DSECDSAKey *)key; //will use defined key
+
 - (BOOL)containsProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash;
 - (BOOL)containsProviderOwningAuthenticationHash:(UInt160)owningAuthenticationHash;
 - (BOOL)containsProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey;
@@ -269,6 +274,7 @@ FOUNDATION_EXPORT NSString *_Nonnull const DSWalletBalanceDidChangeNotification;
 - (NSUInteger)indexOfProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash;
 - (NSUInteger)indexOfProviderOwningAuthenticationHash:(UInt160)owningAuthenticationHash;
 - (NSUInteger)indexOfProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey;
+- (NSUInteger)indexOfPlatformNodeAuthenticationHash:(UInt160)platformNodeAuthenticationHash;
 - (NSUInteger)indexOfHoldingAddress:(NSString *)holdingAddress;
 - (NSUInteger)indexOfBlockchainIdentityAuthenticationHash:(UInt160)blockchainIdentityAuthenticationHash;
 - (NSUInteger)indexOfBlockchainIdentityCreditFundingRegistrationHash:(UInt160)creditFundingRegistrationHash;

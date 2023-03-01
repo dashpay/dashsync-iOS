@@ -75,6 +75,7 @@
 #define WALLET_MASTERNODE_VOTERS_KEY @"WALLET_MASTERNODE_VOTERS_KEY"
 #define WALLET_MASTERNODE_OWNERS_KEY @"WALLET_MASTERNODE_OWNERS_KEY"
 #define WALLET_MASTERNODE_OPERATORS_KEY @"WALLET_MASTERNODE_OPERATORS_KEY"
+#define WALLET_PLATFORM_NODES_KEY @"WALLET_PLATFORM_NODES_KEY"
 
 #define VERIFIED_WALLET_CREATION_TIME_KEY @"VERIFIED_WALLET_CREATION_TIME"
 #define REFERENCE_DATE_2001 978307200
@@ -98,9 +99,11 @@
 @property (nonatomic, strong) NSMutableDictionary<NSData *, NSNumber *> *mMasternodeOperatorIndexes;
 @property (nonatomic, strong) NSMutableDictionary<NSData *, NSNumber *> *mMasternodeOwnerIndexes;
 @property (nonatomic, strong) NSMutableDictionary<NSData *, NSNumber *> *mMasternodeVoterIndexes;
+@property (nonatomic, strong) NSMutableDictionary<NSData *, NSNumber *> *mPlatformNodeIndexes;
 @property (nonatomic, strong) NSMutableDictionary<NSData *, NSString *> *mMasternodeOperatorPublicKeyLocations;
 @property (nonatomic, strong) NSMutableDictionary<NSData *, NSString *> *mMasternodeOwnerPrivateKeyLocations;
 @property (nonatomic, strong) NSMutableDictionary<NSData *, NSString *> *mMasternodeVoterKeyLocations;
+@property (nonatomic, strong) NSMutableDictionary<NSData *, NSString *> *mPlatformNodeKeyLocations;
 
 @property (nonatomic, assign, getter=isTransient) BOOL transient;
 @property (nonatomic, strong) NSMutableDictionary<NSData *, DSBlockchainIdentity *> *mBlockchainIdentities;
@@ -299,6 +302,8 @@
             [providerOperatorKeysDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:walletUniqueId];
             DSAuthenticationKeysDerivationPath *providerVotingKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForChain:chain];
             [providerVotingKeysDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:walletUniqueId];
+            DSAuthenticationKeysDerivationPath *providerPlatformNodeKeysDerivationPath = [DSAuthenticationKeysDerivationPath platformNodeKeysDerivationPathForChain:chain];
+            [providerPlatformNodeKeysDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:walletUniqueId];
             DSMasternodeHoldingsDerivationPath *providerFundsDerivationPath = [DSMasternodeHoldingsDerivationPath providerFundsDerivationPathForChain:chain];
             [providerFundsDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:walletUniqueId];
 
@@ -355,6 +360,10 @@
 
 - (NSString *)walletMasternodeOperatorsKey {
     return [NSString stringWithFormat:@"%@_%@", WALLET_MASTERNODE_OPERATORS_KEY, [self uniqueIDString]];
+}
+
+- (NSString *)walletPlatformNodesKey {
+    return [NSString stringWithFormat:@"%@_%@", WALLET_PLATFORM_NODES_KEY, [self uniqueIDString]];
 }
 
 - (NSArray *)accounts {
@@ -1581,6 +1590,18 @@
     return max != nil ? ([max unsignedIntValue] + 1) : 0;
 }
 
+- (NSArray *)platformNodeAddresses {
+    DSAuthenticationKeysDerivationPath *derivationPath = [[DSDerivationPathFactory sharedInstance] platformNodeKeysDerivationPathForWallet:self];
+    if (!derivationPath.hasExtendedPublicKey) return @[];
+    return [derivationPath addressesToIndex:[self unusedPlatformNodeIndex] + 10 useCache:YES addToCache:YES];
+}
+
+- (uint32_t)unusedPlatformNodeIndex {
+    NSArray *indexes = [_mPlatformNodeIndexes allValues];
+    NSNumber *max = [indexes valueForKeyPath:@"@max.intValue"];
+    return max != nil ? ([max unsignedIntValue] + 1) : 0;
+}
+
 - (void)registerMasternodeOperator:(DSLocalMasternode *)masternode {
     NSParameterAssert(masternode);
 
@@ -1669,6 +1690,34 @@
     }
 }
 
+- (void)registerPlatformNode:(DSLocalMasternode *)masternode {
+    NSParameterAssert(masternode);
+    if ([self.mPlatformNodeIndexes objectForKey:uint256_data(masternode.providerRegistrationTransaction.txHash)] == nil && masternode.platformNodeWalletIndex != UINT32_MAX) {
+        [self.mPlatformNodeIndexes setObject:@(masternode.platformNodeWalletIndex) forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
+        NSError *error = nil;
+        NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletPlatformNodesKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
+        if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
+        keyChainDictionary[uint256_data(masternode.providerRegistrationTransaction.txHash)] = @(masternode.platformNodeWalletIndex);
+        setKeychainDict(keyChainDictionary, self.walletPlatformNodesKey, NO);
+    }
+}
+
+- (void)registerPlatformNode:(DSLocalMasternode *)masternode withKey:(DSECDSAKey *)key {
+    NSParameterAssert(masternode);
+
+    if ([self.mPlatformNodeKeyLocations objectForKey:uint256_data(masternode.providerRegistrationTransaction.txHash)] == nil) {
+        NSData *hashedPlatformNodeKey = [NSData dataWithUInt256:[key publicKeyData].SHA256];
+        NSString *platformNodeKeyStorageLocation = [NSString stringWithFormat:@"DS_PLATFORM_NODE_KEY_LOC_%@", hashedPlatformNodeKey.hexString];
+        [self.mPlatformNodeKeyLocations setObject:platformNodeKeyStorageLocation forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
+        NSError *error = nil;
+        NSMutableDictionary *keyChainDictionary = [getKeychainDict(self.walletPlatformNodesKey, @[[NSNumber class], [NSData class]], &error) mutableCopy];
+        if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
+        keyChainDictionary[uint256_data(masternode.providerRegistrationTransaction.txHash)] = hashedPlatformNodeKey;
+        setKeychainDict(keyChainDictionary, self.walletPlatformNodesKey, NO);
+        setKeychainData([key privateKeyData], platformNodeKeyStorageLocation, NO);
+    }
+}
+
 - (BOOL)containsProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash {
     DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForWallet:self];
     return [derivationPath containsAddress:[[NSData dataWithUInt160:votingAuthenticationHash] addressFromHash160DataForChain:self.chain]];
@@ -1682,6 +1731,11 @@
 - (BOOL)containsProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey {
     DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForWallet:self];
     return [derivationPath containsAddress:[[NSData dataWithUInt160:[[NSData dataWithUInt384:providerOperatorAuthenticationKey] hash160]] addressFromHash160DataForChain:self.chain]];
+}
+
+- (BOOL)containsPlatformNodeAuthenticationHash:(UInt160)platformNodeAuthenticationHash {
+    DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath platformNodeKeysDerivationPathForWallet:self];
+    return [derivationPath containsAddress:[[NSData dataWithUInt160:platformNodeAuthenticationHash] addressFromHash160DataForChain:self.chain]];
 }
 
 - (BOOL)containsBlockchainIdentityBLSAuthenticationHash:(UInt160)blockchainIdentityAuthenticationHash {
@@ -1709,6 +1763,11 @@
 - (NSUInteger)indexOfProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey {
     DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForWallet:self];
     return [derivationPath indexOfKnownAddress:[[NSData dataWithUInt160:[[NSData dataWithUInt384:providerOperatorAuthenticationKey] hash160]] addressFromHash160DataForChain:self.chain]];
+}
+
+- (NSUInteger)indexOfPlatformNodeAuthenticationHash:(UInt160)platformNodeAuthenticationHash {
+    DSAuthenticationKeysDerivationPath *derivationPath = [DSAuthenticationKeysDerivationPath platformNodeKeysDerivationPathForWallet:self];
+    return [derivationPath indexOfKnownAddress:[[NSData dataWithUInt160:platformNodeAuthenticationHash] addressFromHash160DataForChain:self.chain]];
 }
 
 - (NSUInteger)indexOfHoldingAddress:(NSString *)holdingAddress {

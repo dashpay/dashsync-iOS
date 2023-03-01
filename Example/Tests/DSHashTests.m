@@ -26,7 +26,10 @@
 }
 
 - (void)testBlake3 {
-    UInt256 md = @"whats the Elvish word for friend".hexToData.blake3;
+    NSData *hex = @"whats the Elvish word for friend".hexToData;
+    NSLog(@"testBlake3.hex: %@", hex.hexString);
+    UInt256 md = hex.blake3;
+    NSLog(@"testBlake3.md: %@", uint256_hex(md));
     XCTAssertEqualObjects(@"af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262", uint256_hex(md),
         @"[NSData blake3]"); // verified by wikipedia
 }
@@ -133,7 +136,9 @@
 
 - (void)testBase58 {
     // test bad input
-    NSString *s = [NSString base58WithData:[BTC @"#&$@*^(*#!^" base58ToData]];
+    NSString *str = BTC @"#&$@*^(*#!^";
+    NSLog(@"ssssss: %@", str);
+    NSString *s = [NSString base58WithData:[str base58ToData]];
 
     XCTAssertTrue(s.length == 0, @"[NSString base58WithData:]");
 
@@ -249,44 +254,35 @@
 - (void)testSHA512 {
     UInt512 md = [@"Free online SHA512 Calculator, type text here..." dataUsingEncoding:NSUTF8StringEncoding].SHA512;
 
-    XCTAssertTrue(uint512_eq(*(UInt512 *)@"04f1154135eecbe42e9adc8e1d532f9c607a8447b786377db8447d11a5b2232cdd419b863922"
-                                          "4f787a51d110f72591f96451a1bb511c4a829ed0a2ec891321f3".hexToData.bytes,
+    XCTAssertTrue(uint512_eq(*(UInt512 *)@"04f1154135eecbe42e9adc8e1d532f9c607a8447b786377db8447d11a5b2232cdd419b8639224f787a51d110f72591f96451a1bb511c4a829ed0a2ec891321f3".hexToData.bytes,
                       md),
         @"[NSData SHA512]");
 
-    md = [@"this is some text to test the sha512 implementation with more than 128bytes of data since it's internal "
-           "digest buffer is 128bytes in size" dataUsingEncoding:NSUTF8StringEncoding]
+    md = [@"this is some text to test the sha512 implementation with more than 128bytes of data since it's internal digest buffer is 128bytes in size" dataUsingEncoding:NSUTF8StringEncoding]
              .SHA512;
-    XCTAssertTrue(uint512_eq(*(UInt512 *)@"9bd2dc7b05fbbe9934cb3289b6e06b8ca9fd7a55e6de5db7e1e4eeddc6629b575307367cd018"
-                                          "3a4461d7eb2dfc6a27e41e8b70f6598ebcc7710911d4fb16a390".hexToData.bytes,
+    XCTAssertTrue(uint512_eq(*(UInt512 *)@"9bd2dc7b05fbbe9934cb3289b6e06b8ca9fd7a55e6de5db7e1e4eeddc6629b575307367cd0183a4461d7eb2dfc6a27e41e8b70f6598ebcc7710911d4fb16a390".hexToData.bytes,
                       md),
         @"[NSData SHA512]");
 
-    md = [@"12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567"
-           "8901234567890" dataUsingEncoding:NSUTF8StringEncoding]
+    md = [@"123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890" dataUsingEncoding:NSUTF8StringEncoding]
              .SHA512;
-    XCTAssertTrue(uint512_eq(*(UInt512 *)@"0d9a7df5b6a6ad20da519effda888a7344b6c0c7adcc8e2d504b4af27aaaacd4e7111c713f71"
-                                          "769539629463cb58c86136c521b0414a3c0edf7dc6349c6edaf3".hexToData.bytes,
+    XCTAssertTrue(uint512_eq(*(UInt512 *)@"0d9a7df5b6a6ad20da519effda888a7344b6c0c7adcc8e2d504b4af27aaaacd4e7111c713f71769539629463cb58c86136c521b0414a3c0edf7dc6349c6edaf3".hexToData.bytes,
                       md),
         @"[NSData SHA512]");
 
-    md = [@"12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567"
-           "890123456789012345678" dataUsingEncoding:NSUTF8StringEncoding]
+    md = [@"12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678" dataUsingEncoding:NSUTF8StringEncoding]
              .SHA512; // exactly 128bytes (internal buf size)
-    XCTAssertTrue(uint512_eq(*(UInt512 *)@"222b2f64c285e66996769b5a03ef863cfd3b63ddb0727788291695e8fb84572e4bfe5a80674a"
-                                          "41fd72eeb48592c9c79f44ae992c76ed1b0d55a670a83fc99ec6".hexToData.bytes,
+    XCTAssertTrue(uint512_eq(*(UInt512 *)@"222b2f64c285e66996769b5a03ef863cfd3b63ddb0727788291695e8fb84572e4bfe5a80674a41fd72eeb48592c9c79f44ae992c76ed1b0d55a670a83fc99ec6".hexToData.bytes,
                       md),
         @"[NSData SHA512]");
 
     md = [NSData data].SHA512; // empty
-    XCTAssertTrue(uint512_eq(*(UInt512 *)@"cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85"
-                                          "f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e".hexToData.bytes,
+    XCTAssertTrue(uint512_eq(*(UInt512 *)@"cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e".hexToData.bytes,
                       md),
         @"[NSData SHA512]");
 
     md = [@"a" dataUsingEncoding:NSUTF8StringEncoding].SHA512;
-    XCTAssertTrue(uint512_eq(*(UInt512 *)@"1f40fc92da241694750979ee6cf582f2d5d7d28e18335de05abc54d0560e0f5302860c652bf0"
-                                          "8d560252aa5e74210546f369fbbbce8c12cfc7957b2652fe9a75".hexToData.bytes,
+    XCTAssertTrue(uint512_eq(*(UInt512 *)@"1f40fc92da241694750979ee6cf582f2d5d7d28e18335de05abc54d0560e0f5302860c652bf08d560252aa5e74210546f369fbbbce8c12cfc7957b2652fe9a75".hexToData.bytes,
                       md),
         @"[NSData SHA512]");
 }

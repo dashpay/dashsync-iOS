@@ -876,7 +876,9 @@
 
     DSAuthenticationKeysDerivationPath *derivationPathBLS = [DSAuthenticationKeysDerivationPath blockchainIdentitiesBLSKeysDerivationPathForWallet:self.wallet];
     DSKey *privateKeyBLS = [derivationPathBLS privateKeyAtIndex:0 fromSeed:self.seed];
+    NoTimeLog(@"pubkey_data_bls: %@", extendedPublicKeyFromMasterContactDerivationPath.extendedPublicKeyData.hexString);
     NSData *encryptedDataBLS = [extendedPublicKeyFromMasterContactDerivationPath.extendedPublicKeyData encryptWithSecretKey:privateKeyBLS forPublicKey:bobKeyPairBLS];
+    NoTimeLog(@"pubkey_data_bls (encrypted): %@", encryptedDataBLS.hexString);
 
     NSString *base64DataBLS = encryptedDataBLS.base64String;
     XCTAssertEqual([base64DataBLS length], 128, @"The size of the base64 should be 128");
@@ -887,7 +889,9 @@
 
     DSAuthenticationKeysDerivationPath *derivationPathECDSA = [DSAuthenticationKeysDerivationPath blockchainIdentitiesECDSAKeysDerivationPathForWallet:self.wallet];
     DSKey *privateKeyECDSA = [derivationPathECDSA privateKeyAtIndex:0 fromSeed:self.seed];
+    NoTimeLog(@"pubkey_data_ecdsa: %@", extendedPublicKeyFromMasterContactDerivationPath.extendedPublicKeyData.hexString);
     NSData *encryptedDataECDSA = [extendedPublicKeyFromMasterContactDerivationPath.extendedPublicKeyData encryptWithSecretKey:privateKeyECDSA forPublicKey:bobKeyPairECDSA];
+    NoTimeLog(@"pubkey_data_ecdsa (encrypted): %@", encryptedDataECDSA.hexString);
 
     NSString *base64DataECDSA = encryptedDataECDSA.base64String;
     XCTAssertEqual([base64DataECDSA length], 128, @"The size of the base64 should be 128");

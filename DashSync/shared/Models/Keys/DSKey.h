@@ -15,6 +15,7 @@ typedef NS_ENUM(NSUInteger, DSKeyType)
     DSKeyType_ECDSA = 0,
     DSKeyType_BLS = 1,
     DSKeyType_BLS_BASIC = 2,
+    DSKeyType_ED25519 = 3,
 };
 
 @class DSChain, DSDerivationPath;

@@ -37,6 +37,9 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus)
 @property (nonatomic, readonly) DSWallet *votingKeysWallet; //only if this is contained in the wallet.
 @property (nonatomic, readonly) uint32_t votingWalletIndex;
 @property (nonatomic, readonly) NSData *votingPublicKeyData;
+@property (nonatomic, readonly) DSWallet *platformNodeKeysWallet; //only if this is contained in the wallet.
+@property (nonatomic, readonly) uint32_t platformNodeWalletIndex;
+@property (nonatomic, readonly) NSData *platformNodePublicKeyData;
 @property (nonatomic, readonly) DSWallet *holdingKeysWallet; //only if this is contained in the wallet.
 @property (nonatomic, readonly) uint32_t holdingWalletIndex;
 @property (nonatomic, readonly) NSMutableIndexSet *previousOperatorWalletIndexes; //previously used operator indexes

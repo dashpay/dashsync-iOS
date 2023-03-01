@@ -244,6 +244,10 @@
     return [[NSData dataWithUInt160:self.ownerKeyHash] addressFromHash160DataForChain:self.chain];
 }
 
+- (NSString *)platformNodeAddress {
+    return [[NSData dataWithUInt160:self.platformNodeID] addressFromHash160DataForChain:self.chain];
+}
+
 - (NSString *)operatorAddress {
     return [DSKey addressWithPublicKeyData:[NSData dataWithUInt384:self.operatorKey] forChain:self.chain];
 }

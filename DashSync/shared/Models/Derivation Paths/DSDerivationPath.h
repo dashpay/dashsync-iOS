@@ -82,6 +82,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference)
     DSDerivationPathReference_BlockchainIdentityCreditRegistrationFunding = 11,
     DSDerivationPathReference_BlockchainIdentityCreditTopupFunding = 12,
     DSDerivationPathReference_BlockchainIdentityCreditInvitationFunding = 13,
+    DSDerivationPathReference_ProviderPlatformNodeKeys = 14,
     DSDerivationPathReference_Root = 255,
 };
 

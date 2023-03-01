@@ -3402,6 +3402,7 @@ static dispatch_once_t devnetToken = 0;
     DSWallet *votingWallet = [self walletHavingProviderVotingAuthenticationHash:providerRegistrationTransaction.votingKeyHash foundAtIndex:nil];
     DSWallet *operatorWallet = [self walletHavingProviderOperatorAuthenticationKey:providerRegistrationTransaction.operatorKey foundAtIndex:nil];
     DSWallet *holdingWallet = [self walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:providerRegistrationTransaction foundAtIndex:nil];
+    DSWallet *platformNodeWallet = [self walletHavingPlatformNodeAuthenticationHash:providerRegistrationTransaction.platformNodeID foundAtIndex:nil];
     DSAccount *account = [self accountContainingAddress:providerRegistrationTransaction.payoutAddress];
     BOOL registered = NO;
     registered |= [account registerTransaction:providerRegistrationTransaction saveImmediately:saveImmediately];
@@ -3409,6 +3410,7 @@ static dispatch_once_t devnetToken = 0;
     registered |= [votingWallet.specialTransactionsHolder registerTransaction:providerRegistrationTransaction saveImmediately:saveImmediately];
     registered |= [operatorWallet.specialTransactionsHolder registerTransaction:providerRegistrationTransaction saveImmediately:saveImmediately];
     registered |= [holdingWallet.specialTransactionsHolder registerTransaction:providerRegistrationTransaction saveImmediately:saveImmediately];
+    registered |= [platformNodeWallet.specialTransactionsHolder registerTransaction:providerRegistrationTransaction saveImmediately:saveImmediately];
 
     if (ownerWallet) {
         DSAuthenticationKeysDerivationPath *ownerDerivationPath = [[DSDerivationPathFactory sharedInstance] providerOwnerKeysDerivationPathForWallet:ownerWallet];
@@ -3428,6 +3430,11 @@ static dispatch_once_t devnetToken = 0;
     if (holdingWallet) {
         DSMasternodeHoldingsDerivationPath *holdingDerivationPath = [[DSDerivationPathFactory sharedInstance] providerFundsDerivationPathForWallet:holdingWallet];
         [holdingDerivationPath registerTransactionAddress:providerRegistrationTransaction.holdingAddress];
+    }
+
+    if (platformNodeWallet) {
+        DSAuthenticationKeysDerivationPath *platformNodeDerivationPath = [[DSDerivationPathFactory sharedInstance] platformNodeKeysDerivationPathForWallet:platformNodeWallet];
+        [platformNodeDerivationPath registerTransactionAddress:providerRegistrationTransaction.platformNodeAddress];
     }
 
     return registered;
@@ -3648,6 +3655,7 @@ static dispatch_once_t devnetToken = 0;
     for (DSSimplifiedMasternodeEntry *simplifiedMasternodeEntry in simplifiedMasternodeEntries) {
         NSString *votingAddress = simplifiedMasternodeEntry.votingAddress;
         NSString *operatorAddress = simplifiedMasternodeEntry.operatorAddress;
+        NSString *platformNodeAddress = simplifiedMasternodeEntry.platformNodeAddress;
         for (DSWallet *wallet in self.wallets) {
             DSAuthenticationKeysDerivationPath *providerOperatorKeysDerivationPath = [[DSDerivationPathFactory sharedInstance] providerOperatorKeysDerivationPathForWallet:wallet];
             if ([providerOperatorKeysDerivationPath containsAddress:operatorAddress]) {
@@ -3656,6 +3664,10 @@ static dispatch_once_t devnetToken = 0;
             DSAuthenticationKeysDerivationPath *providerVotingKeysDerivationPath = [[DSDerivationPathFactory sharedInstance] providerVotingKeysDerivationPathForWallet:wallet];
             if ([providerVotingKeysDerivationPath containsAddress:votingAddress]) {
                 [providerVotingKeysDerivationPath registerTransactionAddress:votingAddress];
+            }
+            DSAuthenticationKeysDerivationPath *platformNodeKeysDerivationPath = [[DSDerivationPathFactory sharedInstance] platformNodeKeysDerivationPathForWallet:wallet];
+            if ([platformNodeKeysDerivationPath containsAddress:platformNodeAddress]) {
+                [platformNodeKeysDerivationPath registerTransactionAddress:platformNodeAddress];
             }
         }
     }
@@ -3726,6 +3738,18 @@ static dispatch_once_t devnetToken = 0;
 - (DSWallet *_Nullable)walletHavingProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey foundAtIndex:(uint32_t *)rIndex {
     for (DSWallet *wallet in self.wallets) {
         NSUInteger index = [wallet indexOfProviderOperatorAuthenticationKey:providerOperatorAuthenticationKey];
+        if (index != NSNotFound) {
+            if (rIndex) *rIndex = (uint32_t)index;
+            return wallet;
+        }
+    }
+    if (rIndex) *rIndex = UINT32_MAX;
+    return nil;
+}
+
+- (DSWallet *_Nullable)walletHavingPlatformNodeAuthenticationHash:(UInt160)platformNodeAuthenticationHash foundAtIndex:(uint32_t *)rIndex {
+    for (DSWallet *wallet in self.wallets) {
+        NSUInteger index = [wallet indexOfPlatformNodeAuthenticationHash:platformNodeAuthenticationHash];
         if (index != NSNotFound) {
             if (rIndex) *rIndex = (uint32_t)index;
             return wallet;

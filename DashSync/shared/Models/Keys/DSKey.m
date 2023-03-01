@@ -83,7 +83,11 @@
         case DSKeyType_ECDSA:
             return DSLocalizedString(@"ECDSA", nil);
         case DSKeyType_BLS:
-            return DSLocalizedString(@"BLS", nil);
+            return DSLocalizedString(@"BLS (Legacy)", nil);
+        case DSKeyType_BLS_BASIC:
+            return DSLocalizedString(@"BLS (Basic)", nil);
+        case DSKeyType_ED25519:
+            return DSLocalizedString(@"ED25519", nil);
         default:
             return DSLocalizedString(@"Unknown Key Type", nil);
     }

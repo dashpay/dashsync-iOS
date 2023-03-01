@@ -32,6 +32,7 @@
 @property (nonatomic, readonly) UInt160 keyIDVoting;
 @property (nonatomic, readonly) NSString *votingAddress;
 @property (nonatomic, readonly) NSString *operatorAddress;
+@property (nonatomic, readonly) NSString *platformNodeAddress;
 @property (nonatomic, readonly) BOOL isValid;
 @property (nonatomic, readonly) uint16_t type;
 @property (nonatomic, readonly) uint16_t platformHTTPPort;

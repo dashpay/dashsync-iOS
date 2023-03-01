@@ -84,17 +84,12 @@ NS_ASSUME_NONNULL_BEGIN
 // MARK: Wallet Discovery
 
 - (DSWallet *_Nullable)walletHavingBlockchainIdentityCreditFundingRegistrationHash:(UInt160)creditFundingRegistrationHash foundAtIndex:(uint32_t *_Nullable)rIndex;
-
 - (DSWallet *_Nullable)walletHavingBlockchainIdentityCreditFundingTopupHash:(UInt160)creditFundingTopupHash foundAtIndex:(uint32_t *)rIndex;
-
 - (DSWallet *_Nullable)walletHavingBlockchainIdentityCreditFundingInvitationHash:(UInt160)creditFundingInvitationHash foundAtIndex:(uint32_t *)rIndex;
-
 - (DSWallet *_Nullable)walletHavingProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash foundAtIndex:(uint32_t *_Nullable)rIndex;
-
 - (DSWallet *_Nullable)walletHavingProviderOwnerAuthenticationHash:(UInt160)owningAuthenticationHash foundAtIndex:(uint32_t *_Nullable)rIndex;
-
 - (DSWallet *_Nullable)walletHavingProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey foundAtIndex:(uint32_t *_Nullable)rIndex;
-
+- (DSWallet *_Nullable)walletHavingPlatformNodeAuthenticationHash:(UInt160)platformNodeAuthenticationHash foundAtIndex:(uint32_t *_Nullable)rIndex;
 - (DSWallet *_Nullable)walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:(DSProviderRegistrationTransaction *_Nonnull)transaction foundAtIndex:(uint32_t *_Nullable)rIndex;
 
 // MARK: - Standalone Derivation Paths
