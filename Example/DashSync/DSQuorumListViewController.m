@@ -126,8 +126,9 @@
             return @"Test V17 Quorums (102)";
         case LlmqtypeTestDIP0024:
         case LlmqtypeDevnetDIP0024:
-        case LlmqtypeDevnet333DIP0024:
-            return [NSString stringWithFormat:@"Test DIP-0024 Quorums (%ld)", quorumType] ;
+        case LlmqtypeTestnetPlatform:
+        case LlmqtypeDevnetPlatform:
+            return [NSString stringWithFormat:@"Test DIP-0024 & DIP-0027 Quorums (%ld)", quorumType] ;
         default:
             return [NSString stringWithFormat:@"Unknown Quorum Type (%ld)", quorumType];
     }

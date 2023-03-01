@@ -197,7 +197,8 @@ allCommitmentAggregatedSignature:(UInt768)allCommitmentAggregatedSignature
         case DSLLMQType_60_75: return 48;
         case DSLLMQType_TestV17: return 2;
         case LlmqtypeDevnetDIP0024: return 4;
-        case LlmqtypeDevnet333DIP0024: return 4;
+        case LlmqtypeTestnetPlatform: return 2;
+        case LlmqtypeDevnetPlatform: return 8;
         default:
             NSAssert(FALSE, @"Unknown llmq type");
             return UINT32_MAX;

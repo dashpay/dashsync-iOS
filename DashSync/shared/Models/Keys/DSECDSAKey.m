@@ -135,18 +135,13 @@ void CKDpriv256(UInt256 *k, UInt256 *c, UInt256 i, BOOL hardened) {
 //
 void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i) {
     if (i & BIP32_HARD) return; // can't derive private child key from public parent key
-
     uint8_t buf[sizeof(*K) + sizeof(i)];
     UInt512 I;
-
     *(DSECPoint *)buf = *K;
     *(uint32_t *)&buf[sizeof(*K)] = CFSwapInt32HostToBig(i);
-
     HMAC(&I, SHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf)); // I = HMAC-SHA512(c, P(K) || i)
-
     *c = *(UInt256 *)&I.u8[sizeof(UInt256)]; // c = IR
     DSSecp256k1PointAdd(K, (UInt256 *)&I);   // K = P(IL) + K
-
     memset(buf, 0, sizeof(buf));
     memset(&I, 0, sizeof(I));
 }
