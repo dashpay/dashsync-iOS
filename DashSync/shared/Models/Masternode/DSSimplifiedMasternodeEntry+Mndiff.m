@@ -90,14 +90,14 @@
                                                                           address:address
                                                                              port:port
                                                              operatorBLSPublicKey:operatorPublicKey
-                                                    previousOperatorBLSPublicKeys:[operatorPublicKeys copy]
+                                                    previousOperatorBLSPublicKeys:operatorPublicKeys
                                                                       keyIDVoting:keyIDVoting
                                                                           isValid:isValid
-                                                                 previousValidity:[validities copy]
+                                                                 previousValidity:validities
                                                            knownConfirmedAtHeight:knownConfirmedAtHeight
                                                                      updateHeight:updateHeight
                                                     simplifiedMasternodeEntryHash:simplifiedMasternodeEntryHash
-                                          previousSimplifiedMasternodeEntryHashes:[masternodeEntryHashes copy]
+                                          previousSimplifiedMasternodeEntryHashes:masternodeEntryHashes
                                                                           onChain:chain];
 }
 + (NSDictionary<NSData *, DSSimplifiedMasternodeEntry *> *)simplifiedEntriesWith:(MasternodeEntry *_Nullable *_Nonnull)entries count:(uintptr_t)count onChain:(DSChain *)chain {
