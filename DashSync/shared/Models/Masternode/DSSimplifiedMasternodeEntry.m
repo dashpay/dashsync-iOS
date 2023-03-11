@@ -84,9 +84,9 @@
     simplifiedMasternodeEntry.updateHeight = updateHeight;
     simplifiedMasternodeEntry.simplifiedMasternodeEntryHash = uint256_is_not_zero(simplifiedMasternodeEntryHash) ? simplifiedMasternodeEntryHash : [simplifiedMasternodeEntry calculateSimplifiedMasternodeEntryHash];
     simplifiedMasternodeEntry.chain = chain;
-    simplifiedMasternodeEntry.previousOperatorPublicKeys = previousOperatorBLSPublicKeys ? [previousOperatorBLSPublicKeys copy] : [NSDictionary dictionary];
-    simplifiedMasternodeEntry.previousSimplifiedMasternodeEntryHashes = previousSimplifiedMasternodeEntryHashes ? [previousSimplifiedMasternodeEntryHashes copy] : [NSDictionary dictionary];
-    simplifiedMasternodeEntry.previousValidity = previousValidity ? [previousValidity copy] : [NSDictionary dictionary];
+    simplifiedMasternodeEntry.previousOperatorPublicKeys = previousOperatorBLSPublicKeys ? previousOperatorBLSPublicKeys : [NSDictionary dictionary];
+    simplifiedMasternodeEntry.previousSimplifiedMasternodeEntryHashes = previousSimplifiedMasternodeEntryHashes ? previousSimplifiedMasternodeEntryHashes : [NSDictionary dictionary];
+    simplifiedMasternodeEntry.previousValidity = previousValidity ? previousValidity : [NSDictionary dictionary];
     return simplifiedMasternodeEntry;
 }
 
