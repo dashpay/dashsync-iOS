@@ -62,8 +62,8 @@
         [snapshotList addObject:snapshot];
         [mnListDiffList addObject:mnListDiff];
     }
-    processingResult.snapshotList = [snapshotList copy];
-    processingResult.mnListDiffList = [mnListDiffList copy];
+    processingResult.snapshotList = snapshotList;
+    processingResult.mnListDiffList = mnListDiffList;
     return processingResult;
 }
 
